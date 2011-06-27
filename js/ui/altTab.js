@@ -197,7 +197,7 @@ AltTabPopup.prototype = {
         this.actor.get_allocation_box();
 
         // Make the initial selection
-        if (binding == 'switch_group') {
+        if (binding == 'switch-group') {
             if (backward) {
                 this._select(0, this._appIcons[0].cachedWindows.length - 1);
             } else {
@@ -206,9 +206,9 @@ AltTabPopup.prototype = {
                 else
                     this._select(0, 0);
             }
-        } else if (binding == 'switch_group_backward') {
+        } else if (binding == 'switch-group-backward') {
             this._select(0, this._appIcons[0].cachedWindows.length - 1);
-        } else if (binding == 'switch_windows_backward') {
+        } else if (binding == 'switch-windows-backward') {
             this._select(this._appIcons.length - 1);
         } else if (this._appIcons.length == 1) {
             this._select(0);

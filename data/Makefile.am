@@ -69,23 +69,14 @@ gschemas.compiled: $(gsettings_SCHEMAS:.xml=.valid)
 all-local: gschemas.compiled
 
 
-# GConf schemas: provide defaults for keys from Metacity we are overriding
-gconfschemadir  = @GCONF_SCHEMA_FILE_DIR@
-gconfschema_DATA = cinnamon.schemas
-
 shadersdir = $(pkgdatadir)/shaders
 shaders_DATA = \
 	shaders/dim-window.glsl
-
-install-data-local:
-	GCONF_CONFIG_SOURCE=$(GCONF_SCHEMA_CONFIG_SOURCE) $(GCONFTOOL) --makefile-install-rule $(srcdir)/$(gconfschema_DATA)
-
 
 
 EXTRA_DIST =						\
 	cinnamon.desktop.in.in			\
 	$(menu_DATA)					\
-	$(gconfschema_DATA)				\
 	$(shaders_DATA)					\
 	org.cinnamon.gschema.xml.in
 

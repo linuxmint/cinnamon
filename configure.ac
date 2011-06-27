@@ -36,10 +36,6 @@ AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE, "$GETTEXT_PACKAGE",
 
 PKG_PROG_PKG_CONFIG([0.22])
 
-# GConf stuff
-AC_PATH_PROG(GCONFTOOL, gconftool-2, no)
-AM_GCONF_SOURCE_2
-
 GLIB_GSETTINGS
 
 # Get a value to substitute into cinnamon.in

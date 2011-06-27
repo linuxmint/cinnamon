@@ -33,6 +33,8 @@ extern GType gnome_cinnamon_plugin_get_type (void);
 #define CINNAMON_DBUS_SERVICE "org.Cinnamon"
 #define MAGNIFIER_DBUS_SERVICE "org.gnome.Magnifier"
 
+#define OVERRIDES_SCHEMA "org.cinnamon.overrides"
+
 static gboolean is_gdm_mode = FALSE;
 
 static void
@@ -134,16 +136,14 @@ cinnamon_dbus_init (gboolean replace)
 static void
 cinnamon_prefs_init (void)
 {
-  meta_prefs_override_preference_location ("/apps/muffin/general/attach_modal_dialogs",
-                                           "/desktop/cinnamon/windows/attach_modal_dialogs");
-  meta_prefs_override_preference_location ("/apps/muffin/general/workspaces_only_on_primary",
-                                           "/desktop/cinnamon/windows/workspaces_only_on_primary");
-  meta_prefs_override_preference_location ("/apps/metacity/general/button_layout",
-                                           "/desktop/cinnamon/windows/button_layout");
-  meta_prefs_override_preference_location ("/apps/metacity/general/edge_tiling",
-                                           "/desktop/cinnamon/windows/edge_tiling");
-  meta_prefs_override_preference_location ("/apps/metacity/general/theme",
-                                           "/desktop/cinnamon/windows/theme");
+  meta_prefs_override_preference_schema ("attach-modal-dialogs",
+                                         OVERRIDES_SCHEMA);
+  meta_prefs_override_preference_schema ("workspaces-only-on-primary",
+                                         OVERRIDES_SCHEMA);
+  meta_prefs_override_preference_schema ("button-layout",
+                                         OVERRIDES_SCHEMA);
+  meta_prefs_override_preference_schema ("edge-tiling",
+                                         OVERRIDES_SCHEMA);
 }
 
 static void
