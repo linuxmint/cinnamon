@@ -1127,10 +1127,10 @@ NMDeviceWireless.prototype = {
         let activeAp = this.device.active_access_point;
 
         if (activeAp) {
-            let pos = this._findNetwork(activeAp);
+            let res = this._findExistingNetwork(activeAp);
 
-            if (pos != -1)
-                this._activeNetwork = this._networks[pos];
+            if (res != null)
+                this._activeNetwork = this._networks[res.network];
         }
 
         // we don't refresh the view here, setActiveConnection will
@@ -1202,6 +1202,18 @@ NMDeviceWireless.prototype = {
             return false;
 
         return true;
+    },
+
+    _findExistingNetwork: function(accessPoint) {
+        for (let i = 0; i < this._networks.length; i++) {
+            let apObj = this._networks[i];
+            for (let j = 0; j < apObj.accessPoints.length; j++) {
+                if (apObj.accessPoints[j] == accessPoint)
+                    return { network: i, ap: j };
+            }
+        }
+
+        return null;
     },
 
     _findNetwork: function(accessPoint) {
@@ -1296,22 +1308,15 @@ NMDeviceWireless.prototype = {
     },
 
     _accessPointRemoved: function(device, accessPoint) {
-        let pos = this._findNetwork(accessPoint);
+        let res = this._findExistingNetwork(accessPoint);
 
-        if (pos == -1) {
+        if (res == null) {
             log('Removing an access point that was never added');
             return;
         }
 
-        let apObj = this._networks[pos];
-        let i = apObj.accessPoints.indexOf(accessPoint);
-
-        if (i == -1) {
-            log('Removing an access point that was never added');
-            return;
-        }
-
-        apObj.accessPoints.splice(i, 1);
+        let apObj = this._networks[res.network];
+        apObj.accessPoints.splice(res.ap, 1);
 
         if (apObj.accessPoints.length == 0) {
             if (this._activeNetwork == apObj)
