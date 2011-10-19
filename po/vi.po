@@ -10,7 +10,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: http://bugzilla.gnome.org/enter_bug.cgi?product=gnome-"
 "cinnamon&keywords=I18N+L10N&component=general\n"
 "POT-Creation-Date: 2011-10-18 19:39+0000\n"
-"PO-Revision-Date: 2011-10-01 10:31+1000\n"
+"PO-Revision-Date: 2011-10-19 19:39+1100\n"
 "Last-Translator: Ngô Chin <ndtrung4419@gmail.com>\n"
 "Language-Team: Vietnamese <vi-VN@googlegroups.com>\n"
 "MIME-Version: 1.0\n"
@@ -591,10 +591,9 @@ msgid "Download and install '%s' from extensions.gnome.org?"
 msgstr "Tải và cài đặt '%s' từ extensions.gnome.org chứ?"
 
 #: ../js/ui/keyboard.js:325
-#, fuzzy
 #| msgid "Retry"
 msgid "tray"
-msgstr "Thử lại"
+msgstr "khay"
 
 #: ../js/ui/keyboard.js:547 ../js/ui/status/power.js:211
 msgid "Keyboard"
@@ -819,23 +818,21 @@ msgstr "Không tìm thấy."
 
 #: ../js/ui/cinnamonEntry.js:30
 msgid "Copy"
-msgstr ""
+msgstr "Chép"
 
 #: ../js/ui/cinnamonEntry.js:35
 msgid "Paste"
-msgstr ""
+msgstr "Dán"
 
 #: ../js/ui/cinnamonEntry.js:81
-#, fuzzy
 #| msgid "Show the _date"
 msgid "Show Text"
-msgstr "Hiện _ngày"
+msgstr "Hiện chữ"
 
 #: ../js/ui/cinnamonEntry.js:83
-#, fuzzy
 #| msgid "Large Text"
 msgid "Hide Text"
-msgstr "Chữ lớn"
+msgstr "Ẩn chữ"
 
 #: ../js/ui/cinnamonMountOperation.js:285
 msgid "Wrong password, please try again"
