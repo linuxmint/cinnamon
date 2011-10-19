@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <cogl-pango/cogl-pango.h>
 #include <clutter/clutter.h>
 #include <clutter/x11/clutter-x11.h>
 #include <dbus/dbus-glib.h>
@@ -258,13 +259,15 @@ static void
 cinnamon_fonts_init (void)
 {
   GtkSettings *settings;
+  CoglPangoFontMap *fontmap;
 
   /* Disable text mipmapping; it causes problems on pre-GEM Intel
    * drivers and we should just be rendering text at the right
    * size rather than scaling it. If we do effects where we dynamically
    * zoom labels, then we might want to reconsider.
    */
-  clutter_set_font_flags (clutter_get_font_flags () & ~CLUTTER_FONT_MIPMAPPING);
+  fontmap = COGL_PANGO_FONT_MAP (clutter_get_font_map ());
+  cogl_pango_font_map_set_use_mipmapping (fontmap, FALSE);
 
   settings = gtk_settings_get_default ();
   g_object_connect (settings,
