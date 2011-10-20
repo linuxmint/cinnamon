@@ -488,11 +488,11 @@ msgstr "Abrir calendário"
 #. in 24-hour mode.
 #: ../js/ui/dateMenu.js:183
 msgid "%a %b %e, %R:%S"
-msgstr "%a, %e de %b, %R:%S"
+msgstr "%a %e de %b, %R:%S"
 
 #: ../js/ui/dateMenu.js:184
 msgid "%a %b %e, %R"
-msgstr "%a, %e de %b, %R"
+msgstr "%a %e de %b, %R"
 
 #. Translators: This is the time format without date used
 #. in 24-hour mode.
@@ -508,11 +508,11 @@ msgstr "%a %R"
 #. for AM/PM.
 #: ../js/ui/dateMenu.js:196
 msgid "%a %b %e, %l:%M:%S %p"
-msgstr "%a, %e de %b, %H:%M:%S"
+msgstr "%a %e de %b, %H:%M:%S"
 
 #: ../js/ui/dateMenu.js:197
 msgid "%a %b %e, %l:%M %p"
-msgstr "%a, %e de %b, %l:%M %p"
+msgstr "%a %e de %b, %l:%M %p"
 
 #. Translators: This is a time format without date used
 #. for AM/PM.
