@@ -149,5 +149,5 @@ use an extension title clicktofocus@janedoe.example.com.'''
 
     print "Created extension in %r" % (extension_path, )
     extensionjs_path = os.path.join(extension_path, 'extension.js')
-    subprocess.Popen(['gnome-open', extensionjs_path])
+    subprocess.Popen(['xdg-open', extensionjs_path])
     sys.exit(0)
