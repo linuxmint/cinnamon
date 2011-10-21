@@ -7,8 +7,9 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: cinnamon master\n"
-"Report-Msgid-Bugs-To: http://bugzilla.gnome.org/enter_bug.cgi?product=cinnamon&keywords=I18N+L10N&component=general\n"
-"POT-Creation-Date: 2011-10-04 21:33+0000\n"
+"Report-Msgid-Bugs-To: http://bugzilla.gnome.org/enter_bug.cgi?product=gnome-"
+"shell&keywords=I18N+L10N&component=general\n"
+"POT-Creation-Date: 2011-10-18 19:39+0000\n"
 "PO-Revision-Date: 2011-10-05 09:26+0100\n"
 "Last-Translator: Matej Urbančič <mateju@svn.gnome.org>\n"
 "Language-Team: Slovenian GNOME Translation Team <gnome-si@googlegroups.com>\n"
@@ -16,7 +17,8 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Language: Slovenian\n"
-"Plural-Forms: nplurals=4; plural=(n%100==1 ? 1 : n%100==2 ? 2 : n%100==3 || n%100==4 ? 3 : 0);\n"
+"Plural-Forms: nplurals=4; plural=(n%100==1 ? 1 : n%100==2 ? 2 : n%100==3 || n"
+"%100==4 ? 3 : 0);\n"
 "X-Poedit-Language: Slovenian\n"
 "X-Poedit-Country: SLOVENIA\n"
 "X-Poedit-SourceCharset: utf-8\n"
@@ -30,12 +32,18 @@ msgid "Window management and application launching"
 msgstr "Upravljanje oken in zaganjanje programov"
 
 #: ../data/org.cinnamon.gschema.xml.in.h:1
-msgid "Allows access to internal debugging and monitoring tools using the Alt-F2 dialog."
-msgstr "Dovoli dostop do razhroščevanja in drugih orodij nadzora preko Alt-F2 vnosnega polja."
+msgid ""
+"Allows access to internal debugging and monitoring tools using the Alt-F2 "
+"dialog."
+msgstr ""
+"Dovoli dostop do razhroščevanja in drugih orodij nadzora preko Alt-F2 "
+"vnosnega polja."
 
 #: ../data/org.cinnamon.gschema.xml.in.h:2
 msgid "Enable internal tools useful for developers and testers from Alt-F2"
-msgstr "Omogoči dostop do orodij razvijalcev in preizkuševalcev programske opreme preko Alt-F2 vnosnega polja."
+msgstr ""
+"Omogoči dostop do orodij razvijalcev in preizkuševalcev programske opreme "
+"preko Alt-F2 vnosnega polja."
 
 #: ../data/org.cinnamon.gschema.xml.in.h:3
 msgid "File extension used for storing the screencast"
@@ -46,8 +54,14 @@ msgid "Framerate used for recording screencasts."
 msgstr "Hitrost sličic uporabljena za snemanje zaslonskega posnetka."
 
 #: ../data/org.cinnamon.gschema.xml.in.h:5
-msgid "Cinnamon extensions have a uuid property; this key lists extensions which should be loaded. disabled-extensions overrides this setting for extensions that appear in both lists."
-msgstr "Razširitve lupine GNOME imajo določila UUID; ključ določa seznam razširitev, ki bodo naložene. To nastavitev prepiše ključ onemogočenih razširitev za tiste razširitve, ki so zapisane na obeh seznamih."
+msgid ""
+"Cinnamon extensions have a uuid property; this key lists extensions which "
+"should be loaded. disabled-extensions overrides this setting for extensions "
+"that appear in both lists."
+msgstr ""
+"Razširitve lupine GNOME imajo določila UUID; ključ določa seznam razširitev, "
+"ki bodo naložene. To nastavitev prepiše ključ onemogočenih razširitev za "
+"tiste razširitve, ki so zapisane na obeh seznamih."
 
 #: ../data/org.cinnamon.gschema.xml.in.h:6
 msgid "History for command (Alt-F2) dialog"
@@ -75,8 +89,28 @@ msgstr "Seznam določil ID namiznih datotek priljubljenih programov"
 
 #: ../data/org.cinnamon.gschema.xml.in.h:13
 #, no-c-format
-msgid "Sets the GStreamer pipeline used to encode recordings. It follows the syntax used for gst-launch. The pipeline should have an unconnected sink pad where the recorded video is recorded. It will normally have a unconnected source pad; output from that pad will be written into the output file. However the pipeline can also take care of its own output - this might be used to send the output to an icecast server via shout2send or similar. When unset or set to an empty value, the default pipeline will be used. This is currently 'videorate ! vp8enc quality=10 speed=2 threads=%T ! queue ! webmmux' and records to WEBM using the VP8 codec. %T is used as a placeholder for a guess at the optimal thread count on the system."
-msgstr "Določa cevovod programa GStreamer, ki se uporablja za kodiranje posnetkov. Ta sledi skladnji, ki se uporablja za gst-launch. Cevovod mora imeti nepovezano korito, kamor se posnetek snema. Običajno je za to namenjen nepovezan izvorni pomnilnik, katerega odvod se zapiše v odvodno datoteko. Vendar pa lahko cevovod ta korak naredi v lastni odvod - možnost se lahko uporabi pri pošiljanju odvoda na strežnik icecast preko shout2send ali podobno. Nedoločena ali prazna možnost se odrazi kot privzeti cevovod. Trenutno je to 'videorate ! vp8enc quality=10 speed=2 threads=%T ! queue ! webmmux' in omogoča snemanje v zapis WEBM z uporabo kodeka VP8. %T se uporablja kot ročnik za ugibanje optimalnega števila niti na sistemu."
+msgid ""
+"Sets the GStreamer pipeline used to encode recordings. It follows the syntax "
+"used for gst-launch. The pipeline should have an unconnected sink pad where "
+"the recorded video is recorded. It will normally have a unconnected source "
+"pad; output from that pad will be written into the output file. However the "
+"pipeline can also take care of its own output - this might be used to send "
+"the output to an icecast server via shout2send or similar. When unset or set "
+"to an empty value, the default pipeline will be used. This is currently "
+"'videorate ! vp8enc quality=10 speed=2 threads=%T ! queue ! webmmux' and "
+"records to WEBM using the VP8 codec. %T is used as a placeholder for a guess "
+"at the optimal thread count on the system."
+msgstr ""
+"Določa cevovod programa GStreamer, ki se uporablja za kodiranje posnetkov. "
+"Ta sledi skladnji, ki se uporablja za gst-launch. Cevovod mora imeti "
+"nepovezano korito, kamor se posnetek snema. Običajno je za to namenjen "
+"nepovezan izvorni pomnilnik, katerega odvod se zapiše v odvodno datoteko. "
+"Vendar pa lahko cevovod ta korak naredi v lastni odvod - možnost se lahko "
+"uporabi pri pošiljanju odvoda na strežnik icecast preko shout2send ali "
+"podobno. Nedoločena ali prazna možnost se odrazi kot privzeti cevovod. "
+"Trenutno je to 'videorate ! vp8enc quality=10 speed=2 threads=%T ! queue ! "
+"webmmux' in omogoča snemanje v zapis WEBM z uporabo kodeka VP8. %T se "
+"uporablja kot ročnik za ugibanje optimalnega števila niti na sistemu."
 
 #: ../data/org.cinnamon.gschema.xml.in.h:14
 msgid "Show date in clock"
@@ -91,24 +125,45 @@ msgid "Show time with seconds"
 msgstr "Pokaži čas s sekundami"
 
 #: ../data/org.cinnamon.gschema.xml.in.h:17
-msgid "The applications corresponding to these identifiers will be displayed in the favorites area."
-msgstr "Programi določeni s temi določili bodo prikazani v območju priljubljenih programov"
+msgid ""
+"The applications corresponding to these identifiers will be displayed in the "
+"favorites area."
+msgstr ""
+"Programi določeni s temi določili bodo prikazani v območju priljubljenih "
+"programov"
 
 #: ../data/org.cinnamon.gschema.xml.in.h:18
-msgid "The filename for recorded screencasts will be a unique filename based on the current date, and use this extension. It should be changed when recording to a different container format."
-msgstr "Ime datoteke zaslonskega posnetka bo enoznačno ime, kateremu bo dodan datum in določena pripona. Pripona mora ustrezati zapisu zabojnika."
+msgid ""
+"The filename for recorded screencasts will be a unique filename based on the "
+"current date, and use this extension. It should be changed when recording to "
+"a different container format."
+msgstr ""
+"Ime datoteke zaslonskega posnetka bo enoznačno ime, kateremu bo dodan datum "
+"in določena pripona. Pripona mora ustrezati zapisu zabojnika."
 
 #: ../data/org.cinnamon.gschema.xml.in.h:19
-msgid "The framerate of the resulting screencast recordered by Cinnamon's screencast recorder in frames-per-second."
-msgstr "Hitrost sličic shranjenega končnega zaslonskega posnetka v sličicah na sekundo."
+msgid ""
+"The framerate of the resulting screencast recordered by Cinnamon's "
+"screencast recorder in frames-per-second."
+msgstr ""
+"Hitrost sličic shranjenega končnega zaslonskega posnetka v sličicah na "
+"sekundo."
 
 #: ../data/org.cinnamon.gschema.xml.in.h:20
 msgid "The gstreamer pipeline used to encode the screencast"
 msgstr "Uporabljen GStreamer cevovod za kodiranje zaslonskega posnetka."
 
 #: ../data/org.cinnamon.gschema.xml.in.h:21
-msgid "Cinnamon normally monitors active applications in order to present the most used ones (e.g. in launchers). While this data will be kept private, you may want to disable this for privacy reasons. Please note that doing so won't remove already saved data."
-msgstr "Lupina običajno nadzira dejavne programe zaradi možnosti prikazovanja najpogosteje uporabljenih v zaganjalniku. Čeprav so podatki krajevni, jih je dobro onemogočiti zaradi varovanja zasebnosti. Z onemogočenje ne bodo odstranjeni že shranjeni podatki."
+msgid ""
+"Cinnamon normally monitors active applications in order to present the most "
+"used ones (e.g. in launchers). While this data will be kept private, you may "
+"want to disable this for privacy reasons. Please note that doing so won't "
+"remove already saved data."
+msgstr ""
+"Lupina običajno nadzira dejavne programe zaradi možnosti prikazovanja "
+"najpogosteje uporabljenih v zaganjalniku. Čeprav so podatki krajevni, jih je "
+"dobro onemogočiti zaradi varovanja zasebnosti. Z onemogočenje ne bodo "
+"odstranjeni že shranjeni podatki."
 
 #: ../data/org.cinnamon.gschema.xml.in.h:22
 msgid "The type of keyboard to use."
@@ -130,59 +185,51 @@ msgstr "Katera tipkovnica naj bo uporabljena?"
 msgid "disabled OpenSearch providers"
 msgstr "ponudniki OpenSearch so bili onemogočeni"
 
-#: ../js/gdm/loginDialog.js:617
+#: ../js/gdm/loginDialog.js:633
 msgid "Session..."
 msgstr "Seja ..."
 
-#: ../js/gdm/loginDialog.js:785
+#: ../js/gdm/loginDialog.js:804
 msgctxt "title"
 msgid "Sign In"
 msgstr "Prijava"
 
 #. translators: this message is shown below the password entry field
 #. to indicate the user can swipe their finger instead
-#: ../js/gdm/loginDialog.js:830
+#: ../js/gdm/loginDialog.js:849
 msgid "(or swipe finger)"
 msgstr "(ali pa povlecite prst)"
 
-#: ../js/gdm/loginDialog.js:848
+#: ../js/gdm/loginDialog.js:867
 msgid "Not listed?"
 msgstr "Ali je ni na seznamu?"
 
-#: ../js/gdm/loginDialog.js:1004
-#: ../js/ui/endSessionDialog.js:426
-#: ../js/ui/extensionSystem.js:477
-#: ../js/ui/networkAgent.js:165
-#: ../js/ui/polkitAuthenticationAgent.js:171
-#: ../js/ui/status/bluetooth.js:480
+#: ../js/gdm/loginDialog.js:1035 ../js/ui/endSessionDialog.js:426
+#: ../js/ui/extensionSystem.js:477 ../js/ui/networkAgent.js:148
+#: ../js/ui/polkitAuthenticationAgent.js:173 ../js/ui/status/bluetooth.js:480
 msgid "Cancel"
 msgstr "Prekliči"
 
-#: ../js/gdm/loginDialog.js:1009
+#: ../js/gdm/loginDialog.js:1040
 msgctxt "button"
 msgid "Sign In"
 msgstr "Prijava"
 
-#: ../js/gdm/loginDialog.js:1358
+#: ../js/gdm/loginDialog.js:1392
 msgid "Login Window"
 msgstr "Prijavno okno"
 
-#: ../js/gdm/powerMenu.js:116
-#: ../js/ui/userMenu.js:514
-#: ../js/ui/userMenu.js:516
-#: ../js/ui/userMenu.js:585
+#: ../js/gdm/powerMenu.js:116 ../js/ui/userMenu.js:554
+#: ../js/ui/userMenu.js:556 ../js/ui/userMenu.js:625
 msgid "Suspend"
 msgstr "Zaustavi"
 
-#: ../js/gdm/powerMenu.js:121
-#: ../js/ui/endSessionDialog.js:89
-#: ../js/ui/endSessionDialog.js:97
-#: ../js/ui/endSessionDialog.js:106
+#: ../js/gdm/powerMenu.js:121 ../js/ui/endSessionDialog.js:89
+#: ../js/ui/endSessionDialog.js:97 ../js/ui/endSessionDialog.js:106
 msgid "Restart"
 msgstr "Zaženi znova"
 
-#: ../js/gdm/powerMenu.js:126
-#: ../js/ui/endSessionDialog.js:80
+#: ../js/gdm/powerMenu.js:126 ../js/ui/endSessionDialog.js:80
 #: ../js/ui/endSessionDialog.js:91
 msgid "Power Off"
 msgstr "Izklop"
@@ -396,38 +443,32 @@ msgstr "Ta teden"
 msgid "Next week"
 msgstr "Naslednji teden"
 
-#: ../js/ui/contactDisplay.js:59
-#: ../js/ui/notificationDaemon.js:444
-#: ../js/ui/status/power.js:223
-#: ../src/cinnamon-app.c:355
+#: ../js/ui/contactDisplay.js:65 ../js/ui/notificationDaemon.js:459
+#: ../js/ui/status/power.js:223 ../src/cinnamon-app.c:353
 msgid "Unknown"
 msgstr "Neznano"
 
-#: ../js/ui/contactDisplay.js:80
-#: ../js/ui/userMenu.js:139
+#: ../js/ui/contactDisplay.js:86 ../js/ui/userMenu.js:139
 msgid "Available"
 msgstr "Na voljo"
 
-#: ../js/ui/contactDisplay.js:85
-#: ../js/ui/userMenu.js:148
+#: ../js/ui/contactDisplay.js:91 ../js/ui/userMenu.js:148
 msgid "Away"
 msgstr "Odsotno"
 
-#: ../js/ui/contactDisplay.js:89
-#: ../js/ui/userMenu.js:142
+#: ../js/ui/contactDisplay.js:95 ../js/ui/userMenu.js:142
 msgid "Busy"
 msgstr "Zaposleno"
 
-#: ../js/ui/contactDisplay.js:93
+#: ../js/ui/contactDisplay.js:99
 msgid "Offline"
 msgstr "Nepovezano"
 
-#: ../js/ui/contactDisplay.js:140
+#: ../js/ui/contactDisplay.js:146
 msgid "CONTACTS"
 msgstr "Stiki"
 
-#: ../js/ui/dash.js:172
-#: ../js/ui/messageTray.js:1204
+#: ../js/ui/dash.js:174 ../js/ui/messageTray.js:1206
 msgid "Remove"
 msgstr "Odstrani"
 
@@ -495,8 +536,7 @@ msgstr "Nedavni predmeti"
 msgid "Log Out %s"
 msgstr "Odjava %s"
 
-#: ../js/ui/endSessionDialog.js:61
-#: ../js/ui/endSessionDialog.js:75
+#: ../js/ui/endSessionDialog.js:61 ../js/ui/endSessionDialog.js:75
 msgid "Log Out"
 msgstr "Odjava"
 
@@ -528,7 +568,8 @@ msgstr "Odjavljanje iz sistema."
 
 #: ../js/ui/endSessionDialog.js:81
 msgid "Click Power Off to quit these applications and power off the system."
-msgstr "Kliknite na gumb za izklop za končanje teh programov in izklop iz sistema."
+msgstr ""
+"Kliknite na gumb za izklop za končanje teh programov in izklop iz sistema."
 
 #: ../js/ui/endSessionDialog.js:83
 #, c-format
@@ -545,7 +586,8 @@ msgstr "Izklapljanje sistema"
 
 #: ../js/ui/endSessionDialog.js:98
 msgid "Click Restart to quit these applications and restart the system."
-msgstr "Kliknite Zaženi znova za končanje teh programov in ponoven zagon sistema. "
+msgstr ""
+"Kliknite Zaženi znova za končanje teh programov in ponoven zagon sistema. "
 
 #: ../js/ui/endSessionDialog.js:100
 #, c-format
@@ -567,140 +609,136 @@ msgstr "Namesti"
 #: ../js/ui/extensionSystem.js:485
 #, c-format
 msgid "Download and install '%s' from extensions.gnome.org?"
-msgstr "Ali naj se razširitev '%s'  namesti preko povezave z extensions.gnome.org?"
+msgstr ""
+"Ali naj se razširitev '%s'  namesti preko povezave z extensions.gnome.org?"
 
-#: ../js/ui/keyboard.js:308
+#: ../js/ui/keyboard.js:325
 msgid "tray"
 msgstr "sistemska vrstica"
 
-#: ../js/ui/keyboard.js:530
-#: ../js/ui/status/power.js:211
+#: ../js/ui/keyboard.js:547 ../js/ui/status/power.js:211
 msgid "Keyboard"
 msgstr "Tipkovnica"
 
-#: ../js/ui/lookingGlass.js:645
+#: ../js/ui/lookingGlass.js:646
 msgid "No extensions installed"
 msgstr "Ni nameščenih razširitev"
 
-#: ../js/ui/lookingGlass.js:691
+#: ../js/ui/lookingGlass.js:692
 msgid "Enabled"
 msgstr "Omogočeno"
 
 #. translators:
 #. * The device has been disabled
-#: ../js/ui/lookingGlass.js:693
-#: ../src/gvc/gvc-mixer-control.c:1093
+#: ../js/ui/lookingGlass.js:694 ../src/gvc/gvc-mixer-control.c:1093
 msgid "Disabled"
 msgstr "Onemogočeno"
 
-#: ../js/ui/lookingGlass.js:695
+#: ../js/ui/lookingGlass.js:696
 msgid "Error"
 msgstr "Napaka"
 
-#: ../js/ui/lookingGlass.js:697
+#: ../js/ui/lookingGlass.js:698
 msgid "Out of date"
 msgstr "Zastarelo"
 
-#: ../js/ui/lookingGlass.js:699
+#: ../js/ui/lookingGlass.js:700
 msgid "Downloading"
 msgstr "Prejemanje"
 
-#: ../js/ui/lookingGlass.js:720
+#: ../js/ui/lookingGlass.js:721
 msgid "View Source"
 msgstr "Poglej vir"
 
-#: ../js/ui/lookingGlass.js:726
+#: ../js/ui/lookingGlass.js:727
 msgid "Web Page"
 msgstr "Spletna stran"
 
-#: ../js/ui/messageTray.js:1197
+#: ../js/ui/messageTray.js:1199
 msgid "Open"
 msgstr "Odpri"
 
-#: ../js/ui/messageTray.js:2406
+#: ../js/ui/messageTray.js:2408
 msgid "System Information"
 msgstr "Podrobnosti sistema"
 
-#: ../js/ui/networkAgent.js:145
-msgid "Show password"
-msgstr "Pokaži geslo"
-
-#: ../js/ui/networkAgent.js:160
+#: ../js/ui/networkAgent.js:143
 msgid "Connect"
 msgstr "Poveži"
 
 #. Cisco LEAP
-#: ../js/ui/networkAgent.js:255
-#: ../js/ui/networkAgent.js:267
-#: ../js/ui/networkAgent.js:294
-#: ../js/ui/networkAgent.js:314
-#: ../js/ui/networkAgent.js:324
+#: ../js/ui/networkAgent.js:238 ../js/ui/networkAgent.js:250
+#: ../js/ui/networkAgent.js:277 ../js/ui/networkAgent.js:297
+#: ../js/ui/networkAgent.js:307
 msgid "Password: "
 msgstr "Geslo:"
 
 #. static WEP
-#: ../js/ui/networkAgent.js:260
+#: ../js/ui/networkAgent.js:243
 msgid "Key: "
 msgstr "Ključ:"
 
 #. TTLS and PEAP are actually much more complicated, but this complication
 #. is not visible here since we only care about phase2 authentication
 #. (and don't even care of which one)
-#: ../js/ui/networkAgent.js:292
-#: ../js/ui/networkAgent.js:310
+#: ../js/ui/networkAgent.js:275 ../js/ui/networkAgent.js:293
 msgid "Username: "
 msgstr "Uporabniško ime: "
 
-#: ../js/ui/networkAgent.js:298
+#: ../js/ui/networkAgent.js:281
 msgid "Identity: "
 msgstr "_Istovetnost:"
 
-#: ../js/ui/networkAgent.js:300
+#: ../js/ui/networkAgent.js:283
 msgid "Private key password: "
 msgstr "Geslo zasebnega ključa:"
 
-#: ../js/ui/networkAgent.js:312
+#: ../js/ui/networkAgent.js:295
 msgid "Service: "
 msgstr "Storitev:"
 
-#: ../js/ui/networkAgent.js:341
+#: ../js/ui/networkAgent.js:324
 msgid "Authentication required by wireless network"
 msgstr "Zahtevana overitev za brezžično omrežje"
 
-#: ../js/ui/networkAgent.js:342
+#: ../js/ui/networkAgent.js:325
 #, c-format
-msgid "Passwords or encryption keys are required to access the wireless network '%s'."
-msgstr "Za povezavo v brezžično omrežje '%s' je zahtevana overitev ali nastavitev šifrirnega ključa."
+msgid ""
+"Passwords or encryption keys are required to access the wireless network '%"
+"s'."
+msgstr ""
+"Za povezavo v brezžično omrežje '%s' je zahtevana overitev ali nastavitev "
+"šifrirnega ključa."
 
-#: ../js/ui/networkAgent.js:346
+#: ../js/ui/networkAgent.js:329
 msgid "Wired 802.1X authentication"
 msgstr "Žična overitev 802.1X"
 
-#: ../js/ui/networkAgent.js:348
+#: ../js/ui/networkAgent.js:331
 msgid "Network name: "
 msgstr "Ime omrežja:"
 
-#: ../js/ui/networkAgent.js:353
+#: ../js/ui/networkAgent.js:336
 msgid "DSL authentication"
 msgstr "DSL overitev"
 
-#: ../js/ui/networkAgent.js:360
+#: ../js/ui/networkAgent.js:343
 msgid "PIN code required"
 msgstr "Zahtevana koda PIN"
 
-#: ../js/ui/networkAgent.js:361
+#: ../js/ui/networkAgent.js:344
 msgid "PIN code is needed for the mobile broadband device"
 msgstr "Za napravo mobilnega širokopasovnega dostopa je zahtevana koda PIN."
 
-#: ../js/ui/networkAgent.js:362
+#: ../js/ui/networkAgent.js:345
 msgid "PIN: "
 msgstr "PIN: "
 
-#: ../js/ui/networkAgent.js:368
+#: ../js/ui/networkAgent.js:351
 msgid "Mobile broadband network password"
 msgstr "Geslo mobilnega širokopasovnega dostopa"
 
-#: ../js/ui/networkAgent.js:369
+#: ../js/ui/networkAgent.js:352
 #, c-format
 msgid "A password is required to connect to '%s'."
 msgstr "Za povezavo z omrežjem '%s' je zahtevano geslo."
@@ -756,15 +794,15 @@ msgstr "Povezava z ..."
 msgid "PLACES & DEVICES"
 msgstr "Mesta in naprave"
 
-#: ../js/ui/polkitAuthenticationAgent.js:72
+#: ../js/ui/polkitAuthenticationAgent.js:73
 msgid "Authentication Required"
 msgstr "Zahtevana je overitev"
 
-#: ../js/ui/polkitAuthenticationAgent.js:106
+#: ../js/ui/polkitAuthenticationAgent.js:107
 msgid "Administrator"
 msgstr "Skrbnik"
 
-#: ../js/ui/polkitAuthenticationAgent.js:175
+#: ../js/ui/polkitAuthenticationAgent.js:177
 msgid "Authenticate"
 msgstr "Overi"
 
@@ -772,11 +810,11 @@ msgstr "Overi"
 #. * requested authentication was not gained; this can happen
 #. * because of an authentication error (like invalid password),
 #. * for instance.
-#: ../js/ui/polkitAuthenticationAgent.js:256
+#: ../js/ui/polkitAuthenticationAgent.js:258
 msgid "Sorry, that didn't work. Please try again."
 msgstr "Dejanje je spodletelo. Poskusite znova."
 
-#: ../js/ui/polkitAuthenticationAgent.js:268
+#: ../js/ui/polkitAuthenticationAgent.js:270
 msgid "Password:"
 msgstr "Geslo:"
 
@@ -789,7 +827,7 @@ msgstr "Geslo:"
 msgid "toggle-switch-us"
 msgstr "toggle-switch-intl"
 
-#: ../js/ui/runDialog.js:208
+#: ../js/ui/runDialog.js:209
 msgid "Please enter a command:"
 msgstr "Vnos ukaza:"
 
@@ -800,6 +838,24 @@ msgstr "Iskanje ..."
 #: ../js/ui/searchDisplay.js:363
 msgid "No matching results."
 msgstr "Ni zadetkov iskanja"
+
+#: ../js/ui/cinnamonEntry.js:30
+msgid "Copy"
+msgstr ""
+
+#: ../js/ui/cinnamonEntry.js:35
+msgid "Paste"
+msgstr ""
+
+#: ../js/ui/cinnamonEntry.js:81
+msgid "Show Text"
+msgstr ""
+
+#: ../js/ui/cinnamonEntry.js:83
+#, fuzzy
+#| msgid "Large Text"
+msgid "Hide Text"
+msgstr "Veliko besedilo"
 
 #: ../js/ui/cinnamonMountOperation.js:285
 msgid "Wrong password, please try again"
@@ -848,12 +904,9 @@ msgstr "Visok kontrast"
 msgid "Large Text"
 msgstr "Veliko besedilo"
 
-#: ../js/ui/status/bluetooth.js:39
-#: ../js/ui/status/bluetooth.js:261
-#: ../js/ui/status/bluetooth.js:347
-#: ../js/ui/status/bluetooth.js:381
-#: ../js/ui/status/bluetooth.js:421
-#: ../js/ui/status/bluetooth.js:454
+#: ../js/ui/status/bluetooth.js:39 ../js/ui/status/bluetooth.js:261
+#: ../js/ui/status/bluetooth.js:347 ../js/ui/status/bluetooth.js:381
+#: ../js/ui/status/bluetooth.js:421 ../js/ui/status/bluetooth.js:454
 msgid "Bluetooth"
 msgstr "Bluetooth"
 
@@ -882,13 +935,11 @@ msgstr "strojno onemogočen"
 msgid "Connection"
 msgstr "Povezava"
 
-#: ../js/ui/status/bluetooth.js:217
-#: ../js/ui/status/network.js:486
+#: ../js/ui/status/bluetooth.js:217 ../js/ui/status/network.js:486
 msgid "disconnecting..."
 msgstr "prekinjanje povezave ..."
 
-#: ../js/ui/status/bluetooth.js:230
-#: ../js/ui/status/network.js:492
+#: ../js/ui/status/bluetooth.js:230 ../js/ui/status/network.js:492
 msgid "connecting..."
 msgstr "povezovanje ..."
 
@@ -917,8 +968,7 @@ msgstr "Nastavitve tipkovnice"
 msgid "Mouse Settings"
 msgstr "Nastavitve miške"
 
-#: ../js/ui/status/bluetooth.js:279
-#: ../js/ui/status/volume.js:62
+#: ../js/ui/status/bluetooth.js:279 ../js/ui/status/volume.js:62
 msgid "Sound Settings"
 msgstr "Nastavitve zvoka"
 
@@ -940,8 +990,7 @@ msgstr "Vedno odobri dostop"
 msgid "Grant this time only"
 msgstr "Odobri le tokrat"
 
-#: ../js/ui/status/bluetooth.js:392
-#: ../js/ui/telepathyClient.js:1200
+#: ../js/ui/status/bluetooth.js:392 ../js/ui/telepathyClient.js:1204
 msgid "Reject"
 msgstr "Zavrni"
 
@@ -950,8 +999,7 @@ msgstr "Zavrni"
 msgid "Pairing confirmation for %s"
 msgstr "Potrditev razčlenjevanja za %s"
 
-#: ../js/ui/status/bluetooth.js:428
-#: ../js/ui/status/bluetooth.js:462
+#: ../js/ui/status/bluetooth.js:428 ../js/ui/status/bluetooth.js:462
 #, c-format
 msgid "Device %s wants to pair with this computer"
 msgstr "Naprava %s se skuša povezati s tem računalnikom"
@@ -1031,15 +1079,13 @@ msgstr "ni na voljo"
 msgid "connection failed"
 msgstr "povezovanje je spodletelo"
 
-#: ../js/ui/status/network.js:575
-#: ../js/ui/status/network.js:1523
+#: ../js/ui/status/network.js:575 ../js/ui/status/network.js:1523
 msgid "More..."
 msgstr "Več ..."
 
 #. TRANSLATORS: this is the indication that a connection for another logged in user is active,
 #. and we cannot access its settings (including the name)
-#: ../js/ui/status/network.js:611
-#: ../js/ui/status/network.js:1458
+#: ../js/ui/status/network.js:611 ../js/ui/status/network.js:1458
 msgid "Connected (private)"
 msgstr "Povezano (zasebna povezava)"
 
@@ -1056,8 +1102,7 @@ msgid "Auto dial-up"
 msgstr "Samodejni klicni dostop"
 
 #. TRANSLATORS: this the automatic wireless connection name (including the network name)
-#: ../js/ui/status/network.js:878
-#: ../js/ui/status/network.js:1470
+#: ../js/ui/status/network.js:878 ../js/ui/status/network.js:1470
 #, c-format
 msgid "Auto %s"
 msgstr "Samodejna povezava z %s"
@@ -1160,8 +1205,7 @@ msgstr[1] "preostaja še %d minuta"
 msgstr[2] "preostajata še %d minuti"
 msgstr[3] "preostajajo še %d minute"
 
-#: ../js/ui/status/power.js:121
-#: ../js/ui/status/power.js:194
+#: ../js/ui/status/power.js:121 ../js/ui/status/power.js:194
 #, c-format
 msgctxt "percent of battery remaining"
 msgid "%d%%"
@@ -1240,22 +1284,22 @@ msgstr "Zahteva po naročilu"
 msgid "Connection error"
 msgstr "Napaka povezovanja"
 
-#: ../js/ui/telepathyClient.js:737
+#: ../js/ui/telepathyClient.js:741
 #, c-format
 msgid "%s is online."
 msgstr "%s je povezan."
 
-#: ../js/ui/telepathyClient.js:742
+#: ../js/ui/telepathyClient.js:746
 #, c-format
 msgid "%s is offline."
 msgstr "%s ni povezan."
 
-#: ../js/ui/telepathyClient.js:745
+#: ../js/ui/telepathyClient.js:749
 #, c-format
 msgid "%s is away."
 msgstr "%s je odsoten."
 
-#: ../js/ui/telepathyClient.js:748
+#: ../js/ui/telepathyClient.js:752
 #, c-format
 msgid "%s is busy."
 msgstr "%s je zaposlen."
@@ -1263,35 +1307,35 @@ msgstr "%s je zaposlen."
 #. Translators: this is a time format string followed by a date.
 #. If applicable, replace %X with a strftime format valid for your
 #. locale, without seconds.
-#: ../js/ui/telepathyClient.js:982
+#: ../js/ui/telepathyClient.js:986
 #, no-c-format
 msgid "Sent at <b>%X</b> on <b>%A</b>"
 msgstr "Poslano <b>%A</b> ob <b>%X</b>"
 
 #. Translators: this is a time format in the style of "Wednesday, May 25",
 #. shown when you get a chat message in the same year.
-#: ../js/ui/telepathyClient.js:988
+#: ../js/ui/telepathyClient.js:992
 #, no-c-format
 msgid "Sent on <b>%A</b>, <b>%B %d</b>"
 msgstr "Poslano <b>%A</b>, <b>%d. %Ba</b>"
 
 #. Translators: this is a time format in the style of "Wednesday, May 25, 2012",
 #. shown when you get a chat message in a different year.
-#: ../js/ui/telepathyClient.js:993
+#: ../js/ui/telepathyClient.js:997
 #, no-c-format
 msgid "Sent on <b>%A</b>, <b>%B %d</b>, %Y"
 msgstr "Poslano <b>%A</b>, <b>%d. %Ba</b>, %Y"
 
 #. Translators: this is the other person changing their old IM name to their new
 #. IM name.
-#: ../js/ui/telepathyClient.js:1035
+#: ../js/ui/telepathyClient.js:1039
 #, c-format
 msgid "%s is now known as %s"
 msgstr "%s je sedaj znan kot v %s"
 
 #. translators: argument is a room name like
 #. * room@jabber.org for example.
-#: ../js/ui/telepathyClient.js:1144
+#: ../js/ui/telepathyClient.js:1148
 #, c-format
 msgid "Invitation to %s"
 msgstr "Povabilo v %s"
@@ -1299,36 +1343,35 @@ msgstr "Povabilo v %s"
 #. translators: first argument is the name of a contact and the second
 #. * one the name of a room. "Alice is inviting you to join room@jabber.org
 #. * for example.
-#: ../js/ui/telepathyClient.js:1152
+#: ../js/ui/telepathyClient.js:1156
 #, c-format
 msgid "%s is inviting you to join %s"
 msgstr "%s vas vabi, da se pridružite v %s"
 
-#: ../js/ui/telepathyClient.js:1154
-#: ../js/ui/telepathyClient.js:1243
-#: ../js/ui/telepathyClient.js:1347
+#: ../js/ui/telepathyClient.js:1158 ../js/ui/telepathyClient.js:1248
+#: ../js/ui/telepathyClient.js:1352
 msgid "Decline"
 msgstr "Zavrni"
 
-#: ../js/ui/telepathyClient.js:1155
-#: ../js/ui/telepathyClient.js:1244
-#: ../js/ui/telepathyClient.js:1348
+#: ../js/ui/telepathyClient.js:1159 ../js/ui/telepathyClient.js:1249
+#: ../js/ui/telepathyClient.js:1353
 msgid "Accept"
 msgstr "Sprejmi"
 
 #. translators: argument is a contact name like Alice for example.
-#: ../js/ui/telepathyClient.js:1188
+#: ../js/ui/telepathyClient.js:1192
 #, c-format
 msgid "Video call from %s"
 msgstr "%s želi vzpostaviti video klic"
 
 #. translators: argument is a contact name like Alice for example.
-#: ../js/ui/telepathyClient.js:1191
+#: ../js/ui/telepathyClient.js:1195
 #, c-format
 msgid "Call from %s"
 msgstr "%s kliče"
 
-#: ../js/ui/telepathyClient.js:1201
+#. translators: this is a button label (verb), not a noun
+#: ../js/ui/telepathyClient.js:1206
 msgid "Answer"
 msgstr "Odgovori"
 
@@ -1337,125 +1380,132 @@ msgstr "Odgovori"
 #. * file name. The string will be something
 #. * like: "Alice is sending you test.ogg"
 #.
-#: ../js/ui/telepathyClient.js:1237
+#: ../js/ui/telepathyClient.js:1242
 #, c-format
 msgid "%s is sending you %s"
 msgstr "%s pošilja %s"
 
 #. To translators: The parameter is the contact's alias
-#: ../js/ui/telepathyClient.js:1312
+#: ../js/ui/telepathyClient.js:1317
 #, c-format
 msgid "%s would like permission to see when you are online"
 msgstr "%s želi dovoljenje za pogled dosegljivosti"
 
-#: ../js/ui/telepathyClient.js:1410
+#: ../js/ui/telepathyClient.js:1415
 msgid "Network error"
 msgstr "Napaka omrežja"
 
-#: ../js/ui/telepathyClient.js:1412
+#: ../js/ui/telepathyClient.js:1417
 msgid "Authentication failed"
 msgstr "Overitev je spodletela"
 
-#: ../js/ui/telepathyClient.js:1414
+#: ../js/ui/telepathyClient.js:1419
 msgid "Encryption error"
 msgstr "Napaka šifriranja"
 
-#: ../js/ui/telepathyClient.js:1416
+#: ../js/ui/telepathyClient.js:1421
 msgid "Certificate not provided"
 msgstr "Potrdilo ni na voljo"
 
-#: ../js/ui/telepathyClient.js:1418
+#: ../js/ui/telepathyClient.js:1423
 msgid "Certificate untrusted"
 msgstr "Potrdilo ni zaupljivo"
 
-#: ../js/ui/telepathyClient.js:1420
+#: ../js/ui/telepathyClient.js:1425
 msgid "Certificate expired"
 msgstr "Potrdilo je preteklo"
 
-#: ../js/ui/telepathyClient.js:1422
+#: ../js/ui/telepathyClient.js:1427
 msgid "Certificate not activated"
 msgstr "Potrdilo ni potrjeno"
 
-#: ../js/ui/telepathyClient.js:1424
+#: ../js/ui/telepathyClient.js:1429
 msgid "Certificate hostname mismatch"
 msgstr "Neustrezno ime gostitelja potrdila"
 
-#: ../js/ui/telepathyClient.js:1426
+#: ../js/ui/telepathyClient.js:1431
 msgid "Certificate fingerprint mismatch"
 msgstr "Neustrezen prstni odtis potrdila"
 
-#: ../js/ui/telepathyClient.js:1428
+#: ../js/ui/telepathyClient.js:1433
 msgid "Certificate self-signed"
 msgstr "Potrdilo je samo-podpisano"
 
-#: ../js/ui/telepathyClient.js:1430
+#: ../js/ui/telepathyClient.js:1435
 msgid "Status is set to offline"
 msgstr "Stanje je nastavljeno na brez povezave"
 
-#: ../js/ui/telepathyClient.js:1432
+#: ../js/ui/telepathyClient.js:1437
 msgid "Encryption is not available"
 msgstr "Šifriranje ni na voljo."
 
-#: ../js/ui/telepathyClient.js:1434
+#: ../js/ui/telepathyClient.js:1439
 msgid "Certificate is invalid"
 msgstr "Potrdilo je neveljavno."
 
-#: ../js/ui/telepathyClient.js:1436
+#: ../js/ui/telepathyClient.js:1441
 msgid "Connection has been refused"
 msgstr "Povezava je zavrnjena."
 
-#: ../js/ui/telepathyClient.js:1438
+#: ../js/ui/telepathyClient.js:1443
 msgid "Connection can't be established"
 msgstr "Povezave ni mogoče vzpostaviti."
 
-#: ../js/ui/telepathyClient.js:1440
+#: ../js/ui/telepathyClient.js:1445
 msgid "Connection has been lost"
 msgstr "Povezava je prekinjena."
 
-#: ../js/ui/telepathyClient.js:1442
+#: ../js/ui/telepathyClient.js:1447
 msgid "This resource is already connected to the server"
 msgstr "Vir je s strežnikom že povezan"
 
-#: ../js/ui/telepathyClient.js:1444
-msgid "Connection has been replaced by a new connection using the same resource"
+#: ../js/ui/telepathyClient.js:1449
+msgid ""
+"Connection has been replaced by a new connection using the same resource"
 msgstr "Povezava je zamenjana z novo povezavo, ki uporablja isti vir."
 
-#: ../js/ui/telepathyClient.js:1446
+#: ../js/ui/telepathyClient.js:1451
 msgid "The account already exists on the server"
 msgstr "Račun na strežniku že obstaja"
 
-#: ../js/ui/telepathyClient.js:1448
+#: ../js/ui/telepathyClient.js:1453
 msgid "Server is currently too busy to handle the connection"
 msgstr "Strežnik je trenutno preveč zaposlen za upravljanje s povezavo."
 
-#: ../js/ui/telepathyClient.js:1450
+#: ../js/ui/telepathyClient.js:1455
 msgid "Certificate has been revoked"
 msgstr "Potrdilo je preklicano"
 
-#: ../js/ui/telepathyClient.js:1452
-msgid "Certificate uses an insecure cipher algorithm or is cryptographically weak"
-msgstr "Potrdilo ne uporablja varnega algoritma ali pa uporablja šibko šifriranje."
+#: ../js/ui/telepathyClient.js:1457
+msgid ""
+"Certificate uses an insecure cipher algorithm or is cryptographically weak"
+msgstr ""
+"Potrdilo ne uporablja varnega algoritma ali pa uporablja šibko šifriranje."
 
-#: ../js/ui/telepathyClient.js:1454
-msgid "The length of the server certificate, or the depth of the server certificate chain, exceed the limits imposed by the cryptography library"
-msgstr "Dolžina potrdila strežnika ali pa globina verige potrdila presega omejitev, ki je določena s šifrirno knjižnico."
+#: ../js/ui/telepathyClient.js:1459
+msgid ""
+"The length of the server certificate, or the depth of the server certificate "
+"chain, exceed the limits imposed by the cryptography library"
+msgstr ""
+"Dolžina potrdila strežnika ali pa globina verige potrdila presega omejitev, "
+"ki je določena s šifrirno knjižnico."
 
 #. translators: argument is the account name, like
 #. * name@jabber.org for example.
-#: ../js/ui/telepathyClient.js:1463
+#: ../js/ui/telepathyClient.js:1468
 #, c-format
 msgid "Connection to %s failed"
 msgstr "Povezava z %s je spodletela"
 
-#: ../js/ui/telepathyClient.js:1472
+#: ../js/ui/telepathyClient.js:1477
 msgid "Reconnect"
 msgstr "Ponovno se poveži"
 
-#: ../js/ui/telepathyClient.js:1473
+#: ../js/ui/telepathyClient.js:1478
 msgid "Edit account"
 msgstr "Uredi račun"
 
-#: ../js/ui/telepathyClient.js:1519
+#: ../js/ui/telepathyClient.js:1524
 msgid "Unknown reason"
 msgstr "Neznan vzrok"
 
@@ -1471,54 +1521,56 @@ msgstr "Nedejavno"
 msgid "Unavailable"
 msgstr "Nedostopno"
 
-#: ../js/ui/userMenu.js:512
-#: ../js/ui/userMenu.js:516
-#: ../js/ui/userMenu.js:586
+#: ../js/ui/userMenu.js:552 ../js/ui/userMenu.js:556 ../js/ui/userMenu.js:626
 msgid "Power Off..."
 msgstr "Izklop ..."
 
-#: ../js/ui/userMenu.js:548
+#: ../js/ui/userMenu.js:588
 msgid "Notifications"
 msgstr "Obvestila"
 
-#: ../js/ui/userMenu.js:556
+#: ../js/ui/userMenu.js:596
 msgid "Online Accounts"
 msgstr "Spletni računi"
 
-#: ../js/ui/userMenu.js:560
+#: ../js/ui/userMenu.js:600
 msgid "System Settings"
 msgstr "Sistemske nastavitve"
 
-#: ../js/ui/userMenu.js:567
+#: ../js/ui/userMenu.js:607
 msgid "Lock Screen"
 msgstr "Zakleni zaslon"
 
-#: ../js/ui/userMenu.js:572
+#: ../js/ui/userMenu.js:612
 msgid "Switch User"
 msgstr "Preklopi uporabnika"
 
-#: ../js/ui/userMenu.js:577
+#: ../js/ui/userMenu.js:617
 msgid "Log Out..."
 msgstr "Odjava ..."
 
-#: ../js/ui/userMenu.js:605
+#: ../js/ui/userMenu.js:645
 msgid "Your chat status will be set to busy"
 msgstr "Stanje vašega klepeta bo nastavljeno na zasedeno"
 
-#: ../js/ui/userMenu.js:606
-msgid "Notifications are now disabled, including chat messages. Your online status has been adjusted to let others know that you might not see their messages."
-msgstr "Obveščanje je zdaj onemogočeno, vključno s sporočili klepeta. Vaše stanje povezanosti se je prilagodilo, da bodo drugi vedeli, da njihovih sporočil morda ne boste opazili."
+#: ../js/ui/userMenu.js:646
+msgid ""
+"Notifications are now disabled, including chat messages. Your online status "
+"has been adjusted to let others know that you might not see their messages."
+msgstr ""
+"Obveščanje je zdaj onemogočeno, vključno s sporočili klepeta. Vaše stanje "
+"povezanosti se je prilagodilo, da bodo drugi vedeli, da njihovih sporočil "
+"morda ne boste opazili."
 
 #. Translators: this is the text displayed
 #. in the search entry when no search is
 #. active; it should not exceed ~30
 #. characters.
-#: ../js/ui/viewSelector.js:120
+#: ../js/ui/viewSelector.js:121
 msgid "Type to search..."
 msgstr "Vtipkajte za iskanje ..."
 
-#: ../js/ui/viewSelector.js:140
-#: ../src/cinnamon-util.c:261
+#: ../js/ui/viewSelector.js:142 ../src/cinnamon-util.c:261
 msgid "Search"
 msgstr "Poišči"
 
@@ -1561,7 +1613,7 @@ msgstr "Izpiši različico"
 msgid "Mode used by GDM for login screen"
 msgstr "Način uporabljen v GDM za prijavni naslov"
 
-#: ../src/cinnamon-app.c:581
+#: ../src/cinnamon-app.c:579
 #, c-format
 msgid "Failed to launch '%s'"
 msgstr "Zaganjanje '%s' je spodletelo"
@@ -1597,6 +1649,9 @@ msgstr "Datotečni sistem"
 #, c-format
 msgid "%1$s: %2$s"
 msgstr "%1$s: %2$s"
+
+#~ msgid "Show password"
+#~ msgstr "Pokaži geslo"
 
 #~ msgid "%s has not emitted any errors."
 #~ msgstr "%s ni vrnil napak."
