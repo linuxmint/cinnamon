@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: cinnamon\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-10-06 08:08+0200\n"
-"PO-Revision-Date: 2011-10-06 08:09+0100\n"
+"POT-Creation-Date: 2011-10-23 13:07+0200\n"
+"PO-Revision-Date: 2011-10-23 13:07+0100\n"
 "Last-Translator: Daniel Nylander <po@danielnylander.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "Language: sv\n"
@@ -126,47 +126,47 @@ msgstr "Vilket tangentbord att använda"
 msgid "disabled OpenSearch providers"
 msgstr "inaktiverade OpenSearch-leverantörer"
 
-#: ../js/gdm/loginDialog.js:617
+#: ../js/gdm/loginDialog.js:633
 msgid "Session..."
 msgstr "Session..."
 
-#: ../js/gdm/loginDialog.js:785
+#: ../js/gdm/loginDialog.js:804
 msgctxt "title"
 msgid "Sign In"
 msgstr "Logga in"
 
 #. translators: this message is shown below the password entry field
 #. to indicate the user can swipe their finger instead
-#: ../js/gdm/loginDialog.js:830
+#: ../js/gdm/loginDialog.js:849
 msgid "(or swipe finger)"
 msgstr "(eller dra fingret)"
 
-#: ../js/gdm/loginDialog.js:848
+#: ../js/gdm/loginDialog.js:867
 msgid "Not listed?"
 msgstr "Inte listad?"
 
-#: ../js/gdm/loginDialog.js:1004
+#: ../js/gdm/loginDialog.js:1035
 #: ../js/ui/endSessionDialog.js:426
 #: ../js/ui/extensionSystem.js:477
-#: ../js/ui/networkAgent.js:165
-#: ../js/ui/polkitAuthenticationAgent.js:171
+#: ../js/ui/networkAgent.js:148
+#: ../js/ui/polkitAuthenticationAgent.js:173
 #: ../js/ui/status/bluetooth.js:480
 msgid "Cancel"
 msgstr "Avbryt"
 
-#: ../js/gdm/loginDialog.js:1009
+#: ../js/gdm/loginDialog.js:1040
 msgctxt "button"
 msgid "Sign In"
 msgstr "Logga in"
 
-#: ../js/gdm/loginDialog.js:1358
+#: ../js/gdm/loginDialog.js:1392
 msgid "Login Window"
 msgstr "Inloggningsfönster"
 
 #: ../js/gdm/powerMenu.js:116
-#: ../js/ui/userMenu.js:514
-#: ../js/ui/userMenu.js:516
-#: ../js/ui/userMenu.js:585
+#: ../js/ui/userMenu.js:554
+#: ../js/ui/userMenu.js:556
+#: ../js/ui/userMenu.js:625
 msgid "Suspend"
 msgstr "Vänteläge"
 
@@ -393,9 +393,9 @@ msgid "Next week"
 msgstr "Nästa vecka"
 
 #: ../js/ui/contactDisplay.js:65
-#: ../js/ui/notificationDaemon.js:444
+#: ../js/ui/notificationDaemon.js:459
 #: ../js/ui/status/power.js:223
-#: ../src/cinnamon-app.c:355
+#: ../src/cinnamon-app.c:353
 msgid "Unknown"
 msgstr "Okänt"
 
@@ -422,8 +422,8 @@ msgstr "Frånkopplad"
 msgid "CONTACTS"
 msgstr "KONTAKTER"
 
-#: ../js/ui/dash.js:172
-#: ../js/ui/messageTray.js:1204
+#: ../js/ui/dash.js:174
+#: ../js/ui/messageTray.js:1206
 msgid "Remove"
 msgstr "Ta bort"
 
@@ -557,138 +557,134 @@ msgstr "Installera"
 msgid "Download and install '%s' from extensions.gnome.org?"
 msgstr "Hämta och installera \"%s\" från extensions.gnome.org?"
 
-#: ../js/ui/keyboard.js:308
+#: ../js/ui/keyboard.js:325
 msgid "tray"
 msgstr "bricka"
 
-#: ../js/ui/keyboard.js:530
+#: ../js/ui/keyboard.js:547
 #: ../js/ui/status/power.js:211
 msgid "Keyboard"
 msgstr "Tangentbord"
 
-#: ../js/ui/lookingGlass.js:645
+#: ../js/ui/lookingGlass.js:646
 msgid "No extensions installed"
 msgstr "Inga tillägg installerade"
 
-#: ../js/ui/lookingGlass.js:691
+#: ../js/ui/lookingGlass.js:692
 msgid "Enabled"
 msgstr "Aktiverad"
 
 #. translators:
 #. * The device has been disabled
-#: ../js/ui/lookingGlass.js:693
+#: ../js/ui/lookingGlass.js:694
 #: ../src/gvc/gvc-mixer-control.c:1093
 msgid "Disabled"
 msgstr "Inaktiverad"
 
-#: ../js/ui/lookingGlass.js:695
+#: ../js/ui/lookingGlass.js:696
 msgid "Error"
 msgstr "Fel"
 
-#: ../js/ui/lookingGlass.js:697
+#: ../js/ui/lookingGlass.js:698
 msgid "Out of date"
 msgstr "Utanför datumintervallet"
 
-#: ../js/ui/lookingGlass.js:699
+#: ../js/ui/lookingGlass.js:700
 msgid "Downloading"
 msgstr "Hämtar"
 
-#: ../js/ui/lookingGlass.js:720
+#: ../js/ui/lookingGlass.js:721
 msgid "View Source"
 msgstr "Visa källa"
 
-#: ../js/ui/lookingGlass.js:726
+#: ../js/ui/lookingGlass.js:727
 msgid "Web Page"
 msgstr "Webbsida"
 
-#: ../js/ui/messageTray.js:1197
+#: ../js/ui/messageTray.js:1199
 msgid "Open"
 msgstr "Öppna"
 
-#: ../js/ui/messageTray.js:2406
+#: ../js/ui/messageTray.js:2408
 msgid "System Information"
 msgstr "Systeminformation"
 
-#: ../js/ui/networkAgent.js:145
-msgid "Show password"
-msgstr "Visa lösenord"
-
-#: ../js/ui/networkAgent.js:160
+#: ../js/ui/networkAgent.js:143
 msgid "Connect"
 msgstr "Anslut"
 
 #. Cisco LEAP
-#: ../js/ui/networkAgent.js:255
-#: ../js/ui/networkAgent.js:267
-#: ../js/ui/networkAgent.js:294
-#: ../js/ui/networkAgent.js:314
-#: ../js/ui/networkAgent.js:324
+#: ../js/ui/networkAgent.js:238
+#: ../js/ui/networkAgent.js:250
+#: ../js/ui/networkAgent.js:277
+#: ../js/ui/networkAgent.js:297
+#: ../js/ui/networkAgent.js:307
 msgid "Password: "
 msgstr "Lösenord: "
 
 #. static WEP
-#: ../js/ui/networkAgent.js:260
+#: ../js/ui/networkAgent.js:243
 msgid "Key: "
 msgstr "Nyckel: "
 
 #. TTLS and PEAP are actually much more complicated, but this complication
 #. is not visible here since we only care about phase2 authentication
 #. (and don't even care of which one)
-#: ../js/ui/networkAgent.js:292
-#: ../js/ui/networkAgent.js:310
+#: ../js/ui/networkAgent.js:275
+#: ../js/ui/networkAgent.js:293
 msgid "Username: "
 msgstr "Användarnamn: "
 
-#: ../js/ui/networkAgent.js:298
+#: ../js/ui/networkAgent.js:281
 msgid "Identity: "
 msgstr "Identitet: "
 
-#: ../js/ui/networkAgent.js:300
+#: ../js/ui/networkAgent.js:283
 msgid "Private key password: "
 msgstr "Lösenord för privat nyckel: "
 
-#: ../js/ui/networkAgent.js:312
+#: ../js/ui/networkAgent.js:295
 msgid "Service: "
 msgstr "Tjänst: "
 
-#: ../js/ui/networkAgent.js:341
+#: ../js/ui/networkAgent.js:324
 msgid "Authentication required by wireless network"
 msgstr "Autentisering krävs av trådlöst nätverk"
 
-#: ../js/ui/networkAgent.js:342
+#: ../js/ui/networkAgent.js:325
 #, c-format
 msgid "Passwords or encryption keys are required to access the wireless network '%s'."
 msgstr "Lösenord eller krypteringsnycklar krävs för att komma åt det trådlösa nätverket \"%s\"."
 
-#: ../js/ui/networkAgent.js:346
+#: ../js/ui/networkAgent.js:329
 msgid "Wired 802.1X authentication"
 msgstr "Trådbunden 802.1X-autentisering"
 
-#: ../js/ui/networkAgent.js:348
+#: ../js/ui/networkAgent.js:331
 msgid "Network name: "
 msgstr "Nätverksnamn: "
 
-#: ../js/ui/networkAgent.js:353
+#: ../js/ui/networkAgent.js:336
 msgid "DSL authentication"
 msgstr "DSL-autentisering"
 
-#: ../js/ui/networkAgent.js:360
+#: ../js/ui/networkAgent.js:343
 msgid "PIN code required"
 msgstr "PIN-kod krävs"
 
-#: ../js/ui/networkAgent.js:361
+#: ../js/ui/networkAgent.js:344
 msgid "PIN code is needed for the mobile broadband device"
 msgstr "PIN-koden krävs för den mobila bredbandsenheten"
 
-#: ../js/ui/networkAgent.js:362
+#: ../js/ui/networkAgent.js:345
 msgid "PIN: "
 msgstr "PIN-kod: "
 
-#: ../js/ui/networkAgent.js:368
+#: ../js/ui/networkAgent.js:351
 msgid "Mobile broadband network password"
 msgstr "Lösenord för mobilt bredbandsnätverk"
 
-#: ../js/ui/networkAgent.js:369
+#: ../js/ui/networkAgent.js:352
 #, c-format
 msgid "A password is required to connect to '%s'."
 msgstr "Ett lösenord krävs för att ansluta till \"%s\"."
@@ -744,15 +740,15 @@ msgstr "Anslut till..."
 msgid "PLACES & DEVICES"
 msgstr "PLATSER OCH ENHETER"
 
-#: ../js/ui/polkitAuthenticationAgent.js:72
+#: ../js/ui/polkitAuthenticationAgent.js:73
 msgid "Authentication Required"
 msgstr "Autentisering krävs"
 
-#: ../js/ui/polkitAuthenticationAgent.js:106
+#: ../js/ui/polkitAuthenticationAgent.js:107
 msgid "Administrator"
 msgstr "Administratör"
 
-#: ../js/ui/polkitAuthenticationAgent.js:175
+#: ../js/ui/polkitAuthenticationAgent.js:177
 msgid "Authenticate"
 msgstr "Autentisera"
 
@@ -760,11 +756,11 @@ msgstr "Autentisera"
 #. * requested authentication was not gained; this can happen
 #. * because of an authentication error (like invalid password),
 #. * for instance.
-#: ../js/ui/polkitAuthenticationAgent.js:256
+#: ../js/ui/polkitAuthenticationAgent.js:258
 msgid "Sorry, that didn't work. Please try again."
 msgstr "Tyvärr, det fungerade inte. Försök igen."
 
-#: ../js/ui/polkitAuthenticationAgent.js:268
+#: ../js/ui/polkitAuthenticationAgent.js:270
 msgid "Password:"
 msgstr "Lösenord:"
 
@@ -777,7 +773,7 @@ msgstr "Lösenord:"
 msgid "toggle-switch-us"
 msgstr "toggle-switch-intl"
 
-#: ../js/ui/runDialog.js:208
+#: ../js/ui/runDialog.js:209
 msgid "Please enter a command:"
 msgstr "Ange ett kommando:"
 
@@ -788,6 +784,22 @@ msgstr "Söker..."
 #: ../js/ui/searchDisplay.js:363
 msgid "No matching results."
 msgstr "Inga sökträffar."
+
+#: ../js/ui/cinnamonEntry.js:30
+msgid "Copy"
+msgstr "Kopiera"
+
+#: ../js/ui/cinnamonEntry.js:35
+msgid "Paste"
+msgstr "Klistra in"
+
+#: ../js/ui/cinnamonEntry.js:81
+msgid "Show Text"
+msgstr "Visa text"
+
+#: ../js/ui/cinnamonEntry.js:83
+msgid "Hide Text"
+msgstr "Dölj text"
 
 #: ../js/ui/cinnamonMountOperation.js:285
 msgid "Wrong password, please try again"
@@ -1285,14 +1297,14 @@ msgid "%s is inviting you to join %s"
 msgstr "%s bjuder in dig till %s"
 
 #: ../js/ui/telepathyClient.js:1158
-#: ../js/ui/telepathyClient.js:1247
-#: ../js/ui/telepathyClient.js:1351
+#: ../js/ui/telepathyClient.js:1248
+#: ../js/ui/telepathyClient.js:1352
 msgid "Decline"
 msgstr "Neka"
 
 #: ../js/ui/telepathyClient.js:1159
-#: ../js/ui/telepathyClient.js:1248
-#: ../js/ui/telepathyClient.js:1352
+#: ../js/ui/telepathyClient.js:1249
+#: ../js/ui/telepathyClient.js:1353
 msgid "Accept"
 msgstr "Acceptera"
 
@@ -1308,7 +1320,8 @@ msgstr "Videosamtal från %s"
 msgid "Call from %s"
 msgstr "Samtal från %s"
 
-#: ../js/ui/telepathyClient.js:1205
+#. translators: this is a button label (verb), not a noun
+#: ../js/ui/telepathyClient.js:1206
 msgid "Answer"
 msgstr "Svara"
 
@@ -1317,125 +1330,125 @@ msgstr "Svara"
 #. * file name. The string will be something
 #. * like: "Alice is sending you test.ogg"
 #.
-#: ../js/ui/telepathyClient.js:1241
+#: ../js/ui/telepathyClient.js:1242
 #, c-format
 msgid "%s is sending you %s"
 msgstr "%s skickar dig %s"
 
 #. To translators: The parameter is the contact's alias
-#: ../js/ui/telepathyClient.js:1316
+#: ../js/ui/telepathyClient.js:1317
 #, c-format
 msgid "%s would like permission to see when you are online"
 msgstr "%s vill få behörighet att se när du är ansluten"
 
-#: ../js/ui/telepathyClient.js:1414
+#: ../js/ui/telepathyClient.js:1415
 msgid "Network error"
 msgstr "Nätverksfel"
 
-#: ../js/ui/telepathyClient.js:1416
+#: ../js/ui/telepathyClient.js:1417
 msgid "Authentication failed"
 msgstr "Autentisering misslyckades"
 
-#: ../js/ui/telepathyClient.js:1418
+#: ../js/ui/telepathyClient.js:1419
 msgid "Encryption error"
 msgstr "Krypteringsfel"
 
-#: ../js/ui/telepathyClient.js:1420
+#: ../js/ui/telepathyClient.js:1421
 msgid "Certificate not provided"
 msgstr "Certifikat tillhandahålls inte"
 
-#: ../js/ui/telepathyClient.js:1422
+#: ../js/ui/telepathyClient.js:1423
 msgid "Certificate untrusted"
 msgstr "Certifikatet är inte pålitligt"
 
-#: ../js/ui/telepathyClient.js:1424
+#: ../js/ui/telepathyClient.js:1425
 msgid "Certificate expired"
 msgstr "Certifikatet är utgånget"
 
-#: ../js/ui/telepathyClient.js:1426
+#: ../js/ui/telepathyClient.js:1427
 msgid "Certificate not activated"
 msgstr "Certifikatet är inte aktiverat"
 
-#: ../js/ui/telepathyClient.js:1428
+#: ../js/ui/telepathyClient.js:1429
 msgid "Certificate hostname mismatch"
 msgstr "Certifikatets värdnamn stämmer inte"
 
-#: ../js/ui/telepathyClient.js:1430
+#: ../js/ui/telepathyClient.js:1431
 msgid "Certificate fingerprint mismatch"
 msgstr "Certifikatets fingeravtryck stämmer inte"
 
-#: ../js/ui/telepathyClient.js:1432
+#: ../js/ui/telepathyClient.js:1433
 msgid "Certificate self-signed"
 msgstr "Certifikatet är självsignerat"
 
-#: ../js/ui/telepathyClient.js:1434
+#: ../js/ui/telepathyClient.js:1435
 msgid "Status is set to offline"
 msgstr "Status är inställd till frånkopplad"
 
-#: ../js/ui/telepathyClient.js:1436
+#: ../js/ui/telepathyClient.js:1437
 msgid "Encryption is not available"
 msgstr "Kryptering är inte tillgänglig"
 
-#: ../js/ui/telepathyClient.js:1438
+#: ../js/ui/telepathyClient.js:1439
 msgid "Certificate is invalid"
 msgstr "Certifikatet är ogiltigt"
 
-#: ../js/ui/telepathyClient.js:1440
+#: ../js/ui/telepathyClient.js:1441
 msgid "Connection has been refused"
 msgstr "Anslutningen har nekats"
 
-#: ../js/ui/telepathyClient.js:1442
+#: ../js/ui/telepathyClient.js:1443
 msgid "Connection can't be established"
 msgstr "Anslutningen kan inte etableras"
 
-#: ../js/ui/telepathyClient.js:1444
+#: ../js/ui/telepathyClient.js:1445
 msgid "Connection has been lost"
 msgstr "Anslutningen har förlorats"
 
-#: ../js/ui/telepathyClient.js:1446
+#: ../js/ui/telepathyClient.js:1447
 msgid "This resource is already connected to the server"
 msgstr "Denna resurs är redan ansluten till servern"
 
-#: ../js/ui/telepathyClient.js:1448
+#: ../js/ui/telepathyClient.js:1449
 msgid "Connection has been replaced by a new connection using the same resource"
 msgstr "Anslutningen har ersatts av en ny anslutning med samma resurs"
 
-#: ../js/ui/telepathyClient.js:1450
+#: ../js/ui/telepathyClient.js:1451
 msgid "The account already exists on the server"
 msgstr "Kontot finns redan på servern"
 
-#: ../js/ui/telepathyClient.js:1452
+#: ../js/ui/telepathyClient.js:1453
 msgid "Server is currently too busy to handle the connection"
 msgstr "Servern är för närvarande för upptagen för att hantera anslutningen"
 
-#: ../js/ui/telepathyClient.js:1454
+#: ../js/ui/telepathyClient.js:1455
 msgid "Certificate has been revoked"
 msgstr "Certifikatet har spärrats"
 
-#: ../js/ui/telepathyClient.js:1456
+#: ../js/ui/telepathyClient.js:1457
 msgid "Certificate uses an insecure cipher algorithm or is cryptographically weak"
 msgstr "Certifikatet använder en osäker skifferalgoritm eller är kryptografiskt svagt"
 
-#: ../js/ui/telepathyClient.js:1458
+#: ../js/ui/telepathyClient.js:1459
 msgid "The length of the server certificate, or the depth of the server certificate chain, exceed the limits imposed by the cryptography library"
 msgstr "Längden på serverns certifikat, eller djupet av serverns certifikatkedja, överstiger gränserna som satts av det kryptografiska biblioteket"
 
 #. translators: argument is the account name, like
 #. * name@jabber.org for example.
-#: ../js/ui/telepathyClient.js:1467
+#: ../js/ui/telepathyClient.js:1468
 #, c-format
 msgid "Connection to %s failed"
 msgstr "Anslutningen till %s misslyckades"
 
-#: ../js/ui/telepathyClient.js:1476
+#: ../js/ui/telepathyClient.js:1477
 msgid "Reconnect"
 msgstr "Återanslut"
 
-#: ../js/ui/telepathyClient.js:1477
+#: ../js/ui/telepathyClient.js:1478
 msgid "Edit account"
 msgstr "Redigera konto"
 
-#: ../js/ui/telepathyClient.js:1523
+#: ../js/ui/telepathyClient.js:1524
 msgid "Unknown reason"
 msgstr "Okänd anledning"
 
@@ -1451,41 +1464,41 @@ msgstr "Overksam"
 msgid "Unavailable"
 msgstr "Inte tillgänglig"
 
-#: ../js/ui/userMenu.js:512
-#: ../js/ui/userMenu.js:516
-#: ../js/ui/userMenu.js:586
+#: ../js/ui/userMenu.js:552
+#: ../js/ui/userMenu.js:556
+#: ../js/ui/userMenu.js:626
 msgid "Power Off..."
 msgstr "Stäng av..."
 
-#: ../js/ui/userMenu.js:548
+#: ../js/ui/userMenu.js:588
 msgid "Notifications"
 msgstr "Notifieringar"
 
-#: ../js/ui/userMenu.js:556
+#: ../js/ui/userMenu.js:596
 msgid "Online Accounts"
 msgstr "Nätkonton"
 
-#: ../js/ui/userMenu.js:560
+#: ../js/ui/userMenu.js:600
 msgid "System Settings"
 msgstr "Systeminställningar"
 
-#: ../js/ui/userMenu.js:567
+#: ../js/ui/userMenu.js:607
 msgid "Lock Screen"
 msgstr "Lås skärmen"
 
-#: ../js/ui/userMenu.js:572
+#: ../js/ui/userMenu.js:612
 msgid "Switch User"
 msgstr "Växla användare"
 
-#: ../js/ui/userMenu.js:577
+#: ../js/ui/userMenu.js:617
 msgid "Log Out..."
 msgstr "Logga ut..."
 
-#: ../js/ui/userMenu.js:605
+#: ../js/ui/userMenu.js:645
 msgid "Your chat status will be set to busy"
 msgstr "Din chattstatus kommer att ställas in till upptagen"
 
-#: ../js/ui/userMenu.js:606
+#: ../js/ui/userMenu.js:646
 msgid "Notifications are now disabled, including chat messages. Your online status has been adjusted to let others know that you might not see their messages."
 msgstr "Notifieringar är nu inaktiverade, inklusive chattmeddelanden. Din anslutningsstatus har ändrats till att låta andra veta att du kanske inte ser deras meddelanden."
 
@@ -1493,11 +1506,11 @@ msgstr "Notifieringar är nu inaktiverade, inklusive chattmeddelanden. Din anslu
 #. in the search entry when no search is
 #. active; it should not exceed ~30
 #. characters.
-#: ../js/ui/viewSelector.js:120
+#: ../js/ui/viewSelector.js:121
 msgid "Type to search..."
 msgstr "Skriv för att söka..."
 
-#: ../js/ui/viewSelector.js:140
+#: ../js/ui/viewSelector.js:142
 #: ../src/cinnamon-util.c:261
 msgid "Search"
 msgstr "Sök"
@@ -1537,7 +1550,7 @@ msgstr "Skriv ut version"
 msgid "Mode used by GDM for login screen"
 msgstr "Läge som används av GDM för inloggningsskärmen"
 
-#: ../src/cinnamon-app.c:581
+#: ../src/cinnamon-app.c:579
 #, c-format
 msgid "Failed to launch '%s'"
 msgstr "Misslyckades med att starta \"%s\""
@@ -1574,26 +1587,39 @@ msgstr "Filsystem"
 msgid "%1$s: %2$s"
 msgstr "%1$s: %2$s"
 
+#~ msgid "Show password"
+#~ msgstr "Visa lösenord"
+
 #~ msgid "%s has not emitted any errors."
 #~ msgstr "%s har inte skickat ut några fel."
+
 #~ msgid "Hide Errors"
 #~ msgstr "Dölj fel"
+
 #~ msgid "Show Errors"
 #~ msgstr "Visa fel"
+
 #~ msgid "%s has finished starting"
 #~ msgstr "%s har startat"
+
 #~ msgid "If true, display onscreen keyboard."
 #~ msgstr "Om true, visa skärmtangentbord."
+
 #~ msgid "Show the onscreen keyboard"
 #~ msgstr "Visa skärmtangentbordet"
+
 #~ msgid "Connectivity lost"
 #~ msgstr "Anslutningen förlorades"
+
 #~ msgid "You're no longer connected to the network"
 #~ msgstr "Du är inte längre ansluten till nätverket"
+
 #~ msgid "Do Not Disturb"
 #~ msgstr "Stör inte"
+
 #~ msgid "calendar:week_start:0"
 #~ msgstr "calendar:week_start:1"
+
 #~ msgid ""
 #~ "Cinnamon extensions have a uuid property; this key lists extensions "
 #~ "which should not be loaded. This setting overrides enabled-extensions for "
@@ -1602,31 +1628,45 @@ msgstr "%1$s: %2$s"
 #~ "Cinnamon-tillägg har en uuid-egenskap; denna nyckel listar tillägg som "
 #~ "inte ska läsas in. Denna inställning åsidosätter enabled-extensions för "
 #~ "tillägg som visas i båda listorna."
+
 #~ msgid "Uuids of extensions to disable"
 #~ msgstr "Uuid:er för tillägg att inaktivera"
+
 #~ msgid "You're now connected to mobile broadband connection '%s'"
 #~ msgstr "Du är nu ansluten till mobila bredbandsanslutningen \"%s\""
+
 #~ msgid "You're now connected to wireless network '%s'"
 #~ msgstr "Du är nu ansluten till trådlösa nätverket \"%s\""
+
 #~ msgid "You're now connected to VPN network '%s'"
 #~ msgstr "Du är nu ansluten till VPN-nätverket \"%s\""
+
 #~ msgid "Localization Settings"
 #~ msgstr "Språkinställningar"
+
 #~ msgid "Less than a minute ago"
 #~ msgstr "Mindre än en minut sedan"
+
 #~ msgid "%d minute ago"
+
 #~ msgid_plural "%d minutes ago"
 #~ msgstr[0] "%d minut sedan"
 #~ msgstr[1] "%d minuter sedan"
+
 #~ msgid "%d hour ago"
+
 #~ msgid_plural "%d hours ago"
 #~ msgstr[0] "%d timme sedan"
 #~ msgstr[1] "%d timmar sedan"
+
 #~ msgid "%d day ago"
+
 #~ msgid_plural "%d days ago"
 #~ msgstr[0] "%d dag sedan"
 #~ msgstr[1] "%d dagar sedan"
+
 #~ msgid "%d week ago"
+
 #~ msgid_plural "%d weeks ago"
 #~ msgstr[0] "%d vecka sedan"
 #~ msgstr[1] "%d veckor sedan"
@@ -1638,86 +1678,119 @@ msgstr "%1$s: %2$s"
 #, fuzzy
 #~ msgid "Shut Down"
 #~ msgstr "Stäng av..."
+
 #~ msgid "Clock"
 #~ msgstr "Klocka"
+
 #~ msgid "Customize the panel clock"
 #~ msgstr "Anpassa panelklockan"
+
 #~ msgid "Custom format of the clock"
 #~ msgstr "Anpassat format för klockan"
+
 #~ msgid "Hour format"
 #~ msgstr "Timmesformat"
+
 #~ msgid ""
 #~ "If true and format is either \"12-hour\" or \"24-hour\", display seconds "
 #~ "in time."
 #~ msgstr ""
 #~ "Om true och formatet antingen är \"12-hour\" eller \"24-hour\", visa "
 #~ "sekunder i tiden."
+
 #~ msgid "Enable lens mode"
 #~ msgstr "Aktivera linsläge"
+
 #~ msgid "Magnification factor"
 #~ msgstr "Förstoringsfaktor"
+
 #~ msgid "Screen position"
 #~ msgstr "Skärmposition"
+
 #~ msgid "Clock Format"
 #~ msgstr "Klockformat"
+
 #~ msgid "Clock Preferences"
 #~ msgstr "Klockinställningar"
+
 #~ msgid "Panel Display"
 #~ msgstr "Panelvisning"
+
 #~ msgid "Show seco_nds"
 #~ msgstr "Visa seku_nder"
-#~ msgid "Show the _date"
-#~ msgstr "Visa _datum"
+
 #~ msgid "_12 hour format"
 #~ msgstr "_12-timmarsformat"
+
 #~ msgid "_24 hour format"
 #~ msgstr "_24-timmarsformat"
+
 #~ msgid "PREFERENCES"
 #~ msgstr "INSTÄLLNINGAR"
+
 #~ msgid "Preferences"
 #~ msgstr "Inställningar"
+
 #~ msgid "Search your computer"
 #~ msgstr "Sök i din dator"
+
 #~ msgid ""
 #~ "Can't add a new workspace because maximum workspaces limit has been "
 #~ "reached."
 #~ msgstr ""
 #~ "Kan inte lägga till en ny arbetsyta eftersom maximalt antal arbetsytor "
 #~ "har uppnåtts."
+
 #~ msgid "Can't remove the first workspace."
 #~ msgstr "Kan inte ta bort första arbetsytan."
+
 #~ msgid "Drag here to add favorites"
 #~ msgstr "Dra hit för att lägga till favorit"
+
 #~ msgid "Find"
 #~ msgstr "Sök"
+
 #~ msgid "ON"
 #~ msgstr "PÅ"
+
 #~ msgid "OFF"
 #~ msgstr "AV"
+
 #~ msgid "Invisible"
 #~ msgstr "Osynlig"
+
 #~ msgid "PLACES"
 #~ msgstr "PLATSER"
+
 #~ msgid "SEARCH RESULTS"
 #~ msgstr "SÖKRESULTAT"
+
 #~ msgid "Recent Documents"
 #~ msgstr "Senaste dokument"
+
 #~ msgid "(see all)"
 #~ msgstr "(se alla)"
+
 #~ msgid "Can't lock screen: %s"
 #~ msgstr "Kan inte låsa skärmen: %s"
+
 #~ msgid "Can't temporarily set screensaver to blank screen: %s"
 #~ msgstr "Kan inte temporärt ställa in skärmsläckaren till blank skärm: %s"
+
 #~ msgid "Can't logout: %s"
 #~ msgstr "Kan inte logga ut: %s"
+
 #~ msgid "Sidebar"
 #~ msgstr "Sidopanel"
+
 #~ msgid "Browse"
 #~ msgstr "Bläddra"
+
 #~ msgid "Find apps or documents"
 #~ msgstr "Hitta program eller dokument"
+
 #~ msgid "DOCUMENTS"
 #~ msgstr "DOKUMENT"
+
 #~ msgid "The user manager object this user is controlled by."
 #~ msgstr "Användarhanteringsobjektet som denna användare styrs av."
-
