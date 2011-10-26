@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: cinnamon\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-10-23 13:07+0200\n"
-"PO-Revision-Date: 2011-10-23 13:07+0100\n"
+"POT-Creation-Date: 2011-10-26 11:54+0200\n"
+"PO-Revision-Date: 2011-10-26 11:54+0100\n"
 "Last-Translator: Daniel Nylander <po@danielnylander.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "Language: sv\n"
@@ -838,7 +838,7 @@ msgstr "Mustangenter"
 
 #: ../js/ui/status/accessibility.js:91
 msgid "Universal Access Settings"
-msgstr "Inställningar för allmän åtkomst"
+msgstr "Inställningar för hjälpmedel"
 
 #: ../js/ui/status/accessibility.js:141
 msgid "High Contrast"
