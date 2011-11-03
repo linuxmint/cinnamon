@@ -1345,7 +1345,7 @@ NMDeviceWireless.prototype = {
                     this._overflowItem = null;
                 }
             }
-            this._networks.splice(pos, 1);
+            this._networks.splice(res.network, 1);
 
         } else if (apObj.item)
             apObj.item.updateAccessPoints(apObj.accessPoints);
