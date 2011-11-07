@@ -89,7 +89,6 @@ WindowManager.prototype = {
     _init : function() {
         this._cinnamonwm =  global.window_manager;
 
-        this._keyBindingHandlers = [];
         this._minimizing = [];
         this._maximizing = [];
         this._unmaximizing = [];
@@ -117,15 +116,24 @@ WindowManager.prototype = {
         this._cinnamonwm.connect('map', Lang.bind(this, this._mapWindow));
         this._cinnamonwm.connect('destroy', Lang.bind(this, this._destroyWindow));
         
-        this.setKeybindingHandler('switch-to-workspace-left', Lang.bind(this, this._showWorkspaceSwitcher));
-        this.setKeybindingHandler('switch-to-workspace-right', Lang.bind(this, this._showWorkspaceSwitcher));
-        this.setKeybindingHandler('switch-to-workspace-up', Lang.bind(this, this._showWorkspaceSwitcher));
-        this.setKeybindingHandler('switch-to-workspace-down', Lang.bind(this, this._showWorkspaceSwitcher));
-        this.setKeybindingHandler('switch-windows', Lang.bind(this, this._startAppSwitcher));
-        this.setKeybindingHandler('switch-group', Lang.bind(this, this._startAppSwitcher));
-        this.setKeybindingHandler('switch-windows-backward', Lang.bind(this, this._startAppSwitcher));
-        this.setKeybindingHandler('switch-group-backward', Lang.bind(this, this._startAppSwitcher));
-        this.setKeybindingHandler('switch-panels', Lang.bind(this, this._startA11ySwitcher));
+        Meta.keybindings_set_custom_handler('switch-to-workspace-left',
+                                            Lang.bind(this, this._showWorkspaceSwitcher));
+        Meta.keybindings_set_custom_handler('switch-to-workspace-right',
+                                            Lang.bind(this, this._showWorkspaceSwitcher));
+        Meta.keybindings_set_custom_handler('switch-to-workspace-up',
+                                            Lang.bind(this, this._showWorkspaceSwitcher));
+        Meta.keybindings_set_custom_handler('switch-to-workspace-down',
+                                            Lang.bind(this, this._showWorkspaceSwitcher));
+        Meta.keybindings_set_custom_handler('switch-windows',
+                                            Lang.bind(this, this._startAppSwitcher));
+        Meta.keybindings_set_custom_handler('switch-group',
+                                            Lang.bind(this, this._startAppSwitcher));
+        Meta.keybindings_set_custom_handler('switch-windows-backward',
+                                            Lang.bind(this, this._startAppSwitcher));
+        Meta.keybindings_set_custom_handler('switch-group-backward',
+                                            Lang.bind(this, this._startAppSwitcher));
+        Meta.keybindings_set_custom_handler('switch-panels',
+                                            Lang.bind(this, this._startA11ySwitcher));
 
         Main.overview.connect('showing', Lang.bind(this, function() {
             for (let i = 0; i < this._dimmedWindows.length; i++)
@@ -135,16 +143,6 @@ WindowManager.prototype = {
             for (let i = 0; i < this._dimmedWindows.length; i++)
                 this._dimWindow(this._dimmedWindows[i], true);
         }));
-    },
-
-    setKeybindingHandler: function(keybinding, handler){
-        if (this._keyBindingHandlers[keybinding])
-            this._cinnamonwm.disconnect(this._keyBindingHandlers[keybinding]);
-        else
-            this._cinnamonwm.takeover_keybinding(keybinding);
-
-        this._keyBindingHandlers[keybinding] =
-            this._cinnamonwm.connect('keybinding::' + keybinding, handler);
     },
 
     blockAnimations: function() {
@@ -738,34 +736,36 @@ WindowManager.prototype = {
         cinnamonwm.completed_switch_workspace();
     },
 
-    _startAppSwitcher : function(cinnamonwm, binding, mask, window, backwards) {
+    _startAppSwitcher : function(display, screen, window, binding) {
         
         let tabPopup = new AltTab.AltTabPopup();
 
-        if (!tabPopup.show(backwards, binding, mask))
+        let modifiers = binding.get_modifiers();
+        let backwards = modifiers & Meta.VirtualModifier.SHIFT_MASK;
+        if (!tabPopup.show(backwards, binding.get_name(), binding.get_mask()))
             tabPopup.destroy();
     },
 
-    _startA11ySwitcher : function(cinnamonwm, binding, mask, window, backwards) {
+    _startA11ySwitcher : function(display, screen, window, binding) {
         
     },
 
-    _showWorkspaceSwitcher : function(cinnamonwm, binding, mask, window, backwards) {
-        if (binding == 'switch-to-workspace-up') {
+    _showWorkspaceSwitcher : function(display, screen, window, binding) {
+        if (binding.get_name() == 'switch-to-workspace-up') {
         	Main.expo.toggle();
         	return;                   
         }
-        if (binding == 'switch-to-workspace-down') {
+        if (binding.get_name() == 'switch-to-workspace-down') {
             Main.overview.toggle();
             return;
         }
         
-        if (global.screen.n_workspaces == 1)
+        if (screen.n_workspaces == 1)
             return;
 
-        if (binding == 'switch-to-workspace-left')
+        if (binding.get_name() == 'switch-to-workspace-left')
            this.actionMoveWorkspaceLeft();
-        else if (binding == 'switch-to-workspace-right')
+        else if (binding.get_name() == 'switch-to-workspace-right')
            this.actionMoveWorkspaceRight();
     },
 

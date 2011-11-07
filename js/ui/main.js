@@ -144,15 +144,11 @@ function _initUserSession() {
     ExtensionSystem.init();
     ExtensionSystem.loadExtensions();
 
-    let cinnamonwm = global.window_manager;
-
-    cinnamonwm.takeover_keybinding('panel-run-dialog');
-    cinnamonwm.connect('keybinding::panel-run-dialog', function () {
+    Meta.keybindings_set_custom_handler('panel-run-dialog', function() {
        getRunDialog().open();
     });
 
-    cinnamonwm.takeover_keybinding('panel-main-menu');
-    cinnamonwm.connect('keybinding::panel-main-menu', function () {
+    Meta.keybindings_set_custom_handler('panel-main-menu', function () {
         expo.toggle();
     });
     
