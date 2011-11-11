@@ -71,10 +71,7 @@ get_string_property (NPP         instance,
     goto out;
 
   result_str = NPVARIANT_TO_STRING (result);
-  if (strlen (result_str.UTF8Characters) != result_str.UTF8Length)
-    goto out;
-
-  result_copy = g_strdup (result_str.UTF8Characters);
+  result_copy = g_strndup (result_str.UTF8Characters, result_str.UTF8Length);
 
  out:
   funcs.releasevariantvalue (&result);
