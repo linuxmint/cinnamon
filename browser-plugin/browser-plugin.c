@@ -816,6 +816,11 @@ NPP_GetValue(NPP          instance,
 
     *(NPObject**)value = funcs.createobject (instance, &plugin_class);
     break;
+
+  case NPPVpluginNeedsXEmbed:
+    *(bool *)value = TRUE;
+    break;
+
   default:
     ;
   }
