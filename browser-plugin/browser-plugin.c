@@ -47,8 +47,6 @@ typedef struct {
   GDBusProxy *proxy;
 } PluginData;
 
-/* =============== public entry points =================== */
-
 static NPNetscapeFuncs funcs;
 
 static inline gchar *
@@ -146,6 +144,8 @@ check_origin_and_protocol (NPP instance)
     funcs.releaseobject (window);
   return ret;
 }
+
+/* =============== public entry points =================== */
 
 NPError
 NP_Initialize(NPNetscapeFuncs *pfuncs, NPPluginFuncs *plugin)
