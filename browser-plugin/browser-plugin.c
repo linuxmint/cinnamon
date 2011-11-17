@@ -455,7 +455,7 @@ plugin_enable_extension (PluginObject *obj,
                          NPString      uuid,
                          gboolean      enabled)
 {
-  const gchar *uuid_str = uuid.UTF8Characters;
+  gchar *uuid_str = g_strndup (uuid.UTF8Characters, uuid.UTF8Length);
   if (!uuid_is_valid (uuid_str))
     return FALSE;
 
@@ -468,6 +468,8 @@ plugin_enable_extension (PluginObject *obj,
                      NULL, /* callback */
                      NULL /* user_data */);
 
+  g_free (uuid_str);
+
   return TRUE;
 }
 
@@ -476,7 +478,7 @@ plugin_install_extension (PluginObject *obj,
                           NPString      uuid,
                           NPString      version_tag)
 {
-  const gchar *uuid_str = uuid.UTF8Characters;
+  gchar *uuid_str = g_strndup (uuid.UTF8Characters, uuid.UTF8Length);
   if (!uuid_is_valid (uuid_str))
     return FALSE;
 
@@ -491,6 +493,8 @@ plugin_install_extension (PluginObject *obj,
                      NULL, /* callback */
                      NULL /* user_data */);
 
+  g_free (uuid_str);
+
   return TRUE;
 }
 
@@ -501,9 +505,9 @@ plugin_uninstall_extension (PluginObject *obj,
 {
   GError *error = NULL;
   GVariant *res;
-  const gchar *uuid_str;
+  gchar *uuid_str;
 
-  uuid_str = uuid.UTF8Characters;
+  uuid_str = g_strndup (uuid.UTF8Characters, uuid.UTF8Length);
   if (!uuid_is_valid (uuid_str))
     return FALSE;
 
@@ -515,6 +519,8 @@ plugin_uninstall_extension (PluginObject *obj,
                                 -1, /* timeout */
                                 NULL, /* cancellable */
                                 &error);
+
+  g_free (uuid_str);
 
   if (!res)
     {
@@ -533,9 +539,9 @@ plugin_get_info (PluginObject *obj,
 {
   GError *error = NULL;
   GVariant *res;
-  const gchar *uuid_str;
+  gchar *uuid_str;
 
-  uuid_str = uuid.UTF8Characters;
+  uuid_str = g_strndup (uuid.UTF8Characters, uuid.UTF8Length);
   if (!uuid_is_valid (uuid_str))
     return FALSE;
 
@@ -546,6 +552,8 @@ plugin_get_info (PluginObject *obj,
                                 -1, /* timeout */
                                 NULL, /* cancellable */
                                 &error);
+
+  g_free (uuid_str);
 
   if (!res)
     {
@@ -564,9 +572,9 @@ plugin_get_errors (PluginObject *obj,
 {
   GError *error = NULL;
   GVariant *res;
-  const gchar *uuid_str;
+  gchar *uuid_str;
 
-  uuid_str = uuid.UTF8Characters;
+  uuid_str = g_strndup (uuid.UTF8Characters, uuid.UTF8Length);
   if (!uuid_is_valid (uuid_str))
     return FALSE;
 
@@ -577,6 +585,8 @@ plugin_get_errors (PluginObject *obj,
                                 -1, /* timeout */
                                 NULL, /* cancellable */
                                 &error);
+
+  g_free (uuid_str);
 
   if (!res)
     {
