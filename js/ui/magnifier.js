@@ -61,7 +61,7 @@ Magnifier.prototype = {
         this._zoomRegions = [];
 
         // Create small clutter tree for the magnified mouse.
-        let xfixesCursor = Cinnamon.XFixesCursor.get_default();
+        let xfixesCursor = Cinnamon.XFixesCursor.get_for_stage(global.stage);
         this._mouseSprite = new Clutter.Texture();
         xfixesCursor.update_texture_image(this._mouseSprite);
         this._cursorRoot = new Clutter.Group();

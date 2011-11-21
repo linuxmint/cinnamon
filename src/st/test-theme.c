@@ -432,7 +432,7 @@ main (int argc, char **argv)
   theme = st_theme_new ("st/test-theme.css",
                         NULL, NULL);
 
-  stage = clutter_stage_get_default ();
+  stage = clutter_stage_new ();
   context = st_theme_context_get_for_stage (CLUTTER_STAGE (stage));
   st_theme_context_set_theme (context, theme);
   st_theme_context_set_resolution (context, 96.);

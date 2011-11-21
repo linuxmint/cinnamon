@@ -336,7 +336,7 @@ gnome_cinnamon_plugin_xevent_filter (MetaPlugin *plugin,
 #endif
 
   if ((xev->xany.type == EnterNotify || xev->xany.type == LeaveNotify)
-      && xev->xcrossing.window == clutter_x11_get_stage_window (CLUTTER_STAGE (clutter_stage_get_default ())))
+      && xev->xcrossing.window == clutter_x11_get_stage_window (CLUTTER_STAGE (meta_plugin_get_stage (plugin))))
     {
       /* If the pointer enters a child of the stage window (eg, a
        * trayicon), we want to consider it to still be in the stage,
