@@ -88,12 +88,15 @@ st_im_text_dispose (GObject *object)
 {
   StIMTextPrivate *priv = ST_IM_TEXT (object)->priv;
 
-  g_signal_handlers_disconnect_by_func (priv->im_context,
-                                        (void *) st_im_text_commit_cb,
-                                        object);
+  if (priv->im_context != NULL)
+    {
+      g_signal_handlers_disconnect_by_func (priv->im_context,
+                                            (void *) st_im_text_commit_cb,
+                                            object);
 
-  g_object_unref (priv->im_context);
-  priv->im_context = NULL;
+      g_object_unref (priv->im_context);
+      priv->im_context = NULL;
+    }
 
   G_OBJECT_CLASS (st_im_text_parent_class)->dispose (object);
 }
