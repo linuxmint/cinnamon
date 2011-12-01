@@ -38,7 +38,7 @@ function recursivelyDeleteDir(dir) {
         let child = dir.get_child(info.get_name());
         if (type == Gio.FileType.REGULAR)
             deleteGFile(child);
-        else if (type == Gio.TypeType.DIRECTORY)
+        else if (type == Gio.FileType.DIRECTORY)
             recursivelyDeleteDir(child);
     }
 
