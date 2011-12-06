@@ -480,7 +480,10 @@ plugin_install_extension (PluginObject *obj,
 {
   gchar *uuid_str = g_strndup (uuid.UTF8Characters, uuid.UTF8Length);
   if (!uuid_is_valid (uuid_str))
-    return FALSE;
+    {
+      g_free (uuid_str);
+      return FALSE;
+    }
 
   g_dbus_proxy_call (obj->proxy,
                      "InstallRemoteExtension",
@@ -509,7 +512,10 @@ plugin_uninstall_extension (PluginObject *obj,
 
   uuid_str = g_strndup (uuid.UTF8Characters, uuid.UTF8Length);
   if (!uuid_is_valid (uuid_str))
-    return FALSE;
+    {
+      g_free (uuid_str);
+      return FALSE;
+    }
 
   res = g_dbus_proxy_call_sync (obj->proxy,
                                 "UninstallExtension",
@@ -543,7 +549,10 @@ plugin_get_info (PluginObject *obj,
 
   uuid_str = g_strndup (uuid.UTF8Characters, uuid.UTF8Length);
   if (!uuid_is_valid (uuid_str))
-    return FALSE;
+    {
+      g_free (uuid_str);
+      return FALSE;
+    }
 
   res = g_dbus_proxy_call_sync (obj->proxy,
                                 "GetExtensionInfo",
@@ -576,7 +585,10 @@ plugin_get_errors (PluginObject *obj,
 
   uuid_str = g_strndup (uuid.UTF8Characters, uuid.UTF8Length);
   if (!uuid_is_valid (uuid_str))
-    return FALSE;
+    {
+      g_free (uuid_str);
+      return FALSE;
+    }
 
   res = g_dbus_proxy_call_sync (obj->proxy,
                                 "GetExtensionErrors",
