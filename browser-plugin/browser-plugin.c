@@ -643,7 +643,8 @@ plugin_get_cinnamon_version (PluginObject  *obj,
   STRINGN_TO_NPVARIANT (buffer, length, *result);
 
  out:
-  g_variant_unref (res);
+  if (res)
+    g_variant_unref (res);
   return ret;
 }
 
