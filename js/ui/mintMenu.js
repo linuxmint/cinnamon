@@ -213,6 +213,7 @@ MintButton.prototype = {
 
     _onSourceKeyPress: function(actor, event) {
         let symbol = event.get_key_symbol();
+
         if (symbol == Clutter.KEY_space || symbol == Clutter.KEY_Return) {
             this.menu.toggle();
             return true;
@@ -319,6 +320,12 @@ ApplicationsButton.prototype = {
     _onMenuKeyPress: function(actor, event) {
 
         let symbol = event.get_key_symbol();
+        global.log(symbol);
+        
+        if (symbol==65515 && this.menu.isOpen) {
+            this.menu.close();
+            return true;
+        }
 
         if (this._activeContainer === null && symbol == Clutter.KEY_Up) {
             this._activeContainer = this.applicationsBox;

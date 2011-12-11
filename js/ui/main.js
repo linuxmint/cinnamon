@@ -146,7 +146,9 @@ function _initUserSession() {
         overview.toggle();
     });
 
-    global.display.connect('overlay-key', Lang.bind(overview, overview.toggle));
+    global.display.connect('overlay-key', function(){
+        panel._mintMenu.menu.toggle();
+    });
 
 }
 
