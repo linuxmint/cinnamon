@@ -555,19 +555,19 @@ WindowManager.prototype = {
         if (global.screen.n_workspaces == 1)
             return;
 
-        if (this._workspaceSwitcherPopup == null)
-            this._workspaceSwitcherPopup = new WorkspaceSwitcherPopup.WorkspaceSwitcherPopup();
+        //if (this._workspaceSwitcherPopup == null)
+        //    this._workspaceSwitcherPopup = new WorkspaceSwitcherPopup.WorkspaceSwitcherPopup();
 
-        if (binding == 'switch_to_workspace_up')
+        /*if (binding == 'switch_to_workspace_up')
             this.actionMoveWorkspaceUp();
         else if (binding == 'switch_to_workspace_down')
-            this.actionMoveWorkspaceDown();
+            this.actionMoveWorkspaceDown();*/
         // left/right would effectively act as synonyms for up/down if we enabled them;
         // but that could be considered confusing.
-        // else if (binding == 'switch_to_workspace_left')
-        //   this.actionMoveWorkspaceLeft();
-        // else if (binding == 'switch_to_workspace_right')
-        //   this.actionMoveWorkspaceRight();
+        if (binding == 'switch_to_workspace_left')
+           this.actionMoveWorkspaceLeft();
+        else if (binding == 'switch_to_workspace_right')
+           this.actionMoveWorkspaceRight();
     },
 
     actionMoveWorkspaceLeft: function() {
