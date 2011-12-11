@@ -146,8 +146,9 @@ LayoutManager.prototype = {
     },
 
     _updateBoxes: function() {
+        // Need to use GSettings to get the panel height instead of hard-coding it
         this.panelBox.set_position(this.bottomMonitor.x, this.bottomMonitor.y + this.bottomMonitor.height - 25);
-        this.panelBox.set_size(this.bottomMonitor.width, -1);
+        this.panelBox.set_size(this.bottomMonitor.width, 25);
 
         this.keyboardBox.set_position(this.bottomMonitor.x,
                                       this.bottomMonitor.y + this.bottomMonitor.height);
