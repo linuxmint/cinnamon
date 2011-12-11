@@ -19,6 +19,7 @@ const PanelMenu = imports.ui.panelMenu;
 const DateMenu = imports.ui.dateMenu;
 const Main = imports.ui.main;
 const Tweener = imports.ui.tweener;
+const WindowList = imports.ui.windowlist;
 
 const PANEL_ICON_SIZE = 24;
 
@@ -937,9 +938,12 @@ Panel.prototype = {
             // more cleanly with the rest of the panel
             this._menus.addMenu(this._activitiesButton.menu);
 
-            this._appMenu = new AppMenuButton();
+            /*this._appMenu = new AppMenuButton();
             this._leftBox.add(this._appMenu.actor);
-            this._menus.addMenu(this._appMenu.menu);
+            this._menus.addMenu(this._appMenu.menu);*/
+            
+            this._windowList = new WindowList.WindowList()
+            this._leftBox.add(this._windowList.actor);
         }
 
         /* center */
