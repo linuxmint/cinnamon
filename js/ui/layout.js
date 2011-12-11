@@ -32,18 +32,18 @@ LayoutManager.prototype = {
         this._rightPanelBarrier = 0;
         this._trayBarrier = 0;
 
-        this._chrome = new Chrome(this);
-
-        this.panelBox = new St.BoxLayout({ name: 'panelBox',
-                                           vertical: true });
-        this.addChrome(this.panelBox, { affectsStruts: true });
-        this.panelBox.connect('allocation-changed',
-                              Lang.bind(this, this._updatePanelBarriers));
+        this._chrome = new Chrome(this);       
 
         this.trayBox = new St.BoxLayout({ name: 'trayBox' }); 
         this.addChrome(this.trayBox, { visibleInFullscreen: true });
         this.trayBox.connect('allocation-changed',
                              Lang.bind(this, this._updateTrayBarrier));
+                             
+        this.panelBox = new St.BoxLayout({ name: 'panelBox',
+                                           vertical: true });
+        this.addChrome(this.panelBox, { affectsStruts: true });
+        this.panelBox.connect('allocation-changed',
+                              Lang.bind(this, this._updatePanelBarriers));
 
         this.keyboardBox = new St.BoxLayout({ name: 'keyboardBox',
                                               reactive: true,
@@ -146,8 +146,8 @@ LayoutManager.prototype = {
     },
 
     _updateBoxes: function() {
-        this.panelBox.set_position(this.primaryMonitor.x, this.primaryMonitor.y);
-        this.panelBox.set_size(this.primaryMonitor.width, -1);
+        this.panelBox.set_position(this.bottomMonitor.x, this.bottomMonitor.y + this.bottomMonitor.height - 28);
+        this.panelBox.set_size(this.bottomMonitor.width, -1);
 
         this.keyboardBox.set_position(this.bottomMonitor.x,
                                       this.bottomMonitor.y + this.bottomMonitor.height);
@@ -171,15 +171,15 @@ LayoutManager.prototype = {
         if (this._rightPanelBarrier)
             global.destroy_pointer_barrier(this._rightPanelBarrier);
 
-        if (this.panelBox.height) {
-            let primary = this.primaryMonitor;
+        if (this.panelBox.height) {            
+            let monitor = this.bottomMonitor;
             this._leftPanelBarrier =
-                global.create_pointer_barrier(primary.x, primary.y,
-                                              primary.x, primary.y + this.panelBox.height,
+                global.create_pointer_barrier(monitor.x, monitor.y + monitor.height - this.panelBox.height,
+                                              monitor.x, monitor.y,
                                               1 /* BarrierPositiveX */);
             this._rightPanelBarrier =
-                global.create_pointer_barrier(primary.x + primary.width, primary.y,
-                                              primary.x + primary.width, primary.y + this.panelBox.height,
+                global.create_pointer_barrier(monitor.x + monitor.width, monitor.y + monitor.height - this.panelBox.height,
+                                              monitor.x + monitor.width, monitor.y,
                                               4 /* BarrierNegativeX */);
         } else {
             this._leftPanelBarrier = 0;
@@ -188,15 +188,15 @@ LayoutManager.prototype = {
     },
 
     _updateTrayBarrier: function() {
-        let monitor = this.bottomMonitor;
+        let monitor = this.primaryMonitor;
 
         if (this._trayBarrier)
             global.destroy_pointer_barrier(this._trayBarrier);
 
         if (Main.messageTray) {
             this._trayBarrier =
-                global.create_pointer_barrier(monitor.x + monitor.width, monitor.y + monitor.height - Main.messageTray.actor.height,
-                                              monitor.x + monitor.width, monitor.y + monitor.height,
+                global.create_pointer_barrier(monitor.x + monitor.width, monitor.y,
+                                              monitor.x + monitor.width, monitor.y + Main.messageTray.actor.height,
                                               4 /* BarrierNegativeX */);
         } else {
             this._trayBarrier = 0;
