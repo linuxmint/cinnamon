@@ -331,7 +331,10 @@ dist_theme_DATA = \
 	theme/toggle-on-us.svg			\
 	theme/toggle-on-intl.svg		\
 	theme/ws-switch-arrow-up.svg		\
-	theme/ws-switch-arrow-down.svg
+	theme/ws-switch-arrow-down.svg		\
+	theme/mediaplayer/player-paused.svg		\
+	theme/mediaplayer/player-playing.svg		\
+	theme/mediaplayer/player-stopped.svg
 
 gsettings_SCHEMAS = org.gnome.shell.gschema.xml
 
