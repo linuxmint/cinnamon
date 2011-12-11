@@ -623,7 +623,7 @@ Indicator.prototype = {
         this._control.connect('default-source-changed', Lang.bind(this, this._readInput));
         this._control.connect('stream-added', Lang.bind(this, this._maybeShowInput));
         this._control.connect('stream-removed', Lang.bind(this, this._maybeShowInput));
-        this._volumeMax = this._control.get_vol_max_norm();
+        this._volumeMax = 1.5*this._control.get_vol_max_norm();
         
         this._output = null;
         this._outputVolumeId = 0;
@@ -656,7 +656,7 @@ Indicator.prototype = {
 
     _addPlayer: function(owner) {
         // ensure menu is empty
-        this._cleanup();
+        this.menu.removeAll();
         this._volumeControlShown = false;
         this._players[owner] = new Player(this, owner);
         this.menu.addMenuItem(this._players[owner]);
@@ -669,7 +669,7 @@ Indicator.prototype = {
 
     _removePlayer: function(owner) {
         delete this._players[owner];
-        this._cleanup();
+        this.menu.removeAll();
         this._volumeControlShown = false;
         for (owner in this._players) { 
             this._addPlayer(owner);
@@ -679,14 +679,6 @@ Indicator.prototype = {
         this._showVolumeControl();
         
         this.setIconName(this._icon_name);
-    },
-    
-    _cleanup: function() {
-       if (this._outputTitle) this._outputTitle.destroy();
-       if (this._outputSlider) this._outputSlider.destroy();
-       if (this._inputTitle) this._inputTitle.destroy();
-       if (this._inputSlider) this._inputSlider.destroy();
-       this.menu.removeAll();
     },
     
     _showVolumeControl: function() {
@@ -706,6 +698,8 @@ Indicator.prototype = {
         this._inputSlider.connect('drag-end', Lang.bind(this, this._notifyVolumeChange));
         this.menu.addMenuItem(this._inputTitle);
         this.menu.addMenuItem(this._inputSlider);
+        this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+        this.menu.addSettingsAction(_("Sound Settings"), 'gnome-sound-panel.desktop');
         
         if (this._showInput){
            this._inputTitle.actor.show();
