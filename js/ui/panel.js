@@ -21,6 +21,7 @@ const Main = imports.ui.main;
 const Tweener = imports.ui.tweener;
 const WindowList = imports.ui.windowlist;
 const ShowDesktopButton = imports.ui.showDesktopButton;
+const MintMenu = imports.ui.mintMenu;
 
 const PANEL_ICON_SIZE = 24;
 
@@ -931,13 +932,17 @@ Panel.prototype = {
 
         /* Button on the left side of the panel. */
         if (global.session_type == Shell.SessionType.USER) {
-            this._activitiesButton = new ActivitiesButton();
+            /*this._activitiesButton = new ActivitiesButton();
             this._activities = this._activitiesButton.actor;
             this._leftBox.add(this._activities);
 
             // The activities button has a pretend menu, so as to integrate
             // more cleanly with the rest of the panel
-            this._menus.addMenu(this._activitiesButton.menu);
+            this._menus.addMenu(this._activitiesButton.menu);*/
+            
+            this._mintMenu = new MintMenu.ApplicationsButton();
+            this._leftBox.add(this._mintMenu.actor);
+            this._menus.addMenu(this._mintMenu.menu);
             
             this._showDesktopButton = new ShowDesktopButton.ShowDesktopButton();
             this._leftBox.add(this._showDesktopButton.actor);

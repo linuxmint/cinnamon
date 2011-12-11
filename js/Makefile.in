@@ -335,6 +335,7 @@ nobase_dist_js_DATA = \
 	ui/magnifierDBus.js	\
 	ui/main.js		\
 	ui/messageTray.js	\
+	ui/mintMenu.js	\
 	ui/modalDialog.js	\
 	ui/networkAgent.js	\
 	ui/shellEntry.js	\
