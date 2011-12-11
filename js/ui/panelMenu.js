@@ -108,7 +108,7 @@ Button.prototype = {
 
         this.actor.connect('button-press-event', Lang.bind(this, this._onButtonPress));
         this.actor.connect('key-press-event', Lang.bind(this, this._onSourceKeyPress));
-        this.menu = new PopupMenu.PopupMenu(this.actor, menuAlignment, St.Side.TOP);
+        this.menu = new PopupMenu.PopupMenu(this.actor, menuAlignment, St.Side.BOTTOM);
         this.menu.actor.add_style_class_name('panel-menu');
         this.menu.connect('open-state-changed', Lang.bind(this, this._onOpenStateChanged));
         this.menu.actor.connect('key-press-event', Lang.bind(this, this._onMenuKeyPress));
