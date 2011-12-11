@@ -112,6 +112,7 @@ x = _("Paused");
 x = _("Stopped");
 
 const VOLUME_NOTIFY_ID = 1;
+const VOLUME_ADJUSTMENT_STEP = 0.05; /* Volume adjustment step in % */
 
 
 function Prop() {
@@ -608,7 +609,7 @@ Indicator.prototype = {
     __proto__: PanelMenu.SystemStatusButton.prototype,
 
     _init: function() {
-        PanelMenu.SystemStatusButton.prototype._init.call(this, 'audio-x-generic');
+        PanelMenu.SystemStatusButton.prototype._init.call(this, 'audio-x-generic', null);
         // menu not showed by default
         this._players = {};
         // watch players
@@ -637,11 +638,36 @@ Indicator.prototype = {
         
         this._icon_name = '';
         
+        this.actor.connect('scroll-event', Lang.bind(this, this._onScrollEvent));
+        
         this._control.open();
         
         this._volumeControlShown = false;
         
         this._showVolumeControl();
+    },
+    
+    _onScrollEvent: function(actor, event) {
+        let direction = event.get_scroll_direction();
+        let currentVolume = this._output.volume;
+
+        if (direction == Clutter.ScrollDirection.DOWN) {
+            let prev_muted = this._output.is_muted;
+            this._output.volume = Math.max(0, currentVolume - this._volumeMax * VOLUME_ADJUSTMENT_STEP);
+            if (this._output.volume < 1) {
+                this._output.volume = 0;
+                if (!prev_muted)
+                    this._output.change_is_muted(true);
+            }
+            this._output.push_volume();
+        }
+        else if (direction == Clutter.ScrollDirection.UP) {
+            this._output.volume = Math.min(this._volumeMax, currentVolume + this._volumeMax * VOLUME_ADJUSTMENT_STEP);
+            this._output.change_is_muted(false);
+            this._output.push_volume();
+        }
+
+        this._notifyVolumeChange();
     },
     
     setIconName: function(icon) {
