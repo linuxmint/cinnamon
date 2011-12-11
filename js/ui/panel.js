@@ -21,7 +21,9 @@ const Main = imports.ui.main;
 const Tweener = imports.ui.tweener;
 const WindowList = imports.ui.windowlist;
 const ShowDesktopButton = imports.ui.showDesktopButton;
+const WorkspaceSwitcher = imports.ui.workspaceSwitcher;
 const MintMenu = imports.ui.mintMenu;
+const Meta = imports.gi.Meta;
 
 const PANEL_ICON_SIZE = 24;
 
@@ -962,6 +964,9 @@ Panel.prototype = {
             this._dateMenu = new DateMenu.DateMenuButton({ showEvents: false });
         this._rightBox.add(this._dateMenu.actor, { y_fill: true });
         this._menus.addMenu(this._dateMenu.menu);
+        
+        this._workspaceSwitcher = new WorkspaceSwitcher.WorkspaceSwitcher();
+        this._rightBox.add(this._workspaceSwitcher.actor);
 
         /* right */
         if (global.session_type == Shell.SessionType.GDM) {
