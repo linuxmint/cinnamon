@@ -31,7 +31,6 @@ AppMenuButtonRightClickMenu.prototype = {
 
     _init: function(actor, app, metaWindow) {
         //take care of menu initialization
-        global.log(bottomPosition);
         if (bottomPosition)
             PopupMenu.PopupMenu.prototype._init.call(this, actor, 0.0, St.Side.BOTTOM, 0);
         else
