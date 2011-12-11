@@ -20,6 +20,7 @@ const DateMenu = imports.ui.dateMenu;
 const Main = imports.ui.main;
 const Tweener = imports.ui.tweener;
 const WindowList = imports.ui.windowlist;
+const ShowDesktopButton = imports.ui.showDesktopButton;
 
 const PANEL_ICON_SIZE = 24;
 
@@ -937,6 +938,9 @@ Panel.prototype = {
             // The activities button has a pretend menu, so as to integrate
             // more cleanly with the rest of the panel
             this._menus.addMenu(this._activitiesButton.menu);
+            
+            this._showDesktopButton = new ShowDesktopButton.ShowDesktopButton();
+            this._leftBox.add(this._showDesktopButton.actor);
 
             /*this._appMenu = new AppMenuButton();
             this._leftBox.add(this._appMenu.actor);
