@@ -948,7 +948,7 @@ Panel.prototype = {
             this._dateMenu = new DateMenu.DateMenuButton({ showEvents: true });
         else
             this._dateMenu = new DateMenu.DateMenuButton({ showEvents: false });
-        this._centerBox.add(this._dateMenu.actor, { y_fill: true });
+        this._rightBox.add(this._dateMenu.actor, { y_fill: true });
         this._menus.addMenu(this._dateMenu.menu);
 
         /* right */
