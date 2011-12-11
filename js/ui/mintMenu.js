@@ -13,6 +13,8 @@ const AppFavorites = imports.ui.appFavorites;
 const Gtk = imports.gi.Gtk;
 const Gio = imports.gi.Gio;
 const Signals = imports.signals;
+const GnomeSession = imports.misc.gnomeSession;
+const ScreenSaver = imports.misc.screenSaver;
 
 const Gettext = imports.gettext.domain('gnome-shell-extensions');
 const _ = Gettext.gettext;
@@ -478,6 +480,52 @@ this.applicationsByCategory[dir.get_menu_id()].push(app);
         let favoritesTitle = new St.Label({ track_hover: true, style_class: 'favorites-title', text: "Favorites" });        
         this.favoritesBox = new St.BoxLayout({ style_class: 'applications-menu-favorites-box', vertical: true });
         this.systemBox = new St.BoxLayout({ style_class: 'applications-menu-favorites-box', vertical: true });
+        
+        this._session = new GnomeSession.SessionManager();
+        this._screenSaverProxy = new ScreenSaver.ScreenSaverProxy();            
+        
+        //Lock screen
+        let systemButton = new St.Button({ reactive: true, style_class: 'application-button', x_align: St.Align.START });
+        let buttonbox = new St.BoxLayout();
+        let label = new St.Label({ text: _("Lock screen"), style_class: 'application-button-label' });
+        let icon = new St.Icon({icon_name: "gnome-lockscreen", icon_size: CATEGORY_ICON_SIZE, icon_type: St.IconType.FULLCOLOR});
+        buttonbox.add_actor(icon);
+        buttonbox.add_actor(label);
+        systemButton.set_child(buttonbox);        
+        systemButton.connect('clicked', Lang.bind(this, function() {            
+            this.menu.close();
+            this._screenSaverProxy.LockRemote();
+        }));           
+        this.systemBox.add_actor(systemButton);     
+        
+        //Logout button
+        let systemButton = new St.Button({ reactive: true, style_class: 'application-button', x_align: St.Align.START });
+        let buttonbox = new St.BoxLayout();
+        let label = new St.Label({ text: _("Logout"), style_class: 'application-button-label' });
+        let icon = new St.Icon({icon_name: "gnome-logout", icon_size: CATEGORY_ICON_SIZE, icon_type: St.IconType.FULLCOLOR});
+        buttonbox.add_actor(icon);
+        buttonbox.add_actor(label);
+        systemButton.set_child(buttonbox);        
+        systemButton.connect('clicked', Lang.bind(this, function() {            
+            this.menu.close();
+            this._session.LogoutRemote(0);
+        }));           
+        this.systemBox.add_actor(systemButton);     
+        
+        //Shutdown button
+        let systemButton = new St.Button({ reactive: true, style_class: 'application-button', x_align: St.Align.START });
+        let buttonbox = new St.BoxLayout();
+        let label = new St.Label({ text: _("Quit"), style_class: 'application-button-label' });
+        let icon = new St.Icon({icon_name: "gnome-shutdown", icon_size: CATEGORY_ICON_SIZE, icon_type: St.IconType.FULLCOLOR});
+        buttonbox.add_actor(icon);
+        buttonbox.add_actor(label);
+        systemButton.set_child(buttonbox);        
+        systemButton.connect('clicked', Lang.bind(this, function() {            
+            this.menu.close();
+            this._session.ShutdownRemote();
+        }));           
+        this.systemBox.add_actor(systemButton);                 
+        
         leftPane.add_actor(this.favoritesBox);
         leftPane.add_actor(this.systemBox);
         
