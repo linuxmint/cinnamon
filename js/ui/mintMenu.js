@@ -472,13 +472,20 @@ this.applicationsByCategory[dir.get_menu_id()].push(app);
         this._activeContainer = null;
         let section = new PopupMenu.PopupMenuSection();
         this.menu.addMenuItem(section);
-        let favoritesTitle = new St.Label({ track_hover: true, style_class: 'favorites-title', text: "Favorites" });
+        
+        let leftPane = new St.BoxLayout({ vertical: true });
+        
+        let favoritesTitle = new St.Label({ track_hover: true, style_class: 'favorites-title', text: "Favorites" });        
         this.favoritesBox = new St.BoxLayout({ style_class: 'applications-menu-favorites-box', vertical: true });
+        this.systemBox = new St.BoxLayout({ style_class: 'applications-menu-favorites-box', vertical: true });
+        leftPane.add_actor(this.favoritesBox);
+        leftPane.add_actor(this.systemBox);
         
         let rightPane = new St.BoxLayout({ vertical: true });
         
         this.searchBox = new St.BoxLayout({ style_class: 'search_box' });
         rightPane.add_actor(this.searchBox);
+        
         this.searchEntry = new St.Entry({ name: 'searchEntry',
                                      hint_text: _("Type to search..."),
                                      track_hover: true,
@@ -541,8 +548,8 @@ this.applicationsByCategory[dir.get_menu_id()].push(app);
         //this.rightBox = new St.BoxLayout({ style_class: 'applications-box', vertical:true });
         //this.rightBox.add_actor(this.categoriesApplicationsBox, { span: 1 });
         
-//this.mainBox.add_actor(applicationsTitle, { span: 1 });
-this.mainBox.add_actor(this.favoritesBox, { span: 1 });
+        //this.mainBox.add_actor(applicationsTitle, { span: 1 });
+        this.mainBox.add_actor(leftPane, { span: 1 });
         this.mainBox.add_actor(rightPane, { span: 1 });
         //this.mainBox.add_actor(favoritesTitle, { span: 1 });
         
