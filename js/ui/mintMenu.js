@@ -322,7 +322,7 @@ ApplicationsButton.prototype = {
         let symbol = event.get_key_symbol();
         global.log(symbol);
         
-        if (symbol==65515 && this.menu.isOpen) {
+        if (symbol==Clutter.KEY_Super_L && this.menu.isOpen) {
             this.menu.close();
             return true;
         }
