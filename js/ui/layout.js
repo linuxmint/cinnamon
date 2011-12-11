@@ -147,16 +147,16 @@ LayoutManager.prototype = {
 
     _updateBoxes: function() {
         // Need to use GSettings to get the panel height instead of hard-coding it
-        this.panelBox.set_position(this.bottomMonitor.x, this.bottomMonitor.y + this.bottomMonitor.height - 28);
-        this.panelBox.set_size(this.bottomMonitor.width, 28);
+        this.panelBox.set_position(this.bottomMonitor.x, this.bottomMonitor.y + this.bottomMonitor.height - 25);
+        this.panelBox.set_size(this.bottomMonitor.width, 25);
 
         this.keyboardBox.set_position(this.bottomMonitor.x,
                                       this.bottomMonitor.y + this.bottomMonitor.height);
         this.keyboardBox.set_size(this.bottomMonitor.width, -1);
 
-        this.trayBox.set_position(this.bottomMonitor.x,
-                                  this.bottomMonitor.y + this.bottomMonitor.height);
-        this.trayBox.set_size(this.bottomMonitor.width, -1);
+        this.trayBox.set_position(this.primaryMonitor.x,
+                                  this.primaryMonitor.y + 25);
+        this.trayBox.set_size(this.primaryMonitor.width, -1);
 
         // Set trayBox's clip to show things above it, but not below
         // it (so it's not visible behind the keyboard). The exact
