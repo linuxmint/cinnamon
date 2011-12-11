@@ -184,17 +184,13 @@ AppMenuButtonTooltip.prototype = {
         let tooltipHeight = this._tooltip.get_allocation_box().y2-this._tooltip.get_allocation_box().y1;
         let tooltipWidth = this._tooltip.get_allocation_box().x2-this._tooltip.get_allocation_box().x1;
         
-        var tooltipTop;
-        if (bottomPosition){
-            tooltipTop = Main.panel._mintPanel.actor.get_allocation_box().y1-tooltipHeight;
-        }else{
-            tooltipTop = this._appButton.actor.get_allocation_box().y2;
-        }
+        let monitor = Main.layoutManager.primaryMonitor;
         
-        let monitorWidth = Main.layoutManager.primaryMonitor.width;
+        let tooltipTop = monitor.height-tooltipHeight-this._appButton.actor.get_allocation_box().y2+this._appButton.actor.get_allocation_box().y1;
+        
         var tooltipLeft = this._mousePosition[0]-(tooltipWidth/2);
         if (tooltipLeft<0) tooltipLeft = 0;
-        if (tooltipLeft+tooltipWidth>monitorWidth) tooltipLeft = monitorWidth-tooltipWidth;
+        if (tooltipLeft+tooltipWidth>monitor.width) tooltipLeft = monitor.width-tooltipWidth;
         
         this._tooltip.set_position(tooltipLeft, tooltipTop);
         
