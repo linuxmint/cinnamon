@@ -32,12 +32,11 @@ const BUTTON_DND_ACTIVATION_TIMEOUT = 250;
 const ANIMATED_ICON_UPDATE_TIMEOUT = 100;
 const SPINNER_ANIMATION_TIME = 0.2;
 
-const STANDARD_STATUS_AREA_ORDER = ['keyboard', 'volume', 'bluetooth', 'network', 'battery', 'userMenu'];
+const STANDARD_STATUS_AREA_ORDER = ['keyboard', 'volume', 'bluetooth', 'network', 'battery'];
 const STANDARD_STATUS_AREA_SHELL_IMPLEMENTATION = {    
     'volume': imports.ui.status.volume.Indicator,
     'battery': imports.ui.status.power.Indicator,
-    'keyboard': imports.ui.status.keyboard.XKBIndicator,
-    'userMenu': imports.ui.userMenu.UserMenuButton
+    'keyboard': imports.ui.status.keyboard.XKBIndicator    
 };
 
 if (Config.HAVE_BLUETOOTH)
