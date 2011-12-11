@@ -999,40 +999,39 @@ Panel.prototype = {
         let [centerMinWidth, centerNaturalWidth] = this._centerBox.get_preferred_width(-1);
         let [rightMinWidth, rightNaturalWidth] = this._rightBox.get_preferred_width(-1);
 
-        let sideWidth, centerWidth;
-        centerWidth = centerNaturalWidth;
-        sideWidth = (allocWidth - centerWidth) / 2;
+        let sideWidth = allocWidth - rightNaturalWidth - centerNaturalWidth;
 
         let childBox = new Clutter.ActorBox();
 
         childBox.y1 = 0;
         childBox.y2 = allocHeight;
         if (this.actor.get_direction() == St.TextDirection.RTL) {
-            childBox.x1 = allocWidth - Math.min(Math.floor(sideWidth),
-                                                leftNaturalWidth);
+            childBox.x1 = allocWidth - Math.min(Math.floor(sideWidth), leftNaturalWidth);
             childBox.x2 = allocWidth;
         } else {
             childBox.x1 = 0;
-            childBox.x2 = Math.min(Math.floor(sideWidth),
-                                   leftNaturalWidth);
+            childBox.x2 = Math.min(Math.floor(sideWidth), leftNaturalWidth);
         }
         this._leftBox.allocate(childBox, flags);
 
-        childBox.x1 = Math.ceil(sideWidth);
         childBox.y1 = 0;
-        childBox.x2 = childBox.x1 + centerWidth;
         childBox.y2 = allocHeight;
+        if (this.actor.get_direction() == St.TextDirection.RTL) {
+            childBox.x1 = rightNaturalWidth;
+            childBox.x2 = childBox.x1 + centerNaturalWidth;
+        } else {
+            childBox.x1 = allocWidth - centerNaturalWidth - rightNaturalWidth;
+            childBox.x2 = childBox.x1 + centerNaturalWidth;
+        }
         this._centerBox.allocate(childBox, flags);
 
         childBox.y1 = 0;
         childBox.y2 = allocHeight;
         if (this.actor.get_direction() == St.TextDirection.RTL) {
             childBox.x1 = 0;
-            childBox.x2 = Math.min(Math.floor(sideWidth),
-                                   rightNaturalWidth);
+            childBox.x2 = rightNaturalWidth;
         } else {
-            childBox.x1 = allocWidth - Math.min(Math.floor(sideWidth),
-                                                rightNaturalWidth);
+            childBox.x1 = allocWidth - rightNaturalWidth;
             childBox.x2 = allocWidth;
         }
         this._rightBox.allocate(childBox, flags);
@@ -1045,8 +1044,8 @@ Panel.prototype = {
         childBox.y2 = allocHeight + cornerHeight;
         this._leftCorner.actor.allocate(childBox, flags);
 
-        let [cornerMinWidth, cornerWidth] = this._rightCorner.actor.get_preferred_width(-1);
-        let [cornerMinHeight, cornerHeight] = this._rightCorner.actor.get_preferred_width(-1);
+        [cornerMinWidth, cornerWidth] = this._rightCorner.actor.get_preferred_width(-1);
+        [cornerMinHeight, cornerHeight] = this._rightCorner.actor.get_preferred_width(-1);
         childBox.x1 = allocWidth - cornerWidth;
         childBox.x2 = allocWidth;
         childBox.y1 = allocHeight;
