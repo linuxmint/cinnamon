@@ -1,0 +1,77 @@
+stage {
+}
+
+#group1 {
+    padding: 12pt;
+    padding-right: 12px;
+    padding-bottom: 2em;
+    padding-left: 1in;
+
+    background: #ff0000 url('some-background.png');
+}
+
+#text1 {
+    background-image: inherit;
+}
+
+.special-text {
+    font-size: 24pt;
+    font-style: italic;
+}
+
+ClutterTexture.special-text {
+    font-weight: bold;
+}
+
+#text2 {
+    background: inherit;
+    background: none; /* also overrides the color */
+}
+
+#group2 {
+    font: italic 12px serif;
+}
+
+#text3 {
+    font-variant: small-caps;
+    font-weight: bold;
+    font-style: oblique;
+    font-size: 200%;
+}
+
+ClutterTexture {
+    padding: 10px;
+}
+
+ClutterCairoTexture {
+    padding-right: 20px;
+}
+
+#group1 > #text1 {
+    color: #00ff00;
+}
+
+stage > #text2 {
+    color: #ff0000;
+}
+
+#group2 {
+    background-image: url('other-background.png');
+    padding: 1px 2px 3px 4px;
+
+    border: 2px solid #000000;
+    border-bottom: 5px solid #0000ff;
+    border-radius: 10px 10px 0px 0px;
+}
+
+ClutterText:hover, StLabel:hover {
+    text-decoration: underline;
+}
+
+ClutterText:visited, StLabel:visited {
+    color: #888888;
+}
+
+StLabel:boxed {
+    border: 1px;
+}

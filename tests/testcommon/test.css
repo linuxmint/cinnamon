@@ -1,0 +1,95 @@
+@import "../../data/theme/gnome-shell.css";
+
+stage {
+    font: 16pt serif;
+}
+
+.red {
+    background-color: red;
+}
+
+.green {
+    background-color: green;
+}
+
+.blue {
+    background-color: blue;
+}
+
+.bold {
+    font-weight: bold;
+}
+
+.italic {
+    font-style: italic;
+}
+
+.big {
+    font-size: 150%;
+}
+
+.monospace {
+    font-family: monospace;
+}
+
+.border-image {
+    border: 15px;
+    border-image: url('border-image.png') 16;
+}
+
+.background-gradient {
+    background-gradient-start: rgba(127, 255, 127, .6);
+    background-gradient-end: rgba(127, 127, 255, .6);
+}
+
+.border-image-with-background-gradient {
+    border: 15px black solid;
+    border-image: url('border-image.png') 16;
+    background-gradient-start: #88ff88;
+    background-gradient-end: #8888ff;
+}
+
+.background-image {
+    background-image: url('face-plain.png');
+    background-color: white;
+}
+
+.push-button {
+    background: #eeddbb;
+    border: 1px solid black;
+    border-radius: 8px;
+    padding: 5px;
+}
+
+.push-button:hover {
+    background: #ffeecc;
+}
+
+.push-button:active {
+    background: #ccbb99;
+}
+
+.vfade {
+    -st-fade-offset: 68px;
+}
+
+#transition-container .transition-label {
+    color: white;
+    width: 1em;
+    height: 1em;
+    padding: 1em;
+    background-color: #333;
+    border: 2px solid black;
+    border-radius: 8px;
+    transition-duration: 1000; /* One second */
+}
+
+#transition-container:hover .transition-label {
+    background-color: blue;
+    border: 2px solid red;
+}
+
+#transition-container .transition-label:hover {
+    background-color: green;
+    border: 2px solid blue;
+}

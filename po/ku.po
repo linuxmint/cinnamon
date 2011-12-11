@@ -1,0 +1,1575 @@
+# Kurdish translations for l package.
+# Copyright (C) 2011 THE l'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the l package.
+# Erdal <reimar.heider@gmail.com>, 2011.
+# Erdal Ronahî <erdal dot ronahi at gmail dot com>, 2011.
+msgid ""
+msgstr ""
+"Project-Id-Version: l 10n-gnome\n"
+"Report-Msgid-Bugs-To: http://bugzilla.gnome.org/enter_bug.cgi?product=gnome-"
+"shell&keywords=I18N+L10N&component=general\n"
+"POT-Creation-Date: 2011-10-17 08:32+0000\n"
+"PO-Revision-Date: 2011-10-17 13:36+0200\n"
+"Last-Translator: Erdal Ronahî <erdal dot ronahi at gmail dot com>\n"
+"Language-Team: Kurdish Team http://pckurd.net\n"
+"Language: ku\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Virtaal 0.6.1\n"
+
+#: ../data/gnome-shell.desktop.in.in.h:1
+msgid "GNOME Shell"
+msgstr ""
+
+#: ../data/gnome-shell.desktop.in.in.h:2
+msgid "Window management and application launching"
+msgstr ""
+
+#: ../data/org.gnome.shell.gschema.xml.in.h:1
+msgid ""
+"Allows access to internal debugging and monitoring tools using the Alt-F2 "
+"dialog."
+msgstr ""
+
+#: ../data/org.gnome.shell.gschema.xml.in.h:2
+msgid "Enable internal tools useful for developers and testers from Alt-F2"
+msgstr ""
+
+#: ../data/org.gnome.shell.gschema.xml.in.h:3
+msgid "File extension used for storing the screencast"
+msgstr ""
+
+#: ../data/org.gnome.shell.gschema.xml.in.h:4
+msgid "Framerate used for recording screencasts."
+msgstr ""
+
+#: ../data/org.gnome.shell.gschema.xml.in.h:5
+msgid ""
+"GNOME Shell extensions have a uuid property; this key lists extensions which "
+"should be loaded. disabled-extensions overrides this setting for extensions "
+"that appear in both lists."
+msgstr ""
+
+#: ../data/org.gnome.shell.gschema.xml.in.h:6
+msgid "History for command (Alt-F2) dialog"
+msgstr ""
+
+#: ../data/org.gnome.shell.gschema.xml.in.h:7
+msgid "History for the looking glass dialog"
+msgstr ""
+
+#: ../data/org.gnome.shell.gschema.xml.in.h:8
+msgid "If true, display date in the clock, in addition to time."
+msgstr ""
+
+#: ../data/org.gnome.shell.gschema.xml.in.h:9
+msgid "If true, display seconds in time."
+msgstr ""
+
+#: ../data/org.gnome.shell.gschema.xml.in.h:10
+msgid "If true, display the ISO week date in the calendar."
+msgstr ""
+
+#: ../data/org.gnome.shell.gschema.xml.in.h:11
+msgid "List of desktop file IDs for favorite applications"
+msgstr ""
+
+#: ../data/org.gnome.shell.gschema.xml.in.h:13
+#, no-c-format
+msgid ""
+"Sets the GStreamer pipeline used to encode recordings. It follows the syntax "
+"used for gst-launch. The pipeline should have an unconnected sink pad where "
+"the recorded video is recorded. It will normally have a unconnected source "
+"pad; output from that pad will be written into the output file. However the "
+"pipeline can also take care of its own output - this might be used to send "
+"the output to an icecast server via shout2send or similar. When unset or set "
+"to an empty value, the default pipeline will be used. This is currently "
+"'videorate ! vp8enc quality=10 speed=2 threads=%T ! queue ! webmmux' and "
+"records to WEBM using the VP8 codec. %T is used as a placeholder for a guess "
+"at the optimal thread count on the system."
+msgstr ""
+
+#: ../data/org.gnome.shell.gschema.xml.in.h:14
+msgid "Show date in clock"
+msgstr ""
+
+#: ../data/org.gnome.shell.gschema.xml.in.h:15
+msgid "Show the week date in the calendar"
+msgstr ""
+
+#: ../data/org.gnome.shell.gschema.xml.in.h:16
+msgid "Show time with seconds"
+msgstr ""
+
+#: ../data/org.gnome.shell.gschema.xml.in.h:17
+msgid ""
+"The applications corresponding to these identifiers will be displayed in the "
+"favorites area."
+msgstr ""
+
+#: ../data/org.gnome.shell.gschema.xml.in.h:18
+msgid ""
+"The filename for recorded screencasts will be a unique filename based on the "
+"current date, and use this extension. It should be changed when recording to "
+"a different container format."
+msgstr ""
+
+#: ../data/org.gnome.shell.gschema.xml.in.h:19
+msgid ""
+"The framerate of the resulting screencast recordered by GNOME Shell's "
+"screencast recorder in frames-per-second."
+msgstr ""
+
+#: ../data/org.gnome.shell.gschema.xml.in.h:20
+msgid "The gstreamer pipeline used to encode the screencast"
+msgstr ""
+
+#: ../data/org.gnome.shell.gschema.xml.in.h:21
+msgid ""
+"The shell normally monitors active applications in order to present the most "
+"used ones (e.g. in launchers). While this data will be kept private, you may "
+"want to disable this for privacy reasons. Please note that doing so won't "
+"remove already saved data."
+msgstr ""
+
+#: ../data/org.gnome.shell.gschema.xml.in.h:22
+msgid "The type of keyboard to use."
+msgstr ""
+
+#: ../data/org.gnome.shell.gschema.xml.in.h:23
+msgid "Uuids of extensions to enable"
+msgstr ""
+
+#: ../data/org.gnome.shell.gschema.xml.in.h:24
+msgid "Whether to collect stats about applications usage"
+msgstr ""
+
+#: ../data/org.gnome.shell.gschema.xml.in.h:25
+msgid "Which keyboard to use"
+msgstr ""
+
+#: ../data/org.gnome.shell.gschema.xml.in.h:26
+msgid "disabled OpenSearch providers"
+msgstr ""
+
+#: ../js/gdm/loginDialog.js:617
+msgid "Session..."
+msgstr "Danişîn..."
+
+#: ../js/gdm/loginDialog.js:788
+msgctxt "title"
+msgid "Sign In"
+msgstr "Têkeve"
+
+#. translators: this message is shown below the password entry field
+#. to indicate the user can swipe their finger instead
+#: ../js/gdm/loginDialog.js:833
+msgid "(or swipe finger)"
+msgstr ""
+
+#: ../js/gdm/loginDialog.js:851
+msgid "Not listed?"
+msgstr "Di listê de tune?"
+
+#: ../js/gdm/loginDialog.js:1019 ../js/ui/endSessionDialog.js:426
+#: ../js/ui/extensionSystem.js:477 ../js/ui/networkAgent.js:165
+#: ../js/ui/polkitAuthenticationAgent.js:171 ../js/ui/status/bluetooth.js:480
+msgid "Cancel"
+msgstr "Betal"
+
+#: ../js/gdm/loginDialog.js:1024
+msgctxt "button"
+msgid "Sign In"
+msgstr "Têkeve"
+
+#: ../js/gdm/loginDialog.js:1373
+msgid "Login Window"
+msgstr "Paceya têketinê"
+
+#: ../js/gdm/powerMenu.js:116 ../js/ui/userMenu.js:549
+#: ../js/ui/userMenu.js:551 ../js/ui/userMenu.js:620
+msgid "Suspend"
+msgstr "Xew"
+
+#: ../js/gdm/powerMenu.js:121 ../js/ui/endSessionDialog.js:89
+#: ../js/ui/endSessionDialog.js:97 ../js/ui/endSessionDialog.js:106
+msgid "Restart"
+msgstr "Dîsdestpêkirin"
+
+#: ../js/gdm/powerMenu.js:126 ../js/ui/endSessionDialog.js:80
+#: ../js/ui/endSessionDialog.js:91
+msgid "Power Off"
+msgstr "Girtin"
+
+#: ../js/misc/util.js:92
+msgid "Command not found"
+msgstr "Ferman nehate dîtin"
+
+#. Replace "Error invoking GLib.shell_parse_argv: " with
+#. something nicer
+#: ../js/misc/util.js:119
+msgid "Could not parse command:"
+msgstr ""
+
+#: ../js/misc/util.js:127
+#, c-format
+msgid "Execution of '%s' failed:"
+msgstr ""
+
+#. Translators: Filter to display all applications
+#: ../js/ui/appDisplay.js:255
+msgid "All"
+msgstr "Hemû"
+
+#: ../js/ui/appDisplay.js:319
+msgid "APPLICATIONS"
+msgstr "SEPAN"
+
+#: ../js/ui/appDisplay.js:377
+msgid "SETTINGS"
+msgstr "MÎHENG"
+
+#: ../js/ui/appDisplay.js:684
+msgid "New Window"
+msgstr "Paceya nû"
+
+#: ../js/ui/appDisplay.js:687
+msgid "Remove from Favorites"
+msgstr "Ji bijareyan rake"
+
+#: ../js/ui/appDisplay.js:688
+msgid "Add to Favorites"
+msgstr "Li bijareyan zêde bike"
+
+#: ../js/ui/appFavorites.js:89
+#, c-format
+msgid "%s has been added to your favorites."
+msgstr "%s li bijareyên te de zêde bû."
+
+#: ../js/ui/appFavorites.js:120
+#, c-format
+msgid "%s has been removed from your favorites."
+msgstr "%s li bijareyên te de hate rakirin."
+
+#: ../js/ui/autorunManager.js:280
+msgid "Removable Devices"
+msgstr ""
+
+#: ../js/ui/autorunManager.js:590
+#, c-format
+msgid "Open with %s"
+msgstr "Bi %s veke"
+
+#: ../js/ui/autorunManager.js:616
+msgid "Eject"
+msgstr "Avêtin"
+
+#. Translators: Shown in calendar event list for all day events
+#. * Keep it short, best if you can use less then 10 characters
+#.
+#: ../js/ui/calendar.js:63
+msgctxt "event list time"
+msgid "All Day"
+msgstr "Hemû roj"
+
+#. Translators: Shown in calendar event list, if 24h format
+#: ../js/ui/calendar.js:68
+msgctxt "event list time"
+msgid "%H:%M"
+msgstr "%H:%M"
+
+#. Transators: Shown in calendar event list, if 12h format
+#: ../js/ui/calendar.js:75
+msgctxt "event list time"
+msgid "%l:%M %p"
+msgstr "%l:%M %p"
+
+#. Translators: Calendar grid abbreviation for Sunday.
+#. *
+#. * NOTE: These grid abbreviations are always shown together
+#. * and in order, e.g. "S M T W T F S".
+#.
+#: ../js/ui/calendar.js:115
+msgctxt "grid sunday"
+msgid "S"
+msgstr "Y"
+
+#. Translators: Calendar grid abbreviation for Monday
+#: ../js/ui/calendar.js:117
+msgctxt "grid monday"
+msgid "M"
+msgstr "D"
+
+#. Translators: Calendar grid abbreviation for Tuesday
+#: ../js/ui/calendar.js:119
+msgctxt "grid tuesday"
+msgid "T"
+msgstr "S"
+
+#. Translators: Calendar grid abbreviation for Wednesday
+#: ../js/ui/calendar.js:121
+msgctxt "grid wednesday"
+msgid "W"
+msgstr "Ç"
+
+#. Translators: Calendar grid abbreviation for Thursday
+#: ../js/ui/calendar.js:123
+msgctxt "grid thursday"
+msgid "T"
+msgstr "P"
+
+#. Translators: Calendar grid abbreviation for Friday
+#: ../js/ui/calendar.js:125
+msgctxt "grid friday"
+msgid "F"
+msgstr "Î"
+
+#. Translators: Calendar grid abbreviation for Saturday
+#: ../js/ui/calendar.js:127
+msgctxt "grid saturday"
+msgid "S"
+msgstr "Ş"
+
+#. Translators: Event list abbreviation for Sunday.
+#. *
+#. * NOTE: These list abbreviations are normally not shown together
+#. * so they need to be unique (e.g. Tuesday and Thursday cannot
+#. * both be 'T').
+#.
+#: ../js/ui/calendar.js:140
+msgctxt "list sunday"
+msgid "Su"
+msgstr "Yş"
+
+#. Translators: Event list abbreviation for Monday
+#: ../js/ui/calendar.js:142
+msgctxt "list monday"
+msgid "M"
+msgstr "D"
+
+#. Translators: Event list abbreviation for Tuesday
+#: ../js/ui/calendar.js:144
+msgctxt "list tuesday"
+msgid "T"
+msgstr "S"
+
+#. Translators: Event list abbreviation for Wednesday
+#: ../js/ui/calendar.js:146
+msgctxt "list wednesday"
+msgid "W"
+msgstr "Ç"
+
+#. Translators: Event list abbreviation for Thursday
+#: ../js/ui/calendar.js:148
+msgctxt "list thursday"
+msgid "Th"
+msgstr "Pş"
+
+#. Translators: Event list abbreviation for Friday
+#: ../js/ui/calendar.js:150
+msgctxt "list friday"
+msgid "F"
+msgstr "Î"
+
+#. Translators: Event list abbreviation for Saturday
+#: ../js/ui/calendar.js:152
+msgctxt "list saturday"
+msgid "S"
+msgstr "Ş"
+
+#. Translators: Text to show if there are no events
+#: ../js/ui/calendar.js:687
+msgid "Nothing Scheduled"
+msgstr ""
+
+#. Translators: Shown on calendar heading when selected day occurs on current year
+#: ../js/ui/calendar.js:703
+msgctxt "calendar heading"
+msgid "%A, %B %d"
+msgstr ""
+
+#. Translators: Shown on calendar heading when selected day occurs on different year
+#: ../js/ui/calendar.js:706
+msgctxt "calendar heading"
+msgid "%A, %B %d, %Y"
+msgstr ""
+
+#: ../js/ui/calendar.js:716
+msgid "Today"
+msgstr ""
+
+#: ../js/ui/calendar.js:720
+msgid "Tomorrow"
+msgstr ""
+
+#: ../js/ui/calendar.js:729
+msgid "This week"
+msgstr ""
+
+#: ../js/ui/calendar.js:737
+msgid "Next week"
+msgstr ""
+
+#: ../js/ui/contactDisplay.js:65 ../js/ui/notificationDaemon.js:444
+#: ../js/ui/status/power.js:223 ../src/shell-app.c:353
+msgid "Unknown"
+msgstr ""
+
+#: ../js/ui/contactDisplay.js:86 ../js/ui/userMenu.js:139
+msgid "Available"
+msgstr ""
+
+#: ../js/ui/contactDisplay.js:91 ../js/ui/userMenu.js:148
+msgid "Away"
+msgstr ""
+
+#: ../js/ui/contactDisplay.js:95 ../js/ui/userMenu.js:142
+msgid "Busy"
+msgstr ""
+
+#: ../js/ui/contactDisplay.js:99
+msgid "Offline"
+msgstr ""
+
+#: ../js/ui/contactDisplay.js:146
+msgid "CONTACTS"
+msgstr "TEKILÎ"
+
+#: ../js/ui/dash.js:172 ../js/ui/messageTray.js:1204
+msgid "Remove"
+msgstr "Rakirin"
+
+#: ../js/ui/dateMenu.js:99
+msgid "Date and Time Settings"
+msgstr ""
+
+#: ../js/ui/dateMenu.js:125
+msgid "Open Calendar"
+msgstr ""
+
+#. Translators: This is the time format with date used
+#. in 24-hour mode.
+#: ../js/ui/dateMenu.js:183
+msgid "%a %b %e, %R:%S"
+msgstr ""
+
+#: ../js/ui/dateMenu.js:184
+msgid "%a %b %e, %R"
+msgstr ""
+
+#. Translators: This is the time format without date used
+#. in 24-hour mode.
+#: ../js/ui/dateMenu.js:188
+msgid "%a %R:%S"
+msgstr ""
+
+#: ../js/ui/dateMenu.js:189
+msgid "%a %R"
+msgstr ""
+
+#. Translators: This is a time format with date used
+#. for AM/PM.
+#: ../js/ui/dateMenu.js:196
+msgid "%a %b %e, %l:%M:%S %p"
+msgstr ""
+
+#: ../js/ui/dateMenu.js:197
+msgid "%a %b %e, %l:%M %p"
+msgstr ""
+
+#. Translators: This is a time format without date used
+#. for AM/PM.
+#: ../js/ui/dateMenu.js:201
+msgid "%a %l:%M:%S %p"
+msgstr ""
+
+#: ../js/ui/dateMenu.js:202
+msgid "%a %l:%M %p"
+msgstr ""
+
+#. Translators: This is the date format to use when the calendar popup is
+#. * shown - it is shown just below the time in the shell (e.g. "Tue 9:29 AM").
+#.
+#: ../js/ui/dateMenu.js:213
+msgid "%A %B %e, %Y"
+msgstr ""
+
+#: ../js/ui/docDisplay.js:16
+msgid "RECENT ITEMS"
+msgstr ""
+
+#: ../js/ui/endSessionDialog.js:60
+#, c-format
+msgid "Log Out %s"
+msgstr ""
+
+#: ../js/ui/endSessionDialog.js:61 ../js/ui/endSessionDialog.js:75
+msgid "Log Out"
+msgstr ""
+
+#: ../js/ui/endSessionDialog.js:62
+msgid "Click Log Out to quit these applications and log out of the system."
+msgstr ""
+
+#: ../js/ui/endSessionDialog.js:64
+#, c-format
+msgid "%s will be logged out automatically in %d second."
+msgid_plural "%s will be logged out automatically in %d seconds."
+msgstr[0] ""
+msgstr[1] ""
+
+#: ../js/ui/endSessionDialog.js:69
+#, c-format
+msgid "You will be logged out automatically in %d second."
+msgid_plural "You will be logged out automatically in %d seconds."
+msgstr[0] ""
+msgstr[1] ""
+
+#: ../js/ui/endSessionDialog.js:73
+msgid "Logging out of the system."
+msgstr ""
+
+#: ../js/ui/endSessionDialog.js:81
+msgid "Click Power Off to quit these applications and power off the system."
+msgstr ""
+
+#: ../js/ui/endSessionDialog.js:83
+#, c-format
+msgid "The system will power off automatically in %d second."
+msgid_plural "The system will power off automatically in %d seconds."
+msgstr[0] ""
+msgstr[1] ""
+
+#: ../js/ui/endSessionDialog.js:87
+msgid "Powering off the system."
+msgstr ""
+
+#: ../js/ui/endSessionDialog.js:98
+msgid "Click Restart to quit these applications and restart the system."
+msgstr ""
+
+#: ../js/ui/endSessionDialog.js:100
+#, c-format
+msgid "The system will restart automatically in %d second."
+msgid_plural "The system will restart automatically in %d seconds."
+msgstr[0] ""
+msgstr[1] ""
+
+#: ../js/ui/endSessionDialog.js:104
+msgid "Restarting the system."
+msgstr ""
+
+#: ../js/ui/extensionSystem.js:481
+msgid "Install"
+msgstr ""
+
+#: ../js/ui/extensionSystem.js:485
+#, c-format
+msgid "Download and install '%s' from extensions.gnome.org?"
+msgstr ""
+
+#: ../js/ui/keyboard.js:309
+msgid "tray"
+msgstr ""
+
+#: ../js/ui/keyboard.js:531 ../js/ui/status/power.js:211
+msgid "Keyboard"
+msgstr ""
+
+#: ../js/ui/lookingGlass.js:645
+msgid "No extensions installed"
+msgstr ""
+
+#: ../js/ui/lookingGlass.js:691
+msgid "Enabled"
+msgstr ""
+
+#. translators:
+#. * The device has been disabled
+#: ../js/ui/lookingGlass.js:693 ../src/gvc/gvc-mixer-control.c:1093
+msgid "Disabled"
+msgstr ""
+
+#: ../js/ui/lookingGlass.js:695
+msgid "Error"
+msgstr ""
+
+#: ../js/ui/lookingGlass.js:697
+msgid "Out of date"
+msgstr ""
+
+#: ../js/ui/lookingGlass.js:699
+msgid "Downloading"
+msgstr ""
+
+#: ../js/ui/lookingGlass.js:720
+msgid "View Source"
+msgstr ""
+
+#: ../js/ui/lookingGlass.js:726
+msgid "Web Page"
+msgstr ""
+
+#: ../js/ui/messageTray.js:1197
+msgid "Open"
+msgstr ""
+
+#: ../js/ui/messageTray.js:2406
+msgid "System Information"
+msgstr ""
+
+#: ../js/ui/networkAgent.js:145
+msgid "Show password"
+msgstr ""
+
+#: ../js/ui/networkAgent.js:160
+msgid "Connect"
+msgstr ""
+
+#. Cisco LEAP
+#: ../js/ui/networkAgent.js:255 ../js/ui/networkAgent.js:267
+#: ../js/ui/networkAgent.js:294 ../js/ui/networkAgent.js:314
+#: ../js/ui/networkAgent.js:324
+msgid "Password: "
+msgstr ""
+
+#. static WEP
+#: ../js/ui/networkAgent.js:260
+msgid "Key: "
+msgstr ""
+
+#. TTLS and PEAP are actually much more complicated, but this complication
+#. is not visible here since we only care about phase2 authentication
+#. (and don't even care of which one)
+#: ../js/ui/networkAgent.js:292 ../js/ui/networkAgent.js:310
+msgid "Username: "
+msgstr ""
+
+#: ../js/ui/networkAgent.js:298
+msgid "Identity: "
+msgstr ""
+
+#: ../js/ui/networkAgent.js:300
+msgid "Private key password: "
+msgstr ""
+
+#: ../js/ui/networkAgent.js:312
+msgid "Service: "
+msgstr ""
+
+#: ../js/ui/networkAgent.js:341
+msgid "Authentication required by wireless network"
+msgstr ""
+
+#: ../js/ui/networkAgent.js:342
+#, c-format
+msgid ""
+"Passwords or encryption keys are required to access the wireless network "
+"'%s'."
+msgstr ""
+
+#: ../js/ui/networkAgent.js:346
+msgid "Wired 802.1X authentication"
+msgstr ""
+
+#: ../js/ui/networkAgent.js:348
+msgid "Network name: "
+msgstr ""
+
+#: ../js/ui/networkAgent.js:353
+msgid "DSL authentication"
+msgstr ""
+
+#: ../js/ui/networkAgent.js:360
+msgid "PIN code required"
+msgstr ""
+
+#: ../js/ui/networkAgent.js:361
+msgid "PIN code is needed for the mobile broadband device"
+msgstr ""
+
+#: ../js/ui/networkAgent.js:362
+msgid "PIN: "
+msgstr ""
+
+#: ../js/ui/networkAgent.js:368
+msgid "Mobile broadband network password"
+msgstr ""
+
+#: ../js/ui/networkAgent.js:369
+#, c-format
+msgid "A password is required to connect to '%s'."
+msgstr ""
+
+#: ../js/ui/overview.js:91
+msgid "Undo"
+msgstr ""
+
+#: ../js/ui/overview.js:205
+msgid "Windows"
+msgstr ""
+
+#: ../js/ui/overview.js:208
+msgid "Applications"
+msgstr ""
+
+#. Translators: this is the name of the dock/favorites area on
+#. the left of the overview
+#: ../js/ui/overview.js:230
+msgid "Dash"
+msgstr ""
+
+#. TODO - _quit() doesn't really work on apps in state STARTING yet
+#: ../js/ui/panel.js:539
+#, c-format
+msgid "Quit %s"
+msgstr ""
+
+#. Translators: If there is no suitable word for "Activities"
+#. in your language, you can use the word for "Overview".
+#: ../js/ui/panel.js:575
+msgid "Activities"
+msgstr ""
+
+#: ../js/ui/panel.js:967
+msgid "Top Bar"
+msgstr ""
+
+#: ../js/ui/placeDisplay.js:120
+#, c-format
+msgid "Failed to unmount '%s'"
+msgstr ""
+
+#: ../js/ui/placeDisplay.js:123
+msgid "Retry"
+msgstr ""
+
+#: ../js/ui/placeDisplay.js:163
+msgid "Connect to..."
+msgstr ""
+
+#: ../js/ui/placeDisplay.js:375
+msgid "PLACES & DEVICES"
+msgstr ""
+
+#: ../js/ui/polkitAuthenticationAgent.js:72
+msgid "Authentication Required"
+msgstr ""
+
+#: ../js/ui/polkitAuthenticationAgent.js:106
+msgid "Administrator"
+msgstr ""
+
+#: ../js/ui/polkitAuthenticationAgent.js:175
+msgid "Authenticate"
+msgstr ""
+
+#. Translators: "that didn't work" refers to the fact that the
+#. * requested authentication was not gained; this can happen
+#. * because of an authentication error (like invalid password),
+#. * for instance.
+#: ../js/ui/polkitAuthenticationAgent.js:256
+msgid "Sorry, that didn't work. Please try again."
+msgstr ""
+
+#: ../js/ui/polkitAuthenticationAgent.js:268
+msgid "Password:"
+msgstr ""
+
+#. Translators: this MUST be either "toggle-switch-us"
+#. (for toggle switches containing the English words
+#. "ON" and "OFF") or "toggle-switch-intl" (for toggle
+#. switches containing "◯" and "|"). Other values will
+#. simply result in invisible toggle switches.
+#: ../js/ui/popupMenu.js:731
+msgid "toggle-switch-us"
+msgstr ""
+
+#: ../js/ui/runDialog.js:208
+msgid "Please enter a command:"
+msgstr ""
+
+#: ../js/ui/searchDisplay.js:340
+msgid "Searching..."
+msgstr ""
+
+#: ../js/ui/searchDisplay.js:363
+msgid "No matching results."
+msgstr ""
+
+#: ../js/ui/shellMountOperation.js:285
+msgid "Wrong password, please try again"
+msgstr ""
+
+#: ../js/ui/status/accessibility.js:60
+msgid "Zoom"
+msgstr ""
+
+#. let screenReader = this._buildItem(_("Screen Reader"), APPLICATIONS_SCHEMA,
+#. 'screen-reader-enabled');
+#. this.menu.addMenuItem(screenReader);
+#: ../js/ui/status/accessibility.js:71
+msgid "Screen Keyboard"
+msgstr ""
+
+#: ../js/ui/status/accessibility.js:75
+msgid "Visual Alerts"
+msgstr ""
+
+#: ../js/ui/status/accessibility.js:78
+msgid "Sticky Keys"
+msgstr ""
+
+#: ../js/ui/status/accessibility.js:81
+msgid "Slow Keys"
+msgstr ""
+
+#: ../js/ui/status/accessibility.js:84
+msgid "Bounce Keys"
+msgstr ""
+
+#: ../js/ui/status/accessibility.js:87
+msgid "Mouse Keys"
+msgstr ""
+
+#: ../js/ui/status/accessibility.js:91
+msgid "Universal Access Settings"
+msgstr ""
+
+#: ../js/ui/status/accessibility.js:141
+msgid "High Contrast"
+msgstr ""
+
+#: ../js/ui/status/accessibility.js:178
+msgid "Large Text"
+msgstr ""
+
+#: ../js/ui/status/bluetooth.js:39 ../js/ui/status/bluetooth.js:261
+#: ../js/ui/status/bluetooth.js:347 ../js/ui/status/bluetooth.js:381
+#: ../js/ui/status/bluetooth.js:421 ../js/ui/status/bluetooth.js:454
+msgid "Bluetooth"
+msgstr ""
+
+#: ../js/ui/status/bluetooth.js:52
+msgid "Visibility"
+msgstr ""
+
+#: ../js/ui/status/bluetooth.js:66
+msgid "Send Files to Device..."
+msgstr ""
+
+#: ../js/ui/status/bluetooth.js:67
+msgid "Set up a New Device..."
+msgstr ""
+
+#: ../js/ui/status/bluetooth.js:91
+msgid "Bluetooth Settings"
+msgstr ""
+
+#. TRANSLATORS: this means that bluetooth was disabled by hardware rfkill
+#: ../js/ui/status/bluetooth.js:111
+msgid "hardware disabled"
+msgstr ""
+
+#: ../js/ui/status/bluetooth.js:208
+msgid "Connection"
+msgstr ""
+
+#: ../js/ui/status/bluetooth.js:217 ../js/ui/status/network.js:486
+msgid "disconnecting..."
+msgstr ""
+
+#: ../js/ui/status/bluetooth.js:230 ../js/ui/status/network.js:492
+msgid "connecting..."
+msgstr ""
+
+#: ../js/ui/status/bluetooth.js:248
+msgid "Send Files..."
+msgstr ""
+
+#: ../js/ui/status/bluetooth.js:253
+msgid "Browse Files..."
+msgstr ""
+
+#: ../js/ui/status/bluetooth.js:262
+msgid "Error browsing device"
+msgstr ""
+
+#: ../js/ui/status/bluetooth.js:263
+#, c-format
+msgid "The requested device cannot be browsed, error is '%s'"
+msgstr ""
+
+#: ../js/ui/status/bluetooth.js:271
+msgid "Keyboard Settings"
+msgstr ""
+
+#: ../js/ui/status/bluetooth.js:274
+msgid "Mouse Settings"
+msgstr ""
+
+#: ../js/ui/status/bluetooth.js:279 ../js/ui/status/volume.js:62
+msgid "Sound Settings"
+msgstr ""
+
+#: ../js/ui/status/bluetooth.js:382
+#, c-format
+msgid "Authorization request from %s"
+msgstr ""
+
+#: ../js/ui/status/bluetooth.js:388
+#, c-format
+msgid "Device %s wants access to the service '%s'"
+msgstr ""
+
+#: ../js/ui/status/bluetooth.js:390
+msgid "Always grant access"
+msgstr ""
+
+#: ../js/ui/status/bluetooth.js:391
+msgid "Grant this time only"
+msgstr ""
+
+#: ../js/ui/status/bluetooth.js:392 ../js/ui/telepathyClient.js:1204
+msgid "Reject"
+msgstr ""
+
+#: ../js/ui/status/bluetooth.js:422
+#, c-format
+msgid "Pairing confirmation for %s"
+msgstr ""
+
+#: ../js/ui/status/bluetooth.js:428 ../js/ui/status/bluetooth.js:462
+#, c-format
+msgid "Device %s wants to pair with this computer"
+msgstr ""
+
+#: ../js/ui/status/bluetooth.js:429
+#, c-format
+msgid "Please confirm whether the PIN '%s' matches the one on the device."
+msgstr ""
+
+#: ../js/ui/status/bluetooth.js:431
+msgid "Matches"
+msgstr ""
+
+#: ../js/ui/status/bluetooth.js:432
+msgid "Does not match"
+msgstr ""
+
+#: ../js/ui/status/bluetooth.js:455
+#, c-format
+msgid "Pairing request for %s"
+msgstr ""
+
+#: ../js/ui/status/bluetooth.js:463
+msgid "Please enter the PIN mentioned on the device."
+msgstr ""
+
+#: ../js/ui/status/bluetooth.js:479
+msgid "OK"
+msgstr ""
+
+#: ../js/ui/status/keyboard.js:73
+msgid "Show Keyboard Layout"
+msgstr ""
+
+#: ../js/ui/status/keyboard.js:78
+msgid "Region and Language Settings"
+msgstr ""
+
+#: ../js/ui/status/network.js:97
+msgid "<unknown>"
+msgstr ""
+
+#. Translators: this indicates that wireless or wwan is disabled by hardware killswitch
+#: ../js/ui/status/network.js:285
+msgid "disabled"
+msgstr ""
+
+#. Translators: this is for network devices that are physically present but are not
+#. under NetworkManager's control (and thus cannot be used in the menu)
+#: ../js/ui/status/network.js:484
+msgid "unmanaged"
+msgstr ""
+
+#. Translators: this is for network connections that require some kind of key or password
+#: ../js/ui/status/network.js:495
+msgid "authentication required"
+msgstr ""
+
+#. Translators: this is for devices that require some kind of firmware or kernel
+#. module, which is missing
+#: ../js/ui/status/network.js:505
+msgid "firmware missing"
+msgstr ""
+
+#. Translators: this is for wired network devices that are physically disconnected
+#: ../js/ui/status/network.js:512
+msgid "cable unplugged"
+msgstr ""
+
+#. Translators: this is for a network device that cannot be activated (for example it
+#. is disabled by rfkill, or it has no coverage
+#: ../js/ui/status/network.js:517
+msgid "unavailable"
+msgstr ""
+
+#: ../js/ui/status/network.js:519
+msgid "connection failed"
+msgstr ""
+
+#: ../js/ui/status/network.js:575 ../js/ui/status/network.js:1523
+msgid "More..."
+msgstr ""
+
+#. TRANSLATORS: this is the indication that a connection for another logged in user is active,
+#. and we cannot access its settings (including the name)
+#: ../js/ui/status/network.js:611 ../js/ui/status/network.js:1458
+msgid "Connected (private)"
+msgstr ""
+
+#: ../js/ui/status/network.js:689
+msgid "Auto Ethernet"
+msgstr ""
+
+#: ../js/ui/status/network.js:753
+msgid "Auto broadband"
+msgstr ""
+
+#: ../js/ui/status/network.js:756
+msgid "Auto dial-up"
+msgstr ""
+
+#. TRANSLATORS: this the automatic wireless connection name (including the network name)
+#: ../js/ui/status/network.js:878 ../js/ui/status/network.js:1470
+#, c-format
+msgid "Auto %s"
+msgstr ""
+
+#: ../js/ui/status/network.js:880
+msgid "Auto bluetooth"
+msgstr ""
+
+#: ../js/ui/status/network.js:1472
+msgid "Auto wireless"
+msgstr ""
+
+#: ../js/ui/status/network.js:1566
+msgid "Enable networking"
+msgstr ""
+
+#: ../js/ui/status/network.js:1578
+msgid "Wired"
+msgstr ""
+
+#: ../js/ui/status/network.js:1589
+msgid "Wireless"
+msgstr ""
+
+#: ../js/ui/status/network.js:1599
+msgid "Mobile broadband"
+msgstr ""
+
+#: ../js/ui/status/network.js:1609
+msgid "VPN Connections"
+msgstr ""
+
+#: ../js/ui/status/network.js:1620
+msgid "Network Settings"
+msgstr ""
+
+#: ../js/ui/status/network.js:1757
+msgid "Connection failed"
+msgstr ""
+
+#: ../js/ui/status/network.js:1758
+msgid "Activation of network connection failed"
+msgstr ""
+
+#: ../js/ui/status/network.js:2008
+msgid "Networking is disabled"
+msgstr ""
+
+#: ../js/ui/status/network.js:2133
+msgid "Network Manager"
+msgstr ""
+
+#: ../js/ui/status/power.js:82
+msgid "Power Settings"
+msgstr ""
+
+#. 0 is reported when UPower does not have enough data
+#. to estimate battery life
+#: ../js/ui/status/power.js:103
+msgid "Estimating..."
+msgstr ""
+
+#: ../js/ui/status/power.js:110
+#, c-format
+msgid "%d hour remaining"
+msgid_plural "%d hours remaining"
+msgstr[0] ""
+msgstr[1] ""
+
+#. TRANSLATORS: this is a time string, as in "%d hours %d minutes remaining"
+#: ../js/ui/status/power.js:113
+#, c-format
+msgid "%d %s %d %s remaining"
+msgstr ""
+
+#: ../js/ui/status/power.js:115
+msgid "hour"
+msgid_plural "hours"
+msgstr[0] ""
+msgstr[1] ""
+
+#: ../js/ui/status/power.js:115
+msgid "minute"
+msgid_plural "minutes"
+msgstr[0] ""
+msgstr[1] ""
+
+#: ../js/ui/status/power.js:118
+#, c-format
+msgid "%d minute remaining"
+msgid_plural "%d minutes remaining"
+msgstr[0] ""
+msgstr[1] ""
+
+#: ../js/ui/status/power.js:121 ../js/ui/status/power.js:194
+#, c-format
+msgctxt "percent of battery remaining"
+msgid "%d%%"
+msgstr ""
+
+#: ../js/ui/status/power.js:201
+msgid "AC adapter"
+msgstr ""
+
+#: ../js/ui/status/power.js:203
+msgid "Laptop battery"
+msgstr ""
+
+#: ../js/ui/status/power.js:205
+msgid "UPS"
+msgstr ""
+
+#: ../js/ui/status/power.js:207
+msgid "Monitor"
+msgstr ""
+
+#: ../js/ui/status/power.js:209
+msgid "Mouse"
+msgstr ""
+
+#: ../js/ui/status/power.js:213
+msgid "PDA"
+msgstr ""
+
+#: ../js/ui/status/power.js:215
+msgid "Cell phone"
+msgstr ""
+
+#: ../js/ui/status/power.js:217
+msgid "Media player"
+msgstr ""
+
+#: ../js/ui/status/power.js:219
+msgid "Tablet"
+msgstr ""
+
+#: ../js/ui/status/power.js:221
+msgid "Computer"
+msgstr ""
+
+#: ../js/ui/status/volume.js:42
+msgid "Volume"
+msgstr ""
+
+#: ../js/ui/status/volume.js:54
+msgid "Microphone"
+msgstr ""
+
+#. We got the TpContact
+#. FIXME: We don't have a 'chat room' icon (bgo #653737) use
+#. system-users for now as Empathy does.
+#: ../js/ui/telepathyClient.js:259
+msgid "Invitation"
+msgstr ""
+
+#. We got the TpContact
+#: ../js/ui/telepathyClient.js:327
+msgid "Call"
+msgstr ""
+
+#. We got the TpContact
+#: ../js/ui/telepathyClient.js:357
+msgid "File Transfer"
+msgstr ""
+
+#: ../js/ui/telepathyClient.js:438
+msgid "Subscription request"
+msgstr ""
+
+#: ../js/ui/telepathyClient.js:474
+msgid "Connection error"
+msgstr ""
+
+#: ../js/ui/telepathyClient.js:741
+#, c-format
+msgid "%s is online."
+msgstr ""
+
+#: ../js/ui/telepathyClient.js:746
+#, c-format
+msgid "%s is offline."
+msgstr ""
+
+#: ../js/ui/telepathyClient.js:749
+#, c-format
+msgid "%s is away."
+msgstr ""
+
+#: ../js/ui/telepathyClient.js:752
+#, c-format
+msgid "%s is busy."
+msgstr ""
+
+#. Translators: this is a time format string followed by a date.
+#. If applicable, replace %X with a strftime format valid for your
+#. locale, without seconds.
+#: ../js/ui/telepathyClient.js:986
+#, no-c-format
+msgid "Sent at <b>%X</b> on <b>%A</b>"
+msgstr ""
+
+#. Translators: this is a time format in the style of "Wednesday, May 25",
+#. shown when you get a chat message in the same year.
+#: ../js/ui/telepathyClient.js:992
+#, no-c-format
+msgid "Sent on <b>%A</b>, <b>%B %d</b>"
+msgstr ""
+
+#. Translators: this is a time format in the style of "Wednesday, May 25, 2012",
+#. shown when you get a chat message in a different year.
+#: ../js/ui/telepathyClient.js:997
+#, no-c-format
+msgid "Sent on <b>%A</b>, <b>%B %d</b>, %Y"
+msgstr ""
+
+#. Translators: this is the other person changing their old IM name to their new
+#. IM name.
+#: ../js/ui/telepathyClient.js:1039
+#, c-format
+msgid "%s is now known as %s"
+msgstr ""
+
+#. translators: argument is a room name like
+#. * room@jabber.org for example.
+#: ../js/ui/telepathyClient.js:1148
+#, c-format
+msgid "Invitation to %s"
+msgstr ""
+
+#. translators: first argument is the name of a contact and the second
+#. * one the name of a room. "Alice is inviting you to join room@jabber.org
+#. * for example.
+#: ../js/ui/telepathyClient.js:1156
+#, c-format
+msgid "%s is inviting you to join %s"
+msgstr ""
+
+#: ../js/ui/telepathyClient.js:1158 ../js/ui/telepathyClient.js:1248
+#: ../js/ui/telepathyClient.js:1352
+msgid "Decline"
+msgstr ""
+
+#: ../js/ui/telepathyClient.js:1159 ../js/ui/telepathyClient.js:1249
+#: ../js/ui/telepathyClient.js:1353
+msgid "Accept"
+msgstr ""
+
+#. translators: argument is a contact name like Alice for example.
+#: ../js/ui/telepathyClient.js:1192
+#, c-format
+msgid "Video call from %s"
+msgstr ""
+
+#. translators: argument is a contact name like Alice for example.
+#: ../js/ui/telepathyClient.js:1195
+#, c-format
+msgid "Call from %s"
+msgstr ""
+
+#. translators: this is a button label (verb), not a noun
+#: ../js/ui/telepathyClient.js:1206
+msgid "Answer"
+msgstr ""
+
+#. To translators: The first parameter is
+#. * the contact's alias and the second one is the
+#. * file name. The string will be something
+#. * like: "Alice is sending you test.ogg"
+#.
+#: ../js/ui/telepathyClient.js:1242
+#, c-format
+msgid "%s is sending you %s"
+msgstr ""
+
+#. To translators: The parameter is the contact's alias
+#: ../js/ui/telepathyClient.js:1317
+#, c-format
+msgid "%s would like permission to see when you are online"
+msgstr ""
+
+#: ../js/ui/telepathyClient.js:1415
+msgid "Network error"
+msgstr ""
+
+#: ../js/ui/telepathyClient.js:1417
+msgid "Authentication failed"
+msgstr ""
+
+#: ../js/ui/telepathyClient.js:1419
+msgid "Encryption error"
+msgstr ""
+
+#: ../js/ui/telepathyClient.js:1421
+msgid "Certificate not provided"
+msgstr ""
+
+#: ../js/ui/telepathyClient.js:1423
+msgid "Certificate untrusted"
+msgstr ""
+
+#: ../js/ui/telepathyClient.js:1425
+msgid "Certificate expired"
+msgstr ""
+
+#: ../js/ui/telepathyClient.js:1427
+msgid "Certificate not activated"
+msgstr ""
+
+#: ../js/ui/telepathyClient.js:1429
+msgid "Certificate hostname mismatch"
+msgstr ""
+
+#: ../js/ui/telepathyClient.js:1431
+msgid "Certificate fingerprint mismatch"
+msgstr ""
+
+#: ../js/ui/telepathyClient.js:1433
+msgid "Certificate self-signed"
+msgstr ""
+
+#: ../js/ui/telepathyClient.js:1435
+msgid "Status is set to offline"
+msgstr ""
+
+#: ../js/ui/telepathyClient.js:1437
+msgid "Encryption is not available"
+msgstr ""
+
+#: ../js/ui/telepathyClient.js:1439
+msgid "Certificate is invalid"
+msgstr ""
+
+#: ../js/ui/telepathyClient.js:1441
+msgid "Connection has been refused"
+msgstr ""
+
+#: ../js/ui/telepathyClient.js:1443
+msgid "Connection can't be established"
+msgstr ""
+
+#: ../js/ui/telepathyClient.js:1445
+msgid "Connection has been lost"
+msgstr ""
+
+#: ../js/ui/telepathyClient.js:1447
+msgid "This resource is already connected to the server"
+msgstr ""
+
+#: ../js/ui/telepathyClient.js:1449
+msgid ""
+"Connection has been replaced by a new connection using the same resource"
+msgstr ""
+
+#: ../js/ui/telepathyClient.js:1451
+msgid "The account already exists on the server"
+msgstr ""
+
+#: ../js/ui/telepathyClient.js:1453
+msgid "Server is currently too busy to handle the connection"
+msgstr ""
+
+#: ../js/ui/telepathyClient.js:1455
+msgid "Certificate has been revoked"
+msgstr ""
+
+#: ../js/ui/telepathyClient.js:1457
+msgid ""
+"Certificate uses an insecure cipher algorithm or is cryptographically weak"
+msgstr ""
+
+#: ../js/ui/telepathyClient.js:1459
+msgid ""
+"The length of the server certificate, or the depth of the server certificate "
+"chain, exceed the limits imposed by the cryptography library"
+msgstr ""
+
+#. translators: argument is the account name, like
+#. * name@jabber.org for example.
+#: ../js/ui/telepathyClient.js:1468
+#, c-format
+msgid "Connection to %s failed"
+msgstr ""
+
+#: ../js/ui/telepathyClient.js:1477
+msgid "Reconnect"
+msgstr ""
+
+#: ../js/ui/telepathyClient.js:1478
+msgid "Edit account"
+msgstr ""
+
+#: ../js/ui/telepathyClient.js:1524
+msgid "Unknown reason"
+msgstr ""
+
+#: ../js/ui/userMenu.js:145
+msgid "Hidden"
+msgstr ""
+
+#: ../js/ui/userMenu.js:151
+msgid "Idle"
+msgstr ""
+
+#: ../js/ui/userMenu.js:154
+msgid "Unavailable"
+msgstr ""
+
+#: ../js/ui/userMenu.js:547 ../js/ui/userMenu.js:551 ../js/ui/userMenu.js:621
+msgid "Power Off..."
+msgstr ""
+
+#: ../js/ui/userMenu.js:583
+msgid "Notifications"
+msgstr ""
+
+#: ../js/ui/userMenu.js:591
+msgid "Online Accounts"
+msgstr ""
+
+#: ../js/ui/userMenu.js:595
+msgid "System Settings"
+msgstr ""
+
+#: ../js/ui/userMenu.js:602
+msgid "Lock Screen"
+msgstr ""
+
+#: ../js/ui/userMenu.js:607
+msgid "Switch User"
+msgstr ""
+
+#: ../js/ui/userMenu.js:612
+msgid "Log Out..."
+msgstr ""
+
+#: ../js/ui/userMenu.js:640
+msgid "Your chat status will be set to busy"
+msgstr ""
+
+#: ../js/ui/userMenu.js:641
+msgid ""
+"Notifications are now disabled, including chat messages. Your online status "
+"has been adjusted to let others know that you might not see their messages."
+msgstr ""
+
+#. Translators: this is the text displayed
+#. in the search entry when no search is
+#. active; it should not exceed ~30
+#. characters.
+#: ../js/ui/viewSelector.js:120
+msgid "Type to search..."
+msgstr ""
+
+#: ../js/ui/viewSelector.js:140 ../src/shell-util.c:261
+msgid "Search"
+msgstr ""
+
+#: ../js/ui/windowAttentionHandler.js:35
+#, c-format
+msgid "'%s' is ready"
+msgstr ""
+
+#. translators:
+#. * The number of sound outputs on a particular device
+#: ../src/gvc/gvc-mixer-control.c:1100
+#, c-format
+msgid "%u Output"
+msgid_plural "%u Outputs"
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators:
+#. * The number of sound inputs on a particular device
+#: ../src/gvc/gvc-mixer-control.c:1110
+#, c-format
+msgid "%u Input"
+msgid_plural "%u Inputs"
+msgstr[0] ""
+msgstr[1] ""
+
+#: ../src/gvc/gvc-mixer-control.c:1408
+msgid "System Sounds"
+msgstr ""
+
+#: ../src/main.c:480
+msgid "Print version"
+msgstr ""
+
+#: ../src/main.c:486
+msgid "Mode used by GDM for login screen"
+msgstr ""
+
+#: ../src/shell-app.c:579
+#, c-format
+msgid "Failed to launch '%s'"
+msgstr ""
+
+#: ../src/shell-mobile-providers.c:80
+msgid "United Kingdom"
+msgstr ""
+
+#: ../src/shell-mobile-providers.c:526
+msgid "Default"
+msgstr ""
+
+#: ../src/shell-polkit-authentication-agent.c:334
+msgid "Authentication dialog was dismissed by the user"
+msgstr ""
+
+#: ../src/shell-util.c:100
+msgid "Home Folder"
+msgstr "Peldanka mal"
+
+#. Translators: this is the same string as the one found in
+#. * nautilus
+#: ../src/shell-util.c:115
+msgid "File System"
+msgstr "Pergala pelan"
+
+#. Translators: the first string is the name of a gvfs
+#. * method, and the second string is a path. For
+#. * example, "Trash: some-directory". It means that the
+#. * directory called "some-directory" is in the trash.
+#.
+#: ../src/shell-util.c:311
+#, c-format
+msgid "%1$s: %2$s"
+msgstr "%1$s: %2$s"

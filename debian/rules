@@ -1,0 +1,22 @@
+#!/usr/bin/make -f
+
+include /usr/share/cdbs/1/rules/debhelper.mk
+include /usr/share/cdbs/1/class/autotools.mk
+include /usr/share/cdbs/1/rules/utils.mk
+include /usr/share/cdbs/1/class/gnome.mk
+include /usr/share/gnome-pkg-tools/1/rules/uploaders.mk
+-include /usr/share/gnome-pkg-tools/1/rules/gnome-get-source.mk
+
+ifeq ($(shell dpkg-vendor --query vendor),Ubuntu)
+	DEB_DH_GENCONTROL_ARGS += -- -Vicon-theme:Depends=gnome-icon-theme-full
+endif
+
+$(patsubst %,binary-predeb/%,$(DEB_ALL_PACKAGES)) ::
+	dh_girepository -p$(cdbs_curpkg) -l src -p /usr/lib/mutter \
+		/usr/lib/gnome-shell
+	find debian/$(cdbs_curpkg) -name '*.la' -exec rm -f '{}' ';'
+
+DEB_CONFIGURE_EXTRA_FLAGS += --enable-compile-warnings=yes
+
+DEB_DH_MAKESHLIBS_ARGS_gnome-shell = -Xlibgnome-shell
+DEB_SHLIBDEPS_INCLUDE = /usr/lib/gnome-bluetooth

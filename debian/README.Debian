@@ -1,0 +1,39 @@
+GNOME Shell for Debian
+======================
+
+1. Running
+
+There are two main ways of running GNOME Shell: replacing your current
+GNOME window manager and panel components, or inside a Xephyr window,
+as a way to quickly try it out without compromising your
+environment. At this stage one of the options may work better than the
+other, depending on various factors, including your drivers.
+
+To run GNOME Shell under Xephyr you first need to install the
+xserver-xephyr package, and then run GNOME Shell with the --xephyr
+parameter:
+
+        $ gnome-shell --xephyr
+
+2. It's SLOW as hell!
+
+To run GNOME Shell you need to have proper DRI, and a video driver
+that Clutter likes. In some Intel cards, Kernel-Mode Setting (KMS) may
+help. In case GNOME Shell runs but is extremely slow you can try
+enabling KMS or running it with CLUTTER_VBLANK=none in its
+environment. See http://bugzilla.openedhand.com/show_bug.cgi?id=1730.
+
+3. If you have enough corage...
+
+GNOME Shell installs a .desktop file which makes it possible to make
+it the default for your session, replacing metacity/gnome-panel. To
+make it the default all you need to do is set the following gconf key
+to 'gnome-shell':
+
+   /desktop/gnome/session/required_components/windowmanager
+
+Here's the gconftool command, if you're feeling lazy:
+
+       $ gconftool-2 -t string -s /desktop/gnome/session/required_components/windowmanager gnome-shell
+
+ -- Gustavo Noronha Silva <kov@debian.org>, Tue, 20 Oct 2009 14:50:12 -0200

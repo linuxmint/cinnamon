@@ -1,0 +1,625 @@
+#!@PYTHON@
+# -*- mode: Python; indent-tabs-mode: nil; -*-
+
+import atexit
+import datetime
+import dbus
+from dbus.mainloop.glib import DBusGMainLoop
+import gobject
+try:
+    import json
+except ImportError:
+    try:
+        import simplejson as json
+    except ImportError:
+        json = None
+import optparse
+import os
+import random
+import re
+import shutil
+import signal
+import subprocess
+import sys
+import tempfile
+import termios
+import time
+import errno
+
+def show_version(option, opt_str, value, parser):
+    print "GNOME Shell @VERSION@"
+    sys.exit()
+
+def get_running_session_environs():
+    wanted_environment = ['DBUS_SESSION_BUS_ADDRESS', 'DISPLAY', 'XDG_DATA_DIRS',
+                          'XAUTHORITY', 'XDG_SESSION_COOKIE', 'ORBIT_SOCKETDIR',
+                          'SESSION_MANAGER']
+    num_re = re.compile('^[0-9]+$')
+    myuid = os.getuid()
+    if not os.path.isdir('/proc'):
+        return {}
+    for filename in os.listdir('/proc'):
+        if not num_re.match(filename):
+            continue
+        piddir = '/proc/' + filename
+        try:
+            stat = os.stat(piddir)
+        except OSError, e:
+            continue
+        if not stat.st_uid == myuid:
+            continue
+        try:
+            f = open(piddir + "/cmdline")
+            command = f.read()
+            f.close()
+        except IOError, e:
+            continue
+        # /proc/cmdline is separated and terminated by NULs
+        command = command.split("\x00")[0]
+        command = os.path.basename(command)
+        if command != 'gnome-session':
+            continue
+        try:
+            f = open(os.path.join(piddir, 'environ'))
+        except OSError, e:
+            continue
+        environ_data = f.read()
+        f.close()
+        # There's a trailing null at the last one, so remove the
+        # empty string
+        environs = environ_data.split('\0')[:-1]
+        # Rumor has it the presence of just FOO (instead of FOO=bar)
+        # represents a deleted environment variable
+        environs = filter(lambda x: '=' in x, environs)
+        # Turn it into a dictionary
+        environs = dict(map(lambda x: x.split('=', 1), environs))
+        result = {}
+        for key in wanted_environment:
+            if key in environs:
+                result[key] = environs[key]
+        return result
+
+_bus = None
+_bus_iface = None
+_name_owner_changed_hook = None
+
+def on_name_owner_changed(name, prev_owner, new_owner):
+    if _name_owner_changed_hook:
+        _name_owner_changed_hook(name, prev_owner, new_owner)
+
+def get_bus():
+    global _bus
+    if _bus is None:
+        dbus_loop = DBusGMainLoop()
+        _bus = dbus.SessionBus(mainloop=dbus_loop)
+    return _bus
+
+def get_bus_iface():
+    global _bus_iface
+    if _bus_iface is None:
+        bus = get_bus()
+        bus_proxy = bus.get_object('org.freedesktop.DBus', '/org/freedesktop/DBus')
+        _bus_iface = dbus.Interface(bus_proxy, 'org.freedesktop.DBus')
+        _bus_iface.connect_to_signal('NameOwnerChanged', on_name_owner_changed)
+    return _bus_iface
+
+def wait_for_dbus_name(wait_name):
+    global _name_owner_changed_hook
+
+    bus_iface = get_bus_iface()
+    loop = gobject.MainLoop()
+
+    def on_name_owner_changed(name, prev_owner, new_owner):
+        if not (name == wait_name and new_owner != ''):
+            return
+        loop.quit()
+        return
+    _name_owner_changed_hook = on_name_owner_changed
+
+    def on_timeout():
+        print "\nFailed to start %s: timed out" % (wait_name,)
+        sys.exit(1)
+    gobject.timeout_add_seconds(7, on_timeout)
+
+    loop.run()
+    _name_owner_changed_hook = None
+
+def start_dconf_await_service():
+    DCONF_NAME = 'ca.desrt.dconf'
+
+    bus = get_bus()
+    get_bus_iface() # connect to NameOwnerChanged signal
+
+    # See if the service is already running or normal D-Bus activation works
+    need_manual_activate = False
+    try:
+        dconf_proxy = bus.get_object(DCONF_NAME, '/')
+        dconf_proxy.Ping(dbus_interface='org.freedesktop.DBus.Peer')
+    except dbus.exceptions.DBusException, e:
+        if e.get_dbus_name() == 'org.freedesktop.DBus.Error.ServiceUnknown':
+            need_manual_activate = True
+        else:
+            raise e
+
+    if not need_manual_activate:
+        return
+
+    # At this point, it looks like we just have a jhbuild install
+    # of dconf, not known to the session dbus-daemon, so we start
+    # it manually and wait for it to join the bus
+
+    print "Starting dconf-service... ",
+    sys.stdout.flush()
+
+    # dconf is linked without libtool, so unlike other GNOME modules,
+    # won't have an embedded rpath for its library directory.
+    env = dict(os.environ)
+    if 'LD_LIBRARY_PATH' in env and env['LD_LIBRARY_PATH']:
+        ld_library_path = '@libdir@:' + env['LD_LIBRARY_PATH']
+    else:
+        ld_library_path = '@libdir@'
+    env['LD_LIBRARY_PATH'] = ld_library_path
+
+    dconf_path = os.path.join('@libexecdir@', 'dconf-service')
+    try:
+        subprocess.Popen([dconf_path, '--keep-alive'], env=env)
+    except OSError, e:
+        print "\nFailed to start %s: %s" % (dconf_path, e)
+        sys.exit(1)
+
+    wait_for_dbus_name (DCONF_NAME)
+
+PERF_HELPER_NAME = "org.gnome.Shell.PerfHelper"
+PERF_HELPER_IFACE = "org.gnome.Shell.PerfHelper"
+PERF_HELPER_PATH = "/org/gnome/Shell/PerfHelper"
+
+def start_perf_helper():
+    get_bus_iface() # connect to NameOwnerChanged signal
+
+    self_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
+    running_from_source_tree = os.path.exists(os.path.join(self_dir, 'gnome-shell-jhbuild.in'))
+
+    if running_from_source_tree:
+        perf_helper_path = os.path.join(self_dir, "gnome-shell-perf-helper")
+    else:
+        perf_helper_path = "@libexecdir@/gnome-shell-perf-helper"
+
+    subprocess.Popen([perf_helper_path])
+    wait_for_dbus_name (PERF_HELPER_NAME)
+
+def stop_perf_helper():
+    bus = get_bus()
+    proxy = bus.get_object(PERF_HELPER_NAME, PERF_HELPER_PATH)
+    proxy.Exit(dbus_interface=PERF_HELPER_IFACE)
+
+def start_shell(perf_output=None):
+    self_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
+    if os.path.exists(os.path.join(self_dir, 'gnome-shell-jhbuild.in')):
+        running_from_source_tree = True
+        top_dir = os.path.dirname(self_dir)
+        typelib_dir = '@JHBUILD_TYPELIBDIR@:' + os.path.join(top_dir, "src")
+        js_dir = os.path.join(top_dir, "js")
+        data_dir = os.path.join(top_dir, "data")
+    else:
+        running_from_source_tree = False
+        js_dir = os.path.join('@pkgdatadir@', 'js')
+        typelib_dir = '@JHBUILD_TYPELIBDIR@'
+
+    if os.environ.has_key('GI_TYPELIB_PATH'):
+        typelib_dir = typelib_dir + ":" + os.environ.get('GI_TYPELIB_PATH')
+
+    # Set up environment
+    env = dict(os.environ)
+    # TODO: Fix this, since nothing prevents it from propagating to child
+    # processes.  Why is it even here?
+    env.update({'GNOME_DISABLE_CRASH_DIALOG' : '1'})
+    # This stuff should really should only happen when running
+    # uninstalled, i.e. it should be in the conditional
+    # below. Otherwise it's just a bad reimplementation of "jhbuild
+    # run".  See bug #642084
+    env.update({'GNOME_SHELL_JS'      : js_dir,
+                'PATH'                : '@bindir@:' + os.environ.get('PATH', ''),
+                'GI_TYPELIB_PATH'     : typelib_dir,
+                'XDG_CONFIG_DIRS'     : '@sysconfdir@/xdg:' + (os.environ.get('XDG_CONFIG_DIRS') or '/etc/xdg'),
+                'XDG_DATA_DIRS'       : '@datadir@:' + (os.environ.get('XDG_DATA_DIRS') or '/usr/local/share:/usr/share')})
+    if running_from_source_tree:
+        env.update({'GNOME_SHELL_BINDIR'   : self_dir,
+                    'GNOME_SHELL_DATADIR'  : data_dir,
+                    'GSETTINGS_SCHEMA_DIR' : data_dir })
+    else:
+        # This is just broken to set in the installed case; see bug #642084
+        env.update({'GSETTINGS_SCHEMA_DIR' : os.path.join('@datadir@', 'glib-2.0', 'schemas')})
+
+    # Also plain broken to set in the normal installed case
+    jhbuild_gconf_source = os.path.join('@sysconfdir@', 'gconf/2/path.jhbuild')
+    if os.path.exists(jhbuild_gconf_source):
+        env['GCONF_DEFAULT_SOURCE_PATH'] = jhbuild_gconf_source
+
+    if options.perf is not None:
+        env['SHELL_PERF_MODULE'] = options.perf
+        env['MUTTER_WM_CLASS_FILTER'] = 'Gnome-shell-perf-helper'
+
+    if perf_output is not None:
+        env['SHELL_PERF_OUTPUT'] = perf_output
+
+    args = []
+    if options.debug:
+        debug_command = options.debug_command.split()
+        if running_from_source_tree:
+            args += [os.path.join(top_dir, 'libtool'), '--mode=execute']
+        args += debug_command
+
+    args.append(os.path.join(self_dir, 'gnome-shell-real'))
+    if options.replace:
+        args.append('--replace')
+    if options.sync:
+        args.append('--sync')
+    return subprocess.Popen(args, env=env)
+
+def _killall(processname):
+    subprocess.call(['pkill', '-u', '%d' % (os.getuid(), ),
+                     '-f', r'^([^ ]*/)?' + re.escape(processname) + '($| )'])
+
+def ensure_desktop_infrastructure_state():
+    # This is a collection of random hacks necessary to make sure
+    # that we can run in jhbuild scenarios or when dynamically
+    # replacing GNOME 2.
+
+    start_dconf_await_service()
+
+    # We need to terminate notification-daemon
+    _killall('notification-daemon')
+    _killall('notify-osd')
+
+def run_shell(perf_output=None):
+    if options.debug:
+        # Record initial terminal state so we can reset it to that
+        # later, in case we kill gdb at a bad time
+        termattrs = termios.tcgetattr(0);
+
+    normal_exit = False
+
+    if options.verbose:
+        print "Starting shell"
+
+    try:
+        shell = start_shell(perf_output=perf_output)
+
+        # Wait for shell to exit
+        if options.verbose:
+            print "Waiting for shell to exit"
+        shell.wait()
+
+    except KeyboardInterrupt, e:
+        try:
+            os.kill(shell.pid, signal.SIGKILL)
+        except:
+            pass
+        shell.wait()
+    finally:
+        if shell is None:
+            print "Failed to start shell"
+        elif shell.returncode == 0:
+            normal_exit = True
+            if options.verbose:
+                print "Shell exited normally"
+        elif shell.returncode < 0:
+            # Python has no mapping for strsignal; not worth using
+            # ctypes for this.
+            print "Shell killed with signal %d" % - shell.returncode
+        else:
+            # Normal reason here would be losing connection the X server
+            if options.verbose:
+                print "Shell exited with return code %d" % shell.returncode
+
+        if options.debug:
+            termios.tcsetattr(0, termios.TCSANOW, termattrs);
+
+    return normal_exit
+
+def upload_performance_report(report_text):
+    # Local imports to avoid impacting gnome-shell startup time
+    import base64
+    from ConfigParser import RawConfigParser
+    import hashlib
+    import hmac
+    import httplib
+    import urlparse
+    import urllib
+
+    try:
+        config_home = os.environ['XDG_CONFIG_HOME']
+    except KeyError:
+        config_home = None
+
+    if not config_home:
+        config_home = os.path.expanduser("~/.config")
+
+    config_file = os.path.join(config_home, "gnome-shell/perf.ini")
+
+    try:
+        config = RawConfigParser()
+        f = open(config_file)
+        config.readfp(f)
+        f.close()
+
+        base_url = config.get('upload', 'url')
+        system_name = config.get('upload', 'name')
+        secret_key = config.get('upload', 'key')
+    except Exception, e:
+        print "Can't read upload configuration from %s: %s" % (config_file, str(e))
+        sys.exit(1)
+
+    # Determine host, port and upload URL from provided data, we're
+    # a bit extra-careful about normalization since the URL is part
+    # of the signature.
+
+    split = urlparse.urlsplit(base_url)
+    scheme = split[0].lower()
+    netloc = split[1]
+    base_path = split[2]
+
+    m = re.match(r'^(.*?)(?::(\d+))?$', netloc)
+    if m.group(2):
+        host, port = m.group(1), int(m.group(2))
+    else:
+        host, port = m.group(1), None
+
+    if scheme != "http":
+        print "'%s' is not a HTTP URL" % base_url
+        sys.exit(1)
+
+    if port is None:
+        port = 80
+
+    if base_path.endswith('/'):
+        base_path = base_path[:-1]
+
+    if port == 80:
+        normalized_base = "%s://%s%s" % (scheme, host, base_path)
+    else:
+        normalized_base = "%s://%s:%d%s" % (scheme, host, port, base_path)
+
+    upload_url = normalized_base + '/system/%s/upload' % system_name
+    upload_path = urlparse.urlsplit(upload_url)[2] # path portion
+
+    # Create signature based on upload URL and the report data
+
+    signature_data = 'POST&' + upload_url + "&&"
+    h = hmac.new(secret_key, digestmod=hashlib.sha1)
+    h.update(signature_data)
+    h.update(report_text)
+    signature = urllib.quote(base64.b64encode(h.digest()), "~")
+
+    headers = {
+        'User-Agent': 'gnome-shell',
+        'Content-Type': 'application/json',
+        'X-Shell-Signature': 'HMAC-SHA1 ' + signature
+    };
+
+    connection = httplib.HTTPConnection(host, port)
+    connection.request('POST', upload_path, report_text, headers)
+    response = connection.getresponse()
+
+    if response.status == 200:
+        print "Performance report upload succeeded"
+    else:
+        print "Performance report upload failed with status %d" % response.status
+        print response.read()
+
+def run_performance_test():
+    iters = options.perf_iters
+    if options.perf_warmup:
+        iters += 1
+
+    logs = []
+    metric_summaries = {}
+
+    start_perf_helper()
+
+    for i in xrange(0, iters):
+        # We create an empty temporary file that the shell will overwrite
+        # with the contents.
+        handle, output_file = tempfile.mkstemp(".json", "gnome-shell-perf.")
+        os.close(handle)
+
+        # Run the performance test and collect the output as JSON
+        normal_exit = False
+        try:
+            normal_exit = run_shell(perf_output=output_file)
+        except:
+            stop_perf_helper()
+            raise
+        finally:
+            if not normal_exit:
+                os.remove(output_file)
+
+        if not normal_exit:
+            stop_perf_helper()
+            return False
+
+        try:
+            f = open(output_file)
+            output = json.load(f)
+            f.close()
+        except:
+            stop_perf_helper()
+            raise
+        finally:
+            os.remove(output_file)
+
+        # Grab the event definitions and monitor layout the first time around
+        if i == 0:
+            events = output['events']
+            monitors = output['monitors']
+
+        if options.perf_warmup and i == 0:
+            continue
+
+        for metric in output['metrics']:
+            name = metric['name']
+            if not name in metric_summaries:
+                summary = {}
+                summary['description'] = metric['description']
+                summary['units'] = metric['units']
+                summary['values'] = []
+                metric_summaries[name] = summary
+            else:
+                summary = metric_summaries[name]
+
+            summary['values'].append(metric['value'])
+
+        logs.append(output['log'])
+
+    stop_perf_helper()
+
+    if options.perf_output or options.perf_upload:
+        # Write a complete report, formatted as JSON. The Javascript/C code that
+        # generates the individual reports we are summarizing here is very careful
+        # to format them nicely, but we just dump out a compressed no-whitespace
+        # version here for simplicity. Using json.dump(indent=0) doesn't real
+        # improve the readability of the output much.
+        report = {
+            'date': datetime.datetime.utcnow().isoformat() + 'Z',
+            'events': events,
+            'monitors': monitors,
+            'metrics': metric_summaries,
+            'logs': logs
+        }
+
+        # Add the Git revision if available
+        self_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
+        if os.path.exists(os.path.join(self_dir, 'gnome-shell-jhbuild.in')):
+            top_dir = os.path.dirname(self_dir)
+            git_dir = os.path.join(top_dir, '.git')
+            if os.path.exists(git_dir):
+                env = dict(os.environ)
+                env['GIT_DIR'] = git_dir
+                revision = subprocess.Popen(['git', 'rev-parse', 'HEAD'],
+                                            env=env,
+                                            stdout=subprocess.PIPE).communicate()[0].strip()
+                report['revision'] = revision
+
+        if options.perf_output:
+            f = open(options.perf_output, 'w')
+            json.dump(report, f)
+            f.close()
+
+        if options.perf_upload:
+            upload_performance_report(json.dumps(report))
+    else:
+        # Write a human readable summary
+        print '------------------------------------------------------------';
+        for metric in sorted(metric_summaries.keys()):
+            summary = metric_summaries[metric]
+            print "#", summary['description']
+            print metric, ", ".join((str(x) for x in summary['values']))
+        print '------------------------------------------------------------';
+
+    return True
+
+def restore_gnome():
+    # Do imports lazily to save time and memory
+    import gio
+    import gconf
+
+    # We don't want to start the new gnome-panel in the current
+    # directory; $HOME is better for stuff launched from it
+    os.chdir(os.path.expanduser("~"))
+
+    def launch_component(gconf_path):
+        client = gconf.client_get_default()
+        component = client.get_string(gconf_path)
+
+        if component == None or component == "":
+            return False
+
+        # See gnome-session/gsm-util.c:gsm_util_find_desktop_file_for_app_name()
+        # The one difference is that we don't search the autostart directories,
+        # and just search normal application search path. (Gio doesnt' know
+        # how to search the autostart dirs, so we'd have to do that ourselves.)
+        appinfo = None
+        try:
+            appinfo = gio.unix.DesktopAppInfo(component + ".desktop")
+        except:
+            try:
+                appinfo = gio.unix.DesktopAppInfo("gnome-" + component + ".desktop")
+            except:
+                pass
+
+        if appinfo:
+            appinfo.launch()
+            return True
+        return False
+
+    # GNOME2 fallback
+    wm    = launch_component("/desktop/gnome/session/required_components/windowmanager")
+    panel = launch_component("/desktop/gnome/session/required_components/panel")
+
+    if not wm and not panel: # Probably GNOME3
+        subprocess.Popen(['gnome-shell'])
+
+# Main program
+
+parser = optparse.OptionParser()
+parser.add_option("-r", "--replace", action="store_true",
+                  help="Replace the running metacity/gnome-panel")
+parser.add_option("-g", "--debug", action="store_true",
+                  help="Run under a debugger")
+parser.add_option("", "--debug-command", metavar="COMMAND",
+                  help="Command to use for debugging (defaults to 'gdb --args')")
+parser.add_option("-v", "--verbose", action="store_true")
+parser.add_option("", "--sync", action="store_true")
+parser.add_option("", "--perf", metavar="PERF_MODULE",
+		  help="Specify the name of a performance module to run")
+parser.add_option("", "--perf-iters", type="int", metavar="ITERS",
+		  help="Numbers of iterations of performance module to run",
+                  default=1)
+parser.add_option("", "--perf-warmup", action="store_true",
+		  help="Run a dry run before performance tests")
+parser.add_option("", "--perf-output", metavar="OUTPUT_FILE",
+		  help="Output file to write performance report")
+parser.add_option("", "--perf-upload", action="store_true",
+		  help="Upload performance report to server")
+parser.add_option("", "--version", action="callback", callback=show_version,
+                  help="Display version and exit")
+
+options, args = parser.parse_args()
+
+if args:
+    parser.print_usage()
+    sys.exit(1)
+
+if options.perf and json is None:
+    print 'The Python simplejson module is required for performance tests'
+    sys.exit(1)
+
+# Handle ssh logins
+if 'DISPLAY' not in os.environ:
+    running_env = get_running_session_environs()
+    os.environ.update(running_env)
+
+if options.debug_command:
+    options.debug = True
+elif options.debug:
+    options.debug_command = "gdb --args"
+
+# We only respawn the previous environment on abnormal exit;
+# for a clean exit, we assume that gnome-shell was replaced with
+# something else.
+normal_exit = False
+
+try:
+    if options.perf:
+        normal_exit = run_performance_test()
+    else:
+        ensure_desktop_infrastructure_state()
+        normal_exit = run_shell()
+finally:
+    if options.replace and (options.perf or not normal_exit):
+        restore_gnome()
+
+if normal_exit:
+    sys.exit(0)
+else:
+    sys.exit(1)

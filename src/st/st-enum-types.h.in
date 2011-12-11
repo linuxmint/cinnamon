@@ -1,0 +1,29 @@
+/*** BEGIN file-header ***/
+#if !defined(ST_H_INSIDE) && !defined(ST_COMPILATION)
+#error "Only <st/st.h> can be included directly.h"
+#endif
+
+#ifndef __ST_ENUM_TYPES_H__
+#define __ST_ENUM_TYPES_H__
+
+#include <glib-object.h>
+
+G_BEGIN_DECLS
+
+/*** END file-header ***/
+
+/*** BEGIN file-production ***/
+/* enumerations from "@filename@" */
+/*** END file-production ***/
+
+/*** BEGIN file-tail ***/
+G_END_DECLS
+
+#endif /* !__ST_ENUM_TYPES_H__ */
+/*** END file-tail ***/
+
+/*** BEGIN value-header ***/
+GType @enum_name@_get_type (void) G_GNUC_CONST;
+#define ST_TYPE_@ENUMSHORT@ (@enum_name@_get_type())
+
+/*** END value-header ***/

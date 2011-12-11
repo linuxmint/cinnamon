@@ -1,0 +1,30 @@
+/*** BEGIN file-header ***/
+#include "st-enum-types.h"
+/*** END file-header ***/
+
+/*** BEGIN file-production ***/
+/* enumerations from "@filename@" */
+#include "@filename@"
+/*** END file-production ***/
+
+/*** BEGIN value-header ***/
+GType
+@enum_name@_get_type(void) {
+  static GType enum_type_id = 0;
+  if (G_UNLIKELY (!enum_type_id))
+    {
+      static const G@Type@Value values[] = {
+/*** END value-header ***/
+
+/*** BEGIN value-production ***/
+        { @VALUENAME@, "@VALUENAME@", "@valuenick@" },
+/*** END value-production ***/
+
+/*** BEGIN value-tail ***/
+        { 0, NULL, NULL }
+      };
+      enum_type_id = g_@type@_register_static (g_intern_static_string ("@EnumName@"), values);
+    }
+  return enum_type_id;
+}
+/*** END value-tail ***/

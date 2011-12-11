@@ -1,0 +1,1189 @@
+# Bengali (India) translation for gnome-shell.
+# Copyright (C) 2011 gnome-shell's COPYRIGHT HOLDER
+# This file is distributed under the same license as the gnome-shell package.
+#
+# , 2011.
+msgid ""
+msgstr ""
+"Project-Id-Version: gnome-shell master\n"
+"Report-Msgid-Bugs-To: http://bugzilla.gnome.org/enter_bug."
+"cgi?product=gnome-shell&keywords=I18N+L10N&component=general\n"
+"POT-Creation-Date: 2011-03-22 23:02+0000\n"
+"PO-Revision-Date: 2011-03-23 20:57+0530\n"
+"Last-Translator: \n"
+"Language-Team: Bengali (India) <bn_IN@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Lokalize 1.1\n"
+
+#: ../data/gnome-shell.desktop.in.in.h:1
+msgid "GNOME Shell"
+msgstr "GNOME Shell"
+
+#: ../data/gnome-shell.desktop.in.in.h:2
+msgid "Window management and application launching"
+msgstr "উইন্ডো পরিচালনা ও অ্যাপ্লিকেশন প্রারম্ভ"
+
+#: ../data/org.gnome.shell.gschema.xml.in.h:1
+msgid ""
+"Allows access to internal debugging and monitoring tools using the Alt-F2 "
+"dialog."
+msgstr ""
+"Alt-F2 ডায়লগের মাধ্যমে ডিবাগিং ও নিরীক্ষণের জন্য ব্যবহৃত অভ্যন্তরীণ সরঞ্জাম "
+"ব্যবহারের সুবিধা উপলব্ধ করা হবে।"
+
+#: ../data/org.gnome.shell.gschema.xml.in.h:2
+msgid "Enable internal tools useful for developers and testers from Alt-F2"
+msgstr ""
+"Alt-F2-র সাহায্যে ডিভেলর ও পরীক্ষকদের ব্যবহারযোগ্য সামগ্রী ব্যবহারের সুবিধা "
+"উপলব্ধ করা হবে"
+
+#: ../data/org.gnome.shell.gschema.xml.in.h:3
+msgid "File extension used for storing the screencast"
+msgstr "স্ক্রিন-কাস্ট সংরক্ষণের জন্য ব্যবহৃত ফাইল এক্সটেশন"
+
+#: ../data/org.gnome.shell.gschema.xml.in.h:4
+msgid "Framerate used for recording screencasts."
+msgstr "স্ক্রিন-কাস্ট রেকর্ড করার জন্য ব্যবহৃত ফ্রেমের হার"
+
+#: ../data/org.gnome.shell.gschema.xml.in.h:5
+msgid ""
+"GNOME Shell extensions have a uuid property; this key lists extensions which "
+"should not be loaded."
+msgstr ""
+"GNOME Shell এক্সটেনশনের ক্ষেত্রে uuid বৈশিষ্ট্য উপস্থিত রয়েছে; যে সমস্ত "
+"এক্সটেনশন লোড করা হবে না সেগুলি এই কি দ্বারা চিহ্নিত হবে।"
+
+#: ../data/org.gnome.shell.gschema.xml.in.h:6
+msgid "History for command (Alt-F2) dialog"
+msgstr "কমান্ড (Alt-F2) ডায়লগের পূর্ববর্তী তথ্য"
+
+#: ../data/org.gnome.shell.gschema.xml.in.h:7
+msgid "History for the looking glass dialog"
+msgstr "লুকিং-গ্লাস ডায়লগের পূর্ববর্তী  তথ্য"
+
+#: ../data/org.gnome.shell.gschema.xml.in.h:8
+msgid "If true, display date in the clock, in addition to time."
+msgstr "মান true(সত্য) হলে, ঘড়ির মধ্যে সময়ের সাথে তারিখ প্রদর্শন করা হবে।"
+
+#: ../data/org.gnome.shell.gschema.xml.in.h:9
+msgid "If true, display seconds in time."
+msgstr "মান true(সত্য) হলে, সময়ের ক্ষেত্রে সেকেন্ড প্রদর্শন করা হয়।"
+
+#: ../data/org.gnome.shell.gschema.xml.in.h:10
+msgid "If true, display the ISO week date in the calendar."
+msgstr ""
+"মান true(সত্য) হলে, বর্ষপঞ্জির মধ্যে ISO সপ্তাহের তারিখ প্রদর্শন করা হবে।"
+
+#: ../data/org.gnome.shell.gschema.xml.in.h:11
+msgid "List of desktop file IDs for favorite applications"
+msgstr "পছন্দসই অ্যাপ্লিকেশনগুলির জন্য ব্যবহৃত ডেস্কটপ ফাইলের ID"
+
+#: ../data/org.gnome.shell.gschema.xml.in.h:13
+#, no-c-format
+msgid ""
+"Sets the GStreamer pipeline used to encode recordings. It follows the syntax "
+"used for gst-launch. The pipeline should have an unconnected sink pad where "
+"the recorded video is recorded. It will normally have a unconnected source "
+"pad; output from that pad will be written into the output file. However the "
+"pipeline can also take care of its own output - this might be used to send "
+"the output to an icecast server via shout2send or similar. When unset or set "
+"to an empty value, the default pipeline will be used. This is currently "
+"'videorate ! vp8enc quality=10 speed=2 threads=%T ! queue ! webmmux' and "
+"records to WEBM using the VP8 codec. %T is used as a placeholder for a guess "
+"at the optimal thread count on the system."
+msgstr ""
+"রেকর্ডিং এনকোড করার জন্য ব্যবহারযোগ্য GStreamer পাইপ-লাইন নির্ধারণ করা হয়। "
+"gst-launch-এ ব্যবহৃত সিন্টেক্স ব্যবহার করা হয়। রেকর্ড করা ভিডিওটি রেকর্ড "
+"জন্য পাইপ-লাইনের মধ্যে একটি বিচ্ছিন্ন সিংক-প্যাড উপস্থিত থাকা আবশ্যক। "
+"সাধারণত একটি বিচ্ছিন্ন সিংক-প্যাড উপস্থিত থাকবে; এই প্যাড থেকে প্রাপ্ত "
+"আউটপুটটি আউটপুট ফাইলের মধ্যে লেখা হবে। পাইপ-লাইন দ্বারা নিজের আউটপুট "
+"ব্যবস্থাপনা করা হয় - এই বৈশিষ্ট্যের সাহায্যে আউটপুটটি shout2send-র মাধ্যমে "
+"icecast সার্ভারে পাঠানো যাবে অথবা সমতূল্য ব্যবস্থাপন করা যাবে। ফাঁকা মান "
+"নির্ধারিত হলে ডিফল্ট পাইপ-লাইন ব্যবহার করা হবে। বর্তমানে এটি  'videorate ! "
+"vp8enc quality=10 speed=2 threads=%T ! queue ! webmmux'  ও VP8 কোডেক সহ "
+"WEBM-এ রেকর্ড করা হয়। সিস্টেমের সর্বোত্তম অনুমিত থ্রেড সংখ্যা ধারণের  জন্য "
+"%T প্রয়োগ করা হয়।"
+
+#: ../data/org.gnome.shell.gschema.xml.in.h:14
+msgid "Show date in clock"
+msgstr "ঘড়ির মধ্যে তারিখ প্রদর্শন করা হবে"
+
+#: ../data/org.gnome.shell.gschema.xml.in.h:15
+msgid "Show the week date in the calendar"
+msgstr "বর্ষপঞ্জির মধ্যে সপ্তাহের তারিখ প্রদর্শন করা হবে"
+
+#: ../data/org.gnome.shell.gschema.xml.in.h:16
+msgid "Show time with seconds"
+msgstr "সেকেন্ড সহ সময় প্রদর্শন করা হবে"
+
+#: ../data/org.gnome.shell.gschema.xml.in.h:17
+msgid ""
+"The applications corresponding to these identifiers will be displayed in the "
+"favorites area."
+msgstr ""
+"এই আইডেন্টিফায়ার দ্বারা চিহ্নিত অ্যাপ্লিকেশনগুলি, পছন্দসই অ্যাপ্লিকেশনের "
+"অংশে প্রদর্শন  করা হবে।"
+
+#: ../data/org.gnome.shell.gschema.xml.in.h:18
+msgid ""
+"The filename for recorded screencasts will be a unique filename based on the "
+"current date, and use this extension. It should be changed when recording to "
+"a different container format."
+msgstr ""
+"রেকর্ড করার স্ক্রিন-কাস্টের ক্ষেত্রে ব্যবহারযোগ্য একটি স্বতন্ত্র ফাইলের নাম "
+"গঠন করা হবে বর্তমান তারিখ প্রয়োগ করে ও এর সাথে এই এক্সটেনশন প্রয়োগ করুন। "
+"ভিন্ন কনটেইনার বিন্যাসে রেকর্ড করার সময় এই এক্সটেনশন পরিবর্তন করা আবশ্যক।"
+
+#: ../data/org.gnome.shell.gschema.xml.in.h:19
+msgid ""
+"The framerate of the resulting screencast recordered by GNOME Shell's "
+"screencast recorder in frames-per-second."
+msgstr ""
+"GNOME Shell-র স্ক্রিন-কাস্ট রেকর্ডার সহযোগে রেকর্ড করার স্ক্রিন-কাস্টের "
+"ফ্রেমের হার, ফ্রেম/সেকেন্ড হিসাবে।"
+
+#: ../data/org.gnome.shell.gschema.xml.in.h:20
+msgid "The gstreamer pipeline used to encode the screencast"
+msgstr "স্ক্রিন-কাস্ট এনকোড করার জন্য ব্যবহৃত gstreamer পাইল-লাইন"
+
+#: ../data/org.gnome.shell.gschema.xml.in.h:21
+msgid ""
+"The shell normally monitors active applications in order to present the most "
+"used ones (e.g. in launchers). While this data will be kept private, you may "
+"want to disable this for privacy reasons. Please note that doing so won't "
+"remove already saved data."
+msgstr ""
+"সর্বাধিক ব্যবহৃত অ্যাপ্লিকেশনের তালিকা প্রদর্শনের জন্য shell দ্বারা সক্রিয় "
+"অ্যাপ্লিকেশনের নিরীক্ষণ করা হয় (উদাহরণস্বরূপ, লঞ্চারের মধ্যে)। এই তথ্য গোপন "
+"রাখা হলেও, অতিরিক্ত গোপনীয়তার জন্য এই বৈশিষ্ট্য নিষ্ক্রিয় করা যেতে পারে। "
+"উল্লেখ্য, নিষ্ক্রিয় করার ফলে পূর্বে সংরক্ষিত তথ্য মুছে ফেলা হবে না।"
+
+#: ../data/org.gnome.shell.gschema.xml.in.h:22
+msgid "Uuids of extensions to disable"
+msgstr "নিষ্ক্রিয় করার উদ্দেশ্যে চিহ্নিত এক্সটেনশনের uuid"
+
+#: ../data/org.gnome.shell.gschema.xml.in.h:23
+msgid "Whether to collect stats about applications usage"
+msgstr "অ্যাপ্লিকেশনের ব্যবহার সম্পর্কিত পরিসংখ্যান সংগ্রহ করা হবে কি না"
+
+#: ../data/org.gnome.shell.gschema.xml.in.h:24
+msgid "disabled OpenSearch providers"
+msgstr "নিষ্ক্রিয় OpenSearch উপলব্ধকারী"
+
+#: ../js/misc/util.js:71
+msgid "Command not found"
+msgstr "কমান্ড পাওয়া যায়নি"
+
+#. Replace "Error invoking GLib.shell_parse_argv: " with
+#. something nicer
+#: ../js/misc/util.js:98
+msgid "Could not parse command:"
+msgstr "কমান্ড পার্স করতে ব্যর্থ"
+
+#: ../js/misc/util.js:106
+#, c-format
+msgid "Execution of '%s' failed:"
+msgstr "'%s' সঞ্চালন করতে ব্যর্থ:"
+
+#. Translators: Filter to display all applications
+#: ../js/ui/appDisplay.js:230
+msgid "All"
+msgstr "সকল"
+
+#: ../js/ui/appDisplay.js:328
+msgid "APPLICATIONS"
+msgstr "APPLICATIONS"
+
+#: ../js/ui/appDisplay.js:354
+msgid "SETTINGS"
+msgstr "SETTINGS"
+
+#: ../js/ui/appDisplay.js:625
+msgid "New Window"
+msgstr "নতুন উইন্ডো"
+
+#: ../js/ui/appDisplay.js:628
+msgid "Remove from Favorites"
+msgstr "পছন্দের তালিকা থেকে সরিয়ে ফেলুন"
+
+#: ../js/ui/appDisplay.js:629
+msgid "Add to Favorites"
+msgstr "পছন্দের তালিকায় যোগ করুন"
+
+#: ../js/ui/appFavorites.js:91
+#, c-format
+msgid "%s has been added to your favorites."
+msgstr "আপনার পছন্দের তালিকার মধ্যে %s-কে যোগ করা হয়েছে"
+
+#: ../js/ui/appFavorites.js:122
+#, c-format
+msgid "%s has been removed from your favorites."
+msgstr "আপনার পছন্দের তালিকা থেকে %s-কে সরিয়ে ফেলা হয়েছে।"
+
+#. Translators: Shown in calendar event list for all day events
+#. * Keep it short, best if you can use less then 10 characters
+#.
+#: ../js/ui/calendar.js:66
+msgctxt "event list time"
+msgid "All Day"
+msgstr "সারাদিন"
+
+#. Translators: Shown in calendar event list, if 24h format
+#: ../js/ui/calendar.js:71
+msgctxt "event list time"
+msgid "%H:%M"
+msgstr "%H:%M"
+
+#. Transators: Shown in calendar event list, if 12h format
+#: ../js/ui/calendar.js:78
+msgctxt "event list time"
+msgid "%l:%M %p"
+msgstr "%l:%M %p"
+
+#. Translators: Calendar grid abbreviation for Sunday.
+#. *
+#. * NOTE: These grid abbreviations are always shown together
+#. * and in order, e.g. "S M T W T F S".
+#.
+#: ../js/ui/calendar.js:118
+msgctxt "grid sunday"
+msgid "S"
+msgstr "র"
+
+#. Translators: Calendar grid abbreviation for Monday
+#: ../js/ui/calendar.js:120
+msgctxt "grid monday"
+msgid "M"
+msgstr "সো"
+
+#. Translators: Calendar grid abbreviation for Tuesday
+#: ../js/ui/calendar.js:122
+msgctxt "grid tuesday"
+msgid "T"
+msgstr "ম"
+
+#. Translators: Calendar grid abbreviation for Wednesday
+#: ../js/ui/calendar.js:124
+msgctxt "grid wednesday"
+msgid "W"
+msgstr "বু"
+
+#. Translators: Calendar grid abbreviation for Thursday
+#: ../js/ui/calendar.js:126
+msgctxt "grid thursday"
+msgid "T"
+msgstr "বৃ"
+
+#. Translators: Calendar grid abbreviation for Friday
+#: ../js/ui/calendar.js:128
+msgctxt "grid friday"
+msgid "F"
+msgstr "শু"
+
+#. Translators: Calendar grid abbreviation for Saturday
+#: ../js/ui/calendar.js:130
+msgctxt "grid saturday"
+msgid "S"
+msgstr "শ"
+
+#. Translators: Event list abbreviation for Sunday.
+#. *
+#. * NOTE: These list abbreviations are normally not shown together
+#. * so they need to be unique (e.g. Tuesday and Thursday cannot
+#. * both be 'T').
+#.
+#: ../js/ui/calendar.js:143
+msgctxt "list sunday"
+msgid "Su"
+msgstr "রবি"
+
+#. Translators: Event list abbreviation for Monday
+#: ../js/ui/calendar.js:145
+msgctxt "list monday"
+msgid "M"
+msgstr "সো"
+
+#. Translators: Event list abbreviation for Tuesday
+#: ../js/ui/calendar.js:147
+msgctxt "list tuesday"
+msgid "T"
+msgstr "ম"
+
+#. Translators: Event list abbreviation for Wednesday
+#: ../js/ui/calendar.js:149
+msgctxt "list wednesday"
+msgid "W"
+msgstr "বু"
+
+#. Translators: Event list abbreviation for Thursday
+#: ../js/ui/calendar.js:151
+msgctxt "list thursday"
+msgid "Th"
+msgstr "বৃহ"
+
+#. Translators: Event list abbreviation for Friday
+#: ../js/ui/calendar.js:153
+msgctxt "list friday"
+msgid "F"
+msgstr "শু"
+
+#. Translators: Event list abbreviation for Saturday
+#: ../js/ui/calendar.js:155
+msgctxt "list saturday"
+msgid "S"
+msgstr "শ"
+
+#. Translators: Text to show if there are no events
+#: ../js/ui/calendar.js:704
+msgid "Nothing Scheduled"
+msgstr "কিছুই নির্ধারিত হয়নি"
+
+#. Translators: Shown on calendar heading when selected day occurs on current year
+#: ../js/ui/calendar.js:720
+msgctxt "calendar heading"
+msgid "%A, %B %d"
+msgstr "%A, %B %d"
+
+#. Translators: Shown on calendar heading when selected day occurs on different year
+#: ../js/ui/calendar.js:723
+msgctxt "calendar heading"
+msgid "%A, %B %d, %Y"
+msgstr "%A, %B %d, %Y"
+
+#: ../js/ui/calendar.js:733
+msgid "Today"
+msgstr "আজ"
+
+#: ../js/ui/calendar.js:737
+msgid "Tomorrow"
+msgstr "আগামীকাল"
+
+#: ../js/ui/calendar.js:746
+msgid "This week"
+msgstr "এই সপ্তাহ"
+
+#: ../js/ui/calendar.js:754
+msgid "Next week"
+msgstr "পরবর্তী সপ্তাহ"
+
+#: ../js/ui/dash.js:174 ../js/ui/messageTray.js:994
+msgid "Remove"
+msgstr "সরিয়ে ফেলুন"
+
+#: ../js/ui/dateMenu.js:91
+msgid "Date and Time Settings"
+msgstr "তারিখ ও সময় সংক্রান্ত বৈশিষ্ট্য"
+
+#: ../js/ui/dateMenu.js:111
+msgid "Open Calendar"
+msgstr "বর্ষপঞ্জি খুলুন"
+
+#. Translators: This is the time format with date used
+#. in 24-hour mode.
+#: ../js/ui/dateMenu.js:164
+msgid "%a %b %e, %R:%S"
+msgstr "%a %b %e, %R:%S"
+
+#: ../js/ui/dateMenu.js:165
+msgid "%a %b %e, %R"
+msgstr "%a %b %e, %R"
+
+#. Translators: This is the time format without date used
+#. in 24-hour mode.
+#: ../js/ui/dateMenu.js:169
+msgid "%a %R:%S"
+msgstr "%a %R:%S"
+
+#: ../js/ui/dateMenu.js:170
+msgid "%a %R"
+msgstr "%a %R"
+
+#. Translators: This is a time format with date used
+#. for AM/PM.
+#: ../js/ui/dateMenu.js:177
+msgid "%a %b %e, %l:%M:%S %p"
+msgstr "%a %b %e, %l:%M:%S %p"
+
+#: ../js/ui/dateMenu.js:178
+msgid "%a %b %e, %l:%M %p"
+msgstr "%a %b %e, %l:%M %p"
+
+#. Translators: This is a time format without date used
+#. for AM/PM.
+#: ../js/ui/dateMenu.js:182
+msgid "%a %l:%M:%S %p"
+msgstr "%a %l:%M:%S %p"
+
+#: ../js/ui/dateMenu.js:183
+msgid "%a %l:%M %p"
+msgstr "%a %l:%M %p"
+
+#. Translators: This is the date format to use when the calendar popup is
+#. * shown - it is shown just below the time in the shell (e.g. "Tue 9:29 AM").
+#.
+#: ../js/ui/dateMenu.js:194
+msgid "%A %B %e, %Y"
+msgstr "%A %B %e, %Y"
+
+#: ../js/ui/docDisplay.js:19
+msgid "RECENT ITEMS"
+msgstr "RECENT ITEMS"
+
+#: ../js/ui/endSessionDialog.js:63
+#, c-format
+msgid "Log Out %s"
+msgstr "%s প্রস্থান করুন"
+
+#: ../js/ui/endSessionDialog.js:64 ../js/ui/endSessionDialog.js:70
+msgid "Log Out"
+msgstr "প্রস্থান করুন"
+
+#: ../js/ui/endSessionDialog.js:65
+msgid "Click Log Out to quit these applications and log out of the system."
+msgstr ""
+"এই অ্যাপ্লিকেশনগুলি বন্ধ করে সিস্টেম থেকে লগ-আউট করার জন্য 'প্রস্থান করুন' "
+"ক্লিক করুন।"
+
+#: ../js/ui/endSessionDialog.js:66
+#, c-format
+msgid "%s will be logged out automatically in %d seconds."
+msgstr "%s-কে %d সেকেন্ডের পরে স্বয়ংক্রিয়ভাবে লগ-আউট করা হবে।"
+
+#: ../js/ui/endSessionDialog.js:67
+#, c-format
+msgid "You will be logged out automatically in %d seconds."
+msgstr "%d সেকেন্ডের পরে স্বয়ংক্রিয়ভাবে আপনাকে লগ-আউট করা হবে।"
+
+#: ../js/ui/endSessionDialog.js:68
+msgid "Logging out of the system."
+msgstr "সিস্টেম থেকে লগ-আউট করা হচ্ছে।"
+
+#: ../js/ui/endSessionDialog.js:75 ../js/ui/endSessionDialog.js:82
+msgid "Power Off"
+msgstr "বন্ধ করুন"
+
+#: ../js/ui/endSessionDialog.js:76
+msgid "Click Power Off to quit these applications and power off the system."
+msgstr ""
+"এই অ্যাপ্লিকেশনগুলি থেকে প্রস্থান করে সিস্টেম বন্ধ করার জন্য 'বন্ধ করুন' "
+"ক্লিক করুন।"
+
+#: ../js/ui/endSessionDialog.js:77
+#, c-format
+msgid "The system will power off automatically in %d seconds."
+msgstr "%d সেকেন্ডের পরে স্বয়ংক্রিয়ভাবে সিস্টেমটি বন্ধ করা হবে।"
+
+#: ../js/ui/endSessionDialog.js:78
+msgid "Powering off the system."
+msgstr "সিস্টেম বন্ধ করা হচ্ছে।"
+
+#: ../js/ui/endSessionDialog.js:80 ../js/ui/endSessionDialog.js:88
+#: ../js/ui/endSessionDialog.js:93
+msgid "Restart"
+msgstr "পুনরারম্ভ"
+
+#: ../js/ui/endSessionDialog.js:89
+msgid "Click Restart to quit these applications and restart the system."
+msgstr ""
+"এই অ্যাপ্লিকেশনগুলি থেকে প্রস্থান করে সিস্টেম পুনরায় আরম্ভ করার জন্য "
+"'পুনরারম্ভ' ক্লিক করুন।"
+
+#: ../js/ui/endSessionDialog.js:90
+#, c-format
+msgid "The system will restart automatically in %d seconds."
+msgstr "%d সেকেন্ডের পরে স্বয়ংক্রিয়ভাবে সিস্টেমটি পুনরায় আরম্ভ করা হবে।"
+
+#: ../js/ui/endSessionDialog.js:91
+msgid "Restarting the system."
+msgstr "সিস্টেম পুনরায় আরম্ভ করা হচ্ছে।"
+
+#: ../js/ui/endSessionDialog.js:415 ../js/ui/status/bluetooth.js:466
+msgid "Cancel"
+msgstr "বাতিল"
+
+#: ../js/ui/lookingGlass.js:588
+msgid "No extensions installed"
+msgstr "কোনো এক্সটেনশন ইনস্টল করা হয়নি"
+
+#: ../js/ui/lookingGlass.js:625
+msgid "Enabled"
+msgstr "সক্রিয়"
+
+#. translators:
+#. * The device has been disabled
+#: ../js/ui/lookingGlass.js:627 ../src/gvc/gvc-mixer-control.c:1091
+msgid "Disabled"
+msgstr "নিষ্ক্রিয়"
+
+#: ../js/ui/lookingGlass.js:629
+msgid "Error"
+msgstr "ত্রুটি"
+
+#: ../js/ui/lookingGlass.js:631
+msgid "Out of date"
+msgstr "মেয়াদ উত্তীর্ণ"
+
+#: ../js/ui/lookingGlass.js:656
+msgid "View Source"
+msgstr "উৎস প্রদর্শন"
+
+#: ../js/ui/lookingGlass.js:662
+msgid "Web Page"
+msgstr "ওয়েব পেজ"
+
+#: ../js/ui/messageTray.js:987
+msgid "Open"
+msgstr "খুলুন"
+
+#: ../js/ui/messageTray.js:2145
+msgid "System Information"
+msgstr "সিস্টেম সংক্রান্ত তথ্য"
+
+#: ../js/ui/overview.js:91
+msgid "Undo"
+msgstr "পূর্বাবস্থা"
+
+#: ../js/ui/overview.js:186
+msgid "Windows"
+msgstr "উইন্ডো"
+
+#: ../js/ui/overview.js:189
+msgid "Applications"
+msgstr "অ্যাপ্লিকেশন"
+
+#. Translators: this is the name of the dock/favorites area on
+#. the left of the overview
+#: ../js/ui/overview.js:205
+msgid "Dash"
+msgstr "ড্যাশ"
+
+#. TODO - _quit() doesn't really work on apps in state STARTING yet
+#: ../js/ui/panel.js:515
+#, c-format
+msgid "Quit %s"
+msgstr "%s থেকে প্রস্থান করুন"
+
+#. Button on the left side of the panel.
+#. Translators: If there is no suitable word for "Activities" in your language, you can use the word for "Overview".
+#: ../js/ui/panel.js:878
+msgid "Activities"
+msgstr "কর্ম"
+
+#: ../js/ui/panel.js:979
+msgid "Top Bar"
+msgstr "উপরের বার"
+
+#: ../js/ui/placeDisplay.js:122
+#, c-format
+msgid "Failed to unmount '%s'"
+msgstr "'%s' আন-মাউন্ট করতে ব্যর্থ"
+
+#: ../js/ui/placeDisplay.js:125
+msgid "Retry"
+msgstr "পুনঃপ্রচেষ্টা"
+
+#: ../js/ui/placeDisplay.js:165
+msgid "Connect to..."
+msgstr "চিহ্নিত বস্তুর সাথে সংযোগ স্থাপন করুন..."
+
+#: ../js/ui/placeDisplay.js:380
+msgid "PLACES & DEVICES"
+msgstr "PLACES & DEVICES"
+
+#. Translators: this MUST be either "toggle-switch-us"
+#. (for toggle switches containing the English words
+#. "ON" and "OFF") or "toggle-switch-intl" (for toggle
+#. switches containing "◯" and "|"). Other values will
+#. simply result in invisible toggle switches.
+#: ../js/ui/popupMenu.js:679
+msgid "toggle-switch-us"
+msgstr "toggle-switch-us"
+
+#: ../js/ui/runDialog.js:205
+msgid "Please enter a command:"
+msgstr "অনুগ্রহ করে একটি কমান্ড লিখুন:"
+
+#: ../js/ui/searchDisplay.js:310
+msgid "Searching..."
+msgstr "অনুসন্ধান করা হচ্ছে..."
+
+#: ../js/ui/searchDisplay.js:324
+msgid "No matching results."
+msgstr "কোনো মিল পাওয়া যায়নি।"
+
+#: ../js/ui/statusMenu.js:161 ../js/ui/statusMenu.js:228
+msgid "Power Off..."
+msgstr "বন্ধ করুন..."
+
+#: ../js/ui/statusMenu.js:163 ../js/ui/statusMenu.js:227
+msgid "Suspend"
+msgstr "স্থগিত করুন"
+
+#: ../js/ui/statusMenu.js:184
+msgid "Available"
+msgstr "উপলব্ধ"
+
+#: ../js/ui/statusMenu.js:189
+msgid "Busy"
+msgstr "ব্যস্ত"
+
+#: ../js/ui/statusMenu.js:197
+msgid "My Account"
+msgstr "আমার অ্যাকাউন্ট"
+
+#: ../js/ui/statusMenu.js:201
+msgid "System Settings"
+msgstr "সিস্টেমের বৈশিষ্ট্য"
+
+#: ../js/ui/statusMenu.js:208
+msgid "Lock Screen"
+msgstr "পর্দা লক করুন"
+
+#: ../js/ui/statusMenu.js:213
+msgid "Switch User"
+msgstr "ব্যবহারকারী পরিবর্তন"
+
+#: ../js/ui/statusMenu.js:218
+msgid "Log Out..."
+msgstr "প্রস্থান..."
+
+#: ../js/ui/status/accessibility.js:62
+msgid "Zoom"
+msgstr "বড় মাপে প্রদর্শন"
+
+#. let screenReader = this._buildItem(_("Screen Reader"), APPLICATIONS_SCHEMA,
+#. 'screen-reader-enabled');
+#. this.menu.addMenuItem(screenReader);
+#. let screenKeyboard = this._buildItem(_("Screen Keyboard"), APPLICATIONS_SCHEMA,
+#. 'screen-keyboard-enabled');
+#. this.menu.addMenuItem(screenKeyboard);
+#: ../js/ui/status/accessibility.js:77
+msgid "Visual Alerts"
+msgstr "দৃশ্যমান সূচনা"
+
+#: ../js/ui/status/accessibility.js:80
+msgid "Sticky Keys"
+msgstr "স্টিকি-কি"
+
+#: ../js/ui/status/accessibility.js:83
+msgid "Slow Keys"
+msgstr "ধীর-কি"
+
+#: ../js/ui/status/accessibility.js:86
+msgid "Bounce Keys"
+msgstr "বাউন্স-কি"
+
+#: ../js/ui/status/accessibility.js:89
+msgid "Mouse Keys"
+msgstr "মাউস-কি"
+
+#: ../js/ui/status/accessibility.js:93
+msgid "Universal Access Settings"
+msgstr "সার্বজনীন ব্যবহারের বৈশিষ্ট্য"
+
+#: ../js/ui/status/accessibility.js:146
+msgid "High Contrast"
+msgstr "উচ্চ মাত্রার বৈপরিত্য"
+
+#: ../js/ui/status/accessibility.js:183
+msgid "Large Text"
+msgstr "বড় মাপের হরফ"
+
+#: ../js/ui/status/bluetooth.js:42 ../js/ui/status/bluetooth.js:237
+#: ../js/ui/status/bluetooth.js:333 ../js/ui/status/bluetooth.js:367
+#: ../js/ui/status/bluetooth.js:407 ../js/ui/status/bluetooth.js:440
+msgid "Bluetooth"
+msgstr "ব্লু-টুথ"
+
+#: ../js/ui/status/bluetooth.js:55
+msgid "Visibility"
+msgstr "দৃশ্যমান"
+
+#: ../js/ui/status/bluetooth.js:69
+msgid "Send Files to Device..."
+msgstr "ডিভাইসের মধ্যে ফাইল পাঠান..."
+
+#: ../js/ui/status/bluetooth.js:70
+msgid "Setup a New Device..."
+msgstr "নতুন ডিভাইস প্রস্তুত করুন..."
+
+#: ../js/ui/status/bluetooth.js:95
+msgid "Bluetooth Settings"
+msgstr "ব্লু-টুথ সংক্রান্ত বৈশিষ্ট্য"
+
+#: ../js/ui/status/bluetooth.js:188
+msgid "Connection"
+msgstr "সংযোগ"
+
+#: ../js/ui/status/bluetooth.js:224
+msgid "Send Files..."
+msgstr "ফাইল পাঠিয়ে দিন..."
+
+#: ../js/ui/status/bluetooth.js:229
+msgid "Browse Files..."
+msgstr "ফাইল ব্রাউজ করুন..."
+
+#: ../js/ui/status/bluetooth.js:238
+msgid "Error browsing device"
+msgstr "ডিভাইস ব্রাউজ করতে ত্রুটি"
+
+#: ../js/ui/status/bluetooth.js:239
+#, c-format
+msgid "The requested device cannot be browsed, error is '%s'"
+msgstr "অনুরোধ করা ডিভাইসটি ব্রাউজ করা যায়নি, '%s' ত্রুটি দেখা দিয়েছে"
+
+#: ../js/ui/status/bluetooth.js:247
+msgid "Keyboard Settings"
+msgstr "কি-বোর্ড সংক্রান্ত বৈশিষ্ট্য"
+
+#: ../js/ui/status/bluetooth.js:252
+msgid "Mouse Settings"
+msgstr "মাউস সংক্রান্ত বৈশিষ্ট্য"
+
+#: ../js/ui/status/bluetooth.js:259 ../js/ui/status/volume.js:66
+msgid "Sound Settings"
+msgstr "শব্দ সংক্রান্ত বৈশিষ্ট্য"
+
+#: ../js/ui/status/bluetooth.js:368
+#, c-format
+msgid "Authorization request from %s"
+msgstr "%s থেকে প্রাপ্র অনুমোদনের অনুরোধ"
+
+#: ../js/ui/status/bluetooth.js:374
+#, c-format
+msgid "Device %s wants access to the service '%s'"
+msgstr "%s ডিভাইস দ্বারা '%s' পরিসেবা ব্যবহারের অনুরোধ করা হচ্ছে"
+
+#: ../js/ui/status/bluetooth.js:376
+msgid "Always grant access"
+msgstr "সর্বদা অনুমতি প্রদান করা হবে"
+
+#: ../js/ui/status/bluetooth.js:377
+msgid "Grant this time only"
+msgstr "শুধুমাত্র এইবার প্রদান করা হবে"
+
+#: ../js/ui/status/bluetooth.js:378
+msgid "Reject"
+msgstr "প্রত্যাখ্যান করুন"
+
+#: ../js/ui/status/bluetooth.js:408
+#, c-format
+msgid "Pairing confirmation for %s"
+msgstr "%s-র জন্য জুটি নির্মাণের নিশ্চিতি"
+
+#: ../js/ui/status/bluetooth.js:414 ../js/ui/status/bluetooth.js:448
+#, c-format
+msgid "Device %s wants to pair with this computer"
+msgstr "%s ডিভাইসটি এই কম্পিউটারের সাথে "
+
+#: ../js/ui/status/bluetooth.js:415
+#, c-format
+msgid "Please confirm whether the PIN '%s' matches the one on the device."
+msgstr "PIN '%s'-টি এই ডিভাইসের সাথে মিলছে কি না তা নিশ্চিত করুন।"
+
+#: ../js/ui/status/bluetooth.js:417
+msgid "Matches"
+msgstr "মিল পাওয়া গিয়েছে"
+
+#: ../js/ui/status/bluetooth.js:418
+msgid "Does not match"
+msgstr "মিল পাওয়া যায়নি"
+
+#: ../js/ui/status/bluetooth.js:441
+#, c-format
+msgid "Pairing request for %s"
+msgstr "%s-র জন্য জুটি তৈরির অনুরোধ"
+
+#: ../js/ui/status/bluetooth.js:449
+msgid "Please enter the PIN mentioned on the device."
+msgstr "অনুগ্রহ করে ডিভাইসে উল্লিখি PIN লিখুন।"
+
+#: ../js/ui/status/bluetooth.js:465
+msgid "OK"
+msgstr "OK"
+
+#: ../js/ui/status/keyboard.js:73
+msgid "Show Keyboard Layout..."
+msgstr "কি-বোর্ড বিন্যাস প্রদর্শন করা হবে..."
+
+#: ../js/ui/status/keyboard.js:76
+msgid "Localization Settings"
+msgstr "স্থানীয়করণ সংক্রান্ত বৈশিষ্ট্য"
+
+#: ../js/ui/status/network.js:102 ../js/ui/status/network.js:1393
+msgid "<unknown>"
+msgstr "<unknown>"
+
+#. Translators: this indicates that wireless or wwan is disabled by hardware killswitch
+#: ../js/ui/status/network.js:295
+msgid "disabled"
+msgstr "নিষ্ক্রিয়"
+
+#: ../js/ui/status/network.js:476
+msgid "connecting..."
+msgstr "সংযোগ করা হচ্ছে..."
+
+#. Translators: this is for network connections that require some kind of key or password
+#: ../js/ui/status/network.js:479
+msgid "authentication required"
+msgstr "অনুমোদন প্রয়োজন"
+
+#. Translators: this is for wired network devices that are physically disconnected
+#: ../js/ui/status/network.js:485
+msgid "cable unplugged"
+msgstr "কেবল বিচ্ছিন্ন করা হয়েছে"
+
+#. Translators: this is for a network device that cannot be activated (for example it
+#. is disabled by rfkill, or it has no coverage
+#: ../js/ui/status/network.js:489
+msgid "unavailable"
+msgstr "উপলব্ধ নয়"
+
+#: ../js/ui/status/network.js:491
+msgid "connection failed"
+msgstr "সংযোগ বিফল"
+
+#. TRANSLATORS: this is the indication that a connection for another logged in user is active,
+#. and we cannot access its settings (including the name)
+#: ../js/ui/status/network.js:571 ../js/ui/status/network.js:1341
+msgid "Connected (private)"
+msgstr "সংযুক্ত (ব্যক্তিগত)"
+
+#: ../js/ui/status/network.js:636
+msgid "Auto Ethernet"
+msgstr "স্বয়ংক্রিয় ইথারনেট"
+
+#: ../js/ui/status/network.js:697
+msgid "Auto broadband"
+msgstr "স্বয়ংক্রিয় ব্রডব্যান্ড"
+
+#: ../js/ui/status/network.js:700
+msgid "Auto dial-up"
+msgstr "স্বয়ংক্রিয় ডায়াল-আপ"
+
+#. TRANSLATORS: this the automatic wireless connection name (including the network name)
+#: ../js/ui/status/network.js:843 ../js/ui/status/network.js:1353
+#, c-format
+msgid "Auto %s"
+msgstr "স্বয়ংক্রিয় %s"
+
+#: ../js/ui/status/network.js:845
+msgid "Auto bluetooth"
+msgstr "স্বয়ংক্রিয় ব্লু-টুথ"
+
+#: ../js/ui/status/network.js:1355
+msgid "Auto wireless"
+msgstr "স্বয়ংক্রিয় বেতার"
+
+#: ../js/ui/status/network.js:1413
+msgid "More..."
+msgstr "অতিরিক্ত..."
+
+#: ../js/ui/status/network.js:1436
+msgid "Enable networking"
+msgstr "নেটওয়ার্ক সক্রিয় করুন"
+
+#: ../js/ui/status/network.js:1448
+msgid "Wired"
+msgstr "তারযুক্ত"
+
+#: ../js/ui/status/network.js:1459
+msgid "Wireless"
+msgstr "বেতার"
+
+#: ../js/ui/status/network.js:1469
+msgid "Mobile broadband"
+msgstr "মোবাইল ব্রড-ব্যান্ড"
+
+#: ../js/ui/status/network.js:1479
+msgid "VPN Connections"
+msgstr "VPN সংযোগ"
+
+#: ../js/ui/status/network.js:1488
+msgid "Network Settings"
+msgstr "নেটওয়ার্ক সংক্রান্ত বৈশিষ্ট্য"
+
+#: ../js/ui/status/network.js:1783
+#, c-format
+msgid "You're now connected to mobile broadband connection '%s'"
+msgstr "মোবাইল ব্রড-ব্যান্ড সংযোগ '%s' বর্তমানে সক্রিয়"
+
+#: ../js/ui/status/network.js:1787
+#, c-format
+msgid "You're now connected to wireless network '%s'"
+msgstr "বেতার নেটওয়ার্ক সংযোগ '%s' বর্তমানে সক্রিয়"
+
+#: ../js/ui/status/network.js:1791
+#, c-format
+msgid "You're now connected to wired network '%s'"
+msgstr "তারযুক্ত নেটওয়ার্ক সংযোগ '%s' বর্তমানে সক্রিয়"
+
+#: ../js/ui/status/network.js:1795
+#, c-format
+msgid "You're now connected to VPN network '%s'"
+msgstr "VPN নেটওয়ার্ক সংযোগ '%s' বর্তমানে সক্রিয়"
+
+#: ../js/ui/status/network.js:1800
+#, c-format
+msgid "You're now connected to '%s'"
+msgstr "'%s' সংযোগ বর্তমানে সক্রিয়"
+
+#: ../js/ui/status/network.js:1808
+msgid "Connection established"
+msgstr "সংযোগ স্থাপিত হয়েছে"
+
+#: ../js/ui/status/network.js:1930
+msgid "Networking is disabled"
+msgstr "নেটওয়ার্ক নিষ্ক্রিয় রয়েছে"
+
+#: ../js/ui/status/network.js:2055
+msgid "Network Manager"
+msgstr "Network Manager"
+
+#: ../js/ui/status/power.js:85
+msgid "Power Settings"
+msgstr "বিদ্যুৎ পরিচালনা সংক্রান্ত বৈশিষ্ট্য"
+
+#. 0 is reported when UPower does not have enough data
+#. to estimate battery life
+#: ../js/ui/status/power.js:111
+msgid "Estimating..."
+msgstr "গণনা করা হচ্ছে..."
+
+#: ../js/ui/status/power.js:118
+#, c-format
+msgid "%d hour remaining"
+msgid_plural "%d hours remaining"
+msgstr[0] "%d ঘন্টা অবশিষ্ট"
+msgstr[1] "%d ঘন্টা অবশিষ্ট"
+
+#. TRANSLATORS: this is a time string, as in "%d hours %d minutes remaining"
+#: ../js/ui/status/power.js:121
+#, c-format
+msgid "%d %s %d %s remaining"
+msgstr "%d %s %d %s অবশিষ্ট"
+
+#: ../js/ui/status/power.js:123
+msgid "hour"
+msgid_plural "hours"
+msgstr[0] "ঘন্টা"
+msgstr[1] "ঘন্টা"
+
+#: ../js/ui/status/power.js:123
+msgid "minute"
+msgid_plural "minutes"
+msgstr[0] "মিনিট"
+msgstr[1] "মিনিট"
+
+#: ../js/ui/status/power.js:126
+#, c-format
+msgid "%d minute remaining"
+msgid_plural "%d minutes remaining"
+msgstr[0] "%d মিনিট অবশিষ্ট"
+msgstr[1] "%d মিনিট অবশিষ্ট"
+
+#: ../js/ui/status/power.js:228
+msgid "AC adapter"
+msgstr "AC অ্যাডাপ্টার"
+
+#: ../js/ui/status/power.js:230
+msgid "Laptop battery"
+msgstr "ল্যাপটপ ব্যাটারি"
+
+#: ../js/ui/status/power.js:232
+msgid "UPS"
+msgstr "UPS"
+
+#: ../js/ui/status/power.js:234
+msgid "Monitor"
+msgstr "মনিটর"
+
+#: ../js/ui/status/power.js:236
+msgid "Mouse"
+msgstr "মাউস"
+
+#: ../js/ui/status/power.js:238
+msgid "Keyboard"
+msgstr "কি-বোর্ড"
+
+#: ../js/ui/status/power.js:240
+msgid "PDA"
+msgstr "PDA"
+
+#: ../js/ui/status/power.js:242
+msgid "Cell phone"
+msgstr "সেল ফোন"
+
+#: ../js/ui/status/power.js:244
+msgid "Media player"
+msgstr "মিডিয়া প্লেয়ার"
+
+#: ../js/ui/status/power.js:246
+msgid "Tablet"
+msgstr "ট্যাবলেট"
+
+#: ../js/ui/status/power.js:248
+msgid "Computer"
+msgstr "কম্পিউটার"
+
+#: ../js/ui/status/power.js:250 ../src/shell-app-system.c:1088
+msgid "Unknown"
+msgstr "অজানা"
+
+#: ../js/ui/status/volume.js:45
+msgid "Volume"
+msgstr "ভলিউম"
+
+#: ../js/ui/status/volume.js:58
+msgid "Microphone"
+msgstr "মাইক্রোফোন"
+
+#: ../js/ui/telepathyClient.js:332
+#, c-format
+msgid "%s is online."
+msgstr "%s বর্তমানে অন-লাইন।"
+
+#: ../js/ui/telepathyClient.js:337
+#, c-format
+msgid "%s is offline."
+msgstr "%s বর্তমানে অফ-লাইন"
+
+#: ../js/ui/telepathyClient.js:340
+#, c-format
+msgid "%s is away."
+msgstr "%s বর্তমানে অনুপস্থিত।"
+
+#: ../js/ui/telepathyClient.js:343
+#, c-format
+msgid "%s is busy."
+msgstr "%s বর্তমানে ব্যস্ত।"
+
+#. Translators: this is a time format string followed by a date.
+#. If applicable, replace %X with a strftime format valid for your
+#. locale, without seconds.
+#: ../js/ui/telepathyClient.js:474
+#, no-c-format
+msgid "Sent at %X on %A"
+msgstr "%X-এ %A-র মধ্যে পাঠানো হয়েছে"
+
+#. Translators: this is the text displayed
+#. in the search entry when no search is
+#. active; it should not exceed ~30
+#. characters.
+#: ../js/ui/viewSelector.js:122
+msgid "Type to search..."
+msgstr "অনুসন্ধান করার জন্য লিখুন..."
+
+#: ../js/ui/viewSelector.js:142 ../src/shell-util.c:250
+msgid "Search"
+msgstr "অনুসন্ধান করুন"
+
+#: ../js/ui/windowAttentionHandler.js:42
+#, c-format
+msgid "%s has finished starting"
+msgstr "%s আরম্ভ হয়েছে"
+
+#: ../js/ui/windowAttentionHandler.js:44
+#, c-format
+msgid "'%s' is ready"
+msgstr "'%s' প্রস্তুত"
+
+#. translators:
+#. * The number of sound outputs on a particular device
+#: ../src/gvc/gvc-mixer-control.c:1098
+#, c-format
+msgid "%u Output"
+msgid_plural "%u Outputs"
+msgstr[0] "%u আউটপুট"
+msgstr[1] "%u আউটপুট"
+
+#. translators:
+#. * The number of sound inputs on a particular device
+#: ../src/gvc/gvc-mixer-control.c:1108
+#, c-format
+msgid "%u Input"
+msgid_plural "%u Inputs"
+msgstr[0] "%u ইনপুট"
+msgstr[1] "%u ইনপুট"
+
+#: ../src/gvc/gvc-mixer-control.c:1406
+msgid "System Sounds"
+msgstr "সিস্টেমের শব্দ"
+
+#: ../src/main.c:438
+msgid "Print version"
+msgstr "সংস্করণ প্রদর্শন করা হবে"
+
+#: ../src/shell-app.c:454
+#, c-format
+msgid "Failed to launch '%s'"
+msgstr "'%s' আরম্ভ করতে ব্যর্থ"
+
+#: ../src/shell-global.c:1395
+msgid "Less than a minute ago"
+msgstr "এক মিনিটের কম সময় পূর্বে"
+
+#: ../src/shell-global.c:1399
+#, c-format
+msgid "%d minute ago"
+msgid_plural "%d minutes ago"
+msgstr[0] "%d মিনিট পূর্বে"
+msgstr[1] "%d মিনিট পূর্বে"
+
+#: ../src/shell-global.c:1404
+#, c-format
+msgid "%d hour ago"
+msgid_plural "%d hours ago"
+msgstr[0] "%d ঘন্টা পূর্বে"
+msgstr[1] "%d ঘন্টা পূর্বে"
+
+#: ../src/shell-global.c:1409
+#, c-format
+msgid "%d day ago"
+msgid_plural "%d days ago"
+msgstr[0] "%d দিন পূর্বে"
+msgstr[1] "%d দিন পূর্বে"
+
+#: ../src/shell-global.c:1414
+#, c-format
+msgid "%d week ago"
+msgid_plural "%d weeks ago"
+msgstr[0] "%d সপ্তাহ পূর্বে"
+msgstr[1] "%d সপ্তাহ পূর্বে"
+
+#: ../src/shell-mobile-providers.c:80
+msgid "United Kingdom"
+msgstr "যুক্তরাজ্য"
+
+#: ../src/shell-mobile-providers.c:526
+msgid "Default"
+msgstr "ডিফল্ট"
+
+#: ../src/shell-polkit-authentication-agent.c:334
+msgid "Authentication dialog was dismissed by the user"
+msgstr "ব্যবহারকারী দ্বারা অনুমোদনের ডায়লগ বাতিল করা হয়েছে"
+
+#: ../src/shell-util.c:89
+msgid "Home Folder"
+msgstr "ব্যক্তিগত ফোল্ডার"
+
+#. Translators: this is the same string as the one found in
+#. * nautilus
+#: ../src/shell-util.c:104
+msgid "File System"
+msgstr "ফাইল-সিস্টেম"
+
+#. Translators: the first string is the name of a gvfs
+#. * method, and the second string is a path. For
+#. * example, "Trash: some-directory". It means that the
+#. * directory called "some-directory" is in the trash.
+#.
+#: ../src/shell-util.c:300
+#, c-format
+msgid "%1$s: %2$s"
+msgstr "%1$s: %2$s"
+
+

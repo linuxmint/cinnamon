@@ -1,0 +1,16 @@
+[Desktop Entry]
+Type=Application
+_Name=GNOME Shell
+_Comment=Window management and application launching
+Exec=@bindir@/gnome-shell
+X-GNOME-Bugzilla-Bugzilla=GNOME
+X-GNOME-Bugzilla-Product=gnome-shell
+X-GNOME-Bugzilla-Component=general
+X-GNOME-Bugzilla-Version=@VERSION@
+Categories=GNOME;GTK;Core;
+OnlyShowIn=GNOME;
+NoDisplay=true
+X-GNOME-Autostart-Phase=WindowManager
+X-GNOME-Provides=panel;windowmanager;
+X-GNOME-Autostart-Notify=true
+X-GNOME-AutoRestart=true

@@ -1,0 +1,52 @@
+This package was debianized by Sebastien Bacher <seb128@ubuntu.com> on
+Wed, 01 Jul 2009 23:29:31 +0200.
+
+It was downloaded from http://ftp.gnome.org/pub/GNOME/sources/gnome-shell/2.28/
+
+Upstream Authors:
+
+         Colin Walters
+         Dan Winship
+         Marina Zhurakhinskaya
+         Owen Taylor
+         William Jon McCann
+
+Files: src/*
+       js/*
+Copyright: © 2000 Helix Code, Inc.
+           © 2000,2001 Eazel, Inc.
+           © 2001 George Lebl
+           © 2002 Sun Microsystems Inc.
+           © 2004-2005 James M. Cape <jcape@ignore-your.tv>
+           © 2006-2008 Red Hat, Inc.
+           © 2007 Ryan Lortie
+           © 2008 Intel Corp.
+License: GPL-2+ (/usr/share/common-licenses/GPL-2)
+
+Files: src/gdmuser/*
+Copyright: © 2007-2008 William Jon McCann <mccann@jhu.edu>
+           © 2004-2005 James M. Cape <jcape@ignore-your.tv>
+License: LGPL-2+ (/usr/share/common-licenses/LGPL-2)
+
+Files: src/tray/*
+Copyright: © 2002 Anders Carlsson <andersca@gnu.org>
+           © 2003-2006 Vincent Untz
+           © 2008 Red Hat, Inc.
+
+Files: src/big/*
+Copyright: © 2005-2008 Red Hat, Inc.
+           © 2008-2009 litl, LLC
+
+Files: src/st/*
+Copyright: © 2008 OpenedHand
+           © 2009 Intel Corporation.
+           © 2003-2004 Dodji Seketeli
+License: LGPL-2.1 (/usr/share/common-licenses/LGPL-2.1)
+
+The Debian packaging is:
+
+    Copyright © 2009 Sebastien Bacher <seb128@ubuntu.com>
+    Copyright © 2009 Collabora Ltd.
+
+and is licensed under the GPL version 3,
+see `/usr/share/common-licenses/GPL-3'.

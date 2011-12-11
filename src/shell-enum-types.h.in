@@ -1,0 +1,25 @@
+/*** BEGIN file-header ***/
+#ifndef __SHELL_ENUM_TYPES_H__
+#define __SHELL_ENUM_TYPES_H__
+
+#include <glib-object.h>
+
+G_BEGIN_DECLS
+
+/*** END file-header ***/
+
+/*** BEGIN file-production ***/
+/* enumerations from "@filename@" */
+/*** END file-production ***/
+
+/*** BEGIN file-tail ***/
+G_END_DECLS
+
+#endif /* !__SHELL_ENUM_TYPES_H__ */
+/*** END file-tail ***/
+
+/*** BEGIN value-header ***/
+GType @enum_name@_get_type (void) G_GNUC_CONST;
+#define SHELL_TYPE_@ENUMSHORT@ (@enum_name@_get_type())
+
+/*** END value-header ***/

@@ -1,0 +1,24 @@
+service_in_files += hotplug-sniffer/org.gnome.Shell.HotplugSniffer.service.in
+
+libexec_PROGRAMS += gnome-shell-hotplug-sniffer
+
+gnome_shell_hotplug_sniffer_SOURCES =								\
+	hotplug-sniffer/hotplug-mimetypes.h \
+	hotplug-sniffer/shell-mime-sniffer.h \
+	hotplug-sniffer/shell-mime-sniffer.c \
+	hotplug-sniffer/hotplug-sniffer.c \
+	$(NULL)
+
+gnome_shell_hotplug_sniffer_CFLAGS =		\
+	-I$(top_srcdir)/src			\
+	-DG_DISABLE_DEPRECATED			\
+	$(SHELL_HOTPLUG_SNIFFER_CFLAGS)		\
+	$(NULL)
+
+gnome_shell_hotplug_sniffer_LDFLAGS =		\
+	$(SHELL_HOTPLUG_SNIFFER_LIBS)		\
+	$(NULL)
+
+EXTRA_DIST += 							  \
+	hotplug-sniffer/org.gnome.Shell.HotplugSniffer.service.in \
+	$(NULL)

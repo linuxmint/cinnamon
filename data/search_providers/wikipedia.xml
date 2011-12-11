@@ -1,0 +1,44 @@
+<OpenSearchDescription xmlns="http://a9.com/-/spec/opensearch/1.1/">
+<ShortName>Wikipedia</ShortName>
+<Description>Wikipedia, the free encyclopedia</Description>
+<InputEncoding>UTF-8</InputEncoding>
+<Image width="16" height="16">data:image/x-icon;base64,AAABAAEAEBAQAAEABAAoAQAAFgAAACgAAAAQAAAAIAAAAAEABAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAEAgQAhIOEAMjHyABIR0gA6ejpAGlqaQCpqKkAKCgoAPz9%2FAAZGBkAmJiYANjZ2ABXWFcAent6ALm6uQA8OjwAiIiIiIiIiIiIiI4oiL6IiIiIgzuIV4iIiIhndo53KIiIiB%2FWvXoYiIiIfEZfWBSIiIEGi%2FfoqoiIgzuL84i9iIjpGIoMiEHoiMkos3FojmiLlUipYliEWIF%2BiDe0GoRa7D6GPbjcu1yIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA</Image>
+<Url type="text/html" method="GET" template="http://{language}.wikipedia.org/wiki/Special:Search?search={searchTerms}"/>
+<!-- The criterion for being below is being listed with more than 100,000
+articles on http://meta.wikimedia.org/wiki/List_of_Wikipedias -->
+<Language>ar</Language>
+<Language>bg</Language>
+<Language>ca</Language>
+<Language>cs</Language>
+<Language>da</Language>
+<Language>de</Language>
+<Language>en</Language>
+<Language>eo</Language>
+<Language>es</Language>
+<Language>fa</Language>
+<Language>fi</Language>
+<Language>fr</Language>
+<Language>he</Language>
+<Language>hu</Language>
+<Language>id</Language>
+<Language>it</Language>
+<Language>ja</Language>
+<Language>ko</Language>
+<Language>lt</Language>
+<Language>nl</Language>
+<Language>no</Language>
+<Language>pl</Language>
+<Language>pt</Language>
+<Language>ro</Language>
+<Language>ru</Language>
+<Language>sk</Language>
+<Language>sl</Language>
+<Language>sr</Language>
+<Language>sv</Language>
+<Language>tr</Language>
+<Language>uk</Language>
+<Language>vi</Language>
+<Language>vo</Language>
+<Language>war</Language>
+<Language>zh</Language>
+</OpenSearchDescription>

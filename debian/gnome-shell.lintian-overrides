@@ -1,0 +1,4 @@
+# It's the only way we have to let gnome-shell find the private library it
+# links against through libgnome-shell.so
+gnome-shell: binary-or-shlib-defines-rpath usr/bin/gnome-shell /usr/lib/gnome-bluetooth
+gnome-shell: binary-or-shlib-defines-rpath ./usr/bin/gnome-shell /usr/lib/gnome-bluetooth
