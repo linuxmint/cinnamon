@@ -74,26 +74,12 @@ DateMenuButton.prototype = {
         this._date = new St.Label();
         this._date.style_class = 'datemenu-date-label';
         vbox.add(this._date);
-
-        if (params.showEvents) {
-            this._eventSource = new Calendar.DBusEventSource();
-            this._eventList = new Calendar.EventsList(this._eventSource);
-        } else {
-            this._eventSource = null;
-            this._eventList = null;
-        }
+       
+        this._eventSource = null;
+        this._eventList = null;
 
         // Calendar
-        this._calendar = new Calendar.Calendar(this._eventSource);
-
-        this._calendar.connect('selected-date-changed',
-                               Lang.bind(this, function(calendar, date) {
-                                  // we know this._eventList is defined here, because selected-data-changed
-                                  // only gets emitted when the user clicks a date in the calendar,
-                                  // and the calender makes those dates unclickable when instantiated with
-                                  // a null event source
-                                   this._eventList.setDate(date);
-                               }));
+        this._calendar = new Calendar.Calendar(this._eventSource);       
         vbox.add(this._calendar.actor);
 
         item = this.menu.addSettingsAction(_("Date and Time Settings"), 'gnome-datetime-panel.desktop');
@@ -104,28 +90,6 @@ DateMenuButton.prototype = {
 
             item.actor.can_focus = false;
             item.actor.reparent(vbox);
-        }
-
-        if (params.showEvents) {
-            // Add vertical separator
-
-            item = new St.DrawingArea({ style_class: 'calendar-vertical-separator',
-                                        pseudo_class: 'highlighted' });
-            item.connect('repaint', Lang.bind(this, _onVertSepRepaint));
-            hbox.add(item);
-
-            // Fill up the second column
-            vbox = new St.BoxLayout({name:     'calendarEventsArea',
-                                     vertical: true});
-            hbox.add(vbox, { expand: true });
-
-            // Event list
-            vbox.add(this._eventList.actor, { expand: true });
-
-            item = new PopupMenu.PopupMenuItem(_("Open Calendar"));
-            item.connect('activate', Lang.bind(this, this._onOpenCalendarActivate));
-            item.actor.can_focus = false;
-            vbox.add(item.actor, {y_align: St.Align.END, expand: true, y_fill: false});
         }
 
         // Whenever the menu is opened, select today
@@ -217,26 +181,4 @@ DateMenuButton.prototype = {
         return false;
     },
 
-    _onOpenCalendarActivate: function() {
-        this.menu.close();
-        let calendarSettings = new Gio.Settings({ schema: 'org.gnome.desktop.default-applications.office.calendar' });
-        let tool = calendarSettings.get_string('exec');
-        if (tool.length == 0 || tool == 'evolution') {
-            // TODO: pass the selected day
-            Util.spawn(['evolution', '-c', 'calendar']);
-        } else {
-            let needTerm = calendarSettings.get_boolean('needs-term');
-            if (needTerm) {
-                let terminalSettings = new Gio.Settings({ schema: 'org.gnome.desktop.default-applications.terminal' });
-                let term = terminalSettings.get_string('exec');
-                let arg = terminalSettings.get_string('exec-arg');
-                if (arg != '')
-                    Util.spawn([term, arg, tool]);
-                else
-                    Util.spawn([term, tool]);
-            } else {
-                Util.spawnCommandLine(tool)
-            }
-        }
-    }
 };

@@ -9,4 +9,4 @@ const GJS_VERSION = '1.30.0';
 /* 1 if gnome-bluetooth is available, 0 otherwise */
 const HAVE_BLUETOOTH = 1;
 /* The system TLS CA list */
-const SHELL_SYSTEM_CA_FILE = '/etc/pki/tls/certs/ca-bundle.crt';
+const SHELL_SYSTEM_CA_FILE = '/etc/ssl/certs/ca-certificates.crt';
