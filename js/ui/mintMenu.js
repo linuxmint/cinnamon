@@ -48,12 +48,12 @@ AppMenuItem.prototype = {
 
 };
 
-function ApplicationButton(app) {
-    this._init(app);
+function ApplicationButton(appsMenuButton, app) {
+    this._init(appsMenuButton, app);
 }
 
 ApplicationButton.prototype = {
-    _init: function(app) {
+    _init: function(appsMenuButton, app) {
 this.app = app;
         this.actor = new St.Button({ reactive: true, label: this.app.get_name(), style_class: 'application-button', x_align: St.Align.START });
         this.actor._delegate = this;
@@ -73,12 +73,12 @@ this.app.open_new_window(-1);
 };
 Signals.addSignalMethods(ApplicationButton.prototype);
 
-function PlaceButton(place, button_name) {
-    this._init(place, button_name);
+function PlaceButton(appsMenuButton, place, button_name) {
+    this._init(appsMenuButton, place, button_name);
 }
 
 PlaceButton.prototype = {
-    _init: function(place, button_name) {
+    _init: function(appsMenuButton,place, button_name) {
 this.place = place;
         this.button_name = button_name;
         this.actor = new St.Button({ reactive: true, label: this.button_name, style_class: 'application-button', x_align: St.Align.START });
@@ -145,12 +145,12 @@ PlaceCategoryButton.prototype = {
 };
 Signals.addSignalMethods(PlaceCategoryButton.prototype);
 
-function FavoritesButton(app, nbFavorites) {
-    this._init(app, nbFavorites);
+function FavoritesButton(appsMenuButton, app, nbFavorites) {
+    this._init(appsMenuButton, app, nbFavorites);
 }
 
 FavoritesButton.prototype = {
-    _init: function(app, nbFavorites) {
+    _init: function(appsMenuButton, app, nbFavorites) {
         this.actor = new St.Button({ reactive: true, style_class: 'applications-menu-favorites-button' });
         
         let monitorHeight = Main.layoutManager.primaryMonitor.height;
@@ -512,7 +512,7 @@ this.applicationsByCategory[dir.get_menu_id()].push(app);
         for ( let i = 0; i < launchers.length; ++i ) {
             let app = appSys.lookup_app(launchers[i]);
             if (app) {
-                let button = new FavoritesButton(app, launchers.length);
+                let button = new FavoritesButton(this, app, launchers.length);
                 this.favoritesBox.add_actor(button.actor);
                 button.actor.connect('enter-event', Lang.bind(this, function() {
                    this.selectedAppTitle.set_text(button._app.get_name());
@@ -628,7 +628,7 @@ this.applicationsBox.remove_actor(actor);
             for (var i=0; i<apps.length; i++) {
                let app = apps[i];
                if (!this._applicationsButtons[app]){
-                  let applicationButton = new ApplicationButton(app);
+                  let applicationButton = new ApplicationButton(this, app);
                   applicationButton.actor.connect('leave-event', Lang.bind(this, function() {
                      this.selectedAppTitle.set_text("");
                      this.selectedAppDescription.set_text("");
@@ -650,7 +650,7 @@ this.applicationsBox.remove_actor(actor);
          if (places){
             for (var i=0; i<places.length; i++) {
                let place = places[i];
-               let button = new PlaceButton(place, place.name);
+               let button = new PlaceButton(this, place, place.name);
                this._addEnterEvent(button, Lang.bind(this, function() {
                    this._clearSelections(this.applicationsBox);
                    button.actor.style_class = "category-button-selected";
