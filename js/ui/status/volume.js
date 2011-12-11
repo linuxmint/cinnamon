@@ -658,7 +658,7 @@ Indicator.prototype = {
 
     _addPlayer: function(owner) {
         // ensure menu is empty
-        this.menu.removeAll();
+        this._cleanup();
         this._volumeControlShown = false;
         this._players[owner] = new Player(this, owner);
         this.menu.addMenuItem(this._players[owner]);
@@ -671,7 +671,7 @@ Indicator.prototype = {
 
     _removePlayer: function(owner) {
         delete this._players[owner];
-        this.menu.removeAll();
+        this._cleanup();
         this._volumeControlShown = false;
         for (owner in this._players) { 
             this._addPlayer(owner);
@@ -682,6 +682,14 @@ Indicator.prototype = {
         
         this.setIconName(this._icon_name);
     },
+    
+    _cleanup: function() {
+        if (this._outputTitle) this._outputTitle.destroy();
+        if (this._outputSlider) this._outputSlider.destroy();
+        if (this._inputTitle) this._inputTitle.destroy();
+        if (this._inputSlider) this._inputSlider.destroy();
+        this.menu.removeAll();
+     },
     
     _showVolumeControl: function() {
         if (this._volumeControlShown) return;
