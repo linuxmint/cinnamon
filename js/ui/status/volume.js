@@ -111,6 +111,8 @@ let x = _("Playing");
 x = _("Paused");
 x = _("Stopped");
 
+const VOLUME_NOTIFY_ID = 1;
+
 
 function Prop() {
     this._init.apply(this, arguments);
