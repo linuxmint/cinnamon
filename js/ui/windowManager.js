@@ -190,16 +190,18 @@ WindowManager.prototype = {
          */
         this._minimizing.push(actor);
 
-        let primary = Main.layoutManager.primaryMonitor;
-        let xDest = primary.x;
+        let monitor = Main.layoutManager.bottomMonitor;
+        // TODO : Quick hack (1/4 of the screen width... ). Once the window list is fully part of the desktop, we need to find the proper window list item, get its coordinate and minimize towards it, rather than using this 1/4. 
+        let xDest = monitor.x + monitor.width/4;
         if (St.Widget.get_default_direction() == St.TextDirection.RTL)
-            xDest += primary.width;
+            xDest = monitor.width - monitor.width/4;
+        let yDest = monitor.height;
 
         Tweener.addTween(actor,
                          { scale_x: 0.0,
                            scale_y: 0.0,
                            x: xDest,
-                           y: 0,
+                           y: yDest,
                            time: WINDOW_ANIMATION_TIME,
                            transition: 'easeOutQuad',
                            onComplete: this._minimizeWindowDone,
