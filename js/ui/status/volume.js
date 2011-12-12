@@ -115,6 +115,8 @@ x = _("Stopped");
 const VOLUME_NOTIFY_ID = 1;
 const VOLUME_ADJUSTMENT_STEP = 0.05; /* Volume adjustment step in % */
 
+const ICON_SIZE = 28;
+
 
 function Prop() {
     this._init.apply(this, arguments);
@@ -617,6 +619,31 @@ Player.prototype = {
 
 }
 
+function MediaPlayerLauncher(app) {
+    this._init(app);
+}
+
+MediaPlayerLauncher.prototype = {
+    __proto__: PopupMenu.PopupBaseMenuItem.prototype,
+
+    _init: function (app) {
+        PopupMenu.PopupBaseMenuItem.prototype._init.call(this, {});
+
+        this._app = app;
+        this.label = new St.Label({ text: app.get_name() });
+        this.addActor(this.label);
+        this._icon = app.create_icon_texture(ICON_SIZE);
+        this.addActor(this._icon, { expand: false });
+    },
+
+    activate: function (event) {
+        this._app.activate_full(-1, event.get_time());
+        
+        return true;
+    }
+
+};
+
 function Indicator() {
     this._init.apply(this, arguments);
 }
@@ -748,24 +775,14 @@ Indicator.prototype = {
             
             if (this._availablePlayers.length > 0){
                 this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-                this._launchPlayerItem = new PopupMenu.PopupComboBoxMenuItem({});
-                
-                this._launchPlayerItem.addMenuItem(new PopupMenu.PopupMenuItem(_("Launch player...")));
+                this._launchPlayerItem = new PopupMenu.PopupSubMenuMenuItem(_("Launch player..."));
                 
                 for (var p=0; p<this._availablePlayers.length; p++){
                     let playerApp = this._availablePlayers[p];
-                    let menuItem = new PopupMenu.PopupMenuItem(playerApp.get_name());
-                    this._launchPlayerItem.addMenuItem(menuItem);
+                    let menuItem = new MediaPlayerLauncher(playerApp);
+                    this._launchPlayerItem.menu.addMenuItem(menuItem);
                 }
                 
-                this._launchPlayerItem.connect("active-item-changed", Lang.bind(this, function(actor, position){
-                    if (position>0){
-                        this._availablePlayers[position-1].activate();
-                    }
-                    this._launchPlayerItem.setActiveItem(0);
-                }));
-                
-                this._launchPlayerItem.setActiveItem(0);
                 this.menu.addMenuItem(this._launchPlayerItem);
             }
         }
