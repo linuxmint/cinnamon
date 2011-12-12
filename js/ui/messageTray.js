@@ -2019,10 +2019,10 @@ MessageTray.prototype = {
         let trayShouldBeVisible = (!notificationsDone ||
                                    this._summaryState == State.SHOWING ||
                                    this._summaryState == State.SHOWN);
-        if (!trayIsVisible && trayShouldBeVisible)
-            this._showTray();
-        else if (trayIsVisible && !trayShouldBeVisible)
-            this._hideTray();
+        //if (!trayIsVisible && trayShouldBeVisible)
+        this._showTray();
+        //else if (trayIsVisible && !trayShouldBeVisible)
+        //    this._hideTray();
     },
 
     _tween: function(actor, statevar, value, params) {
@@ -2060,7 +2060,7 @@ MessageTray.prototype = {
                     { y: -1,
                       time: ANIMATION_TIME,
                       transition: 'easeOutQuad'
-                    });
+                   });
     },
 
     _showNotification: function() {

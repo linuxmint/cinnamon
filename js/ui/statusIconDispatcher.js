@@ -7,6 +7,8 @@ const Signals = imports.signals;
 const MessageTray = imports.ui.messageTray;
 const NotificationDaemon = imports.ui.notificationDaemon;
 const Util = imports.misc.util;
+const Main = imports.ui.main;
+
 
 const STANDARD_TRAY_ICON_IMPLEMENTATIONS = {
     'bluetooth-applet': 'bluetooth',
@@ -47,19 +49,16 @@ StatusIconDispatcher.prototype = {
     _onTrayIconAdded: function(o, icon) {
         let wmClass = (icon.wm_class || 'unknown').toLowerCase();
         let role = STANDARD_TRAY_ICON_IMPLEMENTATIONS[wmClass];
-        if (role)
-            this.emit('status-icon-added', icon, role);
-        else
-            this.emit('message-icon-added', icon);
+        if (role) {
+	    Main.panel._onTrayIconAdded(o, icon, role);
+        } else {
+            role = wmClass;
+            Main.panel._onTrayIconAdded(o, icon, role);
+        }
     },
 
     _onTrayIconRemoved: function(o, icon) {
-        let wmClass = (icon.wm_class || 'unknown').toLowerCase();
-        let role = STANDARD_TRAY_ICON_IMPLEMENTATIONS[wmClass];
-        if (role)
-            this.emit('status-icon-removed', icon);
-        else
-            this.emit('message-icon-removed', icon);
+        Main.panel._onTrayIconRemoved(o, icon);
     }
 };
 Signals.addSignalMethods(StatusIconDispatcher.prototype);

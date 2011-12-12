@@ -162,8 +162,8 @@ LayoutManager.prototype = {
         // it (so it's not visible behind the keyboard). The exact
         // height of the clip doesn't matter, as long as it's taller
         // than any Notification.actor.
-        this.trayBox.set_clip(0, -this.bottomMonitor.height,
-                              this.bottomMonitor.width, this.bottomMonitor.height);
+        //this.trayBox.set_clip(0, -this.bottomMonitor.height,
+        //                      this.bottomMonitor.width, this.bottomMonitor.height);
     },
 
     _updatePanelBarriers: function() {
