@@ -140,6 +140,13 @@ MediaServer2.prototype = {
                 if (!ex)
                     callback(this, raise);
             }));
+    },
+    getQuit: function(callback) {
+        this.GetRemote('CanQuit', Lang.bind(this,
+            function(quit, ex) {
+                if (!ex)
+                    callback(this, quit);
+            }));
     }
 }
 DBus.proxifyPrototype(MediaServer2.prototype, MediaServer2IFace)
@@ -394,6 +401,14 @@ Player.prototype = {
                 this._raiseButton = new ControlButton('go-up',
                     Lang.bind(this, function () { this._mediaServer.RaiseRemote(); this._system_status_button.menu.actor.hide(); }));
                 this.controls.add_actor(this._raiseButton.getActor());
+            }
+        }));
+        
+        this._mediaServer.getQuit(Lang.bind(this, function(sender, quit) {
+            if (quit) {
+                this._quitButton = new ControlButton('window-close',
+                    Lang.bind(this, function () { this._mediaServer.QuitRemote(); }));
+                this.controls.add_actor(this._quitButton.getActor());
             }
         }));
 
