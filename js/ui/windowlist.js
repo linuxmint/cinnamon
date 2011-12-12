@@ -331,6 +331,8 @@ AppMenuButton.prototype = {
                 this.rightClickMenu.toggle();                
             }
             this._windowHandle(false);
+        } else if (Shell.get_event_state(event) & Clutter.ModifierType.BUTTON2_MASK) {
+            this.metaWindow.delete(global.get_current_time());
         } else if (Shell.get_event_state(event) & Clutter.ModifierType.BUTTON3_MASK) {
             if (!this.rightClickMenu.isOpen) {
                 // Setting the max-height won't do any good if the minimum height of the
