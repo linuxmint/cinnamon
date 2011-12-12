@@ -760,7 +760,6 @@ Indicator.prototype = {
                 
                 this._launchPlayerItem.connect("active-item-changed", Lang.bind(this, function(actor, position){
                     if (position>0){
-                        this.menu.actor.hide();
                         this._availablePlayers[position-1].activate();
                     }
                     this._launchPlayerItem.setActiveItem(0);
