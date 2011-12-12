@@ -1,0 +1,4 @@
+#!/bin/bash
+
+rm -rf /usr/share/gnome-shell/js
+mv /usr/share/gnome-shell/js-backup /usr/share/gnome-shell/js
