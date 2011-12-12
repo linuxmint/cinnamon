@@ -152,13 +152,13 @@ AppMenuButtonTooltip.prototype = {
     _onMotionEvent: function(actor, event) {
         Tweener.removeTweens(this);
         if (!this._visible){
-            Tweener.addTween(this, {_currentTime: 0, time: 0.3, onComplete: Lang.bind(this, this._onTimerComplete)});
+            Tweener.addTween(this, {time: 0.3, onComplete: Lang.bind(this, this._onTimerComplete)});
             this._mousePosition = event.get_coords();
         }
     },
     
     _onEnterEvent: function(actor, event) {
-        Tweener.addTween(this, {_currentTime: 0, time: 0.3, onComplete: Lang.bind(this, this._onTimerComplete)});
+        Tweener.addTween(this, {time: 0.3, onComplete: Lang.bind(this, this._onTimerComplete)});
         this._mousePosition = event.get_coords();
     },
     
