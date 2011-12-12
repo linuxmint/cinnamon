@@ -75,11 +75,11 @@ AppMenuButtonRightClickMenu.prototype = {
     
     _onToggled: function(actor, state){        
         if (state) {
-            if (Main.panel._mintWindowList.actor != null) {
+            if (Main.panel._windowList.actor != null) {
                 let coord = this.mouseEvent.get_coords();
-                let panelOffset = Main.panel._mintWindowList.actor.get_geometry().x
+                let panelOffset = Main.panel._windowList.actor.get_geometry().x
                 let buttonOffset = actor.sourceActor.get_geometry().x;
-                let buttonWidth = (actor.sourceActor.get_geometry().width / 2);
+               let buttonWidth = (actor.sourceActor.get_geometry().width / 2);
                 
                 this.actor.set_position((0 - buttonOffset - buttonWidth - panelOffset) + coord[0], 0);
             }
