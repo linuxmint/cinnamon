@@ -4,6 +4,7 @@ const Mainloop = imports.mainloop;
 const Gio = imports.gi.Gio;
 const DBus = imports.dbus;
 const Lang = imports.lang;
+const Shell = imports.gi.Shell;
 const Clutter = imports.gi.Clutter;
 const St = imports.gi.St;
 const Main = imports.ui.main;
@@ -659,7 +660,7 @@ Indicator.prototype = {
         
         this._volumeControlShown = false;
         
-        this._showVolumeControl();
+        this._showFixedElements();
     },
     
     _onScrollEvent: function(actor, event) {
@@ -705,7 +706,7 @@ Indicator.prototype = {
         this.menu.addMenuItem(this._players[owner]);
         this.menu.emit('players-loaded', true);
         
-        this._showVolumeControl();
+        this._showFixedElements();
         
         this.setIconName(this._icon_name);
     },
@@ -719,7 +720,7 @@ Indicator.prototype = {
         }
         this.menu.emit('players-loaded', true);
         
-        this._showVolumeControl();
+        this._showFixedElements();
         
         this.setIconName(this._icon_name);
     },
@@ -732,9 +733,44 @@ Indicator.prototype = {
         this.menu.removeAll();
      },
     
-    _showVolumeControl: function() {
+    _showFixedElements: function() {
         if (this._volumeControlShown) return;
         this._volumeControlShown = true;
+        
+        if (this._nbPlayers()==0){
+            let appsys = Shell.AppSystem.get_default();
+            
+            this._availablePlayers = new Array();
+            for (var p=0; p<compatible_players.length; p++) {
+                let playerApp = appsys.lookup_app(compatible_players[p]+".desktop");
+                if (playerApp) this._availablePlayers.push(playerApp)
+            }
+            
+            if (this._availablePlayers.length > 0){
+                this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+                this._launchPlayerItem = new PopupMenu.PopupComboBoxMenuItem({});
+                
+                this._launchPlayerItem.addMenuItem(new PopupMenu.PopupMenuItem(_("Launch player...")));
+                
+                for (var p=0; p<this._availablePlayers.length; p++){
+                    let playerApp = this._availablePlayers[p];
+                    let menuItem = new PopupMenu.PopupMenuItem(playerApp.get_name());
+                    this._launchPlayerItem.addMenuItem(menuItem);
+                }
+                
+                this._launchPlayerItem.connect("active-item-changed", Lang.bind(this, function(actor, position){
+                    if (position>0){
+                        this.menu.actor.hide();
+                        this._availablePlayers[position-1].activate();
+                    }
+                    this._launchPlayerItem.setActiveItem(0);
+                }));
+                
+                this._launchPlayerItem.setActiveItem(0);
+                this.menu.addMenuItem(this._launchPlayerItem);
+            }
+        }
+        
         this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
         this._outputTitle = new TextImageMenuItem(_("Volume"), "audio-volume-high", false, "right", "volume-menu-item");
         this._outputSlider = new PopupMenu.PopupSliderMenuItem(0);
