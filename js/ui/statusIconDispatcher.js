@@ -7,7 +7,6 @@ const Signals = imports.signals;
 const MessageTray = imports.ui.messageTray;
 const NotificationDaemon = imports.ui.notificationDaemon;
 const Util = imports.misc.util;
-const Main = imports.ui.main;
 
 
 const STANDARD_TRAY_ICON_IMPLEMENTATIONS = {
@@ -49,16 +48,19 @@ StatusIconDispatcher.prototype = {
     _onTrayIconAdded: function(o, icon) {
         let wmClass = (icon.wm_class || 'unknown').toLowerCase();
         let role = STANDARD_TRAY_ICON_IMPLEMENTATIONS[wmClass];
-        if (role) {
-	    Main.panel._onTrayIconAdded(o, icon, role);
-        } else {
-            role = wmClass;
-            Main.panel._onTrayIconAdded(o, icon, role);
-        }
+        if (role)
+            this.emit('status-icon-added', icon, role);
+        else
+            this.emit('message-icon-added', icon);
     },
 
     _onTrayIconRemoved: function(o, icon) {
-        Main.panel._onTrayIconRemoved(o, icon);
+        let wmClass = (icon.wm_class || 'unknown').toLowerCase();
+        let role = STANDARD_TRAY_ICON_IMPLEMENTATIONS[wmClass];
+        if (role)
+            this.emit('status-icon-removed', icon);
+        else
+            this.emit('message-icon-removed', icon);
     }
 };
 Signals.addSignalMethods(StatusIconDispatcher.prototype);

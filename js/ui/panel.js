@@ -1089,8 +1089,8 @@ Panel.prototype = {
     },
 
     addToStatusArea: function(role, indicator, position) {
-        //if (this._statusArea[role])
-        //    throw new Error('Extension point conflict: there is already a status indicator for role ' + role);
+        if (this._statusArea[role])
+            throw new Error('Extension point conflict: there is already a status indicator for role ' + role);
 
         if (!(indicator instanceof PanelMenu.Button))
             throw new TypeError('Status indicator must be an instance of PanelMenu.Button');
