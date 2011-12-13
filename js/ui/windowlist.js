@@ -627,6 +627,7 @@ WindowList.prototype = {
             let appbutton = new AppMenuButton(app, metaWindow, true);
             this._windows.push(appbutton);
             this.actor.add(appbutton.actor);
+            appbutton.actor.show();
         }
     },
 
