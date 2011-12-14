@@ -194,7 +194,7 @@ LayoutManager.prototype = {
         if (this._trayBarrier)
             global.destroy_pointer_barrier(this._trayBarrier);
 
-        if (Main.messageTray) {
+        if (Main.messageTray && Main.messageTray.actor) {
             this._trayBarrier =
                 global.create_pointer_barrier(monitor.x + monitor.width, monitor.y,
                                               monitor.x + monitor.width, monitor.y + Main.messageTray.actor.height,
