@@ -1146,10 +1146,12 @@ StTooltip StLabel {
 }
 
 #notification {
-    font-size: 11pt;
-    border-radius: 10px 10px 0px 0px;
-    background: rgba(0,0,0,0.8);
-    padding: 8px 8px 4px 8px;
+    font-size: 8.5pt;
+    border-radius: 10px 10px 10px 10px;
+    background-gradient-direction: vertical;
+    background-gradient-start: rgba(0,0,0,0.8);
+    background-gradient-end: rgba(0,0,0,0.8);
+    padding: 8px 8px 8px 8px;
     spacing-rows: 10px;
     spacing-columns: 10px;
     width: 34em;
