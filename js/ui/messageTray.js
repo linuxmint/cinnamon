@@ -1336,69 +1336,21 @@ MessageTray.prototype = {
         this._presence.connect('StatusChanged', Lang.bind(this, this._onStatusChanged));
         this._presence.getStatus(Lang.bind(this, this._onStatusChanged));
 
-        this.actor = new St.Group({ name: 'message-tray',
-                                    reactive: true,
-                                    track_hover: true });
-        this.actor.connect('notify::hover', Lang.bind(this, this._onTrayHoverChanged));
-
         this._notificationBin = new St.Bin();
-        this.actor.add_actor(this._notificationBin);
         this._notificationBin.hide();
         this._notificationQueue = [];
         this._notification = null;
         this._notificationClickedId = 0;
-
-        this._summaryBin = new St.Bin({ x_align: St.Align.END });
-        this.actor.add_actor(this._summaryBin);
-        this._summary = new St.BoxLayout({ name: 'summary-mode',
-                                           reactive: true,
-                                           track_hover: true });
-        this._summary.connect('notify::hover', Lang.bind(this, this._onSummaryHoverChanged));
-        this._summaryBin.child = this._summary;
-        this._summaryBin.opacity = 0;
-
-        this._summaryMotionId = 0;
-        this._trayMotionId = 0;
-
-        this._summaryBoxPointer = new BoxPointer.BoxPointer(St.Side.BOTTOM,
-                                                            { reactive: true,
-                                                              track_hover: true });
-        this._summaryBoxPointer.actor.style_class = 'summary-boxpointer';
-        this._summaryBoxPointer.actor.hide();
-        Main.layoutManager.addChrome(this._summaryBoxPointer.actor, { visibleInFullscreen: true });
-
-        this._summaryBoxPointerItem = null;
-        this._summaryBoxPointerContentUpdatedId = 0;
-        this._summaryBoxPointerDoneDisplayingId = 0;
-        this._clickedSummaryItem = null;
-        this._clickedSummaryItemMouseButton = -1;
-        this._clickedSummaryItemAllocationChangedId = 0;
-        this._expandedSummaryItem = null;
-        this._summaryItemTitleWidth = 0;
+        
         this._pointerBarrier = 0;
 
-        // To simplify the summary item animation code, we pretend
-        // that there's an invisible SummaryItem to the left of the
-        // leftmost real summary item, and that it's expanded when all
-        // of the other items are collapsed.
-        this._imaginarySummaryItemTitleWidth = 0;
-
         this._focusGrabber = new FocusGrabber();
-        this._focusGrabber.connect('focus-grabbed', Lang.bind(this,
-            function() {
-                if (this._summaryBoxPointer.bin.child)
-                    this._lock();
-            }));
         this._focusGrabber.connect('focus-ungrabbed', Lang.bind(this, this._unlock));
         this._focusGrabber.connect('button-pressed', Lang.bind(this,
            function(focusGrabber, source) {
-               if (this._clickedSummaryItem && !this._clickedSummaryItem.actor.contains(source))
-                   this._unsetClickedSummaryItem();
                this._focusGrabber.ungrabFocus();
            }));
         this._focusGrabber.connect('escape-pressed', Lang.bind(this, this._escapeTray));
-
-        Main.layoutManager.keyboardBox.connect('notify::hover', Lang.bind(this, this._onKeyboardHoverChanged));
 
         this._trayState = State.HIDDEN;
         this._locked = false;
@@ -1407,22 +1359,15 @@ MessageTray.prototype = {
         this._trayLeftTimeoutId = 0;
         this._pointerInTray = false;
         this._pointerInKeyboard = false;
-        this._summaryState = State.HIDDEN;
-        this._summaryTimeoutId = 0;
-        this._pointerInSummary = false;
         this._notificationState = State.HIDDEN;
         this._notificationTimeoutId = 0;
         this._notificationExpandedId = 0;
-        this._summaryBoxPointerState = State.HIDDEN;
-        this._summaryBoxPointerTimeoutId = 0;
         this._overviewVisible = Main.overview.visible;
         this._notificationRemoved = false;
         this._reNotifyAfterHideNotification = null;
-
-        Main.layoutManager.trayBox.add_actor(this.actor);
-        this.actor.y = -1;
-        Main.layoutManager.trackChrome(this.actor);
-        Main.layoutManager.trackChrome(this._notificationBin);
+        
+        this._sources = [];
+        Main.layoutManager.addChrome(this._notificationBin);
 
         Main.layoutManager.connect('monitors-changed', Lang.bind(this, this._setSizePosition));
 
@@ -1432,7 +1377,6 @@ MessageTray.prototype = {
             function() {
                 this._overviewVisible = true;
                 if (this._locked) {
-                    this._unsetClickedSummaryItem();
                     this._unlock();
                 } else {
                     this._updateState();
@@ -1442,41 +1386,25 @@ MessageTray.prototype = {
             function() {
                 this._overviewVisible = false;
                 if (this._locked) {
-                    this._unsetClickedSummaryItem();
                     this._unlock();
                 } else {
                     this._updateState();
                 }
             }));
-
-        this._summaryItems = [];
-        // We keep a list of new summary items that were added to the summary since the last
-        // time it was shown to the user. We automatically show the summary to the user if there
-        // are items in this list once the notifications are done showing or once an item gets
-        // added to the summary without a notification being shown.
-        this._newSummaryItems = [];
-        this._longestSummaryItem = null;
-        this._chatSummaryItemsCount = 0;
     },
 
     _setSizePosition: function() {
         let monitor = Main.layoutManager.bottomMonitor;
         this._notificationBin.x = 0;
         this._notificationBin.width = monitor.width;
-        this._summaryBin.x = 0;
-        this._summaryBin.width = monitor.width;
     },
 
     contains: function(source) {
-        return this._getIndexOfSummaryItemForSource(source) >= 0;
+        return this._getSourceIndex(source) >= 0;
     },
 
-    _getIndexOfSummaryItemForSource: function(source) {
-        for (let i = 0; i < this._summaryItems.length; i++) {
-            if (this._summaryItems[i].source == source)
-                return i;
-        }
-        return -1;
+    _getSourceIndex: function(source) {
+        return this._sources.indexOf(source);
     },
 
     add: function(source) {
@@ -1485,93 +1413,17 @@ MessageTray.prototype = {
             return;
         }
 
-        let summaryItem = new SummaryItem(source);
-
-        if (source.isChat) {
-            this._summary.insert_actor(summaryItem.actor, 0);
-            this._chatSummaryItemsCount++;
-        } else {
-            this._summary.insert_actor(summaryItem.actor, this._chatSummaryItemsCount);
-        }
-
-        let titleWidth = summaryItem.getTitleNaturalWidth();
-        if (titleWidth > this._summaryItemTitleWidth) {
-            this._summaryItemTitleWidth = titleWidth;
-            if (!this._expandedSummaryItem)
-                this._imaginarySummaryItemTitleWidth = titleWidth;
-            this._longestSummaryItem = summaryItem;
-        }
-
-        this._summaryItems.push(summaryItem);
-
-        // We keep this._newSummaryItems to track any new sources that were added to the
-        // summary and show the summary with them to the user for a short period of time
-        // after notifications are done showing. However, we don't want that to happen for
-        // transient sources, which are removed after the notification is shown, but are
-        // not removed fast enough because of the callbacks to avoid the summary popping up.
-        // So we just don't add transient sources to this._newSummaryItems.
-        // We don't want that to happen for chat sources neither, because they
-        // can be added when the user starts a chat from Empathy and they are not transient.
-        // The notification will popup on incoming message anyway. See bug #657249.
-        if (!source.isTransient && !source.isChat)
-            this._newSummaryItems.push(summaryItem);
-
         source.connect('notify', Lang.bind(this, this._onNotify));
 
-        summaryItem.actor.connect('notify::hover', Lang.bind(this,
-            function () {
-                this._onSummaryItemHoverChanged(summaryItem);
-            }));
-
-        summaryItem.actor.connect('clicked', Lang.bind(this,
-            function (actor, button) {
-                this._onSummaryItemClicked(summaryItem, button);
-            }));
-
         source.connect('destroy', Lang.bind(this, this._onSourceDestroy));
-
-        // We need to display the newly-added summary item, but if the
-        // caller is about to post a notification, we want to show that
-        // *first* and not show the summary item until after it hides.
-        // So postpone calling _updateState() a tiny bit.
-        Meta.later_add(Meta.LaterType.BEFORE_REDRAW, Lang.bind(this, function() { this._updateState(); return false; }));
     },
 
     _onSourceDestroy: function(source) {
-        let index = this._getIndexOfSummaryItemForSource(source);
+        let index = this._getSourceIndex(source);
         if (index == -1)
             return;
-
-        let summaryItemToRemove = this._summaryItems[index];
-
-        let newSummaryItemsIndex = this._newSummaryItems.indexOf(this._summaryItems[index]);
-        if (newSummaryItemsIndex != -1)
-            this._newSummaryItems.splice(newSummaryItemsIndex, 1);
-
-        this._summaryItems.splice(index, 1);
-
-        if (source.isChat)
-            this._chatSummaryItemsCount--;
-
-        if (this._expandedSummaryItem == summaryItemToRemove)
-            this._expandedSummaryItem = null;
-
-        if (this._longestSummaryItem.source == source) {
-            let newTitleWidth = 0;
-            this._longestSummaryItem = null;
-            for (let i = 0; i < this._summaryItems.length; i++) {
-                let summaryItem = this._summaryItems[i];
-                let titleWidth = summaryItem.getTitleNaturalWidth();
-                if (titleWidth > newTitleWidth) {
-                    newTitleWidth = titleWidth;
-                    this._longestSummaryItem = summaryItem;
-                }
-            }
-
-            this._summaryItemTitleWidth = newTitleWidth;
-            if (!this._expandedSummaryItem)
-                this._imaginarySummaryItemTitleWidth = newTitleWidth;
-        }
+            
+        this._sources.splice(index, 1);
 
         let needUpdate = false;
 
@@ -1580,12 +1432,6 @@ MessageTray.prototype = {
             this._notificationRemoved = true;
             needUpdate = true;
         }
-        if (this._clickedSummaryItem == summaryItemToRemove) {
-            this._unsetClickedSummaryItem();
-            needUpdate = true;
-        }
-
-        summaryItemToRemove.actor.destroy();
 
         if (needUpdate)
             this._updateState();
@@ -1613,7 +1459,6 @@ MessageTray.prototype = {
         if (!this._locked)
             return;
         this._locked = false;
-        this._pointerInTray = this.actor.hover;
         this._updateState();
     },
 
@@ -1624,27 +1469,10 @@ MessageTray.prototype = {
 
     hide: function() {
         this._traySummoned = false;
-        this.actor.set_hover(false);
-        this._summary.set_hover(false);
         this._updateState();
     },
 
     _onNotify: function(source, notification) {
-        if (this._summaryBoxPointerItem && this._summaryBoxPointerItem.source == source) {
-            if (this._summaryBoxPointerState == State.HIDING)
-                // We are in the process of hiding the summary box pointer.
-                // If there is an update for one of the notifications or
-                // a new notification to be added to the notification stack
-                // while it is in the process of being hidden, we show it as
-                // a new notification. However, we first wait till the hide
-                // is complete. This is especially important if one of the
-                // notifications in the stack was updated because we will
-                // need to be able to re-parent its actor to a different
-                // part of the stage.
-                this._reNotifyAfterHideNotification = notification;
-            return;
-        }
-
         if (this._notification == notification) {
             // If a notification that is being shown is updated, we update
             // how it is shown and extend the time until it auto-hides.
@@ -1662,218 +1490,6 @@ MessageTray.prototype = {
         this._updateState();
     },
 
-    _onSummaryItemHoverChanged: function(summaryItem) {
-        if (summaryItem.actor.hover)
-            this._setExpandedSummaryItem(summaryItem);
-    },
-
-    _setExpandedSummaryItem: function(summaryItem) {
-        if (summaryItem == this._expandedSummaryItem)
-            return;
-
-        // We can't just animate individual summary items as the
-        // pointer moves in and out of them, because if they don't
-        // move in sync you get weird-looking wobbling. So whenever
-        // there's a change, we have to re-tween the entire summary
-        // area.
-
-        // Turn off ellipsization for the previously expanded item that is
-        // collapsing and for the item that is expanding because it looks
-        // better that way.
-        if (this._expandedSummaryItem) {
-            // Ideally, we would remove 'expanded' pseudo class when the item
-            // is done collapsing, but we don't track when that happens.
-            this._expandedSummaryItem.actor.remove_style_pseudo_class('expanded');
-            this._expandedSummaryItem.setEllipsization(Pango.EllipsizeMode.NONE);
-        }
-
-        this._expandedSummaryItem = summaryItem;
-        if (this._expandedSummaryItem) {
-            this._expandedSummaryItem.actor.add_style_pseudo_class('expanded');
-            this._expandedSummaryItem.setEllipsization(Pango.EllipsizeMode.NONE);
-        }
-
-        // We tween on a "_expandedSummaryItemTitleWidth" pseudo-property
-        // that represents the current title width of the
-        // expanded/expanding item, or the width of the imaginary
-        // invisible item if we're collapsing everything.
-        Tweener.addTween(this,
-                         { _expandedSummaryItemTitleWidth: this._summaryItemTitleWidth,
-                           time: ANIMATION_TIME,
-                           transition: 'easeOutQuad',
-                           onComplete: this._expandSummaryItemCompleted,
-                           onCompleteScope: this });
-    },
-
-    get _expandedSummaryItemTitleWidth() {
-        if (this._expandedSummaryItem)
-            return this._expandedSummaryItem.getTitleWidth();
-        else
-            return this._imaginarySummaryItemTitleWidth;
-    },
-
-    set _expandedSummaryItemTitleWidth(expansion) {
-        expansion = Math.round(expansion);
-
-        // Expand the expanding item to its new width
-        if (this._expandedSummaryItem)
-            this._expandedSummaryItem.setTitleWidth(expansion);
-        else
-            this._imaginarySummaryItemTitleWidth = expansion;
-
-        // Figure out how much space the other items are currently
-        // using, and how much they need to be shrunk to keep the
-        // total width (including the width of the imaginary item)
-        // constant.
-        let excess = this._summaryItemTitleWidth - expansion;
-        let oldExcess = 0, shrinkage;
-        if (excess) {
-            for (let i = 0; i < this._summaryItems.length; i++) {
-                if (this._summaryItems[i] != this._expandedSummaryItem)
-                    oldExcess += this._summaryItems[i].getTitleWidth();
-            }
-            if (this._expandedSummaryItem)
-                oldExcess += this._imaginarySummaryItemTitleWidth;
-        }
-        if (excess && oldExcess)
-            shrinkage = excess / oldExcess;
-        else
-            shrinkage = 0;
-
-        // Now shrink each one proportionately
-        for (let i = 0; i < this._summaryItems.length; i++) {
-            if (this._summaryItems[i] == this._expandedSummaryItem)
-                continue;
-
-            let oldWidth = this._summaryItems[i].getTitleWidth();
-            let newWidth = Math.floor(oldWidth * shrinkage);
-            excess -= newWidth;
-            this._summaryItems[i].setTitleWidth(newWidth);
-        }
-        if (this._expandedSummaryItem) {
-            let oldWidth = this._imaginarySummaryItemTitleWidth;
-            let newWidth = Math.floor(oldWidth * shrinkage);
-            excess -= newWidth;
-            this._imaginarySummaryItemTitleWidth = newWidth;
-        }
-
-        // If the tray as a whole is fully-expanded, make sure the
-        // left edge doesn't wobble during animation due to rounding.
-        if (this._imaginarySummaryItemTitleWidth == 0 && excess != 0) {
-            for (let i = 0; i < this._summaryItems.length; i++) {
-                if (this._summaryItems[i] == this._expandedSummaryItem)
-                    continue;
-
-                let oldWidth = this._summaryItems[i].getTitleWidth();
-                if (oldWidth != 0) {
-                    this._summaryItems[i].setTitleWidth (oldWidth + excess);
-                    break;
-                }
-            }
-        }
-    },
-
-    _expandSummaryItemCompleted: function() {
-        if (this._expandedSummaryItem)
-            this._expandedSummaryItem.setEllipsization(Pango.EllipsizeMode.END);
-    },
-
-    _onSummaryItemClicked: function(summaryItem, button) {
-        if (summaryItem.source.handleSummaryClick())
-            this._unsetClickedSummaryItem();
-        else if (!this._clickedSummaryItem ||
-                 this._clickedSummaryItem != summaryItem ||
-                 this._clickedSummaryItemMouseButton != button) {
-            this._clickedSummaryItem = summaryItem;
-            this._clickedSummaryItemMouseButton = button;
-
-            summaryItem.source.emit('summary-item-clicked', button);
-        } else {
-            this._unsetClickedSummaryItem();
-        }
-
-        this._updateState();
-    },
-
-    _onSummaryHoverChanged: function() {
-        this._pointerInSummary = this._summary.hover;
-        this._updateState();
-    },
-
-    _onTrayHoverChanged: function() {
-        if (this.actor.hover) {
-            // Don't do anything if the one pixel area at the bottom is hovered over while the tray is hidden.
-            if (this._trayState == State.HIDDEN)
-                return;
-
-            // Don't do anything if this._useLongerTrayLeftTimeout is true, meaning the notification originally
-            // popped up under the pointer, but this._trayLeftTimeoutId is 0, meaning the pointer didn't leave
-            // the tray yet. We need to check for this case because sometimes _onTrayHoverChanged() gets called
-            // multiple times while this.actor.hover is true.
-            if (this._useLongerTrayLeftTimeout && !this._trayLeftTimeoutId)
-                return;
-
-            this._useLongerTrayLeftTimeout = false;
-            if (this._trayLeftTimeoutId) {
-                Mainloop.source_remove(this._trayLeftTimeoutId);
-                this._trayLeftTimeoutId = 0;
-                this._trayLeftMouseX = -1;
-                this._trayLeftMouseY = -1;
-                return;
-            }
-
-            if (this._showNotificationMouseX >= 0) {
-                let actorAtShowNotificationPosition =
-                    global.stage.get_actor_at_pos(Clutter.PickMode.ALL, this._showNotificationMouseX, this._showNotificationMouseY);
-                this._showNotificationMouseX = -1;
-                this._showNotificationMouseY = -1;
-                // Don't set this._pointerInTray to true if the pointer was initially in the area where the notification
-                // popped up. That way we will not be expanding notifications that happen to pop up over the pointer
-                // automatically. Instead, the user is able to expand the notification by mousing away from it and then
-                // mousing back in. Because this is an expected action, we set the boolean flag that indicates that a longer
-                // timeout should be used before popping down the notification.
-                if (this._notificationBin.contains(actorAtShowNotificationPosition)) {
-                    this._useLongerTrayLeftTimeout = true;
-                    return;
-                }
-            }
-            this._pointerInTray = true;
-            this._updateState();
-        } else {
-            // We record the position of the mouse the moment it leaves the tray. These coordinates are used in
-            // this._onTrayLeftTimeout() to determine if the mouse has moved far enough during the initial timeout for us
-            // to consider that the user intended to leave the tray and therefore hide the tray. If the mouse is still
-            // close to its previous position, we extend the timeout once.
-            let [x, y, mods] = global.get_pointer();
-            this._trayLeftMouseX = x;
-            this._trayLeftMouseY = y;
-
-            // We wait just a little before hiding the message tray in case the user quickly moves the mouse back into it.
-            // We wait for a longer period if the notification popped up where the mouse pointer was already positioned.
-            // That gives the user more time to mouse away from the notification and mouse back in in order to expand it.
-            let timeout = this._useLongerHideTimeout ? LONGER_HIDE_TIMEOUT * 1000 : HIDE_TIMEOUT * 1000;
-            this._trayLeftTimeoutId = Mainloop.timeout_add(timeout, Lang.bind(this, this._onTrayLeftTimeout));
-        }
-    },
-
-    _onKeyboardHoverChanged: function(keyboard) {
-        this._pointerInKeyboard = keyboard.hover;
-
-        if (!keyboard.hover) {
-            let event = Clutter.get_current_event();
-            if (event && event.type() == Clutter.EventType.LEAVE) {
-                let into = event.get_related();
-                if (into && this.actor.contains(into)) {
-                    // Don't call _updateState, because pointerInTray is
-                    // still false
-                    return;
-                }
-            }
-        }
-
-        this._updateState();
-    },
-
     _onStatusChanged: function(presence, status) {
         this._backFromAway = (this._userStatus == GnomeSession.PresenceStatus.IDLE && this._userStatus != status);
         this._userStatus = status;
@@ -1881,10 +1497,6 @@ MessageTray.prototype = {
         if (status == GnomeSession.PresenceStatus.BUSY) {
             // remove notification and allow the summary to be closed now
             this._updateNotificationTimeout(0);
-            if (this._summaryTimeoutId) {
-                Mainloop.source_remove(this._summaryTimeoutId);
-                this._summaryTimeoutId = 0;
-            }
             this._busy = true;
         } else if (status != GnomeSession.PresenceStatus.IDLE) {
             // We preserve the previous value of this._busy if the status turns to IDLE
@@ -1896,33 +1508,9 @@ MessageTray.prototype = {
         this._updateState();
     },
 
-    _onTrayLeftTimeout: function() {
-        let [x, y, mods] = global.get_pointer();
-        // We extend the timeout once if the mouse moved no further than MOUSE_LEFT_ACTOR_THRESHOLD to either side or up.
-        // We don't check how far down the mouse moved because any point above the tray, but below the exit coordinate,
-        // is close to the tray.
-        if (this._trayLeftMouseX > -1 &&
-            y > this._trayLeftMouseY - MOUSE_LEFT_ACTOR_THRESHOLD &&
-            x < this._trayLeftMouseX + MOUSE_LEFT_ACTOR_THRESHOLD &&
-            x > this._trayLeftMouseX - MOUSE_LEFT_ACTOR_THRESHOLD) {
-            this._trayLeftMouseX = -1;
-            this._trayLeftTimeoutId = Mainloop.timeout_add(LONGER_HIDE_TIMEOUT * 1000,
-                                                             Lang.bind(this, this._onTrayLeftTimeout));
-        } else {
-            this._trayLeftTimeoutId = 0;
-            this._useLongerTrayLeftTimeout = false;
-            this._pointerInTray = false;
-            this._pointerInSummary = false;
-            this._updateNotificationTimeout(0);
-            this._updateState();
-        }
-        return false;
-    },
-
     _escapeTray: function() {
         this._unlock();
         this._pointerInTray = false;
-        this._pointerInSummary = false;
         this._updateNotificationTimeout(0);
         this._updateState();
     },
@@ -1936,10 +1524,9 @@ MessageTray.prototype = {
         // Notifications
         let notificationUrgent = this._notificationQueue.length > 0 && this._notificationQueue[0].urgency == Urgency.CRITICAL;
         let notificationsPending = this._notificationQueue.length > 0 && (!this._busy || notificationUrgent);
-        let notificationPinned = this._pointerInTray && !this._pointerInSummary && !this._notificationRemoved;
         let notificationExpanded = this._notificationBin.y < 0;
         let notificationExpired = (this._notificationTimeoutId == 0 && !(this._notification && this._notification.urgency == Urgency.CRITICAL) && !this._pointerInTray && !this._locked && !(this._pointerInKeyboard && notificationExpanded)) || this._notificationRemoved;
-        let canShowNotification = notificationsPending && this._summaryState == State.HIDDEN;
+        let canShowNotification = notificationsPending;
 
         if (this._notificationState == State.HIDDEN) {
             if (canShowNotification)
@@ -1947,82 +1534,11 @@ MessageTray.prototype = {
         } else if (this._notificationState == State.SHOWN) {
             if (notificationExpired)
                 this._hideNotification();
-            else if (notificationPinned && !notificationExpanded)
-                this._expandNotification(false);
-            else if (notificationPinned)
-                this._ensureNotificationFocused();
         }
-
-        // Summary
-        let summarySummoned = this._pointerInSummary || this._overviewVisible ||  this._traySummoned;
-        let summaryPinned = this._summaryTimeoutId != 0 || this._pointerInTray || summarySummoned || this._locked;
-        let summaryHovered = this._pointerInTray || this._pointerInSummary;
-        let summaryVisibleWithNoHover = (this._overviewVisible || this._locked) && !summaryHovered;
-        let summaryNotificationIsForExpandedSummaryItem = (this._clickedSummaryItem == this._expandedSummaryItem);
 
         let notificationsVisible = (this._notificationState == State.SHOWING ||
                                     this._notificationState == State.SHOWN);
         let notificationsDone = !notificationsVisible && !notificationsPending;
-
-        let summaryOptionalInOverview = this._overviewVisible && !this._locked && !summaryHovered;
-        let mustHideSummary = (notificationsPending && (notificationUrgent || summaryOptionalInOverview))
-                              || notificationsVisible;
-
-        if (this._summaryState == State.HIDDEN && !mustHideSummary) {
-            if (this._backFromAway) {
-                // Immediately set this to false, so that we don't schedule a timeout later
-                this._backFromAway = false;
-                if (!this._busy)
-                    this._showSummary(LONGER_SUMMARY_TIMEOUT);
-            } else if (notificationsDone && this._newSummaryItems.length > 0 && !this._busy) {
-                this._showSummary(SUMMARY_TIMEOUT);
-            } else if (summarySummoned) {
-                this._showSummary(0);
-            }
-        } else if (this._summaryState == State.SHOWN) {
-            if (!summaryPinned || mustHideSummary)
-                this._hideSummary();
-            else if (summaryVisibleWithNoHover && !summaryNotificationIsForExpandedSummaryItem)
-                // If we are hiding the summary, we'll collapse the expanded summary item when we are done
-                // so that there is no animation. However, we should collapse the expanded summary item
-                // if the summary is visible, but not hovered over, and the summary notification for the
-                // expanded summary item is not being shown.
-                this._setExpandedSummaryItem(null);
-        }
-
-        // Summary notification
-        let haveClickedSummaryItem = this._clickedSummaryItem != null;
-        let summarySourceIsMainNotificationSource = (haveClickedSummaryItem && this._notification &&
-                                                     this._clickedSummaryItem.source == this._notification.source);
-        let canShowSummaryBoxPointer = this._summaryState == State.SHOWN;
-        // We only have sources with empty notification stacks for legacy tray icons. Currently, we never attempt
-        // to show notifications for legacy tray icons, but this would be necessary if we did.
-        let requestedNotificationStackIsEmpty = (this._clickedSummaryItemMouseButton == 1 && this._clickedSummaryItem.source.notifications.length == 0);
-        let wrongSummaryNotificationStack = (this._clickedSummaryItemMouseButton == 1 &&
-                                             this._summaryBoxPointer.bin.child != this._clickedSummaryItem.notificationStackView);
-        let wrongSummaryRightClickMenu = (this._clickedSummaryItemMouseButton == 3 &&
-                                          this._summaryBoxPointer.bin.child != this._clickedSummaryItem.rightClickMenu);
-        let wrongSummaryBoxPointer = (haveClickedSummaryItem &&
-                                      (wrongSummaryNotificationStack || wrongSummaryRightClickMenu));
-
-        if (this._summaryBoxPointerState == State.HIDDEN) {
-            if (haveClickedSummaryItem && !summarySourceIsMainNotificationSource && canShowSummaryBoxPointer && !requestedNotificationStackIsEmpty)
-                this._showSummaryBoxPointer();
-        } else if (this._summaryBoxPointerState == State.SHOWN) {
-            if (!haveClickedSummaryItem || !canShowSummaryBoxPointer || wrongSummaryBoxPointer || mustHideSummary)
-                this._hideSummaryBoxPointer();
-        }
-
-        // Tray itself
-        let trayIsVisible = (this._trayState == State.SHOWING ||
-                             this._trayState == State.SHOWN);
-        let trayShouldBeVisible = (!notificationsDone ||
-                                   this._summaryState == State.SHOWING ||
-                                   this._summaryState == State.SHOWN);
-        if (!trayIsVisible && trayShouldBeVisible)
-            this._showTray();
-        else if (trayIsVisible && !trayShouldBeVisible)
-            this._hideTray();
     },
 
     _tween: function(actor, statevar, value, params) {
@@ -2047,22 +1563,6 @@ MessageTray.prototype = {
         this._updateState();
     },
 
-    _showTray: function() {
-        this._tween(this.actor, '_trayState', State.SHOWN,
-                    { y: -this.actor.height,
-                      time: ANIMATION_TIME,
-                      transition: 'easeOutQuad'
-                    });
-    },
-
-    _hideTray: function() {
-        this._tween(this.actor, '_trayState', State.HIDDEN,
-                    { y: -1,
-                      time: ANIMATION_TIME,
-                      transition: 'easeOutQuad'
-                   });
-    },
-
     _showNotification: function() {
         this._notification = this._notificationQueue.shift();
         this._notificationClickedId = this._notification.connect('done-displaying',
@@ -2070,7 +1570,7 @@ MessageTray.prototype = {
         this._notificationBin.child = this._notification.actor;
 
         this._notificationBin.opacity = 0;
-        this._notificationBin.y = this.actor.height;
+        this._notificationBin.y = 0;
         this._notificationBin.show();
 
         this._updateShowingNotification();
@@ -2145,7 +1645,7 @@ MessageTray.prototype = {
 
     _notificationTimeout: function() {
         let [x, y, mods] = global.get_pointer();
-        if (y > this._lastSeenMouseY + 10 && !this.actor.hover) {
+        if (y > this._lastSeenMouseY + 10) {
             // The mouse is moving towards the notification, so don't
             // hide it yet. (We just create a new timeout (and destroy
             // the old one) each time because the bookkeeping is
@@ -2168,7 +1668,7 @@ MessageTray.prototype = {
         }
 
         this._tween(this._notificationBin, '_notificationState', State.HIDDEN,
-                    { y: this.actor.height,
+                    { y: 0,
                       opacity: 0,
                       time: ANIMATION_TIME,
                       transition: 'easeOutQuad',
@@ -2204,7 +1704,7 @@ MessageTray.prototype = {
     },
 
     _onNotificationExpanded: function() {
-        let expandedY = this.actor.height - this._notificationBin.height;
+        let expandedY = - this._notificationBin.height;
 
         // Don't animate the notification to its new position if it has shrunk:
         // there will be a very visible "gap" that breaks the illusion.
@@ -2223,177 +1723,6 @@ MessageTray.prototype = {
     // to a notification with CRITICAL urgency that was already auto-expanded.
     _ensureNotificationFocused: function() {
         this._focusGrabber.grabFocus(this._notification.actor);
-    },
-
-    _showSummary: function(timeout) {
-        this._summaryBin.opacity = 0;
-        this._summaryBin.y = this.actor.height;
-        this._tween(this._summaryBin, '_summaryState', State.SHOWN,
-                    { y: 0,
-                      opacity: 255,
-                      time: ANIMATION_TIME,
-                      transition: 'easeOutQuad',
-                      onComplete: this._showSummaryCompleted,
-                      onCompleteScope: this,
-                      onCompleteParams: [timeout]
-                    });
-    },
-
-    _showSummaryCompleted: function(timeout) {
-        this._newSummaryItems = [];
-
-        if (timeout != 0) {
-            this._summaryTimeoutId =
-                Mainloop.timeout_add(timeout * 1000,
-                                     Lang.bind(this, this._summaryTimeout));
-        }
-    },
-
-    _summaryTimeout: function() {
-        this._summaryTimeoutId = 0;
-        this._updateState();
-        return false;
-    },
-
-    _hideSummary: function() {
-        this._tween(this._summaryBin, '_summaryState', State.HIDDEN,
-                    { opacity: 0,
-                      time: ANIMATION_TIME,
-                      transition: 'easeOutQuad',
-                      onComplete: this._hideSummaryCompleted,
-                      onCompleteScope: this,
-                    });
-        this._newSummaryItems = [];
-    },
-
-    _hideSummaryCompleted: function() {
-        this._setExpandedSummaryItem(null);
-    },
-
-    _showSummaryBoxPointer: function() {
-        this._summaryBoxPointerItem = this._clickedSummaryItem;
-        this._summaryBoxPointerContentUpdatedId = this._summaryBoxPointerItem.connect('content-updated',
-                                                                                      Lang.bind(this, this._onSummaryBoxPointerContentUpdated));
-        this._summaryBoxPointerDoneDisplayingId = this._summaryBoxPointerItem.connect('done-displaying-content',
-                                                                                      Lang.bind(this, this._escapeTray));
-        if (this._clickedSummaryItemMouseButton == 1) {
-            this._notificationQueue = this._notificationQueue.filter( Lang.bind(this,
-                function(notification) {
-                    return this._summaryBoxPointerItem.source != notification.source;
-                }));
-            this._summaryBoxPointerItem.prepareNotificationStackForShowing();
-            this._summaryBoxPointer.bin.child = this._summaryBoxPointerItem.notificationStackView;
-            this._summaryBoxPointerItem.scrollTo(St.Side.BOTTOM);
-        } else if (this._clickedSummaryItemMouseButton == 3) {
-            this._summaryBoxPointer.bin.child = this._clickedSummaryItem.rightClickMenu;
-        }
-
-        this._focusGrabber.grabFocus(this._summaryBoxPointer.bin.child);
-
-        this._clickedSummaryItemAllocationChangedId =
-            this._clickedSummaryItem.actor.connect('allocation-changed',
-                                                   Lang.bind(this, this._adjustSummaryBoxPointerPosition));
-        // _clickedSummaryItem.actor can change absolute position without changing allocation
-        this._summaryMotionId = this._summary.connect('allocation-changed',
-                                                      Lang.bind(this, this._adjustSummaryBoxPointerPosition));
-        this._trayMotionId = Main.layoutManager.trayBox.connect('notify::anchor-y',
-                                                                Lang.bind(this, this._adjustSummaryBoxPointerPosition));
-
-        this._summaryBoxPointer.actor.opacity = 0;
-        this._summaryBoxPointer.actor.show();
-        this._adjustSummaryBoxPointerPosition();
-
-        this._summaryBoxPointerState = State.SHOWING;
-        this._clickedSummaryItem.actor.add_style_pseudo_class('selected');
-        this._summaryBoxPointer.show(true, Lang.bind(this, function() {
-            this._summaryBoxPointerState = State.SHOWN;
-        }));
-    },
-
-    _onSummaryBoxPointerContentUpdated: function() {
-        if (this._summaryBoxPointerItem.notificationStack.get_children().length == 0)
-            this._hideSummaryBoxPointer();
-        this._adjustSummaryBoxPointerPosition();
-
-    },
-
-    _adjustSummaryBoxPointerPosition: function() {
-        // The position of the arrow origin should be the same as center of this._clickedSummaryItem.actor
-        if (!this._clickedSummaryItem)
-            return;
-
-        this._summaryBoxPointer.setPosition(this._clickedSummaryItem.actor, 0, 0.5);
-    },
-
-    _unsetClickedSummaryItem: function() {
-        if (this._clickedSummaryItemAllocationChangedId) {
-            this._clickedSummaryItem.actor.disconnect(this._clickedSummaryItemAllocationChangedId);
-            this._summary.disconnect(this._summaryMotionId);
-            Main.layoutManager.trayBox.disconnect(this._trayMotionId);
-            this._clickedSummaryItemAllocationChangedId = 0;
-            this._summaryMotionId = 0;
-            this._trayMotionId = 0;
-        }
-
-        if (this._clickedSummaryItem)
-            this._clickedSummaryItem.actor.remove_style_pseudo_class('selected');
-        this._clickedSummaryItem = null;
-        this._clickedSummaryItemMouseButton = -1;
-    },
-
-    _hideSummaryBoxPointer: function() {
-        // We should be sure to hide the box pointer if all notifications in it are destroyed while
-        // it is hiding, so that we don't show an an animation of an empty blob being hidden.
-        if (this._summaryBoxPointerState == State.HIDING &&
-            this._summaryBoxPointerItem.notificationStack.get_children().length == 0) {
-            this._summaryBoxPointer.actor.hide();
-            return;
-        }
-
-        this._summaryBoxPointerState = State.HIDING;
-        // Unset this._clickedSummaryItem if we are no longer showing the summary or if
-        // this._clickedSummaryItem is still the item associated with the currently showing box pointer
-        if (this._summaryState != State.SHOWN || this._summaryBoxPointerItem == this._clickedSummaryItem)
-            this._unsetClickedSummaryItem();
-
-        this._focusGrabber.ungrabFocus();
-        if (this._summaryBoxPointerItem.source.notifications.length == 0) {
-            this._summaryBoxPointer.actor.hide();
-            this._hideSummaryBoxPointerCompleted();
-        } else {
-            this._summaryBoxPointer.hide(true, Lang.bind(this, this._hideSummaryBoxPointerCompleted));
-        }
-    },
-
-    _hideSummaryBoxPointerCompleted: function() {
-        let doneShowingNotificationStack = (this._summaryBoxPointer.bin.child == this._summaryBoxPointerItem.notificationStackView);
-
-        this._summaryBoxPointerState = State.HIDDEN;
-        this._summaryBoxPointer.bin.child = null;
-        this._summaryBoxPointerItem.disconnect(this._summaryBoxPointerContentUpdatedId);
-        this._summaryBoxPointerContentUpdatedId = 0;
-        this._summaryBoxPointerItem.disconnect(this._summaryBoxPointerDoneDisplayingId);
-        this._summaryBoxPointerDoneDisplayingId = 0;
-
-        let sourceNotificationStackDoneShowing = null;
-        if (doneShowingNotificationStack) {
-            this._summaryBoxPointerItem.doneShowingNotificationStack();
-            sourceNotificationStackDoneShowing = this._summaryBoxPointerItem.source;
-        }
-
-        this._summaryBoxPointerItem = null;
-
-        if (sourceNotificationStackDoneShowing) {
-            if (sourceNotificationStackDoneShowing.isTransient && !this._reNotifyAfterHideNotification)
-                sourceNotificationStackDoneShowing.destroy(NotificationDestroyedReason.EXPIRED);
-            if (this._reNotifyAfterHideNotification) {
-                this._onNotify(this._reNotifyAfterHideNotification.source, this._reNotifyAfterHideNotification);
-                this._reNotifyAfterHideNotification = null;
-            }
-        }
-
-        if (this._clickedSummaryItem)
-            this._updateState();
     }
 };
 
