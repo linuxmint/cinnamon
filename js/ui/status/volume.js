@@ -800,8 +800,11 @@ Indicator.prototype = {
         this._inputSlider.connect('drag-end', Lang.bind(this, this._notifyVolumeChange));
         this.menu.addMenuItem(this._inputTitle);
         this.menu.addMenuItem(this._inputSlider);
-        this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+        this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());               
         this.menu.addSettingsAction(_("Sound Settings"), 'gnome-sound-panel.desktop');
+        
+        this._selectDeviceItem = new PopupMenu.PopupSubMenuMenuItem(_("Output device..."));
+        this.menu.addMenuItem(this._selectDeviceItem);     
         
         if (this._showInput){
            this._inputTitle.actor.show();
@@ -905,6 +908,16 @@ Indicator.prototype = {
         } else {
             this._outputSlider.setValue(0);
             this.setIconName('audio-volume-muted-symbolic');
+        }
+        let sinks = this._control.get_sinks(); 
+        this._selectDeviceItem.menu.removeAll();                
+        for (let i = 0; i < sinks.length; i++) {        	
+        	let description = sinks[i].get_description();
+        	if (sinks[i].get_id() == this._output.get_id()) {
+        		description = "* " + sinks[i].get_description();
+        	}
+        	let menuItem = new PopupMenu.PopupMenuItem(description);        	
+            this._selectDeviceItem.menu.addMenuItem(menuItem);     	
         }
     },
     
