@@ -1394,8 +1394,8 @@ MessageTray.prototype = {
     },
 
     _setSizePosition: function() {
-        let monitor = Main.layoutManager.bottomMonitor;
-        this._notificationBin.x = 0;
+        let monitor = Main.layoutManager.primaryMonitor;
+        this._notificationBin.x = monitor.width / 3;
         this._notificationBin.width = monitor.width;
     },
 
@@ -1570,7 +1570,7 @@ MessageTray.prototype = {
         this._notificationBin.child = this._notification.actor;
 
         this._notificationBin.opacity = 0;
-        this._notificationBin.y = 0;
+        this._notificationBin.y = 500;
         this._notificationBin.show();
 
         this._updateShowingNotification();
@@ -1622,7 +1622,7 @@ MessageTray.prototype = {
                             onCompleteScope: this
                           };
         if (!this._notification.expanded)
-            tweenParams.y = 0;
+            tweenParams.y = 300;
 
         this._tween(this._notificationBin, '_notificationState', State.SHOWN, tweenParams);
    },
