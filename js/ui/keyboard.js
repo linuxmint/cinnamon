@@ -326,7 +326,7 @@ Keyboard.prototype = {
                                           style_class: 'keyboard-key' });
         trayButton.key_width = 1;
         trayButton.connect('button-press-event', Lang.bind(this, function () {
-            Main.messageTray.toggle();
+            if (Main.messageTray) Main.messageTray.toggle();
         }));
 
         Main.overview.connect('showing', Lang.bind(this, function () {
@@ -455,7 +455,7 @@ Keyboard.prototype = {
         if (this._source == null) {
             this._source = new KeyboardSource(this);
             this._source.setTransient(true);
-            Main.messageTray.add(this._source);
+            if (Main.messageTray) Main.messageTray.add(this._source);
         }
     },
 

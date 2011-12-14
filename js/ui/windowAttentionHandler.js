@@ -30,7 +30,7 @@ WindowAttentionHandler.prototype = {
 
         let app = this._tracker.get_window_app(window);
         let source = new Source(app, window);
-        Main.messageTray.add(source);
+        if (Main.messageTray) Main.messageTray.add(source);
 
         let banner = _("'%s' is ready").format(window.title);
         let title = app.get_name();

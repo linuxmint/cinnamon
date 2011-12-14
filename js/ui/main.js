@@ -214,7 +214,7 @@ function start() {
     statusIconDispatcher = new StatusIconDispatcher.StatusIconDispatcher();
     panel = new Panel.Panel();
     wm = new WindowManager.WindowManager();
-    messageTray = new MessageTray.MessageTray();
+    //messageTray = new MessageTray.MessageTray();
     keyboard = new Keyboard.Keyboard();
     notificationDaemon = new NotificationDaemon.NotificationDaemon();
     windowAttentionHandler = new WindowAttentionHandler.WindowAttentionHandler();
@@ -232,7 +232,7 @@ function start() {
 
     if (global.session_type == Shell.SessionType.USER)
         _initUserSession();
-    statusIconDispatcher.start(messageTray.actor);
+    statusIconDispatcher.start(panel.actor);
 
     // Provide the bus object for gnome-session to
     // initiate logouts.
@@ -480,7 +480,7 @@ function loadTheme() {
  */
 function notify(msg, details) {
     let source = new MessageTray.SystemNotificationSource();
-    messageTray.add(source);
+    //messageTray.add(source);
     let notification = new MessageTray.Notification(source, msg, details);
     notification.setTransient(true);
     source.notify(notification);

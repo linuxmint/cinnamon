@@ -258,7 +258,7 @@ Client.prototype = {
         // system-users for now as Empathy does.
         let source = new ApproverSource(dispatchOp, _("Invitation"),
                                         Gio.icon_new_for_string('system-users'));
-        Main.messageTray.add(source);
+        if (Main.messageTray) Main.messageTray.add(source);
 
         let notif = new RoomInviteNotification(source, dispatchOp, channel, contacts[0]);
         source.notify(notif);
@@ -327,7 +327,7 @@ Client.prototype = {
         let source = new ApproverSource(dispatchOp, _("Call"), isVideo ?
                                         Gio.icon_new_for_string('camera-web') :
                                         Gio.icon_new_for_string('audio-input-microphone'));
-        Main.messageTray.add(source);
+        if (Main.messageTray) Main.messageTray.add(source);
 
         let notif = new AudioVideoNotification(source, dispatchOp, channel, contacts[0], isVideo);
         source.notify(notif);
@@ -355,7 +355,7 @@ Client.prototype = {
 
         // We got the TpContact
         let source = new ApproverSource(dispatchOp, _("File Transfer"), gicon);
-        Main.messageTray.add(source);
+        if (Main.messageTray) Main.messageTray.add(source);
 
         let notif = new FileTransferNotification(source, dispatchOp, channel, contacts[0]);
         source.notify(notif);
@@ -436,7 +436,7 @@ Client.prototype = {
         if (this._subscriptionSource == null) {
             this._subscriptionSource = new MultiNotificationSource(
                 _("Subscription request"), 'gtk-dialog-question');
-            Main.messageTray.add(this._subscriptionSource);
+            if (Main.messageTray) Main.messageTray.add(this._subscriptionSource);
             this._subscriptionSource.connect('destroy', Lang.bind(this, function () {
                 this._subscriptionSource = null;
             }));
@@ -472,7 +472,7 @@ Client.prototype = {
         if (this._accountSource == null) {
             this._accountSource = new MultiNotificationSource(
                 _("Connection error"), 'gtk-dialog-error');
-            Main.messageTray.add(this._accountSource);
+            if (Main.messageTray) Main.messageTray.add(this._accountSource);
             this._accountSource.connect('destroy', Lang.bind(this, function () {
                 this._accountSource = null;
             }));
@@ -531,7 +531,7 @@ ChatSource.prototype = {
         this._presenceChangedId = this._contact.connect('presence-changed', Lang.bind(this, this._presenceChanged));
 
         // Add ourselves as a source.
-        Main.messageTray.add(this);
+        if (Main.messageTray) Main.messageTray.add(this);
         this.pushNotification(this._notification);
 
         this._getLogMessages();

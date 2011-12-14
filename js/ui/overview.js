@@ -72,7 +72,7 @@ ShellInfo.prototype = {
                 function() {
                     this._source = null;
                 }));
-            Main.messageTray.add(this._source);
+            if (Main.messageTray) Main.messageTray.add(this._source);
         }
 
         let notification = null;
@@ -495,7 +495,7 @@ Overview.prototype = {
         let rtl = (St.Widget.get_default_direction () == St.TextDirection.RTL);
 
         let contentY = Main.panel.actor.height;
-        let contentHeight = primary.height - contentY - Main.messageTray.actor.height;
+        let contentHeight = primary.height - contentY - (Main.messageTray ? Main.messageTray.actor.height : 0);
 
         this._group.set_position(primary.x, primary.y);
         this._group.set_size(primary.width, primary.height);

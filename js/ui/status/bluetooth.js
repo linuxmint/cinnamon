@@ -312,7 +312,7 @@ Indicator.prototype = {
     _ensureSource: function() {
         if (!this._source) {
             this._source = new Source();
-            Main.messageTray.add(this._source);
+            if (Main.messageTray) Main.messageTray.add(this._source);
         }
     },
 

@@ -267,7 +267,7 @@ LayoutManager.prototype = {
     },
 
     showKeyboard: function () {
-        Main.messageTray.hide();
+        if (Main.messageTray) Main.messageTray.hide();
         this.keyboardBox.raise_top();
         Tweener.addTween(this.keyboardBox,
                          { anchor_y: this.keyboardBox.height,
@@ -295,7 +295,7 @@ LayoutManager.prototype = {
     },
 
     hideKeyboard: function (immediate) {
-        Main.messageTray.hide();
+        if (Main.messageTray) Main.messageTray.hide();
         if (this._keyboardHeightNotifyId) {
             this.keyboardBox.disconnect(this._keyboardHeightNotifyId);
             this._keyboardHeightNotifyId = 0;

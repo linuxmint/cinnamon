@@ -321,7 +321,7 @@ AutorunResidentSource.prototype = {
         this._notification.updateForMounts(this._mounts);
 
         // add ourselves as a source, and push the notification
-        if (!Main.messageTray.contains(this)) {
+        if (Main.messageTray && !Main.messageTray.contains(this)) {
             Main.messageTray.add(this);
             this.pushNotification(this._notification);
         }
@@ -534,7 +534,7 @@ AutorunTransientSource.prototype = {
         this._setSummaryIcon(this.createNotificationIcon());
 
         // add ourselves as a source, and popup the notification
-        Main.messageTray.add(this);
+        if (Main.messageTray) Main.messageTray.add(this);
         this.notify(this._notification);
     },
 

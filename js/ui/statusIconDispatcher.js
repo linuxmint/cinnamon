@@ -48,19 +48,12 @@ StatusIconDispatcher.prototype = {
     _onTrayIconAdded: function(o, icon) {
         let wmClass = (icon.wm_class || 'unknown').toLowerCase();
         let role = STANDARD_TRAY_ICON_IMPLEMENTATIONS[wmClass];
-        if (role)
-            this.emit('status-icon-added', icon, role);
-        else
-            this.emit('message-icon-added', icon);
+        if (!role) role = wmClass;
+        this.emit('status-icon-added', icon, role);
     },
 
     _onTrayIconRemoved: function(o, icon) {
-        let wmClass = (icon.wm_class || 'unknown').toLowerCase();
-        let role = STANDARD_TRAY_ICON_IMPLEMENTATIONS[wmClass];
-        if (role)
-            this.emit('status-icon-removed', icon);
-        else
-            this.emit('message-icon-removed', icon);
+        this.emit('status-icon-removed', icon);
     }
 };
 Signals.addSignalMethods(StatusIconDispatcher.prototype);

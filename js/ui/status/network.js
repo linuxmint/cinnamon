@@ -1681,7 +1681,7 @@ NMApplet.prototype = {
             this._source.connect('destroy', Lang.bind(this, function() {
                 this._source = null;
             }));
-            Main.messageTray.add(this._source);
+            if (Main.messageTray) Main.messageTray.add(this._source);
         }
     },
 

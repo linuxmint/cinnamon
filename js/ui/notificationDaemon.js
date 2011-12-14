@@ -191,7 +191,7 @@ NotificationDaemon.prototype = {
                 }));
         }
 
-        Main.messageTray.add(source);
+        if (Main.messageTray) Main.messageTray.add(source);
         return source;
     },
 
