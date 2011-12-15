@@ -30,6 +30,7 @@ const LONGER_HIDE_TIMEOUT = 0.6;
 
 const MAX_SOURCE_TITLE_WIDTH = 180;
 
+
 // We delay hiding of the tray if the mouse is within MOUSE_LEFT_ACTOR_THRESHOLD
 // range from the point where it left the tray.
 const MOUSE_LEFT_ACTOR_THRESHOLD = 20;
@@ -1395,9 +1396,9 @@ MessageTray.prototype = {
     },
 
     _setSizePosition: function() {
-        let monitor = Main.layoutManager.primaryMonitor;
-        this._notificationBin.x = monitor.width / 3;
-        this._notificationBin.width = monitor.width;
+        //let monitor = Main.layoutManager.primaryMonitor;
+        //this._notificationBin.x = monitor.width - 500;
+        //this._notificationBin.width = monitor.width;
     },
 
     contains: function(source) {
@@ -1569,9 +1570,11 @@ MessageTray.prototype = {
         this._notificationClickedId = this._notification.connect('done-displaying',
                                                                  Lang.bind(this, this._escapeTray));
         this._notificationBin.child = this._notification.actor;
-
-        this._notificationBin.opacity = 0;
-        this._notificationBin.y = 500;
+        this._notificationBin.opacity = 0;        
+        let monitor = Main.layoutManager.primaryMonitor;
+        this._notificationBin.y = monitor.height; // Notifications appear from here (for the animation)
+        let margin = this._notification._table.get_theme_node().get_length('margin-from-right-edge-of-screen');                
+        this._notificationBin.x = monitor.width - this._notification._table.width - margin;
         this._notificationBin.show();
 
         this._updateShowingNotification();
@@ -1601,7 +1604,7 @@ MessageTray.prototype = {
         // changed. Therefore we need to call this._expandNotification() for expanded notifications
         // to make sure their position is updated.
         if (this._notification.urgency == Urgency.CRITICAL || this._notification.expanded)
-            this._expandNotification(true);
+            this._expandNotification(true);		
 
         // We tween all notifications to full opacity. This ensures that both new notifications and
         // notifications that might have been in the process of hiding get full opacity.
@@ -1622,8 +1625,8 @@ MessageTray.prototype = {
                             onComplete: this._showNotificationCompleted,
                             onCompleteScope: this
                           };
-        if (!this._notification.expanded)
-            tweenParams.y = 300;
+        if (!this._notification.expanded)        	 
+            tweenParams.y = this._notification._table.get_theme_node().get_length('margin-from-top-edge-of-screen');             
 
         this._tween(this._notificationBin, '_notificationState', State.SHOWN, tweenParams);
    },
