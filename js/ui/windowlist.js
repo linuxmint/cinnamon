@@ -91,6 +91,7 @@ AppMenuButtonRightClickMenu.prototype = {
 
     _onCloseWindowActivate: function(actor, event){
         this.metaWindow.delete(global.get_current_time());
+        this.destroy();
     },
 
     _onMinimizeWindowActivate: function(actor, event){
@@ -333,6 +334,7 @@ AppMenuButton.prototype = {
             this._windowHandle(false);
         } else if (Shell.get_event_state(event) & Clutter.ModifierType.BUTTON2_MASK) {
             this.metaWindow.delete(global.get_current_time());
+            this.rightClickMenu.destroy();
         } else if (Shell.get_event_state(event) & Clutter.ModifierType.BUTTON3_MASK) {
             if (!this.rightClickMenu.isOpen) {
                 // Setting the max-height won't do any good if the minimum height of the
