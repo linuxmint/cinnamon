@@ -1136,6 +1136,15 @@ StTooltip StLabel {
     link-color: #ccccff;
 }
 
+/* Overview corner */
+#overview-corner {
+	background-image: url("overview.png");
+}
+
+#overview-corner:hover {    
+    background-image:  url("overview-hover.png");
+}
+
 /* Message Tray */
 #message-tray {
     background-gradient-direction: vertical;

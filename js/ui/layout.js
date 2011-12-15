@@ -33,7 +33,12 @@ LayoutManager.prototype = {
         this._trayBarrier = 0;
 
         this._chrome = new Chrome(this);       
-
+		
+		this._hotCorner = new HotCorner();
+		this.overviewCorner = new St.Button({name: 'overview-corner', reactive: true, track_hover: true });		
+		this.addChrome(this.overviewCorner, { visibleInFullscreen: false });	
+		this.overviewCorner.connect('button-release-event', Lang.bind(this, this._toggleOverview));
+		
         this.trayBox = new St.BoxLayout({ name: 'trayBox' }); 
         this.addChrome(this.trayBox, { visibleInFullscreen: true });
         this.trayBox.connect('allocation-changed',
@@ -63,6 +68,12 @@ LayoutManager.prototype = {
         this._chrome.init();
 
         this._startupAnimation();
+    },
+    
+    _toggleOverview: function() {
+        if (!Main.overview.animationInProgress) {            
+        	Main.overview.toggle();
+        }                    
     },
 
     _updateMonitors: function() {
@@ -137,15 +148,19 @@ LayoutManager.prototype = {
 
             if (!haveTopLeftCorner)
                 continue;
-
-            let corner = new HotCorner();
-            this._hotCorners.push(corner);
-            corner.actor.set_position(cornerX, cornerY);
-            this._chrome.addActor(corner.actor);
+            
+            this._hotCorners.push(_hotCorner);
+            _hotCorner.actor.set_position(cornerX, cornerY);
+            this._chrome.addActor(_hotCorner.actor);
         }
     },
 
     _updateBoxes: function() {
+    	this.overview
+    	
+    	this.overviewCorner.set_position(this.primaryMonitor.x, this.primaryMonitor.y);
+    	this.overviewCorner.set_size(32, 32);
+    	
         // Need to use GSettings to get the panel height instead of hard-coding it
         this.panelBox.set_position(this.bottomMonitor.x, this.bottomMonitor.y + this.bottomMonitor.height - 25);
         this.panelBox.set_size(this.bottomMonitor.width, 25);
