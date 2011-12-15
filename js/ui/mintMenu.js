@@ -444,19 +444,20 @@ ApplicationsButton.prototype = {
         this._display();
     },
    
-    _loadCategory: function(dir) {
+    _loadCategory: function(dir, top_dir) {
         var iter = dir.iter();
         var nextType;
+        if (!top_dir) top_dir = dir;
         while ((nextType = iter.next()) != GMenu.TreeItemType.INVALID) {
             if (nextType == GMenu.TreeItemType.ENTRY) {
                 var entry = iter.get_entry();
                 if (!entry.get_app_info().get_nodisplay()) {
 var app = appsys.lookup_app_by_tree_entry(entry);
-                 if (!this.applicationsByCategory[dir.get_menu_id()]) this.applicationsByCategory[dir.get_menu_id()] = new Array();
-this.applicationsByCategory[dir.get_menu_id()].push(app);
+                 if (!this.applicationsByCategory[top_dir.get_menu_id()]) this.applicationsByCategory[top_dir.get_menu_id()] = new Array();
+this.applicationsByCategory[top_dir.get_menu_id()].push(app);
 }
             } else if (nextType == GMenu.TreeItemType.DIRECTORY) {
-                this._loadCategory(iter.get_directory());
+                this._loadCategory(iter.get_directory(), top_dir);
             }
         }
     },
