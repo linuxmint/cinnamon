@@ -279,9 +279,9 @@ StTooltip StLabel {
     color: #ffffff;
     background-color: black;
     border-image: url("panel-border.svg") 1;
-    font-size: 10.5pt;
-    font-weight: bold;
-    height: 1.86em;
+    font-size: 8.5pt;
+    font-weight: normal;
+    height: 25px;
 }
 
 #panelLeft, #panelCenter {

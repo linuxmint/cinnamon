@@ -911,16 +911,20 @@ Indicator.prototype = {
         }
         let sinks = this._control.get_sinks(); 
         this._selectDeviceItem.menu.removeAll();                
-        for (let i = 0; i < sinks.length; i++) {        	
-        	let description = sinks[i].get_description();
+        for (let i = 0; i < sinks.length; i++) {        	        	
+        	let sink = sinks[i];
+        	let menuItem = new PopupMenu.PopupMenuItem(sink.get_description());
         	if (sinks[i].get_id() == this._output.get_id()) {
-        		description = "* " + sinks[i].get_description();
+        		menuItem.setShowDot(true);
         	}
-        	let menuItem = new PopupMenu.PopupMenuItem(description);        	
-            this._selectDeviceItem.menu.addMenuItem(menuItem);     	
+        	menuItem.connect('activate', Lang.bind(this, function() {
+        		log('Changing default sink to ' + sink.get_description());
+                this._control.set_default_sink(sink);
+            }));        	        	       
+            this._selectDeviceItem.menu.addMenuItem(menuItem);             
         }
     },
-    
+            
     _readInput: function() {
         if (this._inputVolumeId) {
             this._input.disconnect(this._inputVolumeId);
