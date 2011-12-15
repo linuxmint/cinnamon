@@ -35,6 +35,7 @@ LayoutManager.prototype = {
         this._chrome = new Chrome(this);       
 		
 		this._hotCorner = new HotCorner();
+        this._hotCorner.actor.set_position(0,0);
 		this.overviewCorner = new St.Button({name: 'overview-corner', reactive: true, track_hover: true });		
 		this.addChrome(this.overviewCorner, { visibleInFullscreen: false });	
 		this.overviewCorner.connect('button-release-event', Lang.bind(this, this._toggleOverview));
@@ -59,6 +60,7 @@ LayoutManager.prototype = {
         global.screen.connect('monitors-changed',
                               Lang.bind(this, this._monitorsChanged));
         this._monitorsChanged();
+        this._chrome.addActor(this._hotCorner.actor);
     },
 
     // This is called by Main after everything else is constructed;
@@ -148,6 +150,8 @@ LayoutManager.prototype = {
 
             if (!haveTopLeftCorner)
                 continue;
+            
+            _hotCorner = new HotCorner();
             
             this._hotCorners.push(_hotCorner);
             _hotCorner.actor.set_position(cornerX, cornerY);
