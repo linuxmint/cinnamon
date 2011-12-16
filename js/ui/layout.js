@@ -34,8 +34,7 @@ LayoutManager.prototype = {
 
         this._chrome = new Chrome(this);       
 		
-		this._hotCorner = new HotCorner();
-        this._hotCorner.actor.set_position(0,0);
+		this._hotCorner = new HotCorner();        
 		this.overviewCorner = new St.Button({name: 'overview-corner', reactive: true, track_hover: true });		
 		this.addChrome(this.overviewCorner, { visibleInFullscreen: false });	
 		this.overviewCorner.connect('button-release-event', Lang.bind(this, this._toggleOverview));
@@ -151,18 +150,16 @@ LayoutManager.prototype = {
             if (!haveTopLeftCorner)
                 continue;
             
-            _hotCorner = new HotCorner();
-            
+            let _hotCorner = new HotCorner();            
             this._hotCorners.push(_hotCorner);
             _hotCorner.actor.set_position(cornerX, cornerY);
             this._chrome.addActor(_hotCorner.actor);
         }
     },
 
-    _updateBoxes: function() {
-    	this.overview
-    	
-    	this.overviewCorner.set_position(this.primaryMonitor.x, this.primaryMonitor.y);
+    _updateBoxes: function() {    	    
+    	this._hotCorner.actor.set_position(this.primaryMonitor.x,this.primaryMonitor.y);    	
+    	this.overviewCorner.set_position(this.primaryMonitor.x + 1, this.primaryMonitor.y + 1);
     	this.overviewCorner.set_size(32, 32);
     	
         // Need to use GSettings to get the panel height instead of hard-coding it
