@@ -277,8 +277,7 @@ StTooltip StLabel {
 
 #panel {
     color: #ffffff;
-    background-color: black;
-    border-image: url("panel-border.svg") 1;
+    background-color: #555555;    
     font-size: 8.5pt;
     font-weight: normal;
     height: 25px;
@@ -297,11 +296,32 @@ StTooltip StLabel {
 }
 
 #panelRight:ltr {
-    padding-left: 4px;
+    padding-left: 0px;
+    spacing: 0px;
 }
 
 #panelRight:rtl {
-    padding-right: 4px;
+    padding-right: 0px;
+    spacing: 0px;
+}
+
+.panel-status-button {
+	border: 0px solid #8b8b8b;
+	-natural-hpadding: 5px;
+    -minimum-hpadding: 5px;
+    font-weight: bold;
+    color: #ccc;    
+}
+
+.panel-status-button:hover {
+    color: white;    
+}
+
+.system-status-icon {
+	padding-left: 0px;
+	padding-right: 0px;	
+	spacing: 0px;
+	margin: 0px;
 }
 
 .panel-corner {
@@ -358,12 +378,6 @@ StTooltip StLabel {
     background-image: url("panel-button-highlight-wide.svg");
     color: white;
     text-shadow: black 0px 2px 2px;
-}
-
-.panel-status-button:active,
-.panel-status-button:checked,
-.panel-status-button:focus {
-    background-image: url("panel-button-highlight-narrow.svg");
 }
 
 .panel-button:active > .system-status-icon,

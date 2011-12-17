@@ -1116,8 +1116,8 @@ Panel.prototype = {
             return;
         }
 
-        icon.height = PANEL_ICON_SIZE;
-        let buttonBox = new PanelMenu.ButtonBox();
+        //icon.height = PANEL_ICON_SIZE;        
+        let buttonBox = new PanelMenu.ButtonBox({ style_class: 'panel-status-button' });
         let box = buttonBox.actor;
         box.add_actor(icon);
 

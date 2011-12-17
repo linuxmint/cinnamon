@@ -197,7 +197,7 @@ SystemStatusButton.prototype = {
                                         icon_type: St.IconType.SYMBOLIC,
                                         style_class: 'system-status-icon' });
         this.actor.add_actor(this._iconActor);
-        this.actor.add_style_class_name('panel-status-button');
+        this.actor.set_style_class_name('panel-status-button');
         this.setTooltip(tooltipText);
     },
 
