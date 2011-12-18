@@ -479,17 +479,22 @@ plugin_install_extension (PluginObject *obj,
                           NPString      version_tag)
 {
   gchar *uuid_str = g_strndup (uuid.UTF8Characters, uuid.UTF8Length);
+  gchar *version_tag_str;
+
   if (!uuid_is_valid (uuid_str))
     {
       g_free (uuid_str);
       return FALSE;
     }
 
+  version_tag_str = g_strndup (version_tag.UTF8Characters,
+                               version_tag.UTF8Length);
+
   g_dbus_proxy_call (obj->proxy,
                      "InstallRemoteExtension",
                      g_variant_new ("(ss)",
                                     uuid_str,
-                                    version_tag.UTF8Characters),
+                                    version_tag_str),
                      G_DBUS_CALL_FLAGS_NONE,
                      -1, /* timeout */
                      NULL, /* cancellable */
@@ -497,6 +502,7 @@ plugin_install_extension (PluginObject *obj,
                      NULL /* user_data */);
 
   g_free (uuid_str);
+  g_free (version_tag_str);
 
   return TRUE;
 }
