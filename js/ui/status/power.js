@@ -65,6 +65,16 @@ Indicator.prototype = {
     _init: function() {
         PanelMenu.SystemStatusButton.prototype._init.call(this, 'battery-missing');
         this._proxy = new PowerManagerProxy(DBus.session, BUS_NAME, OBJECT_PATH);
+        
+        let icon = this.actor.get_children()[0];
+        this.actor.remove_actor(icon);
+        let box = new St.BoxLayout({ name: 'batteryBox' });
+        this.actor.add_actor(box);
+        let iconBox = new St.Bin();
+        box.add(iconBox, { y_align: St.Align.MIDDLE, y_fill: false });
+        this._mainLabel = new St.Label();
+        box.add(this._mainLabel, { y_align: St.Align.MIDDLE, y_fill: false });
+        iconBox.child = icon;
 
         this._deviceItems = [ ];
         this._hasPrimary = false;
@@ -165,6 +175,26 @@ Indicator.prototype = {
         }));
         this._readPrimaryDevice();
         this._readOtherDevices();
+        this._updateLabel();
+    },
+    
+    _updateLabel: function() {
+        this._proxy.GetDevicesRemote(Lang.bind(this, function(devices, error) {
+            if (error) {
+                this._mainLabel.set_text("");
+                return;
+            }
+            for (let i = 0; i < devices.length; i++) {
+                let [device_id, device_type, icon, percentage, state, time] = devices[i];
+                if (device_type == UPDeviceType.BATTERY || device_id == this._primaryDeviceId) {
+                    let percentageText = C_("percent of battery remaining", "%d%%").format(Math.round(percentage));
+                    this._mainLabel.set_text(percentageText);
+                    return;
+                }
+            }
+            // no battery found... hot-unplugged?
+            this._mainLabel.set_text("");
+        }));
     }
 };
 
