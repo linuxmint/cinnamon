@@ -609,6 +609,7 @@ WindowList.prototype = {
     },
     
     _onMap: function(shellwm, actor) {
+        this._refreshItems();
         this._onWindowStateChange('map', actor);
     },
   
