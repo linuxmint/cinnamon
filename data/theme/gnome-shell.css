@@ -311,6 +311,7 @@ StTooltip StLabel {
     -minimum-hpadding: 5px;
     font-weight: bold;
     color: #ccc;    
+    height: 16px;
 }
 
 .panel-status-button:hover {
