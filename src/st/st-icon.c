@@ -175,6 +175,20 @@ st_icon_dispose (GObject *gobject)
 }
 
 static void
+st_icon_finalize (GObject *object)
+{
+  StIconPrivate *priv = ST_ICON (gobject)->priv;
+
+  if (priv->icon_name)
+    {
+      g_free (priv->icon_name);
+      priv->icon_name = NULL;
+    }
+
+  G_OBJECT_CLASS (st_icon_parent_class)->finalize (gobject);
+}
+
+static void
 st_icon_get_preferred_height (ClutterActor *actor,
                               gfloat        for_width,
                               gfloat       *min_height_p,
@@ -317,6 +331,7 @@ st_icon_class_init (StIconClass *klass)
   object_class->get_property = st_icon_get_property;
   object_class->set_property = st_icon_set_property;
   object_class->dispose = st_icon_dispose;
+  object_class->finalize = st_icon_finalize;
 
   actor_class->get_preferred_height = st_icon_get_preferred_height;
   actor_class->get_preferred_width = st_icon_get_preferred_width;
