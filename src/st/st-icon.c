@@ -175,7 +175,7 @@ st_icon_dispose (GObject *gobject)
 }
 
 static void
-st_icon_finalize (GObject *object)
+st_icon_finalize (GObject *gobject)
 {
   StIconPrivate *priv = ST_ICON (gobject)->priv;
 
