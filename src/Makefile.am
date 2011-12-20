@@ -74,7 +74,7 @@ include Makefile-gvc.am
 include Makefile-calendar-server.am
 include Makefile-hotplug-sniffer.am
 
-gnome_cinnamon_cflags =				\
+cinnamon_cflags =				\
 	$(CINNAMON_CFLAGS)			\
 	-I$(srcdir)/tray			\
 	-DVERSION=\"$(VERSION)\"		\
@@ -122,7 +122,7 @@ cinnamon_public_headers_h =		\
 	cinnamon-wm.h			\
 	cinnamon-xfixes-cursor.h
 
-libgnome_cinnamon_la_SOURCES =		\
+libcinnamon_la_SOURCES =		\
 	$(cinnamon_built_sources)		\
 	$(cinnamon_public_headers_h)	\
 	cinnamon-app-private.h		\
@@ -161,14 +161,14 @@ libgnome_cinnamon_la_SOURCES =		\
 	cinnamon-wm.c			\
 	cinnamon-xfixes-cursor.c
 
-libgnome_cinnamon_la_gir_sources = \
-	$(filter-out %-private.h $(cinnamon_recorder_non_gir_sources), $(cinnamon_public_headers_h) $(libgnome_cinnamon_la_SOURCES))
+libcinnamon_la_gir_sources = \
+	$(filter-out %-private.h $(cinnamon_recorder_non_gir_sources), $(cinnamon_public_headers_h) $(libcinnamon_la_SOURCES))
 
-gnome_cinnamon_real_SOURCES =		\
+cinnamon_real_SOURCES =		\
 	main.c
-gnome_cinnamon_real_CPPFLAGS = $(gnome_cinnamon_cflags)
-gnome_cinnamon_real_LDADD = libcinnamon.la $(libgnome_cinnamon_la_LIBADD)
-gnome_cinnamon_real_DEPENDENCIES = libcinnamon.la
+cinnamon_real_CPPFLAGS = $(cinnamon_cflags)
+cinnamon_real_LDADD = libcinnamon.la $(libcinnamon_la_LIBADD)
+cinnamon_real_DEPENDENCIES = libcinnamon.la
 
 ########################################
 
@@ -182,7 +182,7 @@ cinnamon_recorder_non_gir_sources =  \
 	cinnamon-recorder-src.h
 
 if BUILD_RECORDER
-libgnome_cinnamon_la_SOURCES += $(cinnamon_recorder_sources) $(cinnamon_recorder_non_gir_sources)
+libcinnamon_la_SOURCES += $(cinnamon_recorder_sources) $(cinnamon_recorder_non_gir_sources)
 
 noinst_PROGRAMS += test-recorder
 
@@ -198,16 +198,16 @@ endif BUILD_RECORDER
 
 libexec_PROGRAMS += cinnamon-perf-helper
 
-gnome_cinnamon_perf_helper_SOURCES = cinnamon-perf-helper.c
-gnome_cinnamon_perf_helper_CPPFLAGS = $(CINNAMON_PERF_HELPER_CFLAGS)
-gnome_cinnamon_perf_helper_LDADD = $(CINNAMON_PERF_HELPER_LIBS)
+cinnamon_perf_helper_SOURCES = cinnamon-perf-helper.c
+cinnamon_perf_helper_CPPFLAGS = $(CINNAMON_PERF_HELPER_CFLAGS)
+cinnamon_perf_helper_LDADD = $(CINNAMON_PERF_HELPER_LIBS)
 
 ########################################
 
 noinst_PROGRAMS += run-js-test
 
-run_js_test_CPPFLAGS = $(gnome_cinnamon_cflags)
-run_js_test_LDADD = libcinnamon.la $(libgnome_cinnamon_la_LIBADD)
+run_js_test_CPPFLAGS = $(cinnamon_cflags)
+run_js_test_LDADD = libcinnamon.la $(libcinnamon_la_LIBADD)
 run_js_test_LDFLAGS = -export-dynamic
 
 run_js_test_SOURCES =			\
@@ -259,8 +259,8 @@ cinnamon-enum-types.c: $(srcdir)/cinnamon-enum-types.c.in stamp-cinnamon-enum-ty
 	rm -f $(@F).tmp
 EXTRA_DIST += cinnamon-enum-types.c.in
 
-libgnome_cinnamon_la_LDFLAGS = -avoid-version
-libgnome_cinnamon_la_LIBADD =		\
+libcinnamon_la_LDFLAGS = -avoid-version
+libcinnamon_la_LIBADD =		\
 	-lm			\
 	$(CINNAMON_LIBS)	\
 	$(BLUETOOTH_LIBS)	\
@@ -269,13 +269,13 @@ libgnome_cinnamon_la_LIBADD =		\
 	libgvc.la		\
 	$(NULL)
 
-libgnome_cinnamon_la_CPPFLAGS = $(gnome_cinnamon_cflags)
+libcinnamon_la_CPPFLAGS = $(cinnamon_cflags)
 
 Cinnamon-0.1.gir: libcinnamon.la St-1.0.gir
 Cinnamon_0_1_gir_INCLUDES = Clutter-1.0 ClutterX11-1.0 Meta-3.0 TelepathyGLib-0.12 TelepathyLogger-0.2 Soup-2.4 GMenu-3.0 NetworkManager-1.0 NMClient-1.0 Folks-0.6
-Cinnamon_0_1_gir_CFLAGS = $(libgnome_cinnamon_la_CPPFLAGS) -I $(srcdir)
+Cinnamon_0_1_gir_CFLAGS = $(libcinnamon_la_CPPFLAGS) -I $(srcdir)
 Cinnamon_0_1_gir_LIBS = libcinnamon.la
-Cinnamon_0_1_gir_FILES = $(libgnome_cinnamon_la_gir_sources)
+Cinnamon_0_1_gir_FILES = $(libcinnamon_la_gir_sources)
 Cinnamon_0_1_gir_SCANNERFLAGS = --include-uninstalled=$(builddir)/St-1.0.gir \
 	--add-include-path=$(MUTTER_GIR_DIR)
 INTROSPECTION_GIRS += Cinnamon-0.1.gir
