@@ -34,6 +34,7 @@ const Scripting = imports.ui.scripting;
 const CinnamonDBus = imports.ui.cinnamonDBus;
 const TelepathyClient = imports.ui.telepathyClient;
 const WindowManager = imports.ui.windowManager;
+const ThemeManager = imports.ui.themeManager;
 const Magnifier = imports.ui.magnifier;
 const XdndHandler = imports.ui.xdndHandler;
 const StatusIconDispatcher = imports.ui.statusIconDispatcher;
@@ -66,6 +67,7 @@ let xdndHandler = null;
 let statusIconDispatcher = null;
 let keyboard = null;
 let layoutManager = null;
+let themeManager = null;
 let networkAgent = null;
 let _errorLogStack = [];
 let _startDate;
@@ -191,6 +193,8 @@ function start() {
     _defaultCssStylesheet = global.datadir + '/theme/cinnamon.css';
     _gdmCssStylesheet = global.datadir + '/theme/gdm.css';
     loadTheme();
+    
+    themeManager = new ThemeManager.ThemeManager();
 
     // Set up stage hierarchy to group all UI actors under one container.
     uiGroup = new Cinnamon.GenericContainer({ name: 'uiGroup' });

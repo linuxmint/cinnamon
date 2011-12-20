@@ -31,7 +31,7 @@
       </_description>
     </key>
     <key name="favorite-apps" type="as">
-      <default>[ 'epiphany.desktop', 'evolution.desktop', 'empathy.desktop', 'rhythmbox.desktop', 'shotwell.desktop', 'libreoffice-writer.desktop', 'nautilus.desktop', 'gnome-documents.desktop' ]</default>
+      <default>[ 'firefox.desktop', 'mintInstall.desktop', 'gnome-tweak-tool.desktop', 'xchat.desktop', 'gnome-terminal.desktop', 'nautilus.desktop' ]</default>
       <_summary>List of desktop file IDs for favorite applications</_summary>
       <_description>
         The applications corresponding to these identifiers
@@ -59,9 +59,21 @@
       <_summary></_summary>
     </key>
     <child name="clock" schema="org.cinnamon.clock"/>
+    <child name="theme" schema="org.cinnamon.theme"/>
     <child name="calendar" schema="org.cinnamon.calendar"/>
     <child name="recorder" schema="org.cinnamon.recorder"/>
     <child name="keyboard" schema="org.cinnamon.keyboard"/>
+  </schema>
+  
+  <schema id="org.cinnamon.theme" path="/org/cinnamon/theme/"
+        gettext-domain="@GETTEXT_PACKAGE@">
+    <key name="name" type="s">
+      <default>""</default>
+      <_summary>Theme name</_summary>
+      <_description>
+       The name of the theme
+      </_description>
+    </key>
   </schema>
 
   <schema id="org.cinnamon.calendar" path="/org/cinnamon/calendar/"
@@ -96,7 +108,7 @@
       </_description>
     </key>
     <key name="show-date" type="b">
-      <default>false</default>
+      <default>true</default>
       <_summary>Show date in clock</_summary>
       <_description>
         If true, display date in the clock, in addition to time.
