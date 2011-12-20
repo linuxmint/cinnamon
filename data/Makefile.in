@@ -316,7 +316,9 @@ dist_theme_DATA = \
 	theme/gdm.css				\
 	theme/cinnamon.css			\
 	theme/mintMenu.png			\
-	theme/mintMenu-bottom.png			\
+	theme/mintMenu-bottom.png		\
+	theme/overview.png			\
+	theme/overview-hover.png		\
 	theme/panel-border.svg			\
 	theme/panel-button-border.svg		\
 	theme/panel-button-highlight-narrow.svg	\

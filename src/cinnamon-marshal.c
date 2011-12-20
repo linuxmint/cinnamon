@@ -53,11 +53,11 @@
 /* VOID:INT,INT,INT (./cinnamon-marshal.list:1) */
 void
 _cinnamon_marshal_VOID__INT_INT_INT (GClosure     *closure,
-                                  GValue       *return_value G_GNUC_UNUSED,
-                                  guint         n_param_values,
-                                  const GValue *param_values,
-                                  gpointer      invocation_hint G_GNUC_UNUSED,
-                                  gpointer      marshal_data)
+                                     GValue       *return_value G_GNUC_UNUSED,
+                                     guint         n_param_values,
+                                     const GValue *param_values,
+                                     gpointer      invocation_hint G_GNUC_UNUSED,
+                                     gpointer      marshal_data)
 {
   typedef void (*GMarshalFunc_VOID__INT_INT_INT) (gpointer     data1,
                                                   gint         arg_1,
@@ -92,11 +92,11 @@ _cinnamon_marshal_VOID__INT_INT_INT (GClosure     *closure,
 /* VOID:OBJECT,INT,INT,INT,INT (./cinnamon-marshal.list:2) */
 void
 _cinnamon_marshal_VOID__OBJECT_INT_INT_INT_INT (GClosure     *closure,
-                                             GValue       *return_value G_GNUC_UNUSED,
-                                             guint         n_param_values,
-                                             const GValue *param_values,
-                                             gpointer      invocation_hint G_GNUC_UNUSED,
-                                             gpointer      marshal_data)
+                                                GValue       *return_value G_GNUC_UNUSED,
+                                                guint         n_param_values,
+                                                const GValue *param_values,
+                                                gpointer      invocation_hint G_GNUC_UNUSED,
+                                                gpointer      marshal_data)
 {
   typedef void (*GMarshalFunc_VOID__OBJECT_INT_INT_INT_INT) (gpointer     data1,
                                                              gpointer     arg_1,
@@ -137,11 +137,11 @@ _cinnamon_marshal_VOID__OBJECT_INT_INT_INT_INT (GClosure     *closure,
 /* VOID:BOXED,OBJECT (./cinnamon-marshal.list:4) */
 void
 _cinnamon_marshal_VOID__BOXED_OBJECT (GClosure     *closure,
-                                   GValue       *return_value G_GNUC_UNUSED,
-                                   guint         n_param_values,
-                                   const GValue *param_values,
-                                   gpointer      invocation_hint G_GNUC_UNUSED,
-                                   gpointer      marshal_data)
+                                      GValue       *return_value G_GNUC_UNUSED,
+                                      guint         n_param_values,
+                                      const GValue *param_values,
+                                      gpointer      invocation_hint G_GNUC_UNUSED,
+                                      gpointer      marshal_data)
 {
   typedef void (*GMarshalFunc_VOID__BOXED_OBJECT) (gpointer     data1,
                                                    gpointer     arg_1,
@@ -174,11 +174,11 @@ _cinnamon_marshal_VOID__BOXED_OBJECT (GClosure     *closure,
 /* VOID:OBJECT,OBJECT (./cinnamon-marshal.list:5) */
 void
 _cinnamon_marshal_VOID__OBJECT_OBJECT (GClosure     *closure,
-                                    GValue       *return_value G_GNUC_UNUSED,
-                                    guint         n_param_values,
-                                    const GValue *param_values,
-                                    gpointer      invocation_hint G_GNUC_UNUSED,
-                                    gpointer      marshal_data)
+                                       GValue       *return_value G_GNUC_UNUSED,
+                                       guint         n_param_values,
+                                       const GValue *param_values,
+                                       gpointer      invocation_hint G_GNUC_UNUSED,
+                                       gpointer      marshal_data)
 {
   typedef void (*GMarshalFunc_VOID__OBJECT_OBJECT) (gpointer     data1,
                                                     gpointer     arg_1,
@@ -211,11 +211,11 @@ _cinnamon_marshal_VOID__OBJECT_OBJECT (GClosure     *closure,
 /* VOID:STRING,UINT,OBJECT,BOOLEAN (./cinnamon-marshal.list:6) */
 void
 _cinnamon_marshal_VOID__STRING_UINT_OBJECT_BOOLEAN (GClosure     *closure,
-                                                 GValue       *return_value G_GNUC_UNUSED,
-                                                 guint         n_param_values,
-                                                 const GValue *param_values,
-                                                 gpointer      invocation_hint G_GNUC_UNUSED,
-                                                 gpointer      marshal_data)
+                                                    GValue       *return_value G_GNUC_UNUSED,
+                                                    guint         n_param_values,
+                                                    const GValue *param_values,
+                                                    gpointer      invocation_hint G_GNUC_UNUSED,
+                                                    gpointer      marshal_data)
 {
   typedef void (*GMarshalFunc_VOID__STRING_UINT_OBJECT_BOOLEAN) (gpointer     data1,
                                                                  gpointer     arg_1,
@@ -252,11 +252,11 @@ _cinnamon_marshal_VOID__STRING_UINT_OBJECT_BOOLEAN (GClosure     *closure,
 /* VOID:INT,INT (./cinnamon-marshal.list:7) */
 void
 _cinnamon_marshal_VOID__INT_INT (GClosure     *closure,
-                              GValue       *return_value G_GNUC_UNUSED,
-                              guint         n_param_values,
-                              const GValue *param_values,
-                              gpointer      invocation_hint G_GNUC_UNUSED,
-                              gpointer      marshal_data)
+                                 GValue       *return_value G_GNUC_UNUSED,
+                                 guint         n_param_values,
+                                 const GValue *param_values,
+                                 gpointer      invocation_hint G_GNUC_UNUSED,
+                                 gpointer      marshal_data)
 {
   typedef void (*GMarshalFunc_VOID__INT_INT) (gpointer     data1,
                                               gint         arg_1,
@@ -289,11 +289,11 @@ _cinnamon_marshal_VOID__INT_INT (GClosure     *closure,
 /* VOID:STRING,STRING,STRING,STRING,BOXED (./cinnamon-marshal.list:8) */
 void
 _cinnamon_marshal_VOID__STRING_STRING_STRING_STRING_BOXED (GClosure     *closure,
-                                                        GValue       *return_value G_GNUC_UNUSED,
-                                                        guint         n_param_values,
-                                                        const GValue *param_values,
-                                                        gpointer      invocation_hint G_GNUC_UNUSED,
-                                                        gpointer      marshal_data)
+                                                           GValue       *return_value G_GNUC_UNUSED,
+                                                           guint         n_param_values,
+                                                           const GValue *param_values,
+                                                           gpointer      invocation_hint G_GNUC_UNUSED,
+                                                           gpointer      marshal_data)
 {
   typedef void (*GMarshalFunc_VOID__STRING_STRING_STRING_STRING_BOXED) (gpointer     data1,
                                                                         gpointer     arg_1,
@@ -332,11 +332,11 @@ _cinnamon_marshal_VOID__STRING_STRING_STRING_STRING_BOXED (GClosure     *closure
 /* VOID:STRING,OBJECT,STRING,BOXED (./cinnamon-marshal.list:9) */
 void
 _cinnamon_marshal_VOID__STRING_OBJECT_STRING_BOXED (GClosure     *closure,
-                                                 GValue       *return_value G_GNUC_UNUSED,
-                                                 guint         n_param_values,
-                                                 const GValue *param_values,
-                                                 gpointer      invocation_hint G_GNUC_UNUSED,
-                                                 gpointer      marshal_data)
+                                                    GValue       *return_value G_GNUC_UNUSED,
+                                                    guint         n_param_values,
+                                                    const GValue *param_values,
+                                                    gpointer      invocation_hint G_GNUC_UNUSED,
+                                                    gpointer      marshal_data)
 {
   typedef void (*GMarshalFunc_VOID__STRING_OBJECT_STRING_BOXED) (gpointer     data1,
                                                                  gpointer     arg_1,
