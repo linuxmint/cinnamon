@@ -2,20 +2,20 @@ service_in_files += hotplug-sniffer/org.Cinnamon.HotplugSniffer.service.in
 
 libexec_PROGRAMS += cinnamon-hotplug-sniffer
 
-gnome_cinnamon_hotplug_sniffer_SOURCES =								\
+cinnamon_hotplug_sniffer_SOURCES =								\
 	hotplug-sniffer/hotplug-mimetypes.h \
 	hotplug-sniffer/cinnamon-mime-sniffer.h \
 	hotplug-sniffer/cinnamon-mime-sniffer.c \
 	hotplug-sniffer/hotplug-sniffer.c \
 	$(NULL)
 
-gnome_cinnamon_hotplug_sniffer_CFLAGS =		\
+cinnamon_hotplug_sniffer_CFLAGS =		\
 	-I$(top_srcdir)/src			\
 	-DG_DISABLE_DEPRECATED			\
 	$(CINNAMON_HOTPLUG_SNIFFER_CFLAGS)		\
 	$(NULL)
 
-gnome_cinnamon_hotplug_sniffer_LDFLAGS =		\
+cinnamon_hotplug_sniffer_LDFLAGS =		\
 	$(CINNAMON_HOTPLUG_SNIFFER_LIBS)		\
 	$(NULL)
 

@@ -2,13 +2,13 @@ service_in_files += calendar-server/org.Cinnamon.CalendarServer.service.in
 
 libexec_PROGRAMS += cinnamon-calendar-server
 
-gnome_cinnamon_calendar_server_SOURCES =								\
+cinnamon_calendar_server_SOURCES =								\
 	calendar-server/calendar-debug.h							\
 	calendar-server/calendar-sources.c		calendar-server/calendar-sources.h	\
 	calendar-server/cinnamon-calendar-server.c						\
 	$(NULL)
 
-gnome_cinnamon_calendar_server_CFLAGS =		\
+cinnamon_calendar_server_CFLAGS =		\
 	-I$(top_srcdir)/src			\
 	-DPREFIX=\""$(prefix)"\"		\
 	-DLIBDIR=\""$(libdir)"\"		\
@@ -18,7 +18,7 @@ gnome_cinnamon_calendar_server_CFLAGS =		\
 	$(CALENDAR_SERVER_CFLAGS)		\
 	$(NULL)
 
-gnome_cinnamon_calendar_server_LDFLAGS =		\
+cinnamon_calendar_server_LDFLAGS =		\
 	$(CALENDAR_SERVER_LIBS)			\
 	$(NULL)
 
