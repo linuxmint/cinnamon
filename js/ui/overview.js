@@ -204,30 +204,30 @@ Overview.prototype = {
         this._workspacesDisplay = new WorkspacesView.WorkspacesDisplay();
         this._viewSelector.addViewTab('windows', _("Windows"), this._workspacesDisplay.actor, 'text-x-generic');
 
-        let appView = new AppDisplay.AllAppDisplay();
-        this._viewSelector.addViewTab('applications', _("Applications"), appView.actor, 'system-run');
+        //let appView = new AppDisplay.AllAppDisplay();
+        //this._viewSelector.addViewTab('applications', _("Applications"), appView.actor, 'system-run');
 
         // Default search providers
-        this.addSearchProvider(new AppDisplay.AppSearchProvider());
-        this.addSearchProvider(new AppDisplay.SettingsSearchProvider());
-        this.addSearchProvider(new PlaceDisplay.PlaceSearchProvider());
-        this.addSearchProvider(new DocDisplay.DocSearchProvider());
-        this.addSearchProvider(new ContactDisplay.ContactSearchProvider());
+        //this.addSearchProvider(new AppDisplay.AppSearchProvider());
+        //this.addSearchProvider(new AppDisplay.SettingsSearchProvider());
+        //this.addSearchProvider(new PlaceDisplay.PlaceSearchProvider());
+        //this.addSearchProvider(new DocDisplay.DocSearchProvider());
+        //this.addSearchProvider(new ContactDisplay.ContactSearchProvider());
 
         // TODO - recalculate everything when desktop size changes
-        this._dash = new Dash.Dash();
-        this._group.add_actor(this._dash.actor);
-        this._dash.actor.add_constraint(this._viewSelector.constrainY);
-        this._dash.actor.add_constraint(this._viewSelector.constrainHeight);
-        this.dashIconSize = this._dash.iconSize;
-        this._dash.connect('icon-size-changed',
-                           Lang.bind(this, function() {
-                               this.dashIconSize = this._dash.iconSize;
-                           }));
+        //this._dash = new Dash.Dash();
+        //this._group.add_actor(this._dash.actor);
+        //this._dash.actor.add_constraint(this._viewSelector.constrainY);
+        //this._dash.actor.add_constraint(this._viewSelector.constrainHeight);
+        //this.dashIconSize = this._dash.iconSize;
+       // this._dash.connect('icon-size-changed',
+       //                    Lang.bind(this, function() {
+        //                       this.dashIconSize = this._dash.iconSize;
+        //                   }));
 
         // Translators: this is the name of the dock/favorites area on
         // the left of the overview
-        Main.ctrlAltTabManager.addGroup(this._dash.actor, _("Dash"), 'user-bookmarks');
+        //Main.ctrlAltTabManager.addGroup(this._dash.actor, _("Dash"), 'user-bookmarks');
 
         Main.layoutManager.connect('monitors-changed', Lang.bind(this, this._relayout));
         this._relayout();
@@ -510,14 +510,14 @@ Overview.prototype = {
         let viewX = rtl ? 0 : dashWidth + this._spacing;
 
         // Set the dash's x position - y is handled by a constraint
-        let dashX;
-        if (rtl) {
-            this._dash.actor.set_anchor_point_from_gravity(Clutter.Gravity.NORTH_EAST);
-            dashX = primary.width;
-        } else {
-            dashX = 0;
-        }
-        this._dash.actor.set_x(dashX);
+        //let dashX;
+        //if (rtl) {
+        //    this._dash.actor.set_anchor_point_from_gravity(Clutter.Gravity.NORTH_EAST);
+        //    dashX = primary.width;
+        //} else {
+        //    dashX = 0;
+        //}
+        //this._dash.actor.set_x(dashX);
 
         this._viewSelector.actor.set_position(viewX, viewY);
         this._viewSelector.actor.set_size(viewWidth, viewHeight);
