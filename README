@@ -1,20 +1,10 @@
-Cinnamon provides core user interface functions for the GNOME 3 desktop,
-like switching to windows and launching applications. Cinnamon takes
-advantage of the capabilities of modern graphics hardware and introduces
-innovative user interface concepts to provide a visually attractive and
-easy to use experience.
+Cinnamon is a Linux desktop which provides advanced innovative features and a traditional user experience.
 
-For more information about Cinnamon, including instructions on how
-to build Cinnamon from source and how to get involved with the project,
-see:
-
- http://live.gnome.org/Cinnamon
-
-Bugs should be reported at http://bugzilla.gnome.org against the 'cinnamon'
-product.
+The desktop layout is similar to Gnome 2. 
+The underlying technology is forked from Gnome Shell.
+The emphasis is put on making users feel at home and providing them with an easy to use and comfortable desktop experience.
 
 License
 =======
 Cinnamon is distributed under the terms of the GNU General Public License,
 version 2 or later. See the COPYING file for details.
-
