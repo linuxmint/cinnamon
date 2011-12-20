@@ -165,9 +165,13 @@ AltTabPopup.prototype = {
     },
 
     show : function(backward, binding, mask) {
-        let [localApps, otherApps] = this._getAppLists();
+        let screen = global.screen;
+        let display = screen.get_display();
+        let windows = display.get_tab_list(Meta.TabList.NORMAL, screen,
+                                           screen.get_active_workspace());
+        global.log(windows);
 
-        if (localApps.length == 0 && otherApps.length == 0)
+        if (windows.length == 0)
             return false;
 
         if (!Main.pushModal(this.actor))
@@ -181,7 +185,7 @@ AltTabPopup.prototype = {
         this.actor.connect('button-press-event', Lang.bind(this, this._clickedOutside));
         this.actor.connect('scroll-event', Lang.bind(this, this._onScroll));
 
-        this._appSwitcher = new AppSwitcher(localApps, otherApps, this);
+        this._appSwitcher = new AppSwitcher(windows, this);
         this.actor.add_actor(this._appSwitcher.actor);
         this._appSwitcher.connect('item-activated', Lang.bind(this, this._appActivated));
         this._appSwitcher.connect('item-entered', Lang.bind(this, this._appEntered));
@@ -856,8 +860,10 @@ function AppIcon(app) {
 }
 
 AppIcon.prototype = {
-    _init: function(app) {
-        this.app = app;
+    _init: function(window) {
+        this.window = window;
+        let tracker = Cinnamon.WindowTracker.get_default();
+        this.app = tracker.get_window_app(window);
         this.actor = new St.BoxLayout({ style_class: 'alt-tab-app',
                                          vertical: true });
         this.icon = null;
@@ -882,24 +888,19 @@ function AppSwitcher() {
 AppSwitcher.prototype = {
     __proto__ : SwitcherList.prototype,
 
-    _init : function(localApps, otherApps, altTabPopup) {
+    _init : function(windows, altTabPopup) {
         SwitcherList.prototype._init.call(this, true);
 
         // Construct the AppIcons, add to the popup
         let activeWorkspace = global.screen.get_active_workspace();
         let workspaceIcons = [];
         let otherIcons = [];
-        for (let i = 0; i < localApps.length; i++) {
-            let appIcon = new AppIcon(localApps[i]);
+        for (let i = 0; i < windows.length; i++) {
+            let appIcon = new AppIcon(windows[i]);
             // Cache the window list now; we don't handle dynamic changes here,
             // and we don't want to be continually retrieving it
-            appIcon.cachedWindows = appIcon.app.get_windows();
+            appIcon.cachedWindows = [windows[i]];
             workspaceIcons.push(appIcon);
-        }
-        for (let i = 0; i < otherApps.length; i++) {
-            let appIcon = new AppIcon(otherApps[i]);
-            appIcon.cachedWindows = appIcon.app.get_windows();
-            otherIcons.push(appIcon);
         }
 
         this.icons = [];
