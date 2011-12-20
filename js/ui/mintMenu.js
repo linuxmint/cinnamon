@@ -277,10 +277,7 @@ ApplicationsButton.prototype = {
         this._iconBox = new St.Bin();
         box.add(this._iconBox, { y_align: St.Align.MIDDLE, y_fill: false });
         
-        let icon_file = icon_path + "mintMenu.png";
-        if (bottomPosition) {
-            icon_file = icon_path + "mintMenu-bottom.png";
-        }
+        let icon_file = icon_path + "menu.png";        
         try{
            let file = Gio.file_new_for_path(icon_file);
            let icon_uri = file.get_uri();
