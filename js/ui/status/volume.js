@@ -735,6 +735,8 @@ Indicator.prototype = {
         this._showFixedElements();
         
         this.setIconName(this._icon_name);
+        
+        this._readOutput();
     },
 
     _removePlayer: function(owner) {
@@ -749,6 +751,8 @@ Indicator.prototype = {
         this._showFixedElements();
         
         this.setIconName(this._icon_name);
+        
+        this._readOutput();
     },
     
     _cleanup: function() {
@@ -905,24 +909,24 @@ Indicator.prototype = {
             this._outputVolumeId = this._output.connect('notify::volume', Lang.bind(this, this._volumeChanged, '_output'));
             this._mutedChanged (null, null, '_output');
             this._volumeChanged (null, null, '_output');
+            let sinks = this._control.get_sinks();           
+	        this._selectDeviceItem.menu.removeAll();                
+	        for (let i = 0; i < sinks.length; i++) {
+	        	let sink = sinks[i];
+	        	let menuItem = new PopupMenu.PopupMenuItem(sink.get_description());
+	        	if (sinks[i].get_id() == this._output.get_id()) {
+	        		menuItem.setShowDot(true);
+	        	}
+	        	menuItem.connect('activate', Lang.bind(this, function() {
+	        		log('Changing default sink to ' + sink.get_description());
+	                this._control.set_default_sink(sink);
+	            }));        	        	       
+	            this._selectDeviceItem.menu.addMenuItem(menuItem);             
+	        }            
         } else {
             this._outputSlider.setValue(0);
             this.setIconName('audio-volume-muted-symbolic');
-        }
-        let sinks = this._control.get_sinks(); 
-        this._selectDeviceItem.menu.removeAll();                
-        for (let i = 0; i < sinks.length; i++) {        	        	
-        	let sink = sinks[i];
-        	let menuItem = new PopupMenu.PopupMenuItem(sink.get_description());
-        	if (sinks[i].get_id() == this._output.get_id()) {
-        		menuItem.setShowDot(true);
-        	}
-        	menuItem.connect('activate', Lang.bind(this, function() {
-        		log('Changing default sink to ' + sink.get_description());
-                this._control.set_default_sink(sink);
-            }));        	        	       
-            this._selectDeviceItem.menu.addMenuItem(menuItem);             
-        }
+        }        
     },
             
     _readInput: function() {
