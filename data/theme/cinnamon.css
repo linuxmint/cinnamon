@@ -240,6 +240,279 @@ StTooltip StLabel {
     spacing: .5em;
 }
 
+/* Menu */
+.applications-menu-favorites-box {
+  width: 70%;
+  margin: auto;
+  padding: 10px;
+  border: 1px solid #666;  
+}
+.applications-menu-favorites-button {
+    padding-top: 10px;
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-bottom: 10px;    
+}
+
+.applications-menu-favorites-button:hover {
+    color: white;
+	 background-gradient-direction: vertical;
+	 background-gradient-start: rgba(255,255,255,0.2);
+	 background-gradient-end: rgba(255,255,255,0.08);
+	 box-shadow: inset 0px 0px 1px 1px rgba(255,255,255,0.06);
+    border-radius: 4px;
+}
+
+.places-box {
+  width: 70%;
+  margin: auto;
+  padding: 10px;
+  border: 0px solid #666;  
+}
+.places-button {
+    padding-top: 10px;
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-bottom: 10px;    
+}
+
+.categories-box {
+    padding-top: 10px;
+    padding-left: 30px;
+    padding-right: 30px;
+    padding-bottom: 10px;    
+}
+.applications-box {
+    padding-top: 10px;
+    padding-left: 30px;
+    padding-right: 30px;
+    padding-bottom: 10px;    
+}
+.applications-scrollbox {
+    height: 300px;
+}
+.applications-title {
+	padding-top: 15px;
+	padding-bottom: 5px;
+	padding-right: 5px;
+	padding-left: 5px;
+	font-family: Verdana, sans-serif;
+	font-size: medium;
+	font-style: normal;
+	font-weight: bold;
+}
+
+.favorites-title {
+	padding-top: 5px;
+	padding-bottom: 5px;
+	padding-right: 5px;
+	padding-left: 5px;
+	font-family: Verdana, sans-serif;
+	font-size: medium;
+	font-style: normal;
+	font-weight: bold;
+}
+
+.favorites-title:hover {
+    font-weight: bold;
+}
+
+
+
+.application-button {
+    padding-top: 7px;
+    padding-left: 7px;
+    padding-right: 7px;
+    padding-bottom: 7px;    
+}
+
+.application-button:hover,
+.application-button-selected {
+    padding-top: 7px;
+    padding-left: 7px;
+    padding-right: 7px;
+    padding-bottom: 7px;
+    color: white;
+	 background-gradient-direction: vertical;
+	 background-gradient-start: rgba(255,255,255,0.2);
+	 background-gradient-end: rgba(255,255,255,0.08);
+	 box-shadow: inset 0px 0px 1px 1px rgba(255,255,255,0.06);
+    border-radius: 4px;
+}
+
+.application-button-label { 
+    padding-left: 5px       
+}
+
+.category-button {
+    padding-top: 7px;
+    padding-left: 7px;
+    padding-right: 7px;
+    padding-bottom: 7px; 
+    font-weight: normal;    
+}
+
+.category-button-selected {
+    padding-top: 7px;
+    padding-left: 7px;
+    padding-right: 7px;
+    padding-bottom: 7px; 
+    color: white;
+	 background-gradient-direction: vertical;
+	 background-gradient-start: rgba(255,255,255,0.2);
+	 background-gradient-end: rgba(255,255,255,0.08);
+	 box-shadow: inset 0px 0px 1px 1px rgba(255,255,255,0.06);
+    border-radius: 4px;
+}
+
+.category-button-label { 
+    padding-left: 5px       
+}
+
+.category-button-button:hover {
+    background-color: #969696;
+    border-radius: 8px;
+}
+
+.selected-app-box {
+    padding-right: 30px;
+    padding-left: 28px;
+    text-align: right;
+}
+
+.selected-app-title {
+    font-weight: bold;
+    font-size: small;
+}
+
+.selected-app-description {
+    max-width: 150px;
+}
+
+.search_box {
+   padding-left: 30px;
+}
+
+/* Window list */
+.window-list-box {
+    spacing: 3px;
+    padding-left: 10px;
+    padding-top: 1px;   
+}
+
+.window-list-item-box {
+     background-gradient-direction: vertical;
+	 background-gradient-start: rgba(226,226,226,0.5);
+	 background-gradient-end: rgba(182,182,182,0.5);
+	 box-shadow: inset 0px 0px 1px 1px rgba(170,170,170,1.0);
+     border-radius: 2px;
+}
+
+.window-list-item-box:active,
+.window-list-item-box:checked,
+.window-list-item-box:focus  {     
+	 background-gradient-direction: vertical;
+	 background-gradient-start: rgba(226,226,226,1.0);
+	 background-gradient-end: rgba(182,182,182,1.0);
+	 box-shadow: inset 0px 0px 1px 1px rgba(170,170,170,1.0);
+     border-radius: 2px;
+}
+
+.window-list-item-box:hover  {
+     
+	 box-shadow: inset 0px 0px 1px 1px rgba(170,170,170,1.0);
+     border-radius: 2px;
+}
+
+.window-list-item-label {
+    font-weight: bold;
+    width: 15em;
+    min-width: 5px;
+}
+
+.window-list-item-box-bottom {
+     color: rgba(255,255,255,1.0);
+	 background-gradient-direction: vertical;
+	 background-gradient-start: rgba(255,255,255,0.05);
+	 background-gradient-end: rgba(255,255,255,0.2);
+	 box-shadow: inset 0px 0px 1px 1px rgba(170,170,170,0.5);
+     border-radius: 2px 2px 0px 0px;
+}
+
+.window-list-item-box-bottom:active,
+.window-list-item-box-bottom:checked,
+.window-list-item-box-bottom:focus  {     
+	 background-gradient-direction: vertical;
+	 background-gradient-start: rgba(226,226,226,0.5);
+	 background-gradient-end: rgba(122,122,122,0.5);
+	 box-shadow: inset 0px 0px 1px 1px rgba(170,170,170,0.5);
+     border-radius: 2px 2px 0px 0px;
+}
+
+.window-list-item-box-bottom:hover  {
+     
+	 box-shadow: inset 0px 0px 1px 1px rgba(170,170,170,1.0);
+     border-radius: 2px 2px 0px 0px;
+}
+
+/* Media Player controls */
+.button-container {
+    padding-right: 5px;
+}
+
+.button {
+    width: 22px;
+    height: 13px;
+    border: 1px solid #555;
+    border-radius: 4px;
+    padding: 7px;
+}
+.button:hover {
+    border: 1px solid white;
+}
+
+.button StIcon {
+    icon-size: 1.4em;
+}
+
+.track-infos {
+    padding-left: 10px;
+}
+
+.track-info {
+    padding-bottom: 4px;
+}
+
+.track-info StIcon {
+    icon-size: 1em;
+}
+
+.track-info StLabel {
+    padding-left: 5px;
+}
+
+.track-box {
+    padding-top: 20px;
+    padding-left: 30px;
+    padding-right: 30px;
+    padding-bottom: 10px;
+}
+
+.volume-menu-item {
+    padding: .4em 1.75em;
+}
+
+.volume-menu-item StIcon {
+    icon-size: 1.14em;
+    padding-left: 8px;
+}
+
+.playback-control {
+    padding-top: 5px;
+    padding-bottom: 10px;
+}
+
+
 /* Shared button properties */
 
 .dash-search-button, .notification-button, .notification-icon-button,
@@ -303,6 +576,28 @@ StTooltip StLabel {
 #panelRight:rtl {
     padding-right: 0px;
     spacing: 0px;
+}
+
+#workspaceSwitcher {
+    spacing: 0px;
+    padding: 3px;
+    
+}
+
+.workspace-button {
+    width: 20px;
+    height: 10px;   
+    color: #cccccc;
+    transition-duration: 100;
+    border: 1px;
+    border-color: #a6a6a6;
+    padding: 2px;
+}
+
+.workspace-button:outlined {
+    padding: 1px;    
+    background: #cccccc;
+    color: #555555;
 }
 
 .panel-status-button {

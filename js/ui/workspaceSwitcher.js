@@ -7,8 +7,7 @@ function WorkspaceSwitcher() {
 
 WorkspaceSwitcher.prototype = {
     _init: function() {
-        this.actor = new St.BoxLayout({ name: 'workspaceSwitcher',
-                                        style_class: 'workspace-switcher',
+        this.actor = new St.BoxLayout({ name: 'workspaceSwitcher',                                       
                                         reactive: true });
         this.actor.connect('button-release-event', this._showDialog);
         this.actor._delegate = this;
@@ -33,7 +32,7 @@ WorkspaceSwitcher.prototype = {
                                      reactive: true });
             let text = '';
             if ( i == global.screen.get_active_workspace_index() ) {
-                text = '-' + (i+1).toString() + '-';
+                text = (i+1).toString();
                 this.button[i].add_style_pseudo_class('outlined');
             }
             else {
@@ -53,7 +52,7 @@ WorkspaceSwitcher.prototype = {
     _updateButtons: function() {
         for ( let i=0; i<this.button.length; ++i ) {
             if ( i == global.screen.get_active_workspace_index() ) {
-                this.button[i].get_child().set_text('-' + (i+1).toString() + '-');
+                this.button[i].get_child().set_text((i+1).toString());
                 this.button[i].add_style_pseudo_class('outlined');
             }
             else {
