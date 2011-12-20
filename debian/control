@@ -55,7 +55,7 @@ Build-Depends: cdbs,
 Standards-Version: 3.9.1
 Homepage: http://live.gnome.org/GnomeShell
 
-Package: gnome-shell
+Package: cinnamon
 Architecture: any
 Depends: ${gir:Depends},
          gjs (>= 1.29.18),
