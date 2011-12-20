@@ -1,13 +1,13 @@
-# Serbian translation for gnome-shell.
-# Copyright (C) 2010 gnome-shell's COPYRIGHT HOLDER
-# This file is distributed under the same license as the gnome-shell package.
+# Serbian translation for cinnamon.
+# Copyright (C) 2010 cinnamon's COPYRIGHT HOLDER
+# This file is distributed under the same license as the cinnamon package.
 # Miroslav Nikolić <miroslavnikolic@rocketmail.com>, 2011.
 # Miloš Popović <gpopac@gmail.com>, 2010, 2011.
 msgid ""
 msgstr ""
-"Project-Id-Version: gnome-shell master\n"
+"Project-Id-Version: cinnamon master\n"
 "Report-Msgid-Bugs-To: http://bugzilla.gnome.org/enter_bug.cgi?product=gnome-"
-"shell&keywords=I18N+L10N&component=general\n"
+"cinnamon&keywords=I18N+L10N&component=general\n"
 "POT-Creation-Date: 2011-09-26 17:31+0000\n"
 "PO-Revision-Date: 2011-09-23 05:37+0200\n"
 "Last-Translator: Miroslav Nikolić <miroslavnikolic@rocketmail.com>\n"
@@ -21,15 +21,15 @@ msgstr ""
 "X-Generator: Virtaal 0.7.0-beta5\n"
 "X-Project-Style: gnome\n"
 
-#: ../data/gnome-shell.desktop.in.in.h:1
-msgid "GNOME Shell"
-msgstr "Gnomova školjka"
+#: ../data/cinnamon.desktop.in.in.h:1
+msgid "Cinnamon"
+msgstr "Cinnamon"
 
-#: ../data/gnome-shell.desktop.in.in.h:2
+#: ../data/cinnamon.desktop.in.in.h:2
 msgid "Window management and application launching"
 msgstr "Upravnik prozorima i pokretač programa"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:1
+#: ../data/org.cinnamon.gschema.xml.in.h:1
 msgid ""
 "Allows access to internal debugging and monitoring tools using the Alt-F2 "
 "dialog."
@@ -37,21 +37,21 @@ msgstr ""
 "Dozvoljava pristup unutrašnjem otklanjanju grešaka i alatima za praćenje "
 "korišćenjem „Alt-F2“ prozorčeta."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:2
+#: ../data/org.cinnamon.gschema.xml.in.h:2
 msgid "Enable internal tools useful for developers and testers from Alt-F2"
 msgstr "Uključuje alate korisne programerima i testerima iz „Alt-F2“ prozorčeta"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:3
+#: ../data/org.cinnamon.gschema.xml.in.h:3
 msgid "File extension used for storing the screencast"
 msgstr "Proširenje datoteke za čuvanje video snimaka ekrana"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:4
+#: ../data/org.cinnamon.gschema.xml.in.h:4
 msgid "Framerate used for recording screencasts."
 msgstr "Učestanost kadrova za video snimak ekrana."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:5
+#: ../data/org.cinnamon.gschema.xml.in.h:5
 msgid ""
-"GNOME Shell extensions have a uuid property; this key lists extensions which "
+"Cinnamon extensions have a uuid property; this key lists extensions which "
 "should be loaded. disabled-extensions overrides this setting for extensions "
 "that appear in both lists."
 msgstr ""
@@ -59,31 +59,31 @@ msgstr ""
 "koja treba učitavati. Isključene vrednosti (disabled-extensions) pišu preko "
 "ovog podešavanja za proširenja koja se javljaju u oba spiska."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:6
+#: ../data/org.cinnamon.gschema.xml.in.h:6
 msgid "History for command (Alt-F2) dialog"
 msgstr "Istorijat prozorčeta (Alt-F2) naredbi"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:7
+#: ../data/org.cinnamon.gschema.xml.in.h:7
 msgid "History for the looking glass dialog"
 msgstr "Istorijat prozorčeta ogledala"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:8
+#: ../data/org.cinnamon.gschema.xml.in.h:8
 msgid "If true, display date in the clock, in addition to time."
 msgstr "Ako je izabrano, prikazuje datum u časovniku, kao dodatak vremenu."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:9
+#: ../data/org.cinnamon.gschema.xml.in.h:9
 msgid "If true, display seconds in time."
 msgstr "Ako je izabrano, prikazuje sekunde u vremenu."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:10
+#: ../data/org.cinnamon.gschema.xml.in.h:10
 msgid "If true, display the ISO week date in the calendar."
 msgstr "Ako je izabrano, prikazuje ISO dan u nedelji u kalendaru."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:11
+#: ../data/org.cinnamon.gschema.xml.in.h:11
 msgid "List of desktop file IDs for favorite applications"
 msgstr "Spisak IB datoteka radne površine sa omiljenim programima"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:13
+#: ../data/org.cinnamon.gschema.xml.in.h:13
 #, no-c-format
 msgid ""
 "Sets the GStreamer pipeline used to encode recordings. It follows the syntax "
@@ -109,19 +109,19 @@ msgstr ""
 "queue ! webmmux“ i zapisuje u „WEBM“ koristeći VP8 kodek. „%T“ se koristi "
 "kao nosilac za otkrivanje pri optimalnom proračunu niti na sistemu."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:14
+#: ../data/org.cinnamon.gschema.xml.in.h:14
 msgid "Show date in clock"
 msgstr "Prikazuje datum u panelu"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:15
+#: ../data/org.cinnamon.gschema.xml.in.h:15
 msgid "Show the week date in the calendar"
 msgstr "Prikazuje dan u nedelji u kalendaru"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:16
+#: ../data/org.cinnamon.gschema.xml.in.h:16
 msgid "Show time with seconds"
 msgstr "Prikazuje vreme i sekunde"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:17
+#: ../data/org.cinnamon.gschema.xml.in.h:17
 msgid ""
 "The applications corresponding to these identifiers will be displayed in the "
 "favorites area."
@@ -129,7 +129,7 @@ msgstr ""
 "Programi koji odgovaraju ovim odrednicama se prikazuju unutar oblasti "
 "omiljenih programima."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:18
+#: ../data/org.cinnamon.gschema.xml.in.h:18
 msgid ""
 "The filename for recorded screencasts will be a unique filename based on the "
 "current date, and use this extension. It should be changed when recording to "
@@ -139,21 +139,21 @@ msgstr ""
 "na tekućem datumu, i koristi ovo proširenje. Treba ga promeniti prilikom "
 "snimanja u drugi format."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:19
+#: ../data/org.cinnamon.gschema.xml.in.h:19
 msgid ""
-"The framerate of the resulting screencast recordered by GNOME Shell's "
+"The framerate of the resulting screencast recordered by Cinnamon's "
 "screencast recorder in frames-per-second."
 msgstr ""
 "Učestanost kadrova snimka snimljenih pomoću Gnomove školjke u kadrovima po "
 "sekundi."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:20
+#: ../data/org.cinnamon.gschema.xml.in.h:20
 msgid "The gstreamer pipeline used to encode the screencast"
 msgstr "Procesni lanac Gstrimera korišćen za kodiranje video snimka ekrana"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:21
+#: ../data/org.cinnamon.gschema.xml.in.h:21
 msgid ""
-"The shell normally monitors active applications in order to present the most "
+"Cinnamon normally monitors active applications in order to present the most "
 "used ones (e.g. in launchers). While this data will be kept private, you may "
 "want to disable this for privacy reasons. Please note that doing so won't "
 "remove already saved data."
@@ -163,23 +163,23 @@ msgstr ""
 "opciju zbog zaštite vaše privatnosti. Na taj način nećete obrisati već "
 "sačuvane podatke."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:22
+#: ../data/org.cinnamon.gschema.xml.in.h:22
 msgid "The type of keyboard to use."
 msgstr "Vrsta tastature za upotrebu."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:23
+#: ../data/org.cinnamon.gschema.xml.in.h:23
 msgid "Uuids of extensions to enable"
 msgstr "Uuid-ovi proširenja za uključivanje"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:24
+#: ../data/org.cinnamon.gschema.xml.in.h:24
 msgid "Whether to collect stats about applications usage"
 msgstr "Da li će biti prikupljani podaci o pokretanim programima"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:25
+#: ../data/org.cinnamon.gschema.xml.in.h:25
 msgid "Which keyboard to use"
 msgstr "Koja će tastatura biti korišćena"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:26
+#: ../data/org.cinnamon.gschema.xml.in.h:26
 msgid "disabled OpenSearch providers"
 msgstr "isključeni „OpenSearch“ dostavljači"
 
@@ -236,7 +236,7 @@ msgstr "Isključi"
 msgid "Command not found"
 msgstr "Naredba nije nađena"
 
-#. Replace "Error invoking GLib.shell_parse_argv: " with
+#. Replace "Error invoking GLib.cinnamon_parse_argv: " with
 #. something nicer
 #: ../js/misc/util.js:119
 msgid "Could not parse command:"
@@ -442,7 +442,7 @@ msgid "Next week"
 msgstr "Sledeće nedelje"
 
 #: ../js/ui/contactDisplay.js:59 ../js/ui/notificationDaemon.js:444
-#: ../js/ui/status/power.js:223 ../src/shell-app.c:355
+#: ../js/ui/status/power.js:223 ../src/cinnamon-app.c:355
 msgid "Unknown"
 msgstr "Nepoznato"
 
@@ -519,7 +519,7 @@ msgid "%a %l:%M %p"
 msgstr "%A, %l:%M"
 
 #. Translators: This is the date format to use when the calendar popup is
-#. * shown - it is shown just below the time in the shell (e.g. "Tue 9:29 AM").
+#. * shown - it is shown just below the time in Cinnamon (e.g. "Tue 9:29 AM").
 #.
 #: ../js/ui/dateMenu.js:213
 msgid "%A %B %e, %Y"
@@ -837,7 +837,7 @@ msgstr "Tražim..."
 msgid "No matching results."
 msgstr "Nema odgovarajućih rezultata."
 
-#: ../js/ui/shellMountOperation.js:285
+#: ../js/ui/cinnamonMountOperation.js:285
 msgid "Wrong password, please try again"
 msgstr "Pogrešna lozinka, pokušajte ponovo:"
 
@@ -1549,7 +1549,7 @@ msgstr ""
 msgid "Type to search..."
 msgstr "Upišite tekst za pretragu..."
 
-#: ../js/ui/viewSelector.js:140 ../src/shell-util.c:261
+#: ../js/ui/viewSelector.js:140 ../src/cinnamon-util.c:261
 msgid "Search"
 msgstr "Traži"
 
@@ -1597,30 +1597,30 @@ msgstr "Ispisuje izdanje"
 msgid "Mode used by GDM for login screen"
 msgstr "Koji režim koristi GDM za ekran prijavljivanja"
 
-#: ../src/shell-app.c:581
+#: ../src/cinnamon-app.c:581
 #, c-format
 msgid "Failed to launch '%s'"
 msgstr "Ne mogu da pokrenem „%s“"
 
-#: ../src/shell-mobile-providers.c:80
+#: ../src/cinnamon-mobile-providers.c:80
 msgid "United Kingdom"
 msgstr "Ujedinjeno Kraljevstvo"
 
-#: ../src/shell-mobile-providers.c:526
+#: ../src/cinnamon-mobile-providers.c:526
 msgid "Default"
 msgstr "Podrazumevano"
 
-#: ../src/shell-polkit-authentication-agent.c:334
+#: ../src/cinnamon-polkit-authentication-agent.c:334
 msgid "Authentication dialog was dismissed by the user"
 msgstr "Korisnik je odbacio prozorče za potvrđivanje identiteta"
 
-#: ../src/shell-util.c:100
+#: ../src/cinnamon-util.c:100
 msgid "Home Folder"
 msgstr "Lična fascikla"
 
 #. Translators: this is the same string as the one found in
 #. * nautilus
-#: ../src/shell-util.c:115
+#: ../src/cinnamon-util.c:115
 msgid "File System"
 msgstr "Sistem datoteka"
 
@@ -1629,7 +1629,7 @@ msgstr "Sistem datoteka"
 #. * example, "Trash: some-directory". It means that the
 #. * directory called "some-directory" is in the trash.
 #.
-#: ../src/shell-util.c:311
+#: ../src/cinnamon-util.c:311
 #, c-format
 msgid "%1$s: %2$s"
 msgstr "%1$s: %2$s"

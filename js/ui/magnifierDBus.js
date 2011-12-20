@@ -57,11 +57,11 @@ const ZoomRegionIface = {
 // '/org/gnome/Magnifier/ZoomRegion/zoomer1', etc.
 let _zoomRegionInstanceCount = 0;
 
-function ShellMagnifier() {
+function CinnamonMagnifier() {
     this._init();
 }
 
-ShellMagnifier.prototype = {
+CinnamonMagnifier.prototype = {
     _init: function() {
         this._zoomers = {};
         DBus.session.exportObject(MAG_SERVICE_PATH, this);
@@ -126,7 +126,7 @@ ShellMagnifier.prototype = {
         let objectPath = ZOOM_SERVICE_PATH + '/zoomer' + _zoomRegionInstanceCount;
         _zoomRegionInstanceCount++;
 
-        let zoomRegionProxy = new ShellMagnifierZoomRegion(objectPath, realZoomRegion);
+        let zoomRegionProxy = new CinnamonMagnifierZoomRegion(objectPath, realZoomRegion);
         let proxyAndZoomRegion = {};
         proxyAndZoomRegion.proxy = zoomRegionProxy;
         proxyAndZoomRegion.zoomRegion = realZoomRegion;
@@ -176,7 +176,7 @@ ShellMagnifier.prototype = {
                 // Got a ZoomRegion with no DBus proxy, make one.
                 let newPath =  ZOOM_SERVICE_PATH + '/zoomer' + _zoomRegionInstanceCount;
                 _zoomRegionInstanceCount++;
-                let zoomRegionProxy = new ShellMagnifierZoomRegion(newPath, aZoomRegion);
+                let zoomRegionProxy = new CinnamonMagnifierZoomRegion(newPath, aZoomRegion);
                 let proxyAndZoomer = {};
                 proxyAndZoomer.proxy = zoomRegionProxy;
                 proxyAndZoomer.zoomRegion = aZoomRegion;
@@ -288,16 +288,16 @@ ShellMagnifier.prototype = {
 };
 
 /**
- * ShellMagnifierZoomRegion:
+ * CinnamonMagnifierZoomRegion:
  * Object that implements the DBus ZoomRegion interface.
  * @zoomerObjectPath:   String that is the path to a DBus ZoomRegion.
  * @zoomRegion:         The actual zoom region associated with the object path.
  */
-function ShellMagnifierZoomRegion(zoomerObjectPath, zoomRegion) {
+function CinnamonMagnifierZoomRegion(zoomerObjectPath, zoomRegion) {
     this._init(zoomerObjectPath, zoomRegion);
 }
 
-ShellMagnifierZoomRegion.prototype = {
+CinnamonMagnifierZoomRegion.prototype = {
     _init: function(zoomerObjectPath, zoomRegion) {
         this._zoomRegion = zoomRegion;
         DBus.session.proxifyObject(this, ZOOM_SERVICE_NAME, zoomerObjectPath);
@@ -379,5 +379,5 @@ ShellMagnifierZoomRegion.prototype = {
     }
 };
 
-DBus.conformExport(ShellMagnifier.prototype, MagnifierIface);
-DBus.conformExport(ShellMagnifierZoomRegion.prototype, ZoomRegionIface);
+DBus.conformExport(CinnamonMagnifier.prototype, MagnifierIface);
+DBus.conformExport(CinnamonMagnifierZoomRegion.prototype, ZoomRegionIface);

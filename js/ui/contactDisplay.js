@@ -3,7 +3,7 @@
 const Folks = imports.gi.Folks
 const Lang = imports.lang;
 const Meta = imports.gi.Meta;
-const Shell = imports.gi.Shell;
+const Cinnamon = imports.gi.Cinnamon;
 const St = imports.gi.St;
 
 const Util = imports.misc.util;
@@ -26,7 +26,7 @@ function Contact(id) {
 
 Contact.prototype = {
     _init: function(id) {
-        this._contactSys = Shell.ContactSystem.get_default();
+        this._contactSys = Cinnamon.ContactSystem.get_default();
         this.individual = this._contactSys.get_individual(id);
 
         this.actor = new St.Bin({ style_class: 'contact',
@@ -144,7 +144,7 @@ ContactSearchProvider.prototype = {
 
     _init: function() {
         Search.SearchProvider.prototype._init.call(this, _("CONTACTS"));
-        this._contactSys = Shell.ContactSystem.get_default();
+        this._contactSys = Cinnamon.ContactSystem.get_default();
     },
 
     getResultMeta: function(id) {

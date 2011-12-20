@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: mr\n"
-"Report-Msgid-Bugs-To: http://bugzilla.gnome.org/enter_bug.cgi?product=gnome-shell&keywords=I18N+L10N&component=general\n"
+"Report-Msgid-Bugs-To: http://bugzilla.gnome.org/enter_bug.cgi?product=cinnamon&keywords=I18N+L10N&component=general\n"
 "POT-Creation-Date: 2011-03-27 05:13+0000\n"
 "PO-Revision-Date: 2011-03-28 10:53+0530\n"
 "Last-Translator: Sandeep Shedmake <sshedmak@redhat.com>\n"
@@ -17,63 +17,63 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n!=1);\n"
 "X-Generator: KBabel 1.11.4\n"
 
-#: ../data/gnome-shell.desktop.in.in.h:1
-msgid "GNOME Shell"
-msgstr "GNOME शेल"
+#: ../data/cinnamon.desktop.in.in.h:1
+msgid "Cinnamon"
+msgstr "Cinnamon"
 
-#: ../data/gnome-shell.desktop.in.in.h:2
+#: ../data/cinnamon.desktop.in.in.h:2
 msgid "Window management and application launching"
 msgstr "पटल व्यवस्थापन व ॲप्लिकेशन सुरू करणे"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:1
+#: ../data/org.cinnamon.gschema.xml.in.h:1
 msgid ""
 "Allows access to internal debugging and monitoring tools using the Alt-F2 "
 "dialog."
 msgstr "आंतरिक डिबगिंग व Alt-F2 संवादचा वापर करून निंयत्रणकरीता प्रवेश देतो."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:2
+#: ../data/org.cinnamon.gschema.xml.in.h:2
 msgid "Enable internal tools useful for developers and testers from Alt-F2"
 msgstr "Alt-F2 पासून डेव्लपर्स् व चाचणीकर्त्यांसाठी आंतरिक साधणे सुरू करा"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:3
+#: ../data/org.cinnamon.gschema.xml.in.h:3
 msgid "File extension used for storing the screencast"
 msgstr "स्क्रिनकास्ट साठवण्याकरीता वापरलेले फाइल एक्सटेंशन"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:4
+#: ../data/org.cinnamon.gschema.xml.in.h:4
 msgid "Framerate used for recording screencasts."
 msgstr "स्क्रिनकास्ट्स् रेकॉर्ड करण्यासाठी वापरलेले फ्रेमरेट."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:5
+#: ../data/org.cinnamon.gschema.xml.in.h:5
 msgid ""
-"GNOME Shell extensions have a uuid property; this key lists extensions which "
+"Cinnamon extensions have a uuid property; this key lists extensions which "
 "should not be loaded."
 msgstr "GNOME शेल एक्सटेंशन्स्मध्ये uuid गुणधर्म आढळते; या किमध्ये एक्सटेंशन्स् आहेत ज्यांना लोड करायची आवश्यकता नाही."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:6
+#: ../data/org.cinnamon.gschema.xml.in.h:6
 msgid "History for command (Alt-F2) dialog"
 msgstr "आदेश (Alt-F2) संवादकरीता इतिहास"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:7
+#: ../data/org.cinnamon.gschema.xml.in.h:7
 msgid "History for the looking glass dialog"
 msgstr "लूकिंग ग्लास संवादकरीता इतिहास"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:8
+#: ../data/org.cinnamon.gschema.xml.in.h:8
 msgid "If true, display date in the clock, in addition to time."
 msgstr "खरे असल्यास,वेळेबरोबर तारीख पण घड्याळात दाखवा."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:9
+#: ../data/org.cinnamon.gschema.xml.in.h:9
 msgid "If true, display seconds in time."
 msgstr "खरे असल्यास, वेळेत सेकंद दाखवा."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:10
+#: ../data/org.cinnamon.gschema.xml.in.h:10
 msgid "If true, display the ISO week date in the calendar."
 msgstr "खरे असल्यास, दिनदर्शिकमध्ये ISO सप्ताह दिनांक दाखवा."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:11
+#: ../data/org.cinnamon.gschema.xml.in.h:11
 msgid "List of desktop file IDs for favorite applications"
 msgstr "पसंतीच्या ॲप्लिकेशन्स् करीता डेस्कटॉप फाइल IDs ची सूची"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:13
+#: ../data/org.cinnamon.gschema.xml.in.h:13
 #, no-c-format
 msgid ""
 "Sets the GStreamer pipeline used to encode recordings. It follows the syntax "
@@ -96,25 +96,25 @@ msgstr ""
 "VP8 कोडेकचा वापर करून WEBM करीता रेकॉर्डिंग करतो. %T चा वापर प्रणालीवरील कमाल थ्रेड गणणा "
 "ओळखण्यासाठी प्लेसहोल्डर म्हणून केला जातो."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:14
+#: ../data/org.cinnamon.gschema.xml.in.h:14
 msgid "Show date in clock"
 msgstr "घड्याळात दिनांक दाखवा"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:15
+#: ../data/org.cinnamon.gschema.xml.in.h:15
 msgid "Show the week date in the calendar"
 msgstr "दिनदर्शिकामध्ये सप्ताह दिनांक दाखवा"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:16
+#: ../data/org.cinnamon.gschema.xml.in.h:16
 msgid "Show time with seconds"
 msgstr "सेकंदात वेळ दाखवा"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:17
+#: ../data/org.cinnamon.gschema.xml.in.h:17
 msgid ""
 "The applications corresponding to these identifiers will be displayed in the "
 "favorites area."
 msgstr "या आइडेंटिफायर्स् सह परस्पर ॲप्लिकेशन्स् पसंतीचे कक्षात दाखवले जाईल."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:18
+#: ../data/org.cinnamon.gschema.xml.in.h:18
 msgid ""
 "The filename for recorded screencasts will be a unique filename based on the "
 "current date, and use this extension. It should be changed when recording to "
@@ -123,36 +123,36 @@ msgstr ""
 "सध्याच्या दिनांकवर आधारित रेकॉर्डेड स्क्रिनकास्ट्स्करीता फाइलचेना एकमेव फाइलनाव असणार, व या एक्सटेंशनचा वापर करा. "
 "वेगळ्या कंटेनर स्वरूपकरीता रेकॉर्डिंग करतेवेळी बदलणे आवश्यक आहे."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:19
+#: ../data/org.cinnamon.gschema.xml.in.h:19
 msgid ""
-"The framerate of the resulting screencast recordered by GNOME Shell's "
+"The framerate of the resulting screencast recordered by Cinnamon's "
 "screencast recorder in frames-per-second."
 msgstr "फ्रेम्स्-दर-सेकंदमध्ये GNOME शेलच्या सक्रीनकास्ट रेकॉर्डरद्वारे रेकॉर्ड केलेल्या परिणामक सक्रीनकास्टचा फ्रेमरेट."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:20
+#: ../data/org.cinnamon.gschema.xml.in.h:20
 msgid "The gstreamer pipeline used to encode the screencast"
 msgstr "स्क्रीनकास्ट एंकोड करण्यासाठी वापरलेले gstreamer पाइपलाइन"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:21
+#: ../data/org.cinnamon.gschema.xml.in.h:21
 msgid ""
-"The shell normally monitors active applications in order to present the most "
+"Cinnamon normally monitors active applications in order to present the most "
 "used ones (e.g. in launchers). While this data will be kept private, you may "
 "want to disable this for privacy reasons. Please note that doing so won't "
 "remove already saved data."
 msgstr ""
-"The shell normally monitors active applications in order to present the most "
+"Cinnamon normally monitors active applications in order to present the most "
 "used ones (e.g. in launchers). हा डाटा व्यक्तिगत असेपर्यंत, यांस गोपणीय कारणास्तव you may "
 "want to disable this for privacy reasons. कृपया लक्षात ठेवा असे केल्यास आधिपासूनच साठवलेला डाटा काढून टाकणे अशक्य होईल."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:22
+#: ../data/org.cinnamon.gschema.xml.in.h:22
 msgid "Uuids of extensions to disable"
 msgstr "बंद करण्यासाठीचे एक्सटेंशन्स्चे Uuids"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:23
+#: ../data/org.cinnamon.gschema.xml.in.h:23
 msgid "Whether to collect stats about applications usage"
 msgstr "ॲप्लिकेशन वापरविषयी स्थिती गोळा करायची"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:24
+#: ../data/org.cinnamon.gschema.xml.in.h:24
 msgid "disabled OpenSearch providers"
 msgstr "OpenSearch प्रोव्हाइडर्स् बंद केले"
 
@@ -160,7 +160,7 @@ msgstr "OpenSearch प्रोव्हाइडर्स् बंद के�
 msgid "Command not found"
 msgstr "आदेश आढळले नाही"
 
-#. Replace "Error invoking GLib.shell_parse_argv: " with
+#. Replace "Error invoking GLib.cinnamon_parse_argv: " with
 #. something nicer
 #: ../js/misc/util.js:98
 msgid "Could not parse command:"
@@ -405,7 +405,7 @@ msgid "%a %l:%M %p"
 msgstr "%a %l:%M %p"
 
 #. Translators: This is the date format to use when the calendar popup is
-#. * shown - it is shown just below the time in the shell (e.g. "Tue 9:29 AM").
+#. * shown - it is shown just below the time in Cinnamon (e.g. "Tue 9:29 AM").
 #.
 #: ../js/ui/dateMenu.js:194
 msgid "%A %B %e, %Y"
@@ -1038,7 +1038,7 @@ msgstr "टॅबलेट"
 msgid "Computer"
 msgstr "संगणक"
 
-#: ../js/ui/status/power.js:250 ../src/shell-app-system.c:1088
+#: ../js/ui/status/power.js:250 ../src/cinnamon-app-system.c:1088
 msgid "Unknown"
 msgstr "अपरिचीत"
 
@@ -1086,7 +1086,7 @@ msgstr "%A ला %X वेळी पाठवले"
 msgid "Type to search..."
 msgstr "शोधण्याकरीता टाइप करा..."
 
-#: ../js/ui/viewSelector.js:142 ../src/shell-util.c:250
+#: ../js/ui/viewSelector.js:142 ../src/cinnamon-util.c:250
 msgid "Search"
 msgstr "शोधा"
 
@@ -1126,62 +1126,62 @@ msgstr "प्रणाली आवाज"
 msgid "Print version"
 msgstr "छपाई आवृत्ती"
 
-#: ../src/shell-app.c:454
+#: ../src/cinnamon-app.c:454
 #, c-format
 msgid "Failed to launch '%s'"
 msgstr "'%s' सुरू करण्यास अपयशी"
 
-#: ../src/shell-global.c:1395
+#: ../src/cinnamon-global.c:1395
 msgid "Less than a minute ago"
 msgstr "एका मिनीटापूर्वी"
 
-#: ../src/shell-global.c:1399
+#: ../src/cinnamon-global.c:1399
 #, c-format
 msgid "%d minute ago"
 msgid_plural "%d minutes ago"
 msgstr[0] "%d मिनीट पूर्वी"
 msgstr[1] "%d मिनीट पूर्वी"
 
-#: ../src/shell-global.c:1404
+#: ../src/cinnamon-global.c:1404
 #, c-format
 msgid "%d hour ago"
 msgid_plural "%d hours ago"
 msgstr[0] "%d तास पूर्वी"
 msgstr[1] "%d तास पूर्वी"
 
-#: ../src/shell-global.c:1409
+#: ../src/cinnamon-global.c:1409
 #, c-format
 msgid "%d day ago"
 msgid_plural "%d days ago"
 msgstr[0] "%d दिवस पूर्वी"
 msgstr[1] "%d दिवस पूर्वी"
 
-#: ../src/shell-global.c:1414
+#: ../src/cinnamon-global.c:1414
 #, c-format
 msgid "%d week ago"
 msgid_plural "%d weeks ago"
 msgstr[0] "%d आठवडा पूर्वी"
 msgstr[1] "%d आठवडा पूर्वी"
 
-#: ../src/shell-mobile-providers.c:80
+#: ../src/cinnamon-mobile-providers.c:80
 msgid "United Kingdom"
 msgstr "यूनाइटेड किंगडम"
 
-#: ../src/shell-mobile-providers.c:526
+#: ../src/cinnamon-mobile-providers.c:526
 msgid "Default"
 msgstr "मुलभूत"
 
-#: ../src/shell-polkit-authentication-agent.c:334
+#: ../src/cinnamon-polkit-authentication-agent.c:334
 msgid "Authentication dialog was dismissed by the user"
 msgstr "ओळख पटवा संवाद वापरकर्त्याद्वारे वगळले"
 
-#: ../src/shell-util.c:89
+#: ../src/cinnamon-util.c:89
 msgid "Home Folder"
 msgstr "होम फोल्डर"
 
 #. Translators: this is the same string as the one found in
 #. * nautilus
-#: ../src/shell-util.c:104
+#: ../src/cinnamon-util.c:104
 msgid "File System"
 msgstr "फाइल प्रणाली"
 
@@ -1190,7 +1190,7 @@ msgstr "फाइल प्रणाली"
 #. * example, "Trash: some-directory". It means that the
 #. * directory called "some-directory" is in the trash.
 #.
-#: ../src/shell-util.c:300
+#: ../src/cinnamon-util.c:300
 #, c-format
 msgid "%1$s: %2$s"
 msgstr "%1$s: %2$s"

@@ -9,7 +9,7 @@ const Gtk = imports.gi.Gtk;
 const Lang = imports.lang;
 const Mainloop = imports.mainloop;
 const St = imports.gi.St;
-const Shell = imports.gi.Shell;
+const Cinnamon = imports.gi.Cinnamon;
 
 const Main = imports.ui.main;
 const MessageTray = imports.ui.messageTray;

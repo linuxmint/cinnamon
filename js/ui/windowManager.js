@@ -6,7 +6,7 @@ const Gio = imports.gi.Gio;
 const Lang = imports.lang;
 const Meta = imports.gi.Meta;
 const St = imports.gi.St;
-const Shell = imports.gi.Shell;
+const Cinnamon = imports.gi.Cinnamon;
 
 const AltTab = imports.ui.altTab;
 const WorkspaceSwitcherPopup = imports.ui.workspaceSwitcherPopup;
@@ -21,7 +21,7 @@ var dimShader = undefined;
 
 function getDimShaderSource() {
     if (!dimShader)
-        dimShader = Shell.get_file_contents_utf8_sync(global.datadir + '/shaders/dim-window.glsl');
+        dimShader = Cinnamon.get_file_contents_utf8_sync(global.datadir + '/shaders/dim-window.glsl');
     return dimShader;
 }
 
@@ -59,8 +59,8 @@ WindowDimmer.prototype = {
         }
 
         if (fraction > 0.01) {
-            Shell.shader_effect_set_double_uniform(this._effect, 'height', this.actor.get_height());
-            Shell.shader_effect_set_double_uniform(this._effect, 'fraction', fraction);
+            Cinnamon.shader_effect_set_double_uniform(this._effect, 'height', this.actor.get_height());
+            Cinnamon.shader_effect_set_double_uniform(this._effect, 'fraction', fraction);
 
             if (!this._effect.actor)
                 this.actor.add_effect(this._effect);
@@ -90,7 +90,7 @@ function WindowManager() {
 
 WindowManager.prototype = {
     _init : function() {
-        this._shellwm =  global.window_manager;
+        this._cinnamonwm =  global.window_manager;
 
         this._keyBindingHandlers = [];
         this._minimizing = [];
@@ -104,21 +104,21 @@ WindowManager.prototype = {
         this._animationBlockCount = 0;
 
         this._switchData = null;
-        this._shellwm.connect('kill-switch-workspace', Lang.bind(this, this._switchWorkspaceDone));
-        this._shellwm.connect('kill-window-effects', Lang.bind(this, function (shellwm, actor) {
-            this._minimizeWindowDone(shellwm, actor);
-            this._maximizeWindowDone(shellwm, actor);
-            this._unmaximizeWindowDone(shellwm, actor);
-            this._mapWindowDone(shellwm, actor);
-            this._destroyWindowDone(shellwm, actor);
+        this._cinnamonwm.connect('kill-switch-workspace', Lang.bind(this, this._switchWorkspaceDone));
+        this._cinnamonwm.connect('kill-window-effects', Lang.bind(this, function (cinnamonwm, actor) {
+            this._minimizeWindowDone(cinnamonwm, actor);
+            this._maximizeWindowDone(cinnamonwm, actor);
+            this._unmaximizeWindowDone(cinnamonwm, actor);
+            this._mapWindowDone(cinnamonwm, actor);
+            this._destroyWindowDone(cinnamonwm, actor);
         }));
 
-        this._shellwm.connect('switch-workspace', Lang.bind(this, this._switchWorkspace));
-        this._shellwm.connect('minimize', Lang.bind(this, this._minimizeWindow));
-        this._shellwm.connect('maximize', Lang.bind(this, this._maximizeWindow));
-        this._shellwm.connect('unmaximize', Lang.bind(this, this._unmaximizeWindow));
-        this._shellwm.connect('map', Lang.bind(this, this._mapWindow));
-        this._shellwm.connect('destroy', Lang.bind(this, this._destroyWindow));
+        this._cinnamonwm.connect('switch-workspace', Lang.bind(this, this._switchWorkspace));
+        this._cinnamonwm.connect('minimize', Lang.bind(this, this._minimizeWindow));
+        this._cinnamonwm.connect('maximize', Lang.bind(this, this._maximizeWindow));
+        this._cinnamonwm.connect('unmaximize', Lang.bind(this, this._unmaximizeWindow));
+        this._cinnamonwm.connect('map', Lang.bind(this, this._mapWindow));
+        this._cinnamonwm.connect('destroy', Lang.bind(this, this._destroyWindow));
 
         this._workspaceSwitcherPopup = null;
         this.setKeybindingHandler('switch_to_workspace_left', Lang.bind(this, this._showWorkspaceSwitcher));
@@ -143,12 +143,12 @@ WindowManager.prototype = {
 
     setKeybindingHandler: function(keybinding, handler){
         if (this._keyBindingHandlers[keybinding])
-            this._shellwm.disconnect(this._keyBindingHandlers[keybinding]);
+            this._cinnamonwm.disconnect(this._keyBindingHandlers[keybinding]);
         else
-            this._shellwm.takeover_keybinding(keybinding);
+            this._cinnamonwm.takeover_keybinding(keybinding);
 
         this._keyBindingHandlers[keybinding] =
-            this._shellwm.connect('keybinding::' + keybinding, handler);
+            this._cinnamonwm.connect('keybinding::' + keybinding, handler);
     },
 
     blockAnimations: function() {
@@ -176,9 +176,9 @@ WindowManager.prototype = {
         return false;
     },
 
-    _minimizeWindow : function(shellwm, actor) {
+    _minimizeWindow : function(cinnamonwm, actor) {
         if (!this._shouldAnimate(actor)) {
-            shellwm.completed_minimize(actor);
+            cinnamonwm.completed_minimize(actor);
             return;
         }
 
@@ -206,44 +206,44 @@ WindowManager.prototype = {
                            transition: 'easeOutQuad',
                            onComplete: this._minimizeWindowDone,
                            onCompleteScope: this,
-                           onCompleteParams: [shellwm, actor],
+                           onCompleteParams: [cinnamonwm, actor],
                            onOverwrite: this._minimizeWindowOverwritten,
                            onOverwriteScope: this,
-                           onOverwriteParams: [shellwm, actor]
+                           onOverwriteParams: [cinnamonwm, actor]
                          });
     },
 
-    _minimizeWindowDone : function(shellwm, actor) {
+    _minimizeWindowDone : function(cinnamonwm, actor) {
         if (this._removeEffect(this._minimizing, actor)) {
             Tweener.removeTweens(actor);
             actor.set_scale(1.0, 1.0);
             actor.move_anchor_point_from_gravity(Clutter.Gravity.NORTH_WEST);
 
-            shellwm.completed_minimize(actor);
+            cinnamonwm.completed_minimize(actor);
         }
     },
 
-    _minimizeWindowOverwritten : function(shellwm, actor) {
+    _minimizeWindowOverwritten : function(cinnamonwm, actor) {
         if (this._removeEffect(this._minimizing, actor)) {
-            shellwm.completed_minimize(actor);
+            cinnamonwm.completed_minimize(actor);
         }
     },
 
-    _maximizeWindow : function(shellwm, actor, targetX, targetY, targetWidth, targetHeight) {
-        shellwm.completed_maximize(actor);
+    _maximizeWindow : function(cinnamonwm, actor, targetX, targetY, targetWidth, targetHeight) {
+        cinnamonwm.completed_maximize(actor);
     },
 
-    _maximizeWindowDone : function(shellwm, actor) {
+    _maximizeWindowDone : function(cinnamonwm, actor) {
     },
 
-    _maximizeWindowOverwrite : function(shellwm, actor) {
+    _maximizeWindowOverwrite : function(cinnamonwm, actor) {
     },
 
-    _unmaximizeWindow : function(shellwm, actor, targetX, targetY, targetWidth, targetHeight) {
-        shellwm.completed_unmaximize(actor);
+    _unmaximizeWindow : function(cinnamonwm, actor, targetX, targetY, targetWidth, targetHeight) {
+        cinnamonwm.completed_unmaximize(actor);
     },
 
-    _unmaximizeWindowDone : function(shellwm, actor) {
+    _unmaximizeWindowDone : function(cinnamonwm, actor) {
     },
 
     _hasAttachedDialogs: function(window, ignoreWindow) {
@@ -302,7 +302,7 @@ WindowManager.prototype = {
             getWindowDimmer(actor).dimFraction = 0.0;
     },
 
-    _mapWindow : function(shellwm, actor) {
+    _mapWindow : function(cinnamonwm, actor) {
         actor._windowType = actor.meta_window.get_window_type();
         actor._notifyWindowTypeSignalId = actor.meta_window.connect('notify::window-type', Lang.bind(this, function () {
             let type = actor.meta_window.get_window_type();
@@ -330,18 +330,18 @@ WindowManager.prototype = {
                                    transition: "easeOutQuad",
                                    onComplete: this._mapWindowDone,
                                    onCompleteScope: this,
-                                   onCompleteParams: [shellwm, actor],
+                                   onCompleteParams: [cinnamonwm, actor],
                                    onOverwrite: this._mapWindowOverwrite,
                                    onOverwriteScope: this,
-                                   onOverwriteParams: [shellwm, actor]
+                                   onOverwriteParams: [cinnamonwm, actor]
                                  });
                 return;
             }
-            shellwm.completed_map(actor);
+            cinnamonwm.completed_map(actor);
             return;
         }
         if (!this._shouldAnimate(actor)) {
-            shellwm.completed_map(actor);
+            cinnamonwm.completed_map(actor);
             return;
         }
 
@@ -356,28 +356,28 @@ WindowManager.prototype = {
                            transition: 'easeOutQuad',
                            onComplete: this._mapWindowDone,
                            onCompleteScope: this,
-                           onCompleteParams: [shellwm, actor],
+                           onCompleteParams: [cinnamonwm, actor],
                            onOverwrite: this._mapWindowOverwrite,
                            onOverwriteScope: this,
-                           onOverwriteParams: [shellwm, actor]
+                           onOverwriteParams: [cinnamonwm, actor]
                          });
     },
 
-    _mapWindowDone : function(shellwm, actor) {
+    _mapWindowDone : function(cinnamonwm, actor) {
         if (this._removeEffect(this._mapping, actor)) {
             Tweener.removeTweens(actor);
             actor.opacity = 255;
-            shellwm.completed_map(actor);
+            cinnamonwm.completed_map(actor);
         }
     },
 
-    _mapWindowOverwrite : function(shellwm, actor) {
+    _mapWindowOverwrite : function(cinnamonwm, actor) {
         if (this._removeEffect(this._mapping, actor)) {
-            shellwm.completed_map(actor);
+            cinnamonwm.completed_map(actor);
         }
     },
 
-    _destroyWindow : function(shellwm, actor) {
+    _destroyWindow : function(cinnamonwm, actor) {
         let window = actor.meta_window;
         if (actor._notifyWindowTypeSignalId) {
             window.disconnect(actor._notifyWindowTypeSignalId);
@@ -392,7 +392,7 @@ WindowManager.prototype = {
             let parent = window.get_transient_for();
             this._checkDimming(parent, window);
             if (!this._shouldAnimate()) {
-                shellwm.completed_destroy(actor);
+                cinnamonwm.completed_destroy(actor);
                 return;
             }
 
@@ -402,7 +402,7 @@ WindowManager.prototype = {
 
             actor._parentDestroyId = parent.connect('unmanaged', Lang.bind(this, function () {
                 Tweener.removeTweens(actor);
-                this._destroyWindowDone(shellwm, actor);
+                this._destroyWindowDone(cinnamonwm, actor);
             }));
 
             Tweener.addTween(actor,
@@ -411,30 +411,30 @@ WindowManager.prototype = {
                                transition: "easeOutQuad",
                                onComplete: this._destroyWindowDone,
                                onCompleteScope: this,
-                               onCompleteParams: [shellwm, actor],
+                               onCompleteParams: [cinnamonwm, actor],
                                onOverwrite: this._destroyWindowDone,
                                onOverwriteScope: this,
-                               onOverwriteParams: [shellwm, actor]
+                               onOverwriteParams: [cinnamonwm, actor]
                              });
             return;
         }
-        shellwm.completed_destroy(actor);
+        cinnamonwm.completed_destroy(actor);
     },
 
-    _destroyWindowDone : function(shellwm, actor) {
+    _destroyWindowDone : function(cinnamonwm, actor) {
         if (this._removeEffect(this._destroying, actor)) {
             let parent = actor.get_meta_window().get_transient_for();
             if (parent && actor._parentDestroyId) {
                 parent.disconnect(actor._parentDestroyId);
                 actor._parentDestroyId = 0;
             }
-            shellwm.completed_destroy(actor);
+            cinnamonwm.completed_destroy(actor);
         }
     },
 
-    _switchWorkspace : function(shellwm, from, to, direction) {
+    _switchWorkspace : function(cinnamonwm, from, to, direction) {
         if (!this._shouldAnimate()) {
-            shellwm.completed_switch_workspace();
+            cinnamonwm.completed_switch_workspace();
             return;
         }
 
@@ -502,7 +502,7 @@ WindowManager.prototype = {
                            transition: 'easeOutQuad',
                            onComplete: this._switchWorkspaceDone,
                            onCompleteScope: this,
-                           onCompleteParams: [shellwm]
+                           onCompleteParams: [cinnamonwm]
                          });
         Tweener.addTween(switchData.inGroup,
                          { x: 0,
@@ -512,7 +512,7 @@ WindowManager.prototype = {
                          });
     },
 
-    _switchWorkspaceDone : function(shellwm) {
+    _switchWorkspaceDone : function(cinnamonwm) {
         let switchData = this._switchData;
         if (!switchData)
             return;
@@ -533,10 +533,10 @@ WindowManager.prototype = {
         switchData.inGroup.destroy();
         switchData.outGroup.destroy();
 
-        shellwm.completed_switch_workspace();
+        cinnamonwm.completed_switch_workspace();
     },
 
-    _startAppSwitcher : function(shellwm, binding, mask, window, backwards) {
+    _startAppSwitcher : function(cinnamonwm, binding, mask, window, backwards) {
         /* prevent a corner case where both popups show up at once */
         if (this._workspaceSwitcherPopup != null)
             this._workspaceSwitcherPopup.actor.hide();
@@ -547,11 +547,11 @@ WindowManager.prototype = {
             tabPopup.destroy();
     },
 
-    _startA11ySwitcher : function(shellwm, binding, mask, window, backwards) {
+    _startA11ySwitcher : function(cinnamonwm, binding, mask, window, backwards) {
         Main.ctrlAltTabManager.popup(backwards, mask);
     },
 
-    _showWorkspaceSwitcher : function(shellwm, binding, mask, window, backwards) {
+    _showWorkspaceSwitcher : function(cinnamonwm, binding, mask, window, backwards) {
         if (global.screen.n_workspaces == 1)
             return;
 

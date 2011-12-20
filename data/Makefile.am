@@ -1,5 +1,5 @@
 desktopdir=$(datadir)/applications
-desktop_DATA = gnome-shell.desktop
+desktop_DATA = cinnamon.desktop
 
 # We substitute in bindir so it works as an autostart
 # file when built in a non-system prefix
@@ -30,7 +30,7 @@ dist_theme_DATA =				\
 	theme/filter-selected-ltr.svg		\
 	theme/filter-selected-rtl.svg		\
 	theme/gdm.css				\
-	theme/gnome-shell.css			\
+	theme/cinnamon.css			\
 	theme/panel-border.svg			\
 	theme/panel-button-border.svg		\
 	theme/panel-button-highlight-narrow.svg	\
@@ -47,7 +47,7 @@ dist_theme_DATA =				\
 	theme/ws-switch-arrow-up.svg		\
 	theme/ws-switch-arrow-down.svg
 
-gsettings_SCHEMAS = org.gnome.shell.gschema.xml
+gsettings_SCHEMAS = org.cinnamon.gschema.xml
 
 @INTLTOOL_XML_NOMERGE_RULE@
 @GSETTINGS_RULES@
@@ -62,7 +62,7 @@ all-local: gschemas.compiled
 
 # GConf schemas: provide defaults for keys from Metacity we are overriding
 gconfschemadir  = @GCONF_SCHEMA_FILE_DIR@
-gconfschema_DATA = gnome-shell.schemas
+gconfschema_DATA = cinnamon.schemas
 
 shadersdir = $(pkgdatadir)/shaders
 shaders_DATA = \
@@ -74,14 +74,14 @@ install-data-local:
 
 
 EXTRA_DIST =						\
-	gnome-shell.desktop.in.in			\
+	cinnamon.desktop.in.in			\
 	$(menu_DATA)					\
 	$(gconfschema_DATA)				\
 	$(shaders_DATA)					\
-	org.gnome.shell.gschema.xml.in
+	org.cinnamon.gschema.xml.in
 
 CLEANFILES =						\
-	gnome-shell.desktop.in				\
+	cinnamon.desktop.in				\
 	$(desktop_DATA)					\
 	$(gsettings_SCHEMAS)				\
 	gschemas.compiled

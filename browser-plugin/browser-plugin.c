@@ -35,11 +35,11 @@
 #include <json-glib/json-glib.h>
 
 #define ORIGIN "extensions.gnome.org"
-#define PLUGIN_NAME "Gnome Shell Integration"
-#define PLUGIN_DESCRIPTION "This plugin provides integration with Gnome Shell " \
+#define PLUGIN_NAME "Cinnamon Integration"
+#define PLUGIN_DESCRIPTION "This plugin provides integration with Cinnamon " \
       "for live extension enabling and disabling. " \
       "It can be used only by extensions.gnome.org"
-#define PLUGIN_MIME_STRING "application/x-gnome-shell-integration::Gnome Shell Integration Dummy Content-Type";
+#define PLUGIN_MIME_STRING "application/x-cinnamon-integration::Cinnamon Integration Dummy Content-Type";
 
 #define PLUGIN_API_VERSION 1
 
@@ -223,18 +223,18 @@ NPP_New(NPMIMEType    mimetype,
   data->proxy = g_dbus_proxy_new_for_bus_sync (G_BUS_TYPE_SESSION,
                                                G_DBUS_PROXY_FLAGS_NONE,
                                                NULL, /* interface info */
-                                               "org.gnome.Shell",
-                                               "/org/gnome/Shell",
-                                               "org.gnome.Shell",
+                                               "org.Cinnamon",
+                                               "/org/Cinnamon",
+                                               "org.Cinnamon",
                                                NULL, /* GCancellable */
                                                &error);
   if (!data->proxy)
     {
-      /* ignore error if the shell is not running, otherwise warn */
+      /* ignore error if Cinnamon is not running, otherwise warn */
       if (error->domain != G_DBUS_ERROR ||
           error->code != G_DBUS_ERROR_NAME_HAS_NO_OWNER)
         {
-          g_warning ("Failed to set up Shell proxy: %s", error->message);
+          g_warning ("Failed to set up Cinnamon proxy: %s", error->message);
         }
       g_clear_error (&error);
       return NPERR_GENERIC_ERROR;
@@ -273,7 +273,7 @@ typedef struct {
 } PluginObject;
 
 static void
-on_shell_signal (GDBusProxy *proxy,
+on_cinnamon_signal (GDBusProxy *proxy,
                  gchar      *sender_name,
                  gchar      *signal_name,
                  GVariant   *parameters,
@@ -313,7 +313,7 @@ plugin_object_allocate (NPP      instance,
   obj->instance = instance;
   obj->proxy = g_object_ref (data->proxy);
   obj->signal_id = g_signal_connect (obj->proxy, "g-signal",
-                                     G_CALLBACK (on_shell_signal), obj);
+                                     G_CALLBACK (on_cinnamon_signal), obj);
 
   g_debug ("plugin object created");
 
@@ -337,7 +337,7 @@ plugin_object_deallocate (NPObject *npobj)
 }
 
 static NPIdentifier api_version_id;
-static NPIdentifier shell_version_id;
+static NPIdentifier cinnamon_version_id;
 static NPIdentifier get_info_id;
 static NPIdentifier list_extensions_id;
 static NPIdentifier enable_extension_id;
@@ -600,7 +600,7 @@ plugin_get_api_version (PluginObject  *obj,
 }
 
 static gboolean
-plugin_get_shell_version (PluginObject  *obj,
+plugin_get_cinnamon_version (PluginObject  *obj,
                           NPVariant     *result)
 {
   GVariant *res;
@@ -612,11 +612,11 @@ plugin_get_shell_version (PluginObject  *obj,
   ret = TRUE;
 
   res = g_dbus_proxy_get_cached_property (obj->proxy,
-                                          "ShellVersion");
+                                          "CinnamonVersion");
 
   if (res == NULL)
     {
-      g_warning ("Failed to grab shell version.");
+      g_warning ("Failed to grab cinnamon version.");
       version = "-1";
     }
   else
@@ -710,7 +710,7 @@ plugin_object_has_property (NPObject     *npobj,
 {
   return (name == onextension_changed_id ||
           name == api_version_id ||
-          name == shell_version_id);
+          name == cinnamon_version_id);
 }
 
 static bool
@@ -726,8 +726,8 @@ plugin_object_get_property (NPObject     *npobj,
   obj = (PluginObject*) npobj;
   if (name == api_version_id)
     return plugin_get_api_version (obj, result);
-  else if (name == shell_version_id)
-    return plugin_get_shell_version (obj, result);
+  else if (name == cinnamon_version_id)
+    return plugin_get_cinnamon_version (obj, result);
   else if (name == onextension_changed_id)
     {
       if (obj->listener)
@@ -790,7 +790,7 @@ init_methods_and_properties (void)
 {
   /* this is the JS public API; it is manipulated through NPIdentifiers for speed */
   api_version_id = funcs.getstringidentifier ("apiVersion");
-  shell_version_id = funcs.getstringidentifier ("shellVersion");
+  cinnamon_version_id = funcs.getstringidentifier ("cinnamonVersion");
 
   get_info_id = funcs.getstringidentifier ("getExtensionInfo");
   list_extensions_id = funcs.getstringidentifier ("listExtensions");

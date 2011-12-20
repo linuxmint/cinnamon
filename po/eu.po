@@ -1,7 +1,7 @@
 # translation of eu.po to Basque
-# Basque translation for gnome-shell.
-# Copyright (C) 2011 gnome-shell's COPYRIGHT HOLDER
-# This file is distributed under the same license as the gnome-shell package.
+# Basque translation for cinnamon.
+# Copyright (C) 2011 cinnamon's COPYRIGHT HOLDER
+# This file is distributed under the same license as the cinnamon package.
 # Julen Ruiz Aizpuru <julenx@gmail.com>, 2011.
 # Iñaki Larrañaga Murgoitio <dooteo@euskalgnu.org>, 2011.
 msgid ""
@@ -20,15 +20,15 @@ msgstr ""
 "X-Generator: Lokalize 1.0\n"
 "X-Project-Style: gnome\n"
 
-#: ../data/gnome-shell.desktop.in.in.h:1
-msgid "GNOME Shell"
-msgstr "GNOME Shell"
+#: ../data/cinnamon.desktop.in.in.h:1
+msgid "Cinnamon"
+msgstr "Cinnamon"
 
-#: ../data/gnome-shell.desktop.in.in.h:2
+#: ../data/cinnamon.desktop.in.in.h:2
 msgid "Window management and application launching"
 msgstr "Leiho-kudeaketa eta aplikazioak abiaraztea"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:1
+#: ../data/org.cinnamon.gschema.xml.in.h:1
 msgid ""
 "Allows access to internal debugging and monitoring tools using the Alt-F2 "
 "dialog."
@@ -36,53 +36,53 @@ msgstr ""
 "Barneko arazte- eta gainbegiraketa-tresnen atzipena onartzen du Alt-F2 "
 "elkarrizketa-koadroa erabiliz."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:2
+#: ../data/org.cinnamon.gschema.xml.in.h:2
 msgid "Enable internal tools useful for developers and testers from Alt-F2"
 msgstr "Gaitu garatzaile eta probatzaileentzako barne-tresnak Alt-F2 bitartez"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:3
+#: ../data/org.cinnamon.gschema.xml.in.h:3
 msgid "File extension used for storing the screencast"
 msgstr "Pantailako bideoa gordetzeko erabilitako luzapena"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:4
+#: ../data/org.cinnamon.gschema.xml.in.h:4
 msgid "Framerate used for recording screencasts."
 msgstr "Pantailatik bideoak grabatzean erabilitako fotograma-emaria."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:5
+#: ../data/org.cinnamon.gschema.xml.in.h:5
 msgid ""
-"GNOME Shell extensions have a uuid property; this key lists extensions which "
+"Cinnamon extensions have a uuid property; this key lists extensions which "
 "should be loaded. disabled-extensions overrides this setting for extensions "
 "that appear in both lists."
 msgstr ""
-"GNOME Shell gehigarriek UUID propietatea dute; kargatu beharko liratekeen "
+"Cinnamon gehigarriek UUID propietatea dute; kargatu beharko liratekeen "
 "gehigarriak zerrendatzen ditu gako honek. 'disabled-extensions' gakoak "
 "ezarpen hau gainidazten du bi zerrendetan agertzen diren gehigarrietarako."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:6
+#: ../data/org.cinnamon.gschema.xml.in.h:6
 msgid "History for command (Alt-F2) dialog"
 msgstr "Komandoen (Alt-F2) elkarrizketa-koadroaren historia"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:7
+#: ../data/org.cinnamon.gschema.xml.in.h:7
 msgid "History for the looking glass dialog"
 msgstr "Ikuskatzailearen elkarrizketa-koadroaren historia"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:8
+#: ../data/org.cinnamon.gschema.xml.in.h:8
 msgid "If true, display date in the clock, in addition to time."
 msgstr "Ezarrita badago, orduaz gain data ere bistaratzen du."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:9
+#: ../data/org.cinnamon.gschema.xml.in.h:9
 msgid "If true, display seconds in time."
 msgstr "Ezarrita badago, segundoak bistaratzen ditu orduan."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:10
+#: ../data/org.cinnamon.gschema.xml.in.h:10
 msgid "If true, display the ISO week date in the calendar."
 msgstr "Ezarrita badago, ISO aste-data bistaratzen du egutegian."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:11
+#: ../data/org.cinnamon.gschema.xml.in.h:11
 msgid "List of desktop file IDs for favorite applications"
 msgstr "Gogoko aplikazioen mahaigaineko fitxategien IDen zerrenda"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:13
+#: ../data/org.cinnamon.gschema.xml.in.h:13
 #, no-c-format
 msgid ""
 "Sets the GStreamer pipeline used to encode recordings. It follows the syntax "
@@ -108,26 +108,26 @@ msgstr ""
 "formatuan grabatzen du VP8 kodeka erabiliz. %T leku-marka gisa erabiltzen da "
 "sistemako hari kopuru optimoa asmatzeko."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:14
+#: ../data/org.cinnamon.gschema.xml.in.h:14
 msgid "Show date in clock"
 msgstr "Erakutsi data erlojuan"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:15
+#: ../data/org.cinnamon.gschema.xml.in.h:15
 msgid "Show the week date in the calendar"
 msgstr "Erakutsi aste-data egutegian"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:16
+#: ../data/org.cinnamon.gschema.xml.in.h:16
 msgid "Show time with seconds"
 msgstr "Erakutsi ordua segundoekin"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:17
+#: ../data/org.cinnamon.gschema.xml.in.h:17
 msgid ""
 "The applications corresponding to these identifiers will be displayed in the "
 "favorites area."
 msgstr ""
 "Identifikadore horiei dagozkien aplikazioak bistaratuko dira gogokoen arean."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:18
+#: ../data/org.cinnamon.gschema.xml.in.h:18
 msgid ""
 "The filename for recorded screencasts will be a unique filename based on the "
 "current date, and use this extension. It should be changed when recording to "
@@ -137,48 +137,48 @@ msgstr ""
 "datan oinarrituta eta luzapen hau erabiliko du. Aldatu egin beharko "
 "litzateke beste edukiontziko formatu batean grabatzean."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:19
+#: ../data/org.cinnamon.gschema.xml.in.h:19
 msgid ""
-"The framerate of the resulting screencast recordered by GNOME Shell's "
+"The framerate of the resulting screencast recordered by Cinnamon's "
 "screencast recorder in frames-per-second."
 msgstr ""
-"GNOME Shell-en pantailako bideoen grabatzaileak pantailatik grabatutako "
+"Cinnamon-en pantailako bideoen grabatzaileak pantailatik grabatutako "
 "bideoen fotograma-emaria (fotograma segundoko)."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:20
+#: ../data/org.cinnamon.gschema.xml.in.h:20
 msgid "The gstreamer pipeline used to encode the screencast"
 msgstr "Pantailako bideoak kodetzeko erabilitako gstreamer hodia"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:21
+#: ../data/org.cinnamon.gschema.xml.in.h:21
 msgid ""
-"The shell normally monitors active applications in order to present the most "
+"Cinnamon normally monitors active applications in order to present the most "
 "used ones (e.g. in launchers). While this data will be kept private, you may "
 "want to disable this for privacy reasons. Please note that doing so won't "
 "remove already saved data."
 msgstr ""
-"Shell-ak normalean aplikazio aktiboak monitorizatzen ditu gehien "
+"Cinnamon-ak normalean aplikazio aktiboak monitorizatzen ditu gehien "
 "erabilitakoak aurkezteko (adib. abiarazleetan). Datu hauek pribatu "
 "mantenduko diren arren, agian hau desgaitu nahi duzu pribatutasun-"
 "arrazoiengatik. Kontuan izan hori eginez gero dagoeneko gordeta dauden "
 "datuak ez direla kenduko."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:22
+#: ../data/org.cinnamon.gschema.xml.in.h:22
 msgid "The type of keyboard to use."
 msgstr "Erabili beharreko teklatu mota."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:23
+#: ../data/org.cinnamon.gschema.xml.in.h:23
 msgid "Uuids of extensions to enable"
 msgstr "Gaitzeko hedapenen UUIDak"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:24
+#: ../data/org.cinnamon.gschema.xml.in.h:24
 msgid "Whether to collect stats about applications usage"
 msgstr "Aplikazioen erabilpenei buruzko estatistikak bilduko diren ala ez"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:25
+#: ../data/org.cinnamon.gschema.xml.in.h:25
 msgid "Which keyboard to use"
 msgstr "Erabili beharreko teklatua"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:26
+#: ../data/org.cinnamon.gschema.xml.in.h:26
 msgid "disabled OpenSearch providers"
 msgstr "desgaitutako OpenSearch hornitzaileak"
 
@@ -235,7 +235,7 @@ msgstr "Itzali"
 msgid "Command not found"
 msgstr "Ez da komandoa aurkitu"
 
-#. Replace "Error invoking GLib.shell_parse_argv: " with
+#. Replace "Error invoking GLib.cinnamon_parse_argv: " with
 #. something nicer
 #: ../js/misc/util.js:119
 msgid "Could not parse command:"
@@ -441,7 +441,7 @@ msgid "Next week"
 msgstr "Hurrengo astea"
 
 #: ../js/ui/contactDisplay.js:59 ../js/ui/notificationDaemon.js:444
-#: ../js/ui/status/power.js:223 ../src/shell-app.c:355
+#: ../js/ui/status/power.js:223 ../src/cinnamon-app.c:355
 msgid "Unknown"
 msgstr "Ezezaguna"
 
@@ -518,7 +518,7 @@ msgid "%a %l:%M %p"
 msgstr "%a %l:%M %p"
 
 #. Translators: This is the date format to use when the calendar popup is
-#. * shown - it is shown just below the time in the shell (e.g. "Tue 9:29 AM").
+#. * shown - it is shown just below the time in Cinnamon (e.g. "Tue 9:29 AM").
 #.
 #: ../js/ui/dateMenu.js:213
 msgid "%A %B %e, %Y"
@@ -830,7 +830,7 @@ msgstr "Bilatzen..."
 msgid "No matching results."
 msgstr "Ez dago bat datorren emaitzarik."
 
-#: ../js/ui/shellMountOperation.js:285
+#: ../js/ui/cinnamonMountOperation.js:285
 msgid "Wrong password, please try again"
 msgstr "Okerreko pasahitza, saiatu berriro"
 
@@ -1536,7 +1536,7 @@ msgstr ""
 msgid "Type to search..."
 msgstr "Idatzi bilatzeko..."
 
-#: ../js/ui/viewSelector.js:140 ../src/shell-util.c:261
+#: ../js/ui/viewSelector.js:140 ../src/cinnamon-util.c:261
 msgid "Search"
 msgstr "Bilatu"
 
@@ -1580,30 +1580,30 @@ msgstr "Bistaratu bertsioa"
 msgid "Mode used by GDM for login screen"
 msgstr "GDMk erabiltzen duen modua saio-hasierako pantailarako"
 
-#: ../src/shell-app.c:581
+#: ../src/cinnamon-app.c:581
 #, c-format
 msgid "Failed to launch '%s'"
 msgstr "Huts egin du '%s' abiaraztean"
 
-#: ../src/shell-mobile-providers.c:80
+#: ../src/cinnamon-mobile-providers.c:80
 msgid "United Kingdom"
 msgstr "Erresuma Batua"
 
-#: ../src/shell-mobile-providers.c:526
+#: ../src/cinnamon-mobile-providers.c:526
 msgid "Default"
 msgstr "Lehenetsia"
 
-#: ../src/shell-polkit-authentication-agent.c:334
+#: ../src/cinnamon-polkit-authentication-agent.c:334
 msgid "Authentication dialog was dismissed by the user"
 msgstr "Erabiltzaileak autentifikatzeko elkarrizketa-koadroa itxi du"
 
-#: ../src/shell-util.c:100
+#: ../src/cinnamon-util.c:100
 msgid "Home Folder"
 msgstr "Karpeta nagusia"
 
 #. Translators: this is the same string as the one found in
 #. * nautilus
-#: ../src/shell-util.c:115
+#: ../src/cinnamon-util.c:115
 msgid "File System"
 msgstr "Fitxategi-sistema"
 
@@ -1612,7 +1612,7 @@ msgstr "Fitxategi-sistema"
 #. * example, "Trash: some-directory". It means that the
 #. * directory called "some-directory" is in the trash.
 #.
-#: ../src/shell-util.c:311
+#: ../src/cinnamon-util.c:311
 #, c-format
 msgid "%1$s: %2$s"
 msgstr "%1$s: %2$s"

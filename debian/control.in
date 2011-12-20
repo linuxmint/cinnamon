@@ -1,4 +1,4 @@
-Source: gnome-shell
+Source: cinnamon
 Section: gnome
 Priority: optional
 Maintainer: Ubuntu Developers <ubuntu-devel-discuss@lists.ubuntu.com>
@@ -48,7 +48,7 @@ Build-Depends: cdbs,
                libpolkit-agent-1-dev (>= 0.100),
                libjson-glib-dev (>= 0.13.2)
 Standards-Version: 3.9.1
-Homepage: http://live.gnome.org/GnomeShell
+Homepage: http://live.gnome.org/Cinnamon
 
 Package: cinnamon
 Architecture: any
@@ -75,13 +75,13 @@ Depends: ${gir:Depends},
          mesa-utils
 Recommends: gnome-control-center, gnome-user-guide, gnome-themes-standard, gnome-session-fallback
 Breaks: gnome-control-center (<< 1:3.0)
-Description: graphical shell for the GNOME desktop
- The GNOME Shell redefines user interactions with the GNOME desktop.
+Description: Cinnamon desktop
+ Cinnamon redefines user interactions with the GNOME desktop.
  In particular, it offers new paradigms for launching applications,
  accessing documents, and organizing open windows in GNOME. Later, it
  will introduce a new applets eco-system and offer new solutions for
  other desktop features, such as notifications and contacts
- management. The GNOME Shell is intended to replace functions handled
+ management. Cinnamon is intended to replace functions handled
  by the GNOME Panel and by the window manager in previous versions of
- GNOME. The GNOME Shell has rich visual effects enabled by new
+ GNOME. Cinnamon has rich visual effects enabled by new
  graphical technologies.

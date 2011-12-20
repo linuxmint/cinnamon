@@ -2,7 +2,7 @@
 
 const Clutter = imports.gi.Clutter;
 const Lang = imports.lang;
-const Shell = imports.gi.Shell;
+const Cinnamon = imports.gi.Cinnamon;
 const Signals = imports.signals;
 const DND = imports.ui.dnd;
 
@@ -76,7 +76,7 @@ XdndHandler.prototype = {
 
             this._cursorWindowClone = new Clutter.Clone({ source: cursorWindow });
             global.overlay_group.add_actor(this._cursorWindowClone);
-            Shell.util_set_hidden_from_pick(this._cursorWindowClone, true);
+            Cinnamon.util_set_hidden_from_pick(this._cursorWindowClone, true);
 
             // Make sure that the clone has the same position as the source
             this._cursorWindowClone.add_constraint(constraint_position);

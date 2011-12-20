@@ -4,7 +4,7 @@ const Clutter = imports.gi.Clutter;
 const Lang = imports.lang;
 const Mainloop = imports.mainloop;
 const Meta = imports.gi.Meta;
-const Shell = imports.gi.Shell;
+const Cinnamon = imports.gi.Cinnamon;
 const St = imports.gi.St;
 const Signals = imports.signals;
 
@@ -462,7 +462,7 @@ function WorkspacesDisplay() {
 
 WorkspacesDisplay.prototype = {
     _init: function() {
-        this.actor = new Shell.GenericContainer();
+        this.actor = new Cinnamon.GenericContainer();
         this.actor.connect('get-preferred-width', Lang.bind(this, this._getPreferredWidth));
         this.actor.connect('get-preferred-height', Lang.bind(this, this._getPreferredHeight));
         this.actor.connect('allocate', Lang.bind(this, this._allocate));

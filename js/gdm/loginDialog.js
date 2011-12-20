@@ -28,7 +28,7 @@ const Mainloop = imports.mainloop;
 const Lang = imports.lang;
 const Pango = imports.gi.Pango;
 const Signals = imports.signals;
-const Shell = imports.gi.Shell;
+const Cinnamon = imports.gi.Cinnamon;
 const St = imports.gi.St;
 const GdmGreeter = imports.gi.GdmGreeter;
 
@@ -754,7 +754,7 @@ LoginDialog.prototype = {
     __proto__: ModalDialog.ModalDialog.prototype,
 
     _init: function() {
-        ModalDialog.ModalDialog.prototype._init.call(this, { shellReactive: true,
+        ModalDialog.ModalDialog.prototype._init.call(this, { cinnamonReactive: true,
                                                              styleClass: 'login-dialog' });
         this.connect('destroy',
                      Lang.bind(this, this._onDestroy));

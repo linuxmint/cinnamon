@@ -2,7 +2,7 @@
 
 const GLib = imports.gi.GLib;
 const Gio = imports.gi.Gio;
-const Shell = imports.gi.Shell;
+const Cinnamon = imports.gi.Cinnamon;
 const Lang = imports.lang;
 const Mainloop = imports.mainloop;
 const Signals = imports.signals;
@@ -137,8 +137,8 @@ PlacesManager.prototype = {
 
         let homeFile = Gio.file_new_for_path (GLib.get_home_dir());
         let homeUri = homeFile.get_uri();
-        let homeLabel = Shell.util_get_label_for_uri (homeUri);
-        let homeIcon = Shell.util_get_icon_for_uri (homeUri);
+        let homeLabel = Cinnamon.util_get_label_for_uri (homeUri);
+        let homeIcon = Cinnamon.util_get_icon_for_uri (homeUri);
         this._home = new PlaceInfo('special:home', homeLabel,
             function(size) {
                 return St.TextureCache.get_default().load_gicon(null, homeIcon, size);
@@ -150,8 +150,8 @@ PlacesManager.prototype = {
         let desktopPath = GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_DESKTOP);
         let desktopFile = Gio.file_new_for_path (desktopPath);
         let desktopUri = desktopFile.get_uri();
-        let desktopLabel = Shell.util_get_label_for_uri (desktopUri);
-        let desktopIcon = Shell.util_get_icon_for_uri (desktopUri);
+        let desktopLabel = Cinnamon.util_get_label_for_uri (desktopUri);
+        let desktopIcon = Cinnamon.util_get_icon_for_uri (desktopUri);
         this._desktopMenu = new PlaceInfo('special:desktop', desktopLabel,
             function(size) {
                 return St.TextureCache.get_default().load_gicon(null, desktopIcon, size);
@@ -268,7 +268,7 @@ PlacesManager.prototype = {
         if (!GLib.file_test(this._bookmarksPath, GLib.FileTest.EXISTS))
             return;
 
-        let bookmarksContent = Shell.get_file_contents_utf8_sync(this._bookmarksPath);
+        let bookmarksContent = Cinnamon.get_file_contents_utf8_sync(this._bookmarksPath);
 
         let bookmarks = bookmarksContent.split('\n');
 
@@ -294,10 +294,10 @@ PlacesManager.prototype = {
             if (!file.query_exists(null))
                 continue;
             if (label == null)
-                label = Shell.util_get_label_for_uri(bookmark);
+                label = Cinnamon.util_get_label_for_uri(bookmark);
             if (label == null)
                 continue;
-            let icon = Shell.util_get_icon_for_uri(bookmark);
+            let icon = Cinnamon.util_get_icon_for_uri(bookmark);
 
             let item = new PlaceInfo('bookmark:' + bookmark, label,
                 function(size) {

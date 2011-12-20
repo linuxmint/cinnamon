@@ -8,7 +8,7 @@ const Lang = imports.lang;
 const Meta = imports.gi.Meta;
 const Pango = imports.gi.Pango;
 const St = imports.gi.St;
-const Shell = imports.gi.Shell;
+const Cinnamon = imports.gi.Cinnamon;
 const Signals = imports.signals;
 
 const Params = imports.misc.params;
@@ -35,12 +35,12 @@ function ModalDialog() {
 
 ModalDialog.prototype = {
     _init: function(params) {
-        params = Params.parse(params, { shellReactive: false,
+        params = Params.parse(params, { cinnamonReactive: false,
                                         styleClass: null });
 
         this.state = State.CLOSED;
         this._hasModal = false;
-        this._shellReactive = params.shellReactive;
+        this._cinnamonReactive = params.cinnamonReactive;
 
         this._group = new St.Group({ visible: false,
                                      x: 0,
@@ -65,12 +65,12 @@ ModalDialog.prototype = {
             this._dialogLayout.add_style_class_name(params.styleClass);
         }
 
-        if (!this._shellReactive) {
+        if (!this._cinnamonReactive) {
             this._lightbox = new Lightbox.Lightbox(this._group,
                                                    { inhibitEvents: true });
             this._lightbox.highlight(this._backgroundBin);
 
-            let stack = new Shell.Stack();
+            let stack = new Cinnamon.Stack();
             this._backgroundBin.child = stack;
 
             this._eventBlocker = new Clutter.Group({ reactive: true });
@@ -252,7 +252,7 @@ ModalDialog.prototype = {
         global.gdk_screen.get_display().sync();
         this._hasModal = false;
 
-        if (!this._shellReactive)
+        if (!this._cinnamonReactive)
             this._eventBlocker.raise_top();
     },
 
@@ -269,7 +269,7 @@ ModalDialog.prototype = {
         } else
             this._initialKeyFocus.grab_key_focus();
 
-        if (!this._shellReactive)
+        if (!this._cinnamonReactive)
             this._eventBlocker.lower_bottom();
         return true;
     },

@@ -1,13 +1,13 @@
-# Bengali (India) translation for gnome-shell.
-# Copyright (C) 2011 gnome-shell's COPYRIGHT HOLDER
-# This file is distributed under the same license as the gnome-shell package.
+# Bengali (India) translation for cinnamon.
+# Copyright (C) 2011 cinnamon's COPYRIGHT HOLDER
+# This file is distributed under the same license as the cinnamon package.
 #
 # , 2011.
 msgid ""
 msgstr ""
-"Project-Id-Version: gnome-shell master\n"
+"Project-Id-Version: cinnamon master\n"
 "Report-Msgid-Bugs-To: http://bugzilla.gnome.org/enter_bug."
-"cgi?product=gnome-shell&keywords=I18N+L10N&component=general\n"
+"cgi?product=cinnamon&keywords=I18N+L10N&component=general\n"
 "POT-Creation-Date: 2011-03-22 23:02+0000\n"
 "PO-Revision-Date: 2011-03-23 20:57+0530\n"
 "Last-Translator: \n"
@@ -18,15 +18,15 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Generator: Lokalize 1.1\n"
 
-#: ../data/gnome-shell.desktop.in.in.h:1
-msgid "GNOME Shell"
-msgstr "GNOME Shell"
+#: ../data/cinnamon.desktop.in.in.h:1
+msgid "Cinnamon"
+msgstr "Cinnamon"
 
-#: ../data/gnome-shell.desktop.in.in.h:2
+#: ../data/cinnamon.desktop.in.in.h:2
 msgid "Window management and application launching"
 msgstr "উইন্ডো পরিচালনা ও অ্যাপ্লিকেশন প্রারম্ভ"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:1
+#: ../data/org.cinnamon.gschema.xml.in.h:1
 msgid ""
 "Allows access to internal debugging and monitoring tools using the Alt-F2 "
 "dialog."
@@ -34,54 +34,54 @@ msgstr ""
 "Alt-F2 ডায়লগের মাধ্যমে ডিবাগিং ও নিরীক্ষণের জন্য ব্যবহৃত অভ্যন্তরীণ সরঞ্জাম "
 "ব্যবহারের সুবিধা উপলব্ধ করা হবে।"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:2
+#: ../data/org.cinnamon.gschema.xml.in.h:2
 msgid "Enable internal tools useful for developers and testers from Alt-F2"
 msgstr ""
 "Alt-F2-র সাহায্যে ডিভেলর ও পরীক্ষকদের ব্যবহারযোগ্য সামগ্রী ব্যবহারের সুবিধা "
 "উপলব্ধ করা হবে"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:3
+#: ../data/org.cinnamon.gschema.xml.in.h:3
 msgid "File extension used for storing the screencast"
 msgstr "স্ক্রিন-কাস্ট সংরক্ষণের জন্য ব্যবহৃত ফাইল এক্সটেশন"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:4
+#: ../data/org.cinnamon.gschema.xml.in.h:4
 msgid "Framerate used for recording screencasts."
 msgstr "স্ক্রিন-কাস্ট রেকর্ড করার জন্য ব্যবহৃত ফ্রেমের হার"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:5
+#: ../data/org.cinnamon.gschema.xml.in.h:5
 msgid ""
-"GNOME Shell extensions have a uuid property; this key lists extensions which "
+"Cinnamon extensions have a uuid property; this key lists extensions which "
 "should not be loaded."
 msgstr ""
-"GNOME Shell এক্সটেনশনের ক্ষেত্রে uuid বৈশিষ্ট্য উপস্থিত রয়েছে; যে সমস্ত "
+"Cinnamon এক্সটেনশনের ক্ষেত্রে uuid বৈশিষ্ট্য উপস্থিত রয়েছে; যে সমস্ত "
 "এক্সটেনশন লোড করা হবে না সেগুলি এই কি দ্বারা চিহ্নিত হবে।"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:6
+#: ../data/org.cinnamon.gschema.xml.in.h:6
 msgid "History for command (Alt-F2) dialog"
 msgstr "কমান্ড (Alt-F2) ডায়লগের পূর্ববর্তী তথ্য"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:7
+#: ../data/org.cinnamon.gschema.xml.in.h:7
 msgid "History for the looking glass dialog"
 msgstr "লুকিং-গ্লাস ডায়লগের পূর্ববর্তী  তথ্য"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:8
+#: ../data/org.cinnamon.gschema.xml.in.h:8
 msgid "If true, display date in the clock, in addition to time."
 msgstr "মান true(সত্য) হলে, ঘড়ির মধ্যে সময়ের সাথে তারিখ প্রদর্শন করা হবে।"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:9
+#: ../data/org.cinnamon.gschema.xml.in.h:9
 msgid "If true, display seconds in time."
 msgstr "মান true(সত্য) হলে, সময়ের ক্ষেত্রে সেকেন্ড প্রদর্শন করা হয়।"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:10
+#: ../data/org.cinnamon.gschema.xml.in.h:10
 msgid "If true, display the ISO week date in the calendar."
 msgstr ""
 "মান true(সত্য) হলে, বর্ষপঞ্জির মধ্যে ISO সপ্তাহের তারিখ প্রদর্শন করা হবে।"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:11
+#: ../data/org.cinnamon.gschema.xml.in.h:11
 msgid "List of desktop file IDs for favorite applications"
 msgstr "পছন্দসই অ্যাপ্লিকেশনগুলির জন্য ব্যবহৃত ডেস্কটপ ফাইলের ID"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:13
+#: ../data/org.cinnamon.gschema.xml.in.h:13
 #, no-c-format
 msgid ""
 "Sets the GStreamer pipeline used to encode recordings. It follows the syntax "
@@ -107,19 +107,19 @@ msgstr ""
 "WEBM-এ রেকর্ড করা হয়। সিস্টেমের সর্বোত্তম অনুমিত থ্রেড সংখ্যা ধারণের  জন্য "
 "%T প্রয়োগ করা হয়।"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:14
+#: ../data/org.cinnamon.gschema.xml.in.h:14
 msgid "Show date in clock"
 msgstr "ঘড়ির মধ্যে তারিখ প্রদর্শন করা হবে"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:15
+#: ../data/org.cinnamon.gschema.xml.in.h:15
 msgid "Show the week date in the calendar"
 msgstr "বর্ষপঞ্জির মধ্যে সপ্তাহের তারিখ প্রদর্শন করা হবে"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:16
+#: ../data/org.cinnamon.gschema.xml.in.h:16
 msgid "Show time with seconds"
 msgstr "সেকেন্ড সহ সময় প্রদর্শন করা হবে"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:17
+#: ../data/org.cinnamon.gschema.xml.in.h:17
 msgid ""
 "The applications corresponding to these identifiers will be displayed in the "
 "favorites area."
@@ -127,7 +127,7 @@ msgstr ""
 "এই আইডেন্টিফায়ার দ্বারা চিহ্নিত অ্যাপ্লিকেশনগুলি, পছন্দসই অ্যাপ্লিকেশনের "
 "অংশে প্রদর্শন  করা হবে।"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:18
+#: ../data/org.cinnamon.gschema.xml.in.h:18
 msgid ""
 "The filename for recorded screencasts will be a unique filename based on the "
 "current date, and use this extension. It should be changed when recording to "
@@ -137,39 +137,39 @@ msgstr ""
 "গঠন করা হবে বর্তমান তারিখ প্রয়োগ করে ও এর সাথে এই এক্সটেনশন প্রয়োগ করুন। "
 "ভিন্ন কনটেইনার বিন্যাসে রেকর্ড করার সময় এই এক্সটেনশন পরিবর্তন করা আবশ্যক।"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:19
+#: ../data/org.cinnamon.gschema.xml.in.h:19
 msgid ""
-"The framerate of the resulting screencast recordered by GNOME Shell's "
+"The framerate of the resulting screencast recordered by Cinnamon's "
 "screencast recorder in frames-per-second."
 msgstr ""
-"GNOME Shell-র স্ক্রিন-কাস্ট রেকর্ডার সহযোগে রেকর্ড করার স্ক্রিন-কাস্টের "
+"Cinnamon-র স্ক্রিন-কাস্ট রেকর্ডার সহযোগে রেকর্ড করার স্ক্রিন-কাস্টের "
 "ফ্রেমের হার, ফ্রেম/সেকেন্ড হিসাবে।"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:20
+#: ../data/org.cinnamon.gschema.xml.in.h:20
 msgid "The gstreamer pipeline used to encode the screencast"
 msgstr "স্ক্রিন-কাস্ট এনকোড করার জন্য ব্যবহৃত gstreamer পাইল-লাইন"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:21
+#: ../data/org.cinnamon.gschema.xml.in.h:21
 msgid ""
-"The shell normally monitors active applications in order to present the most "
+"Cinnamon normally monitors active applications in order to present the most "
 "used ones (e.g. in launchers). While this data will be kept private, you may "
 "want to disable this for privacy reasons. Please note that doing so won't "
 "remove already saved data."
 msgstr ""
-"সর্বাধিক ব্যবহৃত অ্যাপ্লিকেশনের তালিকা প্রদর্শনের জন্য shell দ্বারা সক্রিয় "
+"সর্বাধিক ব্যবহৃত অ্যাপ্লিকেশনের তালিকা প্রদর্শনের জন্য cinnamon দ্বারা সক্রিয় "
 "অ্যাপ্লিকেশনের নিরীক্ষণ করা হয় (উদাহরণস্বরূপ, লঞ্চারের মধ্যে)। এই তথ্য গোপন "
 "রাখা হলেও, অতিরিক্ত গোপনীয়তার জন্য এই বৈশিষ্ট্য নিষ্ক্রিয় করা যেতে পারে। "
 "উল্লেখ্য, নিষ্ক্রিয় করার ফলে পূর্বে সংরক্ষিত তথ্য মুছে ফেলা হবে না।"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:22
+#: ../data/org.cinnamon.gschema.xml.in.h:22
 msgid "Uuids of extensions to disable"
 msgstr "নিষ্ক্রিয় করার উদ্দেশ্যে চিহ্নিত এক্সটেনশনের uuid"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:23
+#: ../data/org.cinnamon.gschema.xml.in.h:23
 msgid "Whether to collect stats about applications usage"
 msgstr "অ্যাপ্লিকেশনের ব্যবহার সম্পর্কিত পরিসংখ্যান সংগ্রহ করা হবে কি না"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:24
+#: ../data/org.cinnamon.gschema.xml.in.h:24
 msgid "disabled OpenSearch providers"
 msgstr "নিষ্ক্রিয় OpenSearch উপলব্ধকারী"
 
@@ -177,7 +177,7 @@ msgstr "নিষ্ক্রিয় OpenSearch উপলব্ধকারী"
 msgid "Command not found"
 msgstr "কমান্ড পাওয়া যায়নি"
 
-#. Replace "Error invoking GLib.shell_parse_argv: " with
+#. Replace "Error invoking GLib.cinnamon_parse_argv: " with
 #. something nicer
 #: ../js/misc/util.js:98
 msgid "Could not parse command:"
@@ -422,7 +422,7 @@ msgid "%a %l:%M %p"
 msgstr "%a %l:%M %p"
 
 #. Translators: This is the date format to use when the calendar popup is
-#. * shown - it is shown just below the time in the shell (e.g. "Tue 9:29 AM").
+#. * shown - it is shown just below the time in Cinnamon (e.g. "Tue 9:29 AM").
 #.
 #: ../js/ui/dateMenu.js:194
 msgid "%A %B %e, %Y"
@@ -1029,7 +1029,7 @@ msgstr "ট্যাবলেট"
 msgid "Computer"
 msgstr "কম্পিউটার"
 
-#: ../js/ui/status/power.js:250 ../src/shell-app-system.c:1088
+#: ../js/ui/status/power.js:250 ../src/cinnamon-app-system.c:1088
 msgid "Unknown"
 msgstr "অজানা"
 
@@ -1077,7 +1077,7 @@ msgstr "%X-এ %A-র মধ্যে পাঠানো হয়েছে"
 msgid "Type to search..."
 msgstr "অনুসন্ধান করার জন্য লিখুন..."
 
-#: ../js/ui/viewSelector.js:142 ../src/shell-util.c:250
+#: ../js/ui/viewSelector.js:142 ../src/cinnamon-util.c:250
 msgid "Search"
 msgstr "অনুসন্ধান করুন"
 
@@ -1117,62 +1117,62 @@ msgstr "সিস্টেমের শব্দ"
 msgid "Print version"
 msgstr "সংস্করণ প্রদর্শন করা হবে"
 
-#: ../src/shell-app.c:454
+#: ../src/cinnamon-app.c:454
 #, c-format
 msgid "Failed to launch '%s'"
 msgstr "'%s' আরম্ভ করতে ব্যর্থ"
 
-#: ../src/shell-global.c:1395
+#: ../src/cinnamon-global.c:1395
 msgid "Less than a minute ago"
 msgstr "এক মিনিটের কম সময় পূর্বে"
 
-#: ../src/shell-global.c:1399
+#: ../src/cinnamon-global.c:1399
 #, c-format
 msgid "%d minute ago"
 msgid_plural "%d minutes ago"
 msgstr[0] "%d মিনিট পূর্বে"
 msgstr[1] "%d মিনিট পূর্বে"
 
-#: ../src/shell-global.c:1404
+#: ../src/cinnamon-global.c:1404
 #, c-format
 msgid "%d hour ago"
 msgid_plural "%d hours ago"
 msgstr[0] "%d ঘন্টা পূর্বে"
 msgstr[1] "%d ঘন্টা পূর্বে"
 
-#: ../src/shell-global.c:1409
+#: ../src/cinnamon-global.c:1409
 #, c-format
 msgid "%d day ago"
 msgid_plural "%d days ago"
 msgstr[0] "%d দিন পূর্বে"
 msgstr[1] "%d দিন পূর্বে"
 
-#: ../src/shell-global.c:1414
+#: ../src/cinnamon-global.c:1414
 #, c-format
 msgid "%d week ago"
 msgid_plural "%d weeks ago"
 msgstr[0] "%d সপ্তাহ পূর্বে"
 msgstr[1] "%d সপ্তাহ পূর্বে"
 
-#: ../src/shell-mobile-providers.c:80
+#: ../src/cinnamon-mobile-providers.c:80
 msgid "United Kingdom"
 msgstr "যুক্তরাজ্য"
 
-#: ../src/shell-mobile-providers.c:526
+#: ../src/cinnamon-mobile-providers.c:526
 msgid "Default"
 msgstr "ডিফল্ট"
 
-#: ../src/shell-polkit-authentication-agent.c:334
+#: ../src/cinnamon-polkit-authentication-agent.c:334
 msgid "Authentication dialog was dismissed by the user"
 msgstr "ব্যবহারকারী দ্বারা অনুমোদনের ডায়লগ বাতিল করা হয়েছে"
 
-#: ../src/shell-util.c:89
+#: ../src/cinnamon-util.c:89
 msgid "Home Folder"
 msgstr "ব্যক্তিগত ফোল্ডার"
 
 #. Translators: this is the same string as the one found in
 #. * nautilus
-#: ../src/shell-util.c:104
+#: ../src/cinnamon-util.c:104
 msgid "File System"
 msgstr "ফাইল-সিস্টেম"
 
@@ -1181,7 +1181,7 @@ msgstr "ফাইল-সিস্টেম"
 #. * example, "Trash: some-directory". It means that the
 #. * directory called "some-directory" is in the trash.
 #.
-#: ../src/shell-util.c:300
+#: ../src/cinnamon-util.c:300
 #, c-format
 msgid "%1$s: %2$s"
 msgstr "%1$s: %2$s"

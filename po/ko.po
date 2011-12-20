@@ -1,12 +1,12 @@
-# This file is distributed under the same license as the gnome-shell package.
+# This file is distributed under the same license as the cinnamon package.
 # Young-Ho Cha <ganadist@gmail.com>, 2009.
 # Changwoo Ryu <cwryu@debian.org>, 2011.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gnome-shell\n"
+"Project-Id-Version: cinnamon\n"
 "Report-Msgid-Bugs-To: http://bugzilla.gnome.org/enter_bug.cgi?product=gnome-"
-"shell&keywords=I18N+L10N&component=general\n"
+"cinnamon&keywords=I18N+L10N&component=general\n"
 "POT-Creation-Date: 2011-10-04 20:49+0000\n"
 "PO-Revision-Date: 2011-10-17 03:00+0900\n"
 "Last-Translator: Changwoo Ryu <cwryu@debian.org>\n"
@@ -17,36 +17,36 @@ msgstr ""
 "Language: Korean\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
-#: ../data/gnome-shell.desktop.in.in.h:1
-msgid "GNOME Shell"
+#: ../data/cinnamon.desktop.in.in.h:1
+msgid "Cinnamon"
 msgstr "그놈 셸"
 
-#: ../data/gnome-shell.desktop.in.in.h:2
+#: ../data/cinnamon.desktop.in.in.h:2
 msgid "Window management and application launching"
 msgstr "창 관리와 프로그램 시작"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:1
+#: ../data/org.cinnamon.gschema.xml.in.h:1
 msgid ""
 "Allows access to internal debugging and monitoring tools using the Alt-F2 "
 "dialog."
 msgstr ""
 "Alt-F2 대화 상자를 사용할 때 내부 디버깅 및 감시 도구에 접근을 허용합니다."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:2
+#: ../data/org.cinnamon.gschema.xml.in.h:2
 msgid "Enable internal tools useful for developers and testers from Alt-F2"
 msgstr "Alt-F2를 이용해 개발자 및 테스트용 내부 프로그램 사용 가능"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:3
+#: ../data/org.cinnamon.gschema.xml.in.h:3
 msgid "File extension used for storing the screencast"
 msgstr "스크린 방송 저장에 사용할 파일 확장자"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:4
+#: ../data/org.cinnamon.gschema.xml.in.h:4
 msgid "Framerate used for recording screencasts."
 msgstr "스크린 방송 녹화에 사용할 프레임수."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:5
+#: ../data/org.cinnamon.gschema.xml.in.h:5
 msgid ""
-"GNOME Shell extensions have a uuid property; this key lists extensions which "
+"Cinnamon extensions have a uuid property; this key lists extensions which "
 "should be loaded. disabled-extensions overrides this setting for extensions "
 "that appear in both lists."
 msgstr ""
@@ -54,31 +54,31 @@ msgstr ""
 "지정합니다. 확장 기능이 disabled-extensions 설정과 여기에 모두 들어 있는 경"
 "우 disabled-extensions이 이 설정보다 우선합니다."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:6
+#: ../data/org.cinnamon.gschema.xml.in.h:6
 msgid "History for command (Alt-F2) dialog"
 msgstr "명령어 (Alt-F2) 대화 상자에 명령어 기록 기능"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:7
+#: ../data/org.cinnamon.gschema.xml.in.h:7
 msgid "History for the looking glass dialog"
 msgstr "돋보기 대화 창의 기록"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:8
+#: ../data/org.cinnamon.gschema.xml.in.h:8
 msgid "If true, display date in the clock, in addition to time."
 msgstr "참이면 시계에 날짜를 시각과 같이 표시합니다."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:9
+#: ../data/org.cinnamon.gschema.xml.in.h:9
 msgid "If true, display seconds in time."
 msgstr "참이면 시각에 초를 표시합니다."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:10
+#: ../data/org.cinnamon.gschema.xml.in.h:10
 msgid "If true, display the ISO week date in the calendar."
 msgstr "참이면 달력에 ISO 요일을 표시합니다."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:11
+#: ../data/org.cinnamon.gschema.xml.in.h:11
 msgid "List of desktop file IDs for favorite applications"
 msgstr "즐겨찾기 프로그램의 데스크톱 파일 ID 목록"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:13
+#: ../data/org.cinnamon.gschema.xml.in.h:13
 #, no-c-format
 msgid ""
 "Sets the GStreamer pipeline used to encode recordings. It follows the syntax "
@@ -101,25 +101,25 @@ msgstr ""
 "speed=2 threads=%T ! queue ! webmmux'이고 VP8 코덱을 사용해 WEBM으로 녹화합니"
 "다. %T는 이 시스템에서 최적이라고 생각되는 스레드 개수입니다."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:14
+#: ../data/org.cinnamon.gschema.xml.in.h:14
 msgid "Show date in clock"
 msgstr "시계에 날짜 표시"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:15
+#: ../data/org.cinnamon.gschema.xml.in.h:15
 msgid "Show the week date in the calendar"
 msgstr "달력에 요일 표시"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:16
+#: ../data/org.cinnamon.gschema.xml.in.h:16
 msgid "Show time with seconds"
 msgstr "시각에 초 표시"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:17
+#: ../data/org.cinnamon.gschema.xml.in.h:17
 msgid ""
 "The applications corresponding to these identifiers will be displayed in the "
 "favorites area."
 msgstr "이 ID에 해당하는 프로그램은 즐겨찾기 영역에 표시됩니다."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:18
+#: ../data/org.cinnamon.gschema.xml.in.h:18
 msgid ""
 "The filename for recorded screencasts will be a unique filename based on the "
 "current date, and use this extension. It should be changed when recording to "
@@ -128,20 +128,20 @@ msgstr ""
 "스크린 방송 녹화 파일 이름은 현재 날짜와 이 확장자를 사용해서 결정됩니다. 녹"
 "화할 때 다른 형식으로 바꿀 수도 있습니다."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:19
+#: ../data/org.cinnamon.gschema.xml.in.h:19
 msgid ""
-"The framerate of the resulting screencast recordered by GNOME Shell's "
+"The framerate of the resulting screencast recordered by Cinnamon's "
 "screencast recorder in frames-per-second."
 msgstr ""
 "그놈 셸의 스크린 방송의 녹화 결과물에 사용할 프레임수, 초당 프레임 수 단위."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:20
+#: ../data/org.cinnamon.gschema.xml.in.h:20
 msgid "The gstreamer pipeline used to encode the screencast"
 msgstr "스크린 방송 인코딩에 사용할 gstreamer 파이프라인"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:21
+#: ../data/org.cinnamon.gschema.xml.in.h:21
 msgid ""
-"The shell normally monitors active applications in order to present the most "
+"Cinnamon normally monitors active applications in order to present the most "
 "used ones (e.g. in launchers). While this data will be kept private, you may "
 "want to disable this for privacy reasons. Please note that doing so won't "
 "remove already saved data."
@@ -151,23 +151,23 @@ msgstr ""
 "가 걱정된다면 이 기능을 끌 수도 있습니다. 단 이 기능을 사용하지 않더라도 이"
 "미 저장된 데이터를 제거하지는 않습니다."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:22
+#: ../data/org.cinnamon.gschema.xml.in.h:22
 msgid "The type of keyboard to use."
 msgstr "사용할 키보드의 종류."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:23
+#: ../data/org.cinnamon.gschema.xml.in.h:23
 msgid "Uuids of extensions to enable"
 msgstr "사용할 확장 기능의 UUID"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:24
+#: ../data/org.cinnamon.gschema.xml.in.h:24
 msgid "Whether to collect stats about applications usage"
 msgstr "프로그램 사용 통계를 저장할지 여부"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:25
+#: ../data/org.cinnamon.gschema.xml.in.h:25
 msgid "Which keyboard to use"
 msgstr "사용할 키보드"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:26
+#: ../data/org.cinnamon.gschema.xml.in.h:26
 msgid "disabled OpenSearch providers"
 msgstr "OpenSearch 서비스 사용하지 않음"
 
@@ -224,7 +224,7 @@ msgstr "컴퓨터 끄기"
 msgid "Command not found"
 msgstr "명령이 없습니다"
 
-#. Replace "Error invoking GLib.shell_parse_argv: " with
+#. Replace "Error invoking GLib.cinnamon_parse_argv: " with
 #. something nicer
 #: ../js/misc/util.js:119
 msgid "Could not parse command:"
@@ -430,7 +430,7 @@ msgid "Next week"
 msgstr "다음주"
 
 #: ../js/ui/contactDisplay.js:59 ../js/ui/notificationDaemon.js:444
-#: ../js/ui/status/power.js:223 ../src/shell-app.c:355
+#: ../js/ui/status/power.js:223 ../src/cinnamon-app.c:355
 msgid "Unknown"
 msgstr "알 수 없음"
 
@@ -507,7 +507,7 @@ msgid "%a %l:%M %p"
 msgstr "(%a) %p %l:%M"
 
 #. Translators: This is the date format to use when the calendar popup is
-#. * shown - it is shown just below the time in the shell (e.g. "Tue 9:29 AM").
+#. * shown - it is shown just below the time in Cinnamon (e.g. "Tue 9:29 AM").
 #.
 #: ../js/ui/dateMenu.js:213
 msgid "%A %B %e, %Y"
@@ -813,7 +813,7 @@ msgstr "검색하는 중..."
 msgid "No matching results."
 msgstr "일치하는 결과가 없습니다."
 
-#: ../js/ui/shellMountOperation.js:285
+#: ../js/ui/cinnamonMountOperation.js:285
 msgid "Wrong password, please try again"
 msgstr "암호가 틀렸습니다. 다시 시도하십시오."
 
@@ -1512,7 +1512,7 @@ msgstr ""
 msgid "Type to search..."
 msgstr "검색하려면 입력하십시오..."
 
-#: ../js/ui/viewSelector.js:140 ../src/shell-util.c:261
+#: ../js/ui/viewSelector.js:140 ../src/cinnamon-util.c:261
 msgid "Search"
 msgstr "검색"
 
@@ -1550,30 +1550,30 @@ msgstr "버전을 표시합니다"
 msgid "Mode used by GDM for login screen"
 msgstr "GDM에서 로그인 화면에 사용할 모드"
 
-#: ../src/shell-app.c:581
+#: ../src/cinnamon-app.c:581
 #, c-format
 msgid "Failed to launch '%s'"
 msgstr "'%s' 실행에 실패했습니다"
 
-#: ../src/shell-mobile-providers.c:80
+#: ../src/cinnamon-mobile-providers.c:80
 msgid "United Kingdom"
 msgstr "영국"
 
-#: ../src/shell-mobile-providers.c:526
+#: ../src/cinnamon-mobile-providers.c:526
 msgid "Default"
 msgstr "기본값"
 
-#: ../src/shell-polkit-authentication-agent.c:334
+#: ../src/cinnamon-polkit-authentication-agent.c:334
 msgid "Authentication dialog was dismissed by the user"
 msgstr "인증 대화 창을 사용자가 닫았습니다"
 
-#: ../src/shell-util.c:100
+#: ../src/cinnamon-util.c:100
 msgid "Home Folder"
 msgstr "내 폴더"
 
 #. Translators: this is the same string as the one found in
 #. * nautilus
-#: ../src/shell-util.c:115
+#: ../src/cinnamon-util.c:115
 msgid "File System"
 msgstr "파일 시스템"
 
@@ -1582,7 +1582,7 @@ msgstr "파일 시스템"
 #. * example, "Trash: some-directory". It means that the
 #. * directory called "some-directory" is in the trash.
 #.
-#: ../src/shell-util.c:311
+#: ../src/cinnamon-util.c:311
 #, c-format
 msgid "%1$s: %2$s"
 msgstr "%s: %s"

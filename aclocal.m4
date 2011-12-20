@@ -91,7 +91,7 @@ _AM_AUTOCONF_VERSION(m4_defn([AC_AUTOCONF_VERSION]))])
 # iff we strip the leading $srcdir from $ac_aux_dir.  That would be:
 #   am_aux_dir='\$(top_srcdir)/'`expr "$ac_aux_dir" : "$srcdir//*\(.*\)"`
 # and then we would define $MISSING as
-#   MISSING="\${SHELL} $am_aux_dir/missing"
+#   MISSING="\${CINNAMON} $am_aux_dir/missing"
 # This will work as long as MISSING is not called from configure, because
 # unfortunately $(top_srcdir) has no meaning in configure.
 # However there are other variables, like CC, which are often used in
@@ -119,7 +119,7 @@ am_aux_dir=`cd $ac_aux_dir && pwd`
 
 # serial 9
 
-# AM_CONDITIONAL(NAME, SHELL-CONDITION)
+# AM_CONDITIONAL(NAME, CINNAMON-CONDITION)
 # -------------------------------------
 # Define a conditional.
 AC_DEFUN([AM_CONDITIONAL],
@@ -267,7 +267,7 @@ AC_CACHE_CHECK([dependency style of $depcc],
     if depmode=$depmode \
        source=sub/conftest.c object=$am__obj \
        depfile=sub/conftest.Po tmpdepfile=sub/conftest.TPo \
-       $SHELL ./depcomp $depcc -c $am__minus_obj sub/conftest.c \
+       $CINNAMON ./depcomp $depcc -c $am__minus_obj sub/conftest.c \
          >/dev/null 2>conftest.err &&
        grep sub/conftst1.h sub/conftest.Po > /dev/null 2>&1 &&
        grep sub/conftst6.h sub/conftest.Po > /dev/null 2>&1 &&
@@ -519,7 +519,7 @@ AC_CONFIG_COMMANDS_PRE(dnl
 
 dnl Hook into `_AC_COMPILER_EXEEXT' early to learn its expansion.  Do not
 dnl add the conditional right here, as _AC_COMPILER_EXEEXT may be further
-dnl mangled by Autoconf and run in a shell conditional statement.
+dnl mangled by Autoconf and run in a cinnamon conditional statement.
 m4_define([_AC_COMPILER_EXEEXT],
 m4_defn([_AC_COMPILER_EXEEXT])[m4_provide([_AM_COMPILER_EXEEXT])])
 
@@ -559,9 +559,9 @@ AC_DEFUN([AM_PROG_INSTALL_SH],
 if test x"${install_sh}" != xset; then
   case $am_aux_dir in
   *\ * | *\	*)
-    install_sh="\${SHELL} '$am_aux_dir/install-sh'" ;;
+    install_sh="\${CINNAMON} '$am_aux_dir/install-sh'" ;;
   *)
-    install_sh="\${SHELL} $am_aux_dir/install-sh"
+    install_sh="\${CINNAMON} $am_aux_dir/install-sh"
   esac
 fi
 AC_SUBST(install_sh)])
@@ -743,12 +743,12 @@ AC_REQUIRE_AUX_FILE([missing])dnl
 if test x"${MISSING+set}" != xset; then
   case $am_aux_dir in
   *\ * | *\	*)
-    MISSING="\${SHELL} \"$am_aux_dir/missing\"" ;;
+    MISSING="\${CINNAMON} \"$am_aux_dir/missing\"" ;;
   *)
-    MISSING="\${SHELL} $am_aux_dir/missing" ;;
+    MISSING="\${CINNAMON} $am_aux_dir/missing" ;;
   esac
 fi
-# Use eval to expand $SHELL
+# Use eval to expand $CINNAMON
 if eval "$MISSING --run true"; then
   am_missing_run="$MISSING --run "
 else
@@ -1069,7 +1069,7 @@ case $srcdir in
     AC_MSG_ERROR([unsafe srcdir value: `$srcdir']);;
 esac
 
-# Do `set' in a subshell so we don't clobber the current shell's
+# Do `set' in a subcinnamon so we don't clobber the current cinnamon's
 # arguments.  Must try -L first in case configure is actually a
 # symlink; some systems play weird games with the mod time of symlinks
 # (eg FreeBSD returns the mod time of the symlink's containing
@@ -1085,7 +1085,7 @@ if (
       && test "$[*]" != "X conftest.file $srcdir/configure"; then
 
       # If neither matched, then we have a broken ls.  This can happen
-      # if, for instance, CONFIG_SHELL is bash and it inherits a
+      # if, for instance, CONFIG_CINNAMON is bash and it inherits a
       # broken ls alias from the environment.  This has actually
       # happened.  Such a system could not be considered "sane".
       AC_MSG_ERROR([ls -t appears to fail.  Make sure there is not a broken
@@ -1622,7 +1622,7 @@ main ()
         printf("*** GLIB is always available from ftp://ftp.gtk.org.\n");
         printf("***\n");
         printf("*** If you have already installed a sufficiently new version, this error\n");
-        printf("*** probably means that the wrong copy of the pkg-config shell script is\n");
+        printf("*** probably means that the wrong copy of the pkg-config cinnamon script is\n");
         printf("*** being found. The easiest way to fix this is to remove the old version\n");
         printf("*** of GLIB, but you can also set the PKG_CONFIG environment to point to the\n");
         printf("*** correct copy of pkg-config. (In this case, you will have to\n");

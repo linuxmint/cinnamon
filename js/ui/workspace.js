@@ -6,7 +6,7 @@ const Lang = imports.lang;
 const Mainloop = imports.mainloop;
 const Meta = imports.gi.Meta;
 const Pango = imports.gi.Pango;
-const Shell = imports.gi.Shell;
+const Cinnamon = imports.gi.Cinnamon;
 const St = imports.gi.St;
 const Signals = imports.signals;
 
@@ -28,7 +28,7 @@ const CLOSE_BUTTON_FADE_TIME = 0.1;
 
 const DRAGGING_WINDOW_OPACITY = 100;
 
-const BUTTON_LAYOUT_KEY = '/desktop/gnome/shell/windows/button_layout';
+const BUTTON_LAYOUT_KEY = '/desktop/cinnamon/windows/button_layout';
 
 // Define a layout scheme for small window counts. For larger
 // counts we fall back to an algorithm. We need more schemes here
@@ -107,7 +107,7 @@ WindowClone.prototype = {
         // is not, this just works for most cases. However, for DND all
         // actors are picked, so DND operations would operate on the clone.
         // To avoid this, we hide it from pick.
-        Shell.util_set_hidden_from_pick(this._windowClone, true);
+        Cinnamon.util_set_hidden_from_pick(this._windowClone, true);
 
         this.origX = realWindow.x + borderX;
         this.origY = realWindow.y + borderY;
@@ -634,10 +634,10 @@ WindowOverlay.prototype = {
 
     _onStyleChanged: function() {
         let titleNode = this.title.get_theme_node();
-        this.title._spacing = titleNode.get_length('-shell-caption-spacing');
+        this.title._spacing = titleNode.get_length('-cinnamon-caption-spacing');
 
         let closeNode = this.closeButton.get_theme_node();
-        this.closeButton._overlap = closeNode.get_length('-shell-close-overlap');
+        this.closeButton._overlap = closeNode.get_length('-cinnamon-close-overlap');
 
         this._parentActor.queue_relayout();
     }
@@ -1383,7 +1383,7 @@ Workspace.prototype = {
 
     // Tests if @win should be shown in the Overview
     _isOverviewWindow : function (win) {
-        let tracker = Shell.WindowTracker.get_default();
+        let tracker = Cinnamon.WindowTracker.get_default();
         return tracker.is_window_interesting(win.get_meta_window());
     },
 
@@ -1476,7 +1476,7 @@ Workspace.prototype = {
     handleDragOver : function(source, actor, x, y, time) {
         if (source.realWindow && !this._isMyWindow(source.realWindow))
             return DND.DragMotionResult.MOVE_DROP;
-        if (source.shellWorkspaceLaunch)
+        if (source.cinnamonWorkspaceLaunch)
             return DND.DragMotionResult.COPY_DROP;
 
         return DND.DragMotionResult.CONTINUE;
@@ -1509,8 +1509,8 @@ Workspace.prototype = {
                                                  false, // don't create workspace
                                                  time);
             return true;
-        } else if (source.shellWorkspaceLaunch) {
-            source.shellWorkspaceLaunch({ workspace: this.metaWorkspace ? this.metaWorkspace.index() : -1,
+        } else if (source.cinnamonWorkspaceLaunch) {
+            source.cinnamonWorkspaceLaunch({ workspace: this.metaWorkspace ? this.metaWorkspace.index() : -1,
                                           timestamp: time });
             return true;
         }

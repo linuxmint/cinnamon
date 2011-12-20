@@ -1,18 +1,18 @@
 /* -*- mode: C; c-file-style: "gnu"; indent-tabs-mode: nil; -*- */
 
-#include "shell-recorder.h"
+#include "cinnamon-recorder.h"
 #include <clutter/clutter.h>
 #include <gst/gst.h>
 
-/* Very simple test of the ShellRecorder class; shows some text strings
+/* Very simple test of the CinnamonRecorder class; shows some text strings
  * moving around and records it.
  */
-static ShellRecorder *recorder;
+static CinnamonRecorder *recorder;
 
 static gboolean
 stop_recording_timeout (gpointer data)
 {
-  shell_recorder_close (recorder);
+  cinnamon_recorder_close (recorder);
   return FALSE;
 }
 
@@ -86,12 +86,12 @@ int main (int argc, char **argv)
 				     "y", 240,
 				     NULL);
 
-  recorder = shell_recorder_new (CLUTTER_STAGE (stage));
-  shell_recorder_set_filename (recorder, "test-recorder.ogg");
+  recorder = cinnamon_recorder_new (CLUTTER_STAGE (stage));
+  cinnamon_recorder_set_filename (recorder, "test-recorder.ogg");
 
   clutter_actor_show (stage);
 
-  shell_recorder_record (recorder);
+  cinnamon_recorder_record (recorder);
   clutter_main ();
 
   return 0;

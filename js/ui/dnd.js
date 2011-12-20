@@ -4,7 +4,7 @@ const Clutter = imports.gi.Clutter;
 const Gtk = imports.gi.Gtk;
 const St = imports.gi.St;
 const Lang = imports.lang;
-const Shell = imports.gi.Shell;
+const Cinnamon = imports.gi.Cinnamon;
 const Signals = imports.signals;
 const Tweener = imports.ui.tweener;
 const Main = imports.ui.main;
@@ -26,9 +26,9 @@ const DragMotionResult = {
 };
 
 const DRAG_CURSOR_MAP = {
-    0: Shell.Cursor.DND_UNSUPPORTED_TARGET,
-    1: Shell.Cursor.DND_COPY,
-    2: Shell.Cursor.DND_MOVE
+    0: Cinnamon.Cursor.DND_UNSUPPORTED_TARGET,
+    1: Cinnamon.Cursor.DND_COPY,
+    2: Cinnamon.Cursor.DND_MOVE
 };
 
 const DragDropResult = {
@@ -238,7 +238,7 @@ _Draggable.prototype = {
         if (this._onEventId)
             this._ungrabActor();
         this._grabEvents();
-        global.set_cursor(Shell.Cursor.DND_IN_DRAG);
+        global.set_cursor(Cinnamon.Cursor.DND_IN_DRAG);
 
         this._dragX = this._dragStartX = stageX;
         this._dragY = this._dragStartY = stageY;
@@ -292,7 +292,7 @@ _Draggable.prototype = {
 
         this._dragActor.reparent(Main.uiGroup);
         this._dragActor.raise_top();
-        Shell.util_set_hidden_from_pick(this._dragActor, true);
+        Cinnamon.util_set_hidden_from_pick(this._dragActor, true);
 
         this._dragOrigOpacity = this._dragActor.opacity;
         if (this._dragActorOpacity != undefined)
@@ -399,7 +399,7 @@ _Draggable.prototype = {
                 }
                 target = target.get_parent();
             }
-            global.set_cursor(Shell.Cursor.DND_IN_DRAG);
+            global.set_cursor(Cinnamon.Cursor.DND_IN_DRAG);
         }
 
         return true;
@@ -579,7 +579,7 @@ _Draggable.prototype = {
 
     _dragComplete: function() {
         if (!this._actorDestroyed)
-            Shell.util_set_hidden_from_pick(this._dragActor, false);
+            Cinnamon.util_set_hidden_from_pick(this._dragActor, false);
 
         this._ungrabEvents();
 

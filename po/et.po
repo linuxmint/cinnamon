@@ -1,18 +1,18 @@
 # GNOME kesta eesti keele tõlge.
-# Estonian translation for gnome-shell.
+# Estonian translation for cinnamon.
 #
 # Copyright (C) 2010, 2011 The Gnome Project
 #
-# This file is distributed under the same license as the gnome-shell package.
+# This file is distributed under the same license as the cinnamon package.
 #
 # Mattias Põldaru <mahfiaz gmail com>, 2010, 2011.
 # Ivar Smolin <okul linux ee>, 2011.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gnome-shell MASTER\n"
+"Project-Id-Version: cinnamon MASTER\n"
 "Report-Msgid-Bugs-To: http://bugzilla.gnome.org/enter_bug.cgi?product=gnome-"
-"shell&keywords=I18N+L10N&component=general\n"
+"cinnamon&keywords=I18N+L10N&component=general\n"
 "POT-Creation-Date: 2011-03-30 17:13+0000\n"
 "PO-Revision-Date: 2011-03-30 23:56+0300\n"
 "Last-Translator: Mattias Põldaru <mahfiaz@gmail.com>\n"
@@ -25,8 +25,8 @@ msgstr ""
 "X-Poedit-Language: Estonian\n"
 "X-Poedit-Country: Estonia\n"
 
-msgid "GNOME Shell"
-msgstr "GNOME Shell"
+msgid "Cinnamon"
+msgstr "Cinnamon"
 
 msgid "Window management and application launching"
 msgstr "Aknahaldur ja rakenduste käivitaja"
@@ -49,10 +49,10 @@ msgid "Framerate used for recording screencasts."
 msgstr "Ekraanivideo lindistamisel kasutatav kaadrikiirus."
 
 msgid ""
-"GNOME Shell extensions have a uuid property; this key lists extensions which "
+"Cinnamon extensions have a uuid property; this key lists extensions which "
 "should not be loaded."
 msgstr ""
-"GNOME Shelli laiendustel on omadus UUID. Selle võtmega määratakse "
+"Cinnamoni laiendustel on omadus UUID. Selle võtmega määratakse "
 "laiendused, mida ei peaks laaditama."
 
 msgid "History for command (Alt-F2) dialog"
@@ -123,21 +123,21 @@ msgstr ""
 "määrata."
 
 msgid ""
-"The framerate of the resulting screencast recordered by GNOME Shell's "
+"The framerate of the resulting screencast recordered by Cinnamon's "
 "screencast recorder in frames-per-second."
 msgstr ""
-"GNOME Shelli lindistatava ekraanivideo kaadrisagedus (kaadrit sekundis)."
+"Cinnamoni lindistatava ekraanivideo kaadrisagedus (kaadrit sekundis)."
 
 msgid "The gstreamer pipeline used to encode the screencast"
 msgstr "GStreameri toru, mida ekraanivideo kodeerimiseks kasutatakse"
 
 msgid ""
-"The shell normally monitors active applications in order to present the most "
+"Cinnamon normally monitors active applications in order to present the most "
 "used ones (e.g. in launchers). While this data will be kept private, you may "
 "want to disable this for privacy reasons. Please note that doing so won't "
 "remove already saved data."
 msgstr ""
-"Shell tavaliselt seirab aktiivseid rakendusi, et näidata enamkasutatavaid "
+"Cinnamon tavaliselt seirab aktiivseid rakendusi, et näidata enamkasutatavaid "
 "(näiteks käivitajaid). Kuigi neid andmeid hoitakse privaatselt, võid "
 "privaatsuse suurendamiseks selle keelata. Selle keelamine siiski ei eemalda "
 "juba salvestatud andmeid."
@@ -154,7 +154,7 @@ msgstr "keelatud OpenSearch pakkujad"
 msgid "Command not found"
 msgstr "Käsku ei leitud"
 
-#. Replace "Error invoking GLib.shell_parse_argv: " with
+#. Replace "Error invoking GLib.cinnamon_parse_argv: " with
 #. something nicer
 msgid "Could not parse command:"
 msgstr "Käsku pole võimalik analüüsida:"
@@ -354,7 +354,7 @@ msgid "%a %l:%M %p"
 msgstr "%a, %l:%M %p"
 
 #. Translators: This is the date format to use when the calendar popup is
-#. * shown - it is shown just below the time in the shell (e.g. "Tue 9:29 AM").
+#. * shown - it is shown just below the time in Cinnamon (e.g. "Tue 9:29 AM").
 #.
 msgid "%A %B %e, %Y"
 msgstr "%A, %d. %B %Y"

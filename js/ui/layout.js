@@ -4,7 +4,7 @@ const Clutter = imports.gi.Clutter;
 const Lang = imports.lang;
 const Mainloop = imports.mainloop;
 const Meta = imports.gi.Meta;
-const Shell = imports.gi.Shell;
+const Cinnamon = imports.gi.Cinnamon;
 const Signals = imports.signals;
 const St = imports.gi.St;
 
@@ -568,7 +568,7 @@ HotCorner.prototype = {
 };
 
 
-// This manages the shell "chrome"; the UI that's visible in the
+// This manages Cinnamon "chrome"; the UI that's visible in the
 // normal mode (ie, outside the Overview), that surrounds the main
 // workspace content.
 

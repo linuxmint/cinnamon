@@ -1,7 +1,7 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 
 const Lang = imports.lang;
-const Shell = imports.gi.Shell;
+const Cinnamon = imports.gi.Cinnamon;
 
 const Main = imports.ui.main;
 const MessageTray = imports.ui.messageTray;
@@ -12,7 +12,7 @@ function WindowAttentionHandler() {
 
 WindowAttentionHandler.prototype = {
     _init : function() {
-        this._tracker = Shell.WindowTracker.get_default();
+        this._tracker = Cinnamon.WindowTracker.get_default();
         global.display.connect('window-demands-attention', Lang.bind(this, this._onWindowDemandsAttention));
     },
 

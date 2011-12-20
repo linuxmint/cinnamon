@@ -111,7 +111,7 @@
 #undef PACKAGE_VERSION
 
 /* The system TLS CA list */
-#undef SHELL_SYSTEM_CA_FILE
+#undef CINNAMON_SYSTEM_CA_FILE
 
 /* Define to 1 if you have the ANSI C header files. */
 #undef STDC_HEADERS

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: http://bugzilla.gnome.org/enter_bug.cgi?product=gnome-"
-"shell&keywords=I18N+L10N&component=general\n"
+"cinnamon&keywords=I18N+L10N&component=general\n"
 "POT-Creation-Date: 2011-10-01 00:31+0000\n"
 "PO-Revision-Date: 2011-10-04 15:08+0300\n"
 "Last-Translator: Rūdolfs Mazurs <rudolfs.mazurs@gmail.com>\n"
@@ -21,15 +21,15 @@ msgstr ""
 "X-Generator: Lokalize 1.2\n"
 "Language: lv\n"
 
-#: ../data/gnome-shell.desktop.in.in.h:1
-msgid "GNOME Shell"
-msgstr "GNOME Shell"
+#: ../data/cinnamon.desktop.in.in.h:1
+msgid "Cinnamon"
+msgstr "Cinnamon"
 
-#: ../data/gnome-shell.desktop.in.in.h:2
+#: ../data/cinnamon.desktop.in.in.h:2
 msgid "Window management and application launching"
 msgstr "Logu pārvaldība un lietotņu palaišana"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:1
+#: ../data/org.cinnamon.gschema.xml.in.h:1
 msgid ""
 "Allows access to internal debugging and monitoring tools using the Alt-F2 "
 "dialog."
@@ -37,55 +37,55 @@ msgstr ""
 "Ļauj piekļūt iekšējiem atkļūdošanas un pārraudzības rīkiem, izmantojot Alt-"
 "F2 dialogu."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:2
+#: ../data/org.cinnamon.gschema.xml.in.h:2
 msgid "Enable internal tools useful for developers and testers from Alt-F2"
 msgstr ""
 "Aktivē iekšējos rīkus, kas pieejami no Alt-F2; noder izstrādātājiem un "
 "testētājiem"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:3
+#: ../data/org.cinnamon.gschema.xml.in.h:3
 msgid "File extension used for storing the screencast"
 msgstr "Failu paplašinājumi, ko izmanto ekrānraižu saglabāšanai"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:4
+#: ../data/org.cinnamon.gschema.xml.in.h:4
 msgid "Framerate used for recording screencasts."
 msgstr "Kadrātrums, ko izmantot, ierakstot ekrānraides."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:5
+#: ../data/org.cinnamon.gschema.xml.in.h:5
 msgid ""
-"GNOME Shell extensions have a uuid property; this key lists extensions which "
+"Cinnamon extensions have a uuid property; this key lists extensions which "
 "should be loaded. disabled-extensions overrides this setting for extensions "
 "that appear in both lists."
 msgstr ""
-"GNOME Shell paplašinājumiem ir uuid īpašības; šī atslēga uzskaita "
+"Cinnamon paplašinājumiem ir uuid īpašības; šī atslēga uzskaita "
 "paplašinājumus, kurus vajadzētu ielādēt. disabled-extensions pārraksta šo "
 "iestatījumu paplašinājumiem, kas parādās abos sarakstos."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:6
+#: ../data/org.cinnamon.gschema.xml.in.h:6
 msgid "History for command (Alt-F2) dialog"
 msgstr "Komandu (Alt-F2) dialoga vēsture"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:7
+#: ../data/org.cinnamon.gschema.xml.in.h:7
 msgid "History for the looking glass dialog"
 msgstr "Looking glass dialoga vēsture"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:8
+#: ../data/org.cinnamon.gschema.xml.in.h:8
 msgid "If true, display date in the clock, in addition to time."
 msgstr "Ja patiess, rādīt pulkstenī arī datumu, ne tikai laiku."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:9
+#: ../data/org.cinnamon.gschema.xml.in.h:9
 msgid "If true, display seconds in time."
 msgstr "Ja patiess, rādīt pulkstenī arī sekundes."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:10
+#: ../data/org.cinnamon.gschema.xml.in.h:10
 msgid "If true, display the ISO week date in the calendar."
 msgstr "Ja patiess, kalendārā rādīt ISO nedēļas datumus."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:11
+#: ../data/org.cinnamon.gschema.xml.in.h:11
 msgid "List of desktop file IDs for favorite applications"
 msgstr "Uzskaitīt iecienīto lietotņu darbvirsmas failu ID"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:13
+#: ../data/org.cinnamon.gschema.xml.in.h:13
 #, no-c-format
 msgid ""
 "Sets the GStreamer pipeline used to encode recordings. It follows the syntax "
@@ -111,26 +111,26 @@ msgstr ""
 "VP8 kodeku. %T tiek izmantots kā vietturis, lai uzminētu optimālo pavedienu "
 "skaitu sistēmā."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:14
+#: ../data/org.cinnamon.gschema.xml.in.h:14
 msgid "Show date in clock"
 msgstr "Pie pulksteņa rādīt arī datumu"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:15
+#: ../data/org.cinnamon.gschema.xml.in.h:15
 msgid "Show the week date in the calendar"
 msgstr "Kalendārā rādīt nedēļas datumu"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:16
+#: ../data/org.cinnamon.gschema.xml.in.h:16
 msgid "Show time with seconds"
 msgstr "Rādīt laiku ar sekundēm"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:17
+#: ../data/org.cinnamon.gschema.xml.in.h:17
 msgid ""
 "The applications corresponding to these identifiers will be displayed in the "
 "favorites area."
 msgstr ""
 "Lietotnes, kas atbilst šiem identifikatoriem, tiks rādīta izlases laukā."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:18
+#: ../data/org.cinnamon.gschema.xml.in.h:18
 msgid ""
 "The filename for recorded screencasts will be a unique filename based on the "
 "current date, and use this extension. It should be changed when recording to "
@@ -140,21 +140,21 @@ msgstr ""
 "pašreizējo datumu un izmantos šo paplašinājumu. To vajadzētu mainīt, kad "
 "ieraksta citā konteinera formātā."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:19
+#: ../data/org.cinnamon.gschema.xml.in.h:19
 msgid ""
-"The framerate of the resulting screencast recordered by GNOME Shell's "
+"The framerate of the resulting screencast recordered by Cinnamon's "
 "screencast recorder in frames-per-second."
 msgstr ""
-"Iegūtās ekrānraides kadrātrums, ko ieraksta GNOME Shell ekrānraižu "
+"Iegūtās ekrānraides kadrātrums, ko ieraksta Cinnamon ekrānraižu "
 "ierakstītājs. Norāda kadros sekundē."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:20
+#: ../data/org.cinnamon.gschema.xml.in.h:20
 msgid "The gstreamer pipeline used to encode the screencast"
 msgstr "Gstreamer konveijers, ko izmanto ekrānraides iekodēšanai"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:21
+#: ../data/org.cinnamon.gschema.xml.in.h:21
 msgid ""
-"The shell normally monitors active applications in order to present the most "
+"Cinnamon normally monitors active applications in order to present the most "
 "used ones (e.g. in launchers). While this data will be kept private, you may "
 "want to disable this for privacy reasons. Please note that doing so won't "
 "remove already saved data."
@@ -164,23 +164,23 @@ msgstr ""
 "vēlēties to deaktivēt privātuma iemeslu dēļ. Ņemiet vērā, ka to izdarot "
 "netiks izņemti jau saglabātie dati."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:22
+#: ../data/org.cinnamon.gschema.xml.in.h:22
 msgid "The type of keyboard to use."
 msgstr "Izmantojamās tastatūras tips."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:23
+#: ../data/org.cinnamon.gschema.xml.in.h:23
 msgid "Uuids of extensions to enable"
 msgstr "Uuid paplašinājumiem, kurus aktivēt"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:24
+#: ../data/org.cinnamon.gschema.xml.in.h:24
 msgid "Whether to collect stats about applications usage"
 msgstr "Vai ievākt statistiku par lietotņu izmantošanu"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:25
+#: ../data/org.cinnamon.gschema.xml.in.h:25
 msgid "Which keyboard to use"
 msgstr "Kuru tastatūru izmantot"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:26
+#: ../data/org.cinnamon.gschema.xml.in.h:26
 msgid "disabled OpenSearch providers"
 msgstr "deaktivētie OpenSearch piegādātāji"
 
@@ -237,7 +237,7 @@ msgstr "Izslēgt"
 msgid "Command not found"
 msgstr "Komanda nav atrasta"
 
-#. Replace "Error invoking GLib.shell_parse_argv: " with
+#. Replace "Error invoking GLib.cinnamon_parse_argv: " with
 #. something nicer
 #: ../js/misc/util.js:119
 msgid "Could not parse command:"
@@ -443,7 +443,7 @@ msgid "Next week"
 msgstr "Nākamnedēļ"
 
 #: ../js/ui/contactDisplay.js:59 ../js/ui/notificationDaemon.js:444
-#: ../js/ui/status/power.js:223 ../src/shell-app.c:355
+#: ../js/ui/status/power.js:223 ../src/cinnamon-app.c:355
 msgid "Unknown"
 msgstr "Nezināms"
 
@@ -520,7 +520,7 @@ msgid "%a %l:%M %p"
 msgstr "%a %l:%M %p"
 
 #. Translators: This is the date format to use when the calendar popup is
-#. * shown - it is shown just below the time in the shell (e.g. "Tue 9:29 AM").
+#. * shown - it is shown just below the time in Cinnamon (e.g. "Tue 9:29 AM").
 #.
 #: ../js/ui/dateMenu.js:213
 msgid "%A %B %e, %Y"
@@ -850,7 +850,7 @@ msgstr "Meklē..."
 msgid "No matching results."
 msgstr "Nav rezultātu."
 
-#: ../js/ui/shellMountOperation.js:285
+#: ../js/ui/cinnamonMountOperation.js:285
 msgid "Wrong password, please try again"
 msgstr "Nepareiza parole, mēģiniet vēlreiz"
 
@@ -1561,7 +1561,7 @@ msgstr ""
 msgid "Type to search..."
 msgstr "Ierakstiet, lai meklētu..."
 
-#: ../js/ui/viewSelector.js:140 ../src/shell-util.c:261
+#: ../js/ui/viewSelector.js:140 ../src/cinnamon-util.c:261
 msgid "Search"
 msgstr "Meklēt"
 
@@ -1602,30 +1602,30 @@ msgstr "Drukāt versiju"
 msgid "Mode used by GDM for login screen"
 msgstr "Režīms, ko izmantot GDM pieteikšanās ekrānam"
 
-#: ../src/shell-app.c:581
+#: ../src/cinnamon-app.c:581
 #, c-format
 msgid "Failed to launch '%s'"
 msgstr "Neizdevās palaist '%s'"
 
-#: ../src/shell-mobile-providers.c:80
+#: ../src/cinnamon-mobile-providers.c:80
 msgid "United Kingdom"
 msgstr "Apvienotās Karaliste"
 
-#: ../src/shell-mobile-providers.c:526
+#: ../src/cinnamon-mobile-providers.c:526
 msgid "Default"
 msgstr "Noklusētais"
 
-#: ../src/shell-polkit-authentication-agent.c:334
+#: ../src/cinnamon-polkit-authentication-agent.c:334
 msgid "Authentication dialog was dismissed by the user"
 msgstr "Lietotājs noraidīja autentifikācijas dialoglodziņu"
 
-#: ../src/shell-util.c:100
+#: ../src/cinnamon-util.c:100
 msgid "Home Folder"
 msgstr "Mājas mape"
 
 #. Translators: this is the same string as the one found in
 #. * nautilus
-#: ../src/shell-util.c:115
+#: ../src/cinnamon-util.c:115
 msgid "File System"
 msgstr "Failu sistēma"
 
@@ -1634,7 +1634,7 @@ msgstr "Failu sistēma"
 #. * example, "Trash: some-directory". It means that the
 #. * directory called "some-directory" is in the trash.
 #.
-#: ../src/shell-util.c:311
+#: ../src/cinnamon-util.c:311
 #, c-format
 msgid "%1$s: %2$s"
 msgstr "%1$s: %2$s"
@@ -1659,14 +1659,14 @@ msgstr "%1$s: %2$s"
 #~ msgstr "calendar:week_start:1"
 
 #~| msgid ""
-#~| "GNOME Shell extensions have a uuid property; this key lists extensions "
+#~| "Cinnamon extensions have a uuid property; this key lists extensions "
 #~| "which should not be loaded."
 #~ msgid ""
-#~ "GNOME Shell extensions have a uuid property; this key lists extensions "
+#~ "Cinnamon extensions have a uuid property; this key lists extensions "
 #~ "which should not be loaded. This setting overrides enabled-extensions for "
 #~ "extensions that appear in both lists."
 #~ msgstr ""
-#~ "GNOME Shell paplašinājumiem ir uuid īpašības; šī atslēga uzskaita "
+#~ "Cinnamon paplašinājumiem ir uuid īpašības; šī atslēga uzskaita "
 #~ "paplašinājumus, kurus vajadzētu ielādēt. Šis iestatījums pārraksta "
 #~ "enabled-extensions paplašinājumiem, kas parādās abos sarakstos."
 

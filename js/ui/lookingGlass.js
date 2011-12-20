@@ -9,7 +9,7 @@ const Gtk = imports.gi.Gtk;
 const Meta = imports.gi.Meta;
 const Pango = imports.gi.Pango;
 const St = imports.gi.St;
-const Shell = imports.gi.Shell;
+const Cinnamon = imports.gi.Cinnamon;
 const Signals = imports.signals;
 const Lang = imports.lang;
 const Mainloop = imports.mainloop;
@@ -17,7 +17,7 @@ const Mainloop = imports.mainloop;
 const History = imports.misc.history;
 const ExtensionSystem = imports.ui.extensionSystem;
 const Link = imports.ui.link;
-const ShellEntry = imports.ui.shellEntry;
+const CinnamonEntry = imports.ui.cinnamonEntry;
 const Tweener = imports.ui.tweener;
 const Main = imports.ui.main;
 
@@ -27,13 +27,13 @@ var commandHeader = 'const Clutter = imports.gi.Clutter; ' +
                     'const Gtk = imports.gi.Gtk; ' +
                     'const Mainloop = imports.mainloop; ' +
                     'const Meta = imports.gi.Meta; ' +
-                    'const Shell = imports.gi.Shell; ' +
+                    'const Cinnamon = imports.gi.Cinnamon; ' +
                     'const Tp = imports.gi.TelepathyGLib; ' +
                     'const Main = imports.ui.main; ' +
                     'const Lang = imports.lang; ' +
                     'const Tweener = imports.ui.tweener; ' +
                     /* Utility functions...we should probably be able to use these
-                     * in the shell core code too. */
+                     * in Cinnamon core code too. */
                     'const stage = global.stage; ' +
                     'const color = function(pixel) { let c= new Clutter.Color(); c.from_pixel(pixel); return c; }; ' +
                     /* Special lookingGlass functions */
@@ -224,7 +224,7 @@ function WindowList() {
 WindowList.prototype = {
     _init : function () {
         this.actor = new St.BoxLayout({ name: 'Windows', vertical: true, style: 'spacing: 8px' });
-        let tracker = Shell.WindowTracker.get_default();
+        let tracker = Cinnamon.WindowTracker.get_default();
         this._updateId = Main.initializeDeferredWork(this.actor, Lang.bind(this, this._updateWindowList));
         global.display.connect('window-created', Lang.bind(this, this._updateWindowList));
         tracker.connect('tracked-windows-changed', Lang.bind(this, this._updateWindowList));
@@ -233,7 +233,7 @@ WindowList.prototype = {
     _updateWindowList: function() {
         this.actor.get_children().forEach(function (actor) { actor.destroy(); });
         let windows = global.get_window_actors();
-        let tracker = Shell.WindowTracker.get_default();
+        let tracker = Cinnamon.WindowTracker.get_default();
         for (let i = 0; i < windows.length; i++) {
             let metaWindow = windows[i].metaWindow;
             // Avoid multiple connections
@@ -401,7 +401,7 @@ function Inspector() {
 
 Inspector.prototype = {
     _init: function() {
-        let container = new Shell.GenericContainer({ width: 0,
+        let container = new Cinnamon.GenericContainer({ width: 0,
                                                      height: 0 });
         container.connect('allocate', Lang.bind(this, this._allocate));
         Main.uiGroup.add_actor(container);
@@ -817,7 +817,7 @@ LookingGlass.prototype = {
         entryArea.add(label);
 
         this._entry = new St.Entry({ can_focus: true });
-        ShellEntry.addContextMenu(this._entry);
+        CinnamonEntry.addContextMenu(this._entry);
         entryArea.add(this._entry, { expand: true });
 
         this._windowList = new WindowList();

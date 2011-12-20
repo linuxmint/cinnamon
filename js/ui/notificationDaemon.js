@@ -4,7 +4,7 @@ const Clutter = imports.gi.Clutter;
 const DBus = imports.dbus;
 const GLib = imports.gi.GLib;
 const Lang = imports.lang;
-const Shell = imports.gi.Shell;
+const Cinnamon = imports.gi.Cinnamon;
 const Mainloop = imports.mainloop;
 const St = imports.gi.St;
 
@@ -100,7 +100,7 @@ NotificationDaemon.prototype = {
         Main.statusIconDispatcher.connect('message-icon-added', Lang.bind(this, this._onTrayIconAdded));
         Main.statusIconDispatcher.connect('message-icon-removed', Lang.bind(this, this._onTrayIconRemoved));
 
-        Shell.WindowTracker.get_default().connect('notify::focus-app',
+        Cinnamon.WindowTracker.get_default().connect('notify::focus-app',
             Lang.bind(this, this._onFocusAppChanged));
         Main.overview.connect('hidden',
             Lang.bind(this, this._onFocusAppChanged));
@@ -428,7 +428,7 @@ NotificationDaemon.prototype = {
     },
 
     _onFocusAppChanged: function() {
-        let tracker = Shell.WindowTracker.get_default();
+        let tracker = Cinnamon.WindowTracker.get_default();
         if (!tracker.focus_app)
             return;
 
@@ -515,7 +515,7 @@ Source.prototype = {
         if (!this.app && icon)
             this._setSummaryIcon(icon);
 
-        let tracker = Shell.WindowTracker.get_default();
+        let tracker = Cinnamon.WindowTracker.get_default();
         if (notification.resident && this.app && tracker.focus_app == this.app)
             this.pushNotification(notification);
         else
@@ -557,7 +557,7 @@ Source.prototype = {
         if (this.app)
             return;
 
-        this.app = Shell.WindowTracker.get_default().get_app_from_pid(this._pid);
+        this.app = Cinnamon.WindowTracker.get_default().get_app_from_pid(this._pid);
         if (!this.app)
             return;
 

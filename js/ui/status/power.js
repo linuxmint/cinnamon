@@ -4,7 +4,7 @@ const Gio = imports.gi.Gio;
 const DBus = imports.dbus;
 const Lang = imports.lang;
 const Mainloop = imports.mainloop;
-const Shell = imports.gi.Shell;
+const Cinnamon = imports.gi.Cinnamon;
 const St = imports.gi.St;
 
 const Main = imports.ui.main;

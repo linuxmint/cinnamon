@@ -27,25 +27,25 @@ CLEANFILES += $(service_DATA)
 
 CLEANFILES += $(gir_DATA) $(typelib_DATA)
 
-bin_SCRIPTS += gnome-shell-extension-tool
-EXTRA_DIST += gnome-shell-extension-tool.in
-bin_PROGRAMS = gnome-shell-real
+bin_SCRIPTS += cinnamon-extension-tool
+EXTRA_DIST += cinnamon-extension-tool.in
+bin_PROGRAMS = cinnamon-real
 
 if USE_JHBUILD_WRAPPER_SCRIPT
-gnome_shell = gnome-shell-jhbuild
-bin_SCRIPTS += gnome-shell-jhbuild
+cinnamon = cinnamon-jhbuild
+bin_SCRIPTS += cinnamon-jhbuild
 else
-gnome_shell = gnome-shell-real
+cinnamon = cinnamon-real
 endif
-EXTRA_DIST += gnome-shell-jhbuild.in
+EXTRA_DIST += cinnamon-jhbuild.in
 
-noinst_DATA = gnome-shell
-gnome-shell: $(gnome_shell) Makefile
+noinst_DATA = cinnamon
+cinnamon: $(cinnamon) Makefile
 	$(AM_V_GEN) cp $< $@.tmp && mv $@.tmp $@
 install-exec-hook:
-	mv $(DESTDIR)$(bindir)/$(gnome_shell) $(DESTDIR)$(bindir)/gnome-shell
+	mv $(DESTDIR)$(bindir)/$(cinnamon) $(DESTDIR)$(bindir)/cinnamon
 uninstall-hook:
-	rm -f $(DESTDIR)$(bindir)/gnome-shell
+	rm -f $(DESTDIR)$(bindir)/cinnamon
 
 generated_script_substitutions = \
 	    -e "s|@bindir[@]|$(bindir)|" \
@@ -58,15 +58,15 @@ generated_script_substitutions = \
 	    -e "s|@VERSION[@]|$(VERSION)|" \
 	    -e "s|@sysconfdir[@]|$(sysconfdir)|"
 
-gnome-shell-jhbuild: gnome-shell-jhbuild.in gnome-shell-real Makefile
+cinnamon-jhbuild: cinnamon-jhbuild.in cinnamon-real Makefile
 	$(AM_V_GEN) sed $(generated_script_substitutions) $< > $@.tmp && mv $@.tmp $@ && chmod a+x $@
 	@# Regenerate libtool wrapper so Alt+F2 restart will work
-	@$(LIBTOOL) --mode=execute test -f gnome-shell-real
+	@$(LIBTOOL) --mode=execute test -f cinnamon-real
 
-gnome-shell-extension-tool: gnome-shell-extension-tool.in Makefile
+cinnamon-extension-tool: cinnamon-extension-tool.in Makefile
 	$(AM_V_GEN) sed $(generated_script_substitutions) $< > $@.tmp && mv $@.tmp $@ && chmod a+x $@
 
-CLEANFILES += gnome-shell $(bin_SCRIPTS)
+CLEANFILES += cinnamon $(bin_SCRIPTS)
 
 include Makefile-st.am
 include Makefile-tray.am
@@ -74,140 +74,140 @@ include Makefile-gvc.am
 include Makefile-calendar-server.am
 include Makefile-hotplug-sniffer.am
 
-gnome_shell_cflags =				\
-	$(GNOME_SHELL_CFLAGS)			\
+gnome_cinnamon_cflags =				\
+	$(CINNAMON_CFLAGS)			\
 	-I$(srcdir)/tray			\
 	-DVERSION=\"$(VERSION)\"		\
 	-DLOCALEDIR=\"$(datadir)/locale\" 	\
 	-DDATADIR=\"$(datadir)\"		\
-	-DGNOME_SHELL_LIBEXECDIR=\"$(libexecdir)\"	\
-	-DGNOME_SHELL_DATADIR=\"$(pkgdatadir)\"	\
-	-DGNOME_SHELL_PKGLIBDIR=\"$(pkglibdir)\" \
+	-DCINNAMON_LIBEXECDIR=\"$(libexecdir)\"	\
+	-DCINNAMON_DATADIR=\"$(pkgdatadir)\"	\
+	-DCINNAMON_PKGLIBDIR=\"$(pkglibdir)\" \
 	-DJSDIR=\"$(pkgdatadir)/js\"
 
 privlibdir = $(pkglibdir)
-privlib_LTLIBRARIES = libgnome-shell.la
+privlib_LTLIBRARIES = libcinnamon.la
 
-shell_built_sources = \
-	shell-marshal.h \
-	shell-marshal.c \
-	shell-enum-types.h \
-	shell-enum-types.c
+cinnamon_built_sources = \
+	cinnamon-marshal.h \
+	cinnamon-marshal.c \
+	cinnamon-enum-types.h \
+	cinnamon-enum-types.c
 
-BUILT_SOURCES += $(shell_built_sources)
-EXTRA_DIST += shell-marshal.list
+BUILT_SOURCES += $(cinnamon_built_sources)
+EXTRA_DIST += cinnamon-marshal.list
 
-shell_public_headers_h =		\
-	shell-app.h			\
-	shell-app-system.h		\
-	shell-app-usage.h		\
-	shell-arrow.h			\
-	shell-contact-system.h	\
-	shell-doc-system.h		\
-	shell-embedded-window.h		\
-	shell-generic-container.h	\
-	shell-gtk-embed.h		\
-	shell-global.h			\
-	shell-mobile-providers.h	\
-	shell-mount-operation.h		\
-	shell-network-agent.h		\
-	shell-perf-log.h		\
-	shell-slicer.h			\
-	shell-stack.h			\
-	shell-tp-client.h		\
-	shell-tray-icon.h		\
-	shell-tray-manager.h		\
-	shell-util.h			\
-	shell-window-tracker.h		\
-	shell-wm.h			\
-	shell-xfixes-cursor.h
+cinnamon_public_headers_h =		\
+	cinnamon-app.h			\
+	cinnamon-app-system.h		\
+	cinnamon-app-usage.h		\
+	cinnamon-arrow.h			\
+	cinnamon-contact-system.h	\
+	cinnamon-doc-system.h		\
+	cinnamon-embedded-window.h		\
+	cinnamon-generic-container.h	\
+	cinnamon-gtk-embed.h		\
+	cinnamon-global.h			\
+	cinnamon-mobile-providers.h	\
+	cinnamon-mount-operation.h		\
+	cinnamon-network-agent.h		\
+	cinnamon-perf-log.h		\
+	cinnamon-slicer.h			\
+	cinnamon-stack.h			\
+	cinnamon-tp-client.h		\
+	cinnamon-tray-icon.h		\
+	cinnamon-tray-manager.h		\
+	cinnamon-util.h			\
+	cinnamon-window-tracker.h		\
+	cinnamon-wm.h			\
+	cinnamon-xfixes-cursor.h
 
-libgnome_shell_la_SOURCES =		\
-	$(shell_built_sources)		\
-	$(shell_public_headers_h)	\
-	shell-app-private.h		\
-	shell-app-system-private.h	\
-	shell-embedded-window-private.h	\
-	shell-global-private.h		\
-	shell-jsapi-compat-private.h	\
-	shell-window-tracker-private.h	\
-	shell-wm-private.h		\
-	gnome-shell-plugin.c		\
-	shell-app.c			\
-	shell-a11y.h			\
-	shell-a11y.c			\
-	shell-app-system.c		\
-	shell-app-usage.c		\
-	shell-arrow.c			\
-	shell-contact-system.c	\
-	shell-doc-system.c		\
-	shell-embedded-window.c		\
-	shell-generic-container.c	\
-	shell-gtk-embed.c		\
-	shell-global.c			\
-	shell-mobile-providers.c	\
-	shell-mount-operation.c		\
-	shell-network-agent.c		\
-	shell-perf-log.c		\
-	shell-polkit-authentication-agent.h	\
-	shell-polkit-authentication-agent.c	\
-	shell-slicer.c			\
-	shell-stack.c			\
-	shell-tp-client.c			\
-	shell-tray-icon.c		\
-	shell-tray-manager.c		\
-	shell-util.c			\
-	shell-window-tracker.c		\
-	shell-wm.c			\
-	shell-xfixes-cursor.c
+libgnome_cinnamon_la_SOURCES =		\
+	$(cinnamon_built_sources)		\
+	$(cinnamon_public_headers_h)	\
+	cinnamon-app-private.h		\
+	cinnamon-app-system-private.h	\
+	cinnamon-embedded-window-private.h	\
+	cinnamon-global-private.h		\
+	cinnamon-jsapi-compat-private.h	\
+	cinnamon-window-tracker-private.h	\
+	cinnamon-wm-private.h		\
+	cinnamon-plugin.c		\
+	cinnamon-app.c			\
+	cinnamon-a11y.h			\
+	cinnamon-a11y.c			\
+	cinnamon-app-system.c		\
+	cinnamon-app-usage.c		\
+	cinnamon-arrow.c			\
+	cinnamon-contact-system.c	\
+	cinnamon-doc-system.c		\
+	cinnamon-embedded-window.c		\
+	cinnamon-generic-container.c	\
+	cinnamon-gtk-embed.c		\
+	cinnamon-global.c			\
+	cinnamon-mobile-providers.c	\
+	cinnamon-mount-operation.c		\
+	cinnamon-network-agent.c		\
+	cinnamon-perf-log.c		\
+	cinnamon-polkit-authentication-agent.h	\
+	cinnamon-polkit-authentication-agent.c	\
+	cinnamon-slicer.c			\
+	cinnamon-stack.c			\
+	cinnamon-tp-client.c			\
+	cinnamon-tray-icon.c		\
+	cinnamon-tray-manager.c		\
+	cinnamon-util.c			\
+	cinnamon-window-tracker.c		\
+	cinnamon-wm.c			\
+	cinnamon-xfixes-cursor.c
 
-libgnome_shell_la_gir_sources = \
-	$(filter-out %-private.h $(shell_recorder_non_gir_sources), $(shell_public_headers_h) $(libgnome_shell_la_SOURCES))
+libgnome_cinnamon_la_gir_sources = \
+	$(filter-out %-private.h $(cinnamon_recorder_non_gir_sources), $(cinnamon_public_headers_h) $(libgnome_cinnamon_la_SOURCES))
 
-gnome_shell_real_SOURCES =		\
+gnome_cinnamon_real_SOURCES =		\
 	main.c
-gnome_shell_real_CPPFLAGS = $(gnome_shell_cflags)
-gnome_shell_real_LDADD = libgnome-shell.la $(libgnome_shell_la_LIBADD)
-gnome_shell_real_DEPENDENCIES = libgnome-shell.la
+gnome_cinnamon_real_CPPFLAGS = $(gnome_cinnamon_cflags)
+gnome_cinnamon_real_LDADD = libcinnamon.la $(libgnome_cinnamon_la_LIBADD)
+gnome_cinnamon_real_DEPENDENCIES = libcinnamon.la
 
 ########################################
 
-shell_recorder_sources =        \
-	shell-recorder.c	\
-	shell-recorder.h
+cinnamon_recorder_sources =        \
+	cinnamon-recorder.c	\
+	cinnamon-recorder.h
 
 # Custom element is an internal detail
-shell_recorder_non_gir_sources =  \
-	shell-recorder-src.c	  \
-	shell-recorder-src.h
+cinnamon_recorder_non_gir_sources =  \
+	cinnamon-recorder-src.c	  \
+	cinnamon-recorder-src.h
 
 if BUILD_RECORDER
-libgnome_shell_la_SOURCES += $(shell_recorder_sources) $(shell_recorder_non_gir_sources)
+libgnome_cinnamon_la_SOURCES += $(cinnamon_recorder_sources) $(cinnamon_recorder_non_gir_sources)
 
 noinst_PROGRAMS += test-recorder
 
-test_recorder_CPPFLAGS = $(TEST_SHELL_RECORDER_CFLAGS)
-test_recorder_LDADD = $(TEST_SHELL_RECORDER_LIBS)
+test_recorder_CPPFLAGS = $(TEST_CINNAMON_RECORDER_CFLAGS)
+test_recorder_LDADD = $(TEST_CINNAMON_RECORDER_LIBS)
 
 test_recorder_SOURCES =     \
-	$(shell_recorder_sources) $(shell_recorder_non_gir_sources) \
+	$(cinnamon_recorder_sources) $(cinnamon_recorder_non_gir_sources) \
 	test-recorder.c
 endif BUILD_RECORDER
 
 ########################################
 
-libexec_PROGRAMS += gnome-shell-perf-helper
+libexec_PROGRAMS += cinnamon-perf-helper
 
-gnome_shell_perf_helper_SOURCES = shell-perf-helper.c
-gnome_shell_perf_helper_CPPFLAGS = $(SHELL_PERF_HELPER_CFLAGS)
-gnome_shell_perf_helper_LDADD = $(SHELL_PERF_HELPER_LIBS)
+gnome_cinnamon_perf_helper_SOURCES = cinnamon-perf-helper.c
+gnome_cinnamon_perf_helper_CPPFLAGS = $(CINNAMON_PERF_HELPER_CFLAGS)
+gnome_cinnamon_perf_helper_LDADD = $(CINNAMON_PERF_HELPER_LIBS)
 
 ########################################
 
 noinst_PROGRAMS += run-js-test
 
-run_js_test_CPPFLAGS = $(gnome_shell_cflags)
-run_js_test_LDADD = libgnome-shell.la $(libgnome_shell_la_LIBADD)
+run_js_test_CPPFLAGS = $(gnome_cinnamon_cflags)
+run_js_test_LDADD = libcinnamon.la $(libgnome_cinnamon_la_LIBADD)
 run_js_test_LDFLAGS = -export-dynamic
 
 run_js_test_SOURCES =			\
@@ -215,71 +215,71 @@ run_js_test_SOURCES =			\
 
 ########################################
 
-shell-marshal.h: stamp-shell-marshal.h
+cinnamon-marshal.h: stamp-cinnamon-marshal.h
 	@true
-stamp-shell-marshal.h: Makefile shell-marshal.list
+stamp-cinnamon-marshal.h: Makefile cinnamon-marshal.list
 	$(AM_V_GEN) $(GLIB_GENMARSHAL) \
-		--prefix=_shell_marshal \
+		--prefix=_cinnamon_marshal \
 		--header \
-	$(srcdir)/shell-marshal.list > xgen-smh && \
-	(cmp -s xgen-smh shell-marshal.h || cp -f xgen-smh shell-marshal.h) && \
+	$(srcdir)/cinnamon-marshal.list > xgen-smh && \
+	(cmp -s xgen-smh cinnamon-marshal.h || cp -f xgen-smh cinnamon-marshal.h) && \
 	rm -f xgen-smh && \
 	echo timestamp > $(@F)
-CLEANFILES += stamp-shell-marshal.h
+CLEANFILES += stamp-cinnamon-marshal.h
 
-shell-marshal.c: Makefile shell-marshal.list
-	$(AM_V_GEN) (echo "#include \"shell-marshal.h\"" ; \
+cinnamon-marshal.c: Makefile cinnamon-marshal.list
+	$(AM_V_GEN) (echo "#include \"cinnamon-marshal.h\"" ; \
 	 $(GLIB_GENMARSHAL) \
-		--prefix=_shell_marshal \
+		--prefix=_cinnamon_marshal \
 		--body \
-	 $(srcdir)/shell-marshal.list ) > xgen-smc && \
-	cp -f xgen-smc shell-marshal.c && \
+	 $(srcdir)/cinnamon-marshal.list ) > xgen-smc && \
+	cp -f xgen-smc cinnamon-marshal.c && \
 	rm -f xgen-smc
 
 
-shell-enum-types.h: stamp-shell-enum-types.h Makefile
+cinnamon-enum-types.h: stamp-cinnamon-enum-types.h Makefile
 	@true
-stamp-shell-enum-types.h: $(srcdir)/shell-enum-types.h.in $(shell_public_headers_h)
+stamp-cinnamon-enum-types.h: $(srcdir)/cinnamon-enum-types.h.in $(cinnamon_public_headers_h)
 	$(AM_V_GEN) ( \
 	  $(GLIB_MKENUMS) \
 	    --template $< \
-	  $(addprefix $(srcdir)/,$(shell_public_headers_h)) ) > $(@F).tmp && \
-	(cmp -s $(@F).tmp shell-enum-types.h || mv $(@F).tmp shell-enum-types.h) && \
+	  $(addprefix $(srcdir)/,$(cinnamon_public_headers_h)) ) > $(@F).tmp && \
+	(cmp -s $(@F).tmp cinnamon-enum-types.h || mv $(@F).tmp cinnamon-enum-types.h) && \
 	rm -f $(@F).tmp && \
 	echo timestamp > $(@F)
-EXTRA_DIST += shell-enum-types.h.in
-CLEANFILES += stamp-shell-enum-types.h
+EXTRA_DIST += cinnamon-enum-types.h.in
+CLEANFILES += stamp-cinnamon-enum-types.h
 
-shell-enum-types.c: $(srcdir)/shell-enum-types.c.in stamp-shell-enum-types.h
+cinnamon-enum-types.c: $(srcdir)/cinnamon-enum-types.c.in stamp-cinnamon-enum-types.h
 	$(AM_V_GEN) ( \
 	  $(GLIB_MKENUMS) \
 	    --template $< \
-	  $(addprefix $(srcdir)/,$(shell_public_headers_h)) ) > $(@F).tmp && \
+	  $(addprefix $(srcdir)/,$(cinnamon_public_headers_h)) ) > $(@F).tmp && \
 	mv $(@F).tmp $(@F) && \
 	rm -f $(@F).tmp
-EXTRA_DIST += shell-enum-types.c.in
+EXTRA_DIST += cinnamon-enum-types.c.in
 
-libgnome_shell_la_LDFLAGS = -avoid-version
-libgnome_shell_la_LIBADD =		\
+libgnome_cinnamon_la_LDFLAGS = -avoid-version
+libgnome_cinnamon_la_LIBADD =		\
 	-lm			\
-	$(GNOME_SHELL_LIBS)	\
+	$(CINNAMON_LIBS)	\
 	$(BLUETOOTH_LIBS)	\
 	libst-1.0.la       	\
 	libtray.la		\
 	libgvc.la		\
 	$(NULL)
 
-libgnome_shell_la_CPPFLAGS = $(gnome_shell_cflags)
+libgnome_cinnamon_la_CPPFLAGS = $(gnome_cinnamon_cflags)
 
-Shell-0.1.gir: libgnome-shell.la St-1.0.gir
-Shell_0_1_gir_INCLUDES = Clutter-1.0 ClutterX11-1.0 Meta-3.0 TelepathyGLib-0.12 TelepathyLogger-0.2 Soup-2.4 GMenu-3.0 NetworkManager-1.0 NMClient-1.0 Folks-0.6
-Shell_0_1_gir_CFLAGS = $(libgnome_shell_la_CPPFLAGS) -I $(srcdir)
-Shell_0_1_gir_LIBS = libgnome-shell.la
-Shell_0_1_gir_FILES = $(libgnome_shell_la_gir_sources)
-Shell_0_1_gir_SCANNERFLAGS = --include-uninstalled=$(builddir)/St-1.0.gir \
+Cinnamon-0.1.gir: libcinnamon.la St-1.0.gir
+Cinnamon_0_1_gir_INCLUDES = Clutter-1.0 ClutterX11-1.0 Meta-3.0 TelepathyGLib-0.12 TelepathyLogger-0.2 Soup-2.4 GMenu-3.0 NetworkManager-1.0 NMClient-1.0 Folks-0.6
+Cinnamon_0_1_gir_CFLAGS = $(libgnome_cinnamon_la_CPPFLAGS) -I $(srcdir)
+Cinnamon_0_1_gir_LIBS = libcinnamon.la
+Cinnamon_0_1_gir_FILES = $(libgnome_cinnamon_la_gir_sources)
+Cinnamon_0_1_gir_SCANNERFLAGS = --include-uninstalled=$(builddir)/St-1.0.gir \
 	--add-include-path=$(MUTTER_GIR_DIR)
-INTROSPECTION_GIRS += Shell-0.1.gir
-CLEANFILES += Shell-0.1.gir
+INTROSPECTION_GIRS += Cinnamon-0.1.gir
+CLEANFILES += Cinnamon-0.1.gir
 
 St-1.0.gir: libst-1.0.la
 St_1_0_gir_INCLUDES = Clutter-1.0 Gtk-3.0

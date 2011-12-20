@@ -1,9 +1,9 @@
 #!/bin/bash
 
-rm -rf /usr/share/gnome-shell/js-backup
-mv /usr/share/gnome-shell/js /usr/share/gnome-shell/js-backup
-cp -R js /usr/share/gnome-shell/
+rm -rf /usr/share/cinnamon/js-backup
+mv /usr/share/cinnamon/js /usr/share/cinnamon/js-backup
+cp -R js /usr/share/cinnamon/
 
-rm -rf /usr/share/gnome-shell/theme-backup
-mv /usr/share/gnome-shell/theme /usr/share/gnome-shell/theme-backup
-cp -R data/theme /usr/share/gnome-shell/
+rm -rf /usr/share/cinnamon/theme-backup
+mv /usr/share/cinnamon/theme /usr/share/cinnamon/theme-backup
+cp -R data/theme /usr/share/cinnamon/

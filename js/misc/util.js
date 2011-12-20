@@ -3,7 +3,7 @@
 const Gdk = imports.gi.Gdk;
 const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
-const Shell = imports.gi.Shell;
+const Cinnamon = imports.gi.Cinnamon;
 
 const Main = imports.ui.main;
 
@@ -69,7 +69,7 @@ function spawn(argv) {
 // occur when trying to parse or start the program.
 function spawnCommandLine(command_line) {
     try {
-        let [success, argv] = GLib.shell_parse_argv(command_line);
+        let [success, argv] = GLib.cinnamon_parse_argv(command_line);
         trySpawn(argv);
     } catch (err) {
         _handleSpawnError(command_line, err);
@@ -112,9 +112,9 @@ function trySpawnCommandLine(command_line) {
     let success, argv;
 
     try {
-        [success, argv] = GLib.shell_parse_argv(command_line);
+        [success, argv] = GLib.cinnamon_parse_argv(command_line);
     } catch (err) {
-        // Replace "Error invoking GLib.shell_parse_argv: " with
+        // Replace "Error invoking GLib.cinnamon_parse_argv: " with
         // something nicer
         err.message = err.message.replace(/[^:]*: /, _("Could not parse command:") + "\n");
         throw err;

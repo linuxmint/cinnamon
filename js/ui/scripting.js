@@ -4,11 +4,11 @@ const DBus = imports.dbus;
 const Gio = imports.gi.Gio;
 const Mainloop = imports.mainloop;
 const Meta = imports.gi.Meta;
-const Shell = imports.gi.Shell;
+const Cinnamon = imports.gi.Cinnamon;
 
 const Main = imports.ui.main;
 
-// This module provides functionality for driving the shell user interface
+// This module provides functionality for driving Cinnamon user interface
 // in an automated fashion. The primary current use case for this is
 // automated performance testing (see runPerfScript()), but it could
 // be applied to other forms of automation, such as testing for
@@ -54,7 +54,7 @@ function sleep(milliseconds) {
  * waitLeisure:
  *
  * Used within an automation script to pause the the execution of the
- * current script until the shell is completely idle. Use as
+ * current script until Cinnamon is completely idle. Use as
  * 'yield Scripting.waitLeisure();'
  */
 function waitLeisure() {
@@ -71,7 +71,7 @@ function waitLeisure() {
 }
 
 const PerfHelperIface = {
-    name: 'org.gnome.Shell.PerfHelper',
+    name: 'org.Cinnamon.PerfHelper',
     methods: [{ name: 'CreateWindow', inSignature: 'iibb', outSignature: '' },
               { name: 'WaitWindows', inSignature: '', outSignature: '' },
               { name: 'DestroyWindows', inSignature: '', outSignature: ''}]
@@ -83,7 +83,7 @@ const PerfHelper = function () {
 
 PerfHelper.prototype = {
      _init: function() {
-         DBus.session.proxifyObject(this, 'org.gnome.Shell.PerfHelper', '/org/gnome/Shell/PerfHelper');
+         DBus.session.proxifyObject(this, 'org.Cinnamon.PerfHelper', '/org/Cinnamon/PerfHelper');
      }
 };
 
@@ -104,7 +104,7 @@ function _getPerfHelper() {
  * @alpha: whether the window should be alpha transparent
  * @maximized: whethe the window should be created maximized
  *
- * Creates a window using gnome-shell-perf-helper for testing purposes.
+ * Creates a window using cinnamon-perf-helper for testing purposes.
  * While this function can be used with yield in an automation
  * script to pause until the D-Bus call to the helper process returns,
  * because of the normal X asynchronous mapping process, to actually wait
@@ -178,7 +178,7 @@ function destroyTestWindows() {
  * within a performance automation script
  */
 function defineScriptEvent(name, description) {
-    Shell.PerfLog.get_default().define_event("script." + name,
+    Cinnamon.PerfLog.get_default().define_event("script." + name,
                                              description,
                                              "");
 }
@@ -191,7 +191,7 @@ function defineScriptEvent(name, description) {
  * previously defined with defineScriptEvent
  */
 function scriptEvent(name) {
-    Shell.PerfLog.get_default().event("script." + name);
+    Cinnamon.PerfLog.get_default().event("script." + name);
 }
 
 /**
@@ -200,7 +200,7 @@ function scriptEvent(name) {
  * Convenience function to trigger statistics collection
  */
 function collectStatistics() {
-    Shell.PerfLog.get_default().collect_statistics();
+    Cinnamon.PerfLog.get_default().collect_statistics();
 }
 
 function _step(g, finish, onError) {
@@ -227,7 +227,7 @@ function _collect(scriptModule, outputFile) {
             eventHandlers[m[1] + "." + m[2]] = scriptModule[f];
     }
 
-    Shell.PerfLog.get_default().replay(
+    Cinnamon.PerfLog.get_default().replay(
         function(time, eventName, signature, arg) {
             if (eventName in eventHandlers)
                 eventHandlers[eventName](time, arg);
@@ -242,25 +242,25 @@ function _collect(scriptModule, outputFile) {
                             Gio.FileCreateFlags.NONE,
                             null);
         let out = Gio.BufferedOutputStream.new_sized (raw, 4096);
-        Shell.write_string_to_stream (out, "{\n");
+        Cinnamon.write_string_to_stream (out, "{\n");
 
-        Shell.write_string_to_stream(out, '"events":\n');
-        Shell.PerfLog.get_default().dump_events(out);
+        Cinnamon.write_string_to_stream(out, '"events":\n');
+        Cinnamon.PerfLog.get_default().dump_events(out);
 
         let monitors = Main.layoutManager.monitors;
         let primary = Main.layoutManager.primaryIndex;
-        Shell.write_string_to_stream(out, ',\n"monitors":\n[');
+        Cinnamon.write_string_to_stream(out, ',\n"monitors":\n[');
         for (let i = 0; i < monitors.length; i++) {
             let monitor = monitors[i];
             if (i != 0)
-                Shell.write_string_to_stream(out, ', ');
-            Shell.write_string_to_stream(out, '"%s%dx%d+%d+%d"'.format(i == primary ? "*" : "",
+                Cinnamon.write_string_to_stream(out, ', ');
+            Cinnamon.write_string_to_stream(out, '"%s%dx%d+%d+%d"'.format(i == primary ? "*" : "",
                                                                        monitor.width, monitor.height,
                                                                        monitor.x, monitor.y));
         }
-        Shell.write_string_to_stream(out, ' ]');
+        Cinnamon.write_string_to_stream(out, ' ]');
 
-        Shell.write_string_to_stream(out, ',\n"metrics":\n[ ');
+        Cinnamon.write_string_to_stream(out, ',\n"metrics":\n[ ');
         let first = true;
         for (let name in scriptModule.METRICS) {
             let metric = scriptModule.METRICS[name];
@@ -280,21 +280,21 @@ function _collect(scriptModule, outputFile) {
             }
 
             if (!first)
-                Shell.write_string_to_stream(out, ',\n  ');
+                Cinnamon.write_string_to_stream(out, ',\n  ');
             first = false;
 
-            Shell.write_string_to_stream(out,
+            Cinnamon.write_string_to_stream(out,
                                          '{ "name": ' + JSON.stringify(name) + ',\n' +
                                          '    "description": ' + JSON.stringify(metric.description) + ',\n' +
                                          '    "units": ' + JSON.stringify(metric.units) + ',\n' +
                                          '    "value": ' + JSON.stringify(metric.value) + ' }');
         }
-        Shell.write_string_to_stream(out, ' ]');
+        Cinnamon.write_string_to_stream(out, ' ]');
 
-        Shell.write_string_to_stream (out, ',\n"log":\n');
-        Shell.PerfLog.get_default().dump_log(out);
+        Cinnamon.write_string_to_stream (out, ',\n"log":\n');
+        Cinnamon.PerfLog.get_default().dump_log(out);
 
-        Shell.write_string_to_stream (out, '\n}\n');
+        Cinnamon.write_string_to_stream (out, '\n}\n');
         out.close(null);
     } else {
         let metrics = [];
@@ -351,10 +351,10 @@ function _collect(scriptModule, outputFile) {
  * if @outputFile is not provided, logged.
  *
  * After running the script and collecting statistics from the
- * event log, GNOME Shell will exit.
+ * event log, Cinnamon will exit.
  **/
 function runPerfScript(scriptModule, outputFile) {
-    Shell.PerfLog.get_default().set_enabled(true);
+    Cinnamon.PerfLog.get_default().set_enabled(true);
 
     let g = scriptModule.run();
 

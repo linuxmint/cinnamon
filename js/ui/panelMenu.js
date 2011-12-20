@@ -3,7 +3,7 @@
 const Clutter = imports.gi.Clutter;
 const Gtk = imports.gi.Gtk;
 const Lang = imports.lang;
-const Shell = imports.gi.Shell;
+const Cinnamon = imports.gi.Cinnamon;
 const Signals = imports.signals;
 const St = imports.gi.St;
 
@@ -18,7 +18,7 @@ function ButtonBox(params) {
 ButtonBox.prototype = {
     _init: function(params) {
         params = Params.parse(params, { style_class: 'panel-button' }, true);
-        this.actor = new Shell.GenericContainer(params);
+        this.actor = new Cinnamon.GenericContainer(params);
         this.actor._delegate = this;
 
         this.actor.connect('get-preferred-width', Lang.bind(this, this._getPreferredWidth));

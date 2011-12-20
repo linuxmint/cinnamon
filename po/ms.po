@@ -1,13 +1,13 @@
-# Malay translations for gnome-shell package.
+# Malay translations for cinnamon package.
 # Copyright (C) 2011 Listed translators
-# This file is distributed under the same license as the gnome-shell package.
+# This file is distributed under the same license as the cinnamon package.
 # Andi Rady Kurniawan <niariot87@gmail.com>, 2011.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gnome-shell master ms\n"
+"Project-Id-Version: cinnamon master ms\n"
 "Report-Msgid-Bugs-To: http://bugzilla.gnome.org/enter_bug.cgi?product=gnome-"
-"shell&keywords=I18N+L10N&component=general\n"
+"cinnamon&keywords=I18N+L10N&component=general\n"
 "POT-Creation-Date: 2011-08-02 20:21+0000\n"
 "PO-Revision-Date: 2011-07-21 23:35+0730\n"
 "Last-Translator: Umarzuki Bin Mochlis Moktar <umar@umarzuki.com>\n"
@@ -17,81 +17,81 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: ../data/gnome-shell.desktop.in.in.h:1
-msgid "GNOME Shell"
-msgstr "GNOME Shell"
+#: ../data/cinnamon.desktop.in.in.h:1
+msgid "Cinnamon"
+msgstr "Cinnamon"
 
-#: ../data/gnome-shell.desktop.in.in.h:2
+#: ../data/cinnamon.desktop.in.in.h:2
 msgid "Window management and application launching"
 msgstr "Pengurusan tetingkap dan melancar aplikasi"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:1
+#: ../data/org.cinnamon.gschema.xml.in.h:1
 msgid ""
 "Allows access to internal debugging and monitoring tools using the Alt-F2 "
 "dialog."
 msgstr ""
 "Membolehkan alatan menyahpepijat dan memantau dicapai dengan dialog Alt-F2"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:2
+#: ../data/org.cinnamon.gschema.xml.in.h:2
 msgid "Enable internal tools useful for developers and testers from Alt-F2"
 msgstr ""
 "Bolehkan alatan dalam berguna untuk para pembangun dan pencuba menerusi Alt-"
 "F2"
 
 # Screencast boleh diterjemahkan sebagai rakaman skrin, tapi kerana ini slanga komputer, jadi tidak diterjemah.
-#: ../data/org.gnome.shell.gschema.xml.in.h:3
+#: ../data/org.cinnamon.gschema.xml.in.h:3
 msgid "File extension used for storing the screencast"
 msgstr "Sambungan fail untuk digunakan menyimpan screencast"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:4
+#: ../data/org.cinnamon.gschema.xml.in.h:4
 msgid "Framerate used for recording screencasts."
 msgstr "Kadar bingkai diguna untuk merakam screencast"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:5
+#: ../data/org.cinnamon.gschema.xml.in.h:5
 msgid ""
-"GNOME Shell extensions have a uuid property; this key lists extensions which "
+"Cinnamon extensions have a uuid property; this key lists extensions which "
 "should be loaded. disabled-extensions overrides this setting for extensions "
 "that appear in both lists."
 msgstr ""
-"Sambungan GNOME Shell ada sifat uuid; senarai sambungan-sambungan kekunci "
+"Sambungan Cinnamon ada sifat uuid; senarai sambungan-sambungan kekunci "
 "ini yang patut dimuatkan. disabled-extensions membatalkan tetapan untuk "
 "sambungan-sambungan yang muncul pada kedua-dua senarai."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:6
+#: ../data/org.cinnamon.gschema.xml.in.h:6
 msgid ""
-"GNOME Shell extensions have a uuid property; this key lists extensions which "
+"Cinnamon extensions have a uuid property; this key lists extensions which "
 "should not be loaded. This setting overrides enabled-extensions for "
 "extensions that appear in both lists."
 msgstr ""
-"Sambungan GNOME Shell ada sifat uuid; senarai sambungan-sambungan kekunci "
+"Sambungan Cinnamon ada sifat uuid; senarai sambungan-sambungan kekunci "
 "ini yang tidak patut dimuatkan. Tetapan ini membatalkan enabled-extensions "
 "yang muncul pada kedua-dua senarai."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:7
+#: ../data/org.cinnamon.gschema.xml.in.h:7
 msgid "History for command (Alt-F2) dialog"
 msgstr "Sejarah untuk perintah dialog (Alt-F2)"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:8
+#: ../data/org.cinnamon.gschema.xml.in.h:8
 msgid "History for the looking glass dialog"
 msgstr "Sejarah untuk dialog looking glass"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:9
+#: ../data/org.cinnamon.gschema.xml.in.h:9
 msgid "If true, display date in the clock, in addition to time."
 msgstr "Jika benar, papar tarikh pada jam, bersama waktu."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:10
+#: ../data/org.cinnamon.gschema.xml.in.h:10
 msgid "If true, display seconds in time."
 msgstr "Jika benar, papar saat dalam waktu."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:11
+#: ../data/org.cinnamon.gschema.xml.in.h:11
 msgid "If true, display the ISO week date in the calendar."
 msgstr "Jika benar, papar tarikh minggu ISO pada kalendar."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:12
+#: ../data/org.cinnamon.gschema.xml.in.h:12
 msgid "List of desktop file IDs for favorite applications"
 msgstr "Senarai ID fail desktop untuk aplikasi kegemaran"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:14
+#: ../data/org.cinnamon.gschema.xml.in.h:14
 #, no-c-format
 msgid ""
 "Sets the GStreamer pipeline used to encode recordings. It follows the syntax "
@@ -117,19 +117,19 @@ msgstr ""
 "digunakan sebagai pemegang tempat untuk tetamu pada bilangan benang optima "
 "pada sistem."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:15
+#: ../data/org.cinnamon.gschema.xml.in.h:15
 msgid "Show date in clock"
 msgstr "Tunjuk tarikh pada jam"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:16
+#: ../data/org.cinnamon.gschema.xml.in.h:16
 msgid "Show the week date in the calendar"
 msgstr "Tunjuk tarikh minggu pada kalendar"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:17
+#: ../data/org.cinnamon.gschema.xml.in.h:17
 msgid "Show time with seconds"
 msgstr "Tunjuk waktu beserta saat"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:18
+#: ../data/org.cinnamon.gschema.xml.in.h:18
 msgid ""
 "The applications corresponding to these identifiers will be displayed in the "
 "favorites area."
@@ -137,7 +137,7 @@ msgstr ""
 "Aplikasi-aplikasi bagi setiap pengenal pasti ini akan dipaparkan di kawasan "
 "kegemaran."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:19
+#: ../data/org.cinnamon.gschema.xml.in.h:19
 msgid ""
 "The filename for recorded screencasts will be a unique filename based on the "
 "current date, and use this extension. It should be changed when recording to "
@@ -147,43 +147,43 @@ msgstr ""
 "menggunakan sambungan ini. Ia patut diubah jika ingin merakam untuk format "
 "penyimpan berbeza."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:20
+#: ../data/org.cinnamon.gschema.xml.in.h:20
 msgid ""
-"The framerate of the resulting screencast recordered by GNOME Shell's "
+"The framerate of the resulting screencast recordered by Cinnamon's "
 "screencast recorder in frames-per-second."
 msgstr ""
 "Kadar bingkai bagi screencast yang dihasilkan oleh perakam screencast GNOME "
-"Shell dalam bingkai-se-saat."
+"Cinnamon dalam bingkai-se-saat."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:21
+#: ../data/org.cinnamon.gschema.xml.in.h:21
 msgid "The gstreamer pipeline used to encode the screencast"
 msgstr "Talian paip gstreamer digunakan untuk mengekod screencast"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:22
+#: ../data/org.cinnamon.gschema.xml.in.h:22
 msgid ""
-"The shell normally monitors active applications in order to present the most "
+"Cinnamon normally monitors active applications in order to present the most "
 "used ones (e.g. in launchers). While this data will be kept private, you may "
 "want to disable this for privacy reasons. Please note that doing so won't "
 "remove already saved data."
 msgstr ""
-"Shell biasanya memantau aplikasi aktif untuk tentukan yang paling kerap "
+"Cinnamon biasanya memantau aplikasi aktif untuk tentukan yang paling kerap "
 "diguna (cth. dalam pelancar). Walaupun data ini dirahsiakan, anda mungkin "
 "mahu lumpuhkannya atas sebab privasi. Sila maklum yang berbuat demikian "
 "tidak akan membuang data yang sudah tersimpan."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:23
+#: ../data/org.cinnamon.gschema.xml.in.h:23
 msgid "Uuids of extensions to disable"
 msgstr "Uuid sambungan untuk dilumpuhkan"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:24
+#: ../data/org.cinnamon.gschema.xml.in.h:24
 msgid "Uuids of extensions to enable"
 msgstr "Sambungan-sambungan Uuid sambungan untuk dibenarkan"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:25
+#: ../data/org.cinnamon.gschema.xml.in.h:25
 msgid "Whether to collect stats about applications usage"
 msgstr "Sama ada kumpul statistik tentang penggunaan aplikasi"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:26
+#: ../data/org.cinnamon.gschema.xml.in.h:26
 msgid "disabled OpenSearch providers"
 msgstr "lumpuhkan pembekal OpenSearch"
 
@@ -191,7 +191,7 @@ msgstr "lumpuhkan pembekal OpenSearch"
 msgid "Command not found"
 msgstr "Perintah tidak ditemui"
 
-#. Replace "Error invoking GLib.shell_parse_argv: " with
+#. Replace "Error invoking GLib.cinnamon_parse_argv: " with
 #. something nicer
 #: ../js/misc/util.js:95
 msgid "Could not parse command:"
@@ -447,7 +447,7 @@ msgid "%a %l:%M %p"
 msgstr "%a %l:%M %p"
 
 #. Translators: This is the date format to use when the calendar popup is
-#. * shown - it is shown just below the time in the shell (e.g. "Tue 9:29 AM").
+#. * shown - it is shown just below the time in Cinnamon (e.g. "Tue 9:29 AM").
 #.
 #: ../js/ui/dateMenu.js:192
 msgid "%A %B %e, %Y"
@@ -567,7 +567,7 @@ msgid "System Information"
 msgstr "Maklumat Sistem"
 
 #: ../js/ui/notificationDaemon.js:419 ../js/ui/status/power.js:238
-#: ../src/shell-app-system.c:1115
+#: ../src/cinnamon-app-system.c:1115
 msgid "Unknown"
 msgstr "Tak diketahui"
 
@@ -667,7 +667,7 @@ msgstr "Sedang mencari..."
 msgid "No matching results."
 msgstr "Tiada hasil yang padan."
 
-#: ../js/ui/shellMountOperation.js:285
+#: ../js/ui/cinnamonMountOperation.js:285
 msgid "Wrong password, please try again"
 msgstr ""
 
@@ -1217,7 +1217,7 @@ msgstr "Jawapan"
 msgid "Type to search..."
 msgstr "Taip untuk mencari..."
 
-#: ../js/ui/viewSelector.js:140 ../src/shell-util.c:257
+#: ../js/ui/viewSelector.js:140 ../src/cinnamon-util.c:257
 msgid "Search"
 msgstr "Cari"
 
@@ -1257,30 +1257,30 @@ msgstr "Bunyi Sistem"
 msgid "Print version"
 msgstr "Cetak versi"
 
-#: ../src/shell-app.c:464
+#: ../src/cinnamon-app.c:464
 #, c-format
 msgid "Failed to launch '%s'"
 msgstr "Gagal melancarkan '%s'"
 
-#: ../src/shell-mobile-providers.c:80
+#: ../src/cinnamon-mobile-providers.c:80
 msgid "United Kingdom"
 msgstr "United Kingdom"
 
-#: ../src/shell-mobile-providers.c:526
+#: ../src/cinnamon-mobile-providers.c:526
 msgid "Default"
 msgstr "Lalai"
 
-#: ../src/shell-polkit-authentication-agent.c:334
+#: ../src/cinnamon-polkit-authentication-agent.c:334
 msgid "Authentication dialog was dismissed by the user"
 msgstr "Dialog pengesahan telah digugurkan oleh pengguna"
 
-#: ../src/shell-util.c:96
+#: ../src/cinnamon-util.c:96
 msgid "Home Folder"
 msgstr "Folder Rumah"
 
 #. Translators: this is the same string as the one found in
 #. * nautilus
-#: ../src/shell-util.c:111
+#: ../src/cinnamon-util.c:111
 msgid "File System"
 msgstr "Sistem Fail"
 
@@ -1289,7 +1289,7 @@ msgstr "Sistem Fail"
 #. * example, "Trash: some-directory". It means that the
 #. * directory called "some-directory" is in the trash.
 #.
-#: ../src/shell-util.c:307
+#: ../src/cinnamon-util.c:307
 #, c-format
 msgid "%1$s: %2$s"
 msgstr "%1$s: %2$s"

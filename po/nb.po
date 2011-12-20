@@ -1,12 +1,12 @@
-# Norwegian bokmål translation of gnome-shell.
+# Norwegian bokmål translation of cinnamon.
 # Copyright (C) 2009 THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the gnome-shell package.
+# This file is distributed under the same license as the cinnamon package.
 #
 # Kjartan Maraas <kmaraas@gnome.org>, 2009-2011.
 # Torstein Adolf Winterseth <kvikende@fsfe.org>, 2010.
 msgid ""
 msgstr ""
-"Project-Id-Version: gnome-shell 3.1.x\n"
+"Project-Id-Version: cinnamon 3.1.x\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-09-22 10:10+0200\n"
 "PO-Revision-Date: 2011-09-22 10:10+0200\n"
@@ -18,15 +18,15 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: ../data/gnome-shell.desktop.in.in.h:1
-msgid "GNOME Shell"
-msgstr "GNOME Shell"
+#: ../data/cinnamon.desktop.in.in.h:1
+msgid "Cinnamon"
+msgstr "Cinnamon"
 
-#: ../data/gnome-shell.desktop.in.in.h:2
+#: ../data/cinnamon.desktop.in.in.h:2
 msgid "Window management and application launching"
 msgstr "Vindushåndtering og oppstart av programmer"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:1
+#: ../data/org.cinnamon.gschema.xml.in.h:1
 msgid ""
 "Allows access to internal debugging and monitoring tools using the Alt-F2 "
 "dialog."
@@ -34,53 +34,53 @@ msgstr ""
 "Tillat tilgang til interne feilsøkings- og overvåkingsverktøy ved å bruke "
 "Alt-F2-dialogen."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:2
+#: ../data/org.cinnamon.gschema.xml.in.h:2
 msgid "Enable internal tools useful for developers and testers from Alt-F2"
 msgstr "Aktiver interne verktøy for utviklere og testere fra Alt-F2"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:3
+#: ../data/org.cinnamon.gschema.xml.in.h:3
 msgid "File extension used for storing the screencast"
 msgstr "Filendelse i bruk ved lagring av skjermvideo"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:4
+#: ../data/org.cinnamon.gschema.xml.in.h:4
 msgid "Framerate used for recording screencasts."
 msgstr "Bildefrekvens i bruk ved lagring av skjermvideoer."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:5
+#: ../data/org.cinnamon.gschema.xml.in.h:5
 msgid ""
-"GNOME Shell extensions have a uuid property; this key lists extensions which "
+"Cinnamon extensions have a uuid property; this key lists extensions which "
 "should be loaded. disabled-extensions overrides this setting for extensions "
 "that appear in both lists."
 msgstr ""
-"GNOME Shell-utvidelser har en uuid-egenskap. Denne nøkkelen lister "
+"Cinnamon-utvidelser har en uuid-egenskap. Denne nøkkelen lister "
 "utvidelser som ikke bør lastes. disabled-extensions overstyrer denne "
 "innstillingen for utvidelser som finnes i begge listene."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:6
+#: ../data/org.cinnamon.gschema.xml.in.h:6
 msgid "History for command (Alt-F2) dialog"
 msgstr "Historikk for kommandodialog (Alt-F2)"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:7
+#: ../data/org.cinnamon.gschema.xml.in.h:7
 msgid "History for the looking glass dialog"
 msgstr "Historikk for forstørrelsesglass-dialogen"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:8
+#: ../data/org.cinnamon.gschema.xml.in.h:8
 msgid "If true, display date in the clock, in addition to time."
 msgstr "Viser dato i tillegg til tid i klokken hvis «true»."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:9
+#: ../data/org.cinnamon.gschema.xml.in.h:9
 msgid "If true, display seconds in time."
 msgstr "Viser sekunder i klokken hvis «true»."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:10
+#: ../data/org.cinnamon.gschema.xml.in.h:10
 msgid "If true, display the ISO week date in the calendar."
 msgstr "Viser ISO-ukedato i kalenderen hvis «true»."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:11
+#: ../data/org.cinnamon.gschema.xml.in.h:11
 msgid "List of desktop file IDs for favorite applications"
 msgstr "Liste av skrivebordfil-ider for favorittprogrammer"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:13
+#: ../data/org.cinnamon.gschema.xml.in.h:13
 #, fuzzy, no-c-format
 msgid ""
 "Sets the GStreamer pipeline used to encode recordings. It follows the syntax "
@@ -97,19 +97,19 @@ msgstr ""
 "Setter GStreamer-rør som brukes til å kode opptak. Den følger syntaksen som "
 "brukes for gst-launch. Røret må ha en..."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:14
+#: ../data/org.cinnamon.gschema.xml.in.h:14
 msgid "Show date in clock"
 msgstr "Vis dato i klokken"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:15
+#: ../data/org.cinnamon.gschema.xml.in.h:15
 msgid "Show the week date in the calendar"
 msgstr "Vis dato for uken i kalender"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:16
+#: ../data/org.cinnamon.gschema.xml.in.h:16
 msgid "Show time with seconds"
 msgstr "Vis tid med sekunder"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:17
+#: ../data/org.cinnamon.gschema.xml.in.h:17
 msgid ""
 "The applications corresponding to these identifiers will be displayed in the "
 "favorites area."
@@ -117,7 +117,7 @@ msgstr ""
 "Programmene som passer til disse identifikatorene vil bli vist i "
 "favorittområdet."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:18
+#: ../data/org.cinnamon.gschema.xml.in.h:18
 msgid ""
 "The filename for recorded screencasts will be a unique filename based on the "
 "current date, and use this extension. It should be changed when recording to "
@@ -127,47 +127,47 @@ msgstr ""
 "og bruke denne filendelsen. Den bør endres når du gjør opptak til et nytt "
 "oppbevaringsformat."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:19
+#: ../data/org.cinnamon.gschema.xml.in.h:19
 msgid ""
-"The framerate of the resulting screencast recordered by GNOME Shell's "
+"The framerate of the resulting screencast recordered by Cinnamon's "
 "screencast recorder in frames-per-second."
 msgstr ""
-"Bildefrekvensen i den ferdige skjermvideoen tatt opp med GNOME Shells "
+"Bildefrekvensen i den ferdige skjermvideoen tatt opp med Cinnamons "
 "skjermvideoopptaker i bilder per sekund."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:20
+#: ../data/org.cinnamon.gschema.xml.in.h:20
 msgid "The gstreamer pipeline used to encode the screencast"
 msgstr "Gstreamer-kommandokø brukt til å kode skjermvideoen"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:21
+#: ../data/org.cinnamon.gschema.xml.in.h:21
 msgid ""
-"The shell normally monitors active applications in order to present the most "
+"Cinnamon normally monitors active applications in order to present the most "
 "used ones (e.g. in launchers). While this data will be kept private, you may "
 "want to disable this for privacy reasons. Please note that doing so won't "
 "remove already saved data."
 msgstr ""
-"GNOME Shell vil normalt holde øye med åpne programmer for å kunne vise de "
+"Cinnamon vil normalt holde øye med åpne programmer for å kunne vise de "
 "mest bruke (for eksempel i oppstartsmenyer). Denne informasjonen vil bli "
 "holdt privat, men du kan deaktivere denne lagringen av personvernårsaker. "
 "Hvis du slår det av, vil det ikke fjerne allerede lagret informasjon."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:22
+#: ../data/org.cinnamon.gschema.xml.in.h:22
 msgid "The type of keyboard to use."
 msgstr "Type tastatur som skal brukes."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:23
+#: ../data/org.cinnamon.gschema.xml.in.h:23
 msgid "Uuids of extensions to enable"
 msgstr "Uuider på utvidelser som skal slås på"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:24
+#: ../data/org.cinnamon.gschema.xml.in.h:24
 msgid "Whether to collect stats about applications usage"
 msgstr "Om det skal samles statistikk om bruk av programmer"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:25
+#: ../data/org.cinnamon.gschema.xml.in.h:25
 msgid "Which keyboard to use"
 msgstr "Tastatur som skal brukes"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:26
+#: ../data/org.cinnamon.gschema.xml.in.h:26
 msgid "disabled OpenSearch providers"
 msgstr "OpenSearch tilbydere slått av"
 
@@ -224,7 +224,7 @@ msgstr "Slå av"
 msgid "Command not found"
 msgstr "Kommando ikke funnet"
 
-#. Replace "Error invoking GLib.shell_parse_argv: " with
+#. Replace "Error invoking GLib.cinnamon_parse_argv: " with
 #. something nicer
 #: ../js/misc/util.js:119
 msgid "Could not parse command:"
@@ -430,7 +430,7 @@ msgid "Next week"
 msgstr "Neste uke"
 
 #: ../js/ui/contactDisplay.js:59 ../js/ui/notificationDaemon.js:444
-#: ../js/ui/status/power.js:223 ../src/shell-app.c:355
+#: ../js/ui/status/power.js:223 ../src/cinnamon-app.c:355
 msgid "Unknown"
 msgstr "Ukjent"
 
@@ -507,7 +507,7 @@ msgid "%a %l:%M %p"
 msgstr "%a %l.%M %p"
 
 #. Translators: This is the date format to use when the calendar popup is
-#. * shown - it is shown just below the time in the shell (e.g. "Tue 9:29 AM").
+#. * shown - it is shown just below the time in Cinnamon (e.g. "Tue 9:29 AM").
 #.
 #: ../js/ui/dateMenu.js:213
 msgid "%A %B %e, %Y"
@@ -818,7 +818,7 @@ msgstr "Søker …"
 msgid "No matching results."
 msgstr "Ingen treff."
 
-#: ../js/ui/shellMountOperation.js:285
+#: ../js/ui/cinnamonMountOperation.js:285
 msgid "Wrong password, please try again"
 msgstr "Feil passord. Prøv igjen"
 
@@ -1523,7 +1523,7 @@ msgstr ""
 msgid "Type to search..."
 msgstr "Skriv for å søke …"
 
-#: ../js/ui/viewSelector.js:140 ../src/shell-util.c:261
+#: ../js/ui/viewSelector.js:140 ../src/cinnamon-util.c:261
 msgid "Search"
 msgstr "Søk"
 
@@ -1567,30 +1567,30 @@ msgstr "Skriv ut versjon"
 msgid "Mode used by GDM for login screen"
 msgstr "Modus som brukes av GDM for innloggingsskjermen"
 
-#: ../src/shell-app.c:581
+#: ../src/cinnamon-app.c:581
 #, c-format
 msgid "Failed to launch '%s'"
 msgstr "Klarte ikke å starte «%s»"
 
-#: ../src/shell-mobile-providers.c:80
+#: ../src/cinnamon-mobile-providers.c:80
 msgid "United Kingdom"
 msgstr "Storbritannia"
 
-#: ../src/shell-mobile-providers.c:526
+#: ../src/cinnamon-mobile-providers.c:526
 msgid "Default"
 msgstr "Forvalg"
 
-#: ../src/shell-polkit-authentication-agent.c:334
+#: ../src/cinnamon-polkit-authentication-agent.c:334
 msgid "Authentication dialog was dismissed by the user"
 msgstr "Autentiseringsdialogen ble lukket av brukeren"
 
-#: ../src/shell-util.c:100
+#: ../src/cinnamon-util.c:100
 msgid "Home Folder"
 msgstr "Hjemmemappe"
 
 #. Translators: this is the same string as the one found in
 #. * nautilus
-#: ../src/shell-util.c:115
+#: ../src/cinnamon-util.c:115
 msgid "File System"
 msgstr "Filsystem"
 
@@ -1599,7 +1599,7 @@ msgstr "Filsystem"
 #. * example, "Trash: some-directory". It means that the
 #. * directory called "some-directory" is in the trash.
 #.
-#: ../src/shell-util.c:311
+#: ../src/cinnamon-util.c:311
 #, c-format
 msgid "%1$s: %2$s"
 msgstr "%1$s: %2$s"

@@ -7,14 +7,14 @@ const Gdk = imports.gi.Gdk;
 const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
 const Lang = imports.lang;
-const Shell = imports.gi.Shell;
+const Cinnamon = imports.gi.Cinnamon;
 const St = imports.gi.St;
 
 const BoxPointer = imports.ui.boxpointer;
 const Main = imports.ui.main;
 const MessageTray = imports.ui.messageTray;
 
-const KEYBOARD_SCHEMA = 'org.gnome.shell.keyboard';
+const KEYBOARD_SCHEMA = 'org.cinnamon.keyboard';
 const KEYBOARD_TYPE = 'keyboard-type';
 
 const A11Y_APPLICATIONS_SCHEMA = 'org.gnome.desktop.a11y.applications';
@@ -530,7 +530,7 @@ Keyboard.prototype = {
     },
 
     get Name() {
-        return 'gnome-shell';
+        return 'cinnamon';
     }
 };
 DBus.conformExport(Keyboard.prototype, CaribouKeyboardIface);

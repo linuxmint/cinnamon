@@ -1,5 +1,5 @@
-data/gnome-shell.desktop.in.in
-data/org.gnome.shell.gschema.xml.in
+data/cinnamon.desktop.in.in
+data/org.cinnamon.gschema.xml.in
 js/gdm/loginDialog.js
 js/gdm/powerMenu.js
 js/misc/util.js
@@ -25,8 +25,8 @@ js/ui/polkitAuthenticationAgent.js
 js/ui/popupMenu.js
 js/ui/runDialog.js
 js/ui/searchDisplay.js
-js/ui/shellEntry.js
-js/ui/shellMountOperation.js
+js/ui/cinnamonEntry.js
+js/ui/cinnamonMountOperation.js
 js/ui/status/accessibility.js
 js/ui/status/bluetooth.js
 js/ui/status/keyboard.js
@@ -39,9 +39,9 @@ js/ui/viewSelector.js
 js/ui/windowAttentionHandler.js
 src/gvc/gvc-mixer-control.c
 src/main.c
-src/shell-app.c
-src/shell-app-system.c
-src/shell-global.c
-src/shell-mobile-providers.c
-src/shell-polkit-authentication-agent.c
-src/shell-util.c
+src/cinnamon-app.c
+src/cinnamon-app-system.c
+src/cinnamon-global.c
+src/cinnamon-mobile-providers.c
+src/cinnamon-polkit-authentication-agent.c
+src/cinnamon-util.c

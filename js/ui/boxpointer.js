@@ -4,7 +4,7 @@ const Clutter = imports.gi.Clutter;
 const Lang = imports.lang;
 const Meta = imports.gi.Meta;
 const St = imports.gi.St;
-const Shell = imports.gi.Shell;
+const Cinnamon = imports.gi.Cinnamon;
 
 const Main = imports.ui.main;
 const Tweener = imports.ui.tweener;
@@ -31,7 +31,7 @@ BoxPointer.prototype = {
         this._arrowOrigin = 0;
         this.actor = new St.Bin({ x_fill: true,
                                   y_fill: true });
-        this._container = new Shell.GenericContainer();
+        this._container = new Cinnamon.GenericContainer();
         this.actor.set_child(this._container);
         this._container.connect('get-preferred-width', Lang.bind(this, this._getPreferredWidth));
         this._container.connect('get-preferred-height', Lang.bind(this, this._getPreferredHeight));
@@ -335,7 +335,7 @@ BoxPointer.prototype = {
         // Position correctly relative to the sourceActor
         let sourceNode = sourceActor.get_theme_node();
         let sourceContentBox = sourceNode.get_content_box(sourceActor.get_allocation_box());
-        let sourceAllocation = Shell.util_get_transformed_allocation(sourceActor);
+        let sourceAllocation = Cinnamon.util_get_transformed_allocation(sourceActor);
         let sourceCenterX = sourceAllocation.x1 + sourceContentBox.x1 + (sourceContentBox.x2 - sourceContentBox.x1) * this._sourceAlignment;
         let sourceCenterY = sourceAllocation.y1 + sourceContentBox.y1 + (sourceContentBox.y2 - sourceContentBox.y1) * this._sourceAlignment;
         let [minWidth, minHeight, natWidth, natHeight] = this.actor.get_preferred_size();

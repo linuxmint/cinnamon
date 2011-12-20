@@ -8,7 +8,7 @@ const Lang = imports.lang;
 const Mainloop = imports.mainloop;
 const Meta = imports.gi.Meta;
 const Pango = imports.gi.Pango;
-const Shell = imports.gi.Shell;
+const Cinnamon = imports.gi.Cinnamon;
 const Signals = imports.signals;
 const St = imports.gi.St;
 
@@ -149,7 +149,7 @@ URLHighlighter.prototype = {
 
             let urlId = this._findUrlAtPos(event);
             if (urlId != -1 && !this._cursorChanged) {
-                global.set_cursor(Shell.Cursor.POINTING_HAND);
+                global.set_cursor(Cinnamon.Cursor.POINTING_HAND);
                 this._cursorChanged = true;
             } else if (urlId == -1) {
                 global.unset_cursor();
@@ -253,9 +253,9 @@ FocusGrabber.prototype = {
         this._prevFocusedWindow = global.display.focus_window;
         this._prevKeyFocusActor = global.stage.get_key_focus();
 
-        if (global.stage_input_mode == Shell.StageInputMode.NONREACTIVE ||
-            global.stage_input_mode == Shell.StageInputMode.NORMAL)
-            global.set_stage_input_mode(Shell.StageInputMode.FOCUSED);
+        if (global.stage_input_mode == Cinnamon.StageInputMode.NONREACTIVE ||
+            global.stage_input_mode == Cinnamon.StageInputMode.NORMAL)
+            global.set_stage_input_mode(Cinnamon.StageInputMode.FOCUSED);
 
         // Use captured-event to notice clicks outside the focused actor
         // without consuming them.
@@ -456,8 +456,8 @@ Notification.prototype = {
         // banner text, but ellipsized if they won't both fit. We can't
         // make St.Table or St.BoxLayout do this the way we want (don't
         // show banner at all if title needs to be ellipsized), so we
-        // use Shell.GenericContainer.
-        this._bannerBox = new Shell.GenericContainer();
+        // use Cinnamon.GenericContainer.
+        this._bannerBox = new Cinnamon.GenericContainer();
         this._bannerBox.connect('get-preferred-width', Lang.bind(this, this._bannerBoxGetPreferredWidth));
         this._bannerBox.connect('get-preferred-height', Lang.bind(this, this._bannerBoxGetPreferredHeight));
         this._bannerBox.connect('allocate', Lang.bind(this, this._bannerBoxAllocate));
@@ -969,7 +969,7 @@ Source.prototype = {
     _init: function(title) {
         this.title = title;
 
-        this.actor = new Shell.GenericContainer();
+        this.actor = new Cinnamon.GenericContainer();
         this.actor.connect('get-preferred-width', Lang.bind(this, this._getPreferredWidth));
         this.actor.connect('get-preferred-height', Lang.bind(this, this._getPreferredHeight));
         this.actor.connect('allocate', Lang.bind(this, this._allocate));

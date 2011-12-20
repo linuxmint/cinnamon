@@ -4,7 +4,7 @@ const Clutter = imports.gi.Clutter;
 const Signals = imports.signals;
 const Lang = imports.lang;
 const Meta = imports.gi.Meta;
-const Shell = imports.gi.Shell;
+const Cinnamon = imports.gi.Cinnamon;
 const St = imports.gi.St;
 
 const AppDisplay = imports.ui.appDisplay;
@@ -25,7 +25,7 @@ function DashItemContainer() {
 
 DashItemContainer.prototype = {
     _init: function() {
-        this.actor = new Shell.GenericContainer({ style_class: 'dash-item-container' });
+        this.actor = new Cinnamon.GenericContainer({ style_class: 'dash-item-container' });
         this.actor.connect('get-preferred-width',
                            Lang.bind(this, this._getPreferredWidth));
         this.actor.connect('get-preferred-height',
@@ -202,10 +202,10 @@ RemoveFavoriteIcon.prototype = {
     acceptDrop: function(source, actor, x, y, time) {
         let app = null;
         if (source instanceof AppDisplay.AppWellIcon) {
-            let appSystem = Shell.AppSystem.get_default();
+            let appSystem = Cinnamon.AppSystem.get_default();
             app = appSystem.lookup_app(source.getId());
         } else if (source.metaWindow) {
-            let tracker = Shell.WindowTracker.get_default();
+            let tracker = Cinnamon.WindowTracker.get_default();
             app = tracker.get_window_app(source.metaWindow);
         }
 
@@ -266,8 +266,8 @@ Dash.prototype = {
 
         this._workId = Main.initializeDeferredWork(this._box, Lang.bind(this, this._redisplay));
 
-        this._tracker = Shell.WindowTracker.get_default();
-        this._appSystem = Shell.AppSystem.get_default();
+        this._tracker = Cinnamon.WindowTracker.get_default();
+        this._appSystem = Cinnamon.AppSystem.get_default();
 
         this._appSystem.connect('installed-changed', Lang.bind(this, this._queueRedisplay));
         AppFavorites.getAppFavorites().connect('changed', Lang.bind(this, this._queueRedisplay));

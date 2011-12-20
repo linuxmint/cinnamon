@@ -12,7 +12,7 @@ EXTRA_DIST =		\
 # These are files checked into Git that we don't want to distribute
 DIST_EXCLUDE =					\
 	.gitignore				\
-	gnome-shell.doap			\
+	cinnamon.doap			\
 	MAINTAINERS				\
 	tools/build/*
 

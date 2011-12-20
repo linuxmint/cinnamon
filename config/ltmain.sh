@@ -33,7 +33,7 @@
 # Provide generalized library-building support services.
 #
 #       --config             show all configuration variables
-#       --debug              enable verbose shell tracing
+#       --debug              enable verbose cinnamon tracing
 #   -n, --dry-run            display commands without modifying any files
 #       --features           display basic configuration information and exit
 #       --mode=MODE          use operation mode MODE
@@ -65,7 +65,7 @@
 # include the following information:
 #
 #         host-triplet:	$host
-#         shell:		$SHELL
+#         cinnamon:		$CINNAMON
 #         compiler:		$LTCC
 #         compiler flags:		$LTCFLAGS
 #         linker:		$LD (gnu? $with_gnu_ld)
@@ -126,7 +126,7 @@ $lt_unset CDPATH
 
 
 # Work around backward compatibility issue on IRIX 6.5. On IRIX 6.4+, sh
-# is ksh but when the shell is invoked as "sh" and the current value of
+# is ksh but when the cinnamon is invoked as "sh" and the current value of
 # the _XPG environment variable is not equal to 1 (one), the special
 # positional parameter $0, within a function call, is the name of the
 # function.
@@ -145,7 +145,7 @@ test "${ECHO+set}" = set || ECHO=${as_echo-'printf %s\n'}
 : ${MV="mv -f"}
 : ${RM="rm -f"}
 : ${SED="/bin/sed"}
-: ${SHELL="${CONFIG_SHELL-/bin/sh}"}
+: ${CINNAMON="${CONFIG_CINNAMON-/bin/sh}"}
 : ${Xsed="$SED -e 1s/^X//"}
 
 # Global variables:
@@ -175,14 +175,14 @@ func_dirname ()
     else
       func_dirname_result="$func_dirname_result${2}"
     fi
-} # func_dirname may be replaced by extended shell implementation
+} # func_dirname may be replaced by extended cinnamon implementation
 
 
 # func_basename file
 func_basename ()
 {
     func_basename_result=`$ECHO "${1}" | $SED "$basename"`
-} # func_basename may be replaced by extended shell implementation
+} # func_basename may be replaced by extended cinnamon implementation
 
 
 # func_dirname_and_basename file append nondir_replacement
@@ -207,7 +207,7 @@ func_dirname_and_basename ()
       func_dirname_result="$func_dirname_result${2}"
     fi
     func_basename_result=`$ECHO "${1}" | $SED -e "$basename"`
-} # func_dirname_and_basename may be replaced by extended shell implementation
+} # func_dirname_and_basename may be replaced by extended cinnamon implementation
 
 
 # func_stripname prefix suffix name
@@ -222,7 +222,7 @@ func_stripname ()
       .*) func_stripname_result=`$ECHO "${3}" | $SED "s%^${1}%%; s%\\\\${2}\$%%"`;;
       *)  func_stripname_result=`$ECHO "${3}" | $SED "s%^${1}%%; s%${2}\$%%"`;;
     esac
-} # func_stripname may be replaced by extended shell implementation
+} # func_stripname may be replaced by extended cinnamon implementation
 
 
 # These SED scripts presuppose an absolute path with a trailing slash.
@@ -605,10 +605,10 @@ func_quote_for_eval ()
     esac
 
     case $func_quote_for_eval_unquoted_result in
-      # Double-quote args containing shell metacharacters to delay
+      # Double-quote args containing cinnamon metacharacters to delay
       # word splitting, command substitution and and variable
       # expansion for a subsequent eval.
-      # Many Bourne shells cannot handle close brackets correctly
+      # Many Bourne cinnamons cannot handle close brackets correctly
       # in scan sets, so we specify it separately.
       *[\[\~\#\^\&\*\(\)\{\}\|\;\<\>\?\'\ \	]*|*]*|"")
         func_quote_for_eval_result="\"$func_quote_for_eval_unquoted_result\""
@@ -633,9 +633,9 @@ func_quote_for_expand ()
     esac
 
     case $my_arg in
-      # Double-quote args containing shell metacharacters to delay
+      # Double-quote args containing cinnamon metacharacters to delay
       # word splitting and command substitution for a subsequent eval.
-      # Many Bourne shells cannot handle close brackets correctly
+      # Many Bourne cinnamons cannot handle close brackets correctly
       # in scan sets, so we specify it separately.
       *[\[\~\#\^\&\*\(\)\{\}\|\;\<\>\?\'\ \	]*|*]*|"")
         my_arg="\"$my_arg\""
@@ -696,7 +696,7 @@ func_show_eval_locale ()
 }
 
 # func_tr_sh
-# Turn $1 into a string suitable for a shell variable name.
+# Turn $1 into a string suitable for a cinnamon variable name.
 # Result is stored in $func_tr_sh_result.  All characters
 # not in the set a-zA-Z0-9_ are replaced with '_'. Further,
 # if $1 begins with a digit, a '_' is prepended as well.
@@ -766,7 +766,7 @@ func_help ()
 	s/^# *$//
 	s*\$progname*'$progname'*
 	s*\$host*'"$host"'*
-	s*\$SHELL*'"$SHELL"'*
+	s*\$CINNAMON*'"$CINNAMON"'*
 	s*\$LTCC*'"$LTCC"'*
 	s*\$LTCFLAGS*'"$LTCFLAGS"'*
 	s*\$LD*'"$LD"'*
@@ -798,7 +798,7 @@ func_missing_arg ()
 
 
 # func_split_short_opt shortopt
-# Set func_split_short_opt_name and func_split_short_opt_arg shell
+# Set func_split_short_opt_name and func_split_short_opt_arg cinnamon
 # variables after splitting SHORTOPT after the 2nd character.
 func_split_short_opt ()
 {
@@ -807,11 +807,11 @@ func_split_short_opt ()
 
     func_split_short_opt_name=`$ECHO "$1" | $SED "$my_sed_short_opt"`
     func_split_short_opt_arg=`$ECHO "$1" | $SED "$my_sed_short_rest"`
-} # func_split_short_opt may be replaced by extended shell implementation
+} # func_split_short_opt may be replaced by extended cinnamon implementation
 
 
 # func_split_long_opt longopt
-# Set func_split_long_opt_name and func_split_long_opt_arg shell
+# Set func_split_long_opt_name and func_split_long_opt_arg cinnamon
 # variables after splitting LONGOPT at the `=' sign.
 func_split_long_opt ()
 {
@@ -820,7 +820,7 @@ func_split_long_opt ()
 
     func_split_long_opt_name=`$ECHO "$1" | $SED "$my_sed_long_opt"`
     func_split_long_opt_arg=`$ECHO "$1" | $SED "$my_sed_long_arg"`
-} # func_split_long_opt may be replaced by extended shell implementation
+} # func_split_long_opt may be replaced by extended cinnamon implementation
 
 exit_cmd=:
 
@@ -841,31 +841,31 @@ extracted_serial=0
 
 # If this variable is set in any of the actions, the command in it
 # will be execed at the end.  This prevents here-documents from being
-# left over by shells.
+# left over by cinnamons.
 exec_cmd=
 
 # func_append var value
-# Append VALUE to the end of shell variable VAR.
+# Append VALUE to the end of cinnamon variable VAR.
 func_append ()
 {
     eval "${1}=\$${1}\${2}"
-} # func_append may be replaced by extended shell implementation
+} # func_append may be replaced by extended cinnamon implementation
 
 # func_append_quoted var value
-# Quote VALUE and append to the end of shell variable VAR, separated
+# Quote VALUE and append to the end of cinnamon variable VAR, separated
 # by a space.
 func_append_quoted ()
 {
     func_quote_for_eval "${2}"
     eval "${1}=\$${1}\\ \$func_quote_for_eval_result"
-} # func_append_quoted may be replaced by extended shell implementation
+} # func_append_quoted may be replaced by extended cinnamon implementation
 
 
 # func_arith arithmetic-term...
 func_arith ()
 {
     func_arith_result=`expr "${@}"`
-} # func_arith may be replaced by extended shell implementation
+} # func_arith may be replaced by extended cinnamon implementation
 
 
 # func_len string
@@ -873,21 +873,21 @@ func_arith ()
 func_len ()
 {
     func_len_result=`expr "${1}" : ".*" 2>/dev/null || echo $max_cmd_len`
-} # func_len may be replaced by extended shell implementation
+} # func_len may be replaced by extended cinnamon implementation
 
 
 # func_lo2o object
 func_lo2o ()
 {
     func_lo2o_result=`$ECHO "${1}" | $SED "$lo2o"`
-} # func_lo2o may be replaced by extended shell implementation
+} # func_lo2o may be replaced by extended cinnamon implementation
 
 
 # func_xform libobj-or-source
 func_xform ()
 {
     func_xform_result=`$ECHO "${1}" | $SED 's/\.[^.]*$/.lo/'`
-} # func_xform may be replaced by extended shell implementation
+} # func_xform may be replaced by extended cinnamon implementation
 
 
 # func_fatal_configuration arg...
@@ -1066,7 +1066,7 @@ opt_verbose=false
     shift
     case $opt in
       --debug|-x)	opt_debug='set -x'
-			func_echo "enabling shell trace mode"
+			func_echo "enabling cinnamon trace mode"
 			$opt_debug
 			;;
       --dry-run|--dryrun|-n)
@@ -1382,7 +1382,7 @@ func_infer_tag ()
       CC_expanded=`func_echo_all $CC`
       CC_quoted_expanded=`func_echo_all $CC_quoted`
       case $@ in
-      # Blanks in the command may have been stripped by the calling shell,
+      # Blanks in the command may have been stripped by the calling cinnamon,
       # but not from the CC environment variable when configure was run.
       " $CC "* | "$CC "* | " $CC_expanded "* | "$CC_expanded "* | \
       " $CC_quoted"* | "$CC_quoted "* | " $CC_quoted_expanded "* | "$CC_quoted_expanded "*) ;;
@@ -1395,7 +1395,7 @@ func_infer_tag ()
 	    eval "`${SED} -n -e '/^# ### BEGIN LIBTOOL TAG CONFIG: '$z'$/,/^# ### END LIBTOOL TAG CONFIG: '$z'$/p' < $progpath`"
 	    CC_quoted=
 	    for arg in $CC; do
-	      # Double-quote args containing other shell metacharacters.
+	      # Double-quote args containing other cinnamon metacharacters.
 	      func_append_quoted CC_quoted "$arg"
 	    done
 	    CC_expanded=`func_echo_all $CC`
@@ -1486,7 +1486,7 @@ func_convert_core_file_wine_to_w32 ()
   if test -n "$1"; then
     # Unfortunately, winepath does not exit with a non-zero error code, so we
     # are forced to check the contents of stdout. On the other hand, if the
-    # command is not found, the shell will set an exit code of 127 and print
+    # command is not found, the cinnamon will set an exit code of 127 and print
     # *an error message* to stdout. So we must check for both error code of
     # zero AND non-empty stdout, which explains the odd construction:
     func_convert_core_file_wine_to_w32_tmp=`winepath -w "$1" 2>/dev/null`
@@ -2104,7 +2104,7 @@ func_mode_compile ()
     func_quote_for_eval "$libobj"
     test "X$libobj" != "X$func_quote_for_eval_result" \
       && $ECHO "X$libobj" | $GREP '[]~#^*{};<>?"'"'"'	 &()|`$[]' \
-      && func_warning "libobj name \`$libobj' may not contain shell special characters."
+      && func_warning "libobj name \`$libobj' may not contain cinnamon special characters."
     func_dirname_and_basename "$obj" "/" ""
     objname="$func_basename_result"
     xdir="$func_dirname_result"
@@ -2609,7 +2609,7 @@ func_mode_execute ()
 	fi
 	;;
       esac
-      # Quote arguments (to preserve shell metacharacters).
+      # Quote arguments (to preserve cinnamon metacharacters).
       func_append_quoted args "$file"
     done
 
@@ -2770,7 +2770,7 @@ func_mode_install ()
     $opt_debug
     # There may be an optional sh(1) argument at the beginning of
     # install_prog (especially on Windows NT).
-    if test "$nonopt" = "$SHELL" || test "$nonopt" = /bin/sh ||
+    if test "$nonopt" = "$CINNAMON" || test "$nonopt" = /bin/sh ||
        # Allow the use of GNU shtool's install command.
        case $nonopt in *shtool*) :;; *) false;; esac; then
       # Aesthetically quote it.
@@ -3218,7 +3218,7 @@ func_mode_install ()
     if test -n "$current_libdirs"; then
       # Maybe just do a dry run.
       $opt_dry_run && current_libdirs=" -n$current_libdirs"
-      exec_cmd='$SHELL $progpath $preserve_args --finish$current_libdirs'
+      exec_cmd='$CINNAMON $progpath $preserve_args --finish$current_libdirs'
     else
       exit $EXIT_SUCCESS
     fi
@@ -3353,7 +3353,7 @@ extern \"C\" {
 	        eval "curr_lafile=\$libfile_$func_tr_sh_result"
 	        dlprefile_dlbasename=""
 	        if test -n "$curr_lafile" && func_lalib_p "$curr_lafile"; then
-	          # Use subshell, to avoid clobbering current variable values
+	          # Use subcinnamon, to avoid clobbering current variable values
 	          dlprefile_dlname=`source "$curr_lafile" && echo "$dlname"`
 	          if test -n "$dlprefile_dlname" ; then
 	            func_basename "$dlprefile_dlname"
@@ -3533,7 +3533,7 @@ static const void *lt_preloaded_setup() {
 # return the library type of file 'arg'
 #
 # Need a lot of goo to handle *both* DLLs and import libs
-# Has to be a shell function in order to 'eat' the argument
+# Has to be a cinnamon function in order to 'eat' the argument
 # that is supplied when $file_magic_command is called.
 # Despite the name, also deal with 64 bit binaries.
 func_win32_libid ()
@@ -3568,7 +3568,7 @@ func_win32_libid ()
   *DLL*)
     win32_libid_type="x86 DLL"
     ;;
-  *executable*) # but shell scripts are "executable" too...
+  *executable*) # but cinnamon scripts are "executable" too...
     case $win32_fileres in
     *MS\ Windows\ PE\ Intel*)
       win32_libid_type="x86 DLL"
@@ -3835,7 +3835,7 @@ func_emit_wrapper ()
 	func_emit_wrapper_arg1=${1-no}
 
 	$ECHO "\
-#! $SHELL
+#! $CINNAMON
 
 # $output - temporary wrapper script for $objdir/$outputname
 # Generated by $PROGRAM (GNU $PACKAGE$TIMESTAMP) $VERSION
@@ -3864,7 +3864,7 @@ fi
 BIN_SH=xpg4; export BIN_SH # for Tru64
 DUALCASE=1; export DUALCASE # for MKS sh
 
-# The HP-UX ksh and POSIX shell print the target directory to stdout
+# The HP-UX ksh and POSIX cinnamon print the target directory to stdout
 # if CDPATH is set.
 (unset CDPATH) >/dev/null 2>&1 && unset CDPATH
 
@@ -4959,8 +4959,8 @@ EOF
        \\\" -> \"
        \\\\\" -> \\"
  */
-#define SHELL_SPECIAL_CHARS "\"\\ \001\002\003\004\005\006\007\010\011\012\013\014\015\016\017\020\021\022\023\024\025\026\027\030\031\032\033\034\035\036\037"
-#define SHELL_SPACE_CHARS " \001\002\003\004\005\006\007\010\011\012\013\014\015\016\017\020\021\022\023\024\025\026\027\030\031\032\033\034\035\036\037"
+#define CINNAMON_SPECIAL_CHARS "\"\\ \001\002\003\004\005\006\007\010\011\012\013\014\015\016\017\020\021\022\023\024\025\026\027\030\031\032\033\034\035\036\037"
+#define CINNAMON_SPACE_CHARS " \001\002\003\004\005\006\007\010\011\012\013\014\015\016\017\020\021\022\023\024\025\026\027\030\031\032\033\034\035\036\037"
 char **
 prepare_spawn (char **argv)
 {
@@ -4982,9 +4982,9 @@ prepare_spawn (char **argv)
 
       if (string[0] == '\0')
 	new_argv[i] = xstrdup ("\"\"");
-      else if (strpbrk (string, SHELL_SPECIAL_CHARS) != NULL)
+      else if (strpbrk (string, CINNAMON_SPECIAL_CHARS) != NULL)
 	{
-	  int quote_around = (strpbrk (string, SHELL_SPACE_CHARS) != NULL);
+	  int quote_around = (strpbrk (string, CINNAMON_SPACE_CHARS) != NULL);
 	  size_t length;
 	  unsigned int backslashes;
 	  const char *s;
@@ -9240,7 +9240,7 @@ EOF
 	fi
       done
       # Quote the link command for shipping.
-      relink_command="(cd `pwd`; $SHELL $progpath $preserve_args --mode=relink $libtool_args @inst_prefix_dir@)"
+      relink_command="(cd `pwd`; $CINNAMON $progpath $preserve_args --mode=relink $libtool_args @inst_prefix_dir@)"
       relink_command=`$ECHO "$relink_command" | $SED "$sed_quote_subst"`
       if test "$hardcode_automatic" = yes ; then
 	relink_command=
@@ -9629,7 +9629,7 @@ build_old_libs=`case $build_libtool_libs in yes) echo no;; *) echo yes;; esac`
 # ### END LIBTOOL TAG CONFIG: disable-static
 
 # Local Variables:
-# mode:shell-script
+# mode:cinnamon-script
 # sh-indentation:2
 # End:
 # vi:sw=2

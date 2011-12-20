@@ -1,6 +1,6 @@
 const Clutter = imports.gi.Clutter;
 const Lang = imports.lang;
-const Shell = imports.gi.Shell;
+const Cinnamon = imports.gi.Cinnamon;
 const St = imports.gi.St;
 const Main = imports.ui.main;
 const Layout = imports.ui.layout;
@@ -15,7 +15,7 @@ const AppDisplay = imports.ui.appDisplay;
 const AltTab = imports.ui.altTab;
 const Gio = imports.gi.Gio;
 
-const Gettext = imports.gettext.domain('gnome-shell-extensions');
+const Gettext = imports.gettext.domain('cinnamon-extensions');
 const _ = Gettext.gettext;
 
 const PANEL_ICON_SIZE = 24;
@@ -244,7 +244,7 @@ AppMenuButton.prototype = {
         let bin = new St.Bin({ name: 'appMenu' });
         this.actor.set_child(bin);
 
-        this._container = new Shell.GenericContainer();
+        this._container = new Cinnamon.GenericContainer();
         bin.set_child(this._container);
         this._container.connect('get-preferred-width',
 								Lang.bind(this, this._getContentPreferredWidth));
@@ -253,7 +253,7 @@ AppMenuButton.prototype = {
         this._container.connect('allocate', Lang.bind(this, this._contentAllocate));
 
         
-        this._iconBox = new Shell.Slicer({ name: 'appMenuIcon' });
+        this._iconBox = new Cinnamon.Slicer({ name: 'appMenuIcon' });
         this._iconBox.connect('style-changed',
                               Lang.bind(this, this._onIconBoxStyleChanged));
         this._iconBox.connect('notify::allocation',
@@ -311,7 +311,7 @@ AppMenuButton.prototype = {
     },
     
     doFocus: function() {
-        //let tracker = Shell.WindowTracker.get_default();
+        //let tracker = Cinnamon.WindowTracker.get_default();
         //let focusedApp = tracker.focus_app;    
         if (this.metaWindow.has_focus()) {
             this.actor.add_style_pseudo_class('focus');
@@ -327,15 +327,15 @@ AppMenuButton.prototype = {
     
     _onButtonRelease: function(actor, event) {
         this._tooltip.hide();
-        if ( Shell.get_event_state(event) & Clutter.ModifierType.BUTTON1_MASK ) {
+        if ( Cinnamon.get_event_state(event) & Clutter.ModifierType.BUTTON1_MASK ) {
             if ( this.rightClickMenu.isOpen ) {
                 this.rightClickMenu.toggle();                
             }
             this._windowHandle(false);
-        } else if (Shell.get_event_state(event) & Clutter.ModifierType.BUTTON2_MASK) {
+        } else if (Cinnamon.get_event_state(event) & Clutter.ModifierType.BUTTON2_MASK) {
             this.metaWindow.delete(global.get_current_time());
             this.rightClickMenu.destroy();
-        } else if (Shell.get_event_state(event) & Clutter.ModifierType.BUTTON3_MASK) {
+        } else if (Cinnamon.get_event_state(event) & Clutter.ModifierType.BUTTON3_MASK) {
             if (!this.rightClickMenu.isOpen) {
                 // Setting the max-height won't do any good if the minimum height of the
                 // menu is higher then the screen; it's useful if part of the menu is
@@ -516,7 +516,7 @@ WindowList.prototype = {
         this.actor._delegate = this;
         this._windows = new Array();
                 
-        let tracker = Shell.WindowTracker.get_default();
+        let tracker = Cinnamon.WindowTracker.get_default();
         tracker.connect('notify::focus-app', Lang.bind(this, this._onFocus));
 
         global.window_manager.connect('switch-workspace',
@@ -555,7 +555,7 @@ WindowList.prototype = {
         });
                 
         // Create list items for each window
-        let tracker = Shell.WindowTracker.get_default();
+        let tracker = Cinnamon.WindowTracker.get_default();
         for ( let i = 0; i < windows.length; ++i ) {
             let metaWindow = windows[i];
             if ( metaWindow && tracker.is_window_interesting(metaWindow) ) {
@@ -600,15 +600,15 @@ WindowList.prototype = {
         }
     },
     
-    _onMinimize: function(shellwm, actor) {
+    _onMinimize: function(cinnamonwm, actor) {
         this._onWindowStateChange('minimize', actor);
     },
     
-    _onMaximize: function(shellwm, actor) {
+    _onMaximize: function(cinnamonwm, actor) {
         this._onWindowStateChange('maximize', actor);
     },
     
-    _onMap: function(shellwm, actor) {
+    _onMap: function(cinnamonwm, actor) {
         this._refreshItems();
         this._onWindowStateChange('map', actor);
     },
@@ -624,7 +624,7 @@ WindowList.prototype = {
             }
         }
 
-        let tracker = Shell.WindowTracker.get_default();
+        let tracker = Cinnamon.WindowTracker.get_default();
         let app = tracker.get_window_app(metaWindow);
         if ( app && tracker.is_window_interesting(metaWindow) ) {
             let appbutton = new AppMenuButton(app, metaWindow, true);

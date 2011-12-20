@@ -4,7 +4,7 @@ const Cairo = imports.cairo;
 const Clutter = imports.gi.Clutter;
 const Gtk = imports.gi.Gtk;
 const Lang = imports.lang;
-const Shell = imports.gi.Shell;
+const Cinnamon = imports.gi.Cinnamon;
 const Signals = imports.signals;
 const St = imports.gi.St;
 
@@ -38,7 +38,7 @@ PopupBaseMenuItem.prototype = {
                                          sensitive: true,
                                          style_class: null
                                        });
-        this.actor = new Shell.GenericContainer({ style_class: 'popup-menu-item',
+        this.actor = new Cinnamon.GenericContainer({ style_class: 'popup-menu-item',
                                                   reactive: params.reactive,
                                                   track_hover: params.reactive,
                                                   can_focus: params.reactive });
@@ -871,11 +871,11 @@ PopupMenuBase.prototype = {
 
     addSettingsAction: function(title, desktopFile) {
         // Don't allow user settings to get edited unless we're in a user session
-        if (global.session_type != Shell.SessionType.USER)
+        if (global.session_type != Cinnamon.SessionType.USER)
             return null;
 
         let menuItem = this.addAction(title, function() {
-                           let app = Shell.AppSystem.get_default().lookup_setting(desktopFile);
+                           let app = Cinnamon.AppSystem.get_default().lookup_setting(desktopFile);
 
                            if (!app) {
                                log('Settings panel for desktop file ' + desktopFile + ' could not be loaded!');
@@ -1157,7 +1157,7 @@ PopupMenu.prototype = {
         this.actor.style_class = 'popup-menu-boxpointer';
         this.actor.connect('key-press-event', Lang.bind(this, this._onKeyPressEvent));
 
-        this._boxWrapper = new Shell.GenericContainer();
+        this._boxWrapper = new Cinnamon.GenericContainer();
         this._boxWrapper.connect('get-preferred-width', Lang.bind(this, this._boxGetPreferredWidth));
         this._boxWrapper.connect('get-preferred-height', Lang.bind(this, this._boxGetPreferredHeight));
         this._boxWrapper.connect('allocate', Lang.bind(this, this._boxAllocate));
@@ -1584,7 +1584,7 @@ PopupComboBoxMenuItem.prototype = {
     _init: function (params) {
         PopupBaseMenuItem.prototype._init.call(this, params);
 
-        this._itemBox = new Shell.Stack();
+        this._itemBox = new Cinnamon.Stack();
         this.addActor(this._itemBox);
 
         let expander = new St.Label({ text: '\u2304' });
@@ -1833,8 +1833,8 @@ PopupMenuManager.prototype = {
             this._activeMenu = null;
 
             if (this._grabbedFromKeynav) {
-                if (this._preGrabInputMode == Shell.StageInputMode.FOCUSED)
-                    global.stage_input_mode = Shell.StageInputMode.FOCUSED;
+                if (this._preGrabInputMode == Cinnamon.StageInputMode.FOCUSED)
+                    global.stage_input_mode = Cinnamon.StageInputMode.FOCUSED;
                 if (hadFocus && menu.sourceActor)
                     menu.sourceActor.grab_key_focus();
                 else if (focus)

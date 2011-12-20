@@ -1,14 +1,14 @@
-# Lithuanian translation for gnome-shell.
+# Lithuanian translation for cinnamon.
 # Copyright (C) 2010 Free Software Foundation, Inc.
-# This file is distributed under the same license as the gnome-shell package.
+# This file is distributed under the same license as the cinnamon package.
 # Žygimantas Beručka <zygis@gnome.org>, 2010.
 # Algimantas Margevičius <gymka@mail.ru>, 2011.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gnome-shell master\n"
+"Project-Id-Version: cinnamon master\n"
 "Report-Msgid-Bugs-To: http://bugzilla.gnome.org/enter_bug.cgi?product=gnome-"
-"shell&keywords=I18N+L10N&component=general\n"
+"cinnamon&keywords=I18N+L10N&component=general\n"
 "POT-Creation-Date: 2011-10-08 07:34+0000\n"
 "PO-Revision-Date: 2011-10-08 19:48+0300\n"
 "Last-Translator: Algimantas Margevičius <gymka@mail.ru>\n"
@@ -21,15 +21,15 @@ msgstr ""
 "100<10 || n%100>=20) ? 1 : 2)\n"
 "X-Generator: Virtaal 0.6.1\n"
 
-#: ../data/gnome-shell.desktop.in.in.h:1
-msgid "GNOME Shell"
-msgstr "GNOME Shell"
+#: ../data/cinnamon.desktop.in.in.h:1
+msgid "Cinnamon"
+msgstr "Cinnamon"
 
-#: ../data/gnome-shell.desktop.in.in.h:2
+#: ../data/cinnamon.desktop.in.in.h:2
 msgid "Window management and application launching"
 msgstr "Langų valdymas ir programų paleidimas"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:1
+#: ../data/org.cinnamon.gschema.xml.in.h:1
 msgid ""
 "Allows access to internal debugging and monitoring tools using the Alt-F2 "
 "dialog."
@@ -37,55 +37,55 @@ msgstr ""
 "Suteikia prieigą prie vidinio derinimo ir stebėjimo įrankių, naudojant Alt-"
 "F2 dialogą."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:2
+#: ../data/org.cinnamon.gschema.xml.in.h:2
 msgid "Enable internal tools useful for developers and testers from Alt-F2"
 msgstr ""
 "Įjungti vidinius, Alt-F2 klavišų pagalba pasiekiamus įrankius, naudingus "
 "programuotojams ir bandytojams "
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:3
+#: ../data/org.cinnamon.gschema.xml.in.h:3
 msgid "File extension used for storing the screencast"
 msgstr "Failų plėtinys, naudojamas įrašyti ekrano vaizdo įrašą"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:4
+#: ../data/org.cinnamon.gschema.xml.in.h:4
 msgid "Framerate used for recording screencasts."
 msgstr "Kadrų dažnis, naudojamas norint įrašyti ekrano vaizdo įrašą."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:5
+#: ../data/org.cinnamon.gschema.xml.in.h:5
 msgid ""
-"GNOME Shell extensions have a uuid property; this key lists extensions which "
+"Cinnamon extensions have a uuid property; this key lists extensions which "
 "should be loaded. disabled-extensions overrides this setting for extensions "
 "that appear in both lists."
 msgstr ""
-"GNOME Shell plėtiniai turi uuid savybę; šiame rakte išvardinti plėtiniai, "
+"Cinnamon plėtiniai turi uuid savybę; šiame rakte išvardinti plėtiniai, "
 "kurie neturėtų būti įkelti. Raktas disabled-extensions turi pirmenybę prieš "
 "šį plėtiniams, kurie yra abiejuose sąrašuose."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:6
+#: ../data/org.cinnamon.gschema.xml.in.h:6
 msgid "History for command (Alt-F2) dialog"
 msgstr "Komandų (Alt-F2) dialogo retrospektyva"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:7
+#: ../data/org.cinnamon.gschema.xml.in.h:7
 msgid "History for the looking glass dialog"
 msgstr "Didinamojo stiklo dialogo istorija"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:8
+#: ../data/org.cinnamon.gschema.xml.in.h:8
 msgid "If true, display date in the clock, in addition to time."
 msgstr "Jei reikšmė teigiama, laikrodyje šalia laiko rodyti ir datą."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:9
+#: ../data/org.cinnamon.gschema.xml.in.h:9
 msgid "If true, display seconds in time."
 msgstr "Jeigu reikšmė teigiama, rodyti laike sekundes."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:10
+#: ../data/org.cinnamon.gschema.xml.in.h:10
 msgid "If true, display the ISO week date in the calendar."
 msgstr "Jeigu reikšmė teigiama, kalendoriuje rodyti ISO savaičių datą."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:11
+#: ../data/org.cinnamon.gschema.xml.in.h:11
 msgid "List of desktop file IDs for favorite applications"
 msgstr "Mėgstamų programų darbastalio failų ID sąrašas"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:13
+#: ../data/org.cinnamon.gschema.xml.in.h:13
 #, no-c-format
 msgid ""
 "Sets the GStreamer pipeline used to encode recordings. It follows the syntax "
@@ -111,19 +111,19 @@ msgstr ""
 "VP8 kodeką. %T yra naudojamas kaip žymeklis optimalaus gijų skaičiaus "
 "sistemoje spėjimui."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:14
+#: ../data/org.cinnamon.gschema.xml.in.h:14
 msgid "Show date in clock"
 msgstr "Rodyti datą laikrodyje"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:15
+#: ../data/org.cinnamon.gschema.xml.in.h:15
 msgid "Show the week date in the calendar"
 msgstr "Rodyti savaitės dienas kalendoriuje"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:16
+#: ../data/org.cinnamon.gschema.xml.in.h:16
 msgid "Show time with seconds"
 msgstr "Rodyti laiką su sekundėmis"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:17
+#: ../data/org.cinnamon.gschema.xml.in.h:17
 msgid ""
 "The applications corresponding to these identifiers will be displayed in the "
 "favorites area."
@@ -131,7 +131,7 @@ msgstr ""
 "Programos, atitinkančios šiuos identifikatorius, bus rodomos mėgstamų "
 "srityje."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:18
+#: ../data/org.cinnamon.gschema.xml.in.h:18
 msgid ""
 "The filename for recorded screencasts will be a unique filename based on the "
 "current date, and use this extension. It should be changed when recording to "
@@ -141,21 +141,21 @@ msgstr ""
 "atsižvelgiant į dabartinę datą ir naudojantis šį plėtinį. Rašant į kitą "
 "konteinerio formatą jį reikėtų pakeisti."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:19
+#: ../data/org.cinnamon.gschema.xml.in.h:19
 msgid ""
-"The framerate of the resulting screencast recordered by GNOME Shell's "
+"The framerate of the resulting screencast recordered by Cinnamon's "
 "screencast recorder in frames-per-second."
 msgstr ""
-"GNOME Shell ekranų įrašymo programa sukurto ekrano įrašo kadrų dažnis "
+"Cinnamon ekranų įrašymo programa sukurto ekrano įrašo kadrų dažnis "
 "kadrais per sekundę."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:20
+#: ../data/org.cinnamon.gschema.xml.in.h:20
 msgid "The gstreamer pipeline used to encode the screencast"
 msgstr "Gstreamer konvejeris, naudojamas užkoduojant ekrano vaizdo įrašą."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:21
+#: ../data/org.cinnamon.gschema.xml.in.h:21
 msgid ""
-"The shell normally monitors active applications in order to present the most "
+"Cinnamon normally monitors active applications in order to present the most "
 "used ones (e.g. in launchers). While this data will be kept private, you may "
 "want to disable this for privacy reasons. Please note that doing so won't "
 "remove already saved data."
@@ -165,23 +165,23 @@ msgstr ""
 "jei norite, saugumo sumetimais galite šią funkciją išjungti. Atminkite, kad "
 "tai padarius jau įrašyti duomenys jau nebus įrašyti."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:22
+#: ../data/org.cinnamon.gschema.xml.in.h:22
 msgid "The type of keyboard to use."
 msgstr "Naudotinas klaviatūros tipas."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:23
+#: ../data/org.cinnamon.gschema.xml.in.h:23
 msgid "Uuids of extensions to enable"
 msgstr "Įjungtinų plėtinių UUID."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:24
+#: ../data/org.cinnamon.gschema.xml.in.h:24
 msgid "Whether to collect stats about applications usage"
 msgstr "Ar rinkti statistinę informaciją apie programų naudojimą"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:25
+#: ../data/org.cinnamon.gschema.xml.in.h:25
 msgid "Which keyboard to use"
 msgstr "Kurią klaviatūrą naudoti"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:26
+#: ../data/org.cinnamon.gschema.xml.in.h:26
 msgid "disabled OpenSearch providers"
 msgstr "išjungti OpenSearch tiekėjai"
 
@@ -238,7 +238,7 @@ msgstr "Išjungti"
 msgid "Command not found"
 msgstr "Komanda nerasta"
 
-#. Replace "Error invoking GLib.shell_parse_argv: " with
+#. Replace "Error invoking GLib.cinnamon_parse_argv: " with
 #. something nicer
 #: ../js/misc/util.js:119
 msgid "Could not parse command:"
@@ -444,7 +444,7 @@ msgid "Next week"
 msgstr "Kitą savaitę"
 
 #: ../js/ui/contactDisplay.js:65 ../js/ui/notificationDaemon.js:444
-#: ../js/ui/status/power.js:223 ../src/shell-app.c:355
+#: ../js/ui/status/power.js:223 ../src/cinnamon-app.c:355
 msgid "Unknown"
 msgstr "Nežinoma"
 
@@ -521,7 +521,7 @@ msgid "%a %l:%M %p"
 msgstr "%a %l:%M %p"
 
 #. Translators: This is the date format to use when the calendar popup is
-#. * shown - it is shown just below the time in the shell (e.g. "Tue 9:29 AM").
+#. * shown - it is shown just below the time in Cinnamon (e.g. "Tue 9:29 AM").
 #.
 #: ../js/ui/dateMenu.js:213
 msgid "%A %B %e, %Y"
@@ -841,7 +841,7 @@ msgstr "Ieškoma..."
 msgid "No matching results."
 msgstr "Nerasta atitikmenų."
 
-#: ../js/ui/shellMountOperation.js:285
+#: ../js/ui/cinnamonMountOperation.js:285
 msgid "Wrong password, please try again"
 msgstr "Neteisingas slaptažodis, badykite dar kartą"
 
@@ -1551,7 +1551,7 @@ msgstr ""
 msgid "Type to search..."
 msgstr "Ieškoti..."
 
-#: ../js/ui/viewSelector.js:140 ../src/shell-util.c:261
+#: ../js/ui/viewSelector.js:140 ../src/cinnamon-util.c:261
 msgid "Search"
 msgstr "Ieškoti"
 
@@ -1592,30 +1592,30 @@ msgstr "Atspausdinti versiją"
 msgid "Mode used by GDM for login screen"
 msgstr "Veiksena, naudojama GDM prisijungimo ekrane"
 
-#: ../src/shell-app.c:581
+#: ../src/cinnamon-app.c:581
 #, c-format
 msgid "Failed to launch '%s'"
 msgstr "Nepavyko paleisti „%s“"
 
-#: ../src/shell-mobile-providers.c:80
+#: ../src/cinnamon-mobile-providers.c:80
 msgid "United Kingdom"
 msgstr "Jungtinė Karalystė"
 
-#: ../src/shell-mobile-providers.c:526
+#: ../src/cinnamon-mobile-providers.c:526
 msgid "Default"
 msgstr "Numatyta"
 
-#: ../src/shell-polkit-authentication-agent.c:334
+#: ../src/cinnamon-polkit-authentication-agent.c:334
 msgid "Authentication dialog was dismissed by the user"
 msgstr "Naudotojas užvėrė tapatybės patvirtinimo dialogą"
 
-#: ../src/shell-util.c:100
+#: ../src/cinnamon-util.c:100
 msgid "Home Folder"
 msgstr "Namų aplankas"
 
 #. Translators: this is the same string as the one found in
 #. * nautilus
-#: ../src/shell-util.c:115
+#: ../src/cinnamon-util.c:115
 msgid "File System"
 msgstr "Failų sistema"
 
@@ -1624,7 +1624,7 @@ msgstr "Failų sistema"
 #. * example, "Trash: some-directory". It means that the
 #. * directory called "some-directory" is in the trash.
 #.
-#: ../src/shell-util.c:311
+#: ../src/cinnamon-util.c:311
 #, c-format
 msgid "%1$s: %2$s"
 msgstr "%1$s: %2$s"

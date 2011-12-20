@@ -1,4 +1,4 @@
 #!/bin/bash
 
-rm -rf /usr/share/gnome-shell/js
-mv /usr/share/gnome-shell/js-backup /usr/share/gnome-shell/js
+rm -rf /usr/share/cinnamon/js
+mv /usr/share/cinnamon/js-backup /usr/share/cinnamon/js

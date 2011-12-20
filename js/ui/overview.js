@@ -7,7 +7,7 @@ const Mainloop = imports.mainloop;
 const Signals = imports.signals;
 const Lang = imports.lang;
 const St = imports.gi.St;
-const Shell = imports.gi.Shell;
+const Cinnamon = imports.gi.Cinnamon;
 const Gdk = imports.gi.Gdk;
 
 const AppDisplay = imports.ui.appDisplay;
@@ -46,11 +46,11 @@ const SwipeScrollResult = {
     CLICK: 2
 };
 
-function ShellInfo() {
+function CinnamonInfo() {
     this._init();
 }
 
-ShellInfo.prototype = {
+CinnamonInfo.prototype = {
     _init: function() {
         this._source = null;
         this._undoCallback = null;
@@ -196,7 +196,7 @@ Overview.prototype = {
         if (this.isDummy)
             return;
 
-        this._shellInfo = new ShellInfo();
+        this._cinnamonInfo = new CinnamonInfo();
 
         this._viewSelector = new ViewSelector.ViewSelector();
         this._group.add_actor(this._viewSelector.actor);
@@ -245,7 +245,7 @@ Overview.prototype = {
         if (this.isDummy)
             return;
 
-        this._shellInfo.setMessage(text, undoCallback, undoLabel);
+        this._cinnamonInfo.setMessage(text, undoCallback, undoLabel);
     },
 
     _onDragBegin: function() {
@@ -714,14 +714,14 @@ Overview.prototype = {
                 Main.popModal(this._group);
                 this._modal = false;
             }
-            global.stage_input_mode = Shell.StageInputMode.FULLSCREEN;
+            global.stage_input_mode = Cinnamon.StageInputMode.FULLSCREEN;
         } else {
             if (this._modal) {
                 Main.popModal(this._group);
                 this._modal = false;
             }
-            else if (global.stage_input_mode == Shell.StageInputMode.FULLSCREEN)
-                global.stage_input_mode = Shell.StageInputMode.NORMAL;
+            else if (global.stage_input_mode == Cinnamon.StageInputMode.FULLSCREEN)
+                global.stage_input_mode = Cinnamon.StageInputMode.NORMAL;
         }
     },
 

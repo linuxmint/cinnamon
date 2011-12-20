@@ -85,7 +85,7 @@ AC_DEFUN([AM_GNU_GETTEXT],
   dnl      if test "$USE_NLS" = "yes"; then
   dnl        if { eval "gt_val=\$$gt_func_gnugettext_libc"; test "$gt_val" != "yes"; }; then
   dnl tests. But if configure.in invokes AM_ICONV after AM_GNU_GETTEXT
-  dnl the configure script would need to contain the same shell code
+  dnl the configure script would need to contain the same cinnamon code
   dnl again, outside any 'if'. There are two solutions:
   dnl - Invoke AM_ICONV_LINKFLAGS_BODY here, outside any 'if'.
   dnl - Control the expansions in more detail using AC_PROVIDE_IFELSE.

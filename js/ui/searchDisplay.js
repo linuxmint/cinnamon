@@ -91,7 +91,7 @@ SearchResult.prototype = {
         return this.metaInfo['createIcon'](Main.overview.dashIconSize);
     },
 
-    shellWorkspaceLaunch: function(params) {
+    cinnamonWorkspaceLaunch: function(params) {
         if (this.provider.dragActivateResult)
             this.provider.dragActivateResult(this.metaInfo.id, params);
         else

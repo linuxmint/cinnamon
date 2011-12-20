@@ -116,7 +116,7 @@ AC_DEFUN([AC_LIB_RPATH],
   AC_REQUIRE([AC_CONFIG_AUX_DIR_DEFAULT]) dnl we use $ac_aux_dir
   AC_CACHE_CHECK([for shared library run path origin], acl_cv_rpath, [
     CC="$CC" GCC="$GCC" LDFLAGS="$LDFLAGS" LD="$LD" with_gnu_ld="$with_gnu_ld" \
-    ${CONFIG_SHELL-/bin/sh} "$ac_aux_dir/config.rpath" "$host" > conftest.sh
+    ${CONFIG_CINNAMON-/bin/sh} "$ac_aux_dir/config.rpath" "$host" > conftest.sh
     . ./conftest.sh
     rm -f ./conftest.sh
     acl_cv_rpath=done

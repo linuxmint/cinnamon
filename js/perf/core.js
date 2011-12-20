@@ -4,8 +4,8 @@ const Main = imports.ui.main;
 const Scripting = imports.ui.scripting;
 
 // This performance script measure the most important (core) performance
-// metrics for the shell. By looking at the output metrics of this script
-// someone should be able to get an idea of how well the shell is performing
+// metrics for Cinnamon. By looking at the output metrics of this script
+// someone should be able to get an idea of how well Cinnamon is performing
 // on a particular system.
 
 let METRICS = {

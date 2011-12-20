@@ -9,7 +9,7 @@ const Signals = imports.signals;
 const Pango = imports.gi.Pango;
 const Gettext_gtk30 = imports.gettext.domain('gtk30');
 const Mainloop = imports.mainloop;
-const Shell = imports.gi.Shell;
+const Cinnamon = imports.gi.Cinnamon;
 
 const MSECS_IN_DAY = 24 * 60 * 60 * 1000;
 const WEEKDATE_HEADER_WIDTH_DIGITS = 3;
@@ -196,7 +196,7 @@ EmptyEventSource.prototype = {
 Signals.addSignalMethods(EmptyEventSource.prototype);
 
 const CalendarServerIface = {
-    name: 'org.gnome.Shell.CalendarServer',
+    name: 'org.Cinnamon.CalendarServer',
     methods: [{ name: 'GetEvents',
                 inSignature: 'xxb',
                 outSignature: 'a(sssbxxa{sv})' }],
@@ -210,7 +210,7 @@ const CalendarServer = function () {
 
 CalendarServer.prototype = {
      _init: function() {
-         DBus.session.proxifyObject(this, 'org.gnome.Shell.CalendarServer', '/org/gnome/Shell/CalendarServer');
+         DBus.session.proxifyObject(this, 'org.Cinnamon.CalendarServer', '/org/Cinnamon/CalendarServer');
      }
 };
 
@@ -247,7 +247,7 @@ DBusEventSource.prototype = {
         this._dbusProxy = new CalendarServer(owner);
         this._dbusProxy.connect('Changed', Lang.bind(this, this._onChanged));
 
-        DBus.session.watch_name('org.gnome.Shell.CalendarServer',
+        DBus.session.watch_name('org.Cinnamon.CalendarServer',
                                 false, // do not launch a name-owner if none exists
                                 Lang.bind(this, this._onNameAppeared),
                                 Lang.bind(this, this._onNameVanished));
@@ -360,10 +360,10 @@ Calendar.prototype = {
                                                            }));
         }
 
-        this._weekStart = Shell.util_get_week_start();
+        this._weekStart = Cinnamon.util_get_week_start();
         this._weekdate = NaN;
         this._digitWidth = NaN;
-        this._settings = new Gio.Settings({ schema: 'org.gnome.shell.calendar' });
+        this._settings = new Gio.Settings({ schema: 'org.cinnamon.calendar' });
 
         this._settings.connect('changed::' + SHOW_WEEKDATE_KEY, Lang.bind(this, this._onSettingsChange));
         this._useWeekdate = this._settings.get_boolean(SHOW_WEEKDATE_KEY);
@@ -572,7 +572,7 @@ Calendar.prototype = {
             else
                 styleClass += ' calendar-nonwork-day'
 
-            // Hack used in lieu of border-collapse - see gnome-shell.css
+            // Hack used in lieu of border-collapse - see cinnamon.css
             if (row == 2)
                 styleClass = 'calendar-day-top ' + styleClass;
             if (iter.getDay() == this._weekStart)
@@ -631,7 +631,7 @@ EventsList.prototype = {
         this._eventSource.connect('changed', Lang.bind(this, this._update));
         this._desktopSettings = new Gio.Settings({ schema: 'org.gnome.desktop.interface' });
         this._desktopSettings.connect('changed', Lang.bind(this, this._update));
-        this._weekStart = Shell.util_get_week_start();
+        this._weekStart = Cinnamon.util_get_week_start();
 
         this._update();
     },

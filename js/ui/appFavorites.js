@@ -1,6 +1,6 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 
-const Shell = imports.gi.Shell;
+const Cinnamon = imports.gi.Cinnamon;
 const Lang = imports.lang;
 const Signals = imports.signals;
 
@@ -26,7 +26,7 @@ AppFavorites.prototype = {
 
     _reload: function() {
         let ids = global.settings.get_strv(this.FAVORITE_APPS_KEY);
-        let appSys = Shell.AppSystem.get_default();
+        let appSys = Cinnamon.AppSystem.get_default();
         let apps = ids.map(function (id) {
                 return appSys.lookup_app(id);
             }).filter(function (app) {
@@ -65,7 +65,7 @@ AppFavorites.prototype = {
         if (appId in this._favorites)
             return false;
 
-        let app = Shell.AppSystem.get_default().lookup_app(appId);
+        let app = Cinnamon.AppSystem.get_default().lookup_app(appId);
 
         if (!app)
             return false;
@@ -84,7 +84,7 @@ AppFavorites.prototype = {
         if (!this._addFavorite(appId, pos))
             return;
 
-        let app = Shell.AppSystem.get_default().lookup_app(appId);
+        let app = Cinnamon.AppSystem.get_default().lookup_app(appId);
 
         Main.overview.setMessage(_("%s has been added to your favorites.").format(app.get_name()), Lang.bind(this, function () {
             this._removeFavorite(appId);

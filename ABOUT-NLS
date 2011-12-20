@@ -106,7 +106,7 @@ only have to set the `LANG' environment variable to the appropriate
 setting `LANG', otherwise the setting of `LANG' will not have the
 desired effect.  Here `LL' is an ISO 639 two-letter language code, and
 `CC' is an ISO 3166 two-letter country code.  For example, let's
-suppose that you speak German and live in Germany.  At the shell
+suppose that you speak German and live in Germany.  At the cinnamon
 prompt, merely execute `setenv LANG de_DE' (in `csh'),
 `export LANG; LANG=de_DE' (in `sh') or `export LANG=de_DE' (in `bash').
 This can be done from your `.login' or `.profile' file, once and for

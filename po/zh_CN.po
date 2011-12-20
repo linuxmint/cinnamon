@@ -1,6 +1,6 @@
-# Chinese (China) translation for gnome-shell.
+# Chinese (China) translation for cinnamon.
 # Copyright (C) 2010, 2011 Free Software Foundation, Inc.
-# This file is distributed under the same license as the gnome-shell package.
+# This file is distributed under the same license as the cinnamon package.
 # jiero <lililjlj@gmail.com>, 2010.
 # Jessica Ban <bancage@gmail.com>, 2010.
 # zhang ping <zhangping159@gmail.com>, 2010.
@@ -13,9 +13,9 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gnome-shell master\n"
+"Project-Id-Version: cinnamon master\n"
 "Report-Msgid-Bugs-To: http://bugzilla.gnome.org/enter_bug.cgi?product=gnome-"
-"shell&keywords=I18N+L10N&component=general\n"
+"cinnamon&keywords=I18N+L10N&component=general\n"
 "POT-Creation-Date: 2011-09-21 19:11+0000\n"
 "PO-Revision-Date: 2011-09-28 00:56+0800\n"
 "Last-Translator: YunQiang Su <wzssyqa@gmail.com>\n"
@@ -26,67 +26,67 @@ msgstr ""
 "Language: zh_CN\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
-#: ../data/gnome-shell.desktop.in.in.h:1
-msgid "GNOME Shell"
-msgstr "GNOME Shell"
+#: ../data/cinnamon.desktop.in.in.h:1
+msgid "Cinnamon"
+msgstr "Cinnamon"
 
-#: ../data/gnome-shell.desktop.in.in.h:2
+#: ../data/cinnamon.desktop.in.in.h:2
 msgid "Window management and application launching"
 msgstr "窗口管理和应用程序启动"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:1
+#: ../data/org.cinnamon.gschema.xml.in.h:1
 msgid ""
 "Allows access to internal debugging and monitoring tools using the Alt-F2 "
 "dialog."
 msgstr "允许使用 Alt-F2 对话框访问内部调试和监视工具。"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:2
+#: ../data/org.cinnamon.gschema.xml.in.h:2
 msgid "Enable internal tools useful for developers and testers from Alt-F2"
 msgstr "启用从 Alt-F2 调用对开发者和测试者有用的内部工具"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:3
+#: ../data/org.cinnamon.gschema.xml.in.h:3
 msgid "File extension used for storing the screencast"
 msgstr "存储屏幕录像的文件扩展名"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:4
+#: ../data/org.cinnamon.gschema.xml.in.h:4
 msgid "Framerate used for recording screencasts."
 msgstr "屏幕录像的帧率。"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:5
+#: ../data/org.cinnamon.gschema.xml.in.h:5
 msgid ""
-"GNOME Shell extensions have a uuid property; this key lists extensions which "
+"Cinnamon extensions have a uuid property; this key lists extensions which "
 "should be loaded. disabled-extensions overrides this setting for extensions "
 "that appear in both lists."
 msgstr ""
-"GNOME Shell 扩展有一个 uuid 属性，此键列出了不应该加载的扩展。disabled-"
+"Cinnamon 扩展有一个 uuid 属性，此键列出了不应该加载的扩展。disabled-"
 "extensions 会覆盖同时出现在两个列表里的扩展的设置。"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:6
+#: ../data/org.cinnamon.gschema.xml.in.h:6
 msgid "History for command (Alt-F2) dialog"
 msgstr "命令对话框(Alt-F2)的历史记录"
 
-# http://live.gnome.org/GnomeShell/LookingGlass
-#: ../data/org.gnome.shell.gschema.xml.in.h:7
+# http://live.gnome.org/Cinnamon/LookingGlass
+#: ../data/org.cinnamon.gschema.xml.in.h:7
 msgid "History for the looking glass dialog"
 msgstr "Looking Glass 控制台历史"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:8
+#: ../data/org.cinnamon.gschema.xml.in.h:8
 msgid "If true, display date in the clock, in addition to time."
 msgstr "如果为真，在时钟中显示日期以及时间。"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:9
+#: ../data/org.cinnamon.gschema.xml.in.h:9
 msgid "If true, display seconds in time."
 msgstr "如果为真，在时间上显示秒数。"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:10
+#: ../data/org.cinnamon.gschema.xml.in.h:10
 msgid "If true, display the ISO week date in the calendar."
 msgstr "如果为真，在日历中显示 ISO 周日期。"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:11
+#: ../data/org.cinnamon.gschema.xml.in.h:11
 msgid "List of desktop file IDs for favorite applications"
 msgstr "收藏夹中的应用程序的 desktop 文件 ID 的列表"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:13
+#: ../data/org.cinnamon.gschema.xml.in.h:13
 #, no-c-format
 msgid ""
 "Sets the GStreamer pipeline used to encode recordings. It follows the syntax "
@@ -109,25 +109,25 @@ msgstr ""
 "为 VP8 编码的 WebM 格式。这里的 %T 是一个占位符，其实际值是根据您系统的情况估"
 "计的线程数。"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:14
+#: ../data/org.cinnamon.gschema.xml.in.h:14
 msgid "Show date in clock"
 msgstr "显示日期"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:15
+#: ../data/org.cinnamon.gschema.xml.in.h:15
 msgid "Show the week date in the calendar"
 msgstr "在日历中显示星期"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:16
+#: ../data/org.cinnamon.gschema.xml.in.h:16
 msgid "Show time with seconds"
 msgstr "显示秒"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:17
+#: ../data/org.cinnamon.gschema.xml.in.h:17
 msgid ""
 "The applications corresponding to these identifiers will be displayed in the "
 "favorites area."
 msgstr "符合这些标示的应用程序将显示在收藏区中。"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:18
+#: ../data/org.cinnamon.gschema.xml.in.h:18
 msgid ""
 "The filename for recorded screencasts will be a unique filename based on the "
 "current date, and use this extension. It should be changed when recording to "
@@ -136,44 +136,44 @@ msgstr ""
 "录制的屏幕录像的文件名将是根据当前时间得到的独特值，并使用这个扩展名。录制另"
 "外一个不同容器格式的录像时，它应该被更改。"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:19
+#: ../data/org.cinnamon.gschema.xml.in.h:19
 msgid ""
-"The framerate of the resulting screencast recordered by GNOME Shell's "
+"The framerate of the resulting screencast recordered by Cinnamon's "
 "screencast recorder in frames-per-second."
-msgstr "GNOME Shell 的屏幕录像程序录制的屏幕录像的帧率，以 帧/秒 为格式。"
+msgstr "Cinnamon 的屏幕录像程序录制的屏幕录像的帧率，以 帧/秒 为格式。"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:20
+#: ../data/org.cinnamon.gschema.xml.in.h:20
 msgid "The gstreamer pipeline used to encode the screencast"
 msgstr "用于编码屏幕录像的 GStreamer 管道"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:21
+#: ../data/org.cinnamon.gschema.xml.in.h:21
 msgid ""
-"The shell normally monitors active applications in order to present the most "
+"Cinnamon normally monitors active applications in order to present the most "
 "used ones (e.g. in launchers). While this data will be kept private, you may "
 "want to disable this for privacy reasons. Please note that doing so won't "
 "remove already saved data."
 msgstr ""
-"Gnome Shell 一般将监视活动应用程序，以便呈现最常用的(例如，在启动器中)。同"
+"Cinnamon 一般将监视活动应用程序，以便呈现最常用的(例如，在启动器中)。同"
 "时，此数据将保持私密，您可能因为隐私原因想要禁用此项。请注意，这么做，并不会"
 "移除已经保存的数据。"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:22
+#: ../data/org.cinnamon.gschema.xml.in.h:22
 msgid "The type of keyboard to use."
 msgstr "要使用的键盘类型。"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:23
+#: ../data/org.cinnamon.gschema.xml.in.h:23
 msgid "Uuids of extensions to enable"
 msgstr "要启用的扩展的 uuid"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:24
+#: ../data/org.cinnamon.gschema.xml.in.h:24
 msgid "Whether to collect stats about applications usage"
 msgstr "是否收集应用程序的使用情况"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:25
+#: ../data/org.cinnamon.gschema.xml.in.h:25
 msgid "Which keyboard to use"
 msgstr "使用哪个键盘"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:26
+#: ../data/org.cinnamon.gschema.xml.in.h:26
 msgid "disabled OpenSearch providers"
 msgstr "已禁用的 OpenSearch 提供商"
 
@@ -230,7 +230,7 @@ msgstr "关机"
 msgid "Command not found"
 msgstr "命令未找到"
 
-#. Replace "Error invoking GLib.shell_parse_argv: " with
+#. Replace "Error invoking GLib.cinnamon_parse_argv: " with
 #. something nicer
 #: ../js/misc/util.js:119
 msgid "Could not parse command:"
@@ -436,7 +436,7 @@ msgid "Next week"
 msgstr "下周"
 
 #: ../js/ui/contactDisplay.js:59 ../js/ui/notificationDaemon.js:444
-#: ../js/ui/status/power.js:223 ../src/shell-app.c:355
+#: ../js/ui/status/power.js:223 ../src/cinnamon-app.c:355
 msgid "Unknown"
 msgstr "未知"
 
@@ -513,7 +513,7 @@ msgid "%a %l:%M %p"
 msgstr "%I:%M %p"
 
 #. Translators: This is the date format to use when the calendar popup is
-#. * shown - it is shown just below the time in the shell (e.g. "Tue 9:29 AM").
+#. * shown - it is shown just below the time in Cinnamon (e.g. "Tue 9:29 AM").
 #.
 #: ../js/ui/dateMenu.js:213
 msgid "%A %B %e, %Y"
@@ -814,7 +814,7 @@ msgstr "正在搜索..."
 msgid "No matching results."
 msgstr "无匹配结果。"
 
-#: ../js/ui/shellMountOperation.js:285
+#: ../js/ui/cinnamonMountOperation.js:285
 msgid "Wrong password, please try again"
 msgstr "密码错误，请重试"
 
@@ -1511,7 +1511,7 @@ msgstr ""
 msgid "Type to search..."
 msgstr "搜索..."
 
-#: ../js/ui/viewSelector.js:140 ../src/shell-util.c:261
+#: ../js/ui/viewSelector.js:140 ../src/cinnamon-util.c:261
 msgid "Search"
 msgstr "搜索"
 
@@ -1553,30 +1553,30 @@ msgstr "打印版本"
 msgid "Mode used by GDM for login screen"
 msgstr "GDM 用于登录屏幕的模式"
 
-#: ../src/shell-app.c:581
+#: ../src/cinnamon-app.c:581
 #, c-format
 msgid "Failed to launch '%s'"
 msgstr "启动 %s 失败"
 
-#: ../src/shell-mobile-providers.c:80
+#: ../src/cinnamon-mobile-providers.c:80
 msgid "United Kingdom"
 msgstr "英国"
 
-#: ../src/shell-mobile-providers.c:526
+#: ../src/cinnamon-mobile-providers.c:526
 msgid "Default"
 msgstr "默认"
 
-#: ../src/shell-polkit-authentication-agent.c:334
+#: ../src/cinnamon-polkit-authentication-agent.c:334
 msgid "Authentication dialog was dismissed by the user"
 msgstr "认证对话框被用户驳回"
 
-#: ../src/shell-util.c:100
+#: ../src/cinnamon-util.c:100
 msgid "Home Folder"
 msgstr "主文件夹"
 
 #. Translators: this is the same string as the one found in
 #. * nautilus
-#: ../src/shell-util.c:115
+#: ../src/cinnamon-util.c:115
 msgid "File System"
 msgstr "文件系统"
 
@@ -1585,7 +1585,7 @@ msgstr "文件系统"
 #. * example, "Trash: some-directory". It means that the
 #. * directory called "some-directory" is in the trash.
 #.
-#: ../src/shell-util.c:311
+#: ../src/cinnamon-util.c:311
 #, c-format
 msgid "%1$s: %2$s"
 msgstr "%1$s: %2$s"
@@ -1609,11 +1609,11 @@ msgstr "%1$s: %2$s"
 #~ msgstr "calendar:week_start:0"
 
 #~ msgid ""
-#~ "GNOME Shell extensions have a uuid property; this key lists extensions "
+#~ "Cinnamon extensions have a uuid property; this key lists extensions "
 #~ "which should not be loaded. This setting overrides enabled-extensions for "
 #~ "extensions that appear in both lists."
 #~ msgstr ""
-#~ "GNOME Shell 扩展有一个 uuid 属性，此键列出了不应该加载的扩展。此设置会覆"
+#~ "Cinnamon 扩展有一个 uuid 属性，此键列出了不应该加载的扩展。此设置会覆"
 #~ "盖 enable-extensions 中同时出现在两个列表里的扩展的设置。"
 
 #~ msgid "Uuids of extensions to disable"

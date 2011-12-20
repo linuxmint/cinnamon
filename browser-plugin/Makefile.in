@@ -76,20 +76,20 @@ am__base_list = \
 am__installdirs = "$(DESTDIR)$(mozillalibdir)"
 LTLIBRARIES = $(mozillalib_LTLIBRARIES)
 am__DEPENDENCIES_1 =
-libgnome_shell_browser_plugin_la_DEPENDENCIES = $(am__DEPENDENCIES_1)
-am_libgnome_shell_browser_plugin_la_OBJECTS =  \
-	libgnome_shell_browser_plugin_la-browser-plugin.lo
-libgnome_shell_browser_plugin_la_OBJECTS =  \
-	$(am_libgnome_shell_browser_plugin_la_OBJECTS)
+libgnome_cinnamon_browser_plugin_la_DEPENDENCIES = $(am__DEPENDENCIES_1)
+am_libgnome_cinnamon_browser_plugin_la_OBJECTS =  \
+	libgnome_cinnamon_browser_plugin_la-browser-plugin.lo
+libgnome_cinnamon_browser_plugin_la_OBJECTS =  \
+	$(am_libgnome_cinnamon_browser_plugin_la_OBJECTS)
 AM_V_lt = $(am__v_lt_$(V))
 am__v_lt_ = $(am__v_lt_$(AM_DEFAULT_VERBOSITY))
 am__v_lt_0 = --silent
-libgnome_shell_browser_plugin_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
+libgnome_cinnamon_browser_plugin_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
-	$(libgnome_shell_browser_plugin_la_CFLAGS) $(CFLAGS) \
-	$(libgnome_shell_browser_plugin_la_LDFLAGS) $(LDFLAGS) -o $@
+	$(libgnome_cinnamon_browser_plugin_la_CFLAGS) $(CFLAGS) \
+	$(libgnome_cinnamon_browser_plugin_la_LDFLAGS) $(LDFLAGS) -o $@
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
-depcomp = $(SHELL) $(top_srcdir)/config/depcomp
+depcomp = $(CINNAMON) $(top_srcdir)/config/depcomp
 am__depfiles_maybe = depfiles
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
@@ -114,8 +114,8 @@ am__v_CCLD_0 = @echo "  CCLD  " $@;
 AM_V_GEN = $(am__v_GEN_$(V))
 am__v_GEN_ = $(am__v_GEN_$(AM_DEFAULT_VERBOSITY))
 am__v_GEN_0 = @echo "  GEN   " $@;
-SOURCES = $(libgnome_shell_browser_plugin_la_SOURCES)
-DIST_SOURCES = $(libgnome_shell_browser_plugin_la_SOURCES)
+SOURCES = $(libgnome_cinnamon_browser_plugin_la_SOURCES)
+DIST_SOURCES = $(libgnome_cinnamon_browser_plugin_la_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -171,8 +171,8 @@ GLIB_LIBS = @GLIB_LIBS@
 GLIB_MKENUMS = @GLIB_MKENUMS@
 GMSGFMT = @GMSGFMT@
 GMSGFMT_015 = @GMSGFMT_015@
-GNOME_SHELL_CFLAGS = @GNOME_SHELL_CFLAGS@
-GNOME_SHELL_LIBS = @GNOME_SHELL_LIBS@
+CINNAMON_CFLAGS = @CINNAMON_CFLAGS@
+CINNAMON_LIBS = @CINNAMON_LIBS@
 GOBJECT_QUERY = @GOBJECT_QUERY@
 GREP = @GREP@
 GSETTINGS_DISABLE_SCHEMAS_COMPILE = @GSETTINGS_DISABLE_SCHEMAS_COMPILE@
@@ -249,17 +249,17 @@ PYTHON_VERSION = @PYTHON_VERSION@
 RANLIB = @RANLIB@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
-SHELL = @SHELL@
-SHELL_HOTPLUG_SNIFFER_CFLAGS = @SHELL_HOTPLUG_SNIFFER_CFLAGS@
-SHELL_HOTPLUG_SNIFFER_LIBS = @SHELL_HOTPLUG_SNIFFER_LIBS@
-SHELL_PERF_HELPER_CFLAGS = @SHELL_PERF_HELPER_CFLAGS@
-SHELL_PERF_HELPER_LIBS = @SHELL_PERF_HELPER_LIBS@
-SHELL_SYSTEM_CA_FILE = @SHELL_SYSTEM_CA_FILE@
+CINNAMON = @CINNAMON@
+CINNAMON_HOTPLUG_SNIFFER_CFLAGS = @CINNAMON_HOTPLUG_SNIFFER_CFLAGS@
+CINNAMON_HOTPLUG_SNIFFER_LIBS = @CINNAMON_HOTPLUG_SNIFFER_LIBS@
+CINNAMON_PERF_HELPER_CFLAGS = @CINNAMON_PERF_HELPER_CFLAGS@
+CINNAMON_PERF_HELPER_LIBS = @CINNAMON_PERF_HELPER_LIBS@
+CINNAMON_SYSTEM_CA_FILE = @CINNAMON_SYSTEM_CA_FILE@
 STRIP = @STRIP@
 ST_CFLAGS = @ST_CFLAGS@
 ST_LIBS = @ST_LIBS@
-TEST_SHELL_RECORDER_CFLAGS = @TEST_SHELL_RECORDER_CFLAGS@
-TEST_SHELL_RECORDER_LIBS = @TEST_SHELL_RECORDER_LIBS@
+TEST_CINNAMON_RECORDER_CFLAGS = @TEST_CINNAMON_RECORDER_CFLAGS@
+TEST_CINNAMON_RECORDER_LIBS = @TEST_CINNAMON_RECORDER_LIBS@
 TRAY_CFLAGS = @TRAY_CFLAGS@
 TRAY_LIBS = @TRAY_LIBS@
 TYPELIBDIR = @TYPELIBDIR@
@@ -326,22 +326,22 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 mozillalibdir = $(BROWSER_PLUGIN_DIR)
-mozillalib_LTLIBRARIES = libgnome-shell-browser-plugin.la
-libgnome_shell_browser_plugin_la_LDFLAGS = -module -avoid-version -no-undefined
-libgnome_shell_browser_plugin_la_LIBADD = \
+mozillalib_LTLIBRARIES = libcinnamon-browser-plugin.la
+libgnome_cinnamon_browser_plugin_la_LDFLAGS = -module -avoid-version -no-undefined
+libgnome_cinnamon_browser_plugin_la_LIBADD = \
 	$(BROWSER_PLUGIN_LIBS)
 
-libgnome_shell_browser_plugin_la_SOURCES = \
+libgnome_cinnamon_browser_plugin_la_SOURCES = \
 	browser-plugin.c \
 	npapi/npapi.h \
 	npapi/npfunctions.h \
 	npapi/npruntime.h \
 	npapi/nptypes.h
 
-libgnome_shell_browser_plugin_la_CFLAGS = \
+libgnome_cinnamon_browser_plugin_la_CFLAGS = \
 	$(BROWSER_PLUGIN_CFLAGS)		\
 	-DG_DISABLE_DEPRECATED			\
-	-DG_LOG_DOMAIN=\"GnomeShellBrowserPlugin\"
+	-DG_LOG_DOMAIN=\"CinnamonBrowserPlugin\"
 
 all: all-am
 
@@ -365,8 +365,8 @@ Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	  *config.status*) \
 	    cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh;; \
 	  *) \
-	    echo ' cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@ $(am__depfiles_maybe)'; \
-	    cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@ $(am__depfiles_maybe);; \
+	    echo ' cd $(top_builddir) && $(CINNAMON) ./config.status $(subdir)/$@ $(am__depfiles_maybe)'; \
+	    cd $(top_builddir) && $(CINNAMON) ./config.status $(subdir)/$@ $(am__depfiles_maybe);; \
 	esac;
 
 $(top_builddir)/config.status: $(top_srcdir)/configure $(CONFIG_STATUS_DEPENDENCIES)
@@ -408,8 +408,8 @@ clean-mozillalibLTLIBRARIES:
 	  echo "rm -f \"$${dir}/so_locations\""; \
 	  rm -f "$${dir}/so_locations"; \
 	done
-libgnome-shell-browser-plugin.la: $(libgnome_shell_browser_plugin_la_OBJECTS) $(libgnome_shell_browser_plugin_la_DEPENDENCIES) 
-	$(AM_V_CCLD)$(libgnome_shell_browser_plugin_la_LINK) -rpath $(mozillalibdir) $(libgnome_shell_browser_plugin_la_OBJECTS) $(libgnome_shell_browser_plugin_la_LIBADD) $(LIBS)
+libcinnamon-browser-plugin.la: $(libgnome_cinnamon_browser_plugin_la_OBJECTS) $(libgnome_cinnamon_browser_plugin_la_DEPENDENCIES) 
+	$(AM_V_CCLD)$(libgnome_cinnamon_browser_plugin_la_LINK) -rpath $(mozillalibdir) $(libgnome_cinnamon_browser_plugin_la_OBJECTS) $(libgnome_cinnamon_browser_plugin_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -417,7 +417,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgnome_shell_browser_plugin_la-browser-plugin.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgnome_cinnamon_browser_plugin_la-browser-plugin.Plo@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -443,13 +443,13 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LTCOMPILE) -c -o $@ $<
 
-libgnome_shell_browser_plugin_la-browser-plugin.lo: browser-plugin.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgnome_shell_browser_plugin_la_CFLAGS) $(CFLAGS) -MT libgnome_shell_browser_plugin_la-browser-plugin.lo -MD -MP -MF $(DEPDIR)/libgnome_shell_browser_plugin_la-browser-plugin.Tpo -c -o libgnome_shell_browser_plugin_la-browser-plugin.lo `test -f 'browser-plugin.c' || echo '$(srcdir)/'`browser-plugin.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgnome_shell_browser_plugin_la-browser-plugin.Tpo $(DEPDIR)/libgnome_shell_browser_plugin_la-browser-plugin.Plo
+libgnome_cinnamon_browser_plugin_la-browser-plugin.lo: browser-plugin.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgnome_cinnamon_browser_plugin_la_CFLAGS) $(CFLAGS) -MT libgnome_cinnamon_browser_plugin_la-browser-plugin.lo -MD -MP -MF $(DEPDIR)/libgnome_cinnamon_browser_plugin_la-browser-plugin.Tpo -c -o libgnome_cinnamon_browser_plugin_la-browser-plugin.lo `test -f 'browser-plugin.c' || echo '$(srcdir)/'`browser-plugin.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgnome_cinnamon_browser_plugin_la-browser-plugin.Tpo $(DEPDIR)/libgnome_cinnamon_browser_plugin_la-browser-plugin.Plo
 @am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='browser-plugin.c' object='libgnome_shell_browser_plugin_la-browser-plugin.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='browser-plugin.c' object='libgnome_cinnamon_browser_plugin_la-browser-plugin.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgnome_shell_browser_plugin_la_CFLAGS) $(CFLAGS) -c -o libgnome_shell_browser_plugin_la-browser-plugin.lo `test -f 'browser-plugin.c' || echo '$(srcdir)/'`browser-plugin.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgnome_cinnamon_browser_plugin_la_CFLAGS) $(CFLAGS) -c -o libgnome_cinnamon_browser_plugin_la-browser-plugin.lo `test -f 'browser-plugin.c' || echo '$(srcdir)/'`browser-plugin.c
 
 mostlyclean-libtool:
 	-rm -f *.lo

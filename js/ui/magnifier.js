@@ -2,7 +2,7 @@
 
 const Clutter = imports.gi.Clutter;
 const Gio = imports.gi.Gio;
-const Shell = imports.gi.Shell;
+const Cinnamon = imports.gi.Cinnamon;
 const St = imports.gi.St;
 const Lang = imports.lang;
 const Mainloop = imports.mainloop;
@@ -61,7 +61,7 @@ Magnifier.prototype = {
         this._zoomRegions = [];
 
         // Create small clutter tree for the magnified mouse.
-        let xfixesCursor = Shell.XFixesCursor.get_default();
+        let xfixesCursor = Cinnamon.XFixesCursor.get_default();
         this._mouseSprite = new Clutter.Texture();
         xfixesCursor.update_texture_image(this._mouseSprite);
         this._cursorRoot = new Clutter.Group();
@@ -82,7 +82,7 @@ Magnifier.prototype = {
         this._xfixesCursor = xfixesCursor;
 
         // Export to dbus.
-        magDBusService = new MagnifierDBus.ShellMagnifier();
+        magDBusService = new MagnifierDBus.CinnamonMagnifier();
         this.setActive(showAtLaunch);
     },
 
@@ -901,7 +901,7 @@ ZoomRegion.prototype = {
         global.stage.add_actor(this._magView);
 
         // hide the magnified region from CLUTTER_PICK_ALL
-        Shell.util_set_hidden_from_pick (this._magView, true);
+        Cinnamon.util_set_hidden_from_pick (this._magView, true);
 
         // Append a Clutter.Group to clip the contents of the magnified view.
         let mainGroup = new Clutter.Group({ clip_to_allocation: true });

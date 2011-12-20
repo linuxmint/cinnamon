@@ -25,12 +25,12 @@ const Lang = imports.lang;
 const NetworkManager = imports.gi.NetworkManager;
 const NMClient = imports.gi.NMClient;
 const Pango = imports.gi.Pango;
-const Shell = imports.gi.Shell;
+const Cinnamon = imports.gi.Cinnamon;
 const St = imports.gi.St;
 
 const ModalDialog = imports.ui.modalDialog;
 const PopupMenu = imports.ui.popupMenu;
-const ShellEntry = imports.ui.shellEntry;
+const CinnamonEntry = imports.ui.cinnamonEntry;
 
 function NetworkSecretDialog() {
     this._init.apply(this, arguments);
@@ -104,7 +104,7 @@ NetworkSecretDialog.prototype = {
             secret.entry = new St.Entry({ style_class: 'polkit-dialog-password-entry',
                                           text: secret.value, can_focus: reactive,
                                           reactive: reactive });
-            ShellEntry.addContextMenu(secret.entry,
+            CinnamonEntry.addContextMenu(secret.entry,
                                       { isPassword: secret.password });
 
             if (secret.validate)
@@ -366,8 +366,8 @@ function NetworkAgent() {
 
 NetworkAgent.prototype = {
     _init: function() {
-        this._native = new Shell.NetworkAgent({ auto_register: true,
-                                                identifier: 'org.gnome.Shell.NetworkAgent' });
+        this._native = new Cinnamon.NetworkAgent({ auto_register: true,
+                                                identifier: 'org.Cinnamon.NetworkAgent' });
 
         this._dialogs = { };
         this._native.connect('new-request', Lang.bind(this, this._newRequest));

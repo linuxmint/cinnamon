@@ -47,7 +47,7 @@ IFS=" ""	$nl"
 
 # set DOITPROG to echo to test this script
 
-# Don't use :- since 4.3BSD and earlier shells don't like it.
+# Don't use :- since 4.3BSD and earlier cinnamons don't like it.
 doit=${DOITPROG-}
 if test -z "$doit"; then
   doit_exec=exec

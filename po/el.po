@@ -1,6 +1,6 @@
-# Greek translation for gnome-shell.
-# Copyright (C) 2009 gnome-shell's COPYRIGHT HOLDER
-# This file is distributed under the same license as the gnome-shell package.
+# Greek translation for cinnamon.
+# Copyright (C) 2009 cinnamon's COPYRIGHT HOLDER
+# This file is distributed under the same license as the cinnamon package.
 #
 # Jennie Petoumenou <epetoumenou@gmail.com>, 2009.
 # Fotis Tsamis <ftsamis@gmail.com>, 2010.
@@ -8,7 +8,7 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gnome-shell.po.master\n"
+"Project-Id-Version: cinnamon.po.master\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-03-13 19:13+0200\n"
 "PO-Revision-Date: 2011-01-23 00:04+0200\n"
@@ -21,15 +21,15 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: KBabel 1.11.4\n"
 
-#: ../data/gnome-shell.desktop.in.in.h:1
-msgid "GNOME Shell"
-msgstr "GNOME Shell"
+#: ../data/cinnamon.desktop.in.in.h:1
+msgid "Cinnamon"
+msgstr "Cinnamon"
 
-#: ../data/gnome-shell.desktop.in.in.h:2
+#: ../data/cinnamon.desktop.in.in.h:2
 msgid "Window management and application launching"
 msgstr "Διαχείριση παραθύρων και εκκίνηση εφαρμογών"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:1
+#: ../data/org.cinnamon.gschema.xml.in.h:1
 msgid ""
 "Allows access to internal debugging and monitoring tools using the Alt-F2 "
 "dialog."
@@ -37,59 +37,59 @@ msgstr ""
 "Επιτρέπει την πρόσβαση σε εσωτερικά εργαλεία αποσφαλμάτωσης και "
 "παρακολούθησης με τη χρήση του διαλόγου Alt-F2."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:2
+#: ../data/org.cinnamon.gschema.xml.in.h:2
 msgid "Enable internal tools useful for developers and testers from Alt-F2"
 msgstr ""
 "Ενεργοποίηση εσωτερικών εργαλείων χρήσιμων για τους προγραμματιστές και τους "
 "δοκιμαστές με το Alt-F2"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:3
+#: ../data/org.cinnamon.gschema.xml.in.h:3
 msgid "File extension used for storing the screencast"
 msgstr ""
 "Επέκταση αρχείου που θα χρησιμοποιηθεί για την αποθήκευση του στιγμιότυπου "
 "οθόνης"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:4
+#: ../data/org.cinnamon.gschema.xml.in.h:4
 msgid "Framerate used for recording screencasts."
 msgstr ""
 "Ο ρυθμός καρέ που θα χρησιμοποιηθεί για την καταγραφή των στιγμιοτύπων "
 "οθόνης."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:5
+#: ../data/org.cinnamon.gschema.xml.in.h:5
 msgid ""
-"GNOME Shell extensions have a uuid property; this key lists extensions which "
+"Cinnamon extensions have a uuid property; this key lists extensions which "
 "should not be loaded."
 msgstr ""
-"Οι επεκτάσεις του GNOME Shell έχουν μια ιδιότητα uuid. Αυτό το κλειδί "
+"Οι επεκτάσεις του Cinnamon έχουν μια ιδιότητα uuid. Αυτό το κλειδί "
 "απαριθμεί ποιες επεκτάσεις δεν θα πρέπει να φορτωθούν."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:6
+#: ../data/org.cinnamon.gschema.xml.in.h:6
 msgid "History for command (Alt-F2) dialog"
 msgstr "Ιστορικό του διαλόγου εντολών (Alt-F2)"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:7
+#: ../data/org.cinnamon.gschema.xml.in.h:7
 #, fuzzy
 msgid "History for the looking glass dialog"
 msgstr "Ιστορικό του διαλόγου εντολών (Alt-F2)"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:8
+#: ../data/org.cinnamon.gschema.xml.in.h:8
 msgid "If true, display date in the clock, in addition to time."
 msgstr "Αν αληθές, εμφανίζει την ημερομηνία στο ρολόι επιπλέον της ώρας."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:9
+#: ../data/org.cinnamon.gschema.xml.in.h:9
 msgid "If true, display seconds in time."
 msgstr "Αν αληθές, εμφανίζει δευτερόλεπτα στην ώρα."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:10
+#: ../data/org.cinnamon.gschema.xml.in.h:10
 msgid "If true, display the ISO week date in the calendar."
 msgstr ""
 "Αν αληθές, εμφανίζει τον αριθμό εβδομάδας σύμφωνα με το ISO στο ημερολόγιο."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:11
+#: ../data/org.cinnamon.gschema.xml.in.h:11
 msgid "List of desktop file IDs for favorite applications"
 msgstr "Λίστα ID αρχείων επιφάνειας εργασίας για προτιμώμενες εφαρμογές"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:13
+#: ../data/org.cinnamon.gschema.xml.in.h:13
 #, fuzzy, no-c-format
 msgid ""
 "Sets the GStreamer pipeline used to encode recordings. It follows the syntax "
@@ -114,19 +114,19 @@ msgstr ""
 "χρησιμοποιηθεί ο προεπιλεγμένος δίαυλος. Αυτός είναι αυτή τη στιγμή ο "
 "'videorate ! theoraenc ! oggmux' και εγγράφει σε Ogg Theora."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:14
+#: ../data/org.cinnamon.gschema.xml.in.h:14
 msgid "Show date in clock"
 msgstr "Εμφάνιση ημερομηνίας στο ρολόι"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:15
+#: ../data/org.cinnamon.gschema.xml.in.h:15
 msgid "Show the week date in the calendar"
 msgstr "Εμφάνιση του αριθμού εβδομάδας στο ημερολόγιο"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:16
+#: ../data/org.cinnamon.gschema.xml.in.h:16
 msgid "Show time with seconds"
 msgstr "Εμφάνιση ώρας με δευτερόλεπτα"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:17
+#: ../data/org.cinnamon.gschema.xml.in.h:17
 msgid ""
 "The applications corresponding to these identifiers will be displayed in the "
 "favorites area."
@@ -134,7 +134,7 @@ msgstr ""
 "Οι εφαρμογές που αντιστοιχούν σε αυτά τα αναγνωριστικά θα εμφανισθούν στην "
 "περιοχή αγαπημένων."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:18
+#: ../data/org.cinnamon.gschema.xml.in.h:18
 msgid ""
 "The filename for recorded screencasts will be a unique filename based on the "
 "current date, and use this extension. It should be changed when recording to "
@@ -144,23 +144,23 @@ msgstr ""
 "βασισμένο στην τρέχουσα ημερομηνία και θα χρησιμοποιεί αυτή την επέκταση. Θα "
 "πρέπει να αλλάζει όταν γίνεται εγγραφή σε διαφορετικό πρότυπο περιέκτη."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:19
+#: ../data/org.cinnamon.gschema.xml.in.h:19
 msgid ""
-"The framerate of the resulting screencast recordered by GNOME Shell's "
+"The framerate of the resulting screencast recordered by Cinnamon's "
 "screencast recorder in frames-per-second."
 msgstr ""
 "Ο ρυθμός καρέ του στιγμιότυπου που παράγεται από τον εγγραφέα στιγμιοτύπων "
-"οθόνης του GNOME Shell σε καρέ ανά δευτερόλεπτο."
+"οθόνης του Cinnamon σε καρέ ανά δευτερόλεπτο."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:20
+#: ../data/org.cinnamon.gschema.xml.in.h:20
 msgid "The gstreamer pipeline used to encode the screencast"
 msgstr ""
 "Ο δίαυλος του gstreamer που χρησιμοποιήθηκε για την κωδικοποίηση του "
 "στιγμιότυπου"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:21
+#: ../data/org.cinnamon.gschema.xml.in.h:21
 msgid ""
-"The shell normally monitors active applications in order to present the most "
+"Cinnamon normally monitors active applications in order to present the most "
 "used ones (e.g. in launchers). While this data will be kept private, you may "
 "want to disable this for privacy reasons. Please note that doing so won't "
 "remove already saved data."
@@ -171,15 +171,15 @@ msgstr ""
 "αυτή τη λειτουργία για λόγους απορρήτου. Παρακαλούμε έχετε υπ' όψιν ότι η "
 "απενεργοποίηση δεν θα αφαιρέσει τα ήδη αποθηκευμένα δεδομένα."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:22
+#: ../data/org.cinnamon.gschema.xml.in.h:22
 msgid "Uuids of extensions to disable"
 msgstr "Uuid των επεκτάσεων που θα απενεργοποιηθούν"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:23
+#: ../data/org.cinnamon.gschema.xml.in.h:23
 msgid "Whether to collect stats about applications usage"
 msgstr "Εάν θα συλλέγονται στατιστικά χρήσης των εφαρμογών"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:24
+#: ../data/org.cinnamon.gschema.xml.in.h:24
 msgid "disabled OpenSearch providers"
 msgstr ""
 
@@ -187,7 +187,7 @@ msgstr ""
 msgid "Command not found"
 msgstr ""
 
-#. Replace "Error invoking GLib.shell_parse_argv: " with
+#. Replace "Error invoking GLib.cinnamon_parse_argv: " with
 #. something nicer
 #: ../js/misc/util.js:113
 #, fuzzy
@@ -442,7 +442,7 @@ msgid "%a %l:%M %p"
 msgstr "%a %l:%M %p"
 
 #. Translators: This is the date format to use when the calendar popup is
-#. * shown - it is shown just below the time in the shell (e.g. "Tue 9:29 AM").
+#. * shown - it is shown just below the time in Cinnamon (e.g. "Tue 9:29 AM").
 #.
 #: ../js/ui/dateMenu.js:209
 #, fuzzy
@@ -927,7 +927,7 @@ msgstr "Ταμπλέτα"
 msgid "Computer"
 msgstr "Υπολογιστής"
 
-#: ../js/ui/status/power.js:249 ../src/shell-app-system.c:1013
+#: ../js/ui/status/power.js:249 ../src/cinnamon-app-system.c:1013
 msgid "Unknown"
 msgstr "Άγνωστο"
 
@@ -975,7 +975,7 @@ msgstr "Στάλθηκε στις %A και ώρα %X"
 msgid "Type to search..."
 msgstr ""
 
-#: ../js/ui/viewSelector.js:137 ../src/shell-util.c:250
+#: ../js/ui/viewSelector.js:137 ../src/cinnamon-util.c:250
 msgid "Search"
 msgstr "Αναζήτηση"
 
@@ -1015,49 +1015,49 @@ msgstr "Ήχοι συστήματος"
 msgid "Print version"
 msgstr ""
 
-#: ../src/shell-global.c:1308
+#: ../src/cinnamon-global.c:1308
 msgid "Less than a minute ago"
 msgstr "Λιγότερο από ένα λεπτό πριν"
 
-#: ../src/shell-global.c:1312
+#: ../src/cinnamon-global.c:1312
 #, c-format
 msgid "%d minute ago"
 msgid_plural "%d minutes ago"
 msgstr[0] "%d λεπτό πριν"
 msgstr[1] "%d λεπτά πριν"
 
-#: ../src/shell-global.c:1317
+#: ../src/cinnamon-global.c:1317
 #, c-format
 msgid "%d hour ago"
 msgid_plural "%d hours ago"
 msgstr[0] "%d ώρα πριν"
 msgstr[1] "%d ώρες πριν"
 
-#: ../src/shell-global.c:1322
+#: ../src/cinnamon-global.c:1322
 #, c-format
 msgid "%d day ago"
 msgid_plural "%d days ago"
 msgstr[0] "%d ημέρα πριν"
 msgstr[1] "%d ημέρες πριν"
 
-#: ../src/shell-global.c:1327
+#: ../src/cinnamon-global.c:1327
 #, c-format
 msgid "%d week ago"
 msgid_plural "%d weeks ago"
 msgstr[0] "%d εβδομάδα πριν"
 msgstr[1] "%d εβδομάδες πριν"
 
-#: ../src/shell-polkit-authentication-agent.c:334
+#: ../src/cinnamon-polkit-authentication-agent.c:334
 msgid "Authentication dialog was dismissed by the user"
 msgstr ""
 
-#: ../src/shell-util.c:89
+#: ../src/cinnamon-util.c:89
 msgid "Home Folder"
 msgstr "Προσωπικός φάκελος"
 
 #. Translators: this is the same string as the one found in
 #. * nautilus
-#: ../src/shell-util.c:104
+#: ../src/cinnamon-util.c:104
 msgid "File System"
 msgstr "Σύστημα αρχείων"
 
@@ -1066,7 +1066,7 @@ msgstr "Σύστημα αρχείων"
 #. * example, "Trash: some-directory". It means that the
 #. * directory called "some-directory" is in the trash.
 #.
-#: ../src/shell-util.c:300
+#: ../src/cinnamon-util.c:300
 #, c-format
 msgid "%1$s: %2$s"
 msgstr "%1$s: %2$s"

@@ -9,7 +9,7 @@ const GConf = imports.gi.GConf;
 const Lang = imports.lang;
 const Mainloop = imports.mainloop;
 const Meta = imports.gi.Meta;
-const Shell = imports.gi.Shell;
+const Cinnamon = imports.gi.Cinnamon;
 const St = imports.gi.St;
 
 const AutomountManager = imports.ui.automountManager;
@@ -31,7 +31,7 @@ const NetworkAgent = imports.ui.networkAgent;
 const NotificationDaemon = imports.ui.notificationDaemon;
 const WindowAttentionHandler = imports.ui.windowAttentionHandler;
 const Scripting = imports.ui.scripting;
-const ShellDBus = imports.ui.shellDBus;
+const CinnamonDBus = imports.ui.cinnamonDBus;
 const TelepathyClient = imports.ui.telepathyClient;
 const WindowManager = imports.ui.windowManager;
 const Magnifier = imports.ui.magnifier;
@@ -57,7 +57,7 @@ let windowAttentionHandler = null;
 let telepathyClient = null;
 let ctrlAltTabManager = null;
 let recorder = null;
-let shellDBusService = null;
+let cinnamonDBusService = null;
 let modalCount = 0;
 let modalActorFocusStack = [];
 let uiGroup = null;
@@ -99,11 +99,11 @@ function _createGDMSession() {
 }
 
 function _initRecorder() {
-    let recorderSettings = new Gio.Settings({ schema: 'org.gnome.shell.recorder' });
+    let recorderSettings = new Gio.Settings({ schema: 'org.cinnamon.recorder' });
 
     global.screen.connect('toggle-recording', function() {
         if (recorder == null) {
-            recorder = new Shell.Recorder({ stage: global.stage });
+            recorder = new Cinnamon.Recorder({ stage: global.stage });
         }
 
         if (recorder.is_recording()) {
@@ -112,7 +112,7 @@ function _initRecorder() {
         } else {
             // read the parameters from GSettings always in case they have changed
             recorder.set_framerate(recorderSettings.get_int('framerate'));
-            recorder.set_filename('shell-%d%u-%c.' + recorderSettings.get_string('file-extension'));
+            recorder.set_filename('cinnamon-%d%u-%c.' + recorderSettings.get_string('file-extension'));
             let pipeline = recorderSettings.get_string('pipeline');
 
             if (!pipeline.match(/^\s*$/))
@@ -134,15 +134,15 @@ function _initUserSession() {
     ExtensionSystem.init();
     ExtensionSystem.loadExtensions();
 
-    let shellwm = global.window_manager;
+    let cinnamonwm = global.window_manager;
 
-    shellwm.takeover_keybinding('panel_run_dialog');
-    shellwm.connect('keybinding::panel_run_dialog', function () {
+    cinnamonwm.takeover_keybinding('panel_run_dialog');
+    cinnamonwm.connect('keybinding::panel_run_dialog', function () {
        getRunDialog().open();
     });
 
-    shellwm.takeover_keybinding('panel_main_menu');
-    shellwm.connect('keybinding::panel_main_menu', function () {
+    cinnamonwm.takeover_keybinding('panel_main_menu');
+    cinnamonwm.connect('keybinding::panel_main_menu', function () {
         overview.toggle();
     });
 
@@ -164,23 +164,23 @@ function start() {
 
     Gio.DesktopAppInfo.set_desktop_env('GNOME');
 
-    shellDBusService = new ShellDBus.GnomeShell();
+    cinnamonDBusService = new CinnamonDBus.Cinnamon();
     // Force a connection now; dbus.js will do this internally
     // if we use its name acquisition stuff but we aren't right
     // now; to do so we'd need to convert from its async calls
     // back into sync ones.
     DBus.session.flush();
 
-    // Ensure ShellWindowTracker and ShellAppUsage are initialized; this will
-    // also initialize ShellAppSystem first.  ShellAppSystem
-    // needs to load all the .desktop files, and ShellWindowTracker
+    // Ensure CinnamonWindowTracker and CinnamonAppUsage are initialized; this will
+    // also initialize CinnamonAppSystem first.  CinnamonAppSystem
+    // needs to load all the .desktop files, and CinnamonWindowTracker
     // will use those to associate with windows.  Right now
     // the Monitor doesn't listen for installed app changes
     // and recalculate application associations, so to avoid
     // races for now we initialize it here.  It's better to
     // be predictable anyways.
-    Shell.WindowTracker.get_default();
-    Shell.AppUsage.get_default();
+    Cinnamon.WindowTracker.get_default();
+    Cinnamon.AppUsage.get_default();
 
     // The stage is always covered so Clutter doesn't need to clear it; however
     // the color is used as the default contents for the Mutter root background
@@ -188,12 +188,12 @@ function start() {
     global.stage.color = DEFAULT_BACKGROUND_COLOR;
     global.stage.no_clear_hint = true;
 
-    _defaultCssStylesheet = global.datadir + '/theme/gnome-shell.css';
+    _defaultCssStylesheet = global.datadir + '/theme/cinnamon.css';
     _gdmCssStylesheet = global.datadir + '/theme/gdm.css';
     loadTheme();
 
     // Set up stage hierarchy to group all UI actors under one container.
-    uiGroup = new Shell.GenericContainer({ name: 'uiGroup' });
+    uiGroup = new Cinnamon.GenericContainer({ name: 'uiGroup' });
     uiGroup.connect('allocate',
                     function (actor, box, flags) {
                         let children = uiGroup.get_children();
@@ -209,7 +209,7 @@ function start() {
     xdndHandler = new XdndHandler.XdndHandler();
     ctrlAltTabManager = new CtrlAltTab.CtrlAltTabManager();
     // This overview object is just a stub for non-user sessions
-    overview = new Overview.Overview({ isDummy: global.session_type != Shell.SessionType.USER });
+    overview = new Overview.Overview({ isDummy: global.session_type != Cinnamon.SessionType.USER });
     magnifier = new Magnifier.Magnifier();
     statusIconDispatcher = new StatusIconDispatcher.StatusIconDispatcher();
     panel = new Panel.Panel();
@@ -219,9 +219,9 @@ function start() {
     notificationDaemon = new NotificationDaemon.NotificationDaemon();
     windowAttentionHandler = new WindowAttentionHandler.WindowAttentionHandler();
 
-    if (global.session_type == Shell.SessionType.USER)
+    if (global.session_type == Cinnamon.SessionType.USER)
         _createUserSession();
-    else if (global.session_type == Shell.SessionType.GDM)
+    else if (global.session_type == Cinnamon.SessionType.GDM)
         _createGDMSession();
 
     panel.startStatusArea();
@@ -230,7 +230,7 @@ function start() {
     keyboard.init();
     overview.init();
 
-    if (global.session_type == Shell.SessionType.USER)
+    if (global.session_type == Cinnamon.SessionType.USER)
         _initUserSession();
     statusIconDispatcher.start(panel.actor);
 
@@ -246,11 +246,11 @@ function start() {
     global.stage.connect('captured-event', _globalKeyPressHandler);
 
     _log('info', 'loaded at ' + _startDate);
-    log('GNOME Shell started at ' + _startDate);
+    log('Cinnamon started at ' + _startDate);
 
-    let perfModuleName = GLib.getenv("SHELL_PERF_MODULE");
+    let perfModuleName = GLib.getenv("CINNAMON_PERF_MODULE");
     if (perfModuleName) {
-        let perfOutput = GLib.getenv("SHELL_PERF_OUTPUT");
+        let perfOutput = GLib.getenv("CINNAMON_PERF_OUTPUT");
         let module = eval('imports.perf.' + perfModuleName + ';');
         Scripting.runPerfScript(module, perfOutput);
     }
@@ -423,7 +423,7 @@ function _nWorkspacesChanged() {
 /**
  * getThemeStylesheet:
  *
- * Get the theme CSS file that the shell will load
+ * Get the theme CSS file that Cinnamon will load
  *
  * Returns: A file path that contains the theme CSS,
  *          null if using the default
@@ -438,7 +438,7 @@ function getThemeStylesheet()
  * @cssStylesheet: A file path that contains the theme CSS,
  *                  set it to null to use the default
  *
- * Set the theme CSS file that the shell will load
+ * Set the theme CSS file that Cinnamon will load
  */
 function setThemeStylesheet(cssStylesheet)
 {
@@ -460,7 +460,7 @@ function loadTheme() {
 
     let theme = new St.Theme ({ application_stylesheet: cssStylesheet });
 
-    if (global.session_type == Shell.SessionType.GDM)
+    if (global.session_type == Cinnamon.SessionType.GDM)
         theme.load_stylesheet(_gdmCssStylesheet);
 
     if (previousTheme) {
@@ -491,7 +491,7 @@ function notify(msg, details) {
  * @msg: An error message
  * @details: Additional information
  *
- * See shell_global_notify_problem().
+ * See cinnamon_global_notify_problem().
  */
 function notifyError(msg, details) {
     // Also print to stderr so it's logged somewhere
@@ -580,7 +580,7 @@ function _globalKeyPressHandler(actor, event) {
 
     let symbol = event.get_key_symbol();
     let keyCode = event.get_key_code();
-    let modifierState = Shell.get_event_state(event);
+    let modifierState = Cinnamon.get_event_state(event);
 
     // This relies on the fact that Clutter.ModifierType is the same as Gdk.ModifierType
     let action = global.display.get_keybinding_action(keyCode, modifierState);
@@ -597,7 +597,7 @@ function _globalKeyPressHandler(actor, event) {
 
     // Other bindings are only available to the user session when the overview is up and
     // no modal dialog is present.
-    if (global.session_type == Shell.SessionType.USER && (!overview.visible || modalCount > 1))
+    if (global.session_type == Cinnamon.SessionType.USER && (!overview.visible || modalCount > 1))
         return false;
 
     // This isn't a Meta.KeyBindingAction yet
@@ -613,7 +613,7 @@ function _globalKeyPressHandler(actor, event) {
     }
 
     // None of the other bindings are relevant outside of the user's session
-    if (global.session_type != Shell.SessionType.USER)
+    if (global.session_type != Cinnamon.SessionType.USER)
         return false;
 
     switch (action) {
@@ -683,7 +683,7 @@ function pushModal(actor, timestamp) {
         }
     }
 
-    global.set_stage_input_mode(Shell.StageInputMode.FULLSCREEN);
+    global.set_stage_input_mode(Cinnamon.StageInputMode.FULLSCREEN);
 
     modalCount += 1;
     let actorDestroyId = actor.connect('destroy', function() {
@@ -730,7 +730,7 @@ function popModal(actor, timestamp) {
     if (focusIndex < 0) {
         global.stage.set_key_focus(null);
         global.end_modal(timestamp);
-        global.set_stage_input_mode(Shell.StageInputMode.NORMAL);
+        global.set_stage_input_mode(Cinnamon.StageInputMode.NORMAL);
 
         throw new Error('incorrect pop');
     }
@@ -760,7 +760,7 @@ function popModal(actor, timestamp) {
         return;
 
     global.end_modal(timestamp);
-    global.set_stage_input_mode(Shell.StageInputMode.NORMAL);
+    global.set_stage_input_mode(Cinnamon.StageInputMode.NORMAL);
 }
 
 function createLookingGlass() {

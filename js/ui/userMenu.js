@@ -6,7 +6,7 @@ const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
 const Lang = imports.lang;
 const Pango = imports.gi.Pango;
-const Shell = imports.gi.Shell;
+const Cinnamon = imports.gi.Cinnamon;
 const St = imports.gi.St;
 const Tp = imports.gi.TelepathyGLib;
 const UPowerGlib = imports.gi.UPowerGlib;
@@ -76,7 +76,7 @@ IMUserNameItem.prototype = {
                                                          { reactive: false,
                                                            style_class: 'status-chooser-user-name' });
 
-        this._wrapper = new Shell.GenericContainer();
+        this._wrapper = new Cinnamon.GenericContainer();
         this._wrapper.connect('get-preferred-width',
                               Lang.bind(this, this._wrapperGetPreferredWidth));
         this._wrapper.connect('get-preferred-height',
@@ -651,19 +651,19 @@ UserMenuButton.prototype = {
 
     _onMyAccountActivate: function() {
         Main.overview.hide();
-        let app = Shell.AppSystem.get_default().lookup_setting('gnome-user-accounts-panel.desktop');
+        let app = Cinnamon.AppSystem.get_default().lookup_setting('gnome-user-accounts-panel.desktop');
         app.activate();
     },
 
     _onOnlineAccountsActivate: function() {
         Main.overview.hide();
-        let app = Shell.AppSystem.get_default().lookup_setting('gnome-online-accounts-panel.desktop');
+        let app = Cinnamon.AppSystem.get_default().lookup_setting('gnome-online-accounts-panel.desktop');
         app.activate(-1);
     },
 
     _onPreferencesActivate: function() {
         Main.overview.hide();
-        let app = Shell.AppSystem.get_default().lookup_app('gnome-control-center.desktop');
+        let app = Cinnamon.AppSystem.get_default().lookup_app('gnome-control-center.desktop');
         app.activate();
     },
 

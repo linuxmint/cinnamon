@@ -4,12 +4,12 @@
 srcdir=`dirname $0`
 test -z "$srcdir" && srcdir=.
 
-PKG_NAME="gnome-shell"
+PKG_NAME="cinnamon"
 
 (test -f $srcdir/configure.ac \
   && test -d $srcdir/src) || {
     echo -n "**Error**: Directory "\`$srcdir\'" does not look like the"
-    echo " top-level gnome-shell directory"
+    echo " top-level cinnamon directory"
     exit 1
 }
 

@@ -67,7 +67,7 @@ Translations:
 3.2.0
 =====
 * Prevent the fallback on-screen keyboard from showing up while
-  GNOME Shell is running [Dan, #659865]
+  Cinnamon is running [Dan, #659865]
 * Disable code to reposition windows around the on-screen keyboard;
   it wasn't finished or working properly. [Dan; #659643]
 * Fix interaction between on-screen keyboard and notifications
@@ -161,7 +161,7 @@ Translations:
 ========
 
 * Add a browser plugin - this plugin, tied to extensions.gnome.org,
-  allows users to download and install shell extensions, and enable,
+  allows users to download and install cinnamon extensions, and enable,
   disable, and uninstall extensions they already have installed.
   [Jasper; #658070, #658612]
 * Improve adding links to URLs in notifications [Dan; #636252]
@@ -250,7 +250,7 @@ Translations:
 * Support default actions for notifications [Florian; #655818]
 * Networking
   - Stop using nm-applet for dialogs; do them as proper system modal
-    dialogs in the shell code. [Giovanni; #650244]
+    dialogs in Cinnamon code. [Giovanni; #650244]
   - Fix handling of hidden access points [Giovanni; #646454]
 * Telepathy integration
   - Support subscription requests [Guillaume, Xavier; #653941]
@@ -314,7 +314,7 @@ Translations:
     [Jasper, Guillaume; #649356, #654139]
   - Only remove icons when the sender quits from D-Bus, not when it
     closes its last window [Neha, Marina; #645764]
-  - Solve problems switching chats between shell and Empathy
+  - Solve problems switching chats between cinnamon and Empathy
     [Guillaume; #654237]
   - Fix handling of bad GMarkup in messages [Dan; #650298]
   - Never show notifications when the screensaver is active [Dan; #654550]
@@ -401,7 +401,7 @@ Translations:
 * Fix problems with scrolling in overflow for alt-Tab switcher
   [Dan Winship, Adel; #647807]
 * Mark relationships between labels and actors for accessibility [Alejandro]
-* Add org.gnome.shell.enabled-extensions complementing disabled-extensions
+* Add org.cinnamon.enabled-extensions complementing disabled-extensions
   GSetting [Tassilo; #651088]
 * Visual tweaks [Jakub, Jasper; #646261, #652715]
 * Switch to building against clutter-1.7 with independent Cogl [Adel; #653397]
@@ -487,7 +487,7 @@ Translations:
   - Miscellaneous minor bug fixes [Dan, Giovanni, Owen]
     645981, 646558, 646443, 646708, 646968
 * Application menu and icon
-  - Fix bug where application menu icon was missing at GNOME Shell
+  - Fix bug where application menu icon was missing at Cinnamon
     startup. [Florian]
     https://bugzilla.gnome.org/show_bug.cgi?id=644122
   - Fix missing application menu for dialog windows [Colin]
@@ -552,7 +552,7 @@ Translations:
   user is using the scrollbar. [Owen Taylor]
   https://bugzilla.gnome.org/show_bug.cgi?id=646825
 
-Contributors to GNOME Shell 3.0
+Contributors to Cinnamon 3.0
 ===============================
 
 Code:

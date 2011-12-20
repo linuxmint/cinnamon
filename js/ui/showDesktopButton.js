@@ -1,6 +1,6 @@
 const St = imports.gi.St;
 const Lang = imports.lang;
-const Shell = imports.gi.Shell;
+const Cinnamon = imports.gi.Cinnamon;
 
 function ShowDesktopButton() {
     this._init();
@@ -16,7 +16,7 @@ ShowDesktopButton.prototype = {
         
         this.actor.connect("clicked", Lang.bind(this, this._toggleShowDesktop));
         
-        this._tracker = Shell.WindowTracker.get_default();
+        this._tracker = Cinnamon.WindowTracker.get_default();
         
         this._desktopShown = false;
         

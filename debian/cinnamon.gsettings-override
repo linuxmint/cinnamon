@@ -1,0 +1,3 @@
+[org.cinnamon]
+favorite-apps=[ 'firefox.desktop', 'thunderbird.desktop', 'empathy.desktop', 'banshee.desktop', 'shotwell.desktop', 'libreoffice-writer.desktop', 'nautilus.desktop', 'gnome-documents.desktop' ]
+

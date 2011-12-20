@@ -1,7 +1,7 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 
 const Clutter = imports.gi.Clutter;
-const Shell = imports.gi.Shell;
+const Cinnamon = imports.gi.Cinnamon;
 const St = imports.gi.St;
 
 const Lang = imports.lang;
@@ -28,7 +28,7 @@ BaseIcon.prototype = {
 
         this._spacing = 0;
 
-        let box = new Shell.GenericContainer();
+        let box = new Cinnamon.GenericContainer();
         box.connect('allocate', Lang.bind(this, this._allocate));
         box.connect('get-preferred-width',
                     Lang.bind(this, this._getPreferredWidth));
@@ -169,7 +169,7 @@ IconGrid.prototype = {
         // Pulled from CSS, but hardcode some defaults here
         this._spacing = 0;
         this._item_size = ICON_SIZE;
-        this._grid = new Shell.GenericContainer();
+        this._grid = new Cinnamon.GenericContainer();
         this.actor.add(this._grid, { expand: true, y_align: St.Align.START });
         this.actor.connect('style-changed', Lang.bind(this, this._onStyleChanged));
 
@@ -303,7 +303,7 @@ IconGrid.prototype = {
     _onStyleChanged: function() {
         let themeNode = this.actor.get_theme_node();
         this._spacing = themeNode.get_length('spacing');
-        this._item_size = themeNode.get_length('-shell-grid-item-size');
+        this._item_size = themeNode.get_length('-cinnamon-grid-item-size');
         this._grid.queue_relayout();
     },
 

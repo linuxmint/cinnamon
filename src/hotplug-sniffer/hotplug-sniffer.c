@@ -22,18 +22,18 @@
  *
  */
 
-#include "shell-mime-sniffer.h"
+#include "cinnamon-mime-sniffer.h"
 #include "hotplug-mimetypes.h"
 
 /* Set the environment variable HOTPLUG_SNIFFER_DEBUG to show debug */
 static void print_debug (const gchar *str, ...);
 
-#define BUS_NAME "org.gnome.Shell.HotplugSniffer"
+#define BUS_NAME "org.Cinnamon.HotplugSniffer"
 #define AUTOQUIT_TIMEOUT 5
 
 static const gchar introspection_xml[] =
   "<node>"
-  "  <interface name='org.gnome.Shell.HotplugSniffer'>"
+  "  <interface name='org.Cinnamon.HotplugSniffer'>"
   "    <method name='SniffURI'>"
   "      <arg type='s' name='uri' direction='in'/>"
   "      <arg type='as' name='content_types' direction='out'/>"
@@ -119,7 +119,7 @@ sniff_async_ready_cb (GObject *source,
   GVariantBuilder *builder;
   GVariant *result;
 
-  types = shell_mime_sniffer_sniff_finish (SHELL_MIME_SNIFFER (source),
+  types = cinnamon_mime_sniffer_sniff_finish (CINNAMON_MIME_SNIFFER (source),
                                            res, &error);
 
   if (error != NULL)
@@ -149,7 +149,7 @@ sniff_async_ready_cb (GObject *source,
 static void
 handle_sniff_uri (InvocationData *data)
 {
-  ShellMimeSniffer *sniffer;
+  CinnamonMimeSniffer *sniffer;
   const gchar *uri;
   GFile *file;
 
@@ -162,8 +162,8 @@ handle_sniff_uri (InvocationData *data)
 
   print_debug ("Initiating sniff for uri %s", uri);
 
-  sniffer = shell_mime_sniffer_new (file);
-  shell_mime_sniffer_sniff_async (sniffer,
+  sniffer = cinnamon_mime_sniffer_new (file);
+  cinnamon_mime_sniffer_sniff_async (sniffer,
                                   sniff_async_ready_cb,
                                   data);
 
@@ -208,7 +208,7 @@ on_bus_acquired (GDBusConnection *connection,
   print_debug ("Connected to the session bus: %s", name);
 
   g_dbus_connection_register_object (connection,
-                                     "/org/gnome/Shell/HotplugSniffer",
+                                     "/org/Cinnamon/HotplugSniffer",
                                      introspection_data->interfaces[0],
                                      &interface_vtable,
                                      NULL,
@@ -312,7 +312,7 @@ print_debug (const gchar *format, ...)
   s = g_strdup_vprintf (format, ap);
   va_end (ap);
 
-  g_print ("gnome-shell-hotplug-sniffer[%d]: %s.%03d: %s\n", pid, timebuf, (gint) (now.tv_usec / 1000), s);
+  g_print ("cinnamon-hotplug-sniffer[%d]: %s.%03d: %s\n", pid, timebuf, (gint) (now.tv_usec / 1000), s);
   g_free (s);
  out:
   ;

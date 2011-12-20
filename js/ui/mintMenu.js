@@ -3,7 +3,7 @@
 const Mainloop = imports.mainloop;
 const GMenu = imports.gi.GMenu;
 const Lang = imports.lang;
-const Shell = imports.gi.Shell;
+const Cinnamon = imports.gi.Cinnamon;
 const St = imports.gi.St;
 const Clutter = imports.gi.Clutter;
 const Main = imports.ui.main;
@@ -16,7 +16,7 @@ const Signals = imports.signals;
 const GnomeSession = imports.misc.gnomeSession;
 const ScreenSaver = imports.misc.screenSaver;
 
-const Gettext = imports.gettext.domain('gnome-shell-extensions');
+const Gettext = imports.gettext.domain('cinnamon-extensions');
 const _ = Gettext.gettext;
 
 const ICON_SIZE = 16;
@@ -24,7 +24,7 @@ const FAV_ICON_SIZE = 30;
 const CATEGORY_ICON_SIZE = 20;
 const APPLICATION_ICON_SIZE = 20;
 
-let appsys = Shell.AppSystem.get_default();
+let appsys = Cinnamon.AppSystem.get_default();
 
 function AppMenuItem() {
     this._init.apply(this, arguments);
@@ -572,7 +572,7 @@ this.applicationsByCategory[top_dir.get_menu_id()].push(app);
                      
         //Load favorites
         let launchers = global.settings.get_strv('favorite-apps');
-        let appSys = Shell.AppSystem.get_default();
+        let appSys = Cinnamon.AppSystem.get_default();
         let j = 0;
         for ( let i = 0; i < launchers.length; ++i ) {
             let app = appSys.lookup_app(launchers[i]);
@@ -871,5 +871,5 @@ this._clearApplicationsBox(button.actor);
 };
 
 let mintMenuOrientation = St.Side.BOTTOM;
-let icon_path = "/usr/share/gnome-shell/theme/";
+let icon_path = "/usr/share/cinnamon/theme/";
 let bottomPosition = true;

@@ -6,7 +6,7 @@ const Lang = imports.lang;
 const Mainloop = imports.mainloop;
 const Cairo = imports.cairo;
 const Clutter = imports.gi.Clutter;
-const Shell = imports.gi.Shell;
+const Cinnamon = imports.gi.Cinnamon;
 const St = imports.gi.St;
 
 const Params = imports.misc.params;
@@ -20,7 +20,7 @@ const UPowerGlib = imports.gi.UPowerGlib;
 // in org.gnome.desktop.interface
 const CLOCK_FORMAT_KEY        = 'clock-format';
 
-// in org.gnome.shell.clock
+// in org.cinnamon.clock
 const CLOCK_SHOW_DATE_KEY     = 'show-date';
 const CLOCK_SHOW_SECONDS_KEY  = 'show-seconds';
 
@@ -119,7 +119,7 @@ DateMenuButton.prototype = {
 
         // Track changes to clock settings
         this._desktopSettings = new Gio.Settings({ schema: 'org.gnome.desktop.interface' });
-        this._clockSettings = new Gio.Settings({ schema: 'org.gnome.shell.clock' });
+        this._clockSettings = new Gio.Settings({ schema: 'org.cinnamon.clock' });
         this._desktopSettings.connect('changed', Lang.bind(this, this._updateClockAndDate));
         this._clockSettings.connect('changed', Lang.bind(this, this._updateClockAndDate));
 
@@ -172,7 +172,7 @@ DateMenuButton.prototype = {
         this._clock.set_text(displayDate.toLocaleFormat(clockFormat));
 
         /* Translators: This is the date format to use when the calendar popup is
-         * shown - it is shown just below the time in the shell (e.g. "Tue 9:29 AM").
+         * shown - it is shown just below the time in Cinnamon (e.g. "Tue 9:29 AM").
          */
         dateFormat = _("%A %B %e, %Y");
         this._date.set_text(displayDate.toLocaleFormat(dateFormat));

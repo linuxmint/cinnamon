@@ -10,10 +10,10 @@ const Clutter = imports.gi.Clutter;;
 const Gettext = imports.gettext;
 const GLib = imports.gi.GLib;
 const Gtk = imports.gi.Gtk;
-const Shell = imports.gi.Shell;
+const Cinnamon = imports.gi.Cinnamon;
 const St = imports.gi.St;
 
-// We can't import shell JS modules yet, because they may have
+// We can't import cinnamon JS modules yet, because they may have
 // variable initializations, etc, that depend on init() already having
 // been run.
 
@@ -42,7 +42,7 @@ function _patchContainerClass(containerClass) {
 function init() {
     // Add some bindings to the global JS namespace; (gjs keeps the web
     // browser convention of having that namespace be called 'window'.)
-    window.global = Shell.Global.get();
+    window.global = Cinnamon.Global.get();
 
     window._ = Gettext.gettext;
     window.C_ = Gettext.pgettext;
@@ -72,17 +72,17 @@ function init() {
 
     // Work around https://bugzilla.mozilla.org/show_bug.cgi?id=508783
     Date.prototype.toLocaleFormat = function(format) {
-        return Shell.util_format_date(format, this.getTime());
+        return Cinnamon.util_format_date(format, this.getTime());
     };
 
-    let slowdownEnv = GLib.getenv('GNOME_SHELL_SLOWDOWN_FACTOR');
+    let slowdownEnv = GLib.getenv('CINNAMON_SLOWDOWN_FACTOR');
     if (slowdownEnv) {
         let factor = parseFloat(slowdownEnv);
         if (!isNaN(factor) && factor > 0.0)
             St.set_slow_down_factor(factor);
     }
 
-    // OK, now things are initialized enough that we can import shell JS
+    // OK, now things are initialized enough that we can import cinnamon JS
     const Format = imports.misc.format;
     const Tweener = imports.ui.tweener;
 

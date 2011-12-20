@@ -7,7 +7,7 @@ const Gio = imports.gi.Gio;
 const Params = imports.misc.params;
 
 const Main = imports.ui.main;
-const ShellMountOperation = imports.ui.shellMountOperation;
+const CinnamonMountOperation = imports.ui.cinnamonMountOperation;
 const ScreenSaver = imports.misc.screenSaver;
 
 // GSettings keys
@@ -227,7 +227,7 @@ AutomountManager.prototype = {
         }
 
         if (params.useMountOp) {
-            let operation = new ShellMountOperation.ShellMountOperation(volume);
+            let operation = new CinnamonMountOperation.CinnamonMountOperation(volume);
             this._mountVolume(volume, operation.mountOp);
         } else {
             this._mountVolume(volume, null);
@@ -265,7 +265,7 @@ AutomountManager.prototype = {
     },
 
     _reaskPassword: function(volume) {
-        let operation = new ShellMountOperation.ShellMountOperation(volume, { reaskPassword: true });
+        let operation = new CinnamonMountOperation.CinnamonMountOperation(volume, { reaskPassword: true });
         this._mountVolume(volume, operation.mountOp);        
     },
 

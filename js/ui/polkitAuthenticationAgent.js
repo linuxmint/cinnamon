@@ -22,7 +22,7 @@
 
 const Lang = imports.lang;
 const Signals = imports.signals;
-const Shell = imports.gi.Shell;
+const Cinnamon = imports.gi.Cinnamon;
 const AccountsService = imports.gi.AccountsService;
 const Clutter = imports.gi.Clutter;
 const St = imports.gi.St;
@@ -33,7 +33,7 @@ const Polkit = imports.gi.Polkit;
 const PolkitAgent = imports.gi.PolkitAgent;
 
 const ModalDialog = imports.ui.modalDialog;
-const ShellEntry = imports.ui.shellEntry;
+const CinnamonEntry = imports.ui.cinnamonEntry;
 
 function AuthenticationDialog(actionId, message, cookie, userNames) {
     this._init(actionId, message, cookie, userNames);
@@ -140,7 +140,7 @@ AuthenticationDialog.prototype = {
         this._passwordEntry = new St.Entry({ style_class: 'polkit-dialog-password-entry',
                                              text: "",
                                              can_focus: true});
-        ShellEntry.addContextMenu(this._passwordEntry, { isPassword: true });
+        CinnamonEntry.addContextMenu(this._passwordEntry, { isPassword: true });
         this._passwordEntry.clutter_text.connect('activate', Lang.bind(this, this._onEntryActivate));
         this._passwordBox.add(this._passwordEntry,
                               {expand: true });
@@ -161,7 +161,7 @@ AuthenticationDialog.prototype = {
 
         /* text is intentionally non-blank otherwise the height is not the same as for
          * infoMessage and errorMessageLabel - but it is still invisible because
-         * gnome-shell.css sets the color to be transparent
+         * cinnamon.css sets the color to be transparent
          */
         this._nullMessageLabel = new St.Label({ style_class: 'polkit-dialog-null-label',
                                                 text: 'abc'});
@@ -202,7 +202,7 @@ AuthenticationDialog.prototype = {
             // This can fail if e.g. unable to get input grab
             //
             // In an ideal world this wouldn't happen (because the
-            // Shell is in complete control of the session) but that's
+            // Cinnamon is in complete control of the session) but that's
             // just not how things work right now.
             //
             // One way to make this happen is by running 'sleep 3;
@@ -340,7 +340,7 @@ function AuthenticationAgent() {
 
 AuthenticationAgent.prototype = {
     _init: function() {
-        this._native = new Shell.PolkitAuthenticationAgent();
+        this._native = new Cinnamon.PolkitAuthenticationAgent();
         this._native.connect('initiate', Lang.bind(this, this._onInitiate));
         this._native.connect('cancel', Lang.bind(this, this._onCancel));
         this._currentDialog = null;

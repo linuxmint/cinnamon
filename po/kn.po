@@ -1,13 +1,13 @@
-# Kannada translation for gnome-shell.
-# Copyright (C) 2011 gnome-shell's COPYRIGHT HOLDER
-# This file is distributed under the same license as the gnome-shell package.
+# Kannada translation for cinnamon.
+# Copyright (C) 2011 cinnamon's COPYRIGHT HOLDER
+# This file is distributed under the same license as the cinnamon package.
 #
 # Shankar Prasad <svenkate@redhat.com>, 2011.
 msgid ""
 msgstr ""
-"Project-Id-Version: gnome-shell master\n"
+"Project-Id-Version: cinnamon master\n"
 "Report-Msgid-Bugs-To: http://bugzilla.gnome.org/enter_bug."
-"cgi?product=gnome-shell&component=general\n"
+"cgi?product=cinnamon&component=general\n"
 "POT-Creation-Date: 2011-02-21 01:21+0000\n"
 "PO-Revision-Date: 2011-03-09 09:36+0530\n"
 "Last-Translator: Shankar Prasad <svenkate@redhat.com>\n"
@@ -18,15 +18,15 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n!=1);\n"
 "X-Generator: Lokalize 1.1\n"
 
-#: ../data/gnome-shell.desktop.in.in.h:1
-msgid "GNOME Shell"
-msgstr "GNOME ಶೆಲ್‌"
+#: ../data/cinnamon.desktop.in.in.h:1
+msgid "Cinnamon"
+msgstr "Cinnamon"
 
-#: ../data/gnome-shell.desktop.in.in.h:2
+#: ../data/cinnamon.desktop.in.in.h:2
 msgid "Window management and application launching"
 msgstr "ವಿಂಡೊ ನಿರ್ವಹಣೆ ಹಾಗು ಅನ್ವಯವನ್ನು ಆರಂಭಿಸುವಿಕೆ"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:1
+#: ../data/org.cinnamon.gschema.xml.in.h:1
 msgid ""
 "Allows access to internal debugging and monitoring tools using the Alt-F2 "
 "dialog."
@@ -34,53 +34,53 @@ msgstr ""
 "Alt-F2 ಸಂವಾದಚೌಕವನ್ನು ಬಳಸಿಕೊಂಡು ಆಂತರಿಕ ದೋಷ ನಿವಾರಣೆ ಹಾಗು ಮೇಲ್ವಿಚಾರಣೆ "
 "ಉಪಕರಣಗಳನ್ನು ನಿಲುಕಿಸಿಕೊಳ್ಳಲು ಅನುವುಮಾಡಿಕೊಡುತ್ತದೆ."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:2
+#: ../data/org.cinnamon.gschema.xml.in.h:2
 msgid "Enable internal tools useful for developers and testers from Alt-F2"
 msgstr ""
 "Alt-F2 ಇಂದ ವಿಕಸನೆಗಾರರಿಗೆ ಹಾಗು ಪರೀಕ್ಷಕರಿಗೆ ಉಪಯುಕ್ತವಾಗುವ ಆಂತರಿಕ ಉಪಕರಣಗಳನ್ನು "
 "ಶಕ್ತಗೊಳಿಸುತ್ತದೆ"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:3
+#: ../data/org.cinnamon.gschema.xml.in.h:3
 msgid "File extension used for storing the screencast"
 msgstr "ಸ್ಕ್ರೀನ್‌ಕ್ಯಾಸ್ಟುಗಳನ್ನು ಶೇಖರಿಸಿಡಲು ಬಳಸಲಾಗುವ ಕಡತ ವಿಸ್ತರಣೆಗಳು"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:4
+#: ../data/org.cinnamon.gschema.xml.in.h:4
 msgid "Framerate used for recording screencasts."
 msgstr "ಸ್ಕ್ರೀನ್‌ಕ್ಯಾಸ್ಟುಗಳನ್ನು ರೆಕಾರ್ಡು ಮಾಡಲು ಬಳಸಲಾಗುವ ಫ್ರೇಮ್‌ದರಗಳು."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:5
+#: ../data/org.cinnamon.gschema.xml.in.h:5
 msgid ""
-"GNOME Shell extensions have a uuid property; this key lists extensions which "
+"Cinnamon extensions have a uuid property; this key lists extensions which "
 "should not be loaded."
 msgstr ""
-"GNOME Shell extensions have a uuid property; this key lists extensions which "
+"Cinnamon extensions have a uuid property; this key lists extensions which "
 "should not be loaded."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:6
+#: ../data/org.cinnamon.gschema.xml.in.h:6
 msgid "History for command (Alt-F2) dialog"
 msgstr "ಆಜ್ಞೆಯ ಇತಿಹಾಸ (Alt-F2) ಸಂವಾದಚೌಕ"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:7
+#: ../data/org.cinnamon.gschema.xml.in.h:7
 msgid "History for the looking glass dialog"
 msgstr "ನೋಡುವ ಗಾಜಿನ ಸಂವಾದ ಚೌಕಕ್ಕಾಗಿನ ಇತಿಹಾಸ"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:8
+#: ../data/org.cinnamon.gschema.xml.in.h:8
 msgid "If true, display date in the clock, in addition to time."
 msgstr "true ಆದಲ್ಲಿ, ದಿನಾಂಕವನ್ನು ಸಮಯದ ಜೊತೆಗೆ ಗಡಿಯಾರದಲ್ಲಿ ತೋರಿಸಲಾಗುತ್ತದೆ."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:9
+#: ../data/org.cinnamon.gschema.xml.in.h:9
 msgid "If true, display seconds in time."
 msgstr "true ಆದಲ್ಲಿ, ಸಮಯದಲ್ಲಿ ಸೆಕೆಂಡುಗಳನ್ನು ತೋರಿಸಲಾಗುತ್ತದೆ."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:10
+#: ../data/org.cinnamon.gschema.xml.in.h:10
 msgid "If true, display the ISO week date in the calendar."
 msgstr "true ಆದಲ್ಲಿ, ಕ್ಯಾಲೆಂಡರಿನಲ್ಲಿ ISO ವಾರದ ದಿನವನ್ನು ತೋರಿಸುತ್ತದೆ."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:11
+#: ../data/org.cinnamon.gschema.xml.in.h:11
 msgid "List of desktop file IDs for favorite applications"
 msgstr "ಮೆಚ್ಚಿನ ಅನ್ವಯಗಳಿಗಾಗಿನ ಗಣಕತೆರೆ ಕಡತ IDಗಳ ಪಟ್ಟಿ"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:13
+#: ../data/org.cinnamon.gschema.xml.in.h:13
 #, no-c-format
 msgid ""
 "Sets the GStreamer pipeline used to encode recordings. It follows the syntax "
@@ -95,26 +95,26 @@ msgid ""
 "at the optimal thread count on the system."
 msgstr ""
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:14
+#: ../data/org.cinnamon.gschema.xml.in.h:14
 msgid "Show date in clock"
 msgstr "ಗಡಿಯಾರದಲ್ಲಿ ದಿನಾಂಕವನ್ನು ತೋರಿಸು"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:15
+#: ../data/org.cinnamon.gschema.xml.in.h:15
 msgid "Show the week date in the calendar"
 msgstr "ಕ್ಯಾಲೆಂಡರಿನಲ್ಲಿ ವಾರದ ದಿನವನ್ನು ತೋರಿಸು"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:16
+#: ../data/org.cinnamon.gschema.xml.in.h:16
 msgid "Show time with seconds"
 msgstr "ಸಮಯದೊಂದಿಗೆ ಸೆಕೆಂಡುಗಳನ್ನು ತೋರಿಸು"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:17
+#: ../data/org.cinnamon.gschema.xml.in.h:17
 msgid ""
 "The applications corresponding to these identifiers will be displayed in the "
 "favorites area."
 msgstr ""
 "ಈ ಐಡೆಂಟಿಫಯರುಗಳಿಗೆ ಅನುಗುಣವಾದ ಅನ್ವಯಗಳನ್ನು ಮೆಚ್ಚಿನವುಗಳ ಜಾಗದಲ್ಲಿ ತೋರಿಸಲಾಗುತ್ತದೆ."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:18
+#: ../data/org.cinnamon.gschema.xml.in.h:18
 msgid ""
 "The filename for recorded screencasts will be a unique filename based on the "
 "current date, and use this extension. It should be changed when recording to "
@@ -124,35 +124,35 @@ msgstr ""
 "ಆಧರಿತವಾದ ಒಂದು ವಿಶೇಷವಾದ ಕಡತದ ಹೆಸರಾಗಿರುತ್ತದೆ, ಹಾಗು ಈ ವಿಸ್ತರಣೆಯನ್ನು ಬಳಸುತ್ತದೆ. "
 "ಬೇರೊಂದು ಕಂಟೈನರ್ ಶೈಲಿಗೆ ರೆಕಾರ್ಡ್ ಮಾಡುವಾಗ ಇದನ್ನು ಬದಲಾಯಿಸಬೇಕಾಗುತ್ತದೆ."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:19
+#: ../data/org.cinnamon.gschema.xml.in.h:19
 msgid ""
-"The framerate of the resulting screencast recordered by GNOME Shell's "
+"The framerate of the resulting screencast recordered by Cinnamon's "
 "screencast recorder in frames-per-second."
 msgstr ""
 "ಪ್ರತಿ ಸೆಕೆಂಡಿನ ಫ್ರೇಮ್‌ಗಳಲ್ಲಿನ GNOME ಶೆಲ್‌ನ ಸ್ಕ್ರೀನ್‌ಕ್ಯಾಸ್ಟ್‍ ರೆಕಾರ್ಡರಿನಿಂದ "
 "ರೆಕಾರ್ಡು ಮಾಡಲಾದ ಸ್ಕ್ರೀನ್‌ಕ್ಯಾಸ್ಟಿನ ಫ್ರೇಮ್‌ದರ. "
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:20
+#: ../data/org.cinnamon.gschema.xml.in.h:20
 msgid "The gstreamer pipeline used to encode the screencast"
 msgstr "ಸ್ಕ್ರೀನ್‌ಕ್ಯಾಸ್ಟ್‍ ಅನ್ನು ಎನ್ಕೋಡ್ ಮಾಡಲು ಬಳಸಲಾಗುವ gstreamer ಪೈಪ್‌ಲೈನ್"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:21
+#: ../data/org.cinnamon.gschema.xml.in.h:21
 msgid ""
-"The shell normally monitors active applications in order to present the most "
+"Cinnamon normally monitors active applications in order to present the most "
 "used ones (e.g. in launchers). While this data will be kept private, you may "
 "want to disable this for privacy reasons. Please note that doing so won't "
 "remove already saved data."
 msgstr ""
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:22
+#: ../data/org.cinnamon.gschema.xml.in.h:22
 msgid "Uuids of extensions to disable"
 msgstr "ಅಶಕ್ತಗೊಳಿಸಬೇಕಿರುವ Uuidಗಳ ವಿಸ್ತರಣೆಗಳು"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:23
+#: ../data/org.cinnamon.gschema.xml.in.h:23
 msgid "Whether to collect stats about applications usage"
 msgstr "ಅನ್ವಯದ ಬಳಕೆಯ ಬಗೆಗಿನ ಅಂಕಿಅಂಶಗಳನ್ನು ಸಂಗ್ರಹಿಸಬೇಕೆ"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:24
+#: ../data/org.cinnamon.gschema.xml.in.h:24
 msgid "disabled OpenSearch providers"
 msgstr "ಅಶಕ್ತಗೊಳಿಸಲಾದ OpenSearch ಒದಗಿಸುವವರು"
 
@@ -160,7 +160,7 @@ msgstr "ಅಶಕ್ತಗೊಳಿಸಲಾದ OpenSearch ಒದಗಿಸುವ
 msgid "Command not found"
 msgstr "ಆಜ್ಞೆಯು ಕಂಡು ಬಂದಿಲ್ಲ"
 
-#. Replace "Error invoking GLib.shell_parse_argv: " with
+#. Replace "Error invoking GLib.cinnamon_parse_argv: " with
 #. something nicer
 #: ../js/misc/util.js:113
 msgid "Could not parse command:"
@@ -409,7 +409,7 @@ msgid "%a %l:%M %p"
 msgstr "%a %l:%M %p"
 
 #. Translators: This is the date format to use when the calendar popup is
-#. * shown - it is shown just below the time in the shell (e.g. "Tue 9:29 AM").
+#. * shown - it is shown just below the time in Cinnamon (e.g. "Tue 9:29 AM").
 #.
 #: ../js/ui/dateMenu.js:196
 msgid "%A %B %e, %Y"
@@ -867,7 +867,7 @@ msgstr "ಟ್ಯಾಬ್ಲೆಟ್"
 msgid "Computer"
 msgstr "ಗಣಕ"
 
-#: ../js/ui/status/power.js:257 ../src/shell-app-system.c:1013
+#: ../js/ui/status/power.js:257 ../src/cinnamon-app-system.c:1013
 msgid "Unknown"
 msgstr "ಗೊತ್ತಿರದ"
 
@@ -947,49 +947,49 @@ msgstr[1] "%u ಇನ್‌ಪುಟ್‌ಗಳು"
 msgid "System Sounds"
 msgstr "ವ್ಯವಸ್ಥೆಯ ಧ್ವನಿಗಳು"
 
-#: ../src/shell-global.c:1363
+#: ../src/cinnamon-global.c:1363
 msgid "Less than a minute ago"
 msgstr "ಒಂದು ನಿಮಿಷಕ್ಕೂ ಹಿಂದೆ"
 
-#: ../src/shell-global.c:1367
+#: ../src/cinnamon-global.c:1367
 #, c-format
 msgid "%d minute ago"
 msgid_plural "%d minutes ago"
 msgstr[0] "%d ನಿಮಿಷದ ಹಿಂದೆ"
 msgstr[1] "%d ನಿಮಿಷಗಳ ಹಿಂದೆ"
 
-#: ../src/shell-global.c:1372
+#: ../src/cinnamon-global.c:1372
 #, c-format
 msgid "%d hour ago"
 msgid_plural "%d hours ago"
 msgstr[0] "%d ಗಂಟೆಯ ಹಿಂದೆ"
 msgstr[1] "%d ಗಂಟೆಗಳ ಹಿಂದೆ"
 
-#: ../src/shell-global.c:1377
+#: ../src/cinnamon-global.c:1377
 #, c-format
 msgid "%d day ago"
 msgid_plural "%d days ago"
 msgstr[0] "%d ದಿನದ ಹಿಂದೆ"
 msgstr[1] "%d ದಿನಗಳ ಹಿಂದೆ"
 
-#: ../src/shell-global.c:1382
+#: ../src/cinnamon-global.c:1382
 #, c-format
 msgid "%d week ago"
 msgid_plural "%d weeks ago"
 msgstr[0] "%d ವಾರದ ಹಿಂದೆ"
 msgstr[1] "%d ವಾರಗಳ ಹಿಂದೆ"
 
-#: ../src/shell-util.c:89
+#: ../src/cinnamon-util.c:89
 msgid "Home Folder"
 msgstr "ನೆಲೆ ಕಡತಕೋಶ"
 
 #. Translators: this is the same string as the one found in
 #. * nautilus
-#: ../src/shell-util.c:104
+#: ../src/cinnamon-util.c:104
 msgid "File System"
 msgstr "ಕಡತ ವ್ಯವಸ್ಥೆ"
 
-#: ../src/shell-util.c:250
+#: ../src/cinnamon-util.c:250
 msgid "Search"
 msgstr "ಹುಡುಕು"
 
@@ -998,7 +998,7 @@ msgstr "ಹುಡುಕು"
 #. * example, "Trash: some-directory". It means that the
 #. * directory called "some-directory" is in the trash.
 #.
-#: ../src/shell-util.c:300
+#: ../src/cinnamon-util.c:300
 #, c-format
 msgid "%1$s: %2$s"
 msgstr "%1$s: %2$s"

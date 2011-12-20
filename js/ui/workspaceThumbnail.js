@@ -4,7 +4,7 @@ const Clutter = imports.gi.Clutter;
 const Lang = imports.lang;
 const Mainloop = imports.mainloop;
 const Meta = imports.gi.Meta;
-const Shell = imports.gi.Shell;
+const Cinnamon = imports.gi.Cinnamon;
 const Signals = imports.signals;
 const St = imports.gi.St;
 
@@ -370,7 +370,7 @@ WorkspaceThumbnail.prototype = {
 
     // Tests if @win should be shown in the Overview
     _isOverviewWindow : function (win) {
-        let tracker = Shell.WindowTracker.get_default();
+        let tracker = Cinnamon.WindowTracker.get_default();
         return tracker.is_window_interesting(win.get_meta_window()) &&
                win.get_meta_window().showing_on_its_workspace();
     },
@@ -424,7 +424,7 @@ WorkspaceThumbnail.prototype = {
 
         if (source.realWindow && !this._isMyWindow(source.realWindow))
             return DND.DragMotionResult.MOVE_DROP;
-        if (source.shellWorkspaceLaunch)
+        if (source.cinnamonWorkspaceLaunch)
             return DND.DragMotionResult.COPY_DROP;
 
         return DND.DragMotionResult.CONTINUE;
@@ -451,8 +451,8 @@ WorkspaceThumbnail.prototype = {
                                                  false, // don't create workspace
                                                  time);
             return true;
-        } else if (source.shellWorkspaceLaunch) {
-            source.shellWorkspaceLaunch({ workspace: this.metaWorkspace ? this.metaWorkspace.index() : -1,
+        } else if (source.cinnamonWorkspaceLaunch) {
+            source.cinnamonWorkspaceLaunch({ workspace: this.metaWorkspace ? this.metaWorkspace.index() : -1,
                                           timestamp: time });
             return true;
         }
@@ -470,7 +470,7 @@ function ThumbnailsBox() {
 
 ThumbnailsBox.prototype = {
     _init: function() {
-        this.actor = new Shell.GenericContainer({ style_class: 'workspace-thumbnails',
+        this.actor = new Cinnamon.GenericContainer({ style_class: 'workspace-thumbnails',
                                                   request_mode: Clutter.RequestMode.WIDTH_FOR_HEIGHT });
         this.actor.connect('get-preferred-width', Lang.bind(this, this._getPreferredWidth));
         this.actor.connect('get-preferred-height', Lang.bind(this, this._getPreferredHeight));
@@ -493,7 +493,7 @@ ThumbnailsBox.prototype = {
         let indicator = new St.Bin({ style_class: 'workspace-thumbnail-indicator' });
 
         // We don't want the indicator to affect drag-and-drop
-        Shell.util_set_hidden_from_pick(indicator, true);
+        Cinnamon.util_set_hidden_from_pick(indicator, true);
 
         this._indicator = indicator;
         this.actor.add_actor(indicator);

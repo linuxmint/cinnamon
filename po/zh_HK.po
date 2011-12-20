@@ -1,12 +1,12 @@
-# Chinese (Hong Kong) translation for gnome-shell.
-# Copyright (C) 2010 gnome-shell's COPYRIGHT HOLDER
-# This file is distributed under the same license as the gnome-shell package.
+# Chinese (Hong Kong) translation for cinnamon.
+# Copyright (C) 2010 cinnamon's COPYRIGHT HOLDER
+# This file is distributed under the same license as the cinnamon package.
 # Chao-Hsiung Liao <j_h_liau@yahoo.com.tw>, 2010.
 # Wei-Lun Chao <chaoweilun@gmail.com>, 2010.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gnome-shell 3.1.92\n"
+"Project-Id-Version: cinnamon 3.1.92\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-09-25 14:52+0800\n"
 "PO-Revision-Date: 2011-09-25 14:52+0800\n"
@@ -18,64 +18,64 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
-#: ../data/gnome-shell.desktop.in.in.h:1
-msgid "GNOME Shell"
-msgstr "GNOME Shell"
+#: ../data/cinnamon.desktop.in.in.h:1
+msgid "Cinnamon"
+msgstr "Cinnamon"
 
-#: ../data/gnome-shell.desktop.in.in.h:2
+#: ../data/cinnamon.desktop.in.in.h:2
 msgid "Window management and application launching"
 msgstr "視窗管理與應用程式的執行"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:1
+#: ../data/org.cinnamon.gschema.xml.in.h:1
 msgid ""
 "Allows access to internal debugging and monitoring tools using the Alt-F2 "
 "dialog."
 msgstr "允許使用 Alt-F2 對話盒存取內部除錯和監控工具。"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:2
+#: ../data/org.cinnamon.gschema.xml.in.h:2
 msgid "Enable internal tools useful for developers and testers from Alt-F2"
 msgstr "啟用讓開發者與測試者能以 Alt-F2 使用好用的內部工具"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:3
+#: ../data/org.cinnamon.gschema.xml.in.h:3
 msgid "File extension used for storing the screencast"
 msgstr "用來儲存畫面廣播的延伸檔名"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:4
+#: ../data/org.cinnamon.gschema.xml.in.h:4
 msgid "Framerate used for recording screencasts."
 msgstr "錄製畫面廣播的框架率。"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:5
+#: ../data/org.cinnamon.gschema.xml.in.h:5
 msgid ""
-"GNOME Shell extensions have a uuid property; this key lists extensions which "
+"Cinnamon extensions have a uuid property; this key lists extensions which "
 "should be loaded. disabled-extensions overrides this setting for extensions "
 "that appear in both lists."
-msgstr "GNOME Shell 擴充功能有 uuid 屬性；這個設定鍵列出了應該載入的擴充功能。出現在兩方列表中的擴充功能會讓已停用擴充功能覆蓋這個設定值。"
+msgstr "Cinnamon 擴充功能有 uuid 屬性；這個設定鍵列出了應該載入的擴充功能。出現在兩方列表中的擴充功能會讓已停用擴充功能覆蓋這個設定值。"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:6
+#: ../data/org.cinnamon.gschema.xml.in.h:6
 msgid "History for command (Alt-F2) dialog"
 msgstr "指令 (Alt-F2) 對話盒歷史紀錄"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:7
+#: ../data/org.cinnamon.gschema.xml.in.h:7
 msgid "History for the looking glass dialog"
 msgstr "Looking glass 對話盒歷史紀錄"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:8
+#: ../data/org.cinnamon.gschema.xml.in.h:8
 msgid "If true, display date in the clock, in addition to time."
 msgstr "如設定為「true」，除了在時鐘內顯示日期外還顯示時刻。"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:9
+#: ../data/org.cinnamon.gschema.xml.in.h:9
 msgid "If true, display seconds in time."
 msgstr "如設定為「true」，在時刻中顯示秒數。"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:10
+#: ../data/org.cinnamon.gschema.xml.in.h:10
 msgid "If true, display the ISO week date in the calendar."
 msgstr "如果設為 true，在日曆中顯示 ISO 週數。"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:11
+#: ../data/org.cinnamon.gschema.xml.in.h:11
 msgid "List of desktop file IDs for favorite applications"
 msgstr "喜好的應用程式桌面檔案 ID 清單"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:13
+#: ../data/org.cinnamon.gschema.xml.in.h:13
 #, no-c-format
 msgid ""
 "Sets the GStreamer pipeline used to encode recordings. It follows the syntax "
@@ -90,66 +90,66 @@ msgid ""
 "at the optimal thread count on the system."
 msgstr "設定用來錄製的 GStreamer 管線。它根據據 gst-launch 使用的語法。管線應該要有未連接的出口(sink pad)，提供錄製視像之用。它通常會有未連接的入口(source pad)；從出口輸出的資訊就寫入輸出檔案。然而管線本身也會處理它本身的輸出 - 習慣上是透過 shout2send 之類將輸出傳送到 icecast 伺服器。當取消設定或設定為空值時，就會使用預設的管線。這個值目前為 'videorate ! vp8enc quality=10 speed=2 threads=%T ! queue ! webmmux' 即使用 VP8 codec 錄製 WEBM。%T 是在系統的最佳化執行緒計數猜測時使用的佔位符。"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:14
+#: ../data/org.cinnamon.gschema.xml.in.h:14
 msgid "Show date in clock"
 msgstr "在時鐘內顯示日期"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:15
+#: ../data/org.cinnamon.gschema.xml.in.h:15
 msgid "Show the week date in the calendar"
 msgstr "在日曆中顯示週數"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:16
+#: ../data/org.cinnamon.gschema.xml.in.h:16
 msgid "Show time with seconds"
 msgstr "在時刻中顯示秒數"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:17
+#: ../data/org.cinnamon.gschema.xml.in.h:17
 msgid ""
 "The applications corresponding to these identifiers will be displayed in the "
 "favorites area."
 msgstr "對應這些辨別碼的應用程式會顯示在喜好區域。"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:18
+#: ../data/org.cinnamon.gschema.xml.in.h:18
 msgid ""
 "The filename for recorded screencasts will be a unique filename based on the "
 "current date, and use this extension. It should be changed when recording to "
 "a different container format."
 msgstr "錄製好的畫面廣播檔案名稱會以目前的時刻作為獨特的檔名，並使用這個延伸檔名。當錄製為不同的容器格式時應該做適當更改。"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:19
+#: ../data/org.cinnamon.gschema.xml.in.h:19
 msgid ""
-"The framerate of the resulting screencast recordered by GNOME Shell's "
+"The framerate of the resulting screencast recordered by Cinnamon's "
 "screencast recorder in frames-per-second."
-msgstr "由 GNOME Shell 的畫面廣播錄製程式所錄製成果的框架率，以 frames-per-second 計。"
+msgstr "由 Cinnamon 的畫面廣播錄製程式所錄製成果的框架率，以 frames-per-second 計。"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:20
+#: ../data/org.cinnamon.gschema.xml.in.h:20
 msgid "The gstreamer pipeline used to encode the screencast"
 msgstr "用來編碼畫面廣播的 gstreamer 管線"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:21
+#: ../data/org.cinnamon.gschema.xml.in.h:21
 msgid ""
-"The shell normally monitors active applications in order to present the most "
+"Cinnamon normally monitors active applications in order to present the most "
 "used ones (e.g. in launchers). While this data will be kept private, you may "
 "want to disable this for privacy reasons. Please note that doing so won't "
 "remove already saved data."
-msgstr "這個 shell 通常會監控使用中的應用程式以便能顯示出最常使用的（例如，在程式執行器中）。雖然這個資料會保持隱密，但是你可能會基於私隱的理由想要停用這個功能。請注意這麼做並不會移除已儲存的資料。"
+msgstr "這個 cinnamon 通常會監控使用中的應用程式以便能顯示出最常使用的（例如，在程式執行器中）。雖然這個資料會保持隱密，但是你可能會基於私隱的理由想要停用這個功能。請注意這麼做並不會移除已儲存的資料。"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:22
+#: ../data/org.cinnamon.gschema.xml.in.h:22
 msgid "The type of keyboard to use."
 msgstr "要使用的鍵盤類型。"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:23
+#: ../data/org.cinnamon.gschema.xml.in.h:23
 msgid "Uuids of extensions to enable"
 msgstr "要啟用的擴充功能 Uuid"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:24
+#: ../data/org.cinnamon.gschema.xml.in.h:24
 msgid "Whether to collect stats about applications usage"
 msgstr "是否收集關於應用程式使用率的狀態"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:25
+#: ../data/org.cinnamon.gschema.xml.in.h:25
 msgid "Which keyboard to use"
 msgstr "要使用哪種鍵盤"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:26
+#: ../data/org.cinnamon.gschema.xml.in.h:26
 msgid "disabled OpenSearch providers"
 msgstr "已停用 OpenSearch 提供者"
 
@@ -206,7 +206,7 @@ msgstr "關閉電源"
 msgid "Command not found"
 msgstr "找不到指令"
 
-#. Replace "Error invoking GLib.shell_parse_argv: " with
+#. Replace "Error invoking GLib.cinnamon_parse_argv: " with
 #. something nicer
 #: ../js/misc/util.js:119
 msgid "Could not parse command:"
@@ -412,7 +412,7 @@ msgid "Next week"
 msgstr "下週"
 
 #: ../js/ui/contactDisplay.js:59 ../js/ui/notificationDaemon.js:444
-#: ../js/ui/status/power.js:223 ../src/shell-app.c:355
+#: ../js/ui/status/power.js:223 ../src/cinnamon-app.c:355
 msgid "Unknown"
 msgstr "不明"
 
@@ -489,7 +489,7 @@ msgid "%a %l:%M %p"
 msgstr "(%a)%p %l:%M"
 
 #. Translators: This is the date format to use when the calendar popup is
-#. * shown - it is shown just below the time in the shell (e.g. "Tue 9:29 AM").
+#. * shown - it is shown just below the time in Cinnamon (e.g. "Tue 9:29 AM").
 #.
 #: ../js/ui/dateMenu.js:213
 msgid "%A %B %e, %Y"
@@ -790,7 +790,7 @@ msgstr "搜尋中…"
 msgid "No matching results."
 msgstr "沒有相符的結果。"
 
-#: ../js/ui/shellMountOperation.js:285
+#: ../js/ui/cinnamonMountOperation.js:285
 msgid "Wrong password, please try again"
 msgstr "密碼錯誤，請再試一次"
 
@@ -1484,7 +1484,7 @@ msgstr "通知現在已被停用，包含聊天訊息。你的上線狀態也調
 msgid "Type to search..."
 msgstr "輸入以搜尋…"
 
-#: ../js/ui/viewSelector.js:140 ../src/shell-util.c:261
+#: ../js/ui/viewSelector.js:140 ../src/cinnamon-util.c:261
 msgid "Search"
 msgstr "搜尋"
 
@@ -1526,30 +1526,30 @@ msgstr "顯示版本"
 msgid "Mode used by GDM for login screen"
 msgstr "GDM 在登入畫面使用的模式"
 
-#: ../src/shell-app.c:581
+#: ../src/cinnamon-app.c:581
 #, c-format
 msgid "Failed to launch '%s'"
 msgstr "無法啟動「%s」"
 
-#: ../src/shell-mobile-providers.c:80
+#: ../src/cinnamon-mobile-providers.c:80
 msgid "United Kingdom"
 msgstr "英國"
 
-#: ../src/shell-mobile-providers.c:526
+#: ../src/cinnamon-mobile-providers.c:526
 msgid "Default"
 msgstr "預設值"
 
-#: ../src/shell-polkit-authentication-agent.c:334
+#: ../src/cinnamon-polkit-authentication-agent.c:334
 msgid "Authentication dialog was dismissed by the user"
 msgstr "驗證對話盒被使用者取消了"
 
-#: ../src/shell-util.c:100
+#: ../src/cinnamon-util.c:100
 msgid "Home Folder"
 msgstr "家目錄"
 
 #. Translators: this is the same string as the one found in
 #. * nautilus
-#: ../src/shell-util.c:115
+#: ../src/cinnamon-util.c:115
 msgid "File System"
 msgstr "檔案系統"
 
@@ -1558,7 +1558,7 @@ msgstr "檔案系統"
 #. * example, "Trash: some-directory". It means that the
 #. * directory called "some-directory" is in the trash.
 #.
-#: ../src/shell-util.c:311
+#: ../src/cinnamon-util.c:311
 #, c-format
 msgid "%1$s: %2$s"
 msgstr "%1$s：%2$s"
@@ -1582,11 +1582,11 @@ msgstr "%1$s：%2$s"
 #~ msgstr "calendar:week_start:0"
 
 #~ msgid ""
-#~ "GNOME Shell extensions have a uuid property; this key lists extensions "
+#~ "Cinnamon extensions have a uuid property; this key lists extensions "
 #~ "which should not be loaded. This setting overrides enabled-extensions for "
 #~ "extensions that appear in both lists."
 #~ msgstr ""
-#~ "GNOME Shell 擴充功能有 uuid 屬性；這個設定鍵列出了不應載入的擴充功能。出現"
+#~ "Cinnamon 擴充功能有 uuid 屬性；這個設定鍵列出了不應載入的擴充功能。出現"
 #~ "在兩方列表中的擴充功能會讓這個設定值覆蓋已啟用擴充功能。"
 
 #~ msgid "Uuids of extensions to disable"

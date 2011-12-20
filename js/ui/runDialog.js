@@ -6,13 +6,13 @@ const GLib = imports.gi.GLib;
 const Lang = imports.lang;
 const Meta = imports.gi.Meta;
 const St = imports.gi.St;
-const Shell = imports.gi.Shell;
+const Cinnamon = imports.gi.Cinnamon;
 const Signals = imports.signals;
 
 const FileUtils = imports.misc.fileUtils;
 const Main = imports.ui.main;
 const ModalDialog = imports.ui.modalDialog;
-const ShellEntry = imports.ui.shellEntry;
+const CinnamonEntry = imports.ui.cinnamonEntry;
 const Tweener = imports.ui.tweener;
 const Util = imports.misc.util;
 const History = imports.misc.history;
@@ -211,7 +211,7 @@ __proto__: ModalDialog.ModalDialog.prototype,
         this.contentLayout.add(label, { y_align: St.Align.START });
 
         let entry = new St.Entry({ style_class: 'run-dialog-entry' });
-        ShellEntry.addContextMenu(entry);
+        CinnamonEntry.addContextMenu(entry);
 
         this._entryText = entry.clutter_text;
         this.contentLayout.add(entry, { y_align: St.Align.START });
@@ -246,7 +246,7 @@ __proto__: ModalDialog.ModalDialog.prototype,
             let symbol = e.get_key_symbol();
             if (symbol == Clutter.Return || symbol == Clutter.KP_Enter) {
                 this.popModal();
-                if (Shell.get_event_state(e) & Clutter.ModifierType.CONTROL_MASK)
+                if (Cinnamon.get_event_state(e) & Clutter.ModifierType.CONTROL_MASK)
                     this._run(o.get_text(), true);
                 else
                     this._run(o.get_text(), false);

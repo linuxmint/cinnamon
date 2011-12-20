@@ -7,7 +7,7 @@ const St = imports.gi.St;
 
 const Main = imports.ui.main;
 const MessageTray = imports.ui.messageTray;
-const ShellMountOperation = imports.ui.shellMountOperation;
+const CinnamonMountOperation = imports.ui.cinnamonMountOperation;
 
 // GSettings keys
 const SETTINGS_SCHEMA = 'org.gnome.desktop.media-handling';
@@ -63,7 +63,7 @@ function startAppForMount(app, mount) {
 /******************************************/
 
 const HotplugSnifferIface = {
-    name: 'org.gnome.Shell.HotplugSniffer',
+    name: 'org.Cinnamon.HotplugSniffer',
     methods: [{ name: 'SniffURI',
                 inSignature: 's',
                 outSignature: 'as' }]
@@ -76,8 +76,8 @@ const HotplugSniffer = function() {
 HotplugSniffer.prototype = {
     _init: function() {
         DBus.session.proxifyObject(this,
-                                   'org.gnome.Shell.HotplugSniffer',
-                                   '/org/gnome/Shell/HotplugSniffer');
+                                   'org.Cinnamon.HotplugSniffer',
+                                   '/org/Cinnamon/HotplugSniffer');
     },
 };
 DBus.proxifyPrototype(HotplugSniffer.prototype, HotplugSnifferIface);
@@ -204,7 +204,7 @@ AutorunManager.prototype = {
     },
 
     ejectMount: function(mount) {
-        let mountOp = new ShellMountOperation.ShellMountOperation(mount);
+        let mountOp = new CinnamonMountOperation.CinnamonMountOperation(mount);
 
         // first, see if we have a drive
         let drive = mount.get_drive();

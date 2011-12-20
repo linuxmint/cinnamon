@@ -37,19 +37,19 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-libexec_PROGRAMS = gnome-shell-calendar-server$(EXEEXT) \
-	gnome-shell-hotplug-sniffer$(EXEEXT) \
-	gnome-shell-perf-helper$(EXEEXT)
+libexec_PROGRAMS = cinnamon-calendar-server$(EXEEXT) \
+	cinnamon-hotplug-sniffer$(EXEEXT) \
+	cinnamon-perf-helper$(EXEEXT)
 noinst_PROGRAMS = test-theme$(EXEEXT) $(am__EXEEXT_1) \
 	run-js-test$(EXEEXT)
-bin_PROGRAMS = gnome-shell-real$(EXEEXT)
-@USE_JHBUILD_WRAPPER_SCRIPT_TRUE@am__append_1 = gnome-shell-jhbuild
+bin_PROGRAMS = cinnamon-real$(EXEEXT)
+@USE_JHBUILD_WRAPPER_SCRIPT_TRUE@am__append_1 = cinnamon-jhbuild
 DIST_COMMON = $(srcdir)/Makefile-calendar-server.am \
 	$(srcdir)/Makefile-gvc.am \
 	$(srcdir)/Makefile-hotplug-sniffer.am $(srcdir)/Makefile-st.am \
 	$(srcdir)/Makefile-tray.am $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in
-@BUILD_RECORDER_TRUE@am__append_2 = $(shell_recorder_sources) $(shell_recorder_non_gir_sources)
+@BUILD_RECORDER_TRUE@am__append_2 = $(cinnamon_recorder_sources) $(cinnamon_recorder_non_gir_sources)
 @BUILD_RECORDER_TRUE@am__append_3 = test-recorder
 subdir = src
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -94,73 +94,73 @@ am__installdirs = "$(DESTDIR)$(privlibdir)" "$(DESTDIR)$(bindir)" \
 	"$(DESTDIR)$(servicedir)" "$(DESTDIR)$(typelibdir)"
 LTLIBRARIES = $(noinst_LTLIBRARIES) $(privlib_LTLIBRARIES)
 am__DEPENDENCIES_1 =
-libgnome_shell_la_DEPENDENCIES = $(am__DEPENDENCIES_1) \
+libgnome_cinnamon_la_DEPENDENCIES = $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) libst-1.0.la libtray.la libgvc.la \
 	$(am__DEPENDENCIES_1)
-am__libgnome_shell_la_SOURCES_DIST = shell-marshal.h shell-marshal.c \
-	shell-enum-types.h shell-enum-types.c shell-app.h \
-	shell-app-system.h shell-app-usage.h shell-arrow.h \
-	shell-contact-system.h shell-doc-system.h \
-	shell-embedded-window.h shell-generic-container.h \
-	shell-gtk-embed.h shell-global.h shell-mobile-providers.h \
-	shell-mount-operation.h shell-network-agent.h shell-perf-log.h \
-	shell-slicer.h shell-stack.h shell-tp-client.h \
-	shell-tray-icon.h shell-tray-manager.h shell-util.h \
-	shell-window-tracker.h shell-wm.h shell-xfixes-cursor.h \
-	shell-app-private.h shell-app-system-private.h \
-	shell-embedded-window-private.h shell-global-private.h \
-	shell-jsapi-compat-private.h shell-window-tracker-private.h \
-	shell-wm-private.h gnome-shell-plugin.c shell-app.c \
-	shell-a11y.h shell-a11y.c shell-app-system.c shell-app-usage.c \
-	shell-arrow.c shell-contact-system.c shell-doc-system.c \
-	shell-embedded-window.c shell-generic-container.c \
-	shell-gtk-embed.c shell-global.c shell-mobile-providers.c \
-	shell-mount-operation.c shell-network-agent.c shell-perf-log.c \
-	shell-polkit-authentication-agent.h \
-	shell-polkit-authentication-agent.c shell-slicer.c \
-	shell-stack.c shell-tp-client.c shell-tray-icon.c \
-	shell-tray-manager.c shell-util.c shell-window-tracker.c \
-	shell-wm.c shell-xfixes-cursor.c shell-recorder.c \
-	shell-recorder.h shell-recorder-src.c shell-recorder-src.h
-am__objects_1 = libgnome_shell_la-shell-marshal.lo \
-	libgnome_shell_la-shell-enum-types.lo
+am__libgnome_cinnamon_la_SOURCES_DIST = cinnamon-marshal.h cinnamon-marshal.c \
+	cinnamon-enum-types.h cinnamon-enum-types.c cinnamon-app.h \
+	cinnamon-app-system.h cinnamon-app-usage.h cinnamon-arrow.h \
+	cinnamon-contact-system.h cinnamon-doc-system.h \
+	cinnamon-embedded-window.h cinnamon-generic-container.h \
+	cinnamon-gtk-embed.h cinnamon-global.h cinnamon-mobile-providers.h \
+	cinnamon-mount-operation.h cinnamon-network-agent.h cinnamon-perf-log.h \
+	cinnamon-slicer.h cinnamon-stack.h cinnamon-tp-client.h \
+	cinnamon-tray-icon.h cinnamon-tray-manager.h cinnamon-util.h \
+	cinnamon-window-tracker.h cinnamon-wm.h cinnamon-xfixes-cursor.h \
+	cinnamon-app-private.h cinnamon-app-system-private.h \
+	cinnamon-embedded-window-private.h cinnamon-global-private.h \
+	cinnamon-jsapi-compat-private.h cinnamon-window-tracker-private.h \
+	cinnamon-wm-private.h cinnamon-plugin.c cinnamon-app.c \
+	cinnamon-a11y.h cinnamon-a11y.c cinnamon-app-system.c cinnamon-app-usage.c \
+	cinnamon-arrow.c cinnamon-contact-system.c cinnamon-doc-system.c \
+	cinnamon-embedded-window.c cinnamon-generic-container.c \
+	cinnamon-gtk-embed.c cinnamon-global.c cinnamon-mobile-providers.c \
+	cinnamon-mount-operation.c cinnamon-network-agent.c cinnamon-perf-log.c \
+	cinnamon-polkit-authentication-agent.h \
+	cinnamon-polkit-authentication-agent.c cinnamon-slicer.c \
+	cinnamon-stack.c cinnamon-tp-client.c cinnamon-tray-icon.c \
+	cinnamon-tray-manager.c cinnamon-util.c cinnamon-window-tracker.c \
+	cinnamon-wm.c cinnamon-xfixes-cursor.c cinnamon-recorder.c \
+	cinnamon-recorder.h cinnamon-recorder-src.c cinnamon-recorder-src.h
+am__objects_1 = libgnome_cinnamon_la-cinnamon-marshal.lo \
+	libgnome_cinnamon_la-cinnamon-enum-types.lo
 am__objects_2 =
-am__objects_3 = libgnome_shell_la-shell-recorder.lo
-am__objects_4 = libgnome_shell_la-shell-recorder-src.lo
+am__objects_3 = libgnome_cinnamon_la-cinnamon-recorder.lo
+am__objects_4 = libgnome_cinnamon_la-cinnamon-recorder-src.lo
 @BUILD_RECORDER_TRUE@am__objects_5 = $(am__objects_3) $(am__objects_4)
-am_libgnome_shell_la_OBJECTS = $(am__objects_1) $(am__objects_2) \
-	libgnome_shell_la-gnome-shell-plugin.lo \
-	libgnome_shell_la-shell-app.lo libgnome_shell_la-shell-a11y.lo \
-	libgnome_shell_la-shell-app-system.lo \
-	libgnome_shell_la-shell-app-usage.lo \
-	libgnome_shell_la-shell-arrow.lo \
-	libgnome_shell_la-shell-contact-system.lo \
-	libgnome_shell_la-shell-doc-system.lo \
-	libgnome_shell_la-shell-embedded-window.lo \
-	libgnome_shell_la-shell-generic-container.lo \
-	libgnome_shell_la-shell-gtk-embed.lo \
-	libgnome_shell_la-shell-global.lo \
-	libgnome_shell_la-shell-mobile-providers.lo \
-	libgnome_shell_la-shell-mount-operation.lo \
-	libgnome_shell_la-shell-network-agent.lo \
-	libgnome_shell_la-shell-perf-log.lo \
-	libgnome_shell_la-shell-polkit-authentication-agent.lo \
-	libgnome_shell_la-shell-slicer.lo \
-	libgnome_shell_la-shell-stack.lo \
-	libgnome_shell_la-shell-tp-client.lo \
-	libgnome_shell_la-shell-tray-icon.lo \
-	libgnome_shell_la-shell-tray-manager.lo \
-	libgnome_shell_la-shell-util.lo \
-	libgnome_shell_la-shell-window-tracker.lo \
-	libgnome_shell_la-shell-wm.lo \
-	libgnome_shell_la-shell-xfixes-cursor.lo $(am__objects_5)
-libgnome_shell_la_OBJECTS = $(am_libgnome_shell_la_OBJECTS)
+am_libgnome_cinnamon_la_OBJECTS = $(am__objects_1) $(am__objects_2) \
+	libgnome_cinnamon_la-cinnamon-plugin.lo \
+	libgnome_cinnamon_la-cinnamon-app.lo libgnome_cinnamon_la-cinnamon-a11y.lo \
+	libgnome_cinnamon_la-cinnamon-app-system.lo \
+	libgnome_cinnamon_la-cinnamon-app-usage.lo \
+	libgnome_cinnamon_la-cinnamon-arrow.lo \
+	libgnome_cinnamon_la-cinnamon-contact-system.lo \
+	libgnome_cinnamon_la-cinnamon-doc-system.lo \
+	libgnome_cinnamon_la-cinnamon-embedded-window.lo \
+	libgnome_cinnamon_la-cinnamon-generic-container.lo \
+	libgnome_cinnamon_la-cinnamon-gtk-embed.lo \
+	libgnome_cinnamon_la-cinnamon-global.lo \
+	libgnome_cinnamon_la-cinnamon-mobile-providers.lo \
+	libgnome_cinnamon_la-cinnamon-mount-operation.lo \
+	libgnome_cinnamon_la-cinnamon-network-agent.lo \
+	libgnome_cinnamon_la-cinnamon-perf-log.lo \
+	libgnome_cinnamon_la-cinnamon-polkit-authentication-agent.lo \
+	libgnome_cinnamon_la-cinnamon-slicer.lo \
+	libgnome_cinnamon_la-cinnamon-stack.lo \
+	libgnome_cinnamon_la-cinnamon-tp-client.lo \
+	libgnome_cinnamon_la-cinnamon-tray-icon.lo \
+	libgnome_cinnamon_la-cinnamon-tray-manager.lo \
+	libgnome_cinnamon_la-cinnamon-util.lo \
+	libgnome_cinnamon_la-cinnamon-window-tracker.lo \
+	libgnome_cinnamon_la-cinnamon-wm.lo \
+	libgnome_cinnamon_la-cinnamon-xfixes-cursor.lo $(am__objects_5)
+libgnome_cinnamon_la_OBJECTS = $(am_libgnome_cinnamon_la_OBJECTS)
 AM_V_lt = $(am__v_lt_$(V))
 am__v_lt_ = $(am__v_lt_$(AM_DEFAULT_VERBOSITY))
 am__v_lt_0 = --silent
-libgnome_shell_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
+libgnome_cinnamon_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
-	$(AM_CFLAGS) $(CFLAGS) $(libgnome_shell_la_LDFLAGS) $(LDFLAGS) \
+	$(AM_CFLAGS) $(CFLAGS) $(libgnome_cinnamon_la_LDFLAGS) $(LDFLAGS) \
 	-o $@
 libgvc_la_DEPENDENCIES = $(am__DEPENDENCIES_1)
 am__objects_6 = libgvc_la-gvc-mixer-stream.lo \
@@ -217,47 +217,47 @@ libtray_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(libtray_la_LDFLAGS) $(LDFLAGS) -o $@
 @BUILD_RECORDER_TRUE@am__EXEEXT_1 = test-recorder$(EXEEXT)
 PROGRAMS = $(bin_PROGRAMS) $(libexec_PROGRAMS) $(noinst_PROGRAMS)
-am_gnome_shell_calendar_server_OBJECTS =  \
-	gnome_shell_calendar_server-calendar-sources.$(OBJEXT) \
-	gnome_shell_calendar_server-gnome-shell-calendar-server.$(OBJEXT) \
+am_gnome_cinnamon_calendar_server_OBJECTS =  \
+	gnome_cinnamon_calendar_server-calendar-sources.$(OBJEXT) \
+	gnome_cinnamon_calendar_server-cinnamon-calendar-server.$(OBJEXT) \
 	$(am__objects_2)
-gnome_shell_calendar_server_OBJECTS =  \
-	$(am_gnome_shell_calendar_server_OBJECTS)
-gnome_shell_calendar_server_LDADD = $(LDADD)
-gnome_shell_calendar_server_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
+gnome_cinnamon_calendar_server_OBJECTS =  \
+	$(am_gnome_cinnamon_calendar_server_OBJECTS)
+gnome_cinnamon_calendar_server_LDADD = $(LDADD)
+gnome_cinnamon_calendar_server_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
-	$(gnome_shell_calendar_server_CFLAGS) $(CFLAGS) \
-	$(gnome_shell_calendar_server_LDFLAGS) $(LDFLAGS) -o $@
-am_gnome_shell_hotplug_sniffer_OBJECTS =  \
-	gnome_shell_hotplug_sniffer-shell-mime-sniffer.$(OBJEXT) \
-	gnome_shell_hotplug_sniffer-hotplug-sniffer.$(OBJEXT) \
+	$(gnome_cinnamon_calendar_server_CFLAGS) $(CFLAGS) \
+	$(gnome_cinnamon_calendar_server_LDFLAGS) $(LDFLAGS) -o $@
+am_gnome_cinnamon_hotplug_sniffer_OBJECTS =  \
+	gnome_cinnamon_hotplug_sniffer-cinnamon-mime-sniffer.$(OBJEXT) \
+	gnome_cinnamon_hotplug_sniffer-hotplug-sniffer.$(OBJEXT) \
 	$(am__objects_2)
-gnome_shell_hotplug_sniffer_OBJECTS =  \
-	$(am_gnome_shell_hotplug_sniffer_OBJECTS)
-gnome_shell_hotplug_sniffer_LDADD = $(LDADD)
-gnome_shell_hotplug_sniffer_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
+gnome_cinnamon_hotplug_sniffer_OBJECTS =  \
+	$(am_gnome_cinnamon_hotplug_sniffer_OBJECTS)
+gnome_cinnamon_hotplug_sniffer_LDADD = $(LDADD)
+gnome_cinnamon_hotplug_sniffer_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
-	$(gnome_shell_hotplug_sniffer_CFLAGS) $(CFLAGS) \
-	$(gnome_shell_hotplug_sniffer_LDFLAGS) $(LDFLAGS) -o $@
-am_gnome_shell_perf_helper_OBJECTS =  \
-	gnome_shell_perf_helper-shell-perf-helper.$(OBJEXT)
-gnome_shell_perf_helper_OBJECTS =  \
-	$(am_gnome_shell_perf_helper_OBJECTS)
-gnome_shell_perf_helper_DEPENDENCIES = $(am__DEPENDENCIES_1)
-am_gnome_shell_real_OBJECTS = gnome_shell_real-main.$(OBJEXT)
-gnome_shell_real_OBJECTS = $(am_gnome_shell_real_OBJECTS)
+	$(gnome_cinnamon_hotplug_sniffer_CFLAGS) $(CFLAGS) \
+	$(gnome_cinnamon_hotplug_sniffer_LDFLAGS) $(LDFLAGS) -o $@
+am_gnome_cinnamon_perf_helper_OBJECTS =  \
+	gnome_cinnamon_perf_helper-cinnamon-perf-helper.$(OBJEXT)
+gnome_cinnamon_perf_helper_OBJECTS =  \
+	$(am_gnome_cinnamon_perf_helper_OBJECTS)
+gnome_cinnamon_perf_helper_DEPENDENCIES = $(am__DEPENDENCIES_1)
+am_gnome_cinnamon_real_OBJECTS = gnome_cinnamon_real-main.$(OBJEXT)
+gnome_cinnamon_real_OBJECTS = $(am_gnome_cinnamon_real_OBJECTS)
 am__DEPENDENCIES_2 = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	libst-1.0.la libtray.la libgvc.la $(am__DEPENDENCIES_1)
 am_run_js_test_OBJECTS = run_js_test-run-js-test.$(OBJEXT)
 run_js_test_OBJECTS = $(am_run_js_test_OBJECTS)
-run_js_test_DEPENDENCIES = libgnome-shell.la $(am__DEPENDENCIES_2)
+run_js_test_DEPENDENCIES = libcinnamon.la $(am__DEPENDENCIES_2)
 run_js_test_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(run_js_test_LDFLAGS) $(LDFLAGS) -o $@
-am__test_recorder_SOURCES_DIST = shell-recorder.c shell-recorder.h \
-	shell-recorder-src.c shell-recorder-src.h test-recorder.c
-am__objects_13 = test_recorder-shell-recorder.$(OBJEXT)
-am__objects_14 = test_recorder-shell-recorder-src.$(OBJEXT)
+am__test_recorder_SOURCES_DIST = cinnamon-recorder.c cinnamon-recorder.h \
+	cinnamon-recorder-src.c cinnamon-recorder-src.h test-recorder.c
+am__objects_13 = test_recorder-cinnamon-recorder.$(OBJEXT)
+am__objects_14 = test_recorder-cinnamon-recorder-src.$(OBJEXT)
 @BUILD_RECORDER_TRUE@am_test_recorder_OBJECTS = $(am__objects_13) \
 @BUILD_RECORDER_TRUE@	$(am__objects_14) \
 @BUILD_RECORDER_TRUE@	test_recorder-test-recorder.$(OBJEXT)
@@ -269,7 +269,7 @@ test_theme_OBJECTS = $(am_test_theme_OBJECTS)
 test_theme_DEPENDENCIES = libst-1.0.la
 SCRIPTS = $(bin_SCRIPTS)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
-depcomp = $(SHELL) $(top_srcdir)/config/depcomp
+depcomp = $(CINNAMON) $(top_srcdir)/config/depcomp
 am__depfiles_maybe = depfiles
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
@@ -294,18 +294,18 @@ am__v_CCLD_0 = @echo "  CCLD  " $@;
 AM_V_GEN = $(am__v_GEN_$(V))
 am__v_GEN_ = $(am__v_GEN_$(AM_DEFAULT_VERBOSITY))
 am__v_GEN_0 = @echo "  GEN   " $@;
-SOURCES = $(libgnome_shell_la_SOURCES) $(libgvc_la_SOURCES) \
+SOURCES = $(libgnome_cinnamon_la_SOURCES) $(libgvc_la_SOURCES) \
 	$(libst_1_0_la_SOURCES) $(libtray_la_SOURCES) \
-	$(gnome_shell_calendar_server_SOURCES) \
-	$(gnome_shell_hotplug_sniffer_SOURCES) \
-	$(gnome_shell_perf_helper_SOURCES) $(gnome_shell_real_SOURCES) \
+	$(gnome_cinnamon_calendar_server_SOURCES) \
+	$(gnome_cinnamon_hotplug_sniffer_SOURCES) \
+	$(gnome_cinnamon_perf_helper_SOURCES) $(gnome_cinnamon_real_SOURCES) \
 	$(run_js_test_SOURCES) $(test_recorder_SOURCES) \
 	$(test_theme_SOURCES)
-DIST_SOURCES = $(am__libgnome_shell_la_SOURCES_DIST) \
+DIST_SOURCES = $(am__libgnome_cinnamon_la_SOURCES_DIST) \
 	$(libgvc_la_SOURCES) $(libst_1_0_la_SOURCES) \
-	$(libtray_la_SOURCES) $(gnome_shell_calendar_server_SOURCES) \
-	$(gnome_shell_hotplug_sniffer_SOURCES) \
-	$(gnome_shell_perf_helper_SOURCES) $(gnome_shell_real_SOURCES) \
+	$(libtray_la_SOURCES) $(gnome_cinnamon_calendar_server_SOURCES) \
+	$(gnome_cinnamon_hotplug_sniffer_SOURCES) \
+	$(gnome_cinnamon_perf_helper_SOURCES) $(gnome_cinnamon_real_SOURCES) \
 	$(run_js_test_SOURCES) $(am__test_recorder_SOURCES_DIST) \
 	$(test_theme_SOURCES)
 DATA = $(noinst_DATA) $(service_DATA) $(typelib_DATA)
@@ -364,8 +364,8 @@ GLIB_LIBS = @GLIB_LIBS@
 GLIB_MKENUMS = @GLIB_MKENUMS@
 GMSGFMT = @GMSGFMT@
 GMSGFMT_015 = @GMSGFMT_015@
-GNOME_SHELL_CFLAGS = @GNOME_SHELL_CFLAGS@
-GNOME_SHELL_LIBS = @GNOME_SHELL_LIBS@
+CINNAMON_CFLAGS = @CINNAMON_CFLAGS@
+CINNAMON_LIBS = @CINNAMON_LIBS@
 GOBJECT_QUERY = @GOBJECT_QUERY@
 GREP = @GREP@
 GSETTINGS_DISABLE_SCHEMAS_COMPILE = @GSETTINGS_DISABLE_SCHEMAS_COMPILE@
@@ -442,17 +442,17 @@ PYTHON_VERSION = @PYTHON_VERSION@
 RANLIB = @RANLIB@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
-SHELL = @SHELL@
-SHELL_HOTPLUG_SNIFFER_CFLAGS = @SHELL_HOTPLUG_SNIFFER_CFLAGS@
-SHELL_HOTPLUG_SNIFFER_LIBS = @SHELL_HOTPLUG_SNIFFER_LIBS@
-SHELL_PERF_HELPER_CFLAGS = @SHELL_PERF_HELPER_CFLAGS@
-SHELL_PERF_HELPER_LIBS = @SHELL_PERF_HELPER_LIBS@
-SHELL_SYSTEM_CA_FILE = @SHELL_SYSTEM_CA_FILE@
+CINNAMON = @CINNAMON@
+CINNAMON_HOTPLUG_SNIFFER_CFLAGS = @CINNAMON_HOTPLUG_SNIFFER_CFLAGS@
+CINNAMON_HOTPLUG_SNIFFER_LIBS = @CINNAMON_HOTPLUG_SNIFFER_LIBS@
+CINNAMON_PERF_HELPER_CFLAGS = @CINNAMON_PERF_HELPER_CFLAGS@
+CINNAMON_PERF_HELPER_LIBS = @CINNAMON_PERF_HELPER_LIBS@
+CINNAMON_SYSTEM_CA_FILE = @CINNAMON_SYSTEM_CA_FILE@
 STRIP = @STRIP@
 ST_CFLAGS = @ST_CFLAGS@
 ST_LIBS = @ST_LIBS@
-TEST_SHELL_RECORDER_CFLAGS = @TEST_SHELL_RECORDER_CFLAGS@
-TEST_SHELL_RECORDER_LIBS = @TEST_SHELL_RECORDER_LIBS@
+TEST_CINNAMON_RECORDER_CFLAGS = @TEST_CINNAMON_RECORDER_CFLAGS@
+TEST_CINNAMON_RECORDER_LIBS = @TEST_CINNAMON_RECORDER_LIBS@
 TRAY_CFLAGS = @TRAY_CFLAGS@
 TRAY_LIBS = @TRAY_LIBS@
 TYPELIBDIR = @TYPELIBDIR@
@@ -520,36 +520,36 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 NULL = 
 BUILT_SOURCES = $(st_built_sources) st.h $(tray_built_sources) \
-	$(shell_built_sources)
-CLEANFILES = $(service_DATA) $(gir_DATA) $(typelib_DATA) gnome-shell \
+	$(cinnamon_built_sources)
+CLEANFILES = $(service_DATA) $(gir_DATA) $(typelib_DATA) cinnamon \
 	$(bin_SCRIPTS) stamp-st-marshal.h stamp-st-enum-types.h \
 	stamp-st.h $(TRAY_STAMP_FILES) $(BUILT_SOURCES) Gvc-1.0.gir \
-	stamp-shell-marshal.h stamp-shell-enum-types.h Shell-0.1.gir \
+	stamp-cinnamon-marshal.h stamp-cinnamon-enum-types.h Cinnamon-0.1.gir \
 	St-1.0.gir
-EXTRA_DIST = gnome-shell-extension-tool.in gnome-shell-jhbuild.in \
+EXTRA_DIST = cinnamon-extension-tool.in cinnamon-jhbuild.in \
 	st/test-theme.css st/st-marshal.list st/st-enum-types.h.in \
 	st/st-enum-types.c.in tray/na-marshal.list \
 	calendar-server/README \
-	calendar-server/org.gnome.Shell.CalendarServer.service.in \
+	calendar-server/org.Cinnamon.CalendarServer.service.in \
 	$(NULL) \
-	hotplug-sniffer/org.gnome.Shell.HotplugSniffer.service.in \
-	$(NULL) shell-marshal.list shell-enum-types.h.in \
-	shell-enum-types.c.in
-bin_SCRIPTS = gnome-shell-extension-tool $(am__append_1)
+	hotplug-sniffer/org.Cinnamon.HotplugSniffer.service.in \
+	$(NULL) cinnamon-marshal.list cinnamon-enum-types.h.in \
+	cinnamon-enum-types.c.in
+bin_SCRIPTS = cinnamon-extension-tool $(am__append_1)
 noinst_LTLIBRARIES = libst-1.0.la libtray.la libgvc.la
 service_in_files =  \
-	calendar-server/org.gnome.Shell.CalendarServer.service.in \
-	hotplug-sniffer/org.gnome.Shell.HotplugSniffer.service.in
-INTROSPECTION_GIRS = Gvc-1.0.gir Shell-0.1.gir St-1.0.gir
+	calendar-server/org.Cinnamon.CalendarServer.service.in \
+	hotplug-sniffer/org.Cinnamon.HotplugSniffer.service.in
+INTROSPECTION_GIRS = Gvc-1.0.gir Cinnamon-0.1.gir St-1.0.gir
 INTROSPECTION_SCANNER_ARGS = --warn-all --warn-error --add-include-path=$(srcdir)
 INTROSPECTION_COMPILER_ARGS = --includedir=$(srcdir) --includedir=$(MUTTER_TYPELIB_DIR)
 typelibdir = $(pkglibdir)
 typelib_DATA = $(INTROSPECTION_GIRS:.gir=.typelib)
 servicedir = $(datadir)/dbus-1/services
 service_DATA = $(service_in_files:.service.in=.service)
-@USE_JHBUILD_WRAPPER_SCRIPT_FALSE@gnome_shell = gnome-shell-real
-@USE_JHBUILD_WRAPPER_SCRIPT_TRUE@gnome_shell = gnome-shell-jhbuild
-noinst_DATA = gnome-shell
+@USE_JHBUILD_WRAPPER_SCRIPT_FALSE@cinnamon = cinnamon-real
+@USE_JHBUILD_WRAPPER_SCRIPT_TRUE@cinnamon = cinnamon-jhbuild
+noinst_DATA = cinnamon
 generated_script_substitutions = \
 	    -e "s|@bindir[@]|$(bindir)|" \
 	    -e "s|@datadir[@]|$(datadir)|" \
@@ -755,155 +755,155 @@ Gvc_1_0_gir_INCLUDES = GObject-2.0 Gio-2.0
 Gvc_1_0_gir_CFLAGS = $(INCLUDES) -I$(srcdir)/gvc -DWITH_INTROSPECTION
 Gvc_1_0_gir_LIBS = libgvc.la
 Gvc_1_0_gir_FILES = $(addprefix $(srcdir)/,$(libgvc_la_gir_sources))
-gnome_shell_calendar_server_SOURCES = \
+gnome_cinnamon_calendar_server_SOURCES = \
 	calendar-server/calendar-debug.h							\
 	calendar-server/calendar-sources.c		calendar-server/calendar-sources.h	\
-	calendar-server/gnome-shell-calendar-server.c						\
+	calendar-server/cinnamon-calendar-server.c						\
 	$(NULL)
 
-gnome_shell_calendar_server_CFLAGS = \
+gnome_cinnamon_calendar_server_CFLAGS = \
 	-I$(top_srcdir)/src			\
 	-DPREFIX=\""$(prefix)"\"		\
 	-DLIBDIR=\""$(libdir)"\"		\
 	-DDATADIR=\""$(datadir)"\"		\
 	-DG_DISABLE_DEPRECATED			\
-	-DG_LOG_DOMAIN=\"ShellCalendarServer\"	\
+	-DG_LOG_DOMAIN=\"CinnamonCalendarServer\"	\
 	$(CALENDAR_SERVER_CFLAGS)		\
 	$(NULL)
 
-gnome_shell_calendar_server_LDFLAGS = \
+gnome_cinnamon_calendar_server_LDFLAGS = \
 	$(CALENDAR_SERVER_LIBS)			\
 	$(NULL)
 
-gnome_shell_hotplug_sniffer_SOURCES = \
+gnome_cinnamon_hotplug_sniffer_SOURCES = \
 	hotplug-sniffer/hotplug-mimetypes.h \
-	hotplug-sniffer/shell-mime-sniffer.h \
-	hotplug-sniffer/shell-mime-sniffer.c \
+	hotplug-sniffer/cinnamon-mime-sniffer.h \
+	hotplug-sniffer/cinnamon-mime-sniffer.c \
 	hotplug-sniffer/hotplug-sniffer.c \
 	$(NULL)
 
-gnome_shell_hotplug_sniffer_CFLAGS = \
+gnome_cinnamon_hotplug_sniffer_CFLAGS = \
 	-I$(top_srcdir)/src			\
 	-DG_DISABLE_DEPRECATED			\
-	$(SHELL_HOTPLUG_SNIFFER_CFLAGS)		\
+	$(CINNAMON_HOTPLUG_SNIFFER_CFLAGS)		\
 	$(NULL)
 
-gnome_shell_hotplug_sniffer_LDFLAGS = \
-	$(SHELL_HOTPLUG_SNIFFER_LIBS)		\
+gnome_cinnamon_hotplug_sniffer_LDFLAGS = \
+	$(CINNAMON_HOTPLUG_SNIFFER_LIBS)		\
 	$(NULL)
 
-gnome_shell_cflags = \
-	$(GNOME_SHELL_CFLAGS)			\
+gnome_cinnamon_cflags = \
+	$(CINNAMON_CFLAGS)			\
 	-I$(srcdir)/tray			\
 	-DVERSION=\"$(VERSION)\"		\
 	-DLOCALEDIR=\"$(datadir)/locale\" 	\
 	-DDATADIR=\"$(datadir)\"		\
-	-DGNOME_SHELL_LIBEXECDIR=\"$(libexecdir)\"	\
-	-DGNOME_SHELL_DATADIR=\"$(pkgdatadir)\"	\
-	-DGNOME_SHELL_PKGLIBDIR=\"$(pkglibdir)\" \
+	-DCINNAMON_LIBEXECDIR=\"$(libexecdir)\"	\
+	-DCINNAMON_DATADIR=\"$(pkgdatadir)\"	\
+	-DCINNAMON_PKGLIBDIR=\"$(pkglibdir)\" \
 	-DJSDIR=\"$(pkgdatadir)/js\"
 
 privlibdir = $(pkglibdir)
-privlib_LTLIBRARIES = libgnome-shell.la
-shell_built_sources = \
-	shell-marshal.h \
-	shell-marshal.c \
-	shell-enum-types.h \
-	shell-enum-types.c
+privlib_LTLIBRARIES = libcinnamon.la
+cinnamon_built_sources = \
+	cinnamon-marshal.h \
+	cinnamon-marshal.c \
+	cinnamon-enum-types.h \
+	cinnamon-enum-types.c
 
-shell_public_headers_h = \
-	shell-app.h			\
-	shell-app-system.h		\
-	shell-app-usage.h		\
-	shell-arrow.h			\
-	shell-contact-system.h	\
-	shell-doc-system.h		\
-	shell-embedded-window.h		\
-	shell-generic-container.h	\
-	shell-gtk-embed.h		\
-	shell-global.h			\
-	shell-mobile-providers.h	\
-	shell-mount-operation.h		\
-	shell-network-agent.h		\
-	shell-perf-log.h		\
-	shell-slicer.h			\
-	shell-stack.h			\
-	shell-tp-client.h		\
-	shell-tray-icon.h		\
-	shell-tray-manager.h		\
-	shell-util.h			\
-	shell-window-tracker.h		\
-	shell-wm.h			\
-	shell-xfixes-cursor.h
+cinnamon_public_headers_h = \
+	cinnamon-app.h			\
+	cinnamon-app-system.h		\
+	cinnamon-app-usage.h		\
+	cinnamon-arrow.h			\
+	cinnamon-contact-system.h	\
+	cinnamon-doc-system.h		\
+	cinnamon-embedded-window.h		\
+	cinnamon-generic-container.h	\
+	cinnamon-gtk-embed.h		\
+	cinnamon-global.h			\
+	cinnamon-mobile-providers.h	\
+	cinnamon-mount-operation.h		\
+	cinnamon-network-agent.h		\
+	cinnamon-perf-log.h		\
+	cinnamon-slicer.h			\
+	cinnamon-stack.h			\
+	cinnamon-tp-client.h		\
+	cinnamon-tray-icon.h		\
+	cinnamon-tray-manager.h		\
+	cinnamon-util.h			\
+	cinnamon-window-tracker.h		\
+	cinnamon-wm.h			\
+	cinnamon-xfixes-cursor.h
 
-libgnome_shell_la_SOURCES = $(shell_built_sources) \
-	$(shell_public_headers_h) shell-app-private.h \
-	shell-app-system-private.h shell-embedded-window-private.h \
-	shell-global-private.h shell-jsapi-compat-private.h \
-	shell-window-tracker-private.h shell-wm-private.h \
-	gnome-shell-plugin.c shell-app.c shell-a11y.h shell-a11y.c \
-	shell-app-system.c shell-app-usage.c shell-arrow.c \
-	shell-contact-system.c shell-doc-system.c \
-	shell-embedded-window.c shell-generic-container.c \
-	shell-gtk-embed.c shell-global.c shell-mobile-providers.c \
-	shell-mount-operation.c shell-network-agent.c shell-perf-log.c \
-	shell-polkit-authentication-agent.h \
-	shell-polkit-authentication-agent.c shell-slicer.c \
-	shell-stack.c shell-tp-client.c shell-tray-icon.c \
-	shell-tray-manager.c shell-util.c shell-window-tracker.c \
-	shell-wm.c shell-xfixes-cursor.c $(am__append_2)
-libgnome_shell_la_gir_sources = \
-	$(filter-out %-private.h $(shell_recorder_non_gir_sources), $(shell_public_headers_h) $(libgnome_shell_la_SOURCES))
+libgnome_cinnamon_la_SOURCES = $(cinnamon_built_sources) \
+	$(cinnamon_public_headers_h) cinnamon-app-private.h \
+	cinnamon-app-system-private.h cinnamon-embedded-window-private.h \
+	cinnamon-global-private.h cinnamon-jsapi-compat-private.h \
+	cinnamon-window-tracker-private.h cinnamon-wm-private.h \
+	cinnamon-plugin.c cinnamon-app.c cinnamon-a11y.h cinnamon-a11y.c \
+	cinnamon-app-system.c cinnamon-app-usage.c cinnamon-arrow.c \
+	cinnamon-contact-system.c cinnamon-doc-system.c \
+	cinnamon-embedded-window.c cinnamon-generic-container.c \
+	cinnamon-gtk-embed.c cinnamon-global.c cinnamon-mobile-providers.c \
+	cinnamon-mount-operation.c cinnamon-network-agent.c cinnamon-perf-log.c \
+	cinnamon-polkit-authentication-agent.h \
+	cinnamon-polkit-authentication-agent.c cinnamon-slicer.c \
+	cinnamon-stack.c cinnamon-tp-client.c cinnamon-tray-icon.c \
+	cinnamon-tray-manager.c cinnamon-util.c cinnamon-window-tracker.c \
+	cinnamon-wm.c cinnamon-xfixes-cursor.c $(am__append_2)
+libgnome_cinnamon_la_gir_sources = \
+	$(filter-out %-private.h $(cinnamon_recorder_non_gir_sources), $(cinnamon_public_headers_h) $(libgnome_cinnamon_la_SOURCES))
 
-gnome_shell_real_SOURCES = \
+gnome_cinnamon_real_SOURCES = \
 	main.c
 
-gnome_shell_real_CPPFLAGS = $(gnome_shell_cflags)
-gnome_shell_real_LDADD = libgnome-shell.la $(libgnome_shell_la_LIBADD)
-gnome_shell_real_DEPENDENCIES = libgnome-shell.la
+gnome_cinnamon_real_CPPFLAGS = $(gnome_cinnamon_cflags)
+gnome_cinnamon_real_LDADD = libcinnamon.la $(libgnome_cinnamon_la_LIBADD)
+gnome_cinnamon_real_DEPENDENCIES = libcinnamon.la
 
 ########################################
-shell_recorder_sources = \
-	shell-recorder.c	\
-	shell-recorder.h
+cinnamon_recorder_sources = \
+	cinnamon-recorder.c	\
+	cinnamon-recorder.h
 
 
 # Custom element is an internal detail
-shell_recorder_non_gir_sources = \
-	shell-recorder-src.c	  \
-	shell-recorder-src.h
+cinnamon_recorder_non_gir_sources = \
+	cinnamon-recorder-src.c	  \
+	cinnamon-recorder-src.h
 
-@BUILD_RECORDER_TRUE@test_recorder_CPPFLAGS = $(TEST_SHELL_RECORDER_CFLAGS)
-@BUILD_RECORDER_TRUE@test_recorder_LDADD = $(TEST_SHELL_RECORDER_LIBS)
+@BUILD_RECORDER_TRUE@test_recorder_CPPFLAGS = $(TEST_CINNAMON_RECORDER_CFLAGS)
+@BUILD_RECORDER_TRUE@test_recorder_LDADD = $(TEST_CINNAMON_RECORDER_LIBS)
 @BUILD_RECORDER_TRUE@test_recorder_SOURCES = \
-@BUILD_RECORDER_TRUE@	$(shell_recorder_sources) $(shell_recorder_non_gir_sources) \
+@BUILD_RECORDER_TRUE@	$(cinnamon_recorder_sources) $(cinnamon_recorder_non_gir_sources) \
 @BUILD_RECORDER_TRUE@	test-recorder.c
 
-gnome_shell_perf_helper_SOURCES = shell-perf-helper.c
-gnome_shell_perf_helper_CPPFLAGS = $(SHELL_PERF_HELPER_CFLAGS)
-gnome_shell_perf_helper_LDADD = $(SHELL_PERF_HELPER_LIBS)
-run_js_test_CPPFLAGS = $(gnome_shell_cflags)
-run_js_test_LDADD = libgnome-shell.la $(libgnome_shell_la_LIBADD)
+gnome_cinnamon_perf_helper_SOURCES = cinnamon-perf-helper.c
+gnome_cinnamon_perf_helper_CPPFLAGS = $(CINNAMON_PERF_HELPER_CFLAGS)
+gnome_cinnamon_perf_helper_LDADD = $(CINNAMON_PERF_HELPER_LIBS)
+run_js_test_CPPFLAGS = $(gnome_cinnamon_cflags)
+run_js_test_LDADD = libcinnamon.la $(libgnome_cinnamon_la_LIBADD)
 run_js_test_LDFLAGS = -export-dynamic
 run_js_test_SOURCES = \
 	run-js-test.c
 
-libgnome_shell_la_LDFLAGS = -avoid-version
-libgnome_shell_la_LIBADD = \
+libgnome_cinnamon_la_LDFLAGS = -avoid-version
+libgnome_cinnamon_la_LIBADD = \
 	-lm			\
-	$(GNOME_SHELL_LIBS)	\
+	$(CINNAMON_LIBS)	\
 	$(BLUETOOTH_LIBS)	\
 	libst-1.0.la       	\
 	libtray.la		\
 	libgvc.la		\
 	$(NULL)
 
-libgnome_shell_la_CPPFLAGS = $(gnome_shell_cflags)
-Shell_0_1_gir_INCLUDES = Clutter-1.0 ClutterX11-1.0 Meta-3.0 TelepathyGLib-0.12 TelepathyLogger-0.2 Soup-2.4 GMenu-3.0 NetworkManager-1.0 NMClient-1.0 Folks-0.6
-Shell_0_1_gir_CFLAGS = $(libgnome_shell_la_CPPFLAGS) -I $(srcdir)
-Shell_0_1_gir_LIBS = libgnome-shell.la
-Shell_0_1_gir_FILES = $(libgnome_shell_la_gir_sources)
-Shell_0_1_gir_SCANNERFLAGS = --include-uninstalled=$(builddir)/St-1.0.gir \
+libgnome_cinnamon_la_CPPFLAGS = $(gnome_cinnamon_cflags)
+Cinnamon_0_1_gir_INCLUDES = Clutter-1.0 ClutterX11-1.0 Meta-3.0 TelepathyGLib-0.12 TelepathyLogger-0.2 Soup-2.4 GMenu-3.0 NetworkManager-1.0 NMClient-1.0 Folks-0.6
+Cinnamon_0_1_gir_CFLAGS = $(libgnome_cinnamon_la_CPPFLAGS) -I $(srcdir)
+Cinnamon_0_1_gir_LIBS = libcinnamon.la
+Cinnamon_0_1_gir_FILES = $(libgnome_cinnamon_la_gir_sources)
+Cinnamon_0_1_gir_SCANNERFLAGS = --include-uninstalled=$(builddir)/St-1.0.gir \
 	--add-include-path=$(MUTTER_GIR_DIR)
 
 St_1_0_gir_INCLUDES = Clutter-1.0 Gtk-3.0
@@ -935,8 +935,8 @@ Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	  *config.status*) \
 	    cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh;; \
 	  *) \
-	    echo ' cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@ $(am__depfiles_maybe)'; \
-	    cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@ $(am__depfiles_maybe);; \
+	    echo ' cd $(top_builddir) && $(CINNAMON) ./config.status $(subdir)/$@ $(am__depfiles_maybe)'; \
+	    cd $(top_builddir) && $(CINNAMON) ./config.status $(subdir)/$@ $(am__depfiles_maybe);; \
 	esac;
 
 $(top_builddir)/config.status: $(top_srcdir)/configure $(CONFIG_STATUS_DEPENDENCIES)
@@ -987,8 +987,8 @@ clean-privlibLTLIBRARIES:
 	  echo "rm -f \"$${dir}/so_locations\""; \
 	  rm -f "$${dir}/so_locations"; \
 	done
-libgnome-shell.la: $(libgnome_shell_la_OBJECTS) $(libgnome_shell_la_DEPENDENCIES) 
-	$(AM_V_CCLD)$(libgnome_shell_la_LINK) -rpath $(privlibdir) $(libgnome_shell_la_OBJECTS) $(libgnome_shell_la_LIBADD) $(LIBS)
+libcinnamon.la: $(libgnome_cinnamon_la_OBJECTS) $(libgnome_cinnamon_la_DEPENDENCIES) 
+	$(AM_V_CCLD)$(libgnome_cinnamon_la_LINK) -rpath $(privlibdir) $(libgnome_cinnamon_la_OBJECTS) $(libgnome_cinnamon_la_LIBADD) $(LIBS)
 libgvc.la: $(libgvc_la_OBJECTS) $(libgvc_la_DEPENDENCIES) 
 	$(AM_V_CCLD)$(libgvc_la_LINK)  $(libgvc_la_OBJECTS) $(libgvc_la_LIBADD) $(LIBS)
 libst-1.0.la: $(libst_1_0_la_OBJECTS) $(libst_1_0_la_DEPENDENCIES) 
@@ -1090,18 +1090,18 @@ clean-noinstPROGRAMS:
 	list=`for p in $$list; do echo "$$p"; done | sed 's/$(EXEEXT)$$//'`; \
 	echo " rm -f" $$list; \
 	rm -f $$list
-gnome-shell-calendar-server$(EXEEXT): $(gnome_shell_calendar_server_OBJECTS) $(gnome_shell_calendar_server_DEPENDENCIES) 
-	@rm -f gnome-shell-calendar-server$(EXEEXT)
-	$(AM_V_CCLD)$(gnome_shell_calendar_server_LINK) $(gnome_shell_calendar_server_OBJECTS) $(gnome_shell_calendar_server_LDADD) $(LIBS)
-gnome-shell-hotplug-sniffer$(EXEEXT): $(gnome_shell_hotplug_sniffer_OBJECTS) $(gnome_shell_hotplug_sniffer_DEPENDENCIES) 
-	@rm -f gnome-shell-hotplug-sniffer$(EXEEXT)
-	$(AM_V_CCLD)$(gnome_shell_hotplug_sniffer_LINK) $(gnome_shell_hotplug_sniffer_OBJECTS) $(gnome_shell_hotplug_sniffer_LDADD) $(LIBS)
-gnome-shell-perf-helper$(EXEEXT): $(gnome_shell_perf_helper_OBJECTS) $(gnome_shell_perf_helper_DEPENDENCIES) 
-	@rm -f gnome-shell-perf-helper$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(gnome_shell_perf_helper_OBJECTS) $(gnome_shell_perf_helper_LDADD) $(LIBS)
-gnome-shell-real$(EXEEXT): $(gnome_shell_real_OBJECTS) $(gnome_shell_real_DEPENDENCIES) 
-	@rm -f gnome-shell-real$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(gnome_shell_real_OBJECTS) $(gnome_shell_real_LDADD) $(LIBS)
+cinnamon-calendar-server$(EXEEXT): $(gnome_cinnamon_calendar_server_OBJECTS) $(gnome_cinnamon_calendar_server_DEPENDENCIES) 
+	@rm -f cinnamon-calendar-server$(EXEEXT)
+	$(AM_V_CCLD)$(gnome_cinnamon_calendar_server_LINK) $(gnome_cinnamon_calendar_server_OBJECTS) $(gnome_cinnamon_calendar_server_LDADD) $(LIBS)
+cinnamon-hotplug-sniffer$(EXEEXT): $(gnome_cinnamon_hotplug_sniffer_OBJECTS) $(gnome_cinnamon_hotplug_sniffer_DEPENDENCIES) 
+	@rm -f cinnamon-hotplug-sniffer$(EXEEXT)
+	$(AM_V_CCLD)$(gnome_cinnamon_hotplug_sniffer_LINK) $(gnome_cinnamon_hotplug_sniffer_OBJECTS) $(gnome_cinnamon_hotplug_sniffer_LDADD) $(LIBS)
+cinnamon-perf-helper$(EXEEXT): $(gnome_cinnamon_perf_helper_OBJECTS) $(gnome_cinnamon_perf_helper_DEPENDENCIES) 
+	@rm -f cinnamon-perf-helper$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(gnome_cinnamon_perf_helper_OBJECTS) $(gnome_cinnamon_perf_helper_LDADD) $(LIBS)
+cinnamon-real$(EXEEXT): $(gnome_cinnamon_real_OBJECTS) $(gnome_cinnamon_real_DEPENDENCIES) 
+	@rm -f cinnamon-real$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(gnome_cinnamon_real_OBJECTS) $(gnome_cinnamon_real_LDADD) $(LIBS)
 run-js-test$(EXEEXT): $(run_js_test_OBJECTS) $(run_js_test_DEPENDENCIES) 
 	@rm -f run-js-test$(EXEEXT)
 	$(AM_V_CCLD)$(run_js_test_LINK) $(run_js_test_OBJECTS) $(run_js_test_LDADD) $(LIBS)
@@ -1152,42 +1152,42 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnome_shell_calendar_server-calendar-sources.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnome_shell_calendar_server-gnome-shell-calendar-server.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnome_shell_hotplug_sniffer-hotplug-sniffer.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnome_shell_hotplug_sniffer-shell-mime-sniffer.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnome_shell_perf_helper-shell-perf-helper.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnome_shell_real-main.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgnome_shell_la-gnome-shell-plugin.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgnome_shell_la-shell-a11y.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgnome_shell_la-shell-app-system.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgnome_shell_la-shell-app-usage.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgnome_shell_la-shell-app.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgnome_shell_la-shell-arrow.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgnome_shell_la-shell-contact-system.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgnome_shell_la-shell-doc-system.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgnome_shell_la-shell-embedded-window.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgnome_shell_la-shell-enum-types.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgnome_shell_la-shell-generic-container.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgnome_shell_la-shell-global.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgnome_shell_la-shell-gtk-embed.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgnome_shell_la-shell-marshal.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgnome_shell_la-shell-mobile-providers.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgnome_shell_la-shell-mount-operation.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgnome_shell_la-shell-network-agent.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgnome_shell_la-shell-perf-log.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgnome_shell_la-shell-polkit-authentication-agent.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgnome_shell_la-shell-recorder-src.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgnome_shell_la-shell-recorder.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgnome_shell_la-shell-slicer.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgnome_shell_la-shell-stack.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgnome_shell_la-shell-tp-client.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgnome_shell_la-shell-tray-icon.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgnome_shell_la-shell-tray-manager.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgnome_shell_la-shell-util.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgnome_shell_la-shell-window-tracker.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgnome_shell_la-shell-wm.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgnome_shell_la-shell-xfixes-cursor.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnome_cinnamon_calendar_server-calendar-sources.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnome_cinnamon_calendar_server-cinnamon-calendar-server.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnome_cinnamon_hotplug_sniffer-hotplug-sniffer.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnome_cinnamon_hotplug_sniffer-cinnamon-mime-sniffer.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnome_cinnamon_perf_helper-cinnamon-perf-helper.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnome_cinnamon_real-main.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgnome_cinnamon_la-cinnamon-plugin.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgnome_cinnamon_la-cinnamon-a11y.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgnome_cinnamon_la-cinnamon-app-system.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgnome_cinnamon_la-cinnamon-app-usage.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgnome_cinnamon_la-cinnamon-app.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgnome_cinnamon_la-cinnamon-arrow.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgnome_cinnamon_la-cinnamon-contact-system.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgnome_cinnamon_la-cinnamon-doc-system.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgnome_cinnamon_la-cinnamon-embedded-window.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgnome_cinnamon_la-cinnamon-enum-types.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgnome_cinnamon_la-cinnamon-generic-container.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgnome_cinnamon_la-cinnamon-global.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgnome_cinnamon_la-cinnamon-gtk-embed.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgnome_cinnamon_la-cinnamon-marshal.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgnome_cinnamon_la-cinnamon-mobile-providers.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgnome_cinnamon_la-cinnamon-mount-operation.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgnome_cinnamon_la-cinnamon-network-agent.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgnome_cinnamon_la-cinnamon-perf-log.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgnome_cinnamon_la-cinnamon-polkit-authentication-agent.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgnome_cinnamon_la-cinnamon-recorder-src.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgnome_cinnamon_la-cinnamon-recorder.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgnome_cinnamon_la-cinnamon-slicer.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgnome_cinnamon_la-cinnamon-stack.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgnome_cinnamon_la-cinnamon-tp-client.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgnome_cinnamon_la-cinnamon-tray-icon.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgnome_cinnamon_la-cinnamon-tray-manager.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgnome_cinnamon_la-cinnamon-util.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgnome_cinnamon_la-cinnamon-window-tracker.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgnome_cinnamon_la-cinnamon-wm.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgnome_cinnamon_la-cinnamon-xfixes-cursor.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgvc_la-gvc-channel-map.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgvc_la-gvc-mixer-card.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgvc_la-gvc-mixer-control.Plo@am__quote@
@@ -1236,8 +1236,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libtray_la-na-tray-child.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libtray_la-na-tray-manager.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/run_js_test-run-js-test.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_recorder-shell-recorder-src.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_recorder-shell-recorder.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_recorder-cinnamon-recorder-src.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_recorder-cinnamon-recorder.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_recorder-test-recorder.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_theme-test-theme.Po@am__quote@
 
@@ -1265,245 +1265,245 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LTCOMPILE) -c -o $@ $<
 
-libgnome_shell_la-shell-marshal.lo: shell-marshal.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_shell_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libgnome_shell_la-shell-marshal.lo -MD -MP -MF $(DEPDIR)/libgnome_shell_la-shell-marshal.Tpo -c -o libgnome_shell_la-shell-marshal.lo `test -f 'shell-marshal.c' || echo '$(srcdir)/'`shell-marshal.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgnome_shell_la-shell-marshal.Tpo $(DEPDIR)/libgnome_shell_la-shell-marshal.Plo
+libgnome_cinnamon_la-cinnamon-marshal.lo: cinnamon-marshal.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_cinnamon_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libgnome_cinnamon_la-cinnamon-marshal.lo -MD -MP -MF $(DEPDIR)/libgnome_cinnamon_la-cinnamon-marshal.Tpo -c -o libgnome_cinnamon_la-cinnamon-marshal.lo `test -f 'cinnamon-marshal.c' || echo '$(srcdir)/'`cinnamon-marshal.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgnome_cinnamon_la-cinnamon-marshal.Tpo $(DEPDIR)/libgnome_cinnamon_la-cinnamon-marshal.Plo
 @am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='shell-marshal.c' object='libgnome_shell_la-shell-marshal.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='cinnamon-marshal.c' object='libgnome_cinnamon_la-cinnamon-marshal.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_shell_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libgnome_shell_la-shell-marshal.lo `test -f 'shell-marshal.c' || echo '$(srcdir)/'`shell-marshal.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_cinnamon_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libgnome_cinnamon_la-cinnamon-marshal.lo `test -f 'cinnamon-marshal.c' || echo '$(srcdir)/'`cinnamon-marshal.c
 
-libgnome_shell_la-shell-enum-types.lo: shell-enum-types.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_shell_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libgnome_shell_la-shell-enum-types.lo -MD -MP -MF $(DEPDIR)/libgnome_shell_la-shell-enum-types.Tpo -c -o libgnome_shell_la-shell-enum-types.lo `test -f 'shell-enum-types.c' || echo '$(srcdir)/'`shell-enum-types.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgnome_shell_la-shell-enum-types.Tpo $(DEPDIR)/libgnome_shell_la-shell-enum-types.Plo
+libgnome_cinnamon_la-cinnamon-enum-types.lo: cinnamon-enum-types.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_cinnamon_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libgnome_cinnamon_la-cinnamon-enum-types.lo -MD -MP -MF $(DEPDIR)/libgnome_cinnamon_la-cinnamon-enum-types.Tpo -c -o libgnome_cinnamon_la-cinnamon-enum-types.lo `test -f 'cinnamon-enum-types.c' || echo '$(srcdir)/'`cinnamon-enum-types.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgnome_cinnamon_la-cinnamon-enum-types.Tpo $(DEPDIR)/libgnome_cinnamon_la-cinnamon-enum-types.Plo
 @am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='shell-enum-types.c' object='libgnome_shell_la-shell-enum-types.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='cinnamon-enum-types.c' object='libgnome_cinnamon_la-cinnamon-enum-types.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_shell_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libgnome_shell_la-shell-enum-types.lo `test -f 'shell-enum-types.c' || echo '$(srcdir)/'`shell-enum-types.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_cinnamon_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libgnome_cinnamon_la-cinnamon-enum-types.lo `test -f 'cinnamon-enum-types.c' || echo '$(srcdir)/'`cinnamon-enum-types.c
 
-libgnome_shell_la-gnome-shell-plugin.lo: gnome-shell-plugin.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_shell_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libgnome_shell_la-gnome-shell-plugin.lo -MD -MP -MF $(DEPDIR)/libgnome_shell_la-gnome-shell-plugin.Tpo -c -o libgnome_shell_la-gnome-shell-plugin.lo `test -f 'gnome-shell-plugin.c' || echo '$(srcdir)/'`gnome-shell-plugin.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgnome_shell_la-gnome-shell-plugin.Tpo $(DEPDIR)/libgnome_shell_la-gnome-shell-plugin.Plo
+libgnome_cinnamon_la-cinnamon-plugin.lo: cinnamon-plugin.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_cinnamon_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libgnome_cinnamon_la-cinnamon-plugin.lo -MD -MP -MF $(DEPDIR)/libgnome_cinnamon_la-cinnamon-plugin.Tpo -c -o libgnome_cinnamon_la-cinnamon-plugin.lo `test -f 'cinnamon-plugin.c' || echo '$(srcdir)/'`cinnamon-plugin.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgnome_cinnamon_la-cinnamon-plugin.Tpo $(DEPDIR)/libgnome_cinnamon_la-cinnamon-plugin.Plo
 @am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='gnome-shell-plugin.c' object='libgnome_shell_la-gnome-shell-plugin.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='cinnamon-plugin.c' object='libgnome_cinnamon_la-cinnamon-plugin.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_shell_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libgnome_shell_la-gnome-shell-plugin.lo `test -f 'gnome-shell-plugin.c' || echo '$(srcdir)/'`gnome-shell-plugin.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_cinnamon_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libgnome_cinnamon_la-cinnamon-plugin.lo `test -f 'cinnamon-plugin.c' || echo '$(srcdir)/'`cinnamon-plugin.c
 
-libgnome_shell_la-shell-app.lo: shell-app.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_shell_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libgnome_shell_la-shell-app.lo -MD -MP -MF $(DEPDIR)/libgnome_shell_la-shell-app.Tpo -c -o libgnome_shell_la-shell-app.lo `test -f 'shell-app.c' || echo '$(srcdir)/'`shell-app.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgnome_shell_la-shell-app.Tpo $(DEPDIR)/libgnome_shell_la-shell-app.Plo
+libgnome_cinnamon_la-cinnamon-app.lo: cinnamon-app.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_cinnamon_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libgnome_cinnamon_la-cinnamon-app.lo -MD -MP -MF $(DEPDIR)/libgnome_cinnamon_la-cinnamon-app.Tpo -c -o libgnome_cinnamon_la-cinnamon-app.lo `test -f 'cinnamon-app.c' || echo '$(srcdir)/'`cinnamon-app.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgnome_cinnamon_la-cinnamon-app.Tpo $(DEPDIR)/libgnome_cinnamon_la-cinnamon-app.Plo
 @am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='shell-app.c' object='libgnome_shell_la-shell-app.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='cinnamon-app.c' object='libgnome_cinnamon_la-cinnamon-app.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_shell_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libgnome_shell_la-shell-app.lo `test -f 'shell-app.c' || echo '$(srcdir)/'`shell-app.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_cinnamon_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libgnome_cinnamon_la-cinnamon-app.lo `test -f 'cinnamon-app.c' || echo '$(srcdir)/'`cinnamon-app.c
 
-libgnome_shell_la-shell-a11y.lo: shell-a11y.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_shell_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libgnome_shell_la-shell-a11y.lo -MD -MP -MF $(DEPDIR)/libgnome_shell_la-shell-a11y.Tpo -c -o libgnome_shell_la-shell-a11y.lo `test -f 'shell-a11y.c' || echo '$(srcdir)/'`shell-a11y.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgnome_shell_la-shell-a11y.Tpo $(DEPDIR)/libgnome_shell_la-shell-a11y.Plo
+libgnome_cinnamon_la-cinnamon-a11y.lo: cinnamon-a11y.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_cinnamon_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libgnome_cinnamon_la-cinnamon-a11y.lo -MD -MP -MF $(DEPDIR)/libgnome_cinnamon_la-cinnamon-a11y.Tpo -c -o libgnome_cinnamon_la-cinnamon-a11y.lo `test -f 'cinnamon-a11y.c' || echo '$(srcdir)/'`cinnamon-a11y.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgnome_cinnamon_la-cinnamon-a11y.Tpo $(DEPDIR)/libgnome_cinnamon_la-cinnamon-a11y.Plo
 @am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='shell-a11y.c' object='libgnome_shell_la-shell-a11y.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='cinnamon-a11y.c' object='libgnome_cinnamon_la-cinnamon-a11y.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_shell_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libgnome_shell_la-shell-a11y.lo `test -f 'shell-a11y.c' || echo '$(srcdir)/'`shell-a11y.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_cinnamon_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libgnome_cinnamon_la-cinnamon-a11y.lo `test -f 'cinnamon-a11y.c' || echo '$(srcdir)/'`cinnamon-a11y.c
 
-libgnome_shell_la-shell-app-system.lo: shell-app-system.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_shell_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libgnome_shell_la-shell-app-system.lo -MD -MP -MF $(DEPDIR)/libgnome_shell_la-shell-app-system.Tpo -c -o libgnome_shell_la-shell-app-system.lo `test -f 'shell-app-system.c' || echo '$(srcdir)/'`shell-app-system.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgnome_shell_la-shell-app-system.Tpo $(DEPDIR)/libgnome_shell_la-shell-app-system.Plo
+libgnome_cinnamon_la-cinnamon-app-system.lo: cinnamon-app-system.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_cinnamon_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libgnome_cinnamon_la-cinnamon-app-system.lo -MD -MP -MF $(DEPDIR)/libgnome_cinnamon_la-cinnamon-app-system.Tpo -c -o libgnome_cinnamon_la-cinnamon-app-system.lo `test -f 'cinnamon-app-system.c' || echo '$(srcdir)/'`cinnamon-app-system.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgnome_cinnamon_la-cinnamon-app-system.Tpo $(DEPDIR)/libgnome_cinnamon_la-cinnamon-app-system.Plo
 @am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='shell-app-system.c' object='libgnome_shell_la-shell-app-system.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='cinnamon-app-system.c' object='libgnome_cinnamon_la-cinnamon-app-system.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_shell_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libgnome_shell_la-shell-app-system.lo `test -f 'shell-app-system.c' || echo '$(srcdir)/'`shell-app-system.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_cinnamon_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libgnome_cinnamon_la-cinnamon-app-system.lo `test -f 'cinnamon-app-system.c' || echo '$(srcdir)/'`cinnamon-app-system.c
 
-libgnome_shell_la-shell-app-usage.lo: shell-app-usage.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_shell_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libgnome_shell_la-shell-app-usage.lo -MD -MP -MF $(DEPDIR)/libgnome_shell_la-shell-app-usage.Tpo -c -o libgnome_shell_la-shell-app-usage.lo `test -f 'shell-app-usage.c' || echo '$(srcdir)/'`shell-app-usage.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgnome_shell_la-shell-app-usage.Tpo $(DEPDIR)/libgnome_shell_la-shell-app-usage.Plo
+libgnome_cinnamon_la-cinnamon-app-usage.lo: cinnamon-app-usage.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_cinnamon_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libgnome_cinnamon_la-cinnamon-app-usage.lo -MD -MP -MF $(DEPDIR)/libgnome_cinnamon_la-cinnamon-app-usage.Tpo -c -o libgnome_cinnamon_la-cinnamon-app-usage.lo `test -f 'cinnamon-app-usage.c' || echo '$(srcdir)/'`cinnamon-app-usage.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgnome_cinnamon_la-cinnamon-app-usage.Tpo $(DEPDIR)/libgnome_cinnamon_la-cinnamon-app-usage.Plo
 @am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='shell-app-usage.c' object='libgnome_shell_la-shell-app-usage.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='cinnamon-app-usage.c' object='libgnome_cinnamon_la-cinnamon-app-usage.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_shell_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libgnome_shell_la-shell-app-usage.lo `test -f 'shell-app-usage.c' || echo '$(srcdir)/'`shell-app-usage.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_cinnamon_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libgnome_cinnamon_la-cinnamon-app-usage.lo `test -f 'cinnamon-app-usage.c' || echo '$(srcdir)/'`cinnamon-app-usage.c
 
-libgnome_shell_la-shell-arrow.lo: shell-arrow.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_shell_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libgnome_shell_la-shell-arrow.lo -MD -MP -MF $(DEPDIR)/libgnome_shell_la-shell-arrow.Tpo -c -o libgnome_shell_la-shell-arrow.lo `test -f 'shell-arrow.c' || echo '$(srcdir)/'`shell-arrow.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgnome_shell_la-shell-arrow.Tpo $(DEPDIR)/libgnome_shell_la-shell-arrow.Plo
+libgnome_cinnamon_la-cinnamon-arrow.lo: cinnamon-arrow.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_cinnamon_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libgnome_cinnamon_la-cinnamon-arrow.lo -MD -MP -MF $(DEPDIR)/libgnome_cinnamon_la-cinnamon-arrow.Tpo -c -o libgnome_cinnamon_la-cinnamon-arrow.lo `test -f 'cinnamon-arrow.c' || echo '$(srcdir)/'`cinnamon-arrow.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgnome_cinnamon_la-cinnamon-arrow.Tpo $(DEPDIR)/libgnome_cinnamon_la-cinnamon-arrow.Plo
 @am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='shell-arrow.c' object='libgnome_shell_la-shell-arrow.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='cinnamon-arrow.c' object='libgnome_cinnamon_la-cinnamon-arrow.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_shell_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libgnome_shell_la-shell-arrow.lo `test -f 'shell-arrow.c' || echo '$(srcdir)/'`shell-arrow.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_cinnamon_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libgnome_cinnamon_la-cinnamon-arrow.lo `test -f 'cinnamon-arrow.c' || echo '$(srcdir)/'`cinnamon-arrow.c
 
-libgnome_shell_la-shell-contact-system.lo: shell-contact-system.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_shell_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libgnome_shell_la-shell-contact-system.lo -MD -MP -MF $(DEPDIR)/libgnome_shell_la-shell-contact-system.Tpo -c -o libgnome_shell_la-shell-contact-system.lo `test -f 'shell-contact-system.c' || echo '$(srcdir)/'`shell-contact-system.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgnome_shell_la-shell-contact-system.Tpo $(DEPDIR)/libgnome_shell_la-shell-contact-system.Plo
+libgnome_cinnamon_la-cinnamon-contact-system.lo: cinnamon-contact-system.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_cinnamon_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libgnome_cinnamon_la-cinnamon-contact-system.lo -MD -MP -MF $(DEPDIR)/libgnome_cinnamon_la-cinnamon-contact-system.Tpo -c -o libgnome_cinnamon_la-cinnamon-contact-system.lo `test -f 'cinnamon-contact-system.c' || echo '$(srcdir)/'`cinnamon-contact-system.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgnome_cinnamon_la-cinnamon-contact-system.Tpo $(DEPDIR)/libgnome_cinnamon_la-cinnamon-contact-system.Plo
 @am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='shell-contact-system.c' object='libgnome_shell_la-shell-contact-system.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='cinnamon-contact-system.c' object='libgnome_cinnamon_la-cinnamon-contact-system.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_shell_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libgnome_shell_la-shell-contact-system.lo `test -f 'shell-contact-system.c' || echo '$(srcdir)/'`shell-contact-system.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_cinnamon_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libgnome_cinnamon_la-cinnamon-contact-system.lo `test -f 'cinnamon-contact-system.c' || echo '$(srcdir)/'`cinnamon-contact-system.c
 
-libgnome_shell_la-shell-doc-system.lo: shell-doc-system.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_shell_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libgnome_shell_la-shell-doc-system.lo -MD -MP -MF $(DEPDIR)/libgnome_shell_la-shell-doc-system.Tpo -c -o libgnome_shell_la-shell-doc-system.lo `test -f 'shell-doc-system.c' || echo '$(srcdir)/'`shell-doc-system.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgnome_shell_la-shell-doc-system.Tpo $(DEPDIR)/libgnome_shell_la-shell-doc-system.Plo
+libgnome_cinnamon_la-cinnamon-doc-system.lo: cinnamon-doc-system.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_cinnamon_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libgnome_cinnamon_la-cinnamon-doc-system.lo -MD -MP -MF $(DEPDIR)/libgnome_cinnamon_la-cinnamon-doc-system.Tpo -c -o libgnome_cinnamon_la-cinnamon-doc-system.lo `test -f 'cinnamon-doc-system.c' || echo '$(srcdir)/'`cinnamon-doc-system.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgnome_cinnamon_la-cinnamon-doc-system.Tpo $(DEPDIR)/libgnome_cinnamon_la-cinnamon-doc-system.Plo
 @am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='shell-doc-system.c' object='libgnome_shell_la-shell-doc-system.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='cinnamon-doc-system.c' object='libgnome_cinnamon_la-cinnamon-doc-system.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_shell_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libgnome_shell_la-shell-doc-system.lo `test -f 'shell-doc-system.c' || echo '$(srcdir)/'`shell-doc-system.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_cinnamon_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libgnome_cinnamon_la-cinnamon-doc-system.lo `test -f 'cinnamon-doc-system.c' || echo '$(srcdir)/'`cinnamon-doc-system.c
 
-libgnome_shell_la-shell-embedded-window.lo: shell-embedded-window.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_shell_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libgnome_shell_la-shell-embedded-window.lo -MD -MP -MF $(DEPDIR)/libgnome_shell_la-shell-embedded-window.Tpo -c -o libgnome_shell_la-shell-embedded-window.lo `test -f 'shell-embedded-window.c' || echo '$(srcdir)/'`shell-embedded-window.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgnome_shell_la-shell-embedded-window.Tpo $(DEPDIR)/libgnome_shell_la-shell-embedded-window.Plo
+libgnome_cinnamon_la-cinnamon-embedded-window.lo: cinnamon-embedded-window.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_cinnamon_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libgnome_cinnamon_la-cinnamon-embedded-window.lo -MD -MP -MF $(DEPDIR)/libgnome_cinnamon_la-cinnamon-embedded-window.Tpo -c -o libgnome_cinnamon_la-cinnamon-embedded-window.lo `test -f 'cinnamon-embedded-window.c' || echo '$(srcdir)/'`cinnamon-embedded-window.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgnome_cinnamon_la-cinnamon-embedded-window.Tpo $(DEPDIR)/libgnome_cinnamon_la-cinnamon-embedded-window.Plo
 @am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='shell-embedded-window.c' object='libgnome_shell_la-shell-embedded-window.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='cinnamon-embedded-window.c' object='libgnome_cinnamon_la-cinnamon-embedded-window.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_shell_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libgnome_shell_la-shell-embedded-window.lo `test -f 'shell-embedded-window.c' || echo '$(srcdir)/'`shell-embedded-window.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_cinnamon_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libgnome_cinnamon_la-cinnamon-embedded-window.lo `test -f 'cinnamon-embedded-window.c' || echo '$(srcdir)/'`cinnamon-embedded-window.c
 
-libgnome_shell_la-shell-generic-container.lo: shell-generic-container.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_shell_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libgnome_shell_la-shell-generic-container.lo -MD -MP -MF $(DEPDIR)/libgnome_shell_la-shell-generic-container.Tpo -c -o libgnome_shell_la-shell-generic-container.lo `test -f 'shell-generic-container.c' || echo '$(srcdir)/'`shell-generic-container.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgnome_shell_la-shell-generic-container.Tpo $(DEPDIR)/libgnome_shell_la-shell-generic-container.Plo
+libgnome_cinnamon_la-cinnamon-generic-container.lo: cinnamon-generic-container.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_cinnamon_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libgnome_cinnamon_la-cinnamon-generic-container.lo -MD -MP -MF $(DEPDIR)/libgnome_cinnamon_la-cinnamon-generic-container.Tpo -c -o libgnome_cinnamon_la-cinnamon-generic-container.lo `test -f 'cinnamon-generic-container.c' || echo '$(srcdir)/'`cinnamon-generic-container.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgnome_cinnamon_la-cinnamon-generic-container.Tpo $(DEPDIR)/libgnome_cinnamon_la-cinnamon-generic-container.Plo
 @am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='shell-generic-container.c' object='libgnome_shell_la-shell-generic-container.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='cinnamon-generic-container.c' object='libgnome_cinnamon_la-cinnamon-generic-container.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_shell_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libgnome_shell_la-shell-generic-container.lo `test -f 'shell-generic-container.c' || echo '$(srcdir)/'`shell-generic-container.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_cinnamon_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libgnome_cinnamon_la-cinnamon-generic-container.lo `test -f 'cinnamon-generic-container.c' || echo '$(srcdir)/'`cinnamon-generic-container.c
 
-libgnome_shell_la-shell-gtk-embed.lo: shell-gtk-embed.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_shell_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libgnome_shell_la-shell-gtk-embed.lo -MD -MP -MF $(DEPDIR)/libgnome_shell_la-shell-gtk-embed.Tpo -c -o libgnome_shell_la-shell-gtk-embed.lo `test -f 'shell-gtk-embed.c' || echo '$(srcdir)/'`shell-gtk-embed.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgnome_shell_la-shell-gtk-embed.Tpo $(DEPDIR)/libgnome_shell_la-shell-gtk-embed.Plo
+libgnome_cinnamon_la-cinnamon-gtk-embed.lo: cinnamon-gtk-embed.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_cinnamon_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libgnome_cinnamon_la-cinnamon-gtk-embed.lo -MD -MP -MF $(DEPDIR)/libgnome_cinnamon_la-cinnamon-gtk-embed.Tpo -c -o libgnome_cinnamon_la-cinnamon-gtk-embed.lo `test -f 'cinnamon-gtk-embed.c' || echo '$(srcdir)/'`cinnamon-gtk-embed.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgnome_cinnamon_la-cinnamon-gtk-embed.Tpo $(DEPDIR)/libgnome_cinnamon_la-cinnamon-gtk-embed.Plo
 @am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='shell-gtk-embed.c' object='libgnome_shell_la-shell-gtk-embed.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='cinnamon-gtk-embed.c' object='libgnome_cinnamon_la-cinnamon-gtk-embed.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_shell_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libgnome_shell_la-shell-gtk-embed.lo `test -f 'shell-gtk-embed.c' || echo '$(srcdir)/'`shell-gtk-embed.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_cinnamon_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libgnome_cinnamon_la-cinnamon-gtk-embed.lo `test -f 'cinnamon-gtk-embed.c' || echo '$(srcdir)/'`cinnamon-gtk-embed.c
 
-libgnome_shell_la-shell-global.lo: shell-global.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_shell_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libgnome_shell_la-shell-global.lo -MD -MP -MF $(DEPDIR)/libgnome_shell_la-shell-global.Tpo -c -o libgnome_shell_la-shell-global.lo `test -f 'shell-global.c' || echo '$(srcdir)/'`shell-global.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgnome_shell_la-shell-global.Tpo $(DEPDIR)/libgnome_shell_la-shell-global.Plo
+libgnome_cinnamon_la-cinnamon-global.lo: cinnamon-global.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_cinnamon_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libgnome_cinnamon_la-cinnamon-global.lo -MD -MP -MF $(DEPDIR)/libgnome_cinnamon_la-cinnamon-global.Tpo -c -o libgnome_cinnamon_la-cinnamon-global.lo `test -f 'cinnamon-global.c' || echo '$(srcdir)/'`cinnamon-global.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgnome_cinnamon_la-cinnamon-global.Tpo $(DEPDIR)/libgnome_cinnamon_la-cinnamon-global.Plo
 @am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='shell-global.c' object='libgnome_shell_la-shell-global.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='cinnamon-global.c' object='libgnome_cinnamon_la-cinnamon-global.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_shell_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libgnome_shell_la-shell-global.lo `test -f 'shell-global.c' || echo '$(srcdir)/'`shell-global.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_cinnamon_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libgnome_cinnamon_la-cinnamon-global.lo `test -f 'cinnamon-global.c' || echo '$(srcdir)/'`cinnamon-global.c
 
-libgnome_shell_la-shell-mobile-providers.lo: shell-mobile-providers.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_shell_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libgnome_shell_la-shell-mobile-providers.lo -MD -MP -MF $(DEPDIR)/libgnome_shell_la-shell-mobile-providers.Tpo -c -o libgnome_shell_la-shell-mobile-providers.lo `test -f 'shell-mobile-providers.c' || echo '$(srcdir)/'`shell-mobile-providers.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgnome_shell_la-shell-mobile-providers.Tpo $(DEPDIR)/libgnome_shell_la-shell-mobile-providers.Plo
+libgnome_cinnamon_la-cinnamon-mobile-providers.lo: cinnamon-mobile-providers.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_cinnamon_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libgnome_cinnamon_la-cinnamon-mobile-providers.lo -MD -MP -MF $(DEPDIR)/libgnome_cinnamon_la-cinnamon-mobile-providers.Tpo -c -o libgnome_cinnamon_la-cinnamon-mobile-providers.lo `test -f 'cinnamon-mobile-providers.c' || echo '$(srcdir)/'`cinnamon-mobile-providers.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgnome_cinnamon_la-cinnamon-mobile-providers.Tpo $(DEPDIR)/libgnome_cinnamon_la-cinnamon-mobile-providers.Plo
 @am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='shell-mobile-providers.c' object='libgnome_shell_la-shell-mobile-providers.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='cinnamon-mobile-providers.c' object='libgnome_cinnamon_la-cinnamon-mobile-providers.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_shell_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libgnome_shell_la-shell-mobile-providers.lo `test -f 'shell-mobile-providers.c' || echo '$(srcdir)/'`shell-mobile-providers.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_cinnamon_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libgnome_cinnamon_la-cinnamon-mobile-providers.lo `test -f 'cinnamon-mobile-providers.c' || echo '$(srcdir)/'`cinnamon-mobile-providers.c
 
-libgnome_shell_la-shell-mount-operation.lo: shell-mount-operation.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_shell_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libgnome_shell_la-shell-mount-operation.lo -MD -MP -MF $(DEPDIR)/libgnome_shell_la-shell-mount-operation.Tpo -c -o libgnome_shell_la-shell-mount-operation.lo `test -f 'shell-mount-operation.c' || echo '$(srcdir)/'`shell-mount-operation.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgnome_shell_la-shell-mount-operation.Tpo $(DEPDIR)/libgnome_shell_la-shell-mount-operation.Plo
+libgnome_cinnamon_la-cinnamon-mount-operation.lo: cinnamon-mount-operation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_cinnamon_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libgnome_cinnamon_la-cinnamon-mount-operation.lo -MD -MP -MF $(DEPDIR)/libgnome_cinnamon_la-cinnamon-mount-operation.Tpo -c -o libgnome_cinnamon_la-cinnamon-mount-operation.lo `test -f 'cinnamon-mount-operation.c' || echo '$(srcdir)/'`cinnamon-mount-operation.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgnome_cinnamon_la-cinnamon-mount-operation.Tpo $(DEPDIR)/libgnome_cinnamon_la-cinnamon-mount-operation.Plo
 @am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='shell-mount-operation.c' object='libgnome_shell_la-shell-mount-operation.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='cinnamon-mount-operation.c' object='libgnome_cinnamon_la-cinnamon-mount-operation.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_shell_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libgnome_shell_la-shell-mount-operation.lo `test -f 'shell-mount-operation.c' || echo '$(srcdir)/'`shell-mount-operation.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_cinnamon_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libgnome_cinnamon_la-cinnamon-mount-operation.lo `test -f 'cinnamon-mount-operation.c' || echo '$(srcdir)/'`cinnamon-mount-operation.c
 
-libgnome_shell_la-shell-network-agent.lo: shell-network-agent.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_shell_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libgnome_shell_la-shell-network-agent.lo -MD -MP -MF $(DEPDIR)/libgnome_shell_la-shell-network-agent.Tpo -c -o libgnome_shell_la-shell-network-agent.lo `test -f 'shell-network-agent.c' || echo '$(srcdir)/'`shell-network-agent.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgnome_shell_la-shell-network-agent.Tpo $(DEPDIR)/libgnome_shell_la-shell-network-agent.Plo
+libgnome_cinnamon_la-cinnamon-network-agent.lo: cinnamon-network-agent.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_cinnamon_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libgnome_cinnamon_la-cinnamon-network-agent.lo -MD -MP -MF $(DEPDIR)/libgnome_cinnamon_la-cinnamon-network-agent.Tpo -c -o libgnome_cinnamon_la-cinnamon-network-agent.lo `test -f 'cinnamon-network-agent.c' || echo '$(srcdir)/'`cinnamon-network-agent.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgnome_cinnamon_la-cinnamon-network-agent.Tpo $(DEPDIR)/libgnome_cinnamon_la-cinnamon-network-agent.Plo
 @am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='shell-network-agent.c' object='libgnome_shell_la-shell-network-agent.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='cinnamon-network-agent.c' object='libgnome_cinnamon_la-cinnamon-network-agent.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_shell_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libgnome_shell_la-shell-network-agent.lo `test -f 'shell-network-agent.c' || echo '$(srcdir)/'`shell-network-agent.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_cinnamon_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libgnome_cinnamon_la-cinnamon-network-agent.lo `test -f 'cinnamon-network-agent.c' || echo '$(srcdir)/'`cinnamon-network-agent.c
 
-libgnome_shell_la-shell-perf-log.lo: shell-perf-log.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_shell_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libgnome_shell_la-shell-perf-log.lo -MD -MP -MF $(DEPDIR)/libgnome_shell_la-shell-perf-log.Tpo -c -o libgnome_shell_la-shell-perf-log.lo `test -f 'shell-perf-log.c' || echo '$(srcdir)/'`shell-perf-log.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgnome_shell_la-shell-perf-log.Tpo $(DEPDIR)/libgnome_shell_la-shell-perf-log.Plo
+libgnome_cinnamon_la-cinnamon-perf-log.lo: cinnamon-perf-log.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_cinnamon_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libgnome_cinnamon_la-cinnamon-perf-log.lo -MD -MP -MF $(DEPDIR)/libgnome_cinnamon_la-cinnamon-perf-log.Tpo -c -o libgnome_cinnamon_la-cinnamon-perf-log.lo `test -f 'cinnamon-perf-log.c' || echo '$(srcdir)/'`cinnamon-perf-log.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgnome_cinnamon_la-cinnamon-perf-log.Tpo $(DEPDIR)/libgnome_cinnamon_la-cinnamon-perf-log.Plo
 @am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='shell-perf-log.c' object='libgnome_shell_la-shell-perf-log.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='cinnamon-perf-log.c' object='libgnome_cinnamon_la-cinnamon-perf-log.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_shell_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libgnome_shell_la-shell-perf-log.lo `test -f 'shell-perf-log.c' || echo '$(srcdir)/'`shell-perf-log.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_cinnamon_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libgnome_cinnamon_la-cinnamon-perf-log.lo `test -f 'cinnamon-perf-log.c' || echo '$(srcdir)/'`cinnamon-perf-log.c
 
-libgnome_shell_la-shell-polkit-authentication-agent.lo: shell-polkit-authentication-agent.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_shell_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libgnome_shell_la-shell-polkit-authentication-agent.lo -MD -MP -MF $(DEPDIR)/libgnome_shell_la-shell-polkit-authentication-agent.Tpo -c -o libgnome_shell_la-shell-polkit-authentication-agent.lo `test -f 'shell-polkit-authentication-agent.c' || echo '$(srcdir)/'`shell-polkit-authentication-agent.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgnome_shell_la-shell-polkit-authentication-agent.Tpo $(DEPDIR)/libgnome_shell_la-shell-polkit-authentication-agent.Plo
+libgnome_cinnamon_la-cinnamon-polkit-authentication-agent.lo: cinnamon-polkit-authentication-agent.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_cinnamon_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libgnome_cinnamon_la-cinnamon-polkit-authentication-agent.lo -MD -MP -MF $(DEPDIR)/libgnome_cinnamon_la-cinnamon-polkit-authentication-agent.Tpo -c -o libgnome_cinnamon_la-cinnamon-polkit-authentication-agent.lo `test -f 'cinnamon-polkit-authentication-agent.c' || echo '$(srcdir)/'`cinnamon-polkit-authentication-agent.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgnome_cinnamon_la-cinnamon-polkit-authentication-agent.Tpo $(DEPDIR)/libgnome_cinnamon_la-cinnamon-polkit-authentication-agent.Plo
 @am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='shell-polkit-authentication-agent.c' object='libgnome_shell_la-shell-polkit-authentication-agent.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='cinnamon-polkit-authentication-agent.c' object='libgnome_cinnamon_la-cinnamon-polkit-authentication-agent.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_shell_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libgnome_shell_la-shell-polkit-authentication-agent.lo `test -f 'shell-polkit-authentication-agent.c' || echo '$(srcdir)/'`shell-polkit-authentication-agent.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_cinnamon_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libgnome_cinnamon_la-cinnamon-polkit-authentication-agent.lo `test -f 'cinnamon-polkit-authentication-agent.c' || echo '$(srcdir)/'`cinnamon-polkit-authentication-agent.c
 
-libgnome_shell_la-shell-slicer.lo: shell-slicer.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_shell_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libgnome_shell_la-shell-slicer.lo -MD -MP -MF $(DEPDIR)/libgnome_shell_la-shell-slicer.Tpo -c -o libgnome_shell_la-shell-slicer.lo `test -f 'shell-slicer.c' || echo '$(srcdir)/'`shell-slicer.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgnome_shell_la-shell-slicer.Tpo $(DEPDIR)/libgnome_shell_la-shell-slicer.Plo
+libgnome_cinnamon_la-cinnamon-slicer.lo: cinnamon-slicer.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_cinnamon_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libgnome_cinnamon_la-cinnamon-slicer.lo -MD -MP -MF $(DEPDIR)/libgnome_cinnamon_la-cinnamon-slicer.Tpo -c -o libgnome_cinnamon_la-cinnamon-slicer.lo `test -f 'cinnamon-slicer.c' || echo '$(srcdir)/'`cinnamon-slicer.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgnome_cinnamon_la-cinnamon-slicer.Tpo $(DEPDIR)/libgnome_cinnamon_la-cinnamon-slicer.Plo
 @am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='shell-slicer.c' object='libgnome_shell_la-shell-slicer.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='cinnamon-slicer.c' object='libgnome_cinnamon_la-cinnamon-slicer.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_shell_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libgnome_shell_la-shell-slicer.lo `test -f 'shell-slicer.c' || echo '$(srcdir)/'`shell-slicer.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_cinnamon_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libgnome_cinnamon_la-cinnamon-slicer.lo `test -f 'cinnamon-slicer.c' || echo '$(srcdir)/'`cinnamon-slicer.c
 
-libgnome_shell_la-shell-stack.lo: shell-stack.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_shell_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libgnome_shell_la-shell-stack.lo -MD -MP -MF $(DEPDIR)/libgnome_shell_la-shell-stack.Tpo -c -o libgnome_shell_la-shell-stack.lo `test -f 'shell-stack.c' || echo '$(srcdir)/'`shell-stack.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgnome_shell_la-shell-stack.Tpo $(DEPDIR)/libgnome_shell_la-shell-stack.Plo
+libgnome_cinnamon_la-cinnamon-stack.lo: cinnamon-stack.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_cinnamon_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libgnome_cinnamon_la-cinnamon-stack.lo -MD -MP -MF $(DEPDIR)/libgnome_cinnamon_la-cinnamon-stack.Tpo -c -o libgnome_cinnamon_la-cinnamon-stack.lo `test -f 'cinnamon-stack.c' || echo '$(srcdir)/'`cinnamon-stack.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgnome_cinnamon_la-cinnamon-stack.Tpo $(DEPDIR)/libgnome_cinnamon_la-cinnamon-stack.Plo
 @am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='shell-stack.c' object='libgnome_shell_la-shell-stack.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='cinnamon-stack.c' object='libgnome_cinnamon_la-cinnamon-stack.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_shell_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libgnome_shell_la-shell-stack.lo `test -f 'shell-stack.c' || echo '$(srcdir)/'`shell-stack.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_cinnamon_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libgnome_cinnamon_la-cinnamon-stack.lo `test -f 'cinnamon-stack.c' || echo '$(srcdir)/'`cinnamon-stack.c
 
-libgnome_shell_la-shell-tp-client.lo: shell-tp-client.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_shell_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libgnome_shell_la-shell-tp-client.lo -MD -MP -MF $(DEPDIR)/libgnome_shell_la-shell-tp-client.Tpo -c -o libgnome_shell_la-shell-tp-client.lo `test -f 'shell-tp-client.c' || echo '$(srcdir)/'`shell-tp-client.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgnome_shell_la-shell-tp-client.Tpo $(DEPDIR)/libgnome_shell_la-shell-tp-client.Plo
+libgnome_cinnamon_la-cinnamon-tp-client.lo: cinnamon-tp-client.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_cinnamon_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libgnome_cinnamon_la-cinnamon-tp-client.lo -MD -MP -MF $(DEPDIR)/libgnome_cinnamon_la-cinnamon-tp-client.Tpo -c -o libgnome_cinnamon_la-cinnamon-tp-client.lo `test -f 'cinnamon-tp-client.c' || echo '$(srcdir)/'`cinnamon-tp-client.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgnome_cinnamon_la-cinnamon-tp-client.Tpo $(DEPDIR)/libgnome_cinnamon_la-cinnamon-tp-client.Plo
 @am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='shell-tp-client.c' object='libgnome_shell_la-shell-tp-client.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='cinnamon-tp-client.c' object='libgnome_cinnamon_la-cinnamon-tp-client.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_shell_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libgnome_shell_la-shell-tp-client.lo `test -f 'shell-tp-client.c' || echo '$(srcdir)/'`shell-tp-client.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_cinnamon_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libgnome_cinnamon_la-cinnamon-tp-client.lo `test -f 'cinnamon-tp-client.c' || echo '$(srcdir)/'`cinnamon-tp-client.c
 
-libgnome_shell_la-shell-tray-icon.lo: shell-tray-icon.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_shell_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libgnome_shell_la-shell-tray-icon.lo -MD -MP -MF $(DEPDIR)/libgnome_shell_la-shell-tray-icon.Tpo -c -o libgnome_shell_la-shell-tray-icon.lo `test -f 'shell-tray-icon.c' || echo '$(srcdir)/'`shell-tray-icon.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgnome_shell_la-shell-tray-icon.Tpo $(DEPDIR)/libgnome_shell_la-shell-tray-icon.Plo
+libgnome_cinnamon_la-cinnamon-tray-icon.lo: cinnamon-tray-icon.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_cinnamon_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libgnome_cinnamon_la-cinnamon-tray-icon.lo -MD -MP -MF $(DEPDIR)/libgnome_cinnamon_la-cinnamon-tray-icon.Tpo -c -o libgnome_cinnamon_la-cinnamon-tray-icon.lo `test -f 'cinnamon-tray-icon.c' || echo '$(srcdir)/'`cinnamon-tray-icon.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgnome_cinnamon_la-cinnamon-tray-icon.Tpo $(DEPDIR)/libgnome_cinnamon_la-cinnamon-tray-icon.Plo
 @am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='shell-tray-icon.c' object='libgnome_shell_la-shell-tray-icon.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='cinnamon-tray-icon.c' object='libgnome_cinnamon_la-cinnamon-tray-icon.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_shell_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libgnome_shell_la-shell-tray-icon.lo `test -f 'shell-tray-icon.c' || echo '$(srcdir)/'`shell-tray-icon.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_cinnamon_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libgnome_cinnamon_la-cinnamon-tray-icon.lo `test -f 'cinnamon-tray-icon.c' || echo '$(srcdir)/'`cinnamon-tray-icon.c
 
-libgnome_shell_la-shell-tray-manager.lo: shell-tray-manager.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_shell_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libgnome_shell_la-shell-tray-manager.lo -MD -MP -MF $(DEPDIR)/libgnome_shell_la-shell-tray-manager.Tpo -c -o libgnome_shell_la-shell-tray-manager.lo `test -f 'shell-tray-manager.c' || echo '$(srcdir)/'`shell-tray-manager.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgnome_shell_la-shell-tray-manager.Tpo $(DEPDIR)/libgnome_shell_la-shell-tray-manager.Plo
+libgnome_cinnamon_la-cinnamon-tray-manager.lo: cinnamon-tray-manager.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_cinnamon_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libgnome_cinnamon_la-cinnamon-tray-manager.lo -MD -MP -MF $(DEPDIR)/libgnome_cinnamon_la-cinnamon-tray-manager.Tpo -c -o libgnome_cinnamon_la-cinnamon-tray-manager.lo `test -f 'cinnamon-tray-manager.c' || echo '$(srcdir)/'`cinnamon-tray-manager.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgnome_cinnamon_la-cinnamon-tray-manager.Tpo $(DEPDIR)/libgnome_cinnamon_la-cinnamon-tray-manager.Plo
 @am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='shell-tray-manager.c' object='libgnome_shell_la-shell-tray-manager.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='cinnamon-tray-manager.c' object='libgnome_cinnamon_la-cinnamon-tray-manager.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_shell_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libgnome_shell_la-shell-tray-manager.lo `test -f 'shell-tray-manager.c' || echo '$(srcdir)/'`shell-tray-manager.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_cinnamon_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libgnome_cinnamon_la-cinnamon-tray-manager.lo `test -f 'cinnamon-tray-manager.c' || echo '$(srcdir)/'`cinnamon-tray-manager.c
 
-libgnome_shell_la-shell-util.lo: shell-util.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_shell_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libgnome_shell_la-shell-util.lo -MD -MP -MF $(DEPDIR)/libgnome_shell_la-shell-util.Tpo -c -o libgnome_shell_la-shell-util.lo `test -f 'shell-util.c' || echo '$(srcdir)/'`shell-util.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgnome_shell_la-shell-util.Tpo $(DEPDIR)/libgnome_shell_la-shell-util.Plo
+libgnome_cinnamon_la-cinnamon-util.lo: cinnamon-util.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_cinnamon_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libgnome_cinnamon_la-cinnamon-util.lo -MD -MP -MF $(DEPDIR)/libgnome_cinnamon_la-cinnamon-util.Tpo -c -o libgnome_cinnamon_la-cinnamon-util.lo `test -f 'cinnamon-util.c' || echo '$(srcdir)/'`cinnamon-util.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgnome_cinnamon_la-cinnamon-util.Tpo $(DEPDIR)/libgnome_cinnamon_la-cinnamon-util.Plo
 @am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='shell-util.c' object='libgnome_shell_la-shell-util.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='cinnamon-util.c' object='libgnome_cinnamon_la-cinnamon-util.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_shell_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libgnome_shell_la-shell-util.lo `test -f 'shell-util.c' || echo '$(srcdir)/'`shell-util.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_cinnamon_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libgnome_cinnamon_la-cinnamon-util.lo `test -f 'cinnamon-util.c' || echo '$(srcdir)/'`cinnamon-util.c
 
-libgnome_shell_la-shell-window-tracker.lo: shell-window-tracker.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_shell_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libgnome_shell_la-shell-window-tracker.lo -MD -MP -MF $(DEPDIR)/libgnome_shell_la-shell-window-tracker.Tpo -c -o libgnome_shell_la-shell-window-tracker.lo `test -f 'shell-window-tracker.c' || echo '$(srcdir)/'`shell-window-tracker.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgnome_shell_la-shell-window-tracker.Tpo $(DEPDIR)/libgnome_shell_la-shell-window-tracker.Plo
+libgnome_cinnamon_la-cinnamon-window-tracker.lo: cinnamon-window-tracker.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_cinnamon_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libgnome_cinnamon_la-cinnamon-window-tracker.lo -MD -MP -MF $(DEPDIR)/libgnome_cinnamon_la-cinnamon-window-tracker.Tpo -c -o libgnome_cinnamon_la-cinnamon-window-tracker.lo `test -f 'cinnamon-window-tracker.c' || echo '$(srcdir)/'`cinnamon-window-tracker.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgnome_cinnamon_la-cinnamon-window-tracker.Tpo $(DEPDIR)/libgnome_cinnamon_la-cinnamon-window-tracker.Plo
 @am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='shell-window-tracker.c' object='libgnome_shell_la-shell-window-tracker.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='cinnamon-window-tracker.c' object='libgnome_cinnamon_la-cinnamon-window-tracker.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_shell_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libgnome_shell_la-shell-window-tracker.lo `test -f 'shell-window-tracker.c' || echo '$(srcdir)/'`shell-window-tracker.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_cinnamon_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libgnome_cinnamon_la-cinnamon-window-tracker.lo `test -f 'cinnamon-window-tracker.c' || echo '$(srcdir)/'`cinnamon-window-tracker.c
 
-libgnome_shell_la-shell-wm.lo: shell-wm.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_shell_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libgnome_shell_la-shell-wm.lo -MD -MP -MF $(DEPDIR)/libgnome_shell_la-shell-wm.Tpo -c -o libgnome_shell_la-shell-wm.lo `test -f 'shell-wm.c' || echo '$(srcdir)/'`shell-wm.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgnome_shell_la-shell-wm.Tpo $(DEPDIR)/libgnome_shell_la-shell-wm.Plo
+libgnome_cinnamon_la-cinnamon-wm.lo: cinnamon-wm.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_cinnamon_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libgnome_cinnamon_la-cinnamon-wm.lo -MD -MP -MF $(DEPDIR)/libgnome_cinnamon_la-cinnamon-wm.Tpo -c -o libgnome_cinnamon_la-cinnamon-wm.lo `test -f 'cinnamon-wm.c' || echo '$(srcdir)/'`cinnamon-wm.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgnome_cinnamon_la-cinnamon-wm.Tpo $(DEPDIR)/libgnome_cinnamon_la-cinnamon-wm.Plo
 @am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='shell-wm.c' object='libgnome_shell_la-shell-wm.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='cinnamon-wm.c' object='libgnome_cinnamon_la-cinnamon-wm.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_shell_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libgnome_shell_la-shell-wm.lo `test -f 'shell-wm.c' || echo '$(srcdir)/'`shell-wm.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_cinnamon_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libgnome_cinnamon_la-cinnamon-wm.lo `test -f 'cinnamon-wm.c' || echo '$(srcdir)/'`cinnamon-wm.c
 
-libgnome_shell_la-shell-xfixes-cursor.lo: shell-xfixes-cursor.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_shell_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libgnome_shell_la-shell-xfixes-cursor.lo -MD -MP -MF $(DEPDIR)/libgnome_shell_la-shell-xfixes-cursor.Tpo -c -o libgnome_shell_la-shell-xfixes-cursor.lo `test -f 'shell-xfixes-cursor.c' || echo '$(srcdir)/'`shell-xfixes-cursor.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgnome_shell_la-shell-xfixes-cursor.Tpo $(DEPDIR)/libgnome_shell_la-shell-xfixes-cursor.Plo
+libgnome_cinnamon_la-cinnamon-xfixes-cursor.lo: cinnamon-xfixes-cursor.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_cinnamon_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libgnome_cinnamon_la-cinnamon-xfixes-cursor.lo -MD -MP -MF $(DEPDIR)/libgnome_cinnamon_la-cinnamon-xfixes-cursor.Tpo -c -o libgnome_cinnamon_la-cinnamon-xfixes-cursor.lo `test -f 'cinnamon-xfixes-cursor.c' || echo '$(srcdir)/'`cinnamon-xfixes-cursor.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgnome_cinnamon_la-cinnamon-xfixes-cursor.Tpo $(DEPDIR)/libgnome_cinnamon_la-cinnamon-xfixes-cursor.Plo
 @am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='shell-xfixes-cursor.c' object='libgnome_shell_la-shell-xfixes-cursor.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='cinnamon-xfixes-cursor.c' object='libgnome_cinnamon_la-cinnamon-xfixes-cursor.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_shell_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libgnome_shell_la-shell-xfixes-cursor.lo `test -f 'shell-xfixes-cursor.c' || echo '$(srcdir)/'`shell-xfixes-cursor.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_cinnamon_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libgnome_cinnamon_la-cinnamon-xfixes-cursor.lo `test -f 'cinnamon-xfixes-cursor.c' || echo '$(srcdir)/'`cinnamon-xfixes-cursor.c
 
-libgnome_shell_la-shell-recorder.lo: shell-recorder.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_shell_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libgnome_shell_la-shell-recorder.lo -MD -MP -MF $(DEPDIR)/libgnome_shell_la-shell-recorder.Tpo -c -o libgnome_shell_la-shell-recorder.lo `test -f 'shell-recorder.c' || echo '$(srcdir)/'`shell-recorder.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgnome_shell_la-shell-recorder.Tpo $(DEPDIR)/libgnome_shell_la-shell-recorder.Plo
+libgnome_cinnamon_la-cinnamon-recorder.lo: cinnamon-recorder.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_cinnamon_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libgnome_cinnamon_la-cinnamon-recorder.lo -MD -MP -MF $(DEPDIR)/libgnome_cinnamon_la-cinnamon-recorder.Tpo -c -o libgnome_cinnamon_la-cinnamon-recorder.lo `test -f 'cinnamon-recorder.c' || echo '$(srcdir)/'`cinnamon-recorder.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgnome_cinnamon_la-cinnamon-recorder.Tpo $(DEPDIR)/libgnome_cinnamon_la-cinnamon-recorder.Plo
 @am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='shell-recorder.c' object='libgnome_shell_la-shell-recorder.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='cinnamon-recorder.c' object='libgnome_cinnamon_la-cinnamon-recorder.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_shell_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libgnome_shell_la-shell-recorder.lo `test -f 'shell-recorder.c' || echo '$(srcdir)/'`shell-recorder.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_cinnamon_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libgnome_cinnamon_la-cinnamon-recorder.lo `test -f 'cinnamon-recorder.c' || echo '$(srcdir)/'`cinnamon-recorder.c
 
-libgnome_shell_la-shell-recorder-src.lo: shell-recorder-src.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_shell_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libgnome_shell_la-shell-recorder-src.lo -MD -MP -MF $(DEPDIR)/libgnome_shell_la-shell-recorder-src.Tpo -c -o libgnome_shell_la-shell-recorder-src.lo `test -f 'shell-recorder-src.c' || echo '$(srcdir)/'`shell-recorder-src.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgnome_shell_la-shell-recorder-src.Tpo $(DEPDIR)/libgnome_shell_la-shell-recorder-src.Plo
+libgnome_cinnamon_la-cinnamon-recorder-src.lo: cinnamon-recorder-src.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_cinnamon_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libgnome_cinnamon_la-cinnamon-recorder-src.lo -MD -MP -MF $(DEPDIR)/libgnome_cinnamon_la-cinnamon-recorder-src.Tpo -c -o libgnome_cinnamon_la-cinnamon-recorder-src.lo `test -f 'cinnamon-recorder-src.c' || echo '$(srcdir)/'`cinnamon-recorder-src.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgnome_cinnamon_la-cinnamon-recorder-src.Tpo $(DEPDIR)/libgnome_cinnamon_la-cinnamon-recorder-src.Plo
 @am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='shell-recorder-src.c' object='libgnome_shell_la-shell-recorder-src.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='cinnamon-recorder-src.c' object='libgnome_cinnamon_la-cinnamon-recorder-src.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_shell_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libgnome_shell_la-shell-recorder-src.lo `test -f 'shell-recorder-src.c' || echo '$(srcdir)/'`shell-recorder-src.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnome_cinnamon_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libgnome_cinnamon_la-cinnamon-recorder-src.lo `test -f 'cinnamon-recorder-src.c' || echo '$(srcdir)/'`cinnamon-recorder-src.c
 
 libgvc_la-gvc-mixer-stream.lo: gvc/gvc-mixer-stream.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgvc_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libgvc_la-gvc-mixer-stream.lo -MD -MP -MF $(DEPDIR)/libgvc_la-gvc-mixer-stream.Tpo -c -o libgvc_la-gvc-mixer-stream.lo `test -f 'gvc/gvc-mixer-stream.c' || echo '$(srcdir)/'`gvc/gvc-mixer-stream.c
@@ -1881,101 +1881,101 @@ libtray_la-na-marshal.lo: na-marshal.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libtray_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libtray_la-na-marshal.lo `test -f 'na-marshal.c' || echo '$(srcdir)/'`na-marshal.c
 
-gnome_shell_calendar_server-calendar-sources.o: calendar-server/calendar-sources.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnome_shell_calendar_server_CFLAGS) $(CFLAGS) -MT gnome_shell_calendar_server-calendar-sources.o -MD -MP -MF $(DEPDIR)/gnome_shell_calendar_server-calendar-sources.Tpo -c -o gnome_shell_calendar_server-calendar-sources.o `test -f 'calendar-server/calendar-sources.c' || echo '$(srcdir)/'`calendar-server/calendar-sources.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gnome_shell_calendar_server-calendar-sources.Tpo $(DEPDIR)/gnome_shell_calendar_server-calendar-sources.Po
+gnome_cinnamon_calendar_server-calendar-sources.o: calendar-server/calendar-sources.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnome_cinnamon_calendar_server_CFLAGS) $(CFLAGS) -MT gnome_cinnamon_calendar_server-calendar-sources.o -MD -MP -MF $(DEPDIR)/gnome_cinnamon_calendar_server-calendar-sources.Tpo -c -o gnome_cinnamon_calendar_server-calendar-sources.o `test -f 'calendar-server/calendar-sources.c' || echo '$(srcdir)/'`calendar-server/calendar-sources.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gnome_cinnamon_calendar_server-calendar-sources.Tpo $(DEPDIR)/gnome_cinnamon_calendar_server-calendar-sources.Po
 @am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='calendar-server/calendar-sources.c' object='gnome_shell_calendar_server-calendar-sources.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='calendar-server/calendar-sources.c' object='gnome_cinnamon_calendar_server-calendar-sources.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnome_shell_calendar_server_CFLAGS) $(CFLAGS) -c -o gnome_shell_calendar_server-calendar-sources.o `test -f 'calendar-server/calendar-sources.c' || echo '$(srcdir)/'`calendar-server/calendar-sources.c
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnome_cinnamon_calendar_server_CFLAGS) $(CFLAGS) -c -o gnome_cinnamon_calendar_server-calendar-sources.o `test -f 'calendar-server/calendar-sources.c' || echo '$(srcdir)/'`calendar-server/calendar-sources.c
 
-gnome_shell_calendar_server-calendar-sources.obj: calendar-server/calendar-sources.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnome_shell_calendar_server_CFLAGS) $(CFLAGS) -MT gnome_shell_calendar_server-calendar-sources.obj -MD -MP -MF $(DEPDIR)/gnome_shell_calendar_server-calendar-sources.Tpo -c -o gnome_shell_calendar_server-calendar-sources.obj `if test -f 'calendar-server/calendar-sources.c'; then $(CYGPATH_W) 'calendar-server/calendar-sources.c'; else $(CYGPATH_W) '$(srcdir)/calendar-server/calendar-sources.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gnome_shell_calendar_server-calendar-sources.Tpo $(DEPDIR)/gnome_shell_calendar_server-calendar-sources.Po
+gnome_cinnamon_calendar_server-calendar-sources.obj: calendar-server/calendar-sources.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnome_cinnamon_calendar_server_CFLAGS) $(CFLAGS) -MT gnome_cinnamon_calendar_server-calendar-sources.obj -MD -MP -MF $(DEPDIR)/gnome_cinnamon_calendar_server-calendar-sources.Tpo -c -o gnome_cinnamon_calendar_server-calendar-sources.obj `if test -f 'calendar-server/calendar-sources.c'; then $(CYGPATH_W) 'calendar-server/calendar-sources.c'; else $(CYGPATH_W) '$(srcdir)/calendar-server/calendar-sources.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gnome_cinnamon_calendar_server-calendar-sources.Tpo $(DEPDIR)/gnome_cinnamon_calendar_server-calendar-sources.Po
 @am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='calendar-server/calendar-sources.c' object='gnome_shell_calendar_server-calendar-sources.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='calendar-server/calendar-sources.c' object='gnome_cinnamon_calendar_server-calendar-sources.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnome_shell_calendar_server_CFLAGS) $(CFLAGS) -c -o gnome_shell_calendar_server-calendar-sources.obj `if test -f 'calendar-server/calendar-sources.c'; then $(CYGPATH_W) 'calendar-server/calendar-sources.c'; else $(CYGPATH_W) '$(srcdir)/calendar-server/calendar-sources.c'; fi`
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnome_cinnamon_calendar_server_CFLAGS) $(CFLAGS) -c -o gnome_cinnamon_calendar_server-calendar-sources.obj `if test -f 'calendar-server/calendar-sources.c'; then $(CYGPATH_W) 'calendar-server/calendar-sources.c'; else $(CYGPATH_W) '$(srcdir)/calendar-server/calendar-sources.c'; fi`
 
-gnome_shell_calendar_server-gnome-shell-calendar-server.o: calendar-server/gnome-shell-calendar-server.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnome_shell_calendar_server_CFLAGS) $(CFLAGS) -MT gnome_shell_calendar_server-gnome-shell-calendar-server.o -MD -MP -MF $(DEPDIR)/gnome_shell_calendar_server-gnome-shell-calendar-server.Tpo -c -o gnome_shell_calendar_server-gnome-shell-calendar-server.o `test -f 'calendar-server/gnome-shell-calendar-server.c' || echo '$(srcdir)/'`calendar-server/gnome-shell-calendar-server.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gnome_shell_calendar_server-gnome-shell-calendar-server.Tpo $(DEPDIR)/gnome_shell_calendar_server-gnome-shell-calendar-server.Po
+gnome_cinnamon_calendar_server-cinnamon-calendar-server.o: calendar-server/cinnamon-calendar-server.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnome_cinnamon_calendar_server_CFLAGS) $(CFLAGS) -MT gnome_cinnamon_calendar_server-cinnamon-calendar-server.o -MD -MP -MF $(DEPDIR)/gnome_cinnamon_calendar_server-cinnamon-calendar-server.Tpo -c -o gnome_cinnamon_calendar_server-cinnamon-calendar-server.o `test -f 'calendar-server/cinnamon-calendar-server.c' || echo '$(srcdir)/'`calendar-server/cinnamon-calendar-server.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gnome_cinnamon_calendar_server-cinnamon-calendar-server.Tpo $(DEPDIR)/gnome_cinnamon_calendar_server-cinnamon-calendar-server.Po
 @am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='calendar-server/gnome-shell-calendar-server.c' object='gnome_shell_calendar_server-gnome-shell-calendar-server.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='calendar-server/cinnamon-calendar-server.c' object='gnome_cinnamon_calendar_server-cinnamon-calendar-server.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnome_shell_calendar_server_CFLAGS) $(CFLAGS) -c -o gnome_shell_calendar_server-gnome-shell-calendar-server.o `test -f 'calendar-server/gnome-shell-calendar-server.c' || echo '$(srcdir)/'`calendar-server/gnome-shell-calendar-server.c
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnome_cinnamon_calendar_server_CFLAGS) $(CFLAGS) -c -o gnome_cinnamon_calendar_server-cinnamon-calendar-server.o `test -f 'calendar-server/cinnamon-calendar-server.c' || echo '$(srcdir)/'`calendar-server/cinnamon-calendar-server.c
 
-gnome_shell_calendar_server-gnome-shell-calendar-server.obj: calendar-server/gnome-shell-calendar-server.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnome_shell_calendar_server_CFLAGS) $(CFLAGS) -MT gnome_shell_calendar_server-gnome-shell-calendar-server.obj -MD -MP -MF $(DEPDIR)/gnome_shell_calendar_server-gnome-shell-calendar-server.Tpo -c -o gnome_shell_calendar_server-gnome-shell-calendar-server.obj `if test -f 'calendar-server/gnome-shell-calendar-server.c'; then $(CYGPATH_W) 'calendar-server/gnome-shell-calendar-server.c'; else $(CYGPATH_W) '$(srcdir)/calendar-server/gnome-shell-calendar-server.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gnome_shell_calendar_server-gnome-shell-calendar-server.Tpo $(DEPDIR)/gnome_shell_calendar_server-gnome-shell-calendar-server.Po
+gnome_cinnamon_calendar_server-cinnamon-calendar-server.obj: calendar-server/cinnamon-calendar-server.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnome_cinnamon_calendar_server_CFLAGS) $(CFLAGS) -MT gnome_cinnamon_calendar_server-cinnamon-calendar-server.obj -MD -MP -MF $(DEPDIR)/gnome_cinnamon_calendar_server-cinnamon-calendar-server.Tpo -c -o gnome_cinnamon_calendar_server-cinnamon-calendar-server.obj `if test -f 'calendar-server/cinnamon-calendar-server.c'; then $(CYGPATH_W) 'calendar-server/cinnamon-calendar-server.c'; else $(CYGPATH_W) '$(srcdir)/calendar-server/cinnamon-calendar-server.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gnome_cinnamon_calendar_server-cinnamon-calendar-server.Tpo $(DEPDIR)/gnome_cinnamon_calendar_server-cinnamon-calendar-server.Po
 @am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='calendar-server/gnome-shell-calendar-server.c' object='gnome_shell_calendar_server-gnome-shell-calendar-server.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='calendar-server/cinnamon-calendar-server.c' object='gnome_cinnamon_calendar_server-cinnamon-calendar-server.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnome_shell_calendar_server_CFLAGS) $(CFLAGS) -c -o gnome_shell_calendar_server-gnome-shell-calendar-server.obj `if test -f 'calendar-server/gnome-shell-calendar-server.c'; then $(CYGPATH_W) 'calendar-server/gnome-shell-calendar-server.c'; else $(CYGPATH_W) '$(srcdir)/calendar-server/gnome-shell-calendar-server.c'; fi`
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnome_cinnamon_calendar_server_CFLAGS) $(CFLAGS) -c -o gnome_cinnamon_calendar_server-cinnamon-calendar-server.obj `if test -f 'calendar-server/cinnamon-calendar-server.c'; then $(CYGPATH_W) 'calendar-server/cinnamon-calendar-server.c'; else $(CYGPATH_W) '$(srcdir)/calendar-server/cinnamon-calendar-server.c'; fi`
 
-gnome_shell_hotplug_sniffer-shell-mime-sniffer.o: hotplug-sniffer/shell-mime-sniffer.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnome_shell_hotplug_sniffer_CFLAGS) $(CFLAGS) -MT gnome_shell_hotplug_sniffer-shell-mime-sniffer.o -MD -MP -MF $(DEPDIR)/gnome_shell_hotplug_sniffer-shell-mime-sniffer.Tpo -c -o gnome_shell_hotplug_sniffer-shell-mime-sniffer.o `test -f 'hotplug-sniffer/shell-mime-sniffer.c' || echo '$(srcdir)/'`hotplug-sniffer/shell-mime-sniffer.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gnome_shell_hotplug_sniffer-shell-mime-sniffer.Tpo $(DEPDIR)/gnome_shell_hotplug_sniffer-shell-mime-sniffer.Po
+gnome_cinnamon_hotplug_sniffer-cinnamon-mime-sniffer.o: hotplug-sniffer/cinnamon-mime-sniffer.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnome_cinnamon_hotplug_sniffer_CFLAGS) $(CFLAGS) -MT gnome_cinnamon_hotplug_sniffer-cinnamon-mime-sniffer.o -MD -MP -MF $(DEPDIR)/gnome_cinnamon_hotplug_sniffer-cinnamon-mime-sniffer.Tpo -c -o gnome_cinnamon_hotplug_sniffer-cinnamon-mime-sniffer.o `test -f 'hotplug-sniffer/cinnamon-mime-sniffer.c' || echo '$(srcdir)/'`hotplug-sniffer/cinnamon-mime-sniffer.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gnome_cinnamon_hotplug_sniffer-cinnamon-mime-sniffer.Tpo $(DEPDIR)/gnome_cinnamon_hotplug_sniffer-cinnamon-mime-sniffer.Po
 @am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='hotplug-sniffer/shell-mime-sniffer.c' object='gnome_shell_hotplug_sniffer-shell-mime-sniffer.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='hotplug-sniffer/cinnamon-mime-sniffer.c' object='gnome_cinnamon_hotplug_sniffer-cinnamon-mime-sniffer.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnome_shell_hotplug_sniffer_CFLAGS) $(CFLAGS) -c -o gnome_shell_hotplug_sniffer-shell-mime-sniffer.o `test -f 'hotplug-sniffer/shell-mime-sniffer.c' || echo '$(srcdir)/'`hotplug-sniffer/shell-mime-sniffer.c
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnome_cinnamon_hotplug_sniffer_CFLAGS) $(CFLAGS) -c -o gnome_cinnamon_hotplug_sniffer-cinnamon-mime-sniffer.o `test -f 'hotplug-sniffer/cinnamon-mime-sniffer.c' || echo '$(srcdir)/'`hotplug-sniffer/cinnamon-mime-sniffer.c
 
-gnome_shell_hotplug_sniffer-shell-mime-sniffer.obj: hotplug-sniffer/shell-mime-sniffer.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnome_shell_hotplug_sniffer_CFLAGS) $(CFLAGS) -MT gnome_shell_hotplug_sniffer-shell-mime-sniffer.obj -MD -MP -MF $(DEPDIR)/gnome_shell_hotplug_sniffer-shell-mime-sniffer.Tpo -c -o gnome_shell_hotplug_sniffer-shell-mime-sniffer.obj `if test -f 'hotplug-sniffer/shell-mime-sniffer.c'; then $(CYGPATH_W) 'hotplug-sniffer/shell-mime-sniffer.c'; else $(CYGPATH_W) '$(srcdir)/hotplug-sniffer/shell-mime-sniffer.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gnome_shell_hotplug_sniffer-shell-mime-sniffer.Tpo $(DEPDIR)/gnome_shell_hotplug_sniffer-shell-mime-sniffer.Po
+gnome_cinnamon_hotplug_sniffer-cinnamon-mime-sniffer.obj: hotplug-sniffer/cinnamon-mime-sniffer.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnome_cinnamon_hotplug_sniffer_CFLAGS) $(CFLAGS) -MT gnome_cinnamon_hotplug_sniffer-cinnamon-mime-sniffer.obj -MD -MP -MF $(DEPDIR)/gnome_cinnamon_hotplug_sniffer-cinnamon-mime-sniffer.Tpo -c -o gnome_cinnamon_hotplug_sniffer-cinnamon-mime-sniffer.obj `if test -f 'hotplug-sniffer/cinnamon-mime-sniffer.c'; then $(CYGPATH_W) 'hotplug-sniffer/cinnamon-mime-sniffer.c'; else $(CYGPATH_W) '$(srcdir)/hotplug-sniffer/cinnamon-mime-sniffer.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gnome_cinnamon_hotplug_sniffer-cinnamon-mime-sniffer.Tpo $(DEPDIR)/gnome_cinnamon_hotplug_sniffer-cinnamon-mime-sniffer.Po
 @am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='hotplug-sniffer/shell-mime-sniffer.c' object='gnome_shell_hotplug_sniffer-shell-mime-sniffer.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='hotplug-sniffer/cinnamon-mime-sniffer.c' object='gnome_cinnamon_hotplug_sniffer-cinnamon-mime-sniffer.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnome_shell_hotplug_sniffer_CFLAGS) $(CFLAGS) -c -o gnome_shell_hotplug_sniffer-shell-mime-sniffer.obj `if test -f 'hotplug-sniffer/shell-mime-sniffer.c'; then $(CYGPATH_W) 'hotplug-sniffer/shell-mime-sniffer.c'; else $(CYGPATH_W) '$(srcdir)/hotplug-sniffer/shell-mime-sniffer.c'; fi`
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnome_cinnamon_hotplug_sniffer_CFLAGS) $(CFLAGS) -c -o gnome_cinnamon_hotplug_sniffer-cinnamon-mime-sniffer.obj `if test -f 'hotplug-sniffer/cinnamon-mime-sniffer.c'; then $(CYGPATH_W) 'hotplug-sniffer/cinnamon-mime-sniffer.c'; else $(CYGPATH_W) '$(srcdir)/hotplug-sniffer/cinnamon-mime-sniffer.c'; fi`
 
-gnome_shell_hotplug_sniffer-hotplug-sniffer.o: hotplug-sniffer/hotplug-sniffer.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnome_shell_hotplug_sniffer_CFLAGS) $(CFLAGS) -MT gnome_shell_hotplug_sniffer-hotplug-sniffer.o -MD -MP -MF $(DEPDIR)/gnome_shell_hotplug_sniffer-hotplug-sniffer.Tpo -c -o gnome_shell_hotplug_sniffer-hotplug-sniffer.o `test -f 'hotplug-sniffer/hotplug-sniffer.c' || echo '$(srcdir)/'`hotplug-sniffer/hotplug-sniffer.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gnome_shell_hotplug_sniffer-hotplug-sniffer.Tpo $(DEPDIR)/gnome_shell_hotplug_sniffer-hotplug-sniffer.Po
+gnome_cinnamon_hotplug_sniffer-hotplug-sniffer.o: hotplug-sniffer/hotplug-sniffer.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnome_cinnamon_hotplug_sniffer_CFLAGS) $(CFLAGS) -MT gnome_cinnamon_hotplug_sniffer-hotplug-sniffer.o -MD -MP -MF $(DEPDIR)/gnome_cinnamon_hotplug_sniffer-hotplug-sniffer.Tpo -c -o gnome_cinnamon_hotplug_sniffer-hotplug-sniffer.o `test -f 'hotplug-sniffer/hotplug-sniffer.c' || echo '$(srcdir)/'`hotplug-sniffer/hotplug-sniffer.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gnome_cinnamon_hotplug_sniffer-hotplug-sniffer.Tpo $(DEPDIR)/gnome_cinnamon_hotplug_sniffer-hotplug-sniffer.Po
 @am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='hotplug-sniffer/hotplug-sniffer.c' object='gnome_shell_hotplug_sniffer-hotplug-sniffer.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='hotplug-sniffer/hotplug-sniffer.c' object='gnome_cinnamon_hotplug_sniffer-hotplug-sniffer.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnome_shell_hotplug_sniffer_CFLAGS) $(CFLAGS) -c -o gnome_shell_hotplug_sniffer-hotplug-sniffer.o `test -f 'hotplug-sniffer/hotplug-sniffer.c' || echo '$(srcdir)/'`hotplug-sniffer/hotplug-sniffer.c
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnome_cinnamon_hotplug_sniffer_CFLAGS) $(CFLAGS) -c -o gnome_cinnamon_hotplug_sniffer-hotplug-sniffer.o `test -f 'hotplug-sniffer/hotplug-sniffer.c' || echo '$(srcdir)/'`hotplug-sniffer/hotplug-sniffer.c
 
-gnome_shell_hotplug_sniffer-hotplug-sniffer.obj: hotplug-sniffer/hotplug-sniffer.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnome_shell_hotplug_sniffer_CFLAGS) $(CFLAGS) -MT gnome_shell_hotplug_sniffer-hotplug-sniffer.obj -MD -MP -MF $(DEPDIR)/gnome_shell_hotplug_sniffer-hotplug-sniffer.Tpo -c -o gnome_shell_hotplug_sniffer-hotplug-sniffer.obj `if test -f 'hotplug-sniffer/hotplug-sniffer.c'; then $(CYGPATH_W) 'hotplug-sniffer/hotplug-sniffer.c'; else $(CYGPATH_W) '$(srcdir)/hotplug-sniffer/hotplug-sniffer.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gnome_shell_hotplug_sniffer-hotplug-sniffer.Tpo $(DEPDIR)/gnome_shell_hotplug_sniffer-hotplug-sniffer.Po
+gnome_cinnamon_hotplug_sniffer-hotplug-sniffer.obj: hotplug-sniffer/hotplug-sniffer.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnome_cinnamon_hotplug_sniffer_CFLAGS) $(CFLAGS) -MT gnome_cinnamon_hotplug_sniffer-hotplug-sniffer.obj -MD -MP -MF $(DEPDIR)/gnome_cinnamon_hotplug_sniffer-hotplug-sniffer.Tpo -c -o gnome_cinnamon_hotplug_sniffer-hotplug-sniffer.obj `if test -f 'hotplug-sniffer/hotplug-sniffer.c'; then $(CYGPATH_W) 'hotplug-sniffer/hotplug-sniffer.c'; else $(CYGPATH_W) '$(srcdir)/hotplug-sniffer/hotplug-sniffer.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gnome_cinnamon_hotplug_sniffer-hotplug-sniffer.Tpo $(DEPDIR)/gnome_cinnamon_hotplug_sniffer-hotplug-sniffer.Po
 @am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='hotplug-sniffer/hotplug-sniffer.c' object='gnome_shell_hotplug_sniffer-hotplug-sniffer.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='hotplug-sniffer/hotplug-sniffer.c' object='gnome_cinnamon_hotplug_sniffer-hotplug-sniffer.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnome_shell_hotplug_sniffer_CFLAGS) $(CFLAGS) -c -o gnome_shell_hotplug_sniffer-hotplug-sniffer.obj `if test -f 'hotplug-sniffer/hotplug-sniffer.c'; then $(CYGPATH_W) 'hotplug-sniffer/hotplug-sniffer.c'; else $(CYGPATH_W) '$(srcdir)/hotplug-sniffer/hotplug-sniffer.c'; fi`
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnome_cinnamon_hotplug_sniffer_CFLAGS) $(CFLAGS) -c -o gnome_cinnamon_hotplug_sniffer-hotplug-sniffer.obj `if test -f 'hotplug-sniffer/hotplug-sniffer.c'; then $(CYGPATH_W) 'hotplug-sniffer/hotplug-sniffer.c'; else $(CYGPATH_W) '$(srcdir)/hotplug-sniffer/hotplug-sniffer.c'; fi`
 
-gnome_shell_perf_helper-shell-perf-helper.o: shell-perf-helper.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gnome_shell_perf_helper_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT gnome_shell_perf_helper-shell-perf-helper.o -MD -MP -MF $(DEPDIR)/gnome_shell_perf_helper-shell-perf-helper.Tpo -c -o gnome_shell_perf_helper-shell-perf-helper.o `test -f 'shell-perf-helper.c' || echo '$(srcdir)/'`shell-perf-helper.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gnome_shell_perf_helper-shell-perf-helper.Tpo $(DEPDIR)/gnome_shell_perf_helper-shell-perf-helper.Po
+gnome_cinnamon_perf_helper-cinnamon-perf-helper.o: cinnamon-perf-helper.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gnome_cinnamon_perf_helper_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT gnome_cinnamon_perf_helper-cinnamon-perf-helper.o -MD -MP -MF $(DEPDIR)/gnome_cinnamon_perf_helper-cinnamon-perf-helper.Tpo -c -o gnome_cinnamon_perf_helper-cinnamon-perf-helper.o `test -f 'cinnamon-perf-helper.c' || echo '$(srcdir)/'`cinnamon-perf-helper.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gnome_cinnamon_perf_helper-cinnamon-perf-helper.Tpo $(DEPDIR)/gnome_cinnamon_perf_helper-cinnamon-perf-helper.Po
 @am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='shell-perf-helper.c' object='gnome_shell_perf_helper-shell-perf-helper.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='cinnamon-perf-helper.c' object='gnome_cinnamon_perf_helper-cinnamon-perf-helper.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gnome_shell_perf_helper_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o gnome_shell_perf_helper-shell-perf-helper.o `test -f 'shell-perf-helper.c' || echo '$(srcdir)/'`shell-perf-helper.c
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gnome_cinnamon_perf_helper_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o gnome_cinnamon_perf_helper-cinnamon-perf-helper.o `test -f 'cinnamon-perf-helper.c' || echo '$(srcdir)/'`cinnamon-perf-helper.c
 
-gnome_shell_perf_helper-shell-perf-helper.obj: shell-perf-helper.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gnome_shell_perf_helper_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT gnome_shell_perf_helper-shell-perf-helper.obj -MD -MP -MF $(DEPDIR)/gnome_shell_perf_helper-shell-perf-helper.Tpo -c -o gnome_shell_perf_helper-shell-perf-helper.obj `if test -f 'shell-perf-helper.c'; then $(CYGPATH_W) 'shell-perf-helper.c'; else $(CYGPATH_W) '$(srcdir)/shell-perf-helper.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gnome_shell_perf_helper-shell-perf-helper.Tpo $(DEPDIR)/gnome_shell_perf_helper-shell-perf-helper.Po
+gnome_cinnamon_perf_helper-cinnamon-perf-helper.obj: cinnamon-perf-helper.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gnome_cinnamon_perf_helper_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT gnome_cinnamon_perf_helper-cinnamon-perf-helper.obj -MD -MP -MF $(DEPDIR)/gnome_cinnamon_perf_helper-cinnamon-perf-helper.Tpo -c -o gnome_cinnamon_perf_helper-cinnamon-perf-helper.obj `if test -f 'cinnamon-perf-helper.c'; then $(CYGPATH_W) 'cinnamon-perf-helper.c'; else $(CYGPATH_W) '$(srcdir)/cinnamon-perf-helper.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gnome_cinnamon_perf_helper-cinnamon-perf-helper.Tpo $(DEPDIR)/gnome_cinnamon_perf_helper-cinnamon-perf-helper.Po
 @am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='shell-perf-helper.c' object='gnome_shell_perf_helper-shell-perf-helper.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='cinnamon-perf-helper.c' object='gnome_cinnamon_perf_helper-cinnamon-perf-helper.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gnome_shell_perf_helper_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o gnome_shell_perf_helper-shell-perf-helper.obj `if test -f 'shell-perf-helper.c'; then $(CYGPATH_W) 'shell-perf-helper.c'; else $(CYGPATH_W) '$(srcdir)/shell-perf-helper.c'; fi`
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gnome_cinnamon_perf_helper_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o gnome_cinnamon_perf_helper-cinnamon-perf-helper.obj `if test -f 'cinnamon-perf-helper.c'; then $(CYGPATH_W) 'cinnamon-perf-helper.c'; else $(CYGPATH_W) '$(srcdir)/cinnamon-perf-helper.c'; fi`
 
-gnome_shell_real-main.o: main.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gnome_shell_real_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT gnome_shell_real-main.o -MD -MP -MF $(DEPDIR)/gnome_shell_real-main.Tpo -c -o gnome_shell_real-main.o `test -f 'main.c' || echo '$(srcdir)/'`main.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gnome_shell_real-main.Tpo $(DEPDIR)/gnome_shell_real-main.Po
+gnome_cinnamon_real-main.o: main.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gnome_cinnamon_real_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT gnome_cinnamon_real-main.o -MD -MP -MF $(DEPDIR)/gnome_cinnamon_real-main.Tpo -c -o gnome_cinnamon_real-main.o `test -f 'main.c' || echo '$(srcdir)/'`main.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gnome_cinnamon_real-main.Tpo $(DEPDIR)/gnome_cinnamon_real-main.Po
 @am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='main.c' object='gnome_shell_real-main.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='main.c' object='gnome_cinnamon_real-main.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gnome_shell_real_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o gnome_shell_real-main.o `test -f 'main.c' || echo '$(srcdir)/'`main.c
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gnome_cinnamon_real_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o gnome_cinnamon_real-main.o `test -f 'main.c' || echo '$(srcdir)/'`main.c
 
-gnome_shell_real-main.obj: main.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gnome_shell_real_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT gnome_shell_real-main.obj -MD -MP -MF $(DEPDIR)/gnome_shell_real-main.Tpo -c -o gnome_shell_real-main.obj `if test -f 'main.c'; then $(CYGPATH_W) 'main.c'; else $(CYGPATH_W) '$(srcdir)/main.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gnome_shell_real-main.Tpo $(DEPDIR)/gnome_shell_real-main.Po
+gnome_cinnamon_real-main.obj: main.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gnome_cinnamon_real_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT gnome_cinnamon_real-main.obj -MD -MP -MF $(DEPDIR)/gnome_cinnamon_real-main.Tpo -c -o gnome_cinnamon_real-main.obj `if test -f 'main.c'; then $(CYGPATH_W) 'main.c'; else $(CYGPATH_W) '$(srcdir)/main.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gnome_cinnamon_real-main.Tpo $(DEPDIR)/gnome_cinnamon_real-main.Po
 @am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='main.c' object='gnome_shell_real-main.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='main.c' object='gnome_cinnamon_real-main.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gnome_shell_real_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o gnome_shell_real-main.obj `if test -f 'main.c'; then $(CYGPATH_W) 'main.c'; else $(CYGPATH_W) '$(srcdir)/main.c'; fi`
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gnome_cinnamon_real_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o gnome_cinnamon_real-main.obj `if test -f 'main.c'; then $(CYGPATH_W) 'main.c'; else $(CYGPATH_W) '$(srcdir)/main.c'; fi`
 
 run_js_test-run-js-test.o: run-js-test.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(run_js_test_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT run_js_test-run-js-test.o -MD -MP -MF $(DEPDIR)/run_js_test-run-js-test.Tpo -c -o run_js_test-run-js-test.o `test -f 'run-js-test.c' || echo '$(srcdir)/'`run-js-test.c
@@ -1993,37 +1993,37 @@ run_js_test-run-js-test.obj: run-js-test.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(run_js_test_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o run_js_test-run-js-test.obj `if test -f 'run-js-test.c'; then $(CYGPATH_W) 'run-js-test.c'; else $(CYGPATH_W) '$(srcdir)/run-js-test.c'; fi`
 
-test_recorder-shell-recorder.o: shell-recorder.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_recorder_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_recorder-shell-recorder.o -MD -MP -MF $(DEPDIR)/test_recorder-shell-recorder.Tpo -c -o test_recorder-shell-recorder.o `test -f 'shell-recorder.c' || echo '$(srcdir)/'`shell-recorder.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_recorder-shell-recorder.Tpo $(DEPDIR)/test_recorder-shell-recorder.Po
+test_recorder-cinnamon-recorder.o: cinnamon-recorder.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_recorder_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_recorder-cinnamon-recorder.o -MD -MP -MF $(DEPDIR)/test_recorder-cinnamon-recorder.Tpo -c -o test_recorder-cinnamon-recorder.o `test -f 'cinnamon-recorder.c' || echo '$(srcdir)/'`cinnamon-recorder.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_recorder-cinnamon-recorder.Tpo $(DEPDIR)/test_recorder-cinnamon-recorder.Po
 @am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='shell-recorder.c' object='test_recorder-shell-recorder.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='cinnamon-recorder.c' object='test_recorder-cinnamon-recorder.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_recorder_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_recorder-shell-recorder.o `test -f 'shell-recorder.c' || echo '$(srcdir)/'`shell-recorder.c
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_recorder_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_recorder-cinnamon-recorder.o `test -f 'cinnamon-recorder.c' || echo '$(srcdir)/'`cinnamon-recorder.c
 
-test_recorder-shell-recorder.obj: shell-recorder.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_recorder_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_recorder-shell-recorder.obj -MD -MP -MF $(DEPDIR)/test_recorder-shell-recorder.Tpo -c -o test_recorder-shell-recorder.obj `if test -f 'shell-recorder.c'; then $(CYGPATH_W) 'shell-recorder.c'; else $(CYGPATH_W) '$(srcdir)/shell-recorder.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_recorder-shell-recorder.Tpo $(DEPDIR)/test_recorder-shell-recorder.Po
+test_recorder-cinnamon-recorder.obj: cinnamon-recorder.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_recorder_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_recorder-cinnamon-recorder.obj -MD -MP -MF $(DEPDIR)/test_recorder-cinnamon-recorder.Tpo -c -o test_recorder-cinnamon-recorder.obj `if test -f 'cinnamon-recorder.c'; then $(CYGPATH_W) 'cinnamon-recorder.c'; else $(CYGPATH_W) '$(srcdir)/cinnamon-recorder.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_recorder-cinnamon-recorder.Tpo $(DEPDIR)/test_recorder-cinnamon-recorder.Po
 @am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='shell-recorder.c' object='test_recorder-shell-recorder.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='cinnamon-recorder.c' object='test_recorder-cinnamon-recorder.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_recorder_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_recorder-shell-recorder.obj `if test -f 'shell-recorder.c'; then $(CYGPATH_W) 'shell-recorder.c'; else $(CYGPATH_W) '$(srcdir)/shell-recorder.c'; fi`
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_recorder_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_recorder-cinnamon-recorder.obj `if test -f 'cinnamon-recorder.c'; then $(CYGPATH_W) 'cinnamon-recorder.c'; else $(CYGPATH_W) '$(srcdir)/cinnamon-recorder.c'; fi`
 
-test_recorder-shell-recorder-src.o: shell-recorder-src.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_recorder_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_recorder-shell-recorder-src.o -MD -MP -MF $(DEPDIR)/test_recorder-shell-recorder-src.Tpo -c -o test_recorder-shell-recorder-src.o `test -f 'shell-recorder-src.c' || echo '$(srcdir)/'`shell-recorder-src.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_recorder-shell-recorder-src.Tpo $(DEPDIR)/test_recorder-shell-recorder-src.Po
+test_recorder-cinnamon-recorder-src.o: cinnamon-recorder-src.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_recorder_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_recorder-cinnamon-recorder-src.o -MD -MP -MF $(DEPDIR)/test_recorder-cinnamon-recorder-src.Tpo -c -o test_recorder-cinnamon-recorder-src.o `test -f 'cinnamon-recorder-src.c' || echo '$(srcdir)/'`cinnamon-recorder-src.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_recorder-cinnamon-recorder-src.Tpo $(DEPDIR)/test_recorder-cinnamon-recorder-src.Po
 @am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='shell-recorder-src.c' object='test_recorder-shell-recorder-src.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='cinnamon-recorder-src.c' object='test_recorder-cinnamon-recorder-src.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_recorder_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_recorder-shell-recorder-src.o `test -f 'shell-recorder-src.c' || echo '$(srcdir)/'`shell-recorder-src.c
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_recorder_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_recorder-cinnamon-recorder-src.o `test -f 'cinnamon-recorder-src.c' || echo '$(srcdir)/'`cinnamon-recorder-src.c
 
-test_recorder-shell-recorder-src.obj: shell-recorder-src.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_recorder_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_recorder-shell-recorder-src.obj -MD -MP -MF $(DEPDIR)/test_recorder-shell-recorder-src.Tpo -c -o test_recorder-shell-recorder-src.obj `if test -f 'shell-recorder-src.c'; then $(CYGPATH_W) 'shell-recorder-src.c'; else $(CYGPATH_W) '$(srcdir)/shell-recorder-src.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_recorder-shell-recorder-src.Tpo $(DEPDIR)/test_recorder-shell-recorder-src.Po
+test_recorder-cinnamon-recorder-src.obj: cinnamon-recorder-src.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_recorder_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_recorder-cinnamon-recorder-src.obj -MD -MP -MF $(DEPDIR)/test_recorder-cinnamon-recorder-src.Tpo -c -o test_recorder-cinnamon-recorder-src.obj `if test -f 'cinnamon-recorder-src.c'; then $(CYGPATH_W) 'cinnamon-recorder-src.c'; else $(CYGPATH_W) '$(srcdir)/cinnamon-recorder-src.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_recorder-cinnamon-recorder-src.Tpo $(DEPDIR)/test_recorder-cinnamon-recorder-src.Po
 @am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='shell-recorder-src.c' object='test_recorder-shell-recorder-src.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='cinnamon-recorder-src.c' object='test_recorder-cinnamon-recorder-src.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_recorder_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_recorder-shell-recorder-src.obj `if test -f 'shell-recorder-src.c'; then $(CYGPATH_W) 'shell-recorder-src.c'; else $(CYGPATH_W) '$(srcdir)/shell-recorder-src.c'; fi`
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_recorder_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_recorder-cinnamon-recorder-src.obj `if test -f 'cinnamon-recorder-src.c'; then $(CYGPATH_W) 'cinnamon-recorder-src.c'; else $(CYGPATH_W) '$(srcdir)/cinnamon-recorder-src.c'; fi`
 
 test_recorder-test-recorder.o: test-recorder.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_recorder_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_recorder-test-recorder.o -MD -MP -MF $(DEPDIR)/test_recorder-test-recorder.Tpo -c -o test_recorder-test-recorder.o `test -f 'test-recorder.c' || echo '$(srcdir)/'`test-recorder.c
@@ -2330,19 +2330,19 @@ uninstall-am: uninstall-binPROGRAMS uninstall-binSCRIPTS \
 	$(AM_V_GEN)									\
 		[ -d $(@D) ] || $(mkdir_p) $(@D) ;					\
 		sed -e "s|\@libexecdir\@|$(libexecdir)|" $< > $@.tmp && mv $@.tmp $@
-gnome-shell: $(gnome_shell) Makefile
+cinnamon: $(cinnamon) Makefile
 	$(AM_V_GEN) cp $< $@.tmp && mv $@.tmp $@
 install-exec-hook:
-	mv $(DESTDIR)$(bindir)/$(gnome_shell) $(DESTDIR)$(bindir)/gnome-shell
+	mv $(DESTDIR)$(bindir)/$(cinnamon) $(DESTDIR)$(bindir)/cinnamon
 uninstall-hook:
-	rm -f $(DESTDIR)$(bindir)/gnome-shell
+	rm -f $(DESTDIR)$(bindir)/cinnamon
 
-gnome-shell-jhbuild: gnome-shell-jhbuild.in gnome-shell-real Makefile
+cinnamon-jhbuild: cinnamon-jhbuild.in cinnamon-real Makefile
 	$(AM_V_GEN) sed $(generated_script_substitutions) $< > $@.tmp && mv $@.tmp $@ && chmod a+x $@
 	@# Regenerate libtool wrapper so Alt+F2 restart will work
-	@$(LIBTOOL) --mode=execute test -f gnome-shell-real
+	@$(LIBTOOL) --mode=execute test -f cinnamon-real
 
-gnome-shell-extension-tool: gnome-shell-extension-tool.in Makefile
+cinnamon-extension-tool: cinnamon-extension-tool.in Makefile
 	$(AM_V_GEN) sed $(generated_script_substitutions) $< > $@.tmp && mv $@.tmp $@ && chmod a+x $@
 
 st-marshal.h: stamp-st-marshal.h
@@ -2419,46 +2419,46 @@ Gvc-1.0.gir: libgvc.la
 
 ########################################
 
-shell-marshal.h: stamp-shell-marshal.h
+cinnamon-marshal.h: stamp-cinnamon-marshal.h
 	@true
-stamp-shell-marshal.h: Makefile shell-marshal.list
+stamp-cinnamon-marshal.h: Makefile cinnamon-marshal.list
 	$(AM_V_GEN) $(GLIB_GENMARSHAL) \
-		--prefix=_shell_marshal \
+		--prefix=_cinnamon_marshal \
 		--header \
-	$(srcdir)/shell-marshal.list > xgen-smh && \
-	(cmp -s xgen-smh shell-marshal.h || cp -f xgen-smh shell-marshal.h) && \
+	$(srcdir)/cinnamon-marshal.list > xgen-smh && \
+	(cmp -s xgen-smh cinnamon-marshal.h || cp -f xgen-smh cinnamon-marshal.h) && \
 	rm -f xgen-smh && \
 	echo timestamp > $(@F)
 
-shell-marshal.c: Makefile shell-marshal.list
-	$(AM_V_GEN) (echo "#include \"shell-marshal.h\"" ; \
+cinnamon-marshal.c: Makefile cinnamon-marshal.list
+	$(AM_V_GEN) (echo "#include \"cinnamon-marshal.h\"" ; \
 	 $(GLIB_GENMARSHAL) \
-		--prefix=_shell_marshal \
+		--prefix=_cinnamon_marshal \
 		--body \
-	 $(srcdir)/shell-marshal.list ) > xgen-smc && \
-	cp -f xgen-smc shell-marshal.c && \
+	 $(srcdir)/cinnamon-marshal.list ) > xgen-smc && \
+	cp -f xgen-smc cinnamon-marshal.c && \
 	rm -f xgen-smc
 
-shell-enum-types.h: stamp-shell-enum-types.h Makefile
+cinnamon-enum-types.h: stamp-cinnamon-enum-types.h Makefile
 	@true
-stamp-shell-enum-types.h: $(srcdir)/shell-enum-types.h.in $(shell_public_headers_h)
+stamp-cinnamon-enum-types.h: $(srcdir)/cinnamon-enum-types.h.in $(cinnamon_public_headers_h)
 	$(AM_V_GEN) ( \
 	  $(GLIB_MKENUMS) \
 	    --template $< \
-	  $(addprefix $(srcdir)/,$(shell_public_headers_h)) ) > $(@F).tmp && \
-	(cmp -s $(@F).tmp shell-enum-types.h || mv $(@F).tmp shell-enum-types.h) && \
+	  $(addprefix $(srcdir)/,$(cinnamon_public_headers_h)) ) > $(@F).tmp && \
+	(cmp -s $(@F).tmp cinnamon-enum-types.h || mv $(@F).tmp cinnamon-enum-types.h) && \
 	rm -f $(@F).tmp && \
 	echo timestamp > $(@F)
 
-shell-enum-types.c: $(srcdir)/shell-enum-types.c.in stamp-shell-enum-types.h
+cinnamon-enum-types.c: $(srcdir)/cinnamon-enum-types.c.in stamp-cinnamon-enum-types.h
 	$(AM_V_GEN) ( \
 	  $(GLIB_MKENUMS) \
 	    --template $< \
-	  $(addprefix $(srcdir)/,$(shell_public_headers_h)) ) > $(@F).tmp && \
+	  $(addprefix $(srcdir)/,$(cinnamon_public_headers_h)) ) > $(@F).tmp && \
 	mv $(@F).tmp $(@F) && \
 	rm -f $(@F).tmp
 
-Shell-0.1.gir: libgnome-shell.la St-1.0.gir
+Cinnamon-0.1.gir: libcinnamon.la St-1.0.gir
 
 St-1.0.gir: libst-1.0.la
 

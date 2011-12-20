@@ -1,8 +1,8 @@
 AC_PREREQ(2.63)
-AC_INIT([gnome-shell],[3.2.1],[https://bugzilla.gnome.org/enter_bug.cgi?product=gnome-shell],[gnome-shell])
+AC_INIT([cinnamon],[3.2.1],[https://bugzilla.gnome.org/enter_bug.cgi?product=cinnamon],[cinnamon])
 
 AC_CONFIG_HEADERS([config.h])
-AC_CONFIG_SRCDIR([src/shell-global.c])
+AC_CONFIG_SRCDIR([src/cinnamon-global.c])
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_AUX_DIR([config])
 
@@ -16,7 +16,7 @@ m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])])
 
 # Checks for programs.
 AC_PROG_CC
-# Needed for per-target cflags, like in gnomeshell-taskpanel
+# Needed for per-target cflags, like in cinnamon-taskpanel
 AM_PROG_CC_C_O
 
 # Initialize libtool
@@ -29,7 +29,7 @@ IT_PROG_INTLTOOL([0.40])
 AM_GNU_GETTEXT([external])
 AM_GNU_GETTEXT_VERSION([0.17])
 
-GETTEXT_PACKAGE=gnome-shell
+GETTEXT_PACKAGE=cinnamon
 AC_SUBST(GETTEXT_PACKAGE)
 AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE, "$GETTEXT_PACKAGE",
                    [The prefix for our gettext translation domains.])
@@ -42,7 +42,7 @@ AM_GCONF_SOURCE_2
 
 GLIB_GSETTINGS
 
-# Get a value to substitute into gnome-shell.in
+# Get a value to substitute into cinnamon.in
 AM_PATH_PYTHON([2.5])
 AC_SUBST(PYTHON)
 
@@ -57,7 +57,7 @@ if $PKG_CONFIG --exists gstreamer-0.10 '>=' $GSTREAMER_MIN_VERSION ; then
    AC_MSG_RESULT(yes)
    build_recorder=true
    recorder_modules="gstreamer-0.10 gstreamer-base-0.10 x11"
-   PKG_CHECK_MODULES(TEST_SHELL_RECORDER, $recorder_modules clutter-1.0 xfixes)
+   PKG_CHECK_MODULES(TEST_CINNAMON_RECORDER, $recorder_modules clutter-1.0 xfixes)
 else
    AC_MSG_RESULT(no)
 fi
@@ -80,7 +80,7 @@ POLKIT_MIN_VERSION=0.100
 STARTUP_NOTIFICATION_MIN_VERSION=0.11
 
 # Collect more than 20 libraries for a prize!
-PKG_CHECK_MODULES(GNOME_SHELL, gio-2.0 >= $GIO_MIN_VERSION
+PKG_CHECK_MODULES(CINNAMON, gio-2.0 >= $GIO_MIN_VERSION
                                gio-unix-2.0 dbus-glib-1 libxml-2.0
                                gtk+-3.0 >= $GTK_MIN_VERSION
                                folks >= $FOLKS_MIN_VERSION
@@ -97,9 +97,9 @@ PKG_CHECK_MODULES(GNOME_SHELL, gio-2.0 >= $GIO_MIN_VERSION
                                polkit-agent-1 >= $POLKIT_MIN_VERSION xfixes
                                libnm-glib libnm-util gnome-keyring-1)
 
-PKG_CHECK_MODULES(SHELL_PERF_HELPER, gtk+-3.0 gio-2.0)
+PKG_CHECK_MODULES(CINNAMON_PERF_HELPER, gtk+-3.0 gio-2.0)
 
-PKG_CHECK_MODULES(SHELL_HOTPLUG_SNIFFER, gio-2.0 gdk-pixbuf-2.0)
+PKG_CHECK_MODULES(CINNAMON_HOTPLUG_SNIFFER, gio-2.0 gdk-pixbuf-2.0)
 
 PKG_CHECK_MODULES(BROWSER_PLUGIN, gio-2.0 >= $GIO_MIN_VERSION json-glib-1.0 >= 0.13.2)
 
@@ -113,8 +113,8 @@ AC_SUBST(JHBUILD_TYPELIBDIR)
 
 saved_CFLAGS=$CFLAGS
 saved_LIBS=$LIBS
-CFLAGS=$GNOME_SHELL_CFLAGS
-LIBS=$GNOME_SHELL_LIBS
+CFLAGS=$CINNAMON_CFLAGS
+LIBS=$CINNAMON_LIBS
 AC_CHECK_FUNCS(JS_NewGlobalObject XFixesCreatePointerBarrier)
 CFLAGS=$saved_CFLAGS
 LIBS=$saved_LIBS
@@ -206,7 +206,7 @@ fi
 changequote([,])dnl
 
 AC_ARG_ENABLE(jhbuild-wrapper-script,
-  AS_HELP_STRING([--jhbuild-wrapper-script=yes],[Make "gnome-shell" script work for jhbuild]),,enable_jhbuild_wrapper_script=no)
+  AS_HELP_STRING([--jhbuild-wrapper-script=yes],[Make "cinnamon" script work for jhbuild]),,enable_jhbuild_wrapper_script=no)
 AM_CONDITIONAL(USE_JHBUILD_WRAPPER_SCRIPT, test "x$enable_jhbuild_wrapper_script" = xyes)
 
 AC_MSG_CHECKING([location of system Certificate Authority list])
@@ -230,9 +230,9 @@ else
    fi
 
    AC_MSG_RESULT($with_ca_certificates)
-   AC_DEFINE_UNQUOTED(SHELL_SYSTEM_CA_FILE, ["$with_ca_certificates"], [The system TLS CA list])
+   AC_DEFINE_UNQUOTED(CINNAMON_SYSTEM_CA_FILE, ["$with_ca_certificates"], [The system TLS CA list])
 fi
-AC_SUBST(SHELL_SYSTEM_CA_FILE,["$with_ca_certificates"])
+AC_SUBST(CINNAMON_SYSTEM_CA_FILE,["$with_ca_certificates"])
 
 BROWSER_PLUGIN_DIR="${BROWSER_PLUGIN_DIR:-"\${libdir}/mozilla/plugins"}"
 AC_ARG_VAR([BROWSER_PLUGIN_DIR],[Where to install the plugin to])

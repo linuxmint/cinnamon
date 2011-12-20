@@ -21,7 +21,7 @@ GETTEXT_PACKAGE = @GETTEXT_PACKAGE@
 PACKAGE = @PACKAGE@
 VERSION = @VERSION@
 
-SHELL = @SHELL@
+CINNAMON = @CINNAMON@
 
 srcdir = @srcdir@
 top_srcdir = @top_srcdir@
@@ -54,13 +54,13 @@ GENPOT   = INTLTOOL_EXTRACT=$(INTLTOOL_EXTRACT) srcdir=$(srcdir) $(INTLTOOL_UPDA
 
 ALL_LINGUAS = @ALL_LINGUAS@
 
-PO_LINGUAS=$(shell if test -r $(srcdir)/LINGUAS; then grep -v "^\#" $(srcdir)/LINGUAS; else echo "$(ALL_LINGUAS)"; fi)
+PO_LINGUAS=$(cinnamon if test -r $(srcdir)/LINGUAS; then grep -v "^\#" $(srcdir)/LINGUAS; else echo "$(ALL_LINGUAS)"; fi)
 
-USER_LINGUAS=$(shell if test -n "$(LINGUAS)"; then LLINGUAS="$(LINGUAS)"; ALINGUAS="$(ALL_LINGUAS)"; for lang in $$LLINGUAS; do if test -n "`grep \^$$lang$$ $(srcdir)/LINGUAS 2>/dev/null`" -o -n "`echo $$ALINGUAS|tr ' ' '\n'|grep \^$$lang$$`"; then printf "$$lang "; fi; done; fi)
+USER_LINGUAS=$(cinnamon if test -n "$(LINGUAS)"; then LLINGUAS="$(LINGUAS)"; ALINGUAS="$(ALL_LINGUAS)"; for lang in $$LLINGUAS; do if test -n "`grep \^$$lang$$ $(srcdir)/LINGUAS 2>/dev/null`" -o -n "`echo $$ALINGUAS|tr ' ' '\n'|grep \^$$lang$$`"; then printf "$$lang "; fi; done; fi)
 
-USE_LINGUAS=$(shell if test -n "$(USER_LINGUAS)" -o -n "$(LINGUAS)"; then LLINGUAS="$(USER_LINGUAS)"; else if test -n "$(PO_LINGUAS)"; then LLINGUAS="$(PO_LINGUAS)"; else LLINGUAS="$(ALL_LINGUAS)"; fi; fi; for lang in $$LLINGUAS; do printf "$$lang "; done)
+USE_LINGUAS=$(cinnamon if test -n "$(USER_LINGUAS)" -o -n "$(LINGUAS)"; then LLINGUAS="$(USER_LINGUAS)"; else if test -n "$(PO_LINGUAS)"; then LLINGUAS="$(PO_LINGUAS)"; else LLINGUAS="$(ALL_LINGUAS)"; fi; fi; for lang in $$LLINGUAS; do printf "$$lang "; done)
 
-POFILES=$(shell LINGUAS="$(PO_LINGUAS)"; for lang in $$LINGUAS; do printf "$$lang.po "; done)
+POFILES=$(cinnamon LINGUAS="$(PO_LINGUAS)"; for lang in $$LINGUAS; do printf "$$lang.po "; done)
 
 DISTFILES = Makefile.in.in POTFILES.in $(POFILES)
 EXTRA_DISTFILES = ChangeLog POTFILES.skip Makevars LINGUAS
@@ -68,7 +68,7 @@ EXTRA_DISTFILES = ChangeLog POTFILES.skip Makevars LINGUAS
 POTFILES = \
 # This comment gets stripped out
 
-CATALOGS=$(shell LINGUAS="$(USE_LINGUAS)"; for lang in $$LINGUAS; do printf "$$lang.gmo "; done)
+CATALOGS=$(cinnamon LINGUAS="$(USE_LINGUAS)"; for lang in $$LINGUAS; do printf "$$lang.gmo "; done)
 
 .SUFFIXES:
 .SUFFIXES: .po .pox .gmo .mo .msg .cat
@@ -210,7 +210,7 @@ Makefile POTFILES: stamp-it
 stamp-it: Makefile.in.in $(top_builddir)/config.status POTFILES.in
 	cd $(top_builddir) \
 	  && CONFIG_FILES=$(subdir)/Makefile.in CONFIG_HEADERS= CONFIG_LINKS= \
-	       $(SHELL) ./config.status
+	       $(CINNAMON) ./config.status
 
 # Tell versions [3.59,3.63) of GNU make not to export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

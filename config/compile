@@ -133,7 +133,7 @@ rmdir "$lockdir"
 exit $ret
 
 # Local Variables:
-# mode: shell-script
+# mode: cinnamon-script
 # sh-indentation: 2
 # eval: (add-hook 'write-file-hooks 'time-stamp)
 # time-stamp-start: "scriptversion="

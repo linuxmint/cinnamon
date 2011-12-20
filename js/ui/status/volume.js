@@ -4,7 +4,7 @@ const Mainloop = imports.mainloop;
 const Gio = imports.gi.Gio;
 const DBus = imports.dbus;
 const Lang = imports.lang;
-const Shell = imports.gi.Shell;
+const Cinnamon = imports.gi.Cinnamon;
 const Clutter = imports.gi.Clutter;
 const St = imports.gi.St;
 const Main = imports.ui.main;
@@ -15,7 +15,7 @@ const GLib = imports.gi.GLib;
 const Tweener = imports.ui.tweener;
 const Gvc = imports.gi.Gvc;
 
-const Gettext = imports.gettext.domain('gnome-shell-extension-mediaplayer');
+const Gettext = imports.gettext.domain('cinnamon-extension-mediaplayer');
 const _ = Gettext.gettext;
 
 const PropIFace = {
@@ -104,7 +104,7 @@ const MediaServer2PlayerIFace = {
 };
 
 /* global values */
-let icon_path = "/usr/share/gnome-shell/theme/mediaplayer/";
+let icon_path = "/usr/share/cinnamon/theme/mediaplayer/";
 let compatible_players = [ "clementine", "mpd", "banshee", "rhythmbox", "rhythmbox3", "pragha", "quodlibet", "guayadeque", "amarok", "googlemusicframe", "xbmc" ];
 let support_seek = [ "clementine", "banshee", "rhythmbox", "rhythmbox3", "quodlibet", "amarok" ];
 /* dummy vars for translation */
@@ -662,7 +662,7 @@ Indicator.prototype = {
             );
         }
         
-        this._control = new Gvc.MixerControl({ name: 'GNOME Shell Volume Control' });
+        this._control = new Gvc.MixerControl({ name: 'Cinnamon Volume Control' });
         this._control.connect('state-changed', Lang.bind(this, this._onControlStateChanged));
         this._control.connect('default-sink-changed', Lang.bind(this, this._readOutput));
         this._control.connect('default-source-changed', Lang.bind(this, this._readInput));
@@ -764,7 +764,7 @@ Indicator.prototype = {
         this._volumeControlShown = true;
         
         if (this._nbPlayers()==0){
-            let appsys = Shell.AppSystem.get_default();
+            let appsys = Cinnamon.AppSystem.get_default();
             
             this._availablePlayers = new Array();
             for (var p=0; p<compatible_players.length; p++) {

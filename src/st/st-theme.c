@@ -28,9 +28,9 @@
  *   we order things in priority order, but we don't actually try to
  *   coalesce properties with the same name.
  *
- * In moving it to GNOME Shell:
+ * In moving it to Cinnamon:
  *  - Renamed again to StTheme
- *  - Reformatted to match the gnome-shell coding style
+ *  - Reformatted to match the cinnamon coding style
  *  - Removed notion of "theme engine" from hippo-canvas
  *  - pseudo-class matching changed from link enum to strings
  *  - Some code simplification

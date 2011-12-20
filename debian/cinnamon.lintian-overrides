@@ -1,0 +1,4 @@
+# It's the only way we have to let cinnamon find the private library it
+# links against through libcinnamon.so
+cinnamon: binary-or-shlib-defines-rpath usr/bin/cinnamon /usr/lib/gnome-bluetooth
+cinnamon: binary-or-shlib-defines-rpath ./usr/bin/cinnamon /usr/lib/gnome-bluetooth

@@ -5,7 +5,7 @@ const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
 const Lang = imports.lang;
 const Mainloop = imports.mainloop;
-const Shell = imports.gi.Shell;
+const Cinnamon = imports.gi.Cinnamon;
 const Signals = imports.signals;
 const St = imports.gi.St;
 const Tpl = imports.gi.TelepathyLogger;
@@ -38,8 +38,8 @@ let contactFeatures = [Tp.ContactFeature.ALIAS,
                         Tp.ContactFeature.AVATAR_DATA,
                         Tp.ContactFeature.PRESENCE];
 
-// This is GNOME Shell's implementation of the Telepathy 'Client'
-// interface. Specifically, the shell is a Telepathy 'Observer', which
+// This is Cinnamon's implementation of the Telepathy 'Client'
+// interface. Specifically, Cinnamon is a Telepathy 'Observer', which
 // lets us see messages even if they belong to another app (eg,
 // Empathy).
 
@@ -91,8 +91,8 @@ Client.prototype = {
         // The second argument, recover, means _observeChannels will be run
         // for any existing channel as well.
         this._accountManager = Tp.AccountManager.dup();
-        this._tpClient = new Shell.TpClient({ 'account-manager': this._accountManager,
-                                              'name': 'GnomeShell',
+        this._tpClient = new Cinnamon.TpClient({ 'account-manager': this._accountManager,
+                                              'name': 'Cinnamon',
                                               'uniquify-name': true })
         this._tpClient.set_observe_channels_func(
             Lang.bind(this, this._observeChannels));
@@ -142,7 +142,7 @@ Client.prototype = {
         if (self_contact.has_feature(Tp.ContactFeature.ALIAS)) {
             this._finishObserveChannels(account, conn, channels, context);
         } else {
-            Shell.get_self_contact_features(conn,
+            Cinnamon.get_self_contact_features(conn,
                                             contactFeatures,
                                             Lang.bind(this, function() {
                                                 this._finishObserveChannels(account, conn, channels, context);
@@ -163,7 +163,7 @@ Client.prototype = {
                continue;
 
             /* Request a TpContact */
-            Shell.get_tp_contacts(conn, [targetHandle],
+            Cinnamon.get_tp_contacts(conn, [targetHandle],
                     contactFeatures,
                     Lang.bind(this,  function (connection, contacts, failed) {
                         if (contacts.length < 1)
@@ -228,18 +228,18 @@ Client.prototype = {
         // We can only approve the rooms if we have been invited to it
         let selfHandle = channel.group_get_self_handle();
         if (selfHandle == 0) {
-            Shell.decline_dispatch_op(context, 'Not invited to the room');
+            Cinnamon.decline_dispatch_op(context, 'Not invited to the room');
             return;
         }
 
         let [invited, inviter, reason, msg] = channel.group_get_local_pending_info(selfHandle);
         if (!invited) {
-            Shell.decline_dispatch_op(context, 'Not invited to the room');
+            Cinnamon.decline_dispatch_op(context, 'Not invited to the room');
             return;
         }
 
         // Request a TpContact for the inviter
-        Shell.get_tp_contacts(conn, [inviter],
+        Cinnamon.get_tp_contacts(conn, [inviter],
                 contactFeatures,
                 Lang.bind(this, this._createRoomInviteSource, channel, context, dispatchOp));
 
@@ -248,7 +248,7 @@ Client.prototype = {
 
     _createRoomInviteSource: function(connection, contacts, failed, channel, context, dispatchOp) {
         if (contacts.length < 1) {
-            Shell.decline_dispatch_op(context, 'Failed to get inviter');
+            Cinnamon.decline_dispatch_op(context, 'Failed to get inviter');
             return;
         }
 
@@ -302,7 +302,7 @@ Client.prototype = {
     _approveCall: function(account, conn, channel, dispatchOp, context) {
         let [targetHandle, targetHandleType] = channel.get_handle();
 
-        Shell.get_tp_contacts(conn, [targetHandle],
+        Cinnamon.get_tp_contacts(conn, [targetHandle],
                 contactFeatures,
                 Lang.bind(this, this._createAudioVideoSource, channel, context, dispatchOp));
 
@@ -311,7 +311,7 @@ Client.prototype = {
 
     _createAudioVideoSource: function(connection, contacts, failed, channel, context, dispatchOp) {
         if (contacts.length < 1) {
-            Shell.decline_dispatch_op(context, 'Failed to get inviter');
+            Cinnamon.decline_dispatch_op(context, 'Failed to get inviter');
             return;
         }
 
@@ -337,7 +337,7 @@ Client.prototype = {
     _approveFileTransfer: function(account, conn, channel, dispatchOp, context) {
         let [targetHandle, targetHandleType] = channel.get_handle();
 
-        Shell.get_tp_contacts(conn, [targetHandle],
+        Cinnamon.get_tp_contacts(conn, [targetHandle],
                 contactFeatures,
                 Lang.bind(this, this._createFileTransferSource, channel, context, dispatchOp));
 
@@ -346,7 +346,7 @@ Client.prototype = {
 
     _createFileTransferSource: function(connection, contacts, failed, channel, context, dispatchOp) {
         if (contacts.length < 1) {
-            Shell.decline_dispatch_op(context, 'Failed to get file sender');
+            Cinnamon.decline_dispatch_op(context, 'Failed to get file sender');
             return;
         }
 
@@ -588,7 +588,7 @@ ChatSource.prototype = {
     _getLogMessages: function() {
         let logManager = Tpl.LogManager.dup_singleton();
         let entity = Tpl.Entity.new_from_tp_contact(this._contact, Tpl.EntityType.CONTACT);
-        Shell.get_contact_events(logManager,
+        Cinnamon.get_contact_events(logManager,
                                  this._account, entity,
                                  SCROLLBACK_HISTORY_LINES,
                                  Lang.bind(this, this._displayPendingMessages));
@@ -720,7 +720,7 @@ ChatSource.prototype = {
         // We don't want to send COMPOSING every time a letter is typed into
         // the entry. We send the state only when it changes. Telepathy/Empathy
         // might change it behind our back if the user is using both
-        // gnome-shell's entry and the Empathy conversation window. We could
+        // cinnamon's entry and the Empathy conversation window. We could
         // keep track of it with the ChatStateChanged signal but it is good
         // enough right now.
         if (state != this._chatState) {
@@ -1297,7 +1297,7 @@ MultiNotificationSource.prototype = {
     },
 
     createNotificationIcon: function() {
-        return new St.Icon({ gicon: Shell.util_icon_from_string(this._icon),
+        return new St.Icon({ gicon: Cinnamon.util_icon_from_string(this._icon),
                              icon_type: St.IconType.FULLCOLOR,
                              icon_size: this.ICON_SIZE });
     }

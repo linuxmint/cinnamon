@@ -4,7 +4,7 @@ const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
 const Lang = imports.lang;
 const Signals = imports.signals;
-const Shell = imports.gi.Shell;
+const Cinnamon = imports.gi.Cinnamon;
 const Util = imports.misc.util;
 
 const FileUtils = imports.misc.fileUtils;
@@ -309,8 +309,8 @@ OpenSearchSystem.prototype = {
 
     _addProvider: function(fileName) {
         let path = global.datadir + '/search_providers/' + fileName;
-        let source = Shell.get_file_contents_utf8_sync(path);
-        let [success, name, url, langs, icon_uri] = Shell.parse_search_provider(source);
+        let source = Cinnamon.get_file_contents_utf8_sync(path);
+        let [success, name, url, langs, icon_uri] = Cinnamon.parse_search_provider(source);
         let provider ={ name: name,
                         url: url,
                         id: this._providers.length,

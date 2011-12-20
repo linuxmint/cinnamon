@@ -1,7 +1,7 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 
 const St = imports.gi.St;
-const Shell = imports.gi.Shell;
+const Cinnamon = imports.gi.Cinnamon;
 const Lang = imports.lang;
 const Signals = imports.signals;
 const Search = imports.ui.search;
@@ -30,7 +30,7 @@ DocInfo.prototype = {
     },
 
     launch : function(workspaceIndex) {
-        Shell.DocSystem.get_default().open(this.recentInfo, workspaceIndex);
+        Cinnamon.DocSystem.get_default().open(this.recentInfo, workspaceIndex);
     },
 
     matchTerms: function(terms) {
@@ -68,7 +68,7 @@ function DocManager() {
 
 DocManager.prototype = {
     _init: function() {
-        this._docSystem = Shell.DocSystem.get_default();
+        this._docSystem = Cinnamon.DocSystem.get_default();
         this._infosByTimestamp = [];
         this._infosByUri = {};
         this._docSystem.connect('changed', Lang.bind(this, this._reload));

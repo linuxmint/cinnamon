@@ -3,7 +3,7 @@
 const Clutter = imports.gi.Clutter;
 const GLib = imports.gi.GLib;
 const St = imports.gi.St;
-const Shell = imports.gi.Shell;
+const Cinnamon = imports.gi.Cinnamon;
 
 const Environment = imports.ui.environment;
 
@@ -12,7 +12,7 @@ function init() {
 
     let stage = Clutter.Stage.get_default();
     let context = St.ThemeContext.get_for_stage (stage);
-    let stylesheetPath = GLib.getenv("GNOME_SHELL_TESTSDIR") + "/testcommon/test.css";
+    let stylesheetPath = GLib.getenv("CINNAMON_TESTSDIR") + "/testcommon/test.css";
     let theme = new St.Theme ({ application_stylesheet: stylesheetPath });
     context.set_theme (theme);
 }

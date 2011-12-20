@@ -47,7 +47,7 @@
  *     be added here, but  only affects a small number of input methods
  *     and really doesn't make a lot of sense without A)
  *
- * Another problem that will show up with usage in GNOME Shell's overview
+ * Another problem that will show up with usage in Cinnamon's overview
  * is that the user may have trouble seeing and interacting with ancilliary
  * windows shown by the IM.
  */

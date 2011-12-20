@@ -1,11 +1,11 @@
-# Tamil translation for gnome-shell.
-# Copyright (C) 2010 gnome-shell's COPYRIGHT HOLDER
-# This file is distributed under the same license as the gnome-shell package.
+# Tamil translation for cinnamon.
+# Copyright (C) 2010 cinnamon's COPYRIGHT HOLDER
+# This file is distributed under the same license as the cinnamon package.
 #
 # Dr.T.Vasudevan <agnihot3@gmail.com>, 2010, 2011.
 msgid ""
 msgstr ""
-"Project-Id-Version: gnome-shell master\n"
+"Project-Id-Version: cinnamon master\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-09-27 05:13+0530\n"
 "PO-Revision-Date: 2011-09-27 05:14+0530\n"
@@ -18,15 +18,15 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Lokalize 1.1\n"
 
-#: ../data/gnome-shell.desktop.in.in.h:1
-msgid "GNOME Shell"
+#: ../data/cinnamon.desktop.in.in.h:1
+msgid "Cinnamon"
 msgstr "க்னோம் ஷெல்"
 
-#: ../data/gnome-shell.desktop.in.in.h:2
+#: ../data/cinnamon.desktop.in.in.h:2
 msgid "Window management and application launching"
 msgstr "சாளர மேலாண்மை மற்றும் பயன்பாடு துவக்கம்"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:1
+#: ../data/org.cinnamon.gschema.xml.in.h:1
 msgid ""
 "Allows access to internal debugging and monitoring tools using the Alt-F2 "
 "dialog."
@@ -34,23 +34,23 @@ msgstr ""
 "உள்ளமை வழி நீக்கம் மற்றும் Alt-F2 உரையாடல் மூலம் கருவிகள் கண்காணிப்பு ஆகியவற்றை அணுக "
 "உதவும்."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:2
+#: ../data/org.cinnamon.gschema.xml.in.h:2
 msgid "Enable internal tools useful for developers and testers from Alt-F2"
 msgstr ""
 "உருவாக்குவோர் மற்றூம் சோதிப்போருக்கு பயன்படுமாறு Alt-F2 வழியாக உள்ளமை கருவிகளை "
 "செயலாக்கு"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:3
+#: ../data/org.cinnamon.gschema.xml.in.h:3
 msgid "File extension used for storing the screencast"
 msgstr "திரைவெட்டை சேமிக்க கோப்பு பின்னொட்டு."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:4
+#: ../data/org.cinnamon.gschema.xml.in.h:4
 msgid "Framerate used for recording screencasts."
 msgstr "திரைநிகழ்வை பதிவு செய்ய சட்டவிகிதம் ."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:5
+#: ../data/org.cinnamon.gschema.xml.in.h:5
 msgid ""
-"GNOME Shell extensions have a uuid property; this key lists extensions which "
+"Cinnamon extensions have a uuid property; this key lists extensions which "
 "should be loaded. disabled-extensions overrides this setting for extensions "
 "that appear in both lists."
 msgstr ""
@@ -58,31 +58,31 @@ msgstr ""
 "என பட்டியலிடுகிறது. இரண்டு பட்டியலிலும் காணப்படும் நீட்சிகளுக்கு செயல்நீக்கிய நீட்சிகள் "
 "பட்டியலே ஆட்சி செய்யும்."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:6
+#: ../data/org.cinnamon.gschema.xml.in.h:6
 msgid "History for command (Alt-F2) dialog"
 msgstr "(Alt-F2) கட்டளை உரையாடல் க்கு வரலாறு"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:7
+#: ../data/org.cinnamon.gschema.xml.in.h:7
 msgid "History for the looking glass dialog"
 msgstr "லுக்கிங் க்ளாஸ் உரையாடலுக்கு வரலாறு"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:8
+#: ../data/org.cinnamon.gschema.xml.in.h:8
 msgid "If true, display date in the clock, in addition to time."
 msgstr "உண்மையெனில், கடிகாரத்தில் மணியுடன் நாளை காட்டு."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:9
+#: ../data/org.cinnamon.gschema.xml.in.h:9
 msgid "If true, display seconds in time."
 msgstr "உண்மையானால் நேரத்தில் வினாடிகளை காட்டவும்."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:10
+#: ../data/org.cinnamon.gschema.xml.in.h:10
 msgid "If true, display the ISO week date in the calendar."
 msgstr "உண்மையானால் நாட்காட்டியில் ஐஎஸ்ஓ வார எண்களை காட்டவும்."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:11
+#: ../data/org.cinnamon.gschema.xml.in.h:11
 msgid "List of desktop file IDs for favorite applications"
 msgstr "விருப்ப பயன்பாடுகளுக்கு மேல்மேசை கோப்பு அடையாளங்கள்."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:13
+#: ../data/org.cinnamon.gschema.xml.in.h:13
 #, no-c-format
 msgid ""
 "Sets the GStreamer pipeline used to encode recordings. It follows the syntax "
@@ -106,25 +106,25 @@ msgstr ""
 "webmmux'  ஆகும்; இதுVP8 கோடக் ஐ பயன்படுத்தி WEBM க்கு பதிவுசெய்யும். கணினியில் "
 "பொருத்தமான இழை கணக்குக்கு ஊகம் செய்வதற்கு %T இடப்பிடிப்பானாக வேலை செய்யும்."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:14
+#: ../data/org.cinnamon.gschema.xml.in.h:14
 msgid "Show date in clock"
 msgstr "தேதியை கடிகாரத்தில் காட்டுக"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:15
+#: ../data/org.cinnamon.gschema.xml.in.h:15
 msgid "Show the week date in the calendar"
 msgstr "நாட்காட்டியில் வார நாளை காட்டவும்"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:16
+#: ../data/org.cinnamon.gschema.xml.in.h:16
 msgid "Show time with seconds"
 msgstr "நொடிகளுடன் நேரம் காட்டுக"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:17
+#: ../data/org.cinnamon.gschema.xml.in.h:17
 msgid ""
 "The applications corresponding to these identifiers will be displayed in the "
 "favorites area."
 msgstr "இந்த அடையாளங் காட்டிகளுக்கு பொருத்தமான பயன்பாடுகள் விருப்ப இடத்தில் காட்டப்படும்."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:18
+#: ../data/org.cinnamon.gschema.xml.in.h:18
 msgid ""
 "The filename for recorded screencasts will be a unique filename based on the "
 "current date, and use this extension. It should be changed when recording to "
@@ -134,20 +134,20 @@ msgstr ""
 "அடிப்படையாக கொண்டது; இந்த பின்னொட்டை பயன்படுத்தும். பதிவதை வேறு கொள்கலத்தின் ஒழுங்கில் "
 "மாற்றுகையில் இதையும் மாற்ற வேண்டும்."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:19
+#: ../data/org.cinnamon.gschema.xml.in.h:19
 msgid ""
-"The framerate of the resulting screencast recordered by GNOME Shell's "
+"The framerate of the resulting screencast recordered by Cinnamon's "
 "screencast recorder in frames-per-second."
 msgstr ""
 "க்னோம்ஷெல் இன் ஸ்க்ரீன்காஸ்ட் பதிவரில் ஸ்க்ரீன்காட் ஐ பதிகையில் வினாடிக்கு சட்டங்களின் விகிதம்."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:20
+#: ../data/org.cinnamon.gschema.xml.in.h:20
 msgid "The gstreamer pipeline used to encode the screencast"
 msgstr "ஸ்க்ரீன்காஸ்டை குறியாக்க பயனாகும் ஜிஸ்ட்ரீமர் குழாய்."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:21
+#: ../data/org.cinnamon.gschema.xml.in.h:21
 msgid ""
-"The shell normally monitors active applications in order to present the most "
+"Cinnamon normally monitors active applications in order to present the most "
 "used ones (e.g. in launchers). While this data will be kept private, you may "
 "want to disable this for privacy reasons. Please note that doing so won't "
 "remove already saved data."
@@ -156,23 +156,23 @@ msgstr ""
 "நிரல்கள் (எ-டு: துவக்கிகள்) முன் வைக்கப்படும். இந்த தரவு அந்தரங்கமாக வைக்கப்பட்டாலும் நீங்கள் "
 "இதை நீக்க விரும்பலாம். அப்படிச் செய்வது முன்னே சேகரித்த தரவை நீக்காஅது என் அறியவும்."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:22
+#: ../data/org.cinnamon.gschema.xml.in.h:22
 msgid "The type of keyboard to use."
 msgstr "பயன்படுத்த வேண்டிய விசைப்பலகை வகை"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:23
+#: ../data/org.cinnamon.gschema.xml.in.h:23
 msgid "Uuids of extensions to enable"
 msgstr "செயல் ஆக்க வேண்டிய நீட்சிகளின் யூயூஐடிக்கள்."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:24
+#: ../data/org.cinnamon.gschema.xml.in.h:24
 msgid "Whether to collect stats about applications usage"
 msgstr "நிரல்களின் பயன்பாடு குறித்த புள்ளிவிவரம் சேகரிக்க வேண்டுமா"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:25
+#: ../data/org.cinnamon.gschema.xml.in.h:25
 msgid "Which keyboard to use"
 msgstr "எந்த விசைப்பலகையை பயன்படுத்த வேண்டும்?"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:26
+#: ../data/org.cinnamon.gschema.xml.in.h:26
 msgid "disabled OpenSearch providers"
 msgstr "ஓபன்செர்ச் வழங்குவோர் செயல்நீக்கம் செய்யபட்டனர்."
 
@@ -229,7 +229,7 @@ msgstr "மின்சக்தி நிறுத்தம்"
 msgid "Command not found"
 msgstr "கட்டளை காணப்படவில்லை"
 
-#. Replace "Error invoking GLib.shell_parse_argv: " with
+#. Replace "Error invoking GLib.cinnamon_parse_argv: " with
 #. something nicer
 #: ../js/misc/util.js:119
 msgid "Could not parse command:"
@@ -435,7 +435,7 @@ msgid "Next week"
 msgstr "அடுத்த வாரம்"
 
 #: ../js/ui/contactDisplay.js:59 ../js/ui/notificationDaemon.js:444
-#: ../js/ui/status/power.js:223 ../src/shell-app.c:355
+#: ../js/ui/status/power.js:223 ../src/cinnamon-app.c:355
 msgid "Unknown"
 msgstr "தெரியாத"
 
@@ -512,7 +512,7 @@ msgid "%a %l:%M %p"
 msgstr "%a %l:%M %p"
 
 #. Translators: This is the date format to use when the calendar popup is
-#. * shown - it is shown just below the time in the shell (e.g. "Tue 9:29 AM").
+#. * shown - it is shown just below the time in Cinnamon (e.g. "Tue 9:29 AM").
 #.
 #: ../js/ui/dateMenu.js:213
 msgid "%A %B %e, %Y"
@@ -817,7 +817,7 @@ msgstr "தேடுகிறது..."
 msgid "No matching results."
 msgstr "பொருத்தமான விடைகள் இல்லை."
 
-#: ../js/ui/shellMountOperation.js:285
+#: ../js/ui/cinnamonMountOperation.js:285
 msgid "Wrong password, please try again"
 msgstr "தவறான கடவுச்சொல். தயை செய்து மீண்டும் முயற்சிக்கவும்"
 
@@ -1519,7 +1519,7 @@ msgstr ""
 msgid "Type to search..."
 msgstr "தேட உள்ளிடு..."
 
-#: ../js/ui/viewSelector.js:140 ../src/shell-util.c:261
+#: ../js/ui/viewSelector.js:140 ../src/cinnamon-util.c:261
 msgid "Search"
 msgstr "தேடு"
 
@@ -1563,30 +1563,30 @@ msgstr "அச்சுப் பதிப்பு"
 msgid "Mode used by GDM for login screen"
 msgstr "ஜிடிஎம் உள்நுழைவு திரைக்கு பயன்படுத்தும் பாங்கு"
 
-#: ../src/shell-app.c:581
+#: ../src/cinnamon-app.c:581
 #, c-format
 msgid "Failed to launch '%s'"
 msgstr "'%s' ஐ துவக்க முடியவில்லை"
 
-#: ../src/shell-mobile-providers.c:80
+#: ../src/cinnamon-mobile-providers.c:80
 msgid "United Kingdom"
 msgstr "ஐக்கிய முடியரசுகள்"
 
-#: ../src/shell-mobile-providers.c:526
+#: ../src/cinnamon-mobile-providers.c:526
 msgid "Default"
 msgstr "முன்னிருப்பு"
 
-#: ../src/shell-polkit-authentication-agent.c:334
+#: ../src/cinnamon-polkit-authentication-agent.c:334
 msgid "Authentication dialog was dismissed by the user"
 msgstr "பயனர் உறுதிப்படுத்தல் உரையாடலை வெளியனுப்பினார்."
 
-#: ../src/shell-util.c:100
+#: ../src/cinnamon-util.c:100
 msgid "Home Folder"
 msgstr "இல்ல அடைவு"
 
 #. Translators: this is the same string as the one found in
 #. * nautilus
-#: ../src/shell-util.c:115
+#: ../src/cinnamon-util.c:115
 msgid "File System"
 msgstr "கோப்பு அமைப்பு"
 
@@ -1595,7 +1595,7 @@ msgstr "கோப்பு அமைப்பு"
 #. * example, "Trash: some-directory". It means that the
 #. * directory called "some-directory" is in the trash.
 #.
-#: ../src/shell-util.c:311
+#: ../src/cinnamon-util.c:311
 #, c-format
 msgid "%1$s: %2$s"
 msgstr "%1$s: %2$s"

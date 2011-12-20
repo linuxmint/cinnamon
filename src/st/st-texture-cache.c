@@ -1425,7 +1425,7 @@ st_texture_cache_load_sliced_image (StTextureCache    *cache,
  * Describes what style of icon is desired in a call to
  * st_texture_cache_load_icon_name() or st_texture_cache_load_gicon().
  * Use %ST_ICON_SYMBOLIC for symbolic icons (eg, for the panel and
- * much of the rest of the shell chrome) or %ST_ICON_FULLCOLOR for a
+ * much of the rest of Cinnamon chrome) or %ST_ICON_FULLCOLOR for a
  * full-color icon.
  *
  * If you know that the requested icon is either an application icon

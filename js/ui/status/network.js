@@ -7,7 +7,7 @@ const Lang = imports.lang;
 const Mainloop = imports.mainloop;
 const NetworkManager = imports.gi.NetworkManager;
 const NMClient = imports.gi.NMClient;
-const Shell = imports.gi.Shell;
+const Cinnamon = imports.gi.Cinnamon;
 const Signals = imports.signals;
 const St = imports.gi.St;
 
@@ -842,7 +842,7 @@ NMDeviceModem.prototype = {
     },
 
     _createAutomaticConnection: function() {
-        // Mobile wizard is too complex for the shell UI and
+        // Mobile wizard is too complex for Cinnamon UI and
         // is handled by the network panel
         Util.spawn(['gnome-control-center', 'network',
                     'connect-3g', this.device.get_path()]);

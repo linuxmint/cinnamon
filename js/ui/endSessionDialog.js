@@ -28,7 +28,7 @@ const GLib = imports.gi.GLib;
 const Gtk = imports.gi.Gtk;
 const Pango = imports.gi.Pango;
 const St = imports.gi.St;
-const Shell = imports.gi.Shell;
+const Cinnamon = imports.gi.Cinnamon;
 
 const GnomeSession = imports.misc.gnomeSession
 const Lightbox = imports.ui.lightbox;
@@ -109,9 +109,9 @@ const restartDialogContent = {
 };
 
 const DialogContent = {
-    0 /* GSM_SHELL_END_SESSION_DIALOG_TYPE_LOGOUT */: logoutDialogContent,
-    1 /* GSM_SHELL_END_SESSION_DIALOG_TYPE_SHUTDOWN */: shutdownDialogContent,
-    2 /* GSM_SHELL_END_SESSION_DIALOG_TYPE_RESTART */: restartDialogContent
+    0 /* GSM_CINNAMON_END_SESSION_DIALOG_TYPE_LOGOUT */: logoutDialogContent,
+    1 /* GSM_CINNAMON_END_SESSION_DIALOG_TYPE_SHUTDOWN */: shutdownDialogContent,
+    2 /* GSM_CINNAMON_END_SESSION_DIALOG_TYPE_RESTART */: restartDialogContent
 };
 
 function findAppFromInhibitor(inhibitor) {
@@ -125,7 +125,7 @@ function findAppFromInhibitor(inhibitor) {
     candidateDesktopFiles.push(desktopFile);
     candidateDesktopFiles.push('gnome-' + desktopFile);
 
-    let appSystem = Shell.AppSystem.get_default();
+    let appSystem = Cinnamon.AppSystem.get_default();
     let app = null;
     for (let i = 0; i < candidateDesktopFiles.length; i++) {
         try {
@@ -517,7 +517,7 @@ EndSessionDialog.prototype = {
         this._type = type;
 
         if (!(this._type in DialogContent))
-            throw new DBus.DBusError('org.gnome.Shell.ModalDialog.TypeError',
+            throw new DBus.DBusError('org.Cinnamon.ModalDialog.TypeError',
                                      "Unknown dialog type requested");
 
         for (let i = 0; i < inhibitorObjectPaths.length; i++) {
@@ -533,7 +533,7 @@ EndSessionDialog.prototype = {
         this._updateButtons();
 
         if (!this.open(timestamp))
-            throw new DBus.DBusError('org.gnome.Shell.ModalDialog.GrabError',
+            throw new DBus.DBusError('org.Cinnamon.ModalDialog.GrabError',
                                      "Cannot grab pointer and keyboard");
 
         this._updateContent();

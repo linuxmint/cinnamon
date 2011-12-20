@@ -9,4 +9,4 @@ const GJS_VERSION = '@GJS_VERSION@';
 /* 1 if gnome-bluetooth is available, 0 otherwise */
 const HAVE_BLUETOOTH = @HAVE_BLUETOOTH@;
 /* The system TLS CA list */
-const SHELL_SYSTEM_CA_FILE = '@SHELL_SYSTEM_CA_FILE@';
+const CINNAMON_SYSTEM_CA_FILE = '@CINNAMON_SYSTEM_CA_FILE@';

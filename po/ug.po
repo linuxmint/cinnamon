@@ -1,4 +1,4 @@
-# Uyghur translation for gnome-shell.
+# Uyghur translation for cinnamon.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
 # Gheyret Kenji<gheyret@yahoo.com>,2010.
@@ -9,9 +9,9 @@
 # 
 msgid ""
 msgstr ""
-"Project-Id-Version: gnome-shell\n"
+"Project-Id-Version: cinnamon\n"
 "Report-Msgid-Bugs-To: http://bugzilla.gnome.org/enter_bug.cgi?product=gnome-"
-"shell&keywords=I18N+L10N&component=general\n"
+"cinnamon&keywords=I18N+L10N&component=general\n"
 "POT-Creation-Date: 2011-05-02 05:27+0000\n"
 "PO-Revision-Date: 2011-04-27 11:38+0600\n"
 "Last-Translator: Sahran <sahran.ug@gmail.com>\n"
@@ -21,71 +21,71 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
-#: ../data/gnome-shell.desktop.in.in.h:1
-msgid "GNOME Shell"
-msgstr "GNOME Shell"
+#: ../data/cinnamon.desktop.in.in.h:1
+msgid "Cinnamon"
+msgstr "Cinnamon"
 
-#: ../data/gnome-shell.desktop.in.in.h:2
+#: ../data/cinnamon.desktop.in.in.h:2
 msgid "Window management and application launching"
 msgstr "كۆزنەك باشقۇرۇش ۋە پروگرامما ئىجرا قىلىش"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:1
+#: ../data/org.cinnamon.gschema.xml.in.h:1
 msgid ""
 "Allows access to internal debugging and monitoring tools using the Alt-F2 "
 "dialog."
 msgstr ""
 "ئىچكى سازلاش ۋە كۆزىتىش قورالىنى زىيارەت قىلىشتا  Alt-F2 ئىشلىتىشكە ئىجازەت."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:2
+#: ../data/org.cinnamon.gschema.xml.in.h:2
 msgid "Enable internal tools useful for developers and testers from Alt-F2"
 msgstr ""
 "ئىچكى قورال قوزغىتىلسا ئىجادكارلار ۋە سىنىغۇچىلارنىڭ Alt-F2 ئارقىلىق "
 "كىرىشىگە قۇلايلىق"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:3
+#: ../data/org.cinnamon.gschema.xml.in.h:3
 msgid "File extension used for storing the screencast"
 msgstr ""
 "ئېكران كەسمىسى (screencasts) ساقلاشتا ئىشلىتىلىدىغان ھۆججەتنىڭ كېڭەيتىلگەن "
 "ئاتى"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:4
+#: ../data/org.cinnamon.gschema.xml.in.h:4
 msgid "Framerate used for recording screencasts."
 msgstr ""
 "ئېكران كەسمىسى (screencasts) خاتىرىلەشتە ئىشلىتىلىدىغان كاندۇك تېزلىكى."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:5
+#: ../data/org.cinnamon.gschema.xml.in.h:5
 msgid ""
-"GNOME Shell extensions have a uuid property; this key lists extensions which "
+"Cinnamon extensions have a uuid property; this key lists extensions which "
 "should not be loaded."
 msgstr ""
-"GNOME Shell كېڭەيتىلمىسىنىڭ uuid خاسلىقى بار؛ بۇ كۇنۇپكا يۈكلەنمەيدىغان "
+"Cinnamon كېڭەيتىلمىسىنىڭ uuid خاسلىقى بار؛ بۇ كۇنۇپكا يۈكلەنمەيدىغان "
 "كېڭەيتىلمىلەر تىزىمىنى كۆرسىتىدۇ."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:6
+#: ../data/org.cinnamon.gschema.xml.in.h:6
 msgid "History for command (Alt-F2) dialog"
 msgstr "بۇيرۇق (Alt-F2) سۆزلەشكۈنىڭ تارىخى"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:7
+#: ../data/org.cinnamon.gschema.xml.in.h:7
 msgid "History for the looking glass dialog"
 msgstr "looking glass سۆزلەشكۈنىڭ تارىخى"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:8
+#: ../data/org.cinnamon.gschema.xml.in.h:8
 msgid "If true, display date in the clock, in addition to time."
 msgstr "true بولسا سائەتتە ۋاقىت كۆرسەتكەندىن تاشقىرى چېسلا كۆرسىتىدۇ."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:9
+#: ../data/org.cinnamon.gschema.xml.in.h:9
 msgid "If true, display seconds in time."
 msgstr "true بولسا ۋاقىتتا سېكۇنتمۇ كۆرۈنىدۇ."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:10
+#: ../data/org.cinnamon.gschema.xml.in.h:10
 msgid "If true, display the ISO week date in the calendar."
 msgstr "ئەگەر راست(true) بولسا يىلنامىدىكى ISO ھەپتە چېسلانى كۆرسىتىدۇ."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:11
+#: ../data/org.cinnamon.gschema.xml.in.h:11
 msgid "List of desktop file IDs for favorite applications"
 msgstr "ئامراق پروگراممىلارنىڭ ئۈستەلئۈستى ھۆججەت ID تىزىمى"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:13
+#: ../data/org.cinnamon.gschema.xml.in.h:13
 #, no-c-format
 msgid ""
 "Sets the GStreamer pipeline used to encode recordings. It follows the syntax "
@@ -111,25 +111,25 @@ msgstr ""
 "ۋە WEBM گە خاتىرىلەنگەنلەر VP8 كودىنى ئىشلىتىدۇ. T% بولسا سىستېمىنىڭ ئەڭ "
 "ياخشى سىزىق ئېلىپبەسىنى ھېسابلايدىغان ئورۇن بەلگىسى"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:14
+#: ../data/org.cinnamon.gschema.xml.in.h:14
 msgid "Show date in clock"
 msgstr "سائەت ئىچىدە چېسلا كۆرسەت"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:15
+#: ../data/org.cinnamon.gschema.xml.in.h:15
 msgid "Show the week date in the calendar"
 msgstr "يىلنامىدە ھەپتىنى كۆرسىتىدۇ"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:16
+#: ../data/org.cinnamon.gschema.xml.in.h:16
 msgid "Show time with seconds"
 msgstr "ۋاقىت ئىچىدە سېكۇنتنى بىللە كۆرسەت"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:17
+#: ../data/org.cinnamon.gschema.xml.in.h:17
 msgid ""
 "The applications corresponding to these identifiers will be displayed in the "
 "favorites area."
 msgstr "مۇناسىپ پروگرامما بەلگىسى يىغقۇچ رايونىدا كۆرسىتىلىدۇ."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:18
+#: ../data/org.cinnamon.gschema.xml.in.h:18
 msgid ""
 "The filename for recorded screencasts will be a unique filename based on the "
 "current date, and use this extension. It should be changed when recording to "
@@ -139,39 +139,39 @@ msgstr ""
 "بۇ كېڭەيتىلگەن ئاتىنى ئىشلىتىدۇ. ئۇ ئۆزگەرسە ئوخشاش بولمىغان قاچا فورماتىدا "
 "خاتىرىلەيدۇ."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:19
+#: ../data/org.cinnamon.gschema.xml.in.h:19
 msgid ""
-"The framerate of the resulting screencast recordered by GNOME Shell's "
+"The framerate of the resulting screencast recordered by Cinnamon's "
 "screencast recorder in frames-per-second."
 msgstr ""
-"GNOME Shell ئېكران خاتىرىلىگۈچ ھەر سېكۇنتتا خاتىرىلەيدىغان ئېكران كەسمىسى "
+"Cinnamon ئېكران خاتىرىلىگۈچ ھەر سېكۇنتتا خاتىرىلەيدىغان ئېكران كەسمىسى "
 "كاندۇك سۈرىتى(ھەر سېكۇنتتىكى كاندۇك سانى)."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:20
+#: ../data/org.cinnamon.gschema.xml.in.h:20
 msgid "The gstreamer pipeline used to encode the screencast"
 msgstr "ئېكران كەسمىسىنى كودلاشتا ئىشلىتىلىدىغان gstreamer ئاقما لىنىيىسى"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:21
+#: ../data/org.cinnamon.gschema.xml.in.h:21
 msgid ""
-"The shell normally monitors active applications in order to present the most "
+"Cinnamon normally monitors active applications in order to present the most "
 "used ones (e.g. in launchers). While this data will be kept private, you may "
 "want to disable this for privacy reasons. Please note that doing so won't "
 "remove already saved data."
 msgstr ""
-"چاپان (shell) ئادەتتىكى ئەھۋالدا كۆپ ئىشلىتىلىدىغان ئاكتىپ پروگراممىلار"
+"چاپان (cinnamon) ئادەتتىكى ئەھۋالدا كۆپ ئىشلىتىلىدىغان ئاكتىپ پروگراممىلار"
 "(مەسىلەن، ئىجرا قىلىنىۋاتقان)نى كۆزىتىدۇ. گەرچە بۇ سانلىق مەلۇماتلار مەخپىي "
 "ساقلانسىمۇ، شەخسىي سىر سەۋەبىدىن بۇنى چەكلىشىڭىز مۇمكىن. دىققەت بۇنداق "
 "قىلغاندا ئاللىبۇرۇن ساقلانغان سانلىق مەلۇماتلار چىقىرىۋېتىلمەيدۇ."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:22
+#: ../data/org.cinnamon.gschema.xml.in.h:22
 msgid "Uuids of extensions to disable"
 msgstr "چەكلىنىدىغان كېڭەيتىلمىنىڭ Uuid سى"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:23
+#: ../data/org.cinnamon.gschema.xml.in.h:23
 msgid "Whether to collect stats about applications usage"
 msgstr "پروگراممىنىڭ ئىشلىتىلىشى ھەققىدىكى ستاتىستىكىنى توپلامدۇ يوق"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:24
+#: ../data/org.cinnamon.gschema.xml.in.h:24
 msgid "disabled OpenSearch providers"
 msgstr "OpenSearch نىڭ تەمىنلىگۈچىلىرى چەكلەنگەن"
 
@@ -179,7 +179,7 @@ msgstr "OpenSearch نىڭ تەمىنلىگۈچىلىرى چەكلەنگەن"
 msgid "Command not found"
 msgstr "بۇيرۇق تېپىلمىدى"
 
-#. Replace "Error invoking GLib.shell_parse_argv: " with
+#. Replace "Error invoking GLib.cinnamon_parse_argv: " with
 #. something nicer
 #: ../js/misc/util.js:98
 msgid "Could not parse command:"
@@ -424,7 +424,7 @@ msgid "%a %l:%M %p"
 msgstr "%a %l:%M"
 
 #. Translators: This is the date format to use when the calendar popup is
-#. * shown - it is shown just below the time in the shell (e.g. "Tue 9:29 AM").
+#. * shown - it is shown just below the time in Cinnamon (e.g. "Tue 9:29 AM").
 #.
 #: ../js/ui/dateMenu.js:194
 msgid "%A %B %e, %Y"
@@ -1059,7 +1059,7 @@ msgstr "سەزگۈر تاختا"
 msgid "Computer"
 msgstr "كومپيۇتېر"
 
-#: ../js/ui/status/power.js:250 ../src/shell-app-system.c:1088
+#: ../js/ui/status/power.js:250 ../src/cinnamon-app-system.c:1088
 msgid "Unknown"
 msgstr "نامەلۇم"
 
@@ -1107,7 +1107,7 @@ msgstr "سائەت %X %A غا ئەۋەتتى"
 msgid "Type to search..."
 msgstr "كىرگۈزسە ئىزدە…"
 
-#: ../js/ui/viewSelector.js:142 ../src/shell-util.c:250
+#: ../js/ui/viewSelector.js:142 ../src/cinnamon-util.c:250
 msgid "Search"
 msgstr "ئىزدە"
 
@@ -1145,58 +1145,58 @@ msgstr "سىستېما ئاۋازى"
 msgid "Print version"
 msgstr "نەشرىنى باس"
 
-#: ../src/shell-app.c:454
+#: ../src/cinnamon-app.c:454
 #, c-format
 msgid "Failed to launch '%s'"
 msgstr "'%s' نى قوزغىتالمىدى"
 
-#: ../src/shell-global.c:1395
+#: ../src/cinnamon-global.c:1395
 msgid "Less than a minute ago"
 msgstr "بىر مىنۇتتىنمۇ ئىلگىرى"
 
-#: ../src/shell-global.c:1399
+#: ../src/cinnamon-global.c:1399
 #, c-format
 msgid "%d minute ago"
 msgid_plural "%d minutes ago"
 msgstr[0] "%d مىنۇت ئىلگىرى"
 
-#: ../src/shell-global.c:1404
+#: ../src/cinnamon-global.c:1404
 #, c-format
 msgid "%d hour ago"
 msgid_plural "%d hours ago"
 msgstr[0] "%d سائەت ئىلگىرى"
 
-#: ../src/shell-global.c:1409
+#: ../src/cinnamon-global.c:1409
 #, c-format
 msgid "%d day ago"
 msgid_plural "%d days ago"
 msgstr[0] "%d كۈن ئىلگىرى"
 
-#: ../src/shell-global.c:1414
+#: ../src/cinnamon-global.c:1414
 #, c-format
 msgid "%d week ago"
 msgid_plural "%d weeks ago"
 msgstr[0] "%d ھەپتە ئىلگىرى"
 
-#: ../src/shell-mobile-providers.c:80
+#: ../src/cinnamon-mobile-providers.c:80
 msgid "United Kingdom"
 msgstr "ئەنگلىيە پادىشاھلىقى"
 
-#: ../src/shell-mobile-providers.c:526
+#: ../src/cinnamon-mobile-providers.c:526
 msgid "Default"
 msgstr "كۆڭۈلدىكى"
 
-#: ../src/shell-polkit-authentication-agent.c:334
+#: ../src/cinnamon-polkit-authentication-agent.c:334
 msgid "Authentication dialog was dismissed by the user"
 msgstr "سالاھىيەت دەلىللەش سۆزلەشكۈنى ئىشلەتكۈچى رەت قىلدى"
 
-#: ../src/shell-util.c:89
+#: ../src/cinnamon-util.c:89
 msgid "Home Folder"
 msgstr "ماكان مۇندەرىجە"
 
 #. Translators: this is the same string as the one found in
 #. * nautilus
-#: ../src/shell-util.c:104
+#: ../src/cinnamon-util.c:104
 msgid "File System"
 msgstr "ھۆججەت سىستېمىسى"
 
@@ -1205,7 +1205,7 @@ msgstr "ھۆججەت سىستېمىسى"
 #. * example, "Trash: some-directory". It means that the
 #. * directory called "some-directory" is in the trash.
 #.
-#: ../src/shell-util.c:300
+#: ../src/cinnamon-util.c:300
 #, c-format
 msgid "%1$s: %2$s"
 msgstr "%1$s: %2$s"

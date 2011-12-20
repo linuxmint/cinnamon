@@ -6,7 +6,7 @@ const Gkbd = imports.gi.Gkbd;
 const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
 const Lang = imports.lang;
-const Shell = imports.gi.Shell;
+const Cinnamon = imports.gi.Cinnamon;
 const St = imports.gi.St;
 
 const Main = imports.ui.main;
@@ -48,7 +48,7 @@ XKBIndicator.prototype = {
     _init: function() {
         PanelMenu.Button.prototype._init.call(this, St.Align.START);
 
-        this._container = new Shell.GenericContainer();
+        this._container = new Cinnamon.GenericContainer();
         this._container.connect('get-preferred-width', Lang.bind(this, this._containerGetPreferredWidth));
         this._container.connect('get-preferred-height', Lang.bind(this, this._containerGetPreferredHeight));
         this._container.connect('allocate', Lang.bind(this, this._containerAllocate));
@@ -68,7 +68,7 @@ XKBIndicator.prototype = {
 
         this._syncConfig();
 
-        if (global.session_type == Shell.SessionType.USER) {
+        if (global.session_type == Cinnamon.SessionType.USER) {
             this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
             this.menu.addAction(_("Show Keyboard Layout"), Lang.bind(this, function() {
                 Main.overview.hide();

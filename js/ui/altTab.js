@@ -5,7 +5,7 @@ const Gdk = imports.gi.Gdk;
 const Lang = imports.lang;
 const Mainloop = imports.mainloop;
 const Meta = imports.gi.Meta;
-const Shell = imports.gi.Shell;
+const Cinnamon = imports.gi.Cinnamon;
 const Signals = imports.signals;
 const St = imports.gi.St;
 
@@ -49,7 +49,7 @@ function AltTabPopup() {
 
 AltTabPopup.prototype = {
     _init : function() {
-        this.actor = new Shell.GenericContainer({ name: 'altTabPopup',
+        this.actor = new Cinnamon.GenericContainer({ name: 'altTabPopup',
                                                   reactive: true,
                                                   visible: false });
 
@@ -135,8 +135,8 @@ AltTabPopup.prototype = {
     },
 
     _getAppLists: function() {
-        let tracker = Shell.WindowTracker.get_default();
-        let appSys = Shell.AppSystem.get_default();
+        let tracker = Cinnamon.WindowTracker.get_default();
+        let appSys = Cinnamon.AppSystem.get_default();
         let allApps = appSys.get_running ();
 
         let screen = global.screen;
@@ -262,7 +262,7 @@ AltTabPopup.prototype = {
 
     _keyPressEvent : function(actor, event) {
         let keysym = event.get_key_symbol();
-        let event_state = Shell.get_event_state(event);
+        let event_state = Cinnamon.get_event_state(event);
         let backwards = event_state & Clutter.ModifierType.SHIFT_MASK;
         let action = global.display.get_keybinding_action(event.get_key_code(), event_state);
 
@@ -544,14 +544,14 @@ function SwitcherList(squareItems) {
 
 SwitcherList.prototype = {
     _init : function(squareItems) {
-        this.actor = new Shell.GenericContainer({ style_class: 'switcher-list' });
+        this.actor = new Cinnamon.GenericContainer({ style_class: 'switcher-list' });
         this.actor.connect('get-preferred-width', Lang.bind(this, this._getPreferredWidth));
         this.actor.connect('get-preferred-height', Lang.bind(this, this._getPreferredHeight));
         this.actor.connect('allocate', Lang.bind(this, this._allocateTop));
 
         // Here we use a GenericContainer so that we can force all the
         // children except the separator to have the same width.
-        this._list = new Shell.GenericContainer({ style_class: 'switcher-list-item-container' });
+        this._list = new Cinnamon.GenericContainer({ style_class: 'switcher-list-item-container' });
         this._list.spacing = 0;
         this._list.connect('style-changed', Lang.bind(this, function() {
                                                         this._list.spacing = this._list.get_theme_node().get_length('spacing');

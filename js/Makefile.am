@@ -46,8 +46,8 @@ nobase_dist_js_DATA = 	\
 	ui/messageTray.js	\
 	ui/modalDialog.js	\
 	ui/networkAgent.js	\
-	ui/shellEntry.js	\
-	ui/shellMountOperation.js \
+	ui/cinnamonEntry.js	\
+	ui/cinnamonMountOperation.js \
 	ui/notificationDaemon.js \
 	ui/overview.js		\
 	ui/panel.js		\
@@ -59,7 +59,7 @@ nobase_dist_js_DATA = 	\
 	ui/scripting.js		\
 	ui/search.js		\
 	ui/searchDisplay.js	\
-	ui/shellDBus.js		\
+	ui/cinnamonDBus.js		\
 	ui/statusIconDispatcher.js	\
 	ui/status/accessibility.js	\
 	ui/status/keyboard.js	\

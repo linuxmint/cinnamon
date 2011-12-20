@@ -6,7 +6,7 @@ const Gio = imports.gi.Gio;
 const Lang = imports.lang;
 const Mainloop = imports.mainloop;
 const Pango = imports.gi.Pango;
-const Shell = imports.gi.Shell;
+const Cinnamon = imports.gi.Cinnamon;
 const St = imports.gi.St;
 const Signals = imports.signals;
 
@@ -33,23 +33,23 @@ const ANIMATED_ICON_UPDATE_TIMEOUT = 100;
 const SPINNER_ANIMATION_TIME = 0.2;
 
 const STANDARD_STATUS_AREA_ORDER = ['keyboard', 'volume', 'bluetooth', 'network', 'battery'];
-const STANDARD_STATUS_AREA_SHELL_IMPLEMENTATION = {    
+const STANDARD_STATUS_AREA_CINNAMON_IMPLEMENTATION = {    
     'volume': imports.ui.status.volume.Indicator,
     'battery': imports.ui.status.power.Indicator,
     'keyboard': imports.ui.status.keyboard.XKBIndicator    
 };
 
 if (Config.HAVE_BLUETOOTH)
-    STANDARD_STATUS_AREA_SHELL_IMPLEMENTATION['bluetooth'] = imports.ui.status.bluetooth.Indicator;
+    STANDARD_STATUS_AREA_CINNAMON_IMPLEMENTATION['bluetooth'] = imports.ui.status.bluetooth.Indicator;
 
 try {
-    STANDARD_STATUS_AREA_SHELL_IMPLEMENTATION['network'] = imports.ui.status.network.NMApplet;
+    STANDARD_STATUS_AREA_CINNAMON_IMPLEMENTATION['network'] = imports.ui.status.network.NMApplet;
 } catch(e) {
     log('NMApplet is not supported. It is possible that your NetworkManager version is too old');
 }
 
 const GDM_STATUS_AREA_ORDER = ['a11y', 'display', 'keyboard', 'volume', 'battery', 'powerMenu'];
-const GDM_STATUS_AREA_SHELL_IMPLEMENTATION = {
+const GDM_STATUS_AREA_CINNAMON_IMPLEMENTATION = {
     'a11y': imports.ui.status.accessibility.ATIndicator,
     'volume': imports.ui.status.volume.Indicator,
     'battery': imports.ui.status.power.Indicator,
@@ -150,7 +150,7 @@ function TextShadower() {
 
 TextShadower.prototype = {
     _init: function() {
-        this.actor = new Shell.GenericContainer();
+        this.actor = new Cinnamon.GenericContainer();
         this.actor.connect('get-preferred-width', Lang.bind(this, this._getPreferredWidth));
         this.actor.connect('get-preferred-height', Lang.bind(this, this._getPreferredHeight));
         this.actor.connect('allocate', Lang.bind(this, this._allocate));
@@ -257,13 +257,13 @@ AppMenuButton.prototype = {
         this.actor.reactive = false;
         this._targetIsCurrent = false;
 
-        this._container = new Shell.GenericContainer();
+        this._container = new Cinnamon.GenericContainer();
         bin.set_child(this._container);
         this._container.connect('get-preferred-width', Lang.bind(this, this._getContentPreferredWidth));
         this._container.connect('get-preferred-height', Lang.bind(this, this._getContentPreferredHeight));
         this._container.connect('allocate', Lang.bind(this, this._contentAllocate));
 
-        this._iconBox = new Shell.Slicer({ name: 'appMenuIcon' });
+        this._iconBox = new Cinnamon.Slicer({ name: 'appMenuIcon' });
         this._iconBox.connect('style-changed',
                               Lang.bind(this, this._onIconBoxStyleChanged));
         this._iconBox.connect('notify::allocation',
@@ -295,8 +295,8 @@ AppMenuButton.prototype = {
         this._container.add_actor(this._spinner.actor);
         this._spinner.actor.lower_bottom();
 
-        let tracker = Shell.WindowTracker.get_default();
-        let appSys = Shell.AppSystem.get_default();
+        let tracker = Cinnamon.WindowTracker.get_default();
+        let appSys = Cinnamon.AppSystem.get_default();
         tracker.connect('notify::focus-app', Lang.bind(this, this._sync));
         appSys.connect('app-state-changed', Lang.bind(this, this._onAppStateChanged));
 
@@ -464,11 +464,11 @@ AppMenuButton.prototype = {
 
     _onAppStateChanged: function(appSys, app) {
         let state = app.state;
-        if (state != Shell.AppState.STARTING) {
+        if (state != Cinnamon.AppState.STARTING) {
             this._startingApps = this._startingApps.filter(function(a) {
                 return a != app;
             });
-        } else if (state == Shell.AppState.STARTING) {
+        } else if (state == Cinnamon.AppState.STARTING) {
             this._startingApps.push(app);
         }
         // For now just resync on all running state changes; this is mainly to handle
@@ -479,7 +479,7 @@ AppMenuButton.prototype = {
     },
 
     _sync: function() {
-        let tracker = Shell.WindowTracker.get_default();
+        let tracker = Cinnamon.WindowTracker.get_default();
         let lastStartedApp = null;
         let workspace = global.screen.get_active_workspace();
         for (let i = 0; i < this._startingApps.length; i++)
@@ -492,7 +492,7 @@ AppMenuButton.prototype = {
             // If the app has just lost focus to the panel, pretend
             // nothing happened; otherwise you can't keynav to the
             // app menu.
-            if (global.stage_input_mode == Shell.StageInputMode.FOCUSED)
+            if (global.stage_input_mode == Cinnamon.StageInputMode.FOCUSED)
                 return;
         }
 
@@ -523,7 +523,7 @@ AppMenuButton.prototype = {
         }
 
         if (targetApp == this._targetApp) {
-            if (targetApp && targetApp.get_state() != Shell.AppState.STARTING)
+            if (targetApp && targetApp.get_state() != Cinnamon.AppState.STARTING)
                 this.stopAnimation();
             return;
         }
@@ -544,7 +544,7 @@ AppMenuButton.prototype = {
         this._iconBox.set_child(icon);
         this._iconBox.show();
 
-        if (targetApp.get_state() == Shell.AppState.STARTING)
+        if (targetApp.get_state() == Cinnamon.AppState.STARTING)
             this.startAnimation();
 
         this.emit('changed');
@@ -566,7 +566,7 @@ ActivitiesButton.prototype = {
     _init: function() {
         PanelMenu.Button.prototype._init.call(this, 0.0);
 
-        let container = new Shell.GenericContainer();
+        let container = new Cinnamon.GenericContainer();
         container.connect('get-preferred-width', Lang.bind(this, this._containerGetPreferredWidth));
         container.connect('get-preferred-height', Lang.bind(this, this._containerGetPreferredHeight));
         container.connect('allocate', Lang.bind(this, this._containerAllocate));
@@ -892,7 +892,7 @@ function Panel() {
 
 Panel.prototype = {
     _init : function() {
-        this.actor = new Shell.GenericContainer({ name: 'panel',
+        this.actor = new Cinnamon.GenericContainer({ name: 'panel',
                                                   reactive: true });
         this.actor._delegate = this;
 
@@ -932,7 +932,7 @@ Panel.prototype = {
         this.actor.connect('allocate', Lang.bind(this, this._allocate));
 
         /* Button on the left side of the panel. */
-        if (global.session_type == Shell.SessionType.USER) {
+        if (global.session_type == Cinnamon.SessionType.USER) {
             /*this._activitiesButton = new ActivitiesButton();
             this._activities = this._activitiesButton.actor;
             this._leftBox.add(this._activities);
@@ -957,7 +957,7 @@ Panel.prototype = {
         }
 
         /* center */
-        if (global.session_type == Shell.SessionType.USER)
+        if (global.session_type == Cinnamon.SessionType.USER)
             this._dateMenu = new DateMenu.DateMenuButton({ showEvents: true });
         else
             this._dateMenu = new DateMenu.DateMenuButton({ showEvents: false });
@@ -968,12 +968,12 @@ Panel.prototype = {
         this._rightBox.add(this._workspaceSwitcher.actor);
 
         /* right */
-        if (global.session_type == Shell.SessionType.GDM) {
+        if (global.session_type == Cinnamon.SessionType.GDM) {
             this._status_area_order = GDM_STATUS_AREA_ORDER;
-            this._status_area_shell_implementation = GDM_STATUS_AREA_SHELL_IMPLEMENTATION;
+            this._status_area_cinnamon_implementation = GDM_STATUS_AREA_CINNAMON_IMPLEMENTATION;
         } else {
             this._status_area_order = STANDARD_STATUS_AREA_ORDER;
-            this._status_area_shell_implementation = STANDARD_STATUS_AREA_SHELL_IMPLEMENTATION;
+            this._status_area_cinnamon_implementation = STANDARD_STATUS_AREA_CINNAMON_IMPLEMENTATION;
         }
 
         Main.statusIconDispatcher.connect('status-icon-added', Lang.bind(this, this._onTrayIconAdded));
@@ -1060,7 +1060,7 @@ Panel.prototype = {
     startStatusArea: function() {
         for (let i = 0; i < this._status_area_order.length; i++) {
             let role = this._status_area_order[i];
-            let constructor = this._status_area_shell_implementation[role];
+            let constructor = this._status_area_cinnamon_implementation[role];
             if (!constructor) {
                 // This icon is not implemented (this is a bug)
                 continue;
@@ -1110,8 +1110,8 @@ Panel.prototype = {
     },
 
     _onTrayIconAdded: function(o, icon, role) {
-        if (this._status_area_shell_implementation[role]) {
-            // This icon is legacy, and replaced by a Shell version
+        if (this._status_area_cinnamon_implementation[role]) {
+            // This icon is legacy, and replaced by a Cinnamon version
             // Hide it
             return;
         }

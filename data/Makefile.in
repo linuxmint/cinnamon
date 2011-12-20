@@ -140,8 +140,8 @@ GLIB_LIBS = @GLIB_LIBS@
 GLIB_MKENUMS = @GLIB_MKENUMS@
 GMSGFMT = @GMSGFMT@
 GMSGFMT_015 = @GMSGFMT_015@
-GNOME_SHELL_CFLAGS = @GNOME_SHELL_CFLAGS@
-GNOME_SHELL_LIBS = @GNOME_SHELL_LIBS@
+CINNAMON_CFLAGS = @CINNAMON_CFLAGS@
+CINNAMON_LIBS = @CINNAMON_LIBS@
 GOBJECT_QUERY = @GOBJECT_QUERY@
 GREP = @GREP@
 GSETTINGS_DISABLE_SCHEMAS_COMPILE = @GSETTINGS_DISABLE_SCHEMAS_COMPILE@
@@ -218,17 +218,17 @@ PYTHON_VERSION = @PYTHON_VERSION@
 RANLIB = @RANLIB@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
-SHELL = @SHELL@
-SHELL_HOTPLUG_SNIFFER_CFLAGS = @SHELL_HOTPLUG_SNIFFER_CFLAGS@
-SHELL_HOTPLUG_SNIFFER_LIBS = @SHELL_HOTPLUG_SNIFFER_LIBS@
-SHELL_PERF_HELPER_CFLAGS = @SHELL_PERF_HELPER_CFLAGS@
-SHELL_PERF_HELPER_LIBS = @SHELL_PERF_HELPER_LIBS@
-SHELL_SYSTEM_CA_FILE = @SHELL_SYSTEM_CA_FILE@
+CINNAMON = @CINNAMON@
+CINNAMON_HOTPLUG_SNIFFER_CFLAGS = @CINNAMON_HOTPLUG_SNIFFER_CFLAGS@
+CINNAMON_HOTPLUG_SNIFFER_LIBS = @CINNAMON_HOTPLUG_SNIFFER_LIBS@
+CINNAMON_PERF_HELPER_CFLAGS = @CINNAMON_PERF_HELPER_CFLAGS@
+CINNAMON_PERF_HELPER_LIBS = @CINNAMON_PERF_HELPER_LIBS@
+CINNAMON_SYSTEM_CA_FILE = @CINNAMON_SYSTEM_CA_FILE@
 STRIP = @STRIP@
 ST_CFLAGS = @ST_CFLAGS@
 ST_LIBS = @ST_LIBS@
-TEST_SHELL_RECORDER_CFLAGS = @TEST_SHELL_RECORDER_CFLAGS@
-TEST_SHELL_RECORDER_LIBS = @TEST_SHELL_RECORDER_LIBS@
+TEST_CINNAMON_RECORDER_CFLAGS = @TEST_CINNAMON_RECORDER_CFLAGS@
+TEST_CINNAMON_RECORDER_LIBS = @TEST_CINNAMON_RECORDER_LIBS@
 TRAY_CFLAGS = @TRAY_CFLAGS@
 TRAY_LIBS = @TRAY_LIBS@
 TYPELIBDIR = @TYPELIBDIR@
@@ -295,7 +295,7 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 desktopdir = $(datadir)/applications
-desktop_DATA = gnome-shell.desktop
+desktop_DATA = cinnamon.desktop
 searchprovidersdir = $(pkgdatadir)/search_providers
 dist_searchproviders_DATA = \
 	search_providers/google.xml				\
@@ -314,7 +314,7 @@ dist_theme_DATA = \
 	theme/filter-selected-ltr.svg		\
 	theme/filter-selected-rtl.svg		\
 	theme/gdm.css				\
-	theme/gnome-shell.css			\
+	theme/cinnamon.css			\
 	theme/mintMenu.png			\
 	theme/mintMenu-bottom.png			\
 	theme/panel-border.svg			\
@@ -336,24 +336,24 @@ dist_theme_DATA = \
 	theme/mediaplayer/player-playing.svg		\
 	theme/mediaplayer/player-stopped.svg
 
-gsettings_SCHEMAS = org.gnome.shell.gschema.xml
+gsettings_SCHEMAS = org.cinnamon.gschema.xml
 
 # GConf schemas: provide defaults for keys from Metacity we are overriding
 gconfschemadir = @GCONF_SCHEMA_FILE_DIR@
-gconfschema_DATA = gnome-shell.schemas
+gconfschema_DATA = cinnamon.schemas
 shadersdir = $(pkgdatadir)/shaders
 shaders_DATA = \
 	shaders/dim-window.glsl
 
 EXTRA_DIST = \
-	gnome-shell.desktop.in.in			\
+	cinnamon.desktop.in.in			\
 	$(menu_DATA)					\
 	$(gconfschema_DATA)				\
 	$(shaders_DATA)					\
-	org.gnome.shell.gschema.xml.in
+	org.cinnamon.gschema.xml.in
 
 CLEANFILES = \
-	gnome-shell.desktop.in				\
+	cinnamon.desktop.in				\
 	$(desktop_DATA)					\
 	$(gsettings_SCHEMAS)				\
 	gschemas.compiled
@@ -379,8 +379,8 @@ Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	  *config.status*) \
 	    cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh;; \
 	  *) \
-	    echo ' cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@ $(am__depfiles_maybe)'; \
-	    cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@ $(am__depfiles_maybe);; \
+	    echo ' cd $(top_builddir) && $(CINNAMON) ./config.status $(subdir)/$@ $(am__depfiles_maybe)'; \
+	    cd $(top_builddir) && $(CINNAMON) ./config.status $(subdir)/$@ $(am__depfiles_maybe);; \
 	esac;
 
 $(top_builddir)/config.status: $(top_srcdir)/configure $(CONFIG_STATUS_DEPENDENCIES)

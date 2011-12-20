@@ -6,13 +6,13 @@ const Mainloop = imports.mainloop;
 const Meta = imports.gi.Meta;
 const Signals = imports.signals;
 const Lang = imports.lang;
-const Shell = imports.gi.Shell;
+const Cinnamon = imports.gi.Cinnamon;
 const St = imports.gi.St;
 
 const Main = imports.ui.main;
 const Search = imports.ui.search;
 const SearchDisplay = imports.ui.searchDisplay;
-const ShellEntry = imports.ui.shellEntry;
+const CinnamonEntry = imports.ui.cinnamonEntry;
 const Tweener = imports.ui.tweener;
 
 function BaseTab(titleActor, pageActor, name, a11yIcon) {
@@ -121,7 +121,7 @@ SearchTab.prototype = {
                                      hint_text: _("Type to search..."),
                                      track_hover: true,
                                      can_focus: true });
-        ShellEntry.addContextMenu(this._entry);
+        CinnamonEntry.addContextMenu(this._entry);
         this._text = this._entry.clutter_text;
         this._text.connect('key-press-event', Lang.bind(this, this._onKeyPress));
 
@@ -326,7 +326,7 @@ ViewSelector.prototype = {
         // holds both "normal" tab labels and the search entry. The former
         // is left aligned, the latter right aligned - unless the text
         // direction is RTL, in which case the order is reversed.
-        this._tabBar = new Shell.GenericContainer();
+        this._tabBar = new Cinnamon.GenericContainer();
         this._tabBar.connect('get-preferred-width',
                              Lang.bind(this, this._getPreferredTabBarWidth));
         this._tabBar.connect('get-preferred-height',
@@ -346,7 +346,7 @@ ViewSelector.prototype = {
         // The page area holds the tab pages. Every page is given the
         // area's full allocation, so that the pages would appear on top
         // of each other if the inactive ones weren't hidden.
-        this._pageArea = new Shell.Stack();
+        this._pageArea = new Cinnamon.Stack();
         this.actor.add(this._pageArea, { x_fill: true,
                                          y_fill: true,
                                          expand: true });
@@ -548,7 +548,7 @@ ViewSelector.prototype = {
     },
 
     _onStageKeyPress: function(actor, event) {
-        let modifiers = Shell.get_event_state(event);
+        let modifiers = Cinnamon.get_event_state(event);
         let symbol = event.get_key_symbol();
 
         if (symbol == Clutter.Escape) {

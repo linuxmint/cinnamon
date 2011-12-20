@@ -5,7 +5,7 @@ const Gdk = imports.gi.Gdk;
 const Gtk = imports.gi.Gtk;
 const Lang = imports.lang;
 const Meta = imports.gi.Meta;
-const Shell = imports.gi.Shell;
+const Cinnamon = imports.gi.Cinnamon;
 const St = imports.gi.St;
 
 const AltTab = imports.ui.altTab;
@@ -57,9 +57,9 @@ CtrlAltTabManager.prototype = {
     },
 
     focusGroup: function(item) {
-        if (global.stage_input_mode == Shell.StageInputMode.NONREACTIVE ||
-            global.stage_input_mode == Shell.StageInputMode.NORMAL)
-            global.set_stage_input_mode(Shell.StageInputMode.FOCUSED);
+        if (global.stage_input_mode == Cinnamon.StageInputMode.NONREACTIVE ||
+            global.stage_input_mode == Cinnamon.StageInputMode.NORMAL)
+            global.set_stage_input_mode(Cinnamon.StageInputMode.FOCUSED);
 
         if (item.window)
             Main.activateWindow(item.window);
@@ -103,7 +103,7 @@ CtrlAltTabManager.prototype = {
             let screen = global.screen;
             let display = screen.get_display();
             let windows = display.get_tab_list(Meta.TabList.DOCKS, screen, screen.get_active_workspace ());
-            let windowTracker = Shell.WindowTracker.get_default();
+            let windowTracker = Cinnamon.WindowTracker.get_default();
             let textureCache = St.TextureCache.get_default();
             for (let i = 0; i < windows.length; i++) {
                 let icon;
@@ -146,7 +146,7 @@ function CtrlAltTabPopup() {
 
 CtrlAltTabPopup.prototype = {
     _init : function() {
-        this.actor = new Shell.GenericContainer({ name: 'ctrlAltTabPopup',
+        this.actor = new Cinnamon.GenericContainer({ name: 'ctrlAltTabPopup',
                                                   reactive: true });
 
         this.actor.connect('get-preferred-width', Lang.bind(this, this._getPreferredWidth));
@@ -237,7 +237,7 @@ CtrlAltTabPopup.prototype = {
 
     _keyPressEvent : function(actor, event) {
         let keysym = event.get_key_symbol();
-        let shift = (Shell.get_event_state(event) & Clutter.ModifierType.SHIFT_MASK);
+        let shift = (Cinnamon.get_event_state(event) & Clutter.ModifierType.SHIFT_MASK);
         if (shift && keysym == Clutter.KEY_Tab)
             keysym = Clutter.ISO_Left_Tab;
 

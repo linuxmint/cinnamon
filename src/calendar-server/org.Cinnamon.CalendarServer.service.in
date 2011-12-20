@@ -1,0 +1,3 @@
+[D-BUS Service]
+Name=org.Cinnamon.CalendarServer
+Exec=@libexecdir@/cinnamon-calendar-server

@@ -4,7 +4,7 @@ const Clutter = imports.gi.Clutter;
 const GLib = imports.gi.GLib;
 const Gtk = imports.gi.Gtk;
 const GMenu = imports.gi.GMenu;
-const Shell = imports.gi.Shell;
+const Cinnamon = imports.gi.Cinnamon;
 const Lang = imports.lang;
 const Signals = imports.signals;
 const Meta = imports.gi.Meta;
@@ -33,7 +33,7 @@ function AlphabeticalView() {
 AlphabeticalView.prototype = {
     _init: function() {
         this._grid = new IconGrid.IconGrid({ xAlign: St.Align.START });
-        this._appSystem = Shell.AppSystem.get_default();
+        this._appSystem = Cinnamon.AppSystem.get_default();
 
         this._pendingAppLaterId = 0;
         this._appIcons = {}; // desktop file id
@@ -138,7 +138,7 @@ function ViewByCategories() {
 
 ViewByCategories.prototype = {
     _init: function() {
-        this._appSystem = Shell.AppSystem.get_default();
+        this._appSystem = Cinnamon.AppSystem.get_default();
         this.actor = new St.BoxLayout({ style_class: 'all-app' });
         this.actor._delegate = this;
 
@@ -197,7 +197,7 @@ ViewByCategories.prototype = {
         }
     },
 
-    // Recursively load a GMenuTreeDirectory; we could put this in ShellAppSystem too
+    // Recursively load a GMenuTreeDirectory; we could put this in CinnamonAppSystem too
     _loadCategory: function(dir, appList) {
         var iter = dir.iter();
         var nextType;
@@ -246,7 +246,7 @@ ViewByCategories.prototype = {
     refresh: function() {
         this._removeAll();
 
-        var allApps = Shell.AppSystem.get_default().get_all();
+        var allApps = Cinnamon.AppSystem.get_default().get_all();
         allApps.sort(function(a, b) {
             return a.compare_by_name(b);
         });
@@ -292,7 +292,7 @@ function AllAppDisplay() {
 
 AllAppDisplay.prototype = {
     _init: function() {
-        this._appSystem = Shell.AppSystem.get_default();
+        this._appSystem = Cinnamon.AppSystem.get_default();
         this._appSystem.connect('installed-changed', Lang.bind(this, function() {
             Main.queueDeferredWork(this._workId);
         }));
@@ -317,7 +317,7 @@ AppSearchProvider.prototype = {
 
     _init: function() {
         Search.SearchProvider.prototype._init.call(this, _("APPLICATIONS"));
-        this._appSys = Shell.AppSystem.get_default();
+        this._appSys = Cinnamon.AppSystem.get_default();
     },
 
     getResultMeta: function(app) {
@@ -342,7 +342,7 @@ AppSearchProvider.prototype = {
                                         timestamp: 0 });
 
         let event = Clutter.get_current_event();
-        let modifiers = event ? Shell.get_event_state(event) : 0;
+        let modifiers = event ? Cinnamon.get_event_state(event) : 0;
         let openNewWindow = modifiers & Clutter.ModifierType.CONTROL_MASK;
 
         if (openNewWindow)
@@ -375,7 +375,7 @@ SettingsSearchProvider.prototype = {
 
     _init: function() {
         Search.SearchProvider.prototype._init.call(this, _("SETTINGS"));
-        this._appSys = Shell.AppSystem.get_default();
+        this._appSys = Cinnamon.AppSystem.get_default();
         this._gnomecc = this._appSys.lookup_app('gnome-control-center.desktop');
     },
 
@@ -504,7 +504,7 @@ AppWellIcon.prototype = {
     },
 
     _onStateChanged: function() {
-        if (this.app.state != Shell.AppState.STOPPED)
+        if (this.app.state != Cinnamon.AppState.STOPPED)
             this.actor.add_style_class_name('running');
         else
             this.actor.remove_style_class_name('running');
@@ -589,13 +589,13 @@ AppWellIcon.prototype = {
 
     _onActivate: function (event) {
         this.emit('launching');
-        let modifiers = Shell.get_event_state(event);
+        let modifiers = Cinnamon.get_event_state(event);
 
         if (this._onActivateOverride) {
             this._onActivateOverride(event);
         } else {
             if (modifiers & Clutter.ModifierType.CONTROL_MASK
-                && this.app.state == Shell.AppState.RUNNING) {
+                && this.app.state == Cinnamon.AppState.RUNNING) {
                 this.app.open_new_window(-1);
             } else {
                 this.app.activate();
@@ -604,7 +604,7 @@ AppWellIcon.prototype = {
         Main.overview.hide();
     },
 
-    shellWorkspaceLaunch : function(params) {
+    cinnamonWorkspaceLaunch : function(params) {
         params = Params.parse(params, { workspace: -1,
                                         timestamp: 0 });
 

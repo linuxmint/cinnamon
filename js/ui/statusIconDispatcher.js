@@ -1,7 +1,7 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 
 const Lang = imports.lang;
-const Shell = imports.gi.Shell;
+const Cinnamon = imports.gi.Cinnamon;
 const Signals = imports.signals;
 
 const MessageTray = imports.ui.messageTray;
@@ -30,7 +30,7 @@ function StatusIconDispatcher() {
 
 StatusIconDispatcher.prototype = {
     _init: function() {
-        this._traymanager = new Shell.TrayManager();
+        this._traymanager = new Cinnamon.TrayManager();
         this._traymanager.connect('tray-icon-added', Lang.bind(this, this._onTrayIconAdded));
         this._traymanager.connect('tray-icon-removed', Lang.bind(this, this._onTrayIconRemoved));
 

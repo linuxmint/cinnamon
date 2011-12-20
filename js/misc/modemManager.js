@@ -2,7 +2,7 @@
 
 const DBus = imports.dbus;
 const Lang = imports.lang;
-const Shell = imports.gi.Shell;
+const Cinnamon = imports.gi.Cinnamon;
 const Signals = imports.signals;
 
 // The following are not the complete interfaces, just the methods we need
@@ -40,7 +40,7 @@ let _providersTable;
 function _getProvidersTable() {
     if (_providersTable)
         return _providersTable;
-    let [providers, countryCodes] = Shell.mobile_providers_parse();
+    let [providers, countryCodes] = Cinnamon.mobile_providers_parse();
     return _providersTable = providers;
 }
 

@@ -22,21 +22,21 @@
 #include <telepathy-glib/debug.h>
 #include <telepathy-glib/debug-sender.h>
 
-#include "shell-a11y.h"
-#include "shell-global.h"
-#include "shell-global-private.h"
-#include "shell-perf-log.h"
+#include "cinnamon-a11y.h"
+#include "cinnamon-global.h"
+#include "cinnamon-global-private.h"
+#include "cinnamon-perf-log.h"
 #include "st.h"
 
-extern GType gnome_shell_plugin_get_type (void);
+extern GType gnome_cinnamon_plugin_get_type (void);
 
-#define SHELL_DBUS_SERVICE "org.gnome.Shell"
+#define CINNAMON_DBUS_SERVICE "org.Cinnamon"
 #define MAGNIFIER_DBUS_SERVICE "org.gnome.Magnifier"
 
 static gboolean is_gdm_mode = FALSE;
 
 static void
-shell_dbus_init (gboolean replace)
+cinnamon_dbus_init (gboolean replace)
 {
   GError *error = NULL;
   DBusGConnection *session;
@@ -61,20 +61,20 @@ shell_dbus_init (gboolean replace)
   if (replace)
     request_name_flags |= DBUS_NAME_FLAG_REPLACE_EXISTING;
   if (!dbus_g_proxy_call (bus, "RequestName", &error,
-                          G_TYPE_STRING, SHELL_DBUS_SERVICE,
+                          G_TYPE_STRING, CINNAMON_DBUS_SERVICE,
                           G_TYPE_UINT, request_name_flags,
                           G_TYPE_INVALID,
                           G_TYPE_UINT, &request_name_result,
                           G_TYPE_INVALID))
     {
-      g_printerr ("failed to acquire org.gnome.Shell: %s\n", error->message);
+      g_printerr ("failed to acquire org.Cinnamon: %s\n", error->message);
       exit (1);
     }
   if (!(request_name_result == DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER
         || request_name_result == DBUS_REQUEST_NAME_REPLY_ALREADY_OWNER))
     {
       g_printerr ("%s already exists on bus and --replace not specified\n",
-                  SHELL_DBUS_SERVICE);
+                  CINNAMON_DBUS_SERVICE);
       exit (1);
     }
 
@@ -138,8 +138,8 @@ constrain_tooltip (StTooltip             *tooltip,
                    gpointer               data)
 {
   const ClutterGeometry *tip_area = st_tooltip_get_tip_area (tooltip);
-  ShellGlobal *global = shell_global_get ();
-  MetaScreen *screen = shell_global_get_screen (global);
+  CinnamonGlobal *global = cinnamon_global_get ();
+  MetaScreen *screen = cinnamon_global_get_screen (global);
   int n_monitors = meta_screen_get_n_monitors (screen);
   int i;
 
@@ -255,7 +255,7 @@ settings_notify_cb (GtkSettings *settings,
 }
 
 static void
-shell_fonts_init (void)
+cinnamon_fonts_init (void)
 {
   GtkSettings *settings;
 
@@ -281,18 +281,18 @@ shell_fonts_init (void)
 }
 
 static void
-shell_prefs_init (void)
+cinnamon_prefs_init (void)
 {
   meta_prefs_override_preference_location ("/apps/mutter/general/attach_modal_dialogs",
-                                           "/desktop/gnome/shell/windows/attach_modal_dialogs");
+                                           "/desktop/cinnamon/windows/attach_modal_dialogs");
   meta_prefs_override_preference_location ("/apps/mutter/general/workspaces_only_on_primary",
-                                           "/desktop/gnome/shell/windows/workspaces_only_on_primary");
+                                           "/desktop/cinnamon/windows/workspaces_only_on_primary");
   meta_prefs_override_preference_location ("/apps/metacity/general/button_layout",
-                                           "/desktop/gnome/shell/windows/button_layout");
+                                           "/desktop/cinnamon/windows/button_layout");
   meta_prefs_override_preference_location ("/apps/metacity/general/edge_tiling",
-                                           "/desktop/gnome/shell/windows/edge_tiling");
+                                           "/desktop/cinnamon/windows/edge_tiling");
   meta_prefs_override_preference_location ("/apps/metacity/general/theme",
-                                           "/desktop/gnome/shell/windows/theme");
+                                           "/desktop/cinnamon/windows/theme");
 }
 
 /* This is an IBus workaround. The flow of events with IBus is that every time
@@ -328,7 +328,7 @@ shell_prefs_init (void)
  *
  *   GDK filter function
  *     => Mutter
- *     => gnome_shell_plugin_xevent_filter()
+ *     => gnome_cinnamon_plugin_xevent_filter()
  *     => clutter_x11_handle_event()
  *     => clutter event delivery to actor
  *     => gtk_im_context_filter_event()
@@ -344,7 +344,7 @@ shell_prefs_init (void)
  * gtk_main_do_event().
  */
 static void
-gnome_shell_gdk_event_handler (GdkEvent *event_gdk,
+gnome_cinnamon_gdk_event_handler (GdkEvent *event_gdk,
                                gpointer  data)
 {
   if (event_gdk->type == GDK_KEY_PRESS || event_gdk->type == GDK_KEY_RELEASE)
@@ -390,47 +390,47 @@ gnome_shell_gdk_event_handler (GdkEvent *event_gdk,
 
 
 static void
-malloc_statistics_callback (ShellPerfLog *perf_log,
+malloc_statistics_callback (CinnamonPerfLog *perf_log,
                             gpointer      data)
 {
 #ifdef HAVE_MALLINFO
   struct mallinfo info = mallinfo ();
 
-  shell_perf_log_update_statistic_i (perf_log,
+  cinnamon_perf_log_update_statistic_i (perf_log,
                                      "malloc.arenaSize",
                                      info.arena);
-  shell_perf_log_update_statistic_i (perf_log,
+  cinnamon_perf_log_update_statistic_i (perf_log,
                                      "malloc.mmapSize",
                                      info.hblkhd);
-  shell_perf_log_update_statistic_i (perf_log,
+  cinnamon_perf_log_update_statistic_i (perf_log,
                                      "malloc.usedSize",
                                      info.uordblks);
 #endif
 }
 
 static void
-shell_perf_log_init (void)
+cinnamon_perf_log_init (void)
 {
-  ShellPerfLog *perf_log = shell_perf_log_get_default ();
+  CinnamonPerfLog *perf_log = cinnamon_perf_log_get_default ();
 
   /* For probably historical reasons, mallinfo() defines the returned values,
    * even those in bytes as int, not size_t. We're determined not to use
    * more than 2G of malloc'ed memory, so are OK with that.
    */
-  shell_perf_log_define_statistic (perf_log,
+  cinnamon_perf_log_define_statistic (perf_log,
                                    "malloc.arenaSize",
                                    "Amount of memory allocated by malloc() with brk(), in bytes",
                                    "i");
-  shell_perf_log_define_statistic (perf_log,
+  cinnamon_perf_log_define_statistic (perf_log,
                                    "malloc.mmapSize",
                                    "Amount of memory allocated by malloc() with mmap(), in bytes",
                                    "i");
-  shell_perf_log_define_statistic (perf_log,
+  cinnamon_perf_log_define_statistic (perf_log,
                                    "malloc.usedSize",
                                    "Amount of malloc'ed memory currently in use",
                                    "i");
 
-  shell_perf_log_add_statistics_callback (perf_log,
+  cinnamon_perf_log_add_statistics_callback (perf_log,
                                           malloc_statistics_callback,
                                           NULL, NULL);
 }
@@ -457,7 +457,7 @@ default_log_handler (const char     *log_domain,
 
   tp_debug_sender_add_message (sender, &now, log_domain, log_level, message);
 
-  /* Filter out telepathy-glib logs, we don't want to flood Shell's output
+  /* Filter out telepathy-glib logs, we don't want to flood Cinnamon's output
    * with those. */
   if (!g_str_has_prefix (log_domain, "tp-glib"))
     g_log_default_handler (log_domain, log_level, message, data);
@@ -469,11 +469,11 @@ print_version (const gchar    *option_name,
                gpointer        data,
                GError        **error)
 {
-  g_print ("GNOME Shell %s\n", VERSION);
+  g_print ("Cinnamon %s\n", VERSION);
   exit (0);
 }
 
-GOptionEntry gnome_shell_options[] = {
+GOptionEntry gnome_cinnamon_options[] = {
   {
     "version", 0, G_OPTION_FLAG_NO_ARG, G_OPTION_ARG_CALLBACK,
     print_version,
@@ -494,7 +494,7 @@ main (int argc, char **argv)
 {
   GOptionContext *ctx;
   GError *error = NULL;
-  ShellSessionType session_type;
+  CinnamonSessionType session_type;
   int ecode;
   TpDebugSender *sender;
 
@@ -505,7 +505,7 @@ main (int argc, char **argv)
   textdomain (GETTEXT_PACKAGE);
 
   ctx = meta_get_option_context ();
-  g_option_context_add_main_entries (ctx, gnome_shell_options, GETTEXT_PACKAGE);
+  g_option_context_add_main_entries (ctx, gnome_cinnamon_options, GETTEXT_PACKAGE);
   if (!g_option_context_parse (ctx, &argc, &argv, &error))
     {
       g_printerr ("%s: %s\n", argv[0], error->message);
@@ -514,7 +514,7 @@ main (int argc, char **argv)
 
   g_option_context_free (ctx);
 
-  meta_plugin_type_register (gnome_shell_plugin_get_type ());
+  meta_plugin_type_register (gnome_cinnamon_plugin_get_type ());
 
   /* Prevent meta_init() from causing gtk to load gail and at-bridge */
   g_setenv ("NO_GAIL", "1", TRUE);
@@ -529,15 +529,15 @@ main (int argc, char **argv)
   g_setenv ("GJS_DEBUG_OUTPUT", "stderr", TRUE);
   g_setenv ("GJS_DEBUG_TOPICS", "JS ERROR;JS LOG", TRUE);
 
-  shell_dbus_init (meta_get_replace_current_wm ());
-  shell_a11y_init ();
-  shell_fonts_init ();
-  shell_perf_log_init ();
-  shell_prefs_init ();
+  cinnamon_dbus_init (meta_get_replace_current_wm ());
+  cinnamon_a11y_init ();
+  cinnamon_fonts_init ();
+  cinnamon_perf_log_init ();
+  cinnamon_prefs_init ();
 
-  gdk_event_handler_set (gnome_shell_gdk_event_handler, NULL, NULL);
+  gdk_event_handler_set (gnome_cinnamon_gdk_event_handler, NULL, NULL);
 
-  g_irepository_prepend_search_path (GNOME_SHELL_PKGLIBDIR);
+  g_irepository_prepend_search_path (CINNAMON_PKGLIBDIR);
 #if HAVE_BLUETOOTH
   g_irepository_prepend_search_path (BLUETOOTH_DIR);
 #endif
@@ -562,18 +562,18 @@ main (int argc, char **argv)
 
   /* Initialize the global object */
   if (is_gdm_mode)
-      session_type = SHELL_SESSION_GDM;
+      session_type = CINNAMON_SESSION_GDM;
   else
-      session_type = SHELL_SESSION_USER;
+      session_type = CINNAMON_SESSION_USER;
 
-  _shell_global_init ("session-type", session_type, NULL);
+  _cinnamon_global_init ("session-type", session_type, NULL);
 
   ecode = meta_run ();
 
-  if (g_getenv ("GNOME_SHELL_ENABLE_CLEANUP"))
+  if (g_getenv ("CINNAMON_ENABLE_CLEANUP"))
     {
       g_printerr ("Doing final cleanup...\n");
-      g_object_unref (shell_global_get ());
+      g_object_unref (cinnamon_global_get ());
     }
 
   g_object_unref (sender);

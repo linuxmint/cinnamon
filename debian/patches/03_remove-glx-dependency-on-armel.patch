@@ -90,10 +90,10 @@ Index: oneiric/configure
                                 libstartup-notification-1.0 >= $STARTUP_NOTIFICATION_MIN_VERSION
                                 gobject-introspection-1.0 >= $GOBJECT_INTROSPECTION_MIN_VERSION
  			       libcanberra
-Index: oneiric/src/gnome-shell-plugin.c
+Index: oneiric/src/cinnamon-plugin.c
 ===================================================================
---- oneiric.orig/src/gnome-shell-plugin.c	2011-09-04 04:01:43.713265027 -0400
-+++ oneiric/src/gnome-shell-plugin.c	2011-09-06 11:20:47.243195279 -0400
+--- oneiric.orig/src/cinnamon-plugin.c	2011-09-04 04:01:43.713265027 -0400
++++ oneiric/src/cinnamon-plugin.c	2011-09-06 11:20:47.243195279 -0400
 @@ -30,8 +30,11 @@
  
  #include <clutter/clutter.h>
@@ -107,9 +107,9 @@ Index: oneiric/src/gnome-shell-plugin.c
  #include <meta/display.h>
  #include <meta/meta-plugin.h>
 @@ -146,14 +149,23 @@
- gnome_shell_plugin_start (MetaPlugin *plugin)
+ gnome_cinnamon_plugin_start (MetaPlugin *plugin)
  {
-   GnomeShellPlugin *shell_plugin = GNOME_SHELL_PLUGIN (plugin);
+   CinnamonPlugin *cinnamon_plugin = CINNAMON_PLUGIN (plugin);
 +#if defined (__arm__)
 +#else
    MetaScreen *screen;
@@ -125,7 +125,7 @@ Index: oneiric/src/gnome-shell-plugin.c
    GjsContext *gjs_context;
  
 +#if defined (__arm__)
-+  shell_plugin->have_swap_event = 0;
++  cinnamon_plugin->have_swap_event = 0;
 +#else
    screen = meta_plugin_get_screen (plugin);
    display = meta_screen_get_display (screen);
@@ -133,8 +133,8 @@ Index: oneiric/src/gnome-shell-plugin.c
 @@ -166,6 +178,7 @@
    glx_extensions = glXQueryExtensionsString (xdisplay,
                                               meta_screen_get_screen_number (screen));
-   shell_plugin->have_swap_event = strstr (glx_extensions, "GLX_INTEL_swap_event") != NULL;
+   cinnamon_plugin->have_swap_event = strstr (glx_extensions, "GLX_INTEL_swap_event") != NULL;
 +#endif
  
-   shell_perf_log_define_event (shell_perf_log_get_default (),
+   cinnamon_perf_log_define_event (cinnamon_perf_log_get_default (),
                                 "glx.swapComplete",

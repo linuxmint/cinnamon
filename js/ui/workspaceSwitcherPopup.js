@@ -3,7 +3,7 @@
 const Clutter = imports.gi.Clutter;
 const Lang = imports.lang;
 const Mainloop = imports.mainloop;
-const Shell = imports.gi.Shell;
+const Cinnamon = imports.gi.Cinnamon;
 const St = imports.gi.St;
 const Main = imports.ui.main;
 
@@ -30,7 +30,7 @@ WorkspaceSwitcherPopup.prototype = {
         Main.uiGroup.add_actor(this.actor);
 
         this._container = new St.BoxLayout({ style_class: 'workspace-switcher-container' });
-        this._list = new Shell.GenericContainer({ style_class: 'workspace-switcher' });
+        this._list = new Cinnamon.GenericContainer({ style_class: 'workspace-switcher' });
         this._itemSpacing = 0;
         this._childHeight = 0;
         this._childWidth = 0;

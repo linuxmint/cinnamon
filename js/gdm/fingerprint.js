@@ -2,7 +2,7 @@
 
 const DBus = imports.dbus;
 const Lang = imports.lang;
-const Shell = imports.gi.Shell;
+const Cinnamon = imports.gi.Cinnamon;
 const Signals = imports.signals;
 
 const FprintManagerIface = {

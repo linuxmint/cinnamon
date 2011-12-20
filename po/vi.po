@@ -1,14 +1,14 @@
-# Vietnamese translation for gnome-shell.
+# Vietnamese translation for cinnamon.
 # Copyright (C) 2010 GNOME i18n Project for Vietnamese.
-# This file is distributed under the same license as the gnome-shell package.
+# This file is distributed under the same license as the cinnamon package.
 # Nguyễn Thái Ngọc Duy <pclouds@gmail.com>, 2010-2011.
 # Ngô Chin <ndtrung4419@gmail.com>, 2011.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gnome-shell\n"
+"Project-Id-Version: cinnamon\n"
 "Report-Msgid-Bugs-To: http://bugzilla.gnome.org/enter_bug.cgi?product=gnome-"
-"shell&keywords=I18N+L10N&component=general\n"
+"cinnamon&keywords=I18N+L10N&component=general\n"
 "POT-Creation-Date: 2011-09-30 16:20+0000\n"
 "PO-Revision-Date: 2011-10-01 10:31+1000\n"
 "Last-Translator: Ngô Chin <ndtrung4419@gmail.com>\n"
@@ -19,69 +19,69 @@ msgstr ""
 "Language: vi\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
-#: ../data/gnome-shell.desktop.in.in.h:1
-msgid "GNOME Shell"
-msgstr "GNOME Shell"
+#: ../data/cinnamon.desktop.in.in.h:1
+msgid "Cinnamon"
+msgstr "Cinnamon"
 
-#: ../data/gnome-shell.desktop.in.in.h:2
+#: ../data/cinnamon.desktop.in.in.h:2
 msgid "Window management and application launching"
 msgstr "Quản lý cửa sổ và chạy ứng dụng"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:1
+#: ../data/org.cinnamon.gschema.xml.in.h:1
 msgid ""
 "Allows access to internal debugging and monitoring tools using the Alt-F2 "
 "dialog."
 msgstr ""
 "Cho phép truy cập công cụ theo dõi và tìm lỗi nội bộ qua hộp thoại Alt-F2."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:2
+#: ../data/org.cinnamon.gschema.xml.in.h:2
 msgid "Enable internal tools useful for developers and testers from Alt-F2"
 msgstr ""
 "Bật công cụ nội bộ, hữu dụng với người phát triển và kiểm thử, qua Alt-F2"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:3
+#: ../data/org.cinnamon.gschema.xml.in.h:3
 msgid "File extension used for storing the screencast"
 msgstr "Phần mở rộng dùng để lưu screencast"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:4
+#: ../data/org.cinnamon.gschema.xml.in.h:4
 msgid "Framerate used for recording screencasts."
 msgstr "Tốc độ khung dùng lưu screencast."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:5
+#: ../data/org.cinnamon.gschema.xml.in.h:5
 msgid ""
-"GNOME Shell extensions have a uuid property; this key lists extensions which "
+"Cinnamon extensions have a uuid property; this key lists extensions which "
 "should be loaded. disabled-extensions overrides this setting for extensions "
 "that appear in both lists."
 msgstr ""
-"Phần mở rộng GNOME Shell có thuộc tính uuid. Khoá này liệt kê danh sách phần "
+"Phần mở rộng Cinnamon có thuộc tính uuid. Khoá này liệt kê danh sách phần "
 "mở rộng cần phải nạp. disabled-extensions ghi đè vào khóa này đối với những "
 "phần mở rộng có mặt ở cả hai danh sách."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:6
+#: ../data/org.cinnamon.gschema.xml.in.h:6
 msgid "History for command (Alt-F2) dialog"
 msgstr "Hộp thoại lịch sử lệnh (Alt-F2)"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:7
+#: ../data/org.cinnamon.gschema.xml.in.h:7
 msgid "History for the looking glass dialog"
 msgstr "Lịch sử hộp thoại looking glass"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:8
+#: ../data/org.cinnamon.gschema.xml.in.h:8
 msgid "If true, display date in the clock, in addition to time."
 msgstr "Nếu đúng (true), hiện ngày trên đồng hồ, bên cạnh giờ."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:9
+#: ../data/org.cinnamon.gschema.xml.in.h:9
 msgid "If true, display seconds in time."
 msgstr "Nếu đúng (true), hiện giây."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:10
+#: ../data/org.cinnamon.gschema.xml.in.h:10
 msgid "If true, display the ISO week date in the calendar."
 msgstr "Nếu đúng (true), hiện tuần ISO trong lịch."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:11
+#: ../data/org.cinnamon.gschema.xml.in.h:11
 msgid "List of desktop file IDs for favorite applications"
 msgstr "Danh sách ID tập tin desktop của ứng dụng yêu thích"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:13
+#: ../data/org.cinnamon.gschema.xml.in.h:13
 #, no-c-format
 msgid ""
 "Sets the GStreamer pipeline used to encode recordings. It follows the syntax "
@@ -105,26 +105,26 @@ msgstr ""
 "dùng VP8 codec. %T được dùng để thế chỗ cho số thread dự đoán tối ưu cho hệ "
 "thống."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:14
+#: ../data/org.cinnamon.gschema.xml.in.h:14
 msgid "Show date in clock"
 msgstr "Hiện ngày trên đồng hồ"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:15
+#: ../data/org.cinnamon.gschema.xml.in.h:15
 msgid "Show the week date in the calendar"
 msgstr "Hiện tuần trên lịch"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:16
+#: ../data/org.cinnamon.gschema.xml.in.h:16
 msgid "Show time with seconds"
 msgstr "Hiện giây"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:17
+#: ../data/org.cinnamon.gschema.xml.in.h:17
 msgid ""
 "The applications corresponding to these identifiers will be displayed in the "
 "favorites area."
 msgstr ""
 "Ứng dụng tương ứng với những định danh này sẽ được hiển thị ở vùng ưa thích."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:18
+#: ../data/org.cinnamon.gschema.xml.in.h:18
 msgid ""
 "The filename for recorded screencasts will be a unique filename based on the "
 "current date, and use this extension. It should be changed when recording to "
@@ -134,46 +134,46 @@ msgstr ""
 "thời, và dùng phần mở rộng này. Khi lưu ở định dạng khác nhau thì tên này "
 "cũng nên khác nhau."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:19
+#: ../data/org.cinnamon.gschema.xml.in.h:19
 msgid ""
-"The framerate of the resulting screencast recordered by GNOME Shell's "
+"The framerate of the resulting screencast recordered by Cinnamon's "
 "screencast recorder in frames-per-second."
 msgstr ""
-"Tốc độ khung của screencast lưu bởi bộ thu GNOME Shell theo số khung mỗi "
+"Tốc độ khung của screencast lưu bởi bộ thu Cinnamon theo số khung mỗi "
 "giây."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:20
+#: ../data/org.cinnamon.gschema.xml.in.h:20
 msgid "The gstreamer pipeline used to encode the screencast"
 msgstr "Ống dẫn gstreamer để thu screencast"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:21
+#: ../data/org.cinnamon.gschema.xml.in.h:21
 msgid ""
-"The shell normally monitors active applications in order to present the most "
+"Cinnamon normally monitors active applications in order to present the most "
 "used ones (e.g. in launchers). While this data will be kept private, you may "
 "want to disable this for privacy reasons. Please note that doing so won't "
 "remove already saved data."
 msgstr ""
-"GNOME Shell bình thường sẽ theo dõi các ứng dụng tích cực để thể hiện phù "
+"Cinnamon bình thường sẽ theo dõi các ứng dụng tích cực để thể hiện phù "
 "hợp (ví dụ, bộ phóng). Mặc dù thông tin này là riêng tư, bạn vẫn có thể tắt "
 "vì lý do cá nhân. Chú ý là làm vậy sẽ không xoá bỏ những dữ liệu đã có."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:22
+#: ../data/org.cinnamon.gschema.xml.in.h:22
 msgid "The type of keyboard to use."
 msgstr "Loại bàn phím cần dùng."
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:23
+#: ../data/org.cinnamon.gschema.xml.in.h:23
 msgid "Uuids of extensions to enable"
 msgstr "UUID của phần mở rộng cần bật"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:24
+#: ../data/org.cinnamon.gschema.xml.in.h:24
 msgid "Whether to collect stats about applications usage"
 msgstr "Có thu thập thống kê sử dụng ứng dụng không"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:25
+#: ../data/org.cinnamon.gschema.xml.in.h:25
 msgid "Which keyboard to use"
 msgstr "Loại bàn phím cần dùng"
 
-#: ../data/org.gnome.shell.gschema.xml.in.h:26
+#: ../data/org.cinnamon.gschema.xml.in.h:26
 msgid "disabled OpenSearch providers"
 msgstr "Phần cung cấp OpenSearch bị tắt"
 
@@ -230,7 +230,7 @@ msgstr "Tắt máy"
 msgid "Command not found"
 msgstr "Không tìm thấy lệnh"
 
-#. Replace "Error invoking GLib.shell_parse_argv: " with
+#. Replace "Error invoking GLib.cinnamon_parse_argv: " with
 #. something nicer
 #: ../js/misc/util.js:119
 msgid "Could not parse command:"
@@ -436,7 +436,7 @@ msgid "Next week"
 msgstr "Tuần tới"
 
 #: ../js/ui/contactDisplay.js:59 ../js/ui/notificationDaemon.js:444
-#: ../js/ui/status/power.js:223 ../src/shell-app.c:355
+#: ../js/ui/status/power.js:223 ../src/cinnamon-app.c:355
 msgid "Unknown"
 msgstr "Không biết"
 
@@ -513,7 +513,7 @@ msgid "%a %l:%M %p"
 msgstr "%a %l:%M %p"
 
 #. Translators: This is the date format to use when the calendar popup is
-#. * shown - it is shown just below the time in the shell (e.g. "Tue 9:29 AM").
+#. * shown - it is shown just below the time in Cinnamon (e.g. "Tue 9:29 AM").
 #.
 #: ../js/ui/dateMenu.js:213
 msgid "%A %B %e, %Y"
@@ -831,7 +831,7 @@ msgstr "Đang tìm..."
 msgid "No matching results."
 msgstr "Không tìm thấy."
 
-#: ../js/ui/shellMountOperation.js:285
+#: ../js/ui/cinnamonMountOperation.js:285
 msgid "Wrong password, please try again"
 msgstr "Nhập sai mật khẩu, xin hãy thử lại"
 
@@ -1530,7 +1530,7 @@ msgstr ""
 msgid "Type to search..."
 msgstr "Nhập để tìm..."
 
-#: ../js/ui/viewSelector.js:140 ../src/shell-util.c:261
+#: ../js/ui/viewSelector.js:140 ../src/cinnamon-util.c:261
 msgid "Search"
 msgstr "Tìm"
 
@@ -1567,30 +1567,30 @@ msgstr "In phiên bản"
 msgid "Mode used by GDM for login screen"
 msgstr "Chể độ dùng bởi GDM cho màn hình đăng nhập"
 
-#: ../src/shell-app.c:581
+#: ../src/cinnamon-app.c:581
 #, c-format
 msgid "Failed to launch '%s'"
 msgstr "Lỗi chạy '%s'"
 
-#: ../src/shell-mobile-providers.c:80
+#: ../src/cinnamon-mobile-providers.c:80
 msgid "United Kingdom"
 msgstr "Vương quốc Anh"
 
-#: ../src/shell-mobile-providers.c:526
+#: ../src/cinnamon-mobile-providers.c:526
 msgid "Default"
 msgstr "Mặc định"
 
-#: ../src/shell-polkit-authentication-agent.c:334
+#: ../src/cinnamon-polkit-authentication-agent.c:334
 msgid "Authentication dialog was dismissed by the user"
 msgstr "Hộp thoại xác thực bị người dùng bỏ qua"
 
-#: ../src/shell-util.c:100
+#: ../src/cinnamon-util.c:100
 msgid "Home Folder"
 msgstr "Thư mục riêng"
 
 #. Translators: this is the same string as the one found in
 #. * nautilus
-#: ../src/shell-util.c:115
+#: ../src/cinnamon-util.c:115
 msgid "File System"
 msgstr "Hệ thống tập tin"
 
@@ -1599,7 +1599,7 @@ msgstr "Hệ thống tập tin"
 #. * example, "Trash: some-directory". It means that the
 #. * directory called "some-directory" is in the trash.
 #.
-#: ../src/shell-util.c:311
+#: ../src/cinnamon-util.c:311
 #, c-format
 msgid "%1$s: %2$s"
 msgstr "%1$s: %2$s"
@@ -1616,11 +1616,11 @@ msgstr "%1$s: %2$s"
 #~ msgstr "%s đã hoàn tất khởi chạy"
 
 #~ msgid ""
-#~ "GNOME Shell extensions have a uuid property; this key lists extensions "
+#~ "Cinnamon extensions have a uuid property; this key lists extensions "
 #~ "which should not be loaded. This setting overrides enabled-extensions for "
 #~ "extensions that appear in both lists."
 #~ msgstr ""
-#~ "Phần mở rộng GNOME Shell có thuộc tính uuid. Khoá này liệt kê danh sách "
+#~ "Phần mở rộng Cinnamon có thuộc tính uuid. Khoá này liệt kê danh sách "
 #~ "phần mở rộng không nên nạp. Thiết lập này sẽ ghi đè khoá enabled-"
 #~ "extensions đối với những phần mở rộng có mặt ở cả hai danh sách."
 

@@ -7,7 +7,7 @@ const Clutter = imports.gi.Clutter;
 const GLib = imports.gi.GLib;
 const Gio = imports.gi.Gio;
 const St = imports.gi.St;
-const Shell = imports.gi.Shell;
+const Cinnamon = imports.gi.Cinnamon;
 const Soup = imports.gi.Soup;
 
 const Config = imports.misc.config;
@@ -34,7 +34,7 @@ const ExtensionType = {
 };
 
 const REPOSITORY_URL_BASE = 'https://extensions.gnome.org';
-const REPOSITORY_URL_DOWNLOAD = REPOSITORY_URL_BASE + '/download-extension/%s.shell-extension.zip';
+const REPOSITORY_URL_DOWNLOAD = REPOSITORY_URL_BASE + '/download-extension/%s.cinnamon-extension.zip';
 const REPOSITORY_URL_INFO =     REPOSITORY_URL_BASE + '/extension-info/';
 
 const _httpSession = new Soup.SessionAsync();
@@ -51,7 +51,7 @@ function _getCertFile() {
     if (GLib.file_test(localCert, GLib.FileTest.EXISTS))
         return localCert;
     else
-        return Config.SHELL_SYSTEM_CA_FILE;
+        return Config.CINNAMON_SYSTEM_CA_FILE;
 }
 
 _httpSession.ssl_ca_file = _getCertFile();
@@ -114,7 +114,7 @@ function versionCheck(required, current) {
 function installExtensionFromUUID(uuid, version_tag) {
     let params = { uuid: uuid,
                    version_tag: version_tag,
-                   shell_version: Config.PACKAGE_VERSION,
+                   cinnamon_version: Config.PACKAGE_VERSION,
                    api_version: API_VERSION.toString() };
 
     let message = Soup.form_request_new_from_hash('GET', REPOSITORY_URL_INFO, params);
@@ -167,7 +167,7 @@ function gotExtensionZipFile(session, message, uuid) {
     // FIXME: use a GFile mkstemp-type method once one exists
     let fd, tmpzip;
     try {
-        [fd, tmpzip] = GLib.file_open_tmp('XXXXXX.shell-extension.zip');
+        [fd, tmpzip] = GLib.file_open_tmp('XXXXXX.cinnamon-extension.zip');
     } catch (e) {
         logExtensionError(uuid, 'tempfile: ' + e.toString());
         return;
@@ -175,7 +175,7 @@ function gotExtensionZipFile(session, message, uuid) {
 
     let stream = new Gio.UnixOutputStream({ fd: fd });
     let dir = userExtensionsDir.get_child(uuid);
-    Shell.write_soup_message_to_stream(stream, message);
+    Cinnamon.write_soup_message_to_stream(stream, message);
     stream.close(null);
     let [success, pid] = GLib.spawn_async(null,
                                           ['unzip', '-uod', dir.get_path(), '--', tmpzip],
@@ -266,7 +266,7 @@ function loadExtension(dir, enabled, type) {
 
     let metadataContents;
     try {
-        metadataContents = Shell.get_file_contents_utf8_sync(metadataFile.get_path());
+        metadataContents = Cinnamon.get_file_contents_utf8_sync(metadataFile.get_path());
     } catch (e) {
         logExtensionError(uuid, 'Failed to load metadata.json: ' + e);
         return;
@@ -279,7 +279,7 @@ function loadExtension(dir, enabled, type) {
         return;
     }
 
-    let requiredProperties = ['uuid', 'name', 'description', 'shell-version'];
+    let requiredProperties = ['uuid', 'name', 'description', 'cinnamon-version'];
     for (let i = 0; i < requiredProperties.length; i++) {
         let prop = requiredProperties[i];
         if (!meta[prop]) {
@@ -303,9 +303,9 @@ function loadExtension(dir, enabled, type) {
         return;
     }
 
-    if (!versionCheck(meta['shell-version'], Config.PACKAGE_VERSION) ||
+    if (!versionCheck(meta['cinnamon-version'], Config.PACKAGE_VERSION) ||
         (meta['js-version'] && !versionCheck(meta['js-version'], Config.GJS_VERSION))) {
-        logExtensionError(uuid, 'extension is not compatible with current GNOME Shell and/or GJS version');
+        logExtensionError(uuid, 'extension is not compatible with current Cinnamon and/or GJS version');
         return;
     }
 
@@ -317,9 +317,9 @@ function loadExtension(dir, enabled, type) {
     // Default to error, we set success as the last step
     meta.state = ExtensionState.ERROR;
 
-    if (!versionCheck(meta['shell-version'], Config.PACKAGE_VERSION) ||
+    if (!versionCheck(meta['cinnamon-version'], Config.PACKAGE_VERSION) ||
         (meta['js-version'] && !versionCheck(meta['js-version'], Config.GJS_VERSION))) {
-        logExtensionError(uuid, 'extension is not compatible with current GNOME Shell and/or GJS version', ExtensionState.OUT_OF_DATE);
+        logExtensionError(uuid, 'extension is not compatible with current Cinnamon and/or GJS version', ExtensionState.OUT_OF_DATE);
         meta.state = ExtensionState.OUT_OF_DATE;
         return;
     }
@@ -452,7 +452,7 @@ function _loadExtensionsIn(dir, type) {
 function loadExtensions() {
     let systemDataDirs = GLib.get_system_data_dirs();
     for (let i = 0; i < systemDataDirs.length; i++) {
-        let dirPath = systemDataDirs[i] + '/gnome-shell/extensions';
+        let dirPath = systemDataDirs[i] + '/cinnamon/extensions';
         let dir = Gio.file_new_for_path(dirPath);
         if (dir.query_exists(null))
             _loadExtensionsIn(dir, ExtensionType.SYSTEM);
@@ -515,7 +515,7 @@ InstallExtensionDialog.prototype = {
         _signals.emit('extension-state-changed', meta);
 
         let params = { version_tag: this._version_tag,
-                       shell_version: Config.PACKAGE_VERSION,
+                       cinnamon_version: Config.PACKAGE_VERSION,
                        api_version: API_VERSION.toString() };
 
         let url = REPOSITORY_URL_DOWNLOAD.format(this._uuid);

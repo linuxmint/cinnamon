@@ -3,7 +3,7 @@
 const Clutter = imports.gi.Clutter;
 const Lang = imports.lang;
 const Mainloop = imports.mainloop;
-const Shell = imports.gi.Shell;
+const Cinnamon = imports.gi.Cinnamon;
 const St = imports.gi.St;
 const Signals = imports.signals;
 const Tweener = imports.tweener.tweener;
@@ -79,13 +79,13 @@ function _wrapTweening(target, tweeningParameters) {
 function _getTweenState(target) {
     // If we were paranoid, we could keep a plist mapping targets to
     // states... but we're not that paranoid.
-    if (!target.__ShellTweenerState)
+    if (!target.__CinnamonTweenerState)
         _resetTweenState(target);
-    return target.__ShellTweenerState;
+    return target.__CinnamonTweenerState;
 }
 
 function _resetTweenState(target) {
-    let state = target.__ShellTweenerState;
+    let state = target.__CinnamonTweenerState;
 
     if (state) {
         if (state.destroyedId)
@@ -94,7 +94,7 @@ function _resetTweenState(target) {
             Mainloop.source_remove(state.idleCompletedId);
     }
 
-    target.__ShellTweenerState = {};
+    target.__CinnamonTweenerState = {};
 }
 
 function _addHandler(target, params, name, handler) {
@@ -220,7 +220,7 @@ ClutterFrameTicker.prototype = {
                 this._onNewFrame(frame);
             }));
 
-        let perf_log = Shell.PerfLog.get_default();
+        let perf_log = Cinnamon.PerfLog.get_default();
         perf_log.define_event("tweener.framePrepareStart",
                               "Start of a new animation frame",
                               "");
@@ -239,7 +239,7 @@ ClutterFrameTicker.prototype = {
             this._startTime = this._timeline.get_elapsed_time();
 
         // currentTime is in milliseconds
-        let perf_log = Shell.PerfLog.get_default();
+        let perf_log = Cinnamon.PerfLog.get_default();
         perf_log.event("tweener.framePrepareStart");
         this.emit('prepare-frame');
         perf_log.event("tweener.framePrepareDone");
