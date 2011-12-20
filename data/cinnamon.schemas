@@ -22,7 +22,7 @@
         <applyto>/desktop/cinnamon/windows/button_layout</applyto>
         <owner>cinnamon</owner>
         <type>string</type>
-        <default>:close</default>
+        <default>:minimize,maximize,close</default>
         <locale name="C">
            <short>Arrangement of buttons on the titlebar</short>
            <long>
