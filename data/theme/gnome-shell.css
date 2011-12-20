@@ -94,7 +94,7 @@ StTooltip StLabel {
 
 .popup-menu-boxpointer {
     -arrow-border-radius: 8px;
-    -arrow-background-color: rgba(0,0,0,0.9);
+    -arrow-background-color: rgba(80,80,80,0.9);
     -arrow-border-width: 2px;
     -arrow-border-color: #a5a5a5;
     -arrow-base: 24px;
@@ -326,7 +326,7 @@ StTooltip StLabel {
 }
 
 .panel-corner {
-    -panel-corner-radius: 10px;
+    -panel-corner-radius: 0px;
     -panel-corner-background-color: black;
     -panel-corner-inner-border-width: 2px;
     -panel-corner-inner-border-color: transparent;
@@ -1507,7 +1507,7 @@ StTooltip StLabel {
 }
 
 .switcher-list {
-    background: rgba(0,0,0,0.8);
+    background: rgba(80,80,80,0.8);
     border: 1px solid rgba(128,128,128,0.40);
     border-radius: 24px;
     padding: 20px;
