@@ -870,8 +870,17 @@ AppIcon.prototype = {
         this._iconBin = new St.Bin({ x_fill: true, y_fill: true });
 
         this.actor.add(this._iconBin, { x_fill: false, y_fill: false } );
-        this.label = new St.Label({ text: this.app.get_name() });
-        this.actor.add(this.label, { x_fill: false });
+        let title = window.get_title();
+        if (title) {
+            this.label = new St.Label({ text: title });
+            let bin = new St.Bin({ x_align: St.Align.MIDDLE });
+            bin.add_actor(this.label);
+            this.actor.add(bin);
+        }
+        else {
+            this.label = new St.Label({ text: this.app.get_name() });
+            this.actor.add(this.label, { x_fill: false });
+        }
     },
 
     set_size: function(size) {
