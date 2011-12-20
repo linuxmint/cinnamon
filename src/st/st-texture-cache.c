@@ -1357,9 +1357,9 @@ load_sliced_image (GSimpleAsyncResult *result,
 
   width = gdk_pixbuf_get_width (pix);
   height = gdk_pixbuf_get_height (pix);
-  for (y = 0; y < height; y += data->grid_width)
+  for (y = 0; y < height; y += data->grid_height)
     {
-      for (x = 0; x < width; x += data->grid_height)
+      for (x = 0; x < width; x += data->grid_width)
         {
           GdkPixbuf *pixbuf = gdk_pixbuf_new_subpixbuf (pix, x, y, data->grid_width, data->grid_height);
           g_assert (pixbuf != NULL);
