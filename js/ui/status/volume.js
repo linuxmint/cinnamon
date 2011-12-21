@@ -618,17 +618,18 @@ Player.prototype = {
 
 }
 
-function MediaPlayerLauncher(app) {
-    this._init(app);
+function MediaPlayerLauncher(app, menu) {
+    this._init(app, menu);
 }
 
 MediaPlayerLauncher.prototype = {
     __proto__: PopupMenu.PopupBaseMenuItem.prototype,
 
-    _init: function (app) {
+    _init: function (app, menu) {
         PopupMenu.PopupBaseMenuItem.prototype._init.call(this, {});
 
         this._app = app;
+        this._menu = menu;
         this.label = new St.Label({ text: app.get_name() });
         this.addActor(this.label);
         this._icon = app.create_icon_texture(ICON_SIZE);
@@ -636,8 +637,8 @@ MediaPlayerLauncher.prototype = {
     },
 
     activate: function (event) {
-        this._app.activate_full(-1, event.get_time());
-        
+    	this._menu.actor.hide();
+        this._app.activate_full(-1, event.get_time());        
         return true;
     }
 
@@ -782,7 +783,7 @@ Indicator.prototype = {
                 
                 for (var p=0; p<this._availablePlayers.length; p++){
                     let playerApp = this._availablePlayers[p];
-                    let menuItem = new MediaPlayerLauncher(playerApp);
+                    let menuItem = new MediaPlayerLauncher(playerApp, this._launchPlayerItem.menu);
                     this._launchPlayerItem.menu.addMenuItem(menuItem);
                 }
                 
