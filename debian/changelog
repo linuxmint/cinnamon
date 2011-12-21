@@ -1,3 +1,17 @@
+cinnamon (1.1.0) lisa; urgency=low
+
+  * Fixed run dialog
+  * Fixed sound devices disappearing in sound applet
+  * Fixed amarok support in sound applet
+  * Hide sound applet when media player is launched
+  * Alt tab is now window-centric
+  * Alt tab uses window titles
+  * Added Ctrl+Alt+Up/Down keybindings to show overview screen
+  * Added panel launchers applet (with terminal so far and no configuration so far..)
+  * Many small visual improvements made to default theme
+
+ -- Clement Lefebvre <root@linuxmint.com>  Wed, 21 Dec 2011 17:43:55 +0000
+
 cinnamon (1.0.0) lisa; urgency=low
 
   * Initial version (based on gnome-shell 3.2.1)
