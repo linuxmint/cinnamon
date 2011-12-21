@@ -354,14 +354,14 @@ ViewSelector.prototype = {
         this._tabs = [];
         this._activeTab = null;
 
-        this._searchTab = new SearchTab();
+        /*this._searchTab = new SearchTab();
         this._searchArea.set_child(this._searchTab.title);
         this._addTab(this._searchTab);
 
         this._searchTab.connect('search-cancelled', Lang.bind(this,
             function() {
                 this._switchTab(this._activeTab);
-            }));
+            }));*/
 
         Main.overview.connect('item-drag-begin',
                               Lang.bind(this, this._switchDefaultTab));
@@ -421,13 +421,13 @@ ViewSelector.prototype = {
             this._activeTab.hide();
         }
 
-        if (tab != this._searchTab) {
+        //if (tab != this._searchTab) {
             tab.title.add_style_pseudo_class('selected');
             this._activeTab = tab;
-            if (this._searchTab.visible) {
+            /*if (this._searchTab.visible) {
                 this._searchTab.hide();
-            }
-        }
+            }*/
+        //}
 
         // Only fade when switching between tabs,
         // not when setting the initially selected one.
@@ -556,26 +556,26 @@ ViewSelector.prototype = {
             return true;
         } else if (modifiers & Clutter.ModifierType.CONTROL_MASK) {
             if (symbol == Clutter.Page_Up) {
-                if (!this._searchTab.active)
+                //if (!this._searchTab.active)
                     this._prevTab();
                 return true;
             } else if (symbol == Clutter.Page_Down) {
-                if (!this._searchTab.active)
+                //if (!this._searchTab.active)
                     this._nextTab();
                 return true;
             }
         } else if (Clutter.keysym_to_unicode(symbol)) {
-            this._searchTab.startSearch(event);
+            //this._searchTab.startSearch(event);
         }
         return false;
     },
 
     addSearchProvider: function(provider) {
-        this._searchTab.addSearchProvider(provider);
+        //this._searchTab.addSearchProvider(provider);
     },
 
     removeSearchProvider: function(provider) {
-        this._searchTab.removeSearchProvider(provider);
+        //this._searchTab.removeSearchProvider(provider);
     }
 };
 Signals.addSignalMethods(ViewSelector.prototype);
