@@ -2332,5 +2332,11 @@ StTooltip StLabel {
 }
 
 .panel-launcher {
-    padding-left: 3px;
+    margin: 1px;
+    padding: 1px;
+}
+
+.panel-launcher:hover {
+    border-radius: 2px;
+    background-color: #ADADAD;
 }
