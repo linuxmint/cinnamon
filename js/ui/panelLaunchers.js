@@ -5,14 +5,49 @@ const St = imports.gi.St;
 const Cinnamon = imports.gi.Cinnamon;
 const Lang = imports.lang;
 const Gio = imports.gi.Gio;
+const PopupMenu = imports.ui.popupMenu;
+const Main = imports.ui.main;
 
-function PanelAppLauncher(app) {
-    this._init(app);
+function PanelAppLauncherMenu(launcher) {
+    this._init(launcher);
+}
+
+PanelAppLauncherMenu.prototype = {
+    __proto__: PopupMenu.PopupMenu.prototype,
+    
+    _init: function(launcher) {
+        this._launcher = launcher;
+        PopupMenu.PopupMenu.prototype._init.call(this, launcher.actor, 0.0, St.Side.BOTTOM, 0);
+        Main.uiGroup.add_actor(this.actor);
+        this.actor.hide();
+        
+        this.launchItem = new PopupMenu.PopupMenuItem(_('Launch'));
+        this.addMenuItem(this.launchItem);
+        this.launchItem.connect('activate', Lang.bind(this, this._onLaunchActivate));
+        
+        this.removeItem = new PopupMenu.PopupMenuItem(_('Remove'));
+        this.addMenuItem(this.removeItem);
+        this.removeItem.connect('activate', Lang.bind(this, this._onRemoveActivate));
+    },
+    
+    _onLaunchActivate: function(actor, event) {
+        this._launcher.app.open_new_window(-1);
+    },
+    
+    _onRemoveActivate: function(actor, event) {
+        this._launcher.launchersBox.removeLauncher(this._launcher.app.get_id());
+        this._launcher.actor.destroy();
+    }
+}
+
+function PanelAppLauncher(launchersBox, app) {
+    this._init(launchersBox, app);
 }
 
 PanelAppLauncher.prototype = {
-    _init: function(app) {
+    _init: function(launchersBox, app) {
         this.app = app;
+        this.launchersBox = launchersBox;
         this.actor = new St.Bin({ style_class: 'panel-launcher',
                                       reactive: true,
                                       can_focus: true,
@@ -31,11 +66,19 @@ PanelAppLauncher.prototype = {
         this._iconBottomClip = 0;
         let icon = this.app.create_icon_texture(20);
         this._iconBox.set_child(icon);
+        
+        this._menuManager = new PopupMenu.PopupMenuManager(this);
+        this._menu = new PanelAppLauncherMenu(this);
+        this._menuManager.addMenu(this._menu);
     },
     
     _onButtonRelease: function(actor, event) {
-        if ( Cinnamon.get_event_state(event) & Clutter.ModifierType.BUTTON1_MASK ) {
-            this.app.open_new_window(-1);
+        let button = event.get_button();
+        if (button==1) {
+            if (this._menu.isOpen) this._menu.toggle();
+            else this.app.open_new_window(-1);
+        }else if (button==3) {
+            this._menu.toggle();
         }
     },
     
@@ -85,8 +128,18 @@ PanelLaunchersBox.prototype = {
         let apps = this.loadApps();
         for (var i in apps){
             let app = apps[i];
-            let launcher = new PanelAppLauncher(app);
+            let launcher = new PanelAppLauncher(this, app);
             this.actor.add(launcher.actor);
+        }
+    },
+    
+    removeLauncher: function(appid) {
+        let settings = new Gio.Settings({ schema: 'org.cinnamon' });
+        let desktopFiles = settings.get_strv('panel-launchers');
+        let i = desktopFiles.indexOf(appid);
+        if (i>=0){
+            desktopFiles.splice(i, 1);
+            settings.set_strv('panel-launchers', desktopFiles);
         }
     }
 }
