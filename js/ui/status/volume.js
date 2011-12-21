@@ -769,13 +769,19 @@ Indicator.prototype = {
         this._volumeControlShown = true;
         
         if (this._nbPlayers()==0){
+        	this._availablePlayers = new Array();
             let appsys = Cinnamon.AppSystem.get_default();
-            
-            this._availablePlayers = new Array();
-            for (var p=0; p<compatible_players.length; p++) {
-                let playerApp = appsys.lookup_app(compatible_players[p]+".desktop");
-                if (playerApp) this._availablePlayers.push(playerApp)
-            }
+            let allApps = appsys.get_all();
+            for (let y=0; y<allApps.length; y++) {
+            	let app = allApps[y];
+            	let entry = app.get_tree_entry();
+            	let path = entry.get_desktop_file_path();
+            	for (var p=0; p<compatible_players.length; p++) {
+            		if (path.indexOf(compatible_players[p]+".desktop") != -1) {            		
+                		this._availablePlayers.push(app)
+            		}
+           		}            	        
+            }                                   
             
             if (this._availablePlayers.length > 0){
                 this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
