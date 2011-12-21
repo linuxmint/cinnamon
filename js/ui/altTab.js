@@ -169,7 +169,6 @@ AltTabPopup.prototype = {
         let display = screen.get_display();
         let windows = display.get_tab_list(Meta.TabList.NORMAL, screen,
                                            screen.get_active_workspace());
-        global.log(windows);
 
         if (windows.length == 0)
             return false;
@@ -470,6 +469,7 @@ AltTabPopup.prototype = {
      * app list will have the keyboard focus.
      */
     _select : function(app, window, forceAppFocus) {
+        if (window==null) window = 0;
         if (app != this._currentApp || window == null) {
             if (this._thumbnails)
                 this._destroyThumbnails();
@@ -480,17 +480,17 @@ AltTabPopup.prototype = {
             this._thumbnailTimeoutId = 0;
         }
 
-        this._thumbnailsFocused = (window != null) && !forceAppFocus;
+        this._thumbnailsFocused = false;//(window != null) && !forceAppFocus;
 
         this._currentApp = app;
         this._currentWindow = window ? window : -1;
         this._appSwitcher.highlight(app, this._thumbnailsFocused);
 
         if (window != null) {
-            if (!this._thumbnails)
-                this._createThumbnails();
+            /*if (!this._thumbnails)
+                this._createThumbnails();*/
             this._currentWindow = window;
-            this._thumbnails.highlight(window, forceAppFocus);
+            //this._thumbnails.highlight(window, forceAppFocus);
         } else if (this._appIcons[this._currentApp].cachedWindows.length > 1 &&
                    !forceAppFocus) {
             this._thumbnailTimeoutId = Mainloop.timeout_add (
