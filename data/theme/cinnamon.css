@@ -2326,3 +2326,11 @@ StTooltip StLabel {
     -arrow-rise: 10px;
     -boxpointer-gap: 5px;
 }
+
+#panel-launchers-box {
+    padding-left: 7px;
+}
+
+.panel-launcher {
+    padding-left: 3px;
+}

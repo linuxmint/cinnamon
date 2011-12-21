@@ -22,14 +22,14 @@ PanelAppLauncher.prototype = {
         this.actor._delegate = this;
         this.actor.connect('button-release-event', Lang.bind(this, this._onButtonRelease));
         
-        this._iconBox = new Cinnamon.Slicer({ name: 'appMenuIcon' });
+        this._iconBox = new Cinnamon.Slicer({ name: 'panel-launcher-icon' });
         this._iconBox.connect('style-changed',
                               Lang.bind(this, this._onIconBoxStyleChanged));
         this._iconBox.connect('notify::allocation',
                               Lang.bind(this, this._updateIconBoxClip));
         this.actor.add_actor(this._iconBox);
         this._iconBottomClip = 0;
-        let icon = this.app.create_icon_texture(16);
+        let icon = this.app.create_icon_texture(20);
         this._iconBox.set_child(icon);
     },
     
