@@ -14,11 +14,30 @@
    height="4"
    id="svg2"
    version="1.1"
-   inkscape:version="0.47 r22583"
+   inkscape:version="0.48.2 r9819"
    sodipodi:docname="scroll-hhandle.svg">
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1061"
+     inkscape:window-height="938"
+     id="namedview9"
+     showgrid="false"
+     inkscape:zoom="43.7"
+     inkscape:cx="0.62929062"
+     inkscape:cy="2"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="layer1" />
   <defs
-     id="defs4">
-  </defs>
+     id="defs4" />
   <metadata
      id="metadata7">
     <rdf:RDF>
@@ -36,7 +55,7 @@
      inkscape:groupmode="layer"
      id="layer1">
     <rect
-       style="fill:#323232;fill-opacity:1;fill-rule:evenodd;stroke:none"
+       style="fill:#555555;fill-opacity:1;fill-rule:evenodd;stroke:none"
        id="rect3592"
        width="2"
        height="4"

@@ -52,41 +52,43 @@ StScrollView StScrollBar
 
 
 StScrollBar StBin#trough {
-    background-color: #080808;
-    border: 1px solid #2d2d2d;
-    border-radius: 8px;
+    background-color: rgba(0,0,0,0);
+    border: 1px solid #555555;
+    border-radius: 4px;
 }
 
 StScrollBar StButton#vhandle
 {
     background-image: url("scroll-vhandle.svg");
-    background-color: #252525;
-    border: 1px solid #080808;
-    border-radius: 8px;
+    background-color: rgba(204,204,204,0.3);
+    border: 1px solid #555555;
+    border-radius: 4px;
 }
 
 StScrollBar StButton#hhandle
 {
     background-image: url("scroll-hhandle.svg");
-    background-color: #252525;
-    border: 1px solid #080808;
-    border-radius: 8px;
+    background-color: rgba(204,204,204,0.3);
+    border: 1px solid #555555;
+    border-radius: 4px;
 }
 
 StScrollBar StButton#hhandle:hover,
 StScrollBar StButton#vhandle:hover
 {
-    background-color: #292929;
+    background-color: rgba(204,204,204,0.5);
 }
 
 StTooltip StLabel {
-    border: 1px solid rgba(255,255,255,0.6);
-    border-radius: 5px;
+    border: 1px solid rgba(212,185,67,1.0);
+    border-radius: 4px;
     padding: 2px 12px;
-    background-color: rgba(0,0,0,0.9);
-    color: #ffffff;
-    font-size: 0.8em;
-    font-weight: normal;
+    background-gradient-end: rgba(251,234,159,0.9);
+    background-gradient-start: rgba(254,245,198,0.9);
+    background-gradient-direction: vertical;
+    color: #000000;
+    font-size: 8.5pt;
+    font-weight: normal;    
     text-align: center;
 }
 
@@ -177,8 +179,8 @@ StTooltip StLabel {
 
 .popup-separator-menu-item {
     -gradient-height: 2px;
-    -gradient-start: rgba(8,8,8,0);
-    -gradient-end: #333333;
+    -gradient-start: rgba(85,85,85,1);
+    -gradient-end: #555555;
     -margin-horizontal: 1.5em;
     height: 1em;
 }
@@ -191,10 +193,10 @@ StTooltip StLabel {
     height: 1em;
     min-width: 15em;
     -slider-height: 0.3em;
-    -slider-background-color: #333333;
-    -slider-border-color: #5f5f5f;
-    -slider-active-background-color: #76b0ec;
-    -slider-active-border-color: #1f6dbc;
+    -slider-background-color: #666666;
+    -slider-border-color: #555555;
+    -slider-active-background-color: #CCCCCC;
+    -slider-active-border-color: #DDDDDD;
     -slider-border-width: 1px;
     -slider-handle-radius: 0.5em;
 }
@@ -1110,13 +1112,13 @@ StTooltip StLabel {
 
 #LookingGlassDialog
 {
-  background-color: rgba(0,0,0,0.85);
+  background-color: rgba(85,85,85,0.85);
   spacing: 4px;
   padding: 4px;
   border: 2px solid grey;
   border-radius: 4px;
 
-  color: #88ff66;
+  color: #CCCCCC;
 }
 
 #LookingGlassDialog > #Toolbar
@@ -1134,11 +1136,11 @@ StTooltip StLabel {
 }
 
 #LookingGlassDialog .notebook-tab:hover {
-  color: #00ff00;
+  color: #FFFFFF;
 }
 
 #LookingGlassDialog .notebook-tab:selected {
-  border: 1px solid #88ff66;
+  border: 1px solid #CCCCCC;
   border-radius: 4px;
   padding: 5px;
 }
@@ -1150,13 +1152,13 @@ StTooltip StLabel {
 
 .lg-dialog StLabel
 {
-  color: #88ff66;
+  color: #cccccc;
 }
 
 .lg-dialog StEntry
 {
-  color: #88ff66;
-  selection-background-color: #88ff66;
+  color: #cccccc;
+  selection-background-color: #cccccc;
   selected-color: black;
 }
 
@@ -1167,24 +1169,24 @@ StTooltip StLabel {
 
 .lg-obj-inspector-button
 {
-  border: 1px solid #88ff66;
+  border: 1px solid #cccccc;
   padding: 4px;
   border-radius: 4px;
 }
 
 .lg-obj-inspector-button:hover
 {
-  border: 1px solid #00ff00;
+  border: 1px solid #ffffff;
 }
 
 .lg-dialog .cinnamon-link
 {
-  color: #88ff66;
+  color: #cccccc;
 }
 
 .lg-dialog .cinnamon-link:hover
 {
-  color: #00ff00;
+  color: #ffffff;
 }
 
 #LookingGlassDialog StBoxLayout#EvalBox
@@ -1226,7 +1228,7 @@ StTooltip StLabel {
     border: 2px solid grey;
     border-radius: 4px;
     padding: 6px;
-    color: #88ff66;
+    color: #cccccc;
 }
 
 /* Calendar popup */
@@ -1468,8 +1470,8 @@ StTooltip StLabel {
     font-size: 8.5pt;
     border-radius: 10px 10px 10px 10px;
     background-gradient-direction: vertical;
-    background-gradient-start: rgba(0,0,0,0.8);
-    background-gradient-end: rgba(0,0,0,0.8);
+    background-gradient-start: rgba(85,85,85,0.8);
+    background-gradient-end: rgba(85,85,85,0.8);
     padding: 8px 8px 8px 8px;
     spacing-rows: 10px;
     spacing-columns: 10px;
@@ -1930,7 +1932,7 @@ StTooltip StLabel {
 .modal-dialog {
     font-size: 12pt;
     border-radius: 24px;
-    background-color: rgba(0.0, 0.0, 0.0, 0.9);
+    background-color: rgba(85, 85, 85, 0.9);
     border: 2px solid #868686;
     color: #babdb6;
 
@@ -1988,8 +1990,7 @@ StTooltip StLabel {
 }
 
 .run-dialog {
-    border-radius: 16px;
-
+    border-radius: 16px;	
     padding-right: 21px;
     padding-left: 21px;
     padding-bottom: 15px;

@@ -14,8 +14,30 @@
    height="10"
    id="svg2"
    version="1.1"
-   inkscape:version="0.47 r22583"
-   sodipodi:docname="scroll-hhandle.svg">
+   inkscape:version="0.48.2 r9819"
+   sodipodi:docname="scroll-vhandle.svg">
+  <defs
+     id="defs2994" />
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1174"
+     inkscape:window-height="818"
+     id="namedview2992"
+     showgrid="false"
+     inkscape:zoom="23.6"
+     inkscape:cx="-6.0932203"
+     inkscape:cy="5"
+     inkscape:window-x="585"
+     inkscape:window-y="108"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="layer1" />
   <metadata
      id="metadata7">
     <rdf:RDF>
@@ -24,7 +46,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -33,7 +55,7 @@
      inkscape:groupmode="layer"
      id="layer1">
     <rect
-       style="fill:#323232;fill-opacity:1;fill-rule:evenodd;stroke:none"
+       style="fill:#555555;fill-opacity:1;fill-rule:evenodd;stroke:none"
        id="rect3592"
        width="2"
        height="4"
