@@ -343,6 +343,7 @@ nobase_dist_js_DATA = \
 	ui/notificationDaemon.js \
 	ui/overview.js		\
 	ui/panel.js		\
+	ui/panelLaunchers.js	\
 	ui/panelMenu.js		\
 	ui/placeDisplay.js	\
 	ui/polkitAuthenticationAgent.js \

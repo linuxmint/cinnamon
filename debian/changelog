@@ -1,3 +1,9 @@
+cinnamon (1.1.1) lisa; urgency=low
+
+  * Fix: Added missing panelLaunchers.js
+
+ -- Clement Lefebvre <root@linuxmint.com>  Wed, 21 Dec 2011 18:29:29 +0000
+
 cinnamon (1.1.0) lisa; urgency=low
 
   * Fixed run dialog
