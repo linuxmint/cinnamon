@@ -8,6 +8,7 @@ const Gio = imports.gi.Gio;
 const PopupMenu = imports.ui.popupMenu;
 const Main = imports.ui.main;
 const ModalDialog = imports.ui.modalDialog;
+const Signals = imports.signals;
 
 function PanelAppLauncherMenu(launcher) {
     this._init(launcher);
@@ -122,10 +123,10 @@ AddLauncherDialog.prototype = {
         box = new St.BoxLayout();
         this.contentLayout.add(box, { y_align: St.Align.START });
         label = new St.Label();
-        label.set_text(_("Description"));
+        label.set_text(_("Name"));
         box.add(label, { x_align: St.Align.START, x_fill: true, x_expand: true });
-        this._descriptionEntry = new St.Entry({ styleClass: 'add-launcher-description-entry' });
-        box.add(this._descriptionEntry, { x_align: St.Align.END, x_fill: false, x_expand: false });
+        this._nameEntry = new St.Entry({ styleClass: 'add-launcher-name-entry' });
+        box.add(this._nameEntry, { x_align: St.Align.END, x_fill: false, x_expand: false });
         
         box = new St.BoxLayout();
         this.contentLayout.add(box, { y_align: St.Align.START, x_fill: true });
@@ -134,6 +135,24 @@ AddLauncherDialog.prototype = {
         box.add(label, { x_align: St.Align.START, x_fill: true, x_expand: true });
         this._commandEntry = new St.Entry({ styleClass: 'add-launcher-command-entry' });
         box.add(this._commandEntry, { x_align: St.Align.END, x_fill: false, x_expand: false });
+        
+        this._errorBox = new St.BoxLayout({ style_class: 'run-dialog-error-box' });
+        this.contentLayout.add(this._errorBox, { expand: true });
+
+        let errorIcon = new St.Icon({ icon_name: 'dialog-error', icon_size: 24, style_class: 'run-dialog-error-icon' });
+
+        this._errorBox.add(errorIcon, { y_align: St.Align.MIDDLE });
+
+        this._commandError = false;
+
+        this._errorMessage = new St.Label({ style_class: 'run-dialog-error-label' });
+        this._errorMessage.clutter_text.line_wrap = true;
+
+        this._errorBox.add(this._errorMessage, { expand: true,
+                                                 y_align: St.Align.MIDDLE,
+                                                 y_fill: false });
+
+        this._errorBox.hide();
         
         this.setButtons([
             {
@@ -153,19 +172,42 @@ AddLauncherDialog.prototype = {
     },
     
     _onOpened: function() {
-        this._descriptionEntry.grab_key_focus();
+        this._nameEntry.grab_key_focus();
     },
     
     _validateAdd: function() {
+        if (this._nameEntry.clutter_text.get_text()==""){
+            this._errorMessage.clutter_text.set_text(_('Name cannot be empty !'));
+            this._errorBox.show();
+            return false;
+        }
+        if (this._commandEntry.clutter_text.get_text()==""){
+            this._errorMessage.clutter_text.set_text(_('Command cannot be empty !'));
+            this._errorBox.show();
+            return false;
+        }
+        
+        let appid = this._saveNewLauncher(this._nameEntry.clutter_text.get_text(), this._commandEntry.clutter_text.get_text());
+        this.close();
+        this.emit("launcher-created", appid);
+    },
+    
+    _saveNewLauncher: function(name, command, description, icon){
+        let desktopEntry = "[Desktop Entry]\nName="+name+"\nExec="+command+"\n";
+        if (description) desktopEntry += "Description="+description+"\n";
+        if (icon) desktopEntry += "Icon="+icon+"\n";
+        global.log(desktopEntry);
     },
     
     open: function(timestamp) {
         this._commandEntry.clutter_text.set_text('');
-        this._descriptionEntry.clutter_text.set_text('');
+        this._nameEntry.clutter_text.set_text('');
+        this._errorBox.hide();
 
         ModalDialog.ModalDialog.prototype.open.call(this, timestamp);
     },
 }
+Signals.addSignalMethods(AddLauncherDialog.prototype);
 
 function PanelLaunchersBox() {
     this._init();
@@ -178,8 +220,19 @@ PanelLaunchersBox.prototype = {
         this.actor._delegate = this;
         
         this._addLauncherDialog = new AddLauncherDialog();
+        this._addLauncherDialog.connect("launcher-created", Lang.bind(this, this._onLauncherCreated));
         
         this.reload();
+    },
+    
+    _onLauncherCreated: function(obj, appid){
+        if (appid){
+            let settings = new Gio.Settings({ schema: 'org.cinnamon' });
+            let desktopFiles = settings.get_strv('panel-launchers');
+            desktopFiles.push(appid);
+            settings.set_strv('panel-launchers', desktopFiles);
+            this.reload();
+        }
     },
     
     loadApps: function() {
