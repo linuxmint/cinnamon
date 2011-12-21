@@ -552,18 +552,18 @@ WindowManager.prototype = {
     },
 
     _showWorkspaceSwitcher : function(cinnamonwm, binding, mask, window, backwards) {
+        if (binding == 'switch_to_workspace_up') {
+        	Main.overview.toggle();
+        	return;                   
+        }
+        if (binding == 'switch_to_workspace_down') {
+            Main.overview.toggle();
+            return;
+        }
+        
         if (global.screen.n_workspaces == 1)
             return;
 
-        //if (this._workspaceSwitcherPopup == null)
-        //    this._workspaceSwitcherPopup = new WorkspaceSwitcherPopup.WorkspaceSwitcherPopup();
-
-        /*if (binding == 'switch_to_workspace_up')
-            this.actionMoveWorkspaceUp();
-        else if (binding == 'switch_to_workspace_down')
-            this.actionMoveWorkspaceDown();*/
-        // left/right would effectively act as synonyms for up/down if we enabled them;
-        // but that could be considered confusing.
         if (binding == 'switch_to_workspace_left')
            this.actionMoveWorkspaceLeft();
         else if (binding == 'switch_to_workspace_right')

@@ -631,10 +631,10 @@ function _globalKeyPressHandler(actor, event) {
         //     wm.actionMoveWorkspaceRight();
         //     return true;
         case Meta.KeyBindingAction.WORKSPACE_UP:
-            wm.actionMoveWorkspaceUp();
+            //wm.actionMoveWorkspaceUp();                       
             return true;
         case Meta.KeyBindingAction.WORKSPACE_DOWN:
-            wm.actionMoveWorkspaceDown();
+            //wm.actionMoveWorkspaceDown();
             return true;
         case Meta.KeyBindingAction.PANEL_RUN_DIALOG:
         case Meta.KeyBindingAction.COMMAND_2:
