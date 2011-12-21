@@ -1997,6 +1997,18 @@ StTooltip StLabel {
     padding-top: 15px;
 }
 
+.add-launcher-command-entry {
+    width: 23em;
+    color: white;
+    border: solid 1px #FFFFFF;
+}
+
+.add-launcher-description-entry {
+    width: 23em;
+    color: white;
+    border: solid 1px #FFFFFF;
+}
+
 .lightbox {
     background-color: rgba(0, 0, 0, 0.4);
 }

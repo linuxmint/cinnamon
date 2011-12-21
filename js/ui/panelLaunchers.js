@@ -7,6 +7,7 @@ const Lang = imports.lang;
 const Gio = imports.gi.Gio;
 const PopupMenu = imports.ui.popupMenu;
 const Main = imports.ui.main;
+const ModalDialog = imports.ui.modalDialog;
 
 function PanelAppLauncherMenu(launcher) {
     this._init(launcher);
@@ -25,6 +26,10 @@ PanelAppLauncherMenu.prototype = {
         this.addMenuItem(this.launchItem);
         this.launchItem.connect('activate', Lang.bind(this, this._onLaunchActivate));
         
+        this.addItem = new PopupMenu.PopupMenuItem(_('Add'));
+        this.addMenuItem(this.addItem);
+        this.addItem.connect('activate', Lang.bind(this, this._onAddActivate));
+        
         this.removeItem = new PopupMenu.PopupMenuItem(_('Remove'));
         this.addMenuItem(this.removeItem);
         this.removeItem.connect('activate', Lang.bind(this, this._onRemoveActivate));
@@ -37,6 +42,10 @@ PanelAppLauncherMenu.prototype = {
     _onRemoveActivate: function(actor, event) {
         this._launcher.launchersBox.removeLauncher(this._launcher.app.get_id());
         this._launcher.actor.destroy();
+    },
+    
+    _onAddActivate: function(actor, event) {
+        this._launcher.launchersBox.showAddLauncherDialog(event.get_time());
     }
 }
 
@@ -97,6 +106,67 @@ PanelAppLauncher.prototype = {
     },
 }
 
+function AddLauncherDialog() {
+    this._init();
+}
+
+AddLauncherDialog.prototype = {
+    __proto__: ModalDialog.ModalDialog.prototype,
+    
+    _init: function() {
+        ModalDialog.ModalDialog.prototype._init.call(this, { styleClass: 'add-launcher-dialog' });
+        
+        let box;
+        let label;
+        
+        box = new St.BoxLayout();
+        this.contentLayout.add(box, { y_align: St.Align.START });
+        label = new St.Label();
+        label.set_text(_("Description"));
+        box.add(label, { x_align: St.Align.START, x_fill: true, x_expand: true });
+        this._descriptionEntry = new St.Entry({ styleClass: 'add-launcher-description-entry' });
+        box.add(this._descriptionEntry, { x_align: St.Align.END, x_fill: false, x_expand: false });
+        
+        box = new St.BoxLayout();
+        this.contentLayout.add(box, { y_align: St.Align.START, x_fill: true });
+        label = new St.Label();
+        label.set_text(_("Command"));
+        box.add(label, { x_align: St.Align.START, x_fill: true, x_expand: true });
+        this._commandEntry = new St.Entry({ styleClass: 'add-launcher-command-entry' });
+        box.add(this._commandEntry, { x_align: St.Align.END, x_fill: false, x_expand: false });
+        
+        this.setButtons([
+            {
+                label: _("Add"),
+                action: Lang.bind(this, this._validateAdd)
+            },
+            {
+                label: _("Cancel"),
+                key: Clutter.KEY_Escape,
+                action: Lang.bind(this, function(){
+                    this.close();
+                })
+            }
+        ]);
+        
+        this.connect('opened', Lang.bind(this, this._onOpened));
+    },
+    
+    _onOpened: function() {
+        this._descriptionEntry.grab_key_focus();
+    },
+    
+    _validateAdd: function() {
+    },
+    
+    open: function(timestamp) {
+        this._commandEntry.clutter_text.set_text('');
+        this._descriptionEntry.clutter_text.set_text('');
+
+        ModalDialog.ModalDialog.prototype.open.call(this, timestamp);
+    },
+}
+
 function PanelLaunchersBox() {
     this._init();
 }
@@ -106,6 +176,8 @@ PanelLaunchersBox.prototype = {
         this.actor = new St.BoxLayout({ name: 'panel-launchers-box',
                                         style_class: 'panel-launchers-box' });
         this.actor._delegate = this;
+        
+        this._addLauncherDialog = new AddLauncherDialog();
         
         this.reload();
     },
@@ -141,5 +213,9 @@ PanelLaunchersBox.prototype = {
             desktopFiles.splice(i, 1);
             settings.set_strv('panel-launchers', desktopFiles);
         }
+    },
+    
+    showAddLauncherDialog: function(timestamp){
+        this._addLauncherDialog.open(timestamp);
     }
 }
