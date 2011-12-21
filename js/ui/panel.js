@@ -24,6 +24,7 @@ const ShowDesktopButton = imports.ui.showDesktopButton;
 const WorkspaceSwitcher = imports.ui.workspaceSwitcher;
 const MintMenu = imports.ui.mintMenu;
 const Meta = imports.gi.Meta;
+const PanelLaunchers = imports.ui.panelLaunchers;
 
 const PANEL_ICON_SIZE = 24;
 
@@ -947,6 +948,9 @@ Panel.prototype = {
             
             this._showDesktopButton = new ShowDesktopButton.ShowDesktopButton();
             this._leftBox.add(this._showDesktopButton.actor);
+            
+            this._panelLaunchersBox = new PanelLaunchers.PanelLaunchersBox();
+            this._leftBox.add(this._panelLaunchersBox.actor);
 
             /*this._appMenu = new AppMenuButton();
             this._leftBox.add(this._appMenu.actor);

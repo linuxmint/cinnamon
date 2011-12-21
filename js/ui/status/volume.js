@@ -772,13 +772,16 @@ Indicator.prototype = {
         	this._availablePlayers = new Array();
             let appsys = Cinnamon.AppSystem.get_default();
             let allApps = appsys.get_all();
+            let listedDesktopFiles = new Array();
             for (let y=0; y<allApps.length; y++) {
             	let app = allApps[y];
             	let entry = app.get_tree_entry();
             	let path = entry.get_desktop_file_path();
             	for (var p=0; p<compatible_players.length; p++) {
-            		if (path.indexOf(compatible_players[p]+".desktop") != -1) {            		
-                		this._availablePlayers.push(app)
+                    let desktopFile = compatible_players[p]+".desktop";
+            		if (path.indexOf(desktopFile) != -1 && listedDesktopFiles.indexOf(desktopFile) == -1) {            		
+                		this._availablePlayers.push(app);
+                        listedDesktopFiles.push(desktopFile);
             		}
            		}            	        
             }                                   
