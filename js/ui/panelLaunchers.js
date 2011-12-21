@@ -4,6 +4,7 @@ const Clutter = imports.gi.Clutter;
 const St = imports.gi.St;
 const Cinnamon = imports.gi.Cinnamon;
 const Lang = imports.lang;
+const Gio = imports.gi.Gio;
 
 function PanelAppLauncher(app) {
     this._init(app);
@@ -67,7 +68,8 @@ PanelLaunchersBox.prototype = {
     },
     
     loadApps: function() {
-        let desktopFiles = ["gnome-terminal.desktop"];
+        let settings = new Gio.Settings({ schema: 'org.cinnamon' });
+        let desktopFiles = settings.get_strv('panel-launchers');
         let appSys = Cinnamon.AppSystem.get_default();
         let apps = new Array();
         for (var i in desktopFiles){

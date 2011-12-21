@@ -20,6 +20,14 @@
         extensions that appear in both lists.
       </_description>
     </key>
+    <key name="panel-launchers" type="as">
+      <default>[]</default>
+      <_summary>Desktop files of the applications to put in the panel launchers applet</_summary>
+      <_description>
+        Cinnamon allows to show applications launchers on the panel.
+        This key lists the desktop files of the applications to show there.
+      </_description>
+    </key>
     <key name="enable-app-monitoring" type="b">
       <default>true</default>
       <_summary>Whether to collect stats about applications usage</_summary>
