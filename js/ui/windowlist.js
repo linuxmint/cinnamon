@@ -189,7 +189,7 @@ AppMenuButtonTooltip.prototype = {
         
         let tooltipTop = monitor.height-tooltipHeight-this._appButton.actor.get_allocation_box().y2+this._appButton.actor.get_allocation_box().y1;
         
-        var tooltipLeft = this._mousePosition[0]-(tooltipWidth/2);
+        var tooltipLeft = this._mousePosition[0]- Math.round(tooltipWidth/2);
         if (tooltipLeft<0) tooltipLeft = 0;
         if (tooltipLeft+tooltipWidth>monitor.width) tooltipLeft = monitor.width-tooltipWidth;
         
