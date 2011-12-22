@@ -80,10 +80,10 @@ let background = null;
 function _createUserSession() {
     // Load the calendar server. Note that we are careful about
     // not loading any events until the user presses the clock
-    global.launch_calendar_server();
+    //global.launch_calendar_server();
 
     placesManager = new PlaceDisplay.PlacesManager();
-    telepathyClient = new TelepathyClient.Client();
+    //telepathyClient = new TelepathyClient.Client();
     automountManager = new AutomountManager.AutomountManager();
     autorunManager = new AutorunManager.AutorunManager();
     networkAgent = new NetworkAgent.NetworkAgent();

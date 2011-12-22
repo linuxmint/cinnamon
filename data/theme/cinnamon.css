@@ -1329,12 +1329,12 @@ StTooltip StLabel {
 }
 
 .calendar-day-heading {
-    color: #666666;
+    color: #cccccc;
     padding-top: 1em;
 }
 
 .calendar-week-number {
-    color: #666666;
+    color: #cccccc;
     font-weight: bold;
 }
 
