@@ -193,7 +193,7 @@ AddLauncherDialog.prototype = {
     },
     
     _saveNewLauncher: function(name, command, description, icon){
-        let desktopEntry = "[Desktop Entry]\nName="+name+"\nExec="+command+"\n";
+        let desktopEntry = "[Desktop Entry]\nName="+name+"\nExec="+command+"\nType=Application\n";
         if (description) desktopEntry += "Description="+description+"\n";
         if (icon) desktopEntry += "Icon="+icon+"\n";
         
@@ -206,7 +206,7 @@ AddLauncherDialog.prototype = {
         let fp = file.create(0, null);
         fp.write(desktopEntry, null);
         fp.close(null);
-        return file.get_path();
+        return 'cinnamon-custom-launcher-'+i+'.desktop';
     },
     
     open: function(timestamp) {
@@ -251,10 +251,7 @@ PanelLaunchersBox.prototype = {
         let appSys = Cinnamon.AppSystem.get_default();
         let apps = new Array();
         for (var i in desktopFiles){
-            let app;
-            if (desktopFiles[i][0]=='/') app = appSys.lookup_app_for_path(desktopFiles[i]);
-            else app = appSys.lookup_app(desktopFiles[i]);
-            global.log(desktopFiles[i]+":"+app);
+            let app = appSys.lookup_app(desktopFiles[i]);
             if (app) apps.push(app);
         }
         return apps;
