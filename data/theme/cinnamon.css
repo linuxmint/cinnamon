@@ -1885,6 +1885,15 @@ StTooltip StLabel {
     color: white;
 }
 
+/* Themes in overview */
+.theme-button {
+	color: #CCCCCC;
+}
+
+.theme-box {
+	spacing: 3px;
+}
+
 /* Workspace Switcher */
 .workspace-switcher-group {
     padding: 12px;

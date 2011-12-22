@@ -11,6 +11,7 @@ const Cinnamon = imports.gi.Cinnamon;
 const Gdk = imports.gi.Gdk;
 
 const AppDisplay = imports.ui.appDisplay;
+const ThemesDisplay = imports.ui.themesDisplay;
 const ContactDisplay = imports.ui.contactDisplay;
 const Dash = imports.ui.dash;
 const DND = imports.ui.dnd;
@@ -203,6 +204,9 @@ Overview.prototype = {
 
         this._workspacesDisplay = new WorkspacesView.WorkspacesDisplay();
         this._viewSelector.addViewTab('windows', _("Windows"), this._workspacesDisplay.actor, 'text-x-generic');
+		
+		this._themesDisplay = new ThemesDisplay.ThemesDisplay();
+        this._viewSelector.addViewTab('themes', _("Themes"), this._themesDisplay.actor, 'system-run');
 
         //let appView = new AppDisplay.AllAppDisplay();
         //this._viewSelector.addViewTab('applications', _("Applications"), appView.actor, 'system-run');

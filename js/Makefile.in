@@ -363,6 +363,7 @@ nobase_dist_js_DATA = \
 	ui/status/bluetooth.js	\
 	ui/telepathyClient.js	\
 	ui/themeManager.js	\
+	ui/themesDisplay.js	\
 	ui/tweener.js		\
 	ui/userMenu.js		\
 	ui/viewSelector.js	\
