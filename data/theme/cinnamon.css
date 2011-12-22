@@ -1262,7 +1262,7 @@ StTooltip StLabel {
 }
 
 .calendar-month-label {
-    color: #666666;
+    color: #cccccc;
     font-size: 7.5pt;
     padding-bottom: 8px;
     padding-top: 8px;
@@ -1341,7 +1341,7 @@ StTooltip StLabel {
 /* Hack used in lieu of border-collapse - see calendar.js */
 .calendar-day {
     border: 1px solid #333333;
-    color: #888888;
+    color: #cccccc;
     border-top-width: 0;
     border-left-width: 0;
 }
@@ -1367,7 +1367,7 @@ StTooltip StLabel {
 }
 
 .calendar-other-month-day {
-    color: #333333;
+    color: #888888;
 }
 
 .calendar-day-with-events {
