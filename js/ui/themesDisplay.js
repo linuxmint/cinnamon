@@ -27,6 +27,9 @@ const MAX_APPLICATION_WORK_MILLIS = 75;
 const MENU_POPUP_TIMEOUT = 600;
 const SCROLL_TIME = 0.1;
 
+const SETTINGS_SCHEMA = 'org.cinnamon.theme';
+const SETTINGS_KEY = 'name';
+
 const ThemeType = {
     SYSTEM: 1,
     PER_USER: 2
@@ -38,6 +41,10 @@ function ThemeView() {
 
 ThemeView.prototype = {
     _init: function() {
+    	
+    	this._settings = new Gio.Settings({ schema: SETTINGS_SCHEMA });
+    	this._changedId = this._settings.connect('changed::'+SETTINGS_KEY, Lang.bind(this, this._refresh));
+    	
         this._grid = new IconGrid.IconGrid({ xAlign: St.Align.START });
                 
         let box = new St.BoxLayout({ vertical: true });
@@ -61,8 +68,13 @@ ThemeView.prototype = {
                 // Reset scroll on mapping
                 adjustment.value = 0;
             }));
-        
-        this._loadThemes();                                                
+         
+         this._refresh();                                                      
+    },
+    
+    _refresh: function() {
+    	this._grid.removeAll();
+    	this._loadThemes();
     },
        
     _loadThemesIn: function(dir, type) {
@@ -87,6 +99,7 @@ ThemeView.prototype = {
 	},
 
 	_loadThemes: function() {
+		this._loadDefaultTheme();
 	    let systemDataDirs = GLib.get_system_data_dirs();
 	    for (let i = 0; i < systemDataDirs.length; i++) {
 	        let dirPath = systemDataDirs[i] + '/themes';
@@ -97,26 +110,106 @@ ThemeView.prototype = {
 	    this._loadThemesIn(Gio.file_new_for_path(GLib.build_filenamev([global.userdatadir, 'themes'])), ThemeType.PER_USER);
 	},
 	
+	_loadDefaultTheme: function() {
+	    let info;
+	    let themeName = "Cinnamon";
+		let themeType = _("Default theme");
+		let themeDir = Gio.file_new_for_path("/usr/share/cinnamon/theme");		
+		 			   	    
+	    if (themeDir != null) {	  
+	    	let thumbnail = themeDir.get_child('thumbnail.png');
+	    	let icon = null;	    	
+	    	if (thumbnail.query_exists(null)) {	    		
+	    		icon = St.TextureCache.get_default().load_uri_sync(1, thumbnail.get_uri(), 256, 256);
+	    	}
+	    	else {
+	    		try{
+	    			let file = Gio.file_new_for_path("/usr/share/cinnamon/theme/thumbnail-generic.png");
+           			let uri = file.get_uri();
+	    			icon = St.TextureCache.get_default().load_uri_sync(1, uri, 256, 256);
+	    		}
+	    		catch (error) {
+					log(error);	    			
+	    		}
+	    	}  	
+	    	let theme = new St.Button({ style_class: 'theme-button', reactive: true });                                    
+            let box = new St.BoxLayout({ style_class: 'theme-box', vertical: true });        	
+        	if (icon != null) {
+        		let iconBin = new St.Bin({ x_fill: true, y_fill: true });
+        		iconBin.child = icon;
+				box.add(iconBin, { x_fill: false, y_fill: false } );
+        	}        	        	
+            let label_name = new St.Label({ style_class: 'theme-name', text: themeName });            
+            let bin = new St.Bin({ x_align: St.Align.MIDDLE });
+            bin.add_actor(label_name);            
+            box.add(bin);                        
+            let label_type = new St.Label({ style_class: 'theme-type', text: themeType });
+            bin = new St.Bin({ x_align: St.Align.MIDDLE });
+            bin.add_actor(label_type);
+            box.add(bin);                        
+            theme.set_child(box);     
+            theme.add_style_pseudo_class('active');             		    	    		      
+        	this._grid.addItem(theme);
+        	theme.connect('key-focus-in', Lang.bind(this, this._ensureIconVisible));	
+        	theme.connect('clicked', Lang.bind(this, function() {
+				this._settings.set_string(SETTINGS_KEY, '');                    	
+			}));   		    	
+	    }	         
+	},
+	
 	_loadTheme: function(dir, type) {
 	    let info;
-	    let uuid = dir.get_basename();
-	
-	    let gnomeshellDir = dir.get_child('gnome-shell');
-	    let cinnamonDir = dir.get_child('cinnamon');
-	    if (gnomeshellDir.query_exists(null) || cinnamonDir.query_exists(null)) {	    	
+	    let themeName = dir.get_basename();
+		let themeType = null;
+		let themeDir = null;
+		let cinnamonDir = dir.get_child('cinnamon');
+		let gnomeshellDir = dir.get_child('gnome-shell');
+		if (cinnamonDir.query_exists(null)) {
+			themeType = _("Cinnamon Theme");
+			themeDir = cinnamonDir;
+		}
+		else if (gnomeshellDir.query_exists(null)) {
+			themeType = _("Gnome Shell Theme");
+			themeDir = gnomeshellDir;
+		}
+		 			   	    
+	    if (themeDir != null) {	  
+	    	let thumbnail = themeDir.get_child('thumbnail.png');
+	    	let icon = null;	    	
+	    	if (thumbnail.query_exists(null)) {	    		
+	    		icon = St.TextureCache.get_default().load_uri_sync(1, thumbnail.get_uri(), 256, 256);
+	    	}
+	    	else {
+	    		try{
+	    			let file = Gio.file_new_for_path("/usr/share/cinnamon/theme/thumbnail-generic.png");
+           			let uri = file.get_uri();
+	    			icon = St.TextureCache.get_default().load_uri_sync(1, uri, 256, 256);
+	    		}
+	    		catch (error) {
+					log(error);	    			
+	    		}
+	    	}  	
 	    	let theme = new St.Button({ style_class: 'theme-button', reactive: true });                                    
-            let box = new St.BoxLayout({ style_class: 'theme-box', vertical: true });
-        	let icon = new St.Icon({icon_name: "preferences-desktop-theme", icon_size: 48, icon_type: St.IconType.FULLCOLOR});
-        	let iconBin = new St.Bin({ x_fill: true, y_fill: true });
-        	iconBin.child = icon;
-			box.add(iconBin, { x_fill: false, y_fill: false } );        	        	
-            let label = new St.Label({ text: uuid });
+            let box = new St.BoxLayout({ style_class: 'theme-box', vertical: true });        	
+        	if (icon != null) {
+        		let iconBin = new St.Bin({ x_fill: true, y_fill: true });
+        		iconBin.child = icon;
+				box.add(iconBin, { x_fill: false, y_fill: false } );
+        	}        	        	
+            let label_name = new St.Label({ style_class: 'theme-name', text: themeName });            
             let bin = new St.Bin({ x_align: St.Align.MIDDLE });
-            bin.add_actor(label);
+            bin.add_actor(label_name);            
+            box.add(bin);                        
+            let label_type = new St.Label({ style_class: 'theme-type', text: themeType });
+            bin = new St.Bin({ x_align: St.Align.MIDDLE });
+            bin.add_actor(label_type);
             box.add(bin);                        
             theme.set_child(box);                  		    	    		      
         	this._grid.addItem(theme);
-        	theme.connect('key-focus-in', Lang.bind(this, this._ensureIconVisible));	    		    	
+        	theme.connect('key-focus-in', Lang.bind(this, this._ensureIconVisible));	
+        	theme.connect('clicked', Lang.bind(this, function() {
+				this._settings.set_string(SETTINGS_KEY, themeName);                    	
+			}));   		    	
 	    }	         
 	},
 
@@ -154,14 +247,8 @@ function ThemesDisplay() {
 
 ThemesDisplay.prototype = {
     _init: function() {                
-        this.actor = new ThemeView().actor;
-
-       // this._workId = Main.initializeDeferredWork(this.actor, Lang.bind(this, this._redisplay));
-    }
-
-    //_redisplay: function() {
-    //    this._view.refresh();
-    //}
+        this.actor = new ThemeView().actor;               
+    }    
 };
 
 

@@ -327,6 +327,8 @@ dist_theme_DATA = \
 	theme/scroll-hhandle.svg		\
 	theme/scroll-vhandle.svg		\
 	theme/source-button-border.svg		\
+	theme/thumbnail.png			\
+	theme/thumbnail-generic.png		\
 	theme/toggle-off-us.svg			\
 	theme/toggle-off-intl.svg		\
 	theme/toggle-on-us.svg			\
