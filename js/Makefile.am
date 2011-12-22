@@ -1,7 +1,7 @@
 
 jsdir = $(pkgdatadir)/js
 
-nobase_dist_js_DATA = 	\
+nobase_dist_js_DATA = \
 	gdm/batch.js		\
 	gdm/consoleKit.js	\
 	gdm/fingerprint.js	\
@@ -44,6 +44,7 @@ nobase_dist_js_DATA = 	\
 	ui/magnifierDBus.js	\
 	ui/main.js		\
 	ui/messageTray.js	\
+	ui/mintMenu.js	\
 	ui/modalDialog.js	\
 	ui/networkAgent.js	\
 	ui/cinnamonEntry.js	\
@@ -51,6 +52,7 @@ nobase_dist_js_DATA = 	\
 	ui/notificationDaemon.js \
 	ui/overview.js		\
 	ui/panel.js		\
+	ui/panelLaunchers.js	\
 	ui/panelMenu.js		\
 	ui/placeDisplay.js	\
 	ui/polkitAuthenticationAgent.js \
@@ -60,6 +62,7 @@ nobase_dist_js_DATA = 	\
 	ui/search.js		\
 	ui/searchDisplay.js	\
 	ui/cinnamonDBus.js		\
+	ui/showDesktopButton.js	\
 	ui/statusIconDispatcher.js	\
 	ui/status/accessibility.js	\
 	ui/status/keyboard.js	\
@@ -68,13 +71,18 @@ nobase_dist_js_DATA = 	\
 	ui/status/volume.js	\
 	ui/status/bluetooth.js	\
 	ui/telepathyClient.js	\
+	ui/themeManager.js	\
+	ui/themesDisplay.js	\
 	ui/tweener.js		\
 	ui/userMenu.js		\
 	ui/viewSelector.js	\
 	ui/windowAttentionHandler.js	\
+	ui/windowlist.js	\
 	ui/windowManager.js	\
 	ui/workspace.js		\
 	ui/workspaceThumbnail.js	\
 	ui/workspacesView.js	\
+	ui/workspaceSwitcher.js    \
 	ui/workspaceSwitcherPopup.js    \
 	ui/xdndHandler.js
+	

@@ -18,7 +18,7 @@ dist_searchproviders_DATA =				\
 	search_providers/wikipedia.xml
 
 themedir = $(pkgdatadir)/theme
-dist_theme_DATA =				\
+dist_theme_DATA = \
 	theme/calendar-arrow-left.svg		\
 	theme/calendar-arrow-right.svg		\
 	theme/calendar-today.svg		\
@@ -31,6 +31,9 @@ dist_theme_DATA =				\
 	theme/filter-selected-rtl.svg		\
 	theme/gdm.css				\
 	theme/cinnamon.css			\
+	theme/menu.png				\
+	theme/overview.png			\
+	theme/overview-hover.png		\
 	theme/panel-border.svg			\
 	theme/panel-button-border.svg		\
 	theme/panel-button-highlight-narrow.svg	\
@@ -40,12 +43,17 @@ dist_theme_DATA =				\
 	theme/scroll-hhandle.svg		\
 	theme/scroll-vhandle.svg		\
 	theme/source-button-border.svg		\
+	theme/thumbnail.png			\
+	theme/thumbnail-generic.png		\
 	theme/toggle-off-us.svg			\
 	theme/toggle-off-intl.svg		\
 	theme/toggle-on-us.svg			\
 	theme/toggle-on-intl.svg		\
 	theme/ws-switch-arrow-up.svg		\
-	theme/ws-switch-arrow-down.svg
+	theme/ws-switch-arrow-down.svg		\
+	theme/player-paused.svg		\
+	theme/player-playing.svg		\
+	theme/player-stopped.svg
 
 gsettings_SCHEMAS = org.cinnamon.gschema.xml
 
