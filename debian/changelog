@@ -1,3 +1,19 @@
+cinnamon (1.1.2) lisa; urgency=low
+
+  * Feature: New Panel Launchers applet (alpha, adding apps launchers is done via gsettings)
+  * Feature: New Themes selection tab in overview (stable)
+  * Performance: Telepathy client and Calendar server are not run/used anymore
+  * Performance: Minimizing and restoring windows is much faster. This is especially visible when using the "showDesktop" applet
+  * Visual: Removed search entry from overview
+  * Visual: Easier to read calendar applet
+  * Visual: Fixed blurry tooltips in windowlist
+  * Critical: Fixed memory leak (which made Cinnamon use a lot of memory and the whole system eventually becoming really slow)
+  * Critical: Fixed important packaging bug preventing sound applet to work after a media player was launched (affected users and distributions using the .deb packages)
+  * Critical: Added missing files in data's and js' Makefile.am (for users and distributions not using the .deb packages)
+  * Critical: Fixed frozen menu when applications or favorites changed
+
+ -- Clement Lefebvre <root@linuxmint.com>  Fri, 23 Dec 2011 12:23:36 +0000
+
 cinnamon (1.1.1) lisa; urgency=low
 
   * Fix: Added missing panelLaunchers.js
