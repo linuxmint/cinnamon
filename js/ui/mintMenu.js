@@ -439,8 +439,45 @@ ApplicationsButton.prototype = {
     
     _refreshApps : function() {
         this._applicationsButtons = new Array();
-        this._resetMenu();
-        this._display();
+        
+        //Remove all categories
+    	this.categoriesBox.get_children().forEach(Lang.bind(this, function (child) {
+            child.destroy();
+        })); 
+        
+        let tree = appsys.get_tree();
+        let root = tree.get_root_directory();
+        
+        this._allAppsCategoryButton = new CategoryButton(null);
+             this._allAppsCategoryButton.actor.connect('clicked', Lang.bind(this, function() {
+            this._select_category(null, this._allAppsCategoryButton);
+         }));
+         this._addEnterEvent(this._allAppsCategoryButton, Lang.bind(this, function() {
+             this._select_category(null, this._allAppsCategoryButton);
+         }));
+         this.categoriesBox.add_actor(this._allAppsCategoryButton.actor);
+
+        let iter = root.iter();
+        let nextType;
+        while ((nextType = iter.next()) != GMenu.TreeItemType.INVALID) {
+            if (nextType == GMenu.TreeItemType.DIRECTORY) {
+                let dir = iter.get_directory();
+                this.applicationsByCategory[dir.get_menu_id()] = new Array();
+                this._loadCategory(dir);
+                if (this.applicationsByCategory[dir.get_menu_id()].length>0){
+                   let categoryButton = new CategoryButton(dir);
+                   categoryButton.actor.connect('clicked', Lang.bind(this, function() {
+                     this._select_category(dir, categoryButton);
+                  }));
+                  this._addEnterEvent(categoryButton, Lang.bind(this, function() {
+                      this._select_category(dir, categoryButton);
+                  }));
+                   this.categoriesBox.add_actor(categoryButton.actor);
+                }
+            }
+        } 
+        
+        this._select_category(null, this._allAppsCategoryButton);                     
     },
     
     _refreshFavs : function() {     	
@@ -480,10 +517,10 @@ ApplicationsButton.prototype = {
             if (nextType == GMenu.TreeItemType.ENTRY) {
                 var entry = iter.get_entry();
                 if (!entry.get_app_info().get_nodisplay()) {
-var app = appsys.lookup_app_by_tree_entry(entry);
-                 if (!this.applicationsByCategory[top_dir.get_menu_id()]) this.applicationsByCategory[top_dir.get_menu_id()] = new Array();
-this.applicationsByCategory[top_dir.get_menu_id()].push(app);
-}
+					var app = appsys.lookup_app_by_tree_entry(entry);
+                 	if (!this.applicationsByCategory[top_dir.get_menu_id()]) this.applicationsByCategory[top_dir.get_menu_id()] = new Array();
+					this.applicationsByCategory[top_dir.get_menu_id()].push(app);
+				}
             } else if (nextType == GMenu.TreeItemType.DIRECTORY) {
                 this._loadCategory(iter.get_directory(), top_dir);
             }
@@ -613,37 +650,7 @@ this.applicationsByCategory[top_dir.get_menu_id()].push(app);
         section.actor.add_actor(this.mainBox);
         
 		this.applicationsByCategory = {};
-        let tree = appsys.get_tree();
-        let root = tree.get_root_directory();
-        
-        let categoryButton = new CategoryButton(null);
-             categoryButton.actor.connect('clicked', Lang.bind(this, function() {
-            this._select_category(null, categoryButton);
-         }));
-         this._addEnterEvent(categoryButton, Lang.bind(this, function() {
-             this._select_category(null, categoryButton);
-         }));
-         this.categoriesBox.add_actor(categoryButton.actor);
-
-        let iter = root.iter();
-        let nextType;
-        while ((nextType = iter.next()) != GMenu.TreeItemType.INVALID) {
-            if (nextType == GMenu.TreeItemType.DIRECTORY) {
-                let dir = iter.get_directory();
-                this.applicationsByCategory[dir.get_menu_id()] = new Array();
-                this._loadCategory(dir);
-                if (this.applicationsByCategory[dir.get_menu_id()].length>0){
-                   let categoryButton = new CategoryButton(dir);
-                   categoryButton.actor.connect('clicked', Lang.bind(this, function() {
-                     this._select_category(dir, categoryButton);
-                  }));
-                  this._addEnterEvent(categoryButton, Lang.bind(this, function() {
-                      this._select_category(dir, categoryButton);
-                  }));
-                   this.categoriesBox.add_actor(categoryButton.actor);
-                }
-            }
-        }
+        this._refreshApps();
         
         this.placesButton = new PlaceCategoryButton();
         this.placesButton.actor.connect('clicked', Lang.bind(this, function() {
@@ -656,11 +663,11 @@ this.applicationsByCategory[top_dir.get_menu_id()].push(app);
         
         // Not necessary yet.. will be used to show all apps in an "all category"
         //for (directory in this.applicationsByCategory) {
-// let apps = this.applicationsByCategory[directory];
-// for (var i=0; i<apps.length; i++) {
-// let app = apps[i];
-// }
-//}
+		// let apps = this.applicationsByCategory[directory];
+		// for (var i=0; i<apps.length; i++) {
+		// let app = apps[i];
+		// }
+		//}
          
         this.selectedAppBox = new St.BoxLayout({ style_class: 'selected-app-box', vertical: true });
         this.selectedAppTitle = new St.Label({ style_class: 'selected-app-title', text: "" });
@@ -672,11 +679,11 @@ this.applicationsByCategory[top_dir.get_menu_id()].push(app);
     
     _clearApplicationsBox: function(selectedActor){
        let actors = this.applicationsBox.get_children();
-for (var i=0; i<actors.length; i++) {
-let actor = actors[i];
-this.applicationsBox.remove_actor(actor);
-}
-       
+		for (var i=0; i<actors.length; i++) {
+			let actor = actors[i];
+			this.applicationsBox.remove_actor(actor);
+		}
+		       
        let actors = this.categoriesBox.get_children();
 
          for (var i=0; i<actors.length; i++){
@@ -686,12 +693,12 @@ this.applicationsBox.remove_actor(actor);
          }
     },
     
-     _select_category : function(dir, categoryButton) {
-       this.resetSearch();
-       this._clearApplicationsBox(categoryButton.actor);
-       if (dir) this._displayButtons(this._listApplications(dir.get_menu_id()));
-       else this._displayButtons(this._listApplications(null));
-},
+    _select_category : function(dir, categoryButton) {
+	       this.resetSearch();
+	       this._clearApplicationsBox(categoryButton.actor);
+	       if (dir) this._displayButtons(this._listApplications(dir.get_menu_id()));
+	       else this._displayButtons(this._listApplications(null));
+	},
     
     _displayButtons: function(apps, places){
          if (apps){
