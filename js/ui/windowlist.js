@@ -609,7 +609,17 @@ WindowList.prototype = {
     },
     
     _onMap: function(cinnamonwm, actor) {
-        this._refreshItems();
+    	/* Note by Clem: The call to this._refreshItems() below doesn't look necessary. 
+    	 * When a window is mapped in a quick succession of times (for instance if 
+    	 * the user repeatedly minimize/unminimize the window by clicking on the window list, 
+    	 * or more often when the showDesktop button maps a lot of minimized windows in a quick succession.. 
+    	 * when this happens, many calls to refreshItems are made and this creates a memory leak. 
+    	 * It also slows down all the mapping and so it takes time for all windows to get unminimized after showDesktop is clicked.
+    	 * 
+    	 * For now this was removed. If it needs to be put back, this isn't the place. 
+    	 * If showDesktop needs it, then it should only call it once, not once per window.
+    	 */ 
+        //this._refreshItems();
         this._onWindowStateChange('map', actor);
     },
   

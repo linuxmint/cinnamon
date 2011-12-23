@@ -41,8 +41,8 @@ ShowDesktopButton.prototype = {
                         windows[i].unminimize();                                  
                     }
                 }
-            }
-            this._alreadyMinimizedWindows.length = []; //Apparently this is better than this._alreadyMinimizedWindows = [];
+            }            
+            this._alreadyMinimizedWindows.length = []; //Apparently this is better than this._alreadyMinimizedWindows = [];            
         }
         else {
             for ( let i = 0; i < windows.length; ++i ) {
