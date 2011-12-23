@@ -12,7 +12,7 @@
       <description>Cinnamon extensions have a uuid property; this key lists extensions which should be loaded. disabled-extensions overrides this setting for extensions that appear in both lists.</description>
     </key>
     <key type="as" name="panel-launchers">
-      <default>[]</default>
+      <default>[ 'firefox.desktop', 'gnome-terminal.desktop', 'nautilus.desktop']</default>
       <summary>Desktop files of the applications to put in the panel launchers applet</summary>
       <description>Cinnamon allows to show applications launchers on the panel. This key lists the desktop files of the applications to show there.</description>
     </key>

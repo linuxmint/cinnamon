@@ -310,8 +310,8 @@ ApplicationsButton.prototype = {
         this._activeContainer = null;
 
         this._display();
-        appsys.connect('installed-changed', Lang.bind(this, this.reDisplay));
-        AppFavorites.getAppFavorites().connect('changed', Lang.bind(this, this.reDisplay));
+        appsys.connect('installed-changed', Lang.bind(this, this._refreshApps));
+        AppFavorites.getAppFavorites().connect('changed', Lang.bind(this, this._refreshFavs));
 
         this.menu.connect('open-state-changed', Lang.bind(this, this._onOpenStateToggled));
 
@@ -436,11 +436,40 @@ ApplicationsButton.prototype = {
            this._clearSelections(this.applicationsBox);
        }
     },
-
-    reDisplay : function() {
+    
+    _refreshApps : function() {
         this._applicationsButtons = new Array();
         this._resetMenu();
         this._display();
+    },
+    
+    _refreshFavs : function() {     	
+    	//Remove all favorites
+    	this.favoritesBox.get_children().forEach(Lang.bind(this, function (child) {
+            child.destroy();
+        })); 
+    	 
+        //Load favorites again
+        let launchers = global.settings.get_strv('favorite-apps');
+        let appSys = Cinnamon.AppSystem.get_default();
+        let j = 0;
+        for ( let i = 0; i < launchers.length; ++i ) {
+            let app = appSys.lookup_app(launchers[i]);
+            if (app) {
+                let button = new FavoritesButton(this, app, launchers.length);
+                this.favoritesBox.add_actor(button.actor);
+                button.actor.connect('enter-event', Lang.bind(this, function() {
+                   this.selectedAppTitle.set_text(button._app.get_name());
+                   if (button._app.get_description()) this.selectedAppDescription.set_text(button._app.get_description());
+                   else this.selectedAppDescription.set_text("");
+                }));
+                button.actor.connect('leave-event', Lang.bind(this, function() {
+                   this.selectedAppTitle.set_text("");
+                   this.selectedAppDescription.set_text("");
+                }));
+                ++j;
+            }
+        }
     },
    
     _loadCategory: function(dir, top_dir) {
@@ -567,29 +596,8 @@ this.applicationsByCategory[top_dir.get_menu_id()].push(app);
         this.categoriesApplicationsBox.add_actor(this.categoriesBox);
         this.categoriesApplicationsBox.add_actor(this.applicationsScrollBox);
                      
-        //Load favorites
-        let launchers = global.settings.get_strv('favorite-apps');
-        let appSys = Cinnamon.AppSystem.get_default();
-        let j = 0;
-        for ( let i = 0; i < launchers.length; ++i ) {
-            let app = appSys.lookup_app(launchers[i]);
-            if (app) {
-                let button = new FavoritesButton(this, app, launchers.length);
-                this.favoritesBox.add_actor(button.actor);
-                button.actor.connect('enter-event', Lang.bind(this, function() {
-                   this.selectedAppTitle.set_text(button._app.get_name());
-                   if (button._app.get_description()) this.selectedAppDescription.set_text(button._app.get_description());
-                   else this.selectedAppDescription.set_text("");
-                }));
-                button.actor.connect('leave-event', Lang.bind(this, function() {
-                   this.selectedAppTitle.set_text("");
-                   this.selectedAppDescription.set_text("");
-                }));
-                ++j;
-            }
-        }
-        
-                                              
+        this._refreshFavs();
+                                                 
         let applicationsTitle = new St.Label({ style_class: 'applications-title', text: "Applications" });
  
         this.mainBox = new St.BoxLayout({ style_class: 'applications-box', vertical:false });
@@ -604,7 +612,7 @@ this.applicationsByCategory[top_dir.get_menu_id()].push(app);
 
         section.actor.add_actor(this.mainBox);
         
-this.applicationsByCategory = {};
+		this.applicationsByCategory = {};
         let tree = appsys.get_tree();
         let root = tree.get_root_directory();
         
