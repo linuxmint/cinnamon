@@ -44,8 +44,10 @@ PanelAppLauncherMenu.prototype = {
     },
     
     _onRemoveActivate: function(actor, event) {
-        this._launcher.launchersBox.removeLauncher(this._launcher.get_id());
+        try{
+        this._launcher.launchersBox.removeLauncher(this._launcher.get_id(), this._launcher.is_custom());
         this._launcher.actor.destroy();
+        }catch(e){global.log(e);}
     },
     
     _onAddActivate: function(actor, event) {
@@ -79,7 +81,7 @@ PanelAppLauncher.prototype = {
         this.actor.add_actor(this._iconBox);
         this._iconBottomClip = 0;
         let icon;
-        if (app==null) icon = new St.Icon({ gicon: appinfo.get_icon(), icon_size: 20 });
+        if (this.is_custom()) icon = new St.Icon({ gicon: appinfo.get_icon(), icon_size: 20 });
         else icon = this.app.create_icon_texture(20);
         
         this._iconBox.set_child(icon);
@@ -90,13 +92,17 @@ PanelAppLauncher.prototype = {
     },
     
     launch: function() {
-        if (this.app) this.app.open_new_window(-1);
-        else this.appinfo.launch([], null);
+        if (this.is_custom()) this.appinfo.launch([], null);
+        else this.app.open_new_window(-1);
     },
     
     get_id: function() {
-        if (this.app) return this.app.get_id();
-        else return Gio.file_new_for_path(this.appinfo.get_filename()).get_basename();
+        if (this.is_custom()) return Gio.file_new_for_path(this.appinfo.get_filename()).get_basename();
+        else return this.app.get_id();
+    },
+    
+    is_custom: function() {
+        return (this.app==null);
     },
     
     _onButtonRelease: function(actor, event) {
@@ -289,13 +295,17 @@ PanelLaunchersBox.prototype = {
         }
     },
     
-    removeLauncher: function(appid) {
+    removeLauncher: function(appid, delete_file) {
         let settings = new Gio.Settings({ schema: 'org.cinnamon' });
         let desktopFiles = settings.get_strv('panel-launchers');
         let i = desktopFiles.indexOf(appid);
         if (i>=0){
             desktopFiles.splice(i, 1);
             settings.set_strv('panel-launchers', desktopFiles);
+        }
+        if (delete_file){
+            let file = new Gio.file_new_for_path(CUSTOM_LAUNCHERS_PATH+"/"+appid);
+            if (file.query_exists(null)) file.delete(null);
         }
     },
     
