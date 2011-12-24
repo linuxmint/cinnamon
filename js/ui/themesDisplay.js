@@ -173,22 +173,46 @@ ThemeView.prototype = {
 			themeDir = gnomeshellDir;
 		}
 		 			   	    
-	    if (themeDir != null) {	  
-	    	let thumbnail = themeDir.get_child('thumbnail.png');
-	    	let icon = null;	    	
-	    	if (thumbnail.query_exists(null)) {	    		
-	    		icon = St.TextureCache.get_default().load_uri_sync(1, thumbnail.get_uri(), 256, 256);
+	    if (themeDir != null) {	 
+	    	let thumbnail = null;
+	    	try {	    		
+	    		// Try to get the thumbnail from theme.json
+		    	let jsonThemeFile = themeDir.get_child('theme.json');
+		    	if (jsonThemeFile.query_exists(null)) {
+		    		let content = Cinnamon.get_file_contents_utf8_sync(jsonThemeFile.get_path());
+		    		let meta = JSON.parse(content);		    		
+		    		if (meta['shell-theme']['thumbnail']) {
+		    			thumbnail = themeDir.get_child(meta['shell-theme']['thumbnail']).get_uri();
+		    		}
+		    		else if  (meta['cinnamon-theme']['thumbnail']) {
+		    			thumbnail = themeDir.get_child(meta['cinnamon-theme']['thumbnail']).get_uri();
+		    		}
+		    	}
 	    	}
-	    	else {
-	    		try{
-	    			let file = Gio.file_new_for_path("/usr/share/cinnamon/theme/thumbnail-generic.png");
-           			let uri = file.get_uri();
-	    			icon = St.TextureCache.get_default().load_uri_sync(1, uri, 256, 256);
-	    		}
-	    		catch (error) {
-					log(error);	    			
-	    		}
-	    	}  	
+	    	catch (e) {
+	    		log(e);
+	    	}	
+	    	if (thumbnail == null) {  
+	    		// Try to get the thumbnail from thumbnail.png
+	    		let thumbnailFile = themeDir.get_child('thumbnail.png');	    		    	
+		    	if (thumbnailFile.query_exists(null)) {
+		    		thumbnail = thumbnailFile.get_uri();
+		    	}	    		
+	    	}
+	    	if (thumbnail == null) {
+	    		// Otherwise use the default generic theme thumbnail
+	    		thumbnail = Gio.file_new_for_path("/usr/share/cinnamon/theme/thumbnail-generic.png").get_uri();	    		
+	    	}
+	    		    	
+	    	let icon = null;
+	    	
+    		try{	    			
+    			icon = St.TextureCache.get_default().load_uri_sync(1, thumbnail, 256, 256);
+    		}
+    		catch (error) {
+				log(error);	    			
+    		}
+	    	  	
 	    	let theme = new St.Button({ style_class: 'theme-button', reactive: true });                                    
             let box = new St.BoxLayout({ style_class: 'theme-box', vertical: true });        	
         	if (icon != null) {
