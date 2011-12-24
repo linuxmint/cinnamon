@@ -77,7 +77,7 @@ ThemeView.prototype = {
     	this._loadThemes();
     },
        
-    _loadThemesIn: function(dir, type) {
+    _loadThemesIn: function(dir, type) {    	
 	    let fileEnum;
 	    let file, info;
 	    try {
@@ -91,7 +91,7 @@ ThemeView.prototype = {
 	        let fileType = info.get_file_type();
 	        if (fileType != Gio.FileType.DIRECTORY)
 	            continue;
-	        let name = info.get_name();
+	        let name = info.get_name();	        
 	        let child = dir.get_child(name);	        
 	        this._loadTheme(child, type);
 	    }
@@ -99,7 +99,7 @@ ThemeView.prototype = {
 	},
 
 	_loadThemes: function() {
-		this._loadDefaultTheme();
+		this._loadDefaultTheme();					
 	    let systemDataDirs = GLib.get_system_data_dirs();
 	    for (let i = 0; i < systemDataDirs.length; i++) {
 	        let dirPath = systemDataDirs[i] + '/themes';
@@ -107,7 +107,7 @@ ThemeView.prototype = {
 	        if (dir.query_exists(null))
 	           this._loadThemesIn(dir, ThemeType.SYSTEM);
 	    }
-	    this._loadThemesIn(Gio.file_new_for_path(GLib.build_filenamev([global.userdatadir, 'themes'])), ThemeType.PER_USER);
+	    this._loadThemesIn(Gio.file_new_for_path(GLib.get_home_dir() + '/.themes'), ThemeType.PER_USER);
 	},
 	
 	_loadDefaultTheme: function() {
@@ -157,9 +157,9 @@ ThemeView.prototype = {
 	    }	         
 	},
 	
-	_loadTheme: function(dir, type) {
+	_loadTheme: function(dir, type) {		
 	    let info;
-	    let themeName = dir.get_basename();
+	    let themeName = dir.get_basename();	    
 		let themeType = null;
 		let themeDir = null;
 		let cinnamonDir = dir.get_child('cinnamon');
