@@ -9,10 +9,13 @@ const PopupMenu = imports.ui.popupMenu;
 const Main = imports.ui.main;
 const ModalDialog = imports.ui.modalDialog;
 const Signals = imports.signals;
+const GLib = imports.gi.GLib;
 
 function PanelAppLauncherMenu(launcher) {
     this._init(launcher);
 }
+
+const CUSTOM_LAUNCHERS_PATH = GLib.get_home_dir() + '/.cinnamon/panel-launchers';
 
 PanelAppLauncherMenu.prototype = {
     __proto__: PopupMenu.PopupMenu.prototype,
@@ -37,11 +40,11 @@ PanelAppLauncherMenu.prototype = {
     },
     
     _onLaunchActivate: function(actor, event) {
-        this._launcher.app.open_new_window(-1);
+        this._launcher.launch();
     },
     
     _onRemoveActivate: function(actor, event) {
-        this._launcher.launchersBox.removeLauncher(this._launcher.app.get_id());
+        this._launcher.launchersBox.removeLauncher(this._launcher.get_id());
         this._launcher.actor.destroy();
     },
     
@@ -50,13 +53,14 @@ PanelAppLauncherMenu.prototype = {
     }
 }
 
-function PanelAppLauncher(launchersBox, app) {
-    this._init(launchersBox, app);
+function PanelAppLauncher(launchersBox, app, appinfo) {
+    this._init(launchersBox, app, appinfo);
 }
 
 PanelAppLauncher.prototype = {
-    _init: function(launchersBox, app) {
+    _init: function(launchersBox, app, appinfo) {
         this.app = app;
+        this.appinfo = appinfo;
         this.launchersBox = launchersBox;
         this.actor = new St.Bin({ style_class: 'panel-launcher',
                                       reactive: true,
@@ -74,7 +78,10 @@ PanelAppLauncher.prototype = {
                               Lang.bind(this, this._updateIconBoxClip));
         this.actor.add_actor(this._iconBox);
         this._iconBottomClip = 0;
-        let icon = this.app.create_icon_texture(20);
+        let icon;
+        if (app==null) icon = new St.Icon({ gicon: appinfo.get_icon(), icon_size: 20 });
+        else icon = this.app.create_icon_texture(20);
+        
         this._iconBox.set_child(icon);
         
         this._menuManager = new PopupMenu.PopupMenuManager(this);
@@ -82,11 +89,21 @@ PanelAppLauncher.prototype = {
         this._menuManager.addMenu(this._menu);
     },
     
+    launch: function() {
+        if (this.app) this.app.open_new_window(-1);
+        else this.appinfo.launch([], null);
+    },
+    
+    get_id: function() {
+        if (this.app) return this.app.get_id();
+        else return Gio.file_new_for_path(this.appinfo.get_filename()).get_basename();
+    },
+    
     _onButtonRelease: function(actor, event) {
         let button = event.get_button();
         if (button==1) {
             if (this._menu.isOpen) this._menu.toggle();
-            else this.app.open_new_window(-1);
+            else this.launch();
         }else if (button==3) {
             this._menu.toggle();
         }
@@ -193,15 +210,17 @@ AddLauncherDialog.prototype = {
     },
     
     _saveNewLauncher: function(name, command, description, icon){
+        let dir = Gio.file_new_for_path(CUSTOM_LAUNCHERS_PATH);
+        if (!dir.query_exists(null)) dir.make_directory_with_parents(null);
         let desktopEntry = "[Desktop Entry]\nName="+name+"\nExec="+command+"\nType=Application\n";
         if (description) desktopEntry += "Description="+description+"\n";
         if (icon) desktopEntry += "Icon="+icon+"\n";
         
         let i = 1;
-        let file = Gio.file_parse_name('~/.local/share/applications/cinnamon-custom-launcher-'+i+'.desktop');
+        let file = Gio.file_parse_name(CUSTOM_LAUNCHERS_PATH+'/cinnamon-custom-launcher-'+i+'.desktop');
         while (file.query_exists(null)){
             i++;
-            file = Gio.file_parse_name('~/.local/share/applications/cinnamon-custom-launcher-'+i+'.desktop');
+            file = Gio.file_parse_name(CUSTOM_LAUNCHERS_PATH+'/cinnamon-custom-launcher-'+i+'.desktop');
         }
         let fp = file.create(0, null);
         fp.write(desktopEntry, null);
@@ -252,7 +271,9 @@ PanelLaunchersBox.prototype = {
         let apps = new Array();
         for (var i in desktopFiles){
             let app = appSys.lookup_app(desktopFiles[i]);
-            if (app) apps.push(app);
+            let appinfo;
+            if (!app) appinfo = Gio.DesktopAppInfo.new_from_filename(CUSTOM_LAUNCHERS_PATH+"/"+desktopFiles[i]);
+            if (app || appinfo) apps.push([app, appinfo]);
         }
         return apps;
     },
@@ -263,7 +284,7 @@ PanelLaunchersBox.prototype = {
         let apps = this.loadApps();
         for (var i in apps){
             let app = apps[i];
-            let launcher = new PanelAppLauncher(this, app);
+            let launcher = new PanelAppLauncher(this, app[0], app[1]);
             this.actor.add(launcher.actor);
         }
     },
