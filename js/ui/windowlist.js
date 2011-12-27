@@ -14,6 +14,7 @@ const Meta = imports.gi.Meta;
 const AppDisplay = imports.ui.appDisplay;
 const AltTab = imports.ui.altTab;
 const Gio = imports.gi.Gio;
+const Tooltips = imports.ui.tooltips;
 
 const Gettext = imports.gettext.domain('cinnamon-extensions');
 const _ = Gettext.gettext;
@@ -131,83 +132,6 @@ AppMenuButtonRightClickMenu.prototype = {
 
 };
 
-function AppMenuButtonTooltip(appButton) {
-    this._init(appButton);
-}
-
-AppMenuButtonTooltip.prototype = {
-    _init: function(appButton) {
-        this._tooltip = new St.Tooltip();
-        this._tooltip.set_label(appButton.metaWindow.get_title());
-        Main.uiGroup.add_actor(this._tooltip);
-        
-        appButton.actor.connect('enter-event', Lang.bind(this, this._onEnterEvent));
-        appButton.actor.connect('leave-event', Lang.bind(this, this._onLeaveEvent));
-        appButton.actor.connect('motion-event', Lang.bind(this, this._onMotionEvent));
-        
-        this._showTimer = null;
-        this._visible = false;
-        this._appButton = appButton;
-    },
-    
-    _onMotionEvent: function(actor, event) {
-        Tweener.removeTweens(this);
-        if (!this._visible){
-            Tweener.addTween(this, {time: 0.3, onComplete: Lang.bind(this, this._onTimerComplete)});
-            this._mousePosition = event.get_coords();
-        }
-    },
-    
-    _onEnterEvent: function(actor, event) {
-        Tweener.addTween(this, {time: 0.3, onComplete: Lang.bind(this, this._onTimerComplete)});
-        this._mousePosition = event.get_coords();
-    },
-    
-    _onTimerComplete: function(){
-        this.show();
-    },
-    
-    _onLeaveEvent: function(actor, event) {
-        this.hide();
-    },
-    
-    hide: function() {
-        Tweener.removeTweens(this);
-        this._tooltip.hide();
-        this._visible = false;
-    },
-    
-    show: function() {
-        if (this._appButton.rightClickMenu.isOpen) return;
-        
-        Tweener.removeTweens(this);
-        
-        let tooltipHeight = this._tooltip.get_allocation_box().y2-this._tooltip.get_allocation_box().y1;
-        let tooltipWidth = this._tooltip.get_allocation_box().x2-this._tooltip.get_allocation_box().x1;
-        
-        let monitor = Main.layoutManager.primaryMonitor;
-        
-        let tooltipTop = monitor.height-tooltipHeight-this._appButton.actor.get_allocation_box().y2+this._appButton.actor.get_allocation_box().y1;
-        
-        var tooltipLeft = this._mousePosition[0]- Math.round(tooltipWidth/2);
-        if (tooltipLeft<0) tooltipLeft = 0;
-        if (tooltipLeft+tooltipWidth>monitor.width) tooltipLeft = monitor.width-tooltipWidth;
-        
-        this._tooltip.set_position(tooltipLeft, tooltipTop);
-        
-        this._tooltip.show();
-        this._visible = true;
-    },
-    
-    set_text: function(text) {
-        this._tooltip.set_label(text);
-    },
-    
-    destroy: function() {
-       this._tooltip.destroy();
-    }
-}
-
 function AppMenuButton(app, metaWindow, animation) {
     this._init(app, metaWindow, animation);
 }
@@ -302,7 +226,7 @@ AppMenuButton.prototype = {
         this.rightClickMenu = new AppMenuButtonRightClickMenu(this.actor, this.app, this.metaWindow);
         this._menuManager.addMenu(this.rightClickMenu);
         
-        this._tooltip = new AppMenuButtonTooltip(this);
+        this._tooltip = new Tooltips.PanelItemTooltip(this, this.metaWindow.get_title());
     },
     
     _onDestroy: function() {

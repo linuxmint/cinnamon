@@ -73,6 +73,7 @@ nobase_dist_js_DATA = \
 	ui/telepathyClient.js	\
 	ui/themeManager.js	\
 	ui/themesDisplay.js	\
+	ui/tooltips.js	\
 	ui/tweener.js		\
 	ui/userMenu.js		\
 	ui/viewSelector.js	\
