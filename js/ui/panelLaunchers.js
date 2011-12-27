@@ -260,25 +260,30 @@ PanelLaunchersBox.prototype = {
                                         style_class: 'panel-launchers-box' });
         this.actor._delegate = this;
         
+        this._settings = new Gio.Settings({ schema: 'org.cinnamon' });
+        this._settings.connect('changed', Lang.bind(this, this._onSettingsChanged));
+        
         this._addLauncherDialog = new AddLauncherDialog();
         this._addLauncherDialog.connect("launcher-created", Lang.bind(this, this._onLauncherCreated));
         
         this.reload();
     },
     
+    _onSettingsChanged: function() {
+        this.reload();
+    },
+    
     _onLauncherCreated: function(obj, appid){
         if (appid){
-            let settings = new Gio.Settings({ schema: 'org.cinnamon' });
-            let desktopFiles = settings.get_strv('panel-launchers');
+            let desktopFiles = this._settings.get_strv('panel-launchers');
             desktopFiles.push(appid);
-            settings.set_strv('panel-launchers', desktopFiles);
+            this._settings.set_strv('panel-launchers', desktopFiles);
             this.reload();
         }
     },
     
     loadApps: function() {
-        let settings = new Gio.Settings({ schema: 'org.cinnamon' });
-        let desktopFiles = settings.get_strv('panel-launchers');
+        let desktopFiles = this._settings.get_strv('panel-launchers');
         let appSys = Cinnamon.AppSystem.get_default();
         let apps = new Array();
         for (var i in desktopFiles){
@@ -302,12 +307,11 @@ PanelLaunchersBox.prototype = {
     },
     
     removeLauncher: function(appid, delete_file) {
-        let settings = new Gio.Settings({ schema: 'org.cinnamon' });
-        let desktopFiles = settings.get_strv('panel-launchers');
+        let desktopFiles = this._settings.get_strv('panel-launchers');
         let i = desktopFiles.indexOf(appid);
         if (i>=0){
             desktopFiles.splice(i, 1);
-            settings.set_strv('panel-launchers', desktopFiles);
+            this._settings.set_strv('panel-launchers', desktopFiles);
         }
         if (delete_file){
             let file = new Gio.file_new_for_path(CUSTOM_LAUNCHERS_PATH+"/"+appid);
