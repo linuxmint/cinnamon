@@ -10,6 +10,7 @@ const Main = imports.ui.main;
 const ModalDialog = imports.ui.modalDialog;
 const Signals = imports.signals;
 const GLib = imports.gi.GLib;
+const Tooltips = imports.ui.tooltips;
 
 function PanelAppLauncherMenu(launcher) {
     this._init(launcher);
@@ -89,6 +90,11 @@ PanelAppLauncher.prototype = {
         this._menuManager = new PopupMenu.PopupMenuManager(this);
         this._menu = new PanelAppLauncherMenu(this);
         this._menuManager.addMenu(this._menu);
+        
+        let tooltipText;
+        if (this.is_custom()) tooltipText = appinfo.get_name();
+        else tooltipText = app.get_name();
+        this._tooltip = new Tooltips.PanelItemTooltip(this, tooltipText);
     },
     
     launch: function() {
