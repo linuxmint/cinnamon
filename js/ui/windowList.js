@@ -23,14 +23,14 @@ const PANEL_ICON_SIZE = 24;
 const SPINNER_ANIMATION_TIME = 1;
 
 
-function AppMenuButtonRightClickMenu(actor, app, metaWindow) {
-    this._init(actor, app, metaWindow);
+function AppMenuButtonRightClickMenu(actor, metaWindow) {
+    this._init(actor, metaWindow);
 }
 
 AppMenuButtonRightClickMenu.prototype = {
     __proto__: PopupMenu.PopupMenu.prototype,
 
-    _init: function(actor, app, metaWindow) {
+    _init: function(actor, metaWindow) {
         //take care of menu initialization
         if (bottomPosition)
             PopupMenu.PopupMenu.prototype._init.call(this, actor, 0.0, St.Side.BOTTOM, 0);
@@ -45,7 +45,6 @@ AppMenuButtonRightClickMenu.prototype = {
         this.connect('open-state-changed', Lang.bind(this, this._onToggled));
         
         this.metaWindow = metaWindow;
-        this.app = app;
 
         this.itemCloseWindow = new PopupMenu.PopupMenuItem('Close');
         this.itemCloseWindow.connect('activate', Lang.bind(this, this._onCloseWindowActivate));        
@@ -132,15 +131,15 @@ AppMenuButtonRightClickMenu.prototype = {
 
 };
 
-function AppMenuButton(app, metaWindow, animation) {
-    this._init(app, metaWindow, animation);
+function AppMenuButton(metaWindow, animation) {
+    this._init(metaWindow, animation);
 }
 
 AppMenuButton.prototype = {
 //    __proto__ : AppMenuButton.prototype,
 
     
-    _init: function(app, metaWindow, animation) {
+    _init: function(metaWindow, animation) {
 
         if (bottomPosition) {        
             this.actor = new St.Bin({ style_class: 'window-list-item-box-bottom',
@@ -162,8 +161,7 @@ AppMenuButton.prototype = {
         this.actor._delegate = this;
         this.actor.connect('button-release-event', Lang.bind(this, this._onButtonRelease));
 
-		this.metaWindow = metaWindow;
-		this.app = app;
+		this.metaWindow = metaWindow;		
 		
         let bin = new St.Bin({ name: 'appMenu' });
         this.actor.set_child(bin);
@@ -208,8 +206,9 @@ AppMenuButton.prototype = {
         this._container.add_actor(this._spinner.actor);
         this._spinner.actor.lower_bottom();
 
-		let icon = this.app.create_icon_texture(16);
-		//let icon = this.app.get_faded_icon(1.15 * PANEL_ICON_SIZE);		        
+		let tracker = Cinnamon.WindowTracker.get_default();
+		let app = tracker.get_window_app(this.metaWindow);		
+		let icon = app.create_icon_texture(16);		    
         if (metaWindow.minimized)
             this._label.set_text("[" + this.metaWindow.get_title() + "]");
         else
@@ -223,7 +222,7 @@ AppMenuButton.prototype = {
 		
         //set up the right click menu
         this._menuManager = new PopupMenu.PopupMenuManager(this);
-        this.rightClickMenu = new AppMenuButtonRightClickMenu(this.actor, this.app, this.metaWindow);
+        this.rightClickMenu = new AppMenuButtonRightClickMenu(this.actor, this.metaWindow);
         this._menuManager.addMenu(this.rightClickMenu);
         
         this._tooltip = new Tooltips.PanelItemTooltip(this, this.metaWindow.get_title());
@@ -235,18 +234,18 @@ AppMenuButton.prototype = {
     },
     
     doFocus: function() {
-        //let tracker = Cinnamon.WindowTracker.get_default();
-        //let focusedApp = tracker.focus_app;    
-        if (this.metaWindow.has_focus()) {
-            this.actor.add_style_pseudo_class('focus');
-	    let icon = this.app.create_icon_texture(16);
-	    this._iconBox.set_child(icon);
-        }
-        else {
-            this.actor.remove_style_pseudo_class('focus');
-	    let icon = this.app.create_icon_texture(16);
-	    this._iconBox.set_child(icon);
-        }
+        let tracker = Cinnamon.WindowTracker.get_default();
+        let app = tracker.get_window_app(this.metaWindow);
+        if ( app ) {  
+            let icon = app.create_icon_texture(16);
+    		this._iconBox.set_child(icon);	
+        }         
+        if (this.metaWindow.has_focus()) {                                     
+        	this.actor.add_style_pseudo_class('focus');        	
+        }        		    	        
+        else {            
+          	this.actor.remove_style_pseudo_class('focus');        		
+        }	    	                
     },
     
     _onButtonRelease: function(actor, event) {
@@ -485,7 +484,7 @@ WindowList.prototype = {
             if ( metaWindow && tracker.is_window_interesting(metaWindow) ) {
                 let app = tracker.get_window_app(metaWindow);
                 if ( app ) {
-                    let appbutton = new AppMenuButton(app, metaWindow, false);
+                    let appbutton = new AppMenuButton(metaWindow, false);
                     this._windows.push(appbutton);
                     this.actor.add(appbutton.actor);
                 }
@@ -561,7 +560,7 @@ WindowList.prototype = {
         let tracker = Cinnamon.WindowTracker.get_default();
         let app = tracker.get_window_app(metaWindow);
         if ( app && tracker.is_window_interesting(metaWindow) ) {
-            let appbutton = new AppMenuButton(app, metaWindow, true);
+            let appbutton = new AppMenuButton(metaWindow, true);
             this._windows.push(appbutton);
             this.actor.add(appbutton.actor);
             appbutton.actor.show();
