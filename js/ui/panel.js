@@ -19,10 +19,10 @@ const PanelMenu = imports.ui.panelMenu;
 const DateMenu = imports.ui.dateMenu;
 const Main = imports.ui.main;
 const Tweener = imports.ui.tweener;
-const WindowList = imports.ui.windowlist;
+const WindowList = imports.ui.windowList;
 const ShowDesktopButton = imports.ui.showDesktopButton;
 const WorkspaceSwitcher = imports.ui.workspaceSwitcher;
-const MintMenu = imports.ui.mintMenu;
+const Menu = imports.ui.menu;
 const Meta = imports.gi.Meta;
 const PanelLaunchers = imports.ui.panelLaunchers;
 
@@ -942,9 +942,9 @@ Panel.prototype = {
             // more cleanly with the rest of the panel
             this._menus.addMenu(this._activitiesButton.menu);*/
             
-            this._mintMenu = new MintMenu.ApplicationsButton();
-            this._leftBox.add(this._mintMenu.actor);
-            this._menus.addMenu(this._mintMenu.menu);
+            this._menu = new Menu.ApplicationsButton();
+            this._leftBox.add(this._menu.actor);
+            this._menus.addMenu(this._menu.menu);
             
             this._showDesktopButton = new ShowDesktopButton.ShowDesktopButton();
             this._leftBox.add(this._showDesktopButton.actor);

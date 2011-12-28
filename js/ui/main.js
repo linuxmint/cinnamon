@@ -149,7 +149,7 @@ function _initUserSession() {
     });
 
     global.display.connect('overlay-key', function(){
-        panel._mintMenu.menu.toggle();
+        panel._menu.menu.toggle();
     });
 
 }

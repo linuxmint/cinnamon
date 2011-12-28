@@ -173,11 +173,11 @@ FavoritesButton.prototype = {
     }
 };
 
-function MintButton(menuAlignment) {
+function MenuButton(menuAlignment) {
     this._init(menuAlignment);
 }
 
-MintButton.prototype = {
+MenuButton.prototype = {
     __proto__: PanelMenu.ButtonBox.prototype,
 
     _init: function(menuAlignment) {
@@ -193,7 +193,7 @@ MintButton.prototype = {
     },
     
     _resetMenu: function(){
-        this.menu = new PopupMenu.PopupMenu(this.actor, this._menuAlignment, mintMenuOrientation);
+        this.menu = new PopupMenu.PopupMenu(this.actor, this._menuAlignment, menuOrientation);
         this.menu.actor.add_style_class_name('application-menu-background');
         this.menu.connect('open-state-changed', Lang.bind(this, this._onOpenStateChanged));
         //this.menu.actor.connect('key-press-event', Lang.bind(this, this._onMenuKeyPress));
@@ -268,11 +268,11 @@ function ApplicationsButton() {
 }
 
 ApplicationsButton.prototype = {
-    __proto__: MintButton.prototype,
+    __proto__: MenuButton.prototype,
 
     _init: function() {
-        MintButton.prototype._init.call(this, 1);
-        let box = new St.BoxLayout({ name: 'mintMenu' });
+        MenuButton.prototype._init.call(this, 1);
+        let box = new St.BoxLayout({ name: 'menu' });
         this.actor.add_actor(box);
         this._iconBox = new St.Bin();
         box.add(this._iconBox, { y_align: St.Align.MIDDLE, y_fill: false });
@@ -757,12 +757,12 @@ this._clearApplicationsBox(button.actor);
          // Need to find a way to do this
          if (value){
              //this.menu._arrowSide = St.Side.BOTTOM;
-             //mintMenuOrientation = St.Side.BOTTOM;
+             //menuOrientation = St.Side.BOTTOM;
              //this.disable();
              //this.enable();
          }else{
              //this.menu._arrowSide = St.Side.TOP;
-             //mintMenuOrientation = St.Side.TOP;
+             //menuOrientation = St.Side.TOP;
              //this.disable();
              //this.enable();
          }
@@ -882,6 +882,6 @@ this._clearApplicationsBox(button.actor);
     }
 };
 
-let mintMenuOrientation = St.Side.BOTTOM;
+let menuOrientation = St.Side.BOTTOM;
 let icon_path = "/usr/share/cinnamon/theme/";
 let bottomPosition = true;
