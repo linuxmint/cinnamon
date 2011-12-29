@@ -26,7 +26,7 @@ const Menu = imports.ui.menu;
 const Meta = imports.gi.Meta;
 const PanelLaunchers = imports.ui.panelLaunchers;
 
-const PANEL_ICON_SIZE = 24;
+const PANEL_ICON_DEFAULT_SIZE = 20;
 
 const BUTTON_DND_ACTIVATION_TIMEOUT = 250;
 
@@ -1126,6 +1126,9 @@ Panel.prototype = {
         box.add_actor(icon);
 
         this._insertStatusItem(box, this._status_area_order.indexOf(role));
+        
+        let themeNode = buttonBox.actor.get_theme_node();
+        if (!themeNode.get_length('height')) icon.height = PANEL_ICON_DEFAULT_SIZE;
     },
 
     _onTrayIconRemoved: function(o, icon) {
