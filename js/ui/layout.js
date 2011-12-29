@@ -689,9 +689,8 @@ Chrome.prototype = {
         let index = this._findActor(actor)
         if (index == -1)
             throw new Error('could not find actor in chrome');
-        let newParams = Params.parse(params, defaultParams);
-        for (var i in newParams){
-            this._trackedActors[index][i] = newParams[i];
+        for (var i in params){
+            this._trackedActors[index][i] = params[i];
         }
         this._queueUpdateRegions();
     },
