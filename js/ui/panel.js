@@ -40,6 +40,10 @@ const STANDARD_STATUS_AREA_CINNAMON_IMPLEMENTATION = {
     'keyboard': imports.ui.status.keyboard.XKBIndicator    
 };
 
+const PANEL_HEIGHT = 25;
+const AUTOHIDE_ANIMATION_TIME = 0.4;
+const TIME_DELTA = 1500;
+
 if (Config.HAVE_BLUETOOTH)
     STANDARD_STATUS_AREA_CINNAMON_IMPLEMENTATION['bluetooth'] = imports.ui.status.bluetooth.Indicator;
 
@@ -893,6 +897,11 @@ function Panel() {
 
 Panel.prototype = {
     _init : function() {
+    	
+    	this._hidden = false;
+        this._hidetime = 0;              
+        this._hideable = global.settings.get_boolean("panel-autohide");
+    	
         this.actor = new Cinnamon.GenericContainer({ name: 'panel',
                                                   reactive: true });
         this.actor._delegate = this;
@@ -986,6 +995,17 @@ Panel.prototype = {
         Main.layoutManager.panelBox.add(this.actor);
         Main.ctrlAltTabManager.addGroup(this.actor, _("Top Bar"), 'start-here',
                                         { sortGroup: CtrlAltTab.SortGroup.TOP });
+                                        
+        this.actor.connect('leave-event', Lang.bind(this, this._hidePanel));
+        this.actor.connect('enter-event', Lang.bind(this, this._showPanel));  
+        global.settings.connect("changed::panel-autohide", Lang.bind(this, this._onPanelAutoHideChanged));      
+    },
+    
+    _onPanelAutoHideChanged: function() {  
+    	this._hideable = global.settings.get_boolean("panel-autohide");
+    	if (this._hidden == true && this._hideable == false) {
+    		this._showPanel();
+    	}
     },
 
     _getPreferredWidth: function(actor, forHeight, alloc) {
@@ -1132,6 +1152,64 @@ Panel.prototype = {
         let box = icon.get_parent();
         if (box && box._delegate instanceof PanelMenu.ButtonBox)
             box.destroy();
+    },
+    
+    _showPanel: function() {
+        if (this._hidden == false) return;
+
+        let params = { y: PANEL_HEIGHT - 1,
+                       time: AUTOHIDE_ANIMATION_TIME + 0.1,
+                       transition: 'easeOutQuad'
+                     };
+ 
+        Tweener.addTween(this._leftCorner.actor, params);
+        Tweener.addTween(this._rightCorner.actor, params);
+
+        Tweener.addTween(this.actor,
+                     { y: 0,
+                       time: AUTOHIDE_ANIMATION_TIME,
+                       transition: 'easeOutQuad'
+                     });
+
+        params = { opacity: 255,
+                   time: AUTOHIDE_ANIMATION_TIME+0.2,
+                   transition: 'easeOutQuad'
+                 };
+
+        Tweener.addTween(this._leftBox, params);
+        Tweener.addTween(this._centerBox, params);
+        Tweener.addTween(this._rightBox, params);
+
+        this._hidden = false;
+    },
+    
+    _hidePanel: function() {
+        if (Main.overview.visible || this._hideable == false) return;
+
+        Tweener.addTween(this.actor,
+                     { y: PANEL_HEIGHT - 1,
+                       time: AUTOHIDE_ANIMATION_TIME,
+                       transition: 'easeOutQuad'
+                     });
+
+        let params = { y: 0,
+                       time: AUTOHIDE_ANIMATION_TIME,
+                       transition: 'easeOutQuad'
+                     };
+
+        Tweener.addTween(this._leftCorner.actor, params);
+        Tweener.addTween(this._rightCorner.actor, params);
+
+        params = { opacity: 0,
+                   time: AUTOHIDE_ANIMATION_TIME - 0.1,
+                   transition: 'easeOutQuad'
+                 };
+
+        Tweener.addTween(this._leftBox, params);
+        Tweener.addTween(this._centerBox, params);
+        Tweener.addTween(this._rightBox, params);
+
+        this._hidden = true;
     },
 
 };

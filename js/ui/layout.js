@@ -7,7 +7,7 @@ const Meta = imports.gi.Meta;
 const Cinnamon = imports.gi.Cinnamon;
 const Signals = imports.signals;
 const St = imports.gi.St;
-
+const Gio = imports.gi.Gio;
 const Main = imports.ui.main;
 const Params = imports.misc.params;
 const ScreenSaver = imports.misc.screenSaver;
@@ -30,12 +30,11 @@ LayoutManager.prototype = {
         this._hotCorners = [];
         this._leftPanelBarrier = 0;
         this._rightPanelBarrier = 0;
-        this._trayBarrier = 0;
-
+        this._trayBarrier = 0;		
         this._chrome = new Chrome(this);       
 		
 		this._hotCorner = new HotCorner();        
-		this.overviewCorner = new St.Button({name: 'overview-corner', reactive: true, track_hover: true });		
+		this.overviewCrner = new St.Button({name: 'overview-corner', reactive: true, track_hover: true });		
 		this.addChrome(this.overviewCorner, { visibleInFullscreen: false });	
 		this.overviewCorner.connect('button-release-event', Lang.bind(this, this._toggleOverview));
 		
@@ -46,7 +45,14 @@ LayoutManager.prototype = {
                              
         this.panelBox = new St.BoxLayout({ name: 'panelBox',
                                            vertical: true });
-        this.addChrome(this.panelBox, { affectsStruts: true });
+        
+		let autohide = global.settings.get_boolean("panel-autohide");
+		if (autohide) {
+        	this.addChrome(this.panelBox, { affectsStruts: false });
+		}
+		else {
+			this.addChrome(this.panelBox, { affectsStruts: true });
+		}
         this.panelBox.connect('allocation-changed',
                               Lang.bind(this, this._updatePanelBarriers));
 
@@ -60,6 +66,7 @@ LayoutManager.prototype = {
                               Lang.bind(this, this._monitorsChanged));
         this._monitorsChanged();
         this._chrome.addActor(this._hotCorner.actor);
+        global.settings.connect("changed::panel-autohide", Lang.bind(this, this._onPanelAutoHideChanged));
     },
 
     // This is called by Main after everything else is constructed;
@@ -75,6 +82,17 @@ LayoutManager.prototype = {
         if (!Main.overview.animationInProgress) {            
         	Main.overview.toggle();
         }                    
+    },
+    
+    _onPanelAutoHideChanged: function() {    	
+        this.removeChrome(this.panelBox);        
+        let autohide = global.settings.get_boolean("panel-autohide");
+		if (autohide) {
+        	this.addChrome(this.panelBox, { affectsStruts: false });
+		}
+		else {
+			this.addChrome(this.panelBox, { affectsStruts: true });
+		}
     },
 
     _updateMonitors: function() {

@@ -20,6 +20,13 @@
         extensions that appear in both lists.
       </_description>
     </key>
+    
+    <key name="panel-autohide" type="b">
+      <default>false</default>
+      <_summary>Auto-hide panel</_summary>
+      <_description>Whether the panel autohides or not</_description>
+    </key>
+    
     <key name="panel-launchers" type="as">
       <default>[ 'firefox.desktop', 'gnome-terminal.desktop', 'nautilus.desktop']</default>
       <_summary>Desktop files of the applications to put in the panel launchers applet</_summary>
@@ -67,12 +74,12 @@
       <_summary></_summary>
     </key>
     <child name="clock" schema="org.cinnamon.clock"/>
-    <child name="theme" schema="org.cinnamon.theme"/>
+    <child name="theme" schema="org.cinnamon.theme"/>   
     <child name="calendar" schema="org.cinnamon.calendar"/>
     <child name="recorder" schema="org.cinnamon.recorder"/>
     <child name="keyboard" schema="org.cinnamon.keyboard"/>
   </schema>
-  
+ 
   <schema id="org.cinnamon.theme" path="/org/cinnamon/theme/"
         gettext-domain="@GETTEXT_PACKAGE@">
     <key name="name" type="s">
