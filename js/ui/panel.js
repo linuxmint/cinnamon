@@ -26,6 +26,7 @@ const Menu = imports.ui.menu;
 const Meta = imports.gi.Meta;
 const PanelLaunchers = imports.ui.panelLaunchers;
 
+const PANEL_ICON_SIZE = 24;
 const PANEL_ICON_DEFAULT_SIZE = 20;
 
 const BUTTON_DND_ACTIVATION_TIMEOUT = 250;
