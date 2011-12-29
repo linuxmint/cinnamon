@@ -11,11 +11,13 @@
       <summary>Uuids of extensions to enable</summary>
       <description>Cinnamon extensions have a uuid property; this key lists extensions which should be loaded. disabled-extensions overrides this setting for extensions that appear in both lists.</description>
     </key>
-    <key name="panel-autohide" type="b">
+    
+    <key type="b" name="panel-autohide">
       <default>false</default>
-      <_summary>Auto-hide panel</_summary>
-      <_description>Whether the panel autohides or not</_description>
+      <summary>Auto-hide panel</summary>
+      <description>Whether the panel autohides or not</description>
     </key>
+    
     <key type="as" name="panel-launchers">
       <default>[ 'firefox.desktop', 'gnome-terminal.desktop', 'nautilus.desktop']</default>
       <summary>Desktop files of the applications to put in the panel launchers applet</summary>
@@ -52,12 +54,12 @@
       <summary/>
     </key>
     <child schema="org.cinnamon.clock" name="clock"/>
-    <child schema="org.cinnamon.theme" name="theme"/>
+    <child schema="org.cinnamon.theme" name="theme"/>   
     <child schema="org.cinnamon.calendar" name="calendar"/>
     <child schema="org.cinnamon.recorder" name="recorder"/>
     <child schema="org.cinnamon.keyboard" name="keyboard"/>
-  </schema>  
-  
+  </schema>
+ 
   <schema path="/org/cinnamon/theme/" id="org.cinnamon.theme" gettext-domain="@GETTEXT_PACKAGE@">
     <key type="s" name="name">
       <default>""</default>

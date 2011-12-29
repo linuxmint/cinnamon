@@ -24,7 +24,9 @@
     <key name="panel-autohide" type="b">
       <default>false</default>
       <_summary>Auto-hide panel</_summary>
-      <_description>Whether the panel autohides or not</_description>
+      <_description>
+        Whether the panel autohides or not
+      </_description>
     </key>
     
     <key name="panel-launchers" type="as">
