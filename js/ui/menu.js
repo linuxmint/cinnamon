@@ -431,9 +431,9 @@ ApplicationsButton.prototype = {
             if (scrollBoxHeight<300) scrollBoxHeight = 300;
             this.applicationsScrollBox.style = "height: "+scrollBoxHeight+"px;";
        } else {
-           this.resetSearch();
-           this._clearSelections(this.categoriesBox);
-           this._clearSelections(this.applicationsBox);
+           //this.resetSearch();
+           //this._clearSelections(this.categoriesBox);
+           //this._clearSelections(this.applicationsBox);
        }
     },
     
@@ -785,6 +785,7 @@ this._clearApplicationsBox(button.actor);
                 this._searchIconClickedId = this.searchEntry.connect('secondary-icon-clicked',
                     Lang.bind(this, function() {
                         this.resetSearch();
+                        this._select_category(null, this._allAppsCategoryButton);
                     }));
             }
         } else {
