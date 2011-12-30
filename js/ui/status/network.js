@@ -264,6 +264,7 @@ NMWirelessSectionTitleMenuItem.prototype = {
     },
 
     updateForDevice: function(device) {
+		this._device = device;
         // we show the switch
         // - if there not just one device
         // - if the switch is off
@@ -277,8 +278,22 @@ NMWirelessSectionTitleMenuItem.prototype = {
 
     activate: function(event) {
         PopupMenu.PopupSwitchMenuItem.prototype.activate.call(this, event);
-
+		log(this._setEnabledFunc);
         this._client[this._setEnabledFunc](this._switch.state);
+                        
+        if (!this._device) {
+            log('Section title activated when there is more than one device, should be non reactive');
+            return;
+        }
+        
+        let newState = this._switch.state;
+       
+        if (newState)
+            this._device.activate();
+        else
+            this._device.deactivate();
+            
+        this.emit('enabled-changed', this._switch.state);        
     },
 
     _propertyChanged: function() {
@@ -374,7 +389,8 @@ NMDevice.prototype = {
         this.section.destroy();
     },
 
-    deactivate: function() {		
+    deactivate: function() {	
+		log("DISCONNECT");	
         this.device.disconnect(function() {});
     },
 
