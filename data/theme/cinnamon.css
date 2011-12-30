@@ -1475,8 +1475,8 @@ StTooltip StLabel {
     padding: 8px 8px 8px 8px;
     spacing-rows: 10px;
     spacing-columns: 10px;
-    margin-from-right-edge-of-screen: 10px;
-    margin-from-top-edge-of-screen: 10px;
+    margin-from-right-edge-of-screen: 20px;
+    margin-from-top-edge-of-screen: 30px;
     width: 34em;
     color: white;
 }
