@@ -92,8 +92,14 @@ ThemeView.prototype = {
 	        if (fileType != Gio.FileType.DIRECTORY)
 	            continue;
 	        let name = info.get_name();	        
-	        let child = dir.get_child(name);	        
-	        this._loadTheme(child, type);
+	        let child = dir.get_child(name);	
+	        try {        
+				this._loadTheme(child, type);
+			}
+			catch (e) {
+				global.log('Could not load theme ' + name);
+				global.log('' + e);
+			}
 	    }
 	    fileEnum.close(null);
 	},
