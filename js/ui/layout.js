@@ -68,6 +68,8 @@ LayoutManager.prototype = {
         this._monitorsChanged();
         this._chrome.addActor(this._hotCorner.actor);
         global.settings.connect("changed::panel-autohide", Lang.bind(this, this._onPanelAutoHideChanged));
+        global.settings.connect("changed::overview-corner-visible", Lang.bind(this, this._onOverviewCornerVisibleChanged));
+        global.settings.connect("changed::overview-corner-hover", Lang.bind(this, this._onOverviewCornerHoverChanged));
     },
 
     // This is called by Main after everything else is constructed;
@@ -92,6 +94,26 @@ LayoutManager.prototype = {
 		}
 		else {
 			this._chrome.modifyActorParams(this.panelBox, { affectsStruts: true });
+		}
+    },
+    
+     _onOverviewCornerVisibleChanged: function() {    	
+        let visible = global.settings.get_boolean("overview-corner-visible");
+		if (visible) {
+        	this.overviewCorner.show();
+		}
+		else {
+			this.overviewCorner.hide();
+		}
+    },
+    
+     _onOverviewCornerHoverChanged: function() {    	
+        let enabled = global.settings.get_boolean("overview-corner-hover");
+		if (enabled) {
+        	this._hotCorner.actor.show();
+		}
+		else {
+			this._hotCorner.actor.hide();
 		}
     },
 
@@ -179,6 +201,20 @@ LayoutManager.prototype = {
     	this._hotCorner.actor.set_position(this.primaryMonitor.x,this.primaryMonitor.y);    	
     	this.overviewCorner.set_position(this.primaryMonitor.x + 1, this.primaryMonitor.y + 1);
     	this.overviewCorner.set_size(32, 32);
+    	
+    	if (global.settings.get_boolean("overview-corner-hover")) {
+			this._hotCorner.actor.show();
+		}
+		else {
+			this._hotCorner.actor.hide();
+		}
+    	
+    	if (global.settings.get_boolean("overview-corner-visible")) {
+			this.overviewCorner.show();
+		}
+		else {
+			this.overviewCorner.hide();
+		}
     	
         // Need to use GSettings to get the panel height instead of hard-coding it
         this.panelBox.set_position(this.bottomMonitor.x, this.bottomMonitor.y + this.bottomMonitor.height - 25);

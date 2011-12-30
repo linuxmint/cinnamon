@@ -15,7 +15,19 @@
     <key type="b" name="panel-autohide">
       <default>false</default>
       <summary>Auto-hide panel</summary>
-      <description>Whether the panel autohides or not</description>
+      <description>Whether the panel autohides or not.</description>
+    </key>
+    
+    <key name="overview-corner-visible" type="b">
+      <default>true</default>
+      <summary>Enable or disable the overview corner icon</summary>
+      <description>Whether the overview icon is visible or not.</description>
+    </key>
+    
+    <key name="overview-corner-hover" type="b">
+      <default>true</default>
+      <summary>Enable or disable the overview hot corner</summary>
+      <description>Whether the overview hot corner is enabled or not.</description>
     </key>
     
     <key type="as" name="panel-launchers">
