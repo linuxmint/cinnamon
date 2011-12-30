@@ -779,9 +779,9 @@ StTooltip StLabel {
 }
 
 .window-caption {
-    background: rgba(0,0,0,0.8);
+    background: rgba(85,85,85,0.8);
     border: 1px solid rgba(128,128,128,0.40);
-    border-radius: 10px;
+    border-radius: 4px;
     font-size: 9pt;
     padding: 2px 8px;
     -cinnamon-caption-spacing: 4px;

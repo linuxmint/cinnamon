@@ -46,6 +46,8 @@ const POSITIONS = {
 // Used in _orderWindowsPermutations, 5! = 120 which is probably the highest we can go
 const POSITIONING_PERMUTATIONS_MAX = 5;
 
+const WINDOWOVERLAY_ICON_SIZE = 32;
+
 function _interpolate(start, end, step) {
     return start + (end - start) * step;
 }
@@ -442,6 +444,24 @@ WindowOverlay.prototype = {
                                    text: metaWindow.title });
         title.clutter_text.ellipsize = Pango.EllipsizeMode.END;
         title._spacing = 0;
+        
+        let tracker = Cinnamon.WindowTracker.get_default();
+        let app = tracker.get_window_app(metaWindow);
+        let icon = null;
+        if (app) {
+            icon = app.create_icon_texture(WINDOWOVERLAY_ICON_SIZE);
+        }
+        if (!icon) {
+            icon = new St.Icon({ icon_name: 'applications-other',
+                                 icon_type: St.IconType.FULLCOLOR,
+                                 icon_size: WINDOWOVERLAY_ICON_SIZE });
+        }
+        icon.width = WINDOWOVERLAY_ICON_SIZE;
+        icon.height = WINDOWOVERLAY_ICON_SIZE;
+        
+        this._applicationIconBox = new St.Bin({ style_class: 'window-iconbox' });
+        this._applicationIconBox.set_opacity(255);
+        this._applicationIconBox.add_actor(icon);
 
         this._updateCaptionId = metaWindow.connect('notify::title',
             Lang.bind(this, function(w) {
@@ -468,9 +488,12 @@ WindowOverlay.prototype = {
 
         this.title = title;
         this.closeButton = button;
+        this.icon = icon;
 
+		parentActor.add_actor(this._applicationIconBox);
         parentActor.add_actor(this.title);
         parentActor.add_actor(this.closeButton);
+        //parentActor.add_actor(this.icon);
         title.connect('style-changed',
                       Lang.bind(this, this._onStyleChanged));
         button.connect('style-changed',
@@ -485,6 +508,7 @@ WindowOverlay.prototype = {
         this._hidden = true;
         this.closeButton.hide();
         this.title.hide();
+        this._applicationIconBox.hide();
     },
 
     show: function() {
@@ -492,6 +516,7 @@ WindowOverlay.prototype = {
         if (this._windowClone.actor.has_pointer)
             this.closeButton.show();
         this.title.show();
+        this._applicationIconBox.show();
     },
 
     fadeIn: function() {
@@ -552,8 +577,15 @@ WindowOverlay.prototype = {
         title.width = Math.min(title.fullWidth, cloneWidth);
 
         let titleX = cloneX + (cloneWidth - title.width) / 2;
-        let titleY = cloneY + cloneHeight + title._spacing;
+        let titleY = cloneY + cloneHeight + title._spacing + (WINDOWOVERLAY_ICON_SIZE/2) - (title.height/2);
         title.set_position(Math.floor(titleX), Math.floor(titleY));
+        
+        let icon = this._applicationIconBox;
+        
+        let iconX = titleX - WINDOWOVERLAY_ICON_SIZE - title._spacing;
+        let iconY = cloneY + cloneHeight + title._spacing;
+        
+        icon.set_position(Math.floor(iconX), Math.floor(iconY));
     },
 
     _closeWindow: function(actor) {
@@ -595,7 +627,9 @@ WindowOverlay.prototype = {
         }
         this._windowClone.metaWindow.disconnect(this._updateCaptionId);
         this.title.destroy();
-        this.closeButton.destroy();
+        this.closeButton.destroy();this._applicationIconBox.destroy();
+        
+        this._applicationIconBox.destroy();
     },
 
     _onEnter: function() {
