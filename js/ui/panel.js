@@ -1007,6 +1007,9 @@ Panel.prototype = {
     	if (this._hidden == true && this._hideable == false) {
     		this._showPanel();
     	}
+    	if (this._hidden == false && this._hideable == true) {
+    		this._hidePanel();
+    	}
     },
 
     _getPreferredWidth: function(actor, forHeight, alloc) {

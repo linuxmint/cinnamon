@@ -47,6 +47,7 @@ LayoutManager.prototype = {
                                            vertical: true });
         
 		let autohide = global.settings.get_boolean("panel-autohide");
+//        this._chrome.addActor(this.panelBox);
 		if (autohide) {
         	this.addChrome(this.panelBox, { affectsStruts: false });
 		}
@@ -85,13 +86,12 @@ LayoutManager.prototype = {
     },
     
     _onPanelAutoHideChanged: function() {    	
-        this.removeChrome(this.panelBox);        
         let autohide = global.settings.get_boolean("panel-autohide");
 		if (autohide) {
-        	this.addChrome(this.panelBox, { affectsStruts: false });
+        	this._chrome.modifyActorParams(this.panelBox, { affectsStruts: false });
 		}
 		else {
-			this.addChrome(this.panelBox, { affectsStruts: true });
+			this._chrome.modifyActorParams(this.panelBox, { affectsStruts: true });
 		}
     },
 
@@ -683,6 +683,16 @@ Chrome.prototype = {
                 return i;
         }
         return -1;
+    },
+    
+    modifyActorParams: function(actor, params) {
+        let index = this._findActor(actor)
+        if (index == -1)
+            throw new Error('could not find actor in chrome');
+        for (var i in params){
+            this._trackedActors[index][i] = params[i];
+        }
+        this._queueUpdateRegions();
     },
 
     _trackActor: function(actor, params) {
