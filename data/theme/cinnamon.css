@@ -105,8 +105,8 @@ StTooltip StLabel {
 
 .popup-menu {
     color: #ffffff;
-    font-size: 10.5pt;
-    min-width: 200px;
+    font-size: 9.5pt;
+    min-width: 100px;
 }
 
 .popup-submenu-menu-item:open {
@@ -301,22 +301,14 @@ StTooltip StLabel {
 	padding-top: 15px;
 	padding-bottom: 5px;
 	padding-right: 5px;
-	padding-left: 5px;
-	font-family: Verdana, sans-serif;
-	font-size: medium;
-	font-style: normal;
-	font-weight: bold;
+	padding-left: 5px;	
 }
 
 .favorites-title {
 	padding-top: 5px;
 	padding-bottom: 5px;
 	padding-right: 5px;
-	padding-left: 5px;
-	font-family: Verdana, sans-serif;
-	font-size: medium;
-	font-style: normal;
-	font-weight: bold;
+	padding-left: 5px;	
 }
 
 .favorites-title:hover {
@@ -354,8 +346,7 @@ StTooltip StLabel {
     padding-top: 7px;
     padding-left: 7px;
     padding-right: 7px;
-    padding-bottom: 7px; 
-    font-weight: normal;    
+    padding-bottom: 7px;         
 }
 
 .category-button-selected {
@@ -387,8 +378,7 @@ StTooltip StLabel {
 }
 
 .selected-app-title {
-    font-weight: bold;
-    font-size: small;
+    
 }
 
 .selected-app-description {
