@@ -290,9 +290,9 @@ StTooltip StLabel {
 }
 .applications-box {
     padding-top: 10px;
-    padding-left: 30px;
-    padding-right: 30px;
-    padding-bottom: 10px;    
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-bottom: 0px;    
 }
 .applications-scrollbox {
     height: 300px;
@@ -844,7 +844,7 @@ StTooltip StLabel {
 
 #searchEntry {
     padding: 4px 12px;
-    border-radius: 17px;
+    border-radius: 4px;
     color: rgb(128, 128, 128);
     border: 2px solid rgba(245,245,245,0.2);
     background-gradient-start: rgba(5,5,6,0.1);
