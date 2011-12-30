@@ -374,8 +374,8 @@ NMDevice.prototype = {
         this.section.destroy();
     },
 
-    deactivate: function() {
-        this.device.disconnect(null);
+    deactivate: function() {		
+        this.device.disconnect(function() {});
     },
 
     activate: function() {
