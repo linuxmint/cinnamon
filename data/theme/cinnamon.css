@@ -265,6 +265,10 @@ StTooltip StLabel {
     border-radius: 4px;
 }
 
+.menu-label {
+	padding-left: 2px;
+}
+
 .places-box {
   width: 70%;
   margin: auto;

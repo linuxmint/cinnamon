@@ -287,15 +287,19 @@ ApplicationsButton.prototype = {
         }catch(e){
            global.log("WARNING : Could not load icon file \""+icon_file+"\" for menu button");
         }
-        if (bottomPosition) {
-            this._label = new St.Label({ track_hover: true, style_class: 'application-menu-button-label-bottom'});
-        }
-        else {
-            this._label = new St.Label({ track_hover: true, style_class: 'application-menu-button-label'});
-        }
-        box.add(this._label, { y_align: St.Align.MIDDLE, y_fill: false });
-        this._label.set_text(_(" Menu"));
         
+        this._label = new St.Label({ track_hover: true, style_class: 'menu-label'});
+        
+        box.add(this._label, { y_align: St.Align.MIDDLE, y_fill: false });
+        
+        this._label.set_text(_("Menu"));
+        let menuLabel = global.settings.get_string("menu-text");
+        if (menuLabel != "Menu") {
+			this._label.set_text(menuLabel);
+		} 
+		global.settings.connect("changed::menu-text", Lang.bind(this, function() {
+				this._label.set_text(global.settings.get_string("menu-text"));
+			})); 
         this._searchInactiveIcon = new St.Icon({ style_class: 'search-entry-icon',
                                            icon_name: 'edit-find',
                                            icon_type: St.IconType.SYMBOLIC });

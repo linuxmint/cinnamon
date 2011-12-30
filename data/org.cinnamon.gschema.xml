@@ -18,6 +18,12 @@
       <description>Whether the panel autohides or not.</description>
     </key>
     
+    <key type="s" name="menu-text">
+      <default>"Menu"</default>
+      <summary>Text for the menu</summary>
+      <description>The text shown in the Menu label.</description>
+    </key>
+    
     <key name="overview-corner-visible" type="b">
       <default>true</default>
       <summary>Enable or disable the overview corner icon</summary>
