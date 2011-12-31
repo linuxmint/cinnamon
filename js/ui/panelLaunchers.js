@@ -46,7 +46,7 @@ PanelAppLauncherMenu.prototype = {
     
     _onRemoveActivate: function(actor, event) {
         try{
-        this._launcher.launchersBox.removeLauncher(this._launcher.get_id(), this._launcher.is_custom());
+        this._launcher.launchersBox.removeLauncher(this._launcher, this._launcher.is_custom());
         this._launcher.actor.destroy();
         }catch(e){global.log(e);}
     },
@@ -266,6 +266,8 @@ PanelLaunchersBox.prototype = {
         this._addLauncherDialog = new AddLauncherDialog();
         this._addLauncherDialog.connect("launcher-created", Lang.bind(this, this._onLauncherCreated));
         
+        this._launchers = new Array();
+        
         this.reload();
     },
     
@@ -297,23 +299,27 @@ PanelLaunchersBox.prototype = {
     
     reload: function() {
         this.actor.destroy_children();
+        this._launchers = new Array();
         
         let apps = this.loadApps();
         for (var i in apps){
             let app = apps[i];
             let launcher = new PanelAppLauncher(this, app[0], app[1]);
             this.actor.add(launcher.actor);
+            this._launchers.push(launcher);
         }
     },
     
-    removeLauncher: function(appid, delete_file) {
+    removeLauncher: function(launcher, delete_file) {
         let desktopFiles = this._settings.get_strv('panel-launchers');
-        let i = desktopFiles.indexOf(appid);
+        let i = this._launchers.indexOf(launcher);
         if (i>=0){
+            this._launchers.splice(i, 1);
             desktopFiles.splice(i, 1);
             this._settings.set_strv('panel-launchers', desktopFiles);
         }
         if (delete_file){
+            let appid = launcher.get_id();
             let file = new Gio.file_new_for_path(CUSTOM_LAUNCHERS_PATH+"/"+appid);
             if (file.query_exists(null)) file.delete(null);
         }
