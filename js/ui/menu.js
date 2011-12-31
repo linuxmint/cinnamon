@@ -73,7 +73,7 @@ ApplicationContextMenuItem.prototype = {
                 let desktopFiles = settings.get_strv('panel-launchers');
                 desktopFiles.push(this._appButton.app.get_id());
                 settings.set_strv('panel-launchers', desktopFiles);
-                this._appButton.menu.close();
+                this._appButton.closeMenu();
                 break;
         }
         return false;
@@ -113,8 +113,8 @@ ApplicationButton.prototype = {
             this.activate(event);
         }
         if (event.get_button()==3){
-            this.appsMenuButton.closeApplicationsContextMenus(this.app);
-            this.menu.toggle();
+            this.appsMenuButton.closeApplicationsContextMenus(this.app, true);
+            this.toggleMenu();
         }
         return true;
     },
@@ -122,6 +122,15 @@ ApplicationButton.prototype = {
     activate: function(event) {
         this.app.open_new_window(-1);
         this.appsMenuButton.menu.close();
+    },
+    
+    closeMenu: function() {
+        global.log(this.menu.actor.has_key_focus());
+        this.menu.close();
+    },
+    
+    toggleMenu: function() {
+        this.menu.toggle();
     }
 };
 Signals.addSignalMethods(ApplicationButton.prototype);
@@ -486,7 +495,7 @@ ApplicationsButton.prototype = {
             if (scrollBoxHeight<300) scrollBoxHeight = 300;
             this.applicationsScrollBox.style = "height: "+scrollBoxHeight+"px;";
        } else {
-           this.closeApplicationsContextMenus();
+           this.closeApplicationsContextMenus(null, false);
            //this.resetSearch();
            //this._clearSelections(this.categoriesBox);
            //this._clearSelections(this.applicationsBox);
@@ -754,12 +763,18 @@ ApplicationsButton.prototype = {
 	       this._clearApplicationsBox(categoryButton.actor);
 	       if (dir) this._displayButtons(this._listApplications(dir.get_menu_id()));
 	       else this._displayButtons(this._listApplications(null));
+           this.closeApplicationsContextMenus(null, false);
 	},
     
-    closeApplicationsContextMenus: function(excludeApp) {
-        for (var app in this._applicationsButtons)
-            if (app!=excludeApp && this._applicationsButtons[app].menu.isOpen)
-                this._applicationsButtons[app].menu.toggle();
+    closeApplicationsContextMenus: function(excludeApp, animate) {
+        for (var app in this._applicationsButtons){
+            if (app!=excludeApp && this._applicationsButtons[app].menu.isOpen){
+                if (animate)
+                    this._applicationsButtons[app].toggleMenu();
+                else
+                    this._applicationsButtons[app].closeMenu();
+            }
+        }
     },
     
     _displayButtons: function(apps, places){
