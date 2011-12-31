@@ -62,7 +62,7 @@ ApplicationContextMenuItem.prototype = {
     __proto__: PopupMenu.PopupBaseMenuItem.prototype,
 
     _init: function (appButton, label, action) {
-        PopupMenu.PopupBaseMenuItem.prototype._init.call(this, {});
+        PopupMenu.PopupBaseMenuItem.prototype._init.call(this, {hover: false});
 
         this._appButton = appButton;
         this._action = action;
@@ -107,7 +107,7 @@ ApplicationButton.prototype = {
     _init: function(appsMenuButton, app) {
         this.app = app;
         this.appsMenuButton = appsMenuButton;
-        PopupMenu.PopupBaseMenuItem.prototype._init.call(this);
+        PopupMenu.PopupBaseMenuItem.prototype._init.call(this, {hover: false});
 
         this.actor.add_style_class_name('application-button');
         this.icon = this.app.create_icon_texture(APPLICATION_ICON_SIZE);
@@ -435,7 +435,7 @@ ApplicationsButton.prototype = {
             if (this._activeContainer==this.applicationsBox) index = this._selectedItemIndex - 1 < 0 ? 0 : this._selectedItemIndex - 2;
             else index = this._selectedItemIndex - 1 < 0 ? 0 : this._selectedItemIndex - 1;
         } else if (symbol == Clutter.KEY_Down) {
-            if (this._activeContainer==this.applicationsBox) index = this._selectedItemIndex + 2 >= children.length ? children.length - 2 : this._selectedItemIndex + 2;
+            if (this._activeContainer==this.applicationsBox && this._selectedItemIndex!=-1) index = this._selectedItemIndex + 2 >= children.length ? children.length - 2 : this._selectedItemIndex + 2;
             else index = this._selectedItemIndex + 1 == children.length ? children.length - 1 : this._selectedItemIndex + 1;
         } else if (symbol == Clutter.KEY_Right && this._activeContainer === this.categoriesBox) {
             this._activeContainer = this.applicationsBox;
