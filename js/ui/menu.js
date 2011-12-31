@@ -50,27 +50,78 @@ AppMenuItem.prototype = {
 
 };
 
+function ApplicationContextMenuItem(appButton, label, action) {
+    this._init(appButton, label, action);
+}
+
+ApplicationContextMenuItem.prototype = {
+    __proto__: PopupMenu.PopupBaseMenuItem.prototype,
+
+    _init: function (appButton, label, action) {
+        PopupMenu.PopupBaseMenuItem.prototype._init.call(this, {});
+
+        this._appButton = appButton;
+        this._action = action;
+        this.label = new St.Label({ text: label });
+        this.addActor(this.label);
+    },
+
+    activate: function (event) {
+        switch (this._action){
+            case "add_to_panel":
+                let settings = new Gio.Settings({ schema: 'org.cinnamon' });
+                let desktopFiles = settings.get_strv('panel-launchers');
+                desktopFiles.push(this._appButton.app.get_id());
+                settings.set_strv('panel-launchers', desktopFiles);
+                this._appButton.menu.close();
+                break;
+        }
+        return false;
+    }
+
+};
+
 function ApplicationButton(appsMenuButton, app) {
     this._init(appsMenuButton, app);
 }
 
 ApplicationButton.prototype = {
+    __proto__: PopupMenu.PopupSubMenuMenuItem.prototype,
+    
     _init: function(appsMenuButton, app) {
-this.app = app;
-        this.actor = new St.Button({ reactive: true, label: this.app.get_name(), style_class: 'application-button', x_align: St.Align.START });
-        this.actor._delegate = this;
-        this.buttonbox = new St.BoxLayout();
-        this.label = new St.Label({ text: this.app.get_name(), style_class: 'application-button-label' });
+        this.app = app;
+        this.appsMenuButton = appsMenuButton;
+        PopupMenu.PopupBaseMenuItem.prototype._init.call(this);
+
+        this.actor.add_style_class_name('application-button');
         this.icon = this.app.create_icon_texture(APPLICATION_ICON_SIZE);
-        this.buttonbox.add_actor(this.icon);
-        this.buttonbox.add_actor(this.label);
-        this.actor.set_child(this.buttonbox);
-        /*if (this.app.get_description())
-this.actor.set_tooltip_text(this.app.get_description());*/
-        this.actor.connect('clicked', Lang.bind(this, function() {
-this.app.open_new_window(-1);
-            appsMenuButton.menu.close();
-}));
+        this.addActor(this.icon);
+        this.label = new St.Label({ text: this.app.get_name(), style_class: 'application-button-label' });
+        this.addActor(this.label);
+        this._triangle = new St.Label({ text: '\u25B8' });
+        //this.addActor(this._triangle, { align: St.Align.END });
+
+        this.menu = new PopupMenu.PopupSubMenu(this.actor, this._triangle);
+        this.menu.connect('open-state-changed', Lang.bind(this, this._subMenuOpenStateChanged));
+        
+        let menuItem = new ApplicationContextMenuItem(this, _("Add to panel"), "add_to_panel");
+        this.menu.addMenuItem(menuItem);
+    },
+    
+    _onButtonReleaseEvent: function (actor, event) {
+        if (event.get_button()==1){
+            this.activate(event);
+        }
+        if (event.get_button()==3){
+            global.log('test');
+            this.menu.toggle();
+        }
+        return true;
+    },
+    
+    activate: function(event) {
+        this.app.open_new_window(-1);
+        this.appsMenuButton.menu.close();
     }
 };
 Signals.addSignalMethods(ApplicationButton.prototype);
@@ -725,6 +776,7 @@ ApplicationsButton.prototype = {
                   this._applicationsButtons[app] = applicationButton;
                }
                this.applicationsBox.add_actor(this._applicationsButtons[app].actor);
+               this.applicationsBox.add_actor(this._applicationsButtons[app].menu.actor);
             }
          }
 
