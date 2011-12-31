@@ -113,7 +113,7 @@ ApplicationButton.prototype = {
             this.activate(event);
         }
         if (event.get_button()==3){
-            global.log('test');
+            this.appsMenuButton.closeApplicationsContextMenus(this.app);
             this.menu.toggle();
         }
         return true;
@@ -486,6 +486,7 @@ ApplicationsButton.prototype = {
             if (scrollBoxHeight<300) scrollBoxHeight = 300;
             this.applicationsScrollBox.style = "height: "+scrollBoxHeight+"px;";
        } else {
+           this.closeApplicationsContextMenus();
            //this.resetSearch();
            //this._clearSelections(this.categoriesBox);
            //this._clearSelections(this.applicationsBox);
@@ -754,6 +755,12 @@ ApplicationsButton.prototype = {
 	       if (dir) this._displayButtons(this._listApplications(dir.get_menu_id()));
 	       else this._displayButtons(this._listApplications(null));
 	},
+    
+    closeApplicationsContextMenus: function(excludeApp) {
+        for (var app in this._applicationsButtons)
+            if (app!=excludeApp && this._applicationsButtons[app].menu.isOpen)
+                this._applicationsButtons[app].menu.toggle();
+    },
     
     _displayButtons: function(apps, places){
          if (apps){
