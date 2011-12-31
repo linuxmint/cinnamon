@@ -1241,7 +1241,7 @@ PopupSubMenu.prototype = {
         PopupMenuBase.prototype._init.call(this, sourceActor);
 
         this._arrow = sourceArrow;
-        this._arrow.rotation_center_z_gravity = Clutter.Gravity.CENTER;
+        if (this._arrow) this._arrow.rotation_center_z_gravity = Clutter.Gravity.CENTER;
 
         // Since a function of a submenu might be to provide a "More.." expander
         // with long content, we make it scrollable - the scrollbar will only take
@@ -1322,14 +1322,15 @@ PopupSubMenu.prototype = {
         if (animate) {
             let [minHeight, naturalHeight] = this.actor.get_preferred_height(-1);
             this.actor.height = 0;
-            this.actor._arrow_rotation = this._arrow.rotation_angle_z;
+            if (this._arrow) this.actor._arrow_rotation = this._arrow.rotation_angle_z;
+            else this.actor._arrow_rotation = 0;
             Tweener.addTween(this.actor,
                              { _arrow_rotation: 90,
                                height: naturalHeight,
                                time: 0.25,
                                onUpdateScope: this,
                                onUpdate: function() {
-                                   this._arrow.rotation_angle_z = this.actor._arrow_rotation;
+                                   if (this._arrow) this._arrow.rotation_angle_z = this.actor._arrow_rotation;
                                },
                                onCompleteScope: this,
                                onComplete: function() {
@@ -1338,7 +1339,7 @@ PopupSubMenu.prototype = {
                                }
                              });
         } else {
-            this._arrow.rotation_angle_z = 90;
+            if (this._arrow) this._arrow.rotation_angle_z = 90;
             this.emit('open-state-changed', true);
         }
     },
@@ -1356,7 +1357,8 @@ PopupSubMenu.prototype = {
             animate = false;
 
         if (animate) {
-            this.actor._arrow_rotation = this._arrow.rotation_angle_z;
+            if (this._arrow) this.actor._arrow_rotation = this._arrow.rotation_angle_z;
+            else this.actor._arrow_rotation = 90;
             Tweener.addTween(this.actor,
                              { _arrow_rotation: 0,
                                height: 0,
@@ -1370,11 +1372,11 @@ PopupSubMenu.prototype = {
                                },
                                onUpdateScope: this,
                                onUpdate: function() {
-                                   this._arrow.rotation_angle_z = this.actor._arrow_rotation;
+                                   if (this._arrow) this._arrow.rotation_angle_z = this.actor._arrow_rotation;
                                }
                              });
             } else {
-                this._arrow.rotation_angle_z = 0;
+                if (this._arrow) this._arrow.rotation_angle_z = 0;
                 this.actor.hide();
 
                 this.isOpen = false;

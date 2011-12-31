@@ -73,10 +73,10 @@ ApplicationContextMenuItem.prototype = {
                 let desktopFiles = settings.get_strv('panel-launchers');
                 desktopFiles.push(this._appButton.app.get_id());
                 settings.set_strv('panel-launchers', desktopFiles);
-                this._appButton.actor.grab_key_focus();
-                this._appButton.toggleMenu();
                 break;
         }
+        this._appButton.actor.grab_key_focus();
+        this._appButton.toggleMenu();
         return false;
     }
 
@@ -99,10 +99,8 @@ ApplicationButton.prototype = {
         this.addActor(this.icon);
         this.label = new St.Label({ text: this.app.get_name(), style_class: 'application-button-label' });
         this.addActor(this.label);
-        this._triangle = new St.Label({ text: '\u25B8' });
-        //this.addActor(this._triangle, { align: St.Align.END });
 
-        this.menu = new PopupMenu.PopupSubMenu(this.actor, this._triangle);
+        this.menu = new PopupMenu.PopupSubMenu(this.actor);
         this.menu.connect('open-state-changed', Lang.bind(this, this._subMenuOpenStateChanged));
         
         let menuItem = new ApplicationContextMenuItem(this, _("Add to panel"), "add_to_panel");
