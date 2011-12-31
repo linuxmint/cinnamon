@@ -44,3 +44,11 @@ function recursivelyDeleteDir(dir) {
 
     deleteGFile(dir);
 }
+
+function getUserDesktopDir() {
+    // Needs to be changed in order to handle different paths for the desktop dir
+    let path = GLib.get_home_dir() + '/Desktop';
+    let file = Gio.file_new_for_path(path);
+    if (file.query_exists(null)) return path;
+    else return null;
+}

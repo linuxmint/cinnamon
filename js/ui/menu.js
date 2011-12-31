@@ -15,6 +15,8 @@ const Gio = imports.gi.Gio;
 const Signals = imports.signals;
 const GnomeSession = imports.misc.gnomeSession;
 const ScreenSaver = imports.misc.screenSaver;
+const FileUtils = imports.misc.fileUtils;
+const Util = imports.misc.util;
 
 const Gettext = imports.gettext.domain('cinnamon-extensions');
 const _ = Gettext.gettext;
@@ -23,6 +25,8 @@ const ICON_SIZE = 16;
 const FAV_ICON_SIZE = 30;
 const CATEGORY_ICON_SIZE = 20;
 const APPLICATION_ICON_SIZE = 20;
+
+const USER_DESKTOP_PATH = FileUtils.getUserDesktopDir();
 
 let appsys = Cinnamon.AppSystem.get_default();
 
@@ -74,6 +78,17 @@ ApplicationContextMenuItem.prototype = {
                 desktopFiles.push(this._appButton.app.get_id());
                 settings.set_strv('panel-launchers', desktopFiles);
                 break;
+            case "add_to_desktop":
+                let file = Gio.file_new_for_path(this._appButton.app.get_app_info().get_filename());
+                let destFile = Gio.file_new_for_path(USER_DESKTOP_PATH+"/"+this._appButton.app.get_id());
+                try{
+                    file.copy(destFile, 0, null, function(){});
+                    // Need to find a way to do that using the Gio library, but modifying the access::can-execute attribute on the file object seems unsupported
+                    Util.spawnCommandLine("chmod +x \""+USER_DESKTOP_PATH+"/"+this._appButton.app.get_id()+"\"");
+                }catch(e){
+                    global.log(e);
+                }
+                break;
         }
         this._appButton.actor.grab_key_focus();
         this._appButton.toggleMenu();
@@ -103,8 +118,8 @@ ApplicationButton.prototype = {
         this.menu = new PopupMenu.PopupSubMenu(this.actor);
         this.menu.connect('open-state-changed', Lang.bind(this, this._subMenuOpenStateChanged));
         
-        let menuItem = new ApplicationContextMenuItem(this, _("Add to panel"), "add_to_panel");
-        this.menu.addMenuItem(menuItem);
+        this.menu.addMenuItem(new ApplicationContextMenuItem(this, _("Add to panel"), "add_to_panel"));
+        if (USER_DESKTOP_PATH) this.menu.addMenuItem(new ApplicationContextMenuItem(this, _("Add to desktop"), "add_to_desktop"));
     },
     
     _onButtonReleaseEvent: function (actor, event) {

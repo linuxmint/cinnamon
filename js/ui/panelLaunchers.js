@@ -45,10 +45,8 @@ PanelAppLauncherMenu.prototype = {
     },
     
     _onRemoveActivate: function(actor, event) {
-        try{
         this._launcher.launchersBox.removeLauncher(this._launcher, this._launcher.is_custom());
         this._launcher.actor.destroy();
-        }catch(e){global.log(e);}
     },
     
     _onAddActivate: function(actor, event) {
