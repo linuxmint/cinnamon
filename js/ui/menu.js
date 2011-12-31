@@ -73,7 +73,8 @@ ApplicationContextMenuItem.prototype = {
                 let desktopFiles = settings.get_strv('panel-launchers');
                 desktopFiles.push(this._appButton.app.get_id());
                 settings.set_strv('panel-launchers', desktopFiles);
-                this._appButton.closeMenu();
+                this._appButton.actor.grab_key_focus();
+                this._appButton.toggleMenu();
                 break;
         }
         return false;
