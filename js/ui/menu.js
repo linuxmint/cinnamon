@@ -432,9 +432,11 @@ ApplicationsButton.prototype = {
         let index = this._selectedItemIndex;
 
         if (symbol == Clutter.KEY_Up) {
-            index = this._selectedItemIndex - 1 < 0 ? 0 : this._selectedItemIndex - 1;
+            if (this._activeContainer==this.applicationsBox) index = this._selectedItemIndex - 1 < 0 ? 0 : this._selectedItemIndex - 2;
+            else index = this._selectedItemIndex - 1 < 0 ? 0 : this._selectedItemIndex - 1;
         } else if (symbol == Clutter.KEY_Down) {
-            index = this._selectedItemIndex + 1 == children.length ? children.length - 1 : this._selectedItemIndex + 1;
+            if (this._activeContainer==this.applicationsBox) index = this._selectedItemIndex + 2 >= children.length ? children.length - 2 : this._selectedItemIndex + 2;
+            else index = this._selectedItemIndex + 1 == children.length ? children.length - 1 : this._selectedItemIndex + 1;
         } else if (symbol == Clutter.KEY_Right && this._activeContainer === this.categoriesBox) {
             this._activeContainer = this.applicationsBox;
             children = this._activeContainer.get_children();
@@ -449,8 +451,7 @@ ApplicationsButton.prototype = {
             this._selectedItemIndex = -1;
         } else if (this._activeContainer === this.applicationsBox && (symbol == Clutter.KEY_space || symbol == Clutter.KEY_Return || symbol == Clutter.KP_Enter)) {
             let item_actor = children[this._selectedItemIndex];
-            // First mouse button
-            item_actor.emit('clicked', 1);
+            item_actor._delegate.activate();
             return true;
         } else {
             return false;
@@ -460,7 +461,11 @@ ApplicationsButton.prototype = {
             return true;
         }
         
-        if (index>=children.length) index = children.length-1;
+        if (this._activeContainer==this.applicationsBox){
+            if (index>=children.length-1) index = children.length-2;
+        }else{
+            if (index>=children.length) index = children.length-1;
+        }
 
         this._selectedItemIndex = index;
         let item_actor = children[this._selectedItemIndex];
