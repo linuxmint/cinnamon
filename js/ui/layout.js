@@ -246,11 +246,11 @@ LayoutManager.prototype = {
             let monitor = this.bottomMonitor;
             this._leftPanelBarrier =
                 global.create_pointer_barrier(monitor.x, monitor.y + monitor.height - this.panelBox.height,
-                                              monitor.x, monitor.y,
+                                              monitor.x, monitor.y + monitor.height,
                                               1 /* BarrierPositiveX */);
             this._rightPanelBarrier =
                 global.create_pointer_barrier(monitor.x + monitor.width, monitor.y + monitor.height - this.panelBox.height,
-                                              monitor.x + monitor.width, monitor.y,
+                                              monitor.x + monitor.width, monitor.y + monitor.height,
                                               4 /* BarrierNegativeX */);
         } else {
             this._leftPanelBarrier = 0;
