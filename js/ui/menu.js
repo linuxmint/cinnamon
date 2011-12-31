@@ -118,6 +118,8 @@ ApplicationButton.prototype = {
         this.menu = new PopupMenu.PopupSubMenu(this.actor);
         this.menu.connect('open-state-changed', Lang.bind(this, this._subMenuOpenStateChanged));
         
+        // Only add items to the menu when showing it
+        // Add commands to add/remove applications to/from the favorites
         this.menu.addMenuItem(new ApplicationContextMenuItem(this, _("Add to panel"), "add_to_panel"));
         if (USER_DESKTOP_PATH) this.menu.addMenuItem(new ApplicationContextMenuItem(this, _("Add to desktop"), "add_to_desktop"));
     },
@@ -224,7 +226,7 @@ Signals.addSignalMethods(PlaceCategoryButton.prototype);
 function FavoritesButton(appsMenuButton, app, nbFavorites) {
     this._init(appsMenuButton, app, nbFavorites);
 }
-
+// Add context menu as on applications buttons
 FavoritesButton.prototype = {
     _init: function(appsMenuButton, app, nbFavorites) {
         this.actor = new St.Button({ reactive: true, style_class: 'applications-menu-favorites-button' });
