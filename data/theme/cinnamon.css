@@ -242,12 +242,24 @@ StTooltip StLabel {
     spacing: .5em;
 }
 
-/* Menu */
+/* =================================
+ * Menu 
+ * =================================*/
+
+/* Main menu title */
+.menu-label {
+	padding-left: 2px;
+}
+
 .applications-menu-favorites-box {
   width: 70%;
   margin: auto;
   padding: 10px;
   border: 1px solid #666;  
+  border-radius: 4px;  
+  background-gradient-direction: vertical;
+  background-gradient-start: rgba(85,85,85,0.8);
+  background-gradient-end: rgba(85,85,85,0.2);  
 }
 .applications-menu-favorites-button {
     padding-top: 10px;
@@ -263,10 +275,6 @@ StTooltip StLabel {
 	 background-gradient-end: rgba(255,255,255,0.08);
 	 box-shadow: inset 0px 0px 1px 1px rgba(255,255,255,0.06);
     border-radius: 4px;
-}
-
-.menu-label {
-	padding-left: 2px;
 }
 
 .places-box {
@@ -297,25 +305,6 @@ StTooltip StLabel {
 .applications-scrollbox {
     height: 300px;
 }
-.applications-title {
-	padding-top: 15px;
-	padding-bottom: 5px;
-	padding-right: 5px;
-	padding-left: 5px;	
-}
-
-.favorites-title {
-	padding-top: 5px;
-	padding-bottom: 5px;
-	padding-right: 5px;
-	padding-left: 5px;	
-}
-
-.favorites-title:hover {
-    font-weight: bold;
-}
-
-
 
 .application-button {
     padding-top: 7px;
@@ -371,6 +360,9 @@ StTooltip StLabel {
     border-radius: 8px;
 }
 
+
+/* Name and description of the currently hovered item in the menu
+ * This appears on the bottom right hand corner of the menu*/
 .selected-app-box {
     padding-right: 30px;
     padding-left: 28px;
@@ -378,7 +370,7 @@ StTooltip StLabel {
 }
 
 .selected-app-title {
-    
+    font-weight: bold;
 }
 
 .selected-app-description {
@@ -389,7 +381,11 @@ StTooltip StLabel {
    padding-left: 30px;
 }
 
-/* Window list */
+
+
+/* ========================
+ * Window list 
+ * ========================*/
 .window-list-box {
     spacing: 3px;
     padding-left: 10px;

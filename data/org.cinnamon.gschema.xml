@@ -24,13 +24,13 @@
       <description>The text shown in the Menu label.</description>
     </key>
     
-    <key name="overview-corner-visible" type="b">
+     <key type="b" name="overview-corner-visible">
       <default>true</default>
       <summary>Enable or disable the overview corner icon</summary>
       <description>Whether the overview icon is visible or not.</description>
     </key>
     
-    <key name="overview-corner-hover" type="b">
+    <key type="b" name="overview-corner-hover">
       <default>true</default>
       <summary>Enable or disable the overview hot corner</summary>
       <description>Whether the overview hot corner is enabled or not.</description>
