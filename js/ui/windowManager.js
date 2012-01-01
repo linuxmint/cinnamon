@@ -538,8 +538,8 @@ WindowManager.prototype = {
 
     _startAppSwitcher : function(cinnamonwm, binding, mask, window, backwards) {
         /* prevent a corner case where both popups show up at once */
-        if (this._workspaceSwitcherPopup != null)
-            this._workspaceSwitcherPopup.actor.hide();
+        //if (this._workspaceSwitcherPopup != null)
+        //    this._workspaceSwitcherPopup.actor.hide();
 
         let tabPopup = new AltTab.AltTabPopup();
 
@@ -582,8 +582,8 @@ WindowManager.prototype = {
         if (indexToActivate != activeWorkspaceIndex)
             global.screen.get_workspace_by_index(indexToActivate).activate(global.get_current_time());
 
-        if (!Main.overview.visible)
-            this._workspaceSwitcherPopup.display(WorkspaceSwitcherPopup.UP, indexToActivate);
+        //if (!Main.overview.visible)
+        //    this._workspaceSwitcherPopup.display(WorkspaceSwitcherPopup.UP, indexToActivate);
     },
 
     actionMoveWorkspaceRight: function() {
@@ -598,8 +598,8 @@ WindowManager.prototype = {
         if (indexToActivate != activeWorkspaceIndex)
             global.screen.get_workspace_by_index(indexToActivate).activate(global.get_current_time());
 
-        if (!Main.overview.visible)
-            this._workspaceSwitcherPopup.display(WorkspaceSwitcherPopup.DOWN, indexToActivate);
+        //if (!Main.overview.visible)
+        //    this._workspaceSwitcherPopup.display(WorkspaceSwitcherPopup.DOWN, indexToActivate);
     },
 
     actionMoveWorkspaceUp: function() {
@@ -611,8 +611,8 @@ WindowManager.prototype = {
         if (indexToActivate != activeWorkspaceIndex)
             global.screen.get_workspace_by_index(indexToActivate).activate(global.get_current_time());
 
-        if (!Main.overview.visible)
-            this._workspaceSwitcherPopup.display(WorkspaceSwitcherPopup.UP, indexToActivate);
+        //if (!Main.overview.visible)
+        //    this._workspaceSwitcherPopup.display(WorkspaceSwitcherPopup.UP, indexToActivate);
     },
 
     actionMoveWorkspaceDown: function() {
@@ -624,7 +624,7 @@ WindowManager.prototype = {
         if (indexToActivate != activeWorkspaceIndex)
             global.screen.get_workspace_by_index(indexToActivate).activate(global.get_current_time());
 
-        if (!Main.overview.visible)
-            this._workspaceSwitcherPopup.display(WorkspaceSwitcherPopup.DOWN, indexToActivate);
+        //if (!Main.overview.visible)
+        //    this._workspaceSwitcherPopup.display(WorkspaceSwitcherPopup.DOWN, indexToActivate);
     }
 };
