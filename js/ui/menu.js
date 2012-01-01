@@ -118,10 +118,6 @@ ApplicationButton.prototype = {
         this.menu = new PopupMenu.PopupSubMenu(this.actor);
         this.menu.connect('open-state-changed', Lang.bind(this, this._subMenuOpenStateChanged));
         
-        // Only add items to the menu when showing it
-        // Add commands to add/remove applications to/from the favorites
-        this.menu.addMenuItem(new ApplicationContextMenuItem(this, _("Add to panel"), "add_to_panel"));
-        if (USER_DESKTOP_PATH) this.menu.addMenuItem(new ApplicationContextMenuItem(this, _("Add to desktop"), "add_to_desktop"));
     },
     
     _onButtonReleaseEvent: function (actor, event) {
@@ -146,6 +142,19 @@ ApplicationButton.prototype = {
     },
     
     toggleMenu: function() {
+        if (!this.menu.isOpen){
+            let children = this.menu.box.get_children();
+            for (var i in children){
+                children[i].destroy();
+            }
+            let menuItem;
+            menuItem = new ApplicationContextMenuItem(this, _("Add to panel"), "add_to_panel");
+            this.menu.addMenuItem(menuItem);
+            if (USER_DESKTOP_PATH){
+                menuItem = new ApplicationContextMenuItem(this, _("Add to desktop"), "add_to_desktop")
+                this.menu.addMenuItem(menuItem);
+            }
+        }
         this.menu.toggle();
     }
 };
