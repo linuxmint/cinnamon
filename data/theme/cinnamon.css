@@ -440,6 +440,11 @@ StTooltip StLabel {
     color: #8d8f8a;
 }
 
+/* Context menu (at the moment only for favorites) */
+.menu-context-menu {
+
+}
+
 /* ===================================================================
  * Window list (windowList.js)
  * ===================================================================*/

@@ -116,6 +116,7 @@ GenericApplicationButton.prototype = {
         PopupMenu.PopupBaseMenuItem.prototype._init.call(this, {hover: false});
         
         this.menu = new PopupMenu.PopupSubMenu(this.actor);
+        this.menu.actor.set_style_class_name('menu-context-menu');
         this.menu.connect('open-state-changed', Lang.bind(this, this._subMenuOpenStateChanged));
     },
     
