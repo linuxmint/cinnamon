@@ -1,22 +1,6 @@
-/* Copyright 2009, Red Hat, Inc.
- *
- * Portions adapted from Mx's data/style/default.css
- *   Copyright 2009 Intel Corporation
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms and conditions of the GNU Lesser General Public License,
- * version 2.1, as published by the Free Software Foundation.
- *
- * This program is distributed in the hope it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for
- * more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program; if not, write to the Free Software Foundation,
- * Inc., 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
- */
-
+/* ===================================================================
+ * Main Section
+ * ===================================================================*/
 stage {
     font-family: cantarell, sans-serif;
 }
@@ -92,7 +76,44 @@ StTooltip StLabel {
     text-align: center;
 }
 
-/* PopupMenu */
+/* ===================================================================
+ * Shared button properties 
+ * ===================================================================*/
+
+.dash-search-button, .notification-button, .notification-icon-button,
+.hotplug-notification-item, .hotplug-resident-eject-button,
+.modal-dialog-button {
+    color: white;
+    border: 1px solid #8b8b8b;
+    background-gradient-direction: vertical;
+    background-gradient-start: rgba(255, 255, 255, 0.2);
+    background-gradient-end: rgba(255, 255, 255, 0);
+}
+
+.dash-search-button:hover, .notification-button:hover,
+.notification-icon-button:hover, .hotplug-notification-item:hover,
+.hotplug-resident-eject-button:hover, .modal-dialog-button:hover {
+    background-gradient-start: rgba(255, 255, 255, 0.3);
+    background-gradient-end: rgba(255, 255, 255, 0.1);
+}
+
+.dash-search-button:selected, .notification-button:focus,
+.notification-icon-button:focus, .hotplug-notification-item:focus,
+.modal-dialog-button:focus {
+    border: 2px solid #8b8b8b;
+}
+
+.dash-search-button:active, .dash-search-button:pressed,
+.notification-button:active, .notification-icon-button:active,
+.hotplug-notification-item:active, .hotplug-resident-eject-button:active,
+.modal-dialog-button:active, .modal-dialog-button:pressed {
+    background-gradient-start: rgba(255, 255, 255, 0);
+    background-gradient-end: rgba(255, 255, 255, 0.2);
+}
+
+/* ===================================================================
+ * Applets (popupMenu.js) 
+ * ===================================================================*/
 
 .popup-menu-boxpointer {
     -arrow-border-radius: 8px;
@@ -242,9 +263,9 @@ StTooltip StLabel {
     spacing: .5em;
 }
 
-/* =================================
- * Menu 
- * =================================*/
+/* ===================================================================
+ * Menu (menu.js)
+ * ===================================================================*/
 
 /* Main menu title */
 .menu-label {
@@ -360,7 +381,6 @@ StTooltip StLabel {
     border-radius: 8px;
 }
 
-
 /* Name and description of the currently hovered item in the menu
  * This appears on the bottom right hand corner of the menu*/
 .selected-app-box {
@@ -381,39 +401,52 @@ StTooltip StLabel {
    padding-left: 30px;
 }
 
+#searchEntry {
+    padding: 4px 12px;
+    border-radius: 4px;
+    color: rgb(128, 128, 128);
+    border: 2px solid rgba(245,245,245,0.2);
+    background-gradient-start: rgba(5,5,6,0.1);
+    background-gradient-end: rgba(254,254,254,0.1);
+    background-gradient-direction: vertical;
+    selected-color: black;
+    caret-color: rgb(128, 128, 128);
+    caret-size: 1px;
+    width: 250px;
+    transition-duration: 300;
+    box-shadow: inset 0px 2px 4px rgba(0,0,0,0.6);
+}
 
+#searchEntry:focus,
+#searchEntry:hover {
+    border: 2px solid rgb(136,138,133);
+    background-gradient-start: rgb(200,200,200);
+    background-gradient-end: white;
+    background-gradient-direction: vertical;
+}
 
-/* ========================
- * Window list 
- * ========================*/
+#searchEntry:hover {
+    transition-duration: 300;
+}
+
+#searchEntry:focus {
+    color: rgb(64, 64, 64);
+    font-weight: bold;
+    transition-duration: 0;
+}
+
+.search-entry-icon {
+    icon-size: 1em;
+    color: #8d8f8a;
+}
+
+/* ===================================================================
+ * Window list (windowList.js)
+ * ===================================================================*/
 .window-list-box {
     spacing: 3px;
     padding-left: 10px;
     padding-top: 1px;   
-}
-
-.window-list-item-box {
-     background-gradient-direction: vertical;
-	 background-gradient-start: rgba(226,226,226,0.5);
-	 background-gradient-end: rgba(182,182,182,0.5);
-	 box-shadow: inset 0px 0px 1px 1px rgba(170,170,170,1.0);
-     border-radius: 2px;
-}
-
-.window-list-item-box:active,
-.window-list-item-box:checked,
-.window-list-item-box:focus  {     
-	 background-gradient-direction: vertical;
-	 background-gradient-start: rgba(226,226,226,1.0);
-	 background-gradient-end: rgba(182,182,182,1.0);
-	 box-shadow: inset 0px 0px 1px 1px rgba(170,170,170,1.0);
-     border-radius: 2px;
-}
-
-.window-list-item-box:hover  {
-     
-	 box-shadow: inset 0px 0px 1px 1px rgba(170,170,170,1.0);
-     border-radius: 2px;
 }
 
 .window-list-item-label {
@@ -422,7 +455,7 @@ StTooltip StLabel {
     min-width: 5px;
 }
 
-.window-list-item-box-bottom {
+.window-list-item-box {
      color: rgba(255,255,255,1.0);
 	 background-gradient-direction: vertical;
 	 background-gradient-start: rgba(255,255,255,0.05);
@@ -431,9 +464,9 @@ StTooltip StLabel {
      border-radius: 2px 2px 0px 0px;
 }
 
-.window-list-item-box-bottom:active,
-.window-list-item-box-bottom:checked,
-.window-list-item-box-bottom:focus  {     
+.window-list-item-box:active,
+.window-list-item-box:checked,
+.window-list-item-box:focus  {     
 	 background-gradient-direction: vertical;
 	 background-gradient-start: rgba(226,226,226,0.5);
 	 background-gradient-end: rgba(122,122,122,0.5);
@@ -441,13 +474,14 @@ StTooltip StLabel {
      border-radius: 2px 2px 0px 0px;
 }
 
-.window-list-item-box-bottom:hover  {
-     
+.window-list-item-box:hover  {     
 	 box-shadow: inset 0px 0px 1px 1px rgba(170,170,170,1.0);
      border-radius: 2px 2px 0px 0px;
 }
 
-/* Media Player controls */
+/* ===================================================================
+ * Sound Applet (status/volume.js)
+ * ===================================================================*/
 .button-container {
     padding-right: 5px;
 }
@@ -504,41 +538,9 @@ StTooltip StLabel {
     padding-bottom: 10px;
 }
 
-
-/* Shared button properties */
-
-.dash-search-button, .notification-button, .notification-icon-button,
-.hotplug-notification-item, .hotplug-resident-eject-button,
-.modal-dialog-button {
-    color: white;
-    border: 1px solid #8b8b8b;
-    background-gradient-direction: vertical;
-    background-gradient-start: rgba(255, 255, 255, 0.2);
-    background-gradient-end: rgba(255, 255, 255, 0);
-}
-
-.dash-search-button:hover, .notification-button:hover,
-.notification-icon-button:hover, .hotplug-notification-item:hover,
-.hotplug-resident-eject-button:hover, .modal-dialog-button:hover {
-    background-gradient-start: rgba(255, 255, 255, 0.3);
-    background-gradient-end: rgba(255, 255, 255, 0.1);
-}
-
-.dash-search-button:selected, .notification-button:focus,
-.notification-icon-button:focus, .hotplug-notification-item:focus,
-.modal-dialog-button:focus {
-    border: 2px solid #8b8b8b;
-}
-
-.dash-search-button:active, .dash-search-button:pressed,
-.notification-button:active, .notification-icon-button:active,
-.hotplug-notification-item:active, .hotplug-resident-eject-button:active,
-.modal-dialog-button:active, .modal-dialog-button:pressed {
-    background-gradient-start: rgba(255, 255, 255, 0);
-    background-gradient-end: rgba(255, 255, 255, 0.2);
-}
-
-/* Panel */
+/* ===================================================================
+ * Panel (panel.js)
+ * ===================================================================*/
 
 #panel {
     color: #ffffff;
@@ -641,11 +643,6 @@ StTooltip StLabel {
     app-icon-bottom-clip: 2px;
 }
 
-.app-menu-icon {
-    width: 24px;
-    height: 24px;
-}
-
 .panel-button {
     -natural-hpadding: 6px;
     -minimum-hpadding: 2px;
@@ -730,7 +727,9 @@ StTooltip StLabel {
     icon-size: 1.14em;
 }
 
-/* Overview */
+/* ===================================================================
+ * Overview 
+ * ===================================================================*/
 
 #overview {
     spacing: 12px;
@@ -788,7 +787,9 @@ StTooltip StLabel {
     -st-background-image-shadow: 2px 2px 6px rgba(0,0,0,0.5);
 }
 
-/* Dash */
+/* ===================================================================
+ * Dash 
+ * ===================================================================*/
 
 #dash {
     color: #5f5f5f;
@@ -826,45 +827,6 @@ StTooltip StLabel {
 
 #searchArea {
     padding: 0px 24px;
-}
-
-#searchEntry {
-    padding: 4px 12px;
-    border-radius: 4px;
-    color: rgb(128, 128, 128);
-    border: 2px solid rgba(245,245,245,0.2);
-    background-gradient-start: rgba(5,5,6,0.1);
-    background-gradient-end: rgba(254,254,254,0.1);
-    background-gradient-direction: vertical;
-    selected-color: black;
-    caret-color: rgb(128, 128, 128);
-    caret-size: 1px;
-    width: 250px;
-    transition-duration: 300;
-    box-shadow: inset 0px 2px 4px rgba(0,0,0,0.6);
-}
-
-#searchEntry:focus,
-#searchEntry:hover {
-    border: 2px solid rgb(136,138,133);
-    background-gradient-start: rgb(200,200,200);
-    background-gradient-end: white;
-    background-gradient-direction: vertical;
-}
-
-#searchEntry:hover {
-    transition-duration: 300;
-}
-
-#searchEntry:focus {
-    color: rgb(64, 64, 64);
-    font-weight: bold;
-    transition-duration: 0;
-}
-
-.search-entry-icon {
-    icon-size: 1em;
-    color: #8d8f8a;
 }
 
 .view-tab-title {

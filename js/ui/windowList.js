@@ -141,23 +141,14 @@ AppMenuButton.prototype = {
     
     _init: function(metaWindow, animation) {
 
-        if (bottomPosition) {        
-            this.actor = new St.Bin({ style_class: 'window-list-item-box-bottom',
-                                      reactive: true,
-                                      can_focus: true,
-                                      x_fill: true,
-                                      y_fill: false,
-                                      track_hover: true });
-        }
-        else {
-            this.actor = new St.Bin({ style_class: 'window-list-item-box',
-                                      reactive: true,
-                                      can_focus: true,
-                                      x_fill: true,
-                                      y_fill: false,
-                                      track_hover: true });
-        }
         
+        this.actor = new St.Bin({ style_class: 'window-list-item-box',
+								  reactive: true,
+								  can_focus: true,
+								  x_fill: true,
+								  y_fill: false,
+								  track_hover: true });
+      
         this.actor._delegate = this;
         this.actor.connect('button-release-event', Lang.bind(this, this._onButtonRelease));
 
