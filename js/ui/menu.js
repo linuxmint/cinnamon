@@ -89,6 +89,12 @@ ApplicationContextMenuItem.prototype = {
                     global.log(e);
                 }
                 break;
+            case "add_to_favorites":
+                AppFavorites.getAppFavorites().addFavorite(this._appButton.app.get_id());
+                break;
+            case "remove_from_favorites":
+                AppFavorites.getAppFavorites().removeFavorite(this._appButton.app.get_id());
+                break;
         }
         this._appButton.actor.grab_key_focus();
         this._appButton.toggleMenu();
@@ -151,7 +157,14 @@ ApplicationButton.prototype = {
             menuItem = new ApplicationContextMenuItem(this, _("Add to panel"), "add_to_panel");
             this.menu.addMenuItem(menuItem);
             if (USER_DESKTOP_PATH){
-                menuItem = new ApplicationContextMenuItem(this, _("Add to desktop"), "add_to_desktop")
+                menuItem = new ApplicationContextMenuItem(this, _("Add to desktop"), "add_to_desktop");
+                this.menu.addMenuItem(menuItem);
+            }
+            if (AppFavorites.getAppFavorites().isFavorite(this.app.get_id())){
+                menuItem = new ApplicationContextMenuItem(this, _("Remove from favorites"), "remove_from_favorites");
+                this.menu.addMenuItem(menuItem);
+            }else{
+                menuItem = new ApplicationContextMenuItem(this, _("Add to favorites"), "add_to_favorites");
                 this.menu.addMenuItem(menuItem);
             }
         }
