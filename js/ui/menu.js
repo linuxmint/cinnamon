@@ -230,20 +230,38 @@ FavoritesButton.prototype = {
         this.actor = new St.Button({ reactive: true, style_class: 'applications-menu-favorites-button' });
         
         let monitorHeight = Main.layoutManager.primaryMonitor.height;
-        let boxHeight = monitorHeight - (appsMenuButton.systemBox.get_allocation_box().y2-appsMenuButton.systemBox.get_allocation_box().y1);
+        let boxHeight = monitorHeight - (appsMenuButton.favoritesBox.get_allocation_box().y2-appsMenuButton.favoritesBox.get_allocation_box().y1);
         let real_size = (0.7*boxHeight) / nbFavorites;
         let icon_size = 0.6*real_size;
         if (icon_size>FAV_ICON_SIZE) icon_size = FAV_ICON_SIZE;
         this.actor.style = "padding-top: "+(icon_size/3)+"px;padding-bottom: "+(icon_size/3)+"px;padding-left: "+(icon_size/3)+"px;padding-right: "+(icon_size/3)+"px;"
         
         this.actor.set_child(app.create_icon_texture(icon_size));
-        //this.actor.set_tooltip_text(app.get_name()); #Doesn't appear in the right place
         this._app = app;
 
         this.actor.connect('clicked', Lang.bind(this, function() {
             this._app.open_new_window(-1);
             appsMenuButton.menu.close();
         }));
+    }
+};
+
+function SystemButton(appsMenuButton, icon, nbFavorites) {
+    this._init(appsMenuButton, icon, nbFavorites);
+}
+
+SystemButton.prototype = {
+    _init: function(appsMenuButton, icon, nbFavorites) {
+        this.actor = new St.Button({ reactive: true, style_class: 'applications-menu-favorites-button' });
+        
+        let monitorHeight = Main.layoutManager.primaryMonitor.height;
+        let boxHeight = monitorHeight - (appsMenuButton.favoritesBox.get_allocation_box().y2-appsMenuButton.favoritesBox.get_allocation_box().y1);
+        let real_size = (0.7*boxHeight) / nbFavorites;
+        let icon_size = 0.6*real_size;
+        if (icon_size>FAV_ICON_SIZE) icon_size = FAV_ICON_SIZE;
+        this.actor.style = "padding-top: "+(icon_size/3)+"px;padding-bottom: "+(icon_size/3)+"px;padding-left: "+(icon_size/3)+"px;padding-right: "+(icon_size/3)+"px;"
+        let iconObj = new St.Icon({icon_name: icon, icon_size: icon_size, icon_type: St.IconType.FULLCOLOR});
+        this.actor.set_child(iconObj);             
     }
 };
 
@@ -508,8 +526,7 @@ ApplicationsButton.prototype = {
            global.stage.set_key_focus(this.searchEntry);
            this._selectedItemIndex = null;
            this._activeContainer = null;
-           let scrollBoxHeight = (this.favoritesBox.get_allocation_box().y2-this.favoritesBox.get_allocation_box().y1)
-                                    +(this.systemBox.get_allocation_box().y2-this.systemBox.get_allocation_box().y1)
+           let scrollBoxHeight = (this.favoritesBox.get_allocation_box().y2-this.favoritesBox.get_allocation_box().y1)                                    
                                     -(this.searchBox.get_allocation_box().y2-this.searchBox.get_allocation_box().y1);
             if (scrollBoxHeight<300) scrollBoxHeight = 300;
             this.applicationsScrollBox.style = "height: "+scrollBoxHeight+"px;";
@@ -577,8 +594,8 @@ ApplicationsButton.prototype = {
         for ( let i = 0; i < launchers.length; ++i ) {
             let app = appSys.lookup_app(launchers[i]);
             if (app) {
-                let button = new FavoritesButton(this, app, launchers.length);
-                this.favoritesBox.add_actor(button.actor);
+                let button = new FavoritesButton(this, app, launchers.length + 3); // + 3 because we're adding 3 system buttons at the bottom
+                this.favoritesBox.add_actor(button.actor, { y_align: St.Align.END, y_fill: false });
                 button.actor.connect('enter-event', Lang.bind(this, function() {
                    this.selectedAppTitle.set_text(button._app.get_name());
                    if (button._app.get_description()) this.selectedAppDescription.set_text(button._app.get_description());
@@ -591,6 +608,57 @@ ApplicationsButton.prototype = {
                 ++j;
             }
         }
+        
+        //Lock screen
+        let button = new SystemButton(this, "gnome-lockscreen", launchers.length + 3);        
+        button.actor.connect('enter-event', Lang.bind(this, function() {
+				this.selectedAppTitle.set_text(_("Lock screen"));
+				this.selectedAppDescription.set_text(_("Lock the screen"));				
+			}));
+		button.actor.connect('leave-event', Lang.bind(this, function() {
+				this.selectedAppTitle.set_text("");
+				this.selectedAppDescription.set_text("");
+			}));        
+        button.actor.connect('clicked', Lang.bind(this, function() {            
+            this.menu.close();
+            this._screenSaverProxy.LockRemote();
+        }));
+        
+        this.favoritesBox.add_actor(button.actor, { y_align: St.Align.END, y_fill: false });                  
+        
+        //Logout button
+        let button = new SystemButton(this, "gnome-logout", launchers.length + 3);        
+        button.actor.connect('enter-event', Lang.bind(this, function() {
+				this.selectedAppTitle.set_text(_("Logout"));
+				this.selectedAppDescription.set_text(_("Leave the session"));				
+			}));
+		button.actor.connect('leave-event', Lang.bind(this, function() {
+				this.selectedAppTitle.set_text("");
+				this.selectedAppDescription.set_text("");
+			}));        
+        button.actor.connect('clicked', Lang.bind(this, function() {            
+            this.menu.close();
+            this._session.LogoutRemote(0);
+        }));
+        
+        this.favoritesBox.add_actor(button.actor, { y_align: St.Align.END, y_fill: false }); 
+                        
+        //Shutdown button
+        let button = new SystemButton(this, "gnome-shutdown", launchers.length + 3);        
+        button.actor.connect('enter-event', Lang.bind(this, function() {
+				this.selectedAppTitle.set_text(_("Quit"));
+				this.selectedAppDescription.set_text(_("Shutdown the computer"));				
+			}));
+		button.actor.connect('leave-event', Lang.bind(this, function() {
+				this.selectedAppTitle.set_text("");
+				this.selectedAppDescription.set_text("");
+			}));        
+        button.actor.connect('clicked', Lang.bind(this, function() {            
+            this.menu.close();
+            this._session.ShutdownRemote();
+        }));
+        
+        this.favoritesBox.add_actor(button.actor, { y_align: St.Align.END, y_fill: false });                
     },
    
     _loadCategory: function(dir, top_dir) {
@@ -626,58 +694,13 @@ ApplicationsButton.prototype = {
         this.menu.addMenuItem(section);
         
         let leftPane = new St.BoxLayout({ vertical: true });
-        
-        let favoritesTitle = new St.Label({ track_hover: true, style_class: 'favorites-title', text: "Favorites" });        
-        this.favoritesBox = new St.BoxLayout({ style_class: 'applications-menu-favorites-box', vertical: true });
-        this.systemBox = new St.BoxLayout({ style_class: 'applications-menu-favorites-box', vertical: true });
+                  
+        this.favoritesBox = new St.BoxLayout({ style_class: 'applications-menu-favorites-box', vertical: true });        
         
         this._session = new GnomeSession.SessionManager();
         this._screenSaverProxy = new ScreenSaver.ScreenSaverProxy();            
-        
-        //Lock screen
-        let systemButton = new St.Button({ reactive: true, style_class: 'application-button', x_align: St.Align.START });
-        let buttonbox = new St.BoxLayout();
-        let label = new St.Label({ text: _("Lock screen"), style_class: 'application-button-label' });
-        let icon = new St.Icon({icon_name: "gnome-lockscreen", icon_size: CATEGORY_ICON_SIZE, icon_type: St.IconType.FULLCOLOR});
-        buttonbox.add_actor(icon);
-        buttonbox.add_actor(label);
-        systemButton.set_child(buttonbox);        
-        systemButton.connect('clicked', Lang.bind(this, function() {            
-            this.menu.close();
-            this._screenSaverProxy.LockRemote();
-        }));           
-        this.systemBox.add_actor(systemButton);     
-        
-        //Logout button
-        let systemButton = new St.Button({ reactive: true, style_class: 'application-button', x_align: St.Align.START });
-        let buttonbox = new St.BoxLayout();
-        let label = new St.Label({ text: _("Logout"), style_class: 'application-button-label' });
-        let icon = new St.Icon({icon_name: "gnome-logout", icon_size: CATEGORY_ICON_SIZE, icon_type: St.IconType.FULLCOLOR});
-        buttonbox.add_actor(icon);
-        buttonbox.add_actor(label);
-        systemButton.set_child(buttonbox);        
-        systemButton.connect('clicked', Lang.bind(this, function() {            
-            this.menu.close();
-            this._session.LogoutRemote(0);
-        }));           
-        this.systemBox.add_actor(systemButton);     
-        
-        //Shutdown button
-        let systemButton = new St.Button({ reactive: true, style_class: 'application-button', x_align: St.Align.START });
-        let buttonbox = new St.BoxLayout();
-        let label = new St.Label({ text: _("Quit"), style_class: 'application-button-label' });
-        let icon = new St.Icon({icon_name: "gnome-shutdown", icon_size: CATEGORY_ICON_SIZE, icon_type: St.IconType.FULLCOLOR});
-        buttonbox.add_actor(icon);
-        buttonbox.add_actor(label);
-        systemButton.set_child(buttonbox);        
-        systemButton.connect('clicked', Lang.bind(this, function() {            
-            this.menu.close();
-            this._session.ShutdownRemote();
-        }));           
-        this.systemBox.add_actor(systemButton);                 
-        
-        leftPane.add_actor(this.favoritesBox);
-        leftPane.add_actor(this.systemBox);
+                                       
+        leftPane.add_actor(this.favoritesBox, { y_align: St.Align.END, y_fill: false });        
         
         let rightPane = new St.BoxLayout({ vertical: true });
         
@@ -718,19 +741,14 @@ ApplicationsButton.prototype = {
         this.categoriesApplicationsBox.add_actor(this.applicationsScrollBox);
                      
         this._refreshFavs();
-                                                 
-        let applicationsTitle = new St.Label({ style_class: 'applications-title', text: "Applications" });
- 
+                                                          
         this.mainBox = new St.BoxLayout({ style_class: 'applications-box', vertical:false });
         //this.rightBox = new St.BoxLayout({ style_class: 'applications-box', vertical:true });
         //this.rightBox.add_actor(this.categoriesApplicationsBox, { span: 1 });
-        
-        //this.mainBox.add_actor(applicationsTitle, { span: 1 });
+                
         this.mainBox.add_actor(leftPane, { span: 1 });
         this.mainBox.add_actor(rightPane, { span: 1 });
-        //this.mainBox.add_actor(favoritesTitle, { span: 1 });
         
-
         section.actor.add_actor(this.mainBox);
         
 		this.applicationsByCategory = {};
