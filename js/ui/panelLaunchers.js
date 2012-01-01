@@ -147,21 +147,25 @@ AddLauncherDialog.prototype = {
         let box;
         let label;
         
-        box = new St.BoxLayout();
-        this.contentLayout.add(box, { y_align: St.Align.START });
+        let box = new St.BoxLayout({ styleClass: 'add-launcher-dialog-content-box' });
+        let leftBox = new St.BoxLayout({vertical: true, styleClass: 'add-launcher-dialog-content-box-left'});
+        let rightBox = new St.BoxLayout({vertical: true, styleClass: 'add-launcher-dialog-content-box-right'});
+                
         label = new St.Label();
         label.set_text(_("Name"));
-        box.add(label, { x_align: St.Align.START, x_fill: true, x_expand: true });
-        this._nameEntry = new St.Entry({ styleClass: 'add-launcher-name-entry' });
-        box.add(this._nameEntry, { x_align: St.Align.END, x_fill: false, x_expand: false });
-        
-        box = new St.BoxLayout();
-        this.contentLayout.add(box, { y_align: St.Align.START, x_fill: true });
+        leftBox.add(label, { x_align: St.Align.START, x_fill: true, x_expand: true });
+        this._nameEntry = new St.Entry({ styleClass: 'add-launcher-dialog-entry', can_focus: true });
+        rightBox.add(this._nameEntry, { x_align: St.Align.END, x_fill: false, x_expand: false });
+                        
         label = new St.Label();
         label.set_text(_("Command"));
-        box.add(label, { x_align: St.Align.START, x_fill: true, x_expand: true });
-        this._commandEntry = new St.Entry({ styleClass: 'add-launcher-command-entry' });
-        box.add(this._commandEntry, { x_align: St.Align.END, x_fill: false, x_expand: false });
+        leftBox.add(label, { x_align: St.Align.START, x_fill: true, x_expand: true });
+        this._commandEntry = new St.Entry({ styleClass: 'add-launcher-dialog-entry', can_focus: true });
+        rightBox.add(this._commandEntry, { x_align: St.Align.END, x_fill: false, x_expand: false });
+        
+        box.add(leftBox);
+        box.add(rightBox);
+        this.contentLayout.add(box, { y_align: St.Align.START });
         
         this._errorBox = new St.BoxLayout({ style_class: 'run-dialog-error-box' });
         this.contentLayout.add(this._errorBox, { expand: true });
@@ -214,7 +218,7 @@ AddLauncherDialog.prototype = {
             return false;
         }
         
-        let appid = this._saveNewLauncher(this._nameEntry.clutter_text.get_text(), this._commandEntry.clutter_text.get_text());
+        let appid = this._saveNewLauncher(this._nameEntry.clutter_text.get_text(), this._commandEntry.clutter_text.get_text(), _("Custom Launcher"), "application-x-executable");
         this.close();
         this.emit("launcher-created", appid);
     },
