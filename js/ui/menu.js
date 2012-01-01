@@ -632,8 +632,8 @@ ApplicationsButton.prototype = {
                 this.favoritesBox.add_actor(button.actor, { y_align: St.Align.END, y_fill: false });
                 this.favoritesBox.add_actor(button.menu.actor, { y_align: St.Align.END, y_fill: false });
                 button.actor.connect('enter-event', Lang.bind(this, function() {
-                   this.selectedAppTitle.set_text(button._app.get_name());
-                   if (button._app.get_description()) this.selectedAppDescription.set_text(button._app.get_description());
+                   this.selectedAppTitle.set_text(button.app.get_name());
+                   if (button.app.get_description()) this.selectedAppDescription.set_text(button.app.get_description());
                    else this.selectedAppDescription.set_text("");
                 }));
                 button.actor.connect('leave-event', Lang.bind(this, function() {
