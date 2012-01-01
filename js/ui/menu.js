@@ -89,6 +89,12 @@ ApplicationContextMenuItem.prototype = {
                     global.log(e);
                 }
                 break;
+            case "add_to_favorites":
+                AppFavorites.getAppFavorites().addFavorite(this._appButton.app.get_id());
+                break;
+            case "remove_from_favorites":
+                AppFavorites.getAppFavorites().removeFavorite(this._appButton.app.get_id());
+                break;
         }
         this._appButton.actor.grab_key_focus();
         this._appButton.toggleMenu();
@@ -97,31 +103,20 @@ ApplicationContextMenuItem.prototype = {
 
 };
 
-function ApplicationButton(appsMenuButton, app) {
+function GenericApplicationButton(appsMenuButton, app) {
     this._init(appsMenuButton, app);
 }
 
-ApplicationButton.prototype = {
+GenericApplicationButton.prototype = {
     __proto__: PopupMenu.PopupSubMenuMenuItem.prototype,
     
     _init: function(appsMenuButton, app) {
         this.app = app;
         this.appsMenuButton = appsMenuButton;
         PopupMenu.PopupBaseMenuItem.prototype._init.call(this, {hover: false});
-
-        this.actor.add_style_class_name('application-button');
-        this.icon = this.app.create_icon_texture(APPLICATION_ICON_SIZE);
-        this.addActor(this.icon);
-        this.label = new St.Label({ text: this.app.get_name(), style_class: 'application-button-label' });
-        this.addActor(this.label);
-
+        
         this.menu = new PopupMenu.PopupSubMenu(this.actor);
         this.menu.connect('open-state-changed', Lang.bind(this, this._subMenuOpenStateChanged));
-        
-        // Only add items to the menu when showing it
-        // Add commands to add/remove applications to/from the favorites
-        this.menu.addMenuItem(new ApplicationContextMenuItem(this, _("Add to panel"), "add_to_panel"));
-        if (USER_DESKTOP_PATH) this.menu.addMenuItem(new ApplicationContextMenuItem(this, _("Add to desktop"), "add_to_desktop"));
     },
     
     _onButtonReleaseEvent: function (actor, event) {
@@ -141,12 +136,49 @@ ApplicationButton.prototype = {
     },
     
     closeMenu: function() {
-        global.log(this.menu.actor.has_key_focus());
         this.menu.close();
     },
     
     toggleMenu: function() {
+        if (!this.menu.isOpen){
+            let children = this.menu.box.get_children();
+            for (var i in children){
+                children[i].destroy();
+            }
+            let menuItem;
+            menuItem = new ApplicationContextMenuItem(this, _("Add to panel"), "add_to_panel");
+            this.menu.addMenuItem(menuItem);
+            if (USER_DESKTOP_PATH){
+                menuItem = new ApplicationContextMenuItem(this, _("Add to desktop"), "add_to_desktop");
+                this.menu.addMenuItem(menuItem);
+            }
+            if (AppFavorites.getAppFavorites().isFavorite(this.app.get_id())){
+                menuItem = new ApplicationContextMenuItem(this, _("Remove from favorites"), "remove_from_favorites");
+                this.menu.addMenuItem(menuItem);
+            }else{
+                menuItem = new ApplicationContextMenuItem(this, _("Add to favorites"), "add_to_favorites");
+                this.menu.addMenuItem(menuItem);
+            }
+        }
         this.menu.toggle();
+    }
+}
+
+function ApplicationButton(appsMenuButton, app) {
+    this._init(appsMenuButton, app);
+}
+
+ApplicationButton.prototype = {
+    __proto__: GenericApplicationButton.prototype,
+    
+    _init: function(appsMenuButton, app) {
+        GenericApplicationButton.prototype._init.call(this, appsMenuButton, app);
+
+        this.actor.add_style_class_name('application-button');
+        this.icon = this.app.create_icon_texture(APPLICATION_ICON_SIZE);
+        this.addActor(this.icon);
+        this.label = new St.Label({ text: this.app.get_name(), style_class: 'application-button-label' });
+        this.addActor(this.label);
     }
 };
 Signals.addSignalMethods(ApplicationButton.prototype);
@@ -226,10 +258,12 @@ Signals.addSignalMethods(PlaceCategoryButton.prototype);
 function FavoritesButton(appsMenuButton, app, nbFavorites) {
     this._init(appsMenuButton, app, nbFavorites);
 }
-// Add context menu as on applications buttons
+
 FavoritesButton.prototype = {
+    __proto__: GenericApplicationButton.prototype,
+    
     _init: function(appsMenuButton, app, nbFavorites) {
-        this.actor = new St.Button({ reactive: true, style_class: 'applications-menu-favorites-button' });
+        GenericApplicationButton.prototype._init.call(this, appsMenuButton, app);
         
         let monitorHeight = Main.layoutManager.primaryMonitor.height;
         let boxHeight = monitorHeight - (appsMenuButton.favoritesBox.get_allocation_box().y2-appsMenuButton.favoritesBox.get_allocation_box().y1);
@@ -237,14 +271,9 @@ FavoritesButton.prototype = {
         let icon_size = 0.6*real_size;
         if (icon_size>FAV_ICON_SIZE) icon_size = FAV_ICON_SIZE;
         this.actor.style = "padding-top: "+(icon_size/3)+"px;padding-bottom: "+(icon_size/3)+"px;padding-left: "+(icon_size/3)+"px;padding-right: "+(icon_size/3)+"px;"
-        
-        this.actor.set_child(app.create_icon_texture(icon_size));
-        this._app = app;
 
-        this.actor.connect('clicked', Lang.bind(this, function() {
-            this._app.open_new_window(-1);
-            appsMenuButton.menu.close();
-        }));
+        this.actor.add_style_class_name('applications-menu-favorites-button');
+        this.addActor(app.create_icon_texture(icon_size));
     }
 };
 
@@ -403,6 +432,7 @@ ApplicationsButton.prototype = {
         this._searchTimeoutId = 0;
         this._searchIconClickedId = 0;
         this._applicationsButtons = new Array();
+        this._favoritesButtons = new Array();
         this._selectedItemIndex = null;
         this._previousSelectedItemIndex = null;
         this._activeContainer = null;
@@ -590,6 +620,7 @@ ApplicationsButton.prototype = {
         })); 
     	 
         //Load favorites again
+        this._favoritesButtons = new Array();
         let launchers = global.settings.get_strv('favorite-apps');
         let appSys = Cinnamon.AppSystem.get_default();
         let j = 0;
@@ -597,10 +628,12 @@ ApplicationsButton.prototype = {
             let app = appSys.lookup_app(launchers[i]);
             if (app) {
                 let button = new FavoritesButton(this, app, launchers.length + 3); // + 3 because we're adding 3 system buttons at the bottom
+                this._favoritesButtons[app] = button;
                 this.favoritesBox.add_actor(button.actor, { y_align: St.Align.END, y_fill: false });
+                this.favoritesBox.add_actor(button.menu.actor, { y_align: St.Align.END, y_fill: false });
                 button.actor.connect('enter-event', Lang.bind(this, function() {
-                   this.selectedAppTitle.set_text(button._app.get_name());
-                   if (button._app.get_description()) this.selectedAppDescription.set_text(button._app.get_description());
+                   this.selectedAppTitle.set_text(button.app.get_name());
+                   if (button.app.get_description()) this.selectedAppDescription.set_text(button.app.get_description());
                    else this.selectedAppDescription.set_text("");
                 }));
                 button.actor.connect('leave-event', Lang.bind(this, function() {
@@ -812,6 +845,14 @@ ApplicationsButton.prototype = {
                     this._applicationsButtons[app].toggleMenu();
                 else
                     this._applicationsButtons[app].closeMenu();
+            }
+        }
+        for (var app in this._favoritesButtons){
+            if (app!=excludeApp && this._favoritesButtons[app].menu.isOpen){
+                if (animate)
+                    this._favoritesButtons[app].toggleMenu();
+                else
+                    this._favoritesButtons[app].closeMenu();
             }
         }
     },
