@@ -62,7 +62,7 @@ ApplicationContextMenuItem.prototype = {
     __proto__: PopupMenu.PopupBaseMenuItem.prototype,
 
     _init: function (appButton, label, action) {
-        PopupMenu.PopupBaseMenuItem.prototype._init.call(this, {hover: false});
+        PopupMenu.PopupBaseMenuItem.prototype._init.call(this, {focusOnHover: false});
 
         this._appButton = appButton;
         this._action = action;

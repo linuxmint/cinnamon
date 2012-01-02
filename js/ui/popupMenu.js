@@ -36,7 +36,8 @@ PopupBaseMenuItem.prototype = {
                                          activate: true,
                                          hover: true,
                                          sensitive: true,
-                                         style_class: null
+                                         style_class: null,
+                                         focusOnHover: true
                                        });
         this.actor = new Cinnamon.GenericContainer({ style_class: 'popup-menu-item',
                                                   reactive: params.reactive,
@@ -55,6 +56,7 @@ PopupBaseMenuItem.prototype = {
         this.active = false;
         this._activatable = params.reactive && params.activate;
         this.sensitive = this._activatable && params.sensitive;
+        this.focusOnHover = params.focusOnHover;
 
         this.setSensitive(this.sensitive);
 
@@ -115,7 +117,7 @@ PopupBaseMenuItem.prototype = {
             this.active = active;
             if (active) {
                 this.actor.add_style_pseudo_class('active');
-                this.actor.grab_key_focus();
+                if (this.focusOnHover) this.actor.grab_key_focus();
             } else
                 this.actor.remove_style_pseudo_class('active');
             this.emit('active-changed', active);
