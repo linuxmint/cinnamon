@@ -1,3 +1,33 @@
+cinnamon (1.1.3) lisa; urgency=low
+
+  * Menu improvements: The search entry isn't cleared anymore when the menu is closed
+  * Menu improvements: Clearing the search entry now resets the search results
+  * Menu improvements: Context menu for applications and favorites to "Add to panel", "Add to desktop", "Add/Remove to/from favorites"
+  * Panel Launchers improvements: Custom launchers don't appear in the menu anymore and are store separately
+  * Panel Launchers improvements: Application launchers can be added by right-clicking on apps in the menu and selecting "Add to panel"
+  * Panel Launchers improvements: The Panel Launchers applet refreshes automatically when launchers are added/removed
+  * Visual improvements: The space between panel applets was reduced to 4px
+  * Visual improvements: Improved menu look & feel (less margins, system buttons merged with favorites..etc)
+  * Visual improvements: Reduced overall font size to 9.5pt (we're targeting PC users not mobile phones)
+  * Visual improvements: Windows in overview now feature icons for easier recognition
+  * Visual improvements: The notifications were moved a bit in order not to appear on top of window buttons when a window is maximized
+  * Visual improvements: Thumbnails from theme.json files in Gnome Shell themes are now used
+  * Visual improvements: Improved dialog for adding custom launchers
+  * Visual improvements: Panel Launchers now have tooltips
+  * Network Manager Applet improvements: Switching Ethernet off now actually disconnects the device
+  * Network Manager Applet improvements: Switching Wireless off now actually disconnects the device
+  * Bug fixes: Critical: Cinnamon doesn't crash anymore when a theme was unreadable due to permission problems
+  * Bug fixes: Themes: Themes in ~/.themes are now detected
+  * Bug fixes: Panel: New default size for status icons (fixes issue with Gnome Shell themes where an icon could get too big)
+  * Bug fixes: Window List: A bug which prevented LibreOffice applications from showing an icon was fixed
+  * Bug fixes: Dual Monitors: Fixed a bug which prevented the mouse pointer from moving from the primary monitor to the secondary monitor
+  * New configuration options: The menu text ("Menu") is now configurable via gsettings (at "org.cinnamon menu-text")
+  * New configuration options: The panel can now auto-hide (this is turned OFF by default and available via gsettings at "org.cinnamon panel-autohide")
+  * New configuration options: The Overview Hot Corner can be disabled (it is enabled by default and this is available via gsettings at "org.cinnamon overview-corner-hover")
+  * New configuration options: The Overview Icon can be disabled (it is enabled by default and this is available via gsettings at "org.cinnamon overview-corner-visible")
+
+ -- Clement Lefebvre <root@linuxmint.com>  Sun, 01 Jan 2012 21:52:36 +0000
+
 cinnamon (1.1.2) lisa; urgency=low
 
   * Feature: New Panel Launchers applet (alpha, adding apps launchers is done via gsettings)
