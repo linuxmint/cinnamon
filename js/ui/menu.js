@@ -371,8 +371,10 @@ MenuButton.prototype = {
     _onOpenStateChanged: function(menu, open) {
         if (open)
             this.actor.add_style_pseudo_class('active');
-        else
+        else{
             this.actor.remove_style_pseudo_class('active');
+            this.resetSearch();
+        }
     },
 
     destroy: function() {
