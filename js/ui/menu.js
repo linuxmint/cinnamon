@@ -585,7 +585,7 @@ ApplicationsButton.prototype = {
             this._select_category(null, this._allAppsCategoryButton);
          }));
          this._addEnterEvent(this._allAppsCategoryButton, Lang.bind(this, function() {
-             this._select_category(null, this._allAppsCategoryButton);
+             if (!this.searchActive) this._select_category(null, this._allAppsCategoryButton);
          }));
          this.categoriesBox.add_actor(this._allAppsCategoryButton.actor);
 
@@ -602,14 +602,15 @@ ApplicationsButton.prototype = {
                      this._select_category(dir, categoryButton);
                   }));
                   this._addEnterEvent(categoryButton, Lang.bind(this, function() {
-                      this._select_category(dir, categoryButton);
+                      if (!this.searchActive) this._select_category(dir, categoryButton);
                   }));
                    this.categoriesBox.add_actor(categoryButton.actor);
                 }
             }
         } 
         
-        this._select_category(null, this._allAppsCategoryButton);                     
+        this._select_category(null, this._allAppsCategoryButton);    
+        this._setCategoriesButtonActive(!this.searchActive);                 
     },
     
     _refreshFavs : function() {     	
@@ -793,7 +794,7 @@ ApplicationsButton.prototype = {
             this._select_places(this.placesButton);
         }));
         this._addEnterEvent(this.placesButton, Lang.bind(this, function() {
-            this._select_places(this.placesButton);
+            if (!this.searchActive) this._select_places(this.placesButton);
         }));
         this.categoriesBox.add_actor(this.placesButton.actor);
         
@@ -824,7 +825,8 @@ ApplicationsButton.prototype = {
 
          for (var i=0; i<actors.length; i++){
              let actor = actors[i];
-             if (actor==selectedActor) actor.style_class = "category-button-selected";
+             if (this.searchActive) actor.style_class = "category-button-greyed";
+             else if (actor==selectedActor) actor.style_class = "category-button-selected";
              else actor.style_class = "category-button";
          }
     },
@@ -925,9 +927,30 @@ this._clearApplicationsBox(button.actor);
          }
      },
      
+     _setCategoriesButtonActive: function(active) {
+         global.log("_setCategoriesButtonActive:"+active);
+         try{
+             let categoriesButtons = this.categoriesBox.get_children();
+             for (var i in categoriesButtons){
+                 let button = categoriesButtons[i];
+                 let icon = button._delegate.icon;
+                 if (active){
+                     button.remove_style_class_name("category-button-greyed");
+                     button.add_style_class_name("category-button");
+                 }else{
+                     button.remove_style_class_name("category-button");
+                     button.add_style_class_name("category-button-greyed");
+                 }
+             }
+        }catch(e){
+             global.log(e);
+        }
+     },
+     
      resetSearch: function(){
         this.searchEntry.set_text("");
         this.searchActive = false;
+        this._setCategoriesButtonActive(true);
         global.stage.set_key_focus(this.searchEntry);
      },
      
@@ -945,12 +968,16 @@ this._clearApplicationsBox(button.actor);
                         this._select_category(null, this._allAppsCategoryButton);
                     }));
             }
+            
+            this._setCategoriesButtonActive(false);
         } else {
             if (this._searchIconClickedId > 0)
                 this.searchEntry.disconnect(this._searchIconClickedId);
             this._searchIconClickedId = 0;
 
             this.searchEntry.set_secondary_icon(this._searchInactiveIcon);
+            
+            this._setCategoriesButtonActive(true);
         }
         if (!this.searchActive) {
             if (this._searchTimeoutId > 0) {

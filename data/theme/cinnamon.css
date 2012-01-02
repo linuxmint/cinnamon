@@ -359,6 +359,15 @@ StTooltip StLabel {
     padding-bottom: 7px;         
 }
 
+.category-button-greyed {
+    padding-top: 7px;
+    padding-left: 7px;
+    padding-right: 7px;
+    padding-bottom: 7px; 
+    color: #9C9C9C;
+    font-style: italic;
+}
+
 .category-button-selected {
     padding-top: 7px;
     padding-left: 7px;
