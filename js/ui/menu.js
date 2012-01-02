@@ -267,8 +267,7 @@ FavoritesButton.prototype = {
         GenericApplicationButton.prototype._init.call(this, appsMenuButton, app);
         
         let monitorHeight = Main.layoutManager.primaryMonitor.height;
-        let boxHeight = monitorHeight - (appsMenuButton.favoritesBox.get_allocation_box().y2-appsMenuButton.favoritesBox.get_allocation_box().y1);
-        let real_size = (0.7*boxHeight) / nbFavorites;
+        let real_size = (0.7*monitorHeight) / nbFavorites;
         let icon_size = 0.6*real_size;
         if (icon_size>FAV_ICON_SIZE) icon_size = FAV_ICON_SIZE;
         this.actor.style = "padding-top: "+(icon_size/3)+"px;padding-bottom: "+(icon_size/3)+"px;padding-left: "+(icon_size/3)+"px;padding-right: "+(icon_size/3)+"px;"
@@ -287,8 +286,7 @@ SystemButton.prototype = {
         this.actor = new St.Button({ reactive: true, style_class: 'applications-menu-favorites-button' });
         
         let monitorHeight = Main.layoutManager.primaryMonitor.height;
-        let boxHeight = monitorHeight - (appsMenuButton.favoritesBox.get_allocation_box().y2-appsMenuButton.favoritesBox.get_allocation_box().y1);
-        let real_size = (0.7*boxHeight) / nbFavorites;
+        let real_size = (0.7*monitorHeight) / nbFavorites;
         let icon_size = 0.6*real_size;
         if (icon_size>FAV_ICON_SIZE) icon_size = FAV_ICON_SIZE;
         this.actor.style = "padding-top: "+(icon_size/3)+"px;padding-bottom: "+(icon_size/3)+"px;padding-left: "+(icon_size/3)+"px;padding-right: "+(icon_size/3)+"px;"
