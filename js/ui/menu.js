@@ -437,6 +437,7 @@ ApplicationsButton.prototype = {
         this._selectedItemIndex = null;
         this._previousSelectedItemIndex = null;
         this._activeContainer = null;
+        this._applicationsBoxWidth = 0;
 
         this._display();
         appsys.connect('installed-changed', Lang.bind(this, this._refreshApps));
@@ -449,7 +450,6 @@ ApplicationsButton.prototype = {
     _onMenuKeyPress: function(actor, event) {
 
         let symbol = event.get_key_symbol();
-        global.log(symbol);
         
         if (symbol==Clutter.KEY_Super_L && this.menu.isOpen) {
             this.menu.close();
@@ -573,6 +573,7 @@ ApplicationsButton.prototype = {
     
     _refreshApps : function() {
         this._applicationsButtons = new Array();
+        this._applicationsBoxWidth = 0;
         
         //Remove all categories
     	this.categoriesBox.get_children().forEach(Lang.bind(this, function (child) {
@@ -772,7 +773,7 @@ ApplicationsButton.prototype = {
                                   }));
         
         this.applicationsBox = new St.BoxLayout({ style_class: 'applications-box', vertical:true });
-        this.applicationsScrollBox.add_actor(this.applicationsBox)
+        this.applicationsScrollBox.add_actor(this.applicationsBox);
         this.applicationsScrollBox.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC);
         this.categoriesApplicationsBox.add_actor(this.categoriesBox);
         this.categoriesApplicationsBox.add_actor(this.applicationsScrollBox);
@@ -860,12 +861,20 @@ ApplicationsButton.prototype = {
         }
     },
     
+    _onApplicationButtonRealized: function(actor) {
+        if (actor.get_width() > this._applicationsBoxWidth){
+            this._applicationsBoxWidth = actor.get_width();
+            this.applicationsBox.set_width(this._applicationsBoxWidth);
+        }
+    },
+    
     _displayButtons: function(apps, places){
          if (apps){
             for (var i=0; i<apps.length; i++) {
                let app = apps[i];
                if (!this._applicationsButtons[app]){
                   let applicationButton = new ApplicationButton(this, app);
+                  applicationButton.actor.connect('realize', Lang.bind(this, this._onApplicationButtonRealized));
                   applicationButton.actor.connect('leave-event', Lang.bind(this, function() {
                      this.selectedAppTitle.set_text("");
                      this.selectedAppDescription.set_text("");
