@@ -49,10 +49,10 @@ LayoutManager.prototype = {
 		let autohide = global.settings.get_boolean("panel-autohide");
 //        this._chrome.addActor(this.panelBox);
 		if (autohide) {
-        	this.addChrome(this.panelBox, { affectsStruts: false });
+        	this.addChrome(this.panelBox, { affectsStruts: false, addToWindowgroup: true });
 		}
 		else {
-			this.addChrome(this.panelBox, { affectsStruts: true });
+			this.addChrome(this.panelBox, { affectsStruts: true, addToWindowgroup: true });
 		}
         this.panelBox.connect('allocation-changed',
                               Lang.bind(this, this._updatePanelBarriers));
@@ -70,6 +70,20 @@ LayoutManager.prototype = {
         global.settings.connect("changed::panel-autohide", Lang.bind(this, this._onPanelAutoHideChanged));
         global.settings.connect("changed::overview-corner-visible", Lang.bind(this, this._onOverviewCornerVisibleChanged));
         global.settings.connect("changed::overview-corner-hover", Lang.bind(this, this._onOverviewCornerHoverChanged));
+        
+        global.screen.connect('restacked',
+                              Lang.bind(this, this._windowsRestacked));
+    },
+    
+    _windowsRestacked: function() {
+        let windows = global.window_group.get_children();
+        for (var i in windows){
+            if (windows[i] instanceof Meta.WindowActor){
+                if (windows[i].get_meta_window().get_layer() <= Meta.StackLayer.NORMAL){
+                    this.panelBox.raise(windows[i]);
+                }
+            }
+        }
     },
 
     // This is called by Main after everything else is constructed;
@@ -629,7 +643,8 @@ HotCorner.prototype = {
 const defaultParams = {
     visibleInFullscreen: false,
     affectsStruts: false,
-    affectsInputRegion: true
+    affectsInputRegion: true,
+    addToWindowgroup: false
 };
 
 function Chrome() {
@@ -676,8 +691,9 @@ Chrome.prototype = {
     },
 
     addActor: function(actor, params) {
-        Main.uiGroup.add_actor(actor);
-        //global.window_group.add_actor(actor);
+        let actorData = Params.parse(params, defaultParams);
+        if (actorData.addToWindowgroup) global.window_group.add_actor(actor);
+        else Main.uiGroup.add_actor(actor);
         this._trackActor(actor, params);
     },
 
@@ -709,7 +725,14 @@ Chrome.prototype = {
     },
 
     removeActor: function(actor) {
-        Main.uiGroup.remove_actor(actor);
+        let i = this._findActor(actor);
+
+        if (i == -1)
+            return;
+        let actorData = this._trackedActors[i];
+        
+        if (actorData.addToWindowgroup) global.window_group.remove_actor(actor);
+        else Main.uiGroup.remove_actor(actor);
         this._untrackActor(actor);
     },
 
