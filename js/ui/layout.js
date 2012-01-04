@@ -676,8 +676,8 @@ Chrome.prototype = {
     },
 
     addActor: function(actor, params) {
-        //Main.uiGroup.add_actor(actor);
-        global.window_group.add_actor(actor);
+        Main.uiGroup.add_actor(actor);
+        //global.window_group.add_actor(actor);
         this._trackActor(actor, params);
     },
 
