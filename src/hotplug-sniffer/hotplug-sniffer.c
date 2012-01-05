@@ -114,10 +114,7 @@ sniff_async_ready_cb (GObject *source,
 {
   InvocationData *data = user_data;
   gchar **types;
-  gint idx;
   GError *error = NULL;
-  GVariantBuilder *builder;
-  GVariant *result;
 
   types = cinnamon_mime_sniffer_sniff_finish (CINNAMON_MIME_SNIFFER (source),
                                            res, &error);
@@ -129,16 +126,8 @@ sniff_async_ready_cb (GObject *source,
       goto out;
     }
 
-  builder = g_variant_builder_new (G_VARIANT_TYPE ("as"));
-
-  for (idx = 0; types[idx] != NULL; idx++)
-    g_variant_builder_add (builder, "s", types[idx]);
-
-  result = g_variant_new ("(as)", builder);
-  g_dbus_method_invocation_return_value (data->invocation, result);
-
-  g_variant_unref (result);
-  g_variant_builder_unref (builder);
+  g_dbus_method_invocation_return_value (data->invocation,
+                                         g_variant_new ("(^as)", types));
   g_strfreev (types);
 
  out:
