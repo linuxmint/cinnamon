@@ -369,11 +369,15 @@ MenuButton.prototype = {
     },
 
     _onOpenStateChanged: function(menu, open) {
-        if (open)
-            this.actor.add_style_pseudo_class('active');
-        else{
-            this.actor.remove_style_pseudo_class('active');
-            this.resetSearch();
+        if (open) {
+            this.actor.add_style_pseudo_class('active');            
+		}
+        else {
+            this.actor.remove_style_pseudo_class('active');            
+            if (this.searchActive) {
+				this.resetSearch();
+				this._select_category(null, this._allAppsCategoryButton);
+			}
         }
     },
 
@@ -910,7 +914,7 @@ ApplicationsButton.prototype = {
      
      _select_places : function(button) {
          this.resetSearch();
-this._clearApplicationsBox(button.actor);
+		 this._clearApplicationsBox(button.actor);
          
          //let places = Main.placesManager.getDefaultPlaces();
          //for (let id = 0; id < places.length; id++) {
@@ -975,8 +979,8 @@ this._clearApplicationsBox(button.actor);
             if (this._searchIconClickedId == 0) {
                 this._searchIconClickedId = this.searchEntry.connect('secondary-icon-clicked',
                     Lang.bind(this, function() {
-                        this.resetSearch();
-                        this._select_category(null, this._allAppsCategoryButton);
+                        this.resetSearch();       
+                        this._select_category(null, this._allAppsCategoryButton);                 
                     }));
             }
             
