@@ -13,7 +13,6 @@ const Gdk = imports.gi.Gdk;
 const AppDisplay = imports.ui.appDisplay;
 const ThemesDisplay = imports.ui.themesDisplay;
 const ContactDisplay = imports.ui.contactDisplay;
-const Dash = imports.ui.dash;
 const DND = imports.ui.dnd;
 const DocDisplay = imports.ui.docDisplay;
 const Lightbox = imports.ui.lightbox;
@@ -29,9 +28,6 @@ const WorkspaceThumbnail = imports.ui.workspaceThumbnail;
 
 // Time for initial animation going into Overview mode
 const ANIMATION_TIME = 0.25;
-
-// We split the screen vertically between the dash and the view selector.
-const DASH_SPLIT_FRACTION = 0.1;
 
 const DND_WINDOW_SWITCH_TIMEOUT = 1250;
 
@@ -159,8 +155,7 @@ Overview.prototype = {
         this._hideInProgress = false;
 
         // During transitions, we raise this to the top to avoid having the overview
-        // area be reactive; it causes too many issues such as double clicks on
-        // Dash elements, or mouseover handlers in the workspaces.
+        // area be reactive; it causes too many issues such as mouseover handlers in the workspaces.
         this._coverPane = new Clutter.Rectangle({ opacity: 0,
                                                   reactive: true });
         this._group.add_actor(this._coverPane);
@@ -216,22 +211,7 @@ Overview.prototype = {
         //this.addSearchProvider(new AppDisplay.SettingsSearchProvider());
         //this.addSearchProvider(new PlaceDisplay.PlaceSearchProvider());
         //this.addSearchProvider(new DocDisplay.DocSearchProvider());
-        //this.addSearchProvider(new ContactDisplay.ContactSearchProvider());
-
-        // TODO - recalculate everything when desktop size changes
-        //this._dash = new Dash.Dash();
-        //this._group.add_actor(this._dash.actor);
-        //this._dash.actor.add_constraint(this._viewSelector.constrainY);
-        //this._dash.actor.add_constraint(this._viewSelector.constrainHeight);
-        //this.dashIconSize = this._dash.iconSize;
-       // this._dash.connect('icon-size-changed',
-       //                    Lang.bind(this, function() {
-        //                       this.dashIconSize = this._dash.iconSize;
-        //                   }));
-
-        // Translators: this is the name of the dock/favorites area on
-        // the left of the overview
-        //Main.ctrlAltTabManager.addGroup(this._dash.actor, _("Dash"), 'user-bookmarks');
+        //this.addSearchProvider(new ContactDisplay.ContactSearchProvider());        
 
         Main.layoutManager.connect('monitors-changed', Lang.bind(this, this._relayout));
         this._relayout();
@@ -506,22 +486,11 @@ Overview.prototype = {
 
         this._coverPane.set_position(0, contentY);
         this._coverPane.set_size(primary.width, contentHeight);
-
-        let dashWidth = Math.round(DASH_SPLIT_FRACTION * primary.width);
-        let viewWidth = primary.width - dashWidth - this._spacing;
+        
+        let viewWidth = primary.width - this._spacing;
         let viewHeight = contentHeight - 2 * this._spacing;
         let viewY = contentY + this._spacing;
-        let viewX = rtl ? 0 : dashWidth + this._spacing;
-
-        // Set the dash's x position - y is handled by a constraint
-        //let dashX;
-        //if (rtl) {
-        //    this._dash.actor.set_anchor_point_from_gravity(Clutter.Gravity.NORTH_EAST);
-        //    dashX = primary.width;
-        //} else {
-        //    dashX = 0;
-        //}
-        //this._dash.actor.set_x(dashX);
+        let viewX = rtl ? 0 : this._spacing;        
 
         this._viewSelector.actor.set_position(viewX, viewY);
         this._viewSelector.actor.set_size(viewWidth, viewHeight);

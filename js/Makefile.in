@@ -317,8 +317,7 @@ nobase_dist_js_DATA = \
 	ui/boxpointer.js	\
 	ui/calendar.js		\
 	ui/contactDisplay.js \
-	ui/ctrlAltTab.js	\
-	ui/dash.js		\
+	ui/ctrlAltTab.js	\	
 	ui/dateMenu.js		\
 	ui/dnd.js		\
 	ui/docDisplay.js	\
