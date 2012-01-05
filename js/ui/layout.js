@@ -761,7 +761,8 @@ Chrome.prototype = {
 
         let actorData = Params.parse(params, defaultParams);
         actorData.actor = actor;
-        actorData.isToplevel = actor.get_parent() == Main.uiGroup;
+        if (actorData.addToWindowgroup) actorData.isToplevel = actor.get_parent() == global.window_group;
+        else actorData.isToplevel = actor.get_parent() == Main.uiGroup;
         actorData.visibleId = actor.connect('notify::visible',
                                             Lang.bind(this, this._queueUpdateRegions));
         actorData.allocationId = actor.connect('notify::allocation',
@@ -794,8 +795,10 @@ Chrome.prototype = {
         let newParent = actor.get_parent();
         if (!newParent)
             this._untrackActor(actor);
-        else
-            actorData.isToplevel = (newParent == Main.uiGroup);
+        else{
+            if (actorData.addToWindowgroup) actorData.isToplevel = (newParent == global.window_group);
+            else actorData.isToplevel = (newParent == Main.uiGroup);
+        }
     },
 
     _updateVisibility: function() {
@@ -1074,7 +1077,7 @@ Chrome.prototype = {
             let strut = new Meta.Strut({ rect: strutRect, side: side });
             struts.push(strut);
         }
-
+        
         global.set_stage_input_region(rects);
 
         let screen = global.screen;
