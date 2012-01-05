@@ -9,7 +9,6 @@ const St = imports.gi.St;
 const Cinnamon = imports.gi.Cinnamon;
 
 const AltTab = imports.ui.altTab;
-const WorkspaceSwitcherPopup = imports.ui.workspaceSwitcherPopup;
 const Main = imports.ui.main;
 const Tweener = imports.ui.tweener;
 
@@ -119,8 +118,7 @@ WindowManager.prototype = {
         this._cinnamonwm.connect('unmaximize', Lang.bind(this, this._unmaximizeWindow));
         this._cinnamonwm.connect('map', Lang.bind(this, this._mapWindow));
         this._cinnamonwm.connect('destroy', Lang.bind(this, this._destroyWindow));
-
-        this._workspaceSwitcherPopup = null;
+        
         this.setKeybindingHandler('switch_to_workspace_left', Lang.bind(this, this._showWorkspaceSwitcher));
         this.setKeybindingHandler('switch_to_workspace_right', Lang.bind(this, this._showWorkspaceSwitcher));
         this.setKeybindingHandler('switch_to_workspace_up', Lang.bind(this, this._showWorkspaceSwitcher));
@@ -537,10 +535,7 @@ WindowManager.prototype = {
     },
 
     _startAppSwitcher : function(cinnamonwm, binding, mask, window, backwards) {
-        /* prevent a corner case where both popups show up at once */
-        //if (this._workspaceSwitcherPopup != null)
-        //    this._workspaceSwitcherPopup.actor.hide();
-
+        
         let tabPopup = new AltTab.AltTabPopup();
 
         if (!tabPopup.show(backwards, binding, mask))
@@ -580,10 +575,7 @@ WindowManager.prototype = {
             indexToActivate--;
 
         if (indexToActivate != activeWorkspaceIndex)
-            global.screen.get_workspace_by_index(indexToActivate).activate(global.get_current_time());
-
-        //if (!Main.overview.visible)
-        //    this._workspaceSwitcherPopup.display(WorkspaceSwitcherPopup.UP, indexToActivate);
+            global.screen.get_workspace_by_index(indexToActivate).activate(global.get_current_time());        
     },
 
     actionMoveWorkspaceRight: function() {
@@ -596,10 +588,7 @@ WindowManager.prototype = {
             indexToActivate++;
 
         if (indexToActivate != activeWorkspaceIndex)
-            global.screen.get_workspace_by_index(indexToActivate).activate(global.get_current_time());
-
-        //if (!Main.overview.visible)
-        //    this._workspaceSwitcherPopup.display(WorkspaceSwitcherPopup.DOWN, indexToActivate);
+            global.screen.get_workspace_by_index(indexToActivate).activate(global.get_current_time());        
     },
 
     actionMoveWorkspaceUp: function() {
@@ -609,10 +598,7 @@ WindowManager.prototype = {
             indexToActivate--;
 
         if (indexToActivate != activeWorkspaceIndex)
-            global.screen.get_workspace_by_index(indexToActivate).activate(global.get_current_time());
-
-        //if (!Main.overview.visible)
-        //    this._workspaceSwitcherPopup.display(WorkspaceSwitcherPopup.UP, indexToActivate);
+            global.screen.get_workspace_by_index(indexToActivate).activate(global.get_current_time());        
     },
 
     actionMoveWorkspaceDown: function() {
@@ -622,9 +608,6 @@ WindowManager.prototype = {
             indexToActivate++;
 
         if (indexToActivate != activeWorkspaceIndex)
-            global.screen.get_workspace_by_index(indexToActivate).activate(global.get_current_time());
-
-        //if (!Main.overview.visible)
-        //    this._workspaceSwitcherPopup.display(WorkspaceSwitcherPopup.DOWN, indexToActivate);
+            global.screen.get_workspace_by_index(indexToActivate).activate(global.get_current_time());        
     }
 };

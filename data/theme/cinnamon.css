@@ -80,7 +80,7 @@ StTooltip StLabel {
  * Shared button properties 
  * ===================================================================*/
 
-.dash-search-button, .notification-button, .notification-icon-button,
+.notification-button, .notification-icon-button,
 .hotplug-notification-item, .hotplug-resident-eject-button,
 .modal-dialog-button {
     color: white;
@@ -90,20 +90,19 @@ StTooltip StLabel {
     background-gradient-end: rgba(255, 255, 255, 0);
 }
 
-.dash-search-button:hover, .notification-button:hover,
+.notification-button:hover,
 .notification-icon-button:hover, .hotplug-notification-item:hover,
 .hotplug-resident-eject-button:hover, .modal-dialog-button:hover {
     background-gradient-start: rgba(255, 255, 255, 0.3);
     background-gradient-end: rgba(255, 255, 255, 0.1);
 }
 
-.dash-search-button:selected, .notification-button:focus,
+.notification-button:focus,
 .notification-icon-button:focus, .hotplug-notification-item:focus,
 .modal-dialog-button:focus {
     border: 2px solid #8b8b8b;
 }
 
-.dash-search-button:active, .dash-search-button:pressed,
 .notification-button:active, .notification-icon-button:active,
 .hotplug-notification-item:active, .hotplug-resident-eject-button:active,
 .modal-dialog-button:active, .modal-dialog-button:pressed {
@@ -869,33 +868,8 @@ StTooltip StLabel {
 }
 
 /* ===================================================================
- * Dash 
+ * ViewSelector 
  * ===================================================================*/
-
-#dash {
-    color: #5f5f5f;
-    font-size: 9pt;
-    padding: 4px 0px;
-    background-color: rgba(0, 0, 0, 0.5);
-    border: 1px solid rgba(128, 128, 128, 0.4);
-    border-left: 0px;
-    border-radius: 0px 9px 9px 0px;
-}
-
-#dash:rtl {
-    border-left: 1px;
-    border-right: 0px;
-    border-radius: 9px 0px 0px 9px;
-}
-
-#dash:empty {
-    height: 100px;
-    width: 60px;
-}
-
-.dash-placeholder {
-    background-image: url("dash-placeholder.svg");
-}
 
 #viewSelector {
     spacing: 1em;
@@ -967,28 +941,6 @@ StTooltip StLabel {
     spacing: 12px;
 }
 
-/* Text labels are an odd number of pixels tall. The uneven top and bottom
- * padding compensates for this and ensures that the label is vertically
- * centered */
-.dash-search-button {
-    border-radius: 16px;
-    padding-top: 4px;
-    padding-bottom: 5px;
-    width: 300px;
-    font-weight: bold;
-}
-
-.dash-search-button:selected {
-    padding-top: 3px;
-    padding-bottom: 4px;
-    width: 298px;
-}
-
-.dash-search-button-label {
-    color: white;
-    font-size: 11pt;
-}
-
 /* Apps */
 
 .icon-grid {
@@ -1042,7 +994,7 @@ StTooltip StLabel {
     outline: 1px solid #aaa;
 }
 
-.dash-item-container > .app-well-app {
+.app-well-app {
     padding: 4px 8px;
 }
 
@@ -1674,51 +1626,6 @@ StTooltip StLabel {
     color: #ccc;
 }
 
-.chat-log-message {
-    color: #888888;
-}
-
-.chat-group-sent, .chat-group-meta {
-    padding: 8px 0;
-}
-
-.chat-sent {
-    padding-left: 4px;
-    border-radius: 4px;
-}
-
-.chat-received:rtl {
-    padding-left: 0px;
-    padding-right: 4px;
-}
-
-.chat-sent {
-    padding-left: 18pt;
-    border-radius: 4px;
-    color: #7E7E7E;
-}
-
-.chat-sent:rtl {
-    padding-left: 0px;
-    padding-right: 18pt;
-}
-
-.chat-meta-message {
-    padding-left: 4px;
-    border-radius: 4px;
-    font-size: 9pt;
-    color: #bbbbbb;
-}
-
-.chat-meta-message:rtl {
-    padding-left: 0px;
-    padding-right: 4px;
-}
-
-.subscription-message {
-    font-style: italic;
-}
-
 #notification StEntry {
     padding: 4px;
     border-radius: 4px;
@@ -1956,49 +1863,6 @@ StTooltip StLabel {
 .theme-type {
 	font-size: 6pt;
 	font-style: italic;
-}
-
-/* Workspace Switcher */
-.workspace-switcher-group {
-    padding: 12px;
-}
-
-.workspace-switcher-container {
-    background: rgba(0,0,0,0.8);
-    border: 1px solid rgba(128,128,128,0.40);
-    border-radius: 24px;
-    padding: 20px;
-}
-
-.workspace-switcher {
-    background: transparent;
-    border: 0px;
-    border-radius: 0px;
-    padding: 0px;
-    spacing: 8px;
-}
-
-.ws-switcher-active-up {
-    height: 100px;
-    border: 0px;
-    background: rgba(255,255,255,0.5);
-    background-image: url("ws-switch-arrow-up.svg");
-    border-radius: 8px;
-}
-
-.ws-switcher-active-down {
-    height: 100px;
-    border: 0px;
-    background: rgba(255,255,255,0.5);
-    background-image: url("ws-switch-arrow-down.svg");
-    border-radius: 8px;
-}
-
-.ws-switcher-box {
-    height: 96px;
-    border: 2px solid rgba(85,85,85,0.5);
-    background: transparent;
-    border-radius: 8px;
 }
 
 /* Modal Dialogs */
