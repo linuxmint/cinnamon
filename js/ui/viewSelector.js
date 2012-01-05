@@ -10,8 +10,6 @@ const Cinnamon = imports.gi.Cinnamon;
 const St = imports.gi.St;
 
 const Main = imports.ui.main;
-const Search = imports.ui.search;
-const SearchDisplay = imports.ui.searchDisplay;
 const CinnamonEntry = imports.ui.cinnamonEntry;
 const Tweener = imports.ui.tweener;
 
@@ -97,222 +95,6 @@ ViewTab.prototype = {
     }
 };
 
-
-function SearchTab() {
-    this._init();
-}
-
-SearchTab.prototype = {
-    __proto__: BaseTab.prototype,
-
-    _init: function() {
-        this.active = false;
-        this._searchPending = false;
-        this._searchTimeoutId = 0;
-
-        this._searchSystem = new Search.SearchSystem();
-        this._openSearchSystem = new Search.OpenSearchSystem();
-
-        this._entry = new St.Entry({ name: 'searchEntry',
-                                     /* Translators: this is the text displayed
-                                        in the search entry when no search is
-                                        active; it should not exceed ~30
-                                        characters. */
-                                     hint_text: _("Type to search..."),
-                                     track_hover: true,
-                                     can_focus: true });
-        CinnamonEntry.addContextMenu(this._entry);
-        this._text = this._entry.clutter_text;
-        this._text.connect('key-press-event', Lang.bind(this, this._onKeyPress));
-
-        this._inactiveIcon = new St.Icon({ style_class: 'search-entry-icon',
-                                           icon_name: 'edit-find',
-                                           icon_type: St.IconType.SYMBOLIC });
-        this._activeIcon = new St.Icon({ style_class: 'search-entry-icon',
-                                         icon_name: 'edit-clear',
-                                         icon_type: St.IconType.SYMBOLIC });
-        this._entry.set_secondary_icon(this._inactiveIcon);
-
-        this._iconClickedId = 0;
-
-        this._searchResults = new SearchDisplay.SearchResults(this._searchSystem, this._openSearchSystem);
-        BaseTab.prototype._init.call(this,
-                                     this._entry,
-                                     this._searchResults.actor,
-                                     _("Search"),
-                                     'edit-find');
-
-        this._text.connect('text-changed', Lang.bind(this, this._onTextChanged));
-        this._text.connect('key-press-event', Lang.bind(this, function (o, e) {
-            // We can't connect to 'activate' here because search providers
-            // might want to do something with the modifiers in activateSelected.
-            let symbol = e.get_key_symbol();
-            if (symbol == Clutter.Return || symbol == Clutter.KP_Enter) {
-                if (this._searchTimeoutId > 0) {
-                    Mainloop.source_remove(this._searchTimeoutId);
-                    this._doSearch();
-                }
-                this._searchResults.activateSelected();
-                return true;
-            }
-            return false;
-        }));
-
-        this._entry.connect('notify::mapped', Lang.bind(this, this._onMapped));
-
-        global.stage.connect('notify::key-focus', Lang.bind(this, this._updateCursorVisibility));
-
-        this._capturedEventId = 0;
-    },
-
-    hide: function() {
-        BaseTab.prototype.hide.call(this);
-
-        // Leave the entry focused when it doesn't have any text;
-        // when replacing a selected search term, Clutter emits
-        // two 'text-changed' signals, one for deleting the previous
-        // text and one for the new one - the second one is handled
-        // incorrectly when we remove focus
-        // (https://bugzilla.gnome.org/show_bug.cgi?id=636341) */
-        if (this._text.text != '')
-            this._reset();
-    },
-
-    _reset: function () {
-        this._text.text = '';
-
-        global.stage.set_key_focus(null);
-
-        this._text.set_cursor_visible(true);
-        this._text.set_selection(0, 0);
-    },
-
-    _updateCursorVisibility: function() {
-        let focus = global.stage.get_key_focus();
-        this._text.set_cursor_visible(focus == this._text);
-    },
-
-    _onMapped: function() {
-        if (this._entry.mapped) {
-            // Enable 'find-as-you-type'
-            this._capturedEventId = global.stage.connect('captured-event',
-                                 Lang.bind(this, this._onCapturedEvent));
-            this._text.set_cursor_visible(true);
-            this._text.set_selection(0, 0);
-        } else {
-            // Disable 'find-as-you-type'
-            if (this._capturedEventId > 0)
-                global.stage.disconnect(this._capturedEventId);
-            this._capturedEventId = 0;
-        }
-    },
-
-    addSearchProvider: function(provider) {
-        this._searchSystem.registerProvider(provider);
-        this._searchResults.createProviderMeta(provider);
-    },
-
-    removeSearchProvider: function(provider) {
-        this._searchSystem.unregisterProvider(provider);
-        this._searchResults.destroyProviderMeta(provider);
-    },
-
-    startSearch: function(event) {
-        global.stage.set_key_focus(this._text);
-        this._text.event(event, false);
-    },
-
-    // the entry does not show the hint
-    _isActivated: function() {
-        return this._text.text == this._entry.get_text();
-    },
-
-    _onTextChanged: function (se, prop) {
-        let searchPreviouslyActive = this.active;
-        this.active = this._entry.get_text() != '';
-        this._searchPending = this.active && !searchPreviouslyActive;
-        if (this._searchPending) {
-            this._searchResults.startingSearch();
-        }
-        if (this.active) {
-            this._entry.set_secondary_icon(this._activeIcon);
-
-            if (this._iconClickedId == 0) {
-                this._iconClickedId = this._entry.connect('secondary-icon-clicked',
-                    Lang.bind(this, function() {
-                        this._reset();
-                    }));
-            }
-            this._activate();
-        } else {
-            if (this._iconClickedId > 0)
-                this._entry.disconnect(this._iconClickedId);
-            this._iconClickedId = 0;
-
-            this._entry.set_secondary_icon(this._inactiveIcon);
-            this.emit('search-cancelled');
-        }
-        if (!this.active) {
-            if (this._searchTimeoutId > 0) {
-                Mainloop.source_remove(this._searchTimeoutId);
-                this._searchTimeoutId = 0;
-            }
-            return;
-        }
-        if (this._searchTimeoutId > 0)
-            return;
-        this._searchTimeoutId = Mainloop.timeout_add(150, Lang.bind(this, this._doSearch));
-    },
-
-    _onKeyPress: function(entry, event) {
-        let symbol = event.get_key_symbol();
-        if (symbol == Clutter.Up) {
-            if (!this.active)
-                return true;
-            this._searchResults.selectUp(false);
-
-            return true;
-        } else if (symbol == Clutter.Down) {
-            if (!this.active)
-                return true;
-
-            this._searchResults.selectDown(false);
-            return true;
-        } else if (symbol == Clutter.Escape) {
-            if (this._isActivated()) {
-                this._reset();
-                return true;
-            }
-        }
-
-        return false;
-    },
-
-    _onCapturedEvent: function(actor, event) {
-        if (event.type() == Clutter.EventType.BUTTON_PRESS) {
-            let source = event.get_source();
-            if (source != this._text && this._text.text == '' &&
-                !Main.layoutManager.keyboardBox.contains(source)) {
-                // the user clicked outside after activating the entry, but
-                // with no search term entered and no keyboard button pressed
-                // - cancel the search
-                this._reset();
-            }
-        }
-
-        return false;
-    },
-
-    _doSearch: function () {
-        this._searchTimeoutId = 0;
-        let text = this._text.get_text().replace(/^\s+/g, '').replace(/\s+$/g, '');
-        this._searchResults.doSearch(text);
-
-        return false;
-    }
-};
-
-
 function ViewSelector() {
     this._init();
 }
@@ -323,9 +105,7 @@ ViewSelector.prototype = {
                                         vertical: true });
 
         // The tab bar is located at the top of the view selector and
-        // holds both "normal" tab labels and the search entry. The former
-        // is left aligned, the latter right aligned - unless the text
-        // direction is RTL, in which case the order is reversed.
+        // holds "normal" tab labels.
         this._tabBar = new Cinnamon.GenericContainer();
         this._tabBar.connect('get-preferred-width',
                              Lang.bind(this, this._getPreferredTabBarWidth));
@@ -338,11 +118,7 @@ ViewSelector.prototype = {
         // Box to hold "normal" tab labels
         this._tabBox = new St.BoxLayout({ name: 'viewSelectorTabBar' });
         this._tabBar.add_actor(this._tabBox);
-
-        // The searchArea just holds the entry
-        this._searchArea = new St.Bin({ name: 'searchArea' });
-        this._tabBar.add_actor(this._searchArea);
-
+        
         // The page area holds the tab pages. Every page is given the
         // area's full allocation, so that the pages would appear on top
         // of each other if the inactive ones weren't hidden.
@@ -352,16 +128,7 @@ ViewSelector.prototype = {
                                          expand: true });
 
         this._tabs = [];
-        this._activeTab = null;
-
-        /*this._searchTab = new SearchTab();
-        this._searchArea.set_child(this._searchTab.title);
-        this._addTab(this._searchTab);
-
-        this._searchTab.connect('search-cancelled', Lang.bind(this,
-            function() {
-                this._switchTab(this._activeTab);
-            }));*/
+        this._activeTab = null;       
 
         Main.overview.connect('item-drag-begin',
                               Lang.bind(this, this._switchDefaultTab));
@@ -421,14 +188,10 @@ ViewSelector.prototype = {
             this._activeTab.hide();
         }
 
-        //if (tab != this._searchTab) {
-            tab.title.add_style_pseudo_class('selected');
-            this._activeTab = tab;
-            /*if (this._searchTab.visible) {
-                this._searchTab.hide();
-            }*/
-        //}
-
+        
+        tab.title.add_style_pseudo_class('selected');
+        this._activeTab = tab;
+        
         // Only fade when switching between tabs,
         // not when setting the initially selected one.
         if (!tab.visible)
@@ -517,8 +280,7 @@ ViewSelector.prototype = {
     _allocateTabBar: function(container, box, flags) {
         let allocWidth = box.x2 - box.x1;
         let allocHeight = box.y2 - box.y1;
-
-        let [searchMinWidth, searchNatWidth] = this._searchArea.get_preferred_width(-1);
+        
         let [barMinWidth, barNatWidth] = this._tabBox.get_preferred_width(-1);
         let childBox = new Clutter.ActorBox();
         childBox.y1 = 0;
@@ -531,16 +293,7 @@ ViewSelector.prototype = {
             childBox.x2 = barNatWidth;
         }
         this._tabBox.allocate(childBox, flags);
-
-        if (this.actor.get_direction() == St.TextDirection.RTL) {
-            childBox.x1 = 0;
-            childBox.x2 = searchNatWidth;
-        } else {
-            childBox.x1 = allocWidth - searchNatWidth;
-            childBox.x2 = allocWidth;
-        }
-        this._searchArea.allocate(childBox, flags);
-
+   
         Meta.later_add(Meta.LaterType.BEFORE_REDRAW, Lang.bind(this,
             function() {
                 this.constrainY.offset = this.actor.y;
@@ -555,27 +308,19 @@ ViewSelector.prototype = {
             Main.overview.hide();
             return true;
         } else if (modifiers & Clutter.ModifierType.CONTROL_MASK) {
-            if (symbol == Clutter.Page_Up) {
-                //if (!this._searchTab.active)
-                    this._prevTab();
+            if (symbol == Clutter.Page_Up) {                
+                this._prevTab();
                 return true;
-            } else if (symbol == Clutter.Page_Down) {
-                //if (!this._searchTab.active)
-                    this._nextTab();
+            } else if (symbol == Clutter.Page_Down) {                
+                this._nextTab();
                 return true;
             }
         } else if (Clutter.keysym_to_unicode(symbol)) {
-            //this._searchTab.startSearch(event);
+            
         }
         return false;
-    },
-
-    addSearchProvider: function(provider) {
-        //this._searchTab.addSearchProvider(provider);
-    },
-
-    removeSearchProvider: function(provider) {
-        //this._searchTab.removeSearchProvider(provider);
     }
+
+    
 };
 Signals.addSignalMethods(ViewSelector.prototype);

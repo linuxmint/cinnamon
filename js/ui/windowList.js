@@ -11,7 +11,6 @@ const PopupMenu = imports.ui.popupMenu;
 const PanelMenu = imports.ui.panelMenu;
 const Signals = imports.signals;
 const Meta = imports.gi.Meta;
-const AppDisplay = imports.ui.appDisplay;
 const AltTab = imports.ui.altTab;
 const Gio = imports.gi.Gio;
 const Tooltips = imports.ui.tooltips;

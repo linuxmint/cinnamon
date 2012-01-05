@@ -198,26 +198,7 @@ NotificationDaemon.prototype = {
     Notify: function(appName, replacesId, icon, summary, body,
                      actions, hints, timeout) {
         let id;
-
-        // Filter out chat, presence, calls and invitation notifications from
-        // Empathy, since we handle that information from telepathyClient.js
-        if (appName == 'Empathy' && (hints['category'] == 'im.received' ||
-              hints['category'] == 'x-empathy.im.room-invitation' ||
-              hints['category'] == 'x-empathy.call.incoming' ||
-              hints['category'] == 'x-empathy.call.incoming"' ||
-              hints['category'] == 'x-empathy.im.subscription-request' ||
-              hints['category'] == 'presence.online' ||
-              hints['category'] == 'presence.offline')) {
-            // Ignore replacesId since we already sent back a
-            // NotificationClosed for that id.
-            id = nextNotificationId++;
-            Mainloop.idle_add(Lang.bind(this,
-                                        function () {
-                                            this._emitNotificationClosed(id, NotificationClosedReason.DISMISSED);
-                                        }));
-            return id;
-        }
-
+        
         let rewrites = rewriteRules[appName];
         if (rewrites) {
             for (let i = 0; i < rewrites.length; i++) {

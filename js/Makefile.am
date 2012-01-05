@@ -19,17 +19,14 @@ nobase_dist_js_DATA = \
 	misc/util.js		\
 	perf/core.js		\
 	ui/altTab.js		\
-	ui/appDisplay.js	\
 	ui/appFavorites.js	\
 	ui/automountManager.js  \
 	ui/autorunManager.js    \
 	ui/boxpointer.js	\
-	ui/calendar.js		\
-	ui/contactDisplay.js \
+	ui/calendar.js		\	
 	ui/ctrlAltTab.js	\
 	ui/dateMenu.js		\
-	ui/dnd.js		\
-	ui/docDisplay.js	\
+	ui/dnd.js		\	
 	ui/endSessionDialog.js	\
 	ui/environment.js	\
 	ui/extensionSystem.js	\
@@ -53,13 +50,12 @@ nobase_dist_js_DATA = \
 	ui/panel.js		\
 	ui/panelLaunchers.js	\
 	ui/panelMenu.js		\
-	ui/placeDisplay.js	\
+	ui/placesManager.js  \	
 	ui/polkitAuthenticationAgent.js \
 	ui/popupMenu.js		\
 	ui/runDialog.js		\
 	ui/scripting.js		\
-	ui/search.js		\
-	ui/searchDisplay.js	\
+	ui/search.js		\	
 	ui/cinnamonDBus.js		\
 	ui/showDesktopButton.js	\
 	ui/statusIconDispatcher.js	\
@@ -69,12 +65,10 @@ nobase_dist_js_DATA = \
 	ui/status/power.js	\
 	ui/status/volume.js	\
 	ui/status/bluetooth.js	\
-	ui/telepathyClient.js	\
 	ui/themeManager.js	\
 	ui/themesDisplay.js	\
 	ui/tooltips.js	\
 	ui/tweener.js		\
-	ui/userMenu.js		\
 	ui/viewSelector.js	\
 	ui/windowAttentionHandler.js	\
 	ui/windowList.js	\

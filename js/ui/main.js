@@ -23,7 +23,7 @@ const Keyboard = imports.ui.keyboard;
 const MessageTray = imports.ui.messageTray;
 const Overview = imports.ui.overview;
 const Panel = imports.ui.panel;
-const PlaceDisplay = imports.ui.placeDisplay;
+const PlacesManager = imports.ui.placesManager;
 const RunDialog = imports.ui.runDialog;
 const Layout = imports.ui.layout;
 const LookingGlass = imports.ui.lookingGlass;
@@ -32,7 +32,6 @@ const NotificationDaemon = imports.ui.notificationDaemon;
 const WindowAttentionHandler = imports.ui.windowAttentionHandler;
 const Scripting = imports.ui.scripting;
 const CinnamonDBus = imports.ui.cinnamonDBus;
-const TelepathyClient = imports.ui.telepathyClient;
 const WindowManager = imports.ui.windowManager;
 const ThemeManager = imports.ui.themeManager;
 const Magnifier = imports.ui.magnifier;
@@ -55,7 +54,6 @@ let wm = null;
 let messageTray = null;
 let notificationDaemon = null;
 let windowAttentionHandler = null;
-let telepathyClient = null;
 let ctrlAltTabManager = null;
 let recorder = null;
 let cinnamonDBusService = null;
@@ -77,13 +75,8 @@ let _gdmCssStylesheet = null;
 
 let background = null;
 
-function _createUserSession() {
-    // Load the calendar server. Note that we are careful about
-    // not loading any events until the user presses the clock
-    //global.launch_calendar_server();
-
-    placesManager = new PlaceDisplay.PlacesManager();
-    //telepathyClient = new TelepathyClient.Client();
+function _createUserSession() {  
+    placesManager = new PlacesManager.PlacesManager();    
     automountManager = new AutomountManager.AutomountManager();
     autorunManager = new AutorunManager.AutorunManager();
     networkAgent = new NetworkAgent.NetworkAgent();

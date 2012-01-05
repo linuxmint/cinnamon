@@ -10,17 +10,13 @@ const St = imports.gi.St;
 const Cinnamon = imports.gi.Cinnamon;
 const Gdk = imports.gi.Gdk;
 
-const AppDisplay = imports.ui.appDisplay;
 const ThemesDisplay = imports.ui.themesDisplay;
-const ContactDisplay = imports.ui.contactDisplay;
 const DND = imports.ui.dnd;
-const DocDisplay = imports.ui.docDisplay;
 const Lightbox = imports.ui.lightbox;
 const Main = imports.ui.main;
 const MessageTray = imports.ui.messageTray;
 const Panel = imports.ui.panel;
 const Params = imports.misc.params;
-const PlaceDisplay = imports.ui.placeDisplay;
 const Tweener = imports.ui.tweener;
 const ViewSelector = imports.ui.viewSelector;
 const WorkspacesView = imports.ui.workspacesView;
@@ -201,17 +197,7 @@ Overview.prototype = {
         this._viewSelector.addViewTab('windows', _("Windows"), this._workspacesDisplay.actor, 'text-x-generic');
 		
 		this._themesDisplay = new ThemesDisplay.ThemesDisplay();
-        this._viewSelector.addViewTab('themes', _("Themes"), this._themesDisplay.actor, 'system-run');
-
-        //let appView = new AppDisplay.AllAppDisplay();
-        //this._viewSelector.addViewTab('applications', _("Applications"), appView.actor, 'system-run');
-
-        // Default search providers
-        //this.addSearchProvider(new AppDisplay.AppSearchProvider());
-        //this.addSearchProvider(new AppDisplay.SettingsSearchProvider());
-        //this.addSearchProvider(new PlaceDisplay.PlaceSearchProvider());
-        //this.addSearchProvider(new DocDisplay.DocSearchProvider());
-        //this.addSearchProvider(new ContactDisplay.ContactSearchProvider());        
+        this._viewSelector.addViewTab('themes', _("Themes"), this._themesDisplay.actor, 'system-run');        
 
         Main.layoutManager.connect('monitors-changed', Lang.bind(this, this._relayout));
         this._relayout();
