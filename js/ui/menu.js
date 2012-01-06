@@ -576,6 +576,8 @@ ApplicationsButton.prototype = {
         while ((nextType = iter.next()) != GMenu.TreeItemType.INVALID) {
             if (nextType == GMenu.TreeItemType.DIRECTORY) {
                 let dir = iter.get_directory();
+                if (dir.get_is_nodisplay())
+                    continue;
                 this.applicationsByCategory[dir.get_menu_id()] = new Array();
                 this._loadCategory(dir);
                 if (this.applicationsByCategory[dir.get_menu_id()].length>0){
