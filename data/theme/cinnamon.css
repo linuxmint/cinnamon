@@ -271,7 +271,7 @@ StTooltip StLabel {
 	padding-left: 2px;
 }
 
-.applications-menu-favorites-box {
+.menu-favorites-box {
   width: 70%;
   margin: auto;
   padding: 10px;
@@ -281,14 +281,14 @@ StTooltip StLabel {
   background-gradient-start: rgba(85,85,85,0.8);
   background-gradient-end: rgba(85,85,85,0.2);  
 }
-.applications-menu-favorites-button {
+.menu-favorites-button {
     padding-top: 10px;
     padding-left: 10px;
     padding-right: 10px;
     padding-bottom: 10px;    
 }
 
-.applications-menu-favorites-button:hover {
+.menu-favorites-button:hover {
     color: white;
 	 background-gradient-direction: vertical;
 	 background-gradient-start: rgba(255,255,255,0.2);
@@ -297,44 +297,47 @@ StTooltip StLabel {
     border-radius: 4px;
 }
 
-.places-box {
+.menu-places-box {
   width: 70%;
   margin: auto;
   padding: 10px;
   border: 0px solid #666;  
 }
-.places-button {
+
+.menu-places-button {
     padding-top: 10px;
     padding-left: 10px;
     padding-right: 10px;
     padding-bottom: 10px;    
 }
 
-.categories-box {
+.menu-categories-box {
     padding-top: 10px;
     padding-left: 30px;
     padding-right: 30px;
     padding-bottom: 10px;    
 }
-.applications-box {
+
+.menu-applications-box {
     padding-top: 10px;
     padding-left: 10px;
     padding-right: 10px;
     padding-bottom: 0px;    
 }
-.applications-scrollbox {
+
+.menu-applications-scrollbox {
     height: 300px;
 }
 
-.application-button {
+.menu-application-button {
     padding-top: 7px;
     padding-left: 7px;
     padding-right: 7px;
     padding-bottom: 7px;    
 }
 
-.application-button:hover,
-.application-button-selected {
+.menu-application-button:hover,
+.menu-application-button-selected {
     padding-top: 7px;
     padding-left: 7px;
     padding-right: 7px;
@@ -347,18 +350,18 @@ StTooltip StLabel {
     border-radius: 4px;
 }
 
-.application-button-label { 
+.menu-application-button-label { 
     padding-left: 5px       
 }
 
-.category-button {
+.menu-category-button {
     padding-top: 7px;
     padding-left: 7px;
     padding-right: 7px;
     padding-bottom: 7px;         
 }
 
-.category-button-greyed {
+.menu-category-button-greyed {
     padding-top: 7px;
     padding-left: 7px;
     padding-right: 7px;
@@ -367,7 +370,7 @@ StTooltip StLabel {
     font-style: italic;
 }
 
-.category-button-selected {
+.menu-category-button-selected {
     padding-top: 7px;
     padding-left: 7px;
     padding-right: 7px;
@@ -380,36 +383,36 @@ StTooltip StLabel {
     border-radius: 4px;
 }
 
-.category-button-label { 
+.menu-category-button-label { 
     padding-left: 5px       
 }
 
-.category-button-button:hover {
+.menu-category-button-button:hover {
     background-color: #969696;
     border-radius: 8px;
 }
 
 /* Name and description of the currently hovered item in the menu
  * This appears on the bottom right hand corner of the menu*/
-.selected-app-box {
+.menu-selected-app-box {
     padding-right: 30px;
     padding-left: 28px;
     text-align: right;
 }
 
-.selected-app-title {
+.menu-selected-app-title {
     font-weight: bold;
 }
 
-.selected-app-description {
+.menu-selected-app-description {
     max-width: 150px;
 }
 
-.search_box {
+.menu-search-box {
    padding-left: 30px;
 }
 
-#searchEntry {
+#menu-search-entry {
     padding: 4px 12px;
     border-radius: 4px;
     color: rgb(128, 128, 128);
@@ -425,25 +428,25 @@ StTooltip StLabel {
     box-shadow: inset 0px 2px 4px rgba(0,0,0,0.6);
 }
 
-#searchEntry:focus,
-#searchEntry:hover {
+#menu-search-entry:focus,
+#menu-search-entry:hover {
     border: 2px solid rgb(136,138,133);
     background-gradient-start: rgb(200,200,200);
     background-gradient-end: white;
     background-gradient-direction: vertical;
 }
 
-#searchEntry:hover {
+#menu-search-entry:hover {
     transition-duration: 300;
 }
 
-#searchEntry:focus {
+#menu-search-entry:focus {
     color: rgb(64, 64, 64);
     font-weight: bold;
     transition-duration: 0;
 }
 
-.search-entry-icon {
+.menu-search-entry-icon {
     icon-size: 1em;
     color: #8d8f8a;
 }
@@ -495,60 +498,85 @@ StTooltip StLabel {
 /* ===================================================================
  * Sound Applet (status/volume.js)
  * ===================================================================*/
-.button-container {
+.sound-button-container {
     padding-right: 5px;
 }
 
-.button {
+.sound-button {
     width: 22px;
     height: 13px;
     border: 1px solid #555;
     border-radius: 4px;
     padding: 7px;
 }
-.button:hover {
+.sound-button:hover {
     border: 1px solid white;
 }
 
-.button StIcon {
+.sound-button StIcon {
     icon-size: 1.4em;
 }
 
-.track-infos {
+.sound-track-infos {
     padding-left: 10px;
 }
 
-.track-info {
+.sound-track-info {
     padding-bottom: 4px;
 }
 
-.track-info StIcon {
+.sound-track-info StIcon {
     icon-size: 1em;
 }
 
-.track-info StLabel {
+.sound-track-info StLabel {
     padding-left: 5px;
 }
 
-.track-box {
+.sound-track-box {
     padding-top: 20px;
     padding-left: 30px;
     padding-right: 30px;
     padding-bottom: 10px;
 }
 
-.volume-menu-item {
+.sound-volume-menu-item {
     padding: .4em 1.75em;
 }
 
-.volume-menu-item StIcon {
+.sound-volume-menu-item StIcon {
     icon-size: 1.14em;
     padding-left: 8px;
 }
 
-.playback-control {
+.sound-playback-control {
     padding-top: 5px;
     padding-bottom: 10px;
+}
+
+/* ===================================================================
+ * Workspace Switcher applet (workspaceSwitcher.js)
+ * ===================================================================*/
+#workspaceSwitcher {
+    spacing: 0px;
+    padding: 3px;
+    
+}
+
+.workspace-button {
+    width: 20px;
+    height: 10px;   
+    color: #cccccc;
+    transition-duration: 100;
+    border: 1px;
+    border-color: #a6a6a6;
+    padding: 2px;
+}
+
+.workspace-button:outlined {
+    padding: 1px;    
+    background: #cccccc;
+    color: #555555;
 }
 
 /* ===================================================================
@@ -583,28 +611,6 @@ StTooltip StLabel {
 #panelRight:rtl {
     padding-right: 0px;
     spacing: 0px;
-}
-
-#workspaceSwitcher {
-    spacing: 0px;
-    padding: 3px;
-    
-}
-
-.workspace-button {
-    width: 20px;
-    height: 10px;   
-    color: #cccccc;
-    transition-duration: 100;
-    border: 1px;
-    border-color: #a6a6a6;
-    padding: 2px;
-}
-
-.workspace-button:outlined {
-    padding: 1px;    
-    background: #cccccc;
-    color: #555555;
 }
 
 .panel-status-button {
@@ -688,52 +694,8 @@ StTooltip StLabel {
     -boxpointer-gap: 4px
 }
 
-#panelUserMenu {
-    spacing: 4px;
-}
-
-.status-chooser {
-    spacing: .4em;
-}
-
-.status-chooser .popup-menu-item,
-.status-chooser-combo .popup-menu-item {
+.popup-menu-item, .popup-menu-item {
     padding: .4em;
-}
-
-.status-chooser-user-icon {
-    border: 2px solid #8b8b8b;
-    border-radius: 5px;
-    width: 48pt;
-    height: 48pt;
-}
-
-.status-chooser-user-icon:hover {
-    border: 2px solid #bbbbbb;
-}
-
-.status-chooser-user-name {
-    font-weight: bold;
-    font-size: 1.3em;
-    min-width: 120pt;
-}
-
-.status-chooser-combo {
-    border: 1px solid transparent;
-}
-
-.status-chooser-combo.popup-combo-menu {
-    background-color: rgba(0,0,0,0.7);
-    padding: .4em 0em;
-    border-radius: 4px;
-    border: 1px solid #5f5f5f;
-    color: #ffffff;
-    font-size: 10.5pt;
-}
-
-.status-chooser-status-item,
-.status-chooser-combo .popup-combobox-item {
-    spacing: .4em;
 }
 
 .system-status-icon {
@@ -758,22 +720,22 @@ StTooltip StLabel {
     background-color: #ADADAD;
 }
 
-.add-launcher-dialog-content-box {
+.panel-launcher-add-dialog-content-box {
 	padding: 6px;
 	spacing: 20px;
 }
 
-.add-launcher-dialog-content-box-left {
+.panel-launcher-add-dialog-content-box-left {
 	padding: 6px;
 	spacing: 20px;
 }
 
-.add-launcher-dialog-content-box-right {
+.panel-launcher-add-dialog-content-box-right {
 	padding: 6px;
 	spacing: 10px;
 }
 
-.add-launcher-dialog-entry {
+.panel-launcher-add-dialog-entry {
     padding-bottom: 10px;
     border-radius: 4px;
     color: rgb(128, 128, 128);
@@ -789,19 +751,19 @@ StTooltip StLabel {
     box-shadow: inset 0px 2px 4px rgba(0,0,0,0.6);
 }
 
-.add-launcher-dialog-entry:focus,
-.add-launcher-dialog-entry:hover {
+.panel-launcher-add-dialog-entry:focus,
+.panel-launcher-add-dialog-entry:hover {
     border: 2px solid rgb(136,138,133);
     background-gradient-start: rgb(200,200,200);
     background-gradient-end: white;
     background-gradient-direction: vertical;
 }
 
-.add-launcher-dialog-entry:hover {
+.panel-launcher-add-dialog-entry:hover {
     transition-duration: 300;
 }
 
-.add-launcher-dialog-entry:focus {
+.panel-launcher-add-dialog-entry:focus {
     color: rgb(64, 64, 64);
     font-weight: bold;
     transition-duration: 0;
@@ -867,6 +829,25 @@ StTooltip StLabel {
     -st-background-image-shadow: 2px 2px 6px rgba(0,0,0,0.5);
 }
 
+.icon-grid {
+    spacing: 36px;
+    -cinnamon-grid-item-size: 118px;
+}
+
+.icon-grid .overview-icon {
+    icon-size: 96px;
+}
+
+.overview-icon {
+    border-radius: 4px;
+    padding: 3px;
+    border: 1px rgba(0,0,0,0);
+    font-size: 7.5pt;
+    color: white;
+    transition-duration: 100;
+    text-align: center;
+}
+
 /* ===================================================================
  * ViewSelector 
  * ===================================================================*/
@@ -878,10 +859,6 @@ StTooltip StLabel {
 
 #viewSelectorTabBar {
     padding: 1em;
-}
-
-#searchArea {
-    padding: 0px 24px;
 }
 
 .view-tab-title {
@@ -901,83 +878,9 @@ StTooltip StLabel {
     border-radius: 0.25em;
 }
 
-#searchResults {
-    padding: 20px 10px 10px 10px;
-    spacing: 18px;
-}
-
-#searchResultsContent {
-    padding-right: 20px;
-    spacing: 36px;
-}
-
-#searchResultsContent:rtl {
-    padding-right: 0px;
-    padding-left: 20px;
-}
-
-.search-statustext,
-.search-section-header {
-    padding: 4px 12px;
-    spacing: 4px;
-    color: #6f6f6f;
-    font-size: .8em;
-}
-
-.search-section-results {
-    color: #ffffff;
-    padding: 6px;
-}
-
-.search-section-list-results {
-    spacing: 4px;
-}
-
-.results-container {
-    spacing: 4px;
-}
-
-.search-providers-box {
-    spacing: 12px;
-}
-
-/* Apps */
-
-.icon-grid {
-    spacing: 36px;
-    -cinnamon-grid-item-size: 118px;
-}
-
-.icon-grid .overview-icon {
-    icon-size: 96px;
-}
-
-.overview-icon,
-.search-result-content > .overview-icon {
-    border-radius: 4px;
-    padding: 3px;
-    border: 1px rgba(0,0,0,0);
-    font-size: 7.5pt;
-    color: white;
-    transition-duration: 100;
-    text-align: center;
-}
-
-.search-result-content:selected > .overview-icon {
-    background-color: rgba(255,255,255,0.33);
-}
-
-.search-result-content:hover > .overview-icon {
-    background-color: rgba(255,255,255,0.1);
-    text-shadow: black 0px 2px 2px;
-    transition-duration: 100;
-}
-
-.search-result-content:focus > .overview-icon {
-    border: 1px solid #cccccc;
-}
-
-/* LookingGlass */
+/* ===================================================================
+ * Looking Glass 
+ * ===================================================================*/
 
 #LookingGlassDialog
 {
@@ -1100,29 +1003,9 @@ StTooltip StLabel {
     color: #cccccc;
 }
 
-/* Calendar popup */
-
-#calendarEventsArea {
-    /* this is the width of the second column of the popup */
-    min-width: 400px;
-}
-
-.calendar-vertical-separator {
-    -stipple-width: 1px;
-    -stipple-color: #505050;
-    width: 0.3em;
-}
-
-#calendarPopup {
-    border-radius: 5px;
-    background: rgba(0,0,0,0.9);
-    border: 1px solid rgba(128,128,128,0.45);
-    color: white;
-}
-
-#calendarPopup .calendar {
-    padding: 10px;
-}
+/* ===================================================================
+ * Date applet 
+ * ===================================================================*/
 
 .calendar {
     padding: .4em 1.75em;
@@ -1244,80 +1127,9 @@ StTooltip StLabel {
     color: #cccccc;
 }
 
-.events-header-vbox {
-    spacing: 6pt;
-    padding-right: 1.75em;
-}
-
-.events-header-vbox:rtl {
-    padding-right: 0em;
-    padding-left: 1.75em;
-}
-
-.events-header-hbox {
-    padding: 0.3em;
-}
-
-.events-day-header {
-    font-size: 9pt;
-    font-weight: bold;
-    color: rgba(153, 153, 153, 1.0);
-    padding-left: 1.8em;
-    padding-top: 0.8em;
-}
-
-.events-day-header:rtl {
-    padding-left: 0em;
-    padding-right: 0.3em;
-}
-
-.events-day-dayname {
-    font-size: 9pt;
-    color: rgba(153, 153, 153, 1.0);
-    text-align: left;
-}
-
-.events-day-dayname:rtl {
-    text-align: right;
-}
-
-.events-day-time {
-    font-size: 9pt;
-    color: #fff;
-    text-align: right;
-}
-
-.events-day-time:rtl {
-    text-align: left;
-}
-
-.events-day-task {
-    font-size: 9pt;
-    color: rgba(153, 153, 153, 1.0);
-}
-
-.events-day-name-box {
-    min-width: 15pt;
-}
-
-.events-time-box {
-    min-width: 53pt;
-    padding-right: 6pt;
-}
-
-.events-time-box:rtl {
-    padding-right: 0px;
-    padding-left: 6pt;
-}
-
-.events-event-box {
-}
-
-.url-highlighter {
-    link-color: #ccccff;
-}
-
-/* Overview corner */
+/* ===================================================================
+ * Overview corner
+ * ===================================================================*/
 #overview-corner {
 	background-image: url("overview.png");
 }
@@ -1326,7 +1138,9 @@ StTooltip StLabel {
     background-image:  url("overview-hover.png");
 }
 
-/* Message Tray */
+/* ===================================================================
+ * Notifications
+ * ===================================================================*/
 #message-tray {
     background-gradient-direction: vertical;
     background-gradient-start: rgba(0,0,0,0.01);

@@ -239,7 +239,7 @@ function TrackInfo() {
 
 TrackInfo.prototype = {
     _init: function(label, icon) {
-        this.actor = new St.BoxLayout({style_class: 'track-info'});
+        this.actor = new St.BoxLayout({style_class: 'sound-track-info'});
         this.label = new St.Label({text: label.toString()});
         this.icon = new St.Icon({icon_name: icon.toString()});
         this.actor.add_actor(this.icon, { span: 0 });
@@ -268,13 +268,13 @@ function ControlButton() {
 
 ControlButton.prototype = {
     _init: function(icon, callback) {
-        this.actor = new St.Bin({style_class: 'button-container'});
-        this.button = new St.Button({ style_class: 'button' });
+        this.actor = new St.Bin({style_class: 'sound-button-container'});
+        this.button = new St.Button({ style_class: 'sound-button' });
         this.button.connect('clicked', callback);
         this.icon = new St.Icon({
             icon_type: St.IconType.SYMBOLIC,
             icon_name: icon,
-            style_class: 'button-icon',
+            style_class: 'sound-button-icon',
         });
         this.button.set_child(this.icon);
         this.actor.add_actor(this.button);
@@ -360,12 +360,12 @@ Player.prototype = {
         this._playerInfo = new TextImageMenuItem(this._getName(), false, "player-stopped", "left", "popup-menu-item");
         this.addMenuItem(this._playerInfo);
 
-        this._trackCover = new St.Bin({style_class: 'track-cover', x_align: St.Align.MIDDLE});
+        this._trackCover = new St.Bin({style_class: 'sound-track-cover', x_align: St.Align.MIDDLE});
         this._trackCover.set_child(new St.Icon({icon_name: "media-optical-cd-audio", icon_size: 100, icon_type: St.IconType.FULLCOLOR}));
-        this._trackInfos = new St.Bin({style_class: 'track-infos', y_align: St.Align.MIDDLE});
-        this._trackControls = new St.Bin({style_class: 'playback-control', x_align: St.Align.MIDDLE});
+        this._trackInfos = new St.Bin({style_class: 'sound-track-infos', y_align: St.Align.MIDDLE});
+        this._trackControls = new St.Bin({style_class: 'sound-playback-control', x_align: St.Align.MIDDLE});
 
-        let mainBox = new St.BoxLayout({style_class: 'track-box'});
+        let mainBox = new St.BoxLayout({style_class: 'sound-track-box'});
         mainBox.add_actor(this._trackCover);
         mainBox.add_actor(this._trackInfos);
 
@@ -413,13 +413,7 @@ Player.prototype = {
                     Lang.bind(this, function () { this._mediaServer.QuitRemote(); }));
                 this.controls.add_actor(this._quitButton.getActor());
             }
-        }));
-
-        /*this._trackPosition = new PopupMenu.PopupSliderMenuItem(0, {style_class: 'position-slider'});
-        this._trackPosition.connect('value-changed', Lang.bind(this, function(item) {
-            this._mediaServerPlayer.SetPositionRemote(this._trackId, item._value * this._songLength);
-        }));*/
-        /*this.addMenuItem(this._trackPosition);*/
+        }));      
        
         /* this players don't support seek */
         if (support_seek.indexOf(this._name) == -1)
@@ -801,7 +795,7 @@ Indicator.prototype = {
         }
         
         this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-        this._outputTitle = new TextImageMenuItem(_("Volume"), "audio-volume-high", false, "right", "volume-menu-item");
+        this._outputTitle = new TextImageMenuItem(_("Volume"), "audio-volume-high", false, "right", "sound-volume-menu-item");
         this._outputSlider = new PopupMenu.PopupSliderMenuItem(0);
         this._outputSlider.connect('value-changed', Lang.bind(this, this._sliderChanged, '_output'));
         this._outputSlider.connect('drag-end', Lang.bind(this, this._notifyVolumeChange));

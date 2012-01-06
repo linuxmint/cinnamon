@@ -30,30 +30,6 @@ const USER_DESKTOP_PATH = FileUtils.getUserDesktopDir();
 
 let appsys = Cinnamon.AppSystem.get_default();
 
-function AppMenuItem() {
-    this._init.apply(this, arguments);
-}
-
-AppMenuItem.prototype = {
-    __proto__: PopupMenu.PopupBaseMenuItem.prototype,
-
-    _init: function (app, params) {
-        PopupMenu.PopupBaseMenuItem.prototype._init.call(this, params);
-
-        this._app = app;
-        this.label = new St.Label({ text: app.get_name() });
-        this.addActor(this.label);
-        this._icon = app.create_icon_texture(ICON_SIZE);
-        this.addActor(this._icon, { expand: false });
-    },
-
-    activate: function (event) {
-        this._app.activate_full(-1, event.get_time());
-        PopupMenu.PopupBaseMenuItem.prototype.activate.call(this, event);
-    }
-
-};
-
 function ApplicationContextMenuItem(appButton, label, action) {
     this._init(appButton, label, action);
 }
@@ -175,10 +151,10 @@ ApplicationButton.prototype = {
     _init: function(appsMenuButton, app) {
         GenericApplicationButton.prototype._init.call(this, appsMenuButton, app);
 
-        this.actor.add_style_class_name('application-button');
+        this.actor.add_style_class_name('menu-application-button');
         this.icon = this.app.create_icon_texture(APPLICATION_ICON_SIZE);
         this.addActor(this.icon);
-        this.label = new St.Label({ text: this.app.get_name(), style_class: 'application-button-label' });
+        this.label = new St.Label({ text: this.app.get_name(), style_class: 'menu-application-button-label' });
         this.addActor(this.label);
     }
 };
@@ -192,10 +168,10 @@ PlaceButton.prototype = {
     _init: function(appsMenuButton,place, button_name) {
 this.place = place;
         this.button_name = button_name;
-        this.actor = new St.Button({ reactive: true, label: this.button_name, style_class: 'application-button', x_align: St.Align.START });
+        this.actor = new St.Button({ reactive: true, label: this.button_name, style_class: 'menu-application-button', x_align: St.Align.START });
         this.actor._delegate = this;
         this.buttonbox = new St.BoxLayout();
-        this.label = new St.Label({ text: this.button_name, style_class: 'application-button-label' });
+        this.label = new St.Label({ text: this.button_name, style_class: 'menu-application-button-label' });
         this.icon = place.iconFactory(APPLICATION_ICON_SIZE);
         this.buttonbox.add_actor(this.icon);
         this.buttonbox.add_actor(this.label);
@@ -223,10 +199,10 @@ if (category){
                this.icon_name = "";
            label = category.get_name();
         }else label = _("All Applications");
-        this.actor = new St.Button({ reactive: true, label: label, style_class: 'category-button', x_align: St.Align.START });
+        this.actor = new St.Button({ reactive: true, label: label, style_class: 'menu-category-button', x_align: St.Align.START });
         this.actor._delegate = this;
         this.buttonbox = new St.BoxLayout();
-        this.label = new St.Label({ text: label, style_class: 'category-button-label' });
+        this.label = new St.Label({ text: label, style_class: 'menu-category-button-label' });
         if (category && this.icon_name){
            this.icon = new St.Icon({icon_name: this.icon_name, icon_size: CATEGORY_ICON_SIZE, icon_type: St.IconType.FULLCOLOR});
            this.buttonbox.add_actor(this.icon);
@@ -244,10 +220,10 @@ function PlaceCategoryButton(app) {
 
 PlaceCategoryButton.prototype = {
     _init: function(category) {
-        this.actor = new St.Button({ reactive: true, label: _("Places"), style_class: 'category-button', x_align: St.Align.START });
+        this.actor = new St.Button({ reactive: true, label: _("Places"), style_class: 'menu-category-button', x_align: St.Align.START });
         this.actor._delegate = this;
         this.buttonbox = new St.BoxLayout();
-        this.label = new St.Label({ text: _("Places"), style_class: 'category-button-label' });
+        this.label = new St.Label({ text: _("Places"), style_class: 'menu-category-button-label' });
         this.icon = new St.Icon({icon_name: "folder", icon_size: CATEGORY_ICON_SIZE, icon_type: St.IconType.FULLCOLOR});
         this.buttonbox.add_actor(this.icon);
         this.buttonbox.add_actor(this.label);
@@ -272,7 +248,7 @@ FavoritesButton.prototype = {
         if (icon_size>FAV_ICON_SIZE) icon_size = FAV_ICON_SIZE;
         this.actor.style = "padding-top: "+(icon_size/3)+"px;padding-bottom: "+(icon_size/3)+"px;padding-left: "+(icon_size/3)+"px;padding-right: "+(icon_size/3)+"px;"
 
-        this.actor.add_style_class_name('applications-menu-favorites-button');
+        this.actor.add_style_class_name('menu-favorites-button');
         this.addActor(app.create_icon_texture(icon_size));
     }
 };
@@ -283,7 +259,7 @@ function SystemButton(appsMenuButton, icon, nbFavorites) {
 
 SystemButton.prototype = {
     _init: function(appsMenuButton, icon, nbFavorites) {
-        this.actor = new St.Button({ reactive: true, style_class: 'applications-menu-favorites-button' });
+        this.actor = new St.Button({ reactive: true, style_class: 'menu-favorites-button' });
         
         let monitorHeight = Main.layoutManager.primaryMonitor.height;
         let real_size = (0.7*monitorHeight) / nbFavorites;
@@ -316,7 +292,7 @@ MenuButton.prototype = {
     
     _resetMenu: function(){
         this.menu = new PopupMenu.PopupMenu(this.actor, this._menuAlignment, menuOrientation);
-        this.menu.actor.add_style_class_name('application-menu-background');
+        this.menu.actor.add_style_class_name('menu-background');
         this.menu.connect('open-state-changed', Lang.bind(this, this._onOpenStateChanged));
         //this.menu.actor.connect('key-press-event', Lang.bind(this, this._onMenuKeyPress));
         Main.uiGroup.add_actor(this.menu.actor);
@@ -409,8 +385,7 @@ ApplicationsButton.prototype = {
         try{
            let file = Gio.file_new_for_path(icon_file);
            let icon_uri = file.get_uri();
-           this._icon = St.TextureCache.get_default().load_uri_sync(1, icon_uri, 22, 22);
-           //this._icon = new St.Icon({ icon_name: 'start-here', style_class: 'popup-menu-icon' });
+           this._icon = St.TextureCache.get_default().load_uri_sync(1, icon_uri, 22, 22);           
            this._iconBox.child = this._icon;
         }catch(e){
            global.log("WARNING : Could not load icon file \""+icon_file+"\" for menu button");
@@ -428,10 +403,10 @@ ApplicationsButton.prototype = {
 		global.settings.connect("changed::menu-text", Lang.bind(this, function() {
 				this._label.set_text(global.settings.get_string("menu-text"));
 			})); 
-        this._searchInactiveIcon = new St.Icon({ style_class: 'search-entry-icon',
+        this._searchInactiveIcon = new St.Icon({ style_class: 'menu-search-entry-icon',
                                            icon_name: 'edit-find',
                                            icon_type: St.IconType.SYMBOLIC });
-        this._searchActiveIcon = new St.Icon({ style_class: 'search-entry-icon',
+        this._searchActiveIcon = new St.Icon({ style_class: 'menu-search-entry-icon',
                                          icon_name: 'edit-clear',
                                          icon_type: St.IconType.SYMBOLIC });
         this._searchTimeoutId = 0;
@@ -554,7 +529,7 @@ ApplicationsButton.prototype = {
 
     _clearSelections: function(container) {
         container.get_children().forEach(function(actor) {
-            actor.style_class = "category-button";
+            actor.style_class = "menu-category-button";
         });
     },
 
@@ -737,7 +712,7 @@ ApplicationsButton.prototype = {
         
         let leftPane = new St.BoxLayout({ vertical: true });
                   
-        this.favoritesBox = new St.BoxLayout({ style_class: 'applications-menu-favorites-box', vertical: true });        
+        this.favoritesBox = new St.BoxLayout({ style_class: 'menu-favorites-box', vertical: true });        
         
         this._session = new GnomeSession.SessionManager();
         this._screenSaverProxy = new ScreenSaver.ScreenSaverProxy();            
@@ -746,10 +721,10 @@ ApplicationsButton.prototype = {
         
         let rightPane = new St.BoxLayout({ vertical: true });
         
-        this.searchBox = new St.BoxLayout({ style_class: 'search_box' });
+        this.searchBox = new St.BoxLayout({ style_class: 'menu-search-box' });
         rightPane.add_actor(this.searchBox);
         
-        this.searchEntry = new St.Entry({ name: 'searchEntry',
+        this.searchEntry = new St.Entry({ name: 'menu-search-entry',
                                      hint_text: _("Type to search..."),
                                      track_hover: true,
                                      can_focus: true });
@@ -763,8 +738,8 @@ ApplicationsButton.prototype = {
 
         this.categoriesApplicationsBox = new St.BoxLayout();
         rightPane.add_actor(this.categoriesApplicationsBox);
-        this.categoriesBox = new St.BoxLayout({ style_class: 'categories-box', vertical: true });
-        this.applicationsScrollBox = new St.ScrollView({ x_fill: true, y_fill: false, y_align: St.Align.START, style_class: 'vfade applications-scrollbox' });
+        this.categoriesBox = new St.BoxLayout({ style_class: 'menu-categories-box', vertical: true });
+        this.applicationsScrollBox = new St.ScrollView({ x_fill: true, y_fill: false, y_align: St.Align.START, style_class: 'vfade menu-applications-scrollbox' });
         
         let vscroll = this.applicationsScrollBox.get_vscroll_bar();
         vscroll.connect('scroll-start',
@@ -776,7 +751,7 @@ ApplicationsButton.prototype = {
                                       this.menu.passEvents = false;
                                   }));
         
-        this.applicationsBox = new St.BoxLayout({ style_class: 'applications-box', vertical:true });
+        this.applicationsBox = new St.BoxLayout({ style_class: 'menu-applications-box', vertical:true });
         this.applicationsScrollBox.add_actor(this.applicationsBox);
         this.applicationsScrollBox.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC);
         this.categoriesApplicationsBox.add_actor(this.categoriesBox);
@@ -784,9 +759,7 @@ ApplicationsButton.prototype = {
                      
         this._refreshFavs();
                                                           
-        this.mainBox = new St.BoxLayout({ style_class: 'applications-box', vertical:false });
-        //this.rightBox = new St.BoxLayout({ style_class: 'applications-box', vertical:true });
-        //this.rightBox.add_actor(this.categoriesApplicationsBox, { span: 1 });
+        this.mainBox = new St.BoxLayout({ style_class: 'menu-applications-box', vertical:false });       
                 
         this.mainBox.add_actor(leftPane, { span: 1 });
         this.mainBox.add_actor(rightPane, { span: 1 });
@@ -803,20 +776,12 @@ ApplicationsButton.prototype = {
         this._addEnterEvent(this.placesButton, Lang.bind(this, function() {
             if (!this.searchActive) this._select_places(this.placesButton);
         }));
-        this.categoriesBox.add_actor(this.placesButton.actor);
-        
-        // Not necessary yet.. will be used to show all apps in an "all category"
-        //for (directory in this.applicationsByCategory) {
-		// let apps = this.applicationsByCategory[directory];
-		// for (var i=0; i<apps.length; i++) {
-		// let app = apps[i];
-		// }
-		//}
+        this.categoriesBox.add_actor(this.placesButton.actor);            
          
-        this.selectedAppBox = new St.BoxLayout({ style_class: 'selected-app-box', vertical: true });
-        this.selectedAppTitle = new St.Label({ style_class: 'selected-app-title', text: "" });
+        this.selectedAppBox = new St.BoxLayout({ style_class: 'menu-selected-app-box', vertical: true });
+        this.selectedAppTitle = new St.Label({ style_class: 'menu-selected-app-title', text: "" });
         this.selectedAppBox.add_actor(this.selectedAppTitle);
-        this.selectedAppDescription = new St.Label({ style_class: 'selected-app-description', text: "" });
+        this.selectedAppDescription = new St.Label({ style_class: 'menu-selected-app-description', text: "" });
         this.selectedAppBox.add_actor(this.selectedAppDescription);
         section.actor.add_actor(this.selectedAppBox);
     },
@@ -832,9 +797,9 @@ ApplicationsButton.prototype = {
 
          for (var i=0; i<actors.length; i++){
              let actor = actors[i];
-             if (this.searchActive) actor.style_class = "category-button-greyed";
-             else if (actor==selectedActor) actor.style_class = "category-button-selected";
-             else actor.style_class = "category-button";
+             if (this.searchActive) actor.style_class = "menu-category-button-greyed";
+             else if (actor==selectedActor) actor.style_class = "menu-category-button-selected";
+             else actor.style_class = "menu-category-button";
          }
     },
     
@@ -888,7 +853,7 @@ ApplicationsButton.prototype = {
                       if (applicationButton.app.get_description()) this.selectedAppDescription.set_text(applicationButton.app.get_description());
                       else this.selectedAppDescription.set_text("");
                       this._clearSelections(this.applicationsBox);
-                      applicationButton.actor.style_class = "category-button-selected";
+                      applicationButton.actor.style_class = "menu-category-button-selected";
                       this._scrollToButton(applicationButton);
                   }));
                   this._applicationsButtons[app] = applicationButton;
@@ -904,7 +869,7 @@ ApplicationsButton.prototype = {
                let button = new PlaceButton(this, place, place.name);
                this._addEnterEvent(button, Lang.bind(this, function() {
                    this._clearSelections(this.applicationsBox);
-                   button.actor.style_class = "category-button-selected";
+                   button.actor.style_class = "menu-category-button-selected";
                    this._scrollToButton(button);
                }));
                this.applicationsBox.add_actor(button.actor);
@@ -915,13 +880,7 @@ ApplicationsButton.prototype = {
      _select_places : function(button) {
          this.resetSearch();
 		 this._clearApplicationsBox(button.actor);
-         
-         //let places = Main.placesManager.getDefaultPlaces();
-         //for (let id = 0; id < places.length; id++) {
-         // let button = new PlaceButton(places[id], places[id].name);
-         // this.applicationsBox.add_actor(button.actor);
-         //}
-         
+               
          let bookmarks = this._listBookmarks();
          let devices = this._listDevices();
          this._displayButtons(null, bookmarks.concat(devices));
@@ -950,11 +909,11 @@ ApplicationsButton.prototype = {
                  let button = categoriesButtons[i];
                  let icon = button._delegate.icon;
                  if (active){
-                     button.remove_style_class_name("category-button-greyed");
-                     button.add_style_class_name("category-button");
+                     button.remove_style_class_name("menu-category-button-greyed");
+                     button.add_style_class_name("menu-category-button");
                  }else{
-                     button.remove_style_class_name("category-button");
-                     button.add_style_class_name("category-button-greyed");
+                     button.remove_style_class_name("menu-category-button");
+                     button.add_style_class_name("menu-category-button-greyed");
                  }
              }
         }catch(e){

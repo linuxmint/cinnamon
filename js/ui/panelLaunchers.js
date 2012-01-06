@@ -142,25 +142,25 @@ AddLauncherDialog.prototype = {
     __proto__: ModalDialog.ModalDialog.prototype,
     
     _init: function() {
-        ModalDialog.ModalDialog.prototype._init.call(this, { styleClass: 'add-launcher-dialog' });
+        ModalDialog.ModalDialog.prototype._init.call(this, { styleClass: 'panel-launcher-add-dialog' });
         
         let box;
         let label;
         
-        let box = new St.BoxLayout({ styleClass: 'add-launcher-dialog-content-box' });
-        let leftBox = new St.BoxLayout({vertical: true, styleClass: 'add-launcher-dialog-content-box-left'});
-        let rightBox = new St.BoxLayout({vertical: true, styleClass: 'add-launcher-dialog-content-box-right'});
+        let box = new St.BoxLayout({ styleClass: 'panel-launcher-add-dialog-content-box' });
+        let leftBox = new St.BoxLayout({vertical: true, styleClass: 'panel-launcher-add-dialog-content-box-left'});
+        let rightBox = new St.BoxLayout({vertical: true, styleClass: 'panel-launcher-add-dialog-content-box-right'});
                 
         label = new St.Label();
         label.set_text(_("Name"));
         leftBox.add(label, { x_align: St.Align.START, x_fill: true, x_expand: true });
-        this._nameEntry = new St.Entry({ styleClass: 'add-launcher-dialog-entry', can_focus: true });
+        this._nameEntry = new St.Entry({ styleClass: 'panel-launcher-add-dialog-entry', can_focus: true });
         rightBox.add(this._nameEntry, { x_align: St.Align.END, x_fill: false, x_expand: false });
                         
         label = new St.Label();
         label.set_text(_("Command"));
         leftBox.add(label, { x_align: St.Align.START, x_fill: true, x_expand: true });
-        this._commandEntry = new St.Entry({ styleClass: 'add-launcher-dialog-entry', can_focus: true });
+        this._commandEntry = new St.Entry({ styleClass: 'panel-launcher-add-dialog-entry', can_focus: true });
         rightBox.add(this._commandEntry, { x_align: St.Align.END, x_fill: false, x_expand: false });
         
         box.add(leftBox);
