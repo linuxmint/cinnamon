@@ -1,6 +1,7 @@
-/* ===================================================================
- * Main Section
- * ===================================================================*/
+/* ###################################################################
+ * Section common with Gnome Shell
+ * ... contains a few cinnamon specific styles (rare occurences) 
+ * ###################################################################*/
 stage {
     font-family: cantarell, sans-serif;
 }
@@ -263,323 +264,6 @@ StTooltip StLabel {
 }
 
 /* ===================================================================
- * Menu (menu.js)
- * ===================================================================*/
-
-/* Main menu title */
-.menu-label {
-	padding-left: 2px;
-}
-
-.menu-favorites-box {
-  width: 70%;
-  margin: auto;
-  padding: 10px;
-  border: 1px solid #666;  
-  border-radius: 4px;  
-  background-gradient-direction: vertical;
-  background-gradient-start: rgba(85,85,85,0.8);
-  background-gradient-end: rgba(85,85,85,0.2);  
-}
-.menu-favorites-button {
-    padding-top: 10px;
-    padding-left: 10px;
-    padding-right: 10px;
-    padding-bottom: 10px;    
-}
-
-.menu-favorites-button:hover {
-    color: white;
-	 background-gradient-direction: vertical;
-	 background-gradient-start: rgba(255,255,255,0.2);
-	 background-gradient-end: rgba(255,255,255,0.08);
-	 box-shadow: inset 0px 0px 1px 1px rgba(255,255,255,0.06);
-    border-radius: 4px;
-}
-
-.menu-places-box {
-  width: 70%;
-  margin: auto;
-  padding: 10px;
-  border: 0px solid #666;  
-}
-
-.menu-places-button {
-    padding-top: 10px;
-    padding-left: 10px;
-    padding-right: 10px;
-    padding-bottom: 10px;    
-}
-
-.menu-categories-box {
-    padding-top: 10px;
-    padding-left: 30px;
-    padding-right: 30px;
-    padding-bottom: 10px;    
-}
-
-.menu-applications-box {
-    padding-top: 10px;
-    padding-left: 10px;
-    padding-right: 10px;
-    padding-bottom: 0px;    
-}
-
-.menu-applications-scrollbox {
-    height: 300px;
-}
-
-.menu-application-button {
-    padding-top: 7px;
-    padding-left: 7px;
-    padding-right: 7px;
-    padding-bottom: 7px;    
-}
-
-.menu-application-button:hover,
-.menu-application-button-selected {
-    padding-top: 7px;
-    padding-left: 7px;
-    padding-right: 7px;
-    padding-bottom: 7px;
-    color: white;
-	 background-gradient-direction: vertical;
-	 background-gradient-start: rgba(255,255,255,0.2);
-	 background-gradient-end: rgba(255,255,255,0.08);
-	 box-shadow: inset 0px 0px 1px 1px rgba(255,255,255,0.06);
-    border-radius: 4px;
-}
-
-.menu-application-button-label { 
-    padding-left: 5px       
-}
-
-.menu-category-button {
-    padding-top: 7px;
-    padding-left: 7px;
-    padding-right: 7px;
-    padding-bottom: 7px;         
-}
-
-.menu-category-button-greyed {
-    padding-top: 7px;
-    padding-left: 7px;
-    padding-right: 7px;
-    padding-bottom: 7px; 
-    color: #9C9C9C;
-    font-style: italic;
-}
-
-.menu-category-button-selected {
-    padding-top: 7px;
-    padding-left: 7px;
-    padding-right: 7px;
-    padding-bottom: 7px; 
-    color: white;
-	 background-gradient-direction: vertical;
-	 background-gradient-start: rgba(255,255,255,0.2);
-	 background-gradient-end: rgba(255,255,255,0.08);
-	 box-shadow: inset 0px 0px 1px 1px rgba(255,255,255,0.06);
-    border-radius: 4px;
-}
-
-.menu-category-button-label { 
-    padding-left: 5px       
-}
-
-.menu-category-button-button:hover {
-    background-color: #969696;
-    border-radius: 8px;
-}
-
-/* Name and description of the currently hovered item in the menu
- * This appears on the bottom right hand corner of the menu*/
-.menu-selected-app-box {
-    padding-right: 30px;
-    padding-left: 28px;
-    text-align: right;
-}
-
-.menu-selected-app-title {
-    font-weight: bold;
-}
-
-.menu-selected-app-description {
-    max-width: 150px;
-}
-
-.menu-search-box {
-   padding-left: 30px;
-}
-
-#menu-search-entry {
-    padding: 4px 12px;
-    border-radius: 4px;
-    color: rgb(128, 128, 128);
-    border: 2px solid rgba(245,245,245,0.2);
-    background-gradient-start: rgba(5,5,6,0.1);
-    background-gradient-end: rgba(254,254,254,0.1);
-    background-gradient-direction: vertical;
-    selected-color: black;
-    caret-color: rgb(128, 128, 128);
-    caret-size: 1px;
-    width: 250px;
-    transition-duration: 300;
-    box-shadow: inset 0px 2px 4px rgba(0,0,0,0.6);
-}
-
-#menu-search-entry:focus,
-#menu-search-entry:hover {
-    border: 2px solid rgb(136,138,133);
-    background-gradient-start: rgb(200,200,200);
-    background-gradient-end: white;
-    background-gradient-direction: vertical;
-}
-
-#menu-search-entry:hover {
-    transition-duration: 300;
-}
-
-#menu-search-entry:focus {
-    color: rgb(64, 64, 64);
-    font-weight: bold;
-    transition-duration: 0;
-}
-
-.menu-search-entry-icon {
-    icon-size: 1em;
-    color: #8d8f8a;
-}
-
-/* Context menu (at the moment only for favorites) */
-.menu-context-menu {
-
-}
-
-/* ===================================================================
- * Window list (windowList.js)
- * ===================================================================*/
-.window-list-box {
-    spacing: 3px;
-    padding-left: 10px;
-    padding-top: 1px;   
-}
-
-.window-list-item-label {
-    font-weight: bold;
-    width: 15em;
-    min-width: 5px;
-}
-
-.window-list-item-box {
-     color: rgba(255,255,255,1.0);
-	 background-gradient-direction: vertical;
-	 background-gradient-start: rgba(255,255,255,0.05);
-	 background-gradient-end: rgba(255,255,255,0.2);
-	 box-shadow: inset 0px 0px 1px 1px rgba(170,170,170,0.5);
-     border-radius: 2px 2px 0px 0px;
-}
-
-.window-list-item-box:active,
-.window-list-item-box:checked,
-.window-list-item-box:focus  {     
-	 background-gradient-direction: vertical;
-	 background-gradient-start: rgba(226,226,226,0.5);
-	 background-gradient-end: rgba(122,122,122,0.5);
-	 box-shadow: inset 0px 0px 1px 1px rgba(170,170,170,0.5);
-     border-radius: 2px 2px 0px 0px;
-}
-
-.window-list-item-box:hover  {     
-	 box-shadow: inset 0px 0px 1px 1px rgba(170,170,170,1.0);
-     border-radius: 2px 2px 0px 0px;
-}
-
-/* ===================================================================
- * Sound Applet (status/volume.js)
- * ===================================================================*/
-.sound-button-container {
-    padding-right: 5px;
-}
-
-.sound-button {
-    width: 22px;
-    height: 13px;
-    border: 1px solid #555;
-    border-radius: 4px;
-    padding: 7px;
-}
-.sound-button:hover {
-    border: 1px solid white;
-}
-
-.sound-button StIcon {
-    icon-size: 1.4em;
-}
-
-.sound-track-infos {
-    padding-left: 10px;
-}
-
-.sound-track-info {
-    padding-bottom: 4px;
-}
-
-.sound-track-info StIcon {
-    icon-size: 1em;
-}
-
-.sound-track-info StLabel {
-    padding-left: 5px;
-}
-
-.sound-track-box {
-    padding-top: 20px;
-    padding-left: 30px;
-    padding-right: 30px;
-    padding-bottom: 10px;
-}
-
-.sound-volume-menu-item {
-    padding: .4em 1.75em;
-}
-
-.sound-volume-menu-item StIcon {
-    icon-size: 1.14em;
-    padding-left: 8px;
-}
-
-.sound-playback-control {
-    padding-top: 5px;
-    padding-bottom: 10px;
-}
-
-/* ===================================================================
- * Workspace Switcher applet (workspaceSwitcher.js)
- * ===================================================================*/
-#workspaceSwitcher {
-    spacing: 0px;
-    padding: 3px;
-    
-}
-
-.workspace-button {
-    width: 20px;
-    height: 10px;   
-    color: #cccccc;
-    transition-duration: 100;
-    border: 1px;
-    border-color: #a6a6a6;
-    padding: 2px;
-}
-
-.workspace-button:outlined {
-    padding: 1px;    
-    background: #cccccc;
-    color: #555555;
-}
-
-/* ===================================================================
  * Panel (panel.js)
  * ===================================================================*/
 
@@ -700,73 +384,6 @@ StTooltip StLabel {
 
 .system-status-icon {
     icon-size: 1.14em;
-}
-
-/* ===================================================================
- * Panel Launchers Applet (panelLaunchers.js)
- * ===================================================================*/
-
-#panel-launchers-box {
-    padding-left: 7px;
-}
-
-.panel-launcher {
-    margin: 1px;
-    padding: 1px;
-}
-
-.panel-launcher:hover {
-    border-radius: 2px;
-    background-color: #ADADAD;
-}
-
-.panel-launcher-add-dialog-content-box {
-	padding: 6px;
-	spacing: 20px;
-}
-
-.panel-launcher-add-dialog-content-box-left {
-	padding: 6px;
-	spacing: 20px;
-}
-
-.panel-launcher-add-dialog-content-box-right {
-	padding: 6px;
-	spacing: 10px;
-}
-
-.panel-launcher-add-dialog-entry {
-    padding-bottom: 10px;
-    border-radius: 4px;
-    color: rgb(128, 128, 128);
-    border: 2px solid rgba(245,245,245,0.2);
-    background-gradient-start: rgba(5,5,6,0.1);
-    background-gradient-end: rgba(254,254,254,0.1);
-    background-gradient-direction: vertical;
-    selected-color: black;
-    caret-color: rgb(128, 128, 128);
-    caret-size: 1px;
-    width: 250px;
-    transition-duration: 300;
-    box-shadow: inset 0px 2px 4px rgba(0,0,0,0.6);
-}
-
-.panel-launcher-add-dialog-entry:focus,
-.panel-launcher-add-dialog-entry:hover {
-    border: 2px solid rgb(136,138,133);
-    background-gradient-start: rgb(200,200,200);
-    background-gradient-end: white;
-    background-gradient-direction: vertical;
-}
-
-.panel-launcher-add-dialog-entry:hover {
-    transition-duration: 300;
-}
-
-.panel-launcher-add-dialog-entry:focus {
-    color: rgb(64, 64, 64);
-    font-weight: bold;
-    transition-duration: 0;
 }
 
 /* ===================================================================
@@ -1128,26 +745,8 @@ StTooltip StLabel {
 }
 
 /* ===================================================================
- * Overview corner
- * ===================================================================*/
-#overview-corner {
-	background-image: url("overview.png");
-}
-
-#overview-corner:hover {    
-    background-image:  url("overview-hover.png");
-}
-
-/* ===================================================================
  * Notifications
  * ===================================================================*/
-#message-tray {
-    background-gradient-direction: vertical;
-    background-gradient-start: rgba(0,0,0,0.01);
-    background-gradient-end: rgba(0,0,0,0.82);
-    height: 36px;
-    color: white;
-}
 
 #notification {
     font-size: 8.5pt;
@@ -1176,46 +775,6 @@ StTooltip StLabel {
 .notification-with-image {
     min-height: 159px;
     color: white;
-}
-
-.summary-boxpointer {
-    -arrow-border-radius: 8px;
-    -arrow-background-color: rgba(0,0,0,0.9);
-    -arrow-border-width: 2px;
-    -arrow-border-color: #a5a5a5;
-    -arrow-base: 24px;
-    -arrow-rise: 11px;
-    color: white;
-}
-
-.summary-boxpointer #notification {
-    border-radius: 9px;
-    background: rgba(0,0,0,0) !important;
-    padding-bottom: 12px;
-}
-
-.summary-boxpointer #summary-right-click-menu {
-    font-size: 10.5pt;
-    padding-top: 12px;
-    padding-bottom: 12px;
-}
-
-#summary-notification-stack-scrollview {
-    max-height: 18em;
-    padding-top: 6px;
-    padding-bottom: 6px;
-}
-
-#summary-notification-stack-scrollview > .top-shadow, #summary-notification-stack-scrollview > .bottom-shadow {
-    height: 1em;
-}
-
-#summary-notification-stack-scrollview:ltr {
-    padding-right: 8px;
-}
-
-#summary-notification-stack-scrollview:rtl {
-    padding-left: 8px;
 }
 
 #notification-scrollview {
@@ -1351,91 +910,10 @@ StTooltip StLabel {
     selection-background-color: #808080;
 }
 
-/* The spacing and padding on the summary is tricky; we want to keep
- * the icons from touching each other or the edges of the screen, but
- * we also want them to be "Fitts"-y with respect to the edges, so the
- * summary area's bottom and right padding must actually be part of
- * the icons. However, we can't put *all* of the padding into the
- * icons, because then the summary would be 0x0 when there were no
- * icons in it, and so you wouldn't be able to hover over it to
- * activate it.
- *
- * Also, the spacing between a summary-source's icon and title is
- * actually specified as padding-left in source-title, because we
- * want the spacing to collapse along with the title.
- */
-#summary-mode {
-    padding: 2px 0px 0px 4px;
-    height: 36px;
-}
+/* ===================================================================
+ * Alt Tab
+ * ===================================================================*/
 
-#summary-mode:rtl {
-    padding: 2px 4px 0px 0px;
-}
-
-.summary-source-button {
-    color: #fff;
-    text-shadow: black 0px 2px 2px;
-}
-
-.summary-source-button:ltr {
-    padding-right: 12px;
-}
-
-.summary-source-button:selected .summary-source {
-    background-image: url("panel-button-highlight-narrow.svg");
-    border-image: url("source-button-border.svg") 10 10 0 1;
-}
-
-.summary-source-button:expanded:selected .summary-source {
-    background-image: none;
-    border-image: none;
-}
-
-.summary-source-button:expanded:selected {
-    background-image: url("panel-button-highlight-wide.svg");
-    border-image: url("source-button-border.svg") 10 10 0 1;
-}
-
-.summary-source-button:rtl {
-    padding-left: 12px;
-}
-
-.summary-source-button:last-child:ltr {
-    padding-right: 12px;
-}
-
-.summary-source-button:last-child:rtl {
-    padding-left: 12px;
-}
-
-.summary-source {
-    padding-right: 4px;
-    padding-left: 4px;
-}
-
-.summary-source-counter {
-    color: white;
-    background-color: #3465A4;
-    text-shadow: black 1px 1px 0;
-    font-size: 9pt;
-    border-radius: 1em;
-    min-height: 1em;
-    min-width: 1em;
-}
-
-.source-title {
-    font-size: 9pt;
-    font-weight: bold;
-    padding-left: 4px;
-}
-
-.source-title:rtl {
-    padding-left: 0px;
-    padding-right: 4px;
-}
-
-/* App Switcher */
 #altTabPopup {
     padding: 8px;
     spacing: 16px;
@@ -1523,47 +1001,10 @@ StTooltip StLabel {
     color: white;
 }
 
-/* Themes in overview */
-.theme-button {
-	color: #CCCCCC;
-	padding: 10px;
-	margin: auto;
-}
+/* ===================================================================
+ * Modal dialogs
+ * ===================================================================*/
 
-.theme-button:hover {
-    color: white;
-	background-gradient-direction: vertical;
-	background-gradient-start: rgba(255,255,255,0.2);
-	background-gradient-end: rgba(255,255,255,0.08);
-	box-shadow: inset 0px 0px 1px 1px rgba(255,255,255,0.06);
-    border-radius: 4px;
-}
-
-.theme-button:active {
-	color: white;
-	background-gradient-direction: vertical;
-	background-gradient-start: rgba(255,255,255,0.4);
-	background-gradient-end: rgba(255,255,255,0.16);
-	box-shadow: inset 0px 0px 1px 1px rgba(255,255,255,0.06);
-    border-radius: 4px;
-}
-
-.theme-box {
-	spacing: 3px;
-}
-
-.theme-name {
-	font-size: 10pt;
-	font-weight: bold;
-	color: white;
-}
-
-.theme-type {
-	font-size: 6pt;
-	font-style: italic;
-}
-
-/* Modal Dialogs */
 .modal-dialog {
     font-size: 12pt;
     border-radius: 24px;
@@ -1599,7 +1040,10 @@ StTooltip StLabel {
     padding: 3px 31px 4px;
 }
 
-/* Run Dialog */
+/* ===================================================================
+ * Run dialog
+ * ===================================================================*/
+
 .run-dialog-label {
     font-size: 9pt;
     color: white;
@@ -1636,7 +1080,10 @@ StTooltip StLabel {
     background-color: rgba(0, 0, 0, 0.4);
 }
 
-/* End Session Dialog */
+/* ===================================================================
+ * End session dialog
+ * ===================================================================*/
+
 .end-session-dialog {
     spacing: 42px;
 }
@@ -1808,7 +1255,10 @@ StTooltip StLabel {
     font-size: 10pt;
 }
 
-/* PolicyKit Authentication Dialog */
+/* ===================================================================
+ * Policykit authentication dialog
+ * ===================================================================*/
+
 .polkit-dialog {
     /* this is the width of the entire modal popup */
     width: 500px;
@@ -1897,7 +1347,10 @@ StTooltip StLabel {
     spacing-rows: 15px;
 }
 
-/* Magnifier */
+/* ===================================================================
+ * Magnifier
+ * ===================================================================*/
+
 
 .magnifier-zoom-region {
     border: 2px solid rgba(128, 0, 0, 255);
@@ -1907,7 +1360,10 @@ StTooltip StLabel {
     border-width: 0px;
 }
 
-/* On-screen Keyboard */
+/* ===================================================================
+ * On screen keyboard
+ * ===================================================================*/
+
 
 #keyboard {
     background: rgba(0,0,0,0.8);
@@ -1960,6 +1416,448 @@ StTooltip StLabel {
     -arrow-base: 20px;
     -arrow-rise: 10px;
     -boxpointer-gap: 5px;
+}
+
+/* ###################################################################
+ * Cinnamon Specific Section 
+ * ###################################################################*/
+
+/* ===================================================================
+ * Menu (menu.js)
+ * ===================================================================*/
+
+/* Main menu title */
+.menu-label {
+	padding-left: 2px;
+}
+
+.menu-favorites-box {
+  width: 70%;
+  margin: auto;
+  padding: 10px;
+  border: 1px solid #666;  
+  border-radius: 4px;  
+  background-gradient-direction: vertical;
+  background-gradient-start: rgba(85,85,85,0.8);
+  background-gradient-end: rgba(85,85,85,0.2);  
+}
+.menu-favorites-button {
+    padding-top: 10px;
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-bottom: 10px;    
+}
+
+.menu-favorites-button:hover {
+    color: white;
+	 background-gradient-direction: vertical;
+	 background-gradient-start: rgba(255,255,255,0.2);
+	 background-gradient-end: rgba(255,255,255,0.08);
+	 box-shadow: inset 0px 0px 1px 1px rgba(255,255,255,0.06);
+    border-radius: 4px;
+}
+
+.menu-places-box {
+  width: 70%;
+  margin: auto;
+  padding: 10px;
+  border: 0px solid #666;  
+}
+
+.menu-places-button {
+    padding-top: 10px;
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-bottom: 10px;    
+}
+
+.menu-categories-box {
+    padding-top: 10px;
+    padding-left: 30px;
+    padding-right: 30px;
+    padding-bottom: 10px;    
+}
+
+.menu-applications-box {
+    padding-top: 10px;
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-bottom: 0px;    
+}
+
+.menu-applications-scrollbox {
+    height: 300px;
+}
+
+.menu-application-button {
+    padding-top: 7px;
+    padding-left: 7px;
+    padding-right: 7px;
+    padding-bottom: 7px;    
+}
+
+.menu-application-button:hover,
+.menu-application-button-selected {
+    padding-top: 7px;
+    padding-left: 7px;
+    padding-right: 7px;
+    padding-bottom: 7px;
+    color: white;
+	 background-gradient-direction: vertical;
+	 background-gradient-start: rgba(255,255,255,0.2);
+	 background-gradient-end: rgba(255,255,255,0.08);
+	 box-shadow: inset 0px 0px 1px 1px rgba(255,255,255,0.06);
+    border-radius: 4px;
+}
+
+.menu-application-button-label { 
+    padding-left: 5px       
+}
+
+.menu-category-button {
+    padding-top: 7px;
+    padding-left: 7px;
+    padding-right: 7px;
+    padding-bottom: 7px;         
+}
+
+.menu-category-button-greyed {
+    padding-top: 7px;
+    padding-left: 7px;
+    padding-right: 7px;
+    padding-bottom: 7px; 
+    color: #9C9C9C;
+    font-style: italic;
+}
+
+.menu-category-button-selected {
+    padding-top: 7px;
+    padding-left: 7px;
+    padding-right: 7px;
+    padding-bottom: 7px; 
+    color: white;
+	 background-gradient-direction: vertical;
+	 background-gradient-start: rgba(255,255,255,0.2);
+	 background-gradient-end: rgba(255,255,255,0.08);
+	 box-shadow: inset 0px 0px 1px 1px rgba(255,255,255,0.06);
+    border-radius: 4px;
+}
+
+.menu-category-button-label { 
+    padding-left: 5px       
+}
+
+.menu-category-button-button:hover {
+    background-color: #969696;
+    border-radius: 8px;
+}
+
+/* Name and description of the currently hovered item in the menu
+ * This appears on the bottom right hand corner of the menu*/
+.menu-selected-app-box {
+    padding-right: 30px;
+    padding-left: 28px;
+    text-align: right;
+}
+
+.menu-selected-app-title {
+    font-weight: bold;
+}
+
+.menu-selected-app-description {
+    max-width: 150px;
+}
+
+.menu-search-box {
+   padding-left: 30px;
+}
+
+#menu-search-entry {
+    padding: 4px 12px;
+    border-radius: 4px;
+    color: rgb(128, 128, 128);
+    border: 2px solid rgba(245,245,245,0.2);
+    background-gradient-start: rgba(5,5,6,0.1);
+    background-gradient-end: rgba(254,254,254,0.1);
+    background-gradient-direction: vertical;
+    selected-color: black;
+    caret-color: rgb(128, 128, 128);
+    caret-size: 1px;
+    width: 250px;
+    transition-duration: 300;
+    box-shadow: inset 0px 2px 4px rgba(0,0,0,0.6);
+}
+
+#menu-search-entry:focus,
+#menu-search-entry:hover {
+    border: 2px solid rgb(136,138,133);
+    background-gradient-start: rgb(200,200,200);
+    background-gradient-end: white;
+    background-gradient-direction: vertical;
+}
+
+#menu-search-entry:hover {
+    transition-duration: 300;
+}
+
+#menu-search-entry:focus {
+    color: rgb(64, 64, 64);
+    font-weight: bold;
+    transition-duration: 0;
+}
+
+.menu-search-entry-icon {
+    icon-size: 1em;
+    color: #8d8f8a;
+}
+
+/* Context menu (at the moment only for favorites) */
+.menu-context-menu {
+
+}
+
+/* ===================================================================
+ * Window list (windowList.js)
+ * ===================================================================*/
+.window-list-box {
+    spacing: 3px;
+    padding-left: 10px;
+    padding-top: 1px;   
+}
+
+.window-list-item-label {
+    font-weight: bold;
+    width: 15em;
+    min-width: 5px;
+}
+
+.window-list-item-box {
+     color: rgba(255,255,255,1.0);
+	 background-gradient-direction: vertical;
+	 background-gradient-start: rgba(255,255,255,0.05);
+	 background-gradient-end: rgba(255,255,255,0.2);
+	 box-shadow: inset 0px 0px 1px 1px rgba(170,170,170,0.5);
+     border-radius: 2px 2px 0px 0px;
+}
+
+.window-list-item-box:active,
+.window-list-item-box:checked,
+.window-list-item-box:focus  {     
+	 background-gradient-direction: vertical;
+	 background-gradient-start: rgba(226,226,226,0.5);
+	 background-gradient-end: rgba(122,122,122,0.5);
+	 box-shadow: inset 0px 0px 1px 1px rgba(170,170,170,0.5);
+     border-radius: 2px 2px 0px 0px;
+}
+
+.window-list-item-box:hover  {     
+	 box-shadow: inset 0px 0px 1px 1px rgba(170,170,170,1.0);
+     border-radius: 2px 2px 0px 0px;
+}
+
+/* ===================================================================
+ * Sound Applet (status/volume.js)
+ * ===================================================================*/
+.sound-button-container {
+    padding-right: 5px;
+}
+
+.sound-button {
+    width: 22px;
+    height: 13px;
+    border: 1px solid #555;
+    border-radius: 4px;
+    padding: 7px;
+}
+.sound-button:hover {
+    border: 1px solid white;
+}
+
+.sound-button StIcon {
+    icon-size: 1.4em;
+}
+
+.sound-track-infos {
+    padding-left: 10px;
+}
+
+.sound-track-info {
+    padding-bottom: 4px;
+}
+
+.sound-track-info StIcon {
+    icon-size: 1em;
+}
+
+.sound-track-info StLabel {
+    padding-left: 5px;
+}
+
+.sound-track-box {
+    padding-top: 20px;
+    padding-left: 30px;
+    padding-right: 30px;
+    padding-bottom: 10px;
+}
+
+.sound-volume-menu-item {
+    padding: .4em 1.75em;
+}
+
+.sound-volume-menu-item StIcon {
+    icon-size: 1.14em;
+    padding-left: 8px;
+}
+
+.sound-playback-control {
+    padding-top: 5px;
+    padding-bottom: 10px;
+}
+
+/* ===================================================================
+ * Workspace Switcher applet (workspaceSwitcher.js)
+ * ===================================================================*/
+#workspaceSwitcher {
+    spacing: 0px;
+    padding: 3px;
+    
+}
+
+.workspace-button {
+    width: 20px;
+    height: 10px;   
+    color: #cccccc;
+    transition-duration: 100;
+    border: 1px;
+    border-color: #a6a6a6;
+    padding: 2px;
+}
+
+.workspace-button:outlined {
+    padding: 1px;    
+    background: #cccccc;
+    color: #555555;
+}
+
+/* ===================================================================
+ * Panel Launchers Applet (panelLaunchers.js)
+ * ===================================================================*/
+
+#panel-launchers-box {
+    padding-left: 7px;
+}
+
+.panel-launcher {
+    margin: 1px;
+    padding: 1px;
+}
+
+.panel-launcher:hover {
+    border-radius: 2px;
+    background-color: #ADADAD;
+}
+
+.panel-launcher-add-dialog-content-box {
+	padding: 6px;
+	spacing: 20px;
+}
+
+.panel-launcher-add-dialog-content-box-left {
+	padding: 6px;
+	spacing: 20px;
+}
+
+.panel-launcher-add-dialog-content-box-right {
+	padding: 6px;
+	spacing: 10px;
+}
+
+.panel-launcher-add-dialog-entry {
+    padding-bottom: 10px;
+    border-radius: 4px;
+    color: rgb(128, 128, 128);
+    border: 2px solid rgba(245,245,245,0.2);
+    background-gradient-start: rgba(5,5,6,0.1);
+    background-gradient-end: rgba(254,254,254,0.1);
+    background-gradient-direction: vertical;
+    selected-color: black;
+    caret-color: rgb(128, 128, 128);
+    caret-size: 1px;
+    width: 250px;
+    transition-duration: 300;
+    box-shadow: inset 0px 2px 4px rgba(0,0,0,0.6);
+}
+
+.panel-launcher-add-dialog-entry:focus,
+.panel-launcher-add-dialog-entry:hover {
+    border: 2px solid rgb(136,138,133);
+    background-gradient-start: rgb(200,200,200);
+    background-gradient-end: white;
+    background-gradient-direction: vertical;
+}
+
+.panel-launcher-add-dialog-entry:hover {
+    transition-duration: 300;
+}
+
+.panel-launcher-add-dialog-entry:focus {
+    color: rgb(64, 64, 64);
+    font-weight: bold;
+    transition-duration: 0;
+}
+
+/* ===================================================================
+ * Overview corner
+ * ===================================================================*/
+#overview-corner {
+	background-image: url("overview.png");
+}
+
+#overview-corner:hover {    
+    background-image:  url("overview-hover.png");
+}
+
+/* ===================================================================
+ * Themes selection in overview
+ * ===================================================================*/
+
+.theme-button {
+	color: #CCCCCC;
+	padding: 10px;
+	margin: auto;
+}
+
+.theme-button:hover {
+    color: white;
+	background-gradient-direction: vertical;
+	background-gradient-start: rgba(255,255,255,0.2);
+	background-gradient-end: rgba(255,255,255,0.08);
+	box-shadow: inset 0px 0px 1px 1px rgba(255,255,255,0.06);
+    border-radius: 4px;
+}
+
+.theme-button:active {
+	color: white;
+	background-gradient-direction: vertical;
+	background-gradient-start: rgba(255,255,255,0.4);
+	background-gradient-end: rgba(255,255,255,0.16);
+	box-shadow: inset 0px 0px 1px 1px rgba(255,255,255,0.06);
+    border-radius: 4px;
+}
+
+.theme-box {
+	spacing: 3px;
+}
+
+.theme-name {
+	font-size: 10pt;
+	font-weight: bold;
+	color: white;
+}
+
+.theme-type {
+	font-size: 6pt;
+	font-style: italic;
 }
 
 
