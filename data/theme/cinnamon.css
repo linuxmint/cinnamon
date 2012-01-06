@@ -948,67 +948,11 @@ StTooltip StLabel {
     -cinnamon-grid-item-size: 118px;
 }
 
-.contact-grid {
-    spacing: 36px;
-    -cinnamon-grid-item-size: 272px; /* 2 * -cinnamon-grid-item-size + spacing */
-}
-
 .icon-grid .overview-icon {
     icon-size: 96px;
 }
 
-.all-app {
-    padding: 16px 25px 16px 16px;
-    spacing: 20px;
-}
-
-.all-app:rtl {
-    padding-right: 16px;
-    padding-left: 25px;
-}
-
-.app-filter {
-    font-size: 10.5pt;
-    font-weight: bold;
-    height: 2.85em;
-    color: #aaa;
-    width: 200px;
-}
-
-.app-filter:hover {
-    color: #eee;
-}
-
-.app-filter:selected {
-    color: #ffffff;
-    background-image: url("filter-selected-ltr.svg");
-    background-position: 190px 10px;
-}
-
-.app-filter:selected:rtl {
-    background-image: url("filter-selected-rtl.svg");
-    background-position: 10px 10px;
-}
-
-.app-filter:focus {
-    outline: 1px solid #aaa;
-}
-
-.app-well-app {
-    padding: 4px 8px;
-}
-
-.remove-favorite-icon {
-    color: #a0a0a0;
-}
-
-.remove-favorite-icon:hover {
-    color: white;
-    icon-shadow: black 0px 2px 2px;
-}
-
-.app-well-app > .overview-icon,
-.remove-favorite > .overview-icon,
+.overview-icon,
 .search-result-content > .overview-icon {
     border-radius: 4px;
     padding: 3px;
@@ -1019,78 +963,18 @@ StTooltip StLabel {
     text-align: center;
 }
 
-.contact {
-    width: 272px; /* Same width as two normal results + spacing */
-    height: 118px; /* Aspect ratio = 1.75. Normal US business card ratio */
-    border-radius: 4px;
-    padding: 3px;
-    border: 1px rgba(0,0,0,0);
-    transition-duration: 100;
-}
-
-.contact-content {
-    border-radius: 2px;
-    padding: 8px;
-    width: 232px;
-    height: 84px;
-    background-color: white;
-    color: black;
-    text-align: center;
-}
-
-.contact-icon {
-  border-radius: 4px;
-}
-
-.contact-details {
-  padding: 6px 8px 11px 8px;
-}
-
-.contact-details-alias {
-  font-size: 16px;
-  padding-bottom: 11px;
-}
-
-.contact-details-status {
-  font-size: 11pt;
-}
-
-.contact-details-status-icon {
-  padding-right: 2px;
-}
-
-.contact:hover {
-    background-color: rgba(255,255,255,0.1);
-    transition-duration: 100;
-}
-
-.app-well-app.running > .overview-icon {
-    text-shadow: black 0px 2px 2px;
-    background-image: url("running-indicator.svg");
-}
-
-.contact:selected,
-.app-well-app:selected > .overview-icon,
 .search-result-content:selected > .overview-icon {
     background-color: rgba(255,255,255,0.33);
 }
 
-.app-well-app:hover > .overview-icon,
-.remove-favorite:hover > .overview-icon,
 .search-result-content:hover > .overview-icon {
     background-color: rgba(255,255,255,0.1);
     text-shadow: black 0px 2px 2px;
     transition-duration: 100;
 }
 
-.contact:focus,
-.app-well-app:focus > .overview-icon,
 .search-result-content:focus > .overview-icon {
     border: 1px solid #cccccc;
-}
-
-.app-well-menu {
-    font-size: 9pt;
 }
 
 /* LookingGlass */
