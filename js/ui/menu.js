@@ -473,7 +473,7 @@ ApplicationsButton.prototype = {
             index = 0;
             this._previousSelectedItemIndex = this._selectedItemIndex;
             this._selectedItemIndex = -1;
-        } else if (symbol == Clutter.KEY_Left && this._activeContainer === this.applicationsBox) {
+        } else if (symbol == Clutter.KEY_Left && this._activeContainer === this.applicationsBox && !this.searchActive) {
             this._clearSelections(this.applicationsBox);
             this._activeContainer = this.categoriesBox;
             children = this._activeContainer.get_children();
@@ -1038,6 +1038,16 @@ ApplicationsButton.prototype = {
        
        this._clearApplicationsBox();
        this._displayButtons(appResults, placesResults);
+       
+       let applicationsBoxChilren = this.applicationsBox.get_children()
+       if (applicationsBoxChilren.length>0){
+           this._activeContainer = this.applicationsBox;
+           this._selectedItemIndex = 0;
+           let item_actor = applicationsBoxChilren[this._selectedItemIndex];
+           if (item_actor && item_actor !== this.searchEntry) {
+               item_actor._delegate.emit('enter-event');
+           }
+       }
 
        return false;
     }
