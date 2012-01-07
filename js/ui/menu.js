@@ -1039,7 +1039,7 @@ ApplicationsButton.prototype = {
        this._clearApplicationsBox();
        this._displayButtons(appResults, placesResults);
        
-       let applicationsBoxChilren = this.applicationsBox.get_children()
+       let applicationsBoxChilren = this.applicationsBox.get_children();
        if (applicationsBoxChilren.length>0){
            this._activeContainer = this.applicationsBox;
            this._selectedItemIndex = 0;
