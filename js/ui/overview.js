@@ -10,7 +10,6 @@ const St = imports.gi.St;
 const Cinnamon = imports.gi.Cinnamon;
 const Gdk = imports.gi.Gdk;
 
-const ThemesDisplay = imports.ui.themesDisplay;
 const DND = imports.ui.dnd;
 const Lightbox = imports.ui.lightbox;
 const Main = imports.ui.main;
@@ -195,10 +194,7 @@ Overview.prototype = {
 
         this._workspacesDisplay = new WorkspacesView.WorkspacesDisplay();
         this._viewSelector.addViewTab('windows', _("Windows"), this._workspacesDisplay.actor, 'text-x-generic');
-		
-		this._themesDisplay = new ThemesDisplay.ThemesDisplay();
-        this._viewSelector.addViewTab('themes', _("Themes"), this._themesDisplay.actor, 'system-run');        
-
+				
         Main.layoutManager.connect('monitors-changed', Lang.bind(this, this._relayout));
         this._relayout();
     },

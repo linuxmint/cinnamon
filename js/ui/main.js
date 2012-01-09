@@ -449,24 +449,14 @@ function setThemeStylesheet(cssStylesheet)
  */
 function loadTheme() {
     let themeContext = St.ThemeContext.get_for_stage (global.stage);
-    let previousTheme = themeContext.get_theme();
 
     let cssStylesheet = _defaultCssStylesheet;
     if (_cssStylesheet != null)
         cssStylesheet = _cssStylesheet;
 
-    let theme = new St.Theme ({ application_stylesheet: cssStylesheet });
-
-    if (global.session_type == Cinnamon.SessionType.GDM)
-        theme.load_stylesheet(_gdmCssStylesheet);
-
-    if (previousTheme) {
-        let customStylesheets = previousTheme.get_custom_stylesheets();
-
-        for (let i = 0; i < customStylesheets.length; i++)
-            theme.load_stylesheet(customStylesheets[i]);
-    }
-
+    let theme = new St.Theme ();
+    theme.load_stylesheet(cssStylesheet);
+    
     themeContext.set_theme (theme);
 }
 

@@ -357,7 +357,6 @@ nobase_dist_js_DATA = \
 	ui/status/volume.js	\
 	ui/status/bluetooth.js	\
 	ui/themeManager.js	\
-	ui/themesDisplay.js	\
 	ui/tooltips.js	\
 	ui/tweener.js		\
 	ui/viewSelector.js	\
