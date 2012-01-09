@@ -35,6 +35,10 @@ PanelAppLauncherMenu.prototype = {
         this.addMenuItem(this.addItem);
         this.addItem.connect('activate', Lang.bind(this, this._onAddActivate));
         
+        this.editItem = new PopupMenu.PopupMenuItem(_('Edit'));
+        this.addMenuItem(this.editItem);
+        this.editItem.connect('activate', Lang.bind(this, this._onEditActivate));
+        
         this.removeItem = new PopupMenu.PopupMenuItem(_('Remove'));
         this.addMenuItem(this.removeItem);
         this.removeItem.connect('activate', Lang.bind(this, this._onRemoveActivate));
@@ -51,6 +55,10 @@ PanelAppLauncherMenu.prototype = {
     
     _onAddActivate: function(actor, event) {
         this._launcher.launchersBox.showAddLauncherDialog(event.get_time());
+    },
+    
+    _onEditActivate: function(actor, event) {
+        this._launcher.launchersBox.showAddLauncherDialog(event.get_time(), this._launcher);
     }
 }
 
@@ -132,6 +140,27 @@ PanelAppLauncher.prototype = {
         else
             this._iconBox.remove_clip();
     },
+    
+    get_appinfo: function() {
+        if (this.is_custom()) return this.appinfo;
+        else return this.app.get_app_info();
+    },
+    
+    get_command: function() {
+        return this.get_appinfo().get_commandline();
+    },
+    
+    get_appname: function() {
+        return this.get_appinfo().get_name();
+    },
+    
+    get_icon: function() {
+        let icon = this.get_appinfo().get_icon();
+        if (icon){
+            if (icon instanceof Gio.FileIcon) return icon.get_file().get_path();
+            else return icon.get_names();
+        }
+    }
 }
 
 function AddLauncherDialog() {
@@ -185,21 +214,9 @@ AddLauncherDialog.prototype = {
 
         this._errorBox.hide();
         
-        this.setButtons([
-            {
-                label: _("Add"),
-                action: Lang.bind(this, this._validateAdd)
-            },
-            {
-                label: _("Cancel"),
-                key: Clutter.KEY_Escape,
-                action: Lang.bind(this, function(){
-                    this.close();
-                })
-            }
-        ]);
-        
         this.connect('opened', Lang.bind(this, this._onOpened));
+        
+        this._currentLauncher = null;
     },
     
     _onOpened: function() {
@@ -218,34 +235,85 @@ AddLauncherDialog.prototype = {
             return false;
         }
         
-        let appid = this._saveNewLauncher(this._nameEntry.clutter_text.get_text(), this._commandEntry.clutter_text.get_text(), _("Custom Launcher"), "application-x-executable");
+        
+        let appid = this._saveNewLauncher(this._nameEntry.clutter_text.get_text(), this._commandEntry.clutter_text.get_text(), _("Custom Launcher"));
+        
         this.close();
-        this.emit("launcher-created", appid);
+        
+        if (this._currentLauncher) this.emit("launcher-updated", this._currentLauncher, appid);
+        else this.emit("launcher-created", appid);
     },
     
     _saveNewLauncher: function(name, command, description, icon){
-        let dir = Gio.file_new_for_path(CUSTOM_LAUNCHERS_PATH);
-        if (!dir.query_exists(null)) dir.make_directory_with_parents(null);
+        let file;
+        let i;
+        if (this._currentLauncher && this._currentLauncher.is_custom()){
+            file = Gio.file_parse_name(CUSTOM_LAUNCHERS_PATH+'/'+this._currentLauncher.get_id());
+            file.delete(null);
+        }else{
+            let dir = Gio.file_new_for_path(CUSTOM_LAUNCHERS_PATH);
+            if (!dir.query_exists(null)) dir.make_directory_with_parents(null);
+            i = 1;
+            file = Gio.file_parse_name(CUSTOM_LAUNCHERS_PATH+'/cinnamon-custom-launcher-'+i+'.desktop');
+            while (file.query_exists(null)){
+                i++;
+                file = Gio.file_parse_name(CUSTOM_LAUNCHERS_PATH+'/cinnamon-custom-launcher-'+i+'.desktop');
+            }
+        }
+        
         let desktopEntry = "[Desktop Entry]\nName="+name+"\nExec="+command+"\nType=Application\n";
         if (description) desktopEntry += "Description="+description+"\n";
-        if (icon) desktopEntry += "Icon="+icon+"\n";
+        if (!icon && this._currentLauncher) icon = this._currentLauncher.get_icon();
+        global.log(icon);
+        if (!icon) icon = "application-x-executable";
+        desktopEntry += "Icon="+icon+"\n";
         
-        let i = 1;
-        let file = Gio.file_parse_name(CUSTOM_LAUNCHERS_PATH+'/cinnamon-custom-launcher-'+i+'.desktop');
-        while (file.query_exists(null)){
-            i++;
-            file = Gio.file_parse_name(CUSTOM_LAUNCHERS_PATH+'/cinnamon-custom-launcher-'+i+'.desktop');
-        }
         let fp = file.create(0, null);
         fp.write(desktopEntry, null);
         fp.close(null);
-        return 'cinnamon-custom-launcher-'+i+'.desktop';
+        
+        if (this._currentLauncher && this._currentLauncher.is_custom()) return this._currentLauncher.get_id();
+        else return 'cinnamon-custom-launcher-'+i+'.desktop';
     },
     
-    open: function(timestamp) {
-        this._commandEntry.clutter_text.set_text('');
-        this._nameEntry.clutter_text.set_text('');
-        this._errorBox.hide();
+    open: function(timestamp, launcher) {
+        this._currentLauncher = launcher;
+        
+        if (launcher){
+            this._commandEntry.clutter_text.set_text(launcher.get_command());
+            this._nameEntry.clutter_text.set_text(launcher.get_appname());
+            this._errorBox.hide();
+            this.setButtons([
+                {
+                    label: _("Save"),
+                    action: Lang.bind(this, this._validateAdd)
+                },
+                {
+                    label: _("Cancel"),
+                    key: Clutter.KEY_Escape,
+                    action: Lang.bind(this, function(){
+                        this.close();
+                    })
+                }
+            ]);
+        }else{
+            this._commandEntry.clutter_text.set_text('');
+            this._nameEntry.clutter_text.set_text('');
+            this._errorBox.hide();
+            this.setButtons([
+                {
+                    label: _("Add"),
+                    action: Lang.bind(this, this._validateAdd)
+                },
+                {
+                    label: _("Cancel"),
+                    key: Clutter.KEY_Escape,
+                    action: Lang.bind(this, function(){
+                        this.close();
+                    })
+                }
+            ]);
+        }
 
         ModalDialog.ModalDialog.prototype.open.call(this, timestamp);
     },
@@ -267,6 +335,7 @@ PanelLaunchersBox.prototype = {
         
         this._addLauncherDialog = new AddLauncherDialog();
         this._addLauncherDialog.connect("launcher-created", Lang.bind(this, this._onLauncherCreated));
+        this._addLauncherDialog.connect("launcher-updated", Lang.bind(this, this._onLauncherUpdated));
         
         this._launchers = new Array();
         
@@ -275,6 +344,17 @@ PanelLaunchersBox.prototype = {
     
     _onSettingsChanged: function() {
         this.reload();
+    },
+    
+    _onLauncherUpdated: function(obj, launcher, appid){
+        let desktopFiles = this._settings.get_strv('panel-launchers');
+        let i = this._launchers.indexOf(launcher);
+        if (i>=0){
+            desktopFiles.splice(i, 1);
+            desktopFiles.splice(i, 0, appid);
+            this._settings.set_strv('panel-launchers', desktopFiles);
+            this.reload();
+        }
     },
     
     _onLauncherCreated: function(obj, appid){
@@ -327,7 +407,7 @@ PanelLaunchersBox.prototype = {
         }
     },
     
-    showAddLauncherDialog: function(timestamp){
-        this._addLauncherDialog.open(timestamp);
+    showAddLauncherDialog: function(timestamp, launcher){
+        this._addLauncherDialog.open(timestamp, launcher);
     }
 }
