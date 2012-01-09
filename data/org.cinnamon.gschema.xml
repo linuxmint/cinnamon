@@ -37,7 +37,7 @@
     </key>
     
     <key type="as" name="panel-launchers">
-      <default>[ 'firefox.desktop', 'gnome-terminal.desktop', 'nautilus.desktop']</default>
+      <default>[ 'cinnamon-settings.desktop', 'firefox.desktop', 'gnome-terminal.desktop', 'nautilus.desktop']</default>
       <summary>Desktop files of the applications to put in the panel launchers applet</summary>
       <description>Cinnamon allows to show applications launchers on the panel. This key lists the desktop files of the applications to show there.</description>
     </key>
@@ -47,7 +47,7 @@
       <description>Cinnamon normally monitors active applications in order to present the most used ones (e.g. in launchers). While this data will be kept private, you may want to disable this for privacy reasons. Please note that doing so won't remove already saved data.</description>
     </key>
     <key type="as" name="favorite-apps">
-      <default>[ 'firefox.desktop', 'mintInstall.desktop', 'gnome-tweak-tool.desktop', 'xchat.desktop', 'gnome-terminal.desktop', 'nautilus.desktop' ]</default>
+      <default>[ 'firefox.desktop', 'mintInstall.desktop', 'cinnamon-settings.desktop', 'xchat.desktop', 'gnome-terminal.desktop', 'nautilus.desktop' ]</default>
       <summary>List of desktop file IDs for favorite applications</summary>
       <description>The applications corresponding to these identifiers will be displayed in the favorites area.</description>
     </key>

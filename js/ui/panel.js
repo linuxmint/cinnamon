@@ -9,7 +9,7 @@ const Pango = imports.gi.Pango;
 const Cinnamon = imports.gi.Cinnamon;
 const St = imports.gi.St;
 const Signals = imports.signals;
-
+const Util = imports.misc.util;
 const Config = imports.misc.config;
 const CtrlAltTab = imports.ui.ctrlAltTab;
 const Layout = imports.ui.layout;
@@ -106,6 +106,28 @@ function _unpremultiply(color) {
                                blue: blue, alpha: color.alpha });
 };
 
+function PanelContextMenu(panel) {
+    this._init(panel);
+}
+
+PanelContextMenu.prototype = {
+    __proto__: PopupMenu.PopupMenu.prototype,
+    
+    _init: function(panel) {
+        
+        PopupMenu.PopupMenu.prototype._init.call(this, panel.actor, 0.0, St.Side.BOTTOM, 0);
+        Main.uiGroup.add_actor(this.actor);
+        this.actor.hide();
+        
+        this.launchItem = new PopupMenu.PopupMenuItem(_('Settings'));
+        this.addMenuItem(this.launchItem);
+        this.launchItem.connect('activate', Lang.bind(this, this.launchSettings));            
+    },
+    
+    launchSettings: function(actor, event) {
+        Util.spawn(['cinnamon-settings']);
+    }    
+};
 
 function AnimatedIcon(name, size) {
     this._init(name, size);
@@ -434,6 +456,8 @@ Panel.prototype = {
                                                   reactive: true });
         this.actor._delegate = this;
 
+        
+
         this._statusArea = {};
 
         Main.overview.connect('shown', Lang.bind(this, function () {
@@ -443,8 +467,11 @@ Panel.prototype = {
             this.actor.remove_style_class_name('in-overview');
         }));
 
-        this._menus = new PopupMenu.PopupMenuManager(this);
-
+        this._menus = new PopupMenu.PopupMenuManager(this);                
+        this._context_menu = new PanelContextMenu(this);
+        this._menus.addMenu(this._context_menu);
+        this.actor.connect('button-release-event', Lang.bind(this, this._onButtonRelease));
+        
         this._leftBox = new St.BoxLayout({ name: 'panelLeft' });
         this.actor.add_actor(this._leftBox);
         this._centerBox = new St.BoxLayout({ name: 'panelCenter' });
@@ -516,6 +543,15 @@ Panel.prototype = {
         this.actor.connect('leave-event', Lang.bind(this, this._hidePanel));
         this.actor.connect('enter-event', Lang.bind(this, this._showPanel));  
         global.settings.connect("changed::panel-autohide", Lang.bind(this, this._onPanelAutoHideChanged));      
+    },
+    
+    _onButtonRelease: function(actor, event) {
+        let button = event.get_button();
+        if (button==1) {
+            if (this._context_menu.isOpen) this._context_menu.toggle();            
+        }else if (button==3) {
+            this._context_menu.toggle();
+        }
     },
     
     _onPanelAutoHideChanged: function() {  

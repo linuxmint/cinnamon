@@ -630,24 +630,7 @@ ApplicationsButton.prototype = {
         
         //Separator
         let separator = new PopupMenu.PopupSeparatorMenuItem();
-        this.favoritesBox.add_actor(separator.actor, { y_align: St.Align.END, y_fill: false });   
-        
-        //System settings
-        let button = new SystemButton(this, "preferences-system", launchers.length + 3);        
-        button.actor.connect('enter-event', Lang.bind(this, function() {
-				this.selectedAppTitle.set_text(_("Settings"));
-				this.selectedAppDescription.set_text(_("Configure Cinnamon"));				
-			}));
-		button.actor.connect('leave-event', Lang.bind(this, function() {
-				this.selectedAppTitle.set_text("");
-				this.selectedAppDescription.set_text("");
-			}));        
-        button.actor.connect('clicked', Lang.bind(this, function() {            
-            this.menu.close();
-            Util.spawn(['cinnamon-settings']);;
-        }));
-        
-        this.favoritesBox.add_actor(button.actor, { y_align: St.Align.END, y_fill: false });        
+        this.favoritesBox.add_actor(separator.actor, { y_align: St.Align.END, y_fill: false });                   
         
         //Lock screen
         let button = new SystemButton(this, "gnome-lockscreen", launchers.length + 3);        
