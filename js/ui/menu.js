@@ -479,7 +479,7 @@ ApplicationsButton.prototype = {
             children = this._activeContainer.get_children();
             index = this._previousSelectedItemIndex;
             this._selectedItemIndex = -1;
-        } else if (this._activeContainer === this.applicationsBox && (symbol == Clutter.KEY_space || symbol == Clutter.KEY_Return || symbol == Clutter.KP_Enter)) {
+        } else if (this._activeContainer === this.applicationsBox && (symbol == Clutter.KEY_Return || symbol == Clutter.KP_Enter)) {
             let item_actor = children[this._selectedItemIndex];
             item_actor._delegate.activate();
             return true;
