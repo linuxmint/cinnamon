@@ -550,7 +550,7 @@ Panel.prototype = {
         if (button==1) {
             if (this._context_menu.isOpen) this._context_menu.toggle();            
         }else if (button==3) {
-            this._context_menu.toggle();
+            this._context_menu.toggle();        
         }
     },
     

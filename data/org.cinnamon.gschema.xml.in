@@ -29,6 +29,14 @@
       </_description>
     </key>
     
+    <key name="date-format" type="s">
+      <default>"YYYY-MM-DD"</default>
+      <_summary>Auto-hide panel</_summary>
+      <_description>
+        Whether the panel autohides or not.
+      </_description>
+    </key>
+    
     <key type="s" name="menu-text">
       <default>"Menu"</default>
       <_summary>Text for the menu</_summary>
@@ -99,9 +107,8 @@
       <default>0</default>
       <_summary></_summary>
     </key>
-    <child name="clock" schema="org.cinnamon.clock"/>
-    <child name="theme" schema="org.cinnamon.theme"/>   
     <child name="calendar" schema="org.cinnamon.calendar"/>
+    <child name="theme" schema="org.cinnamon.theme"/>   
     <child name="recorder" schema="org.cinnamon.recorder"/>
     <child name="keyboard" schema="org.cinnamon.keyboard"/>
   </schema>
@@ -116,18 +123,7 @@
       </_description>
     </key>
   </schema>
-
-  <schema id="org.cinnamon.calendar" path="/org/cinnamon/calendar/"
-          gettext-domain="@GETTEXT_PACKAGE@">
-    <key name="show-weekdate" type="b">
-      <default>false</default>
-      <_summary>Show the week date in the calendar</_summary>
-      <_description>
-        If true, display the ISO week date in the calendar.
-      </_description>
-      </key>
-  </schema>
-
+ 
   <schema id="org.cinnamon.keyboard" path="/org/cinnamon/keyboard/"
           gettext-domain="@GETTEXT_PACKAGE@">
     <key name="keyboard-type" type="s">
@@ -139,22 +135,33 @@
     </key>
   </schema>
 
-  <schema id="org.cinnamon.clock" path="/org/cinnamon/clock/"
+  <schema id="org.cinnamon.calendar" path="/org/cinnamon/calendar/"
           gettext-domain="@GETTEXT_PACKAGE@">
-    <key name="show-seconds" type="b">
+          
+    <key name="show-weekdate" type="b">
       <default>false</default>
-      <_summary>Show time with seconds</_summary>
+      <_summary>Show the week date in the calendar</_summary>
       <_description>
-        If true, display seconds in time.
+        If true, display the ISO week date in the calendar.
       </_description>
     </key>
-    <key name="show-date" type="b">
-      <default>true</default>
-      <_summary>Show date in clock</_summary>
+    
+     <key name="date-format" type="s">
+      <default>'%a %b %e, %H:%M'</default>
+      <_summary>Format for the date in the panel</_summary>
       <_description>
-        If true, display date in the clock, in addition to time.
+       Format used to show the date in the panel.
       </_description>
     </key>
+    
+     <key name="date-format-full" type="s">
+      <default>'%A %B %e, %Y'</default>
+      <_summary>Format for the date in the applet menu</_summary>
+      <_description>
+       Format used to show the date in the applet menu.
+      </_description>
+    </key>
+    
   </schema>
 
   <schema id="org.cinnamon.recorder" path="/org/cinnamon/recorder/"

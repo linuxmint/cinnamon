@@ -71,9 +71,8 @@
       <default>0</default>
       <summary/>
     </key>
-    <child schema="org.cinnamon.clock" name="clock"/>
-    <child schema="org.cinnamon.theme" name="theme"/>   
     <child schema="org.cinnamon.calendar" name="calendar"/>
+    <child schema="org.cinnamon.theme" name="theme"/>   
     <child schema="org.cinnamon.recorder" name="recorder"/>
     <child schema="org.cinnamon.keyboard" name="keyboard"/>
   </schema>
@@ -86,14 +85,6 @@
     </key>
   </schema>
 
-  <schema path="/org/cinnamon/calendar/" id="org.cinnamon.calendar" gettext-domain="@GETTEXT_PACKAGE@">
-    <key type="b" name="show-weekdate">
-      <default>false</default>
-      <summary>Show the week date in the calendar</summary>
-      <description>If true, display the ISO week date in the calendar.</description>
-      </key>
-  </schema>
-
   <schema path="/org/cinnamon/keyboard/" id="org.cinnamon.keyboard" gettext-domain="@GETTEXT_PACKAGE@">
     <key type="s" name="keyboard-type">
       <default>'touch'</default>
@@ -102,16 +93,22 @@
     </key>
   </schema>
 
-  <schema path="/org/cinnamon/clock/" id="org.cinnamon.clock" gettext-domain="@GETTEXT_PACKAGE@">
-    <key type="b" name="show-seconds">
-      <default>false</default>
-      <summary>Show time with seconds</summary>
-      <description>If true, display seconds in time.</description>
+  <schema path="/org/cinnamon/calendar/" id="org.cinnamon.calendar" gettext-domain="@GETTEXT_PACKAGE@">
+
+    <key name="date-format" type="s">
+      <default>'%a %b %e, %H:%M'</default>
+      <summary>Format for the date in the panel</summary>
+      <description>Format used to show the date in the panel.</description>
     </key>
-    <key type="b" name="show-date">
-      <default>true</default>
-      <summary>Show date in clock</summary>
-      <description>If true, display date in the clock, in addition to time.</description>
+    <key name="date-format-full" type="s">
+      <default>'%A %B %e, %Y'</default>
+      <summary>Format for the date in the applet menu</summary>
+      <description>Format used to show the date in the applet menu.</description>
+    </key>
+    <key name="show-weekdate" type="b">
+      <default>false</default>
+      <summary>Show the week date in the calendar</summary>
+      <description>If true, display the ISO week date in the calendar.</description>
     </key>
   </schema>
 

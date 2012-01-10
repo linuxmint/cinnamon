@@ -17,13 +17,6 @@ const PopupMenu = imports.ui.popupMenu;
 const Calendar = imports.ui.calendar;
 const UPowerGlib = imports.gi.UPowerGlib;
 
-// in org.gnome.desktop.interface
-const CLOCK_FORMAT_KEY        = 'clock-format';
-
-// in org.cinnamon.clock
-const CLOCK_SHOW_DATE_KEY     = 'show-date';
-const CLOCK_SHOW_SECONDS_KEY  = 'show-seconds';
-
 function _onVertSepRepaint (area)
 {
     let cr = area.get_context();
@@ -117,11 +110,9 @@ DateMenuButton.prototype = {
 
         // Done with hbox for calendar and event list
 
-        // Track changes to clock settings
-        this._desktopSettings = new Gio.Settings({ schema: 'org.gnome.desktop.interface' });
-        this._clockSettings = new Gio.Settings({ schema: 'org.cinnamon.clock' });
-        this._desktopSettings.connect('changed', Lang.bind(this, this._updateClockAndDate));
-        this._clockSettings.connect('changed', Lang.bind(this, this._updateClockAndDate));
+        // Track changes to clock settings        
+        this._calendarSettings = new Gio.Settings({ schema: 'org.cinnamon.calendar' });
+        this._calendarSettings.connect('changed', Lang.bind(this, this._updateClockAndDate));
 
         // https://bugzilla.gnome.org/show_bug.cgi?id=655129
         this._upClient = new UPowerGlib.Client();
@@ -132,50 +123,11 @@ DateMenuButton.prototype = {
     },
 
     _updateClockAndDate: function() {
-        let format = this._desktopSettings.get_string(CLOCK_FORMAT_KEY);
-        let showDate = this._clockSettings.get_boolean(CLOCK_SHOW_DATE_KEY);
-        let showSeconds = this._clockSettings.get_boolean(CLOCK_SHOW_SECONDS_KEY);
-
-        let clockFormat;
-        let dateFormat;
-
-        switch (format) {
-            case '24h':
-                if (showDate)
-                    /* Translators: This is the time format with date used
-                       in 24-hour mode. */
-                    clockFormat = showSeconds ? _("%a %b %e, %R:%S")
-                                              : _("%a %b %e, %R");
-                else
-                    /* Translators: This is the time format without date used
-                       in 24-hour mode. */
-                    clockFormat = showSeconds ? _("%a %R:%S")
-                                              : _("%a %R");
-                break;
-            case '12h':
-            default:
-                if (showDate)
-                    /* Translators: This is a time format with date used
-                       for AM/PM. */
-                    clockFormat = showSeconds ? _("%a %b %e, %l:%M:%S %p")
-                                              : _("%a %b %e, %l:%M %p");
-                else
-                    /* Translators: This is a time format without date used
-                       for AM/PM. */
-                    clockFormat = showSeconds ? _("%a %l:%M:%S %p")
-                                              : _("%a %l:%M %p");
-                break;
-        }
-
+        let dateFormat = this._calendarSettings.get_string('date-format');       
+        let dateFormatFull = this._calendarSettings.get_string('date-format-full'); 
         let displayDate = new Date();
-
-        this._clock.set_text(displayDate.toLocaleFormat(clockFormat));
-
-        /* Translators: This is the date format to use when the calendar popup is
-         * shown - it is shown just below the time in Cinnamon (e.g. "Tue 9:29 AM").
-         */
-        dateFormat = _("%A %B %e, %Y");
-        this._date.set_text(displayDate.toLocaleFormat(dateFormat));
+        this._clock.set_text(displayDate.toLocaleFormat(dateFormat));
+        this._date.set_text(displayDate.toLocaleFormat(dateFormatFull));
 
         Mainloop.timeout_add_seconds(1, Lang.bind(this, this._updateClockAndDate));
         return false;
