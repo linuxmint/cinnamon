@@ -189,7 +189,13 @@ function start() {
     // actor so set it anyways.
     global.stage.color = DEFAULT_BACKGROUND_COLOR;
     global.stage.no_clear_hint = true;
-
+    
+    desktop_layout = global.settings.get_string("desktop-layout"); 
+    if (desktop_layout == LAYOUT_FLIPPED) {
+        applet_side = St.Side.TOP;
+        windowlist_side = St.Side.TOP;
+    }   
+    
     _defaultCssStylesheet = global.datadir + '/theme/cinnamon.css';
     _gdmCssStylesheet = global.datadir + '/theme/gdm.css';
     loadTheme();
@@ -215,12 +221,7 @@ function start() {
     // This overview object is just a stub for non-user sessions
     overview = new Overview.Overview({ isDummy: global.session_type != Cinnamon.SessionType.USER });
     magnifier = new Magnifier.Magnifier();
-    statusIconDispatcher = new StatusIconDispatcher.StatusIconDispatcher();
-    desktop_layout = global.settings.get_string("desktop-layout");    
-    if (desktop_layout == LAYOUT_FLIPPED) {
-        applet_side = St.Side.TOP;
-        windowlist_side = St.Side.TOP;
-    }   
+    statusIconDispatcher = new StatusIconDispatcher.StatusIconDispatcher();    
     panel = new Panel.Panel();    
     wm = new WindowManager.WindowManager();
     messageTray = new MessageTray.MessageTray();

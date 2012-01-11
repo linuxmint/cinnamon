@@ -231,11 +231,11 @@ LayoutManager.prototype = {
 		}
     	
         // Need to use GSettings to get the panel height instead of hard-coding it
-        if (Main.desktop_layout == Main.LAYOUT_TRADITIONAL) {
+        if (Main.desktop_layout == Main.LAYOUT_TRADITIONAL) {       
             this.panelBox.set_position(this.bottomMonitor.x, this.bottomMonitor.y + this.bottomMonitor.height - 25);
             this.panelBox.set_size(this.bottomMonitor.width, 25);
         }
-        else {
+        else {            
             this.panelBox.set_position(this.primaryMonitor.x, this.primaryMonitor.y);
             this.panelBox.set_size(this.primaryMonitor.width, -1);            
         }
