@@ -175,17 +175,21 @@ WorkspaceThumbnail.prototype = {
         let monitor = Main.layoutManager.primaryMonitor;
         this.setPorthole(monitor.x, monitor.y, monitor.width, monitor.height);
 
-        let windows = global.get_window_actors().filter(this._isMyWindow, this);
+        let windows = global.get_window_actors().filter(this._isWorkspaceWindow, this);
 
         // Create clones for windows that should be visible in the Overview
         this._windows = [];
+        this._allWindows = [];
+        this._minimizedChangedIds = [];
         for (let i = 0; i < windows.length; i++) {
-            windows[i].meta_window._minimizedChangedId =
+            let minimizedChangedId =
                 windows[i].meta_window.connect('notify::minimized',
                                                Lang.bind(this,
                                                          this._updateMinimized));
+            this._allWindows.push(windows[i].meta_window);
+            this._minimizedChangedIds.push(minimizedChangedId);
 
-            if (this._isOverviewWindow(windows[i])) {
+            if (this._isMyWindow(windows[i]) && this._isOverviewWindow(windows[i])) {
                 this._addWindowClone(windows[i]);
             }
         }
@@ -270,12 +274,6 @@ WorkspaceThumbnail.prototype = {
         let clone = this._windows[index];
         this._windows.splice(index, 1);
 
-        if (win && this._isOverviewWindow(win)) {
-            if (metaWin._minimizedChangedId) {
-                metaWin.disconnect(metaWin._minimizedChangedId);
-                delete metaWin._minimizedChangedId;
-            }
-        }
         clone.destroy();
     },
 
@@ -301,13 +299,14 @@ WorkspaceThumbnail.prototype = {
 
         // We might have the window in our list already if it was on all workspaces and
         // now was moved to this workspace
-        if (this._lookupIndex (metaWin) != -1)
+        if (this._allWindows.indexOf(metaWin) != -1)
             return;
 
-        if (!metaWin._minimizedChangedId)
-            metaWin._minimizedChangedId = metaWin.connect('notify::minimized',
-                                                          Lang.bind(this,
-                                                                    this._updateMinimized));
+        let minimizedChangedId = metaWin.connect('notify::minimized',
+                                                 Lang.bind(this,
+                                                           this._updateMinimized));
+        this._allWindows.push(metaWin);
+        this._minimizedChangedIds.push(minimizedChangedId);
 
         if (!this._isMyWindow(win) || !this._isOverviewWindow(win))
             return;
@@ -320,6 +319,13 @@ WorkspaceThumbnail.prototype = {
     },
 
     _windowRemoved : function(metaWorkspace, metaWin) {
+        let index = this._allWindows.indexOf(metaWin);
+        if (index != -1) {
+            metaWin.disconnect(this._minimizedChangedIds[index]);
+            this._allWindows.splice(index, 1);
+            this._minimizedChangedIds.splice(index, 1);
+        }
+
         this._doRemoveWindow(metaWin);
     },
 
@@ -357,13 +363,8 @@ WorkspaceThumbnail.prototype = {
         global.screen.disconnect(this._windowEnteredMonitorId);
         global.screen.disconnect(this._windowLeftMonitorId);
 
-        for (let i = 0; i < this._windows.length; i++) {
-            let metaWin = this._windows[i].metaWindow;
-            if (metaWin._minimizedChangedId) {
-                metaWin.disconnect(metaWin._minimizedChangedId);
-                delete metaWin._minimizedChangedId;
-            }
-        }
+        for (let i = 0; i < this._allWindows.length; i++)
+            this._allWindows[i].disconnect(this._minimizedChangedIds[i]);
     },
 
     _onDestroy: function(actor) {
@@ -373,9 +374,14 @@ WorkspaceThumbnail.prototype = {
         this.actor = null;
     },
 
+    // Tests if @win belongs to this workspace
+    _isWorkspaceWindow : function (win) {
+        return Main.isWindowActorDisplayedOnWorkspace(win, this.metaWorkspace.index());
+    },
+
     // Tests if @win belongs to this workspace and monitor
     _isMyWindow : function (win) {
-        return Main.isWindowActorDisplayedOnWorkspace(win, this.metaWorkspace.index()) &&
+        return this._isWorkspaceWindow(win) &&
             (!win.get_meta_window() || win.get_meta_window().get_monitor() == this.monitorIndex);
     },
 
