@@ -23,7 +23,8 @@ PanelAppLauncherMenu.prototype = {
     
     _init: function(launcher) {
         this._launcher = launcher;
-        PopupMenu.PopupMenu.prototype._init.call(this, launcher.actor, 0.0, St.Side.BOTTOM, 0);
+        let side;
+        PopupMenu.PopupMenu.prototype._init.call(this, launcher.actor, 0.0, Main.applet_side, 0);
         Main.uiGroup.add_actor(this.actor);
         this.actor.hide();
         

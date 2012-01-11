@@ -231,8 +231,14 @@ LayoutManager.prototype = {
 		}
     	
         // Need to use GSettings to get the panel height instead of hard-coding it
-        this.panelBox.set_position(this.bottomMonitor.x, this.bottomMonitor.y + this.bottomMonitor.height - 25);
-        this.panelBox.set_size(this.bottomMonitor.width, 25);
+        if (Main.desktop_layout == Main.LAYOUT_TRADITIONAL) {
+            this.panelBox.set_position(this.bottomMonitor.x, this.bottomMonitor.y + this.bottomMonitor.height - 25);
+            this.panelBox.set_size(this.bottomMonitor.width, 25);
+        }
+        else {
+            this.panelBox.set_position(this.primaryMonitor.x, this.primaryMonitor.y);
+            this.panelBox.set_size(this.primaryMonitor.width, -1);            
+        }
 
         this.keyboardBox.set_position(this.bottomMonitor.x,
                                       this.bottomMonitor.y + this.bottomMonitor.height);
@@ -256,16 +262,31 @@ LayoutManager.prototype = {
         if (this._rightPanelBarrier)
             global.destroy_pointer_barrier(this._rightPanelBarrier);
 
-        if (this.panelBox.height) {            
-            let monitor = this.bottomMonitor;
-            this._leftPanelBarrier =
-                global.create_pointer_barrier(monitor.x, monitor.y + monitor.height - this.panelBox.height,
+        if (this.panelBox.height) {                        
+            if (Main.desktop_layout == Main.LAYOUT_TRADITIONAL) {
+                let monitor = this.bottomMonitor;
+                this._leftPanelBarrier =
+                    global.create_pointer_barrier(monitor.x, monitor.y + monitor.height - this.panelBox.height,
                                               monitor.x, monitor.y + monitor.height,
                                               1 /* BarrierPositiveX */);
-            this._rightPanelBarrier =
-                global.create_pointer_barrier(monitor.x + monitor.width, monitor.y + monitor.height - this.panelBox.height,
+                                            
+                this._rightPanelBarrier =
+                    global.create_pointer_barrier(monitor.x + monitor.width, monitor.y + monitor.height - this.panelBox.height,
                                               monitor.x + monitor.width, monitor.y + monitor.height,
                                               4 /* BarrierNegativeX */);
+            }
+            else {
+                let primary = this.primaryMonitor;
+                this._leftPanelBarrier =
+                    global.create_pointer_barrier(primary.x, primary.y,
+-                                              primary.x, primary.y + this.panelBox.height, 
+                                              1 /* BarrierPositiveX */);
+                                            
+                this._rightPanelBarrier =
+                    global.create_pointer_barrier(primary.x + primary.width, primary.y,
+-                                              primary.x + primary.width, primary.y + this.panelBox.height, 
+                                              4 /* BarrierNegativeX */);
+            }
         } else {
             this._leftPanelBarrier = 0;
             this._rightPanelBarrier = 0;
@@ -278,14 +299,14 @@ LayoutManager.prototype = {
         if (this._trayBarrier)
             global.destroy_pointer_barrier(this._trayBarrier);
 
-        if (Main.messageTray && Main.messageTray.actor) {
-            this._trayBarrier =
-                global.create_pointer_barrier(monitor.x + monitor.width, monitor.y,
-                                              monitor.x + monitor.width, monitor.y + Main.messageTray.actor.height,
-                                              4 /* BarrierNegativeX */);
-        } else {
+        //if (Main.messageTray && Main.messageTray.actor) {
+        //    this._trayBarrier =
+        //        global.create_pointer_barrier(monitor.x + monitor.width, monitor.y,
+        //                                      monitor.x + monitor.width, monitor.y + Main.messageTray.actor.height,
+        //                                      4 /* BarrierNegativeX */);
+        //} else {
             this._trayBarrier = 0;
-        }
+        //}
     },
 
     _monitorsChanged: function() {

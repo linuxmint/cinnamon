@@ -42,6 +42,9 @@ const Util = imports.misc.util;
 const DEFAULT_BACKGROUND_COLOR = new Clutter.Color();
 DEFAULT_BACKGROUND_COLOR.from_pixel(0x2266bbff);
 
+const LAYOUT_TRADITIONAL = "traditional";
+const LAYOUT_FLIPPED = "flipped";
+
 let automountManager = null;
 let autorunManager = null;
 let panel = null;
@@ -74,6 +77,10 @@ let _cssStylesheet = null;
 let _gdmCssStylesheet = null;
 
 let background = null;
+
+let desktop_layout;
+let applet_side = St.Side.BOTTOM;
+let windowlist_side = St.Side.BOTTOM;
 
 function _createUserSession() {  
     placesManager = new PlacesManager.PlacesManager();    
@@ -209,7 +216,12 @@ function start() {
     overview = new Overview.Overview({ isDummy: global.session_type != Cinnamon.SessionType.USER });
     magnifier = new Magnifier.Magnifier();
     statusIconDispatcher = new StatusIconDispatcher.StatusIconDispatcher();
-    panel = new Panel.Panel();
+    desktop_layout = global.settings.get_string("desktop-layout");    
+    if (desktop_layout == LAYOUT_FLIPPED) {
+        applet_side = St.Side.TOP;
+        windowlist_side = St.Side.TOP;
+    }   
+    panel = new Panel.Panel();    
     wm = new WindowManager.WindowManager();
     messageTray = new MessageTray.MessageTray();
     keyboard = new Keyboard.Keyboard();

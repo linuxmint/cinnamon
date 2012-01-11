@@ -188,12 +188,22 @@ WindowManager.prototype = {
          */
         this._minimizing.push(actor);
 
-        let monitor = Main.layoutManager.bottomMonitor;
-        // TODO : Quick hack (1/4 of the screen width... ). Once the window list is fully part of the desktop, we need to find the proper window list item, get its coordinate and minimize towards it, rather than using this 1/4. 
+        let monitor;
+        let yDest;
+        
+        if (Main.desktop_layout == Main.LAYOUT_TRADITIONAL) {
+            monitor = Main.layoutManager.bottomMonitor;
+            yDest = monitor.height;
+        }
+        else {
+            monitor = Main.layoutManager.primaryMonitor;
+            yDest = 0;
+        }
+        
         let xDest = monitor.x + monitor.width/4;
         if (St.Widget.get_default_direction() == St.TextDirection.RTL)
             xDest = monitor.width - monitor.width/4;
-        let yDest = monitor.height;
+        
 
         Tweener.addTween(actor,
                          { scale_x: 0.0,

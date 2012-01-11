@@ -481,10 +481,11 @@ Panel.prototype = {
             this._leftBox.add(this._showDesktopButton.actor);
             
             this._panelLaunchersBox = new PanelLaunchers.PanelLaunchersBox();
-            this._leftBox.add(this._panelLaunchersBox.actor);         
+            this._leftBox.add(this._panelLaunchersBox.actor);   
             
             this._windowList = new WindowList.WindowList()
-            this._leftBox.add(this._windowList.actor);
+            this._leftBox.add(this._windowList.actor);      
+                        
         }
 
         /* center */

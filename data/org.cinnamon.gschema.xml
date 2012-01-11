@@ -17,7 +17,13 @@
       <summary>Auto-hide panel</summary>
       <description>Whether the panel autohides or not.</description>
     </key>
-    
+   
+    <key name="desktop-layout" type="s">
+      <default>"traditional"</default>
+      <summary>Layout style</summary>
+      <description>Layout styles: traditional (1 panel at the bottom), flipped (1 panel on top)</description>
+    </key>    
+
     <key type="s" name="menu-text">
       <default>"Menu"</default>
       <summary>Text for the menu</summary>

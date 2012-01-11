@@ -30,11 +30,8 @@ AppMenuButtonRightClickMenu.prototype = {
     __proto__: PopupMenu.PopupMenu.prototype,
 
     _init: function(actor, metaWindow) {
-        //take care of menu initialization
-        if (bottomPosition)
-            PopupMenu.PopupMenu.prototype._init.call(this, actor, 0.0, St.Side.BOTTOM, 0);
-        else
-            PopupMenu.PopupMenu.prototype._init.call(this, actor, 0.0, St.Side.TOP, 0);
+        //take care of menu initialization        
+        PopupMenu.PopupMenu.prototype._init.call(this, actor, 0.0, Main.windowlist_side, 0);        
         Main.uiGroup.add_actor(this.actor);
         //Main.chrome.addActor(this.actor, { visibleInOverview: true,
         //                                   affectsStruts: false });
@@ -60,7 +57,7 @@ AppMenuButtonRightClickMenu.prototype = {
             this.itemMaximizeWindow = new PopupMenu.PopupMenuItem(_('Maximize'));
         this.itemMaximizeWindow.connect('activate', Lang.bind(this, this._onMaximizeWindowActivate));        
         
-        if (bottomPosition) {
+        if (Main.desktop_layout == Main.LAYOUT_TRADITIONAL) {
             this.addMenuItem(this.itemMinimizeWindow);
             this.addMenuItem(this.itemMaximizeWindow);
             this.addMenuItem(this.itemCloseWindow);                        
@@ -633,12 +630,7 @@ WindowList.prototype = {
 			childBox.x2 = allocWidth;
 		}
 		this._rightBox.allocate(childBox, flags);
-    },
-     
-    setBottomPosition: function(value){
-        bottomPosition = value;
-        this._refreshItems();
     }
 };
 
-let bottomPosition = true;
+

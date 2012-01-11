@@ -29,6 +29,14 @@
       </_description>
     </key>
     
+    <key name="desktop-layout" type="s">
+      <default>"traditional"</default>
+      <_summary>Layout style</_summary>
+      <_description>
+       Layout styles: traditional (1 panel at the bottom), flipped (1 panel on top)
+      </_description>
+    </key>
+    
     <key name="date-format" type="s">
       <default>"YYYY-MM-DD"</default>
       <_summary>Auto-hide panel</_summary>

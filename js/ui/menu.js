@@ -291,7 +291,7 @@ MenuButton.prototype = {
     },
     
     _resetMenu: function(){
-        this.menu = new PopupMenu.PopupMenu(this.actor, this._menuAlignment, menuOrientation);
+        this.menu = new PopupMenu.PopupMenu(this.actor, this._menuAlignment, Main.applet_side);
         this.menu.actor.add_style_class_name('menu-background');
         this.menu.connect('open-state-changed', Lang.bind(this, this._onOpenStateChanged));
         //this.menu.actor.connect('key-press-event', Lang.bind(this, this._onMenuKeyPress));
@@ -890,22 +890,7 @@ ApplicationsButton.prototype = {
          let bookmarks = this._listBookmarks();
          let devices = this._listDevices();
          this._displayButtons(null, bookmarks.concat(devices));
-},
-     
-     setBottomPosition: function(value){
-         // Need to find a way to do this
-         if (value){
-             //this.menu._arrowSide = St.Side.BOTTOM;
-             //menuOrientation = St.Side.BOTTOM;
-             //this.disable();
-             //this.enable();
-         }else{
-             //this.menu._arrowSide = St.Side.TOP;
-             //menuOrientation = St.Side.TOP;
-             //this.disable();
-             //this.enable();
-         }
-     },
+},        
      
      _setCategoriesButtonActive: function(active) {
          global.log("_setCategoriesButtonActive:"+active);
@@ -1057,6 +1042,4 @@ ApplicationsButton.prototype = {
     }
 };
 
-let menuOrientation = St.Side.BOTTOM;
 let icon_path = "/usr/share/cinnamon/theme/";
-let bottomPosition = true;
