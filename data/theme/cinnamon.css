@@ -1777,7 +1777,7 @@ StTooltip StLabel {
 }
 
 .panel-launcher-add-dialog-entry {
-    padding-bottom: 10px;
+    padding: 5px;
     border-radius: 4px;
     color: rgb(128, 128, 128);
     border: 2px solid rgba(245,245,245,0.2);
