@@ -1522,7 +1522,7 @@ Workspace.prototype = {
             if (this._isMyWindow(win))
                 return false;
 
-            // Set a hint on the Mutter.Window so its initial position
+            // Set a hint on the Muffin.Window so its initial position
             // in the new workspace will be correct
             win._overviewHint = {
                 x: actor.x,

@@ -283,9 +283,9 @@ cinnamon_fonts_init (void)
 static void
 cinnamon_prefs_init (void)
 {
-  meta_prefs_override_preference_location ("/apps/mutter/general/attach_modal_dialogs",
+  meta_prefs_override_preference_location ("/apps/muffin/general/attach_modal_dialogs",
                                            "/desktop/cinnamon/windows/attach_modal_dialogs");
-  meta_prefs_override_preference_location ("/apps/mutter/general/workspaces_only_on_primary",
+  meta_prefs_override_preference_location ("/apps/muffin/general/workspaces_only_on_primary",
                                            "/desktop/cinnamon/windows/workspaces_only_on_primary");
   meta_prefs_override_preference_location ("/apps/metacity/general/button_layout",
                                            "/desktop/cinnamon/windows/button_layout");
@@ -327,7 +327,7 @@ cinnamon_prefs_init (void)
  * To summarize, the full key event flow with IBus is:
  *
  *   GDK filter function
- *     => Mutter
+ *     => Muffin
  *     => gnome_cinnamon_plugin_xevent_filter()
  *     => clutter_x11_handle_event()
  *     => clutter event delivery to actor

@@ -21,7 +21,7 @@ XdndHandler.prototype = {
         global.stage.add_actor(this._dummy);
         this._dummy.hide();
 
-        // Mutter delays the creation of the output window as long
+        // Muffin delays the creation of the output window as long
         // as possible to avoid flicker. In case a plugin wants to
         // access it directly it has to connect to the stage's show
         // signal. (see comment in compositor.c:meta_compositor_manage_screen)

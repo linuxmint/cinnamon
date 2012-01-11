@@ -633,8 +633,8 @@ GLIB_GENMARSHAL
 GLIB_LIBS
 GLIB_CFLAGS
 GJS_CONSOLE
-MUTTER_TYPELIB_DIR
-MUTTER_GIR_DIR
+MUFFIN_TYPELIB_DIR
+MUFFIN_GIR_DIR
 CALENDAR_SERVER_LIBS
 CALENDAR_SERVER_CFLAGS
 HAVE_BLUETOOTH
@@ -14948,7 +14948,7 @@ fi
 CLUTTER_MIN_VERSION=1.7.5
 GOBJECT_INTROSPECTION_MIN_VERSION=0.10.1
 GJS_MIN_VERSION=1.29.18
-MUTTER_MIN_VERSION=1.0.0
+MUFFIN_MIN_VERSION=1.0.0
 FOLKS_MIN_VERSION=0.5.2
 GTK_MIN_VERSION=3.0.0
 GIO_MIN_VERSION=2.29.10
@@ -14974,7 +14974,7 @@ if test -n "$CINNAMON_CFLAGS"; then
                                gio-unix-2.0 dbus-glib-1 libxml-2.0
                                gtk+-3.0 >= \$GTK_MIN_VERSION
                                folks >= \$FOLKS_MIN_VERSION
-                               libmutter >= \$MUTTER_MIN_VERSION
+                               libmuffin >= \$MUFFIN_MIN_VERSION
                                gjs-internals-1.0 >= \$GJS_MIN_VERSION
 			       libgnome-menu-3.0 \$recorder_modules gconf-2.0
                                gdk-x11-3.0 libsoup-2.4
@@ -14990,7 +14990,7 @@ if test -n "$CINNAMON_CFLAGS"; then
                                gio-unix-2.0 dbus-glib-1 libxml-2.0
                                gtk+-3.0 >= $GTK_MIN_VERSION
                                folks >= $FOLKS_MIN_VERSION
-                               libmutter >= $MUTTER_MIN_VERSION
+                               libmuffin >= $MUFFIN_MIN_VERSION
                                gjs-internals-1.0 >= $GJS_MIN_VERSION
 			       libgnome-menu-3.0 $recorder_modules gconf-2.0
                                gdk-x11-3.0 libsoup-2.4
@@ -15009,7 +15009,7 @@ if test -n "$CINNAMON_CFLAGS"; then
                                gio-unix-2.0 dbus-glib-1 libxml-2.0
                                gtk+-3.0 >= $GTK_MIN_VERSION
                                folks >= $FOLKS_MIN_VERSION
-                               libmutter >= $MUTTER_MIN_VERSION
+                               libmuffin >= $MUFFIN_MIN_VERSION
                                gjs-internals-1.0 >= $GJS_MIN_VERSION
 			       libgnome-menu-3.0 $recorder_modules gconf-2.0
                                gdk-x11-3.0 libsoup-2.4
@@ -15035,7 +15035,7 @@ if test -n "$CINNAMON_LIBS"; then
                                gio-unix-2.0 dbus-glib-1 libxml-2.0
                                gtk+-3.0 >= \$GTK_MIN_VERSION
                                folks >= \$FOLKS_MIN_VERSION
-                               libmutter >= \$MUTTER_MIN_VERSION
+                               libmuffin >= \$MUFFIN_MIN_VERSION
                                gjs-internals-1.0 >= \$GJS_MIN_VERSION
 			       libgnome-menu-3.0 \$recorder_modules gconf-2.0
                                gdk-x11-3.0 libsoup-2.4
@@ -15051,7 +15051,7 @@ if test -n "$CINNAMON_LIBS"; then
                                gio-unix-2.0 dbus-glib-1 libxml-2.0
                                gtk+-3.0 >= $GTK_MIN_VERSION
                                folks >= $FOLKS_MIN_VERSION
-                               libmutter >= $MUTTER_MIN_VERSION
+                               libmuffin >= $MUFFIN_MIN_VERSION
                                gjs-internals-1.0 >= $GJS_MIN_VERSION
 			       libgnome-menu-3.0 $recorder_modules gconf-2.0
                                gdk-x11-3.0 libsoup-2.4
@@ -15070,7 +15070,7 @@ if test -n "$CINNAMON_LIBS"; then
                                gio-unix-2.0 dbus-glib-1 libxml-2.0
                                gtk+-3.0 >= $GTK_MIN_VERSION
                                folks >= $FOLKS_MIN_VERSION
-                               libmutter >= $MUTTER_MIN_VERSION
+                               libmuffin >= $MUFFIN_MIN_VERSION
                                gjs-internals-1.0 >= $GJS_MIN_VERSION
 			       libgnome-menu-3.0 $recorder_modules gconf-2.0
                                gdk-x11-3.0 libsoup-2.4
@@ -15105,7 +15105,7 @@ fi
                                gio-unix-2.0 dbus-glib-1 libxml-2.0
                                gtk+-3.0 >= $GTK_MIN_VERSION
                                folks >= $FOLKS_MIN_VERSION
-                               libmutter >= $MUTTER_MIN_VERSION
+                               libmuffin >= $MUFFIN_MIN_VERSION
                                gjs-internals-1.0 >= $GJS_MIN_VERSION
 			       libgnome-menu-3.0 $recorder_modules gconf-2.0
                                gdk-x11-3.0 libsoup-2.4
@@ -15122,7 +15122,7 @@ fi
                                gio-unix-2.0 dbus-glib-1 libxml-2.0
                                gtk+-3.0 >= $GTK_MIN_VERSION
                                folks >= $FOLKS_MIN_VERSION
-                               libmutter >= $MUTTER_MIN_VERSION
+                               libmuffin >= $MUFFIN_MIN_VERSION
                                gjs-internals-1.0 >= $GJS_MIN_VERSION
 			       libgnome-menu-3.0 $recorder_modules gconf-2.0
                                gdk-x11-3.0 libsoup-2.4
@@ -15142,7 +15142,7 @@ fi
                                gio-unix-2.0 dbus-glib-1 libxml-2.0
                                gtk+-3.0 >= $GTK_MIN_VERSION
                                folks >= $FOLKS_MIN_VERSION
-                               libmutter >= $MUTTER_MIN_VERSION
+                               libmuffin >= $MUFFIN_MIN_VERSION
                                gjs-internals-1.0 >= $GJS_MIN_VERSION
 			       libgnome-menu-3.0 $recorder_modules gconf-2.0
                                gdk-x11-3.0 libsoup-2.4
@@ -16171,8 +16171,8 @@ fi
 
 
 
-MUTTER_GIR_DIR=`$PKG_CONFIG --variable=girdir libmutter`
-MUTTER_TYPELIB_DIR=`$PKG_CONFIG --variable=typelibdir libmutter`
+MUFFIN_GIR_DIR=`$PKG_CONFIG --variable=girdir libmuffin`
+MUFFIN_TYPELIB_DIR=`$PKG_CONFIG --variable=typelibdir libmuffin`
 
 
 

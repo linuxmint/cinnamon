@@ -414,8 +414,8 @@ MKDIR_P = @MKDIR_P@
 MSGFMT = @MSGFMT@
 MSGFMT_015 = @MSGFMT_015@
 MSGMERGE = @MSGMERGE@
-MUTTER_GIR_DIR = @MUTTER_GIR_DIR@
-MUTTER_TYPELIB_DIR = @MUTTER_TYPELIB_DIR@
+MUFFIN_GIR_DIR = @MUFFIN_GIR_DIR@
+MUFFIN_TYPELIB_DIR = @MUFFIN_TYPELIB_DIR@
 NM = @NM@
 NMEDIT = @NMEDIT@
 OBJDUMP = @OBJDUMP@
@@ -542,7 +542,7 @@ service_in_files =  \
 	hotplug-sniffer/org.Cinnamon.HotplugSniffer.service.in
 INTROSPECTION_GIRS = Gvc-1.0.gir Cinnamon-0.1.gir St-1.0.gir
 INTROSPECTION_SCANNER_ARGS = --warn-all --warn-error --add-include-path=$(srcdir)
-INTROSPECTION_COMPILER_ARGS = --includedir=$(srcdir) --includedir=$(MUTTER_TYPELIB_DIR)
+INTROSPECTION_COMPILER_ARGS = --includedir=$(srcdir) --includedir=$(MUFFIN_TYPELIB_DIR)
 typelibdir = $(pkglibdir)
 typelib_DATA = $(INTROSPECTION_GIRS:.gir=.typelib)
 servicedir = $(datadir)/dbus-1/services
@@ -904,7 +904,7 @@ Cinnamon_0_1_gir_CFLAGS = $(libgnome_cinnamon_la_CPPFLAGS) -I $(srcdir)
 Cinnamon_0_1_gir_LIBS = libcinnamon.la
 Cinnamon_0_1_gir_FILES = $(libgnome_cinnamon_la_gir_sources)
 Cinnamon_0_1_gir_SCANNERFLAGS = --include-uninstalled=$(builddir)/St-1.0.gir \
-	--add-include-path=$(MUTTER_GIR_DIR)
+	--add-include-path=$(MUFFIN_GIR_DIR)
 
 St_1_0_gir_INCLUDES = Clutter-1.0 Gtk-3.0
 St_1_0_gir_CFLAGS = $(st_cflags) -DST_COMPILATION

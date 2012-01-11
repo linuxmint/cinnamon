@@ -12,7 +12,7 @@ ifeq ($(cinnamon dpkg-vendor --query vendor),Ubuntu)
 endif
 
 $(patsubst %,binary-predeb/%,$(DEB_ALL_PACKAGES)) ::
-	dh_girepository -p$(cdbs_curpkg) -l src -p /usr/lib/mutter \
+	dh_girepository -p$(cdbs_curpkg) -l src -p /usr/lib/muffin \
 		/usr/lib/cinnamon
 	find debian/$(cdbs_curpkg) -name '*.la' -exec rm -f '{}' ';'
 

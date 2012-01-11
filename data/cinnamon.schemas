@@ -11,7 +11,7 @@
         <locale name="C">
           <short>Attach modal dialog to the parent window</short>
           <long>
-             This key overrides /apps/mutter/general/attach_modal_dialogs when
+             This key overrides /apps/muffin/general/attach_modal_dialogs when
              running Cinnamon.
           </long>
         </locale>
@@ -90,7 +90,7 @@
         <locale name="C">
           <short>Workspaces only on primary monitor</short>
           <long>
-             This key overrides /apps/mutter/general/workspaces_only_on_primary when
+             This key overrides /apps/muffin/general/workspaces_only_on_primary when
              running Cinnamon.
           </long>
         </locale>

@@ -932,7 +932,7 @@ Chrome.prototype = {
         // with layer FULLSCREEN, or a window with layer
         // OVERRIDE_REDIRECT that covers the whole screen.
         // ('override_redirect' is not actually a layer above all
-        // other windows, but this seems to be how mutter treats it
+        // other windows, but this seems to be how muffin treats it
         // currently...) If we wanted to be extra clever, we could
         // figure out when an OVERRIDE_REDIRECT window was trying to
         // partially overlap us, and then adjust the input region and
@@ -1078,7 +1078,7 @@ Chrome.prototype = {
                 continue;
 
             // Ensure that the strut rects goes all the way to the screen edge,
-            // as this really what mutter expects.
+            // as this really what muffin expects.
             switch (side) {
             case Meta.Side.TOP:
                 y1 = 0;

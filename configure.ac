@@ -67,7 +67,7 @@ AM_CONDITIONAL(BUILD_RECORDER, $build_recorder)
 CLUTTER_MIN_VERSION=1.7.5
 GOBJECT_INTROSPECTION_MIN_VERSION=0.10.1
 GJS_MIN_VERSION=1.29.18
-MUTTER_MIN_VERSION=3.2.1
+MUFFIN_MIN_VERSION=1.0.0
 FOLKS_MIN_VERSION=0.5.2
 GTK_MIN_VERSION=3.0.0
 GIO_MIN_VERSION=2.29.10
@@ -84,7 +84,7 @@ PKG_CHECK_MODULES(CINNAMON, gio-2.0 >= $GIO_MIN_VERSION
                                gio-unix-2.0 dbus-glib-1 libxml-2.0
                                gtk+-3.0 >= $GTK_MIN_VERSION
                                folks >= $FOLKS_MIN_VERSION
-                               libmutter >= $MUTTER_MIN_VERSION
+                               libmuffin >= $MUFFIN_MIN_VERSION
                                gjs-internals-1.0 >= $GJS_MIN_VERSION
 			       libgnome-menu-3.0 $recorder_modules gconf-2.0
                                gdk-x11-3.0 libsoup-2.4
@@ -142,10 +142,10 @@ PKG_CHECK_MODULES(CALENDAR_SERVER, libecal-1.2 >= $LIBECAL_MIN_VERSION libedatas
 AC_SUBST(CALENDAR_SERVER_CFLAGS)
 AC_SUBST(CALENDAR_SERVER_LIBS)
 
-MUTTER_GIR_DIR=`$PKG_CONFIG --variable=girdir libmutter`
-MUTTER_TYPELIB_DIR=`$PKG_CONFIG --variable=typelibdir libmutter`
-AC_SUBST(MUTTER_GIR_DIR)
-AC_SUBST(MUTTER_TYPELIB_DIR)
+MUFFIN_GIR_DIR=`$PKG_CONFIG --variable=girdir libmuffin`
+MUFFIN_TYPELIB_DIR=`$PKG_CONFIG --variable=typelibdir libmuffin`
+AC_SUBST(MUFFIN_GIR_DIR)
+AC_SUBST(MUFFIN_TYPELIB_DIR)
 
 GJS_CONSOLE=`$PKG_CONFIG --variable=gjs_console gjs-1.0`
 AC_SUBST(GJS_CONSOLE)

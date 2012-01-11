@@ -151,7 +151,7 @@ function waitTestWindows() {
  * Destroys all windows previously created with createTestWindow().
  * While this function can be used with yield in an automation
  * script to pause until the D-Bus call to the helper process returns,
- * this doesn't guarantee that Mutter has actually finished the destroy
+ * this doesn't guarantee that Muffin has actually finished the destroy
  * process because of normal X asynchronicity.
  */
 function destroyTestWindows() {

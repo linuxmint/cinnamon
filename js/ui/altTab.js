@@ -1119,11 +1119,11 @@ ThumbnailList.prototype = {
         binHeight = Math.min(THUMBNAIL_DEFAULT_SIZE, binHeight);
 
         for (let i = 0; i < this._thumbnailBins.length; i++) {
-            let mutterWindow = this._windows[i].get_compositor_private();
-            if (!mutterWindow)
+            let muffinWindow = this._windows[i].get_compositor_private();
+            if (!muffinWindow)
                 continue;
 
-            let windowTexture = mutterWindow.get_texture ();
+            let windowTexture = muffinWindow.get_texture ();
             let [width, height] = windowTexture.get_size();
             let scale = Math.min(1.0, THUMBNAIL_DEFAULT_SIZE / width, availHeight / height);
             let clone = new Clutter.Clone ({ source: windowTexture,

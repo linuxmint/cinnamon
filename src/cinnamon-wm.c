@@ -346,7 +346,7 @@ cinnamon_wm_key_handler (MetaDisplay    *display,
  * @wm: the #CinnamonWM
  * @binding_name: a meta keybinding name
  *
- * Tells mutter to forward keypresses for @binding_name to Cinnamon
+ * Tells muffin to forward keypresses for @binding_name to Cinnamon
  * rather than processing them internally. This will cause a
  * #CinnamonWM::keybinding signal to be emitted when that key is pressed.
  */

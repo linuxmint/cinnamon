@@ -239,7 +239,7 @@ cinnamon_tray_manager_manage_stage (CinnamonTrayManager *manager,
   /* This is a pretty ugly way to get the GdkScreen for the stage; it
    *  will normally go through the foreign_new() case with a
    *  round-trip to the X server, it might be nicer to pass the screen
-   *  in in some way. (The Clutter/Mutter combo is currently incapable
+   *  in in some way. (The Clutter/Muffin combo is currently incapable
    *  of multi-screen operation, so alternatively we could just assume
    *  that clutter_x11_get_default_screen() gives us the right
    *  screen.) We assume, in any case, that we are using the default

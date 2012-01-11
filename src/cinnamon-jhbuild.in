@@ -237,7 +237,7 @@ def start_cinnamon(perf_output=None):
 
     if options.perf is not None:
         env['CINNAMON_PERF_MODULE'] = options.perf
-        env['MUTTER_WM_CLASS_FILTER'] = 'Cinnamon-perf-helper'
+        env['MUFFIN_WM_CLASS_FILTER'] = 'Cinnamon-perf-helper'
 
     if perf_output is not None:
         env['CINNAMON_PERF_OUTPUT'] = perf_output

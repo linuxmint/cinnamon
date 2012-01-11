@@ -164,8 +164,8 @@ MKDIR_P = @MKDIR_P@
 MSGFMT = @MSGFMT@
 MSGFMT_015 = @MSGFMT_015@
 MSGMERGE = @MSGMERGE@
-MUTTER_GIR_DIR = @MUTTER_GIR_DIR@
-MUTTER_TYPELIB_DIR = @MUTTER_TYPELIB_DIR@
+MUFFIN_GIR_DIR = @MUFFIN_GIR_DIR@
+MUFFIN_TYPELIB_DIR = @MUFFIN_TYPELIB_DIR@
 NM = @NM@
 NMEDIT = @NMEDIT@
 OBJDUMP = @OBJDUMP@
@@ -484,7 +484,7 @@ uninstall-am:
 
 run-test.sh: run-test.sh.in
 	$(AM_V_GEN) sed \
-	    -e "s|@MUTTER_TYPELIB_DIR[@]|$(MUTTER_TYPELIB_DIR)|" \
+	    -e "s|@MUFFIN_TYPELIB_DIR[@]|$(MUFFIN_TYPELIB_DIR)|" \
 	    -e "s|@JHBUILD_TYPELIBDIR[@]|$(JHBUILD_TYPELIBDIR)|" \
 	    -e "s|@srcdir[@]|$(srcdir)|" \
 	    $< > $@ && chmod a+x $@

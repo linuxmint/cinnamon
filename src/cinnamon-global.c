@@ -556,7 +556,7 @@ cinnamon_global_focus_stage (CinnamonGlobal *global)
  * focus (eg, because the user clicked into a window) the input mode
  * will revert to %CINNAMON_STAGE_INPUT_MODE_NORMAL.
  *
- * Note that whenever a mutter-internal Gtk widget has a pointer grab,
+ * Note that whenever a muffin-internal Gtk widget has a pointer grab,
  * Cinnamon behaves as though it was in
  * %CINNAMON_STAGE_INPUT_MODE_NONREACTIVE, to ensure that the widget gets
  * any clicks it is expecting.
@@ -858,7 +858,7 @@ _cinnamon_global_get_gjs_context (CinnamonGlobal *global)
  *
  * Returns value: %TRUE if we succesfully entered the mode. %FALSE if we couldn't
  *  enter the mode. Failure may occur because an application has the pointer
- *  or keyboard grabbed, because Mutter is in a mode itself like moving a
+ *  or keyboard grabbed, because Muffin is in a mode itself like moving a
  *  window or alt-Tab window selection, or because cinnamon_global_begin_modal()
  *  was previouly called.
  */
