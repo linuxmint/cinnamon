@@ -159,7 +159,7 @@ PanelAppLauncher.prototype = {
         let icon = this.get_appinfo().get_icon();
         if (icon){
             if (icon instanceof Gio.FileIcon) return icon.get_file().get_path();
-            else return icon.get_names();
+            else return icon.get_names().toString();
         }
     }
 }
@@ -192,6 +192,12 @@ AddLauncherDialog.prototype = {
         leftBox.add(label, { x_align: St.Align.START, x_fill: true, x_expand: true });
         this._commandEntry = new St.Entry({ styleClass: 'panel-launcher-add-dialog-entry', can_focus: true });
         rightBox.add(this._commandEntry, { x_align: St.Align.END, x_fill: false, x_expand: false });
+        
+        label = new St.Label();
+        label.set_text(_("Icon"));
+        leftBox.add(label, { x_align: St.Align.START, x_fill: true, x_expand: true });
+        this._iconEntry = new St.Entry({ styleClass: 'panel-launcher-add-dialog-entry', can_focus: true });
+        rightBox.add(this._iconEntry, { x_align: St.Align.END, x_fill: false, x_expand: false });
         
         box.add(leftBox);
         box.add(rightBox);
@@ -237,7 +243,7 @@ AddLauncherDialog.prototype = {
         }
         
         
-        let appid = this._saveNewLauncher(this._nameEntry.clutter_text.get_text(), this._commandEntry.clutter_text.get_text(), _("Custom Launcher"));
+        let appid = this._saveNewLauncher(this._nameEntry.clutter_text.get_text(), this._commandEntry.clutter_text.get_text(), _("Custom Launcher"), this._iconEntry.clutter_text.get_text());
         
         this.close();
         
@@ -265,7 +271,6 @@ AddLauncherDialog.prototype = {
         let desktopEntry = "[Desktop Entry]\nName="+name+"\nExec="+command+"\nType=Application\n";
         if (description) desktopEntry += "Description="+description+"\n";
         if (!icon && this._currentLauncher) icon = this._currentLauncher.get_icon();
-        global.log(icon);
         if (!icon) icon = "application-x-executable";
         desktopEntry += "Icon="+icon+"\n";
         
@@ -283,6 +288,7 @@ AddLauncherDialog.prototype = {
         if (launcher){
             this._commandEntry.clutter_text.set_text(launcher.get_command());
             this._nameEntry.clutter_text.set_text(launcher.get_appname());
+            if (launcher.get_icon()) this._iconEntry.clutter_text.set_text(launcher.get_icon());
             this._errorBox.hide();
             this.setButtons([
                 {
