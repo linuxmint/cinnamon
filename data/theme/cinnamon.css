@@ -1489,10 +1489,6 @@ StTooltip StLabel {
     padding-bottom: 0px;    
 }
 
-.menu-applications-scrollbox {
-    height: 300px;
-}
-
 .menu-application-button {
     padding-top: 7px;
     padding-left: 7px;

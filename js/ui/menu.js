@@ -538,9 +538,11 @@ ApplicationsButton.prototype = {
            global.stage.set_key_focus(this.searchEntry);
            this._selectedItemIndex = null;
            this._activeContainer = null;
+           let monitorHeight = Main.layoutManager.primaryMonitor.height;
+           let applicationsBoxHeight = this.applicationsBox.get_allocation_box().y2-this.applicationsBox.get_allocation_box().y1;
            let scrollBoxHeight = (this.favoritesBox.get_allocation_box().y2-this.favoritesBox.get_allocation_box().y1)                                    
                                     -(this.searchBox.get_allocation_box().y2-this.searchBox.get_allocation_box().y1);
-            if (scrollBoxHeight<300) scrollBoxHeight = 300;
+            if (scrollBoxHeight<0.7*monitorHeight && scrollBoxHeight<applicationsBoxHeight) scrollBoxHeight = Math.min(0.7*monitorHeight, applicationsBoxHeight);
             this.applicationsScrollBox.style = "height: "+scrollBoxHeight+"px;";
        } else {
            this.closeApplicationsContextMenus(null, false);
