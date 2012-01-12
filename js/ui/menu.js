@@ -561,9 +561,6 @@ ApplicationsButton.prototype = {
             child.destroy();
         })); 
         
-        let tree = appsys.get_tree();
-        let root = tree.get_root_directory();
-        
         this._allAppsCategoryButton = new CategoryButton(null);
              this._allAppsCategoryButton.actor.connect('clicked', Lang.bind(this, function() {
             this._select_category(null, this._allAppsCategoryButton);
@@ -572,28 +569,35 @@ ApplicationsButton.prototype = {
              if (!this.searchActive) this._select_category(null, this._allAppsCategoryButton);
          }));
          this.categoriesBox.add_actor(this._allAppsCategoryButton.actor);
-
-        let iter = root.iter();
-        let nextType;
-        while ((nextType = iter.next()) != GMenu.TreeItemType.INVALID) {
-            if (nextType == GMenu.TreeItemType.DIRECTORY) {
-                let dir = iter.get_directory();
-                if (dir.get_is_nodisplay())
-                    continue;
-                this.applicationsByCategory[dir.get_menu_id()] = new Array();
-                this._loadCategory(dir);
-                if (this.applicationsByCategory[dir.get_menu_id()].length>0){
-                   let categoryButton = new CategoryButton(dir);
-                   categoryButton.actor.connect('clicked', Lang.bind(this, function() {
-                     this._select_category(dir, categoryButton);
-                  }));
-                  this._addEnterEvent(categoryButton, Lang.bind(this, function() {
-                      if (!this.searchActive) this._select_category(dir, categoryButton);
-                  }));
-                   this.categoriesBox.add_actor(categoryButton.actor);
+        
+        let trees = [appsys.get_tree(), appsys.get_settings_tree()];
+        
+        for (var i in trees) {
+            let tree = trees[i];
+            let root = tree.get_root_directory();
+            
+            let iter = root.iter();
+            let nextType;
+            while ((nextType = iter.next()) != GMenu.TreeItemType.INVALID) {
+                if (nextType == GMenu.TreeItemType.DIRECTORY) {
+                    let dir = iter.get_directory();
+                    if (dir.get_is_nodisplay())
+                        continue;
+                    this.applicationsByCategory[dir.get_menu_id()] = new Array();
+                    this._loadCategory(dir);
+                    if (this.applicationsByCategory[dir.get_menu_id()].length>0){
+                       let categoryButton = new CategoryButton(dir);
+                       categoryButton.actor.connect('clicked', Lang.bind(this, function() {
+                         this._select_category(dir, categoryButton);
+                      }));
+                      this._addEnterEvent(categoryButton, Lang.bind(this, function() {
+                          if (!this.searchActive) this._select_category(dir, categoryButton);
+                      }));
+                       this.categoriesBox.add_actor(categoryButton.actor);
+                    }
                 }
-            }
-        } 
+            } 
+        }
         
         this._select_category(null, this._allAppsCategoryButton);    
         this._setCategoriesButtonActive(!this.searchActive);                 
@@ -695,6 +699,7 @@ ApplicationsButton.prototype = {
                 var entry = iter.get_entry();
                 if (!entry.get_app_info().get_nodisplay()) {
 					var app = appsys.lookup_app_by_tree_entry(entry);
+                    if (!app) app = appsys.lookup_settings_app_by_tree_entry(entry);
                  	if (!this.applicationsByCategory[top_dir.get_menu_id()]) this.applicationsByCategory[top_dir.get_menu_id()] = new Array();
 					this.applicationsByCategory[top_dir.get_menu_id()].push(app);
 				}
