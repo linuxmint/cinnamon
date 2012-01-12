@@ -116,7 +116,6 @@ PanelAppLauncher.prototype = {
     },
     
     _getIconActor: function() {
-        global.log(St.TextureCache.get_default().load_gicon);
         if (this.is_custom()) return St.TextureCache.get_default().load_gicon(null, this.appinfo.get_icon(), 20);
         else return this.app.create_icon_texture(20);
     },
