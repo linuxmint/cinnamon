@@ -11,6 +11,7 @@ const ModalDialog = imports.ui.modalDialog;
 const Signals = imports.signals;
 const GLib = imports.gi.GLib;
 const Tooltips = imports.ui.tooltips;
+const DND = imports.ui.dnd;
 
 function PanelAppLauncherMenu(launcher) {
     this._init(launcher);
@@ -88,11 +89,9 @@ PanelAppLauncher.prototype = {
                               Lang.bind(this, this._updateIconBoxClip));
         this.actor.add_actor(this._iconBox);
         this._iconBottomClip = 0;
-        let icon;
-        if (this.is_custom()) icon = new St.Icon({ gicon: appinfo.get_icon(), icon_size: 20 });
-        else icon = this.app.create_icon_texture(20);
         
-        this._iconBox.set_child(icon);
+        this.icon = this._getIconActor();
+        this._iconBox.set_child(this.icon);
         
         this._menuManager = new PopupMenu.PopupMenuManager(this);
         this._menu = new PanelAppLauncherMenu(this);
@@ -102,6 +101,24 @@ PanelAppLauncher.prototype = {
         if (this.is_custom()) tooltipText = appinfo.get_name();
         else tooltipText = app.get_name();
         this._tooltip = new Tooltips.PanelItemTooltip(this, tooltipText);
+        
+        this._draggable = DND.makeDraggable(this.actor);
+    },
+    
+    getDragActor: function() {
+        return this._getIconActor();
+    },
+
+    // Returns the original actor that should align with the actor
+    // we show as the item is being dragged.
+    getDragActorSource: function() {
+        return this.icon;
+    },
+    
+    _getIconActor: function() {
+        global.log(St.TextureCache.get_default().load_gicon);
+        if (this.is_custom()) return St.TextureCache.get_default().load_gicon(null, this.appinfo.get_icon(), 20);
+        else return this.app.create_icon_texture(20);
     },
     
     launch: function() {
