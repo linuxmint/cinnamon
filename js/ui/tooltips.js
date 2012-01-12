@@ -20,6 +20,7 @@ PanelItemTooltip.prototype = {
         this._showTimer = null;
         this._visible = false;
         this._panelItem = panelItem;
+        this.preventShow = false;
     },
     
     _onMotionEvent: function(actor, event) {
@@ -51,6 +52,7 @@ PanelItemTooltip.prototype = {
     
     show: function() {
         //if (this._appButton.rightClickMenu.isOpen) return;
+        if (this.preventShow) return;
         
         Tweener.removeTweens(this);
         
