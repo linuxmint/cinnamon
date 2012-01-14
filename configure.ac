@@ -247,5 +247,6 @@ AC_CONFIG_FILES([
   tests/Makefile
   po/Makefile.in
   man/Makefile
+  files/Makefile
 ])
 AC_OUTPUT

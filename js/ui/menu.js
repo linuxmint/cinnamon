@@ -570,7 +570,7 @@ ApplicationsButton.prototype = {
          }));
          this.categoriesBox.add_actor(this._allAppsCategoryButton.actor);
         
-        let trees = [appsys.get_tree()];
+        let trees = [appsys.get_tree(), appsys.get_settings_tree()];
         
         for (var i in trees) {
             let tree = trees[i];
