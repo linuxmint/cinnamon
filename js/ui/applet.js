@@ -3,6 +3,7 @@ const Lang = imports.lang;
 const Cinnamon = imports.gi.Cinnamon;
 const Tooltips = imports.ui.tooltips;
 const PopupMenu = imports.ui.popupMenu;
+const Gio = imports.gi.Gio;
 
 function Applet() {
     this._init();
