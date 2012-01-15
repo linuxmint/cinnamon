@@ -12,7 +12,8 @@ ShowDesktopButton.prototype = {
 
     _init: function() {
         Applet.IconApplet.prototype._init.call(this);
-        this.set_icon_name("desktop");        
+        this.set_icon_name("desktop");    
+        this.set_tooltip(_("Show desktop"));    
                         
         this._tracker = Cinnamon.WindowTracker.get_default();        
         this._desktopShown = false;        

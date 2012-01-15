@@ -11,7 +11,7 @@ function Applet() {
 Applet.prototype = {
 
     _init: function() {
-        this.actor = new St.BoxLayout({ name: 'applet-box' });
+        this.actor = new St.BoxLayout({ name: 'applet-box', reactive: true });
         this.tooltip = new Tooltips.PanelItemTooltip(this, "");
         this.context_menu = new PopupMenu.PopupSubMenu(this.actor);
         this.context_menu.actor.set_style_class_name('applet-context-menu');                                
