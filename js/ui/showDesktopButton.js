@@ -1,29 +1,26 @@
 const St = imports.gi.St;
 const Lang = imports.lang;
 const Cinnamon = imports.gi.Cinnamon;
+const Applet = imports.ui.applet;
 
 function ShowDesktopButton() {
     this._init();
 }
 
 ShowDesktopButton.prototype = {
-//    __proto__ : ShowDesktopButton.prototype,
+    __proto__: Applet.IconApplet.prototype,
 
     _init: function() {
-        this.actor = new St.Button();
-        let icon = new St.Icon({icon_name: "desktop", icon_size: 24, icon_type: St.IconType.FULLCOLOR});             
-        this.actor.add_actor(icon);
-        
-        this.actor.connect("clicked", Lang.bind(this, this._toggleShowDesktop));
-        
-        this._tracker = Cinnamon.WindowTracker.get_default();
-        
-        this._desktopShown = false;
-        
+        Applet.IconApplet.prototype._init.call(this);
+        this.set_icon_name("desktop");        
+                        
+        this._tracker = Cinnamon.WindowTracker.get_default();        
+        this._desktopShown = false;        
         this._alreadyMinimizedWindows = [];
     },
       
-    _toggleShowDesktop: function() {
+    clicked: function(event) {
+        log ("INSTANCE CLICKED");
         let metaWorkspace = global.screen.get_active_workspace();
         let windows = metaWorkspace.list_windows();
         
