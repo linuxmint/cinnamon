@@ -37,7 +37,9 @@ PanelItemTooltip.prototype = {
     },
     
     _onTimerComplete: function(){
-        this.show();
+        if (this._tooltip.get_label() != "") {
+            this.show();
+        }
     },
     
     _onLeaveEvent: function(actor, event) {
