@@ -12,16 +12,15 @@ ShowDesktopButton.prototype = {
 
     _init: function() {
         Applet.IconApplet.prototype._init.call(this);
-        this.set_icon_name("desktop");    
-        this.set_tooltip(_("Show desktop"));    
+        this.set_applet_icon_name("desktop");    
+        this.set_applet_tooltip(_("Show desktop"));    
                         
         this._tracker = Cinnamon.WindowTracker.get_default();        
         this._desktopShown = false;        
         this._alreadyMinimizedWindows = [];
     },
       
-    clicked: function(event) {
-        log ("INSTANCE CLICKED");
+    on_applet_clicked: function(event) {
         let metaWorkspace = global.screen.get_active_workspace();
         let windows = metaWorkspace.list_windows();
         
@@ -40,7 +39,7 @@ ShowDesktopButton.prototype = {
                     }
                 }
             }            
-            this._alreadyMinimizedWindows.length = []; //Apparently this is better than this._alreadyMinimizedWindows = [];            
+            this._alreadyMinimizedWindows.length = [];      
         }
         else {
             for ( let i = 0; i < windows.length; ++i ) {
