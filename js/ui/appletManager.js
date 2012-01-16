@@ -14,11 +14,13 @@ const Main = imports.ui.main;
 
 // Maps uuid -> metadata object
 const appletMeta = {};
+// Maps uuid -> applet objects
+const appletObj = {};
 // Maps uuid -> importer object (applet directory tree)
 const applets = {};
 
 var enabledApplets;
-var loadedApplets = [];
+var appletsCurrentlyInPanel = [];
 var userAppletsDir = null;
 
 function init() {
@@ -30,23 +32,69 @@ function init() {
     } catch (e) {
         global.logError('' + e);
     }
-    
+            
+    global.settings.connect('changed::enabled-applets', onEnabledAppletsChanged);
     enabledApplets = global.settings.get_strv('enabled-applets');
 }
 
-function loadApplets() {
-    let systemDataDirs = GLib.get_system_data_dirs();    
-    for (let i = 0; i < systemDataDirs.length; i++) {
-        let dirPath = systemDataDirs[i] + '/cinnamon/applets';
-        let dir = Gio.file_new_for_path(dirPath);
-        if (dir.query_exists(null))
-            _loadAppletsIn(dir);
-    }
-    _loadAppletsIn(userAppletsDir);
-    return loadedApplets;
+function onEnabledAppletsChanged() {
+        
+    let newEnabledApplets = global.settings.get_strv('enabled-applets');
+    
+    // Find and disable all the newly disabled applets: UUIDs found in the
+    // old setting, but not in the new one.
+    enabledApplets.filter(function(item) {
+        return newEnabledApplets.indexOf(item) == -1;
+    }).forEach(function(uuid) {
+        let directory = _find_applet(uuid);
+        let applet = loadApplet(uuid, directory);
+        Main.panel._centerBox.remove_actor(applet.actor);
+    });
+            
+    // Find and enable all the newly enabled applets: UUIDs found in the
+    // new setting, but not in the old one.
+    newEnabledApplets.filter(function(uuid) {
+        return enabledApplets.indexOf(uuid) == -1;
+    }).forEach(function(uuid) {
+        let directory = _find_applet(uuid);
+        let applet = loadApplet(uuid, directory);
+        Main.panel._centerBox.add(applet.actor);
+    });
+    
+    enabledApplets = newEnabledApplets;
 }
 
-function _loadAppletsIn(dir) {
+function loadApplets() {    
+    for (let i=0; i<enabledApplets.length; i++) {
+        let uuid = enabledApplets[i];
+        let directory = _find_applet(uuid);
+        if (directory != null) {
+            let applet = loadApplet(uuid, directory);
+            Main.panel._centerBox.add(applet.actor);
+        }        
+    }        
+}
+
+function _find_applet(uuid) {
+    let directory = null;
+    directory = _find_applet_in(uuid, userAppletsDir);
+    if (directory == null) {
+        let systemDataDirs = GLib.get_system_data_dirs();    
+        for (let i = 0; i < systemDataDirs.length; i++) {
+            let dirPath = systemDataDirs[i] + '/cinnamon/applets';
+            let dir = Gio.file_new_for_path(dirPath);
+            if (dir.query_exists(null))
+                directory = _find_applet_in(uuid, dir);
+                if (directory != null) {
+                    break;
+                }
+            }
+    }
+    return(directory);
+}
+
+function _find_applet_in(uuid, dir) {    
+    let directory = null;
     let fileEnum;
     let file, info;
     try {
@@ -60,20 +108,21 @@ function _loadAppletsIn(dir) {
         let fileType = info.get_file_type();
         if (fileType != Gio.FileType.DIRECTORY)
             continue;
-        let name = info.get_name();
-        let child = dir.get_child(name);
-        let enabled = enabledApplets.indexOf(name) != -1;
-        if (enabled) {
-            loadApplet(child);
+        let name = info.get_name();            
+        if (name == uuid) {
+            let child = dir.get_child(name);
+            directory = child;
+            break;
         }
     }
-    fileEnum.close(null);
+    fileEnum.close(null);    
+    return(directory);
 }
 
-function loadApplet(dir) {
+function loadApplet(uuid, dir) {
     let info;    
-    let uuid = dir.get_basename();
-
+    let applet = null;
+    
     let metadataFile = dir.get_child('metadata.json');
     if (!metadataFile.query_exists(null)) {
         log(uuid + ' missing metadata.json');
@@ -105,8 +154,8 @@ function loadApplet(dir) {
     }
 
     if (applets[uuid] != undefined) {
-        log(uuid + ' applet already loaded');
-        return;
+        log(uuid + ' applet already loaded');        
+        return (appletObj[uuid]);
     }
    
     if (uuid != meta.uuid) {
@@ -116,7 +165,7 @@ function loadApplet(dir) {
    
     appletMeta[uuid] = meta;    
     meta.path = dir.get_path();
-    meta.error = '';
+    meta.error = '';    
    
     let appletJs = dir.get_child('applet.js');
     if (!appletJs.query_exists(null)) {
@@ -153,15 +202,17 @@ function loadApplet(dir) {
     }
 
     try {
-        let applet = appletModule.main(meta);
-        loadedApplets.push(applet);
-        global.log('Loaded applet ' + meta.uuid);
+        applet = appletModule.main(meta);        
+        global.log('Loaded applet ' + meta.uuid);        
     } catch (e) {
         if (stylesheetPath != null)
             theme.unload_stylesheet(stylesheetPath);
         log(uuid + ' failed to evaluate main function:' + e);
         return;
     }        
+    
+    appletObj[uuid] = applet;  
+    return(applet);
 }
 
 

@@ -229,12 +229,7 @@ function start() {
     
     AppletManager.init();
     applets = AppletManager.loadApplets();
-    
-    for (let i=0; i<applets.length; i++) {
-        let applet = applets[i];
-        panel._centerBox.add(applet.actor);
-    }
-        
+            
     wm = new WindowManager.WindowManager();
     messageTray = new MessageTray.MessageTray();
     keyboard = new Keyboard.Keyboard();
