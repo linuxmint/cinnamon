@@ -1314,6 +1314,8 @@ st_theme_node_render_resources (StThemeNode   *node,
   StShadow *background_image_shadow_spec;
   const char *background_image;
 
+  g_return_if_fail (width > 0 && height > 0);
+
   texture_cache = st_texture_cache_get_default ();
 
   /* FIXME - need to separate this into things that need to be recomputed on
@@ -1417,9 +1419,11 @@ st_theme_node_render_resources (StThemeNode   *node,
       else if (node->background_color.alpha > 0 || has_border)
         {
           CoglHandle buffer, offscreen;
+          int texture_width = ceil (width);
+          int texture_height = ceil (height);
 
-          buffer = cogl_texture_new_with_size (width,
-                                               height,
+          buffer = cogl_texture_new_with_size (texture_width,
+                                               texture_height,
                                                COGL_TEXTURE_NO_SLICING,
                                                COGL_PIXEL_FORMAT_ANY);
           offscreen = cogl_offscreen_new_to_texture (buffer);
@@ -1932,6 +1936,9 @@ st_theme_node_paint (StThemeNode           *node,
   allocation.x1 = allocation.y1 = 0;
   allocation.x2 = width;
   allocation.y2 = height;
+
+  if (width <= 0 || height <= 0)
+    return;
 
   if (node->alloc_width != width || node->alloc_height != height)
     st_theme_node_render_resources (node, width, height);
