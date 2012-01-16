@@ -450,7 +450,7 @@ function _loadExtensionsIn(dir, type) {
 }
 
 function loadExtensions() {
-    let systemDataDirs = GLib.get_system_data_dirs();
+    let systemDataDirs = GLib.get_system_data_dirs();    
     for (let i = 0; i < systemDataDirs.length; i++) {
         let dirPath = systemDataDirs[i] + '/cinnamon/extensions';
         let dir = Gio.file_new_for_path(dirPath);

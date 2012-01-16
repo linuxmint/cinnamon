@@ -21,6 +21,15 @@
       </_description>
     </key>
     
+    <key name="enabled-applets" type="as">
+      <default>[]</default>
+      <_summary>Uuids of applets to enable</_summary>
+      <_description>
+        Cinnamon applets have a uuid property; this key lists applets
+        which should be loaded.
+      </_description>
+    </key>
+    
     <key name="panel-autohide" type="b">
       <default>false</default>
       <_summary>Auto-hide panel</_summary>

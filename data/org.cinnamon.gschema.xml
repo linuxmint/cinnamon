@@ -11,6 +11,11 @@
       <summary>Uuids of extensions to enable</summary>
       <description>Cinnamon extensions have a uuid property; this key lists extensions which should be loaded. disabled-extensions overrides this setting for extensions that appear in both lists.</description>
     </key>
+    <key type="as" name="enabled-applets">
+      <default>[]</default>
+      <summary>Uuids of applets to enable</summary>
+      <description>Cinnamon applets have a uuid property; this key lists applets which should be loaded.</description>
+    </key>
     
     <key type="b" name="panel-autohide">
       <default>false</default>

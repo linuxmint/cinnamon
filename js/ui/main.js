@@ -19,6 +19,7 @@ const EndSessionDialog = imports.ui.endSessionDialog;
 const PolkitAuthenticationAgent = imports.ui.polkitAuthenticationAgent;
 const Environment = imports.ui.environment;
 const ExtensionSystem = imports.ui.extensionSystem;
+const AppletManager = imports.ui.appletManager;
 const Keyboard = imports.ui.keyboard;
 const MessageTray = imports.ui.messageTray;
 const Overview = imports.ui.overview;
@@ -47,6 +48,7 @@ const LAYOUT_FLIPPED = "flipped";
 
 let automountManager = null;
 let autorunManager = null;
+let applets = [];
 let panel = null;
 let hotCorners = [];
 let placesManager = null;
@@ -221,8 +223,18 @@ function start() {
     // This overview object is just a stub for non-user sessions
     overview = new Overview.Overview({ isDummy: global.session_type != Cinnamon.SessionType.USER });
     magnifier = new Magnifier.Magnifier();
-    statusIconDispatcher = new StatusIconDispatcher.StatusIconDispatcher();    
+    statusIconDispatcher = new StatusIconDispatcher.StatusIconDispatcher();  
+            
     panel = new Panel.Panel();    
+    
+    AppletManager.init();
+    applets = AppletManager.loadApplets();
+    
+    for (let i=0; i<applets.length; i++) {
+        let applet = applets[i];
+        panel._rightBox.add(applet.actor);
+    }
+        
     wm = new WindowManager.WindowManager();
     messageTray = new MessageTray.MessageTray();
     keyboard = new Keyboard.Keyboard();

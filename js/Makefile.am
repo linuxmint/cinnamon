@@ -20,6 +20,7 @@ nobase_dist_js_DATA = \
 	perf/core.js		\
 	ui/altTab.js		\
 	ui/applet.js		\	
+	ui/appletManager.js	\	
 	ui/appFavorites.js	\
 	ui/automountManager.js  \
 	ui/autorunManager.js    \
