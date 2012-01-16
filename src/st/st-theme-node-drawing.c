@@ -1427,9 +1427,14 @@ st_theme_node_render_resources (StThemeNode   *node,
           if (offscreen != COGL_INVALID_HANDLE)
             {
               ClutterActorBox box = { 0, 0, width, height };
+              CoglColor clear_color;
 
               cogl_push_framebuffer (offscreen);
               cogl_ortho (0, width, height, 0, 0, 1.0);
+
+              cogl_color_set_from_4ub (&clear_color, 0, 0, 0, 0);
+              cogl_clear (&clear_color, COGL_BUFFER_BIT_COLOR);
+
               st_theme_node_paint_borders (node, &box, 0xFF);
               cogl_pop_framebuffer ();
               cogl_handle_unref (offscreen);
