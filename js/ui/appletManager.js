@@ -67,11 +67,16 @@ function onEnabledAppletsChanged() {
 function loadApplets() {    
     for (let i=0; i<enabledApplets.length; i++) {
         let uuid = enabledApplets[i];
-        let directory = _find_applet(uuid);
-        if (directory != null) {
-            let applet = loadApplet(uuid, directory);
-            Main.panel._centerBox.add(applet.actor);
-        }        
+        try {            
+            let directory = _find_applet(uuid);
+            if (directory != null) {
+                let applet = loadApplet(uuid, directory);
+                Main.panel._centerBox.add(applet.actor);
+            }        
+        }
+        catch (e) {
+            global.logError('Failed to load applet ' + uuid);     
+        }
     }        
 }
 
