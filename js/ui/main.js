@@ -232,7 +232,7 @@ function start() {
     
     for (let i=0; i<applets.length; i++) {
         let applet = applets[i];
-        panel._rightBox.add(applet.actor);
+        panel._centerBox.add(applet.actor);
     }
         
     wm = new WindowManager.WindowManager();
