@@ -228,7 +228,8 @@ AppMenuButton.prototype = {
     		this._iconBox.set_child(icon);	
         }         
         if (this.metaWindow.has_focus()) {                                     
-        	this.actor.add_style_pseudo_class('focus');        	
+        	this.actor.add_style_pseudo_class('focus');    
+         this.actor.remove_style_class_name("window-list-item-demands-attention");    	
         }        		    	        
         else {            
           	this.actor.remove_style_pseudo_class('focus');        		
@@ -444,8 +445,17 @@ WindowList.prototype = {
         this._changeWorkspaces();
         global.screen.connect('notify::n-workspaces',
                                 Lang.bind(this, this._changeWorkspaces));
+        global.display.connect('window-demands-attention', Lang.bind(this, this._onWindowDemandsAttention));
                                 
 //        this._container.connect('allocate', Lang.bind(Main.panel, this._allocateBoxes));
+    },
+    
+    _onWindowDemandsAttention : function(display, window) {
+        for ( let i=0; i<this._windows.length; ++i ) {
+            if ( this._windows[i].metaWindow == window ) {
+                this._windows[i].actor.add_style_class_name("window-list-item-demands-attention");
+            }
+        }
     },
 
     _onFocus: function() {
