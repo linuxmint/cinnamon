@@ -4,6 +4,22 @@ const Cinnamon = imports.gi.Cinnamon;
 const Tooltips = imports.ui.tooltips;
 const PopupMenu = imports.ui.popupMenu;
 const Gio = imports.gi.Gio;
+const Main = imports.ui.main;
+
+function AppletContextMenu(launcher) {
+    this._init(launcher);
+}
+
+AppletContextMenu.prototype = {
+    __proto__: PopupMenu.PopupMenu.prototype,
+    
+    _init: function(launcher) {
+        this._launcher = launcher;        
+        PopupMenu.PopupMenu.prototype._init.call(this, launcher.actor, 0.0, Main.applet_side, 0);
+        Main.uiGroup.add_actor(this.actor);
+        this.actor.hide();                    
+    }    
+}
 
 function Applet() {
     this._init();
@@ -13,10 +29,12 @@ Applet.prototype = {
 
     _init: function() {
         this.actor = new St.BoxLayout({ name: 'applet-box', reactive: true });        
-        this._applet_tooltip = new Tooltips.PanelItemTooltip(this, "");
-        this._applet_context_menu = new PopupMenu.PopupSubMenu(this._applet);
-        this._applet_context_menu.actor.set_style_class_name('applet-context-menu');                                        
-        this.actor.connect('button-release-event', Lang.bind(this, this._onButtonReleaseEvent));          
+        this._applet_tooltip = new Tooltips.PanelItemTooltip(this, "");                                        
+        this.actor.connect('button-release-event', Lang.bind(this, this._onButtonReleaseEvent));  
+        
+        this._menuManager = new PopupMenu.PopupMenuManager(this);
+        this._applet_context_menu = new AppletContextMenu(this);
+        this._menuManager.addMenu(this._applet_context_menu);                                              
     },
             
     _onButtonReleaseEvent: function (actor, event) {
