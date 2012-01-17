@@ -553,7 +553,7 @@ WindowManager.prototype = {
     },
 
     _startA11ySwitcher : function(cinnamonwm, binding, mask, window, backwards) {
-        Main.ctrlAltTabManager.popup(backwards, mask);
+        
     },
 
     _showWorkspaceSwitcher : function(cinnamonwm, binding, mask, window, backwards) {

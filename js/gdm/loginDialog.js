@@ -20,7 +20,6 @@
 
 const AccountsService = imports.gi.AccountsService;
 const Clutter = imports.gi.Clutter;
-const CtrlAltTab = imports.ui.ctrlAltTab;
 const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
 const Gtk = imports.gi.Gtk;
@@ -1388,16 +1387,11 @@ LoginDialog.prototype = {
     },
 
     _onOpened: function() {
-        Main.ctrlAltTabManager.addGroup(this._mainContentBox,
-                                        _("Login Window"),
-                                        'dialog-password',
-                                        { sortGroup: CtrlAltTab.SortGroup.MIDDLE });
-
+        
     },
 
     close: function() {
         ModalDialog.ModalDialog.prototype.close.call(this);
-
-        Main.ctrlAltTabManager.removeGroup(this._group);
+        
     }
 };

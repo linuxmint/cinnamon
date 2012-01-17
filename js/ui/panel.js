@@ -11,7 +11,6 @@ const St = imports.gi.St;
 const Signals = imports.signals;
 const Util = imports.misc.util;
 const Config = imports.misc.config;
-const CtrlAltTab = imports.ui.ctrlAltTab;
 const Layout = imports.ui.layout;
 const Overview = imports.ui.overview;
 const PopupMenu = imports.ui.popupMenu;
@@ -511,9 +510,7 @@ Panel.prototype = {
         Main.statusIconDispatcher.connect('status-icon-added', Lang.bind(this, this._onTrayIconAdded));
         Main.statusIconDispatcher.connect('status-icon-removed', Lang.bind(this, this._onTrayIconRemoved));
 
-        Main.layoutManager.panelBox.add(this.actor);
-        Main.ctrlAltTabManager.addGroup(this.actor, _("Top Bar"), 'start-here',
-                                        { sortGroup: CtrlAltTab.SortGroup.TOP });
+        Main.layoutManager.panelBox.add(this.actor);        
                                         
         this.actor.connect('leave-event', Lang.bind(this, this._hidePanel));
         this.actor.connect('enter-event', Lang.bind(this, this._showPanel));  

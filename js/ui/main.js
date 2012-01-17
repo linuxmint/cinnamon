@@ -14,7 +14,6 @@ const St = imports.gi.St;
 
 const AutomountManager = imports.ui.automountManager;
 const AutorunManager = imports.ui.autorunManager;
-const CtrlAltTab = imports.ui.ctrlAltTab;
 const EndSessionDialog = imports.ui.endSessionDialog;
 const PolkitAuthenticationAgent = imports.ui.polkitAuthenticationAgent;
 const Environment = imports.ui.environment;
@@ -59,7 +58,6 @@ let wm = null;
 let messageTray = null;
 let notificationDaemon = null;
 let windowAttentionHandler = null;
-let ctrlAltTabManager = null;
 let recorder = null;
 let cinnamonDBusService = null;
 let modalCount = 0;
@@ -219,7 +217,6 @@ function start() {
 
     layoutManager = new Layout.LayoutManager();
     xdndHandler = new XdndHandler.XdndHandler();
-    ctrlAltTabManager = new CtrlAltTab.CtrlAltTabManager();
     // This overview object is just a stub for non-user sessions
     overview = new Overview.Overview({ isDummy: global.session_type != Cinnamon.SessionType.USER });
     magnifier = new Magnifier.Magnifier();
@@ -614,8 +611,7 @@ function _globalKeyPressHandler(actor, event) {
     }
 
     if (action == Meta.KeyBindingAction.SWITCH_PANELS) {
-        ctrlAltTabManager.popup(modifierState & Clutter.ModifierType.SHIFT_MASK,
-                                modifierState);
+        //Used to call the ctrlalttabmanager in Gnome Shell
         return true;
     }
 

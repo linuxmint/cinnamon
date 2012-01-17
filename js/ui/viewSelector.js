@@ -25,15 +25,7 @@ BaseTab.prototype = {
                                  y_align: St.Align.START,
                                  x_fill: true,
                                  y_fill: true,
-                                 style_class: 'view-tab-page' });
-
-        if (this.title.can_focus) {
-            Main.ctrlAltTabManager.addGroup(this.title, name, a11yIcon);
-        } else {
-            Main.ctrlAltTabManager.addGroup(this.page, name, a11yIcon,
-                                            { proxy: this.title,
-                                              focusCallback: Lang.bind(this, this._a11yFocus) });
-        }
+                                 style_class: 'view-tab-page' });        
 
         this.visible = false;
     },
