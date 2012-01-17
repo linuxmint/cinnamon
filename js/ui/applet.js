@@ -28,7 +28,7 @@ function Applet() {
 Applet.prototype = {
 
     _init: function() {
-        this.actor = new St.BoxLayout({ name: 'applet-box', reactive: true });        
+        this.actor = new St.BoxLayout({ style_class: 'applet-box', reactive: true, track_hover: true });        
         this._applet_tooltip = new Tooltips.PanelItemTooltip(this, "");                                        
         this.actor.connect('button-release-event', Lang.bind(this, this._onButtonReleaseEvent));  
         

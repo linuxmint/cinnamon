@@ -112,7 +112,7 @@ StTooltip StLabel {
 }
 
 /* ===================================================================
- * Applets (popupMenu.js) 
+ * PopupMenu (popupMenu.js) 
  * ===================================================================*/
 
 .popup-menu-boxpointer {
@@ -1818,46 +1818,21 @@ StTooltip StLabel {
 }
 
 /* ===================================================================
- * Themes selection in overview
+ * Applets (applet.js) 
  * ===================================================================*/
 
-.theme-button {
-	color: #CCCCCC;
-	padding: 10px;
-	margin: auto;
+.applet-box {
+    margin: 1px;
+    padding: 1px;
 }
 
-.theme-button:hover {
-    color: white;
-	background-gradient-direction: vertical;
-	background-gradient-start: rgba(255,255,255,0.2);
-	background-gradient-end: rgba(255,255,255,0.08);
-	box-shadow: inset 0px 0px 1px 1px rgba(255,255,255,0.06);
-    border-radius: 4px;
+.applet-box:hover {
+    border-radius: 2px;
+    background-color: #ADADAD;
 }
 
-.theme-button:active {
-	color: white;
-	background-gradient-direction: vertical;
-	background-gradient-start: rgba(255,255,255,0.4);
-	background-gradient-end: rgba(255,255,255,0.16);
-	box-shadow: inset 0px 0px 1px 1px rgba(255,255,255,0.06);
-    border-radius: 4px;
-}
+.applet-label {
 
-.theme-box {
-	spacing: 3px;
-}
-
-.theme-name {
-	font-size: 10pt;
-	font-weight: bold;
-	color: white;
-}
-
-.theme-type {
-	font-size: 6pt;
-	font-style: italic;
 }
 
 
