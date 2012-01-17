@@ -61,10 +61,16 @@ PanelItemTooltip.prototype = {
         let tooltipHeight = this._tooltip.get_allocation_box().y2-this._tooltip.get_allocation_box().y1;
         let tooltipWidth = this._tooltip.get_allocation_box().x2-this._tooltip.get_allocation_box().x1;
         
-        let monitor = Main.layoutManager.primaryMonitor;
-        
-        let tooltipTop = monitor.height-tooltipHeight-this._panelItem.actor.get_allocation_box().y2+this._panelItem.actor.get_allocation_box().y1;
-        
+        let monitor;        
+        let tooltipTop;
+        if (Main.desktop_layout == Main.LAYOUT_TRADITIONAL) {
+            monitor = Main.layoutManager.bottomMonitor;
+            tooltipTop = monitor.height-tooltipHeight-this._panelItem.actor.get_allocation_box().y2+this._panelItem.actor.get_allocation_box().y1;
+        }
+        else {    
+            monitor = Main.layoutManager.primaryMonitor;
+            tooltipTop = this._panelItem.actor.get_allocation_box().y2;
+        }
         var tooltipLeft = this._mousePosition[0]- Math.round(tooltipWidth/2);
         if (tooltipLeft<0) tooltipLeft = 0;
         if (tooltipLeft+tooltipWidth>monitor.width) tooltipLeft = monitor.width-tooltipWidth;
