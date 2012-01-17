@@ -212,10 +212,10 @@ WorkspacesView.prototype = {
 
             Tweener.removeTweens(workspace.actor);
 
-            let y = (w - active) * (this._height + this._spacing + this._workspaceRatioSpacing);
+            let x = (w - active) * (this._width + this._spacing + this._workspaceRatioSpacing);
 
             if (showAnimation) {
-                let params = { y: y,
+                let params = { x: x,
                                time: WORKSPACE_SWITCH_TIME,
                                transition: 'easeOutQuad'
                              };
@@ -232,7 +232,7 @@ WorkspacesView.prototype = {
                 }
                 Tweener.addTween(workspace.actor, params);
             } else {
-                workspace.actor.set_position(0, y);
+                workspace.actor.set_position(x, 0);
                 if (w == 0)
                     this._updateVisibility();
             }
@@ -430,22 +430,22 @@ WorkspacesView.prototype = {
         }
 
         let last = this._workspaces.length - 1;
-        let firstWorkspaceY = this._workspaces[0].actor.y;
-        let lastWorkspaceY = this._workspaces[last].actor.y;
-        let workspacesHeight = lastWorkspaceY - firstWorkspaceY;
+        let firstWorkspaceX = this._workspaces[0].actor.x;
+        let lastWorkspaceX = this._workspaces[last].actor.x;
+        let workspacesWidth = lastWorkspaceX - firstWorkspaceX;
 
         if (adj.upper == 1)
             return;
 
-        let currentY = firstWorkspaceY;
-        let newY =  - adj.value / (adj.upper - 1) * workspacesHeight;
+        let currentX = firstWorkspaceX;
+        let newX =  - adj.value / (adj.upper - 1) * workspacesWidth;
 
-        let dy = newY - currentY;
+        let dx = newX - currentX;
 
         for (let i = 0; i < this._workspaces.length; i++) {
             this._workspaces[i].hideWindowsOverlays();
             this._workspaces[i].actor.visible = Math.abs(i - adj.value) <= 1;
-            this._workspaces[i].actor.y += dy;
+            this._workspaces[i].actor.x += dx;
         }
     },
 
@@ -469,9 +469,9 @@ WorkspacesDisplay.prototype = {
         this.actor.set_clip_to_allocation(true);
 
         let controls = new St.Bin({ style_class: 'workspace-controls',
-                                    request_mode: Clutter.RequestMode.WIDTH_FOR_HEIGHT,
-                                    y_align: St.Align.START,
-                                    y_fill: true });
+                                    request_mode: Clutter.RequestMode.HEIGHT_FOR_WIDTH,
+                                    x_align: St.Align.START,
+                                    x_fill: true });
         this._controls = controls;
         this.actor.add_actor(controls);
 
@@ -654,26 +654,20 @@ WorkspacesDisplay.prototype = {
     _allocate: function (actor, box, flags) {
         let childBox = new Clutter.ActorBox();
 
-        let totalWidth = box.x2 - box.x1;
+        let totalHeight = box.y2 - box.y1;
 
-        // width of the controls
-        let [controlsMin, controlsNatural] = this._controls.get_preferred_width(box.y2 - box.y1);
+        // height of the controls
+        let [controlsMin, controlsNatural] = this._controls.get_preferred_height(box.x2 - box.x1);
 
         // Amount of space on the screen we reserve for the visible control
-        let controlsVisible = this._controls.get_theme_node().get_length('visible-width');
+        let controlsVisible = this._controls.get_theme_node().get_length('visible-height');
         let controlsReserved = controlsVisible * (1 - this._zoomFraction) + controlsNatural * this._zoomFraction;
 
-        let rtl = (St.Widget.get_default_direction () == St.TextDirection.RTL);
-        if (rtl) {
-            childBox.x2 = controlsReserved;
-            childBox.x1 = childBox.x2 - controlsNatural;
-        } else {
-            childBox.x1 = totalWidth - controlsReserved;
-            childBox.x2 = childBox.x1 + controlsNatural;
-        }
+        childBox.y1 = totalHeight - controlsReserved;
+        childBox.y2 = childBox.y1 + controlsNatural;
 
-        childBox.y1 = 0;
-        childBox.y2 = box.y2- box.y1;
+        childBox.x1 = 0;
+        childBox.x2 = box.x2- box.x1;
         this._controls.allocate(childBox, flags);
 
         this._updateWorkspacesGeometry();
@@ -685,37 +679,32 @@ WorkspacesDisplay.prototype = {
 
         let fullWidth = this.actor.allocation.x2 - this.actor.allocation.x1;
         let fullHeight = this.actor.allocation.y2 - this.actor.allocation.y1;
+        global.log(fullWidth+":"+fullHeight);
 
         let width = fullWidth;
         let height = fullHeight;
 
-        let [controlsMin, controlsNatural] = this._controls.get_preferred_width(height);
-        let controlsVisible = this._controls.get_theme_node().get_length('visible-width');
+        let [controlsMin, controlsNatural] = this._controls.get_preferred_height(width);
+        let controlsVisible = this._controls.get_theme_node().get_length('visible-height');
 
         let [x, y] = this.actor.get_transformed_position();
 
-        let rtl = (St.Widget.get_default_direction () == St.TextDirection.RTL);
-
-        let clipWidth = width - controlsVisible;
-        let clipHeight = (fullHeight / fullWidth) * clipWidth;
-        let clipX = rtl ? x + controlsVisible : x;
-        let clipY = y + (fullHeight - clipHeight) / 2;
+        let clipHeight = height - controlsVisible;
+        let clipWidth = (fullWidth / fullHeight) * clipHeight;
+        let clipY = y;
+        let clipX = x + (fullWidth - clipWidth) / 2;
 
         this.workspacesView.setClipRect(clipX, clipY, clipWidth, clipHeight);
 
         if (this._zoomOut) {
-            width -= controlsNatural;
-            if (rtl)
-                x += controlsNatural;
+            height -= controlsNatural;
         } else {
-            width -= controlsVisible;
-            if (rtl)
-                x += controlsVisible;
+            height -= controlsVisible;
         }
 
-        height = (fullHeight / fullWidth) * width;
-        let difference = fullHeight - height;
-        y += difference / 2;
+        width = (fullWidth / fullHeight) * height;
+        let difference = fullWidth - width;
+        x += difference / 2;
 
         this.workspacesView.setGeometry(x, y, width, height, difference);
     },

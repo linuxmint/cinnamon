@@ -284,10 +284,6 @@ WindowClone.prototype = {
                                              y: monitor.y,
                                              width: monitor.width,
                                              height: monitor.height });
-        if (monitorIndex == Main.layoutManager.primaryIndex) {
-            availArea.y += Main.panel.actor.height;
-            availArea.height -= Main.panel.actor.height;
-        }
 
         this.actor.x = _clamp(this.actor.x, availArea.x, availArea.x + availArea.width - width);
         this.actor.y = _clamp(this.actor.y, availArea.y, availArea.y + availArea.height - height);

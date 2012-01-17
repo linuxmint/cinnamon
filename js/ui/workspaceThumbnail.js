@@ -503,7 +503,7 @@ ThumbnailsBox.prototype = {
         this._pendingScaleUpdate = false;
         this._stateUpdateQueued = false;
         this._animatingIndicator = false;
-        this._indicatorY = 0; // only used when _animatingIndicator is true
+        this._indicatorX = 0; // only used when _animatingIndicator is true
 
         this._stateCounts = {};
         for (let key in ThumbnailState)
@@ -527,13 +527,12 @@ ThumbnailsBox.prototype = {
             this._stateCounts[ThumbnailState[key]] = 0;
 
         // The "porthole" is the portion of the screen that we show in the workspaces
-        let panelHeight = Main.panel.actor.height;
         let monitor = Main.layoutManager.primaryMonitor;
         this._porthole = {
             x: monitor.x,
-            y: monitor.y + panelHeight,
+            y: monitor.y,
             width: monitor.width,
-            height: monitor.height - panelHeight
+            height: monitor.height
         };
 
         this.addThumbnails(0, global.screen.n_workspaces);
@@ -607,13 +606,13 @@ ThumbnailsBox.prototype = {
         return this._scale;
     },
 
-    set indicatorY(indicatorY) {
-        this._indicatorY = indicatorY;
+    set indicatorX(indicatorX) {
+        this._indicatorX = indicatorX;
         this.actor.queue_relayout();
     },
 
-    get indicatorY() {
-        return this._indicatorY;
+    get indicatorX() {
+        return this._indicatorX;
     },
 
     _setThumbnailState: function(thumbnail, state) {
@@ -727,11 +726,11 @@ ThumbnailsBox.prototype = {
         this._stateUpdateQueued = true;
     },
 
-    _getPreferredHeight: function(actor, forWidth, alloc) {
+    _getPreferredWidth: function(actor, forHeight, alloc) {
         // See comment about this._background in _init()
         let themeNode = this._background.get_theme_node();
 
-        forWidth = themeNode.adjust_for_width(forWidth);
+        forHeight = themeNode.adjust_for_height(forHeight);
 
         // Note that for getPreferredWidth/Height we cheat a bit and skip propagating
         // the size request to our children because we know how big they are and know
@@ -745,11 +744,11 @@ ThumbnailsBox.prototype = {
         let totalSpacing = (nWorkspaces - 1) * spacing;
 
         [alloc.min_size, alloc.natural_size] =
-            themeNode.adjust_preferred_height(totalSpacing,
-                                              totalSpacing + nWorkspaces * this._porthole.height * MAX_THUMBNAIL_SCALE);
+            themeNode.adjust_preferred_width(totalSpacing,
+                                              totalSpacing + nWorkspaces * this._porthole.width * MAX_THUMBNAIL_SCALE);
     },
 
-    _getPreferredWidth: function(actor, forHeight, alloc) {
+    _getPreferredHeight: function(actor, forWidth, alloc) {
         // See comment about this._background in _init()
         let themeNode = this._background.get_theme_node();
 
@@ -763,14 +762,14 @@ ThumbnailsBox.prototype = {
         let nWorkspaces = global.screen.n_workspaces;
         let totalSpacing = (nWorkspaces - 1) * spacing;
 
-        let avail = forHeight - totalSpacing;
+        let avail = forWidth - totalSpacing;
 
-        let scale = (avail / nWorkspaces) / this._porthole.height;
+        let scale = (avail / nWorkspaces) / this._porthole.width;
         scale = Math.min(scale, MAX_THUMBNAIL_SCALE);
 
-        let width = Math.round(this._porthole.width * scale);
+        let height = Math.round(this._porthole.height * scale);
         [alloc.min_size, alloc.natural_size] =
-            themeNode.adjust_preferred_width(width, width);
+            themeNode.adjust_preferred_height(height, height);
     },
 
     _allocate: function(actor, box, flags) {
@@ -790,9 +789,9 @@ ThumbnailsBox.prototype = {
         // Compute the scale we'll need once everything is updated
         let nWorkspaces = global.screen.n_workspaces;
         let totalSpacing = (nWorkspaces - 1) * spacing;
-        let avail = (contentBox.y2 - contentBox.y1) - totalSpacing;
+        let avail = (contentBox.x2 - contentBox.x1) - totalSpacing;
 
-        let newScale = (avail / nWorkspaces) / portholeHeight;
+        let newScale = (avail / nWorkspaces) / portholeWidth;
         newScale = Math.min(newScale, MAX_THUMBNAIL_SCALE);
 
         if (newScale != this._targetScale) {
@@ -809,69 +808,62 @@ ThumbnailsBox.prototype = {
             this._queueUpdateStates();
         }
 
-        let thumbnailHeight = portholeHeight * this._scale;
-        let thumbnailWidth = Math.round(portholeWidth * this._scale);
-        let roundedHScale = thumbnailWidth / portholeWidth;
+        let thumbnailWidth = portholeWidth * this._scale;
+        let thumbnailHeight = Math.round(portholeHeight * this._scale);
+        let roundedVScale = thumbnailHeight / portholeHeight;
 
         let slideOffset; // X offset when thumbnail is fully slid offscreen
-        if (rtl)
-            slideOffset = - (thumbnailWidth + themeNode.get_padding(St.Side.LEFT));
-        else
-            slideOffset = thumbnailWidth + themeNode.get_padding(St.Side.RIGHT);
+        slideOffset = thumbnailHeight + themeNode.get_padding(St.Side.BOTTOM);
 
         let childBox = new Clutter.ActorBox();
 
         // The background is horizontally restricted to correspond to the current thumbnail size
         // but otherwise covers the entire allocation
-        if (rtl) {
-            childBox.x1 = box.x1;
-            childBox.x2 = box.x2 - ((contentBox.x2 - contentBox.x1) - thumbnailWidth);
-        } else {
-            childBox.x1 = box.x1 + ((contentBox.x2 - contentBox.x1) - thumbnailWidth);
-            childBox.x2 = box.x2;
-        }
-        childBox.y1 = box.y1;
+        childBox.y1 = box.y1 + ((contentBox.y2 - contentBox.y1) - thumbnailHeight);
         childBox.y2 = box.y2;
+        
+        childBox.x1 = box.x1;
+        childBox.x2 = box.x2;
         this._background.allocate(childBox, flags);
 
-        let indicatorY = this._indicatorY;
-        // when not animating, the workspace position overrides this._indicatorY
+        let indicatorX = this._indicatorX;
+        // when not animating, the workspace position overrides this._indicatorX
         let indicatorWorkspace = !this._animatingIndicator ? global.screen.get_active_workspace() : null;
 
-        let y = contentBox.y1;
+        let x = contentBox.x1;
 
         for (let i = 0; i < this._thumbnails.length; i++) {
             let thumbnail = this._thumbnails[i];
 
             if (i > 0)
-                y += spacing - Math.round(thumbnail.collapseFraction * spacing);
+                x += spacing - Math.round(thumbnail.collapseFraction * spacing);
 
             // We might end up with thumbnailHeight being something like 99.33
             // pixels. To make this work and not end up with a gap at the bottom,
             // we need some thumbnails to be 99 pixels and some 100 pixels height;
             // we compute an actual scale separately for each thumbnail.
-            let y1 = Math.round(y);
-            let y2 = Math.round(y + thumbnailHeight);
-            let roundedVScale = (y2 - y1) / portholeHeight;
+            let x1 = Math.round(x);
+            let x2 = Math.round(x + thumbnailWidth);
+            let roundedHScale = (x2 - x1) / portholeWidth;
 
-            let x1, x2;
+            let y1, y2;
             if (rtl) {
-                x1 = contentBox.x1 + slideOffset * thumbnail.slidePosition;
-                x2 = x1 + thumbnailWidth;
+                y1 = contentBox.y1 + slideOffset * thumbnail.slidePosition;
+                y2 = y1 + thumbnailHeight;
             } else {
-                x1 = contentBox.x2 - thumbnailWidth + slideOffset * thumbnail.slidePosition;
-                x2 = x1 + thumbnailWidth;
+                y1 = contentBox.y2 - thumbnailHeight + slideOffset * thumbnail.slidePosition;
+                y2 = y1 + thumbnailHeight;
             }
 
             if (thumbnail.metaWorkspace == indicatorWorkspace)
-                indicatorY = y1;
+                indicatorX = x1;
 
             // Allocating a scaled actor is funny - x1/y1 correspond to the origin
             // of the actor, but x2/y2 are increased by the *unscaled* size.
-            childBox.x1 = x1;
-            childBox.x2 = x1 + portholeWidth;
             childBox.y1 = y1;
             childBox.y2 = y1 + portholeHeight;
+            childBox.x1 = x1;
+            childBox.x2 = x1 + portholeWidth;
 
             thumbnail.actor.set_scale(roundedHScale, roundedVScale);
             thumbnail.actor.allocate(childBox, flags);
@@ -879,18 +871,18 @@ ThumbnailsBox.prototype = {
             // We round the collapsing portion so that we don't get thumbnails resizing
             // during an animation due to differences in rounded, but leave the uncollapsed
             // portion unrounded so that non-animating we end up with the right total
-            y += thumbnailHeight - Math.round(thumbnailHeight * thumbnail.collapseFraction);
+            x += thumbnailWidth - Math.round(thumbnailWidth * thumbnail.collapseFraction);
         }
 
         if (rtl) {
-            childBox.x1 = contentBox.x1;
-            childBox.x2 = contentBox.x1 + thumbnailWidth;
+            childBox.y1 = contentBox.y1;
+            childBox.y2 = contentBox.y1 + thumbnailHeight;
         } else {
-            childBox.x1 = contentBox.x2 - thumbnailWidth;
-            childBox.x2 = contentBox.x2;
+            childBox.y1 = contentBox.y2 - thumbnailHeight;
+            childBox.y2 = contentBox.y2;
         }
-        childBox.y1 = indicatorY;
-        childBox.y2 = childBox.y1 + thumbnailHeight;
+        childBox.x1 = indicatorX;
+        childBox.x2 = childBox.x1 + thumbnailWidth;
         this._indicator.allocate(childBox, flags);
     },
 
@@ -905,9 +897,9 @@ ThumbnailsBox.prototype = {
         }
 
         this._animatingIndicator = true;
-        this.indicatorY = this._indicator.allocation.y1;
+        this.indicatorX = this._indicator.allocation.x1;
         Tweener.addTween(this,
-                         { indicatorY: thumbnail.actor.allocation.y1,
+                         { indicatorX: thumbnail.actor.allocation.x1,
                            time: WorkspacesView.WORKSPACE_SWITCH_TIME,
                            transition: 'easeOutQuad',
                            onComplete: function() {

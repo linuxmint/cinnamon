@@ -460,18 +460,17 @@ Overview.prototype = {
         let primary = Main.layoutManager.primaryMonitor;
         let rtl = (St.Widget.get_default_direction () == St.TextDirection.RTL);
 
-        let contentY = Main.panel.actor.height;
-        let contentHeight = primary.height - contentY - ((Main.messageTray && Main.messageTray.actor) ? Main.messageTray.actor.height : 0);
+        let contentHeight = primary.height;
 
         this._group.set_position(primary.x, primary.y);
         this._group.set_size(primary.width, primary.height);
 
-        this._coverPane.set_position(0, contentY);
+        this._coverPane.set_position(0, 0);
         this._coverPane.set_size(primary.width, contentHeight);
         
-        let viewWidth = primary.width - this._spacing;
-        let viewHeight = contentHeight - 2 * this._spacing;
-        let viewY = contentY + this._spacing;
+        let viewWidth = primary.width - 2 * this._spacing;
+        let viewHeight = contentHeight - this._spacing;
+        let viewY = this._spacing;
         let viewX = rtl ? 0 : this._spacing;        
 
         this._viewSelector.actor.set_position(viewX, viewY);

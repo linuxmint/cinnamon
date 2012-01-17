@@ -404,13 +404,13 @@ StTooltip StLabel {
 }
 
 .workspace-controls {
-    visible-width: 32px; /* Amount visible before hovering */
+    visible-height: 32px; /* Amount visible before hovering */
 }
 
 .workspace-thumbnails-background {
     border: 1px solid rgba(128, 128, 128, 0.4);
     border-right: 0px;
-    border-radius: 9px 0px 0px 9px;
+    border-radius: 9px 9px 0px 0px;
     background-color: rgba(0, 0, 0, 0.5);
     padding: 8px;
 }
@@ -418,7 +418,7 @@ StTooltip StLabel {
 .workspace-thumbnails-background:rtl {
     border-right: 1px;
     border-left: 0px;
-    border-radius: 0px 9px 9px 0px;
+    border-radius: 9px 9px 0px 0px;
 }
 
 .workspace-thumbnails {
