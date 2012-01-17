@@ -297,16 +297,18 @@ WorkspaceThumbnail.prototype = {
             return;
         }
 
+        if (this._allWindows.indexOf(metaWin) == -1) {
+            let minimizedChangedId = metaWin.connect('notify::minimized',
+                                                     Lang.bind(this,
+                                                               this._updateMinimized));
+            this._allWindows.push(metaWin);
+            this._minimizedChangedIds.push(minimizedChangedId);
+        }
+
         // We might have the window in our list already if it was on all workspaces and
         // now was moved to this workspace
-        if (this._allWindows.indexOf(metaWin) != -1)
+        if (this._lookupIndex (metaWin) != -1)
             return;
-
-        let minimizedChangedId = metaWin.connect('notify::minimized',
-                                                 Lang.bind(this,
-                                                           this._updateMinimized));
-        this._allWindows.push(metaWin);
-        this._minimizedChangedIds.push(minimizedChangedId);
 
         if (!this._isMyWindow(win) || !this._isOverviewWindow(win))
             return;
@@ -600,10 +602,10 @@ ThumbnailsBox.prototype = {
             if (thumbnail.state > ThumbnailState.NORMAL)
                 continue;
 
-            thumbnail.workspaceRemoved();
-
-            if (currentPos >= start && currentPos < start + count)
+            if (currentPos >= start && currentPos < start + count) {
+                thumbnail.workspaceRemoved();
                 this._setThumbnailState(thumbnail, ThumbnailState.REMOVING);
+            }
 
             currentPos++;
         }
