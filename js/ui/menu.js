@@ -243,7 +243,7 @@ FavoritesButton.prototype = {
         GenericApplicationButton.prototype._init.call(this, appsMenuButton, app);
         
         let monitorHeight = Main.layoutManager.primaryMonitor.height;
-        let real_size = (0.7*monitorHeight) / nbFavorites;
+        let real_size = (1*monitorHeight) / nbFavorites;
         let icon_size = 0.6*real_size;
         if (icon_size>FAV_ICON_SIZE) icon_size = FAV_ICON_SIZE;
         this.actor.style = "padding-top: "+(icon_size/3)+"px;padding-bottom: "+(icon_size/3)+"px;padding-left: "+(icon_size/3)+"px;padding-right: "+(icon_size/3)+"px;"
@@ -262,7 +262,7 @@ SystemButton.prototype = {
         this.actor = new St.Button({ reactive: true, style_class: 'menu-favorites-button' });
         
         let monitorHeight = Main.layoutManager.primaryMonitor.height;
-        let real_size = (0.7*monitorHeight) / nbFavorites;
+        let real_size = (1*monitorHeight) / nbFavorites;
         let icon_size = 0.6*real_size;
         if (icon_size>FAV_ICON_SIZE) icon_size = FAV_ICON_SIZE;
         this.actor.style = "padding-top: "+(icon_size/3)+"px;padding-bottom: "+(icon_size/3)+"px;padding-left: "+(icon_size/3)+"px;padding-right: "+(icon_size/3)+"px;"
@@ -541,8 +541,10 @@ ApplicationsButton.prototype = {
            let monitorHeight = Main.layoutManager.primaryMonitor.height;
            let applicationsBoxHeight = this.applicationsBox.get_allocation_box().y2-this.applicationsBox.get_allocation_box().y1;
            let scrollBoxHeight = (this.favoritesBox.get_allocation_box().y2-this.favoritesBox.get_allocation_box().y1)                                    
-                                    -(this.searchBox.get_allocation_box().y2-this.searchBox.get_allocation_box().y1);
-            if (scrollBoxHeight<0.5*monitorHeight && scrollBoxHeight<applicationsBoxHeight) scrollBoxHeight = Math.min(0.5*monitorHeight, applicationsBoxHeight);
+                                    -(this.searchBox.get_allocation_box().y2-this.searchBox.get_allocation_box().y1);           
+           // if (scrollBoxHeight < (0.2*monitorHeight)  &&  (scrollBoxHeight < applicationsBoxHeight)) {
+             //    scrollBoxHeight = Math.min(0.2*monitorHeight, applicationsBoxHeight);
+            // }
             this.applicationsScrollBox.style = "height: "+scrollBoxHeight+"px;";
        } else {
            this.closeApplicationsContextMenus(null, false);
