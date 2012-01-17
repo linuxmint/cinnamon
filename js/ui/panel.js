@@ -678,29 +678,55 @@ Panel.prototype = {
     
     _showPanel: function() {
         if (this._hidden == false) return;
+        
+        if (Main.desktop_layout == Main.LAYOUT_TRADITIONAL) {        
+            let params = { y: PANEL_HEIGHT - 1,
+                           time: AUTOHIDE_ANIMATION_TIME + 0.1,
+                           transition: 'easeOutQuad'
+                         };
+     
+            Tweener.addTween(this._leftCorner.actor, params);
+            Tweener.addTween(this._rightCorner.actor, params);
 
-        let params = { y: PANEL_HEIGHT - 1,
+            Tweener.addTween(this.actor,
+                         { y: 0,
+                           time: AUTOHIDE_ANIMATION_TIME,
+                           transition: 'easeOutQuad'
+                         });
+
+            params = { opacity: 255,
+                       time: AUTOHIDE_ANIMATION_TIME+0.2,
+                       transition: 'easeOutQuad'
+                     };
+
+            Tweener.addTween(this._leftBox, params);
+            Tweener.addTween(this._centerBox, params);
+            Tweener.addTween(this._rightBox, params);
+        }
+        else {
+            let params = { y: PANEL_HEIGHT - 1,
                        time: AUTOHIDE_ANIMATION_TIME + 0.1,
                        transition: 'easeOutQuad'
                      };
  
-        Tweener.addTween(this._leftCorner.actor, params);
-        Tweener.addTween(this._rightCorner.actor, params);
+            Tweener.addTween(Main.panel._leftCorner.actor, params);
+            Tweener.addTween(Main.panel._rightCorner.actor, params);
 
-        Tweener.addTween(this.actor,
-                     { y: 0,
-                       time: AUTOHIDE_ANIMATION_TIME,
+            Tweener.addTween(Main.panel.actor,
+                         { height: PANEL_HEIGHT,
+                           time: AUTOHIDE_ANIMATION_TIME,
+                           transition: 'easeOutQuad'
+                         });
+
+            params = { opacity: 255,
+                       time: AUTOHIDE_ANIMATION_TIME+0.2,
                        transition: 'easeOutQuad'
-                     });
+                     };
 
-        params = { opacity: 255,
-                   time: AUTOHIDE_ANIMATION_TIME+0.2,
-                   transition: 'easeOutQuad'
-                 };
-
-        Tweener.addTween(this._leftBox, params);
-        Tweener.addTween(this._centerBox, params);
-        Tweener.addTween(this._rightBox, params);
+            Tweener.addTween(Main.panel._leftBox, params);
+            Tweener.addTween(Main.panel._centerBox, params);
+            Tweener.addTween(Main.panel._rightBox, params);
+        }
 
         this._hidden = false;
     },
@@ -708,28 +734,54 @@ Panel.prototype = {
     _hidePanel: function() {
         if (Main.overview.visible || this._hideable == false) return;
 
-        Tweener.addTween(this.actor,
-                     { y: PANEL_HEIGHT - 1,
+        if (Main.desktop_layout == Main.LAYOUT_TRADITIONAL) {  
+            Tweener.addTween(this.actor,
+                         { y: PANEL_HEIGHT - 1,
+                           time: AUTOHIDE_ANIMATION_TIME,
+                           transition: 'easeOutQuad'
+                         });
+
+            let params = { y: 0,
+                           time: AUTOHIDE_ANIMATION_TIME,
+                           transition: 'easeOutQuad'
+                         };
+
+            Tweener.addTween(this._leftCorner.actor, params);
+            Tweener.addTween(this._rightCorner.actor, params);
+
+            params = { opacity: 0,
+                       time: AUTOHIDE_ANIMATION_TIME - 0.1,
+                       transition: 'easeOutQuad'
+                     };
+
+            Tweener.addTween(this._leftBox, params);
+            Tweener.addTween(this._centerBox, params);
+            Tweener.addTween(this._rightBox, params);
+        }
+        else {
+            Tweener.addTween(Main.panel.actor,
+                     { height: 1,
                        time: AUTOHIDE_ANIMATION_TIME,
                        transition: 'easeOutQuad'
                      });
 
-        let params = { y: 0,
-                       time: AUTOHIDE_ANIMATION_TIME,
+            let params = { y: 0,
+                           time: AUTOHIDE_ANIMATION_TIME,
+                           transition: 'easeOutQuad'
+                         };
+
+            Tweener.addTween(Main.panel._leftCorner.actor, params);
+            Tweener.addTween(Main.panel._rightCorner.actor, params);
+
+            params = { opacity: 0,
+                       time: AUTOHIDE_ANIMATION_TIME - 0.1,
                        transition: 'easeOutQuad'
                      };
 
-        Tweener.addTween(this._leftCorner.actor, params);
-        Tweener.addTween(this._rightCorner.actor, params);
-
-        params = { opacity: 0,
-                   time: AUTOHIDE_ANIMATION_TIME - 0.1,
-                   transition: 'easeOutQuad'
-                 };
-
-        Tweener.addTween(this._leftBox, params);
-        Tweener.addTween(this._centerBox, params);
-        Tweener.addTween(this._rightBox, params);
+            Tweener.addTween(Main.panel._leftBox, params);
+            Tweener.addTween(Main.panel._centerBox, params);
+            Tweener.addTween(Main.panel._rightBox, params);
+        }
 
         this._hidden = true;
     },
