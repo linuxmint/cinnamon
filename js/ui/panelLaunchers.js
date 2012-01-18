@@ -64,12 +64,12 @@ PanelAppLauncherMenu.prototype = {
     }
 }
 
-function PanelAppLauncher(launchersBox, app, appinfo) {
-    this._init(launchersBox, app, appinfo);
+function PanelAppLauncher(launchersBox, app, appinfo, orientation) {
+    this._init(launchersBox, app, appinfo, orientation);
 }
 
 PanelAppLauncher.prototype = {
-    _init: function(launchersBox, app, appinfo) {
+    _init: function(launchersBox, app, appinfo, orientation) {
         this.app = app;
         this.appinfo = appinfo;
         this.launchersBox = launchersBox;
@@ -94,7 +94,7 @@ PanelAppLauncher.prototype = {
         this._iconBox.set_child(this.icon);
         
         this._menuManager = new PopupMenu.PopupMenuManager(this);
-        this._menu = new PanelAppLauncherMenu(this);
+        this._menu = new PanelAppLauncherMenu(this, orientation);
         this._menuManager.addMenu(this._menu);
         
         let tooltipText;
@@ -363,12 +363,15 @@ AddLauncherDialog.prototype = {
 }
 Signals.addSignalMethods(AddLauncherDialog.prototype);
 
-function PanelLaunchersBox() {
-    this._init();
+function PanelLaunchersBox(orientation) {
+    this._init(orientation);
 }
 
 PanelLaunchersBox.prototype = {
-    _init: function() {
+    _init: function(orientation) {
+        
+        this.orientation = orientation;
+        
         this.actor = new St.BoxLayout({ name: 'panel-launchers-box',
                                         style_class: 'panel-launchers-box' });
         this.actor._delegate = this;
@@ -430,7 +433,7 @@ PanelLaunchersBox.prototype = {
         let apps = this.loadApps();
         for (var i in apps){
             let app = apps[i];
-            let launcher = new PanelAppLauncher(this, app[0], app[1]);
+            let launcher = new PanelAppLauncher(this, app[0], app[1], this.orientation);
             this.actor.add(launcher.actor);
             this._launchers.push(launcher);
         }
