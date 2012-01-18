@@ -901,8 +901,7 @@ ApplicationsButton.prototype = {
          this._displayButtons(null, bookmarks.concat(devices));
 },        
      
-     _setCategoriesButtonActive: function(active) {
-         global.log("_setCategoriesButtonActive:"+active);
+     _setCategoriesButtonActive: function(active) {         
          try{
              let categoriesButtons = this.categoriesBox.get_children();
              for (var i in categoriesButtons){

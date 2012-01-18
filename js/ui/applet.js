@@ -6,39 +6,37 @@ const PopupMenu = imports.ui.popupMenu;
 const Gio = imports.gi.Gio;
 const Main = imports.ui.main;
 
-function AppletContextMenu(launcher) {
-    this._init(launcher);
+function AppletContextMenu(launcher, orientation) {
+    this._init(launcher, orientation);
 }
 
 AppletContextMenu.prototype = {
     __proto__: PopupMenu.PopupMenu.prototype,
     
-    _init: function(launcher) {
-        this._launcher = launcher;        
-        PopupMenu.PopupMenu.prototype._init.call(this, launcher.actor, 0.0, Main.applet_side, 0);
+    _init: function(launcher, orientation) {    
+        PopupMenu.PopupMenu.prototype._init.call(this, launcher.actor, 0.0, orientation, 0);
         Main.uiGroup.add_actor(this.actor);
         this.actor.hide();                    
     }    
 }
 
-function Applet() {
-    this._init();
+function Applet(orientation) {
+    this._init(orientation);
 }
 
 Applet.prototype = {
 
-    _init: function() {
+    _init: function(orientation) {
         this.actor = new St.BoxLayout({ style_class: 'applet-box', reactive: true, track_hover: true });        
         this._applet_tooltip = new Tooltips.PanelItemTooltip(this, "");                                        
         this.actor.connect('button-release-event', Lang.bind(this, this._onButtonReleaseEvent));  
         
         this._menuManager = new PopupMenu.PopupMenuManager(this);
-        this._applet_context_menu = new AppletContextMenu(this);
+        this._applet_context_menu = new AppletContextMenu(this, orientation);
         this._menuManager.addMenu(this._applet_context_menu);                                              
     },
             
-    _onButtonReleaseEvent: function (actor, event) {
-        log("_onButtonReleaseEvent");
+    _onButtonReleaseEvent: function (actor, event) {        
         if (event.get_button()==1){
             this.on_applet_clicked(event);
         }
@@ -58,15 +56,15 @@ Applet.prototype = {
     
 };
 
-function IconApplet() {
-    this._init();
+function IconApplet(orientation) {
+    this._init(orientation);
 }
 
 IconApplet.prototype = {
     __proto__: Applet.prototype,
 
-    _init: function() {
-        Applet.prototype._init.call(this);
+    _init: function(orientation) {
+        Applet.prototype._init.call(this, orientation);
         this._applet_icon_box = new St.Bin();
         this.actor.add(this._applet_icon_box, { y_align: St.Align.MIDDLE, y_fill: false });                            
     },
@@ -84,15 +82,15 @@ IconApplet.prototype = {
     },
 };
 
-function TextApplet() {
-    this._init();
+function TextApplet(orientation) {
+    this._init(orientation);
 }
 
 TextApplet.prototype = {
     __proto__: Applet.prototype,
 
-    _init: function() {
-        Applet.prototype._init.call(this);
+    _init: function(orientation) {
+        Applet.prototype._init.call(this, orientation);
         this._applet_label = new St.Label({ track_hover: true, style_class: 'applet-label'});        
         this.actor.add(this._applet_label, { y_align: St.Align.MIDDLE, y_fill: false });    
     },
@@ -102,15 +100,15 @@ TextApplet.prototype = {
     }
 };
 
-function TextIconApplet() {
-    this._init();
+function TextIconApplet(orientation) {
+    this._init(orientation);
 }
 
 TextIconApplet.prototype = {
     __proto__: IconApplet.prototype,
 
-    _init: function() {
-        IconApplet.prototype._init.call(this);
+    _init: function(orientation) {
+        IconApplet.prototype._init.call(this, orientation);
         this._applet_label = new St.Label({ track_hover: true, style_class: 'applet-label'});        
         this.actor.add(this._applet_label, { y_align: St.Align.MIDDLE, y_fill: false });
     },

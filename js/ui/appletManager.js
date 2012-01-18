@@ -2,13 +2,11 @@
 
 const Lang = imports.lang;
 const Signals = imports.signals;
-
 const Clutter = imports.gi.Clutter;
 const GLib = imports.gi.GLib;
 const Gio = imports.gi.Gio;
 const St = imports.gi.St;
 const Cinnamon = imports.gi.Cinnamon;
-
 const Config = imports.misc.config;
 const Main = imports.ui.main;
 
@@ -130,7 +128,7 @@ function loadApplet(uuid, dir) {
     
     let metadataFile = dir.get_child('metadata.json');
     if (!metadataFile.query_exists(null)) {
-        log(uuid + ' missing metadata.json');
+        global.logError(uuid + ' missing metadata.json');
         return;
     }
 
@@ -138,14 +136,14 @@ function loadApplet(uuid, dir) {
     try {
         metadataContents = Cinnamon.get_file_contents_utf8_sync(metadataFile.get_path());
     } catch (e) {
-        log(uuid + ' failed to load metadata.json: ' + e);
+        global.logError(uuid + ' failed to load metadata.json: ' + e);
         return;
     }
     let meta;
     try {
         meta = JSON.parse(metadataContents);
     } catch (e) {
-        log(uuid + ' failed to parse metadata.json: ' + e);
+        global.logError(uuid + ' failed to parse metadata.json: ' + e);
         return;
     }
 
@@ -153,7 +151,7 @@ function loadApplet(uuid, dir) {
     for (let i = 0; i < requiredProperties.length; i++) {
         let prop = requiredProperties[i];
         if (!meta[prop]) {
-            log(uuid + ' missing "' + prop + '" property in metadata.json');
+            global.logError(uuid + ' missing "' + prop + '" property in metadata.json');
             return;
         }
     }
@@ -164,7 +162,7 @@ function loadApplet(uuid, dir) {
     }
    
     if (uuid != meta.uuid) {
-        log(uuid + ' uuid "' + meta.uuid + '" from metadata.json does not match directory name "' + uuid + '"');
+        global.logError(uuid + ' uuid "' + meta.uuid + '" from metadata.json does not match directory name "' + uuid + '"');
         return;
     }
    
@@ -174,7 +172,7 @@ function loadApplet(uuid, dir) {
    
     let appletJs = dir.get_child('applet.js');
     if (!appletJs.query_exists(null)) {
-        log(uuid + ' missing applet.js');
+        global.logError(uuid + ' missing applet.js');
         return;
     }
     let stylesheetPath = null;
@@ -185,7 +183,7 @@ function loadApplet(uuid, dir) {
         try {
             theme.load_stylesheet(stylesheetFile.get_path());
         } catch (e) {
-            log(uuid + ' stylesheet parse error: ' + e);
+            global.logError(uuid + ' stylesheet parse error: ' + e);
             return;
         }
     }
@@ -197,22 +195,27 @@ function loadApplet(uuid, dir) {
     } catch (e) {
         if (stylesheetPath != null)
             theme.unload_stylesheet(stylesheetPath);
-        log(uuid + " " + e);
+        global.logError(uuid + " " + e);
         return;
     }
 
     if (!appletModule.main) {
-        log(uuid + ' missing \'main\' function');
+        global.logError(uuid + ' missing \'main\' function');
         return;
     }
 
     try {
-        applet = appletModule.main(meta);        
+        if (Main.desktop_layout == Main.LAYOUT_TRADITIONAL) {
+            applet = appletModule.main(meta, St.Side.BOTTOM);        
+        }
+        else {
+            applet = appletModule.main(meta, St.Side.TOP);
+        }
         global.log('Loaded applet ' + meta.uuid);        
     } catch (e) {
         if (stylesheetPath != null)
             theme.unload_stylesheet(stylesheetPath);
-        log(uuid + ' failed to evaluate main function:' + e);
+        global.logError(uuid + ' failed to evaluate main function:' + e);
         return;
     }        
     

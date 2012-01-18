@@ -59,7 +59,14 @@ let autorunManager = null;
 let applets = [];
 let panel = null;
 let panel2 = null;
+
+let menu = null;
+let panelLaunchersBox = null;
+let showDesktopButton = null;
 let windowList = null;
+let dateMenu = null;
+let workspaceSwitcher = null;
+
 let hotCorners = [];
 let placesManager = null;
 let overview = null;
@@ -240,7 +247,7 @@ function start() {
             menu = new Menu.ApplicationsButton();    
             panel._leftBox.add(menu.actor);
             panel._menus.addMenu(menu.menu);        
-            showDesktopButton = new ShowDesktopButton.ShowDesktopButton();
+            showDesktopButton = new ShowDesktopButton.ShowDesktopButton(St.Side.BOTTOM);
             panel._leftBox.add(showDesktopButton.actor);        
             panelLaunchersBox = new PanelLaunchers.PanelLaunchersBox(St.Side.BOTTOM);
             panel._leftBox.add(panelLaunchersBox.actor);           
@@ -262,7 +269,7 @@ function start() {
             menu = new Menu.ApplicationsButton();    
             panel._leftBox.add(menu.actor);
             panel._menus.addMenu(menu.menu);        
-            showDesktopButton = new ShowDesktopButton.ShowDesktopButton();
+            showDesktopButton = new ShowDesktopButton.ShowDesktopButton(St.Side.TOP);
             panel._leftBox.add(showDesktopButton.actor);        
             panelLaunchersBox = new PanelLaunchers.PanelLaunchersBox(St.Side.TOP);
             panel._leftBox.add(panelLaunchersBox.actor);           
@@ -287,7 +294,7 @@ function start() {
             panel._menus.addMenu(menu.menu);        
             panelLaunchersBox = new PanelLaunchers.PanelLaunchersBox(St.Side.TOP);
             panel._leftBox.add(panelLaunchersBox.actor);
-            showDesktopButton = new ShowDesktopButton.ShowDesktopButton();
+            showDesktopButton = new ShowDesktopButton.ShowDesktopButton(St.Side.BOTTOM);
             panel2._leftBox.add(showDesktopButton.actor);                    
             windowList = new WindowList.WindowList(St.Side.BOTTOM); 
             panel2._leftBox.add(windowList.actor);

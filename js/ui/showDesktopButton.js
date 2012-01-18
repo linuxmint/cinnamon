@@ -3,15 +3,15 @@ const Lang = imports.lang;
 const Cinnamon = imports.gi.Cinnamon;
 const Applet = imports.ui.applet;
 
-function ShowDesktopButton() {
-    this._init();
+function ShowDesktopButton(orientation) {
+    this._init(orientation);
 }
 
 ShowDesktopButton.prototype = {
     __proto__: Applet.IconApplet.prototype,
 
-    _init: function() {
-        Applet.IconApplet.prototype._init.call(this);
+    _init: function(orientation) {
+        Applet.IconApplet.prototype._init.call(this, orientation);
         this.set_applet_icon_name("desktop");    
         this.set_applet_tooltip(_("Show desktop"));    
                         
