@@ -4,7 +4,7 @@
 <Menu>
 
   <Name>Desktop</Name>
-  <Directory>mate-menu-system.directory</Directory>
+  <Directory>cinnamon-menu-system.directory</Directory>
 
   <!-- Read standard .directory and .desktop file locations -->
   <DefaultAppDirs/>
@@ -13,24 +13,13 @@
   <!-- Read in overrides and child menus from applications-merged/ -->
   <DefaultMergeDirs/>
 
-  <!-- Add a link to the control center -->
-  <Include>
-    <Filename>matecc.desktop</Filename>
-  </Include>
-
   <!-- Merge in these other files as submenus -->
   <Menu>
     <Name>Preferences</Name>
-    <Directory>mate-settings.directory</Directory>
+    <Directory>cinnamon-settings.directory</Directory>
     <Include>
       <And>
         <Category>Settings</Category>
-        <Not>
-          <Or>
-            <Category>System</Category>
-            <Filename>matecc.desktop</Filename>
-          </Or>
-        </Not>
       </And>
     </Include>
   </Menu>
@@ -38,7 +27,7 @@
   <!-- System Settings -->
   <Menu>
     <Name>Administration</Name>
-    <Directory>mate-settings-system.directory</Directory>
+    <Directory>cinnamon-settings-system.directory</Directory>
     <Include>
       <And>
         <Category>Settings</Category>

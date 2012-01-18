@@ -4,12 +4,12 @@
 <Menu>
 
   <Name>Applications</Name>
-  <Directory>mate-menu-applications.directory</Directory>
+  <Directory>cinnamon-menu-applications.directory</Directory>
 
   <!-- Scan legacy dirs first, as later items take priority -->
   <KDELegacyDirs/>
   <LegacyDir>/etc/X11/applnk</LegacyDir>
-  <LegacyDir>/usr/share/mate/apps</LegacyDir>
+  <LegacyDir>/usr/share/cinnamon/apps</LegacyDir>
 
   <!-- Read standard .directory and .desktop file locations -->
   <DefaultAppDirs/>
@@ -21,7 +21,7 @@
   <!-- Accessories submenu -->
   <Menu>
     <Name>Accessories</Name>
-    <Directory>mate-utility.directory</Directory>
+    <Directory>cinnamon-utility.directory</Directory>
     <Include>
       <And>
         <Category>Utility</Category>
@@ -38,7 +38,7 @@
   <!-- Accessibility submenu -->
   <Menu>
     <Name>Universal Access</Name>
-    <Directory>mate-utility-accessibility.directory</Directory>
+    <Directory>cinnamon-utility-accessibility.directory</Directory>
     <Include>
       <And>
         <Category>Accessibility</Category>
@@ -50,7 +50,7 @@
   <!-- Development Tools -->
   <Menu>
     <Name>Development</Name>
-    <Directory>mate-development.directory</Directory>
+    <Directory>cinnamon-development.directory</Directory>
     <Include>
       <And>
         <Category>Development</Category>
@@ -62,7 +62,7 @@
   <!-- Education -->
   <Menu>
     <Name>Education</Name>
-    <Directory>mate-education.directory</Directory>
+    <Directory>cinnamon-education.directory</Directory>
     <Include>
       <And>
         <Category>Education</Category>
@@ -73,7 +73,7 @@
   <!-- Games -->
   <Menu>
     <Name>Games</Name>
-    <Directory>mate-game.directory</Directory>
+    <Directory>cinnamon-game.directory</Directory>
     <Include>
       <And>
         <Category>Game</Category>
@@ -84,7 +84,7 @@
   <!-- Graphics -->
   <Menu>
     <Name>Graphics</Name>
-    <Directory>mate-graphics.directory</Directory>
+    <Directory>cinnamon-graphics.directory</Directory>
     <Include>
       <And>
         <Category>Graphics</Category>
@@ -95,7 +95,7 @@
   <!-- Internet -->
   <Menu>
     <Name>Internet</Name>
-    <Directory>mate-network.directory</Directory>
+    <Directory>cinnamon-network.directory</Directory>
     <Include>
       <And>
         <Category>Network</Category>
@@ -106,7 +106,7 @@
   <!-- Multimedia -->
   <Menu>
     <Name>Multimedia</Name>
-    <Directory>mate-audio-video.directory</Directory>
+    <Directory>cinnamon-audio-video.directory</Directory>
     <Include>
       <And>
         <Category>AudioVideo</Category>
@@ -117,7 +117,7 @@
   <!-- Office -->
   <Menu>
     <Name>Office</Name>
-    <Directory>mate-office.directory</Directory>
+    <Directory>cinnamon-office.directory</Directory>
     <Include>
       <And>
         <Category>Office</Category>
@@ -128,7 +128,7 @@
   <!-- System Tools-->
   <Menu>
     <Name>System</Name>
-    <Directory>mate-system-tools.directory</Directory>
+    <Directory>cinnamon-system-tools.directory</Directory>
     <Include>
       <And>
         <Category>System</Category>
@@ -140,7 +140,7 @@
   <!-- Other -->
   <Menu>
     <Name>Other</Name>
-    <Directory>mate-other.directory</Directory>
+    <Directory>cinnamon-other.directory</Directory>
     <OnlyUnallocated/>
     <Include>
       <And>
@@ -150,5 +150,16 @@
       </And>
     </Include>
   </Menu> <!-- End Other -->
+  
+   <!-- Wine -->
+  <Menu>
+    <Name>Wine</Name>
+    <Directory>wine-wine.directory</Directory>
+    <Include>
+      <And>
+        <Category>Wine</Category>
+      </And>
+    </Include>
+  </Menu> <!-- End Wine -->
 
 </Menu> <!-- End Applications -->
