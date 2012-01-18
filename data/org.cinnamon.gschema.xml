@@ -36,7 +36,7 @@
     </key>
     
      <key type="b" name="overview-corner-visible">
-      <default>true</default>
+      <default>false</default>
       <summary>Enable or disable the overview corner icon</summary>
       <description>Whether the overview icon is visible or not.</description>
     </key>
