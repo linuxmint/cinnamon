@@ -191,7 +191,7 @@ WindowManager.prototype = {
         let monitor;
         let yDest;
         
-        if (Main.desktop_layout == Main.LAYOUT_TRADITIONAL) {
+        if (Main.desktop_layout == Main.LAYOUT_TRADITIONAL || Main.desktop_layout == Main.LAYOUT_CLASSIC) {
             monitor = Main.layoutManager.bottomMonitor;
             yDest = monitor.height;
         }
