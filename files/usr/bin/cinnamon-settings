@@ -1,0 +1,7 @@
+#!/usr/bin/python
+
+import os
+
+os.system("/usr/lib/cinnamon-settings/cinnamon-settings.py")
+
+

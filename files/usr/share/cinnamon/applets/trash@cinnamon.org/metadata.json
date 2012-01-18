@@ -1,0 +1,7 @@
+{
+ "uuid": "trash@cinnamon.org",
+ "name": "Trash",
+ "description": "Control the trash from the panel",
+ "icon": "user-trash",
+ "localedir": "/usr/share/locale"
+}

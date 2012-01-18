@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=Cinnamon Settings
+Comment=Fine-tune Cinnamon settings
+Exec=cinnamon-settings
+Icon=preferences-system
+Terminal=false
+Type=Application
+Encoding=UTF-8
+Categories=GNOME;GTK;Settings;DesktopSettings;
+StartupNotify=false

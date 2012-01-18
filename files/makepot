@@ -1,0 +1,3 @@
+#!/bin/bash
+
+xgettext --language=Python --keyword=_ --output=cinnamon-settings.pot usr/lib/cinnamon-settings/cinnamon-settings.py
