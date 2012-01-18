@@ -22,7 +22,7 @@ const Meta = imports.gi.Meta;
 
 
 const PANEL_ICON_SIZE = 24;
-const PANEL_ICON_DEFAULT_SIZE = 20;
+const PANEL_ICON_DEFAULT_SIZE = 22;
 
 const BUTTON_DND_ACTIVATION_TIMEOUT = 250;
 
