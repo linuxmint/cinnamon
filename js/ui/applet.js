@@ -28,7 +28,7 @@ Applet.prototype = {
 
     _init: function(orientation) {
         this.actor = new St.BoxLayout({ style_class: 'applet-box', reactive: true, track_hover: true });        
-        this._applet_tooltip = new Tooltips.PanelItemTooltip(this, "");                                        
+        this._applet_tooltip = new Tooltips.PanelItemTooltip(this, "", orientation);                                        
         this.actor.connect('button-release-event', Lang.bind(this, this._onButtonReleaseEvent));  
         
         this._menuManager = new PopupMenu.PopupMenuManager(this);

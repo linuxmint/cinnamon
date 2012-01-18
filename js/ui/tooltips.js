@@ -3,13 +3,14 @@ const Main = imports.ui.main;
 const Lang = imports.lang;
 const Tweener = imports.ui.tweener;
 
-function PanelItemTooltip(panelItem, initTitle) {
-    this._init(panelItem, initTitle);
+function PanelItemTooltip(panelItem, initTitle, orientation) {
+    this._init(panelItem, initTitle, orientation);
 }
 
 PanelItemTooltip.prototype = {
-    _init: function(panelItem, initTitle) {
+    _init: function(panelItem, initTitle, orientation) {
         this._tooltip = new St.Tooltip();
+        this.orientation = orientation;
         if (initTitle) this._tooltip.set_label(initTitle);
         Main.uiGroup.add_actor(this._tooltip);
         
@@ -63,7 +64,7 @@ PanelItemTooltip.prototype = {
         
         let monitor;        
         let tooltipTop;
-        if (Main.desktop_layout == Main.LAYOUT_TRADITIONAL) {
+        if (this.orientation == St.Side.BOTTOM) {
             monitor = Main.layoutManager.bottomMonitor;
             tooltipTop = monitor.height-tooltipHeight-this._panelItem.actor.get_allocation_box().y2+this._panelItem.actor.get_allocation_box().y1;
         }

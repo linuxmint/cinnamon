@@ -210,7 +210,7 @@ AppMenuButton.prototype = {
         this.rightClickMenu = new AppMenuButtonRightClickMenu(this.actor, this.metaWindow, orientation);
         this._menuManager.addMenu(this.rightClickMenu);
         
-        this._tooltip = new Tooltips.PanelItemTooltip(this, this.metaWindow.get_title());
+        this._tooltip = new Tooltips.PanelItemTooltip(this, this.metaWindow.get_title(), orientation);
     },
     
     _onDestroy: function() {

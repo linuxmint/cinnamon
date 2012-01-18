@@ -100,7 +100,7 @@ PanelAppLauncher.prototype = {
         let tooltipText;
         if (this.is_custom()) tooltipText = appinfo.get_name();
         else tooltipText = app.get_name();
-        this._tooltip = new Tooltips.PanelItemTooltip(this, tooltipText);
+        this._tooltip = new Tooltips.PanelItemTooltip(this, tooltipText, orientation);
         
         this._dragging = false;
         this._draggable = DND.makeDraggable(this.actor);
