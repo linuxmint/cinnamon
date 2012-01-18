@@ -28,20 +28,7 @@ WindowAttentionHandler.prototype = {
         if (!window || window.has_focus() || window.is_skip_taskbar())
             return;
 
-        let app = this._tracker.get_window_app(window);
-        let source = new Source(app, window);
-        if (Main.messageTray) Main.messageTray.add(source);
-
-        let banner = _("'%s' is ready").format(window.title);
-        let title = app.get_name();
-
-        let notification = new MessageTray.Notification(source, title, banner);
-        source.notify(notification);
-
-        source.signalIDs.push(window.connect('notify::title',
-                                             Lang.bind(this, function() {
-                                                 notification.update(title, banner);
-                                             })));
+        window.activate(global.get_current_time());
     }
 };
 
