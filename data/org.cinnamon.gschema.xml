@@ -26,7 +26,7 @@
     <key name="desktop-layout" type="s">
       <default>"traditional"</default>
       <summary>Layout style</summary>
-      <description>Layout styles: traditional (1 panel at the bottom), flipped (1 panel on top)</description>
+      <description>Layout styles: traditional (1 panel at the bottom), flipped (1 panel on top), classic (1 panel on top, 1 panel at the bottom)</description>
     </key>    
 
     <key type="s" name="menu-text">

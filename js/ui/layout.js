@@ -45,16 +45,23 @@ LayoutManager.prototype = {
                              
         this.panelBox = new St.BoxLayout({ name: 'panelBox',
                                            vertical: true });
+                                           
+        this.panelBox2 = new St.BoxLayout({ name: 'panelBox',
+                                           vertical: true });                                           
         
 		let autohide = global.settings.get_boolean("panel-autohide");
 //        this._chrome.addActor(this.panelBox);
 		if (autohide) {
         	this.addChrome(this.panelBox, { affectsStruts: false, addToWindowgroup: true });
+            this.addChrome(this.panelBox2, { affectsStruts: false, addToWindowgroup: true });
 		}
 		else {
 			this.addChrome(this.panelBox, { affectsStruts: true, addToWindowgroup: true });
+            this.addChrome(this.panelBox2, { affectsStruts: true, addToWindowgroup: true });
 		}
         this.panelBox.connect('allocation-changed',
+                              Lang.bind(this, this._updatePanelBarriers));
+        this.panelBox2.connect('allocation-changed',
                               Lang.bind(this, this._updatePanelBarriers));
 
         this.keyboardBox = new St.BoxLayout({ name: 'keyboardBox',
@@ -81,6 +88,7 @@ LayoutManager.prototype = {
             if (windows[i] instanceof Meta.WindowActor){
                 if (windows[i].get_meta_window().get_layer() <= Meta.StackLayer.NORMAL){
                     this.panelBox.raise(windows[i]);
+                    this.panelBox2.raise(windows[i]);
                 }
             }
         }
@@ -105,9 +113,11 @@ LayoutManager.prototype = {
         let autohide = global.settings.get_boolean("panel-autohide");
 		if (autohide) {
         	this._chrome.modifyActorParams(this.panelBox, { affectsStruts: false });
+            this._chrome.modifyActorParams(this.panelBox2, { affectsStruts: false });
 		}
 		else {
 			this._chrome.modifyActorParams(this.panelBox, { affectsStruts: true });
+            this._chrome.modifyActorParams(this.panelBox2, { affectsStruts: true });
 		}
     },
     
@@ -235,9 +245,15 @@ LayoutManager.prototype = {
             this.panelBox.set_position(this.bottomMonitor.x, this.bottomMonitor.y + this.bottomMonitor.height - 25);
             this.panelBox.set_size(this.bottomMonitor.width, 25);
         }
-        else {            
+        else if (Main.desktop_layout == Main.LAYOUT_FLIPPED) {         
             this.panelBox.set_position(this.primaryMonitor.x, this.primaryMonitor.y);
             this.panelBox.set_size(this.primaryMonitor.width, -1);            
+        }
+        else if (Main.desktop_layout == Main.LAYOUT_CLASSIC) { 
+            this.panelBox.set_position(this.primaryMonitor.x, this.primaryMonitor.y);
+            this.panelBox.set_size(this.primaryMonitor.width, -1);       
+            this.panelBox2.set_position(this.bottomMonitor.x, this.bottomMonitor.y + this.bottomMonitor.height - 25);
+            this.panelBox2.set_size(this.bottomMonitor.width, 25);       
         }
 
         this.keyboardBox.set_position(this.bottomMonitor.x,

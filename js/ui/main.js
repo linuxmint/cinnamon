@@ -39,16 +39,27 @@ const XdndHandler = imports.ui.xdndHandler;
 const StatusIconDispatcher = imports.ui.statusIconDispatcher;
 const Util = imports.misc.util;
 
+//applets
+const Menu = imports.ui.menu;
+const ShowDesktopButton = imports.ui.showDesktopButton;
+const PanelLaunchers = imports.ui.panelLaunchers;
+const WindowList = imports.ui.windowList;
+const DateMenu = imports.ui.dateMenu;
+const WorkspaceSwitcher = imports.ui.workspaceSwitcher;
+
 const DEFAULT_BACKGROUND_COLOR = new Clutter.Color();
 DEFAULT_BACKGROUND_COLOR.from_pixel(0x2266bbff);
 
 const LAYOUT_TRADITIONAL = "traditional";
 const LAYOUT_FLIPPED = "flipped";
+const LAYOUT_CLASSIC = "classic";
 
 let automountManager = null;
 let autorunManager = null;
 let applets = [];
 let panel = null;
+let panel2 = null;
+let windowList = null;
 let hotCorners = [];
 let placesManager = null;
 let overview = null;
@@ -80,7 +91,6 @@ let background = null;
 
 let desktop_layout;
 let applet_side = St.Side.BOTTOM;
-let windowlist_side = St.Side.BOTTOM;
 
 function _createUserSession() {  
     placesManager = new PlacesManager.PlacesManager();    
@@ -192,9 +202,11 @@ function start() {
     
     desktop_layout = global.settings.get_string("desktop-layout"); 
     if (desktop_layout == LAYOUT_FLIPPED) {
-        applet_side = St.Side.TOP;
-        windowlist_side = St.Side.TOP;
-    }   
+        applet_side = St.Side.TOP;        
+    }
+    else if (desktop_layout == LAYOUT_CLASSIC) {
+        applet_side = St.Side.TOP;        
+    }
     
     _defaultCssStylesheet = global.datadir + '/theme/cinnamon.css';
     _gdmCssStylesheet = global.datadir + '/theme/gdm.css';
@@ -221,8 +233,75 @@ function start() {
     overview = new Overview.Overview({ isDummy: global.session_type != Cinnamon.SessionType.USER });
     magnifier = new Magnifier.Magnifier();
     statusIconDispatcher = new StatusIconDispatcher.StatusIconDispatcher();  
-            
-    panel = new Panel.Panel();    
+                    
+    if (desktop_layout == LAYOUT_TRADITIONAL) {                                    
+        panel = new Panel.Panel(true);         
+        if (global.session_type == Cinnamon.SessionType.USER) {
+            menu = new Menu.ApplicationsButton();    
+            panel._leftBox.add(menu.actor);
+            panel._menus.addMenu(menu.menu);        
+            showDesktopButton = new ShowDesktopButton.ShowDesktopButton();
+            panel._leftBox.add(showDesktopButton.actor);        
+            panelLaunchersBox = new PanelLaunchers.PanelLaunchersBox(St.Side.BOTTOM);
+            panel._leftBox.add(panelLaunchersBox.actor);           
+            windowList = new WindowList.WindowList(St.Side.BOTTOM); 
+            panel._leftBox.add(windowList.actor);
+        }        
+        dateMenu = new DateMenu.DateMenuButton({ showEvents: false });
+        panel._rightBox.add(dateMenu.actor, { y_fill: true });
+        panel._menus.addMenu(dateMenu.menu);        
+        if (global.session_type == Cinnamon.SessionType.USER) {
+            workspaceSwitcher = new WorkspaceSwitcher.WorkspaceSwitcher();
+            panel._rightBox.add(workspaceSwitcher.actor);        
+        }        
+        layoutManager.panelBox.add(panel.actor);    
+    }
+    else if (desktop_layout == LAYOUT_FLIPPED) {
+        panel = new Panel.Panel(false);         
+        if (global.session_type == Cinnamon.SessionType.USER) {
+            menu = new Menu.ApplicationsButton();    
+            panel._leftBox.add(menu.actor);
+            panel._menus.addMenu(menu.menu);        
+            showDesktopButton = new ShowDesktopButton.ShowDesktopButton();
+            panel._leftBox.add(showDesktopButton.actor);        
+            panelLaunchersBox = new PanelLaunchers.PanelLaunchersBox(St.Side.TOP);
+            panel._leftBox.add(panelLaunchersBox.actor);           
+            windowList = new WindowList.WindowList(St.Side.TOP); 
+            panel._leftBox.add(windowList.actor);
+        }    
+        dateMenu = new DateMenu.DateMenuButton({ showEvents: false });
+        panel._rightBox.add(dateMenu.actor, { y_fill: true });
+        panel._menus.addMenu(dateMenu.menu);        
+        if (global.session_type == Cinnamon.SessionType.USER) {
+            workspaceSwitcher = new WorkspaceSwitcher.WorkspaceSwitcher();
+            panel._rightBox.add(workspaceSwitcher.actor);        
+        }        
+        layoutManager.panelBox.add(panel.actor);  
+    }
+    else if (desktop_layout == LAYOUT_CLASSIC) {
+        panel = new Panel.Panel(false);         
+        panel2 = new Panel.Panel(true); 
+        if (global.session_type == Cinnamon.SessionType.USER) {
+            menu = new Menu.ApplicationsButton();    
+            panel._leftBox.add(menu.actor);
+            panel._menus.addMenu(menu.menu);        
+            panelLaunchersBox = new PanelLaunchers.PanelLaunchersBox(St.Side.TOP);
+            panel._leftBox.add(panelLaunchersBox.actor);
+            showDesktopButton = new ShowDesktopButton.ShowDesktopButton();
+            panel2._leftBox.add(showDesktopButton.actor);                    
+            windowList = new WindowList.WindowList(St.Side.BOTTOM); 
+            panel2._leftBox.add(windowList.actor);
+        }        
+        dateMenu = new DateMenu.DateMenuButton({ showEvents: false });
+        panel._rightBox.add(dateMenu.actor, { y_fill: true });
+        panel._menus.addMenu(dateMenu.menu);        
+        if (global.session_type == Cinnamon.SessionType.USER) {
+            workspaceSwitcher = new WorkspaceSwitcher.WorkspaceSwitcher();
+            panel2._rightBox.add(workspaceSwitcher.actor);        
+        }        
+        layoutManager.panelBox.add(panel.actor);   
+        layoutManager.panelBox2.add(panel2.actor);   
+    }
     
     AppletManager.init();
     applets = AppletManager.loadApplets();

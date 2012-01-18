@@ -8,7 +8,6 @@ const Tweener = imports.ui.tweener;
 const Overview = imports.ui.overview;
 const Panel = imports.ui.panel;
 const PopupMenu = imports.ui.popupMenu;
-const PanelMenu = imports.ui.panelMenu;
 const Signals = imports.signals;
 const Meta = imports.gi.Meta;
 const AltTab = imports.ui.altTab;
@@ -22,16 +21,16 @@ const PANEL_ICON_SIZE = 24;
 const SPINNER_ANIMATION_TIME = 1;
 
 
-function AppMenuButtonRightClickMenu(actor, metaWindow) {
-    this._init(actor, metaWindow);
+function AppMenuButtonRightClickMenu(actor, metaWindow, orientation) {
+    this._init(actor, metaWindow, orientation);
 }
 
 AppMenuButtonRightClickMenu.prototype = {
     __proto__: PopupMenu.PopupMenu.prototype,
 
-    _init: function(actor, metaWindow) {
+    _init: function(actor, metaWindow, orientation) {
         //take care of menu initialization        
-        PopupMenu.PopupMenu.prototype._init.call(this, actor, 0.0, Main.windowlist_side, 0);        
+        PopupMenu.PopupMenu.prototype._init.call(this, actor, 0.0, orientation, 0);        
         Main.uiGroup.add_actor(this.actor);
         //Main.chrome.addActor(this.actor, { visibleInOverview: true,
         //                                   affectsStruts: false });
@@ -57,7 +56,7 @@ AppMenuButtonRightClickMenu.prototype = {
             this.itemMaximizeWindow = new PopupMenu.PopupMenuItem(_('Maximize'));
         this.itemMaximizeWindow.connect('activate', Lang.bind(this, this._onMaximizeWindowActivate));        
         
-        if (Main.desktop_layout == Main.LAYOUT_TRADITIONAL) {
+        if (this.orientation == St.Side.BOTTOM) {
             this.addMenuItem(this.itemMinimizeWindow);
             this.addMenuItem(this.itemMaximizeWindow);
             this.addMenuItem(this.itemCloseWindow);                        
@@ -71,11 +70,11 @@ AppMenuButtonRightClickMenu.prototype = {
     
     _onToggled: function(actor, state){        
         if (state) {
-            if (Main.panel._windowList.actor != null) {
+            if (Main.windowList.actor != null) {
                 let coord = this.mouseEvent.get_coords();
-                let panelOffset = Main.panel._windowList.actor.get_geometry().x
+                let panelOffset = Main.windowList.actor.get_geometry().x
                 let buttonOffset = actor.sourceActor.get_geometry().x;
-               let buttonWidth = (actor.sourceActor.get_geometry().width / 2);
+                let buttonWidth = (actor.sourceActor.get_geometry().width / 2);
                 
                 this.actor.set_position((0 - buttonOffset - buttonWidth - panelOffset) + coord[0], 0);
             }
@@ -127,17 +126,16 @@ AppMenuButtonRightClickMenu.prototype = {
 
 };
 
-function AppMenuButton(metaWindow, animation) {
-    this._init(metaWindow, animation);
+function AppMenuButton(metaWindow, animation, orientation) {
+    this._init(metaWindow, animation, orientation);
 }
 
 AppMenuButton.prototype = {
 //    __proto__ : AppMenuButton.prototype,
 
     
-    _init: function(metaWindow, animation) {
-
-        
+    _init: function(metaWindow, animation, orientation) {
+               
         this.actor = new St.Bin({ style_class: 'window-list-item-box',
 								  reactive: true,
 								  can_focus: true,
@@ -209,7 +207,7 @@ AppMenuButton.prototype = {
 		
         //set up the right click menu
         this._menuManager = new PopupMenu.PopupMenuManager(this);
-        this.rightClickMenu = new AppMenuButtonRightClickMenu(this.actor, this.metaWindow);
+        this.rightClickMenu = new AppMenuButtonRightClickMenu(this.actor, this.metaWindow, orientation);
         this._menuManager.addMenu(this.rightClickMenu);
         
         this._tooltip = new Tooltips.PanelItemTooltip(this, this.metaWindow.get_title());
@@ -229,7 +227,8 @@ AppMenuButton.prototype = {
         }         
         if (this.metaWindow.has_focus()) {                                     
         	this.actor.add_style_pseudo_class('focus');    
-         this.actor.remove_style_class_name("window-list-item-demands-attention");    	
+            this.actor.remove_style_class_name("window-list-item-demands-attention");    	
+            this.actor.remove_style_class_name("window-list-item-demands-attention-top");
         }        		    	        
         else {            
           	this.actor.remove_style_pseudo_class('focus');        		
@@ -414,14 +413,17 @@ AppMenuButton.prototype = {
     }
 };
 
-function WindowList() {
-    this._init();
+function WindowList(orientation) {
+    this._init(orientation);
 }
 
 WindowList.prototype = {
 //    __proto__ : WindowList.prototype,
 
-    _init: function() {
+    _init: function(orientation) {
+        
+        this.orientation = orientation;
+                       
         this.actor = new St.BoxLayout({ name: 'windowList',
                                         style_class: 'window-list-box' });
         this.actor._delegate = this;
@@ -452,8 +454,8 @@ WindowList.prototype = {
     
     _onWindowDemandsAttention : function(display, window) {
         for ( let i=0; i<this._windows.length; ++i ) {
-            if ( this._windows[i].metaWindow == window ) {
-                this._windows[i].actor.add_style_class_name("window-list-item-demands-attention");
+            if ( this._windows[i].metaWindow == window ) {                
+                this._windows[i].actor.add_style_class_name("window-list-item-demands-attention");                
             }
         }
     },
@@ -481,7 +483,7 @@ WindowList.prototype = {
             if ( metaWindow && tracker.is_window_interesting(metaWindow) ) {
                 let app = tracker.get_window_app(metaWindow);
                 if ( app ) {
-                    let appbutton = new AppMenuButton(metaWindow, false);
+                    let appbutton = new AppMenuButton(metaWindow, false, this.orientation);
                     this._windows.push(appbutton);
                     this.actor.add(appbutton.actor);
                 }
@@ -557,7 +559,7 @@ WindowList.prototype = {
         let tracker = Cinnamon.WindowTracker.get_default();
         let app = tracker.get_window_app(metaWindow);
         if ( app && tracker.is_window_interesting(metaWindow) ) {
-            let appbutton = new AppMenuButton(metaWindow, true);
+            let appbutton = new AppMenuButton(metaWindow, true, this.orientation);
             this._windows.push(appbutton);
             this.actor.add(appbutton.actor);
             appbutton.actor.show();

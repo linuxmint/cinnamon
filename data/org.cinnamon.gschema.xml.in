@@ -42,7 +42,7 @@
       <default>"traditional"</default>
       <_summary>Layout style</_summary>
       <_description>
-       Layout styles: traditional (1 panel at the bottom), flipped (1 panel on top)
+       Layout styles: traditional (1 panel at the bottom), flipped (1 panel on top), classic (1 panel on top, 1 panel at the bottom)
       </_description>
     </key>
     

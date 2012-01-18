@@ -13,8 +13,8 @@ const GLib = imports.gi.GLib;
 const Tooltips = imports.ui.tooltips;
 const DND = imports.ui.dnd;
 
-function PanelAppLauncherMenu(launcher) {
-    this._init(launcher);
+function PanelAppLauncherMenu(launcher, orientation) {
+    this._init(launcher, orientation);
 }
 
 const CUSTOM_LAUNCHERS_PATH = GLib.get_home_dir() + '/.cinnamon/panel-launchers';
@@ -22,10 +22,10 @@ const CUSTOM_LAUNCHERS_PATH = GLib.get_home_dir() + '/.cinnamon/panel-launchers'
 PanelAppLauncherMenu.prototype = {
     __proto__: PopupMenu.PopupMenu.prototype,
     
-    _init: function(launcher) {
-        this._launcher = launcher;
-        let side;
-        PopupMenu.PopupMenu.prototype._init.call(this, launcher.actor, 0.0, Main.applet_side, 0);
+    _init: function(launcher, orientation) {
+        this._launcher = launcher;        
+                
+        PopupMenu.PopupMenu.prototype._init.call(this, launcher.actor, 0.0, orientation, 0);
         Main.uiGroup.add_actor(this.actor);
         this.actor.hide();
         

@@ -15,15 +15,11 @@ const Layout = imports.ui.layout;
 const Overview = imports.ui.overview;
 const PopupMenu = imports.ui.popupMenu;
 const PanelMenu = imports.ui.panelMenu;
-const DateMenu = imports.ui.dateMenu;
 const Main = imports.ui.main;
 const Tweener = imports.ui.tweener;
-const WindowList = imports.ui.windowList;
-const ShowDesktopButton = imports.ui.showDesktopButton;
-const WorkspaceSwitcher = imports.ui.workspaceSwitcher;
-const Menu = imports.ui.menu;
 const Meta = imports.gi.Meta;
-const PanelLaunchers = imports.ui.panelLaunchers;
+
+
 
 const PANEL_ICON_SIZE = 24;
 const PANEL_ICON_DEFAULT_SIZE = 20;
@@ -417,13 +413,15 @@ PanelCorner.prototype = {
 };
 
 
-function Panel() {
-    this._init();
+function Panel(bottomPosition) {
+    this._init(bottomPosition);
 }
 
 Panel.prototype = {
-    _init : function() {
+    _init : function(bottomPosition) {
     	
+        this.bottomPosition = bottomPosition;
+        
     	this._hidden = false;
         this._hidetime = 0;              
         this._hideable = global.settings.get_boolean("panel-autohide");
@@ -469,35 +467,7 @@ Panel.prototype = {
         this.actor.connect('get-preferred-height', Lang.bind(this, this._getPreferredHeight));
         this.actor.connect('allocate', Lang.bind(this, this._allocate));
 
-        /* Button on the left side of the panel. */
-        if (global.session_type == Cinnamon.SessionType.USER) {
             
-            this._menu = new Menu.ApplicationsButton();
-            this._leftBox.add(this._menu.actor);
-            this._menus.addMenu(this._menu.menu);
-            
-            this._showDesktopButton = new ShowDesktopButton.ShowDesktopButton();
-            this._leftBox.add(this._showDesktopButton.actor);
-            
-            this._panelLaunchersBox = new PanelLaunchers.PanelLaunchersBox();
-            this._leftBox.add(this._panelLaunchersBox.actor);   
-            
-            this._windowList = new WindowList.WindowList()
-            this._leftBox.add(this._windowList.actor);      
-                        
-        }
-
-        /* center */
-        if (global.session_type == Cinnamon.SessionType.USER)
-            this._dateMenu = new DateMenu.DateMenuButton({ showEvents: true });
-        else
-            this._dateMenu = new DateMenu.DateMenuButton({ showEvents: false });
-        this._rightBox.add(this._dateMenu.actor, { y_fill: true });
-        this._menus.addMenu(this._dateMenu.menu);
-        
-        this._workspaceSwitcher = new WorkspaceSwitcher.WorkspaceSwitcher();
-        this._rightBox.add(this._workspaceSwitcher.actor);
-
         /* right */
         if (global.session_type == Cinnamon.SessionType.GDM) {
             this._status_area_order = GDM_STATUS_AREA_ORDER;
@@ -508,9 +478,7 @@ Panel.prototype = {
         }
 
         Main.statusIconDispatcher.connect('status-icon-added', Lang.bind(this, this._onTrayIconAdded));
-        Main.statusIconDispatcher.connect('status-icon-removed', Lang.bind(this, this._onTrayIconRemoved));
-
-        Main.layoutManager.panelBox.add(this.actor);        
+        Main.statusIconDispatcher.connect('status-icon-removed', Lang.bind(this, this._onTrayIconRemoved));        
                                         
         this.actor.connect('leave-event', Lang.bind(this, this._hidePanel));
         this.actor.connect('enter-event', Lang.bind(this, this._showPanel));  
@@ -679,7 +647,7 @@ Panel.prototype = {
     _showPanel: function() {
         if (this._hidden == false) return;
         
-        if (Main.desktop_layout == Main.LAYOUT_TRADITIONAL) {        
+        if (this.bottomPosition) {        
             let params = { y: PANEL_HEIGHT - 1,
                            time: AUTOHIDE_ANIMATION_TIME + 0.1,
                            transition: 'easeOutQuad'
@@ -734,7 +702,7 @@ Panel.prototype = {
     _hidePanel: function() {
         if (Main.overview.visible || this._hideable == false) return;
 
-        if (Main.desktop_layout == Main.LAYOUT_TRADITIONAL) {  
+        if (this.bottomPosition) {  
             Tweener.addTween(this.actor,
                          { y: PANEL_HEIGHT - 1,
                            time: AUTOHIDE_ANIMATION_TIME,
