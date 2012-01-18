@@ -44,9 +44,15 @@ function onEnabledAppletsChanged() {
     enabledApplets.filter(function(item) {
         return newEnabledApplets.indexOf(item) == -1;
     }).forEach(function(uuid) {
-        let directory = _find_applet(uuid);
-        let applet = loadApplet(uuid, directory);
-        Main.panel._centerBox.remove_actor(applet.actor);
+        try {
+            let directory = _find_applet(uuid);
+            if (directory != null) {
+                let applet = loadApplet(uuid, directory);
+                Main.panel._centerBox.remove_actor(applet.actor);
+            }        
+        } catch (e) {
+            global.logError('Failed to remove applet: ' + uuid + ': ' + e);
+        }
     });
             
     // Find and enable all the newly enabled applets: UUIDs found in the
@@ -54,9 +60,15 @@ function onEnabledAppletsChanged() {
     newEnabledApplets.filter(function(uuid) {
         return enabledApplets.indexOf(uuid) == -1;
     }).forEach(function(uuid) {
-        let directory = _find_applet(uuid);
-        let applet = loadApplet(uuid, directory);
-        Main.panel._centerBox.add(applet.actor);
+        try {
+            let directory = _find_applet(uuid);
+            if (directory != null) {
+                let applet = loadApplet(uuid, directory);
+                Main.panel._centerBox.add(applet.actor);
+            }
+        } catch (e) {
+            global.logError('Failed to add applet: ' + uuid + ': ' + e);
+        }  
     });
     
     enabledApplets = newEnabledApplets;
@@ -70,7 +82,10 @@ function loadApplets() {
             if (directory != null) {
                 let applet = loadApplet(uuid, directory);
                 Main.panel._centerBox.add(applet.actor);
-            }        
+            } 
+            else {
+                global.logError('Could not find applet ' + uuid + ', make sure its directory is present and matches its UUID');
+            }     
         }
         catch (e) {
             global.logError('Failed to load applet ' + uuid);     
@@ -78,7 +93,7 @@ function loadApplets() {
     }        
 }
 
-function _find_applet(uuid) {
+function _find_applet(uuid) {    
     let directory = null;
     directory = _find_applet_in(uuid, userAppletsDir);
     if (directory == null) {
@@ -96,7 +111,7 @@ function _find_applet(uuid) {
     return(directory);
 }
 
-function _find_applet_in(uuid, dir) {    
+function _find_applet_in(uuid, dir) {       
     let directory = null;
     let fileEnum;
     let file, info;
@@ -122,7 +137,7 @@ function _find_applet_in(uuid, dir) {
     return(directory);
 }
 
-function loadApplet(uuid, dir) {
+function loadApplet(uuid, dir) {    
     let info;    
     let applet = null;
     

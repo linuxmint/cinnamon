@@ -1,0 +1,6 @@
+{
+ "uuid": "a11y@cinnamon.org",
+ "name": "Accessibility",
+ "description": "Accessibility applet",
+ "icon": "preferences-desktop-accessibility"
+}

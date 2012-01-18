@@ -1,0 +1,7 @@
+{
+ "uuid": "xrandr@cinnamon.org",
+ "name": "Display",
+ "description": "XRandR monitor control applet",
+ "icon": "preferences-desktop-display",
+ "localedir": "/usr/share/locale"
+}
