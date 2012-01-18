@@ -678,11 +678,11 @@ Panel.prototype = {
                        transition: 'easeOutQuad'
                      };
  
-            Tweener.addTween(Main.panel._leftCorner.actor, params);
-            Tweener.addTween(Main.panel._rightCorner.actor, params);
+            Tweener.addTween(this._leftCorner.actor, params);
+            Tweener.addTween(this._rightCorner.actor, params);
 
-            Tweener.addTween(Main.panel.actor,
-                         { height: PANEL_HEIGHT,
+            Tweener.addTween(this.actor,
+                         { y: 0,
                            time: AUTOHIDE_ANIMATION_TIME,
                            transition: 'easeOutQuad'
                          });
@@ -692,9 +692,9 @@ Panel.prototype = {
                        transition: 'easeOutQuad'
                      };
 
-            Tweener.addTween(Main.panel._leftBox, params);
-            Tweener.addTween(Main.panel._centerBox, params);
-            Tweener.addTween(Main.panel._rightBox, params);
+            Tweener.addTween(this._leftBox, params);
+            Tweener.addTween(this._centerBox, params);
+            Tweener.addTween(this._rightBox, params);
         }
 
         this._hidden = false;
@@ -728,8 +728,8 @@ Panel.prototype = {
             Tweener.addTween(this._rightBox, params);
         }
         else {
-            Tweener.addTween(Main.panel.actor,
-                     { height: 1,
+            Tweener.addTween(this.actor,
+                     { y: -PANEL_HEIGHT + 1,
                        time: AUTOHIDE_ANIMATION_TIME,
                        transition: 'easeOutQuad'
                      });
@@ -739,17 +739,17 @@ Panel.prototype = {
                            transition: 'easeOutQuad'
                          };
 
-            Tweener.addTween(Main.panel._leftCorner.actor, params);
-            Tweener.addTween(Main.panel._rightCorner.actor, params);
+            Tweener.addTween(this._leftCorner.actor, params);
+            Tweener.addTween(this._rightCorner.actor, params);
 
             params = { opacity: 0,
                        time: AUTOHIDE_ANIMATION_TIME - 0.1,
                        transition: 'easeOutQuad'
                      };
 
-            Tweener.addTween(Main.panel._leftBox, params);
-            Tweener.addTween(Main.panel._centerBox, params);
-            Tweener.addTween(Main.panel._rightBox, params);
+            Tweener.addTween(this._leftBox, params);
+            Tweener.addTween(this._centerBox, params);
+            Tweener.addTween(this._rightBox, params);
         }
 
         this._hidden = true;

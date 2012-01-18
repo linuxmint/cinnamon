@@ -30,6 +30,8 @@ LayoutManager.prototype = {
         this._hotCorners = [];
         this._leftPanelBarrier = 0;
         this._rightPanelBarrier = 0;
+        this._leftPanelBarrier2 = 0;
+        this._rightPanelBarrier2 = 0;
         this._trayBarrier = 0;		
         this._chrome = new Chrome(this);       
 		
@@ -272,40 +274,56 @@ LayoutManager.prototype = {
                               this.bottomMonitor.width, this.bottomMonitor.height);
     },
 
-    _updatePanelBarriers: function() {
-        if (this._leftPanelBarrier)
-            global.destroy_pointer_barrier(this._leftPanelBarrier);
-        if (this._rightPanelBarrier)
-            global.destroy_pointer_barrier(this._rightPanelBarrier);
+    _updatePanelBarriers: function(panelBox) {
+        let leftPanelBarrier;
+        let rightPanelBarrier;
+        if (panelBox==this.panelBox){
+            leftPanelBarrier = this._leftPanelBarrier;
+            rightPanelBarrier = this._rightPanelBarrier;
+        }else{
+            leftPanelBarrier = this._leftPanelBarrier2;
+            rightPanelBarrier = this._rightPanelBarrier2;
+        }
+        if (leftPanelBarrier)
+            global.destroy_pointer_barrier(leftPanelBarrier);
+        if (rightPanelBarrier)
+            global.destroy_pointer_barrier(rightPanelBarrier);
 
-        if (this.panelBox.height) {                        
-            if (Main.desktop_layout == Main.LAYOUT_TRADITIONAL) {
+        if (panelBox.height) {                        
+            if (Main.desktop_layout == Main.LAYOUT_TRADITIONAL && panelBox==this.panelBox) {
                 let monitor = this.bottomMonitor;
-                this._leftPanelBarrier =
-                    global.create_pointer_barrier(monitor.x, monitor.y + monitor.height - this.panelBox.height,
+                leftPanelBarrier =
+                    global.create_pointer_barrier(monitor.x, monitor.y + monitor.height - panelBox.height,
                                               monitor.x, monitor.y + monitor.height,
                                               1 /* BarrierPositiveX */);
                                             
-                this._rightPanelBarrier =
-                    global.create_pointer_barrier(monitor.x + monitor.width, monitor.y + monitor.height - this.panelBox.height,
+                rightPanelBarrier =
+                    global.create_pointer_barrier(monitor.x + monitor.width, monitor.y + monitor.height - panelBox.height,
                                               monitor.x + monitor.width, monitor.y + monitor.height,
                                               4 /* BarrierNegativeX */);
             }
             else {
                 let primary = this.primaryMonitor;
-                this._leftPanelBarrier =
+                leftPanelBarrier =
                     global.create_pointer_barrier(primary.x, primary.y,
--                                              primary.x, primary.y + this.panelBox.height, 
+-                                              primary.x, primary.y + panelBox.height, 
                                               1 /* BarrierPositiveX */);
                                             
-                this._rightPanelBarrier =
+                rightPanelBarrier =
                     global.create_pointer_barrier(primary.x + primary.width, primary.y,
--                                              primary.x + primary.width, primary.y + this.panelBox.height, 
+-                                              primary.x + primary.width, primary.y + panelBox.height, 
                                               4 /* BarrierNegativeX */);
             }
         } else {
-            this._leftPanelBarrier = 0;
-            this._rightPanelBarrier = 0;
+            leftPanelBarrier = 0;
+            rightPanelBarrier = 0;
+        }
+        if (panelBox==this.panelBox){
+            this._leftPanelBarrier = leftPanelBarrier;
+            this._rightPanelBarrier = rightPanelBarrier;
+        }else{
+            this._leftPanelBarrier2 = leftPanelBarrier;
+            this._rightPanelBarrier2 = rightPanelBarrier;
         }
     },
 
@@ -375,6 +393,14 @@ LayoutManager.prototype = {
 
         this.panelBox.anchor_y = this.panelBox.height;
         Tweener.addTween(this.panelBox,
+                         { anchor_y: 0,
+                           time: STARTUP_ANIMATION_TIME,
+                           transition: 'easeOutQuad',
+                           onComplete: this._startupAnimationComplete,
+                           onCompleteScope: this
+                         });
+        this.panelBox2.anchor_y = this.panelBox2.height;
+        Tweener.addTween(this.panelBox2,
                          { anchor_y: 0,
                            time: STARTUP_ANIMATION_TIME,
                            transition: 'easeOutQuad',
