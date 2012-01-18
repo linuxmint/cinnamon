@@ -299,11 +299,11 @@ StTooltip StLabel {
 
 .panel-status-button {
 	border: 0px solid #8b8b8b;
-	font-weight: bold;
+	-natural-hpadding: 5px;
+    -minimum-hpadding: 5px;
+    font-weight: bold;
     color: #ccc;    
-    height: 22px;
-    margin: 2px;
-    padding: 2px;
+    height: 22px;    
 }
 
 .panel-status-button:hover {
@@ -1820,8 +1820,8 @@ StTooltip StLabel {
  * ===================================================================*/
 
 .applet-box {
-    margin: 2px;
-    padding: 2px;
+    margin: 1px;
+    padding: 1px;
 }
 
 .applet-box:hover {
