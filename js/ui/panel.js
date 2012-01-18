@@ -636,6 +636,7 @@ Panel.prototype = {
         
         let themeNode = buttonBox.actor.get_theme_node();
         if (!themeNode.get_length('height')) icon.height = PANEL_ICON_DEFAULT_SIZE;
+        else icon.height = themeNode.get_length('height');
     },
 
     _onTrayIconRemoved: function(o, icon) {
