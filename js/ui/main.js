@@ -309,10 +309,7 @@ function start() {
         layoutManager.panelBox.add(panel.actor);   
         layoutManager.panelBox2.add(panel2.actor);   
     }
-    
-    AppletManager.init();
-    applets = AppletManager.loadApplets();
-            
+                
     wm = new WindowManager.WindowManager();
     messageTray = new MessageTray.MessageTray();
     keyboard = new Keyboard.Keyboard();
@@ -362,6 +359,9 @@ function start() {
     global.screen.connect('restacked', _windowsRestacked);
 
     _nWorkspacesChanged();
+    
+    AppletManager.init();
+    applets = AppletManager.loadApplets();
 }
 
 let _workspaces = [];

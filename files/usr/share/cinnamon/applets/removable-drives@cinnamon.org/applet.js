@@ -1,0 +1,121 @@
+const Gio = imports.gi.Gio;
+const Lang = imports.lang;
+const St = imports.gi.St;
+const Cinnamon = imports.gi.Cinnamon;
+const Applet = imports.ui.applet;
+const Gettext = imports.gettext.domain('cinnamon-extensions');
+const _ = Gettext.gettext;
+const Main = imports.ui.main;
+const PopupMenu = imports.ui.popupMenu;
+
+function DriveMenuItem(place) {
+    this._init(place);
+}
+
+DriveMenuItem.prototype = {
+    __proto__: PopupMenu.PopupBaseMenuItem.prototype,
+
+    _init: function(place) {
+        PopupMenu.PopupBaseMenuItem.prototype._init.call(this);
+
+        this.place = place;
+
+        this.label = new St.Label({ text: place.name });
+        this.addActor(this.label);
+
+        let ejectIcon = new St.Icon({ icon_name: 'media-eject',
+				      icon_type: St.IconType.SYMBOLIC,
+				      style_class: 'popup-menu-icon ' });
+        let ejectButton = new St.Button({ child: ejectIcon });
+        ejectButton.connect('clicked', Lang.bind(this, this._eject));
+        this.addActor(ejectButton);
+    },
+
+    _eject: function() {
+        this.place.remove();
+    },
+
+    activate: function(event) {
+        this.place.launch({ timestamp: event.get_time() });
+        PopupMenu.PopupBaseMenuItem.prototype.activate.call(this, event);
+    }
+};
+
+function MyMenu(launcher, orientation) {
+    this._init(launcher, orientation);
+}
+
+MyMenu.prototype = {
+    __proto__: PopupMenu.PopupMenu.prototype,
+    
+    _init: function(launcher, orientation) {
+        this._launcher = launcher;        
+                
+        PopupMenu.PopupMenu.prototype._init.call(this, launcher.actor, 0.0, orientation, 0);
+        Main.uiGroup.add_actor(this.actor);
+        this.actor.hide();            
+    }
+}
+
+function MyApplet(orientation) {
+    this._init(orientation);
+}
+
+MyApplet.prototype = {
+    __proto__: Applet.IconApplet.prototype,
+
+    _init: function(orientation) {        
+        Applet.IconApplet.prototype._init.call(this, orientation);
+        
+        try {        
+            this.set_applet_icon_name("media-eject");
+            this.set_applet_tooltip(_("Removable drives"));
+            
+            this.menuManager = new PopupMenu.PopupMenuManager(this);
+            this.menu = new MyMenu(this, orientation);
+            this.menuManager.addMenu(this.menu);            
+                                            
+            this._contentSection = new PopupMenu.PopupMenuSection();
+            this.menu.addMenuItem(this._contentSection);
+
+            this._update();
+
+            this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+            this.menu.addAction(_("Open file manager"), function(event) {
+                let appSystem = Cinnamon.AppSystem.get_default();
+                let app = appSystem.lookup_app('nautilus.desktop');
+                app.activate_full(-1, event.get_time());
+            });     
+            
+            Main.placesManager.connect('mounts-updated', Lang.bind(this, this._update));
+        }
+        catch (e) {
+            global.logError(e);
+        }
+    },
+    
+    on_applet_clicked: function(event) {
+        this.menu.toggle();        
+    },
+    
+    _update: function() {
+        this._contentSection.removeAll();
+
+        let mounts = Main.placesManager.getMounts();
+        let any = false;
+        for (let i = 0; i < mounts.length; i++) {
+            if (mounts[i].isRemovable()) {
+                this._contentSection.addMenuItem(new DriveMenuItem(mounts[i]));
+                any = true;
+            }
+        }
+
+        this.actor.visible = any;
+    }
+    
+};
+
+function main(metadata, orientation) {  
+    let myApplet = new MyApplet(orientation);
+    return myApplet;      
+}
