@@ -375,10 +375,6 @@ StTooltip StLabel {
     -boxpointer-gap: 4px
 }
 
-.popup-menu-item, .popup-menu-item {
-    padding: .4em;
-}
-
 .popup-menu-item-dot {
 
 }
