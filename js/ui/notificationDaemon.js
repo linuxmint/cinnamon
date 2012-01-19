@@ -469,8 +469,8 @@ NotificationDaemon.prototype = {
 
 DBus.conformExport(NotificationDaemon.prototype, NotificationDaemonIface);
 
-function Source(title, pid, sender) {
-    this._init(title, pid, sender);
+function Source(title, pid, sender, trayIcon) {
+    this._init(title, pid, sender, trayIcon);
 }
 
 Source.prototype = {
