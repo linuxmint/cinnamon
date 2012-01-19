@@ -290,7 +290,7 @@ LayoutManager.prototype = {
             global.destroy_pointer_barrier(rightPanelBarrier);
 
         if (panelBox.height) {                        
-            if (Main.desktop_layout == Main.LAYOUT_TRADITIONAL && panelBox==this.panelBox) {
+            if ((Main.desktop_layout == Main.LAYOUT_TRADITIONAL || Main.desktop_layout == Main.LAYOUT_CLASSIC) && panelBox==this.panelBox) {
                 let monitor = this.bottomMonitor;
                 leftPanelBarrier =
                     global.create_pointer_barrier(monitor.x, monitor.y + monitor.height - panelBox.height,
