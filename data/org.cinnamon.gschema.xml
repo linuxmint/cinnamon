@@ -23,6 +23,42 @@
       <description>Whether to enable desktop effects and window animations.</description>
     </key>
     
+    <key type="s" name="desktop-effects-close-effect">
+      <default>"scale"</default>
+      <summary>Effect used when closing windows</summary>
+      <description>An effect: scale, opacity, none</description>
+    </key>
+    
+    <key type="s" name="desktop-effects-close-transition">
+      <default>"easeInSine"</default>
+      <summary>Transition used when closing windows</summary>
+      <description>A Tweener transition</description>
+    </key>
+    
+    <key type="i" name="desktop-effects-close-time">
+      <default>250</default>
+      <summary>Duration of the effect (in milliseconds)</summary>
+      <description>Duration of the effect (in milliseconds)</description>
+    </key>
+    
+    <key type="s" name="desktop-effects-map-effect">
+      <default>"scale"</default>
+      <summary>Effect used when mapping windows</summary>
+      <description>An effect: scale, opacity, none</description>
+    </key>
+    
+    <key type="s" name="desktop-effects-map-transition">
+      <default>"easeInSine"</default>
+      <summary>Transition used when mapping windows</summary>
+      <description>A Tweener transition</description>
+    </key>
+    
+    <key type="i" name="desktop-effects-map-time">
+      <default>250</default>
+      <summary>Duration of the effect (in milliseconds)</summary>
+      <description>Duration of the effect (in milliseconds)</description>
+    </key>
+    
     <key type="b" name="panel-autohide">
       <default>false</default>
       <summary>Auto-hide panel</summary>

@@ -43,7 +43,7 @@ class SidePage:
         # Add our own widgets
         for widget in self.widgets:
             self.content_box.pack_start(widget, False, False, 2)            
-            self.content_box.show_all()
+        self.content_box.show_all()
                       
 class ThemeViewSidePage (SidePage):
     def __init__(self, name, icon, content_box):   
@@ -63,7 +63,7 @@ class ThemeViewSidePage (SidePage):
         # Add our own widgets
         scrolledWindow = Gtk.ScrolledWindow()                
         
-        iconView = Gtk.IconView();        
+        iconView = Gtk.IconView()        
         self.model = Gtk.ListStore(str, GdkPixbuf.Pixbuf)
                  
         img = GdkPixbuf.Pixbuf.new_from_file_at_size( "/usr/share/cinnamon/theme/thumbnail.png", 64, 64 )
@@ -100,7 +100,7 @@ class ThemeViewSidePage (SidePage):
     def apply_theme(self, iconView):
         selected_items = iconView.get_selected_items()
         if len(selected_items) > 0:
-            path = selected_items[0];                  
+            path = selected_items[0]                  
             iterator = self.model.get_iter(path)
             theme_name = self.model.get_value(iterator, 0)
             if theme_name == "Cinnamon":
@@ -324,6 +324,33 @@ class GSettingsCheckButton(Gtk.CheckButton):
         
     def on_my_value_changed(self, widget):
         self.settings.set_boolean(self.key, self.get_active())
+        
+class GSettingsSpinButton(Gtk.HBox):    
+    def __init__(self, label, schema, key, min, max, step, page, units):        
+        self.key = key
+        super(GSettingsSpinButton, self).__init__()        
+        self.label = Gtk.Label(label)       
+        self.content_widget = Gtk.SpinButton()
+        self.units = Gtk.Label(units)               
+        self.pack_start(self.label, False, False, 10)                
+        self.pack_start(self.content_widget, False, False, 10)              
+        self.pack_start(self.units, False, False, 10)              
+        
+        self.content_widget.set_range(min, max)
+        self.content_widget.set_increments(step, page)
+        self.content_widget.set_editable(False)
+        
+        self.settings = Gio.Settings.new(schema)        
+        self.content_widget.set_value(self.settings.get_int(self.key))
+        self.settings.connect("changed::"+self.key, self.on_my_setting_changed)
+        self.content_widget.connect('focus-out-event', self.on_my_value_changed)
+    
+    def on_my_setting_changed(self, settings, key):
+        self.content_widget.set_value(self.settings.get_int(self.key))
+        
+    def on_my_value_changed(self, widget, data):
+        print self.content_widget.get_value()
+        self.settings.set_int(self.key, self.content_widget.get_value())
 
 class GSettingsEntry(Gtk.HBox):    
     def __init__(self, label, schema, key):        
@@ -341,7 +368,7 @@ class GSettingsEntry(Gtk.HBox):
     def on_my_setting_changed(self, settings, key):
         self.content_widget.set_text(self.settings.get_string(self.key))
         
-    def on_my_value_changed(self, widget):
+    def on_my_value_changed(self, widget):        
         self.settings.set_string(self.key, self.content_widget.get_text())
 
 class GSettingsComboBox(Gtk.HBox):    
@@ -387,7 +414,7 @@ class MainWindow:
     def side_view_nav(self, side_view):
         selected_items = side_view.get_selected_items()
         if len(selected_items) > 0:
-            path = selected_items[0];            
+            path = selected_items[0]            
             iterator = self.store.get_iter(path)
             print self.store.get_value(iterator, 0)
             self.store.get_value(iterator,2).build()
@@ -407,7 +434,7 @@ class MainWindow:
         self.sidePages = []
                                                       
         sidePage = SidePage(_("Panel"), "panel.svg", self.content_box)
-        self.sidePages.append(sidePage);
+        self.sidePages.append(sidePage)
         sidePage.add_widget(GSettingsEntry(_("Menu text"), "org.cinnamon", "menu-text")) 
         sidePage.add_widget(GSettingsCheckButton(_("Auto-hide panel"), "org.cinnamon", "panel-autohide"))
         desktop_layouts = [["traditional", _("Traditional (panel at the bottom)")], ["flipped", _("Flipped (panel at the top)")], ["classic", _("Classic (panels at the top and at the bottom)")]]        
@@ -415,32 +442,98 @@ class MainWindow:
         sidePage.add_widget(desktop_layouts_combo) 
         label = Gtk.Label()
         label.set_markup("<i><small>%s</small></i>" % _("Note: If you change the layout you will need to restart Cinnamon."))
-        sidePage.add_widget(label) 
-        sidePage.add_widget(GSettingsCheckButton(_("Enable desktop effects"), "org.cinnamon", "desktop-effects"))
+        sidePage.add_widget(label)         
         
         sidePage = SidePage(_("Calendar"), "clock.svg", self.content_box)
-        self.sidePages.append(sidePage);        
+        self.sidePages.append(sidePage)     
         sidePage.add_widget(GSettingsCheckButton(_("Show week dates in calendar"), "org.cinnamon.calendar", "show-weekdate"))         
         sidePage.add_widget(GSettingsEntry(_("Date format for the panel"), "org.cinnamon.calendar", "date-format"))                                 
         sidePage.add_widget(GSettingsEntry(_("Date format inside the date applet"), "org.cinnamon.calendar", "date-format-full"))                                 
         sidePage.add_widget(Gtk.LinkButton.new_with_label("http://www.foragoodstrftime.com/", _("Generate your own date formats"))) 
         
         sidePage = SidePage(_("Overview"), "overview.svg", self.content_box)
-        self.sidePages.append(sidePage);
+        self.sidePages.append(sidePage)
         sidePage.add_widget(GSettingsCheckButton(_("Overview icon visible"), "org.cinnamon", "overview-corner-visible")) 
         sidePage.add_widget(GSettingsCheckButton(_("Overview hot corner enabled"), "org.cinnamon", "overview-corner-hover")) 
         
         sidePage = ThemeViewSidePage(_("Themes"), "themes.svg", self.content_box)
-        self.sidePages.append(sidePage);
+        self.sidePages.append(sidePage)
+        
+        sidePage = SidePage(_("Desktop Effects"), "desktop-effects.svg", self.content_box)
+        self.sidePages.append(sidePage)
+        sidePage.add_widget(GSettingsCheckButton(_("Enable desktop effects"), "org.cinnamon", "desktop-effects"))
+        
+        # Destroy window effects
+        transition_effects = []
+        transition_effects.append(["easeInQuad", "easeInQuad"])
+        transition_effects.append(["easeOutQuad", "easeOutQuad"])
+        transition_effects.append(["easeInOutQuad", "easeInOutQuad"])        
+        transition_effects.append(["easeInCubic", "easeInCubic"])
+        transition_effects.append(["easeOutCubic", "easeOutCubic"])
+        transition_effects.append(["easeInOutCubic", "easeInOutCubic"])        
+        transition_effects.append(["easeInQuart", "easeInQuart"])
+        transition_effects.append(["easeOutQuart", "easeOutQuart"])
+        transition_effects.append(["easeInOutQuart", "easeInOutQuart"])        
+        transition_effects.append(["easeInQuint", "easeInQuint"])
+        transition_effects.append(["easeOutQuint", "easeOutQuint"])
+        transition_effects.append(["easeInOutQuint", "easeInOutQuint"])        
+        transition_effects.append(["easeInSine", "easeInSine"])
+        transition_effects.append(["easeOutSine", "easeOutSine"])
+        transition_effects.append(["easeInOutSine", "easeInOutSine"])        
+        transition_effects.append(["easeInExpo", "easeInExpo"])
+        transition_effects.append(["easeOutEXpo", "easeOutExpo"])
+        transition_effects.append(["easeInOutExpo", "easeInOutExpo"])        
+        transition_effects.append(["easeInCirc", "easeInCirc"])
+        transition_effects.append(["easeOutCirc", "easeOutCirc"])
+        transition_effects.append(["easeInOutCirc", "easeInOutCirc"])        
+        transition_effects.append(["easeInElastic", "easeInElastic"])
+        transition_effects.append(["easeOutElastic", "easeOutElastic"])
+        transition_effects.append(["easeInOutElastic", "easeInOutElastic"])        
+        transition_effects.append(["easeInBack", "easeInBack"])
+        transition_effects.append(["easeOutBack", "easeOutBack"])
+        transition_effects.append(["easeInOutBack", "easeInOutBack"])        
+        transition_effects.append(["easeInBounce", "easeInBounce"])
+        transition_effects.append(["easeOutBounce", "easeOutBounce"])
+        transition_effects.append(["easeInOutBounce", "easeInOutBounce"])
+        
+        #CLOSING WINDOWS
+        label = Gtk.Label()
+        label.set_markup("<b>%s</b>" % _("Closing windows"))
+        sidePage.add_widget(label)     
+        
+        effects = [["none", _("None")], ["scale", _("Scale")], ["opacity", _("Opacity")]]        
+        combo = GSettingsComboBox(_("Effect"), "org.cinnamon", "desktop-effects-close-effect", effects)
+        sidePage.add_widget(combo) 
+        
+        combo = GSettingsComboBox(_("Transition"), "org.cinnamon", "desktop-effects-close-transition", transition_effects)
+        sidePage.add_widget(combo) 
+        
+        spin = GSettingsSpinButton(_("Time"), "org.cinnamon", "desktop-effects-close-time", 0, 2000, 50, 200, _("milliseconds"))
+        sidePage.add_widget(spin) 
+        
+        #MAPPING WINDOWS
+        label = Gtk.Label()
+        label.set_markup("<b>%s</b>" % _("Mapping windows"))
+        sidePage.add_widget(label)     
+        
+        effects = [["none", _("None")], ["scale", _("Scale")], ["opacity", _("Opacity")]]        
+        combo = GSettingsComboBox(_("Effect"), "org.cinnamon", "desktop-effects-map-effect", effects)
+        sidePage.add_widget(combo) 
+        
+        combo = GSettingsComboBox(_("Transition"), "org.cinnamon", "desktop-effects-map-transition", transition_effects)
+        sidePage.add_widget(combo) 
+        
+        spin = GSettingsSpinButton(_("Time"), "org.cinnamon", "desktop-effects-map-time", 0, 2000, 50, 200, _("milliseconds"))
+        sidePage.add_widget(spin)
         
         sidePage = AppletViewSidePage(_("Applets"), "applets.svg", self.content_box)
-        self.sidePages.append(sidePage);
+        self.sidePages.append(sidePage)
         
         sidePage = ExtensionViewSidePage(_("Extensions"), "extensions.svg", self.content_box)
-        self.sidePages.append(sidePage);
+        self.sidePages.append(sidePage)
                         
         #sidePage = SidePage(_("Terminal"), "terminal", self.content_box)
-        #self.sidePages.append(sidePage);
+        #self.sidePages.append(sidePage)
         #sidePage.add_widget(GConfCheckButton(_("Show fortune cookies"), "/desktop/linuxmint/terminal/show_fortunes"))
         
                                 

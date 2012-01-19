@@ -352,16 +352,28 @@ WindowManager.prototype = {
             cinnamonwm.completed_map(actor);
             return;
         }
-
-        actor.opacity = 0;
-        actor.show();
-
-        /* Fade window in */
-        this._mapping.push(actor);
-        Tweener.addTween(actor,
+        
+        
+        let transition = "easeInSine";
+        let effect = "scale";
+        let time = 0.25;
+        try{
+            effect = global.settings.get_string("desktop-effects-map-effect");                                                
+            transition = global.settings.get_string("desktop-effects-map-transition");                        
+            time = global.settings.get_int("desktop-effects-map-time") / 1000;
+        }
+        catch(e) {
+            log(e);
+        }
+                
+        if (effect == "opacity") {            
+            this._mapping.push(actor);
+            actor.opacity = 0;
+            actor.show();           
+            Tweener.addTween(actor, 
                          { opacity: 255,
-                           time: WINDOW_ANIMATION_TIME,
-                           transition: 'easeOutQuad',
+                           time: time,
+                           transition: transition,
                            onComplete: this._mapWindowDone,
                            onCompleteScope: this,
                            onCompleteParams: [cinnamonwm, actor],
@@ -369,11 +381,37 @@ WindowManager.prototype = {
                            onOverwriteScope: this,
                            onOverwriteParams: [cinnamonwm, actor]
                          });
+        }
+        else if (effect == "scale") {   
+            actor.move_anchor_point_from_gravity(Clutter.Gravity.CENTER);          
+            actor.set_scale(0.0, 0.0);
+            actor.show();
+            this._mapping.push(actor);
+
+            Tweener.addTween(actor,
+                             { scale_x: 1,
+                               scale_y: 1,
+                               time: time,
+                               transition: transition,
+                               onComplete: this._mapWindowDone,
+                               onCompleteScope: this,
+                               onCompleteParams: [cinnamonwm, actor],
+                               onOverwrite: this._mapWindowOverwrite,
+                               onOverwriteScope: this,
+                               onOverwriteParams: [cinnamonwm, actor]
+                             });
+        }
+        else {   
+            log("NONE");
+            cinnamonwm.completed_map(actor);
+        }
+        
     },
 
     _mapWindowDone : function(cinnamonwm, actor) {
         if (this._removeEffect(this._mapping, actor)) {
             Tweener.removeTweens(actor);
+            actor.move_anchor_point_from_gravity(Clutter.Gravity.NORTH_WEST);
             actor.opacity = 255;
             cinnamonwm.completed_map(actor);
         }
@@ -404,7 +442,7 @@ WindowManager.prototype = {
                 return;
             }
 
-            actor.set_scale(1.0, 1.0);
+            actor.opacity = 255;
             actor.show();
             this._destroying.push(actor);
 
@@ -414,7 +452,7 @@ WindowManager.prototype = {
             }));
 
             Tweener.addTween(actor,
-                             { scale_y: 0,
+                             { opacity: 0,
                                time: WINDOW_ANIMATION_TIME,
                                transition: "easeOutQuad",
                                onComplete: this._destroyWindowDone,
@@ -426,7 +464,59 @@ WindowManager.prototype = {
                              });
             return;
         }
-        cinnamonwm.completed_destroy(actor);
+        
+        if (!this._shouldAnimate(actor)) {
+            cinnamonwm.completed_destroy(actor);
+            return;
+        }
+        
+        
+        actor.move_anchor_point_from_gravity(Clutter.Gravity.CENTER);        
+        this._destroying.push(actor);   
+                
+        let transition = "easeInSine";
+        let effect = "scale";
+        let time = 0.25;
+        try{
+            effect = global.settings.get_string("desktop-effects-close-effect");                                                
+            transition = global.settings.get_string("desktop-effects-close-transition");                        
+            time = global.settings.get_int("desktop-effects-close-time") / 1000;
+        }
+        catch(e) {
+            log(e);
+        }
+        
+        if (effect == "scale") {
+            Tweener.addTween(actor,
+                             { scale_x: 0,
+                               scale_y: 0,
+                               opacity: 0,                               
+                               time: time,
+                               transition: transition,
+                               onComplete: this._destroyWindowDone,
+                               onCompleteScope: this,
+                               onCompleteParams: [cinnamonwm, actor],   
+                               onOverwrite: this._destroyWindowDone,
+                               onOverwriteScope: this,
+                               onOverwriteParams: [cinnamonwm, actor]
+                             });
+        }
+        else if (effect == "opacity") {
+            Tweener.addTween(actor,
+                             { opacity: 0,                               
+                               time: time,
+                               transition: transition,
+                               onComplete: this._destroyWindowDone,
+                               onCompleteScope: this,
+                               onCompleteParams: [cinnamonwm, actor],   
+                               onOverwrite: this._destroyWindowDone,
+                               onOverwriteScope: this,
+                               onOverwriteParams: [cinnamonwm, actor]
+                             });
+        }
+        else {        
+            this._destroyWindowDone();
+        }
     },
 
     _destroyWindowDone : function(cinnamonwm, actor) {
