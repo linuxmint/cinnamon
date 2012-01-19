@@ -331,10 +331,12 @@ class GSettingsSpinButton(Gtk.HBox):
         super(GSettingsSpinButton, self).__init__()        
         self.label = Gtk.Label(label)       
         self.content_widget = Gtk.SpinButton()
-        self.units = Gtk.Label(units)               
-        self.pack_start(self.label, False, False, 10)                
-        self.pack_start(self.content_widget, False, False, 10)              
-        self.pack_start(self.units, False, False, 10)              
+        self.units = Gtk.Label(units)        
+        if (label != ""):       
+            self.pack_start(self.label, False, False, 2)                
+        self.pack_start(self.content_widget, False, False, 2)              
+        if (units != ""):
+            self.pack_start(self.units, False, False, 2)              
         
         self.content_widget.set_range(min, max)
         self.content_widget.set_increments(step, page)
@@ -358,7 +360,7 @@ class GSettingsEntry(Gtk.HBox):
         super(GSettingsEntry, self).__init__()
         self.label = Gtk.Label(label)       
         self.content_widget = Gtk.Entry()
-        self.pack_start(self.label, False, False, 10)        
+        self.pack_start(self.label, False, False, 5)        
         self.add(self.content_widget)     
         self.settings = Gio.Settings.new(schema)        
         self.content_widget.set_text(self.settings.get_string(self.key))
@@ -396,8 +398,9 @@ class GSettingsComboBox(Gtk.HBox):
         if selected is not None:
             self.content_widget.set_active_iter(selected)
         
-        self.pack_start(self.label, False, False, 10)                
-        self.pack_start(self.content_widget, False, False, 10)                     
+        if (label != ""):
+            self.pack_start(self.label, False, False, 2)                
+        self.pack_start(self.content_widget, False, False, 2)                     
         self.content_widget.connect('changed', self.on_my_value_changed)
         self.content_widget.show_all()
                             
@@ -459,7 +462,7 @@ class MainWindow:
         sidePage = ThemeViewSidePage(_("Themes"), "themes.svg", self.content_box)
         self.sidePages.append(sidePage)
         
-        sidePage = SidePage(_("Desktop Effects"), "desktop-effects.svg", self.content_box)
+        sidePage = SidePage(_("Effects"), "desktop-effects.svg", self.content_box)
         self.sidePages.append(sidePage)
         sidePage.add_widget(GSettingsCheckButton(_("Enable desktop effects"), "org.cinnamon", "desktop-effects"))
         
@@ -497,34 +500,74 @@ class MainWindow:
         transition_effects.append(["easeInOutBounce", "easeInOutBounce"])
         
         #CLOSING WINDOWS
+        box = Gtk.HBox()        
         label = Gtk.Label()
-        label.set_markup("<b>%s</b>" % _("Closing windows"))
-        sidePage.add_widget(label)     
-        
+        label.set_markup("%s" % _("Closing windows:"))
+        box.pack_start(label, False, False, 0)         
         effects = [["none", _("None")], ["scale", _("Scale")], ["fade", _("Fade")]]        
-        combo = GSettingsComboBox(_("Effect"), "org.cinnamon", "desktop-effects-close-effect", effects)
-        sidePage.add_widget(combo) 
-        
-        combo = GSettingsComboBox(_("Transition"), "org.cinnamon", "desktop-effects-close-transition", transition_effects)
-        sidePage.add_widget(combo) 
-        
-        spin = GSettingsSpinButton(_("Time"), "org.cinnamon", "desktop-effects-close-time", 0, 2000, 50, 200, _("milliseconds"))
-        sidePage.add_widget(spin) 
+        combo = GSettingsComboBox(_(""), "org.cinnamon", "desktop-effects-close-effect", effects)        
+        box.pack_start(combo, False, False, 0)         
+        combo = GSettingsComboBox(_(""), "org.cinnamon", "desktop-effects-close-transition", transition_effects)
+        box.pack_start(combo, False, False, 0)         
+        spin = GSettingsSpinButton(_(""), "org.cinnamon", "desktop-effects-close-time", 0, 2000, 50, 200, _("milliseconds"))
+        box.pack_start(spin, False, False, 0)         
+        sidePage.add_widget(box) 
         
         #MAPPING WINDOWS
+        box = Gtk.HBox()        
         label = Gtk.Label()
-        label.set_markup("<b>%s</b>" % _("Mapping windows"))
-        sidePage.add_widget(label)     
-        
+        label.set_markup("%s" % _("Mapping windows:"))
+        box.pack_start(label, False, False, 0)         
         effects = [["none", _("None")], ["scale", _("Scale")], ["fade", _("Fade")]]        
-        combo = GSettingsComboBox(_("Effect"), "org.cinnamon", "desktop-effects-map-effect", effects)
-        sidePage.add_widget(combo) 
+        combo = GSettingsComboBox(_(""), "org.cinnamon", "desktop-effects-map-effect", effects)        
+        box.pack_start(combo, False, False, 0)         
+        combo = GSettingsComboBox(_(""), "org.cinnamon", "desktop-effects-map-transition", transition_effects)
+        box.pack_start(combo, False, False, 0)         
+        spin = GSettingsSpinButton(_(""), "org.cinnamon", "desktop-effects-map-time", 0, 2000, 50, 200, _("milliseconds"))
+        box.pack_start(spin, False, False, 0)         
+        sidePage.add_widget(box)
         
-        combo = GSettingsComboBox(_("Transition"), "org.cinnamon", "desktop-effects-map-transition", transition_effects)
-        sidePage.add_widget(combo) 
+        #MINIMIZING WINDOWS
+        box = Gtk.HBox()        
+        label = Gtk.Label()
+        label.set_markup("%s" % _("Minimizing windows:"))
+        box.pack_start(label, False, False, 0)         
+        effects = [["none", _("None")], ["traditional", _("Traditional")], ["scale", _("Scale")], ["fade", _("Fade")]]        
+        combo = GSettingsComboBox(_(""), "org.cinnamon", "desktop-effects-minimize-effect", effects)        
+        box.pack_start(combo, False, False, 0)         
+        combo = GSettingsComboBox(_(""), "org.cinnamon", "desktop-effects-minimize-transition", transition_effects)
+        box.pack_start(combo, False, False, 0)         
+        spin = GSettingsSpinButton(_(""), "org.cinnamon", "desktop-effects-minimize-time", 0, 2000, 50, 200, _("milliseconds"))
+        box.pack_start(spin, False, False, 0)         
+        sidePage.add_widget(box)
         
-        spin = GSettingsSpinButton(_("Time"), "org.cinnamon", "desktop-effects-map-time", 0, 2000, 50, 200, _("milliseconds"))
-        sidePage.add_widget(spin)
+        #MAXIMIZING WINDOWS
+        box = Gtk.HBox()        
+        label = Gtk.Label()
+        label.set_markup("%s" % _("Maximizing windows:"))
+        box.pack_start(label, False, False, 0)         
+        effects = [["none", _("None")], ["scale", _("Scale")]]        
+        combo = GSettingsComboBox(_(""), "org.cinnamon", "desktop-effects-maximize-effect", effects)        
+        box.pack_start(combo, False, False, 0)         
+        combo = GSettingsComboBox(_(""), "org.cinnamon", "desktop-effects-maximize-transition", transition_effects)
+        box.pack_start(combo, False, False, 0)         
+        spin = GSettingsSpinButton(_(""), "org.cinnamon", "desktop-effects-maximize-time", 0, 2000, 50, 200, _("milliseconds"))
+        box.pack_start(spin, False, False, 0)         
+        sidePage.add_widget(box)
+        
+        #UNMAXIMIZING WINDOWS
+        box = Gtk.HBox()        
+        label = Gtk.Label()
+        label.set_markup("%s" % _("Unmaximizing windows:"))
+        box.pack_start(label, False, False, 0)         
+        effects = [["none", _("None")]]        
+        combo = GSettingsComboBox(_(""), "org.cinnamon", "desktop-effects-unmaximize-effect", effects)        
+        box.pack_start(combo, False, False, 0)         
+        combo = GSettingsComboBox(_(""), "org.cinnamon", "desktop-effects-unmaximize-transition", transition_effects)
+        box.pack_start(combo, False, False, 0)         
+        spin = GSettingsSpinButton(_(""), "org.cinnamon", "desktop-effects-unmaximize-time", 0, 2000, 50, 200, _("milliseconds"))
+        box.pack_start(spin, False, False, 0)         
+        sidePage.add_widget(box)
         
         sidePage = AppletViewSidePage(_("Applets"), "applets.svg", self.content_box)
         self.sidePages.append(sidePage)

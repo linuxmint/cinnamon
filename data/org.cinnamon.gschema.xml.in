@@ -55,7 +55,7 @@
     </key>
     
      <key name="desktop-effects-close-transition" type="s">
-      <default>"easeInSine"</default>
+      <default>"easeInBack"</default>
       <_summary>Transition used when closing windows</_summary>
       <_description>
        A Tweener transition
@@ -63,7 +63,7 @@
     </key>
     
     <key type="i" name="desktop-effects-close-time">
-      <default>250</default>
+      <default>400</default>
       <_summary>Duration of the effect (in milliseconds)</_summary>
       <_description>
        Duration of the effect (in milliseconds)    
@@ -79,7 +79,7 @@
     </key>
     
      <key name="desktop-effects-map-transition" type="s">
-      <default>"easeInSine"</default>
+      <default>"easeOutBounce"</default>
       <_summary>Transition used when mapping windows</_summary>
       <_description>
        A Tweener transition
@@ -87,7 +87,80 @@
     </key>
     
     <key type="i" name="desktop-effects-map-time">
+      <default>400</default>
+      <_summary>Duration of the effect (in milliseconds)</_summary>
+      <_description>
+       Duration of the effect (in milliseconds)    
+      </_description>
+    </key>
+    
+    
+    <key type="s" name="desktop-effects-minimize-effect">
+      <default>"scale"</default>
+      <_summary>Effect used when minimizing windows</_summary>
+      <_description>
+       An effect: traditional, scale, fade, none
+      </_description>
+    </key>
+    
+     <key name="desktop-effects-minimize-transition" type="s">
+      <default>"easeInSine"</default>
+      <_summary>Transition used when minimizing windows</_summary>
+      <_description>
+       A Tweener transition
+      </_description>
+    </key>
+    
+    <key type="i" name="desktop-effects-minimize-time">
       <default>250</default>
+      <_summary>Duration of the effect (in milliseconds)</_summary>
+      <_description>
+       Duration of the effect (in milliseconds)    
+      </_description>
+    </key>
+    
+    <key type="s" name="desktop-effects-maximize-effect">
+      <default>"none"</default>
+      <_summary>Effect used when maximizing windows</_summary>
+      <_description>
+       An effect: none
+      </_description>
+    </key>
+    
+     <key name="desktop-effects-maximize-transition" type="s">
+      <default>"easeInBack"</default>
+      <_summary>Transition used when maximizing windows</_summary>
+      <_description>
+       A Tweener transition
+      </_description>
+    </key>
+    
+    <key type="i" name="desktop-effects-maximize-time">
+      <default>400</default>
+      <_summary>Duration of the effect (in milliseconds)</_summary>
+      <_description>
+       Duration of the effect (in milliseconds)    
+      </_description>
+    </key>
+    
+    <key type="s" name="desktop-effects-unmaximize-effect">
+      <default>"none"</default>
+      <_summary>Effect used when unmaximizing windows</_summary>
+      <_description>
+       An effect: none
+      </_description>
+    </key>
+    
+     <key name="desktop-effects-unmaximize-transition" type="s">
+      <default>"easeOutBounce"</default>
+      <_summary>Transition used when unmaximizing windows</_summary>
+      <_description>
+       A Tweener transition
+      </_description>
+    </key>
+    
+    <key type="i" name="desktop-effects-unmaximize-time">
+      <default>400</default>
       <_summary>Duration of the effect (in milliseconds)</_summary>
       <_description>
        Duration of the effect (in milliseconds)    
