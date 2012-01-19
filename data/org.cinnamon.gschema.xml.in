@@ -38,6 +38,14 @@
       </_description>
     </key>
     
+    <key name="desktop-effects" type="b">
+      <default>true</default>
+      <_summary>Enable desktop effects</_summary>
+      <_description>
+        Whether to enable desktop effects and window animations.
+      </_description>
+    </key>
+    
     <key name="desktop-layout" type="s">
       <default>"traditional"</default>
       <_summary>Layout style</_summary>

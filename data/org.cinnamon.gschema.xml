@@ -17,6 +17,12 @@
       <description>Cinnamon applets have a uuid property; this key lists applets which should be loaded.</description>
     </key>
     
+    <key type="b" name="desktop-effects">
+      <default>true</default>
+      <summary>Enable desktop effects</summary>
+      <description>Whether to enable desktop effects and window animations.</description>
+    </key>
+    
     <key type="b" name="panel-autohide">
       <default>false</default>
       <summary>Auto-hide panel</summary>

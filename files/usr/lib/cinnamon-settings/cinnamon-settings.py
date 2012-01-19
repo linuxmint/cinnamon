@@ -416,6 +416,7 @@ class MainWindow:
         label = Gtk.Label()
         label.set_markup("<i><small>%s</small></i>" % _("Note: If you change the layout you will need to restart Cinnamon."))
         sidePage.add_widget(label) 
+        sidePage.add_widget(GSettingsCheckButton(_("Enable desktop effects"), "org.cinnamon", "desktop-effects"))
         
         sidePage = SidePage(_("Calendar"), "clock.svg", self.content_box)
         self.sidePages.append(sidePage);        

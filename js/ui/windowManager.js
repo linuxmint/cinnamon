@@ -161,8 +161,8 @@ WindowManager.prototype = {
         if (Main.overview.visible || this._animationsBlocked > 0)
             return false;
         if (actor && (actor.meta_window.get_window_type() != Meta.WindowType.NORMAL))
-            return false;
-        return true;
+            return false;            
+        return global.settings.get_boolean("desktop-effects");
     },
 
     _removeEffect : function(list, actor) {
