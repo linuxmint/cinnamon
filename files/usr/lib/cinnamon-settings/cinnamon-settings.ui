@@ -54,16 +54,22 @@
                 <property name="vexpand">True</property>
                 <property name="shadow_type">in</property>
                 <child>
-                  <object class="GtkVBox" id="content_box">
+                  <object class="GtkViewport" id="viewport1">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-                    <property name="hexpand">True</property>
-                    <property name="vexpand">True</property>
-                    <property name="border_width">6</property>
-                    <property name="spacing">3</property>
                     <child>
-                      <placeholder/>
+                      <object class="GtkVBox" id="content_box">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+                        <property name="hexpand">True</property>
+                        <property name="vexpand">True</property>
+                        <property name="border_width">6</property>
+                        <property name="spacing">3</property>
+                        <child>
+                          <placeholder/>
+                        </child>
+                      </object>
                     </child>
                   </object>
                 </child>
