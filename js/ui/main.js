@@ -166,7 +166,7 @@ function _initUserSession() {
     });
 
     global.display.connect('overlay-key', function(){
-        panel._menu.menu.toggle();
+        menu.menu.toggle();
     });
 
 }
