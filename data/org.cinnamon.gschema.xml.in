@@ -50,7 +50,7 @@
       <default>"scale"</default>
       <_summary>Effect used when closing windows</_summary>
       <_description>
-       An effect: scale, opacity, none
+       An effect: scale, fade, none
       </_description>
     </key>
     
@@ -63,6 +63,30 @@
     </key>
     
     <key type="i" name="desktop-effects-close-time">
+      <default>250</default>
+      <_summary>Duration of the effect (in milliseconds)</_summary>
+      <_description>
+       Duration of the effect (in milliseconds)    
+      </_description>
+    </key>
+    
+    <key type="s" name="desktop-effects-map-effect">
+      <default>"scale"</default>
+      <_summary>Effect used when mapping windows</_summary>
+      <_description>
+       An effect: scale, fade, none
+      </_description>
+    </key>
+    
+     <key name="desktop-effects-map-transition" type="s">
+      <default>"easeInSine"</default>
+      <_summary>Transition used when mapping windows</_summary>
+      <_description>
+       A Tweener transition
+      </_description>
+    </key>
+    
+    <key type="i" name="desktop-effects-map-time">
       <default>250</default>
       <_summary>Duration of the effect (in milliseconds)</_summary>
       <_description>

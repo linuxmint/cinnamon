@@ -501,7 +501,7 @@ class MainWindow:
         label.set_markup("<b>%s</b>" % _("Closing windows"))
         sidePage.add_widget(label)     
         
-        effects = [["none", _("None")], ["scale", _("Scale")], ["opacity", _("Opacity")]]        
+        effects = [["none", _("None")], ["scale", _("Scale")], ["fade", _("Fade")]]        
         combo = GSettingsComboBox(_("Effect"), "org.cinnamon", "desktop-effects-close-effect", effects)
         sidePage.add_widget(combo) 
         
@@ -516,7 +516,7 @@ class MainWindow:
         label.set_markup("<b>%s</b>" % _("Mapping windows"))
         sidePage.add_widget(label)     
         
-        effects = [["none", _("None")], ["scale", _("Scale")], ["opacity", _("Opacity")]]        
+        effects = [["none", _("None")], ["scale", _("Scale")], ["fade", _("Fade")]]        
         combo = GSettingsComboBox(_("Effect"), "org.cinnamon", "desktop-effects-map-effect", effects)
         sidePage.add_widget(combo) 
         

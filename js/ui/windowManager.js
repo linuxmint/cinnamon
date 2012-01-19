@@ -366,7 +366,7 @@ WindowManager.prototype = {
             log(e);
         }
                 
-        if (effect == "opacity") {            
+        if (effect == "fade") {            
             this._mapping.push(actor);
             actor.opacity = 0;
             actor.show();           
@@ -501,7 +501,7 @@ WindowManager.prototype = {
                                onOverwriteParams: [cinnamonwm, actor]
                              });
         }
-        else if (effect == "opacity") {
+        else if (effect == "fade") {
             Tweener.addTween(actor,
                              { opacity: 0,                               
                                time: time,

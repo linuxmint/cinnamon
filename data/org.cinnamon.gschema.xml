@@ -26,7 +26,7 @@
     <key type="s" name="desktop-effects-close-effect">
       <default>"scale"</default>
       <summary>Effect used when closing windows</summary>
-      <description>An effect: scale, opacity, none</description>
+      <description>An effect: scale, fade, none</description>
     </key>
     
     <key type="s" name="desktop-effects-close-transition">
@@ -44,7 +44,7 @@
     <key type="s" name="desktop-effects-map-effect">
       <default>"scale"</default>
       <summary>Effect used when mapping windows</summary>
-      <description>An effect: scale, opacity, none</description>
+      <description>An effect: scale, fade, none</description>
     </key>
     
     <key type="s" name="desktop-effects-map-transition">
