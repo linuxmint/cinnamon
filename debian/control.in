@@ -75,6 +75,9 @@ Depends: ${gir:Depends},
          mesa-utils
 Recommends: gnome-control-center, gnome-user-guide, gnome-themes-standard, gnome-session-fallback
 Breaks: gnome-control-center (<< 1:3.0)
+Conflicts: cinnamon-session, cinnamon-settings
+Provides: cinnamon-session, cinnamon-settings
+Replaces: cinnamon-session, cinnamon-settings
 Description: Cinnamon desktop
  Cinnamon redefines user interactions with the GNOME desktop.
  In particular, it offers new paradigms for launching applications,
