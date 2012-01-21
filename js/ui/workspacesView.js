@@ -339,7 +339,7 @@ WorkspacesView.prototype = {
 
     _onMappedChanged: function() {
         if (this.actor.mapped) {
-            let direction = Overview.SwipeScrollDirection.VERTICAL;
+            let direction = Overview.SwipeScrollDirection.HORIZONTAL;
             Main.overview.setScrollAdjustment(this._scrollAdjustment,
                                               direction);
             this._swipeScrollBeginId = Main.overview.connect('swipe-scroll-begin',
