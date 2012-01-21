@@ -809,13 +809,13 @@ Chrome.prototype = {
     },
     
     modifyActorParams: function(actor, params) {
-        let index = this._findActor(actor)
+        let index = this._findActor(actor);
         if (index == -1)
             throw new Error('could not find actor in chrome');
         for (var i in params){
             this._trackedActors[index][i] = params[i];
         }
-        this._queueUpdateRegions();
+        this.updateRegions();
     },
 
     _trackActor: function(actor, params) {
