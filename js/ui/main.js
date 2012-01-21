@@ -428,9 +428,6 @@ function _checkWorkspaces() {
     if (removingCurrentWorkspace) {
         global.screen.get_workspace_by_index(global.screen.n_workspaces - 1).activate(global.get_current_time());
         wm.unblockAnimations();
-
-        if (!overview.visible && showOverview)
-            overview.show();
     }
 
     _checkWorkspacesId = 0;
