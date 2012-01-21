@@ -475,6 +475,7 @@ Overview.prototype = {
 
         this._viewSelector.actor.set_position(viewX, viewY);
         this._viewSelector.actor.set_size(viewWidth, viewHeight);
+        this._viewSelector.actor.hide();
     },
 
     //// Public methods ////
