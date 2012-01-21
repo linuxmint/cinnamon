@@ -74,6 +74,8 @@ LayoutManager.prototype = {
 
         global.screen.connect('monitors-changed',
                               Lang.bind(this, this._monitorsChanged));
+        global.window_manager.connect('switch-workspace',
+                              Lang.bind(this, this._windowsRestacked));
         this._monitorsChanged();
         this._chrome.addActor(this._hotCorner.actor);
         global.settings.connect("changed::panel-autohide", Lang.bind(this, this._onPanelAutoHideChanged));
@@ -94,6 +96,7 @@ LayoutManager.prototype = {
                 }
             }
         }
+        this._chrome.updateRegions();
     },
 
     // This is called by Main after everything else is constructed;
@@ -290,7 +293,7 @@ LayoutManager.prototype = {
             global.destroy_pointer_barrier(rightPanelBarrier);
 
         if (panelBox.height) {                        
-            if ((Main.desktop_layout == Main.LAYOUT_TRADITIONAL || Main.desktop_layout == Main.LAYOUT_CLASSIC) && panelBox==this.panelBox) {
+            if ((Main.desktop_layout == Main.LAYOUT_TRADITIONAL && panelBox==this.panelBox) || (Main.desktop_layout == Main.LAYOUT_CLASSIC && panelBox==this.panelBox2)) {
                 let monitor = this.bottomMonitor;
                 leftPanelBarrier =
                     global.create_pointer_barrier(monitor.x, monitor.y + monitor.height - panelBox.height,
