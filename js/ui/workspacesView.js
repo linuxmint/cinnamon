@@ -679,7 +679,6 @@ WorkspacesDisplay.prototype = {
 
         let fullWidth = this.actor.allocation.x2 - this.actor.allocation.x1;
         let fullHeight = this.actor.allocation.y2 - this.actor.allocation.y1;
-        global.log(fullWidth+":"+fullHeight);
 
         let width = fullWidth;
         let height = fullHeight;

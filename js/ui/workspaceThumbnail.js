@@ -819,8 +819,8 @@ ThumbnailsBox.prototype = {
 
         // The background is horizontally restricted to correspond to the current thumbnail size
         // but otherwise covers the entire allocation
-        childBox.y1 = box.y1 + ((contentBox.y2 - contentBox.y1) - thumbnailHeight);
-        childBox.y2 = box.y2;
+        childBox.y1 = box.y1 + ((contentBox.y2 - contentBox.y1) - thumbnailHeight) + Main.overview._viewSelector._tabBar.get_height();
+        childBox.y2 = box.y2 + Main.overview._viewSelector._tabBar.get_height();
         
         childBox.x1 = box.x1;
         childBox.x2 = box.x2;
@@ -847,13 +847,8 @@ ThumbnailsBox.prototype = {
             let roundedHScale = (x2 - x1) / portholeWidth;
 
             let y1, y2;
-            if (rtl) {
-                y1 = contentBox.y1 + slideOffset * thumbnail.slidePosition;
-                y2 = y1 + thumbnailHeight;
-            } else {
-                y1 = contentBox.y2 - thumbnailHeight + slideOffset * thumbnail.slidePosition;
-                y2 = y1 + thumbnailHeight;
-            }
+            y1 = contentBox.y2 - thumbnailHeight + slideOffset * thumbnail.slidePosition + Main.overview._viewSelector._tabBar.get_height();
+            y2 = y1 + thumbnailHeight;
 
             if (thumbnail.metaWorkspace == indicatorWorkspace)
                 indicatorX = x1;
@@ -874,13 +869,8 @@ ThumbnailsBox.prototype = {
             x += thumbnailWidth - Math.round(thumbnailWidth * thumbnail.collapseFraction);
         }
 
-        if (rtl) {
-            childBox.y1 = contentBox.y1;
-            childBox.y2 = contentBox.y1 + thumbnailHeight;
-        } else {
-            childBox.y1 = contentBox.y2 - thumbnailHeight;
-            childBox.y2 = contentBox.y2;
-        }
+        childBox.y1 = contentBox.y2 - thumbnailHeight + Main.overview._viewSelector._tabBar.get_height();
+        childBox.y2 = contentBox.y2 + Main.overview._viewSelector._tabBar.get_height();
         childBox.x1 = indicatorX;
         childBox.x2 = childBox.x1 + thumbnailWidth;
         this._indicator.allocate(childBox, flags);
