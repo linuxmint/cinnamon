@@ -648,6 +648,9 @@ Panel.prototype = {
     _showPanel: function() {
         if (this._hidden == false) return;
         
+        // Force the panel to be on top (hack to correct issues when switching workspace)
+        Main.layoutManager._windowsRestacked();
+        
         if (this.bottomPosition) {        
             let params = { y: PANEL_HEIGHT - 1,
                            time: AUTOHIDE_ANIMATION_TIME + 0.1,
@@ -657,10 +660,14 @@ Panel.prototype = {
             Tweener.addTween(this._leftCorner.actor, params);
             Tweener.addTween(this._rightCorner.actor, params);
 
-            Tweener.addTween(this.actor,
-                         { y: 0,
+            Tweener.addTween(this.actor.get_parent(),
+                         { y: Main.layoutManager.bottomMonitor.y + Main.layoutManager.bottomMonitor.height - PANEL_HEIGHT,
                            time: AUTOHIDE_ANIMATION_TIME,
-                           transition: 'easeOutQuad'
+                           transition: 'easeOutQuad',
+                           onUpdate: function() {
+                               // Force the layout manager to update the input region
+                               Main.layoutManager._chrome.updateRegions()
+                           }
                          });
 
             params = { opacity: 255,
@@ -681,10 +688,14 @@ Panel.prototype = {
             Tweener.addTween(this._leftCorner.actor, params);
             Tweener.addTween(this._rightCorner.actor, params);
 
-            Tweener.addTween(this.actor,
-                         { y: 0,
+            Tweener.addTween(this.actor.get_parent(),
+                         { y: Main.layoutManager.primaryMonitor.y,
                            time: AUTOHIDE_ANIMATION_TIME,
-                           transition: 'easeOutQuad'
+                           transition: 'easeOutQuad',
+                           onUpdate: function() {
+                               // Force the layout manager to update the input region
+                               Main.layoutManager._chrome.updateRegions()
+                           }
                          });
 
             params = { opacity: 255,
@@ -702,12 +713,19 @@ Panel.prototype = {
     
     _hidePanel: function() {
         if (Main.overview.visible || this._hideable == false) return;
+        
+        // Force the panel to be on top (hack to correct issues when switching workspace)
+        Main.layoutManager._windowsRestacked();
 
         if (this.bottomPosition) {  
-            Tweener.addTween(this.actor,
-                         { y: PANEL_HEIGHT - 1,
+            Tweener.addTween(this.actor.get_parent(),
+                         { y: Main.layoutManager.bottomMonitor.y + Main.layoutManager.bottomMonitor.height - 1,
                            time: AUTOHIDE_ANIMATION_TIME,
-                           transition: 'easeOutQuad'
+                           transition: 'easeOutQuad',
+                           onUpdate: function() {
+                               // Force the layout manager to update the input region
+                               Main.layoutManager._chrome.updateRegions()
+                           }
                          });
 
             let params = { y: 0,
@@ -728,10 +746,14 @@ Panel.prototype = {
             Tweener.addTween(this._rightBox, params);
         }
         else {
-            Tweener.addTween(this.actor,
-                     { y: -PANEL_HEIGHT + 1,
+            Tweener.addTween(this.actor.get_parent(),
+                     { y: Main.layoutManager.primaryMonitor.y - PANEL_HEIGHT + 1,
                        time: AUTOHIDE_ANIMATION_TIME,
-                       transition: 'easeOutQuad'
+                       transition: 'easeOutQuad',
+                       onUpdate: function() {
+                           // Force the layout manager to update the input region
+                           Main.layoutManager._chrome.updateRegions()
+                       }
                      });
 
             let params = { y: 0,
