@@ -88,18 +88,18 @@ LayoutManager.prototype = {
     
     _windowsRestacked: function() {
         let windows = global.window_group.get_children();
-        let hasCoveringWindows = false;
+        //let hasCoveringWindows = false;
         for (var i in windows){
             if (windows[i] instanceof Meta.WindowActor){
                 if (windows[i].get_meta_window().get_layer() <= Meta.StackLayer.NORMAL){
                     this.panelBox.raise(windows[i]);
                     this.panelBox2.raise(windows[i]);
-                }else hasCoveringWindows = true;
+                }//else hasCoveringWindows = true;
             }
         }
-        // Hack to have context menus items active when they're over the panel
+        /*// Hack to have context menus items active when they're over the panel
         this._chrome.modifyActorParams(this.panelBox, { affectsInputRegion: !hasCoveringWindows });
-        this._chrome.modifyActorParams(this.panelBox2, { affectsInputRegion: !hasCoveringWindows });
+        this._chrome.modifyActorParams(this.panelBox2, { affectsInputRegion: !hasCoveringWindows });*/
         
         this._chrome.updateRegions();
     },
