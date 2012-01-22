@@ -765,6 +765,8 @@ Overview.prototype = {
             this._fakePointerEvent();
             this._needsFakePointerEvent = false;
         }
+        
+        Main.layoutManager._chrome.updateRegions();
     }
 };
 Signals.addSignalMethods(Overview.prototype);
