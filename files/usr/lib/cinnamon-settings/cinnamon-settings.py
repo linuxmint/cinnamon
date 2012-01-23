@@ -10,6 +10,7 @@ try:
     from gi.repository import GdkPixbuf 
     import gconf
     import json
+    import dbus
     from user import home
 except Exception, detail:
     print detail
@@ -325,6 +326,19 @@ class GSettingsCheckButton(Gtk.CheckButton):
     def on_my_value_changed(self, widget):
         self.settings.set_boolean(self.key, self.get_active())
         
+class DBusCheckButton(Gtk.CheckButton):    
+    def __init__(self, label, service, path, get_method, set_method):        
+        super(DBusCheckButton, self).__init__(label)     
+        proxy = dbus.SystemBus().get_object(service, path)
+        self.dbus_iface = dbus.Interface(proxy, dbus_interface=service)
+        self.dbus_get_method = get_method
+        self.dbus_set_method = set_method
+        self.set_active(getattr(self.dbus_iface, get_method)()[1])
+        self.connect('toggled', self.on_my_value_changed)
+        
+    def on_my_value_changed(self, widget):
+        getattr(self.dbus_iface, self.dbus_set_method)(self.get_active())
+        
 class GSettingsSpinButton(Gtk.HBox):    
     def __init__(self, label, schema, key, min, max, step, page, units):        
         self.key = key
@@ -453,6 +467,7 @@ class MainWindow:
         sidePage.add_widget(GSettingsEntry(_("Date format for the panel"), "org.cinnamon.calendar", "date-format"))                                 
         sidePage.add_widget(GSettingsEntry(_("Date format inside the date applet"), "org.cinnamon.calendar", "date-format-full"))                                 
         sidePage.add_widget(Gtk.LinkButton.new_with_label("http://www.foragoodstrftime.com/", _("Generate your own date formats"))) 
+        sidePage.add_widget(DBusCheckButton(_("Use network time"), "org.gnome.SettingsDaemon.DateTimeMechanism", "/", "GetUsingNtp", "SetUsingNtp"))
         
         sidePage = SidePage(_("Overview"), "overview.svg", self.content_box)
         self.sidePages.append(sidePage)
