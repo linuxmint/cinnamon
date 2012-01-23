@@ -618,6 +618,7 @@ ApplicationsButton.prototype = {
         let j = 0;
         for ( let i = 0; i < launchers.length; ++i ) {
             let app = appSys.lookup_app(launchers[i]);
+            if (!app) app = appSys.lookup_settings_app(launchers[i]);
             if (app) {
                 let button = new FavoritesButton(this, app, launchers.length + 3); // + 3 because we're adding 3 system buttons at the bottom
                 this._favoritesButtons[app] = button;

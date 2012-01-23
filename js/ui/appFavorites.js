@@ -28,7 +28,9 @@ AppFavorites.prototype = {
         let ids = global.settings.get_strv(this.FAVORITE_APPS_KEY);
         let appSys = Cinnamon.AppSystem.get_default();
         let apps = ids.map(function (id) {
-                return appSys.lookup_app(id);
+                let app = appSys.lookup_app(id);
+                if (!app) app = appSys.lookup_settings_app(id);
+                return app;
             }).filter(function (app) {
                 return app != null;
             });
@@ -66,6 +68,7 @@ AppFavorites.prototype = {
             return false;
 
         let app = Cinnamon.AppSystem.get_default().lookup_app(appId);
+        if (!app) app = Cinnamon.AppSystem.get_default().lookup_settings_app(appId);
 
         if (!app)
             return false;
@@ -85,6 +88,7 @@ AppFavorites.prototype = {
             return;
 
         let app = Cinnamon.AppSystem.get_default().lookup_app(appId);
+        if (!app) app = Cinnamon.AppSystem.get_default().lookup_settings_app(appId);
 
         Main.overview.setMessage(_("%s has been added to your favorites.").format(app.get_name()), Lang.bind(this, function () {
             this._removeFavorite(appId);
