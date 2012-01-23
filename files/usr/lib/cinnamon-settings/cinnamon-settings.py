@@ -447,7 +447,7 @@ class TimeZoneSelectorWidget(Gtk.HBox):
         for region in regions:
             iter = self.region_model.insert_before(None, None)
             self.region_model.set_value(iter, 0, region)                
-            self.region_model.set_value(iter, 1, region)                        
+            self.region_model.set_value(iter, 1, region.replace("_", " "))                        
             if (region == self.selected_region):
                 selected_region_iter = iter
                                 
@@ -492,7 +492,7 @@ class TimeZoneSelectorWidget(Gtk.HBox):
             for city in cities:
                 iter = self.city_model.insert_before(None, None)
                 self.city_model.set_value(iter, 0, city)                
-                self.city_model.set_value(iter, 1, city)                        
+                self.city_model.set_value(iter, 1, city.replace("_", " "))                        
                 if (city == self.selected_city):
                     selected_city_iter = iter
             if selected_city_iter is not None:
