@@ -19,15 +19,16 @@ def load_db():
         tz_info = line.split('\t')
         if len(tz_info)<3:
             continue
-        tz = tz_info[2].split('/')
+        tz = tz_info[2]
+        if "/" in tz:
+            i = tz.index("/")
+            region = tz[:i]
+            zone = tz[i+1:]
         
-        region = tz[0]
-        zone = tz[1]
-        
-        if region not in tz_db:
-            tz_db[region] = []
-        
-        tz_db[region].append(zone)
+            if region not in tz_db:
+                tz_db[region] = []
+            
+            tz_db[region].append(zone)
         
     tz_file.close()
     
