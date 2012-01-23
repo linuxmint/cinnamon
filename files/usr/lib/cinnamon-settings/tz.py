@@ -1,3 +1,5 @@
+import os
+
 def load_db():
     tz_db = {}
     
@@ -11,7 +13,7 @@ def load_db():
     
     for line in tz_file:
         line = line.rstrip().lstrip()
-        if line="" or line[0] == '#':
+        if line=="" or line[0] == '#':
             continue
         
         tz_info = line.split('\t')
