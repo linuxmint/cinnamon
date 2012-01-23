@@ -11,6 +11,7 @@ try:
     import gconf
     import json
     import dbus
+    import tz
     from user import home
 except Exception, detail:
     print detail
@@ -425,6 +426,87 @@ class GSettingsComboBox(Gtk.HBox):
             value = self.model[tree_iter][0]            
             self.settings.set_string(self.key, value)                       
 
+class TimeZoneSelectorWidget(Gtk.HBox):
+    def __init__(self):
+        super(TimeZoneSelectorWidget, self).__init__()
+        
+        proxy = dbus.SystemBus().get_object("org.gnome.SettingsDaemon.DateTimeMechanism", "/")
+        self.dbus_iface = dbus.Interface(proxy, dbus_interface="org.gnome.SettingsDaemon.DateTimeMechanism")
+        
+        self.timezones = tz.load_db()
+        
+        self.selected_region, self.selected_city = self.get_selected_zone()
+        
+        region_label = Gtk.Label(_("Region"))
+        self.pack_start(region_label, False, False, 2)
+        
+        regions = self.timezones.keys()
+        regions.sort()
+        self.region_model = Gtk.ListStore(str, str)
+        selected_region_iter = None
+        for region in regions:
+            iter = self.region_model.insert_before(None, None)
+            self.region_model.set_value(iter, 0, region)                
+            self.region_model.set_value(iter, 1, region)                        
+            if (region == self.selected_region):
+                selected_region_iter = iter
+                                
+        self.region_widget = Gtk.ComboBox.new_with_model(self.region_model)   
+        renderer_text = Gtk.CellRendererText()
+        self.region_widget.pack_start(renderer_text, True)
+        self.region_widget.add_attribute(renderer_text, "text", 1)
+        if selected_region_iter is not None:
+            self.region_widget.set_active_iter(selected_region_iter)
+        self.pack_start(self.region_widget, False, False, 2)
+        
+        city_label = Gtk.Label(_("City"))
+        self.pack_start(city_label, False, False, 2)
+        
+        self.city_model = Gtk.ListStore(str, str)
+        self.city_widget = Gtk.ComboBox.new_with_model(self.city_model)   
+        renderer_text = Gtk.CellRendererText()
+        self.city_widget.pack_start(renderer_text, True)
+        self.city_widget.add_attribute(renderer_text, "text", 1)
+        self.pack_start(self.city_widget, False, False, 2)
+        
+        self.update_cities_list()
+        
+        self.region_widget.connect("changed", self.on_region_changed)
+        self.city_widget.connect("changed", self.on_city_changed)
+    def on_city_changed(self, widget):
+        tree_iter = widget.get_active_iter()
+        if tree_iter != None:
+            self.selected_city = self.city_model[tree_iter][0]
+            self.dbus_iface.SetTimezone(self.selected_region+"/"+self.selected_city)
+    def on_region_changed(self, widget):
+        tree_iter = widget.get_active_iter()
+        if tree_iter != None:            
+            self.selected_region = self.region_model[tree_iter][0]
+            self.update_cities_list()
+    def update_cities_list(self):
+        self.city_model.clear()
+        if self.selected_region and self.selected_region in self.timezones.keys():
+            cities = self.timezones[self.selected_region]
+            cities.sort()
+            selected_city_iter = None
+            for city in cities:
+                iter = self.city_model.insert_before(None, None)
+                self.city_model.set_value(iter, 0, city)                
+                self.city_model.set_value(iter, 1, city)                        
+                if (city == self.selected_city):
+                    selected_city_iter = iter
+            if selected_city_iter is not None:
+                self.city_widget.set_active_iter(selected_city_iter)
+    def get_selected_zone(self):
+        tz = self.dbus_iface.GetTimezone()
+        if "/" in tz:
+            i = tz.index("/")
+            region = tz[:i]
+            city = tz[i+1:]
+            return region, city
+        else:
+            return "", ""
+
 class MainWindow:
   
     # Change pages
@@ -468,6 +550,7 @@ class MainWindow:
         sidePage.add_widget(GSettingsEntry(_("Date format inside the date applet"), "org.cinnamon.calendar", "date-format-full"))                                 
         sidePage.add_widget(Gtk.LinkButton.new_with_label("http://www.foragoodstrftime.com/", _("Generate your own date formats"))) 
         sidePage.add_widget(DBusCheckButton(_("Use network time"), "org.gnome.SettingsDaemon.DateTimeMechanism", "/", "GetUsingNtp", "SetUsingNtp"))
+        sidePage.add_widget(TimeZoneSelectorWidget())
         
         sidePage = SidePage(_("Overview"), "overview.svg", self.content_box)
         self.sidePages.append(sidePage)
