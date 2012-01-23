@@ -48,10 +48,10 @@ MyApplet.prototype = {
         try {        
             this.set_applet_icon_name("user-trash");
             this.set_applet_tooltip(_("Trash"));
-                            
-            this.trash_directory = Gio.file_new_for_path(GLib.get_home_dir() + "/.local/share/Trash/files");            
-            this.trash_info_directory = Gio.file_new_for_path(GLib.get_home_dir() + "/.local/share/Trash/info");
-
+                   
+            this.trash_path = 'trash:///';
+            this.trash_directory =  Gio.file_new_for_uri(this.trash_path);
+                       
             this.empty_item = new PopupMenuItem(_('Empty Trash'), Gtk.STOCK_REMOVE, Lang.bind(this, this._emptyTrash));
             this._applet_context_menu.addMenuItem(this.empty_item);
 
@@ -99,15 +99,7 @@ MyApplet.prototype = {
                 let child = this.trash_directory.get_child(child_info.get_name());
                 child.delete(null);
               }
-        }
-        if (this.trash_info_directory.query_exists(null)) {
-              children = this.trash_info_directory.enumerate_children('*', 0, null, null);
-              child_info = null;
-              while ((child_info = children.next_file(null, null)) != null) {
-                let child = this.trash_directory.get_child(child_info.get_name());
-                child.delete(null);
-              }
-        }
+        }      
     }
 };
 
