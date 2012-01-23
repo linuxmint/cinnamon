@@ -549,8 +549,14 @@ class MainWindow:
         sidePage.add_widget(GSettingsEntry(_("Date format for the panel"), "org.cinnamon.calendar", "date-format"))                                 
         sidePage.add_widget(GSettingsEntry(_("Date format inside the date applet"), "org.cinnamon.calendar", "date-format-full"))                                 
         sidePage.add_widget(Gtk.LinkButton.new_with_label("http://www.foragoodstrftime.com/", _("Generate your own date formats"))) 
-        sidePage.add_widget(DBusCheckButton(_("Use network time"), "org.gnome.SettingsDaemon.DateTimeMechanism", "/", "GetUsingNtp", "SetUsingNtp"))
-        sidePage.add_widget(TimeZoneSelectorWidget())
+        try:
+            sidePage.add_widget(DBusCheckButton(_("Use network time"), "org.gnome.SettingsDaemon.DateTimeMechanism", "/", "GetUsingNtp", "SetUsingNtp"))
+        except:
+            pass
+        try:
+            sidePage.add_widget(TimeZoneSelectorWidget())
+        except:
+            pass
         
         sidePage = SidePage(_("Overview"), "overview.svg", self.content_box)
         self.sidePages.append(sidePage)
