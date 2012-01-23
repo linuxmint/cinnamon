@@ -1,12 +1,18 @@
 def load_db():
     tz_db = {}
     
-    tz_file = open('/usr/share/zoneinfo/zone.tab')
+    filename = '/usr/share/zoneinfo/zone.tab'
+    if not os.path.exists(filename):
+        filename = '/usr/share/lib/zoneinfo/tab/zone_sun.tab'
+    if not os.path.exists(filename):
+        return {}
+        
+    tz_file = open(filename)
     
     for line in tz_file:
-        if line[0] == '#':
-            continue
         line = line.rstrip().lstrip()
+        if line="" or line[0] == '#':
+            continue
         
         tz_info = line.split('\t')
         if len(tz_info)<3:
