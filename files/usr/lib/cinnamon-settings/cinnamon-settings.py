@@ -6,7 +6,7 @@ try:
     import sys
     import string    
     import gettext
-    from gi.repository import Gio, Gtk
+    from gi.repository import Gio, Gtk, GObject
     from gi.repository import GdkPixbuf 
     import gconf
     import json
@@ -515,6 +515,9 @@ class ChangeTimeWidget(Gtk.VBox):
         proxy = dbus.SystemBus().get_object("org.gnome.SettingsDaemon.DateTimeMechanism", "/")
         self.dbus_iface = dbus.Interface(proxy, dbus_interface="org.gnome.SettingsDaemon.DateTimeMechanism")
         
+        # Ensures we're setting the system time only when the user changes it
+        self.changedOnTimeout = False
+        
         self.thirtyDays = [3, 5, 8, 10]
         months = ['January','February','March','April','May','June','July','August','September','October','November','December']
         
@@ -558,6 +561,7 @@ class ChangeTimeWidget(Gtk.VBox):
             self.daySpin.set_sensitive(False)
         
         self.update_time()
+        GObject.timeout_add(1000, self.update_time)
         
         # Connect to callback
         self.hourSpin.connect('changed', self._change_system_time)
@@ -580,6 +584,8 @@ class ChangeTimeWidget(Gtk.VBox):
     def update_time(self):
         dt = datetime.now()
         
+        self.changedOnTimeout = True
+        
         # Time
         self.hourSpin.set_value( dt.hour )
         self.minSpin.set_value( dt.minute )
@@ -588,6 +594,8 @@ class ChangeTimeWidget(Gtk.VBox):
         self.monthBox.set_active( dt.month-1 )
         self.daySpin.set_value( dt.day )
         self.yearSpin.set_value( dt.year )
+        
+        self.changedOnTimeout = False
         
         # Update the max of the day spin box
         maxDay = 31
@@ -600,6 +608,8 @@ class ChangeTimeWidget(Gtk.VBox):
             maxDay = 30
             
         self.daySpin.get_adjustment().set_upper(maxDay)
+        
+        return True
         
     def change_using_ntp(self, usingNtp):
         # Check if we were using Ntp by seeing if the spin button
@@ -621,14 +631,15 @@ class ChangeTimeWidget(Gtk.VBox):
                 self.daySpin.set_sensitive(False)
                 
     def _change_system_time(self, widget):
-        hour = int( self.hourSpin.get_value() )
-        minute = int( self.minSpin.get_value() )
-        month = self.monthBox.get_active() + 1
-        day = int( self.daySpin.get_value() )
-        year = int( self.yearSpin.get_value() )
-        
-        newDt = datetime(year, month, day, hour, minute)
-        self.dbus_iface.SetTime( time.mktime(newDt.utctimetuple()) )
+        if not self.changedOnTimeout:
+            hour = int( self.hourSpin.get_value() )
+            minute = int( self.minSpin.get_value() )
+            month = self.monthBox.get_active() + 1
+            day = int( self.daySpin.get_value() )
+            year = int( self.yearSpin.get_value() )
+            
+            newDt = datetime(year, month, day, hour, minute)
+            self.dbus_iface.SetTime( time.mktime(newDt.utctimetuple()) )
 
 class MainWindow:
   
