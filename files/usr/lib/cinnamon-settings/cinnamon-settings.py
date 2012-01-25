@@ -552,14 +552,6 @@ class ChangeTimeWidget(Gtk.VBox):
         self.yearSpin.set_editable(False)
         self.daySpin.set_editable(False)
         
-        usingNtp = getattr(self.dbus_iface, 'GetUsingNtp')()[1]
-        if usingNtp:
-            self.hourSpin.set_sensitive(False)
-            self.minSpin.set_sensitive(False)
-            self.yearSpin.set_sensitive(False)
-            self.monthBox.set_sensitive(False)
-            self.daySpin.set_sensitive(False)
-        
         self.update_time()
         GObject.timeout_add(1000, self.update_time)
         
@@ -614,21 +606,7 @@ class ChangeTimeWidget(Gtk.VBox):
     def change_using_ntp(self, usingNtp):
         # Check if we were using Ntp by seeing if the spin button
         # is sensitive
-        prevUsingNtp = not self.hourSpin.get_sensitive()
-        if prevUsingNtp:
-            if not usingNtp:
-                self.hourSpin.set_sensitive(True)
-                self.minSpin.set_sensitive(True)
-                self.yearSpin.set_sensitive(True)
-                self.monthBox.set_sensitive(True)
-                self.daySpin.set_sensitive(True)
-        else:
-            if usingNtp:
-                self.hourSpin.set_sensitive(False)
-                self.minSpin.set_sensitive(False)
-                self.yearSpin.set_sensitive(False)
-                self.monthBox.set_sensitive(False)
-                self.daySpin.set_sensitive(False)
+        self.set_sensitive(not usingNtp)
                 
     def _change_system_time(self, widget):
         if not self.changedOnTimeout:
@@ -698,6 +676,7 @@ class MainWindow:
         
         if self.ntpCheckButton != None:
             self.ntpCheckButton.connect('toggled', self._ntp_toggled)
+            self.changeTimeWidget.change_using_ntp( self.ntpCheckButton.get_active() )
         
         sidePage = SidePage(_("Overview"), "overview.svg", self.content_box)
         self.sidePages.append(sidePage)
