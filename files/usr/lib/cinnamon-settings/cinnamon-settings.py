@@ -659,7 +659,10 @@ class ChangeTimeWidget(Gtk.VBox):
             year = int( self.yearSpin.get_value() )
             
             newDt = datetime(year, month, day, hour, minute)
+            
+            self._setting_time_lock.acquire()
             self._time_to_set = time.mktime(newDt.utctimetuple())
+            self._setting_time_lock.release()
             
             thread.start_new_thread(self._do_change_system_time, ())
 
