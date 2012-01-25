@@ -510,7 +510,7 @@ class TimeZoneSelectorWidget(Gtk.HBox):
         else:
             return "", ""
             
-class ChangeTimeWidget(Gtk.VBox):
+class ChangeTimeWidget(Gtk.HBox):
     def __init__(self):
         super(ChangeTimeWidget, self).__init__()
         proxy = dbus.SystemBus().get_object("org.gnome.SettingsDaemon.DateTimeMechanism", "/")
@@ -576,8 +576,10 @@ class ChangeTimeWidget(Gtk.VBox):
         dateBox.pack_start(self.daySpin, False, False, 2)
         dateBox.pack_start(self.yearSpin, False, False, 2)
         
-        self.pack_start(timeBox, False, False, 2)
-        self.pack_start(dateBox, False, False, 2)
+        self.pack_start(Gtk.Label(_("Date : ")), False, False, 2)
+        self.pack_start(dateBox, True, True, 2)
+        self.pack_start(Gtk.Label(_("Time : ")), False, False, 2)
+        self.pack_start(timeBox, True, True, 2)
         
     def update_time(self):
         self._setting_time_lock.acquire()
