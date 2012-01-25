@@ -75,7 +75,9 @@ DateMenuButton.prototype = {
         this._calendar = new Calendar.Calendar(this._eventSource);       
         vbox.add(this._calendar.actor);
 
-        item = this.menu.addSettingsAction(_("Date and Time Settings"), 'gnome-datetime-panel.desktop');
+        item = new PopupMenu.PopupMenuItem(_("Date and Time Settings"))
+        item.connect("activate", Lang.bind(this, this._onLaunchSettings));
+        //this.menu.addMenuItem(item);
         if (item) {
             let separator = new PopupMenu.PopupSeparatorMenuItem();
             separator.setColumnWidths(1);
@@ -120,6 +122,11 @@ DateMenuButton.prototype = {
 
         // Start the clock
         this._updateClockAndDate();
+    },
+    
+    _onLaunchSettings: function() {
+        this.menu.close();
+        Util.spawnCommandLine("cinnamon-settings calendar");
     },
 
     _updateClockAndDate: function() {

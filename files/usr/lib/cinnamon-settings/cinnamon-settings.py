@@ -694,7 +694,7 @@ class MainWindow:
         self.sidePages = []
                                                       
         sidePage = SidePage(_("Panel"), "panel.svg", self.content_box)
-        self.sidePages.append(sidePage)
+        self.sidePages.append((sidePage, "panel"))
         sidePage.add_widget(GSettingsEntry(_("Menu text"), "org.cinnamon", "menu-text")) 
         sidePage.add_widget(GSettingsCheckButton(_("Auto-hide panel"), "org.cinnamon", "panel-autohide"))
         desktop_layouts = [["traditional", _("Traditional (panel at the bottom)")], ["flipped", _("Flipped (panel at the top)")], ["classic", _("Classic (panels at the top and at the bottom)")]]        
@@ -705,7 +705,7 @@ class MainWindow:
         sidePage.add_widget(label)         
         
         sidePage = SidePage(_("Calendar"), "clock.svg", self.content_box)
-        self.sidePages.append(sidePage)
+        self.sidePages.append((sidePage, "calendar"))
         self.changeTimeWidget = ChangeTimeWidget()     
         sidePage.add_widget(GSettingsCheckButton(_("Show week dates in calendar"), "org.cinnamon.calendar", "show-weekdate"))         
         sidePage.add_widget(GSettingsEntry(_("Date format for the panel"), "org.cinnamon.calendar", "date-format"))                                 
@@ -728,15 +728,15 @@ class MainWindow:
             self.changeTimeWidget.change_using_ntp( self.ntpCheckButton.get_active() )
         
         sidePage = SidePage(_("Overview"), "overview.svg", self.content_box)
-        self.sidePages.append(sidePage)
+        self.sidePages.append((sidePage, "overwiew"))
         sidePage.add_widget(GSettingsCheckButton(_("Overview icon visible"), "org.cinnamon", "overview-corner-visible")) 
         sidePage.add_widget(GSettingsCheckButton(_("Overview hot corner enabled"), "org.cinnamon", "overview-corner-hover")) 
         
         sidePage = ThemeViewSidePage(_("Themes"), "themes.svg", self.content_box)
-        self.sidePages.append(sidePage)
+        self.sidePages.append((sidePage, "themes"))
         
         sidePage = SidePage(_("Effects"), "desktop-effects.svg", self.content_box)
-        self.sidePages.append(sidePage)
+        self.sidePages.append((sidePage, "effects"))
         sidePage.add_widget(GSettingsCheckButton(_("Enable desktop effects"), "org.cinnamon", "desktop-effects"))
         
         # Destroy window effects
@@ -843,10 +843,10 @@ class MainWindow:
         sidePage.add_widget(box)
         
         sidePage = AppletViewSidePage(_("Applets"), "applets.svg", self.content_box)
-        self.sidePages.append(sidePage)
+        self.sidePages.append((sidePage, "applets"))
         
         sidePage = ExtensionViewSidePage(_("Extensions"), "extensions.svg", self.content_box)
-        self.sidePages.append(sidePage)
+        self.sidePages.append((sidePage, "extensions"))
                         
         #sidePage = SidePage(_("Terminal"), "terminal", self.content_box)
         #self.sidePages.append(sidePage)
@@ -855,9 +855,11 @@ class MainWindow:
                                 
         # create the backing store for the side nav-view.                            
         self.store = Gtk.ListStore(str, GdkPixbuf.Pixbuf, object)
-        for sidePage in self.sidePages:
+        sidePagesIters = {}
+        for sidePage, sidePageID in self.sidePages:
             img = GdkPixbuf.Pixbuf.new_from_file_at_size( "/usr/lib/cinnamon-settings/data/icons/%s" % sidePage.icon, 48, 48)
-            self.store.append([sidePage.name, img, sidePage])     
+            sidePagesIters[sidePageID] = self.store.append([sidePage.name, img, sidePage])     
+        print sidePagesIters
                       
         # set up the side view - navigation.
         self.side_view.set_text_column(0)
@@ -866,7 +868,10 @@ class MainWindow:
         self.side_view.connect("selection_changed", self.side_view_nav )
 
         # Select the first sidePage
-        first_page_iter = self.store.get_iter_first()        
+        if len(sys.argv)==2 and sys.argv[1] in sidePagesIters.keys():
+            first_page_iter = sidePagesIters[sys.argv[1]]
+        else:
+            first_page_iter = self.store.get_iter_first()        
         path = self.store.get_path(first_page_iter)
         self.side_view.select_path(path)
 
