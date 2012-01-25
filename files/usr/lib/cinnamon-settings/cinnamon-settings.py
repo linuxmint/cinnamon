@@ -6,12 +6,14 @@ try:
     import sys
     import string    
     import gettext
-    from gi.repository import Gio, Gtk
+    from gi.repository import Gio, Gtk, GObject
     from gi.repository import GdkPixbuf 
     import gconf
     import json
     import dbus
     import tz
+    import time
+    from datetime import datetime
     from user import home
 except Exception, detail:
     print detail
@@ -506,6 +508,138 @@ class TimeZoneSelectorWidget(Gtk.HBox):
             return region, city
         else:
             return "", ""
+            
+class ChangeTimeWidget(Gtk.VBox):
+    def __init__(self):
+        super(ChangeTimeWidget, self).__init__()
+        proxy = dbus.SystemBus().get_object("org.gnome.SettingsDaemon.DateTimeMechanism", "/")
+        self.dbus_iface = dbus.Interface(proxy, dbus_interface="org.gnome.SettingsDaemon.DateTimeMechanism")
+        
+        # Ensures we're setting the system time only when the user changes it
+        self.changedOnTimeout = False
+        
+        self.thirtyDays = [3, 5, 8, 10]
+        months = ['January','February','March','April','May','June','July','August','September','October','November','December']
+        
+        # Boxes
+        timeBox = Gtk.HBox()
+        dateBox = Gtk.HBox()
+        
+        # Combo Boxes
+        self.monthBox = Gtk.ComboBoxText()
+        
+        for month in months:
+            self.monthBox.append_text(month)
+        
+        # Adjustments
+        hourAdj = Gtk.Adjustment(0, 0, 23, 1, 1)
+        minAdj = Gtk.Adjustment(0, 0, 59, 1, 1)
+        yearAdj = Gtk.Adjustment(0, 0, 9999, 1, 5)
+        dayAdj = Gtk.Adjustment(0, 1, 31, 1, 1)
+        
+        # Spin buttons
+        self.hourSpin = Gtk.SpinButton()
+        self.minSpin = Gtk.SpinButton()
+        self.yearSpin = Gtk.SpinButton()
+        self.daySpin = Gtk.SpinButton()
+        
+        self.hourSpin.configure(hourAdj, 0.5, 0)
+        self.minSpin.configure(minAdj, 0.5, 0)
+        self.yearSpin.configure(yearAdj, 0.5, 0)
+        self.daySpin.configure(dayAdj, 0.5, 0)
+        self.hourSpin.set_editable(False)
+        self.minSpin.set_editable(False)
+        self.yearSpin.set_editable(False)
+        self.daySpin.set_editable(False)
+        
+        usingNtp = getattr(self.dbus_iface, 'GetUsingNtp')()[1]
+        if usingNtp:
+            self.hourSpin.set_sensitive(False)
+            self.minSpin.set_sensitive(False)
+            self.yearSpin.set_sensitive(False)
+            self.monthBox.set_sensitive(False)
+            self.daySpin.set_sensitive(False)
+        
+        self.update_time()
+        GObject.timeout_add(1000, self.update_time)
+        
+        # Connect to callback
+        self.hourSpin.connect('changed', self._change_system_time)
+        self.minSpin.connect('changed', self._change_system_time)
+        self.monthBox.connect('changed', self._change_system_time)
+        self.yearSpin.connect('changed', self._change_system_time)
+        self.daySpin.connect('changed', self._change_system_time)
+        
+        timeBox.pack_start(self.hourSpin, False, False, 2)
+        timeBox.pack_start(Gtk.Label(_(":")), False, False, 2)
+        timeBox.pack_start(self.minSpin, False, False, 2)
+        
+        dateBox.pack_start(self.monthBox, False, False, 2)
+        dateBox.pack_start(self.daySpin, False, False, 2)
+        dateBox.pack_start(self.yearSpin, False, False, 2)
+        
+        self.pack_start(timeBox, False, False, 2)
+        self.pack_start(dateBox, False, False, 2)
+        
+    def update_time(self):
+        dt = datetime.now()
+        
+        self.changedOnTimeout = True
+        
+        # Time
+        self.hourSpin.set_value( dt.hour )
+        self.minSpin.set_value( dt.minute )
+        
+        # Date
+        self.monthBox.set_active( dt.month-1 )
+        self.daySpin.set_value( dt.day )
+        self.yearSpin.set_value( dt.year )
+        
+        self.changedOnTimeout = False
+        
+        # Update the max of the day spin box
+        maxDay = 31
+        if dt.month == 2:
+            if dt.year % 4 == 0:
+                maxDay = 29
+            else:
+                maxDay = 28
+        elif dt.month-1 in self.thirtyDays:
+            maxDay = 30
+            
+        self.daySpin.get_adjustment().set_upper(maxDay)
+        
+        return True
+        
+    def change_using_ntp(self, usingNtp):
+        # Check if we were using Ntp by seeing if the spin button
+        # is sensitive
+        prevUsingNtp = not self.hourSpin.get_sensitive()
+        if prevUsingNtp:
+            if not usingNtp:
+                self.hourSpin.set_sensitive(True)
+                self.minSpin.set_sensitive(True)
+                self.yearSpin.set_sensitive(True)
+                self.monthBox.set_sensitive(True)
+                self.daySpin.set_sensitive(True)
+        else:
+            if usingNtp:
+                self.hourSpin.set_sensitive(False)
+                self.minSpin.set_sensitive(False)
+                self.yearSpin.set_sensitive(False)
+                self.monthBox.set_sensitive(False)
+                self.daySpin.set_sensitive(False)
+                
+    def _change_system_time(self, widget):
+        if not self.changedOnTimeout:
+            hour = int( self.hourSpin.get_value() )
+            minute = int( self.minSpin.get_value() )
+            month = self.monthBox.get_active() + 1
+            day = int( self.daySpin.get_value() )
+            year = int( self.yearSpin.get_value() )
+            
+            newDt = datetime(year, month, day, hour, minute)
+            self.dbus_iface.SetTime( time.mktime(newDt.utctimetuple()) )
 
 class MainWindow:
   
@@ -544,19 +678,26 @@ class MainWindow:
         sidePage.add_widget(label)         
         
         sidePage = SidePage(_("Calendar"), "clock.svg", self.content_box)
-        self.sidePages.append(sidePage)     
+        self.sidePages.append(sidePage)
+        self.changeTimeWidget = ChangeTimeWidget()     
         sidePage.add_widget(GSettingsCheckButton(_("Show week dates in calendar"), "org.cinnamon.calendar", "show-weekdate"))         
         sidePage.add_widget(GSettingsEntry(_("Date format for the panel"), "org.cinnamon.calendar", "date-format"))                                 
         sidePage.add_widget(GSettingsEntry(_("Date format inside the date applet"), "org.cinnamon.calendar", "date-format-full"))                                 
-        sidePage.add_widget(Gtk.LinkButton.new_with_label("http://www.foragoodstrftime.com/", _("Generate your own date formats"))) 
+        sidePage.add_widget(Gtk.LinkButton.new_with_label("http://www.foragoodstrftime.com/", _("Generate your own date formats")))
+        self.ntpCheckButton = None 
         try:
-            sidePage.add_widget(DBusCheckButton(_("Use network time"), "org.gnome.SettingsDaemon.DateTimeMechanism", "/", "GetUsingNtp", "SetUsingNtp"))
+            self.ntpCheckButton = DBusCheckButton(_("Use network time"), "org.gnome.SettingsDaemon.DateTimeMechanism", "/", "GetUsingNtp", "SetUsingNtp")
+            sidePage.add_widget(self.ntpCheckButton)
         except:
             pass
+        sidePage.add_widget(self.changeTimeWidget)
         try:
             sidePage.add_widget(TimeZoneSelectorWidget())
         except:
             pass
+        
+        if self.ntpCheckButton != None:
+            self.ntpCheckButton.connect('toggled', self._ntp_toggled)
         
         sidePage = SidePage(_("Overview"), "overview.svg", self.content_box)
         self.sidePages.append(sidePage)
@@ -706,6 +847,9 @@ class MainWindow:
         self.window.connect("destroy", Gtk.main_quit)
         self.button_cancel.connect("clicked", Gtk.main_quit)                                    
         self.window.show()
+        
+    def _ntp_toggled(self, widget):
+        self.changeTimeWidget.change_using_ntp( self.ntpCheckButton.get_active() )
                 
                 
 if __name__ == "__main__":
