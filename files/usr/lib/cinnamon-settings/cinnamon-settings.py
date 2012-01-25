@@ -15,6 +15,7 @@ try:
     import time
     from datetime import datetime
     from user import home
+    import thread
 except Exception, detail:
     print detail
     sys.exit(1)
@@ -518,6 +519,11 @@ class ChangeTimeWidget(Gtk.VBox):
         # Ensures we're setting the system time only when the user changes it
         self.changedOnTimeout = False
         
+        # Ensures we don't update the values in the date/time fields during the DBus call to set the time
+        self._setting_time = False
+        self._setting_time_lock = thread.allocate()
+        self._time_to_set = None
+        
         self.thirtyDays = [3, 5, 8, 10]
         months = ['January','February','March','April','May','June','July','August','September','October','November','December']
         
@@ -574,6 +580,13 @@ class ChangeTimeWidget(Gtk.VBox):
         self.pack_start(dateBox, False, False, 2)
         
     def update_time(self):
+        self._setting_time_lock.acquire()
+        do_update = not self._setting_time
+        self._setting_time_lock.release()
+        
+        if not do_update:
+            return True
+        
         dt = datetime.now()
         
         self.changedOnTimeout = True
@@ -607,6 +620,35 @@ class ChangeTimeWidget(Gtk.VBox):
         # Check if we were using Ntp by seeing if the spin button
         # is sensitive
         self.set_sensitive(not usingNtp)
+    
+    def _do_change_system_time(self):
+        self._setting_time_lock.acquire()
+        do_set = not self._setting_time
+        self._setting_time = True
+        self._setting_time_lock.release()
+        
+        # If there's already another thread updating the time, we let it do the job
+        if not do_set:
+            return
+        
+        done = False
+        while not done:
+            self._setting_time_lock.acquire()
+            time_to_set = self._time_to_set
+            self._time_to_set = None
+            self._setting_time_lock.release()
+            
+            self.dbus_iface.SetTime(time_to_set)
+            
+            # Check whether another request to set the time was done since this thread started
+            self._setting_time_lock.acquire()
+            if self._time_to_set==None:
+                done = True
+            self._setting_time_lock.release()
+        
+        self._setting_time_lock.acquire()
+        self._setting_time = False
+        self._setting_time_lock.release()
                 
     def _change_system_time(self, widget):
         if not self.changedOnTimeout:
@@ -617,7 +659,9 @@ class ChangeTimeWidget(Gtk.VBox):
             year = int( self.yearSpin.get_value() )
             
             newDt = datetime(year, month, day, hour, minute)
-            self.dbus_iface.SetTime( time.mktime(newDt.utctimetuple()) )
+            self._time_to_set = time.mktime(newDt.utctimetuple())
+            
+            thread.start_new_thread(self._do_change_system_time, ())
 
 class MainWindow:
   
@@ -832,5 +876,6 @@ class MainWindow:
                 
                 
 if __name__ == "__main__":
+    GObject.threads_init()
     MainWindow()
     Gtk.main()
