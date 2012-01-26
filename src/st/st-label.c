@@ -482,10 +482,22 @@ st_label_accessible_init (StLabelAccessible *self)
 }
 
 static void
+label_text_notify_cb (StLabel    *label,
+                      GParamSpec *pspec,
+                      AtkObject  *accessible)
+{
+  g_object_notify (G_OBJECT (accessible), "accessible-name");
+}
+
+static void
 st_label_accessible_initialize (AtkObject *obj,
                                 gpointer   data)
 {
   ATK_OBJECT_CLASS (st_label_accessible_parent_class)->initialize (obj, data);
+
+  g_signal_connect (data, "notify::text",
+                    G_CALLBACK (label_text_notify_cb),
+                    obj);
 
   obj->role = ATK_ROLE_LABEL;
 }
