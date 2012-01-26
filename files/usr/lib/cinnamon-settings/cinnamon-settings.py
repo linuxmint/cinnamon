@@ -871,7 +871,6 @@ class MainWindow:
         for sidePage, sidePageID in self.sidePages:
             img = GdkPixbuf.Pixbuf.new_from_file_at_size( "/usr/lib/cinnamon-settings/data/icons/%s" % sidePage.icon, 48, 48)
             sidePagesIters[sidePageID] = self.store.append([sidePage.name, img, sidePage])     
-        print sidePagesIters
                       
         # set up the side view - navigation.
         self.side_view.set_text_column(0)
@@ -886,6 +885,7 @@ class MainWindow:
             first_page_iter = self.store.get_iter_first()        
         path = self.store.get_path(first_page_iter)
         self.side_view.select_path(path)
+        self.side_view.scroll_to_path(path, False, 0, 0)
 
         # set up larger components.
         self.window.set_title(_("Cinnamon Settings"))       
