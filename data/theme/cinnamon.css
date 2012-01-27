@@ -1503,8 +1503,12 @@ StTooltip StLabel {
     border-radius: 4px;
 }
 
-.menu-application-button-label { 
+.menu-application-button-label:ltr { 
     padding-left: 5px       
+}
+
+.menu-application-button-label:rtl { 
+    padding-right: 5px       
 }
 
 .menu-category-button {
@@ -1536,8 +1540,12 @@ StTooltip StLabel {
     border-radius: 4px;
 }
 
-.menu-category-button-label { 
+.menu-category-button-label:ltr { 
     padding-left: 5px       
+}
+
+.menu-category-button-label:rtl { 
+    padding-right: 5px       
 }
 
 .menu-category-button-button:hover {
@@ -1561,8 +1569,12 @@ StTooltip StLabel {
     max-width: 150px;
 }
 
-.menu-search-box {
+.menu-search-box:ltr {
    padding-left: 30px;
+}
+
+.menu-search-box:rtl {
+   padding-right: 30px;
 }
 
 #menu-search-entry {
@@ -1630,7 +1642,9 @@ StTooltip StLabel {
 	 background-gradient-start: rgba(255,255,255,0.05);
 	 background-gradient-end: rgba(255,255,255,0.2);
 	 box-shadow: inset 0px 0px 1px 1px rgba(170,170,170,0.5);
-     border-radius: 2px 2px 0px 0px;
+         border-radius: 2px 2px 0px 0px;
+         padding-left: 5px;
+         padding-right: 5px;
 }
 
 .window-list-item-box:active,
