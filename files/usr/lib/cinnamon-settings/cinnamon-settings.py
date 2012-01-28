@@ -85,7 +85,11 @@ class ThemeViewSidePage (SidePage):
             iconView.select_path(self.model.get_path(self.active_theme_iter))
         iconView.connect("selection_changed", self.apply_theme )
         scrolledWindow.add(iconView)
+        scrolledWindow.set_shadow_type(Gtk.ShadowType.IN)
+        link = Gtk.LinkButton("http://cinnamon-spices.linuxmint.com/themes")
+        link.set_label(_("Get new themes"))                
         self.content_box.add(scrolledWindow)
+        self.content_box.pack_start(link, False, False, 2) 
         self.content_box.show_all()
     
     def load_themes_in(self, directory):
@@ -163,8 +167,14 @@ class ExtensionViewSidePage (SidePage):
         self.load_extensions_in('/usr/share/cinnamon/extensions')                                                                          
         self.load_extensions_in('%s/.local/share/cinnamon/extensions' % home)
         
-        scrolledWindow.add(treeview)                                       
+        scrolledWindow.add(treeview)    
+        
+        scrolledWindow.set_shadow_type(Gtk.ShadowType.IN)
+        link = Gtk.LinkButton("http://cinnamon-spices.linuxmint.com/extensions")
+        link.set_label(_("Get new extensions"))                
         self.content_box.add(scrolledWindow)
+        self.content_box.pack_start(link, False, False, 2) 
+                                                        
         self.content_box.show_all()   
         
     def load_extensions_in(self, directory):
@@ -249,8 +259,14 @@ class AppletViewSidePage (SidePage):
         self.load_applets_in('/usr/share/cinnamon/applets')                                                                          
         self.load_applets_in('%s/.local/share/cinnamon/applets' % home)
         
-        scrolledWindow.add(treeview)                                       
+        scrolledWindow.add(treeview)     
+                                          
+        scrolledWindow.set_shadow_type(Gtk.ShadowType.IN)
+        link = Gtk.LinkButton("http://cinnamon-spices.linuxmint.com/applets")
+        link.set_label(_("Get new applets"))                
         self.content_box.add(scrolledWindow)
+        self.content_box.pack_start(link, False, False, 2) 
+        
         self.content_box.show_all()   
         
     def load_applets_in(self, directory):
