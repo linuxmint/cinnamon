@@ -49,7 +49,64 @@ class SidePage:
         for widget in self.widgets:
             self.content_box.pack_start(widget, False, False, 2)            
         self.content_box.show_all()
+
+class GConfComboBox(Gtk.HBox):    
+    def __init__(self, label, key, options, init_value = ""):  
+        self.key = key
+        super(GConfComboBox, self).__init__()
+        self.settings = gconf.client_get_default()  
+        self.value = self.settings.get_string(self.key)
+        if not self.value:
+            self.value = init_value
                       
+        self.label = Gtk.Label(label)       
+        self.model = Gtk.ListStore(str, str)
+        selected = None
+        for option in options:
+            iter = self.model.insert_before(None, None)
+            self.model.set_value(iter, 0, option[0])                
+            self.model.set_value(iter, 1, option[1])                        
+            if (option[0] == self.value):
+                selected = iter
+                                
+        self.content_widget = Gtk.ComboBox.new_with_model(self.model)   
+        renderer_text = Gtk.CellRendererText()
+        self.content_widget.pack_start(renderer_text, True)
+        self.content_widget.add_attribute(renderer_text, "text", 1)     
+        
+        if selected is not None:
+            self.content_widget.set_active_iter(selected)
+        
+        if (label != ""):
+            self.pack_start(self.label, False, False, 2)                
+        self.pack_start(self.content_widget, False, False, 2)                     
+        self.content_widget.connect('changed', self.on_my_value_changed)
+        # The on_my_setting_changed callback raises a segmentation fault, need to investigate that
+        #self.settings.add_dir(os.path.split(key)[0], gconf.CLIENT_PRELOAD_NONE)
+        #self.settings.notify_add(self.key, self.on_my_setting_changed)
+        self.content_widget.show_all()
+        
+    def on_my_value_changed(self, widget):
+        tree_iter = widget.get_active_iter()
+        if tree_iter != None:            
+            value = self.model[tree_iter][0]            
+            self.settings.set_string(self.key, value)
+    def on_my_setting_changed(self, client, cnxn_id, entry, args):
+        print entry
+
+def walk_directories(dirs, filter_func):
+    valid = []
+    try:
+        for thdir in dirs:
+            if os.path.isdir(thdir):
+                for t in os.listdir(thdir):
+                    if filter_func(os.path.join(thdir, t)):
+                         valid.append(t)
+    except:
+        pass
+        #logging.critical("Error parsing directories", exc_info=True)
+    return valid
+
 class ThemeViewSidePage (SidePage):
     def __init__(self, name, icon, content_box):   
         SidePage.__init__(self, name, icon, content_box)        
@@ -66,7 +123,12 @@ class ThemeViewSidePage (SidePage):
         self.current_theme = self.settings.get_string("name")
         
         # Add our own widgets
-        scrolledWindow = Gtk.ScrolledWindow()                
+        notebook = Gtk.Notebook()
+        
+        cinnamon_theme_vbox = Gtk.VBox()
+        
+        scrolledWindow = Gtk.ScrolledWindow()   
+        cinnamon_theme_vbox.pack_start(scrolledWindow, True, True, 2)
         
         iconView = Gtk.IconView()        
         self.model = Gtk.ListStore(str, GdkPixbuf.Pixbuf)
@@ -87,10 +149,77 @@ class ThemeViewSidePage (SidePage):
         scrolledWindow.add(iconView)
         scrolledWindow.set_shadow_type(Gtk.ShadowType.IN)
         link = Gtk.LinkButton("http://cinnamon-spices.linuxmint.com/themes")
-        link.set_label(_("Get new themes"))                
-        self.content_box.add(scrolledWindow)
-        self.content_box.pack_start(link, False, False, 2) 
+        link.set_label(_("Get new themes"))    
+        cinnamon_theme_vbox.pack_start(link, False, False, 2)
+        
+        notebook.append_page(cinnamon_theme_vbox, Gtk.Label(_("Cinnamon themes")))
+        
+        scrolledWindow = Gtk.ScrolledWindow()
+        other_settings_box = Gtk.VBox()
+        scrolledWindow.add_with_viewport(other_settings_box)
+        other_settings_box.set_border_width(5)
+        
+        windowThemeSwitcher = GConfComboBox(_("Window theme"), "/desktop/cinnamon/windows/theme", self._load_window_themes(), "Adwaita")
+        other_settings_box.pack_start(windowThemeSwitcher, False, False, 2)
+        menusHaveIconsCB = GSettingsCheckButton(_("Menus Have Icons"), "org.gnome.desktop.interface", "menus-have-icons")
+        other_settings_box.pack_start(menusHaveIconsCB, False, False, 2)
+        buttonsHaveIconsCB = GSettingsCheckButton(_("Buttons Have Icons"), "org.gnome.desktop.interface", "buttons-have-icons")
+        other_settings_box.pack_start(buttonsHaveIconsCB, False, False, 2)
+        cursorThemeSwitcher = GSettingsComboBox(_("Cursor theme"), "org.gnome.desktop.interface", "cursor-theme", self._load_cursor_themes())
+        other_settings_box.pack_start(cursorThemeSwitcher, False, False, 2)
+        keybindingThemeSwitcher = GSettingsComboBox(_("Keybinding theme"), "org.gnome.desktop.interface", "gtk-key-theme", self._load_keybinding_themes())
+        other_settings_box.pack_start(keybindingThemeSwitcher, False, False, 2)
+        iconThemeSwitcher = GSettingsComboBox(_("Icon theme"), "org.gnome.desktop.interface", "icon-theme", self._load_icon_themes())
+        other_settings_box.pack_start(iconThemeSwitcher, False, False, 2)
+        gtkThemeSwitcher = GSettingsComboBox(_("GTK+ theme"), "org.gnome.desktop.interface", "gtk-theme", self._load_gtk_themes())
+        other_settings_box.pack_start(gtkThemeSwitcher, False, False, 2)
+        
+        notebook.append_page(scrolledWindow, Gtk.Label(_("Other settings")))
+                    
+        self.content_box.add(notebook)
         self.content_box.show_all()
+        
+    def _load_gtk_themes(self):
+        """ Only shows themes that have variations for gtk+-3 and gtk+-2 """
+        dirs = ("/usr/share/themes", os.path.join(os.path.expanduser("~"), ".themes"))
+        valid = walk_directories(dirs, lambda d: os.path.exists(os.path.join(d, "gtk-2.0")) and os.path.exists(os.path.join(d, "gtk-3.0")))
+        res = []
+        for i in valid:
+            res.append((i, i))
+        return res
+    
+    def _load_icon_themes(self):
+        dirs = ("/usr/share/icons", os.path.join(os.path.expanduser("~"), ".icons"))
+        valid = walk_directories(dirs, lambda d: os.path.isdir(d) and not os.path.exists(os.path.join(d, "cursors")))
+        res = []
+        for i in valid:
+            res.append((i, i))
+        return res
+        
+    def _load_keybinding_themes(self):
+        dirs = ("/usr/share/themes", os.path.join(os.path.expanduser("~"), ".themes"))
+        valid = walk_directories(dirs, lambda d: os.path.isfile(os.path.join(d, "gtk-3.0", "gtk-keys.css")) and os.path.isfile(os.path.join(d, "gtk-2.0-key", "gtkrc")))
+        res = []
+        for i in valid:
+            res.append((i, i))
+        return res
+        
+    def _load_cursor_themes(self):
+        dirs = ("/usr/share/icons", os.path.join(os.path.expanduser("~"), ".icons"))
+        valid = walk_directories(dirs, lambda d: os.path.isdir(d) and os.path.exists(os.path.join(d, "cursors")))
+        res = []
+        for i in valid:
+            res.append((i, i))
+        return res
+        
+    def _load_window_themes(self):
+        dirs = ("/usr/share/themes", os.path.join(os.path.expanduser("~"), ".themes"))
+        valid = walk_directories(dirs, lambda d: os.path.exists(os.path.join(d, "metacity-1")))
+        valid.sort(lambda a,b: cmp(a.lower(), b.lower()))
+        res = []
+        for i in valid:
+            res.append((i, i))
+        return res
     
     def load_themes_in(self, directory):
         if os.path.exists(directory) and os.path.isdir(directory):
