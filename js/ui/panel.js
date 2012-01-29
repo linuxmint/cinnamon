@@ -712,7 +712,7 @@ Panel.prototype = {
     },
     
     _hidePanel: function() {
-        if (Main.overview.visible || this._hideable == false) return;
+        if (Main.overview.visible || this._hideable == false || global.menuStackLength > 0) return;
         
         // Force the panel to be on top (hack to correct issues when switching workspace)
         Main.layoutManager._windowsRestacked();
