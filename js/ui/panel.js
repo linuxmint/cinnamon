@@ -480,8 +480,8 @@ Panel.prototype = {
         Main.statusIconDispatcher.connect('status-icon-added', Lang.bind(this, this._onTrayIconAdded));
         Main.statusIconDispatcher.connect('status-icon-removed', Lang.bind(this, this._onTrayIconRemoved));        
                                         
-        this.actor.connect('leave-event', Lang.bind(this, this._hidePanel));
-        this.actor.connect('enter-event', Lang.bind(this, this._showPanel));  
+        this.actor.connect('leave-event', Lang.bind(this, this._leavePanel));
+        this.actor.connect('enter-event', Lang.bind(this, this._enterPanel));  
         global.settings.connect("changed::panel-autohide", Lang.bind(this, this._onPanelAutoHideChanged));      
     },
         
@@ -645,6 +645,16 @@ Panel.prototype = {
             box.destroy();
     },
     
+    _enterPanel: function() {
+        this.isMouseOverPanel = true;
+        this._showPanel();
+    },
+
+    _leavePanel:function() {
+        this.isMouseOverPanel = false;
+        this._hidePanel();
+    }, 
+    
     _showPanel: function() {
         if (this._hidden == false) return;
         
@@ -712,7 +722,7 @@ Panel.prototype = {
     },
     
     _hidePanel: function() {
-        if (Main.overview.visible || this._hideable == false || global.menuStackLength > 0) return;
+        if (Main.overview.visible || this._hideable == false || global.menuStackLength > 0 || this.isMouseOverPanel) return;
         
         // Force the panel to be on top (hack to correct issues when switching workspace)
         Main.layoutManager._windowsRestacked();
