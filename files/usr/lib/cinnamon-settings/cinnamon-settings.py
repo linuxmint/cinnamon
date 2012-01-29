@@ -540,6 +540,68 @@ class GSettingsEntry(Gtk.HBox):
     def on_my_value_changed(self, widget):        
         self.settings.set_string(self.key, self.content_widget.get_text())
 
+class GSettingsFontButton(Gtk.HBox):
+    def __init__(self, label, schema, key):
+        self.key = key
+        super(GSettingsFontButton, self).__init__()
+        self.settings = Gio.Settings.new(schema)
+        self.value = self.settings.get_string(key)
+        
+        self.label = Gtk.Label(label)
+
+        self.content_widget = Gtk.FontButton()
+        self.content_widget.set_font_name(self.value)
+        
+        if (label != ""):
+            self.pack_start(self.label, False, False, 2)
+        self.pack_start(self.content_widget, False, False, 2)
+        self.content_widget.connect('font-set', self.on_my_value_changed)
+        self.content_widget.show_all()
+    def on_my_value_changed(self, widget):
+        self.settings.set_string(self.key, widget.get_font_name())
+
+class GConfFontButton(Gtk.HBox):
+    def __init__(self, label, key):
+        self.key = key
+        super(GConfFontButton, self).__init__()
+        self.settings = gconf.client_get_default()
+        self.value = self.settings.get_string(key)
+        
+        self.label = Gtk.Label(label)
+
+        self.content_widget = Gtk.FontButton()
+        self.content_widget.set_font_name(self.value)
+        
+        if (label != ""):
+            self.pack_start(self.label, False, False, 2)
+        self.pack_start(self.content_widget, False, False, 2)
+        self.content_widget.connect('font-set', self.on_my_value_changed)
+        self.content_widget.show_all()
+    def on_my_value_changed(self, widget):
+        self.settings.set_string(self.key, widget.get_font_name())
+
+class GSettingsRange(Gtk.HBox):
+    def __init__(self, label, schema, key, **options):
+        self.key = key
+        super(GSettingsRange, self).__init__()
+        self.settings = Gio.Settings.new(schema)
+        self.value = self.settings.get_double(self.key)
+        
+        self.label = Gtk.Label(label)
+
+        #returned variant is range:(min, max)
+        _min, _max = self.settings.get_range(self.key)[1]
+
+        self.content_widget = Gtk.HScale.new_with_range(_min, _max, options.get('adjustment_step', 1))
+        self.content_widget.set_value(self.value)
+        if (label != ""):
+            self.pack_start(self.label, False, False, 2)
+        self.pack_start(self.content_widget, True, True, 2)
+        self.content_widget.connect('value-changed', self.on_my_value_changed)
+        self.content_widget.show_all()
+    def on_my_value_changed(self, widget):
+        self.settings.set_double(self.key, widget.get_value())
+
 class GSettingsComboBox(Gtk.HBox):    
     def __init__(self, label, schema, key, options):        
         self.key = key
@@ -817,9 +879,6 @@ class ChangeTimeWidget(Gtk.HBox):
             
             thread.start_new_thread(self._do_change_system_time, ())
 
-class DesktopViewSidePage(SidePage):
-    pass
-
 class MainWindow:
   
     # Change pages
@@ -1000,7 +1059,7 @@ class MainWindow:
         sidePage = ExtensionViewSidePage(_("Extensions"), "extensions.svg", self.content_box)
         self.sidePages.append((sidePage, "extensions"))
                         
-        sidePage = DesktopViewSidePage(_("Desktop"), "desktop.svg", self.content_box)
+        sidePage = SidePage(_("Desktop"), "desktop.svg", self.content_box)
         self.sidePages.append((sidePage, "desktop"))
         sidePage.add_widget(GSettingsCheckButton(_("Have file manager handle the desktop"), "org.gnome.desktop.background", "show-desktop-icons"))
         sidePage.add_widget(GSettingsCheckButton(_("Computer icon visible on desktop"), "org.gnome.nautilus.desktop", "computer-icon-visible"))
@@ -1008,6 +1067,16 @@ class MainWindow:
         sidePage.add_widget(GSettingsCheckButton(_("Network Servers icon visible on desktop"), "org.gnome.nautilus.desktop", "network-icon-visible"))
         sidePage.add_widget(GSettingsCheckButton(_("Trash icon visible on desktop"), "org.gnome.nautilus.desktop", "trash-icon-visible"))
         sidePage.add_widget(GSettingsCheckButton(_("Show mounted volumes on the desktop"), "org.gnome.nautilus.desktop", "volumes-visible"))
+        
+        sidePage = SidePage(_("Fonts"), "fonts.svg", self.content_box)
+        self.sidePages.append((sidePage, "fonts"))
+        sidePage.add_widget(GSettingsRange(_("Text scaling factor"), "org.gnome.desktop.interface", "text-scaling-factor", adjustment_step=0.1))
+        sidePage.add_widget(GSettingsFontButton(_("Default font"), "org.gnome.desktop.interface", "font-name"))
+        sidePage.add_widget(GSettingsFontButton(_("Document font"), "org.gnome.desktop.interface", "document-font-name"))
+        sidePage.add_widget(GSettingsFontButton(_("Monospace font"), "org.gnome.desktop.interface", "monospace-font-name"))
+        sidePage.add_widget(GConfFontButton(_("Window title font"), "/apps/metacity/general/titlebar_font"))
+        sidePage.add_widget(GSettingsComboBox(_("Hinting"), "org.gnome.settings-daemon.plugins.xsettings", "hinting", [(i, i.title()) for i in ("none", "slight", "medium", "full")]))
+        sidePage.add_widget(GSettingsComboBox(_("Antialiasing"), "org.gnome.settings-daemon.plugins.xsettings", "antialiasing", [(i, i.title()) for i in ("none", "grayscale", "rgba")]))
                         
         #sidePage = SidePage(_("Terminal"), "terminal", self.content_box)
         #self.sidePages.append(sidePage)
