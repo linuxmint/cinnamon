@@ -1068,6 +1068,21 @@ class MainWindow:
         sidePage.add_widget(GSettingsCheckButton(_("Trash icon visible on desktop"), "org.gnome.nautilus.desktop", "trash-icon-visible"))
         sidePage.add_widget(GSettingsCheckButton(_("Show mounted volumes on the desktop"), "org.gnome.nautilus.desktop", "volumes-visible"))
         
+        sidePage = SidePage(_("Windows"), "windows.svg", self.content_box)
+        self.sidePages.append((sidePage, "windows"))
+        sidePage.add_widget(GConfComboBox(_("Action on title bar double-click"),
+                                            "/apps/metacity/general/action_double_click_titlebar",
+                                            [(i, i.replace("_", " ").title()) for i in ('toggle_shade', 'toggle_maximize', 'toggle_maximize_horizontally', 'toggle_maximize_vertically', 'minimize', 'shade', 'menu', 'lower', 'none')]))
+        sidePage.add_widget(GConfComboBox(_("Action on title bar middle-click"),
+                                            "/apps/metacity/general/action_middle_click_titlebar",
+                                            [(i, i.replace("_", " ").title()) for i in ('toggle_shade', 'toggle_maximize', 'toggle_maximize_horizontally', 'toggle_maximize_vertically', 'minimize', 'shade', 'menu', 'lower', 'none')]))
+        sidePage.add_widget(GConfComboBox(_("Action on title bar right-click"),
+                                            "/apps/metacity/general/action_right_click_titlebar",
+                                            [(i, i.replace("_", " ").title()) for i in ('toggle_shade', 'toggle_maximize', 'toggle_maximize_horizontally', 'toggle_maximize_vertically', 'minimize', 'shade', 'menu', 'lower', 'none')]))
+        sidePage.add_widget(GConfComboBox(_("Window focus mode"),
+                                            "/apps/metacity/general/focus_mode",
+                                            [(i, i.title()) for i in ("click","sloppy","mouse")]))
+        
         sidePage = SidePage(_("Fonts"), "fonts.svg", self.content_box)
         self.sidePages.append((sidePage, "fonts"))
         sidePage.add_widget(GSettingsRange(_("Text scaling factor"), "org.gnome.desktop.interface", "text-scaling-factor", adjustment_step=0.1))
