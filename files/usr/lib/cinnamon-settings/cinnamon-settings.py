@@ -532,13 +532,34 @@ class GSettingsEntry(Gtk.HBox):
         self.settings = Gio.Settings.new(schema)        
         self.content_widget.set_text(self.settings.get_string(self.key))
         self.settings.connect("changed::"+self.key, self.on_my_setting_changed)
-        self.content_widget.connect('changed', self.on_my_value_changed)            
+        self.content_widget.connect('changed', self.on_my_value_changed)     
+        
+        self.content_widget.show_all()       
     
     def on_my_setting_changed(self, settings, key):
         self.content_widget.set_text(self.settings.get_string(self.key))
         
     def on_my_value_changed(self, widget):        
         self.settings.set_string(self.key, self.content_widget.get_text())
+
+class GSettingsFileChooser(Gtk.HBox):
+    def __init__(self, label, schema, key):        
+        self.key = key
+        super(GSettingsFileChooser, self).__init__()
+        self.label = Gtk.Label(label)       
+        self.content_widget = Gtk.FileChooserButton()
+        self.pack_start(self.label, False, False, 2)
+        self.add(self.content_widget)     
+        self.settings = Gio.Settings.new(schema)
+        self.content_widget.set_filename(self.settings.get_string(self.key))
+        self.content_widget.connect('file-set', self.on_my_value_changed)
+        
+        self.content_widget.show_all()
+    def on_my_value_changed(self, widget):
+        if widget.get_filename():
+            self.settings.set_string(self.key, widget.get_filename())
+        else:
+            self.settings.set_string(self.key, "")
 
 class GSettingsFontButton(Gtk.HBox):
     def __init__(self, label, schema, key):
@@ -1000,6 +1021,7 @@ class MainWindow:
         sidePage = SidePage(_("Panel"), "panel.svg", self.content_box)
         self.sidePages.append((sidePage, "panel"))
         sidePage.add_widget(GSettingsEntry(_("Menu text"), "org.cinnamon", "menu-text")) 
+        sidePage.add_widget(GSettingsFileChooser(_("Menu icon"), "org.cinnamon", "menu-icon"))
         sidePage.add_widget(GSettingsCheckButton(_("Auto-hide panel"), "org.cinnamon", "panel-autohide"))
         desktop_layouts = [["traditional", _("Traditional (panel at the bottom)")], ["flipped", _("Flipped (panel at the top)")], ["classic", _("Classic (panels at the top and at the bottom)")]]        
         desktop_layouts_combo = GSettingsComboBox(_("Desktop layout"), "org.cinnamon", "desktop-layout", desktop_layouts)
