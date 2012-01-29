@@ -183,6 +183,7 @@ class ThemeViewSidePage (SidePage):
         """ Only shows themes that have variations for gtk+-3 and gtk+-2 """
         dirs = ("/usr/share/themes", os.path.join(os.path.expanduser("~"), ".themes"))
         valid = walk_directories(dirs, lambda d: os.path.exists(os.path.join(d, "gtk-2.0")) and os.path.exists(os.path.join(d, "gtk-3.0")))
+        valid.sort(lambda a,b: cmp(a.lower(), b.lower()))
         res = []
         for i in valid:
             res.append((i, i))
@@ -191,6 +192,7 @@ class ThemeViewSidePage (SidePage):
     def _load_icon_themes(self):
         dirs = ("/usr/share/icons", os.path.join(os.path.expanduser("~"), ".icons"))
         valid = walk_directories(dirs, lambda d: os.path.isdir(d) and not os.path.exists(os.path.join(d, "cursors")))
+        valid.sort(lambda a,b: cmp(a.lower(), b.lower()))
         res = []
         for i in valid:
             res.append((i, i))
@@ -199,6 +201,7 @@ class ThemeViewSidePage (SidePage):
     def _load_keybinding_themes(self):
         dirs = ("/usr/share/themes", os.path.join(os.path.expanduser("~"), ".themes"))
         valid = walk_directories(dirs, lambda d: os.path.isfile(os.path.join(d, "gtk-3.0", "gtk-keys.css")) and os.path.isfile(os.path.join(d, "gtk-2.0-key", "gtkrc")))
+        valid.sort(lambda a,b: cmp(a.lower(), b.lower()))
         res = []
         for i in valid:
             res.append((i, i))
@@ -207,6 +210,7 @@ class ThemeViewSidePage (SidePage):
     def _load_cursor_themes(self):
         dirs = ("/usr/share/icons", os.path.join(os.path.expanduser("~"), ".icons"))
         valid = walk_directories(dirs, lambda d: os.path.isdir(d) and os.path.exists(os.path.join(d, "cursors")))
+        valid.sort(lambda a,b: cmp(a.lower(), b.lower()))
         res = []
         for i in valid:
             res.append((i, i))
