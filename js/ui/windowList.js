@@ -423,13 +423,9 @@ WindowList.prototype = {
     _init: function(orientation) {
         
         this.orientation = orientation;
-                       
-        if (this.orientation == St.Side.BOTTOM)               
-       		this.actor = new St.BoxLayout({ name: 'windowList',
-                                        style_class: 'window-list-box-bottom' });
-		else
-			this.actor = new St.BoxLayout({ name: 'windowList',
-                                        style_class: 'window-list-box-top' });
+                                  
+        this.actor = new St.BoxLayout({ name: 'windowList',
+                                       	style_class: 'window-list-box' });
                                         
         this.actor._delegate = this;
         this._windows = new Array();
