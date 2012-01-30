@@ -1008,7 +1008,7 @@ ApplicationsButton.prototype = {
           res = new Array();
           for (var i in applist){
              let app = applist[i];
-             if (app.get_name().toLowerCase().indexOf(pattern)!=-1 || (app.get_description() && app.get_description().toLowerCase().indexOf(pattern)!=-1)) res.push(app);
+             if (app.get_name().toLowerCase().indexOf(pattern)!=-1 || (app.get_description() && app.get_description().toLowerCase().indexOf(pattern)!=-1) || (app.get_id() && app.get_id().toLowerCase().indexOf(pattern)!=-1)) res.push(app);
           }
        }else res = applist;
        
