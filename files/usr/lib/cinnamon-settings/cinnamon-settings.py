@@ -421,8 +421,8 @@ class AppletViewSidePage (SidePage):
                     theme = Gtk.IconTheme.get_default()
                     if theme.has_icon(applet_icon):
                         img = theme.load_icon(applet_icon, 36, 0)
-                    else:
-                        img = theme.load_icon("/usr/lib/cinnamon-settings/data/icons/applets.svg", 36, 36)
+                    else:                        
+                        img = GdkPixbuf.Pixbuf.new_from_file_at_size( "/usr/lib/cinnamon-settings/data/icons/applets.svg", 36, 36)
                     self.model.set_value(iter, 3, img)
         
     def toggled(self, renderer, path, treeview):        
