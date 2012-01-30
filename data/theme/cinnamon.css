@@ -1612,10 +1612,16 @@ StTooltip StLabel {
 /* ===================================================================
  * Window list (windowList.js)
  * ===================================================================*/
-.window-list-box {
+.window-list-box-bottom {
     spacing: 3px;
     padding-left: 10px;
     padding-top: 1px;   
+}
+
+.window-list-box-top {
+    spacing: 3px;
+    padding-left: 10px;
+    padding-bottom: 1px;   
 }
 
 .window-list-item-label {
