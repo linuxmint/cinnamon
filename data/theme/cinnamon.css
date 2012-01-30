@@ -1614,7 +1614,14 @@ StTooltip StLabel {
  * ===================================================================*/
 .window-list-box{
     spacing: 3px;
-    padding-left: 10px;
+    padding-left: 10px; 
+}
+
+.window-list-box-top {
+    padding-bottom: 1px;   
+}
+
+.window-list-box-bottom {
     padding-top: 1px;   
 }
 
@@ -1626,31 +1633,48 @@ StTooltip StLabel {
 
 .window-list-item-box {
      color: rgba(255,255,255,1.0);
-	 background-gradient-direction: vertical;
-	 background-gradient-start: rgba(255,255,255,0.05);
-	 background-gradient-end: rgba(255,255,255,0.2);
-	 box-shadow: inset 0px 0px 1px 1px rgba(170,170,170,0.5);
-     border-radius: 2px 2px 0px 0px;
+     box-shadow: inset 0px 0px 1px 1px rgba(170,170,170,0.5);
 }
 
-.window-list-item-box:active,
-.window-list-item-box:checked,
-.window-list-item-box:focus  {     
+.window-list-item-box-top {
+	background-gradient-direction: vertical;
+	background-gradient-start: rgba(255,255,255,0.2);
+	background-gradient-end: rgba(255,255,255,0.05);
+	border-radius: 0px 0px 2px 2px;
+}
+
+.window-list-item-box-bottom {
+	background-gradient-direction: vertical;
+	background-gradient-start: rgba(255,255,255,0.05);
+	background-gradient-end: rgba(255,255,255,0.2);
+	border-radius: 2px 2px 0px 0px;
+}
+
+.window-list-item-box-top:active,
+.window-list-item-box-top:checked,
+.window-list-item-box-top:focus  {     
+	 background-gradient-direction: vertical;
+	 background-gradient-start: rgba(122,122,122,0.5);
+	 background-gradient-end: rgba(226,226,226,0.5);
+	 box-shadow: inset 0px 0px 1px 1px rgba(170,170,170,0.5);
+}
+
+.window-list-item-box-bottom:active,
+.window-list-item-box-bottom:checked,
+.window-list-item-box-bottom:focus  {     
 	 background-gradient-direction: vertical;
 	 background-gradient-start: rgba(226,226,226,0.5);
 	 background-gradient-end: rgba(122,122,122,0.5);
 	 box-shadow: inset 0px 0px 1px 1px rgba(170,170,170,0.5);
-     border-radius: 2px 2px 0px 0px;
 }
 
 .window-list-item-box:hover  {     
 	 box-shadow: inset 0px 0px 1px 1px rgba(170,170,170,1.0);
-     border-radius: 2px 2px 0px 0px;
 }
 
 .window-list-item-demands-attention {
-    background-gradient-start: rgba(255,52,52,0.5);
-	 background-gradient-end: rgba(255,144,144,0.5);
+	background-gradient-start: rgba(255,52,52,0.5);
+	background-gradient-end: rgba(255,144,144,0.5);
 }
 
 /* ===================================================================
