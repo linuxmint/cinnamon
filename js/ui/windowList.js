@@ -56,7 +56,7 @@ AppMenuButtonRightClickMenu.prototype = {
             this.itemMaximizeWindow = new PopupMenu.PopupMenuItem(_('Maximize'));
         this.itemMaximizeWindow.connect('activate', Lang.bind(this, this._onMaximizeWindowActivate));        
         
-        if (this.orientation == St.Side.BOTTOM) {
+        if (orientation == St.Side.BOTTOM) {
             this.addMenuItem(this.itemMinimizeWindow);
             this.addMenuItem(this.itemMaximizeWindow);
             this.addMenuItem(this.itemCloseWindow);                        

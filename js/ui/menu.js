@@ -381,15 +381,11 @@ ApplicationsButton.prototype = {
         this._iconBox = new St.Bin();
         box.add(this._iconBox, { y_align: St.Align.MIDDLE, y_fill: false });
         
-        let icon_file = icon_path + "menu.png";        
-        try{
-           let file = Gio.file_new_for_path(icon_file);
-           let icon_uri = file.get_uri();
-           this._icon = St.TextureCache.get_default().load_uri_sync(1, icon_uri, 22, 22);           
-           this._iconBox.child = this._icon;
-        }catch(e){
-           global.log("WARNING : Could not load icon file \""+icon_file+"\" for menu button");
-        }
+        this._updateIcon();
+        
+        global.settings.connect("changed::menu-icon", Lang.bind(this, function() {
+            this._updateIcon();
+        })); 
         
         this._label = new St.Label({ track_hover: true, style_class: 'menu-label'});
         
@@ -424,6 +420,22 @@ ApplicationsButton.prototype = {
 
         this.menu.connect('open-state-changed', Lang.bind(this, this._onOpenStateToggled));
 
+    },
+    
+    _updateIcon: function(){
+        if (this._icon) this._icon.destroy();
+        
+        let icon_file = global.settings.get_string("menu-icon");
+        if (icon_file != "") {
+            try{
+               let file = Gio.file_new_for_path(icon_file);
+               let icon_uri = file.get_uri();
+               this._icon = St.TextureCache.get_default().load_uri_sync(1, icon_uri, 22, 22);           
+               this._iconBox.child = this._icon;
+            }catch(e){
+               global.log("WARNING : Could not load icon file \""+icon_file+"\" for menu button");
+            }
+        }
     },
 
     _onMenuKeyPress: function(actor, event) {
@@ -996,7 +1008,7 @@ ApplicationsButton.prototype = {
           res = new Array();
           for (var i in applist){
              let app = applist[i];
-             if (app.get_name().toLowerCase().indexOf(pattern)!=-1 || (app.get_description() && app.get_description().toLowerCase().indexOf(pattern)!=-1)) res.push(app);
+             if (app.get_name().toLowerCase().indexOf(pattern)!=-1 || (app.get_description() && app.get_description().toLowerCase().indexOf(pattern)!=-1) || (app.get_id() && app.get_id().toLowerCase().indexOf(pattern)!=-1)) res.push(app);
           }
        }else res = applist;
        

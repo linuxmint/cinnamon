@@ -49,7 +49,64 @@ class SidePage:
         for widget in self.widgets:
             self.content_box.pack_start(widget, False, False, 2)            
         self.content_box.show_all()
+
+class GConfComboBox(Gtk.HBox):    
+    def __init__(self, label, key, options, init_value = ""):  
+        self.key = key
+        super(GConfComboBox, self).__init__()
+        self.settings = gconf.client_get_default()  
+        self.value = self.settings.get_string(self.key)
+        if not self.value:
+            self.value = init_value
                       
+        self.label = Gtk.Label(label)       
+        self.model = Gtk.ListStore(str, str)
+        selected = None
+        for option in options:
+            iter = self.model.insert_before(None, None)
+            self.model.set_value(iter, 0, option[0])                
+            self.model.set_value(iter, 1, option[1])                        
+            if (option[0] == self.value):
+                selected = iter
+                                
+        self.content_widget = Gtk.ComboBox.new_with_model(self.model)   
+        renderer_text = Gtk.CellRendererText()
+        self.content_widget.pack_start(renderer_text, True)
+        self.content_widget.add_attribute(renderer_text, "text", 1)     
+        
+        if selected is not None:
+            self.content_widget.set_active_iter(selected)
+        
+        if (label != ""):
+            self.pack_start(self.label, False, False, 2)                
+        self.pack_start(self.content_widget, False, False, 2)                     
+        self.content_widget.connect('changed', self.on_my_value_changed)
+        # The on_my_setting_changed callback raises a segmentation fault, need to investigate that
+        #self.settings.add_dir(os.path.split(key)[0], gconf.CLIENT_PRELOAD_NONE)
+        #self.settings.notify_add(self.key, self.on_my_setting_changed)
+        self.content_widget.show_all()
+        
+    def on_my_value_changed(self, widget):
+        tree_iter = widget.get_active_iter()
+        if tree_iter != None:            
+            value = self.model[tree_iter][0]            
+            self.settings.set_string(self.key, value)
+    def on_my_setting_changed(self, client, cnxn_id, entry, args):
+        print entry
+
+def walk_directories(dirs, filter_func):
+    valid = []
+    try:
+        for thdir in dirs:
+            if os.path.isdir(thdir):
+                for t in os.listdir(thdir):
+                    if filter_func(os.path.join(thdir, t)):
+                         valid.append(t)
+    except:
+        pass
+        #logging.critical("Error parsing directories", exc_info=True)
+    return valid
+
 class ThemeViewSidePage (SidePage):
     def __init__(self, name, icon, content_box):   
         SidePage.__init__(self, name, icon, content_box)        
@@ -66,7 +123,12 @@ class ThemeViewSidePage (SidePage):
         self.current_theme = self.settings.get_string("name")
         
         # Add our own widgets
-        scrolledWindow = Gtk.ScrolledWindow()                
+        notebook = Gtk.Notebook()
+        
+        cinnamon_theme_vbox = Gtk.VBox()
+        
+        scrolledWindow = Gtk.ScrolledWindow()   
+        cinnamon_theme_vbox.pack_start(scrolledWindow, True, True, 2)
         
         iconView = Gtk.IconView()        
         self.model = Gtk.ListStore(str, GdkPixbuf.Pixbuf)
@@ -87,10 +149,81 @@ class ThemeViewSidePage (SidePage):
         scrolledWindow.add(iconView)
         scrolledWindow.set_shadow_type(Gtk.ShadowType.IN)
         link = Gtk.LinkButton("http://cinnamon-spices.linuxmint.com/themes")
-        link.set_label(_("Get new themes"))                
-        self.content_box.add(scrolledWindow)
-        self.content_box.pack_start(link, False, False, 2) 
+        link.set_label(_("Get new themes"))    
+        cinnamon_theme_vbox.pack_start(link, False, False, 2)
+        
+        notebook.append_page(cinnamon_theme_vbox, Gtk.Label(_("Cinnamon themes")))
+        
+        scrolledWindow = Gtk.ScrolledWindow()
+        other_settings_box = Gtk.VBox()
+        scrolledWindow.add_with_viewport(other_settings_box)
+        other_settings_box.set_border_width(5)
+        
+        windowThemeSwitcher = GConfComboBox(_("Window theme"), "/desktop/cinnamon/windows/theme", self._load_window_themes(), "Adwaita")
+        other_settings_box.pack_start(windowThemeSwitcher, False, False, 2)
+        menusHaveIconsCB = GSettingsCheckButton(_("Menus Have Icons"), "org.gnome.desktop.interface", "menus-have-icons")
+        other_settings_box.pack_start(menusHaveIconsCB, False, False, 2)
+        buttonsHaveIconsCB = GSettingsCheckButton(_("Buttons Have Icons"), "org.gnome.desktop.interface", "buttons-have-icons")
+        other_settings_box.pack_start(buttonsHaveIconsCB, False, False, 2)
+        cursorThemeSwitcher = GSettingsComboBox(_("Cursor theme"), "org.gnome.desktop.interface", "cursor-theme", self._load_cursor_themes())
+        other_settings_box.pack_start(cursorThemeSwitcher, False, False, 2)
+        keybindingThemeSwitcher = GSettingsComboBox(_("Keybinding theme"), "org.gnome.desktop.interface", "gtk-key-theme", self._load_keybinding_themes())
+        other_settings_box.pack_start(keybindingThemeSwitcher, False, False, 2)
+        iconThemeSwitcher = GSettingsComboBox(_("Icon theme"), "org.gnome.desktop.interface", "icon-theme", self._load_icon_themes())
+        other_settings_box.pack_start(iconThemeSwitcher, False, False, 2)
+        gtkThemeSwitcher = GSettingsComboBox(_("GTK+ theme"), "org.gnome.desktop.interface", "gtk-theme", self._load_gtk_themes())
+        other_settings_box.pack_start(gtkThemeSwitcher, False, False, 2)
+        
+        notebook.append_page(scrolledWindow, Gtk.Label(_("Other settings")))
+                    
+        self.content_box.add(notebook)
         self.content_box.show_all()
+        
+    def _load_gtk_themes(self):
+        """ Only shows themes that have variations for gtk+-3 and gtk+-2 """
+        dirs = ("/usr/share/themes", os.path.join(os.path.expanduser("~"), ".themes"))
+        valid = walk_directories(dirs, lambda d: os.path.exists(os.path.join(d, "gtk-2.0")) and os.path.exists(os.path.join(d, "gtk-3.0")))
+        valid.sort(lambda a,b: cmp(a.lower(), b.lower()))
+        res = []
+        for i in valid:
+            res.append((i, i))
+        return res
+    
+    def _load_icon_themes(self):
+        dirs = ("/usr/share/icons", os.path.join(os.path.expanduser("~"), ".icons"))
+        valid = walk_directories(dirs, lambda d: os.path.isdir(d) and not os.path.exists(os.path.join(d, "cursors")))
+        valid.sort(lambda a,b: cmp(a.lower(), b.lower()))
+        res = []
+        for i in valid:
+            res.append((i, i))
+        return res
+        
+    def _load_keybinding_themes(self):
+        dirs = ("/usr/share/themes", os.path.join(os.path.expanduser("~"), ".themes"))
+        valid = walk_directories(dirs, lambda d: os.path.isfile(os.path.join(d, "gtk-3.0", "gtk-keys.css")) and os.path.isfile(os.path.join(d, "gtk-2.0-key", "gtkrc")))
+        valid.sort(lambda a,b: cmp(a.lower(), b.lower()))
+        res = []
+        for i in valid:
+            res.append((i, i))
+        return res
+        
+    def _load_cursor_themes(self):
+        dirs = ("/usr/share/icons", os.path.join(os.path.expanduser("~"), ".icons"))
+        valid = walk_directories(dirs, lambda d: os.path.isdir(d) and os.path.exists(os.path.join(d, "cursors")))
+        valid.sort(lambda a,b: cmp(a.lower(), b.lower()))
+        res = []
+        for i in valid:
+            res.append((i, i))
+        return res
+        
+    def _load_window_themes(self):
+        dirs = ("/usr/share/themes", os.path.join(os.path.expanduser("~"), ".themes"))
+        valid = walk_directories(dirs, lambda d: os.path.exists(os.path.join(d, "metacity-1")))
+        valid.sort(lambda a,b: cmp(a.lower(), b.lower()))
+        res = []
+        for i in valid:
+            res.append((i, i))
+        return res
     
     def load_themes_in(self, directory):
         if os.path.exists(directory) and os.path.isdir(directory):
@@ -399,13 +532,96 @@ class GSettingsEntry(Gtk.HBox):
         self.settings = Gio.Settings.new(schema)        
         self.content_widget.set_text(self.settings.get_string(self.key))
         self.settings.connect("changed::"+self.key, self.on_my_setting_changed)
-        self.content_widget.connect('changed', self.on_my_value_changed)            
+        self.content_widget.connect('changed', self.on_my_value_changed)     
+        
+        self.content_widget.show_all()       
     
     def on_my_setting_changed(self, settings, key):
         self.content_widget.set_text(self.settings.get_string(self.key))
         
     def on_my_value_changed(self, widget):        
         self.settings.set_string(self.key, self.content_widget.get_text())
+
+class GSettingsFileChooser(Gtk.HBox):
+    def __init__(self, label, schema, key):        
+        self.key = key
+        super(GSettingsFileChooser, self).__init__()
+        self.label = Gtk.Label(label)       
+        self.content_widget = Gtk.FileChooserButton()
+        self.pack_start(self.label, False, False, 2)
+        self.add(self.content_widget)     
+        self.settings = Gio.Settings.new(schema)
+        self.content_widget.set_filename(self.settings.get_string(self.key))
+        self.content_widget.connect('file-set', self.on_my_value_changed)
+        
+        self.content_widget.show_all()
+    def on_my_value_changed(self, widget):
+        if widget.get_filename():
+            self.settings.set_string(self.key, widget.get_filename())
+        else:
+            self.settings.set_string(self.key, "")
+
+class GSettingsFontButton(Gtk.HBox):
+    def __init__(self, label, schema, key):
+        self.key = key
+        super(GSettingsFontButton, self).__init__()
+        self.settings = Gio.Settings.new(schema)
+        self.value = self.settings.get_string(key)
+        
+        self.label = Gtk.Label(label)
+
+        self.content_widget = Gtk.FontButton()
+        self.content_widget.set_font_name(self.value)
+        
+        if (label != ""):
+            self.pack_start(self.label, False, False, 2)
+        self.pack_start(self.content_widget, False, False, 2)
+        self.content_widget.connect('font-set', self.on_my_value_changed)
+        self.content_widget.show_all()
+    def on_my_value_changed(self, widget):
+        self.settings.set_string(self.key, widget.get_font_name())
+
+class GConfFontButton(Gtk.HBox):
+    def __init__(self, label, key):
+        self.key = key
+        super(GConfFontButton, self).__init__()
+        self.settings = gconf.client_get_default()
+        self.value = self.settings.get_string(key)
+        
+        self.label = Gtk.Label(label)
+
+        self.content_widget = Gtk.FontButton()
+        self.content_widget.set_font_name(self.value)
+        
+        if (label != ""):
+            self.pack_start(self.label, False, False, 2)
+        self.pack_start(self.content_widget, False, False, 2)
+        self.content_widget.connect('font-set', self.on_my_value_changed)
+        self.content_widget.show_all()
+    def on_my_value_changed(self, widget):
+        self.settings.set_string(self.key, widget.get_font_name())
+
+class GSettingsRange(Gtk.HBox):
+    def __init__(self, label, schema, key, **options):
+        self.key = key
+        super(GSettingsRange, self).__init__()
+        self.settings = Gio.Settings.new(schema)
+        self.value = self.settings.get_double(self.key)
+        
+        self.label = Gtk.Label(label)
+
+        #returned variant is range:(min, max)
+        _min, _max = self.settings.get_range(self.key)[1]
+
+        self.content_widget = Gtk.HScale.new_with_range(_min, _max, options.get('adjustment_step', 1))
+        self.content_widget.set_value(self.value)
+        if (label != ""):
+            self.pack_start(self.label, False, False, 2)
+        self.pack_start(self.content_widget, True, True, 2)
+        self.content_widget.connect('value-changed', self.on_my_value_changed)
+        self.content_widget.show_all()
+    def on_my_value_changed(self, widget):
+        self.settings.set_double(self.key, widget.get_value())
 
 class GSettingsComboBox(Gtk.HBox):    
     def __init__(self, label, schema, key, options):        
@@ -684,9 +900,99 @@ class ChangeTimeWidget(Gtk.HBox):
             
             thread.start_new_thread(self._do_change_system_time, ())
 
-class DesktopViewSidePage(SidePage):
-    pass
-
+class TitleBarButtonsOrderSelector(Gtk.Table):
+    def __init__(self):
+        self.key = "/desktop/cinnamon/windows/button_layout"
+        super(TitleBarButtonsOrderSelector, self).__init__()
+        self.settings = gconf.client_get_default()
+        self.value = self.settings.get_string(self.key)
+        try:
+            left_items, right_items = self.value.split(":")
+        except:
+            left_items = right_items = ""
+        if len(left_items) > 0:
+            left_items = left_items.split(",")
+        else:
+            left_items = []
+        if len(right_items) > 0:
+            right_items = right_items.split(",")
+        else:
+            right_items = []
+        
+        label = Gtk.Label(_("Left side title bar buttons"))
+        label.set_alignment(0, 0.5)
+        self.attach(label, 0, 1, 0, 1, xoptions = Gtk.AttachOptions.FILL, yoptions=0, xpadding=2)
+        left_side_box = Gtk.HBox()
+        self.attach(left_side_box, 1, 2, 0, 1, yoptions=0, xpadding=2)
+        
+        label = Gtk.Label(_("Right side title bar buttons"))
+        label.set_alignment(0, 0.5)
+        self.attach(label, 0, 1, 1, 2, xoptions = Gtk.AttachOptions.FILL, yoptions=0, xpadding=2)
+        right_side_box = Gtk.HBox()
+        self.attach(right_side_box, 1, 2, 1, 2, yoptions=0, xpadding=2)
+        
+        self.left_side_widgets = []
+        self.right_side_widgets = []
+        for i in range(3):
+            self.left_side_widgets.append(Gtk.ComboBox())
+            self.right_side_widgets.append(Gtk.ComboBox())
+        
+        buttons = [
+            ("", ""),
+            ("close", _("Close")),
+            ("minimize", _("Minimize")),
+            ("maximize", _("Maximize"))
+        ]
+        
+        for i in self.left_side_widgets + self.right_side_widgets:
+            if i in self.left_side_widgets:
+                ref_list = left_items
+                index = self.left_side_widgets.index(i)
+            else:
+                ref_list = right_items
+                index = self.right_side_widgets.index(i)
+            model = Gtk.ListStore(str, str)
+            selected_iter = None
+            for button in buttons:
+                iter = model.insert_before(None, None)
+                model.set_value(iter, 0, button[0])                
+                model.set_value(iter, 1, button[1])
+                if index < len(ref_list) and ref_list[index] == button[0]:
+                    selected_iter = iter
+            i.set_model(model)
+            renderer_text = Gtk.CellRendererText()
+            i.pack_start(renderer_text, True)
+            i.add_attribute(renderer_text, "text", 1)
+            i.connect("changed", self.on_my_value_changed)
+            if selected_iter is not None:
+                i.set_active_iter(selected_iter)
+        
+        for i in self.left_side_widgets:
+            left_side_box.pack_start(i, False, False, 2)
+        for i in self.right_side_widgets:
+            right_side_box.pack_start(i, False, False, 2)
+    
+    def on_my_value_changed(self, widget):
+        active_iter = widget.get_active_iter()
+        if active_iter:
+            new_value = widget.get_model()[active_iter][0]
+        else:
+            new_value = None
+        left_items = []
+        right_items = []
+        for i in self.left_side_widgets + self.right_side_widgets:
+            active_iter = i.get_active_iter()
+            if active_iter:
+                value = i.get_model()[i.get_active_iter()][0]
+                if i != widget and value == new_value:
+                    i.set_active_iter(None)
+                elif value != "":
+                    if i in self.left_side_widgets:
+                        left_items.append(value)
+                    else:
+                        right_items.append(value)
+        self.settings.set_string(self.key, ','.join(str(item) for item in left_items) + ':' + ','.join(str(item) for item in right_items))
+        
 class MainWindow:
   
     # Change pages
@@ -715,6 +1021,7 @@ class MainWindow:
         sidePage = SidePage(_("Panel"), "panel.svg", self.content_box)
         self.sidePages.append((sidePage, "panel"))
         sidePage.add_widget(GSettingsEntry(_("Menu text"), "org.cinnamon", "menu-text")) 
+        sidePage.add_widget(GSettingsFileChooser(_("Menu icon"), "org.cinnamon", "menu-icon"))
         sidePage.add_widget(GSettingsCheckButton(_("Auto-hide panel"), "org.cinnamon", "panel-autohide"))
         desktop_layouts = [["traditional", _("Traditional (panel at the bottom)")], ["flipped", _("Flipped (panel at the top)")], ["classic", _("Classic (panels at the top and at the bottom)")]]        
         desktop_layouts_combo = GSettingsComboBox(_("Desktop layout"), "org.cinnamon", "desktop-layout", desktop_layouts)
@@ -867,7 +1174,7 @@ class MainWindow:
         sidePage = ExtensionViewSidePage(_("Extensions"), "extensions.svg", self.content_box)
         self.sidePages.append((sidePage, "extensions"))
                         
-        sidePage = DesktopViewSidePage(_("Desktop"), "desktop.svg", self.content_box)
+        sidePage = SidePage(_("Desktop"), "desktop.svg", self.content_box)
         self.sidePages.append((sidePage, "desktop"))
         sidePage.add_widget(GSettingsCheckButton(_("Have file manager handle the desktop"), "org.gnome.desktop.background", "show-desktop-icons"))
         sidePage.add_widget(GSettingsCheckButton(_("Computer icon visible on desktop"), "org.gnome.nautilus.desktop", "computer-icon-visible"))
@@ -875,6 +1182,35 @@ class MainWindow:
         sidePage.add_widget(GSettingsCheckButton(_("Network Servers icon visible on desktop"), "org.gnome.nautilus.desktop", "network-icon-visible"))
         sidePage.add_widget(GSettingsCheckButton(_("Trash icon visible on desktop"), "org.gnome.nautilus.desktop", "trash-icon-visible"))
         sidePage.add_widget(GSettingsCheckButton(_("Show mounted volumes on the desktop"), "org.gnome.nautilus.desktop", "volumes-visible"))
+        
+        sidePage = SidePage(_("Windows"), "windows.svg", self.content_box)
+        self.sidePages.append((sidePage, "windows"))
+        sidePage.add_widget(GConfComboBox(_("Action on title bar double-click"),
+                                            "/apps/metacity/general/action_double_click_titlebar",
+                                            [(i, i.replace("_", " ").title()) for i in ('toggle_shade', 'toggle_maximize', 'toggle_maximize_horizontally', 'toggle_maximize_vertically', 'minimize', 'shade', 'menu', 'lower', 'none')]))
+        sidePage.add_widget(GConfComboBox(_("Action on title bar middle-click"),
+                                            "/apps/metacity/general/action_middle_click_titlebar",
+                                            [(i, i.replace("_", " ").title()) for i in ('toggle_shade', 'toggle_maximize', 'toggle_maximize_horizontally', 'toggle_maximize_vertically', 'minimize', 'shade', 'menu', 'lower', 'none')]))
+        sidePage.add_widget(GConfComboBox(_("Action on title bar right-click"),
+                                            "/apps/metacity/general/action_right_click_titlebar",
+                                            [(i, i.replace("_", " ").title()) for i in ('toggle_shade', 'toggle_maximize', 'toggle_maximize_horizontally', 'toggle_maximize_vertically', 'minimize', 'shade', 'menu', 'lower', 'none')]))
+        sidePage.add_widget(GConfComboBox(_("Window focus mode"),
+                                            "/apps/metacity/general/focus_mode",
+                                            [(i, i.title()) for i in ("click","sloppy","mouse")]))
+        sidePage.add_widget(TitleBarButtonsOrderSelector())
+        label = Gtk.Label()
+        label.set_markup("<i><small>%s</small></i>" % _("Note: If you change the title bar buttons order you will need to restart Cinnamon."))
+        sidePage.add_widget(label)
+        
+        sidePage = SidePage(_("Fonts"), "fonts.svg", self.content_box)
+        self.sidePages.append((sidePage, "fonts"))
+        sidePage.add_widget(GSettingsRange(_("Text scaling factor"), "org.gnome.desktop.interface", "text-scaling-factor", adjustment_step=0.1))
+        sidePage.add_widget(GSettingsFontButton(_("Default font"), "org.gnome.desktop.interface", "font-name"))
+        sidePage.add_widget(GSettingsFontButton(_("Document font"), "org.gnome.desktop.interface", "document-font-name"))
+        sidePage.add_widget(GSettingsFontButton(_("Monospace font"), "org.gnome.desktop.interface", "monospace-font-name"))
+        sidePage.add_widget(GConfFontButton(_("Window title font"), "/apps/metacity/general/titlebar_font"))
+        sidePage.add_widget(GSettingsComboBox(_("Hinting"), "org.gnome.settings-daemon.plugins.xsettings", "hinting", [(i, i.title()) for i in ("none", "slight", "medium", "full")]))
+        sidePage.add_widget(GSettingsComboBox(_("Antialiasing"), "org.gnome.settings-daemon.plugins.xsettings", "antialiasing", [(i, i.title()) for i in ("none", "grayscale", "rgba")]))
                         
         #sidePage = SidePage(_("Terminal"), "terminal", self.content_box)
         #self.sidePages.append(sidePage)
