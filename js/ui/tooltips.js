@@ -62,7 +62,7 @@ PanelItemTooltip.prototype = {
     
     show: function() {
         //if (this._appButton.rightClickMenu.isOpen) return;
-        if (this.preventShow) return;
+        if (this.preventShow || global.menuStackLength > 0) return;
         
         Tweener.removeTweens(this);
         
