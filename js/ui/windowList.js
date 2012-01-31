@@ -432,10 +432,16 @@ WindowList.prototype = {
         this.actor = new St.BoxLayout({ name: 'windowList',
                                        	style_class: 'window-list-box' });
                                        	
-	if (orientation == St.Side.TOP) 
+	if (orientation == St.Side.TOP) {
 		this.actor.add_style_class_name('window-list-box-top');
-	else
+		this.actor.set_style('margin-top: 0px;');
+		this.actor.set_style('padding-top: 0px;');
+	}
+	else {
 		this.actor.add_style_class_name('window-list-box-bottom');
+		this.actor.set_style('margin-bottom: 0px;');
+		this.actor.set_style('padding-bottom: 0px;');
+	}
                                         
         this.actor._delegate = this;
         this._windows = new Array();
