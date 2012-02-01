@@ -36,8 +36,11 @@ Applet.prototype = {
         this._menuManager.addMenu(this._applet_context_menu);                                              
     },
             
-    _onButtonReleaseEvent: function (actor, event) {        
+    _onButtonReleaseEvent: function (actor, event) {                      
         if (event.get_button()==1){
+            if (this._applet_context_menu.isOpen) {
+                this._applet_context_menu.toggle(); 
+            }
             this.on_applet_clicked(event);
         }
         if (event.get_button()==3){            
