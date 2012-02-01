@@ -142,6 +142,11 @@ AppMenuButton.prototype = {
 								  x_fill: true,
 								  y_fill: false,
 								  track_hover: true });
+								  
+	if (orientation == St.Side.TOP) 
+		this.actor.add_style_class_name('window-list-item-box-top');
+	else
+		this.actor.add_style_class_name('window-list-item-box-bottom');
       
         this.actor._delegate = this;
         this.actor.connect('button-release-event', Lang.bind(this, this._onButtonRelease));
@@ -428,10 +433,12 @@ WindowList.prototype = {
                                        	style_class: 'window-list-box' });
                                        	
 	if (orientation == St.Side.TOP) {
+		this.actor.add_style_class_name('window-list-box-top');
 		this.actor.set_style('margin-top: 0px;');
 		this.actor.set_style('padding-top: 0px;');
 	}
 	else {
+		this.actor.add_style_class_name('window-list-box-bottom');
 		this.actor.set_style('margin-bottom: 0px;');
 		this.actor.set_style('padding-bottom: 0px;');
 	}
