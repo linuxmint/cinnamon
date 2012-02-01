@@ -712,12 +712,12 @@ function _globalKeyPressHandler(actor, event) {
         // left/right would effectively act as synonyms for up/down if we enabled them;
         // but that could be considered confusing; we also disable them in the main view.
         //
-        // case Meta.KeyBindingAction.WORKSPACE_LEFT:
-        //     wm.actionMoveWorkspaceLeft();
-        //     return true;
-        // case Meta.KeyBindingAction.WORKSPACE_RIGHT:
-        //     wm.actionMoveWorkspaceRight();
-        //     return true;
+         case Meta.KeyBindingAction.WORKSPACE_LEFT:
+             wm.actionMoveWorkspaceLeft();
+             return true;
+         case Meta.KeyBindingAction.WORKSPACE_RIGHT:
+             wm.actionMoveWorkspaceRight();
+             return true;
         case Meta.KeyBindingAction.WORKSPACE_UP:
             //wm.actionMoveWorkspaceUp();                       
             return true;
