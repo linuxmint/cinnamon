@@ -1209,6 +1209,10 @@ PopupMenu.prototype = {
             return;
 
         this.isOpen = true;
+        
+        if (global.menuStackLength == undefined)
+            global.menuStackLength = 0;
+        global.menuStackLength += 1;
 
         this._boxPointer.setPosition(this.sourceActor, this._arrowAlignment);
         this._boxPointer.show(animate);
@@ -1221,6 +1225,12 @@ PopupMenu.prototype = {
     close: function(animate) {
         if (!this.isOpen)
             return;
+            
+        global.menuStackLength -= 1;
+
+        Main.panel._hidePanel();
+        if (Main.panel2 != null)
+            Main.panel2._hidePanel();
 
         if (this._activeMenuItem)
             this._activeMenuItem.setActive(false);
