@@ -41,7 +41,10 @@ Applet.prototype = {
             this.on_applet_clicked(event);
         }
         if (event.get_button()==3){            
-            this._applet_context_menu.toggle();
+            if (this._applet_context_menu._getMenuItems().length > 0)       
+                this._applet_context_menu.toggle();
+			else
+				this.on_applet_clicked(event);
         }
         return true;
     },

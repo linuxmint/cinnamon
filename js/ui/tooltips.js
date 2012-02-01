@@ -17,6 +17,7 @@ PanelItemTooltip.prototype = {
         panelItem.actor.connect('enter-event', Lang.bind(this, this._onEnterEvent));
         panelItem.actor.connect('leave-event', Lang.bind(this, this._onLeaveEvent));
         panelItem.actor.connect('motion-event', Lang.bind(this, this._onMotionEvent));
+        panelItem.actor.connect('button-release-event', Lang.bind(this, this._onReleaseEvent));
         
         this._showTimer = null;
         this._visible = false;
@@ -33,6 +34,7 @@ PanelItemTooltip.prototype = {
     },
     
     _onEnterEvent: function(actor, event) {
+        this.preventShow = false;
         Tweener.addTween(this, {time: 0.3, onComplete: Lang.bind(this, this._onTimerComplete)});
         this._mousePosition = event.get_coords();
     },
@@ -47,6 +49,11 @@ PanelItemTooltip.prototype = {
         this.hide();
     },
     
+    _onReleaseEvent: function(actor, event) {
+    	this.preventShow = true;
+        this.hide();
+    },
+    
     hide: function() {
         Tweener.removeTweens(this);
         this._tooltip.hide();
@@ -55,7 +62,7 @@ PanelItemTooltip.prototype = {
     
     show: function() {
         //if (this._appButton.rightClickMenu.isOpen) return;
-        if (this.preventShow) return;
+        if (this.preventShow || global.menuStackLength > 0) return;
         
         Tweener.removeTweens(this);
         
