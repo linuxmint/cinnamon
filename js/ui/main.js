@@ -692,13 +692,7 @@ function _globalKeyPressHandler(actor, event) {
         overview.hide();
         return true;
     }
-    
-    // Bindings to workspace up and workspace down are being used to toggle overview
-    if (action == Meta.KeyBindingAction.WORKSPACE_UP || action == Meta.KeyBindingAction.WORKSPACE_DOWN){
-        overview.hide();
-        return true;    
-    }
-
+       
     if (action == Meta.KeyBindingAction.SWITCH_PANELS) {
         //Used to call the ctrlalttabmanager in Gnome Shell
         return true;
@@ -719,10 +713,10 @@ function _globalKeyPressHandler(actor, event) {
              wm.actionMoveWorkspaceRight();
              return true;
         case Meta.KeyBindingAction.WORKSPACE_UP:
-            //wm.actionMoveWorkspaceUp();                       
+            overview.hide();                     
             return true;
         case Meta.KeyBindingAction.WORKSPACE_DOWN:
-            //wm.actionMoveWorkspaceDown();
+            overview.hide();
             return true;
         case Meta.KeyBindingAction.PANEL_RUN_DIALOG:
         case Meta.KeyBindingAction.COMMAND_2:
