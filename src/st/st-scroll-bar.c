@@ -242,33 +242,11 @@ st_scroll_bar_pick (ClutterActor       *actor,
 }
 
 static void
-st_scroll_bar_map (ClutterActor *actor)
-{
-  StScrollBarPrivate *priv = ST_SCROLL_BAR (actor)->priv;
-
-  CLUTTER_ACTOR_CLASS (st_scroll_bar_parent_class)->map (actor);
-
-  clutter_actor_map (priv->bw_stepper);
-  clutter_actor_map (priv->fw_stepper);
-  clutter_actor_map (priv->trough);
-
-  if (priv->handle)
-    clutter_actor_map (priv->handle);
-}
-
-static void
 st_scroll_bar_unmap (ClutterActor *actor)
 {
   CLUTTER_ACTOR_CLASS (st_scroll_bar_parent_class)->unmap (actor);
 
   stop_scrolling (ST_SCROLL_BAR (actor));
-
-  clutter_actor_unmap (priv->bw_stepper);
-  clutter_actor_unmap (priv->fw_stepper);
-  clutter_actor_unmap (priv->trough);
-
-  if (priv->handle)
-    clutter_actor_unmap (priv->handle);
 }
 
 static void
@@ -684,7 +662,6 @@ st_scroll_bar_class_init (StScrollBarClass *klass)
   actor_class->paint          = st_scroll_bar_paint;
   actor_class->pick           = st_scroll_bar_pick;
   actor_class->scroll_event   = st_scroll_bar_scroll_event;
-  actor_class->map            = st_scroll_bar_map;
   actor_class->unmap          = st_scroll_bar_unmap;
 
   widget_class->style_changed = st_scroll_bar_style_changed;
