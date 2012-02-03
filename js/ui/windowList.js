@@ -90,10 +90,13 @@ AppMenuButtonRightClickMenu.prototype = {
     },
 
     _onMinimizeWindowActivate: function(actor, event){
-        if (this.metaWindow.minimized)
+        if (this.metaWindow.minimized) {
             this.metaWindow.unminimize(global.get_current_time());
-        else
+            this.metaWindow.activate(global.get_current_time());
+        }
+        else {
             this.metaWindow.minimize(global.get_current_time());
+        }
     },
 
     _onMaximizeWindowActivate: function(actor, event){      
@@ -275,6 +278,9 @@ AppMenuButton.prototype = {
             this.actor.remove_style_pseudo_class('focus');
         }
         else {
+            if (this.metaWindow.minimized) {
+                this.metaWindow.unminimize(global.get_current_time()); 
+            }
             this.metaWindow.activate(global.get_current_time());
             this.actor.add_style_pseudo_class('focus');
         }
