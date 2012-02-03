@@ -194,9 +194,14 @@ PanelAppLauncher.prototype = {
     get_icon: function() {
         let icon = this.get_appinfo().get_icon();
         if (icon){
-            if (icon instanceof Gio.FileIcon) return icon.get_file().get_path();
-            else return icon.get_names().toString();
+            if (icon instanceof Gio.FileIcon) {
+                return icon.get_file().get_path();
+            }
+            else {
+                return icon.get_names().toString();
+            }
         }
+        return null;
     }
 }
 
@@ -285,6 +290,8 @@ AddLauncherDialog.prototype = {
         
         if (this._currentLauncher) this.emit("launcher-updated", this._currentLauncher, appid);
         else this.emit("launcher-created", appid);
+        
+        return true;
     },
     
     _saveNewLauncher: function(name, command, description, icon){

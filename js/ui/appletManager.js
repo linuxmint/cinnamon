@@ -119,7 +119,7 @@ function _find_applet_in(uuid, dir) {
         fileEnum = dir.enumerate_children('standard::*', Gio.FileQueryInfoFlags.NONE, null);
     } catch (e) {
         global.logError('' + e);
-       return;
+       return null;
     }
 
     while ((info = fileEnum.next_file(null)) != null) {
@@ -144,7 +144,7 @@ function loadApplet(uuid, dir) {
     let metadataFile = dir.get_child('metadata.json');
     if (!metadataFile.query_exists(null)) {
         global.logError(uuid + ' missing metadata.json');
-        return;
+        return null;
     }
 
     let metadataContents;
@@ -152,14 +152,14 @@ function loadApplet(uuid, dir) {
         metadataContents = Cinnamon.get_file_contents_utf8_sync(metadataFile.get_path());
     } catch (e) {
         global.logError(uuid + ' failed to load metadata.json: ' + e);
-        return;
+        return null;
     }
     let meta;
     try {
         meta = JSON.parse(metadataContents);
     } catch (e) {
         global.logError(uuid + ' failed to parse metadata.json: ' + e);
-        return;
+        return null;
     }
 
     let requiredProperties = ['uuid', 'name', 'description', 'icon'];
@@ -167,7 +167,7 @@ function loadApplet(uuid, dir) {
         let prop = requiredProperties[i];
         if (!meta[prop]) {
             global.logError(uuid + ' missing "' + prop + '" property in metadata.json');
-            return;
+            return null;
         }
     }
 
@@ -178,7 +178,7 @@ function loadApplet(uuid, dir) {
    
     if (uuid != meta.uuid) {
         global.logError(uuid + ' uuid "' + meta.uuid + '" from metadata.json does not match directory name "' + uuid + '"');
-        return;
+        return null;
     }
    
     appletMeta[uuid] = meta;    
@@ -188,7 +188,7 @@ function loadApplet(uuid, dir) {
     let appletJs = dir.get_child('applet.js');
     if (!appletJs.query_exists(null)) {
         global.logError(uuid + ' missing applet.js');
-        return;
+        return null;
     }
     let stylesheetPath = null;
     let themeContext = St.ThemeContext.get_for_stage(global.stage);
@@ -199,7 +199,7 @@ function loadApplet(uuid, dir) {
             theme.load_stylesheet(stylesheetFile.get_path());
         } catch (e) {
             global.logError(uuid + ' stylesheet parse error: ' + e);
-            return;
+            return null;
         }
     }
 
@@ -211,12 +211,12 @@ function loadApplet(uuid, dir) {
         if (stylesheetPath != null)
             theme.unload_stylesheet(stylesheetPath);
         global.logError(uuid + " " + e);
-        return;
+        return null;
     }
 
     if (!appletModule.main) {
         global.logError(uuid + ' missing \'main\' function');
-        return;
+        return null;
     }
 
     try {
@@ -231,7 +231,7 @@ function loadApplet(uuid, dir) {
         if (stylesheetPath != null)
             theme.unload_stylesheet(stylesheetPath);
         global.logError(uuid + ' failed to evaluate main function:' + e);
-        return;
+        return null;
     }        
     
     appletObj[uuid] = applet;  
