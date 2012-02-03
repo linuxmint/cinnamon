@@ -22,7 +22,7 @@ const Gettext = imports.gettext.domain('cinnamon-extensions');
 const _ = Gettext.gettext;
 
 const ICON_SIZE = 16;
-const FAV_ICON_SIZE = 30;
+const MAX_FAV_ICON_SIZE = 30;
 const CATEGORY_ICON_SIZE = 20;
 const APPLICATION_ICON_SIZE = 20;
 
@@ -240,16 +240,15 @@ FavoritesButton.prototype = {
     __proto__: GenericApplicationButton.prototype,
     
     _init: function(appsMenuButton, app, nbFavorites) {
-        GenericApplicationButton.prototype._init.call(this, appsMenuButton, app);
-        
+        GenericApplicationButton.prototype._init.call(this, appsMenuButton, app);        
         let monitorHeight = Main.layoutManager.primaryMonitor.height;
-        let real_size = (1*monitorHeight) / nbFavorites;
+        let real_size = (0.7*monitorHeight) / nbFavorites;
         let icon_size = 0.6*real_size;
-        if (icon_size>FAV_ICON_SIZE) icon_size = FAV_ICON_SIZE;
-        this.actor.style = "padding-top: "+(icon_size/3)+"px;padding-bottom: "+(icon_size/3)+"px;padding-left: "+(icon_size/3)+"px;padding-right: "+(icon_size/3)+"px;"
+        if (icon_size>MAX_FAV_ICON_SIZE) icon_size = MAX_FAV_ICON_SIZE;
+        this.actor.style = "padding-top: "+(icon_size/3)+"px;padding-bottom: "+(icon_size/3)+"px; margin:auto;"
 
         this.actor.add_style_class_name('menu-favorites-button');
-        this.addActor(app.create_icon_texture(icon_size));
+        this.addActor(app.create_icon_texture(icon_size));       
     }
 };
 
@@ -259,13 +258,12 @@ function SystemButton(appsMenuButton, icon, nbFavorites) {
 
 SystemButton.prototype = {
     _init: function(appsMenuButton, icon, nbFavorites) {
-        this.actor = new St.Button({ reactive: true, style_class: 'menu-favorites-button' });
-        
+        this.actor = new St.Button({ reactive: true, style_class: 'menu-favorites-button' });        
         let monitorHeight = Main.layoutManager.primaryMonitor.height;
-        let real_size = (1*monitorHeight) / nbFavorites;
+        let real_size = (0.7*monitorHeight) / nbFavorites;
         let icon_size = 0.6*real_size;
-        if (icon_size>FAV_ICON_SIZE) icon_size = FAV_ICON_SIZE;
-        this.actor.style = "padding-top: "+(icon_size/3)+"px;padding-bottom: "+(icon_size/3)+"px;padding-left: "+(icon_size/3)+"px;padding-right: "+(icon_size/3)+"px;"
+        if (icon_size>MAX_FAV_ICON_SIZE) icon_size = MAX_FAV_ICON_SIZE;
+        this.actor.style = "padding-top: "+(icon_size/3)+"px;padding-bottom: "+(icon_size/3)+"px; margin:auto;"
         let iconObj = new St.Icon({icon_name: icon, icon_size: icon_size, icon_type: St.IconType.FULLCOLOR});
         this.actor.set_child(iconObj);             
     }
