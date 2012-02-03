@@ -55,8 +55,16 @@ AppMenuButtonRightClickMenu.prototype = {
         else
             this.itemMaximizeWindow = new PopupMenu.PopupMenuItem(_('Maximize'));
         this.itemMaximizeWindow.connect('activate', Lang.bind(this, this._onMaximizeWindowActivate));        
+	
+	this.itemMoveToLeftWorkspace = new PopupMenu.PopupMenuItem('Move to left workspace');
+        this.itemMoveToLeftWorkspace.connect('activate', Lang.bind(this, this._onMoveToLeftWorkspace));
+
+	this.itemMoveToRightWorkspace = new PopupMenu.PopupMenuItem('Move to right workspace');
+        this.itemMoveToRightWorkspace.connect('activate', Lang.bind(this, this._onMoveToRightWorkspace));
         
         if (orientation == St.Side.BOTTOM) {
+            this.addMenuItem(this.itemMoveToLeftWorkspace);
+            this.addMenuItem(this.itemMoveToRightWorkspace);
             this.addMenuItem(this.itemMinimizeWindow);
             this.addMenuItem(this.itemMaximizeWindow);
             this.addMenuItem(this.itemCloseWindow);                        
@@ -65,6 +73,8 @@ AppMenuButtonRightClickMenu.prototype = {
             this.addMenuItem(this.itemCloseWindow);
             this.addMenuItem(this.itemMaximizeWindow);
             this.addMenuItem(this.itemMinimizeWindow);
+            this.addMenuItem(this.itemMoveToLeftWorkspace);
+            this.addMenuItem(this.itemMoveToRightWorkspace);
         }
     },
     
@@ -90,13 +100,10 @@ AppMenuButtonRightClickMenu.prototype = {
     },
 
     _onMinimizeWindowActivate: function(actor, event){
-        if (this.metaWindow.minimized) {
+        if (this.metaWindow.minimized)
             this.metaWindow.unminimize(global.get_current_time());
-            this.metaWindow.activate(global.get_current_time());
-        }
-        else {
+        else
             this.metaWindow.minimize(global.get_current_time());
-        }
     },
 
     _onMaximizeWindowActivate: function(actor, event){      
@@ -108,6 +115,17 @@ AppMenuButtonRightClickMenu.prototype = {
             this.metaWindow.maximize(3);
             this.itemMaximizeWindow.label.set_text(_("Unmaximize"));
         }
+    },
+
+    _onMoveToLeftWorkspace: function(actor, event){
+        let currentIndex = this.metaWindow.get_workspace().index();
+        if (currentIndex > 0)
+            this.metaWindow.change_workspace_by_index(currentIndex - 1, 1, global.get_current_time());
+    },
+
+    _onMoveToRightWorkspace: function(actor, event){
+        let currentIndex = this.metaWindow.get_workspace().index();
+        this.metaWindow.change_workspace_by_index(currentIndex + 1, 1, global.get_current_time());
     },
 
     _onSourceKeyPress: function(actor, event) {
@@ -278,9 +296,6 @@ AppMenuButton.prototype = {
             this.actor.remove_style_pseudo_class('focus');
         }
         else {
-            if (this.metaWindow.minimized) {
-                this.metaWindow.unminimize(global.get_current_time()); 
-            }
             this.metaWindow.activate(global.get_current_time());
             this.actor.add_style_pseudo_class('focus');
         }
