@@ -19,15 +19,15 @@ nobase_dist_js_DATA = \
 	misc/util.js		\
 	perf/core.js		\
 	ui/altTab.js		\
-	ui/applet.js		\	
-	ui/appletManager.js	\	
+	ui/applet.js		\
+	ui/appletManager.js	\
 	ui/appFavorites.js	\
 	ui/automountManager.js  \
 	ui/autorunManager.js    \
 	ui/boxpointer.js	\
-	ui/calendar.js		\	
+	ui/calendar.js		\
 	ui/dateMenu.js		\
-	ui/dnd.js		\	
+	ui/dnd.js		\
 	ui/endSessionDialog.js	\
 	ui/environment.js	\
 	ui/extensionSystem.js	\
@@ -51,12 +51,12 @@ nobase_dist_js_DATA = \
 	ui/panel.js		\
 	ui/panelLaunchers.js	\
 	ui/panelMenu.js		\
-	ui/placesManager.js  \	
+	ui/placesManager.js  \
 	ui/polkitAuthenticationAgent.js \
 	ui/popupMenu.js		\
 	ui/runDialog.js		\
 	ui/scripting.js		\
-	ui/search.js		\	
+	ui/search.js		\
 	ui/cinnamonDBus.js		\
 	ui/showDesktopButton.js	\
 	ui/statusIconDispatcher.js	\
