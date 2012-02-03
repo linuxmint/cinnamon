@@ -705,17 +705,30 @@ StTooltip StLabel {
 }
 
 /* Hack used in lieu of border-collapse - see calendar.js */
-.calendar-day {
+.calendar-day:ltr {
     border: 1px solid #333333;
     color: #cccccc;
     border-top-width: 0;
     border-left-width: 0;
 }
-.calendar-day-top {
+.calendar-day-top:ltr {
     border-top-width: 1px;
 }
-.calendar-day-left {
+.calendar-day-left:ltr {
     border-left-width: 1px;
+}
+
+.calendar-day:rtl {
+    border: 1px solid #333333;
+    color: #cccccc;
+    border-top-width: 0;
+    border-right-width: 0;
+}
+.calendar-day-top:rtl {
+    border-top-width: 1px;
+}
+.calendar-day-left:rtl {
+    border-right-width: 1px;
 }
 
 .calendar-work-day {
