@@ -999,10 +999,15 @@ class MainWindow:
     def side_view_nav(self, side_view):
         selected_items = side_view.get_selected_items()
         if len(selected_items) > 0:
+            self.side_view_sw.hide()
             path = selected_items[0]            
             iterator = self.store.get_iter(path)
             print self.store.get_value(iterator, 0)
-            self.store.get_value(iterator,2).build()
+            sidePage = self.store.get_value(iterator,2)
+            self.window.set_title(_("Cinnamon Settings") + " - " + sidePage.name)
+            sidePage.build()
+            self.content_box_sw.show_all()
+            self.top_button_box.show_all()
             
     ''' Create the UI '''
     def __init__(self):        
@@ -1011,8 +1016,12 @@ class MainWindow:
         self.builder.add_from_file("/usr/lib/cinnamon-settings/cinnamon-settings.ui")
         self.window = self.builder.get_object("main_window")
         self.side_view = self.builder.get_object("side_view")
+        self.side_view_sw = self.builder.get_object("side_view_sw")
         self.content_box = self.builder.get_object("content_box")
+        self.content_box_sw = self.builder.get_object("content_box_sw")
         self.button_cancel = self.builder.get_object("button_cancel")
+        self.button_back = self.builder.get_object("button_back")
+        self.top_button_box = self.builder.get_object("top_button_box")
         
         self.window.connect("destroy", Gtk.main_quit)
 
@@ -1233,17 +1242,21 @@ class MainWindow:
         # Select the first sidePage
         if len(sys.argv)==2 and sys.argv[1] in sidePagesIters.keys():
             first_page_iter = sidePagesIters[sys.argv[1]]
-        else:
-            first_page_iter = self.store.get_iter_first()        
-        path = self.store.get_path(first_page_iter)
-        self.side_view.select_path(path)
-        self.side_view.scroll_to_path(path, False, 0, 0)
+            path = self.store.get_path(first_page_iter)
+            self.side_view.select_path(path)
 
         # set up larger components.
         self.window.set_title(_("Cinnamon Settings"))       
         self.window.connect("destroy", Gtk.main_quit)
-        self.button_cancel.connect("clicked", Gtk.main_quit)                                    
+        self.button_cancel.connect("clicked", Gtk.main_quit)      
+        self.button_back.connect('clicked', self.back_to_icon_view)                              
         self.window.show()
+    
+    def back_to_icon_view(self, widget):
+        self.window.set_title(_("Cinnamon Settings"))
+        self.content_box_sw.hide()
+        self.top_button_box.hide()
+        self.side_view_sw.show_all()
         
     def _ntp_toggled(self, widget):
         self.changeTimeWidget.change_using_ntp( self.ntpCheckButton.get_active() )
