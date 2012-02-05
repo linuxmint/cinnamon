@@ -1005,11 +1005,8 @@ class MainWindow:
             print self.store.get_value(iterator, 0)
             sidePage = self.store.get_value(iterator,2)
             self.window.set_title(_("Cinnamon Settings") + " - " + sidePage.name)
-            self.sidepage_name_label.set_markup("<b>%s</b>" % sidePage.name)
-            icon = self.store.get_value(iterator,3)
-            self.sidepage_icon.set_from_pixbuf(icon)
             sidePage.build()
-            self.content_box_frame.show_all()
+            self.content_box_sw.show_all()
             self.top_button_box.show_all()
             
     ''' Create the UI '''
@@ -1021,12 +1018,11 @@ class MainWindow:
         self.side_view = self.builder.get_object("side_view")
         self.side_view_sw = self.builder.get_object("side_view_sw")
         self.content_box = self.builder.get_object("content_box")
-        self.content_box_frame = self.builder.get_object("content_box_frame")
+        self.content_box_sw = self.builder.get_object("content_box_sw")
         self.button_cancel = self.builder.get_object("button_cancel")
         self.button_back = self.builder.get_object("button_back")
+        self.button_back.set_label(_("All Settings"))
         self.top_button_box = self.builder.get_object("top_button_box")
-        self.sidepage_name_label = self.builder.get_object("sidepage_name_label")
-        self.sidepage_icon = self.builder.get_object("sidepage_icon")
         
         self.window.connect("destroy", Gtk.main_quit)
 
@@ -1232,12 +1228,11 @@ class MainWindow:
         
                                 
         # create the backing store for the side nav-view.                            
-        self.store = Gtk.ListStore(str, GdkPixbuf.Pixbuf, object, GdkPixbuf.Pixbuf)
+        self.store = Gtk.ListStore(str, GdkPixbuf.Pixbuf, object)
         sidePagesIters = {}
         for sidePage, sidePageID in self.sidePages:
             img = GdkPixbuf.Pixbuf.new_from_file_at_size( "/usr/lib/cinnamon-settings/data/icons/%s" % sidePage.icon, 48, 48)
-            icon = GdkPixbuf.Pixbuf.new_from_file_at_size( "/usr/lib/cinnamon-settings/data/icons/%s" % sidePage.icon, 22, 22)
-            sidePagesIters[sidePageID] = self.store.append([sidePage.name, img, sidePage, icon])     
+            sidePagesIters[sidePageID] = self.store.append([sidePage.name, img, sidePage])     
                       
         # set up the side view - navigation.
         self.side_view.set_text_column(0)
@@ -1261,7 +1256,7 @@ class MainWindow:
     
     def back_to_icon_view(self, widget):
         self.window.set_title(_("Cinnamon Settings"))
-        self.content_box_frame.hide()
+        self.content_box_sw.hide()
         self.top_button_box.hide()
         self.side_view_sw.show_all()
         
