@@ -1239,17 +1239,18 @@ class MainWindow:
         self.side_view.set_model(self.store)        
         self.side_view.connect("selection_changed", self.side_view_nav )
 
+        # set up larger components.
+        self.window.set_title(_("Cinnamon Settings"))       
+        self.window.connect("destroy", Gtk.main_quit)
+        self.button_cancel.connect("clicked", Gtk.main_quit)      
+        self.button_back.connect('clicked', self.back_to_icon_view)     
+        
         # Select the first sidePage
         if len(sys.argv)==2 and sys.argv[1] in sidePagesIters.keys():
             first_page_iter = sidePagesIters[sys.argv[1]]
             path = self.store.get_path(first_page_iter)
             self.side_view.select_path(path)
-
-        # set up larger components.
-        self.window.set_title(_("Cinnamon Settings"))       
-        self.window.connect("destroy", Gtk.main_quit)
-        self.button_cancel.connect("clicked", Gtk.main_quit)      
-        self.button_back.connect('clicked', self.back_to_icon_view)                              
+                                     
         self.window.show()
     
     def back_to_icon_view(self, widget):
