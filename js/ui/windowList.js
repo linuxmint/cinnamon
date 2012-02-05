@@ -121,13 +121,13 @@ AppMenuButtonRightClickMenu.prototype = {
         let currentIndex = this.metaWindow.get_workspace().index();
         if (currentIndex > 0)
             this.metaWindow.change_workspace_by_index(currentIndex - 1, 1, global.get_current_time());
-        this._checkWorkspaces()
+        Main._checkWorkspaces()
     },
 
     _onMoveToRightWorkspace: function(actor, event){
         let currentIndex = this.metaWindow.get_workspace().index();
         this.metaWindow.change_workspace_by_index(currentIndex + 1, 1, global.get_current_time());
-        this._checkWorkspaces()
+        Main._checkWorkspaces()
     },
 
     _onSourceKeyPress: function(actor, event) {
