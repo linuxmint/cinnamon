@@ -17,6 +17,7 @@ const GnomeSession = imports.misc.gnomeSession;
 const ScreenSaver = imports.misc.screenSaver;
 const FileUtils = imports.misc.fileUtils;
 const Util = imports.misc.util;
+const Tweener = imports.ui.tweener;
 
 const Gettext = imports.gettext.domain('cinnamon-extensions');
 const _ = Gettext.gettext;
@@ -25,6 +26,7 @@ const ICON_SIZE = 16;
 const FAV_ICON_SIZE = 32;
 const CATEGORY_ICON_SIZE = 22;
 const APPLICATION_ICON_SIZE = 22;
+const CATEGORY_BUTTON_HOVER_TIME = 0.15;
 
 const USER_DESKTOP_PATH = FileUtils.getUserDesktopDir();
 
@@ -580,8 +582,20 @@ ApplicationsButton.prototype = {
             this._select_category(null, this._allAppsCategoryButton);
          }));
          this._addEnterEvent(this._allAppsCategoryButton, Lang.bind(this, function() {
-             if (!this.searchActive) this._select_category(null, this._allAppsCategoryButton);
+             if (!this.searchActive) {
+                             this._allAppsCategoryButton.isHovered = true;
+                             Tweener.addTween(this, {
+                                                    time: CATEGORY_BUTTON_HOVER_TIME,
+                                                    onComplete: function () {
+                                                                    if (this._allAppsCategoryButton.isHovered)
+                                                                        this._select_category(null, this._allAppsCategoryButton);
+                                                                }
+                             });
+            }
          }));
+         this._allAppsCategoryButton.actor.connect('leave-event', function () {
+                            this._allAppsCategoryButton.isHovered = false;
+                        });
          this.categoriesBox.add_actor(this._allAppsCategoryButton.actor);
         
         let trees = [appsys.get_tree(), appsys.get_settings_tree()];
@@ -605,8 +619,20 @@ ApplicationsButton.prototype = {
                          this._select_category(dir, categoryButton);
                       }));
                       this._addEnterEvent(categoryButton, Lang.bind(this, function() {
-                          if (!this.searchActive) this._select_category(dir, categoryButton);
+                          if (!this.searchActive) {
+                             categoryButton.isHovered = true;
+                             Tweener.addTween(this, {
+                                                time: CATEGORY_BUTTON_HOVER_TIME,
+                                                onComplete: function () {
+                                                                if (categoryButton.isHovered)
+                                                                    this._select_category(dir, categoryButton);
+                                                            }
+                             });
+                          }
                       }));
+                      categoryButton.actor.connect('leave-event', function () {
+                            categoryButton.isHovered = false;
+                        });
                        this.categoriesBox.add_actor(categoryButton.actor);
                     }
                 }
@@ -802,8 +828,20 @@ ApplicationsButton.prototype = {
             this._select_places(this.placesButton);
         }));
         this._addEnterEvent(this.placesButton, Lang.bind(this, function() {
-            if (!this.searchActive) this._select_places(this.placesButton);
+            if (!this.searchActive) {
+                         this.placesButton.isHovered = true;
+                         Tweener.addTween(this, {
+                                            time: CATEGORY_BUTTON_HOVER_TIME,
+                                            onComplete: function () {
+                                                        if (this.placesButton.isHovered)
+                        	                                this._select_places(this.placesButton);
+                                            	        }
+                             });
+                          }
         }));
+        this.placesButton.actor.connect('leave-event', function () {
+                            this.placesButton.isHovered = false;
+                        });
         this.categoriesBox.add_actor(this.placesButton.actor);            
          
         this.selectedAppBox = new St.BoxLayout({ style_class: 'menu-selected-app-box', vertical: true });
