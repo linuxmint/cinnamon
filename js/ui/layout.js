@@ -54,12 +54,12 @@ LayoutManager.prototype = {
 		let autohide = global.settings.get_boolean("panel-autohide");
 //        this._chrome.addActor(this.panelBox);
 		if (autohide) {
-        	this.addChrome(this.panelBox, { affectsStruts: false, addToWindowgroup: true });
-            this.addChrome(this.panelBox2, { affectsStruts: false, addToWindowgroup: true });
+        	this.addChrome(this.panelBox, { affectsStruts: false, addToWindowgroup: false });
+            this.addChrome(this.panelBox2, { affectsStruts: false, addToWindowgroup: false });
 		}
 		else {
-			this.addChrome(this.panelBox, { affectsStruts: true, addToWindowgroup: true });
-            this.addChrome(this.panelBox2, { affectsStruts: true, addToWindowgroup: true });
+			this.addChrome(this.panelBox, { affectsStruts: true, addToWindowgroup: false });
+            this.addChrome(this.panelBox2, { affectsStruts: true, addToWindowgroup: false });
 		}
         this.panelBox.connect('allocation-changed',
                               Lang.bind(this, this._updatePanelBarriers));
