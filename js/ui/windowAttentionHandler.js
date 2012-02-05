@@ -14,9 +14,6 @@ WindowAttentionHandler.prototype = {
     _init : function() {
         this._tracker = Cinnamon.WindowTracker.get_default();
         global.display.connect('window-demands-attention', Lang.bind(this, this._onWindowDemandsAttention));
-        
-        // Remember the windows which already sent notifications, in order to prevent them from getting the focus again
-        this._windows_with_notifications = new Array();
     },
 
     _onWindowDemandsAttention : function(display, window) {
@@ -28,10 +25,8 @@ WindowAttentionHandler.prototype = {
         // We are just ignoring the hint on skip_taskbar windows for now.
         // (Which is the same behaviour as with metacity + panel)
 
-        if (!window || window.has_focus() || window.is_skip_taskbar() || this._windows_with_notifications.indexOf(window) != -1)
+        if (!window || window.has_focus() || window.is_skip_taskbar())
             return;
-         
-        this._windows_with_notifications.push(window);
 
         window.activate(global.get_current_time());
     }
