@@ -267,29 +267,16 @@ class ExtensionViewSidePage (SidePage):
         cr.connect("toggled", self.toggled, treeview)
         column1 = Gtk.TreeViewColumn(_("Enable"), cr)
         column1.set_cell_data_func(cr, self.celldatafunction_checkbox)
-        column1.set_sort_column_id(4)
         column1.set_resizable(True)
 
-        column2 = Gtk.TreeViewColumn(_("UUID"), Gtk.CellRendererText(), text=0)
-        column2.set_sort_column_id(1)
+        column2 = Gtk.TreeViewColumn(_("Description"), Gtk.CellRendererText(), markup=1)
         column2.set_resizable(True)
-
-        column3 = Gtk.TreeViewColumn(_("Name"), Gtk.CellRendererText(), text=1)
-        column3.set_sort_column_id(2)
-        column3.set_resizable(True)
-
-        column4 = Gtk.TreeViewColumn(_("Description"), Gtk.CellRendererText(), text=2)
-        column4.set_sort_column_id(3)
-        column4.set_resizable(True)
         
         treeview.append_column(column1)
         treeview.append_column(column2)
-        treeview.append_column(column3)
-        treeview.append_column(column4)
-        treeview.set_headers_clickable(True)
-        treeview.set_reorderable(False)
+        treeview.set_headers_visible(False)
             
-        self.model = Gtk.TreeStore(str, str, str, bool)
+        self.model = Gtk.TreeStore(str, str, bool)
         #self.model.set_sort_column_id( 1, Gtk.SORT_ASCENDING )
         treeview.set_model(self.model)
                                 
@@ -322,28 +309,27 @@ class ExtensionViewSidePage (SidePage):
                     extension_name = data["name"]                
                     extension_description = data["description"]
                     iter = self.model.insert_before(None, None)
-                    self.model.set_value(iter, 0, extension_uuid)                
-                    self.model.set_value(iter, 1, extension_name)
-                    self.model.set_value(iter, 2, extension_description)
-                    self.model.set_value(iter, 3, (extension_uuid in self.enabled_extensions))
+                    self.model.set_value(iter, 0, extension_uuid)         
+                    self.model.set_value(iter, 1, '<b>%s</b>\n<i><span foreground="#555555" size="x-small">%s</span></i>' % (extension_name, extension_description))
+                    self.model.set_value(iter, 2, (extension_uuid in self.enabled_extensions))
         
     def toggled(self, renderer, path, treeview):        
         iter = self.model.get_iter(path)
         if (iter != None):
             uuid = self.model.get_value(iter, 0)
-            checked = self.model.get_value(iter, 3)
+            checked = self.model.get_value(iter, 2)
             if (checked):
-                self.model.set_value(iter, 3, False)
+                self.model.set_value(iter, 2, False)
                 self.enabled_extensions.remove(uuid)
             else:
-                self.model.set_value(iter, 3, True) 
+                self.model.set_value(iter, 2, True) 
                 self.enabled_extensions.append(uuid)
             
             self.settings.set_strv("enabled-extensions", self.enabled_extensions)
                 
     def celldatafunction_checkbox(self, column, cell, model, iter, data=None):
         cell.set_property("activatable", True)
-        checked = model.get_value(iter, 3)
+        checked = model.get_value(iter, 2)
         if (checked):
             cell.set_property("active", True)
         else:
