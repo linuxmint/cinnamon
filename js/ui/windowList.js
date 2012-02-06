@@ -118,16 +118,21 @@ AppMenuButtonRightClickMenu.prototype = {
     },
 
     _onMoveToLeftWorkspace: function(actor, event){
-        let currentIndex = this.metaWindow.get_workspace().index();
-        if (currentIndex > 0)
-            this.metaWindow.change_workspace_by_index(currentIndex - 1, 1, global.get_current_time());
-        Main._checkWorkspaces()
+        let workspace = this.metaWindow.get_workspace().get_neighbor(-3); // -3 is left, see muffin/src/meta/common.h
+        if (workspace) {
+            this.destroy();
+            this.metaWindow.change_workspace(workspace);
+            Main._checkWorkspaces();
+        }
     },
 
     _onMoveToRightWorkspace: function(actor, event){
-        let currentIndex = this.metaWindow.get_workspace().index();
-        this.metaWindow.change_workspace_by_index(currentIndex + 1, 1, global.get_current_time());
-        Main._checkWorkspaces()
+        let workspace = this.metaWindow.get_workspace().get_neighbor(-4); // -4 is right, see muffin/src/meta/common.h
+        if (workspace) {
+            this.destroy();
+            this.metaWindow.change_workspace(workspace);
+            Main._checkWorkspaces();
+        }
     },
 
     _onSourceKeyPress: function(actor, event) {
