@@ -262,8 +262,6 @@ st_scroll_bar_map (ClutterActor *actor)
 static void
 st_scroll_bar_unmap (ClutterActor *actor)
 {
-  StScrollBarPrivate *priv = ST_SCROLL_BAR (actor)->priv;
-
   CLUTTER_ACTOR_CLASS (st_scroll_bar_parent_class)->unmap (actor);
 
   stop_scrolling (ST_SCROLL_BAR (actor));
