@@ -56,12 +56,12 @@ AppMenuButtonRightClickMenu.prototype = {
             this.itemMaximizeWindow = new PopupMenu.PopupMenuItem(_('Maximize'));
         this.itemMaximizeWindow.connect('activate', Lang.bind(this, this._onMaximizeWindowActivate));        
 	
-	this.itemMoveToLeftWorkspace = new PopupMenu.PopupMenuItem('Move to left workspace');
+        this.itemMoveToLeftWorkspace = new PopupMenu.PopupMenuItem('Move to left workspace');
         this.itemMoveToLeftWorkspace.connect('activate', Lang.bind(this, this._onMoveToLeftWorkspace));
 
-	this.itemMoveToRightWorkspace = new PopupMenu.PopupMenuItem('Move to right workspace');
-        this.itemMoveToRightWorkspace.connect('activate', Lang.bind(this, this._onMoveToRightWorkspace));
-        
+        this.itemMoveToRightWorkspace = new PopupMenu.PopupMenuItem('Move to right workspace');
+        this.itemMoveToRightWorkspace.connect('activate', Lang.bind(this, this._onMoveToRightWorkspace));      
+
         if (orientation == St.Side.BOTTOM) {
             this.addMenuItem(this.itemMoveToLeftWorkspace);
             this.addMenuItem(this.itemMoveToRightWorkspace);
@@ -85,6 +85,13 @@ AppMenuButtonRightClickMenu.prototype = {
                 let panelOffset = Main.windowList.actor.get_geometry().x
                 let buttonOffset = actor.sourceActor.get_geometry().x;
                 let buttonWidth = (actor.sourceActor.get_geometry().width / 2);
+                if (this.metaWindow.is_on_all_workspaces()) {
+                    this.itemMoveToLeftWorkspace.actor.hide();
+                    this.itemMoveToRightWorkspace.actor.hide();
+                } else {
+                    this.itemMoveToLeftWorkspace.actor.show();
+                    this.itemMoveToRightWorkspace.actor.show();
+                }
                 
                 this.actor.set_position((0 - buttonOffset - buttonWidth - panelOffset) + coord[0], 0);
             }
