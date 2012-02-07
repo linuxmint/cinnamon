@@ -53,6 +53,7 @@ DEFAULT_BACKGROUND_COLOR.from_pixel(0x2266bbff);
 const LAYOUT_TRADITIONAL = "traditional";
 const LAYOUT_FLIPPED = "flipped";
 const LAYOUT_CLASSIC = "classic";
+const LAYOUT_CLASSIC_FLIP = "classic flip";
 
 let automountManager = null;
 let autorunManager = null;
@@ -214,7 +215,10 @@ function start() {
     else if (desktop_layout == LAYOUT_CLASSIC) {
         applet_side = St.Side.TOP;        
     }
-    
+    else if (desktop_layout == LAYOUT_CLASSIC_FLIP) {
+        applet_side = St.Side.BOTTOM; 
+    }
+
     _defaultCssStylesheet = global.datadir + '/theme/cinnamon.css';
     _gdmCssStylesheet = global.datadir + '/theme/gdm.css';
     loadTheme();
@@ -309,7 +313,41 @@ function start() {
         layoutManager.panelBox.add(panel.actor);   
         layoutManager.panelBox2.add(panel2.actor);   
     }
-                
+    else if (desktop_layout == LAYOUT_CLASSIC_FLIP) {
+        panel = new Panel.Panel(true);
+
+        panel2 = new Panel.Panel(false);
+        if (global.session_type == Cinnamon.SessionType.USER) {
+            menu = new Menu.ApplicationsButton();
+
+            panel._leftBox.add(menu.actor);
+            panel._menus.addMenu(menu.menu);
+
+            panelLaunchersBox = new PanelLaunchers.PanelLaunchersBox(St.Side.BOTTOM);
+            panel._leftBox.add(panelLaunchersBox.actor);
+            showDesktopButton = new ShowDesktopButton.ShowDesktopButton(St.Side.TOP);
+            panel2._leftBox.add(showDesktopButton.actor);
+
+            windowList = new WindowList.WindowList(St.Side.TOP);
+            panel2._leftBox.add(windowList.actor);
+        }
+
+        dateMenu = new DateMenu.DateMenuButton({ showEvents: false });
+        panel._rightBox.add(dateMenu.actor, { y_fill: true });
+        panel._menus.addMenu(dateMenu.menu);
+
+        if (global.session_type == Cinnamon.SessionType.USER) {
+            workspaceSwitcher = new WorkspaceSwitcher.WorkspaceSwitcher();
+            panel2._rightBox.add(workspaceSwitcher.actor);
+
+        }
+
+        layoutManager.panelBox.add(panel.actor);
+
+        layoutManager.panelBox2.add(panel2.actor);
+
+    } 
+
     wm = new WindowManager.WindowManager();
     messageTray = new MessageTray.MessageTray();
     keyboard = new Keyboard.Keyboard();
