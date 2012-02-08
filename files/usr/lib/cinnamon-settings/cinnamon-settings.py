@@ -167,6 +167,8 @@ class ThemeViewSidePage (SidePage):
         other_settings_box.pack_start(menusHaveIconsCB, False, False, 2)
         buttonsHaveIconsCB = GSettingsCheckButton(_("Buttons Have Icons"), "org.gnome.desktop.interface", "buttons-have-icons")
         other_settings_box.pack_start(buttonsHaveIconsCB, False, False, 2)
+        alwaysUseLocationEntryCB = GSettingsCheckButton(_("Always Use Location Entry"), "org.gnome.nautilus.preferences", "always-use-location-entry")
+        other_settings_box.pack_start(alwaysUseLocationEntryCB, False, False, 2)
         cursorThemeSwitcher = GSettingsComboBox(_("Cursor theme"), "org.gnome.desktop.interface", "cursor-theme", self._load_cursor_themes())
         other_settings_box.pack_start(cursorThemeSwitcher, False, False, 2)
         keybindingThemeSwitcher = GSettingsComboBox(_("Keybinding theme"), "org.gnome.desktop.interface", "gtk-key-theme", self._load_keybinding_themes())
