@@ -220,7 +220,7 @@ function loadApplet(uuid, dir) {
     }
 
     try {
-        if (Main.desktop_layout == Main.LAYOUT_TRADITIONAL) {
+        if (Main.desktop_layout == Main.LAYOUT_TRADITIONAL || Main.desktop_layout == Main.LAYOUT_CLASSIC_FLIP) {
             applet = appletModule.main(meta, St.Side.BOTTOM);        
         }
         else {

@@ -933,7 +933,7 @@ LookingGlass.prototype = {
     },
 
     _resize: function() {
-        if (Main.desktop_layout == Main.LAYOUT_TRADITIONAL) {
+        if (Main.desktop_layout == Main.LAYOUT_TRADITIONAL || Main.desktop_layout == Main.LAYOUT_CLASSIC_FLIP) {
             let primary = Main.layoutManager.primaryMonitor;
             let myWidth = primary.width * 0.7;
             let availableHeight = primary.height - Main.layoutManager.keyboardBox.height;

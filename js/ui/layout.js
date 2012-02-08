@@ -265,7 +265,14 @@ LayoutManager.prototype = {
             this.panelBox2.set_position(this.bottomMonitor.x, this.bottomMonitor.y + this.bottomMonitor.height - 25);
             this.panelBox2.set_size(this.bottomMonitor.width, 25);       
         }
+        else if (Main.desktop_layout == Main.LAYOUT_CLASSIC_FLIP) {
 
+            this.panelBox.set_position(this.bottomMonitor.x, this.bottomMonitor.y + this.bottomMonitor.height - 25);
+            this.panelBox.set_size(this.bottomMonitor.width, 25);
+            this.panelBox2.set_position(this.primaryMonitor.x, this.primaryMonitor.y);
+            this.panelBox2.set_size(this.primaryMonitor.width, -1);
+
+        }
         this.keyboardBox.set_position(this.bottomMonitor.x,
                                       this.bottomMonitor.y + this.bottomMonitor.height);
         this.keyboardBox.set_size(this.bottomMonitor.width, -1);
