@@ -9,6 +9,9 @@ const St = imports.gi.St;
 const Cinnamon = imports.gi.Cinnamon;
 const Config = imports.misc.config;
 const Main = imports.ui.main;
+const Applet = imports.ui.applet;
+const Gtk = imports.gi.Gtk;
+const PopupMenu = imports.ui.popupMenu;
 
 // Maps uuid -> metadata object
 const appletMeta = {};
@@ -36,61 +39,121 @@ function init() {
 }
 
 function onEnabledAppletsChanged() {
-        
-    let newEnabledApplets = global.settings.get_strv('enabled-applets');
+    try {    
+        let newEnabledApplets = global.settings.get_strv('enabled-applets');        
     
-    // Find and disable all the newly disabled applets: UUIDs found in the
-    // old setting, but not in the new one.
-    enabledApplets.filter(function(item) {
-        return newEnabledApplets.indexOf(item) == -1;
-    }).forEach(function(uuid) {
-        try {
-            let directory = _find_applet(uuid);
-            if (directory != null) {
-                let applet = loadApplet(uuid, directory);
-                Main.panel._centerBox.remove_actor(applet.actor);
-            }        
-        } catch (e) {
-            global.logError('Failed to remove applet: ' + uuid + ': ' + e);
+        for (let i=0; i<newEnabledApplets.length; i++) {
+            let appletDefinition = newEnabledApplets[i];   
+            if (enabledApplets.indexOf(appletDefinition) == -1) {                    
+                // New applet or changed definition
+                add_applet_to_panels(appletDefinition);                                                
+            }            
         }
-    });
-            
-    // Find and enable all the newly enabled applets: UUIDs found in the
-    // new setting, but not in the old one.
-    newEnabledApplets.filter(function(uuid) {
-        return enabledApplets.indexOf(uuid) == -1;
-    }).forEach(function(uuid) {
-        try {
-            let directory = _find_applet(uuid);
-            if (directory != null) {
-                let applet = loadApplet(uuid, directory);
-                Main.panel._centerBox.add(applet.actor);
-            }
-        } catch (e) {
-            global.logError('Failed to add applet: ' + uuid + ': ' + e);
-        }  
-    });
-    
-    enabledApplets = newEnabledApplets;
+        
+        for (let i=0; i<enabledApplets.length; i++) {
+            let appletDefinition = enabledApplets[i];   
+            if (newEnabledApplets.indexOf(appletDefinition) == -1) {                    
+                // Applet was removed or definition was changed...
+                let elements = appletDefinition.split(":");
+                if (elements.length == 4) {
+                    let uuid = elements[3];
+                    let uuidIsStillPresent = false;
+                    for (let j=0; j<newEnabledApplets.length; j++) {
+                        if (newEnabledApplets[j].match(uuid)) {
+                            uuidIsStillPresent = true;
+                            break;
+                        }
+                    }
+                    if (!uuidIsStillPresent) {
+                        // Applet was removed                        
+                        let directory = _find_applet(uuid);
+                        if (directory != null) {
+                            let applet = loadApplet(uuid, directory);
+                            if (applet._panelLocation != null) {
+                                applet._panelLocation.remove_actor(applet.actor);
+                                applet._panelLocation = null;
+                            }
+                        }        
+                    }
+                }                                                         
+            }            
+        }
+           
+        enabledApplets = newEnabledApplets;
+    }
+    catch(e) {
+        global.logError('Failed to refresh list of applets ' + e); 
+    }
 }
 
 function loadApplets() {    
-    for (let i=0; i<enabledApplets.length; i++) {
-        let uuid = enabledApplets[i];
-        try {            
+    for (let i=0; i<enabledApplets.length; i++) {        
+        add_applet_to_panels(enabledApplets[i]);
+    }        
+}
+
+function add_applet_to_panels(appletDefinition) {
+    try { 
+        // format used in gsettings is 'panel:location:order:uuid' where panel is something like 'panel1', location is
+        // either 'left', 'center' or 'right' and order is an integer representing the order of the applet within the panel/location (i.e. 1st, 2nd etc..).                     
+        let elements = appletDefinition.split(":");
+        if (elements.length == 4) {
+            let panel = Main.panel;
+            if (elements[0] == "panel2") {
+                panel = Main.panel2;
+            }
+            let location = panel._leftBox;
+            if (elements[1] == "center") {
+                location = panel._centerBox;
+            }
+            else if (elements[1] == "right") {
+                location = panel._rightBox;
+            }
+            let order = elements[2];
+            let uuid = elements[3];
             let directory = _find_applet(uuid);
             if (directory != null) {
+                // Load the applet
                 let applet = loadApplet(uuid, directory);
-                Main.panel._centerBox.add(applet.actor);
+                applet._order = order;
+                
+                // Remove it from its previous panel location (if it had one)
+                if (applet._panelLocation != null) {
+                    applet._panelLocation.remove_actor(applet.actor);
+                    applet._panelLocation = null;
+                }
+                
+                // Add it to its new panel location
+                let children = location.get_children();                    
+                let appletsToMove = [];
+                for (let i=0; i<children.length;i++) {
+                    let child = children[i];
+                    if ((typeof child._applet !== "undefined") && (child._applet instanceof Applet.Applet)) {                            
+                        if (order < child._applet._order) {                                
+                            appletsToMove.push(child);
+                        }
+                    }                        
+                }
+                for (let i=0; i<appletsToMove.length; i++) {
+                    location.remove_actor(appletsToMove[i]);
+                }
+                location.add(applet.actor);  
+                applet._panelLocation = location;                  
+                for (let i=0; i<appletsToMove.length; i++) {
+                    location.add(appletsToMove[i]);
+                }                    
             } 
             else {
                 global.logError('Could not find applet ' + uuid + ', make sure its directory is present and matches its UUID');
             }     
         }
-        catch (e) {
-            global.logError('Failed to load applet ' + uuid);     
+        else {
+            global.logError('Invalid applet definition: ' + appletDefinition);
         }
-    }        
+    }
+    catch(e) {
+        global.logError('Failed to load applet ' + appletDefinition + e); 
+    }
 }
 
 function _find_applet(uuid) {    
@@ -235,7 +298,32 @@ function loadApplet(uuid, dir) {
     }        
     
     appletObj[uuid] = applet;  
+    applet._uuid = uuid;
+    
+    // Add default context menus
+    if (applet._applet_context_menu._getMenuItems().length > 0) {
+        applet._applet_context_menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+    }
+    context_menu_item_remove = new Applet.MenuItem(_('Remove from Panel'), Gtk.STOCK_REMOVE, Lang.bind(null, _removeAppletFromPanel, applet._uuid));
+    applet._applet_context_menu.addMenuItem(context_menu_item_remove);
+    
     return(applet);
+}
+
+function _removeAppletFromPanel(menuitem, event, uuid) {     
+    for (let i=0; i<enabledApplets.length; i++) {
+        let appletDefinition = enabledApplets[i];           
+        let elements = appletDefinition.split(":");
+        if (elements.length == 4) {
+            let applet_uuid = elements[3];                
+            if (uuid == applet_uuid) {   
+                newEnabledApplets = enabledApplets.slice(0);             
+                newEnabledApplets.splice(i, 1);
+                global.settings.set_strv('enabled-applets', newEnabledApplets);                            
+                break;   
+            }                    
+        }
+    }
 }
 
 

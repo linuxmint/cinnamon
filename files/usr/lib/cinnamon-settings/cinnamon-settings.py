@@ -405,9 +405,15 @@ class AppletViewSidePage (SidePage):
                     applet_description = data["description"]
                     applet_icon = data["icon"]
                     iter = self.model.insert_before(None, None)
+                    found = False
+                    for enabled_applet in self.enabled_applets:
+                        if applet_uuid in enabled_applet:
+                            found = True                            
+                            break       
+                    
                     self.model.set_value(iter, 0, applet_uuid)                
-                    self.model.set_value(iter, 1, '<b>%s</b>\n<i><span foreground="#555555" size="x-small">%s</span></i>' % (applet_name, applet_description))                    
-                    self.model.set_value(iter, 2, (applet_uuid in self.enabled_applets))
+                    self.model.set_value(iter, 1, '<b>%s</b>\n<i><span foreground="#555555" size="x-small">%s</span></i>' % (applet_name, applet_description))                                  
+                    self.model.set_value(iter, 2, found)
                     theme = Gtk.IconTheme.get_default()
                     if theme.has_icon(applet_icon):
                         img = theme.load_icon(applet_icon, 36, 0)
@@ -422,10 +428,12 @@ class AppletViewSidePage (SidePage):
             checked = self.model.get_value(iter, 2)
             if (checked):
                 self.model.set_value(iter, 2, False)
-                self.enabled_applets.remove(uuid)
+                for enabled_applet in self.enabled_applets:
+                    if uuid in enabled_applet:
+                        self.enabled_applets.remove(enabled_applet)
             else:
                 self.model.set_value(iter, 2, True) 
-                self.enabled_applets.append(uuid)
+                self.enabled_applets.append("panel1:center:0:%s" % uuid)
             
             self.settings.set_strv("enabled-applets", self.enabled_applets)
                 

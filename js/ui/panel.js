@@ -412,6 +412,20 @@ PanelCorner.prototype = {
     }
 };
 
+function PanelContextMenu(launcher, orientation) {
+    this._init(launcher, orientation);
+}
+
+PanelContextMenu.prototype = {
+    __proto__: PopupMenu.PopupMenu.prototype,
+    
+    _init: function(launcher, orientation) {    
+        PopupMenu.PopupMenu.prototype._init.call(this, launcher.actor, 0.0, orientation, 0);
+        Main.uiGroup.add_actor(this.actor);
+        this.actor.hide();                    
+    }    
+}
+
 
 function Panel(bottomPosition) {
     this._init(bottomPosition);
@@ -482,7 +496,32 @@ Panel.prototype = {
                                         
         this.actor.connect('leave-event', Lang.bind(this, this._leavePanel));
         this.actor.connect('enter-event', Lang.bind(this, this._enterPanel));  
-        global.settings.connect("changed::panel-autohide", Lang.bind(this, this._onPanelAutoHideChanged));      
+        global.settings.connect("changed::panel-autohide", Lang.bind(this, this._onPanelAutoHideChanged));   
+        
+        //let orientation = St.Side.TOP;
+        //if (bottomPosition) {
+        //    orientation = St.Side.BOTTOM;
+        //}
+        
+        //this._context_menu = new PanelContextMenu(this, orientation);
+        //this._menus.addMenu(this._context_menu);   
+        //this._context_menu.addMenuItem(new PopupMenu.PopupMenuItem(_("Add applet")));
+        
+        //this.actor.connect('button-release-event', Lang.bind(this, this._onButtonReleaseEvent));      
+    },
+    
+    _onButtonReleaseEvent: function (actor, event) {                      
+        if (event.get_button()==1){
+            if (this._context_menu.isOpen) {
+                this._context_menu.toggle(); 
+            }            
+        }
+        if (event.get_button()==3){            
+            if (this._context_menu._getMenuItems().length > 0) {
+                this._context_menu.toggle();			
+            }
+        }
+        return true;
     },
         
     _onPanelAutoHideChanged: function() {  

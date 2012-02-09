@@ -5,6 +5,28 @@ const Tooltips = imports.ui.tooltips;
 const PopupMenu = imports.ui.popupMenu;
 const Gio = imports.gi.Gio;
 const Main = imports.ui.main;
+const DND = imports.ui.dnd;
+
+function MenuItem(label, icon, callback) {
+    this._init(label, icon, callback);
+}
+
+MenuItem.prototype = {
+    __proto__: PopupMenu.PopupBaseMenuItem.prototype,
+
+    _init: function(text, icon, callback) {
+        PopupMenu.PopupBaseMenuItem.prototype._init.call(this);
+
+        this.icon = new St.Icon({ icon_name: icon,
+                                  icon_type: St.IconType.FULLCOLOR,
+                                  style_class: 'popup-menu-icon' });
+        this.addActor(this.icon);
+        this.label = new St.Label({ text: text });
+        this.addActor(this.label);
+
+        this.connect('activate', callback);
+    }
+};
 
 function AppletContextMenu(launcher, orientation) {
     this._init(launcher, orientation);
@@ -33,7 +55,43 @@ Applet.prototype = {
         
         this._menuManager = new PopupMenu.PopupMenuManager(this);
         this._applet_context_menu = new AppletContextMenu(this, orientation);
-        this._menuManager.addMenu(this._applet_context_menu);                                              
+        this._menuManager.addMenu(this._applet_context_menu);     
+        
+        this.actor._applet = this; // Backlink to get the applet from its actor (handy when we want to know stuff about a particular applet within the panel)
+        this._order = 0; // Defined in gsettings, this is the order of the applet within a panel location. This value is set by Cinnamon when loading/listening_to gsettings.
+        this._panelLocation = null; // Backlink to the panel location our applet is in, set by Cinnamon.
+        this._uuid = null; // Defined in gsettings, set by Cinnamon.
+        this._dragging = false;
+        this._draggable = DND.makeDraggable(this.actor);
+        this._draggable.connect('drag-begin', Lang.bind(this, this._onDragBegin));
+        this._draggable.connect('drag-cancelled', Lang.bind(this, this._onDragCancelled));
+        this._draggable.connect('drag-end', Lang.bind(this, this._onDragEnd));            
+    },
+            
+    _onDragBegin: function() {
+        this._dragging = true;
+        this._applet_tooltip.hide();
+        this._applet_tooltip.preventShow = true;
+    },
+    
+    _onDragEnd: function() {
+        this._dragging = false;
+        this._applet_tooltip.preventShow = false;
+    },
+    
+    _onDragCancelled: function() {
+        this._dragging = false;
+        this._applet_tooltip.preventShow = false;
+    },
+    
+    getDragActor: function() {
+        return this.actor;
+    },
+
+    // Returns the original actor that should align with the actor
+    // we show as the item is being dragged.
+    getDragActorSource: function() {
+        return this.actor; // not correct, should be a copy of the object.. 
     },
             
     _onButtonReleaseEvent: function (actor, event) {                      

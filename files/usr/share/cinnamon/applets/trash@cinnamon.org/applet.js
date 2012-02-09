@@ -13,28 +13,6 @@ const GLib = imports.gi.GLib;
 const Gettext = imports.gettext.domain('cinnamon-applets');
 const _ = Gettext.gettext;
 
-
-function PopupMenuItem(label, icon, callback) {
-    this._init(label, icon, callback);
-}
-
-PopupMenuItem.prototype = {
-    __proto__: PopupMenu.PopupBaseMenuItem.prototype,
-
-    _init: function(text, icon, callback) {
-        PopupMenu.PopupBaseMenuItem.prototype._init.call(this);
-
-        this.icon = new St.Icon({ icon_name: icon,
-                                  icon_type: St.IconType.FULLCOLOR,
-                                  style_class: 'popup-menu-icon' });
-        this.addActor(this.icon);
-        this.label = new St.Label({ text: text });
-        this.addActor(this.label);
-
-        this.connect('activate', callback);
-    }
-};
-
 function MyApplet(orientation) {
     this._init(orientation);
 }
@@ -52,10 +30,10 @@ MyApplet.prototype = {
             this.trash_path = 'trash:///';
             this.trash_directory =  Gio.file_new_for_uri(this.trash_path);
                        
-            this.empty_item = new PopupMenuItem(_('Empty Trash'), Gtk.STOCK_REMOVE, Lang.bind(this, this._emptyTrash));
+            this.empty_item = new Applet.MenuItem(_('Empty Trash'), Gtk.STOCK_REMOVE, Lang.bind(this, this._emptyTrash));
             this._applet_context_menu.addMenuItem(this.empty_item);
 
-            this.open_item = new PopupMenuItem(_('Open Trash'), Gtk.STOCK_OPEN, Lang.bind(this, this._openTrash));
+            this.open_item = new Applet.MenuItem(_('Open Trash'), Gtk.STOCK_OPEN, Lang.bind(this, this._openTrash));
             this._applet_context_menu.addMenuItem(this.open_item);
 
             this._onTrashChange();

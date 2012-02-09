@@ -275,7 +275,7 @@ StTooltip StLabel {
     height: 25px;
 }
 
-#panelLeft, #panelCenter {
+#panelLeft, #panelCenter {    
     spacing: 4px;
 }
 
@@ -287,7 +287,7 @@ StTooltip StLabel {
     padding-left: 4px;
 }
 
-#panelRight:ltr {
+#panelRight:ltr {    
     padding-left: 0px;
     spacing: 0px;
 }
