@@ -365,8 +365,7 @@ nobase_dist_js_DATA = \
 	ui/windowManager.js	\
 	ui/workspace.js		\
 	ui/workspaceThumbnail.js	\
-	ui/workspacesView.js	\
-	ui/workspaceSwitcher.js    \
+	ui/workspacesView.js	\	
 	ui/xdndHandler.js
 
 all: all-am

@@ -44,7 +44,6 @@ const Menu = imports.ui.menu;
 const PanelLaunchers = imports.ui.panelLaunchers;
 const WindowList = imports.ui.windowList;
 const DateMenu = imports.ui.dateMenu;
-const WorkspaceSwitcher = imports.ui.workspaceSwitcher;
 
 const DEFAULT_BACKGROUND_COLOR = new Clutter.Color();
 DEFAULT_BACKGROUND_COLOR.from_pixel(0x2266bbff);
@@ -63,7 +62,6 @@ let menu = null;
 let panelLaunchersBox = null;
 let windowList = null;
 let dateMenu = null;
-let workspaceSwitcher = null;
 
 let hotCorners = [];
 let placesManager = null;
@@ -252,11 +250,7 @@ function start() {
         }        
         dateMenu = new DateMenu.DateMenuButton({ showEvents: false });
         panel._rightBox.add(dateMenu.actor, { y_fill: true });
-        panel._menus.addMenu(dateMenu.menu);        
-        if (global.session_type == Cinnamon.SessionType.USER) {
-            workspaceSwitcher = new WorkspaceSwitcher.WorkspaceSwitcher();
-            panel._rightBox.add(workspaceSwitcher.actor);        
-        }        
+        panel._menus.addMenu(dateMenu.menu);                    
         layoutManager.panelBox.add(panel.actor);    
     }
     else if (desktop_layout == LAYOUT_FLIPPED) {
@@ -272,11 +266,7 @@ function start() {
         }    
         dateMenu = new DateMenu.DateMenuButton({ showEvents: false });
         panel._rightBox.add(dateMenu.actor, { y_fill: true });
-        panel._menus.addMenu(dateMenu.menu);        
-        if (global.session_type == Cinnamon.SessionType.USER) {
-            workspaceSwitcher = new WorkspaceSwitcher.WorkspaceSwitcher();
-            panel._rightBox.add(workspaceSwitcher.actor);        
-        }        
+        panel._menus.addMenu(dateMenu.menu);                
         layoutManager.panelBox.add(panel.actor);  
     }
     else if (desktop_layout == LAYOUT_CLASSIC) {
@@ -294,10 +284,6 @@ function start() {
         dateMenu = new DateMenu.DateMenuButton({ showEvents: false });
         panel._rightBox.add(dateMenu.actor, { y_fill: true });
         panel._menus.addMenu(dateMenu.menu);        
-        if (global.session_type == Cinnamon.SessionType.USER) {
-            workspaceSwitcher = new WorkspaceSwitcher.WorkspaceSwitcher();
-            panel2._rightBox.add(workspaceSwitcher.actor);        
-        }        
         layoutManager.panelBox.add(panel.actor);   
         layoutManager.panelBox2.add(panel2.actor);   
     }
