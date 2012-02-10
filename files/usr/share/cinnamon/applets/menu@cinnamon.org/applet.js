@@ -1,5 +1,4 @@
-/* -*- mode: js2; js2-basic-offset: 4; indent-tabs-mode: nil -*- */
-
+const Applet = imports.ui.applet;
 const Mainloop = imports.mainloop;
 const GMenu = imports.gi.GMenu;
 const Lang = imports.lang;
@@ -269,80 +268,87 @@ SystemButton.prototype = {
     }
 };
 
-function ApplicationsButton() {
-    this._init();
+
+function MyMenu(launcher, orientation) {
+    this._init(launcher, orientation);
 }
 
-ApplicationsButton.prototype = {
-    __proto__: PanelMenu.ButtonBox.prototype,
+MyMenu.prototype = {
+    __proto__: PopupMenu.PopupMenu.prototype,
+    
+    _init: function(launcher, orientation) {
+        this._launcher = launcher;        
+                
+        PopupMenu.PopupMenu.prototype._init.call(this, launcher.actor, 0.0, orientation, 0);
+        Main.uiGroup.add_actor(this.actor);
+        this.actor.hide();            
+    }
+}
 
-    _init: function() {
-        PanelMenu.ButtonBox.prototype._init.call(this, { reactive: true,
-                                               can_focus: true,
-                                               track_hover: true });
+function MyApplet(orientation) {
+    this._init(orientation);
+}
 
-        this.actor.connect('button-press-event', Lang.bind(this, this._onButtonPress));
-        this.actor.connect('key-press-event', Lang.bind(this, this._onSourceKeyPress));
+MyApplet.prototype = {
+    __proto__: Applet.TextIconApplet.prototype,
+
+    _init: function(orientation) {        
+        Applet.TextIconApplet.prototype._init.call(this, orientation);
         
-        this._menuAlignment = 1;
-        this._resetMenu();
-        
-        let box = new St.BoxLayout({ name: 'menu' });
-        this.actor.add_actor(box);
-        this._iconBox = new St.Bin();
-        box.add(this._iconBox, { y_align: St.Align.MIDDLE, y_fill: false });
-        
-        this._updateIcon();
-        
-        global.settings.connect("changed::menu-icon", Lang.bind(this, function() {
+        try {                    
+            this.set_applet_tooltip(_("Menu"));
+            
+            this.menuManager = new PopupMenu.PopupMenuManager(this);
+            this.menu = new MyMenu(this, orientation);
+            this.menuManager.addMenu(this.menu);   
+                        
+            this.actor.connect('key-press-event', Lang.bind(this, this._onSourceKeyPress));
+            
+            this._menuAlignment = 1;
+            this._resetMenu();
+                                    
             this._updateIcon();
-        })); 
-        
-        this._label = new St.Label({ track_hover: true, style_class: 'menu-label'});
-        
-        box.add(this._label, { y_align: St.Align.MIDDLE, y_fill: false });
-        
-        this._label.set_text(_("Menu"));
-        let menuLabel = global.settings.get_string("menu-text");
-        if (menuLabel != "Menu") {
-			this._label.set_text(menuLabel);
-		} 
-		global.settings.connect("changed::menu-text", Lang.bind(this, function() {
-				this._label.set_text(global.settings.get_string("menu-text"));
-			})); 
-        this._searchInactiveIcon = new St.Icon({ style_class: 'menu-search-entry-icon',
-                                           icon_name: 'edit-find',
-                                           icon_type: St.IconType.SYMBOLIC });
-        this._searchActiveIcon = new St.Icon({ style_class: 'menu-search-entry-icon',
-                                         icon_name: 'edit-clear',
-                                         icon_type: St.IconType.SYMBOLIC });
-        this._searchTimeoutId = 0;
-        this._searchIconClickedId = 0;
-        this._applicationsButtons = new Array();
-        this._favoritesButtons = new Array();
-        this._selectedItemIndex = null;
-        this._previousSelectedItemIndex = null;
-        this._activeContainer = null;
-        this._applicationsBoxWidth = 0;
+            
+            global.settings.connect("changed::menu-icon", Lang.bind(this, function() {
+                this._updateIcon();
+            })); 
+            
+            this.set_applet_label(_("Menu"));                                            
+            let menuLabel = global.settings.get_string("menu-text");
+            if (menuLabel != "Menu") {
+                this.set_applet_label(menuLabel);                 
+            } 
+            global.settings.connect("changed::menu-text", Lang.bind(this, function() {
+                    this.set_applet_label(global.settings.get_string("menu-text"));
+                })); 
+            this._searchInactiveIcon = new St.Icon({ style_class: 'menu-search-entry-icon',
+                                               icon_name: 'edit-find',
+                                               icon_type: St.IconType.SYMBOLIC });
+            this._searchActiveIcon = new St.Icon({ style_class: 'menu-search-entry-icon',
+                                             icon_name: 'edit-clear',
+                                             icon_type: St.IconType.SYMBOLIC });
+            this._searchTimeoutId = 0;
+            this._searchIconClickedId = 0;
+            this._applicationsButtons = new Array();
+            this._favoritesButtons = new Array();
+            this._selectedItemIndex = null;
+            this._previousSelectedItemIndex = null;
+            this._activeContainer = null;
+            this._applicationsBoxWidth = 0;
 
-        this._display();
-        appsys.connect('installed-changed', Lang.bind(this, this._refreshApps));
-        AppFavorites.getAppFavorites().connect('changed', Lang.bind(this, this._refreshFavs));
+            this._display();
+            appsys.connect('installed-changed', Lang.bind(this, this._refreshApps));
+            AppFavorites.getAppFavorites().connect('changed', Lang.bind(this, this._refreshFavs));
 
-        this.menu.connect('open-state-changed', Lang.bind(this, this._onOpenStateToggled));
-
+            this.menu.connect('open-state-changed', Lang.bind(this, this._onOpenStateToggled));         
+                                                                           
+        }
+        catch (e) {
+            global.logError(e);
+        }
     },
     
-    _resetMenu: function(){
-        this.menu = new PopupMenu.PopupMenu(this.actor, this._menuAlignment, Main.applet_side);
-        this.menu.actor.add_style_class_name('menu-background');
-        this.menu.connect('open-state-changed', Lang.bind(this, this._onOpenStateChanged));
-        //this.menu.actor.connect('key-press-event', Lang.bind(this, this._onMenuKeyPress));
-        Main.uiGroup.add_actor(this.menu.actor);
-        this.menu.actor.hide();
-    },
-
-    _onButtonPress: function(actor, event) {
+    on_applet_clicked: function(event) {
         if (!this.menu.isOpen) {
             // Setting the max-height won't do any good if the minimum height of the
             // menu is higher then the screen; it's useful if part of the menu is
@@ -352,8 +358,18 @@ ApplicationsButton.prototype = {
                                      Math.round(monitor.height - Main.panel.actor.height) +
                                      'px;');
         }
-        this.menu.toggle();
+        this.menu.toggle();     
+    },        
+    
+    _resetMenu: function(){
+        this.menu = new PopupMenu.PopupMenu(this.actor, this._menuAlignment, Main.applet_side);
+        this.menu.actor.add_style_class_name('menu-background');
+        this.menu.connect('open-state-changed', Lang.bind(this, this._onOpenStateChanged));
+        //this.menu.actor.connect('key-press-event', Lang.bind(this, this._onMenuKeyPress));
+        Main.uiGroup.add_actor(this.menu.actor);
+        this.menu.actor.hide();
     },
+   
 
     _onSourceKeyPress: function(actor, event) {
         let symbol = event.get_key_symbol();
@@ -413,10 +429,7 @@ ApplicationsButton.prototype = {
         let icon_file = global.settings.get_string("menu-icon");
         if (icon_file != "") {
             try{
-               let file = Gio.file_new_for_path(icon_file);
-               let icon_uri = file.get_uri();
-               this._icon = St.TextureCache.get_default().load_uri_sync(1, icon_uri, 22, 22);           
-               this._iconBox.child = this._icon;
+               this.set_applet_icon_path(icon_file);               
             }catch(e){
                global.log("WARNING : Could not load icon file \""+icon_file+"\" for menu button");
             }
@@ -1046,6 +1059,11 @@ ApplicationsButton.prototype = {
 
        return false;
     }
+    
+    
 };
 
-let icon_path = "/usr/share/cinnamon/theme/";
+function main(metadata, orientation) {  
+    let myApplet = new MyApplet(orientation);
+    return myApplet;      
+}
