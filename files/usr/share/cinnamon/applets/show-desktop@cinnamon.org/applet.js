@@ -3,23 +3,29 @@ const Lang = imports.lang;
 const Cinnamon = imports.gi.Cinnamon;
 const Applet = imports.ui.applet;
 
-function ShowDesktopButton(orientation) {
+function MyApplet(orientation) {
     this._init(orientation);
 }
 
-ShowDesktopButton.prototype = {
+MyApplet.prototype = {
     __proto__: Applet.IconApplet.prototype,
 
-    _init: function(orientation) {
+    _init: function(orientation) {        
         Applet.IconApplet.prototype._init.call(this, orientation);
-        this.set_applet_icon_name("desktop");    
-        this.set_applet_tooltip(_("Show desktop"));    
-                        
-        this._tracker = Cinnamon.WindowTracker.get_default();        
-        this._desktopShown = false;        
-        this._alreadyMinimizedWindows = [];
+        
+        try {        
+            this.set_applet_icon_name("desktop");
+            this.set_applet_tooltip(_("Show desktop"));
+                                                                                   
+            this._tracker = Cinnamon.WindowTracker.get_default();        
+            this._desktopShown = false;        
+            this._alreadyMinimizedWindows = [];
+        }
+        catch (e) {
+            global.logError(e);
+        }
     },
-      
+    
     on_applet_clicked: function(event) {
         let metaWorkspace = global.screen.get_active_workspace();
         let windows = metaWorkspace.list_windows();
@@ -56,3 +62,8 @@ ShowDesktopButton.prototype = {
         this._desktopShown = !this._desktopShown;
     }
 };
+
+function main(metadata, orientation) {  
+    let myApplet = new MyApplet(orientation);
+    return myApplet;      
+}

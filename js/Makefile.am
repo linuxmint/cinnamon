@@ -58,7 +58,6 @@ nobase_dist_js_DATA = \
 	ui/scripting.js		\
 	ui/search.js		\
 	ui/cinnamonDBus.js		\
-	ui/showDesktopButton.js	\
 	ui/statusIconDispatcher.js	\
 	ui/status/accessibility.js	\
 	ui/status/keyboard.js	\

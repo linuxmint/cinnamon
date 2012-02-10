@@ -1,0 +1,6 @@
+{
+ "uuid": "show-desktop@cinnamon.org",
+ "name": "Show desktop",
+ "description": "Minimize all windows",
+ "icon": "desktop"
+}

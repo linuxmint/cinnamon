@@ -41,7 +41,6 @@ const Util = imports.misc.util;
 
 //applets
 const Menu = imports.ui.menu;
-const ShowDesktopButton = imports.ui.showDesktopButton;
 const PanelLaunchers = imports.ui.panelLaunchers;
 const WindowList = imports.ui.windowList;
 const DateMenu = imports.ui.dateMenu;
@@ -62,7 +61,6 @@ let panel2 = null;
 
 let menu = null;
 let panelLaunchersBox = null;
-let showDesktopButton = null;
 let windowList = null;
 let dateMenu = null;
 let workspaceSwitcher = null;
@@ -247,8 +245,6 @@ function start() {
             menu = new Menu.ApplicationsButton();    
             panel._leftBox.add(menu.actor);
             panel._menus.addMenu(menu.menu);        
-            showDesktopButton = new ShowDesktopButton.ShowDesktopButton(St.Side.BOTTOM);
-            panel._leftBox.add(showDesktopButton.actor);        
             panelLaunchersBox = new PanelLaunchers.PanelLaunchersBox(St.Side.BOTTOM);
             panel._leftBox.add(panelLaunchersBox.actor);           
             windowList = new WindowList.WindowList(St.Side.BOTTOM); 
@@ -268,9 +264,7 @@ function start() {
         if (global.session_type == Cinnamon.SessionType.USER) {
             menu = new Menu.ApplicationsButton();    
             panel._leftBox.add(menu.actor);
-            panel._menus.addMenu(menu.menu);        
-            showDesktopButton = new ShowDesktopButton.ShowDesktopButton(St.Side.TOP);
-            panel._leftBox.add(showDesktopButton.actor);        
+            panel._menus.addMenu(menu.menu);                            
             panelLaunchersBox = new PanelLaunchers.PanelLaunchersBox(St.Side.TOP);
             panel._leftBox.add(panelLaunchersBox.actor);           
             windowList = new WindowList.WindowList(St.Side.TOP); 
@@ -294,8 +288,6 @@ function start() {
             panel._menus.addMenu(menu.menu);        
             panelLaunchersBox = new PanelLaunchers.PanelLaunchersBox(St.Side.TOP);
             panel._leftBox.add(panelLaunchersBox.actor);
-            showDesktopButton = new ShowDesktopButton.ShowDesktopButton(St.Side.BOTTOM);
-            panel2._leftBox.add(showDesktopButton.actor);                    
             windowList = new WindowList.WindowList(St.Side.BOTTOM); 
             panel2._leftBox.add(windowList.actor);
         }        
