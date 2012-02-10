@@ -88,6 +88,14 @@ AppMenuButtonRightClickMenu.prototype = {
                 if (this.metaWindow.is_on_all_workspaces()) {
                     this.itemMoveToLeftWorkspace.actor.hide();
                     this.itemMoveToRightWorkspace.actor.hide();
+                } else if (global.screen.get_active_workspace_index() == 0) {
+                    if (St.Widget.get_default_direction() == St.TextDirection.RTL) {
+                        this.itemMoveToLeftWorkspace.actor.show();
+                        this.itemMoveToRightWorkspace.actor.hide();
+                    } else {
+                        this.itemMoveToLeftWorkspace.actor.hide();
+                        this.itemMoveToRightWorkspace.actor.show();
+                    }
                 } else {
                     this.itemMoveToLeftWorkspace.actor.show();
                     this.itemMoveToRightWorkspace.actor.show();
