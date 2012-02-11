@@ -115,10 +115,13 @@ AppMenuButtonRightClickMenu.prototype = {
     },
 
     _onMinimizeWindowActivate: function(actor, event){
-        if (this.metaWindow.minimized)
+        if (this.metaWindow.minimized) {
             this.metaWindow.unminimize(global.get_current_time());
-        else
+            this.metaWindow.activate(global.get_current_time());
+        }
+        else {
             this.metaWindow.minimize(global.get_current_time());
+        }
     },
 
     _onMaximizeWindowActivate: function(actor, event){      
