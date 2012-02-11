@@ -321,6 +321,9 @@ AppMenuButton.prototype = {
             this.actor.remove_style_pseudo_class('focus');
         }
         else {
+            if (this.metaWindow.minimized) {
+                this.metaWindow.unminimize(global.get_current_time()); 
+            }
             this.metaWindow.activate(global.get_current_time());
             this.actor.add_style_pseudo_class('focus');
         }
