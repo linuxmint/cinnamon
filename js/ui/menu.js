@@ -47,18 +47,21 @@ ApplicationContextMenuItem.prototype = {
     },
 
     activate: function (event) {
+        let settings;
+        let desktopFiles;
+        
         switch (this._action){
             case "add_to_panel":
-                let settings = new Gio.Settings({ schema: 'org.cinnamon' });
-                let desktopFiles = settings.get_strv('panel-launchers');
+                settings = new Gio.Settings({ schema: 'org.cinnamon' });
+                desktopFiles = settings.get_strv('panel-launchers');
                 desktopFiles.push(this._appButton.app.get_id());
                 settings.set_strv('panel-launchers', desktopFiles);
                 break;
             case "remove_from_panel":
-                let settings2 = new Gio.Settings({ schema: 'org.cinnamon' });
-                let desktopFiles2 = settings2.get_strv('panel-launchers');
-                desktopFiles2.splice(desktopFiles2.indexOf(this._appButton.app.get_id()),1)
-                settings2.set_strv('panel-launchers', desktopFiles2);
+                settings = new Gio.Settings({ schema: 'org.cinnamon' });
+                desktopFiles = settings.get_strv('panel-launchers');
+                desktopFiles.splice(desktopFiles.indexOf(this._appButton.app.get_id()),1)
+                settings.set_strv('panel-launchers', desktopFiles);
                 break;                            
             case "add_to_desktop":
                 let file = Gio.file_new_for_path(this._appButton.app.get_app_info().get_filename());
