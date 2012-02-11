@@ -136,7 +136,7 @@ AppMenuButtonRightClickMenu.prototype = {
     },
 
     _onMoveToLeftWorkspace: function(actor, event){
-        let workspace = this.metaWindow.get_workspace().get_neighbor(-3); // -3 is left, see muffin/src/meta/common.h
+        let workspace = this.metaWindow.get_workspace().get_neighbor(Meta.MotionDirection.LEFT);
         if (workspace) {
             this.destroy();
             this.metaWindow.change_workspace(workspace);
@@ -145,7 +145,7 @@ AppMenuButtonRightClickMenu.prototype = {
     },
 
     _onMoveToRightWorkspace: function(actor, event){
-        let workspace = this.metaWindow.get_workspace().get_neighbor(-4); // -4 is right, see muffin/src/meta/common.h
+        let workspace = this.metaWindow.get_workspace().get_neighbor(Meta.MotionDirection.RIGHT);
         if (workspace) {
             this.destroy();
             this.metaWindow.change_workspace(workspace);
