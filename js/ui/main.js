@@ -41,11 +41,9 @@ const Util = imports.misc.util;
 
 //applets
 const Menu = imports.ui.menu;
-const ShowDesktopButton = imports.ui.showDesktopButton;
 const PanelLaunchers = imports.ui.panelLaunchers;
 const WindowList = imports.ui.windowList;
 const DateMenu = imports.ui.dateMenu;
-const WorkspaceSwitcher = imports.ui.workspaceSwitcher;
 
 const DEFAULT_BACKGROUND_COLOR = new Clutter.Color();
 DEFAULT_BACKGROUND_COLOR.from_pixel(0x2266bbff);
@@ -62,10 +60,8 @@ let panel2 = null;
 
 let menu = null;
 let panelLaunchersBox = null;
-let showDesktopButton = null;
 let windowList = null;
 let dateMenu = null;
-let workspaceSwitcher = null;
 
 let hotCorners = [];
 let placesManager = null;
@@ -247,8 +243,6 @@ function start() {
             menu = new Menu.ApplicationsButton();    
             panel._leftBox.add(menu.actor);
             panel._menus.addMenu(menu.menu);        
-            showDesktopButton = new ShowDesktopButton.ShowDesktopButton(St.Side.BOTTOM);
-            panel._leftBox.add(showDesktopButton.actor);        
             panelLaunchersBox = new PanelLaunchers.PanelLaunchersBox(St.Side.BOTTOM);
             panel._leftBox.add(panelLaunchersBox.actor);           
             windowList = new WindowList.WindowList(St.Side.BOTTOM); 
@@ -256,11 +250,7 @@ function start() {
         }        
         dateMenu = new DateMenu.DateMenuButton({ showEvents: false });
         panel._rightBox.add(dateMenu.actor, { y_fill: true });
-        panel._menus.addMenu(dateMenu.menu);        
-        if (global.session_type == Cinnamon.SessionType.USER) {
-            workspaceSwitcher = new WorkspaceSwitcher.WorkspaceSwitcher();
-            panel._rightBox.add(workspaceSwitcher.actor);        
-        }        
+        panel._menus.addMenu(dateMenu.menu);                    
         layoutManager.panelBox.add(panel.actor);    
     }
     else if (desktop_layout == LAYOUT_FLIPPED) {
@@ -268,9 +258,7 @@ function start() {
         if (global.session_type == Cinnamon.SessionType.USER) {
             menu = new Menu.ApplicationsButton();    
             panel._leftBox.add(menu.actor);
-            panel._menus.addMenu(menu.menu);        
-            showDesktopButton = new ShowDesktopButton.ShowDesktopButton(St.Side.TOP);
-            panel._leftBox.add(showDesktopButton.actor);        
+            panel._menus.addMenu(menu.menu);                            
             panelLaunchersBox = new PanelLaunchers.PanelLaunchersBox(St.Side.TOP);
             panel._leftBox.add(panelLaunchersBox.actor);           
             windowList = new WindowList.WindowList(St.Side.TOP); 
@@ -278,11 +266,7 @@ function start() {
         }    
         dateMenu = new DateMenu.DateMenuButton({ showEvents: false });
         panel._rightBox.add(dateMenu.actor, { y_fill: true });
-        panel._menus.addMenu(dateMenu.menu);        
-        if (global.session_type == Cinnamon.SessionType.USER) {
-            workspaceSwitcher = new WorkspaceSwitcher.WorkspaceSwitcher();
-            panel._rightBox.add(workspaceSwitcher.actor);        
-        }        
+        panel._menus.addMenu(dateMenu.menu);                
         layoutManager.panelBox.add(panel.actor);  
     }
     else if (desktop_layout == LAYOUT_CLASSIC) {
@@ -294,18 +278,12 @@ function start() {
             panel._menus.addMenu(menu.menu);        
             panelLaunchersBox = new PanelLaunchers.PanelLaunchersBox(St.Side.TOP);
             panel._leftBox.add(panelLaunchersBox.actor);
-            showDesktopButton = new ShowDesktopButton.ShowDesktopButton(St.Side.BOTTOM);
-            panel2._leftBox.add(showDesktopButton.actor);                    
             windowList = new WindowList.WindowList(St.Side.BOTTOM); 
             panel2._leftBox.add(windowList.actor);
         }        
         dateMenu = new DateMenu.DateMenuButton({ showEvents: false });
         panel._rightBox.add(dateMenu.actor, { y_fill: true });
         panel._menus.addMenu(dateMenu.menu);        
-        if (global.session_type == Cinnamon.SessionType.USER) {
-            workspaceSwitcher = new WorkspaceSwitcher.WorkspaceSwitcher();
-            panel2._rightBox.add(workspaceSwitcher.actor);        
-        }        
         layoutManager.panelBox.add(panel.actor);   
         layoutManager.panelBox2.add(panel2.actor);   
     }

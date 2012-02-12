@@ -58,7 +58,6 @@ nobase_dist_js_DATA = \
 	ui/scripting.js		\
 	ui/search.js		\
 	ui/cinnamonDBus.js		\
-	ui/showDesktopButton.js	\
 	ui/statusIconDispatcher.js	\
 	ui/status/accessibility.js	\
 	ui/status/keyboard.js	\
@@ -76,6 +75,5 @@ nobase_dist_js_DATA = \
 	ui/workspace.js		\
 	ui/workspaceThumbnail.js	\
 	ui/workspacesView.js	\
-	ui/workspaceSwitcher.js    \
 	ui/xdndHandler.js
 	

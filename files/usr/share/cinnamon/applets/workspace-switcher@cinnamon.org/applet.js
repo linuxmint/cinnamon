@@ -1,25 +1,33 @@
 const St = imports.gi.St;
 const Lang = imports.lang;
+const Applet = imports.ui.applet;
 
-function WorkspaceSwitcher() {
-    this._init();
+function MyApplet(orientation) {
+    this._init(orientation);
 }
 
-WorkspaceSwitcher.prototype = {
-    _init: function() {
-        this.actor = new St.BoxLayout({ name: 'workspaceSwitcher',                                       
-                                        reactive: true });
-        this.actor.connect('button-release-event', this._showDialog);
-        this.actor._delegate = this;
-        this.button = [];
-        this._createButtons();
+MyApplet.prototype = {
+    __proto__: Applet.Applet.prototype,
 
-        global.screen.connect('notify::n-workspaces',
-                                Lang.bind(this, this._createButtons));
-        global.window_manager.connect('switch-workspace',
-                                Lang.bind(this, this._updateButtons));
+    _init: function(orientation) {        
+        Applet.Applet.prototype._init.call(this, orientation);
+        
+        try {                    
+            this.set_applet_tooltip(_("Switch workspace"));
+            this.button = [];
+            this._createButtons();
+            global.screen.connect('notify::n-workspaces', Lang.bind(this, this._createButtons));
+            global.window_manager.connect('switch-workspace', Lang.bind(this, this._updateButtons));                                                                                                                            
+        }
+        catch (e) {
+            global.logError(e);
+        }
     },
-
+    
+    on_applet_clicked: function(event) {
+        
+    },
+    
     _createButtons: function() {
         for ( let i=0; i<this.button.length; ++i ) {
             this.button[i].destroy();
@@ -60,17 +68,10 @@ WorkspaceSwitcher.prototype = {
                 this.button[i].remove_style_pseudo_class('outlined');
             }
         }
-    },
-
-    _showDialog: function(actor, event) {
-        let button = event.get_button();
-        if ( button == 3 ) {
-            if ( this._workspaceDialog == null ) {
-                this._workspaceDialog = new WorkspaceDialog();
-            }
-            this._workspaceDialog.open();
-            return true;
-        }
-        return false;
     }
 };
+
+function main(metadata, orientation) {  
+    let myApplet = new MyApplet(orientation);
+    return myApplet;      
+}
