@@ -101,6 +101,11 @@ AppMenuButtonRightClickMenu.prototype = {
                     this.itemMoveToRightWorkspace.actor.show();
                 }
                 
+                if (this.metaWindow.get_maximized())
+                    this.itemMaximizeWindow.label.set_text(_("Unmaximize"));
+                else
+                    this.itemMaximizeWindow.label.set_text(_("Maximize"));
+
                 this.actor.set_position((0 - buttonOffset - buttonWidth - panelOffset) + coord[0], 0);
             }
         }
@@ -126,13 +131,10 @@ AppMenuButtonRightClickMenu.prototype = {
 
     _onMaximizeWindowActivate: function(actor, event){      
         // 3 = 1 | 2 for both horizontally and vertically (didn't find where the META_MAXIMIZE_HORIZONTAL and META_MAXIMIZE_VERTICAL constants were defined for the JS wrappers)
-        if (this.metaWindow.get_maximized()){
+        if (this.metaWindow.get_maximized())
             this.metaWindow.unmaximize(3);
-            this.itemMaximizeWindow.label.set_text(_("Maximize"));
-        }else{
+        else
             this.metaWindow.maximize(3);
-            this.itemMaximizeWindow.label.set_text(_("Unmaximize"));
-        }
     },
 
     _onMoveToLeftWorkspace: function(actor, event){
