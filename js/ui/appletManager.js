@@ -93,7 +93,7 @@ function loadApplets() {
 }
 
 function add_applet_to_panels(appletDefinition) {
-    try { 
+    try {                 
         // format used in gsettings is 'panel:location:order:uuid' where panel is something like 'panel1', location is
         // either 'left', 'center' or 'right' and order is an integer representing the order of the applet within the panel/location (i.e. 1st, 2nd etc..).                     
         let elements = appletDefinition.split(":");
@@ -122,20 +122,21 @@ function add_applet_to_panels(appletDefinition) {
                     applet._panelLocation.remove_actor(applet.actor);
                     applet._panelLocation = null;
                 }
-                
+                                            
                 // Add it to its new panel location
                 let children = location.get_children();                    
                 let appletsToMove = [];
                 for (let i=0; i<children.length;i++) {
                     let child = children[i];
-                    if ((typeof child._applet !== "undefined") && (child._applet instanceof Applet.Applet)) {                            
+                    if ((typeof child._applet !== "undefined") && (child._applet instanceof Applet.Applet)) {                         
                         if (order < child._applet._order) {                                
-                            appletsToMove.push(child);
+                            appletsToMove.push(child);                            
                         }
-                    }                        
+                    }                    
                 }
+                                
                 for (let i=0; i<appletsToMove.length; i++) {
-                    location.remove_actor(appletsToMove[i]);
+                    location.remove_actor(appletsToMove[i]);                    
                 }
                 location.add(applet.actor);  
                 applet._panelLocation = location;                  

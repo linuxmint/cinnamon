@@ -37,8 +37,7 @@ AppMenuButtonRightClickMenu.prototype = {
         //                                   affectsStruts: false });
         this.actor.hide();
 
-        actor.connect('key-press-event', Lang.bind(this, this._onSourceKeyPress));
-        this.connect('open-state-changed', Lang.bind(this, this._onToggled));
+        actor.connect('key-press-event', Lang.bind(this, this._onSourceKeyPress));        
         
         this.metaWindow = metaWindow;
 
@@ -66,19 +65,6 @@ AppMenuButtonRightClickMenu.prototype = {
             this.addMenuItem(this.itemCloseWindow);
             this.addMenuItem(this.itemMaximizeWindow);
             this.addMenuItem(this.itemMinimizeWindow);
-        }
-    },
-    
-    _onToggled: function(actor, state){        
-        if (state) {
-            if (Main.windowList.actor != null) {
-                let coord = this.mouseEvent.get_coords();
-                let panelOffset = Main.windowList.actor.get_geometry().x
-                let buttonOffset = actor.sourceActor.get_geometry().x;
-                let buttonWidth = (actor.sourceActor.get_geometry().width / 2);
-                
-                this.actor.set_position((0 - buttonOffset - buttonWidth - panelOffset) + coord[0], 0);
-            }
         }
     },
     
@@ -147,20 +133,18 @@ AppMenuButton.prototype = {
 								  y_fill: false,
 								  track_hover: true });
 								  
-        if (orientation == St.Side.TOP) 
-            this.actor.add_style_class_name('window-list-item-box-top');
-        else
-            this.actor.add_style_class_name('window-list-item-box-bottom');
+	if (orientation == St.Side.TOP) 
+		this.actor.add_style_class_name('window-list-item-box-top');
+	else
+		this.actor.add_style_class_name('window-list-item-box-bottom');
       
         this.actor._delegate = this;
         this.actor.connect('button-release-event', Lang.bind(this, this._onButtonRelease));
-        
+
 		this.metaWindow = metaWindow;		
 		
         let bin = new St.Bin({ name: 'appMenu' });
         this.actor.set_child(bin);
-        
-        
 
         this._container = new Cinnamon.GenericContainer();
         bin.set_child(this._container);
@@ -247,20 +231,16 @@ AppMenuButton.prototype = {
     },
     
     _onButtonRelease: function(actor, event) {
-        this._tooltip.hide();        
-        global.logError("CLICK");
+        this._tooltip.hide();
         if ( Cinnamon.get_event_state(event) & Clutter.ModifierType.BUTTON1_MASK ) {
-            global.logError("LEFT CLICK");
             if ( this.rightClickMenu.isOpen ) {
                 this.rightClickMenu.toggle();                
             }
             this._windowHandle(false);
         } else if (Cinnamon.get_event_state(event) & Clutter.ModifierType.BUTTON2_MASK) {
-            global.logError("MIDDLE CLICK");
             this.metaWindow.delete(global.get_current_time());
             this.rightClickMenu.destroy();
         } else if (Cinnamon.get_event_state(event) & Clutter.ModifierType.BUTTON3_MASK) {
-            global.logError("RIGHT CLICK");
             if (!this.rightClickMenu.isOpen) {
                 // Setting the max-height won't do any good if the minimum height of the
                 // menu is higher then the screen; it's useful if part of the menu is
@@ -442,28 +422,27 @@ MyApplet.prototype = {
         Applet.Applet.prototype._init.call(this, orientation);
         
         try {                    
-            
-            this.actor.reactive = false; // Hack, otherwise we can't capture the click events...
-            
             this.orientation = orientation;
-                                  
-            //this.actor.add_style_name('windowList');
-            this.actor.add_style_class_name('window-list-box');
+        
+            this.myactor = new St.BoxLayout({ name: 'windowList',
+                                       	style_class: 'window-list-box' });
+            this.actor.add(this.myactor);
+            this.actor.reactive = false;
                                        	
             if (orientation == St.Side.TOP) {
-                this.actor.add_style_class_name('window-list-box-top');
-                this.actor.set_style('margin-top: 0px;');
-                this.actor.set_style('padding-top: 0px;');
+                this.myactor.add_style_class_name('window-list-box-top');
+                this.myactor.set_style('margin-top: 0px;');
+                this.myactor.set_style('padding-top: 0px;');
             }
             else {
-                this.actor.add_style_class_name('window-list-box-bottom');
-                this.actor.set_style('margin-bottom: 0px;');
-                this.actor.set_style('padding-bottom: 0px;');
+                this.myactor.add_style_class_name('window-list-box-bottom');
+                this.myactor.set_style('margin-bottom: 0px;');
+                this.myactor.set_style('padding-bottom: 0px;');
             }
-                                        
-            //this.actor._delegate = this;
+                                                
+        
             this._windows = new Array();
-                    
+                
             let tracker = Cinnamon.WindowTracker.get_default();
             tracker.connect('notify::focus-app', Lang.bind(this, this._onFocus));
 
@@ -483,9 +462,8 @@ MyApplet.prototype = {
             global.screen.connect('notify::n-workspaces',
                                     Lang.bind(this, this._changeWorkspaces));
             global.display.connect('window-demands-attention', Lang.bind(this, this._onWindowDemandsAttention));
-                                
-            //this._container.connect('allocate', Lang.bind(Main.panel, this._allocateBoxes));
-                                                                           
+                                    
+            // this._container.connect('allocate', Lang.bind(Main.panel, this._allocateBoxes));                                                                                
         }
         catch (e) {
             global.logError(e);
@@ -511,7 +489,7 @@ MyApplet.prototype = {
     },
     
     _refreshItems: function() {
-        this.actor.destroy_children();
+        this.myactor.destroy_children();
         this._windows = new Array();
 
         let metaWorkspace = global.screen.get_active_workspace();
@@ -529,7 +507,7 @@ MyApplet.prototype = {
                 if ( app ) {
                     let appbutton = new AppMenuButton(metaWindow, false, this.orientation);
                     this._windows.push(appbutton);
-                    this.actor.add(appbutton.actor);
+                    this.myactor.add(appbutton.actor);
                 }
             }
         }
@@ -605,7 +583,7 @@ MyApplet.prototype = {
         if ( app && tracker.is_window_interesting(metaWindow) ) {
             let appbutton = new AppMenuButton(metaWindow, true, this.orientation);
             this._windows.push(appbutton);
-            this.actor.add(appbutton.actor);
+            this.myactor.add(appbutton.actor);
             appbutton.actor.show();
         }
     },
@@ -617,7 +595,7 @@ MyApplet.prototype = {
 
         for ( let i=0; i<this._windows.length; ++i ) {
             if ( this._windows[i].metaWindow == metaWindow ) {
-                this.actor.remove_actor(this._windows[i].actor);
+                this.myactor.remove_actor(this._windows[i].actor);
                 this._windows[i].actor.destroy();
                 this._windows.splice(i, 1);
                 break;
@@ -658,7 +636,7 @@ MyApplet.prototype = {
 
 		childBox.y1 = 0;
 		childBox.y2 = allocHeight;
-		if (this.actor.get_direction() == St.TextDirection.RTL) {
+		if (this.myactor.get_direction() == St.TextDirection.RTL) {
 			childBox.x1 = allocWidth - Math.min(allocWidth - rightNaturalWidth,
 												leftNaturalWidth);
 			childBox.x2 = allocWidth;
@@ -676,7 +654,7 @@ MyApplet.prototype = {
 
 		childBox.y1 = 0;
 		childBox.y2 = allocHeight;
-		if (this.actor.get_direction() == St.TextDirection.RTL) {
+		if (this.myactor.get_direction() == St.TextDirection.RTL) {
 			childBox.x1 = 0;
 			childBox.x2 = Math.min(Math.floor(sideWidth),
 								   rightNaturalWidth);
@@ -686,8 +664,7 @@ MyApplet.prototype = {
 			childBox.x2 = allocWidth;
 		}
 		this._rightBox.allocate(childBox, flags);
-    }    
-    
+    }
 };
 
 function main(metadata, orientation) {  
