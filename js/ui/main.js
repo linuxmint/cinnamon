@@ -40,7 +40,6 @@ const StatusIconDispatcher = imports.ui.statusIconDispatcher;
 const Util = imports.misc.util;
 
 //applets
-const PanelLaunchers = imports.ui.panelLaunchers;
 const WindowList = imports.ui.windowList;
 const DateMenu = imports.ui.dateMenu;
 
@@ -57,7 +56,6 @@ let applets = [];
 let panel = null;
 let panel2 = null;
 
-let panelLaunchersBox = null;
 let windowList = null;
 let dateMenu = null;
 
@@ -233,9 +231,7 @@ function start() {
                     
     if (desktop_layout == LAYOUT_TRADITIONAL) {                                    
         panel = new Panel.Panel(true);         
-        if (global.session_type == Cinnamon.SessionType.USER) {
-            panelLaunchersBox = new PanelLaunchers.PanelLaunchersBox(St.Side.BOTTOM);
-            panel._leftBox.add(panelLaunchersBox.actor);           
+        if (global.session_type == Cinnamon.SessionType.USER) {            
             windowList = new WindowList.WindowList(St.Side.BOTTOM); 
             panel._leftBox.add(windowList.actor);
         }        
@@ -246,9 +242,7 @@ function start() {
     }
     else if (desktop_layout == LAYOUT_FLIPPED) {
         panel = new Panel.Panel(false);         
-        if (global.session_type == Cinnamon.SessionType.USER) {
-            panelLaunchersBox = new PanelLaunchers.PanelLaunchersBox(St.Side.TOP);
-            panel._leftBox.add(panelLaunchersBox.actor);           
+        if (global.session_type == Cinnamon.SessionType.USER) {            
             windowList = new WindowList.WindowList(St.Side.TOP); 
             panel._leftBox.add(windowList.actor);
         }    
@@ -260,9 +254,7 @@ function start() {
     else if (desktop_layout == LAYOUT_CLASSIC) {
         panel = new Panel.Panel(false);         
         panel2 = new Panel.Panel(true); 
-        if (global.session_type == Cinnamon.SessionType.USER) {
-            panelLaunchersBox = new PanelLaunchers.PanelLaunchersBox(St.Side.TOP);
-            panel._leftBox.add(panelLaunchersBox.actor);
+        if (global.session_type == Cinnamon.SessionType.USER) {            
             windowList = new WindowList.WindowList(St.Side.BOTTOM); 
             panel2._leftBox.add(windowList.actor);
         }        
