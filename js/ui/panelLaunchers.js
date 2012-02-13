@@ -627,11 +627,8 @@ PanelLaunchersBox.prototype = {
         if (origpos>=0){
             this._launchers.splice(origpos, 1);
             desktopFiles.splice(origpos, 1);
-            if (pos < origpos) desktopFiles.splice(pos, 0, launcher.get_id());
-            else desktopFiles.splice(pos-1, 0, launcher.get_id());
+            desktopFiles.splice(pos, 0, launcher.get_id());
             this._settings.set_strv('panel-launchers', desktopFiles);
-            
-            //this.reload();
         }
     },
     
@@ -674,7 +671,7 @@ PanelLaunchersBox.prototype = {
             }
 
             // Don't allow positioning before or after self
-            if (launcherPos != -1 && (pos == launcherPos || pos == launcherPos + 1)) {
+            if (launcherPos != -1 && pos == launcherPos) {
                 if (this._dragPlaceholder) {
                     this._dragPlaceholder.animateOutAndDestroy();
                     this._animatingPlaceholdersCount++;
