@@ -50,7 +50,7 @@ MyApplet.prototype = {
             this.button[i].set_child(label);
             this.actor.add(this.button[i]);
             let index = i;
-            this.button[i].connect('clicked', Lang.bind(this, function() {
+            this.button[i].connect('button-release-event', Lang.bind(this, function() {
                 let metaWorkspace = global.screen.get_workspace_by_index(index);
                 metaWorkspace.activate(global.get_current_time());
             }));
