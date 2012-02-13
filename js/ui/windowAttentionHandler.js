@@ -28,7 +28,9 @@ WindowAttentionHandler.prototype = {
         if (!window || window.has_focus() || window.is_skip_taskbar())
             return;
 
-        window.activate(global.get_current_time());
+        if (this._tracker.is_window_interesting(window)) {
+            window.activate(global.get_current_time());
+        }
     }
 };
 
