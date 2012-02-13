@@ -298,14 +298,16 @@ MyApplet.prototype = {
         try {                    
             this.set_applet_tooltip(_("Menu"));
             
+            this.actor.add_style_class_name('menu');
+            
             this.menuManager = new PopupMenu.PopupMenuManager(this);
             this.menu = new MyMenu(this, orientation);
             this.menuManager.addMenu(this.menu);   
                         
             this.actor.connect('key-press-event', Lang.bind(this, this._onSourceKeyPress));
-            
-            this._menuAlignment = 1;
-            this._resetMenu();
+                        
+            this.menu.actor.add_style_class_name('menu-background');
+            this.menu.connect('open-state-changed', Lang.bind(this, this._onOpenStateChanged));                                
                                     
             this._updateIcon();
             
@@ -340,7 +342,11 @@ MyApplet.prototype = {
             appsys.connect('installed-changed', Lang.bind(this, this._refreshApps));
             AppFavorites.getAppFavorites().connect('changed', Lang.bind(this, this._refreshFavs));
 
-            this.menu.connect('open-state-changed', Lang.bind(this, this._onOpenStateToggled));         
+            this.menu.connect('open-state-changed', Lang.bind(this, this._onOpenStateToggled));     
+            
+            global.display.connect('overlay-key', function(){
+                this.menu.toggle();
+            });    
                                                                            
         }
         catch (e) {
@@ -360,17 +366,7 @@ MyApplet.prototype = {
         }
         this.menu.toggle();     
     },        
-    
-    _resetMenu: function(){
-        this.menu = new PopupMenu.PopupMenu(this.actor, this._menuAlignment, Main.applet_side);
-        this.menu.actor.add_style_class_name('menu-background');
-        this.menu.connect('open-state-changed', Lang.bind(this, this._onOpenStateChanged));
-        //this.menu.actor.connect('key-press-event', Lang.bind(this, this._onMenuKeyPress));
-        Main.uiGroup.add_actor(this.menu.actor);
-        this.menu.actor.hide();
-    },
-   
-
+           
     _onSourceKeyPress: function(actor, event) {
         let symbol = event.get_key_symbol();
 

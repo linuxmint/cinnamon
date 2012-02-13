@@ -40,7 +40,6 @@ const StatusIconDispatcher = imports.ui.statusIconDispatcher;
 const Util = imports.misc.util;
 
 //applets
-const Menu = imports.ui.menu;
 const PanelLaunchers = imports.ui.panelLaunchers;
 const WindowList = imports.ui.windowList;
 const DateMenu = imports.ui.dateMenu;
@@ -58,7 +57,6 @@ let applets = [];
 let panel = null;
 let panel2 = null;
 
-let menu = null;
 let panelLaunchersBox = null;
 let windowList = null;
 let dateMenu = null;
@@ -160,11 +158,7 @@ function _initUserSession() {
     cinnamonwm.connect('keybinding::panel_main_menu', function () {
         overview.toggle();
     });
-
-    global.display.connect('overlay-key', function(){
-        menu.menu.toggle();
-    });
-
+    
 }
 
 function start() {
@@ -240,9 +234,6 @@ function start() {
     if (desktop_layout == LAYOUT_TRADITIONAL) {                                    
         panel = new Panel.Panel(true);         
         if (global.session_type == Cinnamon.SessionType.USER) {
-            menu = new Menu.ApplicationsButton();    
-            panel._leftBox.add(menu.actor);
-            panel._menus.addMenu(menu.menu);        
             panelLaunchersBox = new PanelLaunchers.PanelLaunchersBox(St.Side.BOTTOM);
             panel._leftBox.add(panelLaunchersBox.actor);           
             windowList = new WindowList.WindowList(St.Side.BOTTOM); 
@@ -256,9 +247,6 @@ function start() {
     else if (desktop_layout == LAYOUT_FLIPPED) {
         panel = new Panel.Panel(false);         
         if (global.session_type == Cinnamon.SessionType.USER) {
-            menu = new Menu.ApplicationsButton();    
-            panel._leftBox.add(menu.actor);
-            panel._menus.addMenu(menu.menu);                            
             panelLaunchersBox = new PanelLaunchers.PanelLaunchersBox(St.Side.TOP);
             panel._leftBox.add(panelLaunchersBox.actor);           
             windowList = new WindowList.WindowList(St.Side.TOP); 
@@ -273,9 +261,6 @@ function start() {
         panel = new Panel.Panel(false);         
         panel2 = new Panel.Panel(true); 
         if (global.session_type == Cinnamon.SessionType.USER) {
-            menu = new Menu.ApplicationsButton();    
-            panel._leftBox.add(menu.actor);
-            panel._menus.addMenu(menu.menu);        
             panelLaunchersBox = new PanelLaunchers.PanelLaunchersBox(St.Side.TOP);
             panel._leftBox.add(panelLaunchersBox.actor);
             windowList = new WindowList.WindowList(St.Side.BOTTOM); 
