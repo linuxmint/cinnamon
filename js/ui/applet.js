@@ -62,10 +62,10 @@ Applet.prototype = {
         this._panelLocation = null; // Backlink to the panel location our applet is in, set by Cinnamon.
         this._uuid = null; // Defined in gsettings, set by Cinnamon.
         this._dragging = false;
-        this._draggable = DND.makeDraggable(this.actor);
-        this._draggable.connect('drag-begin', Lang.bind(this, this._onDragBegin));
-        this._draggable.connect('drag-cancelled', Lang.bind(this, this._onDragCancelled));
-        this._draggable.connect('drag-end', Lang.bind(this, this._onDragEnd));            
+        //this._draggable = DND.makeDraggable(this.actor);
+        //this._draggable.connect('drag-begin', Lang.bind(this, this._onDragBegin));
+        //this._draggable.connect('drag-cancelled', Lang.bind(this, this._onDragCancelled));
+        //this._draggable.connect('drag-end', Lang.bind(this, this._onDragEnd));            
     },
             
     _onDragBegin: function() {
