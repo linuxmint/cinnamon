@@ -133,7 +133,7 @@ IconApplet.prototype = {
     },
     
     set_applet_icon_name: function (icon_name) {
-        this._applet_icon = new St.Icon({icon_name: icon_name, icon_size: 22, icon_type: St.IconType.FULLCOLOR});             
+        this._applet_icon = new St.Icon({icon_name: icon_name, icon_size: 22, icon_type: St.IconType.FULLCOLOR, reactive: true, track_hover: true, style_class: 'applet-icon' });             
         this._applet_icon_box.child = this._applet_icon;
     },
     
@@ -153,8 +153,8 @@ TextApplet.prototype = {
     __proto__: Applet.prototype,
 
     _init: function(orientation) {
-        Applet.prototype._init.call(this, orientation);
-        this._applet_label = new St.Label({ track_hover: true, style_class: 'applet-label'});        
+        Applet.prototype._init.call(this, orientation);        
+        this._applet_label = new St.Label({ reactive: true, track_hover: true, style_class: 'applet-label'});        
         this.actor.add(this._applet_label, { y_align: St.Align.MIDDLE, y_fill: false });    
     },
     
@@ -172,7 +172,7 @@ TextIconApplet.prototype = {
 
     _init: function(orientation) {
         IconApplet.prototype._init.call(this, orientation);
-        this._applet_label = new St.Label({ track_hover: true, style_class: 'applet-label'});        
+        this._applet_label = new St.Label({ reactive: true, track_hover: true, style_class: 'applet-label'});        
         this.actor.add(this._applet_label, { y_align: St.Align.MIDDLE, y_fill: false });
     },
     
