@@ -1,5 +1,4 @@
-// -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
-
+const Applet = imports.ui.applet;
 const Clutter = imports.gi.Clutter;
 const GdkPixbuf = imports.gi.GdkPixbuf;
 const Gkbd = imports.gi.Gkbd;
@@ -38,47 +37,77 @@ LayoutMenuItem.prototype = {
     }
 };
 
-function XKBIndicator() {
-    this._init.call(this);
+function MyMenu(launcher, orientation) {
+    this._init(launcher, orientation);
 }
 
-XKBIndicator.prototype = {
-    __proto__: PanelMenu.Button.prototype,
+MyMenu.prototype = {
+    __proto__: PopupMenu.PopupMenu.prototype,
+    
+    _init: function(launcher, orientation) {
+        this._launcher = launcher;        
+                
+        PopupMenu.PopupMenu.prototype._init.call(this, launcher.actor, 0.0, orientation, 0);
+        Main.uiGroup.add_actor(this.actor);
+        this.actor.hide();            
+    }
+}
 
-    _init: function() {
-        PanelMenu.Button.prototype._init.call(this, St.Align.START);
+function MyApplet(orientation) {
+    this._init(orientation);
+}
 
-        this._container = new Cinnamon.GenericContainer();
-        this._container.connect('get-preferred-width', Lang.bind(this, this._containerGetPreferredWidth));
-        this._container.connect('get-preferred-height', Lang.bind(this, this._containerGetPreferredHeight));
-        this._container.connect('allocate', Lang.bind(this, this._containerAllocate));
-        this.actor.add_actor(this._container);
-        this.actor.add_style_class_name('panel-status-button');
+MyApplet.prototype = {
+    __proto__: Applet.Applet.prototype,
 
-        this._iconActor = new St.Icon({ icon_name: 'keyboard', icon_type: St.IconType.SYMBOLIC, style_class: 'system-status-icon' });
-        this._container.add_actor(this._iconActor);
-        this._labelActors = [ ];
-        this._layoutItems = [ ];
+    _init: function(orientation) {        
+        Applet.Applet.prototype._init.call(this, orientation);
+        
+        try {                                
+            this.menuManager = new PopupMenu.PopupMenuManager(this);
+            this.menu = new MyMenu(this, orientation);
+            this.menuManager.addMenu(this.menu);                            
+                        
+            this._container = new Cinnamon.GenericContainer();
+            this._container.connect('get-preferred-width', Lang.bind(this, this._containerGetPreferredWidth));
+            this._container.connect('get-preferred-height', Lang.bind(this, this._containerGetPreferredHeight));
+            this._container.connect('allocate', Lang.bind(this, this._containerAllocate));
+            this.actor.add_actor(this._container);
+            this.actor.add_style_class_name('panel-status-button');
 
-        this._showFlags = false;
-        this._config = Gkbd.Configuration.get();
-        this._config.connect('changed', Lang.bind(this, this._syncConfig));
-        this._config.connect('group-changed', Lang.bind(this, this._syncGroup));
-        this._config.start_listen();
+            this._iconActor = new St.Icon({ icon_name: 'keyboard', icon_type: St.IconType.SYMBOLIC, style_class: 'system-status-icon' });
+            this._container.add_actor(this._iconActor);
+            this._labelActors = [ ];
+            this._layoutItems = [ ];
 
-        this._syncConfig();
+            this._showFlags = false;
+            this._config = Gkbd.Configuration.get();
+            this._config.connect('changed', Lang.bind(this, this._syncConfig));
+            this._config.connect('group-changed', Lang.bind(this, this._syncGroup));
+            this._config.start_listen();
 
-        if (global.session_type == Cinnamon.SessionType.USER) {
-            this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-            this.menu.addAction(_("Show Keyboard Layout"), Lang.bind(this, function() {
-                Main.overview.hide();
-                Util.spawn(['gkbd-keyboard-display', '-g', String(this._config.get_current_group() + 1)]);
-            }));
+            this._syncConfig();
+
+            if (global.session_type == Cinnamon.SessionType.USER) {
+                this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+                this.menu.addAction(_("Show Keyboard Layout"), Lang.bind(this, function() {
+                    Main.overview.hide();
+                    Util.spawn(['gkbd-keyboard-display', '-g', String(this._config.get_current_group() + 1)]);
+                }));
+            }
+            this.menu.addSettingsAction(_("Region and Language Settings"), 'gnome-region-panel.desktop'); 
+                      
         }
-        this.menu.addSettingsAction(_("Region and Language Settings"), 'gnome-region-panel.desktop');
+        catch (e) {
+            global.logError(e);
+        }
     },
-
-    _adjustGroupNames: function(names) {
+    
+    on_applet_clicked: function(event) {
+        this.menu.toggle();        
+    },
+    
+   _adjustGroupNames: function(names) {
         // Disambiguate duplicate names with a subscript
         // This is O(N^2) to avoid sorting names
         // but N <= 4 so who cares?
@@ -221,4 +250,10 @@ XKBIndicator.prototype = {
         for (let i = 0; i < this._labelActors.length; i++)
             this._labelActors[i].allocate_align_fill(box, 0.5, 0, false, false, flags);
     }
+    
 };
+
+function main(metadata, orientation) {  
+    let myApplet = new MyApplet(orientation);
+    return myApplet;      
+}

@@ -1,12 +1,10 @@
-// -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
-
+const Applet = imports.ui.applet;
 const Gio = imports.gi.Gio;
 const DBus = imports.dbus;
 const Lang = imports.lang;
 const Mainloop = imports.mainloop;
 const Cinnamon = imports.gi.Cinnamon;
 const St = imports.gi.St;
-
 const Main = imports.ui.main;
 const PanelMenu = imports.ui.panelMenu;
 const PopupMenu = imports.ui.popupMenu;
@@ -55,46 +53,77 @@ const PowerManagerInterface = {
 };
 let PowerManagerProxy = DBus.makeProxyClass(PowerManagerInterface);
 
-function Indicator() {
-    this._init.apply(this, arguments);
+function MyMenu(launcher, orientation) {
+    this._init(launcher, orientation);
 }
 
-Indicator.prototype = {
-    __proto__: PanelMenu.SystemStatusButton.prototype,
+MyMenu.prototype = {
+    __proto__: PopupMenu.PopupMenu.prototype,
+    
+    _init: function(launcher, orientation) {
+        this._launcher = launcher;        
+                
+        PopupMenu.PopupMenu.prototype._init.call(this, launcher.actor, 0.0, orientation, 0);
+        Main.uiGroup.add_actor(this.actor);
+        this.actor.hide();            
+    }
+}
 
-    _init: function() {
-        PanelMenu.SystemStatusButton.prototype._init.call(this, 'battery-missing');
-        this._proxy = new PowerManagerProxy(DBus.session, BUS_NAME, OBJECT_PATH);
+function MyApplet(orientation) {
+    this._init(orientation);
+}
+
+MyApplet.prototype = {
+    __proto__: Applet.TextIconApplet.prototype,
+
+    _init: function(orientation) {        
+        Applet.TextIconApplet.prototype._init.call(this, orientation);
         
-        let icon = this.actor.get_children()[0];
-        this.actor.remove_actor(icon);
-        let box = new St.BoxLayout({ name: 'batteryBox' });
-        this.actor.add_actor(box);
-        let iconBox = new St.Bin();
-        box.add(iconBox, { y_align: St.Align.MIDDLE, y_fill: false });
-        this._mainLabel = new St.Label();
-        box.add(this._mainLabel, { y_align: St.Align.MIDDLE, y_fill: false });
-        iconBox.child = icon;
+        try {                                
+            this.menuManager = new PopupMenu.PopupMenuManager(this);
+            this.menu = new MyMenu(this, orientation);
+            this.menuManager.addMenu(this.menu);            
+            
+            this.set_applet_icon_symbolic_name('battery-missing');            
+            this._proxy = new PowerManagerProxy(DBus.session, BUS_NAME, OBJECT_PATH);
+            
+            let icon = this.actor.get_children()[0];
+            this.actor.remove_actor(icon);
+            let box = new St.BoxLayout({ name: 'batteryBox' });
+            this.actor.add_actor(box);
+            let iconBox = new St.Bin();
+            box.add(iconBox, { y_align: St.Align.MIDDLE, y_fill: false });
+            this._mainLabel = new St.Label();
+            box.add(this._mainLabel, { y_align: St.Align.MIDDLE, y_fill: false });
+            iconBox.child = icon;
 
-        this._deviceItems = [ ];
-        this._hasPrimary = false;
-        this._primaryDeviceId = null;
+            this._deviceItems = [ ];
+            this._hasPrimary = false;
+            this._primaryDeviceId = null;
 
-        this._batteryItem = new PopupMenu.PopupMenuItem('', { reactive: false });
-        this._primaryPercentage = new St.Label();
-        this._batteryItem.addActor(this._primaryPercentage, { align: St.Align.END });
-        this.menu.addMenuItem(this._batteryItem);
+            this._batteryItem = new PopupMenu.PopupMenuItem('', { reactive: false });
+            this._primaryPercentage = new St.Label();
+            this._batteryItem.addActor(this._primaryPercentage, { align: St.Align.END });
+            this.menu.addMenuItem(this._batteryItem);
 
-        this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-        this._otherDevicePosition = 2;
+            this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+            this._otherDevicePosition = 2;
 
-        this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-        this.menu.addSettingsAction(_("Power Settings"), 'gnome-power-panel.desktop');
+            this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+            this.menu.addSettingsAction(_("Power Settings"), 'gnome-power-panel.desktop');
 
-        this._proxy.connect('Changed', Lang.bind(this, this._devicesChanged));
-        this._devicesChanged();
+            this._proxy.connect('Changed', Lang.bind(this, this._devicesChanged));
+            this._devicesChanged();            
+        }
+        catch (e) {
+            global.logError(e);
+        }
     },
-
+    
+    on_applet_clicked: function(event) {
+        this.menu.toggle();        
+    },
+    
     _readPrimaryDevice: function() {
         this._proxy.GetPrimaryDeviceRemote(Lang.bind(this, function(device, error) {
             if (error) {
@@ -196,61 +225,10 @@ Indicator.prototype = {
             this._mainLabel.set_text("");
         }));
     }
+    
 };
 
-function DeviceItem() {
-    this._init.apply(this, arguments);
-}
-
-DeviceItem.prototype = {
-    __proto__: PopupMenu.PopupBaseMenuItem.prototype,
-
-    _init: function(device) {
-        PopupMenu.PopupBaseMenuItem.prototype._init.call(this, { reactive: false });
-
-        let [device_id, device_type, icon, percentage, state, time] = device;
-
-        this._box = new St.BoxLayout({ style_class: 'popup-device-menu-item' });
-        this._label = new St.Label({ text: this._deviceTypeToString(device_type) });
-
-        this._icon = new St.Icon({ gicon: Gio.icon_new_for_string(icon),
-                                   icon_type: St.IconType.SYMBOLIC,
-                                   style_class: 'popup-menu-icon' });
-
-        this._box.add_actor(this._icon);
-        this._box.add_actor(this._label);
-        this.addActor(this._box);
-
-        let percentLabel = new St.Label({ text: C_("percent of battery remaining", "%d%%").format(Math.round(percentage)) });
-        this.addActor(percentLabel, { align: St.Align.END });
-    },
-
-    _deviceTypeToString: function(type) {
-	switch (type) {
-	case UPDeviceType.AC_POWER:
-            return _("AC adapter");
-        case UPDeviceType.BATTERY:
-            return _("Laptop battery");
-        case UPDeviceType.UPS:
-            return _("UPS");
-        case UPDeviceType.MONITOR:
-            return _("Monitor");
-        case UPDeviceType.MOUSE:
-            return _("Mouse");
-        case UPDeviceType.KEYBOARD:
-            return _("Keyboard");
-        case UPDeviceType.PDA:
-            return _("PDA");
-        case UPDeviceType.PHONE:
-            return _("Cell phone");
-        case UPDeviceType.MEDIA_PLAYER:
-            return _("Media player");
-        case UPDeviceType.TABLET:
-            return _("Tablet");
-        case UPDeviceType.COMPUTER:
-            return _("Computer");
-        default:
-            return _("Unknown");
-        }
-    }
+function main(metadata, orientation) {  
+    let myApplet = new MyApplet(orientation);
+    return myApplet;      
 }

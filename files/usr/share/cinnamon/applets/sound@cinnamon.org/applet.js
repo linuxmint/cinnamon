@@ -1,5 +1,4 @@
-/* -*- mode: js2; js2-basic-offset: 4; indent-tabs-mode: nil -*- */
-
+const Applet = imports.ui.applet;
 const Mainloop = imports.mainloop;
 const Gio = imports.gi.Gio;
 const DBus = imports.dbus;
@@ -638,50 +637,84 @@ MediaPlayerLauncher.prototype = {
 
 };
 
-function Indicator() {
-    this._init.apply(this, arguments);
+function MyMenu(launcher, orientation) {
+    this._init(launcher, orientation);
 }
 
-Indicator.prototype = {
-    __proto__: PanelMenu.SystemStatusButton.prototype,
+MyMenu.prototype = {
+    __proto__: PopupMenu.PopupMenu.prototype,
+    
+    _init: function(launcher, orientation) {
+        this._launcher = launcher;        
+                
+        PopupMenu.PopupMenu.prototype._init.call(this, launcher.actor, 0.0, orientation, 0);
+        Main.uiGroup.add_actor(this.actor);
+        this.actor.hide();            
+    }
+}
 
-    _init: function() {
-        PanelMenu.SystemStatusButton.prototype._init.call(this, 'audio-x-generic', null);
-        // menu not showed by default
-        this._players = {};
-        // watch players
-        for (var p=0; p<compatible_players.length; p++) {
-            DBus.session.watch_name('org.mpris.MediaPlayer2.'+compatible_players[p], false,
-                Lang.bind(this, this._addPlayer),
-                Lang.bind(this, this._removePlayer)
-            );
+function MyApplet(orientation) {
+    this._init(orientation);
+}
+
+MyApplet.prototype = {
+    __proto__: Applet.IconApplet.prototype,
+
+    _init: function(orientation) {        
+        Applet.IconApplet.prototype._init.call(this, orientation);
+        
+        try {                                
+            this.menuManager = new PopupMenu.PopupMenuManager(this);
+            this.menu = new MyMenu(this, orientation);
+            this.menuManager.addMenu(this.menu);            
+            
+            this.set_applet_icon_symbolic_name('audio-x-generic');
+            
+            // menu not showed by default
+            this._players = {};
+            // watch players
+            for (var p=0; p<compatible_players.length; p++) {
+                DBus.session.watch_name('org.mpris.MediaPlayer2.'+compatible_players[p], false,
+                    Lang.bind(this, this._addPlayer),
+                    Lang.bind(this, this._removePlayer)
+                );
+            }
+            
+            this._control = new Gvc.MixerControl({ name: 'Cinnamon Volume Control' });
+            this._control.connect('state-changed', Lang.bind(this, this._onControlStateChanged));
+            this._control.connect('default-sink-changed', Lang.bind(this, this._readOutput));
+            this._control.connect('default-source-changed', Lang.bind(this, this._readInput));
+            this._control.connect('stream-added', Lang.bind(this, this._maybeShowInput));
+            this._control.connect('stream-removed', Lang.bind(this, this._maybeShowInput));
+            this._volumeMax = 1.5*this._control.get_vol_max_norm();
+            
+            this._output = null;
+            this._outputVolumeId = 0;
+            this._outputMutedId = 0;
+
+            this._input = null;
+            this._inputVolumeId = 0;
+            this._inputMutedId = 0;
+            
+            this._icon_name = '';
+            
+            this.actor.connect('scroll-event', Lang.bind(this, this._onScrollEvent));
+            
+            this._control.open();
+            
+            this._volumeControlShown = false;
+            
+            this._showFixedElements();
+            
+            
         }
-        
-        this._control = new Gvc.MixerControl({ name: 'Cinnamon Volume Control' });
-        this._control.connect('state-changed', Lang.bind(this, this._onControlStateChanged));
-        this._control.connect('default-sink-changed', Lang.bind(this, this._readOutput));
-        this._control.connect('default-source-changed', Lang.bind(this, this._readInput));
-        this._control.connect('stream-added', Lang.bind(this, this._maybeShowInput));
-        this._control.connect('stream-removed', Lang.bind(this, this._maybeShowInput));
-        this._volumeMax = 1.5*this._control.get_vol_max_norm();
-        
-        this._output = null;
-        this._outputVolumeId = 0;
-        this._outputMutedId = 0;
-
-        this._input = null;
-        this._inputVolumeId = 0;
-        this._inputMutedId = 0;
-        
-        this._icon_name = '';
-        
-        this.actor.connect('scroll-event', Lang.bind(this, this._onScrollEvent));
-        
-        this._control.open();
-        
-        this._volumeControlShown = false;
-        
-        this._showFixedElements();
+        catch (e) {
+            global.logError(e);
+        }
+    },
+    
+    on_applet_clicked: function(event) {
+        this.menu.toggle();        
     },
     
     _onScrollEvent: function(actor, event) {
@@ -710,9 +743,9 @@ Indicator.prototype = {
     setIconName: function(icon) {
        this._icon_name = icon;
        if (this._nbPlayers()==0)
-         this.setIcon(icon);
+         this.set_applet_icon_symbolic_name(icon);
        else
-         this.setIcon('audio-x-generic');
+         this.set_applet_icon_symbolic_name('audio-x-generic');
     },
 
     _nbPlayers: function() {
@@ -975,5 +1008,11 @@ Indicator.prototype = {
             this._inputTitle.actor.hide();
             this._inputSlider.actor.hide();
         }
-    },
+    }
+    
 };
+
+function main(metadata, orientation) {  
+    let myApplet = new MyApplet(orientation);
+    return myApplet;      
+}

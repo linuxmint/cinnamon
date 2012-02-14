@@ -57,12 +57,6 @@ nobase_dist_js_DATA = \
 	ui/search.js		\
 	ui/cinnamonDBus.js		\
 	ui/statusIconDispatcher.js	\
-	ui/status/accessibility.js	\
-	ui/status/keyboard.js	\
-	ui/status/network.js	\
-	ui/status/power.js	\
-	ui/status/volume.js	\
-	ui/status/bluetooth.js	\
 	ui/themeManager.js	\
 	ui/tooltips.js	\
 	ui/tweener.js		\

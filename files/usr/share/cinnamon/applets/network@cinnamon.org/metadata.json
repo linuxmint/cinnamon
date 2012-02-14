@@ -1,0 +1,6 @@
+{
+ "uuid": "network@cinnamon.org",
+ "name": "Network Manager",
+ "description": "Network manager applet",
+ "icon": "network-idle"
+}

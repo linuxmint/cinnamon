@@ -137,6 +137,11 @@ IconApplet.prototype = {
         this._applet_icon_box.child = this._applet_icon;
     },
     
+    set_applet_icon_symbolic_name: function (icon_name) {
+        this._applet_icon = new St.Icon({icon_name: icon_name, icon_type: St.IconType.SYMBOLIC, reactive: true, track_hover: true, style_class: 'system-status-icon' });             
+        this._applet_icon_box.child = this._applet_icon;
+    },
+    
     set_applet_icon_path: function (icon_path) {
         let file = Gio.file_new_for_path(icon_path);
         let icon_uri = file.get_uri();

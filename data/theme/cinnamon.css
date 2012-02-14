@@ -1850,20 +1850,19 @@ StTooltip StLabel {
 
 .applet-box {
     margin: 1px;
-    padding: 1px;    
+    padding: 1px;  
+    color: #ccc;  
 }
 
 .applet-box:hover {
-    
+    color: #fff;
 }
 
 .applet-label {    
 	padding-left: 4px;
     padding-right: 4px;
     font-weight: bold;
-    color: #ccc;    
-    
-    
+    color: #ccc;            
 }
 
 .applet-label:hover,
@@ -1873,11 +1872,12 @@ StTooltip StLabel {
 }
 
 .applet-icon {  
-	
+    color: #ccc;
 }
 
 .applet-icon:hover,
 .applet-box:hover > .applet-icon {
-    icon-shadow: white 0px 0px 3px;        
+    color: #fff;
+    icon-shadow: white 0px 0px 3px;            
 }
 

@@ -247,9 +247,7 @@ function start() {
         _createUserSession();
     else if (global.session_type == Cinnamon.SessionType.GDM)
         _createGDMSession();
-
-    panel.startStatusArea();
-
+    
     layoutManager.init();
     keyboard.init();
     overview.init();
