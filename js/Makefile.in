@@ -316,8 +316,7 @@ nobase_dist_js_DATA = \
 	ui/automountManager.js  \
 	ui/autorunManager.js    \
 	ui/boxpointer.js	\
-	ui/calendar.js		\	
-	ui/dateMenu.js		\
+	ui/calendar.js		\		
 	ui/dnd.js		\	
 	ui/endSessionDialog.js	\
 	ui/environment.js	\

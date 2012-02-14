@@ -1,0 +1,6 @@
+{
+ "uuid": "calendar@cinnamon.org",
+ "name": "Cinnamon calendar",
+ "description": "The Cinnamon calendar applet",
+ "icon": "stock_calendar"
+}
