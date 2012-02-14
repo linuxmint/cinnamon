@@ -577,14 +577,6 @@ WindowList.prototype = {
                     menuReference.itemMinimizeWindow.label.set_text(_("Minimize"));
                     
                     return;
-                } else if (state == 'maximize') {
-                    if (actor.get_meta_window().get_maximized()) {
-                        menuReference.itemMaximizeWindow.label.set_text(_("Unmaximize"));
-                    } else {
-                        menuReference.itemMaximizeWindow.label.set_text(_("Maximize"));
-                    }
-                    
-                    return;
                 }
             }
         }
