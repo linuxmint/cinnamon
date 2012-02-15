@@ -18,6 +18,9 @@ const PanelMenu = imports.ui.panelMenu;
 const Main = imports.ui.main;
 const Tweener = imports.ui.tweener;
 const Meta = imports.gi.Meta;
+const Applet = imports.ui.applet;
+const DND = imports.ui.dnd;
+const AppletManager = imports.ui.appletManager;
 
 const PANEL_ICON_SIZE = 24;
 const PANEL_ICON_DEFAULT_SIZE = 22;
@@ -38,6 +41,8 @@ const GDM_STATUS_AREA_ORDER = ['display', 'powerMenu'];
 const GDM_STATUS_AREA_CINNAMON_IMPLEMENTATION = {        
     'powerMenu': imports.gdm.powerMenu.PowerMenuButton
 };
+
+const APPLETS_DROP_ANIMATION_TIME = 0.2;
 
 // To make sure the panel corners blend nicely with the panel,
 // we draw background and borders the same way, e.g. drawing
@@ -407,6 +412,254 @@ PanelContextMenu.prototype = {
     }    
 }
 
+function DashItemContainer() {
+    this._init();
+}
+
+DashItemContainer.prototype = {
+    _init: function() {
+        this.actor = new Cinnamon.GenericContainer({ style_class: 'dash-item-container' });
+        this.actor.connect('get-preferred-width',
+                           Lang.bind(this, this._getPreferredWidth));
+        this.actor.connect('get-preferred-height',
+                           Lang.bind(this, this._getPreferredHeight));
+        this.actor.connect('allocate',
+                           Lang.bind(this, this._allocate));
+        this.actor._delegate = this;
+
+        this.child = null;
+        this._childScale = 1;
+        this._childOpacity = 255;
+        this.animatingOut = false;
+    },
+
+    _allocate: function(actor, box, flags) {
+        if (this.child == null)
+            return;
+
+        let availWidth = box.x2 - box.x1;
+        let availHeight = box.y2 - box.y1;
+        let [minChildWidth, minChildHeight, natChildWidth, natChildHeight] =
+            this.child.get_preferred_size();
+        let [childScaleX, childScaleY] = this.child.get_scale();
+
+        let childWidth = Math.min(natChildWidth * childScaleX, availWidth);
+        let childHeight = Math.min(natChildHeight * childScaleY, availHeight);
+
+        let childBox = new Clutter.ActorBox();
+        childBox.x1 = (availWidth - childWidth) / 2;
+        childBox.y1 = (availHeight - childHeight) / 2;
+        childBox.x2 = childBox.x1 + childWidth;
+        childBox.y2 = childBox.y1 + childHeight;
+
+        this.child.allocate(childBox, flags);
+    },
+
+    _getPreferredHeight: function(actor, forWidth, alloc) {
+        alloc.min_size = 0;
+        alloc.natural_size = 0;
+
+        if (this.child == null)
+            return;
+
+        let [minHeight, natHeight] = this.child.get_preferred_height(forWidth);
+        alloc.min_size += minHeight * this.child.scale_y;
+        alloc.natural_size += natHeight * this.child.scale_y;
+    },
+
+    _getPreferredWidth: function(actor, forHeight, alloc) {
+        alloc.min_size = 0;
+        alloc.natural_size = 0;
+
+        if (this.child == null)
+            return;
+
+        let [minWidth, natWidth] = this.child.get_preferred_width(forHeight);
+        alloc.min_size = minWidth * this.child.scale_y;
+        alloc.natural_size = natWidth * this.child.scale_y;
+    },
+
+    setChild: function(actor) {
+        if (this.child == actor)
+            return;
+
+        this.actor.destroy_children();
+
+        this.child = actor;
+        this.actor.add_actor(this.child);
+    },
+
+    animateIn: function() {
+        if (this.child == null)
+            return;
+
+        this.childScale = 0;
+        this.childOpacity = 0;
+        Tweener.addTween(this,
+                         { childScale: 1.0,
+                           childOpacity: 255,
+                           time: APPLETS_DROP_ANIMATION_TIME,
+                           transition: 'easeOutQuad'
+                         });
+    },
+
+    animateOutAndDestroy: function() {
+        if (this.child == null) {
+            this.actor.destroy();
+            return;
+        }
+
+        this.animatingOut = true;
+        this.childScale = 1.0;
+        Tweener.addTween(this,
+                         { childScale: 0.0,
+                           childOpacity: 0,
+                           time: APPLETS_DROP_ANIMATION_TIME,
+                           transition: 'easeOutQuad',
+                           onComplete: Lang.bind(this, function() {
+                               this.actor.destroy();
+                           })
+                         });
+    },
+
+    set childScale(scale) {
+        this._childScale = scale;
+
+        if (this.child == null)
+            return;
+
+        this.child.set_scale_with_gravity(scale, scale,
+                                          Clutter.Gravity.CENTER);
+        this.actor.queue_relayout();
+    },
+
+    get childScale() {
+        return this._childScale;
+    },
+
+    set childOpacity(opacity) {
+        this._childOpacity = opacity;
+
+        if (this.child == null)
+            return;
+
+        this.child.set_opacity(opacity);
+        this.actor.queue_redraw();
+    },
+
+    get childOpacity() {
+        return this._childOpacity;
+    }
+};
+
+
+function DragPlaceholderItem() {
+    this._init();
+}
+
+DragPlaceholderItem.prototype = {
+    __proto__: DashItemContainer.prototype,
+
+    _init: function() {
+        DashItemContainer.prototype._init.call(this);
+        this.setChild(new St.Bin({ style_class: 'dash-placeholder' }));
+    }
+};
+
+function PanelZoneDNDHandler(panelZone){
+    this._init(panelZone);
+}
+
+PanelZoneDNDHandler.prototype = {
+    _init : function(panelZone) {
+        this._panelZone = panelZone;
+        this._panelZone._delegate = this;
+        this._dragPlaceholder = null;
+        this._dragPlaceholderPos = -1;
+        this._animatingPlaceholdersCount = 0;
+    },
+    
+    handleDragOver: function(source, actor, x, y, time) {
+        let children = this._panelZone.get_children();
+        let appletPos = children.indexOf(source.actor);
+        
+        let pos = 0;
+        
+        for (var i in children){
+            //if (children[i] == this._dragPlaceholder.actor) continue;
+            if (x > children[i].get_allocation_box().x1 + children[i].width / 2) pos = i;
+        }
+        
+        if (pos != this._dragPlaceholderPos) {            
+            if (false && this._animatingPlaceholdersCount > 0) {
+                this._dragPlaceholderPos = children.indexOf(appletsChildren[pos]);
+            } else {
+                this._dragPlaceholderPos = pos;
+            }
+
+            // Don't allow positioning before or after self
+            if (appletPos != -1 && pos == appletPos) {
+                if (this._dragPlaceholder) {
+                    this._dragPlaceholder.animateOutAndDestroy();
+                    this._animatingPlaceholdersCount++;
+                    this._dragPlaceholder.actor.connect('destroy',
+                        Lang.bind(this, function() {
+                            this._animatingPlaceholdersCount--;
+                        }));
+                }
+                this._dragPlaceholder = null;
+
+                return DND.DragMotionResult.CONTINUE;
+            }
+
+            // If the placeholder already exists, we just move
+            // it, but if we are adding it, expand its size in
+            // an animation
+            let fadeIn;
+            if (this._dragPlaceholder) {
+                this._dragPlaceholder.actor.destroy();
+                fadeIn = false;
+            } else {
+                fadeIn = true;
+            }
+
+            this._dragPlaceholder = new DragPlaceholderItem();
+            this._dragPlaceholder.child.set_width (20);
+            this._dragPlaceholder.child.set_height (10);
+            this._panelZone.insert_actor(this._dragPlaceholder.actor,
+                                        this._dragPlaceholderPos);
+            if (fadeIn)
+                this._dragPlaceholder.animateIn();
+        }
+        
+        return DND.DragMotionResult.MOVE_DROP;
+    },
+    
+    acceptDrop: function(source, actor, x, y, time) {
+        let children = this._panelZone.get_children();
+        for (var i in children){
+            if (children[i]._applet){
+                if (i < this._dragPlaceholderPos) children[i]._applet._newOrder = i;
+                else children[i]._applet._newOrder = i + 1;
+            }
+        }
+        source.actor._applet._newOrder = this._dragPlaceholderPos;
+        source.actor._applet._newPanelLocation = this._panelZone;
+        this._clearDragPlaceholder();
+        actor.destroy();
+        AppletManager.saveAppletsPositions();
+        return true;
+    },
+    
+    _clearDragPlaceholder: function() {
+        if (this._dragPlaceholder) {
+            this._dragPlaceholder.animateOutAndDestroy();
+            this._dragPlaceholder = null;
+            this._dragPlaceholderPos = -1;
+        }
+    }
+}
+
 
 function Panel(bottomPosition) {
     this._init(bottomPosition);
@@ -440,10 +693,13 @@ Panel.prototype = {
         
         this._leftBox = new St.BoxLayout({ name: 'panelLeft' });
         this.actor.add_actor(this._leftBox);
+        this._leftBoxDNDHandler = new PanelZoneDNDHandler(this._leftBox);
         this._centerBox = new St.BoxLayout({ name: 'panelCenter' });
         this.actor.add_actor(this._centerBox);
+        this._centerBoxDNDHandler = new PanelZoneDNDHandler(this._centerBox);
         this._rightBox = new St.BoxLayout({ name: 'panelRight' });
         this.actor.add_actor(this._rightBox);
+        this._rightBoxDNDHandler = new PanelZoneDNDHandler(this._rightBox);
 
         if (this.actor.get_direction() == St.TextDirection.RTL)
             this._leftCorner = new PanelCorner(this._rightBox, St.Side.LEFT);

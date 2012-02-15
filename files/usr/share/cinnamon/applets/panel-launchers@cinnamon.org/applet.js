@@ -545,6 +545,7 @@ MyApplet.prototype = {
             this.actor = new St.BoxLayout({ name: 'panel-launchers-box',
                                             style_class: 'panel-launchers-box' });
             this.actor._delegate = this;
+            this.actor._applet = this;
             
             this._settings = new Gio.Settings({ schema: 'org.cinnamon' });
             this._settings.connect('changed', Lang.bind(this, this._onSettingsChanged));

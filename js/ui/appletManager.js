@@ -334,9 +334,43 @@ function _removeAppletFromPanel(menuitem, event, uuid) {
     }
 }
 
-
-
-
-
-
-
+function saveAppletsPositions() {
+    let panels = [Main.panel, Main.panel2];
+    let zones_strings = ["left", "center", "right"];
+    let allApplets = new Array();
+    for (var i in panels){
+        let panel = panels[i];
+        for (var j in zones_strings){
+            let zone_string = zones_strings[j];
+            let zone = panel["_"+zone_string+"Box"];
+            let children = zone.get_children();
+            for (var k in children) if (children[k]._applet) allApplets.push(children[k]._applet);
+        }
+    }
+    let applets = new Array();
+    for (var i in panels){
+        let panel = panels[i];
+        let panel_string;
+        if (panel == Main.panel) panel_string = "panel1";
+        else panel_string = "panel2";
+        for (var j in zones_strings){
+            let zone_string = zones_strings[j];
+            let zone = panel["_"+zone_string+"Box"];
+            for (var k in allApplets){
+                let applet = allApplets[k];
+                let appletZone;
+                if (applet._newPanelLocation != null) appletZone = applet._newPanelLocation;
+                else appletZone = applet._panelLocation;
+                let appletOrder;
+                if (applet._newOrder != null) appletOrder = applet._newOrder;
+                else appletOrder = applet._order;
+                if (appletZone == zone) applets.push(panel_string+":"+zone_string+":"+appletOrder+":"+applet._uuid);
+            }
+        }
+    }
+    for (var i in allApplets){
+        allApplets[i]._newPanelLocation = null;
+        allApplets[i]._newOrder = null;
+    }
+    global.settings.set_strv('enabled-applets', applets);
+}
