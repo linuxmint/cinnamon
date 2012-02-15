@@ -137,8 +137,7 @@ StTooltip StLabel {
 .popup-sub-menu {
     background-gradient-start: rgba(80,80,80,0.3);
     background-gradient-end: rgba(80,80,80,0.7);
-    background-gradient-direction: vertical;
-    box-shadow: inset 0px 2px 4px rgba(0,0,0,0.9);
+    background-gradient-direction: vertical;    
 }
 
 .popup-sub-menu .popup-menu-item:ltr {
@@ -760,7 +759,8 @@ StTooltip StLabel {
 
 #notification {
     font-size: 8.5pt;
-    border-radius: 10px 10px 10px 10px;
+    border-radius: 8px 8px 8px 8px;
+    border: 2px solid #a5a5a5;
     background-gradient-direction: vertical;
     background-gradient-start: rgba(85,85,85,0.8);
     background-gradient-end: rgba(85,85,85,0.8);
@@ -931,12 +931,12 @@ StTooltip StLabel {
 
 .switcher-list {
     background: rgba(80,80,80,0.8);
-    border: 1px solid rgba(128,128,128,0.40);
+    border: 2px solid #a5a5a5;
     border-radius: 24px;
     padding: 20px;
-
     font-size: 9pt;
     color: white;
+    text-shadow: black 0px 0px 2px;
 }
 
 .switcher-list-item-container {
@@ -1446,16 +1446,17 @@ StTooltip StLabel {
   margin: auto;
   padding: 10px;
   border: 1px solid #666;  
-  border-radius: 4px;  
+  border-radius: 8px;  
   background-gradient-direction: vertical;
   background-gradient-start: rgba(85,85,85,0.8);
   background-gradient-end: rgba(85,85,85,0.2);  
+  transition-duration: 300;
 }
 .menu-favorites-button {
     padding-top: 10px;
     padding-left: 10px;
     padding-right: 10px;
-    padding-bottom: 10px;       
+    padding-bottom: 10px;   
 }
 
 .menu-favorites-button:hover {
@@ -1551,6 +1552,7 @@ StTooltip StLabel {
 	 background-gradient-end: rgba(255,255,255,0.08);
 	 box-shadow: inset 0px 0px 1px 1px rgba(255,255,255,0.06);
     border-radius: 4px;
+    transition-duration: 300;
 }
 
 .menu-category-button-label:ltr { 
@@ -1655,9 +1657,10 @@ StTooltip StLabel {
 	 background-gradient-start: rgba(255,255,255,0.05);
 	 background-gradient-end: rgba(255,255,255,0.2);
 	 box-shadow: inset 0px 0px 1px 1px rgba(170,170,170,0.5);
-         border-radius: 2px 2px 0px 0px;
-         padding-left: 5px;
-         padding-right: 5px;
+     border-radius: 2px 2px 0px 0px;
+     padding-left: 5px;
+     padding-right: 5px;
+     transition-duration: 300;
 }
 
 .window-list-item-box:active,
@@ -1751,17 +1754,18 @@ StTooltip StLabel {
 .workspace-button {
     width: 20px;
     height: 10px;   
-    color: #cccccc;
-    transition-duration: 100;
+    color: #cccccc;    
     border: 1px;
     border-color: #a6a6a6;
     padding: 2px;
+    transition-duration: 300;
 }
 
 .workspace-button:outlined {
     padding: 1px;    
     background: #cccccc;
     color: #555555;
+    box-shadow: inset 0px 0px 8px 1px rgba(255,255,255, 0.7);
 }
 
 /* ===================================================================
@@ -1775,6 +1779,7 @@ StTooltip StLabel {
 .panel-launcher {
     margin: 1px;
     padding: 1px;
+    transition-duration: 300;
 }
 
 .panel-launcher:hover {            	
@@ -1851,7 +1856,9 @@ StTooltip StLabel {
 .applet-box {
     margin: 1px;
     padding: 1px;  
-    color: #ccc;  
+    color: #ccc; 
+    text-shadow: black 0px 0px 2px;
+    transition-duration: 300;
 }
 
 .applet-box:hover {
@@ -1862,7 +1869,7 @@ StTooltip StLabel {
 	padding-left: 4px;
     padding-right: 4px;
     font-weight: bold;
-    color: #ccc;            
+    color: #ccc;       
 }
 
 .applet-label:hover,
