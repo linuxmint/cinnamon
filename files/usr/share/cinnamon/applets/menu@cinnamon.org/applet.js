@@ -21,9 +21,9 @@ const Gettext = imports.gettext.domain('cinnamon-extensions');
 const _ = Gettext.gettext;
 
 const ICON_SIZE = 16;
-const MAX_FAV_ICON_SIZE = 30;
-const CATEGORY_ICON_SIZE = 20;
-const APPLICATION_ICON_SIZE = 20;
+const MAX_FAV_ICON_SIZE = 32;
+const CATEGORY_ICON_SIZE = 22;
+const APPLICATION_ICON_SIZE = 22;
 
 const USER_DESKTOP_PATH = FileUtils.getUserDesktopDir();
 
