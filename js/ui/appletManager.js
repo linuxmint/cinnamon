@@ -57,6 +57,14 @@ function onEnabledAppletsChanged() {
                 let elements = appletDefinition.split(":");
                 if (elements.length == 4) {
                     let uuid = elements[3];
+                    let panel = Main.panel;
+                    if (elements[0] == "panel2") {
+                        panel = Main.panel2;
+                    }
+                    let orientation = St.Side.TOP;
+                    if (panel.bottomPosition) {
+                        orientation = St.Side.BOTTOM;
+                    }
                     let uuidIsStillPresent = false;
                     for (let j=0; j<newEnabledApplets.length; j++) {
                         if (newEnabledApplets[j].match(uuid)) {
@@ -68,7 +76,7 @@ function onEnabledAppletsChanged() {
                         // Applet was removed                        
                         let directory = _find_applet(uuid);
                         if (directory != null) {
-                            let applet = loadApplet(uuid, directory);
+                            let applet = loadApplet(uuid, directory, orientation);
                             if (applet._panelLocation != null) {
                                 applet._panelLocation.remove_actor(applet.actor);
                                 applet._panelLocation = null;
@@ -111,10 +119,14 @@ function add_applet_to_panels(appletDefinition) {
             }
             let order = elements[2];
             let uuid = elements[3];
+            let orientation = St.Side.TOP;
+            if (panel.bottomPosition) {
+                orientation = St.Side.BOTTOM;
+            }
             let directory = _find_applet(uuid);
             if (directory != null) {
                 // Load the applet
-                let applet = loadApplet(uuid, directory);
+                let applet = loadApplet(uuid, directory, orientation);
                 applet._order = order;
                 
                 // Remove it from its previous panel location (if it had one)
@@ -201,7 +213,7 @@ function _find_applet_in(uuid, dir) {
     return(directory);
 }
 
-function loadApplet(uuid, dir) {    
+function loadApplet(uuid, dir, orientation) {    
     let info;    
     let applet = null;
     
@@ -283,13 +295,8 @@ function loadApplet(uuid, dir) {
         return null;
     }
 
-    try {
-        if (Main.desktop_layout == Main.LAYOUT_TRADITIONAL) {
-            applet = appletModule.main(meta, St.Side.BOTTOM);        
-        }
-        else {
-            applet = appletModule.main(meta, St.Side.TOP);
-        }
+    try {        
+        applet = appletModule.main(meta, orientation);                
         global.log('Loaded applet ' + meta.uuid);        
     } catch (e) {
         if (stylesheetPath != null)
