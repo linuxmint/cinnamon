@@ -55,8 +55,16 @@ AppMenuButtonRightClickMenu.prototype = {
         else
             this.itemMaximizeWindow = new PopupMenu.PopupMenuItem(_('Maximize'));
         this.itemMaximizeWindow.connect('activate', Lang.bind(this, this._onMaximizeWindowActivate));        
-        
+	
+        this.itemMoveToLeftWorkspace = new PopupMenu.PopupMenuItem('Move to left workspace');
+        this.itemMoveToLeftWorkspace.connect('activate', Lang.bind(this, this._onMoveToLeftWorkspace));
+
+        this.itemMoveToRightWorkspace = new PopupMenu.PopupMenuItem('Move to right workspace');
+        this.itemMoveToRightWorkspace.connect('activate', Lang.bind(this, this._onMoveToRightWorkspace));      
+
         if (orientation == St.Side.BOTTOM) {
+            this.addMenuItem(this.itemMoveToLeftWorkspace);
+            this.addMenuItem(this.itemMoveToRightWorkspace);
             this.addMenuItem(this.itemMinimizeWindow);
             this.addMenuItem(this.itemMaximizeWindow);
             this.addMenuItem(this.itemCloseWindow);                        
@@ -65,6 +73,8 @@ AppMenuButtonRightClickMenu.prototype = {
             this.addMenuItem(this.itemCloseWindow);
             this.addMenuItem(this.itemMaximizeWindow);
             this.addMenuItem(this.itemMinimizeWindow);
+            this.addMenuItem(this.itemMoveToLeftWorkspace);
+            this.addMenuItem(this.itemMoveToRightWorkspace);
         }
     },
     
@@ -75,7 +85,27 @@ AppMenuButtonRightClickMenu.prototype = {
                 let panelOffset = Main.windowList.actor.get_geometry().x
                 let buttonOffset = actor.sourceActor.get_geometry().x;
                 let buttonWidth = (actor.sourceActor.get_geometry().width / 2);
+                if (this.metaWindow.is_on_all_workspaces()) {
+                    this.itemMoveToLeftWorkspace.actor.hide();
+                    this.itemMoveToRightWorkspace.actor.hide();
+                } else if (global.screen.get_active_workspace_index() == 0) {
+                    if (St.Widget.get_default_direction() == St.TextDirection.RTL) {
+                        this.itemMoveToLeftWorkspace.actor.show();
+                        this.itemMoveToRightWorkspace.actor.hide();
+                    } else {
+                        this.itemMoveToLeftWorkspace.actor.hide();
+                        this.itemMoveToRightWorkspace.actor.show();
+                    }
+                } else {
+                    this.itemMoveToLeftWorkspace.actor.show();
+                    this.itemMoveToRightWorkspace.actor.show();
+                }
                 
+                if (this.metaWindow.get_maximized())
+                    this.itemMaximizeWindow.label.set_text(_("Unmaximize"));
+                else
+                    this.itemMaximizeWindow.label.set_text(_("Maximize"));
+
                 this.actor.set_position((0 - buttonOffset - buttonWidth - panelOffset) + coord[0], 0);
             }
         }
@@ -101,12 +131,27 @@ AppMenuButtonRightClickMenu.prototype = {
 
     _onMaximizeWindowActivate: function(actor, event){      
         // 3 = 1 | 2 for both horizontally and vertically (didn't find where the META_MAXIMIZE_HORIZONTAL and META_MAXIMIZE_VERTICAL constants were defined for the JS wrappers)
-        if (this.metaWindow.get_maximized()){
+        if (this.metaWindow.get_maximized())
             this.metaWindow.unmaximize(3);
-            this.itemMaximizeWindow.label.set_text(_("Maximize"));
-        }else{
+        else
             this.metaWindow.maximize(3);
-            this.itemMaximizeWindow.label.set_text(_("Unmaximize"));
+    },
+
+    _onMoveToLeftWorkspace: function(actor, event){
+        let workspace = this.metaWindow.get_workspace().get_neighbor(Meta.MotionDirection.LEFT);
+        if (workspace) {
+            this.destroy();
+            this.metaWindow.change_workspace(workspace);
+            Main._checkWorkspaces();
+        }
+    },
+
+    _onMoveToRightWorkspace: function(actor, event){
+        let workspace = this.metaWindow.get_workspace().get_neighbor(Meta.MotionDirection.RIGHT);
+        if (workspace) {
+            this.destroy();
+            this.metaWindow.change_workspace(workspace);
+            Main._checkWorkspaces();
         }
     },
 
@@ -530,14 +575,6 @@ WindowList.prototype = {
                 } else if (state == 'map') {
                     windowReference._label.set_text(actor.get_meta_window().get_title());
                     menuReference.itemMinimizeWindow.label.set_text(_("Minimize"));
-                    
-                    return;
-                } else if (state == 'maximize') {
-                    if (actor.get_meta_window().get_maximized()) {
-                        menuReference.itemMaximizeWindow.label.set_text(_("Unmaximize"));
-                    } else {
-                        menuReference.itemMaximizeWindow.label.set_text(_("Maximize"));
-                    }
                     
                     return;
                 }
