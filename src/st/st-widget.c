@@ -2110,18 +2110,17 @@ st_describe_actor (ClutterActor *actor)
   if (name)
     g_string_append_printf (desc, " \"%s\"", name);
 
-  if (!append_actor_text (desc, actor) && CLUTTER_IS_CONTAINER (actor))
+  if (!append_actor_text (desc, actor))
     {
       GList *children, *l;
 
       /* Do a limited search of @actor's children looking for a label */
-      children = clutter_container_get_children (CLUTTER_CONTAINER (actor));
+      children = clutter_actor_get_children (actor);
       for (l = children, i = 0; l && i < 20; l = l->next, i++)
         {
           if (append_actor_text (desc, l->data))
             break;
-          else if (CLUTTER_IS_CONTAINER (l->data))
-            children = g_list_concat (children, clutter_container_get_children (l->data));
+          children = g_list_concat (children, clutter_actor_get_children (l->data));
         }
       g_list_free (children);
     }
