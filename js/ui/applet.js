@@ -6,6 +6,7 @@ const PopupMenu = imports.ui.popupMenu;
 const Gio = imports.gi.Gio;
 const Main = imports.ui.main;
 const DND = imports.ui.dnd;
+const Clutter = imports.gi.Clutter;
 
 function MenuItem(label, icon, callback) {
     this._init(label, icon, callback);
@@ -58,14 +59,15 @@ Applet.prototype = {
         this._menuManager.addMenu(this._applet_context_menu);     
         
         this.actor._applet = this; // Backlink to get the applet from its actor (handy when we want to know stuff about a particular applet within the panel)
+        this.actor._delegate = this;
         this._order = 0; // Defined in gsettings, this is the order of the applet within a panel location. This value is set by Cinnamon when loading/listening_to gsettings.
         this._panelLocation = null; // Backlink to the panel location our applet is in, set by Cinnamon.
         this._uuid = null; // Defined in gsettings, set by Cinnamon.
         this._dragging = false;
-        //this._draggable = DND.makeDraggable(this.actor);
-        //this._draggable.connect('drag-begin', Lang.bind(this, this._onDragBegin));
-        //this._draggable.connect('drag-cancelled', Lang.bind(this, this._onDragCancelled));
-        //this._draggable.connect('drag-end', Lang.bind(this, this._onDragEnd));            
+        this._draggable = DND.makeDraggable(this.actor);
+        this._draggable.connect('drag-begin', Lang.bind(this, this._onDragBegin));
+        this._draggable.connect('drag-cancelled', Lang.bind(this, this._onDragCancelled));
+        this._draggable.connect('drag-end', Lang.bind(this, this._onDragEnd));            
     },
             
     _onDragBegin: function() {
@@ -85,13 +87,13 @@ Applet.prototype = {
     },
     
     getDragActor: function() {
-        return this.actor;
+        return new Clutter.Clone({ source: this.actor });
     },
 
     // Returns the original actor that should align with the actor
     // we show as the item is being dragged.
     getDragActorSource: function() {
-        return this.actor; // not correct, should be a copy of the object.. 
+        return this.actor;
     },
             
     _onButtonReleaseEvent: function (actor, event) {                      
