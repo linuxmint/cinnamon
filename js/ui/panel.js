@@ -247,11 +247,7 @@ PanelCorner.prototype = {
             index--;
 
         if (index < 0)
-            return null;
-
-        if (!(children[index].has_style_class_name('panel-menu')) &&
-            !(children[index].has_style_class_name('panel-button')))
-            return this._findRightmostButton(children[index]);
+            return null;        
 
         return children[index];
     },
@@ -271,11 +267,7 @@ PanelCorner.prototype = {
             index++;
 
         if (index == children.length)
-            return null;
-
-        if (!(children[index].has_style_class_name('panel-menu')) &&
-            !(children[index].has_style_class_name('panel-button')))
-            return this._findLeftmostButton(children[index]);
+            return null;        
 
         return children[index];
     },
