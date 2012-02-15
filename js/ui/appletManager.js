@@ -340,6 +340,7 @@ function saveAppletsPositions() {
     let allApplets = new Array();
     for (var i in panels){
         let panel = panels[i];
+        if (!panel) continue;
         for (var j in zones_strings){
             let zone_string = zones_strings[j];
             let zone = panel["_"+zone_string+"Box"];
@@ -350,6 +351,7 @@ function saveAppletsPositions() {
     let applets = new Array();
     for (var i in panels){
         let panel = panels[i];
+        if (!panel) continue;
         let panel_string;
         if (panel == Main.panel) panel_string = "panel1";
         else panel_string = "panel2";

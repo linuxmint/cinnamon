@@ -247,7 +247,7 @@ PanelCorner.prototype = {
             index--;
 
         if (index < 0)
-            return null;        
+            return null;
 
         return children[index];
     },
@@ -267,7 +267,7 @@ PanelCorner.prototype = {
             index++;
 
         if (index == children.length)
-            return null;        
+            return null;
 
         return children[index];
     },
