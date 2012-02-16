@@ -48,8 +48,7 @@ StatusIconDispatcher.prototype = {
     _onTrayIconAdded: function(o, icon) {
         let wmClass = (icon.wm_class || 'unknown').toLowerCase();
         let role = STANDARD_TRAY_ICON_IMPLEMENTATIONS[wmClass];
-        if (!role) role = wmClass;
-        global.log("ROLE: " + wmClass + " --> " + role);
+        if (!role) role = wmClass;        
         this.emit('status-icon-added', icon, role);
     },
 
