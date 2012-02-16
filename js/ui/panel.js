@@ -895,7 +895,9 @@ Panel.prototype = {
             return;
         }
         
-        if (role == "network") {  
+        let hiddenIcons = ["network", "power", "keyboard", "gnome-settings-daemon", "volume", "bluetooth", "battery", "a11y"];
+        
+        if (hiddenIcons.indexOf(role) != -1 ) {  
             // We've got an applet for that          
             return;
         }

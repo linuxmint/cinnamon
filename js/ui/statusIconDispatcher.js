@@ -12,7 +12,7 @@ const Util = imports.misc.util;
 const STANDARD_TRAY_ICON_IMPLEMENTATIONS = {
     'bluetooth-applet': 'bluetooth',
     'gnome-volume-control-applet': 'volume', // renamed to gnome-sound-applet
-                                             // when moved to control center
+                                             // when moved to control center                                                
     'gnome-sound-applet': 'volume',
     'nm-applet': 'network',
     'gnome-power-manager': 'battery',
@@ -49,6 +49,7 @@ StatusIconDispatcher.prototype = {
         let wmClass = (icon.wm_class || 'unknown').toLowerCase();
         let role = STANDARD_TRAY_ICON_IMPLEMENTATIONS[wmClass];
         if (!role) role = wmClass;
+        global.log("ROLE: " + wmClass + " --> " + role);
         this.emit('status-icon-added', icon, role);
     },
 
