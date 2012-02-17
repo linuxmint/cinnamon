@@ -63,8 +63,8 @@ AppMenuButtonRightClickMenu.prototype = {
         this.itemMoveToRightWorkspace.connect('activate', Lang.bind(this, this._onMoveToRightWorkspace));      
         
         if (orientation == St.Side.BOTTOM) {
-            this.addMenuItem(this.itemMoveToLeftWorkspace);
-            this.addMenuItem(this.itemMoveToRightWorkspace);
+            //this.addMenuItem(this.itemMoveToLeftWorkspace);
+            //this.addMenuItem(this.itemMoveToRightWorkspace);
             this.addMenuItem(this.itemMinimizeWindow);
             this.addMenuItem(this.itemMaximizeWindow);
             this.addMenuItem(this.itemCloseWindow);                        
@@ -73,11 +73,11 @@ AppMenuButtonRightClickMenu.prototype = {
             this.addMenuItem(this.itemCloseWindow);
             this.addMenuItem(this.itemMaximizeWindow);
             this.addMenuItem(this.itemMinimizeWindow);
-            this.addMenuItem(this.itemMoveToLeftWorkspace);
-            this.addMenuItem(this.itemMoveToRightWorkspace);
+            //this.addMenuItem(this.itemMoveToLeftWorkspace);
+            //this.addMenuItem(this.itemMoveToRightWorkspace);
         }
         
-        if (this.metaWindow.is_on_all_workspaces()) {
+        /**if (this.metaWindow.is_on_all_workspaces()) {
             this.itemMoveToLeftWorkspace.actor.hide();
             this.itemMoveToRightWorkspace.actor.hide();
         } 
@@ -94,7 +94,7 @@ AppMenuButtonRightClickMenu.prototype = {
         else {
             this.itemMoveToLeftWorkspace.actor.show();
             this.itemMoveToRightWorkspace.actor.show();        
-        }
+        }*/
 },
     
     _onWindowMinimized: function(actor, event){
@@ -480,11 +480,15 @@ MyApplet.prototype = {
                 this.myactor.add_style_class_name('window-list-box-top');
                 this.myactor.set_style('margin-top: 0px;');
                 this.myactor.set_style('padding-top: 0px;');
+                this.actor.set_style('margin-top: 0px;');
+                this.actor.set_style('padding-top: 0px;');
             }
             else {
                 this.myactor.add_style_class_name('window-list-box-bottom');
                 this.myactor.set_style('margin-bottom: 0px;');
                 this.myactor.set_style('padding-bottom: 0px;');
+                this.actor.set_style('margin-bottom: 0px;');
+                this.actor.set_style('padding-bottom: 0px;');
             }
                                                 
         
