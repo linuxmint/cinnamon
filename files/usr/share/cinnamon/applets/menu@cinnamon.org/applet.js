@@ -351,9 +351,14 @@ MyApplet.prototype = {
                     this.hover_delay = global.settings.get_int("menu-hover-delay") / 1000;
             })); 
                 
-            global.display.connect('overlay-key', function(){
-                this.menu.toggle();
-            });    
+            global.display.connect('overlay-key', Lang.bind(this, function(){
+                try{
+                    this.menu.toggle();
+                }
+                catch(e) {
+                    global.logError(e);
+                }
+            }));    
                                                                            
         }
         catch (e) {
