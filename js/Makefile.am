@@ -40,7 +40,6 @@ nobase_dist_js_DATA = \
 	ui/magnifierDBus.js	\
 	ui/main.js		\
 	ui/messageTray.js	\
-	ui/menu.js	\
 	ui/modalDialog.js	\
 	ui/networkAgent.js	\
 	ui/cinnamonEntry.js	\
@@ -62,7 +61,6 @@ nobase_dist_js_DATA = \
 	ui/tweener.js		\
 	ui/viewSelector.js	\
 	ui/windowAttentionHandler.js	\
-	ui/windowList.js	\
 	ui/windowManager.js	\
 	ui/workspace.js		\
 	ui/workspaceThumbnail.js	\
