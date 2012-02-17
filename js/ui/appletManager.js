@@ -95,9 +95,17 @@ function onEnabledAppletsChanged() {
 }
 
 function loadApplets() {    
-    for (let i=0; i<enabledApplets.length; i++) {        
+    let foundAtLeastOneApplet = false;
+    for (let i=0; i<enabledApplets.length; i++) {                
         add_applet_to_panels(enabledApplets[i]);
-    }        
+        let elements = enabledApplets[i].split(":");
+        if (elements.length == 4) {
+            foundAtLeastOneApplet = true;
+        }        
+    }    
+    if (!foundAtLeastOneApplet) {
+        global.settings.reset('enabled-applets');
+    }
 }
 
 function add_applet_to_panels(appletDefinition) {
