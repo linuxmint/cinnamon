@@ -251,7 +251,7 @@ MyApplet.prototype = {
     _devicesChanged: function() {
         this._proxy.GetRemote('Icon', Lang.bind(this, function(icon, error) {
             if (icon) {                
-                this.set_applet_icon_name(icon);
+                this.set_applet_icon_symbolic_name(icon);
                 this.actor.show();
             } else {
                 this.menu.close();
