@@ -382,12 +382,17 @@ class AppletViewSidePage (SidePage):
         self.load_applets_in('/usr/share/cinnamon/applets')                                                                          
         self.load_applets_in('%s/.local/share/cinnamon/applets' % home)
         
-        scrolledWindow.add(treeview)     
-                                          
+        scrolledWindow.add(treeview)                                                     
         scrolledWindow.set_shadow_type(Gtk.ShadowType.IN)
+        
+        button = Gtk.Button(_("Restore to default"))       
+        button.connect("clicked", lambda x: os.system('gsettings reset org.cinnamon enabled-applets'))
+        
         link = Gtk.LinkButton("http://cinnamon-spices.linuxmint.com/applets")
         link.set_label(_("Get new applets"))                
-        self.content_box.add(scrolledWindow)
+                         
+        self.content_box.add(scrolledWindow)        
+        self.content_box.pack_start(button, False, False, 2) 
         self.content_box.pack_start(link, False, False, 2) 
         
         self.content_box.show_all()   
