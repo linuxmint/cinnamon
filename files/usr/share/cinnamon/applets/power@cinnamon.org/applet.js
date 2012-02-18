@@ -53,6 +53,63 @@ const PowerManagerInterface = {
 };
 let PowerManagerProxy = DBus.makeProxyClass(PowerManagerInterface);
 
+function DeviceItem() {
+    this._init.apply(this, arguments);
+}
+
+DeviceItem.prototype = {
+    __proto__: PopupMenu.PopupBaseMenuItem.prototype,
+
+    _init: function(device) {
+        PopupMenu.PopupBaseMenuItem.prototype._init.call(this, { reactive: false });
+
+        let [device_id, device_type, icon, percentage, state, time] = device;
+
+        this._box = new St.BoxLayout({ style_class: 'popup-device-menu-item' });
+        this._label = new St.Label({ text: this._deviceTypeToString(device_type) });
+
+        this._icon = new St.Icon({ gicon: Gio.icon_new_for_string(icon),
+                                   icon_type: St.IconType.SYMBOLIC,
+                                   style_class: 'popup-menu-icon' });
+
+        this._box.add_actor(this._icon);
+        this._box.add_actor(this._label);
+        this.addActor(this._box);
+
+        let percentLabel = new St.Label({ text: C_("percent of battery remaining", "%d%%").format(Math.round(percentage)) });
+        this.addActor(percentLabel, { align: St.Align.END });
+    },
+
+    _deviceTypeToString: function(type) {
+        switch (type) {
+            case UPDeviceType.AC_POWER:
+                return _("AC adapter");
+            case UPDeviceType.BATTERY:
+                return _("Laptop battery");
+            case UPDeviceType.UPS:
+                return _("UPS");
+            case UPDeviceType.MONITOR:
+                return _("Monitor");
+            case UPDeviceType.MOUSE:
+                return _("Mouse");
+            case UPDeviceType.KEYBOARD:
+                return _("Keyboard");
+            case UPDeviceType.PDA:
+                return _("PDA");
+            case UPDeviceType.PHONE:
+                return _("Cell phone");
+            case UPDeviceType.MEDIA_PLAYER:
+                return _("Media player");
+            case UPDeviceType.TABLET:
+                return _("Tablet");
+            case UPDeviceType.COMPUTER:
+                return _("Computer");
+            default:
+                return _("Unknown");
+        }
+    }
+}
+
 function MyMenu(launcher, orientation) {
     this._init(launcher, orientation);
 }
@@ -193,9 +250,8 @@ MyApplet.prototype = {
 
     _devicesChanged: function() {
         this._proxy.GetRemote('Icon', Lang.bind(this, function(icon, error) {
-            if (icon) {
-                let gicon = Gio.icon_new_for_string(icon);
-                this.setGIcon(gicon);
+            if (icon) {                
+                this.set_applet_icon_name(icon);
                 this.actor.show();
             } else {
                 this.menu.close();
