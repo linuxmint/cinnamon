@@ -34,8 +34,7 @@ MyApplet.prototype = {
                 // We've got an applet for that          
                 return;
             }
-
-            //icon.height = PANEL_ICON_SIZE;        
+            
             let buttonBox = new PanelMenu.ButtonBox({ style_class: 'panel-status-button' });
             let box = buttonBox.actor;
             box.add_actor(icon);
@@ -43,7 +42,7 @@ MyApplet.prototype = {
             this._insertStatusItem(box, -1);
             
             let themeNode = buttonBox.actor.get_theme_node();
-            if (!themeNode.get_length('height')) icon.height = PANEL_ICON_DEFAULT_SIZE;
+            if (!themeNode.get_length('height')) icon.height = 22;
             else icon.height = themeNode.get_length('height');
         }
         catch (e) {
