@@ -76,16 +76,28 @@ Applet.prototype = {
         this._dragging = true;
         this._applet_tooltip.hide();
         this._applet_tooltip.preventShow = true;
+        Main.panel.addDNDstyle();
+        if (Main.panel2 != null) {
+            Main.panel2.addDNDstyle();
+        }
     },
     
     _onDragEnd: function() {
         this._dragging = false;
         this._applet_tooltip.preventShow = false;
+        Main.panel.removeDNDstyle();
+        if (Main.panel2 != null) {
+            Main.panel2.removeDNDstyle();
+        }
     },
     
     _onDragCancelled: function() {
         this._dragging = false;
         this._applet_tooltip.preventShow = false;
+        Main.panel.removeDNDstyle();
+        if (Main.panel2 != null) {
+            Main.panel2.removeDNDstyle();
+        }
     },
     
     getDragActor: function() {

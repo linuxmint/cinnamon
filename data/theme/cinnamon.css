@@ -278,6 +278,24 @@ StTooltip StLabel {
     spacing: 4px;
 }
 
+#panelLeft:dnd {
+    background-gradient-direction: vertical;
+	background-gradient-start: rgba(255,0,0,0.05);
+	background-gradient-end: rgba(255,0,0,0.2);        
+}
+
+#panelCenter:dnd {
+    background-gradient-direction: vertical;
+	background-gradient-start: rgba(0,255,0,0.05);
+	background-gradient-end: rgba(0,255,0,0.2);        
+}
+
+#panelRight:dnd {
+    background-gradient-direction: vertical;
+	background-gradient-start: rgba(0,0,255,0.05);
+	background-gradient-end: rgba(0,0,255,0.2);        
+}
+
 #panelLeft:ltr {
     padding-right: 4px;
 }
@@ -286,7 +304,7 @@ StTooltip StLabel {
     padding-left: 4px;
 }
 
-#panelRight:ltr {    
+#panelRight:ltr {   
     padding-left: 0px;
     spacing: 0px;
 }

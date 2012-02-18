@@ -572,6 +572,7 @@ PanelZoneDNDHandler.prototype = {
     },
     
     handleDragOver: function(source, actor, x, y, time) {
+                       
         let children = this._panelZone.get_children();
         let appletPos = children.indexOf(source.actor);
         
@@ -627,7 +628,7 @@ PanelZoneDNDHandler.prototype = {
         return DND.DragMotionResult.MOVE_DROP;
     },
     
-    acceptDrop: function(source, actor, x, y, time) {
+    acceptDrop: function(source, actor, x, y, time) {        
         let children = this._panelZone.get_children();
         for (var i in children){
             if (children[i]._applet){
@@ -643,7 +644,7 @@ PanelZoneDNDHandler.prototype = {
         return true;
     },
     
-    _clearDragPlaceholder: function() {
+    _clearDragPlaceholder: function() {        
         if (this._dragPlaceholder) {
             this._dragPlaceholder.animateOutAndDestroy();
             this._dragPlaceholder = null;
@@ -736,9 +737,21 @@ Panel.prototype = {
         //this._menus.addMenu(this._context_menu);   
         //this._context_menu.addMenuItem(new PopupMenu.PopupMenuItem(_("Add applet")));
         
-        //this.actor.connect('button-release-event', Lang.bind(this, this._onButtonReleaseEvent));      
+        //this.actor.connect('button-release-event', Lang.bind(this, this._onButtonReleaseEvent));                  
     },
     
+    addDNDstyle: function() {
+        this._leftBox.add_style_pseudo_class('dnd');
+        this._centerBox.add_style_pseudo_class('dnd');
+        this._rightBox.add_style_pseudo_class('dnd');
+    },
+    
+    removeDNDstyle: function() {
+        this._leftBox.remove_style_pseudo_class('dnd');
+        this._centerBox.remove_style_pseudo_class('dnd');
+        this._rightBox.remove_style_pseudo_class('dnd');
+    },
+            
     _onButtonReleaseEvent: function (actor, event) {                      
         if (event.get_button()==1){
             if (this._context_menu.isOpen) {
@@ -781,43 +794,48 @@ Panel.prototype = {
         let [leftMinWidth, leftNaturalWidth] = this._leftBox.get_preferred_width(-1);
         let [centerMinWidth, centerNaturalWidth] = this._centerBox.get_preferred_width(-1);
         let [rightMinWidth, rightNaturalWidth] = this._rightBox.get_preferred_width(-1);
-
+              
         let sideWidth = allocWidth - rightNaturalWidth - centerNaturalWidth;
 
         let childBox = new Clutter.ActorBox();
 
+        let leftBoxBoundary = 0;
+        let rightBoxBoundary = 0;
+
         childBox.y1 = 0;
-        childBox.y2 = allocHeight;
+        childBox.y2 = allocHeight;        
         if (this.actor.get_direction() == St.TextDirection.RTL) {
-            childBox.x1 = allocWidth - Math.min(Math.floor(sideWidth), leftNaturalWidth);
+            childBox.x1 = allocWidth - Math.max(Math.min(Math.floor(sideWidth), leftNaturalWidth), 25);
             childBox.x2 = allocWidth;
         } else {
             childBox.x1 = 0;
-            childBox.x2 = Math.min(Math.floor(sideWidth), leftNaturalWidth);
-        }
-        this._leftBox.allocate(childBox, flags);
-
-        childBox.y1 = 0;
-        childBox.y2 = allocHeight;
-        if (this.actor.get_direction() == St.TextDirection.RTL) {
-            childBox.x1 = rightNaturalWidth;
-            childBox.x2 = childBox.x1 + centerNaturalWidth;
-        } else {
-            childBox.x1 = allocWidth - centerNaturalWidth - rightNaturalWidth;
-            childBox.x2 = childBox.x1 + centerNaturalWidth;
-        }
-        this._centerBox.allocate(childBox, flags);
+            childBox.x2 = Math.max(Math.min(Math.floor(sideWidth), leftNaturalWidth), 25); // Min size for zone is 25px
+            leftBoxBoundary = childBox.x2;
+        }        
+        this._leftBox.allocate(childBox, flags);        
 
         childBox.y1 = 0;
         childBox.y2 = allocHeight;
         if (this.actor.get_direction() == St.TextDirection.RTL) {
             childBox.x1 = 0;
-            childBox.x2 = rightNaturalWidth;
+            childBox.x2 = Math.max(rightNaturalWidth, 25);
         } else {
-            childBox.x1 = allocWidth - rightNaturalWidth;
+            childBox.x1 = allocWidth - Math.max(rightNaturalWidth, 25); // Min size for zone is 25px
             childBox.x2 = allocWidth;
+            rightBoxBoundary = childBox.x1;
         }
         this._rightBox.allocate(childBox, flags);
+        
+        childBox.y1 = 0;
+        childBox.y2 = allocHeight;
+        if (this.actor.get_direction() == St.TextDirection.RTL) {
+            childBox.x1 = rightBoxBoundary;
+            childBox.x2 = leftBoxBoundary;
+        } else {
+            childBox.x1 = leftBoxBoundary;
+            childBox.x2 = rightBoxBoundary;
+        }
+        this._centerBox.allocate(childBox, flags);
 
         let [cornerMinWidth, cornerWidth] = this._leftCorner.actor.get_preferred_width(-1);
         let [cornerMinHeight, cornerHeight] = this._leftCorner.actor.get_preferred_width(-1);
