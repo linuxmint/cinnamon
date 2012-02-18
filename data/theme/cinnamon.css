@@ -274,7 +274,11 @@ StTooltip StLabel {
     height: 25px;
 }
 
-#panelLeft, #panelCenter {    
+#panelLeft {    
+    spacing: 4px;
+}
+
+#panelCenter {    
     spacing: 4px;
 }
 
