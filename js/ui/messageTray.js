@@ -1572,7 +1572,7 @@ MessageTray.prototype = {
         this._notificationBin.child = this._notification.actor;
         this._notificationBin.opacity = 0;        
         let monitor = Main.layoutManager.primaryMonitor;
-        this._notificationBin.y = monitor.height; // Notifications appear from here (for the animation)
+        this._notificationBin.y = this._notification._table.get_theme_node().get_length('margin-from-top-edge-of-screen') * 2; // Notifications appear from here (for the animation)
         let margin = this._notification._table.get_theme_node().get_length('margin-from-right-edge-of-screen');                
         this._notificationBin.x = monitor.width - this._notification._table.width - margin;
         this._notificationBin.show();
