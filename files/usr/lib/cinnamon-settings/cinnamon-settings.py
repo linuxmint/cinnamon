@@ -626,6 +626,37 @@ class GSettingsRange(Gtk.HBox):
     def on_my_value_changed(self, widget):
         self.settings.set_double(self.key, widget.get_value())
 
+class GSettingsRangeSpin(Gtk.HBox):
+    def __init__(self, label, schema, key, **options):
+        self.key = key
+        super(GSettingsRangeSpin, self).__init__()
+        self.label = Gtk.Label(label)
+        self.content_widget = Gtk.SpinButton()
+
+        if (label != ""):
+            self.pack_start(self.label, False, False, 2)
+        self.pack_start(self.content_widget, False, False, 2)
+
+        self.settings = Gio.Settings.new(schema)
+
+        _min, _max = self.settings.get_range(self.key)[1]
+        _increment = options.get('adjustment_step', 1)
+
+        self.content_widget.set_range(_min, _max)
+        self.content_widget.set_increments(_increment, _increment)
+        self.content_widget.set_editable(False)
+        self.content_widget.set_digits(1)
+        self.content_widget.set_value(self.settings.get_double(self.key))
+
+        self.settings.connect("changed::"+self.key, self.on_my_setting_changed)
+        self.content_widget.connect('value-changed', self.on_my_value_changed)
+
+    def on_my_setting_changed(self, settings, key):
+        self.content_widget.set_value(self.settings.get_double(self.key))
+
+    def on_my_value_changed(self, widget):
+        self.settings.set_double(self.key, self.content_widget.get_value())
+
 class GSettingsComboBox(Gtk.HBox):    
     def __init__(self, label, schema, key, options):        
         self.key = key
@@ -1219,7 +1250,7 @@ class MainWindow:
         
         sidePage = SidePage(_("Fonts"), "fonts.svg", self.content_box)
         self.sidePages.append((sidePage, "fonts"))
-        sidePage.add_widget(GSettingsRange(_("Text scaling factor"), "org.gnome.desktop.interface", "text-scaling-factor", adjustment_step=0.1))
+        sidePage.add_widget(GSettingsRangeSpin(_("Text scaling factor"), "org.gnome.desktop.interface", "text-scaling-factor", adjustment_step = 0.1))
         sidePage.add_widget(GSettingsFontButton(_("Default font"), "org.gnome.desktop.interface", "font-name"))
         sidePage.add_widget(GSettingsFontButton(_("Document font"), "org.gnome.desktop.interface", "document-font-name"))
         sidePage.add_widget(GSettingsFontButton(_("Monospace font"), "org.gnome.desktop.interface", "monospace-font-name"))
