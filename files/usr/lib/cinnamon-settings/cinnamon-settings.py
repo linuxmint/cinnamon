@@ -343,6 +343,11 @@ class AppletViewSidePage (SidePage):
     def __init__(self, name, icon, content_box):   
         SidePage.__init__(self, name, icon, content_box)        
         self.icons = []
+        
+        self.search_entry = Gtk.Entry()
+        self.search_entry.connect('changed', lambda y: self.model.clear() 
+                                  or self.load_applets_in('/usr/share/cinnamon/applets') 
+                                  or self.load_applets_in('%s/.local/share/cinnamon/applets' % home) )
                   
     def build(self):
         # Clear all the widgets from the content box
@@ -391,6 +396,7 @@ class AppletViewSidePage (SidePage):
         link = Gtk.LinkButton("http://cinnamon-spices.linuxmint.com/applets")
         link.set_label(_("Get new applets"))                
                          
+        self.content_box.pack_start(self.search_entry, False, False, 2)
         self.content_box.add(scrolledWindow)        
         self.content_box.pack_start(button, False, False, 2) 
         self.content_box.pack_start(link, False, False, 2) 
@@ -409,22 +415,24 @@ class AppletViewSidePage (SidePage):
                     applet_name = data["name"]                
                     applet_description = data["description"]
                     applet_icon = data["icon"]
-                    iter = self.model.insert_before(None, None)
-                    found = False
-                    for enabled_applet in self.enabled_applets:
-                        if applet_uuid in enabled_applet:
-                            found = True                            
-                            break       
                     
-                    self.model.set_value(iter, 0, applet_uuid)                
-                    self.model.set_value(iter, 1, '<b>%s</b>\n<i><span foreground="#555555" size="x-small">%s</span></i>' % (applet_name, applet_description))                                  
-                    self.model.set_value(iter, 2, found)
-                    theme = Gtk.IconTheme.get_default()
-                    if theme.has_icon(applet_icon):
-                        img = theme.load_icon(applet_icon, 36, 0)
-                    else:                        
-                        img = GdkPixbuf.Pixbuf.new_from_file_at_size( "/usr/lib/cinnamon-settings/data/icons/applets.svg", 36, 36)
-                    self.model.set_value(iter, 3, img)
+                    if self.search_entry.get_text().upper() in (applet_name + applet_description).upper():
+                        iter = self.model.insert_before(None, None)
+                        found = False
+                        for enabled_applet in self.enabled_applets:
+                            if applet_uuid in enabled_applet:
+                                found = True                            
+                                break       
+                    
+                        self.model.set_value(iter, 0, applet_uuid)                
+                        self.model.set_value(iter, 1, '<b>%s</b>\n<i><span foreground="#555555" size="x-small">%s</span></i>' % (applet_name, applet_description))                                  
+                        self.model.set_value(iter, 2, found)
+                        theme = Gtk.IconTheme.get_default()
+                        if theme.has_icon(applet_icon):
+                            img = theme.load_icon(applet_icon, 32, 0)
+                        else:                        
+                            img = GdkPixbuf.Pixbuf.new_from_file_at_size( "/usr/lib/cinnamon-settings/data/icons/applets.svg", 36, 36)
+                        self.model.set_value(iter, 3, img)
         
     def toggled(self, renderer, path, treeview):        
         iter = self.model.get_iter(path)
