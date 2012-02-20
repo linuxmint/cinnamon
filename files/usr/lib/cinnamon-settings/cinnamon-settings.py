@@ -386,7 +386,7 @@ class AppletViewSidePage (SidePage):
         scrolledWindow.set_shadow_type(Gtk.ShadowType.IN)
         
         button = Gtk.Button(_("Restore to default"))       
-        button.connect("clicked", lambda x: os.system('gsettings reset org.cinnamon enabled-applets'))
+        button.connect("clicked", lambda x: self._restore_default_applets())
         
         link = Gtk.LinkButton("http://cinnamon-spices.linuxmint.com/applets")
         link.set_label(_("Get new applets"))                
@@ -396,6 +396,15 @@ class AppletViewSidePage (SidePage):
         self.content_box.pack_start(link, False, False, 2) 
         
         self.content_box.show_all()   
+    
+    def _restore_default_applets(self):
+        os.system('gsettings reset org.cinnamon enabled-applets')
+        self.enabled_applets = self.settings.get_strv("enabled-applets")
+        
+        self.model.clear()
+                         
+        self.load_applets_in('/usr/share/cinnamon/applets')                                                                          
+        self.load_applets_in('%s/.local/share/cinnamon/applets' % home)
         
     def load_applets_in(self, directory):
         if os.path.exists(directory) and os.path.isdir(directory):
