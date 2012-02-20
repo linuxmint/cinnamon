@@ -801,7 +801,7 @@ ExpoThumbnailsBox.prototype = {
         let spacing = this.actor.get_theme_node().get_length('spacing');
 
         // Compute the scale we'll need once everything is updated
-        let nWorkspaces = global.screen.n_workspaces;
+        let nWorkspaces = this._thumbnails.length;
         let totalSpacing = (nWorkspaces - 1) * spacing;
         let avail = (box.x2 - box.x1) - totalSpacing - (spacing * 2) ;
         let screen = (box.x2 - box.x1);
