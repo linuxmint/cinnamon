@@ -95,8 +95,11 @@ ExpoWindowClone.prototype = {
     },
 
     _onButtonRelease : function (actor, event) {
-        this.emit('selected', event.get_time());
-
+        if ((Cinnamon.get_event_state(event) & Clutter.ModifierType.BUTTON1_MASK) || (Cinnamon.get_event_state(event) & Clutter.ModifierType.BUTTON3_MASK)){
+            this.emit('selected', event.get_time());
+        } else if (Cinnamon.get_event_state(event) & Clutter.ModifierType.BUTTON2_MASK){
+            this.emit('remove-workspace', event.get_time());               
+        }
         return true;
     },
 
@@ -161,8 +164,13 @@ ExpoWorkspaceThumbnail.prototype = {
             }));
         this.actor.connect('button-release-event', Lang.bind(this,
             function(actor, event) {
-                this._activate();
-                return true;
+                if ((Cinnamon.get_event_state(event) & Clutter.ModifierType.BUTTON1_MASK) || (Cinnamon.get_event_state(event) & Clutter.ModifierType.BUTTON3_MASK)){
+                    this._activate();
+                    return true;
+                } else if (Cinnamon.get_event_state(event) & Clutter.ModifierType.BUTTON2_MASK){
+                    this._remove();
+                    return true;                
+                }
             }));
 
         this._background = Meta.BackgroundActor.new_for_screen(global.screen);
@@ -368,6 +376,8 @@ ExpoWorkspaceThumbnail.prototype = {
 
         clone.connect('selected',
                       Lang.bind(this, this._activate));
+        clone.connect('remove-workspace', 
+                      Lang.bind(this, this._remove));
         clone.connect('drag-begin',
                       Lang.bind(this, function(clone) {
                           Main.expo.beginWindowDrag();
@@ -397,6 +407,10 @@ ExpoWorkspaceThumbnail.prototype = {
             Main.expo.hide();
         else
             this.metaWorkspace.activate(time);
+    },
+
+    _remove : function (){
+        Main._removeWorkspace(this.metaWorkspace);
     },
 
     // Draggable target interface
@@ -840,13 +854,13 @@ ExpoThumbnailsBox.prototype = {
             // pixels. To make this work and not end up with a gap at the bottom,
             // we need some thumbnails to be 99 pixels and some 100 pixels height;
             // we compute an actual scale separately for each thumbnail.
-            let x1 = x;
+            let x1 = Math.round(x);
             let x2 = Math.round(x + thumbnailWidth);
 
             let y1, y2;
             
-            y1 = y + ((Main.layoutManager.primaryMonitor.height - y) * thumbnail.slidePosition);
-            y2 = y1 + thumbnailHeight;
+            y1 = Math.round(y + ((Main.layoutManager.primaryMonitor.height - y) * thumbnail.slidePosition));
+            y2 = Math.round(y1 + thumbnailHeight);
 
             if (thumbnail.metaWorkspace == indicatorWorkspace)
                 indicatorX = x1;

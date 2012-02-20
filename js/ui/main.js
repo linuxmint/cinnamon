@@ -80,6 +80,8 @@ let _startDate;
 let _defaultCssStylesheet = null;
 let _cssStylesheet = null;
 let _gdmCssStylesheet = null;
+let dynamicWorkspaces = null;
+let nWorks = null;
 
 let background = null;
 
@@ -250,6 +252,15 @@ function start() {
         _createUserSession();
     else if (global.session_type == Cinnamon.SessionType.GDM)
         _createGDMSession();
+
+    Meta.later_add(Meta.LaterType.BEFORE_REDRAW, _checkWorkspaces);
+
+    nWorks = 3; // This should be configurable
+    dynamicWorkspaces = false; // This should be configurable
+
+    if (!dynamicWorkspaces) {
+        _staticWorkspaces();
+    }
     
     layoutManager.init();
     keyboard.init();
@@ -304,7 +315,41 @@ let _checkWorkspacesId = 0;
  */
 const LAST_WINDOW_GRACE_TIME = 1000;
 
+function _addWorkspace() {
+    if (dynamicWorkspaces)
+        return false;
+    nWorks++;
+    _staticWorkspaces();
+}
+
+function _removeWorkspace(workspace) {
+    if (nWorks == 1)
+        return false;
+    nWorks--;
+    global.screen.remove_workspace(workspace, global.get_current_time());
+}
+
+function _staticWorkspaces() {
+    let i;
+    let dif = nWorks - global.screen.n_workspaces;
+    if (dif > 0) {
+        for (i = 0; i < dif; i++)
+            global.screen.append_new_workspace(false, global.get_current_time());
+    } else {
+        if (nWorks == 0)
+            return false;
+        for (i = 0; i > dif; i--){
+            let removeWorkspaceIndex = global.screen.n_workspaces - 1;
+            let removeWorkspace = global.screen.get_workspace_by_index(removeWorkspaceIndex);
+            let lastRemoved = removeWorkspace._lastRemovedWindow;
+            global.screen.remove_workspace(removeWorkspace, global.get_current_time()); 
+        }    
+    }
+}
+
 function _checkWorkspaces() {
+    if (!dynamicWorkspaces)
+        return false;
     let i;
     let emptyWorkspaces = [];
 
@@ -396,11 +441,15 @@ function _windowsRestacked() {
 }
 
 function _queueCheckWorkspaces() {
+    if (!dynamicWorkspaces)
+        return false;
     if (_checkWorkspacesId == 0)
         _checkWorkspacesId = Meta.later_add(Meta.LaterType.BEFORE_REDRAW, _checkWorkspaces);
 }
 
 function _nWorkspacesChanged() {
+    if (!dynamicWorkspaces)
+        return false;
     let oldNumWorkspaces = _workspaces.length;
     let newNumWorkspaces = global.screen.n_workspaces;
 
