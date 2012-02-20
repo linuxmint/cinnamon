@@ -320,7 +320,7 @@ function loadApplet(uuid, dir, orientation) {
     if (applet._applet_context_menu._getMenuItems().length > 0) {
         applet._applet_context_menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
     }
-    context_menu_item_remove = new Applet.MenuItem(_('Remove from Panel'), Gtk.STOCK_REMOVE, Lang.bind(null, _removeAppletFromPanel, applet._uuid));
+    let context_menu_item_remove = new Applet.MenuItem(_('Remove from Panel'), Gtk.STOCK_REMOVE, Lang.bind(null, _removeAppletFromPanel, applet._uuid));
     applet._applet_context_menu.addMenuItem(context_menu_item_remove);
     
     return(applet);
