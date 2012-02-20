@@ -366,6 +366,18 @@ MyApplet.prototype = {
         }
     },
     
+    on_orientation_changed: function (orientation) {
+        this.menu.destroy();
+        this.menu = new MyMenu(this, orientation);
+        this.menuManager.addMenu(this.menu);
+        
+        this.menu.actor.add_style_class_name('menu-background');
+        this.menu.connect('open-state-changed', Lang.bind(this, this._onOpenStateChanged));
+        this.menu.connect('open-state-changed', Lang.bind(this, this._onOpenStateToggled));
+        
+        this._display();
+    },
+    
     on_applet_clicked: function(event) {
         if (!this.menu.isOpen) {
             // Setting the max-height won't do any good if the minimum height of the

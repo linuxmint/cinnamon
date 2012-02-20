@@ -7,6 +7,8 @@ const Gio = imports.gi.Gio;
 const Main = imports.ui.main;
 const DND = imports.ui.dnd;
 const Clutter = imports.gi.Clutter;
+const AppletManager = imports.ui.appletManager;
+const Gtk = imports.gi.Gtk;
 
 function MenuItem(label, icon, callback) {
     this._init(label, icon, callback);
@@ -69,7 +71,9 @@ Applet.prototype = {
         this._draggable = DND.makeDraggable(this.actor);
         this._draggable.connect('drag-begin', Lang.bind(this, this._onDragBegin));
         this._draggable.connect('drag-cancelled', Lang.bind(this, this._onDragCancelled));
-        this._draggable.connect('drag-end', Lang.bind(this, this._onDragEnd));            
+        this._draggable.connect('drag-end', Lang.bind(this, this._onDragEnd));
+        
+        this._applet_tooltip_text = "";            
     },
             
     _onDragBegin: function() {
@@ -126,12 +130,39 @@ Applet.prototype = {
     },
     
     set_applet_tooltip: function (text) {
+        this._applet_tooltip_text = text;
         this._applet_tooltip.set_text(text);
     },
       
     on_applet_clicked: function(event) {
         // Implemented by Applets        
-    }    
+    },
+    
+    setOrientation: function (orientation) {
+        this._applet_tooltip.destroy();
+        this._applet_tooltip = new Tooltips.PanelItemTooltip(this, this._applet_tooltip_text, orientation);
+        
+        this._applet_context_menu.destroy();
+        this._applet_context_menu = new AppletContextMenu(this, orientation);
+        this._menuManager.addMenu(this._applet_context_menu);
+        
+        this.on_orientation_changed(orientation);
+        
+        this.finalizeContextMenu();
+    },
+    
+    on_orientation_changed: function(event) {
+        // Implemented by Applets        
+    },
+    
+    finalizeContextMenu: function () {
+        // Add default context menus
+        if (this._applet_context_menu._getMenuItems().length > 0) {
+            this._applet_context_menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+        }
+        let context_menu_item_remove = new MenuItem(_('Remove from Panel'), Gtk.STOCK_REMOVE, Lang.bind(null, AppletManager._removeAppletFromPanel, this._uuid));
+        this._applet_context_menu.addMenuItem(context_menu_item_remove);
+    }
     
 };
 

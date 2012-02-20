@@ -257,6 +257,7 @@ function loadApplet(uuid, dir, orientation) {
 
     if (applets[uuid] != undefined) {
         log(uuid + ' applet already loaded');        
+        appletObj[uuid].setOrientation(orientation);
         return (appletObj[uuid]);
     }
    
@@ -316,12 +317,7 @@ function loadApplet(uuid, dir, orientation) {
     appletObj[uuid] = applet;  
     applet._uuid = uuid;
     
-    // Add default context menus
-    if (applet._applet_context_menu._getMenuItems().length > 0) {
-        applet._applet_context_menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-    }
-    let context_menu_item_remove = new Applet.MenuItem(_('Remove from Panel'), Gtk.STOCK_REMOVE, Lang.bind(null, _removeAppletFromPanel, applet._uuid));
-    applet._applet_context_menu.addMenuItem(context_menu_item_remove);
+    applet.finalizeContextMenu();
     
     return(applet);
 }
