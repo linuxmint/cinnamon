@@ -206,6 +206,13 @@
        Duration of the delay (in milliseconds)    
       </_description>
     </key>
+
+    <key type="i" name="number-workspaces">
+	<default>2</default>
+	<_summary>Number of workspaces in Cinnamon session</_summary>
+	<_description>
+		Number of Workspaces</_description>
+    </key>
     
      <key name="overview-corner-visible" type="b">
       <default>false</default>

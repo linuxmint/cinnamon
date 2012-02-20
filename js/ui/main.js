@@ -255,7 +255,7 @@ function start() {
 
     Meta.later_add(Meta.LaterType.BEFORE_REDRAW, _checkWorkspaces);
 
-    nWorks = 3; // This should be configurable
+    nWorks = global.settings.get_int("number-workspaces");
     dynamicWorkspaces = false; // This should be configurable
 
     if (!dynamicWorkspaces) {
@@ -319,13 +319,15 @@ function _addWorkspace() {
     if (dynamicWorkspaces)
         return false;
     nWorks++;
+    global.settings.set_int("number-workspaces", nWorks);
     _staticWorkspaces();
 }
 
 function _removeWorkspace(workspace) {
-    if (nWorks == 1)
+    if (nWorks == 1 || dynamicWorkspaces)
         return false;
     nWorks--;
+    global.settings.set_int("number-workspaces", nWorks);
     global.screen.remove_workspace(workspace, global.get_current_time());
 }
 
