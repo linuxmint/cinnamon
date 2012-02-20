@@ -1017,6 +1017,8 @@ Workspace.prototype = {
      *  ANIMATE - Indicates that we need animate changing position.
      */
     positionWindows : function(flags) {
+        if (Main.expo.visible)
+            return;
         if (this._repositionWindowsId > 0) {
             Mainloop.source_remove(this._repositionWindowsId);
             this._repositionWindowsId = 0;
@@ -1236,7 +1238,6 @@ Workspace.prototype = {
             return;
 
         let win = metaWin.get_compositor_private();
-
         if (!win) {
             // Newly-created windows are added to a workspace before
             // the compositor finds out about them...
@@ -1256,9 +1257,9 @@ Workspace.prototype = {
         if (this._lookupIndex (metaWin) != -1)
             return;
 
-        if (!this._isMyWindow(win) || !this._isOverviewWindow(win))
+        if (!this._isMyWindow(win) || !this._isOverviewWindow(win)){
             return;
-
+        }
         let clone = this._addWindowClone(win);
 
         if (win._overviewHint) {
