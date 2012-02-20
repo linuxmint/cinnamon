@@ -754,7 +754,7 @@ WindowManager.prototype = {
 
     _showWorkspaceSwitcher : function(cinnamonwm, binding, mask, window, backwards) {
         if (binding == 'switch_to_workspace_up') {
-        	Main.overview.toggle();
+        	Main.expo.toggle();
         	return;                   
         }
         if (binding == 'switch_to_workspace_down') {

@@ -22,6 +22,7 @@ const AppletManager = imports.ui.appletManager;
 const Keyboard = imports.ui.keyboard;
 const MessageTray = imports.ui.messageTray;
 const Overview = imports.ui.overview;
+const Expo = imports.ui.expo;
 const Panel = imports.ui.panel;
 const PlacesManager = imports.ui.placesManager;
 const RunDialog = imports.ui.runDialog;
@@ -55,6 +56,7 @@ let panel2 = null;
 let hotCorners = [];
 let placesManager = null;
 let overview = null;
+let expo = null;
 let runDialog = null;
 let lookingGlass = null;
 let wm = null;
@@ -219,6 +221,7 @@ function start() {
     xdndHandler = new XdndHandler.XdndHandler();
     // This overview object is just a stub for non-user sessions
     overview = new Overview.Overview({ isDummy: global.session_type != Cinnamon.SessionType.USER });
+    expo = new Expo.Expo({ isDummy: global.session_type != Cinnamon.SessionType.USER });
     magnifier = new Magnifier.Magnifier();
     statusIconDispatcher = new StatusIconDispatcher.StatusIconDispatcher();  
                     
@@ -251,6 +254,7 @@ function start() {
     layoutManager.init();
     keyboard.init();
     overview.init();
+    expo.init();
 
     if (global.session_type == Cinnamon.SessionType.USER)
         _initUserSession();
@@ -609,12 +613,13 @@ function _globalKeyPressHandler(actor, event) {
 
     // Other bindings are only available to the user session when the overview is up and
     // no modal dialog is present.
-    if (global.session_type == Cinnamon.SessionType.USER && (!overview.visible || modalCount > 1))
+    if (global.session_type == Cinnamon.SessionType.USER && ((!overview.visible && !expo.visible) || modalCount > 1))
         return false;
 
     // This isn't a Meta.KeyBindingAction yet
-    if (symbol == Clutter.Super_L || symbol == Clutter.Super_R) {
+    if (symbol == Clutter.Super_L || symbol == Clutter.Super_R || symbol == Clutter.Return) {
         overview.hide();
+        expo.hide();
         return true;
     }
        
@@ -638,10 +643,12 @@ function _globalKeyPressHandler(actor, event) {
              wm.actionMoveWorkspaceRight();
              return true;
         case Meta.KeyBindingAction.WORKSPACE_UP:
-            overview.hide();                     
+            overview.hide();   
+            expo.hide();                  
             return true;
         case Meta.KeyBindingAction.WORKSPACE_DOWN:
             overview.hide();
+            expo.hide();
             return true;
         case Meta.KeyBindingAction.PANEL_RUN_DIALOG:
         case Meta.KeyBindingAction.COMMAND_2:
@@ -649,6 +656,7 @@ function _globalKeyPressHandler(actor, event) {
             return true;
         case Meta.KeyBindingAction.PANEL_MAIN_MENU:
             overview.hide();
+            expo.hide();
             return true;
     }
 
@@ -812,6 +820,7 @@ function activateWindow(window, time, workspaceNum) {
     }
 
     overview.hide();
+    expo.hide();
 }
 
 // TODO - replace this timeout with some system to guess when the user might

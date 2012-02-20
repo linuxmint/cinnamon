@@ -652,7 +652,7 @@ HotCorner.prototype = {
         if (source != Main.xdndHandler)
             return;
 
-        if (!Main.overview.visible && !Main.overview.animationInProgress) {
+        if (!Main.overview.visible && !Main.overview.animationInProgress && !Main.expo.visible) {
             this.rippleAnimation();
             Main.overview.showTemporarily();
             Main.overview.beginItemDrag(actor);
@@ -662,18 +662,23 @@ HotCorner.prototype = {
     _onCornerEntered : function() {
         if (!this._entered) {
             this._entered = true;
-            if (!Main.overview.animationInProgress) {
+            if (!Main.overview.animationInProgress && !Main.expo.visible) {
                 this._activationTime = Date.now() / 1000;
 
                 this.rippleAnimation();
                 Main.overview.toggle();
+            } else if (Main.expo.visible){
+                this._activationTime = Date.now() / 1000;
+
+                this.rippleAnimation();
+                Main.expo.hide();
             }
         }
         return false;
     },
 
     _onCornerClicked : function() {
-        if (this.shouldToggleOverviewOnClick())
+        if (this.shouldToggleOverviewOnClick() && !Main.expo.visible)
             Main.overview.toggle();
         return true;
     },
