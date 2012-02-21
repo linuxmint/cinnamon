@@ -439,6 +439,16 @@ StTooltip StLabel {
     spacing: 7px;
 }
 
+.workspace-add-button {
+	background-image: url("add-workspace.png");
+	height: 200px;
+	width: 35px;
+}
+
+.workspace-add-button:hover {
+	
+}
+
 .workspace-thumbnail-indicator {
     outline: 2px solid white;
     border: 1px solid #888;
