@@ -90,6 +90,12 @@ st_theme_node_dispose (GObject *gobject)
       node->border_image = NULL;
     }
 
+  if (node->icon_colors)
+    {
+      st_icon_colors_unref (node->icon_colors);
+      node->icon_colors = NULL;
+    }
+
   G_OBJECT_CLASS (st_theme_node_parent_class)->dispose (gobject);
 }
 

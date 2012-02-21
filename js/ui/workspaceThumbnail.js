@@ -148,6 +148,8 @@ WorkspaceThumbnail.prototype = {
         this.metaWorkspace = metaWorkspace;
         this.monitorIndex = Main.layoutManager.primaryIndex;
 
+        this._removed = false;
+
         this.actor = new St.Group({ reactive: true,
                                     clip_to_allocation: true,
                                     style_class: 'workspace-thumbnail' });
@@ -173,17 +175,21 @@ WorkspaceThumbnail.prototype = {
         let monitor = Main.layoutManager.primaryMonitor;
         this.setPorthole(monitor.x, monitor.y, monitor.width, monitor.height);
 
-        let windows = global.get_window_actors().filter(this._isMyWindow, this);
+        let windows = global.get_window_actors().filter(this._isWorkspaceWindow, this);
 
         // Create clones for windows that should be visible in the Overview
         this._windows = [];
+        this._allWindows = [];
+        this._minimizedChangedIds = [];
         for (let i = 0; i < windows.length; i++) {
-            windows[i].meta_window._minimizedChangedId =
+            let minimizedChangedId =
                 windows[i].meta_window.connect('notify::minimized',
                                                Lang.bind(this,
                                                          this._updateMinimized));
+            this._allWindows.push(windows[i].meta_window);
+            this._minimizedChangedIds.push(minimizedChangedId);
 
-            if (this._isOverviewWindow(windows[i])) {
+            if (this._isMyWindow(windows[i]) && this._isOverviewWindow(windows[i])) {
                 this._addWindowClone(windows[i]);
             }
         }
@@ -268,17 +274,11 @@ WorkspaceThumbnail.prototype = {
         let clone = this._windows[index];
         this._windows.splice(index, 1);
 
-        if (win && this._isOverviewWindow(win)) {
-            if (metaWin._minimizedChangedId) {
-                metaWin.disconnect(metaWin._minimizedChangedId);
-                delete metaWin._minimizedChangedId;
-            }
-        }
         clone.destroy();
     },
 
     _doAddWindow : function(metaWin) {
-        if (this.leavingOverview)
+        if (this._removed)
             return;
 
         let win = metaWin.get_compositor_private();
@@ -288,7 +288,7 @@ WorkspaceThumbnail.prototype = {
             // the compositor finds out about them...
             Mainloop.idle_add(Lang.bind(this,
                                         function () {
-                                            if (this.actor &&
+                                            if (!this._removed &&
                                                 metaWin.get_compositor_private() &&
                                                 metaWin.get_workspace() == this.metaWorkspace)
                                                 this._doAddWindow(metaWin);
@@ -297,15 +297,18 @@ WorkspaceThumbnail.prototype = {
             return;
         }
 
+        if (this._allWindows.indexOf(metaWin) == -1) {
+            let minimizedChangedId = metaWin.connect('notify::minimized',
+                                                     Lang.bind(this,
+                                                               this._updateMinimized));
+            this._allWindows.push(metaWin);
+            this._minimizedChangedIds.push(minimizedChangedId);
+        }
+
         // We might have the window in our list already if it was on all workspaces and
         // now was moved to this workspace
         if (this._lookupIndex (metaWin) != -1)
             return;
-
-        if (!metaWin._minimizedChangedId)
-            metaWin._minimizedChangedId = metaWin.connect('notify::minimized',
-                                                          Lang.bind(this,
-                                                                    this._updateMinimized));
 
         if (!this._isMyWindow(win) || !this._isOverviewWindow(win))
             return;
@@ -318,6 +321,13 @@ WorkspaceThumbnail.prototype = {
     },
 
     _windowRemoved : function(metaWorkspace, metaWin) {
+        let index = this._allWindows.indexOf(metaWin);
+        if (index != -1) {
+            metaWin.disconnect(this._minimizedChangedIds[index]);
+            this._allWindows.splice(index, 1);
+            this._minimizedChangedIds.splice(index, 1);
+        }
+
         this._doRemoveWindow(metaWin);
     },
 
@@ -344,27 +354,36 @@ WorkspaceThumbnail.prototype = {
         this.actor.destroy();
     },
 
-    _onDestroy: function(actor) {
+    workspaceRemoved : function() {
+        if (this._removed)
+            return;
+
+        this._removed = true;
+
         this.metaWorkspace.disconnect(this._windowAddedId);
         this.metaWorkspace.disconnect(this._windowRemovedId);
         global.screen.disconnect(this._windowEnteredMonitorId);
         global.screen.disconnect(this._windowLeftMonitorId);
 
-        for (let i = 0; i < this._windows.length; i++) {
-            let metaWin = this._windows[i].metaWindow;
-            if (metaWin._minimizedChangedId) {
-                metaWin.disconnect(metaWin._minimizedChangedId);
-                delete metaWin._minimizedChangedId;
-            }
-        }
+        for (let i = 0; i < this._allWindows.length; i++)
+            this._allWindows[i].disconnect(this._minimizedChangedIds[i]);
+    },
+
+    _onDestroy: function(actor) {
+        this.workspaceRemoved();
 
         this._windows = [];
         this.actor = null;
     },
 
+    // Tests if @win belongs to this workspace
+    _isWorkspaceWindow : function (win) {
+        return Main.isWindowActorDisplayedOnWorkspace(win, this.metaWorkspace.index());
+    },
+
     // Tests if @win belongs to this workspace and monitor
     _isMyWindow : function (win) {
-        return Main.isWindowActorDisplayedOnWorkspace(win, this.metaWorkspace.index()) &&
+        return this._isWorkspaceWindow(win) &&
             (!win.get_meta_window() || win.get_meta_window().get_monitor() == this.monitorIndex);
     },
 
@@ -583,8 +602,10 @@ ThumbnailsBox.prototype = {
             if (thumbnail.state > ThumbnailState.NORMAL)
                 continue;
 
-            if (currentPos >= start && currentPos < start + count)
+            if (currentPos >= start && currentPos < start + count) {
+                thumbnail.workspaceRemoved();
                 this._setThumbnailState(thumbnail, ThumbnailState.REMOVING);
+            }
 
             currentPos++;
         }

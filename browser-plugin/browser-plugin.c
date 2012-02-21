@@ -47,8 +47,6 @@ typedef struct {
   GDBusProxy *proxy;
 } PluginData;
 
-/* =============== public entry points =================== */
-
 static NPNetscapeFuncs funcs;
 
 static inline gchar *
@@ -71,10 +69,7 @@ get_string_property (NPP         instance,
     goto out;
 
   result_str = NPVARIANT_TO_STRING (result);
-  if (strlen (result_str.UTF8Characters) != result_str.UTF8Length)
-    goto out;
-
-  result_copy = g_strdup (result_str.UTF8Characters);
+  result_copy = g_strndup (result_str.UTF8Characters, result_str.UTF8Length);
 
  out:
   funcs.releasevariantvalue (&result);
@@ -149,6 +144,8 @@ check_origin_and_protocol (NPP instance)
     funcs.releaseobject (window);
   return ret;
 }
+
+/* =============== public entry points =================== */
 
 NPError
 NP_Initialize(NPNetscapeFuncs *pfuncs, NPPluginFuncs *plugin)
@@ -458,7 +455,7 @@ plugin_enable_extension (PluginObject *obj,
                          NPString      uuid,
                          gboolean      enabled)
 {
-  const gchar *uuid_str = uuid.UTF8Characters;
+  gchar *uuid_str = g_strndup (uuid.UTF8Characters, uuid.UTF8Length);
   if (!uuid_is_valid (uuid_str))
     return FALSE;
 
@@ -471,6 +468,8 @@ plugin_enable_extension (PluginObject *obj,
                      NULL, /* callback */
                      NULL /* user_data */);
 
+  g_free (uuid_str);
+
   return TRUE;
 }
 
@@ -479,20 +478,31 @@ plugin_install_extension (PluginObject *obj,
                           NPString      uuid,
                           NPString      version_tag)
 {
-  const gchar *uuid_str = uuid.UTF8Characters;
+  gchar *uuid_str = g_strndup (uuid.UTF8Characters, uuid.UTF8Length);
+  gchar *version_tag_str;
+
   if (!uuid_is_valid (uuid_str))
-    return FALSE;
+    {
+      g_free (uuid_str);
+      return FALSE;
+    }
+
+  version_tag_str = g_strndup (version_tag.UTF8Characters,
+                               version_tag.UTF8Length);
 
   g_dbus_proxy_call (obj->proxy,
                      "InstallRemoteExtension",
                      g_variant_new ("(ss)",
                                     uuid_str,
-                                    version_tag.UTF8Characters),
+                                    version_tag_str),
                      G_DBUS_CALL_FLAGS_NONE,
                      -1, /* timeout */
                      NULL, /* cancellable */
                      NULL, /* callback */
                      NULL /* user_data */);
+
+  g_free (uuid_str);
+  g_free (version_tag_str);
 
   return TRUE;
 }
@@ -504,11 +514,14 @@ plugin_uninstall_extension (PluginObject *obj,
 {
   GError *error = NULL;
   GVariant *res;
-  const gchar *uuid_str;
+  gchar *uuid_str;
 
-  uuid_str = uuid.UTF8Characters;
+  uuid_str = g_strndup (uuid.UTF8Characters, uuid.UTF8Length);
   if (!uuid_is_valid (uuid_str))
-    return FALSE;
+    {
+      g_free (uuid_str);
+      return FALSE;
+    }
 
   res = g_dbus_proxy_call_sync (obj->proxy,
                                 "UninstallExtension",
@@ -518,6 +531,8 @@ plugin_uninstall_extension (PluginObject *obj,
                                 -1, /* timeout */
                                 NULL, /* cancellable */
                                 &error);
+
+  g_free (uuid_str);
 
   if (!res)
     {
@@ -536,11 +551,14 @@ plugin_get_info (PluginObject *obj,
 {
   GError *error = NULL;
   GVariant *res;
-  const gchar *uuid_str;
+  gchar *uuid_str;
 
-  uuid_str = uuid.UTF8Characters;
+  uuid_str = g_strndup (uuid.UTF8Characters, uuid.UTF8Length);
   if (!uuid_is_valid (uuid_str))
-    return FALSE;
+    {
+      g_free (uuid_str);
+      return FALSE;
+    }
 
   res = g_dbus_proxy_call_sync (obj->proxy,
                                 "GetExtensionInfo",
@@ -549,6 +567,8 @@ plugin_get_info (PluginObject *obj,
                                 -1, /* timeout */
                                 NULL, /* cancellable */
                                 &error);
+
+  g_free (uuid_str);
 
   if (!res)
     {
@@ -567,11 +587,14 @@ plugin_get_errors (PluginObject *obj,
 {
   GError *error = NULL;
   GVariant *res;
-  const gchar *uuid_str;
+  gchar *uuid_str;
 
-  uuid_str = uuid.UTF8Characters;
+  uuid_str = g_strndup (uuid.UTF8Characters, uuid.UTF8Length);
   if (!uuid_is_valid (uuid_str))
-    return FALSE;
+    {
+      g_free (uuid_str);
+      return FALSE;
+    }
 
   res = g_dbus_proxy_call_sync (obj->proxy,
                                 "GetExtensionErrors",
@@ -580,6 +603,8 @@ plugin_get_errors (PluginObject *obj,
                                 -1, /* timeout */
                                 NULL, /* cancellable */
                                 &error);
+
+  g_free (uuid_str);
 
   if (!res)
     {
@@ -636,7 +661,8 @@ plugin_get_cinnamon_version (PluginObject  *obj,
   STRINGN_TO_NPVARIANT (buffer, length, *result);
 
  out:
-  g_variant_unref (res);
+  if (res)
+    g_variant_unref (res);
   return ret;
 }
 
@@ -816,6 +842,11 @@ NPP_GetValue(NPP          instance,
 
     *(NPObject**)value = funcs.createobject (instance, &plugin_class);
     break;
+
+  case NPPVpluginNeedsXEmbed:
+    *(bool *)value = TRUE;
+    break;
+
   default:
     ;
   }

@@ -147,6 +147,11 @@ BaseIcon.prototype = {
             size = found ? len : ICON_SIZE;
         }
 
+        // don't create icons unnecessarily
+        if (size == this.iconSize &&
+            this._iconBin.child)
+            return;
+
         this._createIconTexture(size);
     }
 };

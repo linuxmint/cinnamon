@@ -1261,13 +1261,16 @@ _cinnamon_app_match_search_terms (CinnamonApp  *app,
             current_match = MATCH_SUBSTRING;
         }
 
-      p = strstr (app->casefolded_exec, term);
-      if (p != NULL)
+      if (app->casefolded_exec)
         {
-          if (p == app->casefolded_exec || *(p - 1) == '-')
-            current_match = MATCH_PREFIX;
-          else if (current_match < MATCH_PREFIX)
-            current_match = MATCH_SUBSTRING;
+          p = strstr (app->casefolded_exec, term);
+          if (p != NULL)
+            {
+              if (p == app->casefolded_exec || *(p - 1) == '-')
+                current_match = MATCH_PREFIX;
+              else if (current_match < MATCH_PREFIX)
+                current_match = MATCH_SUBSTRING;
+            }
         }
 
       if (app->casefolded_description && current_match < MATCH_PREFIX)
