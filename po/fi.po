@@ -19,18 +19,20 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: cinnamon\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-09-26 15:40+0300\n"
-"PO-Revision-Date: 2011-09-26 15:39+0300\n"
-"Last-Translator: Tommi Vainikainen <thv@iki.fi>\n"
+"Report-Msgid-Bugs-To: http://bugzilla.gnome.org/enter_bug.cgi?product=gnome-"
+"shell&keywords=I18N+L10N&component=general\n"
+"POT-Creation-Date: 2011-10-18 19:39+0000\n"
+"PO-Revision-Date: 2011-11-15 22:19+0200\n"
+"Last-Translator: Ville-Pekka Vainio <vpvainio@iki.fi>\n"
 "Language-Team: Finnish <gnome-fi-laatu@lists.sourceforge.net>\n"
 "Language: fi\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Virtaal 0.6.1\n"
+"X-Generator: Virtaal 0.7.1-rc1\n"
 "X-DamnedLies-Scope: partial\n"
+"X-Project-Style: gnome\n"
 
 #: ../data/cinnamon.desktop.in.in.h:1
 msgid "Cinnamon"
@@ -40,6 +42,7 @@ msgstr "Cinnamon"
 msgid "Window management and application launching"
 msgstr "Ikkunanhallinta ja sovelluksien käynnistäminen"
 
+#: ../data/org.cinnamon.gschema.xml.in.h:1
 msgid ""
 "Allows access to internal debugging and monitoring tools using the Alt-F2 "
 "dialog."
@@ -47,16 +50,20 @@ msgstr ""
 "Salli pääsy sisäiseen vianselvitys- ja monitorointityökaluun Alt-F2-ikkunan "
 "kautta."
 
+#: ../data/org.cinnamon.gschema.xml.in.h:2
 msgid "Enable internal tools useful for developers and testers from Alt-F2"
 msgstr ""
 "Ota käyttöön sisäiset kehittäjiä ja testaajia hyödyttävät työkalut Alt-F2:sta"
 
+#: ../data/org.cinnamon.gschema.xml.in.h:3
 msgid "File extension used for storing the screencast"
 msgstr "Tiedostopääte ruutunauhoitusten tallentamiseen"
 
+#: ../data/org.cinnamon.gschema.xml.in.h:4
 msgid "Framerate used for recording screencasts."
 msgstr "Ruutunauhoitusten kuvataajuus."
 
+#: ../data/org.cinnamon.gschema.xml.in.h:5
 msgid ""
 "Cinnamon extensions have a uuid property; this key lists extensions which "
 "should be loaded. disabled-extensions overrides this setting for extensions "
@@ -67,24 +74,31 @@ msgstr ""
 "kytketyt laajennukset) ylittää tämän asetuksen mikäli laajennus esiintyy "
 "molemmissa luetteloissa."
 
+#: ../data/org.cinnamon.gschema.xml.in.h:6
 msgid "History for command (Alt-F2) dialog"
 msgstr "Historia komentoikkunalle (Alt-F2)"
 
+#: ../data/org.cinnamon.gschema.xml.in.h:7
 msgid "History for the looking glass dialog"
 msgstr "Historia näyttölasi-ikkunalle"
 
+#: ../data/org.cinnamon.gschema.xml.in.h:8
 msgid "If true, display date in the clock, in addition to time."
 msgstr "Jos tosi, näytä päivämäärä kellossa ajan lisäksi."
 
+#: ../data/org.cinnamon.gschema.xml.in.h:9
 msgid "If true, display seconds in time."
 msgstr "Jos tosi, näytä sekunnit ajassa."
 
+#: ../data/org.cinnamon.gschema.xml.in.h:10
 msgid "If true, display the ISO week date in the calendar."
 msgstr "Jos tosi, näytä ISO-viikonpäivät kalenterissa."
 
+#: ../data/org.cinnamon.gschema.xml.in.h:11
 msgid "List of desktop file IDs for favorite applications"
 msgstr "Luettelo työpöytätiedostojen tunnisteista lempisovelluksille"
 
+#: ../data/org.cinnamon.gschema.xml.in.h:13
 #, no-c-format
 msgid ""
 "Sets the GStreamer pipeline used to encode recordings. It follows the syntax "
@@ -110,20 +124,25 @@ msgstr ""
 "muotoon VP8-koodekilla. %T korvautuu arvauksella parhaan suorituskyvy "
 "antavasta säiemäärästä järjestelmässä."
 
+#: ../data/org.cinnamon.gschema.xml.in.h:14
 msgid "Show date in clock"
 msgstr "Näytä päivämäärä kellossa"
 
+#: ../data/org.cinnamon.gschema.xml.in.h:15
 msgid "Show the week date in the calendar"
 msgstr "Näytä viikonpäivä kalenterissa"
 
+#: ../data/org.cinnamon.gschema.xml.in.h:16
 msgid "Show time with seconds"
 msgstr "Näytä aika sekuntien kera"
 
+#: ../data/org.cinnamon.gschema.xml.in.h:17
 msgid ""
 "The applications corresponding to these identifiers will be displayed in the "
 "favorites area."
 msgstr "Näitä tunnisteita vastaavat sovellukset näytetään suosikkien alueella."
 
+#: ../data/org.cinnamon.gschema.xml.in.h:18
 msgid ""
 "The filename for recorded screencasts will be a unique filename based on the "
 "current date, and use this extension. It should be changed when recording to "
@@ -133,6 +152,7 @@ msgstr ""
 "nykyisen päivämäärän ja tämän tiedostopäätteen mukaisesti. Tiedostopääte "
 "tulisi vaihtaa mikäli nauhoitetaan eri tallennusmuotoon."
 
+#: ../data/org.cinnamon.gschema.xml.in.h:19
 msgid ""
 "The framerate of the resulting screencast recordered by Cinnamon's "
 "screencast recorder in frames-per-second."
@@ -140,9 +160,11 @@ msgstr ""
 "Nauhoituksesta tuloksena saatavan ruutunauhoituksen kuvataajuus kun käytössä "
 "on GNOMEn ikkunanhallinnan nauhoitin, kuvaa per sekunti."
 
+#: ../data/org.cinnamon.gschema.xml.in.h:20
 msgid "The gstreamer pipeline used to encode the screencast"
 msgstr "Gstreamer-liukuhihna jolla ruutunauhoitukset pakataan"
 
+#: ../data/org.cinnamon.gschema.xml.in.h:21
 msgid ""
 "Cinnamon normally monitors active applications in order to present the most "
 "used ones (e.g. in launchers). While this data will be kept private, you may "
@@ -155,52 +177,72 @@ msgstr ""
 "yksityisyyden vuoksi. Huomaa että pois kytkeminen ei poista aiemmin "
 "tallennettuja tietoja."
 
+#: ../data/org.cinnamon.gschema.xml.in.h:22
 msgid "The type of keyboard to use."
 msgstr "Käytettävän näppäimistön tyyppi."
 
+#: ../data/org.cinnamon.gschema.xml.in.h:23
 msgid "Uuids of extensions to enable"
 msgstr "Käyttöön otettavien laajennosten UUID:t"
 
+#: ../data/org.cinnamon.gschema.xml.in.h:24
 msgid "Whether to collect stats about applications usage"
 msgstr "Kerätäänkö sovellusten käytöstä tilastoja"
 
+#: ../data/org.cinnamon.gschema.xml.in.h:25
 msgid "Which keyboard to use"
 msgstr "Mitä näppäimistöä käytetään"
 
+#: ../data/org.cinnamon.gschema.xml.in.h:26
 msgid "disabled OpenSearch providers"
 msgstr "käytöstä poistetut OpenSearch-tarjoajat"
 
+#: ../js/gdm/loginDialog.js:633
 msgid "Session..."
 msgstr "Istunto…"
 
+#: ../js/gdm/loginDialog.js:804
 msgctxt "title"
 msgid "Sign In"
 msgstr "Kirjaudu sisään"
 
 #. translators: this message is shown below the password entry field
 #. to indicate the user can swipe their finger instead
+#: ../js/gdm/loginDialog.js:849
 msgid "(or swipe finger)"
 msgstr "(tai pyyhkäise sormella)"
 
+#: ../js/gdm/loginDialog.js:867
 msgid "Not listed?"
 msgstr "Ei luettelossa?"
 
+#: ../js/gdm/loginDialog.js:1035 ../js/ui/endSessionDialog.js:426
+#: ../js/ui/extensionSystem.js:477 ../js/ui/networkAgent.js:148
+#: ../js/ui/polkitAuthenticationAgent.js:173 ../js/ui/status/bluetooth.js:480
 msgid "Cancel"
 msgstr "Peru"
 
+#: ../js/gdm/loginDialog.js:1040
 msgctxt "button"
 msgid "Sign In"
 msgstr "Kirjaudu sisään"
 
+#: ../js/gdm/loginDialog.js:1392
 msgid "Login Window"
 msgstr "Kirjautumisikkuna"
 
+#: ../js/gdm/powerMenu.js:116 ../js/ui/userMenu.js:554
+#: ../js/ui/userMenu.js:556 ../js/ui/userMenu.js:625
 msgid "Suspend"
 msgstr "Valmiustila"
 
+#: ../js/gdm/powerMenu.js:121 ../js/ui/endSessionDialog.js:89
+#: ../js/ui/endSessionDialog.js:97 ../js/ui/endSessionDialog.js:106
 msgid "Restart"
 msgstr "Käynnistä uudelleen"
 
+#: ../js/gdm/powerMenu.js:126 ../js/ui/endSessionDialog.js:80
+#: ../js/ui/endSessionDialog.js:91
 msgid "Power Off"
 msgstr "Sammuta"
 
@@ -254,13 +296,16 @@ msgstr "%s on lisätty suosikkeihin."
 msgid "%s has been removed from your favorites."
 msgstr "%s on poistettu suosikeista."
 
+#: ../js/ui/autorunManager.js:280
 msgid "Removable Devices"
 msgstr "Irroitettavat laitteet"
 
+#: ../js/ui/autorunManager.js:590
 #, c-format
 msgid "Open with %s"
-msgstr "Avaa käyttäen %s"
+msgstr "Avaa käyttäen sovellusta %s"
 
+#: ../js/ui/autorunManager.js:616
 msgid "Eject"
 msgstr "Poista asemasta"
 
@@ -412,28 +457,32 @@ msgstr "Tällä viikolla"
 msgid "Next week"
 msgstr "Ensi viikolla"
 
-#: ../js/ui/contactDisplay.js:59 ../js/ui/notificationDaemon.js:444
-#: ../js/ui/status/power.js:223 ../src/cinnamon-app.c:355
+#: ../js/ui/contactDisplay.js:65 ../js/ui/notificationDaemon.js:459
+#: ../js/ui/status/power.js:223 ../src/cinnamon-app.c:353
 msgid "Unknown"
 msgstr "Tuntematon"
 
+#: ../js/ui/contactDisplay.js:86 ../js/ui/userMenu.js:139
 msgid "Available"
 msgstr "Tavoitettavissa"
 
+#: ../js/ui/contactDisplay.js:91 ../js/ui/userMenu.js:148
 msgid "Away"
 msgstr "Poissa"
 
+#: ../js/ui/contactDisplay.js:95 ../js/ui/userMenu.js:142
 msgid "Busy"
 msgstr "Kiireinen"
 
-#: ../js/ui/contactDisplay.js:93
+#: ../js/ui/contactDisplay.js:99
 msgid "Offline"
 msgstr "Ei linjoilla"
 
-#: ../js/ui/contactDisplay.js:140
+#: ../js/ui/contactDisplay.js:146
 msgid "CONTACTS"
 msgstr "YHTEYSTIEDOT"
 
+#: ../js/ui/dash.js:174 ../js/ui/messageTray.js:1206
 msgid "Remove"
 msgstr "Poista"
 
@@ -583,108 +632,131 @@ msgstr "Asenna"
 msgid "Download and install '%s' from extensions.gnome.org?"
 msgstr "Lataa ja asenna ”%s” sivustolta extensions.gnome.org?"
 
+#: ../js/ui/keyboard.js:325
+msgid "tray"
+msgstr "ilmoitusalue"
+
+#: ../js/ui/keyboard.js:547 ../js/ui/status/power.js:211
 msgid "Keyboard"
 msgstr "Näppäimistö"
 
-#: ../js/ui/lookingGlass.js:645
+#: ../js/ui/lookingGlass.js:646
 msgid "No extensions installed"
 msgstr "Laajennuksia ei asennettu"
 
-#: ../js/ui/lookingGlass.js:691
+#: ../js/ui/lookingGlass.js:692
 msgid "Enabled"
 msgstr "Käytössä"
 
 #. translators:
 #. * The device has been disabled
-#: ../js/ui/lookingGlass.js:693 ../src/gvc/gvc-mixer-control.c:1093
+#: ../js/ui/lookingGlass.js:694 ../src/gvc/gvc-mixer-control.c:1093
 msgid "Disabled"
 msgstr "Ei käytössä"
 
-#: ../js/ui/lookingGlass.js:695
+#: ../js/ui/lookingGlass.js:696
 msgid "Error"
 msgstr "Virhe"
 
-#: ../js/ui/lookingGlass.js:697
+#: ../js/ui/lookingGlass.js:698
 msgid "Out of date"
 msgstr "Ei ajan tasalla"
 
-#: ../js/ui/lookingGlass.js:699
+#: ../js/ui/lookingGlass.js:700
 msgid "Downloading"
 msgstr "Noudetaan"
 
-#: ../js/ui/lookingGlass.js:724
+#: ../js/ui/lookingGlass.js:721
 msgid "View Source"
 msgstr "Näytä lähde"
 
-#: ../js/ui/lookingGlass.js:730
+#: ../js/ui/lookingGlass.js:727
 msgid "Web Page"
 msgstr "WWW-sivu"
 
+#: ../js/ui/messageTray.js:1199
 msgid "Open"
 msgstr "Avaa"
 
+#: ../js/ui/messageTray.js:2408
 msgid "System Information"
 msgstr "Järjestelmän tiedot"
 
-msgid "Show password"
-msgstr "Näytä salasana"
-
+#: ../js/ui/networkAgent.js:143
 msgid "Connect"
 msgstr "Yhdistä"
 
 #. Cisco LEAP
+#: ../js/ui/networkAgent.js:238 ../js/ui/networkAgent.js:250
+#: ../js/ui/networkAgent.js:277 ../js/ui/networkAgent.js:297
+#: ../js/ui/networkAgent.js:307
 msgid "Password: "
 msgstr "Salasana: "
 
 #. static WEP
+#: ../js/ui/networkAgent.js:243
 msgid "Key: "
 msgstr "Avain: "
 
 #. TTLS and PEAP are actually much more complicated, but this complication
 #. is not visible here since we only care about phase2 authentication
 #. (and don't even care of which one)
+#: ../js/ui/networkAgent.js:275 ../js/ui/networkAgent.js:293
 msgid "Username: "
 msgstr "Käyttäjänimi: "
 
+#: ../js/ui/networkAgent.js:281
 msgid "Identity: "
 msgstr "Henkilöllisyys: "
 
+#: ../js/ui/networkAgent.js:283
 msgid "Private key password: "
 msgstr "Salaisen avaimen salasana: "
 
+#: ../js/ui/networkAgent.js:295
 msgid "Service: "
 msgstr "Palvelu: "
 
+#: ../js/ui/networkAgent.js:324
 msgid "Authentication required by wireless network"
 msgstr "Langaton verkko vaatii tunnistautumisen"
 
+#: ../js/ui/networkAgent.js:325
 #, c-format
 msgid ""
-"Passwords or encryption keys are required to access the wireless network "
-"'%s'."
+"Passwords or encryption keys are required to access the wireless network '%"
+"s'."
 msgstr "Langaton verkko %s vaatii salasanan tai salausavaimia."
 
+#: ../js/ui/networkAgent.js:329
 msgid "Wired 802.1X authentication"
 msgstr "Kiinteän 802.1X-yhteyden tunnistautuminen"
 
+#: ../js/ui/networkAgent.js:331
 msgid "Network name: "
 msgstr "Verkon nimi: "
 
+#: ../js/ui/networkAgent.js:336
 msgid "DSL authentication"
 msgstr "DSL-tunnistautuminen"
 
+#: ../js/ui/networkAgent.js:343
 msgid "PIN code required"
 msgstr "PIN-koodi vaaditaan"
 
+#: ../js/ui/networkAgent.js:344
 msgid "PIN code is needed for the mobile broadband device"
 msgstr "Mobiililaajakaista vaatii PIN-koodin"
 
+#: ../js/ui/networkAgent.js:345
 msgid "PIN: "
 msgstr "PIN: "
 
+#: ../js/ui/networkAgent.js:351
 msgid "Mobile broadband network password"
 msgstr "Mobiililaajakaistan verkkosalasana"
 
+#: ../js/ui/networkAgent.js:352
 #, c-format
 msgid "A password is required to connect to '%s'."
 msgstr "Salasana vaaditaan kohteeseen %s yhdistämiseksi."
@@ -708,15 +780,18 @@ msgid "Dash"
 msgstr "Pikavalikko"
 
 #. TODO - _quit() doesn't really work on apps in state STARTING yet
+#: ../js/ui/panel.js:539
 #, c-format
 msgid "Quit %s"
 msgstr "Lopeta %s"
 
 #. Translators: If there is no suitable word for "Activities"
 #. in your language, you can use the word for "Overview".
+#: ../js/ui/panel.js:575
 msgid "Activities"
 msgstr "Toiminnot"
 
+#: ../js/ui/panel.js:967
 msgid "Top Bar"
 msgstr "Yläpalkki"
 
@@ -737,14 +812,15 @@ msgstr "Yhdistä…"
 msgid "PLACES & DEVICES"
 msgstr "SIJAINNIT JA LAITTEET"
 
-#: ../js/ui/polkitAuthenticationAgent.js:72
+#: ../js/ui/polkitAuthenticationAgent.js:73
 msgid "Authentication Required"
 msgstr "Tunnistautuminen vaaditaan"
 
-#: ../js/ui/polkitAuthenticationAgent.js:106
+#: ../js/ui/polkitAuthenticationAgent.js:107
 msgid "Administrator"
 msgstr "Ylläpitäjä"
 
+#: ../js/ui/polkitAuthenticationAgent.js:177
 msgid "Authenticate"
 msgstr "Tunnistaudu"
 
@@ -752,9 +828,11 @@ msgstr "Tunnistaudu"
 #. * requested authentication was not gained; this can happen
 #. * because of an authentication error (like invalid password),
 #. * for instance.
+#: ../js/ui/polkitAuthenticationAgent.js:258
 msgid "Sorry, that didn't work. Please try again."
 msgstr "Tunnistautuminen epäonnistui. Yritä uudelleen."
 
+#: ../js/ui/polkitAuthenticationAgent.js:270
 msgid "Password:"
 msgstr "Salasana:"
 
@@ -763,10 +841,11 @@ msgstr "Salasana:"
 #. "ON" and "OFF") or "toggle-switch-intl" (for toggle
 #. switches containing "◯" and "|"). Other values will
 #. simply result in invisible toggle switches.
+#: ../js/ui/popupMenu.js:731
 msgid "toggle-switch-us"
 msgstr "toggle-switch-intl"
 
-#: ../js/ui/runDialog.js:208
+#: ../js/ui/runDialog.js:209
 msgid "Please enter a command:"
 msgstr "Syötä komento:"
 
@@ -777,6 +856,22 @@ msgstr "Haetaan…"
 #: ../js/ui/searchDisplay.js:363
 msgid "No matching results."
 msgstr "Ei tuloksia."
+
+#: ../js/ui/cinnamonEntry.js:30
+msgid "Copy"
+msgstr "Kopioi"
+
+#: ../js/ui/cinnamonEntry.js:35
+msgid "Paste"
+msgstr "Liitä"
+
+#: ../js/ui/cinnamonEntry.js:81
+msgid "Show Text"
+msgstr "Näytä teksti"
+
+#: ../js/ui/cinnamonEntry.js:83
+msgid "Hide Text"
+msgstr "Piilota teksti"
 
 #: ../js/ui/cinnamonMountOperation.js:285
 msgid "Wrong password, please try again"
@@ -789,6 +884,7 @@ msgstr "Lähennys"
 #. let screenReader = this._buildItem(_("Screen Reader"), APPLICATIONS_SCHEMA,
 #. 'screen-reader-enabled');
 #. this.menu.addMenuItem(screenReader);
+#: ../js/ui/status/accessibility.js:71
 msgid "Screen Keyboard"
 msgstr "Näyttönäppäimistö"
 
@@ -910,7 +1006,7 @@ msgstr "Salli pääsy aina"
 msgid "Grant this time only"
 msgstr "Salli vain tällä kerralla"
 
-#: ../js/ui/status/bluetooth.js:392 ../js/ui/telepathyClient.js:1196
+#: ../js/ui/status/bluetooth.js:392 ../js/ui/telepathyClient.js:1204
 msgid "Reject"
 msgstr "Hylkää"
 
@@ -950,9 +1046,11 @@ msgstr "Kirjoita laitteella mainittu PIN-koodi."
 msgid "OK"
 msgstr "OK"
 
+#: ../js/ui/status/keyboard.js:73
 msgid "Show Keyboard Layout"
 msgstr "Näytä näppäimistön asettelu"
 
+#: ../js/ui/status/keyboard.js:78
 msgid "Region and Language Settings"
 msgstr "Kielen ja alueen asetukset"
 
@@ -997,11 +1095,13 @@ msgstr "ei käytettävissä"
 msgid "connection failed"
 msgstr "yhteys katkesi"
 
+#: ../js/ui/status/network.js:575 ../js/ui/status/network.js:1523
 msgid "More..."
 msgstr "Lisää…"
 
 #. TRANSLATORS: this is the indication that a connection for another logged in user is active,
 #. and we cannot access its settings (including the name)
+#: ../js/ui/status/network.js:611 ../js/ui/status/network.js:1458
 msgid "Connected (private)"
 msgstr "Yhdistetty (yksityinen)"
 
@@ -1018,6 +1118,7 @@ msgid "Auto dial-up"
 msgstr "Automaattinen, puhelinverkko"
 
 #. TRANSLATORS: this the automatic wireless connection name (including the network name)
+#: ../js/ui/status/network.js:878 ../js/ui/status/network.js:1470
 #, c-format
 msgid "Auto %s"
 msgstr "Automaattinen: %s"
@@ -1026,36 +1127,47 @@ msgstr "Automaattinen: %s"
 msgid "Auto bluetooth"
 msgstr "Automaattinen: Bluetooth"
 
+#: ../js/ui/status/network.js:1472
 msgid "Auto wireless"
 msgstr "Automaattinen: langaton"
 
+#: ../js/ui/status/network.js:1566
 msgid "Enable networking"
 msgstr "Ota verkko käyttöön"
 
+#: ../js/ui/status/network.js:1578
 msgid "Wired"
 msgstr "Kiinteä"
 
+#: ../js/ui/status/network.js:1589
 msgid "Wireless"
 msgstr "Langaton"
 
+#: ../js/ui/status/network.js:1599
 msgid "Mobile broadband"
 msgstr "Mobiililaajakaista"
 
+#: ../js/ui/status/network.js:1609
 msgid "VPN Connections"
 msgstr "VPN-yhteydet"
 
+#: ../js/ui/status/network.js:1620
 msgid "Network Settings"
 msgstr "Verkkoasetukset"
 
+#: ../js/ui/status/network.js:1757
 msgid "Connection failed"
 msgstr "Yhteys epäonnistui"
 
+#: ../js/ui/status/network.js:1758
 msgid "Activation of network connection failed"
 msgstr "Verkkoyhteyden aktivointi epäonnistui"
 
+#: ../js/ui/status/network.js:2008
 msgid "Networking is disabled"
 msgstr "Verkko ei ole käytössä"
 
+#: ../js/ui/status/network.js:2133
 msgid "Network Manager"
 msgstr "Verkon hallinta"
 
@@ -1163,39 +1275,39 @@ msgid "Invitation"
 msgstr "Kutsu"
 
 #. We got the TpContact
-#: ../js/ui/telepathyClient.js:325
+#: ../js/ui/telepathyClient.js:327
 msgid "Call"
 msgstr "Soita"
 
 #. We got the TpContact
-#: ../js/ui/telepathyClient.js:353
+#: ../js/ui/telepathyClient.js:357
 msgid "File Transfer"
 msgstr "Tiedostonsiirto"
 
-#: ../js/ui/telepathyClient.js:434
+#: ../js/ui/telepathyClient.js:438
 msgid "Subscription request"
 msgstr "Tilauspyyntö"
 
-#: ../js/ui/telepathyClient.js:470
+#: ../js/ui/telepathyClient.js:474
 msgid "Connection error"
 msgstr "Yhteysvirhe"
 
-#: ../js/ui/telepathyClient.js:733
+#: ../js/ui/telepathyClient.js:741
 #, c-format
 msgid "%s is online."
 msgstr "%s on linjoilla."
 
-#: ../js/ui/telepathyClient.js:738
+#: ../js/ui/telepathyClient.js:746
 #, c-format
 msgid "%s is offline."
 msgstr "%s on poissa linjoilta."
 
-#: ../js/ui/telepathyClient.js:741
+#: ../js/ui/telepathyClient.js:749
 #, c-format
 msgid "%s is away."
 msgstr "%s on poissa."
 
-#: ../js/ui/telepathyClient.js:744
+#: ../js/ui/telepathyClient.js:752
 #, c-format
 msgid "%s is busy."
 msgstr "%s on kiireinen."
@@ -1203,35 +1315,35 @@ msgstr "%s on kiireinen."
 #. Translators: this is a time format string followed by a date.
 #. If applicable, replace %X with a strftime format valid for your
 #. locale, without seconds.
-#: ../js/ui/telepathyClient.js:978
+#: ../js/ui/telepathyClient.js:986
 #, no-c-format
 msgid "Sent at <b>%X</b> on <b>%A</b>"
 msgstr "Lähetetty <b>%Ana</b> kello <b>%H.%M</b>"
 
 #. Translators: this is a time format in the style of "Wednesday, May 25",
 #. shown when you get a chat message in the same year.
-#: ../js/ui/telepathyClient.js:984
+#: ../js/ui/telepathyClient.js:992
 #, no-c-format
 msgid "Sent on <b>%A</b>, <b>%B %d</b>"
 msgstr "Lähetetty <b>%Ana</b> <b>%d. %Bta</b>"
 
 #. Translators: this is a time format in the style of "Wednesday, May 25, 2012",
 #. shown when you get a chat message in a different year.
-#: ../js/ui/telepathyClient.js:989
+#: ../js/ui/telepathyClient.js:997
 #, no-c-format
 msgid "Sent on <b>%A</b>, <b>%B %d</b>, %Y"
 msgstr "Lähetetty <b>%Ana</b> <b>%d. %Bta</b> %Y"
 
 #. Translators: this is the other person changing their old IM name to their new
 #. IM name.
-#: ../js/ui/telepathyClient.js:1031
+#: ../js/ui/telepathyClient.js:1039
 #, c-format
 msgid "%s is now known as %s"
 msgstr "%s on nyt nimeltään %s"
 
 #. translators: argument is a room name like
 #. * room@jabber.org for example.
-#: ../js/ui/telepathyClient.js:1140
+#: ../js/ui/telepathyClient.js:1148
 #, c-format
 msgid "Invitation to %s"
 msgstr "Kutsu huoneeseen %s"
@@ -1239,34 +1351,35 @@ msgstr "Kutsu huoneeseen %s"
 #. translators: first argument is the name of a contact and the second
 #. * one the name of a room. "Alice is inviting you to join room@jabber.org
 #. * for example.
-#: ../js/ui/telepathyClient.js:1148
+#: ../js/ui/telepathyClient.js:1156
 #, c-format
 msgid "%s is inviting you to join %s"
 msgstr "%s kutsuu sinut huoneeseen %s"
 
-#: ../js/ui/telepathyClient.js:1150 ../js/ui/telepathyClient.js:1239
-#: ../js/ui/telepathyClient.js:1343
+#: ../js/ui/telepathyClient.js:1158 ../js/ui/telepathyClient.js:1248
+#: ../js/ui/telepathyClient.js:1352
 msgid "Decline"
 msgstr "Kieltäydy"
 
-#: ../js/ui/telepathyClient.js:1151 ../js/ui/telepathyClient.js:1240
-#: ../js/ui/telepathyClient.js:1344
+#: ../js/ui/telepathyClient.js:1159 ../js/ui/telepathyClient.js:1249
+#: ../js/ui/telepathyClient.js:1353
 msgid "Accept"
 msgstr "Hyväksy"
 
 #. translators: argument is a contact name like Alice for example.
-#: ../js/ui/telepathyClient.js:1184
+#: ../js/ui/telepathyClient.js:1192
 #, c-format
 msgid "Video call from %s"
 msgstr "Videopuhelu käyttäjältä %s"
 
 #. translators: argument is a contact name like Alice for example.
-#: ../js/ui/telepathyClient.js:1187
+#: ../js/ui/telepathyClient.js:1195
 #, c-format
 msgid "Call from %s"
 msgstr "Puhelu käyttäjältä %s"
 
-#: ../js/ui/telepathyClient.js:1197
+#. translators: this is a button label (verb), not a noun
+#: ../js/ui/telepathyClient.js:1206
 msgid "Answer"
 msgstr "Vastaa"
 
@@ -1275,108 +1388,108 @@ msgstr "Vastaa"
 #. * file name. The string will be something
 #. * like: "Alice is sending you test.ogg"
 #.
-#: ../js/ui/telepathyClient.js:1233
+#: ../js/ui/telepathyClient.js:1242
 #, c-format
 msgid "%s is sending you %s"
 msgstr "%s on lähettämässä sinulle tiedostoa %s"
 
 #. To translators: The parameter is the contact's alias
-#: ../js/ui/telepathyClient.js:1308
+#: ../js/ui/telepathyClient.js:1317
 #, c-format
 msgid "%s would like permission to see when you are online"
 msgstr "%s haluaisi saada luvan nähdä, milloin olet linjoilla"
 
-#: ../js/ui/telepathyClient.js:1406
+#: ../js/ui/telepathyClient.js:1415
 msgid "Network error"
 msgstr "Verkkovirhe"
 
-#: ../js/ui/telepathyClient.js:1408
+#: ../js/ui/telepathyClient.js:1417
 msgid "Authentication failed"
 msgstr "Tunnistautuminen epäonnistui"
 
-#: ../js/ui/telepathyClient.js:1410
+#: ../js/ui/telepathyClient.js:1419
 msgid "Encryption error"
 msgstr "Salausvirhe"
 
-#: ../js/ui/telepathyClient.js:1412
+#: ../js/ui/telepathyClient.js:1421
 msgid "Certificate not provided"
 msgstr "Varmennetta ei annettu"
 
-#: ../js/ui/telepathyClient.js:1414
+#: ../js/ui/telepathyClient.js:1423
 msgid "Certificate untrusted"
 msgstr "Varmenteeseen ei luoteta"
 
-#: ../js/ui/telepathyClient.js:1416
+#: ../js/ui/telepathyClient.js:1425
 msgid "Certificate expired"
 msgstr "Varmenne on vanhentunut"
 
-#: ../js/ui/telepathyClient.js:1418
+#: ../js/ui/telepathyClient.js:1427
 msgid "Certificate not activated"
 msgstr "Varmennetta ei ole aktivoitu"
 
-#: ../js/ui/telepathyClient.js:1420
+#: ../js/ui/telepathyClient.js:1429
 msgid "Certificate hostname mismatch"
 msgstr "Varmenteen konenimiristiriita"
 
-#: ../js/ui/telepathyClient.js:1422
+#: ../js/ui/telepathyClient.js:1431
 msgid "Certificate fingerprint mismatch"
 msgstr "Varmenteen sormenjälkiristiriita"
 
-#: ../js/ui/telepathyClient.js:1424
+#: ../js/ui/telepathyClient.js:1433
 msgid "Certificate self-signed"
 msgstr "Varmenne on itseallekirjoitettu"
 
-#: ../js/ui/telepathyClient.js:1426
+#: ../js/ui/telepathyClient.js:1435
 msgid "Status is set to offline"
 msgstr "Tilaksi on asetettu ”poissa linjoilta”"
 
-#: ../js/ui/telepathyClient.js:1428
+#: ../js/ui/telepathyClient.js:1437
 msgid "Encryption is not available"
 msgstr "Salaus ei ole käytettävissä"
 
-#: ../js/ui/telepathyClient.js:1430
+#: ../js/ui/telepathyClient.js:1439
 msgid "Certificate is invalid"
 msgstr "Varmenne ei kelpaa"
 
-#: ../js/ui/telepathyClient.js:1432
+#: ../js/ui/telepathyClient.js:1441
 msgid "Connection has been refused"
 msgstr "Yhteys on evätty"
 
-#: ../js/ui/telepathyClient.js:1434
+#: ../js/ui/telepathyClient.js:1443
 msgid "Connection can't be established"
 msgstr "Yhteyttä ei voida muodostaa"
 
-#: ../js/ui/telepathyClient.js:1436
+#: ../js/ui/telepathyClient.js:1445
 msgid "Connection has been lost"
 msgstr "Yhteys on katkennut"
 
-#: ../js/ui/telepathyClient.js:1438
+#: ../js/ui/telepathyClient.js:1447
 msgid "This resource is already connected to the server"
 msgstr "Tämä resurssi on jo yhteydessä palvelimeen"
 
-#: ../js/ui/telepathyClient.js:1440
+#: ../js/ui/telepathyClient.js:1449
 msgid ""
 "Connection has been replaced by a new connection using the same resource"
 msgstr "Yhteys on korvattu uudella samaa resurssia käyttävällä yhteydellä"
 
-#: ../js/ui/telepathyClient.js:1442
+#: ../js/ui/telepathyClient.js:1451
 msgid "The account already exists on the server"
 msgstr "Tili on jo olemassa palvelimella"
 
-#: ../js/ui/telepathyClient.js:1444
+#: ../js/ui/telepathyClient.js:1453
 msgid "Server is currently too busy to handle the connection"
 msgstr "Palvelin on tällä hetkellä liian kiireinen käsittelemään yhteyttä"
 
-#: ../js/ui/telepathyClient.js:1446
+#: ../js/ui/telepathyClient.js:1455
 msgid "Certificate has been revoked"
 msgstr "Varmenne on kumottu"
 
-#: ../js/ui/telepathyClient.js:1448
+#: ../js/ui/telepathyClient.js:1457
 msgid ""
 "Certificate uses an insecure cipher algorithm or is cryptographically weak"
 msgstr "Varmenne käyttää turvatonta salausmenetelmää"
 
-#: ../js/ui/telepathyClient.js:1450
+#: ../js/ui/telepathyClient.js:1459
 msgid ""
 "The length of the server certificate, or the depth of the server certificate "
 "chain, exceed the limits imposed by the cryptography library"
@@ -1385,56 +1498,68 @@ msgstr ""
 
 #. translators: argument is the account name, like
 #. * name@jabber.org for example.
-#: ../js/ui/telepathyClient.js:1459
+#: ../js/ui/telepathyClient.js:1468
 #, c-format
 msgid "Connection to %s failed"
 msgstr "Yhteys kohteeseen %s katkesi"
 
-#: ../js/ui/telepathyClient.js:1468
+#: ../js/ui/telepathyClient.js:1477
 msgid "Reconnect"
 msgstr "Yhdistä uudelleen"
 
-#: ../js/ui/telepathyClient.js:1469
+#: ../js/ui/telepathyClient.js:1478
 msgid "Edit account"
 msgstr "Muokkaa tiliä"
 
-#: ../js/ui/telepathyClient.js:1515
+#: ../js/ui/telepathyClient.js:1524
 msgid "Unknown reason"
 msgstr "Tuntematon syy"
 
+#: ../js/ui/userMenu.js:145
 msgid "Hidden"
 msgstr "Piilotettu"
 
+#: ../js/ui/userMenu.js:151
 msgid "Idle"
 msgstr "Jouten"
 
+#: ../js/ui/userMenu.js:154
 msgid "Unavailable"
 msgstr "Ei tavoitettavissa"
 
+#: ../js/ui/userMenu.js:552 ../js/ui/userMenu.js:556 ../js/ui/userMenu.js:626
 msgid "Power Off..."
 msgstr "Sammuta…"
 
+#: ../js/ui/userMenu.js:588
 msgid "Notifications"
 msgstr "Ilmoitukset"
 
+#: ../js/ui/userMenu.js:596
 msgid "Online Accounts"
 msgstr "Verkkotilit"
 
+#: ../js/ui/userMenu.js:600
 msgid "System Settings"
 msgstr "Järjestelmän asetukset"
 
+#: ../js/ui/userMenu.js:607
 msgid "Lock Screen"
 msgstr "Lukitse näyttö"
 
+#: ../js/ui/userMenu.js:612
 msgid "Switch User"
 msgstr "Vaihda käyttäjää"
 
+#: ../js/ui/userMenu.js:617
 msgid "Log Out..."
 msgstr "Kirjaudu ulos…"
 
+#: ../js/ui/userMenu.js:645
 msgid "Your chat status will be set to busy"
 msgstr "Pikaviestitilaksi asetetaan ”kiireinen”"
 
+#: ../js/ui/userMenu.js:646
 msgid ""
 "Notifications are now disabled, including chat messages. Your online status "
 "has been adjusted to let others know that you might not see their messages."
@@ -1447,20 +1572,15 @@ msgstr ""
 #. in the search entry when no search is
 #. active; it should not exceed ~30
 #. characters.
-#: ../js/ui/viewSelector.js:120
+#: ../js/ui/viewSelector.js:121
 msgid "Type to search..."
 msgstr "Kirjoita hakeaksesi…"
 
-#: ../js/ui/viewSelector.js:140 ../src/cinnamon-util.c:261
+#: ../js/ui/viewSelector.js:142 ../src/cinnamon-util.c:261
 msgid "Search"
 msgstr "Haku"
 
-#: ../js/ui/windowAttentionHandler.js:39
-#, c-format
-msgid "%s has finished starting"
-msgstr "%s on käynnistynyt"
-
-#: ../js/ui/windowAttentionHandler.js:41
+#: ../js/ui/windowAttentionHandler.js:35
 #, c-format
 msgid "'%s' is ready"
 msgstr "%s on valmis"
@@ -1495,7 +1615,7 @@ msgstr "Tulosta versio"
 msgid "Mode used by GDM for login screen"
 msgstr "GDM:n kirjautumisruudussa käyttämä tila"
 
-#: ../src/cinnamon-app.c:581
+#: ../src/cinnamon-app.c:579
 #, c-format
 msgid "Failed to launch '%s'"
 msgstr "Sovelluksen ”%s” käynnistäminen epäonnistui"
@@ -1531,6 +1651,12 @@ msgstr "Tiedostojärjestelmä"
 #, c-format
 msgid "%1$s: %2$s"
 msgstr "%1$s: %2$s"
+
+#~ msgid "Show password"
+#~ msgstr "Näytä salasana"
+
+#~ msgid "%s has finished starting"
+#~ msgstr "%s on käynnistynyt"
 
 #~ msgid "Connectivity lost"
 #~ msgstr "Yhteys katkesi"

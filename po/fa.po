@@ -8,10 +8,10 @@ msgid ""
 msgstr ""
 "Project-Id-Version: cinnamon master\n"
 "Report-Msgid-Bugs-To: http://bugzilla.gnome.org/enter_bug.cgi?product=cinnamon&keywords=I18N+L10N&component=general\n"
-"POT-Creation-Date: 2011-10-04 20:49+0000\n"
-"PO-Revision-Date: 2011-10-15 16:02+0330\n"
+"POT-Creation-Date: 2011-10-18 19:39+0000\n"
+"PO-Revision-Date: 2011-10-24 21:11+0330\n"
 "Last-Translator: Arash Mousavi <mousavi.arash@gmail.com>\n"
-"Language-Team: Persian <>\n"
+"Language-Team: Persian\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -130,47 +130,47 @@ msgstr "استفاده از کدام صفحه‌کلید"
 msgid "disabled OpenSearch providers"
 msgstr "غیرفعال کردنِ تامین‌کننده‌گان OpenSearch"
 
-#: ../js/gdm/loginDialog.js:617
+#: ../js/gdm/loginDialog.js:633
 msgid "Session..."
 msgstr "نشست..."
 
-#: ../js/gdm/loginDialog.js:785
+#: ../js/gdm/loginDialog.js:804
 msgctxt "title"
 msgid "Sign In"
 msgstr "ورود"
 
 #. translators: this message is shown below the password entry field
 #. to indicate the user can swipe their finger instead
-#: ../js/gdm/loginDialog.js:830
+#: ../js/gdm/loginDialog.js:849
 msgid "(or swipe finger)"
 msgstr "(یا انگشتتان را بکشید)"
 
-#: ../js/gdm/loginDialog.js:848
+#: ../js/gdm/loginDialog.js:867
 msgid "Not listed?"
 msgstr "فهرست نشده؟"
 
-#: ../js/gdm/loginDialog.js:1004
+#: ../js/gdm/loginDialog.js:1035
 #: ../js/ui/endSessionDialog.js:426
 #: ../js/ui/extensionSystem.js:477
-#: ../js/ui/networkAgent.js:165
-#: ../js/ui/polkitAuthenticationAgent.js:171
+#: ../js/ui/networkAgent.js:148
+#: ../js/ui/polkitAuthenticationAgent.js:173
 #: ../js/ui/status/bluetooth.js:480
 msgid "Cancel"
 msgstr "لغو"
 
-#: ../js/gdm/loginDialog.js:1009
+#: ../js/gdm/loginDialog.js:1040
 msgctxt "button"
 msgid "Sign In"
 msgstr "ورود"
 
-#: ../js/gdm/loginDialog.js:1358
+#: ../js/gdm/loginDialog.js:1392
 msgid "Login Window"
 msgstr "پنجره‌ی ورود به سیستم"
 
 #: ../js/gdm/powerMenu.js:116
-#: ../js/ui/userMenu.js:514
-#: ../js/ui/userMenu.js:516
-#: ../js/ui/userMenu.js:585
+#: ../js/ui/userMenu.js:554
+#: ../js/ui/userMenu.js:556
+#: ../js/ui/userMenu.js:625
 msgid "Suspend"
 msgstr "تعلیق"
 
@@ -396,38 +396,38 @@ msgstr "این هفته"
 msgid "Next week"
 msgstr "هفته آینده"
 
-#: ../js/ui/contactDisplay.js:59
-#: ../js/ui/notificationDaemon.js:444
+#: ../js/ui/contactDisplay.js:65
+#: ../js/ui/notificationDaemon.js:459
 #: ../js/ui/status/power.js:223
-#: ../src/cinnamon-app.c:355
+#: ../src/cinnamon-app.c:353
 msgid "Unknown"
 msgstr "ناشناخته"
 
-#: ../js/ui/contactDisplay.js:80
+#: ../js/ui/contactDisplay.js:86
 #: ../js/ui/userMenu.js:139
 msgid "Available"
 msgstr "در دسترس"
 
-#: ../js/ui/contactDisplay.js:85
+#: ../js/ui/contactDisplay.js:91
 #: ../js/ui/userMenu.js:148
 msgid "Away"
 msgstr "غائب"
 
-#: ../js/ui/contactDisplay.js:89
+#: ../js/ui/contactDisplay.js:95
 #: ../js/ui/userMenu.js:142
 msgid "Busy"
 msgstr "مشغول"
 
-#: ../js/ui/contactDisplay.js:93
+#: ../js/ui/contactDisplay.js:99
 msgid "Offline"
 msgstr "برون‌خط"
 
-#: ../js/ui/contactDisplay.js:140
+#: ../js/ui/contactDisplay.js:146
 msgid "CONTACTS"
 msgstr "CONTACTS"
 
-#: ../js/ui/dash.js:172
-#: ../js/ui/messageTray.js:1204
+#: ../js/ui/dash.js:174
+#: ../js/ui/messageTray.js:1206
 msgid "Remove"
 msgstr "حذف"
 
@@ -561,139 +561,134 @@ msgstr "نصب"
 msgid "Download and install '%s' from extensions.gnome.org?"
 msgstr "بارگیری و نصب «%s» از extensions.gnome.org؟"
 
-#: ../js/ui/keyboard.js:308
-#| msgid "Retry"
+#: ../js/ui/keyboard.js:325
 msgid "tray"
 msgstr "سینی"
 
-#: ../js/ui/keyboard.js:530
+#: ../js/ui/keyboard.js:547
 #: ../js/ui/status/power.js:211
 msgid "Keyboard"
 msgstr "صفحه‌کلید"
 
-#: ../js/ui/lookingGlass.js:645
+#: ../js/ui/lookingGlass.js:646
 msgid "No extensions installed"
 msgstr "هیچ افزونه‌ای نصب نشده است"
 
-#: ../js/ui/lookingGlass.js:691
+#: ../js/ui/lookingGlass.js:692
 msgid "Enabled"
 msgstr "به کار انداختن"
 
 #. translators:
 #. * The device has been disabled
-#: ../js/ui/lookingGlass.js:693
+#: ../js/ui/lookingGlass.js:694
 #: ../src/gvc/gvc-mixer-control.c:1093
 msgid "Disabled"
 msgstr "از کار انداختن"
 
-#: ../js/ui/lookingGlass.js:695
+#: ../js/ui/lookingGlass.js:696
 msgid "Error"
 msgstr "خطا"
 
-#: ../js/ui/lookingGlass.js:697
+#: ../js/ui/lookingGlass.js:698
 msgid "Out of date"
 msgstr "قدیمی"
 
-#: ../js/ui/lookingGlass.js:699
+#: ../js/ui/lookingGlass.js:700
 msgid "Downloading"
 msgstr "در حال بارگیری"
 
-#: ../js/ui/lookingGlass.js:720
+#: ../js/ui/lookingGlass.js:721
 msgid "View Source"
 msgstr "نمایش منبع"
 
-#: ../js/ui/lookingGlass.js:726
+#: ../js/ui/lookingGlass.js:727
 msgid "Web Page"
 msgstr "صفحه‌ی وب"
 
-#: ../js/ui/messageTray.js:1197
+#: ../js/ui/messageTray.js:1199
 msgid "Open"
 msgstr "بازکردن"
 
-#: ../js/ui/messageTray.js:2406
+#: ../js/ui/messageTray.js:2408
 msgid "System Information"
 msgstr "اطلاعات سیستم"
 
-#: ../js/ui/networkAgent.js:145
-msgid "Show password"
-msgstr "نمایش گذرواژه"
-
-#: ../js/ui/networkAgent.js:160
+#: ../js/ui/networkAgent.js:143
 msgid "Connect"
 msgstr "اتصال"
 
 #. Cisco LEAP
-#: ../js/ui/networkAgent.js:255
-#: ../js/ui/networkAgent.js:267
-#: ../js/ui/networkAgent.js:294
-#: ../js/ui/networkAgent.js:314
-#: ../js/ui/networkAgent.js:324
+#: ../js/ui/networkAgent.js:238
+#: ../js/ui/networkAgent.js:250
+#: ../js/ui/networkAgent.js:277
+#: ../js/ui/networkAgent.js:297
+#: ../js/ui/networkAgent.js:307
 msgid "Password: "
 msgstr "گذرواژه: "
 
 #. static WEP
-#: ../js/ui/networkAgent.js:260
+#: ../js/ui/networkAgent.js:243
 msgid "Key: "
 msgstr "کلید: "
 
 #. TTLS and PEAP are actually much more complicated, but this complication
 #. is not visible here since we only care about phase2 authentication
 #. (and don't even care of which one)
-#: ../js/ui/networkAgent.js:292
-#: ../js/ui/networkAgent.js:310
+#: ../js/ui/networkAgent.js:275
+#: ../js/ui/networkAgent.js:293
 msgid "Username: "
 msgstr "نام‌کاربری: "
 
-#: ../js/ui/networkAgent.js:298
+#: ../js/ui/networkAgent.js:281
 msgid "Identity: "
 msgstr "شناسه: "
 
-#: ../js/ui/networkAgent.js:300
+#: ../js/ui/networkAgent.js:283
 msgid "Private key password: "
 msgstr "گذرواژه کلید خصوصی: "
 
-#: ../js/ui/networkAgent.js:312
+#: ../js/ui/networkAgent.js:295
 msgid "Service: "
 msgstr "سرویس: "
 
-#: ../js/ui/networkAgent.js:341
+#: ../js/ui/networkAgent.js:324
 msgid "Authentication required by wireless network"
 msgstr "تایید هویت برای شبکه بی‌سیم لازم است"
 
-#: ../js/ui/networkAgent.js:342
+#: ../js/ui/networkAgent.js:325
 #, c-format
 msgid "Passwords or encryption keys are required to access the wireless network '%s'."
 msgstr "گذرواژه یا کلیدهای رمزنگاری برای دسترسی به شبکه «%s» لازم است."
 
-#: ../js/ui/networkAgent.js:346
+#: ../js/ui/networkAgent.js:329
 msgid "Wired 802.1X authentication"
 msgstr "تایید هویت 802.1X سیمی"
 
-#: ../js/ui/networkAgent.js:348
+#: ../js/ui/networkAgent.js:331
 msgid "Network name: "
 msgstr "نام شبکه: "
 
-#: ../js/ui/networkAgent.js:353
+#: ../js/ui/networkAgent.js:336
 msgid "DSL authentication"
 msgstr "تایید هویت DSL"
 
-#: ../js/ui/networkAgent.js:360
+#: ../js/ui/networkAgent.js:343
 msgid "PIN code required"
 msgstr "کد پین لازم است"
 
-#: ../js/ui/networkAgent.js:361
+#: ../js/ui/networkAgent.js:344
 msgid "PIN code is needed for the mobile broadband device"
 msgstr "کد پین برای دستگاه پهن‌باند تلفن‌همراه لازم است"
 
-#: ../js/ui/networkAgent.js:362
+#: ../js/ui/networkAgent.js:345
 msgid "PIN: "
 msgstr "پین: "
 
-#: ../js/ui/networkAgent.js:368
+#: ../js/ui/networkAgent.js:351
 msgid "Mobile broadband network password"
 msgstr "گذرواژه شبکه پهن‌باند تلفن همراه"
 
-#: ../js/ui/networkAgent.js:369
+#: ../js/ui/networkAgent.js:352
 #, c-format
 msgid "A password is required to connect to '%s'."
 msgstr "برای اتصال به «%s» گذرواژه لازم است."
@@ -749,15 +744,15 @@ msgstr "اتصال به..."
 msgid "PLACES & DEVICES"
 msgstr "محل‌ها و ابزارها"
 
-#: ../js/ui/polkitAuthenticationAgent.js:72
+#: ../js/ui/polkitAuthenticationAgent.js:73
 msgid "Authentication Required"
 msgstr "تایید هویت لازم است"
 
-#: ../js/ui/polkitAuthenticationAgent.js:106
+#: ../js/ui/polkitAuthenticationAgent.js:107
 msgid "Administrator"
 msgstr "مدیر"
 
-#: ../js/ui/polkitAuthenticationAgent.js:175
+#: ../js/ui/polkitAuthenticationAgent.js:177
 msgid "Authenticate"
 msgstr "تایید هویت"
 
@@ -765,11 +760,11 @@ msgstr "تایید هویت"
 #. * requested authentication was not gained; this can happen
 #. * because of an authentication error (like invalid password),
 #. * for instance.
-#: ../js/ui/polkitAuthenticationAgent.js:256
+#: ../js/ui/polkitAuthenticationAgent.js:258
 msgid "Sorry, that didn't work. Please try again."
 msgstr "متاسفتم، تاثیری نداشت! مجددا تلاش کنید."
 
-#: ../js/ui/polkitAuthenticationAgent.js:268
+#: ../js/ui/polkitAuthenticationAgent.js:270
 msgid "Password:"
 msgstr "گذرواژه"
 
@@ -782,7 +777,7 @@ msgstr "گذرواژه"
 msgid "toggle-switch-us"
 msgstr "toggle-switch-intl"
 
-#: ../js/ui/runDialog.js:208
+#: ../js/ui/runDialog.js:209
 msgid "Please enter a command:"
 msgstr "لطفا یک فرمان وارد کنید:"
 
@@ -793,6 +788,23 @@ msgstr "درحال حستجو..."
 #: ../js/ui/searchDisplay.js:363
 msgid "No matching results."
 msgstr "نتیجه‌ی منطبقی پیدا نشد."
+
+#: ../js/ui/cinnamonEntry.js:30
+msgid "Copy"
+msgstr "رونوشت"
+
+#: ../js/ui/cinnamonEntry.js:35
+msgid "Paste"
+msgstr "چسباندن"
+
+#: ../js/ui/cinnamonEntry.js:81
+msgid "Show Text"
+msgstr "نمایش متن"
+
+#: ../js/ui/cinnamonEntry.js:83
+#| msgid "Large Text"
+msgid "Hide Text"
+msgstr "مخفی‌کردن متن"
 
 #: ../js/ui/cinnamonMountOperation.js:285
 msgid "Wrong password, please try again"
@@ -806,7 +818,6 @@ msgstr "بزرگنمایی"
 #. 'screen-reader-enabled');
 #. this.menu.addMenuItem(screenReader);
 #: ../js/ui/status/accessibility.js:71
-#| msgid "Keyboard"
 msgid "Screen Keyboard"
 msgstr "صفحه‌کلید مجازی"
 
@@ -935,7 +946,7 @@ msgid "Grant this time only"
 msgstr "موافقت تنها در همین زمان"
 
 #: ../js/ui/status/bluetooth.js:392
-#: ../js/ui/telepathyClient.js:1200
+#: ../js/ui/telepathyClient.js:1204
 msgid "Reject"
 msgstr "رد کردن"
 
@@ -1226,22 +1237,22 @@ msgstr "درخواست اشتراک"
 msgid "Connection error"
 msgstr "خطا اتصال"
 
-#: ../js/ui/telepathyClient.js:737
+#: ../js/ui/telepathyClient.js:741
 #, c-format
 msgid "%s is online."
 msgstr "%s بر خط است."
 
-#: ../js/ui/telepathyClient.js:742
+#: ../js/ui/telepathyClient.js:746
 #, c-format
 msgid "%s is offline."
 msgstr "%s برون خط است."
 
-#: ../js/ui/telepathyClient.js:745
+#: ../js/ui/telepathyClient.js:749
 #, c-format
 msgid "%s is away."
 msgstr "%s غایب است."
 
-#: ../js/ui/telepathyClient.js:748
+#: ../js/ui/telepathyClient.js:752
 #, c-format
 msgid "%s is busy."
 msgstr "%s مشغول است."
@@ -1249,35 +1260,35 @@ msgstr "%s مشغول است."
 #. Translators: this is a time format string followed by a date.
 #. If applicable, replace %X with a strftime format valid for your
 #. locale, without seconds.
-#: ../js/ui/telepathyClient.js:982
+#: ../js/ui/telepathyClient.js:986
 #, no-c-format
 msgid "Sent at <b>%X</b> on <b>%A</b>"
 msgstr "ارسال در <b>%OH:%OM</b> در <b>%A</b>"
 
 #. Translators: this is a time format in the style of "Wednesday, May 25",
 #. shown when you get a chat message in the same year.
-#: ../js/ui/telepathyClient.js:988
+#: ../js/ui/telepathyClient.js:992
 #, no-c-format
 msgid "Sent on <b>%A</b>, <b>%B %d</b>"
 msgstr "ارسال در <b>%A</b>, <b>%B %d</b>"
 
 #. Translators: this is a time format in the style of "Wednesday, May 25, 2012",
 #. shown when you get a chat message in a different year.
-#: ../js/ui/telepathyClient.js:993
+#: ../js/ui/telepathyClient.js:997
 #, no-c-format
 msgid "Sent on <b>%A</b>, <b>%B %d</b>, %Y"
 msgstr "ارسال در <b>%A</b>, <b>%B %d</b>, %Y"
 
 #. Translators: this is the other person changing their old IM name to their new
 #. IM name.
-#: ../js/ui/telepathyClient.js:1035
+#: ../js/ui/telepathyClient.js:1039
 #, c-format
 msgid "%s is now known as %s"
 msgstr "%s با عنوان %s شناخته می‌شود"
 
 #. translators: argument is a room name like
 #. * room@jabber.org for example.
-#: ../js/ui/telepathyClient.js:1144
+#: ../js/ui/telepathyClient.js:1148
 #, c-format
 msgid "Invitation to %s"
 msgstr "دعوتنامه به %s"
@@ -1285,36 +1296,37 @@ msgstr "دعوتنامه به %s"
 #. translators: first argument is the name of a contact and the second
 #. * one the name of a room. "Alice is inviting you to join room@jabber.org
 #. * for example.
-#: ../js/ui/telepathyClient.js:1152
+#: ../js/ui/telepathyClient.js:1156
 #, c-format
 msgid "%s is inviting you to join %s"
 msgstr "%s از شما دعوت می‌کند که به %s بپیوندید"
 
-#: ../js/ui/telepathyClient.js:1154
-#: ../js/ui/telepathyClient.js:1243
-#: ../js/ui/telepathyClient.js:1347
+#: ../js/ui/telepathyClient.js:1158
+#: ../js/ui/telepathyClient.js:1248
+#: ../js/ui/telepathyClient.js:1352
 msgid "Decline"
 msgstr "رد کردن"
 
-#: ../js/ui/telepathyClient.js:1155
-#: ../js/ui/telepathyClient.js:1244
-#: ../js/ui/telepathyClient.js:1348
+#: ../js/ui/telepathyClient.js:1159
+#: ../js/ui/telepathyClient.js:1249
+#: ../js/ui/telepathyClient.js:1353
 msgid "Accept"
 msgstr "پذیرفتن"
 
 #. translators: argument is a contact name like Alice for example.
-#: ../js/ui/telepathyClient.js:1188
+#: ../js/ui/telepathyClient.js:1192
 #, c-format
 msgid "Video call from %s"
 msgstr "تماس ویدئویی از طریق %s"
 
 #. translators: argument is a contact name like Alice for example.
-#: ../js/ui/telepathyClient.js:1191
+#: ../js/ui/telepathyClient.js:1195
 #, c-format
 msgid "Call from %s"
 msgstr "تماس از طرف %s"
 
-#: ../js/ui/telepathyClient.js:1201
+#. translators: this is a button label (verb), not a noun
+#: ../js/ui/telepathyClient.js:1206
 msgid "Answer"
 msgstr "پاسخگویی"
 
@@ -1323,125 +1335,125 @@ msgstr "پاسخگویی"
 #. * file name. The string will be something
 #. * like: "Alice is sending you test.ogg"
 #.
-#: ../js/ui/telepathyClient.js:1237
+#: ../js/ui/telepathyClient.js:1242
 #, c-format
 msgid "%s is sending you %s"
 msgstr "%s در حال ارسال %s به شما است"
 
 #. To translators: The parameter is the contact's alias
-#: ../js/ui/telepathyClient.js:1312
+#: ../js/ui/telepathyClient.js:1317
 #, c-format
 msgid "%s would like permission to see when you are online"
 msgstr "%s اجازه دسترسی برای دیدن زمان‌هایی که شما برخط هستید را دارد"
 
-#: ../js/ui/telepathyClient.js:1410
+#: ../js/ui/telepathyClient.js:1415
 msgid "Network error"
 msgstr "خطا شبکه"
 
-#: ../js/ui/telepathyClient.js:1412
+#: ../js/ui/telepathyClient.js:1417
 msgid "Authentication failed"
 msgstr "تایید هویت شکست خورد"
 
-#: ../js/ui/telepathyClient.js:1414
+#: ../js/ui/telepathyClient.js:1419
 msgid "Encryption error"
 msgstr "خطا رمزنگاری"
 
-#: ../js/ui/telepathyClient.js:1416
+#: ../js/ui/telepathyClient.js:1421
 msgid "Certificate not provided"
 msgstr "گواهینامه ارائه نشده"
 
-#: ../js/ui/telepathyClient.js:1418
+#: ../js/ui/telepathyClient.js:1423
 msgid "Certificate untrusted"
 msgstr "گواهینامه نامعتبر است"
 
-#: ../js/ui/telepathyClient.js:1420
+#: ../js/ui/telepathyClient.js:1425
 msgid "Certificate expired"
 msgstr "گواهینامه منقضی شده"
 
-#: ../js/ui/telepathyClient.js:1422
+#: ../js/ui/telepathyClient.js:1427
 msgid "Certificate not activated"
 msgstr "گواهینامه فعال نشده"
 
-#: ../js/ui/telepathyClient.js:1424
+#: ../js/ui/telepathyClient.js:1429
 msgid "Certificate hostname mismatch"
 msgstr "نام کارگزار گواهینامه نامنطبق است"
 
-#: ../js/ui/telepathyClient.js:1426
+#: ../js/ui/telepathyClient.js:1431
 msgid "Certificate fingerprint mismatch"
 msgstr "اثرانگشت گواهینامه نامنطبق است"
 
-#: ../js/ui/telepathyClient.js:1428
+#: ../js/ui/telepathyClient.js:1433
 msgid "Certificate self-signed"
 msgstr "گواهینامه خود-امضا شده"
 
-#: ../js/ui/telepathyClient.js:1430
+#: ../js/ui/telepathyClient.js:1435
 msgid "Status is set to offline"
 msgstr "وضعیت بر روی برون خط تنظیم شده"
 
-#: ../js/ui/telepathyClient.js:1432
+#: ../js/ui/telepathyClient.js:1437
 msgid "Encryption is not available"
 msgstr "رمزنگاری موجود نیست"
 
-#: ../js/ui/telepathyClient.js:1434
+#: ../js/ui/telepathyClient.js:1439
 msgid "Certificate is invalid"
 msgstr "گواهینامه نامعتبر است"
 
-#: ../js/ui/telepathyClient.js:1436
+#: ../js/ui/telepathyClient.js:1441
 msgid "Connection has been refused"
 msgstr "اتصال رد شده است"
 
-#: ../js/ui/telepathyClient.js:1438
+#: ../js/ui/telepathyClient.js:1443
 msgid "Connection can't be established"
 msgstr "اتصال نمی‌تواند برقرار شود"
 
-#: ../js/ui/telepathyClient.js:1440
+#: ../js/ui/telepathyClient.js:1445
 msgid "Connection has been lost"
 msgstr "اتصال از دست رفته است"
 
-#: ../js/ui/telepathyClient.js:1442
+#: ../js/ui/telepathyClient.js:1447
 msgid "This resource is already connected to the server"
 msgstr "این منبع از قبل به کارگزار متصل شده است"
 
-#: ../js/ui/telepathyClient.js:1444
+#: ../js/ui/telepathyClient.js:1449
 msgid "Connection has been replaced by a new connection using the same resource"
 msgstr "اتصال توسط یک اتصال جدید که از منبع مشابه استفاده می‌کند، جایگزین شده است"
 
-#: ../js/ui/telepathyClient.js:1446
+#: ../js/ui/telepathyClient.js:1451
 msgid "The account already exists on the server"
 msgstr "حساب از قبل بر روی کارگزار وجود دارد"
 
-#: ../js/ui/telepathyClient.js:1448
+#: ../js/ui/telepathyClient.js:1453
 msgid "Server is currently too busy to handle the connection"
 msgstr "کارگزار در حال حاضر برای دست گرفتن اتصال بسیار مشغول است"
 
-#: ../js/ui/telepathyClient.js:1450
+#: ../js/ui/telepathyClient.js:1455
 msgid "Certificate has been revoked"
 msgstr "گواهینامه لغو شده است"
 
-#: ../js/ui/telepathyClient.js:1452
+#: ../js/ui/telepathyClient.js:1457
 msgid "Certificate uses an insecure cipher algorithm or is cryptographically weak"
 msgstr "گواهینامه از الگوریتم رمزی نامطمئنی استفاده می‌کند یا از نظر cryptography ضعیف است"
 
-#: ../js/ui/telepathyClient.js:1454
+#: ../js/ui/telepathyClient.js:1459
 msgid "The length of the server certificate, or the depth of the server certificate chain, exceed the limits imposed by the cryptography library"
 msgstr "اندازه گواهینامه کارگزار، یا عمق حلقه‌ی گواهینامه کارگزار، از محدودیت اعمال شده توسط کتابخانه cryptography تجاوز کرد"
 
 #. translators: argument is the account name, like
 #. * name@jabber.org for example.
-#: ../js/ui/telepathyClient.js:1463
+#: ../js/ui/telepathyClient.js:1468
 #, c-format
 msgid "Connection to %s failed"
 msgstr "اتصال به %s شکست خورد"
 
-#: ../js/ui/telepathyClient.js:1472
+#: ../js/ui/telepathyClient.js:1477
 msgid "Reconnect"
 msgstr "اتصال مجدد"
 
-#: ../js/ui/telepathyClient.js:1473
+#: ../js/ui/telepathyClient.js:1478
 msgid "Edit account"
 msgstr "ویرایش حساب"
 
-#: ../js/ui/telepathyClient.js:1519
+#: ../js/ui/telepathyClient.js:1524
 msgid "Unknown reason"
 msgstr "دلیل ناشناخته"
 
@@ -1457,41 +1469,41 @@ msgstr "بی‌کار"
 msgid "Unavailable"
 msgstr "خارج از دسترس"
 
-#: ../js/ui/userMenu.js:512
-#: ../js/ui/userMenu.js:516
-#: ../js/ui/userMenu.js:586
+#: ../js/ui/userMenu.js:552
+#: ../js/ui/userMenu.js:556
+#: ../js/ui/userMenu.js:626
 msgid "Power Off..."
 msgstr "خاموش کردن..."
 
-#: ../js/ui/userMenu.js:548
+#: ../js/ui/userMenu.js:588
 msgid "Notifications"
 msgstr "اعلان‌ها"
 
-#: ../js/ui/userMenu.js:556
+#: ../js/ui/userMenu.js:596
 msgid "Online Accounts"
 msgstr "حساب‌های برخط"
 
-#: ../js/ui/userMenu.js:560
+#: ../js/ui/userMenu.js:600
 msgid "System Settings"
 msgstr "تنظیمات سیستم"
 
-#: ../js/ui/userMenu.js:567
+#: ../js/ui/userMenu.js:607
 msgid "Lock Screen"
 msgstr "قفل کردن صفحه"
 
-#: ../js/ui/userMenu.js:572
+#: ../js/ui/userMenu.js:612
 msgid "Switch User"
 msgstr "تعویض کاربر"
 
-#: ../js/ui/userMenu.js:577
+#: ../js/ui/userMenu.js:617
 msgid "Log Out..."
 msgstr "خروج از سیستم..."
 
-#: ../js/ui/userMenu.js:605
+#: ../js/ui/userMenu.js:645
 msgid "Your chat status will be set to busy"
 msgstr "وضعیت گپ شما «مشغول» تنظیم می‌شود"
 
-#: ../js/ui/userMenu.js:606
+#: ../js/ui/userMenu.js:646
 msgid "Notifications are now disabled, including chat messages. Your online status has been adjusted to let others know that you might not see their messages."
 msgstr "هم‌اکنون اعلان‌ها، از جمله پیام‌های گپ، غیرفعال هستند. وضعیتِ برخطِ شما به گونه‌ای تنظیم شده است که به دیگران نشان دهد ممکن است شما پیام‌هایشان را نبینید."
 
@@ -1499,11 +1511,11 @@ msgstr "هم‌اکنون اعلان‌ها، از جمله پیام‌های گ
 #. in the search entry when no search is
 #. active; it should not exceed ~30
 #. characters.
-#: ../js/ui/viewSelector.js:120
+#: ../js/ui/viewSelector.js:121
 msgid "Type to search..."
 msgstr "برای جستجو تایپ کنید..."
 
-#: ../js/ui/viewSelector.js:140
+#: ../js/ui/viewSelector.js:142
 #: ../src/cinnamon-util.c:261
 msgid "Search"
 msgstr "جستجو"
@@ -1543,7 +1555,7 @@ msgstr "چاپ نسخه"
 msgid "Mode used by GDM for login screen"
 msgstr "حالت استفاده شده توسط GDM برای صفحه ورود به سیستم"
 
-#: ../src/cinnamon-app.c:581
+#: ../src/cinnamon-app.c:579
 #, c-format
 msgid "Failed to launch '%s'"
 msgstr "راه‌اندازی «%s» شکست خورد"
@@ -1579,6 +1591,9 @@ msgstr "سیستم پرونده‌ها"
 #, c-format
 msgid "%1$s: %2$s"
 msgstr "%1$s: %2$s"
+
+#~ msgid "Show password"
+#~ msgstr "نمایش گذرواژه"
 
 #~ msgid "If true, display onscreen keyboard."
 #~ msgstr "در صورت تنظیم بر روی «درست»، صفحه‌کلید مجازی نمایش داده می‌شود."

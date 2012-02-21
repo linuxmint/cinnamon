@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: cinnamon master\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-10-14 19:11+0100\n"
-"PO-Revision-Date: 2011-10-14 19:12+0100\n"
+"POT-Creation-Date: 2011-11-12 07:44+0000\n"
+"PO-Revision-Date: 2011-11-12 07:47+0100\n"
 "Last-Translator: Bruce Cowan <bruce@bcowan.me.uk>\n"
 "Language-Team: British English <en@li.org>\n"
 "Language: en_GB\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Virtaal 0.7.1-rc1\n"
+"X-Generator: Virtaal 0.7.0\n"
 "X-Project-Style: gnome\n"
 
 #: ../data/cinnamon.desktop.in.in.h:1
@@ -180,42 +180,42 @@ msgstr "Which keyboard to use"
 msgid "disabled OpenSearch providers"
 msgstr "disabled OpenSearch providers"
 
-#: ../js/gdm/loginDialog.js:617
+#: ../js/gdm/loginDialog.js:633
 msgid "Session..."
 msgstr "Session…"
 
-#: ../js/gdm/loginDialog.js:788
+#: ../js/gdm/loginDialog.js:804
 msgctxt "title"
 msgid "Sign In"
 msgstr "Sign In"
 
 #. translators: this message is shown below the password entry field
 #. to indicate the user can swipe their finger instead
-#: ../js/gdm/loginDialog.js:833
+#: ../js/gdm/loginDialog.js:849
 msgid "(or swipe finger)"
 msgstr "(or swipe finger)"
 
-#: ../js/gdm/loginDialog.js:851
+#: ../js/gdm/loginDialog.js:867
 msgid "Not listed?"
 msgstr "Not listed?"
 
-#: ../js/gdm/loginDialog.js:1019 ../js/ui/endSessionDialog.js:426
-#: ../js/ui/extensionSystem.js:477 ../js/ui/networkAgent.js:165
-#: ../js/ui/polkitAuthenticationAgent.js:171 ../js/ui/status/bluetooth.js:480
+#: ../js/gdm/loginDialog.js:1035 ../js/ui/endSessionDialog.js:426
+#: ../js/ui/extensionSystem.js:477 ../js/ui/networkAgent.js:148
+#: ../js/ui/polkitAuthenticationAgent.js:173 ../js/ui/status/bluetooth.js:480
 msgid "Cancel"
 msgstr "Cancel"
 
-#: ../js/gdm/loginDialog.js:1024
+#: ../js/gdm/loginDialog.js:1040
 msgctxt "button"
 msgid "Sign In"
 msgstr "Sign In"
 
-#: ../js/gdm/loginDialog.js:1373
+#: ../js/gdm/loginDialog.js:1392
 msgid "Login Window"
 msgstr "Login Window"
 
-#: ../js/gdm/powerMenu.js:116 ../js/ui/userMenu.js:549
-#: ../js/ui/userMenu.js:551 ../js/ui/userMenu.js:620
+#: ../js/gdm/powerMenu.js:116 ../js/ui/userMenu.js:554
+#: ../js/ui/userMenu.js:556 ../js/ui/userMenu.js:625
 msgid "Suspend"
 msgstr "Suspend"
 
@@ -438,7 +438,7 @@ msgstr "This week"
 msgid "Next week"
 msgstr "Next week"
 
-#: ../js/ui/contactDisplay.js:65 ../js/ui/notificationDaemon.js:444
+#: ../js/ui/contactDisplay.js:65 ../js/ui/notificationDaemon.js:459
 #: ../js/ui/status/power.js:223 ../src/cinnamon-app.c:353
 msgid "Unknown"
 msgstr "Unknown"
@@ -463,7 +463,7 @@ msgstr "Offline"
 msgid "CONTACTS"
 msgstr "CONTACTS"
 
-#: ../js/ui/dash.js:172 ../js/ui/messageTray.js:1204
+#: ../js/ui/dash.js:174 ../js/ui/messageTray.js:1206
 msgid "Remove"
 msgstr "Remove"
 
@@ -596,100 +596,96 @@ msgstr "Install"
 msgid "Download and install '%s' from extensions.gnome.org?"
 msgstr "Download and install '%s' from extensions.gnome.org?"
 
-#: ../js/ui/keyboard.js:309
+#: ../js/ui/keyboard.js:325
 msgid "tray"
 msgstr "tray"
 
-#: ../js/ui/keyboard.js:531 ../js/ui/status/power.js:211
+#: ../js/ui/keyboard.js:547 ../js/ui/status/power.js:211
 msgid "Keyboard"
 msgstr "Keyboard"
 
-#: ../js/ui/lookingGlass.js:645
+#: ../js/ui/lookingGlass.js:646
 msgid "No extensions installed"
 msgstr "No extensions installed"
 
-#: ../js/ui/lookingGlass.js:691
+#: ../js/ui/lookingGlass.js:692
 msgid "Enabled"
 msgstr "Enabled"
 
 #. translators:
 #. * The device has been disabled
-#: ../js/ui/lookingGlass.js:693 ../src/gvc/gvc-mixer-control.c:1093
+#: ../js/ui/lookingGlass.js:694 ../src/gvc/gvc-mixer-control.c:1093
 msgid "Disabled"
 msgstr "Disabled"
 
-#: ../js/ui/lookingGlass.js:695
+#: ../js/ui/lookingGlass.js:696
 msgid "Error"
 msgstr "Error"
 
-#: ../js/ui/lookingGlass.js:697
+#: ../js/ui/lookingGlass.js:698
 msgid "Out of date"
 msgstr "Out of date"
 
-#: ../js/ui/lookingGlass.js:699
+#: ../js/ui/lookingGlass.js:700
 msgid "Downloading"
 msgstr "Downloading"
 
-#: ../js/ui/lookingGlass.js:720
+#: ../js/ui/lookingGlass.js:721
 msgid "View Source"
 msgstr "View Source"
 
-#: ../js/ui/lookingGlass.js:726
+#: ../js/ui/lookingGlass.js:727
 msgid "Web Page"
 msgstr "Web Page"
 
-#: ../js/ui/messageTray.js:1197
+#: ../js/ui/messageTray.js:1199
 msgid "Open"
 msgstr "Open"
 
-#: ../js/ui/messageTray.js:2406
+#: ../js/ui/messageTray.js:2408
 msgid "System Information"
 msgstr "System Information"
 
-#: ../js/ui/networkAgent.js:145
-msgid "Show password"
-msgstr "Show password"
-
-#: ../js/ui/networkAgent.js:160
+#: ../js/ui/networkAgent.js:143
 msgid "Connect"
 msgstr "Connect"
 
 #. Cisco LEAP
-#: ../js/ui/networkAgent.js:255 ../js/ui/networkAgent.js:267
-#: ../js/ui/networkAgent.js:294 ../js/ui/networkAgent.js:314
-#: ../js/ui/networkAgent.js:324
+#: ../js/ui/networkAgent.js:238 ../js/ui/networkAgent.js:250
+#: ../js/ui/networkAgent.js:277 ../js/ui/networkAgent.js:297
+#: ../js/ui/networkAgent.js:307
 msgid "Password: "
 msgstr "Password: "
 
 #. static WEP
-#: ../js/ui/networkAgent.js:260
+#: ../js/ui/networkAgent.js:243
 msgid "Key: "
 msgstr "Key: "
 
 #. TTLS and PEAP are actually much more complicated, but this complication
 #. is not visible here since we only care about phase2 authentication
 #. (and don't even care of which one)
-#: ../js/ui/networkAgent.js:292 ../js/ui/networkAgent.js:310
+#: ../js/ui/networkAgent.js:275 ../js/ui/networkAgent.js:293
 msgid "Username: "
 msgstr "Username: "
 
-#: ../js/ui/networkAgent.js:298
+#: ../js/ui/networkAgent.js:281
 msgid "Identity: "
 msgstr "Identity: "
 
-#: ../js/ui/networkAgent.js:300
+#: ../js/ui/networkAgent.js:283
 msgid "Private key password: "
 msgstr "Private key password: "
 
-#: ../js/ui/networkAgent.js:312
+#: ../js/ui/networkAgent.js:295
 msgid "Service: "
 msgstr "Service: "
 
-#: ../js/ui/networkAgent.js:341
+#: ../js/ui/networkAgent.js:324
 msgid "Authentication required by wireless network"
 msgstr "Authentication required by wireless network"
 
-#: ../js/ui/networkAgent.js:342
+#: ../js/ui/networkAgent.js:325
 #, c-format
 msgid ""
 "Passwords or encryption keys are required to access the wireless network "
@@ -698,35 +694,35 @@ msgstr ""
 "Passwords or encryption keys are required to access the wireless network "
 "'%s'."
 
-#: ../js/ui/networkAgent.js:346
+#: ../js/ui/networkAgent.js:329
 msgid "Wired 802.1X authentication"
 msgstr "Wired 802.1X authentication"
 
-#: ../js/ui/networkAgent.js:348
+#: ../js/ui/networkAgent.js:331
 msgid "Network name: "
 msgstr "Network name: "
 
-#: ../js/ui/networkAgent.js:353
+#: ../js/ui/networkAgent.js:336
 msgid "DSL authentication"
 msgstr "DSL authentication"
 
-#: ../js/ui/networkAgent.js:360
+#: ../js/ui/networkAgent.js:343
 msgid "PIN code required"
 msgstr "PIN code required"
 
-#: ../js/ui/networkAgent.js:361
+#: ../js/ui/networkAgent.js:344
 msgid "PIN code is needed for the mobile broadband device"
 msgstr "PIN code is needed for the mobile broadband device"
 
-#: ../js/ui/networkAgent.js:362
+#: ../js/ui/networkAgent.js:345
 msgid "PIN: "
 msgstr "PIN: "
 
-#: ../js/ui/networkAgent.js:368
+#: ../js/ui/networkAgent.js:351
 msgid "Mobile broadband network password"
 msgstr "Mobile broadband network password"
 
-#: ../js/ui/networkAgent.js:369
+#: ../js/ui/networkAgent.js:352
 #, c-format
 msgid "A password is required to connect to '%s'."
 msgstr "A password is required to connect to '%s'."
@@ -782,15 +778,15 @@ msgstr "Connect to…"
 msgid "PLACES & DEVICES"
 msgstr "PLACES & DEVICES"
 
-#: ../js/ui/polkitAuthenticationAgent.js:72
+#: ../js/ui/polkitAuthenticationAgent.js:73
 msgid "Authentication Required"
 msgstr "Authentication Required"
 
-#: ../js/ui/polkitAuthenticationAgent.js:106
+#: ../js/ui/polkitAuthenticationAgent.js:107
 msgid "Administrator"
 msgstr "Administrator"
 
-#: ../js/ui/polkitAuthenticationAgent.js:175
+#: ../js/ui/polkitAuthenticationAgent.js:177
 msgid "Authenticate"
 msgstr "Authenticate"
 
@@ -798,11 +794,11 @@ msgstr "Authenticate"
 #. * requested authentication was not gained; this can happen
 #. * because of an authentication error (like invalid password),
 #. * for instance.
-#: ../js/ui/polkitAuthenticationAgent.js:256
+#: ../js/ui/polkitAuthenticationAgent.js:258
 msgid "Sorry, that didn't work. Please try again."
 msgstr "Sorry, that didn't work. Please try again."
 
-#: ../js/ui/polkitAuthenticationAgent.js:268
+#: ../js/ui/polkitAuthenticationAgent.js:270
 msgid "Password:"
 msgstr "Password:"
 
@@ -815,7 +811,7 @@ msgstr "Password:"
 msgid "toggle-switch-us"
 msgstr "toggle-switch-us"
 
-#: ../js/ui/runDialog.js:208
+#: ../js/ui/runDialog.js:209
 msgid "Please enter a command:"
 msgstr "Please enter a command:"
 
@@ -826,6 +822,22 @@ msgstr "Searching…"
 #: ../js/ui/searchDisplay.js:363
 msgid "No matching results."
 msgstr "No matching results."
+
+#: ../js/ui/cinnamonEntry.js:30
+msgid "Copy"
+msgstr "Copy"
+
+#: ../js/ui/cinnamonEntry.js:35
+msgid "Paste"
+msgstr "Paste"
+
+#: ../js/ui/cinnamonEntry.js:81
+msgid "Show Text"
+msgstr "Show Text"
+
+#: ../js/ui/cinnamonEntry.js:83
+msgid "Hide Text"
+msgstr "Hide Text"
 
 #: ../js/ui/cinnamonMountOperation.js:285
 msgid "Wrong password, please try again"
@@ -1484,39 +1496,39 @@ msgstr "Idle"
 msgid "Unavailable"
 msgstr "Unavailable"
 
-#: ../js/ui/userMenu.js:547 ../js/ui/userMenu.js:551 ../js/ui/userMenu.js:621
+#: ../js/ui/userMenu.js:552 ../js/ui/userMenu.js:556 ../js/ui/userMenu.js:626
 msgid "Power Off..."
 msgstr "Power Off…"
 
-#: ../js/ui/userMenu.js:583
+#: ../js/ui/userMenu.js:588
 msgid "Notifications"
 msgstr "Notifications"
 
-#: ../js/ui/userMenu.js:591
+#: ../js/ui/userMenu.js:596
 msgid "Online Accounts"
 msgstr "Online Accounts"
 
-#: ../js/ui/userMenu.js:595
+#: ../js/ui/userMenu.js:600
 msgid "System Settings"
 msgstr "System Settings"
 
-#: ../js/ui/userMenu.js:602
+#: ../js/ui/userMenu.js:607
 msgid "Lock Screen"
 msgstr "Lock Screen"
 
-#: ../js/ui/userMenu.js:607
+#: ../js/ui/userMenu.js:612
 msgid "Switch User"
 msgstr "Switch User"
 
-#: ../js/ui/userMenu.js:612
+#: ../js/ui/userMenu.js:617
 msgid "Log Out..."
 msgstr "Log Out…"
 
-#: ../js/ui/userMenu.js:640
+#: ../js/ui/userMenu.js:645
 msgid "Your chat status will be set to busy"
 msgstr "Your chat status will be set to busy"
 
-#: ../js/ui/userMenu.js:641
+#: ../js/ui/userMenu.js:646
 msgid ""
 "Notifications are now disabled, including chat messages. Your online status "
 "has been adjusted to let others know that you might not see their messages."
@@ -1528,11 +1540,11 @@ msgstr ""
 #. in the search entry when no search is
 #. active; it should not exceed ~30
 #. characters.
-#: ../js/ui/viewSelector.js:120
+#: ../js/ui/viewSelector.js:121
 msgid "Type to search..."
 msgstr "Type to search…"
 
-#: ../js/ui/viewSelector.js:140 ../src/cinnamon-util.c:261
+#: ../js/ui/viewSelector.js:142 ../src/cinnamon-util.c:261
 msgid "Search"
 msgstr "Search"
 
@@ -1607,6 +1619,9 @@ msgstr "File System"
 #, c-format
 msgid "%1$s: %2$s"
 msgstr "%1$s: %2$s"
+
+#~ msgid "Show password"
+#~ msgstr "Show password"
 
 #~ msgid "If true, display onscreen keyboard."
 #~ msgstr "If true, display on-screen keyboard."
@@ -1748,9 +1763,6 @@ msgstr "%1$s: %2$s"
 
 #~ msgid "Show seco_nds"
 #~ msgstr "Show seco_nds"
-
-#~ msgid "Show the _date"
-#~ msgstr "Show the _date"
 
 #~ msgid "_12 hour format"
 #~ msgstr "_12 hour format"

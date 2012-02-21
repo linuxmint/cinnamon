@@ -5,20 +5,21 @@
 # Kiyotaka NISHIBORI <ml.nishibori.kiyotaka@gmail.com>, 2011.
 # Jiro Matsuzawa <jmatsuzawa@src.gnome.org>, 2011.
 # Takayuki KUSANO <AE5T-KSN@asahi-net.or.jp>, 2011.
+# Hideki Yamane <henrich@debian.org>, 2011.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: cinnamon master\n"
 "Report-Msgid-Bugs-To: http://bugzilla.gnome.org/enter_bug.cgi?product=gnome-"
 "cinnamon&keywords=I18N+L10N&component=general\n"
-"POT-Creation-Date: 2011-10-17 14:02+0000\n"
-"PO-Revision-Date: 2011-10-17 23:22+0900\n"
-"Last-Translator: Takayuki KUSANO <AE5T-KSN@asahi-net.or.jp>\n"
+"POT-Creation-Date: 2011-11-08 00:01+0000\n"
+"PO-Revision-Date: 2011-11-03 10:22+0900\n"
+"Last-Translator: Hideki Yamane <henrich@debian.org>\n"
 "Language-Team: Japanese <gnome-translation@gnome.gr.jp>\n"
-"Language: ja\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Language: ja\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 "X-DamnedLies-Scope: partial\n"
 
@@ -140,9 +141,7 @@ msgstr ""
 msgid ""
 "The framerate of the resulting screencast recordered by Cinnamon's "
 "screencast recorder in frames-per-second."
-msgstr ""
-"Cinnamon のスクリーンキャスト・レコーダーで録画するスクリーンキャストの 1"
-"秒あたりのフレーム数です。"
+msgstr "Cinnamon のスクリーンキャストレコーダーで録画するスクリーンキャストの 1秒あたりのフレーム数です。"
 
 #: ../data/org.cinnamon.gschema.xml.in.h:20
 msgid "The gstreamer pipeline used to encode the screencast"
@@ -179,42 +178,42 @@ msgstr "使いたいキーボードの種類"
 msgid "disabled OpenSearch providers"
 msgstr "OpenSearch プロバイダーを無効にする"
 
-#: ../js/gdm/loginDialog.js:617
+#: ../js/gdm/loginDialog.js:633
 msgid "Session..."
 msgstr "セッション..."
 
-#: ../js/gdm/loginDialog.js:788
+#: ../js/gdm/loginDialog.js:804
 msgctxt "title"
 msgid "Sign In"
 msgstr "サインイン"
 
 #. translators: this message is shown below the password entry field
 #. to indicate the user can swipe their finger instead
-#: ../js/gdm/loginDialog.js:833
+#: ../js/gdm/loginDialog.js:849
 msgid "(or swipe finger)"
 msgstr "(あるいは指でスワイプする)"
 
-#: ../js/gdm/loginDialog.js:851
+#: ../js/gdm/loginDialog.js:867
 msgid "Not listed?"
 msgstr "アカウントが見つかりませんか?"
 
-#: ../js/gdm/loginDialog.js:1019 ../js/ui/endSessionDialog.js:426
+#: ../js/gdm/loginDialog.js:1035 ../js/ui/endSessionDialog.js:426
 #: ../js/ui/extensionSystem.js:477 ../js/ui/networkAgent.js:148
 #: ../js/ui/polkitAuthenticationAgent.js:173 ../js/ui/status/bluetooth.js:480
 msgid "Cancel"
 msgstr "キャンセル"
 
-#: ../js/gdm/loginDialog.js:1024
+#: ../js/gdm/loginDialog.js:1040
 msgctxt "button"
 msgid "Sign In"
 msgstr "サインイン"
 
-#: ../js/gdm/loginDialog.js:1373
+#: ../js/gdm/loginDialog.js:1392
 msgid "Login Window"
 msgstr "ログインウィンドウ"
 
-#: ../js/gdm/powerMenu.js:116 ../js/ui/userMenu.js:549
-#: ../js/ui/userMenu.js:551 ../js/ui/userMenu.js:620
+#: ../js/gdm/powerMenu.js:116 ../js/ui/userMenu.js:554
+#: ../js/ui/userMenu.js:556 ../js/ui/userMenu.js:625
 msgid "Suspend"
 msgstr "サスペンド"
 
@@ -437,7 +436,7 @@ msgstr "今週"
 msgid "Next week"
 msgstr "来週"
 
-#: ../js/ui/contactDisplay.js:65 ../js/ui/notificationDaemon.js:444
+#: ../js/ui/contactDisplay.js:65 ../js/ui/notificationDaemon.js:459
 #: ../js/ui/status/power.js:223 ../src/cinnamon-app.c:353
 msgid "Unknown"
 msgstr "不明なデバイス"
@@ -462,7 +461,7 @@ msgstr "オフライン"
 msgid "CONTACTS"
 msgstr "連絡先"
 
-#: ../js/ui/dash.js:172 ../js/ui/messageTray.js:1204
+#: ../js/ui/dash.js:174 ../js/ui/messageTray.js:1206
 msgid "Remove"
 msgstr "削除"
 
@@ -593,15 +592,16 @@ msgid "Install"
 msgstr "インストール"
 
 #: ../js/ui/extensionSystem.js:485
+#: ../js/ui/extensionSystem.js:527
 #, c-format
 msgid "Download and install '%s' from extensions.gnome.org?"
-msgstr "extensions.gnome.org から '%s' をダウンロードし、インストールしますか?"
+msgstr "extensions.gnome.org から '%s' をダウンロードしてインストールしますか?"
 
-#: ../js/ui/keyboard.js:309
+#: ../js/ui/keyboard.js:325
 msgid "tray"
 msgstr "トレイ"
 
-#: ../js/ui/keyboard.js:531 ../js/ui/status/power.js:211
+#: ../js/ui/keyboard.js:547 ../js/ui/status/power.js:211
 msgid "Keyboard"
 msgstr "キーボード"
 
@@ -639,11 +639,11 @@ msgstr "ソースの表示"
 msgid "Web Page"
 msgstr "ウェブページ"
 
-#: ../js/ui/messageTray.js:1197
+#: ../js/ui/messageTray.js:1199
 msgid "Open"
 msgstr "開く"
 
-#: ../js/ui/messageTray.js:2406
+#: ../js/ui/messageTray.js:2408
 msgid "System Information"
 msgstr "システム情報"
 
@@ -689,8 +689,8 @@ msgstr "無線ネットワークでは認証が要求されます"
 #: ../js/ui/networkAgent.js:325
 #, c-format
 msgid ""
-"Passwords or encryption keys are required to access the wireless network "
-"'%s'."
+"Passwords or encryption keys are required to access the wireless network '%"
+"s'."
 msgstr ""
 "無線ネットワーク '%s' にアクセスするにはパスワードか、または暗号化キーが必要"
 "です。"
@@ -785,7 +785,7 @@ msgstr "認証が要求されました"
 
 #: ../js/ui/polkitAuthenticationAgent.js:107
 msgid "Administrator"
-msgstr "アドミニストレーター"
+msgstr "管理者"
 
 #: ../js/ui/polkitAuthenticationAgent.js:177
 msgid "Authenticate"
@@ -823,6 +823,22 @@ msgstr "検索しています..."
 #: ../js/ui/searchDisplay.js:363
 msgid "No matching results."
 msgstr "一致するものがありません。"
+
+#: ../js/ui/cinnamonEntry.js:30
+msgid "Copy"
+msgstr "コピー"
+
+#: ../js/ui/cinnamonEntry.js:35
+msgid "Paste"
+msgstr "貼り付け"
+
+#: ../js/ui/cinnamonEntry.js:81
+msgid "Show Text"
+msgstr "文字を表示"
+
+#: ../js/ui/cinnamonEntry.js:83
+msgid "Hide Text"
+msgstr "文字を非表示"
 
 #: ../js/ui/cinnamonMountOperation.js:285
 msgid "Wrong password, please try again"
@@ -1023,7 +1039,7 @@ msgstr "管理対象外"
 #. Translators: this is for network connections that require some kind of key or password
 #: ../js/ui/status/network.js:495
 msgid "authentication required"
-msgstr "認証要求"
+msgstr "認証の要求"
 
 #. Translators: this is for devices that require some kind of firmware or kernel
 #. module, which is missing
@@ -1176,7 +1192,7 @@ msgstr "バッテリー"
 
 #: ../js/ui/status/power.js:205
 msgid "UPS"
-msgstr "無停電電源装置"
+msgstr "UPS"
 
 #: ../js/ui/status/power.js:207
 msgid "Monitor"
@@ -1317,7 +1333,7 @@ msgstr "受け入れる"
 #: ../js/ui/telepathyClient.js:1192
 #, c-format
 msgid "Video call from %s"
-msgstr "%s さんから映像での呼び出し"
+msgstr "%s さんからビデオでの呼び出し"
 
 #. translators: argument is a contact name like Alice for example.
 #: ../js/ui/telepathyClient.js:1195
@@ -1441,9 +1457,7 @@ msgstr "証明書が安全でない暗号のアルゴリズムを使っている
 msgid ""
 "The length of the server certificate, or the depth of the server certificate "
 "chain, exceed the limits imposed by the cryptography library"
-msgstr ""
-"サーバー証明書の長さや、サーバー証明書のチェインの深さが暗号ライブラリで規定"
-"されている長さを越えています"
+msgstr "サーバー証明書の長さや、サーバー証明書のチェーンの深さが暗号ライブラリで規定されている長さを越えています"
 
 #. translators: argument is the account name, like
 #. * name@jabber.org for example.
@@ -1476,39 +1490,39 @@ msgstr "待機中"
 msgid "Unavailable"
 msgstr "オフライン"
 
-#: ../js/ui/userMenu.js:547 ../js/ui/userMenu.js:551 ../js/ui/userMenu.js:621
+#: ../js/ui/userMenu.js:552 ../js/ui/userMenu.js:556 ../js/ui/userMenu.js:626
 msgid "Power Off..."
 msgstr "電源オフ..."
 
-#: ../js/ui/userMenu.js:583
+#: ../js/ui/userMenu.js:588
 msgid "Notifications"
 msgstr "メッセージ通知"
 
-#: ../js/ui/userMenu.js:591
+#: ../js/ui/userMenu.js:596
 msgid "Online Accounts"
 msgstr "オンラインアカウント"
 
-#: ../js/ui/userMenu.js:595
+#: ../js/ui/userMenu.js:600
 msgid "System Settings"
 msgstr "システム設定"
 
-#: ../js/ui/userMenu.js:602
+#: ../js/ui/userMenu.js:607
 msgid "Lock Screen"
 msgstr "画面のロック"
 
-#: ../js/ui/userMenu.js:607
+#: ../js/ui/userMenu.js:612
 msgid "Switch User"
 msgstr "ユーザーの切り替え"
 
-#: ../js/ui/userMenu.js:612
+#: ../js/ui/userMenu.js:617
 msgid "Log Out..."
 msgstr "ログアウト..."
 
-#: ../js/ui/userMenu.js:640
+#: ../js/ui/userMenu.js:645
 msgid "Your chat status will be set to busy"
 msgstr "取り込み中に設定されます"
 
-#: ../js/ui/userMenu.js:641
+#: ../js/ui/userMenu.js:646
 msgid ""
 "Notifications are now disabled, including chat messages. Your online status "
 "has been adjusted to let others know that you might not see their messages."
@@ -1678,9 +1692,6 @@ msgstr "%1$s: %2$s"
 #~ msgid "Confirm"
 #~ msgstr "確定"
 
-#~ msgid "Panel"
-#~ msgstr "パネル"
-
 #~ msgid "No such application"
 #~ msgstr "アプリケーションが見当たりません"
 
@@ -1719,9 +1730,6 @@ msgstr "%1$s: %2$s"
 #~ msgid "Show seco_nds"
 #~ msgstr "秒の表示(_n)"
 
-#~ msgid "Show the _date"
-#~ msgstr "日付の表示(_d)"
-
 #~ msgid "_12 hour format"
 #~ msgstr "12時間形式(_1)"
 
@@ -1758,3 +1766,4 @@ msgstr "%1$s: %2$s"
 
 #~ msgid "Recent Documents"
 #~ msgstr "最近利用したドキュメント"
+
