@@ -19,6 +19,7 @@ let MAX_THUMBNAIL_SCALE = 0.9;
 
 const RESCALE_ANIMATION_TIME = 0.2;
 const SLIDE_ANIMATION_TIME = 0.2;
+const INACTIVE_OPACITY = 120;
 
 function ExpoWindowClone(realWindow) {
     this._init(realWindow);
@@ -178,6 +179,15 @@ ExpoWorkspaceThumbnail.prototype = {
 
         let monitor = Main.layoutManager.primaryMonitor;
         this.setPorthole(monitor.x, monitor.y, monitor.width, monitor.height);
+
+        this.shade = new Clutter.Rectangle();
+        this.shade.set_color(Clutter.Color.new(0, 0, 0, 255));
+        this.actor.add_actor(this.shade);
+        this.shade.set_size(monitor.width, monitor.height);
+        if (metaWorkspace == global.screen.get_active_workspace())
+            this.shade.opacity = 0;
+        else
+            this.shade.opacity = INACTIVE_OPACITY;
 
         let windows = global.get_window_actors().filter(this._isMyWindow, this);
 
@@ -407,10 +417,16 @@ ExpoWorkspaceThumbnail.prototype = {
             Main.expo.hide();
         else
             this.metaWorkspace.activate(time);
+        
+        Tweener.addTween(this.shade, {opacity: 0, time: SLIDE_ANIMATION_TIME, transition: 'easeOutQuad'});
     },
 
     _remove : function (){
         Main._removeWorkspace(this.metaWorkspace);
+    },
+
+    _disactivate : function (){
+        Tweener.addTween(this.shade, {opacity: INACTIVE_OPACITY, time: SLIDE_ANIMATION_TIME, transition: 'easeOutQuad'});    
     },
 
     // Draggable target interface
@@ -570,6 +586,8 @@ ExpoThumbnailsBox.prototype = {
             thumbnail.setPorthole(this._porthole.x, this._porthole.y,
                                   this._porthole.width, this._porthole.height);
             this._thumbnails.push(thumbnail);
+            if (metaWorkspace == global.screen.get_active_workspace())
+                this._lastActiveWorkspace = thumbnail;
             this.actor.add_actor(thumbnail.actor);
 
             if (start > 0) { // not the initial fill
@@ -898,6 +916,13 @@ ExpoThumbnailsBox.prototype = {
                 break;
             }
         }
+
+        if (this._lastActiveWorkspace)
+            this._lastActiveWorkspace._disactivate();
+
+        this._lastActiveWorkspace = thumbnail;
+        if (thumbnail.shade.opacity == INACTIVE_OPACITY)
+            thumbnail.shade.opacity = 0;
 
         this._animatingIndicator = true;
         let x = thumbnail.actor.allocation.x1;
