@@ -563,23 +563,39 @@ class GSettingsEntry(Gtk.HBox):
         self.settings.set_string(self.key, self.content_widget.get_text())
 
 class GSettingsFileChooser(Gtk.HBox):
-    def __init__(self, label, schema, key):        
+    def __init__(self, label, schema, key, show_none_cb = False):        
         self.key = key
         super(GSettingsFileChooser, self).__init__()
         self.label = Gtk.Label(label)       
         self.content_widget = Gtk.FileChooserButton()
         self.pack_start(self.label, False, False, 2)
-        self.add(self.content_widget)     
+        self.add(self.content_widget)
         self.settings = Gio.Settings.new(schema)
-        self.content_widget.set_filename(self.settings.get_string(self.key))
+        value = self.settings.get_string(self.key)     
+        if show_none_cb:
+            self.show_none_cb = Gtk.CheckButton(_("None"))
+            self.show_none_cb.set_active(value=="")
+            self.pack_start(self.show_none_cb, False, False, 5)
+        else:
+            self.show_none_cb = None
+        if value=="":
+            self.content_widget.set_sensitive(False)
+        else:
+            self.content_widget.set_filename(value)
         self.content_widget.connect('file-set', self.on_my_value_changed)
+        self.show_none_cb.connect('toggled', self.on_my_value_changed)
         
         self.content_widget.show_all()
     def on_my_value_changed(self, widget):
-        if widget.get_filename():
-            self.settings.set_string(self.key, widget.get_filename())
+        if self.show_none_cb.get_active():
+            value = ""
+            self.content_widget.set_sensitive(False)
         else:
-            self.settings.set_string(self.key, "")
+            value = self.content_widget.get_filename()
+            if value==None:
+                value = ""
+            self.content_widget.set_sensitive(True)
+        self.settings.set_string(self.key, value)
 
 class GSettingsFontButton(Gtk.HBox):
     def __init__(self, label, schema, key):
@@ -1082,7 +1098,7 @@ class MainWindow:
         sidePage = SidePage(_("Panel"), "panel.svg", self.content_box)
         self.sidePages.append((sidePage, "panel"))
         sidePage.add_widget(GSettingsEntry(_("Menu text"), "org.cinnamon", "menu-text")) 
-        sidePage.add_widget(GSettingsFileChooser(_("Menu icon"), "org.cinnamon", "menu-icon"))
+        sidePage.add_widget(GSettingsFileChooser(_("Menu icon"), "org.cinnamon", "menu-icon", True))
         sidePage.add_widget(GSettingsSpinButton(_("Menu hover delay"), "org.cinnamon", "menu-hover-delay", 0, 2000, 50, 200, _("milliseconds")))        
         
         sidePage.add_widget(GSettingsCheckButton(_("Auto-hide panel"), "org.cinnamon", "panel-autohide"))
