@@ -95,8 +95,11 @@ ExpoWindowClone.prototype = {
     },
 
     _onButtonRelease : function (actor, event) {
-        this.emit('selected', event.get_time());
-
+        if ((Cinnamon.get_event_state(event) & Clutter.ModifierType.BUTTON1_MASK) || (Cinnamon.get_event_state(event) & Clutter.ModifierType.BUTTON3_MASK)){
+            this.emit('selected', event.get_time());
+        } else if (Cinnamon.get_event_state(event) & Clutter.ModifierType.BUTTON2_MASK){
+            this.emit('remove-workspace', event.get_time());               
+        }
         return true;
     },
 
@@ -161,8 +164,13 @@ ExpoWorkspaceThumbnail.prototype = {
             }));
         this.actor.connect('button-release-event', Lang.bind(this,
             function(actor, event) {
-                this._activate();
-                return true;
+                if ((Cinnamon.get_event_state(event) & Clutter.ModifierType.BUTTON1_MASK) || (Cinnamon.get_event_state(event) & Clutter.ModifierType.BUTTON3_MASK)){
+                    this._activate();
+                    return true;
+                } else if (Cinnamon.get_event_state(event) & Clutter.ModifierType.BUTTON2_MASK){
+                    this._remove();
+                    return true;                
+                }
             }));
 
         this._background = Meta.BackgroundActor.new_for_screen(global.screen);
@@ -368,6 +376,8 @@ ExpoWorkspaceThumbnail.prototype = {
 
         clone.connect('selected',
                       Lang.bind(this, this._activate));
+        clone.connect('remove-workspace', 
+                      Lang.bind(this, this._remove));
         clone.connect('drag-begin',
                       Lang.bind(this, function(clone) {
                           Main.expo.beginWindowDrag();
@@ -397,6 +407,10 @@ ExpoWorkspaceThumbnail.prototype = {
             Main.expo.hide();
         else
             this.metaWorkspace.activate(time);
+    },
+
+    _remove : function (){
+        Main._removeWorkspace(this.metaWorkspace);
     },
 
     // Draggable target interface
@@ -787,7 +801,7 @@ ExpoThumbnailsBox.prototype = {
         let spacing = this.actor.get_theme_node().get_length('spacing');
 
         // Compute the scale we'll need once everything is updated
-        let nWorkspaces = global.screen.n_workspaces;
+        let nWorkspaces = this._thumbnails.length;
         let totalSpacing = (nWorkspaces - 1) * spacing;
         let avail = (box.x2 - box.x1) - totalSpacing - (spacing * 2) ;
         let screen = (box.x2 - box.x1);
