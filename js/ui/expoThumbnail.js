@@ -174,7 +174,8 @@ ExpoWorkspaceThumbnail.prototype = {
                 }
             }));
 
-        this.actor.connect('enter-event', Lang.bind(this, function (actor, event) { this.metaWorkspace.activate(event.get_time()); }));
+        this.actor.connect('enter-event', Lang.bind(this, function (actor, event) { this._highlight();}));
+        this.actor.connect('leave-event', Lang.bind(this, function (actor, event) { this._shade();}));
 
         this._background = Meta.BackgroundActor.new_for_screen(global.screen);
         this._contents.add_actor(this._background);
@@ -186,10 +187,7 @@ ExpoWorkspaceThumbnail.prototype = {
         this.shade.set_color(Clutter.Color.new(0, 0, 0, 255));
         this.actor.add_actor(this.shade);
         this.shade.set_size(monitor.width, monitor.height);
-        if (metaWorkspace == global.screen.get_active_workspace())
-            this.shade.opacity = 0;
-        else
-            this.shade.opacity = INACTIVE_OPACITY;
+        this.shade.opacity = INACTIVE_OPACITY;
 
         let windows = global.get_window_actors().filter(this._isMyWindow, this);
 
