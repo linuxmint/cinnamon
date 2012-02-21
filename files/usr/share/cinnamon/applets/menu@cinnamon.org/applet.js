@@ -430,15 +430,11 @@ MyApplet.prototype = {
     },
     
     _updateIcon: function(){
-        if (this._icon) this._icon.destroy();
-        
         let icon_file = global.settings.get_string("menu-icon");
-        if (icon_file != "") {
-            try{
-               this.set_applet_icon_path(icon_file);               
-            }catch(e){
-               global.log("WARNING : Could not load icon file \""+icon_file+"\" for menu button");
-            }
+        try{
+           this.set_applet_icon_path(icon_file);               
+        }catch(e){
+           global.log("WARNING : Could not load icon file \""+icon_file+"\" for menu button");
         }
     },
 
