@@ -426,7 +426,8 @@ ExpoWorkspaceThumbnail.prototype = {
     },
 
     _shade : function (){
-        Tweener.addTween(this.shade, {opacity: INACTIVE_OPACITY, time: SLIDE_ANIMATION_TIME, transition: 'easeOutQuad'});    
+        if (this.metaWorkspace != global.screen.get_active_workspace())
+            Tweener.addTween(this.shade, {opacity: INACTIVE_OPACITY, time: SLIDE_ANIMATION_TIME, transition: 'easeOutQuad'});    
     },
 
     _highlight : function (){
@@ -891,7 +892,7 @@ ExpoThumbnailsBox.prototype = {
             this._lastActiveWorkspace._shade();
 
         this._lastActiveWorkspace = thumbnail;
-        if (thumbnail.shade.opacity == INACTIVE_OPACITY)
+        if (thumbnail.shade.opacity > 0)
             thumbnail._highlight();
     }
 };
