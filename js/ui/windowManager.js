@@ -779,6 +779,10 @@ WindowManager.prototype = {
             indexToActivate++;
         else if (!rtl && activeWorkspaceIndex > 0)
             indexToActivate--;
+        else if (rtl && activeWorkspaceIndex == global.screen.n_workspaces - 1)
+            indexToActivate = 0;
+        else if (!rtl && activeWorkspaceIndex == 0)
+            indexToActivate = global.screen.n_workspaces - 1;
 
         if (indexToActivate != activeWorkspaceIndex)
             global.screen.get_workspace_by_index(indexToActivate).activate(global.get_current_time());        
@@ -792,6 +796,10 @@ WindowManager.prototype = {
             indexToActivate--;
         else if (!rtl && activeWorkspaceIndex < global.screen.n_workspaces - 1)
             indexToActivate++;
+        else if (rtl && activeWorkspaceIndex == 0)
+            indexToActivate = global.screen.n_workspaces - 1;
+        else if (!rtl && activeWorkspaceIndex == global.screen.n_workspaces - 1)
+            indexToActivate = 0;
 
         if (indexToActivate != activeWorkspaceIndex)
             global.screen.get_workspace_by_index(indexToActivate).activate(global.get_current_time());        
