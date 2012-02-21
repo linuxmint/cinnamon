@@ -120,7 +120,7 @@ Expo.prototype = {
             }));
 
         this._workspacesDisplay = null;
-        this._expo = null
+        this._expo = null;
 
         this.visible = false;           // animating to overview, in overview, animating out
         this._shown = false;            // show() and not hide()
@@ -137,11 +137,15 @@ Expo.prototype = {
         this._group.add_actor(this._coverPane);
         this._coverPane.connect('event', Lang.bind(this, function (actor, event) { return true; }));
 
+        this._addWorkspaceButton = new St.Button({style_class: 'workspace-add-button'});
+        this._group.add_actor(this._addWorkspaceButton);
+        this._addWorkspaceButton.connect('clicked', Lang.bind(this, function () { Main._addWorkspace();}));
 
         this._group.hide();
         global.overlay_group.add_actor(this._group);
 
         this._coverPane.hide();
+        this._addWorkspaceButton.hide();
 
         this._windowSwitchTimeoutId = 0;
         this._windowSwitchTimestamp = 0;
@@ -221,8 +225,17 @@ Expo.prototype = {
         let viewY = contentY + this._spacing;
         let viewX = rtl ? 0 : this._spacing;
 
+        let node = this._addWorkspaceButton.get_theme_node();
+        let buttonWidth = node.get_length('width');
+        let buttonHeight = node.get_length('height');
+
         this._expo.actor.set_position(0, 0);
-        this._expo.actor.set_size(primary.width, primary.height);
+        this._expo.actor.set_size((primary.width - buttonWidth), primary.height);
+
+        let buttonY = (primary.height - buttonHeight) / 2;
+
+        this._addWorkspaceButton.set_position((primary.width - buttonWidth), buttonY);
+        this._addWorkspaceButton.set_size(buttonWidth, buttonHeight);
     },
 
     //// Public methods ////
@@ -276,7 +289,7 @@ Expo.prototype = {
         global.window_group.hide();
         this._group.show();
         this._background.show();
-
+        this._addWorkspaceButton.show();
         this._expo.show();
 
         if (!this._desktopFade.child)
@@ -480,6 +493,7 @@ Expo.prototype = {
         global.window_group.show();
 
         this._expo.hide();
+        this._addWorkspaceButton.hide();
 
         this._desktopFade.hide();
         this._background.hide();

@@ -145,10 +145,16 @@
       <description>The icon shown in the Menu button.</description>
     </key>
     
-    <key type="i" name="menu-hover-delay">
+     <key type="i" name="menu-hover-delay">
       <default>0</default>
       <summary>Duration of the delay before which a category is selected when it is hovered</summary>
       <description>Duration of the delay (in milliseconds)</description>
+    </key>
+
+    <key type="i" name="number-workspaces">
+	<default>2</default>
+	<summary>Number of workspaces in Cinnamon session</summary>
+	<description>Number of Workspaces</description>
     </key>
     
      <key type="b" name="overview-corner-visible">
