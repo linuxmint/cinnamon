@@ -291,6 +291,10 @@ Expo.prototype = {
         this._background.show();
         this._addWorkspaceButton.show();
         this._expo.show();
+        if (Main.panel)
+            Tweener.addTween(Main.panel.actor, {opacity: 0, time: ANIMATION_TIME, transition: 'easeOutQuad'});
+        if (Main.panel2)
+            Tweener.addTween(Main.panel2.actor, {opacity: 0, time: ANIMATION_TIME, transition: 'easeOutQuad'});
 
         if (!this._desktopFade.child)
             this._desktopFade.child = this._getDesktopClone();
@@ -443,6 +447,12 @@ Expo.prototype = {
                 metaWindow.maximized_vertically)
                 maximizedWindow = true;
         }
+
+        if (Main.panel)
+            Tweener.addTween(Main.panel.actor, {opacity: 255, time: ANIMATION_TIME, transition: 'easeOutQuad'});
+        if (Main.panel2)
+            Tweener.addTween(Main.panel2.actor, {opacity: 255, time: ANIMATION_TIME, transition: 'easeOutQuad'});
+
         if (!maximizedWindow){
         this._desktopFade.opacity = 0;
         this._desktopFade.show();
