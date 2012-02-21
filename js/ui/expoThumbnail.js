@@ -921,6 +921,8 @@ ExpoThumbnailsBox.prototype = {
             this._lastActiveWorkspace._disactivate();
 
         this._lastActiveWorkspace = thumbnail;
+        if (thumbnail.shade.opacity == INACTIVE_OPACITY)
+            thumbnail.shade.opacity = 0;
 
         this._animatingIndicator = true;
         let x = thumbnail.actor.allocation.x1;
