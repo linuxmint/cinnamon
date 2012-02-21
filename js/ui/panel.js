@@ -629,7 +629,9 @@ PanelZoneDNDHandler.prototype = {
         return DND.DragMotionResult.MOVE_DROP;
     },
     
-    acceptDrop: function(source, actor, x, y, time) {        
+    acceptDrop: function(source, actor, x, y, time) {      
+        if (!(source instanceof Applet.Applet)) return false;
+          
         let children = this._panelZone.get_children();
         for (var i in children){
             if (children[i]._applet){

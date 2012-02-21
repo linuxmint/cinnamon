@@ -721,6 +721,8 @@ MyApplet.prototype = {
     },
     
     acceptDrop: function(source, actor, x, y, time) {
+        if (!(source instanceof PanelAppLauncher)) return false;
+        
         let launcherPos = 0;
         let children = this.actor.get_children();
         for (let i = 0; i < this._dragPlaceholderPos; i++) {
