@@ -18,7 +18,7 @@ const Workspace = imports.ui.workspace;
 let MAX_THUMBNAIL_SCALE = 0.9;
 
 const RESCALE_ANIMATION_TIME = 0.2;
-const SLIDE_ANIMATION_TIME = 0.2;
+const SLIDE_ANIMATION_TIME = 0.3;
 const INACTIVE_OPACITY = 120;
 
 function ExpoWindowClone(realWindow) {
@@ -173,6 +173,8 @@ ExpoWorkspaceThumbnail.prototype = {
                     return true;                
                 }
             }));
+
+        this.actor.connect('enter-event', Lang.bind(this, function (actor, event) { this.metaWorkspace.activate(event.get_time()); }));
 
         this._background = Meta.BackgroundActor.new_for_screen(global.screen);
         this._contents.add_actor(this._background);
@@ -418,19 +420,24 @@ ExpoWorkspaceThumbnail.prototype = {
         else
             this.metaWorkspace.activate(time);
         
-        Tweener.addTween(this.shade, {opacity: 0, time: SLIDE_ANIMATION_TIME, transition: 'easeOutQuad'});
+        this._highlight();
+    },
+
+    _shade : function (){
+        Tweener.addTween(this.shade, {opacity: INACTIVE_OPACITY, time: SLIDE_ANIMATION_TIME, transition: 'easeOutQuad'});    
+    },
+
+    _highlight : function (){
+        Tweener.addTween(this.shade, {opacity: 0, time: SLIDE_ANIMATION_TIME, transition: 'easeOutQuad'});    
     },
 
     _remove : function (){
         Main._removeWorkspace(this.metaWorkspace);
     },
 
-    _disactivate : function (){
-        Tweener.addTween(this.shade, {opacity: INACTIVE_OPACITY, time: SLIDE_ANIMATION_TIME, transition: 'easeOutQuad'});    
-    },
-
     // Draggable target interface
     handleDragOver : function(source, actor, x, y, time) {
+        this.metaWorkspace.activate(time);
 
         if (source == Main.xdndHandler) {
             this.metaWorkspace.activate(time);
@@ -502,20 +509,10 @@ ExpoThumbnailsBox.prototype = {
 
         this.actor.add_actor(this._background);
 
-        let indicator = new St.Bin({ style_class: 'workspace-thumbnail-indicator' });
-
-        // We don't want the indicator to affect drag-and-drop
-        Cinnamon.util_set_hidden_from_pick(indicator, true);
-
-        this._indicator = indicator;
-        this.actor.add_actor(indicator);
-
         this._targetScale = 0;
         this._scale = 0;
         this._pendingScaleUpdate = false;
         this._stateUpdateQueued = false;
-        this._animatingIndicator = false;
-        this._indicatorX = 0; // only used when _animatingIndicator is true
 
         this._stateCounts = {};
         for (let key in ThumbnailState)
@@ -602,9 +599,6 @@ ExpoThumbnailsBox.prototype = {
         }
 
         this._queueUpdateStates();
-
-        // The thumbnails indicator actually needs to be on top of the thumbnails
-        this._indicator.raise_top();
     },
 
     removeThumbnails: function(start, count) {
@@ -638,15 +632,6 @@ ExpoThumbnailsBox.prototype = {
         return this._scale;
     },
 
-    set indicatorX(indicatorX) {
-        this._indicatorX = indicatorX;
-        this.actor.queue_relayout();
-    },
-
-    get indicatorX() {
-        return this._indicatorX;
-    },
-
     _setThumbnailState: function(thumbnail, state) {
         this._stateCounts[thumbnail.state]--;
         thumbnail.state = state;
@@ -674,10 +659,6 @@ ExpoThumbnailsBox.prototype = {
 
     _updateStates: function() {
         this._stateUpdateQueued = false;
-
-        // If we are animating the indicator, wait
-        if (this._animatingIndicator)
-            return;
 
         // Then slide out any thumbnails that have been destroyed
         this._iterateStateThumbnails(ThumbnailState.REMOVING,
@@ -859,10 +840,6 @@ ExpoThumbnailsBox.prototype = {
 
         this._background.allocate(childBox, flags);
 
-        let indicatorX = this._indicatorX;
-        // when not animating, the workspace position overrides this._indicatorX
-        let indicatorWorkspace = !this._animatingIndicator ? global.screen.get_active_workspace() : null;
-
         let x = spacing + (extraSpace/2);
         let y = (Main.layoutManager.primaryMonitor.height - thumbnailHeight) / 2
         for (let i = 0; i < this._thumbnails.length; i++) {
@@ -880,9 +857,6 @@ ExpoThumbnailsBox.prototype = {
             y1 = Math.round(y + ((Main.layoutManager.primaryMonitor.height - y) * thumbnail.slidePosition));
             y2 = Math.round(y1 + thumbnailHeight);
 
-            if (thumbnail.metaWorkspace == indicatorWorkspace)
-                indicatorX = x1;
-
             // Allocating a scaled actor is funny - x1/y1 correspond to the origin
             // of the actor, but x2/y2 are increased by the *unscaled* size.
             childBox.x1 = x1;
@@ -898,13 +872,6 @@ ExpoThumbnailsBox.prototype = {
             // portion unrounded so that non-animating we end up with the right total
             x += thumbnailWidth + spacing;
         }
-
-        childBox.x1 = indicatorX;
-        childBox.x2 = childBox.x1 + thumbnailWidth;
-
-        childBox.y1 = (Main.layoutManager.primaryMonitor.height - thumbnailHeight) / 2;
-        childBox.y2 = childBox.y1 + thumbnailHeight;
-        this._indicator.allocate(childBox, flags);
     },
 
     _activeWorkspaceChanged: function(wm, from, to, direction) {
@@ -918,23 +885,10 @@ ExpoThumbnailsBox.prototype = {
         }
 
         if (this._lastActiveWorkspace)
-            this._lastActiveWorkspace._disactivate();
+            this._lastActiveWorkspace._shade();
 
         this._lastActiveWorkspace = thumbnail;
         if (thumbnail.shade.opacity == INACTIVE_OPACITY)
-            thumbnail.shade.opacity = 0;
-
-        this._animatingIndicator = true;
-        let x = thumbnail.actor.allocation.x1;
-        Tweener.addTween(this,
-                         { indicatorX: thumbnail.actor.allocation.x1,
-                           time: ExpoView.WORKSPACE_SWITCH_TIME,
-                           transition: 'easeOutQuad',
-                           onComplete: function() {
-                               this._animatingIndicator = false;
-                               this._queueUpdateStates();
-                           },
-                           onCompleteScope: this
-                         });
+            thumbnail._highlight();
     }
 };
