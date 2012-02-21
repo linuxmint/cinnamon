@@ -174,8 +174,8 @@ ExpoWorkspaceThumbnail.prototype = {
                 }
             }));
 
-        this.actor.connect('enter-event', Lang.bind(this, function (actor, event) { this._highlight();}));
-        this.actor.connect('leave-event', Lang.bind(this, function (actor, event) { this._shade();}));
+        this.actor.connect('enter-event', Lang.bind(this, function (actor, event) { if (metaWorkspace != global.screen.get_active_workspace()) this._highlight();}));
+        this.actor.connect('leave-event', Lang.bind(this, function (actor, event) { if (metaWorkspace != global.screen.get_active_workspace()) this._shade();}));
 
         this._background = Meta.BackgroundActor.new_for_screen(global.screen);
         this._contents.add_actor(this._background);
@@ -187,7 +187,11 @@ ExpoWorkspaceThumbnail.prototype = {
         this.shade.set_color(Clutter.Color.new(0, 0, 0, 255));
         this.actor.add_actor(this.shade);
         this.shade.set_size(monitor.width, monitor.height);
+
         this.shade.opacity = INACTIVE_OPACITY;
+
+        if (metaWorkspace == global.screen.get_active_workspace())
+            this.shade.opacity = 0;
 
         let windows = global.get_window_actors().filter(this._isMyWindow, this);
 
@@ -435,10 +439,9 @@ ExpoWorkspaceThumbnail.prototype = {
 
     // Draggable target interface
     handleDragOver : function(source, actor, x, y, time) {
-        this.metaWorkspace.activate(time);
-
+        this.emit('drag-over');
         if (source == Main.xdndHandler) {
-            this.metaWorkspace.activate(time);
+            //this.metaWorkspace.activate(time);
             return DND.DragMotionResult.CONTINUE;
         }
 
@@ -456,7 +459,7 @@ ExpoWorkspaceThumbnail.prototype = {
     acceptDrop : function(source, actor, x, y, time) {
         if (this.state > ThumbnailState.NORMAL)
             return false;
-
+        this.metaWorkspace.activate(time);
         if (source.realWindow) {
             let win = source.realWindow;
             if (this._isMyWindow(win))
@@ -584,6 +587,8 @@ ExpoThumbnailsBox.prototype = {
             if (metaWorkspace == global.screen.get_active_workspace())
                 this._lastActiveWorkspace = thumbnail;
             this.actor.add_actor(thumbnail.actor);
+
+            thumbnail.connect('drag-over', Lang.bind(this, function () { thumbnail._highlight(); if (this.lastHovered && this.lastHovered != thumbnail) this.lastHovered._shade(); this.lastHovered = thumbnail;}));
 
             if (start > 0) { // not the initial fill
                 thumbnail.state = ThumbnailState.NEW;
