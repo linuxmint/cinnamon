@@ -572,6 +572,7 @@ PanelZoneDNDHandler.prototype = {
     },
     
     handleDragOver: function(source, actor, x, y, time) {
+        if (!(source instanceof Applet.Applet)) return DND.DragMotionResult.NO_DROP;
                        
         let children = this._panelZone.get_children();
         let appletPos = children.indexOf(source.actor);

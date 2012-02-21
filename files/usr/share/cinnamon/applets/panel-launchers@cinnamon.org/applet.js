@@ -657,7 +657,7 @@ MyApplet.prototype = {
     },
     
     handleDragOver: function(source, actor, x, y, time) {
-        if (!source instanceof PanelAppLauncher) return DND.DragMotionResult.NO_DROP;
+        if (!(source instanceof PanelAppLauncher)) return DND.DragMotionResult.NO_DROP;
         
         let children = this.actor.get_children();
         let numChildren = children.length;
