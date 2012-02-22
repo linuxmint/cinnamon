@@ -56,7 +56,14 @@ AppletPopupMenu.prototype = {
         PopupMenu.PopupMenu.prototype._init.call(this, launcher.actor, 0.0, orientation, 0);
         Main.uiGroup.add_actor(this.actor);
         this.actor.hide();                    
-    }    
+    },
+
+    setMaxHeight: function() {
+        let monitor = Main.layoutManager.primaryMonitor;
+        this.actor.style = ('max-height: ' +
+                            Math.round(monitor.height - Main.panel.actor.height) +
+                            'px;');
+    }
 }
 
 function Applet(orientation) {
