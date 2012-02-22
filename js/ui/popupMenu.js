@@ -1208,6 +1208,8 @@ PopupMenu.prototype = {
         if (this.isOpen)
             return;
 
+        this.setMaxHeight();
+
         this.isOpen = true;
         
         if (global.menuStackLength == undefined)
@@ -1220,6 +1222,12 @@ PopupMenu.prototype = {
         this.actor.raise_top();
 
         this.emit('open-state-changed', true);
+    },
+
+    // Setting the max-height won't do any good if the minimum height of the
+    // menu is higher then the screen; it's useful if part of the menu is
+    // scrollable so the minimum height is smaller than the natural height
+    setMaxHeight: function() {
     },
 
     close: function(animate) {
