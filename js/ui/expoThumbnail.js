@@ -190,6 +190,8 @@ ExpoWorkspaceThumbnail.prototype = {
 
         this.shade.opacity = INACTIVE_OPACITY;
 
+        this.removed = false;
+
         if (metaWorkspace == global.screen.get_active_workspace())
             this.shade.opacity = 0;
 
@@ -435,7 +437,10 @@ ExpoWorkspaceThumbnail.prototype = {
     },
 
     _remove : function (){
+        if (global.screen.n_workspaces <= 1)
+            return false;
         Main._removeWorkspace(this.metaWorkspace);
+        this.removed = true;
     },
 
     // Draggable target interface
@@ -511,10 +516,19 @@ ExpoThumbnailsBox.prototype = {
 
         this.actor.add_actor(this._background);
 
+        this.button = new St.Button({ style_class: 'workspace-close-button' });
+        this.actor.add_actor(this.button);
+        this.button.connect('enter-event', Lang.bind(this, function () { this.lastHovered._highlight(); this.button.show();}));
+        this.button.connect('leave-event', Lang.bind(this, function () { this.lastHovered._shade(); this.button.hide();}));
+        this.button.connect('clicked', Lang.bind(this, function () { this.lastHovered._remove(); this.button.hide();}));
+        this.button.hide();
+
         this._targetScale = 0;
         this._scale = 0;
         this._pendingScaleUpdate = false;
         this._stateUpdateQueued = false;
+        this.bX = 0;
+        this.bY = 0;
 
         this._stateCounts = {};
         for (let key in ThumbnailState)
@@ -531,7 +545,7 @@ ExpoThumbnailsBox.prototype = {
         this._targetScale = 0;
         this._scale = 0;
         this._pendingScaleUpdate = false;
-        this._stateUpdateQueued = false;
+        this._stateUpdateQueued = false;        
 
         this._stateCounts = {};
         for (let key in ThumbnailState)
@@ -565,6 +579,7 @@ ExpoThumbnailsBox.prototype = {
         };
 
         this.addThumbnails(0, global.screen.n_workspaces);
+        this.button.raise_top();
     },
 
     hide: function() {
@@ -576,6 +591,14 @@ ExpoThumbnailsBox.prototype = {
         for (let w = 0; w < this._thumbnails.length; w++)
             this._thumbnails[w].destroy();
         this._thumbnails = [];
+    },
+
+    showButton: function(){
+        if (global.screen.n_workspaces <= 1)
+            return false;
+        this.actor.queue_relayout();
+        this.button.raise_top();
+        this.button.show();
     },
 
     addThumbnails: function(start, count) {
@@ -590,6 +613,9 @@ ExpoThumbnailsBox.prototype = {
             this.actor.add_actor(thumbnail.actor);
 
             thumbnail.connect('drag-over', Lang.bind(this, function () { thumbnail._highlight(); if (this.lastHovered && this.lastHovered != thumbnail) this.lastHovered._shade(); this.lastHovered = thumbnail;}));
+
+            thumbnail.actor.connect('enter-event', Lang.bind(this, function () { this.lastHovered = thumbnail; this.showButton();}));
+            thumbnail.actor.connect('leave-event', Lang.bind(this, function () { this.button.hide();}));
 
             if (start > 0) { // not the initial fill
                 thumbnail.state = ThumbnailState.NEW;
@@ -853,12 +879,12 @@ ExpoThumbnailsBox.prototype = {
             // pixels. To make this work and not end up with a gap at the bottom,
             // we need some thumbnails to be 99 pixels and some 100 pixels height;
             // we compute an actual scale separately for each thumbnail.
-            let x1 = Math.round(x);
+            let x1 = Math.round(x + (thumbnailWidth * thumbnail.slidePosition / 2));
             let x2 = Math.round(x + thumbnailWidth);
 
             let y1, y2;
             
-            y1 = Math.round(y + ((Main.layoutManager.primaryMonitor.height - y) * thumbnail.slidePosition));
+            y1 = Math.round(y + (thumbnailHeight * thumbnail.slidePosition / 2) /*+ ((Main.layoutManager.primaryMonitor.height - y) * thumbnail.slidePosition)*/);
             y2 = Math.round(y1 + thumbnailHeight);
 
             // Allocating a scaled actor is funny - x1/y1 correspond to the origin
@@ -868,7 +894,7 @@ ExpoThumbnailsBox.prototype = {
             childBox.y1 = y1;
             childBox.y2 = y1 + portholeHeight;
 
-            thumbnail.actor.set_scale(this._scale, this._scale);
+            thumbnail.actor.set_scale(this._scale * (1 - thumbnail.slidePosition), this._scale * (1 - thumbnail.slidePosition));
             thumbnail.actor.allocate(childBox, flags);            
 
             // We round the collapsing portion so that we don't get thumbnails resizing
@@ -876,6 +902,26 @@ ExpoThumbnailsBox.prototype = {
             // portion unrounded so that non-animating we end up with the right total
             x += thumbnailWidth + spacing;
         }
+        let x = 0;
+        let y = 0;
+
+        let buttonWidth = this.button.get_theme_node().get_length('width');
+        let buttonHeight = this.button.get_theme_node().get_length('height');
+        let buttonOverlap = this.button.get_theme_node().get_length('-cinnamon-close-overlap');
+
+        if (this.lastHovered && this.lastHovered.actor != null && !this.lastHovered.removed){
+            x = this.lastHovered.actor.allocation.x1 + ((this.lastHovered.actor.allocation.x2 - this.lastHovered.actor.allocation.x1) * this.lastHovered.actor.get_scale()[0]) - buttonOverlap;
+            y = this.lastHovered.actor.allocation.y1 - (buttonHeight - buttonOverlap);
+        } else {
+            this.button.hide();        
+        }
+
+        childBox.x1 = x;
+        childBox.x2 = childBox.x1 + buttonWidth;
+        childBox.y1 = y;
+        childBox.y2 = childBox.y1 + buttonHeight;
+        
+        this.button.allocate(childBox, flags);
     },
 
     _activeWorkspaceChanged: function(wm, from, to, direction) {
