@@ -38,7 +38,8 @@ AppMenuButtonRightClickMenu.prototype = {
         this.actor.hide();
 
         actor.connect('key-press-event', Lang.bind(this, this._onSourceKeyPress));        
-        
+        this.connect('open-state-changed', Lang.bind(this, this._onToggled));        
+
         this.metaWindow = metaWindow;
 
         this.itemCloseWindow = new PopupMenu.PopupMenuItem('Close');
@@ -63,8 +64,8 @@ AppMenuButtonRightClickMenu.prototype = {
         this.itemMoveToRightWorkspace.connect('activate', Lang.bind(this, this._onMoveToRightWorkspace));      
         
         if (orientation == St.Side.BOTTOM) {
-            //this.addMenuItem(this.itemMoveToLeftWorkspace);
-            //this.addMenuItem(this.itemMoveToRightWorkspace);
+            this.addMenuItem(this.itemMoveToLeftWorkspace);
+            this.addMenuItem(this.itemMoveToRightWorkspace);
             this.addMenuItem(this.itemMinimizeWindow);
             this.addMenuItem(this.itemMaximizeWindow);
             this.addMenuItem(this.itemCloseWindow);                        
@@ -73,29 +74,27 @@ AppMenuButtonRightClickMenu.prototype = {
             this.addMenuItem(this.itemCloseWindow);
             this.addMenuItem(this.itemMaximizeWindow);
             this.addMenuItem(this.itemMinimizeWindow);
-            //this.addMenuItem(this.itemMoveToLeftWorkspace);
-            //this.addMenuItem(this.itemMoveToRightWorkspace);
+            this.addMenuItem(this.itemMoveToLeftWorkspace);
+            this.addMenuItem(this.itemMoveToRightWorkspace);
         }
-        
-        /**if (this.metaWindow.is_on_all_workspaces()) {
+     },
+
+     _onToggled: function(actor, event){
+	if (this.metaWindow.is_on_all_workspaces()) {
             this.itemMoveToLeftWorkspace.actor.hide();
             this.itemMoveToRightWorkspace.actor.hide();
-        } 
-        else if (global.screen.get_active_workspace_index() == 0) {
-            if (St.Widget.get_default_direction() == St.TextDirection.RTL) {
+        } else {
+            if (this.metaWindow.get_workspace().get_neighbor(Meta.MotionDirection.LEFT) != this.metaWindow.get_workspace())
                 this.itemMoveToLeftWorkspace.actor.show();
-                this.itemMoveToRightWorkspace.actor.hide();
-            } 
-            else {
+            else
                 this.itemMoveToLeftWorkspace.actor.hide();
+            
+            if (this.metaWindow.get_workspace().get_neighbor(Meta.MotionDirection.RIGHT) != this.metaWindow.get_workspace())
                 this.itemMoveToRightWorkspace.actor.show();
-            }
+            else
+                this.itemMoveToRightWorkspace.actor.hide();
         }
-        else {
-            this.itemMoveToLeftWorkspace.actor.show();
-            this.itemMoveToRightWorkspace.actor.show();        
-        }*/
-},
+    },
     
     _onWindowMinimized: function(actor, event){
     },
@@ -129,7 +128,7 @@ AppMenuButtonRightClickMenu.prototype = {
     _onMoveToLeftWorkspace: function(actor, event){
         let workspace = this.metaWindow.get_workspace().get_neighbor(Meta.MotionDirection.LEFT); 
         if (workspace) {
-            this.destroy();
+            this.actor.destroy();
             this.metaWindow.change_workspace(workspace);
             Main._checkWorkspaces();
         }
@@ -138,7 +137,7 @@ AppMenuButtonRightClickMenu.prototype = {
     _onMoveToRightWorkspace: function(actor, event){
         let workspace = this.metaWindow.get_workspace().get_neighbor(Meta.MotionDirection.RIGHT); 
         if (workspace) {
-            this.destroy();
+            this.actor.destroy();
             this.metaWindow.change_workspace(workspace);
             Main._checkWorkspaces();
         }
