@@ -37,22 +37,6 @@ LayoutMenuItem.prototype = {
     }
 };
 
-function MyMenu(launcher, orientation) {
-    this._init(launcher, orientation);
-}
-
-MyMenu.prototype = {
-    __proto__: PopupMenu.PopupMenu.prototype,
-    
-    _init: function(launcher, orientation) {
-        this._launcher = launcher;        
-                
-        PopupMenu.PopupMenu.prototype._init.call(this, launcher.actor, 0.0, orientation, 0);
-        Main.uiGroup.add_actor(this.actor);
-        this.actor.hide();            
-    }
-}
-
 function MyApplet(orientation) {
     this._init(orientation);
 }
@@ -65,7 +49,7 @@ MyApplet.prototype = {
         
         try {                                
             this.menuManager = new PopupMenu.PopupMenuManager(this);
-            this.menu = new MyMenu(this, orientation);
+            this.menu = new Applet.AppletPopupMenu(this, orientation);
             this.menuManager.addMenu(this.menu);                            
                         
             this._container = new Cinnamon.GenericContainer();
