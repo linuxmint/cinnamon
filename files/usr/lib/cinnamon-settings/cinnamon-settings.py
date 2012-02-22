@@ -455,7 +455,7 @@ class AppletViewSidePage (SidePage):
                         self.enabled_applets.remove(enabled_applet)
             else:
                 self.model.set_value(iter, 2, True) 
-                self.enabled_applets.append("panel1:center:0:%s" % uuid)
+                self.enabled_applets.append("panel1:right:0:%s" % uuid)
             
             self.settings.set_strv("enabled-applets", self.enabled_applets)
                 
