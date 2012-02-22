@@ -352,7 +352,7 @@ StTooltip StLabel {
 	border-radius: 9px 9px 0px 0px;
 }
 .workspace-thumbnails {
-	spacing: 7px;
+	spacing: 14px;
 }
 .workspace-add-button {
 	background-image: url("add-workspace.png");
@@ -361,6 +361,14 @@ StTooltip StLabel {
 }
 .workspace-add-button:hover {	
 }
+
+.workspace-close-button {
+    background-image: url("close-window.svg");
+    height: 34px;
+    width: 34px;
+    -cinnamon-close-overlap: 20px;
+}
+
 .workspace-thumbnail-indicator {
 	outline: 2px solid white;
 	border: 1px solid #888;
