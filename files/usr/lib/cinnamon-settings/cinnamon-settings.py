@@ -416,32 +416,41 @@ class AppletViewSidePage (SidePage):
         if os.path.exists(directory) and os.path.isdir(directory):
             applets = os.listdir(directory)
             applets.sort()
-            for applet in applets:            
-                if os.path.exists("%s/%s/metadata.json" % (directory, applet)):
-                    json_data=open("%s/%s/metadata.json" % (directory, applet)).read()
-                    data = json.loads(json_data)  
-                    applet_uuid = data["uuid"]
-                    applet_name = data["name"]                
-                    applet_description = data["description"]
-                    applet_icon = data["icon"]
-                    
-                    if self.search_entry.get_text().upper() in (applet_name + applet_description).upper():
-                        iter = self.model.insert_before(None, None)
-                        found = False
-                        for enabled_applet in self.enabled_applets:
-                            if applet_uuid in enabled_applet:
-                                found = True                            
-                                break       
-                    
-                        self.model.set_value(iter, 0, applet_uuid)                
-                        self.model.set_value(iter, 1, '<b>%s</b>\n<i><span foreground="#555555" size="x-small">%s</span></i>' % (applet_name, applet_description))                                  
-                        self.model.set_value(iter, 2, found)
-                        theme = Gtk.IconTheme.get_default()
-                        if theme.has_icon(applet_icon):
-                            img = theme.load_icon(applet_icon, 32, 0)
-                        else:                        
-                            img = GdkPixbuf.Pixbuf.new_from_file_at_size( "/usr/lib/cinnamon-settings/data/icons/applets.svg", 36, 36)
-                        self.model.set_value(iter, 3, img)
+            for applet in applets:
+                try:           
+                    if os.path.exists("%s/%s/metadata.json" % (directory, applet)):
+                        json_data=open("%s/%s/metadata.json" % (directory, applet)).read()
+                        data = json.loads(json_data)  
+                        applet_uuid = data["uuid"]
+                        applet_name = data["name"]                                        
+                        applet_description = data["description"]                                                                    
+                        
+                        if self.search_entry.get_text().upper() in (applet_name + applet_description).upper():
+                            iter = self.model.insert_before(None, None)
+                            found = False
+                            for enabled_applet in self.enabled_applets:
+                                if applet_uuid in enabled_applet:
+                                    found = True                            
+                                    break       
+                        
+                            self.model.set_value(iter, 0, applet_uuid)                
+                            self.model.set_value(iter, 1, '<b>%s</b>\n<i><span foreground="#555555" size="x-small">%s</span></i>' % (applet_name, applet_description))                                  
+                            self.model.set_value(iter, 2, found)                            
+                            img = None                            
+                            if "icon" in data:
+                                applet_icon = data["icon"]
+                                theme = Gtk.IconTheme.get_default()                                                    
+                                if theme.has_icon(applet_icon):
+                                    img = theme.load_icon(applet_icon, 32, 0)
+                            elif os.path.exists("%s/%s/icon.png" % (directory, applet)):
+                                img = GdkPixbuf.Pixbuf.new_from_file_at_size("%s/%s/icon.png" % (directory, applet), 32, 32)                            
+                            
+                            if img is None:                                                
+                                img = GdkPixbuf.Pixbuf.new_from_file_at_size( "/usr/lib/cinnamon-settings/data/icons/applets.svg", 32, 32)
+                                
+                            self.model.set_value(iter, 3, img)                
+                except Exception, detail:
+                    print "Failed to load applet %s: %s" % (applet, detail)
         
     def toggled(self, renderer, path, treeview):        
         iter = self.model.get_iter(path)
@@ -1069,7 +1078,6 @@ class MainWindow:
             self.side_view_sw.hide()
             path = selected_items[0]            
             iterator = self.store.get_iter(path)
-            print self.store.get_value(iterator, 0)
             sidePage = self.store.get_value(iterator,2)
             self.window.set_title(_("Cinnamon Settings") + " - " + sidePage.name)
             sidePage.build()
