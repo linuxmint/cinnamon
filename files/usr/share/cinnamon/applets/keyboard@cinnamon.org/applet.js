@@ -42,25 +42,20 @@ function MyApplet(orientation) {
 }
 
 MyApplet.prototype = {
-    __proto__: Applet.Applet.prototype,
+    __proto__: Applet.TextIconApplet.prototype,
 
     _init: function(orientation) {        
-        Applet.Applet.prototype._init.call(this, orientation);
+        Applet.TextIconApplet.prototype._init.call(this, orientation);
         
         try {                                
             this.menuManager = new PopupMenu.PopupMenuManager(this);
             this.menu = new Applet.AppletPopupMenu(this, orientation);
             this.menuManager.addMenu(this.menu);                            
-                        
-            this._container = new Cinnamon.GenericContainer();
-            this._container.connect('get-preferred-width', Lang.bind(this, this._containerGetPreferredWidth));
-            this._container.connect('get-preferred-height', Lang.bind(this, this._containerGetPreferredHeight));
-            this._container.connect('allocate', Lang.bind(this, this._containerAllocate));
-            this.actor.add_actor(this._container);
+
             this.actor.add_style_class_name('panel-status-button');
 
-            this._iconActor = new St.Icon({ icon_name: 'keyboard', icon_type: St.IconType.SYMBOLIC, style_class: 'system-status-icon' });
-            this._container.add_actor(this._iconActor);
+            this.set_applet_icon_name('keyboard');
+
             this._labelActors = [ ];
             this._layoutItems = [ ];
 
@@ -115,11 +110,6 @@ MyApplet.prototype = {
 
     _syncConfig: function() {
         this._showFlags = this._config.if_flags_shown();
-        if (this._showFlags) {
-            this._container.set_skip_paint(this._iconActor, false);
-        } else {
-            this._container.set_skip_paint(this._iconActor, true);
-        }
 
         let groups = this._config.get_group_names();
         if (groups.length > 1) {
@@ -139,7 +129,6 @@ MyApplet.prototype = {
 
         this._selectedLayout = null;
         this._layoutItems = [ ];
-        this._selectedLabel = null;
         this._labelActors = [ ];
         for (let i = 0; i < groups.length; i++) {
             let icon_name = this._config.get_group_name(i);
@@ -156,8 +145,6 @@ MyApplet.prototype = {
 
             let shortLabel = new St.Label({ text: short_names[i] });
             this._labelActors.push(shortLabel);
-            this._container.add_actor(shortLabel);
-            this._container.set_skip_paint(shortLabel, true);
         }
 
         this._syncGroup();
@@ -171,70 +158,21 @@ MyApplet.prototype = {
             this._selectedLayout = null;
         }
 
-        if (this._selectedLabel) {
-            this._container.set_skip_paint(this._selectedLabel, true);
-            this._selectedLabel = null;
-        }
-
         let item = this._layoutItems[selected];
         item.setShowDot(true);
 
-        this._iconActor.icon_name = item._icon_name;
-        this._selectedLabel = this._labelActors[selected];
-        this._container.set_skip_paint(this._selectedLabel, this._showFlags);
+        let selectedLabel = this._labelActors[selected];
+
+        if (this._showFlags) {
+            this.set_applet_icon_symbolic_name(item._icon_name);
+            this.set_applet_label("");
+        } else {
+            this.hide_applet_icon();
+            this.set_applet_label(selectedLabel.text);
+        }       
 
         this._selectedLayout = item;
-    },
-
-    _containerGetPreferredWidth: function(container, for_height, alloc) {
-        // Here, and in _containerGetPreferredHeight, we need to query
-        // for the height of all children, but we ignore the results
-        // for those we don't actually display.
-        let max_min_width = 0, max_natural_width = 0;
-        if (this._showFlags)
-            [max_min_width, max_natural_width] = this._iconActor.get_preferred_width(for_height);
-
-        for (let i = 0; i < this._labelActors.length; i++) {
-            let [min_width, natural_width] = this._labelActors[i].get_preferred_width(for_height);
-            if (!this._showFlags) {
-                max_min_width = Math.max(max_min_width, min_width);
-                max_natural_width = Math.max(max_natural_width, natural_width);
-            }
-        }
-
-        alloc.min_size = max_min_width;
-        alloc.natural_size = max_natural_width;
-    },
-
-    _containerGetPreferredHeight: function(container, for_width, alloc) {
-        let max_min_height = 0, max_natural_height = 0;
-        if (this._showFlags)
-            [max_min_height, max_natural_height] = this._iconActor.get_preferred_height(for_width);
-        
-        for (let i = 0; i < this._labelActors.length; i++) {
-            let [min_height, natural_height] = this._labelActors[i].get_preferred_height(for_width);
-            if (!this._showFlags) {
-                max_min_height = Math.max(max_min_height, min_height);
-                max_natural_height = Math.max(max_natural_height, natural_height);
-            }
-        }
-
-        alloc.min_size = max_min_height;
-        alloc.natural_size = max_natural_height;
-    },
-
-    _containerAllocate: function(container, box, flags) {
-        // translate box to (0, 0)
-        box.x2 -= box.x1;
-        box.x1 = 0;
-        box.y2 -= box.y1;
-        box.y1 = 0;
-
-        this._iconActor.allocate_align_fill(box, 0.5, 0, false, false, flags);
-        for (let i = 0; i < this._labelActors.length; i++)
-            this._labelActors[i].allocate_align_fill(box, 0.5, 0, false, false, flags);
-    }
-    
+    }    
 };
 
 function main(metadata, orientation) {  
