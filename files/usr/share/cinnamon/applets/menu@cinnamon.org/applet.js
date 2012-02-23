@@ -160,6 +160,24 @@ ApplicationButton.prototype = {
         this.addActor(this.icon);
         this.label = new St.Label({ text: this.app.get_name(), style_class: 'menu-application-button-label' });
         this.addActor(this.label);
+        
+        this._draggable = DND.makeDraggable(this.actor);
+    },
+    
+    getDragActor: function() {
+        let favorites = AppFavorites.getAppFavorites().getFavorites();
+        let nbFavorites = favorites.length;
+        let monitorHeight = Main.layoutManager.primaryMonitor.height;
+        let real_size = (0.7*monitorHeight) / nbFavorites;
+        let icon_size = 0.6*real_size;
+        if (icon_size>MAX_FAV_ICON_SIZE) icon_size = MAX_FAV_ICON_SIZE;
+        return this.app.create_icon_texture(icon_size);
+    },
+
+    // Returns the original actor that should align with the actor
+    // we show as the item is being dragged.
+    getDragActorSource: function() {
+        return this.actor;
     }
 };
 Signals.addSignalMethods(ApplicationButton.prototype);
@@ -523,7 +541,7 @@ FavoritesBox.prototype = {
             }
 
             this._dragPlaceholder = new DragPlaceholderItem();
-            this._dragPlaceholder.child.set_width (source.actor.width);
+            this._dragPlaceholder.child.set_width (source.actor.height);
             this._dragPlaceholder.child.set_height (source.actor.height);
             this.actor.insert_actor(this._dragPlaceholder.actor,
                                    this._dragPlaceholderPos);
