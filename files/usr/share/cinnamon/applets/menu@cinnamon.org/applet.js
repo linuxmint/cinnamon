@@ -17,6 +17,8 @@ const ScreenSaver = imports.misc.screenSaver;
 const FileUtils = imports.misc.fileUtils;
 const Util = imports.misc.util;
 const Tweener = imports.ui.tweener;
+const DND = imports.ui.dnd;
+const Meta = imports.gi.Meta;
 
 const Gettext = imports.gettext.domain('cinnamon-extensions');
 const _ = Gettext.gettext;
@@ -27,6 +29,8 @@ const CATEGORY_ICON_SIZE = 22;
 const APPLICATION_ICON_SIZE = 22;
 
 const USER_DESKTOP_PATH = FileUtils.getUserDesktopDir();
+
+const DND_ANIMATION_TIME = 0.2;
 
 let appsys = Cinnamon.AppSystem.get_default();
 
@@ -248,7 +252,19 @@ FavoritesButton.prototype = {
         this.actor.style = "padding-top: "+(icon_size/3)+"px;padding-bottom: "+(icon_size/3)+"px; margin:auto;"
 
         this.actor.add_style_class_name('menu-favorites-button');
-        this.addActor(app.create_icon_texture(icon_size));       
+        this.addActor(app.create_icon_texture(icon_size));  
+        
+        this._draggable = DND.makeDraggable(this.actor);     
+    },
+    
+    getDragActor: function() {
+        return new Clutter.Clone({ source: this.actor });
+    },
+
+    // Returns the original actor that should align with the actor
+    // we show as the item is being dragged.
+    getDragActorSource: function() {
+        return this.actor;
     }
 };
 
@@ -268,6 +284,305 @@ SystemButton.prototype = {
         this.actor.set_child(iconObj);             
     }
 };
+
+function DashItemContainer() {
+    this._init();
+}
+
+DashItemContainer.prototype = {
+    _init: function() {
+        this.actor = new Cinnamon.GenericContainer({ style_class: 'dash-item-container' });
+        this.actor.connect('get-preferred-width',
+                           Lang.bind(this, this._getPreferredWidth));
+        this.actor.connect('get-preferred-height',
+                           Lang.bind(this, this._getPreferredHeight));
+        this.actor.connect('allocate',
+                           Lang.bind(this, this._allocate));
+        this.actor._delegate = this;
+
+        this.child = null;
+        this._childScale = 1;
+        this._childOpacity = 255;
+        this.animatingOut = false;
+    },
+
+    _allocate: function(actor, box, flags) {
+        if (this.child == null)
+            return;
+
+        let availWidth = box.x2 - box.x1;
+        let availHeight = box.y2 - box.y1;
+        let [minChildWidth, minChildHeight, natChildWidth, natChildHeight] =
+            this.child.get_preferred_size();
+        let [childScaleX, childScaleY] = this.child.get_scale();
+
+        let childWidth = Math.min(natChildWidth * childScaleX, availWidth);
+        let childHeight = Math.min(natChildHeight * childScaleY, availHeight);
+
+        let childBox = new Clutter.ActorBox();
+        childBox.x1 = (availWidth - childWidth) / 2;
+        childBox.y1 = (availHeight - childHeight) / 2;
+        childBox.x2 = childBox.x1 + childWidth;
+        childBox.y2 = childBox.y1 + childHeight;
+
+        this.child.allocate(childBox, flags);
+    },
+
+    _getPreferredHeight: function(actor, forWidth, alloc) {
+        alloc.min_size = 0;
+        alloc.natural_size = 0;
+
+        if (this.child == null)
+            return;
+
+        let [minHeight, natHeight] = this.child.get_preferred_height(forWidth);
+        alloc.min_size += minHeight * this.child.scale_y;
+        alloc.natural_size += natHeight * this.child.scale_y;
+    },
+
+    _getPreferredWidth: function(actor, forHeight, alloc) {
+        alloc.min_size = 0;
+        alloc.natural_size = 0;
+
+        if (this.child == null)
+            return;
+
+        let [minWidth, natWidth] = this.child.get_preferred_width(forHeight);
+        alloc.min_size = minWidth * this.child.scale_y;
+        alloc.natural_size = natWidth * this.child.scale_y;
+    },
+
+    setChild: function(actor) {
+        if (this.child == actor)
+            return;
+
+        this.actor.destroy_children();
+
+        this.child = actor;
+        this.actor.add_actor(this.child);
+    },
+
+    animateIn: function() {
+        if (this.child == null)
+            return;
+
+        this.childScale = 0;
+        this.childOpacity = 0;
+        Tweener.addTween(this,
+                         { childScale: 1.0,
+                           childOpacity: 255,
+                           time: DND_ANIMATION_TIME,
+                           transition: 'easeOutQuad'
+                         });
+    },
+
+    animateOutAndDestroy: function() {
+        if (this.child == null) {
+            this.actor.destroy();
+            return;
+        }
+
+        this.animatingOut = true;
+        this.childScale = 1.0;
+        Tweener.addTween(this,
+                         { childScale: 0.0,
+                           childOpacity: 0,
+                           time: DND_ANIMATION_TIME,
+                           transition: 'easeOutQuad',
+                           onComplete: Lang.bind(this, function() {
+                               this.actor.destroy();
+                           })
+                         });
+    },
+
+    set childScale(scale) {
+        this._childScale = scale;
+
+        if (this.child == null)
+            return;
+
+        this.child.set_scale_with_gravity(scale, scale,
+                                          Clutter.Gravity.CENTER);
+        this.actor.queue_relayout();
+    },
+
+    get childScale() {
+        return this._childScale;
+    },
+
+    set childOpacity(opacity) {
+        this._childOpacity = opacity;
+
+        if (this.child == null)
+            return;
+
+        this.child.set_opacity(opacity);
+        this.actor.queue_redraw();
+    },
+
+    get childOpacity() {
+        return this._childOpacity;
+    }
+};
+
+function DragPlaceholderItem() {
+    this._init();
+}
+
+DragPlaceholderItem.prototype = {
+    __proto__: DashItemContainer.prototype,
+
+    _init: function() {
+        DashItemContainer.prototype._init.call(this);
+        this.setChild(new St.Bin({ style_class: 'dash-placeholder' }));
+    }
+};
+
+function FavoritesBox() {
+    this._init();
+}
+
+FavoritesBox.prototype = {
+    _init: function() {
+        this.actor = new St.BoxLayout({ vertical: true });
+        this.actor._delegate = this;
+        
+        this._dragPlaceholder = null;
+        this._dragPlaceholderPos = -1;
+        this._animatingPlaceholdersCount = 0;
+    },
+    
+    _clearDragPlaceholder: function() {
+        if (this._dragPlaceholder) {
+            this._dragPlaceholder.animateOutAndDestroy();
+            this._dragPlaceholder = null;
+            this._dragPlaceholderPos = -1;
+        }
+    },
+    
+    handleDragOver : function(source, actor, x, y, time) {
+        let app = source.app;
+
+        // Don't allow favoriting of transient apps
+        if (app == null || app.is_window_backed())
+            return DND.DragMotionResult.NO_DROP;
+
+        let favorites = AppFavorites.getAppFavorites().getFavorites();
+        let numFavorites = favorites.length;
+
+        let favPos = favorites.indexOf(app);
+
+        let children = this.actor.get_children();
+        let numChildren = children.length;
+        let boxHeight = this.actor.height;
+
+        // Keep the placeholder out of the index calculation; assuming that
+        // the remove target has the same size as "normal" items, we don't
+        // need to do the same adjustment there.
+        if (this._dragPlaceholder) {
+            boxHeight -= this._dragPlaceholder.actor.height;
+            numChildren--;
+        }
+
+        let pos = Math.round(y * numFavorites / boxHeight);
+
+        if (pos != this._dragPlaceholderPos && pos <= numFavorites) {
+            if (this._animatingPlaceholdersCount > 0) {
+                let appChildren = children.filter(function(actor) {
+                    return (actor._delegate instanceof FavoritesButton);
+                });
+                this._dragPlaceholderPos = 2 * children.indexOf(appChildren[pos]);
+            } else {
+                this._dragPlaceholderPos = 2 * pos;
+            }
+
+            // Don't allow positioning before or after self
+            if (favPos != -1 && (pos == favPos || pos == favPos + 1)) {
+                if (this._dragPlaceholder) {
+                    this._dragPlaceholder.animateOutAndDestroy();
+                    this._animatingPlaceholdersCount++;
+                    this._dragPlaceholder.actor.connect('destroy',
+                        Lang.bind(this, function() {
+                            this._animatingPlaceholdersCount--;
+                        }));
+                }
+                this._dragPlaceholder = null;
+
+                return DND.DragMotionResult.CONTINUE;
+            }
+
+            // If the placeholder already exists, we just move
+            // it, but if we are adding it, expand its size in
+            // an animation
+            let fadeIn;
+            if (this._dragPlaceholder) {
+                this._dragPlaceholder.actor.destroy();
+                fadeIn = false;
+            } else {
+                fadeIn = true;
+            }
+
+            this._dragPlaceholder = new DragPlaceholderItem();
+            this._dragPlaceholder.child.set_width (source.actor.width);
+            this._dragPlaceholder.child.set_height (source.actor.height);
+            this.actor.insert_actor(this._dragPlaceholder.actor,
+                                   this._dragPlaceholderPos);
+            if (fadeIn)
+                this._dragPlaceholder.animateIn();
+        }
+
+        let srcIsFavorite = (favPos != -1);
+
+        if (srcIsFavorite)
+            return DND.DragMotionResult.MOVE_DROP;
+
+        return DND.DragMotionResult.COPY_DROP;
+    },
+    
+    // Draggable target interface
+    acceptDrop : function(source, actor, x, y, time) {
+        let app = source.app;
+
+        // Don't allow favoriting of transient apps
+        if (app == null || app.is_window_backed()) {
+            return false;
+        }
+
+        let id = app.get_id();
+
+        let favorites = AppFavorites.getAppFavorites().getFavoriteMap();
+
+        let srcIsFavorite = (id in favorites);
+
+        let favPos = 0;
+        let children = this.actor.get_children();
+        for (let i = 0; i < this._dragPlaceholderPos; i++) {
+            if (this._dragPlaceholder &&
+                children[i] == this._dragPlaceholder.actor)
+                continue;
+            
+            if (!(children[i]._delegate instanceof FavoritesButton)) continue;
+
+            let childId = children[i]._delegate.app.get_id();
+            if (childId == id)
+                continue;
+            if (childId in favorites)
+                favPos++;
+        }
+
+        Meta.later_add(Meta.LaterType.BEFORE_REDRAW, Lang.bind(this,
+            function () {
+                let appFavorites = AppFavorites.getAppFavorites();
+                if (srcIsFavorite)
+                    appFavorites.moveFavoriteToPos(id, favPos);
+                else
+                    appFavorites.addFavoriteAtPos(id, favPos);
+                return false;
+            }));
+
+        return true;
+    }
+}
 
 function MyApplet(orientation) {
     this._init(orientation);
@@ -535,7 +850,7 @@ MyApplet.prototype = {
            this._activeContainer = null;
            let monitorHeight = Main.layoutManager.primaryMonitor.height;
            let applicationsBoxHeight = this.applicationsBox.get_allocation_box().y2-this.applicationsBox.get_allocation_box().y1;
-           let scrollBoxHeight = (this.favoritesBox.get_allocation_box().y2-this.favoritesBox.get_allocation_box().y1)                                    
+           let scrollBoxHeight = (this.leftBox.get_allocation_box().y2-this.leftBox.get_allocation_box().y1)                                    
                                     -(this.searchBox.get_allocation_box().y2-this.searchBox.get_allocation_box().y1);           
            // if (scrollBoxHeight < (0.2*monitorHeight)  &&  (scrollBoxHeight < applicationsBoxHeight)) {
              //    scrollBoxHeight = Math.min(0.2*monitorHeight, applicationsBoxHeight);
@@ -628,9 +943,12 @@ MyApplet.prototype = {
     
     _refreshFavs : function() {     	
     	//Remove all favorites
-    	this.favoritesBox.get_children().forEach(Lang.bind(this, function (child) {
+    	this.leftBox.get_children().forEach(Lang.bind(this, function (child) {
             child.destroy();
-        })); 
+        }));
+        
+        let favoritesBox = new FavoritesBox();
+        this.leftBox.add_actor(favoritesBox.actor, { y_align: St.Align.END, y_fill: false });
     	 
         //Load favorites again
         this._favoritesButtons = new Array();
@@ -643,8 +961,8 @@ MyApplet.prototype = {
             if (app) {
                 let button = new FavoritesButton(this, app, launchers.length + 3); // + 3 because we're adding 3 system buttons at the bottom
                 this._favoritesButtons[app] = button;
-                this.favoritesBox.add_actor(button.actor, { y_align: St.Align.END, y_fill: false });
-                this.favoritesBox.add_actor(button.menu.actor, { y_align: St.Align.END, y_fill: false });
+                favoritesBox.actor.add_actor(button.actor, { y_align: St.Align.END, y_fill: false });
+                favoritesBox.actor.add_actor(button.menu.actor, { y_align: St.Align.END, y_fill: false });
                 button.actor.connect('enter-event', Lang.bind(this, function() {
                    this.selectedAppTitle.set_text(button.app.get_name());
                    if (button.app.get_description()) this.selectedAppDescription.set_text(button.app.get_description());
@@ -660,7 +978,7 @@ MyApplet.prototype = {
         
         //Separator
         let separator = new PopupMenu.PopupSeparatorMenuItem();
-        this.favoritesBox.add_actor(separator.actor, { y_align: St.Align.END, y_fill: false });                   
+        this.leftBox.add_actor(separator.actor, { y_align: St.Align.END, y_fill: false });                   
         
         //Lock screen
         let button = new SystemButton(this, "gnome-lockscreen", launchers.length + 3);        
@@ -677,7 +995,7 @@ MyApplet.prototype = {
             this._screenSaverProxy.LockRemote();
         }));
         
-        this.favoritesBox.add_actor(button.actor, { y_align: St.Align.END, y_fill: false });                  
+        this.leftBox.add_actor(button.actor, { y_align: St.Align.END, y_fill: false });                  
         
         //Logout button
         let button = new SystemButton(this, "gnome-logout", launchers.length + 3);        
@@ -694,7 +1012,7 @@ MyApplet.prototype = {
             this._session.LogoutRemote(0);
         }));
         
-        this.favoritesBox.add_actor(button.actor, { y_align: St.Align.END, y_fill: false }); 
+        this.leftBox.add_actor(button.actor, { y_align: St.Align.END, y_fill: false }); 
                         
         //Shutdown button
         let button = new SystemButton(this, "gnome-shutdown", launchers.length + 3);        
@@ -711,7 +1029,7 @@ MyApplet.prototype = {
             this._session.ShutdownRemote();
         }));
         
-        this.favoritesBox.add_actor(button.actor, { y_align: St.Align.END, y_fill: false });                
+        this.leftBox.add_actor(button.actor, { y_align: St.Align.END, y_fill: false });                
     },
    
     _loadCategory: function(dir, top_dir) {
@@ -749,12 +1067,12 @@ MyApplet.prototype = {
         
         let leftPane = new St.BoxLayout({ vertical: true });
                   
-        this.favoritesBox = new St.BoxLayout({ style_class: 'menu-favorites-box', vertical: true });        
+        this.leftBox = new St.BoxLayout({ style_class: 'menu-favorites-box', vertical: true });        
         
         this._session = new GnomeSession.SessionManager();
         this._screenSaverProxy = new ScreenSaver.ScreenSaverProxy();            
                                        
-        leftPane.add_actor(this.favoritesBox, { y_align: St.Align.END, y_fill: false });        
+        leftPane.add_actor(this.leftBox, { y_align: St.Align.END, y_fill: false });        
         
         let rightPane = new St.BoxLayout({ vertical: true });
         
