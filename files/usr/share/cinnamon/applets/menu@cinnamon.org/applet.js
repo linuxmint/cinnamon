@@ -482,7 +482,7 @@ FavoritesBox.prototype = {
         let app = source.app;
 
         // Don't allow favoriting of transient apps
-        if (app == null || app.is_window_backed())
+        if (app == null || app.is_window_backed() || (app.get_id() in AppFavorites.getAppFavorites().getFavoriteMap()))
             return DND.DragMotionResult.NO_DROP;
 
         let favorites = AppFavorites.getAppFavorites().getFavorites();
