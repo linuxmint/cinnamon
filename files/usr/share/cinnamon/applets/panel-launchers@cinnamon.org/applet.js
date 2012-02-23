@@ -501,7 +501,7 @@ MyApplet.prototype = {
     },
     
     handleDragOver: function(source, actor, x, y, time) {
-        if (!(source instanceof PanelAppLauncher)) return DND.DragMotionResult.NO_DROP;
+        if (!(source.isDraggableApp || (source instanceof PanelAppLauncher))) return DND.DragMotionResult.NO_DROP;
         
         let children = this.actor.get_children();
         let numChildren = children.length;
@@ -565,7 +565,11 @@ MyApplet.prototype = {
     },
     
     acceptDrop: function(source, actor, x, y, time) {
-        if (!(source instanceof PanelAppLauncher)) return false;
+        if (!(source.isDraggableApp || (source instanceof PanelAppLauncher))) return DND.DragMotionResult.NO_DROP;
+        
+        let sourceId;
+        if (source instanceof PanelAppLauncher) sourceId = source.get_id();
+        else sourceId = source.get_app_id();
         
         let launcherPos = 0;
         let children = this.actor.get_children();
@@ -575,11 +579,16 @@ MyApplet.prototype = {
                 continue;
 
             let childId = children[i]._delegate.get_id();
-            if (childId == source.get_id())
+            if (childId == sourceId)
                 continue;
             launcherPos++;
         }
-        this.moveLauncher(source, launcherPos);
+        if (source instanceof PanelAppLauncher) this.moveLauncher(source, launcherPos);
+        else{
+            let desktopFiles = this._settings.get_strv('panel-launchers');
+            desktopFiles.splice(launcherPos, 0, sourceId);
+            this._settings.set_strv('panel-launchers', desktopFiles);
+        }
         this._clearDragPlaceholder();
         actor.destroy();
         return true;

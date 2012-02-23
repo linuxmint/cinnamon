@@ -160,6 +160,11 @@ ApplicationButton.prototype = {
         this.addActor(this.label);
         
         this._draggable = DND.makeDraggable(this.actor);
+        this.isDraggableApp = true;
+    },
+    
+    get_app_id: function() {
+        return this.app.get_id();
     },
     
     getDragActor: function() {
@@ -271,6 +276,11 @@ FavoritesButton.prototype = {
         this.addActor(app.create_icon_texture(icon_size));  
         
         this._draggable = DND.makeDraggable(this.actor);     
+        this.isDraggableApp = true;
+    },
+    
+    get_app_id: function() {
+        return this.app.get_id();
     },
     
     getDragActor: function() {
