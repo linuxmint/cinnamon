@@ -37,6 +37,8 @@ const DragDropResult = {
     CONTINUE: 2
 };
 
+const DND_ANIMATION_TIME = 0.2;
+
 let eventHandlerActor = null;
 let currentDraggable = null;
 let dragMonitors = [];
@@ -624,3 +626,156 @@ Signals.addSignalMethods(_Draggable.prototype);
 function makeDraggable(actor, params) {
     return new _Draggable(actor, params);
 }
+
+function GenericDragItemContainer() {
+    this._init();
+}
+
+GenericDragItemContainer.prototype = {
+    _init: function() {
+        this.actor = new Cinnamon.GenericContainer({ style_class: 'drag-item-container' });
+        this.actor.connect('get-preferred-width',
+                           Lang.bind(this, this._getPreferredWidth));
+        this.actor.connect('get-preferred-height',
+                           Lang.bind(this, this._getPreferredHeight));
+        this.actor.connect('allocate',
+                           Lang.bind(this, this._allocate));
+        this.actor._delegate = this;
+
+        this.child = null;
+        this._childScale = 1;
+        this._childOpacity = 255;
+        this.animatingOut = false;
+    },
+
+    _allocate: function(actor, box, flags) {
+        if (this.child == null)
+            return;
+
+        let availWidth = box.x2 - box.x1;
+        let availHeight = box.y2 - box.y1;
+        let [minChildWidth, minChildHeight, natChildWidth, natChildHeight] =
+            this.child.get_preferred_size();
+        let [childScaleX, childScaleY] = this.child.get_scale();
+
+        let childWidth = Math.min(natChildWidth * childScaleX, availWidth);
+        let childHeight = Math.min(natChildHeight * childScaleY, availHeight);
+
+        let childBox = new Clutter.ActorBox();
+        childBox.x1 = (availWidth - childWidth) / 2;
+        childBox.y1 = (availHeight - childHeight) / 2;
+        childBox.x2 = childBox.x1 + childWidth;
+        childBox.y2 = childBox.y1 + childHeight;
+
+        this.child.allocate(childBox, flags);
+    },
+
+    _getPreferredHeight: function(actor, forWidth, alloc) {
+        alloc.min_size = 0;
+        alloc.natural_size = 0;
+
+        if (this.child == null)
+            return;
+
+        let [minHeight, natHeight] = this.child.get_preferred_height(forWidth);
+        alloc.min_size += minHeight * this.child.scale_y;
+        alloc.natural_size += natHeight * this.child.scale_y;
+    },
+
+    _getPreferredWidth: function(actor, forHeight, alloc) {
+        alloc.min_size = 0;
+        alloc.natural_size = 0;
+
+        if (this.child == null)
+            return;
+
+        let [minWidth, natWidth] = this.child.get_preferred_width(forHeight);
+        alloc.min_size = minWidth * this.child.scale_y;
+        alloc.natural_size = natWidth * this.child.scale_y;
+    },
+
+    setChild: function(actor) {
+        if (this.child == actor)
+            return;
+
+        this.actor.destroy_children();
+
+        this.child = actor;
+        this.actor.add_actor(this.child);
+    },
+
+    animateIn: function() {
+        if (this.child == null)
+            return;
+
+        this.childScale = 0;
+        this.childOpacity = 0;
+        Tweener.addTween(this,
+                         { childScale: 1.0,
+                           childOpacity: 255,
+                           time: DND_ANIMATION_TIME,
+                           transition: 'easeOutQuad'
+                         });
+    },
+
+    animateOutAndDestroy: function() {
+        if (this.child == null) {
+            this.actor.destroy();
+            return;
+        }
+
+        this.animatingOut = true;
+        this.childScale = 1.0;
+        Tweener.addTween(this,
+                         { childScale: 0.0,
+                           childOpacity: 0,
+                           time: DND_ANIMATION_TIME,
+                           transition: 'easeOutQuad',
+                           onComplete: Lang.bind(this, function() {
+                               this.actor.destroy();
+                           })
+                         });
+    },
+
+    set childScale(scale) {
+        this._childScale = scale;
+
+        if (this.child == null)
+            return;
+
+        this.child.set_scale_with_gravity(scale, scale,
+                                          Clutter.Gravity.CENTER);
+        this.actor.queue_relayout();
+    },
+
+    get childScale() {
+        return this._childScale;
+    },
+
+    set childOpacity(opacity) {
+        this._childOpacity = opacity;
+
+        if (this.child == null)
+            return;
+
+        this.child.set_opacity(opacity);
+        this.actor.queue_redraw();
+    },
+
+    get childOpacity() {
+        return this._childOpacity;
+    }
+};
+
+function GenericDragPlaceholderItem() {
+    this._init();
+}
+
+GenericDragPlaceholderItem.prototype = {
+    __proto__: GenericDragItemContainer.prototype,
+
+    _init: function() {
+        GenericDragItemContainer.prototype._init.call(this);
+        this.setChild(new St.Bin({ style_class: 'drag-placeholder' }));
+    }
+};
