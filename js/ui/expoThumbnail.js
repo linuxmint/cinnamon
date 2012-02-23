@@ -522,7 +522,6 @@ ExpoWorkspaceThumbnail.prototype = {
     handleDragOver : function(source, actor, x, y, time) {
         this.emit('drag-over');
         if (source == Main.xdndHandler) {
-            //this.metaWorkspace.activate(time);
             return DND.DragMotionResult.CONTINUE;
         }
 
@@ -557,6 +556,8 @@ ExpoWorkspaceThumbnail.prototype = {
             metaWindow.change_workspace_by_index(this.metaWorkspace.index(),
                                                  false, // don't create workspace
                                                  time);
+
+            this._overviewModeOn();
             return true;
         }
         return false;
