@@ -498,6 +498,7 @@ ExpoWorkspaceThumbnail.prototype = {
         //if (this.metaWorkspace == global.screen.get_active_workspace()){
             if (clone && clone != null)
                 Main.activateWindow(clone.metaWindow, time, this.metaWorkspace.index());
+            this.metaWorkspace.activate(time);
             Main.expo.hide();
         /*} else {
             this.metaWorkspace.activate(time);
