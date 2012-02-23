@@ -293,6 +293,8 @@ ExpoWorkspaceThumbnail.prototype = {
             }
         }
         clone.destroy();
+        if (this.overviewMode)
+            this._overviewModeOn();
     },
 
     _doAddWindow : function(metaWin) {
@@ -329,6 +331,8 @@ ExpoWorkspaceThumbnail.prototype = {
             return;
 
         let clone = this._addWindowClone(win); 
+        if (this.overviewMode)
+            this._overviewModeOn();
     },
 
     _windowAdded : function(metaWorkspace, metaWin) {
