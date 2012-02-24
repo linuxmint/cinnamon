@@ -453,8 +453,8 @@ ExpoWorkspaceThumbnail.prototype = {
                 window.origX = window.actor.x;
                 window.origY = window.actor.y;
             }
-            if (window.metaWindow.maximized_horizontally &&
-                window.metaWindow.maximized_vertically){
+            if ((window.metaWindow.maximized_horizontally &&
+                window.metaWindow.maximized_vertically) || window.metaWindow.get_layer() == Meta.StackLayer.FULLSCREEN){
                 window.origX = 0;
                 window.origY = 0;
             }
