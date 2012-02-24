@@ -287,15 +287,6 @@ AppMenuButton.prototype = {
             this.metaWindow.delete(global.get_current_time());
             this.rightClickMenu.destroy();
         } else if (Cinnamon.get_event_state(event) & Clutter.ModifierType.BUTTON3_MASK) {
-            if (!this.rightClickMenu.isOpen) {
-                // Setting the max-height won't do any good if the minimum height of the
-                // menu is higher then the screen; it's useful if part of the menu is
-                // scrollable so the minimum height is smaller than the natural height
-                //let monitor = global.get_primary_monitor();
-                //this.rightClickMenu.actor.style = ('max-height: ' +
-                //                         Math.round(200) +
-                //                         'px;');
-            }
             this.rightClickMenu.mouseEvent = event;
             this.rightClickMenu.toggle();   
         }   
