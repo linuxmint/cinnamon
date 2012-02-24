@@ -52,6 +52,9 @@ ExpoWindowClone.prototype = {
         this._draggable.connect('drag-begin', Lang.bind(this, this._onDragBegin));
         this._draggable.connect('drag-end', Lang.bind(this, this._onDragEnd));
         this.inDrag = false;
+        
+        if (!this.metaWindow.showing_on_its_workspace())
+            this.actor.opacity = 0;
 
     },
 
