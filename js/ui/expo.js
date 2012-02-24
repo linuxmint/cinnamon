@@ -19,7 +19,7 @@ const Tweener = imports.ui.tweener;
 const ExpoView = imports.ui.expoView;
 
 // Time for initial animation going into Overview mode
-const ANIMATION_TIME = 0.25;
+const ANIMATION_TIME = 0.3;
 
 const DND_WINDOW_SWITCH_TIMEOUT = 1250;
 
@@ -100,9 +100,6 @@ Expo.prototype = {
         this._background = Meta.BackgroundActor.new_for_screen(global.screen);
         this._background.hide();
         global.overlay_group.add_actor(this._background);
-
-        this._desktopFade = new St.Bin();
-        global.overlay_group.add_actor(this._desktopFade);
 
         this._spacing = 0;
 
@@ -235,7 +232,9 @@ Expo.prototype = {
         let buttonY = (primary.height - buttonHeight) / 2;
 
         this._addWorkspaceButton.set_position((primary.width - buttonWidth), buttonY);
-        this._addWorkspaceButton.set_size(buttonWidth, buttonHeight);
+        this._addWorkspaceButton.set_size(buttonWidth, buttonHeight); 
+        if (this._addWorkspaceButton.get_theme_node().get_background_image() == null)
+            this._addWorkspaceButton.set_style('background-image: url("/usr/share/cinnamon/theme/add-workspace.png");'); 
     },
 
     //// Public methods ////
@@ -291,46 +290,29 @@ Expo.prototype = {
         this._background.show();
         this._addWorkspaceButton.show();
         this._expo.show();
-        if (Main.panel)
-            Tweener.addTween(Main.panel.actor, {opacity: 0, time: ANIMATION_TIME, transition: 'easeOutQuad', onComplete: function(){Main.panel.actor.hide();}});
-        if (Main.panel2)
-            Tweener.addTween(Main.panel2.actor, {opacity: 0, time: ANIMATION_TIME, transition: 'easeOutQuad', onComplete: function(){Main.panel2.actor.hide();}});
-
-        if (!this._desktopFade.child)
-            this._desktopFade.child = this._getDesktopClone();
+        let activeWorkspaceActor = this._expo._thumbnailsBox._lastActiveWorkspace.actor;
+        this.clone = new Clutter.Clone({source: activeWorkspaceActor});
+        this.clone.show();
+        this._group.add_actor(this.clone);
         
-        let maximizedWindow = false;
-        let windows = global.screen.get_active_workspace().list_windows();
-        for (let i = 0; i < windows.length; i++) {
-            let metaWindow = windows[i];
-            if (metaWindow.showing_on_its_workspace() &&
-                metaWindow.maximized_horizontally &&
-                metaWindow.maximized_vertically)
-                maximizedWindow = true;
-        }
-        if (!maximizedWindow){
-            this._desktopFade.opacity = 255;
-            this._desktopFade.show();
-            Tweener.addTween(this._desktopFade,
-                             { opacity: 0,
-                               time: ANIMATION_TIME,
-                               transition: 'easeOutQuad'
-                             });
-        }
+        if (Main.panel)
+            Tweener.addTween(Main.panel.actor, {    opacity: 0, 
+                                                    time: ANIMATION_TIME, 
+                                                    transition: 'easeOutQuad', 
+                                                    onComplete: function(){Main.panel.actor.hide();}});
+        if (Main.panel2)
+            Tweener.addTween(Main.panel2.actor, {   opacity: 0, 
+                                                    time: ANIMATION_TIME, 
+                                                    transition: 'easeOutQuad', 
+                                                    onComplete: function(){Main.panel2.actor.hide();}});
+        
+        this._background.dim_factor = 0.4;
 
-        this._group.opacity = 0;
-        Tweener.addTween(this._group,
-                         { opacity: 255,
+        Tweener.addTween(this,
+                         { time: ANIMATION_TIME,
                            transition: 'easeOutQuad',
-                           time: ANIMATION_TIME,
                            onComplete: this._showDone,
                            onCompleteScope: this
-                         });
-
-        Tweener.addTween(this._background,
-                         { dim_factor: 0.4,
-                           time: ANIMATION_TIME,
-                           transition: 'easeOutQuad'
                          });
 
         this._coverPane.raise_top();
@@ -457,29 +439,27 @@ Expo.prototype = {
             Tweener.addTween(Main.panel2.actor, {opacity: 255, time: ANIMATION_TIME, transition: 'easeOutQuad'});
         }
 
-        if (!maximizedWindow){
-        this._desktopFade.opacity = 0;
-        this._desktopFade.show();
-        Tweener.addTween(this._desktopFade,
-                         { opacity: 255,
-                           time: ANIMATION_TIME,
-                           transition: 'easeOutQuad' });
-        }
-
-        // Make other elements fade out.
-        Tweener.addTween(this._group,
-                         { opacity: 0,
-                           transition: 'easeOutQuad',
-                           time: ANIMATION_TIME,
+        Tweener.addTween(this,
+                         { time: ANIMATION_TIME,
                            onComplete: this._hideDone,
                            onCompleteScope: this
                          });
 
-        Tweener.addTween(this._background,
-                         { dim_factor: 1.0,
-                           time: ANIMATION_TIME,
-                           transition: 'easeOutQuad'
-                         });
+        let activeWorkspace = this._expo._thumbnailsBox._lastActiveWorkspace;
+        let activeWorkspaceActor = activeWorkspace.actor;
+        activeWorkspace._overviewModeOff();
+        this.clone = new Clutter.Clone({source: activeWorkspaceActor});
+        this._group.add_actor(this.clone);
+        this.clone.set_position(activeWorkspaceActor.allocation.x1, activeWorkspaceActor.allocation.y1);
+        this.clone.set_scale(activeWorkspaceActor.get_scale()[0], activeWorkspaceActor.get_scale()[1]);
+        this.clone.show();
+        Tweener.addTween(this.clone, {  x: 0, 
+                                        y: 0, 
+                                        scale_x: 1 , 
+                                        scale_y: 1, 
+                                        time: ANIMATION_TIME, 
+                                        transition: 'easeOutQuad', 
+                                        onComplete: this.hide});
 
         this._coverPane.raise_top();
         this._coverPane.show();
@@ -487,8 +467,15 @@ Expo.prototype = {
     },
 
     _showDone: function() {
+        let activeWorkspaceActor = this._expo._thumbnailsBox._lastActiveWorkspace.actor;
+        Tweener.addTween(this.clone, {  x: activeWorkspaceActor.allocation.x1, 
+                                        y: activeWorkspaceActor.allocation.y1, 
+                                        scale_x: activeWorkspaceActor.get_scale()[0] , 
+                                        scale_y: activeWorkspaceActor.get_scale()[1], 
+                                        time: ANIMATION_TIME, transition: 'easeOutQuad', 
+                                        onComplete: function() { this.clone.hide();}, 
+                                        onCompleteScope: this});
         this.animationInProgress = false;
-        this._desktopFade.hide();
         this._coverPane.hide();
 
         this.emit('shown');
@@ -509,9 +496,9 @@ Expo.prototype = {
         this._expo.hide();
         this._addWorkspaceButton.hide();
 
-        this._desktopFade.hide();
         this._background.hide();
         this._group.hide();
+        this.clone.hide();
 
         this.visible = false;
         this.animationInProgress = false;
