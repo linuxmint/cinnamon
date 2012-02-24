@@ -20,6 +20,7 @@ const ExpoView = imports.ui.expoView;
 
 // Time for initial animation going into Overview mode
 const ANIMATION_TIME = 0.3;
+const ADD_BUTTON_HOVER_TIME = 0.3;
 
 const DND_WINDOW_SWITCH_TIMEOUT = 1250;
 
@@ -137,6 +138,22 @@ Expo.prototype = {
         this._addWorkspaceButton = new St.Button({style_class: 'workspace-add-button'});
         this._group.add_actor(this._addWorkspaceButton);
         this._addWorkspaceButton.connect('clicked', Lang.bind(this, function () { Main._addWorkspace();}));
+        this._addWorkspaceButton.connect('enter-event', Lang.bind(this, function () { 
+                Tweener.addTween(this._expo.actor, { width: Main.layoutManager.primaryMonitor.width - (this._addWorkspaceButton.width),
+                                                                  time: ADD_BUTTON_HOVER_TIME,
+                                                                  transition: 'easeOutQuad'});
+                Tweener.addTween(this._addWorkspaceButton, { x: (Main.layoutManager.primaryMonitor.width - (this._addWorkspaceButton.width)),
+                                                                  time: ADD_BUTTON_HOVER_TIME,
+                                                                  transition: 'easeOutBounce'});
+                                                                                        }));
+        this._addWorkspaceButton.connect('leave-event', Lang.bind(this, function () { 
+                Tweener.addTween(this._expo.actor, { width: Main.layoutManager.primaryMonitor.width - (this._addWorkspaceButton.width / 5),
+                                                                  time: ADD_BUTTON_HOVER_TIME,
+                                                                  transition: 'easeOutQuad'});
+                Tweener.addTween(this._addWorkspaceButton, { x: (Main.layoutManager.primaryMonitor.width - (this._addWorkspaceButton.width / 5)),
+                                                                  time: ADD_BUTTON_HOVER_TIME,
+                                                                  transition: 'easeOutBounce'});
+                                                                                        }));
 
         this._group.hide();
         global.overlay_group.add_actor(this._group);
@@ -227,11 +244,11 @@ Expo.prototype = {
         let buttonHeight = node.get_length('height');
 
         this._expo.actor.set_position(0, 0);
-        this._expo.actor.set_size((primary.width - buttonWidth), primary.height);
+        this._expo.actor.set_size((primary.width - (buttonWidth / 5)), primary.height);
 
         let buttonY = (primary.height - buttonHeight) / 2;
 
-        this._addWorkspaceButton.set_position((primary.width - buttonWidth), buttonY);
+        this._addWorkspaceButton.set_position((primary.width - (buttonWidth / 5)), buttonY);
         this._addWorkspaceButton.set_size(buttonWidth, buttonHeight); 
         if (this._addWorkspaceButton.get_theme_node().get_background_image() == null)
             this._addWorkspaceButton.set_style('background-image: url("/usr/share/cinnamon/theme/add-workspace.png");'); 
