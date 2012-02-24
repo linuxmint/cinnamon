@@ -52,6 +52,11 @@ ExpoWindowClone.prototype = {
         this._draggable.connect('drag-begin', Lang.bind(this, this._onDragBegin));
         this._draggable.connect('drag-end', Lang.bind(this, this._onDragEnd));
         this.inDrag = false;
+
+        if (!this.metaWindow.showing_on_its_workspace()){
+            this.actor.scale_x = 0;
+            this.actor.scale_y = 0;        
+        }
     },
 
     setStackAbove: function (actor) {
@@ -331,6 +336,11 @@ ExpoWorkspaceThumbnail.prototype = {
             return;
 
         let clone = this._addWindowClone(win); 
+
+        if (!win.showing_on_its_workspace()){
+            clone.actor.hide();
+            clone.actor.opacity = 0;
+        }
         if (this.overviewMode)
             this._overviewModeOn();
     },
@@ -450,6 +460,9 @@ ExpoWorkspaceThumbnail.prototype = {
                 window.origY = 0;
             }
 
+            if (!window.metaWindow.showing_on_its_workspace()) 
+                window.actor.show();          
+
             if (row == nRows)
                 offset = lastRowOffset;
 
@@ -457,7 +470,7 @@ ExpoWorkspaceThumbnail.prototype = {
             scale = Math.min(1, scale);
             let x = offset + (spacing * col) + (maxWindowWidth * (col - 1)) + ((maxWindowWidth - (window.actor.width * scale)) / 2);
             let y = (spacing * row) + (maxWindowHeight * (row - 1)) + ((maxWindowHeight - (window.actor.height * scale)) / 2);   
-            Tweener.addTween(window.actor, {x: x, y: y, scale_x: scale, scale_y: scale, time: REARRANGE_TIME, transition: 'easeOutQuad'});
+            Tweener.addTween(window.actor, {x: x, y: y, scale_x: scale, scale_y: scale, opacity: 255, time: REARRANGE_TIME, transition: 'easeOutQuad'});
             col++;
             if (col > nCols){
                 row ++;
@@ -472,7 +485,13 @@ ExpoWorkspaceThumbnail.prototype = {
         let i;
         for (i = 0; i < this._windows.length; i++){
             let window = this._windows[i];
-            Tweener.addTween(window.actor, {x: window.origX, y: window.origY, scale_x: 1, scale_y: 1, time: REARRANGE_TIME, transition: 'easeOutQuad'});        
+            let opacity = 255;
+            let hide = false;
+            if (!window.metaWindow.showing_on_its_workspace()){
+                opacity = 0;  
+                hide = true;          
+            }
+            Tweener.addTween(window.actor, {x: window.origX, y: window.origY, scale_x: 1, scale_y: 1, opacity: opacity, time: REARRANGE_TIME, transition: 'easeOutQuad', onComplete: function () { if(hide) window.actor.hide();}, onCompleteScope: this});        
         } 
     },
 
@@ -480,12 +499,9 @@ ExpoWorkspaceThumbnail.prototype = {
         switch ( event.get_scroll_direction() ) {
         case Clutter.ScrollDirection.UP:
             Main.wm.actionMoveWorkspaceLeft();
-            /*Tweener.addTween(this, {slidePosition: -0.2, time: 0.3, transition: 'easeOutQuad'});
-            this.actor.raise_top();*/
             break;
         case Clutter.ScrollDirection.DOWN:
             Main.wm.actionMoveWorkspaceRight();
-            //Tweener.addTween(this, {slidePosition: 0, time: 0.3, transition: 'easeOutQuad'});
             break;
         }
     },
@@ -494,15 +510,15 @@ ExpoWorkspaceThumbnail.prototype = {
         if (this.state > ThumbnailState.NORMAL)
             return;
 
-        // a click on the already current workspace should go back to the main view
-        //if (this.metaWorkspace == global.screen.get_active_workspace()){
-            if (clone && clone != null)
+            if (clone && clone.metaWindow != null){
                 Main.activateWindow(clone.metaWindow, time, this.metaWorkspace.index());
-            this.metaWorkspace.activate(time);
+            } else if (this._windows.length > 0) {
+                Main.activateWindow(this._windows[(this._windows.length-1)].metaWindow, time, this.metaWorkspace.index());            
+            }
+            if (this.metaWorkspace != global.screen.get_active_workspace())
+                this.metaWorkspace.activate(time);
+            this._overviewModeOff();
             Main.expo.hide();
-        /*} else {
-            this.metaWorkspace.activate(time);
-        }*/
         
         this._highlight();
     },
