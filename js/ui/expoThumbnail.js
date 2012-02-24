@@ -53,10 +53,6 @@ ExpoWindowClone.prototype = {
         this._draggable.connect('drag-end', Lang.bind(this, this._onDragEnd));
         this.inDrag = false;
 
-        if (!this.metaWindow.showing_on_its_workspace()){
-            this.actor.scale_x = 0;
-            this.actor.scale_y = 0;        
-        }
     },
 
     setStackAbove: function (actor) {
