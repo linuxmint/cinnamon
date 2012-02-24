@@ -309,6 +309,8 @@ Expo.prototype = {
         this._expo.show();
         let activeWorkspaceActor = this._expo._thumbnailsBox._lastActiveWorkspace.actor;
         this.clone = new Clutter.Clone({source: activeWorkspaceActor});
+        if (global.settings.get_string("desktop-layout") != 'traditional' && !global.settings.get_boolean("panel-autohide"))
+            this.clone.set_position(0, Main.panel.actor.height); 
         this.clone.show();
         this._group.add_actor(this.clone);
         
@@ -470,8 +472,11 @@ Expo.prototype = {
         this.clone.set_position(activeWorkspaceActor.allocation.x1, activeWorkspaceActor.allocation.y1);
         this.clone.set_scale(activeWorkspaceActor.get_scale()[0], activeWorkspaceActor.get_scale()[1]);
         this.clone.show();
+        let y = 0;
+        if (global.settings.get_string("desktop-layout") != 'traditional' && !global.settings.get_boolean("panel-autohide"))
+            y = Main.panel.actor.height; 
         Tweener.addTween(this.clone, {  x: 0, 
-                                        y: 0, 
+                                        y: y, 
                                         scale_x: 1 , 
                                         scale_y: 1, 
                                         time: ANIMATION_TIME, 
