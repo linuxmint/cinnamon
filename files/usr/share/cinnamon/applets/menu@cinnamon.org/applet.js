@@ -765,9 +765,9 @@ MyApplet.prototype = {
                  });
             }
          }));
-         this._allAppsCategoryButton.actor.connect('leave-event', function () {
+         this._allAppsCategoryButton.actor.connect('leave-event', Lang.bind(this, function () {
             this._allAppsCategoryButton.isHovered = false;
-         });
+         }));
          this.categoriesBox.add_actor(this._allAppsCategoryButton.actor);
         
         let trees = [appsys.get_tree(), appsys.get_settings_tree()];
