@@ -497,7 +497,7 @@ MyApplet.prototype = {
             let tracker = Cinnamon.WindowTracker.get_default();
             tracker.connect('notify::focus-app', Lang.bind(this, this._onFocus));
 
-            global.window_manager.connect('switch-workspace',
+            this.switchWorkspaceHandler = global.window_manager.connect('switch-workspace',
                                             Lang.bind(this, this._refreshItems));
             global.window_manager.connect('minimize',
                                             Lang.bind(this, this._onMinimize));
