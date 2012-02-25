@@ -52,7 +52,7 @@ ExpoWindowClone.prototype = {
         this._draggable.connect('drag-begin', Lang.bind(this, this._onDragBegin));
         this._draggable.connect('drag-end', Lang.bind(this, this._onDragEnd));
         this.inDrag = false;
-        
+
         if (!this.metaWindow.showing_on_its_workspace())
             this.actor.opacity = 0;
 
@@ -337,8 +337,8 @@ ExpoWorkspaceThumbnail.prototype = {
         let clone = this._addWindowClone(win); 
 
         if (!win.showing_on_its_workspace()){
-            clone.actor.hide();
             clone.actor.opacity = 0;
+            clone.actor.hide();
         }
         if (this.overviewMode)
             this._overviewModeOn();
@@ -534,6 +534,7 @@ ExpoWorkspaceThumbnail.prototype = {
     _remove : function (){
         if (global.screen.n_workspaces <= 1)
             return false;
+        this.emit('remove-event');
         Main._removeWorkspace(this.metaWorkspace);
         this.removed = true;
     },
@@ -576,6 +577,7 @@ ExpoWorkspaceThumbnail.prototype = {
             metaWindow.change_workspace_by_index(this.metaWorkspace.index(),
                                                  false, // don't create workspace
                                                  time);
+
 
             this._overviewModeOn();
             return true;
@@ -712,6 +714,7 @@ ExpoThumbnailsBox.prototype = {
 
             thumbnail.actor.connect('enter-event', Lang.bind(this, function (actor, event) { this.lastHovered = thumbnail; this.showButton(); thumbnail._onEnterEvent(actor, event)}));
             thumbnail.actor.connect('leave-event', Lang.bind(this, function () { this.button.hide(); if (thumbnail.metaWorkspace != global.screen.get_active_workspace()) thumbnail._shade(); thumbnail.hovered = false; thumbnail._overviewModeOff();}));
+            thumbnail.connect('remove-event', Lang.bind(this, function () { this.button.hide(); if (thumbnail.metaWorkspace != global.screen.get_active_workspace()) thumbnail._shade(); thumbnail.hovered = false; thumbnail._overviewModeOff();}));
 
             if (start > 0) { // not the initial fill
                 thumbnail.state = ThumbnailState.NEW;
