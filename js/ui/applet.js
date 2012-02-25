@@ -95,7 +95,7 @@ Applet.prototype = {
             this._draggable.connect('drag-begin', Lang.bind(this, this._onDragBegin));
     	    this._draggable.connect('drag-cancelled', Lang.bind(this, this._onDragCancelled));
             this._draggable.connect('drag-end', Lang.bind(this, this._onDragEnd));
-	    }
+	}
         
         this._applet_tooltip_text = "";            
     },
