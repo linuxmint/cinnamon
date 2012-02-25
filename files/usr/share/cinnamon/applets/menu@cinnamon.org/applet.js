@@ -541,7 +541,7 @@ MyApplet.prototype = {
     
     on_orientation_changed: function (orientation) {
         this.menu.destroy();
-        this.menu = new MyMenu(this, orientation);
+        this.menu = new Applet.AppletPopupMenu(this, orientation);
         this.menuManager.addMenu(this.menu);
         
         this.menu.actor.add_style_class_name('menu-background');
