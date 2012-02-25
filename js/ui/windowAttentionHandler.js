@@ -28,9 +28,42 @@ WindowAttentionHandler.prototype = {
         if (!window || window.has_focus() || window.is_skip_taskbar())
             return;
 
-        if (this._tracker.is_window_interesting(window)) {
-            window.activate(global.get_current_time());
+        switch (this.notification_style) {
+            case 0:
+                //nop
+                break;
+            case 1:
+                this.bringToFront(window);
+                break;
+            case 2:
+                this.showBanner(window);
+                break;
+            default:
+                global.log('Unknown notification style: ' + this.notification_style);
         }
+    },
+
+    bringToFront : function(window) {
+         if (this._tracker.is_window_interesting(window)) {
+            window.activate(global.get_current_time());
+        }       
+    },
+
+    showBanner : function(window) {
+        let app = this._tracker.get_window_app(window);
+        let source = new Source(app, window);
+        if (Main.messageTray) Main.messageTray.add(source);
+
+        let banner = _("'%s' is ready").format(window.title);
+        let title = app.get_name();
+
+        let notification = new MessageTray.Notification(source, title, banner);
+        source.notify(notification);
+
+        source.signalIDs.push(window.connect('notify::title',
+                                             Lang.bind(this, function() {
+                                                 notification.update(title, banner);
+                                             })));
     }
 };
 
