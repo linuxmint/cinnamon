@@ -12,6 +12,11 @@ function WindowAttentionHandler() {
 
 WindowAttentionHandler.prototype = {
     _init : function() {
+        this.notification_style = global.settings.get_int("notification-style");
+        global.settings.connect("changed::notification-style", Lang.bind(this, function() {
+            this.notification_style = global.settings.get_int("notification-style");
+        })); 
+        
         this._tracker = Cinnamon.WindowTracker.get_default();
         global.display.connect('window-demands-attention', Lang.bind(this, this._onWindowDemandsAttention));
     },
