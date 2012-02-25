@@ -1016,9 +1016,9 @@ MyApplet.prototype = {
                 });
             }
         }));
-        this.placesButton.actor.connect('leave-event', function () {
+        this.placesButton.actor.connect('leave-event', Lang.bind(this, function () {
             this.placesButton.isHovered = false;
-        });
+        }));
         this.categoriesBox.add_actor(this.placesButton.actor);            
          
         this.selectedAppBox = new St.BoxLayout({ style_class: 'menu-selected-app-box', vertical: true });
