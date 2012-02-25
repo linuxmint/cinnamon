@@ -276,6 +276,11 @@
       <default>0</default>
       <_summary></_summary>
     </key>
+    <key type="b" name="applets-draggable">
+      <default>true</default>
+      <summary>Whether applets in panel are draggable</summary>
+      <description> This determines whether the applets in the panel can be dragged or not</description>
+    </key>
     <child name="calendar" schema="org.cinnamon.calendar"/>
     <child name="theme" schema="org.cinnamon.theme"/>   
     <child name="recorder" schema="org.cinnamon.recorder"/>
