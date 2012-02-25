@@ -214,7 +214,7 @@
 		Number of Workspaces</_description>
     </key>
     
-     <key name="overview-corner-visible" type="b">
+    <key name="overview-corner-visible" type="b">
       <default>false</default>
       <_summary>Enable or disable the overview corner icon</_summary>
       <_description>
@@ -238,6 +238,7 @@
         This key lists the desktop files of the applications to show there.
       </_description>
     </key>
+
     <key name="enable-app-monitoring" type="b">
       <default>true</default>
       <_summary>Whether to collect stats about applications usage</_summary>
@@ -248,6 +249,7 @@
         Please note that doing so won't remove already saved data.
       </_description>
     </key>
+
     <key name="favorite-apps" type="as">
       <default>[ 'firefox.desktop', 'mintInstall.desktop', 'cinnamon-settings.desktop', 'xchat.desktop', 'gnome-terminal.desktop', 'nautilus.desktop' ]</default>
       <_summary>List of desktop file IDs for favorite applications</_summary>
@@ -256,31 +258,43 @@
         will be displayed in the favorites area.
       </_description>
     </key>
+
     <key name="disabled-open-search-providers" type="as">
       <default>[]</default>
       <_summary>disabled OpenSearch providers</_summary>
     </key>
+
     <key name="command-history" type="as">
       <default>[]</default>
       <_summary>History for command (Alt-F2) dialog</_summary>
     </key>
+
     <key name="looking-glass-history" type="as">
       <default>[]</default>
       <_summary>History for the looking glass dialog</_summary>
     </key>
+
     <key name="saved-im-presence" type="i">
       <default>1</default>
       <_summary></_summary>
     </key>
+
     <key name="saved-session-presence" type="i">
       <default>0</default>
       <_summary></_summary>
     </key>
+
     <key type="b" name="applets-draggable">
       <default>true</default>
-      <summary>Whether applets in panel are draggable</summary>
-      <description> This determines whether the applets in the panel can be dragged or not</description>
+      <_summary>Whether applets in panel are draggable</_summary>
+      <_description> This determines whether the applets in the panel can be dragged or not</_description>
     </key>
+    
+    <key type="b" name="panel-launchers-draggable">
+      <default>true</default>
+      <_summary>Whether panel launchers are draggable</_summary>
+    </key>
+
     <child name="calendar" schema="org.cinnamon.calendar"/>
     <child name="theme" schema="org.cinnamon.theme"/>   
     <child name="recorder" schema="org.cinnamon.recorder"/>
