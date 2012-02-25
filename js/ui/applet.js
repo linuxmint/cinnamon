@@ -90,7 +90,7 @@ Applet.prototype = {
         this._uuid = null; // Defined in gsettings, set by Cinnamon.
         this._dragging = false;
         let settings = new Gio.Settings({ schema: 'org.cinnamon'});
-        if (settings.get_boolean("applets-draggable")) {
+        if (settings.get_boolean('applets-draggable')) {
             this._draggable = DND.makeDraggable(this.actor);
             this._draggable.connect('drag-begin', Lang.bind(this, this._onDragBegin));
     	    this._draggable.connect('drag-cancelled', Lang.bind(this, this._onDragCancelled));
