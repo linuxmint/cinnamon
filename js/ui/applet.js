@@ -89,10 +89,13 @@ Applet.prototype = {
         this._newPanelLocation = null; //  Used when moving an applet
         this._uuid = null; // Defined in gsettings, set by Cinnamon.
         this._dragging = false;
-        this._draggable = DND.makeDraggable(this.actor);
-        this._draggable.connect('drag-begin', Lang.bind(this, this._onDragBegin));
-        this._draggable.connect('drag-cancelled', Lang.bind(this, this._onDragCancelled));
-        this._draggable.connect('drag-end', Lang.bind(this, this._onDragEnd));
+        let settings = new Gio.Settings({ schema: 'org.cinnamon'});
+        if (settings.get_boolean('applets-draggable')) {
+            this._draggable = DND.makeDraggable(this.actor);
+            this._draggable.connect('drag-begin', Lang.bind(this, this._onDragBegin));
+    	    this._draggable.connect('drag-cancelled', Lang.bind(this, this._onDragCancelled));
+            this._draggable.connect('drag-end', Lang.bind(this, this._onDragEnd));
+	}
         
         this._applet_tooltip_text = "";            
     },

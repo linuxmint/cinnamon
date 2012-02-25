@@ -174,36 +174,55 @@
       <summary>Desktop files of the applications to put in the panel launchers applet</summary>
       <description>Cinnamon allows to show applications launchers on the panel. This key lists the desktop files of the applications to show there.</description>
     </key>
+    
     <key type="b" name="enable-app-monitoring">
       <default>true</default>
       <summary>Whether to collect stats about applications usage</summary>
       <description>Cinnamon normally monitors active applications in order to present the most used ones (e.g. in launchers). While this data will be kept private, you may want to disable this for privacy reasons. Please note that doing so won't remove already saved data.</description>
     </key>
+    
     <key type="as" name="favorite-apps">
       <default>[ 'firefox.desktop', 'mintInstall.desktop', 'cinnamon-settings.desktop', 'xchat.desktop', 'gnome-terminal.desktop', 'nautilus.desktop' ]</default>
       <summary>List of desktop file IDs for favorite applications</summary>
       <description>The applications corresponding to these identifiers will be displayed in the favorites area.</description>
     </key>
+    
     <key type="as" name="disabled-open-search-providers">
       <default>[]</default>
       <summary>disabled OpenSearch providers</summary>
     </key>
+    
     <key type="as" name="command-history">
       <default>[]</default>
       <summary>History for command (Alt-F2) dialog</summary>
     </key>
+    
     <key type="as" name="looking-glass-history">
       <default>[]</default>
       <summary>History for the looking glass dialog</summary>
     </key>
+    
     <key type="i" name="saved-im-presence">
       <default>1</default>
       <summary/>
     </key>
+    
     <key type="i" name="saved-session-presence">
       <default>0</default>
       <summary/>
     </key>
+    
+    <key type="b" name="applets-draggable">
+      <default>true</default>
+      <summary>Whether applets in panel are draggable</summary>
+      <description> This determines whether the applets in the panel can be dragged or not</description>
+    </key>
+    
+    <key type="b" name="panel-launchers-draggable">
+      <default>true</default>
+      <summary>Whether panel launchers are draggable</summary>
+    </key>
+    
     <child schema="org.cinnamon.calendar" name="calendar"/>
     <child schema="org.cinnamon.theme" name="theme"/>   
     <child schema="org.cinnamon.recorder" name="recorder"/>

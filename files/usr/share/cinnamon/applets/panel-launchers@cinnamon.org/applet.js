@@ -13,6 +13,8 @@ const Tooltips = imports.ui.tooltips;
 const DND = imports.ui.dnd;
 const Tweener = imports.ui.tweener;
 
+let pressLauncher = null;
+
 function PanelAppLauncherMenu(launcher, orientation) {
     this._init(launcher, orientation);
 }
@@ -81,6 +83,7 @@ PanelAppLauncher.prototype = {
                                       track_hover: true });
         this.actor._delegate = this;
         this.actor.connect('button-release-event', Lang.bind(this, this._onButtonRelease));
+        this.actor.connect('button-press-event', Lang.bind(this, this._onButtonPress));
         
         this._iconBox = new Cinnamon.Slicer({ name: 'panel-launcher-icon' });
         this._iconBox.connect('style-changed',
@@ -103,10 +106,13 @@ PanelAppLauncher.prototype = {
         this._tooltip = new Tooltips.PanelItemTooltip(this, tooltipText, orientation);
         
         this._dragging = false;
-        this._draggable = DND.makeDraggable(this.actor);
-        this._draggable.connect('drag-begin', Lang.bind(this, this._onDragBegin));
-        this._draggable.connect('drag-cancelled', Lang.bind(this, this._onDragCancelled));
-        this._draggable.connect('drag-end', Lang.bind(this, this._onDragEnd));
+        let settings = new Gio.Settings({ schema: 'org.cinnamon'});
+    	if (settings.get_boolean('panel-launchers-draggable')){
+    	    this._draggable = DND.makeDraggable(this.actor);
+            this._draggable.connect('drag-begin', Lang.bind(this, this._onDragBegin));
+            this._draggable.connect('drag-cancelled', Lang.bind(this, this._onDragCancelled));
+            this._draggable.connect('drag-end', Lang.bind(this, this._onDragEnd));
+    	}
     },
     
     _onDragBegin: function() {
@@ -154,14 +160,20 @@ PanelAppLauncher.prototype = {
         return (this.app==null);
     },
     
+    _onButtonPress: function(actor, event) {
+        pressLauncher = this.get_appname();
+    },
+   
     _onButtonRelease: function(actor, event) {
-        let button = event.get_button();
-        if (button==1) {
-            if (this._menu.isOpen) this._menu.toggle();
-            else this.launch();
-        }else if (button==3) {
-            this._menu.toggle();
-        }
+        if (pressLauncher == this.get_appname()){
+	        let button = event.get_button();
+            if (button==1) {
+		        if (this._menu.isOpen) this._menu.toggle();
+		        else this.launch();
+            }else if (button==3) {
+		        this._menu.toggle();
+            }
+    	}
     },
     
     _onIconBoxStyleChanged: function() {
