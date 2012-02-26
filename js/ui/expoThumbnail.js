@@ -441,6 +441,7 @@ ExpoWorkspaceThumbnail.prototype = {
     },
 
     _fadeOutUninterestingWindows : function() {
+        this._uninterestingWindows.opacity = 255;
         this._uninterestingWindows.show();
         this._uninterestingWindows.raise(this._background);
         Tweener.addTween(this._uninterestingWindows, {  opacity: 0,
@@ -450,6 +451,7 @@ ExpoWorkspaceThumbnail.prototype = {
     },
 
     _fadeInUninterestingWindows : function() {
+        this._uninterestingWindows.opacity = 0;
         this._uninterestingWindows.show();
         this._uninterestingWindows.raise(this._background);
         Tweener.addTween(this._uninterestingWindows, {  opacity: 255,
