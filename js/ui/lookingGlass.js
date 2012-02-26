@@ -714,19 +714,16 @@ Extensions.prototype = {
         let metaBox = new St.BoxLayout({ style_class: 'lg-extension-meta' });
         box.add(metaBox);
         let state = new St.Label({ style_class: 'lg-extension-state',
-                                   text: this._stateToString(meta.state) });
+                                   text: this._stateToString(meta.state) + " "});
         metaBox.add(state);
-        
-        let space = new St.Label({text: ' '});
-        metaBox.add(space);
         
         let viewsource = new Link.Link({ label: _("View Source") });
         viewsource.actor._extensionMeta = meta;
         viewsource.actor.connect('clicked', Lang.bind(this, this._onViewSource));
         metaBox.add(viewsource.actor);
         
-        let space2 = new St.Label({text: ' '});
-        metaBox.add(space2);
+        let space = new St.Label({text: " "});
+        metaBox.add(space);
 
         if (meta.url) {
             let webpage = new Link.Link({ label: _("Web Page") });
