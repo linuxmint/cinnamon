@@ -547,9 +547,15 @@ Overview.prototype = {
         this._workspacesDisplay.show();
 
         if (Main.panel)
-            Tweener.addTween(Main.panel.actor, {opacity: 0, time: ANIMATION_TIME, transition: 'easeOutQuad'});
+            Tweener.addTween(Main.panel.actor, {    opacity: 0, 
+                                                    time: ANIMATION_TIME, 
+                                                    transition: 'easeOutQuad', 
+                                                    onComplete: function(){Main.panel.actor.hide();}});
         if (Main.panel2)
-            Tweener.addTween(Main.panel2.actor, {opacity: 0, time: ANIMATION_TIME, transition: 'easeOutQuad'});
+            Tweener.addTween(Main.panel2.actor, {   opacity: 0, 
+                                                    time: ANIMATION_TIME, 
+                                                    transition: 'easeOutQuad', 
+                                                    onComplete: function(){Main.panel2.actor.hide();}});
 
         this.workspaces = this._workspacesDisplay.workspacesView;
         global.overlay_group.add_actor(this.workspaces.actor);
