@@ -202,20 +202,6 @@ Expo.prototype = {
         pointer.warp(screen, pointerX, pointerY);
     },
 
-    _getDesktopClone: function() {
-        let windows = global.get_window_actors().filter(function(w) {
-            return w.meta_window.get_window_type() == Meta.WindowType.DESKTOP;
-        });
-        if (windows.length == 0)
-            return null;
-
-        let clone = new Clutter.Clone({ source: windows[0].get_texture() });
-        clone.source.connect('destroy', Lang.bind(this, function() {
-            clone.destroy();
-        }));
-        return clone;
-    },
-
     _relayout: function () {
         // To avoid updating the position and size of the workspaces
         // we just hide the overview. The positions will be updated
@@ -308,6 +294,7 @@ Expo.prototype = {
         this._addWorkspaceButton.show();
         this._expo.show();
         let activeWorkspaceActor = this._expo._thumbnailsBox._lastActiveWorkspace.actor;
+        this._expo._thumbnailsBox._lastActiveWorkspace._fadeOutUninterestingWindows();
         this.clone = new Clutter.Clone({source: activeWorkspaceActor});
         if (global.settings.get_string("desktop-layout") != 'traditional' && !global.settings.get_boolean("panel-autohide"))
             this.clone.set_position(0, Main.panel.actor.height); 
@@ -467,6 +454,7 @@ Expo.prototype = {
         let activeWorkspace = this._expo._thumbnailsBox._lastActiveWorkspace;
         let activeWorkspaceActor = activeWorkspace.actor;
         activeWorkspace._overviewModeOff();
+        activeWorkspace._fadeInUninterestingWindows();
         this.clone = new Clutter.Clone({source: activeWorkspaceActor});
         this._group.add_actor(this.clone);
         this.clone.set_position(activeWorkspaceActor.allocation.x1, activeWorkspaceActor.allocation.y1);
