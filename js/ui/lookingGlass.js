@@ -713,7 +713,6 @@ Extensions.prototype = {
 
         let metaBox = new St.BoxLayout({ style_class: 'lg-extension-meta' });
         box.add(metaBox);
-        let stateString = this._stateToString(meta.state);
         let state = new St.Label({ style_class: 'lg-extension-state',
                                    text: this._stateToString(meta.state) });
         metaBox.add(state);
