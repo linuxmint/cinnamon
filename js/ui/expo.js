@@ -454,7 +454,7 @@ Expo.prototype = {
         let activeWorkspace = this._expo._thumbnailsBox._lastActiveWorkspace;
         let activeWorkspaceActor = activeWorkspace.actor;
         activeWorkspace._overviewModeOff();
-        activeWorkspace._fadeInUninterestingWindows();
+        //activeWorkspace._fadeInUninterestingWindows(); Disabled until solution to bug is fixed
         this.clone = new Clutter.Clone({source: activeWorkspaceActor});
         this._group.add_actor(this.clone);
         this.clone.set_position(activeWorkspaceActor.allocation.x1, activeWorkspaceActor.allocation.y1);
