@@ -19,7 +19,8 @@ const Tweener = imports.ui.tweener;
 const ExpoView = imports.ui.expoView;
 
 // Time for initial animation going into Overview mode
-const ANIMATION_TIME = 0.25;
+const ANIMATION_TIME = 0.3;
+const ADD_BUTTON_HOVER_TIME = 0.3;
 
 const DND_WINDOW_SWITCH_TIMEOUT = 1250;
 
@@ -101,9 +102,6 @@ Expo.prototype = {
         this._background.hide();
         global.overlay_group.add_actor(this._background);
 
-        this._desktopFade = new St.Bin();
-        global.overlay_group.add_actor(this._desktopFade);
-
         this._spacing = 0;
 
         this._group = new St.Group({ name: 'expo',
@@ -140,6 +138,22 @@ Expo.prototype = {
         this._addWorkspaceButton = new St.Button({style_class: 'workspace-add-button'});
         this._group.add_actor(this._addWorkspaceButton);
         this._addWorkspaceButton.connect('clicked', Lang.bind(this, function () { Main._addWorkspace();}));
+        this._addWorkspaceButton.connect('enter-event', Lang.bind(this, function () { 
+                Tweener.addTween(this._expo.actor, { width: Main.layoutManager.primaryMonitor.width - (this._addWorkspaceButton.width),
+                                                                  time: ADD_BUTTON_HOVER_TIME,
+                                                                  transition: 'easeOutQuad'});
+                Tweener.addTween(this._addWorkspaceButton, { x: (Main.layoutManager.primaryMonitor.width - (this._addWorkspaceButton.width)),
+                                                                  time: ADD_BUTTON_HOVER_TIME,
+                                                                  transition: 'easeOutBounce'});
+                                                                                        }));
+        this._addWorkspaceButton.connect('leave-event', Lang.bind(this, function () { 
+                Tweener.addTween(this._expo.actor, { width: Main.layoutManager.primaryMonitor.width - (this._addWorkspaceButton.width / 5),
+                                                                  time: ADD_BUTTON_HOVER_TIME,
+                                                                  transition: 'easeOutQuad'});
+                Tweener.addTween(this._addWorkspaceButton, { x: (Main.layoutManager.primaryMonitor.width - (this._addWorkspaceButton.width / 5)),
+                                                                  time: ADD_BUTTON_HOVER_TIME,
+                                                                  transition: 'easeOutBounce'});
+                                                                                        }));
 
         this._group.hide();
         global.overlay_group.add_actor(this._group);
@@ -188,20 +202,6 @@ Expo.prototype = {
         pointer.warp(screen, pointerX, pointerY);
     },
 
-    _getDesktopClone: function() {
-        let windows = global.get_window_actors().filter(function(w) {
-            return w.meta_window.get_window_type() == Meta.WindowType.DESKTOP;
-        });
-        if (windows.length == 0)
-            return null;
-
-        let clone = new Clutter.Clone({ source: windows[0].get_texture() });
-        clone.source.connect('destroy', Lang.bind(this, function() {
-            clone.destroy();
-        }));
-        return clone;
-    },
-
     _relayout: function () {
         // To avoid updating the position and size of the workspaces
         // we just hide the overview. The positions will be updated
@@ -230,12 +230,14 @@ Expo.prototype = {
         let buttonHeight = node.get_length('height');
 
         this._expo.actor.set_position(0, 0);
-        this._expo.actor.set_size((primary.width - buttonWidth), primary.height);
+        this._expo.actor.set_size((primary.width - (buttonWidth / 5)), primary.height);
 
         let buttonY = (primary.height - buttonHeight) / 2;
 
-        this._addWorkspaceButton.set_position((primary.width - buttonWidth), buttonY);
-        this._addWorkspaceButton.set_size(buttonWidth, buttonHeight);
+        this._addWorkspaceButton.set_position((primary.width - (buttonWidth / 5)), buttonY);
+        this._addWorkspaceButton.set_size(buttonWidth, buttonHeight); 
+        if (this._addWorkspaceButton.get_theme_node().get_background_image() == null)
+            this._addWorkspaceButton.set_style('background-image: url("/usr/share/cinnamon/theme/add-workspace.png");'); 
     },
 
     //// Public methods ////
@@ -291,46 +293,32 @@ Expo.prototype = {
         this._background.show();
         this._addWorkspaceButton.show();
         this._expo.show();
-        if (Main.panel)
-            Tweener.addTween(Main.panel.actor, {opacity: 0, time: ANIMATION_TIME, transition: 'easeOutQuad'});
-        if (Main.panel2)
-            Tweener.addTween(Main.panel2.actor, {opacity: 0, time: ANIMATION_TIME, transition: 'easeOutQuad'});
-
-        if (!this._desktopFade.child)
-            this._desktopFade.child = this._getDesktopClone();
+        let activeWorkspaceActor = this._expo._thumbnailsBox._lastActiveWorkspace.actor;
+        this._expo._thumbnailsBox._lastActiveWorkspace._fadeOutUninterestingWindows();
+        this.clone = new Clutter.Clone({source: activeWorkspaceActor});
+        if (global.settings.get_string("desktop-layout") != 'traditional' && !global.settings.get_boolean("panel-autohide"))
+            this.clone.set_position(0, Main.panel.actor.height); 
+        this.clone.show();
+        this._group.add_actor(this.clone);
         
-        let maximizedWindow = false;
-        let windows = global.screen.get_active_workspace().list_windows();
-        for (let i = 0; i < windows.length; i++) {
-            let metaWindow = windows[i];
-            if (metaWindow.showing_on_its_workspace() &&
-                metaWindow.maximized_horizontally &&
-                metaWindow.maximized_vertically)
-                maximizedWindow = true;
-        }
-        if (!maximizedWindow){
-            this._desktopFade.opacity = 255;
-            this._desktopFade.show();
-            Tweener.addTween(this._desktopFade,
-                             { opacity: 0,
-                               time: ANIMATION_TIME,
-                               transition: 'easeOutQuad'
-                             });
-        }
+        if (Main.panel)
+            Tweener.addTween(Main.panel.actor, {    opacity: 0, 
+                                                    time: ANIMATION_TIME, 
+                                                    transition: 'easeOutQuad', 
+                                                    onComplete: function(){Main.panel.actor.hide();}});
+        if (Main.panel2)
+            Tweener.addTween(Main.panel2.actor, {   opacity: 0, 
+                                                    time: ANIMATION_TIME, 
+                                                    transition: 'easeOutQuad', 
+                                                    onComplete: function(){Main.panel2.actor.hide();}});
+        
+        this._background.dim_factor = 0.4;
 
-        this._group.opacity = 0;
-        Tweener.addTween(this._group,
-                         { opacity: 255,
+        Tweener.addTween(this,
+                         { time: ANIMATION_TIME,
                            transition: 'easeOutQuad',
-                           time: ANIMATION_TIME,
                            onComplete: this._showDone,
                            onCompleteScope: this
-                         });
-
-        Tweener.addTween(this._background,
-                         { dim_factor: 0.4,
-                           time: ANIMATION_TIME,
-                           transition: 'easeOutQuad'
                          });
 
         this._coverPane.raise_top();
@@ -448,34 +436,40 @@ Expo.prototype = {
                 maximizedWindow = true;
         }
 
-        if (Main.panel)
+        if (Main.panel){
+            Main.panel.actor.show();
             Tweener.addTween(Main.panel.actor, {opacity: 255, time: ANIMATION_TIME, transition: 'easeOutQuad'});
-        if (Main.panel2)
+        }
+        if (Main.panel2){
+            Main.panel2.actor.show();
             Tweener.addTween(Main.panel2.actor, {opacity: 255, time: ANIMATION_TIME, transition: 'easeOutQuad'});
-
-        if (!maximizedWindow){
-        this._desktopFade.opacity = 0;
-        this._desktopFade.show();
-        Tweener.addTween(this._desktopFade,
-                         { opacity: 255,
-                           time: ANIMATION_TIME,
-                           transition: 'easeOutQuad' });
         }
 
-        // Make other elements fade out.
-        Tweener.addTween(this._group,
-                         { opacity: 0,
-                           transition: 'easeOutQuad',
-                           time: ANIMATION_TIME,
+        Tweener.addTween(this,
+                         { time: ANIMATION_TIME,
                            onComplete: this._hideDone,
                            onCompleteScope: this
                          });
 
-        Tweener.addTween(this._background,
-                         { dim_factor: 1.0,
-                           time: ANIMATION_TIME,
-                           transition: 'easeOutQuad'
-                         });
+        let activeWorkspace = this._expo._thumbnailsBox._lastActiveWorkspace;
+        let activeWorkspaceActor = activeWorkspace.actor;
+        activeWorkspace._overviewModeOff();
+        //activeWorkspace._fadeInUninterestingWindows(); Disabled until solution to bug is fixed
+        this.clone = new Clutter.Clone({source: activeWorkspaceActor});
+        this._group.add_actor(this.clone);
+        this.clone.set_position(activeWorkspaceActor.allocation.x1, activeWorkspaceActor.allocation.y1);
+        this.clone.set_scale(activeWorkspaceActor.get_scale()[0], activeWorkspaceActor.get_scale()[1]);
+        this.clone.show();
+        let y = 0;
+        if (global.settings.get_string("desktop-layout") != 'traditional' && !global.settings.get_boolean("panel-autohide"))
+            y = Main.panel.actor.height; 
+        Tweener.addTween(this.clone, {  x: 0, 
+                                        y: y, 
+                                        scale_x: 1 , 
+                                        scale_y: 1, 
+                                        time: ANIMATION_TIME, 
+                                        transition: 'easeOutQuad', 
+                                        onComplete: this.hide});
 
         this._coverPane.raise_top();
         this._coverPane.show();
@@ -483,8 +477,15 @@ Expo.prototype = {
     },
 
     _showDone: function() {
+        let activeWorkspaceActor = this._expo._thumbnailsBox._lastActiveWorkspace.actor;
+        Tweener.addTween(this.clone, {  x: activeWorkspaceActor.allocation.x1, 
+                                        y: activeWorkspaceActor.allocation.y1, 
+                                        scale_x: activeWorkspaceActor.get_scale()[0] , 
+                                        scale_y: activeWorkspaceActor.get_scale()[1], 
+                                        time: ANIMATION_TIME, transition: 'easeOutQuad', 
+                                        onComplete: function() { this.clone.hide();}, 
+                                        onCompleteScope: this});
         this.animationInProgress = false;
-        this._desktopFade.hide();
         this._coverPane.hide();
 
         this.emit('shown');
@@ -505,9 +506,9 @@ Expo.prototype = {
         this._expo.hide();
         this._addWorkspaceButton.hide();
 
-        this._desktopFade.hide();
         this._background.hide();
         this._group.hide();
+        this.clone.hide();
 
         this.visible = false;
         this.animationInProgress = false;
