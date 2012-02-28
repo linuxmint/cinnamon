@@ -6,7 +6,6 @@ const Mainloop = imports.mainloop;
 const Gio = imports.gi.Gio;
 const Params = imports.misc.params;
 
-const Main = imports.ui.main;
 const CinnamonMountOperation = imports.ui.cinnamonMountOperation;
 const ScreenSaver = imports.misc.screenSaver;
 

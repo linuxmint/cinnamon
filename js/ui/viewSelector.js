@@ -2,7 +2,6 @@
 
 const Clutter = imports.gi.Clutter;
 const Gtk = imports.gi.Gtk;
-const Mainloop = imports.mainloop;
 const Meta = imports.gi.Meta;
 const Signals = imports.signals;
 const Lang = imports.lang;
@@ -10,7 +9,6 @@ const Cinnamon = imports.gi.Cinnamon;
 const St = imports.gi.St;
 
 const Main = imports.ui.main;
-const CinnamonEntry = imports.ui.cinnamonEntry;
 const Tweener = imports.ui.tweener;
 
 function BaseTab(titleActor, pageActor, name, a11yIcon) {

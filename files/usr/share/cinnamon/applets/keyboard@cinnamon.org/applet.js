@@ -1,16 +1,11 @@
 const Applet = imports.ui.applet;
-const Clutter = imports.gi.Clutter;
-const GdkPixbuf = imports.gi.GdkPixbuf;
 const Gkbd = imports.gi.Gkbd;
-const Gio = imports.gi.Gio;
-const GLib = imports.gi.GLib;
 const Lang = imports.lang;
 const Cinnamon = imports.gi.Cinnamon;
 const St = imports.gi.St;
 
 const Main = imports.ui.main;
 const PopupMenu = imports.ui.popupMenu;
-const PanelMenu = imports.ui.panelMenu;
 const Util = imports.misc.util;
 
 function LayoutMenuItem() {

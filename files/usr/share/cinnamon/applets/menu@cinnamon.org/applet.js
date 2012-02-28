@@ -6,7 +6,6 @@ const Cinnamon = imports.gi.Cinnamon;
 const St = imports.gi.St;
 const Clutter = imports.gi.Clutter;
 const Main = imports.ui.main;
-const PanelMenu = imports.ui.panelMenu;
 const PopupMenu = imports.ui.popupMenu;
 const AppFavorites = imports.ui.appFavorites;
 const Gtk = imports.gi.Gtk;

@@ -4,15 +4,10 @@ const Lang = imports.lang;
 const Cinnamon = imports.gi.Cinnamon;
 const St = imports.gi.St;
 const Main = imports.ui.main;
-const Layout = imports.ui.layout;
 const Tweener = imports.ui.tweener;
-const Overview = imports.ui.overview;
 const Panel = imports.ui.panel;
 const PopupMenu = imports.ui.popupMenu;
-const Signals = imports.signals;
 const Meta = imports.gi.Meta;
-const AltTab = imports.ui.altTab;
-const Gio = imports.gi.Gio;
 const Tooltips = imports.ui.tooltips;
 
 const Gettext = imports.gettext.domain('cinnamon-extensions');

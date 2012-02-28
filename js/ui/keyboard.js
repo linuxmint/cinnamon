@@ -7,7 +7,6 @@ const Gdk = imports.gi.Gdk;
 const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
 const Lang = imports.lang;
-const Cinnamon = imports.gi.Cinnamon;
 const St = imports.gi.St;
 
 const BoxPointer = imports.ui.boxpointer;

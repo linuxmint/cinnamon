@@ -12,7 +12,6 @@ const Cinnamon = imports.gi.Cinnamon;
 const Signals = imports.signals;
 const St = imports.gi.St;
 
-const BoxPointer = imports.ui.boxpointer;
 const GnomeSession = imports.misc.gnomeSession;
 const Main = imports.ui.main;
 const PopupMenu = imports.ui.popupMenu;

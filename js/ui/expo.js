@@ -1,19 +1,15 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 
 const Clutter = imports.gi.Clutter;
-const Gtk = imports.gi.Gtk;
 const Meta = imports.gi.Meta;
-const Mainloop = imports.mainloop;
 const Signals = imports.signals;
 const Lang = imports.lang;
 const St = imports.gi.St;
 const Cinnamon = imports.gi.Cinnamon;
 const Gdk = imports.gi.Gdk;
 
-const DND = imports.ui.dnd;
 const Main = imports.ui.main;
 const MessageTray = imports.ui.messageTray;
-const Panel = imports.ui.panel;
 const Params = imports.misc.params;
 const Tweener = imports.ui.tweener;
 const ExpoView = imports.ui.expoView;

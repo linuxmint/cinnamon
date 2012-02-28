@@ -2,11 +2,9 @@
 
 const Clutter = imports.gi.Clutter;
 const DBus = imports.dbus;
-const Gdk = imports.gi.Gdk;
 const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
 const GConf = imports.gi.GConf;
-const Lang = imports.lang;
 const Mainloop = imports.mainloop;
 const Meta = imports.gi.Meta;
 const Cinnamon = imports.gi.Cinnamon;
@@ -16,7 +14,6 @@ const AutomountManager = imports.ui.automountManager;
 const AutorunManager = imports.ui.autorunManager;
 const EndSessionDialog = imports.ui.endSessionDialog;
 const PolkitAuthenticationAgent = imports.ui.polkitAuthenticationAgent;
-const Environment = imports.ui.environment;
 const ExtensionSystem = imports.ui.extensionSystem;
 const AppletManager = imports.ui.appletManager;
 const Keyboard = imports.ui.keyboard;

@@ -4,8 +4,6 @@ const Lang = imports.lang;
 const Cinnamon = imports.gi.Cinnamon;
 const Signals = imports.signals;
 
-const MessageTray = imports.ui.messageTray;
-const NotificationDaemon = imports.ui.notificationDaemon;
 const Util = imports.misc.util;
 
 
