@@ -12,7 +12,9 @@ MyApplet.prototype = {
     _init: function(orientation) {        
         Applet.Applet.prototype._init.call(this, orientation);
         
-        try {                    
+        try {
+            this.actor.set_style_class_name("workspace-switcher-box");
+            this.actor.connect('scroll-event', this.hook.bind(this));
             this.set_applet_tooltip(_("Switch workspace"));
             this.button = [];
             this._createButtons();
@@ -26,6 +28,20 @@ MyApplet.prototype = {
     
     on_applet_clicked: function(event) {
         
+    },
+    
+    hook: function(actor, event){
+        var direction = event.get_scroll_direction();
+        if(direction==0) this.switch_workspace(-1);
+        if(direction==1) this.switch_workspace(1);
+    },
+    
+    switch_workspace: function(incremental){
+        var index = global.screen.get_active_workspace_index();
+        index += incremental;
+        if(global.screen.get_workspace_by_index(index) != null) {
+            global.screen.get_workspace_by_index(index).activate(false);
+        }
     },
     
     _createButtons: function() {
