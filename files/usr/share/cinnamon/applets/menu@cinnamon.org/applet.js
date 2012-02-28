@@ -552,15 +552,6 @@ MyApplet.prototype = {
     },
     
     on_applet_clicked: function(event) {
-        if (!this.menu.isOpen) {
-            // Setting the max-height won't do any good if the minimum height of the
-            // menu is higher then the screen; it's useful if part of the menu is
-            // scrollable so the minimum height is smaller than the natural height
-            let monitor = Main.layoutManager.primaryMonitor;
-            this.menu.actor.style = ('max-height: ' +
-                                     Math.round(monitor.height - Main.panel.actor.height) +
-                                     'px;');
-        }
         this.menu.toggle();     
     },        
            
