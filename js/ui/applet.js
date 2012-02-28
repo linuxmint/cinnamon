@@ -255,5 +255,9 @@ TextIconApplet.prototype = {
     
     set_applet_label: function (text) {
         this._applet_label.set_text(text);
+    },
+
+    hide_applet_icon: function () {
+        this._applet_icon_box.child = null;
     }    
 };
