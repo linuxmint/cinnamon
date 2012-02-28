@@ -496,7 +496,7 @@ MyApplet.prototype = {
             let tracker = Cinnamon.WindowTracker.get_default();
             tracker.connect('notify::focus-app', Lang.bind(this, this._onFocus));
 
-            global.window_manager.connect('switch-workspace',
+            this.switchWorkspaceHandler = global.window_manager.connect('switch-workspace',
                                             Lang.bind(this, this._refreshItems));
             global.window_manager.connect('minimize',
                                             Lang.bind(this, this._onMinimize));
@@ -506,6 +506,20 @@ MyApplet.prototype = {
                                             Lang.bind(this, this._onMaximize));
             global.window_manager.connect('map',
                                             Lang.bind(this, this._onMap));
+                                            
+            Main.expo.connect('showing', Lang.bind(this, 
+	    					function(){	global.window_manager.disconnect(this.switchWorkspaceHandler);}));
+	    Main.expo.connect('hidden', Lang.bind(this, 
+						function(){	this.switchWorkspaceHandler=global.window_manager.connect('switch-workspace', 
+												Lang.bind(this, this._refreshItems)); 
+								this._refreshItems();}));
+
+	    Main.overview.connect('showing', Lang.bind(this, 
+						function(){	global.window_manager.disconnect(this.switchWorkspaceHandler);}));
+	    Main.overview.connect('hidden', Lang.bind(this, 
+						function(){	this.switchWorkspaceHandler=global.window_manager.connect('switch-workspace', 
+												Lang.bind(this, this._refreshItems)); 
+								this._refreshItems();}));
             
             this._workspaces = [];
             this._changeWorkspaces();
