@@ -21,6 +21,12 @@ WindowAttentionHandler.prototype = {
         global.display.connect('window-demands-attention', Lang.bind(this, this._onWindowDemandsAttention));
     },
 
+    _getTitleAndBanner: function(app, window) {
+        let title = app.get_name();
+        let banner = _("'%s' is ready").format(window.get_title());
+        return [title, banner]
+    },
+
     _onWindowDemandsAttention : function(display, window) {
         // We don't want to show the notification when the window is already focused,
         // because this is rather pointless.
@@ -59,16 +65,15 @@ WindowAttentionHandler.prototype = {
         let source = new Source(app, window);
         if (Main.messageTray) Main.messageTray.add(source);
 
-        let banner = _("'%s' is ready").format(window.title);
-        let title = app.get_name();
+        let [title, banner] = this._getTitleAndBanner(app, window);
 
         let notification = new MessageTray.Notification(source, title, banner);
         source.notify(notification);
 
-        source.signalIDs.push(window.connect('notify::title',
-                                             Lang.bind(this, function() {
-                                                 notification.update(title, banner);
-                                             })));
+        source.signalIDs.push(window.connect('notify::title', Lang.bind(this, function() {
+            let [title, banner] = this._getTitleAndBanner(app, window);
+            notification.update(title, banner);
+        })));
     }
 };
 
