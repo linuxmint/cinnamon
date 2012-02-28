@@ -51,10 +51,7 @@ AppMenuButtonRightClickMenu.prototype = {
             this.itemMinimizeWindow = new PopupMenu.PopupMenuItem('Minimize');
         this.itemMinimizeWindow.connect('activate', Lang.bind(this, this._onMinimizeWindowActivate));        
         
-        if (metaWindow.maximized_horizontally && metaWindow.maximized_vertically)
-            this.itemMaximizeWindow = new PopupMenu.PopupMenuItem(_("Unmaximize"));
-        else
-            this.itemMaximizeWindow = new PopupMenu.PopupMenuItem(_('Maximize'));
+        this.itemMaximizeWindow = new PopupMenu.PopupMenuItem(_('Maximize'));
         this.itemMaximizeWindow.connect('activate', Lang.bind(this, this._onMaximizeWindowActivate));  
         
         this.itemMoveToLeftWorkspace = new PopupMenu.PopupMenuItem(_('Move to left workspace'));
@@ -94,6 +91,11 @@ AppMenuButtonRightClickMenu.prototype = {
             else
                 this.itemMoveToRightWorkspace.actor.hide();
         }
+        if (this.metaWindow.get_maximized()) {
+            this.itemMaximizeWindow.label.set_text(_("Unmaximize"));
+        }else{
+            this.itemMaximizeWindow.label.set_text(_("Maximize"));
+        }
     },
     
     _onWindowMinimized: function(actor, event){
@@ -117,11 +119,9 @@ AppMenuButtonRightClickMenu.prototype = {
     _onMaximizeWindowActivate: function(actor, event){      
         // 3 = 1 | 2 for both horizontally and vertically (didn't find where the META_MAXIMIZE_HORIZONTAL and META_MAXIMIZE_VERTICAL constants were defined for the JS wrappers)
         if (this.metaWindow.get_maximized()){
-            this.metaWindow.unmaximize(3);
-            this.itemMaximizeWindow.label.set_text(_("Maximize"));
+            this.metaWindow.unmaximize(Meta.MaximizeFlags.HORIZONTAL | Meta.MaximizeFlags.VERTICAL);
         }else{
-            this.metaWindow.maximize(3);
-            this.itemMaximizeWindow.label.set_text(_("Unmaximize"));
+            this.metaWindow.maximize(Meta.MaximizeFlags.HORIZONTAL | Meta.MaximizeFlags.VERTICAL);
         }
     },
     
@@ -579,14 +579,6 @@ MyApplet.prototype = {
                 } else if (state == 'map') {
                     windowReference._label.set_text(actor.get_meta_window().get_title());
                     menuReference.itemMinimizeWindow.label.set_text(_("Minimize"));
-                    
-                    return;
-                } else if (state == 'maximize') {
-                    if (actor.get_meta_window().get_maximized()) {
-                        menuReference.itemMaximizeWindow.label.set_text(_("Unmaximize"));
-                    } else {
-                        menuReference.itemMaximizeWindow.label.set_text(_("Maximize"));
-                    }
                     
                     return;
                 }
