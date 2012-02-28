@@ -1,21 +1,9 @@
-
-const St = imports.gi.St;
 const Main = imports.ui.main;
 const PopupMenu = imports.ui.popupMenu;
-const ModalDialog = imports.ui.modalDialog;
 const Gio = imports.gi.Gio;
-const Gtk = imports.gi.Gtk;
 const Lang = imports.lang;
-const Clutter = imports.gi.Clutter;
 const Applet = imports.ui.applet;
-const GLib = imports.gi.GLib;
-const DBus = imports.dbus;
 const GConf = imports.gi.GConf;
-const Mainloop = imports.mainloop;
-const Cinnamon = imports.gi.Cinnamon;
-const Signals = imports.signals;
-const PanelMenu = imports.ui.panelMenu;
-const Util = imports.misc.util;
 
 const Gettext = imports.gettext.domain('cinnamon-applets');
 const _ = Gettext.gettext;
