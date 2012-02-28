@@ -144,7 +144,7 @@ Expo.prototype = {
                                                                   transition: 'easeOutQuad'});
                 Tweener.addTween(this._addWorkspaceButton, { x: (Main.layoutManager.primaryMonitor.width - (this._addWorkspaceButton.width)),
                                                                   time: ADD_BUTTON_HOVER_TIME,
-                                                                  transition: 'easeOutBounce'});
+                                                                  transition: 'easeOutQuad'});
                                                                                         }));
         this._addWorkspaceButton.connect('leave-event', Lang.bind(this, function () { 
                 Tweener.addTween(this._expo.actor, { width: Main.layoutManager.primaryMonitor.width - (this._addWorkspaceButton.width / 5),
@@ -152,7 +152,7 @@ Expo.prototype = {
                                                                   transition: 'easeOutQuad'});
                 Tweener.addTween(this._addWorkspaceButton, { x: (Main.layoutManager.primaryMonitor.width - (this._addWorkspaceButton.width / 5)),
                                                                   time: ADD_BUTTON_HOVER_TIME,
-                                                                  transition: 'easeOutBounce'});
+                                                                  transition: 'easeOutQuad'});
                                                                                         }));
 
         this._group.hide();
