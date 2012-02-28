@@ -1115,7 +1115,9 @@ class MainWindow:
         sidePage.add_widget(desktop_layouts_combo) 
         label = Gtk.Label()
         label.set_markup("<i><small>%s</small></i>" % _("Note: If you change the layout you will need to restart Cinnamon."))
-        sidePage.add_widget(label)         
+        sidePage.add_widget(label)
+        sidePage.add_widget(GSettingsCheckButton(_("Applets draggable"), "org.cinnamon", "applets-draggable"))
+        sidePage.add_widget(GSettingsCheckButton(_("Panel Launchers draggable"), "org.cinnamon", "panel-launchers-draggable"))       
         
         sidePage = SidePage(_("Calendar"), "clock.svg", self.content_box)
         self.sidePages.append((sidePage, "calendar"))
