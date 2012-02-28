@@ -224,8 +224,9 @@ AppMenuButton.prototype = {
         this.actor.connect('destroy', Lang.bind(this, this._onDestroy));
         
         this._updateCaptionId = this.metaWindow.connect('notify::title', Lang.bind(this, function () {
-            this._label.set_text(this.metaWindow.get_title());
-            if (this._tooltip) this._tooltip.set_text(this.metaWindow.get_title());
+            let title = this.getDisplayTitle();
+            this._label.set_text(title);
+            if (this._tooltip) this._tooltip.set_text(title);
         }));
                 
         this._spinner = new Panel.AnimatedIcon('process-working.svg', PANEL_ICON_SIZE);
@@ -233,12 +234,14 @@ AppMenuButton.prototype = {
         this._spinner.actor.lower_bottom();
 
 		let tracker = Cinnamon.WindowTracker.get_default();
-		let app = tracker.get_window_app(this.metaWindow);		
-		let icon = app.create_icon_texture(16);		    
+		this.app = tracker.get_window_app(this.metaWindow);
+		let icon = this.app.create_icon_texture(16);
+        let title = this.getDisplayTitle();
+
         if (metaWindow.minimized)
-            this._label.set_text("[" + this.metaWindow.get_title() + "]");
+            this._label.set_text("[" + title + "]");
         else
-            this._label.set_text(this.metaWindow.get_title());
+            this._label.set_text(title);
         this._iconBox.set_child(icon);
         
         if(animation){
@@ -251,9 +254,15 @@ AppMenuButton.prototype = {
         this.rightClickMenu = new AppMenuButtonRightClickMenu(this.actor, this.metaWindow, orientation);
         this._menuManager.addMenu(this.rightClickMenu);
         
-        this._tooltip = new Tooltips.PanelItemTooltip(this, this.metaWindow.get_title(), orientation);
+        this._tooltip = new Tooltips.PanelItemTooltip(this, title, orientation);
     },
-    
+
+    getDisplayTitle: function() {
+        let title = this.metaWindow.get_title();
+        if (!title) title = this.app.get_name();
+        return title;
+    },
+
     _onDestroy: function() {
         this.metaWindow.disconnect(this._updateCaptionId);
         this._tooltip.destroy();
@@ -575,14 +584,15 @@ MyApplet.prototype = {
             if ( this._windows[i].metaWindow == actor.get_meta_window() ) {
                 let windowReference = this._windows[i];
                 let menuReference = this._windows[i].rightClickMenu;
+                let title = windowReference.getDisplayTitle();
                 
                 if (state == 'minimize') {
-                    windowReference._label.set_text("["+ actor.get_meta_window().get_title() +"]");
+                    windowReference._label.set_text("["+ title +"]");
                     menuReference.itemMinimizeWindow.label.set_text(_("Restore"));
                     
                     return;
                 } else if (state == 'map') {
-                    windowReference._label.set_text(actor.get_meta_window().get_title());
+                    windowReference._label.set_text(title);
                     menuReference.itemMinimizeWindow.label.set_text(_("Minimize"));
                     
                     return;
