@@ -82,6 +82,9 @@ AppMenuButtonRightClickMenu.prototype = {
      },
 
      _onToggled: function(actor, event){
+	if (!event)
+            return;
+
 	if (this.metaWindow.is_on_all_workspaces()) {
             this.itemOnAllWorkspaces.label.set_text(_('Only on this workspace'));
             this.itemMoveToLeftWorkspace.actor.hide();
