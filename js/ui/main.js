@@ -321,6 +321,7 @@ function _addWorkspace() {
     nWorks++;
     global.settings.set_int("number-workspaces", nWorks);
     _staticWorkspaces();
+    return true;
 }
 
 function _removeWorkspace(workspace) {
@@ -329,6 +330,7 @@ function _removeWorkspace(workspace) {
     nWorks--;
     global.settings.set_int("number-workspaces", nWorks);
     global.screen.remove_workspace(workspace, global.get_current_time());
+    return true;
 }
 
 function _staticWorkspaces() {
@@ -347,6 +349,7 @@ function _staticWorkspaces() {
             global.screen.remove_workspace(removeWorkspace, global.get_current_time()); 
         }    
     }
+    return true;
 }
 
 function _checkWorkspaces() {
@@ -447,6 +450,7 @@ function _queueCheckWorkspaces() {
         return false;
     if (_checkWorkspacesId == 0)
         _checkWorkspacesId = Meta.later_add(Meta.LaterType.BEFORE_REDRAW, _checkWorkspaces);
+    return true;
 }
 
 function _nWorkspacesChanged() {
