@@ -280,8 +280,8 @@ class ExtensionViewSidePage (SidePage):
         treeview.append_column(column2)
         treeview.set_headers_visible(False)
             
-        self.model = Gtk.TreeStore(str, str, bool)
-        #self.model.set_sort_column_id( 1, Gtk.SORT_ASCENDING )
+        self.model = Gtk.TreeStore(str, str, bool)        
+        self.model.set_sort_column_id( 1, Gtk.SortType.ASCENDING )
         treeview.set_model(self.model)
                                 
         # Find the enabled extensions
@@ -367,8 +367,7 @@ class AppletViewSidePage (SidePage):
         column2 = Gtk.TreeViewColumn(_("Icon"), Gtk.CellRendererPixbuf(), pixbuf=3)        
         column2.set_resizable(True)
 
-        column3 = Gtk.TreeViewColumn(_("Description"), Gtk.CellRendererText(), markup=1)
-        column3.set_sort_column_id(2)
+        column3 = Gtk.TreeViewColumn(_("Description"), Gtk.CellRendererText(), markup=1)        
         column3.set_resizable(True)      
         
         treeview.append_column(column1)
@@ -378,6 +377,7 @@ class AppletViewSidePage (SidePage):
             
         self.model = Gtk.TreeStore(str, str, bool, GdkPixbuf.Pixbuf)
         #                          uuid, name, enabled, icon        
+        self.model.set_sort_column_id(1, Gtk.SortType.ASCENDING)
         treeview.set_model(self.model)
                                 
         # Find the enabled applets
