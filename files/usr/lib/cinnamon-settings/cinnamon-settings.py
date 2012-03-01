@@ -314,7 +314,7 @@ class ExtensionViewSidePage (SidePage):
                     extension_description = data["description"]
                     iter = self.model.insert_before(None, None)
                     self.model.set_value(iter, 0, extension_uuid)         
-                    self.model.set_value(iter, 1, '<b>%s</b>\n<i><span foreground="#555555" size="x-small">%s</span></i>' % (extension_name, extension_description))
+                    self.model.set_value(iter, 1, '<b>%s</b>\n<b><span foreground="#333333" size="xx-small">%s</span></b>\n<i><span foreground="#555555" size="x-small">%s</span></i>' % (extension_name, extension_uuid, extension_description))
                     self.model.set_value(iter, 2, (extension_uuid in self.enabled_extensions))
         
     def toggled(self, renderer, path, treeview):        
@@ -434,7 +434,7 @@ class AppletViewSidePage (SidePage):
                                     break       
                         
                             self.model.set_value(iter, 0, applet_uuid)                
-                            self.model.set_value(iter, 1, '<b>%s</b>\n<i><span foreground="#555555" size="x-small">%s</span></i>' % (applet_name, applet_description))                                  
+                            self.model.set_value(iter, 1, '<b>%s</b>\n<b><span foreground="#333333" size="xx-small">%s</span></b>\n<i><span foreground="#555555" size="x-small">%s</span></i>' % (applet_name, applet_uuid, applet_description))                                  
                             self.model.set_value(iter, 2, found)                            
                             img = None                            
                             if "icon" in data:
