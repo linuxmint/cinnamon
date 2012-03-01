@@ -36,7 +36,7 @@ LayoutManager.prototype = {
 		this._hotCorner = new HotCorner();        
 		this.overviewCorner = new St.Button({name: 'overview-corner', reactive: true, track_hover: true });		
 		this.addChrome(this.overviewCorner, { visibleInFullscreen: false });	
-		this.overviewCorner.connect('button-release-event', Lang.bind(this, this._toggleOverview));
+		this.overviewCorner.connect('button-release-event', Lang.bind(this, this._toggleExpo));
 		
         this.trayBox = new St.BoxLayout({ name: 'trayBox' }); 
         this.addChrome(this.trayBox, { visibleInFullscreen: true });
@@ -111,9 +111,9 @@ LayoutManager.prototype = {
         this._startupAnimation();
     },
     
-    _toggleOverview: function() {
-        if (!Main.overview.animationInProgress) {            
-        	Main.overview.toggle();
+    _toggleExpo: function() {
+        if (!Main.expo.animationInProgress) {            
+        	Main.expo.toggle();
         }                    
     },
     
@@ -660,24 +660,24 @@ HotCorner.prototype = {
     _onCornerEntered : function() {
         if (!this._entered) {
             this._entered = true;
-            if (!Main.overview.animationInProgress && !Main.expo.visible) {
+            if (!Main.expo.animationInProgress && !Main.overview.visible) {
                 this._activationTime = Date.now() / 1000;
 
                 this.rippleAnimation();
-                Main.overview.toggle();
-            } else if (Main.expo.visible){
+                Main.expo.toggle();
+            } else if (Main.overview.visible){
                 this._activationTime = Date.now() / 1000;
 
                 this.rippleAnimation();
-                Main.expo.hide();
+                Main.overview.hide();
             }
         }
         return false;
     },
 
     _onCornerClicked : function() {
-        if (this.shouldToggleOverviewOnClick() && !Main.expo.visible)
-            Main.overview.toggle();
+        if (this.shouldToggleOverviewOnClick() && !Main.overview.visible)
+            Main.expo.toggle();
         return true;
     },
 
