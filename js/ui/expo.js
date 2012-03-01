@@ -133,22 +133,17 @@ Expo.prototype = {
 
         this._addWorkspaceButton = new St.Button({style_class: 'workspace-add-button'});
         this._group.add_actor(this._addWorkspaceButton);
+        this._addWorkspaceButton.opacity = 160;
         this._addWorkspaceButton.connect('clicked', Lang.bind(this, function () { Main._addWorkspace();}));
         this._addWorkspaceButton.connect('enter-event', Lang.bind(this, function () { 
-                Tweener.addTween(this._expo.actor, { width: Main.layoutManager.primaryMonitor.width - (this._addWorkspaceButton.width),
-                                                                  time: ADD_BUTTON_HOVER_TIME,
-                                                                  transition: 'easeOutQuad'});
-                Tweener.addTween(this._addWorkspaceButton, { x: (Main.layoutManager.primaryMonitor.width - (this._addWorkspaceButton.width)),
-                                                                  time: ADD_BUTTON_HOVER_TIME,
-                                                                  transition: 'easeOutQuad'});
+                Tweener.addTween(this._addWorkspaceButton, { opacity: 255,
+                                                             time: ADD_BUTTON_HOVER_TIME,
+                                                             transition: 'easeOutQuad'});
                                                                                         }));
         this._addWorkspaceButton.connect('leave-event', Lang.bind(this, function () { 
-                Tweener.addTween(this._expo.actor, { width: Main.layoutManager.primaryMonitor.width - (this._addWorkspaceButton.width / 5),
-                                                                  time: ADD_BUTTON_HOVER_TIME,
-                                                                  transition: 'easeOutQuad'});
-                Tweener.addTween(this._addWorkspaceButton, { x: (Main.layoutManager.primaryMonitor.width - (this._addWorkspaceButton.width / 5)),
-                                                                  time: ADD_BUTTON_HOVER_TIME,
-                                                                  transition: 'easeOutQuad'});
+                Tweener.addTween(this._addWorkspaceButton, { opacity: 160,
+                                                             time: ADD_BUTTON_HOVER_TIME,
+                                                             transition: 'easeOutQuad'});
                                                                                         }));
 
         this._group.hide();
@@ -226,11 +221,11 @@ Expo.prototype = {
         let buttonHeight = node.get_length('height');
 
         this._expo.actor.set_position(0, 0);
-        this._expo.actor.set_size((primary.width - (buttonWidth / 5)), primary.height);
+        this._expo.actor.set_size((primary.width - buttonWidth), primary.height);
 
         let buttonY = (primary.height - buttonHeight) / 2;
 
-        this._addWorkspaceButton.set_position((primary.width - (buttonWidth / 5)), buttonY);
+        this._addWorkspaceButton.set_position((primary.width - buttonWidth), buttonY);
         this._addWorkspaceButton.set_size(buttonWidth, buttonHeight); 
         if (this._addWorkspaceButton.get_theme_node().get_background_image() == null)
             this._addWorkspaceButton.set_style('background-image: url("/usr/share/cinnamon/theme/add-workspace.png");'); 
@@ -308,18 +303,32 @@ Expo.prototype = {
                                                     transition: 'easeOutQuad', 
                                                     onComplete: function(){Main.panel2.actor.hide();}});
         
-        this._background.dim_factor = 0.4;
+        this._background.dim_factor = 1;
+        Tweener.addTween(this._background,
+                            { dim_factor: 0.4,
+                              transition: 'easeOutQuad',
+                              time: ANIMATION_TIME});
 
         Tweener.addTween(this,
-                         { time: ANIMATION_TIME,
-                           transition: 'easeOutQuad',
-                           onComplete: this._showDone,
-                           onCompleteScope: this
-                         });
+                            { time: 0.01,
+                              onComplete: this._animateVisible2,
+                              onCompleteScope: this});
 
         this._coverPane.raise_top();
         this._coverPane.show();
         this.emit('showing');
+    },
+
+    //We need a (small)delay so that expoThumbnail can allocate thumbnails before we get the position and scale of the desired thumbnail
+    _animateVisible2: function() {
+        let activeWorkspaceActor = this._expo._thumbnailsBox._lastActiveWorkspace.actor;
+        Tweener.addTween(this.clone, {  x: activeWorkspaceActor.allocation.x1, 
+                                        y: activeWorkspaceActor.allocation.y1, 
+                                        scale_x: activeWorkspaceActor.get_scale()[0] , 
+                                        scale_y: activeWorkspaceActor.get_scale()[1], 
+                                        time: ANIMATION_TIME, transition: 'easeOutQuad', 
+                                        onComplete: function() { this.clone.hide(); this._showDone()}, 
+                                        onCompleteScope: this});        
     },
 
     // showTemporarily:
@@ -441,16 +450,17 @@ Expo.prototype = {
             Tweener.addTween(Main.panel2.actor, {opacity: 255, time: ANIMATION_TIME, transition: 'easeOutQuad'});
         }
 
-        Tweener.addTween(this,
-                         { time: ANIMATION_TIME,
+        Tweener.addTween(this._background,
+                         { dim_factor: 1,
+                           time: ANIMATION_TIME,
                            onComplete: this._hideDone,
                            onCompleteScope: this
                          });
 
         let activeWorkspace = this._expo._thumbnailsBox._lastActiveWorkspace;
         let activeWorkspaceActor = activeWorkspace.actor;
+        //activeWorkspace._fadeInUninterestingWindows();
         activeWorkspace._overviewModeOff();
-        //activeWorkspace._fadeInUninterestingWindows(); Disabled until solution to bug is fixed
         this.clone = new Clutter.Clone({source: activeWorkspaceActor});
         this._group.add_actor(this.clone);
         this.clone.set_position(activeWorkspaceActor.allocation.x1, activeWorkspaceActor.allocation.y1);
@@ -473,14 +483,6 @@ Expo.prototype = {
     },
 
     _showDone: function() {
-        let activeWorkspaceActor = this._expo._thumbnailsBox._lastActiveWorkspace.actor;
-        Tweener.addTween(this.clone, {  x: activeWorkspaceActor.allocation.x1, 
-                                        y: activeWorkspaceActor.allocation.y1, 
-                                        scale_x: activeWorkspaceActor.get_scale()[0] , 
-                                        scale_y: activeWorkspaceActor.get_scale()[1], 
-                                        time: ANIMATION_TIME, transition: 'easeOutQuad', 
-                                        onComplete: function() { this.clone.hide();}, 
-                                        onCompleteScope: this});
         this.animationInProgress = false;
         this._coverPane.hide();
 
