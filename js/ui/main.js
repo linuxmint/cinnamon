@@ -148,7 +148,7 @@ function _initUserSession() {
 
     cinnamonwm.takeover_keybinding('panel_main_menu');
     cinnamonwm.connect('keybinding::panel_main_menu', function () {
-        overview.toggle();
+        expo.toggle();
     });
     
 }
