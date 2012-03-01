@@ -8,7 +8,6 @@ const Mainloop = imports.mainloop;
 const Signals = imports.signals;
 const St = imports.gi.St;
 
-const DND = imports.ui.dnd;
 const Main = imports.ui.main;
 const Params = imports.misc.params;
 const Search = imports.ui.search;

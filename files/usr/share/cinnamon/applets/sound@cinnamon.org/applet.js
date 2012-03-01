@@ -6,12 +6,8 @@ const Lang = imports.lang;
 const Cinnamon = imports.gi.Cinnamon;
 const Clutter = imports.gi.Clutter;
 const St = imports.gi.St;
-const Main = imports.ui.main;
-const Panel = imports.ui.panel;
-const PanelMenu = imports.ui.panelMenu;
 const PopupMenu = imports.ui.popupMenu;
 const GLib = imports.gi.GLib;
-const Tweener = imports.ui.tweener;
 const Gvc = imports.gi.Gvc;
 
 const Gettext = imports.gettext.domain('cinnamon-extension-mediaplayer');

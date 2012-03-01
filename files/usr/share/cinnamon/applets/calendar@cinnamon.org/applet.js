@@ -1,15 +1,10 @@
-
 const Applet = imports.ui.applet;
-const GLib = imports.gi.GLib;
 const Gio = imports.gi.Gio;
 const Lang = imports.lang;
 const Mainloop = imports.mainloop;
-const Cairo = imports.cairo;
 const Clutter = imports.gi.Clutter;
-const Cinnamon = imports.gi.Cinnamon;
 const St = imports.gi.St;
 const Util = imports.misc.util;
-const Main = imports.ui.main;
 const PopupMenu = imports.ui.popupMenu;
 const Calendar = imports.ui.calendar;
 const UPowerGlib = imports.gi.UPowerGlib;

@@ -5,14 +5,12 @@ const DBus = imports.dbus;
 const GLib = imports.gi.GLib;
 const Lang = imports.lang;
 const Cinnamon = imports.gi.Cinnamon;
-const Mainloop = imports.mainloop;
 const St = imports.gi.St;
 
 const Config = imports.misc.config;
 const Main = imports.ui.main;
 const MessageTray = imports.ui.messageTray;
 const Params = imports.misc.params;
-const Util = imports.misc.util;
 
 let nextNotificationId = 1;
 

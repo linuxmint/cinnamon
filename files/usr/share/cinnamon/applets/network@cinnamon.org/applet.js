@@ -1,13 +1,9 @@
 const Applet = imports.ui.applet;
-const ByteArray = imports.byteArray;
-const DBus = imports.dbus;
 const GLib = imports.gi.GLib;
 const GObject = imports.gi.GObject;
 const Lang = imports.lang;
-const Mainloop = imports.mainloop;
 const NetworkManager = imports.gi.NetworkManager;
 const NMClient = imports.gi.NMClient;
-const Cinnamon = imports.gi.Cinnamon;
 const Signals = imports.signals;
 const St = imports.gi.St;
 

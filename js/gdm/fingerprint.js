@@ -1,9 +1,6 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 
 const DBus = imports.dbus;
-const Lang = imports.lang;
-const Cinnamon = imports.gi.Cinnamon;
-const Signals = imports.signals;
 
 const FprintManagerIface = {
     name: 'net.reactivated.Fprint.Manager',

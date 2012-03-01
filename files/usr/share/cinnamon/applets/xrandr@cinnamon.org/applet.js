@@ -5,11 +5,8 @@ const Gdk = imports.gi.Gdk;
 const GLib = imports.gi.GLib;
 const GnomeDesktop = imports.gi.GnomeDesktop;
 const Lang = imports.lang;
-const St = imports.gi.St;
 const Applet = imports.ui.applet;
-const Main = imports.ui.main;
 const PopupMenu = imports.ui.popupMenu;
-const Panel = imports.ui.panel;
 
 const Gettext = imports.gettext.domain('gnome-shell-extensions');
 const _ = Gettext.gettext;

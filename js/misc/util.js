@@ -1,9 +1,6 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 
-const Gdk = imports.gi.Gdk;
-const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
-const Cinnamon = imports.gi.Cinnamon;
 
 const Main = imports.ui.main;
 

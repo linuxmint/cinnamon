@@ -14,7 +14,6 @@ const DND = imports.ui.dnd;
 const Lightbox = imports.ui.lightbox;
 const Main = imports.ui.main;
 const Overview = imports.ui.overview;
-const Panel = imports.ui.panel;
 const Tweener = imports.ui.tweener;
 
 const FOCUS_ANIMATION_TIME = 0.15;

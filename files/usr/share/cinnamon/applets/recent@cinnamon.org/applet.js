@@ -2,7 +2,6 @@ const DocInfo = imports.misc.docInfo;
 const Gtk = imports.gi.Gtk;
 const Gio = imports.gi.Gio;
 const St = imports.gi.St;
-const Main = imports.ui.main;
 const PopupMenu = imports.ui.popupMenu;
 const Lang = imports.lang;
 const Applet = imports.ui.applet;

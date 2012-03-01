@@ -25,16 +25,13 @@ const GLib = imports.gi.GLib;
 const Gtk = imports.gi.Gtk;
 const Mainloop = imports.mainloop;
 const Lang = imports.lang;
-const Pango = imports.gi.Pango;
 const Signals = imports.signals;
-const Cinnamon = imports.gi.Cinnamon;
 const St = imports.gi.St;
 const GdmGreeter = imports.gi.GdmGreeter;
 
 const Batch = imports.gdm.batch;
 const DBus = imports.dbus;
 const Fprint = imports.gdm.fingerprint;
-const Lightbox = imports.ui.lightbox;
 const Main = imports.ui.main;
 const ModalDialog = imports.ui.modalDialog;
 const Tweener = imports.ui.tweener;

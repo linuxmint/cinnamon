@@ -20,16 +20,12 @@
  */ 
 
 const Clutter = imports.gi.Clutter;
-const Gio = imports.gi.Gio;
 const Lang = imports.lang;
 const NetworkManager = imports.gi.NetworkManager;
-const NMClient = imports.gi.NMClient;
-const Pango = imports.gi.Pango;
 const Cinnamon = imports.gi.Cinnamon;
 const St = imports.gi.St;
 
 const ModalDialog = imports.ui.modalDialog;
-const PopupMenu = imports.ui.popupMenu;
 const CinnamonEntry = imports.ui.cinnamonEntry;
 
 function NetworkSecretDialog() {
