@@ -258,8 +258,8 @@ StTooltip StLabel {
 }
 .panel-status-button {
 	border: 0px solid #8b8b8b;
-	-natural-hpadding: 5px;
-	-minimum-hpadding: 5px;
+	-natural-hpadding: 3px;
+	-minimum-hpadding: 3px;
 	font-weight: bold;
 	color: #ccc;
 	height: 22px;
@@ -1545,8 +1545,8 @@ StTooltip StLabel {
  * Applets (applet.js) 
  * ===================================================================*/
 .applet-box {
-	margin: 1px;
-	padding: 1px;
+	padding-left: 3px;
+    padding-right: 3px;
 	color: #ccc;
 	text-shadow: black 0px 0px 2px;
 	transition-duration: 300;
