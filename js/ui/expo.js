@@ -459,8 +459,9 @@ Expo.prototype = {
             Tweener.addTween(Main.panel2.actor, {opacity: 255, time: ANIMATION_TIME, transition: 'easeOutQuad'});
         }
 
-        Tweener.addTween(this,
-                         { time: ANIMATION_TIME,
+        Tweener.addTween(this._background,
+                         { dim_factor: 1,
+                           time: ANIMATION_TIME,
                            onComplete: this._hideDone,
                            onCompleteScope: this
                          });
