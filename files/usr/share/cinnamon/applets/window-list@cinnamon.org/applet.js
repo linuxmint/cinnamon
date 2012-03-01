@@ -55,9 +55,14 @@ AppMenuButtonRightClickMenu.prototype = {
         this.itemMoveToRightWorkspace = new PopupMenu.PopupMenuItem(_('Move to right workspace'));
         this.itemMoveToRightWorkspace.connect('activate', Lang.bind(this, this._onMoveToRightWorkspace));      
         
+        this.itemOnAllWorkspaces = new PopupMenu.PopupMenuItem(_('Visible on all workspaces'));
+        this.itemOnAllWorkspaces.connect('activate', Lang.bind(this, this._toggleOnAllWorkspaces));
+
         if (orientation == St.Side.BOTTOM) {
+            this.addMenuItem(this.itemOnAllWorkspaces);
             this.addMenuItem(this.itemMoveToLeftWorkspace);
             this.addMenuItem(this.itemMoveToRightWorkspace);
+            this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
             this.addMenuItem(this.itemMinimizeWindow);
             this.addMenuItem(this.itemMaximizeWindow);
             this.addMenuItem(this.itemCloseWindow);                        
@@ -66,16 +71,23 @@ AppMenuButtonRightClickMenu.prototype = {
             this.addMenuItem(this.itemCloseWindow);
             this.addMenuItem(this.itemMaximizeWindow);
             this.addMenuItem(this.itemMinimizeWindow);
+            this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
             this.addMenuItem(this.itemMoveToLeftWorkspace);
             this.addMenuItem(this.itemMoveToRightWorkspace);
+            this.addMenuItem(this.itemOnAllWorkspaces);
         }
      },
 
      _onToggled: function(actor, event){
+	if (!event)
+            return;
+
 	if (this.metaWindow.is_on_all_workspaces()) {
+            this.itemOnAllWorkspaces.label.set_text(_('Only on this workspace'));
             this.itemMoveToLeftWorkspace.actor.hide();
             this.itemMoveToRightWorkspace.actor.hide();
         } else {
+            this.itemOnAllWorkspaces.label.set_text(_('Visible on all workspaces'));
             if (this.metaWindow.get_workspace().get_neighbor(Meta.MotionDirection.LEFT) != this.metaWindow.get_workspace())
                 this.itemMoveToLeftWorkspace.actor.show();
             else
@@ -112,7 +124,6 @@ AppMenuButtonRightClickMenu.prototype = {
     },
 
     _onMaximizeWindowActivate: function(actor, event){      
-        // 3 = 1 | 2 for both horizontally and vertically (didn't find where the META_MAXIMIZE_HORIZONTAL and META_MAXIMIZE_VERTICAL constants were defined for the JS wrappers)
         if (this.metaWindow.get_maximized()){
             this.metaWindow.unmaximize(Meta.MaximizeFlags.HORIZONTAL | Meta.MaximizeFlags.VERTICAL);
         }else{
@@ -136,6 +147,13 @@ AppMenuButtonRightClickMenu.prototype = {
             this.metaWindow.change_workspace(workspace);
             Main._checkWorkspaces();
         }
+    },
+
+    _toggleOnAllWorkspaces: function(actor, event) {
+        if (this.metaWindow.is_on_all_workspaces())
+            this.metaWindow.unstick();
+        else
+            this.metaWindow.stick();
     },
 
     _onSourceKeyPress: function(actor, event) {
