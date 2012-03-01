@@ -2,7 +2,6 @@
 
 const Clutter = imports.gi.Clutter;
 const Lang = imports.lang;
-const Meta = imports.gi.Meta;
 const St = imports.gi.St;
 const Cinnamon = imports.gi.Cinnamon;
 

@@ -2,16 +2,12 @@
 
 const Clutter = imports.gi.Clutter;
 const Lang = imports.lang;
-const Mainloop = imports.mainloop;
-const Meta = imports.gi.Meta;
 const Cinnamon = imports.gi.Cinnamon;
 const St = imports.gi.St;
 const Signals = imports.signals;
 
 const DND = imports.ui.dnd;
 const Main = imports.ui.main;
-const Expo = imports.ui.expo;
-const Tweener = imports.ui.tweener;
 const Workspace = imports.ui.workspace;
 const ExpoThumbnail = imports.ui.expoThumbnail;
 

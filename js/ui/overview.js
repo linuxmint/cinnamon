@@ -11,10 +11,8 @@ const Cinnamon = imports.gi.Cinnamon;
 const Gdk = imports.gi.Gdk;
 
 const DND = imports.ui.dnd;
-const Lightbox = imports.ui.lightbox;
 const Main = imports.ui.main;
 const MessageTray = imports.ui.messageTray;
-const Panel = imports.ui.panel;
 const Params = imports.misc.params;
 const Tweener = imports.ui.tweener;
 const ViewSelector = imports.ui.viewSelector;

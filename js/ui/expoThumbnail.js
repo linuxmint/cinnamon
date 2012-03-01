@@ -11,7 +11,6 @@ const St = imports.gi.St;
 const DND = imports.ui.dnd;
 const Main = imports.ui.main;
 const Tweener = imports.ui.tweener;
-const ExpoView = imports.ui.expoView;
 const Workspace = imports.ui.workspace;
 
 // The maximum size of a thumbnail is 1/8 the width and height of the screen

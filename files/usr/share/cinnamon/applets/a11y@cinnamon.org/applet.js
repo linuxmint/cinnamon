@@ -1,4 +1,3 @@
-const Main = imports.ui.main;
 const PopupMenu = imports.ui.popupMenu;
 const Gio = imports.gi.Gio;
 const Lang = imports.lang;

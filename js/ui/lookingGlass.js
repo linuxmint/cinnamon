@@ -2,7 +2,6 @@
 
 const Clutter = imports.gi.Clutter;
 const Cogl = imports.gi.Cogl;
-const GConf = imports.gi.GConf;
 const GLib = imports.gi.GLib;
 const Gio = imports.gi.Gio;
 const Gtk = imports.gi.Gtk;
@@ -12,7 +11,6 @@ const St = imports.gi.St;
 const Cinnamon = imports.gi.Cinnamon;
 const Signals = imports.signals;
 const Lang = imports.lang;
-const Mainloop = imports.mainloop;
 
 const History = imports.misc.history;
 const ExtensionSystem = imports.ui.extensionSystem;

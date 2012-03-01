@@ -1,14 +1,10 @@
-
 const St = imports.gi.St;
-const Main = imports.ui.main;
-const PopupMenu = imports.ui.popupMenu;
 const ModalDialog = imports.ui.modalDialog;
 const Gio = imports.gi.Gio;
 const Gtk = imports.gi.Gtk;
 const Lang = imports.lang;
 const Clutter = imports.gi.Clutter;
 const Applet = imports.ui.applet;
-const GLib = imports.gi.GLib;
 
 const Gettext = imports.gettext.domain('cinnamon-applets');
 const _ = Gettext.gettext;

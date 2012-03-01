@@ -8,7 +8,6 @@ const St = imports.gi.St;
 const Signals = imports.signals;
 const Pango = imports.gi.Pango;
 const Gettext_gtk30 = imports.gettext.domain('gtk30');
-const Mainloop = imports.mainloop;
 const Cinnamon = imports.gi.Cinnamon;
 
 const MSECS_IN_DAY = 24 * 60 * 60 * 1000;

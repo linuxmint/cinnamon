@@ -11,7 +11,6 @@ const Signals = imports.signals;
 const GLib = imports.gi.GLib;
 const Tooltips = imports.ui.tooltips;
 const DND = imports.ui.dnd;
-const Tweener = imports.ui.tweener;
 
 let pressLauncher = null;
 

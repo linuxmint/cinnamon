@@ -31,8 +31,6 @@ const St = imports.gi.St;
 const Cinnamon = imports.gi.Cinnamon;
 
 const GnomeSession = imports.misc.gnomeSession
-const Lightbox = imports.ui.lightbox;
-const Main = imports.ui.main;
 const ModalDialog = imports.ui.modalDialog;
 const Tweener = imports.ui.tweener;
 

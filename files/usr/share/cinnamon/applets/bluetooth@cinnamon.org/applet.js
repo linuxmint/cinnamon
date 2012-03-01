@@ -1,18 +1,12 @@
 const Applet = imports.ui.applet;
 const Clutter = imports.gi.Clutter;
-const Gdk = imports.gi.Gdk;
 const GLib = imports.gi.GLib;
-const Gio = imports.gi.Gio;
 const GnomeBluetoothApplet = imports.gi.GnomeBluetoothApplet;
-const Gtk = imports.gi.Gtk;
 const Lang = imports.lang;
-const Mainloop = imports.mainloop;
 const St = imports.gi.St;
-const Cinnamon = imports.gi.Cinnamon;
 
 const Main = imports.ui.main;
 const MessageTray = imports.ui.messageTray;
-const PanelMenu = imports.ui.panelMenu;
 const PopupMenu = imports.ui.popupMenu;
 
 const ConnectionState = {

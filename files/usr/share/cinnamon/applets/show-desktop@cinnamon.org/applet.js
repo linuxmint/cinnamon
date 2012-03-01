@@ -1,5 +1,3 @@
-const St = imports.gi.St;
-const Lang = imports.lang;
 const Cinnamon = imports.gi.Cinnamon;
 const Applet = imports.ui.applet;
 
