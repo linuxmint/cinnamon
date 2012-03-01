@@ -312,18 +312,32 @@ Expo.prototype = {
                                                     transition: 'easeOutQuad', 
                                                     onComplete: function(){Main.panel2.actor.hide();}});
         
-        this._background.dim_factor = 0.4;
+        this._background.dim_factor = 1;
+        Tweener.addTween(this._background,
+                            { dim_factor: 0.4,
+                              transition: 'easeOutQuad',
+                              time: ANIMATION_TIME});
 
         Tweener.addTween(this,
-                         { time: ANIMATION_TIME,
-                           transition: 'easeOutQuad',
-                           onComplete: this._showDone,
-                           onCompleteScope: this
-                         });
+                            { time: 0.01,
+                              onComplete: this._animateVisible2,
+                              onCompleteScope: this});
 
         this._coverPane.raise_top();
         this._coverPane.show();
         this.emit('showing');
+    },
+
+    //We need a (small)delay so that expoThumbnail can allocate thumbnails before we get the position and scale of the desired thumbnail
+    _animateVisible2: function() {
+        let activeWorkspaceActor = this._expo._thumbnailsBox._lastActiveWorkspace.actor;
+        Tweener.addTween(this.clone, {  x: activeWorkspaceActor.allocation.x1, 
+                                        y: activeWorkspaceActor.allocation.y1, 
+                                        scale_x: activeWorkspaceActor.get_scale()[0] , 
+                                        scale_y: activeWorkspaceActor.get_scale()[1], 
+                                        time: ANIMATION_TIME, transition: 'easeOutQuad', 
+                                        onComplete: function() { this.clone.hide(); this._showDone()}, 
+                                        onCompleteScope: this});        
     },
 
     // showTemporarily:
@@ -453,8 +467,8 @@ Expo.prototype = {
 
         let activeWorkspace = this._expo._thumbnailsBox._lastActiveWorkspace;
         let activeWorkspaceActor = activeWorkspace.actor;
+        //activeWorkspace._fadeInUninterestingWindows();
         activeWorkspace._overviewModeOff();
-        //activeWorkspace._fadeInUninterestingWindows(); Disabled until solution to bug is fixed
         this.clone = new Clutter.Clone({source: activeWorkspaceActor});
         this._group.add_actor(this.clone);
         this.clone.set_position(activeWorkspaceActor.allocation.x1, activeWorkspaceActor.allocation.y1);
@@ -477,14 +491,6 @@ Expo.prototype = {
     },
 
     _showDone: function() {
-        let activeWorkspaceActor = this._expo._thumbnailsBox._lastActiveWorkspace.actor;
-        Tweener.addTween(this.clone, {  x: activeWorkspaceActor.allocation.x1, 
-                                        y: activeWorkspaceActor.allocation.y1, 
-                                        scale_x: activeWorkspaceActor.get_scale()[0] , 
-                                        scale_y: activeWorkspaceActor.get_scale()[1], 
-                                        time: ANIMATION_TIME, transition: 'easeOutQuad', 
-                                        onComplete: function() { this.clone.hide();}, 
-                                        onCompleteScope: this});
         this.animationInProgress = false;
         this._coverPane.hide();
 
