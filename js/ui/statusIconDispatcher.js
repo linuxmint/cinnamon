@@ -38,6 +38,12 @@ StatusIconDispatcher.prototype = {
         // http://bugzilla.gnome.org/show_bug.cgi=id=621382
         Util.killall('indicator-application-service');
     },
+    
+    redisplay: function() {
+        this.emit('before-redisplay');
+        this._traymanager.redisplay();
+        this.emit('after-redisplay');
+    },
 
     start: function(themeWidget) {
         this._traymanager.manage_stage(global.stage, themeWidget);

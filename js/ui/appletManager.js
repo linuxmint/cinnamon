@@ -92,6 +92,8 @@ function onEnabledAppletsChanged() {
     catch(e) {
         global.logError('Failed to refresh list of applets ' + e); 
     }
+    
+    Main.statusIconDispatcher.redisplay();
 }
 
 function loadApplets() {    

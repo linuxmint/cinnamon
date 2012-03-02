@@ -16,6 +16,7 @@ MyApplet.prototype = {
         try {                   
             Main.statusIconDispatcher.connect('status-icon-added', Lang.bind(this, this._onTrayIconAdded));
             Main.statusIconDispatcher.connect('status-icon-removed', Lang.bind(this, this._onTrayIconRemoved));    
+            Main.statusIconDispatcher.connect('before-redisplay', Lang.bind(this, this._onBeforeRedisplay));    
         }
         catch (e) {
             global.logError(e);
@@ -24,6 +25,13 @@ MyApplet.prototype = {
     
     on_applet_clicked: function(event) {
     
+    },
+    
+    _onBeforeRedisplay: function() {
+        let children = this.actor.get_children();
+        for (var i = 0; i < children.length; i++) {
+            children[i].destroy();
+        }
     },
     
     _onTrayIconAdded: function(o, icon, role) {
