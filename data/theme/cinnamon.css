@@ -23,7 +23,7 @@ StScrollView.vfade {
 }
 StScrollView StScrollBar {
 	min-width: 16px;
-	min-height: 16px;zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz
+	min-height: 16px;
 }
 
 StScrollBar StBin#trough {
