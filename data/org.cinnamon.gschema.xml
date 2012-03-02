@@ -13,7 +13,7 @@
     </key>
     
     <key type="as" name="enabled-applets">
-      <default>['panel1:left:0:menu@cinnamon.org', 'panel1:left:1:show-desktop@cinnamon.org', 'panel1:left:2:panel-launchers@cinnamon.org', 'panel1:left:3:window-list@cinnamon.org', 'panel1:right:0:keyboard@cinnamon.org', 'panel1:right:1:bluetooth@cinnamon.org', 'panel1:right:2:network@cinnamon.org', 'panel1:right:3:sound@cinnamon.org', 'panel1:right:4:power@cinnamon.org', 'panel1:right:5:systray@cinnamon.org', 'panel1:right:6:calendar@cinnamon.org']</default>
+      <default>['panel1:left:0:menu@cinnamon.org', 'panel1:left:1:show-desktop@cinnamon.org', 'panel1:left:2:panel-launchers@cinnamon.org', 'panel1:left:3:window-list@cinnamon.org', 'panel1:right:0:removable-drives@cinnamon.org', 'panel1:right:1:keyboard@cinnamon.org', 'panel1:right:2:settings@cinnamon.org', 'panel1:right:3:bluetooth@cinnamon.org', 'panel1:right:4:network@cinnamon.org', 'panel1:right:5:sound@cinnamon.org', 'panel1:right:6:power@cinnamon.org', 'panel1:right:7:systray@cinnamon.org', 'panel1:right:8:calendar@cinnamon.org']</default>
       <summary>Uuids of applets to enable</summary>
       <description>Cinnamon applets have a uuid property; this key lists applets which should be loaded.</description>
     </key>
@@ -170,7 +170,7 @@
     </key>
     
     <key type="as" name="panel-launchers">
-      <default>[ 'cinnamon-settings.desktop', 'firefox.desktop', 'gnome-terminal.desktop', 'nautilus.desktop']</default>
+      <default>[ 'firefox.desktop', 'gnome-terminal.desktop', 'nautilus.desktop']</default>
       <summary>Desktop files of the applications to put in the panel launchers applet</summary>
       <description>Cinnamon allows to show applications launchers on the panel. This key lists the desktop files of the applications to show there.</description>
     </key>

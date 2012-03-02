@@ -38,7 +38,13 @@ MyApplet.prototype = {
             
             this.troubleshootItem.menu.addAction(_("Looking Glass"), function(event) {
                 Main.createLookingGlass().open();
-            });            
+            }); 
+            
+            this.troubleshootItem.menu.addAction(_("Restore all settings to default"), function(event) {
+                Util.spawnCommandLine("gsettings reset-recursively org.cinnamon");
+                global.reexec_self();
+            });  
+                       
             this.menu.addMenuItem(this.troubleshootItem);                                
                                                
             this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
@@ -55,7 +61,7 @@ MyApplet.prototype = {
             
             this.menu.addAction(_("Cinnamon Settings"), function(event) {
                 Util.spawnCommandLine("cinnamon-settings");
-            });  
+            });                     
                         
         }
         catch (e) {
