@@ -125,7 +125,12 @@ function add_applet_to_panels(appletDefinition) {
             else if (elements[1] == "right") {
                 location = panel._rightBox;
             }
-            let order = elements[2];
+            let order;
+            try{
+                order = parseInt(elements[2]);
+            }catch(e){
+                order = 0;
+            }
             let uuid = elements[3];
             let orientation = St.Side.TOP;
             if (panel.bottomPosition) {

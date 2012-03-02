@@ -472,13 +472,18 @@ PanelZoneDNDHandler.prototype = {
         if (!(source instanceof Applet.Applet)) return false;
           
         let children = this._panelZone.get_children();
+        let curAppletPos = 0;
+        let insertAppletPos;
         for (var i in children){
-            if (children[i]._applet){
-                if (i < this._dragPlaceholderPos) children[i]._applet._newOrder = i;
-                else children[i]._applet._newOrder = i + 1;
+            if (children[i]._delegate instanceof Applet.Applet){
+                children[i]._applet._newOrder = curAppletPos;
+                curAppletPos++;
+            }else if (children[i] == this._dragPlaceholder.actor){
+                insertAppletPos = curAppletPos;
+                curAppletPos++;
             }
         }
-        source.actor._applet._newOrder = this._dragPlaceholderPos;
+        source.actor._applet._newOrder = insertAppletPos;
         source.actor._applet._newPanelLocation = this._panelZone;
         this._clearDragPlaceholder();
         actor.destroy();
