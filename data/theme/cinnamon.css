@@ -630,6 +630,7 @@ StTooltip StLabel {
 }
 .calendar-other-month-day {
 	color: #888888;
+    background-color: rgba(64, 64, 64, .5);
 }
 .calendar-day-with-events {
 	font-weight: bold;
