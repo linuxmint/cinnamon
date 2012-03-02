@@ -23,7 +23,7 @@ StScrollView.vfade {
 }
 StScrollView StScrollBar {
 	min-width: 16px;
-	min-height: 16px;
+	min-height: 16px;zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz
 }
 
 StScrollBar StBin#trough {
@@ -1311,6 +1311,12 @@ StTooltip StLabel {
 	padding-left: 28px;
 	text-align: right;
 }
+
+.menu-selected-app-box:rtl {
+	padding-top: 10px;
+	height: 30px;
+}
+
 .menu-selected-app-title {
 	font-weight: bold;
 }
