@@ -43,7 +43,7 @@ MyApplet.prototype = {
         Applet.IconApplet.prototype._init.call(this, orientation);
         
         try {        
-            this.set_applet_icon_name("preferences-desktop-display");
+            this.set_applet_icon_symbolic_name("preferences-desktop-display");
             this.set_applet_tooltip(_("Display"));
             
             this.menuManager = new PopupMenu.PopupMenuManager(this);

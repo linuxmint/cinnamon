@@ -20,7 +20,7 @@ MyApplet.prototype = {
         Applet.IconApplet.prototype._init.call(this, orientation);
         
         try {        
-            this.set_applet_icon_name("user-trash");
+            this.set_applet_icon_symbolic_name("user-trash");
             this.set_applet_tooltip(_("Trash"));
                    
             this.trash_path = 'trash:///';
@@ -58,9 +58,10 @@ MyApplet.prototype = {
       if (this.trash_directory.query_exists(null)) {
           let children = this.trash_directory.enumerate_children('standard::*', Gio.FileQueryInfoFlags.NONE, null);          
           if (children.next_file(null, null) == null) {
-              this.set_applet_icon_name("user-trash");        
+              this.set_applet_icon_symbolic_name("user-trash");        
           } else {
-              this.set_applet_icon_name("user-trash-full");
+              //this.set_applet_icon_name("user-trash-full");
+              this.set_applet_icon_symbolic_name("user-trash");        
           }
       }
     },
