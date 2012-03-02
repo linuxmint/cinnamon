@@ -246,7 +246,7 @@ function loadApplet(uuid, dir, orientation) {
         return null;
     }
 
-    let requiredProperties = ['uuid', 'name', 'description', 'icon'];
+    let requiredProperties = ['uuid', 'name', 'description'];
     for (let i = 0; i < requiredProperties.length; i++) {
         let prop = requiredProperties[i];
         if (!meta[prop]) {

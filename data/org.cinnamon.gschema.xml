@@ -212,10 +212,10 @@
       <summary/>
     </key>
     
-    <key type="b" name="applets-draggable">
-      <default>true</default>
-      <summary>Whether applets in panel are draggable</summary>
-      <description> This determines whether the applets in the panel can be dragged or not</description>
+     <key type="b" name="panel-edit-mode">
+      <default>false</default>
+      <summary>Panel edit mode</summary>
+      <description>A mode for the user to drag and drop applets and modify the look of the desktop</description>
     </key>
     
     <key type="b" name="panel-launchers-draggable">

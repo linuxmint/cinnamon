@@ -89,14 +89,21 @@ Applet.prototype = {
         this._uuid = null; // Defined in gsettings, set by Cinnamon.
         this._dragging = false;
         let settings = new Gio.Settings({ schema: 'org.cinnamon'});
-        if (settings.get_boolean('applets-draggable')) {
+        if (settings.get_boolean('panel-edit-mode')) {
             this._draggable = DND.makeDraggable(this.actor);
             this._draggable.connect('drag-begin', Lang.bind(this, this._onDragBegin));
     	    this._draggable.connect('drag-cancelled', Lang.bind(this, this._onDragCancelled));
             this._draggable.connect('drag-end', Lang.bind(this, this._onDragEnd));
-	}
+        }
 
-        this._applet_tooltip_text = "";            
+        this._applet_tooltip_text = "";      
+                
+        global.settings.connect('changed::panel-edit-mode', Lang.bind(this, this._setAppletReactivity));
+        this._setAppletReactivity();        
+    },
+    
+    _setAppletReactivity: function() {
+        //this.actor.reactive = global.settings.get_boolean("panel-edit-mode"); <-- that breaks stuff, big time :))
     },
 
     _onDragBegin: function() {

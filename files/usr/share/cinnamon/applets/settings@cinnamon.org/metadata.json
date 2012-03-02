@@ -1,0 +1,6 @@
+{
+ "uuid": "settings@cinnamon.org",
+ "name": "Cinnamon Settings",
+ "description": "Cinnamon Settings",
+ "icon": "preferences-system"
+}
