@@ -25,7 +25,7 @@ nobase_dist_js_DATA = \
 	ui/automountManager.js  \
 	ui/autorunManager.js    \
 	ui/boxpointer.js	\
-	ui/calendar.js		\	
+	ui/calendar.js		\
 	ui/dnd.js		\
 	ui/endSessionDialog.js	\
 	ui/environment.js	\
@@ -49,7 +49,7 @@ nobase_dist_js_DATA = \
 	ui/cinnamonMountOperation.js \
 	ui/notificationDaemon.js \
 	ui/overview.js		\
-	ui/panel.js		\	
+	ui/panel.js		\
 	ui/panelMenu.js		\
 	ui/placesManager.js  \
 	ui/polkitAuthenticationAgent.js \
