@@ -87,14 +87,18 @@ function GenericApplicationButton(appsMenuButton, app) {
 GenericApplicationButton.prototype = {
     __proto__: PopupMenu.PopupSubMenuMenuItem.prototype,
     
-    _init: function(appsMenuButton, app) {
+    _init: function(appsMenuButton, app, withMenu) {
         this.app = app;
         this.appsMenuButton = appsMenuButton;
         PopupMenu.PopupBaseMenuItem.prototype._init.call(this, {hover: false});
         
-        this.menu = new PopupMenu.PopupSubMenu(this.actor);
-        this.menu.actor.set_style_class_name('menu-context-menu');
-        this.menu.connect('open-state-changed', Lang.bind(this, this._subMenuOpenStateChanged));
+        this.withMenu = withMenu;
+        
+        if (this.withMenu){
+            this.menu = new PopupMenu.PopupSubMenu(this.actor);
+            this.menu.actor.set_style_class_name('menu-context-menu');
+            this.menu.connect('open-state-changed', Lang.bind(this, this._subMenuOpenStateChanged));
+        }
     },
     
     _onButtonReleaseEvent: function (actor, event) {
@@ -114,10 +118,12 @@ GenericApplicationButton.prototype = {
     },
     
     closeMenu: function() {
-        this.menu.close();
+        if (this.withMenu) this.menu.close();
     },
     
     toggleMenu: function() {
+        if (!this.withMenu) return;
+        
         if (!this.menu.isOpen){
             let children = this.menu.box.get_children();
             for (var i in children){
@@ -150,7 +156,7 @@ ApplicationButton.prototype = {
     __proto__: GenericApplicationButton.prototype,
     
     _init: function(appsMenuButton, app) {
-        GenericApplicationButton.prototype._init.call(this, appsMenuButton, app);
+        GenericApplicationButton.prototype._init.call(this, appsMenuButton, app, true);
 
         this.actor.add_style_class_name('menu-application-button');
         this.icon = this.app.create_icon_texture(APPLICATION_ICON_SIZE);
@@ -382,9 +388,9 @@ FavoritesBox.prototype = {
                 let appChildren = children.filter(function(actor) {
                     return (actor._delegate instanceof FavoritesButton);
                 });
-                this._dragPlaceholderPos = 2 * children.indexOf(appChildren[pos]);
+                this._dragPlaceholderPos = children.indexOf(appChildren[pos]);
             } else {
-                this._dragPlaceholderPos = 2 * pos;
+                this._dragPlaceholderPos = pos;
             }
 
             // Don't allow positioning before or after self
@@ -844,7 +850,6 @@ MyApplet.prototype = {
                 let button = new FavoritesButton(this, app, launchers.length + 3); // + 3 because we're adding 3 system buttons at the bottom
                 this._favoritesButtons[app] = button;
                 favoritesBox.actor.add_actor(button.actor, { y_align: St.Align.END, y_fill: false });
-                favoritesBox.actor.add_actor(button.menu.actor, { y_align: St.Align.END, y_fill: false });
                 button.actor.connect('enter-event', Lang.bind(this, function() {
                    this.selectedAppTitle.set_text(button.app.get_name());
                    if (button.app.get_description()) this.selectedAppDescription.set_text(button.app.get_description());
@@ -1068,14 +1073,6 @@ MyApplet.prototype = {
                     this._applicationsButtons[app].toggleMenu();
                 else
                     this._applicationsButtons[app].closeMenu();
-            }
-        }
-        for (var app in this._favoritesButtons){
-            if (app!=excludeApp && this._favoritesButtons[app].menu.isOpen){
-                if (animate)
-                    this._favoritesButtons[app].toggleMenu();
-                else
-                    this._favoritesButtons[app].closeMenu();
             }
         }
     },
