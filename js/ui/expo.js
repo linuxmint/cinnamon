@@ -284,8 +284,10 @@ Expo.prototype = {
         this._background.show();
         this._addWorkspaceButton.show();
         this._expo.show();
-        let activeWorkspaceActor = this._expo._thumbnailsBox._lastActiveWorkspace.actor;
+        this.activeWorkspace = this._expo._thumbnailsBox._lastActiveWorkspace;
+        let activeWorkspaceActor = this.activeWorkspace.actor;
         this._expo._thumbnailsBox._lastActiveWorkspace._fadeOutUninterestingWindows();
+        this.allocateID = this.activeWorkspace.connect('allocated', Lang.bind(this, this._animateVisible2));
         this.clone = new Clutter.Clone({source: activeWorkspaceActor});
         if (global.settings.get_string("desktop-layout") != 'traditional' && !global.settings.get_boolean("panel-autohide"))
             this.clone.set_position(0, Main.panel.actor.height); 
@@ -309,18 +311,19 @@ Expo.prototype = {
                               transition: 'easeOutQuad',
                               time: ANIMATION_TIME});
 
-        Tweener.addTween(this,
-                            { time: 0.01,
+        /*Tweener.addTween(this,
+                            { time: 0.4,
                               onComplete: this._animateVisible2,
-                              onCompleteScope: this});
+                              onCompleteScope: this});*/
 
         this._coverPane.raise_top();
         this._coverPane.show();
         this.emit('showing');
     },
 
-    //We need a (small)delay so that expoThumbnail can allocate thumbnails before we get the position and scale of the desired thumbnail
+    //We need to allocate activeWorkspace before we begin it's clone animation
     _animateVisible2: function() {
+        this.activeWorkspace.disconnect(this.allocateID);
         let activeWorkspaceActor = this._expo._thumbnailsBox._lastActiveWorkspace.actor;
         Tweener.addTween(this.clone, {  x: activeWorkspaceActor.allocation.x1, 
                                         y: activeWorkspaceActor.allocation.y1, 
@@ -457,10 +460,10 @@ Expo.prototype = {
                            onCompleteScope: this
                          });
 
-        let activeWorkspace = this._expo._thumbnailsBox._lastActiveWorkspace;
-        let activeWorkspaceActor = activeWorkspace.actor;
-        //activeWorkspace._fadeInUninterestingWindows();
-        activeWorkspace._overviewModeOff();
+        this.activeWorkspace = this._expo._thumbnailsBox._lastActiveWorkspace;
+        let activeWorkspaceActor = this.activeWorkspace.actor;
+        //this.activeWorkspace._fadeInUninterestingWindows();
+        this.activeWorkspace._overviewModeOff();
         this.clone = new Clutter.Clone({source: activeWorkspaceActor});
         this._group.add_actor(this.clone);
         this.clone.set_position(activeWorkspaceActor.allocation.x1, activeWorkspaceActor.allocation.y1);
