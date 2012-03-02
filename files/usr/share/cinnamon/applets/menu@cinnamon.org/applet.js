@@ -310,6 +310,25 @@ SystemButton.prototype = {
     }
 };
 
+function CategoriesApplicationsBox() {
+    this._init();
+}
+
+CategoriesApplicationsBox.prototype = {
+    _init: function() {
+        this.actor = new St.BoxLayout();
+        this.actor._delegate = this;
+    },
+    
+    acceptDrop : function(source, actor, x, y, time) {
+        if (source instanceof FavoritesButton){
+            AppFavorites.getAppFavorites().removeFavorite(source.app.get_id());
+            return true;
+        }
+        return false;
+    }
+}
+
 function FavoritesBox() {
     this._init();
 }
@@ -333,7 +352,6 @@ FavoritesBox.prototype = {
     },
     
     handleDragOver : function(source, actor, x, y, time) {
-        try{
         let app = source.app;
 
         // Don't allow favoriting of transient apps
@@ -410,7 +428,6 @@ FavoritesBox.prototype = {
             return DND.DragMotionResult.MOVE_DROP;
 
         return DND.DragMotionResult.COPY_DROP;
-        }catch(e){global.log(e);}
     },
     
     // Draggable target interface
@@ -956,8 +973,8 @@ MyApplet.prototype = {
         this.searchEntryText.connect('key-press-event', Lang.bind(this, this._onMenuKeyPress));
         this._previousSearchPattern = "";
 
-        this.categoriesApplicationsBox = new St.BoxLayout();
-        rightPane.add_actor(this.categoriesApplicationsBox);
+        this.categoriesApplicationsBox = new CategoriesApplicationsBox();
+        rightPane.add_actor(this.categoriesApplicationsBox.actor);
         this.categoriesBox = new St.BoxLayout({ style_class: 'menu-categories-box', vertical: true });
         this.applicationsScrollBox = new St.ScrollView({ x_fill: true, y_fill: false, y_align: St.Align.START, style_class: 'vfade menu-applications-scrollbox' });
         
@@ -974,8 +991,8 @@ MyApplet.prototype = {
         this.applicationsBox = new St.BoxLayout({ style_class: 'menu-applications-box', vertical:true });
         this.applicationsScrollBox.add_actor(this.applicationsBox);
         this.applicationsScrollBox.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC);
-        this.categoriesApplicationsBox.add_actor(this.categoriesBox);
-        this.categoriesApplicationsBox.add_actor(this.applicationsScrollBox);
+        this.categoriesApplicationsBox.actor.add_actor(this.categoriesBox);
+        this.categoriesApplicationsBox.actor.add_actor(this.applicationsScrollBox);
                      
         this._refreshFavs();
                                                           
