@@ -87,14 +87,18 @@ function GenericApplicationButton(appsMenuButton, app) {
 GenericApplicationButton.prototype = {
     __proto__: PopupMenu.PopupSubMenuMenuItem.prototype,
     
-    _init: function(appsMenuButton, app) {
+    _init: function(appsMenuButton, app, withMenu) {
         this.app = app;
         this.appsMenuButton = appsMenuButton;
         PopupMenu.PopupBaseMenuItem.prototype._init.call(this, {hover: false});
         
-        this.menu = new PopupMenu.PopupSubMenu(this.actor);
-        this.menu.actor.set_style_class_name('menu-context-menu');
-        this.menu.connect('open-state-changed', Lang.bind(this, this._subMenuOpenStateChanged));
+        this.withMenu = withMenu;
+        
+        if (this.withMenu){
+            this.menu = new PopupMenu.PopupSubMenu(this.actor);
+            this.menu.actor.set_style_class_name('menu-context-menu');
+            this.menu.connect('open-state-changed', Lang.bind(this, this._subMenuOpenStateChanged));
+        }
     },
     
     _onButtonReleaseEvent: function (actor, event) {
@@ -114,10 +118,12 @@ GenericApplicationButton.prototype = {
     },
     
     closeMenu: function() {
-        this.menu.close();
+        if (this.withMenu) this.menu.close();
     },
     
     toggleMenu: function() {
+        if (!this.withMenu) return;
+        
         if (!this.menu.isOpen){
             let children = this.menu.box.get_children();
             for (var i in children){
@@ -150,7 +156,7 @@ ApplicationButton.prototype = {
     __proto__: GenericApplicationButton.prototype,
     
     _init: function(appsMenuButton, app) {
-        GenericApplicationButton.prototype._init.call(this, appsMenuButton, app);
+        GenericApplicationButton.prototype._init.call(this, appsMenuButton, app, true);
 
         this.actor.add_style_class_name('menu-application-button');
         this.icon = this.app.create_icon_texture(APPLICATION_ICON_SIZE);
@@ -310,6 +316,25 @@ SystemButton.prototype = {
     }
 };
 
+function CategoriesApplicationsBox() {
+    this._init();
+}
+
+CategoriesApplicationsBox.prototype = {
+    _init: function() {
+        this.actor = new St.BoxLayout();
+        this.actor._delegate = this;
+    },
+    
+    acceptDrop : function(source, actor, x, y, time) {
+        if (source instanceof FavoritesButton){
+            AppFavorites.getAppFavorites().removeFavorite(source.app.get_id());
+            return true;
+        }
+        return false;
+    }
+}
+
 function FavoritesBox() {
     this._init();
 }
@@ -333,7 +358,6 @@ FavoritesBox.prototype = {
     },
     
     handleDragOver : function(source, actor, x, y, time) {
-        try{
         let app = source.app;
 
         // Don't allow favoriting of transient apps
@@ -364,9 +388,9 @@ FavoritesBox.prototype = {
                 let appChildren = children.filter(function(actor) {
                     return (actor._delegate instanceof FavoritesButton);
                 });
-                this._dragPlaceholderPos = 2 * children.indexOf(appChildren[pos]);
+                this._dragPlaceholderPos = children.indexOf(appChildren[pos]);
             } else {
-                this._dragPlaceholderPos = 2 * pos;
+                this._dragPlaceholderPos = pos;
             }
 
             // Don't allow positioning before or after self
@@ -410,7 +434,6 @@ FavoritesBox.prototype = {
             return DND.DragMotionResult.MOVE_DROP;
 
         return DND.DragMotionResult.COPY_DROP;
-        }catch(e){global.log(e);}
     },
     
     // Draggable target interface
@@ -827,7 +850,6 @@ MyApplet.prototype = {
                 let button = new FavoritesButton(this, app, launchers.length + 3); // + 3 because we're adding 3 system buttons at the bottom
                 this._favoritesButtons[app] = button;
                 favoritesBox.actor.add_actor(button.actor, { y_align: St.Align.END, y_fill: false });
-                favoritesBox.actor.add_actor(button.menu.actor, { y_align: St.Align.END, y_fill: false });
                 button.actor.connect('enter-event', Lang.bind(this, function() {
                    this.selectedAppTitle.set_text(button.app.get_name());
                    if (button.app.get_description()) this.selectedAppDescription.set_text(button.app.get_description());
@@ -956,8 +978,8 @@ MyApplet.prototype = {
         this.searchEntryText.connect('key-press-event', Lang.bind(this, this._onMenuKeyPress));
         this._previousSearchPattern = "";
 
-        this.categoriesApplicationsBox = new St.BoxLayout();
-        rightPane.add_actor(this.categoriesApplicationsBox);
+        this.categoriesApplicationsBox = new CategoriesApplicationsBox();
+        rightPane.add_actor(this.categoriesApplicationsBox.actor);
         this.categoriesBox = new St.BoxLayout({ style_class: 'menu-categories-box', vertical: true });
         this.applicationsScrollBox = new St.ScrollView({ x_fill: true, y_fill: false, y_align: St.Align.START, style_class: 'vfade menu-applications-scrollbox' });
         
@@ -974,8 +996,8 @@ MyApplet.prototype = {
         this.applicationsBox = new St.BoxLayout({ style_class: 'menu-applications-box', vertical:true });
         this.applicationsScrollBox.add_actor(this.applicationsBox);
         this.applicationsScrollBox.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC);
-        this.categoriesApplicationsBox.add_actor(this.categoriesBox);
-        this.categoriesApplicationsBox.add_actor(this.applicationsScrollBox);
+        this.categoriesApplicationsBox.actor.add_actor(this.categoriesBox);
+        this.categoriesApplicationsBox.actor.add_actor(this.applicationsScrollBox);
                      
         this._refreshFavs();
                                                           
@@ -1051,14 +1073,6 @@ MyApplet.prototype = {
                     this._applicationsButtons[app].toggleMenu();
                 else
                     this._applicationsButtons[app].closeMenu();
-            }
-        }
-        for (var app in this._favoritesButtons){
-            if (app!=excludeApp && this._favoritesButtons[app].menu.isOpen){
-                if (animate)
-                    this._favoritesButtons[app].toggleMenu();
-                else
-                    this._favoritesButtons[app].closeMenu();
             }
         }
     },
