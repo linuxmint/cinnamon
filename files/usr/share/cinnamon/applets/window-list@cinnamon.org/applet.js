@@ -9,6 +9,7 @@ const Panel = imports.ui.panel;
 const PopupMenu = imports.ui.popupMenu;
 const Meta = imports.gi.Meta;
 const Tooltips = imports.ui.tooltips;
+const DND = imports.ui.dnd;
 
 const Gettext = imports.gettext.domain('cinnamon-extensions');
 const _ = Gettext.gettext;
@@ -268,6 +269,8 @@ AppMenuButton.prototype = {
         this._menuManager.addMenu(this.rightClickMenu);
         
         this._tooltip = new Tooltips.PanelItemTooltip(this, title, orientation);
+        
+        this._draggable = DND.makeDraggable(this.actor);
     },
 
     getDisplayTitle: function() {
@@ -333,6 +336,8 @@ AppMenuButton.prototype = {
     },
 
     handleDragOver: function(source, actor, x, y, time) {
+        if (source instanceof AppMenuButton) return DND.DragMotionResult.CONTINUE;
+        
         if (typeof(WindowList.dragEnterTime) == 'undefined') {
             WindowList.dragEnterTime = time;
         } else {
@@ -345,6 +350,10 @@ AppMenuButton.prototype = {
         if (time > (WindowList.dragEnterTime + 300)) {
             this._windowHandle(true);
         }
+    },
+    
+    acceptDrop: function(source, actor, x, y, time) {
+        return false;
     },
     
     show: function() {
@@ -467,8 +476,110 @@ AppMenuButton.prototype = {
             childBox.y2 = box.y2 - 1;
             this._spinner.actor.allocate(childBox, flags);
         }
+    },
+    
+    getDragActor: function() {
+        return new Clutter.Clone({ source: this.actor });
+    },
+
+    // Returns the original actor that should align with the actor
+    // we show as the item is being dragged.
+    getDragActorSource: function() {
+        return this.actor;
     }
 };
+
+function MyAppletBox(applet) {
+    this._init(applet);
+}
+
+MyAppletBox.prototype = {
+    _init: function(applet) {
+        this.actor = new St.BoxLayout({ name: 'windowList',
+                                       	style_class: 'window-list-box' });
+        this.actor._delegate = this;
+        
+        this._applet = applet;
+        
+        this._dragPlaceholder = null;
+        this._dragPlaceholderPos = -1;
+        this._animatingPlaceholdersCount = 0;
+    },
+    
+    handleDragOver: function(source, actor, x, y, time) {
+        try{
+        if (!(source instanceof AppMenuButton)) return DND.DragMotionResult.NO_DROP;
+        
+        let children = this.actor.get_children();
+        let windowPos = children.indexOf(source.actor);
+        
+        let pos = 0;
+        
+        for (var i in children){
+            if (x > children[i].get_allocation_box().x1 + children[i].width / 2) pos = i;
+        }
+        
+        if (pos != this._dragPlaceholderPos) {            
+            this._dragPlaceholderPos = pos;
+
+            // Don't allow positioning before or after self
+            if (windowPos != -1 && pos == windowPos) {
+                if (this._dragPlaceholder) {
+                    this._dragPlaceholder.animateOutAndDestroy();
+                    this._animatingPlaceholdersCount++;
+                    this._dragPlaceholder.actor.connect('destroy',
+                        Lang.bind(this, function() {
+                            this._animatingPlaceholdersCount--;
+                        }));
+                }
+                this._dragPlaceholder = null;
+
+                return DND.DragMotionResult.CONTINUE;
+            }
+
+            // If the placeholder already exists, we just move
+            // it, but if we are adding it, expand its size in
+            // an animation
+            let fadeIn;
+            if (this._dragPlaceholder) {
+                this._dragPlaceholder.actor.destroy();
+                fadeIn = false;
+            } else {
+                fadeIn = true;
+            }
+
+            this._dragPlaceholder = new DND.GenericDragPlaceholderItem();
+            this._dragPlaceholder.child.set_width (source.actor.width);
+            this._dragPlaceholder.child.set_height (source.actor.height);
+            this.actor.insert_actor(this._dragPlaceholder.actor,
+                                        this._dragPlaceholderPos);
+            if (fadeIn)
+                this._dragPlaceholder.animateIn();
+        }
+        
+        return DND.DragMotionResult.MOVE_DROP;
+        }catch(e){global.log(e);}
+    },
+    
+    acceptDrop: function(source, actor, x, y, time) {  
+        if (!(source instanceof AppMenuButton)) return false;
+        
+        this.actor.move_child(source.actor, this._dragPlaceholderPos);
+        
+        this._clearDragPlaceholder();
+        actor.destroy();
+        
+        return true;
+    },
+    
+    _clearDragPlaceholder: function() {        
+        if (this._dragPlaceholder) {
+            this._dragPlaceholder.animateOutAndDestroy();
+            this._dragPlaceholder = null;
+            this._dragPlaceholderPos = -1;
+        }
+    }
+}
 
 function MyApplet(orientation) {
     this._init(orientation);
@@ -482,9 +593,11 @@ MyApplet.prototype = {
         
         try {                    
             this.orientation = orientation;
+            this.dragInProgress = false;
+            
+            this.myactorbox = new MyAppletBox(this);
+            this.myactor = this.myactorbox.actor;
         
-            this.myactor = new St.BoxLayout({ name: 'windowList',
-                                       	style_class: 'window-list-box' });
             this.actor.add(this.myactor);
             this.actor.reactive = false;
                                        	
