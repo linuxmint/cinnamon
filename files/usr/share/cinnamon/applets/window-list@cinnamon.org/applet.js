@@ -176,15 +176,15 @@ AppMenuButtonRightClickMenu.prototype = {
 
 };
 
-function AppMenuButton(metaWindow, animation, orientation) {
-    this._init(metaWindow, animation, orientation);
+function AppMenuButton(applet, metaWindow, animation, orientation) {
+    this._init(applet, metaWindow, animation, orientation);
 }
 
 AppMenuButton.prototype = {
 //    __proto__ : AppMenuButton.prototype,
 
     
-    _init: function(metaWindow, animation, orientation) {
+    _init: function(applet, metaWindow, animation, orientation) {
                
         this.actor = new St.Bin({ style_class: 'window-list-item-box',
 								  reactive: true,
@@ -201,7 +201,9 @@ AppMenuButton.prototype = {
         this.actor._delegate = this;
         this.actor.connect('button-release-event', Lang.bind(this, this._onButtonRelease));
 
-		this.metaWindow = metaWindow;		
+		this.metaWindow = metaWindow;	
+        
+        this._applet = applet;	
 		
         let bin = new St.Bin({ name: 'appMenu' });
         this.actor.set_child(bin);
@@ -271,6 +273,16 @@ AppMenuButton.prototype = {
         this._tooltip = new Tooltips.PanelItemTooltip(this, title, orientation);
         
         this._draggable = DND.makeDraggable(this.actor);
+        this._draggable.connect('drag-cancelled', Lang.bind(this, this._onDragCancelled));
+        this._draggable.connect('drag-end', Lang.bind(this, this._onDragEnd));
+    },
+
+    _onDragEnd: function() {
+        this._applet.myactorbox._clearDragPlaceholder();
+    },
+
+    _onDragCancelled: function() {
+        this._applet.myactorbox._clearDragPlaceholder();
     },
 
     getDisplayTitle: function() {
@@ -693,7 +705,7 @@ MyApplet.prototype = {
             if ( metaWindow && tracker.is_window_interesting(metaWindow) ) {
                 let app = tracker.get_window_app(metaWindow);
                 if ( app ) {
-                    let appbutton = new AppMenuButton(metaWindow, false, this.orientation);
+                    let appbutton = new AppMenuButton(this, metaWindow, false, this.orientation);
                     this._windows.push(appbutton);
                     this.myactor.add(appbutton.actor);
                 }
@@ -762,7 +774,7 @@ MyApplet.prototype = {
         let tracker = Cinnamon.WindowTracker.get_default();
         let app = tracker.get_window_app(metaWindow);
         if ( app && tracker.is_window_interesting(metaWindow) ) {
-            let appbutton = new AppMenuButton(metaWindow, true, this.orientation);
+            let appbutton = new AppMenuButton(this, metaWindow, true, this.orientation);
             this._windows.push(appbutton);
             this.myactor.add(appbutton.actor);
             appbutton.actor.show();
