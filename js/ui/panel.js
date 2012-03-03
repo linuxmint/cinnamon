@@ -424,11 +424,7 @@ PanelZoneDNDHandler.prototype = {
         }
         
         if (pos != this._dragPlaceholderPos) {            
-            if (false && this._animatingPlaceholdersCount > 0) {
-                this._dragPlaceholderPos = children.indexOf(appletsChildren[pos]);
-            } else {
-                this._dragPlaceholderPos = pos;
-            }
+            this._dragPlaceholderPos = pos;
 
             // Don't allow positioning before or after self
             if (appletPos != -1 && pos == appletPos) {

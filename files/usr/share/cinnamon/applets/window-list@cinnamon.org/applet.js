@@ -507,7 +507,6 @@ MyAppletBox.prototype = {
     },
     
     handleDragOver: function(source, actor, x, y, time) {
-        try{
         if (!(source instanceof AppMenuButton)) return DND.DragMotionResult.NO_DROP;
         
         let children = this.actor.get_children();
@@ -558,7 +557,6 @@ MyAppletBox.prototype = {
         }
         
         return DND.DragMotionResult.MOVE_DROP;
-        }catch(e){global.log(e);}
     },
     
     acceptDrop: function(source, actor, x, y, time) {  
