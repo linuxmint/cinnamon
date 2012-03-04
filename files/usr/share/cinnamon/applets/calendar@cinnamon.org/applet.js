@@ -37,16 +37,18 @@ MyApplet.prototype = {
         
         try {                 
             this.menuManager = new PopupMenu.PopupMenuManager(this);
-            this.menu = new Applet.AppletPopupMenu(this, orientation);
-            this.menuManager.addMenu(this.menu);                         
-                                                                       
-            let hbox = new St.BoxLayout({name: 'calendarArea' });
-            this.menu.addActor(hbox);
+            
+            this._orientation = orientation;
+            
+            this._initContextMenu();
+                                     
+            this._calendarArea = new St.BoxLayout({name: 'calendarArea' });
+            this.menu.addActor(this._calendarArea);
 
             // Fill up the first column
 
             let vbox = new St.BoxLayout({vertical: true});
-            hbox.add(vbox);
+            this._calendarArea.add(vbox);
 
             // Date
             this._date = new St.Label();
@@ -71,29 +73,6 @@ MyApplet.prototype = {
                 item.actor.can_focus = false;
                 item.actor.reparent(vbox);
             }
-
-            // Whenever the menu is opened, select today
-            this.menu.connect('open-state-changed', Lang.bind(this, function(menu, isOpen) {
-                if (isOpen) {
-                    let now = new Date();
-                    /* Passing true to setDate() forces events to be reloaded. We
-                     * want this behavior, because
-                     *
-                     *   o It will cause activation of the calendar server which is
-                     *     useful if it has crashed
-                     *
-                     *   o It will cause the calendar server to reload events which
-                     *     is useful if dynamic updates are not supported or not
-                     *     properly working
-                     *
-                     * Since this only happens when the menu is opened, the cost
-                     * isn't very big.
-                     */
-                    this._calendar.setDate(now, true);
-                    // No need to update this._eventList as ::selected-date-changed
-                    // signal will fire
-                }
-            }));
 
             // Done with hbox for calendar and event list
 
@@ -132,6 +111,47 @@ MyApplet.prototype = {
 
         Mainloop.timeout_add_seconds(1, Lang.bind(this, this._updateClockAndDate));
         return false;
+    },
+    
+    _initContextMenu: function () {
+        if (this._calendarArea) this._calendarArea.unparent();
+        if (this.menu) this.menuManager.removeMenu(this.menu);
+        
+        this.menu = new Applet.AppletPopupMenu(this, this._orientation);
+        this.menuManager.addMenu(this.menu);
+        
+        if (this._calendarArea){
+            this.menu.addActor(this._calendarArea);
+            this._calendarArea.show_all();
+        }
+        
+        // Whenever the menu is opened, select today
+        this.menu.connect('open-state-changed', Lang.bind(this, function(menu, isOpen) {
+            if (isOpen) {
+                let now = new Date();
+                /* Passing true to setDate() forces events to be reloaded. We
+                 * want this behavior, because
+                 *
+                 *   o It will cause activation of the calendar server which is
+                 *     useful if it has crashed
+                 *
+                 *   o It will cause the calendar server to reload events which
+                 *     is useful if dynamic updates are not supported or not
+                 *     properly working
+                 *
+                 * Since this only happens when the menu is opened, the cost
+                 * isn't very big.
+                 */
+                this._calendar.setDate(now, true);
+                // No need to update this._eventList as ::selected-date-changed
+                // signal will fire
+            }
+        }));
+    },
+    
+    on_orientation_changed: function (orientation) {
+        this._orientation = orientation;
+        this._initContextMenu();
     }
     
 };
