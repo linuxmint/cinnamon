@@ -238,6 +238,14 @@
       </_description>
     </key>
     
+    <key name="overview-corner-functionality" type="s">
+      <default>"expo"</default>
+      <_summary>Set hot corner functionality</_summary>
+      <_description>
+        Set the function that is executed when hitting the hot corner.
+      </_description>
+    </key>
+    
     <key name="panel-launchers" type="as">
       <default>[ 'firefox.desktop', 'gnome-terminal.desktop', 'nautilus.desktop']</default>
       <_summary>Desktop files of the applications to put in the panel launchers applet</_summary>

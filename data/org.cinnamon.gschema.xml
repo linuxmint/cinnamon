@@ -175,6 +175,12 @@
       <description>Change the position of the overview hot corner on the screen.</description>
     </key>
     
+    <key type="s" name="overview-corner-functionality">
+      <default>"expo"</default>
+      <summary>Set hot corner functionality</summary>
+      <description>Set the function that is executed when hitting the hot corner.</description>
+    </key>
+    
     <key type="as" name="panel-launchers">
       <default>[ 'firefox.desktop', 'gnome-terminal.desktop', 'nautilus.desktop']</default>
       <summary>Desktop files of the applications to put in the panel launchers applet</summary>

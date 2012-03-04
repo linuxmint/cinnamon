@@ -675,6 +675,7 @@ HotCorner.prototype = {
 
     _onCornerEntered : function() {
         let rippleActivated = (global.settings.get_string("overview-corner-position") == "topLeft");
+        let cornerOpensExpo = (global.settings.get_string("overview-corner-functionality") == "expo");
         if (!this._entered) {
             this._entered = true;
             if (!Main.expo.animationInProgress && !Main.overview.visible) {
@@ -683,7 +684,11 @@ HotCorner.prototype = {
                 if (rippleActivated) {
                 	this.rippleAnimation();
                 }
-                Main.expo.toggle();
+                if (cornerOpensExpo) {
+                	Main.expo.toggle();
+                } else {
+                	Main.overview.show();
+                }
             } else if (Main.overview.visible){
                 this._activationTime = Date.now() / 1000;
 
