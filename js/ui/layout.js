@@ -607,6 +607,8 @@ HotCorner.prototype = {
         let cornerOpensExpo = (global.settings.get_string("overview-corner-functionality") == "expo");
         let rippleActivated = (global.settings.get_string("overview-corner-position") == "topLeft");
         
+        this._updatePrefs();
+        
         global.settings.connect("changed::overview-corner-position", Lang.bind(this, this._updatePrefs));
 		global.settings.connect("changed::overview-corner-functionality", Lang.bind(this, this._updatePrefs));
 
