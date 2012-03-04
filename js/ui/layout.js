@@ -603,6 +603,12 @@ HotCorner.prototype = {
                              Lang.bind(this, this._onCornerClicked));
         this._corner.connect('leave-event',
                              Lang.bind(this, this._onCornerLeft));
+                             
+        let cornerOpensExpo = (global.settings.get_string("overview-corner-functionality") == "expo");
+        let rippleActivated = (global.settings.get_string("overview-corner-position") == "topLeft");
+        
+        global.settings.connect("changed::overview-corner-position", Lang.bind(this, this._updatePrefs));
+		global.settings.connect("changed::overview-corner-functionality", Lang.bind(this, this._updatePrefs));
 
         // Cache the three ripples instead of dynamically creating and destroying them.
         this._ripple1 = new St.BoxLayout({ style_class: 'ripple-box', opacity: 0 });
@@ -617,6 +623,11 @@ HotCorner.prototype = {
     destroy: function() {
         this.actor.destroy();
     },
+    
+    _updatePrefs : function() {
+    	cornerOpensExpo = (global.settings.get_string("overview-corner-functionality") == "expo");
+        rippleActivated = (global.settings.get_string("overview-corner-position") == "topLeft");
+    }
 
     _animRipple : function(ripple, delay, time, startScale, startOpacity, finalScale) {
         // We draw a ripple by using a source image and animating it scaling
@@ -675,8 +686,6 @@ HotCorner.prototype = {
     },
 
     _onCornerEntered : function() {
-        let rippleActivated = (global.settings.get_string("overview-corner-position") == "topLeft");
-        let cornerOpensExpo = (global.settings.get_string("overview-corner-functionality") == "expo");
         if (!this._entered) {
             this._entered = true;
             if (!Main.expo.animationInProgress && !Main.overview.visible) {
