@@ -1155,10 +1155,6 @@ class MainWindow:
         box.pack_start(combo, False, False, 0)               
         sidePage.add_widget(box)
         
-        label = Gtk.Label()
-        label.set_markup("<i><small>%s</small></i>" % _("Note: Cinnamon needs to be restarted in order to apply position changes."))
-        sidePage.add_widget(label)
-        
         box = Gtk.HBox()        
         label = Gtk.Label()
         label.set_markup("%s" % _("Hot corner functionality:"))

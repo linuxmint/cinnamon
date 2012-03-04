@@ -79,6 +79,7 @@ LayoutManager.prototype = {
         global.settings.connect("changed::panel-autohide", Lang.bind(this, this._onPanelAutoHideChanged));
         global.settings.connect("changed::overview-corner-visible", Lang.bind(this, this._onOverviewCornerVisibleChanged));
         global.settings.connect("changed::overview-corner-hover", Lang.bind(this, this._onOverviewCornerHoverChanged));
+        global.settings.connect("changed::overview-corner-position", Lang.bind(this, this._updateBoxes));
         
         global.screen.connect('restacked',
                               Lang.bind(this, this._windowsRestacked));
