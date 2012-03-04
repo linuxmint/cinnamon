@@ -627,7 +627,7 @@ HotCorner.prototype = {
     _updatePrefs : function() {
     	cornerOpensExpo = (global.settings.get_string("overview-corner-functionality") == "expo");
         rippleActivated = (global.settings.get_string("overview-corner-position") == "topLeft");
-    }
+    },
 
     _animRipple : function(ripple, delay, time, startScale, startOpacity, finalScale) {
         // We draw a ripple by using a source image and animating it scaling
