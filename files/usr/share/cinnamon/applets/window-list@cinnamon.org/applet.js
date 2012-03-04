@@ -273,16 +273,24 @@ AppMenuButton.prototype = {
         this._tooltip = new Tooltips.PanelItemTooltip(this, title, orientation);
         
         this._draggable = DND.makeDraggable(this.actor);
+        this._draggable.connect('drag-begin', Lang.bind(this, this._onDragBegin));
         this._draggable.connect('drag-cancelled', Lang.bind(this, this._onDragCancelled));
         this._draggable.connect('drag-end', Lang.bind(this, this._onDragEnd));
+    },
+    
+    _onDragBegin: function() {
+        this._tooltip.hide();
+        this._tooltip.preventShow = true;
     },
 
     _onDragEnd: function() {
         this._applet.myactorbox._clearDragPlaceholder();
+        this._tooltip.preventShow = false;
     },
 
     _onDragCancelled: function() {
         this._applet.myactorbox._clearDragPlaceholder();
+        this._tooltip.preventShow = false;
     },
 
     getDisplayTitle: function() {
