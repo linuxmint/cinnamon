@@ -230,8 +230,21 @@ LayoutManager.prototype = {
     },
 
     _updateBoxes: function() {    	    
-    	this._hotCorner.actor.set_position(this.primaryMonitor.x,this.primaryMonitor.y);    	
-    	this.overviewCorner.set_position(this.primaryMonitor.x + 1, this.primaryMonitor.y + 1);
+    	let hotCornerPosition = global.settings.get_string("overview-corner-position");
+    	if (hotCornerPosition == "topLeft") {
+			this._hotCorner.actor.set_position(this.primaryMonitor.x,this.primaryMonitor.y);    	
+			this.overviewCorner.set_position(this.primaryMonitor.x + 1, this.primaryMonitor.y + 1);
+		} else if (hotCornerPosition == "topRight") {
+			this._hotCorner.actor.set_position(this.primaryMonitor.width,this.primaryMonitor.y);    	
+			this.overviewCorner.set_position(this.primaryMonitor.width - 1, this.primaryMonitor.y + 1);
+		} else if (hotCornerPosition == "bottomLeft") {
+			this._hotCorner.actor.set_position(this.primaryMonitor.x,this.primaryMonitor.height);    	
+			this.overviewCorner.set_position(this.primaryMonitor.x + 1, this.primaryMonitor.height - 1);
+		} else if (hotCornerPosition == "bottomRight") {
+			this._hotCorner.actor.set_position(this.primaryMonitor.width,this.primaryMonitor.height);
+			this.overviewCorner.set_position(this.primaryMonitor.width - 1, this.primaryMonitor.height - 1);
+		}
+    	
     	this.overviewCorner.set_size(32, 32);
     	
     	if (global.settings.get_boolean("overview-corner-hover")) {
