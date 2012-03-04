@@ -1151,7 +1151,7 @@ class MainWindow:
         label.set_markup("%s" % _("Hot corner position:"))
         box.pack_start(label, False, False, 0)         
         positions = [["topLeft", _("Top left")], ["topRight", _("Top right")], ["bottomLeft", _("Bottom left")], ["bottomRight", _("Bottom right")]]        
-        combo = GSettingsComboBox(_(""), "org.cinnamon", "overview-corner-position", effects)        
+        combo = GSettingsComboBox(_(""), "org.cinnamon", "overview-corner-position", positions)        
         box.pack_start(combo, False, False, 0)               
         sidePage.add_widget(box) 
         
