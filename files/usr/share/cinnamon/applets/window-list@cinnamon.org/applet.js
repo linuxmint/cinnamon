@@ -358,16 +358,16 @@ AppMenuButton.prototype = {
     handleDragOver: function(source, actor, x, y, time) {
         if (source instanceof AppMenuButton) return DND.DragMotionResult.CONTINUE;
         
-        if (typeof(WindowList.dragEnterTime) == 'undefined') {
-            WindowList.dragEnterTime = time;
+        if (typeof(this._applet.dragEnterTime) == 'undefined') {
+            this._applet.dragEnterTime = time;
         } else {
-            if (time > (WindowList.dragEnterTime + 3000))
+            if (time > (this._applet.dragEnterTime + 3000))
             {
-                WindowList.dragEnterTime = time;
+                this._applet.dragEnterTime = time;
             }
         }
                 
-        if (time > (WindowList.dragEnterTime + 300)) {
+        if (time > (this._applet.dragEnterTime + 300)) {
             this._windowHandle(true);
         }
     },
