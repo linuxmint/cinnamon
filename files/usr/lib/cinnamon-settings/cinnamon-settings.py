@@ -1146,6 +1146,14 @@ class MainWindow:
         self.sidePages.append((sidePage, "overwiew"))
         sidePage.add_widget(GSettingsCheckButton(_("Overview icon visible"), "org.cinnamon", "overview-corner-visible")) 
         sidePage.add_widget(GSettingsCheckButton(_("Overview hot corner enabled"), "org.cinnamon", "overview-corner-hover")) 
+        box = Gtk.HBox()        
+        label = Gtk.Label()
+        label.set_markup("%s" % _("Hot corner position:"))
+        box.pack_start(label, False, False, 0)         
+        positions = [["topLeft", _("Top left")], ["topRight", _("Top right")], ["bottomLeft", _("Bottom left")], ["bottomRight", _("Bottom right")]]        
+        combo = GSettingsComboBox(_(""), "org.cinnamon", "overview-corner-position", effects)        
+        box.pack_start(combo, False, False, 0)               
+        sidePage.add_widget(box) 
         
         sidePage = ThemeViewSidePage(_("Themes"), "themes.svg", self.content_box)
         self.sidePages.append((sidePage, "themes"))

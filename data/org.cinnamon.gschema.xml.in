@@ -230,6 +230,14 @@
       </_description>
     </key>
     
+    <key name="overview-corner-position" type="s">
+      <default>"topLeft"</default>
+      <_summary>Set hot corner position</_summary>
+      <_description>
+        Change the position of the overview hot corner on the screen.
+      </_description>
+    </key>
+    
     <key name="panel-launchers" type="as">
       <default>[ 'firefox.desktop', 'gnome-terminal.desktop', 'nautilus.desktop']</default>
       <_summary>Desktop files of the applications to put in the panel launchers applet</_summary>

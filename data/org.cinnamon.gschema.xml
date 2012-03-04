@@ -169,6 +169,12 @@
       <description>Whether the overview hot corner is enabled or not.</description>
     </key>
     
+    <key type="s" name="overview-corner-position">
+      <default>"topLeft"</default>
+      <summary>Set hot corner position</summary>
+      <description>Change the position of the overview hot corner on the screen.</description>
+    </key>
+    
     <key type="as" name="panel-launchers">
       <default>[ 'firefox.desktop', 'gnome-terminal.desktop', 'nautilus.desktop']</default>
       <summary>Desktop files of the applications to put in the panel launchers applet</summary>
