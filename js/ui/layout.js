@@ -660,28 +660,36 @@ HotCorner.prototype = {
     },
 
     handleDragOver: function(source, actor, x, y, time) {
+    	let rippleActivated = (global.settings.get_string("overview-corner-position") == "topLeft");
         if (source != Main.xdndHandler)
             return;
 
         if (!Main.overview.visible && !Main.overview.animationInProgress && !Main.expo.visible) {
-            this.rippleAnimation();
+            if (rippleActivated) {
+            	this.rippleAnimation();
+            }
             Main.overview.showTemporarily();
             Main.overview.beginItemDrag(actor);
         }
     },
 
     _onCornerEntered : function() {
+        let rippleActivated = (global.settings.get_string("overview-corner-position") == "topLeft");
         if (!this._entered) {
             this._entered = true;
             if (!Main.expo.animationInProgress && !Main.overview.visible) {
                 this._activationTime = Date.now() / 1000;
 
-                this.rippleAnimation();
+                if (rippleActivated) {
+                	this.rippleAnimation();
+                }
                 Main.expo.toggle();
             } else if (Main.overview.visible){
                 this._activationTime = Date.now() / 1000;
 
-                this.rippleAnimation();
+                if (rippleActivated) {
+                	this.rippleAnimation();
+                }
                 Main.overview.hide();
             }
         }
