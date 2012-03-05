@@ -8,7 +8,7 @@ const Lang = imports.lang;
 const Applet = imports.ui.applet;
 const PopupMenu = imports.ui.popupMenu;
 
-const Gettext = imports.gettext.domain('gnome-shell-extensions');
+const Gettext = imports.gettext.domain('cinnamon-applets');
 const _ = Gettext.gettext;
 const N_ = function(e) { return e };
 
