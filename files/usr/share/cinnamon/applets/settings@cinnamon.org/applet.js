@@ -8,6 +8,37 @@ const Main = imports.ui.main;
 const PopupMenu = imports.ui.popupMenu;
 const Util = imports.misc.util;
 const GLib = imports.gi.GLib;
+const ModalDialog = imports.ui.modalDialog;
+
+function ConfirmDialog(){
+    this._init();
+}
+
+ConfirmDialog.prototype = {
+    __proto__: ModalDialog.ModalDialog.prototype,
+
+    _init: function(){
+	ModalDialog.ModalDialog.prototype._init.call(this);
+	let label = new St.Label({text: "Are you sure you want to restore all settings to default?\n\n"});
+	this.contentLayout.add(label);
+
+	this.setButtons([
+	    {
+		label: _("Yes"),
+		action: Lang.bind(this, function(){
+                    Util.spawnCommandLine("gsettings reset-recursively org.cinnamon");
+                    global.reexec_self();
+		})
+	    },
+	    {
+		label: _("No"),
+		action: Lang.bind(this, function(){
+		    this.close();
+		})
+	    }
+	]);
+    },	
+}
 
 function MyApplet(orientation) {
     this._init(orientation);
@@ -41,8 +72,8 @@ MyApplet.prototype = {
             }); 
             
             this.troubleshootItem.menu.addAction(_("Restore all settings to default"), function(event) {
-                Util.spawnCommandLine("gsettings reset-recursively org.cinnamon");
-                global.reexec_self();
+                this.confirm = new ConfirmDialog();
+                this.confirm.open();
             });  
                        
             this.menu.addMenuItem(this.troubleshootItem);                                

@@ -864,9 +864,11 @@ MyApplet.prototype = {
         }
         
         //Separator
-        let separator = new PopupMenu.PopupSeparatorMenuItem();
-        this.leftBox.add_actor(separator.actor, { y_align: St.Align.END, y_fill: false });                   
-        
+	if (launchers.length!=0){
+            let separator = new PopupMenu.PopupSeparatorMenuItem();
+            this.leftBox.add_actor(separator.actor, { y_align: St.Align.END, y_fill: false });                   
+        }
+
         //Lock screen
         let button = new SystemButton(this, "gnome-lockscreen", launchers.length + 3);        
         button.actor.connect('enter-event', Lang.bind(this, function() {
