@@ -79,6 +79,7 @@ LayoutManager.prototype = {
         global.settings.connect("changed::panel-autohide", Lang.bind(this, this._onPanelAutoHideChanged));
         global.settings.connect("changed::overview-corner-visible", Lang.bind(this, this._onOverviewCornerVisibleChanged));
         global.settings.connect("changed::overview-corner-hover", Lang.bind(this, this._onOverviewCornerHoverChanged));
+        global.settings.connect("changed::overview-corner-position", Lang.bind(this, this._updateBoxes));
         
         global.screen.connect('restacked',
                               Lang.bind(this, this._windowsRestacked));
@@ -230,8 +231,21 @@ LayoutManager.prototype = {
     },
 
     _updateBoxes: function() {    	    
-    	this._hotCorner.actor.set_position(this.primaryMonitor.x,this.primaryMonitor.y);    	
-    	this.overviewCorner.set_position(this.primaryMonitor.x + 1, this.primaryMonitor.y + 1);
+    	let hotCornerPosition = global.settings.get_string("overview-corner-position");
+    	if (hotCornerPosition == "topLeft") {
+			this._hotCorner.actor.set_position(this.primaryMonitor.x,this.primaryMonitor.y);    	
+			this.overviewCorner.set_position(this.primaryMonitor.x + 1, this.primaryMonitor.y + 1);
+		} else if (hotCornerPosition == "topRight") {
+			this._hotCorner.actor.set_position(this.primaryMonitor.width - 1,this.primaryMonitor.y);    	
+			this.overviewCorner.set_position(this.primaryMonitor.width - 33, this.primaryMonitor.y + 1);
+		} else if (hotCornerPosition == "bottomLeft") {
+			this._hotCorner.actor.set_position(this.primaryMonitor.x,this.primaryMonitor.height - 1);    	
+			this.overviewCorner.set_position(this.primaryMonitor.x + 1, this.primaryMonitor.height - 33);
+		} else if (hotCornerPosition == "bottomRight") {
+			this._hotCorner.actor.set_position(this.primaryMonitor.width - 1,this.primaryMonitor.height - 1);
+			this.overviewCorner.set_position(this.primaryMonitor.width - 33, this.primaryMonitor.height - 33);
+		}
+    	
     	this.overviewCorner.set_size(32, 32);
     	
     	if (global.settings.get_boolean("overview-corner-hover")) {
@@ -589,6 +603,14 @@ HotCorner.prototype = {
                              Lang.bind(this, this._onCornerClicked));
         this._corner.connect('leave-event',
                              Lang.bind(this, this._onCornerLeft));
+                             
+        let cornerOpensExpo = (global.settings.get_string("overview-corner-functionality") == "expo");
+        let rippleActivated = (global.settings.get_string("overview-corner-position") == "topLeft");
+        
+        this._updatePrefs();
+        
+        global.settings.connect("changed::overview-corner-position", Lang.bind(this, this._updatePrefs));
+		global.settings.connect("changed::overview-corner-functionality", Lang.bind(this, this._updatePrefs));
 
         // Cache the three ripples instead of dynamically creating and destroying them.
         this._ripple1 = new St.BoxLayout({ style_class: 'ripple-box', opacity: 0 });
@@ -602,6 +624,11 @@ HotCorner.prototype = {
 
     destroy: function() {
         this.actor.destroy();
+    },
+    
+    _updatePrefs : function() {
+    	cornerOpensExpo = (global.settings.get_string("overview-corner-functionality") == "expo");
+        rippleActivated = (global.settings.get_string("overview-corner-position") == "topLeft");
     },
 
     _animRipple : function(ripple, delay, time, startScale, startOpacity, finalScale) {
@@ -647,11 +674,14 @@ HotCorner.prototype = {
     },
 
     handleDragOver: function(source, actor, x, y, time) {
+    	let rippleActivated = (global.settings.get_string("overview-corner-position") == "topLeft");
         if (source != Main.xdndHandler)
             return;
 
         if (!Main.overview.visible && !Main.overview.animationInProgress && !Main.expo.visible) {
-            this.rippleAnimation();
+            if (rippleActivated) {
+            	this.rippleAnimation();
+            }
             Main.overview.showTemporarily();
             Main.overview.beginItemDrag(actor);
         }
@@ -663,12 +693,20 @@ HotCorner.prototype = {
             if (!Main.expo.animationInProgress && !Main.overview.visible) {
                 this._activationTime = Date.now() / 1000;
 
-                this.rippleAnimation();
-                Main.expo.toggle();
+                if (rippleActivated) {
+                	this.rippleAnimation();
+                }
+                if (cornerOpensExpo) {
+                	Main.expo.toggle();
+                } else {
+                	Main.overview.show();
+                }
             } else if (Main.overview.visible){
                 this._activationTime = Date.now() / 1000;
 
-                this.rippleAnimation();
+                if (rippleActivated) {
+                	this.rippleAnimation();
+                }
                 Main.overview.hide();
             }
         }
