@@ -493,9 +493,7 @@ MyApplet.prototype = {
         
         try {                    
             this.set_applet_tooltip(_("Menu"));
-            
-            this.actor.add_style_class_name('menu');
-            
+                                    
             this.menuManager = new PopupMenu.PopupMenuManager(this);
             this.menu = new Applet.AppletPopupMenu(this, orientation);
             this.menuManager.addMenu(this.menu);   

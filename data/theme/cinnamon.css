@@ -1191,9 +1191,7 @@ StTooltip StLabel {
  * Menu (menu.js)
  * ===================================================================*/
 /* Main menu title */
-.menu-label {
-	padding-left: 2px;
-}
+
 .menu-favorites-box {
 	width: 70%;
 	margin: auto;
@@ -1554,19 +1552,19 @@ StTooltip StLabel {
  * ===================================================================*/
 .applet-box {
 	padding-left: 3px;
-    padding-right: 3px;
+    padding-right: 3px;	
 	color: #ccc;
 	text-shadow: black 0px 0px 2px;
 	transition-duration: 300;
+	min-width: 1em;
+	
 }
 .applet-box:hover {
 	color: #fff;
 }
-.applet-label {
-	padding-left: 4px;
-	padding-right: 4px;
+.applet-label {	
 	font-weight: bold;
-	color: #ccc;
+	color: #ccc;		
 }
 .applet-label:hover,
 .applet-box:hover > .applet-label {
