@@ -1142,8 +1142,8 @@ class MainWindow:
             self.ntpCheckButton.connect('toggled', self._ntp_toggled)
             self.changeTimeWidget.change_using_ntp( self.ntpCheckButton.get_active() )
         
-        sidePage = SidePage(_("Overview"), "overview.svg", self.content_box)
-        self.sidePages.append((sidePage, "overwiew"))
+        sidePage = SidePage(_("Hot corner"), "overview.svg", self.content_box)
+        self.sidePages.append((sidePage, "hotcorner"))
         sidePage.add_widget(GSettingsCheckButton(_("Hot corner icon visible"), "org.cinnamon", "overview-corner-visible")) 
         sidePage.add_widget(GSettingsCheckButton(_("Hot corner enabled"), "org.cinnamon", "overview-corner-hover")) 
         box = Gtk.HBox()        
@@ -1157,9 +1157,9 @@ class MainWindow:
         
         box = Gtk.HBox()        
         label = Gtk.Label()
-        label.set_markup("%s" % _("Hot corner functionality:"))
+        label.set_markup("%s" % _("Hot corner function:"))
         box.pack_start(label, False, False, 0)         
-        cornerfunctions = [["expo", _("Expo")], ["overview", _("Overview")]]        
+        cornerfunctions = [["expo", _("Workspace selection (ala Compiz Expo)")], ["scale", _("Window selection (ala Compiz Scale)")]]     
         combo = GSettingsComboBox(_(""), "org.cinnamon", "overview-corner-functionality", cornerfunctions)        
         box.pack_start(combo, False, False, 0)               
         sidePage.add_widget(box)
