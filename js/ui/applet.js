@@ -190,7 +190,7 @@ Applet.prototype = {
         if (this._applet_context_menu._getMenuItems().length > 0) {
             this._applet_context_menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
         }
-        let context_menu_item_remove = new MenuItem(_('Remove from Panel'), Gtk.STOCK_REMOVE, Lang.bind(null, AppletManager._removeAppletFromPanel, this._uuid));
+        let context_menu_item_remove = new MenuItem(_("Remove from Panel"), Gtk.STOCK_REMOVE, Lang.bind(null, AppletManager._removeAppletFromPanel, this._uuid));
         this._applet_context_menu.addMenuItem(context_menu_item_remove);
     }
     
