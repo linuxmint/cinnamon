@@ -276,8 +276,15 @@ AppMenuButton.prototype = {
         this._draggable.connect('drag-begin', Lang.bind(this, this._onDragBegin));
         this._draggable.connect('drag-cancelled', Lang.bind(this, this._onDragCancelled));
         this._draggable.connect('drag-end', Lang.bind(this, this._onDragEnd));
+        
+        this.on_panel_edit_mode_changed();
+        global.settings.connect('changed::panel-edit-mode', Lang.bind(this, this.on_panel_edit_mode_changed));
     },
     
+    on_panel_edit_mode_changed: function() {
+        this._draggable.inhibit = global.settings.get_boolean("panel-edit-mode");
+    }, 
+        
     _onDragBegin: function() {
         this._tooltip.hide();
         this._tooltip.preventShow = true;
@@ -617,7 +624,7 @@ MyApplet.prototype = {
             this.myactor = this.myactorbox.actor;
         
             this.actor.add(this.myactor);
-            this.actor.reactive = false;
+            this.actor.reactive = global.settings.get_boolean("panel-edit-mode");
                                        	
             if (orientation == St.Side.TOP) {
                 this.myactor.add_style_class_name('window-list-box-top');
@@ -671,7 +678,9 @@ MyApplet.prototype = {
                                     Lang.bind(this, this._changeWorkspaces));
             global.display.connect('window-demands-attention', Lang.bind(this, this._onWindowDemandsAttention));
                                     
-            // this._container.connect('allocate', Lang.bind(Main.panel, this._allocateBoxes));                                                                                
+            // this._container.connect('allocate', Lang.bind(Main.panel, this._allocateBoxes)); 
+            
+            global.settings.connect('changed::panel-edit-mode', Lang.bind(this, this.on_panel_edit_mode_changed));                                                                               
         }
         catch (e) {
             global.logError(e);
@@ -681,6 +690,11 @@ MyApplet.prototype = {
     on_applet_clicked: function(event) {
             
     },        
+    
+    on_panel_edit_mode_changed: function() {
+        this.actor.reactive = global.settings.get_boolean("panel-edit-mode");
+    }, 
+    
            
     _onWindowDemandsAttention : function(display, window) {
         for ( let i=0; i<this._windows.length; ++i ) {

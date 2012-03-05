@@ -77,6 +77,9 @@ function _Draggable(actor, params) {
 
 _Draggable.prototype = {
     _init : function(actor, params) {
+        
+        this.inhibit = false; // Use the inhibit flag to temporarily disable an object from being draggable
+        
         params = Params.parse(params, { manualMode: false,
                                         restoreOnSuccess: false,
                                         dragActorMaxSize: undefined,
@@ -117,35 +120,37 @@ _Draggable.prototype = {
     },
 
     _onButtonPress : function (actor, event) {
-        if (event.get_button() != 1)
-            return false;
+        if (!this.inhibit) {
+            if (event.get_button() != 1)
+                return false;
 
-        if (Tweener.getTweenCount(actor))
-            return false;
+            if (Tweener.getTweenCount(actor))
+                return false;
 
-        this._buttonDown = true;
-        // special case St.Button: grabbing the pointer would mess up the
-        // internal state, so we start the drag manually on hover change
-        if (this.actor instanceof St.Button)
-            this.actor.connect('notify::hover',
-                               Lang.bind(this, this._onButtonHoverChanged));
-        else
-            this._grabActor();
+            this._buttonDown = true;
+            // special case St.Button: grabbing the pointer would mess up the
+            // internal state, so we start the drag manually on hover change
+            if (this.actor instanceof St.Button)
+                this.actor.connect('notify::hover',
+                                   Lang.bind(this, this._onButtonHoverChanged));
+            else
+                this._grabActor();
 
-        let [stageX, stageY] = event.get_coords();
-        this._dragStartX = stageX;
-        this._dragStartY = stageY;
+            let [stageX, stageY] = event.get_coords();
+            this._dragStartX = stageX;
+            this._dragStartY = stageY;
+        }
 
         return false;
     },
 
-    _onButtonHoverChanged: function(button) {
+    _onButtonHoverChanged: function(button) {        
         if (button.hover || !button.pressed)
             return;
 
         button.fake_release();
         this.startDrag(this._dragStartX, this._dragStartY,
-                       global.get_current_time());
+                       global.get_current_time());        
     },
 
     _grabActor: function() {

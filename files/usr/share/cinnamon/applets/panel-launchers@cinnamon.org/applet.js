@@ -44,7 +44,7 @@ PanelAppLauncherMenu.prototype = {
         
         this.removeItem = new PopupMenu.PopupMenuItem(_('Remove'));
         this.addMenuItem(this.removeItem);
-        this.removeItem.connect('activate', Lang.bind(this, this._onRemoveActivate));
+        this.removeItem.connect('activate', Lang.bind(this, this._onRemoveActivate));            
     },
     
     _onLaunchActivate: function(actor, event) {
@@ -396,11 +396,9 @@ MyApplet.prototype = {
             this._dragPlaceholder = null;
             this._dragPlaceholderPos = -1;
             this._animatingPlaceholdersCount = 0;
-            
-            this.actor = new St.BoxLayout({ name: 'panel-launchers-box',
-                                            style_class: 'panel-launchers-box' });
-            this.actor._delegate = this;
-            this.actor._applet = this;
+                                    
+            this.myactor = new St.BoxLayout({ name: 'panel-launchers-box',
+                                            style_class: 'panel-launchers-box' });           
             
             this._settings = new Gio.Settings({ schema: 'org.cinnamon' });
             this._settings.connect('changed', Lang.bind(this, this._onSettingsChanged));
@@ -412,6 +410,10 @@ MyApplet.prototype = {
             this._launchers = new Array();
             
             this.reload();
+            
+            this.actor.add(this.myactor);  
+            this.actor.reactive = global.settings.get_boolean("panel-edit-mode");            
+            global.settings.connect('changed::panel-edit-mode', Lang.bind(this, this.on_panel_edit_mode_changed)); 
         }
         catch (e) {
             global.logError(e);
@@ -421,6 +423,10 @@ MyApplet.prototype = {
     on_applet_clicked: function(event) {
         
     },
+    
+    on_panel_edit_mode_changed: function() {
+        this.actor.reactive = global.settings.get_boolean("panel-edit-mode");
+    }, 
     
     _onSettingsChanged: function() {
         this.reload();
@@ -461,14 +467,14 @@ MyApplet.prototype = {
     },
     
     reload: function() {
-        this.actor.destroy_children();
+        this.myactor.destroy_children();
         this._launchers = new Array();
         
         let apps = this.loadApps();
         for (var i in apps){
             let app = apps[i];
             let launcher = new PanelAppLauncher(this, app[0], app[1], this.orientation);
-            this.actor.add(launcher.actor);
+            this.myactor.add(launcher.actor);
             this._launchers.push(launcher);
         }
     },
@@ -514,9 +520,9 @@ MyApplet.prototype = {
     handleDragOver: function(source, actor, x, y, time) {
         if (!(source.isDraggableApp || (source instanceof PanelAppLauncher))) return DND.DragMotionResult.NO_DROP;
         
-        let children = this.actor.get_children();
+        let children = this.myactor.get_children();
         let numChildren = children.length;
-        let boxWidth = this.actor.width;
+        let boxWidth = this.myactor.width;
         
         if (this._dragPlaceholder) {
             boxWidth -= this._dragPlaceholder.actor.width;
@@ -566,7 +572,7 @@ MyApplet.prototype = {
             this._dragPlaceholder = new DND.GenericDragPlaceholderItem();
             this._dragPlaceholder.child.set_width (20);
             this._dragPlaceholder.child.set_height (10);
-            this.actor.insert_actor(this._dragPlaceholder.actor,
+            this.myactor.insert_actor(this._dragPlaceholder.actor,
                                    this._dragPlaceholderPos);
             if (fadeIn)
                 this._dragPlaceholder.animateIn();
@@ -583,7 +589,7 @@ MyApplet.prototype = {
         else sourceId = source.get_app_id();
         
         let launcherPos = 0;
-        let children = this.actor.get_children();
+        let children = this.myactor.get_children();
         for (let i = 0; i < this._dragPlaceholderPos; i++) {
             if (this._dragPlaceholder &&
                 children[i] == this._dragPlaceholder.actor)

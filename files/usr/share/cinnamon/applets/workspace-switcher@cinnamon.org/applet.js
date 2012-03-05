@@ -19,7 +19,9 @@ MyApplet.prototype = {
             this.button = [];
             this._createButtons();
             global.screen.connect('notify::n-workspaces', Lang.bind(this, this._createButtons));
-            global.window_manager.connect('switch-workspace', Lang.bind(this, this._updateButtons));                                                                                                                            
+            global.window_manager.connect('switch-workspace', Lang.bind(this, this._updateButtons));   
+            this.on_panel_edit_mode_changed();
+            global.settings.connect('changed::panel-edit-mode', Lang.bind(this, this.on_panel_edit_mode_changed));                       
         }
         catch (e) {
             global.logError(e);
@@ -29,6 +31,13 @@ MyApplet.prototype = {
     on_applet_clicked: function(event) {
         
     },
+    
+    on_panel_edit_mode_changed: function() {
+        let reactive = !global.settings.get_boolean('panel-edit-mode');
+        for ( let i=0; i<this.button.length; ++i ) {
+            this.button[i].reactive = reactive;            
+        }
+    }, 
     
     hook: function(actor, event){
         var direction = event.get_scroll_direction();

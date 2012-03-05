@@ -580,20 +580,24 @@ Panel.prototype = {
         //this._menus.addMenu(this._context_menu);   
         //this._context_menu.addMenuItem(new PopupMenu.PopupMenuItem(_("Add applet")));
         
-        //this.actor.connect('button-release-event', Lang.bind(this, this._onButtonReleaseEvent));                  
+        //this.actor.connect('button-release-event', Lang.bind(this, this._onButtonReleaseEvent)); 
+        
+        this._setDNDstyle();
+        global.settings.connect("changed::panel-edit-mode", Lang.bind(this, this._setDNDstyle));   
     },
     
-    addDNDstyle: function() {
-        this._leftBox.add_style_pseudo_class('dnd');
-        this._centerBox.add_style_pseudo_class('dnd');
-        this._rightBox.add_style_pseudo_class('dnd');
-    },
-    
-    removeDNDstyle: function() {
-        this._leftBox.remove_style_pseudo_class('dnd');
-        this._centerBox.remove_style_pseudo_class('dnd');
-        this._rightBox.remove_style_pseudo_class('dnd');
-    },
+    _setDNDstyle: function() {
+        if (global.settings.get_boolean("panel-edit-mode")) {
+            this._leftBox.add_style_pseudo_class('dnd');
+            this._centerBox.add_style_pseudo_class('dnd');
+            this._rightBox.add_style_pseudo_class('dnd');
+        }
+        else {
+            this._leftBox.remove_style_pseudo_class('dnd');
+            this._centerBox.remove_style_pseudo_class('dnd');
+            this._rightBox.remove_style_pseudo_class('dnd');
+        }
+    },    
             
     _onButtonReleaseEvent: function (actor, event) {                      
         if (event.get_button()==1){
