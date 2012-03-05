@@ -1,17 +1,11 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 
-const Lang = imports.lang;
-const Signals = imports.signals;
-const Clutter = imports.gi.Clutter;
 const GLib = imports.gi.GLib;
 const Gio = imports.gi.Gio;
 const St = imports.gi.St;
 const Cinnamon = imports.gi.Cinnamon;
-const Config = imports.misc.config;
 const Main = imports.ui.main;
 const Applet = imports.ui.applet;
-const Gtk = imports.gi.Gtk;
-const PopupMenu = imports.ui.popupMenu;
 
 // Maps uuid -> metadata object
 const appletMeta = {};
