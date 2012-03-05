@@ -63,7 +63,7 @@
     </key>
     
     <key type="i" name="desktop-effects-close-time">
-      <default>400</default>
+      <default>250</default>
       <_summary>Duration of the effect (in milliseconds)</_summary>
       <_description>
        Duration of the effect (in milliseconds)    
@@ -79,7 +79,7 @@
     </key>
     
      <key name="desktop-effects-map-transition" type="s">
-      <default>"easeOutBounce"</default>
+      <default>"easeOutSine"</default>
       <_summary>Transition used when mapping windows</_summary>
       <_description>
        A Tweener transition
@@ -87,7 +87,7 @@
     </key>
     
     <key type="i" name="desktop-effects-map-time">
-      <default>400</default>
+      <default>250</default>
       <_summary>Duration of the effect (in milliseconds)</_summary>
       <_description>
        Duration of the effect (in milliseconds)    
