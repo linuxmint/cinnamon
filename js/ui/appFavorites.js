@@ -4,8 +4,6 @@ const Cinnamon = imports.gi.Cinnamon;
 const Lang = imports.lang;
 const Signals = imports.signals;
 
-const Main = imports.ui.main;
-
 function AppFavorites() {
     this._init();
 }
