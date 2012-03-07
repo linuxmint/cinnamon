@@ -343,6 +343,8 @@ cinnamon_app_get_name (CinnamonApp *app)
 {
   if (app->entry)
     return g_app_info_get_name (G_APP_INFO (gmenu_tree_entry_get_app_info (app->entry)));
+  else if (app->running_state == NULL)
+    return _("Unknown");
   else
     {
       MetaWindow *window = window_backed_app_get_window (app);
