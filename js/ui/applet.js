@@ -8,6 +8,7 @@ const DND = imports.ui.dnd;
 const Clutter = imports.gi.Clutter;
 const AppletManager = imports.ui.appletManager;
 const Gtk = imports.gi.Gtk;
+const Util = imports.misc.util;
 
 function MenuItem(label, icon, callback) {
     this._init(label, icon, callback);
@@ -177,8 +178,19 @@ Applet.prototype = {
         }
         let context_menu_item_remove = new MenuItem(_("Remove from Panel"), Gtk.STOCK_REMOVE, Lang.bind(null, AppletManager._removeAppletFromPanel, this._uuid));
         this._applet_context_menu.addMenuItem(context_menu_item_remove);
+        let panel_settings_item = new MenuItem(_("Panel settings"), null, Lang.bind(this, this._PanelSettings));
+        this._applet_context_menu.addMenuItem(panel_settings_item);
+        let applet_settings_item = new MenuItem(_("Add/remove applets"), null, Lang.bind(this, this._AppletSettings));
+        this._applet_context_menu.addMenuItem(applet_settings_item);
+    },
+
+    _PanelSettings: function(actor, event) {
+        Util.spawnCommandLine("cinnamon-settings panel");
+    },
+
+    _AppletSettings: function(actor, event) {
+        Util.spawnCommandLine("cinnamon-settings applets");
     }
-    
 };
 
 function IconApplet(orientation) {
