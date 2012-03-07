@@ -552,6 +552,9 @@ MyApplet.prototype = {
                     global.logError(e);
                 }
             }));    
+            
+            this.edit_menu_item = new Applet.MenuItem(_("Edit menu"), Gtk.STOCK_EDIT, Lang.bind(this, this._launch_editor));
+            this._applet_context_menu.addMenuItem(this.edit_menu_item);
                                                                            
         }
         catch (e) {
@@ -569,6 +572,10 @@ MyApplet.prototype = {
         this.menu.connect('open-state-changed', Lang.bind(this, this._onOpenStateToggled));
         
         this._display();
+    },
+    
+    _launch_editor: function() {
+        Util.spawnCommandLine("cinnamon-menu-editor");
     },
     
     on_applet_clicked: function(event) {

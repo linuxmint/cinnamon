@@ -16,6 +16,7 @@ sudo rm -rf /usr/share/glib-2.0/schemas/org.cinnamon.extensions.*.gschema.xml
 sudo rm -rf /usr/share/cinnamon/applets/*@cinnamon.org
 sudo rm -rf /usr/share/cinnamon/extensions/*@cinnamon.org
 sudo rm -rf /usr/lib/cinnamon-settings
+sudo rm -rf /usr/lib/cinnamon-menu-editor
 sudo cp -R files/usr /
 sudo cp -R files/etc /
 
