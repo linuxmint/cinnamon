@@ -1339,13 +1339,18 @@ PopupSubMenu.prototype = {
         if (animate && needsScrollbar)
             animate = false;
 
+        let rotation_angle = 90;
+        if (this.actor.get_direction() == St.TextDirection.RTL) {
+            rotation_angle = 270;
+        }
+
         if (animate) {
             let [minHeight, naturalHeight] = this.actor.get_preferred_height(-1);
             this.actor.height = 0;
             if (this._arrow) this.actor._arrow_rotation = this._arrow.rotation_angle_z;
             else this.actor._arrow_rotation = 0;
             Tweener.addTween(this.actor,
-                             { _arrow_rotation: 90,
+                             { _arrow_rotation: rotation_angle,
                                height: naturalHeight,
                                time: 0.25,
                                onUpdateScope: this,
@@ -1359,7 +1364,7 @@ PopupSubMenu.prototype = {
                                }
                              });
         } else {
-            if (this._arrow) this._arrow.rotation_angle_z = 90;
+            if (this._arrow) this._arrow.rotation_angle_z = rotation_angle;
             this.emit('open-state-changed', true);
         }
     },
@@ -1375,10 +1380,15 @@ PopupSubMenu.prototype = {
 
         if (animate && this._needsScrollbar())
             animate = false;
+            
+        let rotation_angle = 90;
+        if (this.actor.get_direction() == St.TextDirection.RTL) {
+            rotation_angle = 270;
+        }
 
         if (animate) {
             if (this._arrow) this.actor._arrow_rotation = this._arrow.rotation_angle_z;
-            else this.actor._arrow_rotation = 90;
+            else this.actor._arrow_rotation = rotation_angle;
             Tweener.addTween(this.actor,
                              { _arrow_rotation: 0,
                                height: 0,
@@ -1459,7 +1469,13 @@ PopupSubMenuMenuItem.prototype = {
 
         this.label = new St.Label({ text: text });
         this.addActor(this.label);
-        this._triangle = new St.Label({ text: '\u25B8' });
+        if (this.actor.get_direction() == St.TextDirection.RTL) {
+            this._triangle = new St.Label({ text: '\u25C2' });
+        }
+        else {
+            this._triangle = new St.Label({ text: '\u25B8' });
+        }
+
         this.addActor(this._triangle, { align: St.Align.END });
 
         this.menu = new PopupSubMenu(this.actor, this._triangle);

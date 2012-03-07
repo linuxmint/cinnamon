@@ -654,6 +654,7 @@ Panel.prototype = {
         if (this.actor.get_direction() == St.TextDirection.RTL) {
             childBox.x1 = allocWidth - Math.max(Math.min(Math.floor(sideWidth), leftNaturalWidth), 25);
             childBox.x2 = allocWidth;
+            leftBoxBoundary = childBox.x1;
         } else {
             childBox.x1 = 0;
             childBox.x2 = Math.max(Math.min(Math.floor(sideWidth), leftNaturalWidth), 25); // Min size for zone is 25px
@@ -666,6 +667,7 @@ Panel.prototype = {
         if (this.actor.get_direction() == St.TextDirection.RTL) {
             childBox.x1 = 0;
             childBox.x2 = Math.max(rightNaturalWidth, 25);
+            rightBoxBoundary = childBox.x2;
         } else {
             childBox.x1 = allocWidth - Math.max(rightNaturalWidth, 25); // Min size for zone is 25px
             childBox.x2 = allocWidth;
