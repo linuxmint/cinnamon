@@ -89,10 +89,18 @@ MyApplet.prototype = {
             global.settings.connect('changed::panel-edit-mode', function() {
                 panelEditMode.setToggleState(global.settings.get_boolean("panel-edit-mode"));                            
             });
-            
-            this.menu.addAction(_("Cinnamon Settings"), function(event) {
+
+            this.menu.addAction(_("Panel settings"), function(event) {
+                Util.spawnCommandLine("cinnamon-settings panel");
+            });
+
+            this.menu.addAction(_("Add/remove applets"), function(event) {
+                Util.spawnCommandLine("cinnamon-settings applets");
+            });
+
+            this.menu.addAction(_("Other settings"), function(event) {
                 Util.spawnCommandLine("cinnamon-settings");
-            });                     
+            });
                         
         }
         catch (e) {
