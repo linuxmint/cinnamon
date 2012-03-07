@@ -293,7 +293,7 @@ CinnamonMountPasswordNotification.prototype = {
 
         this._responseEntry.clutter_text.connect('activate',
                                                  Lang.bind(this, this._onEntryActivated));
-        this._responseEntry.clutter_text.set_password_char('\u25cf'); // ● U+25CF BLACK CIRCLE
+        this._responseEntry.clutter_text.set_password_char('\u25cf'); // U+25CF is the unicode BLACK CIRCLE
 
         this._responseEntry.grab_key_focus();
     },

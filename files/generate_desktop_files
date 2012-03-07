@@ -26,7 +26,7 @@ Name=Cinnamon Settings
 """)
 
 import gettext
-gettext.install("cinnamon-settings", "/usr/share/cinnamon/locale")
+gettext.install("cinnamon", "/usr/share/cinnamon/locale")
 
 for directory in os.listdir("/usr/share/cinnamon/locale"):
 	if os.path.isdir(os.path.join("/usr/share/cinnamon/locale", directory)):

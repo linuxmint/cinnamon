@@ -22,7 +22,7 @@ except Exception, detail:
 
 
 # i18n
-gettext.install("cinnamon-settings", "/usr/share/cinnamon/locale")
+gettext.install("cinnamon", "/usr/share/cinnamon/locale")
 
 # i18n for menu item
 menuName = _("Desktop Settings")
@@ -824,10 +824,10 @@ class ChangeTimeWidget(Gtk.HBox):
         proxy = dbus.SystemBus().get_object("org.gnome.SettingsDaemon.DateTimeMechanism", "/")
         self.dbus_iface = dbus.Interface(proxy, dbus_interface="org.gnome.SettingsDaemon.DateTimeMechanism")
         
-        # Ensures we're setting the system time only when the user changes it
+        # Ensures we are setting the system time only when the user changes it
         self.changedOnTimeout = False
         
-        # Ensures we don't update the values in the date/time fields during the DBus call to set the time
+        # Ensures we do not update the values in the date/time fields during the DBus call to set the time
         self._setting_time = False
         self._setting_time_lock = thread.allocate()
         self._time_to_set = None
@@ -937,7 +937,7 @@ class ChangeTimeWidget(Gtk.HBox):
         self._setting_time = True
         self._setting_time_lock.release()
         
-        # If there's already another thread updating the time, we let it do the job
+        # If there is already another thread updating the time, we let it do the job
         if not do_set:
             return
         
@@ -1151,7 +1151,7 @@ class MainWindow:
         label.set_markup("%s" % _("Hot corner position:"))
         box.pack_start(label, False, False, 0)         
         positions = [["topLeft", _("Top left")], ["topRight", _("Top right")], ["bottomLeft", _("Bottom left")], ["bottomRight", _("Bottom right")]]        
-        combo = GSettingsComboBox(_(""), "org.cinnamon", "overview-corner-position", positions)        
+        combo = GSettingsComboBox("", "org.cinnamon", "overview-corner-position", positions)        
         box.pack_start(combo, False, False, 0)               
         sidePage.add_widget(box)
         
@@ -1160,7 +1160,7 @@ class MainWindow:
         label.set_markup("%s" % _("Hot corner function:"))
         box.pack_start(label, False, False, 0)         
         cornerfunctions = [["expo", _("Workspace selection (ala Compiz Expo)")], ["scale", _("Window selection (ala Compiz Scale)")]]     
-        combo = GSettingsComboBox(_(""), "org.cinnamon", "overview-corner-functionality", cornerfunctions)        
+        combo = GSettingsComboBox("", "org.cinnamon", "overview-corner-functionality", cornerfunctions)        
         box.pack_start(combo, False, False, 0)               
         sidePage.add_widget(box)
         
@@ -1210,11 +1210,11 @@ class MainWindow:
         label.set_markup("%s" % _("Closing windows:"))
         box.pack_start(label, False, False, 0)         
         effects = [["none", _("None")], ["scale", _("Scale")], ["fade", _("Fade")]]        
-        combo = GSettingsComboBox(_(""), "org.cinnamon", "desktop-effects-close-effect", effects)        
+        combo = GSettingsComboBox("", "org.cinnamon", "desktop-effects-close-effect", effects)        
         box.pack_start(combo, False, False, 0)         
-        combo = GSettingsComboBox(_(""), "org.cinnamon", "desktop-effects-close-transition", transition_effects)
+        combo = GSettingsComboBox("", "org.cinnamon", "desktop-effects-close-transition", transition_effects)
         box.pack_start(combo, False, False, 0)         
-        spin = GSettingsSpinButton(_(""), "org.cinnamon", "desktop-effects-close-time", 0, 2000, 50, 200, _("milliseconds"))
+        spin = GSettingsSpinButton("", "org.cinnamon", "desktop-effects-close-time", 0, 2000, 50, 200, _("milliseconds"))
         box.pack_start(spin, False, False, 0)         
         sidePage.add_widget(box) 
         
@@ -1224,11 +1224,11 @@ class MainWindow:
         label.set_markup("%s" % _("Mapping windows:"))
         box.pack_start(label, False, False, 0)         
         effects = [["none", _("None")], ["scale", _("Scale")], ["fade", _("Fade")]]        
-        combo = GSettingsComboBox(_(""), "org.cinnamon", "desktop-effects-map-effect", effects)        
+        combo = GSettingsComboBox("", "org.cinnamon", "desktop-effects-map-effect", effects)        
         box.pack_start(combo, False, False, 0)         
-        combo = GSettingsComboBox(_(""), "org.cinnamon", "desktop-effects-map-transition", transition_effects)
+        combo = GSettingsComboBox("", "org.cinnamon", "desktop-effects-map-transition", transition_effects)
         box.pack_start(combo, False, False, 0)         
-        spin = GSettingsSpinButton(_(""), "org.cinnamon", "desktop-effects-map-time", 0, 2000, 50, 200, _("milliseconds"))
+        spin = GSettingsSpinButton("", "org.cinnamon", "desktop-effects-map-time", 0, 2000, 50, 200, _("milliseconds"))
         box.pack_start(spin, False, False, 0)         
         sidePage.add_widget(box)
         
@@ -1238,11 +1238,11 @@ class MainWindow:
         label.set_markup("%s" % _("Minimizing windows:"))
         box.pack_start(label, False, False, 0)         
         effects = [["none", _("None")], ["traditional", _("Traditional")], ["scale", _("Scale")], ["fade", _("Fade")]]        
-        combo = GSettingsComboBox(_(""), "org.cinnamon", "desktop-effects-minimize-effect", effects)        
+        combo = GSettingsComboBox("", "org.cinnamon", "desktop-effects-minimize-effect", effects)        
         box.pack_start(combo, False, False, 0)         
-        combo = GSettingsComboBox(_(""), "org.cinnamon", "desktop-effects-minimize-transition", transition_effects)
+        combo = GSettingsComboBox("", "org.cinnamon", "desktop-effects-minimize-transition", transition_effects)
         box.pack_start(combo, False, False, 0)         
-        spin = GSettingsSpinButton(_(""), "org.cinnamon", "desktop-effects-minimize-time", 0, 2000, 50, 200, _("milliseconds"))
+        spin = GSettingsSpinButton("", "org.cinnamon", "desktop-effects-minimize-time", 0, 2000, 50, 200, _("milliseconds"))
         box.pack_start(spin, False, False, 0)         
         sidePage.add_widget(box)
         
@@ -1252,11 +1252,11 @@ class MainWindow:
         label.set_markup("%s" % _("Maximizing windows:"))
         box.pack_start(label, False, False, 0)         
         effects = [["none", _("None")], ["scale", _("Scale")]]        
-        combo = GSettingsComboBox(_(""), "org.cinnamon", "desktop-effects-maximize-effect", effects)        
+        combo = GSettingsComboBox("", "org.cinnamon", "desktop-effects-maximize-effect", effects)        
         box.pack_start(combo, False, False, 0)         
-        combo = GSettingsComboBox(_(""), "org.cinnamon", "desktop-effects-maximize-transition", transition_effects)
+        combo = GSettingsComboBox("", "org.cinnamon", "desktop-effects-maximize-transition", transition_effects)
         box.pack_start(combo, False, False, 0)         
-        spin = GSettingsSpinButton(_(""), "org.cinnamon", "desktop-effects-maximize-time", 0, 2000, 50, 200, _("milliseconds"))
+        spin = GSettingsSpinButton("", "org.cinnamon", "desktop-effects-maximize-time", 0, 2000, 50, 200, _("milliseconds"))
         box.pack_start(spin, False, False, 0)         
         sidePage.add_widget(box)
         
@@ -1266,11 +1266,11 @@ class MainWindow:
         label.set_markup("%s" % _("Unmaximizing windows:"))
         box.pack_start(label, False, False, 0)         
         effects = [["none", _("None")]]        
-        combo = GSettingsComboBox(_(""), "org.cinnamon", "desktop-effects-unmaximize-effect", effects)        
+        combo = GSettingsComboBox("", "org.cinnamon", "desktop-effects-unmaximize-effect", effects)        
         box.pack_start(combo, False, False, 0)         
-        combo = GSettingsComboBox(_(""), "org.cinnamon", "desktop-effects-unmaximize-transition", transition_effects)
+        combo = GSettingsComboBox("", "org.cinnamon", "desktop-effects-unmaximize-transition", transition_effects)
         box.pack_start(combo, False, False, 0)         
-        spin = GSettingsSpinButton(_(""), "org.cinnamon", "desktop-effects-unmaximize-time", 0, 2000, 50, 200, _("milliseconds"))
+        spin = GSettingsSpinButton("", "org.cinnamon", "desktop-effects-unmaximize-time", 0, 2000, 50, 200, _("milliseconds"))
         box.pack_start(spin, False, False, 0)         
         sidePage.add_widget(box)
         

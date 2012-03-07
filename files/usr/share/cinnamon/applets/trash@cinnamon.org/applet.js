@@ -86,8 +86,7 @@ MyApplet.prototype = {
     }
 };
 
-const MESSAGE = _("Are you sure you want to delete all items from the trash?\n\
-This operation cannot be undone.");
+const MESSAGE = _("Are you sure you want to delete all items from the trash?") + "\n" + _("This operation cannot be undone.");
 
 function ConfirmEmptyTrashDialog(emptyMethod) {
   this._init(emptyMethod);

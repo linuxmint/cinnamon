@@ -1,0 +1,3 @@
+#!/bin/bash
+xgettext --language=C --keyword=_ --output=cinnamon.pot src/*.c src/*/*.c js/*/*.js files/usr/share/cinnamon/applets/*/applet.js files/usr/lib/cinnamon-settings/*.py
+
