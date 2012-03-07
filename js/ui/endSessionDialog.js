@@ -29,8 +29,9 @@ const Gtk = imports.gi.Gtk;
 const Pango = imports.gi.Pango;
 const St = imports.gi.St;
 const Cinnamon = imports.gi.Cinnamon;
-
-const GnomeSession = imports.misc.gnomeSession
+const UPowerGlib = imports.gi.UPowerGlib;
+const ScreenSaver = imports.misc.screenSaver;
+const GnomeSession = imports.misc.gnomeSession;
 const ModalDialog = imports.ui.modalDialog;
 const Tweener = imports.ui.tweener;
 
@@ -83,7 +84,11 @@ const shutdownDialogContent = {
                         seconds).format(seconds);
     },
     endDescription: _("Powering off the system."),
-    confirmButtons: [{ signal: 'ConfirmedReboot',
+    confirmButtons: [{ signal: 'ConfirmedSuspend',
+                       label:  _("Suspend") },
+                     { signal: 'ConfirmedHibernate',
+                       label:  _("Hibernate") },
+                     { signal: 'ConfirmedReboot',
                        label:  _("Restart") },
                      { signal: 'ConfirmedShutdown',
                        label:  _("Power Off") }],
@@ -250,6 +255,9 @@ EndSessionDialog.prototype = {
 
     _init: function() {
         ModalDialog.ModalDialog.prototype._init.call(this, { styleClass: 'end-session-dialog' });
+
+        this._upClient = new UPowerGlib.Client();
+        this._screenSaverProxy = new ScreenSaver.ScreenSaverProxy();
 
         this._user = AccountsService.UserManager.get_default().get_user(GLib.get_user_name());
 
@@ -427,9 +435,27 @@ EndSessionDialog.prototype = {
         for (let i = 0; i < dialogContent.confirmButtons.length; i++) {
             let signal = dialogContent.confirmButtons[i].signal;
             let label = dialogContent.confirmButtons[i].label;
-            buttons.push({ action: Lang.bind(this, function() {
-                                       this._confirm(signal);
-                                   }),
+            let action = null;
+
+            switch (signal) {
+                case 'ConfirmedSuspend':
+                    if (this._upClient.get_can_suspend())
+                        action = Lang.bind(this, this._doSuspend);
+                    break;
+                case 'ConfirmedHibernate':
+                    if (this._upClient.get_can_hibernate())
+                        action = Lang.bind(this, this._doHibernate);
+                    break;
+                default:
+                    action = Lang.bind(this, function() {
+                        this._confirm(signal);
+                    });
+            }
+
+            if (action == null)
+                continue;
+
+            buttons.push({ action: action,
                            label: label });
         }
 
@@ -457,6 +483,22 @@ EndSessionDialog.prototype = {
         DBus.session.emit_signal('/org/gnome/SessionManager/EndSessionDialog',
                                  'org.gnome.SessionManager.EndSessionDialog',
                                  signal, '', []);
+    },
+
+    _doSuspend: function() {
+        this.cancel(); //cancel auto-shutdown and close dialog
+
+        this._screenSaverProxy.LockRemote(Lang.bind(this, function() {
+            this._upClient.suspend_sync(null);
+        }));
+    },
+
+    _doHibernate: function() {
+        this.cancel(); //cancel auto-shutdown and close dialog
+
+        this._screenSaverProxy.LockRemote(Lang.bind(this, function() {
+            this._upClient.hibernate_sync(null);
+        }));
     },
 
     _onOpened: function() {
