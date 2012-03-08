@@ -475,11 +475,13 @@ Expo.prototype = {
 
         Tweener.addTween(this._gradient, {  opacity: 0,
                                             time: ANIMATION_TIME,
+                                            transition: 'linear',
                                             onComplete: this.hide});
 
         Tweener.addTween(this._background,
                          { dim_factor: 1,
                            time: ANIMATION_TIME,
+                           transition: 'linear',
                            onComplete: this._hideDone,
                            onCompleteScope: this
                          });
