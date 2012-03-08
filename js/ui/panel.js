@@ -8,15 +8,11 @@ const Pango = imports.gi.Pango;
 const Cinnamon = imports.gi.Cinnamon;
 const St = imports.gi.St;
 const PopupMenu = imports.ui.popupMenu;
-const PanelMenu = imports.ui.panelMenu;
 const Main = imports.ui.main;
 const Tweener = imports.ui.tweener;
 const Applet = imports.ui.applet;
 const DND = imports.ui.dnd;
 const AppletManager = imports.ui.appletManager;
-
-const PANEL_ICON_SIZE = 24;
-const PANEL_ICON_DEFAULT_SIZE = 22;
 
 const BUTTON_DND_ACTIVATION_TIMEOUT = 250;
 
@@ -142,12 +138,6 @@ TextShadower.prototype = {
             this.actor.add_actor(actor);
         }
         this._label.raise_top();
-    },
-
-    setText: function(text) {
-        let children = this.actor.get_children();
-        for (let i = 0; i < children.length; i++)
-            children[i].set_text(text);
     },
 
     _getPreferredWidth: function(actor, forHeight, alloc) {
@@ -514,10 +504,6 @@ Panel.prototype = {
                                                   reactive: true });
         this.actor._delegate = this;
 
-        
-
-        this._statusArea = {};
-
         Main.overview.connect('shown', Lang.bind(this, function () {
             this.actor.add_style_class_name('in-overview');
         }));
@@ -563,9 +549,6 @@ Panel.prototype = {
             this._status_area_order = STANDARD_STATUS_AREA_ORDER;
             this._status_area_cinnamon_implementation = STANDARD_STATUS_AREA_CINNAMON_IMPLEMENTATION;
         }
-
-        //Main.statusIconDispatcher.connect('status-icon-added', Lang.bind(this, this._onTrayIconAdded));
-        //Main.statusIconDispatcher.connect('status-icon-removed', Lang.bind(this, this._onTrayIconRemoved));        
                                         
         this.actor.connect('leave-event', Lang.bind(this, this._leavePanel));
         this.actor.connect('enter-event', Lang.bind(this, this._enterPanel));  
@@ -703,90 +686,6 @@ Panel.prototype = {
         this._rightCorner.actor.allocate(childBox, flags);
     },
 
-    startStatusArea: function() {
-        for (let i = 0; i < this._status_area_order.length; i++) {
-            let role = this._status_area_order[i];
-            let constructor = this._status_area_cinnamon_implementation[role];
-            if (!constructor) {
-                // This icon is not implemented (this is a bug)
-                continue;
-            }
-
-            let indicator = new constructor();
-            this.addToStatusArea(role, indicator, i);
-        }
-    },
-
-    _insertStatusItem: function(actor, position) {
-        let children = this._rightBox.get_children();
-        let i;
-        for (i = children.length - 1; i >= 0; i--) {
-            let rolePosition = children[i]._rolePosition;
-            if (position > rolePosition) {
-                this._rightBox.insert_actor(actor, i + 1);
-                break;
-            }
-        }
-        if (i == -1) {
-            // If we didn't find a position, we must be first
-            this._rightBox.insert_actor(actor, 0);
-        }
-        actor._rolePosition = position;
-    },
-
-    addToStatusArea: function(role, indicator, position) {
-        if (this._statusArea[role])
-            throw new Error('Extension point conflict: there is already a status indicator for role ' + role);
-
-        if (!(indicator instanceof PanelMenu.Button))
-            throw new TypeError('Status indicator must be an instance of PanelMenu.Button');
-
-        if (!position)
-            position = 0;
-        this._insertStatusItem(indicator.actor, position);
-        this._menus.addMenu(indicator.menu);
-
-        this._statusArea[role] = indicator;
-        let destroyId = indicator.connect('destroy', Lang.bind(this, function(emitter) {
-            this._statusArea[role] = null;
-            emitter.disconnect(destroyId);
-        }));
-
-        return indicator;
-    },
-
-    _onTrayIconAdded: function(o, icon, role) {
-        if (this._status_area_cinnamon_implementation[role]) {
-            // This icon is legacy, and replaced by a Cinnamon version
-            // Hide it
-            return;
-        }
-        
-        let hiddenIcons = ["network", "power", "keyboard", "gnome-settings-daemon", "volume", "bluetooth", "battery", "a11y"];
-        
-        if (hiddenIcons.indexOf(role) != -1 ) {  
-            // We've got an applet for that          
-            return;
-        }
-
-        //icon.height = PANEL_ICON_SIZE;        
-        let buttonBox = new PanelMenu.ButtonBox({ style_class: 'panel-status-button' });
-        let box = buttonBox.actor;
-        box.add_actor(icon);
-
-        this._insertStatusItem(box, this._status_area_order.indexOf(role));
-        
-        let themeNode = buttonBox.actor.get_theme_node();
-        if (!themeNode.get_length('height')) icon.height = PANEL_ICON_DEFAULT_SIZE;
-        else icon.height = themeNode.get_length('height');
-    },
-
-    _onTrayIconRemoved: function(o, icon) {
-        let box = icon.get_parent();
-        if (box && box._delegate instanceof PanelMenu.ButtonBox)
-            box.destroy();
-    },
-    
     _enterPanel: function() {
         this.isMouseOverPanel = true;
         this._showPanel();
