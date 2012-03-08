@@ -919,7 +919,7 @@ StTooltip StLabel {
 .end-session-dialog-subject {
 	font-size: 12pt;
 	font-weight: bold;
-	color: #666666;
+	color: #cccccc;
 	padding-top: 10px;
 	padding-left: 17px;
 	padding-bottom: 30px;
