@@ -67,7 +67,7 @@ MyApplet.prototype = {
         if (this.RecentManager._infosByTimestamp.length > 0) {
             this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
             let icon = new St.Icon({ icon_name: 'edit-clear', icon_type: St.IconType.SYMBOLIC, icon_size: 22 });
-            let menuItem = new MyPopupMenuItem(icon, 'Clear list', {});
+            let menuItem = new MyPopupMenuItem(icon, _("Clear list"), {});
             this.menu.addMenuItem(menuItem);
             menuItem.connect('activate', Lang.bind(this, this._clearAll));
         }
