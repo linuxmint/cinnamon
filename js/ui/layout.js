@@ -30,7 +30,6 @@ LayoutManager.prototype = {
         this._rightPanelBarrier = 0;
         this._leftPanelBarrier2 = 0;
         this._rightPanelBarrier2 = 0;
-        this._trayBarrier = 0;		
         this._chrome = new Chrome(this);       
 		
 		this._hotCorner = new HotCorner();        
@@ -38,11 +37,6 @@ LayoutManager.prototype = {
 		this.addChrome(this.overviewCorner, { visibleInFullscreen: false });	
 		this.overviewCorner.connect('button-release-event', Lang.bind(this, this._toggleExpo));
 		
-        this.trayBox = new St.BoxLayout({ name: 'trayBox' }); 
-        this.addChrome(this.trayBox, { visibleInFullscreen: true });
-        this.trayBox.connect('allocation-changed',
-                             Lang.bind(this, this._updateTrayBarrier));
-                             
         this.panelBox = new St.BoxLayout({ name: 'panelBox',
                                            vertical: true });
                                            
@@ -281,17 +275,6 @@ LayoutManager.prototype = {
         this.keyboardBox.set_position(this.bottomMonitor.x,
                                       this.bottomMonitor.y + this.bottomMonitor.height);
         this.keyboardBox.set_size(this.bottomMonitor.width, -1);
-
-        this.trayBox.set_position(this.primaryMonitor.x,
-                                  this.primaryMonitor.y + 25);
-        this.trayBox.set_size(this.primaryMonitor.width, -1);
-
-        // Set trayBox's clip to show things above it, but not below
-        // it (so it's not visible behind the keyboard). The exact
-        // height of the clip doesn't matter, as long as it's taller
-        // than any Notification.actor.
-        this.trayBox.set_clip(0, -this.bottomMonitor.height,
-                              this.bottomMonitor.width, this.bottomMonitor.height);
     },
 
     _updatePanelBarriers: function(panelBox) {
@@ -345,22 +328,6 @@ LayoutManager.prototype = {
             this._leftPanelBarrier2 = leftPanelBarrier;
             this._rightPanelBarrier2 = rightPanelBarrier;
         }
-    },
-
-    _updateTrayBarrier: function() {
-        let monitor = this.primaryMonitor;
-
-        if (this._trayBarrier)
-            global.destroy_pointer_barrier(this._trayBarrier);
-
-        //if (Main.messageTray && Main.messageTray.actor) {
-        //    this._trayBarrier =
-        //        global.create_pointer_barrier(monitor.x + monitor.width, monitor.y,
-        //                                      monitor.x + monitor.width, monitor.y + Main.messageTray.actor.height,
-        //                                      4 /* BarrierNegativeX */);
-        //} else {
-            this._trayBarrier = 0;
-        //}
     },
 
     _monitorsChanged: function() {
@@ -443,11 +410,6 @@ LayoutManager.prototype = {
                            onComplete: this._showKeyboardComplete,
                            onCompleteScope: this
                          });
-        Tweener.addTween(this.trayBox,
-                         { anchor_y: this.keyboardBox.height,
-                           time: KEYBOARD_ANIMATION_TIME,
-                           transition: 'easeOutQuad'
-                         });
     },
 
     _showKeyboardComplete: function() {
@@ -457,7 +419,6 @@ LayoutManager.prototype = {
 
         this._keyboardHeightNotifyId = this.keyboardBox.connect('notify::height', Lang.bind(this, function () {
             this.keyboardBox.anchor_y = this.keyboardBox.height;
-            this.trayBox.anchor_y = this.keyboardBox.height;
         }));
     },
 
@@ -473,11 +434,6 @@ LayoutManager.prototype = {
                            transition: 'easeOutQuad',
                            onComplete: this._hideKeyboardComplete,
                            onCompleteScope: this
-                         });
-        Tweener.addTween(this.trayBox,
-                         { anchor_y: 0,
-                           time: immediate ? 0 : KEYBOARD_ANIMATION_TIME,
-                           transition: 'easeOutQuad'
                          });
     },
 
