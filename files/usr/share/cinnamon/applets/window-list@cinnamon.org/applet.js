@@ -11,9 +11,6 @@ const Meta = imports.gi.Meta;
 const Tooltips = imports.ui.tooltips;
 const DND = imports.ui.dnd;
 
-const Gettext = imports.gettext.domain('cinnamon-extensions');
-const _ = Gettext.gettext;
-
 const PANEL_ICON_SIZE = 24;
 const SPINNER_ANIMATION_TIME = 1;
 

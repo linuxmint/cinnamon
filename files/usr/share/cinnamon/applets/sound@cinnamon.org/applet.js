@@ -10,9 +10,6 @@ const PopupMenu = imports.ui.popupMenu;
 const GLib = imports.gi.GLib;
 const Gvc = imports.gi.Gvc;
 
-const Gettext = imports.gettext.domain('cinnamon-extension-mediaplayer');
-const _ = Gettext.gettext;
-
 const PropIFace = {
     name: 'org.freedesktop.DBus.Properties',
     signals: [{ name: 'PropertiesChanged',
