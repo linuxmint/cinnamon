@@ -371,7 +371,7 @@ PlaceSearchProvider.prototype = {
     __proto__: Search.SearchProvider.prototype,
 
     _init: function() {
-        Search.SearchProvider.prototype._init.call(this, _("PLACES & DEVICES"));
+        Search.SearchProvider.prototype._init.call(this, "PLACES & DEVICES");
     },
 
     getResultMeta: function(resultId) {
