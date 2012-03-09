@@ -5,8 +5,6 @@ const Gtk = imports.gi.Gtk;
 const Lang = imports.lang;
 const Clutter = imports.gi.Clutter;
 const Applet = imports.ui.applet;
-const Gettext = imports.gettext.domain('cinnamon-applets');
-const _ = Gettext.gettext;
 
 function MyApplet(orientation) {
     this._init(orientation);
@@ -111,7 +109,7 @@ ConfirmEmptyTrashDialog.prototype = {
     messageBox.add(this._subjectLabel, { y_fill:  false, y_align: St.Align.START });
 
     this._descriptionLabel = new St.Label({ style_class: 'polkit-dialog-description',
-                                            text: Gettext.gettext(MESSAGE) });
+                                            text: MESSAGE });
 
     messageBox.add(this._descriptionLabel, { y_fill:  true, y_align: St.Align.START });
 
@@ -134,8 +132,7 @@ ConfirmEmptyTrashDialog.prototype = {
   }
 };
 
-function main(metadata, orientation) {  
-    imports.gettext.bindtextdomain('cinnamon-applets', metadata.localedir);
+function main(metadata, orientation) {      
     let myApplet = new MyApplet(orientation);
     return myApplet;      
 }
