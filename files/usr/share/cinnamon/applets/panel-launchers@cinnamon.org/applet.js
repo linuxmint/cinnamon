@@ -30,19 +30,19 @@ PanelAppLauncherMenu.prototype = {
         Main.uiGroup.add_actor(this.actor);
         this.actor.hide();
         
-        this.launchItem = new PopupMenu.PopupMenuItem(_('Launch'));
+        this.launchItem = new PopupMenu.PopupMenuItem(_("Launch"));
         this.addMenuItem(this.launchItem);
         this.launchItem.connect('activate', Lang.bind(this, this._onLaunchActivate));
         
-        this.addItem = new PopupMenu.PopupMenuItem(_('Add'));
+        this.addItem = new PopupMenu.PopupMenuItem(_("Add"));
         this.addMenuItem(this.addItem);
         this.addItem.connect('activate', Lang.bind(this, this._onAddActivate));
         
-        this.editItem = new PopupMenu.PopupMenuItem(_('Edit'));
+        this.editItem = new PopupMenu.PopupMenuItem(_("Edit"));
         this.addMenuItem(this.editItem);
         this.editItem.connect('activate', Lang.bind(this, this._onEditActivate));
         
-        this.removeItem = new PopupMenu.PopupMenuItem(_('Remove'));
+        this.removeItem = new PopupMenu.PopupMenuItem(_("Remove"));
         this.addMenuItem(this.removeItem);
         this.removeItem.connect('activate', Lang.bind(this, this._onRemoveActivate));            
     },
@@ -284,12 +284,12 @@ AddLauncherDialog.prototype = {
     
     _validateAdd: function() {
         if (this._nameEntry.clutter_text.get_text()==""){
-            this._errorMessage.clutter_text.set_text(_('Name cannot be empty !'));
+            this._errorMessage.clutter_text.set_text(_("Name cannot be empty!"));
             this._errorBox.show();
             return false;
         }
         if (this._commandEntry.clutter_text.get_text()==""){
-            this._errorMessage.clutter_text.set_text(_('Command cannot be empty !'));
+            this._errorMessage.clutter_text.set_text(_("Command cannot be empty!"));
             this._errorBox.show();
             return false;
         }

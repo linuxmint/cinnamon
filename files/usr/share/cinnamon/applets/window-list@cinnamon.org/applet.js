@@ -35,25 +35,25 @@ AppMenuButtonRightClickMenu.prototype = {
 
         this.metaWindow = metaWindow;
 
-        this.itemCloseWindow = new PopupMenu.PopupMenuItem('Close');
+        this.itemCloseWindow = new PopupMenu.PopupMenuItem(_("Close"));
         this.itemCloseWindow.connect('activate', Lang.bind(this, this._onCloseWindowActivate));        
 
         if (metaWindow.minimized)
-            this.itemMinimizeWindow = new PopupMenu.PopupMenuItem('Restore');
+            this.itemMinimizeWindow = new PopupMenu.PopupMenuItem(_("Restore"));
         else
-            this.itemMinimizeWindow = new PopupMenu.PopupMenuItem('Minimize');
+            this.itemMinimizeWindow = new PopupMenu.PopupMenuItem(_("Minimize"));
         this.itemMinimizeWindow.connect('activate', Lang.bind(this, this._onMinimizeWindowActivate));        
         
-        this.itemMaximizeWindow = new PopupMenu.PopupMenuItem(_('Maximize'));
+        this.itemMaximizeWindow = new PopupMenu.PopupMenuItem(_("Maximize"));
         this.itemMaximizeWindow.connect('activate', Lang.bind(this, this._onMaximizeWindowActivate));  
         
-        this.itemMoveToLeftWorkspace = new PopupMenu.PopupMenuItem(_('Move to left workspace'));
+        this.itemMoveToLeftWorkspace = new PopupMenu.PopupMenuItem(_("Move to left workspace"));
         this.itemMoveToLeftWorkspace.connect('activate', Lang.bind(this, this._onMoveToLeftWorkspace));
         
-        this.itemMoveToRightWorkspace = new PopupMenu.PopupMenuItem(_('Move to right workspace'));
+        this.itemMoveToRightWorkspace = new PopupMenu.PopupMenuItem(_("Move to right workspace"));
         this.itemMoveToRightWorkspace.connect('activate', Lang.bind(this, this._onMoveToRightWorkspace));      
         
-        this.itemOnAllWorkspaces = new PopupMenu.PopupMenuItem(_('Visible on all workspaces'));
+        this.itemOnAllWorkspaces = new PopupMenu.PopupMenuItem(_("Visible on all workspaces"));
         this.itemOnAllWorkspaces.connect('activate', Lang.bind(this, this._toggleOnAllWorkspaces));
 
         if (orientation == St.Side.BOTTOM) {
@@ -81,11 +81,11 @@ AppMenuButtonRightClickMenu.prototype = {
             return;
 
 	if (this.metaWindow.is_on_all_workspaces()) {
-            this.itemOnAllWorkspaces.label.set_text(_('Only on this workspace'));
+            this.itemOnAllWorkspaces.label.set_text(_("Only on this workspace"));
             this.itemMoveToLeftWorkspace.actor.hide();
             this.itemMoveToRightWorkspace.actor.hide();
         } else {
-            this.itemOnAllWorkspaces.label.set_text(_('Visible on all workspaces'));
+            this.itemOnAllWorkspaces.label.set_text(_("Visible on all workspaces"));
             if (this.metaWindow.get_workspace().get_neighbor(Meta.MotionDirection.LEFT) != this.metaWindow.get_workspace())
                 this.itemMoveToLeftWorkspace.actor.show();
             else
