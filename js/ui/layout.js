@@ -1190,7 +1190,10 @@ Chrome.prototype = {
             struts.push(strut);
         }
         
-        global.set_stage_input_region(rects);
+        if (global.top_window_group.get_children().length == 0)
+            global.set_stage_input_region(rects);
+        else
+            global.set_stage_input_region([]);
 
         let screen = global.screen;
         for (let w = 0; w < screen.n_workspaces; w++) {
