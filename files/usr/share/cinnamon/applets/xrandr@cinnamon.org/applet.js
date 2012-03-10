@@ -8,8 +8,6 @@ const Lang = imports.lang;
 const Applet = imports.ui.applet;
 const PopupMenu = imports.ui.popupMenu;
 
-const Gettext = imports.gettext.domain('cinnamon-applets');
-const _ = Gettext.gettext;
 const N_ = function(e) { return e };
 
 const possibleRotations = [ GnomeDesktop.RRRotation.ROTATION_0,
@@ -104,7 +102,7 @@ MyApplet.prototype = {
         for (let i = 0; i < rotations.length; i++) {
             let [bitmask, name] = rotations[i];
             if (bitmask & allowedRotations) {
-                let item = new PopupMenu.PopupMenuItem(Gettext.gettext(name));
+                let item = new PopupMenu.PopupMenuItem(_(name));
                 if (bitmask & currentRotation)
                     item.setShowDot(true);
                 item.connect('activate', Lang.bind(this, function(item, event) {

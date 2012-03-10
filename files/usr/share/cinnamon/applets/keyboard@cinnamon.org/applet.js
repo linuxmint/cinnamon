@@ -67,6 +67,10 @@ MyApplet.prototype = {
                 this.menu.addAction(_("Show Keyboard Layout"), Lang.bind(this, function() {
                     Main.overview.hide();
                     Util.spawn(['gkbd-keyboard-display', '-g', String(this._config.get_current_group() + 1)]);
+                }));                                
+                this.menu.addAction(_("Show Character Table"), Lang.bind(this, function() {
+                    Main.overview.hide();
+                    Util.spawn(['gucharmap']);
                 }));
             }
             this.menu.addSettingsAction(_("Region and Language Settings"), 'gnome-region-panel.desktop'); 

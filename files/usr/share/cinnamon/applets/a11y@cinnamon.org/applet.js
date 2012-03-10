@@ -4,9 +4,6 @@ const Lang = imports.lang;
 const Applet = imports.ui.applet;
 const GConf = imports.gi.GConf;
 
-const Gettext = imports.gettext.domain('cinnamon-applets');
-const _ = Gettext.gettext;
-
 const A11Y_SCHEMA = 'org.gnome.desktop.a11y.keyboard';
 const KEY_STICKY_KEYS_ENABLED = 'stickykeys-enable';
 const KEY_BOUNCE_KEYS_ENABLED = 'bouncekeys-enable';

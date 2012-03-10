@@ -159,7 +159,7 @@ class MainWindow:
 	def setupMenuTree(self):
 		self.menu_store = gtk.TreeStore(gtk.gdk.Pixbuf, str, object)
 		menus = self.tree.get_object('menu_tree')
-		column = gtk.TreeViewColumn(_('Name'))
+		column = gtk.TreeViewColumn(_("Name"))
 		column.set_spacing(4)
 		cell = gtk.CellRendererPixbuf()
 		column.pack_start(cell, False)
@@ -175,7 +175,7 @@ class MainWindow:
 
 	def setupItemTree(self):
 		items = self.tree.get_object('item_tree')
-		column = gtk.TreeViewColumn(_('Show'))
+		column = gtk.TreeViewColumn(_("Show"))
 		cell = gtk.CellRendererToggle()
 		cell.connect('toggled', self.on_item_tree_show_toggled)
 		column.pack_start(cell, True)
@@ -183,7 +183,7 @@ class MainWindow:
 		#hide toggle for separators
 		column.set_cell_data_func(cell, self._cell_data_toggle_func)
 		items.append_column(column)
-		column = gtk.TreeViewColumn(_('Item'))
+		column = gtk.TreeViewColumn(_("Item"))
 		column.set_spacing(4)
 		cell = gtk.CellRendererPixbuf()
 		column.pack_start(cell, False)

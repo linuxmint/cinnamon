@@ -10,9 +10,6 @@ const PopupMenu = imports.ui.popupMenu;
 const GLib = imports.gi.GLib;
 const Gvc = imports.gi.Gvc;
 
-const Gettext = imports.gettext.domain('cinnamon-extension-mediaplayer');
-const _ = Gettext.gettext;
-
 const PropIFace = {
     name: 'org.freedesktop.DBus.Properties',
     signals: [{ name: 'PropertiesChanged',
@@ -367,9 +364,9 @@ Player.prototype = {
         this.addActor(mainBox);
 
         this.infos = new St.BoxLayout({vertical: true});
-        this._artist = new TrackInfo(_('Unknown Artist'), "system-users");
-        this._album = new TrackInfo(_('Unknown Album'), "media-optical");
-        this._title = new TrackInfo(_('Unknown Title'), "audio-x-generic");
+        this._artist = new TrackInfo(_("Unknown Artist"), "system-users");
+        this._album = new TrackInfo(_("Unknown Album"), "media-optical");
+        this._title = new TrackInfo(_("Unknown Title"), "audio-x-generic");
         this._time = new TrackInfo("0:00 / 0:00", "document-open-recent");
         this.infos.add_actor(this._artist.getActor());
         this.infos.add_actor(this._album.getActor());

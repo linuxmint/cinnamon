@@ -85,6 +85,12 @@ let background = null;
 let desktop_layout;
 let applet_side = St.Side.BOTTOM;
 
+// Override Gettext localization
+const Gettext = imports.gettext;
+Gettext.bindtextdomain('cinnamon', '/usr/share/cinnamon/locale');
+Gettext.textdomain('cinnamon');
+const _ = Gettext.gettext;
+
 function _createUserSession() {  
     placesManager = new PlacesManager.PlacesManager();    
     automountManager = new AutomountManager.AutomountManager();

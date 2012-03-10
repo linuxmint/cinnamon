@@ -2,8 +2,6 @@ const Lang = imports.lang;
 const St = imports.gi.St;
 const Cinnamon = imports.gi.Cinnamon;
 const Applet = imports.ui.applet;
-const Gettext = imports.gettext.domain('cinnamon-extensions');
-const _ = Gettext.gettext;
 const Main = imports.ui.main;
 const PopupMenu = imports.ui.popupMenu;
 
