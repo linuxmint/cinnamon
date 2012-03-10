@@ -142,6 +142,10 @@ GenericApplicationButton.prototype = {
             }
         }
         this.menu.toggle();
+    },
+    
+    _subMenuOpenStateChanged: function() {
+        if (this.menu.isOpen) this.appsMenuButton._scrollToButton(this.menu);
     }
 }
 
