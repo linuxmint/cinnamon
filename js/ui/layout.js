@@ -10,6 +10,7 @@ const Main = imports.ui.main;
 const Params = imports.misc.params;
 const ScreenSaver = imports.misc.screenSaver;
 const Tweener = imports.ui.tweener;
+const EdgeFlip = imports.ui.edgeFlip;
 
 const HOT_CORNER_ACTIVATION_TIMEOUT = 0.5;
 const STARTUP_ANIMATION_TIME = 0.2;
@@ -110,6 +111,13 @@ LayoutManager.prototype = {
         this._chrome.init();
 
         this._startupAnimation();
+
+        this.edgeRight = new EdgeFlip.EdgeFlipper(St.Side.RIGHT, Main.wm.actionMoveWorkspaceRight, Main.layoutManager.primaryMonitor);
+        this.edgeLeft = new EdgeFlip.EdgeFlipper(St.Side.LEFT, Main.wm.actionMoveWorkspaceLeft, Main.layoutManager.primaryMonitor);
+
+        this.addChrome(this.edgeRight.actor);
+        this.addChrome(this.edgeLeft.actor);
+
     },
     
     _toggleExpo: function() {
