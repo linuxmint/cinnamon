@@ -32,6 +32,8 @@ LayoutManager.prototype = {
         this._leftPanelBarrier2 = 0;
         this._rightPanelBarrier2 = 0;
         this._trayBarrier = 0;		
+        this.edgeRight = null;
+        this.edgeLeft = null;
         this._chrome = new Chrome(this);       
 		
 		this._hotCorner = new HotCorner();        
@@ -77,6 +79,8 @@ LayoutManager.prototype = {
                               Lang.bind(this, this._windowsRestacked));
         this._monitorsChanged();
         this._chrome.addActor(this._hotCorner.actor);
+        this.enabledEdgeFlip = global.settings.get_boolean("enable-edge-flip");
+        global.settings.connect("changed::enable-edge-flip", Lang.bind(this, this._onEnableEdgeFlipChanged));
         global.settings.connect("changed::panel-autohide", Lang.bind(this, this._onPanelAutoHideChanged));
         global.settings.connect("changed::overview-corner-visible", Lang.bind(this, this._onOverviewCornerVisibleChanged));
         global.settings.connect("changed::overview-corner-hover", Lang.bind(this, this._onOverviewCornerHoverChanged));
@@ -85,7 +89,13 @@ LayoutManager.prototype = {
         global.screen.connect('restacked',
                               Lang.bind(this, this._windowsRestacked));
     },
-    
+ 
+    _onEnableEdgeFlipChanged: function(){
+        this.enabledEdgeFlip = global.settings.get_boolean("enable-edge-flip");
+        this.edgeRight.enabled = this.enabledEdgeFlip;
+        this.edgeLeft.enabled = this.enabledEdgeFlip;
+    },
+
     _windowsRestacked: function() {
         /*let windows = global.window_group.get_children();
         //let hasCoveringWindows = false;
@@ -114,6 +124,9 @@ LayoutManager.prototype = {
 
         this.edgeRight = new EdgeFlip.EdgeFlipper(St.Side.RIGHT, Main.wm.actionMoveWorkspaceRight, Main.layoutManager.primaryMonitor);
         this.edgeLeft = new EdgeFlip.EdgeFlipper(St.Side.LEFT, Main.wm.actionMoveWorkspaceLeft, Main.layoutManager.primaryMonitor);
+
+        this.edgeRight.enabled = this.enabledEdgeFlip;
+        this.edgeLeft.enabled = this.enabledEdgeFlip;
 
         this.addChrome(this.edgeRight.actor);
         this.addChrome(this.edgeLeft.actor);

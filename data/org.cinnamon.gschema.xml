@@ -234,7 +234,12 @@
       <default>true</default>
       <summary>Whether panel launchers are draggable</summary>
     </key>
-    
+
+    <key type = "b" name = "enable-edge-flip">
+      <default>false</default>
+      <summary>Whether edge flip is enabled</summary>
+    </key>
+
     <child schema="org.cinnamon.calendar" name="calendar"/>
     <child schema="org.cinnamon.theme" name="theme"/>   
     <child schema="org.cinnamon.recorder" name="recorder"/>

@@ -18,6 +18,8 @@ EdgeFlipper.prototype = {
 	this.actor = new Cinnamon.GenericContainer({reactive: true});
 	this.set();
 
+        this.enabled = true;
+
 	this.entered = false;
 	this.actor.connect('enter-event', Lang.bind(this, this._onMouseEnter));
 	this.actor.connect('leave-event', Lang.bind(this, this._onMouseLeave));
@@ -51,7 +53,7 @@ EdgeFlipper.prototype = {
     },
 
     _check: function(){
-	if (this.entered){
+	if (this.entered && this.enabled){
 	    this.func();
 	}
     },
