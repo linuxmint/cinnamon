@@ -86,7 +86,7 @@
         <applyto>/desktop/cinnamon/windows/workspaces_only_on_primary</applyto>
         <owner>cinnamon</owner>
         <type>bool</type>
-        <default>true</default>
+        <default>false</default>
         <locale name="C">
           <short>Workspaces only on primary monitor</short>
           <long>
