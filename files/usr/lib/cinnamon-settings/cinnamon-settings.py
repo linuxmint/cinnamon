@@ -1318,6 +1318,10 @@ class MainWindow:
         sidePage.add_widget(GSettingsComboBox(_("Hinting"), "org.gnome.settings-daemon.plugins.xsettings", "hinting", [(i, i.title()) for i in ("none", "slight", "medium", "full")]))
         sidePage.add_widget(GSettingsComboBox(_("Antialiasing"), "org.gnome.settings-daemon.plugins.xsettings", "antialiasing", [(i, i.title()) for i in ("none", "grayscale", "rgba")]))
 
+        sidePage = SidePage(_("Workspaces"), "workspaces.svg", self.content_box);
+        self.sidePages.append((sidePage, "workspaces"))
+        sidePage.add_widget(GSettingsSpinButton(_("Number of workspaces"), "org.cinnamon", "number-workspaces", 0, 25, 1, 1,""));
+        sidePage.add_widget(GSettingsCheckButton(_("Enable Edge Flip"), "org.cinnamon", "enable-edge-flip"))
         #sidePage = SidePage(_("Terminal"), "terminal", self.content_box)
         #self.sidePages.append(sidePage)
         #sidePage.add_widget(GConfCheckButton(_("Show fortune cookies"), "/desktop/linuxmint/terminal/show_fortunes"))
