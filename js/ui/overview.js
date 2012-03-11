@@ -18,6 +18,7 @@ const Tweener = imports.ui.tweener;
 const ViewSelector = imports.ui.viewSelector;
 const WorkspacesView = imports.ui.workspacesView;
 const WorkspaceThumbnail = imports.ui.workspaceThumbnail;
+const EdgeFlip = imports.ui.edgeFlip;
 
 // Time for initial animation going into Overview mode
 const ANIMATION_TIME = 0.25;
@@ -189,6 +190,11 @@ Overview.prototype = {
 
         this._viewSelector = new ViewSelector.ViewSelector();
         this._group.add_actor(this._viewSelector.actor);
+
+        this.edgeRight = new EdgeFlip.EdgeFlipper(St.Side.RIGHT, Main.wm.actionMoveWorkspaceRight, Main.layoutManager.primaryMonitor);
+        this.edgeLeft = new EdgeFlip.EdgeFlipper(St.Side.LEFT, Main.wm.actionMoveWorkspaceLeft, Main.layoutManager.primaryMonitor);
+        this._group.add_actor(this.edgeRight.actor);
+        this._group.add_actor(this.edgeLeft.actor);
 
         this._workspacesDisplay = new WorkspacesView.WorkspacesDisplay();
         this._viewSelector.addViewTab('windows', _("Windows"), this._workspacesDisplay.actor, 'text-x-generic');
