@@ -47,12 +47,10 @@ EdgeFlipper.prototype = {
 
     _onMouseEnter: function(){
 	this.entered = true;
-	//this.actor.add_style_pseudo_class('hover');
 	Mainloop.timeout_add(1000, Lang.bind(this, this._check));
     },
 
     _check: function(){
-	global.logError("Hello World");
 	if (this.entered){
 	    this.func();
 	}
