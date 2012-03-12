@@ -604,13 +604,13 @@ HotCorner.prototype = {
         this._corner.connect('leave-event',
                              Lang.bind(this, this._onCornerLeft));
                              
-        let cornerOpensExpo = (global.settings.get_string("overview-corner-functionality") == "expo");
-        let rippleActivated = (global.settings.get_string("overview-corner-position") == "topLeft");
+        this.cornerOpensExpo;
+        this.rippleActivated;
         
         this._updatePrefs();
         
         global.settings.connect("changed::overview-corner-position", Lang.bind(this, this._updatePrefs));
-		global.settings.connect("changed::overview-corner-functionality", Lang.bind(this, this._updatePrefs));
+	global.settings.connect("changed::overview-corner-functionality", Lang.bind(this, this._updatePrefs));
 
         // Cache the three ripples instead of dynamically creating and destroying them.
         this._ripple1 = new St.BoxLayout({ style_class: 'ripple-box', opacity: 0 });
@@ -627,8 +627,8 @@ HotCorner.prototype = {
     },
     
     _updatePrefs : function() {
-    	cornerOpensExpo = (global.settings.get_string("overview-corner-functionality") == "expo");
-        rippleActivated = (global.settings.get_string("overview-corner-position") == "topLeft");
+    	this.cornerOpensExpo = (global.settings.get_string("overview-corner-functionality") == "expo");
+        this.rippleActivated = (global.settings.get_string("overview-corner-position") == "topLeft");
     },
 
     _animRipple : function(ripple, delay, time, startScale, startOpacity, finalScale) {
@@ -674,12 +674,11 @@ HotCorner.prototype = {
     },
 
     handleDragOver: function(source, actor, x, y, time) {
-    	let rippleActivated = (global.settings.get_string("overview-corner-position") == "topLeft");
         if (source != Main.xdndHandler)
             return;
 
         if (!Main.overview.visible && !Main.overview.animationInProgress && !Main.expo.visible) {
-            if (rippleActivated) {
+            if (this.rippleActivated) {
             	this.rippleAnimation();
             }
             Main.overview.showTemporarily();
@@ -693,10 +692,10 @@ HotCorner.prototype = {
             if (!Main.expo.animationInProgress && !Main.overview.visible) {
                 this._activationTime = Date.now() / 1000;
 
-                if (rippleActivated) {
+                if (this.rippleActivated) {
                 	this.rippleAnimation();
                 }
-                if (cornerOpensExpo) {
+                if (this.cornerOpensExpo) {
                 	Main.expo.toggle();
                 } else {
                 	Main.overview.show();
@@ -704,7 +703,7 @@ HotCorner.prototype = {
             } else if (Main.overview.visible){
                 this._activationTime = Date.now() / 1000;
 
-                if (rippleActivated) {
+                if (this.rippleActivated) {
                 	this.rippleAnimation();
                 }
                 Main.overview.hide();
