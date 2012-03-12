@@ -128,7 +128,7 @@ Expo.prototype = {
         // Dash elements, or mouseover handlers in the workspaces.
 
         this._gradient = new St.Button({reactive: false});
-        this._gradient.set_style("background-gradient-end: rgba(255, 255, 255, 0.6);background-gradient-start: rgba(255, 255, 255,0);background-gradient-direction: vertical;");
+        this._gradient.set_style("background-gradient-end: #AAA;background-gradient-start: #000;background-gradient-direction: vertical;");
         this._group.add_actor(this._gradient);
         this._coverPane = new Clutter.Rectangle({ opacity: 0,
                                                   reactive: true });
@@ -213,8 +213,8 @@ Expo.prototype = {
         this._group.set_position(primary.x, primary.y);
         this._group.set_size(primary.width, primary.height);
 
-        this._gradient.set_position(0, primary.height / 2);
-        this._gradient.set_size(primary.width, primary.height / 2);
+        this._gradient.set_position(0, 0);
+        this._gradient.set_size(primary.width, primary.height);
 
         this._coverPane.set_position(0, 0);
         this._coverPane.set_size(primary.width, contentHeight);
@@ -306,13 +306,7 @@ Expo.prototype = {
         this.clone.show();
         this._group.add_actor(this.clone);
 
-        this._gradient.set_position(0, Main.layoutManager.primaryMonitor.height);
-        this._gradient.opacity = 255;
         this._gradient.show();
-        Tweener.addTween(this._gradient, {  y: Main.layoutManager.primaryMonitor.height / 2,
-                                            time: 1,
-                                            delay: ANIMATION_TIME,
-                                            transition: 'easeOutQuint'});
         
         if (Main.panel)
             Tweener.addTween(Main.panel.actor, {    opacity: 0, 
@@ -473,11 +467,6 @@ Expo.prototype = {
             Tweener.addTween(Main.panel2.actor, {opacity: 255, time: ANIMATION_TIME, transition: 'easeOutQuad'});
         }
 
-        Tweener.addTween(this._gradient, {  opacity: 0,
-                                            time: ANIMATION_TIME,
-                                            transition: 'linear',
-                                            onComplete: this.hide});
-
         Tweener.addTween(this._background,
                          { dim_factor: 1,
                            time: ANIMATION_TIME,
@@ -536,6 +525,7 @@ Expo.prototype = {
         this._background.hide();
         this._group.hide();
         this.clone.hide();
+        this._gradient.hide();
 
         this.visible = false;
         this.animationInProgress = false;
