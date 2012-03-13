@@ -1,5 +1,5 @@
 AC_PREREQ(2.63)
-AC_INIT([cinnamon],[1.3.1],[https://bugzilla.gnome.org/enter_bug.cgi?product=cinnamon],[cinnamon])
+AC_INIT([cinnamon],[1.4.0],[https://bugzilla.gnome.org/enter_bug.cgi?product=cinnamon],[cinnamon])
 
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_SRCDIR([src/cinnamon-global.c])
@@ -67,7 +67,7 @@ AM_CONDITIONAL(BUILD_RECORDER, $build_recorder)
 CLUTTER_MIN_VERSION=1.7.5
 GOBJECT_INTROSPECTION_MIN_VERSION=0.10.1
 GJS_MIN_VERSION=1.29.18
-MUFFIN_MIN_VERSION=1.0.1
+MUFFIN_MIN_VERSION=1.0.2
 FOLKS_MIN_VERSION=0.5.2
 GTK_MIN_VERSION=3.0.0
 GIO_MIN_VERSION=2.29.10
