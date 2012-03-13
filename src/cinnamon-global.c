@@ -723,6 +723,17 @@ cinnamon_global_set_stage_input_region (CinnamonGlobal *global,
 }
 
 /**
+ * cinnamon_global_get_stage:
+ *
+ * Return value: (transfer none): The default #ClutterStage
+ */
+ClutterStage *
+cinnamon_global_get_stage (CinnamonGlobal  *global)
+{
+  return global->stage;
+}
+
+/**
  * cinnamon_global_get_screen:
  *
  * Return value: (transfer none): The default #MetaScreen
@@ -1971,7 +1982,7 @@ grab_screenshot (ClutterActor *stage,
   guchar *data;
   int width, height;
 
-  meta_plugin_query_screen_size (screenshot_data->global->plugin, &width, &height);
+  meta_screen_get_size (screen, &width, &height);
   image = cairo_image_surface_create (CAIRO_FORMAT_ARGB32, width, height);
   data = cairo_image_surface_get_data (image);
 
@@ -2079,7 +2090,7 @@ cinnamon_global_screenshot (CinnamonGlobal  *global,
   data->filename = g_strdup (filename);
   data->callback = callback;
 
-  stage = CLUTTER_ACTOR (meta_plugin_get_stage (global->plugin));
+  stage = CLUTTER_ACTOR (cinnamon_global_get_stage (global));
 
   g_signal_connect_after (stage, "paint", G_CALLBACK (grab_screenshot), (gpointer)data);
 
@@ -2121,7 +2132,7 @@ cinnamon_global_screenshot_area (CinnamonGlobal  *global,
   data->height = height;
   data->callback = callback;
 
-  stage = CLUTTER_ACTOR (meta_plugin_get_stage (global->plugin));
+  stage = CLUTTER_ACTOR (cinnamon_global_get_stage (global));
 
   g_signal_connect_after (stage, "paint", G_CALLBACK (grab_area_screenshot), (gpointer)data);
 
