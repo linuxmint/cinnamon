@@ -3,7 +3,7 @@
 /* The name of this package (not localized) */
 const PACKAGE_NAME = 'cinnamon';
 /* The version of this package */
-const PACKAGE_VERSION = '1.3.1';
+const PACKAGE_VERSION = '1.4.0';
 /* The version of GJS we're linking to */
 const GJS_VERSION = '1.30.0';
 /* 1 if gnome-bluetooth is available, 0 otherwise */

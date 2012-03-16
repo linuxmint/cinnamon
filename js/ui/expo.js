@@ -126,6 +126,10 @@ Expo.prototype = {
         // During transitions, we raise this to the top to avoid having the overview
         // area be reactive; it causes too many issues such as double clicks on
         // Dash elements, or mouseover handlers in the workspaces.
+
+        this._gradient = new St.Button({reactive: false});
+        this._gradient.set_style("background-gradient-end: #AAA;background-gradient-start: #000;background-gradient-direction: vertical;");
+        this._group.add_actor(this._gradient);
         this._coverPane = new Clutter.Rectangle({ opacity: 0,
                                                   reactive: true });
         this._group.add_actor(this._coverPane);
@@ -149,6 +153,7 @@ Expo.prototype = {
         this._group.hide();
         global.overlay_group.add_actor(this._group);
 
+        this._gradient.hide();
         this._coverPane.hide();
         this._addWorkspaceButton.hide();
 
@@ -207,6 +212,9 @@ Expo.prototype = {
 
         this._group.set_position(primary.x, primary.y);
         this._group.set_size(primary.width, primary.height);
+
+        this._gradient.set_position(0, 0);
+        this._gradient.set_size(primary.width, primary.height);
 
         this._coverPane.set_position(0, 0);
         this._coverPane.set_size(primary.width, contentHeight);
@@ -284,15 +292,21 @@ Expo.prototype = {
         this._background.show();
         this._addWorkspaceButton.show();
         this._expo.show();
+
         this.activeWorkspace = this._expo._thumbnailsBox._lastActiveWorkspace;
         let activeWorkspaceActor = this.activeWorkspace.actor;
         this._expo._thumbnailsBox._lastActiveWorkspace._fadeOutUninterestingWindows();
+
         this.allocateID = this.activeWorkspace.connect('allocated', Lang.bind(this, this._animateVisible2));
+
         this.clone = new Clutter.Clone({source: activeWorkspaceActor});
         if (global.settings.get_string("desktop-layout") != 'traditional' && !global.settings.get_boolean("panel-autohide"))
             this.clone.set_position(0, Main.panel.actor.height); 
+
         this.clone.show();
         this._group.add_actor(this.clone);
+
+        this._gradient.show();
         
         if (Main.panel)
             Tweener.addTween(Main.panel.actor, {    opacity: 0, 
@@ -456,6 +470,7 @@ Expo.prototype = {
         Tweener.addTween(this._background,
                          { dim_factor: 1,
                            time: ANIMATION_TIME,
+                           transition: 'linear',
                            onComplete: this._hideDone,
                            onCompleteScope: this
                          });
@@ -510,6 +525,7 @@ Expo.prototype = {
         this._background.hide();
         this._group.hide();
         this.clone.hide();
+        this._gradient.hide();
 
         this.visible = false;
         this.animationInProgress = false;
