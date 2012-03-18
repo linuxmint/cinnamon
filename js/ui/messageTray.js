@@ -241,6 +241,14 @@ FocusGrabber.prototype = {
             function() {
                 this._toggleFocusGrabMode();
             }));
+        Main.expo.connect('showing', Lang.bind(this,
+            function() {
+                this._toggleFocusGrabMode();
+            }));
+        Main.expo.connect('hidden', Lang.bind(this,
+            function() {
+                this._toggleFocusGrabMode();
+            }));
     },
 
     grabFocus: function(actor) {
@@ -1363,7 +1371,10 @@ MessageTray.prototype = {
         this._notificationState = State.HIDDEN;
         this._notificationTimeoutId = 0;
         this._notificationExpandedId = 0;
-        this._overviewVisible = Main.overview.visible;
+        if (Main.overview.visible || Main.expo.visible)
+            this._overviewVisible = true;
+        else
+            this._overviewVisible = false;
         this._notificationRemoved = false;
         this._reNotifyAfterHideNotification = null;
         
@@ -1384,6 +1395,25 @@ MessageTray.prototype = {
                 }
             }));
         Main.overview.connect('hiding', Lang.bind(this,
+            function() {
+                this._overviewVisible = false;
+                if (this._locked) {
+                    this._unlock();
+                } else {
+                    this._updateState();
+                }
+            }));
+
+        Main.expo.connect('showing', Lang.bind(this,
+            function() {
+                this._overviewVisible = true;
+                if (this._locked) {
+                    this._unlock();
+                } else {
+                    this._updateState();
+                }
+            }));
+        Main.expo.connect('hiding', Lang.bind(this,
             function() {
                 this._overviewVisible = false;
                 if (this._locked) {

@@ -337,6 +337,15 @@ Keyboard.prototype = {
             trayButton.remove_style_pseudo_class('grayed');
         }));
 
+        Main.expo.connect('showing', Lang.bind(this, function () {
+            trayButton.reactive = false;
+            trayButton.add_style_pseudo_class('grayed');
+        }));
+        Main.expo.connect('hiding', Lang.bind(this, function () {
+            trayButton.reactive = true;
+            trayButton.remove_style_pseudo_class('grayed');
+        }));
+
         return trayButton;
     },
 

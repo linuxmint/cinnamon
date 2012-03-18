@@ -525,6 +525,13 @@ Panel.prototype = {
             this.actor.remove_style_class_name('in-overview');
         }));
 
+        Main.expo.connect('shown', Lang.bind(this, function () {
+            this.actor.add_style_class_name('in-overview');
+        }));
+        Main.expo.connect('hiding', Lang.bind(this, function () {
+            this.actor.remove_style_class_name('in-overview');
+        }));
+
         this._menus = new PopupMenu.PopupMenuManager(this);                        
         
         this._leftBox = new St.BoxLayout({ name: 'panelLeft' });
