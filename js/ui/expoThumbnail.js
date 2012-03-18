@@ -230,13 +230,14 @@ ExpoWorkspaceThumbnail.prototype = {
                                                            Lang.bind(this, this._windowLeftMonitor));
 
         this.state = ThumbnailState.NORMAL;
+        this.highlight = false;
         this._slidePosition = 0; // Fully slid in
     },
     
     _onEnterEvent : function(actor, event) {
         this._overviewModeOn();
         if (this.metaWorkspace != global.screen.get_active_workspace()) 
-            this._highlight(); 
+            this._highlight();
     },
 
     setPorthole: function(x, y, width, height) {
@@ -467,6 +468,7 @@ ExpoWorkspaceThumbnail.prototype = {
 
     _overviewModeOn : function () {
         this._overviewMode = true;
+        this.highlight = true;
         let spacing = 14;
         let nCols = Math.ceil(Math.sqrt(this._windows.length));
         let nRows = Math.round(Math.sqrt(this._windows.length));
@@ -523,6 +525,7 @@ ExpoWorkspaceThumbnail.prototype = {
             }
             Tweener.addTween(window.actor, {x: window.origX, y: window.origY, scale_x: 1, scale_y: 1, opacity: opacity, time: REARRANGE_TIME, transition: 'easeOutQuad', onComplete: function () { if(hide) window.actor.hide();}, onCompleteScope: this});        
         } 
+        this.highlight = false;
     },
 
     _onScrollEvent: function (actor, event) {
@@ -556,10 +559,12 @@ ExpoWorkspaceThumbnail.prototype = {
     _shade : function (){
         if (this.metaWorkspace != global.screen.get_active_workspace())
             Tweener.addTween(this.shade, {opacity: INACTIVE_OPACITY, time: SLIDE_ANIMATION_TIME, transition: 'easeOutQuad'});    
+        this.highlight = false;
     },
 
     _highlight : function (){
         Tweener.addTween(this.shade, {opacity: 0, time: SLIDE_ANIMATION_TIME, transition: 'easeOutQuad'});    
+        this.highlight = true;
     },
 
     _remove : function (){
@@ -664,6 +669,7 @@ ExpoThumbnailsBox.prototype = {
             this._stateCounts[ThumbnailState[key]] = 0;
 
         this._thumbnails = [];
+        this._allocate();
     },
 
     show: function() {
@@ -965,7 +971,7 @@ ExpoThumbnailsBox.prototype = {
         let avail = (box.x2 - box.x1) - totalSpacing - (spacing * 2) ;
         let screen = (box.x2 - box.x1);
 
-        let newScale = (avail / nWorkspaces) / portholeWidth;
+        let newScale = (avail / (nWorkspaces+1)) / portholeWidth;
         newScale = Math.min(newScale, MAX_THUMBNAIL_SCALE);
 
         if (newScale != this._targetScale) {
@@ -986,8 +992,8 @@ ExpoThumbnailsBox.prototype = {
         let thumbnailWidth = Math.round(portholeWidth * this._scale);
 
         let childBox = new Clutter.ActorBox();
-        
-        let needed = (thumbnailWidth * nWorkspaces) + totalSpacing + (spacing * 2);
+
+        let needed = (thumbnailWidth * (nWorkspaces+1)) + totalSpacing + (spacing * 2);
         let extraSpace = (box.x2 - box.x1) - needed;
 
         // The background is horizontally restricted to correspond to the current thumbnail size
@@ -1001,7 +1007,19 @@ ExpoThumbnailsBox.prototype = {
         this._background.allocate(childBox, flags);
 
         let x = spacing + (extraSpace/2);
-        let y = (Main.layoutManager.primaryMonitor.height - thumbnailHeight) / 2
+        let y = (Main.layoutManager.primaryMonitor.height - thumbnailHeight) / 2;
+//added
+        let large = null;
+        for (let i = 0; i < this._thumbnails.length; i++){
+            if (this._thumbnails[i].highlight){
+                large = this._thumbnails[i];
+            }
+        }
+
+        if (large == null){
+            large = this._lastActiveWorkspace;
+        }
+
         for (let i = 0; i < this._thumbnails.length; i++) {
             let thumbnail = this._thumbnails[i];
 
@@ -1024,9 +1042,17 @@ ExpoThumbnailsBox.prototype = {
             childBox.y1 = y1;
             childBox.y2 = y1 + portholeHeight;
 
-            thumbnail.actor.set_scale(this._scale * (1 - thumbnail.slidePosition), this._scale * (1 - thumbnail.slidePosition));
-            thumbnail.actor.allocate(childBox, flags);            
-
+//Added
+            if (thumbnail == large){
+                childBox.y1 -= Math.round((childBox.y2-childBox.y1)*this._scale/2);
+                thumbnail.actor.set_scale(this._scale * (1 - thumbnail.slidePosition)*2, this._scale * (1 - thumbnail.slidePosition)*2);
+                x+= thumbnailWidth;
+            }else{
+                thumbnail.actor.set_scale(this._scale * (1 - thumbnail.slidePosition), this._scale * (1 - thumbnail.slidePosition));
+            }
+            
+            thumbnail.actor.allocate(childBox, flags);
+            
             // We round the collapsing portion so that we don't get thumbnails resizing
             // during an animation due to differences in rounded, but leave the uncollapsed
             // portion unrounded so that non-animating we end up with the right total
