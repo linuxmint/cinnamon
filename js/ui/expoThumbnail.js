@@ -1008,7 +1008,6 @@ ExpoThumbnailsBox.prototype = {
 
         let x = spacing + (extraSpace/2);
         let y = (Main.layoutManager.primaryMonitor.height - thumbnailHeight) / 2;
-//added
         let large = null;
         for (let i = 0; i < this._thumbnails.length; i++){
             if (this._thumbnails[i].highlight){
@@ -1042,7 +1041,6 @@ ExpoThumbnailsBox.prototype = {
             childBox.y1 = y1;
             childBox.y2 = y1 + portholeHeight;
 
-//Added
             if (thumbnail == large){
                 childBox.y1 -= Math.round((childBox.y2-childBox.y1)*this._scale/2);
                 thumbnail.actor.set_scale(this._scale * (1 - thumbnail.slidePosition)*2, this._scale * (1 - thumbnail.slidePosition)*2);
