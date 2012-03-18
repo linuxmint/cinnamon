@@ -204,8 +204,8 @@ ExpoWorkspaceThumbnail.prototype = {
         this._windows = [];
         this._uninterestingWindows = new Clutter.Group();
         this._uninterestingWindows.hide();
-        this._uninterestingWindows.raise(this._background);
         this._contents.add_actor(this._uninterestingWindows);
+        this._uninterestingWindows.raise(this._background);
         for (let i = 0; i < windows.length; i++) {
             windows[i].meta_window._minimizedChangedId =
                 windows[i].meta_window.connect('notify::minimized',
