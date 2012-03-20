@@ -196,8 +196,8 @@ Overview.prototype = {
 
         this.edgeRight = new EdgeFlip.EdgeFlipper(St.Side.RIGHT, Main.wm.actionMoveWorkspaceRight);
         this.edgeLeft = new EdgeFlip.EdgeFlipper(St.Side.LEFT, Main.wm.actionMoveWorkspaceLeft);
-        this.edgeRight.enabled = this._settings.get_boolean("enable-edge-flip");
-        this.edgeLeft.enabled = this._settings.get_boolean("enable-edge-flip");
+        this.edgeRight.enabled = false;
+        this.edgeLeft.enabled = false;
 
         this._workspacesDisplay = new WorkspacesView.WorkspacesDisplay();
         this._viewSelector.addViewTab('windows', _("Windows"), this._workspacesDisplay.actor, 'text-x-generic');
