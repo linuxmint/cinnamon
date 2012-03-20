@@ -19,7 +19,6 @@ const Tweener = imports.ui.tweener;
 const ViewSelector = imports.ui.viewSelector;
 const WorkspacesView = imports.ui.workspacesView;
 const WorkspaceThumbnail = imports.ui.workspaceThumbnail;
-const EdgeFlip = imports.ui.edgeFlip;
 
 // Time for initial animation going into Overview mode
 const ANIMATION_TIME = 0.25;
@@ -193,11 +192,6 @@ Overview.prototype = {
 
         this._viewSelector = new ViewSelector.ViewSelector();
         this._group.add_actor(this._viewSelector.actor);
-
-        this.edgeRight = new EdgeFlip.EdgeFlipper(St.Side.RIGHT, Main.wm.actionMoveWorkspaceRight);
-        this.edgeLeft = new EdgeFlip.EdgeFlipper(St.Side.LEFT, Main.wm.actionMoveWorkspaceLeft);
-        this.edgeRight.enabled = false;
-        this.edgeLeft.enabled = false;
 
         this._workspacesDisplay = new WorkspacesView.WorkspacesDisplay();
         this._viewSelector.addViewTab('windows', _("Windows"), this._workspacesDisplay.actor, 'text-x-generic');
@@ -526,9 +520,6 @@ Overview.prototype = {
         this._animateVisible();
         this._shown = true;
 
-        this.edgeRight.enabled = this._settings.get_boolean("enable-edge-flip");
-        this.edgeLeft.enabled = this._settings.get_boolean("enable-edge-flip");
-
         this._buttonPressId = this._group.connect('button-press-event',
             Lang.bind(this, this._onButtonPress));
     },
@@ -633,9 +624,6 @@ Overview.prototype = {
 
         if (!this._shownTemporarily)
             this._animateNotVisible();
-
-        this.edgeRight.enabled = false;
-        this.edgeLeft.enabled = false;
 
         this._shown = false;
         this._syncInputMode();
