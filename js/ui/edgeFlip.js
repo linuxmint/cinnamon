@@ -5,46 +5,51 @@ const Mainloop = imports.mainloop;
 const Lang = imports.lang;
 const Cinnamon = imports.gi.Cinnamon;
 
-function EdgeFlipper(side, func, monitor){
-    this._init(side, func, monitor);
+function EdgeFlipper(side, func){
+    this._init(side, func);
 }
 
 EdgeFlipper.prototype = {
-    _init: function(side, func, monitor){
-	this.monitor = monitor;
+    _init: function(side, func){
 	this.side = side;
 	this.func = func;
 
-	this.actor = new Cinnamon.GenericContainer({reactive: true});
-	this.set();
-
         this.enabled = true;
-
 	this.entered = false;
-	this.actor.connect('enter-event', Lang.bind(this, this._onMouseEnter));
-	this.actor.connect('leave-event', Lang.bind(this, this._onMouseLeave));
+	this.activated = false;
+
+	this._checkOver();
     },
 
-    set: function(){
-	if (this.side == St.Side.TOP){
-	    this.actor.set_size(this.monitor.width, 1);
+    _checkOver: function(){
+	let mask;
+	[this.xMouse, this.yMouse, mask] = global.get_pointer();
+	if (this.side == St.Side.RIGHT){
+	    if (this.xMouse + 5 > global.screen_width){
+		this._onMouseEnter();
+	    } else {
+		this._onMouseLeave();
+	    }
+	} else if (this.side == St.Side.LEFT){
+	    if (this.xMouse < 5 ){
+		this._onMouseEnter();
+	    } else {
+		this._onMouseLeave();
+	    }
 	} else if (this.side == St.Side.BOTTOM){
-	    this.actor.set_size(this.monitor.width, 1);
-	    this.actor.set_position(0, this.monitor.height-1);
-	} else if (this.side == St.Side.LEFT) {
-	    this.actor.set_size(1, this.monitor.height);
-	} else if (this.side == St.Side.RIGHT){
-	    this.actor.set_size(1, this.monitor.height);
-	    this.actor.set_position(this.monitor.width - 1, 0);
+	    if (this.yMouse + 5 > global.screen_height) {
+		this._onMouseEnter();
+	    } else {
+		this._onMouseLeave();
+	    }
+	} else if (this.side == St.Side.TOP){
+	    if (this.yMouse < 5){
+		this._onMouseEnter();
+	    } else {
+		this._onMouseLeave();
+	    }
 	}
-    },
-
-    show: function(){
-	this.actor.show();
-    },
-
-    hide: function(){
-	this.actor.hide();
+	Mainloop.timeout_add(500, Lang.bind(this, this._checkOver));
     },
 
     _onMouseEnter: function(){
@@ -53,12 +58,14 @@ EdgeFlipper.prototype = {
     },
 
     _check: function(){
-	if (this.entered && this.enabled){
+	if (this.entered && this.enabled && !this.activated){
 	    this.func();
+	    this.activated = true;
 	}
     },
 
     _onMouseLeave: function(){
 	this.entered = false;
+	this.activated = false;
     }
 };

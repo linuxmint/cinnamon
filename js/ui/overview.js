@@ -9,6 +9,7 @@ const Lang = imports.lang;
 const St = imports.gi.St;
 const Cinnamon = imports.gi.Cinnamon;
 const Gdk = imports.gi.Gdk;
+const Gio = imports.gi.Gio;
 
 const DND = imports.ui.dnd;
 const Main = imports.ui.main;
@@ -97,6 +98,8 @@ Overview.prototype = {
         params = Params.parse(params, { isDummy: false });
 
         this.isDummy = params.isDummy;
+
+        this._settings = new Gio.Settings({schema: "org.cinnamon"});
 
         // We only have an overview in user sessions, so
         // create a dummy overview in other cases
@@ -191,10 +194,10 @@ Overview.prototype = {
         this._viewSelector = new ViewSelector.ViewSelector();
         this._group.add_actor(this._viewSelector.actor);
 
-        this.edgeRight = new EdgeFlip.EdgeFlipper(St.Side.RIGHT, Main.wm.actionMoveWorkspaceRight, Main.layoutManager.primaryMonitor);
-        this.edgeLeft = new EdgeFlip.EdgeFlipper(St.Side.LEFT, Main.wm.actionMoveWorkspaceLeft, Main.layoutManager.primaryMonitor);
-        this._group.add_actor(this.edgeRight.actor);
-        this._group.add_actor(this.edgeLeft.actor);
+        this.edgeRight = new EdgeFlip.EdgeFlipper(St.Side.RIGHT, Main.wm.actionMoveWorkspaceRight);
+        this.edgeLeft = new EdgeFlip.EdgeFlipper(St.Side.LEFT, Main.wm.actionMoveWorkspaceLeft);
+        this.edgeRight.enabled = this._settings.get_boolean("enable-edge-flip");
+        this.edgeLeft.enabled = this._settings.get_boolean("enable-edge-flip");
 
         this._workspacesDisplay = new WorkspacesView.WorkspacesDisplay();
         this._viewSelector.addViewTab('windows', _("Windows"), this._workspacesDisplay.actor, 'text-x-generic');
@@ -523,6 +526,9 @@ Overview.prototype = {
         this._animateVisible();
         this._shown = true;
 
+        this.edgeRight.enabled = this._settings.get_boolean("enable-edge-flip");
+        this.edgeLeft.enabled = this._settings.get_boolean("enable-edge-flip");
+
         this._buttonPressId = this._group.connect('button-press-event',
             Lang.bind(this, this._onButtonPress));
     },
@@ -627,6 +633,9 @@ Overview.prototype = {
 
         if (!this._shownTemporarily)
             this._animateNotVisible();
+
+        this.edgeRight.enabled = false;
+        this.edgeLeft.enabled = false;
 
         this._shown = false;
         this._syncInputMode();
