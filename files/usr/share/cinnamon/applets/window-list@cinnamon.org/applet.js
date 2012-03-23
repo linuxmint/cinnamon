@@ -334,7 +334,6 @@ AppMenuButton.prototype = {
             this._windowHandle(false);
         } else if (Cinnamon.get_event_state(event) & Clutter.ModifierType.BUTTON2_MASK) {
             this.metaWindow.delete(global.get_current_time());
-            this.rightClickMenu.destroy();
         } else if (Cinnamon.get_event_state(event) & Clutter.ModifierType.BUTTON3_MASK) {
             this.rightClickMenu.mouseEvent = event;
             this.rightClickMenu.toggle();   
