@@ -784,8 +784,8 @@ StTooltip StLabel {
 .switcher-list {
 	background: rgba(80,80,80,0.8);
 	border: 2px solid #a5a5a5;
-	border-radius: 10px;
-	padding: 4px;
+	border-radius: 24px;
+	padding: 20px;
 	font-size: 9pt;
 	color: white;
 	text-shadow: black 0px 0px 2px;
