@@ -122,7 +122,7 @@ MyApplet.prototype = {
             
             this.set_applet_icon_symbolic_name('battery-missing');            
             this._proxy = new PowerManagerProxy(DBus.session, BUS_NAME, OBJECT_PATH);
-            
+
             let icon = this.actor.get_children()[0];
             this.actor.remove_actor(icon);
             let box = new St.BoxLayout({ name: 'batteryBox' });
@@ -136,6 +136,7 @@ MyApplet.prototype = {
             this._deviceItems = [ ];
             this._hasPrimary = false;
             this._primaryDeviceId = null;
+            this._showPercentage = false;
 
             this._batteryItem = new PopupMenu.PopupMenuItem('', { reactive: false });
             this._primaryPercentage = new St.Label();
@@ -144,6 +145,23 @@ MyApplet.prototype = {
 
             this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
             this._otherDevicePosition = 2;
+            
+            // Setup label display settings
+            this._displayItem = new PopupMenu.PopupSubMenuMenuItem(_("Display"));
+            this.menu.addMenuItem(this._displayItem);
+            this._displayPercentageItem = new PopupMenu.PopupMenuItem(_("Show percentage"));
+            this._displayPercentageItem.connect('activate', Lang.bind(this, function() {
+                this._switchLabelDisplay(true);
+            }));
+            this._displayItem.menu.addMenuItem(this._displayPercentageItem);
+            this._displayTimeItem = new PopupMenu.PopupMenuItem(_("Show time remaining"));
+            this._displayTimeItem.connect('activate', Lang.bind(this, function() {
+                this._switchLabelDisplay(false);
+            }));
+            this._displayItem.menu.addMenuItem(this._displayTimeItem);
+            this._switchLabelDisplay(this._showPercentage);
+
+            
 
             this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
             this.menu.addSettingsAction(_("Power Settings"), 'gnome-power-panel.desktop');
@@ -158,6 +176,21 @@ MyApplet.prototype = {
     
     on_applet_clicked: function(event) {
         this.menu.toggle();        
+    },
+
+    _switchLabelDisplay: function(showPercentage) {
+            this._showPercentage = showPercentage;
+
+            if (this._showPercentage) {
+                this._displayPercentageItem.setShowDot(true);
+                this._displayTimeItem.setShowDot(false);
+            }
+            else {
+                this._displayPercentageItem.setShowDot(false);
+                this._displayTimeItem.setShowDot(true);
+            }
+
+            this._updateLabel();
     },
     
     _readPrimaryDevice: function() {
@@ -254,7 +287,18 @@ MyApplet.prototype = {
             for (let i = 0; i < devices.length; i++) {
                 let [device_id, device_type, icon, percentage, state, time] = devices[i];
                 if (device_type == UPDeviceType.BATTERY || device_id == this._primaryDeviceId) {
-                    let percentageText = C_("percent of battery remaining", "%d%%").format(Math.round(percentage));
+                    let percentageText = "";
+
+                    if (this._showPercentage) {
+                        percentageText = C_("percent of battery remaining", "%d%%").format(Math.round(percentage));
+                    }
+                    else {
+                        let seconds = time / 60;
+                        let minutes = Math.floor(seconds % 60);
+                        let hours = Math.floor(seconds / 60);       
+                        percentageText = C_("time of battery remaining", "%d:%02d").format(hours,minutes);
+                    }
+
                     this._mainLabel.set_text(percentageText);
                     return;
                 }
