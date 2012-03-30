@@ -358,8 +358,11 @@ StTooltip StLabel {
 	background-image: url("add-workspace.png");
 	height: 200px;
 	width: 35px;
+	transition-duration: 300;
 }
-.workspace-add-button:hover {	
+.workspace-add-button:hover {
+	background-image: url("add-workspace-hover.png");
+	transition-duration: 300;
 }
 
 .workspace-close-button {

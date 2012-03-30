@@ -137,18 +137,7 @@ Expo.prototype = {
 
         this._addWorkspaceButton = new St.Button({style_class: 'workspace-add-button'});
         this._group.add_actor(this._addWorkspaceButton);
-        this._addWorkspaceButton.opacity = 160;
         this._addWorkspaceButton.connect('clicked', Lang.bind(this, function () { Main._addWorkspace();}));
-        this._addWorkspaceButton.connect('enter-event', Lang.bind(this, function () { 
-                Tweener.addTween(this._addWorkspaceButton, { opacity: 255,
-                                                             time: ADD_BUTTON_HOVER_TIME,
-                                                             transition: 'easeOutQuad'});
-                                                                                        }));
-        this._addWorkspaceButton.connect('leave-event', Lang.bind(this, function () { 
-                Tweener.addTween(this._addWorkspaceButton, { opacity: 160,
-                                                             time: ADD_BUTTON_HOVER_TIME,
-                                                             transition: 'easeOutQuad'});
-                                                                                        }));
 
         this._group.hide();
         global.overlay_group.add_actor(this._group);

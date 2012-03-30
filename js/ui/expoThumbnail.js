@@ -204,8 +204,8 @@ ExpoWorkspaceThumbnail.prototype = {
         this._windows = [];
         this._uninterestingWindows = new Clutter.Group();
         this._uninterestingWindows.hide();
-        this._uninterestingWindows.raise(this._background);
         this._contents.add_actor(this._uninterestingWindows);
+        this._uninterestingWindows.raise(this._background);
         for (let i = 0; i < windows.length; i++) {
             windows[i].meta_window._minimizedChangedId =
                 windows[i].meta_window.connect('notify::minimized',
@@ -747,6 +747,8 @@ ExpoThumbnailsBox.prototype = {
             thumbnail.actor.connect('leave-event', Lang.bind(this, function () { this.button.hide(); if (thumbnail.metaWorkspace != global.screen.get_active_workspace()) thumbnail._shade(); thumbnail.hovered = false; thumbnail._overviewModeOff();}));
             thumbnail.connect('remove-event', Lang.bind(this, function () { this.button.hide(); if (thumbnail.metaWorkspace != global.screen.get_active_workspace()) thumbnail._shade(); thumbnail.hovered = false; thumbnail._overviewModeOff();}));
 
+            Main.expo.connect('hiding', Lang.bind(this, function() { this.button.hide();}));
+            
             if (start > 0) { // not the initial fill
                 thumbnail.state = ThumbnailState.NEW;
                 thumbnail.slidePosition = 1; // start slid out
