@@ -409,6 +409,12 @@ StTooltip StLabel {
 	transition-duration: 100;
 	text-align: center;
 }
+
+.expo-background {
+	background-gradient-start: #000;
+	background-gradient-end: #AAA;
+	background-gradient-direction: vertical
+}
 /* ===================================================================
  * ViewSelector 
  * ===================================================================*/
