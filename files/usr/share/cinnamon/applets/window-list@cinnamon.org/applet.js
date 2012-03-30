@@ -315,7 +315,7 @@ AppMenuButton.prototype = {
             let icon = app.create_icon_texture(16);
     		this._iconBox.set_child(icon);	
         }         
-        if (this.metaWindow.has_focus()) {                                     
+        if (this.metaWindow.has_focus() && !this.metaWindow.minimized) {                                     
         	this.actor.add_style_pseudo_class('focus');    
             this.actor.remove_style_class_name("window-list-item-demands-attention");    	
             this.actor.remove_style_class_name("window-list-item-demands-attention-top");
