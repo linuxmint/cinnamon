@@ -500,6 +500,18 @@ MyApplet.prototype = {
             this.menuManager.addMenu(this.menu);   
                         
             this.actor.connect('key-press-event', Lang.bind(this, this._onSourceKeyPress));
+
+            let openOnHover = global.settings.get_boolean("activate-menu-applet-on-hover");
+            if (openOnHover)
+                this._openMenuId = this.actor.connect('enter-event', Lang.bind(this, this.openMenu));
+
+            global.settings.connect("changed::activate-menu-applet-on-hover", Lang.bind(this, function() {
+                let openOnHover = global.settings.get_boolean("activate-menu-applet-on-hover");
+                if (openOnHover)
+                    this._openMenuId = this.actor.connect('enter-event', Lang.bind(this, this.openMenu));
+                else
+                    this.actor.disconnect(this._openMenuId);
+            }));
                         
             this.menu.actor.add_style_class_name('menu-background');
             this.menu.connect('open-state-changed', Lang.bind(this, this._onOpenStateChanged));                                
@@ -562,7 +574,11 @@ MyApplet.prototype = {
             global.logError(e);
         }
     },
-    
+
+    openMenu: function() {
+        this.menu.open(true);
+    },
+
     on_orientation_changed: function (orientation) {
         this.menu.destroy();
         this.menu = new Applet.AppletPopupMenu(this, orientation);
