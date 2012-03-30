@@ -128,7 +128,7 @@ Expo.prototype = {
         // Dash elements, or mouseover handlers in the workspaces.
 
         this._gradient = new St.Button({reactive: false});
-        this._gradient.set_style("background-gradient-end: #AAA;background-gradient-start: #000;background-gradient-direction: vertical;");
+        this._gradient.set_style_class_name("expo-background");
         this._group.add_actor(this._gradient);
         this._coverPane = new Clutter.Rectangle({ opacity: 0,
                                                   reactive: true });
