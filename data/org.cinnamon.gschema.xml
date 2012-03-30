@@ -151,6 +151,12 @@
       <description>Duration of the delay (in milliseconds)</description>
     </key>
 
+    <key type="b" name="activate-menu-applet-on-hover">
+      <default>false</default>
+      <summary>Enable or disable activation menu applet on hover</summary>
+      <description>Another way to open the menu by just hovering the mouse pointer as opposed to clicking on it.</description>
+    </key>
+
     <key type="i" name="number-workspaces">
 	<default>2</default>
 	<summary>Number of workspaces in Cinnamon session</summary>

@@ -207,6 +207,14 @@
       </_description>
     </key>
 
+    <key type="b" name="activate-menu-applet-on-hover">
+      <default>false</default>
+      <_summary>Enable or disable activation menu applet on hover</_summary>
+      <_description>
+            Another way to open the menu by just hovering the mouse pointer as opposed to clicking on it.
+      </_description>
+    </key>
+
     <key type="i" name="number-workspaces">
 	<default>2</default>
 	<_summary>Number of workspaces in Cinnamon session</_summary>
