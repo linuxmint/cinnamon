@@ -6,6 +6,7 @@ const St = imports.gi.St;
 const PopupMenu = imports.ui.popupMenu;
 
 const POWER_SCHEMA = "org.cinnamon.power"
+const SHOW_PERCENTAGE_KEY = "power-show-percentage";
 const BUS_NAME = 'org.gnome.SettingsDaemon';
 const OBJECT_PATH = '/org/gnome/SettingsDaemon/Power';
 
@@ -110,6 +111,7 @@ function MyApplet(orientation) {
     this._init(orientation);
 }
 
+
 MyApplet.prototype = {
     __proto__: Applet.TextIconApplet.prototype,
 
@@ -137,7 +139,13 @@ MyApplet.prototype = {
             this._deviceItems = [ ];
             this._hasPrimary = false;
             this._primaryDeviceId = null;
-            this._showPercentage = false;
+            
+            let settings = new Gio.Settings({ schema: POWER_SCHEMA }); 
+            this._showPercentage = settings.get_boolean(SHOW_PERCENTAGE_KEY); 
+            let applet = this;
+            settings.connect('changed::'+SHOW_PERCENTAGE_KEY, function() {
+                applet._switchLabelDisplay(settings.get_boolean(SHOW_PERCENTAGE_KEY));
+            });
 
             this._batteryItem = new PopupMenu.PopupMenuItem('', { reactive: false });
             this._primaryPercentage = new St.Label();
@@ -152,17 +160,15 @@ MyApplet.prototype = {
             this.menu.addMenuItem(this._displayItem);
             this._displayPercentageItem = new PopupMenu.PopupMenuItem(_("Show percentage"));
             this._displayPercentageItem.connect('activate', Lang.bind(this, function() {
-                this._switchLabelDisplay(true);
+                settings.set_boolean(SHOW_PERCENTAGE_KEY, true);
             }));
             this._displayItem.menu.addMenuItem(this._displayPercentageItem);
             this._displayTimeItem = new PopupMenu.PopupMenuItem(_("Show time remaining"));
             this._displayTimeItem.connect('activate', Lang.bind(this, function() {
-                this._switchLabelDisplay(false);
+                settings.set_boolean(SHOW_PERCENTAGE_KEY, false);
             }));
             this._displayItem.menu.addMenuItem(this._displayTimeItem);
             this._switchLabelDisplay(this._showPercentage);
-
-            
 
             this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
             this.menu.addSettingsAction(_("Power Settings"), 'gnome-power-panel.desktop');
