@@ -5,6 +5,7 @@ const Lang = imports.lang;
 const St = imports.gi.St;
 const PopupMenu = imports.ui.popupMenu;
 
+const POWER_SCHEMA = "org.cinnamon.power"
 const BUS_NAME = 'org.gnome.SettingsDaemon';
 const OBJECT_PATH = '/org/gnome/SettingsDaemon/Power';
 
@@ -289,13 +290,13 @@ MyApplet.prototype = {
                 if (device_type == UPDeviceType.BATTERY || device_id == this._primaryDeviceId) {
                     let percentageText = "";
 
-                    if (this._showPercentage) {
+                    if (this._showPercentage || time == 0) {
                         percentageText = C_("percent of battery remaining", "%d%%").format(Math.round(percentage));
                     }
                     else {
                         let seconds = time / 60;
                         let minutes = Math.floor(seconds % 60);
-                        let hours = Math.floor(seconds / 60);       
+                        let hours = Math.floor(seconds / 60); 
                         percentageText = C_("time of battery remaining", "%d:%02d").format(hours,minutes);
                     }
 
