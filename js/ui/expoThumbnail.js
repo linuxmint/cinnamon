@@ -109,11 +109,13 @@ ExpoWindowClone.prototype = {
     },
 
     _onDragBegin : function (draggable, time) {
+        Main.expo.showCloseArea();
         this.inDrag = true;
         this.emit('drag-begin');
     },
 
     _onDragEnd : function (draggable, time, snapback) {
+        Main.expo.hideCloseArea();
         this.inDrag = false;
         // We may not have a parent if DnD completed successfully, in
         // which case our clone will shortly be destroyed and replaced
@@ -201,6 +203,7 @@ ExpoWorkspaceThumbnail.prototype = {
         let windows = global.get_window_actors().filter(this._isMyWindow, this);
 
         // Create clones for windows that should be visible in the Expo
+        this.count = 0;
         this._windows = [];
         this._uninterestingWindows = new Clutter.Group();
         this._uninterestingWindows.hide();
@@ -392,6 +395,7 @@ ExpoWorkspaceThumbnail.prototype = {
                 metaWin.disconnect(metaWin._minimizedChangedId);
                 delete metaWin._minimizedChangedId;
             }
+            this._windows[i].destroy();
         }
 
         this._windows = [];
@@ -461,7 +465,7 @@ ExpoWorkspaceThumbnail.prototype = {
 
     _addUninterestingWindowClone : function(win) {
         let clone = new ExpoWindowClone(win);
-        this._uninterestingWindows.add_actor(clone.actor)
+        this._uninterestingWindows.add_actor(clone.actor);
         return clone;
     },
 
@@ -746,6 +750,8 @@ ExpoThumbnailsBox.prototype = {
             thumbnail.actor.connect('enter-event', Lang.bind(this, function (actor, event) { this.lastHovered = thumbnail; this.showButton(); thumbnail._onEnterEvent(actor, event)}));
             thumbnail.actor.connect('leave-event', Lang.bind(this, function () { this.button.hide(); if (thumbnail.metaWorkspace != global.screen.get_active_workspace()) thumbnail._shade(); thumbnail.hovered = false; thumbnail._overviewModeOff();}));
             thumbnail.connect('remove-event', Lang.bind(this, function () { this.button.hide(); if (thumbnail.metaWorkspace != global.screen.get_active_workspace()) thumbnail._shade(); thumbnail.hovered = false; thumbnail._overviewModeOff();}));
+
+            Main.expo.connect('hiding', Lang.bind(this, function() { this.button.hide();}));
 
             if (start > 0) { // not the initial fill
                 thumbnail.state = ThumbnailState.NEW;
