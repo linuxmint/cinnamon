@@ -50,6 +50,8 @@ MyApplet.prototype = {
             this._insertStatusItem(box, -1);
             
             let themeNode = buttonBox.actor.get_theme_node();
+            if (!themeNode.get_length('width')) icon.width = 22;
+            else icon.width = themeNode.get_length('width');
             if (!themeNode.get_length('height')) icon.height = 22;
             else icon.height = themeNode.get_length('height');
         }
