@@ -130,10 +130,11 @@ on_stage_destroy (ClutterStage *stage)
   g_object_unref (context);
 }
 
-static void
+static gboolean
 emit_changed (StThemeContext *context)
 {
   g_signal_emit (context, signals[CHANGED], 0);
+  return FALSE;
 }
 
 static void
@@ -157,7 +158,7 @@ on_icon_theme_changed (StTextureCache *cache,
    * icon_name => icon lookup, faking a theme context change is a good way
    * to force users such as StIcon to look up icons again. Don't bother recreating
    * the root node, though. */
-  emit_changed (context);
+  g_idle_add ((GSourceFunc) emit_changed, context);
 }
 
 /**
