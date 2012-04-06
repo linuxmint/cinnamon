@@ -164,8 +164,13 @@ cinnamon_wm_completed_minimize (CinnamonWM         *wm,
 }
 
 /**
+<<<<<<< HEAD
  * cinnamon_wm_completed_maximize:
  * @wm: the CinnamonWM
+=======
+ * shell_wm_completed_maximize:
+ * @wm: the ShellWM
+>>>>>>> 55a4517... Fix documentation warnings
  * @actor: the MetaWindowActor actor
  *
  * The plugin must call this when it has completed a window maximize effect.
@@ -178,8 +183,13 @@ cinnamon_wm_completed_maximize (CinnamonWM         *wm,
 }
 
 /**
+<<<<<<< HEAD
  * cinnamon_wm_completed_unmaximize:
  * @wm: the CinnamonWM
+=======
+ * shell_wm_completed_unmaximize:
+ * @wm: the ShellWM
+>>>>>>> 55a4517... Fix documentation warnings
  * @actor: the MetaWindowActor actor
  *
  * The plugin must call this when it has completed a window unmaximize effect.
@@ -192,8 +202,13 @@ cinnamon_wm_completed_unmaximize (CinnamonWM         *wm,
 }
 
 /**
+<<<<<<< HEAD
  * cinnamon_wm_completed_map:
  * @wm: the CinnamonWM
+=======
+ * shell_wm_completed_map:
+ * @wm: the ShellWM
+>>>>>>> 55a4517... Fix documentation warnings
  * @actor: the MetaWindowActor actor
  *
  * The plugin must call this when it has completed a window map effect.
@@ -206,8 +221,13 @@ cinnamon_wm_completed_map (CinnamonWM         *wm,
 }
 
 /**
+<<<<<<< HEAD
  * cinnamon_wm_completed_destroy:
  * @wm: the CinnamonWM
+=======
+ * shell_wm_completed_destroy:
+ * @wm: the ShellWM
+>>>>>>> 55a4517... Fix documentation warnings
  * @actor: the MetaWindowActor actor
  *
  * The plugin must call this when it has completed a window destroy effect.

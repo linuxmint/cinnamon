@@ -1172,8 +1172,13 @@ cinnamon_global_create_pointer_barrier (CinnamonGlobal *global,
 }
 
 /**
+<<<<<<< HEAD
  * cinnamon_global_destroy_pointer_barrier:
  * @global: a #CinnamonGlobal
+=======
+ * shell_global_destroy_pointer_barrier:
+ * @global: a #ShellGlobal
+>>>>>>> 55a4517... Fix documentation warnings
  * @barrier: a pointer barrier
  *
  * Destroys the @barrier created by cinnamon_global_create_pointer_barrier().

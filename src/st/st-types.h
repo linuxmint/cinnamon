@@ -14,14 +14,12 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-
+#ifndef __ST_TYPES_H__
+#define __ST_TYPES_H__
 
 #if !defined(ST_H_INSIDE) && !defined(ST_COMPILATION)
 #error "Only <st/st.h> can be included directly.h"
 #endif
-
-#ifndef __ST_TYPES_H__
-#define __ST_TYPES_H__
 
 #include <glib-object.h>
 #include <clutter/clutter.h>
