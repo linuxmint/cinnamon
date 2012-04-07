@@ -47,7 +47,7 @@ StScrollBar StButton#hhandle:hover,
 StScrollBar StButton#vhandle:hover {
 	background-color: rgba(204,204,204,0.5);
 }
-StTooltip StLabel {
+#Tooltip {
 	border: 1px solid rgba(212,185,67,1.0);
 	border-radius: 4px;
 	padding: 2px 12px;
