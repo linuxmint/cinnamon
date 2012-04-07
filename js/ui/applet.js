@@ -222,7 +222,7 @@ IconApplet.prototype = {
         if (icon_path){
             let file = Gio.file_new_for_path(icon_path);
             let icon_uri = file.get_uri();
-            this._applet_icon = St.TextureCache.get_default().load_uri_sync(1, icon_uri, 22, 22);
+            this._applet_icon = St.TextureCache.get_default().load_uri_async(icon_uri, 22, 22);
             this._applet_icon_box.child = this._applet_icon;
         }
     },
