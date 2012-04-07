@@ -50,6 +50,7 @@ dist_theme_DATA = \
 	theme/toggle-off-intl.svg		\
 	theme/toggle-on-us.svg			\
 	theme/toggle-on-intl.svg		\
+	theme/trash-icon.png			\
 	theme/ws-switch-arrow-up.svg		\
 	theme/ws-switch-arrow-down.svg		\
 	theme/player-paused.svg		\
