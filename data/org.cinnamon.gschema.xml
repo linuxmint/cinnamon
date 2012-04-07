@@ -259,8 +259,8 @@
   </schema>
 
   <schema path="/org/cinnamon/power/" id="org.cinnamon.power" gettext-domain="@GETTEXT_PACKAGE">
-      <key type="b" name="power-show-percentage">
-          <default>true</default>
+      <key type="s" name="power-label">
+          <default>'percent'</default>
           <summary>Display percentage in power applet</summary>
           <description>Display battery remaining as percentage or time in power applet.</description>
     </key>

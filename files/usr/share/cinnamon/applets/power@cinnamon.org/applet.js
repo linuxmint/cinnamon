@@ -6,7 +6,7 @@ const St = imports.gi.St;
 const PopupMenu = imports.ui.popupMenu;
 
 const POWER_SCHEMA = "org.cinnamon.power"
-const SHOW_PERCENTAGE_KEY = "power-show-percentage";
+const SHOW_PERCENTAGE_KEY = "power-label";
 const BUS_NAME = 'org.gnome.SettingsDaemon';
 const OBJECT_PATH = '/org/gnome/SettingsDaemon/Power';
 
@@ -33,6 +33,12 @@ const UPDeviceState = {
     FULLY_CHARGED: 4,
     PENDING_CHARGE: 5,
     PENDING_DISCHARGE: 6
+};
+
+const LabelDisplay = {
+    NONE: 'none',
+    PERCENT: 'percent',
+    TIME: 'time'
 };
 
 const PowerManagerInterface = {
@@ -141,10 +147,10 @@ MyApplet.prototype = {
             this._primaryDeviceId = null;
             
             let settings = new Gio.Settings({ schema: POWER_SCHEMA }); 
-            this._showPercentage = settings.get_boolean(SHOW_PERCENTAGE_KEY); 
+            this._labelDisplay = settings.get_string(SHOW_PERCENTAGE_KEY);
             let applet = this;
             settings.connect('changed::'+SHOW_PERCENTAGE_KEY, function() {
-                applet._switchLabelDisplay(settings.get_boolean(SHOW_PERCENTAGE_KEY));
+                applet._switchLabelDisplay(settings.get_string(SHOW_PERCENTAGE_KEY));
             });
 
             this._batteryItem = new PopupMenu.PopupMenuItem('', { reactive: false });
@@ -160,15 +166,20 @@ MyApplet.prototype = {
             this.menu.addMenuItem(this._displayItem);
             this._displayPercentageItem = new PopupMenu.PopupMenuItem(_("Show percentage"));
             this._displayPercentageItem.connect('activate', Lang.bind(this, function() {
-                settings.set_boolean(SHOW_PERCENTAGE_KEY, true);
+                settings.set_string(SHOW_PERCENTAGE_KEY, LabelDisplay.PERCENT);
             }));
             this._displayItem.menu.addMenuItem(this._displayPercentageItem);
             this._displayTimeItem = new PopupMenu.PopupMenuItem(_("Show time remaining"));
             this._displayTimeItem.connect('activate', Lang.bind(this, function() {
-                settings.set_boolean(SHOW_PERCENTAGE_KEY, false);
+                settings.set_string(SHOW_PERCENTAGE_KEY, LabelDisplay.TIME);
             }));
             this._displayItem.menu.addMenuItem(this._displayTimeItem);
-            this._switchLabelDisplay(this._showPercentage);
+            this._displayNoneItem = new PopupMenu.PopupMenuItem(_("Hide label"));
+            this._displayNoneItem.connect('activate', Lang.bind(this, function() {
+                settings.set_string(SHOW_PERCENTAGE_KEY, LabelDisplay.NONE);
+            }));
+            this._displayItem.menu.addMenuItem(this._displayNoneItem);
+            this._switchLabelDisplay(this._labelDisplay);
 
             this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
             this.menu.addSettingsAction(_("Power Settings"), 'gnome-power-panel.desktop');
@@ -185,16 +196,21 @@ MyApplet.prototype = {
         this.menu.toggle();        
     },
 
-    _switchLabelDisplay: function(showPercentage) {
-            this._showPercentage = showPercentage;
+    _switchLabelDisplay: function(display) {
+            this._labelDisplay = display;
 
-            if (this._showPercentage) {
+            this._displayPercentageItem.setShowDot(false);
+            this._displayNoneItem.setShowDot(false);
+            this._displayTimeItem.setShowDot(false);
+
+            if (this._labelDisplay == LabelDisplay.PERCENT) {
                 this._displayPercentageItem.setShowDot(true);
-                this._displayTimeItem.setShowDot(false);
+            }
+            else if (this._labelDisplay == LabelDisplay.TIME) {
+                this._displayTimeItem.setShowDot(true);
             }
             else {
-                this._displayPercentageItem.setShowDot(false);
-                this._displayTimeItem.setShowDot(true);
+                this._displayNoneItem.setShowDot(true);
             }
 
             this._updateLabel();
@@ -291,26 +307,29 @@ MyApplet.prototype = {
                 this._mainLabel.set_text("");
                 return;
             }
-            for (let i = 0; i < devices.length; i++) {
-                let [device_id, device_type, icon, percentage, state, time] = devices[i];
-                if (device_type == UPDeviceType.BATTERY || device_id == this._primaryDeviceId) {
-                    let percentageText = "";
 
-                    if (this._showPercentage || time == 0) {
-                        percentageText = C_("percent of battery remaining", "%d%%").format(Math.round(percentage));
-                    }
-                    else {
-                        let seconds = time / 60;
-                        let minutes = Math.floor(seconds % 60);
-                        let hours = Math.floor(seconds / 60); 
-                        percentageText = C_("time of battery remaining", "%d:%02d").format(hours,minutes);
-                    }
+            if (this._labelDisplay != LabelDisplay.NONE) {
+                for (let i = 0; i < devices.length; i++) {
+                    let [device_id, device_type, icon, percentage, state, time] = devices[i];
+                    if (device_type == UPDeviceType.BATTERY || device_id == this._primaryDeviceId) {
+                        let labelText = "";
 
-                    this._mainLabel.set_text(percentageText);
-                    return;
+                        if (this._labelDisplay == LabelDisplay.PERCENT || time == 0) {
+                            labelText = C_("percent of battery remaining", "%d%%").format(Math.round(percentage));
+                        }
+                        else if (this._labelDisplay == LabelDisplay.TIME) {
+                            let seconds = time / 60;
+                            let minutes = Math.floor(seconds % 60);
+                            let hours = Math.floor(seconds / 60);
+                            labelText = C_("time of battery remaining", "%d:%02d").format(hours,minutes);
+                        }
+
+                        this._mainLabel.set_text(labelText);
+                        return;
+                    }
                 }
             }
-            // no battery found... hot-unplugged?
+            // Display disabled or no battery found... hot-unplugged?
             this._mainLabel.set_text("");
         }));
     }
