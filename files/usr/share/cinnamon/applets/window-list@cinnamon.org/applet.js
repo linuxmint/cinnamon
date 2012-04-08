@@ -463,12 +463,12 @@ AppMenuButton.prototype = {
 
         let [minWidth, minHeight, naturalWidth, naturalHeight] = this._iconBox.get_preferred_size();
 
-        let direction = this.actor.get_direction();
+        let direction = this.actor.get_text_direction();
 
         let yPadding = Math.floor(Math.max(0, allocHeight - naturalHeight) / 2);
         childBox.y1 = yPadding;
         childBox.y2 = childBox.y1 + Math.min(naturalHeight, allocHeight);
-        if (direction == St.TextDirection.LTR) {
+        if (direction == Clutter.TextDirection.LTR) {
             childBox.x1 = 3;
             childBox.x2 = childBox.x1 + Math.min(naturalWidth, allocWidth);
         } else {
@@ -485,7 +485,7 @@ AppMenuButton.prototype = {
         childBox.y1 = yPadding;
         childBox.y2 = childBox.y1 + Math.min(naturalHeight, allocHeight);
 
-        if (direction == St.TextDirection.LTR) {
+        if (direction == Clutter.TextDirection.LTR) {
             childBox.x1 = Math.floor(iconWidth + 5);
             childBox.x2 = Math.min(childBox.x1 + naturalWidth, allocWidth);
         } else {
@@ -494,7 +494,7 @@ AppMenuButton.prototype = {
         }
         this._label.allocate(childBox, flags);
 
-        if (direction == St.TextDirection.LTR) {
+        if (direction == Clutter.TextDirection.LTR) {
             childBox.x1 = Math.floor(iconWidth / 2) + this._label.width;
             childBox.x2 = childBox.x1 + this._spinner.actor.width;
             childBox.y1 = box.y1;
@@ -855,7 +855,7 @@ MyApplet.prototype = {
 
 		childBox.y1 = 0;
 		childBox.y2 = allocHeight;
-		if (this.myactor.get_direction() == St.TextDirection.RTL) {
+		if (this.myactor.get_text_direction() == Clutter.TextDirection.RTL) {
 			childBox.x1 = allocWidth - Math.min(allocWidth - rightNaturalWidth,
 												leftNaturalWidth);
 			childBox.x2 = allocWidth;
@@ -873,7 +873,7 @@ MyApplet.prototype = {
 
 		childBox.y1 = 0;
 		childBox.y2 = allocHeight;
-		if (this.myactor.get_direction() == St.TextDirection.RTL) {
+		if (this.myactor.get_text_direction() == Clutter.TextDirection.RTL) {
 			childBox.x1 = 0;
 			childBox.x2 = Math.min(Math.floor(sideWidth),
 								   rightNaturalWidth);
