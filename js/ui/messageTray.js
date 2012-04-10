@@ -1702,7 +1702,7 @@ MessageTray.prototype = {
         }
 
         this._tween(this._notificationBin, '_notificationState', State.HIDDEN,
-                    { y: 0,
+                    { y: Main.layoutManager.primaryMonitor.y,
                       opacity: 0,
                       time: ANIMATION_TIME,
                       transition: 'easeOutQuad',
