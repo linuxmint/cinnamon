@@ -314,6 +314,7 @@ AppMenuButton.prototype = {
     _onDestroy: function() {
         this.metaWindow.disconnect(this._updateCaptionId);
         this._tooltip.destroy();
+        this.rightClickMenu.destroy();
     },
     
     doFocus: function() {
