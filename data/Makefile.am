@@ -20,6 +20,7 @@ dist_searchproviders_DATA =				\
 themedir = $(pkgdatadir)/theme
 dist_theme_DATA = \
 	theme/add-workspace.png			\
+	theme/add-workspace-hover.png		\
 	theme/calendar-arrow-left.svg		\
 	theme/calendar-arrow-right.svg		\
 	theme/calendar-today.svg		\
@@ -50,6 +51,7 @@ dist_theme_DATA = \
 	theme/toggle-off-intl.svg		\
 	theme/toggle-on-us.svg			\
 	theme/toggle-on-intl.svg		\
+	theme/trash-icon.png			\
 	theme/ws-switch-arrow-up.svg		\
 	theme/ws-switch-arrow-down.svg		\
 	theme/player-paused.svg		\
