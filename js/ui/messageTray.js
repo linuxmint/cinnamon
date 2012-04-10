@@ -1601,9 +1601,9 @@ MessageTray.prototype = {
         this._notificationBin.child = this._notification.actor;
         this._notificationBin.opacity = 0;        
         let monitor = Main.layoutManager.primaryMonitor;
-        this._notificationBin.y = this._notification._table.get_theme_node().get_length('margin-from-top-edge-of-screen') * 2; // Notifications appear from here (for the animation)
+        this._notificationBin.y = monitor.y + this._notification._table.get_theme_node().get_length('margin-from-top-edge-of-screen') * 2; // Notifications appear from here (for the animation)
         let margin = this._notification._table.get_theme_node().get_length('margin-from-right-edge-of-screen');                
-        this._notificationBin.x = monitor.width - this._notification._table.width - margin;
+        this._notificationBin.x = monitor.x + monitor.width - this._notification._table.width - margin;
         this._notificationBin.show();
 
         this._updateShowingNotification();
@@ -1654,8 +1654,9 @@ MessageTray.prototype = {
                             onComplete: this._showNotificationCompleted,
                             onCompleteScope: this
                           };
+        let monitor = Main.layoutManager.primaryMonitor;
         if (!this._notification.expanded)        	 
-            tweenParams.y = this._notification._table.get_theme_node().get_length('margin-from-top-edge-of-screen');             
+            tweenParams.y = monitor.y + this._notification._table.get_theme_node().get_length('margin-from-top-edge-of-screen');             
 
         this._tween(this._notificationBin, '_notificationState', State.SHOWN, tweenParams);
    },
