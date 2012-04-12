@@ -5,6 +5,7 @@
 # Jennie Petoumenou <epetoumenou@gmail.com>, 2009.
 # Fotis Tsamis <ftsamis@gmail.com>, 2010.
 # Kostas Papadimas <pkst@gnome.org>, 2011.
+# Iraklis Karagkiozoglou <i.kar@windowslive.com>, 2012.
 #
 msgid ""
 msgstr ""
@@ -185,7 +186,7 @@ msgstr ""
 
 #: ../js/misc/util.js:86
 msgid "Command not found"
-msgstr ""
+msgstr "Η εντολή δεν βρέθηκε."
 
 #. Replace "Error invoking GLib.cinnamon_parse_argv: " with
 #. something nicer
@@ -215,7 +216,7 @@ msgstr "ΕΦΑΡΜΟΓΕΣ"
 
 #: ../js/ui/appDisplay.js:350
 msgid "SETTINGS"
-msgstr ""
+msgstr "ΡΥΘΜΙΣΕΙΣ"
 
 #: ../js/ui/appDisplay.js:612
 msgid "New Window"
@@ -269,43 +270,43 @@ msgstr "%a %l:%M %p"
 #: ../js/ui/calendar.js:118
 msgctxt "grid sunday"
 msgid "S"
-msgstr ""
+msgstr "Κυρ"
 
 #. Translators: Calendar grid abbreviation for Monday
 #: ../js/ui/calendar.js:120
 msgctxt "grid monday"
 msgid "M"
-msgstr ""
+msgstr "Δευ"
 
 #. Translators: Calendar grid abbreviation for Tuesday
 #: ../js/ui/calendar.js:122
 msgctxt "grid tuesday"
 msgid "T"
-msgstr ""
+msgstr "Τρι"
 
 #. Translators: Calendar grid abbreviation for Wednesday
 #: ../js/ui/calendar.js:124
 msgctxt "grid wednesday"
 msgid "W"
-msgstr ""
+msgstr "Τετ"
 
 #. Translators: Calendar grid abbreviation for Thursday
 #: ../js/ui/calendar.js:126
 msgctxt "grid thursday"
 msgid "T"
-msgstr ""
+msgstr "Πεμ"
 
 #. Translators: Calendar grid abbreviation for Friday
 #: ../js/ui/calendar.js:128
 msgctxt "grid friday"
 msgid "F"
-msgstr ""
+msgstr "Παρ"
 
 #. Translators: Calendar grid abbreviation for Saturday
 #: ../js/ui/calendar.js:130
 msgctxt "grid saturday"
 msgid "S"
-msgstr ""
+msgstr "Σαβ"
 
 #. Translators: Event list abbreviation for Sunday.
 #. *
@@ -316,48 +317,48 @@ msgstr ""
 #: ../js/ui/calendar.js:143
 msgctxt "list sunday"
 msgid "Su"
-msgstr ""
+msgstr "Κυρ"
 
 #. Translators: Event list abbreviation for Monday
 #: ../js/ui/calendar.js:145
 msgctxt "list monday"
 msgid "M"
-msgstr ""
+msgstr "Δευ"
 
 #. Translators: Event list abbreviation for Tuesday
 #: ../js/ui/calendar.js:147
 msgctxt "list tuesday"
 msgid "T"
-msgstr ""
+msgstr "Τρι"
 
 #. Translators: Event list abbreviation for Wednesday
 #: ../js/ui/calendar.js:149
 msgctxt "list wednesday"
 msgid "W"
-msgstr ""
+msgstr "Τετ"
 
 #. Translators: Event list abbreviation for Thursday
 #: ../js/ui/calendar.js:151
 msgctxt "list thursday"
 msgid "Th"
-msgstr ""
+msgstr "Πεμ"
 
 #. Translators: Event list abbreviation for Friday
 #: ../js/ui/calendar.js:153
 msgctxt "list friday"
 msgid "F"
-msgstr ""
+msgstr "Παρ"
 
 #. Translators: Event list abbreviation for Saturday
 #: ../js/ui/calendar.js:155
 msgctxt "list saturday"
 msgid "S"
-msgstr ""
+msgstr "Σαβ"
 
 #. Translators: Text to show if there are no events
 #: ../js/ui/calendar.js:704
 msgid "Nothing Scheduled"
-msgstr ""
+msgstr "Τίποτα προγραμματισμένο"
 
 #. Translators: Shown on calendar heading when selected day occurs on current year
 #: ../js/ui/calendar.js:720
@@ -374,19 +375,19 @@ msgstr "%a %e %b, %R"
 
 #: ../js/ui/calendar.js:733
 msgid "Today"
-msgstr ""
+msgstr "Σήμερα"
 
 #: ../js/ui/calendar.js:737
 msgid "Tomorrow"
-msgstr ""
+msgstr "Αύριο"
 
 #: ../js/ui/calendar.js:746
 msgid "This week"
-msgstr ""
+msgstr "Τρέχον εβδομάδα"
 
 #: ../js/ui/calendar.js:754
 msgid "Next week"
-msgstr ""
+msgstr "Επόμενη εβδομάδα"
 
 #: ../js/ui/dash.js:174 ../js/ui/messageTray.js:933
 msgid "Remove"
@@ -399,7 +400,7 @@ msgstr "Ρυθμίσεις συστήματος"
 
 #: ../js/ui/dateMenu.js:111
 msgid "Open Calendar"
-msgstr ""
+msgstr "Άνοιγμα Ημερολογίου"
 
 #. Translators: This is the time format with date used
 #. in 24-hour mode.
@@ -465,21 +466,21 @@ msgstr "Αποσύνδεση..."
 
 #: ../js/ui/endSessionDialog.js:65
 msgid "Click Log Out to quit these applications and log out of the system."
-msgstr ""
+msgstr "Πατήστε Αποσύνδεση για να τερματίσετε αυτές τις εφαρμογές και να αποσυνδεθείτε από το σύστημα."
 
 #: ../js/ui/endSessionDialog.js:66
 #, c-format
 msgid "%s will be logged out automatically in %d seconds."
-msgstr ""
+msgstr "Θα αποσυνδεθείτε από το σύστημα αυτόματα σε %d δευτερόλεπτα"
 
 #: ../js/ui/endSessionDialog.js:67
 #, c-format
 msgid "You will be logged out automatically in %d seconds."
-msgstr ""
+msgstr "Θα αποσυνδεθείτε από το σύστημα αυτόματα σε %d δευτερόλεπτα."
 
 #: ../js/ui/endSessionDialog.js:68
 msgid "Logging out of the system."
-msgstr ""
+msgstr "Αποσύνδεση απο το σύστημα."
 
 #: ../js/ui/endSessionDialog.js:74 ../js/ui/endSessionDialog.js:78
 #, fuzzy
@@ -488,37 +489,37 @@ msgstr "Τερματισμός..."
 
 #: ../js/ui/endSessionDialog.js:75
 msgid "Click Shut Down to quit these applications and shut down the system."
-msgstr ""
+msgstr "Πατήστε Τερματισμός για να τερματίσετε αυτές τις εφαρμογές και να τερματιστεί η λειτουργία του συστήματος."
 
 #: ../js/ui/endSessionDialog.js:76
 #, c-format
 msgid "The system will shut down automatically in %d seconds."
-msgstr ""
+msgstr "Θα τερματιστεί η λειτουργία του συστήματος αυτόματα σε %d δευτερόλεπτα."
 
 #: ../js/ui/endSessionDialog.js:77
 msgid "Shutting down the system."
-msgstr ""
+msgstr "Τερματίζεται η λειτουργία του συστήματος."
 
 #: ../js/ui/endSessionDialog.js:84 ../js/ui/endSessionDialog.js:88
 msgid "Restart"
-msgstr ""
+msgstr "Επανεκκίνηση"
 
 #: ../js/ui/endSessionDialog.js:85
 msgid "Click Restart to quit these applications and restart the system."
-msgstr ""
+msgstr "Πατήστε Επανεκκίνηση για να τερματίσετε αυτές τις εφαρμογές και να επανεκκινήσετε το σύστημα."
 
 #: ../js/ui/endSessionDialog.js:86
 #, c-format
 msgid "The system will restart automatically in %d seconds."
-msgstr ""
+msgstr "Το σύστημα θα επανεκκινηθεί αυτόματα σε %d δευτερόλεπτα."
 
 #: ../js/ui/endSessionDialog.js:87
 msgid "Restarting the system."
-msgstr ""
+msgstr "Επανεκκίνηση συστήματος."
 
 #: ../js/ui/endSessionDialog.js:395
 msgid "Confirm"
-msgstr ""
+msgstr "Επιβεβαίωση"
 
 #: ../js/ui/endSessionDialog.js:400 ../js/ui/status/bluetooth.js:470
 msgid "Cancel"
@@ -556,7 +557,7 @@ msgstr "Ιστοσελίδα"
 
 #: ../js/ui/messageTray.js:926
 msgid "Open"
-msgstr ""
+msgstr "Άνοιγμα"
 
 #: ../js/ui/messageTray.js:1963
 #, fuzzy
@@ -635,11 +636,11 @@ msgstr "Αναζήτηση"
 
 #: ../js/ui/searchDisplay.js:297
 msgid "No matching results."
-msgstr ""
+msgstr "Δεν βρέθηκαν απότελέσματα που να ταιριάζουν στην αναζήτηση."
 
 #: ../js/ui/statusMenu.js:102 ../js/ui/statusMenu.js:166
 msgid "Power Off..."
-msgstr ""
+msgstr "Κλείσιμο Συστήματος..."
 
 #: ../js/ui/statusMenu.js:104 ../js/ui/statusMenu.js:165
 #, fuzzy
@@ -834,7 +835,7 @@ msgstr "ΟΚ"
 
 #: ../js/ui/status/keyboard.js:73
 msgid "Show Keyboard Layout..."
-msgstr ""
+msgstr "Εμφάνιση διάταξης πληκτρολογίου"
 
 #: ../js/ui/status/keyboard.js:76
 #, fuzzy
@@ -973,7 +974,7 @@ msgstr "Στάλθηκε στις %A και ώρα %X"
 #. characters.
 #: ../js/ui/viewSelector.js:117
 msgid "Type to search..."
-msgstr ""
+msgstr "Πληκτρολογήστε για αναζήτηση.."
 
 #: ../js/ui/viewSelector.js:137 ../src/cinnamon-util.c:250
 msgid "Search"
