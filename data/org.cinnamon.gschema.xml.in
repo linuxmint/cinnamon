@@ -175,6 +175,11 @@
       </_description>
     </key>
     
+    <key type="i" name="notification-style">
+      <default>1</default>
+      <_summary>Notification style</_summary>
+    </key>
+    
     <key name="date-format" type="s">
       <default>"YYYY-MM-DD"</default>
       <_summary>Auto-hide panel</_summary>
