@@ -1288,6 +1288,8 @@ class MainWindow:
         sidePage.add_widget(GSettingsCheckButton(_("Network Servers icon visible on desktop"), "org.gnome.nautilus.desktop", "network-icon-visible"))
         sidePage.add_widget(GSettingsCheckButton(_("Trash icon visible on desktop"), "org.gnome.nautilus.desktop", "trash-icon-visible"))
         sidePage.add_widget(GSettingsCheckButton(_("Show mounted volumes on the desktop"), "org.gnome.nautilus.desktop", "volumes-visible"))
+	notification_styles = [["highlight", _("Highlight window in panel")], ["front", _("Bring window to front")], ["popup", _("Show notification popup")]]
+        sidePage.add_widget(GSettingsComboBox(_("Notification style"), "org.cinnamon", "notification-style", notification_styles))
         
         sidePage = SidePage(_("Windows"), "windows.svg", self.content_box)
         self.sidePages.append((sidePage, "windows"))
