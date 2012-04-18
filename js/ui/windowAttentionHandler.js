@@ -12,9 +12,9 @@ function WindowAttentionHandler() {
 
 WindowAttentionHandler.prototype = {
     _init : function() {
-        this.notification_style = global.settings.get_int("notification-style");
+        this.notification_style = global.settings.get_string("notification-style");
         global.settings.connect("changed::notification-style", Lang.bind(this, function() {
-            this.notification_style = global.settings.get_int("notification-style");
+            this.notification_style = global.settings.get_string("notification-style");
         })); 
         
         this._tracker = Cinnamon.WindowTracker.get_default();
@@ -40,13 +40,13 @@ WindowAttentionHandler.prototype = {
             return;
 
         switch (this.notification_style) {
-            case 0:
+            case "highlight":
                 //nop
                 break;
-            case 1:
+            case "front":
                 this.bringToFront(window);
                 break;
-            case 2:
+            case "popup":
                 this.showBanner(window);
                 break;
             default:

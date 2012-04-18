@@ -127,9 +127,8 @@
       <description>Layout styles: traditional (1 panel at the bottom), flipped (1 panel on top), classic (1 panel on top, 1 panel at the bottom)</description>
     </key>
     
-    <key type="i" name="notification-style">
-      <range min="0" max="2"/>
-      <default>1</default>
+    <key type="s" name="notification-style">
+      <default>"front"</default>
       <summary>Notification style</summary>
     </key>
     

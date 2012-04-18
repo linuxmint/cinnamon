@@ -175,8 +175,8 @@
       </_description>
     </key>
     
-    <key type="i" name="notification-style">
-      <default>1</default>
+    <key type="s" name="notification-style">
+      <default>"front"</default>
       <_summary>Notification style</_summary>
     </key>
     
