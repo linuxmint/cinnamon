@@ -604,6 +604,7 @@ ZoomRegion.prototype = {
             this._updateMagViewGeometry();
             this._updateCloneGeometry();
             this._updateMousePosition();
+            global.top_window_group.raise_top();
         } else if (!activate && this.isActive()) {
             this._destroyActors();
         }
