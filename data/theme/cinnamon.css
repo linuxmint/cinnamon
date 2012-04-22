@@ -1431,7 +1431,8 @@ StTooltip StLabel {
  * Sound Applet (status/volume.js)
  * ===================================================================*/
 .sound-button-container {
-	padding-right: 5px;
+	padding-right: 3px;
+	padding-left: 3px;
 }
 .sound-button {
 	width: 22px;
@@ -1447,7 +1448,8 @@ StTooltip StLabel {
 	icon-size: 1.4em;
 }
 .sound-track-infos {
-	padding-left: 10px;
+	padding-left: 5px;
+	padding-right: 5px;
 }
 .sound-track-info {
 	padding-bottom: 4px;
@@ -1457,6 +1459,7 @@ StTooltip StLabel {
 }
 .sound-track-info StLabel {
 	padding-left: 5px;
+	padding-right: 5px;
 }
 .sound-track-box {
 	padding-top: 20px;
@@ -1470,10 +1473,13 @@ StTooltip StLabel {
 .sound-volume-menu-item StIcon {
 	icon-size: 1.14em;
 	padding-left: 8px;
+	padding-right: 8px;
 }
 .sound-playback-control {
 	padding-top: 5px;
 	padding-bottom: 10px;
+	padding-left: 10px;
+	padding-right: 10px;
 }
 /* ===================================================================
  * Workspace Switcher applet (workspaceSwitcher.js)
