@@ -9,6 +9,7 @@ const Lang = imports.lang;
 const St = imports.gi.St;
 const Cinnamon = imports.gi.Cinnamon;
 const Gdk = imports.gi.Gdk;
+const Gio = imports.gi.Gio;
 
 const DND = imports.ui.dnd;
 const Main = imports.ui.main;
@@ -96,6 +97,8 @@ Overview.prototype = {
         params = Params.parse(params, { isDummy: false });
 
         this.isDummy = params.isDummy;
+
+        this._settings = new Gio.Settings({schema: "org.cinnamon"});
 
         // We only have an overview in user sessions, so
         // create a dummy overview in other cases

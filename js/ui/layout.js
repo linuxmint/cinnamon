@@ -10,6 +10,7 @@ const Main = imports.ui.main;
 const Params = imports.misc.params;
 const ScreenSaver = imports.misc.screenSaver;
 const Tweener = imports.ui.tweener;
+const EdgeFlip = imports.ui.edgeFlip;
 
 const HOT_CORNER_ACTIVATION_TIMEOUT = 0.5;
 const STARTUP_ANIMATION_TIME = 0.2;
@@ -31,12 +32,14 @@ LayoutManager.prototype = {
         this._leftPanelBarrier2 = 0;
         this._rightPanelBarrier2 = 0;
         this._trayBarrier = 0;		
+        this.edgeRight = null;
+        this.edgeLeft = null;
         this._chrome = new Chrome(this);       
 		
-		this._hotCorner = new HotCorner();        
-		this.overviewCorner = new St.Button({name: 'overview-corner', reactive: true, track_hover: true });		
-		this.addChrome(this.overviewCorner, { visibleInFullscreen: false });	
-		this.overviewCorner.connect('button-release-event', Lang.bind(this, this._toggleExpo));
+	this._hotCorner = new HotCorner();        
+	this.overviewCorner = new St.Button({name: 'overview-corner', reactive: true, track_hover: true });		
+	this.addChrome(this.overviewCorner, { visibleInFullscreen: false });	
+	this.overviewCorner.connect('button-release-event', Lang.bind(this, this._toggleExpo));
 		
         this.trayBox = new St.BoxLayout({ name: 'trayBox' }); 
         this.addChrome(this.trayBox, { visibleInFullscreen: true });
@@ -49,16 +52,16 @@ LayoutManager.prototype = {
         this.panelBox2 = new St.BoxLayout({ name: 'panelBox',
                                            vertical: true });                                           
         
-		let autohide = global.settings.get_boolean("panel-autohide");
+	let autohide = global.settings.get_boolean("panel-autohide");
 //        this._chrome.addActor(this.panelBox);
-		if (autohide) {
-        	this.addChrome(this.panelBox, { affectsStruts: false, addToWindowgroup: false });
+	if (autohide) {
+            this.addChrome(this.panelBox, { affectsStruts: false, addToWindowgroup: false });
             this.addChrome(this.panelBox2, { affectsStruts: false, addToWindowgroup: false });
-		}
-		else {
-			this.addChrome(this.panelBox, { affectsStruts: true, addToWindowgroup: false });
+	}
+	else {
+	    this.addChrome(this.panelBox, { affectsStruts: true, addToWindowgroup: false });
             this.addChrome(this.panelBox2, { affectsStruts: true, addToWindowgroup: false });
-		}
+	}
         this.panelBox.connect('allocation-changed',
                               Lang.bind(this, this._updatePanelBarriers));
         this.panelBox2.connect('allocation-changed',
@@ -76,6 +79,8 @@ LayoutManager.prototype = {
                               Lang.bind(this, this._windowsRestacked));
         this._monitorsChanged();
         this._chrome.addActor(this._hotCorner.actor);
+        this.enabledEdgeFlip = global.settings.get_boolean("enable-edge-flip");
+        global.settings.connect("changed::enable-edge-flip", Lang.bind(this, this._onEnableEdgeFlipChanged));
         global.settings.connect("changed::panel-autohide", Lang.bind(this, this._onPanelAutoHideChanged));
         global.settings.connect("changed::overview-corner-visible", Lang.bind(this, this._onOverviewCornerVisibleChanged));
         global.settings.connect("changed::overview-corner-hover", Lang.bind(this, this._onOverviewCornerHoverChanged));
@@ -84,22 +89,14 @@ LayoutManager.prototype = {
         global.screen.connect('restacked',
                               Lang.bind(this, this._windowsRestacked));
     },
-    
+ 
+    _onEnableEdgeFlipChanged: function(){
+        this.enabledEdgeFlip = global.settings.get_boolean("enable-edge-flip");
+        this.edgeRight.enabled = this.enabledEdgeFlip;
+        this.edgeLeft.enabled = this.enabledEdgeFlip;
+    },
+
     _windowsRestacked: function() {
-        /*let windows = global.window_group.get_children();
-        //let hasCoveringWindows = false;
-        for (var i in windows){
-            if (windows[i] instanceof Meta.WindowActor){
-                if (windows[i].get_meta_window().get_layer() <= Meta.StackLayer.NORMAL){
-                    this.panelBox.raise(windows[i]);
-                    this.panelBox2.raise(windows[i]);
-                }//else hasCoveringWindows = true;
-            }
-        }*/
-        /*// Hack to have context menus items active when they're over the panel
-        this._chrome.modifyActorParams(this.panelBox, { affectsInputRegion: !hasCoveringWindows });
-        this._chrome.modifyActorParams(this.panelBox2, { affectsInputRegion: !hasCoveringWindows });*/
-        
         this._chrome.updateRegions();
     },
 
@@ -110,6 +107,13 @@ LayoutManager.prototype = {
         this._chrome.init();
 
         this._startupAnimation();
+
+        this.edgeRight = new EdgeFlip.EdgeFlipper(St.Side.RIGHT, Main.wm.actionMoveWorkspaceRight);
+        this.edgeLeft = new EdgeFlip.EdgeFlipper(St.Side.LEFT, Main.wm.actionMoveWorkspaceLeft);
+
+        this.edgeRight.enabled = this.enabledEdgeFlip;
+        this.edgeLeft.enabled = this.enabledEdgeFlip;
+        
     },
     
     _toggleExpo: function() {
