@@ -777,16 +777,16 @@ move_slider (StScrollBar *bar,
 static void
 stop_scrolling (StScrollBar *bar)
 {
-  ClutterActor *stage;
+  ClutterStage *stage;
 
   if (!bar->priv->capture_handler)
     return;
 
-  stage = clutter_actor_get_stage (bar->priv->trough);
+  stage = CLUTTER_STAGE (clutter_actor_get_stage (bar->priv->trough));
   g_signal_handler_disconnect (stage, bar->priv->capture_handler);
   bar->priv->capture_handler = 0;
 
-  clutter_set_motion_events_enabled (TRUE);
+  clutter_stage_set_motion_events_enabled (stage, TRUE);
   g_signal_emit (bar, signals[SCROLL_STOP], 0);
 }
 
@@ -829,6 +829,7 @@ handle_button_press_event_cb (ClutterActor       *actor,
                               ClutterButtonEvent *event,
                               StScrollBar        *bar)
 {
+  ClutterStage *stage;
   StScrollBarPrivate *priv = bar->priv;
 
   if (event->button != 1)
@@ -845,8 +846,10 @@ handle_button_press_event_cb (ClutterActor       *actor,
   priv->x_origin += clutter_actor_get_x (priv->trough);
   priv->y_origin += clutter_actor_get_y (priv->trough);
 
+  stage = CLUTTER_STAGE (clutter_actor_get_stage (bar->priv->trough));
+
   /* Turn off picking for motion events */
-  clutter_set_motion_events_enabled (FALSE);
+  clutter_stage_set_motion_events_enabled (stage, FALSE);
 
   priv->capture_handler = g_signal_connect_after (
     clutter_actor_get_stage (priv->trough),

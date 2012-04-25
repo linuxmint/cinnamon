@@ -33,6 +33,8 @@ extern GType gnome_cinnamon_plugin_get_type (void);
 #define CINNAMON_DBUS_SERVICE "org.Cinnamon"
 #define MAGNIFIER_DBUS_SERVICE "org.gnome.Magnifier"
 
+#define OVERRIDES_SCHEMA "org.cinnamon.overrides"
+
 static gboolean is_gdm_mode = FALSE;
 
 static void
@@ -132,262 +134,17 @@ cinnamon_dbus_init (gboolean replace)
 }
 
 static void
-constrain_tooltip (StTooltip             *tooltip,
-                   const ClutterGeometry *geometry,
-                   ClutterGeometry       *adjusted_geometry,
-                   gpointer               data)
-{
-  const ClutterGeometry *tip_area = st_tooltip_get_tip_area (tooltip);
-  CinnamonGlobal *global = cinnamon_global_get ();
-  MetaScreen *screen = cinnamon_global_get_screen (global);
-  int n_monitors = meta_screen_get_n_monitors (screen);
-  int i;
-
-  *adjusted_geometry = *geometry;
-
-  /* A point that determines what screen we'll constrain to */
-  int x = tip_area->x + tip_area->width / 2;
-  int y = tip_area->y + tip_area->height / 2;
-
-  for (i = 0; i < n_monitors; i++)
-    {
-      MetaRectangle rect;
-      meta_screen_get_monitor_geometry (screen, i, &rect);
-      if (x >= rect.x && x < rect.x + rect.width &&
-          y >= rect.y && y < rect.y + rect.height)
-        {
-          if (adjusted_geometry->x + adjusted_geometry->width > rect.x + rect.width)
-            adjusted_geometry->x = rect.x + rect.width - adjusted_geometry->width;
-          if (adjusted_geometry->x < rect.x)
-            adjusted_geometry->x = rect.x;
-
-          if (adjusted_geometry->y + adjusted_geometry->height > rect.y + rect.height)
-            adjusted_geometry->y = rect.y + rect.height - adjusted_geometry->height;
-          if (adjusted_geometry->y < rect.y)
-            adjusted_geometry->y = rect.y;
-
-          return;
-        }
-    }
-}
-
-static void
-update_font_options (GtkSettings *settings)
-{
-  StThemeContext *context;
-  ClutterStage *stage;
-  ClutterBackend *backend;
-  gint dpi;
-  gint hinting;
-  gchar *hint_style_str;
-  cairo_hint_style_t hint_style = CAIRO_HINT_STYLE_NONE;
-  gint antialias;
-  cairo_antialias_t antialias_mode = CAIRO_ANTIALIAS_NONE;
-  cairo_font_options_t *options;
-
-  g_object_get (settings,
-                "gtk-xft-dpi", &dpi,
-                "gtk-xft-antialias", &antialias,
-                "gtk-xft-hinting", &hinting,
-                "gtk-xft-hintstyle", &hint_style_str,
-                NULL);
-
-  stage = CLUTTER_STAGE (clutter_stage_get_default ());
-  context = st_theme_context_get_for_stage (stage);
-
-  if (dpi != -1)
-    /* GTK stores resolution as 1024 * dots/inch */
-    st_theme_context_set_resolution (context, dpi / 1024);
-  else
-    st_theme_context_set_default_resolution (context);
-
-  st_tooltip_set_constrain_func (stage, constrain_tooltip, NULL, NULL);
-
-  /* Clutter (as of 0.9) passes comprehensively wrong font options
-   * override whatever set_font_flags() did above.
-   *
-   * http://bugzilla.openedhand.com/show_bug.cgi?id=1456
-   */
-  backend = clutter_get_default_backend ();
-  options = cairo_font_options_create ();
-
-  cairo_font_options_set_hint_metrics (options, CAIRO_HINT_METRICS_ON);
-
-  if (hinting >= 0 && !hinting)
-    {
-      hint_style = CAIRO_HINT_STYLE_NONE;
-    }
-  else if (hint_style_str)
-    {
-      if (strcmp (hint_style_str, "hintnone") == 0)
-        hint_style = CAIRO_HINT_STYLE_NONE;
-      else if (strcmp (hint_style_str, "hintslight") == 0)
-        hint_style = CAIRO_HINT_STYLE_SLIGHT;
-      else if (strcmp (hint_style_str, "hintmedium") == 0)
-        hint_style = CAIRO_HINT_STYLE_MEDIUM;
-      else if (strcmp (hint_style_str, "hintfull") == 0)
-        hint_style = CAIRO_HINT_STYLE_FULL;
-    }
-
-  g_free (hint_style_str);
-
-  cairo_font_options_set_hint_style (options, hint_style);
-
-  /* We don't want to turn on subpixel anti-aliasing; since Clutter
-   * doesn't currently have the code to support ARGB masks,
-   * generating them then squashing them back to A8 is pointless.
-   */
-  antialias_mode = (antialias < 0 || antialias) ? CAIRO_ANTIALIAS_GRAY
-                                                : CAIRO_ANTIALIAS_NONE;
-
-  cairo_font_options_set_antialias (options, antialias_mode);
-
-  clutter_backend_set_font_options (backend, options);
-  cairo_font_options_destroy (options);
-}
-
-static void
-settings_notify_cb (GtkSettings *settings,
-                    GParamSpec  *pspec,
-                    gpointer     data)
-{
-  update_font_options (settings);
-}
-
-static void
-cinnamon_fonts_init (void)
-{
-  GtkSettings *settings;
-
-  /* Disable text mipmapping; it causes problems on pre-GEM Intel
-   * drivers and we should just be rendering text at the right
-   * size rather than scaling it. If we do effects where we dynamically
-   * zoom labels, then we might want to reconsider.
-   */
-  clutter_set_font_flags (clutter_get_font_flags () & ~CLUTTER_FONT_MIPMAPPING);
-
-  settings = gtk_settings_get_default ();
-  g_object_connect (settings,
-                    "signal::notify::gtk-xft-dpi",
-                    G_CALLBACK (settings_notify_cb), NULL,
-                    "signal::notify::gtk-xft-antialias",
-                    G_CALLBACK (settings_notify_cb), NULL,
-                    "signal::notify::gtk-xft-hinting",
-                    G_CALLBACK (settings_notify_cb), NULL,
-                    "signal::notify::gtk-xft-hintstyle",
-                    G_CALLBACK (settings_notify_cb), NULL,
-                    NULL);
-  update_font_options (settings);
-}
-
-static void
 cinnamon_prefs_init (void)
 {
-  meta_prefs_override_preference_location ("/apps/muffin/general/attach_modal_dialogs",
-                                           "/desktop/cinnamon/windows/attach_modal_dialogs");
-  meta_prefs_override_preference_location ("/apps/muffin/general/workspaces_only_on_primary",
-                                           "/desktop/cinnamon/windows/workspaces_only_on_primary");
-  meta_prefs_override_preference_location ("/apps/metacity/general/button_layout",
-                                           "/desktop/cinnamon/windows/button_layout");
-  meta_prefs_override_preference_location ("/apps/metacity/general/edge_tiling",
-                                           "/desktop/cinnamon/windows/edge_tiling");
-  meta_prefs_override_preference_location ("/apps/metacity/general/theme",
-                                           "/desktop/cinnamon/windows/theme");
+  meta_prefs_override_preference_schema ("attach-modal-dialogs",
+                                         OVERRIDES_SCHEMA);
+  meta_prefs_override_preference_schema ("workspaces-only-on-primary",
+                                         OVERRIDES_SCHEMA);
+  meta_prefs_override_preference_schema ("button-layout",
+                                         OVERRIDES_SCHEMA);
+  meta_prefs_override_preference_schema ("edge-tiling",
+                                         OVERRIDES_SCHEMA);
 }
-
-/* This is an IBus workaround. The flow of events with IBus is that every time
- * it gets gets a key event, it:
- *
- *  Sends it to the daemon via D-Bus asynchronously
- *  When it gets an reply, synthesizes a new GdkEvent and puts it into the
- *   GDK event queue with gdk_event_put(), including
- *   IBUS_FORWARD_MASK = 1 << 25 in the state to prevent a loop.
- *
- * (Normally, IBus uses the GTK+ key snooper mechanism to get the key
- * events early, but since our key events aren't visible to GTK+ key snoopers,
- * IBus will instead get the events via the standard
- * GtkIMContext.filter_keypress() mechanism.)
- *
- * There are a number of potential problems here; probably the worst
- * problem is that IBus doesn't forward the timestamp with the event
- * so that every key event that gets delivered ends up with
- * GDK_CURRENT_TIME.  This creates some very subtle bugs; for example
- * if you have IBus running and a keystroke is used to trigger
- * launching an application, focus stealing prevention won't work
- * right. http://code.google.com/p/ibus/issues/detail?id=1184
- *
- * In any case, our normal flow of key events is:
- *
- *  GDK filter function => clutter_x11_handle_event => clutter actor
- *
- * So, if we see a key event that gets delivered via the GDK event handler
- * function - then we know it must be one of these synthesized events, and
- * we should push it back to clutter.
- *
- * To summarize, the full key event flow with IBus is:
- *
- *   GDK filter function
- *     => Muffin
- *     => gnome_cinnamon_plugin_xevent_filter()
- *     => clutter_x11_handle_event()
- *     => clutter event delivery to actor
- *     => gtk_im_context_filter_event()
- *     => sent to IBus daemon
- *     => response received from IBus daemon
- *     => gdk_event_put()
- *     => GDK event handler
- *     => <this function>
- *     => clutter_event_put()
- *     => clutter event delivery to actor
- *
- * Anything else we see here we just pass on to the normal GDK event handler
- * gtk_main_do_event().
- */
-static void
-gnome_cinnamon_gdk_event_handler (GdkEvent *event_gdk,
-                               gpointer  data)
-{
-  if (event_gdk->type == GDK_KEY_PRESS || event_gdk->type == GDK_KEY_RELEASE)
-    {
-      ClutterActor *stage;
-      Window stage_xwindow;
-
-      stage = clutter_stage_get_default ();
-      stage_xwindow = clutter_x11_get_stage_window (CLUTTER_STAGE (stage));
-
-      if (GDK_WINDOW_XID (event_gdk->key.window) == stage_xwindow)
-        {
-          ClutterDeviceManager *device_manager = clutter_device_manager_get_default ();
-          ClutterInputDevice *keyboard = clutter_device_manager_get_core_device (device_manager,
-                                                                                 CLUTTER_KEYBOARD_DEVICE);
-
-          ClutterEvent *event_clutter = clutter_event_new ((event_gdk->type == GDK_KEY_PRESS) ?
-                                                           CLUTTER_KEY_PRESS : CLUTTER_KEY_RELEASE);
-          event_clutter->key.time = event_gdk->key.time;
-          event_clutter->key.flags = CLUTTER_EVENT_NONE;
-          event_clutter->key.stage = CLUTTER_STAGE (stage);
-          event_clutter->key.source = NULL;
-
-          /* This depends on ClutterModifierType and GdkModifierType being
-           * identical, which they are currently. (They both match the X
-           * modifier state in the low 16-bits and have the same extensions.) */
-          event_clutter->key.modifier_state = event_gdk->key.state;
-
-          event_clutter->key.keyval = event_gdk->key.keyval;
-          event_clutter->key.hardware_keycode = event_gdk->key.hardware_keycode;
-          event_clutter->key.unicode_value = gdk_keyval_to_unicode (event_clutter->key.keyval);
-          event_clutter->key.device = keyboard;
-
-          clutter_event_put (event_clutter);
-          clutter_event_free (event_clutter);
-
-          return;
-        }
-    }
-
-  gtk_main_do_event (event_gdk);
-}
-
 
 static void
 malloc_statistics_callback (CinnamonPerfLog *perf_log,
@@ -531,11 +288,8 @@ main (int argc, char **argv)
 
   cinnamon_dbus_init (meta_get_replace_current_wm ());
   cinnamon_a11y_init ();
-  cinnamon_fonts_init ();
   cinnamon_perf_log_init ();
   cinnamon_prefs_init ();
-
-  gdk_event_handler_set (gnome_cinnamon_gdk_event_handler, NULL, NULL);
 
   g_irepository_prepend_search_path (CINNAMON_PKGLIBDIR);
 #if HAVE_BLUETOOTH

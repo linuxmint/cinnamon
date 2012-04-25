@@ -321,19 +321,29 @@ cinnamon_xfixes_cursor_class_init (CinnamonXFixesCursorClass *klass)
 }
 
 /**
- * cinnamon_xfixes_cursor_get_default:
+ * cinnamon_xfixes_cursor_get_for_stage:
+ * @stage: (transfer none): The #ClutterStage to get the cursor for
  *
- * Return value: (transfer none): The global #CinnamonXFixesCursor singleton
+ * Return value: (transfer none): A #CinnamonXFixesCursor instance
  */
 CinnamonXFixesCursor *
-cinnamon_xfixes_cursor_get_default ()
+cinnamon_xfixes_cursor_get_for_stage (ClutterStage *stage)
 {
-  static CinnamonXFixesCursor *instance = NULL;
+  CinnamonXFixesCursor *instance;
+  static GQuark xfixes_cursor_quark;
+
+  if (G_UNLIKELY (xfixes_cursor_quark == 0))
+    xfixes_cursor_quark = g_quark_from_static_string ("cinnamon-xfixes-cursor");
+
+  instance = g_object_get_qdata (G_OBJECT (stage), xfixes_cursor_quark);
 
   if (instance == NULL)
-    instance = g_object_new (CINNAMON_TYPE_XFIXES_CURSOR,
-                             "stage", clutter_stage_get_default (),
-                             NULL);
+    {
+      instance = g_object_new (CINNAMON_TYPE_XFIXES_CURSOR,
+                               "stage", stage,
+                               NULL);
+      g_object_set_qdata (G_OBJECT (stage), xfixes_cursor_quark, instance);
+    }
 
   return instance;
 }

@@ -29,6 +29,7 @@ GType cinnamon_global_get_type (void) G_GNUC_CONST;
 
 CinnamonGlobal   *cinnamon_global_get                       (void);
 
+ClutterStage  *cinnamon_global_get_stage                 (CinnamonGlobal *global);
 MetaScreen    *cinnamon_global_get_screen                (CinnamonGlobal *global);
 GdkScreen     *cinnamon_global_get_gdk_screen            (CinnamonGlobal *global);
 MetaDisplay   *cinnamon_global_get_display               (CinnamonGlobal *global);
