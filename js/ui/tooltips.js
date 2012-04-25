@@ -9,9 +9,10 @@ function PanelItemTooltip(panelItem, initTitle, orientation) {
 
 PanelItemTooltip.prototype = {
     _init: function(panelItem, initTitle, orientation) {
-        this._tooltip = new St.Tooltip();
+        this._tooltip = new St.Label({ name: 'Tooltip' });
+        this._tooltip.show_on_set_parent = false;
         this.orientation = orientation;
-        if (initTitle) this._tooltip.set_label(initTitle);
+        if (initTitle) this._tooltip.set_text(initTitle);
         Main.uiGroup.add_actor(this._tooltip);
         
         panelItem.actor.connect('enter-event', Lang.bind(this, this._onEnterEvent));
@@ -40,7 +41,7 @@ PanelItemTooltip.prototype = {
     },
     
     _onTimerComplete: function(){
-        if (this._tooltip.get_label() != "") {
+        if (this._tooltip.get_text() != "") {
             this.show();
         }
     },
@@ -90,7 +91,7 @@ PanelItemTooltip.prototype = {
     },
     
     set_text: function(text) {
-        this._tooltip.set_label(text);
+        this._tooltip.set_text(text);
     },
     
     destroy: function() {
