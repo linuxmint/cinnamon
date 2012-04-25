@@ -19,7 +19,7 @@ typedef struct _CinnamonXFixesCursorClass   CinnamonXFixesCursorClass;
 
 GType               cinnamon_xfixes_cursor_get_type     (void) G_GNUC_CONST;
 
-CinnamonXFixesCursor   *cinnamon_xfixes_cursor_get_default (void);
+CinnamonXFixesCursor   *cinnamon_xfixes_cursor_get_for_stage (ClutterStage *stage);
 
 void                cinnamon_xfixes_cursor_show (CinnamonXFixesCursor *xfixes_cursor);
 void                cinnamon_xfixes_cursor_hide (CinnamonXFixesCursor *xfixes_cursor);

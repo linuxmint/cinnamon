@@ -39,10 +39,6 @@ void     cinnamon_wm_completed_destroy          (CinnamonWM         *wm,
                                               MetaWindowActor *actor);
 void     cinnamon_wm_completed_switch_workspace (CinnamonWM         *wm);
 
-/* Keybinding stuff */
-void cinnamon_wm_takeover_keybinding (CinnamonWM    *wm,
-				   const char *binding_name);
-
 G_END_DECLS
 
 #endif /* __CINNAMON_WM_H__ */

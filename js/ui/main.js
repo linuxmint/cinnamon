@@ -4,7 +4,6 @@ const Clutter = imports.gi.Clutter;
 const DBus = imports.dbus;
 const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
-const GConf = imports.gi.GConf;
 const Mainloop = imports.mainloop;
 const Meta = imports.gi.Meta;
 const Cinnamon = imports.gi.Cinnamon;
@@ -145,15 +144,11 @@ function _initUserSession() {
     ExtensionSystem.init();
     ExtensionSystem.loadExtensions();
 
-    let cinnamonwm = global.window_manager;
-
-    cinnamonwm.takeover_keybinding('panel_run_dialog');
-    cinnamonwm.connect('keybinding::panel_run_dialog', function () {
+    Meta.keybindings_set_custom_handler('panel-run-dialog', function() {
        getRunDialog().open();
     });
 
-    cinnamonwm.takeover_keybinding('panel_main_menu');
-    cinnamonwm.connect('keybinding::panel_main_menu', function () {
+    Meta.keybindings_set_custom_handler('panel-main-menu', function () {
         expo.toggle();
     });
     
@@ -659,16 +654,6 @@ function _globalKeyPressHandler(actor, event) {
 
     // This relies on the fact that Clutter.ModifierType is the same as Gdk.ModifierType
     let action = global.display.get_keybinding_action(keyCode, modifierState);
-
-    // The screenshot action should always be available (even if a
-    // modal dialog is present)
-    if (action == Meta.KeyBindingAction.COMMAND_SCREENSHOT) {
-        let gconf = GConf.Client.get_default();
-        let command = gconf.get_string('/apps/metacity/keybinding_commands/command_screenshot');
-        if (command != null && command != '')
-            Util.spawnCommandLine(command);
-        return true;
-    }
 
     // Other bindings are only available to the user session when the overview is up and
     // no modal dialog is present.

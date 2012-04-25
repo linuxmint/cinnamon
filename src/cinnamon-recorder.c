@@ -341,7 +341,7 @@ recorder_update_memory_used (CinnamonRecorder *recorder,
            * seems like a bad idea.
            */
           recorder->only_paint = TRUE;
-          clutter_redraw (recorder->stage);
+          clutter_stage_ensure_redraw (recorder->stage);
           recorder->only_paint = FALSE;
         }
     }
