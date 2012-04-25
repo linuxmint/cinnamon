@@ -245,6 +245,7 @@
     <child schema="org.cinnamon.theme" name="theme"/>   
     <child schema="org.cinnamon.recorder" name="recorder"/>
     <child schema="org.cinnamon.keyboard" name="keyboard"/>
+    <child schema="org.cinnamon.power" name="power" />
   </schema>
  
   <schema path="/org/cinnamon/theme/" id="org.cinnamon.theme" gettext-domain="@GETTEXT_PACKAGE@">
@@ -260,6 +261,14 @@
       <default>'touch'</default>
       <summary>Which keyboard to use</summary>
       <description>The type of keyboard to use.</description>
+    </key>
+  </schema>
+
+  <schema path="/org/cinnamon/power/" id="org.cinnamon.power" gettext-domain="@GETTEXT_PACKAGE">
+      <key type="s" name="power-label">
+          <default>'percent'</default>
+          <summary>Display percentage in power applet</summary>
+          <description>Display battery remaining as percentage or time in power applet.</description>
     </key>
   </schema>
 
