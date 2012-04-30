@@ -134,6 +134,8 @@ MyApplet.prototype = {
 
             let icon = this.actor.get_children()[0];
             this.actor.remove_actor(icon);
+            let label = this.actor.get_children()[0];
+            this.actor.remove_actor(label);
             let box = new St.BoxLayout({ name: 'batteryBox' });
             this.actor.add_actor(box);
             let iconBox = new St.Bin();
