@@ -40,13 +40,27 @@ const PowerManagerInterface = {
         { name: 'GetPrimaryDevice', inSignature: '', outSignature: '(susdut)' },
         ],
     signals: [
-        { name: 'Changed', inSignature: '' },
+        { name: 'PropertiesChanged', inSignature: 's,a{sv},a[s]' },
         ],
     properties: [
         { name: 'Icon', signature: 's', access: 'read' },
         ]
 };
 let PowerManagerProxy = DBus.makeProxyClass(PowerManagerInterface);
+
+const SettingsManagerInterface = {
+	name: 'org.freedesktop.DBus.Properties',
+	methods: [
+		{ name: 'Get', inSignature: 's,s', outSignature: 'v' },
+		{ name: 'GetAll', inSignature: 's', outSignature: 'a{sv}' },
+		{ name: 'Set', inSignature: 's,s,v', outSignature: '' }
+	],
+	signals: [
+	{name: 'PropertiesChanged', inSignature:'s,a{sv},a[s]', outSignature:''}
+	]
+};
+
+let SettingsManagerProxy = DBus.makeProxyClass(SettingsManagerInterface);
 
 function DeviceItem() {
     this._init.apply(this, arguments);
@@ -122,6 +136,10 @@ MyApplet.prototype = {
             
             this.set_applet_icon_symbolic_name('battery-missing');            
             this._proxy = new PowerManagerProxy(DBus.session, BUS_NAME, OBJECT_PATH);
+<<<<<<< HEAD
+=======
+			this._smProxy = new SettingsManagerProxy(DBus.session, BUS_NAME, OBJECT_PATH);
+>>>>>>> cdf72e8... Fixed power applet not updating ( issue #611 )
             
             let icon = this.actor.get_children()[0];
             this.actor.remove_actor(icon);
@@ -148,7 +166,7 @@ MyApplet.prototype = {
             this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
             this.menu.addSettingsAction(_("Power Settings"), 'gnome-power-panel.desktop');
 
-            this._proxy.connect('Changed', Lang.bind(this, this._devicesChanged));
+            this._smProxy.connect('PropertiesChanged', Lang.bind(this, this._devicesChanged));
             this._devicesChanged();            
         }
         catch (e) {
