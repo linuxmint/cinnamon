@@ -7,6 +7,7 @@ nobase_dist_js_DATA = \
 	gdm/fingerprint.js	\
 	gdm/loginDialog.js	\
 	gdm/powerMenu.js	\
+	misc/appletSettings.js	\
 	misc/config.js		\
 	misc/docInfo.js		\
 	misc/fileUtils.js	\
