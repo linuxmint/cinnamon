@@ -136,10 +136,7 @@ MyApplet.prototype = {
             
             this.set_applet_icon_symbolic_name('battery-missing');            
             this._proxy = new PowerManagerProxy(DBus.session, BUS_NAME, OBJECT_PATH);
-<<<<<<< HEAD
-=======
-			this._smProxy = new SettingsManagerProxy(DBus.session, BUS_NAME, OBJECT_PATH);
->>>>>>> cdf72e8... Fixed power applet not updating ( issue #611 )
+	    this._smProxy = new SettingsManagerProxy(DBus.session, BUS_NAME, OBJECT_PATH);
             
             let icon = this.actor.get_children()[0];
             this.actor.remove_actor(icon);
