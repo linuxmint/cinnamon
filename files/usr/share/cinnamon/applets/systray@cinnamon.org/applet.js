@@ -12,7 +12,7 @@ MyApplet.prototype = {
 
     _init: function(orientation) {        
         Applet.Applet.prototype._init.call(this, orientation);
-        
+        this.actor.remove_style_class_name("applet-box");
         try {                   
             Main.statusIconDispatcher.connect('status-icon-added', Lang.bind(this, this._onTrayIconAdded));
             Main.statusIconDispatcher.connect('status-icon-removed', Lang.bind(this, this._onTrayIconRemoved));    
@@ -43,7 +43,7 @@ MyApplet.prototype = {
                 return;
             }
             
-            let buttonBox = new PanelMenu.ButtonBox({ style_class: 'panel-status-button' });
+            let buttonBox = new PanelMenu.ButtonBox({ style_class: 'panel-status-button', reactive: true, track_hover: true  });
             let box = buttonBox.actor;
             box.add_actor(icon);
 
