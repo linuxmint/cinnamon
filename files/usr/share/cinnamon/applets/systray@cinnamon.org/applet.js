@@ -36,12 +36,14 @@ MyApplet.prototype = {
     
     _onTrayIconAdded: function(o, icon, role) {
         try {                          
-            let hiddenIcons = ["network", "power", "keyboard", "gnome-settings-daemon", "volume", "bluetooth", "battery", "a11y"];
+            let hiddenIcons = ["network", "power", "keyboard", "gnome-settings-daemon", "volume", "bluetooth", "bluetooth-manager", "battery", "a11y"];
             
             if (hiddenIcons.indexOf(role) != -1 ) {  
                 // We've got an applet for that          
                 return;
             }
+            
+            global.log("Adding systray: " + role);
             
             let buttonBox = new PanelMenu.ButtonBox({ style_class: 'panel-status-button', reactive: true, track_hover: true  });
             let box = buttonBox.actor;
