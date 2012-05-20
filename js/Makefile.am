@@ -27,6 +27,7 @@ nobase_dist_js_DATA = \
 	ui/boxpointer.js	\
 	ui/calendar.js		\
 	ui/dnd.js		\
+        ui/edgeFlip.js          \
 	ui/endSessionDialog.js	\
 	ui/environment.js	\
 	ui/expo.js		\
@@ -69,4 +70,3 @@ nobase_dist_js_DATA = \
 	ui/workspaceThumbnail.js	\
 	ui/workspacesView.js	\
 	ui/xdndHandler.js
-	
