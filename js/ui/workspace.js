@@ -739,6 +739,33 @@ Workspace.prototype = {
         this._repositionWindowsId = 0;
 
         this.leavingOverview = false;
+
+        this._stageKeyPressId = 0;
+        this._stageKeyPressId = global.stage.connect('key-press-event',
+            Lang.bind(this, this._onStageKeyPress));
+        Main.overview.connect('hiding', Lang.bind(this,
+            function () {
+                if (this._stageKeyPressId != 0) {
+                    global.stage.disconnect(this._stageKeyPressId);
+                    this._stageKeyPressId = 0;
+                }
+            }));
+    },
+    
+    _onStageKeyPress: function(actor, event) {
+        let modifiers = Cinnamon.get_event_state(event);
+        let symbol = event.get_key_symbol();
+
+        if (symbol == Clutter.Left) {
+            // return true;
+        }
+        else if (symbol == Clutter.Right) {
+            // return true;
+        }
+        else if (symbol == Clutter.Return) {
+            // return true;
+        }
+        return false;
     },
 
     setGeometry: function(x, y, width, height) {
