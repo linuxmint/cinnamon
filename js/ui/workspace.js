@@ -740,6 +740,8 @@ Workspace.prototype = {
 
         this.leavingOverview = false;
 
+        this._kbWindowIndex = -1; // index of the current keyboard-selected window (in _windows), if any
+        
         this._stageKeyPressId = 0;
         this._stageKeyPressId = global.stage.connect('key-press-event',
             Lang.bind(this, this._onStageKeyPress));
@@ -756,14 +758,26 @@ Workspace.prototype = {
         let modifiers = Cinnamon.get_event_state(event);
         let symbol = event.get_key_symbol();
 
-        if (symbol == Clutter.Left) {
-            // return true;
+        if (this._windows.length > 1) {
+            if (symbol == Clutter.Left) {
+                this._kbWindowIndex = (this._kbWindowIndex < 1 ? this._windows.length : this._kbWindowIndex) - 1;
+                this._windowOverlays[this._kbWindowIndex]._onEnter();
+                return true;
+            }
+            if (symbol == Clutter.Right) {
+                this._kbWindowIndex = (this._kbWindowIndex + 1) % this._windows.length;
+                this._windowOverlays[this._kbWindowIndex]._onEnter();
+                return true;
+            }
         }
-        else if (symbol == Clutter.Right) {
-            // return true;
-        }
-        else if (symbol == Clutter.Return) {
-            // return true;
+        
+        if (symbol == Clutter.Return) {
+            if (this._kbWindowIndex > -1 && this._kbWindowIndex < this._windows.length) {
+                this._onCloneSelected(this._windows[this._kbWindowIndex], global.get_current_time());
+                return true;
+            }
+            Main.overview.hide();
+            return true;
         }
         return false;
     },
