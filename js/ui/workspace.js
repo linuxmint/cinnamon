@@ -469,7 +469,7 @@ WindowOverlay.prototype = {
         button._overlap = 0;
 
         this._idleToggleCloseId = 0;
-        button.connect('clicked', Lang.bind(this, this._closeWindow));
+        button.connect('clicked', Lang.bind(this, this.closeWindow));
 
         windowClone.actor.connect('destroy', Lang.bind(this, this._onDestroy));
         windowClone.actor.connect('enter-event',
@@ -589,7 +589,7 @@ WindowOverlay.prototype = {
         icon.set_position(Math.floor(iconX), Math.floor(iconY));
     },
 
-    _closeWindow: function(actor) {
+    closeWindow: function() {
         let metaWindow = this._windowClone.metaWindow;
         this._workspace = metaWindow.get_workspace();
 
@@ -770,6 +770,12 @@ Workspace.prototype = {
             return true;
         }
         return false;
+    },
+
+    closeSelectedWindow: function() {
+        if (this._kbWindowIndex > -1 && this._kbWindowIndex < this._windows.length) {
+            this._windowOverlays[this._kbWindowIndex].closeWindow();
+        }
     },
 
     setGeometry: function(x, y, width, height) {

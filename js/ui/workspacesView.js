@@ -141,6 +141,11 @@ WorkspacesView.prototype = {
         let modifiers = Cinnamon.get_event_state(event);
         let symbol = event.get_key_symbol();
 
+        if (symbol == Clutter.w && modifiers & Clutter.ModifierType.CONTROL_MASK) {
+            activeWorkspace.closeSelectedWindow();
+            return true;
+        }
+
         if (symbol == Clutter.Left || symbol == Clutter.Down) {
             activeWorkspace.selectPrevWindow();
             return true;
