@@ -120,7 +120,8 @@ WindowClone.prototype = {
         // the invisible border; this is inconvenient; rather than trying
         // to compensate all over the place we insert a ClutterGroup into
         // the hierarchy that is sized to only the visible portion.
-        this.actor = new Clutter.Group({ reactive: true,
+        this.actor = new St.Bin({ style_class: 'clone-container',
+                                         reactive: true,
                                          x: this.origX,
                                          y: this.origY,
                                          width: outerRect.width,
@@ -500,6 +501,10 @@ WindowOverlay.prototype = {
             this._onStyleChanged();
     },
 
+    setSelected: function(selected) {
+        this._windowClone.actor.name = selected ? 'selected' : '';
+    },
+
     hide: function() {
         this._hidden = true;
         this.closeButton.hide();
@@ -744,13 +749,19 @@ Workspace.prototype = {
     },
     
     selectNextWindow: function() {
+        if (this._kbWindowIndex > -1 && this._kbWindowIndex < this._windows.length) {
+            this._windowOverlays[this._kbWindowIndex].setSelected(false);
+        }
         this._kbWindowIndex = (this._kbWindowIndex + 1) % this._windows.length;
-        this._windowOverlays[this._kbWindowIndex]._onEnter();
+        this._windowOverlays[this._kbWindowIndex].setSelected(true);
     },
     
     selectPrevWindow: function() {
+        if (this._kbWindowIndex > -1 && this._kbWindowIndex < this._windows.length) {
+            this._windowOverlays[this._kbWindowIndex].setSelected(false);
+        }
         this._kbWindowIndex = (this._kbWindowIndex < 1 ? this._windows.length : this._kbWindowIndex) - 1;
-        this._windowOverlays[this._kbWindowIndex]._onEnter();
+        this._windowOverlays[this._kbWindowIndex].setSelected(true);
     },
     
     activateSelectedWindow: function() {

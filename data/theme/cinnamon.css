@@ -336,6 +336,13 @@ StScrollBar StButton#vhandle:hover {
 	color: white;
 	spacing: 25px;
 }
+
+.clone-container#selected {
+    border: 1px;
+    border-color: blue;
+    border-style: dashed;
+}
+
 .workspace-controls {
 	visible-height: 32px; /* Amount visible before hovering */
 }
@@ -388,7 +395,7 @@ StScrollBar StButton#vhandle:hover {
 	background-image: url("close-window.svg");
 	height: 34px;
 	width: 34px;
-	-cinnamon-close-overlap: 20px;
+	-cinnamon-close-overlap: 28px;
 }
 .window-close:rtl {
 	-st-background-image-shadow: 2px 2px 6px rgba(0,0,0,0.5);
