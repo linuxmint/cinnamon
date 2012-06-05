@@ -1247,6 +1247,15 @@ Workspace.prototype = {
                 scale: stageWidth / clone.actor.width
             };
         }
+        if (index === this._kbWindowIndex) {
+            if (this._kbWindowIndex >= this._windowOverlays.length) {
+                this._kbWindowIndex = 0;
+            }
+            if (this._kbWindowIndex < this._windowOverlays.length) {
+                this._windowOverlays[this._kbWindowIndex].setSelected(true);
+            }
+        }
+        
         clone.destroy();
 
 
