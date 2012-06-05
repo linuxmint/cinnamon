@@ -66,6 +66,7 @@ AppletPopupMenu.prototype = {
     }
 }
 
+
 function Applet(orientation) {
     this._init(orientation);
 }
@@ -88,12 +89,13 @@ Applet.prototype = {
         this._panelLocation = null; // Backlink to the panel location our applet is in, set by Cinnamon.
         this._newPanelLocation = null; //  Used when moving an applet
         this._uuid = null; // Defined in gsettings, set by Cinnamon.
+        this._grav_padding = 0; // padding added to gravity side of applet, allowing user to position applets where they wish within a panel zone
         this._dragging = false;                
         this._draggable = DND.makeDraggable(this.actor);
         this._draggable.connect('drag-begin', Lang.bind(this, this._onDragBegin));
-    	this._draggable.connect('drag-cancelled', Lang.bind(this, this._onDragCancelled));
+        this._draggable.connect('drag-cancelled', Lang.bind(this, this._onDragCancelled));
         this._draggable.connect('drag-end', Lang.bind(this, this._onDragEnd));        
-
+        this.gravity_slider = new PopupMenu.PopupSliderMenuItem(0);
         this._applet_tooltip_text = "";      
         
         this._setAppletReactivity();                
@@ -101,7 +103,9 @@ Applet.prototype = {
     },
     
     _setAppletReactivity: function() {
-        this._draggable.inhibit = !global.settings.get_boolean('panel-edit-mode');
+        let drag = global.settings.get_boolean('panel-edit-mode');
+        this._draggable.inhibit = !drag;
+        drag ? this.gravity_slider.actor.show() : this.gravity_slider.actor.hide();
     },
 
     _onDragBegin: function() {
@@ -166,7 +170,7 @@ Applet.prototype = {
         this._menuManager.addMenu(this._applet_context_menu);
 
         this.on_orientation_changed(orientation);
-
+        this.gravity_slider = new PopupMenu.PopupSliderMenuItem(0);
         this.finalizeContextMenu();
     },
     
@@ -185,6 +189,18 @@ Applet.prototype = {
         this._applet_context_menu.addMenuItem(panel_settings_item);
         let applet_settings_item = new MenuItem(_("Add/remove applets"), null, Lang.bind(this, this._AppletSettings));
         this._applet_context_menu.addMenuItem(applet_settings_item);
+        this.gravity_slider.setValue(this._grav_padding/100);
+        this.gravity_slider.connect('value-changed', Lang.bind(this, this._sliderChanged));
+        this.gravity_slider.connect('drag-end', Lang.bind(this, this._updatePadding));
+        this._applet_context_menu.addMenuItem(this.gravity_slider);
+    },
+    
+    _sliderChanged: function(slider, value) {
+        this._grav_padding = Math.round(value * 100);
+    },
+    
+    _updatePadding: function() {
+        AppletManager.saveAppletsPositions();
     },
 
     _PanelSettings: function(actor, event) {

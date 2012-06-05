@@ -49,7 +49,8 @@ function onEnabledAppletsChanged() {
             if (newEnabledApplets.indexOf(appletDefinition) == -1) {                    
                 // Applet was removed or definition was changed...
                 let elements = appletDefinition.split(":");
-                if (elements.length == 4) {
+                if (elements.length >= 4) {
+                    let padding = elements.length == 5 ? parseInt(elements[4]): 0;
                     let uuid = elements[3];
                     let panel = Main.panel;
                     if (elements[0] == "panel2") {
@@ -70,7 +71,7 @@ function onEnabledAppletsChanged() {
                         // Applet was removed                        
                         let directory = _find_applet(uuid);
                         if (directory != null) {
-                            let applet = loadApplet(uuid, directory, orientation);
+                            let applet = loadApplet(uuid, directory, orientation, padding);
                             if (applet._panelLocation != null) {
                                 applet._panelLocation.remove_actor(applet.actor);
                                 applet._panelLocation = null;
@@ -95,7 +96,7 @@ function loadApplets() {
     for (let i=0; i<enabledApplets.length; i++) {                
         add_applet_to_panels(enabledApplets[i]);
         let elements = enabledApplets[i].split(":");
-        if (elements.length == 4) {
+        if (elements.length >= 4) {
             foundAtLeastOneApplet = true;
         }        
     }    
@@ -109,7 +110,9 @@ function add_applet_to_panels(appletDefinition) {
         // format used in gsettings is 'panel:location:order:uuid' where panel is something like 'panel1', location is
         // either 'left', 'center' or 'right' and order is an integer representing the order of the applet within the panel/location (i.e. 1st, 2nd etc..).                     
         let elements = appletDefinition.split(":");
-        if (elements.length == 4) {
+        let padleft = true;
+        if (elements.length >= 4) {
+            let padding = elements.length == 5 ? parseInt(elements[4]): 0; // setup padding early so we can introduce a vector (sign) depending on left/right/center
             let panel = Main.panel;
             if (elements[0] == "panel2") {
                 panel = Main.panel2;
@@ -120,6 +123,7 @@ function add_applet_to_panels(appletDefinition) {
             }
             else if (elements[1] == "right") {
                 location = panel._rightBox;
+                padleft = false; // gravity is reversed in the right zone
             }
             let order;
             try{
@@ -135,7 +139,7 @@ function add_applet_to_panels(appletDefinition) {
             let directory = _find_applet(uuid);
             if (directory != null) {
                 // Load the applet
-                let applet = loadApplet(uuid, directory, orientation);
+                let applet = loadApplet(uuid, directory, orientation, padding);
                 applet._order = order;
                 
                 // Remove it from its previous panel location (if it had one)
@@ -163,7 +167,12 @@ function add_applet_to_panels(appletDefinition) {
                 applet._panelLocation = location;                  
                 for (let i=0; i<appletsToMove.length; i++) {
                     location.add(appletsToMove[i]);
-                }  
+                }            
+                let realpadding = Math.round((padding/100)*Main.layoutManager.primaryMonitor.width);
+                let pad_string = "padding-left: "+realpadding.toString()+"px;";
+                if (!padleft)
+                    pad_string = "padding-right: "+realpadding.toString()+"px;";
+                applet.actor.style = pad_string;
                 applet.on_applet_added_to_panel();
             } 
             else {
@@ -223,7 +232,7 @@ function _find_applet_in(uuid, dir) {
     return(directory);
 }
 
-function loadApplet(uuid, dir, orientation) {    
+function loadApplet(uuid, dir, orientation, padding) {
     let info;    
     let applet = null;
     
@@ -318,7 +327,7 @@ function loadApplet(uuid, dir, orientation) {
     
     appletObj[uuid] = applet;  
     applet._uuid = uuid;
-    
+    applet._grav_padding = padding;
     applet.finalizeContextMenu();
     
     return(applet);
@@ -328,7 +337,7 @@ function _removeAppletFromPanel(menuitem, event, uuid) {
     for (let i=0; i<enabledApplets.length; i++) {
         let appletDefinition = enabledApplets[i];           
         let elements = appletDefinition.split(":");
-        if (elements.length == 4) {
+        if (elements.length >= 4) {
             let applet_uuid = elements[3];                
             if (uuid == applet_uuid) {   
                 newEnabledApplets = enabledApplets.slice(0);             
@@ -372,7 +381,8 @@ function saveAppletsPositions() {
                 let appletOrder;
                 if (applet._newOrder != null) appletOrder = applet._newOrder;
                 else appletOrder = applet._order;
-                if (appletZone == zone) applets.push(panel_string+":"+zone_string+":"+appletOrder+":"+applet._uuid);
+                if (appletZone == zone)
+                    applets.push(panel_string+":"+zone_string+":"+appletOrder+":"+applet._uuid+":"+applet._grav_padding.toString());
             }
         }
     }
