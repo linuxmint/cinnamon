@@ -7,6 +7,7 @@ const PopupMenu = imports.ui.popupMenu;
 const Util = imports.misc.util;
 const GLib = imports.gi.GLib;
 const ModalDialog = imports.ui.modalDialog;
+const AppletManager = imports.ui.appletManager;
 
 function ConfirmDialog(){
     this._init();
@@ -69,6 +70,10 @@ MyApplet.prototype = {
                 Main.createLookingGlass().open();
             }); 
             
+            this.troubleshootItem.menu.addAction(_("Reset all applet padding"), function() {
+                AppletManager.resetAppletPadding();
+            });
+    
             this.troubleshootItem.menu.addAction(_("Restore all settings to default"), function(event) {
                 this.confirm = new ConfirmDialog();
                 this.confirm.open();

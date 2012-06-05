@@ -49,7 +49,8 @@ function onEnabledAppletsChanged() {
             if (newEnabledApplets.indexOf(appletDefinition) == -1) {                    
                 // Applet was removed or definition was changed...
                 let elements = appletDefinition.split(":");
-                if (elements.length == 4) {
+                if (elements.length >= 4) {
+                    let padding = elements.length == 5 ? parseInt(elements[4]): 0;
                     let uuid = elements[3];
                     let panel = Main.panel;
                     if (elements[0] == "panel2") {
@@ -70,7 +71,7 @@ function onEnabledAppletsChanged() {
                         // Applet was removed                        
                         let directory = _find_applet(uuid);
                         if (directory != null) {
-                            let applet = loadApplet(uuid, directory, orientation);
+                            let applet = loadApplet(uuid, directory, orientation, padding);
                             if (applet._panelLocation != null) {
                                 applet._panelLocation.remove_actor(applet.actor);
                                 applet._panelLocation = null;
@@ -95,7 +96,7 @@ function loadApplets() {
     for (let i=0; i<enabledApplets.length; i++) {                
         add_applet_to_panels(enabledApplets[i]);
         let elements = enabledApplets[i].split(":");
-        if (elements.length == 4) {
+        if (elements.length >= 4) {
             foundAtLeastOneApplet = true;
         }        
     }    
@@ -105,11 +106,14 @@ function loadApplets() {
 }
 
 function add_applet_to_panels(appletDefinition) {
-    try {                 
-        // format used in gsettings is 'panel:location:order:uuid' where panel is something like 'panel1', location is
-        // either 'left', 'center' or 'right' and order is an integer representing the order of the applet within the panel/location (i.e. 1st, 2nd etc..).                     
+    try {
+        // format used in gsettings is 'panel:location:order:uuid:padding' where panel is something like 'panel1', location is
+        // either 'left', 'center' or 'right' and order is an integer representing the order of the applet within the panel/location (i.e. 1st, 2nd etc..).
+        // padding is 0-100 representing the percentage of screen width to add to the left or right padding of the applet
         let elements = appletDefinition.split(":");
-        if (elements.length == 4) {
+        let padleft = true;
+        if (elements.length >= 4) {
+            let padding = elements.length == 5 ? parseInt(elements[4]): 0;
             let panel = Main.panel;
             if (elements[0] == "panel2") {
                 panel = Main.panel2;
@@ -120,6 +124,7 @@ function add_applet_to_panels(appletDefinition) {
             }
             else if (elements[1] == "right") {
                 location = panel._rightBox;
+                padleft = false; // gravity is reversed in the right zone
             }
             let order;
             try{
@@ -135,17 +140,17 @@ function add_applet_to_panels(appletDefinition) {
             let directory = _find_applet(uuid);
             if (directory != null) {
                 // Load the applet
-                let applet = loadApplet(uuid, directory, orientation);
+                let applet = loadApplet(uuid, directory, orientation, padding);
                 applet._order = order;
-                
                 // Remove it from its previous panel location (if it had one)
                 if (applet._panelLocation != null) {
                     applet._panelLocation.remove_actor(applet.actor);
+                    applet._panelLocation.remove_actor(applet.buffer);
                     applet._panelLocation = null;
                 }
-                                            
+                
                 // Add it to its new panel location
-                let children = location.get_children();                    
+                let children = location.get_children();
                 let appletsToMove = [];
                 for (let i=0; i<children.length;i++) {
                     let child = children[i];
@@ -153,17 +158,22 @@ function add_applet_to_panels(appletDefinition) {
                         if (order < child._applet._order) {                                
                             appletsToMove.push(child);                            
                         }
-                    }                    
+                    }
                 }
-                                
                 for (let i=0; i<appletsToMove.length; i++) {
                     location.remove_actor(appletsToMove[i]);                    
                 }
-                location.add(applet.actor);  
+                if (padleft) {
+                    update_padding(location, applet, padding);
+                    location.add(applet.actor);
+                } else {
+                    location.add(applet.actor);
+                    update_padding(location, applet, padding);
+                }
                 applet._panelLocation = location;                  
                 for (let i=0; i<appletsToMove.length; i++) {
                     location.add(appletsToMove[i]);
-                }  
+                }
                 applet.on_applet_added_to_panel();
             } 
             else {
@@ -178,6 +188,22 @@ function add_applet_to_panels(appletDefinition) {
         global.logError('Failed to load applet ' + appletDefinition + e); 
     }
 }
+
+function update_padding(location, applet, padding) {
+    if (padding == 0) {
+        applet._grav_padding = 0;
+        applet.gravity_slider.setValue(0);
+    } else {
+        let realpadding = Math.round((padding/100)*Main.layoutManager.primaryMonitor.width);
+        let pad_string = "padding-left: "+realpadding.toString()+"px;";
+        applet.buffer.set_style(pad_string);
+        applet._grav_padding = padding;
+        applet.gravity_slider.setValue(padding/100);
+        location.add(applet.buffer);
+        return;
+    }
+}
+
 
 function _find_applet(uuid) {    
     let directory = null;
@@ -223,7 +249,7 @@ function _find_applet_in(uuid, dir) {
     return(directory);
 }
 
-function loadApplet(uuid, dir, orientation) {    
+function loadApplet(uuid, dir, orientation, padding) {
     let info;    
     let applet = null;
     
@@ -318,7 +344,6 @@ function loadApplet(uuid, dir, orientation) {
     
     appletObj[uuid] = applet;  
     applet._uuid = uuid;
-    
     applet.finalizeContextMenu();
     
     return(applet);
@@ -328,7 +353,7 @@ function _removeAppletFromPanel(menuitem, event, uuid) {
     for (let i=0; i<enabledApplets.length; i++) {
         let appletDefinition = enabledApplets[i];           
         let elements = appletDefinition.split(":");
-        if (elements.length == 4) {
+        if (elements.length >= 4) {
             let applet_uuid = elements[3];                
             if (uuid == applet_uuid) {   
                 newEnabledApplets = enabledApplets.slice(0);             
@@ -340,7 +365,7 @@ function _removeAppletFromPanel(menuitem, event, uuid) {
     }
 }
 
-function saveAppletsPositions() {
+function saveAppletsPositions(resetpadding) {
     let panels = [Main.panel, Main.panel2];
     let zones_strings = ["left", "center", "right"];
     let allApplets = new Array();
@@ -367,18 +392,33 @@ function saveAppletsPositions() {
             for (var k in allApplets){
                 let applet = allApplets[k];
                 let appletZone;
-                if (applet._newPanelLocation != null) appletZone = applet._newPanelLocation;
-                else appletZone = applet._panelLocation;
+                if (applet._newPanelLocation != null) {
+                    applet._grav_padding = 0;
+                    appletZone = applet._newPanelLocation;
+                } else appletZone = applet._panelLocation;
                 let appletOrder;
                 if (applet._newOrder != null) appletOrder = applet._newOrder;
                 else appletOrder = applet._order;
-                if (appletZone == zone) applets.push(panel_string+":"+zone_string+":"+appletOrder+":"+applet._uuid);
+                let gravPadding;
+                if (applet._new_grav_padding != null)
+                    gravPadding = applet._new_grav_padding.toString();
+                else
+                    gravPadding = applet._grav_padding.toString();
+                if (resetpadding) gravPadding = "0";
+                if (appletZone == zone)
+                    applets.push(panel_string+":"+zone_string+":"+appletOrder+":"+applet._uuid+":"+gravPadding);
             }
         }
     }
     for (var i in allApplets){
         allApplets[i]._newPanelLocation = null;
         allApplets[i]._newOrder = null;
+        allApplets[i]._new_grav_padding = null;
     }
     global.settings.set_strv('enabled-applets', applets);
+}
+
+
+function resetAppletPadding() {
+    saveAppletsPositions(true);
 }
