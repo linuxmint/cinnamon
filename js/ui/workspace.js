@@ -503,6 +503,7 @@ WindowOverlay.prototype = {
 
     setSelected: function(selected) {
         this._windowClone.actor.name = selected ? 'selected' : '';
+        this.title.name = selected ? 'selected' : '';
     },
 
     hide: function() {
