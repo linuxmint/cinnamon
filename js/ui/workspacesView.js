@@ -132,6 +132,9 @@ WorkspacesView.prototype = {
                     this._stageKeyPressId = 0;
                 }
             }));
+            
+        // this should select the last active window
+        this._workspaces[activeWorkspaceIndex].selectPrevWindow();
     },
 
     _onStageKeyPress: function(actor, event) {

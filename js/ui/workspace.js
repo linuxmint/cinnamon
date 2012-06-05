@@ -745,7 +745,7 @@ Workspace.prototype = {
 
         this.leavingOverview = false;
 
-        this._kbWindowIndex = -1; // index of the current keyboard-selected window (in _windows), if any
+        this._kbWindowIndex = -1; // index of the current keyboard-selected window (in _windows)
     },
     
     selectNextWindow: function() {
