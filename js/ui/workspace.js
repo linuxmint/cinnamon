@@ -120,8 +120,7 @@ WindowClone.prototype = {
         // the invisible border; this is inconvenient; rather than trying
         // to compensate all over the place we insert a ClutterGroup into
         // the hierarchy that is sized to only the visible portion.
-        this.actor = new St.Bin({ style_class: 'clone-container',
-                                         reactive: true,
+        this.actor = new Clutter.Group({ reactive: true,
                                          x: this.origX,
                                          y: this.origY,
                                          width: outerRect.width,
@@ -502,8 +501,10 @@ WindowOverlay.prototype = {
     },
 
     setSelected: function(selected) {
-        this._windowClone.actor.name = selected ? 'selected' : '';
         this.title.name = selected ? 'selected' : '';
+        if (selected) {
+            this._onEnter();
+        }
     },
 
     hide: function() {
@@ -750,18 +751,18 @@ Workspace.prototype = {
     },
     
     selectNextWindow: function() {
-        if (this._kbWindowIndex > -1 && this._kbWindowIndex < this._windows.length) {
+        if (this._kbWindowIndex > -1 && this._kbWindowIndex < this._windowOverlays.length) {
             this._windowOverlays[this._kbWindowIndex].setSelected(false);
         }
-        this._kbWindowIndex = (this._kbWindowIndex + 1) % this._windows.length;
+        this._kbWindowIndex = (this._kbWindowIndex + 1) % this._windowOverlays.length;
         this._windowOverlays[this._kbWindowIndex].setSelected(true);
     },
     
     selectPrevWindow: function() {
-        if (this._kbWindowIndex > -1 && this._kbWindowIndex < this._windows.length) {
+        if (this._kbWindowIndex > -1 && this._kbWindowIndex < this._windowOverlays.length) {
             this._windowOverlays[this._kbWindowIndex].setSelected(false);
         }
-        this._kbWindowIndex = (this._kbWindowIndex < 1 ? this._windows.length : this._kbWindowIndex) - 1;
+        this._kbWindowIndex = (this._kbWindowIndex < 1 ? this._windowOverlays.length : this._kbWindowIndex) - 1;
         this._windowOverlays[this._kbWindowIndex].setSelected(true);
     },
     
@@ -774,7 +775,7 @@ Workspace.prototype = {
     },
 
     closeSelectedWindow: function() {
-        if (this._kbWindowIndex > -1 && this._kbWindowIndex < this._windows.length) {
+        if (this._kbWindowIndex > -1 && this._kbWindowIndex < this._windowOverlays.length) {
             this._windowOverlays[this._kbWindowIndex].closeWindow();
         }
     },
