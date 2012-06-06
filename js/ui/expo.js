@@ -180,7 +180,7 @@ Expo.prototype = {
             Lang.bind(this, function(actor, event) {
                 if (this._shown) {
                     let symbol = event.get_key_symbol();
-                    if (symbol == Clutter.Return || symbol == Clutter.Escape) {
+                    if (symbol === Clutter.Return || symbol === Clutter.Escape) {
                         this.hide();
                         return true;
                     }

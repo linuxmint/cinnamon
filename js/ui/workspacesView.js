@@ -144,21 +144,21 @@ WorkspacesView.prototype = {
         let modifiers = Cinnamon.get_event_state(event);
         let symbol = event.get_key_symbol();
 
-        if (symbol == Clutter.w && modifiers & Clutter.ModifierType.CONTROL_MASK) {
+        if (symbol === Clutter.w && modifiers & Clutter.ModifierType.CONTROL_MASK) {
             activeWorkspace.closeSelectedWindow();
             return true;
         }
 
-        if (symbol == Clutter.Left || symbol == Clutter.Down) {
+        if (symbol === Clutter.Left || symbol === Clutter.Down) {
             activeWorkspace.selectPrevWindow();
             return true;
         }
-        if (symbol == Clutter.Right || symbol == Clutter.Up) {
+        if (symbol === Clutter.Right || symbol === Clutter.Up) {
             activeWorkspace.selectNextWindow();
             return true;
         }
         
-        if (symbol == Clutter.Return) {
+        if (symbol === Clutter.Return) {
             if (activeWorkspace.activateSelectedWindow()) {
                 return true;
             }
