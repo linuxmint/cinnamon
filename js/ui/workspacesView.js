@@ -134,7 +134,9 @@ WorkspacesView.prototype = {
             }));
             
         // this should select the last active window
-        this._workspaces[activeWorkspaceIndex].selectPrevWindow();
+        if (this._workspaces.length > 0) { 
+            this._workspaces[activeWorkspaceIndex].selectPrevWindow();
+        }
     },
 
     _onStageKeyPress: function(actor, event) {

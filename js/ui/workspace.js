@@ -747,10 +747,13 @@ Workspace.prototype = {
 
         this.leavingOverview = false;
 
-        this._kbWindowIndex = -1; // index of the current keyboard-selected window (in _windows)
+        this._kbWindowIndex = -1; // index of the current keyboard-selected window
     },
     
     selectNextWindow: function() {
+        if (this.isEmpty()) {
+            return;
+        }
         if (this._kbWindowIndex > -1 && this._kbWindowIndex < this._windowOverlays.length) {
             this._windowOverlays[this._kbWindowIndex].setSelected(false);
         }
@@ -759,6 +762,9 @@ Workspace.prototype = {
     },
     
     selectPrevWindow: function() {
+        if (this.isEmpty()) {
+            return;
+        }
         if (this._kbWindowIndex > -1 && this._kbWindowIndex < this._windowOverlays.length) {
             this._windowOverlays[this._kbWindowIndex].setSelected(false);
         }
@@ -811,7 +817,7 @@ Workspace.prototype = {
     },
 
     isEmpty: function() {
-        return this._windows.length == 0;
+        return this._windows.length === 0;
     },
 
     // Only use this for n <= 20 say
