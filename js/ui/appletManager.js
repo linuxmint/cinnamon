@@ -107,12 +107,13 @@ function loadApplets() {
 
 function add_applet_to_panels(appletDefinition) {
     try {                 
-        // format used in gsettings is 'panel:location:order:uuid' where panel is something like 'panel1', location is
-        // either 'left', 'center' or 'right' and order is an integer representing the order of the applet within the panel/location (i.e. 1st, 2nd etc..).                     
+        // format used in gsettings is 'panel:location:order:uuid:padding' where panel is something like 'panel1', location is
+        // either 'left', 'center' or 'right' and order is an integer representing the order of the applet within the panel/location (i.e. 1st, 2nd etc..).
+        // padding is 0-100 representing the percentage of screen width to add to the left or right padding of the applet
         let elements = appletDefinition.split(":");
         let padleft = true;
         if (elements.length >= 4) {
-            let padding = elements.length == 5 ? parseInt(elements[4]): 0; // setup padding early so we can introduce a vector (sign) depending on left/right/center
+            let padding = elements.length == 5 ? parseInt(elements[4]): 0;
             let panel = Main.panel;
             if (elements[0] == "panel2") {
                 panel = Main.panel2;
@@ -149,7 +150,7 @@ function add_applet_to_panels(appletDefinition) {
                 }
                                             
                 // Add it to its new panel location
-                let children = location.get_children();                    
+                let children = location.get_children();
                 let appletsToMove = [];
                 for (let i=0; i<children.length;i++) {
                     let child = children[i];
@@ -167,12 +168,16 @@ function add_applet_to_panels(appletDefinition) {
                 applet._panelLocation = location;                  
                 for (let i=0; i<appletsToMove.length; i++) {
                     location.add(appletsToMove[i]);
-                }            
-                let realpadding = Math.round((padding/100)*Main.layoutManager.primaryMonitor.width);
-                let pad_string = "padding-left: "+realpadding.toString()+"px;";
-                if (!padleft)
-                    pad_string = "padding-right: "+realpadding.toString()+"px;";
-                applet.actor.style = pad_string;
+                }
+                if (padding > 0) {
+                    let realpadding = Math.round((padding/100)*Main.layoutManager.primaryMonitor.width);
+                    let pad_string = "padding-left: "+realpadding.toString()+"px;";
+                    if (!padleft)
+                        pad_string = "padding-right: "+realpadding.toString()+"px;";
+                    applet.actor.set_style(pad_string);
+                } else {
+                    applet.actor.set_style("padding-right: 3px; padding-left: 3px;");
+                }
                 applet.on_applet_added_to_panel();
             } 
             else {
@@ -376,8 +381,10 @@ function saveAppletsPositions() {
             for (var k in allApplets){
                 let applet = allApplets[k];
                 let appletZone;
-                if (applet._newPanelLocation != null) appletZone = applet._newPanelLocation;
-                else appletZone = applet._panelLocation;
+                if (applet._newPanelLocation != null) {
+                    applet._grav_padding = 0;
+                    appletZone = applet._newPanelLocation;
+                } else appletZone = applet._panelLocation;
                 let appletOrder;
                 if (applet._newOrder != null) appletOrder = applet._newOrder;
                 else appletOrder = applet._order;
