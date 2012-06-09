@@ -1,7 +1,8 @@
-This package was debianized by Sebastien Bacher <seb128@ubuntu.com> on
-Wed, 01 Jul 2009 23:29:31 +0200.
+This package is based on the Debian packaging of gnome-shell:
+<http://packages.qa.debian.org/g/gnome-shell.html>
 
-It was downloaded from http://ftp.gnome.org/pub/GNOME/sources/cinnamon/2.28/
+The Debian gnome-shell package was debianized by Sebastien Bacher
+<seb128@ubuntu.com> on Wed, 01 Jul 2009 23:29:31 +0200.
 
 Upstream Authors:
 
