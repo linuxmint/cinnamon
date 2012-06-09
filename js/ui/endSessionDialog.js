@@ -273,6 +273,10 @@ EndSessionDialog.prototype = {
                                { x_fill: true,
                                  y_fill: false });
 
+		// Ensure we have some sort of keyboard usability; the keyboard user will have to tab
+        // to the button of choice.
+        this.setInitialKeyFocus(mainContentLayout);
+
         this._iconBin = new St.Bin();
         mainContentLayout.add(this._iconBin,
                               { x_fill:  true,
