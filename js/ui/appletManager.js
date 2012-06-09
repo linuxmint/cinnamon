@@ -74,6 +74,7 @@ function onEnabledAppletsChanged() {
                             let applet = loadApplet(uuid, directory, orientation, padding);
                             if (applet._panelLocation != null) {
                                 applet._panelLocation.remove_actor(applet.actor);
+                                applet._panelLocation.remove_actor(applet.buffer);
                                 applet._panelLocation = null;
                             }
                         }        
