@@ -365,7 +365,7 @@ function _removeAppletFromPanel(menuitem, event, uuid) {
     }
 }
 
-function saveAppletsPositions() {
+function saveAppletsPositions(resetpadding) {
     let panels = [Main.panel, Main.panel2];
     let zones_strings = ["left", "center", "right"];
     let allApplets = new Array();
@@ -404,6 +404,7 @@ function saveAppletsPositions() {
                     gravPadding = applet._new_grav_padding.toString();
                 else
                     gravPadding = applet._grav_padding.toString();
+                if (resetpadding) gravPadding = "0";
                 if (appletZone == zone)
                     applets.push(panel_string+":"+zone_string+":"+appletOrder+":"+applet._uuid+":"+gravPadding);
             }
@@ -415,4 +416,9 @@ function saveAppletsPositions() {
         allApplets[i]._new_grav_padding = null;
     }
     global.settings.set_strv('enabled-applets', applets);
+}
+
+
+function resetAppletPadding() {
+    saveAppletsPositions(true);
 }
