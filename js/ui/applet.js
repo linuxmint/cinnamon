@@ -74,15 +74,15 @@ function Applet(orientation) {
 Applet.prototype = {
 
     _init: function(orientation) {
-        this.actor = new St.BoxLayout({ style_class: 'applet-box', reactive: true, track_hover: true });        
+        this.actor = new St.BoxLayout({ style_class: 'applet-box', reactive: true, track_hover: true });
+        this.buffer = new St.BoxLayout({ style_class: 'applet-box', reactive: false, track_hover: true });
         this._applet_tooltip = new Tooltips.PanelItemTooltip(this, "", orientation);                                        
         this.actor.connect('button-release-event', Lang.bind(this, this._onButtonReleaseEvent));  
-
         this._menuManager = new PopupMenu.PopupMenuManager(this);
         this._applet_context_menu = new AppletContextMenu(this, orientation);
         this._menuManager.addMenu(this._applet_context_menu);     
-
         this.actor._applet = this; // Backlink to get the applet from its actor (handy when we want to know stuff about a particular applet within the panel)
+        this.buffer._applet = this;
         this.actor._delegate = this;
         this._order = 0; // Defined in gsettings, this is the order of the applet within a panel location. This value is set by Cinnamon when loading/listening_to gsettings.
         this._newOrder = null; //  Used when moving an applet
@@ -90,6 +90,7 @@ Applet.prototype = {
         this._newPanelLocation = null; //  Used when moving an applet
         this._uuid = null; // Defined in gsettings, set by Cinnamon.
         this._grav_padding = 0; // padding added to gravity side of applet, allowing user to position applets where they wish within a panel zone
+        this._new_grav_padding = null;
         this._dragging = false;                
         this._draggable = DND.makeDraggable(this.actor);
         this._draggable.connect('drag-begin', Lang.bind(this, this._onDragBegin));
@@ -196,7 +197,7 @@ Applet.prototype = {
     },
     
     _sliderChanged: function(slider, value) {
-        this._grav_padding = Math.round(value * 100);
+        this._new_grav_padding = Math.round(value * 100);
     },
     
     _updatePadding: function() {
