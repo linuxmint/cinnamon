@@ -66,6 +66,7 @@ AppletPopupMenu.prototype = {
     }
 }
 
+
 function Applet(orientation) {
     this._init(orientation);
 }
@@ -73,27 +74,29 @@ function Applet(orientation) {
 Applet.prototype = {
 
     _init: function(orientation) {
-        this.actor = new St.BoxLayout({ style_class: 'applet-box', reactive: true, track_hover: true });        
+        this.actor = new St.BoxLayout({ style_class: 'applet-box', reactive: true, track_hover: true });
+        this.buffer = new St.BoxLayout({ style_class: 'applet-box', reactive: false, track_hover: true });
         this._applet_tooltip = new Tooltips.PanelItemTooltip(this, "", orientation);                                        
         this.actor.connect('button-release-event', Lang.bind(this, this._onButtonReleaseEvent));  
-
         this._menuManager = new PopupMenu.PopupMenuManager(this);
         this._applet_context_menu = new AppletContextMenu(this, orientation);
         this._menuManager.addMenu(this._applet_context_menu);     
-
         this.actor._applet = this; // Backlink to get the applet from its actor (handy when we want to know stuff about a particular applet within the panel)
+        this.buffer._applet = this;
         this.actor._delegate = this;
         this._order = 0; // Defined in gsettings, this is the order of the applet within a panel location. This value is set by Cinnamon when loading/listening_to gsettings.
         this._newOrder = null; //  Used when moving an applet
         this._panelLocation = null; // Backlink to the panel location our applet is in, set by Cinnamon.
         this._newPanelLocation = null; //  Used when moving an applet
         this._uuid = null; // Defined in gsettings, set by Cinnamon.
+        this._grav_padding = 0; // padding added to gravity side of applet, allowing user to position applets where they wish within a panel zone
+        this._new_grav_padding = null;
         this._dragging = false;                
         this._draggable = DND.makeDraggable(this.actor);
         this._draggable.connect('drag-begin', Lang.bind(this, this._onDragBegin));
-    	this._draggable.connect('drag-cancelled', Lang.bind(this, this._onDragCancelled));
+        this._draggable.connect('drag-cancelled', Lang.bind(this, this._onDragCancelled));
         this._draggable.connect('drag-end', Lang.bind(this, this._onDragEnd));        
-
+        this.gravity_slider = new PopupMenu.PopupSliderMenuItem(0);
         this._applet_tooltip_text = "";      
         
         this._setAppletReactivity();                
@@ -101,7 +104,9 @@ Applet.prototype = {
     },
     
     _setAppletReactivity: function() {
-        this._draggable.inhibit = !global.settings.get_boolean('panel-edit-mode');
+        let drag = global.settings.get_boolean('panel-edit-mode');
+        this._draggable.inhibit = !drag;
+        drag ? this.gravity_slider.actor.show() : this.gravity_slider.actor.hide();
     },
 
     _onDragBegin: function() {
@@ -166,7 +171,7 @@ Applet.prototype = {
         this._menuManager.addMenu(this._applet_context_menu);
 
         this.on_orientation_changed(orientation);
-
+        this.gravity_slider = new PopupMenu.PopupSliderMenuItem(0);
         this.finalizeContextMenu();
     },
     
@@ -185,6 +190,19 @@ Applet.prototype = {
         this._applet_context_menu.addMenuItem(panel_settings_item);
         let applet_settings_item = new MenuItem(_("Add/remove applets"), null, Lang.bind(this, this._AppletSettings));
         this._applet_context_menu.addMenuItem(applet_settings_item);
+        this.gravity_slider.setValue(this._grav_padding/100);
+        this.gravity_slider.connect('value-changed', Lang.bind(this, this._sliderChanged));
+        this.gravity_slider.connect('drag-end', Lang.bind(this, this._updatePadding));
+        this.gravity_slider._slider.set_style("min-width: 2em;")
+        this._applet_context_menu.addMenuItem(this.gravity_slider);
+    },
+    
+    _sliderChanged: function(slider, value) {
+        this._new_grav_padding = Math.round(value * 100);
+    },
+    
+    _updatePadding: function() {
+        AppletManager.saveAppletsPositions();
     },
 
     _PanelSettings: function(actor, event) {
