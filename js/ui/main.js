@@ -533,12 +533,10 @@ function setThemeStylesheet(cssStylesheet)
 function loadTheme() {
     let themeContext = St.ThemeContext.get_for_stage (global.stage);
 
-    let cssStylesheet = _defaultCssStylesheet;
-    if (_cssStylesheet != null)
-        cssStylesheet = _cssStylesheet;
+    let theme = St.Theme.new ('', '', _defaultCssStylesheet);
 
-    let theme = new St.Theme ();
-    theme.load_stylesheet(cssStylesheet);
+    if (_cssStylesheet != null)
+        theme = St.Theme.new ('', _cssStylesheet, _defaultCssStylesheet);
     
     themeContext.set_theme (theme);
 }
