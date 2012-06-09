@@ -537,7 +537,7 @@ class GSettingsSpinButton(Gtk.HBox):
         
         self.content_widget.set_range(min, max)
         self.content_widget.set_increments(step, page)
-        self.content_widget.set_editable(False)
+        #self.content_widget.set_editable(False)
         
         self.settings = Gio.Settings.new(schema)        
         self.content_widget.set_value(self.settings.get_int(self.key))
@@ -687,7 +687,7 @@ class GSettingsRangeSpin(Gtk.HBox):
 
         self.content_widget.set_range(_min, _max)
         self.content_widget.set_increments(_increment, _increment)
-        self.content_widget.set_editable(False)
+        #self.content_widget.set_editable(False)
         self.content_widget.set_digits(1)
         self.content_widget.set_value(self.settings.get_double(self.key))
 
@@ -862,10 +862,10 @@ class ChangeTimeWidget(Gtk.HBox):
         self.minSpin.configure(minAdj, 0.5, 0)
         self.yearSpin.configure(yearAdj, 0.5, 0)
         self.daySpin.configure(dayAdj, 0.5, 0)
-        self.hourSpin.set_editable(False)
-        self.minSpin.set_editable(False)
-        self.yearSpin.set_editable(False)
-        self.daySpin.set_editable(False)
+        #self.hourSpin.set_editable(False)
+        #self.minSpin.set_editable(False)
+        #self.yearSpin.set_editable(False)
+        #self.daySpin.set_editable(False)
         
         self.update_time()
         GObject.timeout_add(1000, self.update_time)

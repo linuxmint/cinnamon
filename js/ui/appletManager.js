@@ -163,7 +163,8 @@ function add_applet_to_panels(appletDefinition) {
                 applet._panelLocation = location;                  
                 for (let i=0; i<appletsToMove.length; i++) {
                     location.add(appletsToMove[i]);
-                }                    
+                }  
+                applet.on_applet_added_to_panel();
             } 
             else {
                 global.logError('Could not find applet ' + uuid + ', make sure its directory is present and matches its UUID');

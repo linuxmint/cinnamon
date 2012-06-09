@@ -153,6 +153,9 @@ Applet.prototype = {
     on_applet_clicked: function(event) {
         // Implemented by Applets        
     },
+    
+    on_applet_added_to_panel: function() {       
+    },
 
     setOrientation: function (orientation) {
         this._applet_tooltip.destroy();
@@ -243,6 +246,11 @@ TextApplet.prototype = {
 
     set_applet_label: function (text) {
         this._applet_label.set_text(text);
+    },
+    
+    on_applet_added_to_panel: function() {       
+        let [labelMinWidth, labelNaturalWidth] = this._applet_label.get_preferred_width(-1);
+        this._applet_label.style = ('min-width: ' +  labelNaturalWidth + 'px;');                               
     }
 };
 
@@ -265,5 +273,10 @@ TextIconApplet.prototype = {
 
     hide_applet_icon: function () {
         this._applet_icon_box.child = null;
-    }    
+    },
+    
+    on_applet_added_to_panel: function() {       
+        let [labelMinWidth, labelNaturalWidth] = this._applet_label.get_preferred_width(-1);
+        this._applet_label.style = ('min-width: ' +  labelNaturalWidth + 'px;');                               
+    }  
 };
