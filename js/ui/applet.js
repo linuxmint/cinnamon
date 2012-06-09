@@ -193,6 +193,7 @@ Applet.prototype = {
         this.gravity_slider.setValue(this._grav_padding/100);
         this.gravity_slider.connect('value-changed', Lang.bind(this, this._sliderChanged));
         this.gravity_slider.connect('drag-end', Lang.bind(this, this._updatePadding));
+        this.gravity_slider._slider.set_style("min-width: 2em;")
         this._applet_context_menu.addMenuItem(this.gravity_slider);
     },
     

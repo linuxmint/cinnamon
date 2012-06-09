@@ -169,6 +169,7 @@ function add_applet_to_panels(appletDefinition) {
                 } else {
                     location.add(applet.actor);
                     update_padding(location, applet, padding);
+                    applet.gravity_slider.setInverted(true);
                 }
                 applet._panelLocation = location;                  
                 for (let i=0; i<appletsToMove.length; i++) {

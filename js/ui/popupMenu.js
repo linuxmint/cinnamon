@@ -539,7 +539,7 @@ function PopupSliderMenuItem() {
 PopupSliderMenuItem.prototype = {
     __proto__: PopupBaseMenuItem.prototype,
 
-    _init: function(value) {
+    _init: function(value, invert) {
         PopupBaseMenuItem.prototype._init.call(this, { activate: false });
 
         this.actor.connect('key-press-event', Lang.bind(this, this._onKeyPressEvent));
@@ -548,7 +548,7 @@ PopupSliderMenuItem.prototype = {
             // Avoid spreading NaNs around
             throw TypeError('The slider value must be a number');
         this._value = Math.max(Math.min(value, 1), 0);
-
+        this.invert = invert;
         this._slider = new St.DrawingArea({ style_class: 'popup-slider-menu-item', reactive: true });
         this.addActor(this._slider, { span: -1, expand: true });
         this._slider.connect('repaint', Lang.bind(this, this._sliderRepaint));
@@ -564,6 +564,11 @@ PopupSliderMenuItem.prototype = {
             throw TypeError('The slider value must be a number');
 
         this._value = Math.max(Math.min(value, 1), 0);
+        this._slider.queue_repaint();
+    },
+    
+    setInverted: function(invert) {
+        this.invert = invert;
         this._slider.queue_repaint();
     },
 
@@ -590,7 +595,10 @@ PopupSliderMenuItem.prototype = {
             sliderActiveColor.green / 255,
             sliderActiveColor.blue / 255,
             sliderActiveColor.alpha / 255);
-        cr.rectangle(handleRadius, (height - sliderHeight) / 2, sliderWidth * this._value, sliderHeight);
+        if (this.invert)
+            cr.rectangle(sliderWidth * (1 - this._value), (height - sliderHeight) / 2, sliderWidth * this._value + handleRadius, sliderHeight);
+        else
+            cr.rectangle(handleRadius, (height - sliderHeight) / 2, sliderWidth * this._value, sliderHeight);
         cr.fillPreserve();
         cr.setSourceRGBA (
             sliderActiveBorderColor.red / 255,
@@ -605,7 +613,12 @@ PopupSliderMenuItem.prototype = {
             sliderColor.green / 255,
             sliderColor.blue / 255,
             sliderColor.alpha / 255);
-        cr.rectangle(handleRadius + sliderWidth * this._value, (height - sliderHeight) / 2, sliderWidth * (1 - this._value), sliderHeight);
+        
+        
+        if (this.invert)
+            cr.rectangle(handleRadius, (height - sliderHeight) / 2, sliderWidth * (1-this._value), sliderHeight);
+        else
+            cr.rectangle(handleRadius + sliderWidth * this._value, (height - sliderHeight) / 2, sliderWidth * (1 - this._value), sliderHeight);
         cr.fillPreserve();
         cr.setSourceRGBA (
             sliderBorderColor.red / 255,
@@ -616,8 +629,10 @@ PopupSliderMenuItem.prototype = {
         cr.stroke();
 
         let handleY = height / 2;
-        let handleX = handleRadius + (width - 2 * handleRadius) * this._value;
 
+        let handleX = handleRadius + (width - 2 * handleRadius) * this._value;
+        if (this.invert)
+            handleX = width - (handleRadius + (width - 2 * handleRadius) * this._value);
         let color = themeNode.get_foreground_color();
         cr.setSourceRGBA (
             color.red / 255,
@@ -660,7 +675,7 @@ PopupSliderMenuItem.prototype = {
 
     _onScrollEvent: function (actor, event) {
         let direction = event.get_scroll_direction();
-
+            
         if (direction == Clutter.ScrollDirection.DOWN) {
             this._value = Math.max(0, this._value - SLIDER_SCROLL_STEP);
         }
@@ -690,11 +705,12 @@ PopupSliderMenuItem.prototype = {
 
         let newvalue;
         if (relX < handleRadius)
-            newvalue = 0;
+            this.invert ? newvalue = 1 : newvalue = 0;
         else if (relX > width - handleRadius)
-            newvalue = 1;
+            this.invert ? newvalue = 0 : newvalue = 1;
         else
-            newvalue = (relX - handleRadius) / (width - 2 * handleRadius);
+            newvalue = this.invert ? 1 - ((relX - handleRadius) / (width - 2 * handleRadius)) :
+                    (relX - handleRadius) / (width - 2 * handleRadius);
         this._value = newvalue;
         this._slider.queue_repaint();
         this.emit('value-changed', this._value);
@@ -707,7 +723,11 @@ PopupSliderMenuItem.prototype = {
     _onKeyPressEvent: function (actor, event) {
         let key = event.get_key_symbol();
         if (key == Clutter.KEY_Right || key == Clutter.KEY_Left) {
-            let delta = key == Clutter.KEY_Right ? 0.1 : -0.1;
+            let delta;
+            if (this.invert)
+                delta = key == Clutter.KEY_Left ? 0.1 : -0.1;
+            else
+                delta = key == Clutter.KEY_Right ? 0.1 : -0.1;
             this._value = Math.max(0, Math.min(this._value + delta, 1));
             this._slider.queue_repaint();
             this.emit('value-changed', this._value);
