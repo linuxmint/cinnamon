@@ -706,6 +706,10 @@ Panel.prototype = {
     _showPanel: function() {
         if (this._hidden == false) return;
         
+        if (Main.lookingGlass != null && Main.lookingGlass._open) {
+            return;
+        }
+        
         // Force the panel to be on top (hack to correct issues when switching workspace)
         Main.layoutManager._windowsRestacked();
         
