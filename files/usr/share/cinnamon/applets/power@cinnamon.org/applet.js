@@ -145,12 +145,10 @@ MyApplet.prototype = {
             
             this.set_applet_icon_symbolic_name('battery-missing');            
             this._proxy = new PowerManagerProxy(DBus.session, BUS_NAME, OBJECT_PATH);
-	    this._smProxy = new SettingsManagerProxy(DBus.session, BUS_NAME, OBJECT_PATH);
+            this._smProxy = new SettingsManagerProxy(DBus.session, BUS_NAME, OBJECT_PATH);
             
             let icon = this.actor.get_children()[0];
             this.actor.remove_actor(icon);
-            let label = this.actor.get_children()[0];
-            this.actor.remove_actor(label);
             let box = new St.BoxLayout({ name: 'batteryBox' });
             this.actor.add_actor(box);
             let iconBox = new St.Bin();
