@@ -847,6 +847,28 @@ MyApplet.prototype = {
             } 
         }
         
+        this.placesButton = new PlaceCategoryButton();
+        this.placesButton.actor.connect('clicked', Lang.bind(this, function() {
+            this._select_places(this.placesButton);
+        }));
+        this._addEnterEvent(this.placesButton, Lang.bind(this, function() {
+            if (!this.searchActive) {
+                 this.placesButton.isHovered = true;
+                 Tweener.addTween(this, {
+                    time: this.hover_delay,
+                    onComplete: function () {
+                        if (this.placesButton.isHovered) {
+                            this._select_places(this.placesButton);
+                        }
+                    }
+                });
+            }
+        }));
+        this.placesButton.actor.connect('leave-event', Lang.bind(this, function () {
+            this.placesButton.isHovered = false;
+        }));
+        this.categoriesBox.add_actor(this.placesButton.actor);        
+        
         this._select_category(null, this._allAppsCategoryButton);    
         this._setCategoriesButtonActive(!this.searchActive);                 
     },
@@ -1035,27 +1057,7 @@ MyApplet.prototype = {
 		this.applicationsByCategory = {};
         this._refreshApps();
         
-        this.placesButton = new PlaceCategoryButton();
-        this.placesButton.actor.connect('clicked', Lang.bind(this, function() {
-            this._select_places(this.placesButton);
-        }));
-        this._addEnterEvent(this.placesButton, Lang.bind(this, function() {
-            if (!this.searchActive) {
-                 this.placesButton.isHovered = true;
-                 Tweener.addTween(this, {
-                    time: this.hover_delay,
-                    onComplete: function () {
-                        if (this.placesButton.isHovered) {
-                            this._select_places(this.placesButton);
-                        }
-                    }
-                });
-            }
-        }));
-        this.placesButton.actor.connect('leave-event', Lang.bind(this, function () {
-            this.placesButton.isHovered = false;
-        }));
-        this.categoriesBox.add_actor(this.placesButton.actor);            
+    
          
         this.selectedAppBox = new St.BoxLayout({ style_class: 'menu-selected-app-box', vertical: true });
         this.selectedAppTitle = new St.Label({ style_class: 'menu-selected-app-title', text: "" });
