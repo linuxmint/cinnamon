@@ -1,6 +1,7 @@
 const Cinnamon = imports.gi.Cinnamon;
 const Applet = imports.ui.applet;
 const Lang = imports.lang;
+const Meta = imports.gi.Meta;
 
 function MyApplet(orientation) {
     this._init(orientation);
@@ -37,7 +38,7 @@ MyApplet.prototype = {
         
         if (this._desktopShown) {            
             for ( let i = 0; i < windows.length; ++i ) {
-                if (this._tracker.is_window_interesting(windows[i])){                   
+                if (windows[i].get_window_type() != Meta.WindowType.DESKTOP){                   
                     let shouldrestore = true;
                     for (let j = 0; j < this._alreadyMinimizedWindows.length; j++) {
                         if (windows[i] == this._alreadyMinimizedWindows[j]) {
@@ -47,14 +48,14 @@ MyApplet.prototype = {
                     }    
                     if (shouldrestore) {
                         windows[i].unminimize();                                  
-                    }
-                }
+                    }                    
+                }                
             }            
             this._alreadyMinimizedWindows.length = [];      
         }
         else {
             for ( let i = 0; i < windows.length; ++i ) {
-                if (this._tracker.is_window_interesting(windows[i])){                   
+                if (windows[i].get_window_type() != Meta.WindowType.DESKTOP){                   
                     if (!windows[i].minimized) {
                         windows[i].minimize();
                     }
