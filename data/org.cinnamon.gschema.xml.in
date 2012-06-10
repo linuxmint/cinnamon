@@ -425,7 +425,7 @@
 
   <schema id="org.cinnamon.overrides" path="/org/cinnamon/overrides/">
     <key name="attach-modal-dialogs" type="b">
-      <default>true</default>
+      <default>false</default>
       <summary>Attach modal dialog to the parent window</summary>
       <description>
         This key overrides the key in org.gnome.muffin when running
@@ -434,7 +434,7 @@
     </key>
 
     <key name="button-layout" type="s">
-      <default>":close"</default>
+      <default>":minimize,maximize,close"</default>
       <summary>Arrangement of buttons on the titlebar</summary>
       <description>
         This key overrides the key in org.gnome.desktop.wm.preferences when
@@ -451,7 +451,7 @@
     </key>
 
     <key name="workspaces-only-on-primary" type="b">
-      <default>true</default>
+      <default>false</default>
       <summary>Workspaces only on primary monitor</summary>
       <description>
         This key overrides the key in org.gnome.muffin when running Cinnamon.
