@@ -137,11 +137,11 @@ WindowClone.prototype = {
         this._realWindowDestroyId = this.realWindow.connect('destroy',
             Lang.bind(this, this._disconnectRealWindowSignals));
 
-        let clickAction = new Clutter.ClickAction();
-        clickAction.connect('clicked', Lang.bind(this, this._onClicked));
-        clickAction.connect('long-press', Lang.bind(this, this._onLongPress));
+        //let clickAction = new Clutter.ClickAction();
+        this.actor.connect('button-release-event', Lang.bind(this, this._onButtonRelease));
+        //clickAction.connect('long-press', Lang.bind(this, this._onLongPress));
 
-        this.actor.add_action(clickAction);
+        //this.actor.add_action(clickAction);
 
         this.actor.connect('scroll-event',
                            Lang.bind(this, this._onScroll));
@@ -347,9 +347,15 @@ WindowClone.prototype = {
         this._zoomStep           = undefined;
     },
 
-    _onClicked: function(action, actor) {
-        this._selected = true;
-        this.emit('selected', global.get_current_time());
+    _onButtonRelease: function(actor, event) {
+        if ( event.get_button()==1 ) {
+            this._selected = true;
+            this.emit('selected', global.get_current_time());
+        }
+        if (event.get_button()==2){
+            this.emit('closed', global.get_current_time());
+        }
+        return true;
     },
 
     _onLongPress: function(action, actor, state) {
@@ -1479,6 +1485,8 @@ Workspace.prototype = {
 
         clone.connect('selected',
                       Lang.bind(this, this._onCloneSelected));
+        clone.connect('closed',
+                      Lang.bind(this, this._onCloneClosed));
         clone.connect('drag-begin',
                       Lang.bind(this, function(clone) {
                           Main.overview.beginWindowDrag();
@@ -1555,6 +1563,10 @@ Workspace.prototype = {
         if (this.metaWorkspace)
             wsIndex = this.metaWorkspace.index();
         Main.activateWindow(clone.metaWindow, time, wsIndex);
+    },
+    
+    _onCloneClosed : function (clone, time) {        
+        clone.metaWindow.delete(global.get_current_time());        
     },
 
     // Draggable target interface
