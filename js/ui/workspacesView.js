@@ -151,11 +151,11 @@ WorkspacesView.prototype = {
             return true;
         }
 
-        if (symbol === Clutter.Left || symbol === Clutter.Down) {
+        if (symbol === Clutter.Left || symbol === Clutter.Up) {
             activeWorkspace.selectPrevWindow();
             return true;
         }
-        if (symbol === Clutter.Right || symbol === Clutter.Up) {
+        if (symbol === Clutter.Right || symbol === Clutter.Down) {
             activeWorkspace.selectNextWindow();
             return true;
         }
