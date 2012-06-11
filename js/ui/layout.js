@@ -258,18 +258,26 @@ LayoutManager.prototype = {
     	
         // Need to use GSettings to get the panel height instead of hard-coding it
         if (Main.desktop_layout == Main.LAYOUT_TRADITIONAL) {       
-            this.panelBox.set_position(this.bottomMonitor.x, this.bottomMonitor.y + this.bottomMonitor.height - 25);
-            this.panelBox.set_size(this.bottomMonitor.width, 25);
+            let panelHeight = 25;
+            if (Main.panel) {
+                panelHeight = Main.panel.actor.get_height();
+            }
+            this.panelBox.set_position(this.bottomMonitor.x, this.bottomMonitor.y + this.bottomMonitor.height - panelHeight);
+            this.panelBox.set_size(this.bottomMonitor.width, panelHeight);
         }
         else if (Main.desktop_layout == Main.LAYOUT_FLIPPED) {         
             this.panelBox.set_position(this.primaryMonitor.x, this.primaryMonitor.y);
             this.panelBox.set_size(this.primaryMonitor.width, -1);            
         }
         else if (Main.desktop_layout == Main.LAYOUT_CLASSIC) { 
+            let panelHeight = 25;
+            if (Main.panel2) {
+                panelHeight = Main.panel2.actor.get_height();
+            }
             this.panelBox.set_position(this.primaryMonitor.x, this.primaryMonitor.y);
             this.panelBox.set_size(this.primaryMonitor.width, -1);       
-            this.panelBox2.set_position(this.bottomMonitor.x, this.bottomMonitor.y + this.bottomMonitor.height - 25);
-            this.panelBox2.set_size(this.bottomMonitor.width, 25);       
+            this.panelBox2.set_position(this.bottomMonitor.x, this.bottomMonitor.y + this.bottomMonitor.height - panelHeight);
+            this.panelBox2.set_size(this.bottomMonitor.width, panelHeight);       
         }
 
         this.keyboardBox.set_position(this.bottomMonitor.x,

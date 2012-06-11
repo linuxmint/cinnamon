@@ -1117,6 +1117,8 @@ class MainWindow:
         label = Gtk.Label()
         label.set_markup("<i><small>%s</small></i>" % _("Note: If you change the layout you will need to restart Cinnamon."))
         sidePage.add_widget(label)
+        sidePage.add_widget(GSettingsCheckButton(_("Use customized panel size"), "org.cinnamon", "panel-resizable"))
+        sidePage.add_widget(GSettingsSpinButton(_("Panel size"), "org.cinnamon", "panel-size", 0, 2000, 1, 5, _("Pixels")))
         sidePage.add_widget(GSettingsCheckButton(_("Panel edit mode"), "org.cinnamon", "panel-edit-mode"))
         sidePage.add_widget(GSettingsCheckButton(_("Panel Launchers draggable"), "org.cinnamon", "panel-launchers-draggable"))       
         

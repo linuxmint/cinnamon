@@ -38,6 +38,22 @@
       </_description>
     </key>
     
+    <key name="panel-resizable" type="b">
+      <default>false</default>
+      <_summary>Resizable panel</_summary>
+      <_description>
+        Whether the panel uses a user-defined height
+      </_description>
+    </key>
+    
+    <key name="panel-size" type="i">
+      <default>25</default>
+      <_summary>Panel size</_summary>
+      <_description>
+        User-defined panel-height
+      </_description>
+    </key>
+    
     <key name="desktop-effects" type="b">
       <default>true</default>
       <_summary>Enable desktop effects</_summary>
