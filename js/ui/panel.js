@@ -504,6 +504,10 @@ Panel.prototype = {
                                                   reactive: true });
         this.actor._delegate = this;
 
+        if (global.settings.get_boolean('panel-resizable')) {
+            this.actor.set_height(global.settings.get_int('panel-size'));
+        }
+
         Main.overview.connect('shown', Lang.bind(this, function () {
             this.actor.add_style_class_name('in-overview');
         }));
@@ -574,6 +578,8 @@ Panel.prototype = {
         
         this._setDNDstyle();
         global.settings.connect("changed::panel-edit-mode", Lang.bind(this, this._setDNDstyle));   
+        global.settings.connect("changed::panel-resizable", Lang.bind(this, this._onPanelResizableChanged));
+        this.actor.connect('style-changed', Lang.bind(this, this._onStyleChanged));
     },
     
     _setDNDstyle: function() {
@@ -612,7 +618,37 @@ Panel.prototype = {
     		this._hidePanel();
     	}
     },
-
+    
+    _onPanelSizeChanged: function() {
+        let panelHeight = global.settings.get_int("panel-size");
+        this.actor.set_height(panelHeight);
+        Main.layoutManager._updateBoxes();
+    },
+    
+    _onPanelResizableChanged: function() {
+        let panelResizable = global.settings.get_boolean("panel-resizable");
+        if (panelResizable) {
+            this._onPanelSizeChangedId = global.settings.connect("changed::panel-size", Lang.bind(this, this._onPanelSizeChanged));
+            this._onPanelSizeChanged();
+        }
+        else {
+            if (this._onPanelSizeChangedId) {
+                global.settings.disconnect(this._onPanelSizeChangedId);
+            }
+            let themeNode = this.actor.get_theme_node();
+            let panelHeight = themeNode.get_length("height");
+            if (!panelHeight || panelHeight == 0) {
+                panelHeight = 25;
+            }
+            this.actor.set_height(panelHeight);
+            Main.layoutManager._updateBoxes();
+        }
+    },
+    
+    _onStyleChanged: function() {
+        this._onPanelResizableChanged();
+    },
+    
     _getPreferredWidth: function(actor, forHeight, alloc) {
         alloc.min_size = -1;
         alloc.natural_size = Main.layoutManager.primaryMonitor.width;
@@ -713,8 +749,10 @@ Panel.prototype = {
         // Force the panel to be on top (hack to correct issues when switching workspace)
         Main.layoutManager._windowsRestacked();
         
+        let height = this.actor.get_height();
+        
         if (this.bottomPosition) {        
-            let params = { y: PANEL_HEIGHT - 1,
+            let params = { y: height - 1,
                            time: AUTOHIDE_ANIMATION_TIME + 0.1,
                            transition: 'easeOutQuad'
                          };
@@ -723,7 +761,7 @@ Panel.prototype = {
             Tweener.addTween(this._rightCorner.actor, params);
 
             Tweener.addTween(this.actor.get_parent(),
-                         { y: Main.layoutManager.bottomMonitor.y + Main.layoutManager.bottomMonitor.height - PANEL_HEIGHT,
+                         { y: Main.layoutManager.bottomMonitor.y + Main.layoutManager.bottomMonitor.height - height,
                            time: AUTOHIDE_ANIMATION_TIME,
                            transition: 'easeOutQuad',
                            onUpdate: function() {
@@ -742,7 +780,7 @@ Panel.prototype = {
             Tweener.addTween(this._rightBox, params);
         }
         else {
-            let params = { y: PANEL_HEIGHT - 1,
+            let params = { y: height - 1,
                        time: AUTOHIDE_ANIMATION_TIME + 0.1,
                        transition: 'easeOutQuad'
                      };
@@ -778,6 +816,8 @@ Panel.prototype = {
         
         // Force the panel to be on top (hack to correct issues when switching workspace)
         Main.layoutManager._windowsRestacked();
+        
+        let height = this.actor.get_height();
 
         if (this.bottomPosition) {  
             Tweener.addTween(this.actor.get_parent(),
@@ -809,7 +849,7 @@ Panel.prototype = {
         }
         else {
             Tweener.addTween(this.actor.get_parent(),
-                     { y: Main.layoutManager.primaryMonitor.y - PANEL_HEIGHT + 1,
+                     { y: Main.layoutManager.primaryMonitor.y - height + 1,
                        time: AUTOHIDE_ANIMATION_TIME,
                        transition: 'easeOutQuad',
                        onUpdate: function() {
