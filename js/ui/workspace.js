@@ -1078,7 +1078,7 @@ Workspace.prototype = {
 
         // Start the animations
         let slots = this._computeAllWindowSlots(clones.length);
-        clones = this._orderWindowsByMotionAndStartup(clones, slots);
+        //clones = this._orderWindowsByMotionAndStartup(clones, slots);
 
         let currentWorkspace = global.screen.get_active_workspace();
         let isOnCurrentWorkspace = this.metaWorkspace == null || this.metaWorkspace == currentWorkspace;
