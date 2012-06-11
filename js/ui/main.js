@@ -229,16 +229,19 @@ function start() {
     if (desktop_layout == LAYOUT_TRADITIONAL) {                                    
         panel = new Panel.Panel(true);           
         layoutManager.panelBox.add(panel.actor);    
+        layoutManager._updateBoxes();
     }
     else if (desktop_layout == LAYOUT_FLIPPED) {
         panel = new Panel.Panel(false);                 
         layoutManager.panelBox.add(panel.actor);  
+        layoutManager._updateBoxes();
     }
     else if (desktop_layout == LAYOUT_CLASSIC) {
         panel = new Panel.Panel(false);         
         panel2 = new Panel.Panel(true);         
         layoutManager.panelBox.add(panel.actor);   
         layoutManager.panelBox2.add(panel2.actor);   
+        layoutManager._updateBoxes();
     }
                 
     wm = new WindowManager.WindowManager();
