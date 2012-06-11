@@ -641,40 +641,36 @@ Panel.prototype = {
 
         childBox.y1 = 0;
         childBox.y2 = allocHeight;
-        if (this.actor.get_direction() == St.TextDirection.RTL) {
-            childBox.x1 = 0;
-            childBox.x2 = Math.max(rightNaturalWidth, 25);
-            rightBoxBoundary = childBox.x2;
-        } else {
-            childBox.x1 = allocWidth - Math.max(Math.min(Math.floor(sideWidth), rightNaturalWidth), 25);
-            childBox.x2 = allocWidth;
-            rightBoxBoundary = childBox.x1;
-        }
-        this._rightBox.allocate(childBox, flags);
-
-        childBox.y1 = 0;
-        childBox.y2 = allocHeight;
-        if (this.actor.get_direction() == St.TextDirection.RTL) {
-            childBox.x1 = rightBoxBoundary;
-            childBox.x2 = leftBoxBoundary;
-        } else {
-            childBox.x1 = (allocWidth / 2) - (Math.max(centerNaturalWidth, 25) / 2);
-            childBox.x2 = rightBoxBoundary;
-            leftBoxBoundary = childBox.x1;
-        }
-        this._centerBox.allocate(childBox, flags);
-
-        childBox.y1 = 0;
-        childBox.y2 = allocHeight;
+        
         if (this.actor.get_direction() == St.TextDirection.RTL) {
             childBox.x1 = allocWidth - Math.max(Math.min(Math.floor(sideWidth), leftNaturalWidth), 25);
             childBox.x2 = allocWidth;
             leftBoxBoundary = childBox.x1;
+            this._leftBox.allocate(childBox, flags);
+
+            childBox.x1 = (allocWidth / 2) - (Math.max(centerNaturalWidth, 25) / 2);
+            childBox.x2 = leftBoxBoundary;
+            rightBoxBoundary = childBox.x1;
+            this._centerBox.allocate(childBox, flags);
+
+            childBox.x1 = 0;
+            childBox.x2 = rightBoxBoundary;
+            this._rightBox.allocate(childBox, flags);
         } else {
+            childBox.x1 = allocWidth - Math.max(Math.min(Math.floor(sideWidth), rightNaturalWidth), 25);
+            childBox.x2 = allocWidth;
+            rightBoxBoundary = childBox.x1;
+            this._rightBox.allocate(childBox, flags);
+
+            childBox.x1 = (allocWidth / 2) - (Math.max(centerNaturalWidth, 25) / 2);
+            childBox.x2 = rightBoxBoundary;
+            leftBoxBoundary = childBox.x1;
+            this._centerBox.allocate(childBox, flags);
+
             childBox.x1 = 0;
             childBox.x2 = leftBoxBoundary;
+            this._leftBox.allocate(childBox, flags);
         }
-        this._leftBox.allocate(childBox, flags);
 
         let [cornerMinWidth, cornerWidth] = this._leftCorner.actor.get_preferred_width(-1);
         let [cornerMinHeight, cornerHeight] = this._leftCorner.actor.get_preferred_width(-1);
