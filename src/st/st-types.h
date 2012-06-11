@@ -39,7 +39,8 @@ G_BEGIN_DECLS
 typedef enum {
   ST_ALIGN_START,
   ST_ALIGN_MIDDLE,
-  ST_ALIGN_END
+  ST_ALIGN_END,
+  ST_ALIGN_CENTER_SPECIAL
 } StAlign;
 
 typedef enum {

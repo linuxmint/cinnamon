@@ -668,8 +668,8 @@ Panel.prototype = {
         let [centerMinWidth, centerNaturalWidth] = this._centerBox.get_preferred_width(-1);
         let [rightMinWidth, rightNaturalWidth] = this._rightBox.get_preferred_width(-1);
               
-        let sideWidth = allocWidth - rightNaturalWidth - centerNaturalWidth;
-
+        //let sideWidth = allocWidth - rightNaturalWidth - centerNaturalWidth;
+        let sideWidth = leftNaturalWidth;
         let childBox = new Clutter.ActorBox();
 
         let leftBoxBoundary = 0;
