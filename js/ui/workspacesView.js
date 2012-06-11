@@ -122,6 +122,52 @@ WorkspacesView.prototype = {
                                                       Lang.bind(this, this._dragEnd));
         this._swipeScrollBeginId = 0;
         this._swipeScrollEndId = 0;
+
+        this._stageKeyPressId = global.stage.connect('key-press-event',
+            Lang.bind(this, this._onStageKeyPress));
+        Main.overview.connect('hiding', Lang.bind(this,
+            function () {
+                if (this._stageKeyPressId != 0) {
+                    global.stage.disconnect(this._stageKeyPressId);
+                    this._stageKeyPressId = 0;
+                }
+            }));
+            
+        // this should select the last active window
+        if (this._workspaces.length > 0) { 
+            this._workspaces[activeWorkspaceIndex].selectPrevWindow();
+        }
+    },
+
+    _onStageKeyPress: function(actor, event) {
+        let activeWorkspaceIndex = global.screen.get_active_workspace_index();
+        let activeWorkspace = this._workspaces[activeWorkspaceIndex];
+
+        let modifiers = Cinnamon.get_event_state(event);
+        let symbol = event.get_key_symbol();
+
+        if (symbol === Clutter.w && modifiers & Clutter.ModifierType.CONTROL_MASK) {
+            activeWorkspace.closeSelectedWindow();
+            return true;
+        }
+
+        if (symbol === Clutter.Left || symbol === Clutter.Down) {
+            activeWorkspace.selectPrevWindow();
+            return true;
+        }
+        if (symbol === Clutter.Right || symbol === Clutter.Up) {
+            activeWorkspace.selectNextWindow();
+            return true;
+        }
+        
+        if (symbol === Clutter.Return) {
+            if (activeWorkspace.activateSelectedWindow()) {
+                return true;
+            }
+            Main.overview.hide();
+            return true;
+        }
+        return false;
     },
 
     setGeometry: function(x, y, width, height, spacing) {

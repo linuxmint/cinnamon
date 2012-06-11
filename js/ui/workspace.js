@@ -468,7 +468,7 @@ WindowOverlay.prototype = {
         button._overlap = 0;
 
         this._idleToggleCloseId = 0;
-        button.connect('clicked', Lang.bind(this, this._closeWindow));
+        button.connect('clicked', Lang.bind(this, this.closeWindow));
 
         windowClone.actor.connect('destroy', Lang.bind(this, this._onDestroy));
         windowClone.actor.connect('enter-event',
@@ -498,6 +498,13 @@ WindowOverlay.prototype = {
         // the signal will be emitted normally when we are added
         if (parentActor.get_stage())
             this._onStyleChanged();
+    },
+
+    setSelected: function(selected) {
+        this.title.name = selected ? 'selected' : '';
+        if (selected) {
+            this._onEnter();
+        }
     },
 
     hide: function() {
@@ -584,7 +591,7 @@ WindowOverlay.prototype = {
         icon.set_position(Math.floor(iconX), Math.floor(iconY));
     },
 
-    _closeWindow: function(actor) {
+    closeWindow: function() {
         let metaWindow = this._windowClone.metaWindow;
         this._workspace = metaWindow.get_workspace();
 
@@ -739,6 +746,44 @@ Workspace.prototype = {
         this._repositionWindowsId = 0;
 
         this.leavingOverview = false;
+
+        this._kbWindowIndex = -1; // index of the current keyboard-selected window
+    },
+    
+    selectNextWindow: function() {
+        if (this.isEmpty()) {
+            return;
+        }
+        if (this._kbWindowIndex > -1 && this._kbWindowIndex < this._windowOverlays.length) {
+            this._windowOverlays[this._kbWindowIndex].setSelected(false);
+        }
+        this._kbWindowIndex = (this._kbWindowIndex + 1) % this._windowOverlays.length;
+        this._windowOverlays[this._kbWindowIndex].setSelected(true);
+    },
+    
+    selectPrevWindow: function() {
+        if (this.isEmpty()) {
+            return;
+        }
+        if (this._kbWindowIndex > -1 && this._kbWindowIndex < this._windowOverlays.length) {
+            this._windowOverlays[this._kbWindowIndex].setSelected(false);
+        }
+        this._kbWindowIndex = (this._kbWindowIndex < 1 ? this._windowOverlays.length : this._kbWindowIndex) - 1;
+        this._windowOverlays[this._kbWindowIndex].setSelected(true);
+    },
+    
+    activateSelectedWindow: function() {
+        if (this._kbWindowIndex > -1 && this._kbWindowIndex < this._windows.length) {
+            this._onCloneSelected(this._windows[this._kbWindowIndex], global.get_current_time());
+            return true;
+        }
+        return false;
+    },
+
+    closeSelectedWindow: function() {
+        if (this._kbWindowIndex > -1 && this._kbWindowIndex < this._windowOverlays.length) {
+            this._windowOverlays[this._kbWindowIndex].closeWindow();
+        }
     },
 
     setGeometry: function(x, y, width, height) {
@@ -772,7 +817,7 @@ Workspace.prototype = {
     },
 
     isEmpty: function() {
-        return this._windows.length == 0;
+        return this._windows.length === 0;
     },
 
     // Only use this for n <= 20 say
@@ -1210,6 +1255,15 @@ Workspace.prototype = {
                 scale: stageWidth / clone.actor.width
             };
         }
+        if (index === this._kbWindowIndex) {
+            if (this._kbWindowIndex >= this._windowOverlays.length) {
+                this._kbWindowIndex = 0;
+            }
+            if (this._kbWindowIndex < this._windowOverlays.length) {
+                this._windowOverlays[this._kbWindowIndex].setSelected(true);
+            }
+        }
+        
         clone.destroy();
 
 
