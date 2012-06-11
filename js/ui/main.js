@@ -661,7 +661,7 @@ function _globalKeyPressHandler(actor, event) {
         return false;
 
     // This isn't a Meta.KeyBindingAction yet
-    if (symbol == Clutter.Super_L || symbol == Clutter.Super_R || symbol == Clutter.Return) {
+    if (symbol == Clutter.Super_L || symbol == Clutter.Super_R) {
         overview.hide();
         expo.hide();
         return true;

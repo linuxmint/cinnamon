@@ -175,6 +175,18 @@ Expo.prototype = {
         this._lastHoveredWindow = null;
         this._needsFakePointerEvent = false;
         this._globalKeyPressHandler = 0;
+
+        global.stage.connect('key-press-event',
+            Lang.bind(this, function(actor, event) {
+                if (this._shown) {
+                    let symbol = event.get_key_symbol();
+                    if (symbol === Clutter.Return || symbol === Clutter.Escape) {
+                        this.hide();
+                        return true;
+                    }
+                }
+                return false;
+            }));
     },
 
     // The members we construct that are implemented in JS might
