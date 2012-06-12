@@ -169,12 +169,7 @@ Expo.prototype = {
         this._addWorkspaceButton.hide();
         this._windowCloseArea.hide();
 
-        this._windowSwitchTimeoutId = 0;
-        this._windowSwitchTimestamp = 0;
-        this._lastActiveWorkspaceIndex = -1;
-        this._lastHoveredWindow = null;
         this._needsFakePointerEvent = false;
-        this._globalKeyPressHandler = 0;
 
         global.stage.connect('key-press-event',
             Lang.bind(this, function(actor, event) {
