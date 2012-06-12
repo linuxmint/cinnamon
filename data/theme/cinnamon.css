@@ -1613,3 +1613,14 @@ StScrollBar StButton#vhandle:hover {
 	color: #fff;
 	icon-shadow: white 0px 0px 3px;
 }
+
+/* ===================================================================
+ * Workspace OSD
+ * ===================================================================*/
+
+.workspace-osd {
+	color: #ffffff;
+	text-shadow: black 5px 5px 5px;
+	font-weight: bold;
+	font-size: 48pt;	
+}

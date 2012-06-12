@@ -634,7 +634,7 @@ WindowManager.prototype = {
 
     _switchWorkspace : function(cinnamonwm, from, to, direction) {
         if (!this._shouldAnimate()) {
-            cinnamonwm.completed_switch_workspace();
+            cinnamonwm.completed_switch_workspace();                                
             return;
         }
 
@@ -733,9 +733,34 @@ WindowManager.prototype = {
         switchData.inGroup.destroy();
         switchData.outGroup.destroy();
 
-        cinnamonwm.completed_switch_workspace();
+        cinnamonwm.completed_switch_workspace();                        
     },
-
+    
+    _showWorkspaceOSD : function() {
+        if (global.settings.get_boolean("workspace-osd-visible")) {
+            let workspace_names = global.settings.get_strv('workspace-names');
+            let current_workspace_index = global.screen.get_active_workspace_index();
+            if (current_workspace_index < workspace_names.length) {
+                this.overviewCorner = new St.Button({name: 'overview-corner', reactive: true, track_hover: true });
+                let monitor = Main.layoutManager.primaryMonitor;                
+                let label = new St.Label({style_class:'workspace-osd'});
+                label.set_text(workspace_names[current_workspace_index]);            
+                label.set_opacity = 0;                             
+                Main.layoutManager.addChrome(label, { visibleInFullscreen: false });    
+                let workspace_osd_x = global.settings.get_int("workspace-osd-x");
+                let workspace_osd_y = global.settings.get_int("workspace-osd-y");
+                let x = (monitor.width * workspace_osd_x /100 - label.width/2);
+                let y = (monitor.height * workspace_osd_y /100 - label.height/2);
+                label.set_position(x, y);  
+                let duration = global.settings.get_int("workspace-osd-duration") / 1000;                
+                Tweener.addTween(label, { opacity: 255,                                                        
+                       time: duration,                   
+                       transition: 'linear',                                       
+                       onComplete: function() { Main.layoutManager.removeChrome(label); } });            
+            } 
+        }
+    },
+        
     _startAppSwitcher : function(display, screen, window, binding) {
         
         let tabPopup = new AltTab.AltTabPopup();
@@ -763,10 +788,14 @@ WindowManager.prototype = {
         if (screen.n_workspaces == 1)
             return;
 
-        if (binding.get_name() == 'switch-to-workspace-left')
+        if (binding.get_name() == 'switch-to-workspace-left') {
            this.actionMoveWorkspaceLeft();
-        else if (binding.get_name() == 'switch-to-workspace-right')
+           this._showWorkspaceOSD();       
+        }
+        else if (binding.get_name() == 'switch-to-workspace-right') {
            this.actionMoveWorkspaceRight();
+           this._showWorkspaceOSD();       
+        }
     },
 
     actionMoveWorkspaceLeft: function() {

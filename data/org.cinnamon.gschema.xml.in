@@ -298,6 +298,46 @@
         will be displayed in the favorites area.
       </_description>
     </key>
+    
+    <key name="workspace-names" type="as">
+      <default>[ 'WORKSPACE 1', 'WORKSPACE 2' ]</default>
+      <_summary>List of workspace names</_summary>
+      <_description>
+        The names of the workspaces.
+      </_description>
+    </key>
+    
+    <key type="i" name="workspace-osd-duration">
+      <default>400</default>
+      <_summary>Duration of Workspace OSD (in milliseconds)</_summary>
+      <_description>
+       Duration of the OSD (in milliseconds)    
+      </_description>
+    </key>
+    
+    <key type="i" name="workspace-osd-x">
+      <default>50</default>
+      <_summary>Workspace horizontal position (in percent of the monitor's width)</_summary>
+      <_description>
+       Workspace horizontal position (in percent of the monitor's width)   
+      </_description>
+    </key>
+    
+    <key type="i" name="workspace-osd-y">
+      <default>50</default>
+      <_summary>Workspace vertical position (in percent of the monitor's height)</_summary>
+      <_description>
+       Workspace vertical position (in percent of the monitor's height)
+      </_description>
+    </key>
+    
+    <key name="workspace-osd-visible" type="b">
+      <default>true</default>
+      <_summary>Enable or disable the workspace OSD</_summary>
+      <_description>
+        Whether the name of the workspace shows up on the screen when activated or not.
+      </_description>
+    </key>
 
     <key name="disabled-open-search-providers" type="as">
       <default>[]</default>
@@ -474,4 +514,5 @@
       </description>
     </key>
   </schema>
+  
 </schemalist>

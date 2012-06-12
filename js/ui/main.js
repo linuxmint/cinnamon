@@ -321,7 +321,10 @@ function _addWorkspace() {
     if (dynamicWorkspaces)
         return false;
     nWorks++;
-    global.settings.set_int("number-workspaces", nWorks);
+    global.settings.set_int("number-workspaces", nWorks);  
+    let names = global.settings.get_strv("workspace-names");  
+    names.push("WORKSPACE " + nWorks);
+    global.settings.set_strv("workspace-names", names);
     _staticWorkspaces();
     return true;
 }
@@ -330,6 +333,10 @@ function _removeWorkspace(workspace) {
     if (nWorks == 1 || dynamicWorkspaces)
         return false;
     nWorks--;
+    let index = workspace.index();
+    let names = global.settings.get_strv("workspace-names");  
+    names.splice (index,1);
+    global.settings.set_strv("workspace-names", names);    
     global.settings.set_int("number-workspaces", nWorks);
     global.screen.remove_workspace(workspace, global.get_current_time());
     return true;

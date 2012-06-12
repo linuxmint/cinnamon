@@ -33,7 +33,7 @@ LayoutManager.prototype = {
         this._chrome = new Chrome(this);       
 		
 		this._hotCorner = new HotCorner();        
-		this.overviewCorner = new St.Button({name: 'overview-corner', reactive: true, track_hover: true });		
+		this.overviewCorner = new St.Button({name: 'overview-corner', reactive: true, track_hover: true });
 		this.addChrome(this.overviewCorner, { visibleInFullscreen: false });	
 		this.overviewCorner.connect('button-release-event', Lang.bind(this, this._toggleExpo));
 		
