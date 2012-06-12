@@ -1624,3 +1624,26 @@ StScrollBar StButton#vhandle:hover {
 	font-weight: bold;
 	font-size: 48pt;	
 }
+
+.expo-workspaces-name-entry {
+	padding: 5px;
+	border-radius: 4px;
+	color: rgb(128, 128, 128);
+	border: 2px solid rgb(136,138,133);
+	background-gradient-start: rgb(200,200,200);
+	background-gradient-end: white;
+	background-gradient-direction: vertical;
+	selected-color: black;
+	caret-color: rgb(128, 128, 128);
+	caret-size: 1px;
+	width: 250px;
+	height: 15px;	
+	box-shadow: inset 0px 2px 4px rgba(0,0,0,0.6);
+	text-align: center;	
+}
+
+.expo-workspaces-name-entry:focus {
+	color: rgb(64, 64, 64);
+	font-weight: bold;
+	transition-duration: 300;
+}

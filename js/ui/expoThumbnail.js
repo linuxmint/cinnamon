@@ -7,7 +7,6 @@ const Meta = imports.gi.Meta;
 const Cinnamon = imports.gi.Cinnamon;
 const Signals = imports.signals;
 const St = imports.gi.St;
-
 const DND = imports.ui.dnd;
 const Main = imports.ui.main;
 const Tweener = imports.ui.tweener;
@@ -181,13 +180,26 @@ ExpoWorkspaceThumbnail.prototype = {
             }));
 
         this.actor.connect('scroll-event', Lang.bind(this, this._onScrollEvent));
-
+        
+        this.title = new St.Entry({ style_class: 'expo-workspaces-name-entry',                                     
+                                     track_hover: true,
+                                     can_focus: true });                
+        this.title._spacing = 0; 
+        this.titleText = this.title.clutter_text;
+        this.titleText.connect('text-changed', Lang.bind(this, this._onTitleChanged)); 
+              
+        let workspace_names = global.settings.get_strv("workspace-names");
+        let workspace_index = this.metaWorkspace.index();
+        if (workspace_index < workspace_names.length) {
+            this.title.set_text(workspace_names[workspace_index]);
+        }
+        
         this._background = Meta.BackgroundActor.new_for_screen(global.screen);
         this._contents.add_actor(this._background);
 
         let monitor = Main.layoutManager.primaryMonitor;
         this.setPorthole(monitor.x, monitor.y, monitor.width, monitor.height);
-
+       
         this.shade = new St.Bin();
         this.shade.set_style('background-color: black;');
         this.actor.add_actor(this.shade);
@@ -234,6 +246,14 @@ ExpoWorkspaceThumbnail.prototype = {
 
         this.state = ThumbnailState.NORMAL;
         this._slidePosition = 0; // Fully slid in
+    },
+    
+    _onTitleChanged: function (se, prop) {
+        let workspace_names = global.settings.get_strv("workspace-names");
+        if (this.metaWorkspace.index() < workspace_names.length) {
+            workspace_names[this.metaWorkspace.index()] = this.title.get_text();
+        }      
+        global.settings.set_strv("workspace-names", workspace_names);  
     },
     
     _onEnterEvent : function(actor, event) {
@@ -379,8 +399,9 @@ ExpoWorkspaceThumbnail.prototype = {
             this._doAddWindow(metaWin);
     },
 
-    destroy : function() {
-        this.actor.destroy();
+    destroy : function() {            
+        this.title.destroy();
+        this.actor.destroy();        
     },
 
     _onDestroy: function(actor) {
@@ -399,7 +420,8 @@ ExpoWorkspaceThumbnail.prototype = {
         }
 
         this._windows = [];
-        this.actor = null;
+        this.title = null;
+        this.actor = null;        
     },
 
     // Tests if @win belongs to this workspace and monitor
@@ -655,7 +677,7 @@ ExpoThumbnailsBox.prototype = {
         this.button.connect('leave-event', Lang.bind(this, function () { this.lastHovered._shade(); this.button.hide();}));
         this.button.connect('clicked', Lang.bind(this, function () { this.lastHovered._remove(); this.button.hide();}));
         this.button.hide();
-
+                
         this._targetScale = 0;
         this._scale = 0;
         this._pendingScaleUpdate = false;
@@ -744,6 +766,7 @@ ExpoThumbnailsBox.prototype = {
             if (metaWorkspace == global.screen.get_active_workspace())
                 this._lastActiveWorkspace = thumbnail;
             this.actor.add_actor(thumbnail.actor);
+            this.actor.add_actor(thumbnail.title);
 
             thumbnail.connect('drag-over', Lang.bind(this, function () { thumbnail._highlight(); if (this.lastHovered && this.lastHovered != thumbnail) this.lastHovered._shade(); this.lastHovered = thumbnail;}));
 
@@ -829,6 +852,7 @@ ExpoThumbnailsBox.prototype = {
         // Then slide out any thumbnails that have been destroyed
         this._iterateStateThumbnails(ThumbnailState.REMOVING,
             function(thumbnail) {
+                thumbnail.title.hide();
                 this._setThumbnailState(thumbnail, ThumbnailState.ANIMATING_OUT);
 
                 Tweener.addTween(thumbnail,
@@ -851,6 +875,7 @@ ExpoThumbnailsBox.prototype = {
         this._iterateStateThumbnails(ThumbnailState.ANIMATED_OUT,
             function(thumbnail) {
                 this.actor.set_skip_paint(thumbnail.actor, true);
+                //this.title.set_skip_paint(thumbnail.title, true);
                 this._setThumbnailState(thumbnail, ThumbnailState.COLLAPSING);
                 Tweener.addTween(thumbnail,
                                  { time: RESCALE_ANIMATION_TIME,
@@ -1031,7 +1056,17 @@ ExpoThumbnailsBox.prototype = {
             childBox.y2 = y1 + portholeHeight;
 
             thumbnail.actor.set_scale(this._scale * (1 - thumbnail.slidePosition), this._scale * (1 - thumbnail.slidePosition));
-            thumbnail.actor.allocate(childBox, flags);            
+            thumbnail.actor.allocate(childBox, flags);  
+
+            let thumbnailx = Math.round(x + (thumbnailWidth * thumbnail.slidePosition / 2));
+            childBox.x1 = Math.max(thumbnailx, thumbnailx + Math.round(thumbnailWidth/2) - Math.round(thumbnail.title.width/2));
+            childBox.x2 = Math.min(thumbnailx + thumbnailWidth, childBox.x1 + thumbnail.title.width);
+            
+            let thumbnaily = Math.round(y + (thumbnailHeight * thumbnail.slidePosition / 2));
+            childBox.y1 = thumbnaily + thumbnailHeight + Math.round(thumbnail.title.height/2);
+            childBox.y2 = childBox.y1 + thumbnail.title.height;
+                        
+            thumbnail.title.allocate(childBox, flags);
 
             // We round the collapsing portion so that we don't get thumbnails resizing
             // during an animation due to differences in rounded, but leave the uncollapsed
@@ -1058,6 +1093,7 @@ ExpoThumbnailsBox.prototype = {
         childBox.y2 = childBox.y1 + buttonHeight;
         
         this.button.allocate(childBox, flags);
+                                
         this._lastActiveWorkspace.emit('allocated');
     },
 
