@@ -1,0 +1,5 @@
+[GNOME Session]
+Name=Cinnamon 2D
+RequiredComponents=cinnamon2d;gnome-settings-daemon;
+DesktopName=GNOME
+

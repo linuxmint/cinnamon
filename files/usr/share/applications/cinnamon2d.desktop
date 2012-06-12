@@ -1,0 +1,17 @@
+[Desktop Entry]
+Type=Application
+Name=Cinnamon 2D
+Comment=Window management and application launching
+Exec=/usr/bin/cinnamon2d
+X-GNOME-Bugzilla-Bugzilla=GNOME
+X-GNOME-Bugzilla-Product=cinnamon
+X-GNOME-Bugzilla-Component=general
+X-GNOME-Bugzilla-Version=1.4.0
+Categories=GNOME;GTK;Core;
+OnlyShowIn=GNOME;
+NoDisplay=true
+X-GNOME-Autostart-Phase=WindowManager
+X-GNOME-Provides=panel;windowmanager;
+X-GNOME-Autostart-Notify=true
+X-GNOME-AutoRestart=true
+X-Ubuntu-Gettext-Domain=cinnamon
