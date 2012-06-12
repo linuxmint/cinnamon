@@ -1642,6 +1642,12 @@ StScrollBar StButton#vhandle:hover {
 	text-align: center;	
 }
 
+.expo-workspaces-name-entry#selected {
+	background-gradient-start: rgb(128,128,128);
+	background-gradient-end: black;
+	color: rgb(200, 200, 200);
+}
+
 .expo-workspaces-name-entry:focus {
 	color: rgb(64, 64, 64);
 	font-weight: bold;
