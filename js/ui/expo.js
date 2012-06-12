@@ -179,6 +179,14 @@ Expo.prototype = {
                         this.hide();
                         return true;
                     }
+                    if (symbol === Clutter.Right) {
+                        this._expo.selectNextWorkspace();
+                        return true;
+                    }
+                    if (symbol === Clutter.Left) {
+                        this._expo.selectPrevWorkspace();
+                        return true;
+                    }
                 }
                 return false;
             }));

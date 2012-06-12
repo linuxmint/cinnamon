@@ -735,6 +735,32 @@ ExpoThumbnailsBox.prototype = {
 
         this.addThumbnails(0, global.screen.n_workspaces);
         this.button.raise_top();
+        
+        this._kbThumbnailIndex = global.screen.get_active_workspace_index();
+    },
+
+    selectNextWorkspace: function() {
+        if (this._thumbnails.length < 2) {
+            return;
+        }
+        this._thumbnails[this._kbThumbnailIndex]._shade();
+        ++this._kbThumbnailIndex;
+        if (this._kbThumbnailIndex >= this._thumbnails.length) {
+            this._kbThumbnailIndex = 0;
+        }
+        this._thumbnails[this._kbThumbnailIndex]._highlight();
+    },
+
+    selectPrevWorkspace: function() {
+        if (this._thumbnails.length < 2) {
+            return;
+        }
+        this._thumbnails[this._kbThumbnailIndex]._shade();
+        --this._kbThumbnailIndex;
+        if (this._kbThumbnailIndex < 0 ) {
+            this._kbThumbnailIndex = this._thumbnails.length - 1;
+        }
+        this._thumbnails[this._kbThumbnailIndex]._highlight();
     },
 
     hide: function() {
