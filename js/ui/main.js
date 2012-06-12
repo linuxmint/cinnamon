@@ -160,6 +160,13 @@ function start() {
     // if we want to call back up into JS.
     global.logError = _logError;
     global.log = _logDebug;
+    
+    log("About to start Cinnamon");
+    software_rendering = false;    
+    if (GLib.getenv('CINNAMON_SOFTWARE_RENDERING')) {
+        log("ACTIVATING SOFTWARE RENDERING");        
+        software_rendering = true;
+    }
 
     // Chain up async errors reported from C
     global.connect('notify-error', function (global, msg, detail) { notifyError(msg, detail); });

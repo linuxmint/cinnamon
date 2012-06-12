@@ -1,0 +1,2 @@
+#!/bin/bash
+CLUTTER_PAINT=disable-clipped-redraws:disable-culling LIBGL_ALWAYS_SOFTWARE=1 CINNAMON_SOFTWARE_RENDERING=1 CINNAMON_SLOWDOWN_FACTOR=0.0001 cinnamon $@
