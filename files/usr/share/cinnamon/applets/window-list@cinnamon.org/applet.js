@@ -440,7 +440,8 @@ AppMenuButton.prototype = {
         alloc.min_size = minSize; // minimum size just enough for icon if we ever get that many apps going
         alloc.natural_size = naturalSize;
         [minSize, naturalSize] = this._label.get_preferred_width(forHeight);
-        alloc.natural_size = alloc.natural_size + Math.max(150, naturalSize+10); //never smaller than 150 normally, but as big as it wants +10 for some reason -account for padding maybe?
+	alloc.min_size = alloc.min_size + Math.max(0, minSize - Math.floor(alloc.min_size / 2));
+        alloc.natural_size = 150;
     },
 
     _getContentPreferredHeight: function(actor, forWidth, alloc) {
