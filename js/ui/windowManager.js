@@ -552,6 +552,7 @@ WindowManager.prototype = {
     },
 
     _destroyWindow : function(cinnamonwm, actor) {
+           
         let window = actor.meta_window;
         if (actor._notifyWindowTypeSignalId) {
             window.disconnect(actor._notifyWindowTypeSignalId);
@@ -565,38 +566,14 @@ WindowManager.prototype = {
         if (window.is_attached_dialog()) {
             let parent = window.get_transient_for();
             this._checkDimming(parent, window);
-            if (!this._shouldAnimate()) {
-                cinnamonwm.completed_destroy(actor);
-                return;
-            }
-
-            actor.opacity = 255;
-            actor.show();
-            this._destroying.push(actor);
-
-            actor._parentDestroyId = parent.connect('unmanaged', Lang.bind(this, function () {
-                Tweener.removeTweens(actor);
-                this._destroyWindowDone(cinnamonwm, actor);
-            }));
-
-            Tweener.addTween(actor,
-                             { opacity: 0,
-                               time: WINDOW_ANIMATION_TIME,
-                               transition: "easeOutQuad",
-                               onComplete: this._destroyWindowDone,
-                               onCompleteScope: this,
-                               onCompleteParams: [cinnamonwm, actor],
-                               onOverwrite: this._destroyWindowDone,
-                               onOverwriteScope: this,
-                               onOverwriteParams: [cinnamonwm, actor]
-                             });
-            return;
         }
         
         if (!this._shouldAnimate(actor)) {
             cinnamonwm.completed_destroy(actor);
             return;
         }
+        
+        Tweener.removeTweens(actor);
                                                 
         let transition = "easeInSine";
         let effect = "scale";

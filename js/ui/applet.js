@@ -9,6 +9,7 @@ const Clutter = imports.gi.Clutter;
 const AppletManager = imports.ui.appletManager;
 const Gtk = imports.gi.Gtk;
 const Util = imports.misc.util;
+const Pango = imports.gi.Pango;
 
 function MenuItem(label, icon, callback) {
     this._init(label, icon, callback);
@@ -240,7 +241,8 @@ TextApplet.prototype = {
 
     _init: function(orientation) {
         Applet.prototype._init.call(this, orientation);        
-        this._applet_label = new St.Label({ reactive: true, track_hover: true, style_class: 'applet-label'});        
+        this._applet_label = new St.Label({ reactive: true, track_hover: true, style_class: 'applet-label'});       
+        this._applet_label.clutter_text.ellipsize = Pango.EllipsizeMode.NONE; 
         this.actor.add(this._applet_label, { y_align: St.Align.MIDDLE, y_fill: false });    
     },
 
@@ -249,8 +251,7 @@ TextApplet.prototype = {
     },
     
     on_applet_added_to_panel: function() {       
-        let [labelMinWidth, labelNaturalWidth] = this._applet_label.get_preferred_width(-1);
-        this._applet_label.style = ('min-width: ' +  labelNaturalWidth + 'px;');                               
+                        
     }
 };
 
@@ -263,7 +264,8 @@ TextIconApplet.prototype = {
 
     _init: function(orientation) {
         IconApplet.prototype._init.call(this, orientation);
-        this._applet_label = new St.Label({ reactive: true, track_hover: true, style_class: 'applet-label'});        
+        this._applet_label = new St.Label({ reactive: true, track_hover: true, style_class: 'applet-label'});    
+        this._applet_label.clutter_text.ellipsize = Pango.EllipsizeMode.NONE;     
         this.actor.add(this._applet_label, { y_align: St.Align.MIDDLE, y_fill: false });
     },
 
@@ -276,7 +278,6 @@ TextIconApplet.prototype = {
     },
     
     on_applet_added_to_panel: function() {       
-        let [labelMinWidth, labelNaturalWidth] = this._applet_label.get_preferred_width(-1);
-        this._applet_label.style = ('min-width: ' +  labelNaturalWidth + 'px;');                               
+                                
     }  
 };
