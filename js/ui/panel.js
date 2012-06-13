@@ -669,7 +669,7 @@ Panel.prototype = {
         let [rightMinWidth, rightNaturalWidth] = this._rightBox.get_preferred_width(-1);
 
         let leftWidth = Math.max(leftNaturalWidth, 25);
-        let centerWidth = centerNaturalWidth;
+        let centerWidth = centerMinWidth;
         let rightWidth = Math.max(rightNaturalWidth, 25);
 
         let space_needed = leftWidth + centerWidth + rightWidth;
@@ -682,13 +682,13 @@ Panel.prototype = {
             let space_missing = space_needed - allocWidth;
             // If there isn't enough space, reduce the size of the largest zone (likely to contain more shrinkable content)
             if (leftWidth >= centerWidth && leftWidth >= rightWidth) {
-                leftWidth = leftWidth - space_missing;
+                leftWidth = Math.max(leftWidth - space_missing, leftMinWidth);
             }
             else if (centerWidth >= rightWidth) {
-                centerWidth = centerWidth - space_mising;
+                centerWidth = Math.max(centerWidth - space_mising, centerMinWidth);
             }
             else {
-                rightWidth = rightWidth - space_missing;
+                rightWidth = Math.max(rightWidth - space_missing, rightMinWidth);
             }   
         }
 
