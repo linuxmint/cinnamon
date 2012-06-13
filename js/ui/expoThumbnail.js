@@ -845,6 +845,17 @@ ExpoThumbnailsBox.prototype = {
 
             currentPos++;
         }
+        
+        // for simplicity, assume workspaces are removed one at a time
+        this._thumbnails[this._kbThumbnailIndex].showKeyboardSelectedState(false);
+        if (start < this._kbThumbnailIndex) {
+            --this._kbThumbnailIndex;
+        }
+        if (start === this._kbThumbnailIndex) {
+            if (this._kbThumbnailIndex === this._thumbnails.length - 1) {
+                --this._kbThumbnailIndex;
+            }
+        }
 
         this._queueUpdateStates();
     },
@@ -959,6 +970,7 @@ ExpoThumbnailsBox.prototype = {
                                    onCompleteScope: this
                                  });
             });
+        this._thumbnails[this._kbThumbnailIndex].showKeyboardSelectedState(true);
     },
 
     _queueUpdateStates: function() {
