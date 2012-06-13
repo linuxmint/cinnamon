@@ -179,6 +179,10 @@ Expo.prototype = {
                         this.hide();
                         return true;
                     }
+                    if (symbol === Clutter.plus || symbol === Clutter.Insert) {
+                        Main._addWorkspace();
+                        return true;
+                    }
                     return this._expo.handleKeyPressEvent(actor, event);
                 }
                 return false;
