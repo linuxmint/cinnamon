@@ -579,6 +579,7 @@ WindowManager.prototype = {
                 this._destroyWindowDone(cinnamonwm, actor);
             }));
 
+            Tweener.removeTweens(actor);
             Tweener.addTween(actor,
                              { opacity: 0,
                                time: WINDOW_ANIMATION_TIME,
