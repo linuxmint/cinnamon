@@ -58,9 +58,14 @@ ExpoView.prototype = {
     },
     
     handleKeyPressEvent: function(actor, event) {
+        let modifiers = Cinnamon.get_event_state(event);
         let symbol = event.get_key_symbol();
         if (symbol === Clutter.Return) {
             this._thumbnailsBox.activateSelectedWorkspace();
+            return true;
+        }
+        if (symbol === Clutter.w && modifiers & Clutter.ModifierType.CONTROL_MASK) {
+            this._thumbnailsBox.removeSelectedWorkspace();
             return true;
         }
         if (symbol === Clutter.Right) {

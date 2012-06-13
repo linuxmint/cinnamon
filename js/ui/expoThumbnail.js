@@ -755,6 +755,10 @@ ExpoThumbnailsBox.prototype = {
         this._thumbnails[this._kbThumbnailIndex].activateWorkspace();
     },
 
+    removeSelectedWorkspace: function() {
+        this._thumbnails[this._kbThumbnailIndex]._remove();
+    },
+
     selectNextWorkspace: function() {
         if (this._thumbnails.length < 2) {
             return;
