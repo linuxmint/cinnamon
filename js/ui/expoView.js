@@ -77,6 +77,14 @@ ExpoView.prototype = {
             this._thumbnailsBox.selectPrevWorkspace();
             return true;
         }
+        if (symbol === Clutter.Home) {
+            this._thumbnailsBox.selectPrevWorkspace(true);
+            return true;
+        }
+        if (symbol === Clutter.End) {
+            this._thumbnailsBox.selectNextWorkspace(true);
+            return true;
+        }
         return false;
     },
 

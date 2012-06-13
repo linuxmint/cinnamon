@@ -759,24 +759,24 @@ ExpoThumbnailsBox.prototype = {
         this._thumbnails[this._kbThumbnailIndex]._remove();
     },
 
-    selectNextWorkspace: function() {
+    selectNextWorkspace: function(last) {
         if (this._thumbnails.length < 2) {
             return;
         }
         this._thumbnails[this._kbThumbnailIndex].showKeyboardSelectedState(false);
-        ++this._kbThumbnailIndex;
+        this._kbThumbnailIndex = last ? this._thumbnails.length-1 : this._kbThumbnailIndex+1;
         if (this._kbThumbnailIndex >= this._thumbnails.length) {
             this._kbThumbnailIndex = 0;
         }
         this._thumbnails[this._kbThumbnailIndex].showKeyboardSelectedState(true);
     },
 
-    selectPrevWorkspace: function() {
+    selectPrevWorkspace: function(home) {
         if (this._thumbnails.length < 2) {
             return;
         }
         this._thumbnails[this._kbThumbnailIndex].showKeyboardSelectedState(false);
-        --this._kbThumbnailIndex;
+        this._kbThumbnailIndex = home ? 0 : this._kbThumbnailIndex-1;
         if (this._kbThumbnailIndex < 0 ) {
             this._kbThumbnailIndex = this._thumbnails.length - 1;
         }
