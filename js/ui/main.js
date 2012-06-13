@@ -84,6 +84,8 @@ let background = null;
 let desktop_layout;
 let applet_side = St.Side.BOTTOM;
 
+let software_rendering = false;    
+
 // Override Gettext localization
 const Gettext = imports.gettext;
 Gettext.bindtextdomain('cinnamon', '/usr/share/cinnamon/locale');
@@ -162,9 +164,9 @@ function start() {
     global.log = _logDebug;
     
     log("About to start Cinnamon");
-    software_rendering = false;    
     if (GLib.getenv('CINNAMON_SOFTWARE_RENDERING')) {
         log("ACTIVATING SOFTWARE RENDERING");        
+	global.logError("Cinnamon Software Rendering mode enabled");
         software_rendering = true;
     }
 
