@@ -57,16 +57,21 @@ ExpoView.prototype = {
         this._windowDragEndId = 0;
     },
     
-    activateSelectedWorkspace: function() {
-        this._thumbnailsBox.activateSelectedWorkspace();
-    },
-
-    selectNextWorkspace: function() {
-        this._thumbnailsBox.selectNextWorkspace();
-    },
-
-    selectPrevWorkspace: function() {
-        this._thumbnailsBox.selectPrevWorkspace();
+    handleKeyPressEvent: function(actor, event) {
+        let symbol = event.get_key_symbol();
+        if (symbol === Clutter.Return) {
+            this._thumbnailsBox.activateSelectedWorkspace();
+            return true;
+        }
+        if (symbol === Clutter.Right) {
+            this._thumbnailsBox.selectNextWorkspace();
+            return true;
+        }
+        if (symbol === Clutter.Left) {
+            this._thumbnailsBox.selectPrevWorkspace();
+            return true;
+        }
+        return false;
     },
 
     show: function() {

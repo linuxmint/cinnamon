@@ -179,18 +179,7 @@ Expo.prototype = {
                         this.hide();
                         return true;
                     }
-                    if (symbol === Clutter.Return) {
-                        this._expo.activateSelectedWorkspace();
-                        return true;
-                    }
-                    if (symbol === Clutter.Right) {
-                        this._expo.selectNextWorkspace();
-                        return true;
-                    }
-                    if (symbol === Clutter.Left) {
-                        this._expo.selectPrevWorkspace();
-                        return true;
-                    }
+                    return this._expo.handleKeyPressEvent(actor, event);
                 }
                 return false;
             }));
