@@ -69,11 +69,11 @@ ExpoView.prototype = {
             this._thumbnailsBox.removeSelectedWorkspace();
             return true;
         }
-        if (symbol === Clutter.Right) {
+        if (symbol === Clutter.Right || symbol === Clutter.Down) {
             this._thumbnailsBox.selectNextWorkspace();
             return true;
         }
-        if (symbol === Clutter.Left) {
+        if (symbol === Clutter.Left || symbol === Clutter.Up) {
             this._thumbnailsBox.selectPrevWorkspace();
             return true;
         }
