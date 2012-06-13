@@ -668,7 +668,7 @@ Panel.prototype = {
         let [centerMinWidth, centerNaturalWidth] = this._centerBox.get_preferred_width(-1);
         let [rightMinWidth, rightNaturalWidth] = this._rightBox.get_preferred_width(-1);
 
-        let leftMax = allocWidth-centerMinWidth-rightMinWidth;
+        let sideWidth = allocWidth - rightNaturalWidth - centerNaturalWidth;
 
         let childBox = new Clutter.ActorBox();
 
@@ -678,16 +678,12 @@ Panel.prototype = {
         childBox.y1 = 0;
         childBox.y2 = allocHeight;
         if (this.actor.get_direction() == St.TextDirection.RTL) {
-            childBox.x1 = allocWidth - Math.max(leftNaturalWidth, 25);
+            childBox.x1 = allocWidth - Math.max(Math.min(Math.floor(sideWidth), leftNaturalWidth), 25);
             childBox.x2 = allocWidth;
-            if (childBox.x1 < allocWidth - leftMax)
-                childBox.x1 = allocWidth - leftMax;
             leftBoxBoundary = childBox.x1;
         } else {
             childBox.x1 = 0;
-            childBox.x2 = Math.max(leftNaturalWidth, 25); // Min size for zone is 25px
-            if (childBox.x2 > leftMax)
-                childBox.x2 = leftMax;
+            childBox.x2 = Math.max(Math.min(Math.floor(sideWidth), leftNaturalWidth), 25); // Min size for zone is 25px
             leftBoxBoundary = childBox.x2;
         }        
         this._leftBox.allocate(childBox, flags);
@@ -697,14 +693,10 @@ Panel.prototype = {
         if (this.actor.get_direction() == St.TextDirection.RTL) {
             childBox.x1 = 0;
             childBox.x2 = Math.max(rightNaturalWidth, 25);
-            if (childBox.x2 > leftBoxBoundary-centerMinWidth)
-                childBox.x2 = leftBoxBoundary-centerMinWidth;
             rightBoxBoundary = childBox.x2;
         } else {
             childBox.x1 = allocWidth - Math.max(rightNaturalWidth, 25); // Min size for zone is 25px
             childBox.x2 = allocWidth;
-            if (childBox.x1 < (leftBoxBoundary+centerMinWidth))
-                childBox.x1 = leftBoxBoundary+centerMinWidth;
             rightBoxBoundary = childBox.x1;
         }
         this._rightBox.allocate(childBox, flags);
