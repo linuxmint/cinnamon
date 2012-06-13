@@ -751,11 +751,11 @@ ExpoThumbnailsBox.prototype = {
         this._thumbnails[this._kbThumbnailIndex].showKeyboardSelectedState(true);
     },
 
-    activateSelectedKbWorkspace: function() {
+    activateSelectedWorkspace: function() {
         this._thumbnails[this._kbThumbnailIndex].activateWorkspace();
     },
 
-    selectNextKbWorkspace: function() {
+    selectNextWorkspace: function() {
         if (this._thumbnails.length < 2) {
             return;
         }
@@ -767,7 +767,7 @@ ExpoThumbnailsBox.prototype = {
         this._thumbnails[this._kbThumbnailIndex].showKeyboardSelectedState(true);
     },
 
-    selectPrevKbWorkspace: function() {
+    selectPrevWorkspace: function() {
         if (this._thumbnails.length < 2) {
             return;
         }

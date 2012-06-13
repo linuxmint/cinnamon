@@ -57,6 +57,10 @@ ExpoView.prototype = {
         this._windowDragEndId = 0;
     },
     
+    activateSelectedWorkspace: function() {
+        this._thumbnailsBox.activateSelectedWorkspace();
+    },
+
     selectNextWorkspace: function() {
         this._thumbnailsBox.selectNextWorkspace();
     },

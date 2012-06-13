@@ -180,15 +180,15 @@ Expo.prototype = {
                         return true;
                     }
                     if (symbol === Clutter.Return) {
-                        this._expo.activateSelectedKbWorkspace();
+                        this._expo.activateSelectedWorkspace();
                         return true;
                     }
                     if (symbol === Clutter.Right) {
-                        this._expo.selectNextKbWorkspace();
+                        this._expo.selectNextWorkspace();
                         return true;
                     }
                     if (symbol === Clutter.Left) {
-                        this._expo.selectPrevKbWorkspace();
+                        this._expo.selectPrevWorkspace();
                         return true;
                     }
                 }
