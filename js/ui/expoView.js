@@ -64,7 +64,8 @@ ExpoView.prototype = {
             this._thumbnailsBox.activateSelectedWorkspace();
             return true;
         }
-        if (symbol === Clutter.w && modifiers & Clutter.ModifierType.CONTROL_MASK) {
+        if (symbol === Clutter.Delete
+            || symbol === Clutter.w && modifiers & Clutter.ModifierType.CONTROL_MASK) {
             this._thumbnailsBox.removeSelectedWorkspace();
             return true;
         }
