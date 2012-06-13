@@ -109,6 +109,7 @@ function add_applet_to_panels(appletDefinition) {
         // format used in gsettings is 'panel:location:order:uuid' where panel is something like 'panel1', location is
         // either 'left', 'center' or 'right' and order is an integer representing the order of the applet within the panel/location (i.e. 1st, 2nd etc..).                     
         let elements = appletDefinition.split(":");
+        let center = false;
         if (elements.length == 4) {
             let panel = Main.panel;
             if (elements[0] == "panel2") {
@@ -117,6 +118,7 @@ function add_applet_to_panels(appletDefinition) {
             let location = panel._leftBox;
             if (elements[1] == "center") {
                 location = panel._centerBox;
+                center = true;
             }
             else if (elements[1] == "right") {
                 location = panel._rightBox;
@@ -159,7 +161,13 @@ function add_applet_to_panels(appletDefinition) {
                 for (let i=0; i<appletsToMove.length; i++) {
                     location.remove_actor(appletsToMove[i]);                    
                 }
-                location.add(applet.actor);  
+
+                if (center) {
+                    location.add(applet.actor, {x_align: St.Align.CENTER_SPECIAL});
+                } else {
+                    location.add(applet.actor);    
+                }
+
                 applet._panelLocation = location;                  
                 for (let i=0; i<appletsToMove.length; i++) {
                     location.add(appletsToMove[i]);

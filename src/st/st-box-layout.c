@@ -702,6 +702,7 @@ st_box_layout_allocate (ClutterActor          *actor,
       shrink_amount = MAX (0, natural_width - avail_width);
     }
 
+
   if (expand_amount > 0)
     {
       /* count the number of children with expand set to TRUE */
@@ -750,7 +751,9 @@ st_box_layout_allocate (ClutterActor          *actor,
       l = children;
       i = 0;
     }
-
+    
+  gboolean firstchild = TRUE;
+  gfloat init_padding = (avail_width/2) - (natural_width/2);
   while (l)
     {
       ClutterActor *child = (ClutterActor*) l->data;
@@ -796,8 +799,13 @@ st_box_layout_allocate (ClutterActor          *actor,
 
       if (flip)
         next_position = position - child_allocated;
-      else
+        if (xalign == ST_ALIGN_CENTER_SPECIAL && next_position < content_box.x1)
+          next_position = content_box.x1;
+      else {
         next_position = position + child_allocated;
+        if (xalign == ST_ALIGN_CENTER_SPECIAL && next_position > content_box.x2)
+          next_position = content_box.x2;
+      }
 
       if (priv->is_vertical)
         {
@@ -815,11 +823,32 @@ st_box_layout_allocate (ClutterActor          *actor,
         {
           if (flip)
             {
+              if (firstchild && xalign == ST_ALIGN_CENTER_SPECIAL)
+                {
+                  position -= init_padding;
+                  next_position = position - child_allocated;
+                  firstchild = FALSE;
+                }
+                if (xalign == ST_ALIGN_CENTER_SPECIAL && position > content_box.x2) {
+                  position = content_box.x2;
+                }
               child_box.x1 = (int)(0.5 + next_position);
               child_box.x2 = (int)(0.5 + position);
             }
           else
             {
+              if (firstchild && xalign == ST_ALIGN_CENTER_SPECIAL)
+                {
+                  position += init_padding;
+                  if (position < content_box.x1) {
+                    position = content_box.x1;
+                  }
+                  next_position = position + child_allocated;
+                  firstchild = FALSE;
+                }
+              if (xalign == ST_ALIGN_CENTER_SPECIAL && position < content_box.x1) {
+                    position = content_box.x1;
+                  }
               child_box.x1 = (int)(0.5 + position);
               child_box.x2 = (int)(0.5 + next_position);
             }
