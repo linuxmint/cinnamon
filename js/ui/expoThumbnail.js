@@ -770,7 +770,7 @@ ExpoThumbnailsBox.prototype = {
     handleKeyPressEvent: function(actor, event) {
         let modifiers = Cinnamon.get_event_state(event);
         let symbol = event.get_key_symbol();
-        if (symbol === Clutter.Return) {
+        if (symbol === Clutter.Return || symbol === Clutter.KEY_space) {
             this.activateSelectedWorkspace();
             return true;
         }
