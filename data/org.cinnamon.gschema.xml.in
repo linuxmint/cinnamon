@@ -347,6 +347,14 @@
       </_description>
     </key>
 
+    <key name="enable-looking-glass-to-file" type="b">
+      <default>false</default>
+      <_summary>Enable or disable sending Looking Glass global.log output to file</_summary>
+      <_description>
+        Whether looking glass log data is written to the file: ~/.cinnamon/glass.log or not
+      </_description>
+    </key>
+
     <key name="disabled-open-search-providers" type="as">
       <default>[]</default>
       <_summary>disabled OpenSearch providers</_summary>
