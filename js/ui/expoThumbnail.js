@@ -265,6 +265,12 @@ ExpoWorkspaceThumbnail.prototype = {
     
     showKeyboardSelectedState: function(selected) {
         this.title.name = selected ? "selected" : "";
+        if (selected) {
+            this._highlight();
+        }
+        else {
+            this._shade(true);
+        }
     },
     
     _onEnterEvent : function(actor, event) {
@@ -590,8 +596,8 @@ ExpoWorkspaceThumbnail.prototype = {
         this._highlight();
     },
 
-    _shade : function (){
-        if (this.metaWorkspace != global.screen.get_active_workspace())
+    _shade : function (force){
+        if (this.metaWorkspace != global.screen.get_active_workspace() || force)
             Tweener.addTween(this.shade, {opacity: INACTIVE_OPACITY, time: SLIDE_ANIMATION_TIME, transition: 'easeOutQuad'});    
     },
 
