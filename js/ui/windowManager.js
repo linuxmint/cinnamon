@@ -158,9 +158,12 @@ WindowManager.prototype = {
             return false;
         if (Main.overview.visible || this._animationsBlocked > 0)
             return false;
-        if (actor && (actor.meta_window.get_window_type() != Meta.WindowType.NORMAL))
-            return false;            
-        return global.settings.get_boolean("desktop-effects");
+        if (!actor)
+            return global.settings.get_boolean("desktop-effects");
+        let type = actor.meta_window.get_window_type();
+        if (type == Meta.WindowType.NORMAL || type == Meta.WindowType.DIALOG || type == Meta.WindowType.MODAL_DIALOG)
+            return global.settings.get_boolean("desktop-effects");
+        return false;
     },
 
     _removeEffect : function(list, actor) {
