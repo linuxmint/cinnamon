@@ -751,6 +751,51 @@ ExpoThumbnailsBox.prototype = {
         this._thumbnails[this._kbThumbnailIndex].showKeyboardSelectedState(true);
     },
 
+    handleKeyPressEvent: function(actor, event) {
+        let modifiers = Cinnamon.get_event_state(event);
+        let symbol = event.get_key_symbol();
+        if (symbol === Clutter.Return) {
+            this.activateSelectedWorkspace();
+            return true;
+        }
+        if (symbol === Clutter.Escape) {
+            if (global.stage.get_key_focus() === this._thumbnails[this._kbThumbnailIndex].title) {
+                // does not enter here, must find another way to detect focus ...
+                return true;
+            }
+        }
+        if (symbol === Clutter.Delete
+            || symbol === Clutter.w && modifiers & Clutter.ModifierType.CONTROL_MASK) {
+            this.removeSelectedWorkspace();
+            return true;
+        }
+        if (symbol === Clutter.Right || symbol === Clutter.Down) {
+            this.selectNextWorkspace();
+            return true;
+        }
+        if (symbol === Clutter.Left || symbol === Clutter.Up) {
+            this.selectPrevWorkspace();
+            return true;
+        }
+        if (symbol === Clutter.Home) {
+            this.selectPrevWorkspace(true);
+            return true;
+        }
+        if (symbol === Clutter.End) {
+            this.selectNextWorkspace(true);
+            return true;
+        }
+        if (symbol === Clutter.F2) {
+            this.editWorkspaceTitle();
+            return true;
+        }
+        return false;
+    },
+
+    editWorkspaceTitle: function() {
+        this._thumbnails[this._kbThumbnailIndex].title.grab_key_focus();
+    },
+
     activateSelectedWorkspace: function() {
         this._thumbnails[this._kbThumbnailIndex].activateWorkspace();
     },

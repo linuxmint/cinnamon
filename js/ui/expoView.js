@@ -58,34 +58,7 @@ ExpoView.prototype = {
     },
     
     handleKeyPressEvent: function(actor, event) {
-        let modifiers = Cinnamon.get_event_state(event);
-        let symbol = event.get_key_symbol();
-        if (symbol === Clutter.Return) {
-            this._thumbnailsBox.activateSelectedWorkspace();
-            return true;
-        }
-        if (symbol === Clutter.Delete
-            || symbol === Clutter.w && modifiers & Clutter.ModifierType.CONTROL_MASK) {
-            this._thumbnailsBox.removeSelectedWorkspace();
-            return true;
-        }
-        if (symbol === Clutter.Right || symbol === Clutter.Down) {
-            this._thumbnailsBox.selectNextWorkspace();
-            return true;
-        }
-        if (symbol === Clutter.Left || symbol === Clutter.Up) {
-            this._thumbnailsBox.selectPrevWorkspace();
-            return true;
-        }
-        if (symbol === Clutter.Home) {
-            this._thumbnailsBox.selectPrevWorkspace(true);
-            return true;
-        }
-        if (symbol === Clutter.End) {
-            this._thumbnailsBox.selectNextWorkspace(true);
-            return true;
-        }
-        return false;
+        return this._thumbnailsBox.handleKeyPressEvent(actor, event);
     },
 
     show: function() {
