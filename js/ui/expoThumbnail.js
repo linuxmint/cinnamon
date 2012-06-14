@@ -185,8 +185,7 @@ ExpoWorkspaceThumbnail.prototype = {
                                      track_hover: true,
                                      can_focus: true });                
         this.title._spacing = 0; 
-        this.titleText = this.title.clutter_text;
-        this.titleText.connect('text-changed', Lang.bind(this, this._onTitleChanged)); 
+        this.titleText = this.title.clutter_text;        
         this.titleText.connect('key-press-event', Lang.bind(this, this._onTitleKeyPressEvent)); 
               
         let workspace_names = global.settings.get_strv("workspace-names");
@@ -250,22 +249,21 @@ ExpoWorkspaceThumbnail.prototype = {
     },
     
     _onTitleKeyPressEvent: function(actor, event) {
+        
+        let workspace_names = global.settings.get_strv("workspace-names");
+        if (this.metaWorkspace.index() < workspace_names.length && this.title.get_text() != workspace_names[this.metaWorkspace.index()]) {
+            workspace_names[this.metaWorkspace.index()] = this.title.get_text();
+            global.settings.set_strv("workspace-names", workspace_names);            
+        }      
+                 
         let symbol = event.get_key_symbol();
         if (symbol === Clutter.Return || symbol === Clutter.Escape) {
             global.stage.set_key_focus(this.actor);
             return true;
         }
-        return false;
+        return false;     
     },
-
-    _onTitleChanged: function (se, prop) {
-        let workspace_names = global.settings.get_strv("workspace-names");
-        if (this.metaWorkspace.index() < workspace_names.length) {
-            workspace_names[this.metaWorkspace.index()] = this.title.get_text();
-        }      
-        global.settings.set_strv("workspace-names", workspace_names);  
-    },
-    
+   
     activateWorkspace: function() {
         if (this.metaWorkspace != global.screen.get_active_workspace())
             this.metaWorkspace.activate(global.get_current_time());
