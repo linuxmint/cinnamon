@@ -1176,6 +1176,7 @@ class MainWindow:
         sidePage = SidePage(_("Effects"), "desktop-effects.svg", self.content_box)
         self.sidePages.append((sidePage, "effects"))
         sidePage.add_widget(GSettingsCheckButton(_("Enable desktop effects"), "org.cinnamon", "desktop-effects"))
+        sidePage.add_widget(GSettingsCheckButton(_("Enable desktop effects on dialog boxes"), "org.cinnamon", "desktop-effects-on-dialogs"))
         
         # Destroy window effects
         transition_effects = []

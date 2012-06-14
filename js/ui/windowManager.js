@@ -161,8 +161,12 @@ WindowManager.prototype = {
         if (!actor)
             return global.settings.get_boolean("desktop-effects");
         let type = actor.meta_window.get_window_type();
-        if (type == Meta.WindowType.NORMAL || type == Meta.WindowType.DIALOG || type == Meta.WindowType.MODAL_DIALOG)
+        if (type == Meta.WindowType.NORMAL) {
             return global.settings.get_boolean("desktop-effects");
+        }
+        if (type == Meta.WindowType.DIALOG || type == Meta.WindowType.MODAL_DIALOG) {
+            return global.settings.get_boolean("desktop-effects-on-dialogs");
+        }
         return false;
     },
 
