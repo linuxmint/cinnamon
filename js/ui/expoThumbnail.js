@@ -187,6 +187,7 @@ ExpoWorkspaceThumbnail.prototype = {
         this.title._spacing = 0; 
         this.titleText = this.title.clutter_text;
         this.titleText.connect('text-changed', Lang.bind(this, this._onTitleChanged)); 
+        this.titleText.connect('key-press-event', Lang.bind(this, this._onTitleKeyPressEvent)); 
               
         let workspace_names = global.settings.get_strv("workspace-names");
         let workspace_index = this.metaWorkspace.index();
@@ -248,6 +249,15 @@ ExpoWorkspaceThumbnail.prototype = {
         this._slidePosition = 0; // Fully slid in
     },
     
+    _onTitleKeyPressEvent: function(actor, event) {
+        let symbol = event.get_key_symbol();
+        if (symbol === Clutter.Return || symbol === Clutter.Escape) {
+            global.stage.set_key_focus(this.actor);
+            return true;
+        }
+        return false;
+    },
+
     _onTitleChanged: function (se, prop) {
         let workspace_names = global.settings.get_strv("workspace-names");
         if (this.metaWorkspace.index() < workspace_names.length) {
