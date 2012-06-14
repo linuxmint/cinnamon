@@ -709,6 +709,7 @@ ExpoThumbnailsBox.prototype = {
         this._scale = 0;
         this._pendingScaleUpdate = false;
         this._stateUpdateQueued = false;
+        this._stateUpdatePending = false;
         this.bX = 0;
         this.bY = 0;
 
@@ -782,7 +783,9 @@ ExpoThumbnailsBox.prototype = {
         }
         if (symbol === Clutter.Delete
             || symbol === Clutter.w && modifiers & Clutter.ModifierType.CONTROL_MASK) {
-            this.removeSelectedWorkspace();
+            if (!this._stateUpdatePending) {
+                this.removeSelectedWorkspace();
+            }
             return true;
         }
         if (symbol === Clutter.Right || symbol === Clutter.Down) {
@@ -866,6 +869,7 @@ ExpoThumbnailsBox.prototype = {
     },
 
     addThumbnails: function(start, count) {
+        this._queueUpdateStates();
         for (let k = start; k < start + count; k++) {
             let metaWorkspace = global.screen.get_workspace_by_index(k);
             let thumbnail = new ExpoWorkspaceThumbnail(metaWorkspace);
@@ -895,11 +899,10 @@ ExpoThumbnailsBox.prototype = {
 
             this._stateCounts[thumbnail.state]++;
         }
-
-        this._queueUpdateStates();
     },
 
     removeThumbnails: function(start, count) {
+        this._queueUpdateStates();
         let currentPos = 0;
         for (let k = 0; k < this._thumbnails.length; k++) {
             let thumbnail = this._thumbnails[k];
@@ -924,7 +927,6 @@ ExpoThumbnailsBox.prototype = {
             }
         }
 
-        this._queueUpdateStates();
     },
 
     syncStacking: function(stackIndices) {
@@ -966,7 +968,7 @@ ExpoThumbnailsBox.prototype = {
                            onCompleteScope: this });
     },
 
-    _updateStates: function() {
+    _updateStates_internal: function() {
         this._stateUpdateQueued = false;
 
         // Then slide out any thumbnails that have been destroyed
@@ -1040,7 +1042,17 @@ ExpoThumbnailsBox.prototype = {
         this._thumbnails[this._kbThumbnailIndex].showKeyboardSelectedState(true);
     },
 
+    _updateStates: function() {
+        try {
+            this._updateStates_internal();
+        }
+        finally {
+            this._stateUpdatePending = false;
+        }
+    },
+
     _queueUpdateStates: function() {
+        this._stateUpdatePending = true;
         if (this._stateUpdateQueued)
             return;
 
