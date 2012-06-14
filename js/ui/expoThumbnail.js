@@ -814,6 +814,7 @@ ExpoThumbnailsBox.prototype = {
             this._kbThumbnailIndex = 0;
         }
         this._thumbnails[this._kbThumbnailIndex].showKeyboardSelectedState(true);
+        global.stage.set_key_focus(this._thumbnails[this._kbThumbnailIndex].actor);
     },
 
     selectPrevWorkspace: function(home) {
@@ -826,6 +827,7 @@ ExpoThumbnailsBox.prototype = {
             this._kbThumbnailIndex = this._thumbnails.length - 1;
         }
         this._thumbnails[this._kbThumbnailIndex].showKeyboardSelectedState(true);
+        global.stage.set_key_focus(this._thumbnails[this._kbThumbnailIndex].actor);
     },
 
     hide: function() {
@@ -1204,6 +1206,7 @@ ExpoThumbnailsBox.prototype = {
         this._thumbnails[this._kbThumbnailIndex].showKeyboardSelectedState(false);
         this._kbThumbnailIndex = global.screen.get_active_workspace_index();
         this._thumbnails[this._kbThumbnailIndex].showKeyboardSelectedState(true);
+        global.stage.set_key_focus(this._thumbnails[this._kbThumbnailIndex].actor);
 
         let thumbnail;
         let activeWorkspace = global.screen.get_active_workspace();
