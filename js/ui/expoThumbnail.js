@@ -187,6 +187,7 @@ ExpoWorkspaceThumbnail.prototype = {
         this.title._spacing = 0; 
         this.titleText = this.title.clutter_text;
         this.titleText.connect('text-changed', Lang.bind(this, this._onTitleChanged)); 
+        this.titleText.connect('key-press-event', Lang.bind(this, this._onTitleKeyPressEvent)); 
               
         let workspace_names = global.settings.get_strv("workspace-names");
         let workspace_index = this.metaWorkspace.index();
@@ -248,12 +249,38 @@ ExpoWorkspaceThumbnail.prototype = {
         this._slidePosition = 0; // Fully slid in
     },
     
+    _onTitleKeyPressEvent: function(actor, event) {
+        let symbol = event.get_key_symbol();
+        if (symbol === Clutter.Return || symbol === Clutter.Escape) {
+            global.stage.set_key_focus(this.actor);
+            return true;
+        }
+        return false;
+    },
+
     _onTitleChanged: function (se, prop) {
         let workspace_names = global.settings.get_strv("workspace-names");
         if (this.metaWorkspace.index() < workspace_names.length) {
             workspace_names[this.metaWorkspace.index()] = this.title.get_text();
         }      
         global.settings.set_strv("workspace-names", workspace_names);  
+    },
+    
+    activateWorkspace: function() {
+        if (this.metaWorkspace != global.screen.get_active_workspace())
+            this.metaWorkspace.activate(global.get_current_time());
+        this._overviewModeOff();
+        Main.expo.hide();
+    },
+    
+    showKeyboardSelectedState: function(selected) {
+        this.title.name = selected ? "selected" : "";
+        if (selected) {
+            this._highlight();
+        }
+        else {
+            this._shade(true);
+        }
     },
     
     _onEnterEvent : function(actor, event) {
@@ -579,8 +606,8 @@ ExpoWorkspaceThumbnail.prototype = {
         this._highlight();
     },
 
-    _shade : function (){
-        if (this.metaWorkspace != global.screen.get_active_workspace())
+    _shade : function (force){
+        if (this.metaWorkspace != global.screen.get_active_workspace() || force)
             Tweener.addTween(this.shade, {opacity: INACTIVE_OPACITY, time: SLIDE_ANIMATION_TIME, transition: 'easeOutQuad'});    
     },
 
@@ -735,6 +762,88 @@ ExpoThumbnailsBox.prototype = {
 
         this.addThumbnails(0, global.screen.n_workspaces);
         this.button.raise_top();
+        
+        this._kbThumbnailIndex = global.screen.get_active_workspace_index();
+        this._thumbnails[this._kbThumbnailIndex].showKeyboardSelectedState(true);
+    },
+
+    handleKeyPressEvent: function(actor, event) {
+        let modifiers = Cinnamon.get_event_state(event);
+        let symbol = event.get_key_symbol();
+        if (symbol === Clutter.Return || symbol === Clutter.KEY_space) {
+            this.activateSelectedWorkspace();
+            return true;
+        }
+        if (symbol === Clutter.Escape) {
+            if (global.stage.get_key_focus() === this._thumbnails[this._kbThumbnailIndex].title) {
+                // does not enter here, must find another way to detect focus ...
+                return true;
+            }
+        }
+        if (symbol === Clutter.Delete
+            || symbol === Clutter.w && modifiers & Clutter.ModifierType.CONTROL_MASK) {
+            this.removeSelectedWorkspace();
+            return true;
+        }
+        if (symbol === Clutter.Right || symbol === Clutter.Down) {
+            this.selectNextWorkspace();
+            return true;
+        }
+        if (symbol === Clutter.Left || symbol === Clutter.Up) {
+            this.selectPrevWorkspace();
+            return true;
+        }
+        if (symbol === Clutter.Home) {
+            this.selectPrevWorkspace(true);
+            return true;
+        }
+        if (symbol === Clutter.End) {
+            this.selectNextWorkspace(true);
+            return true;
+        }
+        if (symbol === Clutter.F2) {
+            this.editWorkspaceTitle();
+            return true;
+        }
+        return false;
+    },
+
+    editWorkspaceTitle: function() {
+        this._thumbnails[this._kbThumbnailIndex].title.grab_key_focus();
+    },
+
+    activateSelectedWorkspace: function() {
+        this._thumbnails[this._kbThumbnailIndex].activateWorkspace();
+    },
+
+    removeSelectedWorkspace: function() {
+        this._thumbnails[this._kbThumbnailIndex]._remove();
+    },
+
+    selectNextWorkspace: function(last) {
+        if (this._thumbnails.length < 2) {
+            return;
+        }
+        this._thumbnails[this._kbThumbnailIndex].showKeyboardSelectedState(false);
+        this._kbThumbnailIndex = last ? this._thumbnails.length-1 : this._kbThumbnailIndex+1;
+        if (this._kbThumbnailIndex >= this._thumbnails.length) {
+            this._kbThumbnailIndex = 0;
+        }
+        this._thumbnails[this._kbThumbnailIndex].showKeyboardSelectedState(true);
+        global.stage.set_key_focus(this._thumbnails[this._kbThumbnailIndex].actor);
+    },
+
+    selectPrevWorkspace: function(home) {
+        if (this._thumbnails.length < 2) {
+            return;
+        }
+        this._thumbnails[this._kbThumbnailIndex].showKeyboardSelectedState(false);
+        this._kbThumbnailIndex = home ? 0 : this._kbThumbnailIndex-1;
+        if (this._kbThumbnailIndex < 0 ) {
+            this._kbThumbnailIndex = this._thumbnails.length - 1;
+        }
+        this._thumbnails[this._kbThumbnailIndex].showKeyboardSelectedState(true);
+        global.stage.set_key_focus(this._thumbnails[this._kbThumbnailIndex].actor);
     },
 
     hide: function() {
@@ -802,6 +911,17 @@ ExpoThumbnailsBox.prototype = {
                 this._setThumbnailState(thumbnail, ThumbnailState.REMOVING);
 
             currentPos++;
+        }
+        
+        // for simplicity, assume workspaces are removed one at a time
+        this._thumbnails[this._kbThumbnailIndex].showKeyboardSelectedState(false);
+        if (start < this._kbThumbnailIndex) {
+            --this._kbThumbnailIndex;
+        }
+        if (start === this._kbThumbnailIndex) {
+            if (this._kbThumbnailIndex === this._thumbnails.length - 1) {
+                --this._kbThumbnailIndex;
+            }
         }
 
         this._queueUpdateStates();
@@ -917,6 +1037,7 @@ ExpoThumbnailsBox.prototype = {
                                    onCompleteScope: this
                                  });
             });
+        this._thumbnails[this._kbThumbnailIndex].showKeyboardSelectedState(true);
     },
 
     _queueUpdateStates: function() {
@@ -1098,6 +1219,11 @@ ExpoThumbnailsBox.prototype = {
     },
 
     _activeWorkspaceChanged: function(wm, from, to, direction) {
+        this._thumbnails[this._kbThumbnailIndex].showKeyboardSelectedState(false);
+        this._kbThumbnailIndex = global.screen.get_active_workspace_index();
+        this._thumbnails[this._kbThumbnailIndex].showKeyboardSelectedState(true);
+        global.stage.set_key_focus(this._thumbnails[this._kbThumbnailIndex].actor);
+
         let thumbnail;
         let activeWorkspace = global.screen.get_active_workspace();
         for (let i = 0; i < this._thumbnails.length; i++) {

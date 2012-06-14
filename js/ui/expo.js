@@ -169,19 +169,21 @@ Expo.prototype = {
         this._addWorkspaceButton.hide();
         this._windowCloseArea.hide();
 
-        this._windowSwitchTimeoutId = 0;
-        this._windowSwitchTimestamp = 0;
-        this._lastActiveWorkspaceIndex = -1;
-        this._lastHoveredWindow = null;
         this._needsFakePointerEvent = false;
-        this._globalKeyPressHandler = 0;
 
         global.stage.connect('key-press-event',
             Lang.bind(this, function(actor, event) {
                 if (this._shown) {
+                    if (this._expo.handleKeyPressEvent(actor, event)) {
+                        return true;
+                    }
                     let symbol = event.get_key_symbol();
-                    if (symbol === Clutter.Return || symbol === Clutter.Escape) {
+                    if (symbol === Clutter.Escape) {
                         this.hide();
+                        return true;
+                    }
+                    if (symbol === Clutter.plus || symbol === Clutter.Insert) {
+                        Main._addWorkspace();
                         return true;
                     }
                 }

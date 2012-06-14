@@ -56,6 +56,10 @@ ExpoView.prototype = {
         this._windowDragCancelledId = 0;
         this._windowDragEndId = 0;
     },
+    
+    handleKeyPressEvent: function(actor, event) {
+        return this._thumbnailsBox.handleKeyPressEvent(actor, event);
+    },
 
     show: function() {
         this._controls.show();
