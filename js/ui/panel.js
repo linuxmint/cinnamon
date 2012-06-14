@@ -668,57 +668,71 @@ Panel.prototype = {
         let [centerMinWidth, centerNaturalWidth] = this._centerBox.get_preferred_width(-1);
         let [rightMinWidth, rightNaturalWidth] = this._rightBox.get_preferred_width(-1);
 
-        let leftMax = allocWidth-centerMinWidth-rightMinWidth;
+        let leftWidth = Math.max(leftNaturalWidth, 25);
+        let centerWidth = centerMinWidth;
+        let rightWidth = Math.max(rightNaturalWidth, 25);
+
+        let space_needed = leftWidth + centerWidth + rightWidth;
+        if (space_needed <= allocWidth) {
+            // If we've more space than we need, expand the center zone
+            let space_left = allocWidth - space_needed;
+            centerWidth = centerWidth + space_left;
+        }
+        else {
+            let space_missing = space_needed - allocWidth;
+            // If there isn't enough space, reduce the size of the largest zone (likely to contain more shrinkable content)
+            if (leftWidth >= centerWidth && leftWidth >= rightWidth) {
+                leftWidth = Math.max(leftWidth - space_missing, leftMinWidth);
+            }
+            else if (centerWidth >= rightWidth) {
+                centerWidth = Math.max(centerWidth - space_mising, centerMinWidth);
+            }
+            else {
+                rightWidth = Math.max(rightWidth - space_missing, rightMinWidth);
+            }   
+        }
+
+        let leftBoundary = leftWidth;
+        let rightBoundary = allocWidth - rightWidth;
+        if (this.actor.get_direction() == St.TextDirection.RTL) {
+            leftBoundary = allocWidth - leftWidth;
+            rightBoundary = rightWidth;
+        }
 
         let childBox = new Clutter.ActorBox();
-
-        let leftBoxBoundary = 0;
-        let rightBoxBoundary = 0;
 
         childBox.y1 = 0;
         childBox.y2 = allocHeight;
         if (this.actor.get_direction() == St.TextDirection.RTL) {
-            childBox.x1 = allocWidth - Math.max(leftNaturalWidth, 25);
+            childBox.x1 = leftBoundary;
             childBox.x2 = allocWidth;
-            if (childBox.x1 < allocWidth - leftMax)
-                childBox.x1 = allocWidth - leftMax;
-            leftBoxBoundary = childBox.x1;
         } else {
             childBox.x1 = 0;
-            childBox.x2 = Math.max(leftNaturalWidth, 25); // Min size for zone is 25px
-            if (childBox.x2 > leftMax)
-                childBox.x2 = leftMax;
-            leftBoxBoundary = childBox.x2;
+            childBox.x2 = leftBoundary;
         }        
         this._leftBox.allocate(childBox, flags);
 
         childBox.y1 = 0;
         childBox.y2 = allocHeight;
         if (this.actor.get_direction() == St.TextDirection.RTL) {
-            childBox.x1 = 0;
-            childBox.x2 = Math.max(rightNaturalWidth, 25);
-            if (childBox.x2 > leftBoxBoundary-centerMinWidth)
-                childBox.x2 = leftBoxBoundary-centerMinWidth;
-            rightBoxBoundary = childBox.x2;
+            childBox.x1 = rightBoundary;
+            childBox.x2 = leftBoundary;
         } else {
-            childBox.x1 = allocWidth - Math.max(rightNaturalWidth, 25); // Min size for zone is 25px
-            childBox.x2 = allocWidth;
-            if (childBox.x1 < (leftBoxBoundary+centerMinWidth))
-                childBox.x1 = leftBoxBoundary+centerMinWidth;
-            rightBoxBoundary = childBox.x1;
+            childBox.x1 = leftBoundary;
+            childBox.x2 = rightBoundary;
         }
-        this._rightBox.allocate(childBox, flags);
+        this._centerBox.allocate(childBox, flags);
 
         childBox.y1 = 0;
         childBox.y2 = allocHeight;
         if (this.actor.get_direction() == St.TextDirection.RTL) {
-            childBox.x1 = rightBoxBoundary;
-            childBox.x2 = leftBoxBoundary;
+            childBox.x1 = 0;
+            childBox.x2 = rightBoundary;
         } else {
-            childBox.x1 = leftBoxBoundary;
-            childBox.x2 = rightBoxBoundary;
+            childBox.x1 = rightBoundary;
+            childBox.x2 = allocWidth;
         }
-        this._centerBox.allocate(childBox, flags);
+        this._rightBox.allocate(childBox, flags);
 
         let [cornerMinWidth, cornerWidth] = this._leftCorner.actor.get_preferred_width(-1);
         let [cornerMinHeight, cornerHeight] = this._leftCorner.actor.get_preferred_width(-1);

@@ -552,7 +552,6 @@ WindowManager.prototype = {
     },
 
     _destroyWindow : function(cinnamonwm, actor) {
-           
         let window = actor.meta_window;
         if (actor._notifyWindowTypeSignalId) {
             window.disconnect(actor._notifyWindowTypeSignalId);
@@ -566,21 +565,46 @@ WindowManager.prototype = {
         if (window.is_attached_dialog()) {
             let parent = window.get_transient_for();
             this._checkDimming(parent, window);
+            if (!this._shouldAnimate()) {
+                cinnamonwm.completed_destroy(actor);
+                return;
+            }
+
+            actor.opacity = 255;
+            actor.show();
+            this._destroying.push(actor);
+
+            actor._parentDestroyId = parent.connect('unmanaged', Lang.bind(this, function () {
+                Tweener.removeTweens(actor);
+                this._destroyWindowDone(cinnamonwm, actor);
+            }));
+
+            Tweener.removeTweens(actor);
+            Tweener.addTween(actor,
+                             { opacity: 0,
+                               time: WINDOW_ANIMATION_TIME,
+                               transition: "easeOutQuad",
+                               onComplete: this._destroyWindowDone,
+                               onCompleteScope: this,
+                               onCompleteParams: [cinnamonwm, actor],
+                               onOverwrite: this._destroyWindowDone,
+                               onOverwriteScope: this,
+                               onOverwriteParams: [cinnamonwm, actor]
+                             });
+            return;
         }
         
         if (!this._shouldAnimate(actor)) {
             cinnamonwm.completed_destroy(actor);
             return;
         }
-        
-        Tweener.removeTweens(actor);
                                                 
         let transition = "easeInSine";
         let effect = "scale";
         let time = 0.25;
         try{
-            effect = global.settings.get_string("desktop-effects-close-effect");                                                
-            transition = global.settings.get_string("desktop-effects-close-transition");                        
+            effect = global.settings.get_string("desktop-effects-close-effect");
+            transition = global.settings.get_string("desktop-effects-close-transition");
             time = global.settings.get_int("desktop-effects-close-time") / 1000;
         }
         catch(e) {
@@ -588,14 +612,14 @@ WindowManager.prototype = {
         }
         
         if (effect == "scale") {
-            this._destroying.push(actor);   
-            this._scaleWindow(cinnamonwm, actor, 0.0, 0.0, time, transition, this._destroyWindowDone, this._destroyWindowDone);                    
+            this._destroying.push(actor);
+            this._scaleWindow(cinnamonwm, actor, 0.0, 0.0, time, transition, this._destroyWindowDone, this._destroyWindowDone);
         }
         else if (effect == "fade") {
-            this._destroying.push(actor);   
-            this._fadeWindow(cinnamonwm, actor, 0, time, transition, this._destroyWindowDone, this._destroyWindowDone);            
+            this._destroying.push(actor);
+            this._fadeWindow(cinnamonwm, actor, 0, time, transition, this._destroyWindowDone, this._destroyWindowDone);
         }
-        else {        
+        else {
             cinnamonwm.completed_destroy(actor);
         }
     },

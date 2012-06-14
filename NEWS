@@ -8,7 +8,7 @@ New features:
  - Keyboard navigation in Scale (close windows with CTRL+W or mouse middle-click)
  - Configurable panel height
  - Workspaces and Menu pages in Cinnamon Settings
-	
+
 Bug fixes:
 
  - Gnome 3.4 changes (memory leak fixes, some configuration moved to gsettings, multiple bug fixes)
@@ -18,16 +18,15 @@ Bug fixes:
  - Fixed showDesktop applet not always showing the desktop
  - Fixed showDesktop applet missing Gimp utility windows
  - Fixed places not appearing in menu
+ - Applets are now aligned in the center when placed in the central zone of the panel 
 
 TODO
 ----
 
- - Panel: Center align panel central zone
  - i18n: Update translations
  - i18n: Localize menu categories 
  - Applets: Catch up with eonpatapon's changes on multimedia applet
  - Applets: Fix power applet appearing when applets are moved (code refactoring needed)
- - Applets: Prevent text applets and iconText applets to collapse and reduce their text to "..."
  - System: Fallback on Metacity when Cinnamon crashes
  - System: Improve logging (we're only logging to stderr and looking glass, we need to log to files)
  - Applet API: Allow applets to provide a gsettings schema (which cinnamon-settings compiles when the applet is installed)
