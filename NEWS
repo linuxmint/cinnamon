@@ -25,7 +25,6 @@ TODO
 
  - i18n: Update translations
  - i18n: Localize menu categories 
- - Applets: Catch up with eonpatapon's changes on multimedia applet
  - Applets: Fix power applet appearing when applets are moved (code refactoring needed)
  - System: Fallback on Metacity when Cinnamon crashes
  - System: Improve logging (we're only logging to stderr and looking glass, we need to log to files)
@@ -34,3 +33,6 @@ TODO
  - Settings: In Cinnamon Settings, add the ability to delete themes, extensions and applets located in the user's home
  - Settings: In Cinnamon Settings, add the ability to view and install themes, extensions and applets from cinnamon-settings
  - Layout: Give Cinnamon WM tiling features (fill, grid..etc).
+ - Fix menu crashing Cinnamon (show a category, Internet for instance, click elsewhere, open a terminal, install a program in that category, Opera for instance, open the menu)
+ - List theme changes (for artists) in this file 
+
