@@ -902,6 +902,9 @@ LookingGlass.prototype = {
         let fullCmd = commandHeader + command;
 
         let resultObj;
+
+        let memInfo = global.get_memory_info();
+        
         try {
             resultObj = eval(fullCmd);
         } catch (e) {
@@ -909,6 +912,18 @@ LookingGlass.prototype = {
         }
 
         this._pushResult(command, resultObj);
+
+        let memInfo2 = global.get_memory_info();
+        let memdata = [
+            'glibc_uordblks: ' + (memInfo2.glibc_uordblks - memInfo.glibc_uordblks),
+            'js bytes: ' + (memInfo2.js_bytes - memInfo.js_bytes),
+            'gjs_boxed: ' + (memInfo2.gjs_boxed - memInfo.gjs_boxed),
+            'gjs_gobject: ' + (memInfo2.gjs_gobject - memInfo.gjs_gobject),
+            'gjs_function: ' + (memInfo2.gjs_function - memInfo.gjs_function),
+            'gjs_closure: ' + (memInfo2.gjs_closure - memInfo.gjs_closure),
+            'last_gc_seconds_ago: ' + memInfo2.last_gc_seconds_ago
+        ];
+        this._pushResult("<memdiff>", memdata.join('; '));
         this._entry.text = '';
     },
 
