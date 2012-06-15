@@ -6,6 +6,7 @@ New features:
  - Cinnamon 2D
  - Workspace OSD
  - Keyboard navigation in Scale (close windows with CTRL+W or mouse middle-click)
+ - Keyboard navigation in Expo
  - Configurable panel height
  - Workspaces and Menu pages in Cinnamon Settings
 
@@ -34,5 +35,33 @@ TODO
  - Settings: In Cinnamon Settings, add the ability to view and install themes, extensions and applets from cinnamon-settings
  - Layout: Give Cinnamon WM tiling features (fill, grid..etc).
  - Fix menu crashing Cinnamon (show a category, Internet for instance, click elsewhere, open a terminal, install a program in that category, Opera for instance, open the menu)
- - List theme changes (for artists) in this file 
+ - Fix tooltips on GTK popups appearing behind the popups (and move tooltips when they appear on top of the panel)
+
+THEME CHANGES SINCE 1.4
+-----------------------
+
+#Tooltip {
+}
+
+.expo-background {
+}
+
+.window-close-area {
+}
+
+.window-caption#selected {
+}
+
+/* ===================================================================
+ * Workspace OSD
+ * ===================================================================*/
+
+.workspace-osd {
+}
+
+.expo-workspaces-name-entry {
+}
+
+.expo-workspaces-name-entry:focus {
+}
 
