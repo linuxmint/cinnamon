@@ -30,7 +30,7 @@ LayoutManager.prototype = {
         this._rightPanelBarrier = 0;
         this._leftPanelBarrier2 = 0;
         this._rightPanelBarrier2 = 0;
-        this._chrome = new Chrome(this);       
+        this._chrome = new Chrome(this);
 		
 		this._hotCorner = new HotCorner();        
 		this.overviewCorner = new St.Button({name: 'overview-corner', reactive: true, track_hover: true });
@@ -77,8 +77,9 @@ LayoutManager.prototype = {
         
         global.screen.connect('restacked',
                               Lang.bind(this, this._windowsRestacked));
+
     },
-    
+
     _windowsRestacked: function() {
         /*let windows = global.window_group.get_children();
         //let hasCoveringWindows = false;
@@ -107,9 +108,17 @@ LayoutManager.prototype = {
     },
     
     _toggleExpo: function() {
-        if (!Main.expo.animationInProgress) {            
-        	Main.expo.toggle();
-        }                    
+        if (!Main.expo.animationInProgress) {
+            if (Main.overview.visible) {
+                this._activationTime = Date.now() / 1000;
+                if (this._hotCorner.rippleActivated)
+                    this._hotCorner.rippleAnimation();
+                Main.overview.hide();
+                Main.expo.toggle();
+            } else {
+                Main.expo.toggle();
+            }
+        }
     },
     
     _onPanelAutoHideChanged: function() {    	
@@ -661,8 +670,10 @@ HotCorner.prototype = {
                 }
                 if (this.cornerOpensExpo) {
                 	Main.expo.toggle();
-                } else {
+                } else if (!Main.overview.animationInProgress && !Main.expo.visible) {
                 	Main.overview.show();
+                } else {
+                    Main.expo.toggle();
                 }
             } else if (Main.overview.visible){
                 this._activationTime = Date.now() / 1000;
@@ -709,7 +720,6 @@ HotCorner.prototype = {
         return false;
     }
 };
-
 
 // This manages Cinnamon "chrome"; the UI that's visible in the
 // normal mode (ie, outside the Overview), that surrounds the main
