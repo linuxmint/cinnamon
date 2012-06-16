@@ -903,6 +903,12 @@ LookingGlass.prototype = {
 
         let resultObj;
 
+        /*  Set up for some reporting about memory impact and execution speed.
+            The performance impact of global.get_memory_info should be 
+            very small, whereas getting a timestamp might involve some 
+            memory allocation, so we grab the timestamp first.
+        */
+        let ts = new Date().getTime();
         let memInfo = global.get_memory_info();
         
         try {
@@ -910,20 +916,30 @@ LookingGlass.prototype = {
         } catch (e) {
             resultObj = '<exception ' + e + '>';
         }
+        let memInfo2 = global.get_memory_info();
+        let ts2 = new Date().getTime();
 
         this._pushResult(command, resultObj);
 
-        let memInfo2 = global.get_memory_info();
         let memdata = [
-            'glibc_uordblks: ' + (memInfo2.glibc_uordblks - memInfo.glibc_uordblks),
-            'js bytes: ' + (memInfo2.js_bytes - memInfo.js_bytes),
+            'uordblks: ' + (memInfo2.glibc_uordblks),
+            'js_bytes: ' + (memInfo2.js_bytes),
+            'gjs_boxed: ' + (memInfo2.gjs_boxed),
+            'gjs_gobject: ' + (memInfo2.gjs_gobject),
+            'gjs_function: ' + (memInfo2.gjs_function),
+            'gjs_closure: ' + (memInfo2.gjs_closure)
+        ];
+        this._pushResult("<memstate>", memdata.join('; '));
+        let memdataDiff = [
+            'uordblks: ' + (memInfo2.glibc_uordblks - memInfo.glibc_uordblks),
+            'js_bytes: ' + (memInfo2.js_bytes - memInfo.js_bytes),
             'gjs_boxed: ' + (memInfo2.gjs_boxed - memInfo.gjs_boxed),
             'gjs_gobject: ' + (memInfo2.gjs_gobject - memInfo.gjs_gobject),
             'gjs_function: ' + (memInfo2.gjs_function - memInfo.gjs_function),
-            'gjs_closure: ' + (memInfo2.gjs_closure - memInfo.gjs_closure),
-            'last_gc_seconds_ago: ' + memInfo2.last_gc_seconds_ago
+            'gjs_closure: ' + (memInfo2.gjs_closure - memInfo.gjs_closure)
         ];
-        this._pushResult("<memdiff>", memdata.join('; '));
+        this._pushResult("<memdiff>", memdataDiff.join('; '));
+        this._pushResult("<execution time (ms)>", ts2 - ts);
         this._entry.text = '';
     },
 
