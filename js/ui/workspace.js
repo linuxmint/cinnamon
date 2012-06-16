@@ -40,7 +40,7 @@ const POSITIONS = {
         1: [[0.5, 0.5, 0.95]],
         2: [[0.25, 0.5, 0.48], [0.75, 0.5, 0.48]],
         3: [[0.25, 0.25, 0.48],  [0.75, 0.25, 0.48],  [0.5, 0.75, 0.48]],
-        4: [[0.25, 0.25, 0.47],   [0.75, 0.25, 0.47], [0.75, 0.75, 0.47], [0.25, 0.75, 0.47]],
+        4: [[0.25, 0.25, 0.47],   [0.75, 0.25, 0.47], [0.25, 0.75, 0.47], [0.75, 0.75, 0.47]],
         5: [[0.165, 0.25, 0.32], [0.495, 0.25, 0.32], [0.825, 0.25, 0.32], [0.25, 0.75, 0.32], [0.75, 0.75, 0.32]]
 };
 // Used in _orderWindowsPermutations, 5! = 120 which is probably the highest we can go
@@ -756,25 +756,41 @@ Workspace.prototype = {
         this._kbWindowIndex = -1; // index of the current keyboard-selected window
     },
     
-    selectNextWindow: function() {
-        if (this.isEmpty()) {
+    selectAnotherWindow: function(symbol) {
+        let windowCount = this._windowOverlays.length;
+        if (windowCount === 0) {
             return;
         }
-        if (this._kbWindowIndex > -1 && this._kbWindowIndex < this._windowOverlays.length) {
+        if (this._kbWindowIndex > -1 && this._kbWindowIndex < windowCount) {
             this._windowOverlays[this._kbWindowIndex].setSelected(false);
         }
-        this._kbWindowIndex = (this._kbWindowIndex + 1) % this._windowOverlays.length;
-        this._windowOverlays[this._kbWindowIndex].setSelected(true);
-    },
-    
-    selectPrevWindow: function() {
-        if (this.isEmpty()) {
-            return;
+
+        if (windowCount > 2 && (symbol === Clutter.Down || symbol === Clutter.Up)) {
+            let numCols = Math.ceil(Math.sqrt(windowCount));
+            let curRow = Math.floor(this._kbWindowIndex/numCols);
+
+            if (symbol === Clutter.Down) {
+                let numRows = Math.ceil(windowCount/numCols);
+                if (curRow < numRows - 1) {                
+                    this._kbWindowIndex += numCols;
+                    if (this._kbWindowIndex >= windowCount) {
+                        this._kbWindowIndex = windowCount - 1;
+                    }
+                }
+            }
+            if (symbol === Clutter.Up) {
+                if (curRow > 0) {                
+                    this._kbWindowIndex -= numCols;
+                }
+            }
         }
-        if (this._kbWindowIndex > -1 && this._kbWindowIndex < this._windowOverlays.length) {
-            this._windowOverlays[this._kbWindowIndex].setSelected(false);
+        else if (symbol === Clutter.Left || symbol === Clutter.Up) {
+            this._kbWindowIndex = (this._kbWindowIndex < 1 ? windowCount : this._kbWindowIndex) - 1;
         }
-        this._kbWindowIndex = (this._kbWindowIndex < 1 ? this._windowOverlays.length : this._kbWindowIndex) - 1;
+        else if (symbol === Clutter.Right || symbol === Clutter.Down) {
+            this._kbWindowIndex = (this._kbWindowIndex + 1) % windowCount;
+        }
+
         this._windowOverlays[this._kbWindowIndex].setSelected(true);
     },
     

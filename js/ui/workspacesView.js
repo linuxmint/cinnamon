@@ -135,7 +135,7 @@ WorkspacesView.prototype = {
             
         // this should select the last active window
         if (this._workspaces.length > 0) { 
-            this._workspaces[activeWorkspaceIndex].selectPrevWindow();
+            this._workspaces[activeWorkspaceIndex].selectAnotherWindow(Clutter.Left);
         }
     },
 
@@ -151,12 +151,9 @@ WorkspacesView.prototype = {
             return true;
         }
 
-        if (symbol === Clutter.Left || symbol === Clutter.Up) {
-            activeWorkspace.selectPrevWindow();
-            return true;
-        }
-        if (symbol === Clutter.Right || symbol === Clutter.Down) {
-            activeWorkspace.selectNextWindow();
+        if (symbol === Clutter.Left || symbol === Clutter.Up 
+                || symbol === Clutter.Right || symbol === Clutter.Down) {
+            activeWorkspace.selectAnotherWindow(symbol);
             return true;
         }
         
