@@ -26,8 +26,7 @@ dist_theme_DATA = \
 	theme/calendar-today.svg		\
 	theme/close-window.svg			\
 	theme/close.svg				\
-	theme/corner-ripple-ltr.png		\
-	theme/corner-ripple-rtl.png		\
+	theme/corner-ripple.png			\
 	theme/dash-placeholder.svg		\
 	theme/filter-selected-ltr.svg		\
 	theme/filter-selected-rtl.svg		\
