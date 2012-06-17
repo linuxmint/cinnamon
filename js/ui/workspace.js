@@ -757,38 +757,57 @@ Workspace.prototype = {
     },
     
     selectAnotherWindow: function(symbol) {
-        let windowCount = this._windowOverlays.length;
-        if (windowCount === 0) {
+        let numWindows = this._windowOverlays.length;
+        if (numWindows === 0) {
             return;
         }
-        if (this._kbWindowIndex > -1 && this._kbWindowIndex < windowCount) {
+        if (this._kbWindowIndex > -1 && this._kbWindowIndex < numWindows) {
             this._windowOverlays[this._kbWindowIndex].setSelected(false);
         }
 
-        if (windowCount > 2 && (symbol === Clutter.Down || symbol === Clutter.Up)) {
-            let numCols = Math.ceil(Math.sqrt(windowCount));
+        if (numWindows > 3 // grid navigation is not suited for a low window count
+            && (symbol === Clutter.Down || symbol === Clutter.Up))
+        {
+            let numCols = Math.ceil(Math.sqrt(numWindows));
+            let numRows = Math.ceil(numWindows/numCols);
+
             let curRow = Math.floor(this._kbWindowIndex/numCols);
+            let curCol = this._kbWindowIndex % numCols;
+
+            let calcNewIndex = function(rowDelta) {
+                let newIndex = (curRow + rowDelta) * numCols + curCol;
+                if (rowDelta >= 0) { // down
+                    return newIndex < numWindows ?
+                        newIndex :
+                        curCol < numCols - 1 ?
+                            curCol + 1 :
+                            0;
+                }
+                else { // up
+                    let numFullRows = Math.floor(numWindows/numCols);
+                    let numWOILR = numWindows % numCols; //num Windows on Incompl. Last Row
+                    return newIndex >= 0 ?
+                        newIndex :
+                        curCol === 0 ?
+                            (numFullRows * numCols) - 1 :
+                            numWOILR && curCol > numWOILR ?
+                                ((numRows - 2) * numCols) + curCol - 1:
+                                ((numRows - 1) * numCols) + curCol - 1;
+                }
+            };
 
             if (symbol === Clutter.Down) {
-                let numRows = Math.ceil(windowCount/numCols);
-                if (curRow < numRows - 1) {                
-                    this._kbWindowIndex += numCols;
-                    if (this._kbWindowIndex >= windowCount) {
-                        this._kbWindowIndex = windowCount - 1;
-                    }
-                }
+                this._kbWindowIndex = calcNewIndex(1);
             }
             if (symbol === Clutter.Up) {
-                if (curRow > 0) {                
-                    this._kbWindowIndex -= numCols;
-                }
+                this._kbWindowIndex = calcNewIndex(-1);
             }
         }
         else if (symbol === Clutter.Left || symbol === Clutter.Up) {
-            this._kbWindowIndex = (this._kbWindowIndex < 1 ? windowCount : this._kbWindowIndex) - 1;
+            this._kbWindowIndex = (this._kbWindowIndex < 1 ? numWindows : this._kbWindowIndex) - 1;
         }
         else if (symbol === Clutter.Right || symbol === Clutter.Down) {
-            this._kbWindowIndex = (this._kbWindowIndex + 1) % windowCount;
+            this._kbWindowIndex = (this._kbWindowIndex + 1) % numWindows;
         }
 
         this._windowOverlays[this._kbWindowIndex].setSelected(true);
