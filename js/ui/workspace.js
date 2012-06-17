@@ -780,7 +780,9 @@ Workspace.prototype = {
                     return newIndex < numWindows ?
                         newIndex :
                         curCol < numCols - 1 ?
-                            curCol + 1 :
+                    // wrap to top row, one column to the right:
+                            curCol + 1 : 
+                    // wrap to top row, left-most column:
                             0;
                 }
                 else { // up
@@ -789,9 +791,14 @@ Workspace.prototype = {
                     return newIndex >= 0 ?
                         newIndex :
                         curCol === 0 ?
+                   // Wrap to the bottom of the right-most column, may not be on last row:
                             (numFullRows * numCols) - 1 :
+                    /* If we're on the 
+                    top row but not in the first column, we want to move to the bottom of the
+                    column to the left, even though that may not be the bottom of the grid.
+                    */
                             numWOILR && curCol > numWOILR ?
-                                ((numRows - 2) * numCols) + curCol - 1:
+                                ((numFullRows - 1) * numCols) + curCol - 1:
                                 ((numRows - 1) * numCols) + curCol - 1;
                 }
             };
