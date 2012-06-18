@@ -157,7 +157,7 @@ WorkspacesView.prototype = {
             return true;
         }
         
-        if (symbol === Clutter.Return) {
+        if (symbol === Clutter.Return || symbol === Clutter.KEY_space) {
             if (activeWorkspace.activateSelectedWindow()) {
                 return true;
             }
