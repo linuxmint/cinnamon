@@ -746,12 +746,11 @@ WindowManager.prototype = {
         cinnamonwm.completed_switch_workspace();                        
     },
     
-    _showWorkspaceOSD : function() {
+    showWorkspaceOSD : function() {
         if (global.settings.get_boolean("workspace-osd-visible")) {
             let workspace_names = global.settings.get_strv('workspace-names');
             let current_workspace_index = global.screen.get_active_workspace_index();
             if (current_workspace_index < workspace_names.length) {
-                this.overviewCorner = new St.Button({name: 'overview-corner', reactive: true, track_hover: true });
                 let monitor = Main.layoutManager.primaryMonitor;                
                 let label = new St.Label({style_class:'workspace-osd'});
                 label.set_text(workspace_names[current_workspace_index]);            
@@ -800,11 +799,11 @@ WindowManager.prototype = {
 
         if (binding.get_name() == 'switch-to-workspace-left') {
            this.actionMoveWorkspaceLeft();
-           this._showWorkspaceOSD();       
+           this.showWorkspaceOSD();       
         }
         else if (binding.get_name() == 'switch-to-workspace-right') {
            this.actionMoveWorkspaceRight();
-           this._showWorkspaceOSD();       
+           this.showWorkspaceOSD();       
         }
     },
 
