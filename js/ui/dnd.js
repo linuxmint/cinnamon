@@ -184,11 +184,20 @@ _Draggable.prototype = {
     },
 
     _onEvent: function(actor, event) {
+        // Intercept BUTTON_PRESS to try to address a drag in progress condition 'dragging'
+        // on interminably - you started dragging, went off the panels, released the mouse
+        // button (which we can't track when you're not over a panel) then went back
+        // over a panel - you're in an in between state, no longer wanting to drag, but
+        // we still think you are.  This will cancel the drag if it senses a button press,
+        // assuming we'd never complete a drag with a press, only a release.
+        //
         // We intercept BUTTON_RELEASE event to know that the button was released in case we
         // didn't start the drag, to drop the draggable in case the drag was in progress, and
         // to complete the drag and ensure that whatever happens to be under the pointer does
         // not get triggered if the drag was cancelled with Esc.
-        if (event.type() == Clutter.EventType.BUTTON_RELEASE) {
+        if (event.type() == Clutter.EventType.BUTTON_PRESS && this._dragInProgress) {
+            this._cancelDrag(event.get_time());
+        } else if (event.type() == Clutter.EventType.BUTTON_RELEASE) {
             this._buttonDown = false;
             if (this._dragInProgress) {
                 return this._dragActorDropped(event);
