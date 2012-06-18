@@ -208,7 +208,7 @@ gvc_mixer_event_role_finalize (GObject *object)
  * gvc_mixer_event_role_new: (skip)
  * @context:
  * @device:
- * @map:
+ * @channel_map:
  *
  * Returns:
  */
