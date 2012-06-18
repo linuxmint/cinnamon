@@ -4,6 +4,7 @@ const DBus = imports.dbus;
 const Lang = imports.lang;
 const St = imports.gi.St;
 const PopupMenu = imports.ui.popupMenu;
+const Pango = imports.gi.Pango;
 
 const POWER_SCHEMA = "org.cinnamon.power"
 const SHOW_PERCENTAGE_KEY = "power-label";
@@ -154,6 +155,7 @@ MyApplet.prototype = {
             let iconBox = new St.Bin();
             box.add(iconBox, { y_align: St.Align.MIDDLE, y_fill: false });
             this._mainLabel = new St.Label();
+            this._mainLabel.clutter_text.ellipsize = Pango.EllipsizeMode.NONE;
             box.add(this._mainLabel, { y_align: St.Align.MIDDLE, y_fill: false });
             iconBox.child = icon;
 
