@@ -113,7 +113,6 @@ gvc_mixer_control_get_pa_context (GvcMixerControl *control)
 
 /**
  * gvc_mixer_control_get_event_sink_input:
- *
  * @control:
  *
  * Returns: (transfer none):
@@ -231,7 +230,6 @@ gvc_mixer_control_set_default_source (GvcMixerControl *control,
 
 /**
  * gvc_mixer_control_get_default_sink:
- *
  * @control:
  *
  * Returns: (transfer none):
@@ -255,7 +253,6 @@ gvc_mixer_control_get_default_sink (GvcMixerControl *control)
 
 /**
  * gvc_mixer_control_get_default_source:
- *
  * @control:
  *
  * Returns: (transfer none):
@@ -287,7 +284,6 @@ gvc_mixer_control_lookup_id (GHashTable *hash_table,
 
 /**
  * gvc_mixer_control_lookup_stream_id:
- *
  * @control:
  * @id:
  *
@@ -304,7 +300,6 @@ gvc_mixer_control_lookup_stream_id (GvcMixerControl *control,
 
 /**
  * gvc_mixer_control_lookup_card_id:
- *
  * @control:
  * @id:
  *
@@ -361,7 +356,6 @@ gvc_card_collate (GvcMixerCard *a,
 
 /**
  * gvc_mixer_control_get_cards:
- *
  * @control:
  *
  * Returns: (transfer container) (element-type Gvc.MixerCard):
@@ -398,7 +392,6 @@ gvc_stream_collate (GvcMixerStream *a,
 
 /**
  * gvc_mixer_control_get_streams:
- *
  * @control:
  *
  * Returns: (transfer container) (element-type Gvc.MixerStream):
@@ -419,7 +412,6 @@ gvc_mixer_control_get_streams (GvcMixerControl *control)
 
 /**
  * gvc_mixer_control_get_sinks:
- *
  * @control:
  *
  * Returns: (transfer container) (element-type Gvc.MixerSink):
@@ -440,7 +432,6 @@ gvc_mixer_control_get_sinks (GvcMixerControl *control)
 
 /**
  * gvc_mixer_control_get_sources:
- *
  * @control:
  *
  * Returns: (transfer container) (element-type Gvc.MixerSource):
@@ -461,7 +452,6 @@ gvc_mixer_control_get_sources (GvcMixerControl *control)
 
 /**
  * gvc_mixer_control_get_sink_inputs:
- *
  * @control:
  *
  * Returns: (transfer container) (element-type Gvc.MixerSinkInput):
@@ -482,7 +472,6 @@ gvc_mixer_control_get_sink_inputs (GvcMixerControl *control)
 
 /**
  * gvc_mixer_control_get_source_outputs:
- *
  * @control:
  *
  * Returns: (transfer container) (element-type Gvc.MixerSourceOutput):

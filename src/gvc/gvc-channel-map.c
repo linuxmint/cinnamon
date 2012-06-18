@@ -122,7 +122,6 @@ gvc_channel_map_get_mapping (const GvcChannelMap  *map)
 
 /**
  * gvc_channel_map_has_position: (skip)
- *
  * @map:
  * @position:
  *

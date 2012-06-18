@@ -146,7 +146,6 @@ gvc_mixer_card_set_icon_name (GvcMixerCard *card,
 
 /**
  * gvc_mixer_card_get_profile: (skip)
- *
  * @card:
  *
  * Returns:

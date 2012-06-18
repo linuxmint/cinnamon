@@ -175,7 +175,6 @@ gvc_mixer_sink_finalize (GObject *object)
 
 /**
  * gvc_mixer_sink_new: (skip)
- *
  * @context:
  * @index:
  * @channel_map:
