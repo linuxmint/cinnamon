@@ -742,7 +742,7 @@ on_focus_window_changed (MetaDisplay        *display,
 
 /**
  * cinnamon_window_tracker_get_startup_sequences:
- * @self:
+ * @tracker:
  *
  * Returns: (transfer none) (element-type CinnamonStartupSequence): Currently active startup sequences
  */

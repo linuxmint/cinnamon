@@ -15,13 +15,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- * SECTION:st-types
- * @short_description: type definitions used throughout St
- *
- * Common types for StWidgets.
- */
-
 
 #if !defined(ST_H_INSIDE) && !defined(ST_COMPILATION)
 #error "Only <st/st.h> can be included directly.h"
@@ -35,6 +28,13 @@
 #include <gtk/gtk.h>
 
 G_BEGIN_DECLS
+
+/**
+ * SECTION:st-types
+ * @short_description: type definitions used throughout St
+ *
+ * Common types for StWidgets.
+ */
 
 typedef enum {
   ST_ALIGN_START,

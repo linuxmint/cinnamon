@@ -590,7 +590,7 @@ cinnamon_perf_log_update_statistic_x (CinnamonPerfLog *perf_log,
 }
 
 /**
- * cinnamon_perf_log_add statistics_callback:
+ * cinnamon_perf_log_add_statistics_callback:
  * @perf_log: a #CinnamonPerfLog
  * @callback: function to call before recording statistics
  * @user_data: data to pass to @callback

@@ -90,7 +90,7 @@ cinnamon_contact_system_class_init (CinnamonContactSystemClass *klass)
   g_type_class_add_private (object_class, sizeof (CinnamonContactSystemPrivate));
 }
 
-/**
+/*
  * normalize_terms:
  * @terms: (element-type utf8): Input search terms
  *

@@ -150,7 +150,7 @@ cinnamon_wm_completed_switch_workspace (CinnamonWM *wm)
 }
 
 /**
- * cinnamon_wm_completed_minimize
+ * cinnamon_wm_completed_minimize:
  * @wm: the CinnamonWM
  * @actor: the MetaWindowActor actor
  *
@@ -164,7 +164,7 @@ cinnamon_wm_completed_minimize (CinnamonWM         *wm,
 }
 
 /**
- * cinnamon_wm_completed_maximize
+ * cinnamon_wm_completed_maximize:
  * @wm: the CinnamonWM
  * @actor: the MetaWindowActor actor
  *
@@ -178,7 +178,7 @@ cinnamon_wm_completed_maximize (CinnamonWM         *wm,
 }
 
 /**
- * cinnamon_wm_completed_unmaximize
+ * cinnamon_wm_completed_unmaximize:
  * @wm: the CinnamonWM
  * @actor: the MetaWindowActor actor
  *
@@ -192,7 +192,7 @@ cinnamon_wm_completed_unmaximize (CinnamonWM         *wm,
 }
 
 /**
- * cinnamon_wm_completed_map
+ * cinnamon_wm_completed_map:
  * @wm: the CinnamonWM
  * @actor: the MetaWindowActor actor
  *
@@ -206,7 +206,7 @@ cinnamon_wm_completed_map (CinnamonWM         *wm,
 }
 
 /**
- * cinnamon_wm_completed_destroy
+ * cinnamon_wm_completed_destroy:
  * @wm: the CinnamonWM
  * @actor: the MetaWindowActor actor
  *

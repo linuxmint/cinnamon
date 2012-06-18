@@ -455,7 +455,7 @@ cinnamon_app_system_get_settings_tree (CinnamonAppSystem *self)
 
 /**
  * cinnamon_app_system_lookup_setting:
- * @self:
+ * @system:
  * @id: desktop file id
  *
  * Returns: (transfer none): Application in gnomecc.menu, or %NULL if none
@@ -628,7 +628,7 @@ cinnamon_app_system_lookup_heuristic_basename (CinnamonAppSystem *system,
 
 /**
  * cinnamon_app_system_get_all:
- * @self:
+ * @system:
  *
  * Returns: (transfer container) (element-type CinnamonApp): All installed applications
  */

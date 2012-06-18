@@ -490,7 +490,7 @@ pseudo_class_add_sel_matches_style (StTheme         *a_this,
   return string_in_list (a_add_sel->content.pseudo->name->stryng, node_pseudo_class);
 }
 
-/**
+/*
  *@param a_add_sel the class additional selector to consider.
  *@param a_node the style node to consider.
  *@return TRUE if the class additional selector matches
@@ -516,7 +516,7 @@ class_add_sel_matches_style (CRAdditionalSel *a_add_sel,
   return string_in_list (a_add_sel->content.class_name->stryng, element_class);
 }
 
-/**
+/*
  *@return TRUE if the additional attribute selector matches
  *the current style node given in argument, FALSE otherwise.
  *@param a_add_sel the additional attribute selector to consider.
@@ -614,7 +614,7 @@ element_name_matches_type (const char *element_name,
     }
 }
 
-/**
+/*
  *Evaluate a selector (a simple selectors list) and says
  *if it matches the style node given in parameter.
  *The algorithm used here is the following:

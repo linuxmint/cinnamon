@@ -336,7 +336,6 @@ icon_lookup_data_destroy (gpointer p)
 
 /**
  * on_image_size_prepared:
- *
  * @pixbuf_loader: #GdkPixbufLoader loading the image
  * @width: the original width of the image
  * @height: the original height of the image
@@ -1559,7 +1558,6 @@ st_texture_cache_load_icon_name (StTextureCache    *cache,
 
 /**
  * st_texture_cache_load_uri_async:
- *
  * @cache: The texture cache instance
  * @uri: uri of the image file from which to create a pixbuf
  * @available_width: available width for the image, can be -1 if not limited
@@ -1674,7 +1672,6 @@ out:
 
 /**
  * st_texture_cache_load_uri_sync:
- *
  * @cache: The texture cache instance
  * @policy: Requested lifecycle of cached data
  * @uri: uri of the image file from which to create a pixbuf

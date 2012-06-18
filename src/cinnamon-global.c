@@ -1158,7 +1158,7 @@ cinnamon_global_end_modal (CinnamonGlobal *global,
 }
 
 /**
- * cinnamon_global_create_pointer_barrier
+ * cinnamon_global_create_pointer_barrier:
  * @global: a #CinnamonGlobal
  * @x1: left X coordinate
  * @y1: top Y coordinate
@@ -1189,7 +1189,7 @@ cinnamon_global_create_pointer_barrier (CinnamonGlobal *global,
 }
 
 /**
- * cinnamon_global_destroy_pointer_barrier
+ * cinnamon_global_destroy_pointer_barrier:
  * @global: a #CinnamonGlobal
  * @barrier: a pointer barrier
  *
@@ -2143,7 +2143,6 @@ cinnamon_global_screenshot_area (CinnamonGlobal  *global,
  * cinnamon_global_screenshot_window:
  * @global: the #CinnamonGlobal
  * @include_frame: Whether to include the frame or not
- *
  * @filename: The filename for the screenshot
  *
  * Takes a screenshot of the focused window (optionally omitting the frame)
