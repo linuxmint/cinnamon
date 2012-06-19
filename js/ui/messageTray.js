@@ -1738,7 +1738,7 @@ MessageTray.prototype = {
     },
 
     _onNotificationExpanded: function() {
-        let expandedY = - this._notificationBin.height;
+        let expandedY = this.actor.height - this._notificationBin.height;
 
         // Don't animate the notification to its new position if it has shrunk:
         // there will be a very visible "gap" that breaks the illusion.
