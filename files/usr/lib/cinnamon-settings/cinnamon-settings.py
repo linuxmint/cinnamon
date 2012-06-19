@@ -1316,12 +1316,12 @@ class MainWindow:
         sidePage.add_widget(label)
         
         sidePage = SidePage(_("Workspaces"), "workspaces.svg", self.content_box)
-        self.sidePages.append((sidePage, "workspaces"))
-        sidePage.add_widget(GSettingsCheckButton(_("Only use workspaces on primary monitor (requires Cinnamon restart)"), "org.cinnamon.muffin", "workspaces-only-on-primary"))
+        self.sidePages.append((sidePage, "workspaces"))        
         sidePage.add_widget(GSettingsCheckButton(_("Enable workspace OSD"), "org.cinnamon", "workspace-osd-visible"))
         sidePage.add_widget(GSettingsSpinButton(_("Workspace OSD duration"), "org.cinnamon", "workspace-osd-duration", 0, 2000, 50, 400, _("milliseconds")))
         sidePage.add_widget(GSettingsSpinButton(_("Workspace OSD horizontal position"), "org.cinnamon", "workspace-osd-x", 0, 100, 5, 50, _("percent of the monitor's width")))
         sidePage.add_widget(GSettingsSpinButton(_("Workspace OSD vertical position"), "org.cinnamon", "workspace-osd-y", 0, 100, 5, 50, _("percent of the monitor's height")))
+        sidePage.add_widget(GSettingsCheckButton(_("Only use workspaces on primary monitor (requires Cinnamon restart)"), "org.cinnamon.muffin", "workspaces-only-on-primary"))
         
         sidePage = SidePage(_("Fonts"), "fonts.svg", self.content_box)
         self.sidePages.append((sidePage, "fonts"))

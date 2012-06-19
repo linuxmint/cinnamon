@@ -171,7 +171,7 @@ function start() {
     global.logError = _logError;
     global.log = _logDebug;
 
-    if (global.settings.get_boolean("enable-looking-glass-to-file")) {
+    if (global.settings.get_boolean("enable-looking-glass-logs")) {
         try {
             let log_filename = Gio.file_parse_name(CIN_LOG_FOLDER + '/glass.log');
             let log_backup_filename = Gio.file_parse_name(CIN_LOG_FOLDER + '/glass.log.last');
