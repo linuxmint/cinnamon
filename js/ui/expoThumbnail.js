@@ -778,7 +778,7 @@ ExpoThumbnailsBox.prototype = {
                 return true;
             }
         }
-        if (symbol === Clutter.Delete
+        if ((symbol === Clutter.Delete && (modifiers & Clutter.ModifierType.MODIFIER_MASK) === 0)
             || symbol === Clutter.w && modifiers & Clutter.ModifierType.CONTROL_MASK) {
             this.removeSelectedWorkspace();
             return true;
