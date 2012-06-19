@@ -235,14 +235,17 @@ class ThemeViewSidePage (SidePage):
             themes = os.listdir(directory)
             themes.sort()
             for theme in themes:
-                if os.path.exists("%s/%s/cinnamon/cinnamon.css" % (directory, theme)):
-                    if os.path.exists("%s/%s/cinnamon/thumbnail.png" % (directory, theme)):
-                        img = GdkPixbuf.Pixbuf.new_from_file_at_size( "%s/%s/cinnamon/thumbnail.png" % (directory, theme), 64, 64 )
-                    else:
-                        img = GdkPixbuf.Pixbuf.new_from_file_at_size( "/usr/share/cinnamon/theme/thumbnail-generic.png", 64, 64 )
-                    theme_iter = self.model.append([theme, img])
-                    if theme==self.current_theme:
-                        self.active_theme_iter = theme_iter
+                try:
+                    if os.path.exists("%s/%s/cinnamon/cinnamon.css" % (directory, theme)):
+                        if os.path.exists("%s/%s/cinnamon/thumbnail.png" % (directory, theme)):
+                            img = GdkPixbuf.Pixbuf.new_from_file_at_size( "%s/%s/cinnamon/thumbnail.png" % (directory, theme), 64, 64 )
+                        else:
+                            img = GdkPixbuf.Pixbuf.new_from_file_at_size( "/usr/share/cinnamon/theme/thumbnail-generic.png", 64, 64 )
+                        theme_iter = self.model.append([theme, img])
+                        if theme==self.current_theme:
+                            self.active_theme_iter = theme_iter
+                except Exception, detail:
+                    print detail
         
     def apply_theme(self, iconView):
         selected_items = iconView.get_selected_items()
