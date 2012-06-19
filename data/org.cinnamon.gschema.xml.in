@@ -371,6 +371,14 @@
       </_description>
     </key>
 
+    <key name="workspace-expo-view-as-grid" type="b">
+      <default>false</default>
+      <summary>Display the Expo view as a grid</summary>
+      <description>
+        When enabled the Expo view will be displayed as a grid.
+      </description>
+    </key>
+
     <key name="disabled-open-search-providers" type="as">
       <default>[]</default>
       <_summary>disabled OpenSearch providers</_summary>
