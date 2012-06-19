@@ -1294,8 +1294,7 @@ class MainWindow:
         sidePage.add_widget(GSettingsCheckButton(_("Home icon visible on desktop"), "org.gnome.nautilus.desktop", "home-icon-visible"))
         sidePage.add_widget(GSettingsCheckButton(_("Network Servers icon visible on desktop"), "org.gnome.nautilus.desktop", "network-icon-visible"))
         sidePage.add_widget(GSettingsCheckButton(_("Trash icon visible on desktop"), "org.gnome.nautilus.desktop", "trash-icon-visible"))
-        sidePage.add_widget(GSettingsCheckButton(_("Show mounted volumes on the desktop"), "org.gnome.nautilus.desktop", "volumes-visible"))
-        sidePage.add_widget(GSettingsCheckButton(_("Only use workspaces on primary monitor (requires Cinnamon restart)"), "org.cinnamon.muffin", "workspaces-only-on-primary"))
+        sidePage.add_widget(GSettingsCheckButton(_("Show mounted volumes on the desktop"), "org.gnome.nautilus.desktop", "volumes-visible"))        
         
         sidePage = SidePage(_("Windows"), "windows.svg", self.content_box)
         self.sidePages.append((sidePage, "windows"))
@@ -1318,6 +1317,7 @@ class MainWindow:
         
         sidePage = SidePage(_("Workspaces"), "workspaces.svg", self.content_box)
         self.sidePages.append((sidePage, "workspaces"))
+        sidePage.add_widget(GSettingsCheckButton(_("Only use workspaces on primary monitor (requires Cinnamon restart)"), "org.cinnamon.muffin", "workspaces-only-on-primary"))
         sidePage.add_widget(GSettingsCheckButton(_("Enable workspace OSD"), "org.cinnamon", "workspace-osd-visible"))
         sidePage.add_widget(GSettingsSpinButton(_("Workspace OSD duration"), "org.cinnamon", "workspace-osd-duration", 0, 2000, 50, 400, _("milliseconds")))
         sidePage.add_widget(GSettingsSpinButton(_("Workspace OSD horizontal position"), "org.cinnamon", "workspace-osd-x", 0, 100, 5, 50, _("percent of the monitor's width")))
@@ -1333,9 +1333,9 @@ class MainWindow:
         sidePage.add_widget(GSettingsComboBox(_("Hinting"), "org.gnome.settings-daemon.plugins.xsettings", "hinting", [(i, i.title()) for i in ("none", "slight", "medium", "full")]))
         sidePage.add_widget(GSettingsComboBox(_("Antialiasing"), "org.gnome.settings-daemon.plugins.xsettings", "antialiasing", [(i, i.title()) for i in ("none", "grayscale", "rgba")]))
         
-        sidePage = SidePage(_("Other\nSettings"), "misc.svg", self.content_box)
-        self.sidePages.append((sidePage, "misc"))
-        sidePage.add_widget(GSettingsCheckButton(_("Send LookingGlass output to ~/.cinnamon/glass.log (Requires Cinnamon restart)"), "org.cinnamon", "enable-looking-glass-to-file"))
+        sidePage = SidePage(_("General"), "general.svg", self.content_box)
+        self.sidePages.append((sidePage, "general"))
+        sidePage.add_widget(GSettingsCheckButton(_("Log LookingGlass output to ~/.cinnamon/glass.log (Requires Cinnamon restart)"), "org.cinnamon", "enable-looking-glass-logs"))
         
         #sidePage = SidePage(_("Terminal"), "terminal", self.content_box)
         #self.sidePages.append(sidePage)
