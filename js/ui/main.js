@@ -43,6 +43,8 @@ const LAYOUT_TRADITIONAL = "traditional";
 const LAYOUT_FLIPPED = "flipped";
 const LAYOUT_CLASSIC = "classic";
 
+const CIN_LOG_FOLDER = GLib.get_home_dir() + '/.cinnamon/';
+
 let automountManager = null;
 let autorunManager = null;
 let applets = [];
@@ -84,7 +86,13 @@ let background = null;
 let desktop_layout;
 let applet_side = St.Side.BOTTOM;
 
-let software_rendering = false;    
+let software_rendering = false;
+
+
+let lg_log_file;
+let can_log = false;
+
+
 
 // Override Gettext localization
 const Gettext = imports.gettext;
@@ -162,11 +170,31 @@ function start() {
     // if we want to call back up into JS.
     global.logError = _logError;
     global.log = _logDebug;
-    
+
+    if (global.settings.get_boolean("enable-looking-glass-to-file")) {
+        try {
+            let log_filename = Gio.file_parse_name(CIN_LOG_FOLDER + '/glass.log');
+            let log_backup_filename = Gio.file_parse_name(CIN_LOG_FOLDER + '/glass.log.last');
+            let log_dir = Gio.file_new_for_path(CIN_LOG_FOLDER);
+            if (!log_filename.query_exists(null)) {
+                if (!log_dir.query_exists(null))
+                    log_dir.make_directory_with_parents(null);
+                lg_log_file = log_filename.append_to(0, null);
+            } else {
+                log_filename.copy(log_backup_filename, 1, null, null, null);
+                log_filename.delete(null);
+                lg_log_file = log_filename.append_to(0, null);
+            }
+            can_log = true;
+        } catch (e) {
+            global.logError(e);
+        }
+    }
+
     log("About to start Cinnamon");
     if (GLib.getenv('CINNAMON_SOFTWARE_RENDERING')) {
         log("ACTIVATING SOFTWARE RENDERING");        
-	global.logError("Cinnamon Software Rendering mode enabled");
+        global.logError("Cinnamon Software Rendering mode enabled");
         software_rendering = true;
     }
 
@@ -588,7 +616,6 @@ function notifyError(msg, details) {
         log('error: ' + msg + ': ' + details);
     else
         log('error: ' + msg);
-
     notify(msg, details);
 }
 
@@ -613,9 +640,11 @@ function _log(category, msg) {
                 text += ' ';
         }
     }
-    _errorLogStack.push({timestamp: new Date().getTime(),
+    let out = {timestamp: new Date().getTime(),
                          category: category,
-                         message: text });
+                         message: text };
+    _errorLogStack.push(out);
+    if (can_log) lg_log_file.write(renderLogLine(out), null);
 }
 
 function _logError(msg) {
@@ -631,6 +660,21 @@ function _getAndClearErrorStack() {
     let errors = _errorLogStack;
     _errorLogStack = [];
     return errors;
+}
+
+
+function formatTime(d) {
+    function pad(n) { return n < 10 ? '0' + n : n; }
+    return d.getUTCFullYear()+'-'
+        + pad(d.getUTCMonth()+1)+'-'
+        + pad(d.getUTCDate())+'T'
+        + pad(d.getUTCHours())+':'
+        + pad(d.getUTCMinutes())+':'
+        + pad(d.getUTCSeconds())+'Z';
+}
+
+function renderLogLine(line) {
+    return line.category + ' t=' + formatTime(new Date(line.timestamp)) + ' ' + line.message + '\n';
 }
 
 function logStackTrace(msg) {
