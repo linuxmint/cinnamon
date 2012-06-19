@@ -1295,7 +1295,7 @@ class MainWindow:
         sidePage.add_widget(GSettingsCheckButton(_("Network Servers icon visible on desktop"), "org.gnome.nautilus.desktop", "network-icon-visible"))
         sidePage.add_widget(GSettingsCheckButton(_("Trash icon visible on desktop"), "org.gnome.nautilus.desktop", "trash-icon-visible"))
         sidePage.add_widget(GSettingsCheckButton(_("Show mounted volumes on the desktop"), "org.gnome.nautilus.desktop", "volumes-visible"))
-        sidePage.add_widget(GConfCheckButton(_("Only use workspaces on primary monitor (requires Cinnamon restart)"), "/desktop/cinnamon/windows/workspaces_only_on_primary"))
+        sidePage.add_widget(GSettingsCheckButton(_("Only use workspaces on primary monitor (requires Cinnamon restart)"), "org.cinnamon.muffin", "workspaces-only-on-primary"))
         
         sidePage = SidePage(_("Windows"), "windows.svg", self.content_box)
         self.sidePages.append((sidePage, "windows"))
