@@ -9,6 +9,7 @@ New features:
  - Keyboard navigation in Expo
  - Configurable panel height
  - Workspaces and Menu pages in Cinnamon Settings
+ - Logging (Looking Glass output)
 
 Bug fixes:
 
@@ -28,7 +29,7 @@ TODO
  - i18n: Localize menu categories 
  - Applets: Fix power applet appearing when applets are moved (code refactoring needed)
  - System: Fallback on Metacity when Cinnamon crashes
- - System: Improve logging (we're only logging to stderr and looking glass, we need to log to files)
+ - System: Improve logging (capture stderr output into log files)
  - Applet API: Allow applets to provide a gsettings schema (which cinnamon-settings compiles when the applet is installed)
  - Settings: Fix settings moved to gsettings since 3.4 changes in cinnamon-settings
  - Settings: In Cinnamon Settings, add the ability to delete themes, extensions and applets located in the user's home
@@ -36,7 +37,6 @@ TODO
  - Layout: Give Cinnamon WM tiling features (fill, grid..etc).
  - Fix menu crashing Cinnamon (show a category, Internet for instance, click elsewhere, open a terminal, install a program in that category, Opera for instance, open the menu)
  - Fix tooltips on GTK popups appearing behind the popups (and move tooltips when they appear on top of the panel)
- - Fix Expo and Scale not closing each others: https://github.com/linuxmint/Cinnamon/issues/766
  - Fix https://github.com/linuxmint/Cinnamon/issues/767
  - Add scale and expo applets
  - Add one-hand keyboard-shortcuts for scale and expo
