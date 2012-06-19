@@ -40,7 +40,7 @@ const POSITIONS = {
         1: [[0.5, 0.5, 0.95]],
         2: [[0.25, 0.5, 0.48], [0.75, 0.5, 0.48]],
         3: [[0.25, 0.25, 0.48],  [0.75, 0.25, 0.48],  [0.5, 0.75, 0.48]],
-        4: [[0.25, 0.25, 0.47],   [0.75, 0.25, 0.47], [0.75, 0.75, 0.47], [0.25, 0.75, 0.47]],
+        4: [[0.25, 0.25, 0.47],   [0.75, 0.25, 0.47], [0.25, 0.75, 0.47], [0.75, 0.75, 0.47]],
         5: [[0.165, 0.25, 0.32], [0.495, 0.25, 0.32], [0.825, 0.25, 0.32], [0.25, 0.75, 0.32], [0.75, 0.75, 0.32]]
 };
 // Used in _orderWindowsPermutations, 5! = 120 which is probably the highest we can go
@@ -756,25 +756,67 @@ Workspace.prototype = {
         this._kbWindowIndex = -1; // index of the current keyboard-selected window
     },
     
-    selectNextWindow: function() {
-        if (this.isEmpty()) {
+    selectAnotherWindow: function(symbol) {
+        let numWindows = this._windowOverlays.length;
+        if (numWindows === 0) {
             return;
         }
-        if (this._kbWindowIndex > -1 && this._kbWindowIndex < this._windowOverlays.length) {
+        if (this._kbWindowIndex > -1 && this._kbWindowIndex < numWindows) {
             this._windowOverlays[this._kbWindowIndex].setSelected(false);
         }
-        this._kbWindowIndex = (this._kbWindowIndex + 1) % this._windowOverlays.length;
-        this._windowOverlays[this._kbWindowIndex].setSelected(true);
-    },
-    
-    selectPrevWindow: function() {
-        if (this.isEmpty()) {
-            return;
+
+        if (numWindows > 3 // grid navigation is not suited for a low window count
+            && (symbol === Clutter.Down || symbol === Clutter.Up))
+        {
+            let numCols = Math.ceil(Math.sqrt(numWindows));
+            let numRows = Math.ceil(numWindows/numCols);
+
+            let curRow = Math.floor(this._kbWindowIndex/numCols);
+            let curCol = this._kbWindowIndex % numCols;
+
+            let calcNewIndex = function(rowDelta) {
+                let newIndex = (curRow + rowDelta) * numCols + curCol;
+                if (rowDelta >= 0) { // down
+                    return newIndex < numWindows ?
+                        newIndex :
+                        curCol < numCols - 1 ?
+                    // wrap to top row, one column to the right:
+                            curCol + 1 : 
+                    // wrap to top row, left-most column:
+                            0;
+                }
+                else { // up
+                    let numFullRows = Math.floor(numWindows/numCols);
+                    let numWOILR = numWindows % numCols; //num Windows on Incompl. Last Row
+                    return newIndex >= 0 ?
+                        newIndex :
+                        curCol === 0 ?
+                   // Wrap to the bottom of the right-most column, may not be on last row:
+                            (numFullRows * numCols) - 1 :
+                    /* If we're on the 
+                    top row but not in the first column, we want to move to the bottom of the
+                    column to the left, even though that may not be the bottom of the grid.
+                    */
+                            numWOILR && curCol > numWOILR ?
+                                ((numFullRows - 1) * numCols) + curCol - 1:
+                                ((numRows - 1) * numCols) + curCol - 1;
+                }
+            };
+
+            if (symbol === Clutter.Down) {
+                this._kbWindowIndex = calcNewIndex(1);
+            }
+            if (symbol === Clutter.Up) {
+                this._kbWindowIndex = calcNewIndex(-1);
+            }
         }
-        if (this._kbWindowIndex > -1 && this._kbWindowIndex < this._windowOverlays.length) {
-            this._windowOverlays[this._kbWindowIndex].setSelected(false);
+        else if (symbol === Clutter.Left || symbol === Clutter.Up) {
+            this._kbWindowIndex = (this._kbWindowIndex < 1 ? numWindows : this._kbWindowIndex) - 1;
         }
-        this._kbWindowIndex = (this._kbWindowIndex < 1 ? this._windowOverlays.length : this._kbWindowIndex) - 1;
+        else if (symbol === Clutter.Right || symbol === Clutter.Down) {
+            this._kbWindowIndex = (this._kbWindowIndex + 1) % numWindows;
+        }
+
         this._windowOverlays[this._kbWindowIndex].setSelected(true);
     },
     
