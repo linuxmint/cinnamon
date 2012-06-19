@@ -859,12 +859,12 @@ StScrollBar StButton#vhandle:hover {
 	background: rgba(255,255,255,0.33);
 }
 .ripple-box {
-	width: 52px;
-	height: 52px;
-	background-image: url("corner-ripple-ltr.png");
+	width: 104px;
+	height: 104px;
+	background-image: url("corner-ripple.png");
 }
 .ripple-box:rtl {
-	background-image: url("corner-ripple-rtl.png");
+	background-image: url("corner-ripple.png");
 }
 .switcher-arrow {
 	border-color: rgba(0,0,0,0);
