@@ -772,12 +772,6 @@ ExpoThumbnailsBox.prototype = {
             this.activateSelectedWorkspace();
             return true;
         }
-        if (symbol === Clutter.Escape) {
-            if (global.stage.get_key_focus() === this._thumbnails[this._kbThumbnailIndex].title) {
-                // does not enter here, must find another way to detect focus ...
-                return true;
-            }
-        }
         if ((symbol === Clutter.Delete && (modifiers & Clutter.ModifierType.MODIFIER_MASK) === 0)
             || symbol === Clutter.w && modifiers & Clutter.ModifierType.CONTROL_MASK) {
             this.removeSelectedWorkspace();
