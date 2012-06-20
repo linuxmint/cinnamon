@@ -14,9 +14,9 @@
    width="16"
    version="1.1"
    inkscape:version="0.48.3.1 r9886"
-   sodipodi:docname="expo.svg">
+   sodipodi:docname="view-grid-symbolic (copy).svg">
   <defs
-     id="defs9" />
+     id="defs17" />
   <sodipodi:namedview
      pagecolor="#ffffff"
      bordercolor="#666666"
@@ -26,19 +26,17 @@
      guidetolerance="10"
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:window-width="1769"
-     inkscape:window-height="923"
-     id="namedview7"
+     inkscape:window-width="640"
+     inkscape:window-height="480"
+     id="namedview15"
      showgrid="false"
-     inkscape:zoom="20.85965"
-     inkscape:cx="18.014518"
-     inkscape:cy="5.3891092"
+     inkscape:zoom="14.75"
+     inkscape:cx="8"
+     inkscape:cy="8"
      inkscape:window-x="0"
-     inkscape:window-y="25"
+     inkscape:window-y="0"
      inkscape:window-maximized="0"
-     inkscape:current-layer="layer9" />
-  <title
-     id="title9167">Gnome Symbolic Icon Theme</title>
+     inkscape:current-layer="layer12" />
   <metadata
      id="metadata90">
     <rdf:RDF>
@@ -51,13 +49,31 @@
       </cc:Work>
     </rdf:RDF>
   </metadata>
+  <title
+     id="title9167">Gnome Symbolic Icon Theme</title>
   <g
-     id="layer9"
-     transform="translate(-61 -237)">
-    <path
+     id="layer12"
+     transform="translate(-61 -747)">
+    <rect
+       id="rect20540"
        style="color:#bebebe;fill:#bebebe"
-       d="M 2.0625 0 C 0.9118 0 0 0.91177 0 2.0625 L 0 13.9375 C 0 15.0882 0.91177 16 2.0625 16 L 13.9375 16 C 15.0882 16 16 15.08823 16 13.9375 L 16 2.0625 C 16 0.9118 15.08823 0 13.9375 0 L 2.0625 0 z M 9.40625 2.8125 L 13.3125 2.8125 L 13.3125 6.5625 L 9.40625 6.5625 L 9.40625 2.8125 z M 2.84375 2.84375 L 6.78125 2.84375 L 6.78125 6.5625 L 2.84375 6.5625 L 2.84375 2.84375 z M 2.84375 9.53125 L 6.75 9.53125 L 6.75 13.28125 L 2.84375 13.28125 L 2.84375 9.53125 z M 9.40625 9.53125 L 13.3125 9.53125 L 13.3125 13.25 L 9.40625 13.25 L 9.40625 9.53125 z "
-       transform="translate(61,237)"
-       id="rect7011" />
+       height="3"
+       width="3"
+       y="753"
+       x="62" />
+    <rect
+       id="rect20542"
+       style="color:#bebebe;fill:#bebebe"
+       height="3.0006"
+       width="3"
+       y="753"
+       x="67" />
+    <rect
+       id="rect20544"
+       style="color:#bebebe;fill:#bebebe"
+       height="3"
+       width="3"
+       y="753"
+       x="72" />
   </g>
 </svg>
