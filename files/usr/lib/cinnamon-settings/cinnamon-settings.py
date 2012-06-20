@@ -1173,6 +1173,9 @@ class MainWindow:
         box.pack_start(combo, False, False, 0)               
         sidePage.add_widget(box)
         
+        sidePage.add_widget(GSettingsCheckButton(_("Expo applet: activate on hover"), "org.cinnamon", "expo-applet-hover"))
+        sidePage.add_widget(GSettingsCheckButton(_("Scale applet: activate on hover"), "org.cinnamon", "scale-applet-hover"))
+
         sidePage = ThemeViewSidePage(_("Themes"), "themes.svg", self.content_box)
         self.sidePages.append((sidePage, "themes"))
         
