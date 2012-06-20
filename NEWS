@@ -10,6 +10,7 @@ New features:
  - Configurable panel height
  - Workspaces and Menu pages in Cinnamon Settings
  - Logging (Looking Glass output)
+ - New scale and expo applets
 
 Bug fixes:
 
@@ -37,8 +38,7 @@ TODO
  - Layout: Give Cinnamon WM tiling features (fill, grid..etc).
  - Fix menu crashing Cinnamon (show a category, Internet for instance, click elsewhere, open a terminal, install a program in that category, Opera for instance, open the menu)
  - Fix tooltips on GTK popups appearing behind the popups (and move tooltips when they appear on top of the panel)
- - Fix https://github.com/linuxmint/Cinnamon/issues/767
- - Add scale and expo applets
+ - Fix https://github.com/linuxmint/Cinnamon/issues/767 
  - Add one-hand keyboard-shortcuts for scale and expo
 
 THEME CHANGES SINCE 1.4
