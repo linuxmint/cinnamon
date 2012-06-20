@@ -278,6 +278,22 @@
       </_description>
     </key>
     
+    <key name="expo-applet-hover" type="b">
+      <default>false</default>
+      <_summary>Expo applet: Activate on hover</_summary>
+      <_description>
+        Whether the expo applet triggers only when you click, or when you hover on it
+      </_description>
+    </key>
+    
+    <key name="scale-applet-hover" type="b">
+      <default>false</default>
+      <_summary>Scale applet: Activate on hover</_summary>
+      <_description>
+        Whether the scale applet triggers only when you click, or when you hover on it
+      </_description>
+    </key>
+    
     <key name="panel-launchers" type="as">
       <default>[ 'firefox.desktop', 'gnome-terminal.desktop', 'nautilus.desktop']</default>
       <_summary>Desktop files of the applications to put in the panel launchers applet</_summary>
