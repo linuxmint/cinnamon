@@ -761,7 +761,9 @@ ExpoThumbnailsBox.prototype = {
     handleKeyPressEvent: function(actor, event) {
         let modifiers = Cinnamon.get_event_state(event);
         let symbol = event.get_key_symbol();
-        if (symbol === Clutter.Return || symbol === Clutter.KEY_space) {
+        if (symbol === Clutter.Return || symbol === Clutter.KEY_space 
+            || symbol === Clutter.KP_Enter)
+        {
             this.activateSelectedWorkspace();
             return true;
         }
@@ -770,27 +772,11 @@ ExpoThumbnailsBox.prototype = {
             this.removeSelectedWorkspace();
             return true;
         }
-        if (symbol === Clutter.Right || symbol === Clutter.Down) {
-            this.selectNextWorkspace();
-            return true;
-        }
-        if (symbol === Clutter.Left || symbol === Clutter.Up) {
-            this.selectPrevWorkspace();
-            return true;
-        }
-        if (symbol === Clutter.Home) {
-            this.selectPrevWorkspace(true);
-            return true;
-        }
-        if (symbol === Clutter.End) {
-            this.selectNextWorkspace(true);
-            return true;
-        }
         if (symbol === Clutter.F2) {
             this.editWorkspaceTitle();
             return true;
         }
-        return false;
+        return this.selectNextWorkspace(symbol);
     },
 
     editWorkspaceTitle: function() {
@@ -805,30 +791,55 @@ ExpoThumbnailsBox.prototype = {
         this._thumbnails[this._kbThumbnailIndex]._remove();
     },
 
-    selectNextWorkspace: function(last) {
-        if (this._thumbnails.length < 2) {
-            return;
+    // returns true if symbol was understood, false otherwise
+    selectNextWorkspace: function(symbol) {
+        let prevIndex = this._kbThumbnailIndex;
+        let lastIndex = this._thumbnails.length - 1;
+        
+        if (symbol === Clutter.End) {
+            this._kbThumbnailIndex = lastIndex;
         }
-        this._thumbnails[this._kbThumbnailIndex].showKeyboardSelectedState(false);
-        this._kbThumbnailIndex = last ? this._thumbnails.length-1 : this._kbThumbnailIndex+1;
-        if (this._kbThumbnailIndex >= this._thumbnails.length) {
+        else if (symbol === Clutter.Right || symbol === Clutter.Down) {
+            this._kbThumbnailIndex = this._kbThumbnailIndex + 1;
+            if (this._kbThumbnailIndex >= this._thumbnails.length) {
+                this._kbThumbnailIndex = 0;
+            }
+        }
+        else if (symbol === Clutter.Left || symbol === Clutter.Up) {
+            this._kbThumbnailIndex = this._kbThumbnailIndex - 1;
+            if (this._kbThumbnailIndex < 0 ) {
+                this._kbThumbnailIndex = this._thumbnails.length - 1;
+            }
+        }
+        else if (symbol === Clutter.Home) {
             this._kbThumbnailIndex = 0;
         }
-        this._thumbnails[this._kbThumbnailIndex].showKeyboardSelectedState(true);
-        global.stage.set_key_focus(this._thumbnails[this._kbThumbnailIndex].actor);
-    },
+        else {
+            let index = symbol - 48 - 1; // convert '1' to index 0, etc
+            if (index >= 0 && index < 10) {
+                // OK
+            }
+            else {
+                index = symbol - Clutter.KP_1; // convert Num-pad '1' to index 0, etc
+                if (index < 0 || index > 9) {
+                return false; // not handled
+                }
+            }
+            if (index > lastIndex) {
+                return true; // handled, but out of range
+            }
+            this._kbThumbnailIndex = index;
+            this.activateSelectedWorkspace();
+            Main.wm.showWorkspaceOSD();
+            return true; // handled
+        }
 
-    selectPrevWorkspace: function(home) {
-        if (this._thumbnails.length < 2) {
-            return;
+        if (prevIndex != this._kbThumbnailIndex) {
+            this._thumbnails[prevIndex].showKeyboardSelectedState(false);
+            this._thumbnails[this._kbThumbnailIndex].showKeyboardSelectedState(true);
+            global.stage.set_key_focus(this._thumbnails[this._kbThumbnailIndex].actor);
         }
-        this._thumbnails[this._kbThumbnailIndex].showKeyboardSelectedState(false);
-        this._kbThumbnailIndex = home ? 0 : this._kbThumbnailIndex-1;
-        if (this._kbThumbnailIndex < 0 ) {
-            this._kbThumbnailIndex = this._thumbnails.length - 1;
-        }
-        this._thumbnails[this._kbThumbnailIndex].showKeyboardSelectedState(true);
-        global.stage.set_key_focus(this._thumbnails[this._kbThumbnailIndex].actor);
+        return true; // handled
     },
 
     hide: function() {
