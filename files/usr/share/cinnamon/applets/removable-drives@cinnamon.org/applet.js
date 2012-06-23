@@ -49,7 +49,7 @@ MyApplet.prototype = {
         Applet.IconApplet.prototype._init.call(this, orientation);
         
         try {        
-            this.set_applet_icon_symbolic_name("computer");
+            this.set_applet_icon_symbolic_name("drive-harddisk");
             this.set_applet_tooltip(_("Removable drives"));
             
             this.menuManager = new PopupMenu.PopupMenuManager(this);

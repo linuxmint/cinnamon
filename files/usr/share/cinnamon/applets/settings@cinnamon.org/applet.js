@@ -53,52 +53,7 @@ MyApplet.prototype = {
             this.set_applet_tooltip(_("Settings"));
             
             this.menuManager = new PopupMenu.PopupMenuManager(this);
-            this.menu = new Applet.AppletPopupMenu(this, orientation);
-            this.menuManager.addMenu(this.menu);        
-                                                                
-            this._contentSection = new PopupMenu.PopupMenuSection();
-            this.menu.addMenuItem(this._contentSection);                    
-                                                    
-            this.troubleshootItem = new PopupMenu.PopupSubMenuMenuItem(_("Troubleshoot"));            
-            this.troubleshootItem.menu.addAction(_("Restart Cinnamon"), function(event) {
-                //GLib.spawn_command_line_async('cinnamon --replace');
-                global.reexec_self();
-            });
-            
-            this.troubleshootItem.menu.addAction(_("Looking Glass"), function(event) {
-                Main.createLookingGlass().open();
-            }); 
-            
-            this.troubleshootItem.menu.addAction(_("Restore all settings to default"), function(event) {
-                this.confirm = new ConfirmDialog();
-                this.confirm.open();
-            });  
-                       
-            this.menu.addMenuItem(this.troubleshootItem);                                
-                                               
-            this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-                                                
-            let editMode = global.settings.get_boolean("panel-edit-mode");
-            let panelEditMode = new PopupMenu.PopupSwitchMenuItem(_("Panel Edit mode"), editMode);
-            panelEditMode.connect('toggled', function(item) {
-                global.settings.set_boolean("panel-edit-mode", item.state);
-            });
-            this.menu.addMenuItem(panelEditMode);    
-            global.settings.connect('changed::panel-edit-mode', function() {
-                panelEditMode.setToggleState(global.settings.get_boolean("panel-edit-mode"));                            
-            });
-
-            this.menu.addAction(_("Panel settings"), function(event) {
-                Util.spawnCommandLine("cinnamon-settings panel");
-            });
-
-            this.menu.addAction(_("Add/remove applets"), function(event) {
-                Util.spawnCommandLine("cinnamon-settings applets");
-            });
-
-            this.menu.addAction(_("Other settings"), function(event) {
-                Util.spawnCommandLine("cinnamon-settings");
-            });
+            this._buildMenu(orientation);
                         
         }
         catch (e) {
@@ -109,6 +64,60 @@ MyApplet.prototype = {
     on_applet_clicked: function(event) {
         this.menu.toggle();        
     },
+    
+    _buildMenu: function(orientation) {
+        this.menu = new Applet.AppletPopupMenu(this, orientation);
+        this.menuManager.addMenu(this.menu);        
+                                                            
+        this._contentSection = new PopupMenu.PopupMenuSection();
+        this.menu.addMenuItem(this._contentSection);                    
+                                                
+        this.troubleshootItem = new PopupMenu.PopupSubMenuMenuItem(_("Troubleshoot"));            
+        this.troubleshootItem.menu.addAction(_("Restart Cinnamon"), function(event) {
+            //GLib.spawn_command_line_async('cinnamon --replace');
+            global.reexec_self();
+        });
+        
+        this.troubleshootItem.menu.addAction(_("Looking Glass"), function(event) {
+            Main.createLookingGlass().open();
+        }); 
+        
+        this.troubleshootItem.menu.addAction(_("Restore all settings to default"), function(event) {
+            this.confirm = new ConfirmDialog();
+            this.confirm.open();
+        });  
+                   
+        this.menu.addMenuItem(this.troubleshootItem);                                
+                                           
+        this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+                                            
+        let editMode = global.settings.get_boolean("panel-edit-mode");
+        let panelEditMode = new PopupMenu.PopupSwitchMenuItem(_("Panel Edit mode"), editMode);
+        panelEditMode.connect('toggled', function(item) {
+            global.settings.set_boolean("panel-edit-mode", item.state);
+        });
+        this.menu.addMenuItem(panelEditMode);    
+        global.settings.connect('changed::panel-edit-mode', function() {
+            panelEditMode.setToggleState(global.settings.get_boolean("panel-edit-mode"));                            
+        });
+
+        this.menu.addAction(_("Panel settings"), function(event) {
+            Util.spawnCommandLine("cinnamon-settings panel");
+        });
+
+        this.menu.addAction(_("Add/remove applets"), function(event) {
+            Util.spawnCommandLine("cinnamon-settings applets");
+        });
+
+        this.menu.addAction(_("Other settings"), function(event) {
+            Util.spawnCommandLine("cinnamon-settings");
+        });
+    },
+    
+    on_orientation_changed: function(orientation){
+        this.menu.destroy();
+        this._buildMenu(orientation);
+    }
         
     
 };

@@ -246,6 +246,21 @@ GOptionEntry gnome_cinnamon_options[] = {
   { NULL }
 };
 
+static void
+center_pointer_on_screen ()
+{
+  Display *dpy;
+  Window root_window;
+  Screen *screen;
+  
+  dpy = XOpenDisplay(0);
+  root_window = XRootWindow(dpy, 0);
+  XSelectInput(dpy, root_window, KeyReleaseMask);
+  screen = DefaultScreenOfDisplay(dpy);
+  XWarpPointer(dpy, None, root_window, 0, 0, 0, 0, WidthOfScreen(screen)/2, HeightOfScreen(screen)/2);
+  XFlush(dpy);
+}
+
 int
 main (int argc, char **argv)
 {
@@ -285,6 +300,8 @@ main (int argc, char **argv)
    */
   g_setenv ("GJS_DEBUG_OUTPUT", "stderr", TRUE);
   g_setenv ("GJS_DEBUG_TOPICS", "JS ERROR;JS LOG", TRUE);
+  
+  center_pointer_on_screen();
 
   cinnamon_dbus_init (meta_get_replace_current_wm ());
   cinnamon_a11y_init ();
