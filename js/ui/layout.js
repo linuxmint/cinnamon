@@ -10,6 +10,7 @@ const Main = imports.ui.main;
 const Params = imports.misc.params;
 const ScreenSaver = imports.misc.screenSaver;
 const Tweener = imports.ui.tweener;
+const EdgeFlip = imports.ui.edgeFlip;
 
 const HOT_CORNER_ACTIVATION_TIMEOUT = 0.5;
 const STARTUP_ANIMATION_TIME = 0.2;
@@ -30,6 +31,8 @@ LayoutManager.prototype = {
         this._rightPanelBarrier = 0;
         this._leftPanelBarrier2 = 0;
         this._rightPanelBarrier2 = 0;
+	this.edgeRight = null;
+	this.edgeLeft = null;
         this._chrome = new Chrome(this);
 		
 		this._hotCorner = new HotCorner();        
@@ -70,6 +73,8 @@ LayoutManager.prototype = {
                               Lang.bind(this, this._windowsRestacked));
         this._monitorsChanged();
         this._chrome.addActor(this._hotCorner.actor);
+	this.enabledEdgeFlip = global.settings.get_boolean("enable-edge-flip");
+	global.settings.connect("changed::enable-edge-flip", Lang.bind(this, this._onEnableEdgeFlipChanged));
         global.settings.connect("changed::panel-autohide", Lang.bind(this, this._onPanelAutoHideChanged));
         global.settings.connect("changed::overview-corner-visible", Lang.bind(this, this._onOverviewCornerVisibleChanged));
         global.settings.connect("changed::overview-corner-hover", Lang.bind(this, this._onOverviewCornerHoverChanged));
@@ -78,6 +83,12 @@ LayoutManager.prototype = {
         global.screen.connect('restacked',
                               Lang.bind(this, this._windowsRestacked));
 
+    },
+
+    _onEnableEdgeFlipChanged: function(){
+	this.enableEdgeFlip = global.settings.get_boolean("enable-edge-flip");
+	this.edgeRight.enabled = this.enabledEdgeFlip;
+	this.edgeLeft.enabled = this.enabledEdgeFLip;
     },
 
     _windowsRestacked: function() {
@@ -105,6 +116,11 @@ LayoutManager.prototype = {
         this._chrome.init();
 
         this._startupAnimation();
+	this.edgeRight = new EdgeFlip.EdgeFlipper(St.Side.RIGHT, Main.wm.actionMoveWorkspaceRight);
+	this.edgeLeft = new EdgeFlip.EdgeFlipper(St.Side.LEFT, Main.wm.actionMoveWorksapceLeft);
+
+	this.edgeRight.enabled = this.enabledEdgeFlip;
+	this.edgeLeft.enabled = this.enabledEdgeFLip;
     },
     
     _toggleExpo: function() {
