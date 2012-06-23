@@ -38,6 +38,18 @@
       </_description>
     </key>
     
+    <key type="i" name="panel-show-delay">
+      <default>0</default>
+      <summary>Duration of the delay before a hidden panel is shown</summary>
+      <description>Duration of the delay (in milliseconds)</description>
+    </key>
+    
+    <key type="i" name="panel-hide-delay">
+      <default>0</default>
+      <summary>Duration of the delay before a shown panel is hidden</summary>
+      <description>Duration of the delay (in milliseconds)</description>
+    </key>
+    
     <key name="panel-resizable" type="b">
       <default>false</default>
       <_summary>Resizable panel</_summary>
