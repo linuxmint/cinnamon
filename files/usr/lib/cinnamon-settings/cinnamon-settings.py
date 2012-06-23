@@ -1328,6 +1328,7 @@ class MainWindow:
         label = Gtk.Label()
         label.set_markup("<i><small>%s</small></i>" % _("Note: If you change the title bar buttons order you will need to restart Cinnamon."))
         sidePage.add_widget(label)
+        sidePage.add_widget(GSettingsCheckButton(_("Enable Edge Tiling (\"Aero Snap\")"), "org.cinnamon.overrides", "edge-tiling"))
         
         sidePage = SidePage(_("Workspaces"), "workspaces.svg", self.content_box)
         self.sidePages.append((sidePage, "workspaces"))        
