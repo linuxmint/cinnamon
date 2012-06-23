@@ -66,6 +66,9 @@ THEME CHANGES SINCE 1.4
 .expo-workspaces-name-entry {
 }
 
+.expo-workspaces-name-entry#selected {
+}
+
 .expo-workspaces-name-entry:focus {
 }
 
