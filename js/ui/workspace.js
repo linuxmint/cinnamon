@@ -732,7 +732,7 @@ Workspace.prototype = {
         // visible in the Overview
         this._windows = [];
         this._windowOverlays = [];
-        for (let i = 0; i < windows.length; i++) {
+        for (let i = windows.length - 1; i >= 0; --i) {
             if (this._isOverviewWindow(windows[i])) {
                 this._addWindowClone(windows[i]);
             }

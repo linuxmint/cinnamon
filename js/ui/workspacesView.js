@@ -135,7 +135,7 @@ WorkspacesView.prototype = {
             
         // this should select the last active window
         if (this._workspaces.length > 0) { 
-            this._workspaces[activeWorkspaceIndex].selectAnotherWindow(Clutter.Left);
+            this._workspaces[activeWorkspaceIndex].selectAnotherWindow(Clutter.Right);
         }
     },
 
