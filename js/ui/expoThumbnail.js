@@ -245,6 +245,7 @@ ExpoWorkspaceThumbnail.prototype = {
                                                            Lang.bind(this, this._windowLeftMonitor));
 
         this.state = ThumbnailState.NORMAL;
+	this.highlight = false;
         this._slidePosition = 0; // Fully slid in
     },
     
@@ -518,6 +519,7 @@ ExpoWorkspaceThumbnail.prototype = {
 
     _overviewModeOn : function () {
         this._overviewMode = true;
+	this.highlight = false;
         let spacing = 14;
         let nCols = Math.ceil(Math.sqrt(this._windows.length));
         let nRows = Math.round(Math.sqrt(this._windows.length));
@@ -572,7 +574,8 @@ ExpoWorkspaceThumbnail.prototype = {
                 opacity = 0;  
                 hide = true;          
             }
-            Tweener.addTween(window.actor, {x: window.origX, y: window.origY, scale_x: 1, scale_y: 1, opacity: opacity, time: REARRANGE_TIME, transition: 'easeOutQuad', onComplete: function () { if(hide) window.actor.hide();}, onCompleteScope: this});        
+            Tweener.addTween(window.actor, {x: window.origX, y: window.origY, scale_x: 1, scale_y: 1, opacity: opacity, time: REARRANGE_TIME, transition: 'easeOutQuad', onComplete: function () { if(hide) window.actor.hide();}, onCompleteScope: this});
+	    this.highlight = false;
         } 
     },
 
@@ -606,11 +609,13 @@ ExpoWorkspaceThumbnail.prototype = {
 
     _shade : function (force){
         if (this.metaWorkspace != global.screen.get_active_workspace() || force)
-            Tweener.addTween(this.shade, {opacity: INACTIVE_OPACITY, time: SLIDE_ANIMATION_TIME, transition: 'easeOutQuad'});    
+            Tweener.addTween(this.shade, {opacity: INACTIVE_OPACITY, time: SLIDE_ANIMATION_TIME, transition: 'easeOutQuad'});
+	this.highlight = false;
     },
 
     _highlight : function (){
-        Tweener.addTween(this.shade, {opacity: 0, time: SLIDE_ANIMATION_TIME, transition: 'easeOutQuad'});    
+        Tweener.addTween(this.shade, {opacity: 0, time: SLIDE_ANIMATION_TIME, transition: 'easeOutQuad'});
+	this.highlight = true;
     },
 
     _remove : function (){
@@ -619,6 +624,7 @@ ExpoWorkspaceThumbnail.prototype = {
         this.emit('remove-event');
         Main._removeWorkspace(this.metaWorkspace);
         this.removed = true;
+	this._allocate();
     },
 
     // Draggable target interface
@@ -1109,7 +1115,7 @@ ExpoThumbnailsBox.prototype = {
         let avail = (box.x2 - box.x1) - totalSpacing - (spacing * 2) ;
         let screen = (box.x2 - box.x1);
 
-        let newScale = (avail / nWorkspaces) / portholeWidth;
+        let newScale = (avail / (nWorkspaces+1)) / portholeWidth;
         newScale = Math.min(newScale, MAX_THUMBNAIL_SCALE);
 
         if (newScale != this._targetScale) {
@@ -1131,7 +1137,7 @@ ExpoThumbnailsBox.prototype = {
 
         let childBox = new Clutter.ActorBox();
         
-        let needed = (thumbnailWidth * nWorkspaces) + totalSpacing + (spacing * 2);
+        let needed = (thumbnailWidth * (nWorkspaces+1)) + totalSpacing + (spacing * 2);
         let extraSpace = (box.x2 - box.x1) - needed;
 
         // The background is horizontally restricted to correspond to the current thumbnail size
@@ -1146,6 +1152,16 @@ ExpoThumbnailsBox.prototype = {
 
         let x = spacing + (extraSpace/2);
         let y = (Main.layoutManager.primaryMonitor.height - thumbnailHeight) / 2
+	let large = null;
+	for (let i = 0; i < this._thumbnails.length; i++){
+	    if (this._thumbnails[i].highlight){
+	        large = this._thumbnails[i];
+            }
+        }
+
+	if (large == null){
+            large = this._lastActiveWorspace;
+        }
         for (let i = 0; i < this._thumbnails.length; i++) {
             let thumbnail = this._thumbnails[i];
 
@@ -1168,7 +1184,11 @@ ExpoThumbnailsBox.prototype = {
             childBox.y1 = y1;
             childBox.y2 = y1 + portholeHeight;
 
-            thumbnail.actor.set_scale(this._scale * (1 - thumbnail.slidePosition), this._scale * (1 - thumbnail.slidePosition));
+	    if (thumbnail == large)
+	        thumbnail.actor.set_scale(this._scale * (1 - thumbnail.slidePosition)*2, this._scale * (1 - thumbnail.slidePosition)*2);
+	    else
+                thumbnail.actor.set_scale(this._scale * (1 - thumbnail.slidePosition), this._scale * (1 - thumbnail.slidePosition));
+
             thumbnail.actor.allocate(childBox, flags);  
 
             let thumbnailx = Math.round(x + (thumbnailWidth * thumbnail.slidePosition / 2));
