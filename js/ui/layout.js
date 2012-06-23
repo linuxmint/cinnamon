@@ -87,7 +87,7 @@ LayoutManager.prototype = {
     _onEnableEdgeFlipChanged: function(){
         this.enableEdgeFlip = global.settings.get_boolean("enable-edge-flip");
         this.edgeRight.enabled = this.enabledEdgeFlip;
-        this.edgeLeft.enabled = this.enabledEdgeFLip;
+        this.edgeLeft.enabled = this.enabledEdgeFlip;
     },
 
     _windowsRestacked: function() {
@@ -102,10 +102,10 @@ LayoutManager.prototype = {
 
         this._startupAnimation();
         this.edgeRight = new EdgeFlip.EdgeFlipper(St.Side.RIGHT, Main.wm.actionMoveWorkspaceRight);
-        this.edgeLeft = new EdgeFlip.EdgeFlipper(St.Side.LEFT, Main.wm.actionMoveWorksapceLeft);
+        this.edgeLeft = new EdgeFlip.EdgeFlipper(St.Side.LEFT, Main.wm.actionMoveWorkspaceLeft);
 
         this.edgeRight.enabled = this.enabledEdgeFlip;
-        this.edgeLeft.enabled = this.enabledEdgeFLip;
+        this.edgeLeft.enabled = this.enabledEdgeFlip;
     },
     
     _toggleExpo: function() {
