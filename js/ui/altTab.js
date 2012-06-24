@@ -1078,28 +1078,17 @@ AppSwitcher.prototype = {
     },
 
     // We override SwitcherList's highlight() method to also deal with
-    // the AppSwitcher->ThumbnailList arrows. Apps with only 1 window
-    // will hide their arrows by default, but show them when their
-    // thumbnails are visible (ie, when the app icon is supposed to be
-    // in justOutline mode). Apps with multiple windows will normally
-    // show a dim arrow, but show a bright arrow when they are
-    // highlighted.
+    // the AppSwitcher->ThumbnailList arrows.
     highlight : function(n, justOutline) {
         if (this._curApp != -1) {
-            if (this.icons[this._curApp].cachedWindows.length == 1)
-                this._arrows[this._curApp].hide();
-            else
-                this._arrows[this._curApp].remove_style_pseudo_class('highlighted');
+            this._arrows[this._curApp].hide();
         }
 
         SwitcherList.prototype.highlight.call(this, n, justOutline);
         this._curApp = n;
 
         if (this._curApp != -1) {
-            if (justOutline && this.icons[this._curApp].cachedWindows.length == 1)
-                this._arrows[this._curApp].show();
-            else
-                this._arrows[this._curApp].add_style_pseudo_class('highlighted');
+            this._arrows[this._curApp].show();
         }
     },
 
@@ -1113,8 +1102,9 @@ AppSwitcher.prototype = {
         this._list.add_actor(arrow);
         this._arrows.push(arrow);
 
-        if (appIcon.cachedWindows.length == 1)
+        if (appIcon.cachedWindows.length == 1) {
             arrow.hide();
+        }
     }
 };
 
