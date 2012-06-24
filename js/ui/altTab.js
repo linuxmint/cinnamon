@@ -547,11 +547,11 @@ AltTabPopup.prototype = {
         this._appSwitcher.highlight(app, this._thumbnailsFocused);
 
         if (window != null) {
-            /*if (!this._thumbnails)
-                this._createThumbnails();*/
+            if (!this._thumbnails)
+                this._createThumbnails();
             this._outlineContours();
             this._currentWindow = window;
-            //this._thumbnails.highlight(window, forceAppFocus);
+            this._thumbnails.highlight(window, forceAppFocus);
         } else if (this._appIcons[this._currentApp].cachedWindows.length > 1 &&
                    !forceAppFocus) {
             this._thumbnailTimeoutId = Mainloop.timeout_add (
