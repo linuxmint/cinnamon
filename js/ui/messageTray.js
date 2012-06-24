@@ -18,9 +18,13 @@ const PopupMenu = imports.ui.popupMenu;
 const Params = imports.misc.params;
 const Tweener = imports.ui.tweener;
 const Util = imports.misc.util;
+const AppletManager = imports.ui.appletManager;
 
-const ANIMATION_TIME = 0.2;
+const APPLET_UUID = "notifications@cinnamon.org";
+
+const ANIMATION_TIME = .2;
 const NOTIFICATION_TIMEOUT = 4;
+const NOTIFICATION_CRITICAL_TIMEOUT_WITH_APPLET = 10;
 const SUMMARY_TIMEOUT = 1;
 const LONGER_SUMMARY_TIMEOUT = 4;
 
@@ -441,6 +445,9 @@ Notification.prototype = {
         this._spacing = 0;
         this._scrollPolicy = Gtk.PolicyType.AUTOMATIC;
         this._imageBin = null;
+        this._timestamp = new Date();
+        let calendarSettings = new Gio.Settings({ schema: 'org.cinnamon.calendar' });
+        this.dateFormat = calendarSettings.get_string('date-format');
 
         source.connect('destroy', Lang.bind(this,
             function (source, reason) {
@@ -449,6 +456,7 @@ Notification.prototype = {
 
         this.actor = new St.Button();
         this.actor._delegate = this;
+        this.actor._parent_container = null;
         this.actor.connect('clicked', Lang.bind(this, this._onClicked));
         this.actor.connect('destroy', Lang.bind(this, this._onDestroy));
 
@@ -482,9 +490,10 @@ Notification.prototype = {
                                         col: 2,
                                         y_expand: false,
                                         y_fill: false });
-
+        this._timeLabel = new St.Label();
         this._titleLabel = new St.Label();
         this._bannerBox.add_actor(this._titleLabel);
+        this._bannerBox.add_actor(this._timeLabel);
         this._bannerUrlHighlighter = new URLHighlighter();
         this._bannerLabel = this._bannerUrlHighlighter.actor;
         this._bannerBox.add_actor(this._bannerLabel);
@@ -501,6 +510,7 @@ Notification.prototype = {
     // the title/banner. If @params.clear is %true, it will also
     // remove any additional actors/action buttons previously added.
     update: function(title, banner, params) {
+        this._timestamp = new Date();
         params = Params.parse(params, { customContent: false,
                                         body: null,
                                         icon: null,
@@ -556,7 +566,7 @@ Notification.prototype = {
         this.title = title;
         title = title ? _fixMarkup(title.replace(/\n/g, ' '), params.titleMarkup) : '';
         this._titleLabel.clutter_text.set_markup('<b>' + title + '</b>');
-
+        this._timeLabel.clutter_text.set_markup(this._timestamp.toLocaleTimeString(this.dateFormat));
         if (Pango.find_base_dir(title, -1) == Pango.Direction.RTL)
             this._titleDirection = St.TextDirection.RTL;
         else
@@ -799,14 +809,17 @@ Notification.prototype = {
     _bannerBoxGetPreferredWidth: function(actor, forHeight, alloc) {
         let [titleMin, titleNat] = this._titleLabel.get_preferred_width(forHeight);
         let [bannerMin, bannerNat] = this._bannerLabel.get_preferred_width(forHeight);
+        let [timeMin, timeNat] = this._timeLabel.get_preferred_width(forHeight);
 
-        alloc.min_size = titleMin;
-        alloc.natural_size = titleNat + this._spacing + bannerNat;
+        alloc.min_size = Math.max(titleMin, timeMin);
+        alloc.natural_size = Math.max(titleNat, timeNat) + this._spacing + bannerNat;
     },
 
     _bannerBoxGetPreferredHeight: function(actor, forWidth, alloc) {
-        [alloc.min_size, alloc.natural_size] =
-            this._titleLabel.get_preferred_height(forWidth);
+        let [titleMin, titleNat] = this._titleLabel.get_preferred_height(forWidth);
+        let [timeMin, timeNat] = this._timeLabel.get_preferred_height(forWidth);
+        alloc.min_size = titleMin + timeMin;
+        alloc.natural_size = titleNat + timeNat;
     },
 
     _bannerBoxAllocate: function(actor, box, flags) {
@@ -814,23 +827,38 @@ Notification.prototype = {
 
         let [titleMinW, titleNatW] = this._titleLabel.get_preferred_width(-1);
         let [titleMinH, titleNatH] = this._titleLabel.get_preferred_height(availWidth);
+        
+        let [timeMinW, timeNatW] = this._timeLabel.get_preferred_width(-1);
+        let [timeMinH, timeNatH] = this._timeLabel.get_preferred_height(availWidth);
+        
         let [bannerMinW, bannerNatW] = this._bannerLabel.get_preferred_width(availWidth);
 
         let titleBox = new Clutter.ActorBox();
+        let timeBox = new Clutter.ActorBox();
         let titleBoxW = Math.min(titleNatW, availWidth);
+        let timeBoxW = Math.min(timeNatW, availWidth);
         if (this._titleDirection == St.TextDirection.RTL) {
             titleBox.x1 = availWidth - titleBoxW;
             titleBox.x2 = availWidth;
+            timeBox.x1 = availWidth - timeBoxW;
+            timeBox.x2 = availWidth;
         } else {
             titleBox.x1 = 0;
+            timeBox.x1 = 0;
             titleBox.x2 = titleBoxW;
+            timeBox.x2 = timeBoxW;
         }
-        titleBox.y1 = 0;
-        titleBox.y2 = titleNatH;
+        timeBox.y1 = 0;
+        timeBox.y2 = timeNatH;
+        titleBox.y1 = timeNatH;
+        titleBox.y2 = timeNatH + titleNatH;
+
         this._titleLabel.allocate(titleBox, flags);
+        this._timeLabel.allocate(timeBox, flags);
         this._titleFitsInBannerMode = (titleNatW <= availWidth);
 
         let bannerFits = true;
+        
         if (titleBoxW + this._spacing > availWidth) {
             this._bannerLabel.opacity = 0;
             bannerFits = false;
@@ -848,8 +876,8 @@ Notification.prototype = {
 
                 bannerFits = (bannerBox.x1 + bannerNatW <= availWidth);
             }
-            bannerBox.y1 = 0;
-            bannerBox.y2 = titleNatH;
+            bannerBox.y1 = timeNatH;
+            bannerBox.y2 = timeNatH + titleNatH;
             this._bannerLabel.allocate(bannerBox, flags);
 
             // Make _bannerLabel visible if the entire notification
@@ -1556,7 +1584,8 @@ MessageTray.prototype = {
         let notificationUrgent = this._notificationQueue.length > 0 && this._notificationQueue[0].urgency == Urgency.CRITICAL;
         let notificationsPending = this._notificationQueue.length > 0 && (!this._busy || notificationUrgent);
         let notificationExpanded = this._notificationBin.y < 0;
-        let notificationExpired = (this._notificationTimeoutId == 0 && !(this._notification && this._notification.urgency == Urgency.CRITICAL) && !this._pointerInTray && !this._locked && !(this._pointerInKeyboard && notificationExpanded)) || this._notificationRemoved;
+        let notificationExpired = (this._notificationTimeoutId == 0 && !(this._notification && this._notification.urgency == Urgency.CRITICAL && !AppletManager.get_applet_enabled(APPLET_UUID)) &&
+                                   !this._pointerInTray && !this._locked && !(this._pointerInKeyboard && notificationExpanded)) || this._notificationRemoved;
         let canShowNotification = notificationsPending;
 
         if (this._notificationState == State.HIDDEN) {
@@ -1595,13 +1624,19 @@ MessageTray.prototype = {
     },
 
     _showNotification: function() {
+        this._notificationTimeoutId = 1; // this prevents a race condition with the messagetray wanting
+                                         // to hide a notification before it's done showing it, when updating from applet
         this._notification = this._notificationQueue.shift();
+        if (this._notification.actor._parent_container) {
+            this._notification.collapseCompleted();
+            this._notification.actor._parent_container.remove_actor(this._notification.actor);
+        }
         this._notificationClickedId = this._notification.connect('done-displaying',
                                                                  Lang.bind(this, this._escapeTray));
         this._notificationBin.child = this._notification.actor;
         this._notificationBin.opacity = 0;        
         let monitor = Main.layoutManager.primaryMonitor;
-        this._notificationBin.y = monitor.y + this._notification._table.get_theme_node().get_length('margin-from-top-edge-of-screen') * 2; // Notifications appear from here (for the animation)
+        this._notificationBin.y = monitor.y + (Main.panel.actor.get_height()+5) * 2; // Notifications appear from here (for the animation)
         let margin = this._notification._table.get_theme_node().get_length('margin-from-right-edge-of-screen');                
         this._notificationBin.x = monitor.x + monitor.width - this._notification._table.width - margin;
         this._notificationBin.show();
@@ -1656,14 +1691,17 @@ MessageTray.prototype = {
                           };
         let monitor = Main.layoutManager.primaryMonitor;
         if (!this._notification.expanded)        	 
-            tweenParams.y = monitor.y + this._notification._table.get_theme_node().get_length('margin-from-top-edge-of-screen');             
+            tweenParams.y = monitor.y + (Main.panel.actor.get_height()+5);
 
         this._tween(this._notificationBin, '_notificationState', State.SHOWN, tweenParams);
    },
 
     _showNotificationCompleted: function() {
-        if (this._notification.urgency != Urgency.CRITICAL)
+        if (this._notification.urgency != Urgency.CRITICAL) {
             this._updateNotificationTimeout(NOTIFICATION_TIMEOUT * 1000);
+        } else if (AppletManager.get_applet_enabled(APPLET_UUID)) {
+            this._updateNotificationTimeout(NOTIFICATION_CRITICAL_TIMEOUT_WITH_APPLET * 1000);
+        }
     },
 
     _updateNotificationTimeout: function(timeout) {
@@ -1712,16 +1750,20 @@ MessageTray.prototype = {
     },
 
     _hideNotificationCompleted: function() {
-        this._notificationRemoved = false;
         this._notificationBin.hide();
         this._notificationBin.child = null;
         this._notification.collapseCompleted();
         this._notification.disconnect(this._notificationClickedId);
         this._notificationClickedId = 0;
         let notification = this._notification;
+        if (AppletManager.get_applet_enabled(APPLET_UUID) && !this._notificationRemoved) {
+            this.emit('notify-applet-update', notification);
+        } else {
+            if (notification.isTransient)
+                notification.destroy(NotificationDestroyedReason.EXPIRED);  
+        }
         this._notification = null;
-        if (notification.isTransient)
-            notification.destroy(NotificationDestroyedReason.EXPIRED);
+        this._notificationRemoved = false;
     },
 
     _expandNotification: function(autoExpanding) {
@@ -1738,19 +1780,26 @@ MessageTray.prototype = {
     },
 
     _onNotificationExpanded: function() {
-        let expandedY = this.actor.height - this._notificationBin.height;
-
+        let expandedY = this._notification.actor.height - this._notificationBin.height;
         // Don't animate the notification to its new position if it has shrunk:
         // there will be a very visible "gap" that breaks the illusion.
+        
+        // This isn't really working at the moment, but it was just crashing before
+        // if it encountered a critical notification.  expandedY is always 0.  For now
+        // just make sure it's not covering the top panel if there is one.
+        
+        let monitor = Main.layoutManager.primaryMonitor;
+        let newY = monitor.y + (Main.panel.actor.get_height()+5);
 
         if (this._notificationBin.y < expandedY)
             this._notificationBin.y = expandedY;
         else if (this._notification.y != expandedY)
             this._tween(this._notificationBin, '_notificationState', State.SHOWN,
-                        { y: expandedY,
+                        { y: newY,
                           time: ANIMATION_TIME,
                           transition: 'easeOutQuad'
                         });
+
    },
 
     // We use this function to grab focus when the user moves the pointer
@@ -1759,6 +1808,9 @@ MessageTray.prototype = {
         this._focusGrabber.grabFocus(this._notification.actor);
     }
 };
+Signals.addSignalMethods(MessageTray.prototype);
+
+
 
 function SystemNotificationSource() {
     this._init();

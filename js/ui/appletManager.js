@@ -75,7 +75,8 @@ function onEnabledAppletsChanged() {
                                 applet._panelLocation.remove_actor(applet.actor);
                                 applet._panelLocation = null;
                             }
-                        }        
+                        }
+                        appletsCurrentlyInPanel.splice(appletsCurrentlyInPanel.indexOf(uuid), 1);
                     }
                 }                                                         
             }            
@@ -171,7 +172,8 @@ function add_applet_to_panels(appletDefinition) {
                 applet._panelLocation = location;                  
                 for (let i=0; i<appletsToMove.length; i++) {
                     location.add(appletsToMove[i]);
-                }  
+                }
+                appletsCurrentlyInPanel.push(uuid);
                 applet.on_applet_added_to_panel();
             } 
             else {
@@ -229,6 +231,10 @@ function _find_applet_in(uuid, dir) {
     }
     fileEnum.close(null);    
     return(directory);
+}
+
+function get_applet_enabled(uuid) {
+    return appletsCurrentlyInPanel.indexOf(uuid) != -1;
 }
 
 function loadApplet(uuid, dir, orientation) {    

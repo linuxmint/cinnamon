@@ -682,7 +682,6 @@ StScrollBar StButton#vhandle:hover {
 	spacing-rows: 10px;
 	spacing-columns: 10px;
 	margin-from-right-edge-of-screen: 20px;
-	margin-from-top-edge-of-screen: 30px;
 	width: 34em;
 	color: white;
 }
@@ -1656,4 +1655,20 @@ StScrollBar StButton#vhandle:hover {
 	color: rgb(64, 64, 64);
 	font-weight: bold;
 	transition-duration: 300;
+}
+
+/* Notification Applet */
+.notification-applet-header-label {
+	padding: .4em 1.75em;
+	font-size: 10.5pt;
+	color: #cccccc;
+	font-weight: bold;
+}
+
+.notification-applet-padding {
+	padding: .5em 1em;
+}
+
+.notification-applet-container {
+	max-height: 100px;
 }
