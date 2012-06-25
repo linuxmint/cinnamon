@@ -900,7 +900,7 @@ AppIcon.prototype = {
     set_size: function(size) {
         this.icon = this.app ? 
             this.app.create_icon_texture(size) :
-            new St.Icon({ icon_name: 'applications-other',
+            new St.Icon({ icon_name: 'application-default-icon',
                                  icon_type: St.IconType.FULLCOLOR,
                                  icon_size: size });
         this._iconBin.set_size(size, size);
