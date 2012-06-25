@@ -418,9 +418,6 @@ AltTabPopup.prototype = {
     _onDestroy : function() {
         this._popModal();
 
-        if (this._thumbnails)
-            this._destroyThumbnails();
-
         if (this._motionTimeoutId != 0)
             Mainloop.source_remove(this._motionTimeoutId);
         if (this._thumbnailTimeoutId != 0)
@@ -570,16 +567,17 @@ AltTabPopup.prototype = {
 
     _destroyThumbnails : function() {
         let thumbnailsActor = this._thumbnails.actor;
-        Tweener.addTween(thumbnailsActor,
-                         { opacity: 0,
-                           time: THUMBNAIL_FADE_TIME,
-                           transition: 'easeOutQuad',
-                           onComplete: Lang.bind(this, function() {
-                                                            thumbnailsActor.destroy();
-                                                            this.thumbnailsVisible = false;
-                                                        })
-                         });
         this._thumbnails = null;
+        Tweener.addTween(thumbnailsActor,
+            { opacity: 0,
+                time: THUMBNAIL_FADE_TIME,
+                transition: 'easeOutQuad',
+                onComplete: Lang.bind(this, function() {
+                    this.actor.remove_actor(thumbnailsActor);
+                    thumbnailsActor.destroy();
+                    this.thumbnailsVisible = false;
+                })
+            });
     },
 
     _createThumbnails : function() {
