@@ -747,13 +747,12 @@ WindowManager.prototype = {
     },
     
     showWorkspaceOSD : function() {
-        if (global.settings.get_boolean("workspace-osd-visible")) {
-            let workspace_names = global.settings.get_strv('workspace-names');
+        if (global.settings.get_boolean("workspace-osd-visible")) {            
             let current_workspace_index = global.screen.get_active_workspace_index();
-            if (current_workspace_index < workspace_names.length) {
+            if (current_workspace_index < Main.workspace_names.length) {
                 let monitor = Main.layoutManager.primaryMonitor;                
                 let label = new St.Label({style_class:'workspace-osd'});
-                label.set_text(workspace_names[current_workspace_index]);            
+                label.set_text(Main.workspace_names[current_workspace_index]);            
                 label.set_opacity = 0;                             
                 Main.layoutManager.addChrome(label, { visibleInFullscreen: false });    
                 let workspace_osd_x = global.settings.get_int("workspace-osd-x");

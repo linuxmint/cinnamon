@@ -81,6 +81,8 @@ let _gdmCssStylesheet = null;
 let dynamicWorkspaces = null;
 let nWorks = null;
 
+let workspace_names = [];
+
 let background = null;
 
 let desktop_layout;
@@ -330,6 +332,8 @@ function start() {
         let module = eval('imports.perf.' + perfModuleName + ';');
         Scripting.runPerfScript(module, perfOutput);
     }
+    
+    workspace_names = global.settings.get_strv("workspace-names");  
 
     global.screen.connect('notify::n-workspaces', _nWorkspacesChanged);
 
@@ -358,10 +362,8 @@ function _addWorkspace() {
     if (dynamicWorkspaces)
         return false;
     nWorks++;
-    global.settings.set_int("number-workspaces", nWorks);  
-    let names = global.settings.get_strv("workspace-names");  
-    names.push("WORKSPACE " + nWorks);
-    global.settings.set_strv("workspace-names", names);
+    global.settings.set_int("number-workspaces", nWorks);    
+    workspace_names.push("WORKSPACE " + nWorks);    
     _staticWorkspaces();
     return true;
 }
@@ -370,10 +372,8 @@ function _removeWorkspace(workspace) {
     if (nWorks == 1 || dynamicWorkspaces)
         return false;
     nWorks--;
-    let index = workspace.index();
-    let names = global.settings.get_strv("workspace-names");  
-    names.splice (index,1);
-    global.settings.set_strv("workspace-names", names);    
+    let index = workspace.index();    
+    workspace_names.splice (index,1);    
     global.settings.set_int("number-workspaces", nWorks);
     global.screen.remove_workspace(workspace, global.get_current_time());
     return true;
