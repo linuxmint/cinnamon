@@ -105,7 +105,7 @@ const _ = Gettext.gettext;
 function _createUserSession() {  
     placesManager = new PlacesManager.PlacesManager();    
     automountManager = new AutomountManager.AutomountManager();
-    autorunManager = new AutorunManager.AutorunManager();
+    //autorunManager = new AutorunManager.AutorunManager();
     networkAgent = new NetworkAgent.NetworkAgent();
 }
 
