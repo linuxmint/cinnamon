@@ -981,11 +981,15 @@ class ChangeTimeWidget(Gtk.HBox):
             thread.start_new_thread(self._do_change_system_time, ())
 
 class TitleBarButtonsOrderSelector(Gtk.Table):
-    def __init__(self):
-        self.key = "/desktop/cinnamon/windows/button_layout"
+    def __init__(self):        
+        self.schema = "org.cinnamon.overrides"
+        self.key = "button-layout"
+        
         super(TitleBarButtonsOrderSelector, self).__init__()
-        self.settings = gconf.client_get_default()
+        
+        self.settings = Gio.Settings.new(self.schema)        
         self.value = self.settings.get_string(self.key)
+                
         try:
             left_items, right_items = self.value.split(":")
         except:
@@ -1327,10 +1331,7 @@ class MainWindow:
         sidePage.add_widget(GConfComboBox(_("Window focus mode"),
                                             "/apps/metacity/general/focus_mode",
                                             [(i, i.title()) for i in ("click","sloppy","mouse")]))
-        sidePage.add_widget(TitleBarButtonsOrderSelector())
-        label = Gtk.Label()
-        label.set_markup("<i><small>%s</small></i>" % _("Note: If you change the title bar buttons order you will need to restart Cinnamon."))
-        sidePage.add_widget(label)
+        sidePage.add_widget(TitleBarButtonsOrderSelector())        
         
         sidePage = SidePage(_("Workspaces"), "workspaces.svg", self.content_box)
         self.sidePages.append((sidePage, "workspaces"))        
