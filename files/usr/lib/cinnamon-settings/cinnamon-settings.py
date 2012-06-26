@@ -162,7 +162,7 @@ class ThemeViewSidePage (SidePage):
         scrolledWindow.add_with_viewport(other_settings_box)
         other_settings_box.set_border_width(5)
         
-        windowThemeSwitcher = GConfComboBox(_("Window theme"), "/desktop/cinnamon/windows/theme", self._load_window_themes(), "Adwaita")
+        windowThemeSwitcher = GSettingsComboBox(_("Window theme"), "org.gnome.desktop.wm.preferences", "theme", self._load_window_themes())
         other_settings_box.pack_start(windowThemeSwitcher, False, False, 2)
         menusHaveIconsCB = GSettingsCheckButton(_("Menus Have Icons"), "org.gnome.desktop.interface", "menus-have-icons")
         other_settings_box.pack_start(menusHaveIconsCB, False, False, 2)
