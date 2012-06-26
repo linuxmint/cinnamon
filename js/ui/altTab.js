@@ -169,7 +169,7 @@ AltTabPopup.prototype = {
         let windows = display.get_tab_list(Meta.TabList.NORMAL, screen,
                                            screen.get_active_workspace());
 
-        // Run a second pass through the tablist, now will ALL normal windows.
+        // Run a second pass through the tablist, now with ALL normal windows.
         // The purpose is to find "orphan" windows that would otherwise be
         // difficult to navigate to when lost behind other windows.
         let allwindows = display.get_tab_list(Meta.TabList.NORMAL_ALL, screen,
