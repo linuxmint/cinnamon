@@ -32,6 +32,7 @@ const CinnamonDBus = imports.ui.cinnamonDBus;
 const WindowManager = imports.ui.windowManager;
 const ThemeManager = imports.ui.themeManager;
 const Magnifier = imports.ui.magnifier;
+const FileManagerDBus = imports.ui.fileManagerDBus;
 const XdndHandler = imports.ui.xdndHandler;
 const StatusIconDispatcher = imports.ui.statusIconDispatcher;
 const Util = imports.misc.util;
