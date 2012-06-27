@@ -169,6 +169,21 @@ AltTabPopup.prototype = {
         let windows = display.get_tab_list(Meta.TabList.NORMAL, screen,
                                            screen.get_active_workspace());
 
+        // Run a second pass through the tablist, now with ALL normal windows.
+        // The purpose is to find "orphan" windows that would otherwise be
+        // difficult to navigate to when lost behind other windows.
+        let allwindows = display.get_tab_list(Meta.TabList.NORMAL_ALL, screen,
+                                           screen.get_active_workspace());
+        let tracker = Cinnamon.WindowTracker.get_default();
+        for (let i = 0; i < allwindows.length; ++i) {
+            let window = allwindows[i];
+            // Only add those windows that don't have an "app".
+            if (!tracker.get_window_app(window))
+            {
+                windows.push(window);
+            }
+        }
+
         if (windows.length == 0)
             return false;
 
@@ -877,13 +892,17 @@ AppIcon.prototype = {
             this.actor.add(bin);
         }
         else {
-            this.label = new St.Label({ text: this.app.get_name() });
+            this.label = new St.Label({ text: this.app ? this.app.get_name() : window.title });
             this.actor.add(this.label, { x_fill: false });
         }
     },
 
     set_size: function(size) {
-        this.icon = this.app.create_icon_texture(size);
+        this.icon = this.app ? 
+            this.app.create_icon_texture(size) :
+            new St.Icon({ icon_name: 'application-default-icon',
+                                 icon_type: St.IconType.FULLCOLOR,
+                                 icon_size: size });
         this._iconBin.set_size(size, size);
         this._iconBin.child = this.icon;
     }
