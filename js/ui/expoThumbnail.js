@@ -699,6 +699,7 @@ ExpoThumbnailsBox.prototype = {
         this.button.connect('leave-event', Lang.bind(this, function () { this.lastHovered._shade(); this.button.hide();}));
         this.button.connect('clicked', Lang.bind(this, function () { this.lastHovered._remove(); this.button.hide();}));
         this.button.hide();
+        Main.expo.connect('hiding', Lang.bind(this, function() { this.button.hide();}));
                 
         this._targetScale = 0;
         this._scale = 0;
@@ -871,8 +872,6 @@ ExpoThumbnailsBox.prototype = {
             thumbnail.actor.connect('enter-event', Lang.bind(this, function (actor, event) { this.lastHovered = thumbnail; this.showButton(); thumbnail._onEnterEvent(actor, event)}));
             thumbnail.actor.connect('leave-event', Lang.bind(this, function () { this.button.hide(); if (thumbnail.metaWorkspace != global.screen.get_active_workspace()) thumbnail._shade(); thumbnail.hovered = false; thumbnail._overviewModeOff();}));
             thumbnail.connect('remove-event', Lang.bind(this, function () { this.button.hide(); if (thumbnail.metaWorkspace != global.screen.get_active_workspace()) thumbnail._shade(); thumbnail.hovered = false; thumbnail._overviewModeOff();}));
-
-            Main.expo.connect('hiding', Lang.bind(this, function() { this.button.hide();}));
 
             if (start > 0) { // not the initial fill
                 thumbnail.state = ThumbnailState.NEW;
