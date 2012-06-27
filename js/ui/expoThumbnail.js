@@ -187,11 +187,10 @@ ExpoWorkspaceThumbnail.prototype = {
         this.title._spacing = 0; 
         this.titleText = this.title.clutter_text;        
         this.titleText.connect('key-press-event', Lang.bind(this, this._onTitleKeyPressEvent)); 
-              
-        let workspace_names = global.settings.get_strv("workspace-names");
+                      
         let workspace_index = this.metaWorkspace.index();
-        if (workspace_index < workspace_names.length) {
-            this.title.set_text(workspace_names[workspace_index]);
+        if (workspace_index < Main.workspace_names.length) {
+            this.title.set_text(Main.workspace_names[workspace_index]);
         }
         
         this._background = Meta.BackgroundActor.new_for_screen(global.screen);
@@ -249,11 +248,9 @@ ExpoWorkspaceThumbnail.prototype = {
     },
     
     _onTitleKeyPressEvent: function(actor, event) {
-        
-        let workspace_names = global.settings.get_strv("workspace-names");
-        if (this.metaWorkspace.index() < workspace_names.length && this.title.get_text() != workspace_names[this.metaWorkspace.index()]) {
-            workspace_names[this.metaWorkspace.index()] = this.title.get_text();
-            global.settings.set_strv("workspace-names", workspace_names);            
+                
+        if (this.metaWorkspace.index() < Main.workspace_names.length && this.title.get_text() != Main.workspace_names[this.metaWorkspace.index()]) {
+            Main.workspace_names[this.metaWorkspace.index()] = this.title.get_text();            
         }      
                  
         let symbol = event.get_key_symbol();
