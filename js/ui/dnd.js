@@ -11,6 +11,12 @@ const Main = imports.ui.main;
 
 const Params = imports.misc.params;
 
+// These four just for dragging to desktop
+const FileUtils = imports.misc.fileUtils;
+const USER_DESKTOP_PATH = FileUtils.getUserDesktopDir();
+const Gio = imports.gi.Gio;
+const Util = imports.misc.util;
+
 // Time to scale down to maxDragActorSize
 const SCALE_ANIMATION_TIME = 0.25;
 // Time to animate to original position on cancel
@@ -445,7 +451,7 @@ _Draggable.prototype = {
                         continue;
                 }
         }
-
+         
         while (target) {
             if (target._delegate && target._delegate.acceptDrop) {
                 let [r, targX, targY] = target.transform_stage_point(dropX, dropY);
@@ -475,6 +481,47 @@ _Draggable.prototype = {
             }
             target = target.get_parent();
         }
+        
+        // If we have no target it's because we're trying to drop on an
+        // actor that does not accept DnD.
+        if (target === null)
+        {
+            // Get a list of windows which we could be dropping it on
+            let windows = global.get_window_actors().filter(function(w) {
+               let [_w, _h] = w.get_size();
+               let [_x, _y] = w.get_position();
+               return (_x <= dropX && _x+_w >= dropX && _y <= dropY && _y+_h >= dropY);
+            });
+            
+            // Reverse the list, so the top-most window is first
+            windows.reverse();
+            
+            if (windows[0].meta_window.get_wm_class() == 'Nautilus'
+             && windows[0].meta_window.get_title() == 'Desktop')
+            {
+               let filename = this.actor._app.get_id();
+               let sourceFile = Gio.file_new_for_path(this.actor._app.get_tree_entry().get_desktop_file_path());
+               let destFile = Gio.file_new_for_path(USER_DESKTOP_PATH+"/"+filename);
+               try{
+                 sourceFile.copy(destFile, 0, null, function(){});
+                 // Need to find a way to do that using the Gio library, but modifying the access::can-execute attribute on the file object seems unsupported
+                 ///destFile.set_attribute('access::can-execute', Gio.FILE_ATTRIBUTE_TYPE, true, Gio.FILE_QUERY_INFO_NONE, false);
+                 Util.spawnCommandLine("chmod +x \""+USER_DESKTOP_PATH+"/"+filename+"\"");
+                 
+                 this._dragActor.destroy();
+                 this._dragInProgress = false;
+                 global.unset_cursor();
+                 this.emit('drag-end', event.get_time(), true);
+                 this._dragComplete();
+                 
+                 global.display.emit('overlay-key'); // one way to close the menu
+                 return true;
+                 
+               } catch(e){
+                  global.log(e);
+               }
+            }
+         }
 
         this._cancelDrag(event.get_time());
 

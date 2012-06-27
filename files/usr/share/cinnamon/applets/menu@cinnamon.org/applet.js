@@ -164,7 +164,7 @@ ApplicationButton.prototype = {
         this.addActor(this.icon);
         this.label = new St.Label({ text: this.app.get_name(), style_class: 'menu-application-button-label' });
         this.addActor(this.label);
-        
+        this.actor._app = app; // backreference
         this._draggable = DND.makeDraggable(this.actor);
         this.isDraggableApp = true;
     },
@@ -233,6 +233,7 @@ if (category){
         this.actor = new St.Button({ reactive: true, label: label, style_class: 'menu-category-button', x_align: St.Align.START });
         this.actor._delegate = this;
         this.buttonbox = new St.BoxLayout();
+        
         this.label = new St.Label({ text: label, style_class: 'menu-category-button-label' });
         if (category && this.icon_name){
            this.icon = new St.Icon({icon_name: this.icon_name, icon_size: CATEGORY_ICON_SIZE, icon_type: St.IconType.FULLCOLOR});
