@@ -256,7 +256,13 @@ AppMenuButton.prototype = {
 
 		let tracker = Cinnamon.WindowTracker.get_default();
 		this.app = tracker.get_window_app(this.metaWindow);
-		let icon = this.app.create_icon_texture(16);
+		let iconSize = 16;
+		let icon = this.app ? 
+		    this.app.create_icon_texture(iconSize) :
+            new St.Icon({ icon_name: 'application-default-icon',
+                     icon_type: St.IconType.FULLCOLOR,
+                     icon_size: iconSize });
+
         let title = this.getDisplayTitle();
 
         if (metaWindow.minimized)
@@ -307,7 +313,7 @@ AppMenuButton.prototype = {
 
     getDisplayTitle: function() {
         let title = this.metaWindow.get_title();
-        if (!title) title = this.app.get_name();
+        if (!title) title = this.app ? this.app.get_name() : '?';
         return title;
     },
 
@@ -654,6 +660,22 @@ MyApplet.prototype = {
             let tracker = Cinnamon.WindowTracker.get_default();
             tracker.connect('notify::focus-app', Lang.bind(this, this._onFocus));
 
+            this.isInteresting = function(metaWindow) {
+                if (tracker.is_window_interesting(metaWindow)) {
+                    // The nominal case.
+                    return true;
+                }
+                // The rest of this function is devoted to discovering "orphan" windows
+                // (dialogs without an associated app, e.g., the Logout dialog).
+                if (tracker.get_window_app(metaWindow)) {
+                    // orphans don't have an app!
+                    return false;
+                }    
+                let type = metaWindow.get_window_type();
+                return type === Meta.WindowType.DIALOG || type === Meta.WindowType.MODAL_DIALOG;
+            };
+
+
             this.switchWorkspaceHandler = global.window_manager.connect('switch-workspace',
                                             Lang.bind(this, this._refreshItems));
             global.window_manager.connect('minimize',
@@ -751,16 +773,12 @@ MyApplet.prototype = {
         }));
                 
         // Create list items for each window
-        let tracker = Cinnamon.WindowTracker.get_default();
         for ( let i = 0; i < windows.length; ++i ) {
             let metaWindow = windows[i];
-            if ( metaWindow && tracker.is_window_interesting(metaWindow) ) {
-                let app = tracker.get_window_app(metaWindow);
-                if ( app ) {
-                    let appbutton = new AppMenuButton(this, metaWindow, false, this.orientation);
-                    this._windows.push(appbutton);
-                    this.myactor.add(appbutton.actor);
-                }
+            if (this.isInteresting(metaWindow)) {
+                let appbutton = new AppMenuButton(this, metaWindow, false, this.orientation);
+                this._windows.push(appbutton);
+                this.myactor.add(appbutton.actor);
             }
         }
 
@@ -823,9 +841,7 @@ MyApplet.prototype = {
             }
         }
 
-        let tracker = Cinnamon.WindowTracker.get_default();
-        let app = tracker.get_window_app(metaWindow);
-        if ( app && tracker.is_window_interesting(metaWindow) ) {
+        if ( this.isInteresting(metaWindow) ) {
             let appbutton = new AppMenuButton(this, metaWindow, true, this.orientation);
             this._windows.push(appbutton);
             this.myactor.add(appbutton.actor);
