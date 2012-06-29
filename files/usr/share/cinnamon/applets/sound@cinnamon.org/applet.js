@@ -925,26 +925,30 @@ MyApplet.prototype = {
         let slider = this[property+'Slider'];
         slider.setValue(muted ? 0 : (this[property].volume / this._volumeMax));
         if (property == '_output') {
-            if (muted)
+            if (muted) {
                 this.setIconName('audio-volume-muted');
-            else
+                this._outputTitle.setIcon('audio-volume-muted');
+                this.set_applet_tooltip(_("Volume") + ": 0%");
+                this._outputTitle.setText(_("Volume") + ": 0%");
+            } else {
                 this.setIconName(this._volumeToIcon(this._output.volume));
+                this._outputTitle.setIcon(this._volumeToIcon(this._output.volume));
+                this.set_applet_tooltip(_("Volume") + ": " + Math.floor(this._output.volume / this._volumeMax * 100) + "%");
+                this._outputTitle.setText(_("Volume") + ": " + Math.floor(this._output.volume / this._volumeMax * 100) + "%");
+            }
         }
     },
 
     _volumeChanged: function(object, param_spec, property) {
         if (this[property] == null) return;
-        if (this[property].volume / this._volumeMax === 0)
-            this._outputTitle.setIcon("audio-volume-muted");
-        if (this[property].volume / this._volumeMax > 0)
-            this._outputTitle.setIcon("audio-volume-low");
-        if (this[property].volume / this._volumeMax > 0.30)
-            this._outputTitle.setIcon("audio-volume-medium");
-        if (this[property].volume / this._volumeMax > 0.80)
-            this._outputTitle.setIcon("audio-volume-high");
+
         this[property+'Slider'].setValue(this[property].volume / this._volumeMax);
-        if (property == '_output' && !this._output.is_muted)
+        if (property == '_output' && !this._output.is_muted) {
+            this._outputTitle.setIcon(this._volumeToIcon(this._output.volume));
             this.setIconName(this._volumeToIcon(this._output.volume));
+            this.set_applet_tooltip(_("Volume") + ": " + Math.floor(this._output.volume / this._volumeMax * 100) + "%");
+            this._outputTitle.setText(_("Volume") + ": " + Math.floor(this._output.volume / this._volumeMax * 100) + "%");
+        }
     },
 
     _volumeToIcon: function(volume) {
