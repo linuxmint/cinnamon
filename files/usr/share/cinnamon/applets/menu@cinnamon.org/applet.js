@@ -1251,15 +1251,25 @@ MyApplet.prototype = {
        var res;
        if (pattern){
           res = new Array();
-          for (var i in applist){
+          resext = new Array()
              let app = applist[i];
-             if (app.get_name().toLowerCase().indexOf(pattern)!=-1 || (app.get_description() && app.get_description().toLowerCase().indexOf(pattern)!=-1) || (app.get_id() && app.get_id().slice(0, -8).toLowerCase().indexOf(pattern)!=-1)) res.push(app);
+             if (app.get_name().toLowerCase().indexOf(pattern)!=-1 ) res.push(app);
+             if ((app.get_description() && app.get_description().toLowerCase().indexOf(pattern)!=-1) || (app.get_id() && app.get_id().slice(0, -8).toLowerCase().indexOf(pattern)!=-1)) resext.push(app);
           }
-       }else res = applist;
-       
-       res.sort(function(a,b){
-          return a.get_name().toLowerCase() > b.get_name().toLowerCase();
-       });
+          res.sort(function(a,b){
+             return a.get_name().toLowerCase() > b.get_name().toLowerCase();
+          });
+          resext.sort(function(a,b){
+             return a.get_name().toLowerCase() > b.get_name().toLowerCase();
+          });
+          res.push.apply(res, resext);
+       }
+       else{ 
+          res = applist;
+          res.sort(function(a,b){
+             return a.get_name().toLowerCase() > b.get_name().toLowerCase();
+          });
+       }
        
        return res;
     },
