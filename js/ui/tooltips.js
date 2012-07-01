@@ -111,10 +111,10 @@ Tooltip.prototype = {
         if (initTitle) this._tooltip.set_text(initTitle);
         Main.uiGroup.add_actor(this._tooltip);
         
-        panelItem.actor.connect('enter-event', Lang.bind(this, this._onEnterEvent));
-        panelItem.actor.connect('leave-event', Lang.bind(this, this._onLeaveEvent));
-        panelItem.actor.connect('motion-event', Lang.bind(this, this._onMotionEvent));
-        panelItem.actor.connect('button-release-event', Lang.bind(this, this._onReleaseEvent));
+        item.actor.connect('enter-event', Lang.bind(this, this._onEnterEvent));
+        item.actor.connect('leave-event', Lang.bind(this, this._onLeaveEvent));
+        item.actor.connect('motion-event', Lang.bind(this, this._onMotionEvent));
+        item.actor.connect('button-release-event', Lang.bind(this, this._onReleaseEvent));
         
         this._showTimer = null;
         this._visible = false;
