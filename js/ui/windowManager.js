@@ -862,36 +862,18 @@ WindowManager.prototype = {
     },
 
     actionMoveWorkspaceLeft: function() {
-        let index = this._getWorkspaceLeft();
-        if (index != global.screen.get_active_workspace_index()) {
-            global.screen.get_workspace_by_index(index).activate(global.get_current_time()); 
-        }       
+        global.screen.get_active_workspace().get_neighbor(Meta.MotionDirection.LEFT).activate(global.get_current_time());
     },
 
     actionMoveWorkspaceRight: function() {
-        let index = this._getWorkspaceRight();
-        if (index != global.screen.get_active_workspace_index()) {
-            global.screen.get_workspace_by_index(index).activate(global.get_current_time()); 
-        }      
+        global.screen.get_active_workspace().get_neighbor(Meta.MotionDirection.RIGHT).activate(global.get_current_time());
     },
 
     actionMoveWorkspaceUp: function() {
-        let activeWorkspaceIndex = global.screen.get_active_workspace_index();
-        let indexToActivate = activeWorkspaceIndex;
-        if (activeWorkspaceIndex > 0)
-            indexToActivate--;
-
-        if (indexToActivate != activeWorkspaceIndex)
-            global.screen.get_workspace_by_index(indexToActivate).activate(global.get_current_time());        
+        global.screen.get_active_workspace().get_neighbor(Meta.MotionDirection.UP).activate(global.get_current_time());
     },
 
     actionMoveWorkspaceDown: function() {
-        let activeWorkspaceIndex = global.screen.get_active_workspace_index();
-        let indexToActivate = activeWorkspaceIndex;
-        if (activeWorkspaceIndex < global.screen.n_workspaces - 1)
-            indexToActivate++;
-
-        if (indexToActivate != activeWorkspaceIndex)
-            global.screen.get_workspace_by_index(indexToActivate).activate(global.get_current_time());        
+        global.screen.get_active_workspace().get_neighbor(Meta.MotionDirection.DOWN).activate(global.get_current_time());
     }
 };
