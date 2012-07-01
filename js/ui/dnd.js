@@ -174,7 +174,6 @@ _Draggable.prototype = {
     _grabEvents: function() {
         if (!this._eventsGrabbed) {
             Clutter.grab_pointer(_getEventHandlerActor());
-            Clutter.grab_keyboard(_getEventHandlerActor());
             this._eventsGrabbed = true;
         }
     },
@@ -182,16 +181,13 @@ _Draggable.prototype = {
     _ungrabEvents: function() {
         if (this._eventsGrabbed) {
             Clutter.ungrab_pointer();
-            Clutter.ungrab_keyboard();
             this._eventsGrabbed = false;
         }
     },
 
     _onEvent: function(actor, event) {
-        if (event.type() !== Clutter.EventType.KEY_PRESS && event.type() !== Clutter.EventType.KEY_RELEASE) {
-            // prevent the watchdog timer from firing, for a while
-            this._setTimer(true);
-        }
+        // prevent the watchdog timer from firing, for a while
+        this._setTimer(true);
         
         // Intercept BUTTON_PRESS to try to address a drag in progress condition 'dragging'
         // on interminably - you started dragging, went off the panels, released the mouse
@@ -226,14 +222,6 @@ _Draggable.prototype = {
                 return this._updateDragPosition(event);
             } else if (this._dragActor == null) {
                 return this._maybeStartDrag(event);
-            }
-        // We intercept KEY_PRESS event so that we can process Esc key press to cancel
-        // dragging and ignore all other key presses.
-        } else if (event.type() == Clutter.EventType.KEY_PRESS && this._dragInProgress) {
-            let symbol = event.get_key_symbol();
-            if (symbol == Clutter.Escape) {
-                this._cancelDrag(event.get_time());
-                return true;
             }
         } else if (event.type() == Clutter.EventType.LEAVE) {
             if (this._firstLeaveActor == null)
