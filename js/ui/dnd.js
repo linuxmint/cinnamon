@@ -364,6 +364,20 @@ _Draggable.prototype = {
         return true;
     },
 
+    _setCursor:  function(result) {
+        if (result !== DragMotionResult.CONTINUE) {
+            try {
+                let cursor = DRAG_CURSOR_MAP[result];
+                global.set_cursor(cursor);
+            }
+            catch (e) {
+                global.logError("bad DragMotionResult: " + result);
+            }
+            return true;
+        }
+        return false;
+    },
+    
     _updateDragPosition : function (event) {
         let [stageX, stageY] = event.get_coords();
         this._dragX = stageX;
@@ -391,8 +405,7 @@ _Draggable.prototype = {
                 let motionFunc = dragMonitors[i].dragMotion;
                 if (motionFunc) {
                     let result = motionFunc(dragEvent);
-                    if (result != DragMotionResult.CONTINUE) {
-                        global.set_cursor(DRAG_CURSOR_MAP[result]);
+                    if (this._setCursor(result)) {
                         return true;
                     }
                 }
@@ -408,8 +421,7 @@ _Draggable.prototype = {
                                                                  targX,
                                                                  targY,
                                                                  event.get_time());
-                    if (result != DragMotionResult.CONTINUE) {
-                        global.set_cursor(DRAG_CURSOR_MAP[result]);
+                    if (this._setCursor(result)) {
                         return true;
                     }
                 }
