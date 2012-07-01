@@ -261,17 +261,14 @@ function ControlButton() {
 
 ControlButton.prototype = {
     _init: function(icon, callback) {
-        this.actor = new St.Bin({style_class: 'sound-button-container'});
-        this.button = new St.Button({ style_class: 'sound-button' });
-        this.button.connect('clicked', callback);
+        this.actor = new St.Button({ style_class: 'sound-button' });
+        this.actor.connect('clicked', callback);
         this.icon = new St.Icon({
             icon_type: St.IconType.SYMBOLIC,
             icon_name: icon,
             style_class: 'sound-button-icon',
         });
-        this.button.set_child(this.icon);
-        this.actor.add_actor(this.button);
-
+        this.actor.set_child(this.icon);
     },
     getActor: function() {
         return this.actor;
