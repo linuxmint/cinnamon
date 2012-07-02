@@ -4,6 +4,7 @@ CHANGES SINCE 1.4-UP3
 New features: 
 
  - Cinnamon 2D
+ - Window contour outlining in ALT-Tab mode
  - Workspace OSD
  - Keyboard navigation in Scale (close windows with CTRL+W or mouse middle-click)
  - Keyboard navigation in Expo
@@ -54,6 +55,9 @@ THEME CHANGES SINCE 1.4
 }
 
 .window-caption#selected {
+}
+
+.switcher-outlinebox {
 }
 
 /* ===================================================================
