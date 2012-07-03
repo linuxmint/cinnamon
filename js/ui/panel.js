@@ -499,6 +499,10 @@ Panel.prototype = {
     	this._hidden = false;
         this._hidetime = 0;              
         this._hideable = global.settings.get_boolean("panel-autohide");
+        this._hideTimer = false;
+        this._showTimer = false;
+        this._showDelay = global.settings.get_boolean("panel-show-delay");
+        this._hideDelay = global.settings.get_boolean("panel-hide-delay");
     	
         this.actor = new Cinnamon.GenericContainer({ name: 'panel',
                                                   reactive: true });
@@ -564,6 +568,8 @@ Panel.prototype = {
         this.actor.connect('leave-event', Lang.bind(this, this._leavePanel));
         this.actor.connect('enter-event', Lang.bind(this, this._enterPanel));  
         global.settings.connect("changed::panel-autohide", Lang.bind(this, this._onPanelAutoHideChanged));   
+        global.settings.connect("changed::panel-show-delay", Lang.bind(this, this._onPanelShowDelayChanged));   
+        global.settings.connect("changed::panel-hide-delay", Lang.bind(this, this._onPanelHideDelayChanged));   
         
         //let orientation = St.Side.TOP;
         //if (bottomPosition) {
@@ -609,6 +615,14 @@ Panel.prototype = {
         return true;
     },
         
+    _onPanelShowDelayChanged: function() {  
+       this._showDelay = global.settings.get_int("panel-show-delay");
+    },
+    
+    _onPanelHideDelayChanged: function() {  
+       this._hideDelay = global.settings.get_int("panel-hide-delay");
+    },
+    
     _onPanelAutoHideChanged: function() {  
     	this._hideable = global.settings.get_boolean("panel-autohide");
     	if (this._hidden == true && this._hideable == false) {
@@ -750,15 +764,37 @@ Panel.prototype = {
         childBox.y2 = allocHeight + cornerHeight;
         this._rightCorner.actor.allocate(childBox, flags);
     },
-
+    
+    _clearTimers: function() {
+        if (this._showTimer) {
+            Mainloop.source_remove(this._showTimer);
+        }
+        if (this._hideTimer) {
+            Mainloop.source_remove(this._hideTimer);
+        }
+    },
+    
     _enterPanel: function() {
         this.isMouseOverPanel = true;
-        this._showPanel();
+        this._clearTimers();
+        if (this._showDelay > 0) {
+            this._showTimer = Mainloop.timeout_add(this._hideDelay, Lang.bind(this, this._showPanel));
+        }
+        else {
+            this._showPanel();
+        }
     },
 
     _leavePanel:function() {
         this.isMouseOverPanel = false;
-        this._hidePanel();
+        this._clearTimers();
+        if (this._hideDelay > 0) {
+            this._clearTimers();
+            this._hideTimer = Mainloop.timeout_add(this._hideDelay, Lang.bind(this, this._hidePanel));
+        }
+        else {
+            this._hidePanel();
+        }
     }, 
     
     _showPanel: function() {
