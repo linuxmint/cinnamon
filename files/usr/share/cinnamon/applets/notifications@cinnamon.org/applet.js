@@ -203,13 +203,21 @@ function main(metadata, orientation) {
 }
 
 function stringify(count) {
-    if (count == 0) {
-        return _("No notifications");
-    } else if (count == 1) {
-        return count.toString() + _(" notification");
-    } else if (count > 1) {
-        return count.toString() + _(" notifications");
-    } else return "";
+    let str;
+    switch (true) {
+        case (count == 0):
+            str = _("No notifications");
+            break;
+        case (count == 1):
+            str = count.toString() + _(" notification");
+            break;
+        case (count > 1):
+            str = count.toString() + _(" notifications");
+            break;
+        default:
+            str = "";
+    }
+    return str;
 }
 
 function timeify(orig_time) {
