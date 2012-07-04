@@ -305,6 +305,15 @@ Expo.prototype = {
         this.emit('window-drag-end');
     },
 
+    _createClone: function(source) {
+        if (this.clone) {
+            this._group.remove_actor(this.clone);
+            this.clone.destroy();
+        }
+        this.clone = new Clutter.Clone({source: source});
+        this._group.add_actor(this.clone);
+    },
+
     // show:
     //
     // Animates the overview visible and grabs mouse and keyboard input
@@ -351,12 +360,11 @@ Expo.prototype = {
 
         this.allocateID = this.activeWorkspace.connect('allocated', Lang.bind(this, this._animateVisible2));
 
-        this.clone = new Clutter.Clone({source: activeWorkspaceActor});
+        this._createClone(activeWorkspaceActor);
         if (global.settings.get_string("desktop-layout") != 'traditional' && !global.settings.get_boolean("panel-autohide"))
             this.clone.set_position(0, Main.panel.actor.height); 
 
         this.clone.show();
-        this._group.add_actor(this.clone);
 
         this._gradient.show();
         
@@ -533,8 +541,7 @@ Expo.prototype = {
         let activeWorkspaceActor = this.activeWorkspace.actor;
         //this.activeWorkspace._fadeInUninterestingWindows();
         this.activeWorkspace._overviewModeOff();
-        this.clone = new Clutter.Clone({source: activeWorkspaceActor});
-        this._group.add_actor(this.clone);
+        this._createClone(activeWorkspaceActor);
         this.clone.set_position(activeWorkspaceActor.allocation.x1, activeWorkspaceActor.allocation.y1);
         this.clone.set_scale(activeWorkspaceActor.get_scale()[0], activeWorkspaceActor.get_scale()[1]);
         this.clone.show();
