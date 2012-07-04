@@ -6,6 +6,7 @@ const PopupMenu = imports.ui.popupMenu;
 const St = imports.gi.St;
 const Gio = imports.gi.Gio;
 const Clutter = imports.gi.Clutter;
+const Mainloop = imports.mainloop;
 const MessageTray = imports.ui.messageTray;
 const Urgency = imports.ui.messageTray.Urgency;
 const NotificationDestroyedReason = imports.ui.messageTray.NotificationDestroyedReason;
@@ -55,6 +56,11 @@ MyApplet.prototype = {
             
             this._calendarSettings = new Gio.Settings({ schema: 'org.cinnamon.calendar' });
             this._calendarSettings.connect('changed', Lang.bind(this, this._update_timestamp));
+
+            this._crit_icon = new St.Icon({icon_name: 'critical-notif', icon_type: St.IconType.SYMBOLIC, reactive: true, track_hover: true, style_class: 'system-status-icon' });
+            this._alt_crit_icon = new St.Icon({icon_name: 'alt-critical-notif', icon_type: St.IconType.SYMBOLIC, reactive: true, track_hover: true, style_class: 'system-status-icon' });
+            this._blinking = false;
+            this._blink_toggle = false;
         }
         catch (e) {
             global.logError(e);
@@ -102,17 +108,23 @@ MyApplet.prototype = {
             }
             switch (max_urgency) {
                 case Urgency.LOW:
+                    this._blinking = false;
                     this.set_applet_icon_symbolic_name("low-notif");
                     break;
                 case Urgency.NORMAL:
                 case Urgency.HIGH:
-                    this.set_applet_icon_symbolic_name("high-notif");
+                    this._blinking = false;
+                    this.set_applet_icon_symbolic_name("normal-notif");
                     break;
                 case Urgency.CRITICAL:
-                    this.set_applet_icon_symbolic_name("critical-notif");
+                    if (!this._blinking) {
+                        this._blinking = true;
+                        this.critical_blink();
+                    }
                     break;
             }
         } else {
+            this._blinking = false;
             this.set_applet_label('');
             this.set_applet_icon_symbolic_name("empty-notif");
             this.menu_clear_button.hide();
@@ -170,6 +182,18 @@ MyApplet.prototype = {
                 notification._timeLabel.clutter_text.set_markup(timeify(orig_time));
             }
         }
+    },
+
+    critical_blink: function () {
+        if (!this._blinking)
+            return;
+        if (this._blink_toggle) {
+            this._applet_icon_box.child = this._crit_icon;
+        } else {
+            this._applet_icon_box.child = this._alt_crit_icon;
+        }
+        this._blink_toggle = !this._blink_toggle;
+        Mainloop.timeout_add_seconds(1, Lang.bind(this, this.critical_blink));
     }
 };
 
