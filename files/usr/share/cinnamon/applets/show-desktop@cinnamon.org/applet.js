@@ -1,7 +1,5 @@
-const Cinnamon = imports.gi.Cinnamon;
 const Applet = imports.ui.applet;
 const Lang = imports.lang;
-const Meta = imports.gi.Meta;
 
 function MyApplet(orientation) {
     this._init(orientation);
@@ -15,11 +13,8 @@ MyApplet.prototype = {
         
         try {        
             this.set_applet_icon_name("desktop");
-            this.set_applet_tooltip(_("Show desktop"));
-                                                                                   
-            this._tracker = Cinnamon.WindowTracker.get_default();        
-            this._desktopShown = false;        
-            this._alreadyMinimizedWindows = [];
+            this.set_applet_tooltip(_("Show desktop"));                                                                                               
+            this._desktopShown = false;                    
             
             global.window_manager.connect('map', Lang.bind(this, this.on_window_mapped));
         }
@@ -33,39 +28,18 @@ MyApplet.prototype = {
     },
     
     on_applet_clicked: function(event) {
-        let metaWorkspace = global.screen.get_active_workspace();
-        let windows = metaWorkspace.list_windows();
-        
-        if (this._desktopShown) {            
-            for ( let i = 0; i < windows.length; ++i ) {
-                if (windows[i].get_window_type() != Meta.WindowType.DESKTOP){                   
-                    let shouldrestore = true;
-                    for (let j = 0; j < this._alreadyMinimizedWindows.length; j++) {
-                        if (windows[i] == this._alreadyMinimizedWindows[j]) {
-                            shouldrestore = false;
-                            break;
-                        }                        
-                    }    
-                    if (shouldrestore) {
-                        windows[i].unminimize();                                  
-                    }                    
-                }                
-            }            
-            this._alreadyMinimizedWindows.length = [];      
-        }
-        else {
-            for ( let i = 0; i < windows.length; ++i ) {
-                if (windows[i].get_window_type() != Meta.WindowType.DESKTOP){                   
-                    if (!windows[i].minimized) {
-                        windows[i].minimize();
-                    }
-                    else {
-                        this._alreadyMinimizedWindows.push(windows[i]);
-                    }                    
-                }
+        try {            
+            if (this._desktopShown) {
+                global.screen.unshow_desktop();                
             }
+            else {
+                global.screen.show_desktop(global.get_current_time());                
+            }
+            this._desktopShown = !this._desktopShown;
         }
-        this._desktopShown = !this._desktopShown;
+        catch (e) {
+            global.logError(e);
+        }                
     }
 };
 
