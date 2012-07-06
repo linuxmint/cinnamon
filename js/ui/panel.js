@@ -712,11 +712,10 @@ Panel.prototype = {
         if (event.get_button()==3){
             let [x, y] = event.get_coords();
             let target = global.stage.get_actor_at_pos(Clutter.PickMode.ALL, x, y);
-            if (this._context_menu._getMenuItems().length > 0 && target.get_parent() == this.actor) {
-                if (!this._context_menu.isOpen){
-                    this._context_menu.toggle();
+            if (this._context_menu._getMenuItems().length > 0 && target.get_parent() == this.actor) { 
+                this._context_menu.toggle();
+                if (!this._context_menu.isOpen)
                     return;
-                }
 
                 x -= this._context_menu._boxPointer.actor.get_theme_node().get_length('-arrow-base');
 
