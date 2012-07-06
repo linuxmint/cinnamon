@@ -20,8 +20,6 @@ const Tweener = imports.ui.tweener;
 const Util = imports.misc.util;
 const AppletManager = imports.ui.appletManager;
 
-const APPLET_UUID = "notifications@cinnamon.org";
-
 const ANIMATION_TIME = .2;
 const NOTIFICATION_TIMEOUT = 4;
 const NOTIFICATION_CRITICAL_TIMEOUT_WITH_APPLET = 10;
@@ -1584,8 +1582,9 @@ MessageTray.prototype = {
         let notificationUrgent = this._notificationQueue.length > 0 && this._notificationQueue[0].urgency == Urgency.CRITICAL;
         let notificationsPending = this._notificationQueue.length > 0 && (!this._busy || notificationUrgent);
         let notificationExpanded = this._notificationBin.y < 0;
-        let notificationExpired = (this._notificationTimeoutId == 0 && !(this._notification && this._notification.urgency == Urgency.CRITICAL && !AppletManager.get_applet_enabled(APPLET_UUID)) &&
-                                   !this._pointerInTray && !this._locked && !(this._pointerInKeyboard && notificationExpanded)) || this._notificationRemoved;
+        let notificationExpired = (this._notificationTimeoutId == 0 && !(this._notification && this._notification.urgency == Urgency.CRITICAL &&
+                                    !AppletManager.get_role_provider_exists(AppletManager.Roles.NOTIFICATIONS)) &&
+                                    !this._pointerInTray && !this._locked && !(this._pointerInKeyboard && notificationExpanded)) || this._notificationRemoved;
         let canShowNotification = notificationsPending;
 
         if (this._notificationState == State.HIDDEN) {
@@ -1699,7 +1698,7 @@ MessageTray.prototype = {
     _showNotificationCompleted: function() {
         if (this._notification.urgency != Urgency.CRITICAL) {
             this._updateNotificationTimeout(NOTIFICATION_TIMEOUT * 1000);
-        } else if (AppletManager.get_applet_enabled(APPLET_UUID)) {
+        } else if (AppletManager.get_role_provider_exists(AppletManager.Roles.NOTIFICATIONS)) {
             this._updateNotificationTimeout(NOTIFICATION_CRITICAL_TIMEOUT_WITH_APPLET * 1000);
         }
     },
@@ -1756,7 +1755,7 @@ MessageTray.prototype = {
         this._notification.disconnect(this._notificationClickedId);
         this._notificationClickedId = 0;
         let notification = this._notification;
-        if (AppletManager.get_applet_enabled(APPLET_UUID) && !this._notificationRemoved) {
+        if (AppletManager.get_role_provider_exists(AppletManager.Roles.NOTIFICATIONS) && !this._notificationRemoved) {
             this.emit('notify-applet-update', notification);
         } else {
             if (notification.isTransient)
