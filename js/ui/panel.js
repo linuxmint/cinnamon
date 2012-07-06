@@ -14,6 +14,8 @@ const Applet = imports.ui.applet;
 const DND = imports.ui.dnd;
 const AppletManager = imports.ui.appletManager;
 const Util = imports.misc.util;
+const ModalDialog = imports.ui.modalDialog;
+
 const BUTTON_DND_ACTIVATION_TIMEOUT = 250;
 
 const ANIMATED_ICON_UPDATE_TIMEOUT = 100;
@@ -373,6 +375,61 @@ PanelCorner.prototype = {
     }
 };
 
+function ConfirmDialog(){
+    this._init();
+}
+
+ConfirmDialog.prototype = {
+    __proto__: ModalDialog.ModalDialog.prototype,
+
+    _init: function(){
+	ModalDialog.ModalDialog.prototype._init.call(this);
+	let label = new St.Label({text: "Are you sure you want to restore all settings to default?\n\n"});
+	this.contentLayout.add(label);
+
+	this.setButtons([
+	    {
+		label: _("Yes"),
+		action: Lang.bind(this, function(){
+                    Util.spawnCommandLine("gsettings reset-recursively org.cinnamon");
+                    global.reexec_self();
+		})
+	    },
+	    {
+		label: _("No"),
+		action: Lang.bind(this, function(){
+		    this.close();
+		})
+	    }
+	]);
+    },
+};
+function SettingsLauncher(label, keyword, icon, menu) {
+    this._init(label, keyword, icon, menu);
+}
+
+SettingsLauncher.prototype = {
+    __proto__: PopupMenu.PopupBaseMenuItem.prototype,
+
+    _init: function (label, keyword, icon, menu) {
+        PopupMenu.PopupBaseMenuItem.prototype._init.call(this, {});
+
+        this._menu = menu;
+	this._keyword = keyword;
+        this.label = new St.Label({ text: label });
+        this.addActor(this.label);
+        this._icon = new St.Icon({icon_name: icon, icon_size: 22, icon_type: St.IconType.FULLCOLOR });
+        this.addActor(this._icon, { expand: true });
+    },
+
+    activate: function (event) {
+    	this._menu.actor.hide();
+	Util.spawnCommandLine("cinnamon-settings " + this._keyword);
+        return true;
+    }
+
+};
+
 function PanelContextMenu(launcher, orientation) {
     this._init(launcher, orientation);
 }
@@ -383,9 +440,24 @@ PanelContextMenu.prototype = {
     _init: function(launcher, orientation) {
         PopupMenu.PopupMenu.prototype._init.call(this, launcher.actor, 0.0, orientation, 0);
         Main.uiGroup.add_actor(this.actor);
+	this.settingsItem = new PopupMenu.PopupSubMenuMenuItem(_("Settings"));
 
-        this._contentSection = new PopupMenu.PopupMenuSection();
-        this.addMenuItem(this._contentSection);
+	let menuItem = new SettingsLauncher(_("Themes"), "themes", "themes", this.settingsItem.menu);
+	this.settingsItem.menu.addMenuItem(menuItem);
+
+	let menuItem = new SettingsLauncher(_("Applets"), "applets", "applets", this.settingsItem.menu);
+	this.settingsItem.menu.addMenuItem(menuItem);
+
+	let menuItem = new SettingsLauncher(_("Panel"), "panel", "panel", this.settingsItem.menu);
+	this.settingsItem.menu.addMenuItem(menuItem);
+
+	let menuItem = new SettingsLauncher(_("Menu"), "menu", "menu", this.settingsItem.menu);
+	this.settingsItem.menu.addMenuItem(menuItem);
+
+	let menuItem = new SettingsLauncher(_("All settings"), "", "preferences-system", this.settingsItem.menu);
+	this.settingsItem.menu.addMenuItem(menuItem);
+
+	this.addMenuItem(this.settingsItem);
 
         this.troubleshootItem = new PopupMenu.PopupSubMenuMenuItem(_("Troubleshoot"));
         this.troubleshootItem.menu.addAction(_("Restart Cinnamon"), function(event) {
@@ -403,9 +475,9 @@ PanelContextMenu.prototype = {
 
         this.addMenuItem(this.troubleshootItem);
 
-        this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+	this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
-        let editMode = global.settings.get_boolean("panel-edit-mode");
+	let editMode = global.settings.get_boolean("panel-edit-mode");
         let panelEditMode = new PopupMenu.PopupSwitchMenuItem(_("Panel Edit mode"), editMode);
         panelEditMode.connect('toggled', function(item) {
             global.settings.set_boolean("panel-edit-mode", item.state);
@@ -413,18 +485,6 @@ PanelContextMenu.prototype = {
         this.addMenuItem(panelEditMode);
         global.settings.connect('changed::panel-edit-mode', function() {
             panelEditMode.setToggleState(global.settings.get_boolean("panel-edit-mode"));
-        });
-
-        this.addAction(_("Panel settings"), function(event) {
-            Util.spawnCommandLine("cinnamon-settings panel");
-        });
-
-        this.addAction(_("Add/remove applets"), function(event) {
-            Util.spawnCommandLine("cinnamon-settings applets");
-        });
-
-        this.addAction(_("Other settings"), function(event) {
-            Util.spawnCommandLine("cinnamon-settings");
         });
 
         this.actor.hide();
@@ -653,8 +713,10 @@ Panel.prototype = {
             let [x, y] = event.get_coords();
             let target = global.stage.get_actor_at_pos(Clutter.PickMode.ALL, x, y);
             if (this._context_menu._getMenuItems().length > 0 && target.get_parent() == this.actor) {
-                if (!this._context_menu.isOpen)
+                if (!this._context_menu.isOpen){
                     this._context_menu.toggle();
+                    return;
+                }
 
                 x -= this._context_menu._boxPointer.actor.get_theme_node().get_length('-arrow-base');
 
@@ -666,12 +728,13 @@ Panel.prototype = {
                     x  = monitor.width + monitor.x - mywidth;
                 if (x < monitor.x)
                     x = monitor.x;
+
                 this._context_menu._boxPointer._xpos = x;
                 this._context_menu._boxPointer._xPosition = this._context_menu._boxPointer._xpos;
                 this._context_menu._boxPointer._shiftActor();
             }
         }
-        return true;
+        return;
     },
 
     _onPanelAutoHideChanged: function() {
