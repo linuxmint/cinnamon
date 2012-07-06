@@ -655,6 +655,17 @@ Panel.prototype = {
             if (this._context_menu._getMenuItems().length > 0 && target.get_parent() == this.actor) {
                 if (!this._context_menu.isOpen)
                     this._context_menu.toggle();
+
+                x -= this._context_menu._boxPointer.actor.get_theme_node().get_length('-arrow-base');
+
+                let monitor = Main.layoutManager.findMonitorForActor(this._context_menu._boxPointer.actor);
+
+                let mywidth = this._context_menu._boxPointer.actor.get_allocation_box().x2-this._context_menu._boxPointer.actor.get_allocation_box().x1;//Width of menu
+
+                if (x + mywidth - monitor.x > monitor.width)
+                    x  = monitor.width + monitor.x - mywidth;
+                if (x < monitor.x)
+                    x = monitor.x;
                 this._context_menu._boxPointer._xpos = x;
                 this._context_menu._boxPointer._xPosition = this._context_menu._boxPointer._xpos;
                 this._context_menu._boxPointer._shiftActor();
