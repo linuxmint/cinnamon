@@ -18,3 +18,4 @@ man/Makefile.in
 po/Makefile.in.in
 src/Makefile.in
 tests/Makefile.in
+files/usr/lib/cinnamon-settings/tz.pyc
