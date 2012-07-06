@@ -402,7 +402,7 @@ ConfirmDialog.prototype = {
 		})
 	    }
 	]);
-    },	
+    },
 };
 function SettingsLauncher(label, keyword, icon, menu) {
     this._init(label, keyword, icon, menu);
@@ -413,18 +413,18 @@ SettingsLauncher.prototype = {
 
     _init: function (label, keyword, icon, menu) {
         PopupMenu.PopupBaseMenuItem.prototype._init.call(this, {});
-        
+
         this._menu = menu;
 	this._keyword = keyword;
         this.label = new St.Label({ text: label });
         this.addActor(this.label);
-        this._icon = new St.Icon({icon_name: icon, icon_size: 22, icon_type: St.IconType.FULLCOLOR });  
+        this._icon = new St.Icon({icon_name: icon, icon_size: 22, icon_type: St.IconType.FULLCOLOR });
         this.addActor(this._icon, { expand: true });
     },
 
     activate: function (event) {
     	this._menu.actor.hide();
-	Util.spawnCommandLine("cinnamon-settings " + this._keyword);        
+	Util.spawnCommandLine("cinnamon-settings " + this._keyword);
         return true;
     }
 
@@ -440,49 +440,49 @@ PanelContextMenu.prototype = {
     _init: function(launcher, orientation) {
         PopupMenu.PopupMenu.prototype._init.call(this, launcher.actor, 0.0, orientation, 0);
         Main.uiGroup.add_actor(this.actor);
-	this.settingsItem = new PopupMenu.PopupSubMenuMenuItem(_("Settings")); 
-	
+	this.settingsItem = new PopupMenu.PopupSubMenuMenuItem(_("Settings"));
+
 	let menuItem = new SettingsLauncher(_("Themes"), "themes", "themes", this.settingsItem.menu);
-	this.settingsItem.menu.addMenuItem(menuItem);	    
-		                
+	this.settingsItem.menu.addMenuItem(menuItem);
+
 	let menuItem = new SettingsLauncher(_("Applets"), "applets", "applets", this.settingsItem.menu);
-	this.settingsItem.menu.addMenuItem(menuItem);	    
-	
+	this.settingsItem.menu.addMenuItem(menuItem);
+
 	let menuItem = new SettingsLauncher(_("Panel"), "panel", "panel", this.settingsItem.menu);
-	this.settingsItem.menu.addMenuItem(menuItem);	    
-	
+	this.settingsItem.menu.addMenuItem(menuItem);
+
 	let menuItem = new SettingsLauncher(_("Menu"), "menu", "menu", this.settingsItem.menu);
 	this.settingsItem.menu.addMenuItem(menuItem);
-	
+
 	let menuItem = new SettingsLauncher(_("All settings"), "", "preferences-system", this.settingsItem.menu);
-	this.settingsItem.menu.addMenuItem(menuItem);	    	    
-		    
-	this.addMenuItem(this.settingsItem);			        
-	
-        this.troubleshootItem = new PopupMenu.PopupSubMenuMenuItem(_("Troubleshoot"));            
+	this.settingsItem.menu.addMenuItem(menuItem);
+
+	this.addMenuItem(this.settingsItem);
+
+        this.troubleshootItem = new PopupMenu.PopupSubMenuMenuItem(_("Troubleshoot"));
         this.troubleshootItem.menu.addAction(_("Restart Cinnamon"), function(event) {
             global.reexec_self();
         });
-        
+
         this.troubleshootItem.menu.addAction(_("Looking Glass"), function(event) {
             Main.createLookingGlass().open();
-        }); 
-        
+        });
+
         this.troubleshootItem.menu.addAction(_("Restore all settings to default"), function(event) {
             this.confirm = new ConfirmDialog();
             this.confirm.open();
-        });  
-                   
-        this.addMenuItem(this.troubleshootItem);    
-	
+        });
+
+        this.addMenuItem(this.troubleshootItem);
+
 	this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-	
+
 	let editMode = global.settings.get_boolean("panel-edit-mode");
         let panelEditMode = new PopupMenu.PopupSwitchMenuItem(_("Panel Edit mode"), editMode);
         panelEditMode.connect('toggled', function(item) {
             global.settings.set_boolean("panel-edit-mode", item.state);
         });
-        this.addMenuItem(panelEditMode);    
+        this.addMenuItem(panelEditMode);
         global.settings.connect('changed::panel-edit-mode', function() {
             panelEditMode.setToggleState(global.settings.get_boolean("panel-edit-mode"));
         });
@@ -713,8 +713,10 @@ Panel.prototype = {
             let [x, y] = event.get_coords();
             let target = global.stage.get_actor_at_pos(Clutter.PickMode.ALL, x, y);
             if (this._context_menu._getMenuItems().length > 0 && target.get_parent() == this.actor) {
-                if (!this._context_menu.isOpen)
+                if (!this._context_menu.isOpen){
                     this._context_menu.toggle();
+                    return;
+                }
 
                 x -= this._context_menu._boxPointer.actor.get_theme_node().get_length('-arrow-base');
 
@@ -732,7 +734,7 @@ Panel.prototype = {
                 this._context_menu._boxPointer._shiftActor();
             }
         }
-        return true;
+        return;
     },
 
     _onPanelAutoHideChanged: function() {
