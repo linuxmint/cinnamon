@@ -714,10 +714,11 @@ Panel.prototype = {
             let target = global.stage.get_actor_at_pos(Clutter.PickMode.ALL, x, y);
             if (this._context_menu._getMenuItems().length > 0 && target.get_parent() == this.actor) { 
                 this._context_menu.toggle();
+
                 if (!this._context_menu.isOpen)
                     return;
 
-                x -= this._context_menu._boxPointer.actor.get_theme_node().get_length('-arrow-base');
+                x -= this._context_menu._boxPointer._arrowOrigin;
 
                 let monitor = Main.layoutManager.findMonitorForActor(this._context_menu._boxPointer.actor);
 
