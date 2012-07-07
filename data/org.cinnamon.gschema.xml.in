@@ -239,6 +239,11 @@
       </_description>
     </key>
 
+    <key type="b" name="notifications-on">
+      <default>true</default>
+      <_summary>Whether notifications are to be displayed</_summary>
+    </key>
+
     <key type="i" name="number-workspaces">
 	<default>2</default>
 	<_summary>Number of workspaces in Cinnamon session</_summary>

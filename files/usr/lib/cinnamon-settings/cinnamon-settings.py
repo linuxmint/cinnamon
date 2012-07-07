@@ -1351,6 +1351,7 @@ class MainWindow:
         sidePage = SidePage(_("General"), "general.svg", self.content_box)
         self.sidePages.append((sidePage, "general"))
         sidePage.add_widget(GSettingsCheckButton(_("Log LookingGlass output to ~/.cinnamon/glass.log (Requires Cinnamon restart)"), "org.cinnamon", "enable-looking-glass-logs"))
+        sidePage.add_widget(GSettingsCheckButton(_("Display notifications"), "org.cinnamon", "notifications-on"))
         
         #sidePage = SidePage(_("Terminal"), "terminal", self.content_box)
         #self.sidePages.append(sidePage)
