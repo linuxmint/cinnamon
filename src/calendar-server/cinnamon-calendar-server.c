@@ -34,10 +34,15 @@
 #include <unistd.h>
 
 #include <gio/gio.h>
-#include <gtk/gtk.h>
 
 #define HANDLE_LIBICAL_MEMORY
-#include <libecal/libecal.h>
+#include <libecal/e-cal.h>
+#include <libecal/e-cal-time-util.h>
+#include <libecal/e-cal-recur.h>
+#include <libecal/e-cal-system-timezone.h>
+
+#define CALENDAR_CONFIG_PREFIX   "/apps/evolution/calendar"
+#define CALENDAR_CONFIG_TIMEZONE CALENDAR_CONFIG_PREFIX "/display/timezone"
 
 #include "calendar-sources.h"
 
@@ -65,6 +70,7 @@ static GDBusNodeInfo *introspection_data = NULL;
 struct _App;
 typedef struct _App App;
 
+static GMainLoop    *loop = NULL;
 static gboolean      opt_replace = FALSE;
 static GOptionEntry  opt_entries[] = {
   {"replace", 0, 0, G_OPTION_ARG_NONE, &opt_replace, "Replace existing daemon", NULL},
@@ -84,7 +90,7 @@ typedef struct
 {
   char   *uid;
   char   *rid;
-  char   *backend_name;
+  char   *uri;
   char   *summary;
   char   *description;
   char   *color_string;
@@ -244,63 +250,40 @@ get_ical_completed_time (icalcomponent *ical,
 }
 
 static char *
-get_source_color (ECalClient *esource)
+get_source_color (ECal *esource)
 {
   ESource *source;
-  ECalClientSourceType source_type;
-  ESourceSelectable *extension;
-  const gchar *extension_name;
 
-  g_return_val_if_fail (E_IS_CAL_CLIENT (esource), NULL);
+  g_return_val_if_fail (E_IS_CAL (esource), NULL);
 
-  source = e_client_get_source (E_CLIENT (esource));
-  source_type = e_cal_client_get_source_type (esource);
+  source = e_cal_get_source (esource);
 
-  switch (source_type)
-    {
-      case E_CAL_CLIENT_SOURCE_TYPE_EVENTS:
-        extension_name = E_SOURCE_EXTENSION_CALENDAR;
-        break;
-      case E_CAL_CLIENT_SOURCE_TYPE_TASKS:
-        extension_name = E_SOURCE_EXTENSION_TASK_LIST;
-        break;
-      default:
-        g_return_val_if_reached (NULL);
-    }
-
-  extension = e_source_get_extension (source, extension_name);
-
-  return e_source_selectable_dup_color (extension);
+  return g_strdup (e_source_peek_color_spec (source));
 }
 
 static gchar *
-get_source_backend_name (ECalClient *esource)
+get_source_uri (ECal *esource)
 {
-  ESource *source;
-  ECalClientSourceType source_type;
-  ESourceBackend *extension;
-  const gchar *extension_name;
+    ESource *source;
+    gchar   *string;
+    gchar  **list;
 
-  g_return_val_if_fail (E_IS_CAL_CLIENT (esource), NULL);
+    g_return_val_if_fail (E_IS_CAL (esource), NULL);
 
-  source = e_client_get_source (E_CLIENT (esource));
-  source_type = e_cal_client_get_source_type (esource);
+    source = e_cal_get_source (esource);
+    string = g_strdup (e_source_get_uri (source));
+    if (string) {
+        list = g_strsplit (string, ":", 2);
+        g_free (string);
 
-  switch (source_type)
-    {
-      case E_CAL_CLIENT_SOURCE_TYPE_EVENTS:
-        extension_name = E_SOURCE_EXTENSION_CALENDAR;
-        break;
-      case E_CAL_CLIENT_SOURCE_TYPE_TASKS:
-        extension_name = E_SOURCE_EXTENSION_TASK_LIST;
-        break;
-      default:
-        g_return_val_if_reached (NULL);
+        if (list[0]) {
+            string = g_strdup (list[0]);
+            g_strfreev (list);
+            return string;
+        }
+        g_strfreev (list);
     }
-
-  extension = e_source_get_extension (source, extension_name);
-
-  return e_source_backend_dup_backend_name (extension);
+    return NULL;
 }
 
 static inline int
@@ -331,7 +314,7 @@ calendar_appointment_equal (CalendarAppointment *a,
 
   return
     null_safe_strcmp (a->uid,          b->uid)          == 0 &&
-    null_safe_strcmp (a->backend_name, b->backend_name) == 0 &&
+    null_safe_strcmp (a->uri,          b->uri)          == 0 &&
     null_safe_strcmp (a->summary,      b->summary)      == 0 &&
     null_safe_strcmp (a->description,  b->description)  == 0 &&
     null_safe_strcmp (a->color_string, b->color_string) == 0 &&
@@ -356,8 +339,8 @@ calendar_appointment_free (CalendarAppointment *appointment)
   g_free (appointment->rid);
   appointment->rid = NULL;
 
-  g_free (appointment->backend_name);
-  appointment->backend_name = NULL;
+  g_free (appointment->uri);
+  appointment->uri = NULL;
 
   g_free (appointment->summary);
   appointment->summary = NULL;
@@ -375,12 +358,12 @@ calendar_appointment_free (CalendarAppointment *appointment)
 static void
 calendar_appointment_init (CalendarAppointment  *appointment,
                            icalcomponent        *ical,
-                           ECalClient           *cal,
+                           ECal                 *cal,
                            icaltimezone         *default_zone)
 {
   appointment->uid          = get_ical_uid (ical);
   appointment->rid          = get_ical_rid (ical);
-  appointment->backend_name = get_source_backend_name (cal);
+  appointment->uri          = get_source_uri (cal);
   appointment->summary      = get_ical_summary (ical);
   appointment->description  = get_ical_description (ical);
   appointment->color_string = get_source_color (cal);
@@ -393,14 +376,14 @@ calendar_appointment_init (CalendarAppointment  *appointment,
 
 static icaltimezone *
 resolve_timezone_id (const char *tzid,
-                     ECalClient *source)
+                     ECal       *source)
 {
   icaltimezone *retval;
 
   retval = icaltimezone_get_builtin_timezone_from_tzid (tzid);
   if (!retval)
     {
-      e_cal_client_get_timezone_sync (source, tzid, &retval, NULL, NULL);
+      e_cal_get_timezone (source, tzid, &retval, NULL);
     }
 
   return retval;
@@ -427,7 +410,7 @@ calendar_appointment_collect_occurrence (ECalComponent  *component,
 static void
 calendar_appointment_generate_occurrences (CalendarAppointment *appointment,
                                            icalcomponent       *ical,
-                                           ECalClient          *cal,
+                                           ECal                *cal,
                                            time_t               start,
                                            time_t               end,
                                            icaltimezone        *default_zone)
@@ -456,7 +439,7 @@ calendar_appointment_generate_occurrences (CalendarAppointment *appointment,
 
 static CalendarAppointment *
 calendar_appointment_new (icalcomponent        *ical,
-                          ECalClient           *cal,
+                          ECal                 *cal,
                           icaltimezone         *default_zone)
 {
   CalendarAppointment *appointment;
@@ -483,6 +466,9 @@ struct _App
 
   CalendarSources *sources;
   gulong sources_signal_id;
+
+  guint                zone_listener;
+  GConfClient         *gconf_client;
 
   /* hash from uid to CalendarAppointment objects */
   GHashTable *appointments;
@@ -549,12 +535,12 @@ invalidate_cache (App *app)
 }
 
 static void
-on_objects_added (ECalClientView *view,
-                  GSList         *objects,
-                  gpointer        user_data)
+on_objects_added (ECalView *view,
+                  GList    *objects,
+                  gpointer  user_data)
 {
   App *app = user_data;
-  GSList *l;
+  GList *l;
 
   print_debug ("%s for calendar", G_STRFUNC);
 
@@ -575,9 +561,9 @@ on_objects_added (ECalClientView *view,
 }
 
 static void
-on_objects_modified (ECalClientView *view,
-                     GSList         *objects,
-                     gpointer        user_data)
+on_objects_modified (ECalView *view,
+                     GList    *objects,
+                     gpointer  user_data)
 {
   App *app = user_data;
   print_debug ("%s for calendar", G_STRFUNC);
@@ -586,9 +572,9 @@ on_objects_modified (ECalClientView *view,
 }
 
 static void
-on_objects_removed (ECalClientView *view,
-                    GSList         *uids,
-                    gpointer        user_data)
+on_objects_removed (ECalView *view,
+                    GList    *uids,
+                    gpointer  user_data)
 {
   App *app = user_data;
   print_debug ("%s for calendar", G_STRFUNC);
@@ -599,8 +585,8 @@ on_objects_removed (ECalClientView *view,
 static void
 app_load_events (App *app)
 {
-  GList *clients;
-  GList *l;
+  GSList *sources;
+  GSList *l;
   GList *ll;
   gchar *since_iso8601;
   gchar *until_iso8601;
@@ -610,11 +596,11 @@ app_load_events (App *app)
   /* nuke existing views */
   for (ll = app->live_views; ll != NULL; ll = ll->next)
     {
-      ECalClientView *view = E_CAL_CLIENT_VIEW (ll->data);
+      ECalView *view = E_CAL_VIEW (ll->data);
       g_signal_handlers_disconnect_by_func (view, on_objects_added, app);
       g_signal_handlers_disconnect_by_func (view, on_objects_modified, app);
       g_signal_handlers_disconnect_by_func (view, on_objects_removed, app);
-      e_cal_client_view_stop (view, NULL);
+      e_cal_view_stop (view);
       g_object_unref (view);
     }
   g_list_free (app->live_views);
@@ -630,23 +616,28 @@ app_load_events (App *app)
                since_iso8601,
                until_iso8601);
 
-  clients = calendar_sources_get_appointment_clients (app->sources);
-  for (l = clients; l != NULL; l = l->next)
+  sources = calendar_sources_get_appointment_sources (app->sources);
+  for (l = sources; l != NULL; l = l->next)
     {
-      ECalClient *cal = E_CAL_CLIENT (l->data);
+      ECal *cal = E_CAL (l->data);
       GError *error;
       gchar *query;
-      GSList *objects, *j;
-      ECalClientView *view;
-
-      e_cal_client_set_default_timezone (cal, app->zone);
+      GList *objects;
+      GList *j;
+      ECalView *view;
 
       error = NULL;
-      if (!e_client_open_sync (E_CLIENT (cal), TRUE, NULL, &error))
+      if (!e_cal_set_default_timezone (cal, app->zone, &error))
         {
-          ESource *source = e_client_get_source (E_CLIENT (cal));
-          g_warning ("Error opening calendar %s: %s\n",
-		     e_source_get_uid (source), error->message);
+          g_printerr ("Error setting timezone on calendar: %s\n", error->message);
+          g_error_free (error);
+          continue;
+        }
+
+      error = NULL;
+      if (!e_cal_open (cal, TRUE, &error))
+        {
+          g_printerr ("Error opening calendar: %s\n", error->message);
           g_error_free (error);
           continue;
         }
@@ -657,15 +648,12 @@ app_load_events (App *app)
                                until_iso8601);
       error = NULL;
       objects = NULL;
-      if (!e_cal_client_get_object_list_sync (cal,
-					      query,
-					      &objects,
-					      NULL, /* cancellable */
-					      &error))
+      if (!e_cal_get_object_list (cal,
+                                  query,
+                                  &objects,
+                                  &error))
         {
-          ESource *source = e_client_get_source (E_CLIENT (cal));
-          g_warning ("Error querying calendar %s: %s\n",
-		     e_source_get_uid (source), error->message);
+          g_printerr ("Error querying calendar: %s\n", error->message);
           g_error_free (error);
           g_free (query);
           continue;
@@ -689,16 +677,15 @@ app_load_events (App *app)
           g_hash_table_insert (app->appointments, g_strdup (appointment->uid), appointment);
         }
 
-      e_cal_client_free_icalcomp_slist (objects);
+      e_cal_free_object_list (objects);
 
       error = NULL;
-      if (!e_cal_client_get_view_sync (cal,
-				       query,
-				       &view,
-				       NULL, /* cancellable */
-				       &error))
+      if (!e_cal_get_query (cal,
+                            query,
+                            &view,
+                            &error))
         {
-          g_warning ("Error setting up live-query on calendar: %s\n", error->message);
+          g_printerr ("Error setting up live-query on calendar: %s\n", error->message);
           g_error_free (error);
         }
       else
@@ -715,13 +702,12 @@ app_load_events (App *app)
                             "objects-removed",
                             G_CALLBACK (on_objects_removed),
                             app);
-          e_cal_client_view_start (view, NULL);
+          e_cal_view_start (view);
           app->live_views = g_list_prepend (app->live_views, view);
         }
 
       g_free (query);
     }
-  g_list_free (clients);
   g_free (since_iso8601);
   g_free (until_iso8601);
   app->cache_invalid = FALSE;
@@ -766,11 +752,11 @@ app_free (App *app)
   GList *ll;
   for (ll = app->live_views; ll != NULL; ll = ll->next)
     {
-      ECalClientView *view = E_CAL_CLIENT_VIEW (ll->data);
+      ECalView *view = E_CAL_VIEW (ll->data);
       g_signal_handlers_disconnect_by_func (view, on_objects_added, app);
       g_signal_handlers_disconnect_by_func (view, on_objects_modified, app);
       g_signal_handlers_disconnect_by_func (view, on_objects_removed, app);
-      e_cal_client_view_stop (view, NULL);
+      e_cal_view_stop (view);
       g_object_unref (view);
     }
   g_list_free (app->live_views);
@@ -987,7 +973,7 @@ on_name_lost (GDBusConnection *connection,
 {
   g_print ("cinnamon-calendar-server[%d]: Lost (or failed to acquire) the name " BUS_NAME " - exiting\n",
            (gint) getpid ());
-  gtk_main_quit ();
+  g_main_loop_quit (loop);
 }
 
 static void
@@ -1005,9 +991,9 @@ stdin_channel_io_func (GIOChannel *source,
 {
   if (condition & G_IO_HUP)
     {
-      g_debug ("cinnamon-calendar-server[%d]: Got HUP on stdin - exiting\n",
+      g_print ("cinnamon-calendar-server[%d]: Got HUP on stdin - exiting\n",
                (gint) getpid ());
-      gtk_main_quit ();
+      g_main_loop_quit (loop);
     }
   else
     {
@@ -1027,13 +1013,12 @@ main (int    argc,
   GIOChannel *stdin_channel;
 
   ret = 1;
+  loop = NULL;
   opt_context = NULL;
   name_owner_id = 0;
   stdin_channel = NULL;
 
-  /* We need to initialize GTK+ since evolution-data-server may decide to use
-   * GTK+ to pop up a dialog box */
-  gtk_init (&argc, &argv);
+  g_type_init ();
 
   introspection_data = g_dbus_node_info_new_for_xml (introspection_xml, NULL);
   g_assert (introspection_data != NULL);
@@ -1054,6 +1039,8 @@ main (int    argc,
                   stdin_channel_io_func,
                   NULL);
 
+  loop = g_main_loop_new (NULL, FALSE);
+
   name_owner_id = g_bus_own_name (G_BUS_TYPE_SESSION,
                                   BUS_NAME,
                                   G_BUS_NAME_OWNER_FLAGS_ALLOW_REPLACEMENT |
@@ -1064,7 +1051,7 @@ main (int    argc,
                                   NULL,
                                   NULL);
 
-  gtk_main ();
+  g_main_loop_run (loop);
 
   ret = 0;
 
@@ -1075,6 +1062,8 @@ main (int    argc,
     app_free (_global_app);
   if (name_owner_id != 0)
     g_bus_unown_name (name_owner_id);
+  if (loop != NULL)
+    g_main_loop_unref (loop);
   if (opt_context != NULL)
     g_option_context_free (opt_context);
   return ret;
