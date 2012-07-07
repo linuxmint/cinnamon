@@ -1557,7 +1557,7 @@ MessageTray.prototype = {
         let notificationsPending = this._notificationQueue.length > 0 && (!this._busy || notificationUrgent);
         let notificationExpanded = this._notificationBin.y < 0;
         let notificationExpired = (this._notificationTimeoutId == 0 && !(this._notification && this._notification.urgency == Urgency.CRITICAL) && !this._pointerInTray && !this._locked && !(this._pointerInKeyboard && notificationExpanded)) || this._notificationRemoved;
-        let canShowNotification = notificationsPending;
+        let canShowNotification = notificationsPending && global.settings.get_boolean("notifications-on");
 
         if (this._notificationState == State.HIDDEN) {
             if (canShowNotification)
