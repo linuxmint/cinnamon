@@ -714,20 +714,22 @@ Panel.prototype = {
             let target = global.stage.get_actor_at_pos(Clutter.PickMode.ALL, x, y);
             if (this._context_menu._getMenuItems().length > 0 && target.get_parent() == this.actor) { 
                 this._context_menu.toggle();
-                if (!this._context_menu.isOpen)
+                if (!this._context_menu.isOpen) {
                     return;
+                }
 
-                x -= this._context_menu._boxPointer.actor.get_theme_node().get_length('-arrow-base');
+                x -= this._context_menu._boxPointer._arrowOrigin;
 
                 let monitor = Main.layoutManager.findMonitorForActor(this._context_menu._boxPointer.actor);
 
                 let mywidth = this._context_menu._boxPointer.actor.get_allocation_box().x2-this._context_menu._boxPointer.actor.get_allocation_box().x1;//Width of menu
 
-                if (x + mywidth - monitor.x > monitor.width)
+                if (x + mywidth - monitor.x > monitor.width) {
                     x  = monitor.width + monitor.x - mywidth;
-                if (x < monitor.x)
+                }
+                if (x < monitor.x) {
                     x = monitor.x;
-
+                }
                 this._context_menu._boxPointer._xpos = x;
                 this._context_menu._boxPointer._xPosition = this._context_menu._boxPointer._xpos;
                 this._context_menu._boxPointer._shiftActor();
