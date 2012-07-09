@@ -874,6 +874,10 @@ StScrollBar StButton#vhandle:hover {
 	border-color: rgba(0,0,0,0);
 	color: white;
 }
+.switcher-outlinebox {
+	border-color: black;
+	border-width: 4px;
+}
 /* ===================================================================
  * Modal dialogs
  * ===================================================================*/

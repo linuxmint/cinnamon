@@ -441,7 +441,35 @@ AltTabPopup.prototype = {
         if (this._initialDelayTimeoutId != 0)
             Mainloop.source_remove(this._initialDelayTimeoutId);
     },
+    
+    _outlineContours: function() {
+        if (this._contours) {
+            this.actor.remove_actor(this._contours);
+            this._contours.destroy();
+            this._contours = null;
+        }
+        if (this._appIcons[this._currentApp].cachedWindows.length === 0) {
+            return;
+        }
+        let window = this._appIcons[this._currentApp].cachedWindows[0];
 
+        this._contours = new St.Bin({style_class: 'switcher-outlinebox'});
+        this.actor.add_actor(this._contours);
+
+        // Overlay the target window with this bin and lets its border style
+        // define the frame.
+        let or = window.get_outer_rect();
+        let childBox = new Clutter.ActorBox();
+        childBox.x1 = or.x;
+        childBox.x2 = or.x + or.width;
+        childBox.y1 = or.y;
+        childBox.y2 = or.y + or.height;
+        this._contours.allocate(childBox, 0);
+
+        // Make sure that the frame does not overlap the switcher.
+        this._contours.lower(this._appSwitcher.actor);
+    },
+    
     /**
      * _select:
      * @app: index of the app to select
@@ -488,6 +516,7 @@ AltTabPopup.prototype = {
         if (window != null) {
             /*if (!this._thumbnails)
                 this._createThumbnails();*/
+            this._outlineContours();
             this._currentWindow = window;
             //this._thumbnails.highlight(window, forceAppFocus);
         } else if (this._appIcons[this._currentApp].cachedWindows.length > 1 &&
