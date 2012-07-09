@@ -58,8 +58,8 @@ struct _CalendarSourcesClass
 
 GType            calendar_sources_get_type                (void) G_GNUC_CONST;
 CalendarSources *calendar_sources_get                     (void);
-GSList          *calendar_sources_get_appointment_sources (CalendarSources *sources);
-GSList          *calendar_sources_get_task_sources        (CalendarSources *sources);
+GList           *calendar_sources_get_appointment_clients (CalendarSources *sources);
+GList           *calendar_sources_get_task_clients        (CalendarSources *sources);
 
 G_END_DECLS
 

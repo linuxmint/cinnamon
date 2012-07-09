@@ -36,13 +36,7 @@
 #include <gio/gio.h>
 
 #define HANDLE_LIBICAL_MEMORY
-#include <libecal/e-cal.h>
-#include <libecal/e-cal-time-util.h>
-#include <libecal/e-cal-recur.h>
-#include <libecal/e-cal-system-timezone.h>
-
-#define CALENDAR_CONFIG_PREFIX   "/apps/evolution/calendar"
-#define CALENDAR_CONFIG_TIMEZONE CALENDAR_CONFIG_PREFIX "/display/timezone"
+#include <libecal/libecal.h>
 
 #include "calendar-sources.h"
 
@@ -90,7 +84,7 @@ typedef struct
 {
   char   *uid;
   char   *rid;
-  char   *uri;
+  char   *backend_name;
   char   *summary;
   char   *description;
   char   *color_string;
@@ -253,37 +247,60 @@ static char *
 get_source_color (ECal *esource)
 {
   ESource *source;
+  ECalSourceType source_type;
+  ESourceSelectable *extension;
+  const gchar *extension_name;
 
   g_return_val_if_fail (E_IS_CAL (esource), NULL);
 
   source = e_cal_get_source (esource);
+  source_type = e_cal_get_source_type (esource);
 
-  return g_strdup (e_source_peek_color_spec (source));
+  switch (source_type)
+    {
+      case E_CAL_SOURCE_TYPE_EVENT:
+        extension_name = E_SOURCE_EXTENSION_CALENDAR;
+        break;
+      case E_CAL_SOURCE_TYPE_TODO:
+        extension_name = E_SOURCE_EXTENSION_TASK_LIST;
+        break;
+      default:
+        g_return_val_if_reached (NULL);
+    }
+
+  extension = e_source_get_extension (source, extension_name);
+
+  return e_source_selectable_dup_color (extension);
 }
 
 static gchar *
-get_source_uri (ECal *esource)
+get_source_backend_name (ECal *esource)
 {
-    ESource *source;
-    gchar   *string;
-    gchar  **list;
+  ESource *source;
+  ECalSourceType source_type;
+  ESourceBackend *extension;
+  const gchar *extension_name;
 
-    g_return_val_if_fail (E_IS_CAL (esource), NULL);
+  g_return_val_if_fail (E_IS_CAL (esource), NULL);
 
-    source = e_cal_get_source (esource);
-    string = g_strdup (e_source_get_uri (source));
-    if (string) {
-        list = g_strsplit (string, ":", 2);
-        g_free (string);
+  source = e_cal_get_source (esource);
+  source_type = e_cal_get_source_type (esource);
 
-        if (list[0]) {
-            string = g_strdup (list[0]);
-            g_strfreev (list);
-            return string;
-        }
-        g_strfreev (list);
+  switch (source_type)
+    {
+      case E_CAL_SOURCE_TYPE_EVENT:
+        extension_name = E_SOURCE_EXTENSION_CALENDAR;
+        break;
+      case E_CAL_SOURCE_TYPE_TODO:
+        extension_name = E_SOURCE_EXTENSION_TASK_LIST;
+        break;
+      default:
+        g_return_val_if_reached (NULL);
     }
-    return NULL;
+
+  extension = e_source_get_extension (source, extension_name);
+
+  return e_source_backend_dup_backend_name (extension);
 }
 
 static inline int
@@ -314,7 +331,7 @@ calendar_appointment_equal (CalendarAppointment *a,
 
   return
     null_safe_strcmp (a->uid,          b->uid)          == 0 &&
-    null_safe_strcmp (a->uri,          b->uri)          == 0 &&
+    null_safe_strcmp (a->backend_name, b->backend_name) == 0 &&
     null_safe_strcmp (a->summary,      b->summary)      == 0 &&
     null_safe_strcmp (a->description,  b->description)  == 0 &&
     null_safe_strcmp (a->color_string, b->color_string) == 0 &&
@@ -339,8 +356,8 @@ calendar_appointment_free (CalendarAppointment *appointment)
   g_free (appointment->rid);
   appointment->rid = NULL;
 
-  g_free (appointment->uri);
-  appointment->uri = NULL;
+  g_free (appointment->backend_name);
+  appointment->backend_name = NULL;
 
   g_free (appointment->summary);
   appointment->summary = NULL;
@@ -363,7 +380,7 @@ calendar_appointment_init (CalendarAppointment  *appointment,
 {
   appointment->uid          = get_ical_uid (ical);
   appointment->rid          = get_ical_rid (ical);
-  appointment->uri          = get_source_uri (cal);
+  appointment->backend_name = get_source_backend_name (cal);
   appointment->summary      = get_ical_summary (ical);
   appointment->description  = get_ical_description (ical);
   appointment->color_string = get_source_color (cal);
@@ -466,9 +483,6 @@ struct _App
 
   CalendarSources *sources;
   gulong sources_signal_id;
-
-  guint                zone_listener;
-  GConfClient         *gconf_client;
 
   /* hash from uid to CalendarAppointment objects */
   GHashTable *appointments;
@@ -585,8 +599,8 @@ on_objects_removed (ECalView *view,
 static void
 app_load_events (App *app)
 {
-  GSList *sources;
-  GSList *l;
+  GList *clients;
+  GList *l;
   GList *ll;
   gchar *since_iso8601;
   gchar *until_iso8601;
@@ -616,8 +630,8 @@ app_load_events (App *app)
                since_iso8601,
                until_iso8601);
 
-  sources = calendar_sources_get_appointment_sources (app->sources);
-  for (l = sources; l != NULL; l = l->next)
+  clients = calendar_sources_get_appointment_clients (app->sources);
+  for (l = clients; l != NULL; l = l->next)
     {
       ECal *cal = E_CAL (l->data);
       GError *error;
@@ -708,6 +722,7 @@ app_load_events (App *app)
 
       g_free (query);
     }
+  g_list_free (clients);
   g_free (since_iso8601);
   g_free (until_iso8601);
   app->cache_invalid = FALSE;
