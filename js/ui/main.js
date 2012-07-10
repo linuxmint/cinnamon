@@ -82,7 +82,7 @@ let dynamicWorkspaces = null;
 let nWorks = null;
 
 let workspace_names = [];
-
+let workspace_names_changed = false;
 let background = null;
 
 let desktop_layout;
@@ -363,7 +363,8 @@ function _addWorkspace() {
         return false;
     nWorks++;
     global.settings.set_int("number-workspaces", nWorks);    
-    workspace_names.push("WORKSPACE " + nWorks);    
+    workspace_names.push("WORKSPACE " + nWorks);
+    workspace_names_changed = true;
     _staticWorkspaces();
     return true;
 }
@@ -373,7 +374,8 @@ function _removeWorkspace(workspace) {
         return false;
     nWorks--;
     let index = workspace.index();    
-    workspace_names.splice (index,1);    
+    workspace_names.splice (index,1);
+    workspace_names_changed = true;
     global.settings.set_int("number-workspaces", nWorks);
     global.screen.remove_workspace(workspace, global.get_current_time());
     return true;

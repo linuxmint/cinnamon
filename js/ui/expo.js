@@ -228,8 +228,9 @@ Expo.prototype = {
         // To avoid updating the position and size of the workspaces
         // we just hide the overview. The positions will be updated
         // when it is next shown.
-        this.hide();
-
+        this.hide();        
+        this.settings_traditional_layout = global.settings.get_string("desktop-layout") == "traditional";
+        this.settings_panel_autohide = global.settings.get_boolean("panel-autohide");
         let primary = Main.layoutManager.primaryMonitor;
         let rtl = (St.Widget.get_default_direction () == St.TextDirection.RTL);
 
@@ -361,7 +362,7 @@ Expo.prototype = {
         this.allocateID = this.activeWorkspace.connect('allocated', Lang.bind(this, this._animateVisible2));
 
         this._createClone(activeWorkspaceActor);
-        if (global.settings.get_string("desktop-layout") != 'traditional' && !global.settings.get_boolean("panel-autohide"))
+        if (!this.settings_traditional_layout && !this.settings_panel_autohide)
             this.clone.set_position(0, Main.panel.actor.height); 
 
         this.clone.show();
@@ -441,8 +442,10 @@ Expo.prototype = {
 
         this._shown = false;
         this._syncInputMode();
-        
-        global.settings.set_strv("workspace-names", Main.workspace_names);    
+        if (Main.workspace_names_changed) {
+            global.settings.set_strv("workspace-names", Main.workspace_names);
+            Main.workspace_names_changed = false;
+        }
     },
 
     // hideTemporarily:
@@ -546,7 +549,7 @@ Expo.prototype = {
         this.clone.set_scale(activeWorkspaceActor.get_scale()[0], activeWorkspaceActor.get_scale()[1]);
         this.clone.show();
         let y = 0;
-        if (global.settings.get_string("desktop-layout") != 'traditional' && !global.settings.get_boolean("panel-autohide"))
+        if (!this.settings_traditional_layout && !this.settings_panel_autohide)
             y = Main.panel.actor.height; 
         Tweener.addTween(this.clone, {  x: 0, 
                                         y: y, 
