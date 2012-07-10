@@ -725,7 +725,14 @@ MyApplet.prototype = {
     },
     
     _refreshItems: function() {
-        this.myactor.destroy_children();
+        /* "this.myactor.destroy_children()" produces mysterious warnings:
+        "Clutter-CRITICAL **: clutter_actor_unmap: assertion `CLUTTER_IS_ACTOR (self)' failed",
+        one for each child actor, so let's use a loop instead. */
+
+        for ( let i = 0; i < this._windows.length; ++i ) {
+            this.myactor.remove_actor(this._windows[i].actor);
+            this._windows[i].actor.destroy();
+        }
         this._windows = new Array();
 
         let metaWorkspace = global.screen.get_active_workspace();
