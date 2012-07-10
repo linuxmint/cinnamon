@@ -32,6 +32,7 @@
 #include "config.h"
 #endif
 
+#include <math.h>
 #include <clutter/clutter.h>
 
 #include "st-scroll-bar.h"
@@ -630,14 +631,12 @@ st_scroll_bar_scroll_event (ClutterActor       *actor,
                             ClutterScrollEvent *event)
 {
   StScrollBarPrivate *priv = ST_SCROLL_BAR (actor)->priv;
-  gdouble lower, step, upper, value;
+  gdouble step, value, delta_x, delta_y;
 
   if (priv->adjustment)
     {
       g_object_get (priv->adjustment,
-                    "lower", &lower,
                     "step-increment", &step,
-                    "upper", &upper,
                     "value", &value,
                     NULL);
     }
@@ -648,19 +647,21 @@ st_scroll_bar_scroll_event (ClutterActor       *actor,
 
   switch (event->direction)
     {
+    case CLUTTER_SCROLL_SMOOTH:
+      clutter_event_get_scroll_delta ((ClutterEvent *)event,
+                                      &delta_x, &delta_y);
+      if (fabs (delta_x) > fabs(delta_y))
+        st_adjustment_set_value (priv->adjustment, value + delta_x);
+      else
+        st_adjustment_set_value (priv->adjustment, value + delta_y);
+      break;
     case CLUTTER_SCROLL_UP:
     case CLUTTER_SCROLL_LEFT:
-      if (value == lower)
-        return FALSE;
-      else
-        st_adjustment_set_value (priv->adjustment, value - step);
+      st_adjustment_set_value (priv->adjustment, value - step);
       break;
     case CLUTTER_SCROLL_DOWN:
     case CLUTTER_SCROLL_RIGHT:
-      if (value == upper)
-        return FALSE;
-      else
-        st_adjustment_set_value (priv->adjustment, value + step);
+      st_adjustment_set_value (priv->adjustment, value + step);
       break;
     }
 
