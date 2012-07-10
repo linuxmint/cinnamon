@@ -422,7 +422,6 @@ ExpoWorkspaceThumbnail.prototype = {
     },
 
     destroy : function() {            
-        this.title.destroy();
         this.actor.destroy();        
     },
 
@@ -440,10 +439,7 @@ ExpoWorkspaceThumbnail.prototype = {
             }
             this._windows[i].destroy();
         }
-
-        this._windows = [];
-        this.title = null;
-        this.actor = null;        
+        this._windows = null;
     },
 
     // Tests if @win belongs to this workspace and monitor
@@ -861,8 +857,14 @@ ExpoThumbnailsBox.prototype = {
             thumbnail.setPorthole(this._porthole.x, this._porthole.y,
                                   this._porthole.width, this._porthole.height);
             this._thumbnails.push(thumbnail);
-            if (metaWorkspace == global.screen.get_active_workspace())
+            if (metaWorkspace == global.screen.get_active_workspace()) {
                 this._lastActiveWorkspace = thumbnail;
+            }
+            thumbnail.actor.connect('destroy', Lang.bind(this, function(actor) {
+                this.actor.remove_actor(actor);
+                this.actor.remove_actor(thumbnail.title);
+                thumbnail.title.destroy();
+                }));
             this.actor.add_actor(thumbnail.actor);
             this.actor.add_actor(thumbnail.title);
 
