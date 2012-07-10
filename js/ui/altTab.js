@@ -413,19 +413,22 @@ AltTabPopup.prototype = {
     },
 
     destroy : function() {
+        var doDestroy = Lang.bind(this, function() {
+           Main.uiGroup.remove_actor(this.actor);
+           this.actor.destroy();
+        });
+        
         this._popModal();
         if (this.actor.visible) {
             Tweener.addTween(this.actor,
                              { opacity: 0,
                                time: POPUP_FADE_OUT_TIME,
                                transition: 'easeOutQuad',
-                               onComplete: Lang.bind(this,
-                                   function() {
-                                       this.actor.destroy();
-                                   })
+                               onComplete: doDestroy
                              });
-        } else
-            this.actor.destroy();
+        } else {
+            doDestroy();
+        }
     },
 
     _onDestroy : function() {
