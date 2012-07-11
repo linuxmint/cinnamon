@@ -653,17 +653,18 @@ MyApplet.prototype = {
                 this.showPlaces = global.settings.get_boolean("menu-show-places");
                 this._refreshApps();
             }));
-            let openOnHover = global.settings.get_boolean("activate-menu-applet-on-hover");
-            if (openOnHover)
-                this._openMenuId = this.actor.connect('enter-event', Lang.bind(this, this.openMenu));
-
-            global.settings.connect("changed::activate-menu-applet-on-hover", Lang.bind(this, function() {
-                let openOnHover = global.settings.get_boolean("activate-menu-applet-on-hover");
-                if (openOnHover)
-                    this._openMenuId = this.actor.connect('enter-event', Lang.bind(this, this.openMenu));
-                else
+            let updateActivateOnHover = Lang.bind(this, function() {
+                if (this._openMenuId) {
                     this.actor.disconnect(this._openMenuId);
-            }));
+                    this._openMenuId = 0;
+                }
+                let openOnHover = global.settings.get_boolean("activate-menu-applet-on-hover");
+                if (openOnHover) {
+                    this._openMenuId = this.actor.connect('enter-event', Lang.bind(this, this.openMenu));
+                }
+            });
+            updateActivateOnHover();
+            global.settings.connect("changed::activate-menu-applet-on-hover", updateActivateOnHover);
                         
             this.menu.actor.add_style_class_name('menu-background');
             this.menu.connect('open-state-changed', Lang.bind(this, this._onOpenStateChanged));                                
