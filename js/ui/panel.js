@@ -26,11 +26,6 @@ const PANEL_HEIGHT = 25;
 const AUTOHIDE_ANIMATION_TIME = 0.2;
 const TIME_DELTA = 1500;
 
-const GDM_STATUS_AREA_ORDER = ['display', 'powerMenu'];
-const GDM_STATUS_AREA_CINNAMON_IMPLEMENTATION = {        
-    'powerMenu': imports.gdm.powerMenu.PowerMenuButton
-};
-
 const APPLETS_DROP_ANIMATION_TIME = 0.2;
 
 // To make sure the panel corners blend nicely with the panel,
@@ -551,15 +546,9 @@ Panel.prototype = {
         this.actor.connect('get-preferred-height', Lang.bind(this, this._getPreferredHeight));
         this.actor.connect('allocate', Lang.bind(this, this._allocate));
 
-            
         /* right */
-        if (global.session_type == Cinnamon.SessionType.GDM) {
-            this._status_area_order = GDM_STATUS_AREA_ORDER;
-            this._status_area_cinnamon_implementation = GDM_STATUS_AREA_CINNAMON_IMPLEMENTATION;
-        } else {
-            this._status_area_order = STANDARD_STATUS_AREA_ORDER;
-            this._status_area_cinnamon_implementation = STANDARD_STATUS_AREA_CINNAMON_IMPLEMENTATION;
-        }
+        this._status_area_order = STANDARD_STATUS_AREA_ORDER;
+        this._status_area_cinnamon_implementation = STANDARD_STATUS_AREA_CINNAMON_IMPLEMENTATION;
                                         
         this.actor.connect('leave-event', Lang.bind(this, this._leavePanel));
         this.actor.connect('enter-event', Lang.bind(this, this._enterPanel));  
