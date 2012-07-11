@@ -12,18 +12,6 @@ stage {
 .cinnamon-link:hover {
 	color: #0000e0;
 }
-#Tooltip {
-	border: 1px solid rgba(212,185,67,1.0);
-	border-radius: 4px;
-	padding: 2px 12px;
-	background-gradient-end: rgba(251,234,159,0.9);
-	background-gradient-start: rgba(254,245,198,0.9);
-	background-gradient-direction: vertical;
-	color: #000000;
-	font-size: 8.5pt;
-	font-weight: normal;
-	text-align: center;
-}
 /* ===================================================================
  * PopupMenu (popupMenu.js) 
  * ===================================================================*/
@@ -270,6 +258,19 @@ StScrollBar StButton#vhandle:hover {
 }
 .system-status-icon {
 	icon-size: 1.14em;
+}
+/* Panel applet tooltips*/
+#Tooltip {
+	border: 1px solid rgba(212,185,67,1.0);
+	border-radius: 4px;
+	padding: 2px 12px;
+	background-gradient-end: rgba(251,234,159,0.9);
+	background-gradient-start: rgba(254,245,198,0.9);
+	background-gradient-direction: vertical;
+	color: #000000;
+	font-size: 8.5pt;
+	font-weight: normal;
+	text-align: center;
 }
 /* ===================================================================
  * Overview 
@@ -1296,7 +1297,7 @@ StScrollBar StButton#vhandle:hover {
 	icon-shadow: white 0px 0px 3px;
 }
 /* ===================================================================
- * Workspace OSD
+ * Workspace OSD and Workspace Expo
  * ===================================================================*/
 .workspace-osd {
 	color: #ffffff;
