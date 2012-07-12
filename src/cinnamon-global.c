@@ -59,8 +59,6 @@ struct _CinnamonGlobal {
   MetaScreen *meta_screen;
   GdkScreen *gdk_screen;
 
-  CinnamonSessionType session_type;
-
   /* We use this window to get a notification from GTK+ when
    * a widget in our process does a GTK+ grab.  See
    * http://bugzilla.gnome.org/show_bug.cgi?id=570641
@@ -97,7 +95,6 @@ struct _CinnamonGlobal {
 enum {
   PROP_0,
 
-  PROP_SESSION_TYPE,
   PROP_OVERLAY_GROUP,
   PROP_SCREEN,
   PROP_GDK_SCREEN,
@@ -144,9 +141,6 @@ cinnamon_global_set_property(GObject         *object,
     case PROP_STAGE_INPUT_MODE:
       cinnamon_global_set_stage_input_mode (global, g_value_get_enum (value));
       break;
-    case PROP_SESSION_TYPE:
-      global->session_type = g_value_get_enum (value);
-      break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;
@@ -163,9 +157,6 @@ cinnamon_global_get_property(GObject         *object,
 
   switch (prop_id)
     {
-    case PROP_SESSION_TYPE:
-      g_value_set_enum (value, cinnamon_global_get_session_type (global));
-      break;
     case PROP_OVERLAY_GROUP:
       g_value_set_object (value, meta_get_overlay_group_for_screen (global->meta_screen));
       break;
@@ -350,14 +341,6 @@ cinnamon_global_class_init (CinnamonGlobalClass *klass)
                     G_TYPE_STRING,
                     G_TYPE_STRING);
 
-  g_object_class_install_property (gobject_class,
-                                   PROP_SESSION_TYPE,
-                                   g_param_spec_enum ("session-type",
-                                                      "Session Type",
-                                                      "The type of session",
-                                                      CINNAMON_TYPE_SESSION_TYPE,
-                                                      CINNAMON_SESSION_USER,
-                                                      G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
   g_object_class_install_property (gobject_class,
                                    PROP_OVERLAY_GROUP,
                                    g_param_spec_object ("overlay-group",
@@ -2198,33 +2181,4 @@ cinnamon_global_screenshot_window (CinnamonGlobal  *global,
   cairo_surface_destroy (image);
 
   return status == CAIRO_STATUS_SUCCESS;
-}
-
-/**
- * cinnamon_global_get_session_type:
- * @global: The #CinnamonGlobal.
- *
- * Gets the type of session cinnamon provides.
- *
- * The type determines what UI elements are displayed,
- * what keybindings work, and generally how Cinnamon
- * behaves.
- *
- * A session type of #CINNAMON_SESSION_USER means cinnamon
- * will enable the activities overview, status menu, run dialog,
- * etc. This is the default.
- *
- * A session type of #CINNAMON_SESSION_GDM means cinnamon
- * will enable a login dialog and run in a more confined
- * way. This type is suitable for the display manager.
- *
- * Returns the type of session cinnamon is providing.
- */
-CinnamonSessionType
-cinnamon_global_get_session_type (CinnamonGlobal  *global)
-{
-  g_return_val_if_fail (CINNAMON_IS_GLOBAL (global),
-                        CINNAMON_SESSION_USER);
-
-  return global->session_type;
 }
