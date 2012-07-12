@@ -240,8 +240,8 @@ function start() {
     layoutManager = new Layout.LayoutManager();
     xdndHandler = new XdndHandler.XdndHandler();
     // This overview object is just a stub for non-user sessions
-    overview = new Overview.Overview({ isDummy: global.session_type != Cinnamon.SessionType.USER });
-    expo = new Expo.Expo({ isDummy: global.session_type != Cinnamon.SessionType.USER });
+    overview = new Overview.Overview({ isDummy: false });
+    expo = new Expo.Expo({ isDummy: false });
     magnifier = new Magnifier.Magnifier();
     statusIconDispatcher = new StatusIconDispatcher.StatusIconDispatcher();  
                     
