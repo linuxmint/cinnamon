@@ -303,6 +303,13 @@ st_icon_style_changed (StWidget *widget)
       st_shadow_unref (priv->shadow_spec);
       priv->shadow_spec = NULL;
     }
+
+  if (priv->shadow_material)
+    {
+      cogl_handle_unref (priv->shadow_material);
+      priv->shadow_material = COGL_INVALID_HANDLE;
+    }
+
   priv->shadow_spec = st_theme_node_get_shadow (theme_node, "icon-shadow");
 
   if (priv->shadow_spec && priv->shadow_spec->inset)
