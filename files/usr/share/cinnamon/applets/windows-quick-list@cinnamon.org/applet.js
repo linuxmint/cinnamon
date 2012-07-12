@@ -88,10 +88,6 @@ MyApplet.prototype = {
 					for ( let i = 0; i < windows.length; ++i ) {
 						let metaWindow = windows[i];
 						let item = new PopupMenu.PopupMenuItem(windows[i].get_title());
-						if(metaWindow.is_on_all_workspaces() && (wks != global.screen.get_active_workspace().index())) continue;
-						if(metaWindow.is_on_all_workspaces()) {
-							item.label.add_style_class_name('window-sticky');
-						}
 						item.connect('activate', Lang.bind(this, function() { this.activateWindow(metaWorkspace, metaWindow); } ));
 						item._window = windows[i];
 						let app = tracker.get_window_app(item._window);
