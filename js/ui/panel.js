@@ -430,6 +430,55 @@ SettingsLauncher.prototype = {
 
 };
 
+function populateSettingsMenu(menu) {
+    menu.settingsItem = new PopupMenu.PopupSubMenuMenuItem(_("Settings"));
+
+    let menuItem = new SettingsLauncher(_("Themes"), "themes", "themes", menu.settingsItem.menu);
+    menu.settingsItem.menu.addMenuItem(menuItem);
+
+    menuItem = new SettingsLauncher(_("Applets"), "applets", "applets", menu.settingsItem.menu);
+    menu.settingsItem.menu.addMenuItem(menuItem);
+
+    menuItem = new SettingsLauncher(_("Panel"), "panel", "panel", menu.settingsItem.menu);
+    menu.settingsItem.menu.addMenuItem(menuItem);
+
+    menuItem = new SettingsLauncher(_("Menu"), "menu", "menu", menu.settingsItem.menu);
+    menu.settingsItem.menu.addMenuItem(menuItem);
+
+    menuItem = new SettingsLauncher(_("All settings"), "", "preferences-system", menu.settingsItem.menu);
+    menu.settingsItem.menu.addMenuItem(menuItem);
+
+    menu.addMenuItem(menu.settingsItem);
+
+    menu.troubleshootItem = new PopupMenu.PopupSubMenuMenuItem(_("Troubleshoot"));
+    menu.troubleshootItem.menu.addAction(_("Restart Cinnamon"), function(event) {
+        global.reexec_self();
+    });
+
+    menu.troubleshootItem.menu.addAction(_("Looking Glass"), function(event) {
+        Main.createLookingGlass().open();
+    });
+
+    menu.troubleshootItem.menu.addAction(_("Restore all settings to default"), function(event) {
+        let confirm = new ConfirmDialog();
+        confirm.open();
+    });
+
+    menu.addMenuItem(menu.troubleshootItem);
+
+    menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+
+    let editMode = global.settings.get_boolean("panel-edit-mode");
+    let panelEditMode = new PopupMenu.PopupSwitchMenuItem(_("Panel Edit mode"), editMode);
+    panelEditMode.connect('toggled', function(item) {
+        global.settings.set_boolean("panel-edit-mode", item.state);
+    });
+    menu.addMenuItem(panelEditMode);
+    global.settings.connect('changed::panel-edit-mode', function() {
+        panelEditMode.setToggleState(global.settings.get_boolean("panel-edit-mode"));
+    });
+}
+
 function PanelContextMenu(launcher, orientation) {
     this._init(launcher, orientation);
 }
@@ -440,54 +489,8 @@ PanelContextMenu.prototype = {
     _init: function(launcher, orientation) {
         PopupMenu.PopupMenu.prototype._init.call(this, launcher.actor, 0.0, orientation, 0);
         Main.uiGroup.add_actor(this.actor);
-	this.settingsItem = new PopupMenu.PopupSubMenuMenuItem(_("Settings"));
-
-	let menuItem = new SettingsLauncher(_("Themes"), "themes", "themes", this.settingsItem.menu);
-	this.settingsItem.menu.addMenuItem(menuItem);
-
-	let menuItem = new SettingsLauncher(_("Applets"), "applets", "applets", this.settingsItem.menu);
-	this.settingsItem.menu.addMenuItem(menuItem);
-
-	let menuItem = new SettingsLauncher(_("Panel"), "panel", "panel", this.settingsItem.menu);
-	this.settingsItem.menu.addMenuItem(menuItem);
-
-	let menuItem = new SettingsLauncher(_("Menu"), "menu", "menu", this.settingsItem.menu);
-	this.settingsItem.menu.addMenuItem(menuItem);
-
-	let menuItem = new SettingsLauncher(_("All settings"), "", "preferences-system", this.settingsItem.menu);
-	this.settingsItem.menu.addMenuItem(menuItem);
-
-	this.addMenuItem(this.settingsItem);
-
-        this.troubleshootItem = new PopupMenu.PopupSubMenuMenuItem(_("Troubleshoot"));
-        this.troubleshootItem.menu.addAction(_("Restart Cinnamon"), function(event) {
-            global.reexec_self();
-        });
-
-        this.troubleshootItem.menu.addAction(_("Looking Glass"), function(event) {
-            Main.createLookingGlass().open();
-        });
-
-        this.troubleshootItem.menu.addAction(_("Restore all settings to default"), function(event) {
-            this.confirm = new ConfirmDialog();
-            this.confirm.open();
-        });
-
-        this.addMenuItem(this.troubleshootItem);
-
-	this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-
-	let editMode = global.settings.get_boolean("panel-edit-mode");
-        let panelEditMode = new PopupMenu.PopupSwitchMenuItem(_("Panel Edit mode"), editMode);
-        panelEditMode.connect('toggled', function(item) {
-            global.settings.set_boolean("panel-edit-mode", item.state);
-        });
-        this.addMenuItem(panelEditMode);
-        global.settings.connect('changed::panel-edit-mode', function() {
-            panelEditMode.setToggleState(global.settings.get_boolean("panel-edit-mode"));
-        });
-
         this.actor.hide();
+        populateSettingsMenu(this);
     }
 }
 
