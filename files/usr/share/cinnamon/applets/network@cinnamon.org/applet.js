@@ -1900,11 +1900,18 @@ MyApplet.prototype = {
                 if (a._connection) {
                     a._type = a._connection._type;
                     a._section = this._ctypes[a._type];
+                    if (a._errorLogged) {
+                        log('network applet: Found connection for active');
+                        a._errorLogged = false;
+                    }
                 } else {
                     a._connection = null;
                     a._type = null;
                     a._section = null;
-                    log('Cannot find connection for active (or connection cannot be read)');
+                    if (!a._errorLogged) {
+                        a._errorLogged = true;
+                        log('network applet: Cannot find connection for active (or connection cannot be read)');
+                    }
                 }
             }
 
