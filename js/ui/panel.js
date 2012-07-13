@@ -490,7 +490,14 @@ PanelContextMenu.prototype = {
         PopupMenu.PopupMenu.prototype._init.call(this, launcher.actor, 0.0, orientation, 0);
         Main.uiGroup.add_actor(this.actor);
         this.actor.hide();
+
         populateSettingsMenu(this);
+
+        let menuItem = new SettingsLauncher(_("Panel settings"), "panel", "panel", this);
+        this.addMenuItem(menuItem);
+
+        let applet_settings_item = new SettingsLauncher(_("Add/remove applets"), "applets", "applets", this);
+        this.addMenuItem(applet_settings_item);
     }
 }
 
