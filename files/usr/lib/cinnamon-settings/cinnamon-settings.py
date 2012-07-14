@@ -1047,9 +1047,9 @@ class TitleBarButtonsOrderSelector(Gtk.Table):
             renderer_text = Gtk.CellRendererText()
             i.pack_start(renderer_text, True)
             i.add_attribute(renderer_text, "text", 1)
-            i.connect("changed", self.on_my_value_changed)
             if selected_iter is not None:
                 i.set_active_iter(selected_iter)
+            i.connect("changed", self.on_my_value_changed)
         
         for i in self.left_side_widgets:
             left_side_box.pack_start(i, False, False, 2)
