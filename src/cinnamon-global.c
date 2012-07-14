@@ -1918,60 +1918,6 @@ gboolean _cinnamon_global_check_xdnd_event (CinnamonGlobal  *global,
     return FALSE;
 }
 
-/**
- * cinnamon_global_launch_calendar_server:
- * @global: The #CinnamonGlobal.
- *
- * Launch the cinnamon-calendar-server helper.
- */
-void
-cinnamon_global_launch_calendar_server (CinnamonGlobal *global)
-{
-  const gchar *bin_dir;
-  gchar *calendar_server_exe;
-  GError *error;
-  gchar *argv[2];
-  gint child_standard_input;
-
-  /* launch calendar-server */
-  bin_dir = g_getenv ("CINNAMON_BINDIR");
-  if (bin_dir != NULL)
-    calendar_server_exe = g_strdup_printf ("%s/cinnamon-calendar-server", bin_dir);
-  else
-    calendar_server_exe = g_strdup_printf (CINNAMON_LIBEXECDIR "/cinnamon-calendar-server");
-
-  argv[0] = calendar_server_exe;
-  argv[1] = NULL;
-  error = NULL;
-  if (!g_spawn_async_with_pipes (NULL, /* working_directory */
-                                 argv,
-                                 NULL, /* envp */
-                                 0, /* GSpawnFlags */
-                                 NULL, /* child_setup */
-                                 NULL, /* user_data */
-                                 NULL, /* GPid *child_pid */
-                                 &child_standard_input,
-                                 NULL, /* gint *stdout */
-                                 NULL, /* gint *stderr */
-                                 &error))
-    {
-      g_warning ("Error launching `%s': %s (%s %d)",
-                 calendar_server_exe,
-                 error->message,
-                 g_quark_to_string (error->domain),
-                 error->code);
-      g_error_free (error);
-    }
-  /* Note that cinnamon-calendar-server exits whenever its stdin
-   * file descriptor is HUP'ed. This means that whenever the Cinnamon
-   * process exits or is being replaced, the calendar server is also
-   * exits...and if Cinnamon is being replaced, a new copy of the
-   * calendar server is launched...
-   */
-
-  g_free (calendar_server_exe);
-}
-
 static void
 grab_screenshot (ClutterActor *stage,
                  _screenshot_data *screenshot_data)

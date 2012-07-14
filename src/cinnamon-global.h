@@ -144,8 +144,6 @@ void     cinnamon_global_init_xdnd                 (CinnamonGlobal  *global);
 
 void     cinnamon_global_reexec_self               (CinnamonGlobal  *global);
 
-void     cinnamon_global_launch_calendar_server    (CinnamonGlobal  *global);
-
 typedef void (*CinnamonGlobalScreenshotCallback)  (CinnamonGlobal *global, gboolean success);
 
 void    cinnamon_global_screenshot_area           (CinnamonGlobal  *global,

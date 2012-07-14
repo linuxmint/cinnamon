@@ -71,7 +71,6 @@ CLEANFILES += cinnamon $(bin_SCRIPTS)
 include Makefile-st.am
 include Makefile-tray.am
 include Makefile-gvc.am
-include Makefile-calendar-server.am
 include Makefile-hotplug-sniffer.am
 
 cinnamon_cflags =				\
