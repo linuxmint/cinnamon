@@ -11,6 +11,7 @@ configure
 data/Makefile.in
 files/Makefile
 js/Makefile.in
+js/gdm/*
 m4/intltool.m4
 m4/libtool.m4
 m4/lt~obsolete.m4
