@@ -9,6 +9,7 @@ New features:
  - Keyboard navigation in Expo
  - Expo grid view
  - Direct keyboard activation of workspaces 1 through 9 in Expo
+ - Display of minimized windows as icons in Expo
  - Configurable panel height
  - Workspaces and Menu pages in Cinnamon Settings
  - Logging (Looking Glass output)
