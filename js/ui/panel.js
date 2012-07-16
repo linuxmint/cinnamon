@@ -506,10 +506,10 @@ Panel.prototype = {
 
         if (global.settings.get_boolean('panel-resizable')) {
             if (bottomPosition) {
-                this.actor.set_height(global.settings.get_int('panel-height-bottom'));
+                this.actor.set_height(global.settings.get_int('panel-bottom-height'));
             }
             else {
-                this.actor.set_height(global.settings.get_int('panel-height-top'));
+                this.actor.set_height(global.settings.get_int('panel-top-height'));
             }
         }
 
@@ -627,10 +627,10 @@ Panel.prototype = {
     _onPanelSizeChanged: function() {
         let panelHeight;
         if (this.bottomPosition) {
-            panelHeight = global.settings.get_int("panel-height-bottom");
+            panelHeight = global.settings.get_int("panel-bottom-height");
         }
         else {
-            panelHeight = global.settings.get_int("panel-height-top");
+            panelHeight = global.settings.get_int("panel-top-height");
         }
         this.actor.set_height(panelHeight);
         Main.layoutManager._updateBoxes();
@@ -640,10 +640,10 @@ Panel.prototype = {
         let panelResizable = global.settings.get_boolean("panel-resizable");
         if (panelResizable) {
             if (this.bottomPosition) {
-                this._onPanelSizeChangedId = global.settings.connect("changed::panel-height-bottom", Lang.bind(this, this._onPanelSizeChanged));
+                this._onPanelSizeChangedId = global.settings.connect("changed::panel-bottom-height", Lang.bind(this, this._onPanelSizeChanged));
             }
             else {
-                this._onPanelSizeChangedId = global.settings.connect("changed::panel-height-top", Lang.bind(this, this._onPanelSizeChanged));
+                this._onPanelSizeChangedId = global.settings.connect("changed::panel-top-height", Lang.bind(this, this._onPanelSizeChanged));
             }
             this._onPanelSizeChanged();
         }

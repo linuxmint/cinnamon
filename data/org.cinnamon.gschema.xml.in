@@ -46,7 +46,7 @@
       </_description>
     </key>
     
-    <key name="panel-height-top" type="i">
+    <key name="panel-top-height" type="i">
       <default>25</default>
       <_summary>Panel size</_summary>
       <_description>
@@ -54,7 +54,7 @@
       </_description>
     </key>
     
-    <key name="panel-height-bottom" type="i">
+    <key name="panel-bottom-height" type="i">
       <default>25</default>
       <_summary>Panel size</_summary>
       <_description>
