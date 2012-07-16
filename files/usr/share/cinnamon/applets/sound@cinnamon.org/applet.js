@@ -9,6 +9,7 @@ const St = imports.gi.St;
 const PopupMenu = imports.ui.popupMenu;
 const GLib = imports.gi.GLib;
 const Gvc = imports.gi.Gvc;
+const Tooltips = imports.ui.tooltips;
 
 const PropIFace = {
     name: 'org.freedesktop.DBus.Properties',
@@ -260,17 +261,14 @@ function ControlButton() {
 
 ControlButton.prototype = {
     _init: function(icon, callback) {
-        this.actor = new St.Bin({style_class: 'sound-button-container'});
-        this.button = new St.Button({ style_class: 'sound-button' });
-        this.button.connect('clicked', callback);
+        this.actor = new St.Button({ style_class: 'sound-button' });
+        this.actor.connect('clicked', callback);
         this.icon = new St.Icon({
             icon_type: St.IconType.SYMBOLIC,
             icon_name: icon,
             style_class: 'sound-button-icon',
         });
-        this.button.set_child(this.icon);
-        this.actor.add_actor(this.button);
-
+        this.actor.set_child(this.icon);
     },
     getActor: function() {
         return this.actor;
@@ -377,12 +375,16 @@ Player.prototype = {
 
         this._prevButton = new ControlButton('media-skip-backward',
             Lang.bind(this, function () { this._mediaServerPlayer.PreviousRemote(); }));
+	this._prevButtonTooltip = new Tooltips.Tooltip(this._prevButton, "Previous");
         this._playButton = new ControlButton('media-playback-start',
             Lang.bind(this, function () { this._mediaServerPlayer.PlayPauseRemote(); }));
+	this._playButtonTooltip = new Tooltips.Tooltip(this._playButton, "Play");
         this._stopButton = new ControlButton('media-playback-stop',
             Lang.bind(this, function () { this._mediaServerPlayer.StopRemote(); }));
+	this._stopButtonTooltip = new Tooltips.Tooltip(this._stopButton, "Stop");
         this._nextButton = new ControlButton('media-skip-forward',
             Lang.bind(this, function () { this._mediaServerPlayer.NextRemote(); }));
+	this._nextButtonTooltip = new Tooltips.Tooltip(this._nextButton, "Next");
 
         this.controls = new St.BoxLayout();
         this.controls.add_actor(this._prevButton.getActor());
@@ -396,6 +398,7 @@ Player.prototype = {
             if (raise) {
                 this._raiseButton = new ControlButton('go-up',
                     Lang.bind(this, function () { this._mediaServer.RaiseRemote(); this._system_status_button.menu.actor.hide(); }));
+		this._raiseButtonTooltip = new Tooltips.Tooltip(this._raiseButton, "Open Player");
                 this.controls.add_actor(this._raiseButton.getActor());
             }
         }));
@@ -405,6 +408,7 @@ Player.prototype = {
                 this._quitButton = new ControlButton('window-close',
                     Lang.bind(this, function () { this._mediaServer.QuitRemote(); }));
                 this.controls.add_actor(this._quitButton.getActor());
+		this._quitButtonTooltip = new Tooltips.Tooltip(this._quitButton, "Quit Player");
             }
         }));
 
