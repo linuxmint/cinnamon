@@ -253,10 +253,10 @@ AppMenuButton.prototype = {
         this._container.add_actor(this._label);
 
         this._iconBottomClip = 0;
-                if (!Main.overview.visible || !Main.expo.visible)
-                    this._visible = true;
-                else
-                    this._visible = false;
+        if (!Main.overview.visible || !Main.expo.visible)
+            this._visible = true;
+        else
+            this._visible = false;
         if (!this._visible)
             this.actor.hide();
         Main.overview.connect('hiding', Lang.bind(this, function () {
@@ -695,24 +695,23 @@ MyApplet.prototype = {
             global.window_manager.connect('map',
                                             Lang.bind(this, this._onMap));
 
-            Main.expo.connect('showing', Lang.bind(this, 
-                                                    function(){        global.window_manager.disconnect(this.switchWorkspaceHandler);}));
-                    Main.expo.connect('hidden', Lang.bind(this, 
-                                                        function(){        this.switchWorkspaceHandler=global.window_manager.connect('switch-workspace', 
-                                                                                                Lang.bind(this, this._refreshItems)); 
-                                                                                                this._refreshItems();}));
+            Main.expo.connect('showing', Lang.bind(this, function(){global.window_manager.disconnect(this.switchWorkspaceHandler);}));
+            Main.expo.connect('hidden', Lang.bind(this, function(){
+                this.switchWorkspaceHandler=global.window_manager.connect('switch-workspace',Lang.bind(this, this._refreshItems)); 
+                this._refreshItems();
+            }));
 
-                    Main.overview.connect('showing', Lang.bind(this, 
-                                                        function(){        global.window_manager.disconnect(this.switchWorkspaceHandler);}));
-                    Main.overview.connect('hidden', Lang.bind(this, 
-                                                        function(){        this.switchWorkspaceHandler=global.window_manager.connect('switch-workspace', 
-                                                                                                Lang.bind(this, this._refreshItems)); 
-                                                                                                this._refreshItems();}));
+            Main.overview.connect('showing', Lang.bind(this, function(){
+                global.window_manager.disconnect(this.switchWorkspaceHandler);
+            }));
+            Main.overview.connect('hidden', Lang.bind(this, function(){
+                this.switchWorkspaceHandler=global.window_manager.connect('switch-workspace', Lang.bind(this, this._refreshItems));
+                this._refreshItems();
+            }));
 
             this._workspaces = [];
             this._changeWorkspaces();
-            global.screen.connect('notify::n-workspaces',
-                                    Lang.bind(this, this._changeWorkspaces));
+            global.screen.connect('notify::n-workspaces', Lang.bind(this, this._changeWorkspaces));
             global.display.connect('window-demands-attention', Lang.bind(this, this._onWindowDemandsAttention));
 
             // this._container.connect('allocate', Lang.bind(Main.panel, this._allocateBoxes)); 
