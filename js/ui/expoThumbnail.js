@@ -1175,8 +1175,11 @@ ExpoThumbnailsBox.prototype = {
 
         let childBox = new Clutter.ActorBox();
         
-        let neededX = (thumbnailWidth * nColumns) + totalSpacingX + (spacing * 2);
-        let extraSpaceX = (box.x2 - box.x1) - neededX;
+        let calcPaddingX = function(nCols) {
+            let neededX = (thumbnailWidth * nCols) + totalSpacingX + (spacing * 2);
+            let extraSpaceX = (box.x2 - box.x1) - neededX;
+            return spacing + extraSpaceX/2;
+        };
 
         // The background is horizontally restricted to correspond to the current thumbnail size
         // but otherwise covers the entire allocation
@@ -1188,13 +1191,13 @@ ExpoThumbnailsBox.prototype = {
 
         this._background.allocate(childBox, flags);
 
-        let x_0 = spacing + (extraSpaceX/2);
         let x;
         let y = spacing + Math.floor((availY - nRows * thumbnailHeight) / 2);
         for (let i = 0; i < this._thumbnails.length; i++) {
             let column = i % nColumns;
             let row = Math.floor(i / nColumns);
-            x = column > 0 ? x : x_0;
+            let cItemsInRow = Math.min(this._thumbnails.length - (row * nColumns), nColumns);
+            x = column > 0 ? x : calcPaddingX(cItemsInRow);
             let rowMultiplier = row + 1;
 
             let thumbnail = this._thumbnails[i];
