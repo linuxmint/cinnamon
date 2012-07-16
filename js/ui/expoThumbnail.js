@@ -272,8 +272,10 @@ ExpoWorkspaceThumbnail.prototype = {
         this.title.name = selected ? "selected" : "";
         if (selected) {
             this._highlight();
+            this._overviewModeOn();
         }
         else {
+            this._overviewModeOff();
             this._shade(true);
         }
     },
