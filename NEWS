@@ -7,6 +7,7 @@ New features:
  - Workspace OSD
  - Keyboard navigation in Scale (close windows with CTRL+W or mouse middle-click)
  - Keyboard navigation in Expo
+ - Direct keyboard activation of workspaces 1 through 9 in Expo
  - Configurable panel height
  - Workspaces and Menu pages in Cinnamon Settings
  - Logging (Looking Glass output)
