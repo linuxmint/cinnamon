@@ -6,9 +6,7 @@
 Source: cinnamon
 Section: gnome
 Priority: optional
-Maintainer: Ubuntu Developers <ubuntu-devel-discuss@lists.ubuntu.com>
-XSBC-Original-Maintainer: Gustavo Noronha Silva <gustavo.noronha@collabora.co.uk>
-Uploaders: Debian GNOME Maintainers <pkg-gnome-maintainers@lists.alioth.debian.org>
+Maintainer: Linux Mint <root@linuxmint.com>
 Build-Depends: cdbs,
                debhelper (>= 7),
                autotools-dev,
@@ -76,10 +74,14 @@ Depends: ${gir:Depends},
          gir1.2-soup-2.4,
          gir1.2-upowerglib-1.0,
          python,
+         python-dbus,
          pkg-config,
          mesa-utils
 Recommends: gnome-control-center, gnome-user-guide, gnome-themes-standard, gnome-session-fallback
 Breaks: gnome-control-center (<< 1:3.0)
+Conflicts: cinnamon-session, cinnamon-settings
+Provides: cinnamon-session, cinnamon-settings
+Replaces: cinnamon-session, cinnamon-settings
 Description: Cinnamon desktop
  Cinnamon redefines user interactions with the GNOME desktop.
  In particular, it offers new paradigms for launching applications,
