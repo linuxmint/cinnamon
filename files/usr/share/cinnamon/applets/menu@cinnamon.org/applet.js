@@ -1251,16 +1251,54 @@ MyApplet.prototype = {
        var res;
        if (pattern){
           res = new Array();
+          var found;
+          var reswrd = new Array();
+          var resfrg = new Array();
+          var resetc = new Array();
+          var wordloc;
           for (var i in applist){
              let app = applist[i];
-             if (app.get_name().toLowerCase().indexOf(pattern)!=-1 || (app.get_description() && app.get_description().toLowerCase().indexOf(pattern)!=-1) || (app.get_id() && app.get_id().slice(0, -8).toLowerCase().indexOf(pattern)!=-1)) res.push(app);
+             var n;
+             found = false;
+             wordloc = new Array();
+             wordloc.push(0);
+             while ((n = app.get_name().toLowerCase().substr(wordloc[wordloc.length-1]).indexOf(" "))!=-1){
+                wordloc.push((n+1)+wordloc[wordloc.length-1]);
+             }
+             for (var index in wordloc){
+                if(!found && (app.get_name().toLowerCase().substr(wordloc[index], pattern.length) == pattern)){
+                   reswrd.push(app);
+                   found = true;
+                } 
+             }
+             if (!found && (app.get_name().toLowerCase().indexOf(pattern)!=-1)){
+                resfrg.push(app);
+                found = true;
+             }
+             if (!found && ((app.get_description() && app.get_description().toLowerCase().indexOf(pattern)!=-1) || (app.get_id() && app.get_id().slice(0, -8).toLowerCase().indexOf(pattern)!=-1))){
+                resetc.push(app);
+             }
           }
-       }else res = applist;
-       
-       res.sort(function(a,b){
-          return a.get_name().toLowerCase() > b.get_name().toLowerCase();
-       });
-       
+          reswrd.sort(function(a,b){
+             return a.get_name().toLowerCase() > b.get_name().toLowerCase();
+          });
+          resfrg.sort(function(a,b){
+             return a.get_name().toLowerCase() > b.get_name().toLowerCase();
+          });
+          resetc.sort(function(a,b){
+             return a.get_name().toLowerCase() > b.get_name().toLowerCase();
+          });
+          res = res.concat(reswrd);
+          res = res.concat(resfrg);
+          res = res.concat(resetc);
+       }
+       else{ 
+          res = applist;
+          res.sort(function(a,b){
+             return a.get_name().toLowerCase() > b.get_name().toLowerCase();
+          });
+       }
+
        return res;
     },
     
