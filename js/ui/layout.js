@@ -393,22 +393,25 @@ LayoutManager.prototype = {
         // Don't animate the strut
         this._chrome.freezeUpdateRegions();
 
-        this.panelBox.anchor_y = this.panelBox.height;
-        Tweener.addTween(this.panelBox,
-                         { anchor_y: 0,
-                           time: STARTUP_ANIMATION_TIME,
-                           transition: 'easeOutQuad',
-                           onComplete: this._startupAnimationComplete,
-                           onCompleteScope: this
-                         });
-        this.panelBox2.anchor_y = this.panelBox2.height;
-        Tweener.addTween(this.panelBox2,
-                         { anchor_y: 0,
-                           time: STARTUP_ANIMATION_TIME,
-                           transition: 'easeOutQuad',
-                           onComplete: this._startupAnimationComplete,
-                           onCompleteScope: this
-                         });
+        let params = { anchor_y: 0,
+                       time: STARTUP_ANIMATION_TIME,
+                       transition: 'easeOutQuad',
+                       onComplete: this._startupAnimationComplete,
+                       onCompleteScope: this
+                     };
+        
+        if (Main.desktop_layout == Main.LAYOUT_TRADITIONAL) {
+          this.panelBox.anchor_y  = -(this.panelBox.height);
+        }
+        else if (Main.desktop_layout == Main.LAYOUT_FLIPPED) {
+          this.panelBox.anchor_y  =   this.panelBox.height;
+        }
+        else if (Main.desktop_layout == Main.LAYOUT_CLASSIC) {
+          this.panelBox.anchor_y  =   this.panelBox.height;
+          this.panelBox2.anchor_y = -(this.panelBox2.height);
+        }
+        Tweener.addTween(this.panelBox, params);
+        Tweener.addTween(this.panelBox2, params);
     },
 
     _startupAnimationComplete: function() {
