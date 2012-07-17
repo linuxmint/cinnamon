@@ -234,7 +234,7 @@ ExpoWorkspaceThumbnail.prototype = {
         if (metaWorkspace == global.screen.get_active_workspace())
             this.shade.opacity = 0;
 
-        let windows = global.get_window_actors().filter(this._isMyWindow, this);
+        let windows = Main.getTabList(this.metaWorkspace);
 
         // Create clones for windows that should be visible in the Expo
         this.count = 0;
@@ -244,15 +244,16 @@ ExpoWorkspaceThumbnail.prototype = {
         this._contents.add_actor(this._uninterestingWindows);
         this._uninterestingWindows.raise(this._background);
         for (let i = 0; i < windows.length; i++) {
-            windows[i].meta_window._minimizedChangedId =
-                windows[i].meta_window.connect('notify::minimized',
+            let window = windows[i].get_compositor_private();
+            window.meta_window._minimizedChangedId =
+                window.meta_window.connect('notify::minimized',
                                                Lang.bind(this,
                                                          this._updateMinimized));
 
-            if (this._isExpoWindow(windows[i])) {
-                this._addWindowClone(windows[i]);
+            if (this._isExpoWindow(window)) {
+                this._addWindowClone(window);
             } else {
-                this._addUninterestingWindowClone(windows[i]);
+                this._addUninterestingWindowClone(window);
             }
         }
 
@@ -480,8 +481,7 @@ ExpoWorkspaceThumbnail.prototype = {
 
     // Tests if @win should be shown in the Expo
     _isExpoWindow : function (win) {
-        let tracker = Cinnamon.WindowTracker.get_default();
-        return tracker.is_window_interesting(win.get_meta_window());
+        return true;
     },
 
     // Create a clone of a (non-desktop) window and add it to the window list
@@ -553,8 +553,7 @@ ExpoWorkspaceThumbnail.prototype = {
         let lastRowCols = this._windows.length - ((nRows - 1) * nCols);
         let lastRowOffset = (this.actor.width - (maxWindowWidth * lastRowCols) - (spacing * (lastRowCols+1))) / 2;
         let offset = 0;
-        let i;
-        for (i = 0; i < this._windows.length; i++){
+        for (let i = this._windows.length - 1; i >= 0; --i) { // start with bottom-most
             let window = this._windows[i];
             if (!window.origSet) {
                 window.origX = window.actor.x;

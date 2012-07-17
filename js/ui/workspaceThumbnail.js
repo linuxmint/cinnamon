@@ -175,22 +175,23 @@ WorkspaceThumbnail.prototype = {
         let monitor = Main.layoutManager.primaryMonitor;
         this.setPorthole(monitor.x, monitor.y, monitor.width, monitor.height);
 
-        let windows = global.get_window_actors().filter(this._isWorkspaceWindow, this);
+        let windows = Main.getTabList(this.metaWorkspace);
 
         // Create clones for windows that should be visible in the Overview
         this._windows = [];
         this._allWindows = [];
         this._minimizedChangedIds = [];
         for (let i = 0; i < windows.length; i++) {
+            let window = windows[i].get_compositor_private();
             let minimizedChangedId =
-                windows[i].meta_window.connect('notify::minimized',
+                window.meta_window.connect('notify::minimized',
                                                Lang.bind(this,
                                                          this._updateMinimized));
-            this._allWindows.push(windows[i].meta_window);
+            this._allWindows.push(window.meta_window);
             this._minimizedChangedIds.push(minimizedChangedId);
 
-            if (this._isMyWindow(windows[i]) && this._isOverviewWindow(windows[i])) {
-                this._addWindowClone(windows[i]);
+            if (this._isMyWindow(window) && this._isOverviewWindow(window)) {
+                this._addWindowClone(window);
             }
         }
 
@@ -389,9 +390,7 @@ WorkspaceThumbnail.prototype = {
 
     // Tests if @win should be shown in the Overview
     _isOverviewWindow : function (win) {
-        let tracker = Cinnamon.WindowTracker.get_default();
-        return tracker.is_window_interesting(win.get_meta_window()) &&
-               win.get_meta_window().showing_on_its_workspace();
+        return win.get_meta_window().showing_on_its_workspace();
     },
 
     // Create a clone of a (non-desktop) window and add it to the window list

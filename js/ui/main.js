@@ -1050,3 +1050,49 @@ function queueDeferredWork(workId) {
         });
     }
 }
+
+/**
+ * getTabList:
+ * @workspaceOpt (optional) workspace, defaults to global.screen.get_active_workspace()
+ * @screenOpt: (optional) screen, defaults to global.screen
+ *
+ * Return a list of the interesting windows on a workspace (by default,
+ * the active workspace).
+ * The list will include app-less dialogs.
+ */
+function getTabList(workspaceOpt, screenOpt) {
+    let screen = screenOpt || global.screen;
+    let display = screen.get_display();
+    let workspace = workspaceOpt || screen.get_active_workspace();
+    
+    let windows = []; // the array to return
+
+    // Run a pass through the NORMAL tablist. We only record the identity 
+    // of each window at this point.
+    let normalLookup = {};
+    let normalWindows = display.get_tab_list(Meta.TabList.NORMAL, screen,
+                                       workspace);
+    for (let i = 0; i < normalWindows.length; ++i) {
+        let window = normalWindows[i];
+        normalLookup[window.get_stable_sequence()] = 1;
+    }
+
+    // Run a pass through the NORMAL_ALL tablist.
+    // The purpose is to find "orphan" windows that would otherwise be
+    // difficult to navigate to when lost behind other windows.
+    // The purpose of adding all windows in the same loop is to preserve
+    // the correct tab order.
+    let allwindows = display.get_tab_list(Meta.TabList.NORMAL_ALL, screen,
+                                       workspace);
+    let tracker = Cinnamon.WindowTracker.get_default();
+    for (let i = 0; i < allwindows.length; ++i) {
+        let window = allwindows[i];
+        // Add "normal" windows and those that don't have an "app".
+        if (normalLookup[window.get_stable_sequence()] === 1 || !tracker.get_window_app(window))
+        {
+            windows.push(window);
+        }
+    }
+    return windows;
+}
+

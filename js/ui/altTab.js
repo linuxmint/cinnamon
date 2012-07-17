@@ -166,8 +166,7 @@ AltTabPopup.prototype = {
     show : function(backward, binding, mask) {
         let screen = global.screen;
         let display = screen.get_display();
-        let windows = display.get_tab_list(Meta.TabList.NORMAL, screen,
-                                           screen.get_active_workspace());
+        let windows = Main.getTabList();
 
         if (windows.length == 0)
             return false;
@@ -355,8 +354,16 @@ AltTabPopup.prototype = {
             else
                 window = null;
             this._appIcons[this._currentApp].app.activate_window(window, global.get_current_time());
-        } else {
+        }
+        else if (this._appIcons[n].app) {
             this._appIcons[n].app.activate_window(null, global.get_current_time());
+        }
+        else if (this._appIcons[n].cachedWindows.length > 0) {
+            // can this happen?
+            Main.activateWindow(this._appIcons[n].cachedWindows[0]);
+        }
+        else {
+            // and this?
         }
         this.destroy();
     },
@@ -399,8 +406,15 @@ AltTabPopup.prototype = {
         let app = this._appIcons[this._currentApp];
         if (this._currentWindow >= 0) {
             Main.activateWindow(app.cachedWindows[this._currentWindow]);
-        } else {
+        }
+        else if (app.app) {
             app.app.activate_window(null, global.get_current_time());
+        }
+        else if (app.cachedWindows.length > 0) {
+            Main.activateWindow(app.cachedWindows[0]);
+        }
+        else {
+            // what to do???
         }
         this.destroy();
     },
@@ -880,13 +894,17 @@ AppIcon.prototype = {
             this.actor.add(bin);
         }
         else {
-            this.label = new St.Label({ text: this.app.get_name() });
+            this.label = new St.Label({ text: this.app ? this.app.get_name() : window.title });
             this.actor.add(this.label, { x_fill: false });
         }
     },
 
     set_size: function(size) {
-        this.icon = this.app.create_icon_texture(size);
+        this.icon = this.app ? 
+            this.app.create_icon_texture(size) :
+            new St.Icon({ icon_name: 'application-default-icon',
+                                 icon_type: St.IconType.FULLCOLOR,
+                                 icon_size: size });
         this._iconBin.set_size(size, size);
         this._iconBin.child = this.icon;
     }
@@ -1113,7 +1131,8 @@ ThumbnailList.prototype = {
             return;
         let totalPadding = this._items[0].get_theme_node().get_horizontal_padding() + this._items[0].get_theme_node().get_vertical_padding();
         totalPadding += this.actor.get_theme_node().get_horizontal_padding() + this.actor.get_theme_node().get_vertical_padding();
-        let [labelMinHeight, labelNaturalHeight] = this._labels[0].get_preferred_height(-1);
+        let [labelMinHeight, labelNaturalHeight] = this._labels.length > 0 ?
+            this._labels[0].get_preferred_height(-1) : [0, 0];
         let spacing = this._items[0].child.get_theme_node().get_length('spacing');
 
         availHeight = Math.min(availHeight - labelNaturalHeight - totalPadding - spacing, THUMBNAIL_DEFAULT_SIZE);
