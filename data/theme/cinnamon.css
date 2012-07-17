@@ -1470,6 +1470,8 @@ StScrollBar StButton#vhandle:hover {
 .sound-track-infos {
 	padding-left: 5px;
 	padding-right: 5px;
+	padding-top: 5px;
+	padding-bottom: 5px;
 }
 .sound-track-info {
 	padding-top: 2px;
@@ -1483,11 +1485,9 @@ StScrollBar StButton#vhandle:hover {
 	padding-left: 5px;
 	padding-right: 5px;
 }
-.sound-track-box {
-	padding-top: 10px;
+.sound-track-box {	
 	padding-left: 15px;
-	padding-right: 15px;
-	padding-bottom: 10px;
+	padding-right: 15px;	
 	max-width: 220px;
 }
 .sound-volume-menu-item {

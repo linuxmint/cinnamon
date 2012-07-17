@@ -374,8 +374,8 @@ Player.prototype = {
         this._title = new TrackInfo(_("Unknown Title"), "audio-x-generic");
         this._time = new TrackInfo("0:00 / 0:00", "document-open-recent");
         this.infos_top.add_actor(this._artist.getActor());
-        this.infos_top.add_actor(this._album.getActor());
-        this.infos_bottom.add_actor(this._title.getActor());
+        this.infos_bottom.add_actor(this._album.getActor());
+        this.infos_top.add_actor(this._title.getActor());
         this.infos_bottom.add_actor(this._time.getActor());
         this._trackInfosTop.set_child(this.infos_top);
         this._trackInfosBottom.set_child(this.infos_bottom);
