@@ -266,6 +266,7 @@ ControlButton.prototype = {
         this.icon = new St.Icon({
             icon_type: St.IconType.SYMBOLIC,
             icon_name: icon,
+            icon_size: 16,
             style_class: 'sound-button-icon',
         });
         this.button.set_child(this.icon);
