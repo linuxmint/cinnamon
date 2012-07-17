@@ -362,12 +362,32 @@ let _checkWorkspacesId = 0;
  */
 const LAST_WINDOW_GRACE_TIME = 1000;
 
+function setWorkspaceName(index, name) {
+    if (index < workspace_names.length) {
+        name.trim();
+        if (name != workspace_names[index]) {
+            workspace_names[index] = name;
+            global.settings.set_strv("workspace-names", workspace_names);
+        }
+    }
+}
+
+function getWorkspaceName(index) {
+    let wsName = index < workspace_names.length ?
+        workspace_names[index] :
+        "";
+    wsName.trim();
+    return wsName.length > 0 ?
+        wsName :
+        _("WORKSPACE") + " " + (index + 1).toString();
+}
+
 function _addWorkspace() {
     if (dynamicWorkspaces)
         return false;
     nWorks++;
     global.settings.set_int("number-workspaces", nWorks);    
-    workspace_names.push("WORKSPACE " + nWorks);    
+    workspace_names.push("");    
     _staticWorkspaces();
     return true;
 }

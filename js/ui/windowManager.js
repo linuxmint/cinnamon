@@ -754,23 +754,21 @@ WindowManager.prototype = {
     showWorkspaceOSD : function() {
         if (global.settings.get_boolean("workspace-osd-visible")) {            
             let current_workspace_index = global.screen.get_active_workspace_index();
-            if (current_workspace_index < Main.workspace_names.length) {
-                let monitor = Main.layoutManager.primaryMonitor;                
-                let label = new St.Label({style_class:'workspace-osd'});
-                label.set_text(Main.workspace_names[current_workspace_index]);            
-                label.set_opacity = 0;                             
-                Main.layoutManager.addChrome(label, { visibleInFullscreen: false });    
-                let workspace_osd_x = global.settings.get_int("workspace-osd-x");
-                let workspace_osd_y = global.settings.get_int("workspace-osd-y");
-                let x = (monitor.width * workspace_osd_x /100 - label.width/2);
-                let y = (monitor.height * workspace_osd_y /100 - label.height/2);
-                label.set_position(x, y);  
-                let duration = global.settings.get_int("workspace-osd-duration") / 1000;                
-                Tweener.addTween(label, { opacity: 255,                                                        
-                       time: duration,                   
-                       transition: 'linear',                                       
-                       onComplete: function() { Main.layoutManager.removeChrome(label); } });            
-            } 
+            let monitor = Main.layoutManager.primaryMonitor;                
+            let label = new St.Label({style_class:'workspace-osd'});
+            label.set_text(Main.getWorkspaceName(current_workspace_index));
+            label.set_opacity = 0;                             
+            Main.layoutManager.addChrome(label, { visibleInFullscreen: false });    
+            let workspace_osd_x = global.settings.get_int("workspace-osd-x");
+            let workspace_osd_y = global.settings.get_int("workspace-osd-y");
+            let x = (monitor.width * workspace_osd_x /100 - label.width/2);
+            let y = (monitor.height * workspace_osd_y /100 - label.height/2);
+            label.set_position(x, y);  
+            let duration = global.settings.get_int("workspace-osd-duration") / 1000;                
+            Tweener.addTween(label, { opacity: 255,                                                        
+                    time: duration,                   
+                    transition: 'linear',                                       
+                    onComplete: function() { Main.layoutManager.removeChrome(label); } });            
         }
     },
         
@@ -851,13 +849,18 @@ WindowManager.prototype = {
         if (screen.n_workspaces == 1)
             return;
 
+        let current_workspace_index = global.screen.get_active_workspace_index();
         if (binding.get_name() == 'switch-to-workspace-left') {
            this.actionMoveWorkspaceLeft();
-           this.showWorkspaceOSD();       
+           if (current_workspace_index !== global.screen.get_active_workspace_index()) {
+                this.showWorkspaceOSD();
+           }
         }
         else if (binding.get_name() == 'switch-to-workspace-right') {
            this.actionMoveWorkspaceRight();
-           this.showWorkspaceOSD();       
+           if (current_workspace_index !== global.screen.get_active_workspace_index()) {
+                this.showWorkspaceOSD();
+           }
         }
     },
 
