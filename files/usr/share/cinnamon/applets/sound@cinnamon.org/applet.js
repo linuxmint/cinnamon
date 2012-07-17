@@ -9,6 +9,7 @@ const St = imports.gi.St;
 const PopupMenu = imports.ui.popupMenu;
 const GLib = imports.gi.GLib;
 const Gvc = imports.gi.Gvc;
+const Pango = imports.gi.Pango;
 
 const PropIFace = {
     name: 'org.freedesktop.DBus.Properties',
@@ -234,8 +235,8 @@ TrackInfo.prototype = {
         this.actor = new St.BoxLayout({style_class: 'sound-track-info'});
         this.label = new St.Label({text: label.toString()});
         this.icon = new St.Icon({icon_name: icon.toString()});
-        this.actor.add_actor(this.icon, { span: 0 });
-        this.actor.add_actor(this.label, { span: -1 });
+        this.actor.add_actor(this.icon);
+        this.actor.add_actor(this.label);
     },
     getActor: function() {
         return this.actor;
@@ -353,27 +354,31 @@ Player.prototype = {
         this.addMenuItem(this._playerInfo);
 
         this._trackCoverFile = this._trackCoverFileTmp = false;
-        this._trackCover = new St.Bin({style_class: 'sound-track-cover', x_align: St.Align.MIDDLE});
-        this._trackCover.set_child(new St.Icon({icon_name: "media-optical-cd-audio", icon_size: 100, icon_type: St.IconType.FULLCOLOR}));
-        this._trackInfos = new St.Bin({style_class: 'sound-track-infos', y_align: St.Align.MIDDLE});
+        this._trackCover = new St.Bin({style_class: 'sound-track-cover', x_align: St.Align.START});
+        this._trackCover.set_child(new St.Icon({icon_name: "media-optical-cd-audio", icon_size: 220, icon_type: St.IconType.FULLCOLOR}));
+        this._trackInfosTop = new St.Bin({style_class: 'sound-track-infos', x_align: St.Align.START});
+        this._trackInfosBottom = new St.Bin({style_class: 'sound-track-infos', x_align: St.Align.START});
         this._trackControls = new St.Bin({style_class: 'sound-playback-control', x_align: St.Align.MIDDLE});
 
-        let mainBox = new St.BoxLayout({style_class: 'sound-track-box'});
+        let mainBox = new St.BoxLayout({style_class: 'sound-track-box', vertical: true});
+        mainBox.add_actor(this._trackInfosTop)
         mainBox.add_actor(this._trackCover);
-        mainBox.add_actor(this._trackInfos);
+        mainBox.add_actor(this._trackInfosBottom);
 
         this.addActor(mainBox);
 
-        this.infos = new St.BoxLayout({vertical: true});
+        this.infos_top = new St.BoxLayout({vertical: true});
+        this.infos_bottom = new St.BoxLayout({vertical: true});
         this._artist = new TrackInfo(_("Unknown Artist"), "system-users");
         this._album = new TrackInfo(_("Unknown Album"), "media-optical");
         this._title = new TrackInfo(_("Unknown Title"), "audio-x-generic");
         this._time = new TrackInfo("0:00 / 0:00", "document-open-recent");
-        this.infos.add_actor(this._artist.getActor());
-        this.infos.add_actor(this._album.getActor());
-        this.infos.add_actor(this._title.getActor());
-        this.infos.add_actor(this._time.getActor());
-        this._trackInfos.set_child(this.infos);
+        this.infos_top.add_actor(this._artist.getActor());
+        this.infos_top.add_actor(this._album.getActor());
+        this.infos_bottom.add_actor(this._title.getActor());
+        this.infos_bottom.add_actor(this._time.getActor());
+        this._trackInfosTop.set_child(this.infos_top);
+        this._trackInfosBottom.set_child(this.infos_bottom);
 
         this._prevButton = new ControlButton('media-skip-backward',
             Lang.bind(this, function () { this._mediaServerPlayer.PreviousRemote(); }));
@@ -440,14 +445,6 @@ Player.prototype = {
         this._playerInfo.setText(this._getName() + " - " + _(status));
     },
 
-    _formatTrackInfo: function(text) {
-        text = text.toString();
-        if (text.length > 25) {
-            text = text.substr(0, 25) + "...";
-        }
-        return text;
-    },
-
     _setPosition: function(sender, value) {
         this._stopTimer();
         this._currentTime = value / 1000000;
@@ -480,15 +477,15 @@ Player.prototype = {
             this._stopTimer();
         }
         if (metadata["xesam:artist"])
-            this._artist.setLabel(this._formatTrackInfo(metadata["xesam:artist"]));
+            this._artist.setLabel(metadata["xesam:artist"].toString());
         else
             this._artist.setLabel(_("Unknown Artist"));
         if (metadata["xesam:album"])
-            this._album.setLabel(this._formatTrackInfo(metadata["xesam:album"]));
+            this._album.setLabel(metadata["xesam:album"].toString());
         else
             this._album.setLabel(_("Unknown Album"));
         if (metadata["xesam:title"])
-            this._title.setLabel(this._formatTrackInfo(metadata["xesam:title"]));
+            this._title.setLabel(metadata["xesam:title"].toString());
         else
             this._title.setLabel(_("Unknown Title"));
         /*if (metadata["mpris:trackid"]) {
@@ -636,14 +633,14 @@ Player.prototype = {
             transition: 'easeOutCubic',
             onComplete: Lang.bind(this, function() {*/
                 if (! cover_path || ! GLib.file_test(cover_path, GLib.FileTest.EXISTS)) {
-                    this._trackCover.set_child(new St.Icon({icon_name: "media-optical-cd-audio", icon_size: 100, icon_type: St.IconType.FULLCOLOR}));
+                    this._trackCover.set_child(new St.Icon({icon_name: "media-optical-cd-audio", icon_size: 210, icon_type: St.IconType.FULLCOLOR}));
                 }
                 else {
                     let l = new Clutter.BinLayout();
                     let b = new Clutter.Box();
-                    let c = new Clutter.Texture({height: 100, keep_aspect_ratio: true, filter_quality: 2, filename: cover_path});
+                    let c = new Clutter.Texture({height: 210, keep_aspect_ratio: true, filter_quality: 2, filename: cover_path});
                     b.set_layout_manager(l);
-                    b.set_width(120);
+                    b.set_width(230);
                     b.add_actor(c);
                     this._trackCover.set_child(b);
                 }
