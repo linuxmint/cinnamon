@@ -46,11 +46,19 @@
       </_description>
     </key>
     
-    <key name="panel-size" type="i">
+    <key name="panel-top-height" type="i">
       <default>25</default>
       <_summary>Panel size</_summary>
       <_description>
-        User-defined panel-height
+        User-defined panel-height for top panel
+      </_description>
+    </key>
+    
+    <key name="panel-bottom-height" type="i">
+      <default>25</default>
+      <_summary>Panel size</_summary>
+      <_description>
+        User-defined panel-height for bottom panel
       </_description>
     </key>
     
