@@ -27,6 +27,7 @@ Bug fixes:
  - Fixed showDesktop applet missing Gimp utility windows
  - Fixed places not appearing in menu
  - Applets are now aligned in the center when placed in the central zone of the panel 
+ - Improved sound applet layout
 
 TODO
 ----
