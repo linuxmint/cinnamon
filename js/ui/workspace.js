@@ -454,7 +454,7 @@ WindowOverlay.prototype = {
             icon = app.create_icon_texture(WINDOWOVERLAY_ICON_SIZE);
         }
         if (!icon) {
-            icon = new St.Icon({ icon_name: 'applications-other',
+            icon = new St.Icon({ icon_name: 'application-default-icon',
                                  icon_type: St.IconType.FULLCOLOR,
                                  icon_size: WINDOWOVERLAY_ICON_SIZE });
         }
@@ -726,15 +726,16 @@ Workspace.prototype = {
 
         this.actor.connect('destroy', Lang.bind(this, this._onDestroy));
 
-        let windows = global.get_window_actors().filter(this._isMyWindow, this);
+        let windows = Main.getTabList(this.metaWorkspace);
 
         // Create clones for windows that should be
         // visible in the Overview
         this._windows = [];
         this._windowOverlays = [];
         for (let i = 0; i < windows.length; i++) {
-            if (this._isOverviewWindow(windows[i])) {
-                this._addWindowClone(windows[i]);
+            let window = windows[i].get_compositor_private();
+            if (this._isOverviewWindow(window)) {
+                this._addWindowClone(window);
             }
         }
 
@@ -1516,8 +1517,7 @@ Workspace.prototype = {
 
     // Tests if @win should be shown in the Overview
     _isOverviewWindow : function (win) {
-        let tracker = Cinnamon.WindowTracker.get_default();
-        return tracker.is_window_interesting(win.get_meta_window());
+        return true;
     },
 
     // Create a clone of a (non-desktop) window and add it to the window list
