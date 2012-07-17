@@ -1459,7 +1459,7 @@ StScrollBar StButton#vhandle:hover {
 	height: 13px;
 	border: 1px solid #555;
 	border-radius: 4px;
-	padding: 7px;
+	padding: 5px;
 }
 .sound-button:hover {
 	border: 1px solid white;
@@ -1472,20 +1472,23 @@ StScrollBar StButton#vhandle:hover {
 	padding-right: 5px;
 }
 .sound-track-info {
-	padding-bottom: 4px;
+	padding-top: 2px;
+	padding-bottom: 2px;
 }
 .sound-track-info StIcon {
 	icon-size: 1em;
+
 }
 .sound-track-info StLabel {
 	padding-left: 5px;
 	padding-right: 5px;
 }
 .sound-track-box {
-	padding-top: 20px;
-	padding-left: 30px;
-	padding-right: 30px;
+	padding-top: 10px;
+	padding-left: 15px;
+	padding-right: 15px;
 	padding-bottom: 10px;
+	max-width: 220px;
 }
 .sound-volume-menu-item {
 	padding: .4em 1.75em;
