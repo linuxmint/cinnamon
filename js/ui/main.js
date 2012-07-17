@@ -267,17 +267,21 @@ function start() {
                     
     if (desktop_layout == LAYOUT_TRADITIONAL) {                                    
         panel = new Panel.Panel(true);           
-        layoutManager.panelBox.add(panel.actor);    
+        panel.actor.add_style_class_name('panel-bottom');
+        layoutManager.panelBox.add(panel.actor);
         layoutManager._updateBoxes();
     }
     else if (desktop_layout == LAYOUT_FLIPPED) {
         panel = new Panel.Panel(false);                 
+        panel.actor.add_style_class_name('panel-top');
         layoutManager.panelBox.add(panel.actor);  
         layoutManager._updateBoxes();
     }
     else if (desktop_layout == LAYOUT_CLASSIC) {
         panel = new Panel.Panel(false);         
         panel2 = new Panel.Panel(true);         
+        panel.actor.add_style_class_name('panel-top');
+        panel2.actor.add_style_class_name('panel-bottom');
         layoutManager.panelBox.add(panel.actor);   
         layoutManager.panelBox2.add(panel2.actor);   
         layoutManager._updateBoxes();
