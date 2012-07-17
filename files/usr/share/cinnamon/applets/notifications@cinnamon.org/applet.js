@@ -36,23 +36,30 @@ MyApplet.prototype = {
             this._maincontainer = new St.BoxLayout({name: 'traycontainer', vertical: true});
             this._notificationbin = new St.BoxLayout({vertical:true});
             this.button_label_box = new St.BoxLayout();
+            
+            this.menu_text = stringify(this.notif_count);            
+            this.menu_label = new PopupMenu.PopupMenuItem(this.menu_text);
+            this.menu_label.actor.reactive = false;
+			this.menu_label.actor.can_focus = false;
+            this.menu_label.label.add_style_class_name('popup-subtitle-menu-item');
+            this.menu.addMenuItem(this.menu_label);
+            
             this.menu.addActor(this._maincontainer);
-            this.menu_text = stringify(this.notif_count);
-            this.menu_label = new St.Label({ text: this.menu_text});
-            this.menu_label.add_style_class_name('notification-applet-header-label');
-            this.menu_clear_button = new St.Button({ reactive: true, label: _("Clear")});
-
+            
+            this.clear_separator = new PopupMenu.PopupSeparatorMenuItem();            
+            this.menu.addMenuItem(this.clear_separator);
+            
+            this.clear_action = new PopupMenu.PopupMenuItem(_("Clear notifications"));
+            this.menu.addMenuItem(this.clear_action);
+            this.clear_action.connect('activate', Lang.bind(this, this._clear_all));
+            
             this.scrollview = new St.ScrollView({ x_fill: true, y_fill: true, y_align: St.Align.START});
-            this._maincontainer.add(this.button_label_box);
-            this.button_label_box.add(this.menu_label);
-            this.button_label_box.add(this.menu_clear_button);
+            
             this._maincontainer.add(this.scrollview);
-            this.menu_clear_button.hide();
             this.scrollview.add_actor(this._notificationbin);
             this.scrollview.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC);
             MT.connect('notify-applet-update', Lang.bind(this, this._notification_added));
-            global.settings.connect('changed::panel-edit-mode', Lang.bind(this, this.on_panel_edit_mode_changed));
-            this.menu_clear_button.connect('clicked', Lang.bind(this, this._clear_all));
+            global.settings.connect('changed::panel-edit-mode', Lang.bind(this, this.on_panel_edit_mode_changed));            
             
             this._calendarSettings = new Gio.Settings({ schema: 'org.cinnamon.calendar' });
             this._calendarSettings.connect('changed', Lang.bind(this, this._update_timestamp));
@@ -96,41 +103,48 @@ MyApplet.prototype = {
     },
     
     update_list: function () {
-        this.notif_count = this.notifications.length;
-        if (this.notif_count > 0) {
-            this.menu_clear_button.show();
-            this.set_applet_label(this.notif_count.toString());
-            let max_urgency = -1;
-            for (let i = 0; i < this.notif_count; i++) {
-                let cur_urgency = this.notifications[i].urgency;
-                if (cur_urgency > max_urgency)
-                    max_urgency = cur_urgency;
+        try {
+            this.notif_count = this.notifications.length;
+            if (this.notif_count > 0) {
+                //this.clear_separator.actor.show();
+                this.clear_action.actor.show();
+                this.set_applet_label(this.notif_count.toString());
+                let max_urgency = -1;
+                for (let i = 0; i < this.notif_count; i++) {
+                    let cur_urgency = this.notifications[i].urgency;
+                    if (cur_urgency > max_urgency)
+                        max_urgency = cur_urgency;
+                }
+                switch (max_urgency) {
+                    case Urgency.LOW:
+                        this._blinking = false;
+                        this.set_applet_icon_symbolic_name("low-notif");
+                        break;
+                    case Urgency.NORMAL:
+                    case Urgency.HIGH:
+                        this._blinking = false;
+                        this.set_applet_icon_symbolic_name("normal-notif");
+                        break;
+                    case Urgency.CRITICAL:
+                        if (!this._blinking) {
+                            this._blinking = true;
+                            this.critical_blink();
+                        }
+                        break;
+                }
+            } else {
+                this._blinking = false;
+                this.set_applet_label('');
+                this.set_applet_icon_symbolic_name("empty-notif");
+                //this.clear_separator.actor.hide();
+                this.clear_action.actor.hide();
             }
-            switch (max_urgency) {
-                case Urgency.LOW:
-                    this._blinking = false;
-                    this.set_applet_icon_symbolic_name("low-notif");
-                    break;
-                case Urgency.NORMAL:
-                case Urgency.HIGH:
-                    this._blinking = false;
-                    this.set_applet_icon_symbolic_name("normal-notif");
-                    break;
-                case Urgency.CRITICAL:
-                    if (!this._blinking) {
-                        this._blinking = true;
-                        this.critical_blink();
-                    }
-                    break;
-            }
-        } else {
-            this._blinking = false;
-            this.set_applet_label('');
-            this.set_applet_icon_symbolic_name("empty-notif");
-            this.menu_clear_button.hide();
+            this.menu_label.label.set_text(stringify(this.notif_count));
+            this._notificationbin.queue_relayout();
         }
-        this.menu_label.set_text(stringify(this.notif_count));
-        this._notificationbin.queue_relayout();
+        catch (e) {
+            global.logError(e);
+        }
     },
     
     _clear_all: function() {
@@ -142,8 +156,7 @@ MyApplet.prototype = {
             }
         }
         this.notifications = [];
-        this.update_list();
-        this.menu.toggle();
+        this.update_list();        
     },
     
     on_panel_edit_mode_changed: function () {

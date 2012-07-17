@@ -1666,13 +1666,9 @@ StScrollBar StButton#vhandle:hover {
 	transition-duration: 300;
 }
 
-/* Notification Applet */
-.notification-applet-header-label {
-	padding: .4em 1.75em;
-	font-size: 10.5pt;
-	color: #cccccc;
-	font-weight: bold;
-}
+/* ===================================================================
+ * Notification Applet
+ * ===================================================================*/
 
 .notification-applet-padding {
 	padding: .5em 1em;
