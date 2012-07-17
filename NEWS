@@ -72,6 +72,8 @@ THEME CHANGES SINCE 1.4
 
 .workspace-osd {
 }
+.workspace-osd#failed {
+}
 
 .expo-workspaces-name-entry {
 }
