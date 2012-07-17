@@ -1949,7 +1949,7 @@ MyApplet.prototype = {
             }
         }
 
-        this._mainConnection = activating || default_ip4 || default_ip6 || this._activeConnections[0] || null;
+        this._mainConnection = this._activeConnections[0] || activating || default_ip4 || default_ip6 || null;
     },
 
     _notifyActivated: function(activeConnection) {
