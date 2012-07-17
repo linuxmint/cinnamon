@@ -15,6 +15,7 @@ New features:
  - Workspaces and Menu pages in Cinnamon Settings
  - Logging (Looking Glass output)
  - New scale and expo applets
+ - Notifications applet
 
 Bug fixes:
 
@@ -81,3 +82,14 @@ THEME CHANGES SINCE 1.4
 .expo-workspaces-name-entry:focus {
 }
 
+/* ===================================================================
+ * Notification Applet
+ * ===================================================================*/
+
+.notification-applet-padding {
+	padding: .5em 1em;
+}
+
+.notification-applet-container {
+	max-height: 100px;
+}
