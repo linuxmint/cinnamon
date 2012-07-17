@@ -878,6 +878,14 @@ StScrollBar StButton#vhandle:hover {
 	border-color: rgba(0,0,0,0);
 	color: white;
 }
+.switcher-outline-background {
+	background-color: red;
+}
+.switcher-outline-frame {
+	border-color: black;
+	border-width: 4px;
+	border-radius: 4px;
+}
 /* ===================================================================
  * Modal dialogs
  * ===================================================================*/

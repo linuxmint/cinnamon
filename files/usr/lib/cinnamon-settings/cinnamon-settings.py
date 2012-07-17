@@ -1330,6 +1330,7 @@ class MainWindow:
                                             "/apps/metacity/general/focus_mode",
                                             [(i, i.title()) for i in ("click","sloppy","mouse")]))
         sidePage.add_widget(TitleBarButtonsOrderSelector())        
+        sidePage.add_widget(GSettingsCheckButton(_("Enable ALT+Tab outline and window preview"), "org.cinnamon", "enable-alttab-outline"))
         
         sidePage = SidePage(_("Workspaces"), "workspaces.svg", self.content_box)
         self.sidePages.append((sidePage, "workspaces"))        
