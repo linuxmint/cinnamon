@@ -89,6 +89,7 @@ Applet.prototype = {
         this._panelLocation = null; // Backlink to the panel location our applet is in, set by Cinnamon.
         this._newPanelLocation = null; //  Used when moving an applet
         this._uuid = null; // Defined in gsettings, set by Cinnamon.
+        this._hook = null; // Defined in metadata.json, set by appletManager
         this._dragging = false;                
         this._draggable = DND.makeDraggable(this.actor);
         this._draggable.connect('drag-begin', Lang.bind(this, this._onDragBegin));
