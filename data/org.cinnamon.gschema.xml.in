@@ -424,7 +424,7 @@
     </key>
 
     <key type="b" name="enable-alttab-outline">
-      <default>true</default>
+      <default>false</default>
       <_summary>Enable ALT+Tab outline and window preview</_summary>
     </key>
 
