@@ -194,9 +194,9 @@ PlacesManager.prototype = {
 
         this._bookmarksPath = GLib.build_filenamev([GLib.get_home_dir(), '.gtk-bookmarks']);
         this._bookmarksFile = Gio.file_new_for_path(this._bookmarksPath);
-        let monitor = this._bookmarksFile.monitor_file(Gio.FileMonitorFlags.NONE, null);
+        this.monitor = this._bookmarksFile.monitor_file(Gio.FileMonitorFlags.NONE, null);
         this._bookmarkTimeoutId = 0;
-        monitor.connect('changed', Lang.bind(this, function () {
+        this.monitor.connect('changed', Lang.bind(this, function () {
             if (this._bookmarkTimeoutId > 0)
                 return;
             /* Defensive event compression */
