@@ -720,7 +720,7 @@ MyApplet.prototype = {
             this._control.connect('default-source-changed', Lang.bind(this, this._readInput));
             this._control.connect('stream-added', Lang.bind(this, this._maybeShowInput));
             this._control.connect('stream-removed', Lang.bind(this, this._maybeShowInput));
-            this._volumeMax = 1.5*this._control.get_vol_max_norm();
+            this._volumeMax = 1*this._control.get_vol_max_norm(); // previously was 1.5*this._control.get_vol_max_norm();, but we'd need a little mark on the slider to make it obvious to the user we're going over 100%..
 
             this._output = null;
             this._outputVolumeId = 0;
