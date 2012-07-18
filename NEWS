@@ -17,6 +17,11 @@ New features:
  - New scale and expo applets
  - Notifications applet
 
+API:
+
+ - New St.IconType.FADED icon style
+
+
 Bug fixes:
 
  - Gnome 3.4 changes (memory leak fixes, some configuration moved to gsettings, multiple bug fixes)
