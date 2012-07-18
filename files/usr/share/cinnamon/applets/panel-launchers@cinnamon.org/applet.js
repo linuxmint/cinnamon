@@ -6,6 +6,7 @@ const Lang = imports.lang;
 const Gio = imports.gi.Gio;
 const PopupMenu = imports.ui.popupMenu;
 const Main = imports.ui.main;
+const Mainloop = imports.mainloop;
 const ModalDialog = imports.ui.modalDialog;
 const Signals = imports.signals;
 const GLib = imports.gi.GLib;
@@ -457,7 +458,15 @@ MyApplet.prototype = {
     }, 
     
     _onSettingsChanged: function() {
-        this.reload();
+        // It is bad form to do heavy work inside a settings-changed handler, so
+        // we use a timeout to delay the reload somewhat.
+        if (this._timeoutId) {
+            Mainloop.source_remove(this._timeoutId);
+        }
+        this._timeoutId = Mainloop.timeout_add(100, Lang.bind(this, function() {
+            this.reload();
+            this._timeoutId = 0;
+        }));
     },
     
     _onLauncherUpdated: function(obj, launcher, appid){
