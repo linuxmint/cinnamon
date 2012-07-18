@@ -278,6 +278,10 @@ ExpoWorkspaceThumbnail.prototype = {
         this._slidePosition = 0; // Fully slid in
     },
     
+    _refreshTitle: function() {
+        this.title.set_text(Main.getWorkspaceName(this.metaWorkspace.index()));
+    },
+    
     _onTitleKeyPressEvent: function(actor, event) {
         this._undoTitleEdit = false;
         let symbol = event.get_key_symbol();
@@ -1160,6 +1164,11 @@ ExpoThumbnailsBox.prototype = {
                                    onCompleteScope: this
                                  });
             });
+
+        this._iterateStateThumbnails(ThumbnailState.NORMAL, function(thumbnail) {
+            // keep default workspace names in sync
+            thumbnail._refreshTitle();
+        });
         this._thumbnails[this._kbThumbnailIndex].showKeyboardSelectedState(true);
     },
 
