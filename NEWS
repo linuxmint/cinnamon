@@ -95,3 +95,10 @@ THEME CHANGES SINCE 1.4
 .notification-applet-container {
 	max-height: 100px;
 }
+
+/* ===================================================================
+ * Menu Applet
+ * ===================================================================*/
+
+.menu-place-cat-button-label {
+}

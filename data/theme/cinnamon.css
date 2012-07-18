@@ -1233,7 +1233,7 @@ StScrollBar StButton#vhandle:hover {
 /* Main menu title */
 
 .menu-favorites-box {
-	width: 70%;
+	width: 50px;
 	margin: auto;
 	padding: 10px;
 	border: 1px solid #666;
@@ -1257,8 +1257,22 @@ StScrollBar StButton#vhandle:hover {
 	box-shadow: inset 0px 0px 1px 1px rgba(255,255,255,0.06);
 	border-radius: 4px;
 }
+.menu-help-button {
+	padding-top: 2px;
+	padding-left: 5px;
+	padding-right: 5px;
+	padding-bottom: 2px;
+}
+.menu-help-button:hover {
+	color: white;
+	background-gradient-direction: vertical;
+	background-gradient-start: rgba(255,255,255,0.2);
+	background-gradient-end: rgba(255,255,255,0.08);
+	box-shadow: inset 0px 0px 1px 1px rgba(255,255,255,0.06);
+	border-radius: 4px;
+}
 .menu-places-box {
-	width: 70%;
+	width: 50px;
 	margin: auto;
 	padding: 10px;
 	border: 0px solid #666;
@@ -1301,10 +1315,18 @@ StScrollBar StButton#vhandle:hover {
 	border-radius: 4px;
 }
 .menu-application-button-label:ltr { 
-	padding-left: 5px		
+	padding-left: 5px;
 }
 .menu-application-button-label:rtl { 
-	padding-right: 5px		
+	padding-right: 5px;
+}
+.menu-place-cat-button-label:ltr {
+	padding-top: 4px;
+	padding-left: 5px;
+}
+.menu-place-cat-button-label:rtl {
+	padding-top: 4px;
+	padding-right: 5px;
 }
 .menu-category-button {
 	padding-top: 7px;
@@ -1333,11 +1355,12 @@ StScrollBar StButton#vhandle:hover {
 	border-radius: 4px;
 	transition-duration: 300;
 }
-.menu-category-button-label:ltr { 
-	padding-left: 5px		
+.menu-category-button-label:ltr {
+	padding-left: 5px;
 }
-.menu-category-button-label:rtl { 
-	padding-right: 5px		
+.menu-category-button-label:rtl {
+	padding-right: 5px;
+
 }
 .menu-category-button-button:hover {
 	background-color: #969696;
