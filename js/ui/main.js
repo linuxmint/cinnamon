@@ -1078,13 +1078,18 @@ function getTabList(workspaceOpt, screenOpt) {
     // the correct tab order.
     let allwindows = display.get_tab_list(Meta.TabList.NORMAL_ALL, screen,
                                        workspace);
+    let registry = {}; // to avoid duplicates
     let tracker = Cinnamon.WindowTracker.get_default();
     for (let i = 0; i < allwindows.length; ++i) {
         let window = allwindows[i];
+        let seqno = window.get_stable_sequence();
         // Add "normal" windows and those that don't have an "app".
-        if (normalLookup[window.get_stable_sequence()] === 1 || !tracker.get_window_app(window))
+        if (normalLookup[seqno] === 1 || !tracker.get_window_app(window))
         {
-            windows.push(window);
+            if (!registry[seqno]) {
+                windows.push(window);
+                registry[seqno] = true;
+            }
         }
     }
     return windows;
