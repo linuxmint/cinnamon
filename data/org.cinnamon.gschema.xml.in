@@ -252,6 +252,22 @@
       <_summary>Whether notifications are to be displayed</_summary>
     </key>
 
+    <key type="b" name="menu-show-places">
+      <default>true</default>
+      <_summary>Enable or disable display of places in menu applet</_summary>
+      <_description>
+            Toggles displaying the 'Places' category in the menu applet
+      </_description>
+    </key>
+
+    <key type="b" name="menu-show-recent">
+      <default>true</default>
+      <_summary>Enable or disable display of recent files in menu applet</_summary>
+      <_description>
+            Toggles displaying the 'Recent files' category in the menu applet
+      </_description>
+    </key>
+
     <key type="i" name="number-workspaces">
 	<default>2</default>
 	<_summary>Number of workspaces in Cinnamon session</_summary>
