@@ -210,11 +210,18 @@ ExpoWorkspaceThumbnail.prototype = {
         this.title._spacing = 0; 
         this.titleText = this.title.clutter_text;        
         this.titleText.connect('key-press-event', Lang.bind(this, this._onTitleKeyPressEvent)); 
+        this.titleText.connect('key-focus-in', Lang.bind(this, function() {
+            this._origTitle = Main.getWorkspaceName(this.metaWorkspace.index());
+        })); 
+        this.titleText.connect('key-focus-out', Lang.bind(this, function() {
+            if (!this._undoTitleEdit) {
+                let newName = this.title.get_text().trim();
+                Main.setWorkspaceName(this.metaWorkspace.index(), newName);
+            }
+            this.title.set_text(Main.getWorkspaceName(this.metaWorkspace.index()));
+        })); 
                       
-        let workspace_index = this.metaWorkspace.index();
-        if (workspace_index < Main.workspace_names.length) {
-            this.title.set_text(Main.workspace_names[workspace_index]);
-        }
+        this.title.set_text(Main.getWorkspaceName(this.metaWorkspace.index()));
         
         this._background = Meta.BackgroundActor.new_for_screen(global.screen);
         this._contents.add_actor(this._background);
@@ -272,13 +279,12 @@ ExpoWorkspaceThumbnail.prototype = {
     },
     
     _onTitleKeyPressEvent: function(actor, event) {
-                
-        if (this.metaWorkspace.index() < Main.workspace_names.length && this.title.get_text() != Main.workspace_names[this.metaWorkspace.index()]) {
-            Main.workspace_names[this.metaWorkspace.index()] = this.title.get_text();            
-        }      
-                 
+        this._undoTitleEdit = false;
         let symbol = event.get_key_symbol();
         if (symbol === Clutter.Return || symbol === Clutter.Escape) {
+            if (symbol === Clutter.Escape) {
+                this._undoTitleEdit = true;
+            }
             global.stage.set_key_focus(this.actor);
             return true;
         }
