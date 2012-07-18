@@ -274,7 +274,8 @@ ExpoWorkspaceThumbnail.prototype = {
     _onTitleKeyPressEvent: function(actor, event) {
                 
         if (this.metaWorkspace.index() < Main.workspace_names.length && this.title.get_text() != Main.workspace_names[this.metaWorkspace.index()]) {
-            Main.workspace_names[this.metaWorkspace.index()] = this.title.get_text();            
+            Main.workspace_names[this.metaWorkspace.index()] = this.title.get_text();
+            Main.workspace_names_changed = true;
         }      
                  
         let symbol = event.get_key_symbol();
