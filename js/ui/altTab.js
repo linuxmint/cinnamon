@@ -133,36 +133,6 @@ AltTabPopup.prototype = {
         }
     },
 
-    _getAppLists: function() {
-        let tracker = Cinnamon.WindowTracker.get_default();
-        let appSys = Cinnamon.AppSystem.get_default();
-        let allApps = appSys.get_running ();
-
-        let screen = global.screen;
-        let display = screen.get_display();
-        let windows = display.get_tab_list(Meta.TabList.NORMAL, screen,
-                                           screen.get_active_workspace());
-
-        // windows is only the windows on the current workspace. For
-        // each one, if it corresponds to an app we know, move that
-        // app from allApps to apps.
-        let apps = [];
-        for (let i = 0; i < windows.length && allApps.length != 0; i++) {
-            let app = tracker.get_window_app(windows[i]);
-            let index = allApps.indexOf(app);
-            if (index != -1) {
-                apps.push(app);
-                allApps.splice(index, 1);
-            }
-        }
-
-        // Now @apps is a list of apps on the current workspace, in
-        // standard Alt+Tab order (MRU except for minimized windows),
-        // and allApps is a list of apps that only appear on other
-        // workspaces, sorted by user_time, which is good enough.
-        return [apps, allApps];
-    },
-
     show : function(backward, binding, mask) {
         let screen = global.screen;
         let display = screen.get_display();
@@ -448,9 +418,6 @@ AltTabPopup.prototype = {
     _onDestroy : function() {
         this._popModal();
 
-        if (this._thumbnails)
-            this._destroyThumbnails();
-
         if (this._motionTimeoutId != 0)
             Mainloop.source_remove(this._motionTimeoutId);
         if (this._thumbnailTimeoutId != 0)
@@ -577,11 +544,11 @@ AltTabPopup.prototype = {
         this._appSwitcher.highlight(app, this._thumbnailsFocused);
 
         if (window != null) {
-            /*if (!this._thumbnails)
-                this._createThumbnails();*/
+            if (!this._thumbnails)
+                this._createThumbnails();
             this._outlineContours();
             this._currentWindow = window;
-            //this._thumbnails.highlight(window, forceAppFocus);
+            this._thumbnails.highlight(window, forceAppFocus);
         } else if (this._appIcons[this._currentApp].cachedWindows.length > 1 &&
                    !forceAppFocus) {
             this._thumbnailTimeoutId = Mainloop.timeout_add (
@@ -600,16 +567,17 @@ AltTabPopup.prototype = {
 
     _destroyThumbnails : function() {
         let thumbnailsActor = this._thumbnails.actor;
-        Tweener.addTween(thumbnailsActor,
-                         { opacity: 0,
-                           time: THUMBNAIL_FADE_TIME,
-                           transition: 'easeOutQuad',
-                           onComplete: Lang.bind(this, function() {
-                                                            thumbnailsActor.destroy();
-                                                            this.thumbnailsVisible = false;
-                                                        })
-                         });
         this._thumbnails = null;
+        Tweener.addTween(thumbnailsActor,
+            { opacity: 0,
+                time: THUMBNAIL_FADE_TIME,
+                transition: 'easeOutQuad',
+                onComplete: Lang.bind(this, function() {
+                    this.actor.remove_actor(thumbnailsActor);
+                    thumbnailsActor.destroy();
+                    this.thumbnailsVisible = false;
+                })
+            });
     },
 
     _createThumbnails : function() {
@@ -1108,28 +1076,17 @@ AppSwitcher.prototype = {
     },
 
     // We override SwitcherList's highlight() method to also deal with
-    // the AppSwitcher->ThumbnailList arrows. Apps with only 1 window
-    // will hide their arrows by default, but show them when their
-    // thumbnails are visible (ie, when the app icon is supposed to be
-    // in justOutline mode). Apps with multiple windows will normally
-    // show a dim arrow, but show a bright arrow when they are
-    // highlighted.
+    // the AppSwitcher->ThumbnailList arrows.
     highlight : function(n, justOutline) {
         if (this._curApp != -1) {
-            if (this.icons[this._curApp].cachedWindows.length == 1)
-                this._arrows[this._curApp].hide();
-            else
-                this._arrows[this._curApp].remove_style_pseudo_class('highlighted');
+            this._arrows[this._curApp].hide();
         }
 
         SwitcherList.prototype.highlight.call(this, n, justOutline);
         this._curApp = n;
 
         if (this._curApp != -1) {
-            if (justOutline && this.icons[this._curApp].cachedWindows.length == 1)
-                this._arrows[this._curApp].show();
-            else
-                this._arrows[this._curApp].add_style_pseudo_class('highlighted');
+            this._arrows[this._curApp].show();
         }
     },
 
@@ -1143,8 +1100,9 @@ AppSwitcher.prototype = {
         this._list.add_actor(arrow);
         this._arrows.push(arrow);
 
-        if (appIcon.cachedWindows.length == 1)
+        if (appIcon.cachedWindows.length == 1) {
             arrow.hide();
+        }
     }
 };
 
