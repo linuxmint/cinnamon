@@ -341,13 +341,34 @@ let _checkWorkspacesId = 0;
  */
 const LAST_WINDOW_GRACE_TIME = 1000;
 
+function _fillWorkspaceNames(index) {
+    // ensure that we have workspace names up to index
+    for (let i = index - workspace_names.length; i > 0; --i) {
+        workspace_names.push('');
+    }
+}
+
+function _trimWorkspaceNames(index) {
+    // trim empty or out-of-index names from the end.
+    for (let i = workspace_names.length - 1;
+            i >= 0 && (i >= nWorks || !workspace_names[i].length); --i) {
+        workspace_names.pop();
+    }
+}
+
+function _makeDefaultWorkspaceName(index) {
+    return _("WORKSPACE") + " " + (index + 1).toString();
+}
+
 function setWorkspaceName(index, name) {
-    if (index < workspace_names.length) {
-        name.trim();
-        if (name != workspace_names[index]) {
-            workspace_names[index] = name;
-            global.settings.set_strv("workspace-names", workspace_names);
-        }
+    name.trim();
+    if (name != getWorkspaceName(index)) {
+        _fillWorkspaceNames(index);
+        workspace_names[index] = (name == _makeDefaultWorkspaceName(index) ?
+            "" :
+            name);
+        _trimWorkspaceNames();
+        global.settings.set_strv("workspace-names", workspace_names);
     }
 }
 
@@ -358,15 +379,14 @@ function getWorkspaceName(index) {
     wsName.trim();
     return wsName.length > 0 ?
         wsName :
-        _("WORKSPACE") + " " + (index + 1).toString();
+        _makeDefaultWorkspaceName(index);
 }
 
 function _addWorkspace() {
     if (dynamicWorkspaces)
         return false;
     nWorks++;
-    global.settings.set_int("number-workspaces", nWorks);    
-    workspace_names.push("");    
+    global.settings.set_int("number-workspaces", nWorks);
     _staticWorkspaces();
     return true;
 }
@@ -375,8 +395,12 @@ function _removeWorkspace(workspace) {
     if (nWorks == 1 || dynamicWorkspaces)
         return false;
     nWorks--;
-    let index = workspace.index();    
-    workspace_names.splice (index,1);    
+    let index = workspace.index();
+    if (index < workspace_names.length) {
+        workspace_names.splice (index,1);
+    }
+    _trimWorkspaceNames();
+    global.settings.set_strv("workspace-names", workspace_names);
     global.settings.set_int("number-workspaces", nWorks);
     global.screen.remove_workspace(workspace, global.get_current_time());
     return true;
