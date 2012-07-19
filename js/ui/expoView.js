@@ -149,12 +149,12 @@ ExpoView.prototype = {
     },
 
     _onRestacked: function() {
-        let stack = Main.getTabList();
+        let stack = global.get_window_actors();
         let stackIndices = {};
 
         for (let i = 0; i < stack.length; i++) {
             // Use the stable sequence for an integer to use as a hash key
-            stackIndices[stack[i].get_stable_sequence()] = stack.length - i;
+            stackIndices[stack[i].get_meta_window().get_stable_sequence()] = i;
         }
 
         this._thumbnailsBox.syncStacking(stackIndices);
