@@ -785,57 +785,23 @@ WindowManager.prototype = {
     _startA11ySwitcher : function(display, screen, window, binding) {
         
     },
-    
-    _getWorkspaceLeft: function() {
-        let rtl = (St.Widget.get_default_direction() == St.TextDirection.RTL);
-        let activeWorkspaceIndex = global.screen.get_active_workspace_index();
-        let indexToActivate = activeWorkspaceIndex;
-        if (rtl && activeWorkspaceIndex < global.screen.n_workspaces - 1)
-            indexToActivate++;
-        else if (!rtl && activeWorkspaceIndex > 0)
-            indexToActivate--;
-        else if (rtl && activeWorkspaceIndex == global.screen.n_workspaces - 1)
-            indexToActivate = 0;
-        else if (!rtl && activeWorkspaceIndex == 0)
-            indexToActivate = global.screen.n_workspaces - 1;
-        return indexToActivate;
-    },
-    
-    _getWorkspaceRight: function() {
-        let rtl = (St.Widget.get_default_direction() == St.TextDirection.RTL);
-        let activeWorkspaceIndex = global.screen.get_active_workspace_index();
-        let indexToActivate = activeWorkspaceIndex;
-        if (rtl && activeWorkspaceIndex > 0)
-            indexToActivate--;
-        else if (!rtl && activeWorkspaceIndex < global.screen.n_workspaces - 1)
-            indexToActivate++;
-        else if (rtl && activeWorkspaceIndex == 0)
-            indexToActivate = global.screen.n_workspaces - 1;
-        else if (!rtl && activeWorkspaceIndex == global.screen.n_workspaces - 1)
-            indexToActivate = 0;
-        return indexToActivate;
-    },
-    
+
     _moveWindowToWorkspaceLeft : function(display, screen, window, binding) {
-        let index = this._getWorkspaceLeft();
-        if (index != global.screen.get_active_workspace_index()) {
-            window.change_workspace(global.screen.get_workspace_by_index(index));    
-            global.screen.get_workspace_by_index(index).activate(global.get_current_time());
-            window.raise();
-            this.showWorkspaceOSD();
-        }
+        let workspace = global.screen.get_active_workspace().get_neighbor(Meta.MotionDirection.LEFT)
+        window.change_workspace(workspace);    
+        workspace.activate(global.get_current_time());
+        window.raise();
+        this.showWorkspaceOSD();
     },
-    
+
     _moveWindowToWorkspaceRight : function(display, screen, window, binding) {
-        let index = this._getWorkspaceRight();
-        if (index != global.screen.get_active_workspace_index()) {
-            window.change_workspace(global.screen.get_workspace_by_index(index));    
-            global.screen.get_workspace_by_index(index).activate(global.get_current_time());
-            window.raise();
-            this.showWorkspaceOSD();
-        }    
+        let workspace = global.screen.get_active_workspace().get_neighbor(Meta.MotionDirection.RIGHT)
+        window.change_workspace(workspace);    
+        workspace.activate(global.get_current_time());
+        window.raise();
+        this.showWorkspaceOSD();
     },
-    
+
     _showWorkspaceSwitcher : function(display, screen, window, binding) {
         if (binding.get_name() == 'switch-to-workspace-up') {
         	Main.expo.toggle();
