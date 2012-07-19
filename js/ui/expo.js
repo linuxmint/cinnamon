@@ -441,8 +441,6 @@ Expo.prototype = {
 
         this._shown = false;
         this._syncInputMode();
-        
-        global.settings.set_strv("workspace-names", Main.workspace_names);    
     },
 
     // hideTemporarily:
