@@ -1582,14 +1582,21 @@ MessageTray.prototype = {
         let notificationUrgent = this._notificationQueue.length > 0 && this._notificationQueue[0].urgency == Urgency.CRITICAL;
         let notificationsPending = this._notificationQueue.length > 0 && (!this._busy || notificationUrgent);
         let notificationExpanded = this._notificationBin.y < 0;
-        let notificationExpired = (this._notificationTimeoutId == 0 && !(this._notification && this._notification.urgency == Urgency.CRITICAL &&
-                                    !AppletManager.get_role_provider_exists(AppletManager.Roles.NOTIFICATIONS)) &&
-                                    !this._pointerInTray && !this._locked && !(this._pointerInKeyboard && notificationExpanded)) || this._notificationRemoved;
-        let canShowNotification = notificationsPending && global.settings.get_boolean("display-notifications");
+
+        let notificationExpired = (this._notificationTimeoutId == 0 && !(this._notification && this._notification.urgency == Urgency.CRITICAL) && !this._pointerInTray && !this._locked && !(this._pointerInKeyboard && notificationExpanded)) || this._notificationRemoved;
+        let notificationsEnabled = global.settings.get_boolean("display-notifications");
+        let canShowNotification = notificationsPending && notificationsEnabled;
 
         if (this._notificationState == State.HIDDEN) {
             if (canShowNotification)
                 this._showNotification();
+            else if (!notificationsEnabled) {
+                global.logError("YES");
+                this._notification = this._notificationQueue.shift();
+                if (AppletManager.get_role_provider_exists(AppletManager.Roles.NOTIFICATIONS)) {
+                    this.emit('notify-applet-update', this._notification);
+                }
+            }
         } else if (this._notificationState == State.SHOWN) {
             if (notificationExpired)
                 this._hideNotification();
