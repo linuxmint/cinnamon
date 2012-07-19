@@ -429,7 +429,7 @@ MyApplet.prototype = {
                                             style_class: 'panel-launchers-box' });           
             
             this._settings = new Gio.Settings({ schema: 'org.cinnamon' });
-            this._settings.connect('changed', Lang.bind(this, this._onSettingsChanged));
+            this._settings.connect('changed::panel-launchers', Lang.bind(this, this._onSettingsChanged));
             
             this._addLauncherDialog = new AddLauncherDialog();
             this._addLauncherDialog.connect("launcher-created", Lang.bind(this, this._onLauncherCreated));
@@ -467,7 +467,6 @@ MyApplet.prototype = {
             desktopFiles.splice(i, 1);
             desktopFiles.splice(i, 0, appid);
             this._settings.set_strv('panel-launchers', desktopFiles);
-            this.reload();
         }
     },
     
@@ -476,7 +475,6 @@ MyApplet.prototype = {
             let desktopFiles = this._settings.get_strv('panel-launchers');
             desktopFiles.push(appid);
             this._settings.set_strv('panel-launchers', desktopFiles);
-            this.reload();
         }
     },
     
