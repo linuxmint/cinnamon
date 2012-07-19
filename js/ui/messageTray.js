@@ -1585,7 +1585,7 @@ MessageTray.prototype = {
         let notificationExpired = (this._notificationTimeoutId == 0 && !(this._notification && this._notification.urgency == Urgency.CRITICAL &&
                                     !AppletManager.get_role_provider_exists(AppletManager.Roles.NOTIFICATIONS)) &&
                                     !this._pointerInTray && !this._locked && !(this._pointerInKeyboard && notificationExpanded)) || this._notificationRemoved;
-        let canShowNotification = notificationsPending;
+        let canShowNotification = notificationsPending && global.settings.get_boolean("display-notifications");
 
         if (this._notificationState == State.HIDDEN) {
             if (canShowNotification)
