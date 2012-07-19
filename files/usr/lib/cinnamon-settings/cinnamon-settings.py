@@ -565,14 +565,14 @@ class GSettingsEntry(Gtk.HBox):
         self.settings = Gio.Settings.new(schema)        
         self.content_widget.set_text(self.settings.get_string(self.key))
         self.settings.connect("changed::"+self.key, self.on_my_setting_changed)
-        self.content_widget.connect('changed', self.on_my_value_changed)     
+        self.content_widget.connect('focus-out-event', self.on_my_value_changed)     
         
         self.content_widget.show_all()       
     
     def on_my_setting_changed(self, settings, key):
         self.content_widget.set_text(self.settings.get_string(self.key))
         
-    def on_my_value_changed(self, widget):        
+    def on_my_value_changed(self, event, widget):        
         self.settings.set_string(self.key, self.content_widget.get_text())
 
 class GSettingsFileChooser(Gtk.HBox):
