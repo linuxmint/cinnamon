@@ -75,6 +75,8 @@ ExpoWindowClone.prototype = {
         this.icon.set_opacity(ICON_OPACITY);
         this.icon.width = ICON_SIZE;
         this.icon.height = ICON_SIZE;
+
+        this._doomed = false;
     },
 
     setStackAbove: function (actor) {
@@ -674,8 +676,14 @@ ExpoWorkspaceThumbnail.prototype = {
     },
 
     _remove : function (){
-        if (global.screen.n_workspaces <= 1)
-            return false;
+        if (this._doomed) {
+            // this workspace is already being removed
+            return;
+        }
+        if (global.screen.n_workspaces <= 1) {
+            return;
+        }
+        this._doomed = true;
         this.emit('remove-event');
         Main._removeWorkspace(this.metaWorkspace);
         this.removed = true;
@@ -1030,17 +1038,6 @@ ExpoThumbnailsBox.prototype = {
             currentPos++;
         }
         
-        // for simplicity, assume workspaces are removed one at a time
-        this._thumbnails[this._kbThumbnailIndex].showKeyboardSelectedState(false);
-        if (start < this._kbThumbnailIndex) {
-            --this._kbThumbnailIndex;
-        }
-        if (start === this._kbThumbnailIndex) {
-            if (this._kbThumbnailIndex === this._thumbnails.length - 1) {
-                --this._kbThumbnailIndex;
-            }
-        }
-
         this._queueUpdateStates();
     },
 
@@ -1124,6 +1121,13 @@ ExpoThumbnailsBox.prototype = {
                                        let index = this._thumbnails.indexOf(thumbnail);
                                        this._thumbnails.splice(index, 1);
                                        thumbnail.destroy();
+
+                                       if (index < this._kbThumbnailIndex ||
+                                           (index === this._kbThumbnailIndex &&
+                                               index === this._thumbnails.length))
+                                       {
+                                           --this._kbThumbnailIndex;
+                                       }
 
                                        this._queueUpdateStates();
                                    },
