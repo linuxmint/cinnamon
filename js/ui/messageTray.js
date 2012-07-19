@@ -1591,7 +1591,6 @@ MessageTray.prototype = {
             if (canShowNotification)
                 this._showNotification();
             else if (!notificationsEnabled) {
-                global.logError("YES");
                 this._notification = this._notificationQueue.shift();
                 if (AppletManager.get_role_provider_exists(AppletManager.Roles.NOTIFICATIONS)) {
                     this.emit('notify-applet-update', this._notification);
