@@ -70,6 +70,8 @@ MyApplet.prototype = {
             let menuItem = new MyPopupMenuItem(icon, _("Clear list"), {});
             this.menu.addMenuItem(menuItem);
             menuItem.connect('activate', Lang.bind(this, this._clearAll));
+        } else {
+            this.menu.addMenuItem(new PopupMenu.PopupMenuItem(_("No recent documents")));
         }
     },
     
