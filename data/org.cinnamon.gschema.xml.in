@@ -239,7 +239,7 @@
       </_description>
     </key>
 
-    <key type="b" name="notifications-on">
+    <key type="b" name="display-notifications">
       <default>true</default>
       <_summary>Whether notifications are to be displayed</_summary>
     </key>
