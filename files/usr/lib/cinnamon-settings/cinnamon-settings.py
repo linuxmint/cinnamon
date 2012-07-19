@@ -565,14 +565,14 @@ class GSettingsEntry(Gtk.HBox):
         self.settings = Gio.Settings.new(schema)        
         self.content_widget.set_text(self.settings.get_string(self.key))
         self.settings.connect("changed::"+self.key, self.on_my_setting_changed)
-        self.content_widget.connect('changed', self.on_my_value_changed)     
+        self.content_widget.connect('focus-out-event', self.on_my_value_changed)     
         
         self.content_widget.show_all()       
     
     def on_my_setting_changed(self, settings, key):
         self.content_widget.set_text(self.settings.get_string(self.key))
         
-    def on_my_value_changed(self, widget):        
+    def on_my_value_changed(self, event, widget):        
         self.settings.set_string(self.key, self.content_widget.get_text())
 
 class GSettingsFileChooser(Gtk.HBox):
@@ -1130,8 +1130,7 @@ class MainWindow:
         sidePage.add_widget(GSettingsCheckButton(_("Use customized panel size (otherwise it's defined by the theme)"), "org.cinnamon", "panel-resizable"))
         sidePage.add_widget(GSettingsSpinButton(_("Top panel height"), "org.cinnamon", "panel-top-height", 0, 2000, 1, 5, _("Pixels")))
         sidePage.add_widget(GSettingsSpinButton(_("Bottom panel height"), "org.cinnamon", "panel-bottom-height", 0, 2000, 1, 5, _("Pixels")))
-        sidePage.add_widget(GSettingsCheckButton(_("Panel edit mode"), "org.cinnamon", "panel-edit-mode"))
-        sidePage.add_widget(GSettingsCheckButton(_("Panel Launchers draggable"), "org.cinnamon", "panel-launchers-draggable"))       
+        sidePage.add_widget(GSettingsCheckButton(_("Panel edit mode"), "org.cinnamon", "panel-edit-mode"))        
         
         sidePage = SidePage(_("Calendar"), "clock.svg", self.content_box)
         self.sidePages.append((sidePage, "calendar"))
