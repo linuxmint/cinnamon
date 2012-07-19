@@ -1639,6 +1639,10 @@ StScrollBar StButton#vhandle:hover {
 	font-weight: bold;
 	font-size: 48pt;	
 }
+.workspace-osd#failed {
+	color: #ff0000;
+}
+
 
 .expo-workspaces-name-entry {
 	padding: 5px;
