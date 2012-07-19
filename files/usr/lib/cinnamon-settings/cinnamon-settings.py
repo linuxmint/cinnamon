@@ -1130,8 +1130,7 @@ class MainWindow:
         sidePage.add_widget(GSettingsCheckButton(_("Use customized panel size (otherwise it's defined by the theme)"), "org.cinnamon", "panel-resizable"))
         sidePage.add_widget(GSettingsSpinButton(_("Top panel height"), "org.cinnamon", "panel-top-height", 0, 2000, 1, 5, _("Pixels")))
         sidePage.add_widget(GSettingsSpinButton(_("Bottom panel height"), "org.cinnamon", "panel-bottom-height", 0, 2000, 1, 5, _("Pixels")))
-        sidePage.add_widget(GSettingsCheckButton(_("Panel edit mode"), "org.cinnamon", "panel-edit-mode"))
-        sidePage.add_widget(GSettingsCheckButton(_("Panel Launchers draggable"), "org.cinnamon", "panel-launchers-draggable"))       
+        sidePage.add_widget(GSettingsCheckButton(_("Panel edit mode"), "org.cinnamon", "panel-edit-mode"))        
         
         sidePage = SidePage(_("Calendar"), "clock.svg", self.content_box)
         self.sidePages.append((sidePage, "calendar"))
