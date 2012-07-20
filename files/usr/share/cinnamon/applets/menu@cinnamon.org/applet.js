@@ -1078,7 +1078,12 @@ MyApplet.prototype = {
                         this._clearSelections(this.applicationsBox);
                         button.actor.style_class = "menu-category-button-selected";
                         this._scrollToButton(button);
+                        this.selectedAppDescription.set_text(button.file.uri.slice(7));
                         }));
+                button.actor.connect('leave-event', Lang.bind(this, function() {
+                            this.selectedAppTitle.set_text("");
+                            this.selectedAppDescription.set_text("");
+                            }));
                 this._recentButtons.push(button);
                 this.applicationsBox.add_actor(button.actor);
             }
