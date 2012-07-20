@@ -226,7 +226,7 @@ PanelCorner.prototype = {
 
         // Start at the back and work backward
         let index = children.length - 1;
-        while (!children[index].visible && index >= 0)
+        while (index >= 0 && !children[index].visible)
             index--;
 
         if (index < 0)
@@ -246,7 +246,7 @@ PanelCorner.prototype = {
 
         // Start at the front and work forward
         let index = 0;
-        while (!children[index].visible && index < children.length)
+        while (index < children.length && !children[index].visible)
             index++;
 
         if (index == children.length)
