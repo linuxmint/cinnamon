@@ -36,12 +36,6 @@ let appsys = Cinnamon.AppSystem.get_default();
  * child, and it'll give you the next or previous, or first or
  * last child in the list.
  *
- * It can also become a sort of 'pseudo-container', in the
- * case of the category/places/recent buttons - they don't
- * share the same parent for layout and appearance reasons,
- * but we can cherry-pick actors to add to the list
- * then treat them the same way
- *
  * We could have this object regenerate off a signal
  * every time the visibles have changed in our applicationBox,
  * but we really only need it when we start keyboard
@@ -103,19 +97,6 @@ VisibleChildIterator.prototype = {
 
     getAbsoluteIndexOfChild: function(child) {
         return this.abs_index[this.visible_children.indexOf(child)];
-    },
-    
-    removeChild: function(child) {
-        let index = this.visible_children.indexOf(child);
-        this.visible_children.splice(index, 1);
-        this.abs_index.splice(index, 1);
-        this._num_children = this.visible_children.length;
-    },
-    
-    addChild: function(child) {
-        this.visible_children.push(child);
-        this.abs_index.push(this.abs_index.length);
-        this._num_children = this.visible_children.length;
     }
 };
 
@@ -749,6 +730,7 @@ MyApplet.prototype = {
             });
             this._applet_context_menu.addMenuItem(settings_menu_item);
             this.actor.map();
+            
         }
         catch (e) {
             global.logError(e);
@@ -767,7 +749,6 @@ MyApplet.prototype = {
         this.menu.actor.add_style_class_name('menu-background');
         this.menu.connect('open-state-changed', Lang.bind(this, this._onOpenStateChanged));
         this.menu.connect('open-state-changed', Lang.bind(this, this._onOpenStateToggled));
-        
         this._display();
     },
     
@@ -799,14 +780,17 @@ MyApplet.prototype = {
 
     _onOpenStateChanged: function(menu, open) {
         if (open) {
-            this.actor.add_style_pseudo_class('active');            
-		}
-        else {
+            this.actor.add_style_pseudo_class('active');
+            this._select_category(null, this._allAppsCategoryButton);
+	} else {
             this.actor.remove_style_pseudo_class('active');            
             if (this.searchActive) {
 		this.resetSearch();
 	    }
-            this._clearApplicationsBox();
+            this.selectedAppTitle.set_text("");
+            this.selectedAppDescription.set_text("");
+            this._previousSelectedItemIndex = null;
+            this._previousSelectedActor = null;
         }
     },
 
@@ -842,13 +826,13 @@ MyApplet.prototype = {
         let index = this._selectedItemIndex;   
 
         if (this._activeContainer === null && symbol == Clutter.KEY_Up) {
-            this._activeContainer = this.categoriesBox;
-            item_actor = this.catBoxIter.getLastVisible();
-            index = this.catBoxIter.getAbsoluteIndexOfChild(item_actor);
+            this._activeContainer = this.applicationsBox;
+            item_actor = this.appBoxIter.getLastVisible();
+            index = this.appBoxIter.getAbsoluteIndexOfChild(item_actor);
         } else if (this._activeContainer === null && symbol == Clutter.KEY_Down) {
-            this._activeContainer = this.categoriesBox;
-            item_actor = this.catBoxIter.getFirstVisible();
-            index = this.catBoxIter.getAbsoluteIndexOfChild(item_actor);
+            this._activeContainer = this.applicationsBox;
+            item_actor = this.appBoxIter.getFirstVisible();
+            index = this.appBoxIter.getAbsoluteIndexOfChild(item_actor);
         } else if (symbol == Clutter.KEY_Up) {
             if (this._activeContainer==this.applicationsBox) {
                 item_actor = this.appBoxIter.getPrevVisible(this.applicationsBox.get_child_at_index(index));
@@ -870,13 +854,11 @@ MyApplet.prototype = {
             index = this.appBoxIter.getAbsoluteIndexOfChild(item_actor);
         } else if (symbol == Clutter.KEY_Left && this._activeContainer === this.applicationsBox && !this.searchActive) {
             this._clearSelections(this.applicationsBox);
-            item_actor = this._previousSelectedActor;
+            item_actor = (this._previousSelectedActor != null) ? this._previousSelectedActor : this.catBoxIter.getFirstVisible();
             index = this.catBoxIter.getAbsoluteIndexOfChild(item_actor);
         } else if (this._activeContainer === this.applicationsBox && (symbol == Clutter.KEY_Return || symbol == Clutter.KP_Enter)) {
             item_actor = this.applicationsBox.get_child_at_index(this._selectedItemIndex);
             item_actor._delegate.activate();
-            this.selectedAppTitle.set_text("");
-            this.selectedAppDescription.set_text("");
             return true;
         } else {
             return false;
@@ -1218,7 +1200,7 @@ MyApplet.prototype = {
 		    var app = appsys.lookup_app_by_tree_entry(entry);
                     if (!app)
                         app = appsys.lookup_settings_app_by_tree_entry(entry);
-                    dupe = this.find_dupe_name(app.get_name());
+                    dupe = this.find_dupe(app);
                     if (!dupe) {
                         let applicationButton = new ApplicationButton(this, app);
                         applicationButton.actor.connect('realize', Lang.bind(this, this._onApplicationButtonRealized));
@@ -1248,10 +1230,10 @@ MyApplet.prototype = {
         }
     },
 
-    find_dupe_name: function(app_name) {
+    find_dupe: function(app) {
         let ret = false;
         for (let i = 0; i < this._applicationsButtons.length; i++) {
-            if (app_name == this._applicationsButtons[i].app.get_name()) {
+            if (app == this._applicationsButtons[i].app) {
                 ret = true;
                 break;
             }
@@ -1490,8 +1472,8 @@ MyApplet.prototype = {
             if (this._searchIconClickedId == 0) {
                 this._searchIconClickedId = this.searchEntry.connect('secondary-icon-clicked',
                     Lang.bind(this, function() {
-                        this.resetSearch();       
-                        this._clearApplicationsBox();                 
+                        this.resetSearch();
+                        this._select_category(null, this._allAppsCategoryButton);
                     }));
             }
             
@@ -1502,7 +1484,6 @@ MyApplet.prototype = {
             this._searchIconClickedId = 0;
 
             this.searchEntry.set_secondary_icon(this._searchInactiveIcon);
-            this._clearApplicationsBox();
             this._setCategoriesButtonActive(true);
         }
         if (!this.searchActive) {
