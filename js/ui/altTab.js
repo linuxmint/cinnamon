@@ -470,7 +470,7 @@ AltTabPopup.prototype = {
             let window = this._appIcons[this._currentApp].cachedWindows[0];
 
             // Create the actor that will serve as background for the clone.
-            let background = new St.Bin({style_class: 'switcher-preview-background switcher-preview-frame'});
+            let background = new St.Bin({style_class: 'switcher-preview-frame'});
             this._previewBackground = background;
             this.actor.add_actor(background);
             // Make sure that the frame does not overlap the switcher.
@@ -483,8 +483,8 @@ AltTabPopup.prototype = {
             let borderAdj = borderWidth / 2;
 
             let or = window.get_outer_rect();
-            or.x -= borderAdj; or.y -= borderAdj; 
-            or.width += borderAdj; or.height += borderAdj; 
+            or.x -= Math.floor(borderAdj); or.y -= Math.floor(borderAdj); 
+            or.width += Math.ceil(borderAdj); or.height += Math.ceil(borderAdj); 
 
             let childBox = new Clutter.ActorBox();
             childBox.x1 = or.x;
@@ -503,16 +503,16 @@ AltTabPopup.prototype = {
             // Show a clone of the target window
             let previewClone = new Clutter.Clone({source: window.get_compositor_private().get_texture()});
             background.add_actor(previewClone);
+            previewClone.opacity = 225;
 
             // The clone's rect is not the same as the window's outer rect
             let ir = window.get_input_rect();
             let diffX = (ir.width - or.width)/2;
             let diffY = (ir.height - or.height)/2;
-
-            childBox.x1 = -diffX;
-            childBox.x2 = or.width + diffX;
-            childBox.y1 = -diffY;
-            childBox.y2 = or.height + diffY;
+            childBox.x1 = -Math.floor(diffX);
+            childBox.x2 = or.width + Math.ceil(diffX);
+            childBox.y1 = -Math.floor(diffY);
+            childBox.y2 = or.height + Math.ceil(diffY);
             previewClone.allocate(childBox, 0);
         };
 
