@@ -523,7 +523,7 @@ _Draggable.prototype = {
             if (!this._buttonDown)
                 this._dragComplete();
             this.emit('drag-end', eventTime, false);
-            if (!this._dragOrigParent)
+            if (!this._dragOrigParent && this._dragActor)
                 this._dragActor.destroy();
 
             return;
