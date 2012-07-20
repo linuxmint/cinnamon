@@ -162,6 +162,7 @@ AltTabPopup.prototype = {
         let display = screen.get_display();
         let windows = Main.getTabList();
 
+        this._showThumbnails = this._thumbnailsEnabled && !this._iconsEnabled;
         if (windows.length == 0)
             return false;
 
@@ -176,9 +177,9 @@ AltTabPopup.prototype = {
         this.actor.connect('button-press-event', Lang.bind(this, this._clickedOutside));
         this.actor.connect('scroll-event', Lang.bind(this, this._onScroll));
 
-        this._appSwitcher = new AppSwitcher(windows, this);
+        this._appSwitcher = new AppSwitcher(windows, this._showThumbnails, this);
         this.actor.add_actor(this._appSwitcher.actor);
-        if (!this._iconsEnabled) {
+        if (!this._iconsEnabled && !this._thumbnailsEnabled) {
             this._appSwitcher.actor.hide();
         }
         this._appSwitcher.connect('item-activated', Lang.bind(this, this._appActivated));
@@ -568,7 +569,7 @@ AltTabPopup.prototype = {
         if (window != null) {
             this._currentWindow = window;
             this._doWindowPreview();
-            if (this._thumbnailsEnabled) {
+            if (this._thumbnailsEnabled && this._iconsEnabled) {
                 if (!this._thumbnails)
                     this._createThumbnails();
                 this._thumbnails.highlight(window, forceAppFocus);
@@ -938,19 +939,20 @@ SwitcherList.prototype = {
 
 Signals.addSignalMethods(SwitcherList.prototype);
 
-function AppIcon(app) {
-    this._init(app);
+function AppIcon(window, showThumbnail) {
+    this._init(window, showThumbnail);
 }
 
 AppIcon.prototype = {
-    _init: function(window) {
+    _init: function(window, showThumbnail) {
         this.window = window;
+        this.showThumbnail = showThumbnail;
         let tracker = Cinnamon.WindowTracker.get_default();
         this.app = tracker.get_window_app(window);
         this.actor = new St.BoxLayout({ style_class: 'alt-tab-app',
                                          vertical: true });
         this.icon = null;
-        this._iconBin = new St.Bin({ x_fill: true, y_fill: true });
+        this._iconBin = new St.Bin();
 
         this.actor.add(this._iconBin, { x_fill: false, y_fill: false } );
         let title = window.get_title();
@@ -967,11 +969,20 @@ AppIcon.prototype = {
     },
 
     set_size: function(size) {
-        this.icon = this.app ? 
-            this.app.create_icon_texture(size) :
-            new St.Icon({ icon_name: 'application-default-icon',
-                                 icon_type: St.IconType.FULLCOLOR,
-                                 icon_size: size });
+        if (this.showThumbnail){
+            let windowTexture = this.window.get_compositor_private().get_texture();
+            let [width, height] = windowTexture.get_size();
+            let scale = Math.min(size/Math.max(width, height), 1);
+            this.icon = new Clutter.Clone({source: windowTexture,
+                                           width: width * scale,
+                                           height: height * scale});
+        } else {
+            this.icon = this.app ? 
+                this.app.create_icon_texture(size) :
+                new St.Icon({ icon_name: 'application-default-icon',
+                              icon_type: St.IconType.FULLCOLOR,
+                              icon_size: size });
+        }
         this._iconBin.set_size(size, size);
         this._iconBin.child = this.icon;
     }
@@ -984,7 +995,7 @@ function AppSwitcher() {
 AppSwitcher.prototype = {
     __proto__ : SwitcherList.prototype,
 
-    _init : function(windows, altTabPopup) {
+    _init : function(windows, showThumbnails, altTabPopup) {
         SwitcherList.prototype._init.call(this, true);
 
         // Construct the AppIcons, add to the popup
@@ -992,7 +1003,7 @@ AppSwitcher.prototype = {
         let workspaceIcons = [];
         let otherIcons = [];
         for (let i = 0; i < windows.length; i++) {
-            let appIcon = new AppIcon(windows[i]);
+            let appIcon = new AppIcon(windows[i], showThumbnails);
             // Cache the window list now; we don't handle dynamic changes here,
             // and we don't want to be continually retrieving it
             appIcon.cachedWindows = [windows[i]];
@@ -1108,8 +1119,8 @@ AppSwitcher.prototype = {
 
         SwitcherList.prototype.highlight.call(this, n, justOutline);
         this._curApp = n;
-
-        if (this._curApp != -1 && this._altTabPopup._thumbnailsEnabled) {
+ 
+        if (this._curApp != -1 && this._altTabPopup._thumbnailsEnabled && this._altTabPopup._iconsEnabled) {
             this._arrows[this._curApp].show();
         }
     },
