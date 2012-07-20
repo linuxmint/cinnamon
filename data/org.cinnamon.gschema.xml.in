@@ -448,7 +448,7 @@
       <default>"icons"</default>
       <_summary>ALT-tab switcher style</_summary>
       <_description>
-       Controls the style of the ALT-tab window switcher. Can be any combination of "icon", "preview" and "thumbnail", separated by "+".
+       Controls the style of the ALT-tab window switcher. Can be any combination of "icons", "preview" and "thumbnails", separated by "+".
       </_description>
     </key>
 
