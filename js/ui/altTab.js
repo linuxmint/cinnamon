@@ -74,6 +74,30 @@ AltTabPopup.prototype = {
         this._disableHover();
 
         Main.uiGroup.add_actor(this.actor);
+
+        this._previewEnabled = false;
+        this._iconsEnabled = false;
+        this._thumbnailsEnabled = false;
+        let styleSettings = global.settings.get_string("alttab-switcher-style");
+        let features = styleSettings.split('+');
+        let found = false;
+        for (let i in features) {
+            if (features[i] === 'icons') {
+                this._iconsEnabled = true;
+                found = true;
+            }
+            if (features[i] === 'preview') {
+                this._previewEnabled = true;
+                found = true;
+            }
+            if (features[i] === 'thumbnails') {
+                this._thumbnailsEnabled = true;
+                found = true;
+            }
+        }
+        if (!found) {
+            this._iconsEnabled = true;
+        }
     },
 
     _getPreferredWidth: function (actor, forHeight, alloc) {
@@ -154,6 +178,9 @@ AltTabPopup.prototype = {
 
         this._appSwitcher = new AppSwitcher(windows, this);
         this.actor.add_actor(this._appSwitcher.actor);
+        if (!this._iconsEnabled) {
+            this._appSwitcher.actor.hide();
+        }
         this._appSwitcher.connect('item-activated', Lang.bind(this, this._appActivated));
         this._appSwitcher.connect('item-entered', Lang.bind(this, this._appEntered));
 
@@ -201,10 +228,10 @@ AltTabPopup.prototype = {
         // We delay showing the popup so that fast Alt+Tab users aren't
         // disturbed by the popup briefly flashing.
         this._initialDelayTimeoutId = Mainloop.timeout_add(POPUP_DELAY_TIMEOUT,
-                                                           Lang.bind(this, function () {
-                                                               this.actor.opacity = 255;
-                                                               this._initialDelayTimeoutId = 0;
-                                                           }));
+            Lang.bind(this, function () {
+                this.actor.opacity = 255;
+                this._initialDelayTimeoutId = 0;
+            }));
 
         return true;
     },
@@ -426,19 +453,15 @@ AltTabPopup.prototype = {
             Mainloop.source_remove(this._initialDelayTimeoutId);
     },
     
-    _outlineContours: function() {
-        if (this._outlineBackground) {
-            this.actor.remove_actor(this._outlineBackground);
-            this._outlineBackground.destroy();
-            this._outlineBackground = null;
-            this.actor.remove_actor(this._outlineFrame);
-            this._outlineFrame.destroy();
+    _doWindowPreview: function() {
+        if (this._previewBackground) {
+            this.actor.remove_actor(this._previewBackground);
+            this._previewBackground.destroy();
+            this._previewBackground = null;
+            this.actor.remove_actor(this._previewFrame);
+            this._previewFrame.destroy();
         }
-        if (!this._outlineSettingsFetched) {
-            this._outlineEnabled = global.settings.get_boolean("enable-alttab-outline");
-            this._outlineSettingsFetched = true;
-        }
-        if (!this._outlineEnabled || !this._appIcons[this._currentApp].cachedWindows.length) {
+        if (!this._previewEnabled || !this._appIcons[this._currentApp].cachedWindows.length) {
             return;
         }
 
@@ -446,8 +469,8 @@ AltTabPopup.prototype = {
             let window = this._appIcons[this._currentApp].cachedWindows[0];
 
             // Create the actor that will serve as background for the clone.
-            let background = new St.Bin({style_class: 'switcher-outline-background switcher-outline-frame'});
-            this._outlineBackground = background;
+            let background = new St.Bin({style_class: 'switcher-preview-background switcher-preview-frame'});
+            this._previewBackground = background;
             this.actor.add_actor(background);
             // Make sure that the frame does not overlap the switcher.
             background.lower(this._appSwitcher.actor);
@@ -470,16 +493,15 @@ AltTabPopup.prototype = {
             background.allocate(childBox, 0);
 
             // The frame is needed to draw the border round the clone.
-            let frame = this._outlineFrame = new St.Bin({style_class: 'switcher-outline-frame'});
+            let frame = this._previewFrame = new St.Bin({style_class: 'switcher-preview-frame'});
             this.actor.add_actor(frame); // must not be a child of the background
             frame.allocate(childBox, 0); // same dimensions
             frame.lower(this._appSwitcher.actor);
             background.lower(frame);
 
             // Show a clone of the target window
-            let outlineClone = new Clutter.Clone({source: window.get_compositor_private().get_texture()});
-            background.add_actor(outlineClone);
-            outlineClone.opacity = 225; // slightly translucent to get a tint from the background color
+            let previewClone = new Clutter.Clone({source: window.get_compositor_private().get_texture()});
+            background.add_actor(previewClone);
 
             // The clone's rect is not the same as the window's outer rect
             let ir = window.get_input_rect();
@@ -490,7 +512,7 @@ AltTabPopup.prototype = {
             childBox.x2 = or.width + diffX;
             childBox.y1 = -diffY;
             childBox.y2 = or.height + diffY;
-            outlineClone.allocate(childBox, 0);
+            previewClone.allocate(childBox, 0);
         };
 
         // Use a cancellable timeout to avoid flicker effect when tabbing rapidly through the set
@@ -544,11 +566,13 @@ AltTabPopup.prototype = {
         this._appSwitcher.highlight(app, this._thumbnailsFocused);
 
         if (window != null) {
-            if (!this._thumbnails)
-                this._createThumbnails();
-            this._outlineContours();
             this._currentWindow = window;
-            this._thumbnails.highlight(window, forceAppFocus);
+            this._doWindowPreview();
+            if (this._thumbnailsEnabled) {
+                if (!this._thumbnails)
+                    this._createThumbnails();
+                this._thumbnails.highlight(window, forceAppFocus);
+            }
         } else if (this._appIcons[this._currentApp].cachedWindows.length > 1 &&
                    !forceAppFocus) {
             this._thumbnailTimeoutId = Mainloop.timeout_add (
@@ -1085,7 +1109,7 @@ AppSwitcher.prototype = {
         SwitcherList.prototype.highlight.call(this, n, justOutline);
         this._curApp = n;
 
-        if (this._curApp != -1) {
+        if (this._curApp != -1 && this._altTabPopup._thumbnailsEnabled) {
             this._arrows[this._curApp].show();
         }
     },

@@ -877,13 +877,10 @@ StScrollBar StButton#vhandle:hover {
 	border-color: rgba(0,0,0,0);
 	color: white;
 }
-.switcher-outline-background {
-   background-color: rgba(50, 50, 50, 0.0);   
-}
-.switcher-outline-frame {
-   border-color: #aaaaaa;
-   border: 0px;
-   border-radius: 0px;
+.switcher-preview-frame {
+   border-color: #000;
+   border: 4px;
+   border-radius: 4px;
 }
 
 /* ===================================================================

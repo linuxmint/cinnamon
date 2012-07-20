@@ -456,9 +456,12 @@
       <_summary>Whether panel launchers are draggable</_summary>
     </key>
 
-    <key type="b" name="enable-alttab-outline">
-      <default>false</default>
-      <_summary>Enable ALT+Tab outline and window preview</_summary>
+    <key name="alttab-switcher-style" type="s">
+      <default>"icons"</default>
+      <_summary>ALT-tab switcher style</_summary>
+      <_description>
+       Controls the style of the ALT-tab window switcher. Can be any combination of "icon", "preview" and "thumbnail", separated by "+".
+      </_description>
     </key>
 
     <key type="b" name="enable-edge-flip">
