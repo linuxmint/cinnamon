@@ -364,11 +364,11 @@
       </_description>
     </key>
     
-    <key name="workspace-names" type="as">
-      <default>[ 'WORKSPACE 1', 'WORKSPACE 2' ]</default>
-      <_summary>List of workspace names</_summary>
+    <key name="workspace-name-overrides" type="as">
+      <default>[]</default>
+      <_summary>List of non-default workspace names</_summary>
       <_description>
-        The names of the workspaces.
+        The user-set names of the workspaces.
       </_description>
     </key>
     

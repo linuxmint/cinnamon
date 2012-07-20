@@ -316,7 +316,7 @@ function start() {
         Scripting.runPerfScript(module, perfOutput);
     }
     
-    workspace_names = global.settings.get_strv("workspace-names");  
+    workspace_names = global.settings.get_strv("workspace-name-overrides");  
 
     global.screen.connect('notify::n-workspaces', _nWorkspacesChanged);
 
@@ -349,9 +349,10 @@ function _fillWorkspaceNames(index) {
 }
 
 function _trimWorkspaceNames(index) {
-    // trim empty or out-of-index names from the end.
+    // trim empty or out-of-bounds names from the end.
     for (let i = workspace_names.length - 1;
-            i >= 0 && (i >= nWorks || !workspace_names[i].length); --i) {
+            i >= 0 && (i >= nWorks || !workspace_names[i].length); --i)
+    {
         workspace_names.pop();
     }
 }
@@ -368,7 +369,7 @@ function setWorkspaceName(index, name) {
             "" :
             name);
         _trimWorkspaceNames();
-        global.settings.set_strv("workspace-names", workspace_names);
+        global.settings.set_strv("workspace-name-overrides", workspace_names);
     }
 }
 
@@ -400,7 +401,7 @@ function _removeWorkspace(workspace) {
         workspace_names.splice (index,1);
     }
     _trimWorkspaceNames();
-    global.settings.set_strv("workspace-names", workspace_names);
+    global.settings.set_strv("workspace-name-overrides", workspace_names);
     global.settings.set_int("number-workspaces", nWorks);
     global.screen.remove_workspace(workspace, global.get_current_time());
     return true;
