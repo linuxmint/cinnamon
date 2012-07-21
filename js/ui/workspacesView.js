@@ -135,7 +135,7 @@ WorkspacesView.prototype = {
             
         // this should select the last active window
         if (this._workspaces.length > 0) { 
-            this._workspaces[activeWorkspaceIndex].selectAnotherWindow(Clutter.Left);
+	        this._workspaces[activeWorkspaceIndex].selectAnotherWindow(Clutter.Home);
         }
     },
 
@@ -151,12 +151,6 @@ WorkspacesView.prototype = {
             return true;
         }
 
-        if (symbol === Clutter.Left || symbol === Clutter.Up 
-                || symbol === Clutter.Right || symbol === Clutter.Down) {
-            activeWorkspace.selectAnotherWindow(symbol);
-            return true;
-        }
-        
         if (symbol === Clutter.Return || symbol === Clutter.KEY_space) {
             if (activeWorkspace.activateSelectedWindow()) {
                 return true;
@@ -164,7 +158,7 @@ WorkspacesView.prototype = {
             Main.overview.hide();
             return true;
         }
-        return false;
+        return activeWorkspace.selectAnotherWindow(symbol);
     },
 
     setGeometry: function(x, y, width, height, spacing) {
