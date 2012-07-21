@@ -1318,17 +1318,17 @@ class MainWindow:
         
         sidePage = SidePage(_("Windows"), "windows.svg", self.content_box)
         self.sidePages.append((sidePage, "windows"))
-        sidePage.add_widget(GConfComboBox(_("Action on title bar double-click"),
-                                            "/apps/metacity/general/action_double_click_titlebar",
-                                            [(i, i.replace("_", " ").title()) for i in ('toggle_shade', 'toggle_maximize', 'toggle_maximize_horizontally', 'toggle_maximize_vertically', 'minimize', 'shade', 'menu', 'lower', 'none')]))
-        sidePage.add_widget(GConfComboBox(_("Action on title bar middle-click"),
-                                            "/apps/metacity/general/action_middle_click_titlebar",
-                                            [(i, i.replace("_", " ").title()) for i in ('toggle_shade', 'toggle_maximize', 'toggle_maximize_horizontally', 'toggle_maximize_vertically', 'minimize', 'shade', 'menu', 'lower', 'none')]))
-        sidePage.add_widget(GConfComboBox(_("Action on title bar right-click"),
-                                            "/apps/metacity/general/action_right_click_titlebar",
-                                            [(i, i.replace("_", " ").title()) for i in ('toggle_shade', 'toggle_maximize', 'toggle_maximize_horizontally', 'toggle_maximize_vertically', 'minimize', 'shade', 'menu', 'lower', 'none')]))
-        sidePage.add_widget(GConfComboBox(_("Window focus mode"),
-                                            "/apps/metacity/general/focus_mode",
+        sidePage.add_widget(GSettingsComboBox(_("Action on title bar double-click"),
+                                            "org.gnome.desktop.wm.preferences", "action-double-click-titlebar",
+                                            [(i, i.replace("-", " ").title()) for i in ('toggle-shade', 'toggle-maximize', 'toggle-maximize-horizontally', 'toggle-maximize-vertically', 'minimize', 'shade', 'menu', 'lower', 'none')]))
+        sidePage.add_widget(GSettingsComboBox(_("Action on title bar middle-click"),
+                                            "org.gnome.desktop.wm.preferences", "action-middle-click-titlebar",
+                                            [(i, i.replace("-", " ").title()) for i in ('toggle-shade', 'toggle-maximize', 'toggle-maximize-horizontally', 'toggle-maximize-vertically', 'minimize', 'shade', 'menu', 'lower', 'none')]))
+        sidePage.add_widget(GSettingsComboBox(_("Action on title bar right-click"),
+                                            "org.gnome.desktop.wm.preferences", "action-right-click-titlebar",
+                                            [(i, i.replace("-", " ").title()) for i in ('toggle-shade', 'toggle-maximize', 'toggle-maximize-horizontally', 'toggle-maximize-vertically', 'minimize', 'shade', 'menu', 'lower', 'none')]))
+        sidePage.add_widget(GSettingsComboBox(_("Window focus mode"),
+                                            "org.gnome.desktop.wm.preferences", "focus-mode",
                                             [(i, i.title()) for i in ("click","sloppy","mouse")]))
         sidePage.add_widget(TitleBarButtonsOrderSelector())        
         sidePage.add_widget(GSettingsCheckButton(_("Enable ALT+Tab outline and window preview"), "org.cinnamon", "enable-alttab-outline"))
