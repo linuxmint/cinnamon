@@ -73,7 +73,7 @@ ExpoView.prototype = {
 
         this._restackedNotifyId =
             global.screen.connect('restacked',
-                                  Lang.bind(this, this._onRestacked));
+                                  Lang.bind(this, this._restack));
 
         if (this._nWorkspacesChangedId == 0)
             this._nWorkspacesChangedId = global.screen.connect('notify::n-workspaces',
@@ -88,7 +88,7 @@ ExpoView.prototype = {
             this._windowDragEndId = Main.expo.connect('window-drag-end',
                                                           Lang.bind(this, this._dragEnd));
 
-        this._onRestacked();
+        this._restack();
     },
 
     hide: function() {
@@ -148,7 +148,7 @@ ExpoView.prototype = {
         this._controls.allocate(box, flags);
     },
 
-    _onRestacked: function() {
+    _restack: function() {
         let stack = global.get_window_actors();
         let stackIndices = {};
 
@@ -226,7 +226,9 @@ ExpoView.prototype = {
     _dragEnd: function() {
         this._inDrag = false;
         DND.removeDragMonitor(this._dragMonitor);
-
+        if (!this._cancelledDrag) {
+            this._restack();
+        }
     },
 
     _onScrollEvent: function (actor, event) {
