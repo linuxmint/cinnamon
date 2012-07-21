@@ -567,9 +567,10 @@ ExpoWorkspaceThumbnail.prototype = {
         let lastRowCols = this._windows.length - ((nRows - 1) * nCols);
         let lastRowOffset = (this.actor.width - (maxWindowWidth * lastRowCols) - (spacing * (lastRowCols+1))) / 2;
         let offset = 0;
-        let i;
-        for (i = 0; i < this._windows.length; i++){
-            let window = this._windows[i];
+        let windows = this._windows.slice();
+        windows.reverse();
+        for (let i = 0; i < windows.length; i++){
+            let window = windows[i];
             if (!window.origSet) {
                 window.origX = window.actor.x;
                 window.origY = window.actor.y;
