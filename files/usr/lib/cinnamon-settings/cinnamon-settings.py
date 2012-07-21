@@ -49,14 +49,6 @@ class SidePage:
             self.content_box.pack_start(widget, False, False, 2)            
         self.content_box.show_all()
 
-        
-    def on_my_value_changed(self, widget):
-        tree_iter = widget.get_active_iter()
-        if tree_iter != None:            
-            value = self.model[tree_iter][0]            
-            self.settings.set_string(self.key, value)
-    def on_my_setting_changed(self, client, cnxn_id, entry, args):
-        print entry
 
 def walk_directories(dirs, filter_func):
     valid = []
