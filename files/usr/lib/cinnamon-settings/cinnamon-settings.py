@@ -1355,7 +1355,7 @@ class MainWindow:
         sidePage.add_widget(GSettingsFontButton(_("Default font"), "org.gnome.desktop.interface", "font-name"))
         sidePage.add_widget(GSettingsFontButton(_("Document font"), "org.gnome.desktop.interface", "document-font-name"))
         sidePage.add_widget(GSettingsFontButton(_("Monospace font"), "org.gnome.desktop.interface", "monospace-font-name"))
-        sidePage.add_widget(GConfFontButton(_("Window title font"), "/apps/metacity/general/titlebar_font"))
+        sidePage.add_widget(GSettingsFontButton(_("Window title font"), "org.gnome.desktop.wm.preferences", "titlebar-font"))
         sidePage.add_widget(GSettingsComboBox(_("Hinting"), "org.gnome.settings-daemon.plugins.xsettings", "hinting", [(i, i.title()) for i in ("none", "slight", "medium", "full")]))
         sidePage.add_widget(GSettingsComboBox(_("Antialiasing"), "org.gnome.settings-daemon.plugins.xsettings", "antialiasing", [(i, i.title()) for i in ("none", "grayscale", "rgba")]))
         
