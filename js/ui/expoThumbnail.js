@@ -51,7 +51,9 @@ ExpoWindowClone.prototype = {
                                               dragActorOpacity: Workspace.DRAGGING_WINDOW_OPACITY });
         this._draggable.connect('drag-begin', Lang.bind(this, this._onDragBegin));
         this._draggable.connect('drag-end', Lang.bind(this, this._onDragEnd));
+        this._draggable.connect('drag-cancelled', Lang.bind(this, this._onDragCancelled));
         this.inDrag = false;
+        this.dragCancelled = false;
 
         // Create an icon for this window. Even though the window
         // may be showing now, it might be minimized later on.
@@ -134,22 +136,18 @@ ExpoWindowClone.prototype = {
     _onDragBegin : function (draggable, time) {
         Main.expo.showCloseArea();
         this.inDrag = true;
+        this.dragCancelled = false;
         this.emit('drag-begin');
+    },
+
+    _onDragCancelled : function (draggable, time) {
+        this.dragCancelled = true;
+        this.emit('drag-cancelled');
     },
 
     _onDragEnd : function (draggable, time, snapback) {
         Main.expo.hideCloseArea();
         this.inDrag = false;
-        // We may not have a parent if DnD completed successfully, in
-        // which case our clone will shortly be destroyed and replaced
-        // with a new one on the target workspace.
-        if (this.actor.get_parent() != null) {
-            if (this._stackAbove == null)
-                this.actor.lower_bottom();
-            else
-                this.actor.raise(this._stackAbove);
-        }
-
         this.emit('drag-end');
     }
 };
@@ -238,6 +236,7 @@ ExpoWorkspaceThumbnail.prototype = {
 
         this.shade.opacity = INACTIVE_OPACITY;
 
+        this._pendingOverviewModeTimeoutId = null;
         this.removed = false;
 
         if (metaWorkspace == global.screen.get_active_workspace())
@@ -400,9 +399,6 @@ ExpoWorkspaceThumbnail.prototype = {
     },
 
     _doAddWindow : function(metaWin) {
-        if (this.leavingExpo)
-            return;
-
         let win = metaWin.get_compositor_private();
         
         if (!win) {
@@ -471,6 +467,9 @@ ExpoWorkspaceThumbnail.prototype = {
     },
 
     _onDestroy: function(actor) {
+        if (this._pendingOverviewModeTimeoutId) {
+            Mainloop.source_remove(this._pendingOverviewModeTimeoutId);
+        }
         this.metaWorkspace.disconnect(this._windowAddedId);
         this.metaWorkspace.disconnect(this._windowRemovedId);
         global.screen.disconnect(this._windowEnteredMonitorId);
@@ -513,7 +512,11 @@ ExpoWorkspaceThumbnail.prototype = {
         clone.connect('drag-end',
                       Lang.bind(this, function(clone) {
                           Main.expo.endWindowDrag();
-                          this._overviewModeOff();
+                          // normal hovering monitoring was turned off during drag
+                          this.hovering = false;
+                          if (!clone.dragCancelled) {
+                              this._overviewModeOff();
+                          }
                       }));
         this._contents.add_actor(clone.actor);
         this._contents.add_actor(clone.icon);
@@ -556,6 +559,21 @@ ExpoWorkspaceThumbnail.prototype = {
     },
 
     _overviewModeOn : function () {
+        if (this._pendingOverviewModeTimeoutId) {
+            return;
+        }
+        // The idea is to delay the call to the real _overviewModeOn somewhat,
+        // since this is often called at a busy moment when many things are happening.
+        // If called too soon after a drag-and-drop, the window stacking order may
+        // not have settled, just to mention one reason.
+        // There may also be many calls after another that could be coalesced into one.
+        this._pendingOverviewModeTimeoutId = Mainloop.timeout_add(
+            100,
+            Lang.bind(this, this._overviewModeOn__));
+    },
+
+    _overviewModeOn__ : function () {
+        this._pendingOverviewModeTimeoutId = null;
         this._overviewMode = true;
         let spacing = 14;
         let nCols = Math.ceil(Math.sqrt(this._windows.length));
@@ -567,8 +585,10 @@ ExpoWorkspaceThumbnail.prototype = {
         let lastRowCols = this._windows.length - ((nRows - 1) * nCols);
         let lastRowOffset = (this.actor.width - (maxWindowWidth * lastRowCols) - (spacing * (lastRowCols+1))) / 2;
         let offset = 0;
-        for (let i = this._windows.length - 1; i >= 0; --i) { // start with bottom-most
-            let window = this._windows[i];
+        let windows = this._windows.slice();
+        windows.reverse(); // top-to-bottom order
+        for (let i = 0; i < windows.length; i++){
+            let window = windows[i];
             if (!window.origSet) {
                 window.origX = window.actor.x;
                 window.origY = window.actor.y;
@@ -699,7 +719,6 @@ ExpoWorkspaceThumbnail.prototype = {
         this.emit('remove-event');
         Main._removeWorkspace(this.metaWorkspace);
         this.removed = true;
-        return true;
     },
 
     // Draggable target interface
@@ -739,6 +758,9 @@ ExpoWorkspaceThumbnail.prototype = {
         metaWindow.change_workspace_by_index(this.metaWorkspace.index(),
                                                 false, // don't create workspace
                                                 time);
+
+        // normal hovering monitoring was turned off during drag
+        this.hovering = true;
 
         this._overviewModeOn();
         return true;
