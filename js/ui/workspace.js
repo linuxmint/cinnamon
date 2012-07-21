@@ -810,10 +810,10 @@ Workspace.prototype = {
                 nextIndex = calcNewIndex(-1);
             }
         }
-        else if (symbol === Clutter.Left || symbol === Clutter.Up) {
+        else if (symbol === Clutter.Left || symbol === Clutter.ISO_Left_Tab || symbol === Clutter.Up) {
             nextIndex = (currentIndex < 1 ? numWindows : currentIndex) - 1;
         }
-        else if (symbol === Clutter.Right || symbol === Clutter.Down) {
+        else if (symbol === Clutter.Right || symbol === Clutter.Tab || symbol === Clutter.Down) {
             nextIndex = (currentIndex + 1) % numWindows;
         }
         else if (symbol === Clutter.Home) {
