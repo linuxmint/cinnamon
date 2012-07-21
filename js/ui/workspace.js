@@ -726,16 +726,15 @@ Workspace.prototype = {
 
         this.actor.connect('destroy', Lang.bind(this, this._onDestroy));
 
-        let windows = Main.getTabList(this.metaWorkspace);
+        let windows = global.get_window_actors().filter(this._isMyWindow, this);
 
         // Create clones for windows that should be
         // visible in the Overview
         this._windows = [];
         this._windowOverlays = [];
         for (let i = 0; i < windows.length; i++) {
-            let window = windows[i].get_compositor_private();
-            if (this._isOverviewWindow(window)) {
-                this._addWindowClone(window);
+            if (this._isOverviewWindow(windows[i])) {
+                this._addWindowClone(windows[i]);
             }
         }
 
@@ -1517,7 +1516,8 @@ Workspace.prototype = {
 
     // Tests if @win should be shown in the Overview
     _isOverviewWindow : function (win) {
-        return true;
+        let tracker = Cinnamon.WindowTracker.get_default();
+        return tracker.is_window_interesting(win.get_meta_window());
     },
 
     // Create a clone of a (non-desktop) window and add it to the window list
