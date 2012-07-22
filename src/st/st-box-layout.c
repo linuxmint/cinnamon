@@ -797,10 +797,11 @@ st_box_layout_allocate (ClutterActor          *actor,
       else if (shrink_amount > 0)
         child_allocated -= shrinks[i].shrink_amount;
 
-      if (flip)
+      if (flip) {
         next_position = position - child_allocated;
         if (xalign == ST_ALIGN_CENTER_SPECIAL && next_position < content_box.x1)
           next_position = content_box.x1;
+      }
       else {
         next_position = position + child_allocated;
         if (xalign == ST_ALIGN_CENTER_SPECIAL && next_position > content_box.x2)
