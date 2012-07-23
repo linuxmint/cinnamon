@@ -250,10 +250,6 @@ ExpoWorkspaceThumbnail.prototype = {
         // Create clones for windows that should be visible in the Expo
         this.count = 0;
         this._windows = [];
-        this._uninterestingWindows = new Clutter.Group();
-        this._uninterestingWindows.hide();
-        this._contents.add_actor(this._uninterestingWindows);
-        this._uninterestingWindows.raise(this._background);
         for (let i = 0; i < windows.length; i++) {
             windows[i].meta_window._minimizedChangedId =
                 windows[i].meta_window.connect('notify::minimized',
@@ -262,8 +258,6 @@ ExpoWorkspaceThumbnail.prototype = {
 
             if (this._isExpoWindow(windows[i])) {
                 this._addWindowClone(windows[i]);
-            } else {
-                this._addUninterestingWindowClone(windows[i]);
             }
         }
 
@@ -536,32 +530,6 @@ ExpoWorkspaceThumbnail.prototype = {
 
         this._windows.push(clone);
 
-        return clone;
-    },
-
-    _fadeOutUninterestingWindows : function() {
-        this._uninterestingWindows.opacity = 255;
-        this._uninterestingWindows.show();
-        this._uninterestingWindows.raise(this._background);
-        Tweener.addTween(this._uninterestingWindows, {  opacity: 0,
-                                                        time: REARRANGE_TIME,
-                                                        transition: "easeOutQuad",
-                                                        onComplete: function() {this.hide();}});       
-    },
-
-    _fadeInUninterestingWindows : function() {
-        this._uninterestingWindows.opacity = 0;
-        this._uninterestingWindows.show();
-        this._uninterestingWindows.raise(this._background);
-        Tweener.addTween(this._uninterestingWindows, {  opacity: 255,
-                                                        time: REARRANGE_TIME,
-                                                        transition: "easeOutQuad",
-                                                        onComplete: function() {this.hide();}});
-    },
-
-    _addUninterestingWindowClone : function(win) {
-        let clone = new ExpoWindowClone(win);
-        this._uninterestingWindows.add_actor(clone.actor);
         return clone;
     },
 
