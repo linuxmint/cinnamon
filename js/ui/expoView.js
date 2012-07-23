@@ -37,20 +37,12 @@ ExpoView.prototype = {
         controls.connect('scroll-event',
                          Lang.bind(this, this._onScrollEvent));
         
-        this._monitorIndex = Main.layoutManager.primaryIndex;
-
         this._thumbnailsBox = new ExpoThumbnail.ExpoThumbnailsBox();
         controls.add_actor(this._thumbnailsBox.actor);
 
         this._inDrag = false;
         this._cancelledDrag = false;
 
-        this._switchWorkspaceNotifyId = 0;
-
-        this._nWorkspacesChangedId = 0;
-        this._itemDragBeginId = 0;
-        this._itemDragCancelledId = 0;
-        this._itemDragEndId = 0;
         this._windowDragBeginId = 0;
         this._windowDragCancelledId = 0;
         this._windowDragEndId = 0;
@@ -64,15 +56,6 @@ ExpoView.prototype = {
         this._controls.show();
         this._thumbnailsBox.show();
         
-        this._workspaces = [];
-        for (let i = 0; i < global.screen.n_workspaces; i++) {
-            let metaWorkspace = global.screen.get_workspace_by_index(i);
-            this._workspaces[i] = metaWorkspace;
-        }
-
-        if (this._nWorkspacesChangedId == 0)
-            this._nWorkspacesChangedId = global.screen.connect('notify::n-workspaces',
-                                                               Lang.bind(this, this._workspacesChanged));
         if (this._windowDragBeginId == 0)
             this._windowDragBeginId = Main.expo.connect('window-drag-begin',
                                                             Lang.bind(this, this._dragBegin));
@@ -89,22 +72,6 @@ ExpoView.prototype = {
         this._controls.hide();
         this._thumbnailsBox.hide();
 
-        if (this._nWorkspacesChangedId > 0){
-            global.screen.disconnect(this._nWorkspacesChangedId);
-            this._nWorkspacesChangedId = 0;
-        }
-        if (this._itemDragBeginId > 0) {
-            Main.expo.disconnect(this._itemDragBeginId);
-            this._itemDragBeginId = 0;
-        }
-        if (this._itemDragCancelledId > 0) {
-            Main.expo.disconnect(this._itemDragCancelledId);
-            this._itemDragCancelledId = 0;
-        }
-        if (this._itemDragEndId > 0) {
-            Main.expo.disconnect(this._itemDragEndId);
-            this._itemDragEndId = 0;
-        }
         if (this._windowDragBeginId > 0) {
             Main.expo.disconnect(this._windowDragBeginId);
             this._windowDragBeginId = 0;
@@ -117,8 +84,6 @@ ExpoView.prototype = {
             Main.expo.disconnect(this._windowDragEndId);
             this._windowDragEndId = 0;
         }
-    
-        this._workspaces = null;
     },
 
     _getPreferredWidth: function (actor, forHeight, alloc) {
@@ -133,41 +98,6 @@ ExpoView.prototype = {
 
     _allocate: function (actor, box, flags) {
         this._controls.allocate(box, flags);
-    },
-
-    _workspacesChanged: function() {
-        let oldNumWorkspaces = this._workspaces.length;
-        let newNumWorkspaces = global.screen.n_workspaces;
-        let active = global.screen.get_active_workspace_index();
-
-        if (oldNumWorkspaces == newNumWorkspaces)
-            return;
-        let lostWorkspaces = [];
-        if (newNumWorkspaces > oldNumWorkspaces) {
-            // Assume workspaces are only added at the end
-            for (let w = oldNumWorkspaces; w < newNumWorkspaces; w++) {
-                let metaWorkspace = global.screen.get_workspace_by_index(w);
-                this._workspaces[w] = metaWorkspace;
-            }
-
-            this._thumbnailsBox.addThumbnails(oldNumWorkspaces, newNumWorkspaces - oldNumWorkspaces);
-        } else {
-            // Assume workspaces are only removed sequentially
-            // (e.g. 2,3,4 - not 2,4,7)
-            let removedIndex;
-            let removedNum = oldNumWorkspaces - newNumWorkspaces;
-            for (let w = 0; w < oldNumWorkspaces; w++) {
-                let metaWorkspace = global.screen.get_workspace_by_index(w);
-                if (this._workspaces[w] != metaWorkspace) {
-                    removedIndex = w;
-                    break;
-                }
-            }
-
-            this._workspaces.splice(removedIndex, removedNum);
-
-            this._thumbnailsBox.removeThumbnails(removedIndex, removedNum);
-        }
     },
 
     _dragBegin: function() {
@@ -195,9 +125,6 @@ ExpoView.prototype = {
     _dragEnd: function() {
         this._inDrag = false;
         DND.removeDragMonitor(this._dragMonitor);
-        if (!this._cancelledDrag) {
-            this._thumbnailsBox.restack();
-        }
     },
 
     _onScrollEvent: function (actor, event) {
