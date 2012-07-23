@@ -356,7 +356,6 @@ Expo.prototype = {
 
         this.activeWorkspace = this._expo._thumbnailsBox._lastActiveWorkspace;
         let activeWorkspaceActor = this.activeWorkspace.actor;
-        this._expo._thumbnailsBox._lastActiveWorkspace._fadeOutUninterestingWindows();
 
         this.allocateID = this.activeWorkspace.connect('allocated', Lang.bind(this, this._animateVisible2));
 
@@ -537,7 +536,6 @@ Expo.prototype = {
 
         this.activeWorkspace = this._expo._thumbnailsBox._lastActiveWorkspace;
         let activeWorkspaceActor = this.activeWorkspace.actor;
-        //this.activeWorkspace._fadeInUninterestingWindows();
         this.activeWorkspace._overviewModeOff();
         this._createClone(activeWorkspaceActor);
         this.clone.set_position(activeWorkspaceActor.allocation.x1, activeWorkspaceActor.allocation.y1);
