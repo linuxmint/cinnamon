@@ -169,8 +169,6 @@ Expo.prototype = {
         this._addWorkspaceButton.hide();
         this._windowCloseArea.hide();
 
-        this._needsFakePointerEvent = false;
-
         global.stage.connect('key-press-event',
             Lang.bind(this, function(actor, event) {
                 if (this._shown) {
@@ -213,15 +211,6 @@ Expo.prototype = {
             return;
 
         this._CinnamonInfo.setMessage(text, undoCallback, undoLabel);
-    },
-
-    _fakePointerEvent: function() {
-        let display = Gdk.Display.get_default();
-        let deviceManager = display.get_device_manager();
-        let pointer = deviceManager.get_client_pointer();
-        let [screen, pointerX, pointerY] = pointer.get_position();
-
-        pointer.warp(screen, pointerX, pointerY);
     },
 
     _relayout: function () {
@@ -597,12 +586,6 @@ Expo.prototype = {
             this._animateVisible();
 
         this._syncInputMode();
-
-        // Fake a pointer event if requested
-        if (this._needsFakePointerEvent) {
-            this._fakePointerEvent();
-            this._needsFakePointerEvent = false;
-        }
 
         Main.layoutManager._chrome.updateRegions();
     }
