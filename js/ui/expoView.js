@@ -71,10 +71,6 @@ ExpoView.prototype = {
             this._workspaces[i] = new Workspace.Workspace(metaWorkspace, this._monitorIndex);
         }
 
-        this._restackedNotifyId =
-            global.screen.connect('restacked',
-                                  Lang.bind(this, this._restack));
-
         if (this._nWorkspacesChangedId == 0)
             this._nWorkspacesChangedId = global.screen.connect('notify::n-workspaces',
                                                                Lang.bind(this, this._workspacesChanged));
@@ -88,17 +84,12 @@ ExpoView.prototype = {
             this._windowDragEndId = Main.expo.connect('window-drag-end',
                                                           Lang.bind(this, this._dragEnd));
 
-        this._restack();
     },
 
     hide: function() {
         this._controls.hide();
         this._thumbnailsBox.hide();
 
-        if (this._restackedNotifyId > 0){
-            global.screen.disconnect(this._restackedNotifyId);
-            this._restackedNotifyId = 0;
-        }
         if (this._nWorkspacesChangedId > 0){
             global.screen.disconnect(this._nWorkspacesChangedId);
             this._nWorkspacesChangedId = 0;
@@ -146,18 +137,6 @@ ExpoView.prototype = {
 
     _allocate: function (actor, box, flags) {
         this._controls.allocate(box, flags);
-    },
-
-    _restack: function() {
-        let stack = Main.getTabList();
-        let stackIndices = {};
-
-        for (let i = 0; i < stack.length; i++) {
-            // Use the stable sequence for an integer to use as a hash key
-            stackIndices[stack[i].get_stable_sequence()] = stack.length - i;
-        }
-
-        this._thumbnailsBox.syncStacking(stackIndices);
     },
 
     _workspacesChanged: function() {
@@ -227,7 +206,7 @@ ExpoView.prototype = {
         this._inDrag = false;
         DND.removeDragMonitor(this._dragMonitor);
         if (!this._cancelledDrag) {
-            this._restack();
+            this._thumbnailsBox.restack();
         }
     },
 

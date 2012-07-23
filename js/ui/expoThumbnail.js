@@ -168,12 +168,13 @@ const ThumbnailState = {
 /**
  * @metaWorkspace: a #Meta.Workspace
  */
-function ExpoWorkspaceThumbnail(metaWorkspace) {
-    this._init(metaWorkspace);
+function ExpoWorkspaceThumbnail(metaWorkspace, box) {
+    this._init(metaWorkspace, box);
 }
 
 ExpoWorkspaceThumbnail.prototype = {
-    _init : function(metaWorkspace) {
+    _init : function(metaWorkspace, box) {
+        this.box = box;
         this.metaWorkspace = metaWorkspace;
         this.monitorIndex = Main.layoutManager.primaryIndex;
 
@@ -441,21 +442,25 @@ ExpoWorkspaceThumbnail.prototype = {
 
     _windowAdded : function(metaWorkspace, metaWin) {
         this._doAddWindow(metaWin);
+        this.box.restack();
     },
 
     _windowRemoved : function(metaWorkspace, metaWin) {
         this._doRemoveWindow(metaWin);
+        this.box.restack();
     },
 
     _windowEnteredMonitor : function(metaScreen, monitorIndex, metaWin) {
         if (monitorIndex == this.monitorIndex) {
             this._doAddWindow(metaWin);
+            this.box.restack();
         }
     },
 
     _windowLeftMonitor : function(metaScreen, monitorIndex, metaWin) {
         if (monitorIndex == this.monitorIndex) {
             this._doRemoveWindow(metaWin);
+            this.box.restack();
         }
     },
 
@@ -861,6 +866,11 @@ ExpoThumbnailsBox.prototype = {
         this.addThumbnails(0, global.screen.n_workspaces);
         this.button.raise_top();
 
+        this.restackedNotifyId =
+            global.screen.connect('restacked',
+                                  Lang.bind(this, this.restack));
+        this.restack();
+
         // apparently we get no direct call to show the initial
         // view, so we must force an explicit overviewModeOff display
         for (let i = 0; i < this._thumbnails.length; ++i) {
@@ -957,7 +967,23 @@ ExpoThumbnailsBox.prototype = {
         return true; // handled
     },
 
+    restack: function() {
+        let stack = global.get_window_actors();
+        let stackIndices = {};
+
+        for (let i = 0; i < stack.length; i++) {
+            // Use the stable sequence for an integer to use as a hash key
+            stackIndices[stack[i].get_meta_window().get_stable_sequence()] = i;
+        }
+
+        this.syncStacking(stackIndices);
+    },
+
     hide: function() {
+        if (this.restackedNotifyId > 0){
+            global.screen.disconnect(this.restackedNotifyId);
+            this.restackedNotifyId = 0;
+        }
         if (this._switchWorkspaceNotifyId > 0) {
             global.window_manager.disconnect(this._switchWorkspaceNotifyId);
             this._switchWorkspaceNotifyId = 0;
@@ -984,7 +1010,7 @@ ExpoThumbnailsBox.prototype = {
         }
         for (let k = start; k < start + count; k++) {
             let metaWorkspace = global.screen.get_workspace_by_index(k);
-            let thumbnail = new ExpoWorkspaceThumbnail(metaWorkspace);
+            let thumbnail = new ExpoWorkspaceThumbnail(metaWorkspace, this);
             thumbnail.setPorthole(this._porthole.x, this._porthole.y,
                                   this._porthole.width, this._porthole.height);
             this._thumbnails.push(thumbnail);
