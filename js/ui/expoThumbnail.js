@@ -829,6 +829,9 @@ ExpoThumbnailsBox.prototype = {
             global.window_manager.connect('switch-workspace',
                                           Lang.bind(this, this._activeWorkspaceChanged));
 
+        this._nWorkspacesChangedId = global.screen.connect('notify::n-workspaces',
+                                                            Lang.bind(this, this._workspacesChanged));
+
         this._targetScale = 0;
         this._scale = 0;
         this._pendingScaleUpdate = false;
@@ -990,9 +993,14 @@ ExpoThumbnailsBox.prototype = {
             global.window_manager.disconnect(this._switchWorkspaceNotifyId);
             this._switchWorkspaceNotifyId = 0;
         }
+        if (this._nWorkspacesChangedId > 0){
+            global.screen.disconnect(this._nWorkspacesChangedId);
+            this._nWorkspacesChangedId = 0;
+        }
 
-        for (let w = 0; w < this._thumbnails.length; w++)
+        for (let w = 0; w < this._thumbnails.length; w++) {
             this._thumbnails[w].destroy();
+        }
         this._thumbnails = [];
     },
 
@@ -1427,6 +1435,34 @@ ExpoThumbnailsBox.prototype = {
         
         this.button.allocate(childBox, flags);
         this._lastActiveWorkspace.emit('allocated');
+    },
+
+    _workspacesChanged: function() {
+        let oldNumWorkspaces = this._thumbnails.length;
+        let newNumWorkspaces = global.screen.n_workspaces;
+        let active = global.screen.get_active_workspace_index();
+
+        if (oldNumWorkspaces == newNumWorkspaces)
+            return;
+        if (newNumWorkspaces > oldNumWorkspaces) {
+            // Assume workspaces are only added at the end
+            this.addThumbnails(oldNumWorkspaces, newNumWorkspaces - oldNumWorkspaces);
+        } else {
+            // Assume workspaces are only removed sequentially
+            // (e.g. 2,3,4 - not 2,4,7)
+            let removedIndex = -1;
+            let removedNum = oldNumWorkspaces - newNumWorkspaces;
+            for (let w = 0; w < oldNumWorkspaces; w++) {
+                let metaWorkspace = global.screen.get_workspace_by_index(w);
+                if (this._thumbnails[w].metaWorkspace != metaWorkspace) {
+                    removedIndex = w;
+                    break;
+                }
+            }
+            if (removedIndex >= 0) {
+                this.removeThumbnails(removedIndex, removedNum);
+            }
+        }
     },
 
     _activeWorkspaceChanged: function(wm, from, to, direction) {
