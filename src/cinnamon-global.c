@@ -90,7 +90,6 @@ struct _CinnamonGlobal {
   ca_context *sound_context;
 
   guint32 xdnd_timestamp;
-
   gint64 last_gc_end_time;
 };
 
@@ -1661,6 +1660,17 @@ cinnamon_global_get_current_time (CinnamonGlobal *global)
     return clutter_event_get_time (clutter_event);
   else
     return CLUTTER_CURRENT_TIME;
+}
+
+/**
+ * cinnamon_global_get_pid:
+ *
+ * Returns: the pid of the cinnamon process.
+ */
+pid_t
+cinnamon_global_get_pid ()
+{
+  return getpid();
 }
 
 /**
