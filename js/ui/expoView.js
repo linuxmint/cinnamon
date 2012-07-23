@@ -8,7 +8,6 @@ const Signals = imports.signals;
 
 const DND = imports.ui.dnd;
 const Main = imports.ui.main;
-const Workspace = imports.ui.workspace;
 const ExpoThumbnail = imports.ui.expoThumbnail;
 
 const WORKSPACE_SWITCH_TIME = 0.25;
@@ -68,7 +67,7 @@ ExpoView.prototype = {
         this._workspaces = [];
         for (let i = 0; i < global.screen.n_workspaces; i++) {
             let metaWorkspace = global.screen.get_workspace_by_index(i);
-            this._workspaces[i] = new Workspace.Workspace(metaWorkspace, this._monitorIndex);
+            this._workspaces[i] = metaWorkspace;
         }
 
         if (this._nWorkspacesChangedId == 0)
@@ -119,10 +118,7 @@ ExpoView.prototype = {
             this._windowDragEndId = 0;
         }
     
-        for (let w = 0; w < this._workspaces.length; w++) {
-            this._workspaces[w].disconnectAll();
-            this._workspaces[w].destroy();
-        }
+        this._workspaces = null;
     },
 
     _getPreferredWidth: function (actor, forHeight, alloc) {
@@ -151,7 +147,7 @@ ExpoView.prototype = {
             // Assume workspaces are only added at the end
             for (let w = oldNumWorkspaces; w < newNumWorkspaces; w++) {
                 let metaWorkspace = global.screen.get_workspace_by_index(w);
-                this._workspaces[w] = new Workspace.Workspace(metaWorkspace, this._monitorIndex);
+                this._workspaces[w] = metaWorkspace;
             }
 
             this._thumbnailsBox.addThumbnails(oldNumWorkspaces, newNumWorkspaces - oldNumWorkspaces);
@@ -162,19 +158,13 @@ ExpoView.prototype = {
             let removedNum = oldNumWorkspaces - newNumWorkspaces;
             for (let w = 0; w < oldNumWorkspaces; w++) {
                 let metaWorkspace = global.screen.get_workspace_by_index(w);
-                if (this._workspaces[w].metaWorkspace != metaWorkspace) {
+                if (this._workspaces[w] != metaWorkspace) {
                     removedIndex = w;
                     break;
                 }
             }
 
-            lostWorkspaces = this._workspaces.splice(removedIndex,
-                                                     removedNum);
-
-            for (let l = 0; l < lostWorkspaces.length; l++) {
-                lostWorkspaces[l].disconnectAll();
-                lostWorkspaces[l].destroy();
-            }
+            this._workspaces.splice(removedIndex, removedNum);
 
             this._thumbnailsBox.removeThumbnails(removedIndex, removedNum);
         }
