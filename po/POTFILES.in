@@ -1,7 +1,5 @@
 data/cinnamon.desktop.in.in
 data/org.cinnamon.gschema.xml.in
-js/gdm/loginDialog.js
-js/gdm/powerMenu.js
 js/misc/util.js
 js/ui/appDisplay.js
 js/ui/appFavorites.js
