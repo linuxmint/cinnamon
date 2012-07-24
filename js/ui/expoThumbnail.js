@@ -251,11 +251,6 @@ ExpoWorkspaceThumbnail.prototype = {
         this.count = 0;
         this._windows = [];
         for (let i = 0; i < windows.length; i++) {
-            windows[i].meta_window._minimizedChangedId =
-                windows[i].meta_window.connect('notify::minimized',
-                                               Lang.bind(this,
-                                                         this._updateMinimized));
-
             if (this._isExpoWindow(windows[i])) {
                 this._addWindowClone(windows[i]);
             }
@@ -383,12 +378,6 @@ ExpoWorkspaceThumbnail.prototype = {
         let clone = this._windows[index];
         this._windows.splice(index, 1);
 
-        if (win && this._isExpoWindow(win)) {
-            if (metaWin._minimizedChangedId) {
-                metaWin.disconnect(metaWin._minimizedChangedId);
-                delete metaWin._minimizedChangedId;
-            }
-        }
         clone.destroy();
         if (this.overviewMode)
             this._overviewModeOn();
@@ -417,11 +406,6 @@ ExpoWorkspaceThumbnail.prototype = {
         // now was moved to this workspace
         if (this._lookupIndex (metaWin) != -1)
             return;
-
-        if (!metaWin._minimizedChangedId)
-            metaWin._minimizedChangedId = metaWin.connect('notify::minimized',
-                                                          Lang.bind(this,
-                                                                    this._updateMinimized));
 
         if (!this._isMyWindow(win) || !this._isExpoWindow(win))
             return;
@@ -459,9 +443,6 @@ ExpoWorkspaceThumbnail.prototype = {
         }
     },
 
-    _updateMinimized: function(metaWin) {
-    },
-
     destroy : function() {            
         this.actor.destroy();        
     },
@@ -476,11 +457,6 @@ ExpoWorkspaceThumbnail.prototype = {
         global.screen.disconnect(this._windowLeftMonitorId);
 
         for (let i = 0; i < this._windows.length; i++) {
-            let metaWin = this._windows[i].metaWindow;
-            if (metaWin._minimizedChangedId) {
-                metaWin.disconnect(metaWin._minimizedChangedId);
-                delete metaWin._minimizedChangedId;
-            }
             this._windows[i].destroy();
         }
         this._windows = null;
