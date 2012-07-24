@@ -1135,27 +1135,31 @@ class MainWindow:
         sidePage.add_widget(GSettingsCheckButton(_("Panel edit mode"), "org.cinnamon", "panel-edit-mode"))        
         
         sidePage = SidePage(_("Calendar"), "clock.svg", self.content_box)
-        self.sidePages.append((sidePage, "calendar"))
-        self.changeTimeWidget = ChangeTimeWidget()     
+        self.sidePages.append((sidePage, "calendar"))        
         sidePage.add_widget(GSettingsCheckButton(_("Show week dates in calendar"), "org.cinnamon.calendar", "show-weekdate"))         
         sidePage.add_widget(GSettingsEntry(_("Date format for the panel"), "org.cinnamon.calendar", "date-format"))                                 
         sidePage.add_widget(GSettingsEntry(_("Date format inside the date applet"), "org.cinnamon.calendar", "date-format-full"))                                 
         sidePage.add_widget(Gtk.LinkButton.new_with_label("http://www.foragoodstrftime.com/", _("Generate your own date formats")))
-        self.ntpCheckButton = None 
-        try:
-            self.ntpCheckButton = DBusCheckButton(_("Use network time"), "org.gnome.SettingsDaemon.DateTimeMechanism", "/", "GetUsingNtp", "SetUsingNtp")
-            sidePage.add_widget(self.ntpCheckButton)
-        except:
-            pass
-        sidePage.add_widget(self.changeTimeWidget)
-        try:
-            sidePage.add_widget(TimeZoneSelectorWidget())
-        except:
-            pass
         
-        if self.ntpCheckButton != None:
-            self.ntpCheckButton.connect('toggled', self._ntp_toggled)
-            self.changeTimeWidget.change_using_ntp( self.ntpCheckButton.get_active() )
+        try:
+            self.changeTimeWidget = ChangeTimeWidget()  
+            self.ntpCheckButton = None 
+            try:
+                self.ntpCheckButton = DBusCheckButton(_("Use network time"), "org.gnome.SettingsDaemon.DateTimeMechanism", "/", "GetUsingNtp", "SetUsingNtp")
+                sidePage.add_widget(self.ntpCheckButton)
+            except:
+                pass
+            sidePage.add_widget(self.changeTimeWidget)
+            try:
+                sidePage.add_widget(TimeZoneSelectorWidget())
+            except:
+                pass
+            
+            if self.ntpCheckButton != None:
+                self.ntpCheckButton.connect('toggled', self._ntp_toggled)
+                self.changeTimeWidget.change_using_ntp( self.ntpCheckButton.get_active() )
+        except Exception, detail:
+            print detail
         
         sidePage = SidePage(_("Hot corner"), "overview.svg", self.content_box)
         self.sidePages.append((sidePage, "hotcorner"))
@@ -1334,7 +1338,7 @@ class MainWindow:
         sidePage.add_widget(TitleBarButtonsOrderSelector())        
         sidePage.add_widget(GSettingsCheckButton(_("Enable ALT+Tab outline and window preview"), "org.cinnamon", "enable-alttab-outline"))
         sidePage.add_widget(GSettingsCheckButton(_("Enable Edge Tiling (\"Aero Snap\")"), "org.cinnamon.overrides", "edge-tiling"))
-	sidePage.add_widget(GSettingsCheckButton(_("Enable Edge Flip"), "org.cinnamon", "enable-edge-flip"))
+        sidePage.add_widget(GSettingsCheckButton(_("Enable Edge Flip"), "org.cinnamon", "enable-edge-flip"))
         
         sidePage = SidePage(_("Workspaces"), "workspaces.svg", self.content_box)
         self.sidePages.append((sidePage, "workspaces"))        
