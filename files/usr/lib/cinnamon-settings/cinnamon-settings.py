@@ -8,7 +8,6 @@ try:
     import gettext
     from gi.repository import Gio, Gtk, GObject
     from gi.repository import GdkPixbuf 
-    import gconf
     import json
     import dbus
     import tz
@@ -50,49 +49,6 @@ class SidePage:
             self.content_box.pack_start(widget, False, False, 2)            
         self.content_box.show_all()
 
-class GConfComboBox(Gtk.HBox):    
-    def __init__(self, label, key, options, init_value = ""):  
-        self.key = key
-        super(GConfComboBox, self).__init__()
-        self.settings = gconf.client_get_default()  
-        self.value = self.settings.get_string(self.key)
-        if not self.value:
-            self.value = init_value
-                      
-        self.label = Gtk.Label(label)       
-        self.model = Gtk.ListStore(str, str)
-        selected = None
-        for option in options:
-            iter = self.model.insert_before(None, None)
-            self.model.set_value(iter, 0, option[0])                
-            self.model.set_value(iter, 1, option[1])                        
-            if (option[0] == self.value):
-                selected = iter
-                                
-        self.content_widget = Gtk.ComboBox.new_with_model(self.model)   
-        renderer_text = Gtk.CellRendererText()
-        self.content_widget.pack_start(renderer_text, True)
-        self.content_widget.add_attribute(renderer_text, "text", 1)     
-        
-        if selected is not None:
-            self.content_widget.set_active_iter(selected)
-        
-        if (label != ""):
-            self.pack_start(self.label, False, False, 2)                
-        self.pack_start(self.content_widget, False, False, 2)                     
-        self.content_widget.connect('changed', self.on_my_value_changed)
-        # The on_my_setting_changed callback raises a segmentation fault, need to investigate that
-        #self.settings.add_dir(os.path.split(key)[0], gconf.CLIENT_PRELOAD_NONE)
-        #self.settings.notify_add(self.key, self.on_my_setting_changed)
-        self.content_widget.show_all()
-        
-    def on_my_value_changed(self, widget):
-        tree_iter = widget.get_active_iter()
-        if tree_iter != None:            
-            value = self.model[tree_iter][0]            
-            self.settings.set_string(self.key, value)
-    def on_my_setting_changed(self, client, cnxn_id, entry, args):
-        print entry
 
 def walk_directories(dirs, filter_func):
     valid = []
@@ -480,22 +436,6 @@ class AppletViewSidePage (SidePage):
         else:
             cell.set_property("active", False)
 
-class GConfCheckButton(Gtk.CheckButton):    
-    def __init__(self, label, key):        
-        self.key = key
-        super(GConfCheckButton, self).__init__(label)       
-        self.settings = gconf.client_get_default()
-        self.set_active(self.settings.get_bool(self.key))
-        self.settings.notify_add(self.key, self.on_my_setting_changed)
-        self.connect('toggled', self.on_my_value_changed)            
-    
-    def on_my_setting_changed(self, client, cnxn_id, entry):
-        value = entry.value.get_bool()
-        self.set_active(value)
-        
-    def on_my_value_changed(self, widget):
-        self.settings.set_bool(self.key, self.get_active())
-
             
 class GSettingsCheckButton(Gtk.CheckButton):    
     def __init__(self, label, schema, key):        
@@ -630,25 +570,6 @@ class GSettingsFontButton(Gtk.HBox):
     def on_my_value_changed(self, widget):
         self.settings.set_string(self.key, widget.get_font_name())
 
-class GConfFontButton(Gtk.HBox):
-    def __init__(self, label, key):
-        self.key = key
-        super(GConfFontButton, self).__init__()
-        self.settings = gconf.client_get_default()
-        self.value = self.settings.get_string(key)
-        
-        self.label = Gtk.Label(label)
-
-        self.content_widget = Gtk.FontButton()
-        self.content_widget.set_font_name(self.value)
-        
-        if (label != ""):
-            self.pack_start(self.label, False, False, 2)
-        self.pack_start(self.content_widget, False, False, 2)
-        self.content_widget.connect('font-set', self.on_my_value_changed)
-        self.content_widget.show_all()
-    def on_my_value_changed(self, widget):
-        self.settings.set_string(self.key, widget.get_font_name())
 
 class GSettingsRange(Gtk.HBox):
     def __init__(self, label, schema, key, **options):
