@@ -110,7 +110,6 @@ Examples are: "Make windows visible on click", "Block advertisement popups"
     description = raw_input('Description: ').strip()
     underifier = re.compile('[^A-Za-z]')
     sample_uuid = underifier.sub('_', name)
-    # TODO use evolution data server
     hostname = socket.gethostname()
     sample_uuid = sample_uuid + '@' + hostname
 
