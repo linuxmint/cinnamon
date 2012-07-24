@@ -21,57 +21,6 @@ const ADD_BUTTON_HOVER_TIME = 0.3;
 
 const DND_WINDOW_SWITCH_TIMEOUT = 1250;
 
-function CinnamonInfo() {
-    this._init();
-}
-
-CinnamonInfo.prototype = {
-    _init: function() {
-        this._source = null;
-        this._undoCallback = null;
-    },
-
-    _onUndoClicked: function() {
-        if (this._undoCallback)
-            this._undoCallback();
-        this._undoCallback = null;
-
-        if (this._source)
-            this._source.destroy();
-    },
-
-    setMessage: function(text, undoCallback, undoLabel) {
-        if (this._source == null) {
-            this._source = new MessageTray.SystemNotificationSource();
-            this._source.connect('destroy', Lang.bind(this,
-                function() {
-                    this._source = null;
-                }));
-            Main.messageTray.add(this._source);
-        }
-
-        let notification = null;
-        if (this._source.notifications.length == 0) {
-            notification = new MessageTray.Notification(this._source, text, null);
-        } else {
-            notification = this._source.notifications[0];
-            notification.update(text, null, { clear: true });
-        }
-
-        notification.setTransient(true);
-
-        this._undoCallback = undoCallback;
-        if (undoCallback) {
-            notification.addButton('system-undo',
-                                   undoLabel ? undoLabel : _("Undo"));
-            notification.connect('action-invoked',
-                                 Lang.bind(this, this._onUndoClicked));
-        }
-
-        this._source.notify(notification);
-    }
-};
-
 function Expo() {
     this._init.apply(this, arguments);
 }
@@ -114,7 +63,6 @@ Expo.prototype = {
                 }
             }));
 
-        this._workspacesDisplay = null;
         this._expo = null;
 
         this.visible = false;           // animating to overview, in overview, animating out
@@ -197,20 +145,11 @@ Expo.prototype = {
         if (this.isDummy)
             return;
 
-        this._CinnamonInfo = new CinnamonInfo();
-    
         this._expo = new ExpoView.ExpoView();
         this._group.add_actor(this._expo.actor);
 
         Main.layoutManager.connect('monitors-changed', Lang.bind(this, this._relayout));
         this._relayout();
-    },
-
-    setMessage: function(text, undoCallback, undoLabel) {
-        if (this.isDummy)
-            return;
-
-        this._CinnamonInfo.setMessage(text, undoCallback, undoLabel);
     },
 
     _relayout: function () {
