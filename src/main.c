@@ -19,8 +19,6 @@
 #include <meta/main.h>
 #include <meta/meta-plugin.h>
 #include <meta/prefs.h>
-#include <telepathy-glib/debug.h>
-#include <telepathy-glib/debug-sender.h>
 
 #include "cinnamon-a11y.h"
 #include "cinnamon-global.h"
@@ -201,25 +199,6 @@ muted_log_handler (const char     *log_domain,
   /* Intentionally empty to discard message */
 }
 
-static void
-default_log_handler (const char     *log_domain,
-                     GLogLevelFlags  log_level,
-                     const char     *message,
-                     gpointer        data)
-{
-  TpDebugSender *sender = data;
-  GTimeVal now;
-
-  g_get_current_time (&now);
-
-  tp_debug_sender_add_message (sender, &now, log_domain, log_level, message);
-
-  /* Filter out telepathy-glib logs, we don't want to flood Cinnamon's output
-   * with those. */
-  if (!g_str_has_prefix (log_domain, "tp-glib"))
-    g_log_default_handler (log_domain, log_level, message, data);
-}
-
 static gboolean
 print_version (const gchar    *option_name,
                const gchar    *value,
@@ -268,7 +247,6 @@ main (int argc, char **argv)
   GError *error = NULL;
   CinnamonSessionType session_type;
   int ecode;
-  TpDebugSender *sender;
 
   g_type_init ();
 
@@ -320,16 +298,6 @@ main (int argc, char **argv)
                      muted_log_handler, NULL);
   g_log_set_handler ("Bluetooth", G_LOG_LEVEL_DEBUG | G_LOG_LEVEL_MESSAGE,
                      muted_log_handler, NULL);
-  g_log_set_handler ("tp-glib/proxy", G_LOG_LEVEL_DEBUG,
-                     muted_log_handler, NULL);
-
-  /* Turn on telepathy-glib debugging but filter it out in
-   * default_log_handler. This handler also exposes all the logs over D-Bus
-   * using TpDebugSender. */
-  tp_debug_set_flags ("all");
-
-  sender = tp_debug_sender_dup ();
-  g_log_set_default_handler (default_log_handler, sender);
 
   /* Initialize the global object */
   if (is_gdm_mode)
@@ -346,8 +314,6 @@ main (int argc, char **argv)
       g_printerr ("Doing final cleanup...\n");
       g_object_unref (cinnamon_global_get ());
     }
-
-  g_object_unref (sender);
 
   return ecode;
 }

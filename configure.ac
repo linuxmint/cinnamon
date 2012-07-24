@@ -69,8 +69,6 @@ GIO_MIN_VERSION=2.29.10
 LIBECAL_MIN_VERSION=2.32.0
 LIBEDATASERVER_MIN_VERSION=1.2.0
 LIBEDATASERVERUI_MIN_VERSION=2.91.6
-TELEPATHY_GLIB_MIN_VERSION=0.15.5
-TELEPATHY_LOGGER_MIN_VERSION=0.2.4
 POLKIT_MIN_VERSION=0.100
 STARTUP_NOTIFICATION_MIN_VERSION=0.11
 
@@ -86,8 +84,6 @@ PKG_CHECK_MODULES(CINNAMON, gio-2.0 >= $GIO_MIN_VERSION
                                libstartup-notification-1.0 >= $STARTUP_NOTIFICATION_MIN_VERSION
                                gobject-introspection-1.0 >= $GOBJECT_INTROSPECTION_MIN_VERSION
 			       libcanberra
-                               telepathy-glib >= $TELEPATHY_GLIB_MIN_VERSION
-                               telepathy-logger-0.2 >= $TELEPATHY_LOGGER_MIN_VERSION
                                polkit-agent-1 >= $POLKIT_MIN_VERSION xfixes
                                libnm-glib libnm-util gnome-keyring-1)
 
