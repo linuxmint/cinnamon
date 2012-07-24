@@ -64,7 +64,6 @@ CLUTTER_MIN_VERSION=1.7.5
 GOBJECT_INTROSPECTION_MIN_VERSION=0.10.1
 GJS_MIN_VERSION=1.29.18
 MUFFIN_MIN_VERSION=1.0.5
-FOLKS_MIN_VERSION=0.5.2
 GTK_MIN_VERSION=3.0.0
 GIO_MIN_VERSION=2.29.10
 LIBECAL_MIN_VERSION=2.32.0
@@ -79,7 +78,6 @@ STARTUP_NOTIFICATION_MIN_VERSION=0.11
 PKG_CHECK_MODULES(CINNAMON, gio-2.0 >= $GIO_MIN_VERSION
                                gio-unix-2.0 dbus-glib-1 libxml-2.0
                                gtk+-3.0 >= $GTK_MIN_VERSION
-                               folks >= $FOLKS_MIN_VERSION
                                libmuffin >= $MUFFIN_MIN_VERSION
                                gjs-internals-1.0 >= $GJS_MIN_VERSION
 			       libgnome-menu-3.0 $recorder_modules gconf-2.0

@@ -101,7 +101,6 @@ cinnamon_public_headers_h =		\
 	cinnamon-app-system.h		\
 	cinnamon-app-usage.h		\
 	cinnamon-arrow.h			\
-	cinnamon-contact-system.h	\
 	cinnamon-doc-system.h		\
 	cinnamon-embedded-window.h		\
 	cinnamon-generic-container.h	\
@@ -138,7 +137,6 @@ libcinnamon_la_SOURCES =		\
 	cinnamon-app-system.c		\
 	cinnamon-app-usage.c		\
 	cinnamon-arrow.c			\
-	cinnamon-contact-system.c	\
 	cinnamon-doc-system.c		\
 	cinnamon-embedded-window.c		\
 	cinnamon-generic-container.c	\
@@ -271,7 +269,7 @@ libcinnamon_la_LIBADD =		\
 libcinnamon_la_CPPFLAGS = $(cinnamon_cflags)
 
 Cinnamon-0.1.gir: libcinnamon.la St-1.0.gir
-Cinnamon_0_1_gir_INCLUDES = Clutter-1.0 ClutterX11-1.0 Meta-3.0 TelepathyGLib-0.12 TelepathyLogger-0.2 Soup-2.4 GMenu-3.0 NetworkManager-1.0 NMClient-1.0 Folks-0.6
+Cinnamon_0_1_gir_INCLUDES = Clutter-1.0 ClutterX11-1.0 Meta-3.0 TelepathyGLib-0.12 TelepathyLogger-0.2 Soup-2.4 GMenu-3.0 NetworkManager-1.0 NMClient-1.0
 Cinnamon_0_1_gir_CFLAGS = $(libcinnamon_la_CPPFLAGS) -I $(srcdir)
 Cinnamon_0_1_gir_LIBS = libcinnamon.la
 Cinnamon_0_1_gir_FILES = $(libcinnamon_la_gir_sources)
