@@ -1,0 +1,6 @@
+{
+ "uuid": "brightness@cinnamon.org",
+ "name": "Brightness",
+ "description": "Control your mobile computer's display brightness",
+ "icon": "display-brightness-symbolic"
+}
