@@ -42,9 +42,6 @@ Build-Depends: cdbs,
                libxss-dev,
                libpulse-dev,
                libcanberra-dev,
-               libecal1.2-dev (>= 2.32),
-               libedataserver1.2-dev (>= 3.0.0),
-               libedataserverui-3.0-dev (>= 3.0.0),
                libpolkit-agent-1-dev (>= 0.100),
                libjson-glib-dev (>= 0.13.2)
 Standards-Version: 3.9.1
