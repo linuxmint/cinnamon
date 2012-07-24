@@ -249,7 +249,10 @@ ExpoWorkspaceThumbnail.prototype = {
         this.count = 0;
         this._windows = [];
         for (let i = 0; i < windows.length; i++) {
-            if (this._isExpoWindow(windows[i])) {
+            // The lookup will be unnecessary when linuxmint/cinnamon #930 is applied
+            // or the underlying problem with duplicates is solved.
+            if (this._lookupIndex(windows[i]) < 0) {
+                windows[i]._expoWindow = true;
                 this._addWindowClone(windows[i].get_compositor_private());
             }
         }
@@ -405,9 +408,16 @@ ExpoWorkspaceThumbnail.prototype = {
         if (this._lookupIndex (metaWin) != -1)
             return;
 
-        if (!this._isMyWindow(win) || !this._isExpoWindow(win))
+        if (!this._isMyWindow(win)) {
             return;
-
+        }
+        if (!this._isExpoWindow(win)) {
+        // This will weed out app-less "orphan" dialogs,
+        // such as the Logout dialog. It's a shame, but we must not allow
+        // the Desktop window to slip through and make it into Expo, which
+        // could otherwise happen when a workspace is being removed.
+            return;
+        }
         let clone = this._addWindowClone(win); 
 
         if (!win.showing_on_its_workspace()){
@@ -468,7 +478,8 @@ ExpoWorkspaceThumbnail.prototype = {
 
     // Tests if @win should be shown in the Expo
     _isExpoWindow : function (win) {
-        return true;
+        let tracker = Cinnamon.WindowTracker.get_default();
+        return tracker.is_window_interesting(win.get_meta_window());
     },
 
     // Create a clone of a (non-desktop) window and add it to the window list
