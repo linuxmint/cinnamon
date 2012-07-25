@@ -452,6 +452,8 @@ AltTabPopup.prototype = {
             Mainloop.source_remove(this._thumbnailTimeoutId);
         if (this._initialDelayTimeoutId != 0)
             Mainloop.source_remove(this._initialDelayTimeoutId);
+        if (this._displayOutlineTimeoutId != 0)
+            Mainloop.source_remove(this._displayOutlineTimeoutId);
     },
     
     _doWindowPreview: function() {
