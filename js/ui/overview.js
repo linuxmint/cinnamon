@@ -544,17 +544,6 @@ Overview.prototype = {
 
         this._workspacesDisplay.show();
 
-        if (Main.panel)
-            Tweener.addTween(Main.panel.actor, {    opacity: 0, 
-                                                    time: ANIMATION_TIME, 
-                                                    transition: 'easeOutQuad', 
-                                                    onComplete: function(){Main.panel.actor.hide();}});
-        if (Main.panel2)
-            Tweener.addTween(Main.panel2.actor, {   opacity: 0, 
-                                                    time: ANIMATION_TIME, 
-                                                    transition: 'easeOutQuad', 
-                                                    onComplete: function(){Main.panel2.actor.hide();}});
-
         this.workspaces = this._workspacesDisplay.workspacesView;
         global.overlay_group.add_actor(this.workspaces.actor);
 
@@ -695,15 +684,6 @@ Overview.prototype = {
 
         this.animationInProgress = true;
         this._hideInProgress = true;
-
-        if (Main.panel){
-            Main.panel.actor.show();
-            Tweener.addTween(Main.panel.actor, {opacity: 255, time: ANIMATION_TIME, transition: 'easeOutQuad'});
-        }
-        if (Main.panel2){
-            Main.panel2.actor.show();
-            Tweener.addTween(Main.panel2.actor, {opacity: 255, time: ANIMATION_TIME, transition: 'easeOutQuad'});
-        }
 
         if (!this.workspaces.getActiveWorkspace().hasMaximizedWindows()) {
             this._desktopFade.opacity = 0;

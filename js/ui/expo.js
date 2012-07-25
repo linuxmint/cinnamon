@@ -233,8 +233,8 @@ Expo.prototype = {
         let primary = Main.layoutManager.primaryMonitor;
         let rtl = (St.Widget.get_default_direction () == St.TextDirection.RTL);
 
-        let contentY = Main.panel.actor.height;
-        let contentHeight = primary.height - contentY - Main.panel.actor.height;
+        let contentY = 0;
+        let contentHeight = primary.height - contentY;
 
         this._group.set_position(primary.x, primary.y);
         this._group.set_size(primary.width, primary.height);
@@ -361,24 +361,9 @@ Expo.prototype = {
         this.allocateID = this.activeWorkspace.connect('allocated', Lang.bind(this, this._animateVisible2));
 
         this._createClone(activeWorkspaceActor);
-        if (global.settings.get_string("desktop-layout") != 'traditional' && !global.settings.get_boolean("panel-autohide"))
-            this.clone.set_position(0, Main.panel.actor.height); 
-
         this.clone.show();
 
         this._gradient.show();
-        
-        if (Main.panel)
-            Tweener.addTween(Main.panel.actor, {    opacity: 0, 
-                                                    time: ANIMATION_TIME, 
-                                                    transition: 'easeOutQuad', 
-                                                    onComplete: function(){Main.panel.actor.hide();}});
-        if (Main.panel2)
-            Tweener.addTween(Main.panel2.actor, {   opacity: 0, 
-                                                    time: ANIMATION_TIME, 
-                                                    transition: 'easeOutQuad', 
-                                                    onComplete: function(){Main.panel2.actor.hide();}});
-        
         this._background.dim_factor = 1;
         Tweener.addTween(this._background,
                             { dim_factor: 0.4,
@@ -518,15 +503,6 @@ Expo.prototype = {
                 maximizedWindow = true;
         }
 
-        if (Main.panel){
-            Main.panel.actor.show();
-            Tweener.addTween(Main.panel.actor, {opacity: 255, time: ANIMATION_TIME, transition: 'easeOutQuad'});
-        }
-        if (Main.panel2){
-            Main.panel2.actor.show();
-            Tweener.addTween(Main.panel2.actor, {opacity: 255, time: ANIMATION_TIME, transition: 'easeOutQuad'});
-        }
-
         Tweener.addTween(this._background,
                          { dim_factor: 1,
                            time: ANIMATION_TIME,
@@ -544,8 +520,6 @@ Expo.prototype = {
         this.clone.set_scale(activeWorkspaceActor.get_scale()[0], activeWorkspaceActor.get_scale()[1]);
         this.clone.show();
         let y = 0;
-        if (global.settings.get_string("desktop-layout") != 'traditional' && !global.settings.get_boolean("panel-autohide"))
-            y = Main.panel.actor.height; 
         Tweener.addTween(this.clone, {  x: 0, 
                                         y: y, 
                                         scale_x: 1 , 

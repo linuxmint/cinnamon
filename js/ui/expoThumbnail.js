@@ -810,25 +810,11 @@ ExpoThumbnailsBox.prototype = {
             this._stateCounts[ThumbnailState[key]] = 0;
 
         // The "porthole" is the portion of the screen that we show in the workspaces
-        let panelHeight = Main.panel.actor.height;
         let monitor = Main.layoutManager.primaryMonitor;
-        let autohide = global.settings.get_boolean("panel-autohide");
-        let desktop_layout = global.settings.get_string("desktop-layout");
         let portholeY = null;
         let portholeHeight = null;
-        if (autohide){
-            portholeY = 0;
-            portholeHeight = monitor.height;
-        } else if (desktop_layout == "traditional"){
-            portholeY = 0;
-            portholeHeight = monitor.height - panelHeight;        
-        } else if (desktop_layout == "flipped"){
-            portholeY = panelHeight;
-            portholeHeight = monitor.height - panelHeight;     
-        } else {
-            portholeY = panelHeight;
-            portholeHeight = monitor.height - (panelHeight * 2);         
-        }
+        portholeY = 0;
+        portholeHeight = monitor.height;
         this._porthole = {
             x: monitor.x,
             y: portholeY,
