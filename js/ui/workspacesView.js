@@ -12,7 +12,6 @@ const Main = imports.ui.main;
 const Overview = imports.ui.overview;
 const Tweener = imports.ui.tweener;
 const Workspace = imports.ui.workspace;
-const WorkspaceThumbnail = imports.ui.workspaceThumbnail;
 
 const WORKSPACE_SWITCH_TIME = 0.25;
 // Note that muffin has a compile-time limit of 36
@@ -527,8 +526,8 @@ WorkspacesDisplay.prototype = {
 
         this._monitorIndex = Main.layoutManager.primaryIndex;
 
-        this._thumbnailsBox = new WorkspaceThumbnail.ThumbnailsBox();
-        controls.add_actor(this._thumbnailsBox.actor);
+        // this._thumbnailsBox = new WorkspaceThumbnail.ThumbnailsBox();
+        // controls.add_actor(this._thumbnailsBox.actor);
 
         this.workspacesView = null;
 
@@ -569,7 +568,7 @@ WorkspacesDisplay.prototype = {
         this._updateZoom();
 
         this._controls.show();
-        this._thumbnailsBox.show();
+        // this._thumbnailsBox.show();
 
         this._workspaces = [];
         for (let i = 0; i < global.screen.n_workspaces; i++) {
@@ -613,7 +612,7 @@ WorkspacesDisplay.prototype = {
 
     hide: function() {
         this._controls.hide();
-        this._thumbnailsBox.hide();
+        // this._thumbnailsBox.hide();
 
         if (this._restackedNotifyId > 0){
             global.screen.disconnect(this._restackedNotifyId);
@@ -761,7 +760,7 @@ WorkspacesDisplay.prototype = {
         }
 
         this.workspacesView.syncStacking(stackIndices);
-        this._thumbnailsBox.syncStacking(stackIndices);
+        // this._thumbnailsBox.syncStacking(stackIndices);
     },
 
     _workspacesChanged: function() {
@@ -786,7 +785,7 @@ WorkspacesDisplay.prototype = {
                 this._workspaces[w] = new Workspace.Workspace(metaWorkspace, this._monitorIndex);
             }
 
-            this._thumbnailsBox.addThumbnails(oldNumWorkspaces, newNumWorkspaces - oldNumWorkspaces);
+            // this._thumbnailsBox.addThumbnails(oldNumWorkspaces, newNumWorkspaces - oldNumWorkspaces);
         } else {
             // Assume workspaces are only removed sequentially
             // (e.g. 2,3,4 - not 2,4,7)
@@ -808,7 +807,7 @@ WorkspacesDisplay.prototype = {
                 lostWorkspaces[l].destroy();
             }
 
-            this._thumbnailsBox.removeThumbmails(removedIndex, removedNum);
+            // this._thumbnailsBox.removeThumbmails(removedIndex, removedNum);
         }
 
         this.workspacesView.updateWorkspaces(oldNumWorkspaces,
