@@ -53,10 +53,6 @@ class MainWindow(object):
         self.tree.get_object('move_up_button').set_sensitive(False)
         self.tree.get_object('move_down_button').set_sensitive(False)
         self.tree.get_object('new_separator_button').set_sensitive(False)
-        accelgroup = Gtk.AccelGroup()
-        keyval, modifier = Gtk.accelerator_parse('F1')
-        accelgroup.connect(keyval, modifier, Gtk.AccelFlags.VISIBLE, self.on_help_button_clicked)
-        self.tree.get_object('mainwindow').add_accel_group(accelgroup)
 
     def run(self):
         self.loadMenus()
@@ -434,9 +430,6 @@ class MainWindow(object):
         item = items[path][3]
         after = items[path][3]
         self.editor.moveItem(item.get_parent(), item, after=after)
-
-    def on_help_button_clicked(self, *args):
-        Gtk.show_uri(Gdk.Screen.get_default(), "ghelp:user-guide#menu-editor", Gtk.get_current_event_time())
 
     def on_restore_button_clicked(self, button):
         self.editor.restoreToSystem()
