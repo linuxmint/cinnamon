@@ -50,12 +50,14 @@ MyApplet.prototype = {
             box.add_actor(icon);
 
             this._insertStatusItem(box, -1);
-
+            let width = 22;
+            let height = 22;
             let themeNode = buttonBox.actor.get_theme_node();
-            if (!themeNode.get_length('width')) icon.width = 22;
-            else icon.width = themeNode.get_length('width');
-            if (!themeNode.get_length('height')) icon.height = 22;
-            else icon.height = themeNode.get_length('height');
+            if (themeNode.get_length('width'))
+                width = themeNode.get_length('width');
+            if (themeNode.get_length('height'));
+                height = themeNode.get_length('height');
+            icon.set_height(height); // change this to .set_size(width, height) if we figure out why pidgin is messed up
         }
         catch (e) {
             global.logError(e);
