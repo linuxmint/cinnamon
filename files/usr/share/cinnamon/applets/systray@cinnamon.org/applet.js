@@ -37,13 +37,14 @@ MyApplet.prototype = {
     _onTrayIconAdded: function(o, icon, role) {
         try {
             let hiddenIcons = ["network", "power", "keyboard", "gnome-settings-daemon", "volume", "bluetooth", "bluetooth-manager", "battery", "a11y", "spotify"];
-
+            let buggyIcons = ["pidgin", "thunderbird"];
+            
             if (hiddenIcons.indexOf(role) != -1 ) {
                 // We've got an applet for that
                 return;
             }
 
-            global.log("Adding systray: " + role);
+            global.log("Adding systray: " + role + " (" + icon.get_width() + "x" + icon.get_height() + "px)");            
 
             let buttonBox = new PanelMenu.ButtonBox({ style_class: 'panel-status-button', reactive: true, track_hover: true  });
             let box = buttonBox.actor;
@@ -60,7 +61,7 @@ MyApplet.prototype = {
                 height = themeNode.get_length('height');                        
             }
             
-            if (role == "pidgin") {
+            if (buggyIcons.indexOf(role) != -1) {
                 icon.set_height(height);
             }
             else {
