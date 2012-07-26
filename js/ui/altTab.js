@@ -66,6 +66,7 @@ AltTabPopup.prototype = {
         this._thumbnailTimeoutId = 0;
         this._motionTimeoutId = 0;
         this._initialDelayTimeoutId = 0;
+        this._displayOutlineTimeoutId = 0;
 
         this.thumbnailsVisible = false;
 
