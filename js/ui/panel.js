@@ -497,6 +497,7 @@ Panel.prototype = {
         this.bottomPosition = bottomPosition;
         
     	this._hidden = false;
+        this._disabled = false;
         this._hidetime = 0;              
         this._hideable = global.settings.get_boolean("panel-autohide");
     	
@@ -512,20 +513,6 @@ Panel.prototype = {
                 this.actor.set_height(global.settings.get_int('panel-top-height'));
             }
         }
-
-        Main.overview.connect('shown', Lang.bind(this, function () {
-            this.actor.add_style_class_name('in-overview');
-        }));
-        Main.overview.connect('hiding', Lang.bind(this, function () {
-            this.actor.remove_style_class_name('in-overview');
-        }));
-
-        Main.expo.connect('shown', Lang.bind(this, function () {
-            this.actor.add_style_class_name('in-overview');
-        }));
-        Main.expo.connect('hiding', Lang.bind(this, function () {
-            this.actor.remove_style_class_name('in-overview');
-        }));
 
         this._menus = new PopupMenu.PopupMenuManager(this);                        
         
@@ -777,8 +764,23 @@ Panel.prototype = {
         this._hidePanel();
     }, 
     
-    _showPanel: function() {
+    enable: function() {
+        this._disabled = false;
+        this._showPanel(true);
+    }, 
+    
+    disable: function() {
+        this._disabled = true;
+        this._hidePanel();
+    }, 
+    
+    _showPanel: function(fast) {
+        if (this._disabled) {
+            return;
+        }
         if (this._hidden == false) return;
+        
+        if (this._hideable && !this.isMouseOverPanel) return;
         
         if (Main.lookingGlass != null && Main.lookingGlass._open) {
             return;
@@ -788,131 +790,79 @@ Panel.prototype = {
         Main.layoutManager._windowsRestacked();
         
         let height = this.actor.get_height();
-        
-        if (this.bottomPosition) {        
-            let params = { y: height - 1,
-                           time: AUTOHIDE_ANIMATION_TIME + 0.1,
-                           transition: 'easeOutQuad'
-                         };
-     
-            Tweener.addTween(this._leftCorner.actor, params);
-            Tweener.addTween(this._rightCorner.actor, params);
+        let animationTime = fast ? 0 : AUTOHIDE_ANIMATION_TIME;
+        let y = this.bottomPosition ?
+            Main.layoutManager.bottomMonitor.y + Main.layoutManager.bottomMonitor.height - height :
+            Main.layoutManager.primaryMonitor.y;
+            
+        let params = { y: height - 1,
+                        time: fast ? 0 : animationTime + 0.1,
+                        transition: 'easeOutQuad'
+                        };
+    
+        Tweener.addTween(this._leftCorner.actor, params);
+        Tweener.addTween(this._rightCorner.actor, params);
 
-            Tweener.addTween(this.actor.get_parent(),
-                         { y: Main.layoutManager.bottomMonitor.y + Main.layoutManager.bottomMonitor.height - height,
-                           time: AUTOHIDE_ANIMATION_TIME,
-                           transition: 'easeOutQuad',
-                           onUpdate: function() {
-                               // Force the layout manager to update the input region
-                               Main.layoutManager._chrome.updateRegions()
-                           }
-                         });
+        Tweener.addTween(this.actor.get_parent(),
+                        { y: y,
+                        time: animationTime,
+                        transition: 'easeOutQuad',
+                        onUpdate: function() {
+                            // Force the layout manager to update the input region
+                            Main.layoutManager._chrome.updateRegions()
+                        }
+                        });
 
-            params = { opacity: 255,
-                       time: AUTOHIDE_ANIMATION_TIME+0.2,
-                       transition: 'easeOutQuad'
-                     };
+        params = { opacity: 255,
+                    time: fast ? 0 : animationTime+0.2,
+                    transition: 'easeOutQuad'
+                    };
 
-            Tweener.addTween(this._leftBox, params);
-            Tweener.addTween(this._centerBox, params);
-            Tweener.addTween(this._rightBox, params);
-        }
-        else {
-            let params = { y: height - 1,
-                       time: AUTOHIDE_ANIMATION_TIME + 0.1,
-                       transition: 'easeOutQuad'
-                     };
- 
-            Tweener.addTween(this._leftCorner.actor, params);
-            Tweener.addTween(this._rightCorner.actor, params);
-
-            Tweener.addTween(this.actor.get_parent(),
-                         { y: Main.layoutManager.primaryMonitor.y,
-                           time: AUTOHIDE_ANIMATION_TIME,
-                           transition: 'easeOutQuad',
-                           onUpdate: function() {
-                               // Force the layout manager to update the input region
-                               Main.layoutManager._chrome.updateRegions()
-                           }
-                         });
-
-            params = { opacity: 255,
-                       time: AUTOHIDE_ANIMATION_TIME+0.2,
-                       transition: 'easeOutQuad'
-                     };
-
-            Tweener.addTween(this._leftBox, params);
-            Tweener.addTween(this._centerBox, params);
-            Tweener.addTween(this._rightBox, params);
-        }
+        Tweener.addTween(this._leftBox, params);
+        Tweener.addTween(this._centerBox, params);
+        Tweener.addTween(this._rightBox, params);
 
         this._hidden = false;
     },
     
     _hidePanel: function() {
-        if (Main.overview.visible || this._hideable == false || global.menuStackLength > 0 || this.isMouseOverPanel) return;
+        if (!this._disabled && (this._hideable == false || global.menuStackLength > 0 || this.isMouseOverPanel)) return;
         
         // Force the panel to be on top (hack to correct issues when switching workspace)
         Main.layoutManager._windowsRestacked();
         
         let height = this.actor.get_height();
+        let animationTime = this._disabled ? 0 : AUTOHIDE_ANIMATION_TIME;
+        let y = this.bottomPosition ?
+            Main.layoutManager.bottomMonitor.y + Main.layoutManager.bottomMonitor.height - 1 :
+            Main.layoutManager.primaryMonitor.y - height + 1;
+        
+        Tweener.addTween(this.actor.get_parent(), { 
+            y: y,
+            time: animationTime,
+            transition: 'easeOutQuad',
+            onUpdate: function() {
+                // Force the layout manager to update the input region
+                Main.layoutManager._chrome.updateRegions()
+            }
+        });
 
-        if (this.bottomPosition) {  
-            Tweener.addTween(this.actor.get_parent(),
-                         { y: Main.layoutManager.bottomMonitor.y + Main.layoutManager.bottomMonitor.height - 1,
-                           time: AUTOHIDE_ANIMATION_TIME,
-                           transition: 'easeOutQuad',
-                           onUpdate: function() {
-                               // Force the layout manager to update the input region
-                               Main.layoutManager._chrome.updateRegions()
-                           }
-                         });
+        let params = { y: 0,
+                        time: animationTime,
+                        transition: 'easeOutQuad'
+                        };
 
-            let params = { y: 0,
-                           time: AUTOHIDE_ANIMATION_TIME,
-                           transition: 'easeOutQuad'
-                         };
+        Tweener.addTween(this._leftCorner.actor, params);
+        Tweener.addTween(this._rightCorner.actor, params);
 
-            Tweener.addTween(this._leftCorner.actor, params);
-            Tweener.addTween(this._rightCorner.actor, params);
+        params = { opacity: 0,
+                    time: Math.max(0, animationTime - 0.1),
+                    transition: 'easeOutQuad'
+                    };
 
-            params = { opacity: 0,
-                       time: AUTOHIDE_ANIMATION_TIME - 0.1,
-                       transition: 'easeOutQuad'
-                     };
-
-            Tweener.addTween(this._leftBox, params);
-            Tweener.addTween(this._centerBox, params);
-            Tweener.addTween(this._rightBox, params);
-        }
-        else {
-            Tweener.addTween(this.actor.get_parent(),
-                     { y: Main.layoutManager.primaryMonitor.y - height + 1,
-                       time: AUTOHIDE_ANIMATION_TIME,
-                       transition: 'easeOutQuad',
-                       onUpdate: function() {
-                           // Force the layout manager to update the input region
-                           Main.layoutManager._chrome.updateRegions()
-                       }
-                     });
-
-            let params = { y: 0,
-                           time: AUTOHIDE_ANIMATION_TIME,
-                           transition: 'easeOutQuad'
-                         };
-
-            Tweener.addTween(this._leftCorner.actor, params);
-            Tweener.addTween(this._rightCorner.actor, params);
-
-            params = { opacity: 0,
-                       time: AUTOHIDE_ANIMATION_TIME - 0.1,
-                       transition: 'easeOutQuad'
-                     };
-
-            Tweener.addTween(this._leftBox, params);
-            Tweener.addTween(this._centerBox, params);
-            Tweener.addTween(this._rightBox, params);
-        }
+        Tweener.addTween(this._leftBox, params);
+        Tweener.addTween(this._centerBox, params);
+        Tweener.addTween(this._rightBox, params);
 
         this._hidden = true;
     },

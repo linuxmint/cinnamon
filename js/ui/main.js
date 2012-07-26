@@ -286,6 +286,20 @@ function start() {
         layoutManager.panelBox2.add(panel2.actor);   
         layoutManager._updateBoxes();
     }
+    
+    function enablePanels() {
+        if (panel) panel.enable();
+        if (panel2) panel2.enable();
+    }
+    function disablePanels() {
+        if (panel) panel.disable();
+        if (panel2) panel2.disable();
+    }
+    
+    expo.connect('showing', disablePanels);
+    expo.connect('hiding', enablePanels);
+    overview.connect('showing', disablePanels);
+    overview.connect('hiding', enablePanels);
                 
     wm = new WindowManager.WindowManager();
     messageTray = new MessageTray.MessageTray();
