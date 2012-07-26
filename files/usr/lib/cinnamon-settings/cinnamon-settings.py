@@ -13,6 +13,7 @@ try:
     import dbus
     import tz
     import time
+    import inspect
     from datetime import datetime
     from user import home
     import thread
@@ -49,6 +50,12 @@ class SidePage:
         for widget in self.widgets:
             self.content_box.pack_start(widget, False, False, 2)            
         self.content_box.show_all()
+
+        # Run init functions (things to be run after sidepage is built)
+        for widget in self.widgets:
+            v = vars(widget.__class__)
+            if ("init_widget" in v and  inspect.isroutine(v["init_widget"])):
+                widget.init_widget()
 
 class GConfComboBox(Gtk.HBox):    
     def __init__(self, label, key, options, init_value = ""):  
@@ -741,6 +748,107 @@ class GSettingsComboBox(Gtk.HBox):
             value = self.model[tree_iter][0]            
             self.settings.set_string(self.key, value)                       
 
+class AltTabStyleCheckButton(Gtk.CheckButton):
+    def __init__(self, label, name):
+        self.label = label
+        self.name = name
+        super(AltTabStyleCheckButton, self).__init__(label)
+        self.settings = Gio.Settings.new("org.cinnamon")
+        self.settings.connect("changed::"+"alttab-switcher-style", self.on_my_setting_changed)
+        self.on_my_setting_changed(self.settings, "alttab-switcher-style")
+        self.connect('toggled', self.on_my_value_changed)
+    
+    def on_my_setting_changed(self, settings, key):
+        active = False
+        styles = self.settings.get_strv("alttab-switcher-style")
+        if self.name in styles:
+            active = True
+        self.set_active(active)
+
+    def on_my_value_changed(self, widget):
+        active = self.get_active()
+        styles = self.settings.get_strv("alttab-switcher-style")
+        if active:
+            if self.name not in styles:
+                styles.append(self.name)
+        else:
+            if self.name in styles:
+                styles.remove(self.name)
+        self.settings.set_strv("alttab-switcher-style", styles)
+
+class AltTabWidget(Gtk.VBox):
+    def __init__(self):
+        self.switcher_key = "alttab-switcher-style"
+        self.custom_key = "alttab-switcher-custom"
+        super(AltTabWidget, self).__init__()
+        self.settings = Gio.Settings.new("org.cinnamon")
+        self.style = self.settings.get_strv(self.switcher_key)
+        self.is_custom = self.settings.get_boolean(self.custom_key)
+
+        self.combo_box_hbox = Gtk.HBox()
+        self.label = Gtk.Label("ALT-Tab switcher style")
+        self.model = Gtk.ListStore(str, str)
+        selected = None
+
+        options = [[['icons'], _("Icons only")], [['icons', 'thumbnails'], _("Icons and thumbnails")], [['icons', 'preview'], _("Icons and window preview")], [['preview'], _("Window preview (no icons)")], [["thumbnails"], _("Thumbnails only")]]
+        for option in options:
+            titer = self.model.insert_before(None, None)
+            self.model.set_value(titer, 0, ", ".join(option[0]))
+            self.model.set_value(titer, 1, option[1])
+            if (option[0] == self.style):
+                selected = titer
+        titer = self.model.insert_before(None, None)
+        self.model.set_value(titer, 0, "custom")
+        self.model.set_value(titer, 1, _("Custom"))
+        if (self.is_custom or selected == None):
+            selected = titer
+
+        self.content_widget = Gtk.ComboBox.new_with_model(self.model)
+        renderer_text = Gtk.CellRendererText()
+        self.content_widget.pack_start(renderer_text, True)
+        self.content_widget.add_attribute(renderer_text, "text", 1)     
+
+        if selected is not None:
+            self.content_widget.set_active_iter(selected)
+        
+        self.combo_box_hbox.pack_start(self.label, False, False, 2)
+        self.combo_box_hbox.pack_start(self.content_widget, False, False, 2)
+        self.pack_start(self.combo_box_hbox, False, False, 2)
+
+        self.content_widget.connect('changed', self.on_my_value_changed)
+        self.content_widget.show_all()
+
+        self.custom_box = Gtk.VBox()
+        self.custom_box.pack_start(Gtk.Label(_("Select the components you want to display in the ALT-Tab switcher")), False, False, 2)
+        self.checklist_box = Gtk.HBox()
+
+        icon_checkbox = AltTabStyleCheckButton("Icons", "icons")
+        self.checklist_box.pack_start(icon_checkbox, False, False, 2)
+        preview_checkbox = AltTabStyleCheckButton("Preview", "preview")
+        self.checklist_box.pack_start(preview_checkbox, False, False, 2)
+        thumbnails_checkbox = AltTabStyleCheckButton("Thumbnails", "thumbnails")
+        self.checklist_box.pack_start(thumbnails_checkbox, False, False, 2)
+        self.custom_box.pack_start(self.checklist_box, False, False, 2)
+
+        self.pack_start(self.custom_box, False, False, 2)
+
+        self.on_my_value_changed(self.content_widget)
+
+    def on_my_value_changed(self, widget):
+        tree_iter = widget.get_active_iter()
+        if tree_iter != None:
+            if self.model[tree_iter][0] != "custom":
+                self.custom_box.hide()
+                value = self.model[tree_iter][0].split(", ")
+                self.settings.set_strv(self.switcher_key, value)
+                self.settings.set_boolean(self.custom_key, False)
+            else:
+                self.custom_box.show()
+                self.settings.set_boolean(self.custom_key, True)
+
+    def init_widget(self):
+        self.on_my_value_changed(self.content_widget)
+
 class TimeZoneSelectorWidget(Gtk.HBox):
     def __init__(self):
         super(TimeZoneSelectorWidget, self).__init__()
@@ -1088,9 +1196,9 @@ class MainWindow:
             iterator = self.store.get_iter(path)
             sidePage = self.store.get_value(iterator,2)
             self.window.set_title(_("Cinnamon Settings") + " - " + sidePage.name)
-            sidePage.build()
             self.content_box_sw.show_all()
             self.top_button_box.show_all()
+            sidePage.build()
             
     ''' Create the UI '''
     def __init__(self):        
@@ -1366,12 +1474,17 @@ class MainWindow:
         sidePage.add_widget(GSettingsComboBox(_("Hinting"), "org.gnome.settings-daemon.plugins.xsettings", "hinting", [(i, i.title()) for i in ("none", "slight", "medium", "full")]))
         sidePage.add_widget(GSettingsComboBox(_("Antialiasing"), "org.gnome.settings-daemon.plugins.xsettings", "antialiasing", [(i, i.title()) for i in ("none", "grayscale", "rgba")]))
         
+        sidePage = SidePage(_("Alt-tab Switcher"), "alttab.svg", self.content_box)
+        self.sidePages.append((sidePage, "alt-tab-switcher"))
+        alttab_widget = AltTabWidget()
+        sidePage.add_widget(alttab_widget)
+
         sidePage = SidePage(_("General"), "general.svg", self.content_box)
         self.sidePages.append((sidePage, "general"))
         sidePage.add_widget(GSettingsCheckButton(_("Log LookingGlass output to ~/.cinnamon/glass.log (Requires Cinnamon restart)"), "org.cinnamon", "enable-looking-glass-logs"))
         sidePage.add_widget(GSettingsCheckButton(_("Emulate middle click by clicking both left and right buttons"), "org.gnome.settings-daemon.peripherals.mouse", "middle-button-enabled"))
         sidePage.add_widget(GSettingsCheckButton(_("Display notifications"), "org.cinnamon", "display-notifications"))
-        
+
         #sidePage = SidePage(_("Terminal"), "terminal", self.content_box)
         #self.sidePages.append(sidePage)
         #sidePage.add_widget(GConfCheckButton(_("Show fortune cookies"), "/desktop/linuxmint/terminal/show_fortunes"))
