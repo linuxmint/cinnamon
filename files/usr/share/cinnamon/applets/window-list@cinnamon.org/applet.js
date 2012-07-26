@@ -388,6 +388,7 @@ AppMenuButton.prototype = {
         if (time > (this._applet.dragEnterTime + 300)) {
             this._windowHandle(true);
         }
+        return DND.DragMotionResult.NO_DROP;
     },
     
     acceptDrop: function(source, actor, x, y, time) {
