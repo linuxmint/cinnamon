@@ -8,6 +8,7 @@ const Cinnamon = imports.gi.Cinnamon;
 const Signals = imports.signals;
 const Tweener = imports.ui.tweener;
 const Main = imports.ui.main;
+const Mainloop = imports.mainloop;
 
 const Params = imports.misc.params;
 
@@ -17,6 +18,9 @@ const SCALE_ANIMATION_TIME = 0.25;
 const SNAP_BACK_ANIMATION_TIME = 0.25;
 // Time to animate to original position on success
 const REVERT_ANIMATION_TIME = 0.75;
+
+// Time to wait patiently for events while dragging
+const DRAG_EVENT_TIMEOUT_MS = 5000;
 
 const DragMotionResult = {
     NO_DROP:   0,
@@ -170,7 +174,6 @@ _Draggable.prototype = {
     _grabEvents: function() {
         if (!this._eventsGrabbed) {
             Clutter.grab_pointer(_getEventHandlerActor());
-            Clutter.grab_keyboard(_getEventHandlerActor());
             this._eventsGrabbed = true;
         }
     },
@@ -178,12 +181,14 @@ _Draggable.prototype = {
     _ungrabEvents: function() {
         if (this._eventsGrabbed) {
             Clutter.ungrab_pointer();
-            Clutter.ungrab_keyboard();
             this._eventsGrabbed = false;
         }
     },
 
     _onEvent: function(actor, event) {
+        // prevent the watchdog timer from firing, for a while
+        this._setTimer(true);
+        
         // Intercept BUTTON_PRESS to try to address a drag in progress condition 'dragging'
         // on interminably - you started dragging, went off the panels, released the mouse
         // button (which we can't track when you're not over a panel) then went back
@@ -218,14 +223,6 @@ _Draggable.prototype = {
             } else if (this._dragActor == null) {
                 return this._maybeStartDrag(event);
             }
-        // We intercept KEY_PRESS event so that we can process Esc key press to cancel
-        // dragging and ignore all other key presses.
-        } else if (event.type() == Clutter.EventType.KEY_PRESS && this._dragInProgress) {
-            let symbol = event.get_key_symbol();
-            if (symbol == Clutter.Escape) {
-                this._cancelDrag(event.get_time());
-                return true;
-            }
         } else if (event.type() == Clutter.EventType.LEAVE) {
             if (this._firstLeaveActor == null)
                 this._firstLeaveActor = event.get_source();
@@ -236,6 +233,23 @@ _Draggable.prototype = {
         return false;
     },
 
+    _setTimer: function(renew) {
+        if (this._dragEventTimeoutId) {
+            Mainloop.source_remove(this._dragEventTimeoutId);
+            this._dragEventTimeoutId = 0;
+        }
+        if (renew) {
+            this._dragEventTimeoutId = Mainloop.timeout_add(DRAG_EVENT_TIMEOUT_MS, 
+                Lang.bind(this, function() {
+                    if (this._dragInProgress) {
+                        this._cancelDrag();
+                        // _dragComplete is not always called by _cancelDrag.
+                        this._dragComplete();
+                    }
+                }));
+        }
+    },
+    
     /**
      * startDrag:
      * @stageX: X coordinate of event
@@ -247,6 +261,8 @@ _Draggable.prototype = {
      * for the draggable.
      */
     startDrag: function (stageX, stageY, time) {
+        this._setTimer(true); // activate the watchdog timer
+
         currentDraggable = this;
         this._dragInProgress = true;
 
@@ -513,7 +529,9 @@ _Draggable.prototype = {
         return [x, y, scale];
     },
 
-    _cancelDrag: function(eventTime) {
+    _cancelDrag: function(eventTimeOpt) {
+        this._setTimer(false);
+        let eventTime = eventTimeOpt || global.get_current_time();
         this.emit('drag-cancelled', eventTime);
         this._dragInProgress = false;
         let [snapBackX, snapBackY, snapBackScale] = this._getRestoreLocation();
@@ -594,6 +612,7 @@ _Draggable.prototype = {
     },
 
     _dragComplete: function() {
+        this._setTimer(false);
         if (!this._actorDestroyed)
             Cinnamon.util_set_hidden_from_pick(this._dragActor, false);
 
