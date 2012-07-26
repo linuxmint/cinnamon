@@ -19,9 +19,6 @@ GType cinnamon_stage_input_mode_get_type (void) G_GNUC_CONST;
 GType cinnamon_cursor_get_type (void) G_GNUC_CONST;
 #define CINNAMON_TYPE_CURSOR (cinnamon_cursor_get_type())
 
-GType cinnamon_session_type_get_type (void) G_GNUC_CONST;
-#define CINNAMON_TYPE_SESSION_TYPE (cinnamon_session_type_get_type())
-
 /* enumerations from "./cinnamon-mobile-providers.h" */
 GType cinnamon_mobile_access_method_type_get_type (void) G_GNUC_CONST;
 #define CINNAMON_TYPE_MOBILE_ACCESS_METHOD_TYPE (cinnamon_mobile_access_method_type_get_type())

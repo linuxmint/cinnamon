@@ -33,8 +33,6 @@ extern GType gnome_cinnamon_plugin_get_type (void);
 
 #define OVERRIDES_SCHEMA "org.cinnamon.overrides"
 
-static gboolean is_gdm_mode = FALSE;
-
 static void
 cinnamon_dbus_init (gboolean replace)
 {
@@ -216,12 +214,6 @@ GOptionEntry gnome_cinnamon_options[] = {
     N_("Print version"),
     NULL
   },
-  {
-    "gdm-mode", 0, 0, G_OPTION_ARG_NONE,
-    &is_gdm_mode,
-    N_("Mode used by GDM for login screen"),
-    NULL
-  },
   { NULL }
 };
 
@@ -245,7 +237,6 @@ main (int argc, char **argv)
 {
   GOptionContext *ctx;
   GError *error = NULL;
-  CinnamonSessionType session_type;
   int ecode;
 
   g_type_init ();
@@ -300,12 +291,7 @@ main (int argc, char **argv)
                      muted_log_handler, NULL);
 
   /* Initialize the global object */
-  if (is_gdm_mode)
-      session_type = CINNAMON_SESSION_GDM;
-  else
-      session_type = CINNAMON_SESSION_USER;
-
-  _cinnamon_global_init ("session-type", session_type, NULL);
+  _cinnamon_global_init (NULL);
 
   ecode = meta_run ();
 

@@ -161,13 +161,6 @@ gboolean cinnamon_global_screenshot_window         (CinnamonGlobal  *global,
 void    cinnamon_global_screenshot                (CinnamonGlobal  *global,
                                                 const char *filename,
                                                 CinnamonGlobalScreenshotCallback callback);
-typedef enum {
-  CINNAMON_SESSION_USER,
-  CINNAMON_SESSION_GDM
-} CinnamonSessionType;
-
-CinnamonSessionType cinnamon_global_get_session_type  (CinnamonGlobal  *global);
-
 G_END_DECLS
 
 #endif /* __CINNAMON_GLOBAL_H__ */

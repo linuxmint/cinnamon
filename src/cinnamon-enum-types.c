@@ -54,20 +54,6 @@ cinnamon_cursor_get_type(void) {
     }
   return enum_type_id;
 }
-GType
-cinnamon_session_type_get_type(void) {
-  static GType enum_type_id = 0;
-  if (G_UNLIKELY (!enum_type_id))
-    {
-      static const GEnumValue values[] = {
-        { CINNAMON_SESSION_USER, "CINNAMON_SESSION_USER", "user" },
-        { CINNAMON_SESSION_GDM, "CINNAMON_SESSION_GDM", "gdm" },
-        { 0, NULL, NULL }
-      };
-      enum_type_id = g_enum_register_static("CinnamonSessionType", values);
-    }
-  return enum_type_id;
-}
 /* enumerations from "./cinnamon-mobile-providers.h" */
 #include "./cinnamon-mobile-providers.h"
 GType
