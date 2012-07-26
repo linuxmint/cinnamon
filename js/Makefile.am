@@ -2,11 +2,6 @@
 jsdir = $(pkgdatadir)/js
 
 nobase_dist_js_DATA = \
-	gdm/batch.js		\
-	gdm/consoleKit.js	\
-	gdm/fingerprint.js	\
-	gdm/loginDialog.js	\
-	gdm/powerMenu.js	\
 	misc/config.js		\
 	misc/docInfo.js		\
 	misc/fileUtils.js	\

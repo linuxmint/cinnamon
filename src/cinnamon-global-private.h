@@ -16,9 +16,6 @@ GjsContext *_cinnamon_global_get_gjs_context (CinnamonGlobal  *global);
 gboolean _cinnamon_global_check_xdnd_event (CinnamonGlobal  *global,
                                          XEvent       *xev);
 
-void     _cinnamon_global_set_session_type (CinnamonGlobal      *global,
-                                         CinnamonSessionType  session_type);
-
 /* Used for async screenshot grabbing */
 typedef struct _screenshot_data {
   CinnamonGlobal  *global;

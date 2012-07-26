@@ -77,7 +77,6 @@ let _errorLogStack = [];
 let _startDate;
 let _defaultCssStylesheet = null;
 let _cssStylesheet = null;
-let _gdmCssStylesheet = null;
 let dynamicWorkspaces = null;
 let nWorks = null;
 
@@ -101,24 +100,6 @@ const Gettext = imports.gettext;
 Gettext.bindtextdomain('cinnamon', '/usr/share/cinnamon/locale');
 Gettext.textdomain('cinnamon');
 const _ = Gettext.gettext;
-
-function _createUserSession() {  
-    placesManager = new PlacesManager.PlacesManager();    
-    automountManager = new AutomountManager.AutomountManager();
-    //autorunManager = new AutorunManager.AutorunManager();
-    networkAgent = new NetworkAgent.NetworkAgent();
-}
-
-function _createGDMSession() {
-    // We do this this here instead of at the top to prevent GDM
-    // related code from getting loaded in normal user sessions
-    const LoginDialog = imports.gdm.loginDialog;
-
-    let loginDialog = new LoginDialog.LoginDialog();
-    loginDialog.connect('loaded', function() {
-                            loginDialog.open();
-                        });
-}
 
 function _initRecorder() {
     let recorderSettings = new Gio.Settings({ schema: 'org.cinnamon.recorder' });
@@ -238,7 +219,6 @@ function start() {
     }
     
     _defaultCssStylesheet = global.datadir + '/theme/cinnamon.css';
-    _gdmCssStylesheet = global.datadir + '/theme/gdm.css';
     loadTheme();
     
     themeManager = new ThemeManager.ThemeManager();
@@ -260,8 +240,8 @@ function start() {
     layoutManager = new Layout.LayoutManager();
     xdndHandler = new XdndHandler.XdndHandler();
     // This overview object is just a stub for non-user sessions
-    overview = new Overview.Overview({ isDummy: global.session_type != Cinnamon.SessionType.USER });
-    expo = new Expo.Expo({ isDummy: global.session_type != Cinnamon.SessionType.USER });
+    overview = new Overview.Overview({ isDummy: false });
+    expo = new Expo.Expo({ isDummy: false });
     magnifier = new Magnifier.Magnifier();
     statusIconDispatcher = new StatusIconDispatcher.StatusIconDispatcher();  
                     
@@ -293,10 +273,10 @@ function start() {
     notificationDaemon = new NotificationDaemon.NotificationDaemon();
     windowAttentionHandler = new WindowAttentionHandler.WindowAttentionHandler();
 
-    if (global.session_type == Cinnamon.SessionType.USER)
-        _createUserSession();
-    else if (global.session_type == Cinnamon.SessionType.GDM)
-        _createGDMSession();
+    placesManager = new PlacesManager.PlacesManager();    
+    automountManager = new AutomountManager.AutomountManager();
+    //autorunManager = new AutorunManager.AutorunManager();
+    networkAgent = new NetworkAgent.NetworkAgent();
 
     Meta.later_add(Meta.LaterType.BEFORE_REDRAW, _checkWorkspaces);
 
@@ -312,8 +292,7 @@ function start() {
     overview.init();
     expo.init();
 
-    if (global.session_type == Cinnamon.SessionType.USER)
-        _initUserSession();
+    _initUserSession();
     statusIconDispatcher.start(panel.actor);
 
     // Provide the bus object for gnome-session to
@@ -742,9 +721,8 @@ function _globalKeyPressHandler(actor, event) {
     // This relies on the fact that Clutter.ModifierType is the same as Gdk.ModifierType
     let action = global.display.get_keybinding_action(keyCode, modifierState);
 
-    // Other bindings are only available to the user session when the overview is up and
-    // no modal dialog is present.
-    if (global.session_type == Cinnamon.SessionType.USER && ((!overview.visible && !expo.visible) || modalCount > 1))
+    // Other bindings are only available when the overview is up and no modal dialog is present
+    if (((!overview.visible && !expo.visible) || modalCount > 1))
         return false;
 
     // This isn't a Meta.KeyBindingAction yet
@@ -758,10 +736,6 @@ function _globalKeyPressHandler(actor, event) {
         //Used to call the ctrlalttabmanager in Gnome Shell
         return true;
     }
-
-    // None of the other bindings are relevant outside of the user's session
-    if (global.session_type != Cinnamon.SessionType.USER)
-        return false;
 
     switch (action) {
         // left/right would effectively act as synonyms for up/down if we enabled them;

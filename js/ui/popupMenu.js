@@ -872,10 +872,6 @@ PopupMenuBase.prototype = {
     },
 
     addSettingsAction: function(title, desktopFile) {
-        // Don't allow user settings to get edited unless we're in a user session
-        if (global.session_type != Cinnamon.SessionType.USER)
-            return null;
-
         let menuItem = this.addAction(title, function() {
                            let app = Cinnamon.AppSystem.get_default().lookup_setting(desktopFile);
 
