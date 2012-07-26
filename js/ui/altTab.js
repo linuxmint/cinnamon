@@ -78,22 +78,19 @@ AltTabPopup.prototype = {
         this._previewEnabled = false;
         this._iconsEnabled = false;
         this._thumbnailsEnabled = false;
-        let styleSettings = global.settings.get_string("alttab-switcher-style");
-        let features = styleSettings.split('+');
+        let styleSettings = global.settings.get_strv("alttab-switcher-style");
         let found = false;
-        for (let i in features) {
-            if (features[i] === 'icons') {
-                this._iconsEnabled = true;
-                found = true;
-            }
-            if (features[i] === 'preview') {
-                this._previewEnabled = true;
-                found = true;
-            }
-            if (features[i] === 'thumbnails') {
-                this._thumbnailsEnabled = true;
-                found = true;
-            }
+        if (styleSettings.indexOf("icons") != -1) {
+            this._iconsEnabled = true;
+            found = true;
+        }
+        if (styleSettings.indexOf("preview") != -1) {
+            this._previewEnabled = true;
+            found = true;
+        }
+        if (styleSettings.indexOf("thumbnails") != -1) {
+            this._thumbnailsEnabled = true;
+            found = true;
         }
         if (!found) {
             this._iconsEnabled = true;
