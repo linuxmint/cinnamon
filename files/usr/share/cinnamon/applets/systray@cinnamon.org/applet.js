@@ -53,11 +53,19 @@ MyApplet.prototype = {
             let width = 22;
             let height = 22;
             let themeNode = buttonBox.actor.get_theme_node();
-            if (themeNode.get_length('width'))
+            if (themeNode.get_length('width')) {
                 width = themeNode.get_length('width');
-            if (themeNode.get_length('height'));
-                height = themeNode.get_length('height');
-            icon.set_height(height); // change this to .set_size(width, height) if we figure out why pidgin is messed up
+            }
+            if (themeNode.get_length('height')) {
+                height = themeNode.get_length('height');                        
+            }
+            
+            if (role == "pidgin") {
+                icon.set_height(height);
+            }
+            else {
+                icon.set_size(width, height);
+            }
         }
         catch (e) {
             global.logError(e);
