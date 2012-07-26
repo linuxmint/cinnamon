@@ -733,7 +733,7 @@ Panel.prototype = {
                 if (x < monitor.x) {
                     x = monitor.x;
                 }
-                this._context_menu._boxPointer._xpos = x;
+                this._context_menu._boxPointer._xpos = Math.round(x);
                 this._context_menu._boxPointer._xPosition = this._context_menu._boxPointer._xpos;
                 this._context_menu._boxPointer._shiftActor();
             }
