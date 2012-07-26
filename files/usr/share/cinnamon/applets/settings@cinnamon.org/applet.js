@@ -8,7 +8,6 @@ const PopupMenu = imports.ui.popupMenu;
 const Util = imports.misc.util;
 const GLib = imports.gi.GLib;
 const Gio = imports.gi.Gio;
-const Gtk = imports.gi.Gtk;
 
 function ConfirmDialog(){
     this._init();
@@ -26,9 +25,7 @@ MyApplet.prototype = {
         
         try {        
             this.set_applet_icon_symbolic_name("go-up");
-            this.set_applet_tooltip(_("Settings"));
-            
-	    Gtk.IconTheme.get_default().append_search_path("/usr/lib/cinnamon-settings/data/icons/");	    
+            this.set_applet_tooltip(_("Settings"));                            
             this.menuManager = new PopupMenu.PopupMenuManager(this);
             this._buildMenu(orientation);
                         

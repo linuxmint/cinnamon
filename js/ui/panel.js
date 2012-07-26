@@ -15,6 +15,7 @@ const DND = imports.ui.dnd;
 const AppletManager = imports.ui.appletManager;
 const Util = imports.misc.util;
 const ModalDialog = imports.ui.modalDialog;
+const Gtk = imports.gi.Gtk;
 
 const BUTTON_DND_ACTIVATION_TIMEOUT = 250;
 
@@ -407,7 +408,7 @@ SettingsLauncher.prototype = {
         PopupMenu.PopupBaseMenuItem.prototype._init.call(this, {});
 
         this._menu = menu;
-	this._keyword = keyword;
+        this._keyword = keyword;
         this.label = new St.Label({ text: label });
         this.addActor(this.label);
         this._icon = new St.Icon({icon_name: icon, icon_size: 22, icon_type: St.IconType.FULLCOLOR });
@@ -416,7 +417,7 @@ SettingsLauncher.prototype = {
 
     activate: function (event) {
     	this._menu.actor.hide();
-	Util.spawnCommandLine("cinnamon-settings " + this._keyword);
+        Util.spawnCommandLine("cinnamon-settings " + this._keyword);
         return true;
     }
 
@@ -600,6 +601,8 @@ function Panel(bottomPosition) {
 Panel.prototype = {
     _init : function(bottomPosition) {
 
+        Gtk.IconTheme.get_default().append_search_path("/usr/lib/cinnamon-settings/data/icons/");
+
         this.bottomPosition = bottomPosition;
 
     	this._hidden = false;
@@ -676,16 +679,20 @@ Panel.prototype = {
         global.settings.connect("changed::panel-show-delay", Lang.bind(this, this._onPanelShowDelayChanged));   
         global.settings.connect("changed::panel-hide-delay", Lang.bind(this, this._onPanelHideDelayChanged));   
         
-        //let orientation = St.Side.TOP;
-        //if (bottomPosition) {
-        //    orientation = St.Side.BOTTOM;
-        //}
+        let orientation = St.Side.TOP;
+        if (bottomPosition) {
+            orientation = St.Side.BOTTOM;
+        }
         
-        //this._context_menu = new PanelContextMenu(this, orientation);
-        //this._menus.addMenu(this._context_menu);   
-        //this._context_menu.addMenuItem(new PopupMenu.PopupMenuItem(_("Add applet")));
+        this._context_menu = new PanelContextMenu(this, orientation);
+        this._menus.addMenu(this._context_menu);   
         
-        //this.actor.connect('button-release-event', Lang.bind(this, this._onButtonReleaseEvent)); 
+        this._context_menu._boxPointer._container.connect('allocate', Lang.bind(this._context_menu._boxPointer, function(actor, box, flags){
+                    this._xPosition = this._xpos;
+                    this._shiftActor();
+        }));
+
+        this.actor.connect('button-release-event', Lang.bind(this, this._onButtonReleaseEvent));                            
         
         this._setDNDstyle();
         global.settings.connect("changed::panel-edit-mode", Lang.bind(this, this._setDNDstyle));
@@ -713,6 +720,8 @@ Panel.prototype = {
             }
         }
         if (event.get_button()==3){
+            global.log("3");
+            try {
             let [x, y] = event.get_coords();
             let target = global.stage.get_actor_at_pos(Clutter.PickMode.ALL, x, y);
             if (this._context_menu._getMenuItems().length > 0 && target.get_parent() == this.actor) { 
@@ -737,6 +746,10 @@ Panel.prototype = {
                 this._context_menu._boxPointer._xPosition = this._context_menu._boxPointer._xpos;
                 this._context_menu._boxPointer._shiftActor();
             }
+        }
+        catch(e) {
+            global.log(e);
+        }
         }
         return;
     },
