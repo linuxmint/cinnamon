@@ -489,7 +489,7 @@ PanelContextMenu.prototype = {
         let menuItem = new SettingsLauncher(_("Panel settings"), "panel", "panel", this);
         this.addMenuItem(menuItem);
 
-        let applet_settings_item = new SettingsLauncher(_("Add/remove applets"), "applets", "applets", this);
+        let applet_settings_item = new SettingsLauncher(_("Add applets to the panel"), "applets", "applets", this);
         this.addMenuItem(applet_settings_item);
     }
 }

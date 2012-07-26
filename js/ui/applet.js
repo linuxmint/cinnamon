@@ -181,21 +181,10 @@ Applet.prototype = {
         if (this._applet_context_menu._getMenuItems().length > 0) {
             this._applet_context_menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
         }
-        let context_menu_item_remove = new MenuItem(_("Remove from Panel"), Gtk.STOCK_REMOVE, Lang.bind(null, AppletManager._removeAppletFromPanel, this._uuid));
-        this._applet_context_menu.addMenuItem(context_menu_item_remove);
-        let panel_settings_item = new MenuItem(_("Panel settings"), null, Lang.bind(this, this._PanelSettings));
-        this._applet_context_menu.addMenuItem(panel_settings_item);
-        let applet_settings_item = new MenuItem(_("Add/remove applets"), null, Lang.bind(this, this._AppletSettings));
-        this._applet_context_menu.addMenuItem(applet_settings_item);
+        let context_menu_item_remove = new MenuItem(_("Remove this applet"), Gtk.STOCK_REMOVE, Lang.bind(null, AppletManager._removeAppletFromPanel, this._uuid));
+        this._applet_context_menu.addMenuItem(context_menu_item_remove);        
     },
-
-    _PanelSettings: function(actor, event) {
-        Util.spawnCommandLine("cinnamon-settings panel");
-    },
-
-    _AppletSettings: function(actor, event) {
-        Util.spawnCommandLine("cinnamon-settings applets");
-    }
+   
 };
 
 function IconApplet(orientation) {
