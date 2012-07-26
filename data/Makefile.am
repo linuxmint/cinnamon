@@ -30,7 +30,6 @@ dist_theme_DATA = \
 	theme/dash-placeholder.svg		\
 	theme/filter-selected-ltr.svg		\
 	theme/filter-selected-rtl.svg		\
-	theme/gdm.css				\
 	theme/cinnamon.css			\
 	theme/menu.png				\
 	theme/overview.png			\
