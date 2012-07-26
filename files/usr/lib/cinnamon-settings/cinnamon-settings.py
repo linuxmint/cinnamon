@@ -1123,6 +1123,9 @@ class MainWindow:
         sidePage = SidePage(_("Panel"), "panel.svg", self.content_box)
         self.sidePages.append((sidePage, "panel"))                
         sidePage.add_widget(GSettingsCheckButton(_("Auto-hide panel"), "org.cinnamon", "panel-autohide"))
+        sidePage.add_widget(GSettingsSpinButton(_("Show delay"), "org.cinnamon", "panel-show-delay", 0, 2000, 50, 200, _("milliseconds")))
+        sidePage.add_widget(GSettingsSpinButton(_("Hide delay"), "org.cinnamon", "panel-hide-delay", 0, 2000, 50, 200, _("milliseconds")))
+        
         desktop_layouts = [["traditional", _("Traditional (panel at the bottom)")], ["flipped", _("Flipped (panel at the top)")], ["classic", _("Classic (panels at the top and at the bottom)")]]        
         desktop_layouts_combo = GSettingsComboBox(_("Panel layout"), "org.cinnamon", "desktop-layout", desktop_layouts)
         sidePage.add_widget(desktop_layouts_combo) 
