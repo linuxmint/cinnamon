@@ -1466,7 +1466,7 @@ class MainWindow:
         sidePage.add_widget(GSettingsComboBox(_("Hinting"), "org.gnome.settings-daemon.plugins.xsettings", "hinting", [(i, i.title()) for i in ("none", "slight", "medium", "full")]))
         sidePage.add_widget(GSettingsComboBox(_("Antialiasing"), "org.gnome.settings-daemon.plugins.xsettings", "antialiasing", [(i, i.title()) for i in ("none", "grayscale", "rgba")]))
         
-        sidePage = SidePage(_("Alt-tab Switcher"), "alttab")
+        sidePage = SidePage(_("Alt-tab Switcher"), "alttab.svg", self.content_box)
         self.sidePages.append((sidePage, "alt-tab-switcher"))
         alttab_widget = AltTabWidget()
         sidePage.add_widget(alttab_widget)
