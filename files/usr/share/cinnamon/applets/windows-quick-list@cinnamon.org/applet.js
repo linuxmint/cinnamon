@@ -36,19 +36,41 @@ MyApplet.prototype = {
 	updateMenu: function() {
 		this.menu.removeAll();
 		try {
+			let tracker = Cinnamon.WindowTracker.get_default();
+
 			for ( let wks=0; wks<global.screen.n_workspaces; ++wks ) {
 				// construct a list with all windows
 				let workspace_name = Main.workspace_names[wks];
 				let metaWorkspace = global.screen.get_workspace_by_index(wks);
 				let windows = metaWorkspace.list_windows();				
+				let sticky_windows = windows.filter(
+						function(w) {
+							return !w.is_skip_taskbar() && w.is_on_all_workspaces();
+							}
+                                		);
 				windows = windows.filter(
 						function(w) {
-							return !w.is_skip_taskbar();
+							return !w.is_skip_taskbar() && !w.is_on_all_workspaces();
 							}
                                 		);
 
+				if(sticky_windows.length && (wks==0)) {
+					for ( let i = 0; i < sticky_windows.length; ++i ) {
+						let metaWindow = sticky_windows[i];
+						let item = new PopupMenu.PopupMenuItem(metaWindow.get_title());
+							item.label.add_style_class_name('window-sticky');
+						item.connect('activate', Lang.bind(this, function() { this.activateWindow(metaWorkspace, metaWindow); } ));
+						item._window = sticky_windows[i];
+						let app = tracker.get_window_app(item._window);
+						item._icon = app.create_icon_texture(24);
+        				item.addActor(item._icon, { align: St.Align.END });
+						this.menu.addMenuItem(item);
+					}
+						this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+				}
+
 				if(windows.length) {
-					if(wks>0) {						
+					if(wks>0) {
 						this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 					}
 					if(global.screen.n_workspaces>1) {					
@@ -62,14 +84,10 @@ MyApplet.prototype = {
 						this.menu.addMenuItem(item);
 					}
 
-					let tracker = Cinnamon.WindowTracker.get_default();
 
 					for ( let i = 0; i < windows.length; ++i ) {
 						let metaWindow = windows[i];
 						let item = new PopupMenu.PopupMenuItem(windows[i].get_title());
-						if(metaWindow.is_on_all_workspaces()) {
-							item.label.add_style_class_name('window-sticky');
-						}
 						item.connect('activate', Lang.bind(this, function() { this.activateWindow(metaWorkspace, metaWindow); } ));
 						item._window = windows[i];
 						let app = tracker.get_window_app(item._window);
@@ -85,7 +103,7 @@ MyApplet.prototype = {
 	},
 
 	activateWindow: function(metaWorkspace, metaWindow) {
-		metaWorkspace.activate(global.get_current_time());
+		if(!metaWindow.is_on_all_workspaces()) { metaWorkspace.activate(global.get_current_time()); }
 		metaWindow.unminimize(global.get_current_time());
 		metaWindow.activate(global.get_current_time());
 	},
