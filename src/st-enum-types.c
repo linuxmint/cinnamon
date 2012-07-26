@@ -164,6 +164,7 @@ st_icon_type_get_type(void) {
         { ST_ICON_FULLCOLOR, "ST_ICON_FULLCOLOR", "fullcolor" },
         { ST_ICON_APPLICATION, "ST_ICON_APPLICATION", "application" },
         { ST_ICON_DOCUMENT, "ST_ICON_DOCUMENT", "document" },
+        { ST_ICON_FADED, "ST_ICON_FADED", "faded" },
         { 0, NULL, NULL }
       };
       enum_type_id = g_enum_register_static (g_intern_static_string ("StIconType"), values);
