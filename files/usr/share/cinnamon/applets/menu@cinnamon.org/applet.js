@@ -1444,28 +1444,40 @@ MyApplet.prototype = {
         if (appCategory) {
             if (appCategory == "all") {
                 this._applicationsButtons.forEach( function (item, index) {
-                   item.actor.show();
+                    if (!item.actor.visible) {
+                        item.actor.show();
+                    }
                 });
             } else {
                 this._applicationsButtons.forEach( function (item, index) {
                     if (item.category.indexOf(appCategory) != -1) {
-                        item.actor.show();
+                        if (!item.actor.visible) {
+                            item.actor.show();
+                        }
                     } else {
-                        item.actor.hide();
+                        if (item.actor.visible) {
+                            item.actor.hide();
+                        }
                     }
                 });
             }
         } else if (apps) {
             for (let i = 0; i < this._applicationsButtons.length; i++) {
                     if (apps.indexOf(this._applicationsButtons[i].name) != -1) {
-                        this._applicationsButtons[i].actor.show();
+                        if (!this._applicationsButtons[i].actor.visible) {
+                            this._applicationsButtons[i].actor.show();
+                        }
                     } else {
-                        this._applicationsButtons[i].actor.hide();
+                        if (this._applicationsButtons[i].actor.visible) {
+                            this._applicationsButtons[i].actor.hide();
+                        }
                     }
             }
         } else {
             this._applicationsButtons.forEach( function (item, index) {
-                   item.actor.hide();
+                    if (item.actor.visible) {
+                        item.actor.hide();
+                    }
             });
         }
         if (places) {
@@ -1476,34 +1488,48 @@ MyApplet.prototype = {
             } else {
                 for (let i = 0; i < this._placesButtons.length; i++) {
                     if (places.indexOf(this._placesButtons[i].button_name) != -1) {
-                        this._placesButtons[i].actor.show();
+                        if (!this._placesButtons[i].actor.visible) {
+                            this._placesButtons[i].actor.show();
+                        }
                     } else {
-                        this._placesButtons[i].actor.hide();
+                        if (this._placesButtons[i].actor.visible) {
+                            this._placesButtons[i].actor.hide();
+                        }
                     }
                 }
             }
         } else {
             this._placesButtons.forEach( function (item, index) {
-                   item.actor.hide();
+                    if (item.actor.visible) {
+                        item.actor.hide();
+                    }
             });
         }
         if (recent) {
             if (recent == -1) {
                 this._recentButtons.forEach( function (item, index) {
-                   item.actor.show();
+                    if (!item.actor.visible) {
+                        item.actor.show();
+                    }
                 });
             } else {
                 for (let i = 0; i < this._recentButtons.length; i++) {
                     if (recent.indexOf(this._recentButtons[i].button_name) != -1) {
-                        this._recentButtons[i].actor.show();
+                        if (!this._recentButtons[i].actor.visible) {
+                            this._recentButtons[i].actor.show();
+                        }
                     } else {
-                        this._recentButtons[i].actor.hide();
+                        if (this._recentButtons[i].actor.visible) {
+                            this._recentButtons[i].actor.hide();
+                        }
                     }
                 }
             }
         } else {
             this._recentButtons.forEach( function (item, index) {
-                   item.actor.hide();
+                    if (item.actor.visible) {
+                        item.actor.hide();
+                    }
             });
         }
     },
