@@ -61,7 +61,7 @@ MyApplet.prototype = {
                 height = themeNode.get_length('height');                        
             }
             
-            if (buggyIcons.indexOf(role) != -1) {
+            if (icon.get_width() == 1 || icon.get_height() == 1 || buggyIcons.indexOf(role) != -1) {
                 icon.set_height(height);
             }
             else {
