@@ -711,6 +711,7 @@ MyApplet.prototype = {
             this._activeContainer = null;
             this._activeActor = null;
             this._applicationsBoxWidth = 0;
+            this.menuIsOpening = false;
             
             this.RecentManager = new DocInfo.DocManager();
 
@@ -718,9 +719,6 @@ MyApplet.prototype = {
             appsys.connect('installed-changed', Lang.bind(this, this._refreshApps));
             AppFavorites.getAppFavorites().connect('changed', Lang.bind(this, this._refreshFavs));
 
-            this.menu.connect('open-state-changed', Lang.bind(this, this._onOpenStateToggled));  
-            
-            
             this.hover_delay = global.settings.get_int("menu-hover-delay") / 1000;
             global.settings.connect("changed::menu-hover-delay", Lang.bind(this, function() {
                     this.hover_delay = global.settings.get_int("menu-hover-delay") / 1000;
@@ -760,7 +758,6 @@ MyApplet.prototype = {
         
         this.menu.actor.add_style_class_name('menu-background');
         this.menu.connect('open-state-changed', Lang.bind(this, this._onOpenStateChanged));
-        this.menu.connect('open-state-changed', Lang.bind(this, this._onOpenStateToggled));
         this._display();
     },
     
@@ -792,7 +789,18 @@ MyApplet.prototype = {
 
     _onOpenStateChanged: function(menu, open) {
         if (open) {
+            this.menuIsOpening = true;
             this.actor.add_style_pseudo_class('active');
+            global.stage.set_key_focus(this.searchEntry);
+            this._selectedItemIndex = null;
+            this._activeContainer = null;
+            this._activeActor = null;
+            let monitorHeight = Main.layoutManager.primaryMonitor.height;
+            let applicationsBoxHeight = this.applicationsBox.get_allocation_box().y2-this.applicationsBox.get_allocation_box().y1;
+            let scrollBoxHeight = (this.leftBox.get_allocation_box().y2-this.leftBox.get_allocation_box().y1) -
+                                    (this.searchBox.get_allocation_box().y2-this.searchBox.get_allocation_box().y1);
+            this.applicationsScrollBox.style = "height: "+scrollBoxHeight+"px;";
+            this._select_category(null, this._allAppsCategoryButton);
 	} else {
             this.actor.remove_style_pseudo_class('active');            
             if (this.searchActive) {
@@ -803,6 +811,7 @@ MyApplet.prototype = {
             this._previousTreeItemIndex = null;
             this._previousTreeSelectedActor = null;
             this._previousSelectedActor = null;
+            this.closeApplicationsContextMenus(null, false);
             this._clearAllSelections();
         }
     },
@@ -933,22 +942,6 @@ MyApplet.prototype = {
         if (this._previousSelectedActor && this._previousSelectedActor != actor) {
             this._previousSelectedActor.style_class = "menu-category-button";
         }
-    },
-
-    _onOpenStateToggled: function(menu, open) {
-       if (open) {
-           global.stage.set_key_focus(this.searchEntry);
-           this._selectedItemIndex = null;
-           this._activeContainer = null;
-           this._activeActor = null;
-           let monitorHeight = Main.layoutManager.primaryMonitor.height;
-           let applicationsBoxHeight = this.applicationsBox.get_allocation_box().y2-this.applicationsBox.get_allocation_box().y1;
-           let scrollBoxHeight = (this.leftBox.get_allocation_box().y2-this.leftBox.get_allocation_box().y1)                                    
-                                    -(this.searchBox.get_allocation_box().y2-this.searchBox.get_allocation_box().y1);
-           this.applicationsScrollBox.style = "height: "+scrollBoxHeight+"px;";
-       } else {
-           this.closeApplicationsContextMenus(null, false);
-       }
     },
     
     _refreshApps : function() {
@@ -1571,40 +1564,43 @@ MyApplet.prototype = {
      },
      
      _onSearchTextChanged: function (se, prop) {
-        this.searchActive = this.searchEntry.get_text() != '';
-        this._clearAllSelections();
-        if (this.searchActive) {
-            this.searchEntry.set_secondary_icon(this._searchActiveIcon);
-            if (this._searchIconClickedId == 0) {
-                this._searchIconClickedId = this.searchEntry.connect('secondary-icon-clicked',
-                    Lang.bind(this, function() {
-                        this.resetSearch();
-                        this._select_category(null, this._allAppsCategoryButton);
-                    }));
-            }
-            
-            this._setCategoriesButtonActive(false);
+        if (this.menuIsOpening) {
+            this.menuIsOpening = false;
+            return;
         } else {
-            if (this._searchIconClickedId > 0)
-                this.searchEntry.disconnect(this._searchIconClickedId);
-            this._searchIconClickedId = 0;
-
-            this.searchEntry.set_secondary_icon(this._searchInactiveIcon);
-            this._setCategoriesButtonActive(true);
-            this._select_category(null, this._allAppsCategoryButton);
-        }
-        if (!this.searchActive) {
-            if (this._searchTimeoutId > 0) {
-                Mainloop.source_remove(this._searchTimeoutId);
-                this._searchTimeoutId = 0;
+            this.searchActive = this.searchEntry.get_text() != '';
+            this._clearAllSelections();
+            if (this.searchActive) {
+                this.searchEntry.set_secondary_icon(this._searchActiveIcon);
+                if (this._searchIconClickedId == 0) {
+                    this._searchIconClickedId = this.searchEntry.connect('secondary-icon-clicked',
+                        Lang.bind(this, function() {
+                            this.resetSearch();
+                            this._select_category(null, this._allAppsCategoryButton);
+                        }));
+                }
+                this._setCategoriesButtonActive(false);
+            } else {
+                if (this._searchIconClickedId > 0)
+                    this.searchEntry.disconnect(this._searchIconClickedId);
+                this._searchIconClickedId = 0;
+                this.searchEntry.set_secondary_icon(this._searchInactiveIcon);
+                this._setCategoriesButtonActive(true);
+                this._select_category(null, this._allAppsCategoryButton);
             }
-            return;
+            if (!this.searchActive) {
+                if (this._searchTimeoutId > 0) {
+                    Mainloop.source_remove(this._searchTimeoutId);
+                    this._searchTimeoutId = 0;
+                }
+                return;
+            }
+            if (this._searchTimeoutId > 0)
+                return;
+            this._searchTimeoutId = Mainloop.timeout_add(150, Lang.bind(this, this._doSearch));
         }
-        if (this._searchTimeoutId > 0)
-            return;
-        this._searchTimeoutId = Mainloop.timeout_add(150, Lang.bind(this, this._doSearch));
     },
-    
+
     _listBookmarks: function(pattern){
        let bookmarks = Main.placesManager.getBookmarks();
        var res = new Array();
