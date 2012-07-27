@@ -610,8 +610,8 @@ Panel.prototype = {
         this._hideable = global.settings.get_boolean("panel-autohide");
         this._hideTimer = false;
         this._showTimer = false;
-        this._showDelay = global.settings.get_boolean("panel-show-delay");
-        this._hideDelay = global.settings.get_boolean("panel-hide-delay");
+        this._onPanelShowDelayChanged();
+        this._onPanelHideDelayChanged();
 
         this.actor = new Cinnamon.GenericContainer({ name: 'panel',
                                                   reactive: true });
