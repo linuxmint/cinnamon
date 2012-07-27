@@ -1138,7 +1138,15 @@ Chrome.prototype = {
             struts.push(strut);
         }
 
-        if (global.top_window_group.get_children().length == 0)
+        let enable_stage = true;
+        let top_windows = global.top_window_group.get_children();
+        for (var i in top_windows){
+            if (top_windows[i]._windowType != Meta.WindowType.TOOLTIP){
+                enable_stage = false;
+                break;
+            }
+        }
+        if (enable_stage)
             global.set_stage_input_region(rects);
         else
             global.set_stage_input_region([]);
