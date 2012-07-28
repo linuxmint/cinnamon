@@ -634,6 +634,7 @@ cinnamon_global_set_cursor (CinnamonGlobal *global,
           break;
         case CINNAMON_CURSOR_POINTING_HAND:
           cursor_type = GDK_HAND2;
+          break;
         case CINNAMON_CURSOR_DND_UNSUPPORTED_TARGET:
           cursor_type = GDK_X_CURSOR;
           break;
@@ -1437,7 +1438,7 @@ cinnamon_global_get_memory_info (CinnamonGlobal        *global,
   JSContext *context;
   gint64 now;
 
-  memset (meminfo, 0, sizeof (meminfo));
+  memset (meminfo, 0, sizeof (*meminfo));
 #ifdef HAVE_MALLINFO
   {
     struct mallinfo info = mallinfo ();
