@@ -168,8 +168,9 @@ class ThemeViewSidePage (SidePage):
         other_settings_box.pack_start(menusHaveIconsCB, False, False, 2)
         buttonsHaveIconsCB = GSettingsCheckButton(_("Buttons Have Icons"), "org.gnome.desktop.interface", "buttons-have-icons")
         other_settings_box.pack_start(buttonsHaveIconsCB, False, False, 2)
-        alwaysUseLocationEntryCB = GSettingsCheckButton(_("Always Use Location Entry"), "org.gnome.nautilus.preferences", "always-use-location-entry")
-        other_settings_box.pack_start(alwaysUseLocationEntryCB, False, False, 2)
+        if 'org.gnome.nautilus' in Gio.Settings.list_schemas():
+            alwaysUseLocationEntryCB = GSettingsCheckButton(_("Always Use Location Entry"), "org.gnome.nautilus.preferences", "always-use-location-entry")
+            other_settings_box.pack_start(alwaysUseLocationEntryCB, False, False, 2)
         cursorThemeSwitcher = GSettingsComboBox(_("Cursor theme"), "org.gnome.desktop.interface", "cursor-theme", self._load_cursor_themes())
         other_settings_box.pack_start(cursorThemeSwitcher, False, False, 2)
         keybindingThemeSwitcher = GSettingsComboBox(_("Keybinding theme"), "org.gnome.desktop.interface", "gtk-key-theme", self._load_keybinding_themes())
@@ -1306,22 +1307,23 @@ class MainWindow:
         sidePage = ExtensionViewSidePage(_("Extensions"), "extensions.svg", self.content_box)
         self.sidePages.append((sidePage, "extensions"))
         
-        nautilus_desktop_schema = Gio.Settings.new("org.gnome.nautilus.desktop")
-        nautilus_desktop_keys = nautilus_desktop_schema.list_keys()
-                        
-        sidePage = SidePage(_("Desktop"), "desktop.svg", self.content_box)
-        self.sidePages.append((sidePage, "desktop"))
-        sidePage.add_widget(GSettingsCheckButton(_("Have file manager handle the desktop"), "org.gnome.desktop.background", "show-desktop-icons"))
-        if "computer-icon-visible" in nautilus_desktop_keys:
-            sidePage.add_widget(GSettingsCheckButton(_("Computer icon visible on desktop"), "org.gnome.nautilus.desktop", "computer-icon-visible"))
-        if "home-icon-visible" in nautilus_desktop_keys:
-            sidePage.add_widget(GSettingsCheckButton(_("Home icon visible on desktop"), "org.gnome.nautilus.desktop", "home-icon-visible"))
-        if "network-icon-visible" in nautilus_desktop_keys:
-            sidePage.add_widget(GSettingsCheckButton(_("Network Servers icon visible on desktop"), "org.gnome.nautilus.desktop", "network-icon-visible"))
-        if "trash-icon-visible" in nautilus_desktop_keys:
-            sidePage.add_widget(GSettingsCheckButton(_("Trash icon visible on desktop"), "org.gnome.nautilus.desktop", "trash-icon-visible"))
-        if "volumes-visible" in nautilus_desktop_keys:
-            sidePage.add_widget(GSettingsCheckButton(_("Show mounted volumes on the desktop"), "org.gnome.nautilus.desktop", "volumes-visible"))        
+        if 'org.gnome.nautilus' in Gio.Settings.list_schemas():
+            nautilus_desktop_schema = Gio.Settings.new("org.gnome.nautilus.desktop")
+            nautilus_desktop_keys = nautilus_desktop_schema.list_keys()
+                            
+            sidePage = SidePage(_("Desktop"), "desktop.svg", self.content_box)
+            self.sidePages.append((sidePage, "desktop"))
+            sidePage.add_widget(GSettingsCheckButton(_("Have file manager handle the desktop"), "org.gnome.desktop.background", "show-desktop-icons"))
+            if "computer-icon-visible" in nautilus_desktop_keys:
+                sidePage.add_widget(GSettingsCheckButton(_("Computer icon visible on desktop"), "org.gnome.nautilus.desktop", "computer-icon-visible"))
+            if "home-icon-visible" in nautilus_desktop_keys:
+                sidePage.add_widget(GSettingsCheckButton(_("Home icon visible on desktop"), "org.gnome.nautilus.desktop", "home-icon-visible"))
+            if "network-icon-visible" in nautilus_desktop_keys:
+                sidePage.add_widget(GSettingsCheckButton(_("Network Servers icon visible on desktop"), "org.gnome.nautilus.desktop", "network-icon-visible"))
+            if "trash-icon-visible" in nautilus_desktop_keys:
+                sidePage.add_widget(GSettingsCheckButton(_("Trash icon visible on desktop"), "org.gnome.nautilus.desktop", "trash-icon-visible"))
+            if "volumes-visible" in nautilus_desktop_keys:
+                sidePage.add_widget(GSettingsCheckButton(_("Show mounted volumes on the desktop"), "org.gnome.nautilus.desktop", "volumes-visible"))        
         
         sidePage = SidePage(_("Windows"), "windows.svg", self.content_box)
         self.sidePages.append((sidePage, "windows"))
