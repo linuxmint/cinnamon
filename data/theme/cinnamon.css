@@ -1229,7 +1229,6 @@ StScrollBar StButton#vhandle:hover {
 /* Main menu title */
 
 .menu-favorites-box {
-	width: 50px;
 	margin: auto;
 	padding: 10px;
 	border: 1px solid #666;
@@ -1254,7 +1253,6 @@ StScrollBar StButton#vhandle:hover {
 	border-radius: 4px;
 }
 .menu-places-box {
-	width: 50px;
 	margin: auto;
 	padding: 10px;
 	border: 0px solid #666;
