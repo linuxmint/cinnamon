@@ -1,6 +1,6 @@
 service_in_files += hotplug-sniffer/org.Cinnamon.HotplugSniffer.service.in
 
-libexec_PROGRAMS += cinnamon-hotplug-sniffer
+pkglibexec_PROGRAMS += cinnamon-hotplug-sniffer
 
 cinnamon_hotplug_sniffer_SOURCES =								\
 	hotplug-sniffer/hotplug-mimetypes.h \

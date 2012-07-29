@@ -3,7 +3,7 @@ BUILT_SOURCES =
 CLEANFILES =
 EXTRA_DIST =
 bin_SCRIPTS =
-libexec_PROGRAMS =
+pkglibexec_PROGRAMS =
 noinst_LTLIBRARIES =
 noinst_PROGRAMS =
 service_in_files =
@@ -22,7 +22,9 @@ service_DATA = $(service_in_files:.service.in=.service)
 %.service: %.service.in Makefile
 	$(AM_V_GEN)									\
 		[ -d $(@D) ] || $(mkdir_p) $(@D) ;					\
-		sed -e "s|\@libexecdir\@|$(libexecdir)|" $< > $@.tmp && mv $@.tmp $@
+		sed -e "s|\@libexecdir\@|$(libexecdir)|" \
+		    -e "s|\@pkglibexecdir\@|$(pkglibexecdir)|" $< > $@.tmp && mv $@.tmp $@
+
 CLEANFILES += $(service_DATA)
 
 CLEANFILES += $(gir_DATA) $(typelib_DATA)
@@ -54,6 +56,7 @@ generated_script_substitutions = \
 	    -e "s|@libdir[@]|$(libdir)|" \
 	    -e "s|@JHBUILD_TYPELIBDIR[@]|$(JHBUILD_TYPELIBDIR)|" \
 	    -e "s|@pkgdatadir[@]|$(pkgdatadir)|" \
+	    -e "s|@pkglibexecdir[@]|$(pkglibexecdir)|" \
 	    -e "s|@PYTHON[@]|$(PYTHON)|" \
 	    -e "s|@VERSION[@]|$(VERSION)|" \
 	    -e "s|@sysconfdir[@]|$(sysconfdir)|"
@@ -82,6 +85,7 @@ cinnamon_cflags =				\
 	-DCINNAMON_LIBEXECDIR=\"$(libexecdir)\"	\
 	-DCINNAMON_DATADIR=\"$(pkgdatadir)\"	\
 	-DCINNAMON_PKGLIBDIR=\"$(pkglibdir)\" \
+	-DCINNAMON_PKGLIBEXECDIR=\"$(pkglibexecdir)\"	\
 	-DJSDIR=\"$(pkgdatadir)/js\"
 
 privlibdir = $(pkglibdir)
@@ -191,7 +195,7 @@ endif BUILD_RECORDER
 
 ########################################
 
-libexec_PROGRAMS += cinnamon-perf-helper
+pkglibexec_PROGRAMS += cinnamon-perf-helper
 
 cinnamon_perf_helper_SOURCES = cinnamon-perf-helper.c
 cinnamon_perf_helper_CPPFLAGS = $(CINNAMON_PERF_HELPER_CFLAGS)
