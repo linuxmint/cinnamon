@@ -15,7 +15,7 @@ cinnamon_hotplug_sniffer_CFLAGS =		\
 	$(CINNAMON_HOTPLUG_SNIFFER_CFLAGS)		\
 	$(NULL)
 
-cinnamon_hotplug_sniffer_LDFLAGS =		\
+cinnamon_hotplug_sniffer_LDADD =		\
 	$(CINNAMON_HOTPLUG_SNIFFER_LIBS)		\
 	$(NULL)
 
