@@ -7,6 +7,7 @@ const Lang = imports.lang;
 const Cinnamon = imports.gi.Cinnamon;
 const Signals = imports.signals;
 const St = imports.gi.St;
+const Gio = imports.gi.Gio;
 
 const BoxPointer = imports.ui.boxpointer;
 const Main = imports.ui.main;
@@ -1735,6 +1736,78 @@ PopupComboBoxMenuItem.prototype = {
         this.emit('active-item-changed', position);
     }
 };
+
+
+/*
+ * IconLabelValueMenuItem consists of:
+ * |<icon>  <label>              <value>|
+ *
+ * Useful in conjunction with sliders
+ * to describe what the slider is for
+ * and to present the current value in
+ * a nicely aligned format that won't
+ * wobble as the value is changed.
+ *
+ * icon:  icon name to use
+ * image_path: icon full path if it's not a stock icon (pick one or the other)
+ * label: label (usually won't change)
+ * value: starting value for value field
+ * style: the style to wrap this whole thing in
+ */
+
+function IconLabelValueMenuItem() {
+    this._init.apply(this, arguments);
+}
+
+IconLabelValueMenuItem.prototype = {
+    __proto__: PopupBaseMenuItem.prototype,
+
+    _init: function(icon, image_path, label, value, style) {
+        PopupBaseMenuItem.prototype._init.call(this, {reactive: false});
+        this.actor = new St.BoxLayout({style_class: style});
+        this.actor.add_style_pseudo_class('active');
+        this._iconBin = new St.Bin();
+        this.actor.add_actor(this._iconBin);
+        if (icon) {
+            this.icon = new St.Icon({icon_name: icon, icon_size: 16});
+        } else {
+            this.icon = this._getIconImage(image_path);
+        }
+        this.label = new St.Label({text: label.toString()});
+        this.value = new St.Label({text: value.toString()});
+        if (this.icon) {
+            this._iconBin.set_child(this.icon);
+        }
+        this.actor.add_actor(this.label);
+        this.actor.add_actor(this.value);
+    },
+
+    setLabel: function(label) {
+        this.label.set_text(label.toString());
+    },
+
+    setIcon: function(icon) {
+        if (this.icon) {
+            this.icon.set_icon_name(icon);
+        }
+    },
+
+    setImageFromPath: function(image_path) {
+        this._iconBin.set_child(this._getIconImage(image_path));
+        this.icon = this._iconBin.get_child();
+    },
+
+    setValue: function(value) {
+        this.value.set_text(value.toString());
+    },
+
+    // retrieve an icon image
+    _getIconImage: function(image_path) {
+        let file = Gio.file_new_for_path(image_path);
+        let icon_uri = file.get_uri();
+        return St.TextureCache.get_default().load_uri_async(icon_uri, 16, 16);
+    },
+}
 
 /* Basic implementation of a menu manager.
  * Call addMenu to add menus

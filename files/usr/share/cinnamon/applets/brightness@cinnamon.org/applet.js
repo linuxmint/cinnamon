@@ -33,62 +33,6 @@ const PowerManagerInterface = {
 /* DBus magic */
 let PowerManagerProxy = DBus.makeProxyClass(PowerManagerInterface);
 
-/* TextImageMenuItem taken from sound@cinnamon.org applet */
-let icon_path = "/usr/share/cinnamon/theme/";
-
-function TextImageMenuItem() {
-    this._init.apply(this, arguments);
-}
-
-TextImageMenuItem.prototype = {
-    __proto__: PopupMenu.PopupBaseMenuItem.prototype,
-
-    _init: function(text, icon, image, align, style) {
-        PopupMenu.PopupBaseMenuItem.prototype._init.call(this);
-
-        this.actor = new St.BoxLayout({style_class: style});
-        this.actor.add_style_pseudo_class('active');
-        if (icon) {
-            this.icon = new St.Icon({icon_name: icon});
-        }
-        if (image) {
-            this.icon = new St.Bin();
-            this.icon.set_child(this._getIconImage(image));
-        }
-        this.text = new St.Label({text: text});
-        if (align === "left") {
-            this.actor.add_actor(this.icon, { span: 0 });
-            this.actor.add_actor(this.text, { span: -1 });
-        }
-        else {
-            this.actor.add_actor(this.text, { span: 0 });
-            this.actor.add_actor(this.icon, { span: -1 });
-        }
-    },
-
-    setText: function(text) {
-        this.text.text = text;
-    },
-
-    setIcon: function(icon) {
-        this.icon.icon_name = icon;
-    },
-
-    setImage: function(image) {
-        this.icon.set_child(this._getIconImage(image));
-    },
-
-    // retrieve an icon image
-    _getIconImage: function(icon_name) {
-         let icon_file = icon_path + icon_name + ".svg";
-         let file = Gio.file_new_for_path(icon_file);
-         let icon_uri = file.get_uri();
- 
-         return St.TextureCache.get_default().load_uri_sync(1, icon_uri, 16, 16);
-    },
-}
-/* end of TextImageMenuItem */
-
 function MyApplet(orientation) {
     this._init(orientation);
 }
@@ -109,7 +53,7 @@ MyApplet.prototype = {
             this.set_applet_icon_symbolic_name('display-brightness-symbolic');
 
             //this is exactly the same type of label as in sound@cinnamon.org, it uses the same style.
-            this._brightnessTitle = new TextImageMenuItem(_("Brightness"), "display-brightness-symbolic", false, "right", "sound-volume-menu-item");
+            this._brightnessTitle = new PopupMenu.IconLabelValueMenuItem("display-brightness-symbolic", false, _("Brightness:  "), "", "sound-volume-menu-item");
             
             this._brightnessSlider = new PopupMenu.PopupSliderMenuItem(100);
             this._brightnessSlider.connect('value-changed', Lang.bind(this, this._sliderChanged));
@@ -222,7 +166,7 @@ MyApplet.prototype = {
     },
 
     _updateBrightnessLabel: function(value) {
-        this._brightnessTitle.setText(_("Brightness") + ": " + value + "%");
+        this._brightnessTitle.setValue(value + "%");
         
         if (value != undefined)
             this.set_applet_tooltip(_("Brightness") + ": " + value + "%");
