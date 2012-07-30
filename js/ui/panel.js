@@ -720,7 +720,6 @@ Panel.prototype = {
             }
         }
         if (event.get_button()==3){
-            global.log("3");
             try {
             let [x, y] = event.get_coords();
             let target = global.stage.get_actor_at_pos(Clutter.PickMode.ALL, x, y);
