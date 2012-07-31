@@ -20,6 +20,10 @@ MenuItem.prototype = {
 
     _init: function(text, icon, callback) {
         PopupMenu.PopupBaseMenuItem.prototype._init.call(this);
+        
+        this._text = text;
+        this._icon = icon;
+        this._callback = callback;
 
         this.icon = new St.Icon({ icon_name: icon,
                                   icon_type: St.IconType.FULLCOLOR,
@@ -29,6 +33,10 @@ MenuItem.prototype = {
         this.addActor(this.label);
 
         this.connect('activate', callback);
+    },
+    
+    clone: function(){
+        return new MenuItem(this._text, this._icon, this._callback);
     }
 };
 
@@ -160,12 +168,19 @@ Applet.prototype = {
     },
 
     setOrientation: function (orientation) {
+        let menuItems = new Array();
+        let oldMenuItems = this._applet_context_menu._getMenuItems();
+        for (var i in oldMenuItems) menuItems.push(oldMenuItems[i].clone())
+        this._menuManager.removeMenu(this._applet_context_menu);
+        
         this._applet_tooltip.destroy();
         this._applet_tooltip = new Tooltips.PanelItemTooltip(this, this._applet_tooltip_text, orientation);
 
         this._applet_context_menu.destroy();
         this._applet_context_menu = new AppletContextMenu(this, orientation);
         this._menuManager.addMenu(this._applet_context_menu);
+        
+        for (var i in menuItems) this._applet_context_menu.addMenuItem(menuItems[i]);
 
         this.on_orientation_changed(orientation);
 
