@@ -170,7 +170,11 @@ Applet.prototype = {
     setOrientation: function (orientation) {
         let menuItems = new Array();
         let oldMenuItems = this._applet_context_menu._getMenuItems();
-        for (var i in oldMenuItems) menuItems.push(oldMenuItems[i].clone())
+        for (var i in oldMenuItems){
+            if (oldMenuItems[i] instanceof MenuItem){ // in case some applets don't use the standards
+                menuItems.push(oldMenuItems[i].clone())
+            }
+        }
         this._menuManager.removeMenu(this._applet_context_menu);
         
         this._applet_tooltip.destroy();
