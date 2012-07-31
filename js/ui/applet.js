@@ -179,10 +179,12 @@ Applet.prototype = {
         this._applet_context_menu.destroy();
         this._applet_context_menu = new AppletContextMenu(this, orientation);
         this._menuManager.addMenu(this._applet_context_menu);
-        
-        for (var i in menuItems) this._applet_context_menu.addMenuItem(menuItems[i]);
 
         this.on_orientation_changed(orientation);
+        
+        if (this._applet_context_menu.numMenuItems == 0){ // Do not recreate the menu if the applet already handles it in on_orientation_changed
+            for (var i in menuItems) this._applet_context_menu.addMenuItem(menuItems[i]);
+        }
 
         this.finalizeContextMenu();
     },
