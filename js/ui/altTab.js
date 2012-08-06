@@ -472,12 +472,28 @@ AltTabPopup.prototype = {
         let showOutline = function() {
             let window = this._appIcons[this._currentApp].cachedWindows[0];
 
+            let childBox = new Clutter.ActorBox();
+            if (!this._outlineBackdrop) {
+                let backdrop = new St.Bin({style_class: 'switcher-outline-backdrop'});
+                this._outlineBackdrop = backdrop;
+                this.actor.add_actor(backdrop);
+                // Make sure that the backdrop does not overlap the switcher.
+                backdrop.lower(this._appSwitcher.actor);
+                childBox.x1 = this.actor.x;
+                childBox.x2 = this.actor.x + this.actor.width;
+                childBox.y1 = this.actor.y;
+                childBox.y2 = this.actor.y + this.actor.height;
+                backdrop.allocate(childBox, 0);
+                backdrop.opacity = 192;
+            }
+
             // Create the actor that will serve as background for the clone.
             let background = new St.Bin({style_class: 'switcher-preview-frame'});
             this._previewBackground = background;
             this.actor.add_actor(background);
             // Make sure that the frame does not overlap the switcher.
             background.lower(this._appSwitcher.actor);
+            this._outlineBackdrop.lower(background);
                     
             // We need to know the border width so that we can 
             // make the background slightly bigger than the clone window.
@@ -489,7 +505,6 @@ AltTabPopup.prototype = {
             or.x -= Math.floor(borderAdj); or.y -= Math.floor(borderAdj); 
             or.width += Math.ceil(borderAdj); or.height += Math.ceil(borderAdj); 
 
-            let childBox = new Clutter.ActorBox();
             childBox.x1 = or.x;
             childBox.x2 = or.x + or.width;
             childBox.y1 = or.y;
@@ -506,7 +521,6 @@ AltTabPopup.prototype = {
             // Show a clone of the target window
             let previewClone = new Clutter.Clone({source: window.get_compositor_private().get_texture()});
             background.add_actor(previewClone);
-            previewClone.opacity = 225;
 
             // The clone's rect is not the same as the window's outer rect
             let ir = window.get_input_rect();

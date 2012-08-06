@@ -879,8 +879,11 @@ StScrollBar StButton#vhandle:hover {
 }
 .switcher-preview-frame {
    border-color: #000;
-   border: 4px;
-   border-radius: 4px;
+   border: 0px;
+   border-radius: 0px;
+}
+.switcher-outline-backdrop {
+   background-color: black;
 }
 
 /* ===================================================================
