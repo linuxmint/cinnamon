@@ -48,7 +48,7 @@ LayoutManager.prototype = {
 
         this.addChrome(this.panelBox, { addToWindowgroup: false });
         this.addChrome(this.panelBox2, { addToWindowgroup: false });
-        this._onPanelAutoHideChanged();
+        this._processPanelSettings();
         this.panelBox.connect('allocation-changed',
                               Lang.bind(this, this._updatePanelBarriers));
         this.panelBox2.connect('allocation-changed',
@@ -68,10 +68,10 @@ LayoutManager.prototype = {
         this._chrome.addActor(this._hotCorner.actor);
         this.enabledEdgeFlip = global.settings.get_boolean("enable-edge-flip");
         global.settings.connect("changed::enable-edge-flip", Lang.bind(this, this._onEnableEdgeFlipChanged));
-        global.settings.connect("changed::panel-autohide", Lang.bind(this, this._onPanelAutoHideChanged));
-        global.settings.connect("changed::panel-resizable", Lang.bind(this, this._onPanelAutoHideChanged));
-        global.settings.connect("changed::panel-bottom-height", Lang.bind(this, this._onPanelAutoHideChanged));
-        global.settings.connect("changed::panel-top-height", Lang.bind(this, this._onPanelAutoHideChanged));
+        global.settings.connect("changed::panel-autohide", Lang.bind(this, this._processPanelSettings));
+        global.settings.connect("changed::panel-resizable", Lang.bind(this, this._processPanelSettings));
+        global.settings.connect("changed::panel-bottom-height", Lang.bind(this, this._processPanelSettings));
+        global.settings.connect("changed::panel-top-height", Lang.bind(this, this._processPanelSettings));
         global.settings.connect("changed::overview-corner-visible", Lang.bind(this, this._onOverviewCornerVisibleChanged));
         global.settings.connect("changed::overview-corner-hover", Lang.bind(this, this._onOverviewCornerHoverChanged));
         global.settings.connect("changed::overview-corner-position", Lang.bind(this, this._updateBoxes));
@@ -117,14 +117,14 @@ LayoutManager.prototype = {
         }
     },
     
-    _onPanelAutoHideChanged: function() {
+    _processPanelSettings: function() {
         let autohide = global.settings.get_boolean("panel-autohide");
-        if (this._onPanelAutoHideChangedTimeout) {
-            Mainloop.source_remove(this._onPanelAutoHideChangedTimeout);
+        if (this._processPanelSettingsTimeout) {
+            Mainloop.source_remove(this._processPanelSettingsTimeout);
         }
         // delay this action somewhat, to let others do their thing before us
-        this._onPanelAutoHideChangedTimeout = Mainloop.timeout_add(0, Lang.bind(this, function() {
-            this._onPanelAutoHideChangedTimeout = 0;
+        this._processPanelSettingsTimeout = Mainloop.timeout_add(0, Lang.bind(this, function() {
+            this._processPanelSettingsTimeout = 0;
             this._updateBoxes();
             let affectsStruts = !autohide;
             this._chrome.modifyActorParams(this.panelBox, { affectsStruts: affectsStruts });

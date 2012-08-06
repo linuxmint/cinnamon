@@ -626,10 +626,10 @@ Panel.prototype = {
             }
         }
         if (this.bottomPosition) {
-            this._onPanelSizeChangedId = global.settings.connect("changed::panel-bottom-height", Lang.bind(this, this._onPanelSizeChanged));
+            this._processPanelSizeId = global.settings.connect("changed::panel-bottom-height", Lang.bind(this, this._processPanelSize));
         }
         else {
-            this._onPanelSizeChangedId = global.settings.connect("changed::panel-top-height", Lang.bind(this, this._onPanelSizeChanged));
+            this._processPanelSizeId = global.settings.connect("changed::panel-top-height", Lang.bind(this, this._processPanelSize));
         }
 
         this._menus = new PopupMenu.PopupMenuManager(this);
@@ -667,7 +667,7 @@ Panel.prototype = {
                                         
         this.actor.connect('leave-event', Lang.bind(this, this._leavePanel));
         this.actor.connect('enter-event', Lang.bind(this, this._enterPanel));  
-        global.settings.connect("changed::panel-autohide", Lang.bind(this, this._onPanelAutoHideChanged));   
+        global.settings.connect("changed::panel-autohide", Lang.bind(this, this._processPanelAutoHide));   
         global.settings.connect("changed::panel-show-delay", Lang.bind(this, this._onPanelShowDelayChanged));   
         global.settings.connect("changed::panel-hide-delay", Lang.bind(this, this._onPanelHideDelayChanged));   
         
@@ -688,7 +688,7 @@ Panel.prototype = {
         
         this._setDNDstyle();
         global.settings.connect("changed::panel-edit-mode", Lang.bind(this, this._setDNDstyle));
-        global.settings.connect("changed::panel-resizable", Lang.bind(this, this._onPanelResizableChanged));
+        global.settings.connect("changed::panel-resizable", Lang.bind(this, this._processPanelResizable));
         this.actor.connect('style-changed', Lang.bind(this, this._onStyleChanged));
     },
 
@@ -758,7 +758,7 @@ Panel.prototype = {
        this._hideDelay = global.settings.get_int("panel-hide-delay");
     },
     
-    _onPanelAutoHideChanged: function() {  
+    _processPanelAutoHide: function() {  
         this._hideable = global.settings.get_boolean("panel-autohide");
         // Show a glimpse of the panel irrespective of the new setting,
         // in order to force a region update.
@@ -774,7 +774,7 @@ Panel.prototype = {
         }
     },
 
-    _onPanelSizeChanged: function() {
+    _processPanelSize: function() {
         let panelHeight;
         let panelResizable = global.settings.get_boolean("panel-resizable");
         if (panelResizable) {
@@ -793,15 +793,15 @@ Panel.prototype = {
             }
         }
         this.actor.set_height(panelHeight);
-        this._onPanelAutoHideChanged();
+        this._processPanelAutoHide();
     },
 
-    _onPanelResizableChanged: function() {
-        this._onPanelSizeChanged();
+    _processPanelResizable: function() {
+        this._processPanelSize();
     },
 
     _onStyleChanged: function() {
-        this._onPanelResizableChanged();
+        this._processPanelResizable();
     },
 
     _getPreferredWidth: function(actor, forHeight, alloc) {
