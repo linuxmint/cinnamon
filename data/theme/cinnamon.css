@@ -877,6 +877,9 @@ StScrollBar StButton#vhandle:hover {
 	border-color: rgba(0,0,0,0);
 	color: white;
 }
+.switcher-outline-backdrop {
+   background-color: black;
+}
 .switcher-outline-background {
    background-color: rgba(50, 50, 50, 0.0);   
 }
