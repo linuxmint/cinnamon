@@ -760,7 +760,13 @@ Panel.prototype = {
     
     _onPanelAutoHideChanged: function() {  
         this._hideable = global.settings.get_boolean("panel-autohide");
-        // show a glimpse of the panel irrespective of the new setting
+        // Show a glimpse of the panel irrespective of the new setting,
+        // in order to force a region update.
+        // Techically, this should not be necessary if the function is called
+        // when auto-hide is in effect and is not changing, but experience
+        // shows that not flashing the panels may lead to "phantom panels"
+        // where the panels should be if auto-hide was on.
+        this._hidePanel(true); // force hide
         this._showPanel();
 
         if (this._hideable == true) {
@@ -787,11 +793,11 @@ Panel.prototype = {
             }
         }
         this.actor.set_height(panelHeight);
+        this._onPanelAutoHideChanged();
     },
 
     _onPanelResizableChanged: function() {
         this._onPanelSizeChanged();
-        this._onPanelAutoHideChanged();
     },
 
     _onStyleChanged: function() {
@@ -953,10 +959,9 @@ Panel.prototype = {
     }, 
     
     _showPanel: function() {
-        if (this._disabled) {
-            return;
-        }
-        if (this._hidden == false) return;
+        if (this._disabled) return;
+
+        if (!this._hidden) return;
 
         if (Main.lookingGlass != null && Main.lookingGlass._open) {
             return;
@@ -1002,14 +1007,16 @@ Panel.prototype = {
         this._hidden = false;
     },
 
-    _hidePanel: function() {
-        if (!this._disabled && (this._hideable == false || global.menuStackLength > 0 || this.isMouseOverPanel)) return;
+    _hidePanel: function(force) {
+        if (this._disabled) return;
+        
+        if ((!this._hideable && !force) || global.menuStackLength > 0 || this.isMouseOverPanel) return;
 
         // Force the panel to be on top (hack to correct issues when switching workspace)
         Main.layoutManager._windowsRestacked();
 
         let height = this.actor.get_height();
-        let animationTime = this._disabled ? 0 : AUTOHIDE_ANIMATION_TIME;
+        let animationTime = AUTOHIDE_ANIMATION_TIME;
         let y = this.bottomPosition ?
             Main.layoutManager.bottomMonitor.y + Main.layoutManager.bottomMonitor.height - 1 :
             Main.layoutManager.primaryMonitor.y - height + 1;
