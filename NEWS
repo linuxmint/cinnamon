@@ -4,7 +4,7 @@ CHANGES SINCE 1.4-UP3
 New features: 
 
  - Cinnamon 2D
- - Window preview and contour outlining in ALT-Tab mode
+ - Window preview in ALT-Tab mode
  - Workspace OSD
  - Window thumbnails in Alt-Tab view
  - Keyboard navigation in Scale (close windows with CTRL+W or mouse middle-click)
@@ -69,9 +69,7 @@ THEME CHANGES SINCE 1.4
 .window-caption#selected {
 }
 
-.switcher-outline-background {
-}
-.switcher-outline-frame {
+.switcher-preview-backdrop {
 }
 
 /* ===================================================================
