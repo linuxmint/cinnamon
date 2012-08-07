@@ -252,6 +252,7 @@ cinnamon_global_init (CinnamonGlobal *global)
   g_mkdir_with_parents (global->userdatadir, 0700);
 
   global->settings = g_settings_new ("org.cinnamon");
+  g_settings_set_boolean(global->settings, "panel-edit-mode", FALSE);
   
   global->grab_notifier = GTK_WINDOW (gtk_window_new (GTK_WINDOW_TOPLEVEL));
   g_signal_connect (global->grab_notifier, "grab-notify", G_CALLBACK (grab_notify), global);
