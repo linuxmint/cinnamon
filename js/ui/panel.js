@@ -626,10 +626,10 @@ Panel.prototype = {
             }
         }
         if (this.bottomPosition) {
-            this._processPanelSizeId = global.settings.connect("changed::panel-bottom-height", Lang.bind(this, this._processPanelSize));
+            global.settings.connect("changed::panel-bottom-height", Lang.bind(this, this._processPanelSize));
         }
         else {
-            this._processPanelSizeId = global.settings.connect("changed::panel-top-height", Lang.bind(this, this._processPanelSize));
+            global.settings.connect("changed::panel-top-height", Lang.bind(this, this._processPanelSize));
         }
 
         this._menus = new PopupMenu.PopupMenuManager(this);
@@ -688,8 +688,8 @@ Panel.prototype = {
         
         this._setDNDstyle();
         global.settings.connect("changed::panel-edit-mode", Lang.bind(this, this._setDNDstyle));
-        global.settings.connect("changed::panel-resizable", Lang.bind(this, this._processPanelResizable));
-        this.actor.connect('style-changed', Lang.bind(this, this._onStyleChanged));
+        global.settings.connect("changed::panel-resizable", Lang.bind(this, this._processPanelSize));
+        this.actor.connect('style-changed', Lang.bind(this, this._processPanelSize));
     },
 
     isHideable: function() {
@@ -794,14 +794,6 @@ Panel.prototype = {
         }
         this.actor.set_height(panelHeight);
         this._processPanelAutoHide();
-    },
-
-    _processPanelResizable: function() {
-        this._processPanelSize();
-    },
-
-    _onStyleChanged: function() {
-        this._processPanelResizable();
     },
 
     _getPreferredWidth: function(actor, forHeight, alloc) {
