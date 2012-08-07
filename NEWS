@@ -68,7 +68,7 @@ THEME CHANGES SINCE 1.4
 .window-caption#selected {
 }
 
-.switcher-preview-frame {
+.switcher-preview-backdrop {
 }
 
 /* ===================================================================

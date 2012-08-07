@@ -66,7 +66,7 @@ AltTabPopup.prototype = {
         this._thumbnailTimeoutId = 0;
         this._motionTimeoutId = 0;
         this._initialDelayTimeoutId = 0;
-        this._displayOutlineTimeoutId = 0;
+        this._displayPreviewTimeoutId = 0;
 
         this.thumbnailsVisible = false;
 
@@ -447,35 +447,32 @@ AltTabPopup.prototype = {
     _onDestroy : function() {
         this._popModal();
 
-        if (this._motionTimeoutId != 0)
+        if (this._motionTimeoutId)
             Mainloop.source_remove(this._motionTimeoutId);
-        if (this._thumbnailTimeoutId != 0)
+        if (this._thumbnailTimeoutId)
             Mainloop.source_remove(this._thumbnailTimeoutId);
-        if (this._initialDelayTimeoutId != 0)
+        if (this._initialDelayTimeoutId)
             Mainloop.source_remove(this._initialDelayTimeoutId);
-        if (this._displayOutlineTimeoutId != 0)
-            Mainloop.source_remove(this._displayOutlineTimeoutId);
+        if (this._displayPreviewTimeoutId)
+            Mainloop.source_remove(this._displayPreviewTimeoutId);
     },
     
     _doWindowPreview: function() {
-        if (this._previewBackground) {
-            this.actor.remove_actor(this._previewBackground);
-            this._previewBackground.destroy();
-            this._previewBackground = null;
-            this.actor.remove_actor(this._previewFrame);
-            this._previewFrame.destroy();
+        if (this._previewClone) {
+            this.actor.remove_actor(this._previewClone);
+            this._previewClone.destroy();
+            this._previewClone = null;
         }
         if (!this._previewEnabled || !this._appIcons[this._currentApp].cachedWindows.length) {
             return;
         }
 
-        let showOutline = function() {
+        let showPreview = function() {
             let window = this._appIcons[this._currentApp].cachedWindows[0];
 
             let childBox = new Clutter.ActorBox();
-            if (!this._outlineBackdrop) {
-                let backdrop = new St.Bin({style_class: 'switcher-outline-backdrop'});
-                this._outlineBackdrop = backdrop;
+            if (!this._previewBackdrop) {
+                let backdrop = this._previewBackdrop = new St.Bin({style_class: 'switcher-preview-backdrop'});
                 this.actor.add_actor(backdrop);
                 // Make sure that the backdrop does not overlap the switcher.
                 backdrop.lower(this._appSwitcher.actor);
@@ -487,57 +484,30 @@ AltTabPopup.prototype = {
                 backdrop.opacity = 192;
             }
 
-            // Create the actor that will serve as background for the clone.
-            let background = new St.Bin({style_class: 'switcher-preview-frame'});
-            this._previewBackground = background;
-            this.actor.add_actor(background);
-            // Make sure that the frame does not overlap the switcher.
-            background.lower(this._appSwitcher.actor);
-            this._outlineBackdrop.lower(background);
-                    
-            // We need to know the border width so that we can 
-            // make the background slightly bigger than the clone window.
-            let themeNode = background.get_theme_node();
-            let borderWidth = themeNode.get_border_width(St.Side.LEFT);// assume same for all sides
-            let borderAdj = borderWidth / 2;
-
-            let or = window.get_outer_rect();
-            or.x -= Math.floor(borderAdj); or.y -= Math.floor(borderAdj); 
-            or.width += Math.ceil(borderAdj); or.height += Math.ceil(borderAdj); 
-
-            childBox.x1 = or.x;
-            childBox.x2 = or.x + or.width;
-            childBox.y1 = or.y;
-            childBox.y2 = or.y + or.height;
-            background.allocate(childBox, 0);
-
-            // The frame is needed to draw the border round the clone.
-            let frame = this._previewFrame = new St.Bin({style_class: 'switcher-preview-frame'});
-            this.actor.add_actor(frame); // must not be a child of the background
-            frame.allocate(childBox, 0); // same dimensions
-            frame.lower(this._appSwitcher.actor);
-            background.lower(frame);
-
             // Show a clone of the target window
-            let previewClone = new Clutter.Clone({source: window.get_compositor_private().get_texture()});
-            background.add_actor(previewClone);
+            let clone = this._previewClone = new Clutter.Clone({source: window.get_compositor_private().get_texture()});
+            this.actor.add_actor(clone);
+            clone.lower(this._appSwitcher.actor);
+            this._previewBackdrop.lower(clone);
 
             // The clone's rect is not the same as the window's outer rect
+            let or = window.get_outer_rect();
             let ir = window.get_input_rect();
             let diffX = (ir.width - or.width)/2;
             let diffY = (ir.height - or.height)/2;
-            childBox.x1 = -Math.floor(diffX);
-            childBox.x2 = or.width + Math.ceil(diffX);
-            childBox.y1 = -Math.floor(diffY);
-            childBox.y2 = or.height + Math.ceil(diffY);
-            previewClone.allocate(childBox, 0);
+
+            childBox.x1 = or.x -diffX;
+            childBox.x2 = or.x + or.width + diffX;
+            childBox.y1 = or.y -diffY;
+            childBox.y2 = or.y + or.height + diffY;
+            clone.allocate(childBox, 0);
         };
 
         // Use a cancellable timeout to avoid flicker effect when tabbing rapidly through the set
-        if (this._displayOutlineTimeoutId) {
-            Mainloop.source_remove(this._displayOutlineTimeoutId);
+        if (this._displayPreviewTimeoutId) {
+            Mainloop.source_remove(this._displayPreviewTimeoutId);
         }
-        this._displayOutlineTimeoutId = Mainloop.timeout_add(100, Lang.bind(this, showOutline));
+        this._displayPreviewTimeoutId = Mainloop.timeout_add(100, Lang.bind(this, showPreview));
     },
     
     /**
