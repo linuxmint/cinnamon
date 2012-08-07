@@ -183,25 +183,28 @@ st_scroll_bar_dispose (GObject *gobject)
 
   if (priv->handle)
     {
-      clutter_actor_destroy (priv->handle);
+      g_signal_handlers_disconnect_by_func (priv->handle,
+                                            G_CALLBACK (handle_button_press_event_cb),
+                                            bar);
+      clutter_actor_unparent (priv->handle);
       priv->handle = NULL;
     }
 
   if (priv->bw_stepper)
     {
-      clutter_actor_destroy (priv->bw_stepper);
+      clutter_actor_unparent (priv->bw_stepper);
       priv->bw_stepper = NULL;
     }
 
   if (priv->fw_stepper)
     {
-      clutter_actor_destroy (priv->fw_stepper);
+      clutter_actor_unparent (priv->fw_stepper);
       priv->fw_stepper = NULL;
     }
 
   if (priv->trough)
     {
-      clutter_actor_destroy (priv->trough);
+      clutter_actor_unparent (priv->trough);
       priv->trough = NULL;
     }
 
