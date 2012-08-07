@@ -118,7 +118,6 @@ LayoutManager.prototype = {
     },
     
     _processPanelSettings: function() {
-        let autohide = global.settings.get_boolean("panel-autohide");
         if (this._processPanelSettingsTimeout) {
             Mainloop.source_remove(this._processPanelSettingsTimeout);
         }
@@ -126,9 +125,8 @@ LayoutManager.prototype = {
         this._processPanelSettingsTimeout = Mainloop.timeout_add(0, Lang.bind(this, function() {
             this._processPanelSettingsTimeout = 0;
             this._updateBoxes();
-            let affectsStruts = !autohide;
-            this._chrome.modifyActorParams(this.panelBox, { affectsStruts: affectsStruts });
-            this._chrome.modifyActorParams(this.panelBox2, { affectsStruts: affectsStruts });
+            this._chrome.modifyActorParams(this.panelBox, { affectsStruts: Main.panel && !Main.panel.isHideable() });
+            this._chrome.modifyActorParams(this.panelBox2, { affectsStruts: Main.panel2 && !Main.panel2.isHideable() });
         }));
     },
     
@@ -263,23 +261,23 @@ LayoutManager.prototype = {
             }
             return panelHeight;
         };
+
         let p1height = getPanelHeight(Main.panel);
+        this.panelBox.set_size(this.bottomMonitor.width, p1height);
+
         if (Main.desktop_layout == Main.LAYOUT_TRADITIONAL) {       
             this.panelBox.set_position(this.bottomMonitor.x, this.bottomMonitor.y + this.bottomMonitor.height - p1height);
-            this.panelBox.set_size(this.bottomMonitor.width, p1height);
         }
         else if (Main.desktop_layout == Main.LAYOUT_FLIPPED) {         
             this.panelBox.set_position(this.primaryMonitor.x, this.primaryMonitor.y);
-            this.panelBox.set_size(this.primaryMonitor.width, p1height);            
         }
         else if (Main.desktop_layout == Main.LAYOUT_CLASSIC) { 
             let p2height = getPanelHeight(Main.panel2);
             this.panelBox.set_position(this.primaryMonitor.x, this.primaryMonitor.y);
-            this.panelBox.set_size(this.primaryMonitor.width, p1height);       
             this.panelBox2.set_position(this.bottomMonitor.x, this.bottomMonitor.y + this.bottomMonitor.height - p2height);
             this.panelBox2.set_size(this.bottomMonitor.width, p2height);
         }
-        
+
         this.keyboardBox.set_position(this.bottomMonitor.x,
                                       this.bottomMonitor.y + this.bottomMonitor.height);
         this.keyboardBox.set_size(this.bottomMonitor.width, -1);
@@ -843,7 +841,7 @@ Chrome.prototype = {
         for (var i in params){
             this._trackedActors[index][i] = params[i];
         }
-        this.updateRegions();
+        this._queueUpdateRegions();
     },
 
     _trackActor: function(actor, params) {
