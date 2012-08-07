@@ -878,7 +878,7 @@ StScrollBar StButton#vhandle:hover {
 	color: white;
 }
 .switcher-preview-backdrop {
-   background-color: black;
+   background-color: rgba(0,0,0,0.7);
 }
 
 /* ===================================================================

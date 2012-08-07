@@ -456,7 +456,6 @@ AltTabPopup.prototype = {
                 childBox.y1 = this.actor.y;
                 childBox.y2 = this.actor.y + this.actor.height;
                 backdrop.allocate(childBox, 0);
-                backdrop.opacity = 192;
             }
 
             // Show a clone of the target window
