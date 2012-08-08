@@ -345,7 +345,7 @@ function loadApplet(uuid, dir, orientation) {
     } catch (e) {
         if (stylesheetPath != null)
             theme.unload_stylesheet(stylesheetPath);
-        global.logError(uuid + " " + e);
+        global.logError(uuid + ":" + e.lineNumber + " " + e);
         return null;
     }
 
