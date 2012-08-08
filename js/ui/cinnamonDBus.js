@@ -5,6 +5,7 @@ const Lang = imports.lang;
 
 const Config = imports.misc.config;
 const ExtensionSystem = imports.ui.extensionSystem;
+const Flashspot = imports.ui.flashspot;
 const Main = imports.ui.main;
 
 const CinnamonIface = {
@@ -26,16 +27,21 @@ const CinnamonIface = {
                 outSignature: 'as'
               },
               { name: 'ScreenshotArea',
-                inSignature: 'iiiis',
-                outSignature: 'b'
+                inSignature: 'biiiibs',
+                outSignature: ''
               },
               { name: 'ScreenshotWindow',
-                inSignature: 'bs',
-                outSignature: 'b'
+                inSignature: 'bbbs',
+                outSignature: ''
               },
               { name: 'Screenshot',
-                inSignature: 's',
-                outSignature: 'b'
+                inSignature: 'bbs',
+                outSignature: ''
+              },
+              {
+                name: 'FlashArea',
+                inSignature: 'iiii',
+                outSignature: ''
               },
               { name: 'EnableExtension',
                 inSignature: 's',
@@ -108,12 +114,24 @@ Cinnamon.prototype = {
         return [success, returnValue];
     },
 
+    _onScreenshotComplete: function(obj, result, area, flash, invocation) {
+        if (flash) {
+            let flashspot = new Flashspot.Flashspot(area);
+            flashspot.fire();
+        }
+
+        let retval = GLib.Variant.new('(b)', [result]);
+        invocation.return_value(retval);
+    },
+
     /**
      * ScreenshotArea:
+     * @include_cursor: Whether to include the mouse cursor
      * @x: The X coordinate of the area
      * @y: The Y coordinate of the area
      * @width: The width of the area
      * @height: The height of the area
+     * @flash: Whether to flash the edges of area
      * @filename: The filename for the screenshot
      *
      * Takes a screenshot of the passed in area and saves it
@@ -121,13 +139,19 @@ Cinnamon.prototype = {
      * indicating whether the operation was successful or not.
      *
      */
-    ScreenshotAreaAsync : function (x, y, width, height, filename, callback) {
-        global.screenshot_area (x, y, width, height, filename, function (obj, result) { callback(result); });
+    ScreenshotAreaAsync : function (params, invocation) {
+        let [include_cursor, x, y, width, height, flash, filename, callback] = params;
+        let screenshot = new Cinnamon.Screenshot();
+        screenshot.screenshot_area (include_cursor, x, y, width, height, filename,
+                                Lang.bind(this, this._onScreenshotComplete,
+                                          flash, invocation));
     },
 
     /**
      * ScreenshotWindow:
      * @include_frame: Whether to include the frame or not
+     * @include_cursor: Whether to include the mouse cursor
+     * @flash: Whether to flash the edges of the window
      * @filename: The filename for the screenshot
      *
      * Takes a screenshot of the focused window (optionally omitting the frame)
@@ -135,12 +159,18 @@ Cinnamon.prototype = {
      * indicating whether the operation was successful or not.
      *
      */
-    ScreenshotWindow : function (include_frame, filename) {
-        return global.screenshot_window (include_frame, filename);
+    ScreenshotWindowAsync : function (params, invocation) {
+        let [include_frame, include_cursor, flash, filename] = params;
+        let screenshot = new Cinnamon.Screenshot();
+        screenshot.screenshot_window (include_frame, include_cursor, filename,
+                                      Lang.bind(this, this._onScreenshotComplete,
+                                                flash, invocation));
     },
 
     /**
      * Screenshot:
+     * @include_cursor: Whether to include the mouse cursor
+     * @flash: Whether to flash the edges of the screen
      * @filename: The filename for the screenshot
      *
      * Takes a screenshot of the whole screen and saves it
@@ -148,8 +178,17 @@ Cinnamon.prototype = {
      * indicating whether the operation was successful or not.
      *
      */
-    ScreenshotAsync : function (filename, callback) {
-        global.screenshot(filename, function (obj, result) { callback(result); });
+    ScreenshotAsync : function (params, invocation) {
+        let [include_cursor, flash, filename] = params;
+        let screenshot = new Cinnamon.Screenshot();
+        screenshot.screenshot(include_cursor, filename,
+                          Lang.bind(this, this._onScreenshotComplete,
+                                    flash, invocation));
+    },
+
+    FlashArea: function(x, y, width, height) {
+        let flashspot = new Flashspot.Flashspot({ x : x, y : y, width: width, height: height});
+        flashspot.fire();
     },
 
     ListExtensions: function() {

@@ -110,6 +110,8 @@ cinnamon_public_headers_h =		\
 	cinnamon-mount-operation.h		\
 	cinnamon-network-agent.h		\
 	cinnamon-perf-log.h		\
+	cinnamon-screenshot.h	\
+	cinnamon-screen-grabber.h	\
 	cinnamon-slicer.h			\
 	cinnamon-stack.h			\
 	cinnamon-tray-icon.h		\
@@ -147,6 +149,8 @@ libcinnamon_la_SOURCES =		\
 	cinnamon-perf-log.c		\
 	cinnamon-polkit-authentication-agent.h	\
 	cinnamon-polkit-authentication-agent.c	\
+	cinnamon-screenshot.c		\
+	cinnamon-screen-grabber.c	\
 	cinnamon-slicer.c			\
 	cinnamon-stack.c			\
 	cinnamon-tray-icon.c		\

@@ -144,23 +144,6 @@ void     cinnamon_global_init_xdnd                 (CinnamonGlobal  *global);
 
 void     cinnamon_global_reexec_self               (CinnamonGlobal  *global);
 
-typedef void (*CinnamonGlobalScreenshotCallback)  (CinnamonGlobal *global, gboolean success);
-
-void    cinnamon_global_screenshot_area           (CinnamonGlobal  *global,
-                                                int x,
-                                                int y,
-                                                int width,
-                                                int height,
-                                                const char *filename,
-                                                CinnamonGlobalScreenshotCallback callback);
-
-gboolean cinnamon_global_screenshot_window         (CinnamonGlobal  *global,
-                                                gboolean include_frame,
-                                                const char *filename);
-
-void    cinnamon_global_screenshot                (CinnamonGlobal  *global,
-                                                const char *filename,
-                                                CinnamonGlobalScreenshotCallback callback);
 G_END_DECLS
 
 #endif /* __CINNAMON_GLOBAL_H__ */
