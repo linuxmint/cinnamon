@@ -641,7 +641,8 @@ MyApplet.prototype = {
             this.menuManager = new PopupMenu.PopupMenuManager(this);
             this.menu = new Applet.AppletPopupMenu(this, orientation);
             this.menuManager.addMenu(this.menu);   
-                        
+            fx = new St.BackgroundEffect();
+            this.menu.actor.add_effect_with_name('blur',fx);
             this.actor.connect('key-press-event', Lang.bind(this, this._onSourceKeyPress));
             this.showRecent = global.settings.get_boolean("menu-show-recent");
             global.settings.connect("changed::menu-show-recent", Lang.bind(this, function() {
