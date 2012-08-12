@@ -24,8 +24,10 @@ const ICON_SIZE = 16;
 const MAX_FAV_ICON_SIZE = 32;
 const CATEGORY_ICON_SIZE = 22;
 const APPLICATION_ICON_SIZE = 22;
+const MAX_RECENT_FILES = 20;
 
 const USER_DESKTOP_PATH = FileUtils.getUserDesktopDir();
+
 
 let appsys = Cinnamon.AppSystem.get_default();
 
@@ -287,6 +289,11 @@ PlaceButton.prototype = {
             this.place.launch();
             this.appsMenuButton.menu.close();
         }
+    },
+
+    activate: function(event) {
+        this.place.launch();
+        this.appsMenuButton.menu.close();
     }
 };
 
@@ -315,6 +322,11 @@ RecentButton.prototype = {
             Gio.app_info_launch_default_for_uri(this.file.uri, global.create_app_launch_context());
             this.appsMenuButton.menu.close();
         }
+    },
+
+    activate: function(event) {
+        Gio.app_info_launch_default_for_uri(this.file.uri, global.create_app_launch_context());
+        this.appsMenuButton.menu.close();
     }
 };
 
@@ -1087,10 +1099,12 @@ MyApplet.prototype = {
                         this._clearPrevAppSelection(button.actor);
                         button.actor.style_class = "menu-application-button-selected";
                         this._scrollToButton(button);
+                        this.selectedAppDescription.set_text(button.place.id.slice(16));
                         }));
                 button.actor.connect('leave-event', Lang.bind(this, function() {
                             button.actor.style_class = "menu-application-button";
                             this._previousSelectedActor = button.actor;
+                            this.selectedAppDescription.set_text("");
                             }));
                 this._placesButtons.push(button);
                 this.applicationsBox.add_actor(button.actor);
@@ -1123,7 +1137,7 @@ MyApplet.prototype = {
             }));
             this.categoriesBox.add_actor(this.recentButton.actor);
 
-            for (let id = 0; id < 15 && id < this.RecentManager._infosByTimestamp.length; id++) {
+            for (let id = 0; id < MAX_RECENT_FILES && id < this.RecentManager._infosByTimestamp.length; id++) {
                 let button = new RecentButton(this, this.RecentManager._infosByTimestamp[id]);
                 this._addEnterEvent(button, Lang.bind(this, function() {
                         this._clearPrevAppSelection(button.actor);
