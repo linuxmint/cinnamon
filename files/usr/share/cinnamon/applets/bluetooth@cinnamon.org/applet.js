@@ -202,7 +202,8 @@ MyApplet.prototype = {
             this.menu = new Applet.AppletPopupMenu(this, orientation);
             this.menuManager.addMenu(this.menu);            
             
-            this.set_applet_icon_symbolic_name('bluetooth-disabled');       
+            this.set_applet_icon_symbolic_name('bluetooth-disabled');
+            this.set_applet_tooltip(_("Bluetooth"));
                         
             GLib.spawn_command_line_sync ('pkill -f "^bluetooth-applet$"');
             this._applet = new GnomeBluetoothApplet.Applet();
