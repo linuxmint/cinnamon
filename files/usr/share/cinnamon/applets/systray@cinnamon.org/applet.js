@@ -15,18 +15,24 @@ MyApplet.prototype = {
     _init: function(orientation, panel_height) {
         Applet.Applet.prototype._init.call(this, orientation, panel_height);
         this.actor.remove_style_class_name("applet-box");
-        try {
-            Main.statusIconDispatcher.connect('status-icon-added', Lang.bind(this, this._onTrayIconAdded));
-            Main.statusIconDispatcher.connect('status-icon-removed', Lang.bind(this, this._onTrayIconRemoved));
-            Main.statusIconDispatcher.connect('before-redisplay', Lang.bind(this, this._onBeforeRedisplay));
-        }
-        catch (e) {
-            global.logError(e);
-        }
+        this._signals = { added: null,
+                          removed: null,
+                          redisplay: null };
     },
 
     on_applet_clicked: function(event) {
+    },
 
+    _destroy: function () {
+        Main.statusIconDispatcher.disconnect(this._signals.added);
+        Main.statusIconDispatcher.disconnect(this._signals.removed);
+        Main.statusIconDispatcher.disconnect(this._signals.redisplay);
+    },
+
+    on_applet_added_to_panel: function() {
+        this._signals.added = Main.statusIconDispatcher.connect('status-icon-added', Lang.bind(this, this._onTrayIconAdded));
+        this._signals.removed = Main.statusIconDispatcher.connect('status-icon-removed', Lang.bind(this, this._onTrayIconRemoved));
+        this._signals.redisplay = Main.statusIconDispatcher.connect('before-redisplay', Lang.bind(this, this._onBeforeRedisplay));
     },
 
     on_panel_height_changed: function() {

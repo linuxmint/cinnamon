@@ -180,6 +180,12 @@ Applet.prototype = {
     on_applet_added_to_panel: function() {       
     },
 
+    _destroy: function() {
+        // Implemented by Applets, called by appletManager
+        // handles things that might cause a crash once the applet is
+        // no longer on the stage
+    },
+
     setOrientation: function (orientation) {
         let menuItems = new Array();
         let oldMenuItems = this._applet_context_menu._getMenuItems();

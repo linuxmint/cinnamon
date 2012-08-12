@@ -86,6 +86,11 @@ function onEnabledAppletsChanged() {
                         let directory = _find_applet(uuid);
                         if (directory != null) {
                             let applet = loadApplet(uuid, directory, orientation, panel.actor.get_height());
+                            try {
+                                applet._destroy();
+                            } catch (e) {
+                                global.logError("Problem with applet: " + uuid + " _destroy method: " + e);
+                            }
                             if (applet._panelLocation != null) {
                                 applet._panelLocation.remove_actor(applet.actor);
                                 applet._panelLocation = null;
@@ -104,7 +109,7 @@ function onEnabledAppletsChanged() {
     catch(e) {
         global.logError('Failed to refresh list of applets ' + e); 
     }
-    
+
     Main.statusIconDispatcher.redisplay();
 }
 
@@ -376,18 +381,18 @@ function loadApplet(uuid, dir, orientation, panel_height) {
     return(applet);
 }
 
-function _removeAppletFromPanel(menuitem, event, uuid) {     
+function _removeAppletFromPanel(menuitem, event, uuid) {
     for (let i=0; i<enabledApplets.length; i++) {
-        let appletDefinition = enabledApplets[i];           
+        let appletDefinition = enabledApplets[i];
         let elements = appletDefinition.split(":");
         if (elements.length == 4) {
-            let applet_uuid = elements[3];                
-            if (uuid == applet_uuid) {   
-                newEnabledApplets = enabledApplets.slice(0);             
+            let applet_uuid = elements[3];
+            if (uuid == applet_uuid) {
+                let newEnabledApplets = enabledApplets.slice(0);
                 newEnabledApplets.splice(i, 1);
-                global.settings.set_strv('enabled-applets', newEnabledApplets);                            
-                break;   
-            }                    
+                global.settings.set_strv('enabled-applets', newEnabledApplets);
+                break;
+            }
         }
     }
 }
