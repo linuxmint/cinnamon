@@ -3,15 +3,17 @@ const Main = imports.ui.main;
 const PanelMenu = imports.ui.panelMenu;
 const Lang = imports.lang;
 
-function MyApplet(orientation) {
-    this._init(orientation);
+const ICON_SCALE_FACTOR = .88; // for custom panel heights, 22 (default icon size) / 25 (default panel height)
+
+function MyApplet(orientation, panel_height) {
+    this._init(orientation, panel_height);
 }
 
 MyApplet.prototype = {
     __proto__: Applet.Applet.prototype,
 
-    _init: function(orientation) {
-        Applet.Applet.prototype._init.call(this, orientation);
+    _init: function(orientation, panel_height) {
+        Applet.Applet.prototype._init.call(this, orientation, panel_height);
         this.actor.remove_style_class_name("applet-box");
         try {
             Main.statusIconDispatcher.connect('status-icon-added', Lang.bind(this, this._onTrayIconAdded));
@@ -25,6 +27,10 @@ MyApplet.prototype = {
 
     on_applet_clicked: function(event) {
 
+    },
+
+    on_panel_height_changed: function() {
+        Main.statusIconDispatcher.redisplay();
     },
 
     _onBeforeRedisplay: function() {
@@ -60,7 +66,12 @@ MyApplet.prototype = {
             if (themeNode.get_length('height')) {
                 height = themeNode.get_length('height');                        
             }
-            
+
+            if (global.settings.get_boolean('panel-scale-text-icons')) {
+                width = Math.floor(this._panelHeight * ICON_SCALE_FACTOR);
+                height = Math.floor(this._panelHeight * ICON_SCALE_FACTOR);
+            }
+
             if (icon.get_width() == 1 || icon.get_height() == 1 || buggyIcons.indexOf(role) != -1) {
                 icon.set_height(height);
             }
@@ -99,7 +110,7 @@ MyApplet.prototype = {
 
 };
 
-function main(metadata, orientation) {
-    let myApplet = new MyApplet(orientation);
+function main(metadata, orientation, panel_height) {
+    let myApplet = new MyApplet(orientation, panel_height);
     return myApplet;
 }

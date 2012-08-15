@@ -1640,6 +1640,7 @@ StScrollBar StButton#vhandle:hover {
 }
 .applet-icon {
 	color: #ccc;
+	icon-size: 22px;
 }
 .applet-icon:hover,
 .applet-box:hover > .applet-icon {

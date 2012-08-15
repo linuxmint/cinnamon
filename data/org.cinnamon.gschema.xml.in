@@ -74,6 +74,14 @@
       </_description>
     </key>
     
+    <key name="panel-scale-text-icons" type="b">
+      <default>false</default>
+      <_summary>Scale panel applet text and icons</_summary>
+      <_description>
+        Whether the panel icons and text from applets is resized according to the custom panel height
+      </_description>
+    </key>
+
     <key name="desktop-effects" type="b">
       <default>true</default>
       <_summary>Enable desktop effects</_summary>
