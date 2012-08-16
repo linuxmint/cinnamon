@@ -106,8 +106,10 @@ MyApplet.prototype = {
         let dateFormat = this._calendarSettings.get_string('date-format');       
         let dateFormatFull = this._calendarSettings.get_string('date-format-full'); 
         let displayDate = new Date();
+        let dateFormattedFull = displayDate.toLocaleFormat(dateFormatFull);
         this.set_applet_label(displayDate.toLocaleFormat(dateFormat));
-        this._date.set_text(displayDate.toLocaleFormat(dateFormatFull));
+        this._date.set_text(dateFormattedFull);
+        this.set_applet_tooltip(dateFormattedFull);
 
         Mainloop.timeout_add_seconds(1, Lang.bind(this, this._updateClockAndDate));
         return false;
