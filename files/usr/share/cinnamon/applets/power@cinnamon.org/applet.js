@@ -302,11 +302,16 @@ MyApplet.prototype = {
         }));
     },
 
+    on_panel_height_changed: function() {
+        this._devicesChanged();
+    },
+
     _devicesChanged: function() {
+        this.set_applet_icon_symbolic_name('battery-missing');
         this._proxy.GetRemote('Icon', Lang.bind(this, function(icon, error) {
             if (icon) {    
-				let gicon = Gio.icon_new_for_string(icon);
-				this._applet_icon.gicon = gicon;             
+                let gicon = Gio.icon_new_for_string(icon);
+                this._applet_icon.gicon = gicon;
                 this.actor.show();
             } else {
                 this.menu.close();
