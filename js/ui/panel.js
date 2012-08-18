@@ -698,7 +698,7 @@ Panel.prototype = {
         this._setDNDstyle();
         global.settings.connect("changed::panel-edit-mode", Lang.bind(this, this._setDNDstyle));
         global.settings.connect("changed::panel-resizable", Lang.bind(this, this._onPanelResizableChanged));
-        global.settings.connect("changed::panel-scale-text-icons", Lang.bind(this, this._onPanelResizableChanged))
+        global.settings.connect("changed::panel-scale-text-icons", Lang.bind(this, this._onScaleTextIconsChanged))
         this.actor.connect('style-changed', Lang.bind(this, this._onStyleChanged));
     },
 
@@ -821,6 +821,27 @@ Panel.prototype = {
             Main.layoutManager._updateBoxes();
             AppletManager.updateAppletPanelHeights();
         }
+    },
+
+    _onScaleTextIconsChanged: function() {
+        let panelHeight;
+        if (this.bottomPosition) {
+            panelHeight = global.settings.get_int("panel-bottom-height");
+        }
+        else {
+            panelHeight = global.settings.get_int("panel-top-height");
+        }
+        if (global.settings.get_boolean("panel-scale-text-icons")) {
+            if (!this._themeFontSize) {
+                let themeNode = this.actor.get_theme_node();
+                this._themeFontSize = themeNode.get_length("font-size");
+            }
+            let textheight = (panelHeight / Applet.DEFAULT_PANEL_HEIGHT) * Applet.PANEL_FONT_DEFAULT_HEIGHT;
+            this.actor.set_style('font-size: ' + textheight + 'px;');
+        } else {
+            this.actor.set_style('font-size: ' + this._themeFontSize + 'px;');
+        }
+        AppletManager.updateAppletPanelHeights(true);
     },
 
     _onStyleChanged: function() {

@@ -90,7 +90,7 @@ PanelAppLauncher.prototype = {
         this.actor.connect('button-release-event', Lang.bind(this, this._onButtonRelease));
         this.actor.connect('button-press-event', Lang.bind(this, this._onButtonPress));
         
-        this._iconBox = new Cinnamon.Slicer({ name: 'panel-launcher-icon' });
+        this._iconBox = new St.Bin({ name: 'panel-launcher-icon' });
         this._iconBox.connect('style-changed',
                               Lang.bind(this, this._onIconBoxStyleChanged));
         this._iconBox.connect('notify::allocation',
