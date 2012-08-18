@@ -435,7 +435,7 @@ function saveAppletsPositions() {
     global.settings.set_strv('enabled-applets', applets);
 }
 
-function updateAppletPanelHeights() {
+function updateAppletPanelHeights(force_recalc) {
     for (let i=0; i<enabledApplets.length; i++) {
         let appletDefinition = enabledApplets[i];   
         let elements = appletDefinition.split(":");
@@ -445,7 +445,10 @@ function updateAppletPanelHeights() {
             if (elements[0] == "panel2") {
                 panel = Main.panel2;
             }
-            appletObj[uuid].setPanelHeight(panel.actor.get_height());
+            let newheight = panel.actor.get_height();
+            if (appletObj[uuid]._panelHeight != newheight || force_recalc) {
+                appletObj[uuid].setPanelHeight(newheight);
+            }
         }
     }
 }
