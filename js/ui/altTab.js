@@ -418,86 +418,70 @@ AltTabPopup.prototype = {
     _onDestroy : function() {
         this._popModal();
 
-        if (this._motionTimeoutId != 0)
+        if (this._motionTimeoutId)
             Mainloop.source_remove(this._motionTimeoutId);
-        if (this._thumbnailTimeoutId != 0)
+        if (this._thumbnailTimeoutId)
             Mainloop.source_remove(this._thumbnailTimeoutId);
-        if (this._initialDelayTimeoutId != 0)
+        if (this._initialDelayTimeoutId)
             Mainloop.source_remove(this._initialDelayTimeoutId);
+        if (this._displayPreviewTimeoutId)
+            Mainloop.source_remove(this._displayPreviewTimeoutId);
     },
     
-    _outlineContours: function() {
-        if (this._outlineBackground) {
-            this.actor.remove_actor(this._outlineBackground);
-            this._outlineBackground.destroy();
-            this._outlineBackground = null;
-            this.actor.remove_actor(this._outlineFrame);
-            this._outlineFrame.destroy();
+    _doWindowPreview: function() {
+        if (this._previewClone) {
+            this.actor.remove_actor(this._previewClone);
+            this._previewClone.destroy();
+            this._previewClone = null;
         }
-        if (!this._outlineSettingsFetched) {
-            this._outlineEnabled = global.settings.get_boolean("enable-alttab-outline");
-            this._outlineSettingsFetched = true;
+        if (!this._previewSettingsFetched) {
+            this._previewEnabled = global.settings.get_boolean("enable-alttab-outline");
+            this._previewSettingsFetched = true;
         }
-        if (!this._outlineEnabled || !this._appIcons[this._currentApp].cachedWindows.length) {
+        if (!this._previewEnabled || !this._appIcons[this._currentApp].cachedWindows.length) {
             return;
         }
 
-        let showOutline = function() {
+        let showPreview = function() {
             let window = this._appIcons[this._currentApp].cachedWindows[0];
 
-            // Create the actor that will serve as background for the clone.
-            let background = new St.Bin({style_class: 'switcher-outline-background switcher-outline-frame'});
-            this._outlineBackground = background;
-            this.actor.add_actor(background);
-            // Make sure that the frame does not overlap the switcher.
-            background.lower(this._appSwitcher.actor);
-                    
-            // We need to know the border width so that we can 
-            // make the background slightly bigger than the clone window.
-            let themeNode = background.get_theme_node();
-            let borderWidth = themeNode.get_border_width(St.Side.LEFT);// assume same for all sides
-            let borderAdj = borderWidth / 2;
-
-            let or = window.get_outer_rect();
-            or.x -= borderAdj; or.y -= borderAdj; 
-            or.width += borderAdj; or.height += borderAdj; 
-
             let childBox = new Clutter.ActorBox();
-            childBox.x1 = or.x;
-            childBox.x2 = or.x + or.width;
-            childBox.y1 = or.y;
-            childBox.y2 = or.y + or.height;
-            background.allocate(childBox, 0);
-
-            // The frame is needed to draw the border round the clone.
-            let frame = this._outlineFrame = new St.Bin({style_class: 'switcher-outline-frame'});
-            this.actor.add_actor(frame); // must not be a child of the background
-            frame.allocate(childBox, 0); // same dimensions
-            frame.lower(this._appSwitcher.actor);
-            background.lower(frame);
+            if (!this._previewBackdrop) {
+                let backdrop = this._previewBackdrop = new St.Bin({style_class: 'switcher-preview-backdrop'});
+                this.actor.add_actor(backdrop);
+                // Make sure that the backdrop does not overlap the switcher.
+                backdrop.lower(this._appSwitcher.actor);
+                childBox.x1 = this.actor.x;
+                childBox.x2 = this.actor.x + this.actor.width;
+                childBox.y1 = this.actor.y;
+                childBox.y2 = this.actor.y + this.actor.height;
+                backdrop.allocate(childBox, 0);
+            }
 
             // Show a clone of the target window
-            let outlineClone = new Clutter.Clone({source: window.get_compositor_private().get_texture()});
-            background.add_actor(outlineClone);
-            outlineClone.opacity = 225; // slightly translucent to get a tint from the background color
+            let clone = this._previewClone = new Clutter.Clone({source: window.get_compositor_private().get_texture()});
+            this.actor.add_actor(clone);
+            clone.lower(this._appSwitcher.actor);
+            this._previewBackdrop.lower(clone);
 
             // The clone's rect is not the same as the window's outer rect
+            let or = window.get_outer_rect();
             let ir = window.get_input_rect();
             let diffX = (ir.width - or.width)/2;
             let diffY = (ir.height - or.height)/2;
 
-            childBox.x1 = -diffX;
-            childBox.x2 = or.width + diffX;
-            childBox.y1 = -diffY;
-            childBox.y2 = or.height + diffY;
-            outlineClone.allocate(childBox, 0);
+            childBox.x1 = or.x -diffX;
+            childBox.x2 = or.x + or.width + diffX;
+            childBox.y1 = or.y -diffY;
+            childBox.y2 = or.y + or.height + diffY;
+            clone.allocate(childBox, 0);
         };
 
         // Use a cancellable timeout to avoid flicker effect when tabbing rapidly through the set
-        if (this._displayOutlineTimeoutId) {
-            Mainloop.source_remove(this._displayOutlineTimeoutId);
+        if (this._displayPreviewTimeoutId) {
+            Mainloop.source_remove(this._displayPreviewTimeoutId);
         }
-        this._displayOutlineTimeoutId = Mainloop.timeout_add(100, Lang.bind(this, showOutline));
+        this._displayPreviewTimeoutId = Mainloop.timeout_add(100, Lang.bind(this, showPreview));
     },
     
     /**
@@ -546,7 +530,7 @@ AltTabPopup.prototype = {
         if (window != null) {
             if (!this._thumbnails)
                 this._createThumbnails();
-            this._outlineContours();
+            this._doWindowPreview();
             this._currentWindow = window;
             this._thumbnails.highlight(window, forceAppFocus);
         } else if (this._appIcons[this._currentApp].cachedWindows.length > 1 &&
