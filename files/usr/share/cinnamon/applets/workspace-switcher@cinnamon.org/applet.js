@@ -74,12 +74,20 @@ MyApplet.prototype = {
             let label = new St.Label({ text: text });
             this.button[i].set_child(label);
             this.actor.add(this.button[i]);
+            if (this._scaleMode) {
+                this.button[i].set_width(this._panelHeight);
+            }
             let index = i;
             this.button[i].connect('button-release-event', Lang.bind(this, function() {
                 let metaWorkspace = global.screen.get_workspace_by_index(index);
                 metaWorkspace.activate(global.get_current_time());
             }));
         }
+    },
+
+    on_panel_height_changed: function() {
+        this._scaleMode = global.settings.get_boolean('panel-scale-text-icons');
+        this._createButtons();
     },
 
     _updateButtons: function() {
