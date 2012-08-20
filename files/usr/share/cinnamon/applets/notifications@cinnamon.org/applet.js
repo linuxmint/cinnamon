@@ -52,7 +52,7 @@ MyApplet.prototype = {
             this.clear_action = new PopupMenu.PopupMenuItem(_("Clear notifications"));
             this.menu.addMenuItem(this.clear_action);
             this.clear_action.connect('activate', Lang.bind(this, this._clear_all));
-            
+            this.clear_action.actor.hide();
             this.scrollview = new St.ScrollView({ x_fill: true, y_fill: true, y_align: St.Align.START});
             
             this._maincontainer.add(this.scrollview);
