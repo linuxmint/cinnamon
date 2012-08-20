@@ -741,13 +741,18 @@ MyApplet.prototype = {
 
             this.actor.connect('scroll-event', Lang.bind(this, this._onScrollEvent));
 
+            this.mute_out_switch = new PopupMenu.PopupSwitchMenuItem(_("Mute output"), false);
+            this.mute_in_switch = new PopupMenu.PopupSwitchMenuItem(_("Mute input"), false);
+            this._applet_context_menu.addMenuItem(this.mute_out_switch);
+            this._applet_context_menu.addMenuItem(this.mute_in_switch);
+            this.mute_out_switch.connect('toggled', Lang.bind(this, this._toggle_out_mute));
+            this.mute_in_switch.connect('toggled', Lang.bind(this, this._toggle_in_mute));
+
             this._control.open();
 
             this._volumeControlShown = false;
 
             this._showFixedElements();
-
-
         }
         catch (e) {
             global.logError(e);
@@ -756,6 +761,26 @@ MyApplet.prototype = {
 
     on_applet_clicked: function(event) {
         this.menu.toggle();
+    },
+
+    _toggle_out_mute: function() {
+        if (this._output.is_muted) {
+            this._output.change_is_muted(false);
+            this.mute_out_switch.setToggleState(false);
+        } else {
+            this._output.change_is_muted(true);
+            this.mute_out_switch.setToggleState(true);
+        }
+    },
+
+    _toggle_in_mute: function() {
+        if (this._input.is_muted) {
+            this._input.change_is_muted(false);
+            this.mute_in_switch.setToggleState(false);
+        } else {
+            this._input.change_is_muted(true);
+            this.mute_in_switch.setToggleState(true);
+        }
     },
 
     _onScrollEvent: function(actor, event) {
@@ -934,11 +959,19 @@ MyApplet.prototype = {
                 this._outputTitle.setIcon('audio-volume-muted');
                 this.set_applet_tooltip(_("Volume") + ": 0%");
                 this._outputTitle.setText(_("Volume") + ": 0%");
+                this.mute_out_switch.setToggleState(true);
             } else {
                 this.setIconName(this._volumeToIcon(this._output.volume));
                 this._outputTitle.setIcon(this._volumeToIcon(this._output.volume));
                 this.set_applet_tooltip(_("Volume") + ": " + Math.floor(this._output.volume / this._volumeMax * 100) + "%");
                 this._outputTitle.setText(_("Volume") + ": " + Math.floor(this._output.volume / this._volumeMax * 100) + "%");
+                this.mute_out_switch.setToggleState(false);
+            }
+        } else if (property == '_input') {
+            if (muted) {
+                this.mute_in_switch.setToggleState(true);
+            } else {
+                this.mute_in_switch.setToggleState(false);
             }
         }
     },
