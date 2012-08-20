@@ -78,11 +78,14 @@ MyApplet.prototype = {
         notification.actor.unparent();
         let existing_index = this.notifications.indexOf(notification);
         if (existing_index != -1) {
+            notification._inNotificationBin = true;
             notification.actor.reparent(this._notificationbin);
             notification.expand();
+            notification._timeLabel.show();
             this.update_list();
             return;
         }
+        notification._inNotificationBin = true;
         this.notifications.push(notification);
         notification.expand();
         this._notificationbin.add(notification.actor)
@@ -90,6 +93,7 @@ MyApplet.prototype = {
         notification.actor.add_style_class_name('notification-applet-padding');
         notification.connect('clicked', Lang.bind(this, this._item_clicked));
         notification.connect('destroy', Lang.bind(this, this._item_clicked));
+        notification._timeLabel.show();
         this.update_list();
     },
 
