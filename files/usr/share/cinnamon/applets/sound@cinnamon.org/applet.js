@@ -98,7 +98,8 @@ const MediaServer2PlayerIFace = {
 };
 
 /* global values */
-let icon_path = "/usr/share/cinnamon/theme/";
+const EXT = ".svg";
+const ICON_PATH = "/usr/share/cinnamon/theme/";
 let compatible_players = [ "clementine", "mpd", "exaile", "banshee", "rhythmbox", "rhythmbox3", "pragha", "quodlibet", "guayadeque", "amarok", "googlemusicframe", "xbmc", "xnoise", "gmusicbrowser", "spotify", "audacious", "vlc", "beatbox" ];
 let support_seek = [ "clementine", "banshee", "rhythmbox", "rhythmbox3", "pragha", "quodlibet", "amarok", "xnoise", "gmusicbrowser", "spotify", "vlc", "beatbox" ];
 /* dummy vars for translation */
@@ -282,58 +283,6 @@ ControlButton.prototype = {
     },
 }
 
-function TextImageMenuItem() {
-    this._init.apply(this, arguments);
-}
-
-TextImageMenuItem.prototype = {
-    __proto__: PopupMenu.PopupBaseMenuItem.prototype,
-
-    _init: function(text, icon, image, align, style) {
-        PopupMenu.PopupBaseMenuItem.prototype._init.call(this);
-
-        this.actor = new St.BoxLayout({style_class: style});
-        this.actor.add_style_pseudo_class('active');
-        if (icon) {
-            this.icon = new St.Icon({icon_name: icon});
-        }
-        if (image) {
-            this.icon = new St.Bin();
-            this.icon.set_child(this._getIconImage(image));
-        }
-        this.text = new St.Label({text: text});
-        if (align === "left") {
-            this.actor.add_actor(this.icon, { span: 0 });
-            this.actor.add_actor(this.text, { span: -1 });
-        }
-        else {
-            this.actor.add_actor(this.text, { span: 0 });
-            this.actor.add_actor(this.icon, { span: -1 });
-        }
-    },
-
-    setText: function(text) {
-        this.text.text = text;
-    },
-
-    setIcon: function(icon) {
-        this.icon.icon_name = icon;
-    },
-
-    setImage: function(image) {
-        this.icon.set_child(this._getIconImage(image));
-    },
-
-    // retrieve an icon image
-    _getIconImage: function(icon_name) {
-         let icon_file = icon_path + icon_name + ".svg";
-         let file = Gio.file_new_for_path(icon_file);
-         let icon_uri = file.get_uri();
-
-         return St.TextureCache.get_default().load_uri_async(icon_uri, 16, 16);
-    },
-}
-
 function Player() {
     this._init.apply(this, arguments);
 }
@@ -351,7 +300,7 @@ Player.prototype = {
         this._mediaServer = new MediaServer2(owner);
         this._prop = new Prop(owner);
 
-        this._playerInfo = new TextImageMenuItem(this._getName(), false, "player-stopped", "left", "popup-menu-item");
+        this._playerInfo = new PopupMenu.IconLabelValueMenuItem(false, (ICON_PATH + "player-stopped" + EXT), this._getName() + "   -", "", "popup-menu-item");
         this.addMenuItem(this._playerInfo);
 
         this._trackCoverFile = this._trackCoverFileTmp = false;
@@ -449,7 +398,7 @@ Player.prototype = {
 
 
     _setName: function(status) {
-        this._playerInfo.setText(this._getName() + " - " + _(status));
+        this._playerInfo.setValue(_(status));
     },
 
     _setPosition: function(sender, value) {
@@ -557,7 +506,7 @@ Player.prototype = {
             this._playButton.setIcon("media-playback-start");
             this._stopTimer();
         }
-        this._playerInfo.setImage("player-" + status.toLowerCase());
+        this._playerInfo.setImageFromPath(ICON_PATH + "player-" + status.toLowerCase() + EXT);
         this._setName(status);
     },
 
@@ -869,7 +818,7 @@ MyApplet.prototype = {
         }
 
         this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-        this._outputTitle = new TextImageMenuItem(_("Volume"), "audio-volume-high", false, "right", "sound-volume-menu-item");
+        this._outputTitle = new PopupMenu.IconLabelValueMenuItem("audio-volume-high", false, _("Volume:  "), "", "sound-volume-menu-item");
         this._outputSlider = new PopupMenu.PopupSliderMenuItem(0);
         this._outputSlider.connect('value-changed', Lang.bind(this, this._sliderChanged, '_output'));
         this._outputSlider.connect('drag-end', Lang.bind(this, this._notifyVolumeChange));
@@ -933,12 +882,12 @@ MyApplet.prototype = {
                 this.setIconName('audio-volume-muted');
                 this._outputTitle.setIcon('audio-volume-muted');
                 this.set_applet_tooltip(_("Volume") + ": 0%");
-                this._outputTitle.setText(_("Volume") + ": 0%");
+                this._outputTitle.setValue("0%");
             } else {
                 this.setIconName(this._volumeToIcon(this._output.volume));
                 this._outputTitle.setIcon(this._volumeToIcon(this._output.volume));
                 this.set_applet_tooltip(_("Volume") + ": " + Math.floor(this._output.volume / this._volumeMax * 100) + "%");
-                this._outputTitle.setText(_("Volume") + ": " + Math.floor(this._output.volume / this._volumeMax * 100) + "%");
+                this._outputTitle.setValue(Math.floor(this._output.volume / this._volumeMax * 100) + "%");
             }
         }
     },
@@ -951,7 +900,7 @@ MyApplet.prototype = {
             this._outputTitle.setIcon(this._volumeToIcon(this._output.volume));
             this.setIconName(this._volumeToIcon(this._output.volume));
             this.set_applet_tooltip(_("Volume") + ": " + Math.floor(this._output.volume / this._volumeMax * 100) + "%");
-            this._outputTitle.setText(_("Volume") + ": " + Math.floor(this._output.volume / this._volumeMax * 100) + "%");
+            this._outputTitle.setValue(Math.floor(this._output.volume / this._volumeMax * 100) + "%");
         }
     },
 
