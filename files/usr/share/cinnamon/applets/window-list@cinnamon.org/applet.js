@@ -29,7 +29,7 @@ AppMenuButtonRightClickMenu.prototype = {
         //Main.chrome.addActor(this.actor, { visibleInOverview: true,
         //                                   affectsStruts: false });
         this.actor.hide();
-
+        this.window_list = actor._delegate._applet._windows;
         actor.connect('key-press-event', Lang.bind(this, this._onSourceKeyPress));        
         this.connect('open-state-changed', Lang.bind(this, this._onToggled));        
 
@@ -37,6 +37,12 @@ AppMenuButtonRightClickMenu.prototype = {
 
         this.itemCloseWindow = new PopupMenu.PopupMenuItem(_("Close"));
         this.itemCloseWindow.connect('activate', Lang.bind(this, this._onCloseWindowActivate));        
+
+        this.itemCloseAllWindows = new PopupMenu.PopupMenuItem(_("Close all"));
+        this.itemCloseAllWindows.connect('activate', Lang.bind(this, this._onCloseAllActivate));
+
+        this.itemCloseOtherWindows = new PopupMenu.PopupMenuItem(_("Close others"));
+        this.itemCloseOtherWindows.connect('activate', Lang.bind(this, this._onCloseOthersActivate));
 
         if (metaWindow.minimized)
             this.itemMinimizeWindow = new PopupMenu.PopupMenuItem(_("Restore"));
@@ -63,10 +69,14 @@ AppMenuButtonRightClickMenu.prototype = {
             this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
             this.addMenuItem(this.itemMinimizeWindow);
             this.addMenuItem(this.itemMaximizeWindow);
+            this.addMenuItem(this.itemCloseAllWindows);
+            this.addMenuItem(this.itemCloseOtherWindows);
             this.addMenuItem(this.itemCloseWindow);                        
         }
         else {
             this.addMenuItem(this.itemCloseWindow);
+            this.addMenuItem(this.itemCloseOtherWindows);
+            this.addMenuItem(this.itemCloseAllWindows);
             this.addMenuItem(this.itemMaximizeWindow);
             this.addMenuItem(this.itemMinimizeWindow);
             this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
@@ -109,6 +119,28 @@ AppMenuButtonRightClickMenu.prototype = {
     _onCloseWindowActivate: function(actor, event){
         this.metaWindow.delete(global.get_current_time());
         this.destroy();
+    },
+
+    _onCloseAllActivate: function(actor, event) {
+        let metas = new Array();
+        for (let i = 0; i < this.window_list.length; i++) {
+            metas.push(this.window_list[i].metaWindow);
+        }
+        metas.forEach(Lang.bind(this, function(window) {
+            window.delete(global.get_current_time());
+            }));
+    },
+
+    _onCloseOthersActivate: function(actor, event) {
+        let metas = new Array();
+        for (let i = 0; i < this.window_list.length; i++) {
+            if (this.window_list[i].metaWindow != this.metaWindow) {
+                metas.push(this.window_list[i].metaWindow);
+            }
+        }
+        metas.forEach(Lang.bind(this, function(window) {
+            window.delete(global.get_current_time());
+            }));
     },
 
     _onMinimizeWindowActivate: function(actor, event){
@@ -199,7 +231,7 @@ AppMenuButton.prototype = {
         this.actor.connect('button-release-event', Lang.bind(this, this._onButtonRelease));
 
 		this.metaWindow = metaWindow;	
-        
+
         this._applet = applet;	
 		
         let bin = new St.Bin({ name: 'appMenu' });
