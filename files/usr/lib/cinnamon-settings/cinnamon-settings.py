@@ -552,7 +552,6 @@ class GSettingsSpinButton(Gtk.HBox):
         self.content_widget.set_value(self.settings.get_int(self.key))
         
     def on_my_value_changed(self, widget, data):
-        print self.content_widget.get_value()
         self.settings.set_int(self.key, self.content_widget.get_value())
 
 class GSettingsEntry(Gtk.HBox):    
