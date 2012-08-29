@@ -249,13 +249,11 @@ function start() {
         panel = new Panel.Panel(true);           
         panel.actor.add_style_class_name('panel-bottom');
         layoutManager.panelBox.add(panel.actor);
-        layoutManager._updateBoxes();
     }
     else if (desktop_layout == LAYOUT_FLIPPED) {
         panel = new Panel.Panel(false);                 
         panel.actor.add_style_class_name('panel-top');
         layoutManager.panelBox.add(panel.actor);  
-        layoutManager._updateBoxes();
     }
     else if (desktop_layout == LAYOUT_CLASSIC) {
         panel = new Panel.Panel(false);         
@@ -264,9 +262,9 @@ function start() {
         panel2.actor.add_style_class_name('panel-bottom');
         layoutManager.panelBox.add(panel.actor);   
         layoutManager.panelBox2.add(panel2.actor);   
-        layoutManager._updateBoxes();
     }
-                
+    layoutManager._updateBoxes();
+    
     wm = new WindowManager.WindowManager();
     messageTray = new MessageTray.MessageTray();
     keyboard = new Keyboard.Keyboard();
@@ -328,6 +326,16 @@ function start() {
     
     AppletManager.init();
     applets = AppletManager.loadApplets();
+}
+
+function enablePanels() {
+    if (panel) panel.enable();
+    if (panel2) panel2.enable();
+}
+
+function disablePanels() {
+    if (panel) panel.disable();
+    if (panel2) panel2.disable();
 }
 
 let _workspaces = [];
