@@ -49,7 +49,7 @@ MyApplet.prototype = {
         var index = global.screen.get_active_workspace_index();
         index += incremental;
         if(global.screen.get_workspace_by_index(index) != null) {
-            global.screen.get_workspace_by_index(index).activate(false);
+            global.screen.get_workspace_by_index(index).activate(global.get_current_time());
         }
     },
     
