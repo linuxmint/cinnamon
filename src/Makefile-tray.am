@@ -49,7 +49,6 @@ libtray_la_SOURCES =		\
 	$(tray_built_sources)	\
 	$(NULL)
 libtray_la_CPPFLAGS = $(tray_cflags)
-libtray_la_LDFLAGS = $(LDADD)
 
 CLEANFILES += $(TRAY_STAMP_FILES) $(BUILT_SOURCES)
 
