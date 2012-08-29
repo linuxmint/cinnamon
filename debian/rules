@@ -1,5 +1,8 @@
 #!/usr/bin/make -f
 
+common-configure-impl::
+	./autogen.sh
+
 include /usr/share/cdbs/1/rules/debhelper.mk
 include /usr/share/cdbs/1/class/autotools.mk
 include /usr/share/cdbs/1/rules/utils.mk
