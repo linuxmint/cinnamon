@@ -218,7 +218,9 @@ ExpoWorkspaceThumbnail.prototype = {
         this.titleText.connect('key-focus-out', Lang.bind(this, function() {
             if (!this._undoTitleEdit) {
                 let newName = this.title.get_text().trim();
-                Main.setWorkspaceName(this.metaWorkspace.index(), newName);
+                if (newName != this._origTitle) {
+                    Main.setWorkspaceName(this.metaWorkspace.index(), newName);
+                }
             }
             this.title.set_text(Main.getWorkspaceName(this.metaWorkspace.index()));
         })); 
