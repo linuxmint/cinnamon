@@ -1340,10 +1340,12 @@ class MainWindow:
                                             [(i, i.title()) for i in ("click","sloppy","mouse")]))
 
         sidePage.add_widget(TitleBarButtonsOrderSelector())        
-        sidePage.add_widget(GSettingsCheckButton(_("Enable ALT+Tab outline and window preview"), "org.cinnamon", "enable-alttab-outline"))
         sidePage.add_widget(GSettingsCheckButton(_("Enable Edge Tiling (\"Aero Snap\")"), "org.cinnamon.overrides", "edge-tiling"))
         sidePage.add_widget(GSettingsCheckButton(_("Enable Edge Flip"), "org.cinnamon", "enable-edge-flip"))
         sidePage.add_widget(GSettingsCheckButton(_("Attach dialog windows to their parent window's titlebar"), "org.cinnamon.overrides", "attach-modal-dialogs"))
+        alttab_styles = [["icons", _("Icons only")],["icons+thumbnails", _("Icons and thumbnails")],["icons+preview", _("Icons and window preview")],["preview", _("Window preview (no icons)")]]
+        alttab_styles_combo = GSettingsComboBox(_("ALT-tab switcher style"), "org.cinnamon", "alttab-switcher-style", alttab_styles)
+        sidePage.add_widget(alttab_styles_combo)
         
         sidePage = SidePage(_("Workspaces"), "workspaces.svg", self.content_box)
         self.sidePages.append((sidePage, "workspaces"))        
