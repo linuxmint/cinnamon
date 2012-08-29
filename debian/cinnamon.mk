@@ -44,4 +44,12 @@ $(patsubst %,binary-install/%,$(DEB_PACKAGES)) :: binary-install/%:
 	$(if $(wildcard /usr/bin/dh_gconf),dh_gconf -p$(cdbs_curpkg) $(DEB_DH_GCONF_ARGS))
 	$(if $(wildcard /usr/bin/dh_icons),dh_icons -p$(cdbs_curpkg) $(DEB_DH_ICONS_ARGS))
 
+configure:
+	./autogen.sh $(DEB_CONFIGURE_EXTRA_FLAGS)
+ 
+build: configure
+	dh_auto_build
+ 
+binary-arch: build
+
 endif
