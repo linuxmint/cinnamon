@@ -276,7 +276,7 @@ function start() {
     placesManager = new PlacesManager.PlacesManager();    
     automountManager = new AutomountManager.AutomountManager();
     //autorunManager = new AutorunManager.AutorunManager();
-    networkAgent = new NetworkAgent.NetworkAgent();
+    //networkAgent = new NetworkAgent.NetworkAgent();
 
     Meta.later_add(Meta.LaterType.BEFORE_REDRAW, _checkWorkspaces);
 
