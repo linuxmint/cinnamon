@@ -12,6 +12,7 @@ const GLib = imports.gi.GLib;
 const Tooltips = imports.ui.tooltips;
 const DND = imports.ui.dnd;
 const Tweener = imports.ui.tweener;
+const Util = imports.misc.util;
 
 let pressLauncher = null;
 
@@ -19,6 +20,7 @@ function PanelAppLauncherMenu(launcher, orientation) {
     this._init(launcher, orientation);
 }
 
+const APPLET_DIR = imports.ui.appletManager._find_applet('panel-launchers@cinnamon.org');
 const CUSTOM_LAUNCHERS_PATH = GLib.get_home_dir() + '/.cinnamon/panel-launchers';
 
 PanelAppLauncherMenu.prototype = {
@@ -244,171 +246,6 @@ PanelAppLauncher.prototype = {
     }
 }
 
-function AddLauncherDialog() {
-    this._init();
-}
-
-AddLauncherDialog.prototype = {
-    __proto__: ModalDialog.ModalDialog.prototype,
-    
-    _init: function() {
-        ModalDialog.ModalDialog.prototype._init.call(this, { styleClass: 'panel-launcher-add-dialog' });
-        
-        let box;
-        let label;
-        
-        let box = new St.BoxLayout({ styleClass: 'panel-launcher-add-dialog-content-box' });
-        let leftBox = new St.BoxLayout({vertical: true, styleClass: 'panel-launcher-add-dialog-content-box-left'});
-        let rightBox = new St.BoxLayout({vertical: true, styleClass: 'panel-launcher-add-dialog-content-box-right'});
-                
-        label = new St.Label();
-        label.set_text(_("Name"));
-        leftBox.add(label, { x_align: St.Align.START, x_fill: true, x_expand: true });
-        this._nameEntry = new St.Entry({ styleClass: 'panel-launcher-add-dialog-entry', can_focus: true });
-        rightBox.add(this._nameEntry, { x_align: St.Align.END, x_fill: false, x_expand: false });
-                        
-        label = new St.Label();
-        label.set_text(_("Command"));
-        leftBox.add(label, { x_align: St.Align.START, x_fill: true, x_expand: true });
-        this._commandEntry = new St.Entry({ styleClass: 'panel-launcher-add-dialog-entry', can_focus: true });
-        rightBox.add(this._commandEntry, { x_align: St.Align.END, x_fill: false, x_expand: false });
-        
-        label = new St.Label();
-        label.set_text(_("Icon"));
-        leftBox.add(label, { x_align: St.Align.START, x_fill: true, x_expand: true });
-        this._iconEntry = new St.Entry({ styleClass: 'panel-launcher-add-dialog-entry', can_focus: true });
-        rightBox.add(this._iconEntry, { x_align: St.Align.END, x_fill: false, x_expand: false });
-        
-        box.add(leftBox);
-        box.add(rightBox);
-        this.contentLayout.add(box, { y_align: St.Align.START });
-        
-        this._errorBox = new St.BoxLayout({ style_class: 'run-dialog-error-box' });
-        this.contentLayout.add(this._errorBox, { expand: true });
-
-        let errorIcon = new St.Icon({ icon_name: 'dialog-error', icon_size: 24, style_class: 'run-dialog-error-icon' });
-
-        this._errorBox.add(errorIcon, { y_align: St.Align.MIDDLE });
-
-        this._commandError = false;
-
-        this._errorMessage = new St.Label({ style_class: 'run-dialog-error-label' });
-        this._errorMessage.clutter_text.line_wrap = true;
-
-        this._errorBox.add(this._errorMessage, { expand: true,
-                                                 y_align: St.Align.MIDDLE,
-                                                 y_fill: false });
-
-        this._errorBox.hide();
-        
-        this.connect('opened', Lang.bind(this, this._onOpened));
-        
-        this._currentLauncher = null;
-    },
-    
-    _onOpened: function() {
-        this._nameEntry.grab_key_focus();
-    },
-    
-    _validateAdd: function() {
-        if (this._nameEntry.clutter_text.get_text()==""){
-            this._errorMessage.clutter_text.set_text(_("Name cannot be empty!"));
-            this._errorBox.show();
-            return false;
-        }
-        if (this._commandEntry.clutter_text.get_text()==""){
-            this._errorMessage.clutter_text.set_text(_("Command cannot be empty!"));
-            this._errorBox.show();
-            return false;
-        }
-        
-        
-        let appid = this._saveNewLauncher(this._nameEntry.clutter_text.get_text(), this._commandEntry.clutter_text.get_text(), _("Custom Launcher"), this._iconEntry.clutter_text.get_text());
-        
-        this.close();
-        
-        if (this._currentLauncher) this.emit("launcher-updated", this._currentLauncher, appid);
-        else this.emit("launcher-created", appid);
-        
-        return true;
-    },
-    
-    _saveNewLauncher: function(name, command, description, icon){
-        let file;
-        let i;
-        if (this._currentLauncher && this._currentLauncher.is_custom()){
-            file = Gio.file_parse_name(CUSTOM_LAUNCHERS_PATH+'/'+this._currentLauncher.get_id());
-            file.delete(null);
-        }else{
-            let dir = Gio.file_new_for_path(CUSTOM_LAUNCHERS_PATH);
-            if (!dir.query_exists(null)) dir.make_directory_with_parents(null);
-            i = 1;
-            file = Gio.file_parse_name(CUSTOM_LAUNCHERS_PATH+'/cinnamon-custom-launcher-'+i+'.desktop');
-            while (file.query_exists(null)){
-                i++;
-                file = Gio.file_parse_name(CUSTOM_LAUNCHERS_PATH+'/cinnamon-custom-launcher-'+i+'.desktop');
-            }
-        }
-        
-        let desktopEntry = "[Desktop Entry]\nName="+name+"\nExec="+command+"\nType=Application\n";
-        if (description) desktopEntry += "Description="+description+"\n";
-        if (!icon && this._currentLauncher) icon = this._currentLauncher.get_icon();
-        if (!icon) icon = "application-x-executable";
-        desktopEntry += "Icon="+icon+"\n";
-        
-        let fp = file.create(0, null);
-        fp.write(desktopEntry, null);
-        fp.close(null);
-        
-        if (this._currentLauncher && this._currentLauncher.is_custom()) return this._currentLauncher.get_id();
-        else return 'cinnamon-custom-launcher-'+i+'.desktop';
-    },
-    
-    open: function(timestamp, launcher) {
-        this._currentLauncher = launcher;
-        
-        if (launcher){
-            this._commandEntry.clutter_text.set_text(launcher.get_command());
-            this._nameEntry.clutter_text.set_text(launcher.get_appname());
-            if (launcher.get_icon()) this._iconEntry.clutter_text.set_text(launcher.get_icon());
-            this._errorBox.hide();
-            this.setButtons([
-                {
-                    label: _("Save"),
-                    action: Lang.bind(this, this._validateAdd)
-                },
-                {
-                    label: _("Cancel"),
-                    key: Clutter.KEY_Escape,
-                    action: Lang.bind(this, function(){
-                        this.close();
-                    })
-                }
-            ]);
-        }else{
-            this._commandEntry.clutter_text.set_text('');
-            this._nameEntry.clutter_text.set_text('');
-            this._errorBox.hide();
-            this.setButtons([
-                {
-                    label: _("Add"),
-                    action: Lang.bind(this, this._validateAdd)
-                },
-                {
-                    label: _("Cancel"),
-                    key: Clutter.KEY_Escape,
-                    action: Lang.bind(this, function(){
-                        this.close();
-                    })
-                }
-            ]);
-        }
-
-        ModalDialog.ModalDialog.prototype.open.call(this, timestamp);
-    },
-}
-Signals.addSignalMethods(AddLauncherDialog.prototype);
-
 function MyApplet(orientation) {
     this._init(orientation);
 }
@@ -430,11 +267,7 @@ MyApplet.prototype = {
             
             this._settings = new Gio.Settings({ schema: 'org.cinnamon' });
             this._settings.connect('changed::panel-launchers', Lang.bind(this, this._onSettingsChanged));
-            
-            this._addLauncherDialog = new AddLauncherDialog();
-            this._addLauncherDialog.connect("launcher-created", Lang.bind(this, this._onLauncherCreated));
-            this._addLauncherDialog.connect("launcher-updated", Lang.bind(this, this._onLauncherUpdated));
-            
+
             this._launchers = new Array();
             
             this.reload();
@@ -458,24 +291,6 @@ MyApplet.prototype = {
     
     _onSettingsChanged: function() {
         this.reload();
-    },
-    
-    _onLauncherUpdated: function(obj, launcher, appid){
-        let desktopFiles = this._settings.get_strv('panel-launchers');
-        let i = this._launchers.indexOf(launcher);
-        if (i>=0){
-            desktopFiles.splice(i, 1);
-            desktopFiles.splice(i, 0, appid);
-            this._settings.set_strv('panel-launchers', desktopFiles);
-        }
-    },
-    
-    _onLauncherCreated: function(obj, appid){
-        if (appid){
-            let desktopFiles = this._settings.get_strv('panel-launchers');
-            desktopFiles.push(appid);
-            this._settings.set_strv('panel-launchers', desktopFiles);
-        }
     },
     
     loadApps: function() {
@@ -532,7 +347,16 @@ MyApplet.prototype = {
     },
     
     showAddLauncherDialog: function(timestamp, launcher){
-        this._addLauncherDialog.open(timestamp, launcher);
+        if (launcher) {
+            let cl = APPLET_DIR.get_child('add-panel-launcher.py').get_path() + ' ';
+            cl += '"' + launcher.get_id() + '" ';
+            cl += '"' + launcher.get_appname() + '" ';
+            cl += '"' + launcher.get_command() + '" ';
+            cl += '"' + launcher.get_icon() + '"';
+            Util.spawnCommandLine(cl);
+        } else {
+            Util.spawnCommandLine(APPLET_DIR.get_child('add-panel-launcher.py').get_path());
+        }
     },
     
     _clearDragPlaceholder: function() {
