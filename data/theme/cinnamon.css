@@ -1446,7 +1446,7 @@ StScrollBar StButton#vhandle:hover {
 	border-radius: 2px 2px 0px 0px;
 	padding-left: 5px;
 	padding-right: 5px;
-	transition-duration: 300;
+	transition-duration: 100;
 }
 .window-list-item-box:active,
 .window-list-item-box:checked,
