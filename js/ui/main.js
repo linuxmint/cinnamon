@@ -297,10 +297,10 @@ function start() {
 
     // Provide the bus object for gnome-session to
     // initiate logouts.
-    EndSessionDialog.init();
+    //EndSessionDialog.init();
 
     // Attempt to become a PolicyKit authentication agent
-    PolkitAuthenticationAgent.init()
+    //PolkitAuthenticationAgent.init()
 
     _startDate = new Date();
 
