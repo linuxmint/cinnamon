@@ -91,7 +91,7 @@
     </key>
     
     <key type="s" name="desktop-effects-close-effect">
-      <default>"scale"</default>
+      <default>"none"</default>
       <_summary>Effect used when closing windows</_summary>
       <_description>
        An effect: scale, fade, none
@@ -156,7 +156,7 @@
     </key>
     
     <key type="i" name="desktop-effects-minimize-time">
-      <default>250</default>
+      <default>150</default>
       <_summary>Duration of the effect (in milliseconds)</_summary>
       <_description>
        Duration of the effect (in milliseconds)    
