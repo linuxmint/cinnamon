@@ -167,13 +167,25 @@ def rec_mkdir(path):
     os.mkdir(path)
 
 class GSettingsColorChooser(Gtk.ColorButton):
-    def __init__(self, schema, key):
+    def __init__(self, schema, key, dep_key):
         Gtk.ColorButton.__init__(self)
         self._schema = Gio.Settings(schema)
         self._key = key
+        self.dep_key = dep_key
         self.set_value(self._schema[self._key])
         self.connect("color-set", self._on_color_set)
         self._schema.connect("changed::"+key, self._on_settings_value_changed)
+        self.dependency_invert = False
+        if self.dep_key is not None:
+            if self.dep_key[0] == '!':
+                self.dependency_invert = True
+                self.dep_key = self.dep_key[1:]
+            split = self.dep_key.split('/')
+            self.dep_settings = Gio.Settings.new(split[0])
+            self.dep_key = split[1]
+            self.dep_settings.connect("changed::"+self.dep_key, self.on_dependency_setting_changed)
+            self.on_dependency_setting_changed(self, None)
+
     def _on_settings_value_changed(self, schema, key):
         self.set_value(schema[key])
     def _on_color_set(self, *args):
@@ -182,6 +194,12 @@ class GSettingsColorChooser(Gtk.ColorButton):
         return self.get_color().to_string()
     def set_value(self, value):
         self.set_color(Gdk.color_parse(value))
+
+    def on_dependency_setting_changed(self, settings, dep_key):
+        if not self.dependency_invert:
+            self.set_sensitive(self.dep_settings.get_boolean(self.dep_key))
+        else:
+            self.set_sensitive(not self.dep_settings.get_boolean(self.dep_key))
 
 class ThreadedIconView(Gtk.IconView):
     def __init__(self):
@@ -491,7 +509,7 @@ class BackgroundSidePage (SidePage):
         
         l = Gtk.Label(_("Mode"))
         topbox.pack_start(l, False, False, 0)
-        self.background_mode = GSettingsComboBox("", "org.cinnamon.background", "mode", BACKGROUND_MODES).content_widget
+        self.background_mode = GSettingsComboBox("", "org.cinnamon.background", "mode", None, BACKGROUND_MODES).content_widget
         self.background_mode.unparent()
         topbox.pack_start(self.background_mode, False, False, 0)
         
@@ -535,21 +553,21 @@ class BackgroundSidePage (SidePage):
         l = Gtk.Label(_("Picture aspect"))
         l.set_alignment(0, 0.5)
         advanced_options_box.pack_start(l, False, False, 0)
-        self.picture_options = GSettingsComboBox("", "org.gnome.desktop.background", "picture-options", BACKGROUND_PICTURE_OPTIONS)
+        self.picture_options = GSettingsComboBox("", "org.gnome.desktop.background", "picture-options", None, BACKGROUND_PICTURE_OPTIONS)
         advanced_options_box.pack_start(self.picture_options, False, False, 0)
         
         l = Gtk.Label(_("Gradient"))
         l.set_alignment(0, 0.5)
         advanced_options_box.pack_start(l, False, False, 0)
-        self.color_shading_type = GSettingsComboBox("", "org.gnome.desktop.background", "color-shading-type", BACKGROUND_COLOR_SHADING_TYPES)
+        self.color_shading_type = GSettingsComboBox("", "org.gnome.desktop.background", "color-shading-type", None, BACKGROUND_COLOR_SHADING_TYPES)
         advanced_options_box.pack_start(self.color_shading_type, False, False, 0)
         
         hbox = Gtk.HBox()
         l = Gtk.Label(_("Colors"))
         hbox.pack_start(l, False, False, 2)
-        self.primary_color = GSettingsColorChooser("org.gnome.desktop.background", "primary-color")
+        self.primary_color = GSettingsColorChooser("org.gnome.desktop.background", "primary-color", None)
         hbox.pack_start(self.primary_color, False, False, 2)
-        self.secondary_color = GSettingsColorChooser("org.gnome.desktop.background", "secondary-color")
+        self.secondary_color = GSettingsColorChooser("org.gnome.desktop.background", "secondary-color", None)
         hbox.pack_start(self.secondary_color, False, False, 2)
         advanced_options_box.pack_start(hbox, False, False, 0)
     
@@ -629,22 +647,22 @@ class ThemeViewSidePage (SidePage):
         scrolledWindow.add_with_viewport(other_settings_box)
         other_settings_box.set_border_width(5)
         
-        windowThemeSwitcher = GSettingsComboBox(_("Window theme"), "org.gnome.desktop.wm.preferences", "theme", self._load_window_themes())
+        windowThemeSwitcher = GSettingsComboBox(_("Window theme"), "org.gnome.desktop.wm.preferences", "theme", None, self._load_window_themes())
         other_settings_box.pack_start(windowThemeSwitcher, False, False, 2)
-        menusHaveIconsCB = GSettingsCheckButton(_("Menus Have Icons"), "org.gnome.desktop.interface", "menus-have-icons")
+        menusHaveIconsCB = GSettingsCheckButton(_("Menus Have Icons"), "org.gnome.desktop.interface", "menus-have-icons", None)
         other_settings_box.pack_start(menusHaveIconsCB, False, False, 2)
-        buttonsHaveIconsCB = GSettingsCheckButton(_("Buttons Have Icons"), "org.gnome.desktop.interface", "buttons-have-icons")
+        buttonsHaveIconsCB = GSettingsCheckButton(_("Buttons Have Icons"), "org.gnome.desktop.interface", "buttons-have-icons", None)
         other_settings_box.pack_start(buttonsHaveIconsCB, False, False, 2)
         if 'org.gnome.nautilus' in Gio.Settings.list_schemas():
-            alwaysUseLocationEntryCB = GSettingsCheckButton(_("Always Use Location Entry"), "org.gnome.nautilus.preferences", "always-use-location-entry")
+            alwaysUseLocationEntryCB = GSettingsCheckButton(_("Always Use Location Entry"), "org.gnome.nautilus.preferences", "always-use-location-entry", None)
             other_settings_box.pack_start(alwaysUseLocationEntryCB, False, False, 2)
-        cursorThemeSwitcher = GSettingsComboBox(_("Cursor theme"), "org.gnome.desktop.interface", "cursor-theme", self._load_cursor_themes())
+        cursorThemeSwitcher = GSettingsComboBox(_("Cursor theme"), "org.gnome.desktop.interface", "cursor-theme", None, self._load_cursor_themes())
         other_settings_box.pack_start(cursorThemeSwitcher, False, False, 2)
-        keybindingThemeSwitcher = GSettingsComboBox(_("Keybinding theme"), "org.gnome.desktop.interface", "gtk-key-theme", self._load_keybinding_themes())
+        keybindingThemeSwitcher = GSettingsComboBox(_("Keybinding theme"), "org.gnome.desktop.interface", "gtk-key-theme", None, self._load_keybinding_themes())
         other_settings_box.pack_start(keybindingThemeSwitcher, False, False, 2)
-        iconThemeSwitcher = GSettingsComboBox(_("Icon theme"), "org.gnome.desktop.interface", "icon-theme", self._load_icon_themes())
+        iconThemeSwitcher = GSettingsComboBox(_("Icon theme"), "org.gnome.desktop.interface", "icon-theme", None, self._load_icon_themes())
         other_settings_box.pack_start(iconThemeSwitcher, False, False, 2)
-        gtkThemeSwitcher = GSettingsComboBox(_("GTK+ theme"), "org.gnome.desktop.interface", "gtk-theme", self._load_gtk_themes())
+        gtkThemeSwitcher = GSettingsComboBox(_("GTK+ theme"), "org.gnome.desktop.interface", "gtk-theme", None, self._load_gtk_themes())
         other_settings_box.pack_start(gtkThemeSwitcher, False, False, 2)
         
         notebook.append_page(scrolledWindow, Gtk.Label(_("Other settings")))
@@ -966,20 +984,37 @@ class GConfCheckButton(Gtk.CheckButton):
 
             
 class GSettingsCheckButton(Gtk.CheckButton):    
-    def __init__(self, label, schema, key):        
+    def __init__(self, label, schema, key, dep_key):
         self.key = key
+        self.dep_key = dep_key
         super(GSettingsCheckButton, self).__init__(label)
         self.settings = Gio.Settings.new(schema)        
         self.set_active(self.settings.get_boolean(self.key))
         self.settings.connect("changed::"+self.key, self.on_my_setting_changed)
-        self.connect('toggled', self.on_my_value_changed)            
-    
+        self.connect('toggled', self.on_my_value_changed)
+        self.dependency_invert = False
+        if self.dep_key is not None:
+            if self.dep_key[0] == '!':
+                self.dependency_invert = True
+                self.dep_key = self.dep_key[1:]
+            split = self.dep_key.split('/')
+            self.dep_settings = Gio.Settings.new(split[0])
+            self.dep_key = split[1]
+            self.dep_settings.connect("changed::"+self.dep_key, self.on_dependency_setting_changed)
+            self.on_dependency_setting_changed(self, None)
+
     def on_my_setting_changed(self, settings, key):
         self.set_active(self.settings.get_boolean(self.key))
-        
+
     def on_my_value_changed(self, widget):
         self.settings.set_boolean(self.key, self.get_active())
-        
+
+    def on_dependency_setting_changed(self, settings, dep_key):
+        if not self.dependency_invert:
+            self.set_sensitive(self.dep_settings.get_boolean(self.dep_key))
+        else:
+            self.set_sensitive(not self.dep_settings.get_boolean(self.dep_key))
+
 class DBusCheckButton(Gtk.CheckButton):    
     def __init__(self, label, service, path, get_method, set_method):        
         super(DBusCheckButton, self).__init__(label)     
@@ -994,8 +1029,9 @@ class DBusCheckButton(Gtk.CheckButton):
         getattr(self.dbus_iface, self.dbus_set_method)(self.get_active())
         
 class GSettingsSpinButton(Gtk.HBox):    
-    def __init__(self, label, schema, key, min, max, step, page, units):        
+    def __init__(self, label, schema, key, dep_key, min, max, step, page, units):
         self.key = key
+        self.dep_key = dep_key
         super(GSettingsSpinButton, self).__init__()        
         self.label = Gtk.Label(label)       
         self.content_widget = Gtk.SpinButton()
@@ -1009,21 +1045,37 @@ class GSettingsSpinButton(Gtk.HBox):
         self.content_widget.set_range(min, max)
         self.content_widget.set_increments(step, page)
         #self.content_widget.set_editable(False)
-        
         self.settings = Gio.Settings.new(schema)        
         self.content_widget.set_value(self.settings.get_int(self.key))
         self.settings.connect("changed::"+self.key, self.on_my_setting_changed)
         self.content_widget.connect('focus-out-event', self.on_my_value_changed)
-    
+        self.dependency_invert = False
+        if self.dep_key is not None:
+            if self.dep_key[0] == '!':
+                self.dependency_invert = True
+                self.dep_key = self.dep_key[1:]
+            split = self.dep_key.split('/')
+            self.dep_settings = Gio.Settings.new(split[0])
+            self.dep_key = split[1]
+            self.dep_settings.connect("changed::"+self.dep_key, self.on_dependency_setting_changed)
+            self.on_dependency_setting_changed(self, None)
+
     def on_my_setting_changed(self, settings, key):
         self.content_widget.set_value(self.settings.get_int(self.key))
-        
+
     def on_my_value_changed(self, widget, data):
         self.settings.set_int(self.key, self.content_widget.get_value())
 
+    def on_dependency_setting_changed(self, settings, dep_key):
+        if not self.dependency_invert:
+            self.set_sensitive(self.dep_settings.get_boolean(self.dep_key))
+        else:
+            self.set_sensitive(not self.dep_settings.get_boolean(self.dep_key))
+
 class GSettingsEntry(Gtk.HBox):    
-    def __init__(self, label, schema, key):        
+    def __init__(self, label, schema, key, dep_key):
         self.key = key
+        self.dep_key = dep_key
         super(GSettingsEntry, self).__init__()
         self.label = Gtk.Label(label)       
         self.content_widget = Gtk.Entry()
@@ -1033,18 +1085,34 @@ class GSettingsEntry(Gtk.HBox):
         self.content_widget.set_text(self.settings.get_string(self.key))
         self.settings.connect("changed::"+self.key, self.on_my_setting_changed)
         self.content_widget.connect('focus-out-event', self.on_my_value_changed)     
-        
-        self.content_widget.show_all()       
-    
+        self.content_widget.show_all()
+        self.dependency_invert = False
+        if self.dep_key is not None:
+            if self.dep_key[0] == '!':
+                self.dependency_invert = True
+                self.dep_key = self.dep_key[1:]
+            split = self.dep_key.split('/')
+            self.dep_settings = Gio.Settings.new(split[0])
+            self.dep_key = split[1]
+            self.dep_settings.connect("changed::"+self.dep_key, self.on_dependency_setting_changed)
+            self.on_dependency_setting_changed(self, None)
+
     def on_my_setting_changed(self, settings, key):
         self.content_widget.set_text(self.settings.get_string(self.key))
-        
+
     def on_my_value_changed(self, event, widget):        
         self.settings.set_string(self.key, self.content_widget.get_text())
 
+    def on_dependency_setting_changed(self, settings, dep_key):
+        if not self.dependency_invert:
+            self.set_sensitive(self.dep_settings.get_boolean(self.dep_key))
+        else:
+            self.set_sensitive(not self.dep_settings.get_boolean(self.dep_key))
+
 class GSettingsFileChooser(Gtk.HBox):
-    def __init__(self, label, schema, key, show_none_cb = False):        
+    def __init__(self, label, schema, key, dep_key, show_none_cb = False):
         self.key = key
+        self.dep_key = dep_key
         super(GSettingsFileChooser, self).__init__()
         self.label = Gtk.Label(label)       
         self.content_widget = Gtk.FileChooserButton()
@@ -1064,8 +1132,18 @@ class GSettingsFileChooser(Gtk.HBox):
             self.content_widget.set_filename(value)
         self.content_widget.connect('file-set', self.on_my_value_changed)
         self.show_none_cb.connect('toggled', self.on_my_value_changed)
-        
         self.content_widget.show_all()
+        self.dependency_invert = False
+        if self.dep_key is not None:
+            if self.dep_key[0] == '!':
+                self.dependency_invert = True
+                self.dep_key = self.dep_key[1:]
+            split = self.dep_key.split('/')
+            self.dep_settings = Gio.Settings.new(split[0])
+            self.dep_key = split[1]
+            self.dep_settings.connect("changed::"+self.dep_key, self.on_dependency_setting_changed)
+            self.on_dependency_setting_changed(self, None)
+
     def on_my_value_changed(self, widget):
         if self.show_none_cb.get_active():
             value = ""
@@ -1077,9 +1155,16 @@ class GSettingsFileChooser(Gtk.HBox):
             self.content_widget.set_sensitive(True)
         self.settings.set_string(self.key, value)
 
+    def on_dependency_setting_changed(self, settings, dep_key):
+        if not self.dependency_invert:
+            self.set_sensitive(self.dep_settings.get_boolean(self.dep_key))
+        else:
+            self.set_sensitive(not self.dep_settings.get_boolean(self.dep_key))
+
 class GSettingsFontButton(Gtk.HBox):
-    def __init__(self, label, schema, key):
+    def __init__(self, label, schema, key, dep_key):
         self.key = key
+        self.dep_key = dep_key
         super(GSettingsFontButton, self).__init__()
         self.settings = Gio.Settings.new(schema)
         self.value = self.settings.get_string(key)
@@ -1094,8 +1179,25 @@ class GSettingsFontButton(Gtk.HBox):
         self.pack_start(self.content_widget, False, False, 2)
         self.content_widget.connect('font-set', self.on_my_value_changed)
         self.content_widget.show_all()
+        self.dependency_invert = False
+        if self.dep_key is not None:
+            if self.dep_key[0] == '!':
+                self.dependency_invert = True
+                self.dep_key = self.dep_key[1:]
+            split = self.dep_key.split('/')
+            self.dep_settings = Gio.Settings.new(split[0])
+            self.dep_key = split[1]
+            self.dep_settings.connect("changed::"+self.dep_key, self.on_dependency_setting_changed)
+            self.on_dependency_setting_changed(self, None)
+
     def on_my_value_changed(self, widget):
         self.settings.set_string(self.key, widget.get_font_name())
+
+    def on_dependency_setting_changed(self, settings, dep_key):
+        if not self.dependency_invert:
+            self.set_sensitive(self.dep_settings.get_boolean(self.dep_key))
+        else:
+            self.set_sensitive(not self.dep_settings.get_boolean(self.dep_key))
 
 class GConfFontButton(Gtk.HBox):
     def __init__(self, label, key):
@@ -1118,8 +1220,9 @@ class GConfFontButton(Gtk.HBox):
         self.settings.set_string(self.key, widget.get_font_name())
 
 class GSettingsRange(Gtk.HBox):
-    def __init__(self, label, schema, key, **options):
+    def __init__(self, label, schema, key, dep_key, **options):
         self.key = key
+        self.dep_key = dep_key
         super(GSettingsRange, self).__init__()
         self.settings = Gio.Settings.new(schema)
         self.value = self.settings.get_double(self.key)
@@ -1136,12 +1239,30 @@ class GSettingsRange(Gtk.HBox):
         self.pack_start(self.content_widget, True, True, 2)
         self.content_widget.connect('value-changed', self.on_my_value_changed)
         self.content_widget.show_all()
+        self.dependency_invert = False
+        if self.dep_key is not None:
+            if self.dep_key[0] == '!':
+                self.dependency_invert = True
+                self.dep_key = self.dep_key[1:]
+            split = self.dep_key.split('/')
+            self.dep_settings = Gio.Settings.new(split[0])
+            self.dep_key = split[1]
+            self.dep_settings.connect("changed::"+self.dep_key, self.on_dependency_setting_changed)
+            self.on_dependency_setting_changed(self, None)
+
     def on_my_value_changed(self, widget):
         self.settings.set_double(self.key, widget.get_value())
 
+    def on_dependency_setting_changed(self, settings, dep_key):
+        if not self.dependency_invert:
+            self.set_sensitive(self.dep_settings.get_boolean(self.dep_key))
+        else:
+            self.set_sensitive(not self.dep_settings.get_boolean(self.dep_key))
+
 class GSettingsRangeSpin(Gtk.HBox):
-    def __init__(self, label, schema, key, **options):
+    def __init__(self, label, schema, key, dep_key, **options):
         self.key = key
+        self.dep_key = dep_key
         super(GSettingsRangeSpin, self).__init__()
         self.label = Gtk.Label(label)
         self.content_widget = Gtk.SpinButton()
@@ -1163,6 +1284,16 @@ class GSettingsRangeSpin(Gtk.HBox):
 
         self.settings.connect("changed::"+self.key, self.on_my_setting_changed)
         self.content_widget.connect('value-changed', self.on_my_value_changed)
+        self.dependency_invert = False
+        if self.dep_key is not None:
+            if self.dep_key[0] == '!':
+                self.dependency_invert = True
+                self.dep_key = self.dep_key[1:]
+            split = self.dep_key.split('/')
+            self.dep_settings = Gio.Settings.new(split[0])
+            self.dep_key = split[1]
+            self.dep_settings.connect("changed::"+self.dep_key, self.on_dependency_setting_changed)
+            self.on_dependency_setting_changed(self, None)
 
     def on_my_setting_changed(self, settings, key):
         self.content_widget.set_value(self.settings.get_double(self.key))
@@ -1170,9 +1301,16 @@ class GSettingsRangeSpin(Gtk.HBox):
     def on_my_value_changed(self, widget):
         self.settings.set_double(self.key, self.content_widget.get_value())
 
+    def on_dependency_setting_changed(self, settings, dep_key):
+        if not self.dependency_invert:
+            self.set_sensitive(self.dep_settings.get_boolean(self.dep_key))
+        else:
+            self.set_sensitive(not self.dep_settings.get_boolean(self.dep_key))
+
 class GSettingsComboBox(Gtk.HBox):    
-    def __init__(self, label, schema, key, options):        
+    def __init__(self, label, schema, key, dep_key, options):
         self.key = key
+        self.dep_key = dep_key
         super(GSettingsComboBox, self).__init__()
         self.settings = Gio.Settings.new(schema)        
         self.value = self.settings.get_string(self.key)
@@ -1200,13 +1338,29 @@ class GSettingsComboBox(Gtk.HBox):
         self.pack_start(self.content_widget, False, False, 2)                     
         self.content_widget.connect('changed', self.on_my_value_changed)
         self.content_widget.show_all()
-                            
-        
+        self.dependency_invert = False
+        self.dependency_invert = False
+        if self.dep_key is not None:
+            if self.dep_key[0] == '!':
+                self.dependency_invert = True
+                self.dep_key = self.dep_key[1:]
+            split = self.dep_key.split('/')
+            self.dep_settings = Gio.Settings.new(split[0])
+            self.dep_key = split[1]
+            self.dep_settings.connect("changed::"+self.dep_key, self.on_dependency_setting_changed)
+            self.on_dependency_setting_changed(self, None)
+
     def on_my_value_changed(self, widget):
         tree_iter = widget.get_active_iter()
         if tree_iter != None:            
             value = self.model[tree_iter][0]            
-            self.settings.set_string(self.key, value)                       
+            self.settings.set_string(self.key, value)
+
+    def on_dependency_setting_changed(self, settings, dep_key):
+        if not self.dependency_invert:
+            self.set_sensitive(self.dep_settings.get_boolean(self.dep_key))
+        else:
+            self.set_sensitive(not self.dep_settings.get_boolean(self.dep_key))
 
 class TimeZoneSelectorWidget(Gtk.HBox):
     def __init__(self):
@@ -1580,35 +1734,35 @@ class MainWindow:
                                
         sidePage = SidePage(_("Menu"), "menu.svg", self.content_box)
         self.sidePages.append((sidePage, "menu"))
-        sidePage.add_widget(GSettingsEntry(_("Menu text"), "org.cinnamon", "menu-text")) 
-        sidePage.add_widget(GSettingsFileChooser(_("Menu icon"), "org.cinnamon", "menu-icon", True))
-        sidePage.add_widget(GSettingsSpinButton(_("Menu hover delay"), "org.cinnamon", "menu-hover-delay", 0, 2000, 50, 200, _("milliseconds")))                        
-        sidePage.add_widget(GSettingsCheckButton(_("Activate menu on hover"), "org.cinnamon", "activate-menu-applet-on-hover"))
-        sidePage.add_widget(GSettingsCheckButton(_("Show bookmarks and places"), "org.cinnamon", "menu-show-places"))
-        sidePage.add_widget(GSettingsCheckButton(_("Show recent files"), "org.cinnamon", "menu-show-recent"))
+        sidePage.add_widget(GSettingsEntry(_("Menu text"), "org.cinnamon", "menu-text", None))
+        sidePage.add_widget(GSettingsFileChooser(_("Menu icon"), "org.cinnamon", "menu-icon", None, True))
+        sidePage.add_widget(GSettingsSpinButton(_("Menu hover delay"), "org.cinnamon", "menu-hover-delay", None, 0, 2000, 50, 200, _("milliseconds")))
+        sidePage.add_widget(GSettingsCheckButton(_("Activate menu on hover"), "org.cinnamon", "activate-menu-applet-on-hover", None))
+        sidePage.add_widget(GSettingsCheckButton(_("Show bookmarks and places"), "org.cinnamon", "menu-show-places", None))
+        sidePage.add_widget(GSettingsCheckButton(_("Show recent files"), "org.cinnamon", "menu-show-recent", None))
 
         sidePage = SidePage(_("Panel"), "panel.svg", self.content_box)
         self.sidePages.append((sidePage, "panel"))                
-        sidePage.add_widget(GSettingsCheckButton(_("Auto-hide panel"), "org.cinnamon", "panel-autohide"))
-        sidePage.add_widget(GSettingsSpinButton(_("Show delay"), "org.cinnamon", "panel-show-delay", 0, 2000, 50, 200, _("milliseconds")))
-        sidePage.add_widget(GSettingsSpinButton(_("Hide delay"), "org.cinnamon", "panel-hide-delay", 0, 2000, 50, 200, _("milliseconds")))
+        sidePage.add_widget(GSettingsCheckButton(_("Auto-hide panel"), "org.cinnamon", "panel-autohide", None))
+        sidePage.add_widget(GSettingsSpinButton(_("Show delay"), "org.cinnamon", "panel-show-delay", "org.cinnamon/panel-autohide", 0, 2000, 50, 200, _("milliseconds")))
+        sidePage.add_widget(GSettingsSpinButton(_("Hide delay"), "org.cinnamon", "panel-hide-delay", "org.cinnamon/panel-autohide", 0, 2000, 50, 200, _("milliseconds")))
         
         desktop_layouts = [["traditional", _("Traditional (panel at the bottom)")], ["flipped", _("Flipped (panel at the top)")], ["classic", _("Classic (panels at the top and at the bottom)")]]        
-        desktop_layouts_combo = GSettingsComboBox(_("Panel layout"), "org.cinnamon", "desktop-layout", desktop_layouts)
+        desktop_layouts_combo = GSettingsComboBox(_("Panel layout"), "org.cinnamon", "desktop-layout", None, desktop_layouts)
         sidePage.add_widget(desktop_layouts_combo) 
         label = Gtk.Label()
         label.set_markup("<i><small>%s</small></i>" % _("Note: If you change the layout you will need to restart Cinnamon."))
         sidePage.add_widget(label)
-        sidePage.add_widget(GSettingsCheckButton(_("Use customized panel size (otherwise it's defined by the theme)"), "org.cinnamon", "panel-resizable"))
-        sidePage.add_widget(GSettingsSpinButton(_("Top panel height"), "org.cinnamon", "panel-top-height", 0, 2000, 1, 5, _("Pixels")))
-        sidePage.add_widget(GSettingsSpinButton(_("Bottom panel height"), "org.cinnamon", "panel-bottom-height", 0, 2000, 1, 5, _("Pixels")))
-        sidePage.add_widget(GSettingsCheckButton(_("Panel edit mode"), "org.cinnamon", "panel-edit-mode"))        
+        sidePage.add_widget(GSettingsCheckButton(_("Use customized panel size (otherwise it's defined by the theme)"), "org.cinnamon", "panel-resizable", None))
+        sidePage.add_widget(GSettingsSpinButton(_("Top panel height"), "org.cinnamon", "panel-top-height", "org.cinnamon/panel-resizable", 0, 2000, 1, 5, _("Pixels")))
+        sidePage.add_widget(GSettingsSpinButton(_("Bottom panel height"), "org.cinnamon", "panel-bottom-height", "org.cinnamon/panel-resizable",  0, 2000, 1, 5, _("Pixels")))
+        sidePage.add_widget(GSettingsCheckButton(_("Panel edit mode"), "org.cinnamon", "panel-edit-mode", None))
         
         sidePage = SidePage(_("Calendar"), "clock.svg", self.content_box)
         self.sidePages.append((sidePage, "calendar"))        
-        sidePage.add_widget(GSettingsCheckButton(_("Show week dates in calendar"), "org.cinnamon.calendar", "show-weekdate"))         
-        sidePage.add_widget(GSettingsEntry(_("Date format for the panel"), "org.cinnamon.calendar", "date-format"))                                 
-        sidePage.add_widget(GSettingsEntry(_("Date format inside the date applet"), "org.cinnamon.calendar", "date-format-full"))                                 
+        sidePage.add_widget(GSettingsCheckButton(_("Show week dates in calendar"), "org.cinnamon.calendar", "show-weekdate", None))
+        sidePage.add_widget(GSettingsEntry(_("Date format for the panel"), "org.cinnamon.calendar", "date-format", None))
+        sidePage.add_widget(GSettingsEntry(_("Date format inside the date applet"), "org.cinnamon.calendar", "date-format-full", None))
         sidePage.add_widget(Gtk.LinkButton.new_with_label("http://www.foragoodstrftime.com/", _("Generate your own date formats")))
         
         try:
@@ -1633,14 +1787,14 @@ class MainWindow:
         
         sidePage = SidePage(_("Hot corner"), "overview.svg", self.content_box)
         self.sidePages.append((sidePage, "hotcorner"))
-        sidePage.add_widget(GSettingsCheckButton(_("Hot corner icon visible"), "org.cinnamon", "overview-corner-visible")) 
-        sidePage.add_widget(GSettingsCheckButton(_("Hot corner enabled"), "org.cinnamon", "overview-corner-hover")) 
+        sidePage.add_widget(GSettingsCheckButton(_("Hot corner icon visible"), "org.cinnamon", "overview-corner-visible", None))
+        sidePage.add_widget(GSettingsCheckButton(_("Hot corner enabled"), "org.cinnamon", "overview-corner-hover", None))
         box = Gtk.HBox()        
         label = Gtk.Label()
         label.set_markup("%s" % _("Hot corner position:"))
         box.pack_start(label, False, False, 0)         
         positions = [["topLeft", _("Top left")], ["topRight", _("Top right")], ["bottomLeft", _("Bottom left")], ["bottomRight", _("Bottom right")]]        
-        combo = GSettingsComboBox("", "org.cinnamon", "overview-corner-position", positions)        
+        combo = GSettingsComboBox("", "org.cinnamon", "overview-corner-position", "org.cinnamon/overview-corner-hover", positions)
         box.pack_start(combo, False, False, 0)               
         sidePage.add_widget(box)
         
@@ -1649,20 +1803,20 @@ class MainWindow:
         label.set_markup("%s" % _("Hot corner function:"))
         box.pack_start(label, False, False, 0)         
         cornerfunctions = [["expo", _("Workspace selection (ala Compiz Expo)")], ["scale", _("Window selection (ala Compiz Scale)")]]     
-        combo = GSettingsComboBox("", "org.cinnamon", "overview-corner-functionality", cornerfunctions)        
+        combo = GSettingsComboBox("", "org.cinnamon", "overview-corner-functionality", "org.cinnamon/overview-corner-hover", cornerfunctions)
         box.pack_start(combo, False, False, 0)               
         sidePage.add_widget(box)
         
-        sidePage.add_widget(GSettingsCheckButton(_("Expo applet: activate on hover"), "org.cinnamon", "expo-applet-hover"))
-        sidePage.add_widget(GSettingsCheckButton(_("Scale applet: activate on hover"), "org.cinnamon", "scale-applet-hover"))
+        sidePage.add_widget(GSettingsCheckButton(_("Expo applet: activate on hover"), "org.cinnamon", "expo-applet-hover", None))
+        sidePage.add_widget(GSettingsCheckButton(_("Scale applet: activate on hover"), "org.cinnamon", "scale-applet-hover", None))
 
         sidePage = ThemeViewSidePage(_("Themes"), "themes.svg", self.content_box)
         self.sidePages.append((sidePage, "themes"))
         
         sidePage = SidePage(_("Effects"), "desktop-effects.svg", self.content_box)
         self.sidePages.append((sidePage, "effects"))
-        sidePage.add_widget(GSettingsCheckButton(_("Enable desktop effects"), "org.cinnamon", "desktop-effects"))
-        sidePage.add_widget(GSettingsCheckButton(_("Enable desktop effects on dialog boxes"), "org.cinnamon", "desktop-effects-on-dialogs"))
+        sidePage.add_widget(GSettingsCheckButton(_("Enable desktop effects"), "org.cinnamon", "desktop-effects", None))
+        sidePage.add_widget(GSettingsCheckButton(_("Enable desktop effects on dialog boxes"), "org.cinnamon", "desktop-effects-on-dialogs", "org.cinnamon/desktop-effects"))
         
         # Destroy window effects
         transition_effects = []
@@ -1703,11 +1857,11 @@ class MainWindow:
         label.set_markup("%s" % _("Closing windows:"))
         box.pack_start(label, False, False, 0)         
         effects = [["none", _("None")], ["scale", _("Scale")], ["fade", _("Fade")]]        
-        combo = GSettingsComboBox("", "org.cinnamon", "desktop-effects-close-effect", effects)        
+        combo = GSettingsComboBox("", "org.cinnamon", "desktop-effects-close-effect", "org.cinnamon/desktop-effects", effects)
         box.pack_start(combo, False, False, 0)         
-        combo = GSettingsComboBox("", "org.cinnamon", "desktop-effects-close-transition", transition_effects)
+        combo = GSettingsComboBox("", "org.cinnamon", "desktop-effects-close-transition", "org.cinnamon/desktop-effects", transition_effects)
         box.pack_start(combo, False, False, 0)         
-        spin = GSettingsSpinButton("", "org.cinnamon", "desktop-effects-close-time", 0, 2000, 50, 200, _("milliseconds"))
+        spin = GSettingsSpinButton("", "org.cinnamon", "desktop-effects-close-time", "org.cinnamon/desktop-effects", 0, 2000, 50, 200, _("milliseconds"))
         box.pack_start(spin, False, False, 0)         
         sidePage.add_widget(box) 
         
@@ -1717,11 +1871,11 @@ class MainWindow:
         label.set_markup("%s" % _("Mapping windows:"))
         box.pack_start(label, False, False, 0)         
         effects = [["none", _("None")], ["scale", _("Scale")], ["fade", _("Fade")]]        
-        combo = GSettingsComboBox("", "org.cinnamon", "desktop-effects-map-effect", effects)        
+        combo = GSettingsComboBox("", "org.cinnamon", "desktop-effects-map-effect", "org.cinnamon/desktop-effects", effects)
         box.pack_start(combo, False, False, 0)         
-        combo = GSettingsComboBox("", "org.cinnamon", "desktop-effects-map-transition", transition_effects)
+        combo = GSettingsComboBox("", "org.cinnamon", "desktop-effects-map-transition", "org.cinnamon/desktop-effects", transition_effects)
         box.pack_start(combo, False, False, 0)         
-        spin = GSettingsSpinButton("", "org.cinnamon", "desktop-effects-map-time", 0, 2000, 50, 200, _("milliseconds"))
+        spin = GSettingsSpinButton("", "org.cinnamon", "desktop-effects-map-time", "org.cinnamon/desktop-effects", 0, 2000, 50, 200, _("milliseconds"))
         box.pack_start(spin, False, False, 0)         
         sidePage.add_widget(box)
         
@@ -1730,12 +1884,12 @@ class MainWindow:
         label = Gtk.Label()
         label.set_markup("%s" % _("Minimizing windows:"))
         box.pack_start(label, False, False, 0)         
-        effects = [["none", _("None")], ["traditional", _("Traditional")], ["scale", _("Scale")], ["fade", _("Fade")]]        
-        combo = GSettingsComboBox("", "org.cinnamon", "desktop-effects-minimize-effect", effects)        
+        effects = [["none", _("None")], ["traditional", _("Traditional")], ["scale", _("Scale")], ["fade", _("Fade")]]
+        combo = GSettingsComboBox("", "org.cinnamon", "desktop-effects-minimize-effect", "org.cinnamon/desktop-effects", effects)
         box.pack_start(combo, False, False, 0)         
-        combo = GSettingsComboBox("", "org.cinnamon", "desktop-effects-minimize-transition", transition_effects)
+        combo = GSettingsComboBox("", "org.cinnamon", "desktop-effects-minimize-transition", "org.cinnamon/desktop-effects", transition_effects)
         box.pack_start(combo, False, False, 0)         
-        spin = GSettingsSpinButton("", "org.cinnamon", "desktop-effects-minimize-time", 0, 2000, 50, 200, _("milliseconds"))
+        spin = GSettingsSpinButton("", "org.cinnamon", "desktop-effects-minimize-time", "org.cinnamon/desktop-effects", 0, 2000, 50, 200, _("milliseconds"))
         box.pack_start(spin, False, False, 0)         
         sidePage.add_widget(box)
         
@@ -1745,11 +1899,11 @@ class MainWindow:
         label.set_markup("%s" % _("Maximizing windows:"))
         box.pack_start(label, False, False, 0)         
         effects = [["none", _("None")], ["scale", _("Scale")]]        
-        combo = GSettingsComboBox("", "org.cinnamon", "desktop-effects-maximize-effect", effects)        
+        combo = GSettingsComboBox("", "org.cinnamon", "desktop-effects-maximize-effect", "org.cinnamon/desktop-effects", effects)
         box.pack_start(combo, False, False, 0)         
-        combo = GSettingsComboBox("", "org.cinnamon", "desktop-effects-maximize-transition", transition_effects)
+        combo = GSettingsComboBox("", "org.cinnamon", "desktop-effects-maximize-transition", "org.cinnamon/desktop-effects", transition_effects)
         box.pack_start(combo, False, False, 0)         
-        spin = GSettingsSpinButton("", "org.cinnamon", "desktop-effects-maximize-time", 0, 2000, 50, 200, _("milliseconds"))
+        spin = GSettingsSpinButton("", "org.cinnamon", "desktop-effects-maximize-time", "org.cinnamon/desktop-effects", 0, 2000, 50, 200, _("milliseconds"))
         box.pack_start(spin, False, False, 0)         
         sidePage.add_widget(box)
         
@@ -1759,11 +1913,11 @@ class MainWindow:
         label.set_markup("%s" % _("Unmaximizing windows:"))
         box.pack_start(label, False, False, 0)         
         effects = [["none", _("None")]]        
-        combo = GSettingsComboBox("", "org.cinnamon", "desktop-effects-unmaximize-effect", effects)        
+        combo = GSettingsComboBox("", "org.cinnamon", "desktop-effects-unmaximize-effect", "org.cinnamon/desktop-effects", effects)
         box.pack_start(combo, False, False, 0)         
-        combo = GSettingsComboBox("", "org.cinnamon", "desktop-effects-unmaximize-transition", transition_effects)
+        combo = GSettingsComboBox("", "org.cinnamon", "desktop-effects-unmaximize-transition", "org.cinnamon/desktop-effects", transition_effects)
         box.pack_start(combo, False, False, 0)         
-        spin = GSettingsSpinButton("", "org.cinnamon", "desktop-effects-unmaximize-time", 0, 2000, 50, 200, _("milliseconds"))
+        spin = GSettingsSpinButton("", "org.cinnamon", "desktop-effects-unmaximize-time", "org.cinnamon/desktop-effects", 0, 2000, 50, 200, _("milliseconds"))
         box.pack_start(spin, False, False, 0)         
         sidePage.add_widget(box)
         
@@ -1779,65 +1933,65 @@ class MainWindow:
                             
             sidePage = SidePage(_("Desktop"), "desktop.svg", self.content_box)
             self.sidePages.append((sidePage, "desktop"))
-            sidePage.add_widget(GSettingsCheckButton(_("Have file manager handle the desktop"), "org.gnome.desktop.background", "show-desktop-icons"))
+            sidePage.add_widget(GSettingsCheckButton(_("Have file manager handle the desktop"), "org.gnome.desktop.background", "show-desktop-icons", None))
             if "computer-icon-visible" in nautilus_desktop_keys:
-                sidePage.add_widget(GSettingsCheckButton(_("Computer icon visible on desktop"), "org.gnome.nautilus.desktop", "computer-icon-visible"))
+                sidePage.add_widget(GSettingsCheckButton(_("Computer icon visible on desktop"), "org.gnome.nautilus.desktop", "computer-icon-visible", "org.gnome.desktop.background/show-desktop-icons"))
             if "home-icon-visible" in nautilus_desktop_keys:
-                sidePage.add_widget(GSettingsCheckButton(_("Home icon visible on desktop"), "org.gnome.nautilus.desktop", "home-icon-visible"))
+                sidePage.add_widget(GSettingsCheckButton(_("Home icon visible on desktop"), "org.gnome.nautilus.desktop", "home-icon-visible", "org.gnome.desktop.background/show-desktop-icons"))
             if "network-icon-visible" in nautilus_desktop_keys:
-                sidePage.add_widget(GSettingsCheckButton(_("Network Servers icon visible on desktop"), "org.gnome.nautilus.desktop", "network-icon-visible"))
+                sidePage.add_widget(GSettingsCheckButton(_("Network Servers icon visible on desktop"), "org.gnome.nautilus.desktop", "network-icon-visible", "org.gnome.desktop.background/show-desktop-icons"))
             if "trash-icon-visible" in nautilus_desktop_keys:
-                sidePage.add_widget(GSettingsCheckButton(_("Trash icon visible on desktop"), "org.gnome.nautilus.desktop", "trash-icon-visible"))
+                sidePage.add_widget(GSettingsCheckButton(_("Trash icon visible on desktop"), "org.gnome.nautilus.desktop", "trash-icon-visible", "org.gnome.desktop.background/show-desktop-icons"))
             if "volumes-visible" in nautilus_desktop_keys:
-                sidePage.add_widget(GSettingsCheckButton(_("Show mounted volumes on the desktop"), "org.gnome.nautilus.desktop", "volumes-visible"))        
+                sidePage.add_widget(GSettingsCheckButton(_("Show mounted volumes on the desktop"), "org.gnome.nautilus.desktop", "volumes-visible", "org.gnome.desktop.background/show-desktop-icons"))
         
         sidePage = SidePage(_("Windows"), "windows.svg", self.content_box)
         self.sidePages.append((sidePage, "windows"))
         sidePage.add_widget(GSettingsComboBox(_("Action on title bar double-click"),
-                                            "org.gnome.desktop.wm.preferences", "action-double-click-titlebar",
+                                            "org.gnome.desktop.wm.preferences", "action-double-click-titlebar", None,
                                             [(i, i.replace("-", " ").title()) for i in ('toggle-shade', 'toggle-maximize', 'toggle-maximize-horizontally', 'toggle-maximize-vertically', 'minimize', 'shade', 'menu', 'lower', 'none')]))
         sidePage.add_widget(GSettingsComboBox(_("Action on title bar middle-click"),
-                                            "org.gnome.desktop.wm.preferences", "action-middle-click-titlebar",
+                                            "org.gnome.desktop.wm.preferences", "action-middle-click-titlebar", None,
                                             [(i, i.replace("-", " ").title()) for i in ('toggle-shade', 'toggle-maximize', 'toggle-maximize-horizontally', 'toggle-maximize-vertically', 'minimize', 'shade', 'menu', 'lower', 'none')]))
         sidePage.add_widget(GSettingsComboBox(_("Action on title bar right-click"),
-                                            "org.gnome.desktop.wm.preferences", "action-right-click-titlebar",
+                                            "org.gnome.desktop.wm.preferences", "action-right-click-titlebar", None,
                                             [(i, i.replace("-", " ").title()) for i in ('toggle-shade', 'toggle-maximize', 'toggle-maximize-horizontally', 'toggle-maximize-vertically', 'minimize', 'shade', 'menu', 'lower', 'none')]))
         sidePage.add_widget(GSettingsComboBox(_("Window focus mode"),
-                                            "org.gnome.desktop.wm.preferences", "focus-mode",
+                                            "org.gnome.desktop.wm.preferences", "focus-mode", None,
                                             [(i, i.title()) for i in ("click","sloppy","mouse")]))
 
         sidePage.add_widget(TitleBarButtonsOrderSelector())        
-        sidePage.add_widget(GSettingsCheckButton(_("Enable Edge Tiling (\"Aero Snap\")"), "org.cinnamon.overrides", "edge-tiling"))
-        sidePage.add_widget(GSettingsCheckButton(_("Enable Edge Flip"), "org.cinnamon", "enable-edge-flip"))
-        sidePage.add_widget(GSettingsCheckButton(_("Attach dialog windows to their parent window's titlebar"), "org.cinnamon.overrides", "attach-modal-dialogs"))
+        sidePage.add_widget(GSettingsCheckButton(_("Enable Edge Tiling (\"Aero Snap\")"), "org.cinnamon.overrides", "edge-tiling", None))
+        sidePage.add_widget(GSettingsCheckButton(_("Enable Edge Flip"), "org.cinnamon", "enable-edge-flip", None))
+        sidePage.add_widget(GSettingsCheckButton(_("Attach dialog windows to their parent window's titlebar"), "org.cinnamon.overrides", "attach-modal-dialogs", None))
         alttab_styles = [["icons", _("Icons only")],["icons+thumbnails", _("Icons and thumbnails")],["icons+preview", _("Icons and window preview")],["preview", _("Window preview (no icons)")]]
-        alttab_styles_combo = GSettingsComboBox(_("ALT-tab switcher style"), "org.cinnamon", "alttab-switcher-style", alttab_styles)
+        alttab_styles_combo = GSettingsComboBox(_("ALT-tab switcher style"), "org.cinnamon", "alttab-switcher-style", None, alttab_styles)
         sidePage.add_widget(alttab_styles_combo)
         
         sidePage = SidePage(_("Workspaces"), "workspaces.svg", self.content_box)
         self.sidePages.append((sidePage, "workspaces"))        
-        sidePage.add_widget(GSettingsCheckButton(_("Enable workspace OSD"), "org.cinnamon", "workspace-osd-visible"))
-        sidePage.add_widget(GSettingsSpinButton(_("Workspace OSD duration"), "org.cinnamon", "workspace-osd-duration", 0, 2000, 50, 400, _("milliseconds")))
-        sidePage.add_widget(GSettingsSpinButton(_("Workspace OSD horizontal position"), "org.cinnamon", "workspace-osd-x", 0, 100, 5, 50, _("percent of the monitor's width")))
-        sidePage.add_widget(GSettingsSpinButton(_("Workspace OSD vertical position"), "org.cinnamon", "workspace-osd-y", 0, 100, 5, 50, _("percent of the monitor's height")))
-        sidePage.add_widget(GSettingsCheckButton(_("Only use workspaces on primary monitor (requires Cinnamon restart)"), "org.cinnamon.overrides", "workspaces-only-on-primary"))
-        sidePage.add_widget(GSettingsCheckButton(_("Display Expo view as a grid"), "org.cinnamon", "workspace-expo-view-as-grid"))
+        sidePage.add_widget(GSettingsCheckButton(_("Enable workspace OSD"), "org.cinnamon", "workspace-osd-visible", None))
+        sidePage.add_widget(GSettingsSpinButton(_("Workspace OSD duration"), "org.cinnamon", "workspace-osd-duration", "org.cinnamon/workspace-osd-visible", 0, 2000, 50, 400, _("milliseconds")))
+        sidePage.add_widget(GSettingsSpinButton(_("Workspace OSD horizontal position"), "org.cinnamon", "workspace-osd-x", "org.cinnamon/workspace-osd-visible", 0, 100, 5, 50, _("percent of the monitor's width")))
+        sidePage.add_widget(GSettingsSpinButton(_("Workspace OSD vertical position"), "org.cinnamon", "workspace-osd-y", "org.cinnamon/workspace-osd-visible", 0, 100, 5, 50, _("percent of the monitor's height")))
+        sidePage.add_widget(GSettingsCheckButton(_("Only use workspaces on primary monitor (requires Cinnamon restart)"), "org.cinnamon.overrides", "workspaces-only-on-primary", None))
+        sidePage.add_widget(GSettingsCheckButton(_("Display Expo view as a grid"), "org.cinnamon", "workspace-expo-view-as-grid", None))
         
         sidePage = SidePage(_("Fonts"), "fonts.svg", self.content_box)
         self.sidePages.append((sidePage, "fonts"))
-        sidePage.add_widget(GSettingsRangeSpin(_("Text scaling factor"), "org.gnome.desktop.interface", "text-scaling-factor", adjustment_step = 0.1))
-        sidePage.add_widget(GSettingsFontButton(_("Default font"), "org.gnome.desktop.interface", "font-name"))
-        sidePage.add_widget(GSettingsFontButton(_("Document font"), "org.gnome.desktop.interface", "document-font-name"))
-        sidePage.add_widget(GSettingsFontButton(_("Monospace font"), "org.gnome.desktop.interface", "monospace-font-name"))
-        sidePage.add_widget(GSettingsFontButton(_("Window title font"), "org.gnome.desktop.wm.preferences", "titlebar-font"))
-        sidePage.add_widget(GSettingsComboBox(_("Hinting"), "org.gnome.settings-daemon.plugins.xsettings", "hinting", [(i, i.title()) for i in ("none", "slight", "medium", "full")]))
-        sidePage.add_widget(GSettingsComboBox(_("Antialiasing"), "org.gnome.settings-daemon.plugins.xsettings", "antialiasing", [(i, i.title()) for i in ("none", "grayscale", "rgba")]))
+        sidePage.add_widget(GSettingsRangeSpin(_("Text scaling factor"), "org.gnome.desktop.interface", "text-scaling-factor", None, adjustment_step = 0.1))
+        sidePage.add_widget(GSettingsFontButton(_("Default font"), "org.gnome.desktop.interface", "font-name", None))
+        sidePage.add_widget(GSettingsFontButton(_("Document font"), "org.gnome.desktop.interface", "document-font-name", None))
+        sidePage.add_widget(GSettingsFontButton(_("Monospace font"), "org.gnome.desktop.interface", "monospace-font-name", None))
+        sidePage.add_widget(GSettingsFontButton(_("Window title font"), "org.gnome.desktop.wm.preferences", "titlebar-font", None))
+        sidePage.add_widget(GSettingsComboBox(_("Hinting"), "org.gnome.settings-daemon.plugins.xsettings", "hinting", None, [(i, i.title()) for i in ("none", "slight", "medium", "full")]))
+        sidePage.add_widget(GSettingsComboBox(_("Antialiasing"), "org.gnome.settings-daemon.plugins.xsettings", "antialiasing", None, [(i, i.title()) for i in ("none", "grayscale", "rgba")]))
         
         sidePage = SidePage(_("General"), "general.svg", self.content_box)
         self.sidePages.append((sidePage, "general"))
-        sidePage.add_widget(GSettingsCheckButton(_("Log LookingGlass output to ~/.cinnamon/glass.log (Requires Cinnamon restart)"), "org.cinnamon", "enable-looking-glass-logs"))
-        sidePage.add_widget(GSettingsCheckButton(_("Emulate middle click by clicking both left and right buttons"), "org.gnome.settings-daemon.peripherals.mouse", "middle-button-enabled"))
-        sidePage.add_widget(GSettingsCheckButton(_("Display notifications"), "org.cinnamon", "display-notifications"))
+        sidePage.add_widget(GSettingsCheckButton(_("Log LookingGlass output to ~/.cinnamon/glass.log (Requires Cinnamon restart)"), "org.cinnamon", "enable-looking-glass-logs", None))
+        sidePage.add_widget(GSettingsCheckButton(_("Emulate middle click by clicking both left and right buttons"), "org.gnome.settings-daemon.peripherals.mouse", "middle-button-enabled", None))
+        sidePage.add_widget(GSettingsCheckButton(_("Display notifications"), "org.cinnamon", "display-notifications", None))
         
         #sidePage = SidePage(_("Terminal"), "terminal", self.content_box)
         #self.sidePages.append(sidePage)
