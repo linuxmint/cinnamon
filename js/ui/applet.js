@@ -104,10 +104,16 @@ Applet.prototype = {
     	this._draggable.connect('drag-cancelled', Lang.bind(this, this._onDragCancelled));
         this._draggable.connect('drag-end', Lang.bind(this, this._onDragEnd));        
 
-        this._applet_tooltip_text = "";      
-        
-        this._setAppletReactivity();                
-        global.settings.connect('changed::panel-edit-mode', Lang.bind(this, this._setAppletReactivity));        
+        this._applet_tooltip_text = "";
+
+        this.context_menu_item_remove = null;
+        this.context_menu_separator = null;
+
+        this._setAppletReactivity();
+        global.settings.connect('changed::panel-edit-mode', Lang.bind(this, function() {
+            this._setAppletReactivity();
+            this.finalizeContextMenu();
+        }));
     },
     
     _setAppletReactivity: function() {
@@ -171,8 +177,10 @@ Applet.prototype = {
         let menuItems = new Array();
         let oldMenuItems = this._applet_context_menu._getMenuItems();
         for (var i in oldMenuItems){
-            if (oldMenuItems[i] instanceof MenuItem){ // in case some applets don't use the standards
-                menuItems.push(oldMenuItems[i].clone())
+            if (oldMenuItems[i] instanceof MenuItem) { // in case some applets don't use the standards
+                if (oldMenuItems[i] !== this.context_menu_separator && oldMenuItems[i] !== this.context_menu_item_remove) {
+                    menuItems.push(oldMenuItems[i].clone());
+                }
             }
         }
         this._menuManager.removeMenu(this._applet_context_menu);
@@ -198,14 +206,27 @@ Applet.prototype = {
     },
     
     finalizeContextMenu: function () {
-        // Add default context menus
-        if (this._applet_context_menu._getMenuItems().length > 0) {
-            this._applet_context_menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+        // Add default context menus if we're in panel edit mode, ensure their removal if we're not
+        let isEditMode = global.settings.get_boolean('panel-edit-mode');
+        let items = this._applet_context_menu._getMenuItems();
+        if (isEditMode && items.indexOf(this.context_menu_item_remove) == -1) {
+            this.context_menu_item_remove = new MenuItem(_("Remove this applet"), Gtk.STOCK_REMOVE, Lang.bind(null, AppletManager._removeAppletFromPanel, this._uuid));
+            this.context_menu_separator = new PopupMenu.PopupSeparatorMenuItem();
+            if (this._applet_context_menu._getMenuItems().length > 0) {
+                this._applet_context_menu.addMenuItem(this.context_menu_separator);
+            }
+            this._applet_context_menu.addMenuItem(this.context_menu_item_remove);
+        } else {
+            if (items.indexOf(this.context_menu_separator) != -1) {
+                this.context_menu_separator.destroy();
+                this.context_menu_separator = null;
+            }
+            if (items.indexOf(this.context_menu_item_remove) != -1) {
+                this.context_menu_item_remove.destroy();
+                this.context_menu_item_remove = null;
+            }
         }
-        let context_menu_item_remove = new MenuItem(_("Remove this applet"), Gtk.STOCK_REMOVE, Lang.bind(null, AppletManager._removeAppletFromPanel, this._uuid));
-        this._applet_context_menu.addMenuItem(context_menu_item_remove);        
     },
-   
 };
 
 function IconApplet(orientation) {

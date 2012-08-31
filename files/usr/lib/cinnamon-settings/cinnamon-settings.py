@@ -991,7 +991,7 @@ class GSettingsCheckButton(Gtk.CheckButton):
         self.settings = Gio.Settings.new(schema)        
         self.set_active(self.settings.get_boolean(self.key))
         self.settings.connect("changed::"+self.key, self.on_my_setting_changed)
-        self.connect('toggled', self.on_my_value_changed)
+        self.connectorId = self.connect('toggled', self.on_my_value_changed)
         self.dependency_invert = False
         if self.dep_key is not None:
             if self.dep_key[0] == '!':
@@ -1004,7 +1004,9 @@ class GSettingsCheckButton(Gtk.CheckButton):
             self.on_dependency_setting_changed(self, None)
 
     def on_my_setting_changed(self, settings, key):
-        self.set_active(self.settings.get_boolean(self.key))
+        self.disconnect(self.connectorId)                     #  panel-edit-mode can trigger changed:: twice in certain instances,
+        self.set_active(self.settings.get_boolean(self.key))  #  so disconnect temporarily when we're simply updating the widget state
+        self.connectorId = self.connect('toggled', self.on_my_value_changed)
 
     def on_my_value_changed(self, widget):
         self.settings.set_boolean(self.key, self.get_active())
