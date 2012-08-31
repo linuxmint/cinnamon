@@ -788,18 +788,22 @@ WindowManager.prototype = {
 
     _moveWindowToWorkspaceLeft : function(display, screen, window, binding) {
         let workspace = global.screen.get_active_workspace().get_neighbor(Meta.MotionDirection.LEFT)
-        window.change_workspace(workspace);    
-        workspace.activate(global.get_current_time());
-        window.raise();
-        this.showWorkspaceOSD();
+        if (workspace != global.screen.get_active_workspace()) {
+            window.change_workspace(workspace);
+            workspace.activate(global.get_current_time());
+            window.raise();
+            this.showWorkspaceOSD();
+        }
     },
 
     _moveWindowToWorkspaceRight : function(display, screen, window, binding) {
         let workspace = global.screen.get_active_workspace().get_neighbor(Meta.MotionDirection.RIGHT)
-        window.change_workspace(workspace);    
-        workspace.activate(global.get_current_time());
-        window.raise();
-        this.showWorkspaceOSD();
+        if (workspace != global.screen.get_active_workspace()) {
+            window.change_workspace(workspace);
+            workspace.activate(global.get_current_time());
+            window.raise();
+            this.showWorkspaceOSD();
+        }
     },
 
     _showWorkspaceSwitcher : function(display, screen, window, binding) {
