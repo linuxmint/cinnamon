@@ -290,12 +290,48 @@ AppMenuButton.prototype = {
         
         this.on_panel_edit_mode_changed();
         global.settings.connect('changed::panel-edit-mode', Lang.bind(this, this.on_panel_edit_mode_changed));
+        global.settings.connect('changed::window-list-applet-scroll', Lang.bind(this, this.on_scroll_mode_changed));
+        this.window_list = this.actor._delegate._applet._windows;
+        this.scroll_connector = null;
+        this.on_scroll_mode_changed();
     },
     
     on_panel_edit_mode_changed: function() {
         this._draggable.inhibit = global.settings.get_boolean("panel-edit-mode");
     }, 
-        
+
+    on_scroll_mode_changed: function() {
+        let scrollable = global.settings.get_boolean("window-list-applet-scroll");
+        if (scrollable) {
+            this.scroll_connector = this.actor.connect('scroll-event', Lang.bind(this, this._onScrollEvent));
+        } else {
+            if (this.scroll_connector) {
+                this.actor.disconnect(this.scroll_connector);
+                this.scroll_connector = null;
+            }
+        }
+    },
+
+    _onScrollEvent: function(actor, event) {
+        let direction = event.get_scroll_direction();
+        let current;
+        let num_windows = this.window_list.length;
+        for (let i = 0; i < num_windows; i++) {
+            if (this.window_list[i].metaWindow.has_focus()) {
+                current = i;
+                break;
+            }
+        }
+        let target;
+        if (direction == 1) {
+            target = ((current - 1) >= 0) ? (current - 1) : (num_windows - 1);
+        }
+        if (direction == 0) {
+            target = ((current + 1) <= num_windows - 1) ? (current + 1) : 0;
+        }
+        this.window_list[target].metaWindow.activate(global.get_current_time());
+    },
+
     _onDragBegin: function() {
         this._tooltip.hide();
         this._tooltip.preventShow = true;
@@ -710,7 +746,7 @@ MyApplet.prototype = {
                                     
             // this._container.connect('allocate', Lang.bind(Main.panel, this._allocateBoxes)); 
             
-            global.settings.connect('changed::panel-edit-mode', Lang.bind(this, this.on_panel_edit_mode_changed));                                                                               
+            global.settings.connect('changed::panel-edit-mode', Lang.bind(this, this.on_panel_edit_mode_changed));
         }
         catch (e) {
             global.logError(e);
@@ -726,8 +762,8 @@ MyApplet.prototype = {
     
     on_applet_clicked: function(event) {
             
-    },        
-    
+    },
+
     on_panel_edit_mode_changed: function() {
         this.actor.reactive = global.settings.get_boolean("panel-edit-mode");
     }, 

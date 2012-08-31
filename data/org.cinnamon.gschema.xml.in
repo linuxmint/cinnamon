@@ -464,6 +464,14 @@
       </_description>
     </key>
 
+    <key name="window-list-applet-scroll" type="b">
+      <default>false</default>
+      <summary>Enable mouse-scroll in window-list applet</summary>
+      <description>
+        When enabled the mouse wheel can scroll through the items in the window list applet.
+      </description>
+    </key>
+
     <key type="b" name="enable-edge-flip">
       <default>false</default>
       <_summary>Whether edge flip is enabled</_summary>
