@@ -967,6 +967,7 @@ PopupMenuBase.prototype = {
             }
             if (menuItem == this._activeMenuItem)
                 this._activeMenuItem = null;
+            this.length--;
         }));
     },
 
