@@ -618,6 +618,27 @@
         single wallpaper, a slideshow or an online slideshow (Flickr).
       </description>
     </key>
+    <key name="slideshow-folder" type="s">
+      <default>""</default>
+      <summary>Folder to use for the slideshow</summary>
+      <description>
+        This key defines the folder to use for the slideshow.
+      </description>
+    </key>
+    <key name="slideshow-recursive" type="b">
+      <default>false</default>
+      <summary>Whether to list files recursively for the slideshow</summary>
+      <description>
+        This key defines whether to list files recursively for the slideshow.
+      </description>
+    </key>
+    <key name="slideshow-delay" type="i">
+      <default>15</default>
+      <summary>Delay for the slideshow</summary>
+      <description>
+        This key defines the delay for the slideshow.
+      </description>
+    </key>
   </schema>
   
 </schemalist>
