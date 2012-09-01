@@ -346,12 +346,14 @@ class BackgroundWallpaperPane (Gtk.VBox):
         for i in os.listdir("/usr/share/gnome-background-properties"):
             if i.endswith(".xml"):
                 pictures_list += self.parse_xml_backgrounds_list(os.path.join("/usr/share/gnome-background-properties", i))
-        
+                
         path = os.path.join(os.getenv("HOME"), ".cinnamon", "backgrounds")
-        for i in os.listdir(path):
-            filename = os.path.join(path, i)
-            if commands.getoutput("file -bi \"%s\"" % filename).startswith("image/"):
-                pictures_list.append({"filename": filename})
+        if os.path.exists(path):
+            for i in os.listdir(path):
+                filename = os.path.join(path, i)
+                if commands.getoutput("file -bi \"%s\"" % filename).startswith("image/"):
+                    pictures_list.append({"filename": filename})
+        
         self.icon_view.set_pictures_list(pictures_list)
 
 class AddWallpapersDialog(Gtk.FileChooserDialog):
