@@ -18,6 +18,7 @@ try:
     import thread
     import urllib
     import lxml.etree
+    import hashlib
 except Exception, detail:
     print detail
     sys.exit(1)
@@ -158,6 +159,13 @@ def walk_directories(dirs, filter_func):
         #logging.critical("Error parsing directories", exc_info=True)
     return valid
 
+def rec_mkdir(path):
+    if os.path.exists(path):
+        return
+    
+    rec_mkdir(os.path.split(path)[0])
+    os.mkdir(path)
+
 class GSettingsColorChooser(Gtk.ColorButton):
     def __init__(self, schema, key):
         Gtk.ColorButton.__init__(self)
@@ -287,16 +295,15 @@ class BackgroundWallpaperPane (Gtk.VBox):
         self.icon_view.connect("selection-changed", self._on_selection_changed)
         
         self.update_icon_view()
-    
+        
     def get_selected_wallpaper(self):
         selected_items = self.icon_view.get_selected_items()
-        self._sidepage.remove_wallpaper_button.set_sensitive(False)
         if len(selected_items) == 1:
             path = selected_items[0]
             iter = self.icon_view.get_model().get_iter(path)
             return self.icon_view.get_model().get(iter, 0)[0]
         return None
-    
+        
     def _on_selection_changed(self, iconview):
         self._sidepage.remove_wallpaper_button.set_sensitive(False)
         wallpaper = self.get_selected_wallpaper()
@@ -312,39 +319,39 @@ class BackgroundWallpaperPane (Gtk.VBox):
                     self._gnome_background_schema.set_string("color-shading-type", wallpaper[key])
                 elif key == "options":
                     self._gnome_background_schema.set_string("picture-options", wallpaper[key])
-                elif key == "metadataFile":
-                    if os.path.exists(wallpaper[key]) and os.access(wallpaper[key], os.W_OK):
-                        self._sidepage.remove_wallpaper_button.set_sensitive(True)
+            if (not "metadataFile" in wallpaper) or (wallpaper["metadataFile"] == ""):
+                self._sidepage.remove_wallpaper_button.set_sensitive(True)
         
     def parse_xml_backgrounds_list(self, filename):
-        #~ try:
-        res = []
-        f = open(filename)
-        rootNode = lxml.etree.fromstring(f.read())
-        f.close()
-        if rootNode.tag == "wallpapers":
-            for wallpaperNode in rootNode:
-                if wallpaperNode.tag == "wallpaper" and wallpaperNode.get("deleted") != "true":
-                    wallpaperData = {"metadataFile": filename}
-                    for prop in wallpaperNode:
-                        if type(prop.tag) == str:
-                            if prop.tag == "filename":
-                                wallpaperData[prop.tag] = urllib.url2pathname(prop.text)
-                            else:
+        try:
+            res = []
+            f = open(filename)
+            rootNode = lxml.etree.fromstring(f.read())
+            f.close()
+            if rootNode.tag == "wallpapers":
+                for wallpaperNode in rootNode:
+                    if wallpaperNode.tag == "wallpaper" and wallpaperNode.get("deleted") != "true":
+                        wallpaperData = {"metadataFile": filename}
+                        for prop in wallpaperNode:
+                            if type(prop.tag) == str:
                                 wallpaperData[prop.tag] = prop.text
-                    if "filename" in wallpaperData and wallpaperData["filename"] != "" and os.path.exists(wallpaperData["filename"]) and os.access(wallpaperData["filename"], os.R_OK):
-                        res.append(wallpaperData)
-        return res
-        #~ except:
-            #~ return []
+                        if "filename" in wallpaperData and wallpaperData["filename"] != "" and os.path.exists(wallpaperData["filename"]) and os.access(wallpaperData["filename"], os.R_OK):
+                            res.append(wallpaperData)
+            return res
+        except:
+            return []
     
     def update_icon_view(self):
         pictures_list = []
         for i in os.listdir("/usr/share/gnome-background-properties"):
             if i.endswith(".xml"):
                 pictures_list += self.parse_xml_backgrounds_list(os.path.join("/usr/share/gnome-background-properties", i))
-        if os.path.exists(os.path.join(os.getenv("HOME"), ".cinnamon", "backgrounds.xml")):
-            pictures_list += self.parse_xml_backgrounds_list(os.path.join(os.getenv("HOME"), ".cinnamon", "backgrounds.xml"))
+        
+        path = os.path.join(os.getenv("HOME"), ".cinnamon", "backgrounds")
+        for i in os.listdir(path):
+            filename = os.path.join(path, i)
+            if commands.getoutput("file -bi \"%s\"" % filename).startswith("image/"):
+                pictures_list.append({"filename": filename})
         self.icon_view.set_pictures_list(pictures_list)
 
 class AddWallpapersDialog(Gtk.FileChooserDialog):
@@ -436,53 +443,26 @@ class BackgroundSidePage (SidePage):
         hbox.pack_start(self.secondary_color, False, False, 2)
         advanced_options_box.pack_start(hbox, False, False, 0)
     
-    def _remove_selected_wallpaper(self):
-        res = "<?xml version=\"1.0\"?><!DOCTYPE wallpapers SYSTEM \"gnome-wp-list.dtd\"><wallpapers>"
-        wallpaper = self.wallpaper_pane.get_selected_wallpaper()
-        for i in self.wallpaper_pane.parse_xml_backgrounds_list(wallpaper["metadataFile"]):
-            if i["filename"] != wallpaper["filename"]:
-                res += "<wallpaper>"
-                for key in i:
-                    if key != "metadataFile":
-                        if key == "filename":
-                            res += "<%s>%s</%s>" % (key, urllib.pathname2url(i[key]), key)
-                        else:
-                            res += "<%s>%s</%s>" % (key, i[key], key)
-                res += "</wallpaper>"
-        res += "</wallpapers>"
-        
-        f = open(wallpaper["metadataFile"], "w")
-        f.write(res)
-        f.close()
-        
-        self.wallpaper_pane.update_icon_view()
-    
     def _add_wallpapers(self):
         filenames = self._add_wallpapers_dialog.run()
         if filenames:
-            metadataFile = os.path.join(os.getenv("HOME"), ".cinnamon", "backgrounds.xml")
-            already_present_files = []
-            res = "<?xml version=\"1.0\"?><!DOCTYPE wallpapers SYSTEM \"gnome-wp-list.dtd\"><wallpapers>"
-            for i in self.wallpaper_pane.parse_xml_backgrounds_list(metadataFile):
-                res += "<wallpaper>"
-                for key in i:
-                    if key != "metadataFile":
-                        if key == "filename":
-                            res += "<%s>%s</%s>" % (key, urllib.pathname2url(i[key]), key)
-                        else:
-                            res += "<%s>%s</%s>" % (key, i[key], key)
-                res += "</wallpaper>"
-                already_present_files.append(i["filename"])
+            dest_dir = os.path.join(os.getenv("HOME"), ".cinnamon", "backgrounds")
+            if not os.path.exists(dest_dir):
+                rec_mkdir(dest_dir)
             for filename in filenames:
-                if not filename in already_present_files:
-                    res += "<wallpaper><filename>%s</filename></wallpaper>" % urllib.pathname2url(filename)
-            res += "</wallpapers>"
-            
-            f = open(metadataFile, "w")
-            f.write(res)
-            f.close()
+                dest_filename = os.path.join(dest_dir, hashlib.md5(filename).hexdigest())
+                fs = open(filename)
+                fd = open(dest_filename, "w")
+                fd.write(fs.read())
+                fs.close()
+                fd.close()
             
             self.wallpaper_pane.update_icon_view()
+    
+    def _remove_selected_wallpaper(self):
+        wallpaper = self.wallpaper_pane.get_selected_wallpaper()
+        os.unlink(wallpaper["filename"])
+        self.wallpaper_pane.update_icon_view()
 
 class ThemeViewSidePage (SidePage):
     def __init__(self, name, icon, content_box):   
