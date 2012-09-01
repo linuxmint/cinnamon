@@ -31,26 +31,28 @@ menuGenericName = _("Desktop Configuration Tool")
 menuComment = _("Fine-tune desktop settings")
 
 BACKGROUND_MODES = [
-    ("picture", _("Single picture")),
-    ("folder", _("Folder")),
-    ("list", _("Pictures list"))
+    ("wallpaper", _("Wallpaper")),
+    ("slideshow", _("Slideshow")),
+    ("flickr", _("Flickr"))
 ]
 
 BACKGROUND_COLOR_SHADING_TYPES = [
-    ("solid", _("Solid")),
+    ("solid", _("None")),
     ("horizontal", _("Horizontal")),
     ("vertical", _("Vertical"))
 ]
 
 BACKGROUND_PICTURE_OPTIONS = [
-    ("none", _("None")),
-    ("wallpaper", _("Wallpaper")),
+    ("none", _("No picture")),
+    ("wallpaper", _("Mosaic")),
     ("centered", _("Centered")),
     ("scaled", _("Scaled")),
     ("stretched", _("Stretched")),
     ("zoom", _("Zoom")),
     ("spanned", _("Spanned"))
 ]
+
+BACKGROUND_ICONS_SIZE = 50
                                   
 class SidePage:
     def __init__(self, name, icon, content_box):        
@@ -148,7 +150,7 @@ class GSettingsColorChooser(Gtk.ColorButton):
         self.set_color(Gdk.color_parse(value))
 
 class ThreadedIconView(Gtk.IconView):
-    def __init__(self, selected_file = None):
+    def __init__(self):
         Gtk.IconView.__init__(self)
         self._model = Gtk.ListStore(str, GdkPixbuf.Pixbuf, str)
         self.set_model(self._model)
@@ -163,8 +165,6 @@ class ThreadedIconView(Gtk.IconView):
         
         self._loaded_data = []
         self._loaded_data_lock = thread.allocate_lock()
-        
-        self._selected_file = selected_file
     
     def set_files_list(self, files_list):
         self.clear()
@@ -214,14 +214,8 @@ class ThreadedIconView(Gtk.IconView):
         self._loading_lock.release()
         self._loaded_data_lock.release()
         
-        selected_iter = None
         for i in to_load:
-            inserted_iter = self._model.append(i)
-            if self._selected_file != None and self._selected_file == i[0]:
-                selected_iter = inserted_iter
-        if selected_iter:
-            path = self._model.get_path(selected_iter)
-            self.select_path(path)
+            self._model.append(i)
         
         return res
     
@@ -237,7 +231,7 @@ class ThreadedIconView(Gtk.IconView):
             self._loading_queue_lock.release()
             if not finished:
                 try:
-                    pix = GdkPixbuf.Pixbuf.new_from_file_at_size(to_load, 150, 150)
+                    pix = GdkPixbuf.Pixbuf.new_from_file_at_size(to_load, BACKGROUND_ICONS_SIZE, BACKGROUND_ICONS_SIZE)
                 except:
                     pix = None
                 if pix != None:
@@ -249,7 +243,7 @@ class ThreadedIconView(Gtk.IconView):
         self._loading = False
         self._loading_lock.release()
 
-class BackgroundPictureChooser (Gtk.VBox):
+class BackgroundWallpaperPane (Gtk.VBox):
     def __init__(self, gnome_background_schema):
         Gtk.VBox.__init__(self)
         self.set_spacing(5)
@@ -266,7 +260,7 @@ class BackgroundPictureChooser (Gtk.VBox):
         scw.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
         self.pack_start(scw, True, True, 0)
         
-        self.icon_view = ThreadedIconView(gnome_background_schema["picture-uri"][7:])
+        self.icon_view = ThreadedIconView()
         scw.add(self.icon_view)
         self.icon_view.connect("selection-changed", self._on_selection_changed)
         
@@ -303,69 +297,55 @@ class BackgroundSidePage (SidePage):
         for widget in widgets:
             self.content_box.remove(widget)
         
-        mainbox = Gtk.HBox()
-        self.content_box.pack_start(mainbox, True, True, 0)
-        mainbox.set_spacing(10)
-        
-        leftbox = Gtk.Table()
-        mainbox.pack_start(leftbox, False, False, 0)
-        leftbox.set_col_spacings(5)
-        leftbox.set_row_spacings(5)
+        topbox = Gtk.HBox()
+        self.content_box.pack_start(topbox, False, False, 0)
+        topbox.set_spacing(5)
         
         l = Gtk.Label(_("Mode"))
-        l.set_alignment(0, 0.5)
-        leftbox.attach(l, 0, 1, 0, 1, Gtk.AttachOptions.FILL, 0)
+        topbox.pack_start(l, False, False, 0)
         self.background_mode = GSettingsComboBox("", "org.cinnamon.background", "mode", BACKGROUND_MODES).content_widget
         self.background_mode.unparent()
-        leftbox.attach(self.background_mode, 1, 2, 0, 1, Gtk.AttachOptions.FILL | Gtk.AttachOptions.EXPAND, 0)
+        topbox.pack_start(self.background_mode, False, False, 0)
         
-        self.directory_recursive_cb = Gtk.CheckButton(_("Recursive"))
-        leftbox.attach(self.directory_recursive_cb, 0, 2, 1, 2, Gtk.AttachOptions.FILL | Gtk.AttachOptions.EXPAND, 0)
+        self.content_box.pack_start(Gtk.HSeparator(), False, False, 2)
         
-        l = Gtk.Label(_("Delay (minutes)"))
+        self.mainbox = Gtk.EventBox()
+        self.mainbox.set_visible_window(False)
+        self.content_box.pack_start(self.mainbox, True, True, 0)
+        
+        self.wallpaper_pane = BackgroundWallpaperPane(self._gnome_background_schema)
+        self.mainbox.add(self.wallpaper_pane)
+        
+        self.content_box.pack_start(Gtk.HSeparator(), False, False, 2)
+        
+        expander = Gtk.Expander()
+        expander.set_label(_("Advanced options"))
+        self.content_box.pack_start(expander, False, False, 0)
+        
+        advanced_options_box = Gtk.HBox()
+        expander.add(advanced_options_box)
+        advanced_options_box.set_spacing(10)
+        
+        l = Gtk.Label(_("Picture aspect"))
         l.set_alignment(0, 0.5)
-        leftbox.attach(l, 0, 1, 2, 3, Gtk.AttachOptions.FILL, 0)
-        self.delay_sb = Gtk.SpinButton()
-        self.delay_sb.set_increments(1, 10)
-        self.delay_sb.set_range(1, 120)
-        leftbox.attach(self.delay_sb, 1, 2, 2, 3, Gtk.AttachOptions.FILL | Gtk.AttachOptions.EXPAND, 0)
+        advanced_options_box.pack_start(l, False, False, 0)
+        self.picture_options = GSettingsComboBox("", "org.gnome.desktop.background", "picture-options", BACKGROUND_PICTURE_OPTIONS)
+        advanced_options_box.pack_start(self.picture_options, False, False, 0)
         
-        leftbox.attach(Gtk.HSeparator(), 0, 2, 3, 4, Gtk.AttachOptions.FILL | Gtk.AttachOptions.EXPAND, 0)
-        
-        l = Gtk.Label(_("Picture options"))
+        l = Gtk.Label(_("Gradient"))
         l.set_alignment(0, 0.5)
-        leftbox.attach(l, 0, 1, 4, 5, Gtk.AttachOptions.FILL, 0)
-        self.picture_options = GSettingsComboBox("", "org.gnome.desktop.background", "picture-options", BACKGROUND_PICTURE_OPTIONS).content_widget
-        self.picture_options.unparent()
-        leftbox.attach(self.picture_options, 1, 2, 4, 5, Gtk.AttachOptions.FILL | Gtk.AttachOptions.EXPAND, 0)
+        advanced_options_box.pack_start(l, False, False, 0)
+        self.color_shading_type = GSettingsComboBox("", "org.gnome.desktop.background", "color-shading-type", BACKGROUND_COLOR_SHADING_TYPES)
+        advanced_options_box.pack_start(self.color_shading_type, False, False, 0)
         
-        l = Gtk.Label(_("Color shading type"))
-        l.set_alignment(0, 0.5)
-        leftbox.attach(l, 0, 1, 5, 6, Gtk.AttachOptions.FILL, 0)
-        self.color_shading_type = GSettingsComboBox("", "org.gnome.desktop.background", "color-shading-type", BACKGROUND_COLOR_SHADING_TYPES).content_widget
-        self.color_shading_type.unparent()
-        leftbox.attach(self.color_shading_type, 1, 2, 5, 6, Gtk.AttachOptions.FILL | Gtk.AttachOptions.EXPAND, 0)
-        
-        l = Gtk.Label(_("Primary color"))
-        l.set_alignment(0, 0.5)
-        leftbox.attach(l, 0, 1, 6, 7, Gtk.AttachOptions.FILL, 0)
+        hbox = Gtk.HBox()
+        l = Gtk.Label(_("Colors"))
+        hbox.pack_start(l, False, False, 2)
         self.primary_color = GSettingsColorChooser("org.gnome.desktop.background", "primary-color")
-        leftbox.attach(self.primary_color, 1, 2, 6, 7, Gtk.AttachOptions.FILL | Gtk.AttachOptions.EXPAND, 0)
-        
-        l = Gtk.Label(_("Secondary color"))
-        l.set_alignment(0, 0.5)
-        leftbox.attach(l, 0, 1, 7, 8, Gtk.AttachOptions.FILL, 0)
+        hbox.pack_start(self.primary_color, False, False, 2)
         self.secondary_color = GSettingsColorChooser("org.gnome.desktop.background", "secondary-color")
-        leftbox.attach(self.secondary_color, 1, 2, 7, 8, Gtk.AttachOptions.FILL | Gtk.AttachOptions.EXPAND, 0)
-        
-        mainbox.pack_start(Gtk.VSeparator(), False, False, 0)
-        
-        self.rightbox = Gtk.EventBox()
-        mainbox.pack_start(self.rightbox, True, True, 0)
-        self.rightbox.set_visible_window(False)
-        
-        self.picture_chooser = BackgroundPictureChooser(self._gnome_background_schema)
-        self.rightbox.add(self.picture_chooser)
+        hbox.pack_start(self.secondary_color, False, False, 2)
+        advanced_options_box.pack_start(hbox, False, False, 0)
 
 class ThemeViewSidePage (SidePage):
     def __init__(self, name, icon, content_box):   
@@ -1636,8 +1616,8 @@ class MainWindow:
         #self.sidePages.append(sidePage)
         #sidePage.add_widget(GConfCheckButton(_("Show fortune cookies"), "/desktop/linuxmint/terminal/show_fortunes"))
         
-        sidePage = BackgroundSidePage(_("Background"), "background.svg", self.content_box)
-        self.sidePages.append((sidePage, "background"))
+        sidePage = BackgroundSidePage(_("Backgrounds"), "backgrounds.svg", self.content_box)
+        self.sidePages.append((sidePage, "backgrounds"))
         
                                 
         # create the backing store for the side nav-view.                            
