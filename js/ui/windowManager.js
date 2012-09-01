@@ -366,27 +366,28 @@ WindowManager.prototype = {
         let effect = "none";
         let time = 0.25;
         try{
-            effect = global.settings.get_string("desktop-effects-unmaximize-effect");                                                
-            transition = global.settings.get_string("desktop-effects-unmaximize-transition");                        
+            effect = global.settings.get_string("desktop-effects-unmaximize-effect");
+            transition = global.settings.get_string("desktop-effects-unmaximize-transition");
             time = global.settings.get_int("desktop-effects-unmaximize-time") / 1000;
         }
         catch(e) {
             log(e);
         }
-                
-        if (effect == "scale") {            
-            //Not available yet because it doesn't look good..
-            this._unmaximizing.push(actor);            
+
+        if (effect == "scale") {
+
+            this._unmaximizing.push(actor);
             
-            actor.opacity =0;
-            actor.move_anchor_point_from_gravity(Clutter.Gravity.CENTER);
-                 
+            let scale_x = targetWidth / actor.width;
+            let scale_y = targetHeight / actor.height;
+            let anchor_x = (actor.x - targetX) * actor.width / (targetWidth - actor.width);
+            let anchor_y = (actor.y - targetY) * actor.height / (targetHeight - actor.height);
+
+            actor.move_anchor_point(anchor_x, anchor_y);
+
             Tweener.addTween(actor,
-                         { x: targetX, 
-                           y: targetY,                                            
-                           height: targetHeight,
-                           width: targetWidth,
-                           opacity: 100,
+                         { scale_x: scale_x,
+                           scale_y: scale_y,
                            time: time,
                            transition: transition,
                            onComplete: this._unmaximizeWindowDone,
@@ -396,10 +397,11 @@ WindowManager.prototype = {
                            onOverwriteScope: this,
                            onOverwriteParams: [cinnamonwm, actor]
                             });
+
         }
         else {
             cinnamonwm.completed_unmaximize(actor);
-        }   
+        }
     },
 
     _unmaximizeWindowDone : function(cinnamonwm, actor) {
