@@ -17,6 +17,7 @@ try:
     from user import home
     import thread
     import urllib
+    import lxml.etree
 except Exception, detail:
     print detail
     sys.exit(1)
@@ -152,7 +153,7 @@ class GSettingsColorChooser(Gtk.ColorButton):
 class ThreadedIconView(Gtk.IconView):
     def __init__(self):
         Gtk.IconView.__init__(self)
-        self._model = Gtk.ListStore(str, GdkPixbuf.Pixbuf, str)
+        self._model = Gtk.ListStore(object, GdkPixbuf.Pixbuf, str)
         self.set_model(self._model)
         self.set_pixbuf_column(1)
         self.set_text_column(2)
@@ -166,9 +167,9 @@ class ThreadedIconView(Gtk.IconView):
         self._loaded_data = []
         self._loaded_data_lock = thread.allocate_lock()
     
-    def set_files_list(self, files_list):
+    def set_pictures_list(self, pictures_list):
         self.clear()
-        for i in files_list:
+        for i in pictures_list:
             self.add_picture(i)
     
     def clear(self):
@@ -187,9 +188,9 @@ class ThreadedIconView(Gtk.IconView):
         
         self._model.clear()
     
-    def add_picture(self, filename):
+    def add_picture(self, picture):
         self._loading_queue_lock.acquire()
-        self._loading_queue.append(filename)
+        self._loading_queue.append(picture)
         self._loading_queue_lock.release()
         
         start_loading = False
@@ -231,17 +232,35 @@ class ThreadedIconView(Gtk.IconView):
             self._loading_queue_lock.release()
             if not finished:
                 try:
-                    pix = GdkPixbuf.Pixbuf.new_from_file_at_size(to_load, BACKGROUND_ICONS_SIZE, BACKGROUND_ICONS_SIZE)
+                    pix = GdkPixbuf.Pixbuf.new_from_file_at_size(to_load["filename"], BACKGROUND_ICONS_SIZE, BACKGROUND_ICONS_SIZE)
                 except:
                     pix = None
                 if pix != None:
+                    if "name" in to_load:
+                        label = to_load["name"]
+                    else:
+                        label = os.path.split(to_load["filename"])[1]
                     self._loaded_data_lock.acquire()
-                    self._loaded_data.append((to_load, pix, os.path.split(to_load)[1]))
+                    self._loaded_data.append((to_load, pix, label))
                     self._loaded_data_lock.release()
                 
         self._loading_lock.acquire()
         self._loading = False
         self._loading_lock.release()
+
+class BackgroundPicture(object):
+    def __init__(self, filename, **metadata):
+        self._filename = filename
+        self._metadata = metadata
+    
+    def __getitem__(self, key):
+        if key == "filename":
+            return self._filename
+        else:
+            return self._metadata[key]
+    
+    def __contains__(self, key):
+        return (key == "filename") or (key in self._metadata)
 
 class BackgroundWallpaperPane (Gtk.VBox):
     def __init__(self, gnome_background_schema):
@@ -249,12 +268,6 @@ class BackgroundWallpaperPane (Gtk.VBox):
         self.set_spacing(5)
         
         self._gnome_background_schema = gnome_background_schema
-        
-        self.folder_selector = Gtk.FileChooserButton()
-        self.folder_selector.set_action(Gtk.FileChooserAction.SELECT_FOLDER)
-        self.pack_start(self.folder_selector, False, False, 0)
-        self.folder_selector.connect("file-set", self._on_folder_set)
-        self.folder_selector.set_filename(os.path.split(gnome_background_schema["picture-uri"][7:])[0])
         
         scw = Gtk.ScrolledWindow()
         scw.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
@@ -264,27 +277,45 @@ class BackgroundWallpaperPane (Gtk.VBox):
         scw.add(self.icon_view)
         self.icon_view.connect("selection-changed", self._on_selection_changed)
         
-        self.update_icon_view(os.path.split(gnome_background_schema["picture-uri"][7:])[0])
+        self.update_icon_view()
     
     def _on_selection_changed(self, iconview):
         selected_items = iconview.get_selected_items()
         if len(selected_items) == 1:
             path = selected_items[0]
             iter = iconview.get_model().get_iter(path)
-            filename = iconview.get_model().get(iter, 0)[0]
+            filename = iconview.get_model().get(iter, 0)[0]["filename"]
             self._gnome_background_schema.set_string("picture-uri", "file://" + filename)
-    
-    def _on_folder_set(self, button):
-        self.update_icon_view(button.get_filename())
         
-    def update_icon_view(self, path):
+    def parse_xml_backgrounds_list(self, filename):
+        try:
+            res = []
+            f = open(filename)
+            rootNode = lxml.etree.fromstring(f.read())
+            f.close()
+            if rootNode.tag == "wallpapers":
+                for wallpaperNode in rootNode:
+                    if wallpaperNode.tag == "wallpaper" and wallpaperNode.get("deleted") != "true":
+                        wallpaperData = {}
+                        for prop in wallpaperNode:
+                            if type(prop.tag) == str:
+                                wallpaperData[prop.tag] = prop.text
+                        if "filename" in wallpaperData and wallpaperData["filename"] != "" and os.path.exists(wallpaperData["filename"]) and os.access(wallpaperData["filename"], os.R_OK):
+                            wallpaperFilename = wallpaperData["filename"]
+                            del wallpaperData["filename"]
+                            res.append(BackgroundPicture(wallpaperFilename, **wallpaperData))
+            return res
+        except:
+            import sys
+            print sys.exc_info()
+            return []
+    
+    def update_icon_view(self):
         pictures_list = []
-        for i in os.listdir(path):
-            filename = os.path.join(path, i)
-            mimetype = commands.getoutput("file -bi \"%s\"" % filename)
-            if mimetype.startswith("image/"):
-                pictures_list.append(filename)
-        self.icon_view.set_files_list(pictures_list)
+        for i in os.listdir("/usr/share/gnome-background-properties"):
+            if i.endswith(".xml"):
+                pictures_list += self.parse_xml_backgrounds_list(os.path.join("/usr/share/gnome-background-properties", i))
+        self.icon_view.set_pictures_list(pictures_list)
 
 class BackgroundSidePage (SidePage):
     def __init__(self, name, icon, content_box):   
