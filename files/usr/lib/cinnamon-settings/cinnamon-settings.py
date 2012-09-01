@@ -54,6 +54,31 @@ BACKGROUND_PICTURE_OPTIONS = [
 ]
 
 BACKGROUND_ICONS_SIZE = 50
+
+class PixCache(object):
+    def __init__(self):
+        self._data = {}
+    def get_pix(self, filename, size = None):
+        if not filename in self._data:
+            self._data[filename] = {}
+        if size in self._data[filename]:
+            pix = self._data[filename][size]
+        else:
+            if size:
+                try:
+                    pix = GdkPixbuf.Pixbuf.new_from_file_at_size(filename, size, size)
+                except:
+                    pix = None
+            else:
+                try:
+                    pix = GdkPixbuf.Pixbuf.new_from_file(filename)
+                except:
+                    pix = None
+            if pix:
+                self._data[filename][size] = pix
+        return pix
+
+PIX_CACHE = PixCache()
                                   
 class SidePage:
     def __init__(self, name, icon, content_box):        
@@ -231,10 +256,7 @@ class ThreadedIconView(Gtk.IconView):
                 self._loading_queue = self._loading_queue[1:]
             self._loading_queue_lock.release()
             if not finished:
-                try:
-                    pix = GdkPixbuf.Pixbuf.new_from_file_at_size(to_load["filename"], BACKGROUND_ICONS_SIZE, BACKGROUND_ICONS_SIZE)
-                except:
-                    pix = None
+                pix = PIX_CACHE.get_pix(to_load["filename"], BACKGROUND_ICONS_SIZE)
                 if pix != None:
                     if "name" in to_load:
                         label = to_load["name"]
