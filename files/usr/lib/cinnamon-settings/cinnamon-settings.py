@@ -6,7 +6,7 @@ try:
     import sys
     import string    
     import gettext
-    from gi.repository import Gio, Gtk, GObject
+    from gi.repository import Gio, Gtk, GObject, Gdk
     from gi.repository import GdkPixbuf 
     import gconf
     import json
@@ -16,6 +16,7 @@ try:
     from datetime import datetime
     from user import home
     import thread
+    import urllib
 except Exception, detail:
     print detail
     sys.exit(1)
@@ -28,6 +29,28 @@ gettext.install("cinnamon", "/usr/share/cinnamon/locale")
 menuName = _("Desktop Settings")
 menuGenericName = _("Desktop Configuration Tool")
 menuComment = _("Fine-tune desktop settings")
+
+BACKGROUND_MODES = [
+    ("picture", _("Single picture")),
+    ("folder", _("Folder")),
+    ("list", _("Pictures list"))
+]
+
+BACKGROUND_COLOR_SHADING_TYPES = [
+    ("solid", _("Solid")),
+    ("horizontal", _("Horizontal")),
+    ("vertical", _("Vertical"))
+]
+
+BACKGROUND_PICTURE_OPTIONS = [
+    ("none", _("None")),
+    ("wallpaper", _("Wallpaper")),
+    ("centered", _("Centered")),
+    ("scaled", _("Scaled")),
+    ("stretched", _("Stretched")),
+    ("zoom", _("Zoom")),
+    ("spanned", _("Spanned"))
+]
                                   
 class SidePage:
     def __init__(self, name, icon, content_box):        
@@ -106,6 +129,243 @@ def walk_directories(dirs, filter_func):
         pass
         #logging.critical("Error parsing directories", exc_info=True)
     return valid
+
+class GSettingsColorChooser(Gtk.ColorButton):
+    def __init__(self, schema, key):
+        Gtk.ColorButton.__init__(self)
+        self._schema = Gio.Settings(schema)
+        self._key = key
+        self.set_value(self._schema[self._key])
+        self.connect("color-set", self._on_color_set)
+        self._schema.connect("changed::"+key, self._on_settings_value_changed)
+    def _on_settings_value_changed(self, schema, key):
+        self.set_value(schema[key])
+    def _on_color_set(self, *args):
+        self._schema.set_string(self._key, self.get_value())
+    def get_value(self):
+        return self.get_color().to_string()
+    def set_value(self, value):
+        self.set_color(Gdk.color_parse(value))
+
+class ThreadedIconView(Gtk.IconView):
+    def __init__(self, selected_file = None):
+        Gtk.IconView.__init__(self)
+        self._model = Gtk.ListStore(str, GdkPixbuf.Pixbuf, str)
+        self.set_model(self._model)
+        self.set_pixbuf_column(1)
+        self.set_text_column(2)
+        
+        self._loading_queue = []
+        self._loading_queue_lock = thread.allocate_lock()
+        
+        self._loading_lock = thread.allocate_lock()
+        self._loading = False
+        
+        self._loaded_data = []
+        self._loaded_data_lock = thread.allocate_lock()
+        
+        self._selected_file = selected_file
+    
+    def set_files_list(self, files_list):
+        self.clear()
+        for i in files_list:
+            self.add_picture(i)
+    
+    def clear(self):
+        self._loading_queue_lock.acquire()
+        self._loading_queue = []
+        self._loading_queue_lock.release()
+        
+        self._loading_lock.acquire()
+        is_loading = self._loading
+        self._loading_lock.release()
+        while is_loading:
+            time.sleep(0.1)
+            self._loading_lock.acquire()
+            is_loading = self._loading
+            self._loading_lock.release()
+        
+        self._model.clear()
+    
+    def add_picture(self, filename):
+        self._loading_queue_lock.acquire()
+        self._loading_queue.append(filename)
+        self._loading_queue_lock.release()
+        
+        start_loading = False
+        self._loading_lock.acquire()
+        if not self._loading:
+            self._loading = True
+            start_loading = True
+        self._loading_lock.release()
+        
+        if start_loading:
+            GObject.timeout_add(100, self._check_loading_progress)
+            thread.start_new_thread(self._do_load, ())
+    
+    def _check_loading_progress(self):
+        self._loading_lock.acquire()
+        self._loaded_data_lock.acquire()
+        res = self._loading
+        to_load = []
+        while len(self._loaded_data) > 0:
+            to_load.append(self._loaded_data[0])
+            self._loaded_data = self._loaded_data[1:]
+        self._loading_lock.release()
+        self._loaded_data_lock.release()
+        
+        selected_iter = None
+        for i in to_load:
+            inserted_iter = self._model.append(i)
+            if self._selected_file != None and self._selected_file == i[0]:
+                selected_iter = inserted_iter
+        if selected_iter:
+            path = self._model.get_path(selected_iter)
+            self.select_path(path)
+        
+        return res
+    
+    def _do_load(self):
+        finished = False
+        while not finished:
+            self._loading_queue_lock.acquire()
+            if len(self._loading_queue) == 0:
+                finished = True
+            else:
+                to_load = self._loading_queue[0]
+                self._loading_queue = self._loading_queue[1:]
+            self._loading_queue_lock.release()
+            if not finished:
+                try:
+                    pix = GdkPixbuf.Pixbuf.new_from_file_at_size(to_load, 150, 150)
+                except:
+                    pix = None
+                if pix != None:
+                    self._loaded_data_lock.acquire()
+                    self._loaded_data.append((to_load, pix, os.path.split(to_load)[1]))
+                    self._loaded_data_lock.release()
+                
+        self._loading_lock.acquire()
+        self._loading = False
+        self._loading_lock.release()
+
+class BackgroundPictureChooser (Gtk.VBox):
+    def __init__(self, gnome_background_schema):
+        Gtk.VBox.__init__(self)
+        self.set_spacing(5)
+        
+        self._gnome_background_schema = gnome_background_schema
+        
+        self.folder_selector = Gtk.FileChooserButton()
+        self.folder_selector.set_action(Gtk.FileChooserAction.SELECT_FOLDER)
+        self.pack_start(self.folder_selector, False, False, 0)
+        self.folder_selector.connect("file-set", self._on_folder_set)
+        self.folder_selector.set_filename(os.path.split(gnome_background_schema["picture-uri"][7:])[0])
+        
+        scw = Gtk.ScrolledWindow()
+        scw.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
+        self.pack_start(scw, True, True, 0)
+        
+        self.icon_view = ThreadedIconView(gnome_background_schema["picture-uri"][7:])
+        scw.add(self.icon_view)
+        self.icon_view.connect("selection-changed", self._on_selection_changed)
+        
+        self.update_icon_view(os.path.split(gnome_background_schema["picture-uri"][7:])[0])
+    
+    def _on_selection_changed(self, iconview):
+        selected_items = iconview.get_selected_items()
+        if len(selected_items) == 1:
+            path = selected_items[0]
+            iter = iconview.get_model().get_iter(path)
+            filename = iconview.get_model().get(iter, 0)[0]
+            self._gnome_background_schema.set_string("picture-uri", "file://" + filename)
+    
+    def _on_folder_set(self, button):
+        self.update_icon_view(button.get_filename())
+        
+    def update_icon_view(self, path):
+        pictures_list = []
+        for i in os.listdir(path):
+            filename = os.path.join(path, i)
+            mimetype = commands.getoutput("file -bi \"%s\"" % filename)
+            if mimetype.startswith("image/"):
+                pictures_list.append(filename)
+        self.icon_view.set_files_list(pictures_list)
+
+class BackgroundSidePage (SidePage):
+    def __init__(self, name, icon, content_box):   
+        SidePage.__init__(self, name, icon, content_box)
+        self._gnome_background_schema = Gio.Settings("org.gnome.desktop.background")
+    
+    def build(self):
+        # Clear all the widgets from the content box
+        widgets = self.content_box.get_children()
+        for widget in widgets:
+            self.content_box.remove(widget)
+        
+        mainbox = Gtk.HBox()
+        self.content_box.pack_start(mainbox, True, True, 0)
+        mainbox.set_spacing(10)
+        
+        leftbox = Gtk.Table()
+        mainbox.pack_start(leftbox, False, False, 0)
+        leftbox.set_col_spacings(5)
+        leftbox.set_row_spacings(5)
+        
+        l = Gtk.Label(_("Mode"))
+        l.set_alignment(0, 0.5)
+        leftbox.attach(l, 0, 1, 0, 1, Gtk.AttachOptions.FILL, 0)
+        self.background_mode = GSettingsComboBox("", "org.cinnamon.background", "mode", BACKGROUND_MODES).content_widget
+        self.background_mode.unparent()
+        leftbox.attach(self.background_mode, 1, 2, 0, 1, Gtk.AttachOptions.FILL | Gtk.AttachOptions.EXPAND, 0)
+        
+        self.directory_recursive_cb = Gtk.CheckButton(_("Recursive"))
+        leftbox.attach(self.directory_recursive_cb, 0, 2, 1, 2, Gtk.AttachOptions.FILL | Gtk.AttachOptions.EXPAND, 0)
+        
+        l = Gtk.Label(_("Delay (minutes)"))
+        l.set_alignment(0, 0.5)
+        leftbox.attach(l, 0, 1, 2, 3, Gtk.AttachOptions.FILL, 0)
+        self.delay_sb = Gtk.SpinButton()
+        self.delay_sb.set_increments(1, 10)
+        self.delay_sb.set_range(1, 120)
+        leftbox.attach(self.delay_sb, 1, 2, 2, 3, Gtk.AttachOptions.FILL | Gtk.AttachOptions.EXPAND, 0)
+        
+        leftbox.attach(Gtk.HSeparator(), 0, 2, 3, 4, Gtk.AttachOptions.FILL | Gtk.AttachOptions.EXPAND, 0)
+        
+        l = Gtk.Label(_("Picture options"))
+        l.set_alignment(0, 0.5)
+        leftbox.attach(l, 0, 1, 4, 5, Gtk.AttachOptions.FILL, 0)
+        self.picture_options = GSettingsComboBox("", "org.gnome.desktop.background", "picture-options", BACKGROUND_PICTURE_OPTIONS).content_widget
+        self.picture_options.unparent()
+        leftbox.attach(self.picture_options, 1, 2, 4, 5, Gtk.AttachOptions.FILL | Gtk.AttachOptions.EXPAND, 0)
+        
+        l = Gtk.Label(_("Color shading type"))
+        l.set_alignment(0, 0.5)
+        leftbox.attach(l, 0, 1, 5, 6, Gtk.AttachOptions.FILL, 0)
+        self.color_shading_type = GSettingsComboBox("", "org.gnome.desktop.background", "color-shading-type", BACKGROUND_COLOR_SHADING_TYPES).content_widget
+        self.color_shading_type.unparent()
+        leftbox.attach(self.color_shading_type, 1, 2, 5, 6, Gtk.AttachOptions.FILL | Gtk.AttachOptions.EXPAND, 0)
+        
+        l = Gtk.Label(_("Primary color"))
+        l.set_alignment(0, 0.5)
+        leftbox.attach(l, 0, 1, 6, 7, Gtk.AttachOptions.FILL, 0)
+        self.primary_color = GSettingsColorChooser("org.gnome.desktop.background", "primary-color")
+        leftbox.attach(self.primary_color, 1, 2, 6, 7, Gtk.AttachOptions.FILL | Gtk.AttachOptions.EXPAND, 0)
+        
+        l = Gtk.Label(_("Secondary color"))
+        l.set_alignment(0, 0.5)
+        leftbox.attach(l, 0, 1, 7, 8, Gtk.AttachOptions.FILL, 0)
+        self.secondary_color = GSettingsColorChooser("org.gnome.desktop.background", "secondary-color")
+        leftbox.attach(self.secondary_color, 1, 2, 7, 8, Gtk.AttachOptions.FILL | Gtk.AttachOptions.EXPAND, 0)
+        
+        mainbox.pack_start(Gtk.VSeparator(), False, False, 0)
+        
+        self.rightbox = Gtk.EventBox()
+        mainbox.pack_start(self.rightbox, True, True, 0)
+        self.rightbox.set_visible_window(False)
+        
+        self.picture_chooser = BackgroundPictureChooser(self._gnome_background_schema)
+        self.rightbox.add(self.picture_chooser)
 
 class ThemeViewSidePage (SidePage):
     def __init__(self, name, icon, content_box):   
@@ -1376,12 +1636,19 @@ class MainWindow:
         #self.sidePages.append(sidePage)
         #sidePage.add_widget(GConfCheckButton(_("Show fortune cookies"), "/desktop/linuxmint/terminal/show_fortunes"))
         
+        sidePage = BackgroundSidePage(_("Background"), "background.svg", self.content_box)
+        self.sidePages.append((sidePage, "background"))
+        
                                 
         # create the backing store for the side nav-view.                            
         self.store = Gtk.ListStore(str, GdkPixbuf.Pixbuf, object)
         sidePagesIters = {}
         for sidePage, sidePageID in self.sidePages:
-            img = GdkPixbuf.Pixbuf.new_from_file_at_size( "/usr/lib/cinnamon-settings/data/icons/%s" % sidePage.icon, 48, 48)
+            iconFile = "/usr/lib/cinnamon-settings/data/icons/%s" % sidePage.icon
+            if os.path.exists(iconFile):
+                img = GdkPixbuf.Pixbuf.new_from_file_at_size( iconFile, 48, 48)
+            else:
+                img = None
             sidePagesIters[sidePageID] = self.store.append([sidePage.name, img, sidePage])     
                       
         # set up the side view - navigation.

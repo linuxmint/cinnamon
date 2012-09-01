@@ -609,4 +609,16 @@
     </key>
   </schema>
   
+  <schema id="org.cinnamon.background" path="/org/cinnamon/background/">
+    <key name="mode" type="s">
+      <default>"picture"</default>
+      <summary>Background mode</summary>
+      <description>
+        This key defines the whether the desktop background shows one
+        single picture or rotates in a list of picture (either contained
+        in a folder or listed in the pictures-list configuration)
+      </description>
+    </key>
+  </schema>
+  
 </schemalist>
