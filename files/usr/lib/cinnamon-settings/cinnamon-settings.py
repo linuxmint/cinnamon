@@ -328,7 +328,10 @@ class BackgroundWallpaperPane (Gtk.VBox):
                     wallpaperData = {"metadataFile": filename}
                     for prop in wallpaperNode:
                         if type(prop.tag) == str:
-                            wallpaperData[prop.tag] = prop.text
+                            if prop.tag == "filename":
+                                wallpaperData[prop.tag] = urllib.url2pathname(prop.text)
+                            else:
+                                wallpaperData[prop.tag] = prop.text
                     if "filename" in wallpaperData and wallpaperData["filename"] != "" and os.path.exists(wallpaperData["filename"]) and os.access(wallpaperData["filename"], os.R_OK):
                         res.append(wallpaperData)
         return res
@@ -441,7 +444,10 @@ class BackgroundSidePage (SidePage):
                 res += "<wallpaper>"
                 for key in i:
                     if key != "metadataFile":
-                        res += "<%s>%s</%s>" % (key, i[key], key)
+                        if key == "filename":
+                            res += "<%s>%s</%s>" % (key, urllib.pathname2url(i[key]), key)
+                        else:
+                            res += "<%s>%s</%s>" % (key, i[key], key)
                 res += "</wallpaper>"
         res += "</wallpapers>"
         
@@ -461,12 +467,15 @@ class BackgroundSidePage (SidePage):
                 res += "<wallpaper>"
                 for key in i:
                     if key != "metadataFile":
-                        res += "<%s>%s</%s>" % (key, i[key], key)
+                        if key == "filename":
+                            res += "<%s>%s</%s>" % (key, urllib.pathname2url(i[key]), key)
+                        else:
+                            res += "<%s>%s</%s>" % (key, i[key], key)
                 res += "</wallpaper>"
                 already_present_files.append(i["filename"])
             for filename in filenames:
                 if not filename in already_present_files:
-                    res += "<wallpaper><filename>%s</filename></wallpaper>" % filename
+                    res += "<wallpaper><filename>%s</filename></wallpaper>" % urllib.pathname2url(filename)
             res += "</wallpapers>"
             
             f = open(metadataFile, "w")
