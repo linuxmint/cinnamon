@@ -293,7 +293,7 @@ class BackgroundWallpaperPane (Gtk.VBox):
             if rootNode.tag == "wallpapers":
                 for wallpaperNode in rootNode:
                     if wallpaperNode.tag == "wallpaper" and wallpaperNode.get("deleted") != "true":
-                        wallpaperData = {}
+                        wallpaperData = {"metadataFile": filename}
                         for prop in wallpaperNode:
                             if type(prop.tag) == str:
                                 wallpaperData[prop.tag] = prop.text
@@ -308,6 +308,8 @@ class BackgroundWallpaperPane (Gtk.VBox):
         for i in os.listdir("/usr/share/gnome-background-properties"):
             if i.endswith(".xml"):
                 pictures_list += self.parse_xml_backgrounds_list(os.path.join("/usr/share/gnome-background-properties", i))
+        if os.path.exists(os.path.join(os.getenv("HOME"), ".cinnamon", "backgrounds.xml")):
+            pictures_list += self.parse_xml_backgrounds_list(os.path.join(os.getenv("HOME"), ".cinnamon", "backgrounds.xml"))
         self.icon_view.set_pictures_list(pictures_list)
 
 class BackgroundSidePage (SidePage):
