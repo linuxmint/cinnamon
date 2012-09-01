@@ -434,7 +434,7 @@ class BackgroundSlideshowPane(Gtk.Table):
                     filename = os.path.join(folder, i)
                     if commands.getoutput("file -bi \"%s\"" % filename).startswith("image/"):
                         files.append(filename)
-            xml_data = "<background>\n<starttime>\n<year>2009</year>\n<month>08</month>\n<day>04</day>\n<hour>00</hour>\n<minute>00</minute>\n<second>00</second>\n</starttime>"
+            xml_data = "<background>\n"
             prev_file = None
             first_file = None
             for filename in files:
