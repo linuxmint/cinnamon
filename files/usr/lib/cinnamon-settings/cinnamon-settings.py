@@ -249,11 +249,12 @@ class ThreadedIconView(Gtk.IconView):
         self._loading_lock.release()
 
 class BackgroundWallpaperPane (Gtk.VBox):
-    def __init__(self, gnome_background_schema):
+    def __init__(self, sidepage, gnome_background_schema):
         Gtk.VBox.__init__(self)
         self.set_spacing(5)
         
         self._gnome_background_schema = gnome_background_schema
+        self._sidepage = sidepage
         
         scw = Gtk.ScrolledWindow()
         scw.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
@@ -265,24 +266,33 @@ class BackgroundWallpaperPane (Gtk.VBox):
         
         self.update_icon_view()
     
-    def _on_selection_changed(self, iconview):
-        selected_items = iconview.get_selected_items()
+    def get_selected_wallpaper(self):
+        selected_items = self.icon_view.get_selected_items()
+        self._sidepage.remove_wallpaper_button.set_sensitive(False)
         if len(selected_items) == 1:
             path = selected_items[0]
-            iter = iconview.get_model().get_iter(path)
-            background = iconview.get_model().get(iter, 0)[0]
-            for key in background:
+            iter = self.icon_view.get_model().get_iter(path)
+            return self.icon_view.get_model().get(iter, 0)[0]
+        return None
+    
+    def _on_selection_changed(self, iconview):
+        self._sidepage.remove_wallpaper_button.set_sensitive(False)
+        wallpaper = self.get_selected_wallpaper()
+        if wallpaper:
+            for key in wallpaper:
                 if key == "filename":
-                    self._gnome_background_schema.set_string("picture-uri", "file://" + background[key])
+                    self._gnome_background_schema.set_string("picture-uri", "file://" + wallpaper[key])
                 elif key == "pcolor":
-                    self._gnome_background_schema.set_string("primary-color", background[key])
+                    self._gnome_background_schema.set_string("primary-color", wallpaper[key])
                 elif key == "scolor":
-                    self._gnome_background_schema.set_string("secondary-color", background[key])
+                    self._gnome_background_schema.set_string("secondary-color", wallpaper[key])
                 elif key == "shade_type":
-                    self._gnome_background_schema.set_string("color-shading-type", background[key])
+                    self._gnome_background_schema.set_string("color-shading-type", wallpaper[key])
                 elif key == "options":
-                    self._gnome_background_schema.set_string("picture-options", background[key])
-            
+                    self._gnome_background_schema.set_string("picture-options", wallpaper[key])
+                elif key == "metadataFile":
+                    if os.path.exists(wallpaper[key]) and os.access(wallpaper[key], os.W_OK):
+                        self._sidepage.remove_wallpaper_button.set_sensitive(True)
         
     def parse_xml_backgrounds_list(self, filename):
         try:
@@ -333,13 +343,22 @@ class BackgroundSidePage (SidePage):
         self.background_mode.unparent()
         topbox.pack_start(self.background_mode, False, False, 0)
         
+        self.remove_wallpaper_button = Gtk.Button("-")
+        self.remove_wallpaper_button.set_tooltip_text(_("Remove wallpaper"))
+        self.remove_wallpaper_button.connect("clicked", lambda w: self._remove_selected_wallpaper())
+        self.remove_wallpaper_button.set_sensitive(False)
+        topbox.pack_end(self.remove_wallpaper_button, False, False, 0)
+        self.add_wallpaper_button = Gtk.Button("+")
+        self.add_wallpaper_button.set_tooltip_text(_("Add wallpapers"))
+        topbox.pack_end(self.add_wallpaper_button, False, False, 0)
+        
         self.content_box.pack_start(Gtk.HSeparator(), False, False, 2)
         
         self.mainbox = Gtk.EventBox()
         self.mainbox.set_visible_window(False)
         self.content_box.pack_start(self.mainbox, True, True, 0)
         
-        self.wallpaper_pane = BackgroundWallpaperPane(self._gnome_background_schema)
+        self.wallpaper_pane = BackgroundWallpaperPane(self, self._gnome_background_schema)
         self.mainbox.add(self.wallpaper_pane)
         
         self.content_box.pack_start(Gtk.HSeparator(), False, False, 2)
@@ -372,6 +391,24 @@ class BackgroundSidePage (SidePage):
         self.secondary_color = GSettingsColorChooser("org.gnome.desktop.background", "secondary-color")
         hbox.pack_start(self.secondary_color, False, False, 2)
         advanced_options_box.pack_start(hbox, False, False, 0)
+    
+    def _remove_selected_wallpaper(self):
+        res = "<?xml version=\"1.0\"?><!DOCTYPE wallpapers SYSTEM \"gnome-wp-list.dtd\"><wallpapers>"
+        wallpaper = self.wallpaper_pane.get_selected_wallpaper()
+        for i in self.wallpaper_pane.parse_xml_backgrounds_list(wallpaper["metadataFile"]):
+            if i["filename"] != wallpaper["filename"]:
+                res += "<wallpaper>"
+                for key in i:
+                    if key != "metadataFile":
+                        res += "<%s>%s</%s>" % (key, i[key], key)
+                res += "</wallpaper>"
+        res += "</wallpapers>"
+        
+        f = open(wallpaper["metadataFile"], "w")
+        f.write(res)
+        f.close()
+        
+        self.wallpaper_pane.update_icon_view()
 
 class ThemeViewSidePage (SidePage):
     def __init__(self, name, icon, content_box):   
