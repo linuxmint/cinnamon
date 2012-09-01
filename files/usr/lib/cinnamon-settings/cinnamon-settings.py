@@ -317,23 +317,23 @@ class BackgroundWallpaperPane (Gtk.VBox):
                         self._sidepage.remove_wallpaper_button.set_sensitive(True)
         
     def parse_xml_backgrounds_list(self, filename):
-        try:
-            res = []
-            f = open(filename)
-            rootNode = lxml.etree.fromstring(f.read())
-            f.close()
-            if rootNode.tag == "wallpapers":
-                for wallpaperNode in rootNode:
-                    if wallpaperNode.tag == "wallpaper" and wallpaperNode.get("deleted") != "true":
-                        wallpaperData = {"metadataFile": filename}
-                        for prop in wallpaperNode:
-                            if type(prop.tag) == str:
-                                wallpaperData[prop.tag] = prop.text
-                        if "filename" in wallpaperData and wallpaperData["filename"] != "" and os.path.exists(wallpaperData["filename"]) and os.access(wallpaperData["filename"], os.R_OK):
-                            res.append(wallpaperData)
-            return res
-        except:
-            return []
+        #~ try:
+        res = []
+        f = open(filename)
+        rootNode = lxml.etree.fromstring(f.read())
+        f.close()
+        if rootNode.tag == "wallpapers":
+            for wallpaperNode in rootNode:
+                if wallpaperNode.tag == "wallpaper" and wallpaperNode.get("deleted") != "true":
+                    wallpaperData = {"metadataFile": filename}
+                    for prop in wallpaperNode:
+                        if type(prop.tag) == str:
+                            wallpaperData[prop.tag] = prop.text
+                    if "filename" in wallpaperData and wallpaperData["filename"] != "" and os.path.exists(wallpaperData["filename"]) and os.access(wallpaperData["filename"], os.R_OK):
+                        res.append(wallpaperData)
+        return res
+        #~ except:
+            #~ return []
     
     def update_icon_view(self):
         pictures_list = []
@@ -344,10 +344,28 @@ class BackgroundWallpaperPane (Gtk.VBox):
             pictures_list += self.parse_xml_backgrounds_list(os.path.join(os.getenv("HOME"), ".cinnamon", "backgrounds.xml"))
         self.icon_view.set_pictures_list(pictures_list)
 
+class AddWallpapersDialog(Gtk.FileChooserDialog):
+    def __init__(self, parent = None):
+        Gtk.FileChooserDialog.__init__(self, _("Add wallpapers"), parent, Gtk.FileChooserAction.OPEN)
+        self.add_button(Gtk.STOCK_OPEN, Gtk.ResponseType.OK)
+        self.add_button(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL)
+        self.set_select_multiple(True)
+    
+    def run(self):
+        self.show_all()
+        resp = Gtk.FileChooserDialog.run(self)
+        self.hide()
+        if resp == Gtk.ResponseType.OK:
+            res = self.get_filenames()
+        else:
+            res = []
+        return res
+
 class BackgroundSidePage (SidePage):
     def __init__(self, name, icon, content_box):   
         SidePage.__init__(self, name, icon, content_box)
         self._gnome_background_schema = Gio.Settings("org.gnome.desktop.background")
+        self._add_wallpapers_dialog = AddWallpapersDialog()
     
     def build(self):
         # Clear all the widgets from the content box
@@ -372,6 +390,7 @@ class BackgroundSidePage (SidePage):
         topbox.pack_end(self.remove_wallpaper_button, False, False, 0)
         self.add_wallpaper_button = Gtk.Button("+")
         self.add_wallpaper_button.set_tooltip_text(_("Add wallpapers"))
+        self.add_wallpaper_button.connect("clicked", lambda w: self._add_wallpapers())
         topbox.pack_end(self.add_wallpaper_button, False, False, 0)
         
         self.content_box.pack_start(Gtk.HSeparator(), False, False, 2)
@@ -431,6 +450,30 @@ class BackgroundSidePage (SidePage):
         f.close()
         
         self.wallpaper_pane.update_icon_view()
+    
+    def _add_wallpapers(self):
+        filenames = self._add_wallpapers_dialog.run()
+        if filenames:
+            metadataFile = os.path.join(os.getenv("HOME"), ".cinnamon", "backgrounds.xml")
+            already_present_files = []
+            res = "<?xml version=\"1.0\"?><!DOCTYPE wallpapers SYSTEM \"gnome-wp-list.dtd\"><wallpapers>"
+            for i in self.wallpaper_pane.parse_xml_backgrounds_list(metadataFile):
+                res += "<wallpaper>"
+                for key in i:
+                    if key != "metadataFile":
+                        res += "<%s>%s</%s>" % (key, i[key], key)
+                res += "</wallpaper>"
+                already_present_files.append(i["filename"])
+            for filename in filenames:
+                if not filename in already_present_files:
+                    res += "<wallpaper><filename>%s</filename></wallpaper>" % filename
+            res += "</wallpapers>"
+            
+            f = open(metadataFile, "w")
+            f.write(res)
+            f.close()
+            
+            self.wallpaper_pane.update_icon_view()
 
 class ThemeViewSidePage (SidePage):
     def __init__(self, name, icon, content_box):   
