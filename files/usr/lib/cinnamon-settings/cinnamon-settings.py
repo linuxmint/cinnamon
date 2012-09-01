@@ -248,20 +248,6 @@ class ThreadedIconView(Gtk.IconView):
         self._loading = False
         self._loading_lock.release()
 
-class BackgroundPicture(object):
-    def __init__(self, filename, **metadata):
-        self._filename = filename
-        self._metadata = metadata
-    
-    def __getitem__(self, key):
-        if key == "filename":
-            return self._filename
-        else:
-            return self._metadata[key]
-    
-    def __contains__(self, key):
-        return (key == "filename") or (key in self._metadata)
-
 class BackgroundWallpaperPane (Gtk.VBox):
     def __init__(self, gnome_background_schema):
         Gtk.VBox.__init__(self)
@@ -284,8 +270,19 @@ class BackgroundWallpaperPane (Gtk.VBox):
         if len(selected_items) == 1:
             path = selected_items[0]
             iter = iconview.get_model().get_iter(path)
-            filename = iconview.get_model().get(iter, 0)[0]["filename"]
-            self._gnome_background_schema.set_string("picture-uri", "file://" + filename)
+            background = iconview.get_model().get(iter, 0)[0]
+            for key in background:
+                if key == "filename":
+                    self._gnome_background_schema.set_string("picture-uri", "file://" + background[key])
+                elif key == "pcolor":
+                    self._gnome_background_schema.set_string("primary-color", background[key])
+                elif key == "scolor":
+                    self._gnome_background_schema.set_string("secondary-color", background[key])
+                elif key == "shade_type":
+                    self._gnome_background_schema.set_string("color-shading-type", background[key])
+                elif key == "options":
+                    self._gnome_background_schema.set_string("picture-options", background[key])
+            
         
     def parse_xml_backgrounds_list(self, filename):
         try:
@@ -301,13 +298,9 @@ class BackgroundWallpaperPane (Gtk.VBox):
                             if type(prop.tag) == str:
                                 wallpaperData[prop.tag] = prop.text
                         if "filename" in wallpaperData and wallpaperData["filename"] != "" and os.path.exists(wallpaperData["filename"]) and os.access(wallpaperData["filename"], os.R_OK):
-                            wallpaperFilename = wallpaperData["filename"]
-                            del wallpaperData["filename"]
-                            res.append(BackgroundPicture(wallpaperFilename, **wallpaperData))
+                            res.append(wallpaperData)
             return res
         except:
-            import sys
-            print sys.exc_info()
             return []
     
     def update_icon_view(self):
