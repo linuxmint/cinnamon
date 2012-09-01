@@ -346,14 +346,13 @@ class BackgroundWallpaperPane (Gtk.VBox):
         for i in os.listdir("/usr/share/gnome-background-properties"):
             if i.endswith(".xml"):
                 pictures_list += self.parse_xml_backgrounds_list(os.path.join("/usr/share/gnome-background-properties", i))
-                
+        
         path = os.path.join(os.getenv("HOME"), ".cinnamon", "backgrounds")
         if os.path.exists(path):
             for i in os.listdir(path):
                 filename = os.path.join(path, i)
                 if commands.getoutput("file -bi \"%s\"" % filename).startswith("image/"):
                     pictures_list.append({"filename": filename})
-        
         self.icon_view.set_pictures_list(pictures_list)
 
 class AddWallpapersDialog(Gtk.FileChooserDialog):
@@ -373,11 +372,112 @@ class AddWallpapersDialog(Gtk.FileChooserDialog):
             res = []
         return res
 
+class BackgroundSlideshowPane(Gtk.Table):
+    def __init__(self, sidepage, gnome_background_schema, cinnamon_background_schema):
+        Gtk.Table.__init__(self)
+        self.set_col_spacings(5)
+        self.set_row_spacings(5)
+        
+        self._cinnamon_background_schema = cinnamon_background_schema
+        
+        l = Gtk.Label(_("Folder"))
+        l.set_alignment(0, 0.5)
+        self.attach(l, 0, 1, 0, 1, xoptions = Gtk.AttachOptions.FILL, yoptions = 0)
+        self.folder_selector = Gtk.FileChooserButton()
+        self.folder_selector.set_action(Gtk.FileChooserAction.SELECT_FOLDER)
+        self.folder_selector.connect("file-set", self._on_folder_selected)
+        self.folder_selector.set_filename(self._cinnamon_background_schema["slideshow-folder"])
+        self.attach(self.folder_selector, 1, 2, 0, 1, xoptions = Gtk.AttachOptions.FILL | Gtk.AttachOptions.EXPAND, yoptions = 0)
+        self.recursive_cb = Gtk.CheckButton(_("Recursive listing"))
+        self.recursive_cb.set_active(self._cinnamon_background_schema.get_boolean("slideshow-recursive"))
+        self.recursive_cb.connect("toggled", self._on_recursive_toggled)
+        self.attach(self.recursive_cb, 2, 3, 0, 1, xoptions = Gtk.AttachOptions.FILL, yoptions = 0)
+        
+        l = Gtk.Label(_("Delay"))
+        l.set_alignment(0, 0.5)
+        self.attach(l, 0, 1, 1, 2, xoptions = Gtk.AttachOptions.FILL, yoptions = 0)
+        self.delay_button = Gtk.SpinButton()
+        self.attach(self.delay_button, 1, 3, 1, 2, xoptions = Gtk.AttachOptions.FILL | Gtk.AttachOptions.EXPAND, yoptions = 0)
+        self.delay_button.set_increments(1, 10)
+        self.delay_button.set_range(1, 120)
+        self.delay_button.set_value(self._cinnamon_background_schema.get_int("slideshow-delay"))
+        self.delay_button.connect("value-changed", self._on_delay_changed)
+    
+    def _on_recursive_toggled(self, button):
+        self._cinnamon_background_schema.set_boolean("slideshow-recursive", button.get_active())
+        self.update_list()
+    
+    def _on_delay_changed(self, button):
+        self._cinnamon_background_schema.set_int("slideshow-delay", int(button.get_value()))
+        self.update_list()
+    
+    def _on_folder_selected(self, button):
+        self._cinnamon_background_schema.set_string("slideshow-folder", button.get_filename())
+        self.update_list()
+    
+    def update_list(self):
+        thread.start_new_thread(self._do_update_list, (self.folder_selector.get_filename(), self.recursive_cb.get_active(), int(self.delay_button.get_value())))
+    
+    def _list_pictures(self, res, path, files):
+        for i in files:
+            filename = os.path.join(path, i)
+            if commands.getoutput("file -bi \"%s\"" % filename).startswith("image/"):
+                res.append(filename)
+    
+    def _do_update_list(self, folder, recursive, delay):
+        if os.path.exists(folder) and os.path.isdir(folder):
+            files = []
+            if recursive:
+                os.path.walk(folder, self._list_pictures, files)
+            else:
+                for i in os.listdir(folder):
+                    filename = os.path.join(folder, i)
+                    if commands.getoutput("file -bi \"%s\"" % filename).startswith("image/"):
+                        files.append(filename)
+            xml_data = "<background>\n<starttime>\n<year>2009</year>\n<month>08</month>\n<day>04</day>\n<hour>00</hour>\n<minute>00</minute>\n<second>00</second>\n</starttime>"
+            prev_file = None
+            first_file = None
+            for filename in files:
+                if prev_file:
+                    xml_data += "<transition>\n<duration>1.0</duration>\n<from>%s</from>\n<to>%s</to>\n</transition>\n" % (prev_file, filename)
+                else:
+                    first_file = filename
+                xml_data += "<static>\n<duration>%.1f</duration>\n<file>%s</file>\n</static>\n" % (60 * delay, filename)
+                prev_file = filename
+            if first_file and prev_file and first_file != prev_file:
+                xml_data += "<transition>\n<duration>1.0</duration>\n<from>%s</from>\n<to>%s</to>\n</transition>\n" % (prev_file, first_file)
+            xml_data += "</background>"
+            
+            if not os.path.exists(os.path.join(os.getenv("HOME"), ".cinnamon", "backgrounds")):
+                rec_mkdir(os.path.join(os.getenv("HOME"), ".cinnamon", "backgrounds"))
+            filename = os.path.join(os.getenv("HOME"), ".cinnamon", "backgrounds", "slideshow.xml")
+            f = open(filename, "w")
+            f.write(xml_data)
+            f.close()
+            Gio.Settings("org.gnome.desktop.background").set_string("picture-uri", "file://" + filename)
+
 class BackgroundSidePage (SidePage):
     def __init__(self, name, icon, content_box):   
         SidePage.__init__(self, name, icon, content_box)
         self._gnome_background_schema = Gio.Settings("org.gnome.desktop.background")
+        self._cinnamon_background_schema = Gio.Settings("org.cinnamon.background")
         self._add_wallpapers_dialog = AddWallpapersDialog()
+        
+        self._cinnamon_background_schema.connect("changed::mode", self._on_mode_changed)
+    
+    def _on_mode_changed(self, settings, key):
+        for i in self.mainbox.get_children():
+            self.mainbox.remove(i)
+        if self._cinnamon_background_schema["mode"] == "slideshow":
+            self.mainbox.add(self.slideshow_pane)
+            self.add_wallpaper_button.hide()
+            self.remove_wallpaper_button.hide()
+            self.slideshow_pane.update_list()
+        else:
+            self.mainbox.add(self.wallpaper_pane)
+            self.add_wallpaper_button.show()
+            self.remove_wallpaper_button.show()
+        self.mainbox.show_all()
     
     def build(self):
         # Clear all the widgets from the content box
@@ -396,6 +496,7 @@ class BackgroundSidePage (SidePage):
         topbox.pack_start(self.background_mode, False, False, 0)
         
         self.remove_wallpaper_button = Gtk.Button("-")
+        self.remove_wallpaper_button.set_no_show_all(True)
         self.remove_wallpaper_button.set_tooltip_text(_("Remove wallpaper"))
         self.remove_wallpaper_button.connect("clicked", lambda w: self._remove_selected_wallpaper())
         self.remove_wallpaper_button.set_sensitive(False)
@@ -403,6 +504,7 @@ class BackgroundSidePage (SidePage):
         self.add_wallpaper_button = Gtk.Button("+")
         self.add_wallpaper_button.set_tooltip_text(_("Add wallpapers"))
         self.add_wallpaper_button.connect("clicked", lambda w: self._add_wallpapers())
+        self.add_wallpaper_button.set_no_show_all(True)
         topbox.pack_end(self.add_wallpaper_button, False, False, 0)
         
         self.content_box.pack_start(Gtk.HSeparator(), False, False, 2)
@@ -412,7 +514,13 @@ class BackgroundSidePage (SidePage):
         self.content_box.pack_start(self.mainbox, True, True, 0)
         
         self.wallpaper_pane = BackgroundWallpaperPane(self, self._gnome_background_schema)
-        self.mainbox.add(self.wallpaper_pane)
+        self.slideshow_pane = BackgroundSlideshowPane(self, self._gnome_background_schema, self._cinnamon_background_schema)
+        if self._cinnamon_background_schema["mode"] == "slideshow":
+            self.mainbox.add(self.slideshow_pane)
+        else:
+            self.mainbox.add(self.wallpaper_pane)
+            self.add_wallpaper_button.show()
+            self.remove_wallpaper_button.show()
         
         self.content_box.pack_start(Gtk.HSeparator(), False, False, 2)
         
