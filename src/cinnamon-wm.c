@@ -78,7 +78,7 @@ cinnamon_wm_class_init (CinnamonWMClass *klass)
                   0,
                   NULL, NULL,
                   _cinnamon_marshal_VOID__OBJECT_INT_INT_INT_INT,
-                  G_TYPE_NONE, 1,
+                  G_TYPE_NONE, 5,
                   META_TYPE_WINDOW_ACTOR, G_TYPE_INT, G_TYPE_INT, G_TYPE_INT, G_TYPE_INT);
   cinnamon_wm_signals[MAP] =
     g_signal_new ("map",

@@ -1744,7 +1744,7 @@ class MainWindow:
         label = Gtk.Label()
         label.set_markup("%s" % _("Maximizing windows:"))
         box.pack_start(label, False, False, 0)         
-        effects = [["none", _("None")], ["scale", _("Scale")]]        
+        effects = [["none", _("None")], ["scale", _("Scale")]]
         combo = GSettingsComboBox("", "org.cinnamon", "desktop-effects-maximize-effect", effects)        
         box.pack_start(combo, False, False, 0)         
         combo = GSettingsComboBox("", "org.cinnamon", "desktop-effects-maximize-transition", transition_effects)
@@ -1758,7 +1758,7 @@ class MainWindow:
         label = Gtk.Label()
         label.set_markup("%s" % _("Unmaximizing windows:"))
         box.pack_start(label, False, False, 0)         
-        effects = [["none", _("None")]]        
+        effects = [["none", _("None")], ["scale", _("Scale")]]
         combo = GSettingsComboBox("", "org.cinnamon", "desktop-effects-unmaximize-effect", effects)        
         box.pack_start(combo, False, False, 0)         
         combo = GSettingsComboBox("", "org.cinnamon", "desktop-effects-unmaximize-transition", transition_effects)
