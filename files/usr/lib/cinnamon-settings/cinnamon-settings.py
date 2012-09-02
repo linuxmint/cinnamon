@@ -424,7 +424,7 @@ class BackgroundSlideshowPane(Gtk.Table):
             if commands.getoutput("file -bi \"%s\"" % filename).startswith("image/"):
                 res.append(filename)
     
-    def _do_update_list(self, folder, recursive, delay):
+    def _do_update_list(self, folder, recursive, delay, transition_duration = 0):
         if os.path.exists(folder) and os.path.isdir(folder):
             files = []
             if recursive:
@@ -439,13 +439,13 @@ class BackgroundSlideshowPane(Gtk.Table):
             first_file = None
             for filename in files:
                 if prev_file:
-                    xml_data += "<transition>\n<duration>1.0</duration>\n<from>%s</from>\n<to>%s</to>\n</transition>\n" % (prev_file, filename)
+                    xml_data += "<transition>\n<duration>%.1f</duration>\n<from>%s</from>\n<to>%s</to>\n</transition>\n" % (transition_duration, prev_file, filename)
                 else:
                     first_file = filename
                 xml_data += "<static>\n<duration>%.1f</duration>\n<file>%s</file>\n</static>\n" % (60 * delay, filename)
                 prev_file = filename
             if first_file and prev_file and first_file != prev_file:
-                xml_data += "<transition>\n<duration>1.0</duration>\n<from>%s</from>\n<to>%s</to>\n</transition>\n" % (prev_file, first_file)
+                xml_data += "<transition>\n<duration>%.1f</duration>\n<from>%s</from>\n<to>%s</to>\n</transition>\n" % (transition_duration, prev_file, first_file)
             xml_data += "</background>"
             
             if not os.path.exists(os.path.join(os.getenv("HOME"), ".cinnamon", "backgrounds")):
