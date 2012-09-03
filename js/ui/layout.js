@@ -85,7 +85,7 @@ LayoutManager.prototype = {
     },
 
     _onEnableEdgeFlipChanged: function(){
-        this.enableEdgeFlip = global.settings.get_boolean("enable-edge-flip");
+        this.enabledEdgeFlip = global.settings.get_boolean("enable-edge-flip");
         this.edgeRight.enabled = this.enabledEdgeFlip;
         this.edgeLeft.enabled = this.enabledEdgeFlip;
     },
