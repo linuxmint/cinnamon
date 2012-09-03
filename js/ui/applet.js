@@ -167,7 +167,7 @@ Applet.prototype = {
     on_applet_added_to_panel: function() {       
     },
 
-    _destroy: function() {
+    on_applet_removed_from_panel: function() {
         // Implemented by Applets, called by appletManager
         // handles things that might cause a crash once the applet is
         // no longer on the stage

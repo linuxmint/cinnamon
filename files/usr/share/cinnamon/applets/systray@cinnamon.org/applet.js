@@ -21,7 +21,7 @@ MyApplet.prototype = {
     on_applet_clicked: function(event) {
     },
 
-    _destroy: function () {
+    on_applet_removed_from_panel: function () {
         Main.statusIconDispatcher.disconnect(this._signals.added);
         Main.statusIconDispatcher.disconnect(this._signals.removed);
         Main.statusIconDispatcher.disconnect(this._signals.redisplay);

@@ -87,9 +87,10 @@ function onEnabledAppletsChanged() {
                         if (directory != null) {
                             let applet = loadApplet(uuid, directory, orientation);
                             try {
-                                applet._destroy();
+                                applet.on_applet_removed_from_panel();
                             } catch (e) {
-                                global.logError("Problem with applet: " + uuid + " _destroy method: " + e);
+                                global.logError("Problem with applet: " + uuid +
+                                                " on_applet_removed_from_panel method: " + e);
                             }
                             if (applet._panelLocation != null) {
                                 applet._panelLocation.remove_actor(applet.actor);
