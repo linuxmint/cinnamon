@@ -134,7 +134,7 @@ WorkspacesView.prototype = {
             
         // this should select the last active window
         if (this._workspaces.length > 0) { 
-            this._workspaces[activeWorkspaceIndex].selectAnotherWindow(Clutter.Right);
+	        this._workspaces[activeWorkspaceIndex].selectAnotherWindow(Clutter.Home);
         }
     },
 
@@ -150,12 +150,6 @@ WorkspacesView.prototype = {
             return true;
         }
 
-        if (symbol === Clutter.Left || symbol === Clutter.Up 
-                || symbol === Clutter.Right || symbol === Clutter.Down) {
-            activeWorkspace.selectAnotherWindow(symbol);
-            return true;
-        }
-        
         if (symbol === Clutter.Return || symbol === Clutter.KEY_space) {
             if (activeWorkspace.activateSelectedWindow()) {
                 return true;
@@ -163,7 +157,7 @@ WorkspacesView.prototype = {
             Main.overview.hide();
             return true;
         }
-        return false;
+        return activeWorkspace.selectAnotherWindow(symbol);
     },
 
     setGeometry: function(x, y, width, height, spacing) {
@@ -748,12 +742,12 @@ WorkspacesDisplay.prototype = {
     },
 
     _onRestacked: function() {
-        let stack = Main.getTabList();
+        let stack = global.get_window_actors();
         let stackIndices = {};
 
         for (let i = 0; i < stack.length; i++) {
             // Use the stable sequence for an integer to use as a hash key
-            stackIndices[stack[i].get_stable_sequence()] = stack.length - i;
+            stackIndices[stack[i].get_meta_window().get_stable_sequence()] = i;
         }
 
         this.workspacesView.syncStacking(stackIndices);

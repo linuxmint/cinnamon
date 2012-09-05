@@ -726,16 +726,16 @@ Workspace.prototype = {
 
         this.actor.connect('destroy', Lang.bind(this, this._onDestroy));
 
-        let windows = Main.getTabList(this.metaWorkspace);
+        let windows = global.get_window_actors().filter(this._isMyWindow, this);
+        windows.reverse(); // we want the most-recently-used windows first
 
         // Create clones for windows that should be
         // visible in the Overview
         this._windows = [];
         this._windowOverlays = [];
         for (let i = 0; i < windows.length; i++) {
-            let window = windows[i].get_compositor_private();
-            if (this._isOverviewWindow(window)) {
-                this._addWindowClone(window);
+            if (this._isOverviewWindow(windows[i])) {
+                this._addWindowClone(windows[i]);
             }
         }
 
@@ -760,11 +760,10 @@ Workspace.prototype = {
     selectAnotherWindow: function(symbol) {
         let numWindows = this._windowOverlays.length;
         if (numWindows === 0) {
-            return;
+            return false;
         }
-        if (this._kbWindowIndex > -1 && this._kbWindowIndex < numWindows) {
-            this._windowOverlays[this._kbWindowIndex].setSelected(false);
-        }
+        let currentIndex = this._kbWindowIndex;
+        let nextIndex = -1;
 
         if (numWindows > 3 // grid navigation is not suited for a low window count
             && (symbol === Clutter.Down || symbol === Clutter.Up))
@@ -772,8 +771,8 @@ Workspace.prototype = {
             let numCols = Math.ceil(Math.sqrt(numWindows));
             let numRows = Math.ceil(numWindows/numCols);
 
-            let curRow = Math.floor(this._kbWindowIndex/numCols);
-            let curCol = this._kbWindowIndex % numCols;
+            let curRow = Math.floor(currentIndex/numCols);
+            let curCol = currentIndex % numCols;
 
             let calcNewIndex = function(rowDelta) {
                 let newIndex = (curRow + rowDelta) * numCols + curCol;
@@ -805,20 +804,39 @@ Workspace.prototype = {
             };
 
             if (symbol === Clutter.Down) {
-                this._kbWindowIndex = calcNewIndex(1);
+                nextIndex = calcNewIndex(1);
             }
             if (symbol === Clutter.Up) {
-                this._kbWindowIndex = calcNewIndex(-1);
+                nextIndex = calcNewIndex(-1);
             }
         }
-        else if (symbol === Clutter.Left || symbol === Clutter.Up) {
-            this._kbWindowIndex = (this._kbWindowIndex < 1 ? numWindows : this._kbWindowIndex) - 1;
+        else if (symbol === Clutter.Left || symbol === Clutter.ISO_Left_Tab || symbol === Clutter.Up) {
+            nextIndex = (currentIndex < 1 ? numWindows : currentIndex) - 1;
         }
-        else if (symbol === Clutter.Right || symbol === Clutter.Down) {
-            this._kbWindowIndex = (this._kbWindowIndex + 1) % numWindows;
+        else if (symbol === Clutter.Right || symbol === Clutter.Tab || symbol === Clutter.Down) {
+            nextIndex = (currentIndex + 1) % numWindows;
+        }
+        else if (symbol === Clutter.Home) {
+            nextIndex = 0;
+        }
+        else if (symbol === Clutter.End) {
+            nextIndex = numWindows - 1;
+        }
+        else {
+            return false; // not handled
         }
 
-        this._windowOverlays[this._kbWindowIndex].setSelected(true);
+        if (currentIndex !== nextIndex) {
+            if (currentIndex > -1 && currentIndex < numWindows) {
+                this._windowOverlays[currentIndex].setSelected(false);
+            }
+        }
+
+        this._kbWindowIndex = currentIndex = nextIndex;
+        if (currentIndex > -1 && currentIndex < numWindows) {
+            this._windowOverlays[currentIndex].setSelected(true);
+        }
+        return true;
     },
     
     activateSelectedWindow: function() {
@@ -1517,7 +1535,8 @@ Workspace.prototype = {
 
     // Tests if @win should be shown in the Overview
     _isOverviewWindow : function (win) {
-        return true;
+        let tracker = Cinnamon.WindowTracker.get_default();
+        return tracker.is_window_interesting(win.get_meta_window());
     },
 
     // Create a clone of a (non-desktop) window and add it to the window list
