@@ -175,74 +175,26 @@ LayoutManager.prototype = {
     },
 
     _updateHotCorners: function() {
-        // destroy old hot corners
-        for (let i = 0; i < this._hotCorners.length; i++)
-            this._hotCorners[i].destroy();
-        this._hotCorners = [];
-
-        // build new hot corners
-        for (let i = 0; i < this.monitors.length; i++) {
-            if (i == this.primaryIndex)
-                continue;
-
-            let monitor = this.monitors[i];
-            let cornerX = this._rtl ? monitor.x + monitor.width : monitor.x;
-            let cornerY = monitor.y;
-
-            let haveTopLeftCorner = true;
-
-            // Check if we have a top left (right for RTL) corner.
-            // I.e. if there is no monitor directly above or to the left(right)
-            let besideX = this._rtl ? monitor.x + 1 : cornerX - 1;
-            let besideY = cornerY;
-            let aboveX = cornerX;
-            let aboveY = cornerY - 1;
-
-            for (let j = 0; j < this.monitors.length; j++) {
-                if (i == j)
-                    continue;
-                let otherMonitor = this.monitors[j];
-                if (besideX >= otherMonitor.x &&
-                    besideX < otherMonitor.x + otherMonitor.width &&
-                    besideY >= otherMonitor.y &&
-                    besideY < otherMonitor.y + otherMonitor.height) {
-                    haveTopLeftCorner = false;
-                    break;
-                }
-                if (aboveX >= otherMonitor.x &&
-                    aboveX < otherMonitor.x + otherMonitor.width &&
-                    aboveY >= otherMonitor.y &&
-                    aboveY < otherMonitor.y + otherMonitor.height) {
-                    haveTopLeftCorner = false;
-                    break;
-                }
-            }
-
-            if (!haveTopLeftCorner)
-                continue;
-
-            let _hotCorner = new HotCorner();            
-            this._hotCorners.push(_hotCorner);
-            _hotCorner.actor.set_position(cornerX, cornerY);
-            this._chrome.addActor(_hotCorner.actor);
+        let hotCornerPosition = global.settings.get_string("overview-corner-position");
+        let x = this.primaryMonitor.x;
+        let y = this.primaryMonitor.y;
+        if (hotCornerPosition == "topLeft") {
+            this._hotCorner.actor.set_position(x, y);            
+            this.overviewCorner.set_position(x + 1, y + 1);
+        } else if (hotCornerPosition == "topRight") {
+            this._hotCorner.actor.set_position(x + this.primaryMonitor.width - 1, y);            
+            this.overviewCorner.set_position(x + this.primaryMonitor.width - 33, y + 1);
+        } else if (hotCornerPosition == "bottomLeft") {
+            this._hotCorner.actor.set_position(x, this.primaryMonitor.height - 1);            
+            this.overviewCorner.set_position(x + 1, this.primaryMonitor.height - 33);
+        } else if (hotCornerPosition == "bottomRight") {
+            this._hotCorner.actor.set_position(x + this.primaryMonitor.width - 1, this.primaryMonitor.height - 1);
+            this.overviewCorner.set_position(x + this.primaryMonitor.width - 33, this.primaryMonitor.height - 33);
         }
     },
 
     _updateBoxes: function() {                
-        let hotCornerPosition = global.settings.get_string("overview-corner-position");
-        if (hotCornerPosition == "topLeft") {
-            this._hotCorner.actor.set_position(this.primaryMonitor.x,this.primaryMonitor.y);            
-            this.overviewCorner.set_position(this.primaryMonitor.x + 1, this.primaryMonitor.y + 1);
-        } else if (hotCornerPosition == "topRight") {
-            this._hotCorner.actor.set_position(this.primaryMonitor.width - 1,this.primaryMonitor.y);            
-            this.overviewCorner.set_position(this.primaryMonitor.width - 33, this.primaryMonitor.y + 1);
-        } else if (hotCornerPosition == "bottomLeft") {
-            this._hotCorner.actor.set_position(this.primaryMonitor.x,this.primaryMonitor.height - 1);            
-            this.overviewCorner.set_position(this.primaryMonitor.x + 1, this.primaryMonitor.height - 33);
-        } else if (hotCornerPosition == "bottomRight") {
-            this._hotCorner.actor.set_position(this.primaryMonitor.width - 1,this.primaryMonitor.height - 1);
-            this.overviewCorner.set_position(this.primaryMonitor.width - 33, this.primaryMonitor.height - 33);
-        }
+        this._updateHotCorners();
 
         this.overviewCorner.set_size(32, 32);
 
