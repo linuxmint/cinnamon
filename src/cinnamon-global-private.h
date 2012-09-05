@@ -16,18 +16,4 @@ GjsContext *_cinnamon_global_get_gjs_context (CinnamonGlobal  *global);
 gboolean _cinnamon_global_check_xdnd_event (CinnamonGlobal  *global,
                                          XEvent       *xev);
 
-/* Used for async screenshot grabbing */
-typedef struct _screenshot_data {
-  CinnamonGlobal  *global;
-
-  char *filename;
-
-  int x;
-  int y;
-  int width;
-  int height;
-
-  CinnamonGlobalScreenshotCallback callback;
-} _screenshot_data;
-
 #endif /* __CINNAMON_GLOBAL_PRIVATE_H__ */
