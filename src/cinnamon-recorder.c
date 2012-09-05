@@ -50,7 +50,9 @@ struct _CinnamonRecorder {
   gboolean have_pointer;
   int pointer_x;
   int pointer_y;
-
+  
+  guint height_adjust; // Y adjustment from bottom panel, if any
+  
   gboolean have_xfixes;
   int xfixes_event_base;
 
@@ -155,6 +157,9 @@ G_DEFINE_TYPE(CinnamonRecorder, cinnamon_recorder, G_TYPE_OBJECT);
  * of that for memory_target, otherwise, we use this value, in kB.
  */
 #define DEFAULT_MEMORY_TARGET (512*1024)
+
+#define PANEL_HEIGHT_KEY "panel-bottom-height"
+#define SCHEMA_CINNAMON "org.cinnamon"
 
 /* Create an emblem to show at the lower-left corner of the stage while
  * recording. The emblem is drawn *after* we record the frame so doesn't
@@ -261,7 +266,20 @@ cinnamon_recorder_init (CinnamonRecorder *recorder)
   gst_init (NULL, NULL);
 
   cinnamon_recorder_src_register ();
-
+  
+  // Get bottom panel height from settings so we don't overlap it
+  // with our recording indicators.
+  GVariant *variant = NULL;
+  GSettings *desktop_settings;
+  
+  desktop_settings = g_settings_new (SCHEMA_CINNAMON);
+  variant = g_settings_get_value (desktop_settings, PANEL_HEIGHT_KEY);
+  g_variant_get (variant, "i", &recorder->height_adjust);
+  
+  g_variant_unref (variant);
+  g_object_unref (desktop_settings);
+  
+  
   recorder->recording_icon = create_recording_icon ();
   recorder->memory_target = get_memory_target();
 
@@ -484,14 +502,14 @@ recorder_draw_buffer_meter (CinnamonRecorder *recorder)
   fill_level = MIN (60, (recorder->memory_used * 60) / recorder->memory_target);
 
   /* A hollow rectangle filled from the left to fill_level */
-  cogl_rectangle (recorder->stage_width - 64, recorder->stage_height - 10,
-                  recorder->stage_width - 2,  recorder->stage_height - 9);
-  cogl_rectangle (recorder->stage_width - 64, recorder->stage_height - 9,
-                  recorder->stage_width - (63 - fill_level), recorder->stage_height - 3);
-  cogl_rectangle (recorder->stage_width - 3,  recorder->stage_height - 9,
-                  recorder->stage_width - 2,  recorder->stage_height - 3);
-  cogl_rectangle (recorder->stage_width - 64, recorder->stage_height - 3,
-                  recorder->stage_width - 2,  recorder->stage_height - 2);
+  cogl_rectangle (recorder->stage_width - 64, recorder->stage_height - recorder->height_adjust - 10,
+                  recorder->stage_width - 2,  recorder->stage_height - recorder->height_adjust - 9);
+  cogl_rectangle (recorder->stage_width - 64, recorder->stage_height - recorder->height_adjust - 9,
+                  recorder->stage_width - (63 - fill_level), recorder->stage_height - recorder->height_adjust - 3);
+  cogl_rectangle (recorder->stage_width - 3,  recorder->stage_height - recorder->height_adjust - 9,
+                  recorder->stage_width - 2,  recorder->stage_height - recorder->height_adjust - 3);
+  cogl_rectangle (recorder->stage_width - 64, recorder->stage_height - recorder->height_adjust - 3,
+                  recorder->stage_width - 2,  recorder->stage_height - recorder->height_adjust - 2);
 }
 
 /* We want to time-stamp each frame based on the actual time it was
@@ -557,8 +575,8 @@ recorder_on_stage_paint (ClutterActor  *actor,
         recorder_record_frame (recorder);
 
       cogl_set_source_texture (recorder->recording_icon);
-      cogl_rectangle (recorder->stage_width - 32, recorder->stage_height - 42,
-                      recorder->stage_width,      recorder->stage_height - 10);
+      cogl_rectangle (recorder->stage_width - 32, recorder->stage_height - recorder->height_adjust - 42,
+                      recorder->stage_width,      recorder->stage_height - recorder->height_adjust - 10);
     }
 
   if (recorder->state == RECORDER_STATE_RECORDING || recorder->memory_used != 0)
