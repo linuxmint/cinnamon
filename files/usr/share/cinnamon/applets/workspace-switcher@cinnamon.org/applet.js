@@ -2,15 +2,15 @@ const St = imports.gi.St;
 const Lang = imports.lang;
 const Applet = imports.ui.applet;
 
-function MyApplet(orientation) {
-    this._init(orientation);
+function MyApplet(orientation, panel_height) {
+    this._init(orientation, panel_height);
 }
 
 MyApplet.prototype = {
     __proto__: Applet.Applet.prototype,
 
-    _init: function(orientation) {        
-        Applet.Applet.prototype._init.call(this, orientation);
+    _init: function(orientation, panel_height) {        
+        Applet.Applet.prototype._init.call(this, orientation, panel_height);
         
         try {
             this.actor.set_style_class_name("workspace-switcher-box");
@@ -74,12 +74,20 @@ MyApplet.prototype = {
             let label = new St.Label({ text: text });
             this.button[i].set_child(label);
             this.actor.add(this.button[i]);
+            if (this._scaleMode) {
+                this.button[i].set_width(this._panelHeight);
+            }
             let index = i;
             this.button[i].connect('button-release-event', Lang.bind(this, function() {
                 let metaWorkspace = global.screen.get_workspace_by_index(index);
                 metaWorkspace.activate(global.get_current_time());
             }));
         }
+    },
+
+    on_panel_height_changed: function() {
+        this._scaleMode = global.settings.get_boolean('panel-scale-text-icons');
+        this._createButtons();
     },
 
     _updateButtons: function() {
@@ -96,7 +104,7 @@ MyApplet.prototype = {
     }
 };
 
-function main(metadata, orientation) {  
-    let myApplet = new MyApplet(orientation);
+function main(metadata, orientation, panel_height) {  
+    let myApplet = new MyApplet(orientation, panel_height);
     return myApplet;      
 }

@@ -13,6 +13,11 @@ const Tooltips = imports.ui.tooltips;
 const DND = imports.ui.dnd;
 const Tweener = imports.ui.tweener;
 
+const DEFAULT_ICON_SIZE = 20;
+const DEFAULT_ANIM_SIZE = 13;
+const ICON_HEIGHT_FACTOR = .8;
+const ICON_ANIM_FACTOR = .65;
+
 let pressLauncher = null;
 
 function PanelAppLauncherMenu(launcher, orientation) {
@@ -66,12 +71,12 @@ PanelAppLauncherMenu.prototype = {
     }
 }
 
-function PanelAppLauncher(launchersBox, app, appinfo, orientation) {
-    this._init(launchersBox, app, appinfo, orientation);
+function PanelAppLauncher(launchersBox, app, appinfo, orientation, panel_height) {
+    this._init(launchersBox, app, appinfo, orientation, panel_height);
 }
 
 PanelAppLauncher.prototype = {
-    _init: function(launchersBox, app, appinfo, orientation) {
+    _init: function(launchersBox, app, appinfo, orientation, panel_height) {
         this.app = app;
         this.appinfo = appinfo;
         this.launchersBox = launchersBox;
@@ -85,14 +90,20 @@ PanelAppLauncher.prototype = {
         this.actor.connect('button-release-event', Lang.bind(this, this._onButtonRelease));
         this.actor.connect('button-press-event', Lang.bind(this, this._onButtonPress));
         
-        this._iconBox = new Cinnamon.Slicer({ name: 'panel-launcher-icon' });
+        this._iconBox = new St.Bin({ name: 'panel-launcher-icon' });
         this._iconBox.connect('style-changed',
                               Lang.bind(this, this._onIconBoxStyleChanged));
         this._iconBox.connect('notify::allocation',
                               Lang.bind(this, this._updateIconBoxClip));
         this.actor.add_actor(this._iconBox);
         this._iconBottomClip = 0;
-        
+        if (global.settings.get_boolean('panel-scale-text-icons')) {
+            this.icon_height = Math.floor(panel_height * ICON_HEIGHT_FACTOR);
+            this.icon_anim_height = Math.floor(panel_height * ICON_ANIM_FACTOR);
+        } else {
+            this.icon_height = DEFAULT_ICON_SIZE;
+            this.icon_anim_height = DEFAULT_ANIM_SIZE;
+        }
         this.icon = this._getIconActor();
         this._iconBox.set_child(this.icon);
         
@@ -142,21 +153,21 @@ PanelAppLauncher.prototype = {
     },
     
     _getIconActor: function() {
-        if (this.is_custom()) return St.TextureCache.get_default().load_gicon(null, this.appinfo.get_icon(), 20);
-        else return this.app.create_icon_texture(20);
+        if (this.is_custom()) return St.TextureCache.get_default().load_gicon(null, this.appinfo.get_icon(), this.icon_height);
+        else return this.app.create_icon_texture(this.icon_height);
     },
     
     _animateIcon: function(step){
         if (step>=3) return;
         Tweener.addTween(this.icon,
-                         { width: 13,
-                           height: 13,
+                         { width: this.icon_anim_height,
+                           height: this.icon_anim_height,
                            time: 0.2,
                            transition: 'easeOutQuad',
                            onComplete: function(){
                                Tweener.addTween(this.icon,
-                                                 { width: 20,
-                                                   height: 20,
+                                                 { width: this.icon_height,
+                                                   height: this.icon_height,
                                                    time: 0.2,
                                                    transition: 'easeOutQuad',
                                                    onComplete: function(){
@@ -409,15 +420,15 @@ AddLauncherDialog.prototype = {
 }
 Signals.addSignalMethods(AddLauncherDialog.prototype);
 
-function MyApplet(orientation) {
-    this._init(orientation);
+function MyApplet(orientation, panel_height) {
+    this._init(orientation, panel_height);
 }
 
 MyApplet.prototype = {
     __proto__: Applet.Applet.prototype,
 
-    _init: function(orientation) {        
-        Applet.Applet.prototype._init.call(this, orientation);
+    _init: function(orientation, panel_height) {        
+        Applet.Applet.prototype._init.call(this, orientation, panel_height);
         
         try {                    
             this.orientation = orientation;
@@ -491,6 +502,10 @@ MyApplet.prototype = {
         }
         return apps;
     },
+
+    on_panel_height_changed: function() {
+        this.reload();
+    },
     
     reload: function() {
         this.myactor.destroy_children();
@@ -499,7 +514,7 @@ MyApplet.prototype = {
         let apps = this.loadApps();
         for (var i in apps){
             let app = apps[i];
-            let launcher = new PanelAppLauncher(this, app[0], app[1], this.orientation);
+            let launcher = new PanelAppLauncher(this, app[0], app[1], this.orientation, this._panelHeight);
             this.myactor.add(launcher.actor);
             this._launchers.push(launcher);
         }
@@ -640,7 +655,7 @@ MyApplet.prototype = {
      
 };
 
-function main(metadata, orientation) {  
-    let myApplet = new MyApplet(orientation);
+function main(metadata, orientation, panel_height) {  
+    let myApplet = new MyApplet(orientation, panel_height);
     return myApplet;      
 }

@@ -277,6 +277,7 @@ StScrollBar StButton#vhandle:hover {
 	spacing: 0px;
 	margin: 0px;
 }
+
 .panel-corner {
 	-panel-corner-radius: 0px;
 	-panel-corner-background-color: black;
@@ -1619,12 +1620,10 @@ StScrollBar StButton#vhandle:hover {
  * ===================================================================*/
 .applet-box {
 	padding-left: 3px;
-    padding-right: 3px;	
+	padding-right: 3px;
 	color: #ccc;
 	text-shadow: black 0px 0px 2px;
 	transition-duration: 300;
-	min-width: 1em;
-	
 }
 .applet-box:hover {
 	color: #fff;
@@ -1640,6 +1639,7 @@ StScrollBar StButton#vhandle:hover {
 }
 .applet-icon {
 	color: #ccc;
+	icon-size: 22px;
 }
 .applet-icon:hover,
 .applet-box:hover > .applet-icon {

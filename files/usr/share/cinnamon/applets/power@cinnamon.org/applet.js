@@ -128,16 +128,16 @@ DeviceItem.prototype = {
     }
 }
 
-function MyApplet(orientation) {
-    this._init(orientation);
+function MyApplet(orientation, panel_height) {
+    this._init(orientation, panel_height);
 }
 
 
 MyApplet.prototype = {
     __proto__: Applet.TextIconApplet.prototype,
 
-    _init: function(orientation) {        
-        Applet.TextIconApplet.prototype._init.call(this, orientation);
+    _init: function(orientation, panel_height) {        
+        Applet.TextIconApplet.prototype._init.call(this, orientation, panel_height);
         
         try {                                
             this.menuManager = new PopupMenu.PopupMenuManager(this);
@@ -302,11 +302,16 @@ MyApplet.prototype = {
         }));
     },
 
+    on_panel_height_changed: function() {
+        this._devicesChanged();
+    },
+
     _devicesChanged: function() {
+        this.set_applet_icon_symbolic_name('battery-missing');
         this._proxy.GetRemote('Icon', Lang.bind(this, function(icon, error) {
             if (icon) {    
-				let gicon = Gio.icon_new_for_string(icon);
-				this._applet_icon.gicon = gicon;             
+                let gicon = Gio.icon_new_for_string(icon);
+                this._applet_icon.gicon = gicon;
                 this.actor.show();
             } else {
                 this.menu.close();
@@ -353,7 +358,7 @@ MyApplet.prototype = {
     
 };
 
-function main(metadata, orientation) {  
-    let myApplet = new MyApplet(orientation);
+function main(metadata, orientation, panel_height) {  
+    let myApplet = new MyApplet(orientation, panel_height);
     return myApplet;      
 }
