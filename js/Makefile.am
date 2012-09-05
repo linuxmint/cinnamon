@@ -29,6 +29,7 @@ nobase_dist_js_DATA = \
 	ui/expoThumbnail.js	\
 	ui/expoView.js		\
 	ui/extensionSystem.js	\
+	ui/flashspot.js		\
 	ui/iconGrid.js		\
 	ui/keyboard.js		\
 	ui/layout.js		\
