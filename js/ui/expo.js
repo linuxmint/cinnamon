@@ -21,57 +21,6 @@ const ADD_BUTTON_HOVER_TIME = 0.3;
 
 const DND_WINDOW_SWITCH_TIMEOUT = 1250;
 
-function CinnamonInfo() {
-    this._init();
-}
-
-CinnamonInfo.prototype = {
-    _init: function() {
-        this._source = null;
-        this._undoCallback = null;
-    },
-
-    _onUndoClicked: function() {
-        if (this._undoCallback)
-            this._undoCallback();
-        this._undoCallback = null;
-
-        if (this._source)
-            this._source.destroy();
-    },
-
-    setMessage: function(text, undoCallback, undoLabel) {
-        if (this._source == null) {
-            this._source = new MessageTray.SystemNotificationSource();
-            this._source.connect('destroy', Lang.bind(this,
-                function() {
-                    this._source = null;
-                }));
-            Main.messageTray.add(this._source);
-        }
-
-        let notification = null;
-        if (this._source.notifications.length == 0) {
-            notification = new MessageTray.Notification(this._source, text, null);
-        } else {
-            notification = this._source.notifications[0];
-            notification.update(text, null, { clear: true });
-        }
-
-        notification.setTransient(true);
-
-        this._undoCallback = undoCallback;
-        if (undoCallback) {
-            notification.addButton('system-undo',
-                                   undoLabel ? undoLabel : _("Undo"));
-            notification.connect('action-invoked',
-                                 Lang.bind(this, this._onUndoClicked));
-        }
-
-        this._source.notify(notification);
-    }
-};
-
 function Expo() {
     this._init.apply(this, arguments);
 }
@@ -114,7 +63,6 @@ Expo.prototype = {
                 }
             }));
 
-        this._workspacesDisplay = null;
         this._expo = null;
 
         this.visible = false;           // animating to overview, in overview, animating out
@@ -169,8 +117,6 @@ Expo.prototype = {
         this._addWorkspaceButton.hide();
         this._windowCloseArea.hide();
 
-        this._needsFakePointerEvent = false;
-
         global.stage.connect('key-press-event',
             Lang.bind(this, function(actor, event) {
                 if (this._shown) {
@@ -199,29 +145,11 @@ Expo.prototype = {
         if (this.isDummy)
             return;
 
-        this._CinnamonInfo = new CinnamonInfo();
-    
         this._expo = new ExpoView.ExpoView();
         this._group.add_actor(this._expo.actor);
 
         Main.layoutManager.connect('monitors-changed', Lang.bind(this, this._relayout));
         this._relayout();
-    },
-
-    setMessage: function(text, undoCallback, undoLabel) {
-        if (this.isDummy)
-            return;
-
-        this._CinnamonInfo.setMessage(text, undoCallback, undoLabel);
-    },
-
-    _fakePointerEvent: function() {
-        let display = Gdk.Display.get_default();
-        let deviceManager = display.get_device_manager();
-        let pointer = deviceManager.get_client_pointer();
-        let [screen, pointerX, pointerY] = pointer.get_position();
-
-        pointer.warp(screen, pointerX, pointerY);
     },
 
     _relayout: function () {
@@ -356,7 +284,6 @@ Expo.prototype = {
 
         this.activeWorkspace = this._expo._thumbnailsBox._lastActiveWorkspace;
         let activeWorkspaceActor = this.activeWorkspace.actor;
-        this._expo._thumbnailsBox._lastActiveWorkspace._fadeOutUninterestingWindows();
 
         this.allocateID = this.activeWorkspace.connect('allocated', Lang.bind(this, this._animateVisible2));
 
@@ -537,7 +464,6 @@ Expo.prototype = {
 
         this.activeWorkspace = this._expo._thumbnailsBox._lastActiveWorkspace;
         let activeWorkspaceActor = this.activeWorkspace.actor;
-        //this.activeWorkspace._fadeInUninterestingWindows();
         this.activeWorkspace._overviewModeOff();
         this._createClone(activeWorkspaceActor);
         this.clone.set_position(activeWorkspaceActor.allocation.x1, activeWorkspaceActor.allocation.y1);
@@ -599,12 +525,6 @@ Expo.prototype = {
             this._animateVisible();
 
         this._syncInputMode();
-
-        // Fake a pointer event if requested
-        if (this._needsFakePointerEvent) {
-            this._fakePointerEvent();
-            this._needsFakePointerEvent = false;
-        }
 
         Main.layoutManager._chrome.updateRegions();
     }
