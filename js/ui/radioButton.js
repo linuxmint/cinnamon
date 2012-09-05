@@ -105,12 +105,12 @@ RadioButton.prototype = {
     }
 };
 
-function RadioButtonGroup(id) {
-   this._init(id);
+function RadioButtonGroup() {
+   this._init();
 }
 
 RadioButtonGroup.prototype = {
-   _init: function(id) {
+   _init: function() {
       this.actor = new St.BoxLayout({ vertical: true, width: 250 });
       this._buttons = [];
       this._activeId = null;
@@ -144,7 +144,7 @@ RadioButtonGroup.prototype = {
       // Only trigger real changes to radio selection.
       if (buttonId != this._activeId) {
          this._activeId = buttonId;
-         this.emit('notify::radio-changed', this._activeId);
+         this.emit('radio-changed', this._activeId);
       }
    },
 
@@ -156,7 +156,7 @@ RadioButtonGroup.prototype = {
 
       if (this._activeId != buttonId) {
          this._activeId = buttonId;
-         this.emit('notify::radio-changed', this._activeId);
+         this.emit('radio-changed', this._activeId);
       }
    },
 
