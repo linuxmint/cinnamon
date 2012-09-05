@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="24"
+   height="22"
+   id="svg3199"
+   version="1.1"
+   inkscape:version="0.48.1 r9760"
+   sodipodi:docname="checkbox-off.svg">
+  <defs
+     id="defs3201">
+    <linearGradient
+       id="linearGradient15404"
+       inkscape:collect="always">
+      <stop
+         id="stop15406"
+         offset="0"
+         style="stop-color:#515151;stop-opacity:1" />
+      <stop
+         id="stop15408"
+         offset="1"
+         style="stop-color:#292929;stop-opacity:1" />
+    </linearGradient>
+    <inkscape:perspective
+       sodipodi:type="inkscape:persp3d"
+       inkscape:vp_x="0 : 526.18109 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_z="744.09448 : 526.18109 : 1"
+       inkscape:persp3d-origin="372.04724 : 350.78739 : 1"
+       id="perspective3207" />
+    <inkscape:perspective
+       id="perspective3187"
+       inkscape:persp3d-origin="0.5 : 0.33333333 : 1"
+       inkscape:vp_z="1 : 0.5 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_x="0 : 0.5 : 1"
+       sodipodi:type="inkscape:persp3d" />
+    <inkscape:path-effect
+       effect="spiro"
+       id="path-effect5837-4-6"
+       is_visible="true" />
+    <inkscape:path-effect
+       effect="spiro"
+       id="path-effect14768"
+       is_visible="true" />
+    <inkscape:path-effect
+       effect="spiro"
+       id="path-effect5884-4-7"
+       is_visible="true" />
+    <linearGradient
+       y2="-388.72955"
+       x2="-93.031357"
+       y1="-396.34738"
+       x1="-93.031357"
+       gradientTransform="matrix(1.5918367,0,0,0.85714285,-256.56122,59.685418)"
+       gradientUnits="userSpaceOnUse"
+       id="linearGradient14219"
+       xlink:href="#linearGradient15404"
+       inkscape:collect="always" />
+    <linearGradient
+       inkscape:collect="always"
+       id="linearGradient10013-4-63-6">
+      <stop
+         style="stop-color:#333333;stop-opacity:1;"
+         offset="0"
+         id="stop10015-2-76-1" />
+      <stop
+         style="stop-color:#292929;stop-opacity:1"
+         offset="1"
+         id="stop10017-46-15-8" />
+    </linearGradient>
+    <linearGradient
+       inkscape:collect="always"
+       id="linearGradient10597-5">
+      <stop
+         style="stop-color:#16191a;stop-opacity:1;"
+         offset="0"
+         id="stop10599-2" />
+      <stop
+         style="stop-color:#2b3133;stop-opacity:1"
+         offset="1"
+         id="stop10601-5" />
+    </linearGradient>
+    <linearGradient
+       y2="-322.16354"
+       x2="921.22498"
+       y1="-330.05121"
+       x1="921.32812"
+       gradientTransform="matrix(1.5918367,0,0,0.85714285,-1456.5464,275.45191)"
+       gradientUnits="userSpaceOnUse"
+       id="linearGradient15374"
+       xlink:href="#linearGradient10013-4-63-6"
+       inkscape:collect="always" />
+    <linearGradient
+       gradientTransform="translate(-1199.9852,216.38048)"
+       y2="-227.07961"
+       x2="1203.9177"
+       y1="-217.56708"
+       x1="1203.9177"
+       gradientUnits="userSpaceOnUse"
+       id="linearGradient15376"
+       xlink:href="#linearGradient10597-5"
+       inkscape:collect="always" />
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#000000"
+     bordercolor="#2d2d2d"
+     borderopacity="1"
+     inkscape:pageopacity="1"
+     inkscape:pageshadow="2"
+     inkscape:zoom="1"
+     inkscape:cx="6.1225392"
+     inkscape:cy="3.6003241"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:window-width="1412"
+     inkscape:window-height="1067"
+     inkscape:window-x="2116"
+     inkscape:window-y="261"
+     inkscape:window-maximized="0"
+     borderlayer="true"
+     inkscape:showpageshadow="false"
+     inkscape:snap-nodes="false"
+     inkscape:snap-bbox="true"
+     showborder="false">
+    <inkscape:grid
+       type="xygrid"
+       id="grid14843"
+       empspacing="5"
+       visible="true"
+       enabled="true"
+       snapvisiblegridlinesonly="true" />
+  </sodipodi:namedview>
+  <metadata
+     id="metadata3204">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-342.5,-521.36218)">
+    <g
+       transform="matrix(0.80230061,0,0,0.80230061,-87.624044,-453.10297)"
+       id="g14586"
+       style="stroke-width:2.3714385;stroke-miterlimit:4;stroke-dasharray:none">
+      <g
+         inkscape:export-ydpi="90"
+         inkscape:export-xdpi="90"
+         inkscape:export-filename="/home/jimmac/SparkleShare/gnome-mockups/boxes/interactive/img/checkbox-on.png"
+         transform="matrix(1.9969286,0,0,1.9969286,-397.05491,877.00482)"
+         id="g15291-9"
+         style="stroke-width:1.18754292;stroke-miterlimit:4;stroke-dasharray:none;display:inline;enable-background:new">
+        <g
+           transform="translate(877.50354,-102.83507)"
+           id="g16853-4"
+           style="stroke-width:1.18754292;stroke-miterlimit:4;stroke-dasharray:none;enable-background:new">
+          <rect
+             transform="scale(1,-1)"
+             style="color:#000000;fill:url(#linearGradient14219);fill-opacity:1;fill-rule:nonzero;stroke:#3465a4;stroke-width:1.24833274;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:new"
+             id="rect6506-6"
+             width="11.281681"
+             height="11.26221"
+             x="-409.59354"
+             y="-284.40115"
+             rx="1.0052766"
+             ry="1.0052764" />
+        </g>
+      </g>
+      <g
+         inkscape:export-ydpi="90"
+         inkscape:export-xdpi="90"
+         inkscape:export-filename="/home/jimmac/SparkleShare/gnome-mockups/boxes/interactive/img/checkbox-on.png"
+         transform="translate(343.99999,987.99997)"
+         id="g5886"
+         style="stroke-width:2.3714385;stroke-miterlimit:4;stroke-dasharray:none;display:inline;enable-background:new" />
+    </g>
+  </g>
+</svg>
