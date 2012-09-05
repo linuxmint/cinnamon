@@ -85,7 +85,13 @@ function onEnabledAppletsChanged() {
                         // Applet was removed                        
                         let directory = _find_applet(uuid);
                         if (directory != null) {
-                            let applet = loadApplet(uuid, directory, orientation);
+                            let applet = loadApplet(uuid, directory, orientation, panel.actor.get_height());
+                            try {
+                                applet.on_applet_removed_from_panel();
+                            } catch (e) {
+                                global.logError("Problem with applet: " + uuid +
+                                                " on_applet_removed_from_panel method: " + e);
+                            }
                             if (applet._panelLocation != null) {
                                 applet._panelLocation.remove_actor(applet.actor);
                                 applet._panelLocation = null;
@@ -104,7 +110,7 @@ function onEnabledAppletsChanged() {
     catch(e) {
         global.logError('Failed to refresh list of applets ' + e); 
     }
-    
+
     Main.statusIconDispatcher.redisplay();
 }
 
@@ -155,7 +161,7 @@ function add_applet_to_panels(appletDefinition) {
             let directory = _find_applet(uuid);
             if (directory != null) {
                 // Load the applet
-                let applet = loadApplet(uuid, directory, orientation);
+                let applet = loadApplet(uuid, directory, orientation, panel.actor.get_height());
                 applet._order = order;
                 
                 // Remove it from its previous panel location (if it had one)
@@ -186,7 +192,7 @@ function add_applet_to_panels(appletDefinition) {
                     location.add(applet.actor);    
                 }
 
-                applet._panelLocation = location;                  
+                applet._panelLocation = location;
                 for (let i=0; i<appletsToMove.length; i++) {
                     location.add(appletsToMove[i]);
                 }
@@ -263,7 +269,7 @@ function get_role_provider_exists(role) {
     return false;
 }
 
-function loadApplet(uuid, dir, orientation) {    
+function loadApplet(uuid, dir, orientation, panel_height) {    
     let info;    
     let applet = null;
     
@@ -306,7 +312,7 @@ function loadApplet(uuid, dir, orientation) {
     }
 
     if (applets[uuid] != undefined) {
-        log(uuid + ' applet already loaded');        
+        log(uuid + ' applet already loaded');
         appletObj[uuid].setOrientation(orientation);
         return (appletObj[uuid]);
     }
@@ -355,7 +361,7 @@ function loadApplet(uuid, dir, orientation) {
     }
 
     try {        
-        applet = appletModule.main(meta, orientation);                
+        applet = appletModule.main(meta, orientation, panel_height);                
         global.log('Loaded applet ' + meta.uuid);        
     } catch (e) {
         if (stylesheetPath != null)
@@ -376,18 +382,18 @@ function loadApplet(uuid, dir, orientation) {
     return(applet);
 }
 
-function _removeAppletFromPanel(menuitem, event, uuid) {     
+function _removeAppletFromPanel(menuitem, event, uuid) {
     for (let i=0; i<enabledApplets.length; i++) {
-        let appletDefinition = enabledApplets[i];           
+        let appletDefinition = enabledApplets[i];
         let elements = appletDefinition.split(":");
         if (elements.length == 4) {
-            let applet_uuid = elements[3];                
-            if (uuid == applet_uuid) {   
-                newEnabledApplets = enabledApplets.slice(0);             
+            let applet_uuid = elements[3];
+            if (uuid == applet_uuid) {
+                let newEnabledApplets = enabledApplets.slice(0);
                 newEnabledApplets.splice(i, 1);
-                global.settings.set_strv('enabled-applets', newEnabledApplets);                            
-                break;   
-            }                    
+                global.settings.set_strv('enabled-applets', newEnabledApplets);
+                break;
+            }
         }
     }
 }
@@ -433,4 +439,22 @@ function saveAppletsPositions() {
         allApplets[i]._newOrder = null;
     }
     global.settings.set_strv('enabled-applets', applets);
+}
+
+function updateAppletPanelHeights(force_recalc) {
+    for (let i=0; i<enabledApplets.length; i++) {
+        let appletDefinition = enabledApplets[i];   
+        let elements = appletDefinition.split(":");
+        if (elements.length == 4) {
+            let uuid = elements[3];
+            let panel = Main.panel;
+            if (elements[0] == "panel2") {
+                panel = Main.panel2;
+            }
+            let newheight = panel.actor.get_height();
+            if (appletObj[uuid]._panelHeight != newheight || force_recalc) {
+                appletObj[uuid].setPanelHeight(newheight);
+            }
+        }
+    }
 }

@@ -74,6 +74,14 @@
       </_description>
     </key>
     
+    <key name="panel-scale-text-icons" type="b">
+      <default>false</default>
+      <_summary>Scale panel applet text and icons</_summary>
+      <_description>
+        Whether the panel icons and text from applets is resized according to the custom panel height
+      </_description>
+    </key>
+
     <key name="desktop-effects" type="b">
       <default>true</default>
       <_summary>Enable desktop effects</_summary>
@@ -462,6 +470,14 @@
       <_description>
        Controls the style of the ALT-tab window switcher. Can be any combination of "icons", "preview" and "thumbnails", separated by "+".
       </_description>
+    </key>
+
+    <key name="window-list-applet-scroll" type="b">
+      <default>false</default>
+      <summary>Enable mouse-scroll in window-list applet</summary>
+      <description>
+        When enabled the mouse wheel can scroll through the items in the window list applet.
+      </description>
     </key>
 
     <key type="b" name="enable-edge-flip">

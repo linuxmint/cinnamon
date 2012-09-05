@@ -14,15 +14,15 @@ const NotificationDestroyedReason = imports.ui.messageTray.NotificationDestroyed
 let MT = Main.messageTray;
 
 
-function MyApplet(metadata, orientation) {
-    this._init(metadata, orientation);
+function MyApplet(metadata, orientation, panel_height) {
+    this._init(metadata, orientation, panel_height);
 }
 
 MyApplet.prototype = {
     __proto__: Applet.TextIconApplet.prototype,
 
-    _init: function(metadata, orientation) {
-        Applet.TextIconApplet.prototype._init.call(this, orientation);
+    _init: function(metadata, orientation, panel_height) {
+        Applet.TextIconApplet.prototype._init.call(this, orientation, panel_height);
 
         try {
             Gtk.IconTheme.get_default().append_search_path(metadata.path);
@@ -52,7 +52,7 @@ MyApplet.prototype = {
             this.clear_action = new PopupMenu.PopupMenuItem(_("Clear notifications"));
             this.menu.addMenuItem(this.clear_action);
             this.clear_action.connect('activate', Lang.bind(this, this._clear_all));
-            
+            this.clear_action.actor.hide();
             this.scrollview = new St.ScrollView({ x_fill: true, y_fill: true, y_align: St.Align.START});
             
             this._maincontainer.add(this.scrollview);
@@ -78,11 +78,14 @@ MyApplet.prototype = {
         notification.actor.unparent();
         let existing_index = this.notifications.indexOf(notification);
         if (existing_index != -1) {
+            notification._inNotificationBin = true;
             notification.actor.reparent(this._notificationbin);
             notification.expand();
+            notification._timeLabel.show();
             this.update_list();
             return;
         }
+        notification._inNotificationBin = true;
         this.notifications.push(notification);
         notification.expand();
         this._notificationbin.add(notification.actor)
@@ -90,6 +93,7 @@ MyApplet.prototype = {
         notification.actor.add_style_class_name('notification-applet-padding');
         notification.connect('clicked', Lang.bind(this, this._item_clicked));
         notification.connect('destroy', Lang.bind(this, this._item_clicked));
+        notification._timeLabel.show();
         this.update_list();
     },
 
@@ -210,8 +214,8 @@ MyApplet.prototype = {
     }
 };
 
-function main(metadata, orientation) {
-    let myApplet = new MyApplet(metadata, orientation);
+function main(metadata, orientation, panel_height) {
+    let myApplet = new MyApplet(metadata, orientation, panel_height);
     return myApplet;
 }
 

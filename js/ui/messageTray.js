@@ -444,6 +444,7 @@ Notification.prototype = {
         this._scrollPolicy = Gtk.PolicyType.AUTOMATIC;
         this._imageBin = null;
         this._timestamp = new Date();
+        this._inNotificationBin = false;
         let calendarSettings = new Gio.Settings({ schema: 'org.cinnamon.calendar' });
         this.dateFormat = calendarSettings.get_string('date-format');
 
@@ -492,6 +493,7 @@ Notification.prototype = {
         this._titleLabel = new St.Label();
         this._bannerBox.add_actor(this._titleLabel);
         this._bannerBox.add_actor(this._timeLabel);
+        this._timeLabel.hide();
         this._bannerUrlHighlighter = new URLHighlighter();
         this._bannerLabel = this._bannerUrlHighlighter.actor;
         this._bannerBox.add_actor(this._bannerLabel);
@@ -509,6 +511,7 @@ Notification.prototype = {
     // remove any additional actors/action buttons previously added.
     update: function(title, banner, params) {
         this._timestamp = new Date();
+        this._inNotificationBin = false;
         params = Params.parse(params, { customContent: false,
                                         body: null,
                                         icon: null,
@@ -565,6 +568,7 @@ Notification.prototype = {
         title = title ? _fixMarkup(title.replace(/\n/g, ' '), params.titleMarkup) : '';
         this._titleLabel.clutter_text.set_markup('<b>' + title + '</b>');
         this._timeLabel.clutter_text.set_markup(this._timestamp.toLocaleTimeString(this.dateFormat));
+        this._timeLabel.hide();
         if (Pango.find_base_dir(title, -1) == Pango.Direction.RTL)
             this._titleDirection = St.TextDirection.RTL;
         else
@@ -846,13 +850,20 @@ Notification.prototype = {
             titleBox.x2 = titleBoxW;
             timeBox.x2 = timeBoxW;
         }
-        timeBox.y1 = 0;
-        timeBox.y2 = timeNatH;
-        titleBox.y1 = timeNatH;
-        titleBox.y2 = timeNatH + titleNatH;
+        if (this._inNotificationBin) {
+            timeBox.y1 = 0;
+            timeBox.y2 = timeNatH;
+            titleBox.y1 = timeNatH;
+            titleBox.y2 = timeNatH + titleNatH;
+        } else {
+            titleBox.y1 = 0;
+            titleBox.y2 = titleNatH;
+        }
 
         this._titleLabel.allocate(titleBox, flags);
-        this._timeLabel.allocate(timeBox, flags);
+        if (this._inNotificationBin) {
+            this._timeLabel.allocate(timeBox, flags);
+        }
         this._titleFitsInBannerMode = (titleNatW <= availWidth);
 
         let bannerFits = true;
@@ -874,8 +885,13 @@ Notification.prototype = {
 
                 bannerFits = (bannerBox.x1 + bannerNatW <= availWidth);
             }
-            bannerBox.y1 = timeNatH;
-            bannerBox.y2 = timeNatH + titleNatH;
+            if (this._inNotificationBin) {
+                bannerBox.y1 = timeNatH;
+                bannerBox.y2 = timeNatH + titleNatH;
+            } else {
+                bannerBox.y1 = 0;
+                bannerBox.y2 = titleNatH;
+            }
             this._bannerLabel.allocate(bannerBox, flags);
 
             // Make _bannerLabel visible if the entire notification
