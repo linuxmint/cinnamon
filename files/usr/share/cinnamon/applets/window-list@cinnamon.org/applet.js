@@ -70,18 +70,20 @@ AppMenuButtonRightClickMenu.prototype = {
             this.addMenuItem(this.itemMoveToLeftWorkspace);
             this.addMenuItem(this.itemMoveToRightWorkspace);
             this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-            this.addMenuItem(this.itemMinimizeWindow);
-            this.addMenuItem(this.itemMaximizeWindow);
             this.addMenuItem(this.itemCloseAllWindows);
             this.addMenuItem(this.itemCloseOtherWindows);
+            this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+            this.addMenuItem(this.itemMinimizeWindow);
+            this.addMenuItem(this.itemMaximizeWindow);            
             this.addMenuItem(this.itemCloseWindow);                        
         }
         else {
-            this.addMenuItem(this.itemCloseWindow);
-            this.addMenuItem(this.itemCloseOtherWindows);
-            this.addMenuItem(this.itemCloseAllWindows);
+            this.addMenuItem(this.itemCloseWindow);            
             this.addMenuItem(this.itemMaximizeWindow);
             this.addMenuItem(this.itemMinimizeWindow);
+            this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+            this.addMenuItem(this.itemCloseOtherWindows);
+            this.addMenuItem(this.itemCloseAllWindows);
             this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
             this.addMenuItem(this.itemMoveToLeftWorkspace);
             this.addMenuItem(this.itemMoveToRightWorkspace);
