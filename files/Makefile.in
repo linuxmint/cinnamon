@@ -2,6 +2,8 @@ all:
 
 clean:
 
+distclean:
+
 install:
 	find -mindepth 1 -maxdepth 1 -type d -exec cp -R {} $(DESTDIR)/ \;
 

@@ -175,7 +175,6 @@ libst_1_0_la_SOURCES =				\
 	$(st_built_sources)			\
 	$(NULL)
 libst_1_0_la_CPPFLAGS = $(st_cflags)
-libst_1_0_la_LDFLAGS = $(LDADD)
 
 noinst_PROGRAMS += test-theme
 

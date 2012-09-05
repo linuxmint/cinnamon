@@ -182,7 +182,7 @@ def start_perf_helper():
     if running_from_source_tree:
         perf_helper_path = os.path.join(self_dir, "cinnamon-perf-helper")
     else:
-        perf_helper_path = "@libexecdir@/cinnamon-perf-helper"
+        perf_helper_path = "@pkglibexecdir@/cinnamon-perf-helper"
 
     subprocess.Popen([perf_helper_path])
     wait_for_dbus_name (PERF_HELPER_NAME)
