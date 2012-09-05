@@ -112,7 +112,7 @@ Applet.prototype = {
 
         this._scaleMode = false;
         this._applet_tooltip_text = "";
-        this._scaleMode = global.settings.get_boolean('panel-scale-text-icons');
+        this._scaleMode = global.settings.get_boolean('panel-scale-text-icons') && global.settings.get_boolean('panel-resizable');
         this.context_menu_item_remove = null;
         this.context_menu_separator = null;
 
@@ -273,7 +273,7 @@ IconApplet.prototype = {
             this._applet_icon = new St.Icon({icon_name: icon_name, icon_size: this._panelHeight * COLOR_ICON_HEIGHT_FACTOR,
                                             icon_type: St.IconType.FULLCOLOR, reactive: true, track_hover: true, style_class: 'applet-icon' });
         } else {
-            this._applet_icon = new St.Icon({icon_name: icon_name, icon_type: St.IconType.FULLCOLOR, reactive: true, track_hover: true, style_class: 'applet-icon' });
+            this._applet_icon = new St.Icon({icon_name: icon_name, icon_size: 22, icon_type: St.IconType.FULLCOLOR, reactive: true, track_hover: true, style_class: 'applet-icon' });
         }
         this._applet_icon_box.child = this._applet_icon;
         this.__icon_type = St.IconType.FULLCOLOR;
@@ -310,7 +310,7 @@ IconApplet.prototype = {
     },
 
     on_panel_height_changed: function() {
-        this._scaleMode = global.settings.get_boolean('panel-scale-text-icons');
+        this._scaleMode = global.settings.get_boolean('panel-scale-text-icons') && global.settings.get_boolean('panel-resizable');
         if (this._applet_icon_box.child) {
             this._applet_icon_box.child.destroy();
         }
