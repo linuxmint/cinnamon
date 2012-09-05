@@ -40,7 +40,7 @@ MyApplet.prototype = {
 
 			for ( let wks=0; wks<global.screen.n_workspaces; ++wks ) {
 				// construct a list with all windows
-				let workspace_name = Main.workspace_names[wks];
+				let workspace_name = Main.getWorkspaceName(wks);
 				let metaWorkspace = global.screen.get_workspace_by_index(wks);
 				let windows = metaWorkspace.list_windows();				
 				let sticky_windows = windows.filter(
