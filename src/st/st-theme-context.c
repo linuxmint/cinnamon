@@ -130,13 +130,20 @@ on_stage_destroy (ClutterStage *stage)
   g_object_unref (context);
 }
 
+static gboolean
+emit_changed (StThemeContext *context)
+{
+  g_signal_emit (context, signals[CHANGED], 0);
+  return FALSE;
+}
+
 static void
 st_theme_context_changed (StThemeContext *context)
 {
   StThemeNode *old_root = context->root_node;
   context->root_node = NULL;
 
-  g_signal_emit (context, signals[CHANGED], 0);
+  emit_changed (context);
 
   if (old_root)
     g_object_unref (old_root);
@@ -149,8 +156,9 @@ on_icon_theme_changed (StTextureCache *cache,
   /* Note that an icon theme change isn't really a change of the StThemeContext;
    * the style information has changed. But since the style factors into the
    * icon_name => icon lookup, faking a theme context change is a good way
-   * to force users such as StIcon to look up icons again */
-  st_theme_context_changed (context);
+   * to force users such as StIcon to look up icons again. Don't bother recreating
+   * the root node, though. */
+  g_idle_add ((GSourceFunc) emit_changed, context);
 }
 
 /**

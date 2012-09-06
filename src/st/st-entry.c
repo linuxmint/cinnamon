@@ -549,38 +549,6 @@ st_entry_pick (ClutterActor       *actor,
 }
 
 static void
-st_entry_map (ClutterActor *actor)
-{
-  StEntryPrivate *priv = ST_ENTRY (actor)->priv;
-
-  CLUTTER_ACTOR_CLASS (st_entry_parent_class)->map (actor);
-
-  clutter_actor_map (priv->entry);
-
-  if (priv->primary_icon)
-    clutter_actor_map (priv->primary_icon);
-
-  if (priv->secondary_icon)
-    clutter_actor_map (priv->secondary_icon);
-}
-
-static void
-st_entry_unmap (ClutterActor *actor)
-{
-  StEntryPrivate *priv = ST_ENTRY (actor)->priv;
-
-  CLUTTER_ACTOR_CLASS (st_entry_parent_class)->unmap (actor);
-
-  clutter_actor_unmap (priv->entry);
-
-  if (priv->primary_icon)
-    clutter_actor_unmap (priv->primary_icon);
-
-  if (priv->secondary_icon)
-    clutter_actor_unmap (priv->secondary_icon);
-}
-
-static void
 st_entry_clipboard_callback (StClipboard *clipboard,
                              const gchar *text,
                              gpointer     data)
@@ -695,8 +663,6 @@ st_entry_class_init (StEntryClass *klass)
   actor_class->allocate = st_entry_allocate;
   actor_class->paint = st_entry_paint;
   actor_class->pick = st_entry_pick;
-  actor_class->map = st_entry_map;
-  actor_class->unmap = st_entry_unmap;
 
   actor_class->key_press_event = st_entry_key_press_event;
   actor_class->key_focus_in = st_entry_key_focus_in;
