@@ -99,7 +99,7 @@ PanelAppLauncher.prototype = {
                               Lang.bind(this, this._updateIconBoxClip));
         this.actor.add_actor(this._iconBox);
         this._iconBottomClip = 0;
-        if (global.settings.get_boolean('panel-scale-text-icons')) {
+        if (global.settings.get_boolean('panel-scale-text-icons') && global.settings.get_boolean('panel-resizable')) {
             this.icon_height = Math.floor(panel_height * ICON_HEIGHT_FACTOR);
             this.icon_anim_height = Math.floor(panel_height * ICON_ANIM_FACTOR);
         } else {
