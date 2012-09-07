@@ -67,7 +67,7 @@ Expo.prototype = {
 
         this.visible = false;           // animating to overview, in overview, animating out
         this._shown = false;            // show() and not hide()
-        this._shownTemporarily = false; // showTemporarily() and not hilog("huasuhashusu");deTemporarily()
+        this._shownTemporarily = false; // showTemporarily() and not hideTemporarily()
         this._modal = false;            // have a modal grab
         this.animationInProgress = false;
         this._hideInProgress = false;
@@ -161,8 +161,8 @@ Expo.prototype = {
         let primary = Main.layoutManager.primaryMonitor;
         let rtl = (St.Widget.get_default_direction () == St.TextDirection.RTL);
 
-        let contentY = Main.panel.actor.height;
-        let contentHeight = primary.height - contentY - Main.panel.actor.height;
+        let contentY = 0;
+        let contentHeight = primary.height;
 
         this._group.set_position(primary.x, primary.y);
         this._group.set_size(primary.width, primary.height);
@@ -288,24 +288,11 @@ Expo.prototype = {
         this.allocateID = this.activeWorkspace.connect('allocated', Lang.bind(this, this._animateVisible2));
 
         this._createClone(activeWorkspaceActor);
-        if (global.settings.get_string("desktop-layout") != 'traditional' && !global.settings.get_boolean("panel-autohide"))
-            this.clone.set_position(0, Main.panel.actor.height); 
-
         this.clone.show();
 
         this._gradient.show();
-        
-        if (Main.panel)
-            Tweener.addTween(Main.panel.actor, {    opacity: 0, 
-                                                    time: ANIMATION_TIME, 
-                                                    transition: 'easeOutQuad', 
-                                                    onComplete: function(){Main.panel.actor.hide();}});
-        if (Main.panel2)
-            Tweener.addTween(Main.panel2.actor, {   opacity: 0, 
-                                                    time: ANIMATION_TIME, 
-                                                    transition: 'easeOutQuad', 
-                                                    onComplete: function(){Main.panel2.actor.hide();}});
-        
+        Main.disablePanels();
+
         this._background.dim_factor = 1;
         Tweener.addTween(this._background,
                             { dim_factor: 0.4,
@@ -322,7 +309,7 @@ Expo.prototype = {
         this.emit('showing');
     },
 
-    //We need to allocate activeWorkspace before we begin it's clone animation
+    //We need to allocate activeWorkspace before we begin its clone animation
     _animateVisible2: function() {
         this.activeWorkspace.disconnect(this.allocateID);
         let activeWorkspaceActor = this._expo._thumbnailsBox._lastActiveWorkspace.actor;
@@ -435,25 +422,8 @@ Expo.prototype = {
 
         this.animationInProgress = true;
         this._hideInProgress = true;
-        let maximizedWindow = false;
-        let windows = global.screen.get_active_workspace().list_windows();
-        for (let i = 0; i < windows.length; i++) {
-            let metaWindow = windows[i];
-            if (metaWindow.showing_on_its_workspace() &&
-                metaWindow.maximized_horizontally &&
-                metaWindow.maximized_vertically)
-                maximizedWindow = true;
-        }
 
-        if (Main.panel){
-            Main.panel.actor.show();
-            Tweener.addTween(Main.panel.actor, {opacity: 255, time: ANIMATION_TIME, transition: 'easeOutQuad'});
-        }
-        if (Main.panel2){
-            Main.panel2.actor.show();
-            Tweener.addTween(Main.panel2.actor, {opacity: 255, time: ANIMATION_TIME, transition: 'easeOutQuad'});
-        }
-
+        Main.enablePanels();
         Tweener.addTween(this._background,
                          { dim_factor: 1,
                            time: ANIMATION_TIME,
@@ -468,14 +438,11 @@ Expo.prototype = {
         this._createClone(activeWorkspaceActor);
         this.clone.set_position(activeWorkspaceActor.allocation.x1, activeWorkspaceActor.allocation.y1);
         this.clone.set_scale(activeWorkspaceActor.get_scale()[0], activeWorkspaceActor.get_scale()[1]);
-        this.clone.show();
-        let y = 0;
-        if (global.settings.get_string("desktop-layout") != 'traditional' && !global.settings.get_boolean("panel-autohide"))
-            y = Main.panel.actor.height; 
-        Tweener.addTween(this.clone, {  x: 0, 
-                                        y: y, 
-                                        scale_x: 1 , 
-                                        scale_y: 1, 
+        let porthole = Main.layoutManager.getPorthole();
+        Tweener.addTween(this.clone, {  x: porthole.x, 
+                                        y: porthole.y,
+                                        scale_x: 1,
+                                        scale_y: 1,
                                         time: ANIMATION_TIME, 
                                         transition: 'easeOutQuad', 
                                         onComplete: this.hide});
