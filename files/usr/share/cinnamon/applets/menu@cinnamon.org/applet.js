@@ -647,6 +647,130 @@ FavoritesBox.prototype = {
     }
 }
 
+// Couple constants for auto scroll area definition
+const UPPER = 1;
+const LOWER = 0;
+
+// Speeds - actually Mainloop delay amounts, selected
+// depending on which region you're in.
+const FAST_DELAY = 2;
+const MED_DELAY = 25;
+const SLOW_DELAY = 50;
+
+// Scroll step amount
+const FAST_STEP = 16;
+const MED_STEP = 8;
+const SLOW_STEP = 5
+
+const SUBREGION_HEIGHT_ACTIVE = "height: 7px";
+const SUBREGION_HEIGHT_INACTIVE = "height: 1px";
+
+function AutoScrollArea(position, scrollView) {
+    this._init(position, scrollView);
+}
+
+AutoScrollArea.prototype = {
+    _init: function(position, scrollView) {
+        this.position = position;
+        this.scrollBar = scrollView.get_vscroll_bar().get_adjustment();
+
+        this._inRegion = false;
+        this.actor = new St.BoxLayout({vertical: true});
+        this.slowRegion = new St.Button({reactive: true, style: SUBREGION_HEIGHT_INACTIVE});
+        this.medRegion = new St.Button({reactive: true, style: SUBREGION_HEIGHT_INACTIVE});
+        this.fastRegion = new St.Button({reactive: true, style: SUBREGION_HEIGHT_INACTIVE});
+
+        if (this.position == UPPER) {
+            this.actor.add_actor(this.fastRegion);
+            this.actor.add_actor(this.medRegion);
+            this.actor.add_actor(this.slowRegion);
+        } else {
+            this.actor.add_actor(this.slowRegion);
+            this.actor.add_actor(this.medRegion);
+            this.actor.add_actor(this.fastRegion);
+        }
+
+        this.slowRegion.delay = SLOW_DELAY;
+        this.slowRegion.step = SLOW_STEP;
+        this.medRegion.delay = MED_DELAY;
+        this.medRegion.step = MED_STEP;
+        this.fastRegion.delay = FAST_DELAY;
+        this.fastRegion.step = FAST_STEP;
+
+        this.slowRegion.inRegion = false;
+        this.medRegion.inRegion = false;
+        this.fastRegion.inRegion = false;
+
+        this.signals = { slowEnter: null,
+                         slowLeave: null,
+                          medEnter: null,
+                          medLeave: null,
+                         fastEnter: null,
+                         fastLeave: null };
+
+        global.settings.connect("changed::menu-enable-autoscroll", Lang.bind(this, this.updateEnabled));
+        this.updateEnabled();
+    },
+
+    _onEnterRegion: function(region) {
+        region.inRegion = true;
+        this._doScroll(region);
+    },
+
+    _onLeaveRegion: function(region) {
+        region.inRegion = false;
+    },
+
+    _doScroll: function(region) {
+        if (region.inRegion) {
+            let new_pos;
+            let cur_pos = this.scrollBar.get_value();
+            if (this.position == UPPER) {
+                new_pos = cur_pos - region.step;
+            } else {
+                new_pos = cur_pos + region.step;
+            }
+            this.scrollBar.set_value(new_pos);
+            Mainloop.timeout_add(region.delay, Lang.bind(this, function() {
+                this._doScroll(region);
+            }));
+        }
+    },
+
+    updateEnabled: function() {
+        let enabled = global.settings.get_boolean("menu-enable-autoscroll");
+        if (enabled) {
+            this.enable();
+        } else {
+            this.disable();
+        }
+    },
+
+    disable: function() {
+        this.slowRegion.disconnect(this.signals.slowEnter);
+        this.slowRegion.disconnect(this.signals.slowLeave);
+        this.medRegion.disconnect(this.signals.medEnter);
+        this.medRegion.disconnect(this.signals.medLeave);
+        this.fastRegion.disconnect(this.signals.fastEnter);
+        this.fastRegion.disconnect(this.signals.fastLeave);
+        this.slowRegion.set_style(SUBREGION_HEIGHT_INACTIVE);
+        this.medRegion.set_style(SUBREGION_HEIGHT_INACTIVE);
+        this.fastRegion.set_style(SUBREGION_HEIGHT_INACTIVE);
+    },
+
+    enable: function() {
+        this.signals.slowEnter = this.slowRegion.connect('enter-event', Lang.bind(this, this._onEnterRegion));
+        this.signals.medEnter = this.medRegion.connect('enter-event', Lang.bind(this, this._onEnterRegion));
+        this.signals.fastEnter = this.fastRegion.connect('enter-event', Lang.bind(this, this._onEnterRegion));
+        this.signals.slowLeave = this.slowRegion.connect('leave-event', Lang.bind(this, this._onLeaveRegion));
+        this.signals.medLeave = this.medRegion.connect('leave-event', Lang.bind(this, this._onLeaveRegion));
+        this.signals.fastLeave = this.fastRegion.connect('leave-event', Lang.bind(this, this._onLeaveRegion));
+        this.slowRegion.set_style(SUBREGION_HEIGHT_ACTIVE);
+        this.medRegion.set_style(SUBREGION_HEIGHT_ACTIVE);
+        this.fastRegion.set_style(SUBREGION_HEIGHT_ACTIVE);
+    }
+}
+
 function MyApplet(orientation, panel_height) {
     this._init(orientation, panel_height);
 }
@@ -1098,7 +1222,6 @@ MyApplet.prototype = {
                 this._addEnterEvent(button, Lang.bind(this, function() {
                         this._clearPrevAppSelection(button.actor);
                         button.actor.style_class = "menu-application-button-selected";
-                        this._scrollToButton(button);
                         this.selectedAppDescription.set_text(button.place.id.slice(16));
                         }));
                 button.actor.connect('leave-event', Lang.bind(this, function() {
@@ -1142,7 +1265,6 @@ MyApplet.prototype = {
                 this._addEnterEvent(button, Lang.bind(this, function() {
                         this._clearPrevAppSelection(button.actor);
                         button.actor.style_class = "menu-application-button-selected";
-                        this._scrollToButton(button);
                         this.selectedAppDescription.set_text(button.file.uri.slice(7));
                         }));
                 button.actor.connect('leave-event', Lang.bind(this, function() {
@@ -1317,7 +1439,6 @@ MyApplet.prototype = {
             this.selectedAppDescription.set_text("");
         this._clearPrevAppSelection(applicationButton.actor);
         applicationButton.actor.style_class = "menu-application-button-selected";
-        this._scrollToButton(applicationButton);
     },
 
     find_dupe: function(app) {
@@ -1375,6 +1496,7 @@ MyApplet.prototype = {
         this.categoriesApplicationsBox = new CategoriesApplicationsBox();
         rightPane.add_actor(this.categoriesApplicationsBox.actor);
         this.categoriesBox = new St.BoxLayout({ style_class: 'menu-categories-box', vertical: true });
+        this.autoScrollBox = new St.BoxLayout({ vertical: true });
         this.applicationsScrollBox = new St.ScrollView({ x_fill: true, y_fill: false, y_align: St.Align.START, style_class: 'vfade menu-applications-scrollbox' });
         
         let vscroll = this.applicationsScrollBox.get_vscroll_bar();
@@ -1391,10 +1513,17 @@ MyApplet.prototype = {
         this.applicationsScrollBox.add_actor(this.applicationsBox);
         this.applicationsScrollBox.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC);
         this.categoriesApplicationsBox.actor.add_actor(this.categoriesBox);
-        this.categoriesApplicationsBox.actor.add_actor(this.applicationsScrollBox);
-                     
+
+        this.upperScrollRegion = new AutoScrollArea(UPPER, this.applicationsScrollBox);
+        this.lowerScrollRegion = new AutoScrollArea(LOWER, this.applicationsScrollBox);
+
+        this.autoScrollBox.add_actor(this.upperScrollRegion.actor);
+        this.autoScrollBox.add_actor(this.applicationsScrollBox);
+        this.autoScrollBox.add_actor(this.lowerScrollRegion.actor);
+        this.categoriesApplicationsBox.actor.add_actor(this.autoScrollBox);
+
         this._refreshFavs();
-                                                          
+
         this.mainBox = new St.BoxLayout({ style_class: 'menu-applications-box', vertical:false });       
                 
         this.mainBox.add_actor(leftPane, { span: 1 });
