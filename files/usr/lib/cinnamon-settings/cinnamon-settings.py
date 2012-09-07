@@ -653,8 +653,8 @@ class ThemeViewSidePage (SidePage):
         other_settings_box.pack_start(menusHaveIconsCB, False, False, 2)
         buttonsHaveIconsCB = GSettingsCheckButton(_("Buttons Have Icons"), "org.gnome.desktop.interface", "buttons-have-icons", None)
         other_settings_box.pack_start(buttonsHaveIconsCB, False, False, 2)
-        if 'org.gnome.nautilus' in Gio.Settings.list_schemas():
-            alwaysUseLocationEntryCB = GSettingsCheckButton(_("Always Use Location Entry"), "org.gnome.nautilus.preferences", "always-use-location-entry", None)
+        if 'org.nemo' in Gio.Settings.list_schemas():
+            alwaysUseLocationEntryCB = GSettingsCheckButton(_("Always Use Location Entry"), "org.nemo.preferences", "show-location-entry", None)
             other_settings_box.pack_start(alwaysUseLocationEntryCB, False, False, 2)
         cursorThemeSwitcher = GSettingsComboBox(_("Cursor theme"), "org.gnome.desktop.interface", "cursor-theme", None, self._load_cursor_themes())
         other_settings_box.pack_start(cursorThemeSwitcher, False, False, 2)
@@ -1931,23 +1931,23 @@ class MainWindow:
         sidePage = ExtensionViewSidePage(_("Extensions"), "extensions.svg", self.content_box)
         self.sidePages.append((sidePage, "extensions"))
         
-        if 'org.gnome.nautilus' in Gio.Settings.list_schemas():
-            nautilus_desktop_schema = Gio.Settings.new("org.gnome.nautilus.desktop")
-            nautilus_desktop_keys = nautilus_desktop_schema.list_keys()
+        if 'org.nemo' in Gio.Settings.list_schemas():
+            nemo_desktop_schema = Gio.Settings.new("org.nemo.desktop")
+            nemo_desktop_keys = nemo_desktop_schema.list_keys()
                             
             sidePage = SidePage(_("Desktop"), "desktop.svg", self.content_box)
             self.sidePages.append((sidePage, "desktop"))
             sidePage.add_widget(GSettingsCheckButton(_("Have file manager handle the desktop"), "org.gnome.desktop.background", "show-desktop-icons", None))
-            if "computer-icon-visible" in nautilus_desktop_keys:
-                sidePage.add_widget(GSettingsCheckButton(_("Computer icon visible on desktop"), "org.gnome.nautilus.desktop", "computer-icon-visible", "org.gnome.desktop.background/show-desktop-icons"))
-            if "home-icon-visible" in nautilus_desktop_keys:
-                sidePage.add_widget(GSettingsCheckButton(_("Home icon visible on desktop"), "org.gnome.nautilus.desktop", "home-icon-visible", "org.gnome.desktop.background/show-desktop-icons"))
-            if "network-icon-visible" in nautilus_desktop_keys:
-                sidePage.add_widget(GSettingsCheckButton(_("Network Servers icon visible on desktop"), "org.gnome.nautilus.desktop", "network-icon-visible", "org.gnome.desktop.background/show-desktop-icons"))
-            if "trash-icon-visible" in nautilus_desktop_keys:
-                sidePage.add_widget(GSettingsCheckButton(_("Trash icon visible on desktop"), "org.gnome.nautilus.desktop", "trash-icon-visible", "org.gnome.desktop.background/show-desktop-icons"))
-            if "volumes-visible" in nautilus_desktop_keys:
-                sidePage.add_widget(GSettingsCheckButton(_("Show mounted volumes on the desktop"), "org.gnome.nautilus.desktop", "volumes-visible", "org.gnome.desktop.background/show-desktop-icons"))
+            if "computer-icon-visible" in nemo_desktop_keys:
+                sidePage.add_widget(GSettingsCheckButton(_("Computer icon visible on desktop"), "org.nemo.desktop", "computer-icon-visible", "org.gnome.desktop.background/show-desktop-icons"))
+            if "home-icon-visible" in nemo_desktop_keys:
+                sidePage.add_widget(GSettingsCheckButton(_("Home icon visible on desktop"), "org.nemo.desktop", "home-icon-visible", "org.gnome.desktop.background/show-desktop-icons"))
+            if "network-icon-visible" in nemo_desktop_keys:
+                sidePage.add_widget(GSettingsCheckButton(_("Network Servers icon visible on desktop"), "org.nemo.desktop", "network-icon-visible", "org.gnome.desktop.background/show-desktop-icons"))
+            if "trash-icon-visible" in nemo_desktop_keys:
+                sidePage.add_widget(GSettingsCheckButton(_("Trash icon visible on desktop"), "org.nemo.desktop", "trash-icon-visible", "org.gnome.desktop.background/show-desktop-icons"))
+            if "volumes-visible" in nemo_desktop_keys:
+                sidePage.add_widget(GSettingsCheckButton(_("Show mounted volumes on the desktop"), "org.nemo.desktop", "volumes-visible", "org.gnome.desktop.background/show-desktop-icons"))
         
         sidePage = SidePage(_("Windows"), "windows.svg", self.content_box)
         self.sidePages.append((sidePage, "windows"))
