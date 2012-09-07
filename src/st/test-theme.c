@@ -354,7 +354,7 @@ test_pseudo_class (void)
 
   /* Test the StWidget add/remove pseudo_class interfaces */
   label = st_label_new ("foo");
-  clutter_container_add_actor (CLUTTER_CONTAINER (stage), CLUTTER_ACTOR (label));
+  clutter_actor_add_child (stage, CLUTTER_ACTOR (label));
 
   labelNode = st_widget_get_theme_node (label);
   assert_foreground_color (labelNode, "label", 0x000000ff);

@@ -1822,7 +1822,7 @@ st_theme_node_paint_sliced_border_image (StThemeNode           *node,
   cogl_set_source (material);
 
   {
-    GLfloat rectangles[] =
+    float rectangles[] =
     {
       /* top left corner */
       0, 0, border_left, border_top,
