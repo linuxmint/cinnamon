@@ -1699,7 +1699,17 @@ class TitleBarButtonsOrderSelector(Gtk.Table):
                     else:
                         right_items.append(value)
         self.settings.set_string(self.key, ','.join(str(item) for item in left_items) + ':' + ','.join(str(item) for item in right_items))
-        
+
+
+class IndentedHBox(Gtk.HBox):
+    def __init__(self):
+        super(IndentedHBox, self).__init__()
+        indent = Gtk.Label('\t')
+        self.pack_start(indent, False, False, 0)
+
+    def add(self, item):
+        self.pack_start(item, False, False, 0)
+
 class MainWindow:
   
     # Change pages
@@ -1746,9 +1756,15 @@ class MainWindow:
         sidePage = SidePage(_("Panel"), "panel.svg", self.content_box)
         self.sidePages.append((sidePage, "panel"))                
         sidePage.add_widget(GSettingsCheckButton(_("Auto-hide panel"), "org.cinnamon", "panel-autohide", None))
-        sidePage.add_widget(GSettingsSpinButton(_("Show delay"), "org.cinnamon", "panel-show-delay", "org.cinnamon/panel-autohide", 0, 2000, 50, 200, _("milliseconds")))
-        sidePage.add_widget(GSettingsSpinButton(_("Hide delay"), "org.cinnamon", "panel-hide-delay", "org.cinnamon/panel-autohide", 0, 2000, 50, 200, _("milliseconds")))
-        
+
+        box = IndentedHBox()
+        box.add(GSettingsSpinButton(_("Show delay"), "org.cinnamon", "panel-show-delay", "org.cinnamon/panel-autohide", 0, 2000, 50, 200, _("milliseconds")))
+        sidePage.add_widget(box)
+
+        box = IndentedHBox()
+        box.add(GSettingsSpinButton(_("Hide delay"), "org.cinnamon", "panel-hide-delay", "org.cinnamon/panel-autohide", 0, 2000, 50, 200, _("milliseconds")))
+        sidePage.add_widget(box)
+
         desktop_layouts = [["traditional", _("Traditional (panel at the bottom)")], ["flipped", _("Flipped (panel at the top)")], ["classic", _("Classic (panels at the top and at the bottom)")]]        
         desktop_layouts_combo = GSettingsComboBox(_("Panel layout"), "org.cinnamon", "desktop-layout", None, desktop_layouts)
         sidePage.add_widget(desktop_layouts_combo) 
@@ -1757,11 +1773,20 @@ class MainWindow:
         sidePage.add_widget(label)
 
         sidePage.add_widget(GSettingsCheckButton(_("Use customized panel size (otherwise it's defined by the theme)"), "org.cinnamon", "panel-resizable", None))
-        sidePage.add_widget(GSettingsCheckButton(_("Allow Cinnamon to scale panel text and icons according to the panel heights"), "org.cinnamon", "panel-scale-text-icons", "org.cinnamon/panel-resizable"))
-        sidePage.add_widget(GSettingsSpinButton(_("Top panel height"), "org.cinnamon", "panel-top-height", "org.cinnamon/panel-resizable", 0, 2000, 1, 5, _("Pixels")))
-        sidePage.add_widget(GSettingsSpinButton(_("Bottom panel height"), "org.cinnamon", "panel-bottom-height", "org.cinnamon/panel-resizable",  0, 2000, 1, 5, _("Pixels")))
-        sidePage.add_widget(GSettingsCheckButton(_("Panel edit mode"), "org.cinnamon", "panel-edit-mode", None))
 
+        box = IndentedHBox()
+        box.add(GSettingsCheckButton(_("Allow Cinnamon to scale panel text and icons according to the panel heights"), "org.cinnamon", "panel-scale-text-icons", "org.cinnamon/panel-resizable"))
+        sidePage.add_widget(box)
+
+        box = IndentedHBox()
+        box.add(GSettingsSpinButton(_("Top panel height"), "org.cinnamon", "panel-top-height", "org.cinnamon/panel-resizable", 0, 2000, 1, 5, _("Pixels")))
+        sidePage.add_widget(box)
+
+        box = IndentedHBox()
+        box.add(GSettingsSpinButton(_("Bottom panel height"), "org.cinnamon", "panel-bottom-height", "org.cinnamon/panel-resizable",  0, 2000, 1, 5, _("Pixels")))
+        sidePage.add_widget(box)
+
+        sidePage.add_widget(GSettingsCheckButton(_("Panel edit mode"), "org.cinnamon", "panel-edit-mode", None))
         sidePage = SidePage(_("Calendar"), "clock.svg", self.content_box)
         self.sidePages.append((sidePage, "calendar"))        
         sidePage.add_widget(GSettingsCheckButton(_("Show week dates in calendar"), "org.cinnamon.calendar", "show-weekdate", None))
@@ -1793,22 +1818,20 @@ class MainWindow:
         self.sidePages.append((sidePage, "hotcorner"))
         sidePage.add_widget(GSettingsCheckButton(_("Hot corner icon visible"), "org.cinnamon", "overview-corner-visible", None))
         sidePage.add_widget(GSettingsCheckButton(_("Hot corner enabled"), "org.cinnamon", "overview-corner-hover", None))
-        box = Gtk.HBox()        
+        box = IndentedHBox()
         label = Gtk.Label()
         label.set_markup("%s" % _("Hot corner position:"))
-        box.pack_start(label, False, False, 0)         
+        box.add(label)
         positions = [["topLeft", _("Top left")], ["topRight", _("Top right")], ["bottomLeft", _("Bottom left")], ["bottomRight", _("Bottom right")]]        
-        combo = GSettingsComboBox("", "org.cinnamon", "overview-corner-position", "org.cinnamon/overview-corner-hover", positions)
-        box.pack_start(combo, False, False, 0)               
+        box.add(GSettingsComboBox("", "org.cinnamon", "overview-corner-position", "org.cinnamon/overview-corner-hover", positions))
         sidePage.add_widget(box)
         
-        box = Gtk.HBox()        
+        box = IndentedHBox()
         label = Gtk.Label()
         label.set_markup("%s" % _("Hot corner function:"))
-        box.pack_start(label, False, False, 0)         
+        box.add(label)
         cornerfunctions = [["expo", _("Workspace selection (ala Compiz Expo)")], ["scale", _("Window selection (ala Compiz Scale)")]]     
-        combo = GSettingsComboBox("", "org.cinnamon", "overview-corner-functionality", "org.cinnamon/overview-corner-hover", cornerfunctions)
-        box.pack_start(combo, False, False, 0)               
+        box.add(GSettingsComboBox("", "org.cinnamon", "overview-corner-functionality", "org.cinnamon/overview-corner-hover", cornerfunctions))
         sidePage.add_widget(box)
         
         sidePage.add_widget(GSettingsCheckButton(_("Expo applet: activate on hover"), "org.cinnamon", "expo-applet-hover", None))
@@ -1816,12 +1839,15 @@ class MainWindow:
 
         sidePage = ThemeViewSidePage(_("Themes"), "themes.svg", self.content_box)
         self.sidePages.append((sidePage, "themes"))
-        
+
         sidePage = SidePage(_("Effects"), "desktop-effects.svg", self.content_box)
         self.sidePages.append((sidePage, "effects"))
         sidePage.add_widget(GSettingsCheckButton(_("Enable desktop effects"), "org.cinnamon", "desktop-effects", None))
-        sidePage.add_widget(GSettingsCheckButton(_("Enable desktop effects on dialog boxes"), "org.cinnamon", "desktop-effects-on-dialogs", "org.cinnamon/desktop-effects"))
-        
+
+        box = IndentedHBox()
+        box.add(GSettingsCheckButton(_("Enable desktop effects on dialog boxes"), "org.cinnamon", "desktop-effects-on-dialogs", "org.cinnamon/desktop-effects"))
+        sidePage.add_widget(box)
+
         # Destroy window effects
         transition_effects = []
         transition_effects.append(["easeInQuad", "easeInQuad"])
@@ -1856,73 +1882,58 @@ class MainWindow:
         transition_effects.append(["easeInOutBounce", "easeInOutBounce"])
         
         #CLOSING WINDOWS
-        box = Gtk.HBox()        
+        box = IndentedHBox()
         label = Gtk.Label()
         label.set_markup("%s" % _("Closing windows:"))
-        box.pack_start(label, False, False, 0)         
+        box.add(label)
         effects = [["none", _("None")], ["scale", _("Scale")], ["fade", _("Fade")]]        
-        combo = GSettingsComboBox("", "org.cinnamon", "desktop-effects-close-effect", "org.cinnamon/desktop-effects", effects)
-        box.pack_start(combo, False, False, 0)         
-        combo = GSettingsComboBox("", "org.cinnamon", "desktop-effects-close-transition", "org.cinnamon/desktop-effects", transition_effects)
-        box.pack_start(combo, False, False, 0)         
-        spin = GSettingsSpinButton("", "org.cinnamon", "desktop-effects-close-time", "org.cinnamon/desktop-effects", 0, 2000, 50, 200, _("milliseconds"))
-        box.pack_start(spin, False, False, 0)         
+        box.add(GSettingsComboBox("", "org.cinnamon", "desktop-effects-close-effect", "org.cinnamon/desktop-effects", effects))
+        box.add(GSettingsComboBox("", "org.cinnamon", "desktop-effects-close-transition", "org.cinnamon/desktop-effects", transition_effects))
+        box.add(GSettingsSpinButton("", "org.cinnamon", "desktop-effects-close-time", "org.cinnamon/desktop-effects", 0, 2000, 50, 200, _("milliseconds")))
         sidePage.add_widget(box) 
         
         #MAPPING WINDOWS
-        box = Gtk.HBox()        
+        box = IndentedHBox()
         label = Gtk.Label()
         label.set_markup("%s" % _("Mapping windows:"))
-        box.pack_start(label, False, False, 0)         
+        box.add(label)
         effects = [["none", _("None")], ["scale", _("Scale")], ["fade", _("Fade")]]        
-        combo = GSettingsComboBox("", "org.cinnamon", "desktop-effects-map-effect", "org.cinnamon/desktop-effects", effects)
-        box.pack_start(combo, False, False, 0)         
-        combo = GSettingsComboBox("", "org.cinnamon", "desktop-effects-map-transition", "org.cinnamon/desktop-effects", transition_effects)
-        box.pack_start(combo, False, False, 0)         
-        spin = GSettingsSpinButton("", "org.cinnamon", "desktop-effects-map-time", "org.cinnamon/desktop-effects", 0, 2000, 50, 200, _("milliseconds"))
-        box.pack_start(spin, False, False, 0)         
+        box.add(GSettingsComboBox("", "org.cinnamon", "desktop-effects-map-effect", "org.cinnamon/desktop-effects", effects))
+        box.add(GSettingsComboBox("", "org.cinnamon", "desktop-effects-map-transition", "org.cinnamon/desktop-effects", transition_effects))
+        box.add(GSettingsSpinButton("", "org.cinnamon", "desktop-effects-map-time", "org.cinnamon/desktop-effects", 0, 2000, 50, 200, _("milliseconds")))
         sidePage.add_widget(box)
         
         #MINIMIZING WINDOWS
-        box = Gtk.HBox()        
+        box = IndentedHBox()
         label = Gtk.Label()
         label.set_markup("%s" % _("Minimizing windows:"))
-        box.pack_start(label, False, False, 0)         
+        box.add(label)
         effects = [["none", _("None")], ["traditional", _("Traditional")], ["scale", _("Scale")], ["fade", _("Fade")]]
-        combo = GSettingsComboBox("", "org.cinnamon", "desktop-effects-minimize-effect", "org.cinnamon/desktop-effects", effects)
-        box.pack_start(combo, False, False, 0)         
-        combo = GSettingsComboBox("", "org.cinnamon", "desktop-effects-minimize-transition", "org.cinnamon/desktop-effects", transition_effects)
-        box.pack_start(combo, False, False, 0)         
-        spin = GSettingsSpinButton("", "org.cinnamon", "desktop-effects-minimize-time", "org.cinnamon/desktop-effects", 0, 2000, 50, 200, _("milliseconds"))
-        box.pack_start(spin, False, False, 0)         
+        box.add(GSettingsComboBox("", "org.cinnamon", "desktop-effects-minimize-effect", "org.cinnamon/desktop-effects", effects))
+        box.add(GSettingsComboBox("", "org.cinnamon", "desktop-effects-minimize-transition", "org.cinnamon/desktop-effects", transition_effects))
+        box.add(GSettingsSpinButton("", "org.cinnamon", "desktop-effects-minimize-time", "org.cinnamon/desktop-effects", 0, 2000, 50, 200, _("milliseconds")))
         sidePage.add_widget(box)
         
         #MAXIMIZING WINDOWS
-        box = Gtk.HBox()        
+        box = IndentedHBox()
         label = Gtk.Label()
         label.set_markup("%s" % _("Maximizing windows:"))
-        box.pack_start(label, False, False, 0)         
+        box.add(label)
         effects = [["none", _("None")], ["scale", _("Scale")]]        
-        combo = GSettingsComboBox("", "org.cinnamon", "desktop-effects-maximize-effect", "org.cinnamon/desktop-effects", effects)
-        box.pack_start(combo, False, False, 0)         
-        combo = GSettingsComboBox("", "org.cinnamon", "desktop-effects-maximize-transition", "org.cinnamon/desktop-effects", transition_effects)
-        box.pack_start(combo, False, False, 0)         
-        spin = GSettingsSpinButton("", "org.cinnamon", "desktop-effects-maximize-time", "org.cinnamon/desktop-effects", 0, 2000, 50, 200, _("milliseconds"))
-        box.pack_start(spin, False, False, 0)         
+        box.add(GSettingsComboBox("", "org.cinnamon", "desktop-effects-maximize-effect", "org.cinnamon/desktop-effects", effects))
+        box.add(GSettingsComboBox("", "org.cinnamon", "desktop-effects-maximize-transition", "org.cinnamon/desktop-effects", transition_effects))
+        box.add(GSettingsSpinButton("", "org.cinnamon", "desktop-effects-maximize-time", "org.cinnamon/desktop-effects", 0, 2000, 50, 200, _("milliseconds")))
         sidePage.add_widget(box)
         
         #UNMAXIMIZING WINDOWS
-        box = Gtk.HBox()        
+        box = IndentedHBox()
         label = Gtk.Label()
         label.set_markup("%s" % _("Unmaximizing windows:"))
-        box.pack_start(label, False, False, 0)         
+        box.add(label)
         effects = [["none", _("None")], ["scale", _("Scale")]]
-        combo = GSettingsComboBox("", "org.cinnamon", "desktop-effects-unmaximize-effect", "org.cinnamon/desktop-effects", effects)
-        box.pack_start(combo, False, False, 0)         
-        combo = GSettingsComboBox("", "org.cinnamon", "desktop-effects-unmaximize-transition", "org.cinnamon/desktop-effects", transition_effects)
-        box.pack_start(combo, False, False, 0)         
-        spin = GSettingsSpinButton("", "org.cinnamon", "desktop-effects-unmaximize-time", "org.cinnamon/desktop-effects", 0, 2000, 50, 200, _("milliseconds"))
-        box.pack_start(spin, False, False, 0)         
+        box.add(GSettingsComboBox("", "org.cinnamon", "desktop-effects-unmaximize-effect", "org.cinnamon/desktop-effects", effects))
+        box.add(GSettingsComboBox("", "org.cinnamon", "desktop-effects-unmaximize-transition", "org.cinnamon/desktop-effects", transition_effects))
+        box.add(GSettingsSpinButton("", "org.cinnamon", "desktop-effects-unmaximize-time", "org.cinnamon/desktop-effects", 0, 2000, 50, 200, _("milliseconds")))
         sidePage.add_widget(box)
         
         sidePage = AppletViewSidePage(_("Applets"), "applets.svg", self.content_box)
@@ -1939,16 +1950,26 @@ class MainWindow:
             self.sidePages.append((sidePage, "desktop"))
             sidePage.add_widget(GSettingsCheckButton(_("Have file manager (Nemo) handle the desktop"), "org.gnome.desktop.background", "show-desktop-icons", None))
             if "computer-icon-visible" in nemo_desktop_keys:
-                sidePage.add_widget(GSettingsCheckButton(_("Computer icon visible on desktop"), "org.nemo.desktop", "computer-icon-visible", "org.gnome.desktop.background/show-desktop-icons"))
+                box = IndentedHBox()
+                box.add(GSettingsCheckButton(_("Computer icon visible on desktop"), "org.nemo.desktop", "computer-icon-visible", "org.gnome.desktop.background/show-desktop-icons"))
+                sidePage.add_widget(box)
             if "home-icon-visible" in nemo_desktop_keys:
-                sidePage.add_widget(GSettingsCheckButton(_("Home icon visible on desktop"), "org.nemo.desktop", "home-icon-visible", "org.gnome.desktop.background/show-desktop-icons"))
+                box = IndentedHBox()
+                box.add(GSettingsCheckButton(_("Home icon visible on desktop"), "org.nemo.desktop", "home-icon-visible", "org.gnome.desktop.background/show-desktop-icons"))
+                sidePage.add_widget(box)
             if "network-icon-visible" in nemo_desktop_keys:
-                sidePage.add_widget(GSettingsCheckButton(_("Network Servers icon visible on desktop"), "org.nemo.desktop", "network-icon-visible", "org.gnome.desktop.background/show-desktop-icons"))
+                box = IndentedHBox()
+                box.add(GSettingsCheckButton(_("Network Servers icon visible on desktop"), "org.nemo.desktop", "network-icon-visible", "org.gnome.desktop.background/show-desktop-icons"))
+                sidePage.add_widget(box)
             if "trash-icon-visible" in nemo_desktop_keys:
-                sidePage.add_widget(GSettingsCheckButton(_("Trash icon visible on desktop"), "org.nemo.desktop", "trash-icon-visible", "org.gnome.desktop.background/show-desktop-icons"))
+                box = IndentedHBox()
+                box.add(GSettingsCheckButton(_("Trash icon visible on desktop"), "org.nemo.desktop", "trash-icon-visible", "org.gnome.desktop.background/show-desktop-icons"))
+                sidePage.add_widget(box)
             if "volumes-visible" in nemo_desktop_keys:
-                sidePage.add_widget(GSettingsCheckButton(_("Show mounted volumes on the desktop"), "org.nemo.desktop", "volumes-visible", "org.gnome.desktop.background/show-desktop-icons"))
-        
+                box = IndentedHBox()
+                box.add(GSettingsCheckButton(_("Show mounted volumes on the desktop"), "org.nemo.desktop", "volumes-visible", "org.gnome.desktop.background/show-desktop-icons"))
+                sidePage.add_widget(box)
+
         sidePage = SidePage(_("Windows"), "windows.svg", self.content_box)
         self.sidePages.append((sidePage, "windows"))
         sidePage.add_widget(GSettingsComboBox(_("Action on title bar double-click"),
@@ -1976,9 +1997,19 @@ class MainWindow:
         sidePage = SidePage(_("Workspaces"), "workspaces.svg", self.content_box)
         self.sidePages.append((sidePage, "workspaces"))        
         sidePage.add_widget(GSettingsCheckButton(_("Enable workspace OSD"), "org.cinnamon", "workspace-osd-visible", None))
-        sidePage.add_widget(GSettingsSpinButton(_("Workspace OSD duration"), "org.cinnamon", "workspace-osd-duration", "org.cinnamon/workspace-osd-visible", 0, 2000, 50, 400, _("milliseconds")))
-        sidePage.add_widget(GSettingsSpinButton(_("Workspace OSD horizontal position"), "org.cinnamon", "workspace-osd-x", "org.cinnamon/workspace-osd-visible", 0, 100, 5, 50, _("percent of the monitor's width")))
-        sidePage.add_widget(GSettingsSpinButton(_("Workspace OSD vertical position"), "org.cinnamon", "workspace-osd-y", "org.cinnamon/workspace-osd-visible", 0, 100, 5, 50, _("percent of the monitor's height")))
+
+        box = IndentedHBox()
+        box.add(GSettingsSpinButton(_("Workspace OSD duration"), "org.cinnamon", "workspace-osd-duration", "org.cinnamon/workspace-osd-visible", 0, 2000, 50, 400, _("milliseconds")))
+        sidePage.add_widget(box)
+
+        box = IndentedHBox()
+        box.add(GSettingsSpinButton(_("Workspace OSD horizontal position"), "org.cinnamon", "workspace-osd-x", "org.cinnamon/workspace-osd-visible", 0, 100, 5, 50, _("percent of the monitor's width")))
+        sidePage.add_widget(box)
+
+        box = IndentedHBox()
+        box.add(GSettingsSpinButton(_("Workspace OSD vertical position"), "org.cinnamon", "workspace-osd-y", "org.cinnamon/workspace-osd-visible", 0, 100, 5, 50, _("percent of the monitor's height")))
+        sidePage.add_widget(box)
+
         sidePage.add_widget(GSettingsCheckButton(_("Only use workspaces on primary monitor (requires Cinnamon restart)"), "org.cinnamon.overrides", "workspaces-only-on-primary", None))
         sidePage.add_widget(GSettingsCheckButton(_("Display Expo view as a grid"), "org.cinnamon", "workspace-expo-view-as-grid", None))
         
