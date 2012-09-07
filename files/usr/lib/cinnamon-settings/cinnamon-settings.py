@@ -654,7 +654,7 @@ class ThemeViewSidePage (SidePage):
         buttonsHaveIconsCB = GSettingsCheckButton(_("Buttons Have Icons"), "org.gnome.desktop.interface", "buttons-have-icons", None)
         other_settings_box.pack_start(buttonsHaveIconsCB, False, False, 2)
         if 'org.nemo' in Gio.Settings.list_schemas():
-            alwaysUseLocationEntryCB = GSettingsCheckButton(_("Always Use Location Entry"), "org.nemo.preferences", "show-location-entry", None)
+            alwaysUseLocationEntryCB = GSettingsCheckButton(_("Always Use Location Entry In Nemo"), "org.nemo.preferences", "show-location-entry", None)
             other_settings_box.pack_start(alwaysUseLocationEntryCB, False, False, 2)
         cursorThemeSwitcher = GSettingsComboBox(_("Cursor theme"), "org.gnome.desktop.interface", "cursor-theme", None, self._load_cursor_themes())
         other_settings_box.pack_start(cursorThemeSwitcher, False, False, 2)
