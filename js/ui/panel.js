@@ -612,7 +612,6 @@ Panel.prototype = {
         this._showTimer = false;
         this._onPanelShowDelayChanged();
         this._onPanelHideDelayChanged();
-        this._themeFontSize = null;
 
         this.actor = new Cinnamon.GenericContainer({ name: 'panel',
                                                   reactive: true });
@@ -698,7 +697,6 @@ Panel.prototype = {
         this._setDNDstyle();
         global.settings.connect("changed::panel-edit-mode", Lang.bind(this, this._setDNDstyle));
         global.settings.connect("changed::panel-resizable", Lang.bind(this, this._onPanelResizableChanged));
-        global.settings.connect("changed::panel-scale-text-icons", Lang.bind(this, this._onScaleTextIconsChanged))
         this.actor.connect('style-changed', Lang.bind(this, this._onStyleChanged));
     },
 
@@ -781,19 +779,8 @@ Panel.prototype = {
         else {
             panelHeight = global.settings.get_int("panel-top-height");
         }
-        if (global.settings.get_boolean("panel-scale-text-icons")) {
-            if (!this._themeFontSize) {
-                let themeNode = this.actor.get_theme_node();
-                this._themeFontSize = themeNode.get_length("font-size");
-            }
-            let textheight = (panelHeight / Applet.DEFAULT_PANEL_HEIGHT) * Applet.PANEL_FONT_DEFAULT_HEIGHT;
-            this.actor.set_style('font-size: ' + textheight + 'px;');
-        } else {
-            this.actor.set_style('font-size: ' + this._themeFontSize + 'px;');
-        }
         this.actor.set_height(panelHeight);
         Main.layoutManager._updateBoxes();
-        AppletManager.updateAppletPanelHeights();
     },
 
     _onPanelResizableChanged: function() {
@@ -817,31 +804,8 @@ Panel.prototype = {
                 panelHeight = 25;
             }
             this.actor.set_height(panelHeight);
-            this.actor.set_style('font-size: ' + this._themeFontSize + 'px;');
             Main.layoutManager._updateBoxes();
-            AppletManager.updateAppletPanelHeights();
         }
-    },
-
-    _onScaleTextIconsChanged: function() {
-        let panelHeight;
-        if (this.bottomPosition) {
-            panelHeight = global.settings.get_int("panel-bottom-height");
-        }
-        else {
-            panelHeight = global.settings.get_int("panel-top-height");
-        }
-        if (global.settings.get_boolean("panel-scale-text-icons")) {
-            if (!this._themeFontSize) {
-                let themeNode = this.actor.get_theme_node();
-                this._themeFontSize = themeNode.get_length("font-size");
-            }
-            let textheight = (panelHeight / Applet.DEFAULT_PANEL_HEIGHT) * Applet.PANEL_FONT_DEFAULT_HEIGHT;
-            this.actor.set_style('font-size: ' + textheight + 'px;');
-        } else {
-            this.actor.set_style('font-size: ' + this._themeFontSize + 'px;');
-        }
-        AppletManager.updateAppletPanelHeights(true);
     },
 
     _onStyleChanged: function() {
