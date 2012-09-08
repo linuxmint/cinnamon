@@ -41,6 +41,8 @@ MyApplet.prototype = {
             this._orientation = orientation;
             
             this._initContextMenu();
+            fx = new St.BackgroundEffect();
+            this.menu.actor.add_effect_with_name('blur',fx);
                                      
             this._calendarArea = new St.BoxLayout({name: 'calendarArea' });
             this.menu.addActor(this._calendarArea);
