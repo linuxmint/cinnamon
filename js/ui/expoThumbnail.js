@@ -229,13 +229,13 @@ ExpoWorkspaceThumbnail.prototype = {
         this._background = Meta.BackgroundActor.new_for_screen(global.screen);
         this._contents.add_actor(this._background);
 
-        let monitor = Main.layoutManager.primaryMonitor;
-        this.setPorthole(monitor.x, monitor.y, monitor.width, monitor.height);
+        let porthole = Main.layoutManager.getPorthole();
+        this.setPorthole(porthole);
        
         this.shade = new St.Bin();
         this.shade.set_style('background-color: black;');
         this.actor.add_actor(this.shade);
-        this.shade.set_size(monitor.width, monitor.height);
+        this.shade.set_size(porthole.width, porthole.height);
 
         this.shade.opacity = INACTIVE_OPACITY;
 
@@ -312,12 +312,11 @@ ExpoWorkspaceThumbnail.prototype = {
             this._highlight(); 
     },
 
-    setPorthole: function(x, y, width, height) {
-        this._portholeX = x;
-        this._portholeY = y;
-        this.actor.set_size(width, height);
-        this._contents.set_position(-x, -y);
-    },
+    setPorthole: function(porthole) {
+        this._porthole = porthole;
+        this.actor.set_size(porthole.width, porthole.height);
+        this._contents.set_position(-porthole.x, -porthole.y);
+     },
 
     _lookupIndex: function (metaWindow) {
         for (let i = 0; i < this._windows.length; i++) {
@@ -547,8 +546,8 @@ ExpoWorkspaceThumbnail.prototype = {
             }
             if ((window.metaWindow.maximized_horizontally &&
                 window.metaWindow.maximized_vertically) || window.metaWindow.get_layer() == Meta.StackLayer.FULLSCREEN){
-                window.origX = 0;
-                window.origY = 0;
+                window.origX = this._porthole.x;
+                window.origY = this._porthole.y
             }
 
             if (row == nRows)
@@ -556,8 +555,8 @@ ExpoWorkspaceThumbnail.prototype = {
 
             let scale = Math.min((maxWindowWidth / window.actor.width), (maxWindowHeight / window.actor.height)); 
             scale = Math.min(1, scale);
-            let x = offset + (spacing * col) + (maxWindowWidth * (col - 1)) + ((maxWindowWidth - (window.actor.width * scale)) / 2);
-            let y = (spacing * row) + (maxWindowHeight * (row - 1)) + ((maxWindowHeight - (window.actor.height * scale)) / 2);   
+            let x = this._porthole.x + offset + (spacing * col) + (maxWindowWidth * (col - 1)) + ((maxWindowWidth - (window.actor.width * scale)) / 2);
+            let y = this._porthole.y + (spacing * row) + (maxWindowHeight * (row - 1)) + ((maxWindowHeight - (window.actor.height * scale)) / 2);   
 
             if (!window.metaWindow.showing_on_its_workspace()) {
                 window.actor.set_position(window.icon.x, window.icon.y);
@@ -786,31 +785,7 @@ ExpoThumbnailsBox.prototype = {
             this._stateCounts[ThumbnailState[key]] = 0;
 
         // The "porthole" is the portion of the screen that we show in the workspaces
-        let panelHeight = Main.panel.actor.height;
-        let monitor = Main.layoutManager.primaryMonitor;
-        let autohide = global.settings.get_boolean("panel-autohide");
-        let desktop_layout = global.settings.get_string("desktop-layout");
-        let portholeY = null;
-        let portholeHeight = null;
-        if (autohide){
-            portholeY = 0;
-            portholeHeight = monitor.height;
-        } else if (desktop_layout == "traditional"){
-            portholeY = 0;
-            portholeHeight = monitor.height - panelHeight;        
-        } else if (desktop_layout == "flipped"){
-            portholeY = panelHeight;
-            portholeHeight = monitor.height - panelHeight;     
-        } else {
-            portholeY = panelHeight;
-            portholeHeight = monitor.height - (panelHeight * 2);         
-        }
-        this._porthole = {
-            x: monitor.x,
-            y: portholeY,
-            width: monitor.width,
-            height: portholeHeight
-        };
+        this._porthole = Main.layoutManager.getPorthole();
 
         this.addThumbnails(0, global.screen.n_workspaces);
         this.button.raise_top();
@@ -965,8 +940,8 @@ ExpoThumbnailsBox.prototype = {
         for (let k = start; k < start + count; k++) {
             let metaWorkspace = global.screen.get_workspace_by_index(k);
             let thumbnail = new ExpoWorkspaceThumbnail(metaWorkspace, this);
-            thumbnail.setPorthole(this._porthole.x, this._porthole.y,
-                                  this._porthole.width, this._porthole.height);
+            thumbnail.setPorthole(this._porthole);
+                                  
             this._thumbnails.push(thumbnail);
             if (metaWorkspace == global.screen.get_active_workspace()) {
                 this._lastActiveWorkspace = thumbnail;
@@ -1190,7 +1165,11 @@ ExpoThumbnailsBox.prototype = {
         let asGrid  = global.settings.get_boolean("workspace-expo-view-as-grid");
         let nColumns = asGrid ? Math.ceil(Math.sqrt(nWorkspaces)) : nWorkspaces;
         let nRows = Math.ceil(nWorkspaces/nColumns);
-        return [nColumns, nRows];
+        return this._porthole.height *  nWorkspaces < this._porthole.width ?
+            [1, nWorkspaces] :
+            this._porthole.height * 2 > this._porthole.width ? 
+                    [nColumns, nRows] :
+                    [nRows, nColumns];
     },
 
     _getPreferredHeight: function(actor, forWidth, alloc) {
