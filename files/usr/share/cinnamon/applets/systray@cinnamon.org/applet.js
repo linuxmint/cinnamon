@@ -1,7 +1,9 @@
+const Lang = imports.lang;
+const St = imports.gi.St;
+
 const Applet = imports.ui.applet;
 const Main = imports.ui.main;
 const PanelMenu = imports.ui.panelMenu;
-const Lang = imports.lang;
 
 const ICON_SCALE_FACTOR = .88; // for custom panel heights, 22 (default icon size) / 25 (default panel height)
 
@@ -15,9 +17,20 @@ MyApplet.prototype = {
     _init: function(orientation, panel_height) {
         Applet.Applet.prototype._init.call(this, orientation, panel_height);
         this.actor.remove_style_class_name("applet-box");
+
         this._signals = { added: null,
                           removed: null,
                           redisplay: null };
+
+        this.actor.style="spacing: 5px;";
+        try {
+            Main.statusIconDispatcher.connect('status-icon-added', Lang.bind(this, this._onTrayIconAdded));
+            Main.statusIconDispatcher.connect('status-icon-removed', Lang.bind(this, this._onTrayIconRemoved));
+            Main.statusIconDispatcher.connect('before-redisplay', Lang.bind(this, this._onBeforeRedisplay));
+        }
+        catch (e) {
+            global.logError(e);
+        }
     },
 
     on_applet_clicked: function(event) {
@@ -58,19 +71,18 @@ MyApplet.prototype = {
 
             global.log("Adding systray: " + role + " (" + icon.get_width() + "x" + icon.get_height() + "px)");            
 
-            let buttonBox = new PanelMenu.ButtonBox({ style_class: 'panel-status-button', reactive: true, track_hover: true  });
-            let box = buttonBox.actor;
+            let box = new St.Bin({ style_class: 'panel-status-button', reactive: true, track_hover: true});
             box.add_actor(icon);
 
             this._insertStatusItem(box, -1);
             let width = 22;
             let height = 22;
-            let themeNode = buttonBox.actor.get_theme_node();
+            let themeNode = box.get_theme_node();
             if (themeNode.get_length('width')) {
                 width = themeNode.get_length('width');
             }
             if (themeNode.get_length('height')) {
-                height = themeNode.get_length('height');                        
+                height = themeNode.get_length('height');
             }
 
             if (global.settings.get_boolean('panel-scale-text-icons')) {
@@ -92,7 +104,7 @@ MyApplet.prototype = {
 
     _onTrayIconRemoved: function(o, icon) {
         let box = icon.get_parent();
-        if (box && box._delegate instanceof PanelMenu.ButtonBox)
+        if (box && box instanceof St.Bin)
             box.destroy();
     },
 
