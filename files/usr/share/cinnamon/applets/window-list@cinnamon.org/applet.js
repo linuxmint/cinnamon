@@ -333,6 +333,7 @@ AppMenuButton.prototype = {
         this.window_list = this.actor._delegate._applet._windows;
         this.scroll_connector = null;
         this.on_scroll_mode_changed();
+        this._needsAttention = false;
     },
     
     on_panel_edit_mode_changed: function() {
@@ -401,18 +402,18 @@ AppMenuButton.prototype = {
     doFocus: function() {
         let tracker = Cinnamon.WindowTracker.get_default();
         let app = tracker.get_window_app(this.metaWindow);
-        if ( app ) {  
+        if ( app ) {
             let icon = app.create_icon_texture(this.iconSize);
-    		this._iconBox.set_child(icon);	
-        }         
-        if (this.metaWindow.has_focus() && !this.metaWindow.minimized) {                                     
-        	this.actor.add_style_pseudo_class('focus');    
-            this.actor.remove_style_class_name("window-list-item-demands-attention");    	
+            this._iconBox.set_child(icon);
+        }
+        if (this.metaWindow.has_focus() && !this.metaWindow.minimized) {
+            this.actor.add_style_pseudo_class('focus');
+            this.actor.remove_style_class_name("window-list-item-demands-attention");
             this.actor.remove_style_class_name("window-list-item-demands-attention-top");
-        }        		    	        
-        else {            
-          	this.actor.remove_style_pseudo_class('focus');        		
-        }	    	                
+            this._needsAttention = false;
+        } else {
+            this.actor.remove_style_pseudo_class('focus');
+        }
     },
     
     _onButtonRelease: function(actor, event) {
@@ -598,6 +599,41 @@ AppMenuButton.prototype = {
     // we show as the item is being dragged.
     getDragActorSource: function() {
         return this.actor;
+    },
+
+    getAttention: function() {
+        this._needsAttention = true;
+        let allocation = this._iconBox.get_allocation_box();
+        this._iconBox.width = allocation.x2 - allocation.x1;
+        this._iconBox.height = allocation.y2 - allocation.y1;
+        this._throbButton();
+    },
+
+    _throbButton: function(step){
+        if (!this._needsAttention) {
+            return;
+        }
+        let orig_width = this._iconBox.child.width;
+        let orig_height = this._iconBox.child.height;
+        Tweener.addTween(this._iconBox.child,
+                         { width: this._iconBox.child.width * .7,
+                           height: this._iconBox.child.height * .7,
+                           time: 0.2,
+                           transition: 'easeOutQuad',
+                           onComplete: function(){
+                               Tweener.addTween(this._iconBox.child,
+                                                 { width: orig_width,
+                                                   height: orig_height,
+                                                   time: 0.2,
+                                                   transition: 'easeOutQuad',
+                                                   onComplete: function(){
+                                                       this._throbButton();
+                                                   },
+                                                   onCompleteScope: this
+                                                 });
+                           },
+                           onCompleteScope: this
+                         });
     }
 };
 
@@ -812,7 +848,8 @@ MyApplet.prototype = {
     _onWindowDemandsAttention : function(display, window) {
         for ( let i=0; i<this._windows.length; ++i ) {
             if ( this._windows[i].metaWindow == window ) {                
-                this._windows[i].actor.add_style_class_name("window-list-item-demands-attention");                
+                this._windows[i].actor.add_style_class_name("window-list-item-demands-attention");
+                this._windows[i].actor._delegate.getAttention();
             }
         }
     },
