@@ -19,6 +19,7 @@ try:
     import urllib
     import lxml.etree
     import hashlib
+    import locale
 except Exception, detail:
     print detail
     sys.exit(1)
@@ -342,6 +343,8 @@ class BackgroundWallpaperPane (Gtk.VBox):
         
     def parse_xml_backgrounds_list(self, filename):
         try:
+            loc = locale.getdefaultlocale()[0]
+            locAttrName = "{http://www.w3.org/XML/1998/namespace}lang"
             res = []
             f = open(filename)
             rootNode = lxml.etree.fromstring(f.read())
@@ -352,7 +355,12 @@ class BackgroundWallpaperPane (Gtk.VBox):
                         wallpaperData = {"metadataFile": filename}
                         for prop in wallpaperNode:
                             if type(prop.tag) == str:
-                                wallpaperData[prop.tag] = prop.text
+                                if prop.tag != "name":
+                                    wallpaperData[prop.tag] = prop.text
+                                else:
+                                    propAttr = prop.attrib
+                                    if (not propAttr.has_key(locAttrName)) or loc.startswith(propAttr.get(locAttrName)):
+                                        wallpaperData[prop.tag] = prop.text
                         if "filename" in wallpaperData and wallpaperData["filename"] != "" and os.path.exists(wallpaperData["filename"]) and os.access(wallpaperData["filename"], os.R_OK):
                             res.append(wallpaperData)
             return res
