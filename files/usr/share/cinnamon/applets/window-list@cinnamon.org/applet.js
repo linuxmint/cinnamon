@@ -817,18 +817,31 @@ MyApplet.prototype = {
             this._changeWorkspaces();
             global.screen.connect('notify::n-workspaces',
                                     Lang.bind(this, this._changeWorkspaces));
-            global.display.connect('window-demands-attention', Lang.bind(this, this._onWindowDemandsAttention));
-            global.display.connect('window-marked-urgent', Lang.bind(this, this._onWindowDemandsAttention));
-                                    
+            this._attentionSignals = { attention: null,
+                                            urgent: null }
+            global.settings.connect('changed::window-list-applet-alert', Lang.bind(this, this._updateAttentionGrabber));
+            this._updateAttentionGrabber();
             // this._container.connect('allocate', Lang.bind(Main.panel, this._allocateBoxes)); 
-            
             global.settings.connect('changed::panel-edit-mode', Lang.bind(this, this.on_panel_edit_mode_changed));
         }
         catch (e) {
             global.logError(e);
         }
     },
-    
+
+    _updateAttentionGrabber: function() {
+        let active = global.settings.get_boolean('window-list-applet-alert');
+        if (active) {
+            this._attentionSignals.attention = global.display.connect('window-demands-attention', Lang.bind(this, this._onWindowDemandsAttention));
+            this._attentionSignals.urgent = global.display.connect('window-marked-urgent', Lang.bind(this, this._onWindowDemandsAttention));
+        } else {
+            if (this._attentionSignals.attention) {
+                global.display.disconnect(this._attentionSignals.attention);
+                global.display.disconnect(this._attentionSignals.urgent);
+            }
+        }
+    },
+
     saveWindowsOrder: function() {
         let order = [];
         let children = this.myactor.get_children();

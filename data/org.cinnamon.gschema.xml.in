@@ -480,6 +480,14 @@
       </description>
     </key>
 
+    <key name="window-list-applet-alert" type="b">
+      <default>false</default>
+      <summary>Enable window-list alerts</summary>
+      <description>
+        When enabled items in the window-list applet will change style and pulse their icon when they want attention.
+      </description>
+    </key>
+
     <key type="b" name="enable-edge-flip">
       <default>false</default>
       <_summary>Whether edge flip is enabled</_summary>
