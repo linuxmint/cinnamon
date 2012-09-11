@@ -23,14 +23,6 @@ MyApplet.prototype = {
                           redisplay: null };
 
         this.actor.style="spacing: 5px;";
-        try {
-            Main.statusIconDispatcher.connect('status-icon-added', Lang.bind(this, this._onTrayIconAdded));
-            Main.statusIconDispatcher.connect('status-icon-removed', Lang.bind(this, this._onTrayIconRemoved));
-            Main.statusIconDispatcher.connect('before-redisplay', Lang.bind(this, this._onBeforeRedisplay));
-        }
-        catch (e) {
-            global.logError(e);
-        }
     },
 
     on_applet_clicked: function(event) {
