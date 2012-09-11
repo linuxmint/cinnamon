@@ -237,7 +237,9 @@ AppMenuButton.prototype = {
 
 		this.metaWindow = metaWindow;	
 
-        this._applet = applet;	
+        this._applet = applet;
+        this._virtual = false;
+        this._workspace = -1;
 		
         let bin = new St.Bin({ name: 'appMenu' });
         this.actor.set_child(bin);
@@ -443,6 +445,9 @@ AppMenuButton.prototype = {
         else {
             if (this.metaWindow.minimized) {
                 this.metaWindow.unminimize(global.get_current_time()); 
+            }
+            if (this._virtual) {
+                global.screen.get_workspace_by_index(this._workspace).activate(global.get_current_time());
             }
             this.metaWindow.activate(global.get_current_time());
             this.actor.add_style_pseudo_class('focus');
@@ -859,10 +864,38 @@ MyApplet.prototype = {
     
            
     _onWindowDemandsAttention : function(display, window) {
+        let inCurrentWorkspace = false;
         for ( let i=0; i<this._windows.length; ++i ) {
             if ( this._windows[i].metaWindow == window ) {                
                 this._windows[i].actor.add_style_class_name("window-list-item-demands-attention");
                 this._windows[i].actor._delegate.getAttention();
+                inCurrentWorkspace = true;
+            }
+        }
+        if (!inCurrentWorkspace) {
+            let nws = global.screen.get_n_workspaces();
+            // first find the index of the current workspace
+            let cur_ws_index = global.screen.get_active_workspace_index();
+            for (let i = 0; i < nws; i++) {
+                let ws = global.screen.get_workspace_by_index(i);
+                let windows = ws.list_windows();
+                for (let j = 0; j < windows.length; j++) {
+                    if (window == windows[j]) {
+                        let transientAppButton = new AppMenuButton(this, window, true, this.orientation, this._panelHeight);
+                        transientAppButton._virtual = true;
+                        transientAppButton._workspace = i;
+                        if (i < cur_ws_index) {
+                            this._windows.splice(0, 0, transientAppButton);
+                            this.myactor.insert_actor(transientAppButton.actor, 0);
+                        } else {
+                            this._windows.push(transientAppButton);
+                            this.myactor.add(transientAppButton.actor);
+                        }
+                        transientAppButton.actor.add_style_class_name("window-list-item-demands-attention");
+                        transientAppButton.getAttention();
+                        return;
+                    }
+                }
             }
         }
     },
