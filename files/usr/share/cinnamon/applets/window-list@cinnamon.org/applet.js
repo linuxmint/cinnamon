@@ -679,8 +679,6 @@ MyAppletBox.prototype = {
         this._clearDragPlaceholder();
         actor.destroy();
         
-        this._applet.saveWindowsOrder();
-        
         return true;
     },
     
@@ -706,8 +704,6 @@ MyApplet.prototype = {
         try {                    
             this.orientation = orientation;
             this.dragInProgress = false;
-            
-            this._windows_order = {};
             
             this.myactorbox = new MyAppletBox(this);
             this.myactor = this.myactorbox.actor;
@@ -788,13 +784,6 @@ MyApplet.prototype = {
         catch (e) {
             global.logError(e);
         }
-    },
-    
-    saveWindowsOrder: function() {
-        let order = [];
-        let children = this.myactor.get_children();
-        for (var i in children) if (children[i]._delegate && children[i]._delegate.metaWindow) order.push(children[i]._delegate.metaWindow);
-        this._windows_order[global.screen.get_active_workspace()] = order;
     },
     
     on_applet_clicked: function(event) {
