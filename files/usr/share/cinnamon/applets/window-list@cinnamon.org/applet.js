@@ -726,7 +726,7 @@ MyApplet.prototype = {
                 this.actor.set_style('padding-bottom: 0px;');
             }
 
-	    this.isInteresting = function(metaWindow) {
+            this.isInteresting = function(metaWindow) {
                 if (tracker.is_window_interesting(metaWindow)) {
                     // The nominal case.
                     return true;
@@ -817,10 +817,10 @@ MyApplet.prototype = {
         for ( let i = 0; i < this._windows.length; ++i ) {
             let metaWindow = this._windows[i].metaWindow;
             if (metaWindow.get_workspace().index() == global.screen.get_active_workspace_index()
-		|| metaWindow.is_on_all_workspaces())
+                || metaWindow.is_on_all_workspaces())
                 this._windows[i].actor.show();
             else
-		this._windows[i].actor.hide();
+                this._windows[i].actor.hide();
         }
 
         this._onFocus();
@@ -872,9 +872,9 @@ MyApplet.prototype = {
     },
   
     _windowAdded: function(metaWorkspace, metaWindow) {
-	if (!this.isInteresting(metaWindow))
-	    return;        
-	for ( let i=0; i<this._windows.length; ++i ) {
+        if (!this.isInteresting(metaWindow))
+            return;        
+        for ( let i=0; i<this._windows.length; ++i ) {
             if ( this._windows[i].metaWindow == metaWindow ) {
                 return;
             }
@@ -883,8 +883,8 @@ MyApplet.prototype = {
         let appbutton = new AppMenuButton(this, metaWindow, true, this.orientation, this._panelHeight);
         this._windows.push(appbutton);
         this.myactor.add(appbutton.actor);
-	if (metaWorkspace.index() != global.screen.get_active_workspace_index())
-	    appbutton.actor.hide();
+        if (metaWorkspace.index() != global.screen.get_active_workspace_index())
+            appbutton.actor.hide();
     },
 
     _windowRemoved: function(metaWorkspace, metaWindow) {
