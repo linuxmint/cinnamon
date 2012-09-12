@@ -816,8 +816,10 @@ MyApplet.prototype = {
     _refreshItems: function() {
         for ( let i = 0; i < this._windows.length; ++i ) {
             let metaWindow = this._windows[i].metaWindow;
-            if (metaWindow.get_workspace().index() == global.screen.get_active_workspace_index()
-                || metaWindow.is_on_all_workspaces())
+            if (!this.isInteresting(metaWindow))
+                this._windows[i].actor.hide();
+            else if (metaWindow.get_workspace().index() == global.screen.get_active_workspace_index()
+                      || metaWindow.is_on_all_workspaces())
                 this._windows[i].actor.show();
             else
                 this._windows[i].actor.hide();
@@ -888,10 +890,6 @@ MyApplet.prototype = {
     },
 
     _windowRemoved: function(metaWorkspace, metaWindow) {
-        if ( metaWorkspace.index() != global.screen.get_active_workspace_index() ) {
-            return;
-        }
-
         for ( let i=0; i<this._windows.length; ++i ) {
             if ( this._windows[i].metaWindow == metaWindow ) {
                 this.myactor.remove_actor(this._windows[i].actor);
