@@ -81,7 +81,51 @@ class PixCache(object):
         return pix
 
 PIX_CACHE = PixCache()
-                                  
+
+# wrapper for timedated or gnome-settings-daemon's DateTimeMechanism
+class DateTimeWrapper:
+    def __init__(self):
+        try:
+            proxy = dbus.SystemBus().get_object("org.freedesktop.timedate1", "/org/freedesktop/timedate1")
+            self.dbus_iface = dbus.Interface(proxy, dbus_interface="org.freedesktop.timedate1")
+            self.properties_iface = dbus.Interface(proxy, dbus_interface=dbus.PROPERTIES_IFACE)
+            self.timedated = True
+        except dbus.exceptions.DBusException:
+            proxy = dbus.SystemBus().get_object("org.gnome.SettingsDaemon.DateTimeMechanism", "/")
+            self.dbus_iface = dbus.Interface(proxy, dbus_interface="org.gnome.SettingsDaemon.DateTimeMechanism")
+            self.timedated = False
+
+    def set_time(self, seconds_since_epoch):
+        if self.timedated:
+            # timedated expects microseconds
+            return self.dbus_iface.SetTime(seconds_since_epoch * 1000000, False, True)
+        else:
+            return self.dbus_iface.SetTime(seconds_since_epoch)
+
+    def get_timezone(self):
+        if self.timedated:
+            return self.properties_iface.Get("org.freedesktop.timedate1", "Timezone")
+        else:
+            return self.dbus_iface.GetTimezone()
+
+    def set_timezone(self, tz):
+        if self.timedated:
+            return self.dbus_iface.SetTimezone(tz, True)
+        else:
+            return self.dbus_iface.SetTimezone(tz)
+
+    def get_using_ntp(self):
+        if self.timedated:
+            return self.properties_iface.Get("org.freedesktop.timedate1", "NTP")
+        else:
+            return self.dbus_iface.GetUsingNtp()
+
+    def set_using_ntp(self, usingNtp):
+        if self.timedated:
+            return self.dbus_iface.SetNTP(usingNtp, True)
+        else:
+            return self.dbus_iface.SetUsingNtp(usingNtp)
+
 class SidePage:
     def __init__(self, name, icon, content_box):        
         self.name = name
@@ -1037,7 +1081,17 @@ class DBusCheckButton(Gtk.CheckButton):
         
     def on_my_value_changed(self, widget):
         getattr(self.dbus_iface, self.dbus_set_method)(self.get_active())
-        
+
+class NtpCheckButton(Gtk.CheckButton):
+    def __init__(self, label):
+        super(NtpCheckButton, self).__init__(label)
+        self.date_time_wrapper = DateTimeWrapper()
+        self.set_active(self.date_time_wrapper.get_using_ntp())
+        self.connect('toggled', self.on_my_value_changed)
+
+    def on_my_value_changed(self, widget):
+        self.date_time_wrapper.set_using_ntp(self.get_active())
+
 class GSettingsSpinButton(Gtk.HBox):    
     def __init__(self, label, schema, key, dep_key, min, max, step, page, units):
         self.key = key
@@ -1376,8 +1430,7 @@ class TimeZoneSelectorWidget(Gtk.HBox):
     def __init__(self):
         super(TimeZoneSelectorWidget, self).__init__()
         
-        proxy = dbus.SystemBus().get_object("org.gnome.SettingsDaemon.DateTimeMechanism", "/")
-        self.dbus_iface = dbus.Interface(proxy, dbus_interface="org.gnome.SettingsDaemon.DateTimeMechanism")
+        self.date_time_wrapper = DateTimeWrapper()
         
         self.timezones = tz.load_db()
         
@@ -1423,7 +1476,7 @@ class TimeZoneSelectorWidget(Gtk.HBox):
         tree_iter = widget.get_active_iter()
         if tree_iter != None:
             self.selected_city = self.city_model[tree_iter][0]
-            self.dbus_iface.SetTimezone(self.selected_region+"/"+self.selected_city)
+            self.date_time_wrapper.set_timezone(self.selected_region+"/"+self.selected_city)
     def on_region_changed(self, widget):
         tree_iter = widget.get_active_iter()
         if tree_iter != None:            
@@ -1444,7 +1497,7 @@ class TimeZoneSelectorWidget(Gtk.HBox):
             if selected_city_iter is not None:
                 self.city_widget.set_active_iter(selected_city_iter)
     def get_selected_zone(self):
-        tz = self.dbus_iface.GetTimezone()
+        tz = self.date_time_wrapper.get_timezone()
         if "/" in tz:
             i = tz.index("/")
             region = tz[:i]
@@ -1456,8 +1509,7 @@ class TimeZoneSelectorWidget(Gtk.HBox):
 class ChangeTimeWidget(Gtk.HBox):
     def __init__(self):
         super(ChangeTimeWidget, self).__init__()
-        proxy = dbus.SystemBus().get_object("org.gnome.SettingsDaemon.DateTimeMechanism", "/")
-        self.dbus_iface = dbus.Interface(proxy, dbus_interface="org.gnome.SettingsDaemon.DateTimeMechanism")
+        self.date_time_wrapper = DateTimeWrapper()
         
         # Ensures we are setting the system time only when the user changes it
         self.changedOnTimeout = False
@@ -1583,7 +1635,7 @@ class ChangeTimeWidget(Gtk.HBox):
             self._time_to_set = None
             self._setting_time_lock.release()
             
-            self.dbus_iface.SetTime(time_to_set)
+            self.date_time_wrapper.set_time(time_to_set)
             
             # Check whether another request to set the time was done since this thread started
             self._setting_time_lock.acquire()
@@ -1806,7 +1858,7 @@ class MainWindow:
             self.changeTimeWidget = ChangeTimeWidget()  
             self.ntpCheckButton = None 
             try:
-                self.ntpCheckButton = DBusCheckButton(_("Use network time"), "org.gnome.SettingsDaemon.DateTimeMechanism", "/", "GetUsingNtp", "SetUsingNtp")
+                self.ntpCheckButton = NtpCheckButton(_("Use network time"))
                 sidePage.add_widget(self.ntpCheckButton)
             except:
                 pass
