@@ -18,7 +18,6 @@ try:
     import thread
     import urllib
     import lxml.etree
-    import hashlib
     import locale
 except Exception, detail:
     print detail
@@ -630,7 +629,7 @@ class BackgroundSidePage (SidePage):
             if not os.path.exists(dest_dir):
                 rec_mkdir(dest_dir)
             for filename in filenames:
-                dest_filename = os.path.join(dest_dir, hashlib.md5(filename).hexdigest())
+                dest_filename = os.path.join(dest_dir, os.path.split(filename)[1])
                 fs = open(filename)
                 fd = open(dest_filename, "w")
                 fd.write(fs.read())
