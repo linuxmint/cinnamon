@@ -1083,6 +1083,7 @@ cinnamon_app_launch (CinnamonApp     *app,
   gboolean ret;
   CinnamonGlobal *global;
   MetaScreen *screen;
+  GdkDisplay *gdisplay;
 
   if (startup_id)
     *startup_id = NULL;
@@ -1101,6 +1102,7 @@ cinnamon_app_launch (CinnamonApp     *app,
 
   global = cinnamon_global_get ();
   screen = cinnamon_global_get_screen (global);
+  gdisplay = gdk_screen_get_display (cinnamon_global_get_gdk_screen (global));
 
   if (timestamp == 0)
     timestamp = cinnamon_global_get_current_time (global);
@@ -1108,7 +1110,7 @@ cinnamon_app_launch (CinnamonApp     *app,
   if (workspace < 0)
     workspace = meta_screen_get_active_workspace_index (screen);
 
-  context = gdk_app_launch_context_new ();
+  context = gdk_display_get_app_launch_context (gdisplay);
   gdk_app_launch_context_set_timestamp (context, timestamp);
   gdk_app_launch_context_set_desktop (context, workspace);
 
