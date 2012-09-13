@@ -37,11 +37,12 @@ const BUTTON_LAYOUT_KEY = 'button-layout';
 // Each triplet is [xCenter, yCenter, scale] where the scale
 // is relative to the width of the workspace.
 const POSITIONS = {
-        1: [[0.5, 0.5, 0.95]],
+        1: [[0.5, 0.5, 0.875]],
         2: [[0.25, 0.5, 0.48], [0.75, 0.5, 0.48]],
         3: [[0.25, 0.25, 0.48],  [0.75, 0.25, 0.48],  [0.5, 0.75, 0.48]],
         4: [[0.25, 0.25, 0.47],   [0.75, 0.25, 0.47], [0.25, 0.75, 0.47], [0.75, 0.75, 0.47]],
-        5: [[0.165, 0.25, 0.32], [0.495, 0.25, 0.32], [0.825, 0.25, 0.32], [0.25, 0.75, 0.32], [0.75, 0.75, 0.32]]
+        5: [[0.165, 0.25, 0.32], [0.495, 0.25, 0.32], [0.825, 0.25, 0.32], [0.25, 0.75, 0.32], [0.75, 0.75, 0.32]],
+        6: [[0.165, 0.25, 0.32], [0.495, 0.25, 0.32], [0.825, 0.25, 0.32], [0.165, 0.75, 0.32], [0.495, 0.75, 0.32], [0.825, 0.75, 0.32]]
 };
 // Used in _orderWindowsPermutations, 5! = 120 which is probably the highest we can go
 const POSITIONING_PERMUTATIONS_MAX = 5;
@@ -1096,12 +1097,7 @@ Workspace.prototype = {
                              1.0);
 
         x = Math.floor(x + (width - scale * rect.width) / 2);
-
-        // We want to center the window in case we have just one
-        if (metaWindow.get_workspace().n_windows == 1)
-            y = Math.floor(y + (height - scale * rect.height) / 2);
-        else
-            y = Math.floor(y + height - rect.height * scale - captionHeight);
+        y = Math.floor(y + ((height - (scale * rect.height)) / 2) - captionHeight);
 
         return [x, y, scale];
     },
@@ -1603,7 +1599,7 @@ Workspace.prototype = {
         let gridWidth = Math.ceil(Math.sqrt(numberOfWindows));
         let gridHeight = Math.ceil(numberOfWindows / gridWidth);
 
-        let fraction = 0.95 * (1. / gridWidth);
+        let fraction = 0.875 * (1. / gridWidth);
 
         let xCenter = (.5 / gridWidth) + ((windowIndex) % gridWidth) / gridWidth;
         let yCenter = (.5 / gridHeight) + Math.floor((windowIndex / gridWidth)) / gridHeight;
