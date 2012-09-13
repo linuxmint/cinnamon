@@ -54,7 +54,7 @@ BACKGROUND_PICTURE_OPTIONS = [
     ("spanned", _("Spanned"))
 ]
 
-BACKGROUND_ICONS_SIZE = 100
+BACKGROUND_ICONS_SIZE = 115
 
 class PixCache(object):
     def __init__(self):
@@ -252,7 +252,7 @@ class ThreadedIconView(Gtk.IconView):
         self._model = Gtk.ListStore(object, GdkPixbuf.Pixbuf, str)
         self.set_model(self._model)
         self.set_pixbuf_column(1)
-        self.set_text_column(2)
+        self.set_markup_column(2)
         
         self._loading_queue = []
         self._loading_queue_lock = thread.allocate_lock()
@@ -334,7 +334,7 @@ class ThreadedIconView(Gtk.IconView):
                     else:
                         label = os.path.split(to_load["filename"])[1]
                     self._loaded_data_lock.acquire()
-                    self._loaded_data.append((to_load, pix, label))
+                    self._loaded_data.append((to_load, pix, "<sub>%s</sub>" % label))
                     self._loaded_data_lock.release()
                 
         self._loading_lock.acquire()
