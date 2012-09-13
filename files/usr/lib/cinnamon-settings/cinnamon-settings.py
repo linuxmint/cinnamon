@@ -384,12 +384,37 @@ class BackgroundWallpaperPane (Gtk.VBox):
                     self._gnome_background_schema.set_string("picture-options", wallpaper[key])
             if (not "metadataFile" in wallpaper) or (wallpaper["metadataFile"] == ""):
                 self._sidepage.remove_wallpaper_button.set_sensitive(True)
+    
+    def splitLocaleCode(self, localeCode):
+        loc = localeCode.partition("_")
+        loc = (loc[0], loc[2])
+        return loc
+    
+    def getLocalWallpaperName(self, names, loc):
+        result = ""
+        mainLocFound = False
+        for wp in names:
+            wpLoc = wp[0]
+            wpName = wp[1]
+            if wpLoc == ("", ""):
+                if not mainLocFound:
+                    result = wpName
+            elif wpLoc[0] == loc[0]:
+                if wpLoc[1] == loc[1]:
+                    return wpName
+                elif wpLoc[1] == "":
+                    result = wpName
+                    mainLocFound = True
+        return result
+                        
+                
         
     def parse_xml_backgrounds_list(self, filename):
         try:
-            loc = locale.getdefaultlocale()[0]
             locAttrName = "{http://www.w3.org/XML/1998/namespace}lang"
+            loc = self.splitLocaleCode(locale.getdefaultlocale()[0])
             res = []
+            subLocaleFound = False
             f = open(filename)
             rootNode = lxml.etree.fromstring(f.read())
             f.close()
@@ -397,15 +422,21 @@ class BackgroundWallpaperPane (Gtk.VBox):
                 for wallpaperNode in rootNode:
                     if wallpaperNode.tag == "wallpaper" and wallpaperNode.get("deleted") != "true":
                         wallpaperData = {"metadataFile": filename}
+                        names = []
                         for prop in wallpaperNode:
                             if type(prop.tag) == str:
                                 if prop.tag != "name":
                                     wallpaperData[prop.tag] = prop.text
                                 else:
                                     propAttr = prop.attrib
-                                    if (not propAttr.has_key(locAttrName)) or loc.startswith(propAttr.get(locAttrName)):
-                                        wallpaperData[prop.tag] = prop.text
+                                    wpName = prop.text
+                                    locName = self.splitLocaleCode(propAttr.get(locAttrName)) if propAttr.has_key(locAttrName) else ("", "")
+                                    names.append((locName, wpName))
+                        wallpaperData["name"] = self.getLocalWallpaperName(names, loc)
+                        
                         if "filename" in wallpaperData and wallpaperData["filename"] != "" and os.path.exists(wallpaperData["filename"]) and os.access(wallpaperData["filename"], os.R_OK):
+                            if wallpaperData["name"] == "":
+                                wallpaperData["name"] = os.path.basename(wallpaperData["filename"])
                             res.append(wallpaperData)
             return res
         except:
