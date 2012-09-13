@@ -776,6 +776,7 @@ MyApplet.prototype = {
             global.screen.connect('notify::n-workspaces',
                                     Lang.bind(this, this._changeWorkspaces));
             global.display.connect('window-demands-attention', Lang.bind(this, this._onWindowDemandsAttention));
+            global.display.connect('window-marked-urgent', Lang.bind(this, this._onWindowDemandsAttention));
                                     
             // this._container.connect('allocate', Lang.bind(Main.panel, this._allocateBoxes)); 
             
