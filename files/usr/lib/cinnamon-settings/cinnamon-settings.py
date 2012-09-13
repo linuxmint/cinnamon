@@ -34,8 +34,8 @@ menuComment = _("Fine-tune desktop settings")
 
 BACKGROUND_MODES = [
     ("wallpaper", _("Wallpaper")),
-    ("slideshow", _("Slideshow")),
-    ("flickr", _("Flickr"))
+    #("slideshow", _("Slideshow")),
+    #("flickr", _("Flickr"))
 ]
 
 BACKGROUND_COLOR_SHADING_TYPES = [
@@ -54,7 +54,7 @@ BACKGROUND_PICTURE_OPTIONS = [
     ("spanned", _("Spanned"))
 ]
 
-BACKGROUND_ICONS_SIZE = 50
+BACKGROUND_ICONS_SIZE = 100
 
 class PixCache(object):
     def __init__(self):
@@ -248,6 +248,7 @@ class GSettingsColorChooser(Gtk.ColorButton):
 class ThreadedIconView(Gtk.IconView):
     def __init__(self):
         Gtk.IconView.__init__(self)
+        self.set_item_width(BACKGROUND_ICONS_SIZE * 1.1)
         self._model = Gtk.ListStore(object, GdkPixbuf.Pixbuf, str)
         self.set_model(self._model)
         self.set_pixbuf_column(1)
