@@ -679,8 +679,6 @@ MyAppletBox.prototype = {
         this._clearDragPlaceholder();
         actor.destroy();
         
-        this._applet.saveWindowsOrder();
-        
         return true;
     },
     
@@ -707,8 +705,6 @@ MyApplet.prototype = {
             this.orientation = orientation;
             this.dragInProgress = false;
             
-            this._windows_order = {};
-            
             this.myactorbox = new MyAppletBox(this);
             this.myactor = this.myactorbox.actor;
         
@@ -729,12 +725,6 @@ MyApplet.prototype = {
                 this.actor.set_style('margin-bottom: 0px;');
                 this.actor.set_style('padding-bottom: 0px;');
             }
-                                                
-        
-            this._windows = new Array();
-                
-            let tracker = Cinnamon.WindowTracker.get_default();
-            tracker.connect('notify::focus-app', Lang.bind(this, this._onFocus));
 
             this.isInteresting = function(metaWindow) {
                 if (tracker.is_window_interesting(metaWindow)) {
@@ -751,6 +741,10 @@ MyApplet.prototype = {
                 return type === Meta.WindowType.DIALOG || type === Meta.WindowType.MODAL_DIALOG;
             };
 
+            this._windows = new Array();
+
+            let tracker = Cinnamon.WindowTracker.get_default();
+            tracker.connect('notify::focus-app', Lang.bind(this, this._onFocus));
 
             this.switchWorkspaceHandler = global.window_manager.connect('switch-workspace',
                                             Lang.bind(this, this._refreshItems));
@@ -792,13 +786,6 @@ MyApplet.prototype = {
         }
     },
     
-    saveWindowsOrder: function() {
-        let order = [];
-        let children = this.myactor.get_children();
-        for (var i in children) if (children[i]._delegate && children[i]._delegate.metaWindow) order.push(children[i]._delegate.metaWindow);
-        this._windows_order[global.screen.get_active_workspace()] = order;
-    },
-    
     on_applet_clicked: function(event) {
             
     },
@@ -827,39 +814,13 @@ MyApplet.prototype = {
     },
     
     _refreshItems: function() {
-        /* "this.myactor.destroy_children()" produces mysterious warnings:
-        "Clutter-CRITICAL **: clutter_actor_unmap: assertion `CLUTTER_IS_ACTOR (self)' failed",
-        one for each child actor, so let's use a loop instead. */
-
         for ( let i = 0; i < this._windows.length; ++i ) {
-            this.myactor.remove_actor(this._windows[i].actor);
-            this._windows[i].actor.destroy();
-        }
-        this._windows = new Array();
-
-        let metaWorkspace = global.screen.get_active_workspace();
-        let windows = metaWorkspace.list_windows();
-        windows.sort(Lang.bind(this, function(w1, w2) {
-            if (this._windows_order){
-                let order = this._windows_order[metaWorkspace];
-                if (order){
-                    let iw1 = order.indexOf(w1);
-                    let iw2 = order.indexOf(w2);
-                    if (iw1==-1) return 1;
-                    else if (iw2==-1) return -1;
-                    else return iw1 - iw2;
-                }else return w1.get_stable_sequence() - w2.get_stable_sequence;
-            }else return w1.get_stable_sequence() - w2.get_stable_sequence;
-        }));
-                
-        // Create list items for each window
-        for ( let i = 0; i < windows.length; ++i ) {
-            let metaWindow = windows[i];
-            if (this.isInteresting(metaWindow)) {
-                let appbutton = new AppMenuButton(this, metaWindow, false, this.orientation, this._panelHeight);
-                this._windows.push(appbutton);
-                this.myactor.add(appbutton.actor);
-            }
+            let metaWindow = this._windows[i].metaWindow;
+            else if (metaWindow.get_workspace().index() == global.screen.get_active_workspace_index()
+                      || metaWindow.is_on_all_workspaces())
+                this._windows[i].actor.show();
+            else
+                this._windows[i].actor.hide();
         }
 
         this._onFocus();
@@ -911,29 +872,22 @@ MyApplet.prototype = {
     },
   
     _windowAdded: function(metaWorkspace, metaWindow) {
-        if ( metaWorkspace.index() != global.screen.get_active_workspace_index() ) {
-            return;
-        }
-
+        if (!this.isInteresting(metaWindow))
+            return;        
         for ( let i=0; i<this._windows.length; ++i ) {
             if ( this._windows[i].metaWindow == metaWindow ) {
                 return;
             }
         }
 
-        if ( this.isInteresting(metaWindow) ) {
-            let appbutton = new AppMenuButton(this, metaWindow, true, this.orientation, this._panelHeight);
-            this._windows.push(appbutton);
-            this.myactor.add(appbutton.actor);
-            appbutton.actor.show();
-        }
+        let appbutton = new AppMenuButton(this, metaWindow, true, this.orientation, this._panelHeight);
+        this._windows.push(appbutton);
+        this.myactor.add(appbutton.actor);
+        if (metaWorkspace.index() != global.screen.get_active_workspace_index())
+            appbutton.actor.hide();
     },
 
     _windowRemoved: function(metaWorkspace, metaWindow) {
-        if ( metaWorkspace.index() != global.screen.get_active_workspace_index() ) {
-            return;
-        }
-
         for ( let i=0; i<this._windows.length; ++i ) {
             if ( this._windows[i].metaWindow == metaWindow ) {
                 this.myactor.remove_actor(this._windows[i].actor);
