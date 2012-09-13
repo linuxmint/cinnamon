@@ -816,7 +816,7 @@ MyApplet.prototype = {
     _refreshItems: function() {
         for ( let i = 0; i < this._windows.length; ++i ) {
             let metaWindow = this._windows[i].metaWindow;
-            else if (metaWindow.get_workspace().index() == global.screen.get_active_workspace_index()
+            if (metaWindow.get_workspace().index() == global.screen.get_active_workspace_index()
                       || metaWindow.is_on_all_workspaces())
                 this._windows[i].actor.show();
             else
