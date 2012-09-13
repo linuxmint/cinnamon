@@ -937,7 +937,7 @@ Chrome.prototype = {
     },
 
     thawUpdateRegions: function() {
-        this._freezeUpdateCount--;
+        this._freezeUpdateCount = --this._freezeUpdateCount >= 0 ? this.freezeUpdateCount : 0;
         this._queueUpdateRegions();
     },
 
