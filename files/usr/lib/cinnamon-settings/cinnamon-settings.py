@@ -11,14 +11,17 @@ try:
     import gconf
     import json
     import dbus
-    import tz
+    import tz    
     import time
     from datetime import datetime
     from user import home
     import thread
     import urllib
     import lxml.etree
-    import locale
+    import locale    
+    import imtools
+    import Image
+    import tempfile
 except Exception, detail:
     print detail
     sys.exit(1)
@@ -328,7 +331,23 @@ class ThreadedIconView(Gtk.IconView):
             self._loading_queue_lock.release()
             if not finished:
                 pix = PIX_CACHE.get_pix(to_load["filename"], BACKGROUND_ICONS_SIZE)
-                if pix != None:
+                if pix != None:                    
+                    try:
+                        img = Image.open(to_load["filename"])                        
+                        if img.mode != 'RGB':
+                            img = img.convert('RGB')
+                        img.thumbnail((115, 115), Image.ANTIALIAS)                                                                                                    
+                        img = imtools.round_image(img, {}, False, None, 5, 255)  
+                        img = imtools.drop_shadow(img, 5, 5, background_color=(255, 255, 255, 0), shadow_color=0x444444, border=8, shadow_blur=3, force_background_color=False, cache=None)        
+                        # Convert Image -> Pixbuf (save to file, GTK3 isn't reliable for that)
+                        f = tempfile.NamedTemporaryFile(delete=False)
+                        filename = f.name
+                        f.close()        
+                        img.save(filename, "png")
+                        pix = PIX_CACHE.get_pix(filename, BACKGROUND_ICONS_SIZE)                     
+                    except Exception, detail:
+                        print "Failed to convert %s: %s" % (to_load["filename"], detail)
+                        pass
                     if "name" in to_load:
                         label = to_load["name"]
                     else:
@@ -339,7 +358,7 @@ class ThreadedIconView(Gtk.IconView):
                 
         self._loading_lock.acquire()
         self._loading = False
-        self._loading_lock.release()
+        self._loading_lock.release()                 
 
 class BackgroundWallpaperPane (Gtk.VBox):
     def __init__(self, sidepage, gnome_background_schema):
