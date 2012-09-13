@@ -772,7 +772,7 @@ WindowManager.prototype = {
                                         transition: 'linear',
                                         onComplete: function() {
                                             Main.layoutManager.removeChrome(label);
-                                        });
+                                        }});
         }
     },
 
