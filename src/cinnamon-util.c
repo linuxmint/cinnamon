@@ -85,7 +85,7 @@ cinnamon_util_get_file_display_for_common_files (GFile *file)
     {
       g_object_unref (compare);
       /* Translators: this is the same string as the one found in
-       * nautilus */
+       * nemo */
       return g_strdup (_("Home"));
     }
 
@@ -94,7 +94,7 @@ cinnamon_util_get_file_display_for_common_files (GFile *file)
     {
       g_object_unref (compare);
       /* Translators: this is the same string as the one found in
-       * nautilus */
+       * nemo */
       return g_strdup (_("File System"));
     }
   g_object_unref (compare);
