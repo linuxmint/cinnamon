@@ -2089,6 +2089,7 @@ class MainWindow:
         box.add(GSettingsSpinButton(_("Workspace OSD vertical position"), "org.cinnamon", "workspace-osd-y", "org.cinnamon/workspace-osd-visible", 0, 100, 5, 50, _("percent of the monitor's height")))
         sidePage.add_widget(box)
 
+        sidePage.add_widget(GSettingsCheckButton(_("Allow cycling through workspaces (requires Cinnamon restart)"), "org.cinnamon.overrides", "workspace-cycle", None))
         sidePage.add_widget(GSettingsCheckButton(_("Only use workspaces on primary monitor (requires Cinnamon restart)"), "org.cinnamon.overrides", "workspaces-only-on-primary", None))
         sidePage.add_widget(GSettingsCheckButton(_("Display Expo view as a grid"), "org.cinnamon", "workspace-expo-view-as-grid", None))
         
