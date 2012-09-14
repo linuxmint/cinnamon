@@ -84,7 +84,7 @@ class PixCache(object):
 
 PIX_CACHE = PixCache()
 
-# wrapper for timedated or gnome-settings-daemon's DateTimeMechanism
+# wrapper for timedated or gnome-settings-daemons DateTimeMechanism
 class DateTimeWrapper:
     def __init__(self):
         try:
@@ -339,7 +339,7 @@ class ThreadedIconView(Gtk.IconView):
                         img.thumbnail((115, 115), Image.ANTIALIAS)                                                                                                    
                         img = imtools.round_image(img, {}, False, None, 5, 255)  
                         img = imtools.drop_shadow(img, 5, 5, background_color=(255, 255, 255, 0), shadow_color=0x444444, border=8, shadow_blur=3, force_background_color=False, cache=None)        
-                        # Convert Image -> Pixbuf (save to file, GTK3 isn't reliable for that)
+                        # Convert Image -> Pixbuf (save to file, GTK3 is not reliable for that)
                         f = tempfile.NamedTemporaryFile(delete=False)
                         filename = f.name
                         f.close()        
@@ -1107,7 +1107,7 @@ class GSettingsCheckButton(Gtk.CheckButton):
 
     def on_my_setting_changed(self, settings, key):
         self.disconnect(self.connectorId)                     #  panel-edit-mode can trigger changed:: twice in certain instances,
-        self.set_active(self.settings.get_boolean(self.key))  #  so disconnect temporarily when we're simply updating the widget state
+        self.set_active(self.settings.get_boolean(self.key))  #  so disconnect temporarily when we are simply updating the widget state
         self.connectorId = self.connect('toggled', self.on_my_value_changed)
 
     def on_my_value_changed(self, widget):
