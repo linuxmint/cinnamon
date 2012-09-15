@@ -463,8 +463,7 @@ ExpoWorkspaceThumbnail.prototype = {
 
     // Tests if @win belongs to this workspace and monitor
     _isMyWindow : function (win) {
-        return Main.isWindowActorDisplayedOnWorkspace(win, this.metaWorkspace.index()) &&
-            (!win.get_meta_window() || win.get_meta_window().get_monitor() == this.monitorIndex);
+        return Main.isWindowActorDisplayedOnWorkspace(win, this.metaWorkspace.index());
     },
 
     // Tests if @win should be shown in the Expo
