@@ -294,10 +294,10 @@ LayoutManager.prototype = {
             else {
                 let primary = this.primaryMonitor;
                 leftPanelBarrier = global.create_pointer_barrier(primary.x, primary.y,
-                                                                 -primary.x, primary.y + panelBox.height, 
+                                                                 primary.x, primary.y + panelBox.height,
                                                                  1 /* BarrierPositiveX */);
                 rightPanelBarrier = global.create_pointer_barrier(primary.x + primary.width, primary.y,
-                                                                  -primary.x + primary.width, primary.y + panelBox.height, 
+                                                                  primary.x + primary.width, primary.y + panelBox.height,
                                                                   4 /* BarrierNegativeX */);
             }
         } else {
