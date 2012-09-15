@@ -25,7 +25,7 @@ MenuItem.prototype = {
 
     _init: function(text, icon, callback) {
         PopupMenu.PopupBaseMenuItem.prototype._init.call(this);
-        
+
         this._text = text;
         this._icon = icon;
         this._callback = callback;
@@ -39,7 +39,7 @@ MenuItem.prototype = {
 
         this.connect('activate', callback);
     },
-    
+
     clone: function(){
         return new MenuItem(this._text, this._icon, this._callback);
     }
@@ -52,11 +52,11 @@ function AppletContextMenu(launcher, orientation) {
 AppletContextMenu.prototype = {
     __proto__: PopupMenu.PopupMenu.prototype,
 
-    _init: function(launcher, orientation) {    
+    _init: function(launcher, orientation) {
         PopupMenu.PopupMenu.prototype._init.call(this, launcher.actor, 0.0, orientation, 0);
         Main.uiGroup.add_actor(this.actor);
-        this.actor.hide();                    
-    }    
+        this.actor.hide();
+    }
 }
 
 function AppletPopupMenu(launcher, orientation) {
@@ -66,10 +66,10 @@ function AppletPopupMenu(launcher, orientation) {
 AppletPopupMenu.prototype = {
     __proto__: PopupMenu.PopupMenu.prototype,
 
-    _init: function(launcher, orientation) {    
+    _init: function(launcher, orientation) {
         PopupMenu.PopupMenu.prototype._init.call(this, launcher.actor, 0.0, orientation, 0);
         Main.uiGroup.add_actor(this.actor);
-        this.actor.hide();                    
+        this.actor.hide();
     },
 
     setMaxHeight: function() {
@@ -87,13 +87,13 @@ function Applet(orientation, panel_height) {
 Applet.prototype = {
 
     _init: function(orientation, panel_height) {
-        this.actor = new St.BoxLayout({ style_class: 'applet-box', reactive: true, track_hover: true });        
-        this._applet_tooltip = new Tooltips.PanelItemTooltip(this, "", orientation);                                        
-        this.actor.connect('button-release-event', Lang.bind(this, this._onButtonReleaseEvent));  
+        this.actor = new St.BoxLayout({ style_class: 'applet-box', reactive: true, track_hover: true });
+        this._applet_tooltip = new Tooltips.PanelItemTooltip(this, "", orientation);
+        this.actor.connect('button-release-event', Lang.bind(this, this._onButtonReleaseEvent));
 
         this._menuManager = new PopupMenu.PopupMenuManager(this);
         this._applet_context_menu = new AppletContextMenu(this, orientation);
-        this._menuManager.addMenu(this._applet_context_menu);     
+        this._menuManager.addMenu(this._applet_context_menu);
 
         this.actor._applet = this; // Backlink to get the applet from its actor (handy when we want to know stuff about a particular applet within the panel)
         this.actor._delegate = this;
@@ -104,11 +104,11 @@ Applet.prototype = {
         this._panelHeight = panel_height ? panel_height : 25;
         this._uuid = null; // Defined in gsettings, set by Cinnamon.
         this._hook = null; // Defined in metadata.json, set by appletManager
-        this._dragging = false;                
+        this._dragging = false;
         this._draggable = DND.makeDraggable(this.actor);
         this._draggable.connect('drag-begin', Lang.bind(this, this._onDragBegin));
     	this._draggable.connect('drag-cancelled', Lang.bind(this, this._onDragCancelled));
-        this._draggable.connect('drag-end', Lang.bind(this, this._onDragEnd));        
+        this._draggable.connect('drag-end', Lang.bind(this, this._onDragEnd));
 
         this._scaleMode = false;
         this._applet_tooltip_text = "";
@@ -122,7 +122,7 @@ Applet.prototype = {
             this.finalizeContextMenu();
         }));
     },
-    
+
     _setAppletReactivity: function() {
         this._draggable.inhibit = !global.settings.get_boolean('panel-edit-mode');
     },
@@ -130,17 +130,17 @@ Applet.prototype = {
     _onDragBegin: function() {
         this._dragging = true;
         this._applet_tooltip.hide();
-        this._applet_tooltip.preventShow = true;                
+        this._applet_tooltip.preventShow = true;
     },
 
     _onDragEnd: function() {
         this._dragging = false;
-        this._applet_tooltip.preventShow = false;            
+        this._applet_tooltip.preventShow = false;
     },
 
     _onDragCancelled: function() {
         this._dragging = false;
-        this._applet_tooltip.preventShow = false;        
+        this._applet_tooltip.preventShow = false;
     },
 
     getDragActor: function() {
@@ -153,16 +153,16 @@ Applet.prototype = {
         return this.actor;
     },
 
-    _onButtonReleaseEvent: function (actor, event) {                      
+    _onButtonReleaseEvent: function (actor, event) {
         if (event.get_button()==1){
             if (this._applet_context_menu.isOpen) {
-                this._applet_context_menu.toggle(); 
+                this._applet_context_menu.toggle();
             }
             this.on_applet_clicked(event);
         }
-        if (event.get_button()==3){            
+        if (event.get_button()==3){
             if (this._applet_context_menu._getMenuItems().length > 0) {
-                this._applet_context_menu.toggle();			
+                this._applet_context_menu.toggle();
             }
         }
         return true;
@@ -174,10 +174,10 @@ Applet.prototype = {
     },
 
     on_applet_clicked: function(event) {
-        // Implemented by Applets        
+        // Implemented by Applets
     },
-    
-    on_applet_added_to_panel: function() {       
+
+    on_applet_added_to_panel: function() {
     },
 
     on_applet_removed_from_panel: function() {
@@ -197,7 +197,7 @@ Applet.prototype = {
             }
         }
         this._menuManager.removeMenu(this._applet_context_menu);
-        
+
         this._applet_tooltip.destroy();
         this._applet_tooltip = new Tooltips.PanelItemTooltip(this, this._applet_tooltip_text, orientation);
 
@@ -206,16 +206,16 @@ Applet.prototype = {
         this._menuManager.addMenu(this._applet_context_menu);
 
         this.on_orientation_changed(orientation);
-        
+
         if (this._applet_context_menu.numMenuItems == 0){ // Do not recreate the menu if the applet already handles it in on_orientation_changed
             for (var i in menuItems) this._applet_context_menu.addMenuItem(menuItems[i]);
         }
 
         this.finalizeContextMenu();
     },
-    
+
     on_orientation_changed: function(event) {
-        // Implemented by Applets        
+        // Implemented by Applets
     },
 
     setPanelHeight: function (panel_height) {
@@ -224,11 +224,11 @@ Applet.prototype = {
         }
         this.on_panel_height_changed();
     },
-    
+
     on_panel_height_changed: function() {
         // Implemented byApplets
     },
-    
+
     finalizeContextMenu: function () {
         // Add default context menus if we're in panel edit mode, ensure their removal if we're not
         let isEditMode = global.settings.get_boolean('panel-edit-mode');
@@ -342,15 +342,15 @@ TextApplet.prototype = {
         this._applet_label = new St.Label({ reactive: true, track_hover: true, style_class: 'applet-label'});
         this._label_height = (this._panelHeight / DEFAULT_PANEL_HEIGHT) * PANEL_FONT_DEFAULT_HEIGHT;
         this._applet_label.clutter_text.ellipsize = Pango.EllipsizeMode.NONE;
-        this.actor.add(this._applet_label, { y_align: St.Align.MIDDLE, y_fill: false });    
+        this.actor.add(this._applet_label, { y_align: St.Align.MIDDLE, y_fill: false });
     },
 
     set_applet_label: function (text) {
         this._applet_label.clutter_text.set_text(text);
 	},
-    
-    on_applet_added_to_panel: function() {       
-                        
+
+    on_applet_added_to_panel: function() {
+
     }
 };
 
@@ -365,7 +365,7 @@ TextIconApplet.prototype = {
         IconApplet.prototype._init.call(this, orientation, panel_height);
         this._applet_label = new St.Label({ reactive: true, track_hover: true, style_class: 'applet-label'});
         this._label_height = (this._panelHeight / DEFAULT_PANEL_HEIGHT) * PANEL_FONT_DEFAULT_HEIGHT;
-        this._applet_label.clutter_text.ellipsize = Pango.EllipsizeMode.NONE;     
+        this._applet_label.clutter_text.ellipsize = Pango.EllipsizeMode.NONE;
         this.actor.add(this._applet_label, { y_align: St.Align.MIDDLE, y_fill: false });
     },
 
@@ -376,8 +376,8 @@ TextIconApplet.prototype = {
     hide_applet_icon: function () {
         this._applet_icon_box.child = null;
     },
-    
-    on_applet_added_to_panel: function() {       
-                                
+
+    on_applet_added_to_panel: function() {
+
     }
 };

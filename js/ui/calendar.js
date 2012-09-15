@@ -620,7 +620,7 @@ Calendar.prototype = {
             iter.setTime(iter.getTime() + MSECS_IN_DAY);
             if (iter.getDay() == this._weekStart) {
                 row++;
-                // We always stop after placing 6 rows, even if month fits in 4 
+                // We always stop after placing 6 rows, even if month fits in 4
                 // to prevent issues with jumping controls, see #226
                 if (row > 7) {
                     break;

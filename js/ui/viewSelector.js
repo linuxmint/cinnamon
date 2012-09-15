@@ -23,7 +23,7 @@ BaseTab.prototype = {
                                  y_align: St.Align.START,
                                  x_fill: true,
                                  y_fill: true,
-                                 style_class: 'view-tab-page' });        
+                                 style_class: 'view-tab-page' });
 
         this.visible = false;
     },
@@ -108,7 +108,7 @@ ViewSelector.prototype = {
         // Box to hold "normal" tab labels
         this._tabBox = new St.BoxLayout({ name: 'viewSelectorTabBar' });
         this._tabBar.add_actor(this._tabBox);
-        
+
         // The page area holds the tab pages. Every page is given the
         // area's full allocation, so that the pages would appear on top
         // of each other if the inactive ones weren't hidden.
@@ -118,7 +118,7 @@ ViewSelector.prototype = {
                                          expand: true });
 
         this._tabs = [];
-        this._activeTab = null;       
+        this._activeTab = null;
 
         Main.overview.connect('item-drag-begin',
                               Lang.bind(this, this._switchDefaultTab));
@@ -178,10 +178,10 @@ ViewSelector.prototype = {
             this._activeTab.hide();
         }
 
-        
+
         tab.title.add_style_pseudo_class('selected');
         this._activeTab = tab;
-        
+
         // Only fade when switching between tabs,
         // not when setting the initially selected one.
         if (!tab.visible)
@@ -270,7 +270,7 @@ ViewSelector.prototype = {
     _allocateTabBar: function(container, box, flags) {
         let allocWidth = box.x2 - box.x1;
         let allocHeight = box.y2 - box.y1;
-        
+
         let [barMinWidth, barNatWidth] = this._tabBox.get_preferred_width(-1);
         let childBox = new Clutter.ActorBox();
         childBox.y1 = 0;
@@ -283,7 +283,7 @@ ViewSelector.prototype = {
             childBox.x2 = barNatWidth;
         }
         this._tabBox.allocate(childBox, flags);
-   
+
         Meta.later_add(Meta.LaterType.BEFORE_REDRAW, Lang.bind(this,
             function() {
                 this.constrainY.offset = this.actor.y;
@@ -298,19 +298,19 @@ ViewSelector.prototype = {
             Main.overview.hide();
             return true;
         } else if (modifiers & Clutter.ModifierType.CONTROL_MASK) {
-            if (symbol == Clutter.Page_Up) {                
+            if (symbol == Clutter.Page_Up) {
                 this._prevTab();
                 return true;
-            } else if (symbol == Clutter.Page_Down) {                
+            } else if (symbol == Clutter.Page_Down) {
                 this._nextTab();
                 return true;
             }
         } else if (Clutter.keysym_to_unicode(symbol)) {
-            
+
         }
         return false;
     }
 
-    
+
 };
 Signals.addSignalMethods(ViewSelector.prototype);

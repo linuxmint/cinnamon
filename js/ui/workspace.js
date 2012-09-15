@@ -446,7 +446,7 @@ WindowOverlay.prototype = {
                                    text: metaWindow.title });
         title.clutter_text.ellipsize = Pango.EllipsizeMode.END;
         title._spacing = 0;
-        
+
         let tracker = Cinnamon.WindowTracker.get_default();
         let app = tracker.get_window_app(metaWindow);
         let icon = null;
@@ -460,7 +460,7 @@ WindowOverlay.prototype = {
         }
         icon.width = WINDOWOVERLAY_ICON_SIZE;
         icon.height = WINDOWOVERLAY_ICON_SIZE;
-        
+
         this._applicationIconBox = new St.Bin({ style_class: 'window-iconbox' });
         this._applicationIconBox.set_opacity(255);
         this._applicationIconBox.add_actor(icon);
@@ -588,12 +588,12 @@ WindowOverlay.prototype = {
         let titleX = cloneX + (cloneWidth - title.width) / 2;
         let titleY = cloneY + cloneHeight + title._spacing + (WINDOWOVERLAY_ICON_SIZE/2) - (title.height/2);
         title.set_position(Math.floor(titleX), Math.floor(titleY));
-        
+
         let icon = this._applicationIconBox;
-        
+
         let iconX = titleX - WINDOWOVERLAY_ICON_SIZE - title._spacing;
         let iconY = cloneY + cloneHeight + title._spacing;
-        
+
         icon.set_position(Math.floor(iconX), Math.floor(iconY));
     },
 
@@ -637,7 +637,7 @@ WindowOverlay.prototype = {
         this._windowClone.metaWindow.disconnect(this._updateCaptionId);
         this.title.destroy();
         this.closeButton.destroy();this._applicationIconBox.destroy();
-        
+
         this._applicationIconBox.destroy();
     },
 
@@ -756,7 +756,7 @@ Workspace.prototype = {
 
         this._kbWindowIndex = -1; // index of the current keyboard-selected window
     },
-    
+
     selectAnotherWindow: function(symbol) {
         let numWindows = this._windowOverlays.length;
         if (numWindows === 0) {
@@ -781,7 +781,7 @@ Workspace.prototype = {
                         newIndex :
                         curCol < numCols - 1 ?
                     // wrap to top row, one column to the right:
-                            curCol + 1 : 
+                            curCol + 1 :
                     // wrap to top row, left-most column:
                             0;
                 }
@@ -793,7 +793,7 @@ Workspace.prototype = {
                         curCol === 0 ?
                    // Wrap to the bottom of the right-most column, may not be on last row:
                             (numFullRows * numCols) - 1 :
-                    /* If we're on the 
+                    /* If we're on the
                     top row but not in the first column, we want to move to the bottom of the
                     column to the left, even though that may not be the bottom of the grid.
                     */
@@ -838,7 +838,7 @@ Workspace.prototype = {
         }
         return true;
     },
-    
+
     activateSelectedWindow: function() {
         if (this._kbWindowIndex > -1 && this._kbWindowIndex < this._windows.length) {
             this._onCloneSelected(this._windows[this._kbWindowIndex], global.get_current_time());
@@ -1330,7 +1330,7 @@ Workspace.prototype = {
                 this._windowOverlays[this._kbWindowIndex].setSelected(true);
             }
         }
-        
+
         clone.destroy();
 
 
@@ -1625,9 +1625,9 @@ Workspace.prototype = {
             wsIndex = this.metaWorkspace.index();
         Main.activateWindow(clone.metaWindow, time, wsIndex);
     },
-    
-    _onCloneClosed : function (clone, time) {        
-        clone.metaWindow.delete(global.get_current_time());        
+
+    _onCloneClosed : function (clone, time) {
+        clone.metaWindow.delete(global.get_current_time());
     },
 
     // Draggable target interface

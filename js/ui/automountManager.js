@@ -64,10 +64,10 @@ ConsoleKitManager.prototype = {
 
         this._ckSession.connect
             ('ActiveChanged', Lang.bind(this, function(object, isActive) {
-                this.sessionActive = isActive;            
+                this.sessionActive = isActive;
             }));
         this._ckSession.IsActiveRemote(Lang.bind(this, function(isActive) {
-            this.sessionActive = isActive;            
+            this.sessionActive = isActive;
         }));
     }
 };
@@ -135,7 +135,7 @@ AutomountManager.prototype = {
         // if we're not in the current ConsoleKit session,
         // or screensaver is active, don't play sounds
         if (!this.ckListener.sessionActive)
-            return;        
+            return;
 
         if (this._ssProxy.screenSaverActive)
             return;
@@ -147,12 +147,12 @@ AutomountManager.prototype = {
         // if we're not in the current ConsoleKit session,
         // or screensaver is active, don't play sounds
         if (!this.ckListener.sessionActive)
-            return;        
+            return;
 
         if (this._ssProxy.screenSaverActive)
             return;
 
-        global.play_theme_sound(0, 'device-removed-media');        
+        global.play_theme_sound(0, 'device-removed-media');
     },
 
     _onDriveEjectButton: function(monitor, drive) {
@@ -174,7 +174,7 @@ AutomountManager.prototype = {
                      }
                  }));
         } else if (drive.can_eject()) {
-            drive.eject_with_operation 
+            drive.eject_with_operation
                 (Gio.MountUnmountFlags.FORCE, null, null,
                  Lang.bind(this, function(drive, res) {
                      try {
@@ -216,7 +216,7 @@ AutomountManager.prototype = {
             !volume.should_automount() ||
             !volume.can_mount()) {
             // allow the autorun to run anyway; this can happen if the
-            // mount gets added programmatically later, even if 
+            // mount gets added programmatically later, even if
             // should_automount() or can_mount() are false, like for
             // blank optical media.
             this._allowAutorun(volume);
@@ -257,7 +257,7 @@ AutomountManager.prototype = {
     },
 
     _onVolumeRemoved: function(monitor, volume) {
-        this._volumeQueue = 
+        this._volumeQueue =
             this._volumeQueue.filter(function(element) {
                 return (element != volume);
             });
@@ -265,7 +265,7 @@ AutomountManager.prototype = {
 
     _reaskPassword: function(volume) {
         let operation = new CinnamonMountOperation.CinnamonMountOperation(volume, { reaskPassword: true });
-        this._mountVolume(volume, operation.mountOp);        
+        this._mountVolume(volume, operation.mountOp);
     },
 
     _allowAutorun: function(volume) {

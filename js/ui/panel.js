@@ -665,28 +665,28 @@ Panel.prototype = {
         /* right */
         this._status_area_order = [];
         this._status_area_cinnamon_implementation = {};
-                                        
+
         this.actor.connect('leave-event', Lang.bind(this, this._leavePanel));
-        this.actor.connect('enter-event', Lang.bind(this, this._enterPanel));  
-        global.settings.connect("changed::panel-autohide", Lang.bind(this, this._processPanelAutoHide));   
-        global.settings.connect("changed::panel-show-delay", Lang.bind(this, this._onPanelShowDelayChanged));   
-        global.settings.connect("changed::panel-hide-delay", Lang.bind(this, this._onPanelHideDelayChanged));   
-        
+        this.actor.connect('enter-event', Lang.bind(this, this._enterPanel));
+        global.settings.connect("changed::panel-autohide", Lang.bind(this, this._processPanelAutoHide));
+        global.settings.connect("changed::panel-show-delay", Lang.bind(this, this._onPanelShowDelayChanged));
+        global.settings.connect("changed::panel-hide-delay", Lang.bind(this, this._onPanelHideDelayChanged));
+
         let orientation = St.Side.TOP;
         if (bottomPosition) {
             orientation = St.Side.BOTTOM;
         }
-        
+
         this._context_menu = new PanelContextMenu(this, orientation);
-        this._menus.addMenu(this._context_menu);   
-        
+        this._menus.addMenu(this._context_menu);
+
         this._context_menu._boxPointer._container.connect('allocate', Lang.bind(this._context_menu._boxPointer, function(actor, box, flags){
                     this._xPosition = this._xpos;
                     this._shiftActor();
         }));
 
-        this.actor.connect('button-release-event', Lang.bind(this, this._onButtonReleaseEvent));                            
-        
+        this.actor.connect('button-release-event', Lang.bind(this, this._onButtonReleaseEvent));
+
         this._setDNDstyle();
         global.settings.connect("changed::panel-edit-mode", Lang.bind(this, this._setDNDstyle));
         global.settings.connect("changed::panel-resizable", Lang.bind(this, this._processPanelSize));
@@ -697,7 +697,7 @@ Panel.prototype = {
     isHideable: function() {
         return this._hideable;
     },
-    
+
     _setDNDstyle: function() {
         if (global.settings.get_boolean("panel-edit-mode")) {
             this._leftBox.add_style_pseudo_class('dnd');
@@ -721,7 +721,7 @@ Panel.prototype = {
             try {
             let [x, y] = event.get_coords();
             let target = global.stage.get_actor_at_pos(Clutter.PickMode.ALL, x, y);
-            if (this._context_menu._getMenuItems().length > 0 && target.get_parent() == this.actor) { 
+            if (this._context_menu._getMenuItems().length > 0 && target.get_parent() == this.actor) {
                 this._context_menu.toggle();
                 if (!this._context_menu.isOpen) {
                     return;
@@ -750,16 +750,16 @@ Panel.prototype = {
         }
         return;
     },
-        
-    _onPanelShowDelayChanged: function() {  
+
+    _onPanelShowDelayChanged: function() {
        this._showDelay = global.settings.get_int("panel-show-delay");
     },
-    
-    _onPanelHideDelayChanged: function() {  
+
+    _onPanelHideDelayChanged: function() {
        this._hideDelay = global.settings.get_int("panel-hide-delay");
     },
-    
-    _processPanelAutoHide: function() {  
+
+    _processPanelAutoHide: function() {
         this._hideable = global.settings.get_boolean("panel-autohide");
         // Show a glimpse of the panel irrespective of the new setting,
         // in order to force a region update.
@@ -930,7 +930,7 @@ Panel.prototype = {
         childBox.y2 = allocHeight + cornerHeight;
         this._rightCorner.actor.allocate(childBox, flags);
     },
-    
+
     _clearTimers: function() {
         if (this._showTimer) {
             Mainloop.source_remove(this._showTimer);
@@ -939,7 +939,7 @@ Panel.prototype = {
             Mainloop.source_remove(this._hideTimer);
         }
     },
-    
+
     _enterPanel: function() {
         this.isMouseOverPanel = true;
         this._clearTimers();
@@ -961,28 +961,28 @@ Panel.prototype = {
         else {
             this._hidePanel();
         }
-    }, 
+    },
 
     enable: function() {
         this._disabled = false;
         this.actor.show();
         Tweener.addTween(this.actor, {
-            opacity: 255, 
-            time: AUTOHIDE_ANIMATION_TIME, 
+            opacity: 255,
+            time: AUTOHIDE_ANIMATION_TIME,
             transition: 'easeOutQuad'
         });
-    }, 
-    
+    },
+
     disable: function() {
         this._disabled = true;
         Tweener.addTween(this.actor, {
-            opacity: 0, 
-            time: AUTOHIDE_ANIMATION_TIME, 
-            transition: 'easeOutQuad', 
+            opacity: 0,
+            time: AUTOHIDE_ANIMATION_TIME,
+            transition: 'easeOutQuad',
             onComplete: this.actor.hide
         });
-    }, 
-    
+    },
+
     _showPanel: function() {
         if (this._disabled) return;
 
@@ -1034,7 +1034,7 @@ Panel.prototype = {
 
     _hidePanel: function(force) {
         if (this._disabled) return;
-        
+
         if ((!this._hideable && !force) || global.menuStackLength > 0 || this.isMouseOverPanel) return;
 
         // Force the panel to be on top (hack to correct issues when switching workspace)
@@ -1045,8 +1045,8 @@ Panel.prototype = {
         let y = this.bottomPosition ?
             Main.layoutManager.bottomMonitor.y + Main.layoutManager.bottomMonitor.height - 1 :
             Main.layoutManager.primaryMonitor.y - height + 1;
-        
-        Tweener.addTween(this.actor.get_parent(), { 
+
+        Tweener.addTween(this.actor.get_parent(), {
             y: y,
             time: animationTime,
             transition: 'easeOutQuad',

@@ -432,7 +432,7 @@ AltTabPopup.prototype = {
            Main.uiGroup.remove_actor(this.actor);
            this.actor.destroy();
         });
-        
+
         this._popModal();
         if (this.actor.visible) {
             Tweener.addTween(this.actor,
@@ -458,7 +458,7 @@ AltTabPopup.prototype = {
         if (this._displayPreviewTimeoutId)
             Mainloop.source_remove(this._displayPreviewTimeoutId);
     },
-    
+
     _doWindowPreview: function() {
         if (this._previewClone) {
             this.actor.remove_actor(this._previewClone);
@@ -510,7 +510,7 @@ AltTabPopup.prototype = {
         }
         this._displayPreviewTimeoutId = Mainloop.timeout_add(PREVIEW_DELAY_TIMEOUT, Lang.bind(this, showPreview));
     },
-    
+
     /**
      * _select:
      * @app: index of the app to select
@@ -965,7 +965,7 @@ AppIcon.prototype = {
                                            width: width * scale,
                                            height: height * scale});
         } else {
-            this.icon = this.app ? 
+            this.icon = this.app ?
                 this.app.create_icon_texture(size) :
                 new St.Icon({ icon_name: 'application-default-icon',
                               icon_type: St.IconType.FULLCOLOR,
@@ -1107,7 +1107,7 @@ AppSwitcher.prototype = {
 
         SwitcherList.prototype.highlight.call(this, n, justOutline);
         this._curApp = n;
- 
+
         if (this._curApp != -1 && this._altTabPopup._thumbnailsEnabled && this._altTabPopup._iconsEnabled) {
             this._arrows[this._curApp].show();
         }

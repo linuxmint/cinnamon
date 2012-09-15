@@ -216,7 +216,7 @@ NotificationDaemon.prototype = {
     Notify: function(appName, replacesId, icon, summary, body,
                      actions, hints, timeout) {
         let id;
-        
+
         let rewrites = rewriteRules[appName];
         if (rewrites) {
             for (let i = 0; i < rewrites.length; i++) {

@@ -81,9 +81,9 @@ function _Draggable(actor, params) {
 
 _Draggable.prototype = {
     _init : function(actor, params) {
-        
+
         this.inhibit = false; // Use the inhibit flag to temporarily disable an object from being draggable
-        
+
         params = Params.parse(params, { manualMode: false,
                                         restoreOnSuccess: false,
                                         dragActorMaxSize: undefined,
@@ -148,13 +148,13 @@ _Draggable.prototype = {
         return false;
     },
 
-    _onButtonHoverChanged: function(button) {        
+    _onButtonHoverChanged: function(button) {
         if (button.hover || !button.pressed)
             return;
 
         button.fake_release();
         this.startDrag(this._dragStartX, this._dragStartY,
-                       global.get_current_time());        
+                       global.get_current_time());
     },
 
     _grabActor: function() {
@@ -188,7 +188,7 @@ _Draggable.prototype = {
     _onEvent: function(actor, event) {
         // prevent the watchdog timer from firing, for a while
         this._setTimer(true);
-        
+
         // Intercept BUTTON_PRESS to try to address a drag in progress condition 'dragging'
         // on interminably - you started dragging, went off the panels, released the mouse
         // button (which we can't track when you're not over a panel) then went back
@@ -239,7 +239,7 @@ _Draggable.prototype = {
             this._dragEventTimeoutId = 0;
         }
         if (renew) {
-            this._dragEventTimeoutId = Mainloop.timeout_add(DRAG_EVENT_TIMEOUT_MS, 
+            this._dragEventTimeoutId = Mainloop.timeout_add(DRAG_EVENT_TIMEOUT_MS,
                 Lang.bind(this, function() {
                     if (this._dragInProgress) {
                         this._cancelDrag();
@@ -249,7 +249,7 @@ _Draggable.prototype = {
                 }));
         }
     },
-    
+
     /**
      * startDrag:
      * @stageX: X coordinate of event
@@ -393,7 +393,7 @@ _Draggable.prototype = {
         }
         return false;
     },
-    
+
     _updateDragPosition : function (event) {
         let [stageX, stageY] = event.get_coords();
         this._dragX = stageX;

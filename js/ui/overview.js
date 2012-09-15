@@ -191,7 +191,7 @@ Overview.prototype = {
 
         this._workspacesDisplay = new WorkspacesView.WorkspacesDisplay();
         this._viewSelector.addViewTab('windows', _("Windows"), this._workspacesDisplay.actor, 'text-x-generic');
-				
+
         Main.layoutManager.connect('monitors-changed', Lang.bind(this, this._relayout));
         this._relayout();
     },
@@ -463,11 +463,11 @@ Overview.prototype = {
 
         this._coverPane.set_position(0, 0);
         this._coverPane.set_size(primary.width, contentHeight);
-        
+
         let viewWidth = primary.width - 2 * this._spacing;
         let viewHeight = contentHeight - this._spacing;
         let viewY = this._spacing;
-        let viewX = rtl ? 0 : this._spacing;        
+        let viewX = rtl ? 0 : this._spacing;
 
         this._viewSelector.actor.set_position(viewX, viewY);
         this._viewSelector.actor.set_size(viewWidth, viewHeight);
@@ -763,7 +763,7 @@ Overview.prototype = {
             this._fakePointerEvent();
             this._needsFakePointerEvent = false;
         }
-        
+
         Main.layoutManager._chrome.updateRegions();
     }
 };

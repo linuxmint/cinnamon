@@ -10,7 +10,7 @@ const Util = imports.misc.util;
 const STANDARD_TRAY_ICON_IMPLEMENTATIONS = {
     'bluetooth-applet': 'bluetooth',
     'gnome-volume-control-applet': 'volume', // renamed to gnome-sound-applet
-                                             // when moved to control center                                                
+                                             // when moved to control center
     'gnome-sound-applet': 'volume',
     'nm-applet': 'network',
     'gnome-power-manager': 'battery',
@@ -38,7 +38,7 @@ StatusIconDispatcher.prototype = {
         // http://bugzilla.gnome.org/show_bug.cgi=id=621382
         Util.killall('indicator-application-service');
     },
-    
+
     redisplay: function() {
         this.emit('before-redisplay');
         this._traymanager.redisplay();
@@ -52,7 +52,7 @@ StatusIconDispatcher.prototype = {
     _onTrayIconAdded: function(o, icon) {
         let wmClass = (icon.wm_class || 'unknown').toLowerCase();
         let role = STANDARD_TRAY_ICON_IMPLEMENTATIONS[wmClass];
-        if (!role) role = wmClass;        
+        if (!role) role = wmClass;
         this.emit('status-icon-added', icon, role);
     },
 

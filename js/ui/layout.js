@@ -35,16 +35,16 @@ LayoutManager.prototype = {
         this.edgeLeft = null;
         this._chrome = new Chrome(this);
 
-        this._hotCorner = new HotCorner();        
+        this._hotCorner = new HotCorner();
         this.overviewCorner = new St.Button({name: 'overview-corner', reactive: true, track_hover: true });
-        this.addChrome(this.overviewCorner, { visibleInFullscreen: false });        
+        this.addChrome(this.overviewCorner, { visibleInFullscreen: false });
         this.overviewCorner.connect('button-release-event', Lang.bind(this, this._toggleExpo));
-                
+
         this.panelBox = new St.BoxLayout({ name: 'panelBox',
                                            vertical: true });
 
         this.panelBox2 = new St.BoxLayout({ name: 'panelBox',
-                                            vertical: true });        
+                                            vertical: true });
 
         this.addChrome(this.panelBox, { addToWindowgroup: false });
         this.addChrome(this.panelBox2, { addToWindowgroup: false });
@@ -104,7 +104,7 @@ LayoutManager.prototype = {
         this.edgeRight.enabled = this.enabledEdgeFlip;
         this.edgeLeft.enabled = this.enabledEdgeFlip;
     },
-    
+
     _toggleExpo: function() {
         if (!Main.expo.animationInProgress) {
             if (Main.overview.visible) {
@@ -116,7 +116,7 @@ LayoutManager.prototype = {
             }
         }
     },
-    
+
     _processPanelSettings: function() {
         if (this._processPanelSettingsTimeout) {
             Mainloop.source_remove(this._processPanelSettingsTimeout);
@@ -129,16 +129,16 @@ LayoutManager.prototype = {
             this._chrome.modifyActorParams(this.panelBox2, { affectsStruts: Main.panel2 && !Main.panel2.isHideable() });
         }));
     },
-    
-    _onOverviewCornerVisibleChanged: function() {            
+
+    _onOverviewCornerVisibleChanged: function() {
         let visible = global.settings.get_boolean("overview-corner-visible");
         if (visible)
             this.overviewCorner.show();
         else
             this.overviewCorner.hide();
     },
-    
-    _onOverviewCornerHoverChanged: function() {            
+
+    _onOverviewCornerHoverChanged: function() {
         let enabled = global.settings.get_boolean("overview-corner-hover");
         if (enabled)
             this._hotCorner.actor.show();
@@ -177,13 +177,13 @@ LayoutManager.prototype = {
         let x = this.primaryMonitor.x;
         let y = this.primaryMonitor.y;
         if (hotCornerPosition == "topLeft") {
-            this._hotCorner.actor.set_position(x, y);            
+            this._hotCorner.actor.set_position(x, y);
             this.overviewCorner.set_position(x + 1, y + 1);
         } else if (hotCornerPosition == "topRight") {
-            this._hotCorner.actor.set_position(x + this.primaryMonitor.width - 1, y);            
+            this._hotCorner.actor.set_position(x + this.primaryMonitor.width - 1, y);
             this.overviewCorner.set_position(x + this.primaryMonitor.width - 33, y + 1);
         } else if (hotCornerPosition == "bottomLeft") {
-            this._hotCorner.actor.set_position(x, this.primaryMonitor.height - 1);            
+            this._hotCorner.actor.set_position(x, this.primaryMonitor.height - 1);
             this.overviewCorner.set_position(x + 1, this.primaryMonitor.height - 33);
         } else if (hotCornerPosition == "bottomRight") {
             this._hotCorner.actor.set_position(x + this.primaryMonitor.width - 1, this.primaryMonitor.height - 1);
@@ -191,7 +191,7 @@ LayoutManager.prototype = {
         }
     },
 
-    _updateBoxes: function() {                
+    _updateBoxes: function() {
         this._updateHotCorners();
 
         this.overviewCorner.set_size(32, 32);
@@ -200,12 +200,12 @@ LayoutManager.prototype = {
             this._hotCorner.actor.show();
         else
             this._hotCorner.actor.hide();
-            
+
         if (global.settings.get_boolean("overview-corner-visible"))
             this.overviewCorner.show();
         else
             this.overviewCorner.hide();
-            
+
         let getPanelHeight = function(panel) {
             let panelHeight = 0;
             if (panel) {
@@ -217,13 +217,13 @@ LayoutManager.prototype = {
         let p1height = getPanelHeight(Main.panel);
         this.panelBox.set_size(this.bottomMonitor.width, p1height);
 
-        if (Main.desktop_layout == Main.LAYOUT_TRADITIONAL) {       
+        if (Main.desktop_layout == Main.LAYOUT_TRADITIONAL) {
             this.panelBox.set_position(this.bottomMonitor.x, this.bottomMonitor.y + this.bottomMonitor.height - p1height);
         }
-        else if (Main.desktop_layout == Main.LAYOUT_FLIPPED) {         
+        else if (Main.desktop_layout == Main.LAYOUT_FLIPPED) {
             this.panelBox.set_position(this.primaryMonitor.x, this.primaryMonitor.y);
         }
-        else if (Main.desktop_layout == Main.LAYOUT_CLASSIC) { 
+        else if (Main.desktop_layout == Main.LAYOUT_CLASSIC) {
             let p2height = getPanelHeight(Main.panel2);
             this.panelBox.set_position(this.primaryMonitor.x, this.primaryMonitor.y);
             this.panelBox2.set_position(this.bottomMonitor.x, this.bottomMonitor.y + this.bottomMonitor.height - p2height);
@@ -239,7 +239,7 @@ LayoutManager.prototype = {
     getPorthole: function() {
         let porthole = {};
         let screen = {x: 0, y: 0, width: global.screen_width, height: global.screen_height};
-        
+
         let getPanelHeight = function(panel) {
             let panelHeight = 0;
             let hideable = true;
@@ -250,11 +250,11 @@ LayoutManager.prototype = {
             return hideable ? 0 : panelHeight;
         };
         let p1height = getPanelHeight(Main.panel);
-        if (Main.desktop_layout == Main.LAYOUT_TRADITIONAL) {       
+        if (Main.desktop_layout == Main.LAYOUT_TRADITIONAL) {
             porthole.x = screen.x; porthole.y = screen.y;
             porthole.width = screen.width; porthole.height = screen.height - p1height;
         }
-        else if (Main.desktop_layout == Main.LAYOUT_FLIPPED) {         
+        else if (Main.desktop_layout == Main.LAYOUT_FLIPPED) {
             porthole.x = screen.x; porthole.y = screen.y + p1height;
             porthole.width = screen.width; porthole.height = screen.height - p1height;
         }
@@ -281,7 +281,7 @@ LayoutManager.prototype = {
         if (rightPanelBarrier)
             global.destroy_pointer_barrier(rightPanelBarrier);
 
-        if (panelBox.height) {                        
+        if (panelBox.height) {
             if ((Main.desktop_layout == Main.LAYOUT_TRADITIONAL && panelBox==this.panelBox) || (Main.desktop_layout == Main.LAYOUT_CLASSIC && panelBox==this.panelBox2)) {
                 let monitor = this.bottomMonitor;
                 leftPanelBarrier = global.create_pointer_barrier(monitor.x, monitor.y + monitor.height - panelBox.height,
@@ -294,10 +294,10 @@ LayoutManager.prototype = {
             else {
                 let primary = this.primaryMonitor;
                 leftPanelBarrier = global.create_pointer_barrier(primary.x, primary.y,
-                                                                 -primary.x, primary.y + panelBox.height, 
+                                                                 -primary.x, primary.y + panelBox.height,
                                                                  1 /* BarrierPositiveX */);
                 rightPanelBarrier = global.create_pointer_barrier(primary.x + primary.width, primary.y,
-                                                                  -primary.x + primary.width, primary.y + panelBox.height, 
+                                                                  -primary.x + primary.width, primary.y + panelBox.height,
                                                                   4 /* BarrierNegativeX */);
             }
         } else {
@@ -366,7 +366,7 @@ LayoutManager.prototype = {
                        onComplete: this._startupAnimationComplete,
                        onCompleteScope: this
                      };
-        
+
         if (Main.desktop_layout == Main.LAYOUT_TRADITIONAL) {
           this.panelBox.anchor_y  = -(this.panelBox.height);
         }
@@ -546,9 +546,9 @@ HotCorner.prototype = {
                              Lang.bind(this, this._onCornerLeft));
 
         this.cornerOpensExpo;
-        
+
         this._updatePrefs();
-        
+
         global.settings.connect("changed::overview-corner-position", Lang.bind(this, this._updatePrefs));
         global.settings.connect("changed::overview-corner-functionality", Lang.bind(this, this._updatePrefs));
 
@@ -565,7 +565,7 @@ HotCorner.prototype = {
     destroy: function() {
         this.actor.destroy();
     },
-    
+
     _updatePrefs : function() {
         this.cornerOpensExpo = (global.settings.get_string("overview-corner-functionality") == "expo");
     },
@@ -785,7 +785,7 @@ Chrome.prototype = {
         }
         return -1;
     },
-    
+
     modifyActorParams: function(actor, params) {
         let index = this._findActor(actor);
         if (index == -1)

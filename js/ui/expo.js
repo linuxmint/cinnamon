@@ -93,12 +93,12 @@ Expo.prototype = {
                 return DND.DragMotionResult.MOVE_DROP;
             };
         this._windowCloseArea.acceptDrop = function(source, actor, x, y, time) {
-                
+
                 if (source.realWindow) {
                     let win = source.realWindow;
 
                     let metaWindow = win.get_meta_window();
-                    
+
                     source._draggable._restoreOnSuccess = false;
                     metaWindow.delete(global.get_current_time());
                     return true;
@@ -194,9 +194,9 @@ Expo.prototype = {
         let buttonY = (primary.height - buttonHeight) / 2;
 
         this._addWorkspaceButton.set_position((primary.width - buttonWidth), buttonY);
-        this._addWorkspaceButton.set_size(buttonWidth, buttonHeight); 
+        this._addWorkspaceButton.set_size(buttonWidth, buttonHeight);
         if (this._addWorkspaceButton.get_theme_node().get_background_image() == null)
-            this._addWorkspaceButton.set_style('background-image: url("/usr/share/cinnamon/theme/add-workspace.png");'); 
+            this._addWorkspaceButton.set_style('background-image: url("/usr/share/cinnamon/theme/add-workspace.png");');
 
         this._windowCloseArea.set_position((primary.width - this._windowCloseArea.width) / 2 , primary.height);
         this._windowCloseArea.set_size(this._windowCloseArea.width, this._windowCloseArea.height);
@@ -313,13 +313,13 @@ Expo.prototype = {
     _animateVisible2: function() {
         this.activeWorkspace.disconnect(this.allocateID);
         let activeWorkspaceActor = this._expo._thumbnailsBox._lastActiveWorkspace.actor;
-        Tweener.addTween(this.clone, {  x: activeWorkspaceActor.allocation.x1, 
-                                        y: activeWorkspaceActor.allocation.y1, 
-                                        scale_x: activeWorkspaceActor.get_scale()[0] , 
-                                        scale_y: activeWorkspaceActor.get_scale()[1], 
-                                        time: ANIMATION_TIME, transition: 'easeOutQuad', 
-                                        onComplete: function() { this.clone.hide(); this._showDone()}, 
-                                        onCompleteScope: this});        
+        Tweener.addTween(this.clone, {  x: activeWorkspaceActor.allocation.x1,
+                                        y: activeWorkspaceActor.allocation.y1,
+                                        scale_x: activeWorkspaceActor.get_scale()[0] ,
+                                        scale_y: activeWorkspaceActor.get_scale()[1],
+                                        time: ANIMATION_TIME, transition: 'easeOutQuad',
+                                        onComplete: function() { this.clone.hide(); this._showDone()},
+                                        onCompleteScope: this});
     },
 
     // showTemporarily:
@@ -439,12 +439,12 @@ Expo.prototype = {
         this.clone.set_position(activeWorkspaceActor.allocation.x1, activeWorkspaceActor.allocation.y1);
         this.clone.set_scale(activeWorkspaceActor.get_scale()[0], activeWorkspaceActor.get_scale()[1]);
         let porthole = Main.layoutManager.getPorthole();
-        Tweener.addTween(this.clone, {  x: porthole.x, 
+        Tweener.addTween(this.clone, {  x: porthole.x,
                                         y: porthole.y,
                                         scale_x: 1,
                                         scale_y: 1,
-                                        time: ANIMATION_TIME, 
-                                        transition: 'easeOutQuad', 
+                                        time: ANIMATION_TIME,
+                                        transition: 'easeOutQuad',
                                         onComplete: this.hide});
 
         this._coverPane.raise_top();
