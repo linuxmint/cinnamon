@@ -66,7 +66,7 @@ PanelAppLauncherMenu.prototype = {
     },
 
     _onRemoveActivate: function(actor, event) {
-        this._launcher.launchersBox.removeLauncher(this._launcher, this._launcher.is_custom());
+        this._launcher.launchersBox.removeLauncher(this._launcher, this._launcher.isCustom());
         this._launcher.actor.destroy();
     },
 
@@ -121,7 +121,7 @@ PanelAppLauncher.prototype = {
         this._menuManager.addMenu(this._menu);
 
         let tooltipText;
-        if (this.is_custom()) tooltipText = appinfo.get_name();
+        if (this.isCustom()) tooltipText = appinfo.get_name();
         else tooltipText = app.get_name();
         this._tooltip = new Tooltips.PanelItemTooltip(this, tooltipText, orientation);
 
@@ -132,8 +132,9 @@ PanelAppLauncher.prototype = {
         this._draggable.connect('drag-cancelled', Lang.bind(this, this._onDragCancelled));
         this._draggable.connect('drag-end', Lang.bind(this, this._onDragEnd));
 
-        this._draggable.inhibit = !global.settings.get_boolean(PANEL_LAUNCHERS_DRAGGABLE_KEY);
-        global.settings.connect('changed::' + PANEL_LAUNCHERS_DRAGGABLE_KEY, Lang.bind(this, this._onPanelLaunchersDraggableChanged));
+        this._draggable.inhibit = !global.settings.get_boolean(PANEL_LAUNCHERS_DRAGGABLE_KEY) || global.settings.get_boolean(PANEL_EDIT_MODE_KEY);
+        global.settings.connect('changed::' + PANEL_LAUNCHERS_DRAGGABLE_KEY, Lang.bind(this, this._updateInhibit));
+        global.settings.connect('changed::' + PANEL_EDIT_MODE_KEY, Lang.bind(this, this._updateInhibit));
     },
 
     _onDragBegin: function() {
@@ -152,8 +153,8 @@ PanelAppLauncher.prototype = {
         this._tooltip.preventShow = false;
     },
 
-    _onPanelLaunchersDraggableChanged: function(){
-        this._draggable.inhibit = !global.settings.get_boolean(PANEL_LAUNCHERS_DRAGGABLE_KEY);
+    _updateInhibit: function(){
+        this._draggable.inhibit = !global.settings.get_boolean(PANEL_LAUNCHERS_DRAGGABLE_KEY) || global.settings.get_boolean(PANEL_EDIT_MODE_KEY);
     },
 
     getDragActor: function() {
@@ -167,7 +168,7 @@ PanelAppLauncher.prototype = {
     },
 
     _getIconActor: function() {
-        if (this.is_custom()) return St.TextureCache.get_default().load_gicon(null, this.appinfo.get_icon(), this.icon_height);
+        if (this.isCustom()) return St.TextureCache.get_default().load_gicon(null, this.appinfo.get_icon(), this.icon_height);
         else return this.app.create_icon_texture(this.icon_height);
     },
 
@@ -199,25 +200,25 @@ PanelAppLauncher.prototype = {
         this._iconBox.width = allocation.x2 - allocation.x1;
         this._iconBox.height = allocation.y2 - allocation.y1;
         this._animateIcon(0);
-        if (this.is_custom()) this.appinfo.launch([], null);
+        if (this.isCustom()) this.appinfo.launch([], null);
         else this.app.open_new_window(-1);
     },
 
-    get_id: function() {
-        if (this.is_custom()) return Gio.file_new_for_path(this.appinfo.get_filename()).get_basename();
+    getId: function() {
+        if (this.isCustom()) return Gio.file_new_for_path(this.appinfo.get_filename()).get_basename();
         else return this.app.get_id();
     },
 
-    is_custom: function() {
+    isCustom: function() {
         return (this.app==null);
     },
 
     _onButtonPress: function(actor, event) {
-        pressLauncher = this.get_appname();
+        pressLauncher = this.getAppname();
     },
 
     _onButtonRelease: function(actor, event) {
-        if (pressLauncher == this.get_appname()){
+        if (pressLauncher == this.getAppname()){
             let button = event.get_button();
             if (button==1) {
                 if (this._menu.isOpen) this._menu.toggle();
@@ -242,21 +243,21 @@ PanelAppLauncher.prototype = {
             this._iconBox.remove_clip();
     },
 
-    get_appinfo: function() {
-        if (this.is_custom()) return this.appinfo;
+    getAppInfo: function() {
+        if (this.isCustom()) return this.appinfo;
         else return this.app.get_app_info();
     },
 
-    get_command: function() {
-        return this.get_appinfo().get_commandline();
+    getCommand: function() {
+        return this.getAppInfo().get_commandline();
     },
 
-    get_appname: function() {
-        return this.get_appinfo().get_name();
+    getAppname: function() {
+        return this.getAppInfo().get_name();
     },
 
-    get_icon: function() {
-        let icon = this.get_appinfo().get_icon();
+    getIcon: function() {
+        let icon = this.getAppInfo().get_icon();
         if (icon){
             if (icon instanceof Gio.FileIcon) {
                 return icon.get_file().get_path();
@@ -295,14 +296,14 @@ MyApplet.prototype = {
 
             this.actor.add(this.myactor);
             this.actor.reactive = global.settings.get_boolean(PANEL_EDIT_MODE_KEY);
-            global.settings.connect('changed::' + PANEL_EDIT_MODE_KEY, Lang.bind(this, this.on_panel_edit_mode_changed));
+            global.settings.connect('changed::' + PANEL_EDIT_MODE_KEY, Lang.bind(this, this._onPanelEditModeChanged));
         }
         catch (e) {
             global.logError(e);
         }
     },
 
-    on_panel_edit_mode_changed: function() {
+    _onPanelEditModeChanged: function() {
         this.actor.reactive = global.settings.get_boolean(PANEL_EDIT_MODE_KEY);
     },
 
@@ -350,7 +351,7 @@ MyApplet.prototype = {
             global.settings.set_strv(PANEL_LAUNCHERS_KEY, desktopFiles);
         }
         if (delete_file){
-            let appid = launcher.get_id();
+            let appid = launcher.getId();
             let file = new Gio.file_new_for_path(CUSTOM_LAUNCHERS_PATH+"/"+appid);
             if (file.query_exists(null)) file.delete(null);
         }
@@ -362,7 +363,7 @@ MyApplet.prototype = {
         if (origpos>=0){
             this._launchers.splice(origpos, 1);
             desktopFiles.splice(origpos, 1);
-            desktopFiles.splice(pos, 0, launcher.get_id());
+            desktopFiles.splice(pos, 0, launcher.getId());
             global.settings.set_strv(PANEL_LAUNCHERS_KEY, desktopFiles);
         }
     },
@@ -370,10 +371,10 @@ MyApplet.prototype = {
     showAddLauncherDialog: function(timestamp, launcher){
         if (launcher) {
             let cl = APPLET_DIR.get_child('add-panel-launcher.py').get_path() + ' ';
-            cl += '"' + launcher.get_id() + '" ';
-            cl += '"' + launcher.get_appname() + '" ';
-            cl += '"' + launcher.get_command() + '" ';
-            cl += '"' + launcher.get_icon() + '"';
+            cl += '"' + launcher.getId() + '" ';
+            cl += '"' + launcher.getAppname() + '" ';
+            cl += '"' + launcher.getCommand() + '" ';
+            cl += '"' + launcher.getIcon() + '"';
             Util.spawnCommandLine(cl);
         } else {
             Util.spawnCommandLine(APPLET_DIR.get_child('add-panel-launcher.py').get_path());
@@ -455,7 +456,7 @@ MyApplet.prototype = {
         if (!(source.isDraggableApp || (source instanceof PanelAppLauncher))) return DND.DragMotionResult.NO_DROP;
 
         let sourceId;
-        if (source instanceof PanelAppLauncher) sourceId = source.get_id();
+        if (source instanceof PanelAppLauncher) sourceId = source.getId();
         else sourceId = source.get_app_id();
 
         let launcherPos = 0;
@@ -465,7 +466,7 @@ MyApplet.prototype = {
                 children[i] == this._dragPlaceholder.actor)
                 continue;
 
-            let childId = children[i]._delegate.get_id();
+            let childId = children[i]._delegate.getId();
             if (childId == sourceId)
                 continue;
             launcherPos++;
