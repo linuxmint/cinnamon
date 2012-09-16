@@ -72,7 +72,7 @@ Depends: ${gir:Depends},
          python-dbus,
          pkg-config,
          mesa-utils
-Recommends: gnome-control-center, gnome-user-guide, gnome-themes-standard, gnome-session-fallback
+Recommends: gnome-control-center, gnome-user-guide, gnome-themes-standard, gnome-session-fallback, gnome-terminal
 Breaks: gnome-control-center (<< 1:3.0)
 Conflicts: cinnamon-session, cinnamon-settings
 Provides: cinnamon-session, cinnamon-settings
