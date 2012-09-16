@@ -75,11 +75,11 @@ PanelItemTooltip.prototype = {
         let tooltipTop;
         if (this.orientation == St.Side.BOTTOM) {
             monitor = Main.layoutManager.bottomMonitor;
-            tooltipTop = monitor.height-tooltipHeight-this._panelItem.actor.get_allocation_box().y2+this._panelItem.actor.get_allocation_box().y1;
+            tooltipTop = monitor.y+monitor.height-tooltipHeight-this._panelItem.actor.get_allocation_box().y2+this._panelItem.actor.get_allocation_box().y1;
         }
         else {    
             monitor = Main.layoutManager.primaryMonitor;
-            tooltipTop = this._panelItem.actor.get_allocation_box().y2;
+            tooltipTop = monitor.y+this._panelItem.actor.get_allocation_box().y2;
         }
         var tooltipLeft = this._mousePosition[0]- Math.round(tooltipWidth/2);
         if (tooltipLeft<monitor.x) tooltipLeft = monitor.x;
