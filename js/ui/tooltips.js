@@ -37,6 +37,7 @@ PanelItemTooltip.prototype = {
     _onEnterEvent: function(actor, event) {
         this.preventShow = false;
         Tweener.addTween(this, {time: 0.3, onComplete: Lang.bind(this, this._onTimerComplete)});
+        global.logError("coords: %s".format(event.get_coords().toString()));
         this._mousePosition = event.get_coords();
     },
     
@@ -81,8 +82,8 @@ PanelItemTooltip.prototype = {
             tooltipTop = this._panelItem.actor.get_allocation_box().y2;
         }
         var tooltipLeft = this._mousePosition[0]- Math.round(tooltipWidth/2);
-        if (tooltipLeft<0) tooltipLeft = 0;
-        if (tooltipLeft+tooltipWidth>monitor.width) tooltipLeft = monitor.width-tooltipWidth;
+        if (tooltipLeft<monitor.x) tooltipLeft = monitor.x;
+        if (tooltipLeft+tooltipWidth>monitor.x+monitor.width) tooltipLeft = (monitor.x+monitor.width)-tooltipWidth;
         
         this._tooltip.set_position(tooltipLeft, tooltipTop);
         
