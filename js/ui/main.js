@@ -322,6 +322,8 @@ function start() {
     global.screen.connect('window-left-monitor', _windowLeftMonitor);
     global.screen.connect('restacked', _windowsRestacked);
 
+    global.settings.connect('changed::number-workspaces', _staticWorkspaces);
+
     _nWorkspacesChanged();
     
     AppletManager.init();
@@ -416,6 +418,7 @@ function _removeWorkspace(workspace) {
 }
 
 function _staticWorkspaces() {
+    nWorks = global.settings.get_int('number-workspaces');
     let i;
     let dif = nWorks - global.screen.n_workspaces;
     if (dif > 0) {
