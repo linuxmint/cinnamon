@@ -1857,50 +1857,19 @@ class MainWindow:
         self.window.connect("destroy", Gtk.main_quit)
 
         self.sidePages = []
-                               
-        sidePage = SidePage(_("Menu"), "menu.svg", self.content_box)
-        self.sidePages.append((sidePage, "menu"))
-        sidePage.add_widget(GSettingsEntry(_("Menu text"), "org.cinnamon", "menu-text", None))
-        sidePage.add_widget(GSettingsFileChooser(_("Menu icon"), "org.cinnamon", "menu-icon", None, True))
-        sidePage.add_widget(GSettingsSpinButton(_("Menu hover delay"), "org.cinnamon", "menu-hover-delay", None, 0, 2000, 50, 200, _("milliseconds")))
-        sidePage.add_widget(GSettingsCheckButton(_("Activate menu on hover"), "org.cinnamon", "activate-menu-applet-on-hover", None))
-        sidePage.add_widget(GSettingsCheckButton(_("Show bookmarks and places"), "org.cinnamon", "menu-show-places", None))
-        sidePage.add_widget(GSettingsCheckButton(_("Show recent files"), "org.cinnamon", "menu-show-recent", None))
 
-        sidePage = SidePage(_("Panel"), "panel.svg", self.content_box)
-        self.sidePages.append((sidePage, "panel"))                
-        sidePage.add_widget(GSettingsCheckButton(_("Auto-hide panel"), "org.cinnamon", "panel-autohide", None))
+# ************** APPLETS SIDEPAGE ******************
+        sidePage = AppletViewSidePage(_("Applets"), "applets.svg", self.content_box)
+        self.sidePages.append((sidePage, "applets"))
+# ************** APPLETS SIDEPAGE END **************
 
-        box = IndentedHBox()
-        box.add(GSettingsSpinButton(_("Show delay"), "org.cinnamon", "panel-show-delay", "org.cinnamon/panel-autohide", 0, 2000, 50, 200, _("milliseconds")))
-        sidePage.add_widget(box)
+# *************** BACKGROUNDS SIDEPAGE ***************
+        sidePage = BackgroundSidePage(_("Backgrounds"), "backgrounds.svg", self.content_box)
+        self.sidePages.append((sidePage, "backgrounds"))
+# *************** BACKGROUNDS SIDEPAGE END ***********
 
-        box = IndentedHBox()
-        box.add(GSettingsSpinButton(_("Hide delay"), "org.cinnamon", "panel-hide-delay", "org.cinnamon/panel-autohide", 0, 2000, 50, 200, _("milliseconds")))
-        sidePage.add_widget(box)
+# **************** CALENDAR SIDEPAGE *********************
 
-        desktop_layouts = [["traditional", _("Traditional (panel at the bottom)")], ["flipped", _("Flipped (panel at the top)")], ["classic", _("Classic (panels at the top and at the bottom)")]]        
-        desktop_layouts_combo = GSettingsComboBox(_("Panel layout"), "org.cinnamon", "desktop-layout", None, desktop_layouts)
-        sidePage.add_widget(desktop_layouts_combo) 
-        label = Gtk.Label()
-        label.set_markup("<i><small>%s</small></i>" % _("Note: If you change the layout you will need to restart Cinnamon."))
-        sidePage.add_widget(label)
-
-        sidePage.add_widget(GSettingsCheckButton(_("Use customized panel size (otherwise it's defined by the theme)"), "org.cinnamon", "panel-resizable", None))
-
-        box = IndentedHBox()
-        box.add(GSettingsCheckButton(_("Allow Cinnamon to scale panel text and icons according to the panel heights"), "org.cinnamon", "panel-scale-text-icons", "org.cinnamon/panel-resizable"))
-        sidePage.add_widget(box)
-
-        box = IndentedHBox()
-        box.add(GSettingsSpinButton(_("Top panel height"), "org.cinnamon", "panel-top-height", "org.cinnamon/panel-resizable", 0, 2000, 1, 5, _("Pixels")))
-        sidePage.add_widget(box)
-
-        box = IndentedHBox()
-        box.add(GSettingsSpinButton(_("Bottom panel height"), "org.cinnamon", "panel-bottom-height", "org.cinnamon/panel-resizable",  0, 2000, 1, 5, _("Pixels")))
-        sidePage.add_widget(box)
-
-        sidePage.add_widget(GSettingsCheckButton(_("Panel edit mode"), "org.cinnamon", "panel-edit-mode", None))
         sidePage = SidePage(_("Calendar"), "clock.svg", self.content_box)
         self.sidePages.append((sidePage, "calendar"))        
         sidePage.add_widget(GSettingsCheckButton(_("Show week dates in calendar"), "org.cinnamon.calendar", "show-weekdate", None))
@@ -1927,33 +1896,42 @@ class MainWindow:
                 self.changeTimeWidget.change_using_ntp( self.ntpCheckButton.get_active() )
         except Exception, detail:
             print detail
-        
-        sidePage = SidePage(_("Hot corner"), "overview.svg", self.content_box)
-        self.sidePages.append((sidePage, "hotcorner"))
-        sidePage.add_widget(GSettingsCheckButton(_("Hot corner icon visible"), "org.cinnamon", "overview-corner-visible", None))
-        sidePage.add_widget(GSettingsCheckButton(_("Hot corner enabled"), "org.cinnamon", "overview-corner-hover", None))
-        box = IndentedHBox()
-        label = Gtk.Label()
-        label.set_markup("%s" % _("Hot corner position:"))
-        box.add(label)
-        positions = [["topLeft", _("Top left")], ["topRight", _("Top right")], ["bottomLeft", _("Bottom left")], ["bottomRight", _("Bottom right")]]        
-        box.add(GSettingsComboBox("", "org.cinnamon", "overview-corner-position", "org.cinnamon/overview-corner-hover", positions))
-        sidePage.add_widget(box)
-        
-        box = IndentedHBox()
-        label = Gtk.Label()
-        label.set_markup("%s" % _("Hot corner function:"))
-        box.add(label)
-        cornerfunctions = [["expo", _("Workspace selection (ala Compiz Expo)")], ["scale", _("Window selection (ala Compiz Scale)")]]     
-        box.add(GSettingsComboBox("", "org.cinnamon", "overview-corner-functionality", "org.cinnamon/overview-corner-hover", cornerfunctions))
-        sidePage.add_widget(box)
-        
-        sidePage.add_widget(GSettingsCheckButton(_("Expo applet: activate on hover"), "org.cinnamon", "expo-applet-hover", None))
-        sidePage.add_widget(GSettingsCheckButton(_("Scale applet: activate on hover"), "org.cinnamon", "scale-applet-hover", None))
 
-        sidePage = ThemeViewSidePage(_("Themes"), "themes.svg", self.content_box)
-        self.sidePages.append((sidePage, "themes"))
+# ***************** CALENDAR SIDEPAGE END ****************
 
+
+# ************** DESKTOP SIDEPAGE ******************
+        if 'org.nemo' in Gio.Settings.list_schemas():
+            nemo_desktop_schema = Gio.Settings.new("org.nemo.desktop")
+            nemo_desktop_keys = nemo_desktop_schema.list_keys()
+ 
+            sidePage = SidePage(_("Desktop"), "desktop.svg", self.content_box)
+            self.sidePages.append((sidePage, "desktop"))
+            sidePage.add_widget(GSettingsCheckButton(_("Have file manager (Nemo) handle the desktop"), "org.gnome.desktop.background", "show-desktop-icons", None))
+            if "computer-icon-visible" in nemo_desktop_keys:
+                box = IndentedHBox()
+                box.add(GSettingsCheckButton(_("Computer icon visible on desktop"), "org.nemo.desktop", "computer-icon-visible", "org.gnome.desktop.background/show-desktop-icons"))
+                sidePage.add_widget(box)
+            if "home-icon-visible" in nemo_desktop_keys:
+                box = IndentedHBox()
+                box.add(GSettingsCheckButton(_("Home icon visible on desktop"), "org.nemo.desktop", "home-icon-visible", "org.gnome.desktop.background/show-desktop-icons"))
+                sidePage.add_widget(box)
+            if "network-icon-visible" in nemo_desktop_keys:
+                box = IndentedHBox()
+                box.add(GSettingsCheckButton(_("Network Servers icon visible on desktop"), "org.nemo.desktop", "network-icon-visible", "org.gnome.desktop.background/show-desktop-icons"))
+                sidePage.add_widget(box)
+            if "trash-icon-visible" in nemo_desktop_keys:
+                box = IndentedHBox()
+                box.add(GSettingsCheckButton(_("Trash icon visible on desktop"), "org.nemo.desktop", "trash-icon-visible", "org.gnome.desktop.background/show-desktop-icons"))
+                sidePage.add_widget(box)
+            if "volumes-visible" in nemo_desktop_keys:
+                box = IndentedHBox()
+                box.add(GSettingsCheckButton(_("Show mounted volumes on the desktop"), "org.nemo.desktop", "volumes-visible", "org.gnome.desktop.background/show-desktop-icons"))
+                sidePage.add_widget(box)
+# **************** DESKTOP SIDEPAGE END ***********
+
+
+# ***************** EFFECTS SIDEPAGE *****************
         sidePage = SidePage(_("Effects"), "desktop-effects.svg", self.content_box)
         self.sidePages.append((sidePage, "effects"))
         sidePage.add_widget(GSettingsCheckButton(_("Enable desktop effects"), "org.cinnamon", "desktop-effects", None))
@@ -2049,41 +2027,123 @@ class MainWindow:
         box.add(GSettingsComboBox("", "org.cinnamon", "desktop-effects-unmaximize-transition", "org.cinnamon/desktop-effects", transition_effects))
         box.add(GSettingsSpinButton("", "org.cinnamon", "desktop-effects-unmaximize-time", "org.cinnamon/desktop-effects", 0, 2000, 50, 200, _("milliseconds")))
         sidePage.add_widget(box)
-        
-        sidePage = AppletViewSidePage(_("Applets"), "applets.svg", self.content_box)
-        self.sidePages.append((sidePage, "applets"))
-        
+
+# ************** EFFECTS SIDEPAGE END **************
+
+
+# ************** EXTENSIONS SIDEPAGE ***************
         sidePage = ExtensionViewSidePage(_("Extensions"), "extensions.svg", self.content_box)
         self.sidePages.append((sidePage, "extensions"))
-        
-        if 'org.nemo' in Gio.Settings.list_schemas():
-            nemo_desktop_schema = Gio.Settings.new("org.nemo.desktop")
-            nemo_desktop_keys = nemo_desktop_schema.list_keys()
-                            
-            sidePage = SidePage(_("Desktop"), "desktop.svg", self.content_box)
-            self.sidePages.append((sidePage, "desktop"))
-            sidePage.add_widget(GSettingsCheckButton(_("Have file manager (Nemo) handle the desktop"), "org.gnome.desktop.background", "show-desktop-icons", None))
-            if "computer-icon-visible" in nemo_desktop_keys:
-                box = IndentedHBox()
-                box.add(GSettingsCheckButton(_("Computer icon visible on desktop"), "org.nemo.desktop", "computer-icon-visible", "org.gnome.desktop.background/show-desktop-icons"))
-                sidePage.add_widget(box)
-            if "home-icon-visible" in nemo_desktop_keys:
-                box = IndentedHBox()
-                box.add(GSettingsCheckButton(_("Home icon visible on desktop"), "org.nemo.desktop", "home-icon-visible", "org.gnome.desktop.background/show-desktop-icons"))
-                sidePage.add_widget(box)
-            if "network-icon-visible" in nemo_desktop_keys:
-                box = IndentedHBox()
-                box.add(GSettingsCheckButton(_("Network Servers icon visible on desktop"), "org.nemo.desktop", "network-icon-visible", "org.gnome.desktop.background/show-desktop-icons"))
-                sidePage.add_widget(box)
-            if "trash-icon-visible" in nemo_desktop_keys:
-                box = IndentedHBox()
-                box.add(GSettingsCheckButton(_("Trash icon visible on desktop"), "org.nemo.desktop", "trash-icon-visible", "org.gnome.desktop.background/show-desktop-icons"))
-                sidePage.add_widget(box)
-            if "volumes-visible" in nemo_desktop_keys:
-                box = IndentedHBox()
-                box.add(GSettingsCheckButton(_("Show mounted volumes on the desktop"), "org.nemo.desktop", "volumes-visible", "org.gnome.desktop.background/show-desktop-icons"))
-                sidePage.add_widget(box)
+# ************** EXTENSIONS SIDEPAGE END ***********
 
+
+# **************** FONTS SIDEPAGE ********************
+        sidePage = SidePage(_("Fonts"), "fonts.svg", self.content_box)
+        self.sidePages.append((sidePage, "fonts"))
+        sidePage.add_widget(GSettingsRangeSpin(_("Text scaling factor"), "org.gnome.desktop.interface", "text-scaling-factor", None, adjustment_step = 0.1))
+        sidePage.add_widget(GSettingsFontButton(_("Default font"), "org.gnome.desktop.interface", "font-name", None))
+        sidePage.add_widget(GSettingsFontButton(_("Document font"), "org.gnome.desktop.interface", "document-font-name", None))
+        sidePage.add_widget(GSettingsFontButton(_("Monospace font"), "org.gnome.desktop.interface", "monospace-font-name", None))
+        sidePage.add_widget(GSettingsFontButton(_("Window title font"), "org.gnome.desktop.wm.preferences", "titlebar-font", None))
+        sidePage.add_widget(GSettingsComboBox(_("Hinting"), "org.gnome.settings-daemon.plugins.xsettings", "hinting", None, [(i, i.title()) for i in ("none", "slight", "medium", "full")]))
+        sidePage.add_widget(GSettingsComboBox(_("Antialiasing"), "org.gnome.settings-daemon.plugins.xsettings", "antialiasing", None, [(i, i.title()) for i in ("none", "grayscale", "rgba")]))
+# *************** FONTS SIDEPAGE END *****************
+
+
+# *************** GENERAL SIDEPAGE *******************
+        sidePage = SidePage(_("General"), "general.svg", self.content_box)
+        self.sidePages.append((sidePage, "general"))
+        sidePage.add_widget(GSettingsCheckButton(_("Log LookingGlass output to ~/.cinnamon/glass.log (Requires Cinnamon restart)"), "org.cinnamon", "enable-looking-glass-logs", None))
+        sidePage.add_widget(GSettingsCheckButton(_("Emulate middle click by clicking both left and right buttons"), "org.gnome.settings-daemon.peripherals.mouse", "middle-button-enabled", None))
+        sidePage.add_widget(GSettingsCheckButton(_("Display notifications"), "org.cinnamon", "display-notifications", None))
+# *************** GENERAL SIDEPAGE END ***************
+
+
+# ***************** HOT CORNER SIDEPAGE ***************
+        sidePage = SidePage(_("Hot corner"), "overview.svg", self.content_box)
+        self.sidePages.append((sidePage, "hotcorner"))
+        sidePage.add_widget(GSettingsCheckButton(_("Hot corner icon visible"), "org.cinnamon", "overview-corner-visible", None))
+        sidePage.add_widget(GSettingsCheckButton(_("Hot corner enabled"), "org.cinnamon", "overview-corner-hover", None))
+        box = IndentedHBox()
+        label = Gtk.Label()
+        label.set_markup("%s" % _("Hot corner position:"))
+        box.add(label)
+        positions = [["topLeft", _("Top left")], ["topRight", _("Top right")], ["bottomLeft", _("Bottom left")], ["bottomRight", _("Bottom right")]]
+        box.add(GSettingsComboBox("", "org.cinnamon", "overview-corner-position", "org.cinnamon/overview-corner-hover", positions))
+        sidePage.add_widget(box)
+
+        box = IndentedHBox()
+        label = Gtk.Label()
+        label.set_markup("%s" % _("Hot corner function:"))
+        box.add(label)
+        cornerfunctions = [["expo", _("Workspace selection (ala Compiz Expo)")], ["scale", _("Window selection (ala Compiz Scale)")]]
+        box.add(GSettingsComboBox("", "org.cinnamon", "overview-corner-functionality", "org.cinnamon/overview-corner-hover", cornerfunctions))
+        sidePage.add_widget(box)
+
+        sidePage.add_widget(GSettingsCheckButton(_("Expo applet: activate on hover"), "org.cinnamon", "expo-applet-hover", None))
+        sidePage.add_widget(GSettingsCheckButton(_("Scale applet: activate on hover"), "org.cinnamon", "scale-applet-hover", None))
+
+# ***************** HOT CORNER SIDEPAGE END **********
+
+# **************** MENU SIDEPAGE *********************
+
+        sidePage = SidePage(_("Menu"), "menu.svg", self.content_box)
+        self.sidePages.append((sidePage, "menu"))
+        sidePage.add_widget(GSettingsEntry(_("Menu text"), "org.cinnamon", "menu-text", None))
+        sidePage.add_widget(GSettingsFileChooser(_("Menu icon"), "org.cinnamon", "menu-icon", None, True))
+        sidePage.add_widget(GSettingsSpinButton(_("Menu hover delay"), "org.cinnamon", "menu-hover-delay", None, 0, 2000, 50, 200, _("milliseconds")))
+        sidePage.add_widget(GSettingsCheckButton(_("Activate menu on hover"), "org.cinnamon", "activate-menu-applet-on-hover", None))
+        sidePage.add_widget(GSettingsCheckButton(_("Show bookmarks and places"), "org.cinnamon", "menu-show-places", None))
+        sidePage.add_widget(GSettingsCheckButton(_("Show recent files"), "org.cinnamon", "menu-show-recent", None))
+
+# *************** MENU SIDEPAGE END *******************
+
+
+# *************** PANEL SIDEPAGE **********************
+
+        sidePage = SidePage(_("Panel"), "panel.svg", self.content_box)
+        self.sidePages.append((sidePage, "panel"))
+        sidePage.add_widget(GSettingsCheckButton(_("Auto-hide panel"), "org.cinnamon", "panel-autohide", None))
+
+        box = IndentedHBox()
+        box.add(GSettingsSpinButton(_("Show delay"), "org.cinnamon", "panel-show-delay", "org.cinnamon/panel-autohide", 0, 2000, 50, 200, _("milliseconds")))
+        sidePage.add_widget(box)
+
+        box = IndentedHBox()
+        box.add(GSettingsSpinButton(_("Hide delay"), "org.cinnamon", "panel-hide-delay", "org.cinnamon/panel-autohide", 0, 2000, 50, 200, _("milliseconds")))
+        sidePage.add_widget(box)
+
+        desktop_layouts = [["traditional", _("Traditional (panel at the bottom)")], ["flipped", _("Flipped (panel at the top)")], ["classic", _("Classic (panels at the top and at the bottom)")]]        
+        desktop_layouts_combo = GSettingsComboBox(_("Panel layout"), "org.cinnamon", "desktop-layout", None, desktop_layouts)
+        sidePage.add_widget(desktop_layouts_combo)
+        label = Gtk.Label()
+        label.set_markup("<i><small>%s</small></i>" % _("Note: If you change the layout you will need to restart Cinnamon."))
+        sidePage.add_widget(label)
+
+        sidePage.add_widget(GSettingsCheckButton(_("Use customized panel size (otherwise it's defined by the theme)"), "org.cinnamon", "panel-resizable", None))
+
+        box = IndentedHBox()
+        box.add(GSettingsCheckButton(_("Allow Cinnamon to scale panel text and icons according to the panel heights"), "org.cinnamon", "panel-scale-text-icons", "org.cinnamon/panel-resizable"))
+        sidePage.add_widget(box)
+
+        box = IndentedHBox()
+        box.add(GSettingsSpinButton(_("Top panel height"), "org.cinnamon", "panel-top-height", "org.cinnamon/panel-resizable", 0, 2000, 1, 5, _("Pixels")))
+        sidePage.add_widget(box)
+
+        box = IndentedHBox()
+        box.add(GSettingsSpinButton(_("Bottom panel height"), "org.cinnamon", "panel-bottom-height", "org.cinnamon/panel-resizable",  0, 2000, 1, 5, _("Pixels")))
+        sidePage.add_widget(box)
+
+        sidePage.add_widget(GSettingsCheckButton(_("Panel edit mode"), "org.cinnamon", "panel-edit-mode", None))
+# **************** PANEL SIDEPAGE END *****************
+
+
+# ***************** THEMES SIDEPAGE ******************
+        sidePage = ThemeViewSidePage(_("Themes"), "themes.svg", self.content_box)
+        self.sidePages.append((sidePage, "themes"))
+# ***************** THEMES SIDEPAGE END **************
+
+# **************** WINDOWS SIDEPAGE ***************
         sidePage = SidePage(_("Windows"), "windows.svg", self.content_box)
         self.sidePages.append((sidePage, "windows"))
         sidePage.add_widget(GSettingsComboBox(_("Action on title bar double-click"),
@@ -2107,7 +2167,9 @@ class MainWindow:
         alttab_styles_combo = GSettingsComboBox(_("ALT-tab switcher style"), "org.cinnamon", "alttab-switcher-style", None, alttab_styles)
         sidePage.add_widget(alttab_styles_combo)
         sidePage.add_widget(GSettingsCheckButton(_("Enable mouse-wheel scrolling in Window List applet"), "org.cinnamon", "window-list-applet-scroll", None))
-        
+# *************** WINDOWS SIDEPAGE END ***************
+
+# *************** WORKSPACES SIDEPAGE ****************
         sidePage = SidePage(_("Workspaces"), "workspaces.svg", self.content_box)
         self.sidePages.append((sidePage, "workspaces"))        
         sidePage.add_widget(GSettingsCheckButton(_("Enable workspace OSD"), "org.cinnamon", "workspace-osd-visible", None))
@@ -2126,31 +2188,12 @@ class MainWindow:
 
         sidePage.add_widget(GSettingsCheckButton(_("Only use workspaces on primary monitor (requires Cinnamon restart)"), "org.cinnamon.overrides", "workspaces-only-on-primary", None))
         sidePage.add_widget(GSettingsCheckButton(_("Display Expo view as a grid"), "org.cinnamon", "workspace-expo-view-as-grid", None))
-        
-        sidePage = SidePage(_("Fonts"), "fonts.svg", self.content_box)
-        self.sidePages.append((sidePage, "fonts"))
-        sidePage.add_widget(GSettingsRangeSpin(_("Text scaling factor"), "org.gnome.desktop.interface", "text-scaling-factor", None, adjustment_step = 0.1))
-        sidePage.add_widget(GSettingsFontButton(_("Default font"), "org.gnome.desktop.interface", "font-name", None))
-        sidePage.add_widget(GSettingsFontButton(_("Document font"), "org.gnome.desktop.interface", "document-font-name", None))
-        sidePage.add_widget(GSettingsFontButton(_("Monospace font"), "org.gnome.desktop.interface", "monospace-font-name", None))
-        sidePage.add_widget(GSettingsFontButton(_("Window title font"), "org.gnome.desktop.wm.preferences", "titlebar-font", None))
-        sidePage.add_widget(GSettingsComboBox(_("Hinting"), "org.gnome.settings-daemon.plugins.xsettings", "hinting", None, [(i, i.title()) for i in ("none", "slight", "medium", "full")]))
-        sidePage.add_widget(GSettingsComboBox(_("Antialiasing"), "org.gnome.settings-daemon.plugins.xsettings", "antialiasing", None, [(i, i.title()) for i in ("none", "grayscale", "rgba")]))
-        
-        sidePage = SidePage(_("General"), "general.svg", self.content_box)
-        self.sidePages.append((sidePage, "general"))
-        sidePage.add_widget(GSettingsCheckButton(_("Log LookingGlass output to ~/.cinnamon/glass.log (Requires Cinnamon restart)"), "org.cinnamon", "enable-looking-glass-logs", None))
-        sidePage.add_widget(GSettingsCheckButton(_("Emulate middle click by clicking both left and right buttons"), "org.gnome.settings-daemon.peripherals.mouse", "middle-button-enabled", None))
-        sidePage.add_widget(GSettingsCheckButton(_("Display notifications"), "org.cinnamon", "display-notifications", None))
-        
+# **************** WORKSPACES SIDEPAGE END ***********
+
         #sidePage = SidePage(_("Terminal"), "terminal", self.content_box)
         #self.sidePages.append(sidePage)
         #sidePage.add_widget(GConfCheckButton(_("Show fortune cookies"), "/desktop/linuxmint/terminal/show_fortunes"))
-        
-        sidePage = BackgroundSidePage(_("Backgrounds"), "backgrounds.svg", self.content_box)
-        self.sidePages.append((sidePage, "backgrounds"))
-        
-                                
+
         # create the backing store for the side nav-view.                            
         self.store = Gtk.ListStore(str, GdkPixbuf.Pixbuf, object)
         sidePagesIters = {}
