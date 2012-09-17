@@ -1602,7 +1602,7 @@ Workspace.prototype = {
         let fraction = 0.825 * (1. / gridWidth);
 
         let xCenter = (.5 / gridWidth) + ((windowIndex) % gridWidth) / gridWidth;
-        let yCenter = (.5 / gridHeight) + Math.floor((windowIndex / gridHeight)) / gridHeight;
+        let yCenter = (.5 / gridHeight) + Math.floor((windowIndex / gridWidth)) / gridHeight;
         return [xCenter, yCenter, fraction];
     },
 
