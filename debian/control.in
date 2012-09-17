@@ -66,6 +66,7 @@ Depends: ${gir:Depends},
          gir1.2-upowerglib-1.0,
          python,
          python-dbus,
+	 python-imaging,
          pkg-config,
          mesa-utils,
          python-lxml

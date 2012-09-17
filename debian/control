@@ -70,6 +70,7 @@ Depends: ${gir:Depends},
          gir1.2-upowerglib-1.0,
          python,
          python-dbus,
+	 python-imaging,
          pkg-config,
          mesa-utils
 Recommends: gnome-control-center, gnome-user-guide, gnome-themes-standard, gnome-session-fallback, gnome-terminal
