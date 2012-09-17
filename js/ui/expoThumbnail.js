@@ -1165,11 +1165,12 @@ ExpoThumbnailsBox.prototype = {
         let asGrid  = global.settings.get_boolean("workspace-expo-view-as-grid");
         let nColumns = asGrid ? Math.ceil(Math.sqrt(nWorkspaces)) : nWorkspaces;
         let nRows = Math.ceil(nWorkspaces/nColumns);
-        return this._porthole.height *  nWorkspaces < this._porthole.width ?
-            [1, nWorkspaces] :
-            this._porthole.height * 2 > this._porthole.width ? 
-                    [nColumns, nRows] :
-                    [nRows, nColumns];
+        let ratio = Math.floor(this._porthole.width / this._porthole.height);
+        if (nWorkspaces <= ratio) {
+            return [1, nWorkspaces];
+        } else {
+            return [nColumns, nRows];
+        }
     },
 
     _getPreferredHeight: function(actor, forWidth, alloc) {
