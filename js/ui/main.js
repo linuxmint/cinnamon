@@ -298,7 +298,7 @@ function start() {
     //EndSessionDialog.init();
 
     // Attempt to become a PolicyKit authentication agent
-    //PolkitAuthenticationAgent.init()
+    PolkitAuthenticationAgent.init()
 
     _startDate = new Date();
 
