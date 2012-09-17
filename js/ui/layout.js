@@ -215,19 +215,23 @@ LayoutManager.prototype = {
         };
 
         let p1height = getPanelHeight(Main.panel);
-        this.panelBox.set_size(this.bottomMonitor.width, p1height);
 
-        if (Main.desktop_layout == Main.LAYOUT_TRADITIONAL) {       
+        if (Main.desktop_layout == Main.LAYOUT_TRADITIONAL) {
+            this.panelBox.set_size(this.bottomMonitor.width, p1height);
             this.panelBox.set_position(this.bottomMonitor.x, this.bottomMonitor.y + this.bottomMonitor.height - p1height);
         }
-        else if (Main.desktop_layout == Main.LAYOUT_FLIPPED) {         
+        else if (Main.desktop_layout == Main.LAYOUT_FLIPPED) {
+            this.panelBox.set_size(this.primaryMonitor.width, p1height);
             this.panelBox.set_position(this.primaryMonitor.x, this.primaryMonitor.y);
         }
         else if (Main.desktop_layout == Main.LAYOUT_CLASSIC) { 
             let p2height = getPanelHeight(Main.panel2);
+
+            this.panelBox.set_size(this.primaryMonitor.width, p1height);
             this.panelBox.set_position(this.primaryMonitor.x, this.primaryMonitor.y);
-            this.panelBox2.set_position(this.bottomMonitor.x, this.bottomMonitor.y + this.bottomMonitor.height - p2height);
+
             this.panelBox2.set_size(this.bottomMonitor.width, p2height);
+            this.panelBox2.set_position(this.bottomMonitor.x, this.bottomMonitor.y + this.bottomMonitor.height - p2height);
         }
 
         this.keyboardBox.set_position(this.bottomMonitor.x,
@@ -294,10 +298,10 @@ LayoutManager.prototype = {
             else {
                 let primary = this.primaryMonitor;
                 leftPanelBarrier = global.create_pointer_barrier(primary.x, primary.y,
-                                                                 -primary.x, primary.y + panelBox.height, 
+                                                                 primary.x, primary.y + panelBox.height,
                                                                  1 /* BarrierPositiveX */);
                 rightPanelBarrier = global.create_pointer_barrier(primary.x + primary.width, primary.y,
-                                                                  -primary.x + primary.width, primary.y + panelBox.height, 
+                                                                  primary.x + primary.width, primary.y + panelBox.height,
                                                                   4 /* BarrierNegativeX */);
             }
         } else {
