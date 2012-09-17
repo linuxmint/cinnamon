@@ -36,8 +36,7 @@ PanelItemTooltip.prototype = {
     
     _onEnterEvent: function(actor, event) {
         this.preventShow = false;
-        Tweener.addTween(this, {time: 0.3, onComplete: Lang.bind(this, this._onTimerComplete)});
-        global.logError("coords: %s".format(event.get_coords().toString()));
+        Tweener.addTween(this, {time: 0.3, onComplete: Lang.bind(this, this._onTimerComplete)});        
         this._mousePosition = event.get_coords();
     },
     
