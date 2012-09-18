@@ -709,6 +709,7 @@ AutoScrollArea.prototype = {
                          fastLeave: null };
 
         global.settings.connect("changed::menu-enable-autoscroll", Lang.bind(this, this.updateEnabled));
+        this._enabled = false;
         this.updateEnabled();
     },
 
@@ -747,27 +748,33 @@ AutoScrollArea.prototype = {
     },
 
     disable: function() {
-        this.slowRegion.disconnect(this.signals.slowEnter);
-        this.slowRegion.disconnect(this.signals.slowLeave);
-        this.medRegion.disconnect(this.signals.medEnter);
-        this.medRegion.disconnect(this.signals.medLeave);
-        this.fastRegion.disconnect(this.signals.fastEnter);
-        this.fastRegion.disconnect(this.signals.fastLeave);
-        this.slowRegion.set_style(SUBREGION_HEIGHT_INACTIVE);
-        this.medRegion.set_style(SUBREGION_HEIGHT_INACTIVE);
-        this.fastRegion.set_style(SUBREGION_HEIGHT_INACTIVE);
+        if (this._enabled) {
+            this.slowRegion.disconnect(this.signals.slowEnter);
+            this.slowRegion.disconnect(this.signals.slowLeave);
+            this.medRegion.disconnect(this.signals.medEnter);
+            this.medRegion.disconnect(this.signals.medLeave);
+            this.fastRegion.disconnect(this.signals.fastEnter);
+            this.fastRegion.disconnect(this.signals.fastLeave);
+            this.slowRegion.set_style(SUBREGION_HEIGHT_INACTIVE);
+            this.medRegion.set_style(SUBREGION_HEIGHT_INACTIVE);
+            this.fastRegion.set_style(SUBREGION_HEIGHT_INACTIVE);
+            this._enabled = false;
+        }
     },
 
     enable: function() {
-        this.signals.slowEnter = this.slowRegion.connect('enter-event', Lang.bind(this, this._onEnterRegion));
-        this.signals.medEnter = this.medRegion.connect('enter-event', Lang.bind(this, this._onEnterRegion));
-        this.signals.fastEnter = this.fastRegion.connect('enter-event', Lang.bind(this, this._onEnterRegion));
-        this.signals.slowLeave = this.slowRegion.connect('leave-event', Lang.bind(this, this._onLeaveRegion));
-        this.signals.medLeave = this.medRegion.connect('leave-event', Lang.bind(this, this._onLeaveRegion));
-        this.signals.fastLeave = this.fastRegion.connect('leave-event', Lang.bind(this, this._onLeaveRegion));
-        this.slowRegion.set_style(SUBREGION_HEIGHT_ACTIVE);
-        this.medRegion.set_style(SUBREGION_HEIGHT_ACTIVE);
-        this.fastRegion.set_style(SUBREGION_HEIGHT_ACTIVE);
+        if (!this._enabled) {
+            this.signals.slowEnter = this.slowRegion.connect('enter-event', Lang.bind(this, this._onEnterRegion));
+            this.signals.medEnter = this.medRegion.connect('enter-event', Lang.bind(this, this._onEnterRegion));
+            this.signals.fastEnter = this.fastRegion.connect('enter-event', Lang.bind(this, this._onEnterRegion));
+            this.signals.slowLeave = this.slowRegion.connect('leave-event', Lang.bind(this, this._onLeaveRegion));
+            this.signals.medLeave = this.medRegion.connect('leave-event', Lang.bind(this, this._onLeaveRegion));
+            this.signals.fastLeave = this.fastRegion.connect('leave-event', Lang.bind(this, this._onLeaveRegion));
+            this.slowRegion.set_style(SUBREGION_HEIGHT_ACTIVE);
+            this.medRegion.set_style(SUBREGION_HEIGHT_ACTIVE);
+            this.fastRegion.set_style(SUBREGION_HEIGHT_ACTIVE);
+            this._enabled = true;
+        }
     }
 }
 
