@@ -391,6 +391,10 @@ function getWorkspaceName(index) {
         _makeDefaultWorkspaceName(index);
 }
 
+function hasDefaultWorkspaceName(index) {
+    return getWorkspaceName(index) == _makeDefaultWorkspaceName(index);
+}
+
 function _addWorkspace() {
     if (dynamicWorkspaces)
         return false;
