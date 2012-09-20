@@ -4,6 +4,11 @@ FIX NEEDED FOR 1.6.x
  - The menu doesn't show Administration anymore (its items are in Preferences)
  - A user reported problems with Muffin 1.1.0 (and previously also in cinnamon 1.4/muffin 1.0.x) that work fine in Mutter 3.4.1-0ubuntu1: constant flickering with some graphics-heavy applications, especially games, and overheating. There's probably a fix in Mutter or a change in clutter we need to take into account. 
 
+NEMO
+----
+
+ - Add gtk bookmarks to right-click->copy-to/move-to
+
 TODO
 ----
 
