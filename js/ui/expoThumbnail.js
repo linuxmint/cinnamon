@@ -230,12 +230,19 @@ ExpoWorkspaceThumbnail.prototype = {
                       
         this.title.set_text(Main.getWorkspaceName(this.metaWorkspace.index()));
         
-        this._background = Meta.BackgroundActor.new_for_screen(global.screen);
-        this._contents.add_actor(this._background);
-
         let porthole = Main.layoutManager.getPorthole();
         this.setPorthole(porthole);
-       
+
+        this._background = new Clutter.Group();
+        this._contents.add_actor(this._background);
+
+        let desktopBackground = Meta.BackgroundActor.new_for_screen(global.screen);
+        this._background.add_actor(desktopBackground);
+
+        let backgroundShade = new St.Bin({style_class: 'workspace-overview-background-shade'});
+        this._background.add_actor(backgroundShade);
+        backgroundShade.set_size(porthole.width, porthole.height);
+
         this.shade = new St.Bin();
         this.shade.set_style('background-color: black;');
         this.actor.add_actor(this.shade);
@@ -528,6 +535,7 @@ ExpoWorkspaceThumbnail.prototype = {
     _overviewModeOn__ : function () {
         this._pendingOverviewModeTimeoutId = null;
         this._overviewMode = true;
+
         let spacing = 14;
         let nCols = Math.ceil(Math.sqrt(this._windows.length));
         let nRows = Math.round(Math.sqrt(this._windows.length));
@@ -589,7 +597,7 @@ ExpoWorkspaceThumbnail.prototype = {
     _overviewModeOff : function (force){
         if (!this._overviewMode && !force)
             return;
-
+        
         const iconSpacing = ICON_SIZE/4;
         let iconX = iconSpacing;
         for (let i = 0; i < this._windows.length; i++){
