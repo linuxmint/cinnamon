@@ -327,6 +327,7 @@ AppMenuButton.prototype = {
         this._draggable.connect('drag-cancelled', Lang.bind(this, this._onDragCancelled));
         this._draggable.connect('drag-end', Lang.bind(this, this._onDragEnd));
         
+        this._inEditMode = undefined;
         this.on_panel_edit_mode_changed();
         global.settings.connect('changed::panel-edit-mode', Lang.bind(this, this.on_panel_edit_mode_changed));
         global.settings.connect('changed::window-list-applet-scroll', Lang.bind(this, this.on_scroll_mode_changed));
@@ -336,7 +337,7 @@ AppMenuButton.prototype = {
     },
     
     on_panel_edit_mode_changed: function() {
-        this._draggable.inhibit = global.settings.get_boolean("panel-edit-mode");
+        this._inEditMode = this._draggable.inhibit = global.settings.get_boolean("panel-edit-mode");
     }, 
 
     on_scroll_mode_changed: function() {
@@ -449,6 +450,7 @@ AppMenuButton.prototype = {
     },
 
     handleDragOver: function(source, actor, x, y, time) {
+        if (this._inEditMode) return DND.DragMotionResult.MOVE_DROP;
         if (source instanceof AppMenuButton) return DND.DragMotionResult.CONTINUE;
         
         if (typeof(this._applet.dragEnterTime) == 'undefined') {
@@ -619,6 +621,7 @@ MyAppletBox.prototype = {
     },
     
     handleDragOver: function(source, actor, x, y, time) {
+        if (this._inEditMode) return DND.DragMotionResult.MOVE_DROP;
         if (!(source instanceof AppMenuButton)) return DND.DragMotionResult.NO_DROP;
         
         let children = this.actor.get_children();
