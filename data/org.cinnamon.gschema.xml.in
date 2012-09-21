@@ -229,9 +229,9 @@
     
     <key name="date-format" type="s">
       <default>"YYYY-MM-DD"</default>
-      <_summary>Auto-hide panel</_summary>
+      <_summary>Date format</_summary>
       <_description>
-        Whether the panel autohides or not.
+        Format used for dates.
       </_description>
     </key>
     
