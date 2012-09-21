@@ -1274,7 +1274,7 @@ MyApplet.prototype = {
             if (nextType == GMenu.TreeItemType.ENTRY) {
                 var entry = iter.get_entry();
                 if (!entry.get_app_info().get_nodisplay()) {
-		    var app = appsys.lookup_app_by_tree_entry(entry);
+                    var app = appsys.lookup_app_by_tree_entry(entry);
                     if (!app)
                         app = appsys.lookup_settings_app_by_tree_entry(entry);
                     dupe = this.find_dupe(app);
@@ -1292,8 +1292,9 @@ MyApplet.prototype = {
                                 this._applicationsButtons[i].category.push(dir.get_menu_id());
                             }
                         }
+                        this.applicationsByCategory[dir.get_menu_id()].push(app.get_name());
                     }
-		}
+                }
             } else if (nextType == GMenu.TreeItemType.DIRECTORY) {
                 subdir = iter.get_directory();
                 this.applicationsByCategory[subdir.get_menu_id()] = new Array();
