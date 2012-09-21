@@ -150,7 +150,7 @@ WindowClone.prototype = {
 
         this.actor.connect('destroy', Lang.bind(this, this._onDestroy));
         this.actor.connect('leave-event',
-                           Lang.bind(this, this._onLeave));
+                           Lang.bind(this, this._onPointerLeave));
 
         this._draggable = DND.makeDraggable(this.actor,
                                             { restoreOnSuccess: true,
@@ -248,7 +248,7 @@ WindowClone.prototype = {
         this.disconnectAll();
     },
 
-    _onLeave: function (actor, event) {
+    _onPointerLeave: function (actor, event) {
         if (this._zoomStep)
             this._zoomEnd();
     },
@@ -443,6 +443,7 @@ WindowOverlay.prototype = {
         this._windowClone = windowClone;
         this._parentActor = parentActor;
         this._hidden = false;
+        this._hovering = false;
 
         let title = new St.Label({ style_class: 'window-caption',
                                    text: metaWindow.title });
@@ -479,10 +480,20 @@ WindowOverlay.prototype = {
         button.connect('clicked', Lang.bind(this, this.closeWindow));
 
         windowClone.actor.connect('destroy', Lang.bind(this, this._onDestroy));
-        windowClone.actor.connect('enter-event',
-                                  Lang.bind(this, this._onEnter));
-        windowClone.actor.connect('leave-event',
-                                  Lang.bind(this, this._onLeave));
+        
+        let motionEventsInstalled = false;
+        let installMotionEvents = Lang.bind(this, function() {
+            if (motionEventsInstalled) {
+                return;
+            }
+            windowClone.actor.connect('motion-event', Lang.bind(this, this._onPointerMotion));
+            windowClone.actor.connect('leave-event', Lang.bind(this, this._onPointerLeave));
+            motionEventsInstalled = true;
+        });
+        // Let the animation settle before we start reacting on pointer motion.
+        Mainloop.idle_add(installMotionEvents);
+        // Since idle_add can be slow at times, set an ordinary timeout as a fallback.
+        Mainloop.timeout_add(1000, installMotionEvents);
 
         this._windowAddedId = 0;
         windowClone.connect('zoom-start', Lang.bind(this, this.hide));
@@ -511,7 +522,10 @@ WindowOverlay.prototype = {
     setSelected: function(selected) {
         this.title.name = selected ? 'selected' : '';
         if (selected) {
-            this._onEnter();
+            this._showCloseButton();
+        }
+        else {
+            this.hideCloseButton();
         }
     },
 
@@ -524,8 +538,7 @@ WindowOverlay.prototype = {
 
     show: function() {
         this._hidden = false;
-        if (this._windowClone.actor.has_pointer)
-            this.closeButton.show();
+        this._hovering = false;
         this.title.show();
         this._applicationIconBox.show();
     },
@@ -643,28 +656,39 @@ WindowOverlay.prototype = {
         this._applicationIconBox.destroy();
     },
 
-    _onEnter: function() {
-        // We might get enter events on the clone while the overlay is
+    _onPointerMotion: function() {
+        // We might get motion events on the clone while the overlay is
         // hidden, e.g. during animations, we ignore these events,
         // as the close button will be shown as needed when the overlays
         // are shown again
-        if (this._hidden)
-            return;
+        if (this._hidden) return;
+        if (this._hovering) return;
+        
+        this._hovering = true;
+        this._showCloseButton();
+    },
+
+    _showCloseButton: function() {
         this._parentActor.raise_top();
         this.closeButton.show();
         this.emit('show-close-button');
     },
 
-    _onLeave: function() {
+    _onPointerLeave: function() {
+        this._hovering = false;
+        this._idleHideCloseButton();
+    },
+
+    _idleHideCloseButton: function() {
         if (this._idleToggleCloseId == 0)
             this._idleToggleCloseId = Mainloop.timeout_add(750, Lang.bind(this, this._idleToggleCloseButton));
     },
 
     _idleToggleCloseButton: function() {
         this._idleToggleCloseId = 0;
-        if (!this._windowClone.actor.has_pointer &&
-            !this.closeButton.has_pointer)
+        if (!this._windowClone.actor.has_pointer && !this.closeButton.has_pointer) {
             this.closeButton.hide();
+        }
 
         return false;
     },
