@@ -80,6 +80,7 @@ let _cssStylesheet = null;
 let dynamicWorkspaces = null;
 let nWorks = null;
 let tracker = null;
+let desktopShown;
 
 let workspace_names = [];
 
@@ -323,6 +324,8 @@ function start() {
     global.screen.connect('window-left-monitor', _windowLeftMonitor);
     global.screen.connect('restacked', _windowsRestacked);
 
+    global.window_manager.connect('map', _onWindowMapped);
+
     _nWorkspacesChanged();
     
     AppletManager.init();
@@ -526,6 +529,10 @@ function _windowsRestacked() {
     // it during a grab. (In particular, if a trayicon popup menu
     // is dismissed, see if we need to close the message tray.)
     global.sync_pointer();
+}
+
+function _onWindowMapped() {
+    desktopShown = false;
 }
 
 function _queueCheckWorkspaces() {
@@ -1125,4 +1132,17 @@ function getTabList(workspaceOpt, screenOpt) {
         }
     }
     return windows;
+}
+
+/**
+ * toggleDesktop:
+ *
+ * Shows or unshows desktop
+ */
+function toggleDesktop() {
+    if (desktopShown)
+        global.screen.unshow_desktop();
+    else
+        global.screen.show_desktop(global.get_current_time());
+    desktopShown = !desktopShown;
 }
