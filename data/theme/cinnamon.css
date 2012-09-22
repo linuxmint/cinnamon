@@ -60,35 +60,6 @@ StScrollBar StButton#vhandle:hover {
 	text-align: center;
 }
 /* ===================================================================
- * Shared button properties 
- * ===================================================================*/
-.notification-button, .notification-icon-button,
-.hotplug-notification-item, .hotplug-resident-eject-button,
-.modal-dialog-button {
-	color: white;
-	border: 1px solid #8b8b8b;
-	background-gradient-direction: vertical;
-	background-gradient-start: rgba(255, 255, 255, 0.2);
-	background-gradient-end: rgba(255, 255, 255, 0);
-}
-.notification-button:hover,
-.notification-icon-button:hover, .hotplug-notification-item:hover,
-.hotplug-resident-eject-button:hover, .modal-dialog-button:hover {
-	background-gradient-start: rgba(255, 255, 255, 0.3);
-	background-gradient-end: rgba(255, 255, 255, 0.1);
-}
-.notification-button:focus,
-.notification-icon-button:focus, .hotplug-notification-item:focus,
-.modal-dialog-button:focus {
-	border: 2px solid #8b8b8b;
-}
-.notification-button:active, .notification-icon-button:active,
-.hotplug-notification-item:active, .hotplug-resident-eject-button:active,
-.modal-dialog-button:active, .modal-dialog-button:pressed {
-	background-gradient-start: rgba(255, 255, 255, 0);
-	background-gradient-end: rgba(255, 255, 255, 0.2);
-}
-/* ===================================================================
  * PopupMenu (popupMenu.js) 
  * ===================================================================*/
 .popup-menu-boxpointer {
@@ -906,12 +877,25 @@ StScrollBar StButton#vhandle:hover {
 	margin-left: 10px;
 	margin-right: 10px;
 	padding: 4px 32px 5px;
+	border: 1px solid #8b8b8b;
+	background-gradient-direction: vertical;
+	background-gradient-start: rgba(255, 255, 255, 0.2);
+	background-gradient-end: rgba(255, 255, 255, 0);
 }
-.modal-dialog-button:disabled {
-	color: rgb(60, 60, 60);
+.modal-dialog-button:hover {
+	background-gradient-start: rgba(255, 255, 255, 0.3);
+	background-gradient-end: rgba(255, 255, 255, 0.1);
 }
 .modal-dialog-button:focus {
 	padding: 3px 31px 4px;
+	border: 2px solid #8b8b8b;
+}
+.modal-dialog-button:active, .modal-dialog-button:pressed {
+	background-gradient-start: rgba(255, 255, 255, 0);
+	background-gradient-end: rgba(255, 255, 255, 0.2);
+}
+.modal-dialog-button:disabled {
+	color: rgb(60, 60, 60);
 }
 /* ===================================================================
  * Run dialog
