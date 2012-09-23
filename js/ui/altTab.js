@@ -25,6 +25,7 @@ const THUMBNAIL_POPUP_TIME = 500; // milliseconds
 const THUMBNAIL_FADE_TIME = 0.1; // seconds
 
 const PREVIEW_DELAY_TIMEOUT = 200; // milliseconds
+var PREVIEW_SWITCHER_FADEOUT_TIME = 0.5; // seconds
 
 const iconSizes = [96, 64, 48, 32, 22];
 
@@ -502,6 +503,12 @@ AltTabPopup.prototype = {
             childBox.y1 = Math.round(or.y -diffY);
             childBox.y2 = Math.round(or.y + or.height + diffY);
             clone.allocate(childBox, 0);
+
+            Tweener.addTween(this._appSwitcher.actor,
+                             { opacity: 200,
+                               time: PREVIEW_SWITCHER_FADEOUT_TIME,
+                               transition: 'linear'
+                             });
         };
 
         // Use a cancellable timeout to avoid flicker effect when tabbing rapidly through the set
@@ -509,6 +516,8 @@ AltTabPopup.prototype = {
             Mainloop.source_remove(this._displayPreviewTimeoutId);
         }
         this._displayPreviewTimeoutId = Mainloop.timeout_add(PREVIEW_DELAY_TIMEOUT, Lang.bind(this, showPreview));
+        Tweener.removeTweens(this._appSwitcher.actor);
+        this._appSwitcher.actor.opacity = 255;
     },
     
     /**
