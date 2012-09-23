@@ -136,7 +136,7 @@ AltTabPopup.prototype = {
         // Allocate the thumbnails
         // We try to avoid overflowing the screen so we base the resulting size on
         // those calculations
-        if (this._thumbnails) {
+        if (this._thumbnails && this._appIcons.length > 0) {
             let icon = this._appIcons[this._currentApp].actor;
             let [posX, posY] = icon.get_transformed_position();
             let thumbnailCenter = posX + icon.width / 2;
@@ -160,26 +160,17 @@ AltTabPopup.prototype = {
         }
     },
 
-    show : function(backward, binding, mask) {
-        let screen = global.screen;
-        let display = screen.get_display();
+    refresh : function(binding, backward) {
+        if (this._appSwitcher) {
+            this._clearPreview();
+            this._destroyThumbnails();
+            this.actor.remove_actor(this._appSwitcher.actor);
+            this._appSwitcher.actor.destroy();
+        }
+        
+        this._currentApp = 0;
+        this._currentWindow = -1;
         let windows = Main.getTabList();
-
-        this._showThumbnails = this._thumbnailsEnabled && !this._iconsEnabled;
-        if (windows.length == 0)
-            return false;
-
-        if (!Main.pushModal(this.actor))
-            return false;
-        this._haveModal = true;
-        this._modifierMask = primaryModifier(mask);
-
-        this.actor.connect('key-press-event', Lang.bind(this, this._keyPressEvent));
-        this.actor.connect('key-release-event', Lang.bind(this, this._keyReleaseEvent));
-
-        this.actor.connect('button-press-event', Lang.bind(this, this._clickedOutside));
-        this.actor.connect('scroll-event', Lang.bind(this, this._onScroll));
-
         this._appSwitcher = new AppSwitcher(windows, this._showThumbnails, this);
         this.actor.add_actor(this._appSwitcher.actor);
         if (!this._iconsEnabled && !this._thumbnailsEnabled) {
@@ -192,32 +183,35 @@ AltTabPopup.prototype = {
 
         // Need to force an allocation so we can figure out whether we
         // need to scroll when selecting
-        this.actor.opacity = 0;
+        this._appSwitcher.actor.opacity = 0;
         this.actor.show();
         this.actor.get_allocation_box();
 
         // Make the initial selection
-        if (binding == 'switch-group') {
-            if (backward) {
+        if (this._appIcons.length > 0) {
+            if (binding == 'switch-group') {
+                if (backward) {
+                    this._select(0, this._appIcons[0].cachedWindows.length - 1);
+                } else {
+                    if (this._appIcons[0].cachedWindows.length > 1)
+                        this._select(0, 1);
+                    else
+                        this._select(0, 0);
+                }
+            } else if (binding == 'switch-group-backward') {
                 this._select(0, this._appIcons[0].cachedWindows.length - 1);
+            } else if (binding == 'switch-windows-backward') {
+                this._select(this._appIcons.length - 1);
+            } else if (binding == 'no-switch-windows') {
+                this._select(0);
+            } else if (this._appIcons.length == 1) {
+                this._select(0);
+            } else if (backward) {
+                this._select(this._appIcons.length - 1);
             } else {
-                if (this._appIcons[0].cachedWindows.length > 1)
-                    this._select(0, 1);
-                else
-                    this._select(0, 0);
+                this._select(1);
             }
-        } else if (binding == 'switch-group-backward') {
-            this._select(0, this._appIcons[0].cachedWindows.length - 1);
-        } else if (binding == 'switch-windows-backward') {
-            this._select(this._appIcons.length - 1);
-        } else if (this._appIcons.length == 1) {
-            this._select(0);
-        } else if (backward) {
-            this._select(this._appIcons.length - 1);
-        } else {
-            this._select(1);
         }
-
         // There's a race condition; if the user released Alt before
         // we got the grab, then we won't be notified. (See
         // https://bugzilla.gnome.org/show_bug.cgi?id=596695 for
@@ -229,14 +223,38 @@ AltTabPopup.prototype = {
             return false;
         }
 
-        // We delay showing the popup so that fast Alt+Tab users aren't
-        // disturbed by the popup briefly flashing.
-        this._initialDelayTimeoutId = Mainloop.timeout_add(POPUP_DELAY_TIMEOUT,
-            Lang.bind(this, function () {
-                this.actor.opacity = 255;
-                this._initialDelayTimeoutId = 0;
-            }));
+        if (this._appIcons.length > 0) {
+            // We delay showing the popup so that fast Alt+Tab users aren't
+            // disturbed by the popup briefly flashing.
+            this._initialDelayTimeoutId = Mainloop.timeout_add(POPUP_DELAY_TIMEOUT,
+                Lang.bind(this, function () {
+                    this._appSwitcher.actor.opacity = 255;
+                    this._initialDelayTimeoutId = 0;
+                }));
+        }
+        
+        return true;
+    },
 
+    show : function(backward, binding, mask) {
+        let screen = global.screen;
+        let display = screen.get_display();
+
+        this._showThumbnails = this._thumbnailsEnabled && !this._iconsEnabled;
+
+        if (!Main.pushModal(this.actor))
+            return false;
+        this._haveModal = true;
+        this._modifierMask = primaryModifier(mask);
+        if (!this.refresh(binding, backward)) {
+            return false;
+        }
+        
+        this.actor.connect('key-press-event', Lang.bind(this, this._keyPressEvent));
+        this.actor.connect('key-release-event', Lang.bind(this, this._keyReleaseEvent));
+
+        this.actor.connect('button-press-event', Lang.bind(this, this._clickedOutside));
+        this.actor.connect('scroll-event', Lang.bind(this, this._onScroll));
         return true;
     },
 
@@ -263,6 +281,21 @@ AltTabPopup.prototype = {
     },
 
     _keyPressEvent : function(actor, event) {
+        let that = this;
+        var switchWorkspace = function(direction) {
+            if (global.screen.n_workspaces < 2) {
+                return false;
+            }
+            let current = global.screen.get_active_workspace_index();
+            let nextIndex = (global.screen.n_workspaces + current + direction) % global.screen.n_workspaces;
+            global.screen.get_workspace_by_index(nextIndex).activate(global.get_current_time());
+            if (current == global.screen.get_active_workspace_index()) {
+                return false;
+            }
+            Main.wm.showWorkspaceOSD();
+            that.refresh('no-switch-windows');
+            return true;
+        };
         let keysym = event.get_key_symbol();
         let event_state = Cinnamon.get_event_state(event);
         let backwards = event_state & Clutter.ModifierType.SHIFT_MASK;
@@ -288,10 +321,23 @@ AltTabPopup.prototype = {
             else if (keysym == Clutter.Up)
                 this._select(this._currentApp, null, true);
         } else {
-            if (keysym == Clutter.Left)
+            let ctrlDown = event_state & Clutter.ModifierType.CONTROL_MASK;
+            if (keysym == Clutter.Left) {
+                if (ctrlDown) {
+                    if (switchWorkspace(-1)) {
+                        return false;
+                    }
+                }
                 this._select(this._previousApp());
-            else if (keysym == Clutter.Right)
+            }
+            else if (keysym == Clutter.Right) {
+                if (ctrlDown) {
+                    if (switchWorkspace(1)) {
+                        return false;
+                    }
+                }
                 this._select(this._nextApp());
+            }
             else if (keysym == Clutter.Down)
                 this._select(this._currentApp, 0);
         }
@@ -404,18 +450,20 @@ AltTabPopup.prototype = {
     },
 
     _finish : function() {
-        let app = this._appIcons[this._currentApp];
-        if (this._currentWindow >= 0) {
-            Main.activateWindow(app.cachedWindows[this._currentWindow]);
-        }
-        else if (app.app) {
-            app.app.activate_window(null, global.get_current_time());
-        }
-        else if (app.cachedWindows.length > 0) {
-            Main.activateWindow(app.cachedWindows[0]);
-        }
-        else {
-            // what to do???
+        if (this._appIcons.length > 0) {
+            let app = this._appIcons[this._currentApp];
+            if (this._currentWindow >= 0) {
+                Main.activateWindow(app.cachedWindows[this._currentWindow]);
+            }
+            else if (app.app) {
+                app.app.activate_window(null, global.get_current_time());
+            }
+            else if (app.cachedWindows.length > 0) {
+                Main.activateWindow(app.cachedWindows[0]);
+            }
+            else {
+                // what to do???
+            }
         }
         this.destroy();
     },
@@ -459,17 +507,24 @@ AltTabPopup.prototype = {
             Mainloop.source_remove(this._displayPreviewTimeoutId);
     },
     
-    _doWindowPreview: function() {
+    _clearPreview: function() {
         if (this._previewClone) {
             this.actor.remove_actor(this._previewClone);
             this._previewClone.destroy();
             this._previewClone = null;
         }
+    },
+    
+    _doWindowPreview: function() {
+        this._clearPreview();
         if (!this._previewEnabled || !this._appIcons[this._currentApp].cachedWindows.length) {
             return;
         }
 
         let showPreview = function() {
+            if (this._appIcons.length < 1) {
+                return;
+            }
             let window = this._appIcons[this._currentApp].cachedWindows[0];
 
             let childBox = new Clutter.ActorBox();
@@ -539,8 +594,7 @@ AltTabPopup.prototype = {
     _select : function(app, window, forceAppFocus) {
         if (window==null) window = 0;
         if (app != this._currentApp || window == null) {
-            if (this._thumbnails)
-                this._destroyThumbnails();
+            this._destroyThumbnails();
         }
 
         if (this._thumbnailTimeoutId != 0) {
@@ -552,6 +606,9 @@ AltTabPopup.prototype = {
 
         this._currentApp = app;
         this._currentWindow = window ? window : -1;
+        if (this._appIcons.length < 1) {
+            return;
+        }
         this._appSwitcher.highlight(app, this._thumbnailsFocused);
 
         if (window != null) {
@@ -579,6 +636,9 @@ AltTabPopup.prototype = {
     },
 
     _destroyThumbnails : function() {
+        if (!this._thumbnails) {
+            return;
+        }
         let thumbnailsActor = this._thumbnails.actor;
         this._thumbnails = null;
         Tweener.addTween(thumbnailsActor,
@@ -834,7 +894,7 @@ SwitcherList.prototype = {
             separatorWidth = sepNat + this._list.spacing;
         }
 
-        let totalSpacing = this._list.spacing * (this._items.length - 1);
+        let totalSpacing = this._list.spacing * Math.max(1, (this._items.length - 1));
         alloc.min_size = this._items.length * maxChildMin + separatorWidth + totalSpacing;
         alloc.natural_size = alloc.min_size;
         this._minSize = alloc.min_size;
@@ -1014,6 +1074,10 @@ AppSwitcher.prototype = {
     },
 
     _getPreferredHeight: function (actor, forWidth, alloc) {
+        if (this._items.length < 1) {
+            alloc.min_size = alloc.natural_size = 32;
+            return;
+        }
         let j = 0;
         while(this._items.length > 1 && this._items[j].style_class != 'item-box') {
                 j++;
