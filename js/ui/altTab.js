@@ -305,6 +305,9 @@ AltTabPopup.prototype = {
 
         if (keysym == Clutter.Escape) {
             this.destroy();
+        } else if (keysym == Clutter.Return) {
+            this._finish();
+            return true;
         } else if (action == Meta.KeyBindingAction.SWITCH_GROUP) {
             this._select(this._currentApp, backwards ? this._previousWindow() : this._nextWindow());
         } else if (action == Meta.KeyBindingAction.SWITCH_GROUP_BACKWARD) {
@@ -313,6 +316,7 @@ AltTabPopup.prototype = {
             this._select(backwards ? this._previousApp() : this._nextApp());
         } else if (action == Meta.KeyBindingAction.SWITCH_WINDOWS_BACKWARD) {
             this._select(this._previousApp());
+/* GNOME Shell-specific ?
         } else if (this._thumbnailsFocused) {
             if (keysym == Clutter.Left)
                 this._select(this._currentApp, this._previousWindow());
@@ -320,6 +324,7 @@ AltTabPopup.prototype = {
                 this._select(this._currentApp, this._nextWindow());
             else if (keysym == Clutter.Up)
                 this._select(this._currentApp, null, true);
+*/
         } else {
             let ctrlDown = event_state & Clutter.ModifierType.CONTROL_MASK;
             if (keysym == Clutter.Left) {
@@ -338,8 +343,10 @@ AltTabPopup.prototype = {
                 }
                 this._select(this._nextApp());
             }
+/* GNOME Shell-specific ?
             else if (keysym == Clutter.Down)
                 this._select(this._currentApp, 0);
+*/
         }
 
         return true;
