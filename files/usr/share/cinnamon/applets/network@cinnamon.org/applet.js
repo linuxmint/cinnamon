@@ -14,6 +14,9 @@ const MessageTray = imports.ui.messageTray;
 const ModemManager = imports.misc.modemManager;
 const Util = imports.misc.util;
 
+const DEFAULT_PERIODIC_UPDATE_FREQUENCY_SECONDS = 10;
+const FAST_PERIODIC_UPDATE_FREQUENCY_SECONDS = 2;
+
 const NMConnectionCategory = {
     INVALID: 'invalid',
     WIRED: 'wired',
@@ -1710,14 +1713,14 @@ MyApplet.prototype = {
                     this._client.connect('notify::manager-running', Lang.bind(this, this._syncNMState));
                     this._client.connect('notify::networking-enabled', Lang.bind(this, this._syncNMState));
                     this._client.connect('notify::state', Lang.bind(this, this._syncNMState));
-                    //this._client.connect('notify::active-connections', Lang.bind(this, this._updateIcon));
+                    this._client.connect('notify::active-connections', Lang.bind(this, this._updateIcon));
                     this._client.connect('device-added', Lang.bind(this, this._deviceAdded));
                     this._client.connect('device-removed', Lang.bind(this, this._deviceRemoved));
                     this._settings.connect('new-connection', Lang.bind(this, this._newConnection));
                 }
             }));
             
-            this._updateIcon();
+            this._periodicUpdateIcon();
             
         }
         catch (e) {
@@ -1959,7 +1962,7 @@ MyApplet.prototype = {
             activeConnection._primaryDevice._notification = null;
         }
 
-        //this._updateIcon();
+        this._updateIcon();
     },
 
     _readConnections: function() {
@@ -1990,7 +1993,7 @@ MyApplet.prototype = {
         this._updateConnection(connection);
         this._connections.push(connection);
 
-        //this._updateIcon();
+        this._updateIcon();
     },
 
     _connectionRemoved: function(connection) {
@@ -2079,13 +2082,12 @@ MyApplet.prototype = {
         }
 
         this._showNormal();
-        //this._updateIcon();
+        this._updateIcon();
     },
 
-    _updateIcon: function() {        
+    _updateIcon: function() {
         try {
-            this.set_applet_tooltip("");
-            
+            this._updateFrequencySeconds = DEFAULT_PERIODIC_UPDATE_FREQUENCY_SECONDS;
             this._syncActiveConnections();
             let mc = this._mainConnection;
             let hasApIcon = false;
@@ -2095,6 +2097,7 @@ MyApplet.prototype = {
                 this.set_applet_icon_symbolic_name('network-offline');         
                 this.set_applet_tooltip(_("No connection"));   
             } else if (mc.state == NetworkManager.ActiveConnectionState.ACTIVATING) {
+                this._updateFrequencySeconds = FAST_PERIODIC_UPDATE_FREQUENCY_SECONDS;
                 switch (mc._section) {
                 case NMConnectionCategory.WWAN:
                     this.set_applet_icon_symbolic_name('network-cellular-acquiring');
@@ -2176,14 +2179,18 @@ MyApplet.prototype = {
                     break;
                 }
             }            
-            
-            Mainloop.timeout_add_seconds(1, Lang.bind(this, this._updateIcon));
         }
         catch (e) {
             global.logError(e);
         }                        
-    }
+    },
     
+    _periodicUpdateIcon: function() {
+        this._updateIcon();
+        this._updateFrequencySeconds = Math.max(2, this._updateFrequencySeconds);
+        Mainloop.timeout_add_seconds(this._updateFrequencySeconds, Lang.bind(this, this._periodicUpdateIcon));
+    },
+
 };
 
 function main(metadata, orientation, panel_height) {  
