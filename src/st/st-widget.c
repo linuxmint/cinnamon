@@ -1904,10 +1904,12 @@ st_widget_sync_hover (StWidget *widget)
   pointer = clutter_device_manager_get_core_device (device_manager,
                                                     CLUTTER_POINTER_DEVICE);
   pointer_actor = clutter_input_device_get_pointer_actor (pointer);
-  if (pointer_actor)
-    st_widget_set_hover (widget, clutter_actor_contains (CLUTTER_ACTOR (widget), pointer_actor));
-  else
-    st_widget_set_hover (widget, FALSE);
+  if (widget->priv->track_hover) {
+    if (pointer_actor)
+      st_widget_set_hover (widget, clutter_actor_contains (CLUTTER_ACTOR (widget), pointer_actor));
+    else
+      st_widget_set_hover (widget, FALSE);
+  }
 }
 
 /**
