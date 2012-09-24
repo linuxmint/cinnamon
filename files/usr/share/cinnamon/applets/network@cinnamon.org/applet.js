@@ -2188,7 +2188,13 @@ MyApplet.prototype = {
     _periodicUpdateIcon: function() {
         this._updateIcon();
         this._updateFrequencySeconds = Math.max(2, this._updateFrequencySeconds);
-        Mainloop.timeout_add_seconds(this._updateFrequencySeconds, Lang.bind(this, this._periodicUpdateIcon));
+        this._periodicTimeoutId = Mainloop.timeout_add_seconds(this._updateFrequencySeconds, Lang.bind(this, this._periodicUpdateIcon));
+    },
+
+    on_applet_removed_from_panel: function() {
+        if (this._periodicTimeoutId){
+            Mainloop.source_remove(this._periodicTimeoutId);
+        }
     },
 
 };
