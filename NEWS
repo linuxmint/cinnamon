@@ -3,6 +3,7 @@
 
  - Fixed: Administration category missing in menu
  - Fixed: Blur in Alt-Tab preview
+ - Fixed: Network Manager applet consumes a lot of CPU
 
 FIX NEEDED FOR 1.6.x
 --------------------
