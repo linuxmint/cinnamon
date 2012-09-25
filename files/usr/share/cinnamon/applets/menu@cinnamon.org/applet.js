@@ -1274,7 +1274,7 @@ MyApplet.prototype = {
             if (nextType == GMenu.TreeItemType.ENTRY) {
                 var entry = iter.get_entry();
                 if (!entry.get_app_info().get_nodisplay()) {
-		    var app = appsys.lookup_app_by_tree_entry(entry);
+                    var app = appsys.lookup_app_by_tree_entry(entry);
                     if (!app)
                         app = appsys.lookup_settings_app_by_tree_entry(entry);
                     dupe = this.find_dupe(app);
@@ -1292,8 +1292,9 @@ MyApplet.prototype = {
                                 this._applicationsButtons[i].category.push(dir.get_menu_id());
                             }
                         }
+                        this.applicationsByCategory[dir.get_menu_id()].push(app.get_name());
                     }
-		}
+                }
             } else if (nextType == GMenu.TreeItemType.DIRECTORY) {
                 subdir = iter.get_directory();
                 this.applicationsByCategory[subdir.get_menu_id()] = new Array();
@@ -1643,12 +1644,14 @@ MyApplet.prototype = {
             applist = "all";
         }
         let res;
-        if (pattern){
+        if (pattern) {
+            pattern = pattern.toLowerCase();
             res = new Array();
             for (var i in this._applicationsButtons) {
                 let app = this._applicationsButtons[i].app;
-                if (app.get_name().toLowerCase().indexOf(pattern)!=-1 || (app.get_description() && app.get_description().toLowerCase().indexOf(pattern)!=-1) ||
-                        (app.get_id() && app.get_id().slice(0, -8).toLowerCase().indexOf(pattern)!=-1)) res.push(app.get_name());
+                if (app.get_name().toLowerCase().indexOf(pattern)!=-1 || (app.get_description() && app.get_description().toLowerCase().indexOf(pattern)!=-1)) {
+                    res.push(app.get_name());
+                }
             }
         } else res = applist;
         return res;

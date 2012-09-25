@@ -102,7 +102,7 @@ cinnamon_app_system_init (CinnamonAppSystem *self)
                                                    NULL,
                                                    (GDestroyNotify)g_object_unref);
 
-  /* For now, we want to pick up Evince, Nautilus, etc.  We'll
+  /* For now, we want to pick up Evince, Nemo, etc.  We'll
    * handle NODISPLAY semantics at a higher level or investigate them
    * case by case.
    */

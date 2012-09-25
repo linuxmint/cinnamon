@@ -22,7 +22,6 @@ const BUTTON_DND_ACTIVATION_TIMEOUT = 250;
 const ANIMATED_ICON_UPDATE_TIMEOUT = 100;
 const SPINNER_ANIMATION_TIME = 0.2;
 
-const PANEL_HEIGHT = 25;
 const AUTOHIDE_ANIMATION_TIME = 0.2;
 const TIME_DELTA = 1500;
 
@@ -606,6 +605,7 @@ Panel.prototype = {
         this.bottomPosition = bottomPosition;
 
     	this._hidden = false;
+        this._disabled = false;
         this._hidetime = 0;
         this._hideable = global.settings.get_boolean("panel-autohide");
         this._hideTimer = false;
@@ -626,20 +626,12 @@ Panel.prototype = {
                 this.actor.set_height(global.settings.get_int('panel-top-height'));
             }
         }
-
-        Main.overview.connect('shown', Lang.bind(this, function () {
-            this.actor.add_style_class_name('in-overview');
-        }));
-        Main.overview.connect('hiding', Lang.bind(this, function () {
-            this.actor.remove_style_class_name('in-overview');
-        }));
-
-        Main.expo.connect('shown', Lang.bind(this, function () {
-            this.actor.add_style_class_name('in-overview');
-        }));
-        Main.expo.connect('hiding', Lang.bind(this, function () {
-            this.actor.remove_style_class_name('in-overview');
-        }));
+        if (this.bottomPosition) {
+            global.settings.connect("changed::panel-bottom-height", Lang.bind(this, this._processPanelSize));
+        }
+        else {
+            global.settings.connect("changed::panel-top-height", Lang.bind(this, this._processPanelSize));
+        }
 
         this._menus = new PopupMenu.PopupMenuManager(this);
 
@@ -676,7 +668,7 @@ Panel.prototype = {
                                         
         this.actor.connect('leave-event', Lang.bind(this, this._leavePanel));
         this.actor.connect('enter-event', Lang.bind(this, this._enterPanel));  
-        global.settings.connect("changed::panel-autohide", Lang.bind(this, this._onPanelAutoHideChanged));   
+        global.settings.connect("changed::panel-autohide", Lang.bind(this, this._processPanelAutoHide));   
         global.settings.connect("changed::panel-show-delay", Lang.bind(this, this._onPanelShowDelayChanged));   
         global.settings.connect("changed::panel-hide-delay", Lang.bind(this, this._onPanelHideDelayChanged));   
         
@@ -697,11 +689,15 @@ Panel.prototype = {
         
         this._setDNDstyle();
         global.settings.connect("changed::panel-edit-mode", Lang.bind(this, this._setDNDstyle));
-        global.settings.connect("changed::panel-resizable", Lang.bind(this, this._onPanelResizableChanged));
+        global.settings.connect("changed::panel-resizable", Lang.bind(this, this._processPanelSize));
         global.settings.connect("changed::panel-scale-text-icons", Lang.bind(this, this._onScaleTextIconsChanged))
-        this.actor.connect('style-changed', Lang.bind(this, this._onStyleChanged));
+        this.actor.connect('style-changed', Lang.bind(this, this._processPanelSize));
     },
 
+    isHideable: function() {
+        return this._hideable;
+    },
+    
     _setDNDstyle: function() {
         if (global.settings.get_boolean("panel-edit-mode")) {
             this._leftBox.add_style_pseudo_class('dnd');
@@ -763,64 +759,53 @@ Panel.prototype = {
        this._hideDelay = global.settings.get_int("panel-hide-delay");
     },
     
-    _onPanelAutoHideChanged: function() {  
-    	this._hideable = global.settings.get_boolean("panel-autohide");
-    	if (this._hidden == true && this._hideable == false) {
-    		this._showPanel();
-    	}
-    	if (this._hidden == false && this._hideable == true) {
-    		this._hidePanel();
-    	}
+    _processPanelAutoHide: function() {  
+        this._hideable = global.settings.get_boolean("panel-autohide");
+        // Show a glimpse of the panel irrespective of the new setting,
+        // in order to force a region update.
+        // Techically, this should not be necessary if the function is called
+        // when auto-hide is in effect and is not changing, but experience
+        // shows that not flashing the panels may lead to "phantom panels"
+        // where the panels should be if auto-hide was on.
+        this._hidePanel(true); // force hide
+        this._showPanel();
+
+        if (this._hideable == true) {
+            this._hidePanel();
+        }
     },
 
-    _onPanelSizeChanged: function() {
+    _processPanelSize: function() {
         let panelHeight;
-        if (this.bottomPosition) {
-            panelHeight = global.settings.get_int("panel-bottom-height");
+        let panelResizable = global.settings.get_boolean("panel-resizable");
+        if (panelResizable) {
+            if (this.bottomPosition) {
+                panelHeight = global.settings.get_int("panel-bottom-height");
+            }
+            else {
+                panelHeight = global.settings.get_int("panel-top-height");
+            }
         }
         else {
-            panelHeight = global.settings.get_int("panel-top-height");
+            let themeNode = this.actor.get_theme_node();
+            panelHeight = themeNode.get_length("height");
+            if (!panelHeight || panelHeight == 0) {
+                panelHeight = 25;
+            }
         }
-        if (global.settings.get_boolean("panel-scale-text-icons")) {
-            if (!this._themeFontSize) {
+        if (!this._themeFontSize) {
                 let themeNode = this.actor.get_theme_node();
                 this._themeFontSize = themeNode.get_length("font-size");
             }
+        if (global.settings.get_boolean("panel-scale-text-icons") && global.settings.get_boolean("panel-resizable")) {
             let textheight = (panelHeight / Applet.DEFAULT_PANEL_HEIGHT) * Applet.PANEL_FONT_DEFAULT_HEIGHT;
             this.actor.set_style('font-size: ' + textheight + 'px;');
         } else {
             this.actor.set_style('font-size: ' + this._themeFontSize + 'px;');
         }
         this.actor.set_height(panelHeight);
-        Main.layoutManager._updateBoxes();
+        this._processPanelAutoHide();
         AppletManager.updateAppletPanelHeights();
-    },
-
-    _onPanelResizableChanged: function() {
-        let panelResizable = global.settings.get_boolean("panel-resizable");
-        if (panelResizable) {
-            if (this.bottomPosition) {
-                this._onPanelSizeChangedId = global.settings.connect("changed::panel-bottom-height", Lang.bind(this, this._onPanelSizeChanged));
-            }
-            else {
-                this._onPanelSizeChangedId = global.settings.connect("changed::panel-top-height", Lang.bind(this, this._onPanelSizeChanged));
-            }
-            this._onPanelSizeChanged();
-        }
-        else {
-            if (this._onPanelSizeChangedId) {
-                global.settings.disconnect(this._onPanelSizeChangedId);
-            }
-            let themeNode = this.actor.get_theme_node();
-            let panelHeight = themeNode.get_length("height");
-            if (!panelHeight || panelHeight == 0) {
-                panelHeight = 25;
-            }
-            this.actor.set_height(panelHeight);
-            this.actor.set_style('font-size: ' + this._themeFontSize + 'px;');
-            Main.layoutManager._updateBoxes();
-            AppletManager.updateAppletPanelHeights();
-        }
     },
 
     _onScaleTextIconsChanged: function() {
@@ -831,21 +816,17 @@ Panel.prototype = {
         else {
             panelHeight = global.settings.get_int("panel-top-height");
         }
-        if (global.settings.get_boolean("panel-scale-text-icons")) {
-            if (!this._themeFontSize) {
-                let themeNode = this.actor.get_theme_node();
-                this._themeFontSize = themeNode.get_length("font-size");
-            }
+        if (!this._themeFontSize) {
+            let themeNode = this.actor.get_theme_node();
+            this._themeFontSize = themeNode.get_length("font-size");
+        }
+        if (global.settings.get_boolean("panel-scale-text-icons") && global.settings.get_boolean("panel-resizable")) {
             let textheight = (panelHeight / Applet.DEFAULT_PANEL_HEIGHT) * Applet.PANEL_FONT_DEFAULT_HEIGHT;
             this.actor.set_style('font-size: ' + textheight + 'px;');
         } else {
-            this.actor.set_style('font-size: ' + this._themeFontSize + 'px;');
+            this.actor.set_style('font-size: ' + this._themeFontSize ? this._themeFontSize + 'px;' : '8.5pt;');
         }
         AppletManager.updateAppletPanelHeights(true);
-    },
-
-    _onStyleChanged: function() {
-        this._onPanelResizableChanged();
     },
 
     _getPreferredWidth: function(actor, forHeight, alloc) {
@@ -982,9 +963,30 @@ Panel.prototype = {
         }
     }, 
 
-
+    enable: function() {
+        this._disabled = false;
+        this.actor.show();
+        Tweener.addTween(this.actor, {
+            opacity: 255, 
+            time: AUTOHIDE_ANIMATION_TIME, 
+            transition: 'easeOutQuad'
+        });
+    }, 
+    
+    disable: function() {
+        this._disabled = true;
+        Tweener.addTween(this.actor, {
+            opacity: 0, 
+            time: AUTOHIDE_ANIMATION_TIME, 
+            transition: 'easeOutQuad', 
+            onComplete: this.actor.hide
+        });
+    }, 
+    
     _showPanel: function() {
-        if (this._hidden == false) return;
+        if (this._disabled) return;
+
+        if (!this._hidden) return;
 
         if (Main.lookingGlass != null && Main.lookingGlass._open) {
             return;
@@ -994,131 +996,82 @@ Panel.prototype = {
         Main.layoutManager._windowsRestacked();
 
         let height = this.actor.get_height();
+        let animationTime = AUTOHIDE_ANIMATION_TIME;
+        let y = this.bottomPosition ?
+            Main.layoutManager.bottomMonitor.y + Main.layoutManager.bottomMonitor.height - height :
+            Main.layoutManager.primaryMonitor.y;
 
-        if (this.bottomPosition) {
-            let params = { y: height - 1,
-                           time: AUTOHIDE_ANIMATION_TIME + 0.1,
-                           transition: 'easeOutQuad'
-                         };
 
-            Tweener.addTween(this._leftCorner.actor, params);
-            Tweener.addTween(this._rightCorner.actor, params);
+        let params = { y: height - 1,
+                        time: animationTime + 0.1,
+                        transition: 'easeOutQuad'
+                        };
 
-            Tweener.addTween(this.actor.get_parent(),
-                         { y: Main.layoutManager.bottomMonitor.y + Main.layoutManager.bottomMonitor.height - height,
-                           time: AUTOHIDE_ANIMATION_TIME,
-                           transition: 'easeOutQuad',
-                           onUpdate: function() {
-                               // Force the layout manager to update the input region
-                               Main.layoutManager._chrome.updateRegions()
-                           }
-                         });
+        Tweener.addTween(this._leftCorner.actor, params);
+        Tweener.addTween(this._rightCorner.actor, params);
 
-            params = { opacity: 255,
-                       time: AUTOHIDE_ANIMATION_TIME+0.2,
-                       transition: 'easeOutQuad'
-                     };
+        Tweener.addTween(this.actor.get_parent(),
+                        { y: y,
+                        time: animationTime,
+                        transition: 'easeOutQuad',
+                        onUpdate: function() {
+                            // Force the layout manager to update the input region
+                            Main.layoutManager._chrome.updateRegions()
+                        }
+                        });
 
-            Tweener.addTween(this._leftBox, params);
-            Tweener.addTween(this._centerBox, params);
-            Tweener.addTween(this._rightBox, params);
-        }
-        else {
-            let params = { y: height - 1,
-                       time: AUTOHIDE_ANIMATION_TIME + 0.1,
-                       transition: 'easeOutQuad'
-                     };
+        params = { opacity: 255,
+                    time: animationTime+0.2,
+                    transition: 'easeOutQuad'
+                    };
 
-            Tweener.addTween(this._leftCorner.actor, params);
-            Tweener.addTween(this._rightCorner.actor, params);
-
-            Tweener.addTween(this.actor.get_parent(),
-                         { y: Main.layoutManager.primaryMonitor.y,
-                           time: AUTOHIDE_ANIMATION_TIME,
-                           transition: 'easeOutQuad',
-                           onUpdate: function() {
-                               // Force the layout manager to update the input region
-                               Main.layoutManager._chrome.updateRegions()
-                           }
-                         });
-
-            params = { opacity: 255,
-                       time: AUTOHIDE_ANIMATION_TIME+0.2,
-                       transition: 'easeOutQuad'
-                     };
-
-            Tweener.addTween(this._leftBox, params);
-            Tweener.addTween(this._centerBox, params);
-            Tweener.addTween(this._rightBox, params);
-        }
+        Tweener.addTween(this._leftBox, params);
+        Tweener.addTween(this._centerBox, params);
+        Tweener.addTween(this._rightBox, params);
 
         this._hidden = false;
     },
 
-    _hidePanel: function() {
-        if (Main.overview.visible || this._hideable == false || global.menuStackLength > 0 || this.isMouseOverPanel) return;
+    _hidePanel: function(force) {
+        if (this._disabled) return;
+        
+        if ((!this._hideable && !force) || global.menuStackLength > 0 || this.isMouseOverPanel) return;
 
         // Force the panel to be on top (hack to correct issues when switching workspace)
         Main.layoutManager._windowsRestacked();
 
         let height = this.actor.get_height();
+        let animationTime = AUTOHIDE_ANIMATION_TIME;
+        let y = this.bottomPosition ?
+            Main.layoutManager.bottomMonitor.y + Main.layoutManager.bottomMonitor.height - 1 :
+            Main.layoutManager.primaryMonitor.y - height + 1;
+        
+        Tweener.addTween(this.actor.get_parent(), { 
+            y: y,
+            time: animationTime,
+            transition: 'easeOutQuad',
+            onUpdate: function() {
+                // Force the layout manager to update the input region
+                Main.layoutManager._chrome.updateRegions()
+            }
+        });
 
-        if (this.bottomPosition) {
-            Tweener.addTween(this.actor.get_parent(),
-                         { y: Main.layoutManager.bottomMonitor.y + Main.layoutManager.bottomMonitor.height - 1,
-                           time: AUTOHIDE_ANIMATION_TIME,
-                           transition: 'easeOutQuad',
-                           onUpdate: function() {
-                               // Force the layout manager to update the input region
-                               Main.layoutManager._chrome.updateRegions()
-                           }
-                         });
+        let params = { y: 0,
+                        time: animationTime,
+                        transition: 'easeOutQuad'
+                        };
 
-            let params = { y: 0,
-                           time: AUTOHIDE_ANIMATION_TIME,
-                           transition: 'easeOutQuad'
-                         };
+        Tweener.addTween(this._leftCorner.actor, params);
+        Tweener.addTween(this._rightCorner.actor, params);
 
-            Tweener.addTween(this._leftCorner.actor, params);
-            Tweener.addTween(this._rightCorner.actor, params);
+        params = { opacity: 0,
+                    time: Math.max(0, animationTime - 0.1),
+                    transition: 'easeOutQuad'
+                    };
 
-            params = { opacity: 0,
-                       time: AUTOHIDE_ANIMATION_TIME - 0.1,
-                       transition: 'easeOutQuad'
-                     };
-
-            Tweener.addTween(this._leftBox, params);
-            Tweener.addTween(this._centerBox, params);
-            Tweener.addTween(this._rightBox, params);
-        }
-        else {
-            Tweener.addTween(this.actor.get_parent(),
-                     { y: Main.layoutManager.primaryMonitor.y - height + 1,
-                       time: AUTOHIDE_ANIMATION_TIME,
-                       transition: 'easeOutQuad',
-                       onUpdate: function() {
-                           // Force the layout manager to update the input region
-                           Main.layoutManager._chrome.updateRegions()
-                       }
-                     });
-
-            let params = { y: 0,
-                           time: AUTOHIDE_ANIMATION_TIME,
-                           transition: 'easeOutQuad'
-                         };
-
-            Tweener.addTween(this._leftCorner.actor, params);
-            Tweener.addTween(this._rightCorner.actor, params);
-
-            params = { opacity: 0,
-                       time: AUTOHIDE_ANIMATION_TIME - 0.1,
-                       transition: 'easeOutQuad'
-                     };
-
-            Tweener.addTween(this._leftBox, params);
-            Tweener.addTween(this._centerBox, params);
-            Tweener.addTween(this._rightBox, params);
-        }
+        Tweener.addTween(this._leftBox, params);
+        Tweener.addTween(this._centerBox, params);
+        Tweener.addTween(this._rightBox, params);
 
         this._hidden = true;
     },

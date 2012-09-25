@@ -166,11 +166,11 @@ PlacesManager.prototype = {
                                      icon_size: size });
             },
             function (params) {
-                // BUG: nautilus-connect-server doesn't have a desktop file, so we can't
+                // BUG: nemo-connect-server doesn't have a desktop file, so we can't
                 // launch it with the workspace from params. It's probably pretty rare
                 // and odd to drag this place onto a workspace in any case
 
-                Util.spawn(['nautilus-connect-server']);
+                Util.spawn(['nemo-connect-server']);
             });
 
         this._defaultPlaces.push(this._home);
@@ -178,7 +178,7 @@ PlacesManager.prototype = {
         this._defaultPlaces.push(this._connect);
 
         /*
-        * Show devices, code more or less ported from nautilus-places-sidebar.c
+        * Show devices, code more or less ported from nemo-places-sidebar.c
         */
         this._volumeMonitor = Gio.VolumeMonitor.get();
         this._volumeMonitor.connect('volume-added', Lang.bind(this, this._updateDevices));

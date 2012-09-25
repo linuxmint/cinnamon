@@ -24,6 +24,8 @@ const THUMBNAIL_DEFAULT_SIZE = 256;
 const THUMBNAIL_POPUP_TIME = 500; // milliseconds
 const THUMBNAIL_FADE_TIME = 0.1; // seconds
 
+const PREVIEW_DELAY_TIMEOUT = 200; // milliseconds
+
 const iconSizes = [96, 64, 48, 32, 22];
 
 function mod(a, b) {
@@ -495,10 +497,10 @@ AltTabPopup.prototype = {
             let diffX = (ir.width - or.width)/2;
             let diffY = (ir.height - or.height)/2;
 
-            childBox.x1 = or.x -diffX;
-            childBox.x2 = or.x + or.width + diffX;
-            childBox.y1 = or.y -diffY;
-            childBox.y2 = or.y + or.height + diffY;
+            childBox.x1 = Math.round(or.x -diffX);
+            childBox.x2 = Math.round(or.x + or.width + diffX);
+            childBox.y1 = Math.round(or.y -diffY);
+            childBox.y2 = Math.round(or.y + or.height + diffY);
             clone.allocate(childBox, 0);
         };
 
@@ -506,7 +508,7 @@ AltTabPopup.prototype = {
         if (this._displayPreviewTimeoutId) {
             Mainloop.source_remove(this._displayPreviewTimeoutId);
         }
-        this._displayPreviewTimeoutId = Mainloop.timeout_add(100, Lang.bind(this, showPreview));
+        this._displayPreviewTimeoutId = Mainloop.timeout_add(PREVIEW_DELAY_TIMEOUT, Lang.bind(this, showPreview));
     },
     
     /**

@@ -1,7 +1,17 @@
 const Applet = imports.ui.applet;
 const Clutter = imports.gi.Clutter;
 const GLib = imports.gi.GLib;
-const GnomeBluetoothApplet = imports.gi.GnomeBluetoothApplet;
+var Bluetooth;
+try {
+    Bluetooth = imports.gi.GnomeBluetooth;
+    new Bluetooth.Applet(); // try the 3.6 ABI
+    global.logError("Bluetooth Gnome 3.6 ABI");
+}
+catch(e) {
+    // Fallback to the 3.4 ABI
+    Bluetooth = imports.gi.GnomeBluetoothApplet;
+    global.logError("Bluetooth Gnome 3.4 ABI");
+}
 const Lang = imports.lang;
 const St = imports.gi.St;
 
@@ -206,17 +216,17 @@ MyApplet.prototype = {
             this.set_applet_tooltip(_("Bluetooth"));
                         
             GLib.spawn_command_line_sync ('pkill -f "^bluetooth-applet$"');
-            this._applet = new GnomeBluetoothApplet.Applet();
+            this._applet = new Bluetooth.Applet();
 
             this._killswitch = new PopupMenu.PopupSwitchMenuItem(_("Bluetooth"), false);
             this._applet.connect('notify::killswitch-state', Lang.bind(this, this._updateKillswitch));
             this._killswitch.connect('toggled', Lang.bind(this, function() {
                 let current_state = this._applet.killswitch_state;
-                if (current_state != GnomeBluetoothApplet.KillswitchState.HARD_BLOCKED &&
-                    current_state != GnomeBluetoothApplet.KillswitchState.NO_ADAPTER) {
+                if (current_state != Bluetooth.KillswitchState.HARD_BLOCKED &&
+                    current_state != Bluetooth.KillswitchState.NO_ADAPTER) {
                     this._applet.killswitch_state = this._killswitch.state ?
-                        GnomeBluetoothApplet.KillswitchState.UNBLOCKED:
-                        GnomeBluetoothApplet.KillswitchState.SOFT_BLOCKED;
+                        Bluetooth.KillswitchState.UNBLOCKED:
+                        Bluetooth.KillswitchState.SOFT_BLOCKED;
                 } else
                     this._killswitch.setToggleState(false);
             }));
@@ -280,10 +290,10 @@ MyApplet.prototype = {
    
     _updateKillswitch: function() {
         let current_state = this._applet.killswitch_state;
-        let on = current_state == GnomeBluetoothApplet.KillswitchState.UNBLOCKED;
-        let has_adapter = current_state != GnomeBluetoothApplet.KillswitchState.NO_ADAPTER;
-        let can_toggle = current_state != GnomeBluetoothApplet.KillswitchState.NO_ADAPTER &&
-                         current_state != GnomeBluetoothApplet.KillswitchState.HARD_BLOCKED;
+        let on = current_state == Bluetooth.KillswitchState.UNBLOCKED;
+        let has_adapter = current_state != Bluetooth.KillswitchState.NO_ADAPTER;
+        let can_toggle = current_state != Bluetooth.KillswitchState.NO_ADAPTER &&
+                         current_state != Bluetooth.KillswitchState.HARD_BLOCKED;
 
         this._killswitch.setToggleState(on);
         if (can_toggle)
@@ -342,7 +352,7 @@ MyApplet.prototype = {
     },
 
     _updateDeviceItem: function(item, device) {
-        if (!device.can_connect && device.capabilities == GnomeBluetoothApplet.Capabilities.NONE) {
+        if (!device.can_connect && device.capabilities == Bluetooth.Capabilities.NONE) {
             item.destroy();
             return;
         }
@@ -371,7 +381,7 @@ MyApplet.prototype = {
     },
 
     _createDeviceItem: function(device) {
-        if (!device.can_connect && device.capabilities == GnomeBluetoothApplet.Capabilities.NONE)
+        if (!device.can_connect && device.capabilities == Bluetooth.Capabilities.NONE)
             return null;
         let item = new PopupMenu.PopupSubMenuMenuItem(device.alias);
 
@@ -426,12 +436,12 @@ MyApplet.prototype = {
             item.menu.addMenuItem(item._connectedMenuitem);
         }
 
-        if (device.capabilities & GnomeBluetoothApplet.Capabilities.OBEX_PUSH) {
+        if (device.capabilities & Bluetooth.Capabilities.OBEX_PUSH) {
             item.menu.addAction(_("Send Files..."), Lang.bind(this, function() {
                 this._applet.send_to_address(device.bdaddr, device.alias);
             }));
         }
-        if (device.capabilities & GnomeBluetoothApplet.Capabilities.OBEX_FILE_TRANSFER) {
+        if (device.capabilities & Bluetooth.Capabilities.OBEX_FILE_TRANSFER) {
             item.menu.addAction(_("Browse Files..."), Lang.bind(this, function(event) {
                 this._applet.browse_address(device.bdaddr, event.get_time(),
                     Lang.bind(this, function(applet, result) {
@@ -449,15 +459,15 @@ MyApplet.prototype = {
         }
 
         switch (device.type) {
-        case GnomeBluetoothApplet.Type.KEYBOARD:
+        case Bluetooth.Type.KEYBOARD:
             item.menu.addSettingsAction(_("Keyboard Settings"), 'gnome-keyboard-panel.desktop');
             break;
-        case GnomeBluetoothApplet.Type.MOUSE:
+        case Bluetooth.Type.MOUSE:
             item.menu.addSettingsAction(_("Mouse Settings"), 'gnome-mouse-panel.desktop');
             break;
-        case GnomeBluetoothApplet.Type.HEADSET:
-        case GnomeBluetoothApplet.Type.HEADPHONES:
-        case GnomeBluetoothApplet.Type.OTHER_AUDIO:
+        case Bluetooth.Type.HEADSET:
+        case Bluetooth.Type.HEADPHONES:
+        case Bluetooth.Type.OTHER_AUDIO:
             item.menu.addSettingsAction(_("Sound Settings"), 'gnome-sound-panel.desktop');
             break;
         default:

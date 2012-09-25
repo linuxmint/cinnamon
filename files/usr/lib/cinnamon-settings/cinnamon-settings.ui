@@ -64,7 +64,7 @@
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="hexpand">True</property>
-                    <property name="item_width">90</property>
+                    <property name="item_width">110</property>
                     <property name="row_spacing">0</property>
                     <property name="column_spacing">0</property>
                   </object>

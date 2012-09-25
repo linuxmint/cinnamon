@@ -64,7 +64,7 @@ MyApplet.prototype = {
             this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
             this.menu.addAction(_("Open file manager"), function(event) {
                 let appSystem = Cinnamon.AppSystem.get_default();
-                let app = appSystem.lookup_app('nautilus.desktop');
+                let app = appSystem.lookup_app('nemo.desktop');
                 app.activate_full(-1, event.get_time());
             });     
             
