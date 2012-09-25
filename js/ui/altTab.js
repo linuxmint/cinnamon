@@ -503,6 +503,12 @@ AltTabPopup.prototype = {
             childBox.y1 = Math.round(or.y -diffY);
             childBox.y2 = Math.round(or.y + or.height + diffY);
             clone.allocate(childBox, 0);
+            clone.opacity = 127;
+            Tweener.addTween(clone,
+                             { opacity: 255,
+                               time: PREVIEW_SWITCHER_FADEOUT_TIME/2,
+                               transition: 'linear'
+                             });
 
             Tweener.addTween(this._appSwitcher.actor,
                              { opacity: 200,
