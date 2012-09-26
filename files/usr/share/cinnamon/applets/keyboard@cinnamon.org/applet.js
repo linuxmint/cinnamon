@@ -3,7 +3,7 @@ const Gkbd = imports.gi.Gkbd;
 const Lang = imports.lang;
 const Cinnamon = imports.gi.Cinnamon;
 const St = imports.gi.St;
-
+const Gtk = imports.gi.Gtk;
 const Main = imports.ui.main;
 const PopupMenu = imports.ui.popupMenu;
 const Util = imports.misc.util;
@@ -32,17 +32,18 @@ LayoutMenuItem.prototype = {
     }
 };
 
-function MyApplet(orientation, panel_height) {
-    this._init(orientation, panel_height);
+function MyApplet(metadata, orientation, panel_height) {
+    this._init(metadata, orientation, panel_height);
 }
 
 MyApplet.prototype = {
     __proto__: Applet.TextIconApplet.prototype,
 
-    _init: function(orientation, panel_height) {        
+    _init: function(metadata, orientation, panel_height) {        
         Applet.TextIconApplet.prototype._init.call(this, orientation, panel_height);
         
-        try {                                
+        try {  
+            Gtk.IconTheme.get_default().append_search_path(metadata.path + "/flags");                              
             this.menuManager = new PopupMenu.PopupMenuManager(this);
             this.menu = new Applet.AppletPopupMenu(this, orientation);
             this.menuManager.addMenu(this.menu);                            
@@ -161,8 +162,7 @@ MyApplet.prototype = {
         let selectedLabel = this._labelActors[selected];
 
         if (this._showFlags) {
-            this.set_applet_icon_symbolic_name(item._icon_name);
-            this.set_applet_label("");
+            this.set_applet_icon_name(item._icon_name);            
         } else {
             this.hide_applet_icon();
             this.set_applet_label(selectedLabel.text);
@@ -173,6 +173,6 @@ MyApplet.prototype = {
 };
 
 function main(metadata, orientation, panel_height) {  
-    let myApplet = new MyApplet(orientation, panel_height);
+    let myApplet = new MyApplet(metadata, orientation, panel_height);
     return myApplet;      
 }
