@@ -132,7 +132,7 @@ MyApplet.prototype = {
             let icon_name = this._config.get_group_name(i);
             let actor;
             if (this._showFlags)
-                actor = new St.Icon({ icon_name: icon_name, icon_type: St.IconType.SYMBOLIC, style_class: 'popup-menu-icon' });
+                actor = new St.Icon({ icon_name: icon_name, icon_type: St.IconType.FULLCOLOR, style_class: 'popup-menu-icon' });
             else
                 actor = new St.Label({ text: short_names[i] });
             let item = new LayoutMenuItem(this._config, i, actor, groups[i]);
