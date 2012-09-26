@@ -4,6 +4,19 @@
  - Fixed: Administration category missing in menu
  - Fixed: Blur in Alt-Tab preview
 
+Muffin 1.1.1
+------------
+ 
+ - Fixed: Menubar issues with all Java programs
+
+Nemo 1.0.2
+----------
+
+ - Dropbox extension
+ - Fileroller extension
+ - Configurable units (decimal by default as well as decimal-long, binary and binary-long)
+
+
 FIX NEEDED FOR 1.6.x
 --------------------
 
