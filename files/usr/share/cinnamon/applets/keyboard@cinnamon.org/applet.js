@@ -48,9 +48,7 @@ MyApplet.prototype = {
             this.menu = new Applet.AppletPopupMenu(this, orientation);
             this.menuManager.addMenu(this.menu);                            
 
-            this.actor.add_style_class_name('panel-status-button');
-
-            this.set_applet_icon_name('keyboard');
+            this.actor.add_style_class_name('panel-status-button');            
 
             this._labelActors = [ ];
             this._layoutItems = [ ];
@@ -74,6 +72,10 @@ MyApplet.prototype = {
                 Util.spawn(['gucharmap']);
             }));
             this.menu.addSettingsAction(_("Region and Language Settings"), 'gnome-region-panel.desktop'); 
+            
+            this.show_flags_switch = new PopupMenu.PopupSwitchMenuItem(_("Use flags to show keyboard layouts"), this._showFlags);
+            this._applet_context_menu.addMenuItem(this.show_flags_switch);            
+            this.show_flags_switch.connect('toggled', Lang.bind(this, this._toggle_flags));
                       
         }
         catch (e) {
@@ -85,8 +87,19 @@ MyApplet.prototype = {
         this.menu.toggle();        
     },
     
+    _toggle_flags: function() {
+        if (this._showFlags) {            
+            this.show_flags_switch.setToggleState(false);
+            global.settings.set_boolean("keyboard-applet-use-flags", false);
+        } else {
+            this.show_flags_switch.setToggleState(true);
+            global.settings.set_boolean("keyboard-applet-use-flags", true);
+        }
+    },
+    
     _reload_settings: function() {
         this._showFlags = global.settings.get_boolean("keyboard-applet-use-flags");
+        this._syncConfig();
     },
     
    _adjustGroupNames: function(names) {
@@ -137,7 +150,7 @@ MyApplet.prototype = {
             let icon_name = this._config.get_group_name(i);
             let actor;
             if (this._showFlags)
-                actor = new St.Icon({ icon_name: icon_name, icon_type: St.IconType.SYMBOLIC, style_class: 'popup-menu-icon' });
+                actor = new St.Icon({ icon_name: icon_name, icon_type: St.IconType.FULLCOLOR, style_class: 'popup-menu-icon' });
             else
                 actor = new St.Label({ text: short_names[i] });
             let item = new LayoutMenuItem(this._config, i, actor, groups[i]);
@@ -167,7 +180,8 @@ MyApplet.prototype = {
         let selectedLabel = this._labelActors[selected];
 
         if (this._showFlags) {
-            this.set_applet_icon_name(item._icon_name);            
+            this.set_applet_icon_name(item._icon_name);   
+            this.set_applet_label("");      
         } else {
             this.hide_applet_icon();
             this.set_applet_label(selectedLabel.text);
