@@ -169,8 +169,10 @@ Applet.prototype = {
     },
 
     set_applet_tooltip: function (text) {
-        this._applet_tooltip_text = text;
-        this._applet_tooltip.set_text(text);
+        if (this._applet_tooltip_text !== text) {
+            this._applet_tooltip.set_text(text);
+            this._applet_tooltip_text = text;
+        }
     },
 
     on_applet_clicked: function(event) {
@@ -281,6 +283,10 @@ IconApplet.prototype = {
     },
 
     set_applet_icon_symbolic_name: function (icon_name) {
+        if (this.__icon_name === icon_name) {
+            return;
+        }
+
         if (this._scaleMode) {
             let height = (this._panelHeight / DEFAULT_PANEL_HEIGHT) * PANEL_SYMBOLIC_ICON_DEFAULT_HEIGHT;
             this._applet_icon = new St.Icon({icon_name: icon_name, icon_size: height, icon_type: St.IconType.SYMBOLIC, reactive: true, track_hover: true, style_class: 'system-status-icon' });
