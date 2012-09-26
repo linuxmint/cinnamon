@@ -215,6 +215,10 @@ ExpoWorkspaceThumbnail.prototype = {
             this._origTitle = Main.getWorkspaceName(this.metaWorkspace.index());
         })); 
         this.titleText.connect('key-focus-out', Lang.bind(this, function() {
+            if (this._doomed) {
+                // user probably deleted workspace while editing
+                return;
+            }
             if (!this._undoTitleEdit) {
                 let newName = this.title.get_text().trim();
                 if (newName != this._origTitle) {
