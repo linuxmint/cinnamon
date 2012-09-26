@@ -55,10 +55,11 @@ MyApplet.prototype = {
             this._labelActors = [ ];
             this._layoutItems = [ ];
 
-            this._showFlags = false;
+            this._showFlags = global.settings.get_boolean("keyboard-applet-use-flags");
             this._config = Gkbd.Configuration.get();
             this._config.connect('changed', Lang.bind(this, this._syncConfig));
             this._config.connect('group-changed', Lang.bind(this, this._syncGroup));
+            global.settings.connect('changed::keyboard-applet-use-flags', Lang.bind(this, this._reload_settings));
             this._config.start_listen();
 
             this._syncConfig();
@@ -84,6 +85,10 @@ MyApplet.prototype = {
         this.menu.toggle();        
     },
     
+    _reload_settings: function() {
+        this._showFlags = global.settings.get_boolean("keyboard-applet-use-flags");
+    },
+    
    _adjustGroupNames: function(names) {
         // Disambiguate duplicate names with a subscript
         // This is O(N^2) to avoid sorting names
@@ -107,7 +112,7 @@ MyApplet.prototype = {
     },
 
     _syncConfig: function() {
-        this._showFlags = this._config.if_flags_shown();
+        this._showFlags = global.settings.get_boolean("keyboard-applet-use-flags");
 
         let groups = this._config.get_group_names();
         if (groups.length > 1) {
