@@ -73,7 +73,7 @@ MyApplet.prototype = {
             }));
             this.menu.addSettingsAction(_("Region and Language Settings"), 'gnome-region-panel.desktop'); 
             
-            this.show_flags_switch = new PopupMenu.PopupSwitchMenuItem(_("Use flags to show keyboard layouts"), this._showFlags);
+            this.show_flags_switch = new PopupMenu.PopupSwitchMenuItem(_("Show flags"), this._showFlags);
             this._applet_context_menu.addMenuItem(this.show_flags_switch);            
             this.show_flags_switch.connect('toggled', Lang.bind(this, this._toggle_flags));
                       
