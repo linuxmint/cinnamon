@@ -180,8 +180,8 @@ MyApplet.prototype = {
         let selectedLabel = this._labelActors[selected];
 
         if (this._showFlags) {
-            this.set_applet_icon_name(item._icon_name);   
-            this.set_applet_label("");      
+            this.set_applet_icon_name(item._icon_name);
+            this.set_applet_label("");
         } else {
             this.hide_applet_icon();
             this.set_applet_label(selectedLabel.text);
