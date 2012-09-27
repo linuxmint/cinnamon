@@ -6,6 +6,8 @@
  - Fixed: Network Manager applet consumes a lot of CPU
  - Updated translations
  - Flags in keyboard applet
+ - Fixed: Removing workspace while editing its name results in crash
+ - Added songbird support to sound applet
 
 Muffin 1.1.1
 ------------
@@ -18,12 +20,8 @@ Nemo 1.0.2
  - Dropbox extension
  - Fileroller extension
  - Configurable units (decimal by default as well as decimal-long, binary and binary-long)
+ - Use Nautilus style to render the desktop when the theme doesn't support Nemo
 
-
-FIX NEEDED FOR 1.6.x
---------------------
-
- - A user reported problems with Muffin 1.1.0 (and previously also in cinnamon 1.4/muffin 1.0.x) that work fine in Mutter 3.4.1-0ubuntu1: constant flickering with some graphics-heavy applications, especially games, and overheating. There's probably a fix in Mutter or a change in clutter we need to take into account. 
 
 NEMO
 ----
