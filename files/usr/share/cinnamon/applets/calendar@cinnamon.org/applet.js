@@ -78,14 +78,22 @@ MyApplet.prototype = {
 
             // Track changes to clock settings        
             this._calendarSettings = new Gio.Settings({ schema: 'org.cinnamon.calendar' });
-            this._calendarSettings.connect('changed', Lang.bind(this, this._updateClockAndDate));
+            this._dateFormat = null;
+            this._dateFormatFull = null;
+            let getCalendarSettings = Lang.bind(this, function() {
+                this._dateFormat = this._calendarSettings.get_string('date-format');
+                this._dateFormatFull = this._calendarSettings.get_string('date-format-full');
+                this._updateClockAndDate();
+            });
+            this._calendarSettings.connect('changed', getCalendarSettings);
 
             // https://bugzilla.gnome.org/show_bug.cgi?id=655129
             this._upClient = new UPowerGlib.Client();
-            this._upClient.connect('notify-resume', Lang.bind(this, this._updateClockAndDate));
+            this._upClient.connect('notify-resume', getCalendarSettings);
 
             // Start the clock
-            this._updateClockAndDate();
+            getCalendarSettings();
+            this._updateClockAndDatePeriodic();
      
         }
         catch (e) {
@@ -103,18 +111,27 @@ MyApplet.prototype = {
     },
 
     _updateClockAndDate: function() {
-        let dateFormat = this._calendarSettings.get_string('date-format');       
-        let dateFormatFull = this._calendarSettings.get_string('date-format-full'); 
         let displayDate = new Date();
-        let dateFormattedFull = displayDate.toLocaleFormat(dateFormatFull);
-        this.set_applet_label(displayDate.toLocaleFormat(dateFormat));
-        this._date.set_text(dateFormattedFull);
-        this.set_applet_tooltip(dateFormattedFull);
+        let dateFormattedFull = displayDate.toLocaleFormat(this._dateFormatFull);
+        this.set_applet_label(displayDate.toLocaleFormat(this._dateFormat));
+        if (dateFormattedFull !== this._lastDateFormattedFull) {
+            this._date.set_text(dateFormattedFull);
+            this.set_applet_tooltip(dateFormattedFull);
+            this._lastDateFormattedFull = dateFormattedFull;
+        }
+    },
 
-        Mainloop.timeout_add_seconds(1, Lang.bind(this, this._updateClockAndDate));
-        return false;
+    _updateClockAndDatePeriodic: function() {
+        this._updateClockAndDate();
+        this._periodicTimeoutId = Mainloop.timeout_add_seconds(1, Lang.bind(this, this._updateClockAndDatePeriodic));
     },
     
+    on_applet_removed_from_panel: function() {
+        if (this._periodicTimeoutId){
+            Mainloop.source_remove(this._periodicTimeoutId);
+        }
+    },
+
     _initContextMenu: function () {
         if (this._calendarArea) this._calendarArea.unparent();
         if (this.menu) this.menuManager.removeMenu(this.menu);
