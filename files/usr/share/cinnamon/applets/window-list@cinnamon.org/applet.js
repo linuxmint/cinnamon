@@ -706,7 +706,7 @@ MyApplet.prototype = {
 
     _init: function(orientation, panel_height) {        
         Applet.Applet.prototype._init.call(this, orientation, panel_height);
-        
+        this.actor.set_track_hover(false);
         try {                    
             this.orientation = orientation;
             this.dragInProgress = false;
