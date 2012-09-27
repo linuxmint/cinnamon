@@ -354,9 +354,15 @@ AppMenuButton.prototype = {
     _onScrollEvent: function(actor, event) {
         let direction = event.get_scroll_direction();
         let current;
-        let num_windows = this.window_list.length;
+        let vis_windows = new Array();
+        for (let i = 0; i < this.window_list.length; i++) {
+            if (this.window_list[i].actor.visible) {
+                vis_windows.push(i);
+            }
+        }
+        let num_windows = vis_windows.length;
         for (let i = 0; i < num_windows; i++) {
-            if (this.window_list[i].metaWindow.has_focus()) {
+            if (this.window_list[vis_windows[i]].metaWindow.has_focus()) {
                 current = i;
                 break;
             }
@@ -368,7 +374,7 @@ AppMenuButton.prototype = {
         if (direction == 0) {
             target = ((current + 1) <= num_windows - 1) ? (current + 1) : 0;
         }
-        this.window_list[target].metaWindow.activate(global.get_current_time());
+        this.window_list[vis_windows[target]].metaWindow.activate(global.get_current_time());
     },
 
     _onDragBegin: function() {
