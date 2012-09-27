@@ -81,6 +81,14 @@
         Whether the panel icons and text from applets is resized according to the custom panel height
       </_description>
     </key>
+    
+    <key name="keyboard-applet-use-flags" type="b">
+      <default>true</default>
+      <_summary>Use flags to display the keyboard layouts</_summary>
+      <_description>
+        Whether to use flags to display the keyboard layouts.
+      </_description>
+    </key>
 
     <key name="desktop-effects" type="b">
       <default>true</default>

@@ -215,6 +215,10 @@ ExpoWorkspaceThumbnail.prototype = {
             this._origTitle = Main.getWorkspaceName(this.metaWorkspace.index());
         }));
         this.titleText.connect('key-focus-out', Lang.bind(this, function() {
+            if (this._doomed) {
+                // user probably deleted workspace while editing
+                return;
+            }
             if (!this._undoTitleEdit) {
                 let newName = this.title.get_text().trim();
                 if (newName != this._origTitle) {
@@ -463,8 +467,7 @@ ExpoWorkspaceThumbnail.prototype = {
 
     // Tests if @win belongs to this workspace and monitor
     _isMyWindow : function (win) {
-        return Main.isWindowActorDisplayedOnWorkspace(win, this.metaWorkspace.index()) &&
-            (!win.get_meta_window() || win.get_meta_window().get_monitor() == this.monitorIndex);
+        return Main.isWindowActorDisplayedOnWorkspace(win, this.metaWorkspace.index());
     },
 
     // Tests if @win should be shown in the Expo
@@ -1165,11 +1168,12 @@ ExpoThumbnailsBox.prototype = {
         let asGrid  = global.settings.get_boolean("workspace-expo-view-as-grid");
         let nColumns = asGrid ? Math.ceil(Math.sqrt(nWorkspaces)) : nWorkspaces;
         let nRows = Math.ceil(nWorkspaces/nColumns);
-        return this._porthole.height *  nWorkspaces < this._porthole.width ?
-            [1, nWorkspaces] :
-            this._porthole.height * 2 > this._porthole.width ?
-                    [nColumns, nRows] :
-                    [nRows, nColumns];
+        let ratio = Math.floor(this._porthole.width / this._porthole.height);
+        if (nWorkspaces <= ratio) {
+            return [1, nWorkspaces];
+        } else {
+            return [nColumns, nRows];
+        }
     },
 
     _getPreferredHeight: function(actor, forWidth, alloc) {

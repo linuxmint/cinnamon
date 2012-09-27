@@ -14,6 +14,9 @@ const MessageTray = imports.ui.messageTray;
 const ModemManager = imports.misc.modemManager;
 const Util = imports.misc.util;
 
+const DEFAULT_PERIODIC_UPDATE_FREQUENCY_SECONDS = 10;
+const FAST_PERIODIC_UPDATE_FREQUENCY_SECONDS = 2;
+
 const NMConnectionCategory = {
     INVALID: 'invalid',
     WIRED: 'wired',
@@ -1610,7 +1613,8 @@ MyApplet.prototype = {
             this.menu = new Applet.AppletPopupMenu(this, orientation);
             this.menuManager.addMenu(this.menu);            
             
-            this.set_applet_icon_symbolic_name('network-offline');
+            this._currentIconName = undefined;
+            this._setIcon('network-offline');
 
             this._client = NMClient.Client.new();
 
@@ -1710,18 +1714,25 @@ MyApplet.prototype = {
                     this._client.connect('notify::manager-running', Lang.bind(this, this._syncNMState));
                     this._client.connect('notify::networking-enabled', Lang.bind(this, this._syncNMState));
                     this._client.connect('notify::state', Lang.bind(this, this._syncNMState));
-                    //this._client.connect('notify::active-connections', Lang.bind(this, this._updateIcon));
+                    this._client.connect('notify::active-connections', Lang.bind(this, this._updateIcon));
                     this._client.connect('device-added', Lang.bind(this, this._deviceAdded));
                     this._client.connect('device-removed', Lang.bind(this, this._deviceRemoved));
                     this._settings.connect('new-connection', Lang.bind(this, this._newConnection));
                 }
             }));
             
-            this._updateIcon();
+            this._periodicUpdateIcon();
             
         }
         catch (e) {
             global.logError(e);
+        }
+    },
+    
+    _setIcon: function(name) {
+        if (this._currentIconName !== name) {
+            this.set_applet_icon_symbolic_name(name);
+            this._currentIconName = name;
         }
     },
     
@@ -1959,7 +1970,7 @@ MyApplet.prototype = {
             activeConnection._primaryDevice._notification = null;
         }
 
-        //this._updateIcon();
+        this._updateIcon();
     },
 
     _readConnections: function() {
@@ -1990,7 +2001,7 @@ MyApplet.prototype = {
         this._updateConnection(connection);
         this._connections.push(connection);
 
-        //this._updateIcon();
+        this._updateIcon();
     },
 
     _connectionRemoved: function(connection) {
@@ -2071,7 +2082,7 @@ MyApplet.prototype = {
             this.actor.show();
 
         if (!this._client.networking_enabled) {
-            this.set_applet_icon_symbolic_name('network-offline');
+            this._setIcon('network-offline');
             this._hideDevices();
             this._statusItem.label.text = _("Networking is disabled");
             this._statusSection.actor.show();
@@ -2079,43 +2090,43 @@ MyApplet.prototype = {
         }
 
         this._showNormal();
-        //this._updateIcon();
+        this._updateIcon();
     },
 
-    _updateIcon: function() {        
+    _updateIcon: function() {
         try {
-            this.set_applet_tooltip("");
-            
+            this._updateFrequencySeconds = DEFAULT_PERIODIC_UPDATE_FREQUENCY_SECONDS;
             this._syncActiveConnections();
             let mc = this._mainConnection;
             let hasApIcon = false;
             let hasMobileIcon = false;
 
             if (!mc) {
-                this.set_applet_icon_symbolic_name('network-offline');         
+                this._setIcon('network-offline');         
                 this.set_applet_tooltip(_("No connection"));   
             } else if (mc.state == NetworkManager.ActiveConnectionState.ACTIVATING) {
+                this._updateFrequencySeconds = FAST_PERIODIC_UPDATE_FREQUENCY_SECONDS;
                 switch (mc._section) {
                 case NMConnectionCategory.WWAN:
-                    this.set_applet_icon_symbolic_name('network-cellular-acquiring');
+                    this._setIcon('network-cellular-acquiring');
                     this.set_applet_tooltip(_("Connecting to the cellular network..."));
                     break;
                 case NMConnectionCategory.WIRELESS:
-                    this.set_applet_icon_symbolic_name('network-wireless-acquiring');
+                    this._setIcon('network-wireless-acquiring');
                     this.set_applet_tooltip(_("Connecting to the wireless network..."));
                     break;
                 case NMConnectionCategory.WIRED:
-                    this.set_applet_icon_symbolic_name('network-wired-acquiring');
+                    this._setIcon('network-wired-acquiring');
                     this.set_applet_tooltip(_("Connecting to the wired network..."));
                     break;
                 case NMConnectionCategory.VPN:
-                    this.set_applet_icon_symbolic_name('network-vpn-acquiring');
+                    this._setIcon('network-vpn-acquiring');
                     this.set_applet_tooltip(_("Connecting to the VPN..."));
                     break;
                 default:
                     // fallback to a generic connected icon
                     // (it could be a private connection of some other user)
-                    this.set_applet_icon_symbolic_name('network-wired-acquiring');
+                    this._setIcon('network-wired-acquiring');
                     this.set_applet_tooltip(_("Connecting to the network..."));
                 }
             } else {
@@ -2131,10 +2142,10 @@ MyApplet.prototype = {
                                 log('An active wireless connection, in infrastructure mode, involves no access point?');
                                 break;
                             }
-                            this.set_applet_icon_symbolic_name('network-wireless-connected');
+                            this._setIcon('network-wireless-connected');
                             this.set_applet_tooltip(_("Connected to the wireless network"));
                         } else {                          
-                            this.set_applet_icon_symbolic_name('network-wireless-signal-' + signalToIcon(ap.strength));                            
+                            this._setIcon('network-wireless-signal-' + signalToIcon(ap.strength));                            
                             this.set_applet_tooltip(_("Wireless connection") + ": " + ap.get_ssid() + " ("+ ap.strength +"%)");
                             hasApIcon = true;
                         }
@@ -2144,7 +2155,7 @@ MyApplet.prototype = {
                         break;
                     }
                 case NMConnectionCategory.WIRED:
-                    this.set_applet_icon_symbolic_name('network-wired');
+                    this._setIcon('network-wired');
                     this.set_applet_tooltip(_("Connected to the wired network"));
                     break;
                 case NMConnectionCategory.WWAN:
@@ -2155,35 +2166,45 @@ MyApplet.prototype = {
                     }
                     if (!dev.mobileDevice) {
                         // this can happen for bluetooth in PAN mode
-                        this.set_applet_icon_symbolic_name('network-cellular-connected');
+                        this._setIcon('network-cellular-connected');
                         this.set_applet_tooltip(_("Connected to the cellular network"));
                         break;
                     }
 
-                    this.set_applet_icon_symbolic_name('network-cellular-signal-' + signalToIcon(dev.mobileDevice.signal_quality));
+                    this._setIcon('network-cellular-signal-' + signalToIcon(dev.mobileDevice.signal_quality));
                     this.set_applet_tooltip(_("Connected to the cellular network"));
                     hasMobileIcon = true;
                     break;
                 case NMConnectionCategory.VPN:
-                    this.set_applet_icon_symbolic_name('network-vpn');
+                    this._setIcon('network-vpn');
                     this.set_applet_tooltip(_("Connected to the VPN"));
                     break;
                 default:
                     // fallback to a generic connected icon
                     // (it could be a private connection of some other user)
-                    this.set_applet_icon_symbolic_name('network-wired');
+                    this._setIcon('network-wired');
                     this.set_applet_tooltip(_("Connected to the network"));
                     break;
                 }
             }            
-            
-            Mainloop.timeout_add_seconds(1, Lang.bind(this, this._updateIcon));
         }
         catch (e) {
             global.logError(e);
         }                        
-    }
+    },
     
+    _periodicUpdateIcon: function() {
+        this._updateIcon();
+        this._updateFrequencySeconds = Math.max(2, this._updateFrequencySeconds);
+        this._periodicTimeoutId = Mainloop.timeout_add_seconds(this._updateFrequencySeconds, Lang.bind(this, this._periodicUpdateIcon));
+    },
+
+    on_applet_removed_from_panel: function() {
+        if (this._periodicTimeoutId){
+            Mainloop.source_remove(this._periodicTimeoutId);
+        }
+    },
+
 };
 
 function main(metadata, orientation, panel_height) {  

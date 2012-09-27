@@ -451,9 +451,11 @@ function updateAppletPanelHeights(force_recalc) {
             if (elements[0] == "panel2") {
                 panel = Main.panel2;
             }
-            let newheight = panel.actor.get_height();
-            if (appletObj[uuid]._panelHeight != newheight || force_recalc) {
-                appletObj[uuid].setPanelHeight(newheight);
+            if (appletObj[uuid]) {
+                let newheight = panel.actor.get_height();
+                if (appletObj[uuid]._panelHeight != newheight || force_recalc) {
+                    appletObj[uuid].setPanelHeight(newheight);
+                }
             }
         }
     }

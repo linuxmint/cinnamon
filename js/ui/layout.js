@@ -215,19 +215,23 @@ LayoutManager.prototype = {
         };
 
         let p1height = getPanelHeight(Main.panel);
-        this.panelBox.set_size(this.bottomMonitor.width, p1height);
 
         if (Main.desktop_layout == Main.LAYOUT_TRADITIONAL) {
+            this.panelBox.set_size(this.bottomMonitor.width, p1height);
             this.panelBox.set_position(this.bottomMonitor.x, this.bottomMonitor.y + this.bottomMonitor.height - p1height);
         }
         else if (Main.desktop_layout == Main.LAYOUT_FLIPPED) {
+            this.panelBox.set_size(this.primaryMonitor.width, p1height);
             this.panelBox.set_position(this.primaryMonitor.x, this.primaryMonitor.y);
         }
         else if (Main.desktop_layout == Main.LAYOUT_CLASSIC) {
             let p2height = getPanelHeight(Main.panel2);
+
+            this.panelBox.set_size(this.primaryMonitor.width, p1height);
             this.panelBox.set_position(this.primaryMonitor.x, this.primaryMonitor.y);
-            this.panelBox2.set_position(this.bottomMonitor.x, this.bottomMonitor.y + this.bottomMonitor.height - p2height);
+
             this.panelBox2.set_size(this.bottomMonitor.width, p2height);
+            this.panelBox2.set_position(this.bottomMonitor.x, this.bottomMonitor.y + this.bottomMonitor.height - p2height);
         }
 
         this.keyboardBox.set_position(this.bottomMonitor.x,
@@ -294,10 +298,10 @@ LayoutManager.prototype = {
             else {
                 let primary = this.primaryMonitor;
                 leftPanelBarrier = global.create_pointer_barrier(primary.x, primary.y,
-                                                                 -primary.x, primary.y + panelBox.height,
+                                                                 primary.x, primary.y + panelBox.height,
                                                                  1 /* BarrierPositiveX */);
                 rightPanelBarrier = global.create_pointer_barrier(primary.x + primary.width, primary.y,
-                                                                  -primary.x + primary.width, primary.y + panelBox.height,
+                                                                  primary.x + primary.width, primary.y + panelBox.height,
                                                                   4 /* BarrierNegativeX */);
             }
         } else {
@@ -962,18 +966,18 @@ Chrome.prototype = {
 
         for (let i = windows.length - 1; i > -1; i--) {
             let window = windows[i];
-            let layer = window.get_meta_window().get_layer();
+            let metaWindow = window.get_meta_window();
 
             // Skip minimized windows
             if (!window.showing_on_its_workspace())
                 continue;
 
-            if (layer == Meta.StackLayer.FULLSCREEN) {
+            if (metaWindow.is_fullscreen()) {
                 let monitor = this._findMonitorForWindow(window);
                 if (monitor)
                     monitor.inFullscreen = true;
             }
-            if (layer == Meta.StackLayer.OVERRIDE_REDIRECT) {
+            if (metaWindow.is_override_redirect()) {
                 // Check whether the window is screen sized
                 let isScreenSized =
                     (window.x == 0 && window.y == 0 &&

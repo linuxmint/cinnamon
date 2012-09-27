@@ -97,12 +97,12 @@ ViewSelector.prototype = {
         // The tab bar is located at the top of the view selector and
         // holds "normal" tab labels.
         this._tabBar = new Cinnamon.GenericContainer();
-        this._tabBar.connect('get-preferred-width',
+  /*      this._tabBar.connect('get-preferred-width',
                              Lang.bind(this, this._getPreferredTabBarWidth));
         this._tabBar.connect('get-preferred-height',
                              Lang.bind(this, this._getPreferredTabBarHeight));
         this._tabBar.connect('allocate',
-                             Lang.bind(this, this._allocateTabBar));
+                             Lang.bind(this, this._allocateTabBar));*/
         this.actor.add(this._tabBar);
 
         // Box to hold "normal" tab labels

@@ -3,7 +3,7 @@ const Gkbd = imports.gi.Gkbd;
 const Lang = imports.lang;
 const Cinnamon = imports.gi.Cinnamon;
 const St = imports.gi.St;
-
+const Gtk = imports.gi.Gtk;
 const Main = imports.ui.main;
 const PopupMenu = imports.ui.popupMenu;
 const Util = imports.misc.util;
@@ -32,32 +32,32 @@ LayoutMenuItem.prototype = {
     }
 };
 
-function MyApplet(orientation, panel_height) {
-    this._init(orientation, panel_height);
+function MyApplet(metadata, orientation, panel_height) {
+    this._init(metadata, orientation, panel_height);
 }
 
 MyApplet.prototype = {
     __proto__: Applet.TextIconApplet.prototype,
 
-    _init: function(orientation, panel_height) {        
+    _init: function(metadata, orientation, panel_height) {        
         Applet.TextIconApplet.prototype._init.call(this, orientation, panel_height);
         
-        try {                                
+        try {  
+            Gtk.IconTheme.get_default().append_search_path(metadata.path + "/flags");                              
             this.menuManager = new PopupMenu.PopupMenuManager(this);
             this.menu = new Applet.AppletPopupMenu(this, orientation);
             this.menuManager.addMenu(this.menu);                            
 
-            this.actor.add_style_class_name('panel-status-button');
-
-            this.set_applet_icon_name('keyboard');
+            this.actor.add_style_class_name('panel-status-button');            
 
             this._labelActors = [ ];
             this._layoutItems = [ ];
 
-            this._showFlags = false;
+            this._showFlags = global.settings.get_boolean("keyboard-applet-use-flags");
             this._config = Gkbd.Configuration.get();
             this._config.connect('changed', Lang.bind(this, this._syncConfig));
             this._config.connect('group-changed', Lang.bind(this, this._syncGroup));
+            global.settings.connect('changed::keyboard-applet-use-flags', Lang.bind(this, this._reload_settings));
             this._config.start_listen();
 
             this._syncConfig();
@@ -72,6 +72,10 @@ MyApplet.prototype = {
                 Util.spawn(['gucharmap']);
             }));
             this.menu.addSettingsAction(_("Region and Language Settings"), 'gnome-region-panel.desktop'); 
+            
+            this.show_flags_switch = new PopupMenu.PopupSwitchMenuItem(_("Show flags"), this._showFlags);
+            this._applet_context_menu.addMenuItem(this.show_flags_switch);            
+            this.show_flags_switch.connect('toggled', Lang.bind(this, this._toggle_flags));
                       
         }
         catch (e) {
@@ -81,6 +85,21 @@ MyApplet.prototype = {
     
     on_applet_clicked: function(event) {
         this.menu.toggle();        
+    },
+    
+    _toggle_flags: function() {
+        if (this._showFlags) {            
+            this.show_flags_switch.setToggleState(false);
+            global.settings.set_boolean("keyboard-applet-use-flags", false);
+        } else {
+            this.show_flags_switch.setToggleState(true);
+            global.settings.set_boolean("keyboard-applet-use-flags", true);
+        }
+    },
+    
+    _reload_settings: function() {
+        this._showFlags = global.settings.get_boolean("keyboard-applet-use-flags");
+        this._syncConfig();
     },
     
    _adjustGroupNames: function(names) {
@@ -106,7 +125,7 @@ MyApplet.prototype = {
     },
 
     _syncConfig: function() {
-        this._showFlags = this._config.if_flags_shown();
+        this._showFlags = global.settings.get_boolean("keyboard-applet-use-flags");
 
         let groups = this._config.get_group_names();
         if (groups.length > 1) {
@@ -131,7 +150,7 @@ MyApplet.prototype = {
             let icon_name = this._config.get_group_name(i);
             let actor;
             if (this._showFlags)
-                actor = new St.Icon({ icon_name: icon_name, icon_type: St.IconType.SYMBOLIC, style_class: 'popup-menu-icon' });
+                actor = new St.Icon({ icon_name: icon_name, icon_type: St.IconType.FULLCOLOR, style_class: 'popup-menu-icon' });
             else
                 actor = new St.Label({ text: short_names[i] });
             let item = new LayoutMenuItem(this._config, i, actor, groups[i]);
@@ -161,7 +180,7 @@ MyApplet.prototype = {
         let selectedLabel = this._labelActors[selected];
 
         if (this._showFlags) {
-            this.set_applet_icon_symbolic_name(item._icon_name);
+            this.set_applet_icon_name(item._icon_name);
             this.set_applet_label("");
         } else {
             this.hide_applet_icon();
@@ -173,6 +192,6 @@ MyApplet.prototype = {
 };
 
 function main(metadata, orientation, panel_height) {  
-    let myApplet = new MyApplet(orientation, panel_height);
+    let myApplet = new MyApplet(metadata, orientation, panel_height);
     return myApplet;      
 }
