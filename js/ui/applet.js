@@ -282,8 +282,8 @@ IconApplet.prototype = {
         this.__icon_name = icon_name;
     },
 
-    set_applet_icon_symbolic_name: function (icon_name) {
-        if (this.__icon_name === icon_name) {
+    set_applet_icon_symbolic_name: function (icon_name, forceUpdate) {
+        if (!forceUpdate && this.__icon_name === icon_name) {
             return;
         }
 
@@ -325,7 +325,7 @@ IconApplet.prototype = {
                 this.set_applet_icon_name(this.__icon_name);
                 break;
             case St.IconType.SYMBOLIC:
-                this.set_applet_icon_symbolic_name(this.__icon_name);
+                this.set_applet_icon_symbolic_name(this.__icon_name, true);
                 break;
             case -1:
                 this.set_applet_icon_path(this.__icon_name);
