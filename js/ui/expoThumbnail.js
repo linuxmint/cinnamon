@@ -20,7 +20,7 @@ const SLIDE_ANIMATION_TIME = 0.3;
 const INACTIVE_OPACITY = 120;
 const REARRANGE_TIME = 0.3;
 const ICON_OPACITY = 192;
-const ICON_SIZE = 128;
+const ICON_SIZE = 96;
 
 function ExpoWindowClone(realWindow) {
     this._init(realWindow);
