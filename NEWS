@@ -11,6 +11,7 @@
  - Added songbird support to sound applet
  - Fixed: Scrolling in window list applet brings all windows to the active workspace
  - Fixed: panels visible in firefox fullscreen mode x-shockwave-flash video
+ - Fixed: two issues with dnd and themes using different background for hovering
 
 Muffin 1.1.1
 ------------
