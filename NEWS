@@ -4,10 +4,13 @@
  - Fixed: Administration category missing in menu
  - Fixed: Blur in Alt-Tab preview
  - Fixed: Network Manager applet consumes a lot of CPU
+ - Fixed: Calendar applet consumes a lot of CPU
  - Updated translations
  - Flags in keyboard applet
  - Fixed: Removing workspace while editing its name results in crash
  - Added songbird support to sound applet
+ - Fixed: Scrolling in window list applet brings all windows to the active workspace
+ - Fixed: panels visible in firefox fullscreen mode x-shockwave-flash video
 
 Muffin 1.1.1
 ------------
