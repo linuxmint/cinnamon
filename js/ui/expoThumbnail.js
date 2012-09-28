@@ -243,7 +243,6 @@ ExpoWorkspaceThumbnail.prototype = {
 
         this.shade.opacity = INACTIVE_OPACITY;
 
-        this._pendingOverviewModeTimeoutId = null;
         this.removed = false;
 
         if (metaWorkspace == global.screen.get_active_workspace())
@@ -451,9 +450,6 @@ ExpoWorkspaceThumbnail.prototype = {
     },
 
     _onDestroy: function(actor) {
-        if (this._pendingOverviewModeTimeoutId) {
-            Mainloop.source_remove(this._pendingOverviewModeTimeoutId);
-        }
         this.metaWorkspace.disconnect(this._windowAddedId);
         this.metaWorkspace.disconnect(this._windowRemovedId);
         global.screen.disconnect(this._windowEnteredMonitorId);
@@ -512,21 +508,6 @@ ExpoWorkspaceThumbnail.prototype = {
     },
 
     _overviewModeOn : function () {
-        if (this._pendingOverviewModeTimeoutId) {
-            return;
-        }
-        // The idea is to delay the call to the real _overviewModeOn somewhat,
-        // since this is often called at a busy moment when many things are happening.
-        // If called too soon after a drag-and-drop, the window stacking order may
-        // not have settled, just to mention one reason.
-        // There may also be many calls after another that could be coalesced into one.
-        this._pendingOverviewModeTimeoutId = Mainloop.timeout_add(
-            100,
-            Lang.bind(this, this._overviewModeOn__));
-    },
-
-    _overviewModeOn__ : function () {
-        this._pendingOverviewModeTimeoutId = null;
         this._overviewMode = true;
         let spacing = 14;
         let nCols = Math.ceil(Math.sqrt(this._windows.length));
@@ -599,7 +580,6 @@ ExpoWorkspaceThumbnail.prototype = {
                 // and place the icon at the bottom.
                 window.icon.x = iconX;
                 window.icon.y = this.actor.height - window.icon.height;
-                let rect = window.metaWindow.get_outer_rect();
                 Tweener.addTween(window.actor, {
                     x: window.icon.x,
                     y: window.icon.y,
