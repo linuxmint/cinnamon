@@ -29,8 +29,6 @@ AppMenuButtonRightClickMenu.prototype = {
         //take care of menu initialization        
         PopupMenu.PopupMenu.prototype._init.call(this, actor, 0.0, orientation, 0);        
         Main.uiGroup.add_actor(this.actor);
-        //Main.chrome.addActor(this.actor, { visibleInOverview: true,
-        //                                   affectsStruts: false });
         this.actor.hide();
         this.window_list = actor._delegate._applet._windows;
         actor.connect('key-press-event', Lang.bind(this, this._onSourceKeyPress));        
@@ -227,10 +225,10 @@ AppMenuButton.prototype = {
 								  y_fill: false,
 								  track_hover: true });
 								  
-	if (orientation == St.Side.TOP) 
-		this.actor.add_style_class_name('window-list-item-box-top');
-	else
-		this.actor.add_style_class_name('window-list-item-box-bottom');
+        if (orientation == St.Side.TOP) 
+	        this.actor.add_style_class_name('window-list-item-box-top');
+        else
+	        this.actor.add_style_class_name('window-list-item-box-bottom');
       
         this.actor._delegate = this;
         this.actor.connect('button-release-event', Lang.bind(this, this._onButtonRelease));
@@ -261,12 +259,7 @@ AppMenuButton.prototype = {
         this._container.add_actor(this._label);
 
         this._iconBottomClip = 0;
-		if (!Main.overview.visible || !Main.expo.visible)
-        	this._visible = true;
-		else
-			this._visible = false;
-        if (!this._visible)
-            this.actor.hide();
+    	this._visible = true;
 
         this.actor.connect('destroy', Lang.bind(this, this._onDestroy));
         
