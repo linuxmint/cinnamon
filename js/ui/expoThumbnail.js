@@ -232,6 +232,7 @@ ExpoWorkspaceThumbnail.prototype = {
         
         this._background = Meta.BackgroundActor.new_for_screen(global.screen);
         this._contents.add_actor(this._background);
+        this._background.dim_factor = 0.4;
 
         let porthole = Main.layoutManager.getPorthole();
         this.setPorthole(porthole);
