@@ -62,6 +62,7 @@ KEYBINDINGS = [
     [_("Cycle through open windows"), "org.gnome.desktop.wm.keybindings", "switch-windows", True, "cinnamon"],
     [_("Cycle backwards though open windows"), "org.gnome.desktop.wm.keybindings", "switch-windows-backward", True, "cinnamon"],
     [_("Run dialog (must restart Cinnamon)"), "org.gnome.desktop.wm.keybindings", "panel-run-dialog", True, "cinnamon"],
+    [_("Menu button (must restart Cinnamon)"), "org.cinnamon.muffin", "overlay-key", False, "cinnamon"],
 
     # Windows - General
     [_("Maximize window"), "org.gnome.desktop.wm.keybindings", "maximize", True, "windows"],
@@ -1574,7 +1575,7 @@ class KeyboardSidePage (SidePage):
         entry_cell.connect('accel-edited', self.onEntryChanged, self.entry_store)
         entry_cell.connect('accel-cleared', self.onEntryCleared, self.entry_store)
         entry_cell.set_property('editable', True)
-        entry_cell.set_property('accel-mode', Gtk.CellRendererAccelMode.OTHER)
+        entry_cell.set_property('accel-mode', Gtk.CellRendererAccelMode.MODIFIER_TAP)
         entry_column = Gtk.TreeViewColumn(_("Bindings"), entry_cell, text=0)
         entry_column.set_alignment(.5)
         self.entry_tree.append_column(entry_column)
@@ -1663,6 +1664,7 @@ class KeyboardSidePage (SidePage):
 
     def onEntryChanged(self, cell, path, keyval, mask, keycode, entry_store):
         accel_string = Gtk.accelerator_name(keyval, mask)
+        accel_string = accel_string.replace("<Mod2>", "")
         iter = entry_store.get_iter(path)
         keybindings, kb_iter = self.kb_tree.get_selection().get_selected()
         if kb_iter:
