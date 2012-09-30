@@ -1826,14 +1826,14 @@ class KeyboardSidePage (SidePage):
             popup_reset_item = Gtk.MenuItem(_("Reset to default"))
             popup_reset_item.show()
             popup.append(popup_reset_item)
-            popup_reset_item.connect('activate', self.onResetToDefault, keybinding, path)
+            popup_reset_item.connect('activate', self.onResetToDefault, keybinding)
             popup.popup(None, None,
                         lambda popup, data: (event.get_root_coords()[0],
                                              event.get_root_coords()[1], True),
                         None, button, event_time)
             return True
 
-    def onResetToDefault(self, popup, keybinding, path):
+    def onResetToDefault(self, popup, keybinding):
         keybinding.resetDefaults()
         self.onKeyBindingChanged(self.kb_tree)
 
