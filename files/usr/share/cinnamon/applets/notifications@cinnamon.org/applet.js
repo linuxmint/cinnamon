@@ -24,56 +24,51 @@ MyApplet.prototype = {
     _init: function(metadata, orientation, panel_height) {
         Applet.TextIconApplet.prototype._init.call(this, orientation, panel_height);
 
-        try {
-            Gtk.IconTheme.get_default().append_search_path(metadata.path);
-            this._orientation = orientation;
-            this.menuManager = new PopupMenu.PopupMenuManager(this);
-            this.set_applet_icon_symbolic_name("empty-notif");
-            this.set_applet_tooltip(_("Notifications"));
-            this.notif_count = 0;
-            this.notifications = [];
-            this._initContextMenu();
-            this._maincontainer = new St.BoxLayout({name: 'traycontainer', vertical: true});
-            this._notificationbin = new St.BoxLayout({vertical:true});
-            this.button_label_box = new St.BoxLayout();
+        Gtk.IconTheme.get_default().append_search_path(metadata.path);
+        this._orientation = orientation;
+        this.menuManager = new PopupMenu.PopupMenuManager(this);
+        this.set_applet_icon_symbolic_name("empty-notif");
+        this.set_applet_tooltip(_("Notifications"));
+        this.notif_count = 0;
+        this.notifications = [];
+        this._initContextMenu();
+        this._maincontainer = new St.BoxLayout({name: 'traycontainer', vertical: true});
+        this._notificationbin = new St.BoxLayout({vertical:true});
+        this.button_label_box = new St.BoxLayout();
             
-            this.menu_text = stringify(this.notif_count);            
-            this.menu_label = new PopupMenu.PopupMenuItem(this.menu_text);
-            this.menu_label.actor.reactive = false;
-			this.menu_label.actor.can_focus = false;
-            this.menu_label.label.add_style_class_name('popup-subtitle-menu-item');
-            this.menu.addMenuItem(this.menu_label);
-            
-            this.menu.addActor(this._maincontainer);
-            
-            this.clear_separator = new PopupMenu.PopupSeparatorMenuItem();            
-            this.menu.addMenuItem(this.clear_separator);
-            
-            this.clear_action = new PopupMenu.PopupMenuItem(_("Clear notifications"));
-            this.menu.addMenuItem(this.clear_action);
-            this.clear_action.connect('activate', Lang.bind(this, this._clear_all));
-            this.clear_action.actor.hide();
-            this.scrollview = new St.ScrollView({ x_fill: true, y_fill: true, y_align: St.Align.START});
-            
-            this._maincontainer.add(this.scrollview);
-            this.scrollview.add_actor(this._notificationbin);
-            this.scrollview.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC);
-            MT.connect('notify-applet-update', Lang.bind(this, this._notification_added));
-            global.settings.connect('changed::panel-edit-mode', Lang.bind(this, this.on_panel_edit_mode_changed));            
-            
-            this._calendarSettings = new Gio.Settings({ schema: 'org.cinnamon.calendar' });
-            this._calendarSettings.connect('changed', Lang.bind(this, this._update_timestamp));
-
-            this._crit_icon = new St.Icon({icon_name: 'critical-notif', icon_type: St.IconType.SYMBOLIC, reactive: true, track_hover: true, style_class: 'system-status-icon' });
-            this._alt_crit_icon = new St.Icon({icon_name: 'alt-critical-notif', icon_type: St.IconType.SYMBOLIC, reactive: true, track_hover: true, style_class: 'system-status-icon' });
-            this._blinking = false;
-            this._blink_toggle = false;
-        }
-        catch (e) {
-            global.logError(e);
-        }
+        this.menu_text = stringify(this.notif_count);            
+        this.menu_label = new PopupMenu.PopupMenuItem(this.menu_text);
+        this.menu_label.actor.reactive = false;
+	this.menu_label.actor.can_focus = false;
+        this.menu_label.label.add_style_class_name('popup-subtitle-menu-item');
+        this.menu.addMenuItem(this.menu_label);
+        
+        this.menu.addActor(this._maincontainer);
+        
+        this.clear_separator = new PopupMenu.PopupSeparatorMenuItem();            
+        this.menu.addMenuItem(this.clear_separator);
+        
+        this.clear_action = new PopupMenu.PopupMenuItem(_("Clear notifications"));
+        this.menu.addMenuItem(this.clear_action);
+        this.clear_action.connect('activate', Lang.bind(this, this._clear_all));
+        this.clear_action.actor.hide();
+        this.scrollview = new St.ScrollView({ x_fill: true, y_fill: true, y_align: St.Align.START});
+        
+        this._maincontainer.add(this.scrollview);
+        this.scrollview.add_actor(this._notificationbin);
+        this.scrollview.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC);
+        MT.connect('notify-applet-update', Lang.bind(this, this._notification_added));
+        global.settings.connect('changed::panel-edit-mode', Lang.bind(this, this.on_panel_edit_mode_changed));            
+        
+        this._calendarSettings = new Gio.Settings({ schema: 'org.cinnamon.calendar' });
+        this._calendarSettings.connect('changed', Lang.bind(this, this._update_timestamp));
+	
+        this._crit_icon = new St.Icon({icon_name: 'critical-notif', icon_type: St.IconType.SYMBOLIC, reactive: true, track_hover: true, style_class: 'system-status-icon' });
+        this._alt_crit_icon = new St.Icon({icon_name: 'alt-critical-notif', icon_type: St.IconType.SYMBOLIC, reactive: true, track_hover: true, style_class: 'system-status-icon' });
+        this._blinking = false;
+        this._blink_toggle = false;
     },
-
+    
     _notification_added: function (mtray, notification) {
         notification.actor.unparent();
         let existing_index = this.notifications.indexOf(notification);
@@ -88,7 +83,7 @@ MyApplet.prototype = {
         notification._inNotificationBin = true;
         this.notifications.push(notification);
         notification.expand();
-        this._notificationbin.add(notification.actor)
+        this._notificationbin.add(notification.actor);
         notification.actor._parent_container = this._notificationbin;
         notification.actor.add_style_class_name('notification-applet-padding');
         notification.connect('clicked', Lang.bind(this, this._item_clicked));

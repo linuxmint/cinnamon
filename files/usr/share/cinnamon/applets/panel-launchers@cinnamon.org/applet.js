@@ -280,27 +280,22 @@ MyApplet.prototype = {
     _init: function(orientation, panel_height) {
         Applet.Applet.prototype._init.call(this, orientation, panel_height);
 
-        try {
-            this.orientation = orientation;
-            this._dragPlaceholder = null;
-            this._dragPlaceholderPos = -1;
-            this._animatingPlaceholdersCount = 0;
+        this.orientation = orientation;
+        this._dragPlaceholder = null;
+        this._dragPlaceholderPos = -1;
+        this._animatingPlaceholdersCount = 0;
 
-            this.myactor = new St.BoxLayout({ name: 'panel-launchers-box',
-                                              style_class: 'panel-launchers-box' });
-            global.settings.connect('changed::' + PANEL_LAUNCHERS_KEY, Lang.bind(this, this._onSettingsChanged));
+        this.myactor = new St.BoxLayout({ name: 'panel-launchers-box',
+                                          style_class: 'panel-launchers-box' });
+        global.settings.connect('changed::' + PANEL_LAUNCHERS_KEY, Lang.bind(this, this._onSettingsChanged));
 
-            this._launchers = new Array();
+        this._launchers = new Array();
 
-            this.reload();
+        this.reload();
 
-            this.actor.add(this.myactor);
-            this.actor.reactive = global.settings.get_boolean(PANEL_EDIT_MODE_KEY);
-            global.settings.connect('changed::' + PANEL_EDIT_MODE_KEY, Lang.bind(this, this._onPanelEditModeChanged));
-        }
-        catch (e) {
-            global.logError(e);
-        }
+        this.actor.add(this.myactor);
+        this.actor.reactive = global.settings.get_boolean(PANEL_EDIT_MODE_KEY);
+        global.settings.connect('changed::' + PANEL_EDIT_MODE_KEY, Lang.bind(this, this._onPanelEditModeChanged));
     },
 
     _onPanelEditModeChanged: function() {
@@ -421,9 +416,9 @@ MyApplet.prototype = {
                     this._dragPlaceholder.animateOutAndDestroy();
                     this._animatingPlaceholdersCount++;
                     this._dragPlaceholder.actor.connect('destroy',
-							Lang.bind(this, function() {
-							    this._animatingPlaceholdersCount--;
-							}));
+                                                        Lang.bind(this, function() {
+                                                            this._animatingPlaceholdersCount--;
+                                                        }));
                 }
                 this._dragPlaceholder = null;
 

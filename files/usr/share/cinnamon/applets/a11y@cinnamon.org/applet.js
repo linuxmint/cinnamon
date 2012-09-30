@@ -36,66 +36,57 @@ function MyApplet(orientation, panel_height) {
 MyApplet.prototype = {
     __proto__: Applet.IconApplet.prototype,
 
-    _init: function(orientation, panel_height) {        
+    _init: function(orientation, panel_height) {
         Applet.IconApplet.prototype._init.call(this, orientation, panel_height);
-        
-        try {        
-            this.set_applet_icon_symbolic_name("preferences-desktop-accessibility");
-            this.set_applet_tooltip(_("Accessibility"));
-            
-            this.menuManager = new PopupMenu.PopupMenuManager(this);
-            this.menu = new Applet.AppletPopupMenu(this, orientation);
-            this.menuManager.addMenu(this.menu);            
-                                
-            let client = GConf.Client.get_default();
-            client.add_dir(KEY_META_DIR, GConf.ClientPreloadType.PRELOAD_ONELEVEL, null);
-            client.notify_add(KEY_META_DIR, Lang.bind(this, this._keyChanged), null, null);
 
-            let highContrast = this._buildHCItem();
-            this.menu.addMenuItem(highContrast);
+        this.set_applet_icon_symbolic_name("preferences-desktop-accessibility");
+        this.set_applet_tooltip(_("Accessibility"));
 
-            let magnifier = this._buildItem(_("Zoom"), APPLICATIONS_SCHEMA,
-                                                       'screen-magnifier-enabled');
-            this.menu.addMenuItem(magnifier);
+        this.menuManager = new PopupMenu.PopupMenuManager(this);
+        this.menu = new Applet.AppletPopupMenu(this, orientation);
+        this.menuManager.addMenu(this.menu);
 
-            let textZoom = this._buildFontItem();
-            this.menu.addMenuItem(textZoom);
+        let client = GConf.Client.get_default();
+        client.add_dir(KEY_META_DIR, GConf.ClientPreloadType.PRELOAD_ONELEVEL, null);
+        client.notify_add(KEY_META_DIR, Lang.bind(this, this._keyChanged), null, null);
 
-    //        let screenReader = this._buildItem(_("Screen Reader"), APPLICATIONS_SCHEMA,
-    //                                                               'screen-reader-enabled');
-    //        this.menu.addMenuItem(screenReader);
+        let highContrast = this._buildHCItem();
+        this.menu.addMenuItem(highContrast);
 
-            let screenKeyboard = this._buildItem(_("Screen Keyboard"), APPLICATIONS_SCHEMA,
+        let magnifier = this._buildItem(_("Zoom"), APPLICATIONS_SCHEMA,
+                                        'screen-magnifier-enabled');
+        this.menu.addMenuItem(magnifier);
+
+        let textZoom = this._buildFontItem();
+        this.menu.addMenuItem(textZoom);
+
+        let screenKeyboard = this._buildItem(_("Screen Keyboard"), APPLICATIONS_SCHEMA,
                                                                        'screen-keyboard-enabled');
-            this.menu.addMenuItem(screenKeyboard);
+        this.menu.addMenuItem(screenKeyboard);
 
-            let visualBell = this._buildItemGConf(_("Visual Alerts"), client, KEY_VISUAL_BELL);
-            this.menu.addMenuItem(visualBell);
+        let visualBell = this._buildItemGConf(_("Visual Alerts"), client, KEY_VISUAL_BELL);
+        this.menu.addMenuItem(visualBell);
 
-            let stickyKeys = this._buildItem(_("Sticky Keys"), A11Y_SCHEMA, KEY_STICKY_KEYS_ENABLED);
-            this.menu.addMenuItem(stickyKeys);
+        let stickyKeys = this._buildItem(_("Sticky Keys"), A11Y_SCHEMA, KEY_STICKY_KEYS_ENABLED);
+        this.menu.addMenuItem(stickyKeys);
 
-            let slowKeys = this._buildItem(_("Slow Keys"), A11Y_SCHEMA, KEY_SLOW_KEYS_ENABLED);
-            this.menu.addMenuItem(slowKeys);
+        let slowKeys = this._buildItem(_("Slow Keys"), A11Y_SCHEMA, KEY_SLOW_KEYS_ENABLED);
+        this.menu.addMenuItem(slowKeys);
 
-            let bounceKeys = this._buildItem(_("Bounce Keys"), A11Y_SCHEMA, KEY_BOUNCE_KEYS_ENABLED);
-            this.menu.addMenuItem(bounceKeys);
+        let bounceKeys = this._buildItem(_("Bounce Keys"), A11Y_SCHEMA, KEY_BOUNCE_KEYS_ENABLED);
+        this.menu.addMenuItem(bounceKeys);
 
-            let mouseKeys = this._buildItem(_("Mouse Keys"), A11Y_SCHEMA, KEY_MOUSE_KEYS_ENABLED);
-            this.menu.addMenuItem(mouseKeys);
+        let mouseKeys = this._buildItem(_("Mouse Keys"), A11Y_SCHEMA, KEY_MOUSE_KEYS_ENABLED);
+        this.menu.addMenuItem(mouseKeys);
 
-            this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-            this.menu.addSettingsAction(_("Universal Access Settings"), 'gnome-universal-access-panel.desktop');
-        }
-        catch (e) {
-            global.logError(e);
-        }
+        this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+        this.menu.addSettingsAction(_("Universal Access Settings"), 'gnome-universal-access-panel.desktop');
     },
-    
+
     on_applet_clicked: function(event) {
-        this.menu.toggle();        
+        this.menu.toggle();
     },
-    
+
      _buildItemExtended: function(string, initial_value, writable, on_set) {
         let widget = new PopupMenu.PopupSwitchMenuItem(string, initial_value);
         if (!writable)
@@ -201,10 +192,10 @@ MyApplet.prototype = {
     _keyChanged: function() {
         this.emit('gconf-changed');
     }
-    
+
 };
 
-function main(metadata, orientation, panel_height) {  
+function main(metadata, orientation, panel_height) {
     let myApplet = new MyApplet(orientation, panel_height);
-    return myApplet;      
+    return myApplet;
 }
