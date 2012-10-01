@@ -38,6 +38,7 @@ class Module:
         sidePage.add_widget(GSettingsCheckButton(_("Enforce displaying the alt-tab switcher on the primary monitor instead of the active one"), "org.cinnamon", "alttab-switcher-enforce-primary-monitor", None))
         sidePage.add_widget(GSettingsCheckButton(_("Enable mouse-wheel scrolling in Window List applet"), "org.cinnamon", "window-list-applet-scroll", None))
         sidePage.add_widget(GSettingsCheckButton(_("Bring windows which require attention to the current workspace (instead of switching to the window's workspace)"), "org.cinnamon", "bring-windows-to-current-workspace", None))
+        sidePage.add_widget(GSettingsCheckButton(_("Enable highlighting and pulsing icon for items in Window List applet that want attention"), "org.cinnamon", "window-list-applet-alert", None))
 
 
 
