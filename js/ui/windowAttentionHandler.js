@@ -12,8 +12,8 @@ function WindowAttentionHandler() {
 
 WindowAttentionHandler.prototype = {
     _init : function() {
-        this._tracker = Cinnamon.WindowTracker.get_default();
-        global.display.connect('window-demands-attention', Lang.bind(this, this._onWindowDemandsAttention));
+       // this._tracker = Cinnamon.WindowTracker.get_default();
+       // global.display.connect('window-demands-attention', Lang.bind(this, this._onWindowDemandsAttention));
     },
 
     _onWindowDemandsAttention : function(display, window) {
