@@ -10,6 +10,7 @@ const PopupMenu = imports.ui.popupMenu;
 const Meta = imports.gi.Meta;
 const Tooltips = imports.ui.tooltips;
 const DND = imports.ui.dnd;
+const Mainloop = imports.mainloop
 
 const PANEL_ICON_SIZE = 24; // this is for the spinner when loading
 const DEFAULT_ICON_SIZE = 16; // too bad this can't be defined in theme (cinnamon-app.create_icon_texture returns a clutter actor, not a themable object -
@@ -616,37 +617,20 @@ AppMenuButton.prototype = {
 
     getAttention: function() {
         this._needsAttention = true;
-        let allocation = this._iconBox.get_allocation_box();
-        this._iconBox.width = allocation.x2 - allocation.x1;
-        this._iconBox.height = allocation.y2 - allocation.y1;
-        this._pulseButton();
+        this._flashButton();
     },
 
-    _pulseButton: function(step){
+    _flashButton: function() {
         if (!this._needsAttention) {
             return;
         }
-        let orig_width = this._iconBox.child.width;
-        let orig_height = this._iconBox.child.height;
-        Tweener.addTween(this._iconBox.child,
-                         { width: this._iconBox.child.width * .7,
-                           height: this._iconBox.child.height * .7,
-                           time: 0.2,
-                           transition: 'easeOutQuad',
-                           onComplete: function(){
-                               Tweener.addTween(this._iconBox.child,
-                                                 { width: orig_width,
-                                                   height: orig_height,
-                                                   time: 0.2,
-                                                   transition: 'easeOutQuad',
-                                                   onComplete: function(){
-                                                       this._pulseButton();
-                                                   },
-                                                   onCompleteScope: this
-                                                 });
-                           },
-                           onCompleteScope: this
-                         });
+        this.actor.add_style_class_name("window-list-item-demands-attention");
+        Mainloop.timeout_add(400, Lang.bind(this, function () {
+            if (this.actor.has_style_class_name("window-list-item-demands-attention")) {
+                this.actor.remove_style_class_name("window-list-item-demands-attention");
+            }
+            Mainloop.timeout_add(400, Lang.bind(this, this._flashButton));
+        }));
     }
 };
 
@@ -845,8 +829,7 @@ MyApplet.prototype = {
            
     _onWindowDemandsAttention : function(display, window) {
         for ( let i=0; i<this._windows.length; ++i ) {
-            if ( this._windows[i].metaWindow == window ) {                
-                this._windows[i].actor.add_style_class_name("window-list-item-demands-attention");
+            if ( this._windows[i].metaWindow == window ) {
                 this._windows[i].actor._delegate.getAttention();
                 this._windows[i].actor.show();
             }
