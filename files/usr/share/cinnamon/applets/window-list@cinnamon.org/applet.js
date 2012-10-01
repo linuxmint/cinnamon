@@ -335,6 +335,7 @@ AppMenuButton.prototype = {
         this.window_list = this.actor._delegate._applet._windows;
         this.scroll_connector = null;
         this.on_scroll_mode_changed();
+        this._needsAttention = false;
     },
     
     on_panel_edit_mode_changed: function() {
@@ -409,18 +410,18 @@ AppMenuButton.prototype = {
     doFocus: function() {
         let tracker = Cinnamon.WindowTracker.get_default();
         let app = tracker.get_window_app(this.metaWindow);
-        if ( app ) {  
+        if ( app ) {
             let icon = app.create_icon_texture(this.iconSize);
-    		this._iconBox.set_child(icon);	
-        }         
-        if (this.metaWindow.has_focus() && !this.metaWindow.minimized) {                                     
-        	this.actor.add_style_pseudo_class('focus');    
-            this.actor.remove_style_class_name("window-list-item-demands-attention");    	
+            this._iconBox.set_child(icon);
+        }
+        if (this.metaWindow.has_focus() && !this.metaWindow.minimized) {
+            this.actor.add_style_pseudo_class('focus');
+            this.actor.remove_style_class_name("window-list-item-demands-attention");
             this.actor.remove_style_class_name("window-list-item-demands-attention-top");
-        }        		    	        
-        else {            
-          	this.actor.remove_style_pseudo_class('focus');        		
-        }	    	                
+            this._needsAttention = false;
+        } else {
+            this.actor.remove_style_pseudo_class('focus');
+        }
     },
     
     _onButtonRelease: function(actor, event) {
@@ -443,6 +444,7 @@ AppMenuButton.prototype = {
             if (fromDrag){
                 return;
             }
+
             
             this.metaWindow.minimize(global.get_current_time());
             this.actor.remove_style_pseudo_class('focus');
@@ -450,6 +452,10 @@ AppMenuButton.prototype = {
         else {
             if (this.metaWindow.minimized) {
                 this.metaWindow.unminimize(global.get_current_time()); 
+            }
+            let ws = this.metaWindow.get_workspace().index()
+            if (ws != global.screen.get_active_workspace_index()) {
+                global.screen.get_workspace_by_index(ws).activate(global.get_current_time());
             }
             this.metaWindow.activate(global.get_current_time());
             this.actor.add_style_pseudo_class('focus');
@@ -606,6 +612,41 @@ AppMenuButton.prototype = {
     // we show as the item is being dragged.
     getDragActorSource: function() {
         return this.actor;
+    },
+
+    getAttention: function() {
+        this._needsAttention = true;
+        let allocation = this._iconBox.get_allocation_box();
+        this._iconBox.width = allocation.x2 - allocation.x1;
+        this._iconBox.height = allocation.y2 - allocation.y1;
+        this._pulseButton();
+    },
+
+    _pulseButton: function(step){
+        if (!this._needsAttention) {
+            return;
+        }
+        let orig_width = this._iconBox.child.width;
+        let orig_height = this._iconBox.child.height;
+        Tweener.addTween(this._iconBox.child,
+                         { width: this._iconBox.child.width * .7,
+                           height: this._iconBox.child.height * .7,
+                           time: 0.2,
+                           transition: 'easeOutQuad',
+                           onComplete: function(){
+                               Tweener.addTween(this._iconBox.child,
+                                                 { width: orig_width,
+                                                   height: orig_height,
+                                                   time: 0.2,
+                                                   transition: 'easeOutQuad',
+                                                   onComplete: function(){
+                                                       this._pulseButton();
+                                                   },
+                                                   onCompleteScope: this
+                                                 });
+                           },
+                           onCompleteScope: this
+                         });
     }
 };
 
@@ -783,18 +824,31 @@ MyApplet.prototype = {
             this._changeWorkspaces();
             global.screen.connect('notify::n-workspaces',
                                     Lang.bind(this, this._changeWorkspaces));
-            global.display.connect('window-demands-attention', Lang.bind(this, this._onWindowDemandsAttention));
-            global.display.connect('window-marked-urgent', Lang.bind(this, this._onWindowDemandsAttention));
-                                    
+            this._attentionSignals = { attention: null,
+                                            urgent: null }
+            global.settings.connect('changed::window-list-applet-alert', Lang.bind(this, this._updateAttentionGrabber));
+            this._updateAttentionGrabber();
             // this._container.connect('allocate', Lang.bind(Main.panel, this._allocateBoxes)); 
-            
             global.settings.connect('changed::panel-edit-mode', Lang.bind(this, this.on_panel_edit_mode_changed));
         }
         catch (e) {
             global.logError(e);
         }
     },
-    
+
+    _updateAttentionGrabber: function() {
+        let active = global.settings.get_boolean('window-list-applet-alert');
+        if (active) {
+            this._attentionSignals.attention = global.display.connect('window-demands-attention', Lang.bind(this, this._onWindowDemandsAttention));
+            this._attentionSignals.urgent = global.display.connect('window-marked-urgent', Lang.bind(this, this._onWindowDemandsAttention));
+        } else {
+            if (this._attentionSignals.attention) {
+                global.display.disconnect(this._attentionSignals.attention);
+                global.display.disconnect(this._attentionSignals.urgent);
+            }
+        }
+    },
+
     on_applet_clicked: function(event) {
             
     },
@@ -807,7 +861,9 @@ MyApplet.prototype = {
     _onWindowDemandsAttention : function(display, window) {
         for ( let i=0; i<this._windows.length; ++i ) {
             if ( this._windows[i].metaWindow == window ) {                
-                this._windows[i].actor.add_style_class_name("window-list-item-demands-attention");                
+                this._windows[i].actor.add_style_class_name("window-list-item-demands-attention");
+                this._windows[i].actor._delegate.getAttention();
+                this._windows[i].actor.show();
             }
         }
     },
@@ -826,7 +882,7 @@ MyApplet.prototype = {
         for ( let i = 0; i < this._windows.length; ++i ) {
             let metaWindow = this._windows[i].metaWindow;
             if (metaWindow.get_workspace().index() == global.screen.get_active_workspace_index()
-                      || metaWindow.is_on_all_workspaces())
+                      || metaWindow.is_on_all_workspaces() || this._windows[i]._needsAttention)
                 this._windows[i].actor.show();
             else
                 this._windows[i].actor.hide();
