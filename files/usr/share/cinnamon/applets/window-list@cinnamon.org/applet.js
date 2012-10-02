@@ -625,20 +625,25 @@ AppMenuButton.prototype = {
 
     getAttention: function() {
         this._needsAttention = true;
-        this._flashButton();
+        let counter = 0;
+        this._flashButton(counter);
     },
 
-    _flashButton: function() {
+    _flashButton: function(counter) {
         if (!this._needsAttention) {
             return;
         }
         this.actor.add_style_class_name("window-list-item-demands-attention");
-        Mainloop.timeout_add(400, Lang.bind(this, function () {
-            if (this.actor.has_style_class_name("window-list-item-demands-attention")) {
-                this.actor.remove_style_class_name("window-list-item-demands-attention");
-            }
-            Mainloop.timeout_add(400, Lang.bind(this, this._flashButton));
-        }));
+        if (counter < 4) {
+            Mainloop.timeout_add(500, Lang.bind(this, function () {
+                if (this.actor.has_style_class_name("window-list-item-demands-attention")) {
+                    this.actor.remove_style_class_name("window-list-item-demands-attention");
+                }
+                Mainloop.timeout_add(500, Lang.bind(this, function () {
+                    this._flashButton(++counter)
+                }));
+            }));
+        }
     }
 };
 
