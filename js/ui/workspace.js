@@ -100,6 +100,7 @@ WindowClone.prototype = {
         this.realWindow = realWindow;
         this.metaWindow = realWindow.meta_window;
         this.metaWindow._delegate = this;
+        this.overlay = null;
 
         let [borderX, borderY] = this._getInvisibleBorderPadding();
         this._windowClone = new Clutter.Clone({ source: realWindow.get_texture(),
@@ -723,17 +724,15 @@ Workspace.prototype = {
         this._dropRect._delegate = this;
 
         this.actor.add_actor(this._dropRect);
-        this.actor.add_actor(this._windowOverlaysGroup);
+            this.actor.add_actor(this._windowOverlaysGroup);
 
         this.actor.connect('destroy', Lang.bind(this, this._onDestroy));
 
         let windows = global.get_window_actors().filter(this._isMyWindow, this);
-        windows.reverse(); // we want the most-recently-used windows first
 
         // Create clones for windows that should be
         // visible in the Overview
         this._windows = [];
-        this._windowOverlays = [];
         for (let i = 0; i < windows.length; i++) {
             if (this._isOverviewWindow(windows[i])) {
                 this._addWindowClone(windows[i]);
@@ -759,7 +758,7 @@ Workspace.prototype = {
     },
     
     selectAnotherWindow: function(symbol) {
-        let numWindows = this._windowOverlays.length;
+        let numWindows = this._windows.length;
         if (numWindows === 0) {
             return false;
         }
@@ -829,13 +828,13 @@ Workspace.prototype = {
 
         if (currentIndex !== nextIndex) {
             if (currentIndex > -1 && currentIndex < numWindows) {
-                this._windowOverlays[currentIndex].setSelected(false);
+                this._windows[currentIndex].overlay.setSelected(false);
             }
         }
 
         this._kbWindowIndex = currentIndex = nextIndex;
         if (currentIndex > -1 && currentIndex < numWindows) {
-            this._windowOverlays[currentIndex].setSelected(true);
+            this._windows[currentIndex].overlay.setSelected(true);
         }
         return true;
     },
@@ -849,8 +848,8 @@ Workspace.prototype = {
     },
 
     closeSelectedWindow: function() {
-        if (this._kbWindowIndex > -1 && this._kbWindowIndex < this._windowOverlays.length) {
-            this._windowOverlays[this._kbWindowIndex].closeWindow();
+        if (this._kbWindowIndex > -1 && this._kbWindowIndex < this._windows.length) {
+            this._windows[this._kbWindowIndex].overlay.closeWindow();
         }
     },
 
@@ -1086,9 +1085,9 @@ Workspace.prototype = {
         let buttonOuterHeight, captionHeight;
         let buttonOuterWidth = 0;
 
-        if (this._windowOverlays[0]) {
-            [buttonOuterHeight, captionIconHeight] = this._windowOverlays[0].chromeHeights();
-            buttonOuterWidth = this._windowOverlays[0].chromeWidth();
+        if (this._windows.length) {
+            [buttonOuterHeight, captionIconHeight] = this._windows[0].overlay.chromeHeights();
+            buttonOuterWidth = this._windows[0].overlay.chromeWidth();
         } else {
             [buttonOuterHeight, captionIconHeight] = [0, 0];
         }
@@ -1151,7 +1150,7 @@ Workspace.prototype = {
             let clone = clones[i];
             let metaWindow = clone.metaWindow;
             let mainIndex = this._lookupIndex(metaWindow);
-            let overlay = this._windowOverlays[mainIndex];
+            let overlay = this._windows[mainIndex].overlay;
 
             // Positioning a window currently being dragged must be avoided;
             // we'll just leave a blank spot in the layout for it.
@@ -1200,17 +1199,20 @@ Workspace.prototype = {
                 this._showWindowOverlay(clone, overlay, isOnCurrentWorkspace);
             }
         }
+        if (this._kbWindowIndex < 0) {
+            this.selectAnotherWindow(Clutter.Home);
+        }
     },
 
     syncStacking: function(stackIndices) {
-        let clones = this._windows.slice();
-        clones.sort(function (a, b) {
-            let minimizedA = a.metaWindow.minimized ? -1 : 0;
-            let minimizedB = b.metaWindow.minimized ? -1 : 0;
+        this._windows.sort(function (a, b) {
+            let minimizedA = a.metaWindow.minimized ? 1 : 0;
+            let minimizedB = b.metaWindow.minimized ? 1 : 0;
             let minimizedDiff = minimizedA - minimizedB;
             return minimizedDiff || stackIndices[a.metaWindow.get_stable_sequence()] - stackIndices[b.metaWindow.get_stable_sequence()];
         });
 
+        let clones = this._windows.slice().reverse();
         let below = this._dropRect;
         for (let i = 0; i < clones.length; i++) {
             let clone = clones[i];
@@ -1247,7 +1249,7 @@ Workspace.prototype = {
         let currentWorkspace = global.screen.get_active_workspace();
         for (let i = 0; i < this._windows.length; i++) {
             let clone = this._windows[i];
-            let overlay = this._windowOverlays[i];
+            let overlay = this._windows[i].overlay;
             this._showWindowOverlay(clone, overlay,
                                     this.metaWorkspace == null || this.metaWorkspace == currentWorkspace);
         }
@@ -1302,7 +1304,6 @@ Workspace.prototype = {
         let clone = this._windows[index];
 
         this._windows.splice(index, 1);
-        this._windowOverlays.splice(index, 1);
 
         // If metaWin.get_compositor_private() returned non-NULL, that
         // means the window still exists (and is just being moved to
@@ -1320,11 +1321,11 @@ Workspace.prototype = {
             };
         }
         if (index === this._kbWindowIndex) {
-            if (this._kbWindowIndex >= this._windowOverlays.length) {
+            if (this._kbWindowIndex >= this._windows.length) {
                 this._kbWindowIndex = 0;
             }
-            if (this._kbWindowIndex < this._windowOverlays.length) {
-                this._windowOverlays[this._kbWindowIndex].setSelected(true);
+            if (this._kbWindowIndex < this._windows.length) {
+                this._windows[this._kbWindowIndex].overlay.setSelected(true);
             }
         }
         
@@ -1577,14 +1578,14 @@ Workspace.prototype = {
         overlay.connect('show-close-button', Lang.bind(this, this._onShowOverlayClose));
 
         this._windows.push(clone);
-        this._windowOverlays.push(overlay);
+        clone.overlay = overlay;
 
         return clone;
     },
 
     _onShowOverlayClose: function (windowOverlay) {
-        for (let i = 0; i < this._windowOverlays.length; i++) {
-            let overlay = this._windowOverlays[i];
+        for (let i = 0; i < this._windows.length; i++) {
+            let overlay = this._windows[i].overlay;
             if (overlay == windowOverlay)
                 continue;
             overlay.hideCloseButton();
