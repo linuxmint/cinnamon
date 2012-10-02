@@ -1296,7 +1296,7 @@ MyApplet.prototype = {
                     }
                 }
             } else if (nextType == GMenu.TreeItemType.DIRECTORY) {
-                subdir = iter.get_directory();
+                let subdir = iter.get_directory();
                 this.applicationsByCategory[subdir.get_menu_id()] = new Array();
                 this._loadCategory(subdir, top_dir);
             }
