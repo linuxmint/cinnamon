@@ -470,7 +470,16 @@ ExpoWorkspaceThumbnail.prototype = {
     // Tests if @win should be shown in the Expo
     _isExpoWindow : function (win) {
         let tracker = Cinnamon.WindowTracker.get_default();
-        return tracker.is_window_interesting(win.get_meta_window());
+        let metaWindow = win.get_meta_window();
+        if (tracker.is_window_interesting(metaWindow)) {
+            return true; // the nominal case
+        }
+        if (tracker.get_window_app(metaWindow)) {
+            // not interesting but has an app - no
+            return false;
+        }
+        let type = metaWindow.get_window_type();
+        return type === Meta.WindowType.DIALOG || type === Meta.WindowType.MODAL_DIALOG;
     },
 
     // Create a clone of a (non-desktop) window and add it to the window list
