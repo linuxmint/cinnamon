@@ -144,7 +144,6 @@ ApplicationContextMenuItem.prototype = {
                 AppFavorites.getAppFavorites().removeFavorite(this._appButton.app.get_id());
                 break;
         }
-        this._appButton.actor.grab_key_focus();
         this._appButton.toggleMenu();
         return false;
     }
