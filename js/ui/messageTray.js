@@ -812,16 +812,25 @@ Notification.prototype = {
         let [titleMin, titleNat] = this._titleLabel.get_preferred_width(forHeight);
         let [bannerMin, bannerNat] = this._bannerLabel.get_preferred_width(forHeight);
         let [timeMin, timeNat] = this._timeLabel.get_preferred_width(forHeight);
-
-        alloc.min_size = Math.max(titleMin, timeMin);
-        alloc.natural_size = Math.max(titleNat, timeNat) + this._spacing + bannerNat;
+        if (this._inNotificationBin) {
+            alloc.min_size = Math.max(titleMin, timeMin);
+            alloc.natural_size = Math.max(titleNat, timeNat) + this._spacing + bannerNat;
+        } else {
+            alloc.min_size = titleMin;
+            alloc.natural_size = titleNat + this._spacing + bannerNat;
+        }
     },
 
     _bannerBoxGetPreferredHeight: function(actor, forWidth, alloc) {
-        let [titleMin, titleNat] = this._titleLabel.get_preferred_height(forWidth);
-        let [timeMin, timeNat] = this._timeLabel.get_preferred_height(forWidth);
-        alloc.min_size = titleMin + timeMin;
-        alloc.natural_size = titleNat + timeNat;
+        if (this._inNotificationBin) {
+            let [titleMin, titleNat] = this._titleLabel.get_preferred_height(forWidth);
+            let [timeMin, timeNat] = this._timeLabel.get_preferred_height(forWidth);
+            alloc.min_size = titleMin + timeMin;
+            alloc.natural_size = titleNat + timeNat;
+        } else {
+            [alloc.min_size, alloc.natural_size] =
+                this._titleLabel.get_preferred_height(forWidth);
+        }
     },
 
     _bannerBoxAllocate: function(actor, box, flags) {
