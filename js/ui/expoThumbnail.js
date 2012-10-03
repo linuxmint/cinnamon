@@ -15,6 +15,8 @@ const Workspace = imports.ui.workspace;
 // The maximum size of a thumbnail is 1/8 the width and height of the screen
 let MAX_THUMBNAIL_SCALE = 0.9;
 
+const POINTER_LEAVE_MILLISECONDS_GRACE = 1000;
+const POINTER_ENTER_MILLISECONDS_GRACE = 500;
 const RESCALE_ANIMATION_TIME = 0.2;
 const SLIDE_ANIMATION_TIME = 0.3;
 const INACTIVE_OPACITY = 120;
@@ -309,12 +311,6 @@ ExpoWorkspaceThumbnail.prototype = {
         }
     },
     
-    _onEnterEvent : function(actor, event) {
-        this._overviewModeOn();
-        if (this.metaWorkspace != global.screen.get_active_workspace()) 
-            this._highlight(); 
-    },
-
     setPorthole: function(porthole) {
         this._porthole = porthole;
         this.actor.set_size(porthole.width, porthole.height);
@@ -934,7 +930,16 @@ ExpoThumbnailsBox.prototype = {
             if (metaWorkspace == global.screen.get_active_workspace()) {
                 this._lastActiveWorkspace = thumbnail;
             }
+            let overviewTimeoutId = null;
+            let setOverviewTimeout = function(timeout, func) {
+                if (overviewTimeoutId) Mainloop.source_remove(overviewTimeoutId);
+                overviewTimeoutId = null;
+                if (timeout && func) {
+                    overviewTimeoutId = Mainloop.timeout_add(timeout, func);
+                }
+            };
             thumbnail.actor.connect('destroy', Lang.bind(this, function(actor) {
+                setOverviewTimeout(0, null);
                 this.actor.remove_actor(actor);
                 this.actor.remove_actor(thumbnail.title);
                 thumbnail.title.destroy();
@@ -970,7 +975,14 @@ ExpoThumbnailsBox.prototype = {
                         thumbnail.hovering = true;
                         this.lastHovered = thumbnail; 
                         this.showButton();
-                        thumbnail._onEnterEvent(actor, event);
+                        if (thumbnail.metaWorkspace != global.screen.get_active_workspace()) {
+                            thumbnail._highlight();
+                        }
+                        setOverviewTimeout(POINTER_ENTER_MILLISECONDS_GRACE, function() {
+                            if (thumbnail.hovering) {
+                                thumbnail._overviewModeOn();
+                            }
+                        });
                     }
                 }));
                  
@@ -981,7 +993,11 @@ ExpoThumbnailsBox.prototype = {
                         if (thumbnail.metaWorkspace != global.screen.get_active_workspace()) {
                             thumbnail._shade();
                         }
-                        thumbnail._overviewModeOff();
+                        setOverviewTimeout(POINTER_LEAVE_MILLISECONDS_GRACE, function() {
+                            if (!thumbnail.hovering) {
+                                thumbnail._overviewModeOff();
+                            }
+                        });
                     }
                 }));
              });
