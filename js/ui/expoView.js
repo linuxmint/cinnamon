@@ -36,7 +36,7 @@ ExpoView.prototype = {
         controls.reactive = true;
         controls.connect('scroll-event',
                          Lang.bind(this, this._onScrollEvent));
-        
+
         this._thumbnailsBox = new ExpoThumbnail.ExpoThumbnailsBox();
         controls.add_actor(this._thumbnailsBox.actor);
 
@@ -47,7 +47,7 @@ ExpoView.prototype = {
         this._windowDragCancelledId = 0;
         this._windowDragEndId = 0;
     },
-    
+
     handleKeyPressEvent: function(actor, event) {
         return this._thumbnailsBox.handleKeyPressEvent(actor, event);
     },
@@ -55,7 +55,7 @@ ExpoView.prototype = {
     show: function() {
         this._controls.show();
         this._thumbnailsBox.show();
-        
+
         if (this._windowDragBeginId == 0)
             this._windowDragBeginId = Main.expo.connect('window-drag-begin',
                                                             Lang.bind(this, this._dragBegin));

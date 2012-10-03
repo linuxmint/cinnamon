@@ -50,7 +50,7 @@ function startAppForMount(app, mount) {
     files.push(root);
 
     try {
-        retval = app.launch(files, 
+        retval = app.launch(files,
                             global.create_app_launch_context())
     } catch (e) {
         log('Unable to launch the application ' + app.get_name()
@@ -167,7 +167,7 @@ AutorunManager.prototype = {
         let mounts = this._volumeMonitor.get_mounts();
 
         mounts.forEach(Lang.bind(this, function (mount) {
-            let discoverer = new ContentTypeDiscoverer(Lang.bind (this, 
+            let discoverer = new ContentTypeDiscoverer(Lang.bind (this,
                 function (mount, apps) {
                     this._residentSource.addMount(mount, apps);
                 }));
@@ -239,7 +239,7 @@ AutorunManager.prototype = {
             // FIXME: we need to ignore G_IO_ERROR_FAILED_HANDLED errors here
             // but we can't access the error code from JS.
             // See https://bugzilla.gnome.org/show_bug.cgi?id=591480
-            log('Unable to eject the mount ' + mount.get_name() 
+            log('Unable to eject the mount ' + mount.get_name()
                 + ': ' + e.toString());
         }
     },
@@ -251,7 +251,7 @@ AutorunManager.prototype = {
             // FIXME: we need to ignore G_IO_ERROR_FAILED_HANDLED errors here
             // but we can't access the error code from JS.
             // See https://bugzilla.gnome.org/show_bug.cgi?id=591480
-            log('Unable to eject the drive ' + source.get_name() 
+            log('Unable to eject the drive ' + source.get_name()
                 + ': ' + e.toString());
         }
     },
@@ -263,7 +263,7 @@ AutorunManager.prototype = {
             // FIXME: we need to ignore G_IO_ERROR_FAILED_HANDLED errors here
             // but we can't access the error code from JS.
             // See https://bugzilla.gnome.org/show_bug.cgi?id=591480
-            log('Unable to stop the drive ' + drive.get_name() 
+            log('Unable to stop the drive ' + drive.get_name()
                 + ': ' + e.toString());
         }
     },
@@ -397,7 +397,7 @@ AutorunResidentNotification.prototype = {
         item.add(mountButton, { x_align: St.Align.START,
                                 expand: true });
 
-        let ejectIcon = 
+        let ejectIcon =
             new St.Icon({ icon_name: 'media-eject',
                           style_class: 'hotplug-resident-eject-icon' });
 
@@ -462,11 +462,11 @@ AutorunTransientDispatcher.prototype = {
     },
 
     _addSource: function(mount, apps) {
-        // if we already have a source showing for this 
+        // if we already have a source showing for this
         // mount, return
         if (this._getSourceForMount(mount))
             return;
-     
+
         // add a new source
         this._sources.push(new AutorunTransientSource(mount, apps));
     },
@@ -507,7 +507,7 @@ AutorunTransientDispatcher.prototype = {
 
     removeMount: function(mount) {
         let source = this._getSourceForMount(mount);
-        
+
         // if we aren't tracking this mount, don't do anything
         if (!source)
             return;

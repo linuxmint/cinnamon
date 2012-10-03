@@ -713,12 +713,12 @@ Extensions.prototype = {
         let state = new St.Label({ style_class: 'lg-extension-state',
                                    text: this._stateToString(meta.state) + " "});
         metaBox.add(state);
-        
+
         let viewsource = new Link.Link({ label: _("View Source") });
         viewsource.actor._extensionMeta = meta;
         viewsource.actor.connect('clicked', Lang.bind(this, this._onViewSource));
         metaBox.add(viewsource.actor);
-        
+
         let space = new St.Label({text: " "});
         metaBox.add(space);
 
@@ -848,7 +848,7 @@ LookingGlass.prototype = {
             return true;
         }));
 
-        this._history = new History.HistoryManager({ gsettingsKey: HISTORY_KEY, 
+        this._history = new History.HistoryManager({ gsettingsKey: HISTORY_KEY,
                                                      entry: this._entry.clutter_text });
 
         this._resize();
@@ -903,13 +903,13 @@ LookingGlass.prototype = {
         let resultObj;
 
         /*  Set up for some reporting about memory impact and execution speed.
-            The performance impact of global.get_memory_info should be 
-            very small, whereas getting a timestamp might involve some 
+            The performance impact of global.get_memory_info should be
+            very small, whereas getting a timestamp might involve some
             memory allocation, so we grab the timestamp first.
         */
         let ts = new Date().getTime();
         let memInfo = global.get_memory_info();
-        
+
         try {
             resultObj = eval(fullCmd);
         } catch (e) {
@@ -978,12 +978,12 @@ LookingGlass.prototype = {
             this._objInspector.actor.set_position(this.actor.x + Math.floor(myWidth * 0.1),
                                                   this._hiddenY + Math.floor(myHeight * 0.1));
         }
-        else {                                                
+        else {
             let primary = Main.layoutManager.primaryMonitor;
             let myWidth = primary.width * 0.7;
             let availableHeight = primary.height - Main.layoutManager.keyboardBox.height;
             let myHeight = Math.min(primary.height * 0.7, availableHeight * 0.9);
-            this.actor.x = (primary.width - myWidth) / 2;            
+            this.actor.x = (primary.width - myWidth) / 2;
             this._hiddenY = this.actor.get_parent().height - myHeight - 4; // -4 to hide the top corners
             this._targetY = this._hiddenY + myHeight;
             this.actor.y = this._hiddenY;
@@ -991,8 +991,8 @@ LookingGlass.prototype = {
             this.actor.height = myHeight;
             this._objInspector.actor.set_size(Math.floor(myWidth * 0.8), Math.floor(myHeight * 0.8));
             this._objInspector.actor.set_position(this.actor.x + Math.floor(myWidth * 0.1),
-                                                  this._targetY + Math.floor(myHeight * 0.1));                                 
-        }                                
+                                                  this._targetY + Math.floor(myHeight * 0.1));
+        }
     },
 
     insertObject: function(obj) {

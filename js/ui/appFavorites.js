@@ -82,7 +82,7 @@ AppFavorites.prototype = {
     },
 
     addFavoriteAtPos: function(appId, pos) {
-        this._addFavorite(appId, pos);                            
+        this._addFavorite(appId, pos);
     },
 
     addFavorite: function(appId) {
@@ -105,7 +105,7 @@ AppFavorites.prototype = {
 
     removeFavorite: function(appId) {
         let app = this._favorites[appId];
-        this._removeFavorite(appId);                    
+        this._removeFavorite(appId);
     }
 };
 Signals.addSignalMethods(AppFavorites.prototype);

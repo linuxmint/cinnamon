@@ -115,12 +115,12 @@ WindowManager.prototype = {
         this._cinnamonwm.connect('unmaximize', Lang.bind(this, this._unmaximizeWindow));
         this._cinnamonwm.connect('map', Lang.bind(this, this._mapWindow));
         this._cinnamonwm.connect('destroy', Lang.bind(this, this._destroyWindow));
-        
+
         Meta.keybindings_set_custom_handler('move-to-workspace-left',
                                             Lang.bind(this, this._moveWindowToWorkspaceLeft));
         Meta.keybindings_set_custom_handler('move-to-workspace-right',
                                             Lang.bind(this, this._moveWindowToWorkspaceRight));
-        
+
         Meta.keybindings_set_custom_handler('switch-to-workspace-left',
                                             Lang.bind(this, this._showWorkspaceSwitcher));
         Meta.keybindings_set_custom_handler('switch-to-workspace-right',
@@ -183,12 +183,12 @@ WindowManager.prototype = {
         }
         return false;
     },
-    
-    
-    _fadeWindow: function(cinnamonwm, actor, opacity, time, transition, callbackComplete, callbackOverwrite) {        
-        actor.move_anchor_point_from_gravity(Clutter.Gravity.CENTER);        
+
+
+    _fadeWindow: function(cinnamonwm, actor, opacity, time, transition, callbackComplete, callbackOverwrite) {
+        actor.move_anchor_point_from_gravity(Clutter.Gravity.CENTER);
         Tweener.addTween(actor,
-                         { opacity: opacity,                               
+                         { opacity: opacity,
                            time: time,
                            transition: transition,
                            onComplete: callbackComplete,
@@ -199,12 +199,12 @@ WindowManager.prototype = {
                            onOverwriteParams: [cinnamonwm, actor]
                             });
     },
-    
-    _scaleWindow: function(cinnamonwm, actor, scale_x, scale_y, time, transition, callbackComplete, callbackOverwrite) {        
-        actor.move_anchor_point_from_gravity(Clutter.Gravity.CENTER);        
+
+    _scaleWindow: function(cinnamonwm, actor, scale_x, scale_y, time, transition, callbackComplete, callbackOverwrite) {
+        actor.move_anchor_point_from_gravity(Clutter.Gravity.CENTER);
         Tweener.addTween(actor,
-                         { scale_x: scale_x,     
-                           scale_y: scale_y,                          
+                         { scale_x: scale_x,
+                           scale_y: scale_y,
                            time: time,
                            transition: transition,
                            onComplete: callbackComplete,
@@ -226,20 +226,20 @@ WindowManager.prototype = {
         let effect = "traditional";
         let time = 0.25;
         try{
-            effect = global.settings.get_string("desktop-effects-minimize-effect");                                                
-            transition = global.settings.get_string("desktop-effects-minimize-transition");                        
+            effect = global.settings.get_string("desktop-effects-minimize-effect");
+            transition = global.settings.get_string("desktop-effects-minimize-transition");
             time = global.settings.get_int("desktop-effects-minimize-time") / 1000;
         }
         catch(e) {
             log(e);
         }
-                
-        if (effect == "traditional") {  
+
+        if (effect == "traditional") {
             actor.set_scale(1.0, 1.0);
-            actor.move_anchor_point_from_gravity(Clutter.Gravity.CENTER);        
+            actor.move_anchor_point_from_gravity(Clutter.Gravity.CENTER);
             this._minimizing.push(actor);
             let monitor;
-            let yDest;            
+            let yDest;
             if (Main.desktop_layout == Main.LAYOUT_TRADITIONAL || Main.desktop_layout == Main.LAYOUT_CLASSIC) {
                 monitor = Main.layoutManager.bottomMonitor;
                 yDest = monitor.height;
@@ -247,10 +247,10 @@ WindowManager.prototype = {
             else {
                 monitor = Main.layoutManager.primaryMonitor;
                 yDest = 0;
-            }            
+            }
             let xDest = monitor.x + monitor.width/4;
             if (St.Widget.get_default_direction() == St.TextDirection.RTL)
-                xDest = monitor.width - monitor.width/4;        
+                xDest = monitor.width - monitor.width/4;
             Tweener.addTween(actor,
                              { scale_x: 0.0,
                                scale_y: 0.0,
@@ -268,11 +268,11 @@ WindowManager.prototype = {
         }
         else if (effect == "fade") {
             this._minimizing.push(actor);
-            this._fadeWindow(cinnamonwm, actor, 0, time, transition, this._minimizeWindowDone, this._minimizeWindowOverwritten);            
+            this._fadeWindow(cinnamonwm, actor, 0, time, transition, this._minimizeWindowDone, this._minimizeWindowOverwritten);
         }
-        else if (effect == "scale") {                                
+        else if (effect == "scale") {
             this._minimizing.push(actor);
-            this._scaleWindow(cinnamonwm, actor, 0.0, 0.0, time, transition, this._minimizeWindowDone, this._minimizeWindowOverwritten); 
+            this._scaleWindow(cinnamonwm, actor, 0.0, 0.0, time, transition, this._minimizeWindowDone, this._minimizeWindowOverwritten);
         }
         else {
             cinnamonwm.completed_minimize(actor);
@@ -304,27 +304,27 @@ WindowManager.prototype = {
         let effect = "scale";
         let time = 0.25;
         try{
-            effect = global.settings.get_string("desktop-effects-maximize-effect");                                                
-            transition = global.settings.get_string("desktop-effects-maximize-transition");                        
+            effect = global.settings.get_string("desktop-effects-maximize-effect");
+            transition = global.settings.get_string("desktop-effects-maximize-transition");
             time = global.settings.get_int("desktop-effects-maximize-time") / 1000;
         }
         catch(e) {
             log(e);
         }
-                
-        if (effect == "scale") {            
-            this._maximizing.push(actor);            
-            
+
+        if (effect == "scale") {
+            this._maximizing.push(actor);
+
             let scale_x = targetWidth / actor.width;
             let scale_y = targetHeight / actor.height;
             let anchor_x = (actor.x - targetX) * actor.width / (targetWidth - actor.width);
             let anchor_y = (actor.y - targetY) * actor.height / (targetHeight - actor.height);
-            
-            actor.move_anchor_point(anchor_x, anchor_y);   
-                 
+
+            actor.move_anchor_point(anchor_x, anchor_y);
+
             Tweener.addTween(actor,
-                         { scale_x: scale_x, 
-                           scale_y: scale_y,                                            
+                         { scale_x: scale_x,
+                           scale_y: scale_y,
                            time: time,
                            transition: transition,
                            onComplete: this._maximizeWindowDone,
@@ -337,7 +337,7 @@ WindowManager.prototype = {
         }
         else {
             cinnamonwm.completed_maximize(actor);
-        }            
+        }
     },
 
     _maximizeWindowDone : function(cinnamonwm, actor) {
@@ -377,7 +377,7 @@ WindowManager.prototype = {
         if (effect == "scale") {
 
             this._unmaximizing.push(actor);
-            
+
             let scale_x = targetWidth / actor.width;
             let scale_y = targetHeight / actor.height;
             let anchor_x = (actor.x - targetX) * actor.width / (targetWidth - actor.width);
@@ -413,7 +413,7 @@ WindowManager.prototype = {
             cinnamonwm.completed_unmaximize(actor);
         }
     },
-    
+
     _unmaximizeWindowOverwrite : function(cinnamonwm, actor) {
         if (this._removeEffect(this._unmaximizing, actor)) {
             cinnamonwm.completed_unmaximize(actor);
@@ -518,36 +518,36 @@ WindowManager.prototype = {
             cinnamonwm.completed_map(actor);
             return;
         }
-        
-        
+
+
         let transition = "easeInSine";
         let effect = "scale";
         let time = 0.25;
         try{
-            effect = global.settings.get_string("desktop-effects-map-effect");                                                
-            transition = global.settings.get_string("desktop-effects-map-transition");                        
+            effect = global.settings.get_string("desktop-effects-map-effect");
+            transition = global.settings.get_string("desktop-effects-map-transition");
             time = global.settings.get_int("desktop-effects-map-time") / 1000;
         }
         catch(e) {
             log(e);
         }
-                
-        if (effect == "fade") {            
+
+        if (effect == "fade") {
             this._mapping.push(actor);
             actor.opacity = 0;
             actor.show();
             this._fadeWindow(cinnamonwm, actor, 255, time, transition, this._mapWindowDone, this._mapWindowOverwrite);
         }
-        else if (effect == "scale") {               
+        else if (effect == "scale") {
             actor.set_scale(0.0, 0.0);
             actor.show();
             this._mapping.push(actor);
-            this._scaleWindow(cinnamonwm, actor, 1, 1, time, transition, this._mapWindowDone, this._mapWindowOverwrite);        
+            this._scaleWindow(cinnamonwm, actor, 1, 1, time, transition, this._mapWindowDone, this._mapWindowOverwrite);
         }
-        else {   
+        else {
             cinnamonwm.completed_map(actor);
         }
-        
+
     },
 
     _mapWindowDone : function(cinnamonwm, actor) {
@@ -607,12 +607,12 @@ WindowManager.prototype = {
                              });
             return;
         }
-        
+
         if (!this._shouldAnimate(actor)) {
             cinnamonwm.completed_destroy(actor);
             return;
         }
-                                                
+
         let transition = "easeInSine";
         let effect = "scale";
         let time = 0.25;
@@ -624,7 +624,7 @@ WindowManager.prototype = {
         catch(e) {
             log(e);
         }
-        
+
         if (effect == "scale") {
             this._destroying.push(actor);
             this._scaleWindow(cinnamonwm, actor, 0.0, 0.0, time, transition, this._destroyWindowDone, this._destroyWindowDone);
@@ -651,7 +651,7 @@ WindowManager.prototype = {
 
     _switchWorkspace : function(cinnamonwm, from, to, direction) {
         if (!this._shouldAnimate()) {
-            cinnamonwm.completed_switch_workspace();                                
+            cinnamonwm.completed_switch_workspace();
             return;
         }
 
@@ -750,7 +750,7 @@ WindowManager.prototype = {
         switchData.inGroup.destroy();
         switchData.outGroup.destroy();
 
-        cinnamonwm.completed_switch_workspace();                        
+        cinnamonwm.completed_switch_workspace();
     },
 
     showWorkspaceOSD : function() {
@@ -765,7 +765,7 @@ WindowManager.prototype = {
             let workspace_osd_y = global.settings.get_int("workspace-osd-y");
             let x = (monitor.width * workspace_osd_x /100 - label.width/2);
             let y = (monitor.height * workspace_osd_y /100 - label.height/2);
-            label.set_position(x, y);  
+            label.set_position(x, y);
             let duration = global.settings.get_int("workspace-osd-duration") / 1000;
             Tweener.addTween(label, {   opacity: 255,
                                         time: duration,
@@ -777,7 +777,7 @@ WindowManager.prototype = {
     },
 
     _startAppSwitcher : function(display, screen, window, binding) {
-        
+
         let tabPopup = new AltTab.AltTabPopup();
 
         let modifiers = binding.get_modifiers();
@@ -787,7 +787,7 @@ WindowManager.prototype = {
     },
 
     _startA11ySwitcher : function(display, screen, window, binding) {
-        
+
     },
 
     _moveWindowToWorkspaceLeft : function(display, screen, window, binding) {
@@ -813,13 +813,13 @@ WindowManager.prototype = {
     _showWorkspaceSwitcher : function(display, screen, window, binding) {
         if (binding.get_name() == 'switch-to-workspace-up') {
         	Main.expo.toggle();
-        	return;                   
+        	return;
         }
         if (binding.get_name() == 'switch-to-workspace-down') {
             Main.overview.toggle();
             return;
         }
-        
+
         if (screen.n_workspaces == 1)
             return;
 

@@ -18,8 +18,8 @@ ThemeManager.prototype = {
         this._settings = new Gio.Settings({ schema: SETTINGS_SCHEMA });
         this._changedId = this._settings.connect('changed::'+SETTINGS_KEY, Lang.bind(this, this._changeTheme));
         this._changeTheme();
-    },    
-    
+    },
+
     _findTheme: function(themeName, cssPath) {
         let stylesheet = null;
         let _userCssStylesheet = GLib.get_home_dir() + '/.themes/' + themeName + cssPath;
@@ -36,19 +36,19 @@ ThemeManager.prototype = {
                     break;
                 }
             }
-        }        
+        }
         return stylesheet;
     },
 
     _changeTheme: function() {
         let _stylesheet = null;
-        let _themeName = this._settings.get_string(SETTINGS_KEY);        
-    
+        let _themeName = this._settings.get_string(SETTINGS_KEY);
+
         if (_themeName) {
             _stylesheet = this._findTheme(_themeName, '/cinnamon/cinnamon.css');
             if (_stylesheet == null) {
                 _stylesheet = this._findTheme(_themeName, '/gnome-shell/gnome-shell.css');
-            }                    
+            }
         }
 
         if (_stylesheet)

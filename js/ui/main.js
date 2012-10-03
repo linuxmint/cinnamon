@@ -144,7 +144,7 @@ function _initUserSession() {
     Meta.keybindings_set_custom_handler('panel-main-menu', function () {
         expo.toggle();
     });
-    
+
 }
 
 function start() {
@@ -176,7 +176,7 @@ function start() {
 
     log("About to start Cinnamon");
     if (GLib.getenv('CINNAMON_SOFTWARE_RENDERING')) {
-        log("ACTIVATING SOFTWARE RENDERING");        
+        log("ACTIVATING SOFTWARE RENDERING");
         global.logError("Cinnamon Software Rendering mode enabled");
         software_rendering = true;
     }
@@ -209,18 +209,18 @@ function start() {
     // actor so set it anyways.
     global.stage.color = DEFAULT_BACKGROUND_COLOR;
     global.stage.no_clear_hint = true;
-    
-    desktop_layout = global.settings.get_string("desktop-layout"); 
+
+    desktop_layout = global.settings.get_string("desktop-layout");
     if (desktop_layout == LAYOUT_FLIPPED) {
-        applet_side = St.Side.TOP;        
+        applet_side = St.Side.TOP;
     }
     else if (desktop_layout == LAYOUT_CLASSIC) {
-        applet_side = St.Side.TOP;        
+        applet_side = St.Side.TOP;
     }
-    
+
     _defaultCssStylesheet = global.datadir + '/theme/cinnamon.css';
     loadTheme();
-    
+
     themeManager = new ThemeManager.ThemeManager();
 
     // Set up stage hierarchy to group all UI actors under one container.
@@ -243,35 +243,35 @@ function start() {
     overview = new Overview.Overview({ isDummy: false });
     expo = new Expo.Expo({ isDummy: false });
     magnifier = new Magnifier.Magnifier();
-    statusIconDispatcher = new StatusIconDispatcher.StatusIconDispatcher();  
-                    
-    if (desktop_layout == LAYOUT_TRADITIONAL) {                                    
-        panel = new Panel.Panel(true);           
+    statusIconDispatcher = new StatusIconDispatcher.StatusIconDispatcher();
+
+    if (desktop_layout == LAYOUT_TRADITIONAL) {
+        panel = new Panel.Panel(true);
         panel.actor.add_style_class_name('panel-bottom');
         layoutManager.panelBox.add(panel.actor);
     }
     else if (desktop_layout == LAYOUT_FLIPPED) {
-        panel = new Panel.Panel(false);                 
+        panel = new Panel.Panel(false);
         panel.actor.add_style_class_name('panel-top');
-        layoutManager.panelBox.add(panel.actor);  
+        layoutManager.panelBox.add(panel.actor);
     }
     else if (desktop_layout == LAYOUT_CLASSIC) {
-        panel = new Panel.Panel(false);         
-        panel2 = new Panel.Panel(true);         
+        panel = new Panel.Panel(false);
+        panel2 = new Panel.Panel(true);
         panel.actor.add_style_class_name('panel-top');
         panel2.actor.add_style_class_name('panel-bottom');
-        layoutManager.panelBox.add(panel.actor);   
-        layoutManager.panelBox2.add(panel2.actor);   
+        layoutManager.panelBox.add(panel.actor);
+        layoutManager.panelBox2.add(panel2.actor);
     }
     layoutManager._updateBoxes();
-    
+
     wm = new WindowManager.WindowManager();
     messageTray = new MessageTray.MessageTray();
     keyboard = new Keyboard.Keyboard();
     notificationDaemon = new NotificationDaemon.NotificationDaemon();
     windowAttentionHandler = new WindowAttentionHandler.WindowAttentionHandler();
 
-    placesManager = new PlacesManager.PlacesManager();    
+    placesManager = new PlacesManager.PlacesManager();
     automountManager = new AutomountManager.AutomountManager();
     //autorunManager = new AutorunManager.AutorunManager();
     //networkAgent = new NetworkAgent.NetworkAgent();
@@ -284,7 +284,7 @@ function start() {
     if (!dynamicWorkspaces) {
         _staticWorkspaces();
     }
-    
+
     layoutManager.init();
     keyboard.init();
     overview.init();
@@ -313,8 +313,8 @@ function start() {
         let module = eval('imports.perf.' + perfModuleName + ';');
         Scripting.runPerfScript(module, perfOutput);
     }
-    
-    workspace_names = global.settings.get_strv("workspace-name-overrides");  
+
+    workspace_names = global.settings.get_strv("workspace-name-overrides");
 
     global.screen.connect('notify::n-workspaces', _nWorkspacesChanged);
 
@@ -323,7 +323,7 @@ function start() {
     global.screen.connect('restacked', _windowsRestacked);
 
     _nWorkspacesChanged();
-    
+
     AppletManager.init();
     applets = AppletManager.loadApplets();
 }
@@ -428,8 +428,8 @@ function _staticWorkspaces() {
             let removeWorkspaceIndex = global.screen.n_workspaces - 1;
             let removeWorkspace = global.screen.get_workspace_by_index(removeWorkspaceIndex);
             let lastRemoved = removeWorkspace._lastRemovedWindow;
-            global.screen.remove_workspace(removeWorkspace, global.get_current_time()); 
-        }    
+            global.screen.remove_workspace(removeWorkspace, global.get_current_time());
+        }
     }
     return true;
 }
@@ -622,7 +622,7 @@ function loadTheme() {
 
     let theme = new St.Theme ();
     theme.load_stylesheet(cssStylesheet);
-    
+
     themeContext.set_theme (theme);
 }
 
@@ -764,7 +764,7 @@ function _globalKeyPressHandler(actor, event) {
         expo.hide();
         return true;
     }
-       
+
     if (action == Meta.KeyBindingAction.SWITCH_PANELS) {
         //Used to call the ctrlalttabmanager in Gnome Shell
         return true;
@@ -781,8 +781,8 @@ function _globalKeyPressHandler(actor, event) {
              wm.actionMoveWorkspaceRight();
              return true;
         case Meta.KeyBindingAction.WORKSPACE_UP:
-            overview.hide();   
-            expo.hide();                  
+            overview.hide();
+            expo.hide();
             return true;
         case Meta.KeyBindingAction.WORKSPACE_DOWN:
             overview.hide();
@@ -1091,10 +1091,10 @@ function getTabList(workspaceOpt, screenOpt) {
     let screen = screenOpt || global.screen;
     let display = screen.get_display();
     let workspace = workspaceOpt || screen.get_active_workspace();
-    
+
     let windows = []; // the array to return
 
-    // Run a pass through the NORMAL tablist. We only record the identity 
+    // Run a pass through the NORMAL tablist. We only record the identity
     // of each window at this point.
     let normalLookup = {};
     let normalWindows = display.get_tab_list(Meta.TabList.NORMAL, screen,

@@ -131,9 +131,9 @@ WorkspacesView.prototype = {
                     this._stageKeyPressId = 0;
                 }
             }));
-            
+
         // this should select the last active window
-        if (this._workspaces.length > 0) { 
+        if (this._workspaces.length > 0) {
 	        this._workspaces[activeWorkspaceIndex].selectAnotherWindow(Clutter.Home);
         }
     },
@@ -519,7 +519,7 @@ WorkspacesDisplay.prototype = {
                          Lang.bind(this, this._onScrollEvent));
 
         this._monitorIndex = Main.layoutManager.primaryIndex;
-        
+
         this.workspacesView = null;
 
         this._inDrag = false;

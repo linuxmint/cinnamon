@@ -42,26 +42,26 @@ function init() {
     } catch (e) {
         global.logError('' + e);
     }
-            
+
     global.settings.connect('changed::enabled-applets', onEnabledAppletsChanged);
     enabledApplets = global.settings.get_strv('enabled-applets');
 }
 
 function onEnabledAppletsChanged() {
-    try {    
-        let newEnabledApplets = global.settings.get_strv('enabled-applets');        
-    
+    try {
+        let newEnabledApplets = global.settings.get_strv('enabled-applets');
+
         for (let i=0; i<newEnabledApplets.length; i++) {
-            let appletDefinition = newEnabledApplets[i];   
-            if (enabledApplets.indexOf(appletDefinition) == -1) {                    
+            let appletDefinition = newEnabledApplets[i];
+            if (enabledApplets.indexOf(appletDefinition) == -1) {
                 // New applet or changed definition
-                add_applet_to_panels(appletDefinition);                                                
-            }            
+                add_applet_to_panels(appletDefinition);
+            }
         }
-        
+
         for (let i=0; i<enabledApplets.length; i++) {
-            let appletDefinition = enabledApplets[i];   
-            if (newEnabledApplets.indexOf(appletDefinition) == -1) {                    
+            let appletDefinition = enabledApplets[i];
+            if (newEnabledApplets.indexOf(appletDefinition) == -1) {
                 // Applet was removed or definition was changed...
                 let elements = appletDefinition.split(":");
                 if (elements.length == 4) {
@@ -82,7 +82,7 @@ function onEnabledAppletsChanged() {
                         }
                     }
                     if (!uuidIsStillPresent) {
-                        // Applet was removed                        
+                        // Applet was removed
                         let directory = _find_applet(uuid);
                         if (directory != null) {
                             let applet = loadApplet(uuid, directory, orientation, panel.actor.get_height());
@@ -101,37 +101,37 @@ function onEnabledAppletsChanged() {
                         }
                         appletsCurrentlyInPanel.splice(appletsCurrentlyInPanel.indexOf(uuid), 1);
                     }
-                }                                                         
-            }            
+                }
+            }
         }
-           
+
         enabledApplets = newEnabledApplets;
     }
     catch(e) {
-        global.logError('Failed to refresh list of applets ' + e); 
+        global.logError('Failed to refresh list of applets ' + e);
     }
 
     Main.statusIconDispatcher.redisplay();
 }
 
-function loadApplets() {    
+function loadApplets() {
     let foundAtLeastOneApplet = false;
-    for (let i=0; i<enabledApplets.length; i++) {                
+    for (let i=0; i<enabledApplets.length; i++) {
         add_applet_to_panels(enabledApplets[i]);
         let elements = enabledApplets[i].split(":");
         if (elements.length == 4) {
             foundAtLeastOneApplet = true;
-        }        
-    }    
+        }
+    }
     if (!foundAtLeastOneApplet) {
         global.settings.reset('enabled-applets');
     }
 }
 
 function add_applet_to_panels(appletDefinition) {
-    try {                 
+    try {
         // format used in gsettings is 'panel:location:order:uuid' where panel is something like 'panel1', location is
-        // either 'left', 'center' or 'right' and order is an integer representing the order of the applet within the panel/location (i.e. 1st, 2nd etc..).                     
+        // either 'left', 'center' or 'right' and order is an integer representing the order of the applet within the panel/location (i.e. 1st, 2nd etc..).
         let elements = appletDefinition.split(":");
         let center = false;
         if (elements.length == 4) {
@@ -163,33 +163,33 @@ function add_applet_to_panels(appletDefinition) {
                 // Load the applet
                 let applet = loadApplet(uuid, directory, orientation, panel.actor.get_height());
                 applet._order = order;
-                
+
                 // Remove it from its previous panel location (if it had one)
                 if (applet._panelLocation != null) {
                     applet._panelLocation.remove_actor(applet.actor);
                     applet._panelLocation = null;
                 }
-                                            
+
                 // Add it to its new panel location
-                let children = location.get_children();                    
+                let children = location.get_children();
                 let appletsToMove = [];
                 for (let i=0; i<children.length;i++) {
                     let child = children[i];
-                    if ((typeof child._applet !== "undefined") && (child._applet instanceof Applet.Applet)) {                         
-                        if (order < child._applet._order) {                                
-                            appletsToMove.push(child);                            
+                    if ((typeof child._applet !== "undefined") && (child._applet instanceof Applet.Applet)) {
+                        if (order < child._applet._order) {
+                            appletsToMove.push(child);
                         }
-                    }                    
+                    }
                 }
-                                
+
                 for (let i=0; i<appletsToMove.length; i++) {
-                    location.remove_actor(appletsToMove[i]);                    
+                    location.remove_actor(appletsToMove[i]);
                 }
 
                 if (center) {
                     location.add(applet.actor, {x_align: St.Align.CENTER_SPECIAL});
                 } else {
-                    location.add(applet.actor);    
+                    location.add(applet.actor);
                 }
 
                 applet._panelLocation = location;
@@ -198,27 +198,27 @@ function add_applet_to_panels(appletDefinition) {
                 }
                 appletsCurrentlyInPanel.push(uuid);
                 if (applet._hook)
-                    AppletHooks[applet._hook] = true; 
+                    AppletHooks[applet._hook] = true;
                 applet.on_applet_added_to_panel();
-            } 
+            }
             else {
                 global.logError('Could not find applet ' + uuid + ', make sure its directory is present and matches its UUID');
-            }     
+            }
         }
         else {
             global.logError('Invalid applet definition: ' + appletDefinition);
         }
     }
     catch(e) {
-        global.logError('Failed to load applet ' + appletDefinition + e); 
+        global.logError('Failed to load applet ' + appletDefinition + e);
     }
 }
 
-function _find_applet(uuid) {    
+function _find_applet(uuid) {
     let directory = null;
     directory = _find_applet_in(uuid, userAppletsDir);
     if (directory == null) {
-        let systemDataDirs = GLib.get_system_data_dirs();    
+        let systemDataDirs = GLib.get_system_data_dirs();
         for (let i = 0; i < systemDataDirs.length; i++) {
             let dirPath = systemDataDirs[i] + '/cinnamon/applets';
             let dir = Gio.file_new_for_path(dirPath);
@@ -232,7 +232,7 @@ function _find_applet(uuid) {
     return(directory);
 }
 
-function _find_applet_in(uuid, dir) {       
+function _find_applet_in(uuid, dir) {
     let directory = null;
     let fileEnum;
     let file, info;
@@ -247,14 +247,14 @@ function _find_applet_in(uuid, dir) {
         let fileType = info.get_file_type();
         if (fileType != Gio.FileType.DIRECTORY)
             continue;
-        let name = info.get_name();            
+        let name = info.get_name();
         if (name == uuid) {
             let child = dir.get_child(name);
             directory = child;
             break;
         }
     }
-    fileEnum.close(null);    
+    fileEnum.close(null);
     return(directory);
 }
 
@@ -269,10 +269,10 @@ function get_role_provider_exists(role) {
     return false;
 }
 
-function loadApplet(uuid, dir, orientation, panel_height) {    
-    let info;    
+function loadApplet(uuid, dir, orientation, panel_height) {
+    let info;
     let applet = null;
-    
+
     let metadataFile = dir.get_child('metadata.json');
     if (!metadataFile.query_exists(null)) {
         global.logError(uuid + ' missing metadata.json');
@@ -316,16 +316,16 @@ function loadApplet(uuid, dir, orientation, panel_height) {
         appletObj[uuid].setOrientation(orientation);
         return (appletObj[uuid]);
     }
-   
+
     if (uuid != meta.uuid) {
         global.logError(uuid + ' uuid "' + meta.uuid + '" from metadata.json does not match directory name "' + uuid + '"');
         return null;
     }
-   
-    appletMeta[uuid] = meta;    
+
+    appletMeta[uuid] = meta;
     meta.path = dir.get_path();
-    meta.error = '';    
-   
+    meta.error = '';
+
     let appletJs = dir.get_child('applet.js');
     if (!appletJs.query_exists(null)) {
         global.logError(uuid + ' missing applet.js');
@@ -360,25 +360,25 @@ function loadApplet(uuid, dir, orientation, panel_height) {
         return null;
     }
 
-    try {        
-        applet = appletModule.main(meta, orientation, panel_height);                
-        global.log('Loaded applet ' + meta.uuid);        
+    try {
+        applet = appletModule.main(meta, orientation, panel_height);
+        global.log('Loaded applet ' + meta.uuid);
     } catch (e) {
         if (stylesheetPath != null)
             theme.unload_stylesheet(stylesheetPath);
         global.logError(uuid + ' failed to evaluate main function:' + e);
         return null;
-    }        
-    
+    }
+
     if (hook) {
          applet._hook = hook;
     }
 
-    appletObj[uuid] = applet;  
+    appletObj[uuid] = applet;
     applet._uuid = uuid;
-    
+
     applet.finalizeContextMenu();
-    
+
     return(applet);
 }
 
@@ -443,7 +443,7 @@ function saveAppletsPositions() {
 
 function updateAppletPanelHeights(force_recalc) {
     for (let i=0; i<enabledApplets.length; i++) {
-        let appletDefinition = enabledApplets[i];   
+        let appletDefinition = enabledApplets[i];
         let elements = appletDefinition.split(":");
         if (elements.length == 4) {
             let uuid = elements[3];

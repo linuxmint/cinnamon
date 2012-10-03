@@ -1208,7 +1208,7 @@ PopupMenu.prototype = {
         this.setMaxHeight();
 
         this.isOpen = true;
-        
+
         if (global.menuStackLength == undefined)
             global.menuStackLength = 0;
         global.menuStackLength += 1;
@@ -1230,7 +1230,7 @@ PopupMenu.prototype = {
     close: function(animate) {
         if (!this.isOpen)
             return;
-            
+
         global.menuStackLength -= 1;
 
         Main.panel._hidePanel();
@@ -1377,7 +1377,7 @@ PopupSubMenu.prototype = {
 
         if (animate && this._needsScrollbar())
             animate = false;
-            
+
         let rotation_angle = 90;
         if (this.actor.get_direction() == St.TextDirection.RTL) {
             rotation_angle = 270;

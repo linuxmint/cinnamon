@@ -829,10 +829,10 @@ Notification.prototype = {
 
         let [titleMinW, titleNatW] = this._titleLabel.get_preferred_width(-1);
         let [titleMinH, titleNatH] = this._titleLabel.get_preferred_height(availWidth);
-        
+
         let [timeMinW, timeNatW] = this._timeLabel.get_preferred_width(-1);
         let [timeMinH, timeNatH] = this._timeLabel.get_preferred_height(availWidth);
-        
+
         let [bannerMinW, bannerNatW] = this._bannerLabel.get_preferred_width(availWidth);
 
         let titleBox = new Clutter.ActorBox();
@@ -867,7 +867,7 @@ Notification.prototype = {
         this._titleFitsInBannerMode = (titleNatW <= availWidth);
 
         let bannerFits = true;
-        
+
         if (titleBoxW + this._spacing > availWidth) {
             this._bannerLabel.opacity = 0;
             bannerFits = false;
@@ -1392,7 +1392,7 @@ MessageTray.prototype = {
         this._notificationQueue = [];
         this._notification = null;
         this._notificationClickedId = 0;
-        
+
         this._pointerBarrier = 0;
 
         this._focusGrabber = new FocusGrabber();
@@ -1419,7 +1419,7 @@ MessageTray.prototype = {
             this._overviewVisible = false;
         this._notificationRemoved = false;
         this._reNotifyAfterHideNotification = null;
-        
+
         this._sources = [];
         Main.layoutManager.addChrome(this._notificationBin);
 
@@ -1495,7 +1495,7 @@ MessageTray.prototype = {
         let index = this._getSourceIndex(source);
         if (index == -1)
             return;
-            
+
         this._sources.splice(index, 1);
 
         let needUpdate = false;
@@ -1655,10 +1655,10 @@ MessageTray.prototype = {
         this._notificationClickedId = this._notification.connect('done-displaying',
                                                                  Lang.bind(this, this._escapeTray));
         this._notificationBin.child = this._notification.actor;
-        this._notificationBin.opacity = 0;        
+        this._notificationBin.opacity = 0;
         let monitor = Main.layoutManager.primaryMonitor;
         this._notificationBin.y = monitor.y + (Main.panel.actor.get_height()+5) * 2; // Notifications appear from here (for the animation)
-        let margin = this._notification._table.get_theme_node().get_length('margin-from-right-edge-of-screen');                
+        let margin = this._notification._table.get_theme_node().get_length('margin-from-right-edge-of-screen');
         this._notificationBin.x = monitor.x + monitor.width - this._notification._table.width - margin;
         this._notificationBin.show();
 
@@ -1689,7 +1689,7 @@ MessageTray.prototype = {
         // changed. Therefore we need to call this._expandNotification() for expanded notifications
         // to make sure their position is updated.
         if (this._notification.urgency == Urgency.CRITICAL || this._notification.expanded)
-            this._expandNotification(true);		
+            this._expandNotification(true);
 
         // We tween all notifications to full opacity. This ensures that both new notifications and
         // notifications that might have been in the process of hiding get full opacity.
@@ -1711,7 +1711,7 @@ MessageTray.prototype = {
                             onCompleteScope: this
                           };
         let monitor = Main.layoutManager.primaryMonitor;
-        if (!this._notification.expanded)        	 
+        if (!this._notification.expanded)
             tweenParams.y = monitor.y + (Main.panel.actor.get_height()+5);
 
         this._tween(this._notificationBin, '_notificationState', State.SHOWN, tweenParams);
@@ -1781,7 +1781,7 @@ MessageTray.prototype = {
             this.emit('notify-applet-update', notification);
         } else {
             if (notification.isTransient)
-                notification.destroy(NotificationDestroyedReason.EXPIRED);  
+                notification.destroy(NotificationDestroyedReason.EXPIRED);
         }
         this._notification = null;
         this._notificationRemoved = false;
@@ -1804,11 +1804,11 @@ MessageTray.prototype = {
         let expandedY = this._notification.actor.height - this._notificationBin.height;
         // Don't animate the notification to its new position if it has shrunk:
         // there will be a very visible "gap" that breaks the illusion.
-        
+
         // This isn't really working at the moment, but it was just crashing before
         // if it encountered a critical notification.  expandedY is always 0.  For now
         // just make sure it's not covering the top panel if there is one.
-        
+
         let monitor = Main.layoutManager.primaryMonitor;
         let newY = monitor.y + (Main.panel.actor.get_height()+5);
 

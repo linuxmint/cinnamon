@@ -173,7 +173,7 @@ CinnamonMountOperation.prototype = {
             this._processesDialog = new CinnamonProcessesDialog(this._icon);
             this._dialog = this._processesDialog;
 
-            this._processesDialog.connect('response', 
+            this._processesDialog.connect('response',
                                           Lang.bind(this, function(object, choice) {
                                               if (choice == -1) {
                                                   this.mountOp.reply(Gio.MountOperationResult.ABORTED);

@@ -118,9 +118,9 @@ RadioButtonGroup.prototype = {
 
    addButton: function(buttonId, label) {
       this.radioButton = new RadioButton(label);
-      this.radioButton.actor.connect("clicked", 
+      this.radioButton.actor.connect("clicked",
          Lang.bind(this, function(actor) {
-            this.buttonClicked(actor, buttonId); 
+            this.buttonClicked(actor, buttonId);
          }));
 
       this._buttons.push({ id: buttonId, button: this.radioButton });
@@ -140,7 +140,7 @@ RadioButtonGroup.prototype = {
             this._buttons[i]['button'].actor.checked = true;
          }
       }
-      
+
       // Only trigger real changes to radio selection.
       if (buttonId != this._activeId) {
          this._activeId = buttonId;
@@ -150,7 +150,7 @@ RadioButtonGroup.prototype = {
 
    setActive: function(buttonId) {
       for (var i in this._buttons) {
-         this._buttons[i]['button'].actor.checked = 
+         this._buttons[i]['button'].actor.checked =
            (buttonId == this._buttons[i]['id']);
       }
 
