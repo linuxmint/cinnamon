@@ -144,7 +144,6 @@ ApplicationContextMenuItem.prototype = {
                 AppFavorites.getAppFavorites().removeFavorite(this._appButton.app.get_id());
                 break;
         }
-        this._appButton.actor.grab_key_focus();
         this._appButton.toggleMenu();
         return false;
     }
@@ -1296,7 +1295,7 @@ MyApplet.prototype = {
                     }
                 }
             } else if (nextType == GMenu.TreeItemType.DIRECTORY) {
-                subdir = iter.get_directory();
+                let subdir = iter.get_directory();
                 this.applicationsByCategory[subdir.get_menu_id()] = new Array();
                 this._loadCategory(subdir, top_dir);
             }
