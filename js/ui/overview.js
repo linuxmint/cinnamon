@@ -105,18 +105,6 @@ Overview.prototype = {
             return;
         }
 
-        // The main BackgroundActor is inside global.window_group which is
-        // hidden when displaying the overview, so we create a new
-        // one. Instances of this class share a single CoglTexture behind the
-        // scenes which allows us to show the background with different
-        // rendering options without duplicating the texture data.
-        this._background = Meta.BackgroundActor.new_for_screen(global.screen);
-        this._background.hide();
-        global.overlay_group.add_actor(this._background);
-
-        this._desktopFade = new St.Bin();
-        global.overlay_group.add_actor(this._desktopFade);
-
         this._spacing = 0;
 
         this._group = new St.Group({ name: 'overview',
@@ -526,6 +514,10 @@ Overview.prototype = {
         this.visible = true;
         this.animationInProgress = true;
 
+        this._desktopFade = new St.Bin();
+        global.overlay_group.add_actor(this._desktopFade);
+        this._desktopFade.child = this._getDesktopClone();
+
         // All the the actors in the window group are completely obscured,
         // hiding the group holding them while the Overview is displayed greatly
         // increases performance of the Overview especially when there are many
@@ -538,6 +530,14 @@ Overview.prototype = {
         Meta.disable_unredirect_for_screen(global.screen);
         global.window_group.hide();
         this._group.show();
+
+        // The main BackgroundActor is inside global.window_group which is
+        // hidden when displaying the overview, so we create a new
+        // one. Instances of this class share a single CoglTexture behind the
+        // scenes which allows us to show the background with different
+        // rendering options without duplicating the texture data.
+        this._background = Meta.BackgroundActor.new_for_screen(global.screen);
+        global.overlay_group.add_actor(this._background);
         this._background.show();
 
         this._workspacesDisplay.show();
@@ -546,8 +546,6 @@ Overview.prototype = {
         this.workspaces = this._workspacesDisplay.workspacesView;
         global.overlay_group.add_actor(this.workspaces.actor);
 
-        if (!this._desktopFade.child)
-            this._desktopFade.child = this._getDesktopClone();
 
         if (!this.workspaces.getActiveWorkspace().hasMaximizedWindows()) {
             this._desktopFade.opacity = 255;
@@ -741,8 +739,12 @@ Overview.prototype = {
 
         this._workspacesDisplay.hide();
 
-        this._desktopFade.hide();
-        this._background.hide();
+        global.overlay_group.remove_actor(this._desktopFade);
+        this._desktopFade.destroy();
+        this._desktopFade = null;
+        global.overlay_group.remove_actor(this._background);
+        this._background.destroy();
+        this._background = null;
         this._group.hide();
 
         this.visible = false;
