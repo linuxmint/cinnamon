@@ -1,3 +1,16 @@
+Fixes needed
+------------
+ - Administration and preference don't appear in menu editor
+ - Move up and Move down buttons don't work in menu editor (if Gnome 3 broke that we need to switch back to the GTK2 version of this tool, as on the original fork)
+ - Don't hide spotify in systray
+ - Conky/mintupload windows appear (careful not to hide gimp utility windows though or make it configurable)
+ - workspaces can overlap in expo grid 
+ - recommend muffin
+ - depend on gsjdbus
+ - muffin should depend on libmuffin0 and gir-muffin of the same version (currently it's possible to upgrade cinnamon and libmuffin without upgrading other muffin packages and it results in crashes)
+ - Alt-arrow shortcuts don't work in nemo
+
+
 1.6.1
 -----
 
