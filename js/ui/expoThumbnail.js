@@ -180,6 +180,8 @@ ExpoWorkspaceThumbnail.prototype = {
         this.metaWorkspace = metaWorkspace;
         this.monitorIndex = Main.layoutManager.primaryIndex;
 
+        this.frame = new St.Group({ clip_to_allocation: true,
+                                    style_class: 'expo-workspace-thumbnail-frame' });
         this.actor = new St.Group({ reactive: true,
                                     clip_to_allocation: true,
                                     style_class: 'workspace-thumbnail' });
@@ -274,7 +276,11 @@ ExpoWorkspaceThumbnail.prototype = {
         this.state = ThumbnailState.NORMAL;
         this._slidePosition = 0; // Fully slid in
     },
-    
+
+    _setActive: function(isActive) {
+        this.frame.name = isActive ? 'active' : '';
+    },
+
     _refreshTitle: function() {
         this.title.set_text(Main.getWorkspaceName(this.metaWorkspace.index()));
     },
@@ -448,6 +454,7 @@ ExpoWorkspaceThumbnail.prototype = {
 
     destroy : function() {            
         this.actor.destroy();        
+        this.frame.destroy();
     },
 
     _onDestroy: function(actor) {
@@ -938,6 +945,7 @@ ExpoThumbnailsBox.prototype = {
             this._thumbnails.push(thumbnail);
             if (metaWorkspace == global.screen.get_active_workspace()) {
                 this._lastActiveWorkspace = thumbnail;
+                thumbnail._setActive(true);
             }
             let overviewTimeoutId = null;
             let setOverviewTimeout = function(timeout, func) {
@@ -949,10 +957,12 @@ ExpoThumbnailsBox.prototype = {
             };
             thumbnail.actor.connect('destroy', Lang.bind(this, function(actor) {
                 setOverviewTimeout(0, null);
+                this.actor.remove_actor(thumbnail.frame);
                 this.actor.remove_actor(actor);
                 this.actor.remove_actor(thumbnail.title);
                 thumbnail.title.destroy();
                 }));
+            this.actor.add_actor(thumbnail.frame);
             this.actor.add_actor(thumbnail.actor);
             this.actor.add_actor(thumbnail.title);
 
@@ -1343,7 +1353,7 @@ ExpoThumbnailsBox.prototype = {
             let y1, y2;
             
             y1 = y;
-            y2 = y1 + rowMultiplier * thumbnailHeight;
+            y2 = y1 + thumbnailHeight;
 
             // Allocating a scaled actor is funny - x1/y1 correspond to the origin
             // of the actor, but x2/y2 are increased by the *unscaled* size.
@@ -1352,16 +1362,24 @@ ExpoThumbnailsBox.prototype = {
             childBox.y1 = y1;
             childBox.y2 = y1 + portholeHeight;
 
-            thumbnail.actor.set_scale(this._scale * (1 - thumbnail.slidePosition), this._scale * (1 - thumbnail.slidePosition));
+            let scale = this._scale * (1 - thumbnail.slidePosition);
+            thumbnail.actor.set_scale(scale, scale);
             thumbnail.actor.allocate(childBox, flags);  
+
+            let framethemeNode = thumbnail.frame.get_theme_node();
+            let borderWidth = Math.max(1, framethemeNode.get_border_width(St.Side.BOTTOM));
+            childBox.x1 = x1 - borderWidth;
+            childBox.x2 = x2 + borderWidth;
+            childBox.y1 = y1 - borderWidth;
+            childBox.y2 = y2 + borderWidth;
+            thumbnail.frame.set_scale((1 - thumbnail.slidePosition), (1 - thumbnail.slidePosition));
+            thumbnail.frame.allocate(childBox, flags);
 
             let thumbnailx = Math.round(x + (thumbnailWidth * thumbnail.slidePosition / 2));
             childBox.x1 = Math.max(thumbnailx, thumbnailx + Math.round(thumbnailWidth/2) - Math.round(thumbnail.title.width/2));
             childBox.x2 = Math.min(thumbnailx + thumbnailWidth, childBox.x1 + thumbnail.title.width);
-            
             childBox.y1 = y + thumbnailHeight + thTitleMargin;
             childBox.y2 = childBox.y1 + thumbnail.title.height;
-                        
             thumbnail.title.allocate(childBox, flags);
 
             x += thumbnailWidth + spacing;
@@ -1433,11 +1451,10 @@ ExpoThumbnailsBox.prototype = {
             }
         }
 
-        if (this._lastActiveWorkspace)
-            this._lastActiveWorkspace._shade();
-
+        if (this._lastActiveWorkspace) {
+            this._lastActiveWorkspace._setActive(false);
+        }
+        thumbnail._setActive(true);
         this._lastActiveWorkspace = thumbnail;
-        if (thumbnail.shade.opacity > 0)
-            thumbnail._highlight();
     }
 };
