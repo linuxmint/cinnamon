@@ -123,7 +123,6 @@ AppMenuButtonRightClickMenu.prototype = {
 
     _onCloseWindowActivate: function(actor, event){
         this.metaWindow.delete(global.get_current_time());
-        this.destroy();
     },
 
     _onCloseAllActivate: function(actor, event) {
