@@ -213,10 +213,6 @@ class MenuEditor(object):
         self.positionItem(parent, ('Menu', menu_id), before, after)
         self.save()
 
-    def createSeparator(self, parent, before=None, after=None):
-        self.positionItem(parent, ('Separator',), before, after)
-        self.save()
-
     def editItem(self, item, icon, name, comment, command, use_term, parent=None, final=True):
         #if nothing changed don't make a user copy
         app_info = item.get_app_info()

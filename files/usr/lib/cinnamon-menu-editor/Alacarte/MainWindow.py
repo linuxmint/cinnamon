@@ -52,7 +52,6 @@ class MainWindow(object):
         self.tree.get_object('edit_properties').set_sensitive(False)
         self.tree.get_object('move_up_button').set_sensitive(False)
         self.tree.get_object('move_down_button').set_sensitive(False)
-        self.tree.get_object('new_separator_button').set_sensitive(False)
 
     def run(self):
         self.loadMenus()
@@ -272,18 +271,6 @@ class MainWindow(object):
         process = subprocess.Popen(['gnome-desktop-item-edit', file_path], env=os.environ)
         GObject.timeout_add(100, self.waitForNewItemProcess, process, parent.get_menu_id(), file_path)
 
-    def on_new_separator_button_clicked(self, button):
-        item_tree = self.tree.get_object('item_tree')
-        items, iter = item_tree.get_selection().get_selected()
-        if not iter:
-            return
-        else:
-            after = items[iter][3]
-            menu_tree = self.tree.get_object('menu_tree')
-            menus, iter = menu_tree.get_selection().get_selected()
-            parent = menus[iter][2]
-            self.editor.createSeparator(parent, after=after)
-
     def on_edit_delete_activate(self, menu):
         item_tree = self.tree.get_object('item_tree')
         items, iter = item_tree.get_selection().get_selected()
@@ -337,7 +324,6 @@ class MainWindow(object):
         self.tree.get_object('edit_properties').set_sensitive(False)
         self.tree.get_object('move_up_button').set_sensitive(False)
         self.tree.get_object('move_down_button').set_sensitive(False)
-        self.tree.get_object('new_separator_button').set_sensitive(False)
         self.tree.get_object('properties_button').set_sensitive(False)
         self.tree.get_object('delete_button').set_sensitive(False)
 
@@ -361,7 +347,6 @@ class MainWindow(object):
 
         item = items[iter][3]
         self.tree.get_object('edit_delete').set_sensitive(True)
-        self.tree.get_object('new_separator_button').set_sensitive(True)
         self.tree.get_object('delete_button').set_sensitive(True)
 
         can_edit = not isinstance(item, GMenu.TreeSeparator)
@@ -406,6 +391,7 @@ class MainWindow(object):
             self.on_edit_delete_activate(item_tree)
 
     def on_move_up_button_clicked(self, button):
+        print "move up"
         item_tree = self.tree.get_object('item_tree')
         items, iter = item_tree.get_selection().get_selected()
         if not iter:
@@ -419,6 +405,7 @@ class MainWindow(object):
         self.editor.moveItem(item.get_parent(), item, before=before)
 
     def on_move_down_button_clicked(self, button):
+        print "move down"
         item_tree = self.tree.get_object('item_tree')
         items, iter = item_tree.get_selection().get_selected()
         if not iter:
