@@ -493,22 +493,34 @@ class MenuEditor(object):
         self.positionItem(parent, item, before=before, after=after)
         self.save()
 
+    def getIndex(self, item, contents):
+        index = -1
+        for i in range(len(contents)):
+            if item.get_name() == contents[i].get_name():
+                index = i
+                return index
+        return index
+
     def positionItem(self, parent, item, before=None, after=None):
         contents = self.getContents(parent)
+        index = -1
         if after:
-            index = contents.index(after) + 1
+            index = self.getIndex(after, contents) + 1
+          #  index = contents.index(after) + 1
         elif before:
-            index = contents.index(before)
+            index = self.getIndex(before, contents)
+          #  index = contents.index(before)
         else:
             # append the item to the list
             index = len(contents)
         #if this is a move to a new parent you can't remove the item
-        if item in contents:
+        item_index = self.getIndex(item, contents)
+        if item_index > -1:
             # decrease the destination index, if we shorten the list
-            if (before and (contents.index(item) < index)) \
-                    or (after and (contents.index(item) < index - 1)):
+            if (before and (item_index < index)) \
+                    or (after and (item_index < index - 1)):
                 index -= 1
-            contents.remove(item)
+            contents.remove(contents[item_index])
         contents.insert(index, item)
         layout = self.createLayout(contents)
         dom = self.dom
