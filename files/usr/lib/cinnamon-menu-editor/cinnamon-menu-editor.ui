@@ -266,6 +266,7 @@
                                         <property name="visible">True</property>
                                         <property name="layout_style">GTK_BUTTONBOX_START</property>
                                         <property name="spacing">6</property>
+                                  <!--
                                         <child>
                                           <object class="GtkButton" id="move_up_button">
                                             <property name="label" translatable="yes">Move Up</property>
@@ -290,6 +291,7 @@
                                             <signal handler="on_move_down_button_clicked" name="clicked"/>
                                           </object>
                                         </child>
+                                  -->
                                         <child>
                                           <object class="GtkButton" id="delete_button">
                                             <property name="label" translatable="no">gtk-delete</property>
@@ -297,14 +299,14 @@
                                             <property name="can_focus">True</property>
                                             <property name="receives_default">True</property>
                                             <property name="use_stock">True</property>
-					    <signal handler="on_delete_button_clicked" name="clicked"/>
+                                            <signal handler="on_delete_button_clicked" name="clicked"/>
                                           </object>
                                           <packing>
                                             <property name="expand">False</property>
                                             <property name="fill">False</property>
                                             <property name="position">2</property>
                                           </packing>
-					</child>
+                                        </child>
                                         <child>
                                           <object class="GtkButton" id="properties_button">
                                             <property name="label" translatable="no">gtk-properties</property>

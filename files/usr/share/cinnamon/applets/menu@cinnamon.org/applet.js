@@ -997,7 +997,7 @@ MyApplet.prototype = {
          }));
          this.categoriesBox.add_actor(this._allAppsCategoryButton.actor);
 
-        let trees = [appsys.get_tree(), appsys.get_settings_tree()];
+        let trees = [appsys.get_tree()];
 
         for (var i in trees) {
             let tree = trees[i];
@@ -1188,7 +1188,6 @@ MyApplet.prototype = {
         let j = 0;
         for ( let i = 0; i < launchers.length; ++i ) {
             let app = appSys.lookup_app(launchers[i]);
-            if (!app) app = appSys.lookup_settings_app(launchers[i]);
             if (app) {
                 let button = new FavoritesButton(this, app, launchers.length + 3); // + 3 because we're adding 3 system buttons at the bottom
                 this._favoritesButtons[app] = button;
@@ -1274,8 +1273,6 @@ MyApplet.prototype = {
                 var entry = iter.get_entry();
                 if (!entry.get_app_info().get_nodisplay()) {
                     var app = appsys.lookup_app_by_tree_entry(entry);
-                    if (!app)
-                        app = appsys.lookup_settings_app_by_tree_entry(entry);
                     dupe = this.find_dupe(app);
                     if (!dupe) {
                         let applicationButton = new ApplicationButton(this, app);
