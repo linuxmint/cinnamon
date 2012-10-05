@@ -50,8 +50,8 @@ class MainWindow(object):
         self.setupItemTree()
         self.tree.get_object('edit_delete').set_sensitive(False)
         self.tree.get_object('edit_properties').set_sensitive(False)
-        self.tree.get_object('move_up_button').set_sensitive(False)
-        self.tree.get_object('move_down_button').set_sensitive(False)
+#        self.tree.get_object('move_up_button').set_sensitive(False)
+#        self.tree.get_object('move_down_button').set_sensitive(False)
 
     def run(self):
         self.loadMenus()
@@ -322,8 +322,8 @@ class MainWindow(object):
         self.loadItems(self.menu_store[menu_path][2])
         self.tree.get_object('edit_delete').set_sensitive(False)
         self.tree.get_object('edit_properties').set_sensitive(False)
-        self.tree.get_object('move_up_button').set_sensitive(False)
-        self.tree.get_object('move_down_button').set_sensitive(False)
+#        self.tree.get_object('move_up_button').set_sensitive(False)
+#        self.tree.get_object('move_down_button').set_sensitive(False)
         self.tree.get_object('properties_button').set_sensitive(False)
         self.tree.get_object('delete_button').set_sensitive(False)
 
@@ -356,8 +356,8 @@ class MainWindow(object):
         index = items.get_path(iter).get_indices()[0]
         can_go_up = index > 0
         can_go_down = index < len(items) - 1
-        self.tree.get_object('move_up_button').set_sensitive(can_go_up)
-        self.tree.get_object('move_down_button').set_sensitive(can_go_down)
+#        self.tree.get_object('move_up_button').set_sensitive(can_go_up)
+#        self.tree.get_object('move_down_button').set_sensitive(can_go_down)
 
     def on_item_tree_row_activated(self, treeview, path, column):
         self.on_edit_properties_activate(None)
