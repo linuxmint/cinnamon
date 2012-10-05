@@ -49,6 +49,7 @@ struct _CinnamonAppSystemPrivate {
 
   GSList *known_vendor_prefixes;
 
+  GMenuTree *settings_tree;
   GHashTable *setting_id_to_app;
 };
 
@@ -113,10 +114,10 @@ cinnamon_app_system_finalize (GObject *object)
   CinnamonAppSystemPrivate *priv = self->priv;
 
   g_object_unref (priv->apps_tree);
-
+  g_object_unref (priv->settings_tree);
   g_hash_table_destroy (priv->running_apps);
   g_hash_table_destroy (priv->id_to_app);
-
+  g_hash_table_destroy (priv->setting_id_to_app);
   g_slist_foreach (priv->known_vendor_prefixes, (GFunc)g_free, NULL);
   g_slist_free (priv->known_vendor_prefixes);
   priv->known_vendor_prefixes = NULL;
@@ -397,6 +398,36 @@ cinnamon_app_system_get_tree (CinnamonAppSystem *self)
 }
 
 /**
+ * cinnamon_app_system_get_settings_tree:
+ *
+ * OBSOLETE - ONLY LEFT IN FOR COMPATIBILITY
+ * RETURNS EMPTY GMenuTree
+ */
+GMenuTree *
+cinnamon_app_system_get_settings_tree (CinnamonAppSystem *self)
+{
+  return self->priv->settings_tree;
+}
+/**
+ * cinnamon_app_system_lookup_setting:
+ *
+ * OBSOLETE - ONLY LEFT IN FOR COMPATIBILITY
+ * RETURNS NULL IF NOT FOUND IN STANDARD APPS
+ *
+ */
+CinnamonApp *
+cinnamon_app_system_lookup_setting (CinnamonAppSystem *self,
+                                 const char     *id)
+{
+  CinnamonApp *app;
+  /* Actually defer to the main app set if there's overlap */
+  app = cinnamon_app_system_lookup_app (self, id);
+  if (app != NULL)
+    return app;
+  return NULL;
+}
+
+/**
  * cinnamon_app_system_get_default:
  *
  * Return Value: (transfer none): The global #CinnamonAppSystem singleton
@@ -447,6 +478,20 @@ cinnamon_app_system_lookup_app (CinnamonAppSystem   *self,
 }
 
 /**
+ * cinnamon_app_system_lookup_settings_app:
+ *
+ * OBSOLETE - ONLY LEFT IN FOR COMPATIBILITY
+ * RETURNS NULL
+ *
+ */
+CinnamonApp *
+cinnamon_app_system_lookup_settings_app (CinnamonAppSystem   *self,
+                             const char       *id)
+{
+  return NULL;
+}
+
+/**
  * cinnamon_app_system_lookup_app_by_tree_entry:
  * @system: a #CinnamonAppSystem
  * @entry: a #GMenuTreeEntry
@@ -463,6 +508,21 @@ cinnamon_app_system_lookup_app_by_tree_entry (CinnamonAppSystem  *self,
    * override of running apps.  Thus, indirect through the id.
    */
   return cinnamon_app_system_lookup_app (self, gmenu_tree_entry_get_desktop_file_id (entry));
+}
+
+
+/**
+ * cinnamon_app_system_lookup_settings_app_by_tree_entry:
+ *
+ * OBSOLETE - ONLY LEFT IN FOR COMPATIBILITY
+ * RETURNS NULL
+ *
+ */
+CinnamonApp *
+cinnamon_app_system_lookup_settings_app_by_tree_entry (CinnamonAppSystem  *self,
+                                           GMenuTreeEntry  *entry)
+{
+  return NULL;
 }
 
 /**
@@ -748,3 +808,17 @@ cinnamon_app_system_subsearch (CinnamonAppSystem   *system,
   return sort_and_concat_results (system, prefix_results, substring_results);
 }
 
+/**
+ * cinnamon_app_system_search_settings:
+ *
+ * OBSOLETE - ONLY LEFT IN FOR COMPATIBILITY
+ * RETURNS EMPTY LIST
+ * 
+ */
+GSList *
+cinnamon_app_system_search_settings (CinnamonAppSystem  *self,
+                                  GSList          *terms)
+{
+  GSList *null_list;
+  return null_list;
+}
