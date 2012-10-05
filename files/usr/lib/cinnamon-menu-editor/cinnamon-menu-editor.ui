@@ -266,7 +266,6 @@
                                         <property name="visible">True</property>
                                         <property name="layout_style">GTK_BUTTONBOX_START</property>
                                         <property name="spacing">6</property>
-                                  <!--
                                         <child>
                                           <object class="GtkButton" id="move_up_button">
                                             <property name="label" translatable="yes">Move Up</property>
@@ -291,7 +290,6 @@
                                             <signal handler="on_move_down_button_clicked" name="clicked"/>
                                           </object>
                                         </child>
-                                  -->
                                         <child>
                                           <object class="GtkButton" id="delete_button">
                                             <property name="label" translatable="no">gtk-delete</property>
