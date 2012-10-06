@@ -400,6 +400,7 @@ cinnamon_app_system_get_tree (CinnamonAppSystem *self)
 /**
  * cinnamon_app_system_get_settings_tree:
  *
+ * Return Value: (transfer none): The #GMenuTree for apps
  * OBSOLETE - ONLY LEFT IN FOR COMPATIBILITY
  * RETURNS EMPTY GMenuTree
  */
@@ -411,6 +412,7 @@ cinnamon_app_system_get_settings_tree (CinnamonAppSystem *self)
 /**
  * cinnamon_app_system_lookup_setting:
  *
+ * Returns: (transfer none): Application in gnomecc.menu, or %NULL if none
  * OBSOLETE - ONLY LEFT IN FOR COMPATIBILITY
  * RETURNS NULL IF NOT FOUND IN STANDARD APPS
  *
@@ -480,6 +482,7 @@ cinnamon_app_system_lookup_app (CinnamonAppSystem   *self,
 /**
  * cinnamon_app_system_lookup_settings_app:
  *
+ * Return value: (transfer none): The #CinnamonApp for id, or %NULL if none
  * OBSOLETE - ONLY LEFT IN FOR COMPATIBILITY
  * RETURNS NULL
  *
@@ -514,6 +517,7 @@ cinnamon_app_system_lookup_app_by_tree_entry (CinnamonAppSystem  *self,
 /**
  * cinnamon_app_system_lookup_settings_app_by_tree_entry:
  *
+ * Return value: (transfer none): The #CinnamonApp for @entry, or %NULL if none
  * OBSOLETE - ONLY LEFT IN FOR COMPATIBILITY
  * RETURNS NULL
  *
@@ -811,6 +815,12 @@ cinnamon_app_system_subsearch (CinnamonAppSystem   *system,
 /**
  * cinnamon_app_system_search_settings:
  *
+ * @system: A #CinnamonAppSystem
+ * @terms: (element-type utf8): List of terms, logical AND
+ *
+ * Search through settings for the given search terms.
+ *
+ * Returns: (transfer container) (element-type CinnamonApp): List of setting applications
  * OBSOLETE - ONLY LEFT IN FOR COMPATIBILITY
  * RETURNS EMPTY LIST
  * 
