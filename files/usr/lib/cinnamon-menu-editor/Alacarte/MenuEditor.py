@@ -495,12 +495,20 @@ class MenuEditor(object):
 
     def getIndex(self, item, contents):
         index = -1
-        if not isinstance(item, GMenu.TreeDirectory):
-            return index
-        for i in range(len(contents)):
-            if item.get_menu_id() == contents[i].get_menu_id():
-                index = i
-                return index
+        if isinstance(item, GMenu.TreeDirectory):
+            for i in range(len(contents)):
+                if type(item) is not type(contents[i]):
+                    continue
+                if item.get_menu_id() == contents[i].get_menu_id():
+                    index = i
+                    return index
+        elif isinstance(item, GMenu.TreeEntry):
+            for i in range(len(contents)):
+                if type(item) is not type(contents[i]):
+                    continue
+                if item.get_desktop_file_id() == contents[i].get_desktop_file_id():
+                    index = i
+                    return index
         return index
 
     def positionItem(self, parent, item, before=None, after=None):
