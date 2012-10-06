@@ -495,8 +495,10 @@ class MenuEditor(object):
 
     def getIndex(self, item, contents):
         index = -1
+        if not isinstance(item, GMenu.TreeDirectory):
+            return index
         for i in range(len(contents)):
-            if item.get_name() == contents[i].get_name():
+            if item.get_menu_id() == contents[i].get_menu_id():
                 index = i
                 return index
         return index
