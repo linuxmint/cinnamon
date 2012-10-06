@@ -1626,7 +1626,7 @@ MyApplet.prototype = {
             }
             if (this._searchTimeoutId > 0)
                 return;
-            this._searchTimeoutId = Mainloop.timeout_add(150, Lang.bind(this, this._doSearch));
+            this._searchTimeoutId = Mainloop.timeout_add(0, Lang.bind(this, this._doSearch));
         }
     },
 
