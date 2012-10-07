@@ -23,13 +23,13 @@ import os
 import gettext
 import subprocess
 
-from Alacarte import config
+from cme import config
 gettext.bindtextdomain(config.GETTEXT_PACKAGE, config.localedir)
 gettext.textdomain(config.GETTEXT_PACKAGE)
 
 _ = gettext.gettext
-from Alacarte.MenuEditor import MenuEditor
-from Alacarte import util
+from cme.MenuEditor import MenuEditor
+from cme import util
 
 class MainWindow(object):
     timer = None

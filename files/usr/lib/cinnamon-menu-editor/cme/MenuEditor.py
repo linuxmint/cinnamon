@@ -20,7 +20,7 @@ import os
 import xml.dom.minidom
 import xml.parsers.expat
 from gi.repository import GMenu, GLib
-from Alacarte import util
+from cme import util
 
 class MenuEditor(object):
     def __init__(self, name='cinnamon-applications.menu'):
