@@ -33,6 +33,7 @@ MyApplet.prototype = {
 
     updateMenu: function() {
         this.menu.removeAll();
+        let empty_menu = true;
         try {
             let tracker = Cinnamon.WindowTracker.get_default();
 
@@ -63,6 +64,7 @@ MyApplet.prototype = {
                         item._icon = app.create_icon_texture(24);
                         item.addActor(item._icon, { align: St.Align.END });
                         this.menu.addMenuItem(item);
+                        empty_menu = false;
                     }
                         this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
                 }
@@ -80,6 +82,7 @@ MyApplet.prototype = {
                             item.setShowDot(true);
                         }
                         this.menu.addMenuItem(item);
+                        empty_menu = false;
                     }
 
 
@@ -92,11 +95,19 @@ MyApplet.prototype = {
                         item._icon = app.create_icon_texture(24);
                         item.addActor(item._icon, { align: St.Align.END });
                         this.menu.addMenuItem(item);
+                        empty_menu = false;
                     }
                 }
             }
         } catch(e) {
             global.logError(e);
+        }
+        if (empty_menu) {
+            let item = new PopupMenu.PopupMenuItem(_("No open windows"))
+            item.actor.reactive = false;
+            item.actor.can_focus = false;
+            item.label.add_style_class_name('popup-subtitle-menu-item');
+            this.menu.addMenuItem(item);
         }
     },
 
