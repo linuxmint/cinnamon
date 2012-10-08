@@ -1,0 +1,1884 @@
+# Chinese (Simplified) translation for linuxmint
+# Copyright (c) 2012 Rosetta Contributors and Canonical Ltd 2012
+# This file is distributed under the same license as the linuxmint package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2012.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: linuxmint\n"
+"Report-Msgid-Bugs-To: FULL NAME <EMAIL@ADDRESS>\n"
+"POT-Creation-Date: 2012-09-27 11:06+0100\n"
+"PO-Revision-Date: 2012-08-27 12:29+0000\n"
+"Last-Translator: Wylmer Wang <Unknown>\n"
+"Language-Team: Chinese (Simplified) <zh_CN@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Launchpad-Export-Date: 2012-10-05 14:53+0000\n"
+"X-Generator: Launchpad (build 16061)\n"
+
+#: src/cinnamon-app.c:347 src/cinnamon-app.c:355
+#: js/ui/notificationDaemon.js:458
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:126
+msgid "Unknown"
+msgstr "未知"
+
+#: src/cinnamon-app.c:581
+#, c-format
+msgid "Failed to launch '%s'"
+msgstr "无法启动 '%s'"
+
+#: src/cinnamon-mobile-providers.c:80
+msgid "United Kingdom"
+msgstr "英国"
+
+#: src/cinnamon-mobile-providers.c:526
+msgid "Default"
+msgstr "默认"
+
+#: src/cinnamon-polkit-authentication-agent.c:334
+msgid "Authentication dialog was dismissed by the user"
+msgstr "用户关掉了认证对话框"
+
+#: src/cinnamon-util.c:89
+msgid "Home"
+msgstr "主目录"
+
+#: src/cinnamon-util.c:98
+msgid "File System"
+msgstr "文件系统"
+
+#: src/cinnamon-util.c:244
+msgid "Search"
+msgstr "搜索"
+
+#: src/cinnamon-util.c:294
+#, c-format
+msgid "%1$s: %2$s"
+msgstr "%1$s: %2$s"
+
+#: src/gvc/gvc-mixer-control.c:1082 js/ui/lookingGlass.js:691
+msgid "Disabled"
+msgstr "已禁用"
+
+#: src/gvc/gvc-mixer-control.c:1089
+#, c-format
+msgid "%u Output"
+msgid_plural "%u Outputs"
+msgstr[0] "%u 路输出"
+
+#: src/gvc/gvc-mixer-control.c:1099
+#, c-format
+msgid "%u Input"
+msgid_plural "%u Inputs"
+msgstr[0] "%u 路输入"
+
+#: src/gvc/gvc-mixer-control.c:1397
+msgid "System Sounds"
+msgstr "系统声音"
+
+#: js/misc/util.js:89
+msgid "Command not found"
+msgstr "找不到命令"
+
+#: js/misc/util.js:116
+msgid "Could not parse command:"
+msgstr "无法解析命令："
+
+#: js/misc/util.js:124
+#, c-format
+msgid "Execution of '%s' failed:"
+msgstr "\"%s\" 执行失败："
+
+#: js/ui/applet.js:237
+msgid "Remove this applet"
+msgstr ""
+
+#: js/ui/autorunManager.js:280
+msgid "Removable Devices"
+msgstr "可移动设备"
+
+#: js/ui/autorunManager.js:590
+#, c-format
+msgid "Open with %s"
+msgstr "使用 %s 打开"
+
+#: js/ui/autorunManager.js:616
+msgid "Eject"
+msgstr "弹出"
+
+#: js/ui/calendar.js:704
+msgid "Nothing Scheduled"
+msgstr "没有计划"
+
+#: js/ui/calendar.js:733
+msgid "Today"
+msgstr "今天"
+
+#: js/ui/calendar.js:737
+msgid "Tomorrow"
+msgstr "明天"
+
+#: js/ui/calendar.js:746
+msgid "This week"
+msgstr "本周"
+
+#: js/ui/calendar.js:754
+msgid "Next week"
+msgstr "下周"
+
+#: js/ui/cinnamonEntry.js:30
+msgid "Copy"
+msgstr "复制"
+
+#: js/ui/cinnamonEntry.js:35
+msgid "Paste"
+msgstr "粘贴"
+
+#: js/ui/cinnamonEntry.js:81
+msgid "Show Text"
+msgstr "显示文本"
+
+#: js/ui/cinnamonEntry.js:83
+msgid "Hide Text"
+msgstr "隐藏文本"
+
+#: js/ui/cinnamonMountOperation.js:285
+msgid "Wrong password, please try again"
+msgstr "密码错误，请重试"
+
+#: js/ui/endSessionDialog.js:58
+#, c-format
+msgid "Log Out %s"
+msgstr "注销 %s"
+
+#: js/ui/endSessionDialog.js:59 js/ui/endSessionDialog.js:73
+msgid "Log Out"
+msgstr "注销"
+
+#: js/ui/endSessionDialog.js:60
+msgid "Click Log Out to quit these applications and log out of the system."
+msgstr "点击“注销”以退出应用程序并注销系统。"
+
+#: js/ui/endSessionDialog.js:62
+#, c-format
+msgid "%s will be logged out automatically in %d second."
+msgid_plural "%s will be logged out automatically in %d seconds."
+msgstr[0] "%s 将在 %d 秒后自动注销。"
+
+#: js/ui/endSessionDialog.js:67
+#, c-format
+msgid "You will be logged out automatically in %d second."
+msgid_plural "You will be logged out automatically in %d seconds."
+msgstr[0] "您将在 %d 秒后自动注销。"
+
+#: js/ui/endSessionDialog.js:71
+msgid "Logging out of the system."
+msgstr "注销系统。"
+
+#: js/ui/endSessionDialog.js:78 js/ui/endSessionDialog.js:89
+msgid "Power Off"
+msgstr "关机"
+
+#: js/ui/endSessionDialog.js:79
+msgid "Click Power Off to quit these applications and power off the system."
+msgstr "点击“关机”退出应用程序并关闭系统。"
+
+#: js/ui/endSessionDialog.js:81
+#, c-format
+msgid "The system will power off automatically in %d second."
+msgid_plural "The system will power off automatically in %d seconds."
+msgstr[0] "系统将在 %d 秒后自动关机。"
+
+#: js/ui/endSessionDialog.js:85
+msgid "Powering off the system."
+msgstr "关闭系统。"
+
+#: js/ui/endSessionDialog.js:87 js/ui/endSessionDialog.js:95
+#: js/ui/endSessionDialog.js:104
+msgid "Restart"
+msgstr "重新启动"
+
+#: js/ui/endSessionDialog.js:96
+msgid "Click Restart to quit these applications and restart the system."
+msgstr "点击“重启”退出应用程序并重启系统。"
+
+#: js/ui/endSessionDialog.js:98
+#, c-format
+msgid "The system will restart automatically in %d second."
+msgid_plural "The system will restart automatically in %d seconds."
+msgstr[0] "系统将在 %d 秒后自动重启。"
+
+#: js/ui/endSessionDialog.js:102
+msgid "Restarting the system."
+msgstr "重启系统。"
+
+#: js/ui/endSessionDialog.js:428 js/ui/extensionSystem.js:477
+#: js/ui/networkAgent.js:144 js/ui/polkitAuthenticationAgent.js:173
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:170
+#: files/usr/share/cinnamon/applets/trash@cinnamon.org/applet.js:118
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/add-panel-launcher.py:141
+msgid "Cancel"
+msgstr "取消"
+
+#: js/ui/extensionSystem.js:481
+msgid "Install"
+msgstr "安装"
+
+#: js/ui/extensionSystem.js:485
+#, c-format
+msgid "Download and install '%s' from extensions.gnome.org?"
+msgstr "要从 extensions.gnome.org 站点下载并安装“%s”吗？"
+
+#: js/ui/keyboard.js:324
+msgid "tray"
+msgstr "托盘"
+
+#: js/ui/keyboard.js:555
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:114
+msgid "Keyboard"
+msgstr "键盘"
+
+#: js/ui/lookingGlass.js:643
+msgid "No extensions installed"
+msgstr "未安装扩展"
+
+#: js/ui/lookingGlass.js:689
+msgid "Enabled"
+msgstr "已启用"
+
+#: js/ui/lookingGlass.js:693
+msgid "Error"
+msgstr "错误"
+
+#: js/ui/lookingGlass.js:695
+msgid "Out of date"
+msgstr "已过期"
+
+#: js/ui/lookingGlass.js:697
+msgid "Downloading"
+msgstr "正在下载"
+
+#: js/ui/lookingGlass.js:717
+msgid "View Source"
+msgstr "查看源文件"
+
+#: js/ui/lookingGlass.js:726
+msgid "Web Page"
+msgstr "网页"
+
+#: js/ui/main.js:369
+msgid "WORKSPACE"
+msgstr "工作区"
+
+#: js/ui/messageTray.js:1250
+msgid "Open"
+msgstr "打开"
+
+#: js/ui/messageTray.js:1257
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/applet.js:59
+msgid "Remove"
+msgstr "移除"
+
+#: js/ui/messageTray.js:1844
+msgid "System Information"
+msgstr "系统信息"
+
+#: js/ui/networkAgent.js:139
+msgid "Connect"
+msgstr "连接"
+
+#: js/ui/networkAgent.js:234 js/ui/networkAgent.js:246
+#: js/ui/networkAgent.js:273 js/ui/networkAgent.js:293
+#: js/ui/networkAgent.js:303
+msgid "Password: "
+msgstr "密码： "
+
+#: js/ui/networkAgent.js:239
+msgid "Key: "
+msgstr "密钥： "
+
+#: js/ui/networkAgent.js:271 js/ui/networkAgent.js:289
+msgid "Username: "
+msgstr "用户名： "
+
+#: js/ui/networkAgent.js:277
+msgid "Identity: "
+msgstr "标识： "
+
+#: js/ui/networkAgent.js:279
+msgid "Private key password: "
+msgstr "私人密钥密码： "
+
+#: js/ui/networkAgent.js:291
+msgid "Service: "
+msgstr "服务： "
+
+#: js/ui/networkAgent.js:320
+msgid "Authentication required by wireless network"
+msgstr "无线网络需要认证"
+
+#: js/ui/networkAgent.js:321
+#, c-format
+msgid ""
+"Passwords or encryption keys are required to access the wireless network "
+"'%s'."
+msgstr "需要密码或密钥来访问无线网络“%s”。"
+
+#: js/ui/networkAgent.js:325
+msgid "Wired 802.1X authentication"
+msgstr "有线 802.1X 认证"
+
+#: js/ui/networkAgent.js:327
+msgid "Network name: "
+msgstr "网络名称： "
+
+#: js/ui/networkAgent.js:332
+msgid "DSL authentication"
+msgstr "DSL 认证"
+
+#: js/ui/networkAgent.js:339
+msgid "PIN code required"
+msgstr "需要 PIN 码"
+
+#: js/ui/networkAgent.js:340
+msgid "PIN code is needed for the mobile broadband device"
+msgstr "移动宽带设备需要 PIN 码。"
+
+#: js/ui/networkAgent.js:341
+msgid "PIN: "
+msgstr "PIN: "
+
+#: js/ui/networkAgent.js:347
+msgid "Mobile broadband network password"
+msgstr "移动宽带网络密码"
+
+#: js/ui/networkAgent.js:348
+#, c-format
+msgid "A password is required to connect to '%s'."
+msgstr "连接到“%s”需要密码。"
+
+#: js/ui/overview.js:80
+msgid "Undo"
+msgstr "撤消"
+
+#: js/ui/overview.js:193
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2087
+msgid "Windows"
+msgstr "Windows"
+
+#: js/ui/panel.js:384
+msgid "Yes"
+msgstr "确定"
+
+#: js/ui/panel.js:391
+msgid "No"
+msgstr "取消"
+
+#: js/ui/panel.js:426
+#: files/usr/share/cinnamon/applets/brightness@cinnamon.org/applet.js:148
+#: files/usr/share/cinnamon/applets/settings@cinnamon.org/applet.js:28
+msgid "Settings"
+msgstr "设置"
+
+#: js/ui/panel.js:428
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1954
+msgid "Themes"
+msgstr "主题"
+
+#: js/ui/panel.js:431
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2053
+msgid "Applets"
+msgstr "小程序"
+
+#: js/ui/panel.js:434
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1870
+msgid "Panel"
+msgstr "面板"
+
+#: js/ui/panel.js:437
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:661
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:700
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1861
+msgid "Menu"
+msgstr "菜单"
+
+#: js/ui/panel.js:440
+msgid "All settings"
+msgstr "全部设置"
+
+#: js/ui/panel.js:445
+msgid "Troubleshoot"
+msgstr "故障排查"
+
+#: js/ui/panel.js:446
+msgid "Restart Cinnamon"
+msgstr "重启 Cinnamon"
+
+#: js/ui/panel.js:450
+msgid "Looking Glass"
+msgstr "Looking Glass"
+
+#: js/ui/panel.js:454
+msgid "Restore all settings to default"
+msgstr "恢复所有设置为默认值"
+
+#: js/ui/panel.js:464
+msgid "Panel Edit mode"
+msgstr "面板编辑模式"
+
+#: js/ui/panel.js:488
+msgid "Panel settings"
+msgstr "面板设置"
+
+#: js/ui/panel.js:491
+msgid "Add applets to the panel"
+msgstr ""
+
+#: js/ui/placesManager.js:119
+#, c-format
+msgid "Failed to unmount '%s'"
+msgstr "卸载“%s”失败"
+
+#: js/ui/placesManager.js:122
+msgid "Retry"
+msgstr "重试"
+
+#: js/ui/placesManager.js:162
+msgid "Connect to..."
+msgstr "连接到..."
+
+#: js/ui/polkitAuthenticationAgent.js:73
+msgid "Authentication Required"
+msgstr "需要认证"
+
+#: js/ui/polkitAuthenticationAgent.js:107
+msgid "Administrator"
+msgstr "管理员"
+
+#: js/ui/polkitAuthenticationAgent.js:177
+msgid "Authenticate"
+msgstr "认证"
+
+#: js/ui/polkitAuthenticationAgent.js:258
+msgid "Sorry, that didn't work. Please try again."
+msgstr "对不起，操作无效。请重试。"
+
+#: js/ui/polkitAuthenticationAgent.js:270
+msgid "Password:"
+msgstr "密码:"
+
+#: js/ui/runDialog.js:209
+msgid "Please enter a command:"
+msgstr "请输入命令："
+
+#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:44
+msgid "Accessibility"
+msgstr "辅助功能"
+
+#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:57
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:56
+msgid "Zoom"
+msgstr "缩放"
+
+#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:68
+msgid "Screen Keyboard"
+msgstr "屏幕键盘"
+
+#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:72
+msgid "Visual Alerts"
+msgstr "视觉警告"
+
+#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:75
+msgid "Sticky Keys"
+msgstr "粘滞键"
+
+#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:78
+msgid "Slow Keys"
+msgstr "慢速键"
+
+#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:81
+msgid "Bounce Keys"
+msgstr "回弹键"
+
+#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:84
+msgid "Mouse Keys"
+msgstr "鼠标键"
+
+#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:88
+msgid "Universal Access Settings"
+msgstr "通用访问设置"
+
+#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:146
+msgid "High Contrast"
+msgstr "高对比度"
+
+#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:183
+msgid "Large Text"
+msgstr "大号文本"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:37
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:71
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:111
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:144
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:216
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:221
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:453
+msgid "Bluetooth"
+msgstr "蓝牙"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:72
+#, c-format
+msgid "Authorization request from %s"
+msgstr "收到 %s 的认证请求"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:78
+#, c-format
+msgid "Device %s wants access to the service '%s'"
+msgstr "设备 %s 想要访问服务 \"%s\""
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:80
+msgid "Always grant access"
+msgstr "总是允许访问"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:81
+msgid "Grant this time only"
+msgstr "仅授权一次"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:82
+msgid "Reject"
+msgstr "拒绝"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:112
+#, c-format
+msgid "Pairing confirmation for %s"
+msgstr "%s 的配对确认"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:118
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:152
+#, c-format
+msgid "Device %s wants to pair with this computer"
+msgstr "设备 %s 想要与这台计算机配对"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:119
+#, c-format
+msgid "Please confirm whether the PIN '%s' matches the one on the device."
+msgstr "请确认 PIN 码“%s” 是否与设备匹配。"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:121
+msgid "Matches"
+msgstr "匹配"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:122
+msgid "Does not match"
+msgstr "不匹配"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:145
+#, c-format
+msgid "Pairing request for %s"
+msgstr "%s 配对请求"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:153
+msgid "Please enter the PIN mentioned on the device."
+msgstr "请输入设备上提示的 PIN 码。"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:169
+msgid "OK"
+msgstr "确定"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:234
+msgid "Visibility"
+msgstr "可见性"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:248
+msgid "Send Files to Device..."
+msgstr "发送文件到设备..."
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:249
+msgid "Set up a New Device..."
+msgstr "设置一个新设备..."
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:273
+msgid "Bluetooth Settings"
+msgstr "蓝牙设置"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:303
+msgid "hardware disabled"
+msgstr "硬件已禁用"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:400
+msgid "Connection"
+msgstr "连接"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:409
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:508
+msgid "disconnecting..."
+msgstr "正在断开连接..."
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:422
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:514
+msgid "connecting..."
+msgstr "正在连接..."
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:440
+msgid "Send Files..."
+msgstr "发送文件..."
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:445
+msgid "Browse Files..."
+msgstr "浏览文件..."
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:454
+msgid "Error browsing device"
+msgstr "浏览设备出错"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:455
+#, c-format
+msgid "The requested device cannot be browsed, error is '%s'"
+msgstr "无法浏览请求的设备，错误为“%s”"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:463
+msgid "Keyboard Settings"
+msgstr "键盘设置"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:466
+msgid "Mouse Settings"
+msgstr "鼠标设置"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:471
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:911
+msgid "Sound Settings"
+msgstr "声音设置"
+
+#: files/usr/share/cinnamon/applets/brightness@cinnamon.org/applet.js:112
+#: files/usr/share/cinnamon/applets/brightness@cinnamon.org/applet.js:143
+#: files/usr/share/cinnamon/applets/brightness@cinnamon.org/applet.js:225
+#: files/usr/share/cinnamon/applets/brightness@cinnamon.org/applet.js:228
+#: files/usr/share/cinnamon/applets/brightness@cinnamon.org/applet.js:230
+msgid "Brightness"
+msgstr "亮度"
+
+#: files/usr/share/cinnamon/applets/brightness@cinnamon.org/applet.js:117
+msgid "Dimming settings"
+msgstr "亮度调节设置"
+
+#: files/usr/share/cinnamon/applets/brightness@cinnamon.org/applet.js:119
+msgid "Dim screen on AC power"
+msgstr "使用交流电源时调暗屏幕"
+
+#: files/usr/share/cinnamon/applets/brightness@cinnamon.org/applet.js:121
+msgid "Dim screen on battery"
+msgstr "使用电池时调暗屏幕"
+
+#: files/usr/share/cinnamon/applets/brightness@cinnamon.org/applet.js:144
+msgid "Brightness not available"
+msgstr "亮度调节不可用"
+
+#: files/usr/share/cinnamon/applets/calendar@cinnamon.org/applet.js:65
+msgid "Date and Time Settings"
+msgstr "日期和时间设备"
+
+#: files/usr/share/cinnamon/applets/expo@cinnamon.org/applet.js:19
+msgid "Expo"
+msgstr "展示"
+
+#: files/usr/share/cinnamon/applets/keyboard@cinnamon.org/applet.js:66
+msgid "Show Keyboard Layout"
+msgstr "显示键盘布局"
+
+#: files/usr/share/cinnamon/applets/keyboard@cinnamon.org/applet.js:70
+msgid "Show Character Table"
+msgstr "显示字符表"
+
+#: files/usr/share/cinnamon/applets/keyboard@cinnamon.org/applet.js:74
+msgid "Region and Language Settings"
+msgstr "区域和语言设置"
+
+#: files/usr/share/cinnamon/applets/keyboard@cinnamon.org/applet.js:76
+msgid "Show flags"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:204
+msgid "Add to panel"
+msgstr "添加到面板"
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:207
+msgid "Add to desktop"
+msgstr "添加到桌面"
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:211
+msgid "Remove from favorites"
+msgstr "从收藏中删除"
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:214
+msgid "Add to favorites"
+msgstr "添加到收藏夹"
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:344
+#: files/usr/share/cinnamon/applets/recent@cinnamon.org/applet.js:70
+msgid "Clear list"
+msgstr "清除列表"
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:381
+msgid "All Applications"
+msgstr "所有应用程序"
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:404
+msgid "Places"
+msgstr "位置"
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:422
+msgid "Recent Files"
+msgstr "最近的文件"
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:750
+msgid "Edit menu"
+msgstr "编辑菜单"
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:752
+msgid "Menu settings"
+msgstr "菜单设置"
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1219
+msgid "Lock screen"
+msgstr "锁定屏幕"
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1220
+msgid "Lock the screen"
+msgstr "锁定屏幕"
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1236
+msgid "Logout"
+msgstr "注销"
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1237
+msgid "Leave the session"
+msgstr "离开会话"
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1253
+msgid "Quit"
+msgstr "退出"
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1254
+msgid "Shutdown the computer"
+msgstr "关闭计算机"
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1365
+msgid "Type to search..."
+msgstr "输入进行搜索..."
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:96
+msgid "<unknown>"
+msgstr "<未知>"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:306
+msgid "disabled"
+msgstr "已禁用"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:506
+msgid "unmanaged"
+msgstr "未管理"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:517
+msgid "authentication required"
+msgstr "需要验证"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:527
+msgid "firmware missing"
+msgstr "固件缺失"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:534
+msgid "cable unplugged"
+msgstr "线缆被拔出"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:539
+msgid "unavailable"
+msgstr "不可用"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:541
+msgid "connection failed"
+msgstr "连接失败"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:597
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1554
+msgid "More..."
+msgstr "更多..."
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:633
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1489
+msgid "Connected (private)"
+msgstr "已连接(个人)"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:711
+msgid "Auto Ethernet"
+msgstr "自动以太网"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:775
+msgid "Auto broadband"
+msgstr "自动宽带"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:778
+msgid "Auto dial-up"
+msgstr "自动拨号"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:900
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1501
+#, c-format
+msgid "Auto %s"
+msgstr "自动 %s"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:902
+msgid "Auto bluetooth"
+msgstr "自动蓝牙"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1503
+msgid "Auto wireless"
+msgstr "自动无线网"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1591
+msgid "Network Manager"
+msgstr "网络管理器"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1624
+msgid "Enable networking"
+msgstr "启用网络"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1636
+msgid "Wired"
+msgstr "有线"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1647
+msgid "Wireless"
+msgstr "无线"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1657
+msgid "Mobile broadband"
+msgstr "移动宽带"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1667
+msgid "VPN Connections"
+msgstr "VPN 连接"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1678
+msgid "Network Settings"
+msgstr "网络设置"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1829
+msgid "Connection failed"
+msgstr "连接失败"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1830
+msgid "Activation of network connection failed"
+msgstr "网络连接启用失败"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2087
+msgid "Networking is disabled"
+msgstr "网络已禁用"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2106
+msgid "No connection"
+msgstr "无连接"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2112
+msgid "Connecting to the cellular network..."
+msgstr "正在连接蜂窝网络..."
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2116
+msgid "Connecting to the wireless network..."
+msgstr "正在连接无线网络..."
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2120
+msgid "Connecting to the wired network..."
+msgstr "正在连接有线网络..."
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2124
+msgid "Connecting to the VPN..."
+msgstr "正在连接 VPN..."
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2130
+msgid "Connecting to the network..."
+msgstr "正在连接网络..."
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2146
+msgid "Connected to the wireless network"
+msgstr "已连接无线网络"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2149
+msgid "Wireless connection"
+msgstr "无线连接"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2159
+msgid "Connected to the wired network"
+msgstr "已连接有线网络"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2170
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2175
+msgid "Connected to the cellular network"
+msgstr "已连接蜂窝网络"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2180
+msgid "Connected to the VPN"
+msgstr "已连接 VPN"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2186
+msgid "Connected to the network"
+msgstr "已连接网络"
+
+#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:32
+msgid "Notifications"
+msgstr "通知"
+
+#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:52
+msgid "Clear notifications"
+msgstr "清除通知"
+
+#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:226
+msgid "No notifications"
+msgstr "无通知"
+
+#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:229
+msgid " notification"
+msgstr " 通知"
+
+#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:232
+msgid " notifications"
+msgstr " 通知"
+
+#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:246
+msgid " (Just now)"
+msgstr " (刚刚)"
+
+#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:249
+#, c-format
+msgid " (%s seconds ago)"
+msgstr " (%s 秒前)"
+
+#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:252
+#, c-format
+msgid " (%s minute ago)"
+msgstr " (%s 分钟前)"
+
+#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:255
+#, c-format
+msgid " (%s minutes ago)"
+msgstr " (%s 分钟前)"
+
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/applet.js:47
+msgid "Launch"
+msgstr "启动"
+
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/applet.js:51
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/add-panel-launcher.py:151
+msgid "Add"
+msgstr "添加"
+
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/applet.js:55
+msgid "Edit"
+msgstr "编辑"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:104
+msgid "AC adapter"
+msgstr "交流电源适配器"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:106
+msgid "Laptop battery"
+msgstr "笔记本电池"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:108
+msgid "UPS"
+msgstr "UPS"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:110
+msgid "Monitor"
+msgstr "显示器"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:112
+msgid "Mouse"
+msgstr "鼠标"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:116
+msgid "PDA"
+msgstr "PDA"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:118
+msgid "Cell phone"
+msgstr "手机"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:120
+msgid "Media player"
+msgstr "媒体播放器"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:122
+msgid "Tablet"
+msgstr "平板设备"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:124
+msgid "Computer"
+msgstr "计算机"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:182
+#: files/usr/share/cinnamon/applets/xrandr@cinnamon.org/applet.js:45
+msgid "Display"
+msgstr "显示"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:184
+msgid "Show percentage"
+msgstr "显示百分比"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:189
+msgid "Show time remaining"
+msgstr "显示剩余时间"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:194
+msgid "Hide label"
+msgstr "隐藏标签"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:202
+msgid "Power Settings"
+msgstr "电源设置"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:251
+msgid "Estimating..."
+msgstr "正在估计..."
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:258
+#, c-format
+msgid "%d hour remaining"
+msgid_plural "%d hours remaining"
+msgstr[0] "还剩 %d 小时"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:261
+#, c-format
+msgid "%d %s %d %s remaining"
+msgstr "剩余 %d %s %d %s"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:263
+msgid "hour"
+msgid_plural "hours"
+msgstr[0] "小时"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:263
+msgid "minute"
+msgid_plural "minutes"
+msgstr[0] "分钟"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:266
+#, c-format
+msgid "%d minute remaining"
+msgid_plural "%d minutes remaining"
+msgstr[0] "剩余 %d 分钟"
+
+#: files/usr/share/cinnamon/applets/recent@cinnamon.org/applet.js:41
+msgid "Recent documents"
+msgstr "最近的文档"
+
+#: files/usr/share/cinnamon/applets/recent@cinnamon.org/applet.js:74
+msgid "No recent documents"
+msgstr "无最近文档"
+
+#: files/usr/share/cinnamon/applets/removable-drives@cinnamon.org/applet.js:53
+msgid "Removable drives"
+msgstr "可移动磁盘"
+
+#: files/usr/share/cinnamon/applets/removable-drives@cinnamon.org/applet.js:65
+msgid "Open file manager"
+msgstr "打开文件管理器"
+
+#: files/usr/share/cinnamon/applets/scale@cinnamon.org/applet.js:19
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2003
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2014
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2025
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2036
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2047
+msgid "Scale"
+msgstr "缩放"
+
+#: files/usr/share/cinnamon/applets/show-desktop@cinnamon.org/applet.js:16
+msgid "Show desktop"
+msgstr "显示桌面"
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:105
+msgid "Playing"
+msgstr "正在播放"
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:106
+msgid "Paused"
+msgstr "已暂停"
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:107
+msgid "Stopped"
+msgstr "已停止"
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:373
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:489
+msgid "Unknown Artist"
+msgstr "未知艺人"
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:374
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:493
+msgid "Unknown Album"
+msgstr "未知专辑"
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:375
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:497
+msgid "Unknown Title"
+msgstr "未知标题"
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:386
+msgid "Previous"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:389
+msgid "Play"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:392
+msgid "Stop"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:395
+msgid "Next"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:409
+msgid "Open Player"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:419
+msgid "Quit Player"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:744
+msgid "Mute output"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:745
+msgid "Mute input"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:884
+msgid "Launch player..."
+msgstr "启动播放器..."
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:897
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:960
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:961
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:966
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:967
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:986
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:987
+msgid "Volume"
+msgstr "音量"
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:904
+msgid "Microphone"
+msgstr "麦克风"
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:913
+msgid "Output device..."
+msgstr "输出设备..."
+
+#: files/usr/share/cinnamon/applets/trash@cinnamon.org/applet.js:21
+msgid "Trash"
+msgstr "回收站"
+
+#: files/usr/share/cinnamon/applets/trash@cinnamon.org/applet.js:39
+msgid "Empty Trash"
+msgstr "清空回收站"
+
+#: files/usr/share/cinnamon/applets/trash@cinnamon.org/applet.js:42
+msgid "Open Trash"
+msgstr "打开回收站"
+
+#: files/usr/share/cinnamon/applets/trash@cinnamon.org/applet.js:86
+msgid "Are you sure you want to delete all items from the trash?"
+msgstr "您确定要删除回收站里的所有项目吗？"
+
+#: files/usr/share/cinnamon/applets/trash@cinnamon.org/applet.js:86
+msgid "This operation cannot be undone."
+msgstr "该操作无法撤消。"
+
+#: files/usr/share/cinnamon/applets/trash@cinnamon.org/applet.js:107
+msgid "Empty Trash?"
+msgstr "清空回收站？"
+
+#: files/usr/share/cinnamon/applets/trash@cinnamon.org/applet.js:125
+msgid "Empty"
+msgstr "清空"
+
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:41
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1763
+msgid "Close"
+msgstr "关闭"
+
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:44
+msgid "Close all"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:47
+msgid "Close others"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:51
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:839
+msgid "Restore"
+msgstr "恢复"
+
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:53
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:844
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1764
+msgid "Minimize"
+msgstr "最小化"
+
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:56
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:117
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1765
+msgid "Maximize"
+msgstr "最大化"
+
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:59
+msgid "Move to left workspace"
+msgstr "移至左侧工作区"
+
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:62
+msgid "Move to right workspace"
+msgstr "移至右侧工作区"
+
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:65
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:103
+msgid "Visible on all workspaces"
+msgstr "在所有工作区可见"
+
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:99
+msgid "Only on this workspace"
+msgstr "仅在此工作区"
+
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:115
+msgid "Unmaximize"
+msgstr "取消最大化"
+
+#: files/usr/share/cinnamon/applets/windows-quick-list@cinnamon.org/applet.js:24
+msgid "All windows"
+msgstr "全部窗口"
+
+#: files/usr/share/cinnamon/applets/workspace-switcher@cinnamon.org/applet.js:18
+msgid "Switch workspace"
+msgstr "切换工作区"
+
+#: files/usr/share/cinnamon/applets/xrandr@cinnamon.org/applet.js:88
+msgid "Configure display settings..."
+msgstr "配置显示器设置..."
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:34
+msgid "Desktop Settings"
+msgstr "桌面设置"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:35
+msgid "Desktop Configuration Tool"
+msgstr "桌面配置工具"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:36
+msgid "Fine-tune desktop settings"
+msgstr "微调桌面设置"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:39
+msgid "Wallpaper"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:45
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1242
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2003
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2014
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2025
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2036
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2047
+msgid "None"
+msgstr "无"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:46
+msgid "Horizontal"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:47
+msgid "Vertical"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:51
+msgid "No picture"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:52
+msgid "Mosaic"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:53
+msgid "Centered"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:54
+msgid "Scaled"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:55
+msgid "Stretched"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:57
+msgid "Spanned"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:480
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:625
+msgid "Add wallpapers"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:503
+msgid "Folder"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:511
+msgid "Recursive listing"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:516
+msgid "Delay"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:612
+msgid "Mode"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:620
+msgid "Remove wallpaper"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:651
+msgid "Advanced options"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:659
+msgid "Picture aspect"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:665
+msgid "Gradient"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:672
+msgid "Colors"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:746
+msgid "Get new themes"
+msgstr "获取新主题"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:749
+msgid "Cinnamon themes"
+msgstr "Cinnamon 主题"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:756
+msgid "Window theme"
+msgstr "窗口主题"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:758
+msgid "Menus Have Icons"
+msgstr "菜单带图标"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:760
+msgid "Buttons Have Icons"
+msgstr "按钮带图标"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:763
+msgid "Always Use Location Entry In Nemo"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:765
+msgid "Cursor theme"
+msgstr "光标主题"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:767
+msgid "Keybinding theme"
+msgstr "键绑定主题"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:769
+msgid "Icon theme"
+msgstr "图标主题"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:771
+msgid "GTK+ theme"
+msgstr "GTK+ 主题"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:774
+msgid "Other settings"
+msgstr "其他设置"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:868
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:959
+msgid "Enable"
+msgstr "启用"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:872
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:966
+msgid "Description"
+msgstr "描述"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:894
+msgid "Get new extensions"
+msgstr "获取新扩展"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:963
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/add-panel-launcher.py:140
+msgid "Icon"
+msgstr "图标"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:989
+msgid "Restore to default"
+msgstr "恢复默认"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:993
+msgid "Get new applets"
+msgstr "获取新的小程序"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1493
+msgid "Region"
+msgstr "区域"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1515
+msgid "City"
+msgstr "城市"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1621
+msgid ":"
+msgstr ":"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1628
+msgid "Date : "
+msgstr "日期： "
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1630
+msgid "Time : "
+msgstr "时间： "
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1743
+msgid "Left side title bar buttons"
+msgstr "标题栏按钮左置"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1749
+msgid "Right side title bar buttons"
+msgstr "标题栏按钮右置"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1837
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2172
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2186
+msgid "Cinnamon Settings"
+msgstr "Cinnamon 设置"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1854
+msgid "All Settings"
+msgstr "全部设置"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1863
+msgid "Menu text"
+msgstr "菜单文本"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1864
+msgid "Menu icon"
+msgstr "菜单图标"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1865
+msgid "Menu hover delay"
+msgstr "菜单悬停延迟"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1865
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1875
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1879
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2006
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2017
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2028
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2039
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2050
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2116
+msgid "milliseconds"
+msgstr "毫秒"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1866
+msgid "Activate menu on hover"
+msgstr "光标悬停时激活菜单"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1867
+msgid "Show bookmarks and places"
+msgstr "显示书签和位置"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1868
+msgid "Show recent files"
+msgstr "显示最近使用的文件"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1872
+msgid "Auto-hide panel"
+msgstr "自动隐藏面板"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1875
+msgid "Show delay"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1879
+msgid "Hide delay"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1882
+msgid "Traditional (panel at the bottom)"
+msgstr "传统(面板位于底部)"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1882
+msgid "Flipped (panel at the top)"
+msgstr "翻转(面板位于顶部)"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1882
+msgid "Classic (panels at the top and at the bottom)"
+msgstr "经典(面板位于顶部和底部)"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1883
+msgid "Panel layout"
+msgstr "面板布局"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1886
+msgid "Note: If you change the layout you will need to restart Cinnamon."
+msgstr "提示：如果更改了布局，您需要重启 Cinnamon。"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1889
+msgid "Use customized panel size (otherwise it's defined by the theme)"
+msgstr "使用自定义的面板大小(否则使用主题默认大小)"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1892
+msgid ""
+"Allow Cinnamon to scale panel text and icons according to the panel heights"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1896
+msgid "Top panel height"
+msgstr "顶部面板高度"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1896
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1900
+msgid "Pixels"
+msgstr "像素"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1900
+msgid "Bottom panel height"
+msgstr "底部面板高度"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1903
+msgid "Panel edit mode"
+msgstr "面板编辑模式"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1904
+msgid "Calendar"
+msgstr "日历"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1906
+msgid "Show week dates in calendar"
+msgstr "日历中显示带周日期"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1907
+msgid "Date format for the panel"
+msgstr "面板日期格式"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1908
+msgid "Date format inside the date applet"
+msgstr "日期插件内置的日期格式"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1909
+msgid "Generate your own date formats"
+msgstr "生成您自己的日期格式"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1915
+msgid "Use network time"
+msgstr "使用网络时间"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1931
+msgid "Hot corner"
+msgstr "热角区"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1933
+msgid "Hot corner icon visible"
+msgstr "热角区图标可见"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1934
+msgid "Hot corner enabled"
+msgstr "热角区已启用"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1937
+msgid "Hot corner position:"
+msgstr "热角区位置："
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1939
+msgid "Top left"
+msgstr "左上角"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1939
+msgid "Top right"
+msgstr "右上角"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1939
+msgid "Bottom left"
+msgstr "左下角"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1939
+msgid "Bottom right"
+msgstr "右下角"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1945
+msgid "Hot corner function:"
+msgstr "热角区功能："
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1947
+msgid "Workspace selection (ala Compiz Expo)"
+msgstr "工作区选择(ala Compiz Expo)"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1947
+msgid "Window selection (ala Compiz Scale)"
+msgstr "窗口选择(ala Compiz Scale)"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1951
+msgid "Expo applet: activate on hover"
+msgstr "展示小程序：指向时显示"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1952
+msgid "Scale applet: activate on hover"
+msgstr "缩放 小程序：指向时激活"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1957
+msgid "Effects"
+msgstr "效果"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1959
+msgid "Enable desktop effects"
+msgstr "启用桌面效果"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1962
+msgid "Enable desktop effects on dialog boxes"
+msgstr "在对话框中启用桌面特效"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2001
+msgid "Closing windows:"
+msgstr "关闭窗口："
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2003
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2014
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2025
+msgid "Fade"
+msgstr "淡入淡出"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2012
+msgid "Mapping windows:"
+msgstr "映射窗口："
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2023
+msgid "Minimizing windows:"
+msgstr "最小化窗口："
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2025
+msgid "Traditional"
+msgstr "传统"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2034
+msgid "Maximizing windows:"
+msgstr "最大化窗口："
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2045
+msgid "Unmaximizing windows:"
+msgstr "取消最大化窗口："
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2056
+msgid "Extensions"
+msgstr "扩展"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2063
+msgid "Desktop"
+msgstr "桌面"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2065
+msgid "Have file manager (Nemo) handle the desktop"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2068
+msgid "Computer icon visible on desktop"
+msgstr "在桌面上显示计算机图标"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2072
+msgid "Home icon visible on desktop"
+msgstr "在桌面上显示主目录图标"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2076
+msgid "Network Servers icon visible on desktop"
+msgstr "在桌面上显示网络服务器图标"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2080
+msgid "Trash icon visible on desktop"
+msgstr "在桌面上显示回收站图标"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2084
+msgid "Show mounted volumes on the desktop"
+msgstr "在桌面上显示已挂载的卷"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2089
+msgid "Action on title bar double-click"
+msgstr "双击标题栏时的动作"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2092
+msgid "Action on title bar middle-click"
+msgstr "鼠标中键单击标题栏时的动作"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2095
+msgid "Action on title bar right-click"
+msgstr "鼠标右键单击标题栏时的动作"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2098
+msgid "Window focus mode"
+msgstr "窗口焦点模式"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2103
+msgid "Enable Edge Tiling (\"Aero Snap\")"
+msgstr "启用边缘触发平铺 (\"Aero Snap\")"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2104
+msgid "Enable Edge Flip"
+msgstr "启用边缘触发翻转"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2105
+msgid "Attach dialog windows to their parent window's titlebar"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2106
+msgid "Icons only"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2106
+msgid "Icons and thumbnails"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2106
+msgid "Icons and window preview"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2106
+msgid "Window preview (no icons)"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2107
+msgid "ALT-tab switcher style"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2109
+msgid "Enable mouse-wheel scrolling in Window List applet"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2111
+msgid "Workspaces"
+msgstr "工作区"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2113
+msgid "Enable workspace OSD"
+msgstr "启用工作区屏幕提示"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2116
+msgid "Workspace OSD duration"
+msgstr "工作区屏幕提示时长"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2120
+msgid "Workspace OSD horizontal position"
+msgstr "工作区屏幕提示水平位置"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2120
+msgid "percent of the monitor's width"
+msgstr "显示器宽度百分比"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2124
+msgid "Workspace OSD vertical position"
+msgstr "工作区屏幕提示竖直位置"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2124
+msgid "percent of the monitor's height"
+msgstr "显示器宽度百分比"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2127
+msgid "Only use workspaces on primary monitor (requires Cinnamon restart)"
+msgstr "只在主显示器上使用工作区(需要重启 Cinnamon)"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2128
+msgid "Display Expo view as a grid"
+msgstr "以网格视图显示展示"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2130
+msgid "Fonts"
+msgstr "字体"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2132
+msgid "Text scaling factor"
+msgstr "文本缩放系数"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2133
+msgid "Default font"
+msgstr "默认字体"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2134
+msgid "Document font"
+msgstr "文档字体"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2135
+msgid "Monospace font"
+msgstr "等宽字体"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2136
+msgid "Window title font"
+msgstr "窗口标题字体"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2137
+msgid "Hinting"
+msgstr "微调"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2138
+msgid "Antialiasing"
+msgstr "平滑"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2140
+msgid "General"
+msgstr "常规"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2142
+msgid ""
+"Log LookingGlass output to ~/.cinnamon/glass.log (Requires Cinnamon restart)"
+msgstr "将 LookingGlass 输出记录到  ~/.cinnamon/glass.log(要求 Cinnamon 重启)"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2143
+msgid "Emulate middle click by clicking both left and right buttons"
+msgstr "通过同时点击左键和右键模拟中键点击"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2144
+msgid "Display notifications"
+msgstr "显示通知"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2150
+msgid "Backgrounds"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/add-panel-launcher.py:59
+msgid "Custom Launcher"
+msgstr "自定义启动器"
+
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/add-panel-launcher.py:138
+msgid "Name"
+msgstr "名称"
+
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/add-panel-launcher.py:139
+msgid "Application"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/add-panel-launcher.py:142
+msgid "Add panel launcher..."
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/add-panel-launcher.py:148
+msgid "Update"
+msgstr ""

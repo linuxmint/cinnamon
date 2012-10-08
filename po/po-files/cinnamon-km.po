@@ -1,0 +1,1895 @@
+# Khmer translation for linuxmint
+# Copyright (c) 2012 Rosetta Contributors and Canonical Ltd 2012
+# This file is distributed under the same license as the linuxmint package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2012.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: linuxmint\n"
+"Report-Msgid-Bugs-To: FULL NAME <EMAIL@ADDRESS>\n"
+"POT-Creation-Date: 2012-09-27 11:06+0100\n"
+"PO-Revision-Date: 2012-06-12 18:02+0000\n"
+"Last-Translator: David Salvo <slinkeepy@gmail.com>\n"
+"Language-Team: Khmer <km@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Launchpad-Export-Date: 2012-10-05 14:52+0000\n"
+"X-Generator: Launchpad (build 16061)\n"
+
+#: src/cinnamon-app.c:347 src/cinnamon-app.c:355
+#: js/ui/notificationDaemon.js:458
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:126
+msgid "Unknown"
+msgstr "មិន​ស្គាល់"
+
+#: src/cinnamon-app.c:581
+#, c-format
+msgid "Failed to launch '%s'"
+msgstr "បាន​បរាជ័យ​ក្នុង​ការ​បើក​ដំណើរការ​ '%s'"
+
+#: src/cinnamon-mobile-providers.c:80
+msgid "United Kingdom"
+msgstr "ចក្រភពអង់គ្លេស"
+
+#: src/cinnamon-mobile-providers.c:526
+msgid "Default"
+msgstr "លំនាំ​ដើម"
+
+#: src/cinnamon-polkit-authentication-agent.c:334
+msgid "Authentication dialog was dismissed by the user"
+msgstr "ប្រអប់​ផ្ទៀងផ្ទាត់​ភាព​ត្រឹម​ត្រូវ ត្រូវ​បាន​បោះបង់​ដោយ​អ្នក​ប្រើ"
+
+#: src/cinnamon-util.c:89
+msgid "Home"
+msgstr ""
+
+#: src/cinnamon-util.c:98
+msgid "File System"
+msgstr "ប្រព័ន្ឋ​ឯកសារ"
+
+#: src/cinnamon-util.c:244
+msgid "Search"
+msgstr "ស្វែង​រក"
+
+#: src/cinnamon-util.c:294
+#, c-format
+msgid "%1$s: %2$s"
+msgstr "%1$s: %2$s"
+
+#: src/gvc/gvc-mixer-control.c:1082 js/ui/lookingGlass.js:691
+msgid "Disabled"
+msgstr "មិនបានអនុញ្ញាត"
+
+#: src/gvc/gvc-mixer-control.c:1089
+#, c-format
+msgid "%u Output"
+msgid_plural "%u Outputs"
+msgstr[0] "ទិន្នផល %u"
+
+#: src/gvc/gvc-mixer-control.c:1099
+#, c-format
+msgid "%u Input"
+msgid_plural "%u Inputs"
+msgstr[0] "ព័ត៌មាន​បញ្ចូល %u"
+
+#: src/gvc/gvc-mixer-control.c:1397
+msgid "System Sounds"
+msgstr "សំឡេង​ប្រព័ន្ធ"
+
+#: js/misc/util.js:89
+msgid "Command not found"
+msgstr "រក​មិន​ឃើញ​ពាក្យ​បញ្ជា"
+
+#: js/misc/util.js:116
+msgid "Could not parse command:"
+msgstr "មិន​អាច​ញែក​ពាក្យ៖"
+
+#: js/misc/util.js:124
+#, c-format
+msgid "Execution of '%s' failed:"
+msgstr "បាន​បរាជ័យ​ក្នុង​ការប្រតិបត្ដិ '%s'៖"
+
+#: js/ui/applet.js:237
+msgid "Remove this applet"
+msgstr ""
+
+#: js/ui/autorunManager.js:280
+msgid "Removable Devices"
+msgstr "ឧបករណ៍ចល័ត"
+
+#: js/ui/autorunManager.js:590
+#, c-format
+msgid "Open with %s"
+msgstr "បើក​ដោយ​ប្រើ %s"
+
+#: js/ui/autorunManager.js:616
+msgid "Eject"
+msgstr "ច្រាន​ចេញ"
+
+#: js/ui/calendar.js:704
+msgid "Nothing Scheduled"
+msgstr "គ្មាន​អ្វី​ត្រូវ​បាន​កំណត់​ពេល"
+
+#: js/ui/calendar.js:733
+msgid "Today"
+msgstr "ថ្ងៃនេះ"
+
+#: js/ui/calendar.js:737
+msgid "Tomorrow"
+msgstr "ថ្ងៃ​ស្អែក"
+
+#: js/ui/calendar.js:746
+msgid "This week"
+msgstr "សប្ដាហ៍​នេះ"
+
+#: js/ui/calendar.js:754
+msgid "Next week"
+msgstr "សប្ដាហ៍​បន្ទាប់"
+
+#: js/ui/cinnamonEntry.js:30
+msgid "Copy"
+msgstr "ចម្លង"
+
+#: js/ui/cinnamonEntry.js:35
+msgid "Paste"
+msgstr "បិទភ្ជាប់"
+
+#: js/ui/cinnamonEntry.js:81
+msgid "Show Text"
+msgstr "បង្ហាញ​អត្ថបទ"
+
+#: js/ui/cinnamonEntry.js:83
+msgid "Hide Text"
+msgstr "លាក់​អត្ថបទ"
+
+#: js/ui/cinnamonMountOperation.js:285
+msgid "Wrong password, please try again"
+msgstr "ពាក្យ​សម្ងាត់​ខុស ។ សូម​ព្យាយាម​ម្ដង​ទៀត ។"
+
+#: js/ui/endSessionDialog.js:58
+#, c-format
+msgid "Log Out %s"
+msgstr "បញ្ចេញ %s"
+
+#: js/ui/endSessionDialog.js:59 js/ui/endSessionDialog.js:73
+msgid "Log Out"
+msgstr "ចេញ"
+
+#: js/ui/endSessionDialog.js:60
+msgid "Click Log Out to quit these applications and log out of the system."
+msgstr ""
+"ចុច «បិទម៉ាស៊ីន» ដើម្បី​បោះ​បង់កម្មវិធី​ទាំង​នេះ និង​ចេញ​ពី​ប្រព័ន្ធ ។"
+
+#: js/ui/endSessionDialog.js:62
+#, c-format
+msgid "%s will be logged out automatically in %d second."
+msgid_plural "%s will be logged out automatically in %d seconds."
+msgstr[0] ""
+"%s នឹង​ត្រូវ​បាន​ចេញ​ដោយស្វ័យប្រវត្ដិ នៅ​ក្នុង​ចំនួន​ពេល %d វិនាទី ។"
+
+#: js/ui/endSessionDialog.js:67
+#, c-format
+msgid "You will be logged out automatically in %d second."
+msgid_plural "You will be logged out automatically in %d seconds."
+msgstr[0] ""
+"អ្នក​នឹង​ត្រូវ​បាន​ចេញ​ដោយស្វ័យប្រវត្ដិ នៅ​ក្នុង​ចំនួន​ពេល %d វិនាទី ។"
+
+#: js/ui/endSessionDialog.js:71
+msgid "Logging out of the system."
+msgstr "កំពុង​ចេញពីប្រពន្ធ ។"
+
+#: js/ui/endSessionDialog.js:78 js/ui/endSessionDialog.js:89
+msgid "Power Off"
+msgstr "បិទ​ថាមពល"
+
+#: js/ui/endSessionDialog.js:79
+msgid "Click Power Off to quit these applications and power off the system."
+msgstr ""
+"ចុច «បិទ​ថាមពល» ដើម្បី​បោះ​បង់កម្មវិធី​ទាំង​នេះ និង​បិទ​ថាមពល​ប្រព័ន្ធ ។"
+
+#: js/ui/endSessionDialog.js:81
+#, c-format
+msgid "The system will power off automatically in %d second."
+msgid_plural "The system will power off automatically in %d seconds."
+msgstr[0] ""
+"ប្រព័ន្ធនឹង​បិទ​ថាមពល​ដោយស្វ័យប្រវត្ដិ នៅ​ក្នុង​ចំនួន​ពេល %d វិនាទី ។"
+
+#: js/ui/endSessionDialog.js:85
+msgid "Powering off the system."
+msgstr "កំពុង​បិទ​ថាមពល​ប្រព័ន្ធ​ ។"
+
+#: js/ui/endSessionDialog.js:87 js/ui/endSessionDialog.js:95
+#: js/ui/endSessionDialog.js:104
+msgid "Restart"
+msgstr "ចាប់ផ្ដើម​ឡើង​វិញ"
+
+#: js/ui/endSessionDialog.js:96
+msgid "Click Restart to quit these applications and restart the system."
+msgstr ""
+"ចុច «ចាប់ផ្ដើម​ឡើង​វិញ» ដើម្បី​បោះ​បង់កម្មវិធី​ទាំង​នេះ "
+"និង​ចាប់ផ្ដើម​ប្រព័ន្ធឡើង​វិញ ។"
+
+#: js/ui/endSessionDialog.js:98
+#, c-format
+msgid "The system will restart automatically in %d second."
+msgid_plural "The system will restart automatically in %d seconds."
+msgstr[0] ""
+"ប្រព័ន្ធនឹង​ចាប់ផ្ដើម​ឡើង​វិញ​ដោយស្វ័យប្រវត្ដិ នៅ​ក្នុង​ចំនួន​ពេល %d វិនាទី ។"
+
+#: js/ui/endSessionDialog.js:102
+msgid "Restarting the system."
+msgstr "កំពុង​ចាប់ផ្ដើម​ប្រព័ន្ធឡើង​វិញ ។"
+
+#: js/ui/endSessionDialog.js:428 js/ui/extensionSystem.js:477
+#: js/ui/networkAgent.js:144 js/ui/polkitAuthenticationAgent.js:173
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:170
+#: files/usr/share/cinnamon/applets/trash@cinnamon.org/applet.js:118
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/add-panel-launcher.py:141
+msgid "Cancel"
+msgstr "បោះបង់"
+
+#: js/ui/extensionSystem.js:481
+msgid "Install"
+msgstr "ដំឡើង"
+
+#: js/ui/extensionSystem.js:485
+#, c-format
+msgid "Download and install '%s' from extensions.gnome.org?"
+msgstr "ទាញ​យក ហើយ​ដំឡើង '%s' ពី extensions.gnome.org?"
+
+#: js/ui/keyboard.js:324
+msgid "tray"
+msgstr "ថាស"
+
+#: js/ui/keyboard.js:555
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:114
+msgid "Keyboard"
+msgstr "ក្ដារចុច"
+
+#: js/ui/lookingGlass.js:643
+msgid "No extensions installed"
+msgstr "គ្មាន​ផ្នែក​បន្ថែម​អ្វី​បាន​ដំឡើង​ទេ"
+
+#: js/ui/lookingGlass.js:689
+msgid "Enabled"
+msgstr "បាន​អនុញ្ញាត"
+
+#: js/ui/lookingGlass.js:693
+msgid "Error"
+msgstr "កំហុស"
+
+#: js/ui/lookingGlass.js:695
+msgid "Out of date"
+msgstr "ហួស​សម័យ"
+
+#: js/ui/lookingGlass.js:697
+msgid "Downloading"
+msgstr "កំពុង​ទាញយក"
+
+#: js/ui/lookingGlass.js:717
+msgid "View Source"
+msgstr "មើល​ប្រភព"
+
+#: js/ui/lookingGlass.js:726
+msgid "Web Page"
+msgstr "ទំព័រ​បណ្តាញ"
+
+#: js/ui/main.js:369
+msgid "WORKSPACE"
+msgstr ""
+
+#: js/ui/messageTray.js:1250
+msgid "Open"
+msgstr "បើក"
+
+#: js/ui/messageTray.js:1257
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/applet.js:59
+msgid "Remove"
+msgstr "យកចេញ"
+
+#: js/ui/messageTray.js:1844
+msgid "System Information"
+msgstr "ព័ត៌មាន​ប្រព័ន្ធ"
+
+#: js/ui/networkAgent.js:139
+msgid "Connect"
+msgstr "ត​ភ្ជាប់"
+
+#: js/ui/networkAgent.js:234 js/ui/networkAgent.js:246
+#: js/ui/networkAgent.js:273 js/ui/networkAgent.js:293
+#: js/ui/networkAgent.js:303
+msgid "Password: "
+msgstr "ពាក្យសម្ងាត់ ៖ "
+
+#: js/ui/networkAgent.js:239
+msgid "Key: "
+msgstr "កូន​សោ ៖ "
+
+#: js/ui/networkAgent.js:271 js/ui/networkAgent.js:289
+msgid "Username: "
+msgstr "ឈ្មោះ​អ្នក​ប្រើ​ ៖ "
+
+#: js/ui/networkAgent.js:277
+msgid "Identity: "
+msgstr "អត្ដសញ្ញាណ ៖ "
+
+#: js/ui/networkAgent.js:279
+msgid "Private key password: "
+msgstr "ពាក្យ​សម្ងាត់​កូន​សោ​ឯកជន ៖ "
+
+#: js/ui/networkAgent.js:291
+msgid "Service: "
+msgstr "សេវា ៖ "
+
+#: js/ui/networkAgent.js:320
+msgid "Authentication required by wireless network"
+msgstr "ទាមទារ​ការ​ផ្ទៀងផ្ទាត់​ភាព​ត្រឹមត្រូវ ដោយ​បណ្ដាញ​ឥត​ខ្សែ"
+
+#: js/ui/networkAgent.js:321
+#, c-format
+msgid ""
+"Passwords or encryption keys are required to access the wireless network "
+"'%s'."
+msgstr ""
+"ទាមទារ​ពាក្យសម្ងាត់ ឬ​កូន​សោ​អ៊ិនគ្រីប ដើម្បី​ចូល​ដំណើរការ​បណ្ដាញ​ឥត​ខ្សែ "
+"'%s' ។"
+
+#: js/ui/networkAgent.js:325
+msgid "Wired 802.1X authentication"
+msgstr "ការ​ផ្ទៀងផ្ទាត់ 802.1X របស់​បណ្ដាញ​ខ្សែ"
+
+#: js/ui/networkAgent.js:327
+msgid "Network name: "
+msgstr "ឈ្មោះ​បណ្ដាញ ៖ "
+
+#: js/ui/networkAgent.js:332
+msgid "DSL authentication"
+msgstr "ការ​ផ្ទៀងផ្ទាត់​ភាព​ត្រឹមត្រូវ​អំពី DSL"
+
+#: js/ui/networkAgent.js:339
+msgid "PIN code required"
+msgstr "ទាមទារ​កូដ PIN"
+
+#: js/ui/networkAgent.js:340
+msgid "PIN code is needed for the mobile broadband device"
+msgstr "ទាមទារ​កូដ PIN សម្រាប់​ឧបករណ៍​រលកអាកាស​ចល័ត"
+
+#: js/ui/networkAgent.js:341
+msgid "PIN: "
+msgstr "កូដ ៖ "
+
+#: js/ui/networkAgent.js:347
+msgid "Mobile broadband network password"
+msgstr "ពាក្យសម្ងាត់​របស់​បណ្ដាញ​រលកអាកាស​ចល័ត"
+
+#: js/ui/networkAgent.js:348
+#, c-format
+msgid "A password is required to connect to '%s'."
+msgstr "ទាមទារ​ពាក្យសម្ងាត់ ដើម្បី​តភ្ជាប់​ទៅកាន់ '%s' ។"
+
+#: js/ui/overview.js:80
+msgid "Undo"
+msgstr "មិន​ធ្វើ​វិញ"
+
+#: js/ui/overview.js:193
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2087
+msgid "Windows"
+msgstr "បង្អួច"
+
+#: js/ui/panel.js:384
+msgid "Yes"
+msgstr "បាទ/ចាស"
+
+#: js/ui/panel.js:391
+msgid "No"
+msgstr "ទេ"
+
+#: js/ui/panel.js:426
+#: files/usr/share/cinnamon/applets/brightness@cinnamon.org/applet.js:148
+#: files/usr/share/cinnamon/applets/settings@cinnamon.org/applet.js:28
+msgid "Settings"
+msgstr "ការ​កំណត់"
+
+#: js/ui/panel.js:428
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1954
+msgid "Themes"
+msgstr "ស្បែក"
+
+#: js/ui/panel.js:431
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2053
+msgid "Applets"
+msgstr "អាប់​ភ្លេត"
+
+#: js/ui/panel.js:434
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1870
+msgid "Panel"
+msgstr "បន្ទះ"
+
+#: js/ui/panel.js:437
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:661
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:700
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1861
+msgid "Menu"
+msgstr "ម៉ឺនុយ"
+
+#: js/ui/panel.js:440
+msgid "All settings"
+msgstr ""
+
+#: js/ui/panel.js:445
+msgid "Troubleshoot"
+msgstr "ដោះស្រាយ​បញ្ហា"
+
+#: js/ui/panel.js:446
+msgid "Restart Cinnamon"
+msgstr "ចាប់ផ្ដើម​ស៊ីណាមិនឡើង​វិញ"
+
+#: js/ui/panel.js:450
+msgid "Looking Glass"
+msgstr "កញ្ចក់​មើល"
+
+#: js/ui/panel.js:454
+msgid "Restore all settings to default"
+msgstr "ស្ដារ​ការកំណត់​ទាំងអស់​ទៅ​លំនាំដើម​វិញ"
+
+#: js/ui/panel.js:464
+msgid "Panel Edit mode"
+msgstr "របៀប​កែសម្រួល​បន្ទះ"
+
+#: js/ui/panel.js:488
+msgid "Panel settings"
+msgstr "ការ​កំណត់​បន្ទះ"
+
+#: js/ui/panel.js:491
+msgid "Add applets to the panel"
+msgstr ""
+
+#: js/ui/placesManager.js:119
+#, c-format
+msgid "Failed to unmount '%s'"
+msgstr "បាន​បរាជ័យ​ក្នុង​ការ​អាន់ម៉ោន '%s'"
+
+#: js/ui/placesManager.js:122
+msgid "Retry"
+msgstr "ព្យាយាម​ម្ដងទៀត"
+
+#: js/ui/placesManager.js:162
+msgid "Connect to..."
+msgstr "ភ្ជាប់​ទៅកាន់​..."
+
+#: js/ui/polkitAuthenticationAgent.js:73
+msgid "Authentication Required"
+msgstr "ទាមទារ​ការ​ផ្ទៀងផ្ទាត់​ភាព​ត្រឹមត្រូវ"
+
+#: js/ui/polkitAuthenticationAgent.js:107
+msgid "Administrator"
+msgstr "អ្នក​គ្រប់គ្រង"
+
+#: js/ui/polkitAuthenticationAgent.js:177
+msgid "Authenticate"
+msgstr "ផ្ទៀងផ្ទាត់"
+
+#: js/ui/polkitAuthenticationAgent.js:258
+msgid "Sorry, that didn't work. Please try again."
+msgstr "សូម​អភ័យទោស បាន​បរាជ័យ។ សូម​ព្យាយាម​ម្ដងទៀត។"
+
+#: js/ui/polkitAuthenticationAgent.js:270
+msgid "Password:"
+msgstr "ពាក្យសម្ងាត់ ៖"
+
+#: js/ui/runDialog.js:209
+msgid "Please enter a command:"
+msgstr "សូម​បញ្ចូល​ពាក្យ​បញ្ជា ៖"
+
+#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:44
+msgid "Accessibility"
+msgstr "មធ្យោបាយ​ងាយស្រួល"
+
+#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:57
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:56
+msgid "Zoom"
+msgstr "ពង្រីក"
+
+#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:68
+msgid "Screen Keyboard"
+msgstr "ក្ដារ​ចុច​លើ​អេក្រង់"
+
+#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:72
+msgid "Visual Alerts"
+msgstr "សញ្ញា​ព្រមាន​នៃ​ចក្ខុ"
+
+#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:75
+msgid "Sticky Keys"
+msgstr "គ្រាប់ចុច​ស្អិត"
+
+#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:78
+msgid "Slow Keys"
+msgstr "គ្រាប់ចុច​យឺត"
+
+#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:81
+msgid "Bounce Keys"
+msgstr "គ្រាប់ចុច​លោត"
+
+#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:84
+msgid "Mouse Keys"
+msgstr "គ្រាប់ចុច​កណ្ដុរ"
+
+#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:88
+msgid "Universal Access Settings"
+msgstr "ការ​កំណត់​ការ​ចូល​ដំណើរការ​សកល"
+
+#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:146
+msgid "High Contrast"
+msgstr "កម្រិត​ពណ៌​ខ្ពស់"
+
+#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:183
+msgid "Large Text"
+msgstr "អត្ថបទ​ធំ"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:37
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:71
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:111
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:144
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:216
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:221
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:453
+msgid "Bluetooth"
+msgstr "ប៊្លូធូស"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:72
+#, c-format
+msgid "Authorization request from %s"
+msgstr "សំណើ​សេចក្ដី​អនុញ្ញាតពី %s"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:78
+#, c-format
+msgid "Device %s wants access to the service '%s'"
+msgstr "ឧបករណ៍ %s ចង់​បាន​សិទ្ធិចូល​ដំណើរ​ការ​សេវា '%s'"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:80
+msgid "Always grant access"
+msgstr "តែងតែ​អនុញ្ញាត​ឲ្យ​ចូល​ដំណើរការ"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:81
+msgid "Grant this time only"
+msgstr "អនុញ្ញាត​តែ​ម្ដង​នេះ​ទេ"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:82
+msgid "Reject"
+msgstr "ច្រានចោល"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:112
+#, c-format
+msgid "Pairing confirmation for %s"
+msgstr "ការ​អះអាង​ការ​ផ្គូ​សំរាប់ %s"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:118
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:152
+#, c-format
+msgid "Device %s wants to pair with this computer"
+msgstr "ឧបករណ៍ %s ចង់​ផ្គូជាមួយ​កុំព្យូទ័រ​នេះ"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:119
+#, c-format
+msgid "Please confirm whether the PIN '%s' matches the one on the device."
+msgstr "សូម​អះអាង​ថា ​កូដ​PIN '%s' ផ្គូផ្គង​នឹង​កូដ​PIN​ឧបករណ៍ហ្នឹង​ឬទេ។"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:121
+msgid "Matches"
+msgstr "ដំណូច"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:122
+msgid "Does not match"
+msgstr "មិន​ផ្គូផ្គង​ទេ"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:145
+#, c-format
+msgid "Pairing request for %s"
+msgstr "សំណើ​ការ​ផ្គូសំរាប់ %s"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:153
+msgid "Please enter the PIN mentioned on the device."
+msgstr "សូម​បញ្ចូល​កូដ​PIN​របស់​ឧបករណ៍​ហ្នឹង។"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:169
+msgid "OK"
+msgstr "យល់ព្រម"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:234
+msgid "Visibility"
+msgstr "ភាព​អាច​មើល​ឃើញ"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:248
+msgid "Send Files to Device..."
+msgstr "ផ្ញើ​ឯកសារ​ទៅ​ឧបករណ៍..."
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:249
+msgid "Set up a New Device..."
+msgstr "រៀបចំ​ឧបករណ៍​ថ្មី..."
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:273
+msgid "Bluetooth Settings"
+msgstr "ការ​កំណត់​ប៊្លូធូស"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:303
+msgid "hardware disabled"
+msgstr "ផ្នែក​រឹង​មិន​បាន​អនុញ្ញាត"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:400
+msgid "Connection"
+msgstr "ការ​តភ្ជាប់"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:409
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:508
+msgid "disconnecting..."
+msgstr "កំពុង​ផ្ដាច់..."
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:422
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:514
+msgid "connecting..."
+msgstr "កំពុង​តភ្ជាប់..."
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:440
+msgid "Send Files..."
+msgstr "ផ្ញើ​ឯកសារ..."
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:445
+msgid "Browse Files..."
+msgstr "រកមើល​ឯកសារ..."
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:454
+msgid "Error browsing device"
+msgstr "កំហុស​ក្នុង​ការ​រកមើល​ឧបករន៍"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:455
+#, c-format
+msgid "The requested device cannot be browsed, error is '%s'"
+msgstr "មិន​អាច​រកមើលឧបករណ៍​ដែល​បាន​ស្នើបាន​ទេ កំហុស​គឺ '%s'"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:463
+msgid "Keyboard Settings"
+msgstr "ការ​កំណត់​ក្ដារចុច"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:466
+msgid "Mouse Settings"
+msgstr "ការ​កំណត់​កណ្ដុរ"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:471
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:911
+msgid "Sound Settings"
+msgstr "ការ​កំណត់​សំឡេង"
+
+#: files/usr/share/cinnamon/applets/brightness@cinnamon.org/applet.js:112
+#: files/usr/share/cinnamon/applets/brightness@cinnamon.org/applet.js:143
+#: files/usr/share/cinnamon/applets/brightness@cinnamon.org/applet.js:225
+#: files/usr/share/cinnamon/applets/brightness@cinnamon.org/applet.js:228
+#: files/usr/share/cinnamon/applets/brightness@cinnamon.org/applet.js:230
+msgid "Brightness"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/brightness@cinnamon.org/applet.js:117
+msgid "Dimming settings"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/brightness@cinnamon.org/applet.js:119
+msgid "Dim screen on AC power"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/brightness@cinnamon.org/applet.js:121
+msgid "Dim screen on battery"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/brightness@cinnamon.org/applet.js:144
+msgid "Brightness not available"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/calendar@cinnamon.org/applet.js:65
+msgid "Date and Time Settings"
+msgstr "ការ​កំណត់​កាលបរិច្ឆេទ និង​ពេលវេលា"
+
+#: files/usr/share/cinnamon/applets/expo@cinnamon.org/applet.js:19
+msgid "Expo"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/keyboard@cinnamon.org/applet.js:66
+msgid "Show Keyboard Layout"
+msgstr "បង្ហាញ​ប្លង់​ក្ដារចុច"
+
+#: files/usr/share/cinnamon/applets/keyboard@cinnamon.org/applet.js:70
+msgid "Show Character Table"
+msgstr "បង្ហាញ​តារាង​តួអក្សរ"
+
+#: files/usr/share/cinnamon/applets/keyboard@cinnamon.org/applet.js:74
+msgid "Region and Language Settings"
+msgstr "ការ​កំណត់​ភាសា និង​តំបន់"
+
+#: files/usr/share/cinnamon/applets/keyboard@cinnamon.org/applet.js:76
+msgid "Show flags"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:204
+msgid "Add to panel"
+msgstr "បន្ថែម​ទៅ​បន្ទះ"
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:207
+msgid "Add to desktop"
+msgstr "បន្ថែម​ទៅ​លើ​ផ្ឌៃ​តុ"
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:211
+msgid "Remove from favorites"
+msgstr "យក​ពី​សំណព្វ​ចេញ"
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:214
+msgid "Add to favorites"
+msgstr "បន្ថែម​ដាក់​សំណព្វ"
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:344
+#: files/usr/share/cinnamon/applets/recent@cinnamon.org/applet.js:70
+msgid "Clear list"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:381
+msgid "All Applications"
+msgstr "កម្មវិធី​ទាំងអស់"
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:404
+msgid "Places"
+msgstr "ទី​កន្លែង"
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:422
+msgid "Recent Files"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:750
+msgid "Edit menu"
+msgstr "កែ​សម្រួល​ម៉ឺនុយ"
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:752
+msgid "Menu settings"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1219
+msgid "Lock screen"
+msgstr "ចាក់សោ​អេក្រង់"
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1220
+msgid "Lock the screen"
+msgstr "ចាក់សោ​អេក្រង់"
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1236
+msgid "Logout"
+msgstr "ចេញ"
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1237
+msgid "Leave the session"
+msgstr "ចេញ​ពី​សម័យ"
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1253
+msgid "Quit"
+msgstr "បោះបង់"
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1254
+msgid "Shutdown the computer"
+msgstr "បិទ​កុំព្យូទ័រ"
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1365
+msgid "Type to search..."
+msgstr "វាយ​បញ្ចូល​ ដើម្បី​ស្វែងរក..."
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:96
+msgid "<unknown>"
+msgstr "<មិន​ស្គាល់>"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:306
+msgid "disabled"
+msgstr "បាន​បិទ"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:506
+msgid "unmanaged"
+msgstr "មិន​បាន​គ្រប់គ្រង"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:517
+msgid "authentication required"
+msgstr "ទាមទារ​ការ​ផ្ទៀងផ្ទាត់​ភាព​ត្រឹមត្រូវ"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:527
+msgid "firmware missing"
+msgstr "បាត់​កម្មវិធី​បង្កប់"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:534
+msgid "cable unplugged"
+msgstr "ខ្សែ​ត្រូវ​បាន​ដក"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:539
+msgid "unavailable"
+msgstr "មិន​អាច​រក​បាន"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:541
+msgid "connection failed"
+msgstr "មិន​អាច​រក​បាន"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:597
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1554
+msgid "More..."
+msgstr "ផ្សេងទៀត..."
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:633
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1489
+msgid "Connected (private)"
+msgstr "បាន​ត​ភ្ជាប់ (ឯកជន)"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:711
+msgid "Auto Ethernet"
+msgstr "អ៊ីសឺរណិត​ស្វ័យប្រវត្តិ"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:775
+msgid "Auto broadband"
+msgstr "រលក​អាកាស​ធំ​ស្វ័យប្រវត្តិ"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:778
+msgid "Auto dial-up"
+msgstr "ការ​តភ្ជាប់​ទូរស័ព្ទ​លើ​តុ​ស្វ័យប្រវត្តិ"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:900
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1501
+#, c-format
+msgid "Auto %s"
+msgstr "%s ស្វ័យប្រវត្តិ"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:902
+msgid "Auto bluetooth"
+msgstr "ប៊្លូធូស​ស្វ័យប្រវត្តិ"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1503
+msgid "Auto wireless"
+msgstr "ការ​តភ្ជាប់​ឥត​ខ្សែ​ស្វ័យប្រវត្តិ"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1591
+msgid "Network Manager"
+msgstr "កម្មវិធី​គ្រប់គ្រង​បណ្តាញ"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1624
+msgid "Enable networking"
+msgstr "បើក​ការ​តភ្ជាប់​បណ្ដាញ"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1636
+msgid "Wired"
+msgstr "មាន​ខ្សែ"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1647
+msgid "Wireless"
+msgstr "ឥត​ខ្សែ"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1657
+msgid "Mobile broadband"
+msgstr "រលក​អាកាស​ចល័ត"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1667
+msgid "VPN Connections"
+msgstr "ការ​តភ្ជាប់ VPN"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1678
+msgid "Network Settings"
+msgstr "ការ​កំណត់​បណ្ដាញ"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1829
+msgid "Connection failed"
+msgstr "បាន​បរាជ័យ​ក្នុង​ការ​តភ្ជាប់"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1830
+msgid "Activation of network connection failed"
+msgstr "បាន​បរាជ័យ​ក្នុង​ការ​ធ្វើ​ឲ្យ​ការ​តភ្ជាប់​បណ្តាញ​សកម្ម"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2087
+msgid "Networking is disabled"
+msgstr "បាន​បិទ​ការ​តភ្ជាប់​បណ្ដាញ"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2106
+msgid "No connection"
+msgstr "គ្មាន​ការ​តភ្ជាប់"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2112
+msgid "Connecting to the cellular network..."
+msgstr "កំពុង​តភ្ជាប់​ទៅ​កាន់​បណ្តាញ​ទូរស័ព្ទចល័ត..."
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2116
+msgid "Connecting to the wireless network..."
+msgstr "កំពុង​តភ្ជាប់​ទៅ​កាន់​បណ្តាញ​ឥត​ខ្សែ..."
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2120
+msgid "Connecting to the wired network..."
+msgstr "កំពុង​តភ្ជាប់​ទៅ​កាន់​បណ្តាញ​មាន​ខ្សែ..."
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2124
+msgid "Connecting to the VPN..."
+msgstr "កំពុង​តភ្ជាប់​ទៅ​កាន់ VPN..."
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2130
+msgid "Connecting to the network..."
+msgstr "កំពុង​តភ្ជាប់​ទៅ​កាន់​បណ្តាញ..."
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2146
+msgid "Connected to the wireless network"
+msgstr "បាន​តភ្ជាប់​ទៅ​កាន់​បណ្តាញ​ឥត​ខ្សែ"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2149
+msgid "Wireless connection"
+msgstr "ការ​តភ្ជាប់​បណ្តាញ​ឥត​ខ្សែ"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2159
+msgid "Connected to the wired network"
+msgstr "បាន​តភ្ជាប់​ទៅ​កាន់​បណ្តាញ​មាន​ខ្សែ"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2170
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2175
+msgid "Connected to the cellular network"
+msgstr "បាន​តភ្ជាប់​ទៅ​កាន់​បណ្តាញ​ទូរស័ព្ទចល័ត"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2180
+msgid "Connected to the VPN"
+msgstr "បាន​តភ្ជាប់​ទៅ​កាន់ VPN"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2186
+msgid "Connected to the network"
+msgstr "បាន​តភ្ជាប់​ទៅ​កាន់​បណ្តាញ"
+
+#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:32
+msgid "Notifications"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:52
+msgid "Clear notifications"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:226
+msgid "No notifications"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:229
+msgid " notification"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:232
+msgid " notifications"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:246
+msgid " (Just now)"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:249
+#, c-format
+msgid " (%s seconds ago)"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:252
+#, c-format
+msgid " (%s minute ago)"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:255
+#, c-format
+msgid " (%s minutes ago)"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/applet.js:47
+msgid "Launch"
+msgstr "បើក​ដំណើរការ"
+
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/applet.js:51
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/add-panel-launcher.py:151
+msgid "Add"
+msgstr "បន្ថែមរូបថត"
+
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/applet.js:55
+msgid "Edit"
+msgstr "កែ​សម្រួល"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:104
+msgid "AC adapter"
+msgstr "អាដាប់ទ័រ​ចរន្តឆ្លាស់"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:106
+msgid "Laptop battery"
+msgstr "ថ្ម​កុំព្យូទ័រយួរដៃ"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:108
+msgid "UPS"
+msgstr "UPS (ការ​ផ្គត់ផ្គង់​ថាមពល​ដែល​មិន​អាច​ផ្អាក​បាន)"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:110
+msgid "Monitor"
+msgstr "ម៉ូនីទ័រ"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:112
+msgid "Mouse"
+msgstr "កណ្ដុរ"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:116
+msgid "PDA"
+msgstr "PDA"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:118
+msgid "Cell phone"
+msgstr "ទូរស័ព្ទ​ចល័ត"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:120
+msgid "Media player"
+msgstr "កម្មវិធី​ចាក់​មេឌៀ"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:122
+msgid "Tablet"
+msgstr "កុំព្យូទ័រ​បន្ទះ"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:124
+msgid "Computer"
+msgstr "កុំព្យូទ័រ"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:182
+#: files/usr/share/cinnamon/applets/xrandr@cinnamon.org/applet.js:45
+msgid "Display"
+msgstr "ទិដ្ឋភាព"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:184
+msgid "Show percentage"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:189
+msgid "Show time remaining"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:194
+msgid "Hide label"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:202
+msgid "Power Settings"
+msgstr "ការ​កំណត់​ថាមពល"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:251
+msgid "Estimating..."
+msgstr "កំពុង​ប្រមាណ..."
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:258
+#, c-format
+msgid "%d hour remaining"
+msgid_plural "%d hours remaining"
+msgstr[0] "នៅ​សល់ %d ម៉ោង"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:261
+#, c-format
+msgid "%d %s %d %s remaining"
+msgstr "នៅ​សល់ %d %s %d %s"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:263
+msgid "hour"
+msgid_plural "hours"
+msgstr[0] "ម៉ោង"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:263
+msgid "minute"
+msgid_plural "minutes"
+msgstr[0] "នាទី"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:266
+#, c-format
+msgid "%d minute remaining"
+msgid_plural "%d minutes remaining"
+msgstr[0] "នៅ​សល់ %d នាទី"
+
+#: files/usr/share/cinnamon/applets/recent@cinnamon.org/applet.js:41
+msgid "Recent documents"
+msgstr "ឯកសារ​ថ្មីៗ"
+
+#: files/usr/share/cinnamon/applets/recent@cinnamon.org/applet.js:74
+msgid "No recent documents"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/removable-drives@cinnamon.org/applet.js:53
+msgid "Removable drives"
+msgstr "ឧបករណ៍​ចល័ត"
+
+#: files/usr/share/cinnamon/applets/removable-drives@cinnamon.org/applet.js:65
+msgid "Open file manager"
+msgstr "បើក​កម្មវិធី​គ្រប់គ្រង​ឯកសារ"
+
+#: files/usr/share/cinnamon/applets/scale@cinnamon.org/applet.js:19
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2003
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2014
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2025
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2036
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2047
+msgid "Scale"
+msgstr "ធ្វើមាត្រដ្ឋាន"
+
+#: files/usr/share/cinnamon/applets/show-desktop@cinnamon.org/applet.js:16
+msgid "Show desktop"
+msgstr "បង្ហាញ​ផ្ទៃតុ"
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:105
+msgid "Playing"
+msgstr "កំពុង​ចាក់"
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:106
+msgid "Paused"
+msgstr "បាន​ផ្អាក"
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:107
+msgid "Stopped"
+msgstr "បាន​បញ្ឈប់"
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:373
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:489
+msgid "Unknown Artist"
+msgstr "មិន​ស្គាល់​សិល្បករ"
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:374
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:493
+msgid "Unknown Album"
+msgstr "មិន​ស្គាល់​អាល់ប៊ុម"
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:375
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:497
+msgid "Unknown Title"
+msgstr "មិន​ស្គាល់​ចំណង​ជើង"
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:386
+msgid "Previous"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:389
+msgid "Play"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:392
+msgid "Stop"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:395
+msgid "Next"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:409
+msgid "Open Player"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:419
+msgid "Quit Player"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:744
+msgid "Mute output"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:745
+msgid "Mute input"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:884
+msgid "Launch player..."
+msgstr "បើក​ដំណើរការ​កម្មវិធី​ចាក់..."
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:897
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:960
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:961
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:966
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:967
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:986
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:987
+msgid "Volume"
+msgstr "កម្រិត​សំឡេង"
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:904
+msgid "Microphone"
+msgstr "មីក្រូ"
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:913
+msgid "Output device..."
+msgstr "ឧបករណ៍​ទិន្នផល..."
+
+#: files/usr/share/cinnamon/applets/trash@cinnamon.org/applet.js:21
+msgid "Trash"
+msgstr "ធុង​សំរាម"
+
+#: files/usr/share/cinnamon/applets/trash@cinnamon.org/applet.js:39
+msgid "Empty Trash"
+msgstr "សម្អាត​ធុង​សំរាម"
+
+#: files/usr/share/cinnamon/applets/trash@cinnamon.org/applet.js:42
+msgid "Open Trash"
+msgstr "បើក​ធុង​សំរាម"
+
+#: files/usr/share/cinnamon/applets/trash@cinnamon.org/applet.js:86
+msgid "Are you sure you want to delete all items from the trash?"
+msgstr "តើ​អ្នក​ពិតជា​ចង់​លប់​ឯកសារ​ទាំង​អស់​ចេញ​ពី​ធុង​សំរាម​ឬ ?"
+
+#: files/usr/share/cinnamon/applets/trash@cinnamon.org/applet.js:86
+msgid "This operation cannot be undone."
+msgstr "ប្រតិបត្តិការ​នេះ មិន​អាច​ត្រូវ​បាន​មិន​ធ្វើ​វិញ​បាន​ទេ។"
+
+#: files/usr/share/cinnamon/applets/trash@cinnamon.org/applet.js:107
+msgid "Empty Trash?"
+msgstr "សម្អាត​ធុង​សំរាម?"
+
+#: files/usr/share/cinnamon/applets/trash@cinnamon.org/applet.js:125
+msgid "Empty"
+msgstr "សម្អាត"
+
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:41
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1763
+msgid "Close"
+msgstr "បិទ"
+
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:44
+msgid "Close all"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:47
+msgid "Close others"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:51
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:839
+msgid "Restore"
+msgstr "ស្ដារ"
+
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:53
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:844
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1764
+msgid "Minimize"
+msgstr "បង្រួម​អប្បបរមា"
+
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:56
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:117
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1765
+msgid "Maximize"
+msgstr "ពង្រីក​អតិបរមា"
+
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:59
+msgid "Move to left workspace"
+msgstr "ផ្លាស់​ទី​ទៅ​តំបន់​ធ្វើការ​ខាង​ឆ្វេង"
+
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:62
+msgid "Move to right workspace"
+msgstr "ផ្លាស់​ទី​ទៅ​តំបន់​ធ្វើការ​ខាង​ស្ដាំ"
+
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:65
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:103
+msgid "Visible on all workspaces"
+msgstr "មើល​ឃើញ​លើ​តំបន់​ធ្វើការ​ទាំង​អស់"
+
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:99
+msgid "Only on this workspace"
+msgstr "នៅ​តែ​លើ​តំបន់​ធ្វើការ​នេះ​ប៉ុណ្ណោះ"
+
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:115
+msgid "Unmaximize"
+msgstr "មិន​ពង្រីក​អតិបរមា​វិញ"
+
+#: files/usr/share/cinnamon/applets/windows-quick-list@cinnamon.org/applet.js:24
+msgid "All windows"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/workspace-switcher@cinnamon.org/applet.js:18
+msgid "Switch workspace"
+msgstr "ប្ដូរ​តំបន់​ធ្វើការ"
+
+#: files/usr/share/cinnamon/applets/xrandr@cinnamon.org/applet.js:88
+msgid "Configure display settings..."
+msgstr "កំណត់​រចនាសម្ព័ន្ធ​នៃ​ការ​កំណត់​ទិដ្ឋភាព..."
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:34
+msgid "Desktop Settings"
+msgstr "ការ​កំណត់​ផ្ទៃតុ"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:35
+msgid "Desktop Configuration Tool"
+msgstr "ឧបករណ៍​កំណត់​រចនាសម្ព័ន្ធ​នៃ​ផ្ទៃ​តុ"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:36
+msgid "Fine-tune desktop settings"
+msgstr "លៃ​តម្រូវ​ការ​កំណត់​ផ្ទៃ​តុ"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:39
+msgid "Wallpaper"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:45
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1242
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2003
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2014
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2025
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2036
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2047
+msgid "None"
+msgstr "គ្មាន"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:46
+msgid "Horizontal"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:47
+msgid "Vertical"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:51
+msgid "No picture"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:52
+msgid "Mosaic"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:53
+msgid "Centered"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:54
+msgid "Scaled"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:55
+msgid "Stretched"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:57
+msgid "Spanned"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:480
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:625
+msgid "Add wallpapers"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:503
+msgid "Folder"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:511
+msgid "Recursive listing"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:516
+msgid "Delay"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:612
+msgid "Mode"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:620
+msgid "Remove wallpaper"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:651
+msgid "Advanced options"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:659
+msgid "Picture aspect"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:665
+msgid "Gradient"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:672
+msgid "Colors"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:746
+msgid "Get new themes"
+msgstr "ទាញ​យក​ស្បែក​ថ្មី"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:749
+msgid "Cinnamon themes"
+msgstr "ស្បែក​ស៊ីណាមិន"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:756
+msgid "Window theme"
+msgstr "ស្បែក​បង្អួច"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:758
+msgid "Menus Have Icons"
+msgstr "ម៉ឺនុយ​មាន​រូបតំណាង"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:760
+msgid "Buttons Have Icons"
+msgstr "ប៊ូតុង​មាន​រូបតំណាង"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:763
+msgid "Always Use Location Entry In Nemo"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:765
+msgid "Cursor theme"
+msgstr "ស្បែក​ទស្សន៍ទ្រនិច"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:767
+msgid "Keybinding theme"
+msgstr "ស្បែក​ការ​ចង​គ្រាប់​ចុច"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:769
+msgid "Icon theme"
+msgstr "ស្បែក​រូប​តំណាង"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:771
+msgid "GTK+ theme"
+msgstr "ស្បែក GTK+"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:774
+msgid "Other settings"
+msgstr "ការ​កំណត់​ផ្សេង​ទៀត"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:868
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:959
+msgid "Enable"
+msgstr "បើក"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:872
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:966
+msgid "Description"
+msgstr "សេចក្ដី​ពិពណ៌នា"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:894
+msgid "Get new extensions"
+msgstr "ទាញ​យក​ផ្នែក​បន្ថែម​ថ្មី"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:963
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/add-panel-launcher.py:140
+msgid "Icon"
+msgstr "រូប​តំណាង"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:989
+msgid "Restore to default"
+msgstr "ស្ដារ​លំនាំ​ដើម"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:993
+msgid "Get new applets"
+msgstr "ទាញ​យក​អាប់ភ្លេត​ថ្មី"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1493
+msgid "Region"
+msgstr "តំបន់"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1515
+msgid "City"
+msgstr "ទីក្រុង"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1621
+msgid ":"
+msgstr "៖"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1628
+msgid "Date : "
+msgstr "កាលបរិច្ឆេទ៖ "
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1630
+msgid "Time : "
+msgstr "ពេលវេលា៖ "
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1743
+msgid "Left side title bar buttons"
+msgstr "ប៊ូតុង​របារ​ចំណង​ជើង​ខាង​ឆ្ចេង"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1749
+msgid "Right side title bar buttons"
+msgstr "ប៊ូតុង​របារ​ចំណង​ជើង​ខាង​ស្ដាំ"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1837
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2172
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2186
+msgid "Cinnamon Settings"
+msgstr "ការ​កំណត់​ស៊ីណាមិន"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1854
+msgid "All Settings"
+msgstr "ការ​កំណត់​ទាំង​អស់"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1863
+msgid "Menu text"
+msgstr "អត្ថបទ​ម៉ឺនុយ"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1864
+msgid "Menu icon"
+msgstr "រូប​តំណាង​ម៉ឺនុយ"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1865
+msgid "Menu hover delay"
+msgstr "ការ​ពន្យារពេល​សំកាំង​ម៉ឺនុយ"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1865
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1875
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1879
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2006
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2017
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2028
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2039
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2050
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2116
+msgid "milliseconds"
+msgstr "មីល្លី​វិនាទី"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1866
+msgid "Activate menu on hover"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1867
+msgid "Show bookmarks and places"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1868
+msgid "Show recent files"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1872
+msgid "Auto-hide panel"
+msgstr "លាក់​បន្ទះ​ដោយ​ស្វ័យប្រវត្តិ"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1875
+msgid "Show delay"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1879
+msgid "Hide delay"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1882
+msgid "Traditional (panel at the bottom)"
+msgstr "បុរាណ (បន្ទះ​នៅ​ខាង​ក្រោម)"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1882
+msgid "Flipped (panel at the top)"
+msgstr "ត្រឡប់ (បន្ទះ​នៅ​ខាង​លើ)"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1882
+msgid "Classic (panels at the top and at the bottom)"
+msgstr "តំណាង (បន្ទះ​នៅ​ខាង​ក្រោម និង​ខាង​លើ)"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1883
+msgid "Panel layout"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1886
+msgid "Note: If you change the layout you will need to restart Cinnamon."
+msgstr ""
+"ចំណាំ៖ បើ​អ្នក​ផ្លាស់ប្តូរ​ប្លង់ ត្រូវ​ការ​ចាប់ផ្ដើម​ស៊ីណាមិន​ឡើង​វិញ"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1889
+msgid "Use customized panel size (otherwise it's defined by the theme)"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1892
+msgid ""
+"Allow Cinnamon to scale panel text and icons according to the panel heights"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1896
+msgid "Top panel height"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1896
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1900
+msgid "Pixels"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1900
+msgid "Bottom panel height"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1903
+msgid "Panel edit mode"
+msgstr "របៀប​កែសម្រួល​បន្ទះ"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1904
+msgid "Calendar"
+msgstr "ប្រតិទិន"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1906
+msgid "Show week dates in calendar"
+msgstr "បង្ហាញ​កាល​បរិច្ឆេទ​សប្ដាហ៍​ក្នុង​ប្រតិទិន"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1907
+msgid "Date format for the panel"
+msgstr "ទ្រង់​ទ្រាយ​កាល​បរិច្ឆេទសំរាប់​បន្ទះ"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1908
+msgid "Date format inside the date applet"
+msgstr "ទ្រង់​ទ្រាយ​កាល​បរិច្ឆេទ​នៅ​ក្នុង​អាប់ភ្លេត​កាល​បរិច្ឆេទ"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1909
+msgid "Generate your own date formats"
+msgstr "បង្កើត​ទ្រង់​ទ្រាយ​កាល​បរិច្ឆេទ​ផ្ទាល់​ខ្លួន"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1915
+msgid "Use network time"
+msgstr "ប្រើ​ពេលវេលា​បណ្តាញ"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1931
+msgid "Hot corner"
+msgstr "ជ្រុង​ក្ដៅ"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1933
+msgid "Hot corner icon visible"
+msgstr "ជ្រុង​ក្ដៅអាច​មើល​ឃើញ"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1934
+msgid "Hot corner enabled"
+msgstr "បាន​បើក​ជ្រុង​ក្ដៅ"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1937
+msgid "Hot corner position:"
+msgstr "ទីតាំង​ជ្រុង​ក្ដៅ៖"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1939
+msgid "Top left"
+msgstr "កំពូល​ឆ្វេង"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1939
+msgid "Top right"
+msgstr "កំពូលស្តាំ"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1939
+msgid "Bottom left"
+msgstr "បាត​ឆ្វេង"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1939
+msgid "Bottom right"
+msgstr "បាត​ស្តាំ"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1945
+msgid "Hot corner function:"
+msgstr "មុខ​ងារ​ជ្រុង​ក្ដៅ៖"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1947
+msgid "Workspace selection (ala Compiz Expo)"
+msgstr "ការ​ជ្រើស​តំបន់​ធ្ចើការ (ដូច​បែប​ផែន Compiz Expo)"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1947
+msgid "Window selection (ala Compiz Scale)"
+msgstr "ការ​ជ្រើស​បង្អួច (ដូច​បែប​ផែន Compiz Scale)"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1951
+msgid "Expo applet: activate on hover"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1952
+msgid "Scale applet: activate on hover"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1957
+msgid "Effects"
+msgstr "បែបផែន"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1959
+msgid "Enable desktop effects"
+msgstr "អនុញ្ញាត​ឲ្យ​មាន​បែបផែន​ផ្ទៃតុ"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1962
+msgid "Enable desktop effects on dialog boxes"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2001
+msgid "Closing windows:"
+msgstr "ការ​បិទ​បង្អួច៖"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2003
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2014
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2025
+msgid "Fade"
+msgstr "លេច​បន្តិច​ម្ដងៗ"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2012
+msgid "Mapping windows:"
+msgstr "ការ​ផ្គូផ្គង​បង្អួច៖"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2023
+msgid "Minimizing windows:"
+msgstr "ការ​បង្រួម​អប្បបរមា​បង្អួច៖"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2025
+msgid "Traditional"
+msgstr "បុរាណ"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2034
+msgid "Maximizing windows:"
+msgstr "ការ​ពង្រីក​អតិបរមា​បង្អួច៖"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2045
+msgid "Unmaximizing windows:"
+msgstr "ការ​មិន​ពង្រីក​អតិបរមា​បង្អួច​វិញ៖"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2056
+msgid "Extensions"
+msgstr "ផ្នែក​បន្ថែម"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2063
+msgid "Desktop"
+msgstr "ផ្ទៃតុ"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2065
+msgid "Have file manager (Nemo) handle the desktop"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2068
+msgid "Computer icon visible on desktop"
+msgstr "រូបតំណាង​កុំព្យូទ័រ​អាច​មើល​ឃើញ​នៅ​លើ​ផ្ទៃតុ"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2072
+msgid "Home icon visible on desktop"
+msgstr "រូបតំណាង​ផ្ទះ​អាច​មើល​ឃើញ​នៅ​លើ​ផ្ទៃតុ"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2076
+msgid "Network Servers icon visible on desktop"
+msgstr "រូបតំណាង​ម៉ាស៊ីន​បម្រើ​បណ្ដាញ​អាច​មើល​ឃើញ​នៅ​លើ​ផ្ទៃតុ"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2080
+msgid "Trash icon visible on desktop"
+msgstr "រូបតំណាង​ធុង​សំរាម​អាច​មើល​ឃើញ​នៅ​លើ​ផ្ទៃតុ"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2084
+msgid "Show mounted volumes on the desktop"
+msgstr "បង្ហាញ​ភាគ​ដែល​បាន​ម៉ោ​ន​នៅ​លើ​ផ្ទៃតុ"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2089
+msgid "Action on title bar double-click"
+msgstr "អំពើ​ត្រូវ​ធ្វើ​ពេល​ចុច​ទ្វេដង​លើ​របារ​ចំណង​ជើង"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2092
+msgid "Action on title bar middle-click"
+msgstr "អំពើ​ត្រូវ​ធ្វើ​ពេល​ចុច​របារ​ចំណង​ជើង ដោយ​ប៊ូតុង​កណ្ដាល"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2095
+msgid "Action on title bar right-click"
+msgstr "អំពើ​ត្រូវ​ធ្វើ​ពេល​ចុច​របារ​ចំណង​ជើង ដោយ​ប៊ូតុង​ស្ដាំ"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2098
+msgid "Window focus mode"
+msgstr "របៀប​ផ្ដោត​បង្អួច"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2103
+msgid "Enable Edge Tiling (\"Aero Snap\")"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2104
+msgid "Enable Edge Flip"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2105
+msgid "Attach dialog windows to their parent window's titlebar"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2106
+msgid "Icons only"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2106
+msgid "Icons and thumbnails"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2106
+msgid "Icons and window preview"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2106
+msgid "Window preview (no icons)"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2107
+msgid "ALT-tab switcher style"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2109
+msgid "Enable mouse-wheel scrolling in Window List applet"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2111
+msgid "Workspaces"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2113
+msgid "Enable workspace OSD"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2116
+msgid "Workspace OSD duration"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2120
+msgid "Workspace OSD horizontal position"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2120
+msgid "percent of the monitor's width"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2124
+msgid "Workspace OSD vertical position"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2124
+msgid "percent of the monitor's height"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2127
+msgid "Only use workspaces on primary monitor (requires Cinnamon restart)"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2128
+msgid "Display Expo view as a grid"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2130
+msgid "Fonts"
+msgstr "ពុម្ពអក្សរ"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2132
+msgid "Text scaling factor"
+msgstr "កត្តា​ធ្វើមាត្រដ្ឋាន​អត្ថបទ"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2133
+msgid "Default font"
+msgstr "ពុម្ពអក្សរ​លំនាំដើម"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2134
+msgid "Document font"
+msgstr "ពុម្ពអក្សរ​ឯកសារ"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2135
+msgid "Monospace font"
+msgstr "ពុម្ពអក្សរ Monospace"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2136
+msgid "Window title font"
+msgstr "ពុម្ពអក្សរ​ចំណង​ជើង​បង្អួច"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2137
+msgid "Hinting"
+msgstr "ការផ្ដល់ជំនួយ"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2138
+msgid "Antialiasing"
+msgstr "ប្រឆាំង​រឆេតរឆូត"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2140
+msgid "General"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2142
+msgid ""
+"Log LookingGlass output to ~/.cinnamon/glass.log (Requires Cinnamon restart)"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2143
+msgid "Emulate middle click by clicking both left and right buttons"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2144
+msgid "Display notifications"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2150
+msgid "Backgrounds"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/add-panel-launcher.py:59
+msgid "Custom Launcher"
+msgstr "កម្មវិធី​បើក​ដំណើរការ​ផ្ទាល់​ខ្លួន"
+
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/add-panel-launcher.py:138
+msgid "Name"
+msgstr "ឈ្មោះ"
+
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/add-panel-launcher.py:139
+msgid "Application"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/add-panel-launcher.py:142
+msgid "Add panel launcher..."
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/add-panel-launcher.py:148
+msgid "Update"
+msgstr ""

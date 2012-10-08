@@ -1,0 +1,1918 @@
+# Malayalam translation for linuxmint
+# Copyright (c) 2012 Rosetta Contributors and Canonical Ltd 2012
+# This file is distributed under the same license as the linuxmint package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2012.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: linuxmint\n"
+"Report-Msgid-Bugs-To: FULL NAME <EMAIL@ADDRESS>\n"
+"POT-Creation-Date: 2012-09-27 11:06+0100\n"
+"PO-Revision-Date: 2012-09-29 05:48+0000\n"
+"Last-Translator: praveenp <Unknown>\n"
+"Language-Team: Malayalam <ml@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Launchpad-Export-Date: 2012-10-05 14:52+0000\n"
+"X-Generator: Launchpad (build 16061)\n"
+
+#: src/cinnamon-app.c:347 src/cinnamon-app.c:355
+#: js/ui/notificationDaemon.js:458
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:126
+msgid "Unknown"
+msgstr "അജ്ഞാതം"
+
+#: src/cinnamon-app.c:581
+#, c-format
+msgid "Failed to launch '%s'"
+msgstr "'%s' തുറക്കൽ പരാജയപ്പെട്ടു"
+
+#: src/cinnamon-mobile-providers.c:80
+msgid "United Kingdom"
+msgstr "യുണൈറ്റഡ് കിങ്ഡം"
+
+#: src/cinnamon-mobile-providers.c:526
+msgid "Default"
+msgstr "സ്വതേ"
+
+#: src/cinnamon-polkit-authentication-agent.c:334
+msgid "Authentication dialog was dismissed by the user"
+msgstr "അംഗീകരണ അഭ്യർത്ഥന ഉപയോക്താവ് ഒഴിവാക്കി"
+
+#: src/cinnamon-util.c:89
+msgid "Home"
+msgstr "ആസ്ഥാനം"
+
+#: src/cinnamon-util.c:98
+msgid "File System"
+msgstr "ഫയല്‍ സിസ്റ്റം"
+
+#: src/cinnamon-util.c:244
+msgid "Search"
+msgstr "തിരയുക"
+
+#: src/cinnamon-util.c:294
+#, c-format
+msgid "%1$s: %2$s"
+msgstr "%1$s: %2$s"
+
+#: src/gvc/gvc-mixer-control.c:1082 js/ui/lookingGlass.js:691
+msgid "Disabled"
+msgstr "പ്രവർത്തനരഹിതം"
+
+#: src/gvc/gvc-mixer-control.c:1089
+#, c-format
+msgid "%u Output"
+msgid_plural "%u Outputs"
+msgstr[0] "%u ഔട്ട്പുട്ട്"
+msgstr[1] "%u ഔട്ട്പുട്ടുകള്‍"
+
+#: src/gvc/gvc-mixer-control.c:1099
+#, c-format
+msgid "%u Input"
+msgid_plural "%u Inputs"
+msgstr[0] "%u ഇന്‍പുട്ട്"
+msgstr[1] "%u ഇന്‍പുട്ടുകള്‍"
+
+#: src/gvc/gvc-mixer-control.c:1397
+msgid "System Sounds"
+msgstr "സിസ്റ്റത്തിന്റെ ശബ്ദങ്ങള്‍"
+
+#: js/misc/util.js:89
+msgid "Command not found"
+msgstr "നിർദ്ദേശം കണ്ടെത്താനായില്ല"
+
+#: js/misc/util.js:116
+msgid "Could not parse command:"
+msgstr "നിർദ്ദേശം പാഴ്സ് ചെയ്യാനായില്ല:"
+
+#: js/misc/util.js:124
+#, c-format
+msgid "Execution of '%s' failed:"
+msgstr "'%s' പരാജയപ്പെട്ടു"
+
+#: js/ui/applet.js:237
+msgid "Remove this applet"
+msgstr "ഈ ആപ്‌ലെറ്റ് നീക്കംചെയ്യുക"
+
+#: js/ui/autorunManager.js:280
+msgid "Removable Devices"
+msgstr "നീക്കം ചെയ്യാവുന്ന ഉപകരണങ്ങള്‍"
+
+#: js/ui/autorunManager.js:590
+#, c-format
+msgid "Open with %s"
+msgstr "%s ഉപയോഗിച്ചു് തുറക്കുക"
+
+#: js/ui/autorunManager.js:616
+msgid "Eject"
+msgstr "പുറത്തെടുക്കുക"
+
+#: js/ui/calendar.js:704
+msgid "Nothing Scheduled"
+msgstr "ഒന്നും ആസൂത്രണം ചെയ്തിട്ടില്ല"
+
+#: js/ui/calendar.js:733
+msgid "Today"
+msgstr "ഇന്ന്"
+
+#: js/ui/calendar.js:737
+msgid "Tomorrow"
+msgstr "നാളെ"
+
+#: js/ui/calendar.js:746
+msgid "This week"
+msgstr "ഈയാഴ്ച"
+
+#: js/ui/calendar.js:754
+msgid "Next week"
+msgstr "അടുത്ത ആഴ്ച"
+
+#: js/ui/cinnamonEntry.js:30
+msgid "Copy"
+msgstr "പകര്‍ത്തുക"
+
+#: js/ui/cinnamonEntry.js:35
+msgid "Paste"
+msgstr "ഒട്ടിക്കുക"
+
+#: js/ui/cinnamonEntry.js:81
+msgid "Show Text"
+msgstr "എഴുത്ത് പ്രദർശിപ്പിക്കുക"
+
+#: js/ui/cinnamonEntry.js:83
+msgid "Hide Text"
+msgstr "എഴുത്ത് മറയ്ക്കുക"
+
+#: js/ui/cinnamonMountOperation.js:285
+msgid "Wrong password, please try again"
+msgstr "രഹസ്യവാക്ക് തെറ്റാണ്, ദയവായി വീണ്ടും ശ്രമിക്കുക"
+
+#: js/ui/endSessionDialog.js:58
+#, c-format
+msgid "Log Out %s"
+msgstr "പുറത്തുകടക്കുക %s"
+
+#: js/ui/endSessionDialog.js:59 js/ui/endSessionDialog.js:73
+msgid "Log Out"
+msgstr "പുറത്തുകടക്കുക"
+
+#: js/ui/endSessionDialog.js:60
+msgid "Click Log Out to quit these applications and log out of the system."
+msgstr ""
+"ഈ അപ്ലിക്കേഷനുകൾ നിർത്താനും കമ്പ്യൂട്ടറിൽ നിന്ന് പുറത്തുകടക്കാനും "
+"പുറത്തുകടക്കുക ഞെക്കുക"
+
+#: js/ui/endSessionDialog.js:62
+#, c-format
+msgid "%s will be logged out automatically in %d second."
+msgid_plural "%s will be logged out automatically in %d seconds."
+msgstr[0] ""
+"%s എന്ന ഉപയോക്താവ് %d സെക്കന്റിന്‌ ശേഷം തനിയെ ലോഗ് ഔട്ട് ചെയ്യപ്പെടും"
+msgstr[1] ""
+"%s എന്ന ഉപയോക്താവ് %d സെക്കന്റുകൾക്കു ശേഷം തനിയെ ലോഗ് ഔട്ട് ചെയ്യപ്പെടും"
+
+#: js/ui/endSessionDialog.js:67
+#, c-format
+msgid "You will be logged out automatically in %d second."
+msgid_plural "You will be logged out automatically in %d seconds."
+msgstr[0] "താങ്കൾ %d സെക്കന്റിനുള്ളിൽ സ്വയം പുറത്തുകടക്കുന്നതാണ്"
+msgstr[1] "താങ്കൾ %d സെക്കന്റുകൾക്കുള്ളിൽ സ്വയം പുറത്തുകടക്കുന്നതാണ്"
+
+#: js/ui/endSessionDialog.js:71
+msgid "Logging out of the system."
+msgstr "സിസ്റ്റത്തിൽ നിന്നും നിന്നും പുറത്തുകടക്കുന്നു"
+
+#: js/ui/endSessionDialog.js:78 js/ui/endSessionDialog.js:89
+msgid "Power Off"
+msgstr "പ്രവര്‍ത്തനം നിര്‍ത്തുക"
+
+#: js/ui/endSessionDialog.js:79
+msgid "Click Power Off to quit these applications and power off the system."
+msgstr "ഈ ആപ്ലിക്കേഷനുകൾ നിർത്താനും കമ്പ്യൂട്ടർ നിർത്താനും  ഞെക്കുക"
+
+#: js/ui/endSessionDialog.js:81
+#, c-format
+msgid "The system will power off automatically in %d second."
+msgid_plural "The system will power off automatically in %d seconds."
+msgstr[0] "കമ്പ്യൂട്ടർ %d സെക്കന്റിനുള്ളിൽ സ്വയം നിർത്തപ്പെടും."
+msgstr[1] "കമ്പ്യൂട്ടർ %d സെക്കന്റുകൾക്കുള്ളിൽ സ്വയം നിർത്തപ്പെടും."
+
+#: js/ui/endSessionDialog.js:85
+msgid "Powering off the system."
+msgstr "കമ്പ്യൂട്ടർ നിർത്തുന്നു"
+
+#: js/ui/endSessionDialog.js:87 js/ui/endSessionDialog.js:95
+#: js/ui/endSessionDialog.js:104
+msgid "Restart"
+msgstr "നിർത്തി വീണ്ടും കയറുക"
+
+#: js/ui/endSessionDialog.js:96
+msgid "Click Restart to quit these applications and restart the system."
+msgstr ""
+"ഈ ആപ്ലിക്കേഷനുകൾ നിർത്താനും സിസ്റ്റം നിർത്തി വീണ്ടും കയറാനും നിർത്തി വീണ്ടും "
+"കയറുക ഞെക്കുക"
+
+#: js/ui/endSessionDialog.js:98
+#, c-format
+msgid "The system will restart automatically in %d second."
+msgid_plural "The system will restart automatically in %d seconds."
+msgstr[0] "%d സെക്കൻഡിൽ കമ്പ്യുട്ടർ തനിയെ നിർത്തി വീണ്ടും കയറും"
+msgstr[1] "%d സെക്കൻഡുകൾക്കുള്ളിൽ കമ്പ്യുട്ടർ തനിയെ നിർത്തി വീണ്ടും കയറും"
+
+#: js/ui/endSessionDialog.js:102
+msgid "Restarting the system."
+msgstr "കമ്പ്യുട്ടറിന്റെ പ്രവർത്തനം പുനരാരംഭിക്കുന്നു"
+
+#: js/ui/endSessionDialog.js:428 js/ui/extensionSystem.js:477
+#: js/ui/networkAgent.js:144 js/ui/polkitAuthenticationAgent.js:173
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:170
+#: files/usr/share/cinnamon/applets/trash@cinnamon.org/applet.js:118
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/add-panel-launcher.py:141
+msgid "Cancel"
+msgstr "റദ്ദാക്കുക"
+
+#: js/ui/extensionSystem.js:481
+msgid "Install"
+msgstr "ഇന്‍സ്റ്റോള്‍ ചെയ്യുക"
+
+#: js/ui/extensionSystem.js:485
+#, c-format
+msgid "Download and install '%s' from extensions.gnome.org?"
+msgstr ""
+"extensions.gnome.org-ൽ നിന്നും '%s' ഡൗൺലോഡ് ചെയ്യുകയും ഇൻസ്റ്റോൾ ചെയ്യുകയും "
+"വേണോ?"
+
+#: js/ui/keyboard.js:324
+msgid "tray"
+msgstr "ട്രേ"
+
+#: js/ui/keyboard.js:555
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:114
+msgid "Keyboard"
+msgstr "കീബോര്‍ഡ്"
+
+#: js/ui/lookingGlass.js:643
+msgid "No extensions installed"
+msgstr "അനുബന്ധങ്ങളൊന്നും ഇൻസ്റ്റോൾ ചെയ്തിട്ടില്ല"
+
+#: js/ui/lookingGlass.js:689
+msgid "Enabled"
+msgstr "സജീവമാക്കിയിരിക്കുന്നു"
+
+#: js/ui/lookingGlass.js:693
+msgid "Error"
+msgstr "പിഴവ്"
+
+#: js/ui/lookingGlass.js:695
+msgid "Out of date"
+msgstr "കാലഹരണപ്പെട്ടത്"
+
+#: js/ui/lookingGlass.js:697
+msgid "Downloading"
+msgstr "ഡൗൺലോഡ് ചെയ്യുന്നു"
+
+#: js/ui/lookingGlass.js:717
+msgid "View Source"
+msgstr "മൂലരൂപം കാണുക"
+
+#: js/ui/lookingGlass.js:726
+msgid "Web Page"
+msgstr "വെബ് താൾ"
+
+#: js/ui/main.js:369
+msgid "WORKSPACE"
+msgstr "പണിയിടം"
+
+#: js/ui/messageTray.js:1250
+msgid "Open"
+msgstr "തുറക്കുക"
+
+#: js/ui/messageTray.js:1257
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/applet.js:59
+msgid "Remove"
+msgstr "നീക്കം ചെയ്യുക"
+
+#: js/ui/messageTray.js:1844
+msgid "System Information"
+msgstr "സിസ്റ്റത്തെക്കുറിച്ചുള്ള വിവരം"
+
+#: js/ui/networkAgent.js:139
+msgid "Connect"
+msgstr "ബന്ധിപ്പിക്കുക"
+
+#: js/ui/networkAgent.js:234 js/ui/networkAgent.js:246
+#: js/ui/networkAgent.js:273 js/ui/networkAgent.js:293
+#: js/ui/networkAgent.js:303
+msgid "Password: "
+msgstr "രഹസ്യവാക്ക്: "
+
+#: js/ui/networkAgent.js:239
+msgid "Key: "
+msgstr "ചാവി: "
+
+#: js/ui/networkAgent.js:271 js/ui/networkAgent.js:289
+msgid "Username: "
+msgstr "ഉപയോക്തൃനാമം: "
+
+#: js/ui/networkAgent.js:277
+msgid "Identity: "
+msgstr "വ്യക്തിത്വം: "
+
+#: js/ui/networkAgent.js:279
+msgid "Private key password: "
+msgstr "സ്വകാര്യ ചാവിയുടെ രഹസ്യവാക്ക്: "
+
+#: js/ui/networkAgent.js:291
+msgid "Service: "
+msgstr "സേവനം: "
+
+#: js/ui/networkAgent.js:320
+msgid "Authentication required by wireless network"
+msgstr "വയർലെസ് നെറ്റ്‌വർക്കിന് ആധികാരികത ആവശ്യമാണ്"
+
+#: js/ui/networkAgent.js:321
+#, c-format
+msgid ""
+"Passwords or encryption keys are required to access the wireless network "
+"'%s'."
+msgstr ""
+"വയര്‍ലെസ് നെറ്റ്‌വര്‍ക്ക് '%s'-ലേക്ക് പ്രവേശിക്കുന്നതിനായി അടയാളവാക്കുകള്‍ "
+"അല്ലെങ്കില്‍ എന്‍ക്രിപ്ഷന്‍ കീകള്‍ ആവശ്യമുണ്ടു്."
+
+#: js/ui/networkAgent.js:325
+msgid "Wired 802.1X authentication"
+msgstr "വയേര്‍ഡ് 802.1X ആധികാരികത"
+
+#: js/ui/networkAgent.js:327
+msgid "Network name: "
+msgstr "നെറ്റ്‌വർക്ക് നാമം: "
+
+#: js/ui/networkAgent.js:332
+msgid "DSL authentication"
+msgstr "ഡി.എസ്.എൽ. ആധികാരികത നേടൽ"
+
+#: js/ui/networkAgent.js:339
+msgid "PIN code required"
+msgstr "പി.ഐ.എൻ. കോഡ് ആവശ്യമാണ്"
+
+#: js/ui/networkAgent.js:340
+msgid "PIN code is needed for the mobile broadband device"
+msgstr "മൊബൈല്‍ ബ്രോഡ്ബാന്‍ഡ് ഉപകരണത്തിന്  പി.ഐ.എൻ. കോഡ് ആവശ്യമുണ്ടു്"
+
+#: js/ui/networkAgent.js:341
+msgid "PIN: "
+msgstr "പി.ഐ.എൻ.: "
+
+#: js/ui/networkAgent.js:347
+msgid "Mobile broadband network password"
+msgstr "മൊബൈൽ ബ്രോഡ്ബാൻഡ് നെറ്റ്‌വർക്കിന്റെ രഹസ്യവാക്ക്"
+
+#: js/ui/networkAgent.js:348
+#, c-format
+msgid "A password is required to connect to '%s'."
+msgstr "'%s'-ൽ ബന്ധപ്പെടുന്നതിന് രഹസ്യവാക്ക് ആവശ്യമുണ്ടു്."
+
+#: js/ui/overview.js:80
+msgid "Undo"
+msgstr "തിരസ്കരിക്കുക"
+
+#: js/ui/overview.js:193
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2087
+msgid "Windows"
+msgstr "ജാലകങ്ങള്‍"
+
+#: js/ui/panel.js:384
+msgid "Yes"
+msgstr "അതെ"
+
+#: js/ui/panel.js:391
+msgid "No"
+msgstr "ഇല്ല"
+
+#: js/ui/panel.js:426
+#: files/usr/share/cinnamon/applets/brightness@cinnamon.org/applet.js:148
+#: files/usr/share/cinnamon/applets/settings@cinnamon.org/applet.js:28
+msgid "Settings"
+msgstr "സജ്ജീകരണങ്ങൾ"
+
+#: js/ui/panel.js:428
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1954
+msgid "Themes"
+msgstr "രംഗവിധാനങ്ങൾ"
+
+#: js/ui/panel.js:431
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2053
+msgid "Applets"
+msgstr "ആപ്‌ലെറ്റുകൾ"
+
+#: js/ui/panel.js:434
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1870
+msgid "Panel"
+msgstr "പാളി"
+
+#: js/ui/panel.js:437
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:661
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:700
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1861
+msgid "Menu"
+msgstr "മെനു"
+
+#: js/ui/panel.js:440
+msgid "All settings"
+msgstr "എല്ലാ സജ്ജീകരണങ്ങളും"
+
+#: js/ui/panel.js:445
+msgid "Troubleshoot"
+msgstr "തെറ്റുകണ്ടെത്തുക"
+
+#: js/ui/panel.js:446
+msgid "Restart Cinnamon"
+msgstr "സിനമൺ നിർത്തി വീണ്ടും തുടങ്ങുക"
+
+#: js/ui/panel.js:450
+msgid "Looking Glass"
+msgstr "ദർശനദർപ്പണം"
+
+#: js/ui/panel.js:454
+msgid "Restore all settings to default"
+msgstr "എല്ലാ സജ്ജീകരണങ്ങളും സ്വതേയുള്ളതിലേക്ക് പുനഃസ്ഥാപിക്കുക"
+
+#: js/ui/panel.js:464
+msgid "Panel Edit mode"
+msgstr "പാളി തിരുത്തൽ രൂപം"
+
+#: js/ui/panel.js:488
+msgid "Panel settings"
+msgstr "പാളിയുടെ സജ്ജീകരണങ്ങൾ"
+
+#: js/ui/panel.js:491
+msgid "Add applets to the panel"
+msgstr "പാളിയിലേയ്ക്ക് ആപ്‌ലെറ്റുകൾ കൂട്ടിച്ചേർക്കുക"
+
+#: js/ui/placesManager.js:119
+#, c-format
+msgid "Failed to unmount '%s'"
+msgstr "'%s' അൺമൗണ്ട് ചെയ്യുന്നത് പരാജയപ്പെട്ടു"
+
+#: js/ui/placesManager.js:122
+msgid "Retry"
+msgstr "വീണ്ടും ശ്രമിക്കുക"
+
+#: js/ui/placesManager.js:162
+msgid "Connect to..."
+msgstr "ബന്ധപ്പെടുക..."
+
+#: js/ui/polkitAuthenticationAgent.js:73
+msgid "Authentication Required"
+msgstr "ആധികാരികത ഉറപ്പുവരുത്തേണ്ടതുണ്ട്."
+
+#: js/ui/polkitAuthenticationAgent.js:107
+msgid "Administrator"
+msgstr "കാര്യനിർവാഹക(ൻ)"
+
+#: js/ui/polkitAuthenticationAgent.js:177
+msgid "Authenticate"
+msgstr "അംഗീകരിക്കുക"
+
+#: js/ui/polkitAuthenticationAgent.js:258
+msgid "Sorry, that didn't work. Please try again."
+msgstr "ക്ഷമിക്കുക, അത് പ്രവർത്തിച്ചില്ല. വീണ്ടും ശ്രമിക്കുക."
+
+#: js/ui/polkitAuthenticationAgent.js:270
+msgid "Password:"
+msgstr "രഹസ്യവാക്ക്:"
+
+#: js/ui/runDialog.js:209
+msgid "Please enter a command:"
+msgstr "ദയവായി ഒരു നിർദ്ദേശം നൽകുക:"
+
+#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:44
+msgid "Accessibility"
+msgstr "ഉപയോഗലഭ്യത"
+
+#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:57
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:56
+msgid "Zoom"
+msgstr "വലുതാക്കുക"
+
+#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:68
+msgid "Screen Keyboard"
+msgstr "സ്ക്രീൻ കീബോർഡ്"
+
+#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:72
+msgid "Visual Alerts"
+msgstr "ദൃശ്യ അറിയിപ്പുകൾ"
+
+#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:75
+msgid "Sticky Keys"
+msgstr "സ്റ്റിക്കി കീകള്‍"
+
+#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:78
+msgid "Slow Keys"
+msgstr "സ്ലോ കീകള്‍"
+
+#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:81
+msgid "Bounce Keys"
+msgstr "ബൗണ്‍സ്  കീകള്‍"
+
+#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:84
+msgid "Mouse Keys"
+msgstr "മൗസ് കീകൾ"
+
+#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:88
+msgid "Universal Access Settings"
+msgstr "സാർവ്വജനിക ഉപയോഗലഭ്യതാ സജ്ജീകരണങ്ങൾ"
+
+#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:146
+msgid "High Contrast"
+msgstr "ഉയർന്ന തെളിച്ചം"
+
+#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:183
+msgid "Large Text"
+msgstr "വലിയ എഴുത്ത്"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:37
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:71
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:111
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:144
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:216
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:221
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:453
+msgid "Bluetooth"
+msgstr "ബ്ലൂടൂത്ത്"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:72
+#, c-format
+msgid "Authorization request from %s"
+msgstr "%s അംഗീകരണം ആവശ്യപ്പെടുന്നു"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:78
+#, c-format
+msgid "Device %s wants access to the service '%s'"
+msgstr "%s എന്ന ഉപകരണത്തിന് '%s' എന്ന സേവനം ആവശ്യമാണ്"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:80
+msgid "Always grant access"
+msgstr "എപ്പോഴും ലഭ്യത നൽകുക"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:81
+msgid "Grant this time only"
+msgstr "ഇപ്രാവശ്യം മാത്രം നൽകുക"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:82
+msgid "Reject"
+msgstr "നിരാകരിക്കുക"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:112
+#, c-format
+msgid "Pairing confirmation for %s"
+msgstr "%s എന്ന ഉപകരണത്തിനുള്ള ചേരൽ സ്ഥിരീകരണം"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:118
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:152
+#, c-format
+msgid "Device %s wants to pair with this computer"
+msgstr "ഈ കമ്പ്യൂട്ടറുമായി  %s എന്ന ഉപകരണം ചേരാനാഗ്രഹിക്കുന്നു"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:119
+#, c-format
+msgid "Please confirm whether the PIN '%s' matches the one on the device."
+msgstr ""
+"ഉപകരണത്തിലെ പി.ഐ.എൻ.  '%s' ഒത്തുപോകുന്നുണ്ടോയെന്ന് ദയവായി സ്ഥിരീകരിക്കുക."
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:121
+msgid "Matches"
+msgstr "ചേർച്ചകൾ"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:122
+msgid "Does not match"
+msgstr "ചേരുന്നില്ല"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:145
+#, c-format
+msgid "Pairing request for %s"
+msgstr "%s-നുള്ള ചേരൽ അഭ്യർത്ഥന"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:153
+msgid "Please enter the PIN mentioned on the device."
+msgstr "മുകളിൽ പറഞ്ഞ ഉപകരണത്തിന്റെ പി.ഐ.എൻ. നൽകുക."
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:169
+msgid "OK"
+msgstr "ശരി"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:234
+msgid "Visibility"
+msgstr "ദൃശ്യത"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:248
+msgid "Send Files to Device..."
+msgstr "ഉപകരണത്തിലേക്ക് ഫയലുകൾ അയയ്ക്കുക"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:249
+msgid "Set up a New Device..."
+msgstr "പുതിയ ഉപകരണം തയ്യാറാക്കുക"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:273
+msgid "Bluetooth Settings"
+msgstr "ബ്ലൂടൂത്ത് സജ്ജീകരണങ്ങൾ"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:303
+msgid "hardware disabled"
+msgstr "ഹാർഡ്‌വേർ സജ്ജമല്ല"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:400
+msgid "Connection"
+msgstr "കണക്ഷന്‍"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:409
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:508
+msgid "disconnecting..."
+msgstr "ബന്ധം വേർപെടുത്തുന്നു..."
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:422
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:514
+msgid "connecting..."
+msgstr "ബന്ധപ്പെടുന്നു..."
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:440
+msgid "Send Files..."
+msgstr "ഫയലുകൾ അയക്കുക..."
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:445
+msgid "Browse Files..."
+msgstr "ഫയലുകൾ എടുത്തുനോക്കുക..."
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:454
+msgid "Error browsing device"
+msgstr "ഉപകരണം ബ്രൗസ് ചെയ്യുന്നതിൽ പിഴവുണ്ടായി"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:455
+#, c-format
+msgid "The requested device cannot be browsed, error is '%s'"
+msgstr "ആവശ്യപ്പെട്ട ഉപകരണം ബ്രൗസ് ചെയ്യാനാവില്ല, പിഴവ്: '%s'"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:463
+msgid "Keyboard Settings"
+msgstr "കീബോർഡ് സജ്ജീകരണങ്ങൾ"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:466
+msgid "Mouse Settings"
+msgstr "മൗസ് സജ്ജീകരണങ്ങൾ"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:471
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:911
+msgid "Sound Settings"
+msgstr "ശബ്ദ സജ്ജീകരണങ്ങള്‍"
+
+#: files/usr/share/cinnamon/applets/brightness@cinnamon.org/applet.js:112
+#: files/usr/share/cinnamon/applets/brightness@cinnamon.org/applet.js:143
+#: files/usr/share/cinnamon/applets/brightness@cinnamon.org/applet.js:225
+#: files/usr/share/cinnamon/applets/brightness@cinnamon.org/applet.js:228
+#: files/usr/share/cinnamon/applets/brightness@cinnamon.org/applet.js:230
+msgid "Brightness"
+msgstr "തെളിച്ചം"
+
+#: files/usr/share/cinnamon/applets/brightness@cinnamon.org/applet.js:117
+msgid "Dimming settings"
+msgstr "മങ്ങൽ സജ്ജീകരണങ്ങൾ"
+
+#: files/usr/share/cinnamon/applets/brightness@cinnamon.org/applet.js:119
+msgid "Dim screen on AC power"
+msgstr "എ.സി. വൈദ്യുതിയിൽ പ്രവർത്തിക്കുമ്പോൾ സ്ക്രീൻ മങ്ങണം"
+
+#: files/usr/share/cinnamon/applets/brightness@cinnamon.org/applet.js:121
+msgid "Dim screen on battery"
+msgstr "ബാറ്ററിയിൽ പ്രവർത്തിക്കുമ്പോൾ സ്ക്രീൻ മങ്ങണം"
+
+#: files/usr/share/cinnamon/applets/brightness@cinnamon.org/applet.js:144
+msgid "Brightness not available"
+msgstr "തെളിച്ചം ലഭ്യമല്ല"
+
+#: files/usr/share/cinnamon/applets/calendar@cinnamon.org/applet.js:65
+msgid "Date and Time Settings"
+msgstr "തീയതി, സമയ, സജ്ജീകരണങ്ങൾ"
+
+#: files/usr/share/cinnamon/applets/expo@cinnamon.org/applet.js:19
+msgid "Expo"
+msgstr "എക്സ്പോ"
+
+#: files/usr/share/cinnamon/applets/keyboard@cinnamon.org/applet.js:66
+msgid "Show Keyboard Layout"
+msgstr "കീബോർഡ് രൂപരേഖ പ്രദർശിപ്പിക്കുക"
+
+#: files/usr/share/cinnamon/applets/keyboard@cinnamon.org/applet.js:70
+msgid "Show Character Table"
+msgstr "അക്ഷരമാല പ്രദർശിപ്പിക്കുക"
+
+#: files/usr/share/cinnamon/applets/keyboard@cinnamon.org/applet.js:74
+msgid "Region and Language Settings"
+msgstr "പ്രദേശവും ഭാഷയും സംബന്ധിച്ച സജ്ജീകരണങ്ങൾ"
+
+#: files/usr/share/cinnamon/applets/keyboard@cinnamon.org/applet.js:76
+msgid "Show flags"
+msgstr "പതാകകൾ പ്രദർശിപ്പിക്കുക"
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:204
+msgid "Add to panel"
+msgstr "പാളിയിലേക്ക് ചേര്‍ക്കുക"
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:207
+msgid "Add to desktop"
+msgstr "ഡെസ്ക്‌ടോപ്പിലേക്ക് ചേർക്കുക"
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:211
+msgid "Remove from favorites"
+msgstr "പ്രിയപ്പെട്ടവയിൽ നിന്ന് നീക്കംചെയ്യുക"
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:214
+msgid "Add to favorites"
+msgstr "പ്രിയപ്പെട്ടവയിലേക്ക് ചേർക്കുക"
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:344
+#: files/usr/share/cinnamon/applets/recent@cinnamon.org/applet.js:70
+msgid "Clear list"
+msgstr "പട്ടിക ശൂന്യമാക്കുക"
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:381
+msgid "All Applications"
+msgstr "എല്ലാ ആപ്ലിക്കേഷനുകളും"
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:404
+msgid "Places"
+msgstr "സ്ഥാനങ്ങൾ"
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:422
+msgid "Recent Files"
+msgstr "സമീപകാലത്തെടുത്ത ഫയലുകൾ"
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:750
+msgid "Edit menu"
+msgstr "മെനു തിരുത്തുക"
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:752
+msgid "Menu settings"
+msgstr "മെനുവിന്റെ സജ്ജീകരണങ്ങൾ"
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1219
+msgid "Lock screen"
+msgstr "സ്ക്രീൻ പൂട്ടുക"
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1220
+msgid "Lock the screen"
+msgstr "സ്ക്രീൻ പൂട്ടുക"
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1236
+msgid "Logout"
+msgstr "പുറത്ത് കടക്കുക"
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1237
+msgid "Leave the session"
+msgstr "സെഷൻ വിടുക"
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1253
+msgid "Quit"
+msgstr "പുറത്തു് കടക്കുക"
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1254
+msgid "Shutdown the computer"
+msgstr "കമ്പ്യൂട്ടർ നിർത്തുക"
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1365
+msgid "Type to search..."
+msgstr "തിരയുന്നതിനായി ടൈപ്പ് ചെയ്യുക"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:96
+msgid "<unknown>"
+msgstr "<അപരിചിതം>"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:306
+msgid "disabled"
+msgstr "പ്രവർത്തനരഹിതം"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:506
+msgid "unmanaged"
+msgstr "കൈകാര്യം ചെയ്യാത്തത്"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:517
+msgid "authentication required"
+msgstr "അംഗീകരണം ആവശ്യമാണ്"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:527
+msgid "firmware missing"
+msgstr "ഫേംവേർ ഇല്ല"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:534
+msgid "cable unplugged"
+msgstr "കേബിൾ ബന്ധിച്ചിട്ടില്ല"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:539
+msgid "unavailable"
+msgstr "ലഭ്യമല്ല"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:541
+msgid "connection failed"
+msgstr "കണക്ഷൻ പരാജയപ്പെട്ടു"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:597
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1554
+msgid "More..."
+msgstr "കൂടുതൽ..."
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:633
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1489
+msgid "Connected (private)"
+msgstr "ബന്ധിതം (സ്വകാര്യം)"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:711
+msgid "Auto Ethernet"
+msgstr "സ്വയം ഈഥർനെറ്റ്"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:775
+msgid "Auto broadband"
+msgstr "സ്വയം ബ്രോഡ്ബാൻഡ്"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:778
+msgid "Auto dial-up"
+msgstr "സ്വയം ഡയൽ-അപ്പ്"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:900
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1501
+#, c-format
+msgid "Auto %s"
+msgstr "സ്വയം %s"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:902
+msgid "Auto bluetooth"
+msgstr "സ്വയം ബ്ലൂടൂത്ത്"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1503
+msgid "Auto wireless"
+msgstr "സ്വയം വയർലെസ്"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1591
+msgid "Network Manager"
+msgstr "നെറ്റ്‌വർക്ക് നിയന്ത്രണം"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1624
+msgid "Enable networking"
+msgstr "നെറ്റ്‌വർക്ക് സജ്ജമാക്കുക"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1636
+msgid "Wired"
+msgstr "വയേർഡ്"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1647
+msgid "Wireless"
+msgstr "വയർലെസ്"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1657
+msgid "Mobile broadband"
+msgstr "മൊബൈൽ ബ്രോഡ്ബാൻഡ്"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1667
+msgid "VPN Connections"
+msgstr "വി.പി.എൻ. കണക്ഷനുകൾ"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1678
+msgid "Network Settings"
+msgstr "നെറ്റ്‌വർക്ക് സജ്ജീകരണങ്ങൾ"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1829
+msgid "Connection failed"
+msgstr "കൺക്ഷൻ പരാജയപ്പെട്ടു"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1830
+msgid "Activation of network connection failed"
+msgstr "നെറ്റ്‌വർക്ക് കണക്ഷൻ സജ്ജമാക്കുന്നത് പരാജയപ്പെട്ടു"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2087
+msgid "Networking is disabled"
+msgstr "നെറ്റ്‌വർക്കിങ് പ്രവർത്തനരഹിതമാക്കിയിരിക്കുന്നു"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2106
+msgid "No connection"
+msgstr "കണക്ഷൻ ഇല്ല"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2112
+msgid "Connecting to the cellular network..."
+msgstr "സെല്ലുലാർ നെറ്റ്‌വർക്കിലേക്ക് ബന്ധപ്പെടുന്നു..."
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2116
+msgid "Connecting to the wireless network..."
+msgstr "വയർലെസ് നെറ്റ്‌വർക്കിലേക്ക് ബന്ധപ്പെടുന്നു..."
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2120
+msgid "Connecting to the wired network..."
+msgstr "വയേർഡ് നെറ്റ്‌വർക്കിലേയ്ക്ക് ബന്ധപ്പെടുന്നു..."
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2124
+msgid "Connecting to the VPN..."
+msgstr "വി.പി.എൻ.ലേക്ക് ബന്ധപ്പെടുന്നു..."
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2130
+msgid "Connecting to the network..."
+msgstr "നെറ്റ്‌വർക്കിലേക്ക് ബന്ധപ്പെടുന്നു"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2146
+msgid "Connected to the wireless network"
+msgstr "വയർലെസ് നെറ്റ്‌വർക്കിൽ ബന്ധിതമാണ്"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2149
+msgid "Wireless connection"
+msgstr "വയർലെസ് കണക്ഷൻ"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2159
+msgid "Connected to the wired network"
+msgstr "വയേർഡ് നെറ്റ്‌വർക്കിൽ ബന്ധിതമാണ്"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2170
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2175
+msgid "Connected to the cellular network"
+msgstr "സെല്ലുലാർ നെറ്റ്‌വർക്കിൽ ബന്ധിതമാണ്"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2180
+msgid "Connected to the VPN"
+msgstr "വി.പി.എൻ. ബന്ധിതമാണ്"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2186
+msgid "Connected to the network"
+msgstr "നെറ്റ്‌വർക്കിൽ ബന്ധിതമാണ്"
+
+#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:32
+msgid "Notifications"
+msgstr "അറിയിപ്പുകൾ"
+
+#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:52
+msgid "Clear notifications"
+msgstr "അറിയിപ്പുകൾ ഒഴിവാക്കുക"
+
+#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:226
+msgid "No notifications"
+msgstr "അറിയിപ്പുകൾ ഇല്ല"
+
+#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:229
+msgid " notification"
+msgstr " അറിയിപ്പ്"
+
+#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:232
+msgid " notifications"
+msgstr " അറിയിപ്പുകൾ"
+
+#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:246
+msgid " (Just now)"
+msgstr " (ഇപ്പോൾ)"
+
+#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:249
+#, c-format
+msgid " (%s seconds ago)"
+msgstr " (%s സെക്കൻഡുകൾ മുമ്പ്)"
+
+#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:252
+#, c-format
+msgid " (%s minute ago)"
+msgstr " (%s മിനിറ്റ് മുമ്പ്)"
+
+#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:255
+#, c-format
+msgid " (%s minutes ago)"
+msgstr " (%s മിനിറ്റുകൾ മുമ്പ്)"
+
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/applet.js:47
+msgid "Launch"
+msgstr "തുടങ്ങുക"
+
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/applet.js:51
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/add-panel-launcher.py:151
+msgid "Add"
+msgstr "ചേര്‍ക്കുക"
+
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/applet.js:55
+msgid "Edit"
+msgstr "മാറ്റം വരുത്തുക"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:104
+msgid "AC adapter"
+msgstr "എ.സി. അഡാപ്റ്റർ"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:106
+msgid "Laptop battery"
+msgstr "ലാപ്‌ടോപ്പ് ബാറ്ററി"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:108
+msgid "UPS"
+msgstr "യു.പി.എസ്."
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:110
+msgid "Monitor"
+msgstr "മോണിറ്റർ"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:112
+msgid "Mouse"
+msgstr "മൗസ്"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:116
+msgid "PDA"
+msgstr "പി.ഡി.എ."
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:118
+msgid "Cell phone"
+msgstr "സെൽഫോൺ"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:120
+msgid "Media player"
+msgstr "മീഡിയ പ്ലേയർ"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:122
+msgid "Tablet"
+msgstr "ടാബ്‌ലെറ്റ്"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:124
+msgid "Computer"
+msgstr "കമ്പ്യൂട്ടർ"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:182
+#: files/usr/share/cinnamon/applets/xrandr@cinnamon.org/applet.js:45
+msgid "Display"
+msgstr "ഡിസ്പ്ലേ"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:184
+msgid "Show percentage"
+msgstr "ശതമാനം പ്രദർശിപ്പിക്കുക"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:189
+msgid "Show time remaining"
+msgstr "അവശേഷിക്കുന്ന സമയം പ്രദർശിപ്പിക്കുക"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:194
+msgid "Hide label"
+msgstr "കുറിപ്പ് മറയ്ക്കുക"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:202
+msgid "Power Settings"
+msgstr "വൈദ്യുതി സജ്ജീകരണങ്ങൾ"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:251
+msgid "Estimating..."
+msgstr "കണക്കെടുക്കുന്നു..."
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:258
+#, c-format
+msgid "%d hour remaining"
+msgid_plural "%d hours remaining"
+msgstr[0] "%d മണിക്കൂർ അവശേഷിക്കുന്നു"
+msgstr[1] "%d മണിക്കൂറുകൾ അവശേഷിക്കുന്നു"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:261
+#, c-format
+msgid "%d %s %d %s remaining"
+msgstr "%d %s %d %s അവശേഷിക്കുന്നു"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:263
+msgid "hour"
+msgid_plural "hours"
+msgstr[0] "മണിക്കൂർ"
+msgstr[1] "മണിക്കൂറുകൾ"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:263
+msgid "minute"
+msgid_plural "minutes"
+msgstr[0] "മിനിറ്റ്"
+msgstr[1] "മിനിറ്റുകൾ"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:266
+#, c-format
+msgid "%d minute remaining"
+msgid_plural "%d minutes remaining"
+msgstr[0] "%d മിനിറ്റ് അവശേഷിക്കുന്നു"
+msgstr[1] "%d മിനിറ്റുകൾ അവശേഷിക്കുന്നു"
+
+#: files/usr/share/cinnamon/applets/recent@cinnamon.org/applet.js:41
+msgid "Recent documents"
+msgstr "സമീപകാലത്തെടുത്ത പ്രമാണങ്ങൾ"
+
+#: files/usr/share/cinnamon/applets/recent@cinnamon.org/applet.js:74
+msgid "No recent documents"
+msgstr "സമീപകാല പ്രമാണങ്ങളൊന്നുമില്ല"
+
+#: files/usr/share/cinnamon/applets/removable-drives@cinnamon.org/applet.js:53
+msgid "Removable drives"
+msgstr "നീക്കം ചെയ്യാവുന്ന ഡ്രൈവുകൾ"
+
+#: files/usr/share/cinnamon/applets/removable-drives@cinnamon.org/applet.js:65
+msgid "Open file manager"
+msgstr "ഫയൽ മാനേജർ തുറക്കുക"
+
+#: files/usr/share/cinnamon/applets/scale@cinnamon.org/applet.js:19
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2003
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2014
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2025
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2036
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2047
+msgid "Scale"
+msgstr "തോത്"
+
+#: files/usr/share/cinnamon/applets/show-desktop@cinnamon.org/applet.js:16
+msgid "Show desktop"
+msgstr "ഡെസ്ക്ക്ടോപ്പ് പ്രദർശിപ്പിക്കുക"
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:105
+msgid "Playing"
+msgstr "കളി"
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:106
+msgid "Paused"
+msgstr "തൽക്കാലം നിർത്തിയിരിക്കുന്നു"
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:107
+msgid "Stopped"
+msgstr "നിർത്തി"
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:373
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:489
+msgid "Unknown Artist"
+msgstr "അപരിചിതനായ കലാകാരൻ"
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:374
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:493
+msgid "Unknown Album"
+msgstr "അപരിചിതമായ ആൽബം"
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:375
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:497
+msgid "Unknown Title"
+msgstr "അപരിചിതമായ തലക്കെട്ട്"
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:386
+msgid "Previous"
+msgstr "മുൻപത്തേത്"
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:389
+msgid "Play"
+msgstr "കേൾക്കുക"
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:392
+msgid "Stop"
+msgstr "നിർത്തുക"
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:395
+msgid "Next"
+msgstr "അടുത്തത്"
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:409
+msgid "Open Player"
+msgstr "പ്ലേയർ തുറക്കുക"
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:419
+msgid "Quit Player"
+msgstr "പ്ലേയർ നിർത്തുക"
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:744
+msgid "Mute output"
+msgstr "ഔട്ട്പുട്ട് മ്യൂട്ട് ചെയ്യുക"
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:745
+msgid "Mute input"
+msgstr "ഇൻപുട്ട് മ്യൂട്ട് ചെയ്യുക"
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:884
+msgid "Launch player..."
+msgstr "പ്ലേയർ തുറക്കുക"
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:897
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:960
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:961
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:966
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:967
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:986
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:987
+msgid "Volume"
+msgstr "ശബ്ദം"
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:904
+msgid "Microphone"
+msgstr "മൈക്രോഫോൺ"
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:913
+msgid "Output device..."
+msgstr "ഔട്ട്പുട്ട് ഉപകരണം"
+
+#: files/usr/share/cinnamon/applets/trash@cinnamon.org/applet.js:21
+msgid "Trash"
+msgstr "ട്രാഷ്"
+
+#: files/usr/share/cinnamon/applets/trash@cinnamon.org/applet.js:39
+msgid "Empty Trash"
+msgstr "ട്രാഷ് ശൂന്യമാക്കുക"
+
+#: files/usr/share/cinnamon/applets/trash@cinnamon.org/applet.js:42
+msgid "Open Trash"
+msgstr "ട്രാഷ് തുറക്കുക"
+
+#: files/usr/share/cinnamon/applets/trash@cinnamon.org/applet.js:86
+msgid "Are you sure you want to delete all items from the trash?"
+msgstr "ട്രാഷിലെ എല്ലാം മായ്ക്കണമെന്ന് ഉറപ്പാണോ?"
+
+#: files/usr/share/cinnamon/applets/trash@cinnamon.org/applet.js:86
+msgid "This operation cannot be undone."
+msgstr "ഈ പ്രവൃത്തി പിന്നീട് തിരസ്കരിക്കാൻ കഴിയില്ല."
+
+#: files/usr/share/cinnamon/applets/trash@cinnamon.org/applet.js:107
+msgid "Empty Trash?"
+msgstr "ട്രാഷ് ശൂന്യമാക്കണോ?"
+
+#: files/usr/share/cinnamon/applets/trash@cinnamon.org/applet.js:125
+msgid "Empty"
+msgstr "ശൂന്യം"
+
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:41
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1763
+msgid "Close"
+msgstr "അടയ്ക്കുക"
+
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:44
+msgid "Close all"
+msgstr "എല്ലാം അടയ്ക്കുക"
+
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:47
+msgid "Close others"
+msgstr "മറ്റുള്ളവ അടയ്ക്കുക"
+
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:51
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:839
+msgid "Restore"
+msgstr "പുനഃസ്ഥാപിക്കുക"
+
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:53
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:844
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1764
+msgid "Minimize"
+msgstr "ചുരുക്കുക"
+
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:56
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:117
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1765
+msgid "Maximize"
+msgstr "വലുതാക്കുക"
+
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:59
+msgid "Move to left workspace"
+msgstr "ഇടത്തെ പണിയിടത്തേയ്ക്ക് മാറ്റുക"
+
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:62
+msgid "Move to right workspace"
+msgstr "വലത്തെ പണിയിടത്തേയ്ക്ക് മാറ്റുക"
+
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:65
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:103
+msgid "Visible on all workspaces"
+msgstr "എല്ലാ പണിയിടങ്ങളിലും ദൃശ്യമാക്കുക"
+
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:99
+msgid "Only on this workspace"
+msgstr "ഈ പണിയിടത്തിൽ മാത്രം"
+
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:115
+msgid "Unmaximize"
+msgstr "വലിപ്പം ചുരുക്കുക"
+
+#: files/usr/share/cinnamon/applets/windows-quick-list@cinnamon.org/applet.js:24
+msgid "All windows"
+msgstr "എല്ലാ ജാലകങ്ങളും"
+
+#: files/usr/share/cinnamon/applets/workspace-switcher@cinnamon.org/applet.js:18
+msgid "Switch workspace"
+msgstr "പണിയിടം മാറ്റുക"
+
+#: files/usr/share/cinnamon/applets/xrandr@cinnamon.org/applet.js:88
+msgid "Configure display settings..."
+msgstr "ഡിസ്പ്ലേ സജ്ജീകരണങ്ങൾ ക്രമീകരിക്കുക"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:34
+msgid "Desktop Settings"
+msgstr "ഡെസ്ക്ടോപ്പ് സജ്ജീകരണങ്ങൾ"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:35
+msgid "Desktop Configuration Tool"
+msgstr "ഡെസ്ക്ടോപ്പ് ക്രമീകരണ ഉപകരണം"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:36
+msgid "Fine-tune desktop settings"
+msgstr "ഡെസ്ക്ടോപ്പ് സജ്ജീകരണങ്ങൾ കൃത്യമാക്കുക"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:39
+msgid "Wallpaper"
+msgstr "പശ്ചാത്തലചിത്രം"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:45
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1242
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2003
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2014
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2025
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2036
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2047
+msgid "None"
+msgstr "ഒന്നുമില്ല"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:46
+msgid "Horizontal"
+msgstr "തിരശ്ചീനം"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:47
+msgid "Vertical"
+msgstr "ലംബം"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:51
+msgid "No picture"
+msgstr "ചിത്രമില്ല"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:52
+msgid "Mosaic"
+msgstr "മൊസൈക്"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:53
+msgid "Centered"
+msgstr "കേന്ദ്രീകൃതം"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:54
+msgid "Scaled"
+msgstr "സ്കെയിൽഡ്"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:55
+msgid "Stretched"
+msgstr "വലിച്ച് നീട്ടി"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:57
+msgid "Spanned"
+msgstr "സ്പാൻഡ്"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:480
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:625
+msgid "Add wallpapers"
+msgstr "പശ്ചാത്തലചിത്രങ്ങൾ ചേർക്കുക"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:503
+msgid "Folder"
+msgstr "ഫോൾഡർ"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:511
+msgid "Recursive listing"
+msgstr "പുനരാവർത്തിത പട്ടികയിലുൾപ്പെടുത്തൽ"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:516
+msgid "Delay"
+msgstr "താമസം"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:612
+msgid "Mode"
+msgstr "രീതി"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:620
+msgid "Remove wallpaper"
+msgstr "പശ്ചാത്തലചിത്രം നീക്കംചെയ്യുക"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:651
+msgid "Advanced options"
+msgstr "വിപുലീകൃത ഐച്ഛികങ്ങൾ"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:659
+msgid "Picture aspect"
+msgstr "ചിത്രത്തിന്റെ സ്വഭാവം"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:665
+msgid "Gradient"
+msgstr "ഗ്രേഡിയന്റ്"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:672
+msgid "Colors"
+msgstr "നിറങ്ങൾ"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:746
+msgid "Get new themes"
+msgstr "പുതിയ തീമുകൾ എടുക്കുക"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:749
+msgid "Cinnamon themes"
+msgstr "സിനമൺ തീമുകൾ"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:756
+msgid "Window theme"
+msgstr "ജാലകത്തിന്റെ തീം"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:758
+msgid "Menus Have Icons"
+msgstr "മെനുവിൽ ഐകോണുകൾ വേണം"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:760
+msgid "Buttons Have Icons"
+msgstr "ബട്ടണുകളി ഐകോണുകൾ വേണം"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:763
+msgid "Always Use Location Entry In Nemo"
+msgstr "നെമോയിൽ എപ്പോഴും സ്ഥാനം കാണിക്കണം"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:765
+msgid "Cursor theme"
+msgstr "കഴ്സറിന്റെ തീം"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:767
+msgid "Keybinding theme"
+msgstr "കീബൈൻഡിങ് തീം"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:769
+msgid "Icon theme"
+msgstr "ഐകോൺ തീം"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:771
+msgid "GTK+ theme"
+msgstr "ജി.റ്റി.കെ.+ തീം"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:774
+msgid "Other settings"
+msgstr "മറ്റ് സജ്ജീകരണങ്ങൾ"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:868
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:959
+msgid "Enable"
+msgstr "സജ്ജമാക്കുക"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:872
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:966
+msgid "Description"
+msgstr "വിവരണം"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:894
+msgid "Get new extensions"
+msgstr "പുതിയ അനുബന്ധങ്ങൾ എടുക്കുക"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:963
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/add-panel-launcher.py:140
+msgid "Icon"
+msgstr "ഐകോൺ"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:989
+msgid "Restore to default"
+msgstr "സ്വതേയുള്ളതിലേയ്ക്ക് പുനഃക്രമീകരിക്കുക"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:993
+msgid "Get new applets"
+msgstr "പുതിയ ആപ്‌ലെറ്റുകൾ എടുക്കുക"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1493
+msgid "Region"
+msgstr "മേഖല"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1515
+msgid "City"
+msgstr "പട്ടണം"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1621
+msgid ":"
+msgstr ":"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1628
+msgid "Date : "
+msgstr "തീയതി: "
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1630
+msgid "Time : "
+msgstr "സമയം: "
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1743
+msgid "Left side title bar buttons"
+msgstr "തലക്കെട്ട് നാടയിൽ ഇടതുവശത്തെ ബട്ടണുകൾ"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1749
+msgid "Right side title bar buttons"
+msgstr "തലക്കെട്ട് നാടയിൽ വലതുവശത്തെ ബട്ടണുകൾ"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1837
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2172
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2186
+msgid "Cinnamon Settings"
+msgstr "സിനമൺ സജ്ജീകരണങ്ങൾ"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1854
+msgid "All Settings"
+msgstr "എല്ലാ സജ്ജീകരണങ്ങളും"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1863
+msgid "Menu text"
+msgstr "മെനു എഴുത്ത്"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1864
+msgid "Menu icon"
+msgstr "മെനു ഐകോൺ"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1865
+msgid "Menu hover delay"
+msgstr "മെനുവിന്റെ മുകളിൽ മൗസ് പോകുമ്പോഴുള്ള താമസം"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1865
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1875
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1879
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2006
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2017
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2028
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2039
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2050
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2116
+msgid "milliseconds"
+msgstr "മില്ലിസെക്കൻഡുകൾ"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1866
+msgid "Activate menu on hover"
+msgstr "മൗസ് കടന്നുപോകുമ്പോൾ മെനു സജ്ജമാക്കുക"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1867
+msgid "Show bookmarks and places"
+msgstr "ബുക്ക്മാർക്കുകളും സ്ഥാനങ്ങളും പ്രദർശിപ്പിക്കുക"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1868
+msgid "Show recent files"
+msgstr "സമീപകാല ഫയലുകൾ പ്രദർശിപ്പിക്കുക"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1872
+msgid "Auto-hide panel"
+msgstr "പാളി സ്വയം-മറയുന്നത് ആക്കുക"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1875
+msgid "Show delay"
+msgstr "പ്രദർശിപ്പിക്കാനുള്ള താമസം"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1879
+msgid "Hide delay"
+msgstr "മറയ്ക്കാനുള്ള താമസം"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1882
+msgid "Traditional (panel at the bottom)"
+msgstr "പരമ്പരാഗതം (പാളി താഴെ)"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1882
+msgid "Flipped (panel at the top)"
+msgstr "കടകവിരുദ്ധം (പാളി മുകളിൽ)"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1882
+msgid "Classic (panels at the top and at the bottom)"
+msgstr "ചിരം (മുകളിലും താഴെയും പാളികൾ)"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1883
+msgid "Panel layout"
+msgstr "പാളിയുടെ രൂപരേഖ"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1886
+msgid "Note: If you change the layout you will need to restart Cinnamon."
+msgstr ""
+"കുറിപ്പ്: രൂപരേഖയിൽ മാറ്റം വരുത്തിയാൽ സിനമൺ നിർത്തിയിട്ട് വീണ്ടും "
+"തുടങ്ങേണ്ടി വരുന്നതാണ്."
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1889
+msgid "Use customized panel size (otherwise it's defined by the theme)"
+msgstr ""
+"പാളിയുടെ വലിപ്പം ഇച്ഛാനുസരണമാക്കുക (അല്ലെങ്കിൽ തീമായിരിക്കും നിർണ്ണയിക്കുക)"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1892
+msgid ""
+"Allow Cinnamon to scale panel text and icons according to the panel heights"
+msgstr ""
+"പാളിയുടെ ഉയരത്തിനനുസരിച്ച് പാളിയിലെ എഴുത്തുകളുടെയും ഐകോണുകളുടെയും വലിപ്പം "
+"ക്രമീകരിക്കാൻ സിനമണെ അനുവദിക്കുക"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1896
+msgid "Top panel height"
+msgstr "മുകളിലെ പാളിയുടെ ഉയരം"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1896
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1900
+msgid "Pixels"
+msgstr "പിക്സലുകൾ"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1900
+msgid "Bottom panel height"
+msgstr "താഴത്തെ പാളിയുടെ ഉയരം"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1903
+msgid "Panel edit mode"
+msgstr "പാനൽ തിരുത്തൽ"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1904
+msgid "Calendar"
+msgstr "കലണ്ടർ"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1906
+msgid "Show week dates in calendar"
+msgstr "കലണ്ടറിൽ ആഴ്ചയുടെ എണ്ണവും പ്രദർശിപ്പിക്കുക"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1907
+msgid "Date format for the panel"
+msgstr "പാളിയിൽ തീയതി പ്രദർശിപ്പിക്കേണ്ട രീതി"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1908
+msgid "Date format inside the date applet"
+msgstr "തീയതി ആപ്‌ലെറ്റിനുള്ളിൽ തീയതി പ്രദർശിപ്പിക്കേണ്ട രീതി"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1909
+msgid "Generate your own date formats"
+msgstr "താങ്കളുടെ സ്വന്തമായുള്ള തീയതി രീതികൾ നിർമ്മിക്കുക"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1915
+msgid "Use network time"
+msgstr "നെറ്റ്‌വർക്ക് സമയം ഉപയോഗിക്കുക"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1931
+msgid "Hot corner"
+msgstr "ഉഷ്ണകോൺ"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1933
+msgid "Hot corner icon visible"
+msgstr "ഉഷ്ണകോണിൽ ഐകോൺ പ്രദർശിപ്പിക്കണം"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1934
+msgid "Hot corner enabled"
+msgstr "ഉഷ്ണകോൺ സജ്ജമാക്കിയിരിക്കുന്നു"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1937
+msgid "Hot corner position:"
+msgstr "ഉഷ്ണകോണിന്റെ സ്ഥാനം:"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1939
+msgid "Top left"
+msgstr "മുകളിൽ ഇടത്"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1939
+msgid "Top right"
+msgstr "മുകളിൽ വലത്"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1939
+msgid "Bottom left"
+msgstr "താഴെ ഇടത്"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1939
+msgid "Bottom right"
+msgstr "താഴെ വലത്"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1945
+msgid "Hot corner function:"
+msgstr "ഉഷ്ണമൂലയുടെ പ്രവർത്തനരീതി:"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1947
+msgid "Workspace selection (ala Compiz Expo)"
+msgstr "പണിയിടങ്ങളെല്ലാം (അഥവാ കോമ്പിസ് എക്സ്പോ)"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1947
+msgid "Window selection (ala Compiz Scale)"
+msgstr "ജാലകങ്ങളെല്ലാം (അഥവാ കോമ്പിസ് സ്കെയിൽ)"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1951
+msgid "Expo applet: activate on hover"
+msgstr "എക്സ്പോ ആപ്‌ലെറ്റ്: മൗസ് കടന്നുപോകുമ്പോൾ സജ്ജമാക്കുക"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1952
+msgid "Scale applet: activate on hover"
+msgstr "സ്കെയിൽ ആപ്‌ലെറ്റ്: മൗസ് കടന്നുപോകുമ്പോൾ സജ്ജമാക്കുക"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1957
+msgid "Effects"
+msgstr "പ്രഭാവങ്ങൾ"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1959
+msgid "Enable desktop effects"
+msgstr "ഡെസ്ക്ടോപ്പ് പ്രഭാവങ്ങൾ സജ്ജമാക്കുക"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1962
+msgid "Enable desktop effects on dialog boxes"
+msgstr "ഡയലോഗ് പെട്ടികളിൽ ഡെസ്ക്‌ടോപ്പ് പ്രഭാവങ്ങൾ സജ്ജമാക്കുക"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2001
+msgid "Closing windows:"
+msgstr "അടയ്ക്കുന്ന ജാലകങ്ങളിൽ:"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2003
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2014
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2025
+msgid "Fade"
+msgstr "മങ്ങുക"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2012
+msgid "Mapping windows:"
+msgstr "ജാലകങ്ങൾ അടയാളപ്പെടുത്തുമ്പോൾ:"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2023
+msgid "Minimizing windows:"
+msgstr "ജാലകങ്ങൾ ചുരുക്കുമ്പോൾ:"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2025
+msgid "Traditional"
+msgstr "പരമ്പരാഗതം"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2034
+msgid "Maximizing windows:"
+msgstr "ജാലകങ്ങൾ വലുതാക്കുമ്പോൾ:"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2045
+msgid "Unmaximizing windows:"
+msgstr "ജാലകങ്ങളുടെ വലിപ്പം കുറയ്ക്കുമ്പോൾ:"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2056
+msgid "Extensions"
+msgstr "അനുബന്ധങ്ങൾ"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2063
+msgid "Desktop"
+msgstr "ഡെസ്ക്‌ടോപ്പ്"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2065
+msgid "Have file manager (Nemo) handle the desktop"
+msgstr "ഡെസ്ക്‌ടോപ്പ് ഫയൽ മാനേജർ (നെമോ) കൈകാര്യം ചെയ്യട്ടെ"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2068
+msgid "Computer icon visible on desktop"
+msgstr "ഡെസ്ക്‌ടോപ്പിൽ കമ്പ്യൂട്ടർ ഐകോൺ പ്രദർശിപ്പിക്കുക"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2072
+msgid "Home icon visible on desktop"
+msgstr "ഡെസ്ക്‌ടോപ്പിൽ ഹോം ഐകോൺ പ്രദർശിപ്പിക്കുക"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2076
+msgid "Network Servers icon visible on desktop"
+msgstr "ഡെസ്ക്ടോപ്പിൽ നെറ്റ്‌വർക്ക് സെർവർ ഐകോൺ പ്രദർശിപ്പിക്കുക"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2080
+msgid "Trash icon visible on desktop"
+msgstr "ഡെസ്ക്ടോപ്പിൽ ട്രാഷ് ഐകോൺ പ്രദർശിപ്പിക്കുക"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2084
+msgid "Show mounted volumes on the desktop"
+msgstr "മൗണ്ട് ചെയ്ത വോള്യമുകൾ ഡെസ്ക്ടോപ്പിൽ പ്രദർശിപ്പിക്കുക"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2089
+msgid "Action on title bar double-click"
+msgstr "തലക്കെട്ട് പട്ടയിൽ ഇരട്ടഞെക്കൽ ചെയ്യുമ്പോൾ നടത്തേണ്ട പ്രവൃത്തി"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2092
+msgid "Action on title bar middle-click"
+msgstr "തലക്കെട്ട് പട്ടയിൽ മദ്ധ്യഞെക്കൽ ചെയ്യുമ്പോൾ നടത്തേണ്ട പ്രവൃത്തി"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2095
+msgid "Action on title bar right-click"
+msgstr "തലക്കെട്ട് പട്ടയിൽ വലത്-ഞെക്കൽ ചെയ്യുമ്പോൾ നടത്തേണ്ട പ്രവൃത്തി"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2098
+msgid "Window focus mode"
+msgstr "ജാലകത്തിൽ കേന്ദ്രീകരിക്കേണ്ട രീതി"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2103
+msgid "Enable Edge Tiling (\"Aero Snap\")"
+msgstr "എഡ്ജ് ടൈലിങ് സജ്ജമാക്കുക (\"എയ്‌റോ സ്നാപ്\")"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2104
+msgid "Enable Edge Flip"
+msgstr "എഡ്ജ് ഫ്ലിപ് സജ്ജമാക്കുക"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2105
+msgid "Attach dialog windows to their parent window's titlebar"
+msgstr ""
+"ഡയലോഗ് ജാലകങ്ങൾ അവയുടെ മാതൃ ജാലകത്തിന്റെ തലക്കെട്ട് പട്ടയോട് ചേർത്ത് നിർത്തുക"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2106
+msgid "Icons only"
+msgstr "ഐകോണുകൾ മാത്രം"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2106
+msgid "Icons and thumbnails"
+msgstr "ഐകോണുകളും ലഘുചിത്രങ്ങളും"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2106
+msgid "Icons and window preview"
+msgstr "ഐകോണുകളും ജാലകരൂപവും"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2106
+msgid "Window preview (no icons)"
+msgstr "ജാലകരൂപം (ഐകോണുകളില്ലാതെ)"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2107
+msgid "ALT-tab switcher style"
+msgstr "ആൾട്ട്-ടാബ് മാറ്റൽ രീതി"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2109
+msgid "Enable mouse-wheel scrolling in Window List applet"
+msgstr ""
+"ജാലകങ്ങളുടെ പട്ടിക ആപ്‌ലെറ്റിൽ മൗസ് വീൽ ഉപയോഗിച്ച് മാറ്റൽ സജ്ജമാക്കുക"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2111
+msgid "Workspaces"
+msgstr "പണിയിടങ്ങൾ"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2113
+msgid "Enable workspace OSD"
+msgstr "പണിയിട ഒ.എസ്.ഡി. സജ്ജമാക്കുക"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2116
+msgid "Workspace OSD duration"
+msgstr "പണിയിട ഒ.എസ്.ഡി. കാലയളവ്"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2120
+msgid "Workspace OSD horizontal position"
+msgstr "പണിയിട ഒ.എസ്.ഡി.യുടെ തിരശ്ചീന സ്ഥാനം"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2120
+msgid "percent of the monitor's width"
+msgstr "മോണിറ്ററിന്റെ വീതിയുടെ ശതമാനം"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2124
+msgid "Workspace OSD vertical position"
+msgstr "പണിയിട ഓ.എസ്.ഡി.യുടെ ലംബ സ്ഥാനം"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2124
+msgid "percent of the monitor's height"
+msgstr "മോണിറ്ററിന്റെ ഉയരത്തിന്റെ ശതമാനം"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2127
+msgid "Only use workspaces on primary monitor (requires Cinnamon restart)"
+msgstr ""
+"പണിയിടങ്ങൾ പ്രാഥമിക മോണിറ്ററിൽ മാത്രം ഉപയോഗിക്കുക (സിനമൺ നിർത്തി "
+"തുടങ്ങേണ്ടതുണ്ട്)"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2128
+msgid "Display Expo view as a grid"
+msgstr "എക്സ്പോ രൂപം വരി-നിര രീതിയിൽ പ്രദർശിപ്പിക്കുക"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2130
+msgid "Fonts"
+msgstr "ഫോണ്ടുകൾ"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2132
+msgid "Text scaling factor"
+msgstr "എഴുത്തിന്റെ അളവ് ഘടകം"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2133
+msgid "Default font"
+msgstr "സ്വതേയുള്ള ഫോണ്ട്"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2134
+msgid "Document font"
+msgstr "പ്രമാണത്തിലെ ഫോണ്ട്"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2135
+msgid "Monospace font"
+msgstr "മോണോസ്പേസ് ഫോണ്ട്"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2136
+msgid "Window title font"
+msgstr "ജാലകത്തിന്റെ തലക്കെട്ടിൽ വേണ്ട ഫോണ്ട്"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2137
+msgid "Hinting"
+msgstr "സൂചനകൾ"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2138
+msgid "Antialiasing"
+msgstr "ആന്റിഏലിയാസിങ്"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2140
+msgid "General"
+msgstr "സാർവത്രികം"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2142
+msgid ""
+"Log LookingGlass output to ~/.cinnamon/glass.log (Requires Cinnamon restart)"
+msgstr ""
+"ലുക്കിങ്ഗ്ലാസ് ഔട്ട്പുട്ട് ~/.cinnamon/glass.log-ൽ രേഖപ്പെടുത്തുക (സിനമൺ "
+"നിർത്തി തുടങ്ങേണ്ടതുണ്ട്)"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2143
+msgid "Emulate middle click by clicking both left and right buttons"
+msgstr ""
+"ഇടത്-വലത് ബട്ടണുകൾ ഒരുമിച്ച് അമർത്തുന്നതുവഴി മദ്ധ്യ ഞെക്കൽ പ്രതീതി "
+"സൃഷ്ടിക്കുക"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2144
+msgid "Display notifications"
+msgstr "അറിയിപ്പുകൾ പ്രദർശിപ്പിക്കുക"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2150
+msgid "Backgrounds"
+msgstr "പശ്ചാത്തലങ്ങൾ"
+
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/add-panel-launcher.py:59
+msgid "Custom Launcher"
+msgstr "ഐച്ഛിക ലോഞ്ചർ"
+
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/add-panel-launcher.py:138
+msgid "Name"
+msgstr "നാമം"
+
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/add-panel-launcher.py:139
+msgid "Application"
+msgstr "ആപ്ലിക്കേഷൻ"
+
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/add-panel-launcher.py:142
+msgid "Add panel launcher..."
+msgstr "പാളി ലോഞ്ചർ ചേർക്കുക..."
+
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/add-panel-launcher.py:148
+msgid "Update"
+msgstr "പുതുക്കുക"
