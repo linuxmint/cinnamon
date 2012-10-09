@@ -241,7 +241,8 @@ __proto__: ModalDialog.ModalDialog.prototype,
         this._group.connect('notify::visible', Lang.bind(this._commandCompleter, this._commandCompleter.update));
 
         this._history = new History.HistoryManager({ gsettingsKey: HISTORY_KEY,
-                                                     entry: this._entryText });
+                                                     entry: this._entryText,
+                                                     deduplicate: true });
         this._entryText.connect('key-press-event', Lang.bind(this, function(o, e) {
             let symbol = e.get_key_symbol();
             if (symbol == Clutter.Return || symbol == Clutter.KP_Enter) {
