@@ -10,10 +10,16 @@ try:
     from gi.repository import Gtk, GObject, GdkPixbuf
 # Standard setting pages... this can be expanded to include applet dirs maybe?
     mod_files = glob.glob('modules/*.py')
+    mod_files.sort()
     for i in range(len(mod_files)):
         mod_files[i] = mod_files[i].split('/')[1]
         mod_files[i] = mod_files[i].split('.')[0]
+        if mod_files[i][0:3] != "cs_":
+            raise Exception("Settings modules must have a prefix of 'cs_' !!")
     modules = map(__import__, mod_files)
+    mod_names = []
+    for mod in mod_files:
+        mod_names.append(mod[3:])
 except Exception, detail:
     print detail
     sys.exit(1)
@@ -61,10 +67,8 @@ class MainWindow:
         self.sidePages = []
 
         for i in range(len(modules)):
-            print mod_files[i]
             mod = modules[i].Module(self.content_box)
-            self.sidePages.append((mod.sidePage, mod_files[i]))
-
+            self.sidePages.append((mod.sidePage, mod_names[i]))
 
         # create the backing store for the side nav-view.
         self.store = Gtk.ListStore(str, GdkPixbuf.Pixbuf, object)
