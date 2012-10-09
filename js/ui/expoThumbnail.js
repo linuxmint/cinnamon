@@ -550,6 +550,7 @@ ExpoWorkspaceThumbnail.prototype = {
                 windows.push(window);
             }
             else {
+                window.actor.set_position(0, 0);
                 window.icon.hide();
                 window.actor.hide();
             }
