@@ -38,7 +38,7 @@ HistoryManager.prototype = {
                                 Lang.bind(this, this._onEntryKeyPress));
         }
 
-        this._unify = params.unify;
+        this._deduplicate = params.deduplicate;
     },
 
     _historyChanged: function() {
@@ -79,7 +79,7 @@ HistoryManager.prototype = {
         if (this._history.length == 0 ||
             this._history[this._history.length - 1] != input) {
 
-            if (this._unify) {
+            if (this._deduplicate) {
                 this._history = this._history.filter(function(x) {
                     return x != input;
                 });
