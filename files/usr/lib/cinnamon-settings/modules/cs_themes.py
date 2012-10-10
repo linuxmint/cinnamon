@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 
-import settings
 import os
-from settings import *
+from SettingsWidgets import *
 from gi.repository import Gio, Gtk, GObject, Gdk
 import dbus
 

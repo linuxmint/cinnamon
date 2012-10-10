@@ -2,11 +2,11 @@
 
 import sys
 sys.path.append('/usr/lib/cinnamon-settings/modules')
+sys.path.append('/usr/lib/cinnamon-settings/bin')
 try:
     import os
     import glob
     import gettext
-    import settings
     from gi.repository import Gtk, GObject, GdkPixbuf
 # Standard setting pages... this can be expanded to include applet dirs maybe?
     mod_files = glob.glob('modules/*.py')

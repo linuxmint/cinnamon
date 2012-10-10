@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 
-
-import settings
-from settings import *
+from SettingsWidgets import *
 
 class Module:
     def __init__(self, content_box):

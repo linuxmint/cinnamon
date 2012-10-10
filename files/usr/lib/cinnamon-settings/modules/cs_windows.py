@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
-import settings
-from settings import *
+from SettingsWidgets import *
 from gi.repository import Gio, Gtk, GObject, Gdk
 
 class Module:
