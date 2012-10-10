@@ -1,10 +1,9 @@
 #!/usr/bin/env python
 
-import settings
 import os
 import sys
-sys.path.append('/usr/lib/cinnamon-settings/utils')
-from settings import *
+sys.path.append('/usr/lib/cinnamon-settings/bin')
+from SettingsWidgets import *
 from gi.repository import Gio, Gtk, GObject, Gdk
 import dbus
 import imtools

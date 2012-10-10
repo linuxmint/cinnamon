@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 
 from gi.repository import Gio
-import settings
-from settings import *
+from SettingsWidgets import *
 
 class Module:
     def __init__(self, content_box):
