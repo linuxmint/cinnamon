@@ -15,12 +15,13 @@ const Workspace = imports.ui.workspace;
 // The maximum size of a thumbnail is 1/8 the width and height of the screen
 let MAX_THUMBNAIL_SCALE = 0.9;
 
-const POINTER_LEAVE_MILLISECONDS_GRACE = 1000;
-const POINTER_ENTER_MILLISECONDS_GRACE = 500;
+const POINTER_LEAVE_MILLISECONDS_GRACE = 500;
+const POINTER_ENTER_MILLISECONDS_GRACE = 150;
 const RESCALE_ANIMATION_TIME = 0.2;
 const SLIDE_ANIMATION_TIME = 0.3;
 const INACTIVE_OPACITY = 120;
-const REARRANGE_TIME = 0.3;
+const REARRANGE_TIME_ON = 0.3;
+const REARRANGE_TIME_OFF = 0.3 * 2;
 const ICON_OPACITY = 192;
 const ICON_SIZE = 128;
 
@@ -583,12 +584,12 @@ ExpoWorkspaceThumbnail.prototype = {
                 window.icon.hide();
                 window.icon.set_position(x, y);
                 window.actor.show();
-                Tweener.addTween(window.actor, {x: x, y: y, scale_x: scale, scale_y: scale, time: REARRANGE_TIME, transition: 'easeOutQuad'
+                Tweener.addTween(window.actor, {x: x, y: y, scale_x: scale, scale_y: scale, time: REARRANGE_TIME_ON, transition: 'easeOutQuad'
                 });
             }
             else {
                 window.icon.set_position(x, y);
-                Tweener.addTween(window.actor, {x: x, y: y, scale_x: scale, scale_y: scale, opacity: 255, time: REARRANGE_TIME, transition: 'easeOutQuad', 
+                Tweener.addTween(window.actor, {x: x, y: y, scale_x: scale, scale_y: scale, opacity: 255, time: REARRANGE_TIME_ON, transition: 'easeOutQuad',
                 onComplete: function() {
                     window.actor.show();
                     window.icon.hide();
@@ -621,7 +622,7 @@ ExpoWorkspaceThumbnail.prototype = {
                     y: window.icon.y,
                     scale_x: window.icon.width / window.actor.width, 
                     scale_y: window.icon.height / window.actor.height,
-                    time: REARRANGE_TIME, 
+                    time: REARRANGE_TIME_OFF, 
                     transition: 'easeOutQuad',
                     onComplete: function() {
                             window.icon.show();
@@ -637,7 +638,7 @@ ExpoWorkspaceThumbnail.prototype = {
                     x: window.origSet ? window.origX : window.actor.x,
                     y: window.origSet ? window.origY : window.actor.y,
                     scale_x: 1, scale_y: 1, opacity: 255, 
-                    time: REARRANGE_TIME, transition: 'easeOutQuad'});        
+                    time: REARRANGE_TIME_OFF, transition: 'easeOutQuad'});        
             }
         } 
     },
