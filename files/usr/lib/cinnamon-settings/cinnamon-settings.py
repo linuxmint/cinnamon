@@ -9,10 +9,10 @@ try:
     import gettext
     from gi.repository import Gtk, GObject, GdkPixbuf
 # Standard setting pages... this can be expanded to include applet dirs maybe?
-    mod_files = glob.glob('modules/*.py')
+    mod_files = glob.glob('/usr/lib/cinnamon-settings/modules/*.py')
     mod_files.sort()
     for i in range(len(mod_files)):
-        mod_files[i] = mod_files[i].split('/')[1]
+        mod_files[i] = mod_files[i].split('/')[5]
         mod_files[i] = mod_files[i].split('.')[0]
         if mod_files[i][0:3] != "cs_":
             raise Exception("Settings modules must have a prefix of 'cs_' !!")
