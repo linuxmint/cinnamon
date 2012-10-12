@@ -168,9 +168,8 @@ Applet.prototype = {
         return true;
     },
 
-    set_applet_tooltip: function (text) {
-        if (this._applet_tooltip_text !== text) {
-            global.logError("set_applet_tooltip: " + text);
+    set_applet_tooltip: function (text, force) {
+        if (force || this._applet_tooltip_text !== text) {
             this._applet_tooltip.set_text(text);
             this._applet_tooltip_text = text;
         }
@@ -293,7 +292,6 @@ IconApplet.prototype = {
             return;
         }
 
-        global.logError("set_applet_icon_symbolic_name" + icon_name);
         if (this._scaleMode) {
             let height = (this._panelHeight / DEFAULT_PANEL_HEIGHT) * PANEL_SYMBOLIC_ICON_DEFAULT_HEIGHT;
             this._applet_icon = new St.Icon({icon_name: icon_name, icon_size: height, icon_type: St.IconType.SYMBOLIC, reactive: true, track_hover: true, style_class: 'system-status-icon' });
@@ -310,7 +308,6 @@ IconApplet.prototype = {
             return;
         }
 
-        global.logError("set_applet_icon_path" + icon_name);
         if (this._applet_icon_box.child) this._applet_icon_box.child.destroy();
 
         if (icon_path){
