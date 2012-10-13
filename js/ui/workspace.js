@@ -445,7 +445,7 @@ WindowOverlay.prototype = {
         this._hidden = false;
         this._hovering = false;
 
-        this.makeTitle(metaWindow.title);
+        this.refreshTitle(metaWindow.title);
         let tracker = Cinnamon.WindowTracker.get_default();
         let app = tracker.get_window_app(metaWindow);
         let icon = null;
@@ -466,8 +466,7 @@ WindowOverlay.prototype = {
 
         this._updateCaptionId = metaWindow.connect('notify::title',
             Lang.bind(this, function(w) {
-                this.makeTitle(w.title);
-                this.updateIconCaptionWidth();
+                this.refreshTitle(w.title);
             }));
 
         let button = new St.Button({ style_class: 'window-close' });
@@ -512,28 +511,30 @@ WindowOverlay.prototype = {
             this._onStyleChanged();
     },
 
-    makeTitle: function(titleTextOpt) {
-        let titleText = typeof(titleTextOpt) !== "undefined" ? titleTextOpt : this.title.text;
+    refreshTitle: function(titleText) {
+        let name = '';
         if (this.title) {
+            name = this.title.name;
             this._parentActor.remove_actor(this.title);
             this.title.destroy();
         }
         let title = new St.Label({ style_class: 'window-caption',
                                    text: titleText });
         this.title = title;
+        title.name = name;
         title.clutter_text.ellipsize = Pango.EllipsizeMode.END;
         title._spacing = 0;
-        this._parentActor.add_actor(this.title);
+        this._parentActor.add_actor(title);
         title.connect('style-changed',
                       Lang.bind(this, this._onStyleChanged));
+        if (this._parentActor.get_stage()) {
+            this._onStyleChanged();
+        }
     },
 
     setSelected: function(selected) {
-        this.makeTitle();
         this.title.name = selected ? 'selected' : '';
-        if (this.updateIconCaptionWidth) {
-            this.updateIconCaptionWidth();
-        }
+        this.refreshTitle(this.title.text);
         
         if (selected) {
             this._showCloseButton();
@@ -724,6 +725,9 @@ WindowOverlay.prototype = {
         this.closeButton._overlap = closeNode.get_length('-cinnamon-close-overlap');
 
         this._parentActor.queue_relayout();
+        if (this.updateIconCaptionWidth) {
+            this.updateIconCaptionWidth();
+        }
     }
 };
 Signals.addSignalMethods(WindowOverlay.prototype);
