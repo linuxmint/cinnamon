@@ -460,6 +460,7 @@ class KeyboardSidePage (SidePage):
 
         self.kb_tree.connect('row-activated', self.onCustomKeyBindingEdited)
         self.kb_tree.connect('button-press-event', self.onContextMenuPopup)
+        self.kb_tree.connect('popup-menu', self.onContextMenuPopup)
 
         left_vbox.pack_start(self.cat_tree, True, True, 2)
         kb_name_scroller.add(self.kb_tree)
@@ -746,30 +747,34 @@ class KeyboardSidePage (SidePage):
                     i += 1
                 dialog.destroy()
 
-    def onContextMenuPopup(self, tree, event):
+    def onContextMenuPopup(self, tree, event = None):
         model, iter = tree.get_selection().get_selected()
         if iter:
             keybinding = model[iter][1]
-            if event.button != 3:
-                return
             if isinstance(keybinding, CustomKeyBinding):
                 return
-            button = event.button
-            event_time = event.time
-            info = tree.get_path_at_pos(int(event.x), int(event.y))
-            if info is not None:
-                path, col, cellx, celly = info
+            if event:
+                if event.button != 3:
+                    return
+                button = event.button
+                event_time = event.time
+                info = tree.get_path_at_pos(int(event.x), int(event.y))
+                if info is not None:
+                    path, col, cellx, celly = info
+                    tree.grab_focus()
+                    tree.set_cursor(path, col, 0)
+            else:
+                path = model.get_path(iter)
+                button = 0
+                event_time = 0
                 tree.grab_focus()
-                tree.set_cursor(path, col, 0)
             popup = Gtk.Menu()
+            popup.attach_to_widget(tree, None)
             popup_reset_item = Gtk.MenuItem(_("Reset to default"))
             popup_reset_item.show()
             popup.append(popup_reset_item)
             popup_reset_item.connect('activate', self.onResetToDefault, keybinding)
-            popup.popup(None, None,
-                        lambda popup, data: (event.get_root_coords()[0],
-                                             event.get_root_coords()[1], True),
-                        None, button, event_time)
+            popup.popup(None, None, None, None, button, event_time)
             return True
 
     def onResetToDefault(self, popup, keybinding):
