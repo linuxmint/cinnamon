@@ -46,7 +46,7 @@ const POSITIONS = {
 };
 // Used in _orderWindowsPermutations, 5! = 120 which is probably the highest we can go
 const POSITIONING_PERMUTATIONS_MAX = 5;
-
+const DEFAULT_SLOT_FRACTION = 0.825;
 const WINDOWOVERLAY_ICON_SIZE = 32;
 
 function _interpolate(start, end, step) {
@@ -516,6 +516,7 @@ WindowOverlay.prototype = {
         let titleText = typeof(titleTextOpt) !== "undefined" ? titleTextOpt : this.title.text;
         if (this.title) {
             this._parentActor.remove_actor(this.title);
+            this.title.destroy();
         }
         let title = new St.Label({ style_class: 'window-caption',
                                    text: titleText });
@@ -1189,7 +1190,7 @@ Workspace.prototype = {
             let clone = clones[i];
             let metaWindow = clone.metaWindow;
             let mainIndex = this._lookupIndex(metaWindow);
-            let overlay = this._windows[mainIndex].overlay;
+            let overlay = clone.overlay;
 
             // Positioning a window currently being dragged must be avoided;
             // we'll just leave a blank spot in the layout for it.
@@ -1229,13 +1230,13 @@ Workspace.prototype = {
                                    time: Overview.ANIMATION_TIME,
                                    transition: 'easeOutQuad',
                                    onComplete: Lang.bind(this, function() {
-                                      this._showWindowOverlay(clone, overlay, true);
+                                      this._showWindowOverlay(clone, true);
                                    })
                                  });
             } else {
                 clone.actor.set_position(x, y);
                 clone.actor.set_scale(scale, scale);
-                this._showWindowOverlay(clone, overlay, isOnCurrentWorkspace);
+                this._showWindowOverlay(clone, isOnCurrentWorkspace);
             }
         }
         // default-select the first window
@@ -1269,27 +1270,27 @@ Workspace.prototype = {
         }
     },
 
-    _showWindowOverlay: function(clone, overlay, fade) {
+    _showWindowOverlay: function(clone, fade) {
         if (clone.inDrag)
             return;
 
-        // This is a little messy and complicated because when we
-        // start the fade-in we may not have done the final positioning
-        // of the workspaces. (Tweener doesn't necessarily finish
-        // all animations before calling onComplete callbacks.)
-        // So we need to manually compute where the window will
-        // be after the workspace animation finishes.
-        let [cloneX, cloneY] = clone.actor.get_position();
-        let [cloneWidth, cloneHeight] = clone.actor.get_size();
-        cloneWidth = clone.actor.scale_x * cloneWidth;
-        cloneHeight = clone.actor.scale_y * cloneHeight;
+        if (this._slotWidth) {
+            // This is a little messy and complicated because when we
+            // start the fade-in we may not have done the final positioning
+            // of the workspaces. (Tweener doesn't necessarily finish
+            // all animations before calling onComplete callbacks.)
+            // So we need to manually compute where the window will
+            // be after the workspace animation finishes.
+            let [cloneX, cloneY] = clone.actor.get_position();
+            let [cloneWidth, cloneHeight] = clone.actor.get_size();
+            cloneWidth = clone.actor.scale_x * cloneWidth;
+            cloneHeight = clone.actor.scale_y * cloneHeight;
 
-        if (overlay && this._slotWidth) {
-            overlay.updatePositions(cloneX, cloneY, cloneWidth, cloneHeight, this._slotWidth);
+            clone.overlay.updatePositions(cloneX, cloneY, cloneWidth, cloneHeight, this._slotWidth);
             if (fade)
-                overlay.fadeIn();
+                clone.overlay.fadeIn();
             else
-                overlay.show();
+                clone.overlay.show();
         }
     },
 
@@ -1297,8 +1298,7 @@ Workspace.prototype = {
         let currentWorkspace = global.screen.get_active_workspace();
         for (let i = 0; i < this._windows.length; i++) {
             let clone = this._windows[i];
-            let overlay = this._windows[i].overlay;
-            this._showWindowOverlay(clone, overlay,
+            this._showWindowOverlay(clone,
                                     this.metaWorkspace == null || this.metaWorkspace == currentWorkspace);
         }
     },
@@ -1644,7 +1644,7 @@ Workspace.prototype = {
         if (!numberOfWindows) return [];
         let gridWidth = Math.ceil(Math.sqrt(numberOfWindows));
         let gridHeight = Math.ceil(numberOfWindows / gridWidth);
-        let fraction = 0.825 * (1. / gridWidth);
+        let fraction = DEFAULT_SLOT_FRACTION * (1. / gridWidth);
         this._slotWidth = Math.floor(fraction * this._width);
 
         let computeWindowSlot = function(windowIndex, numberOfWindows) {
