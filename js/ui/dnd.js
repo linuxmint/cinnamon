@@ -75,12 +75,12 @@ function removeDragMonitor(monitor) {
         }
 }
 
-function _Draggable(actor, params) {
-    this._init(actor, params);
+function _Draggable(actor, params, target) {
+    this._init(actor, params, target);
 }
 
 _Draggable.prototype = {
-    _init : function(actor, params) {
+    _init : function(actor, params, target) {
         
         this.inhibit = false; // Use the inhibit flag to temporarily disable an object from being draggable
         
@@ -90,6 +90,8 @@ _Draggable.prototype = {
                                         dragActorOpacity: undefined });
 
         this.actor = actor;
+        this.target = target;
+
         if (!params.manualMode)
             this.actor.connect('button-press-event',
                                Lang.bind(this, this._onButtonPress));
@@ -426,6 +428,21 @@ _Draggable.prototype = {
                     }
                 }
             }
+
+            if (this.target) {
+                if (this.target._delegate && this.target._delegate.handleDragOver){
+                    let [r, targX, targY] = this.target.transform_stage_point(stageX, stageY);
+                    let result = this.target._delegate.handleDragOver(this.actor._delegate,
+                                                                      this._dragActor,
+                                                                      targX,
+                                                                      targY,
+                                                                      event.get_time());
+                    if (this._setCursor(result)) {
+                        return true;
+                    }
+                }
+            }
+
             while (target) {
                 if (target._delegate && target._delegate.handleDragOver) {
                     let [r, targX, targY] = target.transform_stage_point(stageX, stageY);
@@ -472,6 +489,35 @@ _Draggable.prototype = {
                     case DragDropResult.CONTINUE:
                         continue;
                 }
+        }
+
+        if (this.target) {
+            if (this.target._delegate && this.target._delegate.acceptDrop){
+                let [r, targX, targY] = this.target.transform_stage_point(dropX, dropY);
+                if (this.target._delegate.acceptDrop(this.actor._delegate,
+                                                     this._dragActor,
+                                                     targX,
+                                                     targY,
+                                                     event.get_time())) {
+                    if (this._actorDestroyed)
+                        return true;
+                    // If it accepted the drop without taking the actor,
+                    // handle it ourselves.
+                    if (this._dragActor.get_parent() == Main.uiGroup) {
+                        if (this._restoreOnSuccess) {
+                            this._restoreDragActor(event.get_time());
+                            return true;
+                        } else
+                            this._dragActor.destroy();
+                    }
+
+                    this._dragInProgress = false;
+                    global.unset_cursor();
+                    this.emit('drag-end', event.get_time(), true);
+                    this._dragComplete();
+                    return true;
+                }
+            }
         }
 
         while (target) {
@@ -651,8 +697,11 @@ Signals.addSignalMethods(_Draggable.prototype);
  * makeDraggable:
  * @actor: Source actor
  * @params: (optional) Additional parameters
+ * @target: (optional) Actor that has priority as an accepting target
  *
  * Create an object which controls drag and drop for the given actor.
+ * @target has priority when finding a target to accept the drag
+ * actor. This can be used when the target cannot be reached.
  *
  * If %manualMode is %true in @params, do not automatically start
  * drag and drop on click
@@ -668,8 +717,8 @@ Signals.addSignalMethods(_Draggable.prototype);
  * target wants to reuse the actor, it's up to the drop target to
  * reset these values.
  */
-function makeDraggable(actor, params) {
-    return new _Draggable(actor, params);
+function makeDraggable(actor, params, target) {
+    return new _Draggable(actor, params, target);
 }
 
 function GenericDragItemContainer() {

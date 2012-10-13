@@ -25,6 +25,8 @@ nobase_dist_js_DATA = \
 	ui/calendar.js		\
 	ui/checkBox.js		\
 	ui/radioButton.js	\
+	ui/desklet.js		\
+	ui/deskletManager.js	\
 	ui/dnd.js		\
 	ui/edgeFlip.js  	\
 	ui/endSessionDialog.js	\
