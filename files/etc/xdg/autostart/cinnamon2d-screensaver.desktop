@@ -1,0 +1,15 @@
+[Desktop Entry]
+Type=Application
+Name=Cinnamon2d Screensaver
+Comment=Launch screensaver and locker program
+Icon=preferences-desktop-screensaver
+Exec=gnome-screensaver
+OnlyShowIn=GNOME;
+AutostartCondition=GNOME3 if-session cinnamon2d
+NoDisplay=true
+X-GNOME-Autostart-Phase=Application
+X-GNOME-Autostart-Notify=true
+X-GNOME-Bugzilla-Bugzilla=GNOME
+X-GNOME-Bugzilla-Product=gnome-screensaver
+X-GNOME-Bugzilla-Component=general
+X-GNOME-Bugzilla-Version=3.6.0
