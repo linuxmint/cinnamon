@@ -69,7 +69,7 @@ LayoutManager.prototype = {
         this.enabledEdgeFlip = global.settings.get_boolean("enable-edge-flip");
         global.settings.connect("changed::enable-edge-flip", Lang.bind(this, this._onEnableEdgeFlipChanged));
         global.settings.connect("changed::panel-autohide", Lang.bind(this, this._processPanelSettings));
-        global.settings.connect("changed::panel2-autohide"), Lang.bind(this, this._processPanelSettings));
+        global.settings.connect("changed::panel2-autohide", Lang.bind(this, this._processPanelSettings));
         global.settings.connect("changed::panel-resizable", Lang.bind(this, this._processPanelSettings));
         global.settings.connect("changed::panel-bottom-height", Lang.bind(this, this._processPanelSettings));
         global.settings.connect("changed::panel-top-height", Lang.bind(this, this._processPanelSettings));
