@@ -130,7 +130,7 @@ AppMenuButtonRightClickMenu.prototype = {
     _onCloseAllActivate: function(actor, event) {
         let metas = new Array();
         for (let i = 0; i < this.window_list.length; i++) {
-            if (this.window_list[i].actor.visible) {
+            if (this.window_list[i].actor.visible && !this.window_list[i]._needsAttention) {
                 metas.push(this.window_list[i].metaWindow);
             }
         }
@@ -142,7 +142,9 @@ AppMenuButtonRightClickMenu.prototype = {
     _onCloseOthersActivate: function(actor, event) {
         let metas = new Array();
         for (let i = 0; i < this.window_list.length; i++) {
-            if (this.window_list[i].metaWindow != this.metaWindow && this.window_list[i].actor.visible) {
+            if (this.window_list[i].metaWindow != this.metaWindow &&
+                                this.window_list[i].actor.visible &&
+                                !this.window_list[i]._needsAttention) {
                 metas.push(this.window_list[i].metaWindow);
             }
         }
