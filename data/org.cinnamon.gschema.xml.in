@@ -49,7 +49,27 @@
       <summary>Duration of the delay before a shown panel is hidden</summary>
       <description>Duration of the delay (in milliseconds)</description>
     </key>
-    
+
+    <key name="panel2-autohide" type="b">
+      <default>false</default>
+      <_summary>Auto-hide panel</_summary>
+      <_description>
+        Whether the panel autohides or not.
+      </_description>
+    </key>
+
+    <key type="i" name="panel2-show-delay">
+      <default>0</default>
+      <summary>Duration of the delay before a hidden panel is shown</summary>
+      <description>Duration of the delay (in milliseconds)</description>
+    </key>
+
+    <key type="i" name="panel2-hide-delay">
+      <default>0</default>
+      <summary>Duration of the delay before a shown panel is hidden</summary>
+      <description>Duration of the delay (in milliseconds)</description>
+    </key>
+
     <key name="panel-resizable" type="b">
       <default>false</default>
       <_summary>Resizable panel</_summary>

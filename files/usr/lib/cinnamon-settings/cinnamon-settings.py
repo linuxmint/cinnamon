@@ -1869,7 +1869,7 @@ class MainWindow:
 
         sidePage = SidePage(_("Panel"), "panel.svg", self.content_box)
         self.sidePages.append((sidePage, "panel"))                
-        sidePage.add_widget(GSettingsCheckButton(_("Auto-hide panel"), "org.cinnamon", "panel-autohide", None))
+        sidePage.add_widget(GSettingsCheckButton(_("Auto-hide first panel"), "org.cinnamon", "panel-autohide", None))
 
         box = IndentedHBox()
         box.add(GSettingsSpinButton(_("Show delay"), "org.cinnamon", "panel-show-delay", "org.cinnamon/panel-autohide", 0, 2000, 50, 200, _("milliseconds")))
@@ -1877,6 +1877,16 @@ class MainWindow:
 
         box = IndentedHBox()
         box.add(GSettingsSpinButton(_("Hide delay"), "org.cinnamon", "panel-hide-delay", "org.cinnamon/panel-autohide", 0, 2000, 50, 200, _("milliseconds")))
+        sidePage.add_widget(box)
+
+        sidePage.add_widget(GSettingsCheckButton(_("Auto-hide second panel"), "org.cinnamon", "panel2-autohide", None))
+
+        box = IndentedHBox()
+        box.add(GSettingsSpinButton(_("Show delay"), "org.cinnamon", "panel2-show-delay", "org.cinnamon/panel2-autohide", 0, 2000, 50, 200, _("milliseconds")))
+        sidePage.add_widget(box)
+
+        box = IndentedHBox()
+        box.add(GSettingsSpinButton(_("Hide delay"), "org.cinnamon", "panel2-hide-delay", "org.cinnamon/panel2-autohide", 0, 2000, 50, 200, _("milliseconds")))
         sidePage.add_widget(box)
 
         desktop_layouts = [["traditional", _("Traditional (panel at the bottom)")], ["flipped", _("Flipped (panel at the top)")], ["classic", _("Classic (panels at the top and at the bottom)")]]        
