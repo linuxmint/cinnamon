@@ -129,7 +129,9 @@ AppMenuButtonRightClickMenu.prototype = {
     _onCloseAllActivate: function(actor, event) {
         let metas = new Array();
         for (let i = 0; i < this.window_list.length; i++) {
-            metas.push(this.window_list[i].metaWindow);
+            if (this.window_list[i].actor.visible) {
+                metas.push(this.window_list[i].metaWindow);
+            }
         }
         metas.forEach(Lang.bind(this, function(window) {
             window.delete(global.get_current_time());
@@ -139,7 +141,7 @@ AppMenuButtonRightClickMenu.prototype = {
     _onCloseOthersActivate: function(actor, event) {
         let metas = new Array();
         for (let i = 0; i < this.window_list.length; i++) {
-            if (this.window_list[i].metaWindow != this.metaWindow) {
+            if (this.window_list[i].metaWindow != this.metaWindow && this.window_list[i].actor.visible) {
                 metas.push(this.window_list[i].metaWindow);
             }
         }
