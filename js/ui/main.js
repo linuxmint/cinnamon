@@ -202,7 +202,7 @@ function start() {
     // and recalculate application associations, so to avoid
     // races for now we initialize it here.  It's better to
     // be predictable anyways.
-    Cinnamon.WindowTracker.get_default();
+    tracker = Cinnamon.WindowTracker.get_default();
     Cinnamon.AppUsage.get_default();
 
     // The stage is always covered so Clutter doesn't need to clear it; however
@@ -271,7 +271,6 @@ function start() {
     keyboard = new Keyboard.Keyboard();
     notificationDaemon = new NotificationDaemon.NotificationDaemon();
     windowAttentionHandler = new WindowAttentionHandler.WindowAttentionHandler();
-    tracker = Cinnamon.WindowTracker.get_default();
 
     placesManager = new PlacesManager.PlacesManager();    
     automountManager = new AutomountManager.AutomountManager();
