@@ -79,6 +79,7 @@ let _defaultCssStylesheet = null;
 let _cssStylesheet = null;
 let dynamicWorkspaces = null;
 let nWorks = null;
+let tracker = null;
 
 let workspace_names = [];
 
@@ -201,7 +202,7 @@ function start() {
     // and recalculate application associations, so to avoid
     // races for now we initialize it here.  It's better to
     // be predictable anyways.
-    Cinnamon.WindowTracker.get_default();
+    tracker = Cinnamon.WindowTracker.get_default();
     Cinnamon.AppUsage.get_default();
 
     // The stage is always covered so Clutter doesn't need to clear it; however
@@ -1078,6 +1079,21 @@ function queueDeferredWork(workId) {
     }
 }
 
+function isInteresting(metaWindow) {
+    if (tracker.is_window_interesting(metaWindow)) {
+        // The nominal case.
+        return true;
+    }
+    // The rest of this function is devoted to discovering "orphan" windows
+    // (dialogs without an associated app, e.g., the Logout dialog).
+    if (tracker.get_window_app(metaWindow)) {
+        // orphans don't have an app!
+        return false;
+    }    
+    let type = metaWindow.get_window_type();
+    return type === Meta.WindowType.DIALOG || type === Meta.WindowType.MODAL_DIALOG;
+}
+
 /**
  * getTabList:
  * @workspaceOpt (optional) workspace, defaults to global.screen.get_active_workspace()
@@ -1097,25 +1113,6 @@ function getTabList(workspaceOpt, screenOpt) {
     let allwindows = display.get_tab_list(Meta.TabList.NORMAL_ALL, screen,
                                        workspace);
     let registry = {}; // to avoid duplicates
-    let tracker = Cinnamon.WindowTracker.get_default();
-    let isInteresting = function(window) {
-        if (tracker.is_window_interesting(window)) {
-            // an application window, etc.
-            return true;
-        }
-        let type = window.get_window_type();
-        // The purpose is primarily to find "orphan" windows that would otherwise be
-        // difficult to navigate to when lost behind other windows or not given
-        // keyboard focus.
-        if (type === Meta.WindowType.UTILITY) { // Gimp tool windows, etc.
-            return true;
-        }
-        if (tracker.get_window_app(window)) {
-            return false; // not interesting but has an app - no
-        }
-        // app-less dialog, maybe a logout dialog
-        return type === Meta.WindowType.DIALOG || type === Meta.WindowType.MODAL_DIALOG;
-    };
 
     for (let i = 0; i < allwindows.length; ++i) {
         let window = allwindows[i];
