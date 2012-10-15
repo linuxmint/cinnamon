@@ -473,7 +473,7 @@
     </key>
 
     <key name="alttab-switcher-style" type="s">
-      <default>"icons"</default>
+      <default>"icons+thumbnails"</default>
       <_summary>ALT-tab switcher style</_summary>
       <_description>
        Controls the style of the ALT-tab window switcher. Can be any combination of "icons", "preview" and "thumbnails", separated by "+".
