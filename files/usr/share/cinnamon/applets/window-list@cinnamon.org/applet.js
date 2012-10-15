@@ -734,21 +734,6 @@ MyApplet.prototype = {
                 this.actor.set_style('padding-bottom: 0px;');
             }
 
-            this.isInteresting = function(metaWindow) {
-                if (tracker.is_window_interesting(metaWindow)) {
-                    // The nominal case.
-                    return true;
-                }
-                // The rest of this function is devoted to discovering "orphan" windows
-                // (dialogs without an associated app, e.g., the Logout dialog).
-                if (tracker.get_window_app(metaWindow)) {
-                    // orphans don't have an app!
-                    return false;
-                }    
-                let type = metaWindow.get_window_type();
-                return type === Meta.WindowType.DIALOG || type === Meta.WindowType.MODAL_DIALOG;
-            };
-
             this._windows = new Array();
 
             let tracker = Cinnamon.WindowTracker.get_default();
@@ -881,7 +866,7 @@ MyApplet.prototype = {
     },
   
     _windowAdded: function(metaWorkspace, metaWindow) {
-        if (!this.isInteresting(metaWindow))
+        if (!Main.isInteresting(metaWindow))
             return;        
         for ( let i=0; i<this._windows.length; ++i ) {
             if ( this._windows[i].metaWindow == metaWindow ) {
