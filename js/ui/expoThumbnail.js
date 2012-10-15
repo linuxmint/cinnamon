@@ -536,17 +536,6 @@ ExpoWorkspaceThumbnail.prototype = {
         let windows = [];
         for (let i = 0; i < this._windows.length; i++){
             let window = this._windows[i];
-            if (!window.origSet) {
-                window.origX = window.actor.x;
-                window.origY = window.actor.y;
-                window.origSet = true;
-            }
-            if ((window.metaWindow.maximized_horizontally &&
-                window.metaWindow.maximized_vertically) || window.metaWindow.get_layer() == Meta.StackLayer.FULLSCREEN){
-                window.origX = this._porthole.x;
-                window.origY = this._porthole.y
-            }
-
             if (this._isOverviewWindow(window.metaWindow)) {
                 windows.push(window);
             }
@@ -609,14 +598,31 @@ ExpoWorkspaceThumbnail.prototype = {
             return;
 
         const iconSpacing = ICON_SIZE/4;
-        let iconX = iconSpacing;
+        let monitorIconCount = new Array(Main.layoutManager.monitors.length);
+
         for (let i = 0; i < this._windows.length; i++){
             let window = this._windows[i];
+            if (!window.origSet) {
+                window.origX = window.actor.x;
+                window.origY = window.actor.y;
+                window.origSet = true;
+            }
+
             if (!window.metaWindow.showing_on_its_workspace()){
                 // Visually replace the cloned window with its icon
                 // and place the icon at the bottom.
-                window.icon.x = iconX;
-                window.icon.y = this.actor.height - window.icon.height;
+
+                // icons are grouped by monitor
+                let monitorIndex = window.metaWindow.get_monitor();
+                let monitor = Main.layoutManager.monitors[monitorIndex];
+                let iconCount = monitorIconCount[monitorIndex] || 0;
+                let iconX = iconCount * (ICON_SIZE + iconSpacing);
+                iconX %= (monitor.width - ICON_SIZE);
+                ++iconCount;
+                monitorIconCount[monitorIndex] = iconCount;
+
+                window.icon.x = monitor.x + iconX;
+                window.icon.y = monitor.y + monitor.height - window.icon.height;
                 Tweener.addTween(window.actor, {
                     x: window.icon.x,
                     y: window.icon.y,
@@ -629,14 +635,12 @@ ExpoWorkspaceThumbnail.prototype = {
                             window.actor.hide();
                         }
                     });
-                iconX += (ICON_SIZE + iconSpacing);
-                iconX %= (this.actor.width - ICON_SIZE)
             }
             else {
                 window.actor.show();
                 Tweener.addTween(window.actor, {
-                    x: window.origSet ? window.origX : window.actor.x,
-                    y: window.origSet ? window.origY : window.actor.y,
+                    x: window.origX,
+                    y: window.origY,
                     scale_x: 1, scale_y: 1, opacity: 255, 
                     time: REARRANGE_TIME_OFF, transition: 'easeOutQuad'});        
             }
