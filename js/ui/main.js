@@ -1091,40 +1091,41 @@ function getTabList(workspaceOpt, screenOpt) {
     let screen = screenOpt || global.screen;
     let display = screen.get_display();
     let workspace = workspaceOpt || screen.get_active_workspace();
-    
+
     let windows = []; // the array to return
 
-    // Run a pass through the NORMAL tablist. We only record the identity 
-    // of each window at this point.
-    let normalLookup = {};
-    let normalWindows = display.get_tab_list(Meta.TabList.NORMAL, screen,
-                                       workspace);
-    for (let i = 0; i < normalWindows.length; ++i) {
-        let window = normalWindows[i];
-        normalLookup[window.get_stable_sequence()] = 1;
-    }
-
-    // Run a pass through the NORMAL_ALL tablist.
-    // The purpose is to find "orphan" windows that would otherwise be
-    // difficult to navigate to when lost behind other windows.
-    // The purpose of adding all windows in the same loop is to preserve
-    // the correct tab order.
     let allwindows = display.get_tab_list(Meta.TabList.NORMAL_ALL, screen,
                                        workspace);
     let registry = {}; // to avoid duplicates
     let tracker = Cinnamon.WindowTracker.get_default();
+    let isInteresting = function(window) {
+        if (tracker.is_window_interesting(window)) {
+            // an application window, etc.
+            return true;
+        }
+        let type = window.get_window_type();
+        // The purpose is primarily to find "orphan" windows that would otherwise be
+        // difficult to navigate to when lost behind other windows or not given
+        // keyboard focus.
+        if (type === Meta.WindowType.UTILITY) { // Gimp tool windows, etc.
+            return true;
+        }
+        if (tracker.get_window_app(window)) {
+            return false; // not interesting but has an app - no
+        }
+        // app-less dialog, maybe a logout dialog
+        return type === Meta.WindowType.DIALOG || type === Meta.WindowType.MODAL_DIALOG;
+    };
+
     for (let i = 0; i < allwindows.length; ++i) {
         let window = allwindows[i];
-        let seqno = window.get_stable_sequence();
-        // Add "normal" windows and those that don't have an "app".
-        if (normalLookup[seqno] === 1 || !tracker.get_window_app(window))
-        {
+        if (isInteresting(window)) {
+            let seqno = window.get_stable_sequence();
             if (!registry[seqno]) {
                 windows.push(window);
-                registry[seqno] = true;
+                registry[seqno] = true; // there may be duplicates in the list (rare)
             }
         }
     }
     return windows;
 }
-
