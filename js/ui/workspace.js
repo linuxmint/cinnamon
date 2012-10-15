@@ -785,10 +785,6 @@ Workspace.prototype = {
             this._windowRemovedId = this.metaWorkspace.connect('window-removed',
                                                                Lang.bind(this, this._windowRemoved));
         }
-        this._windowEnteredMonitorId = global.screen.connect('window-entered-monitor',
-                                                           Lang.bind(this, this._windowEnteredMonitor));
-        this._windowLeftMonitorId = global.screen.connect('window-left-monitor',
-                                                           Lang.bind(this, this._windowLeftMonitor));
         this._repositionWindowsId = 0;
 
         this.leavingOverview = false;
@@ -1456,18 +1452,6 @@ Workspace.prototype = {
         this._doRemoveWindow(metaWin);
     },
 
-    _windowEnteredMonitor : function(metaScreen, monitorIndex, metaWin) {
-        if (monitorIndex == this.monitorIndex) {
-            this._doAddWindow(metaWin);
-        }
-    },
-
-    _windowLeftMonitor : function(metaScreen, monitorIndex, metaWin) {
-        if (monitorIndex == this.monitorIndex) {
-            this._doRemoveWindow(metaWin);
-        }
-    },
-
     // check for maximized windows on the workspace
     hasMaximizedWindows: function() {
         for (let i = 0; i < this._windows.length; i++) {
@@ -1552,8 +1536,6 @@ Workspace.prototype = {
             this.metaWorkspace.disconnect(this._windowAddedId);
             this.metaWorkspace.disconnect(this._windowRemovedId);
         }
-        global.screen.disconnect(this._windowEnteredMonitorId);
-        global.screen.disconnect(this._windowLeftMonitorId);
 
         if (this._repositionWindowsId > 0)
             Mainloop.source_remove(this._repositionWindowsId);
@@ -1572,10 +1554,9 @@ Workspace.prototype = {
         this.leavingOverview = false;
     },
 
-    // Tests if @win belongs to this workspaces and monitor
+    // Tests if @win belongs to this workspace
     _isMyWindow : function (win) {
-        return (this.metaWorkspace == null || Main.isWindowActorDisplayedOnWorkspace(win, this.metaWorkspace.index())) &&
-            (!win.get_meta_window() || win.get_meta_window().get_monitor() == this.monitorIndex);
+        return (this.metaWorkspace == null || Main.isWindowActorDisplayedOnWorkspace(win, this.metaWorkspace.index()));
     },
 
     // Tests if @win should be shown in the Overview
@@ -1701,12 +1682,6 @@ Workspace.prototype = {
             };
 
             let metaWindow = win.get_meta_window();
-
-            // We need to move the window before changing the workspace, because
-            // the move itself could cause a workspace change if the window enters
-            // the primary monitor
-            if (metaWindow.get_monitor() != this.monitorIndex)
-                metaWindow.move_to_monitor(this.monitorIndex);
 
             let index = this.metaWorkspace ? this.metaWorkspace.index() : global.screen.get_active_workspace_index();
             metaWindow.change_workspace_by_index(index,
