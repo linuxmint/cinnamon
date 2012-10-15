@@ -212,8 +212,9 @@ static void
 cinnamon_gtk_embed_unrealize (ClutterActor *actor)
 {
   CinnamonGtkEmbed *embed = CINNAMON_GTK_EMBED (actor);
-
-  _cinnamon_embedded_window_unrealize (embed->priv->window);
+  
+  if (embed->priv->window)
+    _cinnamon_embedded_window_unrealize (embed->priv->window);
 
   CLUTTER_ACTOR_CLASS (cinnamon_gtk_embed_parent_class)->unrealize (actor);
 }
