@@ -478,6 +478,9 @@ ExpoWorkspaceThumbnail.prototype = {
     // Tests if @win should be shown in the Expo
     _isExpoWindow : function (win) {
         let metaWindow = win.get_meta_window();
+        if (metaWindow.is_override_redirect()) {
+            return false;
+        }
         let type = metaWindow.get_window_type();
         return type !== Meta.WindowType.DESKTOP;
     },
