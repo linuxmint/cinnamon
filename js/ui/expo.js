@@ -239,6 +239,11 @@ Expo.prototype = {
             group.remove_actor(clone);
             clone.destroy();
         };
+        if (Main.layoutManager.monitors.length > 1) {
+            // the clone animation doesn't currently work accurately with multiple monitors,
+            // so we simply hide it.
+            clone.hide();
+        }
         return clone;
     },
 
@@ -286,7 +291,6 @@ Expo.prototype = {
         let activeWorkspaceActor = this.activeWorkspace.actor;
 
         let clone = this._createClone(activeWorkspaceActor);
-        clone.show();
         //We need to allocate activeWorkspace before we begin its clone animation
         let allocateID = this.activeWorkspace.connect('allocated', Lang.bind(this, function() {
             this.activeWorkspace.disconnect(allocateID);
