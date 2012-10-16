@@ -232,12 +232,14 @@ Expo.prototype = {
     },
 
     _createClone: function(source) {
-        if (this.clone) {
-            this._group.remove_actor(this.clone);
-            this.clone.destroy();
-        }
-        this.clone = new Clutter.Clone({source: source});
-        this._group.add_actor(this.clone);
+        let clone = new Clutter.Clone({source: source});
+        this._group.add_actor(clone);
+        let group = this._group;
+        clone.selfDestruct = function() {
+            group.remove_actor(clone);
+            clone.destroy();
+        };
+        return clone;
     },
 
     // show:
@@ -283,10 +285,26 @@ Expo.prototype = {
         this.activeWorkspace = this._expo._thumbnailsBox._lastActiveWorkspace;
         let activeWorkspaceActor = this.activeWorkspace.actor;
 
-        this.allocateID = this.activeWorkspace.connect('allocated', Lang.bind(this, this._animateVisible2));
-
-        this._createClone(activeWorkspaceActor);
-        this.clone.show();
+        let clone = this._createClone(activeWorkspaceActor);
+        clone.show();
+        //We need to allocate activeWorkspace before we begin its clone animation
+        let allocateID = this.activeWorkspace.connect('allocated', Lang.bind(this, function() {
+            this.activeWorkspace.disconnect(allocateID);
+            let activeWorkspaceActor = this._expo._thumbnailsBox._lastActiveWorkspace.actor;
+            Tweener.addTween(clone, {
+                x: activeWorkspaceActor.allocation.x1, 
+                y: activeWorkspaceActor.allocation.y1, 
+                scale_x: activeWorkspaceActor.get_scale()[0] , 
+                scale_y: activeWorkspaceActor.get_scale()[1], 
+                time: ANIMATION_TIME,
+                transition: 'easeOutQuad', 
+                onComplete: function() {
+                    clone.selfDestruct();
+                    this._showDone();
+                }, 
+                onCompleteScope: this
+            });
+        }));
 
         this._gradient.show();
         Main.disablePanels();
@@ -297,27 +315,9 @@ Expo.prototype = {
                               transition: 'easeOutQuad',
                               time: ANIMATION_TIME});
 
-        /*Tweener.addTween(this,
-                            { time: 0.4,
-                              onComplete: this._animateVisible2,
-                              onCompleteScope: this});*/
-
         this._coverPane.raise_top();
         this._coverPane.show();
         this.emit('showing');
-    },
-
-    //We need to allocate activeWorkspace before we begin its clone animation
-    _animateVisible2: function() {
-        this.activeWorkspace.disconnect(this.allocateID);
-        let activeWorkspaceActor = this._expo._thumbnailsBox._lastActiveWorkspace.actor;
-        Tweener.addTween(this.clone, {  x: activeWorkspaceActor.allocation.x1, 
-                                        y: activeWorkspaceActor.allocation.y1, 
-                                        scale_x: activeWorkspaceActor.get_scale()[0] , 
-                                        scale_y: activeWorkspaceActor.get_scale()[1], 
-                                        time: ANIMATION_TIME, transition: 'easeOutQuad', 
-                                        onComplete: function() { this.clone.hide(); this._showDone()}, 
-                                        onCompleteScope: this});        
     },
 
     // showTemporarily:
@@ -433,17 +433,23 @@ Expo.prototype = {
         this.activeWorkspace = this._expo._thumbnailsBox._lastActiveWorkspace;
         let activeWorkspaceActor = this.activeWorkspace.actor;
         this.activeWorkspace._overviewModeOff();
-        this._createClone(activeWorkspaceActor);
-        this.clone.set_position(activeWorkspaceActor.allocation.x1, activeWorkspaceActor.allocation.y1);
-        this.clone.set_scale(activeWorkspaceActor.get_scale()[0], activeWorkspaceActor.get_scale()[1]);
+        let clone = this._createClone(activeWorkspaceActor);
+        clone.set_position(activeWorkspaceActor.allocation.x1, activeWorkspaceActor.allocation.y1);
+        clone.set_scale(activeWorkspaceActor.get_scale()[0], activeWorkspaceActor.get_scale()[1]);
         let porthole = Main.layoutManager.getPorthole();
-        Tweener.addTween(this.clone, {  x: porthole.x, 
-                                        y: porthole.y,
-                                        scale_x: 1,
-                                        scale_y: 1,
-                                        time: ANIMATION_TIME, 
-                                        transition: 'easeOutQuad', 
-                                        onComplete: this.hide});
+        Tweener.addTween(clone, {
+            x: porthole.x, 
+            y: porthole.y,
+            scale_x: 1,
+            scale_y: 1,
+            time: ANIMATION_TIME, 
+            transition: 'easeOutQuad',
+            onCompleteScope: this,
+            onComplete: function() {
+                this.hide();
+                clone.selfDestruct();
+            }
+        });
 
         this._coverPane.raise_top();
         this._coverPane.show();
@@ -475,7 +481,6 @@ Expo.prototype = {
 
         this._background.hide();
         this._group.hide();
-        this.clone.hide();
         this._gradient.hide();
 
         this.visible = false;
