@@ -344,12 +344,15 @@ ExpoWorkspaceThumbnail.prototype = {
     },
 
     syncStacking: function(stackIndices) {
-        this._windows.sort(function (a, b) {
+        this._windows.sort(Lang.bind(this, function (a, b) {
             let minimizedA = a.metaWindow.minimized ? -1 : 0;
             let minimizedB = b.metaWindow.minimized ? -1 : 0;
             let minimizedDiff = minimizedA - minimizedB;
-            return minimizedDiff || stackIndices[a.metaWindow.get_stable_sequence()] - stackIndices[b.metaWindow.get_stable_sequence()];
-        });
+            let noOverviewA = !this._isOverviewWindow(a.metaWindow) ? -1 : 0;
+            let noOverviewB = !this._isOverviewWindow(b.metaWindow) ? -1 : 0;
+            let noOverviewDiff = noOverviewA - noOverviewB;
+            return minimizedDiff || noOverviewDiff || stackIndices[a.metaWindow.get_stable_sequence()] - stackIndices[b.metaWindow.get_stable_sequence()];
+        }));
 
         for (let i = 0; i < this._windows.length; i++) {
             let clone = this._windows[i];
