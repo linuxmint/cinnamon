@@ -1571,6 +1571,8 @@ PopupComboMenu.prototype = {
                            transition: 'linear',
                            time: BoxPointer.POPUP_ANIMATION_TIME });
 
+        this.savedFocusActor = global.stage.get_key_focus();
+        global.stage.set_key_focus(this.actor);
         this.emit('open-state-changed', true);
     },
 
@@ -1590,6 +1592,7 @@ PopupComboMenu.prototype = {
                          });
 
         this.emit('open-state-changed', false);
+        global.stage.set_key_focus(this.savedFocusActor);
     },
 
     setActiveItem: function(position) {
