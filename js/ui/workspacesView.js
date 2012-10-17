@@ -116,6 +116,12 @@ WorkspacesView.prototype = {
 
         let modifiers = Cinnamon.get_event_state(event);
         let symbol = event.get_key_symbol();
+        let ctrlAltMask = Clutter.ModifierType.CONTROL_MASK | Clutter.ModifierType.MOD1_MASK;
+
+        if (symbol === Clutter.m && !(modifiers & ctrlAltMask)) {
+            activeWorkspace.showMenuForSelectedWindow();
+            return true;
+        }
 
         if (symbol === Clutter.w && modifiers & Clutter.ModifierType.CONTROL_MASK) {
             activeWorkspace.closeSelectedWindow();

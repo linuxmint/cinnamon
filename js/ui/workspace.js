@@ -14,6 +14,7 @@ const DND = imports.ui.dnd;
 const Lightbox = imports.ui.lightbox;
 const Main = imports.ui.main;
 const Overview = imports.ui.overview;
+const PopupMenu = imports.ui.popupMenu;
 const Tweener = imports.ui.tweener;
 
 const FOCUS_ANIMATION_TIME = 0.15;
@@ -874,6 +875,16 @@ Workspace.prototype = {
         return true;
     },
     
+    showMenuForSelectedWindow: function() {
+        if (this._kbWindowIndex > -1 && this._kbWindowIndex < this._windows.length) {
+            let window = this._windows[this._kbWindowIndex];
+            let menu = new AppMenuButtonRightClickMenu(window.actor, window.metaWindow, "top");
+            menu.toggle();
+            return true;
+        }
+        return false;
+    },
+
     activateSelectedWindow: function() {
         if (this._kbWindowIndex > -1 && this._kbWindowIndex < this._windows.length) {
             this._onCloneSelected(this._windows[this._kbWindowIndex], global.get_current_time());
@@ -1699,3 +1710,151 @@ Workspace.prototype = {
 };
 
 Signals.addSignalMethods(Workspace.prototype);
+
+function AppMenuButtonRightClickMenu(actor, metaWindow, orientation) {
+    this._init(actor, metaWindow, orientation);
+}
+
+AppMenuButtonRightClickMenu.prototype = {
+    __proto__: PopupMenu.PopupComboMenu.prototype,
+
+    _init: function(actor, metaWindow, orientation) {
+        //take care of menu initialization
+        PopupMenu.PopupComboMenu.prototype._init.call(this, actor);
+        Main.uiGroup.add_actor(this.actor);
+        this.actor.hide();
+        actor.connect('key-press-event', Lang.bind(this, this._onSourceKeyPress));
+        this.connect('open-state-changed', Lang.bind(this, this._onToggled));
+
+        this.metaWindow = metaWindow;
+
+        this.itemCloseWindow = new PopupMenu.PopupMenuItem(_("Close"));
+        this.itemCloseWindow.connect('activate', Lang.bind(this, this._onCloseWindowActivate));
+
+        if (metaWindow.minimized)
+            this.itemMinimizeWindow = new PopupMenu.PopupMenuItem(_("Restore"));
+        else
+            this.itemMinimizeWindow = new PopupMenu.PopupMenuItem(_("Minimize"));
+        this.itemMinimizeWindow.connect('activate', Lang.bind(this, this._onMinimizeWindowActivate));
+
+        this.itemMaximizeWindow = new PopupMenu.PopupMenuItem(_("Maximize"));
+        this.itemMaximizeWindow.connect('activate', Lang.bind(this, this._onMaximizeWindowActivate));
+
+        this.itemMoveToLeftWorkspace = new PopupMenu.PopupMenuItem(_("Move to left workspace"));
+        this.itemMoveToLeftWorkspace.connect('activate', Lang.bind(this, this._onMoveToLeftWorkspace));
+
+        this.itemMoveToRightWorkspace = new PopupMenu.PopupMenuItem(_("Move to right workspace"));
+        this.itemMoveToRightWorkspace.connect('activate', Lang.bind(this, this._onMoveToRightWorkspace));
+
+        this.itemOnAllWorkspaces = new PopupMenu.PopupMenuItem(_("Visible on all workspaces"));
+        this.itemOnAllWorkspaces.connect('activate', Lang.bind(this, this._toggleOnAllWorkspaces));
+
+        let items = [
+            this.itemOnAllWorkspaces,
+            this.itemMoveToLeftWorkspace,
+            this.itemMoveToRightWorkspace,
+            new PopupMenu.PopupSeparatorMenuItem(),
+            this.itemMinimizeWindow,
+            this.itemMaximizeWindow,
+            this.itemCloseWindow
+        ];
+        (orientation == St.Side.BOTTOM ? items : items.reverse()).forEach(function(item) {
+            this.addMenuItem(item);
+        }, this);
+        this.setActiveItem(0);
+     },
+
+     _onToggled: function(actor, event){
+         if (!event) {
+            this.destroy();
+            return;
+         }
+
+        if (this.metaWindow.is_on_all_workspaces()) {
+            this.itemOnAllWorkspaces.label.set_text(_("Only on this workspace"));
+            this.itemMoveToLeftWorkspace.actor.hide();
+            this.itemMoveToRightWorkspace.actor.hide();
+        } else {
+            this.itemOnAllWorkspaces.label.set_text(_("Visible on all workspaces"));
+            if (this.metaWindow.get_workspace().get_neighbor(Meta.MotionDirection.LEFT) != this.metaWindow.get_workspace())
+                this.itemMoveToLeftWorkspace.actor.show();
+            else
+                this.itemMoveToLeftWorkspace.actor.hide();
+
+            if (this.metaWindow.get_workspace().get_neighbor(Meta.MotionDirection.RIGHT) != this.metaWindow.get_workspace())
+                this.itemMoveToRightWorkspace.actor.show();
+            else
+                this.itemMoveToRightWorkspace.actor.hide();
+        }
+        if (this.metaWindow.get_maximized()) {
+            this.itemMaximizeWindow.label.set_text(_("Unmaximize"));
+        }else{
+            this.itemMaximizeWindow.label.set_text(_("Maximize"));
+        }
+    },
+
+    _onWindowMinimized: function(actor, event){
+    },
+
+    _onCloseWindowActivate: function(actor, event){
+        this.metaWindow.delete(global.get_current_time());
+    },
+
+    _onMinimizeWindowActivate: function(actor, event){
+        if (this.metaWindow.minimized) {
+            this.metaWindow.unminimize(global.get_current_time());
+        }
+        else {
+            this.metaWindow.minimize(global.get_current_time());
+        }
+    },
+
+    _onMaximizeWindowActivate: function(actor, event){
+        if (this.metaWindow.get_maximized()){
+            this.metaWindow.unmaximize(Meta.MaximizeFlags.HORIZONTAL | Meta.MaximizeFlags.VERTICAL);
+        }else{
+            this.metaWindow.maximize(Meta.MaximizeFlags.HORIZONTAL | Meta.MaximizeFlags.VERTICAL);
+        }
+    },
+
+    _onMoveToLeftWorkspace: function(actor, event){
+        let workspace = this.metaWindow.get_workspace().get_neighbor(Meta.MotionDirection.LEFT);
+        if (workspace) {
+            this.metaWindow.change_workspace(workspace);
+            Main._checkWorkspaces();
+        }
+    },
+
+    _onMoveToRightWorkspace: function(actor, event){
+        let workspace = this.metaWindow.get_workspace().get_neighbor(Meta.MotionDirection.RIGHT);
+        if (workspace) {
+            this.metaWindow.change_workspace(workspace);
+            Main._checkWorkspaces();
+        }
+    },
+
+    _toggleOnAllWorkspaces: function(actor, event) {
+        if (this.metaWindow.is_on_all_workspaces())
+            this.metaWindow.unstick();
+        else
+            this.metaWindow.stick();
+    },
+
+    _onSourceKeyPress: function(actor, event) {
+        let symbol = event.get_key_symbol();
+        if (symbol == Clutter.KEY_space || symbol == Clutter.KEY_Return) {
+            this.menu.toggle();
+            return true;
+        } else if (symbol == Clutter.KEY_Escape && this.menu.isOpen) {
+            this.menu.close();
+            return true;
+        } else if (symbol == Clutter.KEY_Down) {
+            if (!this.menu.isOpen)
+                this.menu.toggle();
+            this.menu.actor.navigate_focus(this.actor, Gtk.DirectionType.DOWN, false);
+            return true;
+        } else
+            return false;
+    }
+
+};
