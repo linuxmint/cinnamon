@@ -106,16 +106,8 @@ WorkspacesView.prototype = {
         this._swipeScrollBeginId = 0;
         this._swipeScrollEndId = 0;
 
-        this._stageKeyPressId = global.stage.connect('key-press-event',
-            Lang.bind(this, this._onStageKeyPress));
-        Main.overview.connect('hiding', Lang.bind(this,
-            function () {
-                if (this._stageKeyPressId != 0) {
-                    global.stage.disconnect(this._stageKeyPressId);
-                    this._stageKeyPressId = 0;
-                }
-            }));
-            
+        this.actor.connect('key-press-event', Lang.bind(this, this._onStageKeyPress));
+        global.stage.set_key_focus(this.actor);
     },
 
     _onStageKeyPress: function(actor, event) {
