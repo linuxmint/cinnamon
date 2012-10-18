@@ -153,7 +153,7 @@ AltTabPopup.prototype = {
             if (childBox.x2 > primary.x + primary.width - rightPadding)
                 childBox.x2 = primary.x + primary.width - rightPadding;
             childBox.y1 = this._appSwitcher.actor.allocation.y2 + spacing;
-            this._thumbnails.addClones(primary.height - bottomPadding - childBox.y1);
+            this._thumbnails.addClones(primary.y + primary.height - bottomPadding - childBox.y1);
             let [childMinHeight, childNaturalHeight] = this._thumbnails.actor.get_preferred_height(-1);
             childBox.y2 = childBox.y1 + childNaturalHeight;
             this._thumbnails.actor.allocate(childBox, flags);
