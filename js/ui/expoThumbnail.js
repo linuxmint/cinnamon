@@ -11,6 +11,7 @@ const DND = imports.ui.dnd;
 const Main = imports.ui.main;
 const Tweener = imports.ui.tweener;
 const Workspace = imports.ui.workspace;
+const ModalDialog = imports.ui.modalDialog;
 
 // The maximum size of a thumbnail is 1/8 the width and height of the screen
 let MAX_THUMBNAIL_SCALE = 0.9;
@@ -98,8 +99,7 @@ ExpoWindowClone.prototype = {
     },
 
     _onPositionChanged: function() {
-        let rect = this.metaWindow.get_outer_rect();
-        this.actor.set_position(this.realWindow.x, this.realWindow.y);
+        this.actor.set_position(this.origX = this.realWindow.x, this.origY = this.realWindow.y);
     },
 
     _disconnectRealWindowSignals: function() {
@@ -166,6 +166,37 @@ const ThumbnailState = {
     ANIMATED_OUT :  5,
     COLLAPSING :    6,
     DESTROYED :     7
+};
+
+function ConfirmationDialog(prompt, yesAction, yesFocused){
+    this._init(prompt, yesAction, yesFocused);
+}
+
+ConfirmationDialog.prototype = {
+    __proto__: ModalDialog.ModalDialog.prototype,
+
+    _init: function(prompt, yesAction, yesFocused) {
+        ModalDialog.ModalDialog.prototype._init.call(this);
+        let label = new St.Label({text: prompt});
+        this.contentLayout.add(label);
+
+        this.setButtons([
+            {
+                label: _("Yes"),
+                focused: yesFocused,
+                action: Lang.bind(this, function(){
+                    yesAction();
+                    this.close();
+                })
+            },
+            {
+                label: _("No"),
+                action: Lang.bind(this, function(){
+                    this.close();
+                })
+            }
+        ]);
+    },
 };
 
 /**
@@ -235,12 +266,19 @@ ExpoWorkspaceThumbnail.prototype = {
                       
         this.title.set_text(Main.getWorkspaceName(this.metaWorkspace.index()));
         
-        this._background = Meta.BackgroundActor.new_for_screen(global.screen);
-        this._contents.add_actor(this._background);
-
         let porthole = Main.layoutManager.getPorthole();
         this.setPorthole(porthole);
-       
+
+        this._background = new Clutter.Group();
+        this._contents.add_actor(this._background);
+
+        let desktopBackground = Meta.BackgroundActor.new_for_screen(global.screen);
+        this._background.add_actor(desktopBackground);
+
+        let backgroundShade = new St.Bin({style_class: 'workspace-overview-background-shade'});
+        this._background.add_actor(backgroundShade);
+        backgroundShade.set_size(porthole.width, porthole.height);
+
         this.shade = new St.Bin();
         this.shade.set_style('background-color: black;');
         this.actor.add_actor(this.shade);
@@ -513,6 +551,7 @@ ExpoWorkspaceThumbnail.prototype = {
         clone.connect('drag-begin',
                       Lang.bind(this, function(clone) {
                           Main.expo.beginWindowDrag();
+                          this._overviewModeOff();
                       }));
         clone.connect('drag-end',
                       Lang.bind(this, function(clone) {
@@ -602,17 +641,12 @@ ExpoWorkspaceThumbnail.prototype = {
     _overviewModeOff : function (force){
         if (!this._overviewMode && !force)
             return;
-
+        
         const iconSpacing = ICON_SIZE/4;
         let monitorIconCount = new Array(Main.layoutManager.monitors.length);
 
         for (let i = 0; i < this._windows.length; i++){
             let window = this._windows[i];
-            if (!window.origSet) {
-                window.origX = window.actor.x;
-                window.origY = window.actor.y;
-                window.origSet = true;
-            }
 
             if (!window.metaWindow.showing_on_its_workspace()){
                 // Visually replace the cloned window with its icon
@@ -643,12 +677,14 @@ ExpoWorkspaceThumbnail.prototype = {
                     });
             }
             else {
-                window.actor.show();
-                Tweener.addTween(window.actor, {
-                    x: window.origX,
-                    y: window.origY,
-                    scale_x: 1, scale_y: 1, opacity: 255, 
-                    time: REARRANGE_TIME_OFF, transition: 'easeOutQuad'});        
+                if (!window.inDrag) {
+                    window.actor.show();
+                    Tweener.addTween(window.actor, {
+                        x: window.origX,
+                        y: window.origY,
+                        scale_x: 1, scale_y: 1, opacity: 255,
+                        time: REARRANGE_TIME_OFF, transition: 'easeOutQuad'});
+                }
             }
         } 
     },
@@ -696,10 +732,21 @@ ExpoWorkspaceThumbnail.prototype = {
         if (global.screen.n_workspaces <= 1) {
             return;
         }
-        this._doomed = true;
-        this.emit('remove-event');
-        Main._removeWorkspace(this.metaWorkspace);
-        this.removed = true;
+        let removeAction = Lang.bind(this, function() {
+            this._doomed = true;
+            this.emit('remove-event');
+            Main._removeWorkspace(this.metaWorkspace);
+            this.removed = true;
+        });
+        if (!Main.hasDefaultWorkspaceName(this.metaWorkspace.index())) {
+            let prompt = "Are you sure you want to remove workspace \"%s\"?\n\n".format(
+                Main.getWorkspaceName(this.metaWorkspace.index()));
+            let confirm = new ConfirmationDialog(prompt, removeAction, true);
+            confirm.open();
+        }
+        else {
+            removeAction();
+        }
     },
 
     // Draggable target interface
@@ -714,6 +761,12 @@ ExpoWorkspaceThumbnail.prototype = {
 
         if (source.realWindow && !this._isMyWindow(source.realWindow))
             return DND.DragMotionResult.MOVE_DROP;
+        if (source.realWindow && this._isMyWindow(source.realWindow)) {
+            let monitor = Main.layoutManager._chrome._findMonitorIndexForRect(x, y, 1, 1);
+            if (monitor !== source.metaWindow.get_monitor()) {
+                return DND.DragMotionResult.MOVE_DROP;
+            }
+        }
         if (source.CinnamonWorkspaceLaunch)
             return DND.DragMotionResult.COPY_DROP;
 
@@ -724,21 +777,20 @@ ExpoWorkspaceThumbnail.prototype = {
         if (this.handleDragOver(source, actor, x, y, time) === DND.DragMotionResult.CONTINUE) {
             return false;
         }
-
+global.logError([Math.round(x),Math.round(y)]);
         this.metaWorkspace.activate(time);
         let win = source.realWindow;
         let metaWindow = win.get_meta_window();
 
-        // We need to move the window before changing the workspace, because
-        // the move itself could cause a workspace change if the window enters
-        // the primary monitor
-        if (metaWindow.get_monitor() != this.monitorIndex) {
-            metaWindow.move_to_monitor(this.monitorIndex);
+        let monitorIndex = Main.layoutManager._chrome._findMonitorIndexForRect(x, y, 1, 1);
+        if (monitorIndex !== metaWindow.get_monitor()) {
+            metaWindow.move_to_monitor(monitorIndex);
         }
-
-        metaWindow.change_workspace_by_index(this.metaWorkspace.index(),
-                                                false, // don't create workspace
-                                                time);
+        if (!Main.isWindowActorDisplayedOnWorkspace(win, this.metaWorkspace.index())) {
+            metaWindow.change_workspace_by_index(this.metaWorkspace.index(),
+                                                    false, // don't create workspace
+                                                    time);
+        }
 
         // normal hovering monitoring was turned off during drag
         this.hovering = true;
@@ -834,6 +886,7 @@ ExpoThumbnailsBox.prototype = {
 
         this._kbThumbnailIndex = global.screen.get_active_workspace_index();
         this._thumbnails[this._kbThumbnailIndex].showKeyboardSelectedState(true);
+        global.stage.set_key_focus(this.actor);
     },
 
     handleKeyPressEvent: function(actor, event) {
@@ -917,7 +970,6 @@ ExpoThumbnailsBox.prototype = {
         if (prevIndex != this._kbThumbnailIndex) {
             this._thumbnails[prevIndex].showKeyboardSelectedState(false);
             this._thumbnails[this._kbThumbnailIndex].showKeyboardSelectedState(true);
-            global.stage.set_key_focus(this._thumbnails[this._kbThumbnailIndex].actor);
         }
         return true; // handled
     },
@@ -1219,7 +1271,9 @@ ExpoThumbnailsBox.prototype = {
             thumbnail._refreshTitle();
         });
         this._thumbnails[this._kbThumbnailIndex].showKeyboardSelectedState(true);
-    },
+        // we may inadvertently have lost keyboard focus during the reshuffling
+        global.stage.set_key_focus(this.actor);
+  },
 
     _queueUpdateStates: function() {
         if (this._stateUpdateQueued)
@@ -1481,7 +1535,6 @@ ExpoThumbnailsBox.prototype = {
         this._thumbnails[this._kbThumbnailIndex].showKeyboardSelectedState(false);
         this._kbThumbnailIndex = global.screen.get_active_workspace_index();
         this._thumbnails[this._kbThumbnailIndex].showKeyboardSelectedState(true);
-        global.stage.set_key_focus(this._thumbnails[this._kbThumbnailIndex].actor);
 
         let thumbnail;
         let activeWorkspace = global.screen.get_active_workspace();
