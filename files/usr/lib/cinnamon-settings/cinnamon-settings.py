@@ -2064,25 +2064,15 @@ class MainWindow:
             self.sidePages.append((sidePage, "desktop"))
             #sidePage.add_widget(GSettingsCheckButton(_("Have file manager (Nemo) handle the desktop"), "org.gnome.desktop.background", "show-desktop-icons", None))
             if "computer-icon-visible" in nemo_desktop_keys:
-                box = IndentedHBox()
-                box.add(GSettingsCheckButton(_("Computer icon visible on desktop"), "org.nemo.desktop", "computer-icon-visible", "org.gnome.desktop.background/show-desktop-icons"))
-                sidePage.add_widget(box)
+                sidePage.add_widget(GSettingsCheckButton(_("Computer icon visible on desktop"), "org.nemo.desktop", "computer-icon-visible", None))
             if "home-icon-visible" in nemo_desktop_keys:
-                box = IndentedHBox()
-                box.add(GSettingsCheckButton(_("Home icon visible on desktop"), "org.nemo.desktop", "home-icon-visible", "org.gnome.desktop.background/show-desktop-icons"))
-                sidePage.add_widget(box)
+                sidePage.add_widget(GSettingsCheckButton(_("Home icon visible on desktop"), "org.nemo.desktop", "home-icon-visible", None))
             if "network-icon-visible" in nemo_desktop_keys:
-                box = IndentedHBox()
-                box.add(GSettingsCheckButton(_("Network Servers icon visible on desktop"), "org.nemo.desktop", "network-icon-visible", "org.gnome.desktop.background/show-desktop-icons"))
-                sidePage.add_widget(box)
+                sidePage.add_widget(GSettingsCheckButton(_("Network Servers icon visible on desktop"), "org.nemo.desktop", "network-icon-visible", None))
             if "trash-icon-visible" in nemo_desktop_keys:
-                box = IndentedHBox()
-                box.add(GSettingsCheckButton(_("Trash icon visible on desktop"), "org.nemo.desktop", "trash-icon-visible", "org.gnome.desktop.background/show-desktop-icons"))
-                sidePage.add_widget(box)
+                sidePage.add_widget(GSettingsCheckButton(_("Trash icon visible on desktop"), "org.nemo.desktop", "trash-icon-visible", None))
             if "volumes-visible" in nemo_desktop_keys:
-                box = IndentedHBox()
-                box.add(GSettingsCheckButton(_("Show mounted volumes on the desktop"), "org.nemo.desktop", "volumes-visible", "org.gnome.desktop.background/show-desktop-icons"))
-                sidePage.add_widget(box)
+                sidePage.add_widget(GSettingsCheckButton(_("Show mounted volumes on the desktop"), "org.nemo.desktop", "volumes-visible", None))
 
         sidePage = SidePage(_("Windows"), "windows.svg", self.content_box)
         self.sidePages.append((sidePage, "windows"))
