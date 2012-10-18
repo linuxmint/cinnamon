@@ -1228,7 +1228,7 @@ class KeyBinding():
             for entry in raw_array:
                 result.append(entry)
             while (len(result) < 3):
-                result.append(_(""))
+                result.append("")
         else:
             result.append(raw_array)
             while (len(result) < 3):
@@ -1499,23 +1499,30 @@ class KeyboardSidePage (SidePage):
         tab.add_widget(Gtk.Entry())
         self.addNotebookTab(tab)
 
-        tab = NotebookPage(_("Keybindings"))
+        tab = NotebookPage(_("Keyboard shortcuts"))
 
         headingbox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 2)
         mainbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 2)
         headingbox.pack_start(mainbox, True, True, 2)
-        headingbox.pack_end(Gtk.Label(_("To edit a keybinding, click a binding and press the new keys, or backspace to clear it.")), False, False, 1)
+        headingbox.pack_end(Gtk.Label(_("To edit a keyboard binding, click it and press the new keys, or press backspace to clear it.")), False, False, 1)
 
         left_vbox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 2)
         right_vbox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 2)
-
+        
+        category_scroller = Gtk.ScrolledWindow.new(None, None)
+        category_scroller.set_shadow_type(Gtk.ShadowType.IN)
+        
         kb_name_scroller = Gtk.ScrolledWindow.new(None, None)
+        kb_name_scroller.set_shadow_type(Gtk.ShadowType.IN)
+        
         entry_scroller = Gtk.ScrolledWindow.new(None, None)
+        entry_scroller.set_shadow_type(Gtk.ShadowType.IN)
+        
         right_vbox.pack_start(kb_name_scroller, False, False, 2)
         right_vbox.pack_start(entry_scroller, False, False, 2)
         kb_name_scroller.set_property('min-content-height', 150)
         entry_scroller.set_property('min-content-height', 100)
-        self.cat_tree = Gtk.TreeView.new()
+        self.cat_tree = Gtk.TreeView.new()        
         self.kb_tree = Gtk.TreeView.new()
         self.entry_tree = Gtk.TreeView.new()
 
@@ -1523,7 +1530,10 @@ class KeyboardSidePage (SidePage):
         self.kb_tree.connect('button-press-event', self.onContextMenuPopup)
         self.kb_tree.connect('popup-menu', self.onContextMenuPopup)
 
-        left_vbox.pack_start(self.cat_tree, True, True, 2)
+        left_vbox.pack_start(category_scroller, True, True, 2)
+                
+        category_scroller.add(self.cat_tree)
+        category_scroller.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.NEVER)
         kb_name_scroller.add(self.kb_tree)
         kb_name_scroller.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
         entry_scroller.add(self.entry_tree)
@@ -1557,7 +1567,7 @@ class KeyboardSidePage (SidePage):
 
         cell = Gtk.CellRendererText()
         cell.set_alignment(.5,0)
-        cat_column = Gtk.TreeViewColumn(_("Category"), cell, text=0)
+        cat_column = Gtk.TreeViewColumn(_("Categories"), cell, text=0)
         cat_column.set_alignment(.5)
         cat_column.set_property('min-width', 200)
 
@@ -1566,7 +1576,7 @@ class KeyboardSidePage (SidePage):
 
         kb_name_cell = Gtk.CellRendererText()
         kb_name_cell.set_alignment(.5,.5)
-        kb_column = Gtk.TreeViewColumn(_("Keybinding Description"), kb_name_cell, text=0)
+        kb_column = Gtk.TreeViewColumn(_("Keyboard shortcuts"), kb_name_cell, text=0)
         kb_column.set_alignment(.5)
         self.kb_tree.append_column(kb_column)
         self.kb_tree.connect("cursor-changed", self.onKeyBindingChanged)
@@ -1577,7 +1587,7 @@ class KeyboardSidePage (SidePage):
         entry_cell.connect('accel-cleared', self.onEntryCleared, self.entry_store)
         entry_cell.set_property('editable', True)
         entry_cell.set_property('accel-mode', Gtk.CellRendererAccelMode.MODIFIER_TAP)
-        entry_column = Gtk.TreeViewColumn(_("Bindings"), entry_cell, text=0)
+        entry_column = Gtk.TreeViewColumn(_("Keyboard bindings"), entry_cell, text=0)
         entry_column.set_alignment(.5)
         self.entry_tree.append_column(entry_column)
 
@@ -1621,15 +1631,16 @@ class KeyboardSidePage (SidePage):
 
     def onCategoryChanged(self, tree):
         self.kb_store.clear()
-        categories, iter = tree.get_selection().get_selected()
-        if iter:
-            category = categories[iter][1]
-            if category.int_name is not "custom":
-                for keybinding in category.keybindings:
-                    self.kb_store.append((keybinding.label, keybinding))
-            else:
-                self.loadCustoms()
-        self.remove_custom_button.set_property('sensitive', False)
+        if tree.get_selection() is not None:
+            categories, iter = tree.get_selection().get_selected()
+            if iter:
+                category = categories[iter][1]
+                if category.int_name is not "custom":
+                    for keybinding in category.keybindings:
+                        self.kb_store.append((keybinding.label, keybinding))
+                else:
+                    self.loadCustoms()
+            self.remove_custom_button.set_property('sensitive', False)
 
     def loadCustoms(self):
         for category in self.main_store:
@@ -1650,17 +1661,18 @@ class KeyboardSidePage (SidePage):
 
     def onKeyBindingChanged(self, tree):
         self.entry_store.clear()
-        keybindings, iter = tree.get_selection().get_selected()
-        if iter:
-            keybinding = keybindings[iter][1]
-            if isinstance(keybinding, KeyBinding):
-                for entry in keybinding.entries:
-                    if entry is not "_invalid_":
-                        self.entry_store.append((clean_kb(entry), entry))
-                self.remove_custom_button.set_property('sensitive', False)
-            else:
-                self.entry_store.append((clean_kb(keybinding.entries[0]), keybinding))
-                self.remove_custom_button.set_property('sensitive', True)
+        if tree.get_selection() is not None:
+            keybindings, iter = tree.get_selection().get_selected()
+            if iter:
+                keybinding = keybindings[iter][1]
+                if isinstance(keybinding, KeyBinding):
+                    for entry in keybinding.entries:
+                        if entry is not "_invalid_":
+                            self.entry_store.append((clean_kb(entry), entry))
+                    self.remove_custom_button.set_property('sensitive', False)
+                else:
+                    self.entry_store.append((clean_kb(keybinding.entries[0]), keybinding))
+                    self.remove_custom_button.set_property('sensitive', True)
 
 
     def onEntryChanged(self, cell, path, keyval, mask, keycode, entry_store):
