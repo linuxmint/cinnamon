@@ -167,8 +167,6 @@ Expo.prototype = {
         this._group.set_position(primary.x, primary.y);
         this._group.set_size(primary.width, primary.height);
 
-        this._group.set_clip(0, primary.y, primary.width, primary.height);
-
         this._gradient.set_position(0, 0);
         this._gradient.set_size(primary.width, primary.height);
 
