@@ -2062,7 +2062,7 @@ class MainWindow:
                             
             sidePage = SidePage(_("Desktop"), "desktop.svg", self.content_box)
             self.sidePages.append((sidePage, "desktop"))
-            sidePage.add_widget(GSettingsCheckButton(_("Have file manager (Nemo) handle the desktop"), "org.gnome.desktop.background", "show-desktop-icons", None))
+            #sidePage.add_widget(GSettingsCheckButton(_("Have file manager (Nemo) handle the desktop"), "org.gnome.desktop.background", "show-desktop-icons", None))
             if "computer-icon-visible" in nemo_desktop_keys:
                 box = IndentedHBox()
                 box.add(GSettingsCheckButton(_("Computer icon visible on desktop"), "org.nemo.desktop", "computer-icon-visible", "org.gnome.desktop.background/show-desktop-icons"))
