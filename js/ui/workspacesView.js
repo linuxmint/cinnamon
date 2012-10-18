@@ -78,8 +78,8 @@ WorkspacesView.prototype = {
         this._overviewShownId =
             Main.overview.connect('shown',
                                  Lang.bind(this, function() {
-                this.actor.set_clip(this._clipX, this._clipY,
-                                    this._clipWidth, this._clipHeight);
+                // this.actor.set_clip(this._clipX, this._clipY,
+                   //                 this._clipWidth, this._clipHeight);
         }));
 
         this._scrollAdjustment = new St.Adjustment({ value: activeWorkspaceIndex,
@@ -113,29 +113,7 @@ WorkspacesView.prototype = {
     _onStageKeyPress: function(actor, event) {
         let activeWorkspaceIndex = global.screen.get_active_workspace_index();
         let activeWorkspace = this._workspaces[activeWorkspaceIndex];
-
-        let modifiers = Cinnamon.get_event_state(event);
-        let symbol = event.get_key_symbol();
-        let ctrlAltMask = Clutter.ModifierType.CONTROL_MASK | Clutter.ModifierType.MOD1_MASK;
-
-        if (symbol === Clutter.m && !(modifiers & ctrlAltMask)) {
-            activeWorkspace.showMenuForSelectedWindow();
-            return true;
-        }
-
-        if (symbol === Clutter.w && modifiers & Clutter.ModifierType.CONTROL_MASK) {
-            activeWorkspace.closeSelectedWindow();
-            return true;
-        }
-
-        if (symbol === Clutter.Return || symbol === Clutter.KEY_space) {
-            if (activeWorkspace.activateSelectedWindow()) {
-                return true;
-            }
-            Main.overview.hide();
-            return true;
-        }
-        return activeWorkspace.selectAnotherWindow(symbol);
+        return activeWorkspace._onKeyPress(actor, event);
     },
 
     setGeometry: function(x, y, width, height, spacing) {
@@ -149,7 +127,7 @@ WorkspacesView.prototype = {
         this._workspaceRatioSpacing = spacing;
 
         for (let i = 0; i < this._workspaces.length; i++)
-            this._workspaces[i].setGeometry(x, y, width, height);
+           this._workspaces[i].setGeometry(x, y, width, height, spacing);
     },
 
     setClipRect: function(x, y, width, height) {
@@ -298,7 +276,7 @@ WorkspacesView.prototype = {
         if (newNumWorkspaces > oldNumWorkspaces) {
             for (let w = oldNumWorkspaces; w < newNumWorkspaces; w++) {
                 this._workspaces[w].setGeometry(this._x, this._y,
-                                                this._width, this._height);
+                    this._width, this._height, this._workspaceRatioSpacing);
                 this.actor.add_actor(this._workspaces[w].actor);
             }
 
@@ -702,7 +680,6 @@ WorkspacesDisplay.prototype = {
         width = (fullWidth / fullHeight) * height;
         let difference = fullWidth - width;
         x += difference / 2;
-
         this.workspacesView.setGeometry(x, y, width, height, difference);
     },
 
