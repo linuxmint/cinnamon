@@ -26,25 +26,25 @@ EdgeFlipper.prototype = {
         let mask;
         [this.xMouse, this.yMouse, mask] = global.get_pointer();
         if (this.side == St.Side.RIGHT){
-            if (this.xMouse + 5 > global.screen_width){
+            if (this.xMouse + 2 > global.screen_width){
                 this._onMouseEnter();
             } else {
                 this._onMouseLeave();
             }
         } else if (this.side == St.Side.LEFT){
-            if (this.xMouse < 5 ){
+            if (this.xMouse < 2 ){
                 this._onMouseEnter();
             } else {
                 this._onMouseLeave();
             }
         } else if (this.side == St.Side.BOTTOM){
-            if (this.yMouse + 5 > global.screen_height) {
+            if (this.yMouse + 2 > global.screen_height) {
                 this._onMouseEnter();
             } else {
                 this._onMouseLeave();
             }
         } else if (this.side == St.Side.TOP){
-            if (this.yMouse < 5){
+            if (this.yMouse < 2){
                 this._onMouseEnter();
             } else {
                 this._onMouseLeave();
