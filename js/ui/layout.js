@@ -182,12 +182,16 @@ LayoutManager.prototype = {
         } else if (hotCornerPosition == "topRight") {
             this._hotCorner.actor.set_position(x + this.primaryMonitor.width - 1, y);            
             this.overviewCorner.set_position(x + this.primaryMonitor.width - 33, y + 1);
-        } else if (hotCornerPosition == "bottomLeft") {
-            this._hotCorner.actor.set_position(x, this.primaryMonitor.height - 1);            
-            this.overviewCorner.set_position(x + 1, this.primaryMonitor.height - 33);
-        } else if (hotCornerPosition == "bottomRight") {
-            this._hotCorner.actor.set_position(x + this.primaryMonitor.width - 1, this.primaryMonitor.height - 1);
-            this.overviewCorner.set_position(x + this.primaryMonitor.width - 33, this.primaryMonitor.height - 33);
+        } else {
+            x = this.bottomMonitor.x;
+            y = this.bottomMonitor.y + this.bottomMonitor.height;
+            if (hotCornerPosition == "bottomLeft") {
+                this._hotCorner.actor.set_position(x, y - 1);            
+                this.overviewCorner.set_position(x + 1, y - 33);
+            } else if (hotCornerPosition == "bottomRight") {
+                this._hotCorner.actor.set_position(x + this.bottomMonitor.width - 1, y - 1);
+                this.overviewCorner.set_position(x + this.bottomMonitor.width - 33, y - 33);
+            }
         }
     },
 
