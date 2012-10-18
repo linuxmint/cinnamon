@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: linuxmint\n"
 "Report-Msgid-Bugs-To: FULL NAME <EMAIL@ADDRESS>\n"
-"POT-Creation-Date: 2012-09-27 11:06+0100\n"
+"POT-Creation-Date: 2012-10-18 13:28+0100\n"
 "PO-Revision-Date: 2012-09-29 05:48+0000\n"
 "Last-Translator: praveenp <Unknown>\n"
 "Language-Team: Malayalam <ml@li.org>\n"
@@ -15,8 +15,8 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Launchpad-Export-Date: 2012-10-05 14:52+0000\n"
-"X-Generator: Launchpad (build 16061)\n"
+"X-Launchpad-Export-Date: 2012-10-18 13:11+0000\n"
+"X-Generator: Launchpad (build 16160)\n"
 
 #: src/cinnamon-app.c:347 src/cinnamon-app.c:355
 #: js/ui/notificationDaemon.js:458
@@ -50,6 +50,7 @@ msgid "File System"
 msgstr "ഫയല്‍ സിസ്റ്റം"
 
 #: src/cinnamon-util.c:244
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:135
 msgid "Search"
 msgstr "തിരയുക"
 
@@ -107,6 +108,7 @@ msgid "Open with %s"
 msgstr "%s ഉപയോഗിച്ചു് തുറക്കുക"
 
 #: js/ui/autorunManager.js:616
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:147
 msgid "Eject"
 msgstr "പുറത്തെടുക്കുക"
 
@@ -230,6 +232,7 @@ msgstr "കമ്പ്യുട്ടറിന്റെ പ്രവർത്�
 #: js/ui/networkAgent.js:144 js/ui/polkitAuthenticationAgent.js:173
 #: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:170
 #: files/usr/share/cinnamon/applets/trash@cinnamon.org/applet.js:118
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1414
 #: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/add-panel-launcher.py:141
 msgid "Cancel"
 msgstr "റദ്ദാക്കുക"
@@ -251,6 +254,7 @@ msgstr "ട്രേ"
 
 #: js/ui/keyboard.js:555
 #: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:114
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2920
 msgid "Keyboard"
 msgstr "കീബോര്‍ഡ്"
 
@@ -282,7 +286,7 @@ msgstr "മൂലരൂപം കാണുക"
 msgid "Web Page"
 msgstr "വെബ് താൾ"
 
-#: js/ui/main.js:369
+#: js/ui/main.js:370
 msgid "WORKSPACE"
 msgstr "പണിയിടം"
 
@@ -380,7 +384,8 @@ msgid "Undo"
 msgstr "തിരസ്കരിക്കുക"
 
 #: js/ui/overview.js:193
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2087
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1598
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2860
 msgid "Windows"
 msgstr "ജാലകങ്ങള്‍"
 
@@ -399,24 +404,24 @@ msgid "Settings"
 msgstr "സജ്ജീകരണങ്ങൾ"
 
 #: js/ui/panel.js:428
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1954
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2737
 msgid "Themes"
 msgstr "രംഗവിധാനങ്ങൾ"
 
 #: js/ui/panel.js:431
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2053
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2836
 msgid "Applets"
 msgstr "ആപ്‌ലെറ്റുകൾ"
 
 #: js/ui/panel.js:434
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1870
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2653
 msgid "Panel"
 msgstr "പാളി"
 
 #: js/ui/panel.js:437
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:661
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:700
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1861
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:660
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:699
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2644
 msgid "Menu"
 msgstr "മെനു"
 
@@ -494,7 +499,7 @@ msgid "Accessibility"
 msgstr "ഉപയോഗലഭ്യത"
 
 #: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:57
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:56
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:178
 msgid "Zoom"
 msgstr "വലുതാക്കുക"
 
@@ -716,72 +721,73 @@ msgstr "പ്രദേശവും ഭാഷയും സംബന്ധിച�
 msgid "Show flags"
 msgstr "പതാകകൾ പ്രദർശിപ്പിക്കുക"
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:204
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:203
 msgid "Add to panel"
 msgstr "പാളിയിലേക്ക് ചേര്‍ക്കുക"
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:207
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:206
 msgid "Add to desktop"
 msgstr "ഡെസ്ക്‌ടോപ്പിലേക്ക് ചേർക്കുക"
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:211
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:210
 msgid "Remove from favorites"
 msgstr "പ്രിയപ്പെട്ടവയിൽ നിന്ന് നീക്കംചെയ്യുക"
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:214
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:213
 msgid "Add to favorites"
 msgstr "പ്രിയപ്പെട്ടവയിലേക്ക് ചേർക്കുക"
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:344
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:343
 #: files/usr/share/cinnamon/applets/recent@cinnamon.org/applet.js:70
 msgid "Clear list"
 msgstr "പട്ടിക ശൂന്യമാക്കുക"
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:381
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:380
 msgid "All Applications"
 msgstr "എല്ലാ ആപ്ലിക്കേഷനുകളും"
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:404
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:403
 msgid "Places"
 msgstr "സ്ഥാനങ്ങൾ"
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:422
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:421
 msgid "Recent Files"
 msgstr "സമീപകാലത്തെടുത്ത ഫയലുകൾ"
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:750
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:749
 msgid "Edit menu"
 msgstr "മെനു തിരുത്തുക"
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:752
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:751
 msgid "Menu settings"
 msgstr "മെനുവിന്റെ സജ്ജീകരണങ്ങൾ"
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1219
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1218
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:126
 msgid "Lock screen"
 msgstr "സ്ക്രീൻ പൂട്ടുക"
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1220
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1219
 msgid "Lock the screen"
 msgstr "സ്ക്രീൻ പൂട്ടുക"
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1236
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1235
 msgid "Logout"
 msgstr "പുറത്ത് കടക്കുക"
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1237
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1236
 msgid "Leave the session"
 msgstr "സെഷൻ വിടുക"
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1253
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1252
 msgid "Quit"
 msgstr "പുറത്തു് കടക്കുക"
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1254
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1253
 msgid "Shutdown the computer"
 msgstr "കമ്പ്യൂട്ടർ നിർത്തുക"
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1365
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1364
 msgid "Type to search..."
 msgstr "തിരയുന്നതിനായി ടൈപ്പ് ചെയ്യുക"
 
@@ -986,6 +992,7 @@ msgid "Launch"
 msgstr "തുടങ്ങുക"
 
 #: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/applet.js:51
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1409
 #: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/add-panel-launcher.py:151
 msgid "Add"
 msgstr "ചേര്‍ക്കുക"
@@ -1107,15 +1114,16 @@ msgid "Open file manager"
 msgstr "ഫയൽ മാനേജർ തുറക്കുക"
 
 #: files/usr/share/cinnamon/applets/scale@cinnamon.org/applet.js:19
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2003
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2014
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2025
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2036
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2047
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2786
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2797
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2808
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2819
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2830
 msgid "Scale"
 msgstr "തോത്"
 
 #: files/usr/share/cinnamon/applets/show-desktop@cinnamon.org/applet.js:16
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:74
 msgid "Show desktop"
 msgstr "ഡെസ്ക്ക്ടോപ്പ് പ്രദർശിപ്പിക്കുക"
 
@@ -1151,6 +1159,7 @@ msgid "Previous"
 msgstr "മുൻപത്തേത്"
 
 #: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:389
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:142
 msgid "Play"
 msgstr "കേൾക്കുക"
 
@@ -1229,7 +1238,7 @@ msgid "Empty"
 msgstr "ശൂന്യം"
 
 #: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:41
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1763
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2546
 msgid "Close"
 msgstr "അടയ്ക്കുക"
 
@@ -1242,19 +1251,19 @@ msgid "Close others"
 msgstr "മറ്റുള്ളവ അടയ്ക്കുക"
 
 #: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:51
-#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:839
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:832
 msgid "Restore"
 msgstr "പുനഃസ്ഥാപിക്കുക"
 
 #: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:53
-#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:844
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1764
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:837
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2547
 msgid "Minimize"
 msgstr "ചുരുക്കുക"
 
 #: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:56
 #: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:117
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1765
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2548
 msgid "Maximize"
 msgstr "വലുതാക്കുക"
 
@@ -1291,609 +1300,1105 @@ msgstr "പണിയിടം മാറ്റുക"
 msgid "Configure display settings..."
 msgstr "ഡിസ്പ്ലേ സജ്ജീകരണങ്ങൾ ക്രമീകരിക്കുക"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:34
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:36
 msgid "Desktop Settings"
 msgstr "ഡെസ്ക്ടോപ്പ് സജ്ജീകരണങ്ങൾ"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:35
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:37
 msgid "Desktop Configuration Tool"
 msgstr "ഡെസ്ക്ടോപ്പ് ക്രമീകരണ ഉപകരണം"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:36
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:38
 msgid "Fine-tune desktop settings"
 msgstr "ഡെസ്ക്ടോപ്പ് സജ്ജീകരണങ്ങൾ കൃത്യമാക്കുക"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:39
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:60
+msgid "Toggle Scale"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:61
+msgid "Toggle Expo"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:62
+msgid "Cycle through open windows"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:63
+msgid "Cycle backwards though open windows"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:64
+msgid "Run dialog (must restart Cinnamon)"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:65
+msgid "Menu button (must restart Cinnamon)"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:68
+msgid "Maximize window"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:69
+msgid "Unmaximize window"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:70
+msgid "Minimize window"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:71
+msgid "Toggle tiled left (must restart Cinnamon)"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:72
+msgid "Toggle tiled right (must restart Cinnamon)"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:73
+msgid "Close window"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:75
+msgid "Activate window menu"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:76
+msgid "Toggle maximization state"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:77
+msgid "Toggle fullscreen state"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:78
+msgid "Toggle shaded state"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:79
+msgid "Maximize vertically"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:80
+msgid "Maximize horizontally"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:81
+msgid "Resize window"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:82
+msgid "Move window"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:83
+msgid "Center window in screen"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:84
+msgid "Move window to upper-right"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:85
+msgid "Move window to upper-left"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:86
+msgid "Move window to lower-right"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:87
+msgid "Move window to lower-left"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:88
+msgid "Move window to right edge"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:89
+msgid "Move window to top edge"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:90
+msgid "Move window to bottom edge"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:91
+msgid "Move window to left edge"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:94
+msgid "Toggle showing window on all workspaces"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:95
+msgid "Switch to left workspace"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:96
+msgid "Switch to right workspace"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:97
+msgid "Switch to workspace 1"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:98
+msgid "Switch to workspace 2"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:99
+msgid "Switch to workspace 3"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:100
+msgid "Switch to workspace 4"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:101
+msgid "Switch to workspace 5"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:102
+msgid "Switch to workspace 6"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:103
+msgid "Switch to workspace 7"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:104
+msgid "Switch to workspace 8"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:105
+msgid "Switch to workspace 9"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:106
+msgid "Switch to workspace 10"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:107
+msgid "Switch to workspace 11"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:108
+msgid "Switch to workspace 12"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:109
+msgid "Move window to left workspace"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:110
+msgid "Move window to right workspace"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:111
+msgid "Move window to workspace 1"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:112
+msgid "Move window to workspace 2"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:113
+msgid "Move window to workspace 3"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:114
+msgid "Move window to workspace 4"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:115
+msgid "Move window to workspace 5"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:116
+msgid "Move window to workspace 6"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:117
+msgid "Move window to workspace 7"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:118
+msgid "Move window to workspace 8"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:119
+msgid "Move window to workspace 9"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:120
+msgid "Move window to workspace 10"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:121
+msgid "Move window to workspace 11"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:122
+msgid "Move window to workspace 12"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:125
+msgid "Log out"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:127
+msgid "Toggle recording desktop (must restart Cinnamon)"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:130
+msgid "Launch help browser"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:131
+msgid "Launch calculator"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:132
+msgid "Launch email client"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:133
+msgid "Launch web browser"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:134
+msgid "Home folder"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:138
+msgid "Volume mute"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:139
+msgid "Volume down"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:140
+msgid "Volume up"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:141
+msgid "Launch media player"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:143
+msgid "Pause playback"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:144
+msgid "Stop playback"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:145
+msgid "Previous track"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:146
+msgid "Next track"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:150
+msgid "Turn zoom on or off"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:151
+msgid "Zoom in"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:152
+msgid "Zoom out"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:153
+msgid "Turn screen reader on or off"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:154
+msgid "Turn on-screen keyboard on or off"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:155
+msgid "Increase text size"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:156
+msgid "Decrease text size"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:157
+msgid "High contrast on or off"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:161
 msgid "Wallpaper"
 msgstr "പശ്ചാത്തലചിത്രം"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:45
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1242
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2003
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2014
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:167
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2025
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2036
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2047
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2786
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2797
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2808
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2819
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2830
 msgid "None"
 msgstr "ഒന്നുമില്ല"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:46
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:168
 msgid "Horizontal"
 msgstr "തിരശ്ചീനം"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:47
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:169
 msgid "Vertical"
 msgstr "ലംബം"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:51
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:173
 msgid "No picture"
 msgstr "ചിത്രമില്ല"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:52
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:174
 msgid "Mosaic"
 msgstr "മൊസൈക്"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:53
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:175
 msgid "Centered"
 msgstr "കേന്ദ്രീകൃതം"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:54
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:176
 msgid "Scaled"
 msgstr "സ്കെയിൽഡ്"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:55
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:177
 msgid "Stretched"
 msgstr "വലിച്ച് നീട്ടി"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:57
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:179
 msgid "Spanned"
 msgstr "സ്പാൻഡ്"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:480
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:625
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:602
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:747
 msgid "Add wallpapers"
 msgstr "പശ്ചാത്തലചിത്രങ്ങൾ ചേർക്കുക"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:503
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:625
 msgid "Folder"
 msgstr "ഫോൾഡർ"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:511
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:633
 msgid "Recursive listing"
 msgstr "പുനരാവർത്തിത പട്ടികയിലുൾപ്പെടുത്തൽ"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:516
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:638
 msgid "Delay"
 msgstr "താമസം"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:612
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:734
 msgid "Mode"
 msgstr "രീതി"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:620
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:742
 msgid "Remove wallpaper"
 msgstr "പശ്ചാത്തലചിത്രം നീക്കംചെയ്യുക"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:651
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:773
 msgid "Advanced options"
 msgstr "വിപുലീകൃത ഐച്ഛികങ്ങൾ"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:659
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:781
 msgid "Picture aspect"
 msgstr "ചിത്രത്തിന്റെ സ്വഭാവം"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:665
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:787
 msgid "Gradient"
 msgstr "ഗ്രേഡിയന്റ്"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:672
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:794
 msgid "Colors"
 msgstr "നിറങ്ങൾ"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:746
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:868
 msgid "Get new themes"
 msgstr "പുതിയ തീമുകൾ എടുക്കുക"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:749
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:871
 msgid "Cinnamon themes"
 msgstr "സിനമൺ തീമുകൾ"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:756
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:878
 msgid "Window theme"
 msgstr "ജാലകത്തിന്റെ തീം"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:758
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:880
 msgid "Menus Have Icons"
 msgstr "മെനുവിൽ ഐകോണുകൾ വേണം"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:760
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:882
 msgid "Buttons Have Icons"
 msgstr "ബട്ടണുകളി ഐകോണുകൾ വേണം"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:763
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:885
 msgid "Always Use Location Entry In Nemo"
 msgstr "നെമോയിൽ എപ്പോഴും സ്ഥാനം കാണിക്കണം"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:765
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:887
 msgid "Cursor theme"
 msgstr "കഴ്സറിന്റെ തീം"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:767
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:889
 msgid "Keybinding theme"
 msgstr "കീബൈൻഡിങ് തീം"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:769
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:891
 msgid "Icon theme"
 msgstr "ഐകോൺ തീം"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:771
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:893
 msgid "GTK+ theme"
 msgstr "ജി.റ്റി.കെ.+ തീം"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:774
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:896
 msgid "Other settings"
 msgstr "മറ്റ് സജ്ജീകരണങ്ങൾ"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:868
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:959
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:990
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1081
 msgid "Enable"
 msgstr "സജ്ജമാക്കുക"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:872
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:966
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:994
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1088
 msgid "Description"
 msgstr "വിവരണം"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:894
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1016
 msgid "Get new extensions"
 msgstr "പുതിയ അനുബന്ധങ്ങൾ എടുക്കുക"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:963
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1085
 #: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/add-panel-launcher.py:140
 msgid "Icon"
 msgstr "ഐകോൺ"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:989
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1111
 msgid "Restore to default"
 msgstr "സ്വതേയുള്ളതിലേയ്ക്ക് പുനഃക്രമീകരിക്കുക"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:993
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1115
 msgid "Get new applets"
 msgstr "പുതിയ ആപ്‌ലെറ്റുകൾ എടുക്കുക"
 
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1283
+msgid "unassigned"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1284
+msgid "Super-"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1285
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1288
+msgid "Ctrl-"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1286
+msgid "Shift-"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1287
+msgid "Alt-"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1407
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/add-panel-launcher.py:148
+msgid "Update"
+msgstr "പുതുക്കുക"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1410
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1543
+msgid "Add custom shortcut"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1418
+msgid "Name:"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1419
+msgid "Command:"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1427
+msgid "Select a file"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1477
+msgid "Typing"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1478
+msgid "Enable key repeat"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1480
+msgid "Repeat delay:"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1480
+msgid "Short"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1480
+msgid "Long"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1485
+msgid "Repeat speed:"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1485
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1493
+msgid "Slow"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1485
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1493
+msgid "Fast"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1491
+msgid "Text cursor blinks"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1493
+msgid "Blink speed:"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1498
+msgid "Test Box"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1502
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1579
+msgid "Keyboard shortcuts"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1507
+msgid ""
+"To edit a keyboard binding, click it and press the new keys, or press "
+"backspace to clear it."
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1545
+msgid "Remove custom shortcut"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1570
+msgid "Categories"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1590
+msgid "Keyboard bindings"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1597
+msgid "Cinnamon"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1599
+msgid "Workspace Management"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1600
+msgid "System"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1601
+msgid "Launchers"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1602
+msgid "Sound and Media"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1603
+msgid "Universal Access"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1604
+msgid "Custom Shortcuts"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1705
+#, c-format
+msgid ""
+"\n"
+"This key combination, '<b>%s</b>' cannot be used because it would become "
+"impossible to type using this key.\n"
+"\n"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1706
+msgid ""
+"Please try again with a modifier key such as Control, Alt or Super (Windows "
+"key) at the same time.\n"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1724
+#, c-format
+msgid ""
+"This key combination, '<b>%s</b>' is currently in use by '<b>%s</b>'.  "
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1725
+#, c-format
+msgid ""
+"If you continue, the combination will be reassigned to '<b>%s</b>.'\n"
+"\n"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1726
+msgid "Do you want to continue with this operation?"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1846
+msgid "Reset to default"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2276
 msgid "Region"
 msgstr "മേഖല"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1515
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2298
 msgid "City"
 msgstr "പട്ടണം"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1621
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2404
 msgid ":"
 msgstr ":"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1628
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2411
 msgid "Date : "
 msgstr "തീയതി: "
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1630
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2413
 msgid "Time : "
 msgstr "സമയം: "
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1743
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2526
 msgid "Left side title bar buttons"
 msgstr "തലക്കെട്ട് നാടയിൽ ഇടതുവശത്തെ ബട്ടണുകൾ"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1749
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2532
 msgid "Right side title bar buttons"
 msgstr "തലക്കെട്ട് നാടയിൽ വലതുവശത്തെ ബട്ടണുകൾ"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1837
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2172
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2186
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2620
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2949
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2963
 msgid "Cinnamon Settings"
 msgstr "സിനമൺ സജ്ജീകരണങ്ങൾ"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1854
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2637
 msgid "All Settings"
 msgstr "എല്ലാ സജ്ജീകരണങ്ങളും"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1863
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2646
 msgid "Menu text"
 msgstr "മെനു എഴുത്ത്"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1864
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2647
 msgid "Menu icon"
 msgstr "മെനു ഐകോൺ"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1865
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2648
 msgid "Menu hover delay"
 msgstr "മെനുവിന്റെ മുകളിൽ മൗസ് പോകുമ്പോഴുള്ള താമസം"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1865
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1875
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1879
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2006
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2017
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2028
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2039
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2050
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2116
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2648
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2658
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2662
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2789
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2800
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2811
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2822
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2833
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2889
 msgid "milliseconds"
 msgstr "മില്ലിസെക്കൻഡുകൾ"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1866
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2649
 msgid "Activate menu on hover"
 msgstr "മൗസ് കടന്നുപോകുമ്പോൾ മെനു സജ്ജമാക്കുക"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1867
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2650
 msgid "Show bookmarks and places"
 msgstr "ബുക്ക്മാർക്കുകളും സ്ഥാനങ്ങളും പ്രദർശിപ്പിക്കുക"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1868
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2651
 msgid "Show recent files"
 msgstr "സമീപകാല ഫയലുകൾ പ്രദർശിപ്പിക്കുക"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1872
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2655
 msgid "Auto-hide panel"
 msgstr "പാളി സ്വയം-മറയുന്നത് ആക്കുക"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1875
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2658
 msgid "Show delay"
 msgstr "പ്രദർശിപ്പിക്കാനുള്ള താമസം"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1879
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2662
 msgid "Hide delay"
 msgstr "മറയ്ക്കാനുള്ള താമസം"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1882
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2665
 msgid "Traditional (panel at the bottom)"
 msgstr "പരമ്പരാഗതം (പാളി താഴെ)"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1882
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2665
 msgid "Flipped (panel at the top)"
 msgstr "കടകവിരുദ്ധം (പാളി മുകളിൽ)"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1882
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2665
 msgid "Classic (panels at the top and at the bottom)"
 msgstr "ചിരം (മുകളിലും താഴെയും പാളികൾ)"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1883
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2666
 msgid "Panel layout"
 msgstr "പാളിയുടെ രൂപരേഖ"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1886
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2669
 msgid "Note: If you change the layout you will need to restart Cinnamon."
 msgstr ""
 "കുറിപ്പ്: രൂപരേഖയിൽ മാറ്റം വരുത്തിയാൽ സിനമൺ നിർത്തിയിട്ട് വീണ്ടും "
 "തുടങ്ങേണ്ടി വരുന്നതാണ്."
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1889
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2672
 msgid "Use customized panel size (otherwise it's defined by the theme)"
 msgstr ""
 "പാളിയുടെ വലിപ്പം ഇച്ഛാനുസരണമാക്കുക (അല്ലെങ്കിൽ തീമായിരിക്കും നിർണ്ണയിക്കുക)"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1892
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2675
 msgid ""
 "Allow Cinnamon to scale panel text and icons according to the panel heights"
 msgstr ""
 "പാളിയുടെ ഉയരത്തിനനുസരിച്ച് പാളിയിലെ എഴുത്തുകളുടെയും ഐകോണുകളുടെയും വലിപ്പം "
 "ക്രമീകരിക്കാൻ സിനമണെ അനുവദിക്കുക"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1896
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2679
 msgid "Top panel height"
 msgstr "മുകളിലെ പാളിയുടെ ഉയരം"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1896
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1900
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2679
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2683
 msgid "Pixels"
 msgstr "പിക്സലുകൾ"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1900
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2683
 msgid "Bottom panel height"
 msgstr "താഴത്തെ പാളിയുടെ ഉയരം"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1903
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2686
 msgid "Panel edit mode"
 msgstr "പാനൽ തിരുത്തൽ"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1904
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2687
 msgid "Calendar"
 msgstr "കലണ്ടർ"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1906
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2689
 msgid "Show week dates in calendar"
 msgstr "കലണ്ടറിൽ ആഴ്ചയുടെ എണ്ണവും പ്രദർശിപ്പിക്കുക"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1907
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2690
 msgid "Date format for the panel"
 msgstr "പാളിയിൽ തീയതി പ്രദർശിപ്പിക്കേണ്ട രീതി"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1908
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2691
 msgid "Date format inside the date applet"
 msgstr "തീയതി ആപ്‌ലെറ്റിനുള്ളിൽ തീയതി പ്രദർശിപ്പിക്കേണ്ട രീതി"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1909
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2692
 msgid "Generate your own date formats"
 msgstr "താങ്കളുടെ സ്വന്തമായുള്ള തീയതി രീതികൾ നിർമ്മിക്കുക"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1915
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2698
 msgid "Use network time"
 msgstr "നെറ്റ്‌വർക്ക് സമയം ഉപയോഗിക്കുക"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1931
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2714
 msgid "Hot corner"
 msgstr "ഉഷ്ണകോൺ"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1933
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2716
 msgid "Hot corner icon visible"
 msgstr "ഉഷ്ണകോണിൽ ഐകോൺ പ്രദർശിപ്പിക്കണം"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1934
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2717
 msgid "Hot corner enabled"
 msgstr "ഉഷ്ണകോൺ സജ്ജമാക്കിയിരിക്കുന്നു"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1937
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2720
 msgid "Hot corner position:"
 msgstr "ഉഷ്ണകോണിന്റെ സ്ഥാനം:"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1939
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2722
 msgid "Top left"
 msgstr "മുകളിൽ ഇടത്"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1939
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2722
 msgid "Top right"
 msgstr "മുകളിൽ വലത്"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1939
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2722
 msgid "Bottom left"
 msgstr "താഴെ ഇടത്"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1939
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2722
 msgid "Bottom right"
 msgstr "താഴെ വലത്"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1945
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2728
 msgid "Hot corner function:"
 msgstr "ഉഷ്ണമൂലയുടെ പ്രവർത്തനരീതി:"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1947
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2730
 msgid "Workspace selection (ala Compiz Expo)"
 msgstr "പണിയിടങ്ങളെല്ലാം (അഥവാ കോമ്പിസ് എക്സ്പോ)"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1947
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2730
 msgid "Window selection (ala Compiz Scale)"
 msgstr "ജാലകങ്ങളെല്ലാം (അഥവാ കോമ്പിസ് സ്കെയിൽ)"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1951
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2734
 msgid "Expo applet: activate on hover"
 msgstr "എക്സ്പോ ആപ്‌ലെറ്റ്: മൗസ് കടന്നുപോകുമ്പോൾ സജ്ജമാക്കുക"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1952
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2735
 msgid "Scale applet: activate on hover"
 msgstr "സ്കെയിൽ ആപ്‌ലെറ്റ്: മൗസ് കടന്നുപോകുമ്പോൾ സജ്ജമാക്കുക"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1957
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2740
 msgid "Effects"
 msgstr "പ്രഭാവങ്ങൾ"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1959
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2742
 msgid "Enable desktop effects"
 msgstr "ഡെസ്ക്ടോപ്പ് പ്രഭാവങ്ങൾ സജ്ജമാക്കുക"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1962
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2745
 msgid "Enable desktop effects on dialog boxes"
 msgstr "ഡയലോഗ് പെട്ടികളിൽ ഡെസ്ക്‌ടോപ്പ് പ്രഭാവങ്ങൾ സജ്ജമാക്കുക"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2001
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2784
 msgid "Closing windows:"
 msgstr "അടയ്ക്കുന്ന ജാലകങ്ങളിൽ:"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2003
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2014
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2025
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2786
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2797
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2808
 msgid "Fade"
 msgstr "മങ്ങുക"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2012
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2795
 msgid "Mapping windows:"
 msgstr "ജാലകങ്ങൾ അടയാളപ്പെടുത്തുമ്പോൾ:"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2023
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2806
 msgid "Minimizing windows:"
 msgstr "ജാലകങ്ങൾ ചുരുക്കുമ്പോൾ:"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2025
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2808
 msgid "Traditional"
 msgstr "പരമ്പരാഗതം"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2034
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2817
 msgid "Maximizing windows:"
 msgstr "ജാലകങ്ങൾ വലുതാക്കുമ്പോൾ:"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2045
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2828
 msgid "Unmaximizing windows:"
 msgstr "ജാലകങ്ങളുടെ വലിപ്പം കുറയ്ക്കുമ്പോൾ:"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2056
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2839
 msgid "Extensions"
 msgstr "അനുബന്ധങ്ങൾ"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2063
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2846
 msgid "Desktop"
 msgstr "ഡെസ്ക്‌ടോപ്പ്"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2065
-msgid "Have file manager (Nemo) handle the desktop"
-msgstr "ഡെസ്ക്‌ടോപ്പ് ഫയൽ മാനേജർ (നെമോ) കൈകാര്യം ചെയ്യട്ടെ"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2068
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2850
 msgid "Computer icon visible on desktop"
 msgstr "ഡെസ്ക്‌ടോപ്പിൽ കമ്പ്യൂട്ടർ ഐകോൺ പ്രദർശിപ്പിക്കുക"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2072
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2852
 msgid "Home icon visible on desktop"
 msgstr "ഡെസ്ക്‌ടോപ്പിൽ ഹോം ഐകോൺ പ്രദർശിപ്പിക്കുക"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2076
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2854
 msgid "Network Servers icon visible on desktop"
 msgstr "ഡെസ്ക്ടോപ്പിൽ നെറ്റ്‌വർക്ക് സെർവർ ഐകോൺ പ്രദർശിപ്പിക്കുക"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2080
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2856
 msgid "Trash icon visible on desktop"
 msgstr "ഡെസ്ക്ടോപ്പിൽ ട്രാഷ് ഐകോൺ പ്രദർശിപ്പിക്കുക"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2084
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2858
 msgid "Show mounted volumes on the desktop"
 msgstr "മൗണ്ട് ചെയ്ത വോള്യമുകൾ ഡെസ്ക്ടോപ്പിൽ പ്രദർശിപ്പിക്കുക"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2089
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2862
 msgid "Action on title bar double-click"
 msgstr "തലക്കെട്ട് പട്ടയിൽ ഇരട്ടഞെക്കൽ ചെയ്യുമ്പോൾ നടത്തേണ്ട പ്രവൃത്തി"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2092
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2865
 msgid "Action on title bar middle-click"
 msgstr "തലക്കെട്ട് പട്ടയിൽ മദ്ധ്യഞെക്കൽ ചെയ്യുമ്പോൾ നടത്തേണ്ട പ്രവൃത്തി"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2095
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2868
 msgid "Action on title bar right-click"
 msgstr "തലക്കെട്ട് പട്ടയിൽ വലത്-ഞെക്കൽ ചെയ്യുമ്പോൾ നടത്തേണ്ട പ്രവൃത്തി"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2098
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2871
 msgid "Window focus mode"
 msgstr "ജാലകത്തിൽ കേന്ദ്രീകരിക്കേണ്ട രീതി"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2103
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2876
 msgid "Enable Edge Tiling (\"Aero Snap\")"
 msgstr "എഡ്ജ് ടൈലിങ് സജ്ജമാക്കുക (\"എയ്‌റോ സ്നാപ്\")"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2104
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2877
 msgid "Enable Edge Flip"
 msgstr "എഡ്ജ് ഫ്ലിപ് സജ്ജമാക്കുക"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2105
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2878
 msgid "Attach dialog windows to their parent window's titlebar"
 msgstr ""
 "ഡയലോഗ് ജാലകങ്ങൾ അവയുടെ മാതൃ ജാലകത്തിന്റെ തലക്കെട്ട് പട്ടയോട് ചേർത്ത് നിർത്തുക"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2106
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2879
 msgid "Icons only"
 msgstr "ഐകോണുകൾ മാത്രം"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2106
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2879
 msgid "Icons and thumbnails"
 msgstr "ഐകോണുകളും ലഘുചിത്രങ്ങളും"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2106
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2879
 msgid "Icons and window preview"
 msgstr "ഐകോണുകളും ജാലകരൂപവും"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2106
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2879
 msgid "Window preview (no icons)"
 msgstr "ജാലകരൂപം (ഐകോണുകളില്ലാതെ)"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2107
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2880
 msgid "ALT-tab switcher style"
 msgstr "ആൾട്ട്-ടാബ് മാറ്റൽ രീതി"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2109
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2882
 msgid "Enable mouse-wheel scrolling in Window List applet"
 msgstr ""
 "ജാലകങ്ങളുടെ പട്ടിക ആപ്‌ലെറ്റിൽ മൗസ് വീൽ ഉപയോഗിച്ച് മാറ്റൽ സജ്ജമാക്കുക"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2111
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2884
 msgid "Workspaces"
 msgstr "പണിയിടങ്ങൾ"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2113
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2886
 msgid "Enable workspace OSD"
 msgstr "പണിയിട ഒ.എസ്.ഡി. സജ്ജമാക്കുക"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2116
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2889
 msgid "Workspace OSD duration"
 msgstr "പണിയിട ഒ.എസ്.ഡി. കാലയളവ്"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2120
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2893
 msgid "Workspace OSD horizontal position"
 msgstr "പണിയിട ഒ.എസ്.ഡി.യുടെ തിരശ്ചീന സ്ഥാനം"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2120
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2893
 msgid "percent of the monitor's width"
 msgstr "മോണിറ്ററിന്റെ വീതിയുടെ ശതമാനം"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2124
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2897
 msgid "Workspace OSD vertical position"
 msgstr "പണിയിട ഓ.എസ്.ഡി.യുടെ ലംബ സ്ഥാനം"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2124
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2897
 msgid "percent of the monitor's height"
 msgstr "മോണിറ്ററിന്റെ ഉയരത്തിന്റെ ശതമാനം"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2127
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2900
 msgid "Only use workspaces on primary monitor (requires Cinnamon restart)"
 msgstr ""
 "പണിയിടങ്ങൾ പ്രാഥമിക മോണിറ്ററിൽ മാത്രം ഉപയോഗിക്കുക (സിനമൺ നിർത്തി "
 "തുടങ്ങേണ്ടതുണ്ട്)"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2128
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2901
 msgid "Display Expo view as a grid"
 msgstr "എക്സ്പോ രൂപം വരി-നിര രീതിയിൽ പ്രദർശിപ്പിക്കുക"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2130
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2903
 msgid "Fonts"
 msgstr "ഫോണ്ടുകൾ"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2132
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2905
 msgid "Text scaling factor"
 msgstr "എഴുത്തിന്റെ അളവ് ഘടകം"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2133
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2906
 msgid "Default font"
 msgstr "സ്വതേയുള്ള ഫോണ്ട്"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2134
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2907
 msgid "Document font"
 msgstr "പ്രമാണത്തിലെ ഫോണ്ട്"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2135
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2908
 msgid "Monospace font"
 msgstr "മോണോസ്പേസ് ഫോണ്ട്"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2136
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2909
 msgid "Window title font"
 msgstr "ജാലകത്തിന്റെ തലക്കെട്ടിൽ വേണ്ട ഫോണ്ട്"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2137
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2910
 msgid "Hinting"
 msgstr "സൂചനകൾ"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2138
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2911
 msgid "Antialiasing"
 msgstr "ആന്റിഏലിയാസിങ്"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2140
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2913
 msgid "General"
 msgstr "സാർവത്രികം"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2142
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2915
 msgid ""
 "Log LookingGlass output to ~/.cinnamon/glass.log (Requires Cinnamon restart)"
 msgstr ""
 "ലുക്കിങ്ഗ്ലാസ് ഔട്ട്പുട്ട് ~/.cinnamon/glass.log-ൽ രേഖപ്പെടുത്തുക (സിനമൺ "
 "നിർത്തി തുടങ്ങേണ്ടതുണ്ട്)"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2143
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2916
 msgid "Emulate middle click by clicking both left and right buttons"
 msgstr ""
 "ഇടത്-വലത് ബട്ടണുകൾ ഒരുമിച്ച് അമർത്തുന്നതുവഴി മദ്ധ്യ ഞെക്കൽ പ്രതീതി "
 "സൃഷ്ടിക്കുക"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2144
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2917
 msgid "Display notifications"
 msgstr "അറിയിപ്പുകൾ പ്രദർശിപ്പിക്കുക"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2150
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2927
 msgid "Backgrounds"
 msgstr "പശ്ചാത്തലങ്ങൾ"
 
@@ -1913,6 +2418,5 @@ msgstr "ആപ്ലിക്കേഷൻ"
 msgid "Add panel launcher..."
 msgstr "പാളി ലോഞ്ചർ ചേർക്കുക..."
 
-#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/add-panel-launcher.py:148
-msgid "Update"
-msgstr "പുതുക്കുക"
+#~ msgid "Have file manager (Nemo) handle the desktop"
+#~ msgstr "ഡെസ്ക്‌ടോപ്പ് ഫയൽ മാനേജർ (നെമോ) കൈകാര്യം ചെയ്യട്ടെ"
