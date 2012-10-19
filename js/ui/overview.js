@@ -105,14 +105,22 @@ Overview.prototype = {
             return;
         }
 
+        this._background = new Clutter.Group();
+        this._background.hide();
+        global.overlay_group.add_actor(this._background);
+
         // The main BackgroundActor is inside global.window_group which is
         // hidden when displaying the overview, so we create a new
         // one. Instances of this class share a single CoglTexture behind the
         // scenes which allows us to show the background with different
         // rendering options without duplicating the texture data.
-        this._background = Meta.BackgroundActor.new_for_screen(global.screen);
-        this._background.hide();
-        global.overlay_group.add_actor(this._background);
+        let desktopBackground = Meta.BackgroundActor.new_for_screen(global.screen);
+        this._background.add_actor(desktopBackground);
+
+        let backgroundShade = new St.Bin({style_class: 'workspace-overview-background-shade'});
+        this._background.add_actor(backgroundShade);
+        let porthole = Main.layoutManager.getPorthole();
+        backgroundShade.set_size(porthole.width, porthole.height);
 
         this._desktopFade = new St.Bin();
         global.overlay_group.add_actor(this._desktopFade);
@@ -568,12 +576,6 @@ Overview.prototype = {
                            onCompleteScope: this
                          });
 
-        Tweener.addTween(this._background,
-                         { dim_factor: 0.4,
-                           time: ANIMATION_TIME,
-                           transition: 'easeOutQuad'
-                         });
-
         this._coverPane.raise_top();
         this._coverPane.show();
         this.emit('showing');
@@ -703,12 +705,6 @@ Overview.prototype = {
                            time: ANIMATION_TIME,
                            onComplete: this._hideDone,
                            onCompleteScope: this
-                         });
-
-        Tweener.addTween(this._background,
-                         { dim_factor: 1.0,
-                           time: ANIMATION_TIME,
-                           transition: 'easeOutQuad'
                          });
 
         this._coverPane.raise_top();
