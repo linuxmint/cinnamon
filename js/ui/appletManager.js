@@ -22,11 +22,13 @@ const applets = {};
 // question - should multiple applets be able to fill
 // the same role?
 const Roles = {
-    NOTIFICATIONS: 'notifications'
+    NOTIFICATIONS: 'notifications',
+    WINDOWLIST: 'windowlist'
 }
 
 let AppletHooks = {
-    notifications: false
+    notifications: false,
+    windowlist: false
 }
 
 var enabledApplets;
@@ -265,6 +267,15 @@ function get_applet_enabled(uuid) {
 function get_role_provider_exists(role) {
     if (role in AppletHooks && AppletHooks[role] == true) {
         return true;
+    }
+    return false;
+}
+
+function get_role_provider(role) {
+    for (var i in appletMeta) {
+        if (appletMeta[i]['role'] == role) {
+            return appletObj[i];
+        }
     }
     return false;
 }
