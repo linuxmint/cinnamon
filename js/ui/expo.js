@@ -117,7 +117,7 @@ Expo.prototype = {
         this._addWorkspaceButton.hide();
         this._windowCloseArea.hide();
 
-        global.stage.connect('key-press-event',
+        this._group.connect('key-press-event',
             Lang.bind(this, function(actor, event) {
                 if (this._shown) {
                     if (this._expo.handleKeyPressEvent(actor, event)) {
