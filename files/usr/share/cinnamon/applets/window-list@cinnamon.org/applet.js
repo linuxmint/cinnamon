@@ -153,7 +153,7 @@ AppMenuButtonRightClickMenu.prototype = {
     _onMinimizeWindowActivate: function(actor, event){
         if (this.metaWindow.minimized) {
             this.metaWindow.unminimize(global.get_current_time());
-            this.metaWindow.activate(global.get_current_time());
+            Main.activateWindow(this.metaWindow, global.get_current_time());
         }
         else {
             this.metaWindow.minimize(global.get_current_time());
@@ -376,7 +376,7 @@ AppMenuButton.prototype = {
         if (direction == 0) {
             target = ((current + 1) <= num_windows - 1) ? (current + 1) : 0;
         }
-        this.window_list[vis_windows[target]].metaWindow.activate(global.get_current_time());
+        Main.activateWindow(this.window_list[vis_windows[target]].metaWindow, global.get_current_time());
     },
 
     _onDragBegin: function() {
@@ -451,7 +451,7 @@ AppMenuButton.prototype = {
             if (this.metaWindow.minimized) {
                 this.metaWindow.unminimize(global.get_current_time()); 
             }
-            this.metaWindow.activate(global.get_current_time());
+            Main.activateWindow(this.metaWindow, global.get_current_time());
             this.actor.add_style_pseudo_class('focus');
         }
     },

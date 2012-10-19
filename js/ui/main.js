@@ -956,6 +956,11 @@ function activateWindow(window, time, workspaceNum) {
         workspace.activate_with_focus(window, time);
     } else {
         window.activate(time);
+        Mainloop.idle_add(function() {
+            window.foreach_transient(function(win) {
+                win.activate(time);
+            });
+        });
     }
 
     overview.hide();
