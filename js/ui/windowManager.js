@@ -162,9 +162,13 @@ WindowManager.prototype = {
     },
 
     _shouldAnimate : function(actor) {
+        if (Main.modalCount) {
+            // system is in modal state
+            return false;
+        }
         if (Main.software_rendering)
             return false;
-        if (Main.overview.visible || this._animationsBlocked > 0)
+        if (this._animationsBlocked > 0)
             return false;
         if (!actor)
             return global.settings.get_boolean("desktop-effects");
