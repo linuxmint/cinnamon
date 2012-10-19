@@ -67,35 +67,19 @@ WorkspacesView.prototype = {
             this._workspaces[w].actor.reparent(this.actor);
         this._workspaces[activeWorkspaceIndex].actor.raise_top();
 
-        this._extraWorkspaces = [];
-        let monitors = Main.layoutManager.monitors;
-        let m = 0;
-        for (let i = 0; i < monitors.length; i++) {
-            if (i == Main.layoutManager.primaryIndex)
-                continue;
-            let ws = new Workspace.Workspace(null, i);
-            this._extraWorkspaces[m++] = ws;
-            ws.setGeometry(monitors[i].x, monitors[i].y, monitors[i].width, monitors[i].height);
-            global.overlay_group.add_actor(ws.actor);
-        }
-
         // Position/scale the desktop windows and their children after the
         // workspaces have been created. This cannot be done first because
         // window movement depends on the Workspaces object being accessible
         // as an Overview member.
-        this._overviewShowingId =
-            Main.overview.connect('showing',
-                                 Lang.bind(this, function() {
-                for (let w = 0; w < this._workspaces.length; w++)
-                    this._workspaces[w].zoomToOverview();
-                for (let w = 0; w < this._extraWorkspaces.length; w++)
-                    this._extraWorkspaces[w].zoomToOverview();
+        this._overviewShowingId = Main.overview.connect('showing', Lang.bind(this, function() {
+            let activeWorkspaceIndex = global.screen.get_active_workspace_index();
+            this._workspaces[activeWorkspaceIndex].zoomToOverview();
         }));
         this._overviewShownId =
             Main.overview.connect('shown',
                                  Lang.bind(this, function() {
-                this.actor.set_clip(this._clipX, this._clipY,
-                                    this._clipWidth, this._clipHeight);
+                // this.actor.set_clip(this._clipX, this._clipY,
+                   //                 this._clipWidth, this._clipHeight);
         }));
 
         this._scrollAdjustment = new St.Adjustment({ value: activeWorkspaceIndex,
@@ -122,42 +106,14 @@ WorkspacesView.prototype = {
         this._swipeScrollBeginId = 0;
         this._swipeScrollEndId = 0;
 
-        this._stageKeyPressId = global.stage.connect('key-press-event',
-            Lang.bind(this, this._onStageKeyPress));
-        Main.overview.connect('hiding', Lang.bind(this,
-            function () {
-                if (this._stageKeyPressId != 0) {
-                    global.stage.disconnect(this._stageKeyPressId);
-                    this._stageKeyPressId = 0;
-                }
-            }));
-            
-        // this should select the last active window
-        if (this._workspaces.length > 0) { 
-	        this._workspaces[activeWorkspaceIndex].selectAnotherWindow(Clutter.Home);
-        }
+        this.actor.connect('key-press-event', Lang.bind(this, this._onStageKeyPress));
+        global.stage.set_key_focus(this.actor);
     },
 
     _onStageKeyPress: function(actor, event) {
         let activeWorkspaceIndex = global.screen.get_active_workspace_index();
         let activeWorkspace = this._workspaces[activeWorkspaceIndex];
-
-        let modifiers = Cinnamon.get_event_state(event);
-        let symbol = event.get_key_symbol();
-
-        if (symbol === Clutter.w && modifiers & Clutter.ModifierType.CONTROL_MASK) {
-            activeWorkspace.closeSelectedWindow();
-            return true;
-        }
-
-        if (symbol === Clutter.Return || symbol === Clutter.KEY_space) {
-            if (activeWorkspace.activateSelectedWindow()) {
-                return true;
-            }
-            Main.overview.hide();
-            return true;
-        }
-        return activeWorkspace.selectAnotherWindow(symbol);
+        return activeWorkspace._onKeyPress(actor, event);
     },
 
     setGeometry: function(x, y, width, height, spacing) {
@@ -171,7 +127,7 @@ WorkspacesView.prototype = {
         this._workspaceRatioSpacing = spacing;
 
         for (let i = 0; i < this._workspaces.length; i++)
-            this._workspaces[i].setGeometry(x, y, width, height);
+           this._workspaces[i].setGeometry(x, y, width, height, spacing);
     },
 
     setClipRect: function(x, y, width, height) {
@@ -203,13 +159,8 @@ WorkspacesView.prototype = {
         let activeWorkspace = this._workspaces[activeWorkspaceIndex];
 
         activeWorkspace.actor.raise_top();
-
-       this.actor.remove_clip(this._x, this._y, this._width, this._height);
-
-        for (let w = 0; w < this._workspaces.length; w++)
-            this._workspaces[w].zoomFromOverview();
-        for (let w = 0; w < this._extraWorkspaces.length; w++)
-            this._extraWorkspaces[w].zoomFromOverview();
+        this.actor.remove_clip(this._x, this._y, this._width, this._height);
+        activeWorkspace.zoomFromOverview();
     },
 
     destroy: function() {
@@ -219,8 +170,6 @@ WorkspacesView.prototype = {
     syncStacking: function(stackIndices) {
         for (let i = 0; i < this._workspaces.length; i++)
             this._workspaces[i].syncStacking(stackIndices);
-        for (let i = 0; i < this._extraWorkspaces.length; i++)
-            this._extraWorkspaces[i].syncStacking(stackIndices);
     },
 
     updateWindowPositions: function() {
@@ -327,7 +276,7 @@ WorkspacesView.prototype = {
         if (newNumWorkspaces > oldNumWorkspaces) {
             for (let w = oldNumWorkspaces; w < newNumWorkspaces; w++) {
                 this._workspaces[w].setGeometry(this._x, this._y,
-                                                this._width, this._height);
+                    this._width, this._height, this._workspaceRatioSpacing);
                 this.actor.add_actor(this._workspaces[w].actor);
             }
 
@@ -345,8 +294,6 @@ WorkspacesView.prototype = {
     },
 
     _onDestroy: function() {
-        for (let i = 0; i < this._extraWorkspaces.length; i++)
-            this._extraWorkspaces[i].destroy();
         this._scrollAdjustment.run_dispose();
         Main.overview.disconnect(this._overviewShowingId);
         Main.overview.disconnect(this._overviewShownId);
@@ -409,8 +356,6 @@ WorkspacesView.prototype = {
             this._firstDragMotion = false;
             for (let i = 0; i < this._workspaces.length; i++)
                 this._workspaces[i].setReservedSlot(dragEvent.dragActor._delegate);
-            for (let i = 0; i < this._extraWorkspaces.length; i++)
-                this._extraWorkspaces[i].setReservedSlot(dragEvent.dragActor._delegate);
         }
 
         return DND.DragMotionResult.CONTINUE;
@@ -422,8 +367,6 @@ WorkspacesView.prototype = {
 
         for (let i = 0; i < this._workspaces.length; i++)
             this._workspaces[i].setReservedSlot(null);
-        for (let i = 0; i < this._extraWorkspaces.length; i++)
-            this._extraWorkspaces[i].setReservedSlot(null);
     },
 
     _swipeScrollBegin: function() {
@@ -737,12 +680,11 @@ WorkspacesDisplay.prototype = {
         width = (fullWidth / fullHeight) * height;
         let difference = fullWidth - width;
         x += difference / 2;
-
         this.workspacesView.setGeometry(x, y, width, height, difference);
     },
 
     _onRestacked: function() {
-        let stack = global.get_window_actors();
+        let stack = global.get_window_actors().reverse();
         let stackIndices = {};
 
         for (let i = 0; i < stack.length; i++) {
@@ -751,7 +693,6 @@ WorkspacesDisplay.prototype = {
         }
 
         this.workspacesView.syncStacking(stackIndices);
-        // this._thumbnailsBox.syncStacking(stackIndices);
     },
 
     _workspacesChanged: function() {

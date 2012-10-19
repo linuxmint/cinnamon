@@ -14,6 +14,7 @@ const DND = imports.ui.dnd;
 const Lightbox = imports.ui.lightbox;
 const Main = imports.ui.main;
 const Overview = imports.ui.overview;
+const PopupMenu = imports.ui.popupMenu;
 const Tweener = imports.ui.tweener;
 
 const FOCUS_ANIMATION_TIME = 0.15;
@@ -46,7 +47,7 @@ const POSITIONS = {
 };
 // Used in _orderWindowsPermutations, 5! = 120 which is probably the highest we can go
 const POSITIONING_PERMUTATIONS_MAX = 5;
-
+const DEFAULT_SLOT_FRACTION = 0.825;
 const WINDOWOVERLAY_ICON_SIZE = 32;
 
 function _interpolate(start, end, step) {
@@ -60,6 +61,16 @@ function _clamp(value, min, max) {
 
 function ScaledPoint(x, y, scaleX, scaleY) {
     [this.x, this.y, this.scaleX, this.scaleY] = arguments;
+}
+
+var menuShowing = null;
+var menuClone = null;
+function closeContextMenu(requestor) {
+    let requestorShowingMenu = menuClone && menuClone === requestor;
+    if (menuShowing) {
+        menuShowing.close();
+    }
+    return requestorShowingMenu;
 }
 
 ScaledPoint.prototype = {
@@ -100,6 +111,7 @@ WindowClone.prototype = {
         this.realWindow = realWindow;
         this.metaWindow = realWindow.meta_window;
         this.metaWindow._delegate = this;
+        this.overlay = null;
 
         let [borderX, borderY] = this._getInvisibleBorderPadding();
         this._windowClone = new Clutter.Clone({ source: realWindow.get_texture(),
@@ -140,6 +152,7 @@ WindowClone.prototype = {
 
         //let clickAction = new Clutter.ClickAction();
         this.actor.connect('button-release-event', Lang.bind(this, this._onButtonRelease));
+        this.actor.connect('button-press-event', Lang.bind(this, this._onButtonPress));
         //clickAction.connect('long-press', Lang.bind(this, this._onLongPress));
 
         //this.actor.add_action(clickAction);
@@ -149,7 +162,7 @@ WindowClone.prototype = {
 
         this.actor.connect('destroy', Lang.bind(this, this._onDestroy));
         this.actor.connect('leave-event',
-                           Lang.bind(this, this._onLeave));
+                           Lang.bind(this, this._onPointerLeave));
 
         this._draggable = DND.makeDraggable(this.actor,
                                             { restoreOnSuccess: true,
@@ -247,7 +260,7 @@ WindowClone.prototype = {
         this.disconnectAll();
     },
 
-    _onLeave: function (actor, event) {
+    _onPointerLeave: function (actor, event) {
         if (this._zoomStep)
             this._zoomEnd();
     },
@@ -348,15 +361,30 @@ WindowClone.prototype = {
         this._zoomStep           = undefined;
     },
 
+    _onButtonPress: function(actor, event) {
+        // a button-press on a clone already showing a menu should
+        // not open a new-menu, only close the current menu.
+        this.menuCancelled = closeContextMenu(this);
+    },
+
     _onButtonRelease: function(actor, event) {
         if ( event.get_button()==1 ) {
             this._selected = true;
             this.emit('selected', global.get_current_time());
+            return true;
         }
         if (event.get_button()==2){
             this.emit('closed', global.get_current_time());
+            return true;
         }
-        return true;
+        if (event.get_button()==3){
+            if (!this.menuCancelled) {
+                this.emit('context-menu-requested', global.get_current_time());
+            }
+            this.menuCancelled = false;
+            return true;
+        }
+        return false;
     },
 
     _onLongPress: function(action, actor, state) {
@@ -442,12 +470,8 @@ WindowOverlay.prototype = {
         this._windowClone = windowClone;
         this._parentActor = parentActor;
         this._hidden = false;
+        this._hovering = false;
 
-        let title = new St.Label({ style_class: 'window-caption',
-                                   text: metaWindow.title });
-        title.clutter_text.ellipsize = Pango.EllipsizeMode.END;
-        title._spacing = 0;
-        
         let tracker = Cinnamon.WindowTracker.get_default();
         let app = tracker.get_window_app(metaWindow);
         let icon = null;
@@ -459,58 +483,86 @@ WindowOverlay.prototype = {
                                  icon_type: St.IconType.FULLCOLOR,
                                  icon_size: WINDOWOVERLAY_ICON_SIZE });
         }
+        this.icon = icon;
         icon.width = WINDOWOVERLAY_ICON_SIZE;
         icon.height = WINDOWOVERLAY_ICON_SIZE;
         
         this._applicationIconBox = new St.Bin({ style_class: 'window-iconbox' });
         this._applicationIconBox.set_opacity(255);
         this._applicationIconBox.add_actor(icon);
-
-        this._updateCaptionId = metaWindow.connect('notify::title',
-            Lang.bind(this, function(w) {
-                this.title.text = w.title;
-            }));
+        parentActor.add_actor(this._applicationIconBox);
 
         let button = new St.Button({ style_class: 'window-close' });
+        this.closeButton = button;
         button._overlap = 0;
-
-        this._idleToggleCloseId = 0;
+        button.hide();
+        parentActor.add_actor(button);
+        button.connect('style-changed',
+                       Lang.bind(this, this._onStyleChanged));
         button.connect('clicked', Lang.bind(this, this.closeWindow));
 
-        windowClone.actor.connect('destroy', Lang.bind(this, this._onDestroy));
-        windowClone.actor.connect('enter-event',
-                                  Lang.bind(this, this._onEnter));
-        windowClone.actor.connect('leave-event',
-                                  Lang.bind(this, this._onLeave));
+        this.refreshTitle(metaWindow.title);
+        this._updateCaptionId = metaWindow.connect('notify::title',
+            Lang.bind(this, function(w) {
+                this.refreshTitle(w.title);
+            }));
 
+        let motionEventsInstalled = false;
+        let installMotionEvents = Lang.bind(this, function() {
+            if (motionEventsInstalled) {
+                return;
+            }
+            windowClone.actor.connect('motion-event', Lang.bind(this, this._onPointerMotion));
+            windowClone.actor.connect('leave-event', Lang.bind(this, this._onPointerLeave));
+            motionEventsInstalled = true;
+        });
+        // Let the animation settle before we start reacting on pointer motion.
+        Mainloop.idle_add(installMotionEvents);
+        // Since idle_add can be slow at times, set an ordinary timeout as a fallback.
+        Mainloop.timeout_add(1000, installMotionEvents);
+
+        this._idleToggleCloseId = 0;
         this._windowAddedId = 0;
+        windowClone.actor.connect('destroy', Lang.bind(this, this._onDestroy));
         windowClone.connect('zoom-start', Lang.bind(this, this.hide));
         windowClone.connect('zoom-end', Lang.bind(this, this.show));
 
-        button.hide();
-
-        this.title = title;
-        this.closeButton = button;
-        this.icon = icon;
-
-		parentActor.add_actor(this._applicationIconBox);
-        parentActor.add_actor(this.title);
-        parentActor.add_actor(this.closeButton);
-        //parentActor.add_actor(this.icon);
-        title.connect('style-changed',
-                      Lang.bind(this, this._onStyleChanged));
-        button.connect('style-changed',
-                       Lang.bind(this, this._onStyleChanged));
         // force a style change if we are already on a stage - otherwise
         // the signal will be emitted normally when we are added
         if (parentActor.get_stage())
             this._onStyleChanged();
     },
 
+    refreshTitle: function(titleText) {
+        let name = '';
+        if (this.title) {
+            name = this.title.name;
+            this._parentActor.remove_actor(this.title);
+            this.title.destroy();
+        }
+        let title = new St.Label({ style_class: 'window-caption',
+                                   text: titleText });
+        this.title = title;
+        title.name = name;
+        title.clutter_text.ellipsize = Pango.EllipsizeMode.END;
+        title._spacing = 0;
+        this._parentActor.add_actor(title);
+        title.connect('style-changed',
+                      Lang.bind(this, this._onStyleChanged));
+        if (this._parentActor.get_stage()) {
+            this._onStyleChanged();
+        }
+    },
+
     setSelected: function(selected) {
         this.title.name = selected ? 'selected' : '';
+        this.refreshTitle(this.title.text);
+        
         if (selected) {
-            this._onEnter();
+            this._showCloseButton();
+        }
+        else {
+            this.hideCloseButton();
         }
     },
 
@@ -523,8 +575,7 @@ WindowOverlay.prototype = {
 
     show: function() {
         this._hidden = false;
-        if (this._windowClone.actor.has_pointer)
-            this.closeButton.show();
+        this._hovering = false;
         this.title.show();
         this._applicationIconBox.show();
     },
@@ -558,9 +609,8 @@ WindowOverlay.prototype = {
     // get_transformed_position() and get_transformed_size(),
     // as windowClone might be moving.
     // See Workspace._showWindowOverlay
-    updatePositions: function(cloneX, cloneY, cloneWidth, cloneHeight) {
+    updatePositions: function(cloneX, cloneY, cloneWidth, cloneHeight, maxWidth) {
         let button = this.closeButton;
-        let title = this.title;
 
         let settings = new Gio.Settings({ schema: BUTTON_LAYOUT_SCHEMA });
         let layout = settings.get_string(BUTTON_LAYOUT_KEY);
@@ -582,20 +632,22 @@ WindowOverlay.prototype = {
 
         button.set_position(Math.floor(buttonX), Math.floor(buttonY));
 
-        if (!title.fullWidth)
-            title.fullWidth = title.width;
-        title.width = Math.min(title.fullWidth, cloneWidth);
+        this.updateIconCaptionWidth = Lang.bind(this, function() {
+            let title = this.title;
+            let iconWidth = this._applicationIconBox.width + title._spacing;
+            title.width = Math.min(maxWidth - iconWidth, title.width);
+            let titleX = cloneX + (iconWidth + cloneWidth - title.width) / 2;
+            let titleY = cloneY + cloneHeight + title._spacing + (WINDOWOVERLAY_ICON_SIZE/2) - (title.height/2);
+            title.set_position(Math.floor(titleX), Math.floor(titleY));
 
-        let titleX = cloneX + (cloneWidth - title.width) / 2;
-        let titleY = cloneY + cloneHeight + title._spacing + (WINDOWOVERLAY_ICON_SIZE/2) - (title.height/2);
-        title.set_position(Math.floor(titleX), Math.floor(titleY));
-        
-        let icon = this._applicationIconBox;
-        
-        let iconX = titleX - WINDOWOVERLAY_ICON_SIZE - title._spacing;
-        let iconY = cloneY + cloneHeight + title._spacing;
-        
-        icon.set_position(Math.floor(iconX), Math.floor(iconY));
+            let icon = this._applicationIconBox;
+
+            let iconX = titleX - iconWidth;
+            let iconY = cloneY + cloneHeight + title._spacing;
+
+            icon.set_position(Math.floor(iconX), Math.floor(iconY));
+        });
+        this.updateIconCaptionWidth();
     },
 
     closeWindow: function() {
@@ -642,28 +694,39 @@ WindowOverlay.prototype = {
         this._applicationIconBox.destroy();
     },
 
-    _onEnter: function() {
-        // We might get enter events on the clone while the overlay is
+    _onPointerMotion: function() {
+        // We might get motion events on the clone while the overlay is
         // hidden, e.g. during animations, we ignore these events,
         // as the close button will be shown as needed when the overlays
         // are shown again
-        if (this._hidden)
-            return;
+        if (this._hidden) return;
+        if (this._hovering) return;
+        
+        this._hovering = true;
+        this._showCloseButton();
+    },
+
+    _showCloseButton: function() {
         this._parentActor.raise_top();
         this.closeButton.show();
         this.emit('show-close-button');
     },
 
-    _onLeave: function() {
+    _onPointerLeave: function() {
+        this._hovering = false;
+        this._idleHideCloseButton();
+    },
+
+    _idleHideCloseButton: function() {
         if (this._idleToggleCloseId == 0)
             this._idleToggleCloseId = Mainloop.timeout_add(750, Lang.bind(this, this._idleToggleCloseButton));
     },
 
     _idleToggleCloseButton: function() {
         this._idleToggleCloseId = 0;
-        if (!this._windowClone.actor.has_pointer &&
-            !this.closeButton.has_pointer)
+        if (!this._windowClone.actor.has_pointer && !this.closeButton.has_pointer) {
             this.closeButton.hide();
+        }
 
         return false;
     },
@@ -684,6 +747,9 @@ WindowOverlay.prototype = {
         this.closeButton._overlap = closeNode.get_length('-cinnamon-close-overlap');
 
         this._parentActor.queue_relayout();
+        if (this.updateIconCaptionWidth) {
+            this.updateIconCaptionWidth();
+        }
     }
 };
 Signals.addSignalMethods(WindowOverlay.prototype);
@@ -693,15 +759,12 @@ const WindowPositionFlags = {
     ANIMATE: 1 << 1
 };
 
-/**
- * @metaWorkspace: a #Meta.Workspace, or null
- */
-function Workspace(metaWorkspace, monitorIndex) {
-    this._init(metaWorkspace, monitorIndex);
+function WorkspaceMonitor(metaWorkspace, monitorIndex, hasFocus) {
+    this._init(metaWorkspace, monitorIndex, hasFocus);
 }
 
-Workspace.prototype = {
-    _init : function(metaWorkspace, monitorIndex) {
+WorkspaceMonitor.prototype = {
+    _init : function(metaWorkspace, monitorIndex, hasFocus) {
         // When dragging a window, we use this slot for reserve space.
         this._reservedSlot = null;
         this.metaWorkspace = metaWorkspace;
@@ -709,6 +772,7 @@ Workspace.prototype = {
         this._y = 0;
         this._width = 0;
         this._height = 0;
+        this._slotWidth = 0;
 
         this.monitorIndex = monitorIndex;
         this._monitor = Main.layoutManager.monitors[this.monitorIndex];
@@ -726,14 +790,15 @@ Workspace.prototype = {
         this.actor.add_actor(this._windowOverlaysGroup);
 
         this.actor.connect('destroy', Lang.bind(this, this._onDestroy));
+        Main.overview.connect('overview-background-button-press', function() {
+            closeContextMenu();
+        });
 
         let windows = global.get_window_actors().filter(this._isMyWindow, this);
-        windows.reverse(); // we want the most-recently-used windows first
 
         // Create clones for windows that should be
         // visible in the Overview
         this._windows = [];
-        this._windowOverlays = [];
         for (let i = 0; i < windows.length; i++) {
             if (this._isOverviewWindow(windows[i])) {
                 this._addWindowClone(windows[i]);
@@ -748,18 +813,32 @@ Workspace.prototype = {
                                                                Lang.bind(this, this._windowRemoved));
         }
         this._windowEnteredMonitorId = global.screen.connect('window-entered-monitor',
-                                                           Lang.bind(this, this._windowEnteredMonitor));
+            Lang.bind(this, this._windowEnteredMonitor));
         this._windowLeftMonitorId = global.screen.connect('window-left-monitor',
-                                                           Lang.bind(this, this._windowLeftMonitor));
+            Lang.bind(this, this._windowLeftMonitor));
         this._repositionWindowsId = 0;
 
         this.leavingOverview = false;
 
-        this._kbWindowIndex = -1; // index of the current keyboard-selected window
+        this._kbWindowIndex = 0; // index of the current keyboard-selected window
+        if (hasFocus) {
+            this.onInitialPositionWindows = Lang.bind(this, function() {
+                // default-select the first window
+                this.selectAnotherWindow(Clutter.Home);
+                Mainloop.idle_add(Lang.bind(this, function() {
+                    // if keyboard focus is at the default position,
+                    // make sure that the close button is drawn,
+                    // which must done a little bit later
+                    if (this._kbWindowIndex === 0) {
+                        this.selectAnotherWindow(Clutter.Home);
+                    }
+                }));
+            });
+        }
     },
     
     selectAnotherWindow: function(symbol) {
-        let numWindows = this._windowOverlays.length;
+        let numWindows = this._windows.length;
         if (numWindows === 0) {
             return false;
         }
@@ -811,10 +890,10 @@ Workspace.prototype = {
                 nextIndex = calcNewIndex(-1);
             }
         }
-        else if (symbol === Clutter.Left || symbol === Clutter.ISO_Left_Tab || symbol === Clutter.Up) {
+        else if (symbol === Clutter.Left || symbol === Clutter.Up) {
             nextIndex = (currentIndex < 1 ? numWindows : currentIndex) - 1;
         }
-        else if (symbol === Clutter.Right || symbol === Clutter.Tab || symbol === Clutter.Down) {
+        else if (symbol === Clutter.Right || symbol === Clutter.Down) {
             nextIndex = (currentIndex + 1) % numWindows;
         }
         else if (symbol === Clutter.Home) {
@@ -828,18 +907,35 @@ Workspace.prototype = {
         }
 
         if (currentIndex !== nextIndex) {
-            if (currentIndex > -1 && currentIndex < numWindows) {
-                this._windowOverlays[currentIndex].setSelected(false);
-            }
+            this.showActiveSelection(false);
         }
-
         this._kbWindowIndex = currentIndex = nextIndex;
-        if (currentIndex > -1 && currentIndex < numWindows) {
-            this._windowOverlays[currentIndex].setSelected(true);
-        }
+        this.showActiveSelection(true);
         return true;
     },
     
+    showActiveSelection: function(show) {
+        if (this._kbWindowIndex > -1 && this._kbWindowIndex < this._windows.length) {
+            this._windows[this._kbWindowIndex].overlay.setSelected(show);
+        }
+    },
+
+    _onCloneContextMenuRequested: function(clone) {
+        menuShowing = new WindowContextMenu(clone.actor, clone.metaWindow, function() {
+            menuShowing = null; menuClone = null;
+        });
+        menuClone = clone;
+        menuShowing.toggle();
+    },
+    
+    showMenuForSelectedWindow: function() {
+        if (this._kbWindowIndex > -1 && this._kbWindowIndex < this._windows.length) {
+            let window = this._windows[this._kbWindowIndex];
+            this._onCloneContextMenuRequested(window);
+        }
+        return false;
+    },
+
     activateSelectedWindow: function() {
         if (this._kbWindowIndex > -1 && this._kbWindowIndex < this._windows.length) {
             this._onCloneSelected(this._windows[this._kbWindowIndex], global.get_current_time());
@@ -849,8 +945,8 @@ Workspace.prototype = {
     },
 
     closeSelectedWindow: function() {
-        if (this._kbWindowIndex > -1 && this._kbWindowIndex < this._windowOverlays.length) {
-            this._windowOverlays[this._kbWindowIndex].closeWindow();
+        if (this._kbWindowIndex > -1 && this._kbWindowIndex < this._windows.length) {
+            this._windows[this._kbWindowIndex].overlay.closeWindow();
         }
     },
 
@@ -1086,9 +1182,9 @@ Workspace.prototype = {
         let buttonOuterHeight, captionHeight;
         let buttonOuterWidth = 0;
 
-        if (this._windowOverlays[0]) {
-            [buttonOuterHeight, captionIconHeight] = this._windowOverlays[0].chromeHeights();
-            buttonOuterWidth = this._windowOverlays[0].chromeWidth();
+        if (this._windows.length) {
+            [buttonOuterHeight, captionIconHeight] = this._windows[0].overlay.chromeHeights();
+            buttonOuterWidth = this._windows[0].overlay.chromeWidth();
         } else {
             [buttonOuterHeight, captionIconHeight] = [0, 0];
         }
@@ -1132,6 +1228,7 @@ Workspace.prototype = {
             this._repositionWindowsId = 0;
         }
 
+        closeContextMenu();
         let clones = this._windows.slice();
         if (this._reservedSlot)
             clones.push(this._reservedSlot);
@@ -1151,7 +1248,7 @@ Workspace.prototype = {
             let clone = clones[i];
             let metaWindow = clone.metaWindow;
             let mainIndex = this._lookupIndex(metaWindow);
-            let overlay = this._windowOverlays[mainIndex];
+            let overlay = clone.overlay;
 
             // Positioning a window currently being dragged must be avoided;
             // we'll just leave a blank spot in the layout for it.
@@ -1191,54 +1288,65 @@ Workspace.prototype = {
                                    time: Overview.ANIMATION_TIME,
                                    transition: 'easeOutQuad',
                                    onComplete: Lang.bind(this, function() {
-                                      this._showWindowOverlay(clone, overlay, true);
+                                      this._showWindowOverlay(clone, true);
                                    })
                                  });
             } else {
                 clone.actor.set_position(x, y);
                 clone.actor.set_scale(scale, scale);
-                this._showWindowOverlay(clone, overlay, isOnCurrentWorkspace);
+                this._showWindowOverlay(clone, isOnCurrentWorkspace);
             }
+        }
+        if (this.onInitialPositionWindows) {
+            this.onInitialPositionWindows();
+            this.onInitialPositionWindows = null;
         }
     },
 
     syncStacking: function(stackIndices) {
-        let clones = this._windows.slice();
-        clones.sort(function (a, b) { return stackIndices[a.metaWindow.get_stable_sequence()] - stackIndices[b.metaWindow.get_stable_sequence()]; });
+        // Only on the first invocation do we want to affect the
+        // permanent sort order. After that, we don't want major
+        // upheavals to the sort order.
+        let clones = !this._stackedOnce ? this._windows : this._windows.slice();
+        this._stackedOnce = true;
 
+        clones.sort(function (a, b) {
+            let minimizedA = a.metaWindow.minimized ? 1 : 0;
+            let minimizedB = b.metaWindow.minimized ? 1 : 0;
+            let minimizedDiff = minimizedA - minimizedB;
+            return minimizedDiff || stackIndices[a.metaWindow.get_stable_sequence()] - stackIndices[b.metaWindow.get_stable_sequence()];
+        });
+
+        let clones = clones.slice().reverse();
+        let below = this._dropRect;
         for (let i = 0; i < clones.length; i++) {
             let clone = clones[i];
-            let metaWindow = clone.metaWindow;
-            if (i == 0) {
-                clone.setStackAbove(this._dropRect);
-            } else {
-                let previousClone = clones[i - 1];
-                clone.setStackAbove(previousClone.actor);
-            }
+            clone.setStackAbove(below);
+            below = clone.actor;
         }
     },
 
-    _showWindowOverlay: function(clone, overlay, fade) {
+    _showWindowOverlay: function(clone, fade) {
         if (clone.inDrag)
             return;
 
-        // This is a little messy and complicated because when we
-        // start the fade-in we may not have done the final positioning
-        // of the workspaces. (Tweener doesn't necessarily finish
-        // all animations before calling onComplete callbacks.)
-        // So we need to manually compute where the window will
-        // be after the workspace animation finishes.
-        let [cloneX, cloneY] = clone.actor.get_position();
-        let [cloneWidth, cloneHeight] = clone.actor.get_size();
-        cloneWidth = clone.actor.scale_x * cloneWidth;
-        cloneHeight = clone.actor.scale_y * cloneHeight;
+        if (this._slotWidth) {
+            // This is a little messy and complicated because when we
+            // start the fade-in we may not have done the final positioning
+            // of the workspaces. (Tweener doesn't necessarily finish
+            // all animations before calling onComplete callbacks.)
+            // So we need to manually compute where the window will
+            // be after the workspace animation finishes.
+            let [cloneX, cloneY] = clone.actor.get_position();
+            let [cloneWidth, cloneHeight] = clone.actor.get_size();
+            cloneWidth = clone.actor.scale_x * cloneWidth;
+            cloneHeight = clone.actor.scale_y * cloneHeight;
 
-        if (overlay) {
-            overlay.updatePositions(cloneX, cloneY, cloneWidth, cloneHeight);
+            clone.overlay.updatePositions(cloneX, cloneY, cloneWidth, cloneHeight, this._slotWidth);
             if (fade)
-                overlay.fadeIn();
+                clone.overlay.fadeIn();
             else
-                overlay.show();
+                clone.overlay.show();
         }
     },
 
@@ -1246,8 +1354,7 @@ Workspace.prototype = {
         let currentWorkspace = global.screen.get_active_workspace();
         for (let i = 0; i < this._windows.length; i++) {
             let clone = this._windows[i];
-            let overlay = this._windowOverlays[i];
-            this._showWindowOverlay(clone, overlay,
+            this._showWindowOverlay(clone,
                                     this.metaWorkspace == null || this.metaWorkspace == currentWorkspace);
         }
     },
@@ -1301,7 +1408,6 @@ Workspace.prototype = {
         let clone = this._windows[index];
 
         this._windows.splice(index, 1);
-        this._windowOverlays.splice(index, 1);
 
         // If metaWin.get_compositor_private() returned non-NULL, that
         // means the window still exists (and is just being moved to
@@ -1319,11 +1425,11 @@ Workspace.prototype = {
             };
         }
         if (index === this._kbWindowIndex) {
-            if (this._kbWindowIndex >= this._windowOverlays.length) {
+            if (this._kbWindowIndex >= this._windows.length) {
                 this._kbWindowIndex = 0;
             }
-            if (this._kbWindowIndex < this._windowOverlays.length) {
-                this._windowOverlays[this._kbWindowIndex].setSelected(true);
+            if (this._kbWindowIndex < this._windows.length) {
+                this._windows[this._kbWindowIndex].overlay.setSelected(true);
             }
         }
         
@@ -1493,6 +1599,7 @@ Workspace.prototype = {
     },
 
     _onDestroy: function(actor) {
+        closeContextMenu();
         if (this._overviewHiddenId) {
             Main.overview.disconnect(this._overviewHiddenId);
             this._overviewHiddenId = 0;
@@ -1523,10 +1630,9 @@ Workspace.prototype = {
         this.leavingOverview = false;
     },
 
-    // Tests if @win belongs to this workspaces and monitor
+    // Tests if @win belongs to this workspace
     _isMyWindow : function (win) {
-        return (this.metaWorkspace == null || Main.isWindowActorDisplayedOnWorkspace(win, this.metaWorkspace.index())) &&
-            (!win.get_meta_window() || win.get_meta_window().get_monitor() == this.monitorIndex);
+        return (this.metaWorkspace == null || Main.isWindowActorDisplayedOnWorkspace(win, this.metaWorkspace.index()) && (!win.get_meta_window() || win.get_meta_window().get_monitor() == this.monitorIndex));
     },
 
     // Tests if @win should be shown in the Overview
@@ -1544,6 +1650,8 @@ Workspace.prototype = {
                       Lang.bind(this, this._onCloneSelected));
         clone.connect('closed',
                       Lang.bind(this, this._onCloneClosed));
+        clone.connect('context-menu-requested',
+                      Lang.bind(this, this._onCloneContextMenuRequested));
         clone.connect('drag-begin',
                       Lang.bind(this, function(clone) {
                           Main.overview.beginWindowDrag();
@@ -1576,40 +1684,42 @@ Workspace.prototype = {
         overlay.connect('show-close-button', Lang.bind(this, this._onShowOverlayClose));
 
         this._windows.push(clone);
-        this._windowOverlays.push(overlay);
+        clone.overlay = overlay;
 
         return clone;
     },
 
     _onShowOverlayClose: function (windowOverlay) {
-        for (let i = 0; i < this._windowOverlays.length; i++) {
-            let overlay = this._windowOverlays[i];
+        for (let i = 0; i < this._windows.length; i++) {
+            let overlay = this._windows[i].overlay;
             if (overlay == windowOverlay)
                 continue;
             overlay.hideCloseButton();
         }
     },
 
-    _computeWindowSlot : function(windowIndex, numberOfWindows) {
-        if (numberOfWindows in POSITIONS)
-            return POSITIONS[numberOfWindows][windowIndex];
-
-        // If we don't have a predefined scheme for this window count,
-        // arrange the windows in a grid pattern.
+    _computeAllWindowSlots: function(numberOfWindows) {
+        if (!numberOfWindows) return [];
         let gridWidth = Math.ceil(Math.sqrt(numberOfWindows));
         let gridHeight = Math.ceil(numberOfWindows / gridWidth);
+        let fraction = DEFAULT_SLOT_FRACTION * (1. / gridWidth);
+        this._slotWidth = Math.floor(fraction * this._width);
 
-        let fraction = 0.825 * (1. / gridWidth);
+        let computeWindowSlot = function(windowIndex, numberOfWindows) {
+            if (numberOfWindows in POSITIONS)
+                return POSITIONS[numberOfWindows][windowIndex];
 
-        let xCenter = (.5 / gridWidth) + ((windowIndex) % gridWidth) / gridWidth;
-        let yCenter = (.5 / gridHeight) + Math.floor((windowIndex / gridWidth)) / gridHeight;
-        return [xCenter, yCenter, fraction];
-    },
+            // If we don't have a predefined scheme for this window count,
+            // arrange the windows in a grid pattern.
 
-    _computeAllWindowSlots: function(totalWindows) {
+            let xCenter = (.5 / gridWidth) + ((windowIndex) % gridWidth) / gridWidth;
+            let yCenter = (.5 / gridHeight) + Math.floor((windowIndex / gridWidth)) / gridHeight;
+            return [xCenter, yCenter, fraction];
+        };
+        
         let slots = [];
-        for (let i = 0; i < totalWindows; i++) {
-            slots.push(this._computeWindowSlot(i, totalWindows));
+        for (let i = 0; i < numberOfWindows; i++) {
+            slots.push(computeWindowSlot(i, numberOfWindows));
         }
         return slots;
     },
@@ -1651,12 +1761,6 @@ Workspace.prototype = {
 
             let metaWindow = win.get_meta_window();
 
-            // We need to move the window before changing the workspace, because
-            // the move itself could cause a workspace change if the window enters
-            // the primary monitor
-            if (metaWindow.get_monitor() != this.monitorIndex)
-                metaWindow.move_to_monitor(this.monitorIndex);
-
             let index = this.metaWorkspace ? this.metaWorkspace.index() : global.screen.get_active_workspace_index();
             metaWindow.change_workspace_by_index(index,
                                                  false, // don't create workspace
@@ -1672,4 +1776,300 @@ Workspace.prototype = {
     }
 };
 
+Signals.addSignalMethods(WorkspaceMonitor.prototype);
+
+function WindowContextMenu(actor, metaWindow, onClose) {
+    this._init(actor, metaWindow, onClose);
+}
+
+WindowContextMenu.prototype = {
+    __proto__: PopupMenu.PopupComboMenu.prototype,
+
+    _init: function(actor, metaWindow, onClose) {
+        //take care of menu initialization
+        PopupMenu.PopupComboMenu.prototype._init.call(this, actor);
+        Main.uiGroup.add_actor(this.actor);
+        this.actor.hide();
+        let orientation = St.Side.TOP;
+        this.onClose = onClose;
+        actor.connect('key-press-event', Lang.bind(this, this._onSourceKeyPress));
+        this.connect('open-state-changed', Lang.bind(this, this._onToggled));
+
+        this.metaWindow = metaWindow;
+
+        this.itemCloseWindow = new PopupMenu.PopupMenuItem(_("Close"));
+        this.itemCloseWindow.connect('activate', Lang.bind(this, this._onCloseWindowActivate));
+
+        if (metaWindow.minimized)
+            this.itemMinimizeWindow = new PopupMenu.PopupMenuItem(_("Restore"));
+        else
+            this.itemMinimizeWindow = new PopupMenu.PopupMenuItem(_("Minimize"));
+        this.itemMinimizeWindow.connect('activate', Lang.bind(this, this._onMinimizeWindowActivate));
+
+        this.itemMaximizeWindow = new PopupMenu.PopupMenuItem(_("Maximize"));
+        this.itemMaximizeWindow.connect('activate', Lang.bind(this, this._onMaximizeWindowActivate));
+
+        this.itemMoveToLeftWorkspace = new PopupMenu.PopupMenuItem(_("Move to left workspace"));
+        this.itemMoveToLeftWorkspace.connect('activate', Lang.bind(this, this._onMoveToLeftWorkspace));
+
+        this.itemMoveToRightWorkspace = new PopupMenu.PopupMenuItem(_("Move to right workspace"));
+        this.itemMoveToRightWorkspace.connect('activate', Lang.bind(this, this._onMoveToRightWorkspace));
+
+        this.itemOnAllWorkspaces = new PopupMenu.PopupMenuItem(_("Visible on all workspaces"));
+        this.itemOnAllWorkspaces.connect('activate', Lang.bind(this, this._toggleOnAllWorkspaces));
+
+        let monitorItems = [];
+        if (Main.layoutManager.monitors.length > 1) {
+            Main.layoutManager.monitors.forEach(function(monitor, index) {
+                if (index !== metaWindow.get_monitor()) {
+                    let itemChangeMonitor = new PopupMenu.PopupMenuItem(
+                        _("Move to monitor %d").format(index + 1));
+                    itemChangeMonitor.connect('activate', Lang.bind(this, function() {
+                        metaWindow.move_to_monitor(index);
+                    }));
+                    monitorItems.push(itemChangeMonitor);
+                }
+            }, this);
+            monitorItems.push(new PopupMenu.PopupSeparatorMenuItem());
+        }
+
+        let items = monitorItems.concat([
+            this.itemOnAllWorkspaces,
+            this.itemMoveToLeftWorkspace,
+            this.itemMoveToRightWorkspace,
+            new PopupMenu.PopupSeparatorMenuItem(),
+            this.itemMinimizeWindow,
+            this.itemMaximizeWindow,
+            this.itemCloseWindow
+        ]);
+        (orientation == St.Side.BOTTOM ? items : items.reverse()).forEach(function(item) {
+            this.addMenuItem(item);
+        }, this);
+        this.setActiveItem(0);
+     },
+
+     _onToggled: function(actor, opening){
+         if (!opening) {
+            this.onClose();
+            this.destroy();
+            return;
+         }
+
+        if (this.metaWindow.is_on_all_workspaces()) {
+            this.itemOnAllWorkspaces.label.set_text(_("Only on this workspace"));
+            this.itemMoveToLeftWorkspace.actor.hide();
+            this.itemMoveToRightWorkspace.actor.hide();
+        } else {
+            this.itemOnAllWorkspaces.label.set_text(_("Visible on all workspaces"));
+            if (this.metaWindow.get_workspace().get_neighbor(Meta.MotionDirection.LEFT) != this.metaWindow.get_workspace())
+                this.itemMoveToLeftWorkspace.actor.show();
+            else
+                this.itemMoveToLeftWorkspace.actor.hide();
+
+            if (this.metaWindow.get_workspace().get_neighbor(Meta.MotionDirection.RIGHT) != this.metaWindow.get_workspace())
+                this.itemMoveToRightWorkspace.actor.show();
+            else
+                this.itemMoveToRightWorkspace.actor.hide();
+        }
+        if (this.metaWindow.get_maximized()) {
+            this.itemMaximizeWindow.label.set_text(_("Unmaximize"));
+        }else{
+            this.itemMaximizeWindow.label.set_text(_("Maximize"));
+        }
+    },
+
+    _onWindowMinimized: function(actor, event){
+    },
+
+    _onCloseWindowActivate: function(actor, event){
+        this.metaWindow.delete(global.get_current_time());
+    },
+
+    _onMinimizeWindowActivate: function(actor, event){
+        if (this.metaWindow.minimized) {
+            this.metaWindow.unminimize(global.get_current_time());
+        }
+        else {
+            this.metaWindow.minimize(global.get_current_time());
+        }
+    },
+
+    _onMaximizeWindowActivate: function(actor, event){
+        if (this.metaWindow.get_maximized()){
+            this.metaWindow.unmaximize(Meta.MaximizeFlags.HORIZONTAL | Meta.MaximizeFlags.VERTICAL);
+        }else{
+            this.metaWindow.maximize(Meta.MaximizeFlags.HORIZONTAL | Meta.MaximizeFlags.VERTICAL);
+        }
+    },
+
+    _onMoveToLeftWorkspace: function(actor, event){
+        let workspace = this.metaWindow.get_workspace().get_neighbor(Meta.MotionDirection.LEFT);
+        if (workspace) {
+            this.metaWindow.change_workspace(workspace);
+            Main._checkWorkspaces();
+        }
+    },
+
+    _onMoveToRightWorkspace: function(actor, event){
+        let workspace = this.metaWindow.get_workspace().get_neighbor(Meta.MotionDirection.RIGHT);
+        if (workspace) {
+            this.metaWindow.change_workspace(workspace);
+            Main._checkWorkspaces();
+        }
+    },
+
+    _toggleOnAllWorkspaces: function(actor, event) {
+        if (this.metaWindow.is_on_all_workspaces())
+            this.metaWindow.unstick();
+        else
+            this.metaWindow.stick();
+    },
+
+    _onSourceKeyPress: function(actor, event) {
+        let symbol = event.get_key_symbol();
+        if (symbol == Clutter.KEY_space || symbol == Clutter.KEY_Return) {
+            this.menu.toggle();
+            return true;
+        } else if (symbol == Clutter.KEY_Escape && this.menu.isOpen) {
+            this.menu.close();
+            return true;
+        } else if (symbol == Clutter.KEY_Down) {
+            if (!this.menu.isOpen)
+                this.menu.toggle();
+            this.menu.actor.navigate_focus(this.actor, Gtk.DirectionType.DOWN, false);
+            return true;
+        } else
+            return false;
+    }
+
+};
+
+function Workspace(metaWorkspace) {
+    this._init(metaWorkspace);
+}
+
+Workspace.prototype = {
+    _init : function(metaWorkspace) {
+        this.metaWorkspace = metaWorkspace;
+        this.actor = new Clutter.Group();
+        this.actor.set_size(0, 0);
+        this._monitors = [];
+        let focusIndex = Main.layoutManager.focusIndex;
+        Main.layoutManager.monitors.forEach(function(monitor, monitorIndex) {
+            let m = new WorkspaceMonitor(metaWorkspace, monitorIndex, monitorIndex === focusIndex)
+            this._monitors.push(m);
+            this.actor.add_actor(m.actor);
+        }, this);
+        this.currentMonitorIndex = focusIndex;
+    },
+
+    _onKeyPress: function(actor, event) {
+        let modifiers = Cinnamon.get_event_state(event);
+        let symbol = event.get_key_symbol();
+        let ctrlAltMask = Clutter.ModifierType.CONTROL_MASK | Clutter.ModifierType.MOD1_MASK;
+
+        if ((symbol === Clutter.ISO_Left_Tab || symbol === Clutter.Tab)  && !(modifiers & ctrlAltMask)) {
+            if (this._monitors.length < 2) return true;
+            
+            let previousIndex = this.currentMonitorIndex;
+            let increment = symbol === Clutter.ISO_Left_Tab ? -1 : 1;
+            for (let i = 0; i < this._monitors.length; ++i) {
+                this.currentMonitorIndex = (this._monitors.length + this.currentMonitorIndex + increment) % this._monitors.length;
+                if (!this._monitors[this.currentMonitorIndex].isEmpty()) {
+                    break;
+                }
+            }
+            this._monitors[previousIndex].showActiveSelection(false);
+            this._monitors[this.currentMonitorIndex].showActiveSelection(true);
+            return true;
+        }
+
+        let activeMonitor = this._monitors[this.currentMonitorIndex];
+
+        if (symbol === Clutter.m && !(modifiers & ctrlAltMask)) {
+            activeMonitor.showMenuForSelectedWindow();
+            return true;
+        }
+
+        if (symbol === Clutter.w && modifiers & Clutter.ModifierType.CONTROL_MASK) {
+            activeMonitor.closeSelectedWindow();
+            return true;
+        }
+
+        if (symbol === Clutter.Return || symbol === Clutter.KEY_space) {
+            if (activeMonitor.activateSelectedWindow()) {
+                return true;
+            }
+            Main.overview.hide();
+            return true;
+        }
+        return activeMonitor.selectAnotherWindow(symbol);
+    },
+
+    destroy: function() {
+        this._monitors.forEach(function(monitor) {
+            monitor.destroy();
+        }, this);
+        this.actor.destroy();
+    },
+
+    setGeometry: function(x, y, width, height, spacing_unused) {
+        let primary = Main.layoutManager.primaryMonitor;
+        let spacing = (primary.width - width) / 2;
+        this._monitors.forEach(function(monitor, index) {
+            let mon = Main.layoutManager.monitors[index];
+            monitor.setGeometry(mon.x + spacing, mon.y + spacing, mon.width - spacing, mon.height - spacing);
+        }, this);
+    },
+
+    selectAnotherWindow: function(symbol) {
+        this._monitors[this.currentMonitorIndex].selectAnotherWindow(symbol);
+    },
+
+    zoomFromOverview: function() {
+        this._monitors.forEach(function(monitor) {
+            monitor.zoomFromOverview();
+        }, this);
+    },
+
+    zoomToOverview: function() {
+        this._monitors.forEach(function(monitor) {
+            monitor.zoomToOverview();
+        }, this);
+    },
+
+    hasMaximizedWindows: function() {
+        let has = false;
+        this._monitors.forEach(function(monitor) {
+            has = has || monitor.hasMaximizedWindows();
+        }, this);
+        return has;
+    },
+
+    isEmpty: function() {
+        let hasWindows = false;
+        this._monitors.forEach(function(monitor) {
+            hasWindows = hasWindows || !monitor.isEmpty();
+        }, this);
+        return !hasWindows;
+    },
+
+    showWindowsOverlays: function() {
+        this._monitors.forEach(function(monitor) {
+            monitor.showWindowsOverlays();
+        }, this);
+    },
+    
+    hideWindowsOverlays: function() {
+        this._monitors.forEach(function(monitor) {
+            monitor.hideWindowsOverlays();
+        }, this);
+    },
+
+    syncStacking: function(arg1) {
+        this._monitors.forEach(function(monitor) {
+            monitor.syncStacking(arg1);
+        }, this);
+    }
+};
 Signals.addSignalMethods(Workspace.prototype);
