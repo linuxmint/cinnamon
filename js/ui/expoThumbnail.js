@@ -551,7 +551,6 @@ ExpoWorkspaceThumbnail.prototype = {
         clone.connect('drag-begin',
                       Lang.bind(this, function(clone) {
                           Main.expo.beginWindowDrag();
-                          this._overviewModeOff();
                       }));
         clone.connect('drag-end',
                       Lang.bind(this, function(clone) {
@@ -677,14 +676,12 @@ ExpoWorkspaceThumbnail.prototype = {
                     });
             }
             else {
-                if (!window.inDrag) {
-                    window.actor.show();
-                    Tweener.addTween(window.actor, {
-                        x: window.origX,
-                        y: window.origY,
-                        scale_x: 1, scale_y: 1, opacity: 255,
-                        time: REARRANGE_TIME_OFF, transition: 'easeOutQuad'});
-                }
+                window.actor.show();
+                Tweener.addTween(window.actor, {
+                    x: window.origX,
+                    y: window.origY,
+                    scale_x: 1, scale_y: 1, opacity: 255, 
+                    time: REARRANGE_TIME_OFF, transition: 'easeOutQuad'});        
             }
         } 
     },
@@ -761,12 +758,6 @@ ExpoWorkspaceThumbnail.prototype = {
 
         if (source.realWindow && !this._isMyWindow(source.realWindow))
             return DND.DragMotionResult.MOVE_DROP;
-        if (source.realWindow && this._isMyWindow(source.realWindow)) {
-            let monitor = Main.layoutManager._chrome._findMonitorIndexForRect(x, y, 1, 1);
-            if (monitor !== source.metaWindow.get_monitor()) {
-                return DND.DragMotionResult.MOVE_DROP;
-            }
-        }
         if (source.CinnamonWorkspaceLaunch)
             return DND.DragMotionResult.COPY_DROP;
 
@@ -777,20 +768,21 @@ ExpoWorkspaceThumbnail.prototype = {
         if (this.handleDragOver(source, actor, x, y, time) === DND.DragMotionResult.CONTINUE) {
             return false;
         }
-global.logError([Math.round(x),Math.round(y)]);
+
         this.metaWorkspace.activate(time);
         let win = source.realWindow;
         let metaWindow = win.get_meta_window();
 
-        let monitorIndex = Main.layoutManager._chrome._findMonitorIndexForRect(x, y, 1, 1);
-        if (monitorIndex !== metaWindow.get_monitor()) {
-            metaWindow.move_to_monitor(monitorIndex);
+        // We need to move the window before changing the workspace, because
+        // the move itself could cause a workspace change if the window enters
+        // the primary monitor
+        if (metaWindow.get_monitor() != this.monitorIndex) {
+            metaWindow.move_to_monitor(this.monitorIndex);
         }
-        if (!Main.isWindowActorDisplayedOnWorkspace(win, this.metaWorkspace.index())) {
-            metaWindow.change_workspace_by_index(this.metaWorkspace.index(),
-                                                    false, // don't create workspace
-                                                    time);
-        }
+
+        metaWindow.change_workspace_by_index(this.metaWorkspace.index(),
+                                                false, // don't create workspace
+                                                time);
 
         // normal hovering monitoring was turned off during drag
         this.hovering = true;
