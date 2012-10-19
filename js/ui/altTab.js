@@ -518,9 +518,24 @@ AltTabPopup.prototype = {
     
     _clearPreview: function() {
         if (this._previewClones) {
+            Tweener.removeTweens(this._appSwitcher.actor);
+            this._appSwitcher.actor.opacity = 255;
+            if (this._displayPreviewTimeoutId) {
+                Mainloop.source_remove(this._displayPreviewTimeoutId);
+                this._displayPreviewTimeoutId = 0;
+            }
             for (let i = 0; i < this._previewClones.length; ++i) {
-                this.actor.remove_actor(this._previewClones[i]);
-                this._previewClones[i].destroy();
+                let clone = this._previewClones[i];
+                Tweener.addTween(clone, {
+                    opacity: 0,
+                    time: PREVIEW_SWITCHER_FADEOUT_TIME * 2, // slow fade
+                    transition: 'linear',
+                    onCompleteScope: this,
+                    onComplete: function() {
+                        this.actor.remove_actor(clone);
+                        clone.destroy();
+                    }
+                });
             }
         }
         this._previewClones = [];
@@ -528,27 +543,16 @@ AltTabPopup.prototype = {
     
     _doWindowPreview: function() {
         this._clearPreview();
-        if (!this._previewEnabled || !this._appIcons[this._currentApp].cachedWindows.length) {
+        if (!this._previewEnabled || this._appIcons.length < 1 ||
+            !this._appIcons[this._currentApp].cachedWindows.length)
+        {
             return;
         }
 
         let showPreview = function() {
-            if (this._appIcons.length < 1) {
-                return;
-            }
+            this._displayPreviewTimeoutId = null;
 
             let childBox = new Clutter.ActorBox();
-            if (!this._previewBackdrop) {
-                let backdrop = this._previewBackdrop = new St.Bin({style_class: 'switcher-preview-backdrop'});
-                this.actor.add_actor(backdrop);
-                // Make sure that the backdrop does not overlap the switcher.
-                backdrop.lower(this._appSwitcher.actor);
-                childBox.x1 = this.actor.x;
-                childBox.x2 = this.actor.x + this.actor.width;
-                childBox.y1 = this.actor.y;
-                childBox.y2 = this.actor.y + this.actor.height;
-                backdrop.allocate(childBox, 0);
-            }
 
             let lastClone = null;
             let that = this;
@@ -572,11 +576,11 @@ AltTabPopup.prototype = {
                 childBox.x2 = Math.round(or.x + or.width + diffX);
                 childBox.y1 = Math.round(or.y -diffY);
                 childBox.y2 = Math.round(or.y + or.height + diffY);
-                clone.allocate(childBox, 0);
                 clone.opacity = 127;
+                clone.allocate(childBox, 0);
                 Tweener.addTween(clone,
                                 { opacity: 255,
-                                time: PREVIEW_SWITCHER_FADEOUT_TIME/2,
+                                time: PREVIEW_SWITCHER_FADEOUT_TIME/4, // quick
                                 transition: 'linear'
                                 });
             };
@@ -587,21 +591,34 @@ AltTabPopup.prototype = {
                 showClone(win);
             }));
 
+            if (!this._previewBackdrop) {
+                let backdrop = this._previewBackdrop = new St.Bin({style_class: 'switcher-preview-backdrop'});
+                this.actor.add_actor(backdrop);
+                // Make sure that the backdrop does not overlap the switcher.
+                backdrop.lower(this._appSwitcher.actor);
+                backdrop.lower(lastClone);
+                childBox.x1 = this.actor.x;
+                childBox.x2 = this.actor.x + this.actor.width;
+                childBox.y1 = this.actor.y;
+                childBox.y2 = this.actor.y + this.actor.height;
+                backdrop.allocate(childBox, 0);
+                backdrop.opacity = 0;
+                Tweener.addTween(backdrop,
+                                { opacity: 255,
+                                time: PREVIEW_SWITCHER_FADEOUT_TIME,
+                                transition: 'linear'
+                                });
+            }
+
             Tweener.addTween(this._appSwitcher.actor,
                              { opacity: 200,
-                               time: PREVIEW_SWITCHER_FADEOUT_TIME,
+                               time: PREVIEW_SWITCHER_FADEOUT_TIME, // slower
                                transition: 'linear'
                              });
-        };
+        }; // showPreview
 
-        // Use a cancellable timeout to avoid flicker effect when tabbing rapidly through the set
-        let delay = PREVIEW_DELAY_TIMEOUT * 2;
-        if (this._displayPreviewTimeoutId) {
-            delay = PREVIEW_DELAY_TIMEOUT; // shorter delay after first show
-            Mainloop.source_remove(this._displayPreviewTimeoutId);
-            Tweener.removeTweens(this._appSwitcher.actor);
-            this._appSwitcher.actor.opacity = 255;
-        }
+        // Use a cancellable timeout to avoid flicker effect when tabbing rapidly through the set.
+        let delay = PREVIEW_DELAY_TIMEOUT;
         this._displayPreviewTimeoutId = Mainloop.timeout_add(delay, Lang.bind(this, showPreview));
     },
     
