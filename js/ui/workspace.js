@@ -63,6 +63,16 @@ function ScaledPoint(x, y, scaleX, scaleY) {
     [this.x, this.y, this.scaleX, this.scaleY] = arguments;
 }
 
+var menuShowing = null;
+var menuClone = null;
+function closeContextMenu(requestor) {
+    let requestorShowingMenu = menuClone && menuClone === requestor;
+    if (menuShowing) {
+        menuShowing.close();
+    }
+    return requestorShowingMenu;
+}
+
 ScaledPoint.prototype = {
     getPosition : function() {
         return [this.x, this.y];
@@ -142,6 +152,7 @@ WindowClone.prototype = {
 
         //let clickAction = new Clutter.ClickAction();
         this.actor.connect('button-release-event', Lang.bind(this, this._onButtonRelease));
+        this.actor.connect('button-press-event', Lang.bind(this, this._onButtonPress));
         //clickAction.connect('long-press', Lang.bind(this, this._onLongPress));
 
         //this.actor.add_action(clickAction);
@@ -350,15 +361,30 @@ WindowClone.prototype = {
         this._zoomStep           = undefined;
     },
 
+    _onButtonPress: function(actor, event) {
+        // a button-press on a clone already showing a menu should
+        // not open a new-menu, only close the current menu.
+        this.menuCancelled = closeContextMenu(this);
+    },
+
     _onButtonRelease: function(actor, event) {
         if ( event.get_button()==1 ) {
             this._selected = true;
             this.emit('selected', global.get_current_time());
+            return true;
         }
         if (event.get_button()==2){
             this.emit('closed', global.get_current_time());
+            return true;
         }
-        return true;
+        if (event.get_button()==3){
+            if (!this.menuCancelled) {
+                this.emit('context-menu-requested', global.get_current_time());
+            }
+            this.menuCancelled = false;
+            return true;
+        }
+        return false;
     },
 
     _onLongPress: function(action, actor, state) {
@@ -764,6 +790,9 @@ WorkspaceMonitor.prototype = {
         this.actor.add_actor(this._windowOverlaysGroup);
 
         this.actor.connect('destroy', Lang.bind(this, this._onDestroy));
+        Main.overview.connect('overview-background-button-press', function() {
+            closeContextMenu();
+        });
 
         let windows = global.get_window_actors().filter(this._isMyWindow, this);
 
@@ -885,22 +914,24 @@ WorkspaceMonitor.prototype = {
         return true;
     },
     
-    get windowCount() {
-        return this._windows.length;
-    },
-    
     showActiveSelection: function(show) {
         if (this._kbWindowIndex > -1 && this._kbWindowIndex < this._windows.length) {
             this._windows[this._kbWindowIndex].overlay.setSelected(show);
         }
     },
+
+    _onCloneContextMenuRequested: function(clone) {
+        menuShowing = new WindowContextMenu(clone.actor, clone.metaWindow, function() {
+            menuShowing = null; menuClone = null;
+        });
+        menuClone = clone;
+        menuShowing.toggle();
+    },
     
     showMenuForSelectedWindow: function() {
         if (this._kbWindowIndex > -1 && this._kbWindowIndex < this._windows.length) {
             let window = this._windows[this._kbWindowIndex];
-            let menu = new AppMenuButtonRightClickMenu(window.actor, window.metaWindow, "top");
-            menu.toggle();
-            return true;
+            this._onCloneContextMenuRequested(window);
         }
         return false;
     },
@@ -1197,6 +1228,7 @@ WorkspaceMonitor.prototype = {
             this._repositionWindowsId = 0;
         }
 
+        closeContextMenu();
         let clones = this._windows.slice();
         if (this._reservedSlot)
             clones.push(this._reservedSlot);
@@ -1567,6 +1599,7 @@ WorkspaceMonitor.prototype = {
     },
 
     _onDestroy: function(actor) {
+        closeContextMenu();
         if (this._overviewHiddenId) {
             Main.overview.disconnect(this._overviewHiddenId);
             this._overviewHiddenId = 0;
@@ -1617,6 +1650,8 @@ WorkspaceMonitor.prototype = {
                       Lang.bind(this, this._onCloneSelected));
         clone.connect('closed',
                       Lang.bind(this, this._onCloneClosed));
+        clone.connect('context-menu-requested',
+                      Lang.bind(this, this._onCloneContextMenuRequested));
         clone.connect('drag-begin',
                       Lang.bind(this, function(clone) {
                           Main.overview.beginWindowDrag();
@@ -1743,18 +1778,20 @@ WorkspaceMonitor.prototype = {
 
 Signals.addSignalMethods(WorkspaceMonitor.prototype);
 
-function AppMenuButtonRightClickMenu(actor, metaWindow, orientation) {
-    this._init(actor, metaWindow, orientation);
+function WindowContextMenu(actor, metaWindow, onClose) {
+    this._init(actor, metaWindow, onClose);
 }
 
-AppMenuButtonRightClickMenu.prototype = {
+WindowContextMenu.prototype = {
     __proto__: PopupMenu.PopupComboMenu.prototype,
 
-    _init: function(actor, metaWindow, orientation) {
+    _init: function(actor, metaWindow, onClose) {
         //take care of menu initialization
         PopupMenu.PopupComboMenu.prototype._init.call(this, actor);
         Main.uiGroup.add_actor(this.actor);
         this.actor.hide();
+        let orientation = St.Side.TOP;
+        this.onClose = onClose;
         actor.connect('key-press-event', Lang.bind(this, this._onSourceKeyPress));
         this.connect('open-state-changed', Lang.bind(this, this._onToggled));
 
@@ -1811,8 +1848,9 @@ AppMenuButtonRightClickMenu.prototype = {
         this.setActiveItem(0);
      },
 
-     _onToggled: function(actor, event){
-         if (!event) {
+     _onToggled: function(actor, opening){
+         if (!opening) {
+            this.onClose();
             this.destroy();
             return;
          }
@@ -1937,7 +1975,7 @@ Workspace.prototype = {
             let increment = symbol === Clutter.ISO_Left_Tab ? -1 : 1;
             for (let i = 0; i < this._monitors.length; ++i) {
                 this.currentMonitorIndex = (this._monitors.length + this.currentMonitorIndex + increment) % this._monitors.length;
-                if (this._monitors[this.currentMonitorIndex].windowCount > 0) {
+                if (!this._monitors[this.currentMonitorIndex].isEmpty()) {
                     break;
                 }
             }
@@ -2006,6 +2044,14 @@ Workspace.prototype = {
             has = has || monitor.hasMaximizedWindows();
         }, this);
         return has;
+    },
+
+    isEmpty: function() {
+        let hasWindows = false;
+        this._monitors.forEach(function(monitor) {
+            hasWindows = hasWindows || !monitor.isEmpty();
+        }, this);
+        return !hasWindows;
     },
 
     showWindowsOverlays: function() {

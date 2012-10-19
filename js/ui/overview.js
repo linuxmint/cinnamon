@@ -278,9 +278,10 @@ Overview.prototype = {
     },
 
     _onButtonPress: function(actor, event) {
+        this.emit('overview-background-button-press', actor, event);
         if (this._scrollDirection == SwipeScrollDirection.NONE
             || event.get_button() != 1)
-            return;
+            return false;
 
         let [stageX, stageY] = event.get_coords();
         this._dragStartX = this._dragX = stageX;
@@ -290,6 +291,7 @@ Overview.prototype = {
         this._capturedEventId = global.stage.connect('captured-event',
             Lang.bind(this, this._onCapturedEvent));
         this.emit('swipe-scroll-begin');
+        return true;
     },
 
     _onCapturedEvent: function(actor, event) {
