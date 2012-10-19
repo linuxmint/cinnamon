@@ -219,9 +219,7 @@ function start() {
         applet_side = St.Side.TOP;        
     }
     
-    _defaultCssStylesheet = global.datadir + '/theme/cinnamon.css';
-    loadTheme();
-    
+    _defaultCssStylesheet = global.datadir + '/theme/cinnamon.css';    
     themeManager = new ThemeManager.ThemeManager();
 
     // Set up stage hierarchy to group all UI actors under one container.
