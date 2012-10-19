@@ -169,7 +169,14 @@ ModalDialog.prototype = {
     },
 
     _onKeyPressEvent: function(object, keyPressEvent) {
+        let modifiers = Cinnamon.get_event_state(keyPressEvent);
+        let ctrlAltMask = Clutter.ModifierType.CONTROL_MASK | Clutter.ModifierType.MOD1_MASK;
         let symbol = keyPressEvent.get_key_symbol();
+        if (symbol === Clutter.Escape && !(modifiers & ctrlAltMask)) {
+            this.close();
+            return;
+        }
+
         let action = this._actionKeys[symbol];
 
         if (action)
