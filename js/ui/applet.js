@@ -168,9 +168,11 @@ Applet.prototype = {
         return true;
     },
 
-    set_applet_tooltip: function (text) {
-        this._applet_tooltip_text = text;
-        this._applet_tooltip.set_text(text);
+    set_applet_tooltip: function (text, force) {
+        if (force || this._applet_tooltip_text !== text) {
+            this._applet_tooltip.set_text(text);
+            this._applet_tooltip_text = text;
+        }
     },
 
     on_applet_clicked: function(event) {
@@ -268,7 +270,12 @@ IconApplet.prototype = {
         this.__icon_name = null;
     },
 
-    set_applet_icon_name: function (icon_name) {
+    set_applet_icon_name: function (icon_name, force) {
+        if (!force && this.__icon_name === icon_name) {
+            return;
+        }
+
+        global.logError("set_applet_icon_name" + icon_name);
         if (this._scaleMode) {
             this._applet_icon = new St.Icon({icon_name: icon_name, icon_size: this._panelHeight * COLOR_ICON_HEIGHT_FACTOR,
                                             icon_type: St.IconType.FULLCOLOR, reactive: true, track_hover: true, style_class: 'applet-icon' });
@@ -280,7 +287,11 @@ IconApplet.prototype = {
         this.__icon_name = icon_name;
     },
 
-    set_applet_icon_symbolic_name: function (icon_name) {
+    set_applet_icon_symbolic_name: function (icon_name, force) {
+        if (!force && this.__icon_name === icon_name) {
+            return;
+        }
+
         if (this._scaleMode) {
             let height = (this._panelHeight / DEFAULT_PANEL_HEIGHT) * PANEL_SYMBOLIC_ICON_DEFAULT_HEIGHT;
             this._applet_icon = new St.Icon({icon_name: icon_name, icon_size: height, icon_type: St.IconType.SYMBOLIC, reactive: true, track_hover: true, style_class: 'system-status-icon' });
@@ -292,7 +303,11 @@ IconApplet.prototype = {
         this.__icon_name = icon_name;
     },
 
-    set_applet_icon_path: function (icon_path) {
+    set_applet_icon_path: function (icon_path, force) {
+        if (!force && this.__icon_name === icon_path) {
+            return;
+        }
+
         if (this._applet_icon_box.child) this._applet_icon_box.child.destroy();
 
         if (icon_path){
@@ -316,13 +331,13 @@ IconApplet.prototype = {
         }
         switch (this.__icon_type) {
             case St.IconType.FULLCOLOR:
-                this.set_applet_icon_name(this.__icon_name);
+                this.set_applet_icon_name(this.__icon_name, true);
                 break;
             case St.IconType.SYMBOLIC:
-                this.set_applet_icon_symbolic_name(this.__icon_name);
+                this.set_applet_icon_symbolic_name(this.__icon_name, true);
                 break;
             case -1:
-                this.set_applet_icon_path(this.__icon_name);
+                this.set_applet_icon_path(this.__icon_name, true);
                 break;
             default:
                 break;
