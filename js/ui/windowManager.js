@@ -102,7 +102,7 @@ WindowManager.prototype = {
         this._animationBlockCount = 0;
 
         this._switchData = null;
-        this._cinnamonwm.connect('kill-switch-workspace', Lang.bind(this, this._switchWorkspaceDone));
+        this._cinnamonwm.connect('kill-switch-workspace', Lang.bind(this, this._killSwitchWorkspace));
         this._cinnamonwm.connect('kill-window-effects', Lang.bind(this, function (cinnamonwm, actor) {
             this._minimizeWindowDone(cinnamonwm, actor);
             this._maximizeWindowDone(cinnamonwm, actor);
@@ -733,101 +733,144 @@ WindowManager.prototype = {
         }
 
         let windows = global.get_window_actors();
+        
+        this._switchData = {
+            chunks: [],
+            chunksToProcess: 0
+        };
 
-        /* @direction is the direction that the "camera" moves, so the
-         * screen contents have to move one screen's worth in the
-         * opposite direction.
-         */
-        let xDest = 0, yDest = 0;
+        // In a multi-monitor scenario, we need to work one monitor at a time,
+        // protecting the other monitors from having unrelated windows swooshing by.
+        Main.layoutManager.monitors.forEach(function(monitor,index) {
+            let chunkData = {};
+            this._switchData.chunks.push(chunkData);
+            this._switchData.chunksToProcess = this._switchData.chunks.length;
+            
+            chunkData.cover = new Clutter.Group();
+            chunkData.cover.set_position(0, 0);
+            chunkData.cover.set_clip(monitor.x, monitor.y, monitor.width, monitor.height);
 
-        if (direction == Meta.MotionDirection.UP ||
-            direction == Meta.MotionDirection.UP_LEFT ||
-            direction == Meta.MotionDirection.UP_RIGHT)
-                yDest = global.screen_height;
-        else if (direction == Meta.MotionDirection.DOWN ||
-            direction == Meta.MotionDirection.DOWN_LEFT ||
-            direction == Meta.MotionDirection.DOWN_RIGHT)
-                yDest = -global.screen_height;
+            chunkData.inGroup = new Clutter.Group();
+            chunkData.cover.add_actor(chunkData.inGroup);
+            chunkData.outGroup = new Clutter.Group();
+            chunkData.cover.add_actor(chunkData.outGroup);
 
-        if (direction == Meta.MotionDirection.LEFT ||
-            direction == Meta.MotionDirection.UP_LEFT ||
-            direction == Meta.MotionDirection.DOWN_LEFT)
-                xDest = global.screen_width;
-        else if (direction == Meta.MotionDirection.RIGHT ||
-                 direction == Meta.MotionDirection.UP_RIGHT ||
-                 direction == Meta.MotionDirection.DOWN_RIGHT)
-                xDest = -global.screen_width;
+            let wgroup = global.window_group;
+            wgroup.add_actor(chunkData.cover);
 
-        let switchData = {};
-        this._switchData = switchData;
-        switchData.inGroup = new Clutter.Group();
-        switchData.outGroup = new Clutter.Group();
-        switchData.windows = [];
+            chunkData.windows = [];
+            for (let i = 0; i < windows.length; i++) {
+                let window = windows[i];
 
-        let wgroup = global.window_group;
-        wgroup.add_actor(switchData.inGroup);
-        wgroup.add_actor(switchData.outGroup);
+                if (window.meta_window.get_monitor() !== index)
+                    continue;
 
-        for (let i = 0; i < windows.length; i++) {
-            let window = windows[i];
+                if (!window.meta_window.showing_on_its_workspace())
+                    continue;
 
-            if (!window.meta_window.showing_on_its_workspace())
-                continue;
-
-            if (window.get_workspace() == from) {
-                switchData.windows.push({ window: window,
-                                          parent: window.get_parent() });
-                window.reparent(switchData.outGroup);
-            } else if (window.get_workspace() == to) {
-                switchData.windows.push({ window: window,
-                                          parent: window.get_parent() });
-                window.reparent(switchData.inGroup);
-                window.show_all();
+                if (window.get_workspace() == from) {
+                    chunkData.windows.push({ window: window,
+                                              parent: window.get_parent() });
+                    window.reparent(chunkData.outGroup);
+                } else if (window.get_workspace() == to) {
+                    chunkData.windows.push({ window: window,
+                                              parent: window.get_parent() });
+                    window.reparent(chunkData.inGroup);
+                    window.show_all();
+                }
             }
-        }
 
-        switchData.inGroup.set_position(-xDest, -yDest);
-        switchData.inGroup.raise_top();
+            /* @direction is the direction that the "camera" moves, so the
+             * screen contents have to move one screen's worth in the
+             * opposite direction.
+             */
+            let xDest = 0, yDest = 0;
 
-        Tweener.addTween(switchData.outGroup,
-                         { x: xDest,
-                           y: yDest,
-                           time: WINDOW_ANIMATION_TIME,
-                           transition: 'easeOutQuad',
-                           onComplete: this._switchWorkspaceDone,
-                           onCompleteScope: this,
-                           onCompleteParams: [cinnamonwm]
-                         });
-        Tweener.addTween(switchData.inGroup,
-                         { x: 0,
-                           y: 0,
-                           time: WINDOW_ANIMATION_TIME,
-                           transition: 'easeOutQuad'
-                         });
+            if (direction == Meta.MotionDirection.UP ||
+                direction == Meta.MotionDirection.UP_LEFT ||
+                direction == Meta.MotionDirection.UP_RIGHT)
+            {
+                yDest = global.screen_height;
+            }
+            else if (direction == Meta.MotionDirection.DOWN ||
+                direction == Meta.MotionDirection.DOWN_LEFT ||
+                direction == Meta.MotionDirection.DOWN_RIGHT)
+            {
+                yDest = -global.screen_height;
+            }
+            
+            if (direction == Meta.MotionDirection.LEFT ||
+                direction == Meta.MotionDirection.UP_LEFT ||
+                direction == Meta.MotionDirection.DOWN_LEFT)
+            {
+                xDest = global.screen_width;
+            }
+            else if (direction == Meta.MotionDirection.RIGHT ||
+                     direction == Meta.MotionDirection.UP_RIGHT ||
+                     direction == Meta.MotionDirection.DOWN_RIGHT)
+            {
+                xDest = -global.screen_width;
+            }
+
+            chunkData.inGroup.set_position(-xDest, -yDest);
+            chunkData.inGroup.set_size(0, global.screen_height);
+            chunkData.inGroup.raise_top();
+
+            Tweener.addTween(chunkData.outGroup,
+                             { x: xDest,
+                               y: yDest,
+                               time: WINDOW_ANIMATION_TIME,
+                               transition: 'easeOutQuad',
+                               onComplete: this._switchWorkspaceChunkDone,
+                               onCompleteScope: this,
+                               onCompleteParams: [cinnamonwm, index]
+                             });
+            Tweener.addTween(chunkData.inGroup,
+                             { x: 0,
+                               y: 0,
+                               time: WINDOW_ANIMATION_TIME,
+                               transition: 'easeOutQuad'
+                             });
+        }, this);
     },
 
-    _switchWorkspaceDone : function(cinnamonwm) {
-        let switchData = this._switchData;
-        if (!switchData)
+    _switchWorkspaceChunkDone : function(cinnamonwm, index) {
+        if (!this._switchData) {
             return;
-        this._switchData = null;
-
-        for (let i = 0; i < switchData.windows.length; i++) {
-                let w = switchData.windows[i];
-                if (w.window.is_destroyed()) // Window gone
-                    continue;
-                if (w.window.get_parent() == switchData.outGroup) {
-                    w.window.reparent(w.parent);
-                    w.window.hide();
-                } else
-                    w.window.reparent(w.parent);
         }
-        Tweener.removeTweens(switchData.inGroup);
-        Tweener.removeTweens(switchData.outGroup);
-        switchData.inGroup.destroy();
-        switchData.outGroup.destroy();
+        let chunkData = this._switchData.chunks[index];
+        if (!chunkData) {
+            return;
+        }
+        this._switchData.chunks[index] = null;
+        for (let i = 0; i < chunkData.windows.length; i++) {
+            let w = chunkData.windows[i];
+            if (w.window.is_destroyed()) {// Window gone
+                continue;
+            }
+            if (w.window.get_parent() == chunkData.outGroup) {
+                w.window.reparent(w.parent);
+                w.window.hide();
+            } else
+                w.window.reparent(w.parent);
+        }
+        Tweener.removeTweens(chunkData.inGroup);
+        Tweener.removeTweens(chunkData.outGroup);
+        chunkData.cover.destroy();
 
-        cinnamonwm.completed_switch_workspace();                        
+        if (--this._switchData.chunksToProcess === 0) {
+            this._switchData = null;
+            cinnamonwm.completed_switch_workspace();
+        }
+    },
+
+    _killSwitchWorkspace : function(cinnamonwm) {
+        if (!this._switchData) {
+            return;
+        }
+        this._switchData.chunks.forEach(function(chunkData, index) {
+            this._switchWorkspaceChunkDone(cinnamonwm, index);
+        }, this);
     },
 
     showWorkspaceOSD : function() {
