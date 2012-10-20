@@ -584,7 +584,7 @@ ZoomRegion.prototype = {
         this._viewPortX = 0;
         this._viewPortY = 0;
         this._viewPortWidth = global.screen_width;
-        this._viewPortWidth = global.screen_height;
+        this._viewPortHeight = global.screen_height;
         this._xCenter = this._viewPortWidth / 2;
         this._yCenter = this._viewPortHeight / 2;
         this._xMagFactor = 1;
@@ -606,6 +606,7 @@ ZoomRegion.prototype = {
             this._updateMousePosition();
             global.top_window_group.raise_top();
         } else if (!activate && this.isActive()) {
+            global.top_window_group.reparent(global.stage);
             this._destroyActors();
         }
     },
@@ -897,6 +898,7 @@ ZoomRegion.prototype = {
     //// Private methods ////
 
     _createActors: function() {
+        global.top_window_group.reparent(Main.uiGroup);
         // The root actor for the zoom region
         this._magView = new St.Bin({ style_class: 'magnifier-zoom-region', x_fill: true, y_fill: true });
         global.stage.add_actor(this._magView);
