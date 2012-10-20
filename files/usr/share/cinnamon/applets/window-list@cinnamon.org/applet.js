@@ -64,21 +64,30 @@ AppMenuButtonRightClickMenu.prototype = {
         this.itemOnAllWorkspaces = new PopupMenu.PopupMenuItem(_("Visible on all workspaces"));
         this.itemOnAllWorkspaces.connect('activate', Lang.bind(this, this._toggleOnAllWorkspaces));
 
-        let items = [
-            this.itemOnAllWorkspaces,
-            this.itemMoveToLeftWorkspace,
-            this.itemMoveToRightWorkspace,
-            new PopupMenu.PopupSeparatorMenuItem(),
-            this.itemCloseAllWindows,
-            this.itemCloseOtherWindows,
-            new PopupMenu.PopupSeparatorMenuItem(),
-            this.itemMinimizeWindow,
-            this.itemMaximizeWindow,
-            this.itemCloseWindow
-        ];
-        (orientation == St.Side.BOTTOM ? items : items.reverse()).forEach(function(item) {
-            this.addMenuItem(item);
-        }, this);
+        if (orientation == St.Side.BOTTOM) {
+            this.addMenuItem(this.itemOnAllWorkspaces);
+            this.addMenuItem(this.itemMoveToLeftWorkspace);
+            this.addMenuItem(this.itemMoveToRightWorkspace);
+            this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+            this.addMenuItem(this.itemCloseAllWindows);
+            this.addMenuItem(this.itemCloseOtherWindows);
+            this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+            this.addMenuItem(this.itemMinimizeWindow);
+            this.addMenuItem(this.itemMaximizeWindow);            
+            this.addMenuItem(this.itemCloseWindow);                        
+        }
+        else {
+            this.addMenuItem(this.itemCloseWindow);            
+            this.addMenuItem(this.itemMaximizeWindow);
+            this.addMenuItem(this.itemMinimizeWindow);
+            this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+            this.addMenuItem(this.itemCloseOtherWindows);
+            this.addMenuItem(this.itemCloseAllWindows);
+            this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+            this.addMenuItem(this.itemMoveToLeftWorkspace);
+            this.addMenuItem(this.itemMoveToRightWorkspace);
+            this.addMenuItem(this.itemOnAllWorkspaces);
+        }
      },
 
      _onToggled: function(actor, event){
