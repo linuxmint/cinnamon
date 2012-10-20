@@ -190,7 +190,9 @@ WorkspacesView.prototype = {
     _updateWorkspaceActors: function(showAnimation) {
         let active = global.screen.get_active_workspace_index();
 
-        this._animating = showAnimation;
+        // Animation is turned off in a multi-manager scenario till we fix 
+        // the animations so that they respect the monitor boundaries.
+        this._animating = Main.layoutManager.monitors.length < 2 && showAnimation;
 
         for (let w = 0; w < this._workspaces.length; w++) {
             let workspace = this._workspaces[w];
@@ -199,7 +201,7 @@ WorkspacesView.prototype = {
 
             let x = (w - active) * (this._width + this._spacing + this._workspaceRatioSpacing);
 
-            if (showAnimation) {
+            if (this._animating) {
                 let params = { x: x,
                                time: WORKSPACE_SWITCH_TIME,
                                transition: 'easeOutQuad'
