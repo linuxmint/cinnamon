@@ -1586,7 +1586,12 @@ class KeyboardSidePage (SidePage):
         entry_cell.connect('accel-edited', self.onEntryChanged, self.entry_store)
         entry_cell.connect('accel-cleared', self.onEntryCleared, self.entry_store)
         entry_cell.set_property('editable', True)
-        entry_cell.set_property('accel-mode', Gtk.CellRendererAccelMode.MODIFIER_TAP)
+
+        try:  # Only Ubuntu allows MODIFIER_TAP - using a single modifier as a keybinding
+            entry_cell.set_property('accel-mode', Gtk.CellRendererAccelMode.MODIFIER_TAP)
+        except Exception:  # Pure GTK does not, so use OTHER
+            entry_cell.set_property('accel-mode', Gtk.CellRendererAccelMode.OTHER)
+
         entry_column = Gtk.TreeViewColumn(_("Keyboard bindings"), entry_cell, text=0)
         entry_column.set_alignment(.5)
         self.entry_tree.append_column(entry_column)
