@@ -1195,7 +1195,7 @@ MyApplet.prototype = {
                 favoritesBox.actor.add_actor(button.actor, { y_align: St.Align.END, y_fill: false });
                 button.actor.connect('enter-event', Lang.bind(this, function() {
                    this.selectedAppTitle.set_text(button.app.get_name());
-                   if (button.app.get_description()) this.selectedAppDescription.set_text(button.app.get_description());
+                   if (button.app.get_description()) this.selectedAppDescription.set_text(button.app.get_description().split("\n")[0]);
                    else this.selectedAppDescription.set_text("");
                 }));
                 button.actor.connect('leave-event', Lang.bind(this, function() {
@@ -1283,8 +1283,8 @@ MyApplet.prototype = {
                         applicationButton.actor.connect('leave-event', Lang.bind(this, this._appLeaveEvent, applicationButton));
                         this._addEnterEvent(applicationButton, Lang.bind(this, this._appEnterEvent, applicationButton));
                         this._applicationsButtons.push(applicationButton);
-                        applicationButton.category.push(dir.get_menu_id());
-                        this.applicationsByCategory[dir.get_menu_id()].push(app.get_name());
+                        applicationButton.category.push(top_dir.get_menu_id());
+                        this.applicationsByCategory[top_dir.get_menu_id()].push(app.get_name());
                     } else {
                         for (let i = 0; i < this._applicationsButtons.length; i++) {
                             if (this._applicationsButtons[i].app == app) {
