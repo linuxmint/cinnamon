@@ -800,8 +800,7 @@ MyApplet.prototype = {
             this._changeWorkspaces();
             global.screen.connect('notify::n-workspaces',
                                     Lang.bind(this, this._changeWorkspaces));
-            this._attentionSignals = { attention: null,
-                                            urgent: null }
+            this._urgent_signal = null;
             global.settings.connect('changed::window-list-applet-alert', Lang.bind(this, this._updateAttentionGrabber));
             this._updateAttentionGrabber();
             // this._container.connect('allocate', Lang.bind(Main.panel, this._allocateBoxes)); 
@@ -815,12 +814,10 @@ MyApplet.prototype = {
     _updateAttentionGrabber: function() {
         let active = global.settings.get_boolean('window-list-applet-alert');
         if (active) {
-            this._attentionSignals.attention = global.display.connect('window-demands-attention', Lang.bind(this, this._onWindowDemandsAttention));
-            this._attentionSignals.urgent = global.display.connect('window-marked-urgent', Lang.bind(this, this._onWindowDemandsAttention));
+            this._urgent_signal = global.display.connect('window-marked-urgent', Lang.bind(this, this._onWindowDemandsAttention));
         } else {
-            if (this._attentionSignals.attention) {
-                global.display.disconnect(this._attentionSignals.attention);
-                global.display.disconnect(this._attentionSignals.urgent);
+            if (this._urgent_signal) {
+                global.display.disconnect(this._urgent_signal);
             }
         }
     },
