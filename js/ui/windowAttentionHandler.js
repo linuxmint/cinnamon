@@ -30,8 +30,15 @@ WindowAttentionHandler.prototype = {
 
         try {
 
-            if (this._tracker.is_window_interesting(window)) {                
-                window.change_workspace(global.screen.get_active_workspace());
+            if (this._tracker.is_window_interesting(window)) {        
+                if (global.settings.get_boolean("bring-windows-to-current-workspace")) {
+                    window.change_workspace(global.screen.get_active_workspace());
+                }
+                else {
+                    if (global.screen.get_active_workspace().index() != window.get_workspace().index()) {
+                        window.get_workspace().activate(global.get_current_time());
+                    }                    
+                }
                 window.activate(global.get_current_time());
             }
         }
