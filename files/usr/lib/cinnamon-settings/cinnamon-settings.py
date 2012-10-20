@@ -1594,7 +1594,7 @@ class KeyboardSidePage (SidePage):
         self.main_store = []
 
         # categories                                Display name        internal category
-        self.main_store.append(KeyBindingCategory(_("Cinnamon"), "cinnamon"))
+        self.main_store.append(KeyBindingCategory("Cinnamon", "cinnamon"))
         self.main_store.append(KeyBindingCategory(_("Windows"), "windows"))
         self.main_store.append(KeyBindingCategory(_("Workspace Management"), "ws-manage"))
         self.main_store.append(KeyBindingCategory(_("System"), "system"))
