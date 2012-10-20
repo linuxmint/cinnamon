@@ -7,16 +7,16 @@ msgid ""
 msgstr ""
 "Project-Id-Version: linuxmint\n"
 "Report-Msgid-Bugs-To: FULL NAME <EMAIL@ADDRESS>\n"
-"POT-Creation-Date: 2012-10-18 13:28+0100\n"
-"PO-Revision-Date: 2012-10-07 07:00+0000\n"
-"Last-Translator: Gabriel Retana <ganzeldragon@gmail.com>\n"
+"POT-Creation-Date: 2012-10-20 15:43+0100\n"
+"PO-Revision-Date: 2012-10-18 15:32+0000\n"
+"Last-Translator: Quetzal Oscuro <quetzaloscuro@gmail.com>\n"
 "Language-Team: Spanish <es@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Launchpad-Export-Date: 2012-10-18 13:11+0000\n"
-"X-Generator: Launchpad (build 16160)\n"
+"X-Launchpad-Export-Date: 2012-10-20 20:12+0000\n"
+"X-Generator: Launchpad (build 16165)\n"
 
 #: src/cinnamon-app.c:347 src/cinnamon-app.c:355
 #: js/ui/notificationDaemon.js:458
@@ -251,7 +251,7 @@ msgstr "bandeja"
 
 #: js/ui/keyboard.js:555
 #: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:114
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2920
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2921
 msgid "Keyboard"
 msgstr "Teclado"
 
@@ -287,16 +287,16 @@ msgstr "Página web"
 msgid "WORKSPACE"
 msgstr "Escritorio"
 
-#: js/ui/messageTray.js:1250
+#: js/ui/messageTray.js:1259
 msgid "Open"
 msgstr "Abrir"
 
-#: js/ui/messageTray.js:1257
+#: js/ui/messageTray.js:1266
 #: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/applet.js:59
 msgid "Remove"
 msgstr "Quitar"
 
-#: js/ui/messageTray.js:1844
+#: js/ui/messageTray.js:1853
 msgid "System Information"
 msgstr "Información del sistema"
 
@@ -1334,15 +1334,15 @@ msgstr ""
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:68
 msgid "Maximize window"
-msgstr ""
+msgstr "Maximizar ventana"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:69
 msgid "Unmaximize window"
-msgstr ""
+msgstr "Restaurar ventana"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:70
 msgid "Minimize window"
-msgstr ""
+msgstr "Minimizar ventana"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:71
 msgid "Toggle tiled left (must restart Cinnamon)"
@@ -1354,11 +1354,11 @@ msgstr ""
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:73
 msgid "Close window"
-msgstr ""
+msgstr "Cerrar ventana"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:75
 msgid "Activate window menu"
-msgstr ""
+msgstr "Activar el menú de la ventana"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:76
 msgid "Toggle maximization state"
@@ -1374,19 +1374,19 @@ msgstr ""
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:79
 msgid "Maximize vertically"
-msgstr ""
+msgstr "Maximizar verticalmente"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:80
 msgid "Maximize horizontally"
-msgstr ""
+msgstr "Maximizar horizaontalmente"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:81
 msgid "Resize window"
-msgstr ""
+msgstr "Redimensionar ventana"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:82
 msgid "Move window"
-msgstr ""
+msgstr "Mover ventana"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:83
 msgid "Center window in screen"
@@ -1398,7 +1398,7 @@ msgstr ""
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:85
 msgid "Move window to upper-left"
-msgstr ""
+msgstr "Mover ventana arriba a la izquierda"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:86
 msgid "Move window to lower-right"
@@ -1410,19 +1410,19 @@ msgstr ""
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:88
 msgid "Move window to right edge"
-msgstr ""
+msgstr "Mover ventana al borde derecho"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:89
 msgid "Move window to top edge"
-msgstr ""
+msgstr "Mover ventana al borde superior"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:90
 msgid "Move window to bottom edge"
-msgstr ""
+msgstr "Mover ventana al borde inferior"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:91
 msgid "Move window to left edge"
-msgstr ""
+msgstr "Mover ventana al borde izquierdo"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:94
 msgid "Toggle showing window on all workspaces"
@@ -1430,119 +1430,119 @@ msgstr ""
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:95
 msgid "Switch to left workspace"
-msgstr ""
+msgstr "Cambiar al área de trabajo a la izquierda"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:96
 msgid "Switch to right workspace"
-msgstr ""
+msgstr "Cambiar al área de trabajo a la derecha"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:97
 msgid "Switch to workspace 1"
-msgstr ""
+msgstr "Cambiar al área de trabajo 1"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:98
 msgid "Switch to workspace 2"
-msgstr ""
+msgstr "Cambiar al área de trabajo 2"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:99
 msgid "Switch to workspace 3"
-msgstr ""
+msgstr "Cambiar al área de trabajo 3"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:100
 msgid "Switch to workspace 4"
-msgstr ""
+msgstr "Cambiar al área de trabajo 4"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:101
 msgid "Switch to workspace 5"
-msgstr ""
+msgstr "Cambiar al área de trabajo 5"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:102
 msgid "Switch to workspace 6"
-msgstr ""
+msgstr "Cambiar al área de trabajo 6"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:103
 msgid "Switch to workspace 7"
-msgstr ""
+msgstr "Cambiar al área de trabajo 7"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:104
 msgid "Switch to workspace 8"
-msgstr ""
+msgstr "Cambiar al área de trabajo 8"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:105
 msgid "Switch to workspace 9"
-msgstr ""
+msgstr "Cambiar al área de trabajo 9"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:106
 msgid "Switch to workspace 10"
-msgstr ""
+msgstr "Cambiar al área de trabajo 10"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:107
 msgid "Switch to workspace 11"
-msgstr ""
+msgstr "Cambiar al área de trabajo 11"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:108
 msgid "Switch to workspace 12"
-msgstr ""
+msgstr "Cambiar al área de trabajo 12"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:109
 msgid "Move window to left workspace"
-msgstr ""
+msgstr "Mover ventana al área de trabajo a la izquierda"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:110
 msgid "Move window to right workspace"
-msgstr ""
+msgstr "Mover ventana al área de trabajo a la derecha"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:111
 msgid "Move window to workspace 1"
-msgstr ""
+msgstr "Mover ventana al área de trabajo 1"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:112
 msgid "Move window to workspace 2"
-msgstr ""
+msgstr "Mover ventana al área de trabajo 2"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:113
 msgid "Move window to workspace 3"
-msgstr ""
+msgstr "Mover ventana al área de trabajo 3"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:114
 msgid "Move window to workspace 4"
-msgstr ""
+msgstr "Mover ventana al área de trabajo 4"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:115
 msgid "Move window to workspace 5"
-msgstr ""
+msgstr "Mover ventana al área de trabajo 5"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:116
 msgid "Move window to workspace 6"
-msgstr ""
+msgstr "Mover ventana al área de trabajo 6"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:117
 msgid "Move window to workspace 7"
-msgstr ""
+msgstr "Mover ventana al área de trabajo 7"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:118
 msgid "Move window to workspace 8"
-msgstr ""
+msgstr "Mover ventana al área de trabajo 8"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:119
 msgid "Move window to workspace 9"
-msgstr ""
+msgstr "Mover ventana al área de trabajo 9"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:120
 msgid "Move window to workspace 10"
-msgstr ""
+msgstr "Mover ventana al área de trabajo 10"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:121
 msgid "Move window to workspace 11"
-msgstr ""
+msgstr "Mover ventana al área de trabajo 11"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:122
 msgid "Move window to workspace 12"
-msgstr ""
+msgstr "Mover ventana al área de trabajo 12"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:125
 msgid "Log out"
-msgstr ""
+msgstr "Cerrar Sesión"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:127
 msgid "Toggle recording desktop (must restart Cinnamon)"
@@ -1902,10 +1902,6 @@ msgstr ""
 msgid "Keyboard bindings"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1597
-msgid "Cinnamon"
-msgstr ""
-
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1599
 msgid "Workspace Management"
 msgstr ""
@@ -1995,8 +1991,8 @@ msgid "Right side title bar buttons"
 msgstr "Botones del lado derecho de la barra de título"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2620
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2949
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2963
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2950
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2964
 msgid "Cinnamon Settings"
 msgstr "Configuración de Cinnamon"
 
@@ -2024,7 +2020,7 @@ msgstr "Retraso del menú al pasar el cursor"
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2811
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2822
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2833
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2889
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2890
 msgid "milliseconds"
 msgstr "milisegundos"
 
@@ -2303,97 +2299,103 @@ msgid "Enable mouse-wheel scrolling in Window List applet"
 msgstr ""
 "Habilitar rueda de desplazamiento del ratón en el applet Lista de Ventanas"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2884
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2883
+msgid ""
+"Bring windows which require attention to the current workspace (instead of "
+"switching to the window's workspace)"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2885
 msgid "Workspaces"
 msgstr "Áreas de trabajo"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2886
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2887
 msgid "Enable workspace OSD"
 msgstr "Activar áreas de trabajo OSD"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2889
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2890
 msgid "Workspace OSD duration"
 msgstr "Duración del OSD en el área de trabajo"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2893
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2894
 msgid "Workspace OSD horizontal position"
 msgstr "Posición horizontal del OSD en el área de trabajo"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2893
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2894
 msgid "percent of the monitor's width"
 msgstr "porcentaje del ancho del monitor"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2897
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2898
 msgid "Workspace OSD vertical position"
 msgstr "Posición vertical del OSD en el área de trabajo"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2897
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2898
 msgid "percent of the monitor's height"
 msgstr "porcentaje de la altura del monitor"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2900
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2901
 msgid "Only use workspaces on primary monitor (requires Cinnamon restart)"
 msgstr ""
 "Sólo usar áreas de trabajo en monitor primario (requiere reiniciar Cinnamon)"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2901
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2902
 msgid "Display Expo view as a grid"
 msgstr "Mostrar vista Expo como rejilla"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2903
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2904
 msgid "Fonts"
 msgstr "Tipografías"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2905
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2906
 msgid "Text scaling factor"
 msgstr "Factor de escalado del texto"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2906
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2907
 msgid "Default font"
 msgstr "Tipografía predeterminada"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2907
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2908
 msgid "Document font"
 msgstr "Tipografía de documento"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2908
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2909
 msgid "Monospace font"
 msgstr "Tipografía de ancho fijo"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2909
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2910
 msgid "Window title font"
 msgstr "Tipografía del título de la ventana"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2910
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2911
 msgid "Hinting"
 msgstr "Contorno"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2911
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2912
 msgid "Antialiasing"
 msgstr "Suavizado"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2913
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2914
 msgid "General"
 msgstr "General"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2915
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2916
 msgid ""
 "Log LookingGlass output to ~/.cinnamon/glass.log (Requires Cinnamon restart)"
 msgstr ""
 "Guardar la salida de LookingGlass en ~/.cinnamon/glass.log (Será necesario "
 "reiniciar Cinnamon)"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2916
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2917
 msgid "Emulate middle click by clicking both left and right buttons"
 msgstr ""
 "Emular el botón central pulsando simultaneamente los botones izquierdo y "
 "derecho"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2917
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2918
 msgid "Display notifications"
 msgstr "Mostrar notificaciones"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2927
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2928
 msgid "Backgrounds"
 msgstr "Fondos"
 
@@ -2412,6 +2414,3 @@ msgstr "Aplicación"
 #: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/add-panel-launcher.py:142
 msgid "Add panel launcher..."
 msgstr "Añadir lanzador al panel..."
-
-#~ msgid "Have file manager (Nemo) handle the desktop"
-#~ msgstr "Permitir al administrador de archivos (Nemo) manejar el escritorio"

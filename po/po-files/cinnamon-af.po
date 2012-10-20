@@ -7,16 +7,16 @@ msgid ""
 msgstr ""
 "Project-Id-Version: linuxmint\n"
 "Report-Msgid-Bugs-To: FULL NAME <EMAIL@ADDRESS>\n"
-"POT-Creation-Date: 2012-10-18 13:28+0100\n"
-"PO-Revision-Date: 2012-10-18 12:42+0000\n"
-"Last-Translator: Silveri <silv3ricedragon@gmail.com>\n"
+"POT-Creation-Date: 2012-10-20 15:43+0100\n"
+"PO-Revision-Date: 2012-10-18 21:34+0000\n"
+"Last-Translator: Bernhard Breytenbach <Unknown>\n"
 "Language-Team: Afrikaans <af@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Launchpad-Export-Date: 2012-10-18 13:11+0000\n"
-"X-Generator: Launchpad (build 16160)\n"
+"X-Launchpad-Export-Date: 2012-10-20 20:12+0000\n"
+"X-Generator: Launchpad (build 16165)\n"
 
 #: src/cinnamon-app.c:347 src/cinnamon-app.c:355
 #: js/ui/notificationDaemon.js:458
@@ -155,11 +155,11 @@ msgstr "Verkeerde wagwoord, probeer asseblief weer"
 #: js/ui/endSessionDialog.js:58
 #, c-format
 msgid "Log Out %s"
-msgstr "Teken Uit %s"
+msgstr "Meld Af %s"
 
 #: js/ui/endSessionDialog.js:59 js/ui/endSessionDialog.js:73
 msgid "Log Out"
-msgstr "Teken Uit"
+msgstr "Meld Af"
 
 #: js/ui/endSessionDialog.js:60
 msgid "Click Log Out to quit these applications and log out of the system."
@@ -183,7 +183,7 @@ msgstr[1] "Jy sal outomaties uitteken na %d sekondes."
 
 #: js/ui/endSessionDialog.js:71
 msgid "Logging out of the system."
-msgstr ""
+msgstr "Teken tans uit die sisteem uit."
 
 #: js/ui/endSessionDialog.js:78 js/ui/endSessionDialog.js:89
 msgid "Power Off"
@@ -203,7 +203,7 @@ msgstr[1] "Die sisteem sal outomaties afskakel na %d sekondes."
 
 #: js/ui/endSessionDialog.js:85
 msgid "Powering off the system."
-msgstr ""
+msgstr "Skakel tans die sisteem af."
 
 #: js/ui/endSessionDialog.js:87 js/ui/endSessionDialog.js:95
 #: js/ui/endSessionDialog.js:104
@@ -250,7 +250,7 @@ msgstr ""
 
 #: js/ui/keyboard.js:555
 #: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:114
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2920
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2921
 msgid "Keyboard"
 msgstr "Sleutelbord"
 
@@ -286,16 +286,16 @@ msgstr ""
 msgid "WORKSPACE"
 msgstr ""
 
-#: js/ui/messageTray.js:1250
+#: js/ui/messageTray.js:1259
 msgid "Open"
 msgstr ""
 
-#: js/ui/messageTray.js:1257
+#: js/ui/messageTray.js:1266
 #: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/applet.js:59
 msgid "Remove"
 msgstr ""
 
-#: js/ui/messageTray.js:1844
+#: js/ui/messageTray.js:1853
 msgid "System Information"
 msgstr ""
 
@@ -766,7 +766,7 @@ msgstr ""
 
 #: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1235
 msgid "Logout"
-msgstr ""
+msgstr "Meld Af"
 
 #: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1236
 msgid "Leave the session"
@@ -1539,7 +1539,7 @@ msgstr ""
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:125
 msgid "Log out"
-msgstr ""
+msgstr "Meld Af"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:127
 msgid "Toggle recording desktop (must restart Cinnamon)"
@@ -1899,10 +1899,6 @@ msgstr ""
 msgid "Keyboard bindings"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1597
-msgid "Cinnamon"
-msgstr ""
-
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1599
 msgid "Workspace Management"
 msgstr ""
@@ -1992,8 +1988,8 @@ msgid "Right side title bar buttons"
 msgstr ""
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2620
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2949
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2963
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2950
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2964
 msgid "Cinnamon Settings"
 msgstr ""
 
@@ -2021,7 +2017,7 @@ msgstr ""
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2811
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2822
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2833
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2889
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2890
 msgid "milliseconds"
 msgstr ""
 
@@ -2293,92 +2289,98 @@ msgstr ""
 msgid "Enable mouse-wheel scrolling in Window List applet"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2884
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2883
+msgid ""
+"Bring windows which require attention to the current workspace (instead of "
+"switching to the window's workspace)"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2885
 msgid "Workspaces"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2886
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2887
 msgid "Enable workspace OSD"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2889
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2890
 msgid "Workspace OSD duration"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2893
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2894
 msgid "Workspace OSD horizontal position"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2893
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2894
 msgid "percent of the monitor's width"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2897
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2898
 msgid "Workspace OSD vertical position"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2897
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2898
 msgid "percent of the monitor's height"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2900
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2901
 msgid "Only use workspaces on primary monitor (requires Cinnamon restart)"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2901
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2902
 msgid "Display Expo view as a grid"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2903
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2904
 msgid "Fonts"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2905
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2906
 msgid "Text scaling factor"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2906
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2907
 msgid "Default font"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2907
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2908
 msgid "Document font"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2908
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2909
 msgid "Monospace font"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2909
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2910
 msgid "Window title font"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2910
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2911
 msgid "Hinting"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2911
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2912
 msgid "Antialiasing"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2913
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2914
 msgid "General"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2915
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2916
 msgid ""
 "Log LookingGlass output to ~/.cinnamon/glass.log (Requires Cinnamon restart)"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2916
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2917
 msgid "Emulate middle click by clicking both left and right buttons"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2917
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2918
 msgid "Display notifications"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2927
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2928
 msgid "Backgrounds"
 msgstr ""
 

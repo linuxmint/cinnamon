@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: linuxmint\n"
 "Report-Msgid-Bugs-To: FULL NAME <EMAIL@ADDRESS>\n"
-"POT-Creation-Date: 2012-10-18 13:28+0100\n"
+"POT-Creation-Date: 2012-10-20 15:43+0100\n"
 "PO-Revision-Date: 2012-09-15 02:25+0000\n"
 "Last-Translator: abuyop <Unknown>\n"
 "Language-Team: Malay <ms@li.org>\n"
@@ -15,8 +15,8 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Launchpad-Export-Date: 2012-10-18 13:11+0000\n"
-"X-Generator: Launchpad (build 16160)\n"
+"X-Launchpad-Export-Date: 2012-10-20 20:11+0000\n"
+"X-Generator: Launchpad (build 16165)\n"
 
 #: src/cinnamon-app.c:347 src/cinnamon-app.c:355
 #: js/ui/notificationDaemon.js:458
@@ -250,7 +250,7 @@ msgstr "talam"
 
 #: js/ui/keyboard.js:555
 #: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:114
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2920
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2921
 msgid "Keyboard"
 msgstr "Papan Kekunci"
 
@@ -286,16 +286,16 @@ msgstr "Laman Sesawang"
 msgid "WORKSPACE"
 msgstr "RUANG KERJA"
 
-#: js/ui/messageTray.js:1250
+#: js/ui/messageTray.js:1259
 msgid "Open"
 msgstr "Buka"
 
-#: js/ui/messageTray.js:1257
+#: js/ui/messageTray.js:1266
 #: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/applet.js:59
 msgid "Remove"
 msgstr "Buang"
 
-#: js/ui/messageTray.js:1844
+#: js/ui/messageTray.js:1853
 msgid "System Information"
 msgstr "Maklumat Sistem"
 
@@ -1901,10 +1901,6 @@ msgstr ""
 msgid "Keyboard bindings"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1597
-msgid "Cinnamon"
-msgstr ""
-
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1599
 msgid "Workspace Management"
 msgstr ""
@@ -1994,8 +1990,8 @@ msgid "Right side title bar buttons"
 msgstr "Butang tajuk bar sebelah kanan"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2620
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2949
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2963
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2950
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2964
 msgid "Cinnamon Settings"
 msgstr "Tetapan Cinnamon"
 
@@ -2023,7 +2019,7 @@ msgstr "Lewatkan kitaran menu"
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2811
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2822
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2833
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2889
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2890
 msgid "milliseconds"
 msgstr "milisaat"
 
@@ -2297,96 +2293,102 @@ msgstr "Gaya penukar ALT-tab"
 msgid "Enable mouse-wheel scrolling in Window List applet"
 msgstr "Benarkan penatalan roda-tetikus dalan aplet Senarai Tetingkap"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2884
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2883
+msgid ""
+"Bring windows which require attention to the current workspace (instead of "
+"switching to the window's workspace)"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2885
 msgid "Workspaces"
 msgstr "Ruang Kerja"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2886
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2887
 msgid "Enable workspace OSD"
 msgstr "Benarkan OSD ruang kerja"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2889
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2890
 msgid "Workspace OSD duration"
 msgstr "Jangkamasa OSD ruang kerja"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2893
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2894
 msgid "Workspace OSD horizontal position"
 msgstr "Kedudukan mengufuk OSD ruang kerja"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2893
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2894
 msgid "percent of the monitor's width"
 msgstr "peratusan lebar monitor"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2897
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2898
 msgid "Workspace OSD vertical position"
 msgstr "Kedudukan menegak OSD ruang kerja"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2897
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2898
 msgid "percent of the monitor's height"
 msgstr "peratusan tinggi monitor"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2900
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2901
 msgid "Only use workspaces on primary monitor (requires Cinnamon restart)"
 msgstr ""
 "Hanya guna ruang kerja pada monitor utama (perlu mulakan semula Cinnamon)"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2901
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2902
 msgid "Display Expo view as a grid"
 msgstr "Papar paparan Expo sebagai grid"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2903
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2904
 msgid "Fonts"
 msgstr "Fon-fon"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2905
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2906
 msgid "Text scaling factor"
 msgstr "Faktor pembesaran teks"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2906
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2907
 msgid "Default font"
 msgstr "Jenis fon asal"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2907
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2908
 msgid "Document font"
 msgstr "Fon dokumen"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2908
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2909
 msgid "Monospace font"
 msgstr "Fon monospace"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2909
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2910
 msgid "Window title font"
 msgstr "Tulisan tajuk tetingkap"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2910
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2911
 msgid "Hinting"
 msgstr "Pembayang"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2911
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2912
 msgid "Antialiasing"
 msgstr "Pelicinan"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2913
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2914
 msgid "General"
 msgstr "Am"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2915
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2916
 msgid ""
 "Log LookingGlass output to ~/.cinnamon/glass.log (Requires Cinnamon restart)"
 msgstr ""
 "Logkan output LookingGlass ke ~/.cinnamon/glass.log (Perlu mulakan semula "
 "Cinnamon)"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2916
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2917
 msgid "Emulate middle click by clicking both left and right buttons"
 msgstr ""
 "Emulasikan klik tengah dengan mengklik kedua-dua butang kiri dan kanan"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2917
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2918
 msgid "Display notifications"
 msgstr "Papar pemberitahuan"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2927
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2928
 msgid "Backgrounds"
 msgstr "Latar Belakang"
 
@@ -2405,6 +2407,3 @@ msgstr "Aplikasi"
 #: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/add-panel-launcher.py:142
 msgid "Add panel launcher..."
 msgstr "Tambah pelancar panel..."
-
-#~ msgid "Have file manager (Nemo) handle the desktop"
-#~ msgstr "Biarkan pengurus fail (Nemo) kendalikan desktop"

@@ -7,16 +7,16 @@ msgid ""
 msgstr ""
 "Project-Id-Version: linuxmint\n"
 "Report-Msgid-Bugs-To: FULL NAME <EMAIL@ADDRESS>\n"
-"POT-Creation-Date: 2012-10-18 13:28+0100\n"
-"PO-Revision-Date: 2012-10-05 17:41+0000\n"
+"POT-Creation-Date: 2012-10-20 15:43+0100\n"
+"PO-Revision-Date: 2012-10-20 18:59+0000\n"
 "Last-Translator: samson <Unknown>\n"
 "Language-Team: Amharic <am@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Launchpad-Export-Date: 2012-10-18 13:11+0000\n"
-"X-Generator: Launchpad (build 16160)\n"
+"X-Launchpad-Export-Date: 2012-10-20 20:12+0000\n"
+"X-Generator: Launchpad (build 16165)\n"
 
 #: src/cinnamon-app.c:347 src/cinnamon-app.c:355
 #: js/ui/notificationDaemon.js:458
@@ -246,7 +246,7 @@ msgstr "ትሪ"
 
 #: js/ui/keyboard.js:555
 #: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:114
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2920
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2921
 msgid "Keyboard"
 msgstr "የፊደል ገበታ"
 
@@ -282,16 +282,16 @@ msgstr "ድህረ ገጽ"
 msgid "WORKSPACE"
 msgstr "የስራ ቦታ"
 
-#: js/ui/messageTray.js:1250
+#: js/ui/messageTray.js:1259
 msgid "Open"
 msgstr "መክፈቻ"
 
-#: js/ui/messageTray.js:1257
+#: js/ui/messageTray.js:1266
 #: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/applet.js:59
 msgid "Remove"
 msgstr "ማስወገጃ"
 
-#: js/ui/messageTray.js:1844
+#: js/ui/messageTray.js:1853
 msgid "System Information"
 msgstr "የስርአት መረጃ"
 
@@ -1303,7 +1303,7 @@ msgstr "የዴስክቶፕ ማሰናጃ ማረሚያ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:60
 msgid "Toggle Scale"
-msgstr ""
+msgstr "መጠን መቀያየሪያ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:61
 msgid "Toggle Expo"
@@ -1319,39 +1319,39 @@ msgstr ""
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:64
 msgid "Run dialog (must restart Cinnamon)"
-msgstr ""
+msgstr "ንግግር ማስኬጃ (ሲናሞንን እንደገና ማስጀመር ያስፈልጋል)"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:65
 msgid "Menu button (must restart Cinnamon)"
-msgstr ""
+msgstr "የዝርዝር ቁልፍ (ሲናሞንን እንደገና ማስጀመር ያስፈልጋል)"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:68
 msgid "Maximize window"
-msgstr ""
+msgstr "መስኮቱን ማሳደጊያ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:69
 msgid "Unmaximize window"
-msgstr ""
+msgstr "መስኮቱን ማሳነሻ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:70
 msgid "Minimize window"
-msgstr ""
+msgstr "መስኮቱን ማሳነሻ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:71
 msgid "Toggle tiled left (must restart Cinnamon)"
-msgstr ""
+msgstr "በግራ የተሰለፉትን መቀያየሪያ (ሲናሞንን እንደገና ማስጀመር ያስፈልጋል)"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:72
 msgid "Toggle tiled right (must restart Cinnamon)"
-msgstr ""
+msgstr "በቀኝ የተሰለፉትን መቀያየሪያ (ሲናሞንን እንደገና ማስጀመር ያስፈልጋል)"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:73
 msgid "Close window"
-msgstr ""
+msgstr "መስኮቱን መዝጊያ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:75
 msgid "Activate window menu"
-msgstr ""
+msgstr "የመስኮት ዝርዝር ማስነሻ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:76
 msgid "Toggle maximization state"
@@ -1367,19 +1367,19 @@ msgstr ""
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:79
 msgid "Maximize vertically"
-msgstr ""
+msgstr "በቁመት ማሳደጊያ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:80
 msgid "Maximize horizontally"
-msgstr ""
+msgstr "በአግድም ማሳደጊያ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:81
 msgid "Resize window"
-msgstr ""
+msgstr "የመስኮቱን መጠን መቀየሪያ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:82
 msgid "Move window"
-msgstr ""
+msgstr "መስኮቱን ማንቀሳቀሻ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:83
 msgid "Center window in screen"
@@ -1535,7 +1535,7 @@ msgstr ""
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:125
 msgid "Log out"
-msgstr ""
+msgstr "መውጫ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:127
 msgid "Toggle recording desktop (must restart Cinnamon)"
@@ -1567,11 +1567,11 @@ msgstr ""
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:139
 msgid "Volume down"
-msgstr ""
+msgstr "መጠኑን መቀነሻ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:140
 msgid "Volume up"
-msgstr ""
+msgstr "መጠኑን መጨመሪያ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:141
 msgid "Launch media player"
@@ -1595,15 +1595,15 @@ msgstr ""
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:150
 msgid "Turn zoom on or off"
-msgstr ""
+msgstr "በቅርብ ማሳያ ማብሪያ ወይንም ማጥፊያ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:151
 msgid "Zoom in"
-msgstr ""
+msgstr "በቅርብ ማሳያ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:152
 msgid "Zoom out"
-msgstr ""
+msgstr "በርቀት ማሳያ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:153
 msgid "Turn screen reader on or off"
@@ -1615,11 +1615,11 @@ msgstr ""
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:155
 msgid "Increase text size"
-msgstr ""
+msgstr "የጽሁፉን መጠን መጨመሪያ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:156
 msgid "Decrease text size"
-msgstr ""
+msgstr "የጽሁፉን መጠን መቀነሻ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:157
 msgid "High contrast on or off"
@@ -1816,15 +1816,15 @@ msgstr ""
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1418
 msgid "Name:"
-msgstr ""
+msgstr "ስም :"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1419
 msgid "Command:"
-msgstr ""
+msgstr "ትዕዛዝ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1427
 msgid "Select a file"
-msgstr ""
+msgstr "ፋይል ይምረጡ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1477
 msgid "Typing"
@@ -1870,12 +1870,12 @@ msgstr ""
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1498
 msgid "Test Box"
-msgstr ""
+msgstr "መሞከሪያ ሳጥን"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1502
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1579
 msgid "Keyboard shortcuts"
-msgstr ""
+msgstr "የፊደል ገበታ አቋራጮች"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1507
 msgid ""
@@ -1889,14 +1889,10 @@ msgstr ""
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1570
 msgid "Categories"
-msgstr ""
+msgstr "ምድቦች"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1590
 msgid "Keyboard bindings"
-msgstr ""
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1597
-msgid "Cinnamon"
 msgstr ""
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1599
@@ -1905,15 +1901,15 @@ msgstr ""
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1600
 msgid "System"
-msgstr ""
+msgstr "ሥርዓት"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1601
 msgid "Launchers"
-msgstr ""
+msgstr "አስነሺዎች"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1602
 msgid "Sound and Media"
-msgstr ""
+msgstr "ድምጽ እና ማጫወቻዎች"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1603
 msgid "Universal Access"
@@ -1988,8 +1984,8 @@ msgid "Right side title bar buttons"
 msgstr "በቀኝ በኩል የአርእስት ባር ቁልፎች"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2620
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2949
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2963
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2950
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2964
 msgid "Cinnamon Settings"
 msgstr "ሲናሞን ማሰናጃ"
 
@@ -2017,7 +2013,7 @@ msgstr "ዝርዝር ማንሳፈፊያ ማዘግያ"
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2811
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2822
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2833
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2889
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2890
 msgid "milliseconds"
 msgstr "ሚሊ ሰከንድስ"
 
@@ -2289,93 +2285,99 @@ msgstr "ALT-tab መቀያየሪያ ዘዴ"
 msgid "Enable mouse-wheel scrolling in Window List applet"
 msgstr "በመስኮት ዝርዝር ክፍል ውስጥ የአይጥ-ጎማ መሸብለያ ማስቻያ"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2884
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2883
+msgid ""
+"Bring windows which require attention to the current workspace (instead of "
+"switching to the window's workspace)"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2885
 msgid "Workspaces"
 msgstr "የስራ ቦታዎች"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2886
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2887
 msgid "Enable workspace OSD"
 msgstr "የስራ ቦታ OSD ማስቻያ"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2889
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2890
 msgid "Workspace OSD duration"
 msgstr "የስራ ቦታ OSD የሚፈጀው ጊዜ"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2893
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2894
 msgid "Workspace OSD horizontal position"
 msgstr "የስራ ቦታ OSD የአግድም ቦታ"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2893
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2894
 msgid "percent of the monitor's width"
 msgstr "የሞኒተሩ ስፋት በፐርሰንት"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2897
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2898
 msgid "Workspace OSD vertical position"
 msgstr "የስራ ቦታ OSD የቁመት ቦታ"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2897
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2898
 msgid "percent of the monitor's height"
 msgstr "የሞኒተሩ እርዝመት በፐርሰንት"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2900
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2901
 msgid "Only use workspaces on primary monitor (requires Cinnamon restart)"
 msgstr "የስራ ቦታዎችን በቀዳሚው መመልከቻ ላይ ብቻ ማሳያ (ሲናሞንን እንደገና ማስነሳት ያስፈልጋል)"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2901
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2902
 msgid "Display Expo view as a grid"
 msgstr "የ Expo መመልከቻ እንደ መገናኛ ማሳያ"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2903
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2904
 msgid "Fonts"
 msgstr "ፊደሎች"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2905
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2906
 msgid "Text scaling factor"
 msgstr "የጽሁፍ መጠን ምክንያት"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2906
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2907
 msgid "Default font"
 msgstr "ነባር ፊደል"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2907
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2908
 msgid "Document font"
 msgstr "የሰነድ ፊደል"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2908
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2909
 msgid "Monospace font"
 msgstr "Monospace font"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2909
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2910
 msgid "Window title font"
 msgstr "የመስኮት አርእስት ፊደል"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2910
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2911
 msgid "Hinting"
 msgstr "ፍንጭ"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2911
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2912
 msgid "Antialiasing"
 msgstr "Antialiasing"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2913
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2914
 msgid "General"
 msgstr "ባጠቃላይ"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2915
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2916
 msgid ""
 "Log LookingGlass output to ~/.cinnamon/glass.log (Requires Cinnamon restart)"
 msgstr ""
 "Log LookingGlass output to ~/.cinnamon/glass.log (Requires Cinnamon restart)"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2916
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2917
 msgid "Emulate middle click by clicking both left and right buttons"
 msgstr "የመሀከል መጫኛ በመጫን ሁለቱንም የግራ እና የቀኝ ቁልፎች መሞከሪያ"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2917
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2918
 msgid "Display notifications"
 msgstr "ማስታወቂያዎች ማሳያ"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2927
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2928
 msgid "Backgrounds"
 msgstr "መደቦች"
 
@@ -2394,6 +2396,3 @@ msgstr "መተግበሪያዎች"
 #: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/add-panel-launcher.py:142
 msgid "Add panel launcher..."
 msgstr "የክፍል ማስጀመሪያ መጨመሪያ..."
-
-#~ msgid "Have file manager (Nemo) handle the desktop"
-#~ msgstr "የፋይል እና የደስክቶፕ (ኔሞ) አስተዳዳሪ"
