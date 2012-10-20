@@ -382,14 +382,37 @@ ExpoWorkspaceThumbnail.prototype = {
     },
 
     syncStacking: function(stackIndices) {
+        let isTransientFor = function(windowA, windowB) {
+            let isTransient = false;
+            windowB.foreach_transient(function(window) {
+                isTransient = isTransient || (window === windowA);
+                return !isTransient; // return false to end iteration
+            });
+            return isTransient;
+        };
         this._windows.sort(Lang.bind(this, function (a, b) {
-            let minimizedA = a.metaWindow.minimized ? -1 : 0;
-            let minimizedB = b.metaWindow.minimized ? -1 : 0;
-            let minimizedDiff = minimizedA - minimizedB;
-            let noOverviewA = !this._isOverviewWindow(a.metaWindow) ? -1 : 0;
-            let noOverviewB = !this._isOverviewWindow(b.metaWindow) ? -1 : 0;
-            let noOverviewDiff = noOverviewA - noOverviewB;
-            return minimizedDiff || noOverviewDiff || stackIndices[a.metaWindow.get_stable_sequence()] - stackIndices[b.metaWindow.get_stable_sequence()];
+            let minimizedDiff = function(a, b) {
+                let minimizedA = a.metaWindow.minimized ? -1 : 0;
+                let minimizedB = b.metaWindow.minimized ? -1 : 0;
+                return minimizedA - minimizedB;
+            };
+            let noOverviewDiff = Lang.bind(this, function(a, b) {
+                let noOverviewA = !this._isOverviewWindow(a.metaWindow) ? -1 : 0;
+                let noOverviewB = !this._isOverviewWindow(b.metaWindow) ? -1 : 0;
+                return noOverviewA - noOverviewB;
+            });
+            let transientRelation = function(a, b) {
+                let overviewDifference = noOverviewDiff(a,b);
+                if (overviewDifference) {
+                    let transientA = isTransientFor(a.metaWindow, b.metaWindow) ? 1 : 0;
+                    let transientB = !transientA && isTransientFor(b.metaWindow, a.metaWindow) ? 1 : 0;
+                    return transientA - transientB || overviewDifference;
+                }
+                return 0;
+            };
+
+            return transientRelation(a,b) || minimizedDiff(a,b) ||
+                    stackIndices[a.metaWindow.get_stable_sequence()] - stackIndices[b.metaWindow.get_stable_sequence()];
         }));
 
         for (let i = 0; i < this._windows.length; i++) {
