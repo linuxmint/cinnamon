@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: linuxmint\n"
 "Report-Msgid-Bugs-To: FULL NAME <EMAIL@ADDRESS>\n"
-"POT-Creation-Date: 2012-10-18 13:28+0100\n"
+"POT-Creation-Date: 2012-10-20 15:43+0100\n"
 "PO-Revision-Date: 2012-09-21 23:05+0000\n"
 "Last-Translator: Isaac Álvarez Veiga <ialvarezv2009@gmail.com>\n"
 "Language-Team: Galician <gl@li.org>\n"
@@ -15,8 +15,8 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Launchpad-Export-Date: 2012-10-18 13:11+0000\n"
-"X-Generator: Launchpad (build 16160)\n"
+"X-Launchpad-Export-Date: 2012-10-20 20:11+0000\n"
+"X-Generator: Launchpad (build 16165)\n"
 
 #: src/cinnamon-app.c:347 src/cinnamon-app.c:355
 #: js/ui/notificationDaemon.js:458
@@ -246,7 +246,7 @@ msgstr "área de notificación"
 
 #: js/ui/keyboard.js:555
 #: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:114
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2920
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2921
 msgid "Keyboard"
 msgstr "Teclado"
 
@@ -282,16 +282,16 @@ msgstr "Páxina web"
 msgid "WORKSPACE"
 msgstr "Área de traballo"
 
-#: js/ui/messageTray.js:1250
+#: js/ui/messageTray.js:1259
 msgid "Open"
 msgstr "Abrir"
 
-#: js/ui/messageTray.js:1257
+#: js/ui/messageTray.js:1266
 #: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/applet.js:59
 msgid "Remove"
 msgstr "Retirar"
 
-#: js/ui/messageTray.js:1844
+#: js/ui/messageTray.js:1853
 msgid "System Information"
 msgstr "Información do sistema"
 
@@ -1897,10 +1897,6 @@ msgstr ""
 msgid "Keyboard bindings"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1597
-msgid "Cinnamon"
-msgstr ""
-
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1599
 msgid "Workspace Management"
 msgstr ""
@@ -1990,8 +1986,8 @@ msgid "Right side title bar buttons"
 msgstr "Botóns á dereita da barra de título"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2620
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2949
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2963
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2950
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2964
 msgid "Cinnamon Settings"
 msgstr "Preferencias do Cinnamon"
 
@@ -2019,7 +2015,7 @@ msgstr "Atraso do menú ao pasar o punteiro"
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2811
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2822
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2833
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2889
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2890
 msgid "milliseconds"
 msgstr "milisegundos"
 
@@ -2295,96 +2291,102 @@ msgid "Enable mouse-wheel scrolling in Window List applet"
 msgstr ""
 "Permitir o desprazamento coa roda do rato no aplicativo da Lista de xanelas"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2884
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2883
+msgid ""
+"Bring windows which require attention to the current workspace (instead of "
+"switching to the window's workspace)"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2885
 msgid "Workspaces"
 msgstr "Espacios de traballo"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2886
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2887
 msgid "Enable workspace OSD"
 msgstr "Activar OSD na área de traballo"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2889
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2890
 msgid "Workspace OSD duration"
 msgstr "Duración do OSD na área de traballo"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2893
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2894
 msgid "Workspace OSD horizontal position"
 msgstr "Posición horizontal do OSD"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2893
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2894
 msgid "percent of the monitor's width"
 msgstr "porcentaxe da largura do monitor"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2897
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2898
 msgid "Workspace OSD vertical position"
 msgstr "Posición vertical do OSD"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2897
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2898
 msgid "percent of the monitor's height"
 msgstr "porcentaxe da altura do monitor"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2900
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2901
 msgid "Only use workspaces on primary monitor (requires Cinnamon restart)"
 msgstr ""
 "Só utilizar áreas de traballo no monitor principal (require reiniciar "
 "Cinnamon)"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2901
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2902
 msgid "Display Expo view as a grid"
 msgstr "Amosar Expo como unha grella"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2903
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2904
 msgid "Fonts"
 msgstr "Tipos de letra"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2905
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2906
 msgid "Text scaling factor"
 msgstr "Factor de escala de texto"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2906
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2907
 msgid "Default font"
 msgstr "Tipo de letra predeterminado"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2907
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2908
 msgid "Document font"
 msgstr "Tipo de letra do documento"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2908
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2909
 msgid "Monospace font"
 msgstr "Tipo de letra monoespaciada"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2909
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2910
 msgid "Window title font"
 msgstr "Tipo de letra do título da xanela"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2910
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2911
 msgid "Hinting"
 msgstr "Suxestións"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2911
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2912
 msgid "Antialiasing"
 msgstr "Suavizado"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2913
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2914
 msgid "General"
 msgstr "Xeral"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2915
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2916
 msgid ""
 "Log LookingGlass output to ~/.cinnamon/glass.log (Requires Cinnamon restart)"
 msgstr ""
 "Gardar rexistros de LookingGlass en ~/.cinnamon/glass.log (require reiniciar "
 "Cinnamon)"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2916
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2917
 msgid "Emulate middle click by clicking both left and right buttons"
 msgstr "Emilar click intermedio cando se clickan os dous botóns do rato"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2917
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2918
 msgid "Display notifications"
 msgstr "Amosar notificacións"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2927
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2928
 msgid "Backgrounds"
 msgstr "Fondos"
 
@@ -2403,6 +2405,3 @@ msgstr "Aplicación"
 #: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/add-panel-launcher.py:142
 msgid "Add panel launcher..."
 msgstr "Engadir lanzador..."
-
-#~ msgid "Have file manager (Nemo) handle the desktop"
-#~ msgstr "Permitir que o xestor de arquivos (Nemo) xestione o escritorio"
