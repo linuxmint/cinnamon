@@ -528,7 +528,7 @@ AltTabPopup.prototype = {
                 let clone = this._previewClones[i];
                 Tweener.addTween(clone, {
                     opacity: 0,
-                    time: PREVIEW_SWITCHER_FADEOUT_TIME * 2, // slow fade
+                    time: PREVIEW_SWITCHER_FADEOUT_TIME * 1.5,
                     transition: 'linear',
                     onCompleteScope: this,
                     onComplete: function() {
