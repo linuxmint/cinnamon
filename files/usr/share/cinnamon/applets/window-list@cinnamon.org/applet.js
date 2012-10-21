@@ -449,8 +449,6 @@ AppMenuButton.prototype = {
             if (fromDrag){
                 return;
             }
-
-            
             this.metaWindow.minimize(global.get_current_time());
             this.actor.remove_style_pseudo_class('focus');
         }
@@ -494,7 +492,6 @@ AppMenuButton.prototype = {
                 this._applet.dragEnterTime = time;
             }
         }
-                
         if (time > (this._applet.dragEnterTime + 300)) {
             this._windowHandle(true);
         }
@@ -648,7 +645,7 @@ AppMenuButton.prototype = {
                                          icon_type: St.IconType.FULLCOLOR,
                                          icon_size: this.iconSize });
       this._iconBox.set_child(icon);
-    }
+    },
 
     getAttention: function() {
         this._needsAttention = true;
