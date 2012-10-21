@@ -446,8 +446,6 @@ AppMenuButton.prototype = {
         if ( Cinnamon.get_event_state(event) & Clutter.ModifierType.BUTTON1_MASK ) {
             if ( this.rightClickMenu.isOpen ) {
                 this.rightClickMenu.toggle();
-
-
             }
             this._windowHandle(false);
         } else if (Cinnamon.get_event_state(event) & Clutter.ModifierType.BUTTON2_MASK) {
