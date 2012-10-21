@@ -513,16 +513,7 @@ ExpoWorkspaceThumbnail.prototype = {
 
     // Tests if @win should be shown in overview mode
     _isOverviewWindow : function (metaWindow) {
-        let tracker = Cinnamon.WindowTracker.get_default();
-        if (tracker.is_window_interesting(metaWindow)) {
-            return true;
-        }
-        if (tracker.get_window_app(metaWindow)) {
-            // not interesting but has an app - no
-            return false;
-        }
-        let type = metaWindow.get_window_type();
-        return type === Meta.WindowType.DIALOG || type === Meta.WindowType.MODAL_DIALOG;
+        return Main.isInteresting(metaWindow);
     },
 
     // Create a clone of a (non-desktop) window and add it to the window list
