@@ -180,7 +180,6 @@ AppMenuButtonRightClickMenu.prototype = {
             // out a bit later.
             Mainloop.timeout_add(0, function() {
                 metaWindow.change_workspace(workspace);
-                Main._checkWorkspaces();
             });
         }
     },
