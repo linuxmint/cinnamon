@@ -294,7 +294,6 @@ AppMenuButton.prototype = {
 			this.stopAnimation();
 		}
 
-
         this._tooltip = new Tooltips.PanelItemTooltip(this, title, orientation);
 
         if (draggable) {
@@ -392,7 +391,9 @@ AppMenuButton.prototype = {
     _onDestroy: function() {
         this.metaWindow.disconnect(this._updateCaptionId);
         this._tooltip.destroy();
-        this.rightClickMenu.destroy();
+        if (this.rightClickMenu) {
+            this.rightClickMenu.destroy();
+        }
     },
     
     _hasFocus: function(metaWindow) {
@@ -424,9 +425,15 @@ AppMenuButton.prototype = {
 
     _onButtonRelease: function(actor, event) {
         this._tooltip.hide();
+        if (!this._draggable) {
+            if ( Cinnamon.get_event_state(event) & Clutter.ModifierType.BUTTON1_MASK ) {
+                this._windowHandle(false);
+            }
+            return;
+        }
         if ( Cinnamon.get_event_state(event) & Clutter.ModifierType.BUTTON1_MASK ) {
             if ( this.rightClickMenu.isOpen ) {
-                this.rightClickMenu.toggle();                
+                this.rightClickMenu.toggle();
             }
             this._windowHandle(false);
         } else if (Cinnamon.get_event_state(event) & Clutter.ModifierType.BUTTON2_MASK) {
