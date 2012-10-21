@@ -319,13 +319,14 @@ AppMenuButton.prototype = {
 			this.stopAnimation();
 		}
 		
-        //set up the right click menu
-        this._menuManager = new PopupMenu.PopupMenuManager(this);
-        this.rightClickMenu = new AppMenuButtonRightClickMenu(this.actor, this.metaWindow, orientation);
-        this._menuManager.addMenu(this.rightClickMenu);
-        
+
         this._tooltip = new Tooltips.PanelItemTooltip(this, title, orientation);
         if (draggable) {
+            //set up the right click menu
+            this._menuManager = new PopupMenu.PopupMenuManager(this);
+            this.rightClickMenu = new AppMenuButtonRightClickMenu(this.actor, this.metaWindow, orientation);
+            this._menuManager.addMenu(this.rightClickMenu);
+
             this._draggable = DND.makeDraggable(this.actor);
             this._draggable.connect('drag-begin', Lang.bind(this, this._onDragBegin));
             this._draggable.connect('drag-cancelled', Lang.bind(this, this._onDragCancelled));
@@ -411,7 +412,9 @@ AppMenuButton.prototype = {
     _onDestroy: function() {
         this.metaWindow.disconnect(this._updateCaptionId);
         this._tooltip.destroy();
-        this.rightClickMenu.destroy();
+        if (this.rightClickMenu) {
+            this.rightClickMenu.destroy();
+        }
     },
     
     doFocus: function() {
@@ -434,9 +437,17 @@ AppMenuButton.prototype = {
     
     _onButtonRelease: function(actor, event) {
         this._tooltip.hide();
+        if (!this._draggable) {
+            if ( Cinnamon.get_event_state(event) & Clutter.ModifierType.BUTTON1_MASK ) {
+                this._windowHandle(false);
+            }
+            return;
+        }
         if ( Cinnamon.get_event_state(event) & Clutter.ModifierType.BUTTON1_MASK ) {
             if ( this.rightClickMenu.isOpen ) {
-                this.rightClickMenu.toggle();                
+                this.rightClickMenu.toggle();
+
+
             }
             this._windowHandle(false);
         } else if (Cinnamon.get_event_state(event) & Clutter.ModifierType.BUTTON2_MASK) {
