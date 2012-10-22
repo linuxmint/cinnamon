@@ -580,7 +580,7 @@ AltTabPopup.prototype = {
                 clone.allocate(childBox, 0);
                 Tweener.addTween(clone,
                                 { opacity: 255,
-                                time: PREVIEW_SWITCHER_FADEOUT_TIME/4, // quick
+                                time: PREVIEW_SWITCHER_FADEOUT_TIME/8, // quick
                                 transition: 'linear'
                                 });
             };
