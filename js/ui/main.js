@@ -789,8 +789,7 @@ function _globalKeyPressHandler(actor, event) {
             return true;
         case Meta.KeyBindingAction.WORKSPACE_DOWN:
             overview.hide();
-            expo.hide();
-            return true;
+            return false;
         case Meta.KeyBindingAction.PANEL_RUN_DIALOG:
         case Meta.KeyBindingAction.COMMAND_2:
             getRunDialog().open();
