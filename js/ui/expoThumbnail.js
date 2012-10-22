@@ -658,6 +658,7 @@ ExpoWorkspaceThumbnail.prototype = {
         const iconSpacing = ICON_SIZE/4;
         let monitorIconCount = new Array(Main.layoutManager.monitors.length);
 
+        let rearrangeTime = force ? REARRANGE_TIME_OFF/2 : REARRANGE_TIME_OFF;
         for (let i = 0; i < this._windows.length; i++){
             let window = this._windows[i];
 
@@ -681,7 +682,7 @@ ExpoWorkspaceThumbnail.prototype = {
                     y: window.icon.y,
                     scale_x: window.icon.width / window.actor.width, 
                     scale_y: window.icon.height / window.actor.height,
-                    time: REARRANGE_TIME_OFF, 
+                    time: rearrangeTime, 
                     transition: 'easeOutQuad',
                     onComplete: function() {
                             window.icon.show();
@@ -695,7 +696,7 @@ ExpoWorkspaceThumbnail.prototype = {
                     x: window.origX,
                     y: window.origY,
                     scale_x: 1, scale_y: 1, opacity: 255, 
-                    time: REARRANGE_TIME_OFF, transition: 'easeOutQuad'});        
+                    time: rearrangeTime, transition: 'easeOutQuad'});
             }
         } 
     },
