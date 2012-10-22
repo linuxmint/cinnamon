@@ -284,8 +284,6 @@ ExpoWorkspaceThumbnail.prototype = {
 
         this.shade.opacity = INACTIVE_OPACITY;
 
-        this.removed = false;
-
         if (metaWorkspace == global.screen.get_active_workspace())
             this.shade.opacity = 0;
 
@@ -737,9 +735,7 @@ ExpoWorkspaceThumbnail.prototype = {
         }
         let removeAction = Lang.bind(this, function() {
             this._doomed = true;
-            this.emit('remove-event');
             Main._removeWorkspace(this.metaWorkspace);
-            this.removed = true;
         });
         if (!Main.hasDefaultWorkspaceName(this.metaWorkspace.index())) {
             let prompt = "Are you sure you want to remove workspace \"%s\"?\n\n".format(
@@ -1123,14 +1119,6 @@ ExpoThumbnailsBox.prototype = {
             Mainloop.idle_add(installMotionEvents);
             Mainloop.timeout_add(1000, installMotionEvents);
 
-            thumbnail.connect('remove-event', Lang.bind(this, function () {
-                this.button.hide();
-                if (thumbnail.metaWorkspace != global.screen.get_active_workspace()) {
-                    thumbnail._shade();
-                }
-                thumbnail._overviewModeOff();
-            }));
-
             if (start > 0) { // not the initial fill
                 thumbnail.state = ThumbnailState.NEW;
                 thumbnail.slidePosition = 1; // start slid out
@@ -1501,7 +1489,7 @@ ExpoThumbnailsBox.prototype = {
         let buttonHeight = this.button.get_theme_node().get_length('height');
         let buttonOverlap = this.button.get_theme_node().get_length('-cinnamon-close-overlap');
 
-        if (this.lastHovered && this.lastHovered.actor != null && !this.lastHovered.removed){
+        if (this.lastHovered && this.lastHovered.actor != null && !this.lastHovered.doomed){
             x = this.lastHovered.actor.allocation.x1 + ((this.lastHovered.actor.allocation.x2 - this.lastHovered.actor.allocation.x1) * this.lastHovered.actor.get_scale()[0]) - buttonOverlap;
             y = this.lastHovered.actor.allocation.y1 - (buttonHeight - buttonOverlap);
         } else {
