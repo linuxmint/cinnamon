@@ -187,6 +187,7 @@ ExpoWorkspaceThumbnail.prototype = {
                                     clip_to_allocation: true,
                                     style_class: 'workspace-thumbnail' });
         this.actor._delegate = this;
+        this.actor.set_size(global.screen_width, global.screen_height);
 
         this._contents = new Clutter.Group();
         this.actor.add_actor(this._contents);
@@ -238,13 +239,10 @@ ExpoWorkspaceThumbnail.prototype = {
         this._background = Meta.BackgroundActor.new_for_screen(global.screen);
         this._contents.add_actor(this._background);
 
-        let porthole = Main.layoutManager.getPorthole();
-        this.setPorthole(porthole);
-       
         this.shade = new St.Bin();
         this.shade.set_style('background-color: black;');
         this.actor.add_actor(this.shade);
-        this.shade.set_size(porthole.width, porthole.height);
+        this.shade.set_size(global.screen_width, global.screen_height);
 
         this.shade.opacity = INACTIVE_OPACITY;
 
@@ -318,12 +316,6 @@ ExpoWorkspaceThumbnail.prototype = {
         }
     },
     
-    setPorthole: function(porthole) {
-        this._porthole = porthole;
-        this.actor.set_size(porthole.width, porthole.height);
-        this._contents.set_position(-porthole.x, -porthole.y);
-     },
-
     _lookupIndex: function (metaWindow) {
         for (let i = 0; i < this._windows.length; i++) {
             if (this._windows[i].metaWindow == metaWindow) {
@@ -585,8 +577,8 @@ ExpoWorkspaceThumbnail.prototype = {
 
             let scale = Math.min((maxWindowWidth / window.actor.width), (maxWindowHeight / window.actor.height)); 
             scale = Math.min(1, scale);
-            let x = this._porthole.x + offset + (spacing * col) + (maxWindowWidth * (col - 1)) + ((maxWindowWidth - (window.actor.width * scale)) / 2);
-            let y = this._porthole.y + (spacing * row) + (maxWindowHeight * (row - 1)) + ((maxWindowHeight - (window.actor.height * scale)) / 2);   
+            let x = offset + (spacing * col) + (maxWindowWidth * (col - 1)) + ((maxWindowWidth - (window.actor.width * scale)) / 2);
+            let y = (spacing * row) + (maxWindowHeight * (row - 1)) + ((maxWindowHeight - (window.actor.height * scale)) / 2);   
 
             if (!window.metaWindow.showing_on_its_workspace()) {
                 window.actor.set_position(window.icon.x, window.icon.y);
@@ -810,6 +802,13 @@ ExpoThumbnailsBox.prototype = {
             this._stateCounts[ThumbnailState[key]] = 0;
 
         this._thumbnails = [];
+        // The "porthole" is the portion of the screen that we show in the workspaces
+        this._porthole = {
+            x: 0,
+            y: 0,
+            width: global.screen_width,
+            height: global.screen_height
+            };
     },
 
     show: function() {
@@ -828,9 +827,6 @@ ExpoThumbnailsBox.prototype = {
         this._stateCounts = {};
         for (let key in ThumbnailState)
             this._stateCounts[ThumbnailState[key]] = 0;
-
-        // The "porthole" is the portion of the screen that we show in the workspaces
-        this._porthole = Main.layoutManager.getPorthole();
 
         this.addThumbnails(0, global.screen.n_workspaces);
         this.button.raise_top();
@@ -985,7 +981,6 @@ ExpoThumbnailsBox.prototype = {
         for (let k = start; k < start + count; k++) {
             let metaWorkspace = global.screen.get_workspace_by_index(k);
             let thumbnail = new ExpoWorkspaceThumbnail(metaWorkspace, this);
-            thumbnail.setPorthole(this._porthole);
                                   
             this._thumbnails.push(thumbnail);
             if (metaWorkspace == global.screen.get_active_workspace()) {
@@ -1250,16 +1245,16 @@ ExpoThumbnailsBox.prototype = {
         let nColumns = asGrid ? Math.ceil(Math.sqrt(nWorkspaces)) : nWorkspaces;
         let nRows = Math.ceil(nWorkspaces/nColumns);
         
-        // in case of a very wide porthole, we can try and optimize the screen 
+        // in case of a very wide screen, we can try and optimize the screen 
         // utilization by switching the columns and rows, but only if there's a
         // big difference. If the user doesn't want a grid we are even more conservative.
         let divisor = 1.25;
-        let ratio = this._porthole.width / this._porthole.height;
+        let screenRatio = global.screen_width / global.screen_height;
         let boxRatio = this._box ? (this._box.x2 - this._box.x1) / (this._box.y2 - this._box.y1) : 1.6;
 
-        if (nWorkspaces <= Math.floor(ratio)) {
+        if (nWorkspaces <= Math.floor(screenRatio)) {
             return [1, nWorkspaces];
-        } else if (!asGrid || (ratio / divisor) <= boxRatio) {
+        } else if (!asGrid || (screenRatio / divisor) <= boxRatio) {
             return [nColumns, nRows];
         } else {
             return [nRows, nColumns];
