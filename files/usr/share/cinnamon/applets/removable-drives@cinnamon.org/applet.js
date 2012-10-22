@@ -21,8 +21,8 @@ DriveMenuItem.prototype = {
         this.addActor(this.label);
 
         let ejectIcon = new St.Icon({ icon_name: 'media-eject',
-				      icon_type: St.IconType.SYMBOLIC,
-				      style_class: 'popup-menu-icon ' });
+                                      icon_type: St.IconType.SYMBOLIC,
+                                      style_class: 'popup-menu-icon ' });
         let ejectButton = new St.Button({ child: ejectIcon });
         ejectButton.connect('clicked', Lang.bind(this, this._eject));
         this.addActor(ejectButton);
@@ -45,40 +45,35 @@ function MyApplet(orientation, panel_height) {
 MyApplet.prototype = {
     __proto__: Applet.IconApplet.prototype,
 
-    _init: function(orientation, panel_height) {        
+    _init: function(orientation, panel_height) {
         Applet.IconApplet.prototype._init.call(this, orientation, panel_height);
-        
-        try {        
-            this.set_applet_icon_symbolic_name("drive-harddisk");
-            this.set_applet_tooltip(_("Removable drives"));
-            
-            this.menuManager = new PopupMenu.PopupMenuManager(this);
-            this.menu = new Applet.AppletPopupMenu(this, orientation);
-            this.menuManager.addMenu(this.menu);            
-                                            
-            this._contentSection = new PopupMenu.PopupMenuSection();
-            this.menu.addMenuItem(this._contentSection);
 
-            this._update();
+        this.set_applet_icon_symbolic_name("drive-harddisk");
+        this.set_applet_tooltip(_("Removable drives"));
 
-            this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-            this.menu.addAction(_("Open file manager"), function(event) {
-                let appSystem = Cinnamon.AppSystem.get_default();
-                let app = appSystem.lookup_app('nemo.desktop');
-                app.activate_full(-1, event.get_time());
-            });     
-            
-            Main.placesManager.connect('mounts-updated', Lang.bind(this, this._update));
-        }
-        catch (e) {
-            global.logError(e);
-        }
+        this.menuManager = new PopupMenu.PopupMenuManager(this);
+        this.menu = new Applet.AppletPopupMenu(this, orientation);
+        this.menuManager.addMenu(this.menu);
+
+        this._contentSection = new PopupMenu.PopupMenuSection();
+        this.menu.addMenuItem(this._contentSection);
+
+        this._update();
+
+        this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+        this.menu.addAction(_("Open file manager"), function(event) {
+                                let appSystem = Cinnamon.AppSystem.get_default();
+                                let app = appSystem.lookup_app('nemo.desktop');
+                                app.activate_full(-1, event.get_time());
+                            });
+
+        Main.placesManager.connect('mounts-updated', Lang.bind(this, this._update));
     },
-    
+
     on_applet_clicked: function(event) {
-        this.menu.toggle();        
+        this.menu.toggle();
     },
-    
+
     _update: function() {
         this._contentSection.removeAll();
 
@@ -93,10 +88,10 @@ MyApplet.prototype = {
 
         this.actor.visible = any;
     }
-    
+
 };
 
-function main(metadata, orientation, panel_height) {  
+function main(metadata, orientation, panel_height) {
     let myApplet = new MyApplet(orientation, panel_height);
-    return myApplet;      
+    return myApplet;
 }

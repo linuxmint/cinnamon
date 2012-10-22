@@ -6,7 +6,7 @@ const St = imports.gi.St;
 const PopupMenu = imports.ui.popupMenu;
 const Pango = imports.gi.Pango;
 
-const POWER_SCHEMA = "org.cinnamon.power"
+const POWER_SCHEMA = "org.cinnamon.power";
 const SHOW_PERCENTAGE_KEY = "power-label";
 const BUS_NAME = 'org.gnome.SettingsDaemon';
 const OBJECT_PATH = '/org/gnome/SettingsDaemon/Power';
@@ -46,27 +46,27 @@ const PowerManagerInterface = {
     name: 'org.gnome.SettingsDaemon.Power',
     methods: [
         { name: 'GetDevices', inSignature: '', outSignature: 'a(susdut)' },
-        { name: 'GetPrimaryDevice', inSignature: '', outSignature: '(susdut)' },
+        { name: 'GetPrimaryDevice', inSignature: '', outSignature: '(susdut)' }
         ],
     signals: [
-        { name: 'PropertiesChanged', inSignature: 's,a{sv},a[s]' },
+        { name: 'PropertiesChanged', inSignature: 's,a{sv},a[s]' }
         ],
     properties: [
-        { name: 'Icon', signature: 's', access: 'read' },
+        { name: 'Icon', signature: 's', access: 'read' }
         ]
 };
 let PowerManagerProxy = DBus.makeProxyClass(PowerManagerInterface);
 
 const SettingsManagerInterface = {
-	name: 'org.freedesktop.DBus.Properties',
-	methods: [
-		{ name: 'Get', inSignature: 's,s', outSignature: 'v' },
-		{ name: 'GetAll', inSignature: 's', outSignature: 'a{sv}' },
-		{ name: 'Set', inSignature: 's,s,v', outSignature: '' }
-	],
-	signals: [
-	{name: 'PropertiesChanged', inSignature:'s,a{sv},a[s]', outSignature:''}
-	]
+        name: 'org.freedesktop.DBus.Properties',
+        methods: [
+                { name: 'Get', inSignature: 's,s', outSignature: 'v' },
+                { name: 'GetAll', inSignature: 's', outSignature: 'a{sv}' },
+                { name: 'Set', inSignature: 's,s,v', outSignature: '' }
+        ],
+        signals: [
+        {name: 'PropertiesChanged', inSignature:'s,a{sv},a[s]', outSignature:''}
+        ]
 };
 
 let SettingsManagerProxy = DBus.makeProxyClass(SettingsManagerInterface);
@@ -136,109 +136,104 @@ function MyApplet(orientation, panel_height) {
 MyApplet.prototype = {
     __proto__: Applet.TextIconApplet.prototype,
 
-    _init: function(orientation, panel_height) {        
+    _init: function(orientation, panel_height) {
         Applet.TextIconApplet.prototype._init.call(this, orientation, panel_height);
-        
-        try {                                
-            this.menuManager = new PopupMenu.PopupMenuManager(this);
-            this.menu = new Applet.AppletPopupMenu(this, orientation);
-            this.menuManager.addMenu(this.menu);            
-            
-            this.set_applet_icon_symbolic_name('battery-missing');            
-            this._proxy = new PowerManagerProxy(DBus.session, BUS_NAME, OBJECT_PATH);
-            this._smProxy = new SettingsManagerProxy(DBus.session, BUS_NAME, OBJECT_PATH);
-            
-            let icon = this.actor.get_children()[0];
-            this.actor.remove_actor(icon);
-            let box = new St.BoxLayout({ name: 'batteryBox' });
-            this.actor.add_actor(box);
-            let iconBox = new St.Bin();
-            box.add(iconBox, { y_align: St.Align.MIDDLE, y_fill: false });
-            this._mainLabel = new St.Label();
-            this._mainLabel.clutter_text.ellipsize = Pango.EllipsizeMode.NONE;
-            box.add(this._mainLabel, { y_align: St.Align.MIDDLE, y_fill: false });
-            iconBox.child = icon;
 
-            this._deviceItems = [ ];
-            this._hasPrimary = false;
-            this._primaryDeviceId = null;
-            
-            let settings = new Gio.Settings({ schema: POWER_SCHEMA }); 
-            this._labelDisplay = settings.get_string(SHOW_PERCENTAGE_KEY);
-            let applet = this;
-            settings.connect('changed::'+SHOW_PERCENTAGE_KEY, function() {
-                applet._switchLabelDisplay(settings.get_string(SHOW_PERCENTAGE_KEY));
-            });
+        this.menuManager = new PopupMenu.PopupMenuManager(this);
+        this.menu = new Applet.AppletPopupMenu(this, orientation);
+        this.menuManager.addMenu(this.menu);
 
-            this._batteryItem = new PopupMenu.PopupMenuItem('', { reactive: false });
-            this._primaryPercentage = new St.Label();
-            this._batteryItem.addActor(this._primaryPercentage, { align: St.Align.END });
-            this.menu.addMenuItem(this._batteryItem);
+        this.set_applet_icon_symbolic_name('battery-missing');
+        this._proxy = new PowerManagerProxy(DBus.session, BUS_NAME, OBJECT_PATH);
+        this._smProxy = new SettingsManagerProxy(DBus.session, BUS_NAME, OBJECT_PATH);
 
-            this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-            this._otherDevicePosition = 2;
-            
-            // Setup label display settings
-            this._displayItem = new PopupMenu.PopupSubMenuMenuItem(_("Display"));
-            this.menu.addMenuItem(this._displayItem);
-            this._displayPercentageItem = new PopupMenu.PopupMenuItem(_("Show percentage"));
-            this._displayPercentageItem.connect('activate', Lang.bind(this, function() {
-                settings.set_string(SHOW_PERCENTAGE_KEY, LabelDisplay.PERCENT);
-            }));
-            this._displayItem.menu.addMenuItem(this._displayPercentageItem);
-            this._displayTimeItem = new PopupMenu.PopupMenuItem(_("Show time remaining"));
-            this._displayTimeItem.connect('activate', Lang.bind(this, function() {
-                settings.set_string(SHOW_PERCENTAGE_KEY, LabelDisplay.TIME);
-            }));
-            this._displayItem.menu.addMenuItem(this._displayTimeItem);
-            this._displayNoneItem = new PopupMenu.PopupMenuItem(_("Hide label"));
-            this._displayNoneItem.connect('activate', Lang.bind(this, function() {
-                settings.set_string(SHOW_PERCENTAGE_KEY, LabelDisplay.NONE);
-            }));
-            this._displayItem.menu.addMenuItem(this._displayNoneItem);
-            this._switchLabelDisplay(this._labelDisplay);
+        let icon = this.actor.get_children()[0];
+        this.actor.remove_actor(icon);
+        let box = new St.BoxLayout({ name: 'batteryBox' });
+        this.actor.add_actor(box);
+        let iconBox = new St.Bin();
+        box.add(iconBox, { y_align: St.Align.MIDDLE, y_fill: false });
+        this._mainLabel = new St.Label();
+        this._mainLabel.clutter_text.ellipsize = Pango.EllipsizeMode.NONE;
+        box.add(this._mainLabel, { y_align: St.Align.MIDDLE, y_fill: false });
+        iconBox.child = icon;
 
-            this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-            this.menu.addSettingsAction(_("Power Settings"), 'gnome-power-panel.desktop');
+        this._deviceItems = [ ];
+        this._hasPrimary = false;
+        this._primaryDeviceId = null;
 
-            this._smProxy.connect('PropertiesChanged', Lang.bind(this, this._devicesChanged));
-            this._devicesChanged();            
-        }
-        catch (e) {
-            global.logError(e);
-        }
+        let settings = new Gio.Settings({ schema: POWER_SCHEMA });
+        this._labelDisplay = settings.get_string(SHOW_PERCENTAGE_KEY);
+        let applet = this;
+        settings.connect('changed::'+SHOW_PERCENTAGE_KEY, function() {
+                             applet._switchLabelDisplay(settings.get_string(SHOW_PERCENTAGE_KEY));
+                         });
+
+        this._batteryItem = new PopupMenu.PopupMenuItem('', { reactive: false });
+        this._primaryPercentage = new St.Label();
+        this._batteryItem.addActor(this._primaryPercentage, { align: St.Align.END });
+        this.menu.addMenuItem(this._batteryItem);
+
+        this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+        this._otherDevicePosition = 2;
+
+        // Setup label display settings
+        this._displayItem = new PopupMenu.PopupSubMenuMenuItem(_("Display"));
+        this.menu.addMenuItem(this._displayItem);
+        this._displayPercentageItem = new PopupMenu.PopupMenuItem(_("Show percentage"));
+        this._displayPercentageItem.connect('activate', Lang.bind(this, function() {
+                                                                      settings.set_string(SHOW_PERCENTAGE_KEY, LabelDisplay.PERCENT);
+                                                                  }));
+        this._displayItem.menu.addMenuItem(this._displayPercentageItem);
+        this._displayTimeItem = new PopupMenu.PopupMenuItem(_("Show time remaining"));
+        this._displayTimeItem.connect('activate', Lang.bind(this, function() {
+                                                                settings.set_string(SHOW_PERCENTAGE_KEY, LabelDisplay.TIME);
+                                                            }));
+        this._displayItem.menu.addMenuItem(this._displayTimeItem);
+        this._displayNoneItem = new PopupMenu.PopupMenuItem(_("Hide label"));
+        this._displayNoneItem.connect('activate', Lang.bind(this, function() {
+                                                                settings.set_string(SHOW_PERCENTAGE_KEY, LabelDisplay.NONE);
+                                                            }));
+        this._displayItem.menu.addMenuItem(this._displayNoneItem);
+        this._switchLabelDisplay(this._labelDisplay);
+
+        this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+        this.menu.addSettingsAction(_("Power Settings"), 'gnome-power-panel.desktop');
+
+        this._smProxy.connect('PropertiesChanged', Lang.bind(this, this._devicesChanged));
+        this._devicesChanged();
     },
-    
+
     on_applet_clicked: function(event) {
-        this.menu.toggle();        
+        this.menu.toggle();
     },
 
     _switchLabelDisplay: function(display) {
-            this._labelDisplay = display;
+        this._labelDisplay = display;
 
-            this._displayPercentageItem.setShowDot(false);
-            this._displayNoneItem.setShowDot(false);
-            this._displayTimeItem.setShowDot(false);
+        this._displayPercentageItem.setShowDot(false);
+        this._displayNoneItem.setShowDot(false);
+        this._displayTimeItem.setShowDot(false);
 
-            if (this._labelDisplay == LabelDisplay.PERCENT) {
-                this._displayPercentageItem.setShowDot(true);
-            }
-            else if (this._labelDisplay == LabelDisplay.TIME) {
-                this._displayTimeItem.setShowDot(true);
-            }
-            else {
-                this._displayNoneItem.setShowDot(true);
-            }
+        if (this._labelDisplay == LabelDisplay.PERCENT) {
+            this._displayPercentageItem.setShowDot(true);
+        }
+        else if (this._labelDisplay == LabelDisplay.TIME) {
+            this._displayTimeItem.setShowDot(true);
+        }
+        else {
+            this._displayNoneItem.setShowDot(true);
+        }
 
-            this._updateLabel();
+        this._updateLabel();
     },
-    
+
     _readPrimaryDevice: function() {
         this._proxy.GetPrimaryDeviceRemote(Lang.bind(this, function(device, error) {
             if (error) {
                 this._hasPrimary = false;
                 this._primaryDeviceId = null;
-                this._batteryItem.actor.hide();                
+                this._batteryItem.actor.hide();
                 return;
             }
             let [device_id, device_type, icon, percentage, state, seconds] = device;
@@ -309,7 +304,7 @@ MyApplet.prototype = {
     _devicesChanged: function() {
         this.set_applet_icon_symbolic_name('battery-missing');
         this._proxy.GetRemote('Icon', Lang.bind(this, function(icon, error) {
-            if (icon) {    
+            if (icon) {
                 let gicon = Gio.icon_new_for_string(icon);
                 this._applet_icon.gicon = gicon;
                 this.actor.show();
@@ -322,7 +317,7 @@ MyApplet.prototype = {
         this._readOtherDevices();
         this._updateLabel();
     },
-    
+
     _updateLabel: function() {
         this._proxy.GetDevicesRemote(Lang.bind(this, function(devices, error) {
             if (error) {
@@ -355,10 +350,9 @@ MyApplet.prototype = {
             this._mainLabel.set_text("");
         }));
     }
-    
 };
 
-function main(metadata, orientation, panel_height) {  
+function main(metadata, orientation, panel_height) {
     let myApplet = new MyApplet(orientation, panel_height);
-    return myApplet;      
+    return myApplet;
 }
