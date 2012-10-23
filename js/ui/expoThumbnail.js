@@ -86,6 +86,9 @@ ExpoWindowClone.prototype = {
     },
 
     setStackAbove: function (actor) {
+        if (actor.get_parent() !== this.actor) {
+            return;
+        }
         this._stackAbove = actor;
         if (this._stackAbove == null)
             this.actor.lower_bottom();
@@ -751,6 +754,15 @@ ExpoWorkspaceThumbnail.prototype = {
         }
     },
 
+    coordinateToMonitor : function(x, y) {
+        let index = 0;
+        Main.layoutManager.monitors.forEach(function(monitor, mindex) {
+            let [xX, yY] = [x - monitor.x, y - monitor.y];
+            index = index || (xX >= 0 && xX < monitor.width && yY > 0 && yY < monitor.height ? mindex + 1 : 0);
+        }, this);
+        return index - 1;
+    },
+
     // Draggable target interface
     handleDragOver : function(source, actor, x, y, time) {
         this.emit('drag-over');
@@ -763,6 +775,14 @@ ExpoWorkspaceThumbnail.prototype = {
 
         if (source.realWindow && !this._isMyWindow(source.realWindow))
             return DND.DragMotionResult.MOVE_DROP;
+
+        if (source.realWindow && this._isMyWindow(source.realWindow)) {
+            let targetMonitor = this.coordinateToMonitor(x, y);
+            let r = DND.DragMotionResult;
+            return targetMonitor >= 0 && 
+                targetMonitor !== source.metaWindow.get_monitor() ? r.MOVE_DROP : r.CONTINUE;
+        }
+
         if (source.CinnamonWorkspaceLaunch)
             return DND.DragMotionResult.COPY_DROP;
 
@@ -773,21 +793,20 @@ ExpoWorkspaceThumbnail.prototype = {
         if (this.handleDragOver(source, actor, x, y, time) === DND.DragMotionResult.CONTINUE) {
             return false;
         }
+        let targetMonitor = this.coordinateToMonitor(x, y);
 
-        this.metaWorkspace.activate(time);
         let win = source.realWindow;
         let metaWindow = win.get_meta_window();
 
-        // We need to move the window before changing the workspace, because
-        // the move itself could cause a workspace change if the window enters
-        // the primary monitor
-        if (metaWindow.get_monitor() != this.monitorIndex) {
-            metaWindow.move_to_monitor(this.monitorIndex);
+        if (metaWindow.get_workspace() !== this.metaWorkspace.index()) {
+            metaWindow.change_workspace_by_index(this.metaWorkspace.index(),
+                false, // don't create workspace
+                time);
         }
 
-        metaWindow.change_workspace_by_index(this.metaWorkspace.index(),
-                                                false, // don't create workspace
-                                                time);
+        if (targetMonitor >= 0 && metaWindow.get_monitor() !== targetMonitor) {
+            metaWindow.move_to_monitor(targetMonitor);
+        }
 
         // normal hovering monitoring was turned off during drag
         this.hovering = true;
