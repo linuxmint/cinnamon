@@ -636,7 +636,16 @@ HotCorner.prototype = {
                 this._activationTime = Date.now() / 1000;
                 this.rippleAnimation();
                 if (this.cornerOpensExpo) {
-                    Main.expo.toggle();
+                    if (!Main.expo.visible) {
+                        Main.expo.toggle();
+                    }
+                    else {
+                        let id = Main.expo.connect('hidden', function() {
+                            Main.expo.disconnect(id);
+                            Main.overview.show();
+                        });
+                        Main.expo.hide({toScale: true});
+                    }
                 } else if (!Main.overview.animationInProgress && !Main.expo.visible) {
                     Main.overview.show();
                 } else {
