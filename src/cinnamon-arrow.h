@@ -4,6 +4,7 @@
 
 #include <clutter/clutter.h>
 #include <gtk/gtk.h>
+#include <st.h>
 
 #define CINNAMON_TYPE_ARROW                 (cinnamon_arrow_get_type ())
 #define CINNAMON_ARROW(obj)                 (G_TYPE_CHECK_INSTANCE_CAST ((obj), CINNAMON_TYPE_ARROW, CinnamonArrow))
@@ -17,18 +18,20 @@ typedef struct _CinnamonArrowClass   CinnamonArrowClass;
 
 typedef struct _CinnamonArrowPrivate CinnamonArrowPrivate;
 
+// temporary build fix
 struct _CinnamonArrow
 {
-    ClutterCairoTexture parent;
-
+    StWidget parent;
     CinnamonArrowPrivate *priv;
 };
 
 struct _CinnamonArrowClass
 {
-    ClutterCairoTextureClass parent_class;
+    StDrawingAreaClass parent_class;
 };
 
 GType cinnamon_arrow_get_type (void) G_GNUC_CONST;
+
+cairo_t * cinnamon_arrow_get_context (CinnamonArrow *ca);
 
 #endif /* __CINNAMON_ARROW_H__ */

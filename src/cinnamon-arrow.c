@@ -8,19 +8,28 @@
 #include <gtk/gtk.h>
 #include <cairo.h>
 
+#include <st.h>
+
 enum {
    PROP_0,
 
    PROP_DIRECTION
 };
 
-G_DEFINE_TYPE(CinnamonArrow, cinnamon_arrow, CLUTTER_TYPE_CAIRO_TEXTURE);
+G_DEFINE_TYPE(CinnamonArrow, cinnamon_arrow, ST_TYPE_WIDGET);
+
+// temporary build fix
 
 struct _CinnamonArrowPrivate {
+  CoglHandle texture;
+  CoglHandle material;
+  cairo_t *context;
+  guint needs_repaint : 1;
+  guint in_repaint : 1;
   GtkArrowType direction;
 };
 
-static void cinnamon_arrow_redraw (CinnamonArrow *self);
+static void cinnamon_arrow_repaint (CinnamonArrow *self);
 
 static void
 cinnamon_arrow_set_property (GObject         *object,
@@ -41,7 +50,7 @@ cinnamon_arrow_set_property (GObject         *object,
       break;
     }
 
-  cinnamon_arrow_redraw (self);
+  cinnamon_arrow_repaint (self);
 }
 
 static void
@@ -65,7 +74,7 @@ cinnamon_arrow_get_property (GObject         *object,
 }
 
 static void
-cinnamon_arrow_redraw (CinnamonArrow *self)
+cinnamon_arrow_repaint (CinnamonArrow *self)
 {
   cairo_t *cr;
   guint width, height;
@@ -77,7 +86,7 @@ cinnamon_arrow_redraw (CinnamonArrow *self)
   if (width == 0)
     return;
 
-  cr = clutter_cairo_texture_create (CLUTTER_CAIRO_TEXTURE (self));
+  cr = cinnamon_arrow_get_context(self);
 
   cairo_set_source_rgb (cr, 1, 1, 1);
 
@@ -110,8 +119,6 @@ cinnamon_arrow_redraw (CinnamonArrow *self)
 
   cairo_close_path (cr);
   cairo_fill (cr);
-
-  cairo_destroy (cr);
 }
 
 static void
@@ -139,5 +146,15 @@ cinnamon_arrow_init (CinnamonArrow *actor)
 {
   actor->priv = G_TYPE_INSTANCE_GET_PRIVATE (actor, CINNAMON_TYPE_ARROW,
                                              CinnamonArrowPrivate);
-  g_signal_connect (actor, "notify::surface-width", G_CALLBACK (cinnamon_arrow_redraw), NULL);
+  g_signal_connect (actor, "notify::surface-width", G_CALLBACK (cinnamon_arrow_repaint), NULL);
 }
+
+cairo_t *
+cinnamon_arrow_get_context (CinnamonArrow *ca)
+{
+	  g_return_val_if_fail (CINNAMON_IS_ARROW (ca), NULL);
+	  g_return_val_if_fail (ca->priv->in_repaint, NULL);
+
+	  return ca->priv->context;
+}
+
