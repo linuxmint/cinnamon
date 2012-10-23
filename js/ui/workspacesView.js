@@ -111,6 +111,14 @@ WorkspacesView.prototype = {
     },
 
     _onStageKeyPress: function(actor, event) {
+        let modifiers = Cinnamon.get_event_state(event);
+        let symbol = event.get_key_symbol();
+
+        if (symbol == Clutter.Escape)
+        {
+            Main.overview.hide();
+            return true;
+        }
         let activeWorkspaceIndex = global.screen.get_active_workspace_index();
         let activeWorkspace = this._workspaces[activeWorkspaceIndex];
         return activeWorkspace._onKeyPress(actor, event);
