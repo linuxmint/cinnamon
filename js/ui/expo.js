@@ -38,7 +38,10 @@ Expo.prototype = {
             this.visible = false;
             return;
         }
+        Main.layoutManager.connect('monitors-changed', Lang.bind(this, this._relayout));
+    },
 
+    beforeShow: function() {
         // The main BackgroundActor is inside global.window_group which is
         // hidden when displaying the overview, so we create a new
         // one. Instances of this class share a single CoglTexture behind the
@@ -135,6 +138,9 @@ Expo.prototype = {
                 }
                 return false;
             }));
+        this._expo = new ExpoView.ExpoView();
+        this._group.add_actor(this._expo.actor);
+        this._relayout();
     },
 
     // The members we construct that are implemented in JS might
@@ -142,14 +148,6 @@ Expo.prototype = {
     // signal handlers and so forth. So we create them after
     // construction in this init() method.
     init: function() {
-        if (this.isDummy)
-            return;
-
-        this._expo = new ExpoView.ExpoView();
-        this._group.add_actor(this._expo.actor);
-
-        Main.layoutManager.connect('monitors-changed', Lang.bind(this, this._relayout));
-        this._relayout();
     },
 
     _relayout: function () {
@@ -256,6 +254,7 @@ Expo.prototype = {
         if (this._shown)
             return;
         // Do this manually instead of using _syncInputMode, to handle failure
+        this.beforeShow();
         if (!Main.pushModal(this._group))
             return;
         this._modal = true;
@@ -515,6 +514,10 @@ Expo.prototype = {
             this._animateVisible();
 
         this._syncInputMode();
+        global.overlay_group.remove_actor(this._group);
+        this._group.destroy();
+        global.overlay_group.remove_actor(this._background);
+        this._background.destroy();
 
         Main.layoutManager._chrome.updateRegions();
     }

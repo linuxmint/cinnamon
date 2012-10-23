@@ -831,7 +831,6 @@ ExpoThumbnailsBox.prototype = {
         this.button.connect('leave-event', Lang.bind(this, function () { this.lastHovered._shade(); this.button.hide();}));
         this.button.connect('clicked', Lang.bind(this, function () { this.lastHovered._remove(); this.button.hide();}));
         this.button.hide();
-        Main.expo.connect('hiding', Lang.bind(this, function() { this.button.hide();}));
                 
         this._targetScale = 0;
         this._scale = 0;

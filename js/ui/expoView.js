@@ -22,8 +22,20 @@ function ExpoView() {
 }
 
 ExpoView.prototype = {
-	_init: function() {
+        _init: function() {
         this.actor = new Cinnamon.GenericContainer();
+
+        let windowDragBeginId = Main.expo.connect('window-drag-begin',
+                                                        Lang.bind(this, this._dragBegin));
+        let windowDragCancelledId = Main.expo.connect('window-drag-cancelled',
+                                                        Lang.bind(this, this._dragCancelled));
+        let windowDragEndId = Main.expo.connect('window-drag-end',
+                                                          Lang.bind(this, this._dragEnd));
+        this.actor.connect('destroy', Lang.bind(this, function() {
+                Main.expo.disconnect(windowDragBeginId);
+                Main.expo.disconnect(windowDragCancelledId);
+                Main.expo.disconnect(windowDragEndId);
+        }));
         this.actor.connect('get-preferred-width', Lang.bind(this, this._getPreferredWidth));
         this.actor.connect('get-preferred-height', Lang.bind(this, this._getPreferredHeight));
         this.actor.connect('allocate', Lang.bind(this, this._allocate));
@@ -55,35 +67,11 @@ ExpoView.prototype = {
     show: function() {
         this._controls.show();
         this._thumbnailsBox.show();
-        
-        if (this._windowDragBeginId == 0)
-            this._windowDragBeginId = Main.expo.connect('window-drag-begin',
-                                                            Lang.bind(this, this._dragBegin));
-        if (this._windowDragCancelledId == 0)
-            this._windowDragCancelledId = Main.expo.connect('window-drag-cancelled',
-                                                            Lang.bind(this, this._dragCancelled));
-        if (this._windowDragEndId == 0)
-            this._windowDragEndId = Main.expo.connect('window-drag-end',
-                                                          Lang.bind(this, this._dragEnd));
-
     },
 
     hide: function() {
         this._controls.hide();
         this._thumbnailsBox.hide();
-
-        if (this._windowDragBeginId > 0) {
-            Main.expo.disconnect(this._windowDragBeginId);
-            this._windowDragBeginId = 0;
-        }
-        if (this._windowDragCancelledId > 0) {
-            Main.expo.disconnect(this._windowDragCancelledId);
-            this._windowDragCancelledId = 0;
-        }
-        if (this._windowDragEndId > 0) {
-            Main.expo.disconnect(this._windowDragEndId);
-            this._windowDragEndId = 0;
-        }
     },
 
     _getPreferredWidth: function (actor, forHeight, alloc) {
