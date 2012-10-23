@@ -117,9 +117,8 @@ Overview.prototype = {
         let desktopBackground = Meta.BackgroundActor.new_for_screen(global.screen);
         this._background.add_actor(desktopBackground);
 
-        let backgroundShade = new St.Bin({style_class: 'workspace-overview-background-shade'});
-        this._background.add_actor(backgroundShade);
-        backgroundShade.set_size(global.screen_width, global.screen_height);
+        this._backgroundShade = new St.Bin({style_class: 'workspace-overview-background-shade'});
+        this._background.add_actor(this._backgroundShade);
 
         this._desktopFade = new St.Bin();
         global.overlay_group.add_actor(this._desktopFade);
@@ -471,7 +470,8 @@ Overview.prototype = {
         this._group.set_size(primary.width, primary.height);
 
         this._coverPane.set_position(0, 0);
-        this._coverPane.set_size(primary.width, contentHeight);
+        this._coverPane.set_size(global.screen_width, global.screen_height);
+        this._backgroundShade.set_size(global.screen_width, global.screen_height);
         
         let viewWidth = primary.width - 2 * this._spacing;
         let viewHeight = contentHeight - this._spacing;
