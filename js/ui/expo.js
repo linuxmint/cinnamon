@@ -273,8 +273,8 @@ Expo.prototype = {
         this._addWorkspaceButton.show();
         this._expo.show();
 
-        this.activeWorkspace = this._expo._thumbnailsBox._lastActiveWorkspace;
-        let activeWorkspaceActor = this.activeWorkspace.actor;
+        let activeWorkspace = this._expo._thumbnailsBox._lastActiveWorkspace;
+        let activeWorkspaceActor = activeWorkspace.actor;
 
         // should not create new actors and work with them within an allocation cycle
         let clones = [];
@@ -285,8 +285,8 @@ Expo.prototype = {
             clones.push(clone);
         }, this);
         //We need to allocate activeWorkspace before we begin its clone animation
-        let allocateID = this.activeWorkspace.connect('allocated', Lang.bind(this, function() {
-            this.activeWorkspace.disconnect(allocateID);
+        let allocateID = this._expo._thumbnailsBox.connect('allocated', Lang.bind(this, function() {
+            this._expo._thumbnailsBox.disconnect(allocateID);
             Main.layoutManager.monitors.forEach(function(monitor,index) {
                 let clone = clones[index];
                 Tweener.addTween(clone, {
@@ -424,9 +424,9 @@ Expo.prototype = {
         this.animationInProgress = true;
         this._hideInProgress = true;
 
-        this.activeWorkspace = this._expo._thumbnailsBox._lastActiveWorkspace;
+        let activeWorkspace = this._expo._thumbnailsBox._lastActiveWorkspace;
         if (!options || !options.toScale ) {
-            this.activeWorkspace._overviewModeOff(true);
+            activeWorkspace._overviewModeOff(true);
             Main.enablePanels();
             Tweener.addTween(this._background,
                             { dim_factor: 1,
@@ -438,7 +438,7 @@ Expo.prototype = {
 
         this._group.hide();
 
-        let activeWorkspaceActor = this.activeWorkspace.actor;
+        let activeWorkspaceActor = activeWorkspace.actor;
         Main.layoutManager.monitors.forEach(function(monitor,index) {
             let cover = new Clutter.Group();
             global.overlay_group.add_actor(cover);

@@ -12,6 +12,7 @@ const Main = imports.ui.main;
 const Tweener = imports.ui.tweener;
 const Workspace = imports.ui.workspace;
 const ModalDialog = imports.ui.modalDialog;
+const Tooltips = imports.ui.tooltips;
 
 // The maximum size of a thumbnail is 1/8 the width and height of the screen
 let MAX_THUMBNAIL_SCALE = 0.9;
@@ -23,7 +24,7 @@ const SLIDE_ANIMATION_TIME = 0.3;
 const INACTIVE_OPACITY = 120;
 const REARRANGE_TIME_ON = 0.3;
 const REARRANGE_TIME_OFF = 0.3 * 2;
-const ICON_OPACITY = 192;
+const ICON_OPACITY = Math.round(255 * 0.7);
 const ICON_SIZE = 128;
 
 function ExpoWindowClone(realWindow) {
@@ -32,17 +33,31 @@ function ExpoWindowClone(realWindow) {
 
 ExpoWindowClone.prototype = {
     _init : function(realWindow) {
-        this.actor = new Clutter.Clone({ source: realWindow.get_texture(),
-                                         reactive: true });
+        this.actor = new Clutter.Group({reactive: true});
+        this.clone = new Clutter.Clone({ source: realWindow.get_texture(),
+                                         reactive: false });
+        this.actor.add_actor(this.clone);
         this.actor._delegate = this;
         this.realWindow = realWindow;
         this.metaWindow = realWindow.meta_window;
 
-        this._positionChangedId = this.realWindow.connect('position-changed',
+        let positionChangedId = this.realWindow.connect('position-changed',
                                                           Lang.bind(this, this._onPositionChanged));
-        this._realWindowDestroyedId = this.realWindow.connect('destroy',
-                                                              Lang.bind(this, this._disconnectRealWindowSignals));
+        let sizeChangedId = this.realWindow.connect('position-changed',
+                                                          Lang.bind(this, this._onSizeChanged));
+        let orphaned = false;
+        let realWindowDestroyedId = this.realWindow.connect('destroy', Lang.bind(this, function() {
+            orphaned = true;
+        }));
+        this._disconnectRealWindowSignals = function() {
+            if (orphaned) return;
+            realWindow.disconnect(sizeChangedId);
+            realWindow.disconnect(positionChangedId);
+            realWindow.disconnect(realWindowDestroyedId);
+        };
+
         this._onPositionChanged();
+        this._onSizeChanged();
 
         this.actor.connect('button-release-event',
                            Lang.bind(this, this._onButtonRelease));
@@ -78,11 +93,14 @@ ExpoWindowClone.prototype = {
                                  icon_type: St.IconType.FULLCOLOR,
                                  icon_size: ICON_SIZE });
         }
-        this.icon.set_opacity(ICON_OPACITY);
-        this.icon.width = ICON_SIZE;
-        this.icon.height = ICON_SIZE;
+        this.actor.add_actor(this.icon);
+        this.icon.opacity = ICON_OPACITY;
+        this.icon.hide();
 
-        this._doomed = false;
+        this.tooltip = new Tooltips.Tooltip(this.actor, this.metaWindow.title);
+        this.titleNotifyId = this.metaWindow.connect('notify::title', Lang.bind(this, function (w, title) {
+            this.tooltip.set_text(w.title);
+        }));
     },
 
     setStackAbove: function (actor) {
@@ -97,29 +115,23 @@ ExpoWindowClone.prototype = {
     },
 
     destroy: function () {
+        this.metaWindow.disconnect(this.titleNotifyId);
+        this.tooltip.destroy();
         this.actor.destroy();
         this.icon.destroy();
     },
 
     _onPositionChanged: function() {
         this.actor.set_position(this.origX = this.realWindow.x, this.origY = this.realWindow.y);
+        this.actor.set_size(this.realWindow.width, this.realWindow.height);
     },
 
-    _disconnectRealWindowSignals: function() {
-        if (this._positionChangedId != 0) {
-            this.realWindow.disconnect(this._positionChangedId);
-            this._positionChangedId = 0;
-        }
-
-        if (this._realWindowDestroyedId != 0) {
-            this.realWindow.disconnect(this._realWindowDestroyedId);
-            this._realWindowDestroyedId = 0;
-        }
+    _onSizeChanged: function() {
+        this.actor.set_size(this.realWindow.width, this.realWindow.height);
     },
 
     _onDestroy: function() {
         this._disconnectRealWindowSignals();
-
         this.actor._delegate = null;
 
         if (this.inDrag) {
@@ -140,6 +152,7 @@ ExpoWindowClone.prototype = {
     },
 
     _onDragBegin : function (draggable, time) {
+        this.tooltip.hide();
         Main.expo.showCloseArea();
         this.inDrag = true;
         this.dragCancelled = false;
@@ -538,8 +551,6 @@ ExpoWorkspaceThumbnail.prototype = {
                           }
                       }));
         this._contents.add_actor(clone.actor);
-        this._contents.add_actor(clone.icon);
-        clone.icon.hide();
 
         if (this._windows.length == 0)
             clone.setStackAbove(this._background);
@@ -552,6 +563,7 @@ ExpoWorkspaceThumbnail.prototype = {
     },
 
     _overviewModeOn : function () {
+        if (!this.box.scale) {return;}
         this._overviewMode = true;
         let windows = [];
         this._windows.forEach(function(window) {
@@ -560,7 +572,6 @@ ExpoWorkspaceThumbnail.prototype = {
             }
             else {
                 window.actor.set_opacity(0);
-                window.icon.hide();
                 window.actor.hide();
             }
         }, this);
@@ -573,12 +584,10 @@ ExpoWorkspaceThumbnail.prototype = {
             
             let spacing = 14;
             let nWindows = monitorWindows.length;
-            let nCols = Math.ceil(Math.sqrt(nWindows));
-            let nRows = Math.round(Math.sqrt(nWindows));
+            let [nCols, nRows]  = [Math.ceil(Math.sqrt(nWindows)), Math.round(Math.sqrt(nWindows))]
             let maxWindowWidth = Math.min(monitor.width / 2, (monitor.width - (spacing * (nCols+1))) / nCols);
             let maxWindowHeight = Math.min(monitor.height / 2, (monitor.height - (spacing * (nRows+1))) / nRows);
-            let col = 1;
-            let row = 1;
+            let [col, row] = [1, 1];
             let lastRowCols = nWindows - ((nRows - 1) * nCols);
             let lastRowOffset = (monitor.width - (maxWindowWidth * lastRowCols) - (spacing * (lastRowCols+1))) / 2;
             let offset = 0;
@@ -592,20 +601,24 @@ ExpoWorkspaceThumbnail.prototype = {
                 let x = monitor.x + offset + (spacing * col) + (maxWindowWidth * (col - 1)) + ((maxWindowWidth - (wWidth * scale)) / 2);
                 let y = monitor.y + (spacing * row) + (maxWindowHeight * (row - 1)) + ((maxWindowHeight - (wHeight * scale)) / 2);
 
+                // all icons should be the same size!
+                let iconScale = (0.25/this.box.scale/scale);
+                window.icon.reparent(window.actor);
+                window.icon.set_position(-25*iconScale, -25*iconScale);
+                window.icon.opacity = ICON_OPACITY;
                 if (!window.metaWindow.showing_on_its_workspace()) {
-                    window.actor.set_position(window.icon.x, window.icon.y);
-                    window.icon.hide();
-                    window.icon.set_position(x, y);
                     window.actor.show();
                     Tweener.addTween(window.actor, {x: x, y: y, scale_x: scale, scale_y: scale, time: REARRANGE_TIME_ON, transition: 'easeOutQuad'
                     });
+                    Tweener.addTween(window.icon, {scale_x: iconScale, scale_y: iconScale, time: REARRANGE_TIME_ON, transition: 'easeOutQuad', onComplete: window.icon.show
+                    });
                 }
                 else {
-                    window.icon.set_position(x, y);
-                    Tweener.addTween(window.actor, {x: x, y: y, scale_x: scale, scale_y: scale, opacity: 255, time: REARRANGE_TIME_ON, transition: 'easeOutQuad',
+                    window.icon.set_scale(iconScale, iconScale);
+                    Tweener.addTween(window.actor, {x: x, y: y, scale_x: scale, scale_y: scale, time: REARRANGE_TIME_ON, transition: 'easeOutQuad',
                     onComplete: function() {
                         window.actor.show();
-                        window.icon.hide();
+                        window.icon.show();
                         }
                     });
                 }
@@ -619,6 +632,7 @@ ExpoWorkspaceThumbnail.prototype = {
     },
 
     _overviewModeOff : function (force){
+        if (!this.box.scale) {return;}
         if (!this._overviewMode && !force)
             return;
         
@@ -628,8 +642,10 @@ ExpoWorkspaceThumbnail.prototype = {
         Main.layoutManager.monitors.forEach(function(monitor, monitorIndex) {
             let iconCount = 0;
             this._windows.filter(function(window) {
-                return monitorIndex === window.metaWindow.get_monitor();
+                return monitorIndex === window.metaWindow.get_monitor() &&
+                    this._isOverviewWindow(window.metaWindow);
             },this).forEach(function(window) {
+                window.tooltip.hide();
                 if (!window.metaWindow.showing_on_its_workspace()){
                     // Visually replace the cloned window with its icon
                     // and place the icon at the bottom.
@@ -637,24 +653,38 @@ ExpoWorkspaceThumbnail.prototype = {
                     // icons are grouped by monitor
                     let iconX = iconCount * (ICON_SIZE + iconSpacing);
                     iconX %= (monitor.width - ICON_SIZE);
+                    iconX += monitor.x;
                     ++iconCount;
 
-                    window.icon.x = monitor.x + iconX;
-                    window.icon.y = monitor.y + monitor.height - window.icon.height;
+                    let iconY = monitor.y + monitor.height - ICON_SIZE;
+                    let scaleX = ICON_SIZE / window.realWindow.width;
+                    let scaleY = ICON_SIZE / window.realWindow.height;
                     Tweener.addTween(window.actor, {
-                        x: window.icon.x,
-                        y: window.icon.y,
-                        scale_x: window.icon.width / window.realWindow.width,
-                        scale_y: window.icon.height / window.realWindow.height,
+                        x: iconX,
+                        y: iconY,
+                        scale_x: scaleX,
+                        scale_y: scaleY,
                         time: rearrangeTime,
                         transition: 'easeOutQuad',
                         onComplete: function() {
-                                window.icon.show();
                                 window.actor.hide();
                             }
-                        });
+                    });
+                    Tweener.addTween(window.icon, {
+                        scale_x: 0.5/this.box.scale/scaleX,
+                        scale_y: 0.5/this.box.scale/scaleY,
+                        time: rearrangeTime,
+                        transition: 'easeOutQuad',
+                        onComplete: function() {
+                            window.icon.reparent(window.actor.get_parent());
+                            window.icon.set_position(iconX, iconY);
+                            window.icon.set_size(ICON_SIZE, ICON_SIZE);
+                            window.icon.set_scale(1,1);
+                            }
+                    });
                 }
                 else {
+                    window.icon.hide();
                     window.actor.show();
                     Tweener.addTween(window.actor, {
                         x: window.origX,
@@ -843,6 +873,16 @@ ExpoThumbnailsBox.prototype = {
             width: global.screen_width,
             height: global.screen_height
             };
+
+        // apparently we get no direct call to show the initial
+        // view, so we must force an explicit overviewModeOff display
+        // after it has been allocated
+        let allocId = this.connect('allocated', Lang.bind(this, function() {
+            this.disconnect(allocId);
+            this._thumbnails.forEach(function(thumbnail) {
+                thumbnail._overviewModeOff(true);
+            });
+        }));
     },
 
     show: function() {
@@ -852,11 +892,6 @@ ExpoThumbnailsBox.prototype = {
 
         this._nWorkspacesChangedId = global.screen.connect('notify::n-workspaces',
                                                             Lang.bind(this, this._workspacesChanged));
-
-        this._targetScale = 0;
-        this._scale = 0;
-        this._pendingScaleUpdate = false;
-        this._stateUpdateQueued = false;        
 
         this._stateCounts = {};
         for (let key in ThumbnailState)
@@ -869,12 +904,6 @@ ExpoThumbnailsBox.prototype = {
             global.screen.connect('restacked',
                                   Lang.bind(this, this.restack));
         this.restack();
-
-        // apparently we get no direct call to show the initial
-        // view, so we must force an explicit overviewModeOff display
-        for (let i = 0; i < this._thumbnails.length; ++i) {
-            this._thumbnails[i]._overviewModeOff(true);
-        }
 
         this._kbThumbnailIndex = global.screen.get_active_workspace_index();
         this._thumbnails[this._kbThumbnailIndex].showKeyboardSelectedState(true);
@@ -1496,7 +1525,7 @@ ExpoThumbnailsBox.prototype = {
         childBox.y2 = childBox.y1 + buttonHeight;
         
         this.button.allocate(childBox, flags);
-        this._lastActiveWorkspace.emit('allocated');
+        this.emit('allocated');
     },
 
     _workspacesChanged: function() {
@@ -1549,3 +1578,4 @@ ExpoThumbnailsBox.prototype = {
         this._lastActiveWorkspace = thumbnail;
     }
 };
+Signals.addSignalMethods(ExpoThumbnailsBox.prototype);
