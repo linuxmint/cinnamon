@@ -339,7 +339,7 @@ ExpoWorkspaceThumbnail.prototype = {
     activateWorkspace: function(toScale) {
         if (this.metaWorkspace != global.screen.get_active_workspace())
             this.metaWorkspace.activate(global.get_current_time());
-        Main.expo.hide({toScale: true});
+        Main.expo.hide({toScale: toScale});
     },
     
     showKeyboardSelectedState: function(selected) {
