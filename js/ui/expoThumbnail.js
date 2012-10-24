@@ -773,7 +773,7 @@ ExpoWorkspaceThumbnail.prototype = {
         if (this.handleDragOver(source, actor, x, y, time) === DND.DragMotionResult.CONTINUE) {
             return false;
         }
-        actor.reparent(this.actor);
+        actor.reparent(this._contents);
         let targetMonitor = this.coordinateToMonitor(x, y);
 
         let win = source.realWindow;
