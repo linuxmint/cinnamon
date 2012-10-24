@@ -1376,7 +1376,11 @@ MyApplet.prototype = {
         rightPane.add_actor(this.categoriesApplicationsBox.actor);
         this.categoriesBox = new St.BoxLayout({ style_class: 'menu-categories-box', vertical: true });
         this.applicationsScrollBox = new St.ScrollView({ x_fill: true, y_fill: false, y_align: St.Align.START, style_class: 'vfade menu-applications-scrollbox' });
-        
+
+        this.a11y_settings = new Gio.Settings({ schema: "org.gnome.desktop.a11y.applications" });
+        this.a11y_settings.connect("changed::screen-magnifier-enabled", Lang.bind(this, this._updateVFade));
+        this._updateVFade();
+
         let vscroll = this.applicationsScrollBox.get_vscroll_bar();
         vscroll.connect('scroll-start',
                         Lang.bind(this, function() {
@@ -1418,6 +1422,15 @@ MyApplet.prototype = {
         Mainloop.idle_add(Lang.bind(this, function() {
             this._clearAllSelections();
         }));
+    },
+
+    _updateVFade: function() {
+        let mag_on = this.a11y_settings.get_boolean("screen-magnifier-enabled");
+        if (mag_on) {
+            this.applicationsScrollBox.style_class = "menu-applications-scrollbox";
+        } else {
+            this.applicationsScrollBox.style_class = "vfade menu-applications-scrollbox";
+        }
     },
 
     _clearAllSelections: function() {
