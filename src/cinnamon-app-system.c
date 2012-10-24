@@ -814,16 +814,12 @@ cinnamon_app_system_subsearch (CinnamonAppSystem   *system,
 
 /**
  * cinnamon_app_system_search_settings:
- *
  * @system: A #CinnamonAppSystem
  * @terms: (element-type utf8): List of terms, logical AND
  *
  * Search through settings for the given search terms.
  *
  * Returns: (transfer container) (element-type CinnamonApp): List of setting applications
- * OBSOLETE - ONLY LEFT IN FOR COMPATIBILITY
- * RETURNS EMPTY LIST
- * 
  */
 GSList *
 cinnamon_app_system_search_settings (CinnamonAppSystem  *self,
