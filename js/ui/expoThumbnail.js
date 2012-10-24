@@ -1508,6 +1508,7 @@ ExpoThumbnailsBox.prototype = {
     },
 
     _workspacesChanged: function() {
+        this.button.hide();
         let oldNumWorkspaces = this._thumbnails.length;
         let newNumWorkspaces = global.screen.n_workspaces;
         let active = global.screen.get_active_workspace_index();
