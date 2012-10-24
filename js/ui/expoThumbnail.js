@@ -50,7 +50,7 @@ ExpoWindowClone.prototype = {
         this.actor.connect('destroy', Lang.bind(this, this._onDestroy));
 
         this._draggable = DND.makeDraggable(this.actor,
-                                            { restoreOnSuccess: true,
+                                            { restoreOnSuccess: false,
                                               dragActorMaxSize: Workspace.WINDOW_DND_SIZE,
                                               dragActorOpacity: Workspace.DRAGGING_WINDOW_OPACITY });
         this._draggable.connect('drag-begin', Lang.bind(this, this._onDragBegin));
@@ -86,7 +86,7 @@ ExpoWindowClone.prototype = {
     },
 
     setStackAbove: function (actor) {
-        if (actor.get_parent() !== this.actor) {
+        if (actor.get_parent() !== this.actor.get_parent()) {
             return;
         }
         this._stackAbove = actor;
@@ -213,8 +213,6 @@ ExpoWorkspaceThumbnail.prototype = {
     _init : function(metaWorkspace, box) {
         this.box = box;
         this.metaWorkspace = metaWorkspace;
-        this.monitorIndex = Main.layoutManager.primaryIndex;
-
         this.frame = new St.Group({ clip_to_allocation: true,
                                     style_class: 'expo-workspace-thumbnail-frame' });
         this.actor = new St.Group({ reactive: true,
@@ -306,10 +304,6 @@ ExpoWorkspaceThumbnail.prototype = {
                                                           Lang.bind(this, this._windowAdded));
         this._windowRemovedId = this.metaWorkspace.connect('window-removed',
                                                            Lang.bind(this, this._windowRemoved));
-        this._windowEnteredMonitorId = global.screen.connect('window-entered-monitor',
-                                                           Lang.bind(this, this._windowEnteredMonitor));
-        this._windowLeftMonitorId = global.screen.connect('window-left-monitor',
-                                                           Lang.bind(this, this._windowLeftMonitor));
 
         this.state = ThumbnailState.NORMAL;
         this._slidePosition = 0; // Fully slid in
@@ -495,20 +489,6 @@ ExpoWorkspaceThumbnail.prototype = {
         this.box.restack();
     },
 
-    _windowEnteredMonitor : function(metaScreen, monitorIndex, metaWin) {
-        if (monitorIndex == this.monitorIndex) {
-            this._doAddWindow(metaWin);
-            this.box.restack();
-        }
-    },
-
-    _windowLeftMonitor : function(metaScreen, monitorIndex, metaWin) {
-        if (monitorIndex == this.monitorIndex) {
-            this._doRemoveWindow(metaWin);
-            this.box.restack();
-        }
-    },
-
     destroy : function() {            
         this.actor.destroy();        
         this.frame.destroy();
@@ -517,8 +497,6 @@ ExpoWorkspaceThumbnail.prototype = {
     _onDestroy: function(actor) {
         this.metaWorkspace.disconnect(this._windowAddedId);
         this.metaWorkspace.disconnect(this._windowRemovedId);
-        global.screen.disconnect(this._windowEnteredMonitorId);
-        global.screen.disconnect(this._windowLeftMonitorId);
 
         for (let i = 0; i < this._windows.length; i++) {
             this._windows[i].destroy();
@@ -564,7 +542,7 @@ ExpoWorkspaceThumbnail.prototype = {
                           // normal hovering monitoring was turned off during drag
                           this.hovering = false;
                           if (!clone.dragCancelled) {
-                              this._overviewModeOff();
+                              this._overviewModeOn();
                           }
                       }));
         this._contents.add_actor(clone.actor);
@@ -616,11 +594,11 @@ ExpoWorkspaceThumbnail.prototype = {
             monitorWindows.forEach(function(window, i) {
                 if (row == nRows)
                     offset = lastRowOffset;
-
-                let scale = Math.min((maxWindowWidth / window.actor.width), (maxWindowHeight / window.actor.height));
+                let [wWidth, wHeight] = [window.realWindow.width, window.realWindow.height];
+                let scale = Math.min((maxWindowWidth / wWidth), (maxWindowHeight / wHeight));
                 scale = Math.min(1, scale);
-                let x = monitor.x + offset + (spacing * col) + (maxWindowWidth * (col - 1)) + ((maxWindowWidth - (window.actor.width * scale)) / 2);
-                let y = monitor.y + (spacing * row) + (maxWindowHeight * (row - 1)) + ((maxWindowHeight - (window.actor.height * scale)) / 2);
+                let x = monitor.x + offset + (spacing * col) + (maxWindowWidth * (col - 1)) + ((maxWindowWidth - (wWidth * scale)) / 2);
+                let y = monitor.y + (spacing * row) + (maxWindowHeight * (row - 1)) + ((maxWindowHeight - (wHeight * scale)) / 2);
 
                 if (!window.metaWindow.showing_on_its_workspace()) {
                     window.actor.set_position(window.icon.x, window.icon.y);
@@ -674,8 +652,8 @@ ExpoWorkspaceThumbnail.prototype = {
                     Tweener.addTween(window.actor, {
                         x: window.icon.x,
                         y: window.icon.y,
-                        scale_x: window.icon.width / window.actor.width,
-                        scale_y: window.icon.height / window.actor.height,
+                        scale_x: window.icon.width / window.realWindow.width,
+                        scale_y: window.icon.height / window.realWindow.height,
                         time: rearrangeTime,
                         transition: 'easeOutQuad',
                         onComplete: function() {
@@ -755,12 +733,12 @@ ExpoWorkspaceThumbnail.prototype = {
     },
 
     coordinateToMonitor : function(x, y) {
-        let index = 0;
+        let indexOne = 0;
         Main.layoutManager.monitors.forEach(function(monitor, mindex) {
             let [xX, yY] = [x - monitor.x, y - monitor.y];
-            index = index || (xX >= 0 && xX < monitor.width && yY > 0 && yY < monitor.height ? mindex + 1 : 0);
+            indexOne = indexOne || (xX >= 0 && xX < monitor.width && yY > 0 && yY < monitor.height ? mindex + 1 : 0);
         }, this);
-        return index - 1;
+        return indexOne - 1;
     },
 
     // Draggable target interface
@@ -773,18 +751,20 @@ ExpoWorkspaceThumbnail.prototype = {
         if (this.state > ThumbnailState.NORMAL)
             return DND.DragMotionResult.CONTINUE;
 
-        if (source.realWindow && !this._isMyWindow(source.realWindow))
-            return DND.DragMotionResult.MOVE_DROP;
-
-        if (source.realWindow && this._isMyWindow(source.realWindow)) {
-            let targetMonitor = this.coordinateToMonitor(x, y);
-            let r = DND.DragMotionResult;
-            return targetMonitor >= 0 && 
-                targetMonitor !== source.metaWindow.get_monitor() ? r.MOVE_DROP : r.CONTINUE;
-        }
-
         if (source.CinnamonWorkspaceLaunch)
             return DND.DragMotionResult.COPY_DROP;
+
+        if (!source.metaWindow)
+            return DND.DragMotionResult.CONTINUE;
+
+        if (this._lookupIndex(source.metaWindow) < 0)
+            return DND.DragMotionResult.MOVE_DROP;
+        else {        
+            let targetMonitor = this.coordinateToMonitor(x, y);
+            let r = DND.DragMotionResult;
+            if (targetMonitor < 0) return r.CONTINUE;
+            return targetMonitor !== source.metaWindow.get_monitor() ? r.MOVE_DROP : r.CONTINUE;
+        }
 
         return DND.DragMotionResult.CONTINUE;
     },
@@ -793,6 +773,7 @@ ExpoWorkspaceThumbnail.prototype = {
         if (this.handleDragOver(source, actor, x, y, time) === DND.DragMotionResult.CONTINUE) {
             return false;
         }
+        actor.reparent(this.actor);
         let targetMonitor = this.coordinateToMonitor(x, y);
 
         let win = source.realWindow;
