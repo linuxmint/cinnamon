@@ -232,12 +232,19 @@ Expo.prototype = {
     },
 
     _createClone: function(source) {
-        if (this.clone) {
-            this._group.remove_actor(this.clone);
-            this.clone.destroy();
+        let clone = new Clutter.Clone({source: source});
+        this._group.add_actor(clone);
+        let group = this._group;
+        clone.selfDestruct = function() {
+            group.remove_actor(clone);
+            clone.destroy();
+        };
+        if (Main.layoutManager.monitors.length > 1) {
+            // the clone animation doesn't currently work accurately with multiple monitors,
+            // so we simply hide it.
+            clone.hide();
         }
-        this.clone = new Clutter.Clone({source: source});
-        this._group.add_actor(this.clone);
+        return clone;
     },
 
     // show:
@@ -283,10 +290,25 @@ Expo.prototype = {
         this.activeWorkspace = this._expo._thumbnailsBox._lastActiveWorkspace;
         let activeWorkspaceActor = this.activeWorkspace.actor;
 
-        this.allocateID = this.activeWorkspace.connect('allocated', Lang.bind(this, this._animateVisible2));
-
-        this._createClone(activeWorkspaceActor);
-        this.clone.show();
+        let clone = this._createClone(activeWorkspaceActor);
+        //We need to allocate activeWorkspace before we begin its clone animation
+        let allocateID = this.activeWorkspace.connect('allocated', Lang.bind(this, function() {
+            this.activeWorkspace.disconnect(allocateID);
+            let activeWorkspaceActor = this._expo._thumbnailsBox._lastActiveWorkspace.actor;
+            Tweener.addTween(clone, {
+                x: activeWorkspaceActor.allocation.x1, 
+                y: activeWorkspaceActor.allocation.y1, 
+                scale_x: activeWorkspaceActor.get_scale()[0] , 
+                scale_y: activeWorkspaceActor.get_scale()[1], 
+                time: ANIMATION_TIME,
+                transition: 'easeOutQuad', 
+                onComplete: function() {
+                    clone.selfDestruct();
+                    this._showDone();
+                }, 
+                onCompleteScope: this
+            });
+        }));
 
         this._gradient.show();
         Main.disablePanels();
@@ -297,27 +319,9 @@ Expo.prototype = {
                               transition: 'easeOutQuad',
                               time: ANIMATION_TIME});
 
-        /*Tweener.addTween(this,
-                            { time: 0.4,
-                              onComplete: this._animateVisible2,
-                              onCompleteScope: this});*/
-
         this._coverPane.raise_top();
         this._coverPane.show();
         this.emit('showing');
-    },
-
-    //We need to allocate activeWorkspace before we begin its clone animation
-    _animateVisible2: function() {
-        this.activeWorkspace.disconnect(this.allocateID);
-        let activeWorkspaceActor = this._expo._thumbnailsBox._lastActiveWorkspace.actor;
-        Tweener.addTween(this.clone, {  x: activeWorkspaceActor.allocation.x1, 
-                                        y: activeWorkspaceActor.allocation.y1, 
-                                        scale_x: activeWorkspaceActor.get_scale()[0] , 
-                                        scale_y: activeWorkspaceActor.get_scale()[1], 
-                                        time: ANIMATION_TIME, transition: 'easeOutQuad', 
-                                        onComplete: function() { this.clone.hide(); this._showDone()}, 
-                                        onCompleteScope: this});        
     },
 
     // showTemporarily:
@@ -418,36 +422,57 @@ Expo.prototype = {
         if (!this.visible || this.animationInProgress)
             return;
 
+        let animationTime = ANIMATION_TIME;
         this.animationInProgress = true;
         this._hideInProgress = true;
+
+        this.activeWorkspace = this._expo._thumbnailsBox._lastActiveWorkspace;
+        this.activeWorkspace._overviewModeOff();
 
         Main.enablePanels();
         Tweener.addTween(this._background,
                          { dim_factor: 1,
-                           time: ANIMATION_TIME,
-                           transition: 'linear',
-                           onComplete: this._hideDone,
-                           onCompleteScope: this
+                           time: animationTime,
+                           transition: 'linear'
                          });
 
-        this.activeWorkspace = this._expo._thumbnailsBox._lastActiveWorkspace;
-        let activeWorkspaceActor = this.activeWorkspace.actor;
-        this.activeWorkspace._overviewModeOff();
-        this._createClone(activeWorkspaceActor);
-        this.clone.set_position(activeWorkspaceActor.allocation.x1, activeWorkspaceActor.allocation.y1);
-        this.clone.set_scale(activeWorkspaceActor.get_scale()[0], activeWorkspaceActor.get_scale()[1]);
-        let porthole = Main.layoutManager.getPorthole();
-        Tweener.addTween(this.clone, {  x: porthole.x, 
-                                        y: porthole.y,
-                                        scale_x: 1,
-                                        scale_y: 1,
-                                        time: ANIMATION_TIME, 
-                                        transition: 'easeOutQuad', 
-                                        onComplete: this.hide});
+        this._group.hide();
 
-        this._coverPane.raise_top();
-        this._coverPane.show();
-        this.emit('hiding');
+        let activeWorkspaceActor = this.activeWorkspace.actor;
+        Main.layoutManager.monitors.forEach(function(monitor,index) {
+            let cover = new Clutter.Group();
+            global.overlay_group.add_actor(cover);
+            cover.set_position(0, 0);
+            cover.set_clip(monitor.x, monitor.y, monitor.width, monitor.height);
+
+            let clone = new Clutter.Clone({source: activeWorkspaceActor});
+            cover.add_actor(clone);
+            clone.set_position(monitor.x + activeWorkspaceActor.allocation.x1, monitor.y + activeWorkspaceActor.allocation.y1);
+            clone.set_clip(monitor.x, monitor.y, monitor.width, monitor.height);
+            clone.set_scale(activeWorkspaceActor.get_scale()[0], activeWorkspaceActor.get_scale()[1]);
+
+            Tweener.addTween(clone, {
+                x: 0,
+                y: 0,
+                scale_x: 1,
+                scale_y: 1,
+                time: animationTime,
+                transition: 'easeOutQuad',
+                onCompleteScope: this,
+                onComplete: function() {
+                    this.hide();
+                    global.overlay_group.remove_actor(cover);
+                    cover.destroy();
+                    if (index == Main.layoutManager.monitors.length < 1) {
+                        this._coverPane.raise_top();
+                        this._coverPane.show();
+                        this._hideDone();
+                        this.emit('hiding');
+                    }
+                }
+            });
+        }, this);
+
     },
 
     _showDone: function() {
@@ -474,8 +499,6 @@ Expo.prototype = {
         this._windowCloseArea.hide();
 
         this._background.hide();
-        this._group.hide();
-        this.clone.hide();
         this._gradient.hide();
 
         this.visible = false;
