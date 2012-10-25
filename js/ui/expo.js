@@ -427,7 +427,7 @@ Expo.prototype = {
         this._hideInProgress = true;
 
         this.activeWorkspace = this._expo._thumbnailsBox._lastActiveWorkspace;
-        this.activeWorkspace._overviewModeOff();
+        this.activeWorkspace._overviewModeOff(true);
 
         Main.enablePanels();
         Tweener.addTween(this._background,
