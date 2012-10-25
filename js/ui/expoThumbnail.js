@@ -1022,25 +1022,41 @@ ExpoThumbnailsBox.prototype = {
                 this.lastHovered = thumbnail;
             }));
 
-            thumbnail.actor.connect('enter-event', Lang.bind(this, function (actor, event) {
-                if (!thumbnail.hovering && !isInternalEvent(thumbnail, actor, event)) {
-                    thumbnail.hovering = true;
-                    this.lastHovered = thumbnail; 
-                    this.showButton();
-                    thumbnail._onEnterEvent(actor, event);
+            // Delay connecting to pointer-motion events, as we want to ignore spurious events caused
+            // by the opening animation (when the contents are moving and not the pointer).
+            let installEventsDone = false;
+            let installMotionEvents = Lang.bind(this, function() {
+                if (installEventsDone) {
+                    return; // already executed
                 }
-             }));
+                installEventsDone = true;
 
-            thumbnail.actor.connect('leave-event', Lang.bind(this, function (actor, event) {
-                if (thumbnail.hovering && !isInternalEvent(thumbnail, actor, event)) {
-                    thumbnail.hovering = false;
-                    this.button.hide();
-                    if (thumbnail.metaWorkspace != global.screen.get_active_workspace()) {
-                        thumbnail._shade();
+                thumbnail.actor.connect('motion-event', Lang.bind(this, function (actor, event) {
+                    if (!thumbnail.hovering) {
+                        thumbnail.hovering = true;
+                        this.lastHovered = thumbnail; 
+                        this.showButton();
+                        thumbnail._onEnterEvent(actor, event);
                     }
-                    thumbnail._overviewModeOff();
-                }
-            }));
+                }));
+                 
+                thumbnail.actor.connect('leave-event', Lang.bind(this, function (actor, event) {
+                    if (thumbnail.hovering && !isInternalEvent(thumbnail, actor, event)) {
+                        thumbnail.hovering = false;
+                        this.button.hide();
+                        if (thumbnail.metaWorkspace != global.screen.get_active_workspace()) {
+                            thumbnail._shade();
+                        }
+                        thumbnail._overviewModeOff();
+                    }
+                }));
+             });
+
+            // It seems we cannot reliably use only idle_add because it may take several seconds before 
+            // the system goes into an idle state, so we use a fairly long timeout as a backup.
+            Mainloop.idle_add(installMotionEvents);
+            Mainloop.timeout_add(1000, installMotionEvents);
+
             thumbnail.connect('remove-event', Lang.bind(this, function () {
                 this.button.hide();
                 if (thumbnail.metaWorkspace != global.screen.get_active_workspace()) {
