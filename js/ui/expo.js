@@ -345,7 +345,7 @@ Expo.prototype = {
     // hide:
     //
     // Reverses the effect of show()
-    hide: function() {
+    hide: function(options) {
         if (this.isDummy)
             return;
 
@@ -353,7 +353,7 @@ Expo.prototype = {
             return;
 
         if (!this._shownTemporarily)
-            this._animateNotVisible();
+            this._animateNotVisible(options);
 
         this._shown = false;
         this._syncInputMode();
@@ -418,7 +418,7 @@ Expo.prototype = {
         }
     },
 
-    _animateNotVisible: function() {
+    _animateNotVisible: function(options) {
         if (!this.visible || this.animationInProgress)
             return;
 
@@ -427,14 +427,16 @@ Expo.prototype = {
         this._hideInProgress = true;
 
         this.activeWorkspace = this._expo._thumbnailsBox._lastActiveWorkspace;
-        this.activeWorkspace._overviewModeOff(true);
+        if (!options || !options.toScale ) {
+            this.activeWorkspace._overviewModeOff(true);
+            Main.enablePanels();
+            Tweener.addTween(this._background,
+                            { dim_factor: 1,
+                            time: animationTime,
+                            transition: 'linear'
+                            });
+        }
 
-        Main.enablePanels();
-        Tweener.addTween(this._background,
-                         { dim_factor: 1,
-                           time: animationTime,
-                           transition: 'linear'
-                         });
 
         this._group.hide();
 
