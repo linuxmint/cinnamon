@@ -377,12 +377,30 @@ ExpoWorkspaceThumbnail.prototype = {
     },
 
     syncStacking: function(stackIndices) {
-        this._windows.sort(function (a, b) {
-            let minimizedA = a.metaWindow.minimized ? -1 : 0;
-            let minimizedB = b.metaWindow.minimized ? -1 : 0;
-            let minimizedDiff = minimizedA - minimizedB;
-            return minimizedDiff || stackIndices[a.metaWindow.get_stable_sequence()] - stackIndices[b.metaWindow.get_stable_sequence()];
-        });
+        this._windows.sort(Lang.bind(this, function (a, b) {
+            let minimizedDiff = function(a, b) {
+                let minimizedA = a.metaWindow.minimized ? -1 : 0;
+                let minimizedB = b.metaWindow.minimized ? -1 : 0;
+                return minimizedA - minimizedB;
+            };
+            let noOverviewDiff = Lang.bind(this, function(a, b) {
+                let noOverviewA = !this._isOverviewWindow(a.metaWindow) ? -1 : 0;
+                let noOverviewB = !this._isOverviewWindow(b.metaWindow) ? -1 : 0;
+                return noOverviewA - noOverviewB;
+            });
+            let transientRelation = function(a, b) {
+                let overviewDifference = noOverviewDiff(a,b);
+                if (overviewDifference) {
+                    let transientA = a.metaWindow.get_transient_for() === b.metaWindow ? -1 : 0;
+                    let transientB = !transientA && b.metaWindow.get_transient_for() === a.metaWindow ? -1 : 0;
+                    return transientA - transientB || overviewDifference;
+                }
+                return 0;
+            };
+
+            return transientRelation(a,b) || minimizedDiff(a,b) ||
+                    stackIndices[a.metaWindow.get_stable_sequence()] - stackIndices[b.metaWindow.get_stable_sequence()];
+        }));
 
         for (let i = 0; i < this._windows.length; i++) {
             let clone = this._windows[i];
@@ -509,8 +527,17 @@ ExpoWorkspaceThumbnail.prototype = {
 
     // Tests if @win should be shown in the Expo
     _isExpoWindow : function (win) {
-        let tracker = Cinnamon.WindowTracker.get_default();
-        return tracker.is_window_interesting(win.get_meta_window());
+        let metaWindow = win.get_meta_window();
+        if (metaWindow.is_override_redirect()) {
+            return false;
+        }
+        let type = metaWindow.get_window_type();
+        return type !== Meta.WindowType.DESKTOP && type !== Meta.WindowType.DOCK;
+    },
+
+    // Tests if @win should be shown in overview mode
+    _isOverviewWindow : function (metaWindow) {
+        return Main.isInteresting(metaWindow);
     },
 
     // Create a clone of a (non-desktop) window and add it to the window list
@@ -550,21 +577,9 @@ ExpoWorkspaceThumbnail.prototype = {
 
     _overviewModeOn : function () {
         this._overviewMode = true;
-
-        let spacing = 14;
-        let nCols = Math.ceil(Math.sqrt(this._windows.length));
-        let nRows = Math.round(Math.sqrt(this._windows.length));
-        let maxWindowWidth = (this.actor.width - (spacing * (nCols+1))) / nCols;
-        let maxWindowHeight = (this.actor.height - (spacing * (nRows+1))) / nRows;
-        let col = 1;
-        let row = 1;
-        let lastRowCols = this._windows.length - ((nRows - 1) * nCols);
-        let lastRowOffset = (this.actor.width - (maxWindowWidth * lastRowCols) - (spacing * (lastRowCols+1))) / 2;
-        let offset = 0;
-        let windows = this._windows.slice();
-        windows.reverse(); // top-to-bottom order
-        for (let i = 0; i < windows.length; i++){
-            let window = windows[i];
+        let windows = [];
+        for (let i = 0; i < this._windows.length; i++){
+            let window = this._windows[i];
             if (!window.origSet) {
                 window.origX = window.actor.x;
                 window.origY = window.actor.y;
@@ -576,6 +591,30 @@ ExpoWorkspaceThumbnail.prototype = {
                 window.origY = this._porthole.y
             }
 
+            if (this._isOverviewWindow(window.metaWindow)) {
+                windows.push(window);
+            }
+            else {
+                window.actor.set_opacity(0);
+                window.icon.hide();
+                window.actor.hide();
+            }
+        }
+
+        let spacing = 14;
+        let nWindows = windows.length;
+        let nCols = Math.ceil(Math.sqrt(nWindows));
+        let nRows = Math.round(Math.sqrt(nWindows));
+        let maxWindowWidth = (this.actor.width - (spacing * (nCols+1))) / nCols;
+        let maxWindowHeight = (this.actor.height - (spacing * (nRows+1))) / nRows;
+        let col = 1;
+        let row = 1;
+        let lastRowCols = nWindows - ((nRows - 1) * nCols);
+        let lastRowOffset = (this.actor.width - (maxWindowWidth * lastRowCols) - (spacing * (lastRowCols+1))) / 2;
+        let offset = 0;
+        windows.reverse(); // top-to-bottom order
+        for (let i = 0; i < windows.length; i++){
+            let window = windows[i];
             if (row == nRows)
                 offset = lastRowOffset;
 
@@ -638,6 +677,7 @@ ExpoWorkspaceThumbnail.prototype = {
                 iconX %= (this.actor.width - ICON_SIZE)
             }
             else {
+                window.actor.show();
                 Tweener.addTween(window.actor, {
                     x: window.origSet ? window.origX : window.actor.x,
                     y: window.origSet ? window.origY : window.actor.y,
