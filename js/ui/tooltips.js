@@ -1,3 +1,4 @@
+const Mainloop = imports.mainloop;
 const St = imports.gi.St;
 const Main = imports.ui.main;
 const Lang = imports.lang;
@@ -115,6 +116,11 @@ Tooltip.prototype = {
         item.connect('leave-event', Lang.bind(this, this._onLeaveEvent));
         item.connect('motion-event', Lang.bind(this, this._onMotionEvent));
         item.connect('button-release-event', Lang.bind(this, this._onReleaseEvent));
+        item.connect('allocation-changed', Lang.bind(this, function() {
+			// An allocation change could mean that the actor has moved,
+			// so hide, but wait until after the allocation cycle.
+			Mainloop.idle_add(Lang.bind(this, this.hide));
+        }));
         
         this._showTimer = null;
         this._visible = false;
