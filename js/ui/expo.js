@@ -447,14 +447,13 @@ Expo.prototype = {
 
             let clone = new Clutter.Clone({source: activeWorkspaceActor});
             cover.add_actor(clone);
-            let porthole = Main.layoutManager.getPorthole();
             clone.set_position(monitor.x + activeWorkspaceActor.allocation.x1, monitor.y + activeWorkspaceActor.allocation.y1);
-            clone.set_clip(monitor.x - porthole.x, monitor.y - porthole.y, monitor.width, monitor.height);
+            clone.set_clip(monitor.x, monitor.y, monitor.width, monitor.height);
             clone.set_scale(activeWorkspaceActor.get_scale()[0], activeWorkspaceActor.get_scale()[1]);
 
             Tweener.addTween(clone, {
-                x: porthole.x,
-                y: porthole.y,
+                x: 0,
+                y: 0,
                 scale_x: 1,
                 scale_y: 1,
                 time: animationTime,
