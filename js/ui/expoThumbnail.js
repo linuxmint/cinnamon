@@ -576,8 +576,7 @@ ExpoWorkspaceThumbnail.prototype = {
     _overviewModeOn : function () {
         this._overviewMode = true;
         let windows = [];
-        for (let i = 0; i < this._windows.length; i++){
-            let window = this._windows[i];
+        this._windows.forEach(function(window) {
             if (this._isOverviewWindow(window.metaWindow)) {
                 windows.push(window);
             }
@@ -586,53 +585,59 @@ ExpoWorkspaceThumbnail.prototype = {
                 window.icon.hide();
                 window.actor.hide();
             }
-        }
+        }, this);
 
-        let spacing = 14;
-        let nWindows = windows.length;
-        let nCols = Math.ceil(Math.sqrt(nWindows));
-        let nRows = Math.round(Math.sqrt(nWindows));
-        let maxWindowWidth = (this.actor.width - (spacing * (nCols+1))) / nCols;
-        let maxWindowHeight = (this.actor.height - (spacing * (nRows+1))) / nRows;
-        let col = 1;
-        let row = 1;
-        let lastRowCols = nWindows - ((nRows - 1) * nCols);
-        let lastRowOffset = (this.actor.width - (maxWindowWidth * lastRowCols) - (spacing * (lastRowCols+1))) / 2;
-        let offset = 0;
         windows.reverse(); // top-to-bottom order
-        for (let i = 0; i < windows.length; i++){
-            let window = windows[i];
-            if (row == nRows)
-                offset = lastRowOffset;
+        Main.layoutManager.monitors.forEach(function(monitor, monitorIndex) {
+            let monitorWindows = windows.filter(function(window) {
+                return window.metaWindow.get_monitor() === monitorIndex;
+            }, this);
+            
+            let spacing = 14;
+            let nWindows = monitorWindows.length;
+            let nCols = Math.ceil(Math.sqrt(nWindows));
+            let nRows = Math.round(Math.sqrt(nWindows));
+            let maxWindowWidth = Math.min(monitor.width / 2, (monitor.width - (spacing * (nCols+1))) / nCols);
+            let maxWindowHeight = Math.min(monitor.height / 2, (monitor.height - (spacing * (nRows+1))) / nRows);
+            let col = 1;
+            let row = 1;
+            let lastRowCols = nWindows - ((nRows - 1) * nCols);
+            let lastRowOffset = (monitor.width - (maxWindowWidth * lastRowCols) - (spacing * (lastRowCols+1))) / 2;
+            let offset = 0;
 
-            let scale = Math.min((maxWindowWidth / window.actor.width), (maxWindowHeight / window.actor.height)); 
-            scale = Math.min(1, scale);
-            let x = offset + (spacing * col) + (maxWindowWidth * (col - 1)) + ((maxWindowWidth - (window.actor.width * scale)) / 2);
-            let y = (spacing * row) + (maxWindowHeight * (row - 1)) + ((maxWindowHeight - (window.actor.height * scale)) / 2);   
+            monitorWindows.forEach(function(window, i) {
+                if (row == nRows)
+                    offset = lastRowOffset;
 
-            if (!window.metaWindow.showing_on_its_workspace()) {
-                window.actor.set_position(window.icon.x, window.icon.y);
-                window.icon.hide();
-                window.icon.set_position(x, y);
-                window.actor.show();
-                Tweener.addTween(window.actor, {x: x, y: y, scale_x: scale, scale_y: scale, time: REARRANGE_TIME_ON, transition: 'easeOutQuad'
-                });
-            }
-            else {
-                window.icon.set_position(x, y);
-                Tweener.addTween(window.actor, {x: x, y: y, scale_x: scale, scale_y: scale, opacity: 255, time: REARRANGE_TIME_ON, transition: 'easeOutQuad',
-                onComplete: function() {
-                    window.actor.show();
+                let scale = Math.min((maxWindowWidth / window.actor.width), (maxWindowHeight / window.actor.height));
+                scale = Math.min(1, scale);
+                let x = monitor.x + offset + (spacing * col) + (maxWindowWidth * (col - 1)) + ((maxWindowWidth - (window.actor.width * scale)) / 2);
+                let y = monitor.y + (spacing * row) + (maxWindowHeight * (row - 1)) + ((maxWindowHeight - (window.actor.height * scale)) / 2);
+
+                if (!window.metaWindow.showing_on_its_workspace()) {
+                    window.actor.set_position(window.icon.x, window.icon.y);
                     window.icon.hide();
-                    }
-                });
-            }
-            col++;
-            if (col > nCols){
-                row ++;
-                col = 1;
-            } 
-        }    
+                    window.icon.set_position(x, y);
+                    window.actor.show();
+                    Tweener.addTween(window.actor, {x: x, y: y, scale_x: scale, scale_y: scale, time: REARRANGE_TIME_ON, transition: 'easeOutQuad'
+                    });
+                }
+                else {
+                    window.icon.set_position(x, y);
+                    Tweener.addTween(window.actor, {x: x, y: y, scale_x: scale, scale_y: scale, opacity: 255, time: REARRANGE_TIME_ON, transition: 'easeOutQuad',
+                    onComplete: function() {
+                        window.actor.show();
+                        window.icon.hide();
+                        }
+                    });
+                }
+                col++;
+                if (col > nCols){
+                    row ++;
+                    col = 1;
+                }
+            }, this);
+        }, this);
     },
 
     _overviewModeOff : function (force){
@@ -640,49 +645,47 @@ ExpoWorkspaceThumbnail.prototype = {
             return;
         
         const iconSpacing = ICON_SIZE/4;
-        let monitorIconCount = new Array(Main.layoutManager.monitors.length);
-
         let rearrangeTime = force ? REARRANGE_TIME_OFF/2 : REARRANGE_TIME_OFF;
-        for (let i = 0; i < this._windows.length; i++){
-            let window = this._windows[i];
 
-            if (!window.metaWindow.showing_on_its_workspace()){
-                // Visually replace the cloned window with its icon
-                // and place the icon at the bottom.
+        Main.layoutManager.monitors.forEach(function(monitor, monitorIndex) {
+            let iconCount = 0;
+            this._windows.filter(function(window) {
+                return monitorIndex === window.metaWindow.get_monitor();
+            },this).forEach(function(window) {
+                if (!window.metaWindow.showing_on_its_workspace()){
+                    // Visually replace the cloned window with its icon
+                    // and place the icon at the bottom.
 
-                // icons are grouped by monitor
-                let monitorIndex = window.metaWindow.get_monitor();
-                let monitor = Main.layoutManager.monitors[monitorIndex];
-                let iconCount = monitorIconCount[monitorIndex] || 0;
-                let iconX = iconCount * (ICON_SIZE + iconSpacing);
-                iconX %= (monitor.width - ICON_SIZE);
-                ++iconCount;
-                monitorIconCount[monitorIndex] = iconCount;
+                    // icons are grouped by monitor
+                    let iconX = iconCount * (ICON_SIZE + iconSpacing);
+                    iconX %= (monitor.width - ICON_SIZE);
+                    ++iconCount;
 
-                window.icon.x = monitor.x + iconX;
-                window.icon.y = monitor.y + monitor.height - window.icon.height;
-                Tweener.addTween(window.actor, {
-                    x: window.icon.x,
-                    y: window.icon.y,
-                    scale_x: window.icon.width / window.actor.width, 
-                    scale_y: window.icon.height / window.actor.height,
-                    time: rearrangeTime, 
-                    transition: 'easeOutQuad',
-                    onComplete: function() {
-                            window.icon.show();
-                            window.actor.hide();
-                        }
-                    });
-            }
-            else {
-                window.actor.show();
-                Tweener.addTween(window.actor, {
-                    x: window.origX,
-                    y: window.origY,
-                    scale_x: 1, scale_y: 1, opacity: 255, 
-                    time: rearrangeTime, transition: 'easeOutQuad'});
-            }
-        } 
+                    window.icon.x = monitor.x + iconX;
+                    window.icon.y = monitor.y + monitor.height - window.icon.height;
+                    Tweener.addTween(window.actor, {
+                        x: window.icon.x,
+                        y: window.icon.y,
+                        scale_x: window.icon.width / window.actor.width,
+                        scale_y: window.icon.height / window.actor.height,
+                        time: rearrangeTime,
+                        transition: 'easeOutQuad',
+                        onComplete: function() {
+                                window.icon.show();
+                                window.actor.hide();
+                            }
+                        });
+                }
+                else {
+                    window.actor.show();
+                    Tweener.addTween(window.actor, {
+                        x: window.origX,
+                        y: window.origY,
+                        scale_x: 1, scale_y: 1, opacity: 255,
+                        time: rearrangeTime, transition: 'easeOutQuad'});
+                }
+            }, this);
+        }, this);
     },
 
     _onScrollEvent: function (actor, event) {
