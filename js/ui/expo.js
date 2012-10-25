@@ -444,7 +444,7 @@ Expo.prototype = {
 
             let clone = new Clutter.Clone({source: activeWorkspaceActor});
             cover.add_actor(clone);
-            clone.set_position(Main.layoutManager.primaryMonitor.x + activeWorkspaceActor.allocation.x1, Main.layoutManager.primaryMonitor.x + activeWorkspaceActor.allocation.y1);
+            clone.set_position(Main.layoutManager.primaryMonitor.x + activeWorkspaceActor.allocation.x1, Main.layoutManager.primaryMonitor.y + activeWorkspaceActor.allocation.y1);
             clone.set_clip(monitor.x, monitor.y, monitor.width, monitor.height);
             clone.set_scale(activeWorkspaceActor.get_scale()[0], activeWorkspaceActor.get_scale()[1]);
 
