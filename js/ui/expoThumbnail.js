@@ -1293,11 +1293,20 @@ ExpoThumbnailsBox.prototype = {
         let asGrid  = global.settings.get_boolean("workspace-expo-view-as-grid");
         let nColumns = asGrid ? Math.ceil(Math.sqrt(nWorkspaces)) : nWorkspaces;
         let nRows = Math.ceil(nWorkspaces/nColumns);
-        let ratio = Math.floor(this._porthole.width / this._porthole.height);
-        if (nWorkspaces <= ratio) {
+        
+        // in case of a very wide porthole, we can try and optimize the screen 
+        // utilization by switching the columns and rows, but only if there's a
+        // big difference. If the user doesn't want a grid we are even more conservative.
+        let divisor = 1.25;
+        let ratio = this._porthole.width / this._porthole.height;
+        let boxRatio = this._box ? (this._box.x2 - this._box.x1) / (this._box.y2 - this._box.y1) : 1.6;
+
+        if (nWorkspaces <= Math.floor(ratio)) {
             return [1, nWorkspaces];
-        } else {
+        } else if (!asGrid || (ratio / divisor) <= boxRatio) {
             return [nColumns, nRows];
+        } else {
+            return [nRows, nColumns];
         }
     },
 
@@ -1355,6 +1364,7 @@ ExpoThumbnailsBox.prototype = {
     },
 
     _allocate: function(actor, box, flags) {
+        this._box = box;
         let rtl = (St.Widget.get_default_direction () == St.TextDirection.RTL);
 
         if (this._thumbnails.length == 0) // not visible
