@@ -232,22 +232,6 @@ Expo.prototype = {
         this.emit('window-drag-end');
     },
 
-    _createClone: function(source) {
-        let clone = new Clutter.Clone({source: source});
-        this._group.add_actor(clone);
-        let group = this._group;
-        clone.selfDestruct = function() {
-            group.remove_actor(clone);
-            clone.destroy();
-        };
-        if (Main.layoutManager.monitors.length > 1) {
-            // the clone animation doesn't currently work accurately with multiple monitors,
-            // so we simply hide it.
-            clone.hide();
-        }
-        return clone;
-    },
-
     // show:
     //
     // Animates the overview visible and grabs mouse and keyboard input
@@ -292,24 +276,36 @@ Expo.prototype = {
         this.activeWorkspace = this._expo._thumbnailsBox._lastActiveWorkspace;
         let activeWorkspaceActor = this.activeWorkspace.actor;
 
-        let clone = this._createClone(activeWorkspaceActor);
+        // should not create new actors and work with them within an allocation cycle
+        let clones = [];
+        Main.layoutManager.monitors.forEach(function(monitor,index) {
+            let clone = new Clutter.Clone({source: activeWorkspaceActor});
+            global.overlay_group.add_actor(clone);
+            clone.set_clip(monitor.x, monitor.y, monitor.width, monitor.height);
+            clones.push(clone);
+        }, this);
         //We need to allocate activeWorkspace before we begin its clone animation
         let allocateID = this.activeWorkspace.connect('allocated', Lang.bind(this, function() {
             this.activeWorkspace.disconnect(allocateID);
-            let activeWorkspaceActor = this._expo._thumbnailsBox._lastActiveWorkspace.actor;
-            Tweener.addTween(clone, {
-                x: activeWorkspaceActor.allocation.x1, 
-                y: activeWorkspaceActor.allocation.y1, 
-                scale_x: activeWorkspaceActor.get_scale()[0] , 
-                scale_y: activeWorkspaceActor.get_scale()[1], 
-                time: ANIMATION_TIME,
-                transition: 'easeOutQuad', 
-                onComplete: function() {
-                    clone.selfDestruct();
-                    this._showDone();
-                }, 
-                onCompleteScope: this
-            });
+            Main.layoutManager.monitors.forEach(function(monitor,index) {
+                let clone = clones[index];
+                Tweener.addTween(clone, {
+                    x: Main.layoutManager.primaryMonitor.x + activeWorkspaceActor.allocation.x1,
+                    y: Main.layoutManager.primaryMonitor.y + activeWorkspaceActor.allocation.y1,
+                    scale_x: activeWorkspaceActor.get_scale()[0] , 
+                    scale_y: activeWorkspaceActor.get_scale()[1], 
+                    time: ANIMATION_TIME,
+                    transition: 'easeOutQuad', 
+                    onComplete: function() {
+                        global.overlay_group.remove_actor(clone);
+                        clone.destroy();
+                        if (index == Main.layoutManager.monitors.length < 1) {
+                            this._showDone();
+                        }
+                    }, 
+                    onCompleteScope: this
+                });
+            }, this);
         }));
 
         this._gradient.show();
@@ -451,7 +447,7 @@ Expo.prototype = {
 
             let clone = new Clutter.Clone({source: activeWorkspaceActor});
             cover.add_actor(clone);
-            clone.set_position(monitor.x + activeWorkspaceActor.allocation.x1, monitor.y + activeWorkspaceActor.allocation.y1);
+            clone.set_position(Main.layoutManager.primaryMonitor.x + activeWorkspaceActor.allocation.x1, Main.layoutManager.primaryMonitor.y + activeWorkspaceActor.allocation.y1);
             clone.set_clip(monitor.x, monitor.y, monitor.width, monitor.height);
             clone.set_scale(activeWorkspaceActor.get_scale()[0], activeWorkspaceActor.get_scale()[1]);
 
