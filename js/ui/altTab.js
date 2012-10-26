@@ -21,7 +21,8 @@ const APP_ICON_HOVER_TIMEOUT = 200; // milliseconds
 const DISABLE_HOVER_TIMEOUT = 500; // milliseconds
 
 const THUMBNAIL_DEFAULT_SIZE = 256;
-const THUMBNAIL_POPUP_TIME = 500; // milliseconds
+const THUMBNAIL_INITIAL_POPUP_TIME = 500; // milliseconds
+const THUMBNAIL_POPUP_TIME = 125; // milliseconds
 const THUMBNAIL_FADE_TIME = 0.1; // seconds
 
 const PREVIEW_DELAY_TIMEOUT = 200; // milliseconds
@@ -630,6 +631,7 @@ AltTabPopup.prototype = {
      * app list will have the keyboard focus.
      */
     _select : function(app, window, forceAppFocus) {
+        let delay = this._thumbnails ? THUMBNAIL_POPUP_TIME : THUMBNAIL_INITIAL_POPUP_TIME;
         if (window==null) window = 0;
         if (app != this._currentApp || window == null) {
             this._destroyThumbnails();
@@ -653,14 +655,17 @@ AltTabPopup.prototype = {
             this._currentWindow = window;
             this._doWindowPreview();
             if (this._thumbnailsEnabled && this._iconsEnabled) {
-                if (!this._thumbnails)
-                    this._createThumbnails();
-                this._thumbnails.highlight(window, forceAppFocus);
+                this._thumbnailTimeoutId = Mainloop.timeout_add(
+                    delay, Lang.bind(this, function() {
+                        if (!this._thumbnails)
+                            this._createThumbnails();
+                        this._thumbnails.highlight(window, forceAppFocus);
+                }));
             }
         } else if (this._appIcons[this._currentApp].cachedWindows.length > 1 &&
                    !forceAppFocus) {
             this._thumbnailTimeoutId = Mainloop.timeout_add (
-                THUMBNAIL_POPUP_TIME,
+                delay,
                 Lang.bind(this, this._timeoutPopupThumbnails));
         }
     },
