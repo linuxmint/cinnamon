@@ -464,12 +464,12 @@ Expo.prototype = {
                         this._coverPane.raise_top();
                         this._coverPane.show();
                         this._hideDone();
-                        this.emit('hiding');
                     }
                 }
             });
         }, this);
 
+        this.emit('hiding');
     },
 
     _showDone: function() {
