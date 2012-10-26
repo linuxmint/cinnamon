@@ -733,15 +733,12 @@ const WindowPositionFlags = {
     ANIMATE: 1 << 1
 };
 
-/**
- * @metaWorkspace: a #Meta.Workspace, or null
- */
-function Workspace(metaWorkspace, monitorIndex) {
-    this._init(metaWorkspace, monitorIndex);
+function WorkspaceMonitor(metaWorkspace, monitorIndex, hasFocus) {
+    this._init(metaWorkspace, monitorIndex, hasFocus);
 }
 
-Workspace.prototype = {
-    _init : function(metaWorkspace, monitorIndex) {
+WorkspaceMonitor.prototype = {
+    _init : function(metaWorkspace, monitorIndex, hasFocus) {
         // When dragging a window, we use this slot for reserve space.
         this._reservedSlot = null;
         this.metaWorkspace = metaWorkspace;
@@ -764,7 +761,7 @@ Workspace.prototype = {
         this._dropRect._delegate = this;
 
         this.actor.add_actor(this._dropRect);
-            this.actor.add_actor(this._windowOverlaysGroup);
+        this.actor.add_actor(this._windowOverlaysGroup);
 
         this.actor.connect('destroy', Lang.bind(this, this._onDestroy));
 
@@ -786,11 +783,29 @@ Workspace.prototype = {
             this._windowRemovedId = this.metaWorkspace.connect('window-removed',
                                                                Lang.bind(this, this._windowRemoved));
         }
+        this._windowEnteredMonitorId = global.screen.connect('window-entered-monitor',
+            Lang.bind(this, this._windowEnteredMonitor));
+        this._windowLeftMonitorId = global.screen.connect('window-left-monitor',
+            Lang.bind(this, this._windowLeftMonitor));
         this._repositionWindowsId = 0;
 
         this.leavingOverview = false;
 
-        this._kbWindowIndex = -1; // index of the current keyboard-selected window
+        this._kbWindowIndex = 0; // index of the current keyboard-selected window
+        if (hasFocus) {
+            this.onInitialPositionWindows = Lang.bind(this, function() {
+                // default-select the first window
+                this.selectAnotherWindow(Clutter.Home);
+                Mainloop.idle_add(Lang.bind(this, function() {
+                    // if keyboard focus is at the default position,
+                    // make sure that the close button is drawn,
+                    // which must done a little bit later
+                    if (this._kbWindowIndex === 0) {
+                        this.selectAnotherWindow(Clutter.Home);
+                    }
+                }));
+            });
+        }
     },
     
     selectAnotherWindow: function(symbol) {
@@ -846,10 +861,10 @@ Workspace.prototype = {
                 nextIndex = calcNewIndex(-1);
             }
         }
-        else if (symbol === Clutter.Left || symbol === Clutter.ISO_Left_Tab || symbol === Clutter.Up) {
+        else if (symbol === Clutter.Left || symbol === Clutter.Up) {
             nextIndex = (currentIndex < 1 ? numWindows : currentIndex) - 1;
         }
-        else if (symbol === Clutter.Right || symbol === Clutter.Tab || symbol === Clutter.Down) {
+        else if (symbol === Clutter.Right || symbol === Clutter.Down) {
             nextIndex = (currentIndex + 1) % numWindows;
         }
         else if (symbol === Clutter.Home) {
@@ -863,16 +878,21 @@ Workspace.prototype = {
         }
 
         if (currentIndex !== nextIndex) {
-            if (currentIndex > -1 && currentIndex < numWindows) {
-                this._windows[currentIndex].overlay.setSelected(false);
-            }
+            this.showActiveSelection(false);
         }
-
         this._kbWindowIndex = currentIndex = nextIndex;
-        if (currentIndex > -1 && currentIndex < numWindows) {
-            this._windows[currentIndex].overlay.setSelected(true);
-        }
+        this.showActiveSelection(true);
         return true;
+    },
+    
+    get windowCount() {
+        return this._windows.length;
+    },
+    
+    showActiveSelection: function(show) {
+        if (this._kbWindowIndex > -1 && this._kbWindowIndex < this._windows.length) {
+            this._windows[this._kbWindowIndex].overlay.setSelected(show);
+        }
     },
     
     showMenuForSelectedWindow: function() {
@@ -1245,17 +1265,9 @@ Workspace.prototype = {
                 this._showWindowOverlay(clone, isOnCurrentWorkspace);
             }
         }
-        // default-select the first window
-        if (this._kbWindowIndex < 0) {
-            this.selectAnotherWindow(Clutter.Home);
-            Mainloop.idle_add(Lang.bind(this, function() {
-                // if keyboard focus is at the default position,
-                // make sure that the close button is drawn,
-                // which must done a little bit later
-                if (this._kbWindowIndex === 0) {
-                    this.selectAnotherWindow(Clutter.Home);
-                }
-            }));
+        if (this.onInitialPositionWindows) {
+            this.onInitialPositionWindows();
+            this.onInitialPositionWindows = null;
         }
     },
 
@@ -1469,6 +1481,18 @@ Workspace.prototype = {
         this._doRemoveWindow(metaWin);
     },
 
+    _windowEnteredMonitor : function(metaScreen, monitorIndex, metaWin) {
+        if (monitorIndex == this.monitorIndex) {
+            this._doAddWindow(metaWin);
+        }
+    },
+
+    _windowLeftMonitor : function(metaScreen, monitorIndex, metaWin) {
+        if (monitorIndex == this.monitorIndex) {
+            this._doRemoveWindow(metaWin);
+        }
+    },
+
     // check for maximized windows on the workspace
     hasMaximizedWindows: function() {
         for (let i = 0; i < this._windows.length; i++) {
@@ -1553,6 +1577,8 @@ Workspace.prototype = {
             this.metaWorkspace.disconnect(this._windowAddedId);
             this.metaWorkspace.disconnect(this._windowRemovedId);
         }
+        global.screen.disconnect(this._windowEnteredMonitorId);
+        global.screen.disconnect(this._windowLeftMonitorId);
 
         if (this._repositionWindowsId > 0)
             Mainloop.source_remove(this._repositionWindowsId);
@@ -1573,7 +1599,7 @@ Workspace.prototype = {
 
     // Tests if @win belongs to this workspace
     _isMyWindow : function (win) {
-        return (this.metaWorkspace == null || Main.isWindowActorDisplayedOnWorkspace(win, this.metaWorkspace.index()));
+        return (this.metaWorkspace == null || Main.isWindowActorDisplayedOnWorkspace(win, this.metaWorkspace.index()) && (!win.get_meta_window() || win.get_meta_window().get_monitor() == this.monitorIndex));
     },
 
     // Tests if @win should be shown in the Overview
@@ -1715,7 +1741,7 @@ Workspace.prototype = {
     }
 };
 
-Signals.addSignalMethods(Workspace.prototype);
+Signals.addSignalMethods(WorkspaceMonitor.prototype);
 
 function AppMenuButtonRightClickMenu(actor, metaWindow, orientation) {
     this._init(actor, metaWindow, orientation);
@@ -1755,7 +1781,22 @@ AppMenuButtonRightClickMenu.prototype = {
         this.itemOnAllWorkspaces = new PopupMenu.PopupMenuItem(_("Visible on all workspaces"));
         this.itemOnAllWorkspaces.connect('activate', Lang.bind(this, this._toggleOnAllWorkspaces));
 
-        let items = [
+        let monitorItems = [];
+        if (Main.layoutManager.monitors.length > 1) {
+            Main.layoutManager.monitors.forEach(function(monitor, index) {
+                if (index !== metaWindow.get_monitor()) {
+                    let itemChangeMonitor = new PopupMenu.PopupMenuItem(
+                        _("Move to monitor %d").format(index + 1));
+                    itemChangeMonitor.connect('activate', Lang.bind(this, function() {
+                        metaWindow.move_to_monitor(index);
+                    }));
+                    monitorItems.push(itemChangeMonitor);
+                }
+            }, this);
+            monitorItems.push(new PopupMenu.PopupSeparatorMenuItem());
+        }
+
+        let items = monitorItems.concat([
             this.itemOnAllWorkspaces,
             this.itemMoveToLeftWorkspace,
             this.itemMoveToRightWorkspace,
@@ -1763,7 +1804,7 @@ AppMenuButtonRightClickMenu.prototype = {
             this.itemMinimizeWindow,
             this.itemMaximizeWindow,
             this.itemCloseWindow
-        ];
+        ]);
         (orientation == St.Side.BOTTOM ? items : items.reverse()).forEach(function(item) {
             this.addMenuItem(item);
         }, this);
@@ -1864,3 +1905,125 @@ AppMenuButtonRightClickMenu.prototype = {
     }
 
 };
+
+function Workspace(metaWorkspace) {
+    this._init(metaWorkspace);
+}
+
+Workspace.prototype = {
+    _init : function(metaWorkspace) {
+        this.metaWorkspace = metaWorkspace;
+        this.actor = new Clutter.Group();
+        this.actor.set_size(0, 0);
+        this._monitors = [];
+        let focusIndex = Main.layoutManager.focusIndex;
+        Main.layoutManager.monitors.forEach(function(monitor, monitorIndex) {
+            let m = new WorkspaceMonitor(metaWorkspace, monitorIndex, monitorIndex === focusIndex)
+            this._monitors.push(m);
+            this.actor.add_actor(m.actor);
+        }, this);
+        this.currentMonitorIndex = focusIndex;
+    },
+
+    _onKeyPress: function(actor, event) {
+        let modifiers = Cinnamon.get_event_state(event);
+        let symbol = event.get_key_symbol();
+        let ctrlAltMask = Clutter.ModifierType.CONTROL_MASK | Clutter.ModifierType.MOD1_MASK;
+
+        if ((symbol === Clutter.ISO_Left_Tab || symbol === Clutter.Tab)  && !(modifiers & ctrlAltMask)) {
+            if (this._monitors.length < 2) return true;
+            
+            let previousIndex = this.currentMonitorIndex;
+            let increment = symbol === Clutter.ISO_Left_Tab ? -1 : 1;
+            for (let i = 0; i < this._monitors.length; ++i) {
+                this.currentMonitorIndex = (this._monitors.length + this.currentMonitorIndex + increment) % this._monitors.length;
+                if (this._monitors[this.currentMonitorIndex].windowCount > 0) {
+                    break;
+                }
+            }
+            this._monitors[previousIndex].showActiveSelection(false);
+            this._monitors[this.currentMonitorIndex].showActiveSelection(true);
+            return true;
+        }
+
+        let activeMonitor = this._monitors[this.currentMonitorIndex];
+
+        if (symbol === Clutter.m && !(modifiers & ctrlAltMask)) {
+            activeMonitor.showMenuForSelectedWindow();
+            return true;
+        }
+
+        if (symbol === Clutter.w && modifiers & Clutter.ModifierType.CONTROL_MASK) {
+            activeMonitor.closeSelectedWindow();
+            return true;
+        }
+
+        if (symbol === Clutter.Return || symbol === Clutter.KEY_space) {
+            if (activeMonitor.activateSelectedWindow()) {
+                return true;
+            }
+            Main.overview.hide();
+            return true;
+        }
+        return activeMonitor.selectAnotherWindow(symbol);
+    },
+
+    destroy: function() {
+        this._monitors.forEach(function(monitor) {
+            monitor.destroy();
+        }, this);
+        this.actor.destroy();
+    },
+
+    setGeometry: function(x, y, width, height, spacing_unused) {
+        let primary = Main.layoutManager.primaryMonitor;
+        let spacing = (primary.width - width) / 2;
+        this._monitors.forEach(function(monitor, index) {
+            let mon = Main.layoutManager.monitors[index];
+            monitor.setGeometry(mon.x + spacing, mon.y + spacing, mon.width - spacing, mon.height - spacing);
+        }, this);
+    },
+
+    selectAnotherWindow: function(symbol) {
+        this._monitors[this.currentMonitorIndex].selectAnotherWindow(symbol);
+    },
+
+    zoomFromOverview: function() {
+        this._monitors.forEach(function(monitor) {
+            monitor.zoomFromOverview();
+        }, this);
+    },
+
+    zoomToOverview: function() {
+        this._monitors.forEach(function(monitor) {
+            monitor.zoomToOverview();
+        }, this);
+    },
+
+    hasMaximizedWindows: function() {
+        let has = false;
+        this._monitors.forEach(function(monitor) {
+            has = has || monitor.hasMaximizedWindows();
+        }, this);
+        return has;
+    },
+
+    showWindowsOverlays: function() {
+        this._monitors.forEach(function(monitor) {
+            monitor.showWindowsOverlays();
+        }, this);
+    },
+    
+    hideWindowsOverlays: function() {
+        this._monitors.forEach(function(monitor) {
+            monitor.hideWindowsOverlays();
+        }, this);
+    },
+
+    syncStacking: function(arg1) {
+        this._monitors.forEach(function(monitor) {
+            monitor.syncStacking(arg1);
+        }, this);
+    }
+};
+Signals.addSignalMethods(Workspace.prototype);
