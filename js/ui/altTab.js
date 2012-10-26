@@ -594,12 +594,14 @@ AltTabPopup.prototype = {
         };
 
         // Use a cancellable timeout to avoid flicker effect when tabbing rapidly through the set
+        let delay = PREVIEW_DELAY_TIMEOUT * 2;
         if (this._displayPreviewTimeoutId) {
+            delay = PREVIEW_DELAY_TIMEOUT; // shorter delay after first show
             Mainloop.source_remove(this._displayPreviewTimeoutId);
             Tweener.removeTweens(this._appSwitcher.actor);
             this._appSwitcher.actor.opacity = 255;
         }
-        this._displayPreviewTimeoutId = Mainloop.timeout_add(PREVIEW_DELAY_TIMEOUT, Lang.bind(this, showPreview));
+        this._displayPreviewTimeoutId = Mainloop.timeout_add(delay, Lang.bind(this, showPreview));
     },
     
     /**
