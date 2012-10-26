@@ -505,7 +505,7 @@ WindowOverlay.prototype = {
         this.closeButton = button;
         this.icon = icon;
 
-		parentActor.add_actor(this._applicationIconBox);
+        parentActor.add_actor(this._applicationIconBox);
         parentActor.add_actor(this.title);
         parentActor.add_actor(this.closeButton);
         //parentActor.add_actor(this.icon);
@@ -572,7 +572,7 @@ WindowOverlay.prototype = {
     // get_transformed_position() and get_transformed_size(),
     // as windowClone might be moving.
     // See Workspace._showWindowOverlay
-    updatePositions: function(cloneX, cloneY, cloneWidth, cloneHeight) {
+    updatePositions: function(cloneX, cloneY, cloneWidth, cloneHeight, maxWidth) {
         let button = this.closeButton;
         let title = this.title;
 
@@ -595,18 +595,16 @@ WindowOverlay.prototype = {
             buttonX = cloneX + (cloneWidth - button._overlap);
 
         button.set_position(Math.floor(buttonX), Math.floor(buttonY));
+        let iconWidth = this._applicationIconBox.width + title._spacing;
 
-        if (!title.fullWidth)
-            title.fullWidth = title.width;
-        title.width = Math.min(title.fullWidth, cloneWidth);
-
-        let titleX = cloneX + (cloneWidth - title.width) / 2;
+        title.width = Math.min(maxWidth - iconWidth, title.width);
+        let titleX = cloneX + (iconWidth + cloneWidth - title.width) / 2;
         let titleY = cloneY + cloneHeight + title._spacing + (WINDOWOVERLAY_ICON_SIZE/2) - (title.height/2);
         title.set_position(Math.floor(titleX), Math.floor(titleY));
         
         let icon = this._applicationIconBox;
         
-        let iconX = titleX - WINDOWOVERLAY_ICON_SIZE - title._spacing;
+        let iconX = titleX - iconWidth;
         let iconY = cloneY + cloneHeight + title._spacing;
         
         icon.set_position(Math.floor(iconX), Math.floor(iconY));
@@ -734,6 +732,7 @@ Workspace.prototype = {
         this._y = 0;
         this._width = 0;
         this._height = 0;
+        this._slotWidth = 0;
 
         this.monitorIndex = monitorIndex;
         this._monitor = Main.layoutManager.monitors[this.monitorIndex];
@@ -1269,8 +1268,8 @@ Workspace.prototype = {
         cloneWidth = clone.actor.scale_x * cloneWidth;
         cloneHeight = clone.actor.scale_y * cloneHeight;
 
-        if (overlay) {
-            overlay.updatePositions(cloneX, cloneY, cloneWidth, cloneHeight);
+        if (overlay && this._slotWidth) {
+            overlay.updatePositions(cloneX, cloneY, cloneWidth, cloneHeight, this._slotWidth);
             if (fade)
                 overlay.fadeIn();
             else
@@ -1625,26 +1624,28 @@ Workspace.prototype = {
         }
     },
 
-    _computeWindowSlot : function(windowIndex, numberOfWindows) {
-        if (numberOfWindows in POSITIONS)
-            return POSITIONS[numberOfWindows][windowIndex];
-
-        // If we don't have a predefined scheme for this window count,
-        // arrange the windows in a grid pattern.
+    _computeAllWindowSlots: function(numberOfWindows) {
+        if (!numberOfWindows) return [];
         let gridWidth = Math.ceil(Math.sqrt(numberOfWindows));
         let gridHeight = Math.ceil(numberOfWindows / gridWidth);
-
         let fraction = 0.825 * (1. / gridWidth);
+        this._slotWidth = Math.floor(fraction * this._width);
 
-        let xCenter = (.5 / gridWidth) + ((windowIndex) % gridWidth) / gridWidth;
-        let yCenter = (.5 / gridHeight) + Math.floor((windowIndex / gridWidth)) / gridHeight;
-        return [xCenter, yCenter, fraction];
-    },
+        let computeWindowSlot = function(windowIndex, numberOfWindows) {
+            if (numberOfWindows in POSITIONS)
+                return POSITIONS[numberOfWindows][windowIndex];
 
-    _computeAllWindowSlots: function(totalWindows) {
+            // If we don't have a predefined scheme for this window count,
+            // arrange the windows in a grid pattern.
+
+            let xCenter = (.5 / gridWidth) + ((windowIndex) % gridWidth) / gridWidth;
+            let yCenter = (.5 / gridHeight) + Math.floor((windowIndex / gridWidth)) / gridHeight;
+            return [xCenter, yCenter, fraction];
+        };
+        
         let slots = [];
-        for (let i = 0; i < totalWindows; i++) {
-            slots.push(this._computeWindowSlot(i, totalWindows));
+        for (let i = 0; i < numberOfWindows; i++) {
+            slots.push(computeWindowSlot(i, numberOfWindows));
         }
         return slots;
     },
