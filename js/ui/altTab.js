@@ -516,11 +516,13 @@ AltTabPopup.prototype = {
     },
     
     _clearPreview: function() {
-        if (this._previewClone) {
-            this.actor.remove_actor(this._previewClone);
-            this._previewClone.destroy();
-            this._previewClone = null;
+        if (this._previewClones) {
+            for (let i = 0; i < this._previewClones.length; ++i) {
+                this.actor.remove_actor(this._previewClones[i]);
+                this._previewClones[i].destroy();
+            }
         }
+        this._previewClones = [];
     },
     
     _doWindowPreview: function() {
@@ -533,7 +535,6 @@ AltTabPopup.prototype = {
             if (this._appIcons.length < 1) {
                 return;
             }
-            let window = this._appIcons[this._currentApp].cachedWindows[0];
 
             let childBox = new Clutter.ActorBox();
             if (!this._previewBackdrop) {
@@ -548,29 +549,42 @@ AltTabPopup.prototype = {
                 backdrop.allocate(childBox, 0);
             }
 
-            // Show a clone of the target window
-            let clone = this._previewClone = new Clutter.Clone({source: window.get_compositor_private().get_texture()});
-            this.actor.add_actor(clone);
-            clone.lower(this._appSwitcher.actor);
-            this._previewBackdrop.lower(clone);
+            let lastClone = null;
+            let that = this;
+            let showClone = function(window) {
+                let clone = new Clutter.Clone({source: window.get_compositor_private().get_texture()});
+                that._previewClones.push(clone);
+                that.actor.add_actor(clone);
+                clone.lower(that._appSwitcher.actor);
+                if (lastClone) {
+                    lastClone.lower(clone);
+                }
+                lastClone = clone;
 
-            // The clone's rect is not the same as the window's outer rect
-            let or = window.get_outer_rect();
-            let ir = window.get_input_rect();
-            let diffX = (ir.width - or.width)/2;
-            let diffY = (ir.height - or.height)/2;
+                // The clone's rect is not the same as the window's outer rect
+                let or = window.get_outer_rect();
+                let ir = window.get_input_rect();
+                let diffX = (ir.width - or.width)/2;
+                let diffY = (ir.height - or.height)/2;
 
-            childBox.x1 = Math.round(or.x -diffX);
-            childBox.x2 = Math.round(or.x + or.width + diffX);
-            childBox.y1 = Math.round(or.y -diffY);
-            childBox.y2 = Math.round(or.y + or.height + diffY);
-            clone.allocate(childBox, 0);
-            clone.opacity = 127;
-            Tweener.addTween(clone,
-                             { opacity: 255,
-                               time: PREVIEW_SWITCHER_FADEOUT_TIME/2,
-                               transition: 'linear'
-                             });
+                childBox.x1 = Math.round(or.x -diffX);
+                childBox.x2 = Math.round(or.x + or.width + diffX);
+                childBox.y1 = Math.round(or.y -diffY);
+                childBox.y2 = Math.round(or.y + or.height + diffY);
+                clone.allocate(childBox, 0);
+                clone.opacity = 127;
+                Tweener.addTween(clone,
+                                { opacity: 255,
+                                time: PREVIEW_SWITCHER_FADEOUT_TIME/2,
+                                transition: 'linear'
+                                });
+            };
+
+            let window = this._appIcons[this._currentApp].cachedWindows[0];
+            showClone(window);
+            window.foreach_transient(Lang.bind(this, function(win) {
+                showClone(win);
+            }));
 
             Tweener.addTween(this._appSwitcher.actor,
                              { opacity: 200,
@@ -582,10 +596,10 @@ AltTabPopup.prototype = {
         // Use a cancellable timeout to avoid flicker effect when tabbing rapidly through the set
         if (this._displayPreviewTimeoutId) {
             Mainloop.source_remove(this._displayPreviewTimeoutId);
+            Tweener.removeTweens(this._appSwitcher.actor);
+            this._appSwitcher.actor.opacity = 255;
         }
         this._displayPreviewTimeoutId = Mainloop.timeout_add(PREVIEW_DELAY_TIMEOUT, Lang.bind(this, showPreview));
-        Tweener.removeTweens(this._appSwitcher.actor);
-        this._appSwitcher.actor.opacity = 255;
     },
     
     /**
