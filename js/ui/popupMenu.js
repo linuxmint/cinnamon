@@ -1554,12 +1554,13 @@ PopupComboMenu.prototype = {
 
         this.isOpen = true;
 
-        let [sourceX, sourceY] = this.sourceActor.get_transformed_position();
-        let items = this._getMenuItems();
-        let activeItem = items[this._activeItemPos];
+        let activeItem = this._getMenuItems()[this._activeItemPos];
 
-        this.actor.set_position(sourceX, sourceY - activeItem.actor.y);
-        this.actor.width = Math.max(this.actor.width, this.sourceActor.width);
+        let [sourceX, sourceY] = this.sourceActor.get_transformed_position();
+        this.actor.set_position(Math.round(sourceX), Math.round(sourceY - activeItem.actor.y));
+        let [sourceWidth, sourceHeight] = this.sourceActor.get_transformed_size();
+        this.actor.width = Math.max(this.actor.width, sourceWidth);
+
         this.actor.raise_top();
 
         this.actor.opacity = 0;
