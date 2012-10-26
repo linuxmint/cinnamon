@@ -1223,8 +1223,17 @@ Workspace.prototype = {
                 this._showWindowOverlay(clone, overlay, isOnCurrentWorkspace);
             }
         }
+        // default-select the first window
         if (this._kbWindowIndex < 0) {
             this.selectAnotherWindow(Clutter.Home);
+            Mainloop.idle_add(Lang.bind(this, function() {
+                // if keyboard focus is at the default position,
+                // make sure that the close button is drawn,
+                // which must done a little bit later
+                if (this._kbWindowIndex === 0) {
+                    this.selectAnotherWindow(Clutter.Home);
+                }
+            }));
         }
     },
 
