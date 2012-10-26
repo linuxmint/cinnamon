@@ -445,7 +445,6 @@ WindowOverlay.prototype = {
         this._hidden = false;
         this._hovering = false;
 
-        this.refreshTitle(metaWindow.title);
         let tracker = Cinnamon.WindowTracker.get_default();
         let app = tracker.get_window_app(metaWindow);
         let icon = null;
@@ -457,26 +456,30 @@ WindowOverlay.prototype = {
                                  icon_type: St.IconType.FULLCOLOR,
                                  icon_size: WINDOWOVERLAY_ICON_SIZE });
         }
+        this.icon = icon;
         icon.width = WINDOWOVERLAY_ICON_SIZE;
         icon.height = WINDOWOVERLAY_ICON_SIZE;
         
         this._applicationIconBox = new St.Bin({ style_class: 'window-iconbox' });
         this._applicationIconBox.set_opacity(255);
         this._applicationIconBox.add_actor(icon);
+        parentActor.add_actor(this._applicationIconBox);
 
+        let button = new St.Button({ style_class: 'window-close' });
+        this.closeButton = button;
+        button._overlap = 0;
+        button.hide();
+        parentActor.add_actor(button);
+        button.connect('style-changed',
+                       Lang.bind(this, this._onStyleChanged));
+        button.connect('clicked', Lang.bind(this, this.closeWindow));
+
+        this.refreshTitle(metaWindow.title);
         this._updateCaptionId = metaWindow.connect('notify::title',
             Lang.bind(this, function(w) {
                 this.refreshTitle(w.title);
             }));
 
-        let button = new St.Button({ style_class: 'window-close' });
-        button._overlap = 0;
-
-        this._idleToggleCloseId = 0;
-        button.connect('clicked', Lang.bind(this, this.closeWindow));
-
-        windowClone.actor.connect('destroy', Lang.bind(this, this._onDestroy));
-        
         let motionEventsInstalled = false;
         let installMotionEvents = Lang.bind(this, function() {
             if (motionEventsInstalled) {
@@ -491,20 +494,12 @@ WindowOverlay.prototype = {
         // Since idle_add can be slow at times, set an ordinary timeout as a fallback.
         Mainloop.timeout_add(1000, installMotionEvents);
 
+        this._idleToggleCloseId = 0;
         this._windowAddedId = 0;
+        windowClone.actor.connect('destroy', Lang.bind(this, this._onDestroy));
         windowClone.connect('zoom-start', Lang.bind(this, this.hide));
         windowClone.connect('zoom-end', Lang.bind(this, this.show));
 
-        button.hide();
-
-        this.closeButton = button;
-        this.icon = icon;
-
-        parentActor.add_actor(this._applicationIconBox);
-        parentActor.add_actor(this.closeButton);
-
-        button.connect('style-changed',
-                       Lang.bind(this, this._onStyleChanged));
         // force a style change if we are already on a stage - otherwise
         // the signal will be emitted normally when we are added
         if (parentActor.get_stage())
