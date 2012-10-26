@@ -119,8 +119,7 @@ Overview.prototype = {
 
         let backgroundShade = new St.Bin({style_class: 'workspace-overview-background-shade'});
         this._background.add_actor(backgroundShade);
-        let porthole = Main.layoutManager.getPorthole();
-        backgroundShade.set_size(porthole.width, porthole.height);
+        backgroundShade.set_size(global.screen_width, global.screen_height);
 
         this._desktopFade = new St.Bin();
         global.overlay_group.add_actor(this._desktopFade);
