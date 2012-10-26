@@ -576,13 +576,7 @@ AltTabPopup.prototype = {
                 childBox.x2 = Math.round(or.x + or.width + diffX);
                 childBox.y1 = Math.round(or.y -diffY);
                 childBox.y2 = Math.round(or.y + or.height + diffY);
-                clone.opacity = 127;
                 clone.allocate(childBox, 0);
-                Tweener.addTween(clone,
-                                { opacity: 255,
-                                time: PREVIEW_SWITCHER_FADEOUT_TIME/8, // quick
-                                transition: 'linear'
-                                });
             };
 
             let window = this._appIcons[this._currentApp].cachedWindows[0];
