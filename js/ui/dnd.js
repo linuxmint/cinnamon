@@ -47,6 +47,10 @@ let eventHandlerActor = null;
 let currentDraggable = null;
 let dragMonitors = [];
 
+function isDragging() {
+    return currentDraggable != null;
+}
+
 function _getEventHandlerActor() {
     if (!eventHandlerActor) {
         eventHandlerActor = new Clutter.Rectangle();
@@ -173,13 +177,19 @@ _Draggable.prototype = {
 
     _grabEvents: function() {
         if (!this._eventsGrabbed) {
-            Clutter.grab_pointer(_getEventHandlerActor());
+            let eha = _getEventHandlerActor();
+            Clutter.grab_pointer(eha);
+            this.previousKeyFocusActor = global.stage.get_key_focus();
+            eha.grab_key_focus();
             this._eventsGrabbed = true;
         }
     },
 
     _ungrabEvents: function() {
         if (this._eventsGrabbed) {
+            if (this.previousKeyFocusActor) {
+                this.previousKeyFocusActor.grab_key_focus();
+            }
             Clutter.ungrab_pointer();
             this._eventsGrabbed = false;
         }
@@ -228,6 +238,11 @@ _Draggable.prototype = {
                 this._firstLeaveActor = event.get_source();
         } else if (event.type() == Clutter.EventType.ENTER) {
             this._lastEnterActor = event.get_source();
+        } else if (event.type() == Clutter.EventType.KEY_PRESS) {
+            if (event.get_key_symbol() === Clutter.Escape) {
+                this._cancelDrag(event.get_time());
+            }
+            return true; // swallow all keyboard input during drag
         }
 
         return false;
