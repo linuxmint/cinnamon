@@ -1558,8 +1558,6 @@ PopupComboMenu.prototype = {
 
         let [sourceX, sourceY] = this.sourceActor.get_transformed_position();
         this.actor.set_position(Math.round(sourceX), Math.round(sourceY - activeItem.actor.y));
-        let [sourceWidth, sourceHeight] = this.sourceActor.get_transformed_size();
-        this.actor.width = Math.max(this.actor.width, sourceWidth);
 
         this.actor.raise_top();
 
