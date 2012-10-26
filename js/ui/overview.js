@@ -168,12 +168,6 @@ Overview.prototype = {
         this._relayout();
     },
 
-    addSearchProvider: function(provider) {
-    },
-
-    removeSearchProvider: function(provider) {
-    },
-
     setMessage: function(text, undoCallback, undoLabel) {
         if (this.isDummy)
             return;
