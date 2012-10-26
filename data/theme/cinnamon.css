@@ -439,6 +439,10 @@ StScrollBar StButton#vhandle:hover {
 	background-gradient-end: #AAA;
 	background-gradient-direction: vertical
 }
+
+.workspace-overview-background-shade {
+	background-color: rgba(0,0,0,0.4);
+}
 /* ===================================================================
  * ViewSelector 
  * ===================================================================*/
