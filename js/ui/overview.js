@@ -104,24 +104,6 @@ Overview.prototype = {
             return;
         }
 
-        this._background = new Clutter.Group();
-        this._background.hide();
-        global.overlay_group.add_actor(this._background);
-
-        // The main BackgroundActor is inside global.window_group which is
-        // hidden when displaying the overview, so we create a new
-        // one. Instances of this class share a single CoglTexture behind the
-        // scenes which allows us to show the background with different
-        // rendering options without duplicating the texture data.
-        let desktopBackground = Meta.BackgroundActor.new_for_screen(global.screen);
-        this._background.add_actor(desktopBackground);
-
-        this._backgroundShade = new St.Bin({style_class: 'workspace-overview-background-shade'});
-        this._background.add_actor(this._backgroundShade);
-
-        this._desktopFade = new St.Bin();
-        global.overlay_group.add_actor(this._desktopFade);
-
         this._spacing = 0;
 
         this._group = new St.Group({ name: 'overview',
@@ -136,6 +118,8 @@ Overview.prototype = {
                     this._relayout();
                 }
             }));
+        this._group.hide();
+        global.overlay_group.add_actor(this._group);
 
         this._scrollDirection = SwipeScrollDirection.NONE;
         this._scrollAdjustment = null;
@@ -150,19 +134,6 @@ Overview.prototype = {
         this._modal = false;            // have a modal grab
         this.animationInProgress = false;
         this._hideInProgress = false;
-
-        // During transitions, we raise this to the top to avoid having the overview
-        // area be reactive; it causes too many issues such as mouseover handlers in the workspaces.
-        this._coverPane = new Clutter.Rectangle({ opacity: 0,
-                                                  reactive: true });
-        this._group.add_actor(this._coverPane);
-        this._coverPane.connect('event', Lang.bind(this, function (actor, event) { return true; }));
-
-
-        this._group.hide();
-        global.overlay_group.add_actor(this._group);
-
-        this._coverPane.hide();
 
         // XDND
         this._dragMonitor = {
@@ -442,9 +413,6 @@ Overview.prototype = {
             return null;
 
         let clone = new Clutter.Clone({ source: windows[0].get_texture() });
-        clone.source.connect('destroy', Lang.bind(this, function() {
-            clone.destroy();
-        }));
         return clone;
     },
 
@@ -461,10 +429,6 @@ Overview.prototype = {
 
         this._group.set_position(primary.x, primary.y);
         this._group.set_size(primary.width, primary.height);
-
-        this._coverPane.set_position(0, 0);
-        this._coverPane.set_size(global.screen_width, global.screen_height);
-        this._backgroundShade.set_size(global.screen_width, global.screen_height);
         
         let viewWidth = primary.width - 2 * this._spacing;
         let viewHeight = contentHeight - this._spacing;
@@ -525,8 +489,37 @@ Overview.prototype = {
         if (this.visible || this.animationInProgress)
             return;
 
+        // The main BackgroundActor is inside global.window_group which is
+        // hidden when displaying the overview, so we create a new
+        // one. Instances of this class share a single CoglTexture behind the
+        // scenes which allows us to show the background with different
+        // rendering options without duplicating the texture data.
+        this._background = new Clutter.Group();
+        this._background.hide();
+        global.overlay_group.add_actor(this._background);
+
+        this._desktopBackground = Meta.BackgroundActor.new_for_screen(global.screen);
+        this._background.add_actor(this._desktopBackground);
+
+        this._backgroundShade = new St.Bin({style_class: 'workspace-overview-background-shade'});
+        this._background.add_actor(this._backgroundShade);
+        this._backgroundShade.set_size(global.screen_width, global.screen_height);
+
+        this._desktopFade = new St.Bin();
+        global.overlay_group.add_actor(this._desktopFade);
+
         this.visible = true;
         this.animationInProgress = true;
+
+        // During transitions, we raise this to the top to avoid having the overview
+        // area be reactive; it causes too many issues such as mouseover handlers in the workspaces.
+        this._coverPane = new Clutter.Rectangle({ opacity: 0,
+                                                  reactive: true });
+        this._group.add_actor(this._coverPane);
+        this._coverPane.set_position(0, 0);
+        this._coverPane.set_size(global.screen_width, global.screen_height);
+        this._coverPane.connect('event', Lang.bind(this, function (actor, event) { return true; }));
+        this._coverPane.hide();
 
         // All the the actors in the window group are completely obscured,
         // hiding the group holding them while the Overview is displayed greatly
@@ -721,6 +714,13 @@ Overview.prototype = {
     },
 
     _hideDone: function() {
+        global.overlay_group.remove_actor(this._desktopFade);
+        this._desktopFade.destroy();
+        this._group.remove_actor(this._coverPane);
+        this._coverPane.destroy();
+        global.overlay_group.remove_actor(this._background);
+        this._background.destroy();
+
         // Re-enable unredirection
         Meta.enable_unredirect_for_screen(global.screen);
 
@@ -731,15 +731,12 @@ Overview.prototype = {
 
         this._workspacesDisplay.hide();
 
-        this._desktopFade.hide();
-        this._background.hide();
         this._group.hide();
 
         this.visible = false;
         this.animationInProgress = false;
         this._hideInProgress = false;
 
-        this._coverPane.hide();
 
         this.emit('hidden');
         // Handle any calls to show* while we were hiding
