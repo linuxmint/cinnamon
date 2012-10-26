@@ -1260,14 +1260,20 @@ Workspace.prototype = {
     },
 
     syncStacking: function(stackIndices) {
-        this._windows.sort(function (a, b) {
+        // Only on the first invocation do we want to affect the
+        // permanent sort order. After that, we don't want major
+        // upheavals to the sort order.
+        let clones = !this._stackedOnce ? this._windows : this._windows.slice();
+        this._stackedOnce = true;
+
+        clones.sort(function (a, b) {
             let minimizedA = a.metaWindow.minimized ? 1 : 0;
             let minimizedB = b.metaWindow.minimized ? 1 : 0;
             let minimizedDiff = minimizedA - minimizedB;
             return minimizedDiff || stackIndices[a.metaWindow.get_stable_sequence()] - stackIndices[b.metaWindow.get_stable_sequence()];
         });
 
-        let clones = this._windows.slice().reverse();
+        let clones = clones.slice().reverse();
         let below = this._dropRect;
         for (let i = 0; i < clones.length; i++) {
             let clone = clones[i];
