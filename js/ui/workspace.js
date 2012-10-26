@@ -445,11 +445,7 @@ WindowOverlay.prototype = {
         this._hidden = false;
         this._hovering = false;
 
-        let title = new St.Label({ style_class: 'window-caption',
-                                   text: metaWindow.title });
-        title.clutter_text.ellipsize = Pango.EllipsizeMode.END;
-        title._spacing = 0;
-        
+        this.makeTitle(metaWindow.title);
         let tracker = Cinnamon.WindowTracker.get_default();
         let app = tracker.get_window_app(metaWindow);
         let icon = null;
@@ -470,7 +466,8 @@ WindowOverlay.prototype = {
 
         this._updateCaptionId = metaWindow.connect('notify::title',
             Lang.bind(this, function(w) {
-                this.title.text = w.title;
+                this.makeTitle(w.title);
+                this.updateIconCaptionWidth();
             }));
 
         let button = new St.Button({ style_class: 'window-close' });
@@ -501,16 +498,12 @@ WindowOverlay.prototype = {
 
         button.hide();
 
-        this.title = title;
         this.closeButton = button;
         this.icon = icon;
 
         parentActor.add_actor(this._applicationIconBox);
-        parentActor.add_actor(this.title);
         parentActor.add_actor(this.closeButton);
-        //parentActor.add_actor(this.icon);
-        title.connect('style-changed',
-                      Lang.bind(this, this._onStyleChanged));
+
         button.connect('style-changed',
                        Lang.bind(this, this._onStyleChanged));
         // force a style change if we are already on a stage - otherwise
@@ -519,8 +512,28 @@ WindowOverlay.prototype = {
             this._onStyleChanged();
     },
 
+    makeTitle: function(titleTextOpt) {
+        let titleText = typeof(titleTextOpt) !== "undefined" ? titleTextOpt : this.title.text;
+        if (this.title) {
+            this._parentActor.remove_actor(this.title);
+        }
+        let title = new St.Label({ style_class: 'window-caption',
+                                   text: titleText });
+        this.title = title;
+        title.clutter_text.ellipsize = Pango.EllipsizeMode.END;
+        title._spacing = 0;
+        this._parentActor.add_actor(this.title);
+        title.connect('style-changed',
+                      Lang.bind(this, this._onStyleChanged));
+    },
+
     setSelected: function(selected) {
+        this.makeTitle();
         this.title.name = selected ? 'selected' : '';
+        if (this.updateIconCaptionWidth) {
+            this.updateIconCaptionWidth();
+        }
+        
         if (selected) {
             this._showCloseButton();
         }
@@ -574,7 +587,6 @@ WindowOverlay.prototype = {
     // See Workspace._showWindowOverlay
     updatePositions: function(cloneX, cloneY, cloneWidth, cloneHeight, maxWidth) {
         let button = this.closeButton;
-        let title = this.title;
 
         let settings = new Gio.Settings({ schema: BUTTON_LAYOUT_SCHEMA });
         let layout = settings.get_string(BUTTON_LAYOUT_KEY);
@@ -595,19 +607,23 @@ WindowOverlay.prototype = {
             buttonX = cloneX + (cloneWidth - button._overlap);
 
         button.set_position(Math.floor(buttonX), Math.floor(buttonY));
-        let iconWidth = this._applicationIconBox.width + title._spacing;
 
-        title.width = Math.min(maxWidth - iconWidth, title.width);
-        let titleX = cloneX + (iconWidth + cloneWidth - title.width) / 2;
-        let titleY = cloneY + cloneHeight + title._spacing + (WINDOWOVERLAY_ICON_SIZE/2) - (title.height/2);
-        title.set_position(Math.floor(titleX), Math.floor(titleY));
-        
-        let icon = this._applicationIconBox;
-        
-        let iconX = titleX - iconWidth;
-        let iconY = cloneY + cloneHeight + title._spacing;
-        
-        icon.set_position(Math.floor(iconX), Math.floor(iconY));
+        this.updateIconCaptionWidth = Lang.bind(this, function() {
+            let title = this.title;
+            let iconWidth = this._applicationIconBox.width + title._spacing;
+            title.width = Math.min(maxWidth - iconWidth, title.width);
+            let titleX = cloneX + (iconWidth + cloneWidth - title.width) / 2;
+            let titleY = cloneY + cloneHeight + title._spacing + (WINDOWOVERLAY_ICON_SIZE/2) - (title.height/2);
+            title.set_position(Math.floor(titleX), Math.floor(titleY));
+
+            let icon = this._applicationIconBox;
+
+            let iconX = titleX - iconWidth;
+            let iconY = cloneY + cloneHeight + title._spacing;
+
+            icon.set_position(Math.floor(iconX), Math.floor(iconY));
+        });
+        this.updateIconCaptionWidth();
     },
 
     closeWindow: function() {
