@@ -83,13 +83,9 @@ WorkspacesView.prototype = {
         // workspaces have been created. This cannot be done first because
         // window movement depends on the Workspaces object being accessible
         // as an Overview member.
-        this._overviewShowingId =
-            Main.overview.connect('showing',
-                                 Lang.bind(this, function() {
-                for (let w = 0; w < this._workspaces.length; w++)
-                    this._workspaces[w].zoomToOverview();
-                for (let w = 0; w < this._extraWorkspaces.length; w++)
-                    this._extraWorkspaces[w].zoomToOverview();
+        this._overviewShowingId = Main.overview.connect('showing', Lang.bind(this, function() {
+            let activeWorkspaceIndex = global.screen.get_active_workspace_index();
+            this._workspaces[activeWorkspaceIndex].zoomToOverview();
         }));
         this._overviewShownId =
             Main.overview.connect('shown',
@@ -132,10 +128,6 @@ WorkspacesView.prototype = {
                 }
             }));
             
-        // this should select the last active window
-        if (this._workspaces.length > 0) { 
-	        this._workspaces[activeWorkspaceIndex].selectAnotherWindow(Clutter.Home);
-        }
     },
 
     _onStageKeyPress: function(actor, event) {
@@ -203,13 +195,8 @@ WorkspacesView.prototype = {
         let activeWorkspace = this._workspaces[activeWorkspaceIndex];
 
         activeWorkspace.actor.raise_top();
-
-       this.actor.remove_clip(this._x, this._y, this._width, this._height);
-
-        for (let w = 0; w < this._workspaces.length; w++)
-            this._workspaces[w].zoomFromOverview();
-        for (let w = 0; w < this._extraWorkspaces.length; w++)
-            this._extraWorkspaces[w].zoomFromOverview();
+        this.actor.remove_clip(this._x, this._y, this._width, this._height);
+        activeWorkspace.zoomFromOverview();
     },
 
     destroy: function() {
@@ -742,7 +729,7 @@ WorkspacesDisplay.prototype = {
     },
 
     _onRestacked: function() {
-        let stack = global.get_window_actors();
+        let stack = global.get_window_actors().reverse();
         let stackIndices = {};
 
         for (let i = 0; i < stack.length; i++) {
@@ -751,7 +738,6 @@ WorkspacesDisplay.prototype = {
         }
 
         this.workspacesView.syncStacking(stackIndices);
-        // this._thumbnailsBox.syncStacking(stackIndices);
     },
 
     _workspacesChanged: function() {
