@@ -1862,7 +1862,7 @@ PopupMenuManager.prototype = {
 
             if (hadFocus)
                 focus.grab_key_focus();
-            else
+else
                 menu.actor.grab_key_focus();
         } else if (menu == this._activeMenu) {
             if (this.grabbed)
