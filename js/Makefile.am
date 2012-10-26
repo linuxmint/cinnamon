@@ -61,7 +61,6 @@ nobase_dist_js_DATA = \
 	ui/themeManager.js	\
 	ui/tooltips.js	\
 	ui/tweener.js		\
-	ui/viewSelector.js	\
 	ui/windowAttentionHandler.js	\
 	ui/windowManager.js	\
 	ui/workspace.js		\

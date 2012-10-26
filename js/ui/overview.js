@@ -15,7 +15,6 @@ const Main = imports.ui.main;
 const MessageTray = imports.ui.messageTray;
 const Params = imports.misc.params;
 const Tweener = imports.ui.tweener;
-const ViewSelector = imports.ui.viewSelector;
 const WorkspacesView = imports.ui.workspacesView;
 
 // Time for initial animation going into Overview mode
@@ -192,22 +191,16 @@ Overview.prototype = {
 
         this._cinnamonInfo = new CinnamonInfo();
 
-        this._viewSelector = new ViewSelector.ViewSelector();
-        this._group.add_actor(this._viewSelector.actor);
-
         this._workspacesDisplay = new WorkspacesView.WorkspacesDisplay();
-        this._viewSelector.addViewTab('windows', _("Windows"), this._workspacesDisplay.actor, 'text-x-generic');
-				
+        this._group.add_actor(this._workspacesDisplay.actor);
         Main.layoutManager.connect('monitors-changed', Lang.bind(this, this._relayout));
         this._relayout();
     },
 
     addSearchProvider: function(provider) {
-        this._viewSelector.addSearchProvider(provider);
     },
 
     removeSearchProvider: function(provider) {
-        this._viewSelector.removeSearchProvider(provider);
     },
 
     setMessage: function(text, undoCallback, undoLabel) {
@@ -478,9 +471,9 @@ Overview.prototype = {
         let viewY = this._spacing;
         let viewX = rtl ? 0 : this._spacing;        
 
-        this._viewSelector.actor.set_position(viewX, viewY);
-        this._viewSelector.actor.set_size(viewWidth, viewHeight);
-        this._viewSelector.actor.hide();
+        this._workspacesDisplay.actor.set_position(viewX, viewY);
+        this._workspacesDisplay.actor.set_size(viewWidth, viewHeight);
+        this._workspacesDisplay.actor.hide();
     },
 
     //// Public methods ////
