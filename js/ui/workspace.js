@@ -1204,17 +1204,18 @@ Workspace.prototype = {
 
     syncStacking: function(stackIndices) {
         let clones = this._windows.slice();
-        clones.sort(function (a, b) { return stackIndices[a.metaWindow.get_stable_sequence()] - stackIndices[b.metaWindow.get_stable_sequence()]; });
+        clones.sort(function (a, b) {
+            let minimizedA = a.metaWindow.minimized ? -1 : 0;
+            let minimizedB = b.metaWindow.minimized ? -1 : 0;
+            let minimizedDiff = minimizedA - minimizedB;
+            return minimizedDiff || stackIndices[a.metaWindow.get_stable_sequence()] - stackIndices[b.metaWindow.get_stable_sequence()];
+        });
 
+        let below = this._dropRect;
         for (let i = 0; i < clones.length; i++) {
             let clone = clones[i];
-            let metaWindow = clone.metaWindow;
-            if (i == 0) {
-                clone.setStackAbove(this._dropRect);
-            } else {
-                let previousClone = clones[i - 1];
-                clone.setStackAbove(previousClone.actor);
-            }
+            clone.setStackAbove(below);
+            below = clone.actor;
         }
     },
 
