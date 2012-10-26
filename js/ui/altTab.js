@@ -25,7 +25,7 @@ const THUMBNAIL_INITIAL_POPUP_TIME = 500; // milliseconds
 const THUMBNAIL_POPUP_TIME = 125; // milliseconds
 const THUMBNAIL_FADE_TIME = 0.1; // seconds
 
-const PREVIEW_DELAY_TIMEOUT = 200; // milliseconds
+const PREVIEW_DELAY_TIMEOUT = 150; // milliseconds
 var PREVIEW_SWITCHER_FADEOUT_TIME = 0.5; // seconds
 
 const iconSizes = [96, 64, 48, 32, 22];
@@ -537,12 +537,11 @@ AltTabPopup.prototype = {
                     }
                 });
             }
+            this._previewClones = null;
         }
-        this._previewClones = [];
     },
     
     _doWindowPreview: function() {
-        this._clearPreview();
         if (!this._previewEnabled || this._appIcons.length < 1 ||
             !this._appIcons[this._currentApp].cachedWindows.length)
         {
@@ -556,9 +555,10 @@ AltTabPopup.prototype = {
 
             let lastClone = null;
             let that = this;
+            let clones = []
             let showClone = function(window) {
                 let clone = new Clutter.Clone({source: window.get_compositor_private().get_texture()});
-                that._previewClones.push(clone);
+                clones.push(clone);
                 that.actor.add_actor(clone);
                 clone.lower(that._appSwitcher.actor);
                 if (lastClone) {
@@ -590,6 +590,8 @@ AltTabPopup.prototype = {
             window.foreach_transient(Lang.bind(this, function(win) {
                 showClone(win);
             }));
+            this._clearPreview();
+            this._previewClones = clones;
 
             if (!this._previewBackdrop) {
                 let backdrop = this._previewBackdrop = new St.Bin({style_class: 'switcher-preview-backdrop'});
