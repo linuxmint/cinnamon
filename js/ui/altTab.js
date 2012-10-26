@@ -518,8 +518,6 @@ AltTabPopup.prototype = {
     
     _clearPreview: function() {
         if (this._previewClones) {
-            Tweener.removeTweens(this._appSwitcher.actor);
-            this._appSwitcher.actor.opacity = 255;
             if (this._displayPreviewTimeoutId) {
                 Mainloop.source_remove(this._displayPreviewTimeoutId);
                 this._displayPreviewTimeoutId = 0;
@@ -605,12 +603,6 @@ AltTabPopup.prototype = {
                                 transition: 'linear'
                                 });
             }
-
-            Tweener.addTween(this._appSwitcher.actor,
-                             { opacity: 200,
-                               time: PREVIEW_SWITCHER_FADEOUT_TIME, // slower
-                               transition: 'linear'
-                             });
         }; // showPreview
 
         // Use a cancellable timeout to avoid flicker effect when tabbing rapidly through the set.
