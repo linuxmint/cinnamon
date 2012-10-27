@@ -804,6 +804,8 @@ ExpoWorkspaceThumbnail.prototype = {
             return false;
         }
         actor.reparent(this._contents);
+        actor.opacity = 255; // may have been dimmed during the drag
+        
         let targetMonitor = this.coordinateToMonitor(x, y);
 
         let win = source.realWindow;
