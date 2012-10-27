@@ -613,6 +613,7 @@ ExpoWorkspaceThumbnail.prototype = {
                 let iconScale = (0.25/this.box.scale/scale);
                 window.icon.reparent(window.actor);
                 window.icon.set_position(0, 0);
+                window.icon.opacity = ICON_OPACITY;
                 if (!window.metaWindow.showing_on_its_workspace()) {
                     window.actor.show();
                     Tweener.addTween(window.actor, {x: x, y: y, scale_x: scale, scale_y: scale, time: REARRANGE_TIME_ON, transition: 'easeOutQuad'
@@ -622,7 +623,7 @@ ExpoWorkspaceThumbnail.prototype = {
                 }
                 else {
                     window.icon.set_scale(iconScale, iconScale);
-                    Tweener.addTween(window.actor, {x: x, y: y, scale_x: scale, scale_y: scale, opacity: 255, time: REARRANGE_TIME_ON, transition: 'easeOutQuad',
+                    Tweener.addTween(window.actor, {x: x, y: y, scale_x: scale, scale_y: scale, time: REARRANGE_TIME_ON, transition: 'easeOutQuad',
                     onComplete: function() {
                         window.actor.show();
                         window.icon.show();
