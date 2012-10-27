@@ -612,7 +612,7 @@ ExpoWorkspaceThumbnail.prototype = {
                 // all icons should be the same size!
                 let iconScale = (0.25/this.box.scale/scale);
                 window.icon.reparent(window.actor);
-                window.icon.set_position(0, 0);
+                window.icon.set_position(-25*iconScale, -25*iconScale);
                 window.icon.opacity = ICON_OPACITY;
                 if (!window.metaWindow.showing_on_its_workspace()) {
                     window.actor.show();
