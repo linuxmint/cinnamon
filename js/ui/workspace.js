@@ -31,6 +31,8 @@ const DRAGGING_WINDOW_OPACITY = 100;
 const BUTTON_LAYOUT_SCHEMA = 'org.cinnamon.overrides';
 const BUTTON_LAYOUT_KEY = 'button-layout';
 
+const DEMANDS_ATTENTION_CLASS_NAME = "window-list-item-demands-attention";
+
 // Define a layout scheme for small window counts. For larger
 // counts we fall back to an algorithm. We need more schemes here
 // unless we have a really good algorithm.
@@ -527,10 +529,26 @@ WindowOverlay.prototype = {
         windowClone.connect('zoom-start', Lang.bind(this, this.hide));
         windowClone.connect('zoom-end', Lang.bind(this, this.show));
 
+        let attentionId = global.display.connect('window-demands-attention', Lang.bind(this, this._onWindowDemandsAttention));
+        let urgentId = global.display.connect('window-marked-urgent', Lang.bind(this, this._onWindowDemandsAttention));
+        this.disconnectAttentionSignals = function() {
+            global.display.disconnect(attentionId);
+            global.display.disconnect(urgentId);
+        };
+
         // force a style change if we are already on a stage - otherwise
         // the signal will be emitted normally when we are added
         if (parentActor.get_stage())
             this._onStyleChanged();
+    },
+
+    _onWindowDemandsAttention: function(display, metaWindow) {
+        if (metaWindow != this._windowClone.metaWindow) return;
+
+        if (!this.title.has_style_class_name(DEMANDS_ATTENTION_CLASS_NAME)) {
+            this.title.add_style_class_name(DEMANDS_ATTENTION_CLASS_NAME);
+            this._applicationIconBox.add_style_class_name(DEMANDS_ATTENTION_CLASS_NAME);
+        }
     },
 
     refreshTitle: function(titleText) {
@@ -547,6 +565,11 @@ WindowOverlay.prototype = {
         title.clutter_text.ellipsize = Pango.EllipsizeMode.END;
         title._spacing = 0;
         this._parentActor.add_actor(title);
+        let mw = this._windowClone.metaWindow
+        if (mw.is_urgent && (mw.is_demanding_attention() || mw.is_urgent())) {
+            this.title.add_style_class_name(DEMANDS_ATTENTION_CLASS_NAME);
+            this._applicationIconBox.add_style_class_name(DEMANDS_ATTENTION_CLASS_NAME);
+        }
         title.connect('style-changed',
                       Lang.bind(this, this._onStyleChanged));
         if (this._parentActor.get_stage()) {
@@ -687,6 +710,7 @@ WindowOverlay.prototype = {
             Mainloop.source_remove(this._idleToggleCloseId);
             this._idleToggleCloseId = 0;
         }
+        this.disconnectAttentionSignals();
         this._windowClone.metaWindow.disconnect(this._updateCaptionId);
         this.title.destroy();
         this.closeButton.destroy();this._applicationIconBox.destroy();
