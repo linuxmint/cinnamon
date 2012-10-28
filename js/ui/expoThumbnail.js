@@ -603,7 +603,6 @@ ExpoWorkspaceThumbnail.prototype = {
 
                 // all icons should be the same size!
                 let iconScale = (0.25/this.box.scale/scale);
-                window.icon.reparent(window.actor);
                 window.icon.set_position(-25*iconScale, -25*iconScale);
                 window.icon.opacity = ICON_OPACITY;
                 if (!window.metaWindow.showing_on_its_workspace()) {
@@ -647,10 +646,6 @@ ExpoWorkspaceThumbnail.prototype = {
             },this).forEach(function(window) {
                 window.tooltip.hide();
                 if (!window.metaWindow.showing_on_its_workspace()){
-                    // Visually replace the cloned window with its icon
-                    // and place the icon at the bottom.
-
-                    // icons are grouped by monitor
                     let iconX = iconCount * (ICON_SIZE + iconSpacing);
                     iconX %= (monitor.width - ICON_SIZE);
                     iconX += monitor.x;
@@ -665,22 +660,13 @@ ExpoWorkspaceThumbnail.prototype = {
                         scale_x: scaleX,
                         scale_y: scaleY,
                         time: rearrangeTime,
-                        transition: 'easeOutQuad',
-                        onComplete: function() {
-                                window.actor.hide();
-                            }
+                        transition: 'easeOutQuad'
                     });
                     Tweener.addTween(window.icon, {
-                        scale_x: 0.5/this.box.scale/scaleX,
-                        scale_y: 0.5/this.box.scale/scaleY,
+                        scale_x: 1/scaleX,
+                        scale_y: 1/scaleY,
                         time: rearrangeTime,
-                        transition: 'easeOutQuad',
-                        onComplete: function() {
-                            window.icon.reparent(window.actor.get_parent());
-                            window.icon.set_position(iconX, iconY);
-                            window.icon.set_size(ICON_SIZE, ICON_SIZE);
-                            window.icon.set_scale(1,1);
-                            }
+                        transition: 'easeOutQuad'
                     });
                 }
                 else {
