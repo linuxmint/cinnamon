@@ -1960,7 +1960,33 @@ Workspace.prototype = {
             this._monitors.push(m);
             this.actor.add_actor(m.actor);
         }, this);
-        this.currentMonitorIndex = focusIndex;
+        this.selectNextNonEmptyMonitor(focusIndex - 1, 1);
+    },
+
+    findNextNonEmptyMonitor: function(start, increment) {
+        let pos = start;
+        for (let i = 0; i < this._monitors.length; ++i) {
+            pos = (this._monitors.length + pos + increment) % this._monitors.length;
+            if (!this._monitors[pos].isEmpty()) {
+                return pos;
+            }
+        }
+        return this.currentMonitorIndex || 0;
+    },
+
+    selectNextNonEmptyMonitor: function(start, increment) {
+        if (this._monitors.length < 2) {
+            // boldly assume that we have at least one monitor!
+            this.currentMonitorIndex = 0;
+            this._monitors[this.currentMonitorIndex].showActiveSelection(true);
+            return;
+        }
+        let previousIndex = this.currentMonitorIndex || 0;
+        this.currentMonitorIndex = this.findNextNonEmptyMonitor(start || 0, increment);
+        if (previousIndex != this.currentMonitorIndex) {
+            this._monitors[previousIndex].showActiveSelection(false);
+            this._monitors[this.currentMonitorIndex].showActiveSelection(true);
+        }
     },
 
     _onKeyPress: function(actor, event) {
@@ -1969,18 +1995,8 @@ Workspace.prototype = {
         let ctrlAltMask = Clutter.ModifierType.CONTROL_MASK | Clutter.ModifierType.MOD1_MASK;
 
         if ((symbol === Clutter.ISO_Left_Tab || symbol === Clutter.Tab)  && !(modifiers & ctrlAltMask)) {
-            if (this._monitors.length < 2) return true;
-            
-            let previousIndex = this.currentMonitorIndex;
             let increment = symbol === Clutter.ISO_Left_Tab ? -1 : 1;
-            for (let i = 0; i < this._monitors.length; ++i) {
-                this.currentMonitorIndex = (this._monitors.length + this.currentMonitorIndex + increment) % this._monitors.length;
-                if (!this._monitors[this.currentMonitorIndex].isEmpty()) {
-                    break;
-                }
-            }
-            this._monitors[previousIndex].showActiveSelection(false);
-            this._monitors[this.currentMonitorIndex].showActiveSelection(true);
+            this.selectNextNonEmptyMonitor(this.currentMonitorIndex, increment);
             return true;
         }
 
