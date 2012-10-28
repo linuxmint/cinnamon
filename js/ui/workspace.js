@@ -1978,7 +1978,6 @@ Workspace.prototype = {
         if (this._monitors.length < 2) {
             // boldly assume that we have at least one monitor!
             this.currentMonitorIndex = 0;
-            this._monitors[this.currentMonitorIndex].showActiveSelection(true);
             return;
         }
         let previousIndex = this.currentMonitorIndex || 0;
