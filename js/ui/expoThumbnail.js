@@ -660,6 +660,7 @@ ExpoWorkspaceThumbnail.prototype = {
                     ++iconCount;
 
                     window.actor.raise_top();
+                    window.icon.show();
                     let iconY = monitor.y + monitor.height - ICON_SIZE;
                     let scaleX = ICON_SIZE / window.realWindow.width;
                     let scaleY = ICON_SIZE / window.realWindow.height;
