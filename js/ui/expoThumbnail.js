@@ -24,7 +24,7 @@ const SLIDE_ANIMATION_TIME = 0.3;
 const INACTIVE_OPACITY = 120;
 const REARRANGE_TIME_ON = 0.3;
 const REARRANGE_TIME_OFF = 0.3 * 2;
-const ICON_OPACITY = Math.round(255 * 0.7);
+const ICON_OPACITY = Math.round(255 * 0.9);
 const ICON_SIZE = 128;
 
 function ExpoWindowClone(realWindow) {
@@ -604,7 +604,6 @@ ExpoWorkspaceThumbnail.prototype = {
                 // all icons should be the same size!
                 let iconScale = (0.25/this.box.scale/scale);
                 window.icon.set_position(-25*iconScale, -25*iconScale);
-                window.icon.opacity = ICON_OPACITY;
                 if (!window.metaWindow.showing_on_its_workspace()) {
                     window.actor.show();
                     Tweener.addTween(window.actor, {x: x, y: y, scale_x: scale, scale_y: scale, time: REARRANGE_TIME_ON, transition: 'easeOutQuad'
@@ -665,6 +664,7 @@ ExpoWorkspaceThumbnail.prototype = {
                         transition: 'easeOutQuad'
                     });
                     Tweener.addTween(window.icon, {
+                        x: 0, y: 0,
                         scale_x: 1/scaleX,
                         scale_y: 1/scaleY,
                         time: rearrangeTime,
