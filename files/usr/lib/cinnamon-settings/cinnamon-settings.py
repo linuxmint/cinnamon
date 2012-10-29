@@ -2654,6 +2654,7 @@ class MainWindow:
         sidePage.add_widget(GSettingsCheckButton(_("Activate menu on hover"), "org.cinnamon", "activate-menu-applet-on-hover", None))
         sidePage.add_widget(GSettingsCheckButton(_("Show bookmarks and places"), "org.cinnamon", "menu-show-places", None))
         sidePage.add_widget(GSettingsCheckButton(_("Show recent files"), "org.cinnamon", "menu-show-recent", None))
+        sidePage.add_widget(GSettingsCheckButton(_("Enable auto-scrolling in application list"), "org.cinnamon", "menu-enable-autoscroll", None))
 
         sidePage = SidePage(_("Panel"), "panel.svg", self.content_box)
         self.sidePages.append((sidePage, "panel"))                
