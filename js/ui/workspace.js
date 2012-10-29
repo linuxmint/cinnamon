@@ -524,7 +524,6 @@ WindowOverlay.prototype = {
         Mainloop.timeout_add(1000, installMotionEvents);
 
         this._idleToggleCloseId = 0;
-        this._windowAddedId = 0;
         windowClone.actor.connect('destroy', Lang.bind(this, this._onDestroy));
         windowClone.connect('zoom-start', Lang.bind(this, this.hide));
         windowClone.connect('zoom-end', Lang.bind(this, this.show));
@@ -675,37 +674,33 @@ WindowOverlay.prototype = {
 
     closeWindow: function() {
         let metaWindow = this._windowClone.metaWindow;
-        this._workspace = metaWindow.get_workspace();
+        let workspace = metaWindow.get_workspace();
 
-        this._windowAddedId = this._workspace.connect('window-added',
-                                                      Lang.bind(this,
-                                                                this._onWindowAdded));
+        if (this._disconnectWindowAdded) {this._disconnectWindowAdded();}
+        let windowAddedId = workspace.connect('window-added',Lang.bind(this, function(ws, win){
+            if (this._disconnectWindowAdded) {this._disconnectWindowAdded();}
+            if (win.get_transient_for() == metaWindow) {
+
+                // use an idle handler to avoid mapping problems -
+                // see comment in Workspace._windowAdded
+                Mainloop.idle_add(Lang.bind(this,
+                                            function() {
+                                                this._windowClone.emit('selected');
+                                                return false;
+                                            }));
+            }
+        }));
+
+        this._disconnectWindowAdded = Lang.bind(this, function() {
+            workspace.disconnect(windowAddedId);
+            this._disconnectWindowAdded = 0;
+        });
 
         metaWindow.delete(global.get_current_time());
     },
 
-    _onWindowAdded: function(workspace, win) {
-        let metaWindow = this._windowClone.metaWindow;
-
-        if (win.get_transient_for() == metaWindow) {
-            workspace.disconnect(this._windowAddedId);
-            this._windowAddedId = 0;
-
-            // use an idle handler to avoid mapping problems -
-            // see comment in Workspace._windowAdded
-            Mainloop.idle_add(Lang.bind(this,
-                                        function() {
-                                            this._windowClone.emit('selected');
-                                            return false;
-                                        }));
-        }
-    },
-
     _onDestroy: function() {
-        if (this._windowAddedId > 0) {
-            this._workspace.disconnect(this._windowAddedId);
-            this._windowAddedId = 0;
-        }
+        if (this._disconnectWindowAdded) {this._disconnectWindowAdded();}
         if (this._idleToggleCloseId > 0) {
             Mainloop.source_remove(this._idleToggleCloseId);
             this._idleToggleCloseId = 0;
