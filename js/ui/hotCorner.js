@@ -58,8 +58,8 @@ HotCornerManager.prototype = {
         this.corners[0].iconActor.set_position(p_x + 1, p_y + 1);
 
         // Top Right: 1
-        this.corners[1].actor.set_position(p_x + primaryMonitor.width - 1, y);
-        this.corners[1].iconActor.set_position(p_x + primaryMonitor.width - 33, y + 1);
+        this.corners[1].actor.set_position(p_x + primaryMonitor.width - 1, p_y);
+        this.corners[1].iconActor.set_position(p_x + primaryMonitor.width - 33, p_y + 1);
 
         // Bottom Left: 2
         this.corners[2].actor.set_position(b_x, b_y - 1);
