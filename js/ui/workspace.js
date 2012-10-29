@@ -65,16 +65,6 @@ function ScaledPoint(x, y, scaleX, scaleY) {
     [this.x, this.y, this.scaleX, this.scaleY] = arguments;
 }
 
-var menuShowing = null;
-var menuClone = null;
-function closeContextMenu(requestor) {
-    let requestorShowingMenu = menuClone && menuClone === requestor;
-    if (menuShowing) {
-        menuShowing.close();
-    }
-    return requestorShowingMenu;
-}
-
 ScaledPoint.prototype = {
     getPosition : function() {
         return [this.x, this.y];
@@ -103,6 +93,15 @@ ScaledPoint.prototype = {
     }
 };
 
+var menuShowing = null;
+var menuClone = null;
+function closeContextMenu(requestor) {
+    let requestorShowingMenu = menuClone && menuClone === requestor;
+    if (menuShowing) {
+        menuShowing.close();
+    }
+    return requestorShowingMenu;
+}
 
 function WindowClone(realWindow) {
     this._init(realWindow);
