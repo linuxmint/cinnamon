@@ -244,19 +244,19 @@ function start() {
     magnifier = new Magnifier.Magnifier();
     statusIconDispatcher = new StatusIconDispatcher.StatusIconDispatcher();  
                     
-    if (desktop_layout == LAYOUT_TRADITIONAL) {                                    
-        panel = new Panel.Panel(true);           
+    if (desktop_layout == LAYOUT_TRADITIONAL) {
+        panel = new Panel.Panel(true, true);
         panel.actor.add_style_class_name('panel-bottom');
         layoutManager.panelBox.add(panel.actor);
     }
     else if (desktop_layout == LAYOUT_FLIPPED) {
-        panel = new Panel.Panel(false);                 
+        panel = new Panel.Panel(false, true);
         panel.actor.add_style_class_name('panel-top');
-        layoutManager.panelBox.add(panel.actor);  
+        layoutManager.panelBox.add(panel.actor);
     }
     else if (desktop_layout == LAYOUT_CLASSIC) {
-        panel = new Panel.Panel(false);         
-        panel2 = new Panel.Panel(true);         
+        panel = new Panel.Panel(false, true);
+        panel2 = new Panel.Panel(true, false);
         panel.actor.add_style_class_name('panel-top');
         panel2.actor.add_style_class_name('panel-bottom');
         layoutManager.panelBox.add(panel.actor);   
