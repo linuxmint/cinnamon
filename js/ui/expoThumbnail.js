@@ -381,14 +381,6 @@ ExpoWorkspaceThumbnail.prototype = {
     },
 
     syncStacking: function(stackIndices) {
-        let isTransientFor = function(windowA, windowB) {
-            let isTransient = false;
-            windowB.foreach_transient(function(window) {
-                isTransient = isTransient || (window === windowA);
-                return !isTransient; // return false to end iteration
-            });
-            return isTransient;
-        };
         this._windows.sort(Lang.bind(this, function (a, b) {
             let minimizedDiff = function(a, b) {
                 let minimizedA = a.metaWindow.minimized ? -1 : 0;
@@ -403,8 +395,8 @@ ExpoWorkspaceThumbnail.prototype = {
             let transientRelation = function(a, b) {
                 let overviewDifference = noOverviewDiff(a,b);
                 if (overviewDifference) {
-                    let transientA = isTransientFor(a.metaWindow, b.metaWindow) ? 1 : 0;
-                    let transientB = !transientA && isTransientFor(b.metaWindow, a.metaWindow) ? 1 : 0;
+                    let transientA = a.metaWindow.get_transient_for() === b.metaWindow ? -1 : 0;
+                    let transientB = !transientA && b.metaWindow.get_transient_for() === a.metaWindow ? -1 : 0;
                     return transientA - transientB || overviewDifference;
                 }
                 return 0;
