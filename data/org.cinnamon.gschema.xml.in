@@ -305,7 +305,7 @@
 
     <key name="overview-corner" type="as">
       <default>['expo:true:false', 'scale:false:false', 'scale:false:false', 'scale:false:false']</default>
-      <_summary>Properties of overview coners</_summary>
+      <_summary>Properties of overview corners</_summary>
       <_description>Properties of overview corners, in the form functionality:hover:icon. The order in which properties are displayed is top left, top right, bottom left, bottom right.</_description>
     </key>
 
