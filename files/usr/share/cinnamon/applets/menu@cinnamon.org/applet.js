@@ -1606,7 +1606,7 @@ MyApplet.prototype = {
     _onApplicationButtonRealized: function(actor) {
         if (actor.get_width() > this._applicationsBoxWidth){
             this._applicationsBoxWidth = actor.get_width();
-            this.applicationsBox.set_width(this._applicationsBoxWidth);
+            this.applicationsBox.set_width(this._applicationsBoxWidth + 20);
         }
     },
     
