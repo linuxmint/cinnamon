@@ -55,17 +55,17 @@ MyApplet.prototype = {
         try {
             let hiddenIcons = ["network", "power", "keyboard", "gnome-settings-daemon", "volume", "bluetooth", "bluetooth-manager", "battery", "a11y"];
             let buggyIcons = ["pidgin", "thunderbird"];
-            
+
             if (hiddenIcons.indexOf(role) != -1 ) {
                 // We've got an applet for that
                 return;
             }
 
-            global.log("Adding systray: " + role + " (" + icon.get_width() + "x" + icon.get_height() + "px)");            
+            global.log("Adding systray: " + role + " (" + icon.get_width() + "x" + icon.get_height() + "px)");
 
             let box = new St.Bin({ style_class: 'panel-status-button', reactive: true, track_hover: true});
-	    let iconParent = icon.get_parent();
-	    if (iconParent) iconParent.remove_actor(icon);
+            let iconParent = icon.get_parent();
+            if (iconParent) iconParent.remove_actor(icon);
             box.add_actor(icon);
 
             this._insertStatusItem(box, -1);
@@ -117,9 +117,7 @@ MyApplet.prototype = {
             this.actor.insert_actor(actor, 0);
         }
         actor._rolePosition = position;
-    },
-
-
+    }
 };
 
 function main(metadata, orientation, panel_height) {
