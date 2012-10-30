@@ -251,7 +251,6 @@ HotCorner.prototype = {
     },
 
     _onCornerEntered : function() {
-        global.log('entered');
         if (!this._entered) {
             this._entered = true;
             this.rippleAnimation();
