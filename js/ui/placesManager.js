@@ -290,21 +290,36 @@ PlacesManager.prototype = {
             let bookmark = bookmarksOrder[i];
             let label = bookmarksToLabel[bookmark];
             let file = Gio.file_new_for_uri(bookmark);
-            if (!file.query_exists(null))
-                continue;
             if (label == null)
                 label = Cinnamon.util_get_label_for_uri(bookmark);
             if (label == null)
                 continue;
-            let icon = Cinnamon.util_get_icon_for_uri(bookmark);
-
-            let item = new PlaceInfo('bookmark:' + bookmark, label,
-                function(size) {
-                    return St.TextureCache.get_default().load_gicon(null, icon, size);
-                },
-                function(params) {
-                    Gio.app_info_launch_default_for_uri(bookmark, _makeLaunchContext(params));
-                });
+            
+            let item; 
+            if (file.query_exists(null)) {
+                let icon = Cinnamon.util_get_icon_for_uri(bookmark);
+                item = new PlaceInfo('bookmark:' + bookmark, label,
+                        function(size) {
+                            return St.TextureCache.get_default().load_gicon(null, icon, size);
+                        },
+                        function(params) {
+                            Gio.app_info_launch_default_for_uri(bookmark, _makeLaunchContext(params));
+                        });
+            } else {
+                // Asume the bookmark is an unmounted network location
+                // try to mount and open by the default file manager 
+                let icon = Gio.ThemedIcon.new('gnome-fs-network');          
+                item = new PlaceInfo('bookmark:' + bookmark, label,
+                        function(size) {
+                            return St.TextureCache.get_default().load_gicon(null, icon, size);
+                        },
+                        function(params) {
+                            let fileapp = Gio.app_info_get_default_for_uri_scheme('file');
+                            if (fileapp) {    
+                                fileapp.launch_uris([bookmark], _makeLaunchContext(params));
+                            }
+                        });
+            }                  
             this._bookmarks.push(item);
         }
 
