@@ -604,6 +604,7 @@ ExpoWorkspaceThumbnail.prototype = {
                 // all icons should be the same size!
                 let iconScale = (0.25/this.box.scale/scale);
                 let [iconX, iconY] = [-25*iconScale, -25*iconScale];
+                window.icon.raise_top();
                 if (!window.metaWindow.showing_on_its_workspace()) {
                     window.actor.show();
                     Tweener.addTween(window.actor, {x: x, y: y, scale_x: scale, scale_y: scale, time: REARRANGE_TIME_ON, transition: 'easeOutQuad'
