@@ -3059,8 +3059,9 @@ class MainWindow:
         alttab_styles_combo = GSettingsComboBox(_("ALT-tab switcher style"), "org.cinnamon", "alttab-switcher-style", None, alttab_styles)
         sidePage.add_widget(alttab_styles_combo)
         sidePage.add_widget(GSettingsCheckButton(_("Enable mouse-wheel scrolling in Window List applet"), "org.cinnamon", "window-list-applet-scroll", None))
-        sidePage.add_widget(GSettingsCheckButton(_("Enable highlighting and pulsing icon for items in Window List applet that want attention"), "org.cinnamon", "window-list-applet-alert", None))
         sidePage.add_widget(GSettingsCheckButton(_("Bring windows which require attention to the current workspace (instead of switching to the window's workspace)"), "org.cinnamon", "bring-windows-to-current-workspace", None))
+
+        sidePage.add_widget(GSettingsCheckButton(_("Enable highlighting and pulsing icon for items in Window List applet that want attention"), "org.cinnamon", "window-list-applet-alert", None))
         
         sidePage = SidePage(_("Workspaces"), "workspaces.svg", self.content_box)
         self.sidePages.append((sidePage, "workspaces"))        
