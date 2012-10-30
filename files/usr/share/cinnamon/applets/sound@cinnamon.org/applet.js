@@ -99,8 +99,8 @@ const MediaServer2PlayerIFace = {
 
 /* global values */
 let icon_path = "/usr/share/cinnamon/theme/";
-let compatible_players = [ "clementine", "mpd", "exaile", "banshee", "rhythmbox", "rhythmbox3", "pragha", "quodlibet", "guayadeque", "amarok", "googlemusicframe", "xbmc", "xnoise", "gmusicbrowser", "spotify", "audacious", "vlc", "beatbox", "songbird" ];
-let support_seek = [ "clementine", "banshee", "rhythmbox", "rhythmbox3", "pragha", "quodlibet", "amarok", "xnoise", "gmusicbrowser", "spotify", "vlc", "beatbox" ];
+let compatible_players = [ "clementine", "mpd", "exaile", "banshee", "rhythmbox", "rhythmbox3", "pragha", "quodlibet", "guayadeque", "amarok", "googlemusicframe", "xbmc", "xnoise", "gmusicbrowser", "spotify", "audacious", "vlc", "beatbox", "songbird", "qmmp" ];
+let support_seek = [ "clementine", "banshee", "rhythmbox", "rhythmbox3", "pragha", "quodlibet", "amarok", "xnoise", "gmusicbrowser", "spotify", "vlc", "beatbox", "qmmp" ];
 /* dummy vars for translation */
 let x = _("Playing");
 x = _("Paused");
@@ -434,6 +434,13 @@ Player.prototype = {
                 this._setStatus(iface, value["PlaybackStatus"]);
             if (value["Metadata"])
                 this._setMetadata(iface, value["Metadata"]);
+            //qmmp
+            if(sender._dbusBusName == 'org.mpris.MediaPlayer2.qmmp') {
+                if (value["playbackStatus"])
+                    this._setStatus(iface, value["playbackStatus"]);
+                if (value["metadata"])
+                    this._setMetadata(sender, value["metadata"]);
+            }
         }));
 
         this._mediaServerPlayer.connect('Seeked', Lang.bind(this, function(sender, value) {
@@ -452,9 +459,12 @@ Player.prototype = {
     },
 
     _setPosition: function(sender, value) {
-        this._stopTimer();
-        this._currentTime = value / 1000000;
-        this._updateTimer();
+        //qmmp was giving -1000 when stopped or not playing, which in turn would give 59:59 in the sound menu
+        if (value >= 0) {
+            this._stopTimer();
+            this._currentTime = value / 1000000;
+            this._updateTimer();
+        }
         if (this._playerStatus == "Playing")
             this._runTimer();
     },
@@ -521,6 +531,9 @@ Player.prototype = {
                 }
                 else {
                     cover_path = decodeURIComponent(this._trackCoverFile.substr(7));
+                    //qmmp doesn't prepend the "file://"
+                    if(sender._dbusBusName == 'org.mpris.MediaPlayer2.qmmp')
+                        cover_path = decodeURIComponent(this._trackCoverFile);
                     this._showCover(cover_path);
                 }
             }
@@ -583,9 +596,9 @@ Player.prototype = {
     },
 
     _stopTimer: function() {
-        /*Tweener.removeTweens(this);
+        /*Tweener.removeTweens(this);*/
         this._currentTime = 0;
-        this._updateTimer();*/
+        this._updateTimer();
     },
 
     _formatTime: function(s) {
@@ -679,7 +692,7 @@ MediaPlayerLauncher.prototype = {
     },
 
     activate: function (event) {
-            this._menu.actor.hide();
+        this._menu.actor.hide();
         this._app.activate_full(-1, event.get_time());
         return true;
     }
@@ -849,21 +862,21 @@ MyApplet.prototype = {
         this._volumeControlShown = true;
 
         if (this._nbPlayers()==0){
-                this._availablePlayers = new Array();
+            this._availablePlayers = new Array();
             let appsys = Cinnamon.AppSystem.get_default();
             let allApps = appsys.get_all();
             let listedDesktopFiles = new Array();
             for (let y=0; y<allApps.length; y++) {
-                    let app = allApps[y];
-                    let entry = app.get_tree_entry();
-                    let path = entry.get_desktop_file_path();
-                    for (var p=0; p<compatible_players.length; p++) {
+                let app = allApps[y];
+                let entry = app.get_tree_entry();
+                let path = entry.get_desktop_file_path();
+                for (var p=0; p<compatible_players.length; p++) {
                     let desktopFile = compatible_players[p]+".desktop";
-                            if (path.indexOf(desktopFile) != -1 && listedDesktopFiles.indexOf(desktopFile) == -1) {
-                                this._availablePlayers.push(app);
+                    if (path.indexOf(desktopFile) != -1 && listedDesktopFiles.indexOf(desktopFile) == -1) {
+                        this._availablePlayers.push(app);
                         listedDesktopFiles.push(desktopFile);
-                            }
-                           }
+                    }
+                }
             }
 
             if (this._availablePlayers.length > 0){
@@ -1020,9 +1033,9 @@ MyApplet.prototype = {
                     menuItem.setShowDot(true);
                 }
                 menuItem.connect('activate', Lang.bind(this, function() {
-                                                           log('Changing default sink to ' + sink.get_description());
-                                                           this._control.set_default_sink(sink);
-                                                       }));
+                    log('Changing default sink to ' + sink.get_description());
+                    this._control.set_default_sink(sink);
+                }));
                 this._selectDeviceItem.menu.addMenuItem(menuItem);
             }
         } else {
