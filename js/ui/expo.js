@@ -195,7 +195,7 @@ Expo.prototype = {
             this._addWorkspaceButton.set_style('background-image: url("/usr/share/cinnamon/theme/add-workspace.png");'); 
 
         // The dustbin is least likely to overlap a thumbnail if placed bottom-right.
-        this._windowCloseArea.set_position(primary.width - this._windowCloseArea.width, primary.height);
+        this._windowCloseArea.set_position(primary.width-this._windowCloseArea.width - buttonWidth, primary.height);
         this._windowCloseArea.set_size(this._windowCloseArea.width, this._windowCloseArea.height);
         this._windowCloseArea.raise_top();
     },
