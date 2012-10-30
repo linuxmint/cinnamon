@@ -80,7 +80,7 @@
     
     <key name="panel-top-height" type="i">
       <default>25</default>
-      <range min="20" />
+      <range min="10" />
       <_summary>Panel size</_summary>
       <_description>
         User-defined panel-height for top panel
@@ -89,7 +89,7 @@
     
     <key name="panel-bottom-height" type="i">
       <default>25</default>
-      <range min="20" />
+      <range min="10" />
       <_summary>Panel size</_summary>
       <_description>
         User-defined panel-height for bottom panel
