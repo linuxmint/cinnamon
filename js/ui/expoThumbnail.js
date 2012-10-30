@@ -603,16 +603,17 @@ ExpoWorkspaceThumbnail.prototype = {
 
                 // all icons should be the same size!
                 let iconScale = (0.25/this.box.scale/scale);
-                window.icon.set_position(-25*iconScale, -25*iconScale);
+                let [iconX, iconY] = [-25*iconScale, -25*iconScale];
                 if (!window.metaWindow.showing_on_its_workspace()) {
                     window.actor.show();
                     Tweener.addTween(window.actor, {x: x, y: y, scale_x: scale, scale_y: scale, time: REARRANGE_TIME_ON, transition: 'easeOutQuad'
                     });
-                    Tweener.addTween(window.icon, {scale_x: iconScale, scale_y: iconScale, time: REARRANGE_TIME_ON, transition: 'easeOutQuad', onComplete: window.icon.show
+                    Tweener.addTween(window.icon, {x:iconX, y:iconY, scale_x:iconScale, scale_y:iconScale, time: REARRANGE_TIME_ON, transition: 'easeOutQuad', onComplete: window.icon.show
                     });
                 }
                 else {
                     window.icon.set_scale(iconScale, iconScale);
+                    window.icon.set_position(iconX, iconY);
                     Tweener.addTween(window.actor, {x: x, y: y, scale_x: scale, scale_y: scale, time: REARRANGE_TIME_ON, transition: 'easeOutQuad',
                     onComplete: function() {
                         window.actor.show();
