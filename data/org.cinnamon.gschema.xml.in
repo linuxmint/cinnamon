@@ -333,6 +333,23 @@
 		Number of Workspaces</_description>
     </key>
 
+    
+    <key name="overview-corner-visible" type="b">
+      <default>false</default>
+    </key>
+    
+    <key name="overview-corner-hover" type="b">
+      <default>true</default>
+    </key>
+    
+    <key name="overview-corner-position" type="s">
+      <default>"topLeft"</default>
+    </key>
+    
+    <key name="overview-corner-functionality" type="s">
+      <default>"expo"</default>
+    </key>
+
     <key name="overview-corner" type="as">
       <default>['expo:true:false', 'scale:false:false', 'scale:false:false', 'scale:false:false']</default>
       <_summary>Properties of overview corners</_summary>
