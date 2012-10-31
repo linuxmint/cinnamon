@@ -790,6 +790,7 @@ WorkspaceMonitor.prototype = {
         this._y = 0;
         this._width = 0;
         this._height = 0;
+        this._margin = 0;
         this._slotWidth = 0;
 
         this.monitorIndex = monitorIndex;
@@ -968,11 +969,12 @@ WorkspaceMonitor.prototype = {
         }
     },
 
-    setGeometry: function(x, y, width, height) {
+    setGeometry: function(x, y, width, height, margin) {
         this._x = x;
         this._y = y;
         this._width = width;
         this._height = height;
+        this._margin = margin;
 
         // This is sometimes called during allocation, so we do this later
         Meta.later_add(Meta.LaterType.BEFORE_REDRAW, Lang.bind(this,
@@ -1175,11 +1177,11 @@ WorkspaceMonitor.prototype = {
     _getSlotGeometry: function(slot) {
         let [xCenter, yCenter, fraction] = slot;
 
-        let width = this._width * fraction;
-        let height = this._height * fraction;
+        let width = (this._width - this._margin * 2) * fraction;
+        let height = (this._height - this._margin * 2) * fraction;
 
-        let x = this._x + xCenter * this._width - width / 2 ;
-        let y = this._y + yCenter * this._height - height / 2;
+        let x = this._x + this._margin + xCenter * (this._width - this._margin * 2) - width / 2 ;
+        let y = this._y + this._margin + yCenter * (this._height - this._margin * 2) - height / 2;
 
         return [x, y, width, height];
     },
@@ -2048,10 +2050,10 @@ Workspace.prototype = {
 
     setGeometry: function(x, y, width, height, spacing_unused) {
         let primary = Main.layoutManager.primaryMonitor;
-        let spacing = (primary.width - width) / 2;
+        let margin = (primary.width - width) / 2;
         this._monitors.forEach(function(monitor, index) {
             let mon = Main.layoutManager.monitors[index];
-            monitor.setGeometry(mon.x + spacing, mon.y + spacing, mon.width - spacing, mon.height - spacing);
+            monitor.setGeometry(mon.x, mon.y, mon.width, mon.height, margin);
         }, this);
     },
 
