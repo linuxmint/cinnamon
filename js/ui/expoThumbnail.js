@@ -319,15 +319,14 @@ ExpoWorkspaceThumbnail.prototype = {
     _refresh: function() {
         this._windows.forEach(function(window) {
             if (!this._isMyWindow(window.realWindow)) {
-                global.logError("sdaflkjwl");
-                this._doRemoveWindow(window.realWindow);
+                this._doRemoveWindow(window.metaWindow);
             }
         }, this);
         let windows = global.get_window_actors().filter(this._isMyWindow, this);
         // Create clones for windows that should be visible in the Expo
         for (let i = 0; i < windows.length; i++) {
             if (this._isExpoWindow(windows[i])) {
-                this._addWindowClone(windows[i]);
+                this._doAddWindow(windows[i].get_meta_window());
             }
         }
         if (this._refresher) {this._refresher();}
@@ -813,17 +812,15 @@ ExpoWorkspaceThumbnail.prototype = {
         {
             metaWindow.move_to_monitor(targetMonitor);
             if (targetMonitor === Main.layoutManager.primaryIndex) {
-                metaWindow.change_workspace(this.metaWorkspace,
-                    false, // don't create workspace
-                    0);
+                metaWindow.change_workspace(this.metaWorkspace, false, time);
             }
-            Mainloop.idle_add(this.box._refresh);
+            Mainloop.idle_add(Lang.bind(this, function() {
+                this.box.emit('refresh-needed');
+            }));
         }
         else {
             if (movingWorkspaces) {
-                metaWindow.change_workspace(this.metaWorkspace,
-                    false, // don't create workspace
-                    time);
+                metaWindow.change_workspace(this.metaWorkspace, false, time);
             }
             if (movingMonitors) {
                 metaWindow.move_to_monitor(targetMonitor);
@@ -902,6 +899,7 @@ ExpoThumbnailsBox.prototype = {
                 thumbnail._overviewModeOff(true);
             });
         }));
+        this.connect('refresh-needed', Lang.bind(this, this._refresh));
     },
 
     _refresh: function() {
