@@ -27,8 +27,8 @@ const REARRANGE_TIME_OFF = 0.3 * 2;
 const ICON_OPACITY = Math.round(255 * 0.9);
 const ICON_SIZE = 128;
 
-function ExpoWindowClone(realWindow) {
-    this._init(realWindow);
+function ExpoWindowClone() {
+    this._init.apply(this, arguments);
 }
 
 ExpoWindowClone.prototype = {
@@ -317,6 +317,10 @@ ExpoWorkspaceThumbnail.prototype = {
                                                           Lang.bind(this, this._windowAdded));
         this._windowRemovedId = this.metaWorkspace.connect('window-removed',
                                                            Lang.bind(this, this._windowRemoved));
+        this._windowEnteredMonitorId = global.screen.connect('window-entered-monitor',
+            Lang.bind(this, this._windowEnteredMonitor));
+        this._windowLeftMonitorId = global.screen.connect('window-left-monitor',
+            Lang.bind(this, this._windowLeftMonitor));
 
         this.state = ThumbnailState.NORMAL;
         this._slidePosition = 0; // Fully slid in
@@ -450,20 +454,17 @@ ExpoWorkspaceThumbnail.prototype = {
 
     _doAddWindow : function(metaWin) {
         let win = metaWin.get_compositor_private();
-        
         if (!win) {
             // Newly-created windows are added to a workspace before
             // the compositor finds out about them...
-            Mainloop.idle_add(Lang.bind(this,
-                                        function () {
-                                            if (this._windows /*will be null if we're closing down*/ &&
-                                                metaWin.get_compositor_private() &&
-                                                metaWin.get_workspace() == this.metaWorkspace)
-                                            {
-                                                this._doAddWindow(metaWin);
-                                            }
-                                            return false;
-                                        }));
+            Mainloop.idle_add(Lang.bind(this, function () {
+                if (this._windows /*will be null if we're closing down*/ &&
+                    metaWin.get_compositor_private())
+                {
+                    this._doAddWindow(metaWin);
+                }
+                return false;
+            }));
             return;
         }
 
@@ -477,9 +478,6 @@ ExpoWorkspaceThumbnail.prototype = {
 
         let clone = this._addWindowClone(win); 
 
-        if (!win.showing_on_its_workspace()){
-            clone.actor.hide();
-        }
         if (this.overviewMode)
             this._overviewModeOn();
     },
@@ -494,6 +492,16 @@ ExpoWorkspaceThumbnail.prototype = {
         this.box.restack();
     },
 
+    _windowEnteredMonitor : function(metaScreen, monitorIndex, metaWin) {
+        // important if workspaces-only-on-primary is in effect
+        this._doAddWindow(metaWin);
+    },
+
+    _windowLeftMonitor : function(metaScreen, monitorIndex, metaWin) {
+        // important if workspaces-only-on-primary is in effect
+        this._doRemoveWindow(metaWin);
+    },
+
     destroy : function() {            
         this.actor.destroy();        
         this.frame.destroy();
@@ -502,6 +510,8 @@ ExpoWorkspaceThumbnail.prototype = {
     _onDestroy: function(actor) {
         this.metaWorkspace.disconnect(this._windowAddedId);
         this.metaWorkspace.disconnect(this._windowRemovedId);
+        global.screen.disconnect(this._windowEnteredMonitorId);
+        global.screen.disconnect(this._windowLeftMonitorId);
 
         for (let i = 0; i < this._windows.length; i++) {
             this._windows[i].destroy();
@@ -541,15 +551,14 @@ ExpoWorkspaceThumbnail.prototype = {
                       Lang.bind(this, function(clone) {
                           Main.expo.beginWindowDrag();
                       }));
-        clone.connect('drag-end',
-                      Lang.bind(this, function(clone) {
-                          Main.expo.endWindowDrag();
-                          // normal hovering monitoring was turned off during drag
-                          this.hovering = false;
-                          if (!clone.dragCancelled) {
-                              this._overviewModeOn();
-                          }
-                      }));
+        clone.connect('drag-end', Lang.bind(this, function(clone) {
+            Main.expo.endWindowDrag();
+            // normal hovering monitoring was turned off during drag
+            this.hovering = false;
+            if (!clone.dragCancelled) {
+                this._overviewModeOn();
+            }
+        }));
         this._contents.add_actor(clone.actor);
 
         if (this._windows.length == 0)
@@ -636,6 +645,7 @@ ExpoWorkspaceThumbnail.prototype = {
         if (!this._overviewMode && !force)
             return;
         
+        this._overviewMode = false;
         const iconSpacing = ICON_SIZE/4;
         let rearrangeTime = force ? REARRANGE_TIME_OFF/2 : REARRANGE_TIME_OFF;
 
@@ -785,22 +795,32 @@ ExpoWorkspaceThumbnail.prototype = {
         if (this.handleDragOver(source, actor, x, y, time) === DND.DragMotionResult.CONTINUE) {
             return false;
         }
-        actor.reparent(this._contents);
-        actor.opacity = 255; // may have been dimmed during the drag
+        let draggable = source._draggable;
+        actor.opacity = draggable._dragOrigOpacity;
+        actor.reparent(draggable._dragOrigParent);
         
-        let targetMonitor = this.coordinateToMonitor(x, y);
-
         let win = source.realWindow;
         let metaWindow = win.get_meta_window();
+        let targetMonitor = this.coordinateToMonitor(x, y);
+        let fromMonitor = metaWindow.get_monitor();
 
-        if (metaWindow.get_workspace() !== this.metaWorkspace.index()) {
-            metaWindow.change_workspace_by_index(this.metaWorkspace.index(),
-                false, // don't create workspace
-                time);
-        }
-
-        if (targetMonitor >= 0 && metaWindow.get_monitor() !== targetMonitor) {
+        let movingMonitors = targetMonitor >= 0 && fromMonitor !== targetMonitor;
+        let movingWorkspaces = !Main.isWindowActorDisplayedOnWorkspace(win, this.metaWorkspace.index());
+        if (movingMonitors && Main.wm.workspacesOnlyOnPrimary &&
+            (fromMonitor === Main.layoutManager.primaryIndex || targetMonitor === Main.layoutManager.primaryIndex))
+        {
             metaWindow.move_to_monitor(targetMonitor);
+            if (targetMonitor === Main.layoutManager.primaryIndex) {
+                metaWindow.change_workspace(this.metaWorkspace, false, time);
+            }
+        }
+        else {
+            if (movingWorkspaces) {
+                metaWindow.change_workspace(this.metaWorkspace, false, time);
+            }
+            if (movingMonitors) {
+                metaWindow.move_to_monitor(targetMonitor);
+            }
         }
 
         // normal hovering monitoring was turned off during drag
