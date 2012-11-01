@@ -487,9 +487,6 @@ ExpoWorkspaceThumbnail.prototype = {
 
         let clone = this._addWindowClone(win); 
 
-        if (!win.showing_on_its_workspace()){
-            clone.actor.hide();
-        }
         if (this.overviewMode)
             this._overviewModeOn();
     },
@@ -648,6 +645,7 @@ ExpoWorkspaceThumbnail.prototype = {
         if (!this._overviewMode && !force)
             return;
         
+        this._overviewMode = false;
         const iconSpacing = ICON_SIZE/4;
         let rearrangeTime = force ? REARRANGE_TIME_OFF/2 : REARRANGE_TIME_OFF;
 
