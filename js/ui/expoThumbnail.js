@@ -301,16 +301,10 @@ ExpoWorkspaceThumbnail.prototype = {
         if (metaWorkspace == global.screen.get_active_workspace())
             this.shade.opacity = 0;
 
-        let windows = global.get_window_actors().filter(this._isMyWindow, this);
-
-        // Create clones for windows that should be visible in the Expo
         this.count = 0;
         this._windows = [];
-        for (let i = 0; i < windows.length; i++) {
-            if (this._isExpoWindow(windows[i])) {
-                this._addWindowClone(windows[i]);
-            }
-        }
+        this._refresher = null;
+        this._refresh();
 
         // Track window changes
         this._windowAddedId = this.metaWorkspace.connect('window-added',
@@ -320,6 +314,23 @@ ExpoWorkspaceThumbnail.prototype = {
 
         this.state = ThumbnailState.NORMAL;
         this._slidePosition = 0; // Fully slid in
+    },
+
+    _refresh: function() {
+        this._windows.forEach(function(window) {
+            if (!this._isMyWindow(window.realWindow)) {
+                global.logError("sdaflkjwl");
+                this._doRemoveWindow(window.realWindow);
+            }
+        }, this);
+        let windows = global.get_window_actors().filter(this._isMyWindow, this);
+        // Create clones for windows that should be visible in the Expo
+        for (let i = 0; i < windows.length; i++) {
+            if (this._isExpoWindow(windows[i])) {
+                this._addWindowClone(windows[i]);
+            }
+        }
+        if (this._refresher) {this._refresher();}
     },
 
     _setActive: function(isActive) {
@@ -563,6 +574,7 @@ ExpoWorkspaceThumbnail.prototype = {
     },
 
     _overviewModeOn : function () {
+        this._refresher = this._overviewModeOn;
         if (!this.box.scale) {return;}
         this._overviewMode = true;
         let windows = [];
@@ -632,6 +644,7 @@ ExpoWorkspaceThumbnail.prototype = {
     },
 
     _overviewModeOff : function (force){
+        this._refresher = Lang.bind(this, function(){this._overviewModeOff(true);});
         if (!this.box.scale) {return;}
         if (!this._overviewMode && !force)
             return;
@@ -788,19 +801,33 @@ ExpoWorkspaceThumbnail.prototype = {
         actor.reparent(this._contents);
         actor.opacity = 255; // may have been dimmed during the drag
         
-        let targetMonitor = this.coordinateToMonitor(x, y);
-
         let win = source.realWindow;
         let metaWindow = win.get_meta_window();
+        let targetMonitor = this.coordinateToMonitor(x, y);
+        let fromMonitor = metaWindow.get_monitor();
 
-        if (metaWindow.get_workspace() !== this.metaWorkspace.index()) {
-            metaWindow.change_workspace_by_index(this.metaWorkspace.index(),
-                false, // don't create workspace
-                time);
-        }
-
-        if (targetMonitor >= 0 && metaWindow.get_monitor() !== targetMonitor) {
+        let movingMonitors = targetMonitor >= 0 && fromMonitor !== targetMonitor;
+        let movingWorkspaces = !Main.isWindowActorDisplayedOnWorkspace(win, this.metaWorkspace.index());
+        if (movingMonitors && Main.wm.workspacesOnlyOnPrimary &&
+            (fromMonitor === Main.layoutManager.primaryIndex || targetMonitor === Main.layoutManager.primaryIndex))
+        {
             metaWindow.move_to_monitor(targetMonitor);
+            if (targetMonitor === Main.layoutManager.primaryIndex) {
+                metaWindow.change_workspace(this.metaWorkspace,
+                    false, // don't create workspace
+                    0);
+            }
+            Mainloop.idle_add(this.box._refresh);
+        }
+        else {
+            if (movingWorkspaces) {
+                metaWindow.change_workspace(this.metaWorkspace,
+                    false, // don't create workspace
+                    time);
+            }
+            if (movingMonitors) {
+                metaWindow.move_to_monitor(targetMonitor);
+            }
         }
 
         // normal hovering monitoring was turned off during drag
@@ -875,6 +902,13 @@ ExpoThumbnailsBox.prototype = {
                 thumbnail._overviewModeOff(true);
             });
         }));
+    },
+
+    _refresh: function() {
+        if (!this._thumbnails) {return;}
+        this._thumbnails.forEach(function(thumbnail) {
+            thumbnail._refresh();
+        }, this);
     },
 
     show: function() {
