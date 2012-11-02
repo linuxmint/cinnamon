@@ -729,8 +729,11 @@ function logStackTrace(msg) {
 }
 
 function isWindowActorDisplayedOnWorkspace(win, workspaceIndex) {
-    return win.get_workspace() == workspaceIndex ||
-        (win.get_meta_window() && win.get_meta_window().is_on_all_workspaces());
+    if (win.get_workspace() == workspaceIndex) {return true;}
+    let mwin = win.get_meta_window();
+    return mwin && (mwin.is_on_all_workspaces() ||
+        (wm.workspacesOnlyOnPrimary && mwin.get_monitor() != layoutManager.primaryIndex)
+    );
 }
 
 function getWindowActorsForWorkspace(workspaceIndex) {

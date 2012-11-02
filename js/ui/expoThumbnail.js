@@ -27,8 +27,8 @@ const REARRANGE_TIME_OFF = 0.3 * 2;
 const ICON_OPACITY = Math.round(255 * 0.9);
 const ICON_SIZE = 128;
 
-function ExpoWindowClone(realWindow) {
-    this._init(realWindow);
+function ExpoWindowClone() {
+    this._init.apply(this, arguments);
 }
 
 ExpoWindowClone.prototype = {
@@ -301,16 +301,26 @@ ExpoWorkspaceThumbnail.prototype = {
         if (metaWorkspace == global.screen.get_active_workspace())
             this.shade.opacity = 0;
 
+        let windows = global.get_window_actors().filter(this._isMyWindow, this);
+
+        // Create clones for windows that should be visible in the Expo
         this.count = 0;
         this._windows = [];
-        this._refresher = null;
-        this._refresh();
+        for (let i = 0; i < windows.length; i++) {
+            if (this._isExpoWindow(windows[i])) {
+                this._addWindowClone(windows[i]);
+            }
+        }
 
         // Track window changes
         this._windowAddedId = this.metaWorkspace.connect('window-added',
                                                           Lang.bind(this, this._windowAdded));
         this._windowRemovedId = this.metaWorkspace.connect('window-removed',
                                                            Lang.bind(this, this._windowRemoved));
+        this._windowEnteredMonitorId = global.screen.connect('window-entered-monitor',
+            Lang.bind(this, this._windowEnteredMonitor));
+        this._windowLeftMonitorId = global.screen.connect('window-left-monitor',
+            Lang.bind(this, this._windowLeftMonitor));
 
         this.state = ThumbnailState.NORMAL;
         this._slidePosition = 0; // Fully slid in
@@ -460,20 +470,17 @@ ExpoWorkspaceThumbnail.prototype = {
 
     _doAddWindow : function(metaWin) {
         let win = metaWin.get_compositor_private();
-        
         if (!win) {
             // Newly-created windows are added to a workspace before
             // the compositor finds out about them...
-            Mainloop.idle_add(Lang.bind(this,
-                                        function () {
-                                            if (this._windows /*will be null if we're closing down*/ &&
-                                                metaWin.get_compositor_private() &&
-                                                metaWin.get_workspace() == this.metaWorkspace)
-                                            {
-                                                this._doAddWindow(metaWin);
-                                            }
-                                            return false;
-                                        }));
+            Mainloop.idle_add(Lang.bind(this, function () {
+                if (this._windows /*will be null if we're closing down*/ &&
+                    metaWin.get_compositor_private())
+                {
+                    this._doAddWindow(metaWin);
+                }
+                return false;
+            }));
             return;
         }
 
@@ -501,6 +508,16 @@ ExpoWorkspaceThumbnail.prototype = {
         this.box.restack();
     },
 
+    _windowEnteredMonitor : function(metaScreen, monitorIndex, metaWin) {
+        // important if workspaces-only-on-primary is in effect
+        this._doAddWindow(metaWin);
+    },
+
+    _windowLeftMonitor : function(metaScreen, monitorIndex, metaWin) {
+        // important if workspaces-only-on-primary is in effect
+        this._doRemoveWindow(metaWin);
+    },
+
     destroy : function() {            
         this.actor.destroy();        
         this.frame.destroy();
@@ -509,6 +526,8 @@ ExpoWorkspaceThumbnail.prototype = {
     _onDestroy: function(actor) {
         this.metaWorkspace.disconnect(this._windowAddedId);
         this.metaWorkspace.disconnect(this._windowRemovedId);
+        global.screen.disconnect(this._windowEnteredMonitorId);
+        global.screen.disconnect(this._windowLeftMonitorId);
 
         for (let i = 0; i < this._windows.length; i++) {
             this._windows[i].destroy();
@@ -548,15 +567,14 @@ ExpoWorkspaceThumbnail.prototype = {
                       Lang.bind(this, function(clone) {
                           Main.expo.beginWindowDrag();
                       }));
-        clone.connect('drag-end',
-                      Lang.bind(this, function(clone) {
-                          Main.expo.endWindowDrag();
-                          // normal hovering monitoring was turned off during drag
-                          this.hovering = false;
-                          if (!clone.dragCancelled) {
-                              this._overviewModeOn();
-                          }
-                      }));
+        clone.connect('drag-end', Lang.bind(this, function(clone) {
+            Main.expo.endWindowDrag();
+            // normal hovering monitoring was turned off during drag
+            this.hovering = false;
+            if (!clone.dragCancelled) {
+                this._overviewModeOn();
+            }
+        }));
         this._contents.add_actor(clone.actor);
 
         if (this._windows.length == 0)
@@ -570,7 +588,6 @@ ExpoWorkspaceThumbnail.prototype = {
     },
 
     _overviewModeOn : function () {
-        this._refresher = this._overviewModeOn;
         if (!this.box.scale) {return;}
         this._overviewMode = true;
         let windows = [];
@@ -640,7 +657,6 @@ ExpoWorkspaceThumbnail.prototype = {
     },
 
     _overviewModeOff : function (force){
-        this._refresher = Lang.bind(this, function(){this._overviewModeOff(true);});
         if (!this.box.scale) {return;}
         if (!this._overviewMode && !force)
             return;
@@ -795,8 +811,9 @@ ExpoWorkspaceThumbnail.prototype = {
         if (this.handleDragOver(source, actor, x, y, time) === DND.DragMotionResult.CONTINUE) {
             return false;
         }
-        actor.reparent(this._contents);
-        actor.opacity = 255; // may have been dimmed during the drag
+        let draggable = source._draggable;
+        actor.opacity = draggable._dragOrigOpacity;
+        actor.reparent(draggable._dragOrigParent);
         
         let win = source.realWindow;
         let metaWindow = win.get_meta_window();
@@ -812,9 +829,6 @@ ExpoWorkspaceThumbnail.prototype = {
             if (targetMonitor === Main.layoutManager.primaryIndex) {
                 metaWindow.change_workspace(this.metaWorkspace, false, time);
             }
-            Mainloop.idle_add(Lang.bind(this, function() {
-                this.box.emit('refresh-needed');
-            }));
         }
         else {
             if (movingWorkspaces) {
@@ -897,14 +911,6 @@ ExpoThumbnailsBox.prototype = {
                 thumbnail._overviewModeOff(true);
             });
         }));
-        this.connect('refresh-needed', Lang.bind(this, this._refresh));
-    },
-
-    _refresh: function() {
-        if (!this._thumbnails) {return;}
-        this._thumbnails.forEach(function(thumbnail) {
-            thumbnail._refresh();
-        }, this);
     },
 
     show: function() {
