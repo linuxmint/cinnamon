@@ -1837,10 +1837,8 @@ Workspace.prototype = {
         }
         let previousIndex = this.currentMonitorIndex || 0;
         this.currentMonitorIndex = this.findNextNonEmptyMonitor(start || 0, increment);
-        if (previousIndex != this.currentMonitorIndex) {
-            this._monitors[previousIndex].showActiveSelection(false);
-            this._monitors[this.currentMonitorIndex].showActiveSelection(true);
-        }
+        this._monitors[previousIndex].showActiveSelection(false);
+        this._monitors[this.currentMonitorIndex].showActiveSelection(true);
     },
 
     _onKeyPress: function(actor, event) {
