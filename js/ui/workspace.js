@@ -1816,7 +1816,6 @@ Workspace.prototype = {
             this._monitors.push(m);
             this.actor.add_actor(m.actor);
         }, this);
-        this.selectNextNonEmptyMonitor(focusIndex - 1, 1);
     },
 
     findNextNonEmptyMonitor: function(start, increment) {
@@ -1831,9 +1830,9 @@ Workspace.prototype = {
     },
 
     selectNextNonEmptyMonitor: function(start, increment) {
-        if (this._monitors.length < 2) {
-            // boldly assume that we have at least one monitor!
+        if (this._monitors.length === 1) {
             this.currentMonitorIndex = 0;
+            this._monitors[this.currentMonitorIndex].showActiveSelection(true);
             return;
         }
         let previousIndex = this.currentMonitorIndex || 0;
@@ -1907,6 +1906,7 @@ Workspace.prototype = {
         this._monitors.forEach(function(monitor) {
             monitor.zoomToOverview();
         }, this);
+        this.selectNextNonEmptyMonitor(this.currentMonitorIndex - 1, 1);
     },
 
     hasMaximizedWindows: function() {
