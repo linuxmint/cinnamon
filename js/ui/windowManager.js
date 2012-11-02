@@ -881,7 +881,7 @@ WindowManager.prototype = {
             let workspace_osd_y = global.settings.get_int("workspace-osd-y");
             let duration = global.settings.get_int("workspace-osd-duration") / 1000;
             Main.layoutManager.monitors.filter(function(monitor, index) {
-                return index === 0 || !this.workspacesOnlyOnPrimary;
+                return index === Main.layoutManager.primaryIndex || !this.workspacesOnlyOnPrimary;
             }, this).forEach(function(monitor) {
                 let label = new St.Label({style_class:'workspace-osd'});
                 label.set_text(Main.getWorkspaceName(current_workspace_index));
