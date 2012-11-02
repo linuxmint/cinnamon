@@ -1871,6 +1871,9 @@ Workspace.prototype = {
             Main.overview.hide();
             return true;
         }
+        if (modifiers & ctrlAltMask) {
+            return false;
+        }
         return activeMonitor.selectAnotherWindow(symbol);
     },
 
