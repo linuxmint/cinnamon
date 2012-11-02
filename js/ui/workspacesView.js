@@ -272,6 +272,8 @@ WorkspacesView.prototype = {
             this._scrollAdjustment.value = index;
             this._animatingScroll = false;
         }
+        let active = global.screen.get_active_workspace_index();
+        this._workspaces[active].zoomToOverview();
     },
 
     updateWorkspaces: function(oldNumWorkspaces, newNumWorkspaces) {
