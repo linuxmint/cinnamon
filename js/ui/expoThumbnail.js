@@ -932,12 +932,6 @@ ExpoThumbnailsBox.prototype = {
             this.activateSelectedWorkspace();
             return true;
         }
-        if ((symbol === Clutter.Delete && (modifiers & ctrlAltMask) !== ctrlAltMask)
-            || symbol === Clutter.w && modifiers & Clutter.ModifierType.CONTROL_MASK)
-        {
-            this.removeSelectedWorkspace();
-            return true;
-        }
         if (symbol === Clutter.F2) {
             this.editWorkspaceTitle();
             return true;
@@ -1308,8 +1302,10 @@ ExpoThumbnailsBox.prototype = {
             thumbnail._refreshTitle();
         });
         this._thumbnails[this._kbThumbnailIndex].showKeyboardSelectedState(true);
-        // we may inadvertently have lost keyboard focus during the reshuffling
-        global.stage.set_key_focus(this.actor);
+        if (!Main.modalCount) {
+            // we may inadvertently have lost keyboard focus during the reshuffling
+            global.stage.set_key_focus(this.actor);
+        }
   },
 
     _queueUpdateStates: function() {
