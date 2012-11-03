@@ -776,12 +776,13 @@ const WindowPositionFlags = {
     ANIMATE: 1 << 1
 };
 
-function WorkspaceMonitor(metaWorkspace, monitorIndex, hasFocus) {
-    this._init(metaWorkspace, monitorIndex, hasFocus);
+function WorkspaceMonitor() {
+    this._init.apply(this, arguments);
 }
 
 WorkspaceMonitor.prototype = {
-    _init : function(metaWorkspace, monitorIndex, hasFocus) {
+    _init : function(metaWorkspace, monitorIndex, workspace, hasFocus) {
+        this._myWorkspace = workspace;
         // When dragging a window, we use this slot for reserve space.
         this._reservedSlot = null;
         this.metaWorkspace = metaWorkspace;
@@ -939,9 +940,10 @@ WorkspaceMonitor.prototype = {
     },
 
     _onCloneContextMenuRequested: function(clone) {
-        menuShowing = new WindowContextMenu(clone.actor, clone.metaWindow, function() {
+        menuShowing = new WindowContextMenu(clone.actor, clone.metaWindow, Lang.bind(this, function() {
             menuShowing = null; menuClone = null;
-        });
+            this._myWorkspace.emit('focus-refresh-required');
+        }));
         menuClone = clone;
         menuShowing.toggle();
     },
@@ -1233,6 +1235,7 @@ WorkspaceMonitor.prototype = {
         }
 
         this.positionWindows(WindowPositionFlags.ANIMATE);
+        this._myWorkspace.emit('focus-refresh-required');
         return false;
     },
 
@@ -1359,6 +1362,7 @@ WorkspaceMonitor.prototype = {
         }
 
         this.positionWindows(WindowPositionFlags.ANIMATE);
+        this._myWorkspace.emit('focus-refresh-required');
     },
 
     _windowAdded : function(metaWorkspace, metaWin) {
@@ -1812,10 +1816,13 @@ Workspace.prototype = {
         this._monitors = [];
         let focusIndex = Main.layoutManager.focusIndex;
         Main.layoutManager.monitors.forEach(function(monitor, monitorIndex) {
-            let m = new WorkspaceMonitor(metaWorkspace, monitorIndex, monitorIndex === focusIndex)
+            let m = new WorkspaceMonitor(metaWorkspace, monitorIndex, this, monitorIndex === focusIndex)
             this._monitors.push(m);
             this.actor.add_actor(m.actor);
         }, this);
+        this.connect('focus-refresh-required', Lang.bind(this, function() {
+            this.selectNextNonEmptyMonitor(this.currentMonitorIndex - 1, 1);
+        }));
     },
 
     findNextNonEmptyMonitor: function(start, increment) {
@@ -1907,7 +1914,7 @@ Workspace.prototype = {
         this._monitors.forEach(function(monitor) {
             monitor.zoomToOverview();
         }, this);
-        this.selectNextNonEmptyMonitor(this.currentMonitorIndex - 1, 1);
+        this.emit('focus-refresh-required');
     },
 
     hasMaximizedWindows: function() {
