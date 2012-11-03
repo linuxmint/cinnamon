@@ -942,7 +942,7 @@ WorkspaceMonitor.prototype = {
     _onCloneContextMenuRequested: function(clone) {
         menuShowing = new WindowContextMenu(clone.actor, clone.metaWindow, Lang.bind(this, function() {
             menuShowing = null; menuClone = null;
-            this._myWorkspace.emit('refresh-required');
+            this._myWorkspace.emit('focus-refresh-required');
         }));
         menuClone = clone;
         menuShowing.toggle();
@@ -1234,7 +1234,8 @@ WorkspaceMonitor.prototype = {
             return true;
         }
 
-        this._myWorkspace.emit('refresh-required');
+        this.positionWindows(WindowPositionFlags.ANIMATE);
+        this._myWorkspace.emit('focus-refresh-required');
         return false;
     },
 
@@ -1361,6 +1362,7 @@ WorkspaceMonitor.prototype = {
         }
 
         this.positionWindows(WindowPositionFlags.ANIMATE);
+        this._myWorkspace.emit('focus-refresh-required');
     },
 
     _windowAdded : function(metaWorkspace, metaWin) {
@@ -1818,7 +1820,9 @@ Workspace.prototype = {
             this._monitors.push(m);
             this.actor.add_actor(m.actor);
         }, this);
-        this.connect('refresh-required', Lang.bind(this, this.zoomToOverview));
+        this.connect('focus-refresh-required', Lang.bind(this, function() {
+            this.selectNextNonEmptyMonitor(this.currentMonitorIndex - 1, 1);
+        }));
     },
 
     findNextNonEmptyMonitor: function(start, increment) {
@@ -1910,7 +1914,7 @@ Workspace.prototype = {
         this._monitors.forEach(function(monitor) {
             monitor.zoomToOverview();
         }, this);
-        this.selectNextNonEmptyMonitor(this.currentMonitorIndex - 1, 1);
+        this.emit('focus-refresh-required');
     },
 
     hasMaximizedWindows: function() {
