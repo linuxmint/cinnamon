@@ -326,22 +326,6 @@ ExpoWorkspaceThumbnail.prototype = {
         this._slidePosition = 0; // Fully slid in
     },
 
-    _refresh: function() {
-        this._windows.forEach(function(window) {
-            if (!this._isMyWindow(window.realWindow)) {
-                this._doRemoveWindow(window.metaWindow);
-            }
-        }, this);
-        let windows = global.get_window_actors().filter(this._isMyWindow, this);
-        // Create clones for windows that should be visible in the Expo
-        for (let i = 0; i < windows.length; i++) {
-            if (this._isExpoWindow(windows[i])) {
-                this._doAddWindow(windows[i].get_meta_window());
-            }
-        }
-        if (this._refresher) {this._refresher();}
-    },
-
     _setActive: function(isActive) {
         this.frame.name = isActive ? 'active' : '';
     },
