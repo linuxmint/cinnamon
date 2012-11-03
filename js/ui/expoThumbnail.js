@@ -74,8 +74,6 @@ ExpoWindowClone.prototype = {
         this.inDrag = false;
         this.dragCancelled = false;
 
-        // Create an icon for this window. Even though the window
-        // may be showing now, it might be minimized later on.
         this.icon = null;
         let app = this.metaWindow._expoApp; // will be non-null if the window comes from another ws
         if (!app) {
@@ -711,13 +709,13 @@ ExpoWorkspaceThumbnail.prototype = {
         if (this.state > ThumbnailState.NORMAL)
             return;
 
-            if (clone && clone.metaWindow != null){
-                Main.activateWindow(clone.metaWindow, time, this.metaWorkspace.index());
-            }
-            if (this.metaWorkspace != global.screen.get_active_workspace())
-                this.metaWorkspace.activate(time);
-            this._overviewModeOff();
-            Main.expo.hide();
+        if (clone && clone.metaWindow != null){
+            Main.activateWindow(clone.metaWindow, time, this.metaWorkspace.index());
+        }
+        if (this.metaWorkspace != global.screen.get_active_workspace())
+            this.metaWorkspace.activate(time);
+        this._overviewModeOff();
+        Main.expo.hide();
         
         this._highlight();
     },
