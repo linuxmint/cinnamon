@@ -1494,7 +1494,7 @@ ExpoThumbnailsBox.prototype = {
             thumbnail.actor.allocate(childBox, flags);  
 
             let framethemeNode = thumbnail.frame.get_theme_node();
-            let borderWidth = Math.max(1, framethemeNode.get_border_width(St.Side.BOTTOM));
+            let borderWidth = framethemeNode.get_border_width(St.Side.BOTTOM);
             childBox.x1 = x1 - borderWidth;
             childBox.x2 = x2 + borderWidth;
             childBox.y1 = y1 - borderWidth;
