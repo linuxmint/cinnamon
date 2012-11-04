@@ -417,10 +417,12 @@ StScrollBar StButton#vhandle:hover {
 
 .expo-workspace-thumbnail-frame {
 	border: 1px, rgba(64,64,64,0.9);
+	background-color: rgba(64,64,64,0.9);
 }
 
 .expo-workspace-thumbnail-frame#active {
 	border: 2px, rgba(32,32,32,0.9);
+	background-color: rgba(32,32,32,0.9);
 }
 
 /* ===================================================================
