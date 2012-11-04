@@ -25,7 +25,7 @@ const THUMBNAIL_INITIAL_POPUP_TIME = 500; // milliseconds
 const THUMBNAIL_POPUP_TIME = 125; // milliseconds
 const THUMBNAIL_FADE_TIME = 0.1; // seconds
 
-const PREVIEW_DELAY_TIMEOUT = 150; // milliseconds
+const PREVIEW_DELAY_TIMEOUT = 175; // milliseconds
 var PREVIEW_SWITCHER_FADEOUT_TIME = 0.5; // seconds
 
 const iconSizes = [96, 64, 48, 32, 22];
@@ -518,15 +518,11 @@ AltTabPopup.prototype = {
     
     _clearPreview: function() {
         if (this._previewClones) {
-            if (this._displayPreviewTimeoutId) {
-                Mainloop.source_remove(this._displayPreviewTimeoutId);
-                this._displayPreviewTimeoutId = 0;
-            }
             for (let i = 0; i < this._previewClones.length; ++i) {
                 let clone = this._previewClones[i];
                 Tweener.addTween(clone, {
                     opacity: 0,
-                    time: PREVIEW_SWITCHER_FADEOUT_TIME * 2, // slow
+                    time: PREVIEW_SWITCHER_FADEOUT_TIME / 4,
                     transition: 'linear',
                     onCompleteScope: this,
                     onComplete: function() {
@@ -605,7 +601,10 @@ AltTabPopup.prototype = {
             }
         }; // showPreview
 
-        // Use a cancellable timeout to avoid flicker effect when tabbing rapidly through the set.
+        // Use a cancellable timeout to avoid flickering effect when tabbing rapidly through the set.
+        if (this._displayPreviewTimeoutId) {
+            Mainloop.source_remove(this._displayPreviewTimeoutId);
+        }
         let delay = PREVIEW_DELAY_TIMEOUT;
         this._displayPreviewTimeoutId = Mainloop.timeout_add(delay, Lang.bind(this, showPreview));
     },
