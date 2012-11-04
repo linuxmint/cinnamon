@@ -266,6 +266,7 @@ ExpoWorkspaceThumbnail.prototype = {
         this.titleText.connect('key-focus-out', Lang.bind(this, function() {
             if (this._doomed) {
                 // user probably deleted workspace while editing
+                global.stage.set_key_focus(this.box.actor);
                 return;
             }
             if (!this._undoTitleEdit) {
