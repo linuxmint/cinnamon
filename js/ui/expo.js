@@ -13,7 +13,7 @@ const Main = imports.ui.main;
 const MessageTray = imports.ui.messageTray;
 const Params = imports.misc.params;
 const Tweener = imports.ui.tweener;
-const ExpoView = imports.ui.expoView;
+const ExpoThumbnail = imports.ui.expoThumbnail;
 
 // Time for initial animation going into Overview mode
 const ANIMATION_TIME = 0.3;
@@ -171,7 +171,7 @@ Expo.prototype = {
                 }
                 return false;
             }));
-        this._expo = new ExpoView.ExpoView();
+        this._expo = new ExpoThumbnail.ExpoView();
         this._group.add_actor(this._expo.actor);
         this._relayout();
     },
