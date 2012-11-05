@@ -102,12 +102,13 @@ function closeContextMenu(requestor) {
     return requestorShowingMenu;
 }
 
-function WindowClone(realWindow) {
-    this._init(realWindow);
+function WindowClone() {
+    this._init.apply(this, arguments);
 }
 
 WindowClone.prototype = {
-    _init : function(realWindow) {
+    _init : function(realWindow, myContainer) {
+        this.myContainer = myContainer;
         this.realWindow = realWindow;
         this.metaWindow = realWindow.meta_window;
         this.metaWindow._delegate = this;
@@ -150,7 +151,8 @@ WindowClone.prototype = {
         this._realWindowDestroyId = this.realWindow.connect('destroy',
             Lang.bind(this, this._disconnectRealWindowSignals));
 
-        //let clickAction = new Clutter.ClickAction();
+        this.myContainer.connect('selection-changed', Lang.bind(this, this._zoomEnd));
+
         this.actor.connect('button-release-event', Lang.bind(this, this._onButtonRelease));
         this.actor.connect('button-press-event', Lang.bind(this, this._onButtonPress));
         //clickAction.connect('long-press', Lang.bind(this, this._onLongPress));
@@ -265,25 +267,31 @@ WindowClone.prototype = {
             this._zoomEnd();
     },
 
-    _onScroll : function (actor, event) {
-        let direction = event.get_scroll_direction();
-        if (direction == Clutter.ScrollDirection.UP) {
+    scrollZoom: function (direction) {
+        if (direction === Clutter.ScrollDirection.UP) {
             if (this._zoomStep == undefined)
                 this._zoomStart();
             if (this._zoomStep < 100) {
                 this._zoomStep += SCROLL_SCALE_AMOUNT;
                 this._zoomUpdate();
             }
-        } else if (direction == Clutter.ScrollDirection.DOWN) {
+        } else if (direction === Clutter.ScrollDirection.DOWN) {
             if (this._zoomStep > 0) {
                 this._zoomStep -= SCROLL_SCALE_AMOUNT;
                 this._zoomStep = Math.max(0, this._zoomStep);
                 this._zoomUpdate();
             }
-            if (this._zoomStep <= 0.0)
+            if (this._zoomStep <= 0.0) {
                 this._zoomEnd();
+            }
+        } else if (direction < 0) {
+            this._zoomEnd();
         }
+    },
 
+    _onScroll : function (actor, event) {
+        let direction = event.get_scroll_direction();
+        this.scrollZoom(direction);
     },
 
     _zoomUpdate : function () {
@@ -335,6 +343,7 @@ WindowClone.prototype = {
     },
 
     _zoomEnd : function () {
+        if (!this._zooming) {return;}
         this._zooming = false;
         this.emit('zoom-end');
 
@@ -937,6 +946,7 @@ WorkspaceMonitor.prototype = {
         if (this._kbWindowIndex > -1 && this._kbWindowIndex < this._windows.length) {
             this._windows[this._kbWindowIndex].overlay.setSelected(show);
         }
+        this.emit('selection-changed');
     },
 
     _onCloneContextMenuRequested: function(clone) {
@@ -962,6 +972,12 @@ WorkspaceMonitor.prototype = {
             return true;
         }
         return false;
+    },
+
+    zoomSelectedWindow: function(direction) {
+        if (this._kbWindowIndex > -1 && this._kbWindowIndex < this._windows.length) {
+            this._windows[this._kbWindowIndex].scrollZoom(direction);
+        }
     },
 
     closeSelectedWindow: function() {
@@ -1503,7 +1519,7 @@ WorkspaceMonitor.prototype = {
 
     // Create a clone of a (non-desktop) window and add it to the window list
     _addWindowClone : function(win) {
-        let clone = new WindowClone(win);
+        let clone = new WindowClone(win, this);
         let overlay = new WindowOverlay(clone, this._windowOverlaysGroup);
 
         clone.connect('selected',
@@ -1876,6 +1892,18 @@ Workspace.prototype = {
                 return true;
             }
             Main.overview.hide();
+            return true;
+        }
+        if (symbol === Clutter.plus && modifiers & Clutter.ModifierType.CONTROL_MASK) {
+            activeMonitor.zoomSelectedWindow(Clutter.ScrollDirection.UP);
+            return true;
+        }
+        if (symbol === Clutter.minus && modifiers & Clutter.ModifierType.CONTROL_MASK) {
+            activeMonitor.zoomSelectedWindow(Clutter.ScrollDirection.DOWN);
+            return true;
+        }
+        if (symbol - '48' === 0 && modifiers & Clutter.ModifierType.CONTROL_MASK) {
+            activeMonitor.zoomSelectedWindow(-1); // end zoom
             return true;
         }
         if (modifiers & ctrlAltMask) {
