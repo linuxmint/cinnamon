@@ -863,6 +863,8 @@ ExpoThumbnailsBox.prototype = {
         this.button.connect('clicked', Lang.bind(this, function () { this.lastHovered._remove(); this.button.hide();}));
         this.button.hide();
                 
+        this.actor.connect('scroll-event', this._onScrollEvent);
+
         this._targetScale = 0;
         this._scale = 0;
         this._pendingScaleUpdate = false;
@@ -1581,90 +1583,6 @@ ExpoThumbnailsBox.prototype = {
         }
         thumbnail._setActive(true);
         this._lastActiveWorkspace = thumbnail;
-    }
-};
-Signals.addSignalMethods(ExpoThumbnailsBox.prototype);
-
-
-// --------------------------------------------------------------------
-function ExpoView() {
-    this._init();
-}
-
-ExpoView.prototype = {
-        _init: function() {
-        this.actor = new Cinnamon.GenericContainer();
-
-        this.actor.connect('get-preferred-width', Lang.bind(this, this._getPreferredWidth));
-        this.actor.connect('get-preferred-height', Lang.bind(this, this._getPreferredHeight));
-        this.actor.connect('allocate', Lang.bind(this, this._allocate));
-        let controls = new St.Bin({ style_class: 'workspace-controls',
-                                    request_mode: Clutter.RequestMode.WIDTH_FOR_HEIGHT,
-                                    y_align: St.Align.START});
-        this._controls = controls;
-        this.actor.add_actor(controls);
-
-        controls.reactive = true;
-        controls.connect('scroll-event',
-                         Lang.bind(this, this._onScrollEvent));
-
-        this._thumbnailsBox = new ExpoThumbnailsBox();
-        controls.add_actor(this._thumbnailsBox.actor);
-        this._thumbnailsBox.connect('drag-begin', Lang.bind(this, this._dragBegin));
-        this._thumbnailsBox.connect('drag-end', Lang.bind(this, this._dragEnd));
-
-        this._inDrag = false;
-        this._cancelledDrag = false;
-    },
-
-    handleKeyPressEvent: function(actor, event) {
-        return this._thumbnailsBox.handleKeyPressEvent(actor, event);
-    },
-
-    show: function() {
-        this._controls.show();
-        this._thumbnailsBox.show();
-    },
-
-    hide: function() {
-        this._controls.hide();
-        this._thumbnailsBox.hide();
-    },
-
-    _getPreferredWidth: function (actor, forHeight, alloc) {
-        // pass through the call in case the child needs it, but report 0x0
-        this._controls.get_preferred_width(forHeight);
-    },
-
-    _getPreferredHeight: function (actor, forWidth, alloc) {
-        // pass through the call in case the child needs it, but report 0x0
-        this._controls.get_preferred_height(forWidth);
-    },
-
-    _allocate: function (actor, box, flags) {
-        this._controls.allocate(box, flags);
-    },
-
-    _dragBegin: function() {
-        this._inDrag = true;
-        this._cancelledDrag = false;
-        this._firstDragMotion = true;
-        this._dragMonitor = {
-            dragMotion: Lang.bind(this, this._onDragMotion)
-        };
-        DND.addDragMonitor(this._dragMonitor);
-    },
-
-    _onDragMotion: function(dragEvent) {
-        let controlsHovered = this._controls.contains(dragEvent.targetActor);
-        this._controls.set_hover(controlsHovered);
-
-        return DND.DragMotionResult.CONTINUE;
-    },
-
-    _dragEnd: function() {
-        this._inDrag = false;
-        DND.removeDragMonitor(this._dragMonitor);
     },
 
     _onScrollEvent: function (actor, event) {
@@ -1678,4 +1596,4 @@ ExpoView.prototype = {
         }
     }
 };
-Signals.addSignalMethods(ExpoView.prototype);
+Signals.addSignalMethods(ExpoThumbnailsBox.prototype);
