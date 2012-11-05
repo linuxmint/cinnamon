@@ -235,7 +235,7 @@ Expo.prototype = {
         this._windowCloseArea.raise_top();
     },
 
-    showCloseArea : function() {
+    _showCloseArea : function() {
         let primary = Main.layoutManager.primaryMonitor;
         this._windowCloseArea.show();
         Tweener.addTween(this._windowCloseArea, {   y: primary.height - this._windowCloseArea.height,
@@ -243,7 +243,7 @@ Expo.prototype = {
                                                     transition: 'easeOutQuad'});
     },
 
-    hideCloseArea : function() {
+    _hideCloseArea : function() {
         let primary = Main.layoutManager.primaryMonitor;
         Tweener.addTween(this._windowCloseArea, {   y: primary.height,
                                                     time: ANIMATION_TIME,
@@ -252,18 +252,6 @@ Expo.prototype = {
     },
 
     //// Public methods ////
-
-    beginWindowDrag: function(source) {
-        this.emit('window-drag-begin');
-    },
-
-    cancelledWindowDrag: function(source) {
-        this.emit('window-drag-cancelled');
-    },
-
-    endWindowDrag: function(source) {
-        this.emit('window-drag-end');
-    },
 
     // show:
     //
@@ -306,7 +294,11 @@ Expo.prototype = {
         this._addWorkspaceButton.show();
         this._expo.show();
 
-        let activeWorkspace = this._expo._thumbnailsBox._lastActiveWorkspace;
+        let box = this._expo._thumbnailsBox;
+        box.connect('drag-begin', Lang.bind(this, this._showCloseArea));
+        box.connect('drag-end', Lang.bind(this, this._hideCloseArea));
+        
+        let activeWorkspace = box._lastActiveWorkspace;
         let activeWorkspaceActor = activeWorkspace.actor;
 
         // should not create new actors and work with them within an allocation cycle
@@ -318,8 +310,8 @@ Expo.prototype = {
             clones.push(clone);
         }, this);
         //We need to allocate activeWorkspace before we begin its clone animation
-        let allocateID = this._expo._thumbnailsBox.connect('allocated', Lang.bind(this, function() {
-            this._expo._thumbnailsBox.disconnect(allocateID);
+        let allocateID = box.connect('allocated', Lang.bind(this, function() {
+            box.disconnect(allocateID);
             Main.layoutManager.monitors.forEach(function(monitor,index) {
                 let clone = clones[index];
                 Tweener.addTween(clone, {
