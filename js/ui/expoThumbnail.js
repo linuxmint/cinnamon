@@ -151,7 +151,6 @@ ExpoWindowClone.prototype = {
 
     _onDragBegin : function (draggable, time) {
         this.tooltip.hide();
-        Main.expo.showCloseArea();
         this.inDrag = true;
         this.dragCancelled = false;
         this.emit('drag-begin');
@@ -163,7 +162,6 @@ ExpoWindowClone.prototype = {
     },
 
     _onDragEnd : function (draggable, time, snapback) {
-        Main.expo.hideCloseArea();
         this.inDrag = false;
         this.emit('drag-end');
     }
@@ -548,10 +546,10 @@ ExpoWorkspaceThumbnail.prototype = {
                       Lang.bind(this, this._remove));
         clone.connect('drag-begin',
                       Lang.bind(this, function(clone) {
-                          Main.expo.beginWindowDrag();
+                          this.box.emit('drag-begin');
                       }));
         clone.connect('drag-end', Lang.bind(this, function(clone) {
-            Main.expo.endWindowDrag();
+            this.box.emit('drag-end');
             // normal hovering monitoring was turned off during drag
             this.hovering = false;
             if (!clone.dragCancelled) {

@@ -25,17 +25,6 @@ ExpoView.prototype = {
         _init: function() {
         this.actor = new Cinnamon.GenericContainer();
 
-        let windowDragBeginId = Main.expo.connect('window-drag-begin',
-                                                        Lang.bind(this, this._dragBegin));
-        let windowDragCancelledId = Main.expo.connect('window-drag-cancelled',
-                                                        Lang.bind(this, this._dragCancelled));
-        let windowDragEndId = Main.expo.connect('window-drag-end',
-                                                          Lang.bind(this, this._dragEnd));
-        this.actor.connect('destroy', Lang.bind(this, function() {
-                Main.expo.disconnect(windowDragBeginId);
-                Main.expo.disconnect(windowDragCancelledId);
-                Main.expo.disconnect(windowDragEndId);
-        }));
         this.actor.connect('get-preferred-width', Lang.bind(this, this._getPreferredWidth));
         this.actor.connect('get-preferred-height', Lang.bind(this, this._getPreferredHeight));
         this.actor.connect('allocate', Lang.bind(this, this._allocate));
@@ -51,13 +40,11 @@ ExpoView.prototype = {
         
         this._thumbnailsBox = new ExpoThumbnail.ExpoThumbnailsBox();
         controls.add_actor(this._thumbnailsBox.actor);
+        this._thumbnailsBox.connect('drag-begin', Lang.bind(this, this._dragBegin));
+        this._thumbnailsBox.connect('drag-end', Lang.bind(this, this._dragEnd));
 
         this._inDrag = false;
         this._cancelledDrag = false;
-
-        this._windowDragBeginId = 0;
-        this._windowDragCancelledId = 0;
-        this._windowDragEndId = 0;
     },
     
     handleKeyPressEvent: function(actor, event) {
@@ -96,11 +83,6 @@ ExpoView.prototype = {
             dragMotion: Lang.bind(this, this._onDragMotion)
         };
         DND.addDragMonitor(this._dragMonitor);
-    },
-
-    _dragCancelled: function() {
-        this._cancelledDrag = true;
-        DND.removeDragMonitor(this._dragMonitor);
     },
 
     _onDragMotion: function(dragEvent) {
