@@ -164,14 +164,14 @@ Expo.prototype = {
                     {
                         if (this._workspaceOperationPending) {
                             this._workspaceOperationPending = false;
-                            this._expo._thumbnailsBox.removeSelectedWorkspace();
+                            this._expo.removeSelectedWorkspace();
                         }
                         return true;
                     }
                 }
                 return false;
             }));
-        this._expo = new ExpoThumbnail.ExpoView();
+        this._expo = new ExpoThumbnail.ExpoThumbnailsBox();
         this._group.add_actor(this._expo.actor);
         this._relayout();
     },
@@ -291,11 +291,10 @@ Expo.prototype = {
         this._addWorkspaceButton.show();
         this._expo.show();
 
-        let box = this._expo._thumbnailsBox;
-        box.connect('drag-begin', Lang.bind(this, this._showCloseArea));
-        box.connect('drag-end', Lang.bind(this, this._hideCloseArea));
+        this._expo.connect('drag-begin', Lang.bind(this, this._showCloseArea));
+        this._expo.connect('drag-end', Lang.bind(this, this._hideCloseArea));
         
-        let activeWorkspace = box._lastActiveWorkspace;
+        let activeWorkspace = this._expo._lastActiveWorkspace;
         let activeWorkspaceActor = activeWorkspace.actor;
 
         // should not create new actors and work with them within an allocation cycle
@@ -307,8 +306,8 @@ Expo.prototype = {
             clones.push(clone);
         }, this);
         //We need to allocate activeWorkspace before we begin its clone animation
-        let allocateID = box.connect('allocated', Lang.bind(this, function() {
-            box.disconnect(allocateID);
+        let allocateID = this._expo.connect('allocated', Lang.bind(this, function() {
+            this._expo.disconnect(allocateID);
             Main.layoutManager.monitors.forEach(function(monitor,index) {
                 let clone = clones[index];
                 Tweener.addTween(clone, {
@@ -446,7 +445,7 @@ Expo.prototype = {
         this.animationInProgress = true;
         this._hideInProgress = true;
 
-        let activeWorkspace = this._expo._thumbnailsBox._lastActiveWorkspace;
+        let activeWorkspace = this._expo._lastActiveWorkspace;
         if (!options || !options.toScale ) {
             activeWorkspace._overviewModeOff(true);
             Main.enablePanels();
