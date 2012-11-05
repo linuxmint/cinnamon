@@ -26,8 +26,6 @@ const SCROLL_SCALE_AMOUNT = 100 / 5;
 const LIGHTBOX_FADE_TIME = 0.1;
 const CLOSE_BUTTON_FADE_TIME = 0.1;
 
-const DRAGGING_WINDOW_OPACITY = 100;
-
 const BUTTON_LAYOUT_SCHEMA = 'org.cinnamon.overrides';
 const BUTTON_LAYOUT_KEY = 'button-layout';
 
@@ -155,9 +153,6 @@ WindowClone.prototype = {
 
         this.actor.connect('button-release-event', Lang.bind(this, this._onButtonRelease));
         this.actor.connect('button-press-event', Lang.bind(this, this._onButtonPress));
-        //clickAction.connect('long-press', Lang.bind(this, this._onLongPress));
-
-        //this.actor.add_action(clickAction);
 
         this.actor.connect('scroll-event',
                            Lang.bind(this, this._onScroll));
@@ -166,16 +161,6 @@ WindowClone.prototype = {
         this.actor.connect('leave-event',
                            Lang.bind(this, this._onPointerLeave));
 
-        this._draggable = DND.makeDraggable(this.actor,
-                                            { restoreOnSuccess: true,
-                                              manualMode: true,
-                                              dragActorMaxSize: WINDOW_DND_SIZE,
-                                              dragActorOpacity: DRAGGING_WINDOW_OPACITY });
-        this._draggable.connect('drag-begin', Lang.bind(this, this._onDragBegin));
-        this._draggable.connect('drag-cancelled', Lang.bind(this, this._onDragCancelled));
-        this._draggable.connect('drag-end', Lang.bind(this, this._onDragEnd));
-        this.inDrag = false;
-
         this._windowIsZooming = false;
         this._zooming = false;
         this._selected = false;
@@ -183,8 +168,8 @@ WindowClone.prototype = {
 
     setStackAbove: function (actor) {
         this._stackAbove = actor;
-        if (this.inDrag || this._zooming)
-            // We'll fix up the stack after the drag/zooming
+        if (this._zooming)
+            // We'll fix up the stack after the zooming
             return;
         if (this._stackAbove == null)
             this.actor.lower_bottom();
@@ -253,11 +238,6 @@ WindowClone.prototype = {
         this.actor._delegate = null;
         if (this._zoomLightbox)
             this._zoomLightbox.destroy();
-
-        if (this.inDrag) {
-            this.emit('drag-end');
-            this.inDrag = false;
-        }
 
         this.disconnectAll();
     },
@@ -394,70 +374,6 @@ WindowClone.prototype = {
             return true;
         }
         return false;
-    },
-
-    _onLongPress: function(action, actor, state) {
-        // Take advantage of the Clutter policy to consider
-        // a long-press canceled when the pointer movement
-        // exceeds dnd-drag-threshold to manually start the drag
-        if (state == Clutter.LongPressState.CANCEL) {
-            // A click cancels a long-press before any click handler is
-            // run - make sure to not start a drag in that case
-            Meta.later_add(Meta.LaterType.BEFORE_REDRAW, Lang.bind(this,
-                function() {
-                    if (this._selected)
-                        return;
-                    let [x, y] = action.get_coords();
-                    this._draggable.startDrag(x, y, global.get_current_time());
-                }));
-        }
-        return true;
-    },
-
-    _onDragBegin : function (draggable, time) {
-        if (this._zooming)
-            this._zoomEnd();
-
-        [this.dragOrigX, this.dragOrigY] = this.actor.get_position();
-        this.dragOrigScale = this.actor.scale_x;
-        this.inDrag = true;
-        this.emit('drag-begin');
-    },
-
-    _getWorkspaceActor : function() {
-        let index = this.metaWindow.get_workspace().index();
-        return Main.overview.workspaces.getWorkspaceByIndex(index);
-    },
-
-    handleDragOver : function(source, actor, x, y, time) {
-        let workspace = this._getWorkspaceActor();
-        return workspace.handleDragOver(source, actor, x, y, time);
-    },
-
-    acceptDrop : function(source, actor, x, y, time) {
-        let workspace = this._getWorkspaceActor();
-        workspace.acceptDrop(source, actor, x, y, time);
-    },
-
-    _onDragCancelled : function (draggable, time) {
-        this.emit('drag-cancelled');
-    },
-
-    _onDragEnd : function (draggable, time, snapback) {
-        this.inDrag = false;
-
-        // We may not have a parent if DnD completed successfully, in
-        // which case our clone will shortly be destroyed and replaced
-        // with a new one on the target workspace.
-        if (this.actor.get_parent() != null) {
-            if (this._stackAbove == null)
-                this.actor.lower_bottom();
-            else
-                this.actor.raise(this._stackAbove);
-        }
-
-
-        this.emit('drag-end');
     }
 };
 Signals.addSignalMethods(WindowClone.prototype);
@@ -792,8 +708,7 @@ function WorkspaceMonitor() {
 WorkspaceMonitor.prototype = {
     _init : function(metaWorkspace, monitorIndex, workspace, hasFocus) {
         this._myWorkspace = workspace;
-        // When dragging a window, we use this slot for reserve space.
-        this._reservedSlot = null;
+
         this.metaWorkspace = metaWorkspace;
         this._x = 0;
         this._y = 0;
@@ -1124,11 +1039,6 @@ WorkspaceMonitor.prototype = {
             let mainIndex = this._lookupIndex(metaWindow);
             let overlay = clone.overlay;
 
-            // Positioning a window currently being dragged must be avoided;
-            // we'll just leave a blank spot in the layout for it.
-            if (clone.inDrag)
-                continue;
-
             let [x, y, scale] = this._computeWindowLayout(metaWindow, slot);
 
             if (overlay)
@@ -1201,9 +1111,6 @@ WorkspaceMonitor.prototype = {
     },
 
     _showWindowOverlay: function(clone, fade) {
-        if (clone.inDrag)
-            return;
-
         if (this._slotWidth) {
             // This is a little messy and complicated because when we
             // start the fade-in we may not have done the final positioning
@@ -1528,20 +1435,6 @@ WorkspaceMonitor.prototype = {
                       Lang.bind(this, this._onCloneClosed));
         clone.connect('context-menu-requested',
                       Lang.bind(this, this._onCloneContextMenuRequested));
-        clone.connect('drag-begin',
-                      Lang.bind(this, function(clone) {
-                          Main.overview.beginWindowDrag();
-                          overlay.hide();
-                      }));
-        clone.connect('drag-cancelled',
-                      Lang.bind(this, function(clone) {
-                          Main.overview.cancelledWindowDrag();
-                      }));
-        clone.connect('drag-end',
-                      Lang.bind(this, function(clone) {
-                          Main.overview.endWindowDrag();
-                          overlay.show();
-                      }));
         clone.connect('zoom-start',
                       Lang.bind(this, function() {
                           this._windowIsZooming = true;
@@ -1609,46 +1502,6 @@ WorkspaceMonitor.prototype = {
     
     _onCloneClosed : function (clone, time) {        
         clone.metaWindow.delete(global.get_current_time());        
-    },
-
-    // Draggable target interface
-    handleDragOver : function(source, actor, x, y, time) {
-        if (source.realWindow && !this._isMyWindow(source.realWindow))
-            return DND.DragMotionResult.MOVE_DROP;
-        if (source.cinnamonWorkspaceLaunch)
-            return DND.DragMotionResult.COPY_DROP;
-
-        return DND.DragMotionResult.CONTINUE;
-    },
-
-    acceptDrop : function(source, actor, x, y, time) {
-        if (source.realWindow) {
-            let win = source.realWindow;
-            if (this._isMyWindow(win))
-                return false;
-
-            // Set a hint on the Muffin.Window so its initial position
-            // in the new workspace will be correct
-            win._overviewHint = {
-                x: actor.x,
-                y: actor.y,
-                scale: actor.scale_x
-            };
-
-            let metaWindow = win.get_meta_window();
-
-            let index = this.metaWorkspace ? this.metaWorkspace.index() : global.screen.get_active_workspace_index();
-            metaWindow.change_workspace_by_index(index,
-                                                 false, // don't create workspace
-                                                 time);
-            return true;
-        } else if (source.cinnamonWorkspaceLaunch) {
-            source.cinnamonWorkspaceLaunch({ workspace: this.metaWorkspace ? this.metaWorkspace.index() : -1,
-                                          timestamp: time });
-            return true;
-        }
-
-        return false;
     }
 };
 
