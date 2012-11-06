@@ -451,16 +451,7 @@ Expo.prototype = {
         let activeWorkspace = this._expo._lastActiveWorkspace;
         if (!options || !options.toScale ) {
             activeWorkspace._overviewModeOff(true);
-            Main.enablePanels();
-            Tweener.addTween(this._background,
-                            { dim_factor: 1,
-                            time: animationTime,
-                            transition: 'linear'
-                            });
         }
-
-
-        this._group.hide();
 
         let activeWorkspaceActor = activeWorkspace.actor;
         Main.layoutManager.monitors.forEach(function(monitor,index) {
@@ -484,12 +475,13 @@ Expo.prototype = {
                 transition: 'easeOutQuad',
                 onCompleteScope: this,
                 onComplete: function() {
-                    this.hide();
                     global.overlay_group.remove_actor(cover);
                     cover.destroy();
                     if (index == Main.layoutManager.monitors.length < 1) {
-                        this._coverPane.raise_top();
-                        this._coverPane.show();
+                        this._group.hide();
+                        if (!options || !options.toScale ) {
+                            Main.enablePanels();
+                        }
                         this._hideDone();
                     }
                 }
