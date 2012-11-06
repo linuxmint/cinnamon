@@ -30,7 +30,7 @@ except Exception, detail:
 
 
 # i18n
-gettext.install("cinnamon", "/usr/share/cinnamon/locale")
+gettext.install("cinnamon", "/usr/share/locale")
 
 # i18n for menu item
 menuName = _("Desktop Settings")
