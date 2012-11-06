@@ -741,7 +741,7 @@ ExpoWorkspaceThumbnail.prototype = {
             Main._removeWorkspace(this.metaWorkspace);
         });
         if (!Main.hasDefaultWorkspaceName(this.metaWorkspace.index())) {
-            let prompt = "Are you sure you want to remove workspace \"%s\"?\n\n".format(
+            let prompt = _("Are you sure you want to remove workspace \"%s\"?\n\n").format(
                 Main.getWorkspaceName(this.metaWorkspace.index()));
             let confirm = new ConfirmationDialog(prompt, removeAction, true);
             confirm.open();
