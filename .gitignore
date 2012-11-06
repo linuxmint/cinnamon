@@ -1,5 +1,6 @@
 ABOUT-NLS
 Makefile.in
+!files/Makefile.in
 aclocal.m4
 browser-plugin/Makefile.in
 config.h.in
