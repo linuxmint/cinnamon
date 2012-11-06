@@ -66,8 +66,6 @@ Expo.prototype = {
                 }
             }));
 
-        this._expo = null;
-
         this.visible = false;           // animating to overview, in overview, animating out
         this._shown = false;            // show() and not hide()
         this._shownTemporarily = false; // showTemporarily() and not hideTemporarily()
@@ -184,6 +182,11 @@ Expo.prototype = {
     },
 
     _relayout: function () {
+        if (!this._expo) {
+            // This function can be called as a response to the monitors-changed event,
+            // when we're not showing.
+            return;
+        }
         // To avoid updating the position and size of the workspaces
         // we just hide the overview. The positions will be updated
         // when it is next shown.
@@ -516,6 +519,7 @@ Expo.prototype = {
         global.window_group.show();
 
         this._expo.hide();
+        this._expo = null;
         this._addWorkspaceButton.hide();
         this._windowCloseArea.hide();
 
