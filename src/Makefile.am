@@ -80,7 +80,7 @@ cinnamon_cflags =				\
 	$(CINNAMON_CFLAGS)			\
 	-I$(srcdir)/tray			\
 	-DVERSION=\"$(VERSION)\"		\
-	-DLOCALEDIR=\"$(datadir)/locale\" 	\
+	-DLOCALEDIR=\"$(datadir)/cinnamon/locale\" 	\
 	-DDATADIR=\"$(datadir)\"		\
 	-DCINNAMON_LIBEXECDIR=\"$(libexecdir)\"	\
 	-DCINNAMON_DATADIR=\"$(pkgdatadir)\"	\
