@@ -204,83 +204,90 @@ function MyApplet(orientation, panel_height) {
 MyApplet.prototype = {
     __proto__: Applet.TextIconApplet.prototype,
 
-    _init: function(orientation, panel_height) {
+    _init: function(orientation, panel_height) {        
         Applet.TextIconApplet.prototype._init.call(this, orientation, panel_height);
+        
+        try {                                
+            this.menuManager = new PopupMenu.PopupMenuManager(this);
+            this.menu = new Applet.AppletPopupMenu(this, orientation);
+            this.menuManager.addMenu(this.menu);            
+            
+            this.set_applet_icon_symbolic_name('bluetooth-disabled');
+            this.set_applet_tooltip(_("Bluetooth"));
+                        
+            GLib.spawn_command_line_sync ('pkill -f "^bluetooth-applet$"');
+            this._applet = new Bluetooth.Applet();
 
-        this.menuManager = new PopupMenu.PopupMenuManager(this);
-        this.menu = new Applet.AppletPopupMenu(this, orientation);
-        this.menuManager.addMenu(this.menu);
+            this._killswitch = new PopupMenu.PopupSwitchMenuItem(_("Bluetooth"), false);
+            this._applet.connect('notify::killswitch-state', Lang.bind(this, this._updateKillswitch));
+            this._killswitch.connect('toggled', Lang.bind(this, function() {
+                let current_state = this._applet.killswitch_state;
+                if (current_state != Bluetooth.KillswitchState.HARD_BLOCKED &&
+                    current_state != Bluetooth.KillswitchState.NO_ADAPTER) {
+                    this._applet.killswitch_state = this._killswitch.state ?
+                        Bluetooth.KillswitchState.UNBLOCKED:
+                        Bluetooth.KillswitchState.SOFT_BLOCKED;
+                } else
+                    this._killswitch.setToggleState(false);
+            }));
 
-        this.set_applet_icon_symbolic_name('bluetooth-disabled');
-        this.set_applet_tooltip(_("Bluetooth"));
+            this._discoverable = new PopupMenu.PopupSwitchMenuItem(_("Visibility"), this._applet.discoverable);
+            this._applet.connect('notify::discoverable', Lang.bind(this, function() {
+                this._discoverable.setToggleState(this._applet.discoverable);
+            }));
+            this._discoverable.connect('toggled', Lang.bind(this, function() {
+                this._applet.discoverable = this._discoverable.state;
+            }));
 
-        GLib.spawn_command_line_sync ('pkill -f "^bluetooth-applet$"');
-        this._applet = new Bluetooth.Applet();
+            this._updateKillswitch();
+            this.menu.addMenuItem(this._killswitch);
+            this.menu.addMenuItem(this._discoverable);
+            this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
-        this._killswitch = new PopupMenu.PopupSwitchMenuItem(_("Bluetooth"), false);
-        this._applet.connect('notify::killswitch-state', Lang.bind(this, this._updateKillswitch));
-        this._killswitch.connect('toggled', Lang.bind(this, function() {
-            let current_state = this._applet.killswitch_state;
-            if (current_state != Bluetooth.KillswitchState.HARD_BLOCKED &&
-                current_state != Bluetooth.KillswitchState.NO_ADAPTER) {
-                this._applet.killswitch_state = this._killswitch.state ?
-                    Bluetooth.KillswitchState.UNBLOCKED:
-                    Bluetooth.KillswitchState.SOFT_BLOCKED;
-            } else
-                this._killswitch.setToggleState(false);
-        }));
+            this._fullMenuItems = [new PopupMenu.PopupSeparatorMenuItem(),
+                                   new PopupMenu.PopupMenuItem(_("Send Files to Device...")),
+                                   new PopupMenu.PopupMenuItem(_("Set up a New Device...")),
+                                   new PopupMenu.PopupSeparatorMenuItem()];
+            this._hasDevices = false;
 
-        this._discoverable = new PopupMenu.PopupSwitchMenuItem(_("Visibility"), this._applet.discoverable);
-        this._applet.connect('notify::discoverable', Lang.bind(this, function() {
-                                                                   this._discoverable.setToggleState(this._applet.discoverable);
-                                                               }));
-        this._discoverable.connect('toggled', Lang.bind(this, function() {
-                                                            this._applet.discoverable = this._discoverable.state;
-                                                        }));
+            this._fullMenuItems[1].connect('activate', function() {
+                GLib.spawn_command_line_async('bluetooth-sendto');
+            });
+            this._fullMenuItems[2].connect('activate', function() {
+                GLib.spawn_command_line_async('bluetooth-wizard');
+            });
 
-        this._updateKillswitch();
-        this.menu.addMenuItem(this._killswitch);
-        this.menu.addMenuItem(this._discoverable);
-        this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+            for (let i = 0; i < this._fullMenuItems.length; i++) {
+                let item = this._fullMenuItems[i];
+                this.menu.addMenuItem(item);
+            }
 
-        this._fullMenuItems = [new PopupMenu.PopupSeparatorMenuItem(),
-                               new PopupMenu.PopupMenuItem(_("Send Files to Device...")),
-                               new PopupMenu.PopupMenuItem(_("Set up a New Device...")),
-                               new PopupMenu.PopupSeparatorMenuItem()];
-        this._hasDevices = false;
+            this._deviceItemPosition = 3;
+            this._deviceItems = [];
+            this._applet.connect('devices-changed', Lang.bind(this, this._updateDevices));
+            this._updateDevices();
 
-        this._fullMenuItems[1].connect('activate', function() {
-                                           GLib.spawn_command_line_async('bluetooth-sendto');
-                                       });
-        this._fullMenuItems[2].connect('activate', function() {
-                                           GLib.spawn_command_line_async('bluetooth-wizard');
-                                       });
+            this._applet.connect('notify::show-full-menu', Lang.bind(this, this._updateFullMenu));
+            this._updateFullMenu();
 
-        for (let i = 0; i < this._fullMenuItems.length; i++) {
-            let item = this._fullMenuItems[i];
-            this.menu.addMenuItem(item);
+            this.menu.addSettingsAction(_("Bluetooth Settings"), 'bluetooth-properties.desktop');
+
+            this._applet.connect('pincode-request', Lang.bind(this, this._pinRequest));
+            this._applet.connect('confirm-request', Lang.bind(this, this._confirmRequest));
+            this._applet.connect('auth-request', Lang.bind(this, this._authRequest));
+            this._applet.connect('cancel-request', Lang.bind(this, this._cancelRequest));     
+                      
         }
-
-        this._deviceItemPosition = 3;
-        this._deviceItems = [];
-        this._applet.connect('devices-changed', Lang.bind(this, this._updateDevices));
-        this._updateDevices();
-
-        this._applet.connect('notify::show-full-menu', Lang.bind(this, this._updateFullMenu));
-        this._updateFullMenu();
-
-        this.menu.addSettingsAction(_("Bluetooth Settings"), 'bluetooth-properties.desktop');
-
-        this._applet.connect('pincode-request', Lang.bind(this, this._pinRequest));
-        this._applet.connect('confirm-request', Lang.bind(this, this._confirmRequest));
-        this._applet.connect('auth-request', Lang.bind(this, this._authRequest));
-        this._applet.connect('cancel-request', Lang.bind(this, this._cancelRequest));
+        catch (e) {
+            global.logError(e);
+        }
     },
-
+    
     on_applet_clicked: function(event) {
-        this.menu.toggle();
+        this.menu.toggle();        
     },
-
+    
+   
     _updateKillswitch: function() {
         let current_state = this._applet.killswitch_state;
         let on = current_state == Bluetooth.KillswitchState.UNBLOCKED;
@@ -521,7 +528,7 @@ MyApplet.prototype = {
     }
 };
 
-function main(metadata, orientation, panel_height) {
+function main(metadata, orientation, panel_height) {  
     let myApplet = new MyApplet(orientation, panel_height);
-    return myApplet;
+    return myApplet;      
 }
