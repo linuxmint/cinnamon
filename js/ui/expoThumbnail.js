@@ -396,8 +396,8 @@ ExpoWorkspaceThumbnail.prototype = {
             let transientRelation = function(a, b) {
                 let overviewDifference = noOverviewDiff(a,b);
                 if (overviewDifference) {
-                    let transientA = a.metaWindow.get_transient_for() === b.metaWindow ? -1 : 0;
-                    let transientB = !transientA && b.metaWindow.get_transient_for() === a.metaWindow ? -1 : 0;
+                    let transientA = a.metaWindow.get_transient_for() === b.metaWindow ? 1 : 0;
+                    let transientB = !transientA && b.metaWindow.get_transient_for() === a.metaWindow ? 1 : 0;
                     return transientA - transientB || overviewDifference;
                 }
                 return 0;
@@ -577,8 +577,7 @@ ExpoWorkspaceThumbnail.prototype = {
                 windows.push(window);
             }
             else {
-                window.actor.set_opacity(0);
-                window.actor.hide();
+                Tweener.addTween(window.actor, {scale_x: 0, scale_y: 0, time: REARRANGE_TIME_ON, transition: 'easeOutQuad', onComplete: window.actor.hide});
             }
         }, this);
 
@@ -649,8 +648,7 @@ ExpoWorkspaceThumbnail.prototype = {
         Main.layoutManager.monitors.forEach(function(monitor, monitorIndex) {
             let iconCount = 0;
             this._windows.filter(function(window) {
-                return monitorIndex === window.metaWindow.get_monitor() &&
-                    this._isOverviewWindow(window.metaWindow);
+                return monitorIndex === window.metaWindow.get_monitor();
             },this).forEach(function(window) {
                 window.tooltip.hide();
                 if (!window.metaWindow.showing_on_its_workspace()){
