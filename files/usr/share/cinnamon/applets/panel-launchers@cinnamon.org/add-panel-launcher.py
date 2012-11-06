@@ -11,7 +11,7 @@ import inspect
 import sys
 import gettext
 
-gettext.install("cinnamon", "/usr/share/cinnamon/locale")
+gettext.install("cinnamon", "/usr/share/locale")
 Settings = Gio.Settings.new("org.cinnamon")
 
 _ = gettext.gettext
