@@ -351,6 +351,7 @@ ExpoWorkspaceThumbnail.prototype = {
     },
     
     showKeyboardSelectedState: function(selected) {
+        this._isSelected = selected;
         this.title.name = selected ? "selected" : "";
         if (selected) {
             this._highlight();
@@ -358,7 +359,7 @@ ExpoWorkspaceThumbnail.prototype = {
         }
         else {
             this._overviewModeOff();
-            this._shade(true);
+            this._shade();
         }
     },
     
@@ -718,7 +719,7 @@ ExpoWorkspaceThumbnail.prototype = {
     },
 
     _shade : function (force){
-        if (this.metaWorkspace != global.screen.get_active_workspace() || force)
+        if (!this._isSelected || force)
             Tweener.addTween(this.shade, {opacity: INACTIVE_OPACITY, time: SLIDE_ANIMATION_TIME, transition: 'easeOutQuad'});    
     },
 
@@ -1113,9 +1114,7 @@ ExpoThumbnailsBox.prototype = {
                         thumbnail.hovering = true;
                         this.lastHovered = thumbnail; 
                         this.showButton();
-                        if (thumbnail.metaWorkspace != global.screen.get_active_workspace()) {
-                            thumbnail._highlight();
-                        }
+                        thumbnail._highlight();
                         setOverviewTimeout(POINTER_ENTER_MILLISECONDS_GRACE, function() {
                             if (thumbnail.hovering) {
                                 thumbnail._overviewModeOn();
@@ -1128,9 +1127,7 @@ ExpoThumbnailsBox.prototype = {
                     if (thumbnail.hovering && !isInternalEvent(thumbnail, actor, event)) {
                         thumbnail.hovering = false;
                         this.button.hide();
-                        if (thumbnail.metaWorkspace != global.screen.get_active_workspace()) {
-                            thumbnail._shade();
-                        }
+                        thumbnail._shade();
                         setOverviewTimeout(POINTER_LEAVE_MILLISECONDS_GRACE, function() {
                             if (!thumbnail.hovering) {
                                 thumbnail._overviewModeOff();
