@@ -11,6 +11,7 @@ const DND = imports.ui.dnd;
 const Main = imports.ui.main;
 const Tweener = imports.ui.tweener;
 const Workspace = imports.ui.workspace;
+const ModalDialog = imports.ui.modalDialog;
 
 // The maximum size of a thumbnail is 1/8 the width and height of the screen
 let MAX_THUMBNAIL_SCALE = 0.9;
@@ -163,6 +164,37 @@ const ThumbnailState = {
     ANIMATED_OUT :  5,
     COLLAPSING :    6,
     DESTROYED :     7
+};
+
+function ConfirmationDialog(prompt, yesAction, yesFocused){
+    this._init(prompt, yesAction, yesFocused);
+}
+
+ConfirmationDialog.prototype = {
+    __proto__: ModalDialog.ModalDialog.prototype,
+
+    _init: function(prompt, yesAction, yesFocused) {
+        ModalDialog.ModalDialog.prototype._init.call(this);
+        let label = new St.Label({text: prompt});
+        this.contentLayout.add(label);
+
+        this.setButtons([
+            {
+                label: _("Yes"),
+                focused: yesFocused,
+                action: Lang.bind(this, function(){
+                    yesAction();
+                    this.close();
+                })
+            },
+            {
+                label: _("No"),
+                action: Lang.bind(this, function(){
+                    this.close();
+                })
+            }
+        ]);
+    },
 };
 
 /**
@@ -668,10 +700,21 @@ ExpoWorkspaceThumbnail.prototype = {
         if (global.screen.n_workspaces <= 1) {
             return;
         }
-        this._doomed = true;
-        this.emit('remove-event');
-        Main._removeWorkspace(this.metaWorkspace);
-        this.removed = true;
+        let removeAction = Lang.bind(this, function() {
+            this._doomed = true;
+            this.emit('remove-event');
+            Main._removeWorkspace(this.metaWorkspace);
+            this.removed = true;
+        });
+        if (!Main.hasDefaultWorkspaceName(this.metaWorkspace.index())) {
+            let prompt = "Are you sure you want to remove workspace \"%s\"?\n\n".format(
+                Main.getWorkspaceName(this.metaWorkspace.index()));
+            let confirm = new ConfirmationDialog(prompt, removeAction, true);
+            confirm.open();
+        }
+        else {
+            removeAction();
+        }
     },
 
     // Draggable target interface
@@ -806,6 +849,7 @@ ExpoThumbnailsBox.prototype = {
 
         this._kbThumbnailIndex = global.screen.get_active_workspace_index();
         this._thumbnails[this._kbThumbnailIndex].showKeyboardSelectedState(true);
+        global.stage.set_key_focus(this.actor);
     },
 
     handleKeyPressEvent: function(actor, event) {
@@ -889,7 +933,6 @@ ExpoThumbnailsBox.prototype = {
         if (prevIndex != this._kbThumbnailIndex) {
             this._thumbnails[prevIndex].showKeyboardSelectedState(false);
             this._thumbnails[this._kbThumbnailIndex].showKeyboardSelectedState(true);
-            global.stage.set_key_focus(this._thumbnails[this._kbThumbnailIndex].actor);
         }
         return true; // handled
     },
@@ -1152,7 +1195,9 @@ ExpoThumbnailsBox.prototype = {
             thumbnail._refreshTitle();
         });
         this._thumbnails[this._kbThumbnailIndex].showKeyboardSelectedState(true);
-    },
+        // we may inadvertently have lost keyboard focus during the reshuffling
+        global.stage.set_key_focus(this.actor);
+  },
 
     _queueUpdateStates: function() {
         if (this._stateUpdateQueued)
@@ -1396,7 +1441,6 @@ ExpoThumbnailsBox.prototype = {
         this._thumbnails[this._kbThumbnailIndex].showKeyboardSelectedState(false);
         this._kbThumbnailIndex = global.screen.get_active_workspace_index();
         this._thumbnails[this._kbThumbnailIndex].showKeyboardSelectedState(true);
-        global.stage.set_key_focus(this._thumbnails[this._kbThumbnailIndex].actor);
 
         let thumbnail;
         let activeWorkspace = global.screen.get_active_workspace();
