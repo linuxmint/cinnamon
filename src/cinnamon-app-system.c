@@ -614,6 +614,10 @@ cinnamon_app_system_lookup_heuristic_basename (CinnamonAppSystem *system,
   if (result != NULL)
     return result;
 
+  result = cinnamon_app_system_lookup_settings_app (system, name);
+  if (result != NULL)
+    return result;
+
   for (prefix = system->priv->known_vendor_prefixes; prefix; prefix = g_slist_next (prefix))
     {
       char *tmpid = g_strconcat ((char*)prefix->data, name, NULL);
