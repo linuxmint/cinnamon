@@ -113,10 +113,10 @@ ExpoWindowClone.prototype = {
     },
 
     destroy: function () {
+        this.metaWindow.disconnect(this.titleNotifyId);
+        this.tooltip.destroy();
         this.actor.destroy();
         this.icon.destroy();
-        this.tooltip.destroy();
-        this.metaWindow.disconnect(this.titleNotifyId);
     },
 
     _onPositionChanged: function() {
