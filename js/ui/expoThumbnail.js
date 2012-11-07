@@ -27,13 +27,15 @@ const REARRANGE_TIME_OFF = 0.3 * 2;
 const ICON_OPACITY = Math.round(255 * 0.9);
 const ICON_SIZE = 128;
 
+const DEMANDS_ATTENTION_CLASS_NAME = "window-list-item-demands-attention";
+
 function ExpoWindowClone() {
     this._init.apply(this, arguments);
 }
 
 ExpoWindowClone.prototype = {
     _init : function(realWindow) {
-        this.actor = new Clutter.Group({reactive: true});
+        this.actor = new St.Group({reactive: true});
         this.clone = new Clutter.Clone({ source: realWindow.get_texture(),
                                          reactive: false });
         this.actor.add_actor(this.clone);
@@ -99,6 +101,61 @@ ExpoWindowClone.prototype = {
         this.titleNotifyId = this.metaWindow.connect('notify::title', Lang.bind(this, function (w, title) {
             this.tooltip.set_text(w.title);
         }));
+        let attentionId = global.display.connect('window-demands-attention', Lang.bind(this, this._onWindowDemandsAttention));
+        let urgentId = global.display.connect('window-marked-urgent', Lang.bind(this, this._onWindowDemandsAttention));
+        this.disconnectAttentionSignals = function() {
+            global.display.disconnect(attentionId);
+            global.display.disconnect(urgentId);
+        };
+        this._urgencyTimeout = 0;
+    },
+
+    killUrgencyTimeout: function() {
+        if (this._urgencyTimeout) {
+            Mainloop.source_remove(this._urgencyTimeout);
+        }
+        this._urgencyTimeout = 0;
+    },
+
+    showUrgencyState: function(params) {
+        if (params && params.reps === 0) {
+            // probably the easiest way to just show the current state and stop repeating
+            this.showUrgencyState();
+            return;
+        }
+        let mw = this.metaWindow;
+        // Until urgency-query support is generally available in muffin,
+        // this is more than a little complicated to get right.
+        let isUrgent = mw.is_urgent && (mw.is_demanding_attention() || mw.is_urgent());
+        let isNotUrgent = mw.is_urgent && !(mw.is_demanding_attention() || mw.is_urgent());
+        
+        let hasStyle = this.actor.has_style_class_name(DEMANDS_ATTENTION_CLASS_NAME);
+        if (!hasStyle && isNotUrgent) {
+            return; // window is no longer urgent, so don't alert
+        }
+
+        let force = params && params.showUrgent;
+        let styleAdded = false;
+        if (!hasStyle && (force || isUrgent)) {
+            this.actor.add_style_class_name(DEMANDS_ATTENTION_CLASS_NAME);
+            styleAdded = true;
+        }
+        if (hasStyle && (isNotUrgent || params && !params.showUrgent)) {
+            this.actor.remove_style_class_name(DEMANDS_ATTENTION_CLASS_NAME);
+        }
+
+        if (params && params.reps > 0)
+        {
+            this.killUrgencyTimeout();
+            this._urgencyTimeout = Mainloop.timeout_add(750, Lang.bind(this, function() {
+                this.showUrgencyState({showUrgent:!force, reps: params.reps - (force ? 0 : 1)});
+            }));
+        }
+    },
+
+    _onWindowDemandsAttention: function(display, metaWindow) {
+        if (metaWindow != this.metaWindow) {return;}
+        this.showUrgencyState({showUrgent:true, reps: 50});
     },
 
     setStackAbove: function (actor) {
@@ -113,6 +170,8 @@ ExpoWindowClone.prototype = {
     },
 
     destroy: function () {
+        this.killUrgencyTimeout();
+        this.disconnectAttentionSignals();
         this.metaWindow.disconnect(this.titleNotifyId);
         this.tooltip.destroy();
         this.actor.destroy();
@@ -589,6 +648,7 @@ ExpoWorkspaceThumbnail.prototype = {
             let offset = 0;
 
             monitorWindows.forEach(function(window, i) {
+                window.showUrgencyState();
                 if (row == nRows)
                     offset = lastRowOffset;
                 let [wWidth, wHeight] = [window.realWindow.width, window.realWindow.height];
@@ -641,6 +701,7 @@ ExpoWorkspaceThumbnail.prototype = {
             this._windows.filter(function(window) {
                 return monitorIndex === window.metaWindow.get_monitor();
             },this).forEach(function(window) {
+                window.showUrgencyState();
                 window.tooltip.hide();
                 if (!window.metaWindow.showing_on_its_workspace()){
                     let iconX = iconCount * (ICON_SIZE + iconSpacing);
