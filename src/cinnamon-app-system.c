@@ -490,6 +490,20 @@ cinnamon_app_system_get_default ()
   return instance;
 }
 
+gboolean
+case_insensitive_search (const char *key,
+                         const char *value,
+                         gpointer user_data)
+{
+  char *given_id = (char *) user_data;
+
+  if (g_ascii_strcasecmp(key, given_id) == 0) {
+    return TRUE;
+  } else {
+    return FALSE;
+  }
+}
+
 /**
  * cinnamon_app_system_lookup_app:
  *
@@ -501,7 +515,13 @@ CinnamonApp *
 cinnamon_app_system_lookup_app (CinnamonAppSystem   *self,
                              const char       *id)
 {
-  return g_hash_table_lookup (self->priv->id_to_app, id);
+  CinnamonApp *result;
+
+  result = g_hash_table_lookup (self->priv->id_to_app, id);
+  if (result == NULL) {
+    result = g_hash_table_find (self->priv->id_to_app, (GHRFunc) case_insensitive_search, id);
+  }
+  return result;
 }
 
 /**
@@ -515,7 +535,13 @@ CinnamonApp *
 cinnamon_app_system_lookup_settings_app (CinnamonAppSystem   *self,
                              const char       *id)
 {
-  return g_hash_table_lookup (self->priv->setting_id_to_app, id);
+  CinnamonApp *result;
+
+  result = g_hash_table_lookup (self->priv->setting_id_to_app, id);
+  if (result == NULL) {
+    result = g_hash_table_find (self->priv->setting_id_to_app, (GHRFunc) case_insensitive_search, id);
+  }
+  return result;
 }
 
 /**
