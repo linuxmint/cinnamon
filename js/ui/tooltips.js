@@ -115,11 +115,14 @@ Tooltip.prototype = {
         item.connect('enter-event', Lang.bind(this, this._onEnterEvent));
         item.connect('leave-event', Lang.bind(this, this._onLeaveEvent));
         item.connect('motion-event', Lang.bind(this, this._onMotionEvent));
+        item.connect('button-press-event', Lang.bind(this, this.hide));
         item.connect('button-release-event', Lang.bind(this, this._onReleaseEvent));
         item.connect('allocation-changed', Lang.bind(this, function() {
-			// An allocation change could mean that the actor has moved,
-			// so hide, but wait until after the allocation cycle.
-			Mainloop.idle_add(Lang.bind(this, this.hide));
+            // An allocation change could mean that the actor has moved,
+            // so hide, but wait until after the allocation cycle.
+            Mainloop.idle_add(Lang.bind(this, function() {
+                if (this._tooltip) {this.hide();}
+            }));
         }));
         
         this._showTimer = null;
@@ -153,7 +156,7 @@ Tooltip.prototype = {
     },
     
     _onReleaseEvent: function(actor, event) {
-    	this.preventShow = true;
+        this.preventShow = true;
         this.hide();
     },
     
@@ -181,7 +184,7 @@ Tooltip.prototype = {
         this._tooltip.set_position(tooltipLeft, tooltipTop);
         
         this._tooltip.show();
-	this._tooltip.raise_top();
+        this._tooltip.raise_top();
         this._visible = true;
     },
     
@@ -190,6 +193,8 @@ Tooltip.prototype = {
     },
     
     destroy: function() {
-       this._tooltip.destroy();
+        Tweener.removeTweens(this);
+        this._tooltip.destroy();
+        this._tooltip = null;
     }
 }
