@@ -1,5 +1,4 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
-
 const Clutter = imports.gi.Clutter;
 const Gtk = imports.gi.Gtk;
 const Meta = imports.gi.Meta;
@@ -33,57 +32,6 @@ const SwipeScrollResult = {
     CANCEL: 0,
     SWIPE: 1,
     CLICK: 2
-};
-
-function CinnamonInfo() {
-    this._init();
-}
-
-CinnamonInfo.prototype = {
-    _init: function() {
-        this._source = null;
-        this._undoCallback = null;
-    },
-
-    _onUndoClicked: function() {
-        if (this._undoCallback)
-            this._undoCallback();
-        this._undoCallback = null;
-
-        if (this._source)
-            this._source.destroy();
-    },
-
-    setMessage: function(text, undoCallback, undoLabel) {
-        if (this._source == null) {
-            this._source = new MessageTray.SystemNotificationSource();
-            this._source.connect('destroy', Lang.bind(this,
-                function() {
-                    this._source = null;
-                }));
-            if (Main.messageTray) Main.messageTray.add(this._source);
-        }
-
-        let notification = null;
-        if (this._source.notifications.length == 0) {
-            notification = new MessageTray.Notification(this._source, text, null);
-        } else {
-            notification = this._source.notifications[0];
-            notification.update(text, null, { clear: true });
-        }
-
-        notification.setTransient(true);
-
-        this._undoCallback = undoCallback;
-        if (undoCallback) {
-            notification.addButton('system-undo',
-                                   undoLabel ? undoLabel : _("Undo"));
-            notification.connect('action-invoked',
-                                 Lang.bind(this, this._onUndoClicked));
-        }
-
-        this._source.notify(notification);
-    }
 };
 
 function Overview() {
@@ -204,10 +152,12 @@ Overview.prototype = {
         this._viewSelector.removeSearchProvider(provider);
     },
 
+    // Deprecated
     setMessage: function(text, undoCallback, undoLabel) {
         if (this.isDummy)
             return;
 
+        global.log("Overview.setMessage" + _(" is deprecated. Please do not use in newly written code"));
         this._cinnamonInfo.setMessage(text, undoCallback, undoLabel);
     },
 
@@ -768,3 +718,59 @@ Overview.prototype = {
     }
 };
 Signals.addSignalMethods(Overview.prototype);
+
+
+/********************************************
+ *             Deprecated code              *
+ ********************************************/
+
+function CinnamonInfo() {
+    this._init();
+}
+
+CinnamonInfo.prototype = {
+    _init: function() {
+        this._source = null;
+        this._undoCallback = null;
+    },
+
+    _onUndoClicked: function() {
+        if (this._undoCallback)
+            this._undoCallback();
+        this._undoCallback = null;
+
+        if (this._source)
+            this._source.destroy();
+    },
+
+    setMessage: function(text, undoCallback, undoLabel) {
+        if (this._source == null) {
+            this._source = new MessageTray.SystemNotificationSource();
+            this._source.connect('destroy', Lang.bind(this,
+                function() {
+                    this._source = null;
+                }));
+            if (Main.messageTray) Main.messageTray.add(this._source);
+        }
+
+        let notification = null;
+        if (this._source.notifications.length == 0) {
+            notification = new MessageTray.Notification(this._source, text, null);
+        } else {
+            notification = this._source.notifications[0];
+            notification.update(text, null, { clear: true });
+        }
+
+        notification.setTransient(true);
+
+        this._undoCallback = undoCallback;
+        if (undoCallback) {
+            notification.addButton('system-undo',
+                                   undoLabel ? undoLabel : _("Undo"));
+            notification.connect('action-invoked',
+                                 Lang.bind(this, this._onUndoClicked));
+        }
+
+        this._source.notify(notification);
+    }
+};
