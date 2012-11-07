@@ -27,6 +27,8 @@ const REARRANGE_TIME_OFF = 0.3 * 2;
 const ICON_OPACITY = Math.round(255 * 0.9);
 const ICON_SIZE = 128;
 
+const DEMANDS_ATTENTION_CLASS_NAME = "window-list-item-demands-attention";
+
 function ExpoWindowClone() {
     this._init.apply(this, arguments);
 }
@@ -74,7 +76,11 @@ ExpoWindowClone.prototype = {
         this.inDrag = false;
         this.dragCancelled = false;
 
-        this.icon = null;
+        this.icon = new St.Group();
+        this.actor.add_actor(this.icon);
+        this.icon.hide();
+
+        let iconActor = null;
         let app = this.metaWindow._expoApp; // will be non-null if the window comes from another ws
         if (!app) {
             let tracker = Cinnamon.WindowTracker.get_default();
@@ -84,21 +90,84 @@ ExpoWindowClone.prototype = {
             this.metaWindow._expoApp = app;
         }
         if (app) {
-            this.icon = app.create_icon_texture(ICON_SIZE);
+            iconActor = app.create_icon_texture(ICON_SIZE);
         }
-        if (!this.icon) {
-            this.icon = new St.Icon({ icon_name: 'applications-other',
+        if (!iconActor) {
+            iconActor = new St.Icon({ icon_name: 'applications-other',
                                  icon_type: St.IconType.FULLCOLOR,
                                  icon_size: ICON_SIZE });
         }
-        this.actor.add_actor(this.icon);
-        this.icon.opacity = ICON_OPACITY;
-        this.icon.hide();
+        this.icon.add_actor(iconActor);
+        iconActor.opacity = ICON_OPACITY;
 
         this.tooltip = new Tooltips.Tooltip(this.actor, this.metaWindow.title);
         this.titleNotifyId = this.metaWindow.connect('notify::title', Lang.bind(this, function (w, title) {
             this.tooltip.set_text(w.title);
         }));
+        let attentionId = global.display.connect('window-demands-attention', Lang.bind(this, this._onWindowDemandsAttention));
+        let urgentId = global.display.connect('window-marked-urgent', Lang.bind(this, this._onWindowDemandsAttention));
+        this.disconnectAttentionSignals = function() {
+            global.display.disconnect(attentionId);
+            global.display.disconnect(urgentId);
+        };
+        this._urgencyTimeout = 0;
+    },
+
+    killUrgencyTimeout: function() {
+        if (this._urgencyTimeout) {
+            Mainloop.source_remove(this._urgencyTimeout);
+        }
+        this._urgencyTimeout = 0;
+    },
+
+    showUrgencyState: function(params) {
+        if (params && params.reps === 0) {
+            // probably the easiest way to just show the current state and stop repeating
+            this.showUrgencyState();
+            return;
+        }
+        let mw = this.metaWindow;
+        // Until urgency-query support is generally available in muffin,
+        // this is more than a little complicated to get right.
+        let isUrgent = mw.is_urgent && (mw.is_demanding_attention() || mw.is_urgent());
+        if (isUrgent && !this._demanding_attention) {
+            this.demandAttention();
+            return;
+        }
+        let isNotUrgent = mw.is_urgent && !(mw.is_demanding_attention() || mw.is_urgent());
+
+        let actor = this.icon;
+        let hasStyle = actor.has_style_class_name(DEMANDS_ATTENTION_CLASS_NAME);
+        if (!hasStyle && isNotUrgent) {
+            this._demanding_attention = false;
+            return; // window is no longer urgent, so stop alerting
+        }
+
+        let force = params && params.showUrgent;
+        if (!hasStyle && (force || isUrgent)) {
+            actor.add_style_class_name(DEMANDS_ATTENTION_CLASS_NAME);
+        }
+        if (hasStyle && (isNotUrgent || params && !params.showUrgent)) {
+            actor.remove_style_class_name(DEMANDS_ATTENTION_CLASS_NAME);
+        }
+
+        if (params && params.reps > 0)
+        {
+            this.killUrgencyTimeout();
+            this._urgencyTimeout = Mainloop.timeout_add(750, Lang.bind(this, function() {
+                this.showUrgencyState({showUrgent:!force, reps: params.reps - (force ? 0 : 1)});
+            }));
+        }
+    },
+
+    demandAttention: function() {
+        this._demanding_attention = true;
+        this.showUrgencyState({showUrgent:true, reps: 50});
+    },
+
+    _onWindowDemandsAttention: function(display, metaWindow) {
+        if (metaWindow != this.metaWindow) {return;}
+        this.demandAttention();
     },
 
     setStackAbove: function (actor) {
@@ -113,6 +182,8 @@ ExpoWindowClone.prototype = {
     },
 
     destroy: function () {
+        this.killUrgencyTimeout();
+        this.disconnectAttentionSignals();
         this.metaWindow.disconnect(this.titleNotifyId);
         this.tooltip.destroy();
         this.actor.destroy();
@@ -466,8 +537,7 @@ ExpoWorkspaceThumbnail.prototype = {
 
         let clone = this._addWindowClone(win); 
 
-        if (this.overviewMode)
-            this._overviewModeOn();
+        this._overviewModeOn(true);
     },
 
     _windowAdded : function(metaWorkspace, metaWin) {
@@ -589,6 +659,7 @@ ExpoWorkspaceThumbnail.prototype = {
             let offset = 0;
 
             monitorWindows.forEach(function(window, i) {
+                window.showUrgencyState();
                 if (row == nRows)
                     offset = lastRowOffset;
                 let [wWidth, wHeight] = [window.realWindow.width, window.realWindow.height];
@@ -641,6 +712,7 @@ ExpoWorkspaceThumbnail.prototype = {
             this._windows.filter(function(window) {
                 return monitorIndex === window.metaWindow.get_monitor();
             },this).forEach(function(window) {
+                window.showUrgencyState();
                 window.tooltip.hide();
                 if (!window.metaWindow.showing_on_its_workspace()){
                     let iconX = iconCount * (ICON_SIZE + iconSpacing);
