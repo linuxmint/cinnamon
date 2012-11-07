@@ -372,16 +372,6 @@ ExpoWorkspaceThumbnail.prototype = {
         return -1;
     },
 
-    belongs: function (actor) {
-        for (let i = 0; i < this._windows.length; ++i) {
-            let window = this._windows[i];
-            if (window.actor === actor || window.icon === actor) {
-                return true;
-            }
-        }
-        return false;
-    },
-
     syncStacking: function(stackIndices) {
         this._windows.sort(Lang.bind(this, function (a, b) {
             let minimizedDiff = function(a, b) {
@@ -857,8 +847,9 @@ ExpoThumbnailsBox.prototype = {
 
         this.button = new St.Button({ style_class: 'workspace-close-button' });
         this.actor.add_actor(this.button);
-        this.button.connect('enter-event', Lang.bind(this, function () { this.lastHovered._highlight(); this.button.show();}));
-        this.button.connect('leave-event', Lang.bind(this, function () { this.lastHovered._shade(); this.button.hide();}));
+        
+        this.button.connect('enter-event', Lang.bind(this, function () {this.button.show();}));
+        this.button.connect('leave-event', Lang.bind(this, function () {this.button.hide();}));
         this.button.connect('clicked', Lang.bind(this, function () { this.lastHovered._remove(); this.button.hide();}));
         this.button.hide();
                 
@@ -1055,8 +1046,8 @@ ExpoThumbnailsBox.prototype = {
 
     addThumbnails: function(start, count) {
         function isInternalEvent(thumbnail, actor, event) {
-            return actor === event.get_related() || 
-                thumbnail.belongs(event.get_related());
+            return actor === event.get_related() ||
+                thumbnail.actor.contains(event.get_related());
         }
         for (let k = start; k < start + count; k++) {
             let metaWorkspace = global.screen.get_workspace_by_index(k);
