@@ -109,7 +109,7 @@ cinnamon_app_system_init (CinnamonAppSystem *self)
   priv->apps_tree = gmenu_tree_new ("cinnamon-applications.menu", GMENU_TREE_FLAGS_INCLUDE_NODISPLAY);
   g_signal_connect (priv->apps_tree, "changed", G_CALLBACK (on_apps_tree_changed_cb), self);
 
-  priv->settings_tree = gmenu_tree_new ("cinnamon-settings.menu", 0);
+  priv->settings_tree = gmenu_tree_new ("cinnamon-settings.menu", GMENU_TREE_FLAGS_INCLUDE_NODISPLAY);
   g_signal_connect (priv->settings_tree, "changed", G_CALLBACK (on_settings_tree_changed_cb), self);
 
   on_apps_tree_changed_cb (priv->apps_tree, self);
