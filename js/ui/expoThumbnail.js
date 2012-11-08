@@ -133,19 +133,22 @@ ExpoWindowClone.prototype = {
         // Until urgency-query support is generally available in muffin,
         // this is more than a little complicated to get right.
         let isUrgent = mw.is_urgent && (mw.is_demanding_attention() || mw.is_urgent());
+        if (isUrgent && !this._demanding_attention) {
+            this.demandAttention();
+            return;
+        }
         let isNotUrgent = mw.is_urgent && !(mw.is_demanding_attention() || mw.is_urgent());
 
         let actor = this.icon;
         let hasStyle = actor.has_style_class_name(DEMANDS_ATTENTION_CLASS_NAME);
         if (!hasStyle && isNotUrgent) {
-            return; // window is no longer urgent, so don't alert
+            this._demanding_attention = false;
+            return; // window is no longer urgent, so stop alerting
         }
 
         let force = params && params.showUrgent;
-        let styleAdded = false;
         if (!hasStyle && (force || isUrgent)) {
             actor.add_style_class_name(DEMANDS_ATTENTION_CLASS_NAME);
-            styleAdded = true;
         }
         if (hasStyle && (isNotUrgent || params && !params.showUrgent)) {
             actor.remove_style_class_name(DEMANDS_ATTENTION_CLASS_NAME);
@@ -160,9 +163,14 @@ ExpoWindowClone.prototype = {
         }
     },
 
+    demandAttention: function() {
+        this._demanding_attention = true;
+        this.showUrgencyState({showUrgent:true, reps: 50});
+    },
+
     _onWindowDemandsAttention: function(display, metaWindow) {
         if (metaWindow != this.metaWindow) {return;}
-        this.showUrgencyState({showUrgent:true, reps: 50});
+        this.demandAttention();
     },
 
     setStackAbove: function (actor) {
