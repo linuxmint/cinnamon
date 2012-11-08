@@ -405,6 +405,10 @@ ExpoWorkspaceThumbnail.prototype = {
         this._windowLeftMonitorId = global.screen.connect('window-left-monitor',
             Lang.bind(this, this._windowLeftMonitor));
 
+        box.connect('set-overview-mode', Lang.bind(this, function(box, turnOn) {
+            if (turnOn) {this._overviewModeOn(true);}
+            else {this._overviewModeOff();}
+        }));
         this.state = ThumbnailState.NORMAL;
         this._slidePosition = 0; // Fully slid in
     },
@@ -924,6 +928,7 @@ function ExpoThumbnailsBox() {
 ExpoThumbnailsBox.prototype = {
     _init: function() {
         this.actor = new Cinnamon.GenericContainer({ style_class: 'workspace-thumbnails',
+                                                   reactive: true,
                                                   request_mode: Clutter.RequestMode.WIDTH_FOR_HEIGHT });
         this.actor.connect('get-preferred-width', Lang.bind(this, this._getPreferredWidth));
         this.actor.connect('get-preferred-height', Lang.bind(this, this._getPreferredHeight));
@@ -978,9 +983,15 @@ ExpoThumbnailsBox.prototype = {
         // after it has been allocated
         let allocId = this.connect('allocated', Lang.bind(this, function() {
             this.disconnect(allocId);
-            this._thumbnails.forEach(function(thumbnail) {
-                thumbnail._overviewModeOff(true);
-            });
+            this.emit('set-overview-mode', false);
+        }));
+
+        let globalOverviewMode = 0; // off
+        this.actor.connect('button-release-event', Lang.bind(this, function(actor, event) {
+            if (Cinnamon.get_event_state(event) & Clutter.ModifierType.BUTTON2_MASK) {
+                globalOverviewMode = (globalOverviewMode + 1) % 2;
+                this.emit('set-overview-mode', globalOverviewMode === 1);
+            }
         }));
     },
 
