@@ -17,9 +17,6 @@ const ExpoThumbnail = imports.ui.expoThumbnail;
 
 // Time for initial animation going into Overview mode
 const ANIMATION_TIME = 0.3;
-const ADD_BUTTON_HOVER_TIME = 0.3;
-
-const DND_WINDOW_SWITCH_TIMEOUT = 1250;
 
 function Expo() {
     this._init.apply(this, arguments);
