@@ -6,12 +6,9 @@ const Signals = imports.signals;
 const Lang = imports.lang;
 const St = imports.gi.St;
 const Cinnamon = imports.gi.Cinnamon;
-const Gdk = imports.gi.Gdk;
 
 const DND = imports.ui.dnd;
 const Main = imports.ui.main;
-const MessageTray = imports.ui.messageTray;
-const Params = imports.misc.params;
 const Tweener = imports.ui.tweener;
 const ExpoThumbnail = imports.ui.expoThumbnail;
 
@@ -23,7 +20,7 @@ function Expo() {
 }
 
 Expo.prototype = {
-    _init : function(params) {
+    _init : function() {
         Main.layoutManager.connect('monitors-changed', Lang.bind(this, this._relayout));
     },
 
@@ -159,10 +156,6 @@ Expo.prototype = {
         this._relayout();
     },
 
-    // The members we construct that are implemented in JS might
-    // want to access the overview as Main.overview to connect
-    // signal handlers and so forth. So we create them after
-    // construction in this init() method.
     init: function() {
     },
 
@@ -244,8 +237,8 @@ Expo.prototype = {
     show : function() {
         if (this._shown)
             return;
-        // Do this manually instead of using _syncInputMode, to handle failure
         this.beforeShow();
+        // Do this manually instead of using _syncInputMode, to handle failure
         if (!Main.pushModal(this._group))
             return;
         this._modal = true;
