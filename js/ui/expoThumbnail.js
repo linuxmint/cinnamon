@@ -874,8 +874,10 @@ ExpoWorkspaceThumbnail.prototype = {
         }
         let draggable = source._draggable;
         actor.opacity = draggable._dragOrigOpacity;
-        actor.reparent(draggable._dragOrigParent);
-        
+        // Can't use reparent here, it produces strange warnings about widget not being in the stage
+        actor.get_parent().remove_actor(actor);
+        draggable._dragOrigParent.add_actor(actor);
+
         let win = source.realWindow;
         let metaWindow = win.get_meta_window();
         let targetMonitor = this.coordinateToMonitor(x, y);
