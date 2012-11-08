@@ -10,7 +10,6 @@ const St = imports.gi.St;
 const DND = imports.ui.dnd;
 const Main = imports.ui.main;
 const Tweener = imports.ui.tweener;
-const Workspace = imports.ui.workspace;
 const ModalDialog = imports.ui.modalDialog;
 const Tooltips = imports.ui.tooltips;
 
@@ -26,6 +25,9 @@ const REARRANGE_TIME_ON = 0.3;
 const REARRANGE_TIME_OFF = 0.3 * 2;
 const ICON_OPACITY = Math.round(255 * 0.9);
 const ICON_SIZE = 128;
+
+const DRAGGING_WINDOW_OPACITY = Math.round(255 * 0.8);
+const WINDOW_DND_SIZE = 256;
 
 const DEMANDS_ATTENTION_CLASS_NAME = "window-list-item-demands-attention";
 
@@ -71,8 +73,8 @@ ExpoWindowClone.prototype = {
 
         this._draggable = DND.makeDraggable(this.actor,
                                             { restoreOnSuccess: false,
-                                              dragActorMaxSize: Workspace.WINDOW_DND_SIZE,
-                                              dragActorOpacity: Workspace.DRAGGING_WINDOW_OPACITY });
+                                              dragActorMaxSize: WINDOW_DND_SIZE,
+                                              dragActorOpacity: DRAGGING_WINDOW_OPACITY});
         this._draggable.connect('drag-begin', Lang.bind(this, this._onDragBegin));
         this._draggable.connect('drag-end', Lang.bind(this, this._onDragEnd));
         this._draggable.connect('drag-cancelled', Lang.bind(this, this._onDragCancelled));
