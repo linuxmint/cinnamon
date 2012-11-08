@@ -35,7 +35,7 @@ function ExpoWindowClone() {
 
 ExpoWindowClone.prototype = {
     _init : function(realWindow) {
-        this.actor = new St.Group({reactive: true});
+        this.actor = new Clutter.Group({reactive: true});
         this.clone = new Clutter.Clone({ source: realWindow.get_texture(),
                                          reactive: false });
         this.actor.add_actor(this.clone);
@@ -79,7 +79,11 @@ ExpoWindowClone.prototype = {
         this.inDrag = false;
         this.dragCancelled = false;
 
-        this.icon = null;
+        this.icon = new St.Group();
+        this.actor.add_actor(this.icon);
+        this.icon.hide();
+
+        let iconActor = null;
         let app = this.metaWindow._expoApp; // will be non-null if the window comes from another ws
         if (!app) {
             let tracker = Cinnamon.WindowTracker.get_default();
@@ -89,16 +93,15 @@ ExpoWindowClone.prototype = {
             this.metaWindow._expoApp = app;
         }
         if (app) {
-            this.icon = app.create_icon_texture(ICON_SIZE);
+            iconActor = app.create_icon_texture(ICON_SIZE);
         }
-        if (!this.icon) {
-            this.icon = new St.Icon({ icon_name: 'applications-other',
+        if (!iconActor) {
+            iconActor = new St.Icon({ icon_name: 'applications-other',
                                  icon_type: St.IconType.FULLCOLOR,
                                  icon_size: ICON_SIZE });
         }
-        this.actor.add_actor(this.icon);
-        this.icon.opacity = ICON_OPACITY;
-        this.icon.hide();
+        this.icon.add_actor(iconActor);
+        iconActor.opacity = ICON_OPACITY;
 
         this.tooltip = new Tooltips.Tooltip(this.actor, this.metaWindow.title);
         this.titleNotifyId = this.metaWindow.connect('notify::title', Lang.bind(this, function (w, title) {
@@ -131,8 +134,9 @@ ExpoWindowClone.prototype = {
         // this is more than a little complicated to get right.
         let isUrgent = mw.is_urgent && (mw.is_demanding_attention() || mw.is_urgent());
         let isNotUrgent = mw.is_urgent && !(mw.is_demanding_attention() || mw.is_urgent());
-        
-        let hasStyle = this.actor.has_style_class_name(DEMANDS_ATTENTION_CLASS_NAME);
+
+        let actor = this.icon;
+        let hasStyle = actor.has_style_class_name(DEMANDS_ATTENTION_CLASS_NAME);
         if (!hasStyle && isNotUrgent) {
             return; // window is no longer urgent, so don't alert
         }
@@ -140,11 +144,11 @@ ExpoWindowClone.prototype = {
         let force = params && params.showUrgent;
         let styleAdded = false;
         if (!hasStyle && (force || isUrgent)) {
-            this.actor.add_style_class_name(DEMANDS_ATTENTION_CLASS_NAME);
+            actor.add_style_class_name(DEMANDS_ATTENTION_CLASS_NAME);
             styleAdded = true;
         }
         if (hasStyle && (isNotUrgent || params && !params.showUrgent)) {
-            this.actor.remove_style_class_name(DEMANDS_ATTENTION_CLASS_NAME);
+            actor.remove_style_class_name(DEMANDS_ATTENTION_CLASS_NAME);
         }
 
         if (params && params.reps > 0)
@@ -538,8 +542,7 @@ ExpoWorkspaceThumbnail.prototype = {
 
         let clone = this._addWindowClone(win); 
 
-        if (this.overviewMode)
-            this._overviewModeOn();
+        this._overviewModeOn(true);
     },
 
     _windowAdded : function(metaWorkspace, metaWin) {
