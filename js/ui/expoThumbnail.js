@@ -616,11 +616,14 @@ ExpoWorkspaceThumbnail.prototype = {
     _addWindowClone : function(win) {
         let clone = new ExpoWindowClone(win);
 
-        clone.connect('pre-selected', Lang.bind(this, function() {
+        clone.connect('pre-selected', Lang.bind(this, function(unused1, time) {
             this.lastPreSelectedClone = clone;
+            this.lastPreSelectedTime = time;
         }));
-        clone.connect('selected', Lang.bind(this, function() {
-            if (clone === this.lastPreSelectedClone) {
+        clone.connect('selected', Lang.bind(this, function(unused1, time) {
+            // only a quick, decisive click should result in window activation
+            let timeElapsed = time - this.lastPreSelectedTime;
+            if (clone === this.lastPreSelectedClone && timeElapsed < 400) {
                 this._activate.apply(this, arguments);
             }
         }));
