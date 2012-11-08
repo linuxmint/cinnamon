@@ -24,17 +24,6 @@ function Expo() {
 
 Expo.prototype = {
     _init : function(params) {
-        params = Params.parse(params, { isDummy: false });
-
-        this.isDummy = params.isDummy;
-
-        // We only have an overview in user sessions, so
-        // create a dummy overview in other cases
-        if (this.isDummy) {
-            this.animationInProgress = false;
-            this.visible = false;
-            return;
-        }
         Main.layoutManager.connect('monitors-changed', Lang.bind(this, this._relayout));
     },
 
@@ -254,8 +243,6 @@ Expo.prototype = {
     //
     // Animates the overview visible and grabs mouse and keyboard input
     show : function() {
-        if (this.isDummy)
-            return;
         if (this._shown)
             return;
         // Do this manually instead of using _syncInputMode, to handle failure
@@ -350,9 +337,6 @@ Expo.prototype = {
     // will result in the overview not being hidden until hideTemporarily() is
     // called.
     showTemporarily: function() {
-        if (this.isDummy)
-            return;
-
         if (this._shownTemporarily)
             return;
 
@@ -365,9 +349,6 @@ Expo.prototype = {
     //
     // Reverses the effect of show()
     hide: function(options) {
-        if (this.isDummy)
-            return;
-
         if (!this._shown)
             return;
 
@@ -382,9 +363,6 @@ Expo.prototype = {
     //
     // Reverses the effect of showTemporarily()
     hideTemporarily: function() {
-        if (this.isDummy)
-            return;
-
         if (!this._shownTemporarily)
             return;
 
@@ -396,9 +374,6 @@ Expo.prototype = {
     },
 
     toggle: function() {
-        if (this.isDummy)
-            return;
-
         if (this._shown)
             this.hide();
         else
