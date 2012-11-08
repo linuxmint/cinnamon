@@ -61,6 +61,9 @@ ExpoWindowClone.prototype = {
         this._onPositionChanged();
         this._onSizeChanged();
 
+        this.actor.connect('button-press-event', Lang.bind(this, function(actor, event) {
+            this.emit('pre-selected', event.get_time());
+        }));
         this.actor.connect('button-release-event',
                            Lang.bind(this, this._onButtonRelease));
 
@@ -293,16 +296,26 @@ ExpoWorkspaceThumbnail.prototype = {
         this.actor.add_actor(this._contents);
 
         this.actor.connect('destroy', Lang.bind(this, this._onDestroy));
-        this.actor.connect('button-press-event', Lang.bind(this,
-            function(actor, event) {
+
+        let lastButtonPressTimeStamp = 0;
+        this.actor.connect('button-press-event', Lang.bind(this, function(actor, event) {
+                lastButtonPressTimeStamp = event.get_time();
                 return true;
             }));
         this.actor.connect('button-release-event', Lang.bind(this,
             function(actor, event) {
-                if ((Cinnamon.get_event_state(event) & Clutter.ModifierType.BUTTON1_MASK) || (Cinnamon.get_event_state(event) & Clutter.ModifierType.BUTTON3_MASK)){
-                    this._activate();
+                let evstate = Cinnamon.get_event_state(event);
+                if ((evstate & Clutter.ModifierType.BUTTON1_MASK) ||
+                        (evstate & Clutter.ModifierType.BUTTON3_MASK))
+                {
+                    let timeElapsed = event.get_time() - lastButtonPressTimeStamp;
+                    // A long time elapsed is probably due to a failed dnd attempt,
+                    // so we'll ignore those.
+                    if (timeElapsed < 500) {
+                        this._activate();
+                    }
                     return true;
-                } else if (Cinnamon.get_event_state(event) & Clutter.ModifierType.BUTTON2_MASK){
+                } else if (evstate & Clutter.ModifierType.BUTTON2_MASK) {
                     this._remove();
                     return true;                
                 }
@@ -590,8 +603,14 @@ ExpoWorkspaceThumbnail.prototype = {
     _addWindowClone : function(win) {
         let clone = new ExpoWindowClone(win);
 
-        clone.connect('selected',
-                      Lang.bind(this, this._activate));
+        clone.connect('pre-selected', Lang.bind(this, function() {
+            this.lastPreSelectedClone = clone;
+        }));
+        clone.connect('selected', Lang.bind(this, function() {
+            if (clone === this.lastPreSelectedClone) {
+                this._activate.apply(this, arguments);
+            }
+        }));
         clone.connect('remove-workspace', 
                       Lang.bind(this, this._remove));
         clone.connect('drag-begin',
