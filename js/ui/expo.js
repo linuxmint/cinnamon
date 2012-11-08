@@ -54,7 +54,6 @@ Expo.prototype = {
 
         this.visible = false;           // animating to overview, in overview, animating out
         this._shown = false;            // show() and not hide()
-        this._shownTemporarily = false; // showTemporarily() and not hideTemporarily()
         this._modal = false;            // have a modal grab
         this.animationInProgress = false;
         this._hideInProgress = false;
@@ -330,21 +329,6 @@ Expo.prototype = {
         this.emit('showing');
     },
 
-    // showTemporarily:
-    //
-    // Animates the overview visible without grabbing mouse and keyboard input;
-    // if show() has already been called, this has no immediate effect, but
-    // will result in the overview not being hidden until hideTemporarily() is
-    // called.
-    showTemporarily: function() {
-        if (this._shownTemporarily)
-            return;
-
-        this._syncInputMode();
-        this._animateVisible();
-        this._shownTemporarily = true;
-    },
-
     // hide:
     //
     // Reverses the effect of show()
@@ -352,28 +336,15 @@ Expo.prototype = {
         if (!this._shown)
             return;
 
-        if (!this._shownTemporarily)
-            this._animateNotVisible(options);
-
+        this._animateNotVisible(options);
         this._shown = false;
         this._syncInputMode();
     },
 
-    // hideTemporarily:
-    //
-    // Reverses the effect of showTemporarily()
-    hideTemporarily: function() {
-        if (!this._shownTemporarily)
+    toggle: function() {
+        if (this.isDummy)
             return;
 
-        if (!this._shown)
-            this._animateNotVisible();
-
-        this._shownTemporarily = false;
-        this._syncInputMode();
-    },
-
-    toggle: function() {
         if (this._shown)
             this.hide();
         else
@@ -396,12 +367,6 @@ Expo.prototype = {
                 else
                     this.hide();
             }
-        } else if (this._shownTemporarily) {
-            if (this._modal) {
-                Main.popModal(this._group);
-                this._modal = false;
-            }
-            global.stage_input_mode = Cinnamon.StageInputMode.FULLSCREEN;
         } else {
             if (this._modal) {
                 Main.popModal(this._group);
@@ -469,7 +434,7 @@ Expo.prototype = {
 
         this.emit('shown');
         // Handle any calls to hide* while we were showing
-        if (!this._shown && !this._shownTemporarily)
+        if (!this._shown)
             this._animateNotVisible();
 
         this._syncInputMode();
@@ -498,7 +463,7 @@ Expo.prototype = {
 
         this.emit('hidden');
         // Handle any calls to show* while we were hiding
-        if (this._shown || this._shownTemporarily)
+        if (this._shown)
             this._animateVisible();
 
         this._syncInputMode();
