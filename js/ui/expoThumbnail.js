@@ -987,10 +987,13 @@ ExpoThumbnailsBox.prototype = {
         }));
 
         let globalOverviewMode = 0; // off
+        this.toggleGlobalOverviewMode = function() {
+            globalOverviewMode = (globalOverviewMode + 1) % 2;
+            this.emit('set-overview-mode', globalOverviewMode === 1);
+        };
         this.actor.connect('button-release-event', Lang.bind(this, function(actor, event) {
             if (Cinnamon.get_event_state(event) & Clutter.ModifierType.BUTTON2_MASK) {
-                globalOverviewMode = (globalOverviewMode + 1) % 2;
-                this.emit('set-overview-mode', globalOverviewMode === 1);
+                this.toggleGlobalOverviewMode();
             }
         }));
     },
@@ -1042,6 +1045,10 @@ ExpoThumbnailsBox.prototype = {
                 Main.overview.show();
             });
             this.activateSelectedWorkspace(true);
+            return true;
+        }
+        if ((symbol === Clutter.o || symbol === Clutter.O) && modifiers & Clutter.ModifierType.CONTROL_MASK) {
+            this.toggleGlobalOverviewMode();
             return true;
         }
         if (modifiers & ctrlAltMask) {
