@@ -808,12 +808,9 @@ ExpoWorkspaceThumbnail.prototype = {
         if (clone && clone.metaWindow != null){
             Main.activateWindow(clone.metaWindow, time, this.metaWorkspace.index());
         }
+        Main.expo.hide();
         if (this.metaWorkspace != global.screen.get_active_workspace())
             this.metaWorkspace.activate(time);
-        this._overviewModeOff();
-        Main.expo.hide();
-        
-        this._highlight();
     },
 
     _shade : function (force){
@@ -868,9 +865,6 @@ ExpoWorkspaceThumbnail.prototype = {
 
         if (this.state > ThumbnailState.NORMAL)
             return DND.DragMotionResult.CONTINUE;
-
-        if (source.CinnamonWorkspaceLaunch)
-            return DND.DragMotionResult.COPY_DROP;
 
         if (!source.metaWindow)
             return DND.DragMotionResult.CONTINUE;
@@ -972,8 +966,6 @@ ExpoThumbnailsBox.prototype = {
         this._scale = 0;
         this._pendingScaleUpdate = false;
         this._stateUpdateQueued = false;
-        this.bX = 0;
-        this.bY = 0;
 
         this._stateCounts = {};
         for (let key in ThumbnailState)
