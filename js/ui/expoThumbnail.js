@@ -835,6 +835,8 @@ ExpoWorkspaceThumbnail.prototype = {
             Main._removeWorkspace(this.metaWorkspace);
         });
         if (!Main.hasDefaultWorkspaceName(this.metaWorkspace.index())) {
+            this._overviewModeOn();
+            this._highlight();
             let prompt = _("Are you sure you want to remove workspace \"%s\"?\n\n").format(
                 Main.getWorkspaceName(this.metaWorkspace.index()));
             let confirm = new ConfirmationDialog(prompt, removeAction, true);
@@ -1236,6 +1238,7 @@ ExpoThumbnailsBox.prototype = {
                 }));
                  
                 thumbnail.actor.connect('leave-event', Lang.bind(this, function (actor, event) {
+                    if (this._isShowingModalDialog()) {return;}
                     if (thumbnail.hovering && !isInternalEvent(thumbnail, actor, event)) {
                         thumbnail.hovering = false;
                         this.button.hide();
@@ -1408,11 +1411,16 @@ ExpoThumbnailsBox.prototype = {
             thumbnail._refreshTitle();
         });
         this._thumbnails[this._kbThumbnailIndex].showKeyboardSelectedState(true);
-        if (!Main.modalCount) {
+        if (!this._isShowingModalDialog()) {
             // we may inadvertently have lost keyboard focus during the reshuffling
             global.stage.set_key_focus(this.actor);
         }
-  },
+    },
+
+    _isShowingModalDialog: function() {
+        // the normal value is 1 while Expo is active
+        return Main.modalCount > 1;
+    },
 
     _queueUpdateStates: function() {
         if (this._stateUpdateQueued)
