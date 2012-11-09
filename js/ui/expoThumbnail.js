@@ -461,6 +461,7 @@ ExpoWorkspaceThumbnail.prototype = {
             this._overviewModeOn();
         }
         else {
+            this.hovering = false;
             this._overviewModeOff();
             this._shade();
         }
