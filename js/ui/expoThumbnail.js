@@ -175,6 +175,7 @@ ExpoWindowClone.prototype = {
     demandAttention: function() {
         this._demanding_attention = true;
         this.showUrgencyState({showUrgent:true, reps: 50});
+        this.emit('demanding-attention');
     },
 
     _onWindowDemandsAttention: function(display, metaWindow) {
@@ -635,6 +636,7 @@ ExpoWorkspaceThumbnail.prototype = {
     _addWindowClone : function(win) {
         let clone = new ExpoWindowClone(win);
 
+        clone.connect('demanding-attention', Lang.bind(this, this._overviewModeOn));
         clone.connect('selected', Lang.bind(this, this._activate));
         clone.connect('remove-workspace', 
                       Lang.bind(this, this._remove));
