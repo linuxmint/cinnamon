@@ -651,6 +651,7 @@ ExpoWorkspaceThumbnail.prototype = {
             if (!clone.dragCancelled) {
                 this._overviewModeOn();
             }
+            else {this.box.restack();}
         }));
         this._contents.add_actor(clone.actor);
 
