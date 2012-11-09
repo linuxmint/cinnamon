@@ -73,21 +73,18 @@ Expo.prototype = {
 
         this._windowCloseArea = new St.Button({style_class: 'window-close-area'});
         this._windowCloseArea.handleDragOver = function(source, actor, x, y, time) {
-                return DND.DragMotionResult.MOVE_DROP;
+                return source.metaWindow ? DND.DragMotionResult.MOVE_DROP : DND.DragMotionResult.CONTINUE;
             };
         this._windowCloseArea.acceptDrop = function(source, actor, x, y, time) {
-                
-                if (source.realWindow) {
-                    let win = source.realWindow;
-
-                    let metaWindow = win.get_meta_window();
-                    
-                    source._draggable._restoreOnSuccess = false;
-                    metaWindow.delete(global.get_current_time());
-                    return true;
-                }
-                return false;
-            };
+            if (source.metaWindow) {
+                let draggable = source._draggable;
+                actor.get_parent().remove_actor(actor);
+                draggable._dragOrigParent.add_actor(actor);
+                let metaWindow = source.metaWindow;
+                metaWindow.delete(global.get_current_time());
+            }
+            return true;
+        };
 
         this._windowCloseArea._delegate = this._windowCloseArea;
         this._group.add_actor(this._windowCloseArea);
