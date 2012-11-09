@@ -63,11 +63,18 @@ ExpoWindowClone.prototype = {
         this._onPositionChanged();
         this._onSizeChanged();
 
+        let lastButtonPressActor = null;
+        let lastButtonPressTime = 0;
         this.actor.connect('button-press-event', Lang.bind(this, function(actor, event) {
-            this.emit('pre-selected', event.get_time());
+            lastButtonPressActor = actor;
+            lastButtonPressTime = event.get_time();
         }));
-        this.actor.connect('button-release-event',
-                           Lang.bind(this, this._onButtonRelease));
+        this.actor.connect('button-release-event', Lang.bind(this, function(actor, event) {
+            if (lastButtonPressActor===actor && (event.get_time()-lastButtonPressTime) < 500) {
+                this._onButtonRelease.apply(this, arguments);
+            }
+            return true;
+        }));
 
         this.actor.connect('destroy', Lang.bind(this, this._onDestroy));
 
@@ -312,22 +319,28 @@ ExpoWorkspaceThumbnail.prototype = {
         this.actor.connect('destroy', Lang.bind(this, this._onDestroy));
 
         let lastButtonPressTimeStamp = 0;
+        let lastButtonPressActor = null;
         this.actor.connect('button-press-event', Lang.bind(this, function(actor, event) {
                 lastButtonPressTimeStamp = event.get_time();
+                lastButtonPressActor = actor;
                 return true;
             }));
         this.actor.connect('button-release-event', Lang.bind(this,
             function(actor, event) {
+                if (lastButtonPressActor !== actor) {
+                    return true;
+                }
+                let timeElapsed = event.get_time() - lastButtonPressTimeStamp;
+                // A long time elapsed is probably due to a failed dnd attempt,
+                // or some other mishap, so we'll ignore those.
+                if (timeElapsed > 500) {
+                    return true;
+                }
                 let evstate = Cinnamon.get_event_state(event);
                 if ((evstate & Clutter.ModifierType.BUTTON1_MASK) ||
                         (evstate & Clutter.ModifierType.BUTTON3_MASK))
                 {
-                    let timeElapsed = event.get_time() - lastButtonPressTimeStamp;
-                    // A long time elapsed is probably due to a failed dnd attempt,
-                    // so we'll ignore those.
-                    if (timeElapsed < 500) {
-                        this._activate();
-                    }
+                   this._activate();
                     return true;
                 } else if (evstate & Clutter.ModifierType.BUTTON2_MASK) {
                     this._remove();
@@ -621,17 +634,7 @@ ExpoWorkspaceThumbnail.prototype = {
     _addWindowClone : function(win) {
         let clone = new ExpoWindowClone(win);
 
-        clone.connect('pre-selected', Lang.bind(this, function(unused1, time) {
-            this.lastPreSelectedClone = clone;
-            this.lastPreSelectedTime = time;
-        }));
-        clone.connect('selected', Lang.bind(this, function(unused1, time) {
-            // only a quick, decisive click should result in window activation
-            let timeElapsed = time - this.lastPreSelectedTime;
-            if (clone === this.lastPreSelectedClone && timeElapsed < 400) {
-                this._activate.apply(this, arguments);
-            }
-        }));
+        clone.connect('selected', Lang.bind(this, this._activate));
         clone.connect('remove-workspace', 
                       Lang.bind(this, this._remove));
         clone.connect('drag-begin',
