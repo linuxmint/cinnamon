@@ -1271,23 +1271,6 @@ ExpoThumbnailsBox.prototype = {
         this._queueUpdateStates();
     },
 
-    removeThumbnails: function(start, count) {
-        let currentPos = 0;
-        for (let k = 0; k < this._thumbnails.length; k++) {
-            let thumbnail = this._thumbnails[k];
-
-            if (thumbnail.state > ThumbnailState.NORMAL)
-                continue;
-
-            if (currentPos >= start && currentPos < start + count)
-                this._setThumbnailState(thumbnail, ThumbnailState.REMOVING);
-
-            currentPos++;
-        }
-        
-        this._queueUpdateStates();
-    },
-
     syncStacking: function(stackIndices) {
         for (let i = 0; i < this._thumbnails.length; i++)
             this._thumbnails[i].syncStacking(stackIndices);
@@ -1654,7 +1637,6 @@ ExpoThumbnailsBox.prototype = {
         this.button.hide();
         let oldNumWorkspaces = this._thumbnails.length;
         let newNumWorkspaces = global.screen.n_workspaces;
-        let active = global.screen.get_active_workspace_index();
 
         if (oldNumWorkspaces == newNumWorkspaces)
             return;
@@ -1662,19 +1644,19 @@ ExpoThumbnailsBox.prototype = {
             // Assume workspaces are only added at the end
             this.addThumbnails(oldNumWorkspaces, newNumWorkspaces - oldNumWorkspaces);
         } else {
-            // Assume workspaces are only removed sequentially
-            // (e.g. 2,3,4 - not 2,4,7)
-            let removedIndex = -1;
-            let removedNum = oldNumWorkspaces - newNumWorkspaces;
-            for (let w = 0; w < oldNumWorkspaces; w++) {
-                let metaWorkspace = global.screen.get_workspace_by_index(w);
-                if (this._thumbnails[w].metaWorkspace != metaWorkspace) {
-                    removedIndex = w;
-                    break;
+            // Do not assume workspaces are only removed sequentially!
+            let removedCount = 0;
+            this._thumbnails.forEach(function(thumbnail, i) {
+                let metaWorkspace = global.screen.get_workspace_by_index(i-removedCount);
+                if (thumbnail.metaWorkspace != metaWorkspace) {
+                    ++removedCount;
+                    if (thumbnail.state <= ThumbnailState.NORMAL) {
+                        this._setThumbnailState(thumbnail, ThumbnailState.REMOVING);
+                    }
                 }
-            }
-            if (removedIndex >= 0) {
-                this.removeThumbnails(removedIndex, removedNum);
+            }, this);
+            if (removedCount) {
+                this._queueUpdateStates();
             }
         }
     },
