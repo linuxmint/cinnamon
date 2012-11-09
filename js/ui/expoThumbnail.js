@@ -405,7 +405,7 @@ ExpoWorkspaceThumbnail.prototype = {
         this._windowLeftMonitorId = global.screen.connect('window-left-monitor',
             Lang.bind(this, this._windowLeftMonitor));
 
-        box.connect('set-overview-mode', Lang.bind(this, function(box, turnOn) {
+        this._setOverviewModeId = box.connect('set-overview-mode', Lang.bind(this, function(box, turnOn) {
             if (turnOn) {this._overviewModeOn(true);}
             else {this._overviewModeOff();}
         }));
@@ -585,6 +585,7 @@ ExpoWorkspaceThumbnail.prototype = {
     },
 
     _onDestroy: function(actor) {
+        this.box.disconnect(this._setOverviewModeId);
         this.metaWorkspace.disconnect(this._windowAddedId);
         this.metaWorkspace.disconnect(this._windowRemovedId);
         global.screen.disconnect(this._windowEnteredMonitorId);
