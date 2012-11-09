@@ -332,9 +332,6 @@ Expo.prototype = {
     },
 
     toggle: function() {
-        if (this.isDummy)
-            return;
-
         if (this._shown)
             this.hide();
         else
