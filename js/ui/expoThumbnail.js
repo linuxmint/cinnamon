@@ -26,6 +26,7 @@ const REARRANGE_TIME_ON = 0.3;
 const REARRANGE_TIME_OFF = 0.3 * 2;
 const ICON_OPACITY = Math.round(255 * 0.9);
 const ICON_SIZE = 128;
+const ICON_OFFSET = -10;
 
 const DRAGGING_WINDOW_OPACITY = Math.round(255 * 0.8);
 const WINDOW_DND_SIZE = 256;
@@ -707,7 +708,7 @@ ExpoWorkspaceThumbnail.prototype = {
 
                 // all icons should be the same size!
                 let iconScale = (0.25/this.box.scale/scale);
-                let [iconX, iconY] = [-25*iconScale, -25*iconScale];
+                let [iconX, iconY] = [ICON_OFFSET * iconScale, ICON_OFFSET * iconScale];
                 window.icon.raise_top();
                 if (!window.metaWindow.showing_on_its_workspace()) {
                     window.actor.show();
