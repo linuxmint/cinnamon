@@ -887,8 +887,8 @@ WindowManager.prototype = {
                 label.set_text(Main.getWorkspaceName(current_workspace_index));
                 label.set_opacity = 0;
                 Main.layoutManager.addChrome(label, { visibleInFullscreen: false, affectsInputRegion: false });
-                let x = (monitor.x + (monitor.width * workspace_osd_x /100 - label.width/2));
-                let y = (monitor.y + (monitor.height * workspace_osd_y /100 - label.height/2));
+                let x = monitor.x + Math.max(0, (monitor.width * workspace_osd_x /100 - label.width/2));
+                let y = monitor.y + Math.max(0, (monitor.height * workspace_osd_y /100 - label.height/2));
                 label.set_position(x, y);  
                 Tweener.addTween(label, {   opacity: 255,
                     time: duration,
