@@ -1,6 +1,7 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 
 const Clutter = imports.gi.Clutter;
+const Gdk = imports.gi.Gdk;
 const Lang = imports.lang;
 const Mainloop = imports.mainloop;
 const Meta = imports.gi.Meta;
@@ -1209,48 +1210,47 @@ ExpoThumbnailsBox.prototype = {
                 this.lastHovered = thumbnail;
             }));
 
-            // Delay connecting to pointer-motion events, as we want to ignore spurious events caused
-            // by the opening animation (when the contents are moving and not the pointer).
-            let installEventsDone = false;
-            let installMotionEvents = Lang.bind(this, function() {
-                if (installEventsDone) {
-                    return; // already executed
+            // We want to ignore spurious events caused by animations
+            // (when the contents are moving and not the pointer).
+            let display = Gdk.Display.get_default();
+            let deviceManager = display.get_device_manager();
+            let pointer = deviceManager.get_client_pointer();
+            let [lastScreen, lastPointerX, lastPointerY] = pointer.get_position();
+            let pointerHasMoved = function() {
+                let [screen, pointerX, pointerY] = pointer.get_position();
+                if (screen == lastScreen && pointerX == lastPointerX && pointerY == lastPointerY) {return false;}
+                [lastScreen, lastPointerX, lastPointerY] = pointer.get_position();
+                return true;
+            };
+            thumbnail.actor.connect('motion-event', Lang.bind(this, function (actor, event) {
+                if (!pointerHasMoved()) {return;}
+                if (!thumbnail.hovering) {
+                    thumbnail.hovering = true;
+                    this.lastHovered = thumbnail; 
+                    this.showButton();
+                    thumbnail._highlight();
+                    setOverviewTimeout(POINTER_ENTER_MILLISECONDS_GRACE, function() {
+                        if (thumbnail.hovering) {
+                            thumbnail._overviewModeOn();
+                        }
+                    });
                 }
-                installEventsDone = true;
-
-                thumbnail.actor.connect('motion-event', Lang.bind(this, function (actor, event) {
-                    if (!thumbnail.hovering) {
-                        thumbnail.hovering = true;
-                        this.lastHovered = thumbnail; 
-                        this.showButton();
-                        thumbnail._highlight();
-                        setOverviewTimeout(POINTER_ENTER_MILLISECONDS_GRACE, function() {
-                            if (thumbnail.hovering) {
-                                thumbnail._overviewModeOn();
-                            }
-                        });
-                    }
-                }));
-                 
-                thumbnail.actor.connect('leave-event', Lang.bind(this, function (actor, event) {
-                    if (this._isShowingModalDialog()) {return;}
-                    if (thumbnail.hovering && !isInternalEvent(thumbnail, actor, event)) {
-                        thumbnail.hovering = false;
-                        this.button.hide();
-                        thumbnail._shade();
-                        setOverviewTimeout(POINTER_LEAVE_MILLISECONDS_GRACE, function() {
-                            if (!thumbnail.hovering) {
-                                thumbnail._overviewModeOff();
-                            }
-                        });
-                    }
-                }));
-             });
-
-            // It seems we cannot reliably use only idle_add because it may take several seconds before 
-            // the system goes into an idle state, so we use a fairly long timeout as a backup.
-            Mainloop.idle_add(installMotionEvents);
-            Mainloop.timeout_add(1000, installMotionEvents);
+            }));
+             
+            thumbnail.actor.connect('leave-event', Lang.bind(this, function (actor, event) {
+                if (!pointerHasMoved()) {return;}
+                if (this._isShowingModalDialog()) {return;}
+                if (thumbnail.hovering && !isInternalEvent(thumbnail, actor, event)) {
+                    thumbnail.hovering = false;
+                    this.button.hide();
+                    thumbnail._shade();
+                    setOverviewTimeout(POINTER_LEAVE_MILLISECONDS_GRACE, function() {
+                        if (!thumbnail.hovering) {
+                            thumbnail._overviewModeOff();
+                        }
+                    });
+                }
+            }));
 
             if (start > 0) { // not the initial fill
                 thumbnail.state = ThumbnailState.NEW;
