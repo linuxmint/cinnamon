@@ -1,7 +1,6 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 
 const Clutter = imports.gi.Clutter;
-const Gdk = imports.gi.Gdk;
 const Lang = imports.lang;
 const Mainloop = imports.mainloop;
 const Meta = imports.gi.Meta;
@@ -13,6 +12,7 @@ const Main = imports.ui.main;
 const Tweener = imports.ui.tweener;
 const ModalDialog = imports.ui.modalDialog;
 const Tooltips = imports.ui.tooltips;
+const PointerTracker = imports.misc.pointerTracker;
 
 // The maximum size of a thumbnail is 1/8 the width and height of the screen
 let MAX_THUMBNAIL_SCALE = 0.9;
@@ -1212,18 +1212,9 @@ ExpoThumbnailsBox.prototype = {
 
             // We want to ignore spurious events caused by animations
             // (when the contents are moving and not the pointer).
-            let display = Gdk.Display.get_default();
-            let deviceManager = display.get_device_manager();
-            let pointer = deviceManager.get_client_pointer();
-            let [lastScreen, lastPointerX, lastPointerY] = pointer.get_position();
-            let pointerHasMoved = function() {
-                let [screen, pointerX, pointerY] = pointer.get_position();
-                if (screen == lastScreen && pointerX == lastPointerX && pointerY == lastPointerY) {return false;}
-                [lastScreen, lastPointerX, lastPointerY] = pointer.get_position();
-                return true;
-            };
+            let pointerTracker = new PointerTracker.PointerTracker();
             thumbnail.actor.connect('motion-event', Lang.bind(this, function (actor, event) {
-                if (!pointerHasMoved()) {return;}
+                if (!pointerTracker.hasMoved()) {return;}
                 if (!thumbnail.hovering) {
                     thumbnail.hovering = true;
                     this.lastHovered = thumbnail; 
@@ -1238,7 +1229,7 @@ ExpoThumbnailsBox.prototype = {
             }));
              
             thumbnail.actor.connect('leave-event', Lang.bind(this, function (actor, event) {
-                if (!pointerHasMoved()) {return;}
+                if (!pointerTracker.hasMoved()) {return;}
                 if (this._isShowingModalDialog()) {return;}
                 if (thumbnail.hovering && !isInternalEvent(thumbnail, actor, event)) {
                     thumbnail.hovering = false;
