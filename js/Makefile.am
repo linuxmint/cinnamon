@@ -10,6 +10,7 @@ nobase_dist_js_DATA = \
 	misc/history.js		\
 	misc/modemManager.js	\
 	misc/params.js		\
+	misc/pointerTracker.js	\
 	misc/screenSaver.js     \
 	misc/util.js		\
 	perf/core.js		\
