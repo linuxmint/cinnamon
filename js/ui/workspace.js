@@ -16,6 +16,7 @@ const Main = imports.ui.main;
 const Overview = imports.ui.overview;
 const PopupMenu = imports.ui.popupMenu;
 const Tweener = imports.ui.tweener;
+const PointerTracker = imports.misc.pointerTracker;
 
 const FOCUS_ANIMATION_TIME = 0.15;
 
@@ -432,19 +433,9 @@ WindowOverlay.prototype = {
                 this.refreshTitle(w.title);
             }));
 
-        let motionEventsInstalled = false;
-        let installMotionEvents = Lang.bind(this, function() {
-            if (motionEventsInstalled) {
-                return;
-            }
-            windowClone.actor.connect('motion-event', Lang.bind(this, this._onPointerMotion));
-            windowClone.actor.connect('leave-event', Lang.bind(this, this._onPointerLeave));
-            motionEventsInstalled = true;
-        });
-        // Let the animation settle before we start reacting on pointer motion.
-        Mainloop.idle_add(installMotionEvents);
-        // Since idle_add can be slow at times, set an ordinary timeout as a fallback.
-        Mainloop.timeout_add(1000, installMotionEvents);
+        this._pointerTracker = new PointerTracker.PointerTracker();
+        windowClone.actor.connect('motion-event', Lang.bind(this, this._onPointerMotion));
+        windowClone.actor.connect('leave-event', Lang.bind(this, this._onPointerLeave));
 
         this._idleToggleCloseId = 0;
         windowClone.actor.connect('destroy', Lang.bind(this, this._onDestroy));
@@ -637,6 +628,7 @@ WindowOverlay.prototype = {
     },
 
     _onPointerMotion: function() {
+        if (!this._pointerTracker.hasMoved()) {return;}
         // We might get motion events on the clone while the overlay is
         // hidden, e.g. during animations, we ignore these events,
         // as the close button will be shown as needed when the overlays
@@ -655,6 +647,7 @@ WindowOverlay.prototype = {
     },
 
     _onPointerLeave: function() {
+        if (!this._pointerTracker.hasMoved()) {return;}
         this._hovering = false;
         this._idleHideCloseButton();
     },
