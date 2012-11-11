@@ -421,8 +421,7 @@ ExpoWorkspaceThumbnail.prototype = {
             Lang.bind(this, this._windowLeftMonitor));
 
         let setOverviewModeId = box.connect('set-overview-mode', Lang.bind(this, function(box, turnOn) {
-            if (turnOn) {this._overviewModeOn(true);}
-            else {this._overviewModeOff();}
+            this.setOverviewMode(turnOn);
         }));
         let restackedNotifyId = global.screen.connect('restacked', Lang.bind(this, this.onRestack));
 
@@ -440,10 +439,14 @@ ExpoWorkspaceThumbnail.prototype = {
         this._slidePosition = 0; // Fully slid in
     },
 
+    setOverviewMode: function(turnOn) {
+        if (turnOn) {this._overviewModeOn(true);}
+        else {this._overviewModeOff();}
+    },
+
     onRestack: function() {
         this.restack.apply(this, arguments);
-        if (this._overviewMode) {this._overviewModeOn(true);}
-        else {this._overviewModeOff();}
+        this.setOverviewMode(this._overviewMode);
     },
 
     restack: function() {
