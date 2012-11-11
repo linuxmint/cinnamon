@@ -411,21 +411,30 @@ ExpoWorkspaceThumbnail.prototype = {
             }
         }
 
-        // Track window changes
-        this._windowAddedId = this.metaWorkspace.connect('window-added',
+        let windowAddedId = this.metaWorkspace.connect('window-added',
                                                           Lang.bind(this, this._windowAdded));
-        this._windowRemovedId = this.metaWorkspace.connect('window-removed',
+        let windowRemovedId = this.metaWorkspace.connect('window-removed',
                                                            Lang.bind(this, this._windowRemoved));
-        this._windowEnteredMonitorId = global.screen.connect('window-entered-monitor',
+        let windowEnteredMonitorId = global.screen.connect('window-entered-monitor',
             Lang.bind(this, this._windowEnteredMonitor));
-        this._windowLeftMonitorId = global.screen.connect('window-left-monitor',
+        let windowLeftMonitorId = global.screen.connect('window-left-monitor',
             Lang.bind(this, this._windowLeftMonitor));
 
-        this._setOverviewModeId = box.connect('set-overview-mode', Lang.bind(this, function(box, turnOn) {
+        let setOverviewModeId = box.connect('set-overview-mode', Lang.bind(this, function(box, turnOn) {
             if (turnOn) {this._overviewModeOn(true);}
             else {this._overviewModeOff();}
         }));
-        this.restackedNotifyId = global.screen.connect('restacked', Lang.bind(this, this.onRestack));
+        let restackedNotifyId = global.screen.connect('restacked', Lang.bind(this, this.onRestack));
+
+        this._disconnectOtherSignals = function() {
+            global.screen.disconnect(restackedNotifyId);
+            this.box.disconnect(setOverviewModeId);
+            this.metaWorkspace.disconnect(windowAddedId);
+            this.metaWorkspace.disconnect(windowRemovedId);
+            global.screen.disconnect(windowEnteredMonitorId);
+            global.screen.disconnect(windowLeftMonitorId);
+        };
+        
         this.isActive = false;
         this.state = ThumbnailState.NORMAL;
         this.restack();
@@ -628,13 +637,7 @@ ExpoWorkspaceThumbnail.prototype = {
     },
 
     _onDestroy: function(actor) {
-        global.screen.disconnect(this.restackedNotifyId);
-        this.box.disconnect(this._setOverviewModeId);
-        this.metaWorkspace.disconnect(this._windowAddedId);
-        this.metaWorkspace.disconnect(this._windowRemovedId);
-        global.screen.disconnect(this._windowEnteredMonitorId);
-        global.screen.disconnect(this._windowLeftMonitorId);
-
+        this._disconnectOtherSignals();
         for (let i = 0; i < this._windows.length; i++) {
             this._windows[i].destroy();
         }
