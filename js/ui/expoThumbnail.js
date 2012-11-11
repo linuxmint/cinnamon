@@ -425,11 +425,38 @@ ExpoWorkspaceThumbnail.prototype = {
             if (turnOn) {this._overviewModeOn(true);}
             else {this._overviewModeOff();}
         }));
+        this.restackedNotifyId = global.screen.connect('restacked', Lang.bind(this, this.onRestack));
+        this.isActive = false;
         this.state = ThumbnailState.NORMAL;
+        this.restack();
         this._slidePosition = 0; // Fully slid in
     },
 
+    onRestack: function() {
+        this.restack.apply(this, arguments);
+        if (this._overviewMode) {this._overviewModeOn(true);}
+        else {this._overviewModeOff();}
+    },
+
+    restack: function() {
+        if (this.state > ThumbnailState.NORMAL) {
+            return;
+        }
+        if (this.isActive || !this.stackIndices) {
+            let stack = global.get_window_actors().filter(this._isMyWindow, this);
+            this.stackIndices = {};
+
+            for (let i = 0; i < stack.length; i++) {
+                // Use the stable sequence for an integer to use as a hash key
+                this.stackIndices[stack[i].get_meta_window().get_stable_sequence()] = i;
+            }
+        }
+
+        this.syncStacking(this.stackIndices);
+    },
+
     _setActive: function(isActive) {
+        this.isActive = isActive;
         this.frame.name = isActive ? 'active' : '';
     },
 
@@ -578,12 +605,11 @@ ExpoWorkspaceThumbnail.prototype = {
 
     _windowAdded : function(metaWorkspace, metaWin) {
         this._doAddWindow(metaWin);
-        this.box.restack();
+        this.restack();
     },
 
     _windowRemoved : function(metaWorkspace, metaWin) {
         this._doRemoveWindow(metaWin);
-        this.box.restack();
     },
 
     _windowEnteredMonitor : function(metaScreen, monitorIndex, metaWin) {
@@ -602,6 +628,7 @@ ExpoWorkspaceThumbnail.prototype = {
     },
 
     _onDestroy: function(actor) {
+        global.screen.disconnect(this.restackedNotifyId);
         this.box.disconnect(this._setOverviewModeId);
         this.metaWorkspace.disconnect(this._windowAddedId);
         this.metaWorkspace.disconnect(this._windowRemovedId);
@@ -653,7 +680,6 @@ ExpoWorkspaceThumbnail.prototype = {
             if (!clone.dragCancelled) {
                 this._overviewModeOn();
             }
-            else {this.box.restack();}
         }));
         this._contents.add_actor(clone.actor);
 
@@ -1017,11 +1043,6 @@ ExpoThumbnailsBox.prototype = {
         this.addThumbnails(0, global.screen.n_workspaces);
         this.button.raise_top();
 
-        this.restackedNotifyId =
-            global.screen.connect('restacked',
-                                  Lang.bind(this, this.restack));
-        this.restack();
-
         this._kbThumbnailIndex = global.screen.get_active_workspace_index();
         this._thumbnails[this._kbThumbnailIndex].showKeyboardSelectedState(true);
         global.stage.set_key_focus(this.actor);
@@ -1123,23 +1144,7 @@ ExpoThumbnailsBox.prototype = {
         return true; // handled
     },
 
-    restack: function() {
-        let stack = global.get_window_actors();
-        let stackIndices = {};
-
-        for (let i = 0; i < stack.length; i++) {
-            // Use the stable sequence for an integer to use as a hash key
-            stackIndices[stack[i].get_meta_window().get_stable_sequence()] = i;
-        }
-
-        this.syncStacking(stackIndices);
-    },
-
     hide: function() {
-        if (this.restackedNotifyId > 0){
-            global.screen.disconnect(this.restackedNotifyId);
-            this.restackedNotifyId = 0;
-        }
         if (this._switchWorkspaceNotifyId > 0) {
             global.window_manager.disconnect(this._switchWorkspaceNotifyId);
             this._switchWorkspaceNotifyId = 0;
@@ -1256,11 +1261,6 @@ ExpoThumbnailsBox.prototype = {
         }
 
         this._queueUpdateStates();
-    },
-
-    syncStacking: function(stackIndices) {
-        for (let i = 0; i < this._thumbnails.length; i++)
-            this._thumbnails[i].syncStacking(stackIndices);
     },
 
     set scale(scale) {
