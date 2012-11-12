@@ -7,6 +7,7 @@ nobase_dist_js_DATA = \
 	misc/fileUtils.js	\
 	misc/format.js		\
 	misc/gnomeSession.js	\
+	misc/gridNavigator.js	\
 	misc/history.js		\
 	misc/modemManager.js	\
 	misc/params.js		\
