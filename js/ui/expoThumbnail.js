@@ -13,6 +13,7 @@ const Tweener = imports.ui.tweener;
 const ModalDialog = imports.ui.modalDialog;
 const Tooltips = imports.ui.tooltips;
 const PointerTracker = imports.misc.pointerTracker;
+const GridNavigator = imports.misc.gridNavigator;
 
 // The maximum size of a thumbnail is 1/8 the width and height of the screen
 let MAX_THUMBNAIL_SCALE = 0.9;
@@ -1105,23 +1106,10 @@ ExpoThumbnailsBox.prototype = {
         let prevIndex = this._kbThumbnailIndex;
         let lastIndex = this._thumbnails.length - 1;
         
-        if (symbol === Clutter.End) {
-            this._kbThumbnailIndex = lastIndex;
-        }
-        else if (symbol === Clutter.Right || symbol === Clutter.Down) {
-            this._kbThumbnailIndex = this._kbThumbnailIndex + 1;
-            if (this._kbThumbnailIndex >= this._thumbnails.length) {
-                this._kbThumbnailIndex = 0;
-            }
-        }
-        else if (symbol === Clutter.Left || symbol === Clutter.Up) {
-            this._kbThumbnailIndex = this._kbThumbnailIndex - 1;
-            if (this._kbThumbnailIndex < 0 ) {
-                this._kbThumbnailIndex = this._thumbnails.length - 1;
-            }
-        }
-        else if (symbol === Clutter.Home) {
-            this._kbThumbnailIndex = 0;
+        let [nColumns, nRows] = this._getNumberOfColumnsAndRows(this._thumbnails.length);
+        let nextIndex = GridNavigator.nextIndex(this._thumbnails.length, nColumns, prevIndex, symbol);
+        if (nextIndex >= 0) {
+            this._kbThumbnailIndex = nextIndex;
         }
         else {
             let index = symbol - 48 - 1; // convert '1' to index 0, etc
@@ -1131,7 +1119,7 @@ ExpoThumbnailsBox.prototype = {
             else {
                 index = symbol - Clutter.KP_1; // convert Num-pad '1' to index 0, etc
                 if (index < 0 || index > 9) {
-                return false; // not handled
+                    return false; // not handled
                 }
             }
             if (index > lastIndex) {
