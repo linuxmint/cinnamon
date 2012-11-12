@@ -79,6 +79,19 @@ ExpoWindowClone.prototype = {
             return true;
         }));
 
+        let pointerTracker = new PointerTracker.PointerTracker();
+        this.actor.connect('motion-event', Lang.bind(this, function (actor, event) {
+            if (pointerTracker.hasMoved()) {
+                this.emit('hovering', true);
+            }
+            return false;
+        }));
+        this.actor.connect('leave-event', Lang.bind(this, function (actor, event) {
+            if (pointerTracker.hasMoved()) {
+                this.emit('hovering', false);
+            }
+            return false;
+        }));
         this.actor.connect('destroy', Lang.bind(this, this._onDestroy));
 
         this._draggable = DND.makeDraggable(this.actor,
@@ -355,6 +368,16 @@ ExpoWorkspaceThumbnail.prototype = {
 
         this.actor.connect('scroll-event', Lang.bind(this, this._onScrollEvent));
         
+        this.closeWindowButton = new St.Button({ style_class: 'workspace-close-button' });
+        this.actor.add_actor(this.closeWindowButton);
+        this.closeWindowButton.connect('clicked', Lang.bind(this, function(actor, event) {
+            if (this._lastHoveredClone) {
+                this._lastHoveredClone.metaWindow.delete(global.get_current_time());
+                this._resetCloneHover();
+            }
+        }));
+        this.closeWindowButton.hide();
+
         this.title = new St.Entry({ style_class: 'expo-workspaces-name-entry',                                     
                                      track_hover: true,
                                      can_focus: true });                
@@ -673,14 +696,14 @@ ExpoWorkspaceThumbnail.prototype = {
     _addWindowClone : function(win) {
         let clone = new ExpoWindowClone(win);
 
+        clone.connect('hovering', Lang.bind(this, this._onCloneHover));
         clone.connect('demanding-attention', Lang.bind(this, this._overviewModeOn));
         clone.connect('selected', Lang.bind(this, this._activate));
-        clone.connect('remove-workspace', 
-                      Lang.bind(this, this._remove));
-        clone.connect('drag-begin',
-                      Lang.bind(this, function(clone) {
-                          this.box.emit('drag-begin');
-                      }));
+        clone.connect('remove-workspace',  Lang.bind(this, this._remove));
+        clone.connect('drag-begin', Lang.bind(this, function(clone) {
+            this.box.emit('drag-begin');
+            this._resetCloneHover();
+        }));
         clone.connect('drag-end', Lang.bind(this, function(clone) {
             this.box.emit('drag-end');
             // normal hovering monitoring was turned off during drag
@@ -701,9 +724,47 @@ ExpoWorkspaceThumbnail.prototype = {
         return clone;
     },
 
+    _resetCloneHover : function () {
+        this.closeWindowButton.hide();
+        this._lastHoveredClone = null;
+    },
+
+    _onCloneHover : function (clone, hovering) {
+        if (!this._overviewMode) {
+            this._resetCloneHover();
+            return;
+        }
+        if (clone !== this._lastHoveredClone) {
+            if (this._buttonTimeoutId) {Mainloop.source_remove(this._buttonTimeoutId);}
+            this._buttonTimeoutId = Mainloop.idle_add(Lang.bind(this,function() {
+                this._buttonTimeoutId = null;
+                if (!this._windows) {return;} /* being destroyed */
+                let [x, y, mask] = global.get_pointer();
+                let target = this._contents.get_stage().get_actor_at_pos(Clutter.PickMode.REACTIVE, x, y);
+                if (target !== clone.actor) {
+                    this._resetCloneHover();
+                    return;
+                }
+                let [x,y] = clone.actor.get_position();
+                let [scaleX, scaleY] = clone.actor.get_scale();
+                let iboxScale = 1/this.box._scale;
+                let themeNode = this.closeWindowButton.get_theme_node();
+                let overlap = (themeNode.get_length('-cinnamon-close-overlap') / 2) * iboxScale;
+                let xOffset = overlap + Math.round((-this.closeWindowButton.width) * iboxScale + clone.actor.width * scaleX);
+                let yOffset = -overlap;
+                this.closeWindowButton.set_scale(iboxScale, iboxScale);
+                this.closeWindowButton.set_position(x + xOffset, y + yOffset);
+                this.closeWindowButton.show();
+            }));
+        }
+        this._lastHoveredClone = clone;
+    },
+
     _overviewModeOn : function () {
         if (!this.box.scale) {return;}
         this._overviewMode = true;
+        this._resetCloneHover();
+
         let windows = [];
         this._windows.forEach(function(window) {
             if (this._isOverviewWindow(window.metaWindow)) {
@@ -774,8 +835,9 @@ ExpoWorkspaceThumbnail.prototype = {
         if (!this.box.scale) {return;}
         if (!this._overviewMode && !force)
             return;
-        
+
         this._overviewMode = false;
+        this._resetCloneHover();
         const iconSpacing = ICON_SIZE/4;
         let rearrangeTime = force ? REARRANGE_TIME_OFF/2 : REARRANGE_TIME_OFF;
 
@@ -1374,6 +1436,7 @@ ExpoThumbnailsBox.prototype = {
         this._iterateStateThumbnails(ThumbnailState.NORMAL, function(thumbnail) {
             // keep default workspace names in sync
             thumbnail._refreshTitle();
+            thumbnail._resetCloneHover();
         });
         this._thumbnails[this._kbThumbnailIndex].showKeyboardSelectedState(true);
         if (!this._isShowingModalDialog()) {
