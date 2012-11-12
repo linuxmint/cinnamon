@@ -739,9 +739,12 @@ ExpoWorkspaceThumbnail.prototype = {
                 let [x,y] = clone.actor.get_position();
                 let [scaleX, scaleY] = clone.actor.get_scale();
                 let iboxScale = 1/this.box._scale;
-                let xOffset = Math.round(-this.closeWindowButton.width * iboxScale + clone.actor.width * scaleX);
+                let themeNode = this.closeWindowButton.get_theme_node();
+                let overlap = themeNode.get_length('-cinnamon-close-overlap');
+                let xOffset = overlap + Math.round((-this.closeWindowButton.width) * iboxScale + clone.actor.width * scaleX);
+                let yOffset = -overlap;
                 this.closeWindowButton.set_scale(iboxScale, iboxScale);
-                this.closeWindowButton.set_position(x + xOffset, y);
+                this.closeWindowButton.set_position(x + xOffset, y + yOffset);
                 this.closeWindowButton.show();
             }));
         }
