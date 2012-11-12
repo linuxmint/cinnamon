@@ -731,8 +731,13 @@ ExpoWorkspaceThumbnail.prototype = {
             return;
         }
         if (clone !== this._lastHoveredClone) {
-            Mainloop.idle_add(Lang.bind(this,function() {
-                if (clone !== this._lastHoveredClone) {
+            if (this._buttonTimeoutId) {Mainloop.source_remove(this._buttonTimeoutId);}
+            this._buttonTimeoutId = Mainloop.idle_add(Lang.bind(this,function() {
+                this._buttonTimeoutId = null;
+                if (!this._windows) {return;} /* being destroyed */
+                let [x, y, mask] = global.get_pointer();
+                let target = this._contents.get_stage().get_actor_at_pos(Clutter.PickMode.REACTIVE, x, y);
+                if (target !== clone.actor) {
                     this._resetCloneHover();
                     return;
                 }
