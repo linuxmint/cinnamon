@@ -423,6 +423,7 @@ ExpoWorkspaceThumbnail.prototype = {
 
         let setOverviewModeId = box.connect('set-overview-mode', Lang.bind(this, function(box, turnOn) {
             this.setOverviewMode(turnOn);
+            this.hovering = false;
         }));
         let restackedNotifyId = global.screen.connect('restacked', Lang.bind(this, this.onRestack));
 
