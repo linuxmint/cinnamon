@@ -17,6 +17,7 @@ const Overview = imports.ui.overview;
 const PopupMenu = imports.ui.popupMenu;
 const Tweener = imports.ui.tweener;
 const PointerTracker = imports.misc.pointerTracker;
+const GridNavigator = imports.misc.gridNavigator;
 
 const FOCUS_ANIMATION_TIME = 0.15;
 
@@ -779,66 +780,9 @@ WorkspaceMonitor.prototype = {
             return false;
         }
         let currentIndex = this._kbWindowIndex;
-        let nextIndex = -1;
-
-        if (numWindows > 3 // grid navigation is not suited for a low window count
-            && (symbol === Clutter.Down || symbol === Clutter.Up))
-        {
-            let numCols = Math.ceil(Math.sqrt(numWindows));
-            let numRows = Math.ceil(numWindows/numCols);
-
-            let curRow = Math.floor(currentIndex/numCols);
-            let curCol = currentIndex % numCols;
-
-            let calcNewIndex = function(rowDelta) {
-                let newIndex = (curRow + rowDelta) * numCols + curCol;
-                if (rowDelta >= 0) { // down
-                    return newIndex < numWindows ?
-                        newIndex :
-                        curCol < numCols - 1 ?
-                    // wrap to top row, one column to the right:
-                            curCol + 1 : 
-                    // wrap to top row, left-most column:
-                            0;
-                }
-                else { // up
-                    let numFullRows = Math.floor(numWindows/numCols);
-                    let numWOILR = numWindows % numCols; //num Windows on Incompl. Last Row
-                    return newIndex >= 0 ?
-                        newIndex :
-                        curCol === 0 ?
-                   // Wrap to the bottom of the right-most column, may not be on last row:
-                            (numFullRows * numCols) - 1 :
-                    /* If we're on the 
-                    top row but not in the first column, we want to move to the bottom of the
-                    column to the left, even though that may not be the bottom of the grid.
-                    */
-                            numWOILR && curCol > numWOILR ?
-                                ((numFullRows - 1) * numCols) + curCol - 1:
-                                ((numRows - 1) * numCols) + curCol - 1;
-                }
-            };
-
-            if (symbol === Clutter.Down) {
-                nextIndex = calcNewIndex(1);
-            }
-            if (symbol === Clutter.Up) {
-                nextIndex = calcNewIndex(-1);
-            }
-        }
-        else if (symbol === Clutter.Left || symbol === Clutter.Up) {
-            nextIndex = (currentIndex < 1 ? numWindows : currentIndex) - 1;
-        }
-        else if (symbol === Clutter.Right || symbol === Clutter.Down) {
-            nextIndex = (currentIndex + 1) % numWindows;
-        }
-        else if (symbol === Clutter.Home) {
-            nextIndex = 0;
-        }
-        else if (symbol === Clutter.End) {
-            nextIndex = numWindows - 1;
-        }
-        else {
+        let numCols = Math.ceil(Math.sqrt(numWindows));
+        let nextIndex = GridNavigator.nextIndex(numWindows, numCols, currentIndex, symbol);
+        if (nextIndex < 0) {
             return false; // not handled
         }
 
