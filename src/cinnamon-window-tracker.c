@@ -143,7 +143,6 @@ get_appid_from_window (MetaWindow  *window)
   wmclass = meta_window_get_wm_class (window);
   if (!wmclass)
     return NULL;
-
   appid_guess = g_ascii_strdown (wmclass, -1);
 
   /* This handles "Fedora Eclipse", probably others.
@@ -204,6 +203,19 @@ cinnamon_window_tracker_is_window_interesting (MetaWindow *window)
   return TRUE;
 }
 
+gchar *
+strip_extension (gchar *wm_class)
+{
+    char *result;
+    if (g_str_has_suffix (wm_class, ".py") ||
+        g_str_has_suffix (wm_class, ".sh")) {
+            result = g_strndup (wm_class, strlen (wm_class) - 3);
+    } else {
+        result = g_strdup (wm_class);
+    }
+    return result;
+}
+
 /**
  * get_app_from_window_wmclass:
  *
@@ -222,7 +234,7 @@ get_app_from_window_wmclass (MetaWindow  *window)
   char *with_desktop;
 
   appsys = cinnamon_app_system_get_default ();
-  wmclass = get_appid_from_window (window);
+  wmclass = strip_extension(get_appid_from_window (window));
 
   if (!wmclass)
     return NULL;

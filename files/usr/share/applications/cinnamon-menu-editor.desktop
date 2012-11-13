@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=Cinnamon Menu Editor
+Comment=Edit the entries of the Cinnamon menu applet
+Exec=cinnamon-menu-editor
+Icon=alacarte
+Terminal=false
+Type=Application
+NoDisplay=true
+Categories=GNOME;GTK;Settings;DesktopSettings;
+StartupNotify=false
