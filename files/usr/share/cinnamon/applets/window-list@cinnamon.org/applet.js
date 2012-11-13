@@ -295,23 +295,13 @@ AppMenuButton.prototype = {
 
         let tracker = Cinnamon.WindowTracker.get_default();
         this.app = tracker.get_window_app(this.metaWindow);
-        if (global.settings.get_boolean('panel-scale-text-icons') && global.settings.get_boolean('panel-resizable')) {
-            this.iconSize = Math.round(panel_height * ICON_HEIGHT_FACTOR);
-        } else {
-            this.iconSize = DEFAULT_ICON_SIZE;
-        }
-
-        let icon = this.app ?
-                            this.app.create_icon_texture(this.iconSize) :
-                            new St.Icon({ icon_name: 'application-default-icon',
-                                         icon_type: St.IconType.FULLCOLOR,
-                                         icon_size: this.iconSize });
+        this.set_icon(panel_height);
         let title = this.getDisplayTitle();
         if (metaWindow.minimized)
             this._label.set_text("[" + title + "]");
         else
             this._label.set_text(title);
-        this._iconBox.set_child(icon);
+        
         if(animation){
 			this.startAnimation(); 
 			this.stopAnimation();
@@ -407,12 +397,6 @@ AppMenuButton.prototype = {
     },
     
     doFocus: function() {
-        let tracker = Cinnamon.WindowTracker.get_default();
-        let app = tracker.get_window_app(this.metaWindow);
-        if ( app ) {  
-            let icon = app.create_icon_texture(this.iconSize);
-    		this._iconBox.set_child(icon);	
-        }         
         if (this.metaWindow.has_focus() && !this.metaWindow.minimized) {                                     
         	this.actor.add_style_pseudo_class('focus');    
             this.actor.remove_style_class_name("window-list-item-demands-attention");    	
@@ -606,6 +590,21 @@ AppMenuButton.prototype = {
     // we show as the item is being dragged.
     getDragActorSource: function() {
         return this.actor;
+    },
+    
+    set_icon: function(panel_height) {
+      if (global.settings.get_boolean('panel-scale-text-icons') && global.settings.get_boolean('panel-resizable')) {
+        this.iconSize = Math.round(panel_height * ICON_HEIGHT_FACTOR);
+      }
+      else {
+        this.iconSize = DEFAULT_ICON_SIZE;
+      }
+      let icon = this.app ?
+                            this.app.create_icon_texture(this.iconSize) :
+                            new St.Icon({ icon_name: 'application-default-icon',
+                                         icon_type: St.IconType.FULLCOLOR,
+                                         icon_size: this.iconSize });
+      this._iconBox.set_child(icon);
     }
 };
 
@@ -799,7 +798,9 @@ MyApplet.prototype = {
 
     _onFocus: function() {
         for ( let i = 0; i < this._windows.length; ++i ) {
-            this._windows[i].doFocus();
+            let window = this._windows[i];
+            window.set_icon(this._panelHeight);
+            window.doFocus();
         }
     },
 
