@@ -8,16 +8,16 @@ msgstr ""
 "Project-Id-Version: linuxmint\n"
 "Report-Msgid-Bugs-To: FULL NAME <EMAIL@ADDRESS>\n"
 "POT-Creation-Date: 2012-10-20 15:43+0100\n"
-"PO-Revision-Date: 2012-09-10 18:02+0000\n"
-"Last-Translator: Rus F Adrian <adirusf@gmail.com>\n"
+"PO-Revision-Date: 2012-10-21 11:25+0000\n"
+"Last-Translator: Cristian Moldovan <crismblog@yahoo.ro>\n"
 "Language-Team: Romanian <ro@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n == 1 ? 0: (((n % 100 > 19) || ((n % 100 "
 "== 0) && (n != 0))) ? 2: 1));\n"
-"X-Launchpad-Export-Date: 2012-10-20 20:11+0000\n"
-"X-Generator: Launchpad (build 16165)\n"
+"X-Launchpad-Export-Date: 2012-11-13 13:18+0000\n"
+"X-Generator: Launchpad (build 16251)\n"
 
 #: src/cinnamon-app.c:347 src/cinnamon-app.c:355
 #: js/ui/notificationDaemon.js:458
@@ -99,7 +99,7 @@ msgstr "Execuția '%s' a eșuat:"
 
 #: js/ui/applet.js:237
 msgid "Remove this applet"
-msgstr ""
+msgstr "Sterge acest applet"
 
 #: js/ui/autorunManager.js:280
 msgid "Removable Devices"
@@ -462,7 +462,7 @@ msgstr "Setări panel"
 
 #: js/ui/panel.js:491
 msgid "Add applets to the panel"
-msgstr ""
+msgstr "Adaugă appleturi la panou"
 
 #: js/ui/placesManager.js:119
 #, c-format
@@ -730,7 +730,7 @@ msgstr "Configurări de regiune și limbă"
 
 #: files/usr/share/cinnamon/applets/keyboard@cinnamon.org/applet.js:76
 msgid "Show flags"
-msgstr ""
+msgstr "Arată steagurile"
 
 #: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:203
 msgid "Add to panel"
@@ -1171,36 +1171,36 @@ msgstr "Titlu Necunoscut"
 
 #: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:386
 msgid "Previous"
-msgstr ""
+msgstr "Anterior"
 
 #: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:389
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:142
 msgid "Play"
-msgstr ""
+msgstr "Redă"
 
 #: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:392
 msgid "Stop"
-msgstr ""
+msgstr "Oprește"
 
 #: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:395
 msgid "Next"
-msgstr ""
+msgstr "Următorul"
 
 #: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:409
 msgid "Open Player"
-msgstr ""
+msgstr "Deschide Player"
 
 #: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:419
 msgid "Quit Player"
-msgstr ""
+msgstr "Inchide Player"
 
 #: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:744
 msgid "Mute output"
-msgstr ""
+msgstr "Ieșire fără sonor"
 
 #: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:745
 msgid "Mute input"
-msgstr ""
+msgstr "Intrare fără sonor"
 
 #: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:884
 msgid "Launch player..."
@@ -1259,11 +1259,11 @@ msgstr "Închis"
 
 #: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:44
 msgid "Close all"
-msgstr ""
+msgstr "Închide tot"
 
 #: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:47
 msgid "Close others"
-msgstr ""
+msgstr "Închide altele"
 
 #: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:51
 #: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:832
@@ -1353,7 +1353,7 @@ msgstr ""
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:68
 msgid "Maximize window"
-msgstr ""
+msgstr "Maximizează fereastra"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:69
 msgid "Unmaximize window"

@@ -8,15 +8,15 @@ msgstr ""
 "Project-Id-Version: linuxmint\n"
 "Report-Msgid-Bugs-To: FULL NAME <EMAIL@ADDRESS>\n"
 "POT-Creation-Date: 2012-10-20 15:43+0100\n"
-"PO-Revision-Date: 2012-10-19 13:15+0000\n"
+"PO-Revision-Date: 2012-10-26 13:08+0000\n"
 "Last-Translator: Konki <pavel.konkol@seznam.cz>\n"
 "Language-Team: Czech <cs@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
-"X-Launchpad-Export-Date: 2012-10-20 20:11+0000\n"
-"X-Generator: Launchpad (build 16165)\n"
+"X-Launchpad-Export-Date: 2012-11-13 13:18+0000\n"
+"X-Generator: Launchpad (build 16251)\n"
 
 #: src/cinnamon-app.c:347 src/cinnamon-app.c:355
 #: js/ui/notificationDaemon.js:458
@@ -1329,7 +1329,7 @@ msgstr "Přepínání mezi otevřenými okny"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:63
 msgid "Cycle backwards though open windows"
-msgstr ""
+msgstr "Zpětné přepínání otevřenými okny"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:64
 msgid "Run dialog (must restart Cinnamon)"
@@ -1353,11 +1353,11 @@ msgstr "Minimalizovat okno"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:71
 msgid "Toggle tiled left (must restart Cinnamon)"
-msgstr ""
+msgstr "Přepnout dlaždice vlevo (nutný restart Cinnamon)"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:72
 msgid "Toggle tiled right (must restart Cinnamon)"
-msgstr ""
+msgstr "Přepnout dlaždice vpravo (nutný restart Cinnamon)"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:73
 msgid "Close window"
@@ -1417,23 +1417,23 @@ msgstr "Přesunout okno doleva dolů"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:88
 msgid "Move window to right edge"
-msgstr ""
+msgstr "Přesunout okno na pravý okraj"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:89
 msgid "Move window to top edge"
-msgstr ""
+msgstr "Přesunout okno na horní okraj"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:90
 msgid "Move window to bottom edge"
-msgstr ""
+msgstr "Přesunout okno na spodní okraj"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:91
 msgid "Move window to left edge"
-msgstr ""
+msgstr "Přesunout okno na levý okraj"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:94
 msgid "Toggle showing window on all workspaces"
-msgstr ""
+msgstr "Přepnout zobrazení okna na všech pracovních plochách"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:95
 msgid "Switch to left workspace"
@@ -1553,7 +1553,7 @@ msgstr "Odhlásit se"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:127
 msgid "Toggle recording desktop (must restart Cinnamon)"
-msgstr ""
+msgstr "Přepnout nahrávání desktopu (nutný restart Cinnamon)"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:130
 msgid "Launch help browser"
@@ -1876,38 +1876,40 @@ msgstr "Rychlá"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1491
 msgid "Text cursor blinks"
-msgstr ""
+msgstr "Blikání textového kurzoru"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1493
 msgid "Blink speed:"
-msgstr ""
+msgstr "Rychlost blikání:"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1498
 msgid "Test Box"
-msgstr ""
+msgstr "Testovací pole"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1502
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1579
 msgid "Keyboard shortcuts"
-msgstr ""
+msgstr "Klávesové zkratky"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1507
 msgid ""
 "To edit a keyboard binding, click it and press the new keys, or press "
 "backspace to clear it."
 msgstr ""
+"Pro úpravu klávesové zkratky, na ni klikněte a stistněte nové klávesy, nebo "
+"stiskněte Backspace pro její smazání."
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1545
 msgid "Remove custom shortcut"
-msgstr ""
+msgstr "Odstranit vlastní zkratku"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1570
 msgid "Categories"
-msgstr ""
+msgstr "Kategorie"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1590
 msgid "Keyboard bindings"
-msgstr ""
+msgstr "Klávesové zkratky"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1599
 msgid "Workspace Management"
@@ -1927,7 +1929,7 @@ msgstr "Zvuk a média"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1603
 msgid "Universal Access"
-msgstr ""
+msgstr "Univerzální přístup"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1604
 msgid "Custom Shortcuts"
@@ -1941,18 +1943,24 @@ msgid ""
 "impossible to type using this key.\n"
 "\n"
 msgstr ""
+"\n"
+"Tato kombinace kláves, '<b>% s </ b> \"nelze použít, protože by se stalo "
+"nemožné psaní pomocí tohoto tlačítka.\n"
+"\n"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1706
 msgid ""
 "Please try again with a modifier key such as Control, Alt or Super (Windows "
 "key) at the same time.\n"
 msgstr ""
+"Zkuste to prosím znovu s modifikačními klávesami, jako je Ctrl, Alt nebo "
+"Super (klávesa Windows) současně.\n"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1724
 #, c-format
 msgid ""
 "This key combination, '<b>%s</b>' is currently in use by '<b>%s</b>'.  "
-msgstr ""
+msgstr "Tuto kombinaci kláves,  '<b>%s</b>' aktuálně používá  '<b>%s</b>'.  "
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1725
 #, c-format
@@ -1960,6 +1968,8 @@ msgid ""
 "If you continue, the combination will be reassigned to '<b>%s</b>.'\n"
 "\n"
 msgstr ""
+"Pokud budete pokračovat, bude kombinace přidělena k '<b>%s</b>.'\n"
+"\n"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1726
 msgid "Do you want to continue with this operation?"
@@ -1967,7 +1977,7 @@ msgstr "Chcete pokračovat v této operaci?"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1846
 msgid "Reset to default"
-msgstr ""
+msgstr "Obnovit výchozí"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2276
 msgid "Region"
@@ -2277,7 +2287,7 @@ msgstr "Povolit otočení přes hranu"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2878
 msgid "Attach dialog windows to their parent window's titlebar"
-msgstr ""
+msgstr "Připojit dialogové okno k záhlaví jejich nadřazeného okna"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2879
 msgid "Icons only"
@@ -2308,6 +2318,8 @@ msgid ""
 "Bring windows which require attention to the current workspace (instead of "
 "switching to the window's workspace)"
 msgstr ""
+"Přeneste okna, která vyžadují pozornost na aktuální pracovní plochu (místo "
+"přepínání na pracovní plochy oken)"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2885
 msgid "Workspaces"
@@ -2419,6 +2431,3 @@ msgstr "Aplikace"
 #: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/add-panel-launcher.py:142
 msgid "Add panel launcher..."
 msgstr "Přidat na panel spouštěč"
-
-#~ msgid "Cinnamon"
-#~ msgstr "Skořice :)"

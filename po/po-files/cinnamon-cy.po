@@ -3,12 +3,13 @@
 # This file is distributed under the same license as the linuxmint package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2012.
 # asus <r.prys@yahoo.com>, 2012.
+# Rhoslyn Prys <post@meddal.com>, 2012.
 msgid ""
 msgstr ""
 "Project-Id-Version: linuxmint\n"
 "Report-Msgid-Bugs-To: FULL NAME <EMAIL@ADDRESS>\n"
 "POT-Creation-Date: 2012-10-20 15:43+0100\n"
-"PO-Revision-Date: 2012-10-19 08:34+0000\n"
+"PO-Revision-Date: 2012-11-13 10:53+0000\n"
 "Last-Translator: Rhos <rprys@yahoo.com>\n"
 "Language-Team: Cymraeg\n"
 "MIME-Version: 1.0\n"
@@ -16,8 +17,8 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=4; plural=n==1 ? 0 : n==2 ? 1 : (n != 8 && n != 11) ? "
 "2 : 3;\n"
-"X-Launchpad-Export-Date: 2012-10-20 20:11+0000\n"
-"X-Generator: Launchpad (build 16165)\n"
+"X-Launchpad-Export-Date: 2012-11-13 13:18+0000\n"
+"X-Generator: Launchpad (build 16251)\n"
 "Language: cy\n"
 
 #: src/cinnamon-app.c:347 src/cinnamon-app.c:355
@@ -93,7 +94,7 @@ msgstr "Heb ganfod y gochymyn"
 
 #: js/misc/util.js:116
 msgid "Could not parse command:"
-msgstr "Methu didoli'r gorchymyn"
+msgstr "Methu didoli'r gorchymyn:"
 
 #: js/misc/util.js:124
 #, c-format
@@ -175,8 +176,8 @@ msgstr "Cliciwch Allgofnodi i adael y rhaglenni ac allgofnodi o'r system."
 #, c-format
 msgid "%s will be logged out automatically in %d second."
 msgid_plural "%s will be logged out automatically in %d seconds."
-msgstr[0] "Bydd %s yn cael ei allgofnodi yn awtomatig o fewn %d eiliad"
-msgstr[1] "Bydd %s yn cael ei allgofnodi yn awtomatig o fewn %d eiliad"
+msgstr[0] "Bydd %s yn cael ei allgofnodi yn awtomatig o fewn %d eiliad."
+msgstr[1] "Bydd %s yn cael ei allgofnodi yn awtomatig o fewn %d eiliad."
 msgstr[2] "Bydd %s yn cael ei allgofnodi yn awtomatig o fewn %d eiliad"
 msgstr[3] "Bydd %s yn cael ei allgofnodi yn awtomatig o fewn %d eiliad"
 
@@ -191,7 +192,7 @@ msgstr[3] "Byddwch yn cael eich allgofnodi yn awtomatig o fewn %d eiliad."
 
 #: js/ui/endSessionDialog.js:71
 msgid "Logging out of the system."
-msgstr "Allgofnodi o'r system"
+msgstr "Allgofnodi o'r system."
 
 #: js/ui/endSessionDialog.js:78 js/ui/endSessionDialog.js:89
 msgid "Power Off"
@@ -333,7 +334,7 @@ msgstr "Enw: "
 
 #: js/ui/networkAgent.js:279
 msgid "Private key password: "
-msgstr "Cyfrinair allwedd breifat "
+msgstr "Cyfrinair allwedd breifat: "
 
 #: js/ui/networkAgent.js:291
 msgid "Service: "
@@ -433,7 +434,7 @@ msgstr "Dewislen"
 
 #: js/ui/panel.js:440
 msgid "All settings"
-msgstr "pOB GOSODIAD"
+msgstr "Pob gosodiad"
 
 #: js/ui/panel.js:445
 msgid "Troubleshoot"
@@ -445,7 +446,7 @@ msgstr "Ailgychwyn Cinnamon"
 
 #: js/ui/panel.js:450
 msgid "Looking Glass"
-msgstr "Drych"
+msgstr "LookingGlass"
 
 #: js/ui/panel.js:454
 msgid "Restore all settings to default"
@@ -511,7 +512,7 @@ msgstr "Chwyddo"
 
 #: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:68
 msgid "Screen Keyboard"
-msgstr "Bysellfwrdd Ar Sgrin"
+msgstr "Bysellfwrdd ar Sgrin"
 
 #: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:72
 msgid "Visual Alerts"
@@ -910,27 +911,27 @@ msgstr "Dim cysylltiad"
 
 #: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2112
 msgid "Connecting to the cellular network..."
-msgstr "Cysylltu i'r rhwydwaith symudol..."
+msgstr "Cysylltu â'r rhwydwaith symudol..."
 
 #: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2116
 msgid "Connecting to the wireless network..."
-msgstr "Cysylltu i'r rhwydwaith diwyfr..."
+msgstr "Cysylltu â'r rhwydwaith diwyfr..."
 
 #: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2120
 msgid "Connecting to the wired network..."
-msgstr "Cysylltu i'r rhwydwaith gwyfrog..."
+msgstr "Cysylltu â'r rhwydwaith gwyfrog..."
 
 #: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2124
 msgid "Connecting to the VPN..."
-msgstr "Cysylltu i'r VPN..."
+msgstr "Cysylltu â'r VPN..."
 
 #: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2130
 msgid "Connecting to the network..."
-msgstr "Cysylltu i'r rhwydwaith..."
+msgstr "Cysylltu â'r rhwydwaith..."
 
 #: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2146
 msgid "Connected to the wireless network"
-msgstr "Cysylltu â'r rhwydwaith diwyfr..."
+msgstr "Cysylltu â'r rhwydwaith diwyfr"
 
 #: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2149
 msgid "Wireless connection"
@@ -938,20 +939,20 @@ msgstr "Cysylltiad diwifr"
 
 #: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2159
 msgid "Connected to the wired network"
-msgstr "Wedi cysylltu i'r rhwydwaith gwyfrog..."
+msgstr "Wedi cysylltu â'r rhwydwaith gwyfrog"
 
 #: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2170
 #: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2175
 msgid "Connected to the cellular network"
-msgstr "Wedi cysylltu i'r rhwydwaith symudol..."
+msgstr "Wedi cysylltu â'r rhwydwaith symudol"
 
 #: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2180
 msgid "Connected to the VPN"
-msgstr "Wedi cysylltu i'r rhwydwaith VPN..."
+msgstr "Wedi cysylltu â'r rhwydwaith VPN"
 
 #: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2186
 msgid "Connected to the network"
-msgstr "Wedi cysylltu i'r rhwydwaith"
+msgstr "Wedi cysylltu â'r rhwydwaith"
 
 #: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:32
 msgid "Notifications"
@@ -1244,7 +1245,7 @@ msgstr "Nid oes modd dadwneud y weithred."
 
 #: files/usr/share/cinnamon/applets/trash@cinnamon.org/applet.js:107
 msgid "Empty Trash?"
-msgstr "Gwagio'r Sbwriel"
+msgstr "Gwagio'r Sbwriel?"
 
 #: files/usr/share/cinnamon/applets/trash@cinnamon.org/applet.js:125
 msgid "Empty"
@@ -1257,11 +1258,11 @@ msgstr "Cau"
 
 #: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:44
 msgid "Close all"
-msgstr "Cau Popeth"
+msgstr "Cau popeth"
 
 #: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:47
 msgid "Close others"
-msgstr "Cau Eraill"
+msgstr "Cau eraill"
 
 #: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:51
 #: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:832
@@ -1311,7 +1312,7 @@ msgstr "Newid man gwaith"
 
 #: files/usr/share/cinnamon/applets/xrandr@cinnamon.org/applet.js:88
 msgid "Configure display settings..."
-msgstr "Ffurfweddu gosodiadau dangos"
+msgstr "Ffurfweddu gosodiadau dangos..."
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:36
 msgid "Desktop Settings"
@@ -1367,287 +1368,287 @@ msgstr "Toglo teilio chwith (rhaid ailgychwyn Cinnamon)"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:72
 msgid "Toggle tiled right (must restart Cinnamon)"
-msgstr ""
+msgstr "Toglo teilio de (rhaid ailgychwyn Cinnamon)"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:73
 msgid "Close window"
-msgstr ""
+msgstr "Cau ffenestr"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:75
 msgid "Activate window menu"
-msgstr ""
+msgstr "Gweithredu'r ddewislen ffenest"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:76
 msgid "Toggle maximization state"
-msgstr ""
+msgstr "Toglo cyflwr ehangu"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:77
 msgid "Toggle fullscreen state"
-msgstr ""
+msgstr "Toglo cyflwr sgrin lawn"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:78
 msgid "Toggle shaded state"
-msgstr ""
+msgstr "Toglo cyflwr cysgodi"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:79
 msgid "Maximize vertically"
-msgstr ""
+msgstr "Ehangu'n fertigol"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:80
 msgid "Maximize horizontally"
-msgstr ""
+msgstr "Ehangu'n llorweddol"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:81
 msgid "Resize window"
-msgstr ""
+msgstr "Newid maint ffenestr"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:82
 msgid "Move window"
-msgstr ""
+msgstr "Symud ffenestr"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:83
 msgid "Center window in screen"
-msgstr ""
+msgstr "Canoli ffenestr ar y sgrin"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:84
 msgid "Move window to upper-right"
-msgstr ""
+msgstr "Symud ffenestr i'r dde uchaf"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:85
 msgid "Move window to upper-left"
-msgstr ""
+msgstr "Symud ffenestr i'r chwith uchaf"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:86
 msgid "Move window to lower-right"
-msgstr ""
+msgstr "Symud ffenestr i'r dde isaf"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:87
 msgid "Move window to lower-left"
-msgstr ""
+msgstr "Symud ffenestr i'r chwith isaf"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:88
 msgid "Move window to right edge"
-msgstr ""
+msgstr "Symud ffenestr i'r ymyl dde"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:89
 msgid "Move window to top edge"
-msgstr ""
+msgstr "Symud ffenestr i'r ymyl uchaf"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:90
 msgid "Move window to bottom edge"
-msgstr ""
+msgstr "Symud ffenestr i'r ymyl isaf"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:91
 msgid "Move window to left edge"
-msgstr ""
+msgstr "Symud ffenestr i'r ymyl chwith"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:94
 msgid "Toggle showing window on all workspaces"
-msgstr ""
+msgstr "Toglu ffenestr ar bob gweithfan"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:95
 msgid "Switch to left workspace"
-msgstr ""
+msgstr "Symud i'r man gwaith chwith"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:96
 msgid "Switch to right workspace"
-msgstr ""
+msgstr "Symud i'r man gwaith de"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:97
 msgid "Switch to workspace 1"
-msgstr ""
+msgstr "Newid i weithfan 1"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:98
 msgid "Switch to workspace 2"
-msgstr ""
+msgstr "Newid i weithfan 2"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:99
 msgid "Switch to workspace 3"
-msgstr ""
+msgstr "Newid i weithfan 3"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:100
 msgid "Switch to workspace 4"
-msgstr ""
+msgstr "Newid i weithfan 4"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:101
 msgid "Switch to workspace 5"
-msgstr ""
+msgstr "Newid i weithfan 5"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:102
 msgid "Switch to workspace 6"
-msgstr ""
+msgstr "Newid i weithfan 6"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:103
 msgid "Switch to workspace 7"
-msgstr ""
+msgstr "Newid i weithfan 7"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:104
 msgid "Switch to workspace 8"
-msgstr ""
+msgstr "Newid i weithfan 8"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:105
 msgid "Switch to workspace 9"
-msgstr ""
+msgstr "Newid i weithfan 9"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:106
 msgid "Switch to workspace 10"
-msgstr ""
+msgstr "Newid i weithfan 10"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:107
 msgid "Switch to workspace 11"
-msgstr ""
+msgstr "Newid i weithfan 11"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:108
 msgid "Switch to workspace 12"
-msgstr ""
+msgstr "Newid i weithfan 12"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:109
 msgid "Move window to left workspace"
-msgstr ""
+msgstr "Symud i'r man gwaith chwith"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:110
 msgid "Move window to right workspace"
-msgstr ""
+msgstr "Symud i'r man gwaith de"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:111
 msgid "Move window to workspace 1"
-msgstr ""
+msgstr "Symud y ffenest at weithfan 1"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:112
 msgid "Move window to workspace 2"
-msgstr ""
+msgstr "Symud y ffenest at weithfan 2"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:113
 msgid "Move window to workspace 3"
-msgstr ""
+msgstr "Symud y ffenest at weithfan 3"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:114
 msgid "Move window to workspace 4"
-msgstr ""
+msgstr "Symud y ffenest at weithfan 4"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:115
 msgid "Move window to workspace 5"
-msgstr ""
+msgstr "Symud y ffenest at weithfan 5"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:116
 msgid "Move window to workspace 6"
-msgstr ""
+msgstr "Symud y ffenest at weithfan 6"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:117
 msgid "Move window to workspace 7"
-msgstr ""
+msgstr "Symud y ffenest at weithfan 7"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:118
 msgid "Move window to workspace 8"
-msgstr ""
+msgstr "Symud y ffenest at weithfan 8"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:119
 msgid "Move window to workspace 9"
-msgstr ""
+msgstr "Symud y ffenest at weithfan 9"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:120
 msgid "Move window to workspace 10"
-msgstr ""
+msgstr "Symud y ffenest at weithfan 10"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:121
 msgid "Move window to workspace 11"
-msgstr ""
+msgstr "Symud y ffenest at weithfan 11"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:122
 msgid "Move window to workspace 12"
-msgstr ""
+msgstr "Symud y ffenest at weithfan 12"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:125
 msgid "Log out"
-msgstr ""
+msgstr "Allgofnodi"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:127
 msgid "Toggle recording desktop (must restart Cinnamon)"
-msgstr ""
+msgstr "Toglo bwrdd gwaith recordio (rhaid ailgychwyn Cinnamon)"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:130
 msgid "Launch help browser"
-msgstr ""
+msgstr "Cychwyn y porwr cymorth"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:131
 msgid "Launch calculator"
-msgstr ""
+msgstr "Cychwyn y cyfrifiannell"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:132
 msgid "Launch email client"
-msgstr ""
+msgstr "Cychwyn y rhaglen e-bost"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:133
 msgid "Launch web browser"
-msgstr ""
+msgstr "Cychwyn y porwr gwe"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:134
 msgid "Home folder"
-msgstr ""
+msgstr "Ffolder cartref"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:138
 msgid "Volume mute"
-msgstr ""
+msgstr "Tewi'r sain"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:139
 msgid "Volume down"
-msgstr ""
+msgstr "Lefel sain i lawr"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:140
 msgid "Volume up"
-msgstr ""
+msgstr "Lefel sain i fyny"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:141
 msgid "Launch media player"
-msgstr ""
+msgstr "Cychwyn y chwaraewr cyfrwng"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:143
 msgid "Pause playback"
-msgstr ""
+msgstr "Oedi'r chwarae"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:144
 msgid "Stop playback"
-msgstr ""
+msgstr "Atal chwarae"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:145
 msgid "Previous track"
-msgstr ""
+msgstr "Trac blaenorol"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:146
 msgid "Next track"
-msgstr ""
+msgstr "Trac nesaf"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:150
 msgid "Turn zoom on or off"
-msgstr ""
+msgstr "Cychwyn neu ddiffodd chwyddo"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:151
 msgid "Zoom in"
-msgstr ""
+msgstr "Chwyddo i mewn"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:152
 msgid "Zoom out"
-msgstr ""
+msgstr "Chwyddo allan"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:153
 msgid "Turn screen reader on or off"
-msgstr ""
+msgstr "Cychwyn neu ddiffodd y darllenydd sgrin"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:154
 msgid "Turn on-screen keyboard on or off"
-msgstr ""
+msgstr "Cychwyn neu ddiffodd y bysellfwrdd ar sgrin"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:155
 msgid "Increase text size"
-msgstr ""
+msgstr "Lleihau maint y testun"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:156
 msgid "Decrease text size"
-msgstr ""
+msgstr "Lleihau maint y testun"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:157
 msgid "High contrast on or off"
-msgstr ""
+msgstr "Cychwyn neu ddiffodd cyferbyniad uchel"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:161
 msgid "Wallpaper"
@@ -1726,15 +1727,15 @@ msgstr "Gosodiadau uwch"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:781
 msgid "Picture aspect"
-msgstr ""
+msgstr "Agwedd llun"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:787
 msgid "Gradient"
-msgstr ""
+msgstr "Graddiant"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:794
 msgid "Colors"
-msgstr ""
+msgstr "Lliwiau"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:868
 msgid "Get new themes"
@@ -1758,7 +1759,7 @@ msgstr "Mae gan Fotymau Eiconau"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:885
 msgid "Always Use Location Entry In Nemo"
-msgstr ""
+msgstr "Defnyddio Mynediad Lleoliad yn Nemo"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:887
 msgid "Cursor theme"
@@ -1774,7 +1775,7 @@ msgstr "Thema eiconau"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:893
 msgid "GTK+ theme"
-msgstr "Thema Gtk+"
+msgstr "Thema GTK+"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:896
 msgid "Other settings"
@@ -1809,139 +1810,141 @@ msgstr "Estyn apledi newydd"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1283
 msgid "unassigned"
-msgstr ""
+msgstr "heb ei ddynodi"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1284
 msgid "Super-"
-msgstr ""
+msgstr "Super-"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1285
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1288
 msgid "Ctrl-"
-msgstr ""
+msgstr "Ctrl-"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1286
 msgid "Shift-"
-msgstr ""
+msgstr "Shift-"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1287
 msgid "Alt-"
-msgstr ""
+msgstr "Alt-"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1407
 #: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/add-panel-launcher.py:148
 msgid "Update"
-msgstr ""
+msgstr "Diweddaru"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1410
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1543
 msgid "Add custom shortcut"
-msgstr ""
+msgstr "Ychwanegu llwybr byr cyfaddas"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1418
 msgid "Name:"
-msgstr ""
+msgstr "Enw:"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1419
 msgid "Command:"
-msgstr ""
+msgstr "Gorchymyn:"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1427
 msgid "Select a file"
-msgstr ""
+msgstr "Dewis ffeil"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1477
 msgid "Typing"
-msgstr ""
+msgstr "Teipio"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1478
 msgid "Enable key repeat"
-msgstr ""
+msgstr "Galluogi ailadrodd bysell"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1480
 msgid "Repeat delay:"
-msgstr ""
+msgstr "Ailadrodd oedi:"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1480
 msgid "Short"
-msgstr ""
+msgstr "Byr"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1480
 msgid "Long"
-msgstr ""
+msgstr "Hir"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1485
 msgid "Repeat speed:"
-msgstr ""
+msgstr "Cyflymder ailadrodd:"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1485
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1493
 msgid "Slow"
-msgstr ""
+msgstr "Araf"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1485
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1493
 msgid "Fast"
-msgstr ""
+msgstr "Cyflym"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1491
 msgid "Text cursor blinks"
-msgstr ""
+msgstr "Chwinc cyrchwr testun"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1493
 msgid "Blink speed:"
-msgstr ""
+msgstr "Cyflymder chwinc:"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1498
 msgid "Test Box"
-msgstr ""
+msgstr "Blwch Profi"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1502
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1579
 msgid "Keyboard shortcuts"
-msgstr ""
+msgstr "Llwybrau byr bysellfwrdd"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1507
 msgid ""
 "To edit a keyboard binding, click it and press the new keys, or press "
 "backspace to clear it."
 msgstr ""
+"I olygu rhwymiad bysellfwrdd, cliciwch arno a phwyso ar y bysellau newydd, "
+"neu bwyso ar y Backspace i'w ddileu."
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1545
 msgid "Remove custom shortcut"
-msgstr ""
+msgstr "Tynnu llwybr byr cyfaddas"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1570
 msgid "Categories"
-msgstr ""
+msgstr "Categorïau"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1590
 msgid "Keyboard bindings"
-msgstr ""
+msgstr "Rhwymiadau bysellfwrdd"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1599
 msgid "Workspace Management"
-msgstr ""
+msgstr "Rheoli Gweithfannau"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1600
 msgid "System"
-msgstr ""
+msgstr "System"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1601
 msgid "Launchers"
-msgstr ""
+msgstr "Cychwynwyr"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1602
 msgid "Sound and Media"
-msgstr ""
+msgstr "Sain a Chyfrwng"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1603
 msgid "Universal Access"
-msgstr ""
+msgstr "Mynediad Cyffredinol"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1604
 msgid "Custom Shortcuts"
-msgstr ""
+msgstr "Llwybrau Byr Cyfaddas"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1705
 #, c-format
@@ -1951,18 +1954,26 @@ msgid ""
 "impossible to type using this key.\n"
 "\n"
 msgstr ""
+"\n"
+"Nid oes modd defnyddio'r cyfuniad o fysellau hyn, '<b>%s</b>' gan y byddai'n "
+"amhosib teipio gan ddefnyddio'r fysell hon.\n"
+"\n"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1706
 msgid ""
 "Please try again with a modifier key such as Control, Alt or Super (Windows "
 "key) at the same time.\n"
 msgstr ""
+"Ceisiwch eto gyda bysell addasu megis Control, Alt neu Super (bysell "
+"Windows) ar yr un pryd.\n"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1724
 #, c-format
 msgid ""
 "This key combination, '<b>%s</b>' is currently in use by '<b>%s</b>'.  "
 msgstr ""
+"Mae'r cyfuniad bysellau hyn, '<b>%s</b>' yn cael eu defnyddio gan "
+"'<b>%s</b>'.  "
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1725
 #, c-format
@@ -1970,14 +1981,16 @@ msgid ""
 "If you continue, the combination will be reassigned to '<b>%s</b>.'\n"
 "\n"
 msgstr ""
+"Os fyddwch yn parhau, bydd y cyfuniad yn cael ei ailddynodi i '<b>%s</b>.'\n"
+"\n"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1726
 msgid "Do you want to continue with this operation?"
-msgstr ""
+msgstr "Ydych chi am barhau gyda'r weithred hon?"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1846
 msgid "Reset to default"
-msgstr ""
+msgstr "Ailosod i'r rhagosodiad"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2276
 msgid "Region"
@@ -2043,15 +2056,15 @@ msgstr "milfed eiliad"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2649
 msgid "Activate menu on hover"
-msgstr ""
+msgstr "Gweithredu'r ddewislen wrth hofran"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2650
 msgid "Show bookmarks and places"
-msgstr ""
+msgstr "Dangos nodau tudalen a mannau"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2651
 msgid "Show recent files"
-msgstr ""
+msgstr "Dangos ffeiliau diweddar"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2655
 msgid "Auto-hide panel"
@@ -2059,11 +2072,11 @@ msgstr "Awto guddio'r panel"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2658
 msgid "Show delay"
-msgstr ""
+msgstr "Dangos oedi"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2662
 msgid "Hide delay"
-msgstr ""
+msgstr "Cuddio oedi"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2665
 msgid "Traditional (panel at the bottom)"
@@ -2079,7 +2092,7 @@ msgstr "Clasurol (panel ar y brig ac ar y gwaelod)"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2666
 msgid "Panel layout"
-msgstr ""
+msgstr "Cynllun y Panel"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2669
 msgid "Note: If you change the layout you will need to restart Cinnamon."
@@ -2088,24 +2101,27 @@ msgstr "Sylw: Os fyddwch yn newid y cynllun bydd angen ailgychwyn Cinnamon."
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2672
 msgid "Use customized panel size (otherwise it's defined by the theme)"
 msgstr ""
+"Defnyddio maint panel cyfaddas (fel arall bydd yn cael ei ddiffinio gan y "
+"thema)"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2675
 msgid ""
 "Allow Cinnamon to scale panel text and icons according to the panel heights"
 msgstr ""
+"Caniatáu i Cinnamon raddio testun panel ac eiconau yn ôl uchder y panel"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2679
 msgid "Top panel height"
-msgstr ""
+msgstr "Ucher brig y panel"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2679
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2683
 msgid "Pixels"
-msgstr ""
+msgstr "Picseli"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2683
 msgid "Bottom panel height"
-msgstr ""
+msgstr "Ucher gwaelod y panel"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2686
 msgid "Panel edit mode"
@@ -2181,11 +2197,11 @@ msgstr "Dewisiadau ffenestri (megis Compiz Expo)"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2734
 msgid "Expo applet: activate on hover"
-msgstr ""
+msgstr "Apled Expo: cychwyn hofran"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2735
 msgid "Scale applet: activate on hover"
-msgstr ""
+msgstr "Apled gaddio: cychwyn hofran"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2740
 msgid "Effects"
@@ -2197,7 +2213,7 @@ msgstr "Galluogi effeithiau bwrdd gwaith"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2745
 msgid "Enable desktop effects on dialog boxes"
-msgstr ""
+msgstr "Galluogi effeithiau bwrdd gwaith yn y blychau deialog"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2784
 msgid "Closing windows:"
@@ -2275,81 +2291,84 @@ msgstr "Modd ffocysu ffenestri"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2876
 msgid "Enable Edge Tiling (\"Aero Snap\")"
-msgstr ""
+msgstr "Galluogi Teilsio Ymyl (\"Aero Snap\")"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2877
 msgid "Enable Edge Flip"
-msgstr ""
+msgstr "Galluogi Fflipio Ymyl"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2878
 msgid "Attach dialog windows to their parent window's titlebar"
-msgstr ""
+msgstr "Atodi ffenestr deialog i far teitl eu ffenestr rhiant"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2879
 msgid "Icons only"
-msgstr ""
+msgstr "Eiconau'n unig"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2879
 msgid "Icons and thumbnails"
-msgstr ""
+msgstr "Eiconau a lluniau bach"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2879
 msgid "Icons and window preview"
-msgstr ""
+msgstr "Eiconau a rhagolwg ffenestr"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2879
 msgid "Window preview (no icons)"
-msgstr ""
+msgstr "Rhagolwg ffenestr (dim eiconau)"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2880
 msgid "ALT-tab switcher style"
-msgstr ""
+msgstr "Arddull newidydd ALT-tab"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2882
 msgid "Enable mouse-wheel scrolling in Window List applet"
-msgstr ""
+msgstr "Galluogi sgrolio olwyn llygoden yn apled Rhestr Ffenestri"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2883
 msgid ""
 "Bring windows which require attention to the current workspace (instead of "
 "switching to the window's workspace)"
 msgstr ""
+"Dwyn ffenestri sydd angen sylw i'r weithfan gyfredol (yn lle newid i "
+"weithfan y ffenestr)"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2885
 msgid "Workspaces"
-msgstr ""
+msgstr "Gweithfanau"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2887
 msgid "Enable workspace OSD"
-msgstr ""
+msgstr "Galluogi OSD gweithfan"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2890
 msgid "Workspace OSD duration"
-msgstr ""
+msgstr "Hyd OSD gweithfan"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2894
 msgid "Workspace OSD horizontal position"
-msgstr ""
+msgstr "Safle llorweddol OSD gweithfan"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2894
 msgid "percent of the monitor's width"
-msgstr ""
+msgstr "canran o led y monitor"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2898
 msgid "Workspace OSD vertical position"
-msgstr ""
+msgstr "Safle fertigol OSD gweithfan"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2898
 msgid "percent of the monitor's height"
-msgstr ""
+msgstr "canran o uchder y monitor"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2901
 msgid "Only use workspaces on primary monitor (requires Cinnamon restart)"
 msgstr ""
+"Defnyddio gweithfannau ar y prif fonitor yn unig (angen ailgychwyn Cinnamon)"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2902
 msgid "Display Expo view as a grid"
-msgstr ""
+msgstr "Dangos golwg Expo fel grif"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2904
 msgid "Fonts"
@@ -2385,28 +2404,30 @@ msgstr "Llyfnhau"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2914
 msgid "General"
-msgstr ""
+msgstr "Cyffredinol"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2916
 msgid ""
 "Log LookingGlass output to ~/.cinnamon/glass.log (Requires Cinnamon restart)"
 msgstr ""
+"Cofnodi allbwn LookingGlass i  ~/.cinnamon/glass.log (Angen ailgychwyn "
+"Cinnamon)"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2917
 msgid "Emulate middle click by clicking both left and right buttons"
-msgstr ""
+msgstr "Efelychu'r clic canol drwy glicio botymau de a chwith"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2918
 msgid "Display notifications"
-msgstr ""
+msgstr "Dangos hysbysiadau"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2928
 msgid "Backgrounds"
-msgstr ""
+msgstr "Cefndiroedd"
 
 #: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/add-panel-launcher.py:59
 msgid "Custom Launcher"
-msgstr "Cychwynnwr Cyfaddas"
+msgstr "Cychwynwr Cyfaddas"
 
 #: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/add-panel-launcher.py:138
 msgid "Name"
@@ -2414,8 +2435,8 @@ msgstr "Enw"
 
 #: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/add-panel-launcher.py:139
 msgid "Application"
-msgstr ""
+msgstr "Rhaglen"
 
 #: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/add-panel-launcher.py:142
 msgid "Add panel launcher..."
-msgstr ""
+msgstr "Ychwanegu cychwynwr panel..."

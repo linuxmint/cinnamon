@@ -8,15 +8,15 @@ msgstr ""
 "Project-Id-Version: linuxmint\n"
 "Report-Msgid-Bugs-To: FULL NAME <EMAIL@ADDRESS>\n"
 "POT-Creation-Date: 2012-10-20 15:43+0100\n"
-"PO-Revision-Date: 2012-10-20 09:57+0000\n"
-"Last-Translator: Albert Pool <Unknown>\n"
+"PO-Revision-Date: 2012-10-29 22:30+0000\n"
+"Last-Translator: Geert Wirken <Unknown>\n"
 "Language-Team: Dutch <nl@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Launchpad-Export-Date: 2012-10-20 20:12+0000\n"
-"X-Generator: Launchpad (build 16165)\n"
+"X-Launchpad-Export-Date: 2012-11-13 13:18+0000\n"
+"X-Generator: Launchpad (build 16251)\n"
 
 #: src/cinnamon-app.c:347 src/cinnamon-app.c:355
 #: js/ui/notificationDaemon.js:458
@@ -1312,11 +1312,11 @@ msgstr "Fijnafstemming bureaubladinstellingen"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:60
 msgid "Toggle Scale"
-msgstr "Vensterselectie (Scale) in/uitschakelen"
+msgstr "Vensterselectie (Scale) in-/uitschakelen"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:61
 msgid "Toggle Expo"
-msgstr "Werkbladselectie (Expo) in/uitschakelen"
+msgstr "Werkbladselectie (Expo) in-/uitschakelen"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:62
 msgid "Cycle through open windows"
@@ -1348,11 +1348,11 @@ msgstr "Venster minimaliseren"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:71
 msgid "Toggle tiled left (must restart Cinnamon)"
-msgstr ""
+msgstr "Venster op de linkerhelft plaatsen (Cinnamon moet herstart worden)"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:72
 msgid "Toggle tiled right (must restart Cinnamon)"
-msgstr ""
+msgstr "Venster op de rechterhelft plaatsen (Cinnamon moet herstart worden)"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:73
 msgid "Close window"
@@ -1364,7 +1364,7 @@ msgstr "Venstermenu activeren"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:76
 msgid "Toggle maximization state"
-msgstr ""
+msgstr "Maximaliseren in-/uitschakelen"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:77
 msgid "Toggle fullscreen state"
@@ -1372,7 +1372,7 @@ msgstr "Volledig scherm in-/uitschakelen"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:78
 msgid "Toggle shaded state"
-msgstr "Oprollen in- of uitschakelen"
+msgstr "Oprollen in-/uitschakelen"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:79
 msgid "Maximize vertically"
@@ -1428,7 +1428,7 @@ msgstr "Verplaats venster naar links"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:94
 msgid "Toggle showing window on all workspaces"
-msgstr "Zichtbaar op alle werkbladen in/uitschakelen"
+msgstr "Venster op alle werkbladen tonen in-/uitschakelen"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:95
 msgid "Switch to left workspace"
@@ -1548,7 +1548,7 @@ msgstr "Afmelden"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:127
 msgid "Toggle recording desktop (must restart Cinnamon)"
-msgstr ""
+msgstr "Bureaublad opnemen in-/uitschakelen (Cinnamon moet herstart worden)"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:130
 msgid "Launch help browser"
@@ -1871,15 +1871,15 @@ msgstr "Snel"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1491
 msgid "Text cursor blinks"
-msgstr ""
+msgstr "Cursor knippert"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1493
 msgid "Blink speed:"
-msgstr ""
+msgstr "Snelheid:"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1498
 msgid "Test Box"
-msgstr ""
+msgstr "Testvak"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1502
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1579
@@ -2315,6 +2315,8 @@ msgid ""
 "Bring windows which require attention to the current workspace (instead of "
 "switching to the window's workspace)"
 msgstr ""
+"Vensters die om attentie vragen naar het huidige werkblad brengen (in plaats "
+"van naar het andere werkblad te gaan)"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2885
 msgid "Workspaces"
