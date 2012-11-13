@@ -1620,9 +1620,9 @@ Workspace.prototype = {
         this.actor = new Clutter.Group();
         this.actor.set_size(0, 0);
         this._monitors = [];
-        let focusIndex = Main.layoutManager.focusIndex;
-        Main.layoutManager.monitors.forEach(function(monitor, monitorIndex) {
-            let m = new WorkspaceMonitor(metaWorkspace, monitorIndex, this, monitorIndex === focusIndex)
+        this.currentMonitorIndex = Main.layoutManager.primaryIndex;
+        Main.layoutManager.monitors.forEach(function(monitor, ix) {
+            let m = new WorkspaceMonitor(metaWorkspace, ix, this, ix === this.currentMonitorIndex)
             this._monitors.push(m);
             this.actor.add_actor(m.actor);
         }, this);
@@ -1648,7 +1648,7 @@ Workspace.prototype = {
             this._monitors[this.currentMonitorIndex].showActiveSelection(true);
             return;
         }
-        let previousIndex = this.currentMonitorIndex || 0;
+        let previousIndex = this.currentMonitorIndex;
         this.currentMonitorIndex = this.findNextNonEmptyMonitor(start || 0, increment);
         this._monitors[previousIndex].showActiveSelection(false);
         this._monitors[this.currentMonitorIndex].showActiveSelection(true);
