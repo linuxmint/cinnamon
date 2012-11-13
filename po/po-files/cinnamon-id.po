@@ -8,15 +8,15 @@ msgstr ""
 "Project-Id-Version: linuxmint\n"
 "Report-Msgid-Bugs-To: FULL NAME <EMAIL@ADDRESS>\n"
 "POT-Creation-Date: 2012-10-20 15:43+0100\n"
-"PO-Revision-Date: 2012-10-02 04:04+0000\n"
-"Last-Translator: Dio Affriza <Unknown>\n"
+"PO-Revision-Date: 2012-11-01 09:38+0000\n"
+"Last-Translator: Aldo <Unknown>\n"
 "Language-Team: Indonesian <id@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Launchpad-Export-Date: 2012-10-20 20:11+0000\n"
-"X-Generator: Launchpad (build 16165)\n"
+"X-Launchpad-Export-Date: 2012-11-13 13:18+0000\n"
+"X-Generator: Launchpad (build 16251)\n"
 
 #: src/cinnamon-app.c:347 src/cinnamon-app.c:355
 #: js/ui/notificationDaemon.js:458
@@ -39,7 +39,7 @@ msgstr "Bawaan"
 
 #: src/cinnamon-polkit-authentication-agent.c:334
 msgid "Authentication dialog was dismissed by the user"
-msgstr "Dialog otentikasi ditutup oleh pengguna"
+msgstr "Dialog otentikasi dihentikan oleh pengguna"
 
 #: src/cinnamon-util.c:89
 msgid "Home"
@@ -670,19 +670,19 @@ msgstr "Kecerahan"
 
 #: files/usr/share/cinnamon/applets/brightness@cinnamon.org/applet.js:117
 msgid "Dimming settings"
-msgstr ""
+msgstr "Pengaturan keredupan"
 
 #: files/usr/share/cinnamon/applets/brightness@cinnamon.org/applet.js:119
 msgid "Dim screen on AC power"
-msgstr ""
+msgstr "Redupkan layar ketika dalam daya AC"
 
 #: files/usr/share/cinnamon/applets/brightness@cinnamon.org/applet.js:121
 msgid "Dim screen on battery"
-msgstr ""
+msgstr "Redupkan layar dalam modus baterai"
 
 #: files/usr/share/cinnamon/applets/brightness@cinnamon.org/applet.js:144
 msgid "Brightness not available"
-msgstr ""
+msgstr "Kecerahan tidak tersedia"
 
 #: files/usr/share/cinnamon/applets/calendar@cinnamon.org/applet.js:65
 msgid "Date and Time Settings"
@@ -690,7 +690,7 @@ msgstr "Pengaturan Tanggal dan Waktu"
 
 #: files/usr/share/cinnamon/applets/expo@cinnamon.org/applet.js:19
 msgid "Expo"
-msgstr ""
+msgstr "Pameran"
 
 #: files/usr/share/cinnamon/applets/keyboard@cinnamon.org/applet.js:66
 msgid "Show Keyboard Layout"
@@ -706,7 +706,7 @@ msgstr "Pengaturan Bahasa dan Wilayah"
 
 #: files/usr/share/cinnamon/applets/keyboard@cinnamon.org/applet.js:76
 msgid "Show flags"
-msgstr ""
+msgstr "Tunjukkan bendera"
 
 #: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:203
 msgid "Add to panel"
@@ -727,7 +727,7 @@ msgstr "Tambahkan ke favorit"
 #: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:343
 #: files/usr/share/cinnamon/applets/recent@cinnamon.org/applet.js:70
 msgid "Clear list"
-msgstr ""
+msgstr "Bersihkan daftar"
 
 #: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:380
 msgid "All Applications"
@@ -739,7 +739,7 @@ msgstr "Tempat"
 
 #: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:421
 msgid "Recent Files"
-msgstr ""
+msgstr "Berkas Terkini"
 
 #: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:749
 msgid "Edit menu"
@@ -747,7 +747,7 @@ msgstr "Rubah menu"
 
 #: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:751
 msgid "Menu settings"
-msgstr ""
+msgstr "Setelan menu"
 
 #: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1218
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:126
@@ -937,42 +937,42 @@ msgstr "Tersambung ke jaringan"
 
 #: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:32
 msgid "Notifications"
-msgstr ""
+msgstr "Pemberitahuan"
 
 #: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:52
 msgid "Clear notifications"
-msgstr ""
+msgstr "Bersihkan pemberitahuan"
 
 #: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:226
 msgid "No notifications"
-msgstr ""
+msgstr "Tidak ada pemberitahuan"
 
 #: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:229
 msgid " notification"
-msgstr ""
+msgstr " pemberitahuan"
 
 #: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:232
 msgid " notifications"
-msgstr ""
+msgstr " pemberitahuan"
 
 #: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:246
 msgid " (Just now)"
-msgstr ""
+msgstr " (Hanya sekarang)"
 
 #: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:249
 #, c-format
 msgid " (%s seconds ago)"
-msgstr ""
+msgstr " (%s detik lalu)"
 
 #: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:252
 #, c-format
 msgid " (%s minute ago)"
-msgstr ""
+msgstr " (%s menit lalu)"
 
 #: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:255
 #, c-format
 msgid " (%s minutes ago)"
-msgstr ""
+msgstr " (%s menit lalu)"
 
 #: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/applet.js:47
 msgid "Launch"
@@ -1139,36 +1139,36 @@ msgstr "Judul Tidak Dikenal"
 
 #: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:386
 msgid "Previous"
-msgstr ""
+msgstr "Sebelumnya"
 
 #: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:389
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:142
 msgid "Play"
-msgstr ""
+msgstr "Putar"
 
 #: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:392
 msgid "Stop"
-msgstr ""
+msgstr "Hentikan"
 
 #: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:395
 msgid "Next"
-msgstr ""
+msgstr "Selanjutnya"
 
 #: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:409
 msgid "Open Player"
-msgstr ""
+msgstr "Buka Player"
 
 #: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:419
 msgid "Quit Player"
-msgstr ""
+msgstr "Hentikan Player"
 
 #: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:744
 msgid "Mute output"
-msgstr ""
+msgstr "Diamkan keluaran"
 
 #: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:745
 msgid "Mute input"
-msgstr ""
+msgstr "Diamkan masukan"
 
 #: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:884
 msgid "Launch player..."
@@ -1228,11 +1228,11 @@ msgstr "Tutup"
 
 #: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:44
 msgid "Close all"
-msgstr ""
+msgstr "Tutup semua"
 
 #: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:47
 msgid "Close others"
-msgstr ""
+msgstr "Tutup yang lainnya"
 
 #: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:51
 #: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:832
@@ -1298,39 +1298,39 @@ msgstr "Sesuaikan pengaturan desktop"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:60
 msgid "Toggle Scale"
-msgstr ""
+msgstr "Beralih Skala"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:61
 msgid "Toggle Expo"
-msgstr ""
+msgstr "Beralih Expo"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:62
 msgid "Cycle through open windows"
-msgstr ""
+msgstr "Siklus melalui jendela yang terbuka"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:63
 msgid "Cycle backwards though open windows"
-msgstr ""
+msgstr "Siklus terbalik melalui jendela yang terbuka"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:64
 msgid "Run dialog (must restart Cinnamon)"
-msgstr ""
+msgstr "Menjalankan dialog (harus merestart Cinnamon)"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:65
 msgid "Menu button (must restart Cinnamon)"
-msgstr ""
+msgstr "Tombol pilihan (harus merestart Cinnamon)"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:68
 msgid "Maximize window"
-msgstr ""
+msgstr "Memaksimalkan jendela"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:69
 msgid "Unmaximize window"
-msgstr ""
+msgstr "Kembalikan ukuran jendela kembali semula"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:70
 msgid "Minimize window"
-msgstr ""
+msgstr "Meminimalkan jendela"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:71
 msgid "Toggle tiled left (must restart Cinnamon)"
@@ -1342,39 +1342,39 @@ msgstr ""
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:73
 msgid "Close window"
-msgstr ""
+msgstr "Tutup jendela"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:75
 msgid "Activate window menu"
-msgstr ""
+msgstr "Aktifkan jendela menu"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:76
 msgid "Toggle maximization state"
-msgstr ""
+msgstr "Alihkan kekondisi maksimal"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:77
 msgid "Toggle fullscreen state"
-msgstr ""
+msgstr "Alihkan kekondisi layar penuh"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:78
 msgid "Toggle shaded state"
-msgstr ""
+msgstr "Ubah kekondisi berbayang"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:79
 msgid "Maximize vertically"
-msgstr ""
+msgstr "Maksimalkan secara vertikal"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:80
 msgid "Maximize horizontally"
-msgstr ""
+msgstr "Maksimalkan secara horizontal"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:81
 msgid "Resize window"
-msgstr ""
+msgstr "Rubah ukuran jendela"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:82
 msgid "Move window"
-msgstr ""
+msgstr "Pindahkan jendela"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:83
 msgid "Center window in screen"
@@ -2022,7 +2022,7 @@ msgstr ""
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2651
 msgid "Show recent files"
-msgstr ""
+msgstr "Tampilkan berkas terakhir"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2655
 msgid "Auto-hide panel"
@@ -2050,7 +2050,7 @@ msgstr "Klasik (dengan dua panel, di atas dan di bawah)"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2666
 msgid "Panel layout"
-msgstr ""
+msgstr "Panel tata letak"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2669
 msgid "Note: If you change the layout you will need to restart Cinnamon."
@@ -2058,16 +2058,18 @@ msgstr "Catatan: jalankan ulang Cinnamon setelah mengubah tatanan."
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2672
 msgid "Use customized panel size (otherwise it's defined by the theme)"
-msgstr ""
+msgstr "Gunakan ukuran panel sendiri (kecuali jika ditentukan oleh tema)"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2675
 msgid ""
 "Allow Cinnamon to scale panel text and icons according to the panel heights"
 msgstr ""
+"Berikan Cinnamon untuk menyesuaikan teks dan ikon di panel sesuai ketinggian "
+"panel"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2679
 msgid "Top panel height"
-msgstr ""
+msgstr "Ketinggian panel atas"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2679
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2683
@@ -2076,7 +2078,7 @@ msgstr ""
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2683
 msgid "Bottom panel height"
-msgstr ""
+msgstr "Ketinggian panel bawah"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2686
 msgid "Panel edit mode"
@@ -2168,7 +2170,7 @@ msgstr "Aktifkan efek desktop"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2745
 msgid "Enable desktop effects on dialog boxes"
-msgstr ""
+msgstr "Mengaktifkan efek desktop pada kotak dialog"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2784
 msgid "Closing windows:"
@@ -2254,7 +2256,7 @@ msgstr ""
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2878
 msgid "Attach dialog windows to their parent window's titlebar"
-msgstr ""
+msgstr "Lampirkan jendela dialog untuk induk barjudul jendela mereka"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2879
 msgid "Icons only"
@@ -2266,19 +2268,19 @@ msgstr "Ikon dan thumbnail"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2879
 msgid "Icons and window preview"
-msgstr ""
+msgstr "Ikon dan jendela pratinjau"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2879
 msgid "Window preview (no icons)"
-msgstr ""
+msgstr "Jendela pratinjau (tanpa ikon)"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2880
 msgid "ALT-tab switcher style"
-msgstr ""
+msgstr "Gaya sakelar ALT-tab"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2882
 msgid "Enable mouse-wheel scrolling in Window List applet"
-msgstr ""
+msgstr "Aktifkan setir-tetikus bergulir di applet Jendela Daftar"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2883
 msgid ""
@@ -2300,11 +2302,11 @@ msgstr "Lamanya ruang kerja OSD"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2894
 msgid "Workspace OSD horizontal position"
-msgstr ""
+msgstr "Keadaan ruang kerja OSD mendatar"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2894
 msgid "percent of the monitor's width"
-msgstr ""
+msgstr "persen dari lebar monitor"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2898
 msgid "Workspace OSD vertical position"

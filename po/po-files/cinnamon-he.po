@@ -8,15 +8,15 @@ msgstr ""
 "Project-Id-Version: linuxmint\n"
 "Report-Msgid-Bugs-To: FULL NAME <EMAIL@ADDRESS>\n"
 "POT-Creation-Date: 2012-10-20 15:43+0100\n"
-"PO-Revision-Date: 2012-10-16 13:39+0000\n"
+"PO-Revision-Date: 2012-11-12 13:12+0000\n"
 "Last-Translator: Yaron <sh.yaron@gmail.com>\n"
 "Language-Team: Hebrew <he@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Launchpad-Export-Date: 2012-10-20 20:11+0000\n"
-"X-Generator: Launchpad (build 16165)\n"
+"X-Launchpad-Export-Date: 2012-11-13 13:18+0000\n"
+"X-Generator: Launchpad (build 16251)\n"
 
 #: src/cinnamon-app.c:347 src/cinnamon-app.c:355
 #: js/ui/notificationDaemon.js:458
@@ -339,7 +339,7 @@ msgstr "ססמאות או מפתחות הצפנה נדרשים כדי לגשת �
 
 #: js/ui/networkAgent.js:325
 msgid "Wired 802.1X authentication"
-msgstr ""
+msgstr "אימות קווי 802.1X"
 
 #: js/ui/networkAgent.js:327
 msgid "Network name: "
@@ -965,7 +965,7 @@ msgstr " (הרגע)"
 #: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:249
 #, c-format
 msgid " (%s seconds ago)"
-msgstr ""
+msgstr " (לפני %s שניות)"
 
 #: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:252
 #, c-format
@@ -1171,11 +1171,11 @@ msgstr "יציאה מהנגן"
 
 #: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:744
 msgid "Mute output"
-msgstr ""
+msgstr "השתקת הפלט"
 
 #: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:745
 msgid "Mute input"
-msgstr ""
+msgstr "השתקת הקלט"
 
 #: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:884
 msgid "Launch player..."
@@ -1234,11 +1234,11 @@ msgstr "סגור"
 
 #: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:44
 msgid "Close all"
-msgstr ""
+msgstr "סגירת הכול"
 
 #: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:47
 msgid "Close others"
-msgstr ""
+msgstr "סגירת אחרים"
 
 #: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:51
 #: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:832
@@ -1280,7 +1280,7 @@ msgstr "ביטול ההגדלה"
 
 #: files/usr/share/cinnamon/applets/windows-quick-list@cinnamon.org/applet.js:24
 msgid "All windows"
-msgstr ""
+msgstr "כל החלונות"
 
 #: files/usr/share/cinnamon/applets/workspace-switcher@cinnamon.org/applet.js:18
 msgid "Switch workspace"

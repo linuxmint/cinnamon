@@ -119,7 +119,7 @@ userhome = expanduser("~")
 custom_launchers_path = userhome + "/.cinnamon/panel-launchers"
 
 applet_dir = os.path.dirname(inspect.getfile(inspect.currentframe()))
-builder.add_from_file(applet_dir + "/add-panel-launcher.glade")
+builder.add_from_file(applet_dir + "/cinnamon-add-panel-launcher.glade")
 
 window = builder.get_object("add-panel-launcher-dialog")
 builder.connect_signals(Handler())

@@ -8,15 +8,15 @@ msgstr ""
 "Project-Id-Version: linuxmint\n"
 "Report-Msgid-Bugs-To: FULL NAME <EMAIL@ADDRESS>\n"
 "POT-Creation-Date: 2012-10-20 15:43+0100\n"
-"PO-Revision-Date: 2012-04-25 07:58+0000\n"
-"Last-Translator: Keresztes Ákos <xsak@c2.hu>\n"
+"PO-Revision-Date: 2012-10-30 13:05+0000\n"
+"Last-Translator: Sánta János <Unknown>\n"
 "Language-Team: Hungarian <hu@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Launchpad-Export-Date: 2012-10-20 20:11+0000\n"
-"X-Generator: Launchpad (build 16165)\n"
+"X-Launchpad-Export-Date: 2012-11-13 13:18+0000\n"
+"X-Generator: Launchpad (build 16251)\n"
 
 #: src/cinnamon-app.c:347 src/cinnamon-app.c:355
 #: js/ui/notificationDaemon.js:458
@@ -43,7 +43,7 @@ msgstr "A hitelesítési ablakot a felhasználó bezárta"
 
 #: src/cinnamon-util.c:89
 msgid "Home"
-msgstr ""
+msgstr "Saját mappa"
 
 #: src/cinnamon-util.c:98
 msgid "File System"
@@ -96,7 +96,7 @@ msgstr "A(z) '%s' végrehajtása nem sikerült:"
 
 #: js/ui/applet.js:237
 msgid "Remove this applet"
-msgstr ""
+msgstr "Segédalkalmazás eltávolítása"
 
 #: js/ui/autorunManager.js:280
 msgid "Removable Devices"
@@ -286,7 +286,7 @@ msgstr "Weblap"
 
 #: js/ui/main.js:370
 msgid "WORKSPACE"
-msgstr ""
+msgstr "Munkaterület"
 
 #: js/ui/messageTray.js:1259
 msgid "Open"
@@ -425,7 +425,7 @@ msgstr "Menü"
 
 #: js/ui/panel.js:440
 msgid "All settings"
-msgstr ""
+msgstr "Összes beállítás"
 
 #: js/ui/panel.js:445
 msgid "Troubleshoot"
@@ -437,7 +437,7 @@ msgstr "Cinnamon újraindítása"
 
 #: js/ui/panel.js:450
 msgid "Looking Glass"
-msgstr "Nagyító"
+msgstr "Tükör"
 
 #: js/ui/panel.js:454
 msgid "Restore all settings to default"
@@ -453,7 +453,7 @@ msgstr "Panel beállítások"
 
 #: js/ui/panel.js:491
 msgid "Add applets to the panel"
-msgstr ""
+msgstr "Segédalkalmazás hozzáadása a panelhez"
 
 #: js/ui/placesManager.js:119
 #, c-format
@@ -638,7 +638,7 @@ msgstr "Kapcsolat bontása..."
 #: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:422
 #: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:514
 msgid "connecting..."
-msgstr "kapcsolódás..."
+msgstr "Kapcsolódás..."
 
 #: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:440
 msgid "Send Files..."
@@ -676,23 +676,23 @@ msgstr "Hangbeállítások"
 #: files/usr/share/cinnamon/applets/brightness@cinnamon.org/applet.js:228
 #: files/usr/share/cinnamon/applets/brightness@cinnamon.org/applet.js:230
 msgid "Brightness"
-msgstr ""
+msgstr "Fényerő"
 
 #: files/usr/share/cinnamon/applets/brightness@cinnamon.org/applet.js:117
 msgid "Dimming settings"
-msgstr ""
+msgstr "Elsötétítési beállítások"
 
 #: files/usr/share/cinnamon/applets/brightness@cinnamon.org/applet.js:119
 msgid "Dim screen on AC power"
-msgstr ""
+msgstr "Képernyő elsötétítése tápegységre kötve"
 
 #: files/usr/share/cinnamon/applets/brightness@cinnamon.org/applet.js:121
 msgid "Dim screen on battery"
-msgstr ""
+msgstr "Képernyő elsötétítése akkumulátorról"
 
 #: files/usr/share/cinnamon/applets/brightness@cinnamon.org/applet.js:144
 msgid "Brightness not available"
-msgstr ""
+msgstr "Fényerő nem módosítható"
 
 #: files/usr/share/cinnamon/applets/calendar@cinnamon.org/applet.js:65
 msgid "Date and Time Settings"
@@ -700,7 +700,7 @@ msgstr "Dátum és idő beállítások"
 
 #: files/usr/share/cinnamon/applets/expo@cinnamon.org/applet.js:19
 msgid "Expo"
-msgstr ""
+msgstr "Expo"
 
 #: files/usr/share/cinnamon/applets/keyboard@cinnamon.org/applet.js:66
 msgid "Show Keyboard Layout"
@@ -716,7 +716,7 @@ msgstr "Területi és nyelvi beállítások"
 
 #: files/usr/share/cinnamon/applets/keyboard@cinnamon.org/applet.js:76
 msgid "Show flags"
-msgstr ""
+msgstr "Jelölések mutatása"
 
 #: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:203
 msgid "Add to panel"
@@ -737,7 +737,7 @@ msgstr "Hozzáadás a kedvencekhez"
 #: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:343
 #: files/usr/share/cinnamon/applets/recent@cinnamon.org/applet.js:70
 msgid "Clear list"
-msgstr ""
+msgstr "Lista törlése"
 
 #: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:380
 msgid "All Applications"
@@ -749,7 +749,7 @@ msgstr "Helyek"
 
 #: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:421
 msgid "Recent Files"
-msgstr ""
+msgstr "Legutóbbi fájlok"
 
 #: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:749
 msgid "Edit menu"
@@ -757,7 +757,7 @@ msgstr "Menü szerkesztése"
 
 #: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:751
 msgid "Menu settings"
-msgstr ""
+msgstr "Menü beállítások"
 
 #: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1218
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:126
@@ -902,7 +902,7 @@ msgstr "Nincs kapcsolat"
 
 #: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2112
 msgid "Connecting to the cellular network..."
-msgstr "Csatlakozás a cellurális hálózathoz..."
+msgstr "Csatlakozás a mobil hálózathoz..."
 
 #: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2116
 msgid "Connecting to the wireless network..."
@@ -939,7 +939,7 @@ msgstr "Kapcsolódva a mobil hálózathoz"
 
 #: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2180
 msgid "Connected to the VPN"
-msgstr "Kapcsolódva a VPN_hez"
+msgstr "Kapcsolódva a VPN-hez"
 
 #: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2186
 msgid "Connected to the network"
@@ -947,42 +947,42 @@ msgstr "Kapcsolódva a hálózathoz"
 
 #: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:32
 msgid "Notifications"
-msgstr ""
+msgstr "Értesítések"
 
 #: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:52
 msgid "Clear notifications"
-msgstr ""
+msgstr "Értesítések törlése"
 
 #: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:226
 msgid "No notifications"
-msgstr ""
+msgstr "Nincsenek értesítések"
 
 #: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:229
 msgid " notification"
-msgstr ""
+msgstr " értesítés"
 
 #: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:232
 msgid " notifications"
-msgstr ""
+msgstr " értesítés"
 
 #: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:246
 msgid " (Just now)"
-msgstr ""
+msgstr " (Csak most)"
 
 #: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:249
 #, c-format
 msgid " (%s seconds ago)"
-msgstr ""
+msgstr " (%s másodperce)"
 
 #: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:252
 #, c-format
 msgid " (%s minute ago)"
-msgstr ""
+msgstr " (%s perce)"
 
 #: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:255
 #, c-format
 msgid " (%s minutes ago)"
-msgstr ""
+msgstr " (%s perce)"
 
 #: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/applet.js:47
 msgid "Launch"
@@ -1045,15 +1045,15 @@ msgstr "Kijelző"
 
 #: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:184
 msgid "Show percentage"
-msgstr ""
+msgstr "Százalék megjelenítése"
 
 #: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:189
 msgid "Show time remaining"
-msgstr ""
+msgstr "Hátralevő idő mutatása"
 
 #: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:194
 msgid "Hide label"
-msgstr ""
+msgstr "Címke elrejtése"
 
 #: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:202
 msgid "Power Settings"
@@ -1100,7 +1100,7 @@ msgstr "Legutóbbi dokumentumok"
 
 #: files/usr/share/cinnamon/applets/recent@cinnamon.org/applet.js:74
 msgid "No recent documents"
-msgstr ""
+msgstr "Nincsenek előzmények"
 
 #: files/usr/share/cinnamon/applets/removable-drives@cinnamon.org/applet.js:53
 msgid "Removable drives"
@@ -1117,7 +1117,7 @@ msgstr "Fájlkezelő megnyitása"
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2819
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2830
 msgid "Scale"
-msgstr "Nyújtás"
+msgstr "Kirakat"
 
 #: files/usr/share/cinnamon/applets/show-desktop@cinnamon.org/applet.js:16
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:74
@@ -1126,11 +1126,11 @@ msgstr "Asztal megjelenítése"
 
 #: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:105
 msgid "Playing"
-msgstr "Lejátszás folyamatban"
+msgstr "Lejátszás"
 
 #: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:106
 msgid "Paused"
-msgstr "Felfüggesztve"
+msgstr "Szünetel"
 
 #: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:107
 msgid "Stopped"
@@ -1153,36 +1153,36 @@ msgstr "Ismeretlen cím"
 
 #: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:386
 msgid "Previous"
-msgstr ""
+msgstr "Előző"
 
 #: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:389
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:142
 msgid "Play"
-msgstr ""
+msgstr "Lejátszás"
 
 #: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:392
 msgid "Stop"
-msgstr ""
+msgstr "Leállítás"
 
 #: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:395
 msgid "Next"
-msgstr ""
+msgstr "Következő"
 
 #: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:409
 msgid "Open Player"
-msgstr ""
+msgstr "Lejátszó megnyitása"
 
 #: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:419
 msgid "Quit Player"
-msgstr ""
+msgstr "Lejátszó bezárása"
 
 #: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:744
 msgid "Mute output"
-msgstr ""
+msgstr "Kimenet némítása"
 
 #: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:745
 msgid "Mute input"
-msgstr ""
+msgstr "Bemenet némítása"
 
 #: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:884
 msgid "Launch player..."
@@ -1241,11 +1241,11 @@ msgstr "Bezárás"
 
 #: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:44
 msgid "Close all"
-msgstr ""
+msgstr "Minden bezárása"
 
 #: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:47
 msgid "Close others"
-msgstr ""
+msgstr "Többi bezárása"
 
 #: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:51
 #: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:832
@@ -1283,11 +1283,11 @@ msgstr "Csak ezen a munkaterületen"
 
 #: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:115
 msgid "Unmaximize"
-msgstr "Visszaállítás"
+msgstr "Ablakméret visszaállítása"
 
 #: files/usr/share/cinnamon/applets/windows-quick-list@cinnamon.org/applet.js:24
 msgid "All windows"
-msgstr ""
+msgstr "Minden ablak"
 
 #: files/usr/share/cinnamon/applets/workspace-switcher@cinnamon.org/applet.js:18
 msgid "Switch workspace"
@@ -1311,331 +1311,331 @@ msgstr "Asztalbeállítások finomhangolása"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:60
 msgid "Toggle Scale"
-msgstr ""
+msgstr "Kirakat nézet"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:61
 msgid "Toggle Expo"
-msgstr ""
+msgstr "Expo nézet"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:62
 msgid "Cycle through open windows"
-msgstr ""
+msgstr "Megnyitott ablakok tallózása"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:63
 msgid "Cycle backwards though open windows"
-msgstr ""
+msgstr "Megnyitott ablakok tallózása  visszafelé"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:64
 msgid "Run dialog (must restart Cinnamon)"
-msgstr ""
+msgstr "Futtatás... (Cinnamon újraindítása szükséges)"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:65
 msgid "Menu button (must restart Cinnamon)"
-msgstr ""
+msgstr "Menü gomb (Cinnamon újraindítása szükséges)"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:68
 msgid "Maximize window"
-msgstr ""
+msgstr "Teljes méret"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:69
 msgid "Unmaximize window"
-msgstr ""
+msgstr "Ablakméret visszaállítása"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:70
 msgid "Minimize window"
-msgstr ""
+msgstr "Kis méret"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:71
 msgid "Toggle tiled left (must restart Cinnamon)"
-msgstr ""
+msgstr "Balra igazítás (Cinnamon újraindítása szükséges)"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:72
 msgid "Toggle tiled right (must restart Cinnamon)"
-msgstr ""
+msgstr "Jobbra igazítás (Cinnamon újraindítása szükséges)"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:73
 msgid "Close window"
-msgstr ""
+msgstr "Ablak bezárása"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:75
 msgid "Activate window menu"
-msgstr ""
+msgstr "Ablakmenü aktiválása"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:76
 msgid "Toggle maximization state"
-msgstr ""
+msgstr "Teljes méret"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:77
 msgid "Toggle fullscreen state"
-msgstr ""
+msgstr "Teljes képernyős mód"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:78
 msgid "Toggle shaded state"
-msgstr ""
+msgstr "Háttérbe küldés"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:79
 msgid "Maximize vertically"
-msgstr ""
+msgstr "Nyújtás függőlegesen"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:80
 msgid "Maximize horizontally"
-msgstr ""
+msgstr "Nyújtás vízszintesen"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:81
 msgid "Resize window"
-msgstr ""
+msgstr "Ablak átméretezése"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:82
 msgid "Move window"
-msgstr ""
+msgstr "Ablak áthelyezése"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:83
 msgid "Center window in screen"
-msgstr ""
+msgstr "Ablak igazítása a képernyő közepére"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:84
 msgid "Move window to upper-right"
-msgstr ""
+msgstr "Ablak illesztése a jobb felső sarokba"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:85
 msgid "Move window to upper-left"
-msgstr ""
+msgstr "Ablak illesztése a bal felső sarokba"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:86
 msgid "Move window to lower-right"
-msgstr ""
+msgstr "Ablak illesztése a jobb alsó sarokba"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:87
 msgid "Move window to lower-left"
-msgstr ""
+msgstr "Ablak illesztése a bal alsó sarokba"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:88
 msgid "Move window to right edge"
-msgstr ""
+msgstr "Ablak illesztése a jobb szélre"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:89
 msgid "Move window to top edge"
-msgstr ""
+msgstr "Ablak illesztése a felső szélre"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:90
 msgid "Move window to bottom edge"
-msgstr ""
+msgstr "Ablak illesztése az alsó szélre"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:91
 msgid "Move window to left edge"
-msgstr ""
+msgstr "Ablak illesztése a bal szélre"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:94
 msgid "Toggle showing window on all workspaces"
-msgstr ""
+msgstr "Ablak megjelenítése az összes munkaterületen"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:95
 msgid "Switch to left workspace"
-msgstr ""
+msgstr "Átváltás a bal oldali munkaterületre"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:96
 msgid "Switch to right workspace"
-msgstr ""
+msgstr "Átváltás a jobb oldali munkaterületre"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:97
 msgid "Switch to workspace 1"
-msgstr ""
+msgstr "Átváltás az 1. munkaterületre"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:98
 msgid "Switch to workspace 2"
-msgstr ""
+msgstr "Átváltás a 2. munkaterületre"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:99
 msgid "Switch to workspace 3"
-msgstr ""
+msgstr "Átváltás a 3. munkaterületre"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:100
 msgid "Switch to workspace 4"
-msgstr ""
+msgstr "Átváltás a 4. munkaterületre"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:101
 msgid "Switch to workspace 5"
-msgstr ""
+msgstr "Átváltás az 5. munkaterületre"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:102
 msgid "Switch to workspace 6"
-msgstr ""
+msgstr "Átváltás a 6. munkaterületre"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:103
 msgid "Switch to workspace 7"
-msgstr ""
+msgstr "Átváltás a 7. munkaterületre"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:104
 msgid "Switch to workspace 8"
-msgstr ""
+msgstr "Átváltás a 8. munkaterületre"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:105
 msgid "Switch to workspace 9"
-msgstr ""
+msgstr "Átváltás a 9. munkaterületre"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:106
 msgid "Switch to workspace 10"
-msgstr ""
+msgstr "Átváltás a 10. munkaterületre"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:107
 msgid "Switch to workspace 11"
-msgstr ""
+msgstr "Átváltás a 11. munkaterületre"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:108
 msgid "Switch to workspace 12"
-msgstr ""
+msgstr "Átváltás a 12. munkaterületre"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:109
 msgid "Move window to left workspace"
-msgstr ""
+msgstr "Ablak áthelyezése egy munkaterülettel balra"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:110
 msgid "Move window to right workspace"
-msgstr ""
+msgstr "Ablak áthelyezése egy munkaterülettel jobbra"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:111
 msgid "Move window to workspace 1"
-msgstr ""
+msgstr "Ablak áthelyezése az 1. munkaterületre"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:112
 msgid "Move window to workspace 2"
-msgstr ""
+msgstr "Ablak áthelyezése a 2. munkaterületre"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:113
 msgid "Move window to workspace 3"
-msgstr ""
+msgstr "Ablak áthelyezése a 3. munkaterületre"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:114
 msgid "Move window to workspace 4"
-msgstr ""
+msgstr "Ablak áthelyezése a 4. munkaterületre"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:115
 msgid "Move window to workspace 5"
-msgstr ""
+msgstr "Ablak áthelyezése az 5. munkaterületre"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:116
 msgid "Move window to workspace 6"
-msgstr ""
+msgstr "Ablak áthelyezése a 6. munkaterületre"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:117
 msgid "Move window to workspace 7"
-msgstr ""
+msgstr "Ablak áthelyezése a 7. munkaterületre"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:118
 msgid "Move window to workspace 8"
-msgstr ""
+msgstr "Ablak áthelyezése a 8. munkaterületre"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:119
 msgid "Move window to workspace 9"
-msgstr ""
+msgstr "Ablak áthelyezése a 9. munkaterületre"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:120
 msgid "Move window to workspace 10"
-msgstr ""
+msgstr "Ablak áthelyezése a 10. munkaterületre"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:121
 msgid "Move window to workspace 11"
-msgstr ""
+msgstr "Ablak áthelyezése a 11. munkaterületre"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:122
 msgid "Move window to workspace 12"
-msgstr ""
+msgstr "Ablak áthelyezése a 12. munkaterületre"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:125
 msgid "Log out"
-msgstr ""
+msgstr "Kijelentkezés"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:127
 msgid "Toggle recording desktop (must restart Cinnamon)"
-msgstr ""
+msgstr "Képernyő videofelvétel (Cinnamon újraindítása szükséges)"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:130
 msgid "Launch help browser"
-msgstr ""
+msgstr "Súgóböngésző indítása"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:131
 msgid "Launch calculator"
-msgstr ""
+msgstr "Számológép indítása"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:132
 msgid "Launch email client"
-msgstr ""
+msgstr "E-mail olvasó indítása"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:133
 msgid "Launch web browser"
-msgstr ""
+msgstr "Webböngésző indítása"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:134
 msgid "Home folder"
-msgstr ""
+msgstr "Saját mappa"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:138
 msgid "Volume mute"
-msgstr ""
+msgstr "Hangerő némítása"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:139
 msgid "Volume down"
-msgstr ""
+msgstr "Halkítás"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:140
 msgid "Volume up"
-msgstr ""
+msgstr "Hangosítás"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:141
 msgid "Launch media player"
-msgstr ""
+msgstr "Médialejátszó indítása"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:143
 msgid "Pause playback"
-msgstr ""
+msgstr "Lejátszás szüneteltetése"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:144
 msgid "Stop playback"
-msgstr ""
+msgstr "Lejátszás leállítása"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:145
 msgid "Previous track"
-msgstr ""
+msgstr "Előző szám"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:146
 msgid "Next track"
-msgstr ""
+msgstr "Következő szám"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:150
 msgid "Turn zoom on or off"
-msgstr ""
+msgstr "Nagyító ki/bekapcsolása"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:151
 msgid "Zoom in"
-msgstr ""
+msgstr "Nagyítás"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:152
 msgid "Zoom out"
-msgstr ""
+msgstr "Kicsinyítés"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:153
 msgid "Turn screen reader on or off"
-msgstr ""
+msgstr "Képernyőolvasó ki/bekapcsolása"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:154
 msgid "Turn on-screen keyboard on or off"
-msgstr ""
+msgstr "Képernyőbillentyűzet ki/bekapcsolása"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:155
 msgid "Increase text size"
-msgstr ""
+msgstr "Szövegméret növelése"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:156
 msgid "Decrease text size"
-msgstr ""
+msgstr "Szövegméret csökkentése"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:157
 msgid "High contrast on or off"
-msgstr ""
+msgstr "Nagy kontraszt ki/bekapcsolása"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:161
 msgid "Wallpaper"
-msgstr ""
+msgstr "Háttérkép"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:167
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2025
@@ -1649,76 +1649,76 @@ msgstr "Nincs"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:168
 msgid "Horizontal"
-msgstr ""
+msgstr "Vízszintes"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:169
 msgid "Vertical"
-msgstr ""
+msgstr "Függőleges"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:173
 msgid "No picture"
-msgstr ""
+msgstr "Nincs kép"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:174
 msgid "Mosaic"
-msgstr ""
+msgstr "Mozaik"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:175
 msgid "Centered"
-msgstr ""
+msgstr "Középre igazított"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:176
 msgid "Scaled"
-msgstr ""
+msgstr "Méretezett"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:177
 msgid "Stretched"
-msgstr ""
+msgstr "Nyújtott"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:179
 msgid "Spanned"
-msgstr ""
+msgstr "Kifeszített"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:602
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:747
 msgid "Add wallpapers"
-msgstr ""
+msgstr "Háttér hozzáadása"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:625
 msgid "Folder"
-msgstr ""
+msgstr "Mappa"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:633
 msgid "Recursive listing"
-msgstr ""
+msgstr "Rekurzív listázás"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:638
 msgid "Delay"
-msgstr ""
+msgstr "Késleltetés"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:734
 msgid "Mode"
-msgstr ""
+msgstr "Üzemmód"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:742
 msgid "Remove wallpaper"
-msgstr ""
+msgstr "Háttérkép eltávolítása"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:773
 msgid "Advanced options"
-msgstr ""
+msgstr "Haladó beállítások"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:781
 msgid "Picture aspect"
-msgstr ""
+msgstr "Kép méretarányai"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:787
 msgid "Gradient"
-msgstr ""
+msgstr "Színátmenet"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:794
 msgid "Colors"
-msgstr ""
+msgstr "Színek"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:868
 msgid "Get new themes"
@@ -1742,7 +1742,7 @@ msgstr "Gombikonok megjelenítése"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:885
 msgid "Always Use Location Entry In Nemo"
-msgstr ""
+msgstr "Mindig jelenítse meg a Helybevitel mezőt a Nemo-ban"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:887
 msgid "Cursor theme"
@@ -1776,7 +1776,7 @@ msgstr "Leírás"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1016
 msgid "Get new extensions"
-msgstr "Új kiterjesztés letöltése"
+msgstr "Új kiterjesztések letöltése"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1085
 #: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/add-panel-launcher.py:140
@@ -1793,139 +1793,141 @@ msgstr "Új kisalkalmazások letöltése"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1283
 msgid "unassigned"
-msgstr ""
+msgstr "nincs társítva"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1284
 msgid "Super-"
-msgstr ""
+msgstr "Super-"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1285
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1288
 msgid "Ctrl-"
-msgstr ""
+msgstr "Ctrl-"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1286
 msgid "Shift-"
-msgstr ""
+msgstr "Shift-"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1287
 msgid "Alt-"
-msgstr ""
+msgstr "Alt-"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1407
 #: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/add-panel-launcher.py:148
 msgid "Update"
-msgstr ""
+msgstr "Frissítés"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1410
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1543
 msgid "Add custom shortcut"
-msgstr ""
+msgstr "Tetszőleges gyorsbillentyű megadása"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1418
 msgid "Name:"
-msgstr ""
+msgstr "Név:"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1419
 msgid "Command:"
-msgstr ""
+msgstr "Parancs:"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1427
 msgid "Select a file"
-msgstr ""
+msgstr "Fájl kiválasztása"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1477
 msgid "Typing"
-msgstr ""
+msgstr "Gépelés"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1478
 msgid "Enable key repeat"
-msgstr ""
+msgstr "Billentyű ismétlése nyomva tartáskor"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1480
 msgid "Repeat delay:"
-msgstr ""
+msgstr "Késleltetési idő:"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1480
 msgid "Short"
-msgstr ""
+msgstr "Rövid"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1480
 msgid "Long"
-msgstr ""
+msgstr "Hosszú"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1485
 msgid "Repeat speed:"
-msgstr ""
+msgstr "Ismétlés sebessége:"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1485
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1493
 msgid "Slow"
-msgstr ""
+msgstr "Lassú"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1485
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1493
 msgid "Fast"
-msgstr ""
+msgstr "Gyors"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1491
 msgid "Text cursor blinks"
-msgstr ""
+msgstr "A kurzor villogjon a szövegmezőkben"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1493
 msgid "Blink speed:"
-msgstr ""
+msgstr "Villogás sebessége:"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1498
 msgid "Test Box"
-msgstr ""
+msgstr "Tesztmező"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1502
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1579
 msgid "Keyboard shortcuts"
-msgstr ""
+msgstr "Gyorsbillentyűk"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1507
 msgid ""
 "To edit a keyboard binding, click it and press the new keys, or press "
 "backspace to clear it."
 msgstr ""
+"Gyorsbillentyű szerkesztéséhez kattintson a sorra, és nyomja le az új "
+"billentyűket, vagy törölje a Backspace billentyűvel."
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1545
 msgid "Remove custom shortcut"
-msgstr ""
+msgstr "Egyéni gyorsbillentyű törlése"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1570
 msgid "Categories"
-msgstr ""
+msgstr "Kategóriák"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1590
 msgid "Keyboard bindings"
-msgstr ""
+msgstr "Gyorsbillentyűk"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1599
 msgid "Workspace Management"
-msgstr ""
+msgstr "Munkaasztalok kezelése"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1600
 msgid "System"
-msgstr ""
+msgstr "Rendszer"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1601
 msgid "Launchers"
-msgstr ""
+msgstr "Parancsikonok"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1602
 msgid "Sound and Media"
-msgstr ""
+msgstr "Hang és média"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1603
 msgid "Universal Access"
-msgstr ""
+msgstr "Akadálymentesítés"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1604
 msgid "Custom Shortcuts"
-msgstr ""
+msgstr "Egyéni gyorsbillentyűk"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1705
 #, c-format
@@ -1935,18 +1937,25 @@ msgid ""
 "impossible to type using this key.\n"
 "\n"
 msgstr ""
+"\n"
+"A '<b>%s</b>' billentyűkombináció nem alkalmazható, mert ellehetetlenítené a "
+"gépelést.\n"
+"\n"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1706
 msgid ""
 "Please try again with a modifier key such as Control, Alt or Super (Windows "
 "key) at the same time.\n"
 msgstr ""
+"Próbálja újra a Ctrl, Alt vagy Super (Windows) gombok egyidejű "
+"lenyomásával.\n"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1724
 #, c-format
 msgid ""
 "This key combination, '<b>%s</b>' is currently in use by '<b>%s</b>'.  "
 msgstr ""
+"A '<b>%s</b>' billentyűkombináció már használatban van mint: '<b>%s</b>'.  "
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1725
 #, c-format
@@ -1954,14 +1963,16 @@ msgid ""
 "If you continue, the combination will be reassigned to '<b>%s</b>.'\n"
 "\n"
 msgstr ""
+"Ha folytatja, a gyorsbillentyűt átprogramozza erre: '<b>%s</b>.'\n"
+"\n"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1726
 msgid "Do you want to continue with this operation?"
-msgstr ""
+msgstr "Folytatja ezt a műveletet?"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1846
 msgid "Reset to default"
-msgstr ""
+msgstr "Visszaállítás az alapértelmezettre"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2276
 msgid "Region"
@@ -2011,7 +2022,7 @@ msgstr "Menü ikon"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2648
 msgid "Menu hover delay"
-msgstr "Menükiemelés késleltetése"
+msgstr "Menüaktiválás késleltetése"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2648
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2658
@@ -2027,15 +2038,15 @@ msgstr "ezredmásodperc"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2649
 msgid "Activate menu on hover"
-msgstr ""
+msgstr "Menü aktiválása rámutatáskor"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2650
 msgid "Show bookmarks and places"
-msgstr ""
+msgstr "Könyvjelzők és helyek mutatása"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2651
 msgid "Show recent files"
-msgstr ""
+msgstr "Legutóbbi fájlok mutatása"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2655
 msgid "Auto-hide panel"
@@ -2043,11 +2054,11 @@ msgstr "Panel automatikus rejtése"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2658
 msgid "Show delay"
-msgstr ""
+msgstr "Előbukkanás késleltetése"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2662
 msgid "Hide delay"
-msgstr ""
+msgstr "Eltűnés késleltetése"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2665
 msgid "Traditional (panel at the bottom)"
@@ -2063,7 +2074,7 @@ msgstr "Klasszikus (két panel, lent és fent)"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2666
 msgid "Panel layout"
-msgstr ""
+msgstr "Panel elhelyezkedése"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2669
 msgid "Note: If you change the layout you will need to restart Cinnamon."
@@ -2074,24 +2085,27 @@ msgstr ""
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2672
 msgid "Use customized panel size (otherwise it's defined by the theme)"
 msgstr ""
+"Egyéni panelméret használata (egyébként a téma alapértelmezéseit használja)"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2675
 msgid ""
 "Allow Cinnamon to scale panel text and icons according to the panel heights"
 msgstr ""
+"A Cinnamon hozzáigazíthatja a szöveg és az ikonok méretét a panel "
+"magasságához"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2679
 msgid "Top panel height"
-msgstr ""
+msgstr "Felső panel magassága"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2679
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2683
 msgid "Pixels"
-msgstr ""
+msgstr "képpont"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2683
 msgid "Bottom panel height"
-msgstr ""
+msgstr "Alsó panel magassága"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2686
 msgid "Panel edit mode"
@@ -2163,27 +2177,27 @@ msgstr "Munkaterület választás (mint a Compiz Expo)"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2730
 msgid "Window selection (ala Compiz Scale)"
-msgstr "Ablakválasztás (mint a Compiz Scale)"
+msgstr "Ablakválasztás (mint a Compiz Scale / Kirakat)"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2734
 msgid "Expo applet: activate on hover"
-msgstr ""
+msgstr "Expo kisalkalmazás aktiválása ha rámutat az egér"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2735
 msgid "Scale applet: activate on hover"
-msgstr ""
+msgstr "Kirakat kisalkalmazás aktiválása ha rámutat az egér"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2740
 msgid "Effects"
-msgstr "Effektek"
+msgstr "Hatások"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2742
 msgid "Enable desktop effects"
-msgstr "Asztali effektusok engedélyezése"
+msgstr "Asztali hatások engedélyezése"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2745
 msgid "Enable desktop effects on dialog boxes"
-msgstr ""
+msgstr "Asztali hatások engedélyezése a párbeszédablakoknál"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2784
 msgid "Closing windows:"
@@ -2201,7 +2215,7 @@ msgstr "Ablakok átfedése:"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2806
 msgid "Minimizing windows:"
-msgstr "Ablakok minimalizálása"
+msgstr "Ablakok minimalizálása:"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2808
 msgid "Traditional"
@@ -2209,7 +2223,7 @@ msgstr "Hagyományos"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2817
 msgid "Maximizing windows:"
-msgstr "Ablakok maximalizálása"
+msgstr "Ablakok maximalizálása:"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2828
 msgid "Unmaximizing windows:"
@@ -2241,7 +2255,7 @@ msgstr "A Lomtár ikon megjelenítése az asztalon"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2858
 msgid "Show mounted volumes on the desktop"
-msgstr "Csatolt kötetek megjelenítése az asztalon"
+msgstr "Csatlakoztatott meghajtók megjelenítése az asztalon"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2862
 msgid "Action on title bar double-click"
@@ -2261,81 +2275,85 @@ msgstr "Ablakfókusz módja"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2876
 msgid "Enable Edge Tiling (\"Aero Snap\")"
-msgstr ""
+msgstr "Ablakok kifeszítése a a képernyő szélén (\"Aero Snap\" hatás)"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2877
 msgid "Enable Edge Flip"
-msgstr ""
+msgstr "Munkaterület-váltás a képernyő szélén"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2878
 msgid "Attach dialog windows to their parent window's titlebar"
-msgstr ""
+msgstr "Párbeszédablakok igazítása a szülő-ablak címsorához"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2879
 msgid "Icons only"
-msgstr ""
+msgstr "Csak ikonok"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2879
 msgid "Icons and thumbnails"
-msgstr ""
+msgstr "Ikonok és kis képek"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2879
 msgid "Icons and window preview"
-msgstr ""
+msgstr "Ikonok és ablakok elönézete"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2879
 msgid "Window preview (no icons)"
-msgstr ""
+msgstr "Ablakok előnézete (ikonok nélkül)"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2880
 msgid "ALT-tab switcher style"
-msgstr ""
+msgstr "Alt-Tab váltó stílusa"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2882
 msgid "Enable mouse-wheel scrolling in Window List applet"
-msgstr ""
+msgstr "Egérgörgő engedélyezése az ablaklista kisalkalmazásnál"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2883
 msgid ""
 "Bring windows which require attention to the current workspace (instead of "
 "switching to the window's workspace)"
 msgstr ""
+"A figyelmet kérő ablak áthozása az aktív munkaterületre (ne váltson át az "
+"ablak munkaterületére)"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2885
 msgid "Workspaces"
-msgstr ""
+msgstr "Munkaterületek"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2887
 msgid "Enable workspace OSD"
-msgstr ""
+msgstr "Munkaterület név megjelenítése"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2890
 msgid "Workspace OSD duration"
-msgstr ""
+msgstr "Munkaterület név képernyőn eltöltött ideje"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2894
 msgid "Workspace OSD horizontal position"
-msgstr ""
+msgstr "Munkaterület név vízszintes pozíciója"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2894
 msgid "percent of the monitor's width"
-msgstr ""
+msgstr "százaléka a képernyő szélességének"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2898
 msgid "Workspace OSD vertical position"
-msgstr ""
+msgstr "Munkaterület név függőleges pozíciója"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2898
 msgid "percent of the monitor's height"
-msgstr ""
+msgstr "százaléka a képernyő magasságának"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2901
 msgid "Only use workspaces on primary monitor (requires Cinnamon restart)"
 msgstr ""
+"Munkaterületeket csak a főképernyőn használjon (Cinnamon újraindítása "
+"szükséges)"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2902
 msgid "Display Expo view as a grid"
-msgstr ""
+msgstr "Expo nézet rácsként"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2904
 msgid "Fonts"
@@ -2343,7 +2361,7 @@ msgstr "Betűtípusok"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2906
 msgid "Text scaling factor"
-msgstr "Szövegméretezés"
+msgstr "Szövegméretezés szorzója"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2907
 msgid "Default font"
@@ -2371,24 +2389,28 @@ msgstr "Élsimítás"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2914
 msgid "General"
-msgstr ""
+msgstr "Általános"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2916
 msgid ""
 "Log LookingGlass output to ~/.cinnamon/glass.log (Requires Cinnamon restart)"
 msgstr ""
+"A tükör kimenetét a ~/.cinnamon/glass.log naplófájlba mentse (Cinnamon "
+"újraindítása szükséges)"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2917
 msgid "Emulate middle click by clicking both left and right buttons"
 msgstr ""
+"A középső egérgomb helyettesítése a bal és jobb egérgomb egyidejű "
+"megnyomásával"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2918
 msgid "Display notifications"
-msgstr ""
+msgstr "Értesítések megjelenítése"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2928
 msgid "Backgrounds"
-msgstr ""
+msgstr "Háttérképek"
 
 #: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/add-panel-launcher.py:59
 msgid "Custom Launcher"
@@ -2400,8 +2422,8 @@ msgstr "Név"
 
 #: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/add-panel-launcher.py:139
 msgid "Application"
-msgstr ""
+msgstr "Alkalmazás"
 
 #: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/add-panel-launcher.py:142
 msgid "Add panel launcher..."
-msgstr ""
+msgstr "Panel indító hozzáadása..."

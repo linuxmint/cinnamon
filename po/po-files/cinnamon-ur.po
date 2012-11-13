@@ -8,15 +8,15 @@ msgstr ""
 "Project-Id-Version: linuxmint\n"
 "Report-Msgid-Bugs-To: FULL NAME <EMAIL@ADDRESS>\n"
 "POT-Creation-Date: 2012-10-20 15:43+0100\n"
-"PO-Revision-Date: 2012-07-19 23:16+0000\n"
-"Last-Translator: DaSatti <danish_satti2002@yahoo.com>\n"
+"PO-Revision-Date: 2012-10-26 09:36+0000\n"
+"Last-Translator: Muhammad Anwar <anwar.mirza001@gmail.com>\n"
 "Language-Team: Urdu <ur@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Launchpad-Export-Date: 2012-10-20 20:12+0000\n"
-"X-Generator: Launchpad (build 16165)\n"
+"X-Launchpad-Export-Date: 2012-11-13 13:18+0000\n"
+"X-Generator: Launchpad (build 16251)\n"
 
 #: src/cinnamon-app.c:347 src/cinnamon-app.c:355
 #: js/ui/notificationDaemon.js:458
@@ -43,11 +43,11 @@ msgstr "تصدیک مسترد کردی گئ"
 
 #: src/cinnamon-util.c:89
 msgid "Home"
-msgstr ""
+msgstr "صفحہ اول"
 
 #: src/cinnamon-util.c:98
 msgid "File System"
-msgstr "فائل سسٹم"
+msgstr "فائل کا انتظام"
 
 #: src/cinnamon-util.c:244
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:135
@@ -61,7 +61,7 @@ msgstr ""
 
 #: src/gvc/gvc-mixer-control.c:1082 js/ui/lookingGlass.js:691
 msgid "Disabled"
-msgstr "معطل کردہ"
+msgstr "بند شدہ"
 
 #: src/gvc/gvc-mixer-control.c:1089
 #, c-format
@@ -96,7 +96,7 @@ msgstr ""
 
 #: js/ui/applet.js:237
 msgid "Remove this applet"
-msgstr ""
+msgstr "اپلیٹ کو ختم کرو"
 
 #: js/ui/autorunManager.js:280
 msgid "Removable Devices"
@@ -110,7 +110,7 @@ msgstr "کھولیں بمیعہ %s"
 #: js/ui/autorunManager.js:616
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:147
 msgid "Eject"
-msgstr "نکالیں"
+msgstr "باہر نکال دو"
 
 #: js/ui/calendar.js:704
 msgid "Nothing Scheduled"
@@ -138,7 +138,7 @@ msgstr "نقل"
 
 #: js/ui/cinnamonEntry.js:35
 msgid "Paste"
-msgstr "چسپاں"
+msgstr "چسپاں کریں"
 
 #: js/ui/cinnamonEntry.js:81
 msgid "Show Text"
@@ -150,16 +150,16 @@ msgstr "متن چھپائیں"
 
 #: js/ui/cinnamonMountOperation.js:285
 msgid "Wrong password, please try again"
-msgstr "پاس ورڈ غلط ہے دہبارہ کوشش کریں"
+msgstr "پاس ورڈ غلط ہے۔ دوبارہ کوشش کریں"
 
 #: js/ui/endSessionDialog.js:58
 #, c-format
 msgid "Log Out %s"
-msgstr "لاگ آوٹ %s"
+msgstr "%s باہر نکلیں"
 
 #: js/ui/endSessionDialog.js:59 js/ui/endSessionDialog.js:73
 msgid "Log Out"
-msgstr "لاگ آؤٹ"
+msgstr "باہر نکلیں"
 
 #: js/ui/endSessionDialog.js:60
 msgid "Click Log Out to quit these applications and log out of the system."
@@ -171,7 +171,7 @@ msgstr ""
 #, c-format
 msgid "%s will be logged out automatically in %d second."
 msgid_plural "%s will be logged out automatically in %d seconds."
-msgstr[0] "%s خودبخود %d سیکنڈ میں لاگ آوٹ ہو جاءے گا"
+msgstr[0] ""
 msgstr[1] "%s خودبخود %d سیکنڈ میں لاگ آوٹ ہو جاءے گا"
 
 #: js/ui/endSessionDialog.js:67
@@ -183,7 +183,7 @@ msgstr[1] "آپ خودبخود %d سیکنڈ میں لاگ آوٹ ہو جائی�
 
 #: js/ui/endSessionDialog.js:71
 msgid "Logging out of the system."
-msgstr "لاگ آوٹ ہو رہا ہے"
+msgstr "نظام لاگ آوٹ ہو رہا ہے"
 
 #: js/ui/endSessionDialog.js:78 js/ui/endSessionDialog.js:89
 msgid "Power Off"
@@ -197,21 +197,23 @@ msgstr "کمپوٹر اور اپلیکیشنیں بند کرنے کے لیے ب�
 #, c-format
 msgid "The system will power off automatically in %d second."
 msgid_plural "The system will power off automatically in %d seconds."
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "میں خود بخود بند ہو جاے گا %d نظام سیکنڈ"
+msgstr[1] "میں خود بخود بند ہو جاے گا %d نظام سیکنڈز"
 
 #: js/ui/endSessionDialog.js:85
 msgid "Powering off the system."
-msgstr ""
+msgstr "نظام بند ہو رہا ہے"
 
 #: js/ui/endSessionDialog.js:87 js/ui/endSessionDialog.js:95
 #: js/ui/endSessionDialog.js:104
 msgid "Restart"
-msgstr "دوباره شروع"
+msgstr "دوبارہ شروع کریں"
 
 #: js/ui/endSessionDialog.js:96
 msgid "Click Restart to quit these applications and restart the system."
 msgstr ""
+"ان اپلیکیشنز سے نکلنلے کیلئے دوبارہ شروع کریں پر کلک کریں اور  کمپیوٹر کو "
+"دوبارہ شروع کریں"
 
 #: js/ui/endSessionDialog.js:98
 #, c-format

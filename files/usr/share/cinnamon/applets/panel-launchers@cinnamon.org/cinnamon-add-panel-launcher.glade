@@ -7,7 +7,7 @@
     <property name="title" translatable="yes">Add panel launcher...</property>
     <property name="resizable">False</property>
     <property name="window_position">center</property>
-    <property name="icon_name">list-add</property>
+    <property name="icon_name">gnome-panel-launcher</property>
     <property name="type_hint">dialog</property>
     <signal name="close" handler="onDeleteWindow" swapped="no"/>
     <child internal-child="vbox">
