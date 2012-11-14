@@ -56,7 +56,11 @@ ExpoWindowClone.prototype = {
         let realWindowDestroyedId = this.realWindow.connect('destroy', Lang.bind(this, function() {
             orphaned = true;
         }));
-        this._disconnectRealWindowSignals = function() {
+        let workspaceChangedId = this.metaWindow.connect('workspace-changed', Lang.bind(this, function(w, ws) {
+            this.emit('workspace-changed', true);
+        }));
+        this._disconnectWindowSignals = function() {
+            this.metaWindow.disconnect(workspaceChangedId);
             if (orphaned) return;
             realWindow.disconnect(sizeChangedId);
             realWindow.disconnect(positionChangedId);
@@ -223,7 +227,7 @@ ExpoWindowClone.prototype = {
     },
 
     _onDestroy: function() {
-        this._disconnectRealWindowSignals();
+        this._disconnectWindowSignals();
         this.actor._delegate = null;
 
         if (this.inDrag) {
@@ -690,6 +694,9 @@ ExpoWorkspaceThumbnail.prototype = {
     _addWindowClone : function(win) {
         let clone = new ExpoWindowClone(win);
 
+        clone.connect('workspace-changed', Lang.bind(this, function() {
+            this._doRemoveWindow(clone.metaWindow);
+        }));
         clone.connect('hovering', Lang.bind(this, this._onCloneHover));
         clone.connect('demanding-attention', Lang.bind(this, this._overviewModeOn));
         clone.connect('selected', Lang.bind(this, this._activate));
