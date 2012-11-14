@@ -915,6 +915,9 @@ WindowManager.prototype = {
     },
 
     _moveWindowToWorkspaceLeft : function(display, screen, window, binding) {
+        if (window.get_window_type() !== Meta.WindowType.NORMAL) {
+            return;
+        }
         let workspace = global.screen.get_active_workspace().get_neighbor(Meta.MotionDirection.LEFT)
         if (workspace != global.screen.get_active_workspace()) {
             window.change_workspace(workspace);
@@ -925,6 +928,9 @@ WindowManager.prototype = {
     },
 
     _moveWindowToWorkspaceRight : function(display, screen, window, binding) {
+        if (window.get_window_type() !== Meta.WindowType.NORMAL) {
+            return;
+        }
         let workspace = global.screen.get_active_workspace().get_neighbor(Meta.MotionDirection.RIGHT)
         if (workspace != global.screen.get_active_workspace()) {
             window.change_workspace(workspace);
