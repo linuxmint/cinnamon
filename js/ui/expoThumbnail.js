@@ -128,10 +128,6 @@ ExpoWindowClone.prototype = {
         this.icon.add_actor(iconActor);
         iconActor.opacity = ICON_OPACITY;
 
-        this.tooltip = new Tooltips.Tooltip(this.actor, this.metaWindow.title);
-        this.titleNotifyId = this.metaWindow.connect('notify::title', Lang.bind(this, function (w, title) {
-            this.tooltip.set_text(w.title);
-        }));
         let attentionId = global.display.connect('window-demands-attention', Lang.bind(this, this._onWindowDemandsAttention));
         let urgentId = global.display.connect('window-marked-urgent', Lang.bind(this, this._onWindowDemandsAttention));
         this.disconnectAttentionSignals = function() {
@@ -213,8 +209,6 @@ ExpoWindowClone.prototype = {
     destroy: function () {
         this.killUrgencyTimeout();
         this.disconnectAttentionSignals();
-        this.metaWindow.disconnect(this.titleNotifyId);
-        this.tooltip.destroy();
         this.actor.destroy();
         this.icon.destroy();
     },
@@ -250,7 +244,6 @@ ExpoWindowClone.prototype = {
     },
 
     _onDragBegin : function (draggable, time) {
-        this.tooltip.hide();
         this.inDrag = true;
         this.dragCancelled = false;
         this.emit('drag-begin');
@@ -661,6 +654,7 @@ ExpoWorkspaceThumbnail.prototype = {
 
     _onDestroy: function(actor) {
         this._disconnectOtherSignals();
+        this._resetCloneHover();
         for (let i = 0; i < this._windows.length; i++) {
             this._windows[i].destroy();
         }
@@ -723,6 +717,10 @@ ExpoWorkspaceThumbnail.prototype = {
     _resetCloneHover : function () {
         this.closeWindowButton.hide();
         this._lastHoveredClone = null;
+        if (this.tooltip) {
+            this.tooltip.destroy();
+            this.tooltip = null;
+        }
     },
 
     _onCloneHover : function (clone, hovering) {
@@ -730,7 +728,7 @@ ExpoWorkspaceThumbnail.prototype = {
             this._resetCloneHover();
             return;
         }
-        if (clone !== this._lastHoveredClone) {
+        if (hovering && clone !== this._lastHoveredClone) {
             if (this._buttonTimeoutId) {Mainloop.source_remove(this._buttonTimeoutId);}
             this._buttonTimeoutId = Mainloop.idle_add(Lang.bind(this,function() {
                 this._buttonTimeoutId = null;
@@ -751,15 +749,18 @@ ExpoWorkspaceThumbnail.prototype = {
                 this.closeWindowButton.set_scale(iboxScale, iboxScale);
                 this.closeWindowButton.set_position(x + xOffset, y + yOffset);
                 this.closeWindowButton.show();
+                if (this.tooltip) {
+                    this.tooltip.destroy();
+                }
+                this.tooltip = new Tooltips.Tooltip(clone.actor, clone.metaWindow.title);
             }));
+            this._lastHoveredClone = clone;
         }
-        this._lastHoveredClone = clone;
     },
 
     _overviewModeOn : function () {
         if (!this.box.scale) {return;}
         this._overviewMode = true;
-        this._resetCloneHover();
 
         let windows = [];
         this._windows.forEach(function(window) {
@@ -843,7 +844,6 @@ ExpoWorkspaceThumbnail.prototype = {
                 return monitorIndex === window.metaWindow.get_monitor();
             },this).forEach(function(window) {
                 window.showUrgencyState();
-                window.tooltip.hide();
                 if (!window.metaWindow.showing_on_its_workspace()){
                     let iconX = iconCount * (ICON_SIZE + iconSpacing);
                     iconX %= (monitor.width - ICON_SIZE);
