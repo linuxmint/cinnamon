@@ -915,7 +915,7 @@ WindowManager.prototype = {
     },
 
     _moveWindowToWorkspaceLeft : function(display, screen, window, binding) {
-        if (window.get_window_type() !== Meta.WindowType.NORMAL) {
+        if (window.get_window_type() === Meta.WindowType.DESKTOP) {
             return;
         }
         let workspace = global.screen.get_active_workspace().get_neighbor(Meta.MotionDirection.LEFT)
@@ -928,7 +928,7 @@ WindowManager.prototype = {
     },
 
     _moveWindowToWorkspaceRight : function(display, screen, window, binding) {
-        if (window.get_window_type() !== Meta.WindowType.NORMAL) {
+        if (window.get_window_type() === Meta.WindowType.DESKTOP) {
             return;
         }
         let workspace = global.screen.get_active_workspace().get_neighbor(Meta.MotionDirection.RIGHT)
