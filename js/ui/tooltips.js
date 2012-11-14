@@ -121,7 +121,7 @@ Tooltip.prototype = {
             // An allocation change could mean that the actor has moved,
             // so hide, but wait until after the allocation cycle.
             Mainloop.idle_add(Lang.bind(this, function() {
-                if (this._tooltip) {this.hide();}
+                this.hide();
             }));
         }));
         
@@ -146,7 +146,7 @@ Tooltip.prototype = {
     },
     
     _onTimerComplete: function(){
-        if (this._tooltip.get_text() != "") {
+        if (this._tooltip && this._tooltip.get_text() != "") {
             this.show();
         }
     },
@@ -161,6 +161,8 @@ Tooltip.prototype = {
     },
     
     hide: function() {
+        if (!this._tooltip) {return;}
+
         Tweener.removeTweens(this);
         this._tooltip.hide();
         this._visible = false;
