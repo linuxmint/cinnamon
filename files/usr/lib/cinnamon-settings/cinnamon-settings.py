@@ -2542,12 +2542,13 @@ class TitleBarButtonsOrderSelector(Gtk.Table):
         
         self.left_side_widgets = []
         self.right_side_widgets = []
-        for i in range(3):
+        for i in range(4):
             self.left_side_widgets.append(Gtk.ComboBox())
             self.right_side_widgets.append(Gtk.ComboBox())
         
         buttons = [
             ("", ""),
+            ("menu", _("Menu")),
             ("close", _("Close")),
             ("minimize", _("Minimize")),
             ("maximize", _("Maximize"))
