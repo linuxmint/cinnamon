@@ -953,6 +953,18 @@ ExpoWorkspaceThumbnail.prototype = {
     // Draggable target interface
     handleDragOver : function(source, actor, x, y, time) {
         this.emit('drag-over');
+        return this._handleDragOverOrDrop(false, source, actor, x, y, time);
+    },
+
+    _handleDragOverOrDrop : function(dropping, source, actor, x, y, time) {
+        if (dropping) {
+            let draggable = source._draggable;
+            actor.opacity = draggable._dragOrigOpacity;
+            // Can't use reparent here, it produces strange warnings about widget not being in the stage
+            actor.get_parent().remove_actor(actor);
+            draggable._dragOrigParent.add_actor(actor);
+        }
+
         if (source == Main.xdndHandler) {
             return DND.DragMotionResult.CONTINUE;
         }
@@ -963,57 +975,62 @@ ExpoWorkspaceThumbnail.prototype = {
         if (!source.metaWindow)
             return DND.DragMotionResult.CONTINUE;
 
-        if (this._lookupIndex(source.metaWindow) < 0)
-            return DND.DragMotionResult.MOVE_DROP;
-        else {        
-            let targetMonitor = this.coordinateToMonitor(x, y);
-            let r = DND.DragMotionResult;
-            if (targetMonitor < 0) return r.CONTINUE;
-            return targetMonitor !== source.metaWindow.get_monitor() ? r.MOVE_DROP : r.CONTINUE;
-        }
-
-        return DND.DragMotionResult.CONTINUE;
-    },
-
-    acceptDrop : function(source, actor, x, y, time) {
-        if (this.handleDragOver(source, actor, x, y, time) === DND.DragMotionResult.CONTINUE) {
-            return false;
-        }
-        let draggable = source._draggable;
-        actor.opacity = draggable._dragOrigOpacity;
-        // Can't use reparent here, it produces strange warnings about widget not being in the stage
-        actor.get_parent().remove_actor(actor);
-        draggable._dragOrigParent.add_actor(actor);
-
         let win = source.realWindow;
-        let metaWindow = win.get_meta_window();
+        let metaWindow = source.metaWindow;
+        
         let targetMonitor = this.coordinateToMonitor(x, y);
         let fromMonitor = metaWindow.get_monitor();
 
         let movingMonitors = targetMonitor >= 0 && fromMonitor !== targetMonitor;
         let movingWorkspaces = !Main.isWindowActorDisplayedOnWorkspace(win, this.metaWorkspace.index());
+
+        let canDrop = false;
         if (movingMonitors && Main.wm.workspacesOnlyOnPrimary &&
             (fromMonitor === Main.layoutManager.primaryIndex || targetMonitor === Main.layoutManager.primaryIndex))
         {
-            metaWindow.move_to_monitor(targetMonitor);
-            if (targetMonitor === Main.layoutManager.primaryIndex) {
-                metaWindow.change_workspace(this.metaWorkspace, false, time);
+            canDrop = true;
+            if (dropping) {
+                metaWindow.move_to_monitor(targetMonitor);
+                if (targetMonitor === Main.layoutManager.primaryIndex) {
+                    metaWindow.change_workspace(this.metaWorkspace, false, time);
+                }
             }
         }
         else {
-            if (movingWorkspaces) {
-                metaWindow.change_workspace(this.metaWorkspace, false, time);
+            if (movingWorkspaces ||
+                (metaWindow.is_on_all_workspaces() &&
+                    !movingMonitors &&
+                    (Main.layoutManager.monitors.length === 1 ||
+                        !(Main.wm.workspacesOnlyOnPrimary && fromMonitor !== Main.layoutManager.primaryIndex)
+                )))
+            {
+                canDrop = true;
+                if (dropping) {
+                    metaWindow.change_workspace(this.metaWorkspace, false, time);
+                }
             }
             if (movingMonitors) {
-                metaWindow.move_to_monitor(targetMonitor);
+                canDrop = true;
+                if (dropping) {
+                    metaWindow.move_to_monitor(targetMonitor);
+                }
             }
         }
 
-        // normal hovering monitoring was turned off during drag
-        this.hovering = true;
+        return canDrop ? DND.DragMotionResult.MOVE_DROP : DND.DragMotionResult.CONTINUE;
+    },
 
-        this._overviewModeOn();
-        return true;
+    acceptDrop : function(source, actor, x, y, time) {
+        if (this._handleDragOverOrDrop(false, source, actor, x, y, time) != DND.DragMotionResult.CONTINUE) {
+            if (this._handleDragOverOrDrop(true, source, actor, x, y, time) != DND.DragMotionResult.CONTINUE) {
+                // normal hovering monitoring was turned off during drag
+                this.hovering = true;
+
+                this._overviewModeOn();
+                return true;
+            }
+        }
+        return false;
     }
 };
 
