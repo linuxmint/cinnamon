@@ -146,10 +146,21 @@ WindowClone.prototype = {
 
         this._stackAbove = null;
 
-        this._sizeChangedId = this.realWindow.connect('size-changed',
+        let sizeChangedId = this.realWindow.connect('size-changed',
             Lang.bind(this, this._onRealWindowSizeChanged));
-        this._realWindowDestroyId = this.realWindow.connect('destroy',
-            Lang.bind(this, this._disconnectRealWindowSignals));
+        let workspaceChangedId = this.metaWindow.connect('workspace-changed', Lang.bind(this, function(w, oldws) {
+            this.emit('workspace-changed', oldws);
+        }));
+        let realWindowDestroyId = 0;
+        this._disconnectWindowSignals = function() {
+            this._disconnectWindowSignals = function() {};            
+            this.metaWindow.disconnect(workspaceChangedId);
+            this.realWindow.disconnect(sizeChangedId);
+            this.realWindow.disconnect(realWindowDestroyId);
+        };
+        realWindowDestroyId = this.realWindow.connect('destroy',
+            Lang.bind(this, this._disconnectWindowSignals));
+
 
         this.myContainer.connect('selection-changed', Lang.bind(this, this._zoomEnd));
 
@@ -197,16 +208,6 @@ WindowClone.prototype = {
         }
     },
 
-    _disconnectRealWindowSignals: function() {
-        if (this._sizeChangedId > 0)
-            this.realWindow.disconnect(this._sizeChangedId);
-        this._sizeChangedId = 0;
-
-        if (this._realWindowDestroyId > 0)
-            this.realWindow.disconnect(this._realWindowDestroyId);
-        this._realWindowDestroyId = 0;
-    },
-
     _getInvisibleBorderPadding: function() {
         // We need to adjust the position of the actor because of the
         // consequences of invisible borders -- in reality, the texture
@@ -234,7 +235,7 @@ WindowClone.prototype = {
     },
 
     _onDestroy: function() {
-        this._disconnectRealWindowSignals();
+        this._disconnectWindowSignals();
 
         this.metaWindow._delegate = null;
         this.actor._delegate = null;
@@ -731,6 +732,9 @@ WorkspaceMonitor.prototype = {
             closeContextMenu();
         });
 
+        workspace.myView.connect('sticky-detected', Lang.bind(this, function(box, metaWindow) {
+            this._doAddWindow(metaWindow);
+        }));
         let windows = global.get_window_actors().filter(this._isMyWindow, this);
 
         // Create clones for windows that should be
@@ -1196,8 +1200,9 @@ WorkspaceMonitor.prototype = {
 
         // We might have the window in our list already if it was on all workspaces and
         // now was moved to this workspace
-        if (this._lookupIndex (metaWin) != -1)
+        if (this._lookupIndex (metaWin) != -1) {
             return;
+        }
 
         if (!this._isMyWindow(win) || !this._isOverviewWindow(win)){
             return;
@@ -1221,8 +1226,10 @@ WorkspaceMonitor.prototype = {
             clone.actor.set_position (this._x, this._y);
         }
 
-        this.positionWindows(WindowPositionFlags.ANIMATE);
-        this._myWorkspace.emit('focus-refresh-required');
+        if (this.actor.get_stage()) {
+            this.positionWindows(WindowPositionFlags.ANIMATE);
+            this._myWorkspace.emit('focus-refresh-required');
+        }
     },
 
     _windowAdded : function(metaWorkspace, metaWin) {
@@ -1366,6 +1373,13 @@ WorkspaceMonitor.prototype = {
         let clone = new WindowClone(win, this);
         let overlay = new WindowOverlay(clone, this._windowOverlaysGroup);
 
+        clone.connect('workspace-changed', Lang.bind(this, function() {
+            this._doRemoveWindow(clone.metaWindow);
+            if (clone.metaWindow.is_on_all_workspaces()) {
+                // Muffin appears not to broadcast when a window turns sticky
+                this._myWorkspace.myView.emit('sticky-detected', clone.metaWindow);
+            }
+        }));
         clone.connect('selected',
                       Lang.bind(this, this._onCloneSelected));
         clone.connect('closed',
@@ -1522,20 +1536,19 @@ WindowContextMenu.prototype = {
 
         if (this.metaWindow.is_on_all_workspaces()) {
             this.itemOnAllWorkspaces.label.set_text(_("Only on this workspace"));
-            this.itemMoveToLeftWorkspace.actor.hide();
-            this.itemMoveToRightWorkspace.actor.hide();
         } else {
             this.itemOnAllWorkspaces.label.set_text(_("Visible on all workspaces"));
-            if (this.metaWindow.get_workspace().get_neighbor(Meta.MotionDirection.LEFT) != this.metaWindow.get_workspace())
-                this.itemMoveToLeftWorkspace.actor.show();
-            else
-                this.itemMoveToLeftWorkspace.actor.hide();
-
-            if (this.metaWindow.get_workspace().get_neighbor(Meta.MotionDirection.RIGHT) != this.metaWindow.get_workspace())
-                this.itemMoveToRightWorkspace.actor.show();
-            else
-                this.itemMoveToRightWorkspace.actor.hide();
         }
+        if (this.metaWindow.get_workspace().get_neighbor(Meta.MotionDirection.LEFT) != this.metaWindow.get_workspace())
+            this.itemMoveToLeftWorkspace.actor.show();
+        else
+            this.itemMoveToLeftWorkspace.actor.hide();
+
+        if (this.metaWindow.get_workspace().get_neighbor(Meta.MotionDirection.RIGHT) != this.metaWindow.get_workspace())
+            this.itemMoveToRightWorkspace.actor.show();
+        else
+            this.itemMoveToRightWorkspace.actor.hide();
+
         if (this.metaWindow.get_maximized()) {
             this.itemMaximizeWindow.label.set_text(_("Unmaximize"));
         }else{
@@ -1604,13 +1617,14 @@ WindowContextMenu.prototype = {
 
 };
 
-function Workspace(metaWorkspace) {
-    this._init(metaWorkspace);
+function Workspace() {
+    this._init.apply(this, arguments);
 }
 
 Workspace.prototype = {
-    _init : function(metaWorkspace) {
+    _init : function(metaWorkspace, view) {
         this.metaWorkspace = metaWorkspace;
+        this.myView = view;
         this.actor = new Clutter.Group();
         this.actor.set_size(0, 0);
         this._monitors = [];

@@ -519,7 +519,7 @@ WorkspacesDisplay.prototype = {
         this._workspaces = [];
         for (let i = 0; i < global.screen.n_workspaces; i++) {
             let metaWorkspace = global.screen.get_workspace_by_index(i);
-            this._workspaces[i] = new Workspace.Workspace(metaWorkspace, this._monitorIndex);
+            this._workspaces[i] = new Workspace.Workspace(metaWorkspace, this);
         }
 
         if (this.workspacesView)
