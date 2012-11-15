@@ -56,8 +56,8 @@ ExpoWindowClone.prototype = {
         let realWindowDestroyedId = this.realWindow.connect('destroy', Lang.bind(this, function() {
             orphaned = true;
         }));
-        let workspaceChangedId = this.metaWindow.connect('workspace-changed', Lang.bind(this, function(w, ws) {
-            this.emit('workspace-changed', true);
+        let workspaceChangedId = this.metaWindow.connect('workspace-changed', Lang.bind(this, function(w, oldws) {
+            this.emit('workspace-changed', oldws);
         }));
         this._disconnectWindowSignals = function() {
             this.metaWindow.disconnect(workspaceChangedId);
@@ -445,11 +445,15 @@ ExpoWorkspaceThumbnail.prototype = {
             this.setOverviewMode(turnOn);
             this.hovering = false;
         }));
+        let stickyAddedId = box.connect('sticky-detected', Lang.bind(this, function(box, metaWindow) {
+            this._doAddWindow(metaWindow);
+        }));
         let restackedNotifyId = global.screen.connect('restacked', Lang.bind(this, this.onRestack));
 
         this._disconnectOtherSignals = function() {
             global.screen.disconnect(restackedNotifyId);
             this.box.disconnect(setOverviewModeId);
+            this.box.disconnect(stickyAddedId);
             this.metaWorkspace.disconnect(windowAddedId);
             this.metaWorkspace.disconnect(windowRemovedId);
             global.screen.disconnect(windowEnteredMonitorId);
@@ -691,6 +695,10 @@ ExpoWorkspaceThumbnail.prototype = {
 
         clone.connect('workspace-changed', Lang.bind(this, function() {
             this._doRemoveWindow(clone.metaWindow);
+            if (clone.metaWindow.is_on_all_workspaces()) {
+                // Muffin appears not to broadcast when a window turns sticky
+                this.box.emit('sticky-detected', clone.metaWindow);
+            }
         }));
         clone.connect('hovering', Lang.bind(this, this._onCloneHover));
         clone.connect('demanding-attention', Lang.bind(this, this._overviewModeOn));
@@ -1020,6 +1028,12 @@ ExpoWorkspaceThumbnail.prototype = {
                 canDrop = true;
                 if (dropping) {
                     metaWindow.move_to_monitor(targetMonitor);
+                }
+            }
+            if (!canDrop && !movingWorkspaces && !metaWindow.is_on_all_workspaces()) {
+                canDrop = true;
+                if (dropping) {
+                    metaWindow.stick();
                 }
             }
         }
