@@ -1675,7 +1675,9 @@ Workspace.prototype = {
 
         let activeMonitor = this._monitors[this.currentMonitorIndex];
 
-        if (symbol === Clutter.m && !(modifiers & ctrlAltMask)) {
+        if ((symbol === Clutter.m  || symbol === Clutter.M || symbol === Clutter.KEY_space) &&
+            (modifiers & Clutter.ModifierType.MOD1_MASK) && !(modifiers & Clutter.ModifierType.CONTROL_MASK))
+        {
             activeMonitor.showMenuForSelectedWindow();
             return true;
         }
