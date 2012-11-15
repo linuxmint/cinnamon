@@ -1452,7 +1452,6 @@ WindowContextMenu.prototype = {
     __proto__: PopupMenu.PopupComboMenu.prototype,
 
     _init: function(actor, metaWindow, onClose) {
-        //take care of menu initialization
         PopupMenu.PopupComboMenu.prototype._init.call(this, actor);
         Main.uiGroup.add_actor(this.actor);
         this.actor.hide();
@@ -1544,9 +1543,6 @@ WindowContextMenu.prototype = {
         }
     },
 
-    _onWindowMinimized: function(actor, event){
-    },
-
     _onCloseWindowActivate: function(actor, event){
         this.metaWindow.delete(global.get_current_time());
     },
@@ -1572,7 +1568,6 @@ WindowContextMenu.prototype = {
         let workspace = this.metaWindow.get_workspace().get_neighbor(Meta.MotionDirection.LEFT);
         if (workspace) {
             this.metaWindow.change_workspace(workspace);
-            Main._checkWorkspaces();
         }
     },
 
@@ -1580,7 +1575,6 @@ WindowContextMenu.prototype = {
         let workspace = this.metaWindow.get_workspace().get_neighbor(Meta.MotionDirection.RIGHT);
         if (workspace) {
             this.metaWindow.change_workspace(workspace);
-            Main._checkWorkspaces();
         }
     },
 
