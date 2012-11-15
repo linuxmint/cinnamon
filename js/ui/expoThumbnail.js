@@ -56,8 +56,8 @@ ExpoWindowClone.prototype = {
         let realWindowDestroyedId = this.realWindow.connect('destroy', Lang.bind(this, function() {
             orphaned = true;
         }));
-        let workspaceChangedId = this.metaWindow.connect('workspace-changed', Lang.bind(this, function(w, ws) {
-            this.emit('workspace-changed', true);
+        let workspaceChangedId = this.metaWindow.connect('workspace-changed', Lang.bind(this, function(w, oldws) {
+            this.emit('workspace-changed', oldws);
         }));
         this._disconnectWindowSignals = function() {
             this.metaWindow.disconnect(workspaceChangedId);
@@ -445,11 +445,15 @@ ExpoWorkspaceThumbnail.prototype = {
             this.setOverviewMode(turnOn);
             this.hovering = false;
         }));
+        let stickyAddedId = box.connect('sticky-detected', Lang.bind(this, function(box, metaWindow) {
+            this._doAddWindow(metaWindow);
+        }));
         let restackedNotifyId = global.screen.connect('restacked', Lang.bind(this, this.onRestack));
 
         this._disconnectOtherSignals = function() {
             global.screen.disconnect(restackedNotifyId);
             this.box.disconnect(setOverviewModeId);
+            this.box.disconnect(stickyAddedId);
             this.metaWorkspace.disconnect(windowAddedId);
             this.metaWorkspace.disconnect(windowRemovedId);
             global.screen.disconnect(windowEnteredMonitorId);
@@ -696,6 +700,10 @@ ExpoWorkspaceThumbnail.prototype = {
 
         clone.connect('workspace-changed', Lang.bind(this, function() {
             this._doRemoveWindow(clone.metaWindow);
+            if (clone.metaWindow.is_on_all_workspaces()) {
+                // Muffin appears not to broadcast when a window turns sticky
+                this.box.emit('sticky-detected', clone.metaWindow);
+            }
         }));
         clone.connect('hovering', Lang.bind(this, this._onCloneHover));
         clone.connect('demanding-attention', Lang.bind(this, this._overviewModeOn));
@@ -1070,9 +1078,24 @@ ExpoThumbnailsBox.prototype = {
         // around the final size not the animating size. So instead we fake the background with
         // an actor underneath the content and adjust the allocation of our children to leave space
         // for the border and padding of the background actor.
-        this._background = new St.Bin();
-
+        this._background = new St.Bin({reactive:true});
         this.actor.add_actor(this._background);
+        this._background.handleDragOver = function(source, actor, x, y, time) {
+            return source.metaWindow && !source.metaWindow.is_on_all_workspaces() ?
+                DND.DragMotionResult.MOVE_DROP : DND.DragMotionResult.CONTINUE;
+        };
+        this._background.acceptDrop = Lang.bind(this, function(source, actor, x, y, time) {
+            if (this._background.handleDragOver.apply(this, arguments) ===  DND.DragMotionResult.MOVE_DROP) {
+                let draggable = source._draggable;
+                actor.get_parent().remove_actor(actor);
+                draggable._dragOrigParent.add_actor(actor);
+                actor.opacity = draggable._dragOrigOpacity;
+                source.metaWindow.stick();
+                return true;
+            }
+            return false;
+        });
+        this._background._delegate = this._background;
 
         this.button = new St.Button({ style_class: 'workspace-close-button' });
         this.actor.add_actor(this.button);
