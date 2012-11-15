@@ -732,7 +732,7 @@ WorkspaceMonitor.prototype = {
             closeContextMenu();
         });
 
-        workspace.myView.connect('sticky-detected', Lang.bind(this, function(box, metaWindow) {
+        this.stickyCallbackId = workspace.myView.connect('sticky-detected', Lang.bind(this, function(box, metaWindow) {
             this._doAddWindow(metaWindow);
         }));
         let windows = global.get_window_actors().filter(this._isMyWindow, this);
@@ -1333,6 +1333,7 @@ WorkspaceMonitor.prototype = {
         }
         Tweener.removeTweens(actor);
 
+        this._myWorkspace.myView.disconnect(this.stickyCallbackId);
         if (this.metaWorkspace) {
             this.metaWorkspace.disconnect(this._windowAddedId);
             this.metaWorkspace.disconnect(this._windowRemovedId);
