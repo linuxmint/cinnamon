@@ -7,7 +7,6 @@ const Cinnamon = imports.gi.Cinnamon;
 const St = imports.gi.St;
 const Signals = imports.signals;
 
-const DND = imports.ui.dnd;
 const Main = imports.ui.main;
 const Overview = imports.ui.overview;
 const Tweener = imports.ui.tweener;
@@ -57,7 +56,6 @@ WorkspacesView.prototype = {
         this._scrolling = false; // swipe-scrolling
         this._animatingScroll = false; // programatically updating the adjustment
         this._zoomOut = false; // zoom to a larger area
-        this._inDrag = false; // dragging a window
 
         let activeWorkspaceIndex = global.screen.get_active_workspace_index();
         this._workspaces = workspaces;
@@ -90,14 +88,6 @@ WorkspacesView.prototype = {
             global.window_manager.connect('switch-workspace',
                                           Lang.bind(this, this._activeWorkspaceChanged));
 
-        this._itemDragBeginId = Main.overview.connect('item-drag-begin',
-                                                      Lang.bind(this, this._dragBegin));
-        this._itemDragEndId = Main.overview.connect('item-drag-end',
-                                                     Lang.bind(this, this._dragEnd));
-        this._windowDragBeginId = Main.overview.connect('window-drag-begin',
-                                                        Lang.bind(this, this._dragBegin));
-        this._windowDragEndId = Main.overview.connect('window-drag-end',
-                                                      Lang.bind(this, this._dragEnd));
         this._swipeScrollBeginId = 0;
         this._swipeScrollEndId = 0;
 
@@ -239,10 +229,7 @@ WorkspacesView.prototype = {
                 workspace.actor.show();
             } else {
                 workspace.showWindowsOverlays();
-                if (this._inDrag)
-                    workspace.actor.visible = (Math.abs(w - active) <= 1);
-                else
-                    workspace.actor.visible = (w == active);
+                workspace.actor.visible = (w == active);
             }
         }
     },
@@ -303,26 +290,6 @@ WorkspacesView.prototype = {
     _onDestroy: function() {
         this._scrollAdjustment.run_dispose();
         global.window_manager.disconnect(this._switchWorkspaceNotifyId);
-
-        if (this._inDrag)
-            this._dragEnd();
-
-        if (this._itemDragBeginId > 0) {
-            Main.overview.disconnect(this._itemDragBeginId);
-            this._itemDragBeginId = 0;
-        }
-        if (this._itemDragEndId > 0) {
-            Main.overview.disconnect(this._itemDragEndId);
-            this._itemDragEndId = 0;
-        }
-        if (this._windowDragBeginId > 0) {
-            Main.overview.disconnect(this._windowDragBeginId);
-            this._windowDragBeginId = 0;
-        }
-        if (this._windowDragEndId > 0) {
-            Main.overview.disconnect(this._windowDragEndId);
-            this._windowDragEndId = 0;
-        }
     },
 
     _onMappedChanged: function() {
@@ -338,40 +305,6 @@ WorkspacesView.prototype = {
             Main.overview.disconnect(this._swipeScrollBeginId);
             Main.overview.disconnect(this._swipeScrollEndId);
         }
-    },
-
-    _dragBegin: function() {
-        if (this._scrolling)
-            return;
-
-        this._inDrag = true;
-        this._firstDragMotion = true;
-
-        this._dragMonitor = {
-            dragMotion: Lang.bind(this, this._onDragMotion)
-        };
-        DND.addDragMonitor(this._dragMonitor);
-    },
-
-    _onDragMotion: function(dragEvent) {
-        if (Main.overview.animationInProgress)
-             return DND.DragMotionResult.CONTINUE;
-
-        if (this._firstDragMotion) {
-            this._firstDragMotion = false;
-            for (let i = 0; i < this._workspaces.length; i++)
-                this._workspaces[i].setReservedSlot(dragEvent.dragActor._delegate);
-        }
-
-        return DND.DragMotionResult.CONTINUE;
-    },
-
-    _dragEnd: function() {
-        DND.removeDragMonitor(this._dragMonitor);
-        this._inDrag = false;
-
-        for (let i = 0; i < this._workspaces.length; i++)
-            this._workspaces[i].setReservedSlot(null);
     },
 
     _swipeScrollBegin: function() {
@@ -470,9 +403,6 @@ WorkspacesDisplay.prototype = {
         
         this.workspacesView = null;
 
-        this._inDrag = false;
-        this._cancelledDrag = false;
-
         this._alwaysZoomOut = false;
         this._zoomOut = false;
         this._zoomFraction = 0;
@@ -481,24 +411,8 @@ WorkspacesDisplay.prototype = {
 
         Main.layoutManager.connect('monitors-changed', Lang.bind(this, this._updateAlwaysZoom));
 
-        Main.xdndHandler.connect('drag-begin', Lang.bind(this, function(){
-            this._alwaysZoomOut = true;
-        }));
-
-        Main.xdndHandler.connect('drag-end', Lang.bind(this, function(){
-            this._alwaysZoomOut = false;
-            this._updateAlwaysZoom();
-        }));
-
         this._switchWorkspaceNotifyId = 0;
-
         this._nWorkspacesChangedId = 0;
-        this._itemDragBeginId = 0;
-        this._itemDragCancelledId = 0;
-        this._itemDragEndId = 0;
-        this._windowDragBeginId = 0;
-        this._windowDragCancelledId = 0;
-        this._windowDragEndId = 0;
     },
 
     show: function() {
@@ -527,25 +441,6 @@ WorkspacesDisplay.prototype = {
         if (this._nWorkspacesChangedId == 0)
             this._nWorkspacesChangedId = global.screen.connect('notify::n-workspaces',
                                                                Lang.bind(this, this._workspacesChanged));
-        if (this._itemDragBeginId == 0)
-            this._itemDragBeginId = Main.overview.connect('item-drag-begin',
-                                                          Lang.bind(this, this._dragBegin));
-        if (this._itemDragCancelledId == 0)
-            this._itemDragCancelledId = Main.overview.connect('item-drag-cancelled',
-                                                              Lang.bind(this, this._dragCancelled));
-        if (this._itemDragEndId == 0)
-            this._itemDragEndId = Main.overview.connect('item-drag-end',
-                                                        Lang.bind(this, this._dragEnd));
-        if (this._windowDragBeginId == 0)
-            this._windowDragBeginId = Main.overview.connect('window-drag-begin',
-                                                            Lang.bind(this, this._dragBegin));
-        if (this._windowDragCancelledId == 0)
-            this._windowDragCancelledId = Main.overview.connect('window-drag-cancelled',
-                                                            Lang.bind(this, this._dragCancelled));
-        if (this._windowDragEndId == 0)
-            this._windowDragEndId = Main.overview.connect('window-drag-end',
-                                                          Lang.bind(this, this._dragEnd));
-
         this._onRestacked();
     },
 
@@ -556,30 +451,6 @@ WorkspacesDisplay.prototype = {
         if (this._restackedNotifyId > 0){
             global.screen.disconnect(this._restackedNotifyId);
             this._restackedNotifyId = 0;
-        }
-        if (this._itemDragBeginId > 0) {
-            Main.overview.disconnect(this._itemDragBeginId);
-            this._itemDragBeginId = 0;
-        }
-        if (this._itemDragCancelledId > 0) {
-            Main.overview.disconnect(this._itemDragCancelledId);
-            this._itemDragCancelledId = 0;
-        }
-        if (this._itemDragEndId > 0) {
-            Main.overview.disconnect(this._itemDragEndId);
-            this._itemDragEndId = 0;
-        }
-        if (this._windowDragBeginId > 0) {
-            Main.overview.disconnect(this._windowDragBeginId);
-            this._windowDragBeginId = 0;
-        }
-        if (this._windowDragCancelledId > 0) {
-            Main.overview.disconnect(this._windowDragCancelledId);
-            this._windowDragCancelledId = 0;
-        }
-        if (this._windowDragEndId > 0) {
-            Main.overview.disconnect(this._windowDragEndId);
-            this._windowDragEndId = 0;
         }
 
         this.workspacesView.destroy();
@@ -774,39 +645,6 @@ WorkspacesDisplay.prototype = {
 
     _onControlsHoverChanged: function() {
         this._updateZoom();
-    },
-
-    _dragBegin: function() {
-        this._inDrag = true;
-        this._cancelledDrag = false;
-        this._dragMonitor = {
-            dragMotion: Lang.bind(this, this._onDragMotion)
-        };
-        DND.addDragMonitor(this._dragMonitor);
-    },
-
-    _dragCancelled: function() {
-        this._cancelledDrag = true;
-        DND.removeDragMonitor(this._dragMonitor);
-    },
-
-    _onDragMotion: function(dragEvent) {
-        let controlsHovered = this._controls.contains(dragEvent.targetActor);
-        this._controls.set_hover(controlsHovered);
-
-        return DND.DragMotionResult.CONTINUE;
-    },
-
-    _dragEnd: function() {
-        this._inDrag = false;
-
-        // We do this deferred because drag-end is emitted before dnd.js emits
-        // event/leave events that were suppressed during the drag. If we didn't
-        // defer this, we'd zoom out then immediately zoom in because of the
-        // enter event we received. That would normally be invisible but we
-        // might as well avoid it.
-        Meta.later_add(Meta.LaterType.BEFORE_REDRAW,
-                       Lang.bind(this, this._updateZoom));
     },
 
     _onScrollEvent: function (actor, event) {
