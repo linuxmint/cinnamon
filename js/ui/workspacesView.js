@@ -52,7 +52,6 @@ WorkspacesView.prototype = {
         this._animating = false; // tweening
         this._scrolling = false; // swipe-scrolling
         this._animatingScroll = false; // programatically updating the adjustment
-        this._zoomOut = false; // zoom to a larger area
 
         let activeWorkspaceIndex = global.screen.get_active_workspace_index();
         this._workspaces = [];
@@ -82,13 +81,25 @@ WorkspacesView.prototype = {
         this._scrollAdjustment.connect('notify::value',
                                        Lang.bind(this, this._onScroll));
 
-        this._switchWorkspaceNotifyId =
-            global.window_manager.connect('switch-workspace',
-                                          Lang.bind(this, this._activeWorkspaceChanged));
 
         this._swipeScrollBeginId = 0;
         this._swipeScrollEndId = 0;
 
+        let restackedNotifyId = global.screen.connect('restacked', Lang.bind(this, this._onRestacked));
+        let switchWorkspaceNotifyId = global.window_manager.connect('switch-workspace',
+                                          Lang.bind(this, this._activeWorkspaceChanged));
+
+        let nWorkspacesChangedId = global.screen.connect('notify::n-workspaces', Main.overview.hide);
+        let monitorsChangedId = Main.layoutManager.connect('monitors-changed', Main.overview.hide);
+
+        this._disconnectHandlers = function() {
+            global.window_manager.disconnect(switchWorkspaceNotifyId);
+            Main.layoutManager.disconnect(monitorsChangedId);
+            global.screen.disconnect(nWorkspacesChangedId);
+            global.screen.disconnect(restackedNotifyId);
+        };
+
+        this._onRestacked();
         this.actor.connect('key-press-event', Lang.bind(this, this._onStageKeyPress));
         global.stage.set_key_focus(this.actor);
     },
@@ -160,11 +171,6 @@ WorkspacesView.prototype = {
             this._workspaces[w].destroy();
         }
         this.actor.destroy();
-    },
-
-    syncStacking: function(stackIndices) {
-        for (let i = 0; i < this._workspaces.length; i++)
-            this._workspaces[i].syncStacking(stackIndices);
     },
 
     updateWindowPositions: function() {
@@ -269,7 +275,7 @@ WorkspacesView.prototype = {
 
     _onDestroy: function() {
         this._scrollAdjustment.run_dispose();
-        global.window_manager.disconnect(this._switchWorkspaceNotifyId);
+        this._disconnectHandlers();
     },
 
     _onMappedChanged: function() {
@@ -310,6 +316,19 @@ WorkspacesView.prototype = {
 
         // Make sure title captions etc are shown as necessary
         this._updateVisibility();
+    },
+
+    _onRestacked: function() {
+        let stack = global.get_window_actors().reverse();
+        let stackIndices = {};
+
+        for (let i = 0; i < stack.length; i++) {
+            // Use the stable sequence for an integer to use as a hash key
+            stackIndices[stack[i].get_meta_window().get_stable_sequence()] = i;
+        }
+
+        for (let i = 0; i < this._workspaces.length; i++)
+            this._workspaces[i].syncStacking(stackIndices);
     },
 
     // sync the workspaces' positions to the value of the scroll adjustment
@@ -362,38 +381,15 @@ WorkspacesDisplay.prototype = {
         this.actor.connect('scroll-event',
                          Lang.bind(this, this._onScrollEvent));
 
-        this._monitorIndex = Main.layoutManager.primaryIndex;
-        
         this.workspacesView = null;
-
-        this._zoomOut = false;
-
-        Main.layoutManager.connect('monitors-changed', Main.overview.hide);
-
-        this._switchWorkspaceNotifyId = 0;
-        this._nWorkspacesChangedId = 0;
     },
 
     show: function() {
         this.workspacesView = new WorkspacesView();
         this._updateWorkspacesGeometry();
-
-        this._restackedNotifyId =
-            global.screen.connect('restacked',
-                                  Lang.bind(this, this._onRestacked));
-
-        if (this._nWorkspacesChangedId == 0)
-            this._nWorkspacesChangedId = global.screen.connect('notify::n-workspaces',
-                                                               Lang.bind(this, this._workspacesChanged));
-        this._onRestacked();
     },
 
     hide: function() {
-        if (this._restackedNotifyId > 0){
-            global.screen.disconnect(this._restackedNotifyId);
-            this._restackedNotifyId = 0;
-        }
-
         this.workspacesView.destroy();
         this.workspacesView = null;
     },
@@ -424,22 +420,6 @@ WorkspacesDisplay.prototype = {
         let difference = fullWidth - width;
         x += difference / 2;
         this.workspacesView.setGeometry(x, y, width, height, difference);
-    },
-
-    _onRestacked: function() {
-        let stack = global.get_window_actors().reverse();
-        let stackIndices = {};
-
-        for (let i = 0; i < stack.length; i++) {
-            // Use the stable sequence for an integer to use as a hash key
-            stackIndices[stack[i].get_meta_window().get_stable_sequence()] = i;
-        }
-
-        this.workspacesView.syncStacking(stackIndices);
-    },
-
-    _workspacesChanged: function() {
-        Main.overview.hide();
     },
 
     _onScrollEvent: function (actor, event) {
