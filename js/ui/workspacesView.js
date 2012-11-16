@@ -98,6 +98,9 @@ WorkspacesView.prototype = {
         this._onRestacked();
         this.actor.connect('key-press-event', Lang.bind(this, this._onStageKeyPress));
         global.stage.set_key_focus(this.actor);
+
+        let primary = Main.layoutManager.primaryMonitor;
+        this.setGeometry(primary.x, primary.y, primary.width, primary.height, 0);
     },
 
     _onStageKeyPress: function(actor, event) {
@@ -115,9 +118,6 @@ WorkspacesView.prototype = {
     },
 
     setGeometry: function(x, y, width, height, spacing) {
-      if (this._x == x && this._y == y &&
-          this._width == width && this._height == height)
-          return;
         this._width = width;
         this._height = height;
         this._x = x;
@@ -125,7 +125,7 @@ WorkspacesView.prototype = {
         this._workspaceRatioSpacing = spacing;
 
         for (let i = 0; i < this._workspaces.length; i++)
-           this._workspaces[i].setGeometry(x, y, width, height, spacing);
+           this._workspaces[i].setGeometry();
     },
 
     _lookupWorkspaceForMetaWindow: function (metaWindow) {
@@ -365,40 +365,3 @@ WorkspacesView.prototype = {
     }
 };
 Signals.addSignalMethods(WorkspacesView.prototype);
-
-
-function WorkspacesDisplay() {
-    this._init();
-}
-
-WorkspacesDisplay.prototype = {
-    _init: function() {
-        this.actor = new Cinnamon.GenericContainer();
-        this.actor.set_clip_to_allocation(true);
-    },
-
-    show: function() {
-        this.workspacesView = new WorkspacesView();
-        this._updateWorkspacesGeometry();
-    },
-
-    hide: function() {
-        this.workspacesView.destroy();
-        this.workspacesView = null;
-    },
-
-    _updateWorkspacesGeometry: function() {
-        let fullWidth = this.actor.allocation.x2 - this.actor.allocation.x1;
-        let fullHeight = this.actor.allocation.y2 - this.actor.allocation.y1;
-
-        let width = fullWidth;
-        let height = fullHeight;
-        let [x, y] = this.actor.get_transformed_position();
-
-        width = (fullWidth / fullHeight) * height;
-        let difference = fullWidth - width;
-        x += difference / 2;
-        this.workspacesView.setGeometry(x, y, width, height, difference);
-    }
-};
-Signals.addSignalMethods(WorkspacesDisplay.prototype);
