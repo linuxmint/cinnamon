@@ -8,14 +8,22 @@ const St = imports.gi.St;
 const Signals = imports.signals;
 
 const Main = imports.ui.main;
-const Overview = imports.ui.overview;
 const Tweener = imports.ui.tweener;
 const Workspace = imports.ui.workspace;
 
 const WORKSPACE_SWITCH_TIME = 0.25;
-// Note that muffin has a compile-time limit of 36
-const MAX_WORKSPACES = 16;
 
+const SwipeScrollDirection = {
+    NONE: 0,
+    HORIZONTAL: 1,
+    VERTICAL: 2
+};
+
+const SwipeScrollResult = {
+    CANCEL: 0,
+    SWIPE: 1,
+    CLICK: 2
+};
 
 function WorkspacesView(workspaces) {
     this._init(workspaces);
@@ -268,7 +276,7 @@ WorkspacesView.prototype = {
 
     _onMappedChanged: function() {
         if (this.actor.mapped) {
-            let direction = Overview.SwipeScrollDirection.HORIZONTAL;
+            let direction = SwipeScrollDirection.HORIZONTAL;
             Main.overview.setScrollAdjustment(this._scrollAdjustment,
                                               direction);
             this._swipeScrollBeginId = Main.overview.connect('swipe-scroll-begin',
@@ -288,7 +296,7 @@ WorkspacesView.prototype = {
     _swipeScrollEnd: function(overview, result) {
         this._scrolling = false;
 
-        if (result == Overview.SwipeScrollResult.CLICK) {
+        if (result == SwipeScrollResult.CLICK) {
             let [x, y, mod] = global.get_pointer();
             let actor = global.stage.get_actor_at_pos(Clutter.PickMode.ALL,
                                                       x, y);
