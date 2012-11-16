@@ -71,15 +71,10 @@ WorkspacesView.prototype = {
         // workspaces have been created. This cannot be done first because
         // window movement depends on the Workspaces object being accessible
         // as an Overview member.
-        this._overviewShowingId = Main.overview.connect('showing', Lang.bind(this, function() {
+        let overviewShowingId = Main.overview.connect('showing', Lang.bind(this, function() {
+            Main.overview.disconnect(overviewShowingId);
             let activeWorkspaceIndex = global.screen.get_active_workspace_index();
             this._workspaces[activeWorkspaceIndex].zoomToOverview();
-        }));
-        this._overviewShownId =
-            Main.overview.connect('shown',
-                                 Lang.bind(this, function() {
-                // this.actor.set_clip(this._clipX, this._clipY,
-                   //                 this._clipWidth, this._clipHeight);
         }));
 
         this._scrollAdjustment = new St.Adjustment({ value: activeWorkspaceIndex,
@@ -307,8 +302,6 @@ WorkspacesView.prototype = {
 
     _onDestroy: function() {
         this._scrollAdjustment.run_dispose();
-        Main.overview.disconnect(this._overviewShowingId);
-        Main.overview.disconnect(this._overviewShownId);
         global.window_manager.disconnect(this._switchWorkspaceNotifyId);
 
         if (this._inDrag)
