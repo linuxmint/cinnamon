@@ -368,8 +368,6 @@ WorkspacesDisplay.prototype = {
 
         controls.reactive = true;
         controls.track_hover = true;
-        controls.connect('notify::hover',
-                         Lang.bind(this, this._onControlsHoverChanged));
         controls.connect('scroll-event',
                          Lang.bind(this, this._onScrollEvent));
 
@@ -377,25 +375,17 @@ WorkspacesDisplay.prototype = {
         
         this.workspacesView = null;
 
-        this._alwaysZoomOut = false;
         this._zoomOut = false;
-        this._zoomFraction = 0;
+        this._zoomFraction = 1;
 
-        this._updateAlwaysZoom();
-
-        Main.layoutManager.connect('monitors-changed', Lang.bind(this, this._updateAlwaysZoom));
+        Main.layoutManager.connect('monitors-changed', Main.overview.hide);
 
         this._switchWorkspaceNotifyId = 0;
         this._nWorkspacesChangedId = 0;
     },
 
     show: function() {
-        this._zoomOut = this._alwaysZoomOut;
-        this._zoomFraction = this._alwaysZoomOut ? 1 : 0;
-        this._updateZoom();
-
         this._controls.show();
-        // this._thumbnailsBox.show();
 
         this._workspaces = [];
         for (let i = 0; i < global.screen.n_workspaces; i++) {
@@ -420,7 +410,6 @@ WorkspacesDisplay.prototype = {
 
     hide: function() {
         this._controls.hide();
-        // this._thumbnailsBox.hide();
 
         if (this._restackedNotifyId > 0){
             global.screen.disconnect(this._restackedNotifyId);
@@ -443,28 +432,6 @@ WorkspacesDisplay.prototype = {
 
     get zoomFraction() {
         return this._zoomFraction;
-    },
-
-    _updateAlwaysZoom: function()  {
-        // Always show the pager if workspaces are actually used,
-        // e.g. there are windows on more than one
-        this._alwaysZoomOut = global.screen.n_workspaces > 2;
-
-        if (this._alwaysZoomOut)
-            return;
-
-        let monitors = Main.layoutManager.monitors;
-        let primary = Main.layoutManager.primaryMonitor;
-
-        /* Look for any monitor to the right of the primary, if there is
-         * one, we always keep zoom out, otherwise its hard to reach
-         * the thumbnail area without passing into the next monitor. */
-        for (let i = 0; i < monitors.length; i++) {
-            if (monitors[i].x >= primary.x + primary.width) {
-                this._alwaysZoomOut = true;
-                break;
-            }
-        }
     },
 
     _getPreferredWidth: function (actor, forHeight, alloc) {
@@ -547,31 +514,6 @@ WorkspacesDisplay.prototype = {
 
     _workspacesChanged: function() {
         Main.overview.hide();
-    },
-
-    _updateZoom : function() {
-        if (Main.overview.animationInProgress)
-            return;
-
-        let shouldZoom = this._alwaysZoomOut || this._controls.hover;
-        if (shouldZoom != this._zoomOut) {
-            this._zoomOut = shouldZoom;
-            this._updateWorkspacesGeometry();
-
-            if (!this.workspacesView)
-                return;
-
-            Tweener.addTween(this,
-                             { zoomFraction: this._zoomOut ? 1 : 0,
-                               time: WORKSPACE_SWITCH_TIME,
-                               transition: 'easeOutQuad' });
-
-            this.workspacesView.updateWindowPositions();
-        }
-    },
-
-    _onControlsHoverChanged: function() {
-        this._updateZoom();
     },
 
     _onScrollEvent: function (actor, event) {
