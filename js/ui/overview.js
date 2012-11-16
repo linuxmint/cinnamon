@@ -10,7 +10,6 @@ const St = imports.gi.St;
 const Cinnamon = imports.gi.Cinnamon;
 const Gdk = imports.gi.Gdk;
 
-const DND = imports.ui.dnd;
 const Main = imports.ui.main;
 const MessageTray = imports.ui.messageTray;
 const Params = imports.misc.params;
@@ -19,8 +18,6 @@ const WorkspacesView = imports.ui.workspacesView;
 
 // Time for initial animation going into Overview mode
 const ANIMATION_TIME = 0.25;
-
-const DND_WINDOW_SWITCH_TIMEOUT = 1250;
 
 const SwipeScrollDirection = WorkspacesView.SwipeScrollDirection;
 
@@ -123,14 +120,6 @@ Overview.prototype = {
         this.animationInProgress = false;
         this._hideInProgress = false;
 
-        // XDND
-        this._dragMonitor = {
-            dragMotion: Lang.bind(this, this._onDragMotion)
-        };
-
-        Main.xdndHandler.connect('drag-begin', Lang.bind(this, this._onDragBegin));
-        Main.xdndHandler.connect('drag-end', Lang.bind(this, this._onDragEnd));
-
         this._windowSwitchTimeoutId = 0;
         this._windowSwitchTimestamp = 0;
         this._lastActiveWorkspaceIndex = -1;
@@ -158,26 +147,6 @@ Overview.prototype = {
         this._cinnamonInfo.setMessage(text, undoCallback, undoLabel);
     },
 
-    _onDragBegin: function() {
-        DND.addDragMonitor(this._dragMonitor);
-        // Remember the workspace we started from
-        this._lastActiveWorkspaceIndex = global.screen.get_active_workspace_index();
-    },
-
-    _onDragEnd: function(time) {
-        // In case the drag was canceled while in the overview
-        // we have to go back to where we started and hide
-        // the overview
-        if (this._shownTemporarily)  {
-            global.screen.get_workspace_by_index(this._lastActiveWorkspaceIndex).activate(time);
-            this.hideTemporarily();
-        }
-        this._resetWindowSwitchTimeout();
-        this._lastHoveredWindow = null;
-        DND.removeDragMonitor(this._dragMonitor);
-        this.endItemDrag();
-    },
-
     _resetWindowSwitchTimeout: function() {
         if (this._windowSwitchTimeoutId != 0) {
             Mainloop.source_remove(this._windowSwitchTimeoutId);
@@ -193,36 +162,6 @@ Overview.prototype = {
         let [screen, pointerX, pointerY] = pointer.get_position();
 
         pointer.warp(screen, pointerX, pointerY);
-    },
-
-    _onDragMotion: function(dragEvent) {
-        let targetIsWindow = dragEvent.targetActor &&
-                             dragEvent.targetActor._delegate &&
-                             dragEvent.targetActor._delegate.metaWindow;
-
-        this._windowSwitchTimestamp = global.get_current_time();
-
-        if (targetIsWindow &&
-            dragEvent.targetActor._delegate.metaWindow == this._lastHoveredWindow)
-            return DND.DragMotionResult.CONTINUE;
-
-        this._lastHoveredWindow = null;
-
-        this._resetWindowSwitchTimeout();
-
-        if (targetIsWindow) {
-            this._lastHoveredWindow = dragEvent.targetActor._delegate.metaWindow;
-            this._windowSwitchTimeoutId = Mainloop.timeout_add(DND_WINDOW_SWITCH_TIMEOUT,
-                                            Lang.bind(this, function() {
-                                                this._needsFakePointerEvent = true;
-                                                Main.activateWindow(dragEvent.targetActor._delegate.metaWindow,
-                                                                    this._windowSwitchTimestamp);
-                                                this.hideTemporarily();
-                                                this._lastHoveredWindow = null;
-                                            }));
-        }
-
-        return DND.DragMotionResult.CONTINUE;
     },
 
     setScrollAdjustment: function(adjustment, direction) {
@@ -394,30 +333,6 @@ Overview.prototype = {
     },
 
     //// Public methods ////
-
-    beginItemDrag: function(source) {
-        this.emit('item-drag-begin');
-    },
-
-    cancelledItemDrag: function(source) {
-        this.emit('item-drag-cancelled');
-    },
-
-    endItemDrag: function(source) {
-        this.emit('item-drag-end');
-    },
-
-    beginWindowDrag: function(source) {
-        this.emit('window-drag-begin');
-    },
-
-    cancelledWindowDrag: function(source) {
-        this.emit('window-drag-cancelled');
-    },
-
-    endWindowDrag: function(source) {
-        this.emit('window-drag-end');
-    },
 
     // show:
     //
