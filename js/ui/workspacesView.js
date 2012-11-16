@@ -258,28 +258,6 @@ WorkspacesView.prototype = {
         this._workspaces[active].zoomToOverview();
     },
 
-    updateWorkspaces: function(oldNumWorkspaces, newNumWorkspaces) {
-        let active = global.screen.get_active_workspace_index();
-
-        Tweener.addTween(this._scrollAdjustment,
-                         { upper: newNumWorkspaces,
-                           time: WORKSPACE_SWITCH_TIME,
-                           transition: 'easeOutQuad'
-                         });
-
-        if (newNumWorkspaces > oldNumWorkspaces) {
-            for (let w = oldNumWorkspaces; w < newNumWorkspaces; w++) {
-                this._workspaces[w].setGeometry(this._x, this._y,
-                    this._width, this._height, this._workspaceRatioSpacing);
-                this.actor.add_actor(this._workspaces[w].actor);
-            }
-
-            this._updateWorkspaceActors(false);
-        }
-
-        this._scrollToActive(true);
-    },
-
     _activeWorkspaceChanged: function(wm, from, to, direction) {
         if (this._scrolling)
             return;
@@ -364,10 +342,6 @@ WorkspacesView.prototype = {
             this._workspaces[i].actor.visible = Math.abs(i - adj.value) <= 1;
             this._workspaces[i].actor.x += dx;
         }
-    },
-
-    _getWorkspaceIndexToRemove: function() {
-        return global.screen.get_active_workspace_index();
     }
 };
 Signals.addSignalMethods(WorkspacesView.prototype);
@@ -572,54 +546,7 @@ WorkspacesDisplay.prototype = {
     },
 
     _workspacesChanged: function() {
-        let oldNumWorkspaces = this._workspaces.length;
-        let newNumWorkspaces = global.screen.n_workspaces;
-        let active = global.screen.get_active_workspace_index();
-
-        if (oldNumWorkspaces == newNumWorkspaces)
-            return;
-
-        this._updateAlwaysZoom();
-        this._updateZoom();
-
-        if (this.workspacesView == null)
-            return;
-
-        let lostWorkspaces = [];
-        if (newNumWorkspaces > oldNumWorkspaces) {
-            // Assume workspaces are only added at the end
-            for (let w = oldNumWorkspaces; w < newNumWorkspaces; w++) {
-                let metaWorkspace = global.screen.get_workspace_by_index(w);
-                this._workspaces[w] = new Workspace.Workspace(metaWorkspace, this._monitorIndex);
-            }
-
-            // this._thumbnailsBox.addThumbnails(oldNumWorkspaces, newNumWorkspaces - oldNumWorkspaces);
-        } else {
-            // Assume workspaces are only removed sequentially
-            // (e.g. 2,3,4 - not 2,4,7)
-            let removedIndex;
-            let removedNum = oldNumWorkspaces - newNumWorkspaces;
-            for (let w = 0; w < oldNumWorkspaces; w++) {
-                let metaWorkspace = global.screen.get_workspace_by_index(w);
-                if (this._workspaces[w].metaWorkspace != metaWorkspace) {
-                    removedIndex = w;
-                    break;
-                }
-            }
-
-            lostWorkspaces = this._workspaces.splice(removedIndex,
-                                                     removedNum);
-
-            for (let l = 0; l < lostWorkspaces.length; l++) {
-                lostWorkspaces[l].disconnectAll();
-                lostWorkspaces[l].destroy();
-            }
-
-            // this._thumbnailsBox.removeThumbmails(removedIndex, removedNum);
-        }
-
-        this.workspacesView.updateWorkspaces(oldNumWorkspaces,
-                                             newNumWorkspaces);
+        Main.overview.hide();
     },
 
     _updateZoom : function() {
