@@ -417,20 +417,11 @@ Overview.prototype = {
         this.hide();
 
         let primary = Main.layoutManager.primaryMonitor;
-        let rtl = (St.Widget.get_default_direction () == St.TextDirection.RTL);
-
-        let contentHeight = primary.height;
-
         this._group.set_position(primary.x, primary.y);
         this._group.set_size(primary.width, primary.height);
         
-        let viewWidth = primary.width - 2 * this._spacing;
-        let viewHeight = contentHeight - this._spacing;
-        let viewY = this._spacing;
-        let viewX = rtl ? 0 : this._spacing;        
-
-        this._workspacesDisplay.actor.set_position(viewX, viewY);
-        this._workspacesDisplay.actor.set_size(viewWidth, viewHeight);
+        this._workspacesDisplay.actor.set_position(0, 0);
+        this._workspacesDisplay.actor.set_size(primary.width, primary.height);
         this._workspacesDisplay.actor.hide();
     },
 
