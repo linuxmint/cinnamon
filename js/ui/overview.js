@@ -22,17 +22,9 @@ const ANIMATION_TIME = 0.25;
 
 const DND_WINDOW_SWITCH_TIMEOUT = 1250;
 
-const SwipeScrollDirection = {
-    NONE: 0,
-    HORIZONTAL: 1,
-    VERTICAL: 2
-};
+const SwipeScrollDirection = WorkspacesView.SwipeScrollDirection;
 
-const SwipeScrollResult = {
-    CANCEL: 0,
-    SWIPE: 1,
-    CLICK: 2
-};
+const SwipeScrollResult = WorkspacesView.SwipeScrollResult;
 
 function CinnamonInfo() {
     this._init();
