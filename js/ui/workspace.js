@@ -852,12 +852,9 @@ WorkspaceMonitor.prototype = {
         // This is sometimes called during allocation, so we do this later
         Meta.later_add(Meta.LaterType.BEFORE_REDRAW, Lang.bind(this,
             function () {
-                this._dropRect.set_position(x, y);
-                this._dropRect.set_size(width, height);
                 this.positionWindows(WindowPositionFlags.ANIMATE);
                 return false;
             }));
-
     },
 
     _lookupIndex: function (metaWindow) {
@@ -1718,12 +1715,10 @@ Workspace.prototype = {
         this.actor.destroy();
     },
 
-    setGeometry: function(x, y, width, height, spacing_unused) {
-        let primary = Main.layoutManager.primaryMonitor;
-        let margin = (primary.width - width) / 2;
+    setGeometry: function() {
         this._monitors.forEach(function(monitor, index) {
             let mon = Main.layoutManager.monitors[index];
-            monitor.setGeometry(mon.x, mon.y, mon.width, mon.height, margin);
+            monitor.setGeometry(mon.x, mon.y, mon.width, mon.height, 0);
         }, this);
     },
 

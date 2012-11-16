@@ -100,7 +100,6 @@ Overview.prototype = {
         if (this.isDummy) {
             this.animationInProgress = false;
             this.visible = false;
-            this.workspaces = null;
             return;
         }
 
@@ -115,7 +114,6 @@ Overview.prototype = {
                 let spacing = node.get_length('spacing');
                 if (spacing != this._spacing) {
                     this._spacing = spacing;
-                    this._relayout();
                 }
             }));
         this._group.hide();
@@ -125,8 +123,6 @@ Overview.prototype = {
         this._scrollAdjustment = null;
         this._capturedEventId = 0;
         this._buttonPressId = 0;
-
-        this._workspacesDisplay = null;
 
         this.visible = false;           // animating to overview, in overview, animating out
         this._shown = false;            // show() and not hide()
@@ -148,8 +144,6 @@ Overview.prototype = {
         this._lastActiveWorkspaceIndex = -1;
         this._lastHoveredWindow = null;
         this._needsFakePointerEvent = false;
-
-        this.workspaces = null;
     },
 
     // The members we construct that are implemented in JS might
@@ -162,10 +156,7 @@ Overview.prototype = {
 
         this._cinnamonInfo = new CinnamonInfo();
 
-        this._workspacesDisplay = new WorkspacesView.WorkspacesDisplay();
-        this._group.add_actor(this._workspacesDisplay.actor);
-        Main.layoutManager.connect('monitors-changed', Lang.bind(this, this._relayout));
-        this._relayout();
+        Main.layoutManager.connect('monitors-changed', Lang.bind(this, this.hide));
     },
 
     setMessage: function(text, undoCallback, undoLabel) {
@@ -410,21 +401,6 @@ Overview.prototype = {
         return clone;
     },
 
-    _relayout: function () {
-        // To avoid updating the position and size of the workspaces
-        // we just hide the overview. The positions will be updated
-        // when it is next shown.
-        this.hide();
-
-        let primary = Main.layoutManager.primaryMonitor;
-        this._group.set_position(primary.x, primary.y);
-        this._group.set_size(primary.width, primary.height);
-        
-        this._workspacesDisplay.actor.set_position(0, 0);
-        this._workspacesDisplay.actor.set_size(primary.width, primary.height);
-        this._workspacesDisplay.actor.hide();
-    },
-
     //// Public methods ////
 
     beginItemDrag: function(source) {
@@ -520,16 +496,14 @@ Overview.prototype = {
         this._group.show();
         this._background.show();
 
-        this._workspacesDisplay.show();
+        this.workspacesView = new WorkspacesView.WorkspacesView();
+        global.overlay_group.add_actor(this.workspacesView.actor);
         Main.disablePanels();
-
-        this.workspaces = this._workspacesDisplay.workspacesView;
-        global.overlay_group.add_actor(this.workspaces.actor);
 
         if (!this._desktopFade.child)
             this._desktopFade.child = this._getDesktopClone();
 
-        if (!this.workspaces.getActiveWorkspace().hasMaximizedWindows()) {
+        if (!this.workspacesView.getActiveWorkspace().hasMaximizedWindows()) {
             this._desktopFade.opacity = 255;
             this._desktopFade.show();
             Tweener.addTween(this._desktopFade,
@@ -659,7 +633,7 @@ Overview.prototype = {
         this._hideInProgress = true;
         Main.enablePanels();
 
-        if (!this.workspaces.getActiveWorkspace().hasMaximizedWindows()) {
+        if (!this.workspacesView.getActiveWorkspace().hasMaximizedWindows()) {
             this._desktopFade.opacity = 0;
             this._desktopFade.show();
             Tweener.addTween(this._desktopFade,
@@ -668,7 +642,7 @@ Overview.prototype = {
                                transition: 'easeOutQuad' });
         }
 
-        this.workspaces.hide();
+        this.workspacesView.hide();
 
         // Make other elements fade out.
         Tweener.addTween(this._group,
@@ -711,10 +685,8 @@ Overview.prototype = {
 
         global.window_group.show();
 
-        this.workspaces.destroy();
-        this.workspaces = null;
-
-        this._workspacesDisplay.hide();
+        this.workspacesView.destroy();
+        this.workspacesView = null;
 
         this._group.hide();
 
