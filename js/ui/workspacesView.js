@@ -88,11 +88,9 @@ WorkspacesView.prototype = {
                                           Lang.bind(this, this._activeWorkspaceChanged));
 
         let nWorkspacesChangedId = global.screen.connect('notify::n-workspaces', Main.overview.hide);
-        let monitorsChangedId = Main.layoutManager.connect('monitors-changed', Main.overview.hide);
 
         this._disconnectHandlers = function() {
             global.window_manager.disconnect(switchWorkspaceNotifyId);
-            Main.layoutManager.disconnect(monitorsChangedId);
             global.screen.disconnect(nWorkspacesChangedId);
             global.screen.disconnect(restackedNotifyId);
         };
