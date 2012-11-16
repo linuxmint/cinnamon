@@ -30,14 +30,16 @@ WorkspacesView.prototype = {
 
         this.actor.connect('destroy', Lang.bind(this, this._onDestroy));
 
+        // does not work:
+        // this.actor.connect('scroll-event', Lang.bind(this, this._onScrollEvent));
+
         this.actor.connect('style-changed', Lang.bind(this,
             function() {
                 let node = this.actor.get_theme_node();
                 this._spacing = node.get_length('spacing');
                 this._updateWorkspaceActors(false);
             }));
-        this.actor.connect('notify::mapped',
-                           Lang.bind(this, this._onMappedChanged));
+        this.actor.connect('notify::mapped', Lang.bind(this, this._onMappedChanged));
 
         this._width = 0;
         this._height = 0;
@@ -363,6 +365,17 @@ WorkspacesView.prototype = {
             this._workspaces[i].actor.visible = Math.abs(i - adj.value) <= 1;
             this._workspaces[i].actor.x += dx;
         }
+    },
+
+    _onScrollEvent: function (actor, event) {
+        switch ( event.get_scroll_direction() ) {
+        case Clutter.ScrollDirection.UP:
+            Main.wm.actionMoveWorkspaceUp();
+            break;
+        case Clutter.ScrollDirection.DOWN:
+            Main.wm.actionMoveWorkspaceDown();
+            break;
+        }
     }
 };
 Signals.addSignalMethods(WorkspacesView.prototype);
@@ -375,13 +388,7 @@ function WorkspacesDisplay() {
 WorkspacesDisplay.prototype = {
     _init: function() {
         this.actor = new Cinnamon.GenericContainer();
-        this.actor.connect('allocate', Lang.bind(this, this._allocate));
         this.actor.set_clip_to_allocation(true);
-
-        this.actor.connect('scroll-event',
-                         Lang.bind(this, this._onScrollEvent));
-
-        this.workspacesView = null;
     },
 
     show: function() {
@@ -394,14 +401,7 @@ WorkspacesDisplay.prototype = {
         this.workspacesView = null;
     },
 
-    _allocate: function (actor, box, flags) {
-        this._updateWorkspacesGeometry();
-    },
-
     _updateWorkspacesGeometry: function() {
-        if (!this.workspacesView)
-            return;
-
         let fullWidth = this.actor.allocation.x2 - this.actor.allocation.x1;
         let fullHeight = this.actor.allocation.y2 - this.actor.allocation.y1;
 
@@ -420,17 +420,6 @@ WorkspacesDisplay.prototype = {
         let difference = fullWidth - width;
         x += difference / 2;
         this.workspacesView.setGeometry(x, y, width, height, difference);
-    },
-
-    _onScrollEvent: function (actor, event) {
-        switch ( event.get_scroll_direction() ) {
-        case Clutter.ScrollDirection.UP:
-            Main.wm.actionMoveWorkspaceUp();
-            break;
-        case Clutter.ScrollDirection.DOWN:
-            Main.wm.actionMoveWorkspaceDown();
-            break;
-        }
     }
 };
 Signals.addSignalMethods(WorkspacesDisplay.prototype);
