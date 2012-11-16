@@ -17,9 +17,6 @@ const WORKSPACE_SWITCH_TIME = 0.25;
 const MAX_WORKSPACES = 16;
 
 
-const CONTROLS_POP_IN_TIME = 0.1;
-
-
 function WorkspacesView(workspaces) {
     this._init(workspaces);
 }
@@ -354,21 +351,10 @@ function WorkspacesDisplay() {
 WorkspacesDisplay.prototype = {
     _init: function() {
         this.actor = new Cinnamon.GenericContainer();
-        this.actor.connect('get-preferred-width', Lang.bind(this, this._getPreferredWidth));
-        this.actor.connect('get-preferred-height', Lang.bind(this, this._getPreferredHeight));
         this.actor.connect('allocate', Lang.bind(this, this._allocate));
         this.actor.set_clip_to_allocation(true);
 
-        let controls = new St.Bin({ style_class: 'workspace-controls',
-                                    request_mode: Clutter.RequestMode.HEIGHT_FOR_WIDTH,
-                                    x_align: St.Align.START,
-                                    x_fill: true });
-        this._controls = controls;
-        this.actor.add_actor(controls);
-
-        controls.reactive = true;
-        controls.track_hover = true;
-        controls.connect('scroll-event',
+        this.actor.connect('scroll-event',
                          Lang.bind(this, this._onScrollEvent));
 
         this._monitorIndex = Main.layoutManager.primaryIndex;
@@ -376,7 +362,6 @@ WorkspacesDisplay.prototype = {
         this.workspacesView = null;
 
         this._zoomOut = false;
-        this._zoomFraction = 1;
 
         Main.layoutManager.connect('monitors-changed', Main.overview.hide);
 
@@ -385,8 +370,6 @@ WorkspacesDisplay.prototype = {
     },
 
     show: function() {
-        this._controls.show();
-
         this._workspaces = [];
         for (let i = 0; i < global.screen.n_workspaces; i++) {
             let metaWorkspace = global.screen.get_workspace_by_index(i);
@@ -409,8 +392,6 @@ WorkspacesDisplay.prototype = {
     },
 
     hide: function() {
-        this._controls.hide();
-
         if (this._restackedNotifyId > 0){
             global.screen.disconnect(this._restackedNotifyId);
             this._restackedNotifyId = 0;
@@ -424,45 +405,7 @@ WorkspacesDisplay.prototype = {
         }
     },
 
-    // zoomFraction property allows us to tween the controls sliding in and out
-    set zoomFraction(fraction) {
-        this._zoomFraction = fraction;
-        this.actor.queue_relayout();
-    },
-
-    get zoomFraction() {
-        return this._zoomFraction;
-    },
-
-    _getPreferredWidth: function (actor, forHeight, alloc) {
-        // pass through the call in case the child needs it, but report 0x0
-        this._controls.get_preferred_width(forHeight);
-    },
-
-    _getPreferredHeight: function (actor, forWidth, alloc) {
-        // pass through the call in case the child needs it, but report 0x0
-        this._controls.get_preferred_height(forWidth);
-    },
-
     _allocate: function (actor, box, flags) {
-        let childBox = new Clutter.ActorBox();
-
-        let totalHeight = box.y2 - box.y1;
-
-        // height of the controls
-        let [controlsMin, controlsNatural] = this._controls.get_preferred_height(box.x2 - box.x1);
-
-        // Amount of space on the screen we reserve for the visible control
-        let controlsVisible = this._controls.get_theme_node().get_length('visible-height');
-        let controlsReserved = controlsVisible * (1 - this._zoomFraction) + controlsNatural * this._zoomFraction;
-
-        childBox.y1 = totalHeight - controlsReserved;
-        childBox.y2 = childBox.y1 + controlsNatural;
-
-        childBox.x1 = 0;
-        childBox.x2 = box.x2- box.x1;
-        this._controls.allocate(childBox, flags);
-
         this._updateWorkspacesGeometry();
     },
 
@@ -475,24 +418,14 @@ WorkspacesDisplay.prototype = {
 
         let width = fullWidth;
         let height = fullHeight;
-
-        let [controlsMin, controlsNatural] = this._controls.get_preferred_height(width);
-        let controlsVisible = this._controls.get_theme_node().get_length('visible-height');
-
         let [x, y] = this.actor.get_transformed_position();
 
-        let clipHeight = height - controlsVisible;
+        let clipHeight = height;
         let clipWidth = (fullWidth / fullHeight) * clipHeight;
         let clipY = y;
         let clipX = x + (fullWidth - clipWidth) / 2;
 
         this.workspacesView.setClipRect(clipX, clipY, clipWidth, clipHeight);
-
-        if (this._zoomOut) {
-            height -= controlsNatural;
-        } else {
-            height -= controlsVisible;
-        }
 
         width = (fullWidth / fullHeight) * height;
         let difference = fullWidth - width;
