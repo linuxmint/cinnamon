@@ -8,16 +8,16 @@ msgstr ""
 "Project-Id-Version: linuxmint\n"
 "Report-Msgid-Bugs-To: FULL NAME <EMAIL@ADDRESS>\n"
 "POT-Creation-Date: 2012-10-20 15:43+0100\n"
-"PO-Revision-Date: 2012-09-23 21:09+0000\n"
-"Last-Translator: Kamil Doległo <Unknown>\n"
+"PO-Revision-Date: 2012-10-28 17:25+0000\n"
+"Last-Translator: Marcin Wilk <marcin@marcinwilk.eu>\n"
 "Language-Team: Polish <pl@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
 "|| n%100>=20) ? 1 : 2;\n"
-"X-Launchpad-Export-Date: 2012-10-20 20:12+0000\n"
-"X-Generator: Launchpad (build 16165)\n"
+"X-Launchpad-Export-Date: 2012-11-13 13:18+0000\n"
+"X-Generator: Launchpad (build 16251)\n"
 
 #: src/cinnamon-app.c:347 src/cinnamon-app.c:355
 #: js/ui/notificationDaemon.js:458
@@ -719,7 +719,7 @@ msgstr "Ustawienia językowe i regionalne"
 
 #: files/usr/share/cinnamon/applets/keyboard@cinnamon.org/applet.js:76
 msgid "Show flags"
-msgstr ""
+msgstr "Pokaż flagi"
 
 #: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:203
 msgid "Add to panel"
@@ -1326,11 +1326,11 @@ msgstr ""
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:62
 msgid "Cycle through open windows"
-msgstr ""
+msgstr "Przeskakuj między otwartymi oknami"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:63
 msgid "Cycle backwards though open windows"
-msgstr ""
+msgstr "Przeskakuj doo tyłu między otwartymi oknami"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:64
 msgid "Run dialog (must restart Cinnamon)"
@@ -1338,19 +1338,19 @@ msgstr ""
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:65
 msgid "Menu button (must restart Cinnamon)"
-msgstr ""
+msgstr "Przycisk Menu (wymagany restart Cinnamon)"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:68
 msgid "Maximize window"
-msgstr ""
+msgstr "Maksymalizuj okno"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:69
 msgid "Unmaximize window"
-msgstr ""
+msgstr "Przywróć mniejszy rozmiar"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:70
 msgid "Minimize window"
-msgstr ""
+msgstr "Minimalizuj okno"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:71
 msgid "Toggle tiled left (must restart Cinnamon)"
@@ -1362,15 +1362,15 @@ msgstr ""
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:73
 msgid "Close window"
-msgstr ""
+msgstr "Zamknij okno"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:75
 msgid "Activate window menu"
-msgstr ""
+msgstr "Aktywuj menu okna"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:76
 msgid "Toggle maximization state"
-msgstr ""
+msgstr "Przełączenie trybu maksymalizacji"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:77
 msgid "Toggle fullscreen state"
@@ -1382,263 +1382,263 @@ msgstr ""
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:79
 msgid "Maximize vertically"
-msgstr ""
+msgstr "Zmaksymalizuj pionowo"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:80
 msgid "Maximize horizontally"
-msgstr ""
+msgstr "Zmaksymalizuj poziomo"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:81
 msgid "Resize window"
-msgstr ""
+msgstr "Zmień rozmiar okna"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:82
 msgid "Move window"
-msgstr ""
+msgstr "Przenieś okno"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:83
 msgid "Center window in screen"
-msgstr ""
+msgstr "Wyśrodkuj okno na ekranie"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:84
 msgid "Move window to upper-right"
-msgstr ""
+msgstr "Przesuń okno w górny-prawy róg"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:85
 msgid "Move window to upper-left"
-msgstr ""
+msgstr "Przesuń okno w górny-lewy róg"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:86
 msgid "Move window to lower-right"
-msgstr ""
+msgstr "Przesuń okno w dolny-prawy róg"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:87
 msgid "Move window to lower-left"
-msgstr ""
+msgstr "Przesuń okno w dolny-lewy róg"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:88
 msgid "Move window to right edge"
-msgstr ""
+msgstr "Przesuń okno do prawego brzegu"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:89
 msgid "Move window to top edge"
-msgstr ""
+msgstr "Przesuń okno do górnego brzegu"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:90
 msgid "Move window to bottom edge"
-msgstr ""
+msgstr "Przesuń okno do dolnego brzegu"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:91
 msgid "Move window to left edge"
-msgstr ""
+msgstr "Przesuń okno do lewego brzegu"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:94
 msgid "Toggle showing window on all workspaces"
-msgstr ""
+msgstr "Przełącz pokazywanie okien na wszystkich obszarach roboczych"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:95
 msgid "Switch to left workspace"
-msgstr ""
+msgstr "Przełącz do lewego obszaru roboczego"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:96
 msgid "Switch to right workspace"
-msgstr ""
+msgstr "Przełącz do prawego obszaru roboczego"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:97
 msgid "Switch to workspace 1"
-msgstr ""
+msgstr "Przełączenie na 1. obszar roboczy"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:98
 msgid "Switch to workspace 2"
-msgstr ""
+msgstr "Przełączenie na 2. obszar roboczy"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:99
 msgid "Switch to workspace 3"
-msgstr ""
+msgstr "Przełączenie na 3. obszar roboczy"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:100
 msgid "Switch to workspace 4"
-msgstr ""
+msgstr "Przełączenie na 4. obszar roboczy"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:101
 msgid "Switch to workspace 5"
-msgstr ""
+msgstr "Przełączenie na 5. obszar roboczy"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:102
 msgid "Switch to workspace 6"
-msgstr ""
+msgstr "Przełączenie na 6. obszar roboczy"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:103
 msgid "Switch to workspace 7"
-msgstr ""
+msgstr "Przełączenie na 7. obszar roboczy"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:104
 msgid "Switch to workspace 8"
-msgstr ""
+msgstr "Przełączenie na 8. obszar roboczy"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:105
 msgid "Switch to workspace 9"
-msgstr ""
+msgstr "Przełączenie na 9. obszar roboczy"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:106
 msgid "Switch to workspace 10"
-msgstr ""
+msgstr "Przełączenie na 10. obszar roboczy"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:107
 msgid "Switch to workspace 11"
-msgstr ""
+msgstr "Przełączenie na 11. obszar roboczy"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:108
 msgid "Switch to workspace 12"
-msgstr ""
+msgstr "Przełączenie na 12. obszar roboczy"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:109
 msgid "Move window to left workspace"
-msgstr ""
+msgstr "Przesuń okno na obszar roboczy po lewej"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:110
 msgid "Move window to right workspace"
-msgstr ""
+msgstr "Przesuń okno na obszar roboczy po prawej"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:111
 msgid "Move window to workspace 1"
-msgstr ""
+msgstr "Przeniesienie okna na 1. obszar roboczy"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:112
 msgid "Move window to workspace 2"
-msgstr ""
+msgstr "Przeniesienie okna na 2. obszar roboczy"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:113
 msgid "Move window to workspace 3"
-msgstr ""
+msgstr "Przeniesienie okna na 3. obszar roboczy"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:114
 msgid "Move window to workspace 4"
-msgstr ""
+msgstr "Przeniesienie okna na 4. obszar roboczy"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:115
 msgid "Move window to workspace 5"
-msgstr ""
+msgstr "Przeniesienie okna na 5. obszar roboczy"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:116
 msgid "Move window to workspace 6"
-msgstr ""
+msgstr "Przeniesienie okna na 6. obszar roboczy"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:117
 msgid "Move window to workspace 7"
-msgstr ""
+msgstr "Przeniesienie okna na 7. obszar roboczy"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:118
 msgid "Move window to workspace 8"
-msgstr ""
+msgstr "Przeniesienie okna na 8. obszar roboczy"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:119
 msgid "Move window to workspace 9"
-msgstr ""
+msgstr "Przeniesienie okna na 9. obszar roboczy"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:120
 msgid "Move window to workspace 10"
-msgstr ""
+msgstr "Przeniesienie okna na 10. obszar roboczy"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:121
 msgid "Move window to workspace 11"
-msgstr ""
+msgstr "Przeniesienie okna na 11. obszar roboczy"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:122
 msgid "Move window to workspace 12"
-msgstr ""
+msgstr "Przeniesienie okna na 12. obszar roboczy"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:125
 msgid "Log out"
-msgstr ""
+msgstr "Wyloguj"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:127
 msgid "Toggle recording desktop (must restart Cinnamon)"
-msgstr ""
+msgstr "Przełącz nagrywanie pulpitu (wymaga restartu Cinnamon)"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:130
 msgid "Launch help browser"
-msgstr ""
+msgstr "Uruchom przeglądarkę pomocy"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:131
 msgid "Launch calculator"
-msgstr ""
+msgstr "Uruchom kalkulator"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:132
 msgid "Launch email client"
-msgstr ""
+msgstr "Uruchom klienta email"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:133
 msgid "Launch web browser"
-msgstr ""
+msgstr "Uruchom przeglądarkę WWW"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:134
 msgid "Home folder"
-msgstr ""
+msgstr "Katalog domowy"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:138
 msgid "Volume mute"
-msgstr ""
+msgstr "Wyciszenie dźwięku"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:139
 msgid "Volume down"
-msgstr ""
+msgstr "Zmniejsz głośność"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:140
 msgid "Volume up"
-msgstr ""
+msgstr "Zwiększ głośność"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:141
 msgid "Launch media player"
-msgstr ""
+msgstr "Uruchom odtwarzacz multimedialny"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:143
 msgid "Pause playback"
-msgstr ""
+msgstr "Wstrzymaj odtwarzanie"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:144
 msgid "Stop playback"
-msgstr ""
+msgstr "Zatrzymaj odtwarzanie"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:145
 msgid "Previous track"
-msgstr ""
+msgstr "Poprzednia ściężka"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:146
 msgid "Next track"
-msgstr ""
+msgstr "Następna ścieżka"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:150
 msgid "Turn zoom on or off"
-msgstr ""
+msgstr "Włączenie lub wyłączenie powiększania"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:151
 msgid "Zoom in"
-msgstr ""
+msgstr "Powiększ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:152
 msgid "Zoom out"
-msgstr ""
+msgstr "Pomniejsz"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:153
 msgid "Turn screen reader on or off"
-msgstr ""
+msgstr "Włączenie lub wyłączenie czytnika ekranowego"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:154
 msgid "Turn on-screen keyboard on or off"
-msgstr ""
+msgstr "Włączenie lub wyłączenie klawiatury ekranowej"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:155
 msgid "Increase text size"
-msgstr ""
+msgstr "Zwiększ wielkość tekstu"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:156
 msgid "Decrease text size"
-msgstr ""
+msgstr "Zmniejsz wielkość tekstu"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:157
 msgid "High contrast on or off"
-msgstr ""
+msgstr "Włączenie lub wyłączenie wysokiego kontrastu"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:161
 msgid "Wallpaper"
@@ -1800,24 +1800,24 @@ msgstr "Pobierz nowe aplety"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1283
 msgid "unassigned"
-msgstr ""
+msgstr "nieprzydzielone"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1284
 msgid "Super-"
-msgstr ""
+msgstr "Super-"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1285
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1288
 msgid "Ctrl-"
-msgstr ""
+msgstr "Ctrl-"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1286
 msgid "Shift-"
-msgstr ""
+msgstr "Shift-"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1287
 msgid "Alt-"
-msgstr ""
+msgstr "Alt-"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1407
 #: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/add-panel-launcher.py:148
@@ -1827,70 +1827,70 @@ msgstr "Aktualizacja"
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1410
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1543
 msgid "Add custom shortcut"
-msgstr ""
+msgstr "Dodaj własny skrot"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1418
 msgid "Name:"
-msgstr ""
+msgstr "Nazwa:"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1419
 msgid "Command:"
-msgstr ""
+msgstr "Polecenie:"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1427
 msgid "Select a file"
-msgstr ""
+msgstr "Wybierz plik"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1477
 msgid "Typing"
-msgstr ""
+msgstr "Pisanie"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1478
 msgid "Enable key repeat"
-msgstr ""
+msgstr "Włącz powtarzanie przycisków"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1480
 msgid "Repeat delay:"
-msgstr ""
+msgstr "Opóźnienie powtarzania:"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1480
 msgid "Short"
-msgstr ""
+msgstr "Krótki"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1480
 msgid "Long"
-msgstr ""
+msgstr "Długi"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1485
 msgid "Repeat speed:"
-msgstr ""
+msgstr "Szybkość powtarzania:"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1485
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1493
 msgid "Slow"
-msgstr ""
+msgstr "Wolno"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1485
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1493
 msgid "Fast"
-msgstr ""
+msgstr "Szybko"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1491
 msgid "Text cursor blinks"
-msgstr ""
+msgstr "Mruganie kursora tekstowego"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1493
 msgid "Blink speed:"
-msgstr ""
+msgstr "Szybkość mrugania:"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1498
 msgid "Test Box"
-msgstr ""
+msgstr "Okno testowe"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1502
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1579
 msgid "Keyboard shortcuts"
-msgstr ""
+msgstr "Skróty klawiszowe"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1507
 msgid ""
@@ -1900,23 +1900,23 @@ msgstr ""
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1545
 msgid "Remove custom shortcut"
-msgstr ""
+msgstr "Usuń skrót własny"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1570
 msgid "Categories"
-msgstr ""
+msgstr "Kategorie"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1590
 msgid "Keyboard bindings"
-msgstr ""
+msgstr "Powiązania przycisków"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1599
 msgid "Workspace Management"
-msgstr ""
+msgstr "Zarządzanie oknami roboczymi"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1600
 msgid "System"
-msgstr ""
+msgstr "System"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1601
 msgid "Launchers"
@@ -1924,7 +1924,7 @@ msgstr ""
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1602
 msgid "Sound and Media"
-msgstr ""
+msgstr "Dźwięk i multimedia"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1603
 msgid "Universal Access"
@@ -1932,7 +1932,7 @@ msgstr ""
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1604
 msgid "Custom Shortcuts"
-msgstr ""
+msgstr "Skróty własne"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1705
 #, c-format
@@ -1964,11 +1964,11 @@ msgstr ""
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1726
 msgid "Do you want to continue with this operation?"
-msgstr ""
+msgstr "Czy chcesz kontynuowac wykonując ta operację?"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1846
 msgid "Reset to default"
-msgstr ""
+msgstr "Przywróć domyślne"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2276
 msgid "Region"

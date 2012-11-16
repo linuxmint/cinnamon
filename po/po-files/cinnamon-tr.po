@@ -8,15 +8,15 @@ msgstr ""
 "Project-Id-Version: linuxmint\n"
 "Report-Msgid-Bugs-To: FULL NAME <EMAIL@ADDRESS>\n"
 "POT-Creation-Date: 2012-10-20 15:43+0100\n"
-"PO-Revision-Date: 2012-09-29 16:03+0000\n"
-"Last-Translator: kelebek333 <Unknown>\n"
+"PO-Revision-Date: 2012-10-30 15:00+0000\n"
+"Last-Translator: Halit YILMAZ <Unknown>\n"
 "Language-Team: Turkish <tr@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Launchpad-Export-Date: 2012-10-20 20:11+0000\n"
-"X-Generator: Launchpad (build 16165)\n"
+"X-Launchpad-Export-Date: 2012-11-13 13:18+0000\n"
+"X-Generator: Launchpad (build 16251)\n"
 
 #: src/cinnamon-app.c:347 src/cinnamon-app.c:355
 #: js/ui/notificationDaemon.js:458
@@ -108,7 +108,7 @@ msgstr "%s ile aç"
 #: js/ui/autorunManager.js:616
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:147
 msgid "Eject"
-msgstr "Çıkart"
+msgstr "Çıkar"
 
 #: js/ui/calendar.js:704
 msgid "Nothing Scheduled"
@@ -148,7 +148,7 @@ msgstr "Metni Gizle"
 
 #: js/ui/cinnamonMountOperation.js:285
 msgid "Wrong password, please try again"
-msgstr "Yanlış parola, lütfen yeniden deneyin"
+msgstr "Hatalı şifre, lütfen yeniden deneyin"
 
 #: js/ui/endSessionDialog.js:58
 #, c-format
@@ -168,7 +168,7 @@ msgstr ""
 #, c-format
 msgid "%s will be logged out automatically in %d second."
 msgid_plural "%s will be logged out automatically in %d seconds."
-msgstr[0] "%s oturumu %d saniye içinde kapatılacaktır."
+msgstr[0] "%s oturumu %d saniye içinde otomatik  kapatılacaktır."
 
 #: js/ui/endSessionDialog.js:67
 #, c-format
@@ -327,7 +327,7 @@ msgstr "Hizmet: "
 
 #: js/ui/networkAgent.js:320
 msgid "Authentication required by wireless network"
-msgstr "Kablosuz ağ için kimlik doğrulama gerekli"
+msgstr "Kablosuz ağ için kimlik doğrulaması gerekli"
 
 #: js/ui/networkAgent.js:321
 #, c-format
@@ -709,7 +709,7 @@ msgstr "Bölge ve Dil Ayarları"
 
 #: files/usr/share/cinnamon/applets/keyboard@cinnamon.org/applet.js:76
 msgid "Show flags"
-msgstr ""
+msgstr "Bayrakları göster"
 
 #: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:203
 msgid "Add to panel"
@@ -787,7 +787,7 @@ msgstr "<bilinmeyen>"
 
 #: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:306
 msgid "disabled"
-msgstr "etkisiz"
+msgstr "etkin değil"
 
 #: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:506
 msgid "unmanaged"
@@ -855,7 +855,7 @@ msgstr "Ağ Yöneticisi"
 
 #: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1624
 msgid "Enable networking"
-msgstr "Ağ iletişimini etkinleştir"
+msgstr "Ağ bağlantısını etkinleştir"
 
 #: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1636
 msgid "Wired"
@@ -1308,7 +1308,7 @@ msgstr ""
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:62
 msgid "Cycle through open windows"
-msgstr ""
+msgstr "Açık pencereler arasında geçiş"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:63
 msgid "Cycle backwards though open windows"
@@ -1316,23 +1316,23 @@ msgstr ""
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:64
 msgid "Run dialog (must restart Cinnamon)"
-msgstr ""
+msgstr "Dialoğu çalıştır (Cinnamon yeniden başlatılmalı)"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:65
 msgid "Menu button (must restart Cinnamon)"
-msgstr ""
+msgstr "Menü düğmesi (Cinnamon yeniden başlatılmalı)"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:68
 msgid "Maximize window"
-msgstr ""
+msgstr "Ekrana sığdır"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:69
 msgid "Unmaximize window"
-msgstr ""
+msgstr "Pencere büyütmesini geri al"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:70
 msgid "Minimize window"
-msgstr ""
+msgstr "Pencereyi simge durumuna küçült"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:71
 msgid "Toggle tiled left (must restart Cinnamon)"
@@ -1344,11 +1344,11 @@ msgstr ""
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:73
 msgid "Close window"
-msgstr ""
+msgstr "Pencereyi kapat"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:75
 msgid "Activate window menu"
-msgstr ""
+msgstr "Pencere menüsünü etkinleştir"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:76
 msgid "Toggle maximization state"
@@ -1364,55 +1364,55 @@ msgstr ""
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:79
 msgid "Maximize vertically"
-msgstr ""
+msgstr "Dikey büyüt"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:80
 msgid "Maximize horizontally"
-msgstr ""
+msgstr "Yatay büyüt"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:81
 msgid "Resize window"
-msgstr ""
+msgstr "Pencereyi yeniden boyutlandır"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:82
 msgid "Move window"
-msgstr ""
+msgstr "Pencereyi taşı"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:83
 msgid "Center window in screen"
-msgstr ""
+msgstr "Pencereyi ekrana ortala"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:84
 msgid "Move window to upper-right"
-msgstr ""
+msgstr "Pencereyi sağ üste taşı"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:85
 msgid "Move window to upper-left"
-msgstr ""
+msgstr "Pencereyi sol üste taşı"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:86
 msgid "Move window to lower-right"
-msgstr ""
+msgstr "Pencereyi sağ alta taşı"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:87
 msgid "Move window to lower-left"
-msgstr ""
+msgstr "Pencereyi sol alta taşı"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:88
 msgid "Move window to right edge"
-msgstr ""
+msgstr "Pencereyi sağ köşeye taşı"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:89
 msgid "Move window to top edge"
-msgstr ""
+msgstr "Pencereyi üst köşeye taşı"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:90
 msgid "Move window to bottom edge"
-msgstr ""
+msgstr "Pencereyi alt köşeye taşı"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:91
 msgid "Move window to left edge"
-msgstr ""
+msgstr "Pencereyi sol köşeye taşı"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:94
 msgid "Toggle showing window on all workspaces"
@@ -1420,119 +1420,119 @@ msgstr ""
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:95
 msgid "Switch to left workspace"
-msgstr ""
+msgstr "Sol çalışma alanına geç"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:96
 msgid "Switch to right workspace"
-msgstr ""
+msgstr "Sağ çalışma alanına geç"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:97
 msgid "Switch to workspace 1"
-msgstr ""
+msgstr "Çalışma alanı 1'e geç"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:98
 msgid "Switch to workspace 2"
-msgstr ""
+msgstr "Çalışma alanı 2'ye geç"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:99
 msgid "Switch to workspace 3"
-msgstr ""
+msgstr "Çalışma alanı 3'e geç"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:100
 msgid "Switch to workspace 4"
-msgstr ""
+msgstr "Çalışma alanı 4'e geç"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:101
 msgid "Switch to workspace 5"
-msgstr ""
+msgstr "Çalışma alanı 5'e geç"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:102
 msgid "Switch to workspace 6"
-msgstr ""
+msgstr "Çalışma alanı 6'ya geç"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:103
 msgid "Switch to workspace 7"
-msgstr ""
+msgstr "Çalışma alanı 7'ye geç"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:104
 msgid "Switch to workspace 8"
-msgstr ""
+msgstr "Çalışma alanı 8'e geç"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:105
 msgid "Switch to workspace 9"
-msgstr ""
+msgstr "Çalışma alanı 9'a geç"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:106
 msgid "Switch to workspace 10"
-msgstr ""
+msgstr "Çalışma alanı 10'a geç"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:107
 msgid "Switch to workspace 11"
-msgstr ""
+msgstr "Çalışma alanı 11'e geç"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:108
 msgid "Switch to workspace 12"
-msgstr ""
+msgstr "Çalışma alanı 12'ye geç"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:109
 msgid "Move window to left workspace"
-msgstr ""
+msgstr "Pencereyi sol çalışma alanına taşı"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:110
 msgid "Move window to right workspace"
-msgstr ""
+msgstr "Pencereyi sağ çalışma alanına taşı"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:111
 msgid "Move window to workspace 1"
-msgstr ""
+msgstr "Pencereyi çalışma alanı 1'e taşı"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:112
 msgid "Move window to workspace 2"
-msgstr ""
+msgstr "Pencereyi çalışma alanı 2'ye taşı"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:113
 msgid "Move window to workspace 3"
-msgstr ""
+msgstr "Pencereyi çalışma alanı 3'e taşı"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:114
 msgid "Move window to workspace 4"
-msgstr ""
+msgstr "Pencereyi çalışma alanı 4'e taşı"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:115
 msgid "Move window to workspace 5"
-msgstr ""
+msgstr "Pencereyi çalışma alanı 5'e taşı"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:116
 msgid "Move window to workspace 6"
-msgstr ""
+msgstr "Pencereyi çalışma alanı 6'ya taşı"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:117
 msgid "Move window to workspace 7"
-msgstr ""
+msgstr "Pencereyi çalışma alanı 7'ye taşı"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:118
 msgid "Move window to workspace 8"
-msgstr ""
+msgstr "Pencereyi çalışma alanı 8'e taşı"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:119
 msgid "Move window to workspace 9"
-msgstr ""
+msgstr "Pencereyi çalışma alanı 9'a taşı"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:120
 msgid "Move window to workspace 10"
-msgstr ""
+msgstr "Pencereyi çalışma alanı 10'a taşı"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:121
 msgid "Move window to workspace 11"
-msgstr ""
+msgstr "Pencereyi çalışma alanı 11'e taşı"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:122
 msgid "Move window to workspace 12"
-msgstr ""
+msgstr "Pencereyi çalışma alanı 12'ye taşı"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:125
 msgid "Log out"
-msgstr ""
+msgstr "Oturumu kapat"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:127
 msgid "Toggle recording desktop (must restart Cinnamon)"
@@ -1540,87 +1540,87 @@ msgstr ""
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:130
 msgid "Launch help browser"
-msgstr ""
+msgstr "Yardım tarayıcısını çalıştır"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:131
 msgid "Launch calculator"
-msgstr ""
+msgstr "Hesap makinesini çalıştır"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:132
 msgid "Launch email client"
-msgstr ""
+msgstr "E-posta istemcisini çalıştır"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:133
 msgid "Launch web browser"
-msgstr ""
+msgstr "Web tarayıcıyı aç"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:134
 msgid "Home folder"
-msgstr ""
+msgstr "Ev Dizini"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:138
 msgid "Volume mute"
-msgstr ""
+msgstr "Sessiz"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:139
 msgid "Volume down"
-msgstr ""
+msgstr "Sesi azalt"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:140
 msgid "Volume up"
-msgstr ""
+msgstr "Sesi arttır"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:141
 msgid "Launch media player"
-msgstr ""
+msgstr "Ortam yürütücüsünü başlat"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:143
 msgid "Pause playback"
-msgstr ""
+msgstr "Oynatımı beklet"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:144
 msgid "Stop playback"
-msgstr ""
+msgstr "Oynatımı durdur"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:145
 msgid "Previous track"
-msgstr ""
+msgstr "Önceki parça"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:146
 msgid "Next track"
-msgstr ""
+msgstr "Sonraki parça"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:150
 msgid "Turn zoom on or off"
-msgstr ""
+msgstr "Yakınlaştırmayı aç ya da kapat"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:151
 msgid "Zoom in"
-msgstr ""
+msgstr "Yakınlaştır"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:152
 msgid "Zoom out"
-msgstr ""
+msgstr "Uzaklaştır"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:153
 msgid "Turn screen reader on or off"
-msgstr ""
+msgstr "Ekran okuyucuyu aç veya kapat"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:154
 msgid "Turn on-screen keyboard on or off"
-msgstr ""
+msgstr "Ekran klavyesini aç ya da kapat"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:155
 msgid "Increase text size"
-msgstr ""
+msgstr "Metin boyutunu büyüt"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:156
 msgid "Decrease text size"
-msgstr ""
+msgstr "Metin boyutunu küçült"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:157
 msgid "High contrast on or off"
-msgstr ""
+msgstr "Yüksek karşıtlık açık ya da kapalı"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:161
 msgid "Wallpaper"
@@ -1703,7 +1703,7 @@ msgstr "Resim oranı"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:787
 msgid "Gradient"
-msgstr ""
+msgstr "Gradyan"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:794
 msgid "Colors"
@@ -1782,24 +1782,24 @@ msgstr "Yeni uygulamacıklar  edin"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1283
 msgid "unassigned"
-msgstr ""
+msgstr "atanmamış"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1284
 msgid "Super-"
-msgstr ""
+msgstr "Super-"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1285
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1288
 msgid "Ctrl-"
-msgstr ""
+msgstr "Ctrl-"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1286
 msgid "Shift-"
-msgstr ""
+msgstr "Shift-"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1287
 msgid "Alt-"
-msgstr ""
+msgstr "Alt-"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1407
 #: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/add-panel-launcher.py:148
@@ -1809,112 +1809,114 @@ msgstr "Güncelleme"
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1410
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1543
 msgid "Add custom shortcut"
-msgstr ""
+msgstr "Özel kısa yol ekle"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1418
 msgid "Name:"
-msgstr ""
+msgstr "İsim:"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1419
 msgid "Command:"
-msgstr ""
+msgstr "Komut:"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1427
 msgid "Select a file"
-msgstr ""
+msgstr "Bir dosya seçin"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1477
 msgid "Typing"
-msgstr ""
+msgstr "Yazıyor"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1478
 msgid "Enable key repeat"
-msgstr ""
+msgstr "Tekrar tuşlama aktif"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1480
 msgid "Repeat delay:"
-msgstr ""
+msgstr "Tekrarlama Gecikmesi:"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1480
 msgid "Short"
-msgstr ""
+msgstr "Kısa"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1480
 msgid "Long"
-msgstr ""
+msgstr "Uzun"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1485
 msgid "Repeat speed:"
-msgstr ""
+msgstr "Tekrarlama hızı"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1485
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1493
 msgid "Slow"
-msgstr ""
+msgstr "Yavaş"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1485
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1493
 msgid "Fast"
-msgstr ""
+msgstr "Hızlı"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1491
 msgid "Text cursor blinks"
-msgstr ""
+msgstr "İmleç yanıp sönme"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1493
 msgid "Blink speed:"
-msgstr ""
+msgstr "Yanıp sönme hızı:"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1498
 msgid "Test Box"
-msgstr ""
+msgstr "Test Kutusu"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1502
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1579
 msgid "Keyboard shortcuts"
-msgstr ""
+msgstr "Klavye Kısayolları"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1507
 msgid ""
 "To edit a keyboard binding, click it and press the new keys, or press "
 "backspace to clear it."
 msgstr ""
+"Bir klavye bağlantısını düzenlemek için, tıklayın ve yeni tuşlarına basın, "
+"ya da silmek için geri silme tuşuna basın."
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1545
 msgid "Remove custom shortcut"
-msgstr ""
+msgstr "Özel kısayolunu kaldır"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1570
 msgid "Categories"
-msgstr ""
+msgstr "Kategoriler"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1590
 msgid "Keyboard bindings"
-msgstr ""
+msgstr "Klavye bağlandı"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1599
 msgid "Workspace Management"
-msgstr ""
+msgstr "Çalışma Alanı Yönetimi"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1600
 msgid "System"
-msgstr ""
+msgstr "Sistem"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1601
 msgid "Launchers"
-msgstr ""
+msgstr "Başlatıcılar"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1602
 msgid "Sound and Media"
-msgstr ""
+msgstr "Ses ve Ortam"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1603
 msgid "Universal Access"
-msgstr ""
+msgstr "Evrensel Erişim"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1604
 msgid "Custom Shortcuts"
-msgstr ""
+msgstr "Özel Kısayollar"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1705
 #, c-format
@@ -1924,6 +1926,10 @@ msgid ""
 "impossible to type using this key.\n"
 "\n"
 msgstr ""
+"\n"
+"Bu tuş kombinasyonu, '<b>% s </b>' kullanılamaz çünkü Bu anahtarı kullanarak "
+"yazmak imkansız olacaktır.\n"
+"\n"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1706
 msgid ""
@@ -1936,6 +1942,8 @@ msgstr ""
 msgid ""
 "This key combination, '<b>%s</b>' is currently in use by '<b>%s</b>'.  "
 msgstr ""
+"'<b>%s</b>' Bu kombinasyon,  şuanda  '<b>%s</b>' tarafından "
+"kullanılmaktadır.  "
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1725
 #, c-format
@@ -1943,14 +1951,16 @@ msgid ""
 "If you continue, the combination will be reassigned to '<b>%s</b>.'\n"
 "\n"
 msgstr ""
+"Eğer devam edersen, kombinasyon '<b>%s</b>.' atanacak.\n"
+"\n"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1726
 msgid "Do you want to continue with this operation?"
-msgstr ""
+msgstr "Bu sistemle devam etmek istiyor musun?"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1846
 msgid "Reset to default"
-msgstr ""
+msgstr "Varsayılana sıfırla"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2276
 msgid "Region"
@@ -2069,6 +2079,8 @@ msgstr ""
 msgid ""
 "Allow Cinnamon to scale panel text and icons according to the panel heights"
 msgstr ""
+"Cinnamon'na panel yazı ve ikonlarını panel yüksekliğine göre büyütmesine "
+"izin ver"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2679
 msgid "Top panel height"
@@ -2161,7 +2173,7 @@ msgstr "Expo uygulamacığı : üzerine gelince etkinleştir"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2735
 msgid "Scale applet: activate on hover"
-msgstr ""
+msgstr "Scale uygulamacığı: üstüne gelince etkinleştir"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2740
 msgid "Effects"
@@ -2251,7 +2263,7 @@ msgstr "Pencere odaklama kipi"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2876
 msgid "Enable Edge Tiling (\"Aero Snap\")"
-msgstr ""
+msgstr "Kenar düzeltmeyi aktive et (\"Aero Snap\")"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2877
 msgid "Enable Edge Flip"
@@ -2305,7 +2317,7 @@ msgstr "OSD çalışma alanı süreci"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2894
 msgid "Workspace OSD horizontal position"
-msgstr ""
+msgstr "OSD Çalışma Alanı yatay pozisyonu"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2894
 msgid "percent of the monitor's width"
@@ -2313,7 +2325,7 @@ msgstr "Ekran genişliği oranı"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2898
 msgid "Workspace OSD vertical position"
-msgstr ""
+msgstr "OSD Çalışma Alanı dikey pozisyonu"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2898
 msgid "percent of the monitor's height"
@@ -2327,7 +2339,7 @@ msgstr ""
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2902
 msgid "Display Expo view as a grid"
-msgstr ""
+msgstr "Expo görüntüsünü ızgara olarak görüntüle"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2904
 msgid "Fonts"

@@ -8,15 +8,15 @@ msgstr ""
 "Project-Id-Version: linuxmint\n"
 "Report-Msgid-Bugs-To: FULL NAME <EMAIL@ADDRESS>\n"
 "POT-Creation-Date: 2012-10-20 15:43+0100\n"
-"PO-Revision-Date: 2012-10-20 18:59+0000\n"
+"PO-Revision-Date: 2012-11-11 00:55+0000\n"
 "Last-Translator: samson <Unknown>\n"
 "Language-Team: Amharic <am@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Launchpad-Export-Date: 2012-10-20 20:12+0000\n"
-"X-Generator: Launchpad (build 16165)\n"
+"X-Launchpad-Export-Date: 2012-11-13 13:18+0000\n"
+"X-Generator: Launchpad (build 16251)\n"
 
 #: src/cinnamon-app.c:347 src/cinnamon-app.c:355
 #: js/ui/notificationDaemon.js:458
@@ -1311,11 +1311,11 @@ msgstr ""
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:62
 msgid "Cycle through open windows"
-msgstr ""
+msgstr "በተከፈቱ መስኮቶች ውስጥ መመላለሻ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:63
 msgid "Cycle backwards though open windows"
-msgstr ""
+msgstr "በተከፈቱ መስኮቶች ውስጥ ወደ ኋላ መመላለሻ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:64
 msgid "Run dialog (must restart Cinnamon)"
@@ -1355,15 +1355,15 @@ msgstr "የመስኮት ዝርዝር ማስነሻ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:76
 msgid "Toggle maximization state"
-msgstr ""
+msgstr "ማሳደጊያ ሁኔታን መቀያየሪያ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:77
 msgid "Toggle fullscreen state"
-msgstr ""
+msgstr "ከሙሉ መመልከቻ ሁኔታ መቀያየሪያ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:78
 msgid "Toggle shaded state"
-msgstr ""
+msgstr "የጥላ ሁኔታን መቀያየሪያ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:79
 msgid "Maximize vertically"
@@ -1383,155 +1383,155 @@ msgstr "መስኮቱን ማንቀሳቀሻ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:83
 msgid "Center window in screen"
-msgstr ""
+msgstr "መስኮቱን በመመልከቻው መሀከል ማድረጊያ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:84
 msgid "Move window to upper-right"
-msgstr ""
+msgstr "መስኮቱን ወደ ላይ - በቀኝ በኩል ማንቀሳቀሻ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:85
 msgid "Move window to upper-left"
-msgstr ""
+msgstr "መስኮቱን ወደ ላይ - በግራ በኩል ማንቀሳቀሻ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:86
 msgid "Move window to lower-right"
-msgstr ""
+msgstr "መስኮቱን ወደ ታች - በቀኝ በኩል ማንቀሳቀሻ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:87
 msgid "Move window to lower-left"
-msgstr ""
+msgstr "መስኮቱን ወደ ታች - በግራ በኩል ማንቀሳቀሻ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:88
 msgid "Move window to right edge"
-msgstr ""
+msgstr "መስኮቱን ወደ ቀኝ ጠርዝ በኩል ማንቀሳቀሻ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:89
 msgid "Move window to top edge"
-msgstr ""
+msgstr "መስኮቱን ወደ ላይ ጠርዝ በኩል ማንቀሳቀሻ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:90
 msgid "Move window to bottom edge"
-msgstr ""
+msgstr "መስኮቱን ወደ ታች ጠርዝ በኩል ማንቀሳቀሻ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:91
 msgid "Move window to left edge"
-msgstr ""
+msgstr "መስኮቱን ወደ ግራ ጠርዝ በኩል ማንቀሳቀሻ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:94
 msgid "Toggle showing window on all workspaces"
-msgstr ""
+msgstr "በሁሉም የስራ ቦታዎች ላይ ያሉ መስኮቶችን ማሳያ መቀያየሪያ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:95
 msgid "Switch to left workspace"
-msgstr ""
+msgstr "ወደ ግራ መስሪያ ቦታ መቀየሪያ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:96
 msgid "Switch to right workspace"
-msgstr ""
+msgstr "ወደ ቀኝ መስሪያ ቦታ መቀየሪያ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:97
 msgid "Switch to workspace 1"
-msgstr ""
+msgstr "ወደ መስሪያ ቦታ 1 መቀየሪያ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:98
 msgid "Switch to workspace 2"
-msgstr ""
+msgstr "ወደ መስሪያ ቦታ 2 መቀየሪያ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:99
 msgid "Switch to workspace 3"
-msgstr ""
+msgstr "ወደ መስሪያ ቦታ 3 መቀየሪያ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:100
 msgid "Switch to workspace 4"
-msgstr ""
+msgstr "ወደ መስሪያ ቦታ 4 መቀየሪያ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:101
 msgid "Switch to workspace 5"
-msgstr ""
+msgstr "ወደ መስሪያ ቦታ 5 መቀየሪያ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:102
 msgid "Switch to workspace 6"
-msgstr ""
+msgstr "ወደ መስሪያ ቦታ 6 መቀየሪያ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:103
 msgid "Switch to workspace 7"
-msgstr ""
+msgstr "ወደ መስሪያ ቦታ 7 መቀየሪያ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:104
 msgid "Switch to workspace 8"
-msgstr ""
+msgstr "ወደ መስሪያ ቦታ 8 መቀየሪያ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:105
 msgid "Switch to workspace 9"
-msgstr ""
+msgstr "ወደ መስሪያ ቦታ 9 መቀየሪያ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:106
 msgid "Switch to workspace 10"
-msgstr ""
+msgstr "ወደ መስሪያ ቦታ 10 መቀየሪያ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:107
 msgid "Switch to workspace 11"
-msgstr ""
+msgstr "ወደ መስሪያ ቦታ 11 መቀየሪያ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:108
 msgid "Switch to workspace 12"
-msgstr ""
+msgstr "ወደ መስሪያ ቦታ 12 መቀየሪያ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:109
 msgid "Move window to left workspace"
-msgstr ""
+msgstr "መስኮቱን ወደ ግራ መስሪያ ቦታ ማንቀሳቀሻ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:110
 msgid "Move window to right workspace"
-msgstr ""
+msgstr "መስኮቱን ወደ ቀኝ መስሪያ ቦታ ማንቀሳቀሻ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:111
 msgid "Move window to workspace 1"
-msgstr ""
+msgstr "መስኮቱን ወደ መስሪያ ቦታ 1 ማንቀሳቀሻ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:112
 msgid "Move window to workspace 2"
-msgstr ""
+msgstr "መስኮቱን ወደ መስሪያ ቦታ 2 ማንቀሳቀሻ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:113
 msgid "Move window to workspace 3"
-msgstr ""
+msgstr "መስኮቱን ወደ መስሪያ ቦታ 1 ማንቀሳቀሻ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:114
 msgid "Move window to workspace 4"
-msgstr ""
+msgstr "መስኮቱን ወደ መስሪያ ቦታ 4 ማንቀሳቀሻ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:115
 msgid "Move window to workspace 5"
-msgstr ""
+msgstr "መስኮቱን ወደ መስሪያ ቦታ 5 ማንቀሳቀሻ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:116
 msgid "Move window to workspace 6"
-msgstr ""
+msgstr "መስኮቱን ወደ መስሪያ ቦታ 6 ማንቀሳቀሻ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:117
 msgid "Move window to workspace 7"
-msgstr ""
+msgstr "መስኮቱን ወደ መስሪያ ቦታ 7 ማንቀሳቀሻ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:118
 msgid "Move window to workspace 8"
-msgstr ""
+msgstr "መስኮቱን ወደ መስሪያ ቦታ 8 ማንቀሳቀሻ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:119
 msgid "Move window to workspace 9"
-msgstr ""
+msgstr "መስኮቱን ወደ መስሪያ ቦታ 9 ማንቀሳቀሻ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:120
 msgid "Move window to workspace 10"
-msgstr ""
+msgstr "መስኮቱን ወደ መስሪያ ቦታ 10 ማንቀሳቀሻ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:121
 msgid "Move window to workspace 11"
-msgstr ""
+msgstr "መስኮቱን ወደ መስሪያ ቦታ 11 ማንቀሳቀሻ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:122
 msgid "Move window to workspace 12"
-msgstr ""
+msgstr "መስኮቱን ወደ መስሪያ ቦታ 12 ማንቀሳቀሻ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:125
 msgid "Log out"
@@ -1539,31 +1539,31 @@ msgstr "መውጫ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:127
 msgid "Toggle recording desktop (must restart Cinnamon)"
-msgstr ""
+msgstr "ዴስክቶፕ መቅረጫን መቀያየሪያ (ሲናሞን መጀመር አለበት )"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:130
 msgid "Launch help browser"
-msgstr ""
+msgstr "የእርዳታ መቃኛ ማስነሻ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:131
 msgid "Launch calculator"
-msgstr ""
+msgstr "የሂሳብ ማስሊያ ማስነሻ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:132
 msgid "Launch email client"
-msgstr ""
+msgstr "የኢሜይል ደንበኛ ማስነሻ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:133
 msgid "Launch web browser"
-msgstr ""
+msgstr "የዌብ መቃኛ ማስነሻ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:134
 msgid "Home folder"
-msgstr ""
+msgstr "የቤት ፎልደር"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:138
 msgid "Volume mute"
-msgstr ""
+msgstr "መጠኑን መቀነሻ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:139
 msgid "Volume down"
@@ -1575,23 +1575,23 @@ msgstr "መጠኑን መጨመሪያ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:141
 msgid "Launch media player"
-msgstr ""
+msgstr "ሙዚቃ ማጫወቻ ማስነሻ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:143
 msgid "Pause playback"
-msgstr ""
+msgstr "በድጋሚ ማጫወቱን ማቆሚያ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:144
 msgid "Stop playback"
-msgstr ""
+msgstr "በድጋሚ ማጫወቱን ማቆሚያ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:145
 msgid "Previous track"
-msgstr ""
+msgstr "ቀደም ያለው ተረኛ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:146
 msgid "Next track"
-msgstr ""
+msgstr "የሚቀጥለው ተረኛ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:150
 msgid "Turn zoom on or off"
@@ -1607,11 +1607,11 @@ msgstr "በርቀት ማሳያ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:153
 msgid "Turn screen reader on or off"
-msgstr ""
+msgstr "ስክሪን አንባቢን ማብሪያ ወይንም ማጥፊያ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:154
 msgid "Turn on-screen keyboard on or off"
-msgstr ""
+msgstr "የስክሪን ላይ ፊደል ገበታ ማብሪያ ወይንም ማጥፊያ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:155
 msgid "Increase text size"
@@ -1623,7 +1623,7 @@ msgstr "የጽሁፉን መጠን መቀነሻ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:157
 msgid "High contrast on or off"
-msgstr ""
+msgstr "ከፍተኛ ማነፃፀሪያ ማብሪያ ወይንም ማጥፊያ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:161
 msgid "Wallpaper"
@@ -1785,24 +1785,24 @@ msgstr "አዲስ ፕሮግራም ያግኙ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1283
 msgid "unassigned"
-msgstr ""
+msgstr "ያልተመደበ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1284
 msgid "Super-"
-msgstr ""
+msgstr "Super-"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1285
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1288
 msgid "Ctrl-"
-msgstr ""
+msgstr "Ctrl-"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1286
 msgid "Shift-"
-msgstr ""
+msgstr "Shift-"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1287
 msgid "Alt-"
-msgstr ""
+msgstr "Alt-"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1407
 #: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/add-panel-launcher.py:148
@@ -1812,7 +1812,7 @@ msgstr "ማሻሻያ"
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1410
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1543
 msgid "Add custom shortcut"
-msgstr ""
+msgstr "የአቋራጭ ማሻሻያዎች መጨመሪያ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1418
 msgid "Name:"
@@ -1828,45 +1828,45 @@ msgstr "ፋይል ይምረጡ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1477
 msgid "Typing"
-msgstr ""
+msgstr "መጻፊያ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1478
 msgid "Enable key repeat"
-msgstr ""
+msgstr "ቁልፎችን መድገም ማስቻያ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1480
 msgid "Repeat delay:"
-msgstr ""
+msgstr "መድገሙን ማዘግየት :"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1480
 msgid "Short"
-msgstr ""
+msgstr "አጭር"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1480
 msgid "Long"
-msgstr ""
+msgstr "እረጅም"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1485
 msgid "Repeat speed:"
-msgstr ""
+msgstr "ፍጥነት መድገሚያ :"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1485
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1493
 msgid "Slow"
-msgstr ""
+msgstr "በዝግታ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1485
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1493
 msgid "Fast"
-msgstr ""
+msgstr "በፍጥነት"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1491
 msgid "Text cursor blinks"
-msgstr ""
+msgstr "የጽሁፍ ጠቋሚ ብልጭ ድርግም ባይ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1493
 msgid "Blink speed:"
-msgstr ""
+msgstr "ብልጭ ድርግም ባይ :"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1498
 msgid "Test Box"
@@ -1882,10 +1882,11 @@ msgid ""
 "To edit a keyboard binding, click it and press the new keys, or press "
 "backspace to clear it."
 msgstr ""
+"የፊደል ገበታን ብልጭ ድርግም ባይ ለማረም ይጫኑ እና ይያዙ አዲሱን ቁልፎች ወይንም ለማጥፋት የኋሊት መደምሰሻን ይጫኑ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1545
 msgid "Remove custom shortcut"
-msgstr ""
+msgstr "ያሻሻሉትን አቋራጭ ማስወገጃ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1570
 msgid "Categories"
@@ -1897,7 +1898,7 @@ msgstr ""
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1599
 msgid "Workspace Management"
-msgstr ""
+msgstr "የስራ ቦታ አስተዳዳሪ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1600
 msgid "System"
@@ -1913,11 +1914,11 @@ msgstr "ድምጽ እና ማጫወቻዎች"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1603
 msgid "Universal Access"
-msgstr ""
+msgstr "አለም አቀፍ መድረሻ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1604
 msgid "Custom Shortcuts"
-msgstr ""
+msgstr "የተሻሻሉት አቋራጮች"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1705
 #, c-format
@@ -1927,18 +1928,23 @@ msgid ""
 "impossible to type using this key.\n"
 "\n"
 msgstr ""
+"\n"
+"የዚህን ቁልፍ ጥምረት '<b>%s</b>' መጠቀም አይችሉም ምክንያቱም ይህን ቁልፍ በመጠቀም መጻፍ አይችሉም\n"
+"\n"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1706
 msgid ""
 "Please try again with a modifier key such as Control, Alt or Super (Windows "
 "key) at the same time.\n"
 msgstr ""
+"እባክዎን እንደገና ይሞክሩ የማሻሻያ ቁልፎችን በመጠቀም እንደ Control, Alt ወይንም Super (Windows key) "
+"at the same time.\n"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1724
 #, c-format
 msgid ""
 "This key combination, '<b>%s</b>' is currently in use by '<b>%s</b>'.  "
-msgstr ""
+msgstr "የዚህ ቁልፍ ጥምረት '<b>%s</b>' በአሁኑ ጊዜ በስራ ላይ ነው በ '<b>%s</b>'.  "
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1725
 #, c-format
@@ -1946,14 +1952,16 @@ msgid ""
 "If you continue, the combination will be reassigned to '<b>%s</b>.'\n"
 "\n"
 msgstr ""
+"ከቀጠሉ ጥምረቱ እንደገና ይሰየማል ወደ '<b>%s</b>.'\n"
+"\n"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1726
 msgid "Do you want to continue with this operation?"
-msgstr ""
+msgstr "ይህን የግባር መቀጠል ይፈልጋሉ?"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1846
 msgid "Reset to default"
-msgstr ""
+msgstr "ወደ ነባሩ እንደነበር መመለሻ"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2276
 msgid "Region"
@@ -2290,6 +2298,7 @@ msgid ""
 "Bring windows which require attention to the current workspace (instead of "
 "switching to the window's workspace)"
 msgstr ""
+"ትኩረት የሚፈልገውን መስኮት ማምጫ አሁን እየሰሩ ወዳለበት የስራ ቦታ (መስኮቱ ወዳለበት የስራ ቦታ ከመቀየር ይልቅ)"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2885
 msgid "Workspaces"

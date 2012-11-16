@@ -8,15 +8,15 @@ msgstr ""
 "Project-Id-Version: linuxmint\n"
 "Report-Msgid-Bugs-To: FULL NAME <EMAIL@ADDRESS>\n"
 "POT-Creation-Date: 2012-10-20 15:43+0100\n"
-"PO-Revision-Date: 2012-09-29 07:37+0000\n"
-"Last-Translator: Amarvudol <Unknown>\n"
+"PO-Revision-Date: 2012-10-31 15:59+0000\n"
+"Last-Translator: Felice Palmese <felice.palmese@gmail.com>\n"
 "Language-Team: Italian <it@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Launchpad-Export-Date: 2012-10-20 20:11+0000\n"
-"X-Generator: Launchpad (build 16165)\n"
+"X-Launchpad-Export-Date: 2012-11-13 13:18+0000\n"
+"X-Generator: Launchpad (build 16251)\n"
 
 #: src/cinnamon-app.c:347 src/cinnamon-app.c:355
 #: js/ui/notificationDaemon.js:458
@@ -47,7 +47,7 @@ msgstr "Home"
 
 #: src/cinnamon-util.c:98
 msgid "File System"
-msgstr "File system"
+msgstr "File System"
 
 #: src/cinnamon-util.c:244
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:135
@@ -61,7 +61,7 @@ msgstr "%1$s: %2$s"
 
 #: src/gvc/gvc-mixer-control.c:1082 js/ui/lookingGlass.js:691
 msgid "Disabled"
-msgstr "Disattiva"
+msgstr "Disabilitato"
 
 #: src/gvc/gvc-mixer-control.c:1089
 #, c-format
@@ -75,7 +75,7 @@ msgstr[1] "%u uscite"
 msgid "%u Input"
 msgid_plural "%u Inputs"
 msgstr[0] "%u ingresso"
-msgstr[1] "%u ingresso"
+msgstr[1] "%u ingressi"
 
 #: src/gvc/gvc-mixer-control.c:1397
 msgid "System Sounds"
@@ -130,7 +130,7 @@ msgstr "Questa settimana"
 
 #: js/ui/calendar.js:754
 msgid "Next week"
-msgstr "Settimana successiva"
+msgstr "Prossima settimana"
 
 #: js/ui/cinnamonEntry.js:30
 msgid "Copy"
@@ -150,7 +150,7 @@ msgstr "Nascondi il testo"
 
 #: js/ui/cinnamonMountOperation.js:285
 msgid "Wrong password, please try again"
-msgstr "Password errata, per favore prova ancora"
+msgstr "Password errata, riprova"
 
 #: js/ui/endSessionDialog.js:58
 #, c-format
@@ -164,7 +164,8 @@ msgstr "Disconnetti"
 #: js/ui/endSessionDialog.js:60
 msgid "Click Log Out to quit these applications and log out of the system."
 msgstr ""
-"Premi Disconnetti per terminare queste applicazioni e scollegarsi dal sistema"
+"Premi Disconnetti per terminare queste applicazioni e scollegarti dal "
+"sistema."
 
 #: js/ui/endSessionDialog.js:62
 #, c-format
@@ -191,7 +192,7 @@ msgstr "Arresta"
 #: js/ui/endSessionDialog.js:79
 msgid "Click Power Off to quit these applications and power off the system."
 msgstr ""
-"Premi Spegni per uscire da queste applicazioni e spegnere il sistema."
+"Premi Spegni per terminare queste applicazioni e spegnere il sistema."
 
 #: js/ui/endSessionDialog.js:81
 #, c-format
@@ -212,7 +213,7 @@ msgstr "Riavvia"
 #: js/ui/endSessionDialog.js:96
 msgid "Click Restart to quit these applications and restart the system."
 msgstr ""
-"Premi su Riavvia per uscire da queste applicazioni e riavviare il sistema."
+"Premi Riavvia per terminare queste applicazioni e riavviare il sistema."
 
 #: js/ui/endSessionDialog.js:98
 #, c-format
@@ -1329,19 +1330,19 @@ msgstr ""
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:65
 msgid "Menu button (must restart Cinnamon)"
-msgstr ""
+msgstr "Menu (richiede il riavvio di Cinnamon)"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:68
 msgid "Maximize window"
-msgstr ""
+msgstr "Massimizza finestra"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:69
 msgid "Unmaximize window"
-msgstr ""
+msgstr "Demassimizza finestra"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:70
 msgid "Minimize window"
-msgstr ""
+msgstr "Minimizza finestra"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:71
 msgid "Toggle tiled left (must restart Cinnamon)"
@@ -1389,203 +1390,204 @@ msgstr ""
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:83
 msgid "Center window in screen"
-msgstr ""
+msgstr "Centra la finestra nella schermata"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:84
 msgid "Move window to upper-right"
-msgstr ""
+msgstr "Muovi la finestra in alto a destra"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:85
 msgid "Move window to upper-left"
-msgstr ""
+msgstr "Muovi la finestra in alto a sinistra"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:86
 msgid "Move window to lower-right"
-msgstr ""
+msgstr "Muovi la finestra in basso a destra"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:87
 msgid "Move window to lower-left"
-msgstr ""
+msgstr "Muovi la finestra in basso a sinistra"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:88
 msgid "Move window to right edge"
-msgstr ""
+msgstr "Muovi la finestra in"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:89
 msgid "Move window to top edge"
-msgstr ""
+msgstr "Muovi la finestra al bordo superiore"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:90
 msgid "Move window to bottom edge"
-msgstr ""
+msgstr "Muovi la finestra al bordo inferiore"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:91
 msgid "Move window to left edge"
-msgstr ""
+msgstr "Muovi la finestra al bordo destro"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:94
 msgid "Toggle showing window on all workspaces"
 msgstr ""
+"Attiva la visualizzazione della finestra su tutti gli spazi di lavoro"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:95
 msgid "Switch to left workspace"
-msgstr ""
+msgstr "Passa allo spazio di lavoro sinistro"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:96
 msgid "Switch to right workspace"
-msgstr ""
+msgstr "Passa allo spazio di lavoro destro"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:97
 msgid "Switch to workspace 1"
-msgstr ""
+msgstr "Passa allo spazio di lavoro 1"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:98
 msgid "Switch to workspace 2"
-msgstr ""
+msgstr "Passa allo spazio di lavoro 2"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:99
 msgid "Switch to workspace 3"
-msgstr ""
+msgstr "Passa allo spazio di lavoro 3"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:100
 msgid "Switch to workspace 4"
-msgstr ""
+msgstr "Passa allo spazio di lavoro 4"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:101
 msgid "Switch to workspace 5"
-msgstr ""
+msgstr "Passa allo spazio di lavoro 5"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:102
 msgid "Switch to workspace 6"
-msgstr ""
+msgstr "Passa allo spazio di lavoro 6"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:103
 msgid "Switch to workspace 7"
-msgstr ""
+msgstr "Passa allo spazio di lavoro 7"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:104
 msgid "Switch to workspace 8"
-msgstr ""
+msgstr "Passa allo spazio di lavoro 8"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:105
 msgid "Switch to workspace 9"
-msgstr ""
+msgstr "Passa allo spazio di lavoro 9"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:106
 msgid "Switch to workspace 10"
-msgstr ""
+msgstr "Passa allo spazio di lavoro 10"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:107
 msgid "Switch to workspace 11"
-msgstr ""
+msgstr "Passa allo spazio di lavoro 11"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:108
 msgid "Switch to workspace 12"
-msgstr ""
+msgstr "Passa allo spazio di lavoro 12"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:109
 msgid "Move window to left workspace"
-msgstr ""
+msgstr "Sposta la finestra nello spazio di lavoro sinistro"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:110
 msgid "Move window to right workspace"
-msgstr ""
+msgstr "Sposta la finestra nello spazio di lavoro destro"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:111
 msgid "Move window to workspace 1"
-msgstr ""
+msgstr "Sposta la finestra nello spazio di lavoro 1"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:112
 msgid "Move window to workspace 2"
-msgstr ""
+msgstr "Sposta la finestra nello spazio di lavoro 2"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:113
 msgid "Move window to workspace 3"
-msgstr ""
+msgstr "Sposta la finestra nello spazio di lavoro 3"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:114
 msgid "Move window to workspace 4"
-msgstr ""
+msgstr "Sposta la finestra nello spazio di lavoro 4"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:115
 msgid "Move window to workspace 5"
-msgstr ""
+msgstr "Sposta la finestra nello spazio di lavoro 5"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:116
 msgid "Move window to workspace 6"
-msgstr ""
+msgstr "Sposta la finestra nello spazio di lavoro 6"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:117
 msgid "Move window to workspace 7"
-msgstr ""
+msgstr "Sposta la finestra nello spazio di lavoro 7"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:118
 msgid "Move window to workspace 8"
-msgstr ""
+msgstr "Sposta la finestra nello spazio di lavoro 8"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:119
 msgid "Move window to workspace 9"
-msgstr ""
+msgstr "Sposta la finestra nello spazio di lavoro 9"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:120
 msgid "Move window to workspace 10"
-msgstr ""
+msgstr "Sposta la finestra nello spazio di lavoro 10"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:121
 msgid "Move window to workspace 11"
-msgstr ""
+msgstr "Sposta la finestra nello spazio di lavoro 11"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:122
 msgid "Move window to workspace 12"
-msgstr ""
+msgstr "Sposta la finestra nello spazio di lavoro 12"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:125
 msgid "Log out"
-msgstr ""
+msgstr "Log out"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:127
 msgid "Toggle recording desktop (must restart Cinnamon)"
-msgstr ""
+msgstr "Attiva la cattura del desktop (richiede il riavvio di Cinnamon)"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:130
 msgid "Launch help browser"
-msgstr ""
+msgstr "Avvia il visualizzatore di manuali"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:131
 msgid "Launch calculator"
-msgstr ""
+msgstr "Avvia la calcolatrice"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:132
 msgid "Launch email client"
-msgstr ""
+msgstr "Avvia il client email"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:133
 msgid "Launch web browser"
-msgstr ""
+msgstr "Avvia il browser web"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:134
 msgid "Home folder"
-msgstr ""
+msgstr "Cartella Home"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:138
 msgid "Volume mute"
-msgstr ""
+msgstr "Escludi l'audio"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:139
 msgid "Volume down"
-msgstr ""
+msgstr "Diminuisci il volume"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:140
 msgid "Volume up"
-msgstr ""
+msgstr "Aumenta il volume"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:141
 msgid "Launch media player"
-msgstr ""
+msgstr "Lancia il lettore multimediale"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:143
 msgid "Pause playback"
-msgstr ""
+msgstr "Metti in pausa la riproduzione"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:144
 msgid "Stop playback"

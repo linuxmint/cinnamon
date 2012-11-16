@@ -771,8 +771,9 @@ class BackgroundSidePage (SidePage):
 
         expander = Gtk.Expander()
         expander.set_label(_("Advanced options"))
-        scrolled_window.add_with_viewport(expander)
+        
         self.content_box.pack_start(scrolled_window, False, True, 0)
+        self.content_box.pack_start(expander, False, True, 0)
         
         advanced_options_box = Gtk.HBox()
         expander.add(advanced_options_box)

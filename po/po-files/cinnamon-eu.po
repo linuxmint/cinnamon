@@ -8,15 +8,15 @@ msgstr ""
 "Project-Id-Version: linuxmint\n"
 "Report-Msgid-Bugs-To: FULL NAME <EMAIL@ADDRESS>\n"
 "POT-Creation-Date: 2012-10-20 15:43+0100\n"
-"PO-Revision-Date: 2012-09-29 00:11+0000\n"
+"PO-Revision-Date: 2012-10-28 21:25+0000\n"
 "Last-Translator: Asier Sarasua Garmendia <Unknown>\n"
 "Language-Team: Basque <eu@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Launchpad-Export-Date: 2012-10-20 20:12+0000\n"
-"X-Generator: Launchpad (build 16165)\n"
+"X-Launchpad-Export-Date: 2012-11-13 13:18+0000\n"
+"X-Generator: Launchpad (build 16251)\n"
 
 #: src/cinnamon-app.c:347 src/cinnamon-app.c:355
 #: js/ui/notificationDaemon.js:458
@@ -1308,327 +1308,327 @@ msgstr "Mahaigainaren ezarpenen doiketa fina"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:60
 msgid "Toggle Scale"
-msgstr ""
+msgstr "Txandakatu Eskala"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:61
 msgid "Toggle Expo"
-msgstr ""
+msgstr "Txandakatu Expo"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:62
 msgid "Cycle through open windows"
-msgstr ""
+msgstr "Mugitu leiho irekien artean"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:63
 msgid "Cycle backwards though open windows"
-msgstr ""
+msgstr "Mugitu atzerantz leiho irekien artean"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:64
 msgid "Run dialog (must restart Cinnamon)"
-msgstr ""
+msgstr "Exekutatu elkarrizketa (Cinnamon berrabiarazi behar da)"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:65
 msgid "Menu button (must restart Cinnamon)"
-msgstr ""
+msgstr "Menuaren botoia (Cinnamon berrabiarazi behar da)"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:68
 msgid "Maximize window"
-msgstr ""
+msgstr "Maximizatu leihoa"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:69
 msgid "Unmaximize window"
-msgstr ""
+msgstr "Desmaximizatu leihoa"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:70
 msgid "Minimize window"
-msgstr ""
+msgstr "Minimizatu leihoa"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:71
 msgid "Toggle tiled left (must restart Cinnamon)"
-msgstr ""
+msgstr "Txandakatu pilatua ezkerra (Cinnamon berrabiarazi behar da)"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:72
 msgid "Toggle tiled right (must restart Cinnamon)"
-msgstr ""
+msgstr "Txandakatu pilatua eskuina (Cinnamon berrabiarazi behar da)"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:73
 msgid "Close window"
-msgstr ""
+msgstr "Itxi leihoa"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:75
 msgid "Activate window menu"
-msgstr ""
+msgstr "Aktibatu leiho-menua"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:76
 msgid "Toggle maximization state"
-msgstr ""
+msgstr "Txandakatu maximizatze-egoera"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:77
 msgid "Toggle fullscreen state"
-msgstr ""
+msgstr "Txandakatu pantaila osoaren egoera"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:78
 msgid "Toggle shaded state"
-msgstr ""
+msgstr "Txandakatu bildutako egoera"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:79
 msgid "Maximize vertically"
-msgstr ""
+msgstr "Maximizatu bertikalki"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:80
 msgid "Maximize horizontally"
-msgstr ""
+msgstr "Maximizatu horizontalki"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:81
 msgid "Resize window"
-msgstr ""
+msgstr "Aldatu leihoaren tamaina"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:82
 msgid "Move window"
-msgstr ""
+msgstr "Lekuz aldatu leihoa"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:83
 msgid "Center window in screen"
-msgstr ""
+msgstr "Zentratu leihoa pantailan"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:84
 msgid "Move window to upper-right"
-msgstr ""
+msgstr "Mugitu leihoa gora eskuinera"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:85
 msgid "Move window to upper-left"
-msgstr ""
+msgstr "Mugitu leihoa gora ezkerrera"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:86
 msgid "Move window to lower-right"
-msgstr ""
+msgstr "Mugitu leihoa behera eskuinera"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:87
 msgid "Move window to lower-left"
-msgstr ""
+msgstr "Mugitu leihoa behera ezkerrera"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:88
 msgid "Move window to right edge"
-msgstr ""
+msgstr "Mugitu leihoa eskuineko ertzera"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:89
 msgid "Move window to top edge"
-msgstr ""
+msgstr "Mugitu leihoa goiko ertzera"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:90
 msgid "Move window to bottom edge"
-msgstr ""
+msgstr "Mugitu leihoa beheko ertzera"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:91
 msgid "Move window to left edge"
-msgstr ""
+msgstr "Mugitu leihoa ezkerreko ertzera"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:94
 msgid "Toggle showing window on all workspaces"
-msgstr ""
+msgstr "Txandakatu leihoa laneko area guztietan erakustea"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:95
 msgid "Switch to left workspace"
-msgstr ""
+msgstr "Aldatu ezkerreko laneko areara"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:96
 msgid "Switch to right workspace"
-msgstr ""
+msgstr "Aldatu eskuineko laneko areara"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:97
 msgid "Switch to workspace 1"
-msgstr ""
+msgstr "Aldatu 1. laneko areara"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:98
 msgid "Switch to workspace 2"
-msgstr ""
+msgstr "Aldatu 2. laneko areara"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:99
 msgid "Switch to workspace 3"
-msgstr ""
+msgstr "Aldatu 3. laneko areara"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:100
 msgid "Switch to workspace 4"
-msgstr ""
+msgstr "Aldatu 4. laneko areara"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:101
 msgid "Switch to workspace 5"
-msgstr ""
+msgstr "Aldatu 5. laneko areara"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:102
 msgid "Switch to workspace 6"
-msgstr ""
+msgstr "Aldatu 6. laneko areara"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:103
 msgid "Switch to workspace 7"
-msgstr ""
+msgstr "Aldatu 7. laneko areara"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:104
 msgid "Switch to workspace 8"
-msgstr ""
+msgstr "Aldatu 8. laneko areara"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:105
 msgid "Switch to workspace 9"
-msgstr ""
+msgstr "Aldatu 9. laneko areara"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:106
 msgid "Switch to workspace 10"
-msgstr ""
+msgstr "Aldatu 10. laneko areara"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:107
 msgid "Switch to workspace 11"
-msgstr ""
+msgstr "Aldatu 11. laneko areara"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:108
 msgid "Switch to workspace 12"
-msgstr ""
+msgstr "Aldatu 12. laneko areara"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:109
 msgid "Move window to left workspace"
-msgstr ""
+msgstr "Mugitu leihoa ezkerreko laneko areara"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:110
 msgid "Move window to right workspace"
-msgstr ""
+msgstr "Mugitu leihoa eskuineko laneko areara"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:111
 msgid "Move window to workspace 1"
-msgstr ""
+msgstr "Mugitu leihoa 1. laneko areara"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:112
 msgid "Move window to workspace 2"
-msgstr ""
+msgstr "Mugitu leihoa 2. laneko areara"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:113
 msgid "Move window to workspace 3"
-msgstr ""
+msgstr "Mugitu leihoa 3. laneko areara"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:114
 msgid "Move window to workspace 4"
-msgstr ""
+msgstr "Mugitu leihoa 4. laneko areara"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:115
 msgid "Move window to workspace 5"
-msgstr ""
+msgstr "Mugitu leihoa 5. laneko areara"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:116
 msgid "Move window to workspace 6"
-msgstr ""
+msgstr "Mugitu leihoa 6. laneko areara"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:117
 msgid "Move window to workspace 7"
-msgstr ""
+msgstr "Mugitu leihoa 7. laneko areara"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:118
 msgid "Move window to workspace 8"
-msgstr ""
+msgstr "Mugitu leihoa 8. laneko areara"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:119
 msgid "Move window to workspace 9"
-msgstr ""
+msgstr "Mugitu leihoa 9. laneko areara"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:120
 msgid "Move window to workspace 10"
-msgstr ""
+msgstr "Mugitu leihoa 10. laneko areara"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:121
 msgid "Move window to workspace 11"
-msgstr ""
+msgstr "Mugitu leihoa 11. laneko areara"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:122
 msgid "Move window to workspace 12"
-msgstr ""
+msgstr "Mugitu leihoa 12. laneko areara"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:125
 msgid "Log out"
-msgstr ""
+msgstr "Amaitu saioa"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:127
 msgid "Toggle recording desktop (must restart Cinnamon)"
-msgstr ""
+msgstr "Txandakatu mahaigaina grabatzea (Cinnamon berrabiarazi behar da)"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:130
 msgid "Launch help browser"
-msgstr ""
+msgstr "Abiarazi laguntza-arakatzailea"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:131
 msgid "Launch calculator"
-msgstr ""
+msgstr "Abiarazi kalkulagailua"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:132
 msgid "Launch email client"
-msgstr ""
+msgstr "Abiarazi posta-bezeroa"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:133
 msgid "Launch web browser"
-msgstr ""
+msgstr "Abiatu web-arakatzailea"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:134
 msgid "Home folder"
-msgstr ""
+msgstr "Karpeta nagusia"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:138
 msgid "Volume mute"
-msgstr ""
+msgstr "Mututu bolumena"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:139
 msgid "Volume down"
-msgstr ""
+msgstr "Jaitsi bolumena"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:140
 msgid "Volume up"
-msgstr ""
+msgstr "Igo bolumena"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:141
 msgid "Launch media player"
-msgstr ""
+msgstr "Abiarazi multimedia-erreproduzigailua"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:143
 msgid "Pause playback"
-msgstr ""
+msgstr "Pausatu erreprodukzioa"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:144
 msgid "Stop playback"
-msgstr ""
+msgstr "Gelditu erreprodukzioa"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:145
 msgid "Previous track"
-msgstr ""
+msgstr "Aurreko pista"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:146
 msgid "Next track"
-msgstr ""
+msgstr "Hurrengo pista"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:150
 msgid "Turn zoom on or off"
-msgstr ""
+msgstr "Aktibatu edo desaktibatu zooma"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:151
 msgid "Zoom in"
-msgstr ""
+msgstr "Handiagotu"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:152
 msgid "Zoom out"
-msgstr ""
+msgstr "Txikiagotu"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:153
 msgid "Turn screen reader on or off"
-msgstr ""
+msgstr "Aktibatu edo desaktibatu pantailako irakurlea"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:154
 msgid "Turn on-screen keyboard on or off"
-msgstr ""
+msgstr "Aktibatu edo desaktibatu pantailako teklatua"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:155
 msgid "Increase text size"
-msgstr ""
+msgstr "Handiagotu testuaren tamaina"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:156
 msgid "Decrease text size"
-msgstr ""
+msgstr "Txikiagotu testuaren tamaina"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:157
 msgid "High contrast on or off"
-msgstr ""
+msgstr "Gaitu edo desgaitu kontraste altua"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:161
 msgid "Wallpaper"
@@ -1687,7 +1687,7 @@ msgstr "Karpeta"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:633
 msgid "Recursive listing"
-msgstr ""
+msgstr "Zerrendatze errekurtsiboa"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:638
 msgid "Delay"
@@ -1739,7 +1739,7 @@ msgstr "Botoiek ikonoak dituzte"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:885
 msgid "Always Use Location Entry In Nemo"
-msgstr ""
+msgstr "Erabili beti kokapen-sarrera Nemon"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:887
 msgid "Cursor theme"
@@ -1790,24 +1790,24 @@ msgstr "Eskuratu applet berriak"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1283
 msgid "unassigned"
-msgstr ""
+msgstr "esleitu gabea"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1284
 msgid "Super-"
-msgstr ""
+msgstr "Super-"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1285
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1288
 msgid "Ctrl-"
-msgstr ""
+msgstr "Ctrl-"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1286
 msgid "Shift-"
-msgstr ""
+msgstr "Shift-"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1287
 msgid "Alt-"
-msgstr ""
+msgstr "Alt-"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1407
 #: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/add-panel-launcher.py:148
@@ -1817,112 +1817,114 @@ msgstr "Eguneratu"
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1410
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1543
 msgid "Add custom shortcut"
-msgstr ""
+msgstr "Gehitu lasterbide pertsonalizatua"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1418
 msgid "Name:"
-msgstr ""
+msgstr "Izena:"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1419
 msgid "Command:"
-msgstr ""
+msgstr "Komandoa:"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1427
 msgid "Select a file"
-msgstr ""
+msgstr "Hautatu fitxategi bat"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1477
 msgid "Typing"
-msgstr ""
+msgstr "Idazten"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1478
 msgid "Enable key repeat"
-msgstr ""
+msgstr "Gaitu teklen errepikapena"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1480
 msgid "Repeat delay:"
-msgstr ""
+msgstr "Errepikatzearen atzerapena:"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1480
 msgid "Short"
-msgstr ""
+msgstr "Laburra"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1480
 msgid "Long"
-msgstr ""
+msgstr "Luzea"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1485
 msgid "Repeat speed:"
-msgstr ""
+msgstr "Errepikatzearen abiadura:"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1485
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1493
 msgid "Slow"
-msgstr ""
+msgstr "Motela"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1485
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1493
 msgid "Fast"
-msgstr ""
+msgstr "Azkarra"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1491
 msgid "Text cursor blinks"
-msgstr ""
+msgstr "testu-kurtsoreak keinuka egiten du"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1493
 msgid "Blink speed:"
-msgstr ""
+msgstr "Keinu-abiadura:"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1498
 msgid "Test Box"
-msgstr ""
+msgstr "Testu-kutxa"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1502
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1579
 msgid "Keyboard shortcuts"
-msgstr ""
+msgstr "Teklatu-lasterbideak"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1507
 msgid ""
 "To edit a keyboard binding, click it and press the new keys, or press "
 "backspace to clear it."
 msgstr ""
+"Teklatuaren loturak editatzeko, egin klik gainean eta sakatu tekla berriak, "
+"edo sakatu zuriunea lasterbidea ezabatzeko."
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1545
 msgid "Remove custom shortcut"
-msgstr ""
+msgstr "Kendu lasterbide pertsonalizatua"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1570
 msgid "Categories"
-msgstr ""
+msgstr "Kategoriak"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1590
 msgid "Keyboard bindings"
-msgstr ""
+msgstr "Teklatu-loturak"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1599
 msgid "Workspace Management"
-msgstr ""
+msgstr "Laneko areen kudeaketa"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1600
 msgid "System"
-msgstr ""
+msgstr "Sistema"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1601
 msgid "Launchers"
-msgstr ""
+msgstr "Abiarazleak"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1602
 msgid "Sound and Media"
-msgstr ""
+msgstr "Soinua eta multimedia"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1603
 msgid "Universal Access"
-msgstr ""
+msgstr "Sarbide unibertsala"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1604
 msgid "Custom Shortcuts"
-msgstr ""
+msgstr "Lasterbide pertsonalizatuak"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1705
 #, c-format
@@ -1954,11 +1956,11 @@ msgstr ""
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1726
 msgid "Do you want to continue with this operation?"
-msgstr ""
+msgstr "Eragiketa honekin jarraitu nahi al duzu?"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1846
 msgid "Reset to default"
-msgstr ""
+msgstr "Berrezarri lehenetsira"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2276
 msgid "Region"
@@ -2024,7 +2026,7 @@ msgstr "milisegundo"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2649
 msgid "Activate menu on hover"
-msgstr ""
+msgstr "Aktibatu menua sagua gainetik pasatzean"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2650
 msgid "Show bookmarks and places"
@@ -2303,15 +2305,15 @@ msgstr "Laneko areak"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2887
 msgid "Enable workspace OSD"
-msgstr ""
+msgstr "Gaitu laneko areen OSDa"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2890
 msgid "Workspace OSD duration"
-msgstr ""
+msgstr "Laneko areen OSDaren iraupena"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2894
 msgid "Workspace OSD horizontal position"
-msgstr ""
+msgstr "Laneko areen OSDaren kokapen horizontala"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2894
 msgid "percent of the monitor's width"
@@ -2319,7 +2321,7 @@ msgstr "monitorearen zabaleraren portzentaia"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2898
 msgid "Workspace OSD vertical position"
-msgstr ""
+msgstr "Laneko areen OSDaren kokapen bertikala"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2898
 msgid "percent of the monitor's height"
@@ -2333,7 +2335,7 @@ msgstr ""
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2902
 msgid "Display Expo view as a grid"
-msgstr ""
+msgstr "Erakutsi Expo ikuspegia sareta modura"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2904
 msgid "Fonts"
@@ -2361,7 +2363,7 @@ msgstr "Leihoen letra-tipoa"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2911
 msgid "Hinting"
-msgstr ""
+msgstr "Atxikitzea"
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2912
 msgid "Antialiasing"
