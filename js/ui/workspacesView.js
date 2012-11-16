@@ -45,10 +45,6 @@ WorkspacesView.prototype = {
         this._height = 0;
         this._x = 0;
         this._y = 0;
-        this._clipX = 0;
-        this._clipY = 0;
-        this._clipWidth = 0;
-        this._clipHeight = 0;
         this._workspaceRatioSpacing = 0;
         this._spacing = 0;
         this._animating = false; // tweening
@@ -134,13 +130,6 @@ WorkspacesView.prototype = {
            this._workspaces[i].setGeometry(x, y, width, height, spacing);
     },
 
-    setClipRect: function(x, y, width, height) {
-        this._clipX = x;
-        this._clipY = y;
-        this._clipWidth = width;
-        this._clipHeight = height;
-    },
-
     _lookupWorkspaceForMetaWindow: function (metaWindow) {
         for (let i = 0; i < this._workspaces.length; i++) {
             if (this._workspaces[i].containsMetaWindow(metaWindow))
@@ -163,7 +152,6 @@ WorkspacesView.prototype = {
         let activeWorkspace = this._workspaces[activeWorkspaceIndex];
 
         activeWorkspace.actor.raise_top();
-        this.actor.remove_clip(this._x, this._y, this._width, this._height);
         activeWorkspace.zoomFromOverview();
     },
 
@@ -408,13 +396,6 @@ WorkspacesDisplay.prototype = {
         let width = fullWidth;
         let height = fullHeight;
         let [x, y] = this.actor.get_transformed_position();
-
-        let clipHeight = height;
-        let clipWidth = (fullWidth / fullHeight) * clipHeight;
-        let clipY = y;
-        let clipX = x + (fullWidth - clipWidth) / 2;
-
-        this.workspacesView.setClipRect(clipX, clipY, clipWidth, clipHeight);
 
         width = (fullWidth / fullHeight) * height;
         let difference = fullWidth - width;
