@@ -55,11 +55,12 @@ WorkspacesView.prototype = {
         this._zoomOut = false; // zoom to a larger area
 
         let activeWorkspaceIndex = global.screen.get_active_workspace_index();
-        this._workspaces = workspaces;
-
-        // Add workspace actors
-        for (let w = 0; w < global.screen.n_workspaces; w++)
-            this._workspaces[w].actor.reparent(this.actor);
+        this._workspaces = [];
+        for (let i = 0; i < global.screen.n_workspaces; i++) {
+            let metaWorkspace = global.screen.get_workspace_by_index(i);
+            this._workspaces[i] = new Workspace.Workspace(metaWorkspace, this);
+            this.actor.add_actor(this._workspaces[i].actor);
+        }
         this._workspaces[activeWorkspaceIndex].actor.raise_top();
 
         // Position/scale the desktop windows and their children after the
@@ -154,6 +155,10 @@ WorkspacesView.prototype = {
     },
 
     destroy: function() {
+        for (let w = 0; w < this._workspaces.length; w++) {
+            this._workspaces[w].disconnectAll();
+            this._workspaces[w].destroy();
+        }
         this.actor.destroy();
     },
 
@@ -370,15 +375,7 @@ WorkspacesDisplay.prototype = {
     },
 
     show: function() {
-        this._workspaces = [];
-        for (let i = 0; i < global.screen.n_workspaces; i++) {
-            let metaWorkspace = global.screen.get_workspace_by_index(i);
-            this._workspaces[i] = new Workspace.Workspace(metaWorkspace, this);
-        }
-
-        if (this.workspacesView)
-            this.workspacesView.destroy();
-        this.workspacesView = new WorkspacesView(this._workspaces);
+        this.workspacesView = new WorkspacesView();
         this._updateWorkspacesGeometry();
 
         this._restackedNotifyId =
@@ -399,10 +396,6 @@ WorkspacesDisplay.prototype = {
 
         this.workspacesView.destroy();
         this.workspacesView = null;
-        for (let w = 0; w < this._workspaces.length; w++) {
-            this._workspaces[w].disconnectAll();
-            this._workspaces[w].destroy();
-        }
     },
 
     _allocate: function (actor, box, flags) {
