@@ -476,6 +476,9 @@ ExpoWorkspaceThumbnail.prototype = {
     },
 
     restack: function() {
+        if (this.state > ThumbnailState.NORMAL) {
+            return;
+        }
         if (this.isActive || !this.stackIndices) {
             let stack = global.get_window_actors().filter(this._isMyWindow, this);
             this.stackIndices = {};
