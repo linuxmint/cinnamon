@@ -866,10 +866,6 @@ WorkspaceMonitor.prototype = {
         return -1;
     },
 
-    containsMetaWindow: function (metaWindow) {
-        return this._lookupIndex(metaWindow) >= 0;
-    },
-
     isEmpty: function() {
         return this._windows.length === 0;
     },
@@ -925,22 +921,6 @@ WorkspaceMonitor.prototype = {
         return [x, y, scale];
     },
 
-    setReservedSlot: function(clone) {
-        if (this._reservedSlot == clone)
-            return;
-
-        if (clone && this.containsMetaWindow(clone.metaWindow)) {
-            this._reservedSlot = null;
-            this.positionWindows(WindowPositionFlags.ANIMATE);
-            return;
-        }
-        if (clone)
-            this._reservedSlot = clone;
-        else
-            this._reservedSlot = null;
-        this.positionWindows(WindowPositionFlags.ANIMATE);
-    },
-
     /**
      * positionWindows:
      * @flags:
@@ -957,8 +937,6 @@ WorkspaceMonitor.prototype = {
 
         closeContextMenu();
         let clones = this._windows.slice();
-        if (this._reservedSlot)
-            clones.push(this._reservedSlot);
 
         let initialPositioning = flags & WindowPositionFlags.INITIAL;
         let animate = flags & WindowPositionFlags.ANIMATE;
