@@ -537,8 +537,10 @@ function _queueCheckWorkspaces() {
 }
 
 function _nWorkspacesChanged() {
+    nWorks = global.screen.n_workspaces;
     if (!dynamicWorkspaces)
         return false;
+
     let oldNumWorkspaces = _workspaces.length;
     let newNumWorkspaces = global.screen.n_workspaces;
 
