@@ -82,7 +82,7 @@ function trySpawn(argv)
 {
     try {
         GLib.spawn_async(null, argv, null,
-                         GLib.SpawnFlags.SEARCH_PATH,
+                         GLib.SpawnFlags.SEARCH_PATH | GLib.SpawnFlags.STDOUT_TO_DEV_NULL  | GLib.SpawnFlags.STDERR_TO_DEV_NULL,
                          null, null);
     } catch (err) {
         if (err.code == GLib.SpawnError.G_SPAWN_ERROR_NOENT) {
