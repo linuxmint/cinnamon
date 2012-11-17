@@ -1495,6 +1495,11 @@ WindowContextMenu.prototype = {
         this.itemOnAllWorkspaces = new PopupMenu.PopupMenuItem(_("Visible on all workspaces"));
         this.itemOnAllWorkspaces.connect('activate', Lang.bind(this, this._toggleOnAllWorkspaces));
 
+        let itemMoveToNewWorkspace = new PopupMenu.PopupMenuItem(_("Move to a new workspace"));
+        itemMoveToNewWorkspace.connect('activate', Lang.bind(this, function() {
+            Main.moveWindowToNewWorkspace(metaWindow, true);
+        }));
+
         let monitorItems = [];
         if (Main.layoutManager.monitors.length > 1) {
             Main.layoutManager.monitors.forEach(function(monitor, index) {
@@ -1511,6 +1516,7 @@ WindowContextMenu.prototype = {
         }
 
         let items = monitorItems.concat([
+            itemMoveToNewWorkspace,
             this.itemOnAllWorkspaces,
             this.itemMoveToLeftWorkspace,
             this.itemMoveToRightWorkspace,
