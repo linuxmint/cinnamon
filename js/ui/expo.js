@@ -70,6 +70,21 @@ Expo.prototype = {
         this._addWorkspaceButton = new St.Button({style_class: 'workspace-add-button'});
         this._group.add_actor(this._addWorkspaceButton);
         this._addWorkspaceButton.connect('clicked', Lang.bind(this, function () { Main._addWorkspace();}));
+        this._addWorkspaceButton.handleDragOver = function(source, actor, x, y, time) {
+                return source.metaWindow ? DND.DragMotionResult.MOVE_DROP : DND.DragMotionResult.CONTINUE;
+            };
+        this._addWorkspaceButton.acceptDrop = function(source, actor, x, y, time) {
+            if (source.metaWindow) {
+                let draggable = source._draggable;
+                actor.get_parent().remove_actor(actor);
+                draggable._dragOrigParent.add_actor(actor);
+                let metaWindow = source.metaWindow;
+                Main.moveWindowToNewWorkspace(metaWindow);
+            }
+            return true;
+        };
+        this._addWorkspaceButton._delegate = this._addWorkspaceButton;
+
 
         this._windowCloseArea = new St.Button({style_class: 'window-close-area'});
         this._windowCloseArea.handleDragOver = function(source, actor, x, y, time) {
