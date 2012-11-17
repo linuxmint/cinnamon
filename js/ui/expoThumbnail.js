@@ -1482,6 +1482,7 @@ ExpoThumbnailsBox.prototype = {
         this._iterateStateThumbnails(ThumbnailState.NORMAL, function(thumbnail) {
             // keep default workspace names in sync
             thumbnail._refreshTitle();
+            thumbnail._resetCloneHover();
         });
         this._thumbnails[this._kbThumbnailIndex].showKeyboardSelectedState(true);
         if (!this._isShowingModalDialog()) {
