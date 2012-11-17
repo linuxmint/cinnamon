@@ -1629,6 +1629,7 @@ Workspace.prototype = {
         this.currentMonitorIndex = Main.layoutManager.primaryIndex;
         Main.layoutManager.monitors.forEach(function(monitor, ix) {
             let m = new WorkspaceMonitor(metaWorkspace, ix, this, ix === this.currentMonitorIndex)
+            m.setGeometry(monitor.x, monitor.y, monitor.width, monitor.height, 0);
             this._monitors.push(m);
             this.actor.add_actor(m.actor);
         }, this);
@@ -1715,13 +1716,6 @@ Workspace.prototype = {
             monitor.destroy();
         }, this);
         this.actor.destroy();
-    },
-
-    setGeometry: function() {
-        this._monitors.forEach(function(monitor, index) {
-            let mon = Main.layoutManager.monitors[index];
-            monitor.setGeometry(mon.x, mon.y, mon.width, mon.height, 0);
-        }, this);
     },
 
     selectAnotherWindow: function(symbol) {

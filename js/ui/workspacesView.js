@@ -95,7 +95,7 @@ WorkspacesView.prototype = {
         let switchWorkspaceNotifyId = global.window_manager.connect('switch-workspace',
                                           Lang.bind(this, this._activeWorkspaceChanged));
 
-        let nWorkspacesChangedId = global.screen.connect('notify::n-workspaces', Main.overview.hide);
+        let nWorkspacesChangedId = global.screen.connect('notify::n-workspaces', Lang.bind(this, this._workspacesChanged));
 
         this._disconnectHandlers = function() {
             global.window_manager.disconnect(switchWorkspaceNotifyId);
@@ -131,9 +131,6 @@ WorkspacesView.prototype = {
         this._x = x;
         this._y = y;
         this._workspaceRatioSpacing = spacing;
-
-        for (let i = 0; i < this._workspaces.length; i++)
-           this._workspaces[i].setGeometry();
     },
 
     _lookupWorkspaceForMetaWindow: function (metaWindow) {
@@ -260,6 +257,28 @@ WorkspacesView.prototype = {
         }
         let active = global.screen.get_active_workspace_index();
         this._workspaces[active].zoomToOverview();
+    },
+
+    _workspacesChanged: function() {
+        let removedCount = 0;
+        this._workspaces.slice().forEach(function(workspace, i) {
+            let metaWorkspace = global.screen.get_workspace_by_index(i-removedCount);
+            if (workspace.metaWorkspace != metaWorkspace) {
+                Tweener.removeTweens(workspace.actor);
+                workspace.destroy();
+                this._workspaces.splice(i - removedCount, 1);
+                ++removedCount;
+            }
+        }, this);
+
+        while (global.screen.n_workspaces > this._workspaces.length) {
+            let lastWs = global.screen.get_workspace_by_index(this._workspaces.length);
+            let workspace = new Workspace.Workspace(lastWs, this);
+            this._workspaces.push(workspace)
+            this.actor.add_actor(workspace.actor);
+        }
+        this._animating = false;
+        this._updateVisibility();
     },
 
     _activeWorkspaceChanged: function(wm, from, to, direction) {
