@@ -133,14 +133,6 @@ WorkspacesView.prototype = {
         this._workspaceRatioSpacing = spacing;
     },
 
-    _lookupWorkspaceForMetaWindow: function (metaWindow) {
-        for (let i = 0; i < this._workspaces.length; i++) {
-            if (this._workspaces[i].containsMetaWindow(metaWindow))
-                return this._workspaces[i];
-        }
-        return null;
-    },
-
     getActiveWorkspace: function() {
         let active = global.screen.get_active_workspace_index();
         return this._workspaces[active];
