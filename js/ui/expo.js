@@ -78,8 +78,8 @@ Expo.prototype = {
                 let draggable = source._draggable;
                 actor.get_parent().remove_actor(actor);
                 draggable._dragOrigParent.add_actor(actor);
-                let metaWindow = source.metaWindow;
-                Main.moveWindowToNewWorkspace(metaWindow);
+                actor.opacity = draggable._dragOrigOpacity;
+                Main.moveWindowToNewWorkspace(source.metaWindow);
             }
             return true;
         };
@@ -95,8 +95,8 @@ Expo.prototype = {
                 let draggable = source._draggable;
                 actor.get_parent().remove_actor(actor);
                 draggable._dragOrigParent.add_actor(actor);
-                let metaWindow = source.metaWindow;
-                metaWindow.delete(global.get_current_time());
+                actor.opacity = draggable._dragOrigOpacity;
+                source.metaWindow.delete(global.get_current_time());
             }
             return true;
         };
