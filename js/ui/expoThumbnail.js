@@ -1033,12 +1033,6 @@ ExpoWorkspaceThumbnail.prototype = {
                     metaWindow.move_to_monitor(targetMonitor);
                 }
             }
-            if (!canDrop && !movingWorkspaces && !metaWindow.is_on_all_workspaces()) {
-                canDrop = true;
-                if (dropping) {
-                    metaWindow.stick();
-                }
-            }
         }
 
         return canDrop ? DND.DragMotionResult.MOVE_DROP : DND.DragMotionResult.CONTINUE;
@@ -1083,9 +1077,24 @@ ExpoThumbnailsBox.prototype = {
         // around the final size not the animating size. So instead we fake the background with
         // an actor underneath the content and adjust the allocation of our children to leave space
         // for the border and padding of the background actor.
-        this._background = new St.Bin();
-
+        this._background = new St.Bin({reactive:true});
         this.actor.add_actor(this._background);
+        this._background.handleDragOver = function(source, actor, x, y, time) {
+            return source.metaWindow && !source.metaWindow.is_on_all_workspaces() ?
+                DND.DragMotionResult.MOVE_DROP : DND.DragMotionResult.CONTINUE;
+        };
+        this._background.acceptDrop = Lang.bind(this, function(source, actor, x, y, time) {
+            if (this._background.handleDragOver.apply(this, arguments) ===  DND.DragMotionResult.MOVE_DROP) {
+                let draggable = source._draggable;
+                actor.get_parent().remove_actor(actor);
+                draggable._dragOrigParent.add_actor(actor);
+                actor.opacity = draggable._dragOrigOpacity;
+                source.metaWindow.stick();
+                return true;
+            }
+            return false;
+        });
+        this._background._delegate = this._background;
 
         this.button = new St.Button({ style_class: 'workspace-close-button' });
         this.actor.add_actor(this.button);
