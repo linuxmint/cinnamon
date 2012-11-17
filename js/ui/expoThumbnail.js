@@ -761,7 +761,7 @@ ExpoWorkspaceThumbnail.prototype = {
                 let [scaleX, scaleY] = clone.actor.get_scale();
                 let iboxScale = 1/this.box._scale;
                 let themeNode = this.closeWindowButton.get_theme_node();
-                let overlap = themeNode.get_length('-cinnamon-close-overlap');
+                let overlap = (themeNode.get_length('-cinnamon-close-overlap') / 2) * iboxScale;
                 let xOffset = overlap + Math.round((-this.closeWindowButton.width) * iboxScale + clone.actor.width * scaleX);
                 let yOffset = -overlap;
                 this.closeWindowButton.set_scale(iboxScale, iboxScale);
