@@ -821,7 +821,7 @@ ExpoWorkspaceThumbnail.prototype = {
                 let iconScale = (0.25/this.box.scale/scale);
                 let [iconX, iconY] = [ICON_OFFSET * iconScale, ICON_OFFSET * iconScale];
                 window.icon.raise_top();
-                if (!window.metaWindow.showing_on_its_workspace()) {
+                if (false && !window.metaWindow.showing_on_its_workspace()) {
                     window.actor.show();
                     Tweener.addTween(window.actor, {x: x, y: y, scale_x: scale, scale_y: scale, time: REARRANGE_TIME_ON, transition: 'easeOutQuad'
                     });
@@ -863,7 +863,7 @@ ExpoWorkspaceThumbnail.prototype = {
                 return monitorIndex === window.metaWindow.get_monitor();
             },this).forEach(function(window) {
                 window.showUrgencyState();
-                if (!window.metaWindow.showing_on_its_workspace()){
+                if (false && !window.metaWindow.showing_on_its_workspace()){
                     let iconX = iconCount * (ICON_SIZE + iconSpacing);
                     iconX %= (monitor.width - ICON_SIZE);
                     iconX += monitor.x;
