@@ -462,6 +462,7 @@ ExpoWorkspaceThumbnail.prototype = {
         
         this.isActive = false;
         this.state = ThumbnailState.NORMAL;
+        this.restack();
         this._slidePosition = 0; // Fully slid in
     },
 
