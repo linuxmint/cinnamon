@@ -34,6 +34,9 @@ const WINDOW_DND_SIZE = 256;
 
 const DEMANDS_ATTENTION_CLASS_NAME = "window-list-item-demands-attention";
 
+// persistent throughout session
+var forceOverviewMode = false;
+
 function ExpoWindowClone() {
     this._init.apply(this, arguments);
 }
@@ -787,6 +790,7 @@ ExpoWorkspaceThumbnail.prototype = {
     _overviewModeOn : function () {
         if (!this.box.scale) {return;}
         this._overviewMode = true;
+        this._resetCloneHover();
 
         let windows = [];
         this._windows.forEach(function(window) {
@@ -854,13 +858,13 @@ ExpoWorkspaceThumbnail.prototype = {
         }, this);
     },
 
-    _overviewModeOff : function (force){
+    _overviewModeOff : function(force, override) {
         if (!this.box.scale) {return;}
-        if (!this._overviewMode && !force)
-            return;
-
-        this._overviewMode = false;
         this._resetCloneHover();
+        if (!this._overviewMode && !force) {return;}
+        if (forceOverviewMode && !override) {return;}
+        
+        this._overviewMode = false;
         const iconSpacing = ICON_SIZE/4;
         let rearrangeTime = force ? REARRANGE_TIME_OFF/2 : REARRANGE_TIME_OFF;
 
@@ -1133,17 +1137,16 @@ ExpoThumbnailsBox.prototype = {
             };
 
         // apparently we get no direct call to show the initial
-        // view, so we must force an explicit overviewModeOff display
+        // view, so we must force an explicit overviewMode On/Off display
         // after it has been allocated
         let allocId = this.connect('allocated', Lang.bind(this, function() {
             this.disconnect(allocId);
-            this.emit('set-overview-mode', false);
+            this.emit('set-overview-mode', forceOverviewMode === 1);
         }));
 
-        let globalOverviewMode = 0; // off
         this.toggleGlobalOverviewMode = function() {
-            globalOverviewMode = (globalOverviewMode + 1) % 2;
-            this.emit('set-overview-mode', globalOverviewMode === 1);
+            forceOverviewMode = (forceOverviewMode + 1) % 2;
+            this.emit('set-overview-mode', forceOverviewMode === 1);
         };
         this.actor.connect('button-release-event', Lang.bind(this, function(actor, event) {
             if (Cinnamon.get_event_state(event) & Clutter.ModifierType.BUTTON2_MASK) {
