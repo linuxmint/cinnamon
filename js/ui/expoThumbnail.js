@@ -373,6 +373,13 @@ ExpoWorkspaceThumbnail.prototype = {
                 this._resetCloneHover();
             }
         }));
+        this.closeWindowButton.connect('enter-event', Lang.bind(this, function(actor, event) {
+            this.closeWindowButton._oldStyle = this.closeWindowButton.style;
+            this.closeWindowButton.style = "border: 1px solid rgba(255,0,0,0.3);"
+        }));
+        this.closeWindowButton.connect('leave-event', Lang.bind(this, function(actor, event) {
+            this.closeWindowButton.style = this.closeWindowButton._oldStyle;
+        }));
         this.closeWindowButton.hide();
 
         this.title = new St.Entry({ style_class: 'expo-workspaces-name-entry',                                     
