@@ -1443,6 +1443,7 @@ WindowContextMenu.prototype = {
 
     _init: function(actor, metaWindow, onClose) {
         PopupMenu.PopupComboMenu.prototype._init.call(this, actor);
+        this.name = 'scale-window-context-menu';
         Main.uiGroup.add_actor(this.actor);
         this.actor.hide();
         let orientation = St.Side.TOP;
