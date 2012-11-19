@@ -477,7 +477,7 @@ ExpoWorkspaceThumbnail.prototype = {
     },
 
     setOverviewMode: function(turnOn) {
-        if (turnOn) {this._overviewModeOn(true);}
+        if (turnOn) {this._overviewModeOn();}
         else {this._overviewModeOff();}
     },
 
@@ -648,7 +648,7 @@ ExpoWorkspaceThumbnail.prototype = {
 
         let clone = this._addWindowClone(win); 
 
-        this._overviewModeOn(true);
+        this._overviewModeOn();
     },
 
     _windowAdded : function(metaWorkspace, metaWin) {
@@ -1136,12 +1136,17 @@ ExpoThumbnailsBox.prototype = {
             height: global.screen_height
             };
 
+        this._kbThumbnailIndex = global.screen.get_active_workspace_index();
+        
         // apparently we get no direct call to show the initial
         // view, so we must force an explicit overviewMode On/Off display
         // after it has been allocated
         let allocId = this.connect('allocated', Lang.bind(this, function() {
             this.disconnect(allocId);
-            this.emit('set-overview-mode', forceOverviewMode === 1);
+            Mainloop.timeout_add(0, Lang.bind(this, function() {
+                this.emit('set-overview-mode', forceOverviewMode === 1);
+                this._thumbnails[this._kbThumbnailIndex].showKeyboardSelectedState(true);
+            }));
         }));
 
         this.toggleGlobalOverviewMode = function() {
@@ -1170,8 +1175,6 @@ ExpoThumbnailsBox.prototype = {
         this.addThumbnails(0, global.screen.n_workspaces);
         this.button.raise_top();
 
-        this._kbThumbnailIndex = global.screen.get_active_workspace_index();
-        this._thumbnails[this._kbThumbnailIndex].showKeyboardSelectedState(true);
         global.stage.set_key_focus(this.actor);
     },
 
