@@ -389,7 +389,7 @@ Expo.prototype = {
 
         let activeWorkspace = this._expo._lastActiveWorkspace;
         if (!options || !options.toScale ) {
-            activeWorkspace._overviewModeOff(true);
+            activeWorkspace._overviewModeOff(true, true);
         }
 
         let activeWorkspaceActor = activeWorkspace.actor;
