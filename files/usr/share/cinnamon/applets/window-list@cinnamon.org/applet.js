@@ -10,7 +10,7 @@ const PopupMenu = imports.ui.popupMenu;
 const Meta = imports.gi.Meta;
 const Tooltips = imports.ui.tooltips;
 const DND = imports.ui.dnd;
-const Mainloop = imports.mainloop
+const Mainloop = imports.mainloop;
 
 const PANEL_ICON_SIZE = 24; // this is for the spinner when loading
 const DEFAULT_ICON_SIZE = 16; // too bad this can't be defined in theme (cinnamon-app.create_icon_texture returns a clutter actor, not a themable object -
@@ -410,7 +410,7 @@ AppMenuButton.prototype = {
     },
     
     doFocus: function() {
-        if (this.metaWindow.has_focus() && !this.metaWindow.minimized) {                                     
+        if (this._hasFocus(this.metaWindow) && !this.metaWindow.minimized) {                                     
         	this.actor.add_style_pseudo_class('focus');    
             this.actor.remove_style_class_name("window-list-item-demands-attention");    	
             this.actor.remove_style_class_name("window-list-item-demands-attention-top");
