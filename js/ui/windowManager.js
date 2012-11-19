@@ -5,6 +5,7 @@ const Lang = imports.lang;
 const Meta = imports.gi.Meta;
 const St = imports.gi.St;
 const Cinnamon = imports.gi.Cinnamon;
+const Mainloop = imports.mainloop;
 
 const AppletManager = imports.ui.appletManager;
 const AltTab = imports.ui.altTab;
@@ -864,24 +865,28 @@ WindowManager.prototype = {
         
     },
 
-    _moveWindowToWorkspaceLeft : function(display, screen, window, binding) {
-        let workspace = global.screen.get_active_workspace().get_neighbor(Meta.MotionDirection.LEFT)
+    _shiftWindowToWorkspace : function(window, direction) {
+        if (window.get_window_type() === Meta.WindowType.DESKTOP) {
+            return;
+        }
+        let workspace = global.screen.get_active_workspace().get_neighbor(direction);
         if (workspace != global.screen.get_active_workspace()) {
-            window.change_workspace(workspace);
             workspace.activate(global.get_current_time());
-            window.raise();
             this.showWorkspaceOSD();
+            Mainloop.idle_add(Lang.bind(this, function() {
+                // Unless this is done a bit later, window is sometimes not activated
+                window.change_workspace(workspace);
+                window.activate(global.get_current_time());
+            }));
         }
     },
 
+    _moveWindowToWorkspaceLeft : function(display, screen, window, binding) {
+        this._shiftWindowToWorkspace(window, Meta.MotionDirection.LEFT);
+    },
+
     _moveWindowToWorkspaceRight : function(display, screen, window, binding) {
-        let workspace = global.screen.get_active_workspace().get_neighbor(Meta.MotionDirection.RIGHT)
-        if (workspace != global.screen.get_active_workspace()) {
-            window.change_workspace(workspace);
-            workspace.activate(global.get_current_time());
-            window.raise();
-            this.showWorkspaceOSD();
-        }
+        this._shiftWindowToWorkspace(window, Meta.MotionDirection.RIGHT);
     },
 
     _showWorkspaceSwitcher : function(display, screen, window, binding) {
