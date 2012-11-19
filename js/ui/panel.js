@@ -593,21 +593,30 @@ PanelZoneDNDHandler.prototype = {
 }
 
 
-function Panel(bottomPosition) {
-    this._init(bottomPosition);
+function Panel(bottomPosition, isPrimary) {
+    this._init(bottomPosition, isPrimary);
 }
 
 Panel.prototype = {
-    _init : function(bottomPosition) {
+    _init : function(bottomPosition, isPrimary) {
 
         Gtk.IconTheme.get_default().append_search_path("/usr/lib/cinnamon-settings/data/icons/");
 
         this.bottomPosition = bottomPosition;
-
+        this.isPrimary = isPrimary;
+        if (this.isPrimary) {
+            this.panel_ah_key = "panel-autohide";
+            this.panel_sd_key = "panel-show-delay";
+            this.panel_hd_key = "panel-hide-delay";
+        } else {
+            this.panel_ah_key = "panel2-autohide";
+            this.panel_sd_key = "panel2-show-delay";
+            this.panel_hd_key = "panel2-hide-delay";
+        }
     	this._hidden = false;
         this._disabled = false;
         this._hidetime = 0;
-        this._hideable = global.settings.get_boolean("panel-autohide");
+        this._hideable = global.settings.get_boolean(this.panel_ah_key);
         this._hideTimer = false;
         this._showTimer = false;
         this._onPanelShowDelayChanged();
@@ -665,13 +674,13 @@ Panel.prototype = {
         /* right */
         this._status_area_order = [];
         this._status_area_cinnamon_implementation = {};
-                                        
+
         this.actor.connect('leave-event', Lang.bind(this, this._leavePanel));
-        this.actor.connect('enter-event', Lang.bind(this, this._enterPanel));  
-        global.settings.connect("changed::panel-autohide", Lang.bind(this, this._processPanelAutoHide));   
-        global.settings.connect("changed::panel-show-delay", Lang.bind(this, this._onPanelShowDelayChanged));   
-        global.settings.connect("changed::panel-hide-delay", Lang.bind(this, this._onPanelHideDelayChanged));   
-        
+        this.actor.connect('enter-event', Lang.bind(this, this._enterPanel));
+        global.settings.connect("changed::" + this.panel_ah_key, Lang.bind(this, this._processPanelAutoHide));
+        global.settings.connect("changed::" + this.panel_sd_key, Lang.bind(this, this._onPanelShowDelayChanged));
+        global.settings.connect("changed::" + this.panel_hd_key, Lang.bind(this, this._onPanelHideDelayChanged));
+
         let orientation = St.Side.TOP;
         if (bottomPosition) {
             orientation = St.Side.BOTTOM;
@@ -752,15 +761,15 @@ Panel.prototype = {
     },
         
     _onPanelShowDelayChanged: function() {  
-       this._showDelay = global.settings.get_int("panel-show-delay");
+       this._showDelay = global.settings.get_int(this.panel_sd_key);
     },
     
     _onPanelHideDelayChanged: function() {  
-       this._hideDelay = global.settings.get_int("panel-hide-delay");
+       this._hideDelay = global.settings.get_int(this.panel_hd_key);
     },
     
     _processPanelAutoHide: function() {  
-        this._hideable = global.settings.get_boolean("panel-autohide");
+        this._hideable = global.settings.get_boolean(this.panel_ah_key);
         // Show a glimpse of the panel irrespective of the new setting,
         // in order to force a region update.
         // Techically, this should not be necessary if the function is called
