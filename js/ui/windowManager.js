@@ -6,6 +6,7 @@ const Meta = imports.gi.Meta;
 const St = imports.gi.St;
 const Cinnamon = imports.gi.Cinnamon;
 
+const AppletManager = imports.ui.appletManager;
 const AltTab = imports.ui.altTab;
 const Main = imports.ui.main;
 const Tweener = imports.ui.tweener;
@@ -237,10 +238,16 @@ WindowManager.prototype = {
         catch(e) {
             log(e);
         }
-                
-        if (effect == "traditional") {  
+
+        if (actor.get_meta_window()._cinnamonwm_has_origin) {
+            // reset all cached values in case "traditional" is no longer in effect
+            actor.get_meta_window()._cinnamonwm_has_origin = false;
+            actor.get_meta_window()._cinnamonwm_minimize_transition = undefined;
+            actor.get_meta_window()._cinnamonwm_minimize_time = undefined;
+        }
+
+        if (effect == "traditional") {
             actor.set_scale(1.0, 1.0);
-            actor.move_anchor_point_from_gravity(Clutter.Gravity.CENTER);        
             this._minimizing.push(actor);
             let monitor;
             let yDest;            
@@ -251,10 +258,30 @@ WindowManager.prototype = {
             else {
                 monitor = Main.layoutManager.primaryMonitor;
                 yDest = 0;
-            }            
+            }
+
             let xDest = monitor.x + monitor.width/4;
             if (St.Widget.get_default_direction() == St.TextDirection.RTL)
-                xDest = monitor.width - monitor.width/4;        
+                xDest = monitor.width - monitor.width/4;
+
+            if (AppletManager.get_role_provider_exists(AppletManager.Roles.WINDOWLIST)) {
+                let windowApplet = AppletManager.get_role_provider(AppletManager.Roles.WINDOWLIST);
+                let actorOrigin = windowApplet.getOriginFromWindow(actor.get_meta_window());
+                
+                if (actorOrigin !== false) {
+                    [xDest, yDest] = actorOrigin.get_transformed_position();
+                    // Adjust horizontal destination or it'll appear to zoom
+                    // down to our button's left (or right in RTL) edge.
+                    // To center it, we'll add half its width.
+                    // We use the allocation box because otherwise our
+                    // pseudo-class ":focus" may be larger when not minimized.
+                    xDest += actorOrigin.get_allocation_box().get_size()[0] / 2;
+                    actor.get_meta_window()._cinnamonwm_has_origin = true;
+                    actor.get_meta_window()._cinnamonwm_minimize_transition = transition;
+                    actor.get_meta_window()._cinnamonwm_minimize_time = time;
+                }
+            }
+            
             Tweener.addTween(actor,
                              { scale_x: 0.0,
                                scale_y: 0.0,
@@ -535,7 +562,50 @@ WindowManager.prototype = {
         catch(e) {
             log(e);
         }
+        
+        if (actor.get_meta_window()._cinnamonwm_has_origin === true) {
+            /* "traditional" minimize mapping has been applied, do the converse un-minimize */
+            let xSrc, ySrc, xDest, yDest;
+            [xDest, yDest] = actor.get_transformed_position();
+
+            if (AppletManager.get_role_provider_exists(AppletManager.Roles.WINDOWLIST))
+            {
+                let windowApplet = AppletManager.get_role_provider(AppletManager.Roles.WINDOWLIST);
+                let actorOrigin = windowApplet.getOriginFromWindow(actor.get_meta_window());
                 
+                if (actorOrigin !== false) {
+                    actor.set_scale(0.0, 0.0);
+                    this._mapping.push(actor);
+                    [xSrc, ySrc] = actorOrigin.get_transformed_position();
+                    // Adjust horizontal destination or it'll appear to zoom
+                    // down to our button's left (or right in RTL) edge.
+                    // To center it, we'll add half its width.
+                    xSrc += actorOrigin.get_allocation_box().get_size()[0] / 2;
+                    actor.set_position(xSrc, ySrc);
+                    actor.show();
+
+                    let myTransition = actor.get_meta_window()._cinnamonwm_minimize_transition||transition;
+                    let lastTime = actor.get_meta_window()._cinnamonwm_minimize_time;
+                    let myTime = typeof(lastTime) !== "undefined" ? lastTime : time;
+                    Tweener.addTween(actor,
+                                     { scale_x: 1.0,
+                                       scale_y: 1.0,
+                                       x: xDest,
+                                       y: yDest,
+                                       time: myTime,
+                                       transition: myTransition,
+                                       onComplete: this._mapWindowDone,
+                                       onCompleteScope: this,
+                                       onCompleteParams: [cinnamonwm, actor],
+                                       onOverwrite: this._mapWindowOverwrite,
+                                       onOverwriteScope: this,
+                                       onOverwriteParams: [cinnamonwm, actor]
+                                     });
+                    return;
+                }
+            } // if window list doesn't support finding an origin
+        }
+        
         if (effect == "fade") {            
             this._mapping.push(actor);
             actor.opacity = 0;

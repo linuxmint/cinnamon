@@ -848,7 +848,17 @@ MyApplet.prototype = {
         //this._refreshItems();
         this._onWindowStateChange('map', actor);
     },
-  
+   
+    getOriginFromWindow: function(metaWindow) {
+        for ( let i=0; i<this._windows.length; ++i ) {
+            if ( this._windows[i].metaWindow == metaWindow ) {
+                return this._windows[i].actor;
+            }
+        }
+
+        return false;
+    },
+
     _windowAdded: function(metaWorkspace, metaWindow) {
         if (!Main.isInteresting(metaWindow))
             return;        
