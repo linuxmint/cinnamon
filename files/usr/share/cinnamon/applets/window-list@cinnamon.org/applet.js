@@ -378,8 +378,23 @@ AppMenuButton.prototype = {
         this.rightClickMenu.destroy();
     },
     
+    _hasFocus: function(metaWindow) {
+        if (metaWindow.has_focus()) {
+            return true;
+        }
+        let transientHasFocus = false;
+        metaWindow.foreach_transient(function(transient) {
+            if (transient.has_focus()) {
+                transientHasFocus = true;
+                return false;
+            }
+            return true;
+        }); 
+        return transientHasFocus;
+    },
+    
     doFocus: function() {
-        if (this.metaWindow.has_focus() && !this.metaWindow.minimized) {                                     
+        if (this._hasFocus(this.metaWindow) && !this.metaWindow.minimized) {                                     
         	this.actor.add_style_pseudo_class('focus');    
             this.actor.remove_style_class_name("window-list-item-demands-attention");    	
             this.actor.remove_style_class_name("window-list-item-demands-attention-top");
