@@ -643,6 +643,7 @@ ExpoWorkspaceThumbnail.prototype = {
 
     _windowAdded : function(metaWorkspace, metaWin) {
         this._doAddWindow(metaWin);
+        this.restack();
     },
 
     _windowRemoved : function(metaWorkspace, metaWin) {
@@ -719,7 +720,6 @@ ExpoWorkspaceThumbnail.prototype = {
             if (!clone.dragCancelled) {
                 this._overviewModeOn();
             }
-            else {this.restack();}
         }));
         this._contents.add_actor(clone.actor);
 
