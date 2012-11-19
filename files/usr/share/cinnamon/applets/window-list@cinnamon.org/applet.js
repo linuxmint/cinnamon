@@ -29,8 +29,6 @@ AppMenuButtonRightClickMenu.prototype = {
         //take care of menu initialization        
         PopupMenu.PopupMenu.prototype._init.call(this, actor, 0.0, orientation, 0);        
         Main.uiGroup.add_actor(this.actor);
-        //Main.chrome.addActor(this.actor, { visibleInOverview: true,
-        //                                   affectsStruts: false });
         this.actor.hide();
         this.window_list = actor._delegate._applet._windows;
         actor.connect('key-press-event', Lang.bind(this, this._onSourceKeyPress));        
@@ -229,10 +227,10 @@ AppMenuButton.prototype = {
 								  y_fill: false,
 								  track_hover: true });
 								  
-	if (orientation == St.Side.TOP) 
-		this.actor.add_style_class_name('window-list-item-box-top');
-	else
-		this.actor.add_style_class_name('window-list-item-box-bottom');
+        if (orientation == St.Side.TOP) 
+	        this.actor.add_style_class_name('window-list-item-box-top');
+        else
+	        this.actor.add_style_class_name('window-list-item-box-bottom');
       
         this.actor._delegate = this;
         this.actor.connect('button-release-event', Lang.bind(this, this._onButtonRelease));
@@ -263,24 +261,8 @@ AppMenuButton.prototype = {
         this._container.add_actor(this._label);
 
         this._iconBottomClip = 0;
-		if (!Main.overview.visible || !Main.expo.visible)
-        	this._visible = true;
-		else
-			this._visible = false;
-        if (!this._visible)
-            this.actor.hide();
-        Main.overview.connect('hiding', Lang.bind(this, function () {
-            this.show();
-        }));
-        Main.overview.connect('showing', Lang.bind(this, function () {
-            this.hide();
-        }));
-		Main.expo.connect('hiding', Lang.bind(this, function () {
-            this.show();
-        }));
-        Main.expo.connect('showing', Lang.bind(this, function () {
-            this.hide();
-        }));
+    	this._visible = true;
+
         this.actor.connect('destroy', Lang.bind(this, this._onDestroy));
         
         this._updateCaptionId = this.metaWindow.connect('notify::title', Lang.bind(this, function () {
@@ -749,20 +731,6 @@ MyApplet.prototype = {
             global.window_manager.connect('map',
                                             Lang.bind(this, this._onMap));
                                             
-            Main.expo.connect('showing', Lang.bind(this, 
-	    					function(){	global.window_manager.disconnect(this.switchWorkspaceHandler);}));
-	    	Main.expo.connect('hidden', Lang.bind(this, 
-							function(){	this.switchWorkspaceHandler=global.window_manager.connect('switch-workspace', 
-												Lang.bind(this, this._refreshItems)); 
-												this._refreshItems();}));
-
-	    	Main.overview.connect('showing', Lang.bind(this, 
-							function(){	global.window_manager.disconnect(this.switchWorkspaceHandler);}));
-	    	Main.overview.connect('hidden', Lang.bind(this, 
-							function(){	this.switchWorkspaceHandler=global.window_manager.connect('switch-workspace', 
-												Lang.bind(this, this._refreshItems)); 
-												this._refreshItems();}));
-            
             this._workspaces = [];
             this._changeWorkspaces();
             global.screen.connect('notify::n-workspaces',
