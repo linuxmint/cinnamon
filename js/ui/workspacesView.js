@@ -63,8 +63,13 @@ WorkspacesView.prototype = {
         this._workspaces = workspaces;
 
         // Add workspace actors
-        for (let w = 0; w < global.screen.n_workspaces; w++)
-            this._workspaces[w].actor.reparent(this.actor);
+        for (let w = 0; w < global.screen.n_workspaces; w++){
+            let actor = this._workspaces[w].actor;
+            let parent = actor.get_parent();
+            if (parent) parent.remove_actor(actor);
+            this.actor.add_actor(actor);
+        }
+
         this._workspaces[activeWorkspaceIndex].actor.raise_top();
 
         this._extraWorkspaces = [];

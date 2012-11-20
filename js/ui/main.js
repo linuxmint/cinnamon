@@ -233,10 +233,14 @@ function start() {
                             children[i].allocate_preferred_size(flags);
                     });
     St.set_ui_root(global.stage, uiGroup);
-    global.window_group.reparent(uiGroup);
-    global.overlay_group.reparent(uiGroup);
+    global.stage.remove_actor(global.window_group);
+    global.stage.remove_actor(global.overlay_group);
+
+    uiGroup.add_actor(global.window_group);
+    uiGroup.add_actor(global.overlay_group);
+
     global.stage.add_actor(uiGroup);
-    global.top_window_group.reparent(global.stage);
+    global.stage.add_actor(global.top_window_group);
 
     layoutManager = new Layout.LayoutManager();
     xdndHandler = new XdndHandler.XdndHandler();

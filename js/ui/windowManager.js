@@ -775,11 +775,13 @@ WindowManager.prototype = {
             if (window.get_workspace() == from) {
                 switchData.windows.push({ window: window,
                                           parent: window.get_parent() });
-                window.reparent(switchData.outGroup);
+                window.get_parent().remove_actor(window);
+                switchData.outGroup.add_actor(window);
             } else if (window.get_workspace() == to) {
                 switchData.windows.push({ window: window,
                                           parent: window.get_parent() });
-                window.reparent(switchData.inGroup);
+                window.get_parent().remove_actor(window);
+                switchData.inGroup.add_actor(window);
                 window.show_all();
             }
         }
@@ -815,10 +817,13 @@ WindowManager.prototype = {
                 if (w.window.is_destroyed()) // Window gone
                     continue;
                 if (w.window.get_parent() == switchData.outGroup) {
-                    w.window.reparent(w.parent);
+                    w.window.get_parent().remove_actor(w.window);
+                    w.parent.add_actor(w.window);
                     w.window.hide();
-                } else
-                    w.window.reparent(w.parent);
+                } else{
+                    w.window.get_parent().remove_actor(w.window);
+                    w.parent.add_actor(w.window);
+                }
         }
         Tweener.removeTweens(switchData.inGroup);
         Tweener.removeTweens(switchData.outGroup);
