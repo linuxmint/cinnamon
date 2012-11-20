@@ -59,7 +59,6 @@ Overview.prototype = {
         this._windowSwitchTimestamp = 0;
         this._lastActiveWorkspaceIndex = -1;
         this._lastHoveredWindow = null;
-        this._needsFakePointerEvent = false;
     },
 
     // The members we construct that are implemented in JS might
@@ -68,23 +67,6 @@ Overview.prototype = {
     // construction in this init() method.
     init: function() {
         Main.layoutManager.connect('monitors-changed', Lang.bind(this, this.hide));
-    },
-
-    _resetWindowSwitchTimeout: function() {
-        if (this._windowSwitchTimeoutId != 0) {
-            Mainloop.source_remove(this._windowSwitchTimeoutId);
-            this._windowSwitchTimeoutId = 0;
-            this._needsFakePointerEvent = false;
-        }
-    },
-
-    _fakePointerEvent: function() {
-        let display = Gdk.Display.get_default();
-        let deviceManager = display.get_device_manager();
-        let pointer = deviceManager.get_client_pointer();
-        let [screen, pointerX, pointerY] = pointer.get_position();
-
-        pointer.warp(screen, pointerX, pointerY);
     },
 
     setScrollAdjustment: function(adjustment, direction) {
@@ -475,13 +457,6 @@ Overview.prototype = {
             this._animateVisible();
 
         this._syncInputMode();
-
-        // Fake a pointer event if requested
-        if (this._needsFakePointerEvent) {
-            this._fakePointerEvent();
-            this._needsFakePointerEvent = false;
-        }
-        
         Main.layoutManager._chrome.updateRegions();
     }
 };
