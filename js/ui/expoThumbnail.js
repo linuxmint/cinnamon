@@ -716,7 +716,7 @@ ExpoWorkspaceThumbnail.prototype = {
             }
         }));
         clone.connect('hovering', Lang.bind(this, this._onCloneHover));
-        clone.connect('demanding-attention', Lang.bind(this, this._overviewModeOn));
+        clone.connect('demanding-attention', Lang.bind(this, function() {this._overviewModeOn();}));
         clone.connect('selected', Lang.bind(this, this._activate));
         clone.connect('remove-workspace',  Lang.bind(this, this._remove));
         clone.connect('drag-begin', Lang.bind(this, function(clone) {
@@ -725,11 +725,7 @@ ExpoWorkspaceThumbnail.prototype = {
         }));
         clone.connect('drag-end', Lang.bind(this, function(clone) {
             this.box.emit('drag-end');
-            // normal hovering monitoring was turned off during drag
-            this.hovering = false;
-            if (!clone.dragCancelled) {
-                this._overviewModeOn();
-            }
+            this._overviewModeOn();
         }));
         this._contents.add_actor(clone.actor);
 
@@ -987,6 +983,9 @@ ExpoWorkspaceThumbnail.prototype = {
     // Draggable target interface
     handleDragOver : function(source, actor, x, y, time) {
         this.emit('drag-over');
+        if (!this._overviewMode) {
+            this._overviewModeOn();
+        }
         return this._handleDragOverOrDrop(false, source, actor, x, y, time);
     },
 
@@ -1057,9 +1056,6 @@ ExpoWorkspaceThumbnail.prototype = {
     acceptDrop : function(source, actor, x, y, time) {
         if (this._handleDragOverOrDrop(false, source, actor, x, y, time) != DND.DragMotionResult.CONTINUE) {
             if (this._handleDragOverOrDrop(true, source, actor, x, y, time) != DND.DragMotionResult.CONTINUE) {
-                // normal hovering monitoring was turned off during drag
-                this.hovering = true;
-
                 this._overviewModeOn();
                 return true;
             }
