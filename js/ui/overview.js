@@ -260,17 +260,6 @@ Overview.prototype = {
         return false;
     },
 
-    _getDesktopClone: function() {
-        let windows = global.get_window_actors().filter(function(w) {
-            return w.meta_window.get_window_type() == Meta.WindowType.DESKTOP;
-        });
-        if (windows.length == 0)
-            return null;
-
-        let clone = new Clutter.Clone({ source: windows[0].get_texture() });
-        return clone;
-    },
-
     //// Public methods ////
 
     // show:
