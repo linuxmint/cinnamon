@@ -234,8 +234,8 @@ ExpoWindowClone.prototype = {
         this.actor._delegate = null;
 
         if (this.inDrag) {
-            this.emit('drag-end');
             this.inDrag = false;
+            this.emit('drag-end');
         }
 
         this.disconnectAll();
@@ -820,6 +820,8 @@ ExpoWorkspaceThumbnail.prototype = {
             let offset = 0;
 
             monitorWindows.forEach(function(window, i) {
+                if (window.inDrag) {return;}
+                
                 window.showUrgencyState();
                 if (row == nRows)
                     offset = lastRowOffset;
@@ -874,6 +876,8 @@ ExpoWorkspaceThumbnail.prototype = {
             this._windows.filter(function(window) {
                 return monitorIndex === window.metaWindow.get_monitor();
             },this).forEach(function(window) {
+                if (window.inDrag) {return;}
+                
                 window.showUrgencyState();
                 if (false && !window.metaWindow.showing_on_its_workspace()){
                     let iconX = iconCount * (ICON_SIZE + iconSpacing);
