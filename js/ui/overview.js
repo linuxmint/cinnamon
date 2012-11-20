@@ -11,7 +11,6 @@ const Gdk = imports.gi.Gdk;
 
 const Main = imports.ui.main;
 const MessageTray = imports.ui.messageTray;
-const Params = imports.misc.params;
 const Tweener = imports.ui.tweener;
 const WorkspacesView = imports.ui.workspacesView;
 
@@ -27,19 +26,7 @@ function Overview() {
 }
 
 Overview.prototype = {
-    _init : function(params) {
-        params = Params.parse(params, { isDummy: false });
-
-        this.isDummy = params.isDummy;
-
-        // We only have an overview in user sessions, so
-        // create a dummy overview in other cases
-        if (this.isDummy) {
-            this.animationInProgress = false;
-            this.visible = false;
-            return;
-        }
-
+    _init : function() {
         this._spacing = 0;
 
         this._group = new St.Group({ name: 'overview',
@@ -80,9 +67,6 @@ Overview.prototype = {
     // signal handlers and so forth. So we create them after
     // construction in this init() method.
     init: function() {
-        if (this.isDummy)
-            return;
-
         Main.layoutManager.connect('monitors-changed', Lang.bind(this, this.hide));
     },
 
@@ -104,9 +88,6 @@ Overview.prototype = {
     },
 
     setScrollAdjustment: function(adjustment, direction) {
-        if (this.isDummy)
-            return;
-
         this._scrollAdjustment = adjustment;
         if (this._scrollAdjustment == null)
             this._scrollDirection = SwipeScrollDirection.NONE;
@@ -266,8 +247,6 @@ Overview.prototype = {
     //
     // Animates the overview visible and grabs mouse and keyboard input
     show : function() {
-        if (this.isDummy)
-            return;
         if (this._shown)
             return;
         // Do this manually instead of using _syncInputMode, to handle failure
@@ -353,9 +332,6 @@ Overview.prototype = {
     // will result in the overview not being hidden until hideTemporarily() is
     // called.
     showTemporarily: function() {
-        if (this.isDummy)
-            return;
-
         if (this._shownTemporarily)
             return;
 
@@ -368,9 +344,6 @@ Overview.prototype = {
     //
     // Reverses the effect of show()
     hide: function() {
-        if (this.isDummy)
-            return;
-
         if (!this._shown)
             return;
 
@@ -389,9 +362,6 @@ Overview.prototype = {
     //
     // Reverses the effect of showTemporarily()
     hideTemporarily: function() {
-        if (this.isDummy)
-            return;
-
         if (!this._shownTemporarily)
             return;
 
@@ -403,9 +373,6 @@ Overview.prototype = {
     },
 
     toggle: function() {
-        if (this.isDummy)
-            return;
-
         if (this._shown)
             this.hide();
         else
