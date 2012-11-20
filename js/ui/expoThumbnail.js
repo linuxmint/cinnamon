@@ -483,15 +483,15 @@ ExpoWorkspaceThumbnail.prototype = {
     },
 
     onRestack: function() {
-        this.restack.apply(this, arguments);
+        this.restack();
         this.setOverviewMode(this._overviewMode);
     },
 
-    restack: function() {
+    restack: function(force) {
         if (this.state > ThumbnailState.NORMAL) {
             return;
         }
-        if (this.isActive || !this.stackIndices) {
+        if (this.isActive || !this.stackIndices || force) {
             let stack = global.get_window_actors().filter(this._isMyWindow, this);
             this.stackIndices = {};
 
@@ -717,7 +717,7 @@ ExpoWorkspaceThumbnail.prototype = {
             }
         }));
         clone.connect('hovering', Lang.bind(this, this._onCloneHover));
-        clone.connect('demanding-attention', Lang.bind(this, this._overviewModeOn));
+        clone.connect('demanding-attention', Lang.bind(this, function() {this._overviewModeOn();}));
         clone.connect('selected', Lang.bind(this, this._activate));
         clone.connect('remove-workspace',  Lang.bind(this, this._remove));
         clone.connect('drag-begin', Lang.bind(this, function(clone) {
@@ -726,11 +726,11 @@ ExpoWorkspaceThumbnail.prototype = {
         }));
         clone.connect('drag-end', Lang.bind(this, function(clone) {
             this.box.emit('drag-end');
-            // normal hovering monitoring was turned off during drag
-            this.hovering = false;
-            if (!clone.dragCancelled) {
-                this._overviewModeOn();
+            if (clone.dragCancelled) {
+                // stacking order may have been disturbed
+                this.restack();
             }
+            this._overviewModeOn();
         }));
         this._contents.add_actor(clone.actor);
 
@@ -988,6 +988,9 @@ ExpoWorkspaceThumbnail.prototype = {
     // Draggable target interface
     handleDragOver : function(source, actor, x, y, time) {
         this.emit('drag-over');
+        if (!this._overviewMode) {
+            this._overviewModeOn();
+        }
         return this._handleDragOverOrDrop(false, source, actor, x, y, time);
     },
 
@@ -1058,9 +1061,7 @@ ExpoWorkspaceThumbnail.prototype = {
     acceptDrop : function(source, actor, x, y, time) {
         if (this._handleDragOverOrDrop(false, source, actor, x, y, time) != DND.DragMotionResult.CONTINUE) {
             if (this._handleDragOverOrDrop(true, source, actor, x, y, time) != DND.DragMotionResult.CONTINUE) {
-                // normal hovering monitoring was turned off during drag
-                this.hovering = true;
-
+                this.restack(true);
                 this._overviewModeOn();
                 return true;
             }
