@@ -301,9 +301,6 @@ Overview.prototype = {
         this._background.add_actor(this._backgroundShade);
         this._backgroundShade.set_size(global.screen_width, global.screen_height);
 
-        this._desktopFade = new St.Bin();
-        global.overlay_group.add_actor(this._desktopFade);
-
         this.visible = true;
         this.animationInProgress = true;
 
@@ -334,19 +331,6 @@ Overview.prototype = {
         this.workspacesView = new WorkspacesView.WorkspacesView();
         global.overlay_group.add_actor(this.workspacesView.actor);
         Main.disablePanels();
-
-        if (!this._desktopFade.child)
-            this._desktopFade.child = this._getDesktopClone();
-
-        if (!this.workspacesView.getActiveWorkspace().hasMaximizedWindows()) {
-            this._desktopFade.opacity = 255;
-            this._desktopFade.show();
-            Tweener.addTween(this._desktopFade,
-                             { opacity: 0,
-                               time: ANIMATION_TIME,
-                               transition: 'easeOutQuad'
-                             });
-        }
 
         this._group.opacity = 0;
         Tweener.addTween(this._group,
@@ -468,15 +452,6 @@ Overview.prototype = {
         this._hideInProgress = true;
         Main.enablePanels();
 
-        if (!this.workspacesView.getActiveWorkspace().hasMaximizedWindows()) {
-            this._desktopFade.opacity = 0;
-            this._desktopFade.show();
-            Tweener.addTween(this._desktopFade,
-                             { opacity: 255,
-                               time: ANIMATION_TIME,
-                               transition: 'easeOutQuad' });
-        }
-
         this.workspacesView.hide();
 
         // Make other elements fade out.
@@ -495,7 +470,6 @@ Overview.prototype = {
 
     _showDone: function() {
         this.animationInProgress = false;
-        this._desktopFade.hide();
         this._coverPane.hide();
 
         this.emit('shown');
@@ -508,8 +482,6 @@ Overview.prototype = {
     },
 
     _hideDone: function() {
-        global.overlay_group.remove_actor(this._desktopFade);
-        this._desktopFade.destroy();
         this._group.remove_actor(this._coverPane);
         this._coverPane.destroy();
         global.overlay_group.remove_actor(this._background);
