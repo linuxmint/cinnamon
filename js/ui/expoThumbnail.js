@@ -696,7 +696,7 @@ ExpoWorkspaceThumbnail.prototype = {
             return false;
         }
         let type = metaWindow.get_window_type();
-        return type !== Meta.WindowType.DESKTOP;
+        return type !== Meta.WindowType.DESKTOP && type !== Meta.WindowType.DOCK;
     },
 
     // Tests if @win should be shown in overview mode
