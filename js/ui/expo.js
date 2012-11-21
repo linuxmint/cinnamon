@@ -285,7 +285,7 @@ Expo.prototype = {
         this._expo.connect('drag-begin', Lang.bind(this, this._showCloseArea));
         this._expo.connect('drag-end', Lang.bind(this, this._hideCloseArea));
         
-        let activeWorkspace = this._expo._lastActiveWorkspace;
+        let activeWorkspace = this._expo.lastActiveWorkspace;
         let activeWorkspaceActor = activeWorkspace.actor;
 
         // should not create new actors and work with them within an allocation cycle
@@ -387,9 +387,9 @@ Expo.prototype = {
         this.animationInProgress = true;
         this._hideInProgress = true;
 
-        let activeWorkspace = this._expo._lastActiveWorkspace;
+        let activeWorkspace = this._expo.lastActiveWorkspace;
         if (!options || !options.toScale ) {
-            activeWorkspace._overviewModeOff(true, true);
+            activeWorkspace.overviewModeOff(true, true);
         }
 
         let activeWorkspaceActor = activeWorkspace.actor;
