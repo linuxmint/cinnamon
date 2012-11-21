@@ -244,7 +244,7 @@ function start() {
     xdndHandler = new XdndHandler.XdndHandler();
     // This overview object is just a stub for non-user sessions
     overview = new Overview.Overview();
-    expo = new Expo.Expo({ isDummy: false });
+    expo = new Expo.Expo();
     magnifier = new Magnifier.Magnifier();
     statusIconDispatcher = new StatusIconDispatcher.StatusIconDispatcher();  
                     
