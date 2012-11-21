@@ -1,5 +1,4 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
-
 const Clutter = imports.gi.Clutter;
 const Gtk = imports.gi.Gtk;
 const Meta = imports.gi.Meta;
@@ -10,113 +9,24 @@ const St = imports.gi.St;
 const Cinnamon = imports.gi.Cinnamon;
 const Gdk = imports.gi.Gdk;
 
-const DND = imports.ui.dnd;
 const Main = imports.ui.main;
 const MessageTray = imports.ui.messageTray;
-const Params = imports.misc.params;
 const Tweener = imports.ui.tweener;
-const ViewSelector = imports.ui.viewSelector;
 const WorkspacesView = imports.ui.workspacesView;
 
 // Time for initial animation going into Overview mode
 const ANIMATION_TIME = 0.25;
 
-const DND_WINDOW_SWITCH_TIMEOUT = 1250;
+const SwipeScrollDirection = WorkspacesView.SwipeScrollDirection;
 
-const SwipeScrollDirection = {
-    NONE: 0,
-    HORIZONTAL: 1,
-    VERTICAL: 2
-};
-
-const SwipeScrollResult = {
-    CANCEL: 0,
-    SWIPE: 1,
-    CLICK: 2
-};
-
-function CinnamonInfo() {
-    this._init();
-}
-
-CinnamonInfo.prototype = {
-    _init: function() {
-        this._source = null;
-        this._undoCallback = null;
-    },
-
-    _onUndoClicked: function() {
-        if (this._undoCallback)
-            this._undoCallback();
-        this._undoCallback = null;
-
-        if (this._source)
-            this._source.destroy();
-    },
-
-    setMessage: function(text, undoCallback, undoLabel) {
-        if (this._source == null) {
-            this._source = new MessageTray.SystemNotificationSource();
-            this._source.connect('destroy', Lang.bind(this,
-                function() {
-                    this._source = null;
-                }));
-            if (Main.messageTray) Main.messageTray.add(this._source);
-        }
-
-        let notification = null;
-        if (this._source.notifications.length == 0) {
-            notification = new MessageTray.Notification(this._source, text, null);
-        } else {
-            notification = this._source.notifications[0];
-            notification.update(text, null, { clear: true });
-        }
-
-        notification.setTransient(true);
-
-        this._undoCallback = undoCallback;
-        if (undoCallback) {
-            notification.addButton('system-undo',
-                                   undoLabel ? undoLabel : _("Undo"));
-            notification.connect('action-invoked',
-                                 Lang.bind(this, this._onUndoClicked));
-        }
-
-        this._source.notify(notification);
-    }
-};
+const SwipeScrollResult = WorkspacesView.SwipeScrollResult;
 
 function Overview() {
     this._init.apply(this, arguments);
 }
 
 Overview.prototype = {
-    _init : function(params) {
-        params = Params.parse(params, { isDummy: false });
-
-        this.isDummy = params.isDummy;
-
-        // We only have an overview in user sessions, so
-        // create a dummy overview in other cases
-        if (this.isDummy) {
-            this.animationInProgress = false;
-            this.visible = false;
-            this.workspaces = null;
-            return;
-        }
-
-        // The main BackgroundActor is inside global.window_group which is
-        // hidden when displaying the overview, so we create a new
-        // one. Instances of this class share a single CoglTexture behind the
-        // scenes which allows us to show the background with different
-        // rendering options without duplicating the texture data.
-        this._background = Meta.BackgroundActor.new_for_screen(global.screen);
-        this._background.hide();
-        global.overlay_group.add_actor(this._background);
-
-        this._desktopFade = new St.Bin();
-        global.overlay_group.add_actor(this._desktopFade);
-
+    _init : function() {
         this._spacing = 0;
 
         this._group = new St.Group({ name: 'overview',
@@ -128,16 +38,15 @@ Overview.prototype = {
                 let spacing = node.get_length('spacing');
                 if (spacing != this._spacing) {
                     this._spacing = spacing;
-                    this._relayout();
                 }
             }));
+        this._group.hide();
+        global.overlay_group.add_actor(this._group);
 
         this._scrollDirection = SwipeScrollDirection.NONE;
         this._scrollAdjustment = null;
         this._capturedEventId = 0;
         this._buttonPressId = 0;
-
-        this._workspacesDisplay = null;
 
         this.visible = false;           // animating to overview, in overview, animating out
         this._shown = false;            // show() and not hide()
@@ -146,34 +55,10 @@ Overview.prototype = {
         this.animationInProgress = false;
         this._hideInProgress = false;
 
-        // During transitions, we raise this to the top to avoid having the overview
-        // area be reactive; it causes too many issues such as mouseover handlers in the workspaces.
-        this._coverPane = new Clutter.Rectangle({ opacity: 0,
-                                                  reactive: true });
-        this._group.add_actor(this._coverPane);
-        this._coverPane.connect('event', Lang.bind(this, function (actor, event) { return true; }));
-
-
-        this._group.hide();
-        global.overlay_group.add_actor(this._group);
-
-        this._coverPane.hide();
-
-        // XDND
-        this._dragMonitor = {
-            dragMotion: Lang.bind(this, this._onDragMotion)
-        };
-
-        Main.xdndHandler.connect('drag-begin', Lang.bind(this, this._onDragBegin));
-        Main.xdndHandler.connect('drag-end', Lang.bind(this, this._onDragEnd));
-
         this._windowSwitchTimeoutId = 0;
         this._windowSwitchTimestamp = 0;
         this._lastActiveWorkspaceIndex = -1;
         this._lastHoveredWindow = null;
-        this._needsFakePointerEvent = false;
-
-        this.workspaces = null;
     },
 
     // The members we construct that are implemented in JS might
@@ -181,107 +66,10 @@ Overview.prototype = {
     // signal handlers and so forth. So we create them after
     // construction in this init() method.
     init: function() {
-        if (this.isDummy)
-            return;
-
-        this._cinnamonInfo = new CinnamonInfo();
-
-        this._viewSelector = new ViewSelector.ViewSelector();
-        this._group.add_actor(this._viewSelector.actor);
-
-        this._workspacesDisplay = new WorkspacesView.WorkspacesDisplay();
-        this._viewSelector.addViewTab('windows', _("Windows"), this._workspacesDisplay.actor, 'text-x-generic');
-				
-        Main.layoutManager.connect('monitors-changed', Lang.bind(this, this._relayout));
-        this._relayout();
-    },
-
-    addSearchProvider: function(provider) {
-        this._viewSelector.addSearchProvider(provider);
-    },
-
-    removeSearchProvider: function(provider) {
-        this._viewSelector.removeSearchProvider(provider);
-    },
-
-    setMessage: function(text, undoCallback, undoLabel) {
-        if (this.isDummy)
-            return;
-
-        this._cinnamonInfo.setMessage(text, undoCallback, undoLabel);
-    },
-
-    _onDragBegin: function() {
-        DND.addDragMonitor(this._dragMonitor);
-        // Remember the workspace we started from
-        this._lastActiveWorkspaceIndex = global.screen.get_active_workspace_index();
-    },
-
-    _onDragEnd: function(time) {
-        // In case the drag was canceled while in the overview
-        // we have to go back to where we started and hide
-        // the overview
-        if (this._shownTemporarily)  {
-            global.screen.get_workspace_by_index(this._lastActiveWorkspaceIndex).activate(time);
-            this.hideTemporarily();
-        }
-        this._resetWindowSwitchTimeout();
-        this._lastHoveredWindow = null;
-        DND.removeDragMonitor(this._dragMonitor);
-        this.endItemDrag();
-    },
-
-    _resetWindowSwitchTimeout: function() {
-        if (this._windowSwitchTimeoutId != 0) {
-            Mainloop.source_remove(this._windowSwitchTimeoutId);
-            this._windowSwitchTimeoutId = 0;
-            this._needsFakePointerEvent = false;
-        }
-    },
-
-    _fakePointerEvent: function() {
-        let display = Gdk.Display.get_default();
-        let deviceManager = display.get_device_manager();
-        let pointer = deviceManager.get_client_pointer();
-        let [screen, pointerX, pointerY] = pointer.get_position();
-
-        pointer.warp(screen, pointerX, pointerY);
-    },
-
-    _onDragMotion: function(dragEvent) {
-        let targetIsWindow = dragEvent.targetActor &&
-                             dragEvent.targetActor._delegate &&
-                             dragEvent.targetActor._delegate.metaWindow;
-
-        this._windowSwitchTimestamp = global.get_current_time();
-
-        if (targetIsWindow &&
-            dragEvent.targetActor._delegate.metaWindow == this._lastHoveredWindow)
-            return DND.DragMotionResult.CONTINUE;
-
-        this._lastHoveredWindow = null;
-
-        this._resetWindowSwitchTimeout();
-
-        if (targetIsWindow) {
-            this._lastHoveredWindow = dragEvent.targetActor._delegate.metaWindow;
-            this._windowSwitchTimeoutId = Mainloop.timeout_add(DND_WINDOW_SWITCH_TIMEOUT,
-                                            Lang.bind(this, function() {
-                                                this._needsFakePointerEvent = true;
-                                                Main.activateWindow(dragEvent.targetActor._delegate.metaWindow,
-                                                                    this._windowSwitchTimestamp);
-                                                this.hideTemporarily();
-                                                this._lastHoveredWindow = null;
-                                            }));
-        }
-
-        return DND.DragMotionResult.CONTINUE;
+        Main.layoutManager.connect('monitors-changed', Lang.bind(this, this.hide));
     },
 
     setScrollAdjustment: function(adjustment, direction) {
-        if (this.isDummy)
-            return;
-
         this._scrollAdjustment = adjustment;
         if (this._scrollAdjustment == null)
             this._scrollDirection = SwipeScrollDirection.NONE;
@@ -290,9 +78,10 @@ Overview.prototype = {
     },
 
     _onButtonPress: function(actor, event) {
+        this.emit('overview-background-button-press', actor, event);
         if (this._scrollDirection == SwipeScrollDirection.NONE
             || event.get_button() != 1)
-            return;
+            return false;
 
         let [stageX, stageY] = event.get_coords();
         this._dragStartX = this._dragX = stageX;
@@ -302,6 +91,7 @@ Overview.prototype = {
         this._capturedEventId = global.stage.connect('captured-event',
             Lang.bind(this, this._onCapturedEvent));
         this.emit('swipe-scroll-begin');
+        return true;
     },
 
     _onCapturedEvent: function(actor, event) {
@@ -433,79 +223,12 @@ Overview.prototype = {
         return false;
     },
 
-    _getDesktopClone: function() {
-        let windows = global.get_window_actors().filter(function(w) {
-            return w.meta_window.get_window_type() == Meta.WindowType.DESKTOP;
-        });
-        if (windows.length == 0)
-            return null;
-
-        let clone = new Clutter.Clone({ source: windows[0].get_texture() });
-        clone.source.connect('destroy', Lang.bind(this, function() {
-            clone.destroy();
-        }));
-        return clone;
-    },
-
-    _relayout: function () {
-        // To avoid updating the position and size of the workspaces
-        // we just hide the overview. The positions will be updated
-        // when it is next shown.
-        this.hide();
-
-        let primary = Main.layoutManager.primaryMonitor;
-        let rtl = (St.Widget.get_default_direction () == St.TextDirection.RTL);
-
-        let contentHeight = primary.height;
-
-        this._group.set_position(primary.x, primary.y);
-        this._group.set_size(primary.width, primary.height);
-
-        this._coverPane.set_position(0, 0);
-        this._coverPane.set_size(primary.width, contentHeight);
-        
-        let viewWidth = primary.width - 2 * this._spacing;
-        let viewHeight = contentHeight - this._spacing;
-        let viewY = this._spacing;
-        let viewX = rtl ? 0 : this._spacing;        
-
-        this._viewSelector.actor.set_position(viewX, viewY);
-        this._viewSelector.actor.set_size(viewWidth, viewHeight);
-        this._viewSelector.actor.hide();
-    },
-
     //// Public methods ////
-
-    beginItemDrag: function(source) {
-        this.emit('item-drag-begin');
-    },
-
-    cancelledItemDrag: function(source) {
-        this.emit('item-drag-cancelled');
-    },
-
-    endItemDrag: function(source) {
-        this.emit('item-drag-end');
-    },
-
-    beginWindowDrag: function(source) {
-        this.emit('window-drag-begin');
-    },
-
-    cancelledWindowDrag: function(source) {
-        this.emit('window-drag-cancelled');
-    },
-
-    endWindowDrag: function(source) {
-        this.emit('window-drag-end');
-    },
 
     // show:
     //
     // Animates the overview visible and grabs mouse and keyboard input
     show : function() {
-        if (this.isDummy)
-            return;
         if (this._shown)
             return;
         // Do this manually instead of using _syncInputMode, to handle failure
@@ -523,8 +246,34 @@ Overview.prototype = {
         if (this.visible || this.animationInProgress)
             return;
 
+        // The main BackgroundActor is inside global.window_group which is
+        // hidden when displaying the overview, so we create a new
+        // one. Instances of this class share a single CoglTexture behind the
+        // scenes which allows us to show the background with different
+        // rendering options without duplicating the texture data.
+        this._background = new Clutter.Group();
+        this._background.hide();
+        global.overlay_group.add_actor(this._background);
+
+        this._desktopBackground = Meta.BackgroundActor.new_for_screen(global.screen);
+        this._background.add_actor(this._desktopBackground);
+
+        this._backgroundShade = new St.Bin({style_class: 'workspace-overview-background-shade'});
+        this._background.add_actor(this._backgroundShade);
+        this._backgroundShade.set_size(global.screen_width, global.screen_height);
+
         this.visible = true;
         this.animationInProgress = true;
+
+        // During transitions, we raise this to the top to avoid having the overview
+        // area be reactive; it causes too many issues such as mouseover handlers in the workspaces.
+        this._coverPane = new Clutter.Rectangle({ opacity: 0,
+                                                  reactive: true });
+        this._group.add_actor(this._coverPane);
+        this._coverPane.set_position(0, 0);
+        this._coverPane.set_size(global.screen_width, global.screen_height);
+        this._coverPane.connect('event', Lang.bind(this, function (actor, event) { return true; }));
+        this._coverPane.hide();
 
         // All the the actors in the window group are completely obscured,
         // hiding the group holding them while the Overview is displayed greatly
@@ -540,24 +289,9 @@ Overview.prototype = {
         this._group.show();
         this._background.show();
 
-        this._workspacesDisplay.show();
+        this.workspacesView = new WorkspacesView.WorkspacesView();
+        global.overlay_group.add_actor(this.workspacesView.actor);
         Main.disablePanels();
-
-        this.workspaces = this._workspacesDisplay.workspacesView;
-        global.overlay_group.add_actor(this.workspaces.actor);
-
-        if (!this._desktopFade.child)
-            this._desktopFade.child = this._getDesktopClone();
-
-        if (!this.workspaces.getActiveWorkspace().hasMaximizedWindows()) {
-            this._desktopFade.opacity = 255;
-            this._desktopFade.show();
-            Tweener.addTween(this._desktopFade,
-                             { opacity: 0,
-                               time: ANIMATION_TIME,
-                               transition: 'easeOutQuad'
-                             });
-        }
 
         this._group.opacity = 0;
         Tweener.addTween(this._group,
@@ -566,12 +300,6 @@ Overview.prototype = {
                            time: ANIMATION_TIME,
                            onComplete: this._showDone,
                            onCompleteScope: this
-                         });
-
-        Tweener.addTween(this._background,
-                         { dim_factor: 0.4,
-                           time: ANIMATION_TIME,
-                           transition: 'easeOutQuad'
                          });
 
         this._coverPane.raise_top();
@@ -586,9 +314,6 @@ Overview.prototype = {
     // will result in the overview not being hidden until hideTemporarily() is
     // called.
     showTemporarily: function() {
-        if (this.isDummy)
-            return;
-
         if (this._shownTemporarily)
             return;
 
@@ -601,9 +326,6 @@ Overview.prototype = {
     //
     // Reverses the effect of show()
     hide: function() {
-        if (this.isDummy)
-            return;
-
         if (!this._shown)
             return;
 
@@ -622,9 +344,6 @@ Overview.prototype = {
     //
     // Reverses the effect of showTemporarily()
     hideTemporarily: function() {
-        if (this.isDummy)
-            return;
-
         if (!this._shownTemporarily)
             return;
 
@@ -636,9 +355,6 @@ Overview.prototype = {
     },
 
     toggle: function() {
-        if (this.isDummy)
-            return;
-
         if (this._shown)
             this.hide();
         else
@@ -685,16 +401,7 @@ Overview.prototype = {
         this._hideInProgress = true;
         Main.enablePanels();
 
-        if (!this.workspaces.getActiveWorkspace().hasMaximizedWindows()) {
-            this._desktopFade.opacity = 0;
-            this._desktopFade.show();
-            Tweener.addTween(this._desktopFade,
-                             { opacity: 255,
-                               time: ANIMATION_TIME,
-                               transition: 'easeOutQuad' });
-        }
-
-        this.workspaces.hide();
+        this.workspacesView.hide();
 
         // Make other elements fade out.
         Tweener.addTween(this._group,
@@ -705,12 +412,6 @@ Overview.prototype = {
                            onCompleteScope: this
                          });
 
-        Tweener.addTween(this._background,
-                         { dim_factor: 1.0,
-                           time: ANIMATION_TIME,
-                           transition: 'easeOutQuad'
-                         });
-
         this._coverPane.raise_top();
         this._coverPane.show();
         this.emit('hiding');
@@ -718,7 +419,6 @@ Overview.prototype = {
 
     _showDone: function() {
         this.animationInProgress = false;
-        this._desktopFade.hide();
         this._coverPane.hide();
 
         this.emit('shown');
@@ -731,25 +431,25 @@ Overview.prototype = {
     },
 
     _hideDone: function() {
+        this._group.remove_actor(this._coverPane);
+        this._coverPane.destroy();
+        global.overlay_group.remove_actor(this._background);
+        this._background.destroy();
+
         // Re-enable unredirection
         Meta.enable_unredirect_for_screen(global.screen);
 
         global.window_group.show();
 
-        this.workspaces.destroy();
-        this.workspaces = null;
+        this.workspacesView.destroy();
+        this.workspacesView = null;
 
-        this._workspacesDisplay.hide();
-
-        this._desktopFade.hide();
-        this._background.hide();
         this._group.hide();
 
         this.visible = false;
         this.animationInProgress = false;
         this._hideInProgress = false;
 
-        this._coverPane.hide();
 
         this.emit('hidden');
         // Handle any calls to show* while we were hiding
@@ -757,14 +457,9 @@ Overview.prototype = {
             this._animateVisible();
 
         this._syncInputMode();
-
-        // Fake a pointer event if requested
-        if (this._needsFakePointerEvent) {
-            this._fakePointerEvent();
-            this._needsFakePointerEvent = false;
-        }
-        
         Main.layoutManager._chrome.updateRegions();
     }
 };
 Signals.addSignalMethods(Overview.prototype);
+
+

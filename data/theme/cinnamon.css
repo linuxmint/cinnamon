@@ -439,29 +439,9 @@ StScrollBar StButton#vhandle:hover {
 	background-gradient-end: #AAA;
 	background-gradient-direction: vertical
 }
-/* ===================================================================
- * ViewSelector 
- * ===================================================================*/
-#viewSelector {
-	spacing: 1em;
-	font-size: 12pt;
-}
-#viewSelectorTabBar {
-	padding: 1em;
-}
-.view-tab-title {
-	color: #888a85;
-	font-weight: bold;
-	padding: 0px 0.75em;
-	height: 1.5em;
-}
-.view-tab-title:hover {
-	color: #bbb;
-}
-.view-tab-title:selected {
-	color: #000000;
-	background-color: #c2c7cd;
-	border-radius: 0.25em;
+
+.workspace-overview-background-shade {
+	background-color: rgba(0,0,0,0.4);
 }
 /* ===================================================================
  * Looking Glass 

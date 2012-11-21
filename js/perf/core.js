@@ -110,15 +110,6 @@ function run() {
 
     Main.overview.show();
     yield Scripting.waitLeisure();
-
-    for (let i = 0; i < 2; i++) {
-        Scripting.scriptEvent('applicationsShowStart');
-        Main.overview._viewSelector.switchTab('applications');
-        yield Scripting.waitLeisure();
-        Scripting.scriptEvent('applicationsShowDone');
-        Main.overview._viewSelector.switchTab('windows');
-        yield Scripting.waitLeisure();
-    }
 }
 
 let showingOverview = false;
