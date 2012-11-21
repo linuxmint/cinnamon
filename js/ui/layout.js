@@ -11,8 +11,8 @@ const Params = imports.misc.params;
 const ScreenSaver = imports.misc.screenSaver;
 const Tweener = imports.ui.tweener;
 const EdgeFlip = imports.ui.edgeFlip;
+const HotCorner = imports.ui.hotCorner;
 
-const HOT_CORNER_ACTIVATION_TIMEOUT = 0.5;
 const STARTUP_ANIMATION_TIME = 0.2;
 const KEYBOARD_ANIMATION_TIME = 0.5;
 
@@ -26,7 +26,7 @@ LayoutManager.prototype = {
         this.monitors = [];
         this.primaryMonitor = null;
         this.primaryIndex = -1;
-        this._hotCorners = [];
+        this.hotCornerManager = null;
         this._leftPanelBarrier = 0;
         this._rightPanelBarrier = 0;
         this._leftPanelBarrier2 = 0;
@@ -34,12 +34,8 @@ LayoutManager.prototype = {
         this.edgeRight = null;
         this.edgeLeft = null;
         this._chrome = new Chrome(this);
+        this.enabledEdgeFlip = global.settings.get_boolean("enable-edge-flip");
 
-        this._hotCorner = new HotCorner();        
-        this.overviewCorner = new St.Button({name: 'overview-corner', reactive: true, track_hover: true });
-        this.addChrome(this.overviewCorner, { visibleInFullscreen: false });        
-        this.overviewCorner.connect('button-release-event', Lang.bind(this, this._toggleExpo));
-                
         this.panelBox = new St.BoxLayout({ name: 'panelBox',
                                            vertical: true });
 
@@ -48,7 +44,6 @@ LayoutManager.prototype = {
 
         this.addChrome(this.panelBox, { addToWindowgroup: false });
         this.addChrome(this.panelBox2, { addToWindowgroup: false });
-        this._processPanelSettings();
         this.panelBox.connect('allocation-changed',
                               Lang.bind(this, this._updatePanelBarriers));
         this.panelBox2.connect('allocation-changed',
@@ -60,26 +55,28 @@ LayoutManager.prototype = {
         this.addChrome(this.keyboardBox, { visibleInFullscreen: true });
         this._keyboardHeightNotifyId = 0;
 
-        global.screen.connect('monitors-changed',
-                              Lang.bind(this, this._monitorsChanged));
-        global.window_manager.connect('switch-workspace',
-                                      Lang.bind(this, this._windowsRestacked));
+        this.hotCornerManager = new HotCorner.HotCornerManager();
+        let hotCorners = this.hotCornerManager.getCornerActors();
+        let overviewIcons = this.hotCornerManager.getIconActors();
+        for (let i = 0; i < 4; i ++) { // There are only four hot corners
+            this.addChrome(hotCorners[i]);
+            this.addChrome(overviewIcons[i], {visibleInFullscreen: false});
+        }
+
+        this._processPanelSettings();
         this._monitorsChanged();
-        this._chrome.addActor(this._hotCorner.actor);
-        this.enabledEdgeFlip = global.settings.get_boolean("enable-edge-flip");
+
         global.settings.connect("changed::enable-edge-flip", Lang.bind(this, this._onEnableEdgeFlipChanged));
         global.settings.connect("changed::panel-autohide", Lang.bind(this, this._processPanelSettings));
         global.settings.connect("changed::panel2-autohide", Lang.bind(this, this._processPanelSettings));
         global.settings.connect("changed::panel-resizable", Lang.bind(this, this._processPanelSettings));
         global.settings.connect("changed::panel-bottom-height", Lang.bind(this, this._processPanelSettings));
         global.settings.connect("changed::panel-top-height", Lang.bind(this, this._processPanelSettings));
-        global.settings.connect("changed::overview-corner-visible", Lang.bind(this, this._onOverviewCornerVisibleChanged));
-        global.settings.connect("changed::overview-corner-hover", Lang.bind(this, this._onOverviewCornerHoverChanged));
-        global.settings.connect("changed::overview-corner-position", Lang.bind(this, this._updateBoxes));
-
-        global.screen.connect('restacked',
-                              Lang.bind(this, this._windowsRestacked));
-
+        global.screen.connect('restacked', Lang.bind(this, this._windowsRestacked));
+        global.screen.connect('monitors-changed',
+                              Lang.bind(this, this._monitorsChanged));
+        global.window_manager.connect('switch-workspace',
+                                      Lang.bind(this, this._windowsRestacked));
     },
 
     _onEnableEdgeFlipChanged: function(){
@@ -131,22 +128,6 @@ LayoutManager.prototype = {
         }));
     },
     
-    _onOverviewCornerVisibleChanged: function() {            
-        let visible = global.settings.get_boolean("overview-corner-visible");
-        if (visible)
-            this.overviewCorner.show();
-        else
-            this.overviewCorner.hide();
-    },
-    
-    _onOverviewCornerHoverChanged: function() {            
-        let enabled = global.settings.get_boolean("overview-corner-hover");
-        if (enabled)
-            this._hotCorner.actor.show();
-        else
-            this._hotCorner.actor.hide();
-    },
-
     _updateMonitors: function() {
         let screen = global.screen;
 
@@ -174,43 +155,12 @@ LayoutManager.prototype = {
     },
 
     _updateHotCorners: function() {
-        let hotCornerPosition = global.settings.get_string("overview-corner-position");
-        let x = this.primaryMonitor.x;
-        let y = this.primaryMonitor.y;
-        if (hotCornerPosition == "topLeft") {
-            this._hotCorner.actor.set_position(x, y);            
-            this.overviewCorner.set_position(x + 1, y + 1);
-        } else if (hotCornerPosition == "topRight") {
-            this._hotCorner.actor.set_position(x + this.primaryMonitor.width - 1, y);            
-            this.overviewCorner.set_position(x + this.primaryMonitor.width - 33, y + 1);
-        } else {
-            x = this.bottomMonitor.x;
-            y = this.bottomMonitor.y + this.bottomMonitor.height;
-            if (hotCornerPosition == "bottomLeft") {
-                this._hotCorner.actor.set_position(x, y - 1);            
-                this.overviewCorner.set_position(x + 1, y - 33);
-            } else if (hotCornerPosition == "bottomRight") {
-                this._hotCorner.actor.set_position(x + this.bottomMonitor.width - 1, y - 1);
-                this.overviewCorner.set_position(x + this.bottomMonitor.width - 33, y - 33);
-            }
-        }
+        this.hotCornerManager.updatePosition(this.primaryMonitor, this.bottomMonitor);
     },
 
     _updateBoxes: function() {                
         this._updateHotCorners();
 
-        this.overviewCorner.set_size(32, 32);
-
-        if (global.settings.get_boolean("overview-corner-hover"))
-            this._hotCorner.actor.show();
-        else
-            this._hotCorner.actor.hide();
-            
-        if (global.settings.get_boolean("overview-corner-visible"))
-            this.overviewCorner.show();
-        else
-            this.overviewCorner.hide();
-            
         let getPanelHeight = function(panel) {
             let panelHeight = 0;
             if (panel) {
@@ -496,195 +446,6 @@ LayoutManager.prototype = {
 Signals.addSignalMethods(LayoutManager.prototype);
 
 
-// HotCorner:
-//
-// This class manages a "hot corner" that can toggle switching to
-// overview.
-function HotCorner() {
-    this._init();
-}
-
-HotCorner.prototype = {
-    _init : function() {
-        // We use this flag to mark the case where the user has entered the
-        // hot corner and has not left both the hot corner and a surrounding
-        // guard area (the "environs"). This avoids triggering the hot corner
-        // multiple times due to an accidental jitter.
-        this._entered = false;
-
-        this.actor = new Clutter.Group({ name: 'hot-corner-environs',
-                                         width: 3,
-                                         height: 3,
-                                         reactive: true });
-
-        this._corner = new Clutter.Rectangle({ name: 'hot-corner',
-                                               width: 1,
-                                               height: 1,
-                                               opacity: 0,
-                                               reactive: true });
-        this._corner._delegate = this;
-
-        this.actor.add_actor(this._corner);
-
-        if (St.Widget.get_default_direction() == St.TextDirection.RTL) {
-            this._corner.set_position(this.actor.width - this._corner.width, 0);
-            this.actor.set_anchor_point_from_gravity(Clutter.Gravity.NORTH_EAST);
-        } else {
-            this._corner.set_position(0, 0);
-        }
-
-        this._activationTime = 0;
-
-        this.actor.connect('leave-event',
-                           Lang.bind(this, this._onEnvironsLeft));
-
-        // Clicking on the hot corner environs should result in the
-        // same behavior as clicking on the hot corner.
-        this.actor.connect('button-release-event',
-                           Lang.bind(this, this._onCornerClicked));
-
-        // In addition to being triggered by the mouse enter event,
-        // the hot corner can be triggered by clicking on it. This is
-        // useful if the user wants to undo the effect of triggering
-        // the hot corner once in the hot corner.
-        this._corner.connect('enter-event',
-                             Lang.bind(this, this._onCornerEntered));
-        this._corner.connect('button-release-event',
-                             Lang.bind(this, this._onCornerClicked));
-        this._corner.connect('leave-event',
-                             Lang.bind(this, this._onCornerLeft));
-
-        this.cornerOpensExpo;
-        
-        this._updatePrefs();
-        
-        global.settings.connect("changed::overview-corner-position", Lang.bind(this, this._updatePrefs));
-        global.settings.connect("changed::overview-corner-functionality", Lang.bind(this, this._updatePrefs));
-
-        // Cache the three ripples instead of dynamically creating and destroying them.
-        this._ripple1 = new St.BoxLayout({ style_class: 'ripple-box', opacity: 0 });
-        this._ripple2 = new St.BoxLayout({ style_class: 'ripple-box', opacity: 0 });
-        this._ripple3 = new St.BoxLayout({ style_class: 'ripple-box', opacity: 0 });
-
-        Main.uiGroup.add_actor(this._ripple1);
-        Main.uiGroup.add_actor(this._ripple2);
-        Main.uiGroup.add_actor(this._ripple3);
-    },
-
-    destroy: function() {
-        this.actor.destroy();
-    },
-    
-    _updatePrefs : function() {
-        this.cornerOpensExpo = (global.settings.get_string("overview-corner-functionality") == "expo");
-    },
-
-    _animRipple : function(ripple, delay, time, startScale, startOpacity, finalScale) {
-        // We draw a ripple by using a source image and animating it scaling
-        // outwards and fading away. We want the ripples to move linearly
-        // or it looks unrealistic, but if the opacity of the ripple goes
-        // linearly to zero it fades away too quickly, so we use Tweener's
-        // 'onUpdate' to give a non-linear curve to the fade-away and make
-        // it more visible in the middle section.
-
-        ripple._opacity = startOpacity;
-
-        ripple.set_anchor_point_from_gravity(Clutter.Gravity.CENTER);
-        ripple.visible = true;
-        ripple.opacity = 255 * Math.sqrt(startOpacity);
-        ripple.scale_x = ripple.scale_y = startScale;
-
-        let [x, y] = this._corner.get_transformed_position();
-        ripple.x = x;
-        ripple.y = y;
-
-        Tweener.addTween(ripple, { _opacity: 0,
-                                   scale_x: finalScale,
-                                   scale_y: finalScale,
-                                   delay: delay,
-                                   time: time,
-                                   transition: 'linear',
-                                   onUpdate: function() { ripple.opacity = 255 * Math.sqrt(ripple._opacity); },
-                                   onComplete: function() { ripple.visible = false; } });
-    },
-
-    rippleAnimation: function() {
-        // Show three concentric ripples expanding outwards; the exact
-        // parameters were found by trial and error, so don't look
-        // for them to make perfect sense mathematically
-
-        //                              delay  time  scale opacity => scale
-        this._animRipple(this._ripple1, 0.0,   0.83,  0.25,  1.0,     1.5);
-        this._animRipple(this._ripple2, 0.05,  1.0,   0.0,   0.7,     1.25);
-        this._animRipple(this._ripple3, 0.35,  1.0,   0.0,   0.3,     1);
-    },
-
-    handleDragOver: function(source, actor, x, y, time) {
-        if (source != Main.xdndHandler)
-            return;
-
-        if (!Main.overview.visible && !Main.overview.animationInProgress && !Main.expo.visible) {
-            this.rippleAnimation();
-            Main.overview.showTemporarily();
-            Main.overview.beginItemDrag(actor);
-        }
-    },
-
-    _onCornerEntered : function() {
-        if (!this._entered) {
-            this._entered = true;
-            if (!Main.expo.animationInProgress && !Main.overview.visible) {
-                this._activationTime = Date.now() / 1000;
-                this.rippleAnimation();
-                if (this.cornerOpensExpo) {
-                    Main.expo.toggle();
-                } else if (!Main.overview.animationInProgress && !Main.expo.visible) {
-                    Main.overview.show();
-                } else {
-                    Main.expo.toggle();
-                }
-            } else if (Main.overview.visible){
-                this._activationTime = Date.now() / 1000;
-                this.rippleAnimation();
-                Main.overview.hide();
-            }
-        }
-        return false;
-    },
-
-    _onCornerClicked : function() {
-        if (this.shouldToggleOverviewOnClick() && !Main.overview.visible)
-            Main.expo.toggle();
-        return true;
-    },
-
-    _onCornerLeft : function(actor, event) {
-        if (event.get_related() != this.actor)
-            this._entered = false;
-        // Consume event, otherwise this will confuse onEnvironsLeft
-        return true;
-    },
-
-    _onEnvironsLeft : function(actor, event) {
-        if (event.get_related() != this._corner)
-            this._entered = false;
-        return false;
-    },
-
-    // Checks if the Activities button is currently sensitive to
-    // clicks. The first call to this function within the
-    // HOT_CORNER_ACTIVATION_TIMEOUT time of the hot corner being
-    // triggered will return false. This avoids opening and closing
-    // the overview if the user both triggered the hot corner and
-    // clicked the Activities button.
-    shouldToggleOverviewOnClick: function() {
-        if (Main.overview.animationInProgress)
-            return false;
-        if (this._activationTime == 0 || Date.now() / 1000 - this._activationTime > HOT_CORNER_ACTIVATION_TIMEOUT)
-            return true;
-        return false;
-    }
-};
 
 // This manages Cinnamon "chrome"; the UI that's visible in the
 // normal mode (ie, outside the Overview), that surrounds the main
