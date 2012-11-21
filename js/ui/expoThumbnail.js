@@ -482,15 +482,15 @@ ExpoWorkspaceThumbnail.prototype = {
     },
 
     onRestack: function() {
-        this.restack.apply(this, arguments);
+        this.restack();
         this.setOverviewMode(this._overviewMode);
     },
 
-    restack: function() {
+    restack: function(force) {
         if (this.state > ThumbnailState.NORMAL) {
             return;
         }
-        if (this.isActive || !this.stackIndices) {
+        if (this.isActive || !this.stackIndices || force) {
             let stack = global.get_window_actors().filter(this._isMyWindow, this);
             this.stackIndices = {};
 
@@ -725,6 +725,10 @@ ExpoWorkspaceThumbnail.prototype = {
         }));
         clone.connect('drag-end', Lang.bind(this, function(clone) {
             this.box.emit('drag-end');
+            if (clone.dragCancelled) {
+                // stacking order may have been disturbed
+                this.restack();
+            }
             this._overviewModeOn();
         }));
         this._contents.add_actor(clone.actor);
@@ -1056,6 +1060,7 @@ ExpoWorkspaceThumbnail.prototype = {
     acceptDrop : function(source, actor, x, y, time) {
         if (this._handleDragOverOrDrop(false, source, actor, x, y, time) != DND.DragMotionResult.CONTINUE) {
             if (this._handleDragOverOrDrop(true, source, actor, x, y, time) != DND.DragMotionResult.CONTINUE) {
+                this.restack(true);
                 this._overviewModeOn();
                 return true;
             }
