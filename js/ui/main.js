@@ -241,7 +241,7 @@ function start() {
     layoutManager = new Layout.LayoutManager();
     xdndHandler = new XdndHandler.XdndHandler();
     // This overview object is just a stub for non-user sessions
-    overview = new Overview.Overview({ isDummy: false });
+    overview = new Overview.Overview();
     expo = new Expo.Expo({ isDummy: false });
     magnifier = new Magnifier.Magnifier();
     statusIconDispatcher = new StatusIconDispatcher.StatusIconDispatcher();  
@@ -416,6 +416,20 @@ function _removeWorkspace(workspace) {
     return true;
 }
 
+function moveWindowToNewWorkspace(metaWindow, switchToNewWorkspace) {
+    if (switchToNewWorkspace) {
+        let targetCount = global.screen.n_workspaces + 1;
+        let nnwId = global.screen.connect('notify::n-workspaces', function() {
+            global.screen.disconnect(nnwId);
+            if (global.screen.n_workspaces === targetCount) {
+                let newWs = global.screen.get_workspace_by_index(global.screen.n_workspaces - 1);
+                newWs.activate(global.get_current_time());
+            }
+        });
+    }
+    metaWindow.change_workspace_by_index(global.screen.n_workspaces, true, global.get_current_time());
+}
+
 function _staticWorkspaces() {
     let i;
     let dif = nWorks - global.screen.n_workspaces;
@@ -537,8 +551,10 @@ function _queueCheckWorkspaces() {
 }
 
 function _nWorkspacesChanged() {
+    nWorks = global.screen.n_workspaces;
     if (!dynamicWorkspaces)
         return false;
+
     let oldNumWorkspaces = _workspaces.length;
     let newNumWorkspaces = global.screen.n_workspaces;
 
