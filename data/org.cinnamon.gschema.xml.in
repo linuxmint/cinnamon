@@ -652,6 +652,14 @@
       </description>
     </key>
 
+    <key type="b" name="workspace-cycle">
+      <default>false</default>
+      <summary>Allow cycling through workspaces</summary>
+      <description>
+        This key overrides the key in org.cinnamon.muffin when running Cinnamon.
+      </description>
+    </key>
+
     <key name="workspaces-only-on-primary" type="b">
       <default>false</default>
       <summary>Workspaces only on primary monitor</summary>
