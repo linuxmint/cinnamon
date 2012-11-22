@@ -27,7 +27,7 @@ const REARRANGE_TIME_ON = 0.3;
 const REARRANGE_TIME_OFF = 0.3 * 2;
 const ICON_OPACITY = Math.round(255 * 0.9);
 const ICON_SIZE = 128;
-const ICON_OFFSET = -10;
+const ICON_OFFSET = -5;
 
 const DRAGGING_WINDOW_OPACITY = Math.round(255 * 0.8);
 const WINDOW_DND_SIZE = 256;
@@ -826,16 +826,15 @@ ExpoWorkspaceThumbnail.prototype = {
                 if (row == nRows)
                     offset = lastRowOffset;
                 let [wWidth, wHeight] = [window.realWindow.width, window.realWindow.height];
-                let scale = Math.min((maxWindowWidth / wWidth), (maxWindowHeight / wHeight));
-                scale = Math.min(1, scale);
+                let scale = Math.min(1, maxWindowWidth / wWidth, maxWindowHeight / wHeight);
                 let x = monitor.x + offset + (spacing * col) + (maxWindowWidth * (col - 1)) + ((maxWindowWidth - (wWidth * scale)) / 2);
                 let y = monitor.y + (spacing * row) + (maxWindowHeight * (row - 1)) + ((maxWindowHeight - (wHeight * scale)) / 2);
 
+                window.icon.raise_top();
                 // all icons should be the same size!
                 let iconScale = (0.25/this.box.scale/scale);
-                let [iconX, iconY] = [ICON_OFFSET * iconScale, ICON_OFFSET * iconScale];
-                window.icon.raise_top();
                 window.icon.set_scale(iconScale, iconScale);
+                let [iconX, iconY] = [ICON_OFFSET / this.box.scale/scale, ICON_OFFSET / this.box.scale/scale];
                 window.icon.set_position(iconX, iconY);
                 Tweener.addTween(window.actor, {
                     x: x, y: y, scale_x: scale, scale_y: scale,
