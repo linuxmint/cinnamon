@@ -242,10 +242,10 @@ ExpoWindowClone.prototype = {
     },
 
     onButtonRelease : function (actor, event) {
-        if ((Cinnamon.get_event_state(event) & Clutter.ModifierType.BUTTON1_MASK) || (Cinnamon.get_event_state(event) & Clutter.ModifierType.BUTTON3_MASK)){
+        if ((Cinnamon.get_event_state(event) & Clutter.ModifierType.BUTTON1_MASK) ||
+            (Cinnamon.get_event_state(event) & Clutter.ModifierType.BUTTON3_MASK))
+        {
             this.emit('selected', event.get_time());
-        } else if (Cinnamon.get_event_state(event) & Clutter.ModifierType.BUTTON2_MASK){
-            this.emit('remove-workspace', event.get_time());               
         }
         return true;
     },
