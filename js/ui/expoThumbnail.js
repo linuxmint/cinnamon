@@ -482,9 +482,15 @@ ExpoWorkspaceThumbnail.prototype = {
         else {this.overviewModeOff();}
     },
 
+    refresh: function() {
+        this.refreshTitle();
+        this.resetCloneHover();
+        this.setOverviewMode(this.overviewMode);
+    },
+
     onRestack: function() {
         this.restack();
-        this.setOverviewMode(this.overviewMode);
+        this.refresh();
     },
 
     restack: function(force) {
@@ -1466,9 +1472,7 @@ ExpoThumbnailsBox.prototype = {
             });
 
         this.iterateStateThumbnails(ThumbnailState.NORMAL, function(thumbnail) {
-            // keep default workspace names in sync
-            thumbnail.refreshTitle();
-            thumbnail.resetCloneHover();
+            thumbnail.refresh();
         });
         this.thumbnails[this.kbThumbnailIndex].showKeyboardSelectedState(true);
         if (!this.isShowingModalDialog()) {
@@ -1715,26 +1719,26 @@ ExpoThumbnailsBox.prototype = {
         let oldNumWorkspaces = this.thumbnails.length;
         let newNumWorkspaces = global.screen.n_workspaces;
 
-        if (oldNumWorkspaces == newNumWorkspaces)
-            return;
-        if (newNumWorkspaces > oldNumWorkspaces) {
-            // Assume workspaces are only added at the end
-            this.addThumbnails(oldNumWorkspaces, newNumWorkspaces - oldNumWorkspaces);
-        } else {
-            // Do not assume workspaces are only removed sequentially!
-            let removedCount = 0;
-            this.thumbnails.forEach(function(thumbnail, i) {
-                let metaWorkspace = global.screen.get_workspace_by_index(i-removedCount);
-                if (thumbnail.metaWorkspace != metaWorkspace) {
-                    ++removedCount;
-                    if (thumbnail.state <= ThumbnailState.NORMAL) {
-                        this.setThumbnailState(thumbnail, ThumbnailState.REMOVING);
-                    }
+        let removedCount = 0;
+        // Do not assume workspaces are only removed sequentially!
+        this.thumbnails.forEach(function(thumbnail, i) {
+            let metaWorkspace = global.screen.get_workspace_by_index(i-removedCount);
+            if (thumbnail.metaWorkspace != metaWorkspace) {
+                ++removedCount;
+                if (thumbnail.state <= ThumbnailState.NORMAL) {
+                    this.setThumbnailState(thumbnail, ThumbnailState.REMOVING);
                 }
-            }, this);
-            if (removedCount) {
-                this.queueUpdateStates();
             }
+        }, this);
+        
+        let addedCount = newNumWorkspaces - oldNumWorkspaces - removedCount;
+        if (addedCount > 0) {
+            // Assume workspaces are only added at the end
+            this.addThumbnails(oldNumWorkspaces, addedCount);
+        }
+
+        if (addedCount > 0 || removedCount) {
+            this.queueUpdateStates();
         }
     },
 
