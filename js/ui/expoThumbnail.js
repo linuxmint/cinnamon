@@ -474,6 +474,7 @@ ExpoWorkspaceThumbnail.prototype = {
         this.state = ThumbnailState.NORMAL;
         this.restack();
         this._slidePosition = 0; // Fully slid in
+        this.setOverviewMode(forceOverviewMode);
     },
 
     setOverviewMode: function(turnOn) {
