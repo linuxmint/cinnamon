@@ -516,7 +516,9 @@ ExpoWorkspaceThumbnail.prototype = {
     },
 
     refreshTitle: function() {
-        this.title.set_text(Main.getWorkspaceName(this.metaWorkspace.index()));
+        if (!this.doomed) { // better safe than sorry
+            this.title.set_text(Main.getWorkspaceName(this.metaWorkspace.index()));
+        }
     },
     
     onTitleKeyPressEvent: function(actor, event) {
