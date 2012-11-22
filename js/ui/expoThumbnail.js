@@ -532,10 +532,10 @@ ExpoWorkspaceThumbnail.prototype = {
         return false;     
     },
    
-    activateWorkspace: function(toScale) {
+    activateWorkspace: function() {
         if (this.metaWorkspace != global.screen.get_active_workspace())
             this.metaWorkspace.activate(global.get_current_time());
-        Main.expo.hide({toScale: toScale});
+        Main.expo.hide();
     },
     
     showKeyboardSelectedState: function(selected) {
@@ -1171,15 +1171,6 @@ ExpoThumbnailsBox.prototype = {
             return true;
         }
 
-        let action = global.display.get_keybinding_action(event.get_key_code(), modifiers);
-        if (action === Meta.KeyBindingAction.WORKSPACE_DOWN) {
-            let id = Main.expo.connect('hidden', function() {
-                Main.expo.disconnect(id);
-                Main.overview.show();
-            });
-            this.activateSelectedWorkspace(true);
-            return true;
-        }
         if ((symbol === Clutter.o || symbol === Clutter.O) && modifiers & Clutter.ModifierType.CONTROL_MASK) {
             this.toggleGlobalOverviewMode();
             return true;
@@ -1194,8 +1185,8 @@ ExpoThumbnailsBox.prototype = {
         this.thumbnails[this.kbThumbnailIndex].title.grab_key_focus();
     },
 
-    activateSelectedWorkspace: function(toScale) {
-        this.thumbnails[this.kbThumbnailIndex].activateWorkspace(toScale);
+    activateSelectedWorkspace: function() {
+        this.thumbnails[this.kbThumbnailIndex].activateWorkspace();
     },
 
     removeSelectedWorkspace: function() {
