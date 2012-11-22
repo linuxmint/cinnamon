@@ -1143,8 +1143,25 @@ ExpoThumbnailsBox.prototype = {
             global.window_manager.connect('switch-workspace',
                                           Lang.bind(this, this.activeWorkspaceChanged));
 
-        this.nWorkspacesChangedId = global.screen.connect('notify::n-workspaces',
-                                                            Lang.bind(this, this.workspacesChanged));
+        this.workspaceAddedId = global.screen.connect('workspace-added', Lang.bind(this, function(screen, index) {
+            this.addThumbnails(index, 1);
+        }));
+        this.workspaceRemovedId = global.screen.connect('workspace-removed', Lang.bind(this, function() {
+            this.button.hide();
+
+            // just handling the single workspace removed is not enough
+            let removedCount = 0;
+            this.thumbnails.forEach(function(thumbnail, i) {
+                let metaWorkspace = global.screen.get_workspace_by_index(i-removedCount);
+                if (thumbnail.metaWorkspace != metaWorkspace) {
+                    ++removedCount;
+                    if (thumbnail.state <= ThumbnailState.NORMAL) {
+                        this.setThumbnailState(thumbnail, ThumbnailState.REMOVING);
+                    }
+                }
+            }, this);
+            this.updateStates();
+        }));
 
         this.stateCounts = {};
         for (let key in ThumbnailState)
@@ -1231,14 +1248,9 @@ ExpoThumbnailsBox.prototype = {
     },
 
     hide: function() {
-        if (this.switchWorkspaceNotifyId > 0) {
-            global.window_manager.disconnect(this.switchWorkspaceNotifyId);
-            this.switchWorkspaceNotifyId = 0;
-        }
-        if (this.nWorkspacesChangedId > 0){
-            global.screen.disconnect(this.nWorkspacesChangedId);
-            this.nWorkspacesChangedId = 0;
-        }
+        global.window_manager.disconnect(this.switchWorkspaceNotifyId);
+        global.screen.disconnect(this.workspaceAddedId);
+        global.screen.disconnect(this.workspaceRemovedId);
 
         for (let w = 0; w < this.thumbnails.length; w++) {
             this.thumbnails[w].destroy();
@@ -1338,7 +1350,6 @@ ExpoThumbnailsBox.prototype = {
             if (start > 0) { // not the initial fill
                 thumbnail.state = ThumbnailState.NEW;
                 thumbnail.slidePosition = 1; // start slid out
-                this.haveNewThumbnails = true;
             } else {
                 thumbnail.state = ThumbnailState.NORMAL;
             }
@@ -1346,7 +1357,12 @@ ExpoThumbnailsBox.prototype = {
             this.stateCounts[thumbnail.state]++;
         }
 
-        this.queueUpdateStates();
+        if (start > 0) {
+            this.updateStates();
+        }
+        else {
+            this.queueUpdateStates();
+        }
     },
 
     set scale(scale) {
@@ -1703,34 +1719,6 @@ ExpoThumbnailsBox.prototype = {
         
         this.button.allocate(childBox, flags);
         this.emit('allocated');
-    },
-
-    workspacesChanged: function() {
-        this.button.hide();
-        let oldNumWorkspaces = this.thumbnails.length;
-        let newNumWorkspaces = global.screen.n_workspaces;
-
-        let removedCount = 0;
-        // Do not assume workspaces are only removed sequentially!
-        this.thumbnails.forEach(function(thumbnail, i) {
-            let metaWorkspace = global.screen.get_workspace_by_index(i-removedCount);
-            if (thumbnail.metaWorkspace != metaWorkspace) {
-                ++removedCount;
-                if (thumbnail.state <= ThumbnailState.NORMAL) {
-                    this.setThumbnailState(thumbnail, ThumbnailState.REMOVING);
-                }
-            }
-        }, this);
-        
-        let addedCount = newNumWorkspaces - oldNumWorkspaces - removedCount;
-        if (addedCount > 0) {
-            // Assume workspaces are only added at the end
-            this.addThumbnails(oldNumWorkspaces, addedCount);
-        }
-
-        if (addedCount > 0 || removedCount) {
-            this.queueUpdateStates();
-        }
     },
 
     activeWorkspaceChanged: function(wm, from, to, direction) {
