@@ -834,23 +834,17 @@ ExpoWorkspaceThumbnail.prototype = {
                 let iconScale = (0.25/this.box.scale/scale);
                 let [iconX, iconY] = [ICON_OFFSET * iconScale, ICON_OFFSET * iconScale];
                 window.icon.raise_top();
-                if (false && !window.metaWindow.showing_on_its_workspace()) {
-                    window.actor.show();
-                    Tweener.addTween(window.actor, {x: x, y: y, scale_x: scale, scale_y: scale, time: REARRANGE_TIME_ON, transition: 'easeOutQuad'
-                    });
-                    Tweener.addTween(window.icon, {x:iconX, y:iconY, scale_x:iconScale, scale_y:iconScale, time: REARRANGE_TIME_ON, transition: 'easeOutQuad', onComplete: window.icon.show
-                    });
-                }
-                else {
-                    window.icon.set_scale(iconScale, iconScale);
-                    window.icon.set_position(iconX, iconY);
-                    Tweener.addTween(window.actor, {x: x, y: y, scale_x: scale, scale_y: scale, time: REARRANGE_TIME_ON, transition: 'easeOutQuad',
+                window.icon.set_scale(iconScale, iconScale);
+                window.icon.set_position(iconX, iconY);
+                Tweener.addTween(window.actor, {
+                    x: x, y: y, scale_x: scale, scale_y: scale,
+                    opacity: 255,
+                    time: REARRANGE_TIME_ON, transition: 'easeOutQuad',
                     onComplete: function() {
                         window.actor.show();
                         window.icon.show();
                         }
-                    });
-                }
+                });
                 col++;
                 if (col > nCols){
                     row ++;
@@ -878,42 +872,15 @@ ExpoWorkspaceThumbnail.prototype = {
                 if (window.inDrag) {return;}
                 
                 window.showUrgencyState();
-                if (false && !window.metaWindow.showing_on_its_workspace()){
-                    let iconX = iconCount * (ICON_SIZE + iconSpacing);
-                    iconX %= (monitor.width - ICON_SIZE);
-                    iconX += monitor.x;
-                    ++iconCount;
-
-                    window.actor.raise_top();
-                    window.icon.show();
-                    let iconY = monitor.y + monitor.height - ICON_SIZE;
-                    let scaleX = ICON_SIZE / window.realWindow.width;
-                    let scaleY = ICON_SIZE / window.realWindow.height;
-                    Tweener.addTween(window.actor, {
-                        x: iconX,
-                        y: iconY,
-                        scale_x: scaleX,
-                        scale_y: scaleY,
-                        time: rearrangeTime,
-                        transition: 'easeOutQuad'
-                    });
-                    Tweener.addTween(window.icon, {
-                        x: 0, y: 0,
-                        scale_x: 1/scaleX,
-                        scale_y: 1/scaleY,
-                        time: rearrangeTime,
-                        transition: 'easeOutQuad'
-                    });
-                }
-                else {
-                    window.icon.hide();
-                    window.actor.show();
-                    Tweener.addTween(window.actor, {
-                        x: window.origX,
-                        y: window.origY,
-                        scale_x: 1, scale_y: 1, opacity: 255,
-                        time: rearrangeTime, transition: 'easeOutQuad'});
-                }
+                window.icon.hide();
+                window.actor.show();
+                Tweener.addTween(window.actor, {
+                    x: window.origX,
+                    y: window.origY,
+                    scale_x: 1, scale_y: 1,
+                    opacity: window.metaWindow.showing_on_its_workspace() ? 255 : 127,
+                    time: rearrangeTime, transition: 'easeOutQuad'
+                });
             }, this);
         }, this);
     },
