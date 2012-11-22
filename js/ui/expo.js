@@ -6,39 +6,25 @@ const Signals = imports.signals;
 const Lang = imports.lang;
 const St = imports.gi.St;
 const Cinnamon = imports.gi.Cinnamon;
-const Gdk = imports.gi.Gdk;
 
 const DND = imports.ui.dnd;
 const Main = imports.ui.main;
-const MessageTray = imports.ui.messageTray;
-const Params = imports.misc.params;
 const Tweener = imports.ui.tweener;
-const ExpoView = imports.ui.expoView;
+const ExpoThumbnail = imports.ui.expoThumbnail;
 
 // Time for initial animation going into Overview mode
 const ANIMATION_TIME = 0.3;
-const ADD_BUTTON_HOVER_TIME = 0.3;
-
-const DND_WINDOW_SWITCH_TIMEOUT = 1250;
 
 function Expo() {
     this._init.apply(this, arguments);
 }
 
 Expo.prototype = {
-    _init : function(params) {
-        params = Params.parse(params, { isDummy: false });
+    _init : function() {
+        Main.layoutManager.connect('monitors-changed', Lang.bind(this, this._relayout));
+    },
 
-        this.isDummy = params.isDummy;
-
-        // We only have an overview in user sessions, so
-        // create a dummy overview in other cases
-        if (this.isDummy) {
-            this.animationInProgress = false;
-            this.visible = false;
-            return;
-        }
-
+    beforeShow: function() {
         // The main BackgroundActor is inside global.window_group which is
         // hidden when displaying the overview, so we create a new
         // one. Instances of this class share a single CoglTexture behind the
@@ -63,11 +49,8 @@ Expo.prototype = {
                 }
             }));
 
-        this._expo = null;
-
         this.visible = false;           // animating to overview, in overview, animating out
         this._shown = false;            // show() and not hide()
-        this._shownTemporarily = false; // showTemporarily() and not hideTemporarily()
         this._modal = false;            // have a modal grab
         this.animationInProgress = false;
         this._hideInProgress = false;
@@ -87,24 +70,36 @@ Expo.prototype = {
         this._addWorkspaceButton = new St.Button({style_class: 'workspace-add-button'});
         this._group.add_actor(this._addWorkspaceButton);
         this._addWorkspaceButton.connect('clicked', Lang.bind(this, function () { Main._addWorkspace();}));
+        this._addWorkspaceButton.handleDragOver = function(source, actor, x, y, time) {
+                return source.metaWindow ? DND.DragMotionResult.MOVE_DROP : DND.DragMotionResult.CONTINUE;
+            };
+        this._addWorkspaceButton.acceptDrop = function(source, actor, x, y, time) {
+            if (source.metaWindow) {
+                let draggable = source._draggable;
+                actor.get_parent().remove_actor(actor);
+                draggable._dragOrigParent.add_actor(actor);
+                actor.opacity = draggable._dragOrigOpacity;
+                Main.moveWindowToNewWorkspace(source.metaWindow);
+            }
+            return true;
+        };
+        this._addWorkspaceButton._delegate = this._addWorkspaceButton;
+
 
         this._windowCloseArea = new St.Button({style_class: 'window-close-area'});
         this._windowCloseArea.handleDragOver = function(source, actor, x, y, time) {
-                return DND.DragMotionResult.MOVE_DROP;
+                return source.metaWindow ? DND.DragMotionResult.MOVE_DROP : DND.DragMotionResult.CONTINUE;
             };
         this._windowCloseArea.acceptDrop = function(source, actor, x, y, time) {
-                
-                if (source.realWindow) {
-                    let win = source.realWindow;
-
-                    let metaWindow = win.get_meta_window();
-                    
-                    source._draggable._restoreOnSuccess = false;
-                    metaWindow.delete(global.get_current_time());
-                    return true;
-                }
-                return false;
-            };
+            if (source.metaWindow) {
+                let draggable = source._draggable;
+                actor.get_parent().remove_actor(actor);
+                draggable._dragOrigParent.add_actor(actor);
+                actor.opacity = draggable._dragOrigOpacity;
+                source.metaWindow.delete(global.get_current_time());
+            }
+            return true;
+        };
 
         this._windowCloseArea._delegate = this._windowCloseArea;
         this._group.add_actor(this._windowCloseArea);
@@ -117,42 +112,71 @@ Expo.prototype = {
         this._addWorkspaceButton.hide();
         this._windowCloseArea.hide();
 
-        global.stage.connect('key-press-event',
+        let ctrlAltMask = Clutter.ModifierType.CONTROL_MASK | Clutter.ModifierType.MOD1_MASK;
+        this._group.connect('key-press-event',
             Lang.bind(this, function(actor, event) {
                 if (this._shown) {
                     if (this._expo.handleKeyPressEvent(actor, event)) {
                         return true;
                     }
                     let symbol = event.get_key_symbol();
-                    if (symbol === Clutter.Escape) {
-                        this.hide();
-                        return true;
-                    }
                     if (symbol === Clutter.plus || symbol === Clutter.Insert) {
-                        Main._addWorkspace();
+                        this._workspaceOperationPending = true;
+                    }
+                    let modifiers = Cinnamon.get_event_state(event);
+                    if ((symbol === Clutter.Delete && (modifiers & ctrlAltMask) !== ctrlAltMask)
+                        || symbol === Clutter.w && modifiers & Clutter.ModifierType.CONTROL_MASK)
+                    {
+                        this._workspaceOperationPending = true;
+                    }
+                    if (symbol === Clutter.Escape) {
+                        if (!this._workspaceOperationPending) {
+                            this.hide();
+                        }
+                        this._workspaceOperationPending = false;
                         return true;
                     }
                 }
                 return false;
             }));
-    },
-
-    // The members we construct that are implemented in JS might
-    // want to access the overview as Main.overview to connect
-    // signal handlers and so forth. So we create them after
-    // construction in this init() method.
-    init: function() {
-        if (this.isDummy)
-            return;
-
-        this._expo = new ExpoView.ExpoView();
+        this._group.connect('key-release-event',
+            Lang.bind(this, function(actor, event) {
+                if (this._shown) {
+                    let symbol = event.get_key_symbol();
+                    if (symbol === Clutter.plus || symbol === Clutter.Insert) {
+                        if (this._workspaceOperationPending) {
+                            this._workspaceOperationPending = false;
+                            Main._addWorkspace();
+                        }
+                        return true;
+                    }
+                    let modifiers = Cinnamon.get_event_state(event);
+                    if ((symbol === Clutter.Delete && (modifiers & ctrlAltMask) !== ctrlAltMask)
+                        || symbol === Clutter.w && modifiers & Clutter.ModifierType.CONTROL_MASK)
+                    {
+                        if (this._workspaceOperationPending) {
+                            this._workspaceOperationPending = false;
+                            this._expo.removeSelectedWorkspace();
+                        }
+                        return true;
+                    }
+                }
+                return false;
+            }));
+        this._expo = new ExpoThumbnail.ExpoThumbnailsBox();
         this._group.add_actor(this._expo.actor);
-
-        Main.layoutManager.connect('monitors-changed', Lang.bind(this, this._relayout));
         this._relayout();
     },
 
+    init: function() {
+    },
+
     _relayout: function () {
+        if (!this._expo) {
+            // This function can be called as a response to the monitors-changed event,
+            // when we're not showing.
+            return;
+        }
         // To avoid updating the position and size of the workspaces
         // we just hide the overview. The positions will be updated
         // when it is next shown.
@@ -201,7 +225,7 @@ Expo.prototype = {
         this._windowCloseArea.raise_top();
     },
 
-    showCloseArea : function() {
+    _showCloseArea : function() {
         let primary = Main.layoutManager.primaryMonitor;
         this._windowCloseArea.show();
         Tweener.addTween(this._windowCloseArea, {   y: primary.height - this._windowCloseArea.height,
@@ -209,7 +233,7 @@ Expo.prototype = {
                                                     transition: 'easeOutQuad'});
     },
 
-    hideCloseArea : function() {
+    _hideCloseArea : function() {
         let primary = Main.layoutManager.primaryMonitor;
         Tweener.addTween(this._windowCloseArea, {   y: primary.height,
                                                     time: ANIMATION_TIME,
@@ -219,35 +243,13 @@ Expo.prototype = {
 
     //// Public methods ////
 
-    beginWindowDrag: function(source) {
-        this.emit('window-drag-begin');
-    },
-
-    cancelledWindowDrag: function(source) {
-        this.emit('window-drag-cancelled');
-    },
-
-    endWindowDrag: function(source) {
-        this.emit('window-drag-end');
-    },
-
-    _createClone: function(source) {
-        if (this.clone) {
-            this._group.remove_actor(this.clone);
-            this.clone.destroy();
-        }
-        this.clone = new Clutter.Clone({source: source});
-        this._group.add_actor(this.clone);
-    },
-
     // show:
     //
     // Animates the overview visible and grabs mouse and keyboard input
     show : function() {
-        if (this.isDummy)
-            return;
         if (this._shown)
             return;
+        this.beforeShow();
         // Do this manually instead of using _syncInputMode, to handle failure
         if (!Main.pushModal(this._group))
             return;
@@ -280,13 +282,43 @@ Expo.prototype = {
         this._addWorkspaceButton.show();
         this._expo.show();
 
-        this.activeWorkspace = this._expo._thumbnailsBox._lastActiveWorkspace;
-        let activeWorkspaceActor = this.activeWorkspace.actor;
+        this._expo.connect('drag-begin', Lang.bind(this, this._showCloseArea));
+        this._expo.connect('drag-end', Lang.bind(this, this._hideCloseArea));
+        
+        let activeWorkspace = this._expo.lastActiveWorkspace;
+        let activeWorkspaceActor = activeWorkspace.actor;
 
-        this.allocateID = this.activeWorkspace.connect('allocated', Lang.bind(this, this._animateVisible2));
-
-        this._createClone(activeWorkspaceActor);
-        this.clone.show();
+        // should not create new actors and work with them within an allocation cycle
+        let clones = [];
+        Main.layoutManager.monitors.forEach(function(monitor,index) {
+            let clone = new Clutter.Clone({source: activeWorkspaceActor});
+            global.overlay_group.add_actor(clone);
+            clone.set_clip(monitor.x, monitor.y, monitor.width, monitor.height);
+            clones.push(clone);
+        }, this);
+        //We need to allocate activeWorkspace before we begin its clone animation
+        let allocateID = this._expo.connect('allocated', Lang.bind(this, function() {
+            this._expo.disconnect(allocateID);
+            Main.layoutManager.monitors.forEach(function(monitor,index) {
+                let clone = clones[index];
+                Tweener.addTween(clone, {
+                    x: Main.layoutManager.primaryMonitor.x + activeWorkspaceActor.allocation.x1,
+                    y: Main.layoutManager.primaryMonitor.y + activeWorkspaceActor.allocation.y1,
+                    scale_x: activeWorkspaceActor.get_scale()[0] , 
+                    scale_y: activeWorkspaceActor.get_scale()[1], 
+                    time: ANIMATION_TIME,
+                    transition: 'easeOutQuad', 
+                    onComplete: function() {
+                        global.overlay_group.remove_actor(clone);
+                        clone.destroy();
+                        if (index == Main.layoutManager.monitors.length < 1) {
+                            this._showDone();
+                        }
+                    }, 
+                    onCompleteScope: this
+                });
+            }, this);
+        }));
 
         this._gradient.show();
         Main.disablePanels();
@@ -297,85 +329,24 @@ Expo.prototype = {
                               transition: 'easeOutQuad',
                               time: ANIMATION_TIME});
 
-        /*Tweener.addTween(this,
-                            { time: 0.4,
-                              onComplete: this._animateVisible2,
-                              onCompleteScope: this});*/
-
         this._coverPane.raise_top();
         this._coverPane.show();
         this.emit('showing');
     },
 
-    //We need to allocate activeWorkspace before we begin its clone animation
-    _animateVisible2: function() {
-        this.activeWorkspace.disconnect(this.allocateID);
-        let activeWorkspaceActor = this._expo._thumbnailsBox._lastActiveWorkspace.actor;
-        Tweener.addTween(this.clone, {  x: activeWorkspaceActor.allocation.x1, 
-                                        y: activeWorkspaceActor.allocation.y1, 
-                                        scale_x: activeWorkspaceActor.get_scale()[0] , 
-                                        scale_y: activeWorkspaceActor.get_scale()[1], 
-                                        time: ANIMATION_TIME, transition: 'easeOutQuad', 
-                                        onComplete: function() { this.clone.hide(); this._showDone()}, 
-                                        onCompleteScope: this});        
-    },
-
-    // showTemporarily:
-    //
-    // Animates the overview visible without grabbing mouse and keyboard input;
-    // if show() has already been called, this has no immediate effect, but
-    // will result in the overview not being hidden until hideTemporarily() is
-    // called.
-    showTemporarily: function() {
-        if (this.isDummy)
-            return;
-
-        if (this._shownTemporarily)
-            return;
-
-        this._syncInputMode();
-        this._animateVisible();
-        this._shownTemporarily = true;
-    },
-
     // hide:
     //
     // Reverses the effect of show()
-    hide: function() {
-        if (this.isDummy)
-            return;
-
+    hide: function(options) {
         if (!this._shown)
             return;
 
-        if (!this._shownTemporarily)
-            this._animateNotVisible();
-
+        this._animateNotVisible(options);
         this._shown = false;
         this._syncInputMode();
     },
 
-    // hideTemporarily:
-    //
-    // Reverses the effect of showTemporarily()
-    hideTemporarily: function() {
-        if (this.isDummy)
-            return;
-
-        if (!this._shownTemporarily)
-            return;
-
-        if (!this._shown)
-            this._animateNotVisible();
-
-        this._shownTemporarily = false;
-        this._syncInputMode();
-    },
-
     toggle: function() {
-        if (this.isDummy)
-            return;
-
         if (this._shown)
             this.hide();
         else
@@ -398,12 +369,6 @@ Expo.prototype = {
                 else
                     this.hide();
             }
-        } else if (this._shownTemporarily) {
-            if (this._modal) {
-                Main.popModal(this._group);
-                this._modal = false;
-            }
-            global.stage_input_mode = Cinnamon.StageInputMode.FULLSCREEN;
         } else {
             if (this._modal) {
                 Main.popModal(this._group);
@@ -414,39 +379,54 @@ Expo.prototype = {
         }
     },
 
-    _animateNotVisible: function() {
+    _animateNotVisible: function(options) {
         if (!this.visible || this.animationInProgress)
             return;
 
+        let animationTime = ANIMATION_TIME;
         this.animationInProgress = true;
         this._hideInProgress = true;
 
-        Main.enablePanels();
-        Tweener.addTween(this._background,
-                         { dim_factor: 1,
-                           time: ANIMATION_TIME,
-                           transition: 'linear',
-                           onComplete: this._hideDone,
-                           onCompleteScope: this
-                         });
+        let activeWorkspace = this._expo.lastActiveWorkspace;
+        if (!options || !options.toScale ) {
+            activeWorkspace.overviewModeOff(true, true);
+        }
 
-        this.activeWorkspace = this._expo._thumbnailsBox._lastActiveWorkspace;
-        let activeWorkspaceActor = this.activeWorkspace.actor;
-        this.activeWorkspace._overviewModeOff();
-        this._createClone(activeWorkspaceActor);
-        this.clone.set_position(activeWorkspaceActor.allocation.x1, activeWorkspaceActor.allocation.y1);
-        this.clone.set_scale(activeWorkspaceActor.get_scale()[0], activeWorkspaceActor.get_scale()[1]);
-        let porthole = Main.layoutManager.getPorthole();
-        Tweener.addTween(this.clone, {  x: porthole.x, 
-                                        y: porthole.y,
-                                        scale_x: 1,
-                                        scale_y: 1,
-                                        time: ANIMATION_TIME, 
-                                        transition: 'easeOutQuad', 
-                                        onComplete: this.hide});
+        let activeWorkspaceActor = activeWorkspace.actor;
+        Main.layoutManager.monitors.forEach(function(monitor,index) {
+            let cover = new Clutter.Group();
+            global.overlay_group.add_actor(cover);
+            cover.set_position(0, 0);
+            cover.set_clip(monitor.x, monitor.y, monitor.width, monitor.height);
 
-        this._coverPane.raise_top();
-        this._coverPane.show();
+            let clone = new Clutter.Clone({source: activeWorkspaceActor});
+            cover.add_actor(clone);
+            clone.set_position(Main.layoutManager.primaryMonitor.x + activeWorkspaceActor.allocation.x1, Main.layoutManager.primaryMonitor.y + activeWorkspaceActor.allocation.y1);
+            clone.set_clip(monitor.x, monitor.y, monitor.width, monitor.height);
+            clone.set_scale(activeWorkspaceActor.get_scale()[0], activeWorkspaceActor.get_scale()[1]);
+
+            Tweener.addTween(clone, {
+                x: 0,
+                y: 0,
+                scale_x: 1,
+                scale_y: 1,
+                time: animationTime,
+                transition: 'easeOutQuad',
+                onCompleteScope: this,
+                onComplete: function() {
+                    global.overlay_group.remove_actor(cover);
+                    cover.destroy();
+                    if (index == Main.layoutManager.monitors.length < 1) {
+                        this._group.hide();
+                        if (!options || !options.toScale ) {
+                            Main.enablePanels();
+                        }
+                        this._hideDone();
+                    }
+                }
+            });
+        }, this);
+
         this.emit('hiding');
     },
 
@@ -456,7 +436,7 @@ Expo.prototype = {
 
         this.emit('shown');
         // Handle any calls to hide* while we were showing
-        if (!this._shown && !this._shownTemporarily)
+        if (!this._shown)
             this._animateNotVisible();
 
         this._syncInputMode();
@@ -470,12 +450,11 @@ Expo.prototype = {
         global.window_group.show();
 
         this._expo.hide();
+        this._expo = null;
         this._addWorkspaceButton.hide();
         this._windowCloseArea.hide();
 
         this._background.hide();
-        this._group.hide();
-        this.clone.hide();
         this._gradient.hide();
 
         this.visible = false;
@@ -486,10 +465,14 @@ Expo.prototype = {
 
         this.emit('hidden');
         // Handle any calls to show* while we were hiding
-        if (this._shown || this._shownTemporarily)
+        if (this._shown)
             this._animateVisible();
 
         this._syncInputMode();
+        global.overlay_group.remove_actor(this._group);
+        this._group.destroy();
+        global.overlay_group.remove_actor(this._background);
+        this._background.destroy();
 
         Main.layoutManager._chrome.updateRegions();
     }

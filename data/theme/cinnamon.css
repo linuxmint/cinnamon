@@ -443,6 +443,17 @@ StScrollBar StButton#vhandle:hover {
 .workspace-overview-background-shade {
 	background-color: rgba(0,0,0,0.4);
 }
+
+.expo-workspace-thumbnail-frame {
+	border: 1px, rgba(64,64,64,0.9);
+	background-color: rgba(64,64,64,0.9);
+}
+
+.expo-workspace-thumbnail-frame#active {
+	border: 2px, rgba(32,32,32,0.9);
+	background-color: rgba(32,32,32,0.9);
+}
+
 /* ===================================================================
  * Looking Glass 
  * ===================================================================*/
@@ -1617,10 +1628,10 @@ StScrollBar StButton#vhandle:hover {
 .expo-workspaces-name-entry {
 	padding: 5px;
 	border-radius: 4px;
-	color: rgb(128, 128, 128);
+	color: rgb(200, 200, 200);
 	border: 2px solid rgb(136,138,133);
-	background-gradient-start: rgb(200,200,200);
-	background-gradient-end: white;
+	background-gradient-start: rgb(128,128,128);
+	background-gradient-end: rgb(85,85,85);
 	background-gradient-direction: vertical;
 	selected-color: black;
 	caret-color: rgb(128, 128, 128);
@@ -1632,14 +1643,16 @@ StScrollBar StButton#vhandle:hover {
 }
 
 .expo-workspaces-name-entry#selected {
-	background-gradient-start: rgb(128,128,128);
-	background-gradient-end: black;
-	color: rgb(200, 200, 200);
+	background-gradient-start: rgb(200,200,200);
+	background-gradient-end: white;
+	font-weight: bold;
+	color: rgb(0, 0, 0);
 }
 
 .expo-workspaces-name-entry:focus {
-	color: rgb(64, 64, 64);
+	color: rgb(0, 0, 0);
 	font-weight: bold;
+	font-style: italic;
 	transition-duration: 300;
 }
 
