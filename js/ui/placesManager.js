@@ -9,6 +9,7 @@ const Signals = imports.signals;
 const St = imports.gi.St;
 
 const Main = imports.ui.main;
+const MessageTray = imports.ui.messageTray;
 const Params = imports.misc.params;
 const Search = imports.ui.search;
 const Util = imports.misc.util;
