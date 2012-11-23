@@ -242,7 +242,7 @@ function start() {
     xdndHandler = new XdndHandler.XdndHandler();
     // This overview object is just a stub for non-user sessions
     overview = new Overview.Overview();
-    expo = new Expo.Expo({ isDummy: false });
+    expo = new Expo.Expo();
     magnifier = new Magnifier.Magnifier();
     statusIconDispatcher = new StatusIconDispatcher.StatusIconDispatcher();  
                     
@@ -390,6 +390,10 @@ function getWorkspaceName(index) {
     return wsName.length > 0 ?
         wsName :
         _makeDefaultWorkspaceName(index);
+}
+
+function hasDefaultWorkspaceName(index) {
+    return getWorkspaceName(index) == _makeDefaultWorkspaceName(index);
 }
 
 function _addWorkspace() {
@@ -743,8 +747,11 @@ function logStackTrace(msg) {
 }
 
 function isWindowActorDisplayedOnWorkspace(win, workspaceIndex) {
-    return win.get_workspace() == workspaceIndex ||
-        (win.get_meta_window() && win.get_meta_window().is_on_all_workspaces());
+    if (win.get_workspace() == workspaceIndex) {return true;}
+    let mwin = win.get_meta_window();
+    return mwin && (mwin.is_on_all_workspaces() ||
+        (wm.workspacesOnlyOnPrimary && mwin.get_monitor() != layoutManager.primaryIndex)
+    );
 }
 
 function getWindowActorsForWorkspace(workspaceIndex) {
