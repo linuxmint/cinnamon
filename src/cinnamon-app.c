@@ -154,6 +154,14 @@ window_backed_app_get_icon (CinnamonApp *app,
   return actor;
 }
 
+gchar *
+cinnamon_app_get_icon_path (CinnamonApp *app)
+{
+    GIcon *icon;
+    icon = g_app_info_get_icon (G_APP_INFO (gmenu_tree_entry_get_app_info (app->entry)));
+    return g_icon_to_string (icon);
+}
+
 /**
  * cinnamon_app_create_icon_texture:
  *
