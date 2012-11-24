@@ -136,6 +136,8 @@ cinnamon_prefs_init (void)
                                          OVERRIDES_SCHEMA);
   meta_prefs_override_preference_schema ("workspaces-only-on-primary",
                                          OVERRIDES_SCHEMA);
+  meta_prefs_override_preference_schema ("workspace-cycle",
+                                         OVERRIDES_SCHEMA);
   meta_prefs_override_preference_schema ("button-layout",
                                          OVERRIDES_SCHEMA);
   meta_prefs_override_preference_schema ("edge-tiling",

@@ -49,7 +49,27 @@
       <summary>Duration of the delay before a shown panel is hidden</summary>
       <description>Duration of the delay (in milliseconds)</description>
     </key>
-    
+
+    <key name="panel2-autohide" type="b">
+      <default>false</default>
+      <_summary>Auto-hide panel</_summary>
+      <_description>
+        Whether the panel autohides or not.
+      </_description>
+    </key>
+
+    <key type="i" name="panel2-show-delay">
+      <default>0</default>
+      <summary>Duration of the delay before a hidden panel is shown</summary>
+      <description>Duration of the delay (in milliseconds)</description>
+    </key>
+
+    <key type="i" name="panel2-hide-delay">
+      <default>0</default>
+      <summary>Duration of the delay before a shown panel is hidden</summary>
+      <description>Duration of the delay (in milliseconds)</description>
+    </key>
+
     <key name="panel-resizable" type="b">
       <default>false</default>
       <_summary>Resizable panel</_summary>
@@ -302,39 +322,13 @@
 	<_description>
 		Number of Workspaces</_description>
     </key>
-    
-    <key name="overview-corner-visible" type="b">
-      <default>false</default>
-      <_summary>Enable or disable the overview corner icon</_summary>
-      <_description>
-        Whether the overview icon is visible or not.
-      </_description>
+
+    <key name="overview-corner" type="as">
+      <default>['expo:true:false', 'scale:false:false', 'scale:false:false', 'scale:false:false']</default>
+      <_summary>Properties of overview corners</_summary>
+      <_description>Properties of overview corners, in the form functionality:hover:icon. The order in which properties are displayed is top left, top right, bottom left, bottom right.</_description>
     </key>
-    
-    <key name="overview-corner-hover" type="b">
-      <default>true</default>
-      <_summary>Enable or disable the overview hot corner</_summary>
-      <_description>
-        Whether the overview hot corner is enabled or not.
-      </_description>
-    </key>
-    
-    <key name="overview-corner-position" type="s">
-      <default>"topLeft"</default>
-      <_summary>Set hot corner position</_summary>
-      <_description>
-        Change the position of the overview hot corner on the screen.
-      </_description>
-    </key>
-    
-    <key name="overview-corner-functionality" type="s">
-      <default>"expo"</default>
-      <_summary>Set hot corner functionality</_summary>
-      <_description>
-        Set the function that is executed when hitting the hot corner.
-      </_description>
-    </key>
-    
+
     <key name="expo-applet-hover" type="b">
       <default>false</default>
       <_summary>Expo applet: Activate on hover</_summary>
@@ -629,6 +623,14 @@
       <summary>Enable edge tiling when dropping windows on screen edges</summary>
       <description>
         This key overrides the key in org.gnome.muffin when running Cinnamon.
+      </description>
+    </key>
+
+    <key type="b" name="workspace-cycle">
+      <default>false</default>
+      <summary>Allow cycling through workspaces</summary>
+      <description>
+        This key overrides the key in org.cinnamon.muffin when running Cinnamon.
       </description>
     </key>
 

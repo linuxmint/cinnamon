@@ -9,6 +9,7 @@ const Signals = imports.signals;
 const St = imports.gi.St;
 
 const Main = imports.ui.main;
+const MessageTray = imports.ui.messageTray;
 const Params = imports.misc.params;
 const Search = imports.ui.search;
 const Util = imports.misc.util;
@@ -117,9 +118,16 @@ PlaceDeviceInfo.prototype = {
                 this._mount.unmount_finish(res);
         } catch (e) {
             let message = _("Failed to unmount '%s'").format(o.get_name());
-            Main.overview.setMessage(message,
-                                     Lang.bind(this, this.remove),
-                                     _("Retry"));
+            let source = new MessageTray.SystemNotificationSource();
+            if (Main.messageTray) {
+                Main.messageTray.add(source);
+                let notification = new MessageTray.Notification(source, message, null);
+                notification.setTransient(true);
+
+                notification.addButton('system-undo', _("Retry"));
+                notification.connect('action-invoked', Lang.bind(this, this.remove));
+                source.notify(notification);
+            }
         }
     }
 };

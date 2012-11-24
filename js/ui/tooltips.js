@@ -1,3 +1,4 @@
+const Mainloop = imports.mainloop;
 const St = imports.gi.St;
 const Main = imports.ui.main;
 const Lang = imports.lang;
@@ -114,7 +115,15 @@ Tooltip.prototype = {
         item.connect('enter-event', Lang.bind(this, this._onEnterEvent));
         item.connect('leave-event', Lang.bind(this, this._onLeaveEvent));
         item.connect('motion-event', Lang.bind(this, this._onMotionEvent));
+        item.connect('button-press-event', Lang.bind(this, this.hide));
         item.connect('button-release-event', Lang.bind(this, this._onReleaseEvent));
+        item.connect('allocation-changed', Lang.bind(this, function() {
+            // An allocation change could mean that the actor has moved,
+            // so hide, but wait until after the allocation cycle.
+            Mainloop.idle_add(Lang.bind(this, function() {
+                this.hide();
+            }));
+        }));
         
         this._showTimer = null;
         this._visible = false;
@@ -137,7 +146,7 @@ Tooltip.prototype = {
     },
     
     _onTimerComplete: function(){
-        if (this._tooltip.get_text() != "") {
+        if (this._tooltip && this._tooltip.get_text() != "") {
             this.show();
         }
     },
@@ -147,11 +156,13 @@ Tooltip.prototype = {
     },
     
     _onReleaseEvent: function(actor, event) {
-    	this.preventShow = true;
+        this.preventShow = true;
         this.hide();
     },
     
     hide: function() {
+        if (!this._tooltip) {return;}
+
         Tweener.removeTweens(this);
         this._tooltip.hide();
         this._visible = false;
@@ -175,7 +186,7 @@ Tooltip.prototype = {
         this._tooltip.set_position(tooltipLeft, tooltipTop);
         
         this._tooltip.show();
-	this._tooltip.raise_top();
+        this._tooltip.raise_top();
         this._visible = true;
     },
     
@@ -184,6 +195,8 @@ Tooltip.prototype = {
     },
     
     destroy: function() {
-       this._tooltip.destroy();
+        Tweener.removeTweens(this);
+        this._tooltip.destroy();
+        this._tooltip = null;
     }
 }

@@ -241,24 +241,24 @@ function start() {
     layoutManager = new Layout.LayoutManager();
     xdndHandler = new XdndHandler.XdndHandler();
     // This overview object is just a stub for non-user sessions
-    overview = new Overview.Overview({ isDummy: false });
-    expo = new Expo.Expo({ isDummy: false });
+    overview = new Overview.Overview();
+    expo = new Expo.Expo();
     magnifier = new Magnifier.Magnifier();
     statusIconDispatcher = new StatusIconDispatcher.StatusIconDispatcher();  
                     
-    if (desktop_layout == LAYOUT_TRADITIONAL) {                                    
-        panel = new Panel.Panel(true);           
+    if (desktop_layout == LAYOUT_TRADITIONAL) {
+        panel = new Panel.Panel(true, true);
         panel.actor.add_style_class_name('panel-bottom');
         layoutManager.panelBox.add(panel.actor);
     }
     else if (desktop_layout == LAYOUT_FLIPPED) {
-        panel = new Panel.Panel(false);                 
+        panel = new Panel.Panel(false, true);
         panel.actor.add_style_class_name('panel-top');
-        layoutManager.panelBox.add(panel.actor);  
+        layoutManager.panelBox.add(panel.actor);
     }
     else if (desktop_layout == LAYOUT_CLASSIC) {
-        panel = new Panel.Panel(false);         
-        panel2 = new Panel.Panel(true);         
+        panel = new Panel.Panel(false, true);
+        panel2 = new Panel.Panel(true, false);
         panel.actor.add_style_class_name('panel-top');
         panel2.actor.add_style_class_name('panel-bottom');
         layoutManager.panelBox.add(panel.actor);   
@@ -392,6 +392,10 @@ function getWorkspaceName(index) {
         _makeDefaultWorkspaceName(index);
 }
 
+function hasDefaultWorkspaceName(index) {
+    return getWorkspaceName(index) == _makeDefaultWorkspaceName(index);
+}
+
 function _addWorkspace() {
     if (dynamicWorkspaces)
         return false;
@@ -414,6 +418,20 @@ function _removeWorkspace(workspace) {
     global.settings.set_int("number-workspaces", nWorks);
     global.screen.remove_workspace(workspace, global.get_current_time());
     return true;
+}
+
+function moveWindowToNewWorkspace(metaWindow, switchToNewWorkspace) {
+    if (switchToNewWorkspace) {
+        let targetCount = global.screen.n_workspaces + 1;
+        let nnwId = global.screen.connect('notify::n-workspaces', function() {
+            global.screen.disconnect(nnwId);
+            if (global.screen.n_workspaces === targetCount) {
+                let newWs = global.screen.get_workspace_by_index(global.screen.n_workspaces - 1);
+                newWs.activate(global.get_current_time());
+            }
+        });
+    }
+    metaWindow.change_workspace_by_index(global.screen.n_workspaces, true, global.get_current_time());
 }
 
 function _staticWorkspaces() {
@@ -537,8 +555,10 @@ function _queueCheckWorkspaces() {
 }
 
 function _nWorkspacesChanged() {
+    nWorks = global.screen.n_workspaces;
     if (!dynamicWorkspaces)
         return false;
+
     let oldNumWorkspaces = _workspaces.length;
     let newNumWorkspaces = global.screen.n_workspaces;
 
@@ -727,8 +747,11 @@ function logStackTrace(msg) {
 }
 
 function isWindowActorDisplayedOnWorkspace(win, workspaceIndex) {
-    return win.get_workspace() == workspaceIndex ||
-        (win.get_meta_window() && win.get_meta_window().is_on_all_workspaces());
+    if (win.get_workspace() == workspaceIndex) {return true;}
+    let mwin = win.get_meta_window();
+    return mwin && (mwin.is_on_all_workspaces() ||
+        (wm.workspacesOnlyOnPrimary && mwin.get_monitor() != layoutManager.primaryIndex)
+    );
 }
 
 function getWindowActorsForWorkspace(workspaceIndex) {
@@ -956,6 +979,11 @@ function activateWindow(window, time, workspaceNum) {
         workspace.activate_with_focus(window, time);
     } else {
         window.activate(time);
+        Mainloop.idle_add(function() {
+            window.foreach_transient(function(win) {
+                win.activate(time);
+            });
+        });
     }
 
     overview.hide();

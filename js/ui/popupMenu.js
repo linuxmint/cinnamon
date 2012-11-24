@@ -1554,12 +1554,11 @@ PopupComboMenu.prototype = {
 
         this.isOpen = true;
 
-        let [sourceX, sourceY] = this.sourceActor.get_transformed_position();
-        let items = this._getMenuItems();
-        let activeItem = items[this._activeItemPos];
+        let activeItem = this._getMenuItems()[this._activeItemPos];
 
-        this.actor.set_position(sourceX, sourceY - activeItem.actor.y);
-        this.actor.width = Math.max(this.actor.width, this.sourceActor.width);
+        let [sourceX, sourceY] = this.sourceActor.get_transformed_position();
+        this.actor.set_position(Math.round(sourceX), Math.round(sourceY - activeItem.actor.y));
+
         this.actor.raise_top();
 
         this.actor.opacity = 0;
@@ -1570,6 +1569,8 @@ PopupComboMenu.prototype = {
                            transition: 'linear',
                            time: BoxPointer.POPUP_ANIMATION_TIME });
 
+        this.savedFocusActor = global.stage.get_key_focus();
+        global.stage.set_key_focus(this.actor);
         this.emit('open-state-changed', true);
     },
 
@@ -1589,6 +1590,7 @@ PopupComboMenu.prototype = {
                          });
 
         this.emit('open-state-changed', false);
+        global.stage.set_key_focus(this.savedFocusActor);
     },
 
     setActiveItem: function(position) {
@@ -1860,7 +1862,7 @@ PopupMenuManager.prototype = {
 
             if (hadFocus)
                 focus.grab_key_focus();
-            else
+else
                 menu.actor.grab_key_focus();
         } else if (menu == this._activeMenu) {
             if (this.grabbed)

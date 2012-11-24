@@ -7,9 +7,11 @@ nobase_dist_js_DATA = \
 	misc/fileUtils.js	\
 	misc/format.js		\
 	misc/gnomeSession.js	\
+	misc/gridNavigator.js	\
 	misc/history.js		\
 	misc/modemManager.js	\
 	misc/params.js		\
+	misc/pointerTracker.js	\
 	misc/screenSaver.js     \
 	misc/util.js		\
 	perf/core.js		\
@@ -29,9 +31,9 @@ nobase_dist_js_DATA = \
 	ui/environment.js	\
 	ui/expo.js		\
 	ui/expoThumbnail.js	\
-	ui/expoView.js		\
 	ui/extensionSystem.js	\
 	ui/flashspot.js		\
+	ui/hotCorner.js		\
 	ui/iconGrid.js		\
 	ui/keyboard.js		\
 	ui/layout.js		\
@@ -61,7 +63,6 @@ nobase_dist_js_DATA = \
 	ui/themeManager.js	\
 	ui/tooltips.js	\
 	ui/tweener.js		\
-	ui/viewSelector.js	\
 	ui/windowAttentionHandler.js	\
 	ui/windowManager.js	\
 	ui/workspace.js		\

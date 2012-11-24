@@ -1860,6 +1860,167 @@ class KeyboardSidePage (SidePage):
         keybinding.resetDefaults()
         self.onKeyBindingChanged(self.kb_tree)
 
+class HotCornerViewSidePage(SidePage):
+    def __init__(self, name, icon, content_box):   
+        SidePage.__init__(self, name, icon, content_box)
+
+        self.hc_list = Gtk.ListStore(int, str)
+
+        self.hc_list.append([0, _("Top Left")])
+        self.hc_list.append([1, _("Top Right")])
+        self.hc_list.append([2, _("Bottom Left")])
+        self.hc_list.append([3, _("Bottom Right")])
+
+        self.function_list = Gtk.ListStore(str, str)
+        self.function_list.append(['expo', "Expo"])
+        self.function_list.append(['scale', "Scale"])
+        self.function_list.append(['custom', _("Custom")])
+
+        self.hc_selected = 0
+
+        self.custom_command = ""
+        
+        self.settings = Gio.Settings.new('org.cinnamon')
+        self.settings.connect('changed::overview-corner', self.on_settings_changed)
+        oc_list = self.settings.get_strv("overview-corner")
+        self.properties = []
+        for item in oc_list:
+            props = item.split(":")
+            self.properties.append(props)
+
+        self.enabled_check_button = None
+        self.visible_check_button = None
+
+    def on_settings_changed(self, settings, key):
+        oc_list = self.settings.get_strv("overview-corner")
+        del self.properties[:]
+        for item in oc_list:
+            props = item.split(":")
+            self.properties.append(props)
+        self.update()
+
+    def update(self):
+        if self.enabled_check_button != None:
+            self.enabled_check_button.set_active(self.properties[self.hc_selected][1] == "true")
+            self.visible_check_button.set_active(self.properties[self.hc_selected][2] == "true")
+            action_no = 2
+            action = self.properties[self.hc_selected][0]
+            if action == "expo":
+                action_no = 0
+            elif action == "scale":
+                action_no = 1
+            self.func_combo.set_active(action_no)
+
+    def build(self):
+        # Clear all existing widgets
+        widgets = self.content_box.get_children()
+        for widget in widgets:
+            self.content_box.remove(widget)
+
+        # Hot corner position
+        pos_box = Gtk.Box(Gtk.Orientation.HORIZONTAL)
+        self.content_box.pack_start(pos_box, False, False, 0)
+
+        pos_label = Gtk.Label(_("Hot corner position:"))
+        pos_box.pack_start(pos_label, False, False, 0)
+
+        pos_combo = Gtk.ComboBox.new_with_model(self.hc_list)
+        renderer_text= Gtk.CellRendererText()
+        pos_combo.pack_start(renderer_text, True)
+        pos_combo.add_attribute(renderer_text, "text", 1)
+        pos_combo.set_active(0)
+        pos_combo.connect('changed', self.on_pos_changed)
+        pos_box.pack_start(pos_combo, True, True, 0)
+
+        label = Gtk.Label()
+        label.set_markup("<i><small>Select the hot corner you wish to configure</small></i>")
+        self.content_box.pack_start(label, False, False, 0)
+
+        # Hot corner enabled
+        box = IndentedHBox()
+        self.enabled_check_button = Gtk.CheckButton(_("Hot corner enabled"))
+        box.add(self.enabled_check_button)
+        self.content_box.pack_start(box, False, False, 0)
+
+        # Hot corner icon visible
+        box = IndentedHBox()
+        self.visible_check_button = Gtk.CheckButton(_("Hot corner icon visible"))
+        box.add(self.visible_check_button)
+        self.content_box.pack_start(box, False, False, 0)
+
+        # Hot corner function
+        box = IndentedHBox()
+        box.add(Gtk.Label(_("Hot corner function:")))
+        self.func_combo = Gtk.ComboBox.new_with_model(self.function_list)
+        renderer_text = Gtk.CellRendererText()
+        self.func_combo.pack_start(renderer_text, True)
+        self.func_combo.add_attribute(renderer_text, "text", 1)
+        box.add(self.func_combo)
+        self.content_box.pack_start(box, False, False, 0)
+
+        # Hot corner custom function
+        box = IndentedHBox()
+        box2 = IndentedHBox() # Indent by two levels
+        box2.add(box)
+        self.content_box.pack_start(box2, False, False, 0)
+
+        box2.add(Gtk.Label(_("Enter custom command: ")))
+        self.custom_command_entry = Gtk.Entry()
+        box2.add(self.custom_command_entry)
+
+        # Signals
+        self.enabled_check_button.connect('toggled', self.on_enabled_changed)
+        self.visible_check_button.connect('toggled', self.on_visible_changed)
+        self.func_combo.connect('changed', self.on_func_combo_changed)
+        self.custom_command_entry.connect('changed', self.on_search_entry_changed)
+        self.on_settings_changed(self.settings, "overview-corner")
+
+    def on_pos_changed(self, widget):
+        titer = widget.get_active_iter()
+        if titer != None:
+            self.hc_selected = self.hc_list[titer][0]
+            self.update()
+
+    def on_enabled_changed(self, widget):
+        value = "false"
+        if widget.get_active():
+            value = "true"
+        self.properties[self.hc_selected][1] = value
+        self.write_settings()
+
+    def on_visible_changed(self, widget):
+        value = "false"
+        if widget.get_active():
+            value = "true"
+        self.properties[self.hc_selected][2] = value
+        self.write_settings()
+
+    def on_func_combo_changed(self, widget):
+        value = widget.get_active()
+        if value == 2:
+            self.custom_command_entry.set_sensitive(True)
+            value = self.properties[self.hc_selected][0]
+            if value == "expo" or value == "scale":
+                value = ""
+            self.custom_command_entry.set_text(value)
+        else:
+            self.custom_command_entry.set_sensitive(False)
+            self.custom_command_entry.set_text("")
+            titer = widget.get_active_iter()
+            self.properties[self.hc_selected][0] = self.function_list[titer][0]
+            self.write_settings()
+
+    def on_search_entry_changed(self, widget):
+        if self.func_combo.get_active() == 2:
+            self.properties[self.hc_selected][0] = widget.get_text()
+            self.write_settings()
+
+    def write_settings(self):
+        oc_list = []
+        for prop in self.properties:
+            oc_list.append(":".join(prop))
+        self.settings.set_strv("overview-corner", oc_list)
+
 class GConfCheckButton(Gtk.CheckButton):    
     def __init__(self, label, key):        
         self.key = key
@@ -2657,23 +2818,40 @@ class MainWindow:
         sidePage.add_widget(GSettingsCheckButton(_("Show recent files"), "org.cinnamon", "menu-show-recent", None))
 
         sidePage = SidePage(_("Panel"), "panel.svg", self.content_box)
-        self.sidePages.append((sidePage, "panel"))                
-        sidePage.add_widget(GSettingsCheckButton(_("Auto-hide panel"), "org.cinnamon", "panel-autohide", None))
-
-        box = IndentedHBox()
-        box.add(GSettingsSpinButton(_("Show delay"), "org.cinnamon", "panel-show-delay", "org.cinnamon/panel-autohide", 0, 2000, 50, 200, _("milliseconds")))
-        sidePage.add_widget(box)
-
-        box = IndentedHBox()
-        box.add(GSettingsSpinButton(_("Hide delay"), "org.cinnamon", "panel-hide-delay", "org.cinnamon/panel-autohide", 0, 2000, 50, 200, _("milliseconds")))
-        sidePage.add_widget(box)
+        self.sidePages.append((sidePage, "panel"))
 
         desktop_layouts = [["traditional", _("Traditional (panel at the bottom)")], ["flipped", _("Flipped (panel at the top)")], ["classic", _("Classic (panels at the top and at the bottom)")]]        
         desktop_layouts_combo = GSettingsComboBox(_("Panel layout"), "org.cinnamon", "desktop-layout", None, desktop_layouts)
         sidePage.add_widget(desktop_layouts_combo) 
         label = Gtk.Label()
-        label.set_markup("<i><small>%s</small></i>" % _("Note: If you change the layout you will need to restart Cinnamon."))
+        label.set_markup("<i><small>%s</small></i>" % _("Note: If you change the layout you will need to restart Cinnamon and Cinnamon Settings."))
         sidePage.add_widget(label)
+
+        settings = Gio.Settings.new("org.cinnamon")
+        layout_type = settings.get_string("desktop-layout")
+        if layout_type != "classic":
+            sidePage.add_widget(GSettingsCheckButton(_("Auto-hide panel"), "org.cinnamon", "panel-autohide", None))
+            box = IndentedHBox()
+            box.add(GSettingsSpinButton(_("Show delay"), "org.cinnamon", "panel-show-delay", "org.cinnamon/panel-autohide", 0, 2000, 50, 200, _("milliseconds")))
+            sidePage.add_widget(box)
+            box = IndentedHBox()
+            box.add(GSettingsSpinButton(_("Hide delay"), "org.cinnamon", "panel-hide-delay", "org.cinnamon/panel-autohide", 0, 2000, 50, 200, _("milliseconds")))
+            sidePage.add_widget(box)
+        else:
+            sidePage.add_widget(GSettingsCheckButton(_("Auto-hide top panel"), "org.cinnamon", "panel-autohide", None))
+            box = IndentedHBox()
+            box.add(GSettingsSpinButton(_("Show delay"), "org.cinnamon", "panel-show-delay", "org.cinnamon/panel-autohide", 0, 2000, 50, 200, _("milliseconds")))
+            sidePage.add_widget(box)
+            box = IndentedHBox()
+            box.add(GSettingsSpinButton(_("Hide delay"), "org.cinnamon", "panel-hide-delay", "org.cinnamon/panel-autohide", 0, 2000, 50, 200, _("milliseconds")))
+            sidePage.add_widget(box)
+            sidePage.add_widget(GSettingsCheckButton(_("Auto-hide bottom panel"), "org.cinnamon", "panel2-autohide", None))
+            box = IndentedHBox()
+            box.add(GSettingsSpinButton(_("Show delay"), "org.cinnamon", "panel2-show-delay", "org.cinnamon/panel2-autohide", 0, 2000, 50, 200, _("milliseconds")))
+            sidePage.add_widget(box)
+            box = IndentedHBox()
+            box.add(GSettingsSpinButton(_("Hide delay"), "org.cinnamon", "panel2-hide-delay", "org.cinnamon/panel2-autohide", 0, 2000, 50, 200, _("milliseconds")))
+            sidePage.add_widget(box)
 
         sidePage.add_widget(GSettingsCheckButton(_("Use customized panel size (otherwise it's defined by the theme)"), "org.cinnamon", "panel-resizable", None))
 
@@ -2717,28 +2895,8 @@ class MainWindow:
         except Exception, detail:
             print detail
         
-        sidePage = SidePage(_("Hot corner"), "overview.svg", self.content_box)
+        sidePage = HotCornerViewSidePage(_("Hot corner"), "overview.svg", self.content_box)
         self.sidePages.append((sidePage, "hotcorner"))
-        sidePage.add_widget(GSettingsCheckButton(_("Hot corner icon visible"), "org.cinnamon", "overview-corner-visible", None))
-        sidePage.add_widget(GSettingsCheckButton(_("Hot corner enabled"), "org.cinnamon", "overview-corner-hover", None))
-        box = IndentedHBox()
-        label = Gtk.Label()
-        label.set_markup("%s" % _("Hot corner position:"))
-        box.add(label)
-        positions = [["topLeft", _("Top left")], ["topRight", _("Top right")], ["bottomLeft", _("Bottom left")], ["bottomRight", _("Bottom right")]]        
-        box.add(GSettingsComboBox("", "org.cinnamon", "overview-corner-position", "org.cinnamon/overview-corner-hover", positions))
-        sidePage.add_widget(box)
-        
-        box = IndentedHBox()
-        label = Gtk.Label()
-        label.set_markup("%s" % _("Hot corner function:"))
-        box.add(label)
-        cornerfunctions = [["expo", _("Workspace selection (ala Compiz Expo)")], ["scale", _("Window selection (ala Compiz Scale)")]]     
-        box.add(GSettingsComboBox("", "org.cinnamon", "overview-corner-functionality", "org.cinnamon/overview-corner-hover", cornerfunctions))
-        sidePage.add_widget(box)
-        
-        sidePage.add_widget(GSettingsCheckButton(_("Expo applet: activate on hover"), "org.cinnamon", "expo-applet-hover", None))
-        sidePage.add_widget(GSettingsCheckButton(_("Scale applet: activate on hover"), "org.cinnamon", "scale-applet-hover", None))
 
         sidePage = ThemeViewSidePage(_("Themes"), "themes.svg", self.content_box)
         self.sidePages.append((sidePage, "themes"))
@@ -2904,6 +3062,7 @@ class MainWindow:
         box.add(GSettingsSpinButton(_("Workspace OSD vertical position"), "org.cinnamon", "workspace-osd-y", "org.cinnamon/workspace-osd-visible", 0, 100, 5, 50, _("percent of the monitor's height")))
         sidePage.add_widget(box)
 
+        sidePage.add_widget(GSettingsCheckButton(_("Allow cycling through workspaces"), "org.cinnamon.overrides", "workspace-cycle", None))
         sidePage.add_widget(GSettingsCheckButton(_("Only use workspaces on primary monitor (requires Cinnamon restart)"), "org.cinnamon.overrides", "workspaces-only-on-primary", None))
         sidePage.add_widget(GSettingsCheckButton(_("Display Expo view as a grid"), "org.cinnamon", "workspace-expo-view-as-grid", None))
         
