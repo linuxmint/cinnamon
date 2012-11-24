@@ -1125,6 +1125,13 @@ PopupMenuBase.prototype = {
             this.open(true);
     },
 
+    toggleNoAnimate: function() {
+        if (this.isOpen)
+            this.close(false);
+        else
+            this.open(false);
+    },
+
     destroy: function() {
         this.removeAll();
         this.actor.destroy();
