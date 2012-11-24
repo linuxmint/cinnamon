@@ -235,13 +235,7 @@ ApplicationButton.prototype = {
         this.actor.set_style_class_name('menu-application-button');
         let icon_path = this.app.get_icon_path();
 
-        if (GLib.file_test (icon_path, GLib.FileTest.EXISTS)) {
-            let file = Gio.file_new_for_path(icon_path);
-            let icon_uri = file.get_uri();
-            this.icon = new St.TextureCache.get_default().load_uri_async(icon_uri, APPLICATION_ICON_SIZE, APPLICATION_ICON_SIZE);
-        } else {
-            this.icon = new St.Icon({icon_name: icon_path, icon_size: APPLICATION_ICON_SIZE, icon_type: St.IconType.FULLCOLOR, reactive: true, track_hover: true, style_class: 'applet-icon' });
-        }
+        this.icon = this.app.get_preloaded_icon(APPLICATION_ICON_SIZE);
 
         this.addActor(this.icon);
         this.name = this.app.get_name();

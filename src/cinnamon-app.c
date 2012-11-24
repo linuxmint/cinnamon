@@ -154,12 +154,44 @@ window_backed_app_get_icon (CinnamonApp *app,
   return actor;
 }
 
-gchar *
-cinnamon_app_get_icon_path (CinnamonApp *app)
+/**
+ * cinnamon_app_get_preloaded_icon:
+ *
+ * Look up the icon for this application, and create a #ClutterTexture
+ * for it at the given size.  This method does not seem to put off
+ * actual loading of textures, and seems more suited for applets
+ * that load a large number of icons (menu applet for instance)
+ *
+ * Return value: (transfer none): A floating #ClutterActor
+ */
+
+ClutterActor *
+cinnamon_app_get_preloaded_icon (CinnamonApp *app, int size)
 {
     GIcon *icon;
+    gchar *icon_path, *uri;
+    GFile *file;
+
     icon = g_app_info_get_icon (G_APP_INFO (gmenu_tree_entry_get_app_info (app->entry)));
-    return g_icon_to_string (icon);
+    icon_path = g_icon_to_string (icon);
+
+    if (g_file_test (icon_path, G_FILE_TEST_EXISTS)) {
+        file = g_file_new_for_path (icon_path);
+        g_free (icon_path);
+        uri = g_file_get_uri (file);
+        g_object_unref (file);
+
+        return st_texture_cache_load_uri_async (st_texture_cache_get_default (), uri, size, size);
+
+    } else {
+        ClutterActor *icon;
+        icon = st_icon_new ();
+        st_icon_set_icon_name (icon, icon_path);
+        st_icon_set_icon_type (icon, ST_ICON_FULLCOLOR);
+        st_icon_set_icon_size (icon, size);
+
+        return icon;
+    }
 }
 
 /**
