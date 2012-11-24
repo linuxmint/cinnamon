@@ -1063,14 +1063,16 @@ AppIcon.prototype = {
 
     set_size: function(size) {
         if (this.showThumbnail){
-            let windowTexture = this.window.get_compositor_private().get_texture();
-            let [width, height] = windowTexture.get_size();
-            let scale = Math.min(size/Math.max(width, height), 1);
-            this.icon = new Clutter.Clone({source: windowTexture,
-                                           width: width * scale,
-                                           height: height * scale});
+            this.icon = new St.Group();
+            let clones = Main.wm.createWindowClone(this.window, size, true);
+            for (i in clones) {
+                let clone = clones[i];
+                this.icon.add_actor(clone);
+                let [width, height] = clone.get_size();
+                clone.set_position(Math.round((size - width) / 2), Math.round((size - height) / 2));
+            }
         } else {
-            this.icon = this.app ? 
+            this.icon = this.app ?
                 this.app.create_icon_texture(size) :
                 new St.Icon({ icon_name: 'application-default-icon',
                               icon_type: St.IconType.FULLCOLOR,
