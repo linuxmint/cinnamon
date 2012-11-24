@@ -19,7 +19,6 @@ const Tweener = imports.ui.tweener;
 const DND = imports.ui.dnd;
 const Meta = imports.gi.Meta;
 const DocInfo = imports.misc.docInfo;
-const GLib = imports.gi.GLib;
 const ICON_SIZE = 16;
 const MAX_FAV_ICON_SIZE = 32;
 const CATEGORY_ICON_SIZE = 22;
@@ -233,7 +232,6 @@ ApplicationButton.prototype = {
         GenericApplicationButton.prototype._init.call(this, appsMenuButton, app, true);
         this.category = new Array();
         this.actor.set_style_class_name('menu-application-button');
-        let icon_path = this.app.get_icon_path();
 
         this.icon = this.app.get_preloaded_icon(APPLICATION_ICON_SIZE);
 
