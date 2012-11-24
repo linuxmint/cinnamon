@@ -931,5 +931,46 @@ WindowManager.prototype = {
 
     actionMoveWorkspaceDown: function() {
         global.screen.get_active_workspace().get_neighbor(Meta.MotionDirection.DOWN).activate(global.get_current_time());
+    },
+    
+    // Creates scaled clones of metaWindow and its transients,
+    // keeping their relative size to each other.
+    // When scaled, the clone with the biggest width and the one with 
+    // the biggest height are made to fit into size
+    // if size is not given, windows are not scaled
+    createWindowClone: function (metaWindow, size, withTransients) {
+        let clones = [];
+        let textures = [];
+        
+        let metaWindowActor = metaWindow.get_compositor_private();
+        let texture = metaWindowActor.get_texture();
+        let [width, height] = texture.get_size();
+        let [maxWidth, maxHeight] = [width, height];
+        textures.push({t: texture, w: width, h: height});
+        if (withTransients) {
+            metaWindow.foreach_transient(function(win) {
+                let metaWindowActor = win.get_compositor_private();
+                texture = metaWindowActor.get_texture();
+                [width, height] = texture.get_size();
+                maxWidth = Math.max(maxWidth, width);
+                maxHeight = Math.max(maxHeight, height);
+                textures.push({t: texture, w: width, h: height});
+            });
+        }
+        let scale = 1;
+        if (size) {
+            scale = Math.min(size/Math.max(maxWidth, maxHeight), 1);
+        }
+        for (i in textures) {
+            let [texture, width, height] = [textures[i].t, textures[i].w, textures[i].h];
+            let params = {};
+            params.source = texture;
+            if (scale != 1) {
+                params.width = Math.round(width * scale);
+                params.height = Math.round(height * scale);
+            }
+            clones.push(new Clutter.Clone(params));
+        }
+        return clones;
     }
 };
