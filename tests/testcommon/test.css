@@ -37,6 +37,18 @@ stage {
     border-image: url('border-image.png') 16;
 }
 
+.background-image-200-200 {
+    background-image: url('200-200.svg');
+}
+
+.background-image-100-200 {
+    background-image: url('100-200.svg');
+}
+
+.background-image-200-100 {
+    background-image: url('200-100.svg');
+}
+
 .background-gradient {
     background-gradient-start: rgba(127, 255, 127, .6);
     background-gradient-end: rgba(127, 127, 255, .6);
@@ -52,6 +64,10 @@ stage {
 .background-image {
     background-image: url('face-plain.png');
     background-color: white;
+}
+
+.background-repeat {
+    background-repeat: repeat;
 }
 
 .push-button {

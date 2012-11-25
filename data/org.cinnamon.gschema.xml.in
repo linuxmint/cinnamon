@@ -80,6 +80,7 @@
     
     <key name="panel-top-height" type="i">
       <default>25</default>
+      <range min="10" />
       <_summary>Panel size</_summary>
       <_description>
         User-defined panel-height for top panel
@@ -88,6 +89,7 @@
     
     <key name="panel-bottom-height" type="i">
       <default>25</default>
+      <range min="10" />
       <_summary>Panel size</_summary>
       <_description>
         User-defined panel-height for bottom panel
@@ -316,11 +318,36 @@
       </_description>
     </key>
 
+    <key type="b" name="menu-enable-autoscroll">
+      <default>false</default>
+      <_summary>Enable or disable autoscrolling in application list</_summary>
+      <_description>
+            Toggles the auto-scrolling regions at the top and bottom of the app list
+      </_description>
+    </key>
+
     <key type="i" name="number-workspaces">
 	<default>2</default>
 	<_summary>Number of workspaces in Cinnamon session</_summary>
 	<_description>
 		Number of Workspaces</_description>
+    </key>
+
+    
+    <key name="overview-corner-visible" type="b">
+      <default>false</default>
+    </key>
+    
+    <key name="overview-corner-hover" type="b">
+      <default>true</default>
+    </key>
+    
+    <key name="overview-corner-position" type="s">
+      <default>"topLeft"</default>
+    </key>
+    
+    <key name="overview-corner-functionality" type="s">
+      <default>"expo"</default>
     </key>
 
     <key name="overview-corner" type="as">
@@ -487,6 +514,14 @@
       <summary>Brings windows requiring attention to the current workspace</summary>
       <description>
         When enabled, if a window requires attention, it is brought to the current workspace.
+      </description>
+    </key>
+
+    <key name="window-list-applet-alert" type="b">
+      <default>false</default>
+      <summary>Enable window-list alerts</summary>
+      <description>
+        When enabled items in the window-list applet will change style and pulse their icon when they want attention.
       </description>
     </key>
 

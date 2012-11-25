@@ -104,13 +104,15 @@ ModalDialog.prototype = {
 
         this._buttonLayout.destroy_children();
         this._actionKeys = {};
+        let focusSetExplicitly = false;
 
         for (let i = 0; i < buttons.length; i ++) {
             let buttonInfo = buttons[i];
             let label = buttonInfo['label'];
             let action = buttonInfo['action'];
             let key = buttonInfo['key'];
-
+            let wantsfocus = buttonInfo['focused'] === true;
+            let nofocus = buttonInfo['focused'] === false;
             buttonInfo.button = new St.Button({ style_class: 'modal-dialog-button',
                                                 reactive:    true,
                                                 can_focus:   true,
@@ -126,9 +128,16 @@ ModalDialog.prototype = {
             else
                 x_alignment = St.Align.MIDDLE;
 
-            if (this._initialKeyFocus == this._dialogLayout ||
-                this._buttonLayout.contains(this._initialKeyFocus))
+            if (wantsfocus) {
                 this._initialKeyFocus = buttonInfo.button;
+                focusSetExplicitly = true;
+            }
+
+            if (!focusSetExplicitly && !nofocus && (this._initialKeyFocus == this._dialogLayout ||
+                this._buttonLayout.contains(this._initialKeyFocus)))
+            {
+                this._initialKeyFocus = buttonInfo.button;
+            }
             this._buttonLayout.add(buttonInfo.button,
                                    { expand: true,
                                      x_fill: false,

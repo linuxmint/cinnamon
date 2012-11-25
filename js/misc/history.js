@@ -15,7 +15,8 @@ HistoryManager.prototype = {
     _init: function(params) {
         params = Params.parse(params, { gsettingsKey: null,
                                         limit: DEFAULT_LIMIT,
-                                        entry: null });
+                                        entry: null,
+                                        deduplicate: false });
 
         this._key = params.gsettingsKey;
         this._limit = params.limit;
@@ -36,6 +37,8 @@ HistoryManager.prototype = {
             this._entry.connect('key-press-event', 
                                 Lang.bind(this, this._onEntryKeyPress));
         }
+
+        this._deduplicate = params.deduplicate;
     },
 
     _historyChanged: function() {
@@ -75,6 +78,12 @@ HistoryManager.prototype = {
     addItem: function(input) {
         if (this._history.length == 0 ||
             this._history[this._history.length - 1] != input) {
+
+            if (this._deduplicate) {
+                this._history = this._history.filter(function(x) {
+                    return x != input;
+                });
+            }
 
             this._history.push(input);
             this._save();

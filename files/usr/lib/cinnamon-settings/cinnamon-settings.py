@@ -2098,6 +2098,8 @@ class NtpCheckButton(Gtk.CheckButton):
 class GSettingsSpinButton(Gtk.HBox):    
     def __init__(self, label, schema, key, dep_key, min, max, step, page, units):
         self.key = key
+        self.min = min
+        self.max = max
         self.dep_key = dep_key
         super(GSettingsSpinButton, self).__init__()        
         self.label = Gtk.Label(label)       
@@ -2109,10 +2111,20 @@ class GSettingsSpinButton(Gtk.HBox):
         if (units != ""):
             self.pack_start(self.units, False, False, 2)              
         
-        self.content_widget.set_range(min, max)
-        self.content_widget.set_increments(step, page)
         #self.content_widget.set_editable(False)
-        self.settings = Gio.Settings.new(schema)        
+        self.settings = Gio.Settings.new(schema)
+        range = self.settings.get_range(self.key)
+        if range[0] == "range":
+            rangeDefault = (1 << 32) - 1
+            rangeMin = rangeDefault
+            rangeMax = rangeDefault
+            range = range[1]
+            rangeMin = range[0] if range[0] < rangeDefault else rangeDefault
+            rangeMax = range[1] if range[1] < rangeDefault else rangeDefault
+            self.min = min if min > rangeMin else rangeMin
+            self.max = max if max < rangeMax else rangeMax
+        self.content_widget.set_range(self.min, self.max)
+        self.content_widget.set_increments(step, page)        
         self.content_widget.set_value(self.settings.get_int(self.key))
         self.settings.connect("changed::"+self.key, self.on_my_setting_changed)
         self.content_widget.connect('focus-out-event', self.on_my_value_changed)
@@ -2704,12 +2716,13 @@ class TitleBarButtonsOrderSelector(Gtk.Table):
         
         self.left_side_widgets = []
         self.right_side_widgets = []
-        for i in range(3):
+        for i in range(4):
             self.left_side_widgets.append(Gtk.ComboBox())
             self.right_side_widgets.append(Gtk.ComboBox())
         
         buttons = [
             ("", ""),
+            ("menu", _("Menu")),
             ("close", _("Close")),
             ("minimize", _("Minimize")),
             ("maximize", _("Maximize"))
@@ -2816,6 +2829,7 @@ class MainWindow:
         sidePage.add_widget(GSettingsCheckButton(_("Activate menu on hover"), "org.cinnamon", "activate-menu-applet-on-hover", None))
         sidePage.add_widget(GSettingsCheckButton(_("Show bookmarks and places"), "org.cinnamon", "menu-show-places", None))
         sidePage.add_widget(GSettingsCheckButton(_("Show recent files"), "org.cinnamon", "menu-show-recent", None))
+        sidePage.add_widget(GSettingsCheckButton(_("Enable auto-scrolling in application list"), "org.cinnamon", "menu-enable-autoscroll", None))
 
         sidePage = SidePage(_("Panel"), "panel.svg", self.content_box)
         self.sidePages.append((sidePage, "panel"))
@@ -3035,6 +3049,9 @@ class MainWindow:
         sidePage.add_widget(GSettingsComboBox(_("Window focus mode"),
                                             "org.gnome.desktop.wm.preferences", "focus-mode", None,
                                             [(i, i.title()) for i in ("click","sloppy","mouse")]))
+        sidePage.add_widget(GSettingsComboBox(_("Modifier to use for modified window click actions"),
+                                            "org.gnome.desktop.wm.preferences", "mouse-button-modifier", None,
+                                            [(i, i.title()) for i in ("","<Alt>","<Super>","<Control>")]))
 
         sidePage.add_widget(TitleBarButtonsOrderSelector())        
         sidePage.add_widget(GSettingsCheckButton(_("Enable Edge Tiling (\"Aero Snap\")"), "org.cinnamon.overrides", "edge-tiling", None))
@@ -3045,6 +3062,8 @@ class MainWindow:
         sidePage.add_widget(alttab_styles_combo)
         sidePage.add_widget(GSettingsCheckButton(_("Enable mouse-wheel scrolling in Window List applet"), "org.cinnamon", "window-list-applet-scroll", None))
         sidePage.add_widget(GSettingsCheckButton(_("Bring windows which require attention to the current workspace (instead of switching to the window's workspace)"), "org.cinnamon", "bring-windows-to-current-workspace", None))
+
+        sidePage.add_widget(GSettingsCheckButton(_("Enable highlighting and pulsing icon for items in Window List applet that want attention"), "org.cinnamon", "window-list-applet-alert", None))
         
         sidePage = SidePage(_("Workspaces"), "workspaces.svg", self.content_box)
         self.sidePages.append((sidePage, "workspaces"))        
