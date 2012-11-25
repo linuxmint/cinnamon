@@ -73,7 +73,7 @@ def makeLauncher():
     if iconPath == "":
         iconPath = "application-x-executable"
     desktopEntry += "Icon=" + iconPath + "\n"    
-    print desktopEntry
+    print(desktopEntry)
     file.write(desktopEntry)
     file.close()
     newDesktopName = 'cinnamon-custom-launcher-' + str(i) + '.desktop'
