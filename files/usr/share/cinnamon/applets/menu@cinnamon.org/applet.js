@@ -736,7 +736,9 @@ MyApplet.prototype = {
                     this.hover_delay = global.settings.get_int("menu-hover-delay") / 1000;
             })); 
                 
-            global.display.connect('overlay-key', Lang.bind(this, this.menu.toggleNoAnimate));
+            global.display.connect('overlay-key', Lang.bind(this, function() {
+                this.menu.toggleNoAnimate();
+            }));
             Main.placesManager.connect('places-updated', Lang.bind(this, this._refreshApps));
             this.RecentManager.connect('changed', Lang.bind(this, this._refreshApps));
 
