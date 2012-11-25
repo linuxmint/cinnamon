@@ -236,13 +236,14 @@ HotCorner.prototype = {
 
     runAction: function(){
         this._activationTime = Date.now() / 1000;
+
         switch (this.action){
         case 'expo':
-            if (!Main.expo.animationInProgress && !Main.overview.visible)
+            if (!Main.expo.animationInProgress)
                 Main.expo.toggle();
             break;
         case 'scale':
-            if (!Main.overview.animationInProgress && !Main.expo.visible)
+            if (!Main.overview.animationInProgress)
                 Main.overview.toggle();
             break;
         default:
@@ -253,8 +254,17 @@ HotCorner.prototype = {
     _onCornerEntered : function() {
         if (!this._entered) {
             this._entered = true;
-            this.rippleAnimation();
-            this.runAction();
+            let run = false;
+            if (!(Main.expo.visible || Main.overview.visible)){
+                run = true;
+            }
+            if ((Main.expo.visible && this.action=='expo') || (Main.overview.visible && this.action=='scale')){
+                run = true;
+            }
+            if (run){
+                this.rippleAnimation();
+                this.runAction();
+            }
         }
         return false;
     },
