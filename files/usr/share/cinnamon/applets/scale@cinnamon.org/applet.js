@@ -13,19 +13,14 @@ MyApplet.prototype = {
     _init: function(metadata, orientation, panel_height) {
         Applet.IconApplet.prototype._init.call(this, orientation, panel_height);
 
-        try {            
-            Gtk.IconTheme.get_default().append_search_path(metadata.path);
-            this.set_applet_icon_symbolic_name("cinnamon-scale");
-            this.set_applet_tooltip(_("Scale"));            
-            this._hover_activates = false;            
-            global.settings.connect('changed::panel-edit-mode', Lang.bind(this, this.on_panel_edit_mode_changed));
-            global.settings.connect('changed::scale-applet-hover', Lang.bind(this, this._reload_settings));
-            this.actor.connect('enter-event', Lang.bind(this, this._onEntered));
-            this._reload_settings();
-        }
-        catch (e) {
-            global.logError(e);
-        }
+        Gtk.IconTheme.get_default().append_search_path(metadata.path);
+        this.set_applet_icon_symbolic_name("cinnamon-scale");
+        this.set_applet_tooltip(_("Scale"));
+        this._hover_activates = false;
+        global.settings.connect('changed::panel-edit-mode', Lang.bind(this, this.on_panel_edit_mode_changed));
+        global.settings.connect('changed::scale-applet-hover', Lang.bind(this, this._reload_settings));
+        this.actor.connect('enter-event', Lang.bind(this, this._onEntered));
+        this._reload_settings();
     },
 
     on_panel_edit_mode_changed: function () {

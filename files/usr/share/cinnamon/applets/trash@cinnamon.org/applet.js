@@ -13,28 +13,23 @@ function MyApplet(orientation, panel_height) {
 MyApplet.prototype = {
     __proto__: Applet.IconApplet.prototype,
 
-    _init: function(orientation, panel_height) {        
+    _init: function(orientation, panel_height) {
         Applet.IconApplet.prototype._init.call(this, orientation, panel_height);
-        
-        try {        
-            this.set_applet_icon_symbolic_name("user-trash");
-            this.set_applet_tooltip(_("Trash"));
-                   
-            this.trash_path = 'trash:///';
-            this.trash_directory =  Gio.file_new_for_uri(this.trash_path);
-            
-            this._initContextMenu();
 
-            this._onTrashChange();
-            
-            this.monitor = this.trash_directory.monitor_directory(0, null, null);
-            this.monitor.connect('changed', Lang.bind(this, this._onTrashChange));
-        }
-        catch (e) {
-            global.logError(e);
-        }
+        this.set_applet_icon_symbolic_name("user-trash");
+        this.set_applet_tooltip(_("Trash"));
+
+        this.trash_path = 'trash:///';
+        this.trash_directory =  Gio.file_new_for_uri(this.trash_path);
+
+        this._initContextMenu();
+
+        this._onTrashChange();
+
+        this.monitor = this.trash_directory.monitor_directory(0, null, null);
+        this.monitor.connect('changed', Lang.bind(this, this._onTrashChange));
     },
-    
+
     _initContextMenu: function () {
         this.empty_item = new Applet.MenuItem(_("Empty Trash"), Gtk.STOCK_REMOVE, Lang.bind(this, this._emptyTrash));
         this._applet_context_menu.addMenuItem(this.empty_item);
@@ -42,7 +37,7 @@ MyApplet.prototype = {
         this.open_item = new Applet.MenuItem(_("Open Trash"), Gtk.STOCK_OPEN, Lang.bind(this, this._openTrash));
         this._applet_context_menu.addMenuItem(this.open_item);
     },
-    
+
     on_applet_clicked: function(event) {
         this._openTrash();
     },
@@ -50,15 +45,15 @@ MyApplet.prototype = {
     _openTrash: function() {
         Gio.app_info_launch_default_for_uri(this.trash_directory.get_uri(), null);
     },
-   
+
     _onTrashChange: function() {
       if (this.trash_directory.query_exists(null)) {
-          let children = this.trash_directory.enumerate_children('standard::*', Gio.FileQueryInfoFlags.NONE, null);          
+          let children = this.trash_directory.enumerate_children('standard::*', Gio.FileQueryInfoFlags.NONE, null);
           if (children.next_file(null, null) == null) {
-              this.set_applet_icon_symbolic_name("user-trash");        
+              this.set_applet_icon_symbolic_name("user-trash");
           } else {
               //this.set_applet_icon_name("user-trash-full");
-              this.set_applet_icon_symbolic_name("user-trash");        
+              this.set_applet_icon_symbolic_name("user-trash");
           }
       }
     },
@@ -75,9 +70,9 @@ MyApplet.prototype = {
                 let child = this.trash_directory.get_child(child_info.get_name());
                 child.delete(null);
               }
-        }      
+        }
     },
-    
+
     on_orientation_changed: function (orientation) {
         this._initContextMenu();
     }
@@ -90,49 +85,49 @@ function ConfirmEmptyTrashDialog(emptyMethod) {
 }
 
 ConfirmEmptyTrashDialog.prototype = {
-  __proto__: ModalDialog.ModalDialog.prototype,
+    __proto__: ModalDialog.ModalDialog.prototype,
 
-  _init: function(emptyMethod) {
-    ModalDialog.ModalDialog.prototype._init.call(this, { styleClass: null });
+    _init: function(emptyMethod) {
+        ModalDialog.ModalDialog.prototype._init.call(this, { styleClass: null });
 
-    let mainContentBox = new St.BoxLayout({ style_class: 'polkit-dialog-main-layout',
-                                            vertical: false });
-    this.contentLayout.add(mainContentBox, { x_fill: true, y_fill: true });
+        let mainContentBox = new St.BoxLayout({ style_class: 'polkit-dialog-main-layout',
+                                                vertical: false });
+        this.contentLayout.add(mainContentBox, { x_fill: true, y_fill: true });
 
-    let messageBox = new St.BoxLayout({ style_class: 'polkit-dialog-message-layout',
-                                        vertical: true });
-    mainContentBox.add(messageBox, { y_align: St.Align.START });
+        let messageBox = new St.BoxLayout({ style_class: 'polkit-dialog-message-layout',
+                                            vertical: true });
+        mainContentBox.add(messageBox, { y_align: St.Align.START });
 
-    this._subjectLabel = new St.Label({ style_class: 'polkit-dialog-headline',
-                                        text: _("Empty Trash?") });
+        this._subjectLabel = new St.Label({ style_class: 'polkit-dialog-headline',
+                                            text: _("Empty Trash?") });
 
-    messageBox.add(this._subjectLabel, { y_fill:  false, y_align: St.Align.START });
+        messageBox.add(this._subjectLabel, { y_fill:  false, y_align: St.Align.START });
 
-    this._descriptionLabel = new St.Label({ style_class: 'polkit-dialog-description',
-                                            text: MESSAGE });
+        this._descriptionLabel = new St.Label({ style_class: 'polkit-dialog-description',
+                                                text: MESSAGE });
 
-    messageBox.add(this._descriptionLabel, { y_fill:  true, y_align: St.Align.START });
+        messageBox.add(this._descriptionLabel, { y_fill:  true, y_align: St.Align.START });
 
-    this.setButtons([
-      {
-        label: _("Cancel"),
-        action: Lang.bind(this, function() {
-          this.close();
-        }),
-        key: Clutter.Escape
-      },
-      {
-        label: _("Empty"),
-        action: Lang.bind(this, function() {
-          this.close();
-          emptyMethod();
-        })
-      }
-    ]);
-  }
+        this.setButtons([
+                            {
+                                label: _("Cancel"),
+                                action: Lang.bind(this, function() {
+                                                      this.close();
+                                                  }),
+                                key: Clutter.Escape
+                            },
+                            {
+                                label: _("Empty"),
+                                action: Lang.bind(this, function() {
+                                                      this.close();
+                                                      emptyMethod();
+                                                  })
+                            }
+                        ]);
+    }
 };
 
-function main(metadata, orientation, panel_height) {      
+function main(metadata, orientation, panel_height) {
     let myApplet = new MyApplet(orientation, panel_height);
-    return myApplet;      
+    return myApplet;
 }

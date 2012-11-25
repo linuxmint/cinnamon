@@ -8,6 +8,7 @@ const Mainloop = imports.mainloop;
 const Meta = imports.gi.Meta;
 const Cinnamon = imports.gi.Cinnamon;
 const St = imports.gi.St;
+const PointerTracker = imports.misc.pointerTracker;
 
 const AutomountManager = imports.ui.automountManager;
 const AutorunManager = imports.ui.autorunManager;
@@ -219,9 +220,7 @@ function start() {
         applet_side = St.Side.TOP;        
     }
     
-    _defaultCssStylesheet = global.datadir + '/theme/cinnamon.css';
-    loadTheme();
-    
+    _defaultCssStylesheet = global.datadir + '/theme/cinnamon.css';    
     themeManager = new ThemeManager.ThemeManager();
 
     // Set up stage hierarchy to group all UI actors under one container.
@@ -239,6 +238,9 @@ function start() {
     global.top_window_group.reparent(global.stage);
 
     layoutManager = new Layout.LayoutManager();
+    let pointerTracker = new PointerTracker.PointerTracker();
+    pointerTracker.setPosition(layoutManager.primaryMonitor.width/2, layoutManager.primaryMonitor.height/2);
+
     xdndHandler = new XdndHandler.XdndHandler();
     // This overview object is just a stub for non-user sessions
     overview = new Overview.Overview();

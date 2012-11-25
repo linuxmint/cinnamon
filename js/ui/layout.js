@@ -658,7 +658,7 @@ Chrome.prototype = {
         this._queueUpdateRegions();
     },
 
-    _findMonitorForRect: function(x, y, w, h) {
+    _findMonitorIndexForRect: function(x, y, w, h) {
         // First look at what monitor the center of the rectangle is at
         let cx = x + w/2;
         let cy = y + h/2;
@@ -666,17 +666,22 @@ Chrome.prototype = {
             let monitor = this._monitors[i];
             if (cx >= monitor.x && cx < monitor.x + monitor.width &&
                 cy >= monitor.y && cy < monitor.y + monitor.height)
-                return monitor;
+                return i;
         }
         // If the center is not on a monitor, return the first overlapping monitor
         for (let i = 0; i < this._monitors.length; i++) {
             let monitor = this._monitors[i];
             if (x + w > monitor.x && x < monitor.x + monitor.width &&
                 y + h > monitor.y && y < monitor.y + monitor.height)
-                return monitor;
+                return i;
         }
         // otherwise on no monitor
-        return null;
+        return -1;
+    },
+
+    _findMonitorForRect: function(x, y, w, h) {
+        let index = this._findMonitorIndexForRect(x, y, w, y);
+        return index >= 0 ? this._monitors[index] : null;
     },
 
     _findMonitorForWindow: function(window) {

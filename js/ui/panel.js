@@ -27,6 +27,8 @@ const TIME_DELTA = 1500;
 
 const APPLETS_DROP_ANIMATION_TIME = 0.2;
 
+var PANEL_EDGE_STRIP_HEIGHT = 1;
+
 // To make sure the panel corners blend nicely with the panel,
 // we draw background and borders the same way, e.g. drawing
 // them as filled shapes from the outside inwards instead of
@@ -730,7 +732,7 @@ Panel.prototype = {
             try {
             let [x, y] = event.get_coords();
             let target = global.stage.get_actor_at_pos(Clutter.PickMode.ALL, x, y);
-            if (this._context_menu._getMenuItems().length > 0 && target.get_parent() == this.actor) { 
+            if (this._context_menu._getMenuItems().length > 0 && (target.get_parent() == this.actor || target == this.actor)) { 
                 this._context_menu.toggle();
                 if (!this._context_menu.isOpen) {
                     return;
@@ -851,7 +853,14 @@ Panel.prototype = {
 
     _allocate: function(actor, box, flags) {
         let allocWidth = box.x2 - box.x1;
-        let allocHeight = box.y2 - box.y1;
+        let allocHeightFull = box.y2 - box.y1;
+        let edgeStripHeight = allocHeightFull > 2 ? Math.max(0, PANEL_EDGE_STRIP_HEIGHT) : 0;            
+        let allocHeight = allocHeightFull - edgeStripHeight;
+        if (allocHeight < 2) {
+            edgeStripHeight = 0;
+            allocHeight = allocHeightFull;
+        }
+
 
         let [leftMinWidth, leftNaturalWidth] = this._leftBox.get_preferred_width(-1);
         let [centerMinWidth, centerNaturalWidth] = this._centerBox.get_preferred_width(-1);
@@ -890,7 +899,8 @@ Panel.prototype = {
 
         let childBox = new Clutter.ActorBox();
 
-        childBox.y1 = 0;
+        let childBoxY1 = this.bottomPosition ? 0 : edgeStripHeight;
+        childBox.y1 = childBoxY1;
         childBox.y2 = allocHeight;
         if (this.actor.get_direction() == St.TextDirection.RTL) {
             childBox.x1 = leftBoundary;
@@ -901,7 +911,7 @@ Panel.prototype = {
         }
         this._leftBox.allocate(childBox, flags);
 
-        childBox.y1 = 0;
+        childBox.y1 = childBoxY1;
         childBox.y2 = allocHeight;
         if (this.actor.get_direction() == St.TextDirection.RTL) {
             childBox.x1 = rightBoundary;
@@ -912,7 +922,7 @@ Panel.prototype = {
         }
         this._centerBox.allocate(childBox, flags);
 
-        childBox.y1 = 0;
+        childBox.y1 = childBoxY1;
         childBox.y2 = allocHeight;
         if (this.actor.get_direction() == St.TextDirection.RTL) {
             childBox.x1 = 0;

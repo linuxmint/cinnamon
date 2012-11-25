@@ -47,6 +47,10 @@ let eventHandlerActor = null;
 let currentDraggable = null;
 let dragMonitors = [];
 
+function isDragging() {
+    return currentDraggable != null;
+}
+
 function _getEventHandlerActor() {
     if (!eventHandlerActor) {
         eventHandlerActor = new Clutter.Rectangle();
@@ -173,13 +177,19 @@ _Draggable.prototype = {
 
     _grabEvents: function() {
         if (!this._eventsGrabbed) {
-            Clutter.grab_pointer(_getEventHandlerActor());
+            let eha = _getEventHandlerActor();
+            Clutter.grab_pointer(eha);
+            this.previousKeyFocusActor = global.stage.get_key_focus();
+            eha.grab_key_focus();
             this._eventsGrabbed = true;
         }
     },
 
     _ungrabEvents: function() {
         if (this._eventsGrabbed) {
+            if (this.previousKeyFocusActor) {
+                this.previousKeyFocusActor.grab_key_focus();
+            }
             Clutter.ungrab_pointer();
             this._eventsGrabbed = false;
         }
@@ -228,6 +238,11 @@ _Draggable.prototype = {
                 this._firstLeaveActor = event.get_source();
         } else if (event.type() == Clutter.EventType.ENTER) {
             this._lastEnterActor = event.get_source();
+        } else if (event.type() == Clutter.EventType.KEY_PRESS) {
+            if (event.get_key_symbol() === Clutter.Escape) {
+                this._cancelDrag(event.get_time());
+            }
+            return true; // swallow all keyboard input during drag
         }
 
         return false;
@@ -322,7 +337,10 @@ _Draggable.prototype = {
                                  scaledHeight / this.actor.height);
         }
 
-        this._dragActor.reparent(Main.uiGroup);
+        let parent = this._dragActor.get_parent();
+        if (parent) {parent.remove_actor(this._dragActor);}
+        Main.uiGroup.add_actor(this._dragActor);
+
         this._dragActor.raise_top();
         Cinnamon.util_set_hidden_from_pick(this._dragActor, true);
 
@@ -404,7 +422,7 @@ _Draggable.prototype = {
             this._dragActor.set_position(stageX + this._dragOffsetX,
                                          stageY + this._dragOffsetY);
 
-            let target = this._dragActor.get_stage().get_actor_at_pos(Clutter.PickMode.ALL,
+            let target = this._dragActor.get_stage().get_actor_at_pos(Clutter.PickMode.REACTIVE,
                                                                       stageX, stageY);
 
             // We call observers only once per motion with the innermost
@@ -597,7 +615,8 @@ _Draggable.prototype = {
 
     _onAnimationComplete : function (dragActor, eventTime) {
         if (this._dragOrigParent) {
-            dragActor.reparent(this._dragOrigParent);
+            dragActor.get_parent().remove_actor(dragActor);
+            this._dragOrigParent.add_actor(dragActor);
             dragActor.set_scale(this._dragOrigScale, this._dragOrigScale);
             dragActor.set_position(this._dragOrigX, this._dragOrigY);
         } else {
