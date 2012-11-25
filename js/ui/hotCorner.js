@@ -26,11 +26,13 @@ HotCornerManager.prototype = {
         this.corners = [];
         for (let i = 0; i < 4; i++){ // In order: top left; top right; bottom left; bottom right;
             this.corners.push(new HotCorner());
+            Main.layoutManager.addChrome(this.corners[i].actor);
+            Main.layoutManager.addChrome(this.corners[i].iconActor, {visibleInFullscreen: false});
         }
         this.parseGSettings();
         global.settings.connect('changed::' + OVERVIEW_CORNERS_KEY, Lang.bind(this, this.parseGSettings));
 
-        // LayoutManager calls HotCornerManager.updatePosition after monitor properties are updated. Need not call it here.
+        this.updatePosition(Main.layoutManager.primaryMonitor, Main.layoutManager.bottomMonitor);
     },
 
     parseGSettings: function() {
@@ -69,22 +71,6 @@ HotCornerManager.prototype = {
         this.corners[3].actor.set_position(b_x + bottomMonitor.width - 1, b_y - 1);
         this.corners[3].iconActor.set_position(b_x + bottomMonitor.width - 33, b_y - 33);
         return true;
-    },
-
-    getCornerActors: function() {
-        let actors = [];
-        for (let i = 0; i < 4; i ++) {
-            actors.push(this.corners[i].actor);
-        }
-        return actors;
-    },
-
-    getIconActors: function() {
-        let actors = [];
-        for (let i = 0; i < 4; i ++) {
-            actors.push(this.corners[i].iconActor);
-        }
-        return actors;
     }
 }
 

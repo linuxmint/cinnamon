@@ -51,7 +51,6 @@ let applets = [];
 let panel = null;
 let panel2 = null;
 
-let hotCorners = [];
 let placesManager = null;
 let overview = null;
 let expo = null;
