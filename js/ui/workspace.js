@@ -114,19 +114,8 @@ WindowClone.prototype = {
         this.metaWindow._delegate = this;
         this.overlay = null;
 
-        let [borderX, borderY] = this._getInvisibleBorderPadding();
-        this._windowClone = new Clutter.Clone({ source: realWindow.get_texture(),
-                                                x: -borderX,
-                                                y: -borderY });
-        // We expect this.actor to be used for all interaction rather than
-        // this._windowClone; as the former is reactive and the latter
-        // is not, this just works for most cases. However, for DND all
-        // actors are picked, so DND operations would operate on the clone.
-        // To avoid this, we hide it from pick.
-        Cinnamon.util_set_hidden_from_pick(this._windowClone, true);
-
-        this.origX = realWindow.x + borderX;
-        this.origY = realWindow.y + borderY;
+        this.origX = realWindow.x;
+        this.origY = realWindow.y;
 
         let outerRect = realWindow.meta_window.get_outer_rect();
 
@@ -135,12 +124,15 @@ WindowClone.prototype = {
         // to compensate all over the place we insert a ClutterGroup into
         // the hierarchy that is sized to only the visible portion.
         this.actor = new Clutter.Group({ reactive: true,
-                                         x: this.origX,
-                                         y: this.origY,
-                                         width: outerRect.width,
-                                         height: outerRect.height });
-
-        this.actor.add_actor(this._windowClone);
+            width: outerRect.width, height: outerRect.height
+            });
+        this.refreshClone(true);
+        // We expect this.actor to be used for all interaction rather than
+        // this.clone; as the former is reactive and the latter
+        // is not, this just works for most cases. However, for DND all
+        // actors are picked, so DND operations would operate on the clone.
+        // To avoid this, we hide it from pick.
+        Cinnamon.util_set_hidden_from_pick(this.clone, true);
 
         this.actor._delegate = this;
 
@@ -177,6 +169,20 @@ WindowClone.prototype = {
         this._windowIsZooming = false;
         this._zooming = false;
         this._selected = false;
+    },
+
+    refreshClone: function(withTransients) {
+        if (this.clone) {this.clone.destroy();}
+        this.clone = new St.Group({reactive: false});
+        this.actor.add_actor(this.clone);
+        let [pwidth, pheight] = [this.realWindow.width, this.realWindow.height];
+        let clones = Main.wm.createWindowClone(this.metaWindow, 0, withTransients);
+        for (i in clones) {
+            let clone = clones[i];
+            this.clone.add_actor(clone);
+            let [width, height] = clone.get_size();
+            clone.set_position(Math.round((pwidth - width) / 2), Math.round((pheight - height) / 2));
+        }
     },
 
     setStackAbove: function (actor) {
@@ -230,7 +236,7 @@ WindowClone.prototype = {
         let [borderX, borderY] = this._getInvisibleBorderPadding();
         let outerRect = this.metaWindow.get_outer_rect();
         this.actor.set_size(outerRect.width, outerRect.height);
-        this._windowClone.set_position(-borderX, -borderY);
+        this.clone.set_position(-borderX, -borderY);
         this.emit('size-changed');
     },
 
