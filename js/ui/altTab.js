@@ -1064,12 +1064,14 @@ AppIcon.prototype = {
     set_size: function(size) {
         if (this.showThumbnail){
             this.icon = new St.Group();
-            let clones = Main.wm.createWindowClone(this.window, size, true);
+            let clones = Main.wm.createWindowClone(this.window, size, true, true);
             for (i in clones) {
                 let clone = clones[i];
-                this.icon.add_actor(clone);
-                let [width, height] = clone.get_size();
-                clone.set_position(Math.round((size - width) / 2), Math.round((size - height) / 2));
+                this.icon.add_actor(clone.c);
+                // the following 2 lines are used when cloning without positions (param #4 = false)
+                //let [width, height] = clone.c.get_size();
+                //clone.c.set_position(Math.round((size - width) / 2), Math.round((size - height) / 2));
+                clone.c.set_position(clone.x, clone.y);
             }
         } else {
             this.icon = this.app ?

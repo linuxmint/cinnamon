@@ -938,38 +938,55 @@ WindowManager.prototype = {
     // When scaled, the clone with the biggest width and the one with 
     // the biggest height are made to fit into size
     // if size is not given, windows are not scaled
-    createWindowClone: function (metaWindow, size, withTransients) {
+    createWindowClone: function (metaWindow, size, withTransients, withPositions) {
         let clones = [];
         let textures = [];
         
         let metaWindowActor = metaWindow.get_compositor_private();
         let texture = metaWindowActor.get_texture();
-        let [width, height] = texture.get_size();
+        let [width, height] = metaWindowActor.get_size();
         let [maxWidth, maxHeight] = [width, height];
-        textures.push({t: texture, w: width, h: height});
+        let [x, y] = metaWindowActor.get_position();
+        let [minX, minY] = [x, y];
+        let [maxX, maxY] = [minX + width, minY + height];
+        textures.push({t: texture, x: x, y: y, w: width, h: height});
         if (withTransients) {
-            metaWindow.foreach_transient(function(win) {
-                let metaWindowActor = win.get_compositor_private();
-                texture = metaWindowActor.get_texture();
-                [width, height] = texture.get_size();
-                maxWidth = Math.max(maxWidth, width);
-                maxHeight = Math.max(maxHeight, height);
-                textures.push({t: texture, w: width, h: height});
-            });
+          metaWindow.foreach_transient(function(win) {
+            let metaWindowActor = win.get_compositor_private();
+            texture = metaWindowActor.get_texture();
+            [width, height] = metaWindowActor.get_size();
+            [x, y] = metaWindowActor.get_position();
+            maxWidth = Math.max(maxWidth, width);
+            maxHeight = Math.max(maxHeight, height);
+            minX = Math.min(minX, x);
+            maxX = Math.max(maxX, x + width);
+            minY = Math.min(minY, y);
+            maxY = Math.max(maxY, y + height);
+            textures.push({t: texture, x: x, y: y, w: width, h: height});
+          });
         }
         let scale = 1;
         if (size) {
+          if (withPositions) {
+            scale = Math.min(size/Math.max(maxX - minX, maxY - minY), 1);
+          }
+          else {
             scale = Math.min(size/Math.max(maxWidth, maxHeight), 1);
+          }
         }
         for (i in textures) {
-            let [texture, width, height] = [textures[i].t, textures[i].w, textures[i].h];
-            let params = {};
-            params.source = texture;
-            if (scale != 1) {
-                params.width = Math.round(width * scale);
-                params.height = Math.round(height * scale);
-            }
-            clones.push(new Clutter.Clone(params));
+          let data = textures[i];
+          let [texture, width, height, x, y] = [data.t, data.w, data.h, data.x - minX, data.y - minY];
+          let params = {};
+          params.source = texture;
+          if (scale != 1) {
+            params.width = Math.round(width * scale);
+            params.height = Math.round(height * scale);
+            x = Math.round(x * scale);
+            y = Math.round(y * scale);
+          }
+          let clone = {c: new Clutter.Clone(params), x: x, y: y};
+          clones.push(clone);
         }
         return clones;
     }

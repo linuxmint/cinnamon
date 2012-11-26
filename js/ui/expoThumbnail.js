@@ -148,7 +148,7 @@ ExpoWindowClone.prototype = {
         let [pwidth, pheight] = [this.realWindow.width, this.realWindow.height];
         let clones = Main.wm.createWindowClone(this.metaWindow, 0, withTransients);
         for (i in clones) {
-            let clone = clones[i];
+            let clone = clones[i].c;
             this.clone.add_actor(clone);
             let [width, height] = clone.get_size();
             clone.set_position(Math.round((pwidth - width) / 2), Math.round((pheight - height) / 2));
