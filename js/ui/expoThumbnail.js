@@ -357,7 +357,7 @@ ExpoWorkspaceThumbnail.prototype = {
                 if ((evstate & Clutter.ModifierType.BUTTON1_MASK) ||
                         (evstate & Clutter.ModifierType.BUTTON3_MASK))
                 {
-                   this.activate();
+                   this.activate(null, event.get_time());
                     return true;
                 } else if (evstate & Clutter.ModifierType.BUTTON2_MASK) {
                     this.remove();
@@ -911,9 +911,9 @@ ExpoWorkspaceThumbnail.prototype = {
         if (clone && clone.metaWindow != null){
             Main.activateWindow(clone.metaWindow, time, this.metaWorkspace.index());
         }
-        Main.expo.hide();
         if (this.metaWorkspace != global.screen.get_active_workspace())
             this.metaWorkspace.activate(time);
+        Main.expo.hide();
     },
 
     shade : function (force){
