@@ -1308,40 +1308,15 @@ ThumbnailList.prototype = {
         let binHeight = availHeight + this._items[0].get_theme_node().get_vertical_padding() + this.actor.get_theme_node().get_vertical_padding() - spacing;
         binHeight = Math.min(THUMBNAIL_DEFAULT_SIZE, binHeight);
 
-        let addClone = function(metaWindow, parentWindow, container, scaleOpt) {
-            let muffinWindow = metaWindow.get_compositor_private();
-            let windowTexture = muffinWindow.get_texture ();
-            let [width, height] = windowTexture.get_size();
-
-            let [x, y] = [0,0];
-            if (parentWindow) {
-                let parentRect = parentWindow.get_outer_rect();
-                let myRect = metaWindow.get_outer_rect();
-                x = Math.round((0, parentRect.width - myRect.width) / 2);
-                y = Math.round((0, parentRect.height - myRect.height) / 2);
-            }
-
-            let scale = scaleOpt || Math.min(1.0, THUMBNAIL_DEFAULT_SIZE / width, availHeight / height);
-            let clone = new Clutter.Clone ({ source: windowTexture,
-                                                reactive: true,
-                                                width: width * scale,
-                                                x: x * scale, y: y * scale,
-                                                height: height * scale });
-            container.add_actor(clone);
-            return scale;
-        };
         for (let i = 0; i < this._thumbnailBins.length; i++) {
             let metaWindow = this._windows[i];
-            let muffinWindow = metaWindow.get_compositor_private();
-            if (!muffinWindow)
-                continue;
-
             let container = new St.Group();
-            let scale = addClone(metaWindow, null, container);
-            metaWindow.foreach_transient(function(win) {
-                addClone(win, metaWindow, container, scale);
-            });
-
+            let clones = Main.wm.createWindowClone(metaWindow, availHeight, true, true);
+            for (j = 0; j < clones.length; j++) {
+              let clone = clones[j];
+              container.add_actor(clone.c);
+              clone.c.set_position(clone.x, clone.y);
+            }
             this._thumbnailBins[i].set_height(binHeight);
             this._thumbnailBins[i].add_actor(container);
             this._clones.push(container);

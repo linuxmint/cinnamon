@@ -942,7 +942,14 @@ WindowManager.prototype = {
         let clones = [];
         let textures = [];
         
+        if (!metaWindow) {
+          return clones;
+        }
+        
         let metaWindowActor = metaWindow.get_compositor_private();
+        if (!metaWindowActor) {
+          return clones;
+        }
         let texture = metaWindowActor.get_texture();
         let [width, height] = metaWindowActor.get_size();
         let [maxWidth, maxHeight] = [width, height];
