@@ -34,7 +34,6 @@ nobase_dist_js_DATA = \
 	ui/extensionSystem.js	\
 	ui/flashspot.js		\
 	ui/hotCorner.js		\
-	ui/iconGrid.js		\
 	ui/keyboard.js		\
 	ui/layout.js		\
 	ui/lightbox.js		\
@@ -68,4 +67,3 @@ nobase_dist_js_DATA = \
 	ui/workspace.js		\
 	ui/workspacesView.js	\
 	ui/xdndHandler.js
-	

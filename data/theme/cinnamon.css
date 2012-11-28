@@ -417,13 +417,6 @@ StScrollBar StButton#vhandle:hover {
 	width: 400px;
 }
 
-.icon-grid {
-	spacing: 36px;
-	-cinnamon-grid-item-size: 118px;
-}
-.icon-grid .overview-icon {
-	icon-size: 96px;
-}
 .overview-icon {
 	border-radius: 4px;
 	padding: 3px;
