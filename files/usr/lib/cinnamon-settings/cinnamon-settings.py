@@ -271,7 +271,7 @@ class SidePage:
             self.content_box.pack_start(widget, False, False, 2)            
         self.content_box.show_all()
 
-class GConfComboBox(Gtk.HBox):    
+class GConfComboBox(Gtk.Box):    
     def __init__(self, label, key, options, init_value = ""):  
         self.key = key
         super(GConfComboBox, self).__init__()
@@ -482,9 +482,9 @@ class ThreadedIconView(Gtk.IconView):
         self._loading = False
         self._loading_lock.release()                 
 
-class BackgroundWallpaperPane (Gtk.VBox):
+class BackgroundWallpaperPane (Gtk.Box):
     def __init__(self, sidepage, gnome_background_schema):
-        Gtk.VBox.__init__(self)
+        Gtk.Box.__init__(self, Gtk.Orientation.VERTICAL)
         self.set_spacing(5)
         
         self._gnome_background_schema = gnome_background_schema
@@ -727,7 +727,7 @@ class BackgroundSidePage (SidePage):
         for widget in widgets:
             self.content_box.remove(widget)
         
-        topbox = Gtk.HBox()
+        topbox = Gtk.Box()
         self.content_box.pack_start(topbox, False, False, 0)
         topbox.set_spacing(5)
         
@@ -775,7 +775,7 @@ class BackgroundSidePage (SidePage):
         self.content_box.pack_start(scrolled_window, False, True, 0)
         self.content_box.pack_start(expander, False, True, 0)
         
-        advanced_options_box = Gtk.HBox()
+        advanced_options_box = Gtk.Box()
         expander.add(advanced_options_box)
         advanced_options_box.set_spacing(10)
         
@@ -791,7 +791,7 @@ class BackgroundSidePage (SidePage):
         self.color_shading_type = GSettingsComboBox("", "org.gnome.desktop.background", "color-shading-type", None, BACKGROUND_COLOR_SHADING_TYPES)
         advanced_options_box.pack_start(self.color_shading_type, False, False, 0)
         
-        hbox = Gtk.HBox()
+        hbox = Gtk.Box()
         l = Gtk.Label(_("Colors"))
         hbox.pack_start(l, False, False, 2)
         self.primary_color = GSettingsColorChooser("org.gnome.desktop.background", "primary-color", None)
@@ -839,7 +839,7 @@ class ThemeViewSidePage (SidePage):
         # Add our own widgets
         notebook = Gtk.Notebook()
         
-        cinnamon_theme_vbox = Gtk.VBox()
+        cinnamon_theme_vbox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 0)
         
         scrolledWindow = Gtk.ScrolledWindow()   
         cinnamon_theme_vbox.pack_start(scrolledWindow, True, True, 2)
@@ -872,7 +872,7 @@ class ThemeViewSidePage (SidePage):
         notebook.append_page(cinnamon_theme_vbox, Gtk.Label(_("Cinnamon themes")))
         
         scrolledWindow = Gtk.ScrolledWindow()
-        other_settings_box = Gtk.VBox()
+        other_settings_box = Gtk.Box.new(Gtk.Orientation.VERTICAL, 0)
         scrolledWindow.add_with_viewport(other_settings_box)
         other_settings_box.set_border_width(5)
         
@@ -2095,7 +2095,7 @@ class NtpCheckButton(Gtk.CheckButton):
     def on_my_value_changed(self, widget):
         self.date_time_wrapper.set_using_ntp(self.get_active())
 
-class GSettingsSpinButton(Gtk.HBox):    
+class GSettingsSpinButton(Gtk.Box):    
     def __init__(self, label, schema, key, dep_key, min, max, step, page, units):
         self.key = key
         self.dep_key = dep_key
@@ -2139,7 +2139,7 @@ class GSettingsSpinButton(Gtk.HBox):
         else:
             self.set_sensitive(not self.dep_settings.get_boolean(self.dep_key))
 
-class GSettingsEntry(Gtk.HBox):    
+class GSettingsEntry(Gtk.Box):    
     def __init__(self, label, schema, key, dep_key):
         self.key = key
         self.dep_key = dep_key
@@ -2176,8 +2176,7 @@ class GSettingsEntry(Gtk.HBox):
         else:
             self.set_sensitive(not self.dep_settings.get_boolean(self.dep_key))
 
-
-class GSettingsFileChooser(Gtk.HBox):
+class GSettingsFileChooser(Gtk.Box):
     def __init__(self, label, schema, key, dep_key, show_none_cb = False):
         self.key = key
         self.dep_key = dep_key
@@ -2229,7 +2228,7 @@ class GSettingsFileChooser(Gtk.HBox):
         else:
             self.set_sensitive(not self.dep_settings.get_boolean(self.dep_key))
 
-class GSettingsFontButton(Gtk.HBox):
+class GSettingsFontButton(Gtk.Box):
     def __init__(self, label, schema, key, dep_key):
         self.key = key
         self.dep_key = dep_key
@@ -2267,7 +2266,7 @@ class GSettingsFontButton(Gtk.HBox):
         else:
             self.set_sensitive(not self.dep_settings.get_boolean(self.dep_key))
 
-class GConfFontButton(Gtk.HBox):
+class GConfFontButton(Gtk.Box):
     def __init__(self, label, key):
         self.key = key
         super(GConfFontButton, self).__init__()
@@ -2287,7 +2286,7 @@ class GConfFontButton(Gtk.HBox):
     def on_my_value_changed(self, widget):
         self.settings.set_string(self.key, widget.get_font_name())
 
-class GSettingsRange(Gtk.HBox):
+class GSettingsRange(Gtk.Box):
     def __init__(self, label, schema, key, dep_key, **options):
         self.key = key
         self.dep_key = dep_key
@@ -2327,7 +2326,7 @@ class GSettingsRange(Gtk.HBox):
         else:
             self.set_sensitive(not self.dep_settings.get_boolean(self.dep_key))
 
-class GSettingsRangeSpin(Gtk.HBox):
+class GSettingsRangeSpin(Gtk.Box):
     def __init__(self, label, schema, key, dep_key, **options):
         self.key = key
         self.dep_key = dep_key
@@ -2375,7 +2374,7 @@ class GSettingsRangeSpin(Gtk.HBox):
         else:
             self.set_sensitive(not self.dep_settings.get_boolean(self.dep_key))
 
-class GSettingsComboBox(Gtk.HBox):    
+class GSettingsComboBox(Gtk.Box):    
     def __init__(self, label, schema, key, dep_key, options):
         self.key = key
         self.dep_key = dep_key
@@ -2430,7 +2429,7 @@ class GSettingsComboBox(Gtk.HBox):
         else:
             self.set_sensitive(not self.dep_settings.get_boolean(self.dep_key))
 
-class TimeZoneSelectorWidget(Gtk.HBox):
+class TimeZoneSelectorWidget(Gtk.Box):
     def __init__(self):
         super(TimeZoneSelectorWidget, self).__init__()
         
@@ -2510,7 +2509,7 @@ class TimeZoneSelectorWidget(Gtk.HBox):
         else:
             return "", ""
             
-class ChangeTimeWidget(Gtk.HBox):
+class ChangeTimeWidget(Gtk.Box):
     def __init__(self):
         super(ChangeTimeWidget, self).__init__()
         self.date_time_wrapper = DateTimeWrapper()
@@ -2527,8 +2526,8 @@ class ChangeTimeWidget(Gtk.HBox):
         months = ['January','February','March','April','May','June','July','August','September','October','November','December']
         
         # Boxes
-        timeBox = Gtk.HBox()
-        dateBox = Gtk.HBox()
+        timeBox = Gtk.Box()
+        dateBox = Gtk.Box()
         
         # Combo Boxes
         self.monthBox = Gtk.ComboBoxText()
@@ -2693,13 +2692,13 @@ class TitleBarButtonsOrderSelector(Gtk.Table):
         label = Gtk.Label(_("Left side title bar buttons"))
         label.set_alignment(0, 0.5)
         self.attach(label, 0, 1, 0, 1, xoptions = Gtk.AttachOptions.FILL, yoptions=0, xpadding=2)
-        left_side_box = Gtk.HBox()
+        left_side_box = Gtk.Box()
         self.attach(left_side_box, 1, 2, 0, 1, yoptions=0, xpadding=2)
         
         label = Gtk.Label(_("Right side title bar buttons"))
         label.set_alignment(0, 0.5)
         self.attach(label, 0, 1, 1, 2, xoptions = Gtk.AttachOptions.FILL, yoptions=0, xpadding=2)
-        right_side_box = Gtk.HBox()
+        right_side_box = Gtk.Box()
         self.attach(right_side_box, 1, 2, 1, 2, yoptions=0, xpadding=2)
         
         self.left_side_widgets = []
@@ -2765,7 +2764,7 @@ class TitleBarButtonsOrderSelector(Gtk.Table):
         self.settings.set_string(self.key, ','.join(str(item) for item in left_items) + ':' + ','.join(str(item) for item in right_items))
 
 
-class IndentedHBox(Gtk.HBox):
+class IndentedHBox(Gtk.Box):
     def __init__(self):
         super(IndentedHBox, self).__init__()
         indent = Gtk.Label('\t')
