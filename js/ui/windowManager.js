@@ -983,7 +983,11 @@ WindowManager.prototype = {
         }
         for (i in textures) {
           let data = textures[i];
-          let [texture, width, height, x, y] = [data.t, data.w, data.h, data.x - minX, data.y - minY];
+          let [texture, width, height, x, y] = [data.t, data.w, data.h, data.x, data.y];
+          if (withPositions) {
+            x -= minX;
+            y -= minY;
+          }
           let params = {};
           params.source = texture;
           if (scale != 1) {

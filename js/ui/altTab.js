@@ -547,38 +547,28 @@ AltTabPopup.prototype = {
             let childBox = new Clutter.ActorBox();
 
             let lastClone = null;
-            let that = this;
-            let clones = []
-            let showClone = function(window) {
-                let clone = new Clutter.Clone({source: window.get_compositor_private().get_texture()});
-                clones.push(clone);
-                that.actor.add_actor(clone);
-                clone.lower(that._appSwitcher.actor);
-                if (lastClone) {
-                    lastClone.lower(clone);
-                }
-                lastClone = clone;
-
-                // The clone's rect is not the same as the window's outer rect
-                let or = window.get_outer_rect();
-                let ir = window.get_input_rect();
-                let diffX = (ir.width - or.width)/2;
-                let diffY = (ir.height - or.height)/2;
-
-                childBox.x1 = Math.round(or.x -diffX);
-                childBox.x2 = Math.round(or.x + or.width + diffX);
-                childBox.y1 = Math.round(or.y -diffY);
-                childBox.y2 = Math.round(or.y + or.height + diffY);
-                clone.allocate(childBox, 0);
-            };
-
+            let previewClones = [];
             let window = this._appIcons[this._currentApp].cachedWindows[0];
-            showClone(window);
-            window.foreach_transient(Lang.bind(this, function(win) {
-                showClone(win);
-            }));
+            let clones = Main.wm.createWindowClone(window, null, true, false);
+            for (let i = 0; i < clones.length; i++) {
+                let clone = clones[i];
+                previewClones.push(clone.c);
+                this.actor.add_actor(clone.c);
+                let [width, height] = clone.c.get_size();
+                childBox.x1 = clone.x;
+                childBox.x2 = clone.x + width;
+                childBox.y1 = clone.y;
+                childBox.y2 = clone.y + height;
+                clone.c.allocate(childBox, 0);
+                clone.c.lower(this._appSwitcher.actor);
+                if (lastClone) {
+                    lastClone.lower(clone.c);
+                }
+                lastClone = clone.c;
+            }
+            
             this._clearPreview();
-            this._previewClones = clones;
+            this._previewClones = previewClones;
 
             if (!this._previewBackdrop) {
                 let backdrop = this._previewBackdrop = new St.Bin({style_class: 'switcher-preview-backdrop'});
