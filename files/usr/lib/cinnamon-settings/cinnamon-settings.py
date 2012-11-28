@@ -737,13 +737,29 @@ class BackgroundSidePage (SidePage):
         self.background_mode.unparent()
         topbox.pack_start(self.background_mode, False, False, 0)
         
-        self.remove_wallpaper_button = Gtk.Button("-")
+        self.remove_wallpaper_button = Gtk.Button("")
+        imageremove = Gtk.Image()
+        imageremove.set_from_icon_name('remove', Gtk.IconSize.BUTTON)
+        if imageremove.get_pixbuf() == None:
+          imageremove.set_from_stock(Gtk.STOCK_REMOVE, Gtk.IconSize.BUTTON)
+        self.remove_wallpaper_button.set_image(imageremove)
+        self.remove_wallpaper_button.get_image().show()
+
         self.remove_wallpaper_button.set_no_show_all(True)
         self.remove_wallpaper_button.set_tooltip_text(_("Remove wallpaper"))
         self.remove_wallpaper_button.connect("clicked", lambda w: self._remove_selected_wallpaper())
         self.remove_wallpaper_button.set_sensitive(False)
         topbox.pack_end(self.remove_wallpaper_button, False, False, 0)
-        self.add_wallpaper_button = Gtk.Button("+")
+
+        self.add_wallpaper_button = Gtk.Button("")
+        imageadd = Gtk.Image()
+        imageadd.set_from_icon_name('add', Gtk.IconSize.BUTTON)
+        if imageadd.get_pixbuf() == None:
+          imageadd.set_from_stock(Gtk.STOCK_ADD, Gtk.IconSize.BUTTON)
+
+        self.add_wallpaper_button.set_image(imageadd)
+        self.add_wallpaper_button.get_image().show()
+
         self.add_wallpaper_button.set_tooltip_text(_("Add wallpapers"))
         self.add_wallpaper_button.connect("clicked", lambda w: self._add_wallpapers())
         self.add_wallpaper_button.set_no_show_all(True)
