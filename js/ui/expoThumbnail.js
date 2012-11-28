@@ -368,7 +368,7 @@ ExpoWorkspaceThumbnail.prototype = {
 
         this.actor.connect('scroll-event', Lang.bind(this, this.onScrollEvent));
         
-        this.closeWindowButton = new St.Button({ style_class: 'workspace-close-button' });
+        this.closeWindowButton = new St.Button({ style_class: 'window-close' });
         this.actor.add_actor(this.closeWindowButton);
         this.closeWindowButton.connect('clicked', Lang.bind(this, function(actor, event) {
             if (this.lastHoveredClone) {
