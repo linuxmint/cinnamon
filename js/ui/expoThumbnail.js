@@ -969,6 +969,7 @@ ExpoWorkspaceThumbnail.prototype = {
     },
 
     handleDragOverOrDrop : function(dropping, source, actor, x, y, time) {
+        this.hovering = false; // normal hover logic is off during dnd
         if (dropping) {
             let draggable = source._draggable;
             actor.opacity = draggable._dragOrigOpacity;
