@@ -2,6 +2,7 @@
 
 try:
     import os
+    import os.path
     import commands
     import sys
     import string    
@@ -14,7 +15,6 @@ try:
     import tz    
     import time
     from datetime import datetime
-    from user import home
     import thread
     import urllib
     import lxml.etree
@@ -28,6 +28,8 @@ except Exception, detail:
     print detail
     sys.exit(1)
 
+# get home directory
+home = os.path.expanduser("~")
 
 # i18n
 gettext.install("cinnamon", "/usr/share/cinnamon/locale")
