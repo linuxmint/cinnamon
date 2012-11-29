@@ -759,6 +759,12 @@ MyApplet.prototype = {
         }
     },
 
+    on_applet_removed_from_panel : function() {
+        if (this._iconTimeoutId) {
+            Mainloop.source_remove(this._iconTimeoutId);
+        }
+    },
+
     on_applet_clicked: function(event) {
         this.menu.toggle();
     },
@@ -807,11 +813,17 @@ MyApplet.prototype = {
     },
 
     setIconName: function(icon) {
-       this._icon_name = icon;
-       if (this._nbPlayers()==0)
-         this.set_applet_icon_symbolic_name(icon);
-       else
-         this.set_applet_icon_symbolic_name('audio-x-generic');
+        this._icon_name = icon;
+        this.set_applet_icon_symbolic_name(icon);
+        if (this._nbPlayers()>0) {
+            if (this._iconTimeoutId) {
+                Mainloop.source_remove(this._iconTimeoutId);
+            }
+            this._iconTimeoutId = Mainloop.timeout_add(3000, Lang.bind(this, function() {
+                this._iconTimeoutId = null;
+                this.set_applet_icon_symbolic_name(this['_output'].is_muted ? 'audio-volume-muted' : 'audio-x-generic');
+            }));
+        }
     },
 
     _nbPlayers: function() {
