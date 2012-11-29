@@ -11,6 +11,8 @@ const St = imports.gi.St;
 const Main = imports.ui.main;
 const Tweener = imports.ui.tweener;
 
+const WindowUtils = imports.misc.windowUtils;
+
 const POPUP_APPICON_SIZE = 96;
 const POPUP_SCROLL_TIME = 0.10; // seconds
 const POPUP_DELAY_TIMEOUT = 150; // milliseconds
@@ -549,7 +551,7 @@ AltTabPopup.prototype = {
             let lastClone = null;
             let previewClones = [];
             let window = this._appIcons[this._currentApp].cachedWindows[0];
-            let clones = Main.wm.createWindowClone(window, null, true, false);
+            let clones = WindowUtils.createWindowClone(window, null, true, false);
             for (let i = 0; i < clones.length; i++) {
                 let clone = clones[i];
                 previewClones.push(clone.c);
@@ -1054,7 +1056,7 @@ AppIcon.prototype = {
     set_size: function(size) {
         if (this.showThumbnail){
             this.icon = new St.Group();
-            let clones = Main.wm.createWindowClone(this.window, size, true, true);
+            let clones = WindowUtils.createWindowClone(this.window, size, true, true);
             for (i in clones) {
                 let clone = clones[i];
                 this.icon.add_actor(clone.c);
@@ -1301,7 +1303,7 @@ ThumbnailList.prototype = {
         for (let i = 0; i < this._thumbnailBins.length; i++) {
             let metaWindow = this._windows[i];
             let container = new St.Group();
-            let clones = Main.wm.createWindowClone(metaWindow, availHeight, true, true);
+            let clones = WindowUtils.createWindowClone(metaWindow, availHeight, true, true);
             for (j = 0; j < clones.length; j++) {
               let clone = clones[j];
               container.add_actor(clone.c);

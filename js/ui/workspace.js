@@ -18,6 +18,7 @@ const PopupMenu = imports.ui.popupMenu;
 const Tweener = imports.ui.tweener;
 const PointerTracker = imports.misc.pointerTracker;
 const GridNavigator = imports.misc.gridNavigator;
+const WindowUtils = imports.misc.windowUtils;
 
 const FOCUS_ANIMATION_TIME = 0.15;
 
@@ -176,7 +177,7 @@ WindowClone.prototype = {
         this.clone = new St.Group({reactive: false});
         this.actor.add_actor(this.clone);
         let [pwidth, pheight] = [this.realWindow.width, this.realWindow.height];
-        let clones = Main.wm.createWindowClone(this.metaWindow, 0, withTransients);
+        let clones = WindowUtils.createWindowClone(this.metaWindow, 0, withTransients);
         for (i in clones) {
             let clone = clones[i].c;
             this.clone.add_actor(clone);
