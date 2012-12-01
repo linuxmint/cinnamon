@@ -73,7 +73,6 @@ main(int argc, char **argv)
   gsize len;
   int code;
 
-  g_thread_init (NULL);
 
   gtk_init (&argc, &argv);
 
