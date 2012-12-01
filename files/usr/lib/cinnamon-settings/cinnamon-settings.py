@@ -1103,7 +1103,11 @@ class AppletViewSidePage (SidePage):
                                 
         # Find the enabled applets
         self.settings = Gio.Settings.new("org.cinnamon")
-        self._enabled_applets_changed()
+        self.enabled_applets = self.settings.get_strv("enabled-applets")
+        self.model.clear()
+                         
+        self.load_applets_in('/usr/share/cinnamon/applets')                                                                          
+        self.load_applets_in('%s/.local/share/cinnamon/applets' % home)
         
         self.settings.connect("changed::enabled-applets", lambda x,y: self._enabled_applets_changed())
         
@@ -1129,22 +1133,31 @@ class AppletViewSidePage (SidePage):
         
         self.content_box.show_all()   
         self.treeview.get_selection().connect("changed", lambda x: self._selection_changed());
-    
+
     def _enabled_applets_changed(self):
         last_selection = ''
         model, treeiter = self.treeview.get_selection().get_selected()
         if treeiter:
             last_selection = self.model.get_value(treeiter, 0);
         self.enabled_applets = self.settings.get_strv("enabled-applets")
-        self.model.clear()
-                         
-        self.load_applets_in('/usr/share/cinnamon/applets')                                                                          
-        self.load_applets_in('%s/.local/share/cinnamon/applets' % home)
-        if(last_selection != ''):
-            for row in self.model:
-                if(last_selection == self.model.get_value(row.iter, 0)):
-                    self.treeview.get_selection().select_iter(row.iter)
-                    break
+        
+        uuidCount = {}
+        for enabled_applet in self.enabled_applets:
+            try:
+                panel, align, order, uuid, id = enabled_applet.split(":")
+                if uuid in uuidCount:
+                    uuidCount[uuid] += 1
+                else:
+                    uuidCount[uuid] = 1
+            except:
+                pass
+
+        for row in self.model:
+            uuid = self.model.get_value(row.iter, 0)
+            if(uuid in uuidCount):
+                self.model.set_value(row.iter, 2, uuidCount[uuid])
+            else:
+                self.model.set_value(row.iter, 2, 0)
         
     def _add_another_instance(self):
         model, treeiter = self.treeview.get_selection().get_selected()
