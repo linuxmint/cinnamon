@@ -1304,7 +1304,7 @@ ThumbnailList.prototype = {
             let metaWindow = this._windows[i];
             let container = new St.Group();
             let clones = WindowUtils.createWindowClone(metaWindow, availHeight, true, true);
-            for (j = 0; j < clones.length; j++) {
+            for (let j = 0; j < clones.length; j++) {
               let clone = clones[j];
               container.add_actor(clone.actor);
               clone.actor.set_position(clone.x, clone.y);
