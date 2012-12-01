@@ -878,7 +878,7 @@ ExpoWorkspaceThumbnail.prototype = {
     overviewModeOff : function(force, override) {
         if (!this.box.scale) {return;}
         this.resetCloneHover();
-        if (!this.overviewMode && !force) {return;}
+        if (this.overviewMode === false && !force) {return;}
         if (forceOverviewMode && !override) {return;}
         
         this.overviewMode = false;
