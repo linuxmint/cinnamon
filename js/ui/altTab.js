@@ -554,19 +554,19 @@ AltTabPopup.prototype = {
             let clones = WindowUtils.createWindowClone(window, null, true, false);
             for (let i = 0; i < clones.length; i++) {
                 let clone = clones[i];
-                previewClones.push(clone.c);
-                this.actor.add_actor(clone.c);
-                let [width, height] = clone.c.get_size();
+                previewClones.push(clone.actor);
+                this.actor.add_actor(clone.actor);
+                let [width, height] = clone.actor.get_size();
                 childBox.x1 = clone.x;
                 childBox.x2 = clone.x + width;
                 childBox.y1 = clone.y;
                 childBox.y2 = clone.y + height;
-                clone.c.allocate(childBox, 0);
-                clone.c.lower(this._appSwitcher.actor);
+                clone.actor.allocate(childBox, 0);
+                clone.actor.lower(this._appSwitcher.actor);
                 if (lastClone) {
-                    lastClone.lower(clone.c);
+                    lastClone.lower(clone.actor);
                 }
-                lastClone = clone.c;
+                lastClone = clone.actor;
             }
             
             this._clearPreview();
@@ -1059,11 +1059,11 @@ AppIcon.prototype = {
             let clones = WindowUtils.createWindowClone(this.window, size, true, true);
             for (i in clones) {
                 let clone = clones[i];
-                this.icon.add_actor(clone.c);
+                this.icon.add_actor(clone.actor);
                 // the following 2 lines are used when cloning without positions (param #4 = false)
-                //let [width, height] = clone.c.get_size();
-                //clone.c.set_position(Math.round((size - width) / 2), Math.round((size - height) / 2));
-                clone.c.set_position(clone.x, clone.y);
+                //let [width, height] = clone.actor.get_size();
+                //clone.actor.set_position(Math.round((size - width) / 2), Math.round((size - height) / 2));
+                clone.actor.set_position(clone.x, clone.y);
             }
         } else {
             this.icon = this.app ?
@@ -1304,10 +1304,10 @@ ThumbnailList.prototype = {
             let metaWindow = this._windows[i];
             let container = new St.Group();
             let clones = WindowUtils.createWindowClone(metaWindow, availHeight, true, true);
-            for (j = 0; j < clones.length; j++) {
+            for (let j = 0; j < clones.length; j++) {
               let clone = clones[j];
-              container.add_actor(clone.c);
-              clone.c.set_position(clone.x, clone.y);
+              container.add_actor(clone.actor);
+              clone.actor.set_position(clone.x, clone.y);
             }
             this._thumbnailBins[i].set_height(binHeight);
             this._thumbnailBins[i].add_actor(container);

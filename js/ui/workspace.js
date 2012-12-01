@@ -179,7 +179,7 @@ WindowClone.prototype = {
         let [pwidth, pheight] = [this.realWindow.width, this.realWindow.height];
         let clones = WindowUtils.createWindowClone(this.metaWindow, 0, withTransients);
         for (i in clones) {
-            let clone = clones[i].c;
+            let clone = clones[i].actor;
             this.clone.add_actor(clone);
             let [width, height] = clone.get_size();
             clone.set_position(Math.round((pwidth - width) / 2), Math.round((pheight - height) / 2));

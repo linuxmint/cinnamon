@@ -63,7 +63,7 @@ function createWindowClone(metaWindow, size, withTransients, withPositions) {
         x = Math.round(x * scale);
         y = Math.round(y * scale);
       }
-      let clone = {c: new Clutter.Clone(params), x: x, y: y};
+      let clone = {actor: new Clutter.Clone(params), x: x, y: y};
       clones.push(clone);
     }
     return clones;
