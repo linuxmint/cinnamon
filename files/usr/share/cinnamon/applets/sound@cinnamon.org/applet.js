@@ -812,6 +812,22 @@ MyApplet.prototype = {
         this._notifyVolumeChange();
     },
 
+    _onButtonReleaseEvent: function (actor, event) {
+        Applet.IconApplet.prototype._onButtonReleaseEvent.call(this, actor, event);
+
+        if (event.get_button() == 2) {
+            if (this._output.is_muted)
+                this._output.change_is_muted(false);
+            else {
+                this._output.change_is_muted(true);
+            }
+
+            this._output.push_volume();
+        }
+
+        return true;
+    },
+
     setIconName: function(icon) {
         this._icon_name = icon;
         this.set_applet_icon_symbolic_name(icon);
