@@ -1815,7 +1815,7 @@ MyApplet.prototype = {
      _onSearchTextChanged: function (se, prop) {
         if (this.menuIsOpening) {
             this.menuIsOpening = false;
-            return;
+            return false;
         } else {
             let searchString = this.searchEntry.get_text();
             this.searchActive = searchString != '';
@@ -1841,6 +1841,7 @@ MyApplet.prototype = {
                 this._setCategoriesButtonActive(true);
                 this._select_category(null, this._allAppsCategoryButton);
             }
+            return false;
         }
     },
 
@@ -1882,6 +1883,7 @@ MyApplet.prototype = {
     },
     
     _doSearch: function(){
+        this._searchTimeoutId = 0;
         let pattern = this.searchEntryText.get_text().replace(/^\s+/g, '').replace(/\s+$/g, '').toLowerCase();
         if (pattern==this._previousSearchPattern) return false;
         this._previousSearchPattern = pattern;
@@ -1940,6 +1942,8 @@ MyApplet.prototype = {
             } else {
                 return this._pathCompleter.get_completion_suffix(text);
             }
+        } else {
+            return false;
         }
     },
 
