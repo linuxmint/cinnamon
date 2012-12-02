@@ -1946,6 +1946,8 @@ MyApplet.prototype = {
     _getCompletions : function(text) {
         if (text.indexOf('/') != -1) {
             return this._pathCompleter.get_completions(text);
+        } else {
+            return new Array();
         }
     },
 
