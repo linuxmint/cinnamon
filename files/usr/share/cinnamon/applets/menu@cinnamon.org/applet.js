@@ -19,7 +19,6 @@ const Tweener = imports.ui.tweener;
 const DND = imports.ui.dnd;
 const Meta = imports.gi.Meta;
 const DocInfo = imports.misc.docInfo;
-
 const ICON_SIZE = 16;
 const MAX_FAV_ICON_SIZE = 32;
 const CATEGORY_ICON_SIZE = 22;
@@ -233,7 +232,9 @@ ApplicationButton.prototype = {
         GenericApplicationButton.prototype._init.call(this, appsMenuButton, app, true);
         this.category = new Array();
         this.actor.set_style_class_name('menu-application-button');
-        this.icon = this.app.create_icon_texture(APPLICATION_ICON_SIZE);
+
+        this.icon = this.app.get_preloaded_icon(APPLICATION_ICON_SIZE);
+
         this.addActor(this.icon);
         this.name = this.app.get_name();
         this.label = new St.Label({ text: this.name, style_class: 'menu-application-button-label' });
@@ -735,13 +736,8 @@ MyApplet.prototype = {
                     this.hover_delay = global.settings.get_int("menu-hover-delay") / 1000;
             })); 
                 
-            global.display.connect('overlay-key', Lang.bind(this, function(){
-                try{
-                    this.menu.toggle();
-                }
-                catch(e) {
-                    global.logError(e);
-                }
+            global.display.connect('overlay-key', Lang.bind(this, function() {
+                this.menu.toggleNoAnimate();
             }));
             Main.placesManager.connect('places-updated', Lang.bind(this, this._refreshApps));
             this.RecentManager.connect('changed', Lang.bind(this, this._refreshApps));
@@ -759,7 +755,7 @@ MyApplet.prototype = {
     },
 
     openMenu: function() {
-        this.menu.open(true);
+        this.menu.open(false);
     },
 
     on_orientation_changed: function (orientation) {
@@ -777,21 +773,21 @@ MyApplet.prototype = {
     },
     
     on_applet_clicked: function(event) {
-        this.menu.toggle();     
+        this.menu.toggleNoAnimate();     
     },        
            
     _onSourceKeyPress: function(actor, event) {
         let symbol = event.get_key_symbol();
 
         if (symbol == Clutter.KEY_space || symbol == Clutter.KEY_Return) {
-            this.menu.toggle();
+            this.menu.toggleNoAnimate();
             return true;
         } else if (symbol == Clutter.KEY_Escape && this.menu.isOpen) {
             this.menu.close();
             return true;
         } else if (symbol == Clutter.KEY_Down) {
             if (!this.menu.isOpen)
-                this.menu.toggle();
+                this.menu.toggleNoAnimate();
             this.menu.actor.navigate_focus(this.actor, Gtk.DirectionType.DOWN, false);
             return true;
         } else
@@ -1626,7 +1622,7 @@ MyApplet.prototype = {
             }
             if (this._searchTimeoutId > 0)
                 return;
-            this._searchTimeoutId = Mainloop.timeout_add(150, Lang.bind(this, this._doSearch));
+            this._searchTimeoutId = Mainloop.timeout_add(0, Lang.bind(this, this._doSearch));
         }
     },
 
