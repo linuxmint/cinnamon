@@ -67,7 +67,8 @@ class MainWindow:
 
         for i in range(len(modules)):
             mod = modules[i].Module(self.content_box)
-            self.sidePages.append((mod.sidePage, mod.name))
+            if self.loadCheck(mod):
+                self.sidePages.append((mod.sidePage, mod.name))
 
         # create the backing store for the side nav-view.
         self.store = Gtk.ListStore(str, GdkPixbuf.Pixbuf, object)
@@ -99,6 +100,12 @@ class MainWindow:
             self.side_view.select_path(path)
 
         self.window.show()
+
+    def loadCheck (self, mod):
+        try:
+            return mod._loadCheck()
+        except:
+            return True
 
     def back_to_icon_view(self, widget):
         self.window.set_title(_("Cinnamon Settings"))

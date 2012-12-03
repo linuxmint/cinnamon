@@ -20,3 +20,7 @@ class Module:
             sidePage.add_widget(GSettingsCheckButton(_("Trash icon visible on desktop"), "org.nemo.desktop", "trash-icon-visible", None))
         if "volumes-visible" in nemo_desktop_keys:
             sidePage.add_widget(GSettingsCheckButton(_("Show mounted volumes on the desktop"), "org.nemo.desktop", "volumes-visible", None))
+
+    def _loadCheck(self):
+        if 'org.nemo' in Gio.Settings.list_schemas():
+            return True
