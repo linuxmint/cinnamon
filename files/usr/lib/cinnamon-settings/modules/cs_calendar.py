@@ -319,6 +319,16 @@ class ChangeTimeWidget(Gtk.HBox):
             
             thread.start_new_thread(self._do_change_system_time, ())
 
+class NtpCheckButton(Gtk.CheckButton):
+    def __init__(self, label):
+        super(NtpCheckButton, self).__init__(label)
+        self.date_time_wrapper = DateTimeWrapper()
+        self.set_active(self.date_time_wrapper.get_using_ntp())
+        self.connect('toggled', self.on_my_value_changed)
+
+    def on_my_value_changed(self, widget):
+        self.date_time_wrapper.set_using_ntp(self.get_active())
+
 def load_db():
     tz_db = {}
     
