@@ -18,6 +18,7 @@
 
 import os
 import xml.dom.minidom
+import uuid
 from collections import Sequence
 from gi.repository import Gtk, GdkPixbuf, GMenu, GLib
 
@@ -40,12 +41,8 @@ def fillKeyFile(keyfile, items):
             keyfile.set_string(DESKTOP_GROUP, key, item)
 
 def getUniqueFileId(name, extension):
-    append = 0
     while 1:
-        if append == 0:
-            filename = name + extension
-        else:
-            filename = name + '-' + str(append) + extension
+        filename = name + '-' + str(uuid.uuid1()) + extension
         if extension == '.desktop':
             path = getUserItemPath()
             if not os.path.isfile(os.path.join(path, filename)) and not getItemPath(filename):
@@ -54,22 +51,17 @@ def getUniqueFileId(name, extension):
             path = getUserDirectoryPath()
             if not os.path.isfile(os.path.join(path, filename)) and not getDirectoryPath(filename):
                 break
-        append += 1
     return filename
 
 def getUniqueRedoFile(filepath):
-    append = 0
     while 1:
-        new_filepath = filepath + '.redo-' + str(append)
+        new_filepath = filepath + '.redo-' + str(uuid.uuid1())
         if not os.path.isfile(new_filepath):
             break
-        else:
-            append += 1
     return new_filepath
 
 def getUniqueUndoFile(filepath):
     filename, extension = os.path.split(filepath)[1].rsplit('.', 1)
-    append = 0
     while 1:
         if extension == 'desktop':
             path = getUserItemPath()
@@ -77,11 +69,9 @@ def getUniqueUndoFile(filepath):
             path = getUserDirectoryPath()
         elif extension == 'menu':
             path = getUserMenuPath()
-        new_filepath = os.path.join(path, filename + '.' + extension + '.undo-' + str(append))
+        new_filepath = os.path.join(path, filename + '.' + extension + '.undo-' + str(uuid.uuid1()))
         if not os.path.isfile(new_filepath):
             break
-        else:
-            append += 1
     return new_filepath
 
 def getItemPath(file_id):
