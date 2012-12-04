@@ -725,6 +725,7 @@ WindowManager.prototype = {
     },
 
     _switchWorkspace : function(cinnamonwm, from, to, direction) {
+        this.showWorkspaceOSD();
         if (!this._shouldAnimate()) {
             cinnamonwm.completed_switch_workspace();                                
             return;
@@ -872,7 +873,6 @@ WindowManager.prototype = {
         let workspace = global.screen.get_active_workspace().get_neighbor(direction);
         if (workspace != global.screen.get_active_workspace()) {
             workspace.activate(global.get_current_time());
-            this.showWorkspaceOSD();
             Mainloop.idle_add(Lang.bind(this, function() {
                 // Unless this is done a bit later, window is sometimes not activated
                 window.change_workspace(workspace);
@@ -905,15 +905,9 @@ WindowManager.prototype = {
         let current_workspace_index = global.screen.get_active_workspace_index();
         if (binding.get_name() == 'switch-to-workspace-left') {
            this.actionMoveWorkspaceLeft();
-           if (current_workspace_index !== global.screen.get_active_workspace_index()) {
-                this.showWorkspaceOSD();
-           }
         }
         else if (binding.get_name() == 'switch-to-workspace-right') {
            this.actionMoveWorkspaceRight();
-           if (current_workspace_index !== global.screen.get_active_workspace_index()) {
-                this.showWorkspaceOSD();
-           }
         }
     },
 

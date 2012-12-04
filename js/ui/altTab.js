@@ -293,7 +293,6 @@ AltTabPopup.prototype = {
             if (current == global.screen.get_active_workspace_index()) {
                 return false;
             }
-            Main.wm.showWorkspaceOSD();
             that.refresh('no-switch-windows');
             return true;
         };

@@ -167,7 +167,6 @@ WorkspacesView.prototype = {
         let active = global.screen.get_active_workspace_index();
 
         this._updateWorkspaceActors(showAnimation);
-        Main.wm.showWorkspaceOSD();
         this._updateScrollAdjustment(active, showAnimation);
     },
 
