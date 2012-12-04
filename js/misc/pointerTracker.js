@@ -1,9 +1,11 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
-const Lang = imports.lang;
 const Gdk = imports.gi.Gdk;
 
-const PointerTracker = new Lang.Class({
-    Name: 'PointerTracker',
+function PointerTracker(){
+    this._init();
+}
+
+PointerTracker.prototype = {
     _init: function() {
         let display = Gdk.Display.get_default();
         let deviceManager = display.get_device_manager();
@@ -28,4 +30,4 @@ const PointerTracker = new Lang.Class({
             [lastScreen, lastPointerX, lastPointerY] = pointer.get_position();
         };
     }
-});
+};
