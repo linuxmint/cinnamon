@@ -710,7 +710,6 @@ MyApplet.prototype = {
             this._searchActiveIcon = new St.Icon({ style_class: 'menu-search-entry-icon',
                                              icon_name: 'edit-clear',
                                              icon_type: St.IconType.SYMBOLIC });
-            this._searchTimeoutId = 0;
             this._searchIconClickedId = 0;
             this._applicationsButtons = new Array();
             this._favoritesButtons = new Array();
@@ -1609,6 +1608,7 @@ MyApplet.prototype = {
                         }));
                 }
                 this._setCategoriesButtonActive(false);
+                this._doSearch();
             } else {
                 if (this._searchIconClickedId > 0)
                     this.searchEntry.disconnect(this._searchIconClickedId);
@@ -1617,16 +1617,6 @@ MyApplet.prototype = {
                 this._setCategoriesButtonActive(true);
                 this._select_category(null, this._allAppsCategoryButton);
             }
-            if (!this.searchActive) {
-                if (this._searchTimeoutId > 0) {
-                    Mainloop.source_remove(this._searchTimeoutId);
-                    this._searchTimeoutId = 0;
-                }
-                return;
-            }
-            if (this._searchTimeoutId > 0)
-                return;
-            this._searchTimeoutId = Mainloop.timeout_add(150, Lang.bind(this, this._doSearch));
         }
     },
 
@@ -1668,7 +1658,6 @@ MyApplet.prototype = {
     },
     
     _doSearch: function(){
-        this._searchTimeoutId = 0;
         let pattern = this.searchEntryText.get_text().replace(/^\s+/g, '').replace(/\s+$/g, '').toLowerCase();
         if (pattern==this._previousSearchPattern) return false;
         this._previousSearchPattern = pattern;
