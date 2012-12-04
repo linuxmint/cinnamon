@@ -51,16 +51,24 @@ class PixCache(object):
         if size in self._data[filename]:
             pix = self._data[filename][size]
         else:
-            if size:
-                try:
-                    pix = GdkPixbuf.Pixbuf.new_from_file_at_size(filename, size, size)
-                except:
-                    pix = None
-            else:
-                try:
-                    pix = GdkPixbuf.Pixbuf.new_from_file(filename)
-                except:
-                    pix = None
+            try:
+                img = Image.open(filename)                        
+                if img.mode != 'RGB':
+                    img = img.convert('RGB')
+                if size:
+                    img.thumbnail((size, size), Image.ANTIALIAS)                                                                                                    
+                img = imtools.round_image(img, {}, False, None, 5, 255)  
+                img = imtools.drop_shadow(img, 5, 5, background_color=(255, 255, 255, 0), shadow_color=0x444444, border=8, shadow_blur=3, force_background_color=False, cache=None)        
+                # Convert Image -> Pixbuf (save to file, GTK3 is not reliable for that)
+                f = tempfile.NamedTemporaryFile(delete=False)
+                temp_filename = f.name
+                f.close()        
+                img.save(temp_filename, "png")
+                pix = GdkPixbuf.Pixbuf.new_from_file(temp_filename)
+                os.unlink(temp_filename)
+            except Exception, detail:
+                print "Failed to convert %s: %s" % (filename, detail)
+                pix = None
             if pix:
                 self._data[filename][size] = pix
         return pix
@@ -150,23 +158,7 @@ class ThreadedIconView(Gtk.IconView):
             self._loading_queue_lock.release()
             if not finished:
                 pix = PIX_CACHE.get_pix(to_load["filename"], BACKGROUND_ICONS_SIZE)
-                if pix != None:                    
-                    try:
-                        img = Image.open(to_load["filename"])                        
-                        if img.mode != 'RGB':
-                            img = img.convert('RGB')
-                        img.thumbnail((115, 115), Image.ANTIALIAS)                                                                                                    
-                        img = imtools.round_image(img, {}, False, None, 5, 255)  
-                        img = imtools.drop_shadow(img, 5, 5, background_color=(255, 255, 255, 0), shadow_color=0x444444, border=8, shadow_blur=3, force_background_color=False, cache=None)        
-                        # Convert Image -> Pixbuf (save to file, GTK3 is not reliable for that)
-                        f = tempfile.NamedTemporaryFile(delete=False)
-                        filename = f.name
-                        f.close()        
-                        img.save(filename, "png")
-                        pix = PIX_CACHE.get_pix(filename, BACKGROUND_ICONS_SIZE)                     
-                    except Exception, detail:
-                        print "Failed to convert %s: %s" % (to_load["filename"], detail)
-                        pass
+                if pix != None:
                     if "name" in to_load:
                         label = to_load["name"]
                     else:
