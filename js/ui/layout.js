@@ -55,14 +55,6 @@ LayoutManager.prototype = {
         this.addChrome(this.keyboardBox, { visibleInFullscreen: true });
         this._keyboardHeightNotifyId = 0;
 
-        this.hotCornerManager = new HotCorner.HotCornerManager();
-        let hotCorners = this.hotCornerManager.getCornerActors();
-        let overviewIcons = this.hotCornerManager.getIconActors();
-        for (let i = 0; i < 4; i ++) { // There are only four hot corners
-            this.addChrome(hotCorners[i]);
-            this.addChrome(overviewIcons[i], {visibleInFullscreen: false});
-        }
-
         this._processPanelSettings();
         this._monitorsChanged();
 
@@ -90,8 +82,8 @@ LayoutManager.prototype = {
     },
 
     // This is called by Main after everything else is constructed;
-    // Chrome.init() needs access to Main.overview, which didn't exist
-    // yet when the LayoutManager was constructed.
+    // Certain functions need to access other Main elements that do
+    // not exist yet when the LayoutManager was constructed.
     init: function() {
         this._chrome.init();
 
@@ -101,6 +93,8 @@ LayoutManager.prototype = {
 
         this.edgeRight.enabled = this.enabledEdgeFlip;
         this.edgeLeft.enabled = this.enabledEdgeFlip;
+
+        this.hotCornerManager = new HotCorner.HotCornerManager();
     },
     
     _toggleExpo: function() {
@@ -155,10 +149,11 @@ LayoutManager.prototype = {
     },
 
     _updateHotCorners: function() {
-        this.hotCornerManager.updatePosition(this.primaryMonitor, this.bottomMonitor);
+        if (this.hotCornerManager)
+            this.hotCornerManager.updatePosition(this.primaryMonitor, this.bottomMonitor);
     },
 
-    _updateBoxes: function() {                
+    _updateBoxes: function() {
         this._updateHotCorners();
 
         let getPanelHeight = function(panel) {
