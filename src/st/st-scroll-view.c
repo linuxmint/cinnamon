@@ -210,13 +210,6 @@ st_scroll_view_update_vfade_effect (StScrollView *self,
   clutter_actor_queue_redraw (CLUTTER_ACTOR (self));
 }
 
-
-enum {
-    SLOW,
-    MEDIUM,
-    FAST
-};
-
 static gboolean
 get_sub_region_y (gint   mouse_y,
                   gfloat box_y,
