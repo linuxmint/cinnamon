@@ -80,18 +80,14 @@ G_DEFINE_TYPE_WITH_CODE (StScrollView, st_scroll_view, ST_TYPE_BIN,
 
 #define AUTO_SCROLL_POLL_INTERVAL 15
 
-#define AUTO_SCROLL_TOTAL_REGION 125
-#define AUTO_SCROLL_SLOW_RANGE 25 /* total of all 3 ranges should equal AUTO_SCROLL_TOTAL_REGION */
-#define AUTO_SCROLL_MID_RANGE 25
-#define AUTO_SCROLL_HIGH_RANGE 75
+#define AUTO_SCROLL_TOTAL_REGION 100
 
 #define AUTO_SCROLL_OVERLAP 10 /* autoscroll region extends this far into the scroll view
                                 * remaining portion of region is above or below the view
                                 */
 
-#define AUTO_SCROLL_SLOW_SPEED 3.0 /* gdouble - the increment/speed of the auto scrolling */
-#define AUTO_SCROLL_MEDIUM_SPEED 12.0
-#define AUTO_SCROLL_FAST_SPEED 22.0
+/* gdouble - from 0 to TOTAL_REGION / this number to get scroll delta */
+#define AUTO_SCROLL_SPEED_DIVISOR 4.0
 
 struct _StScrollViewPrivate
 {
@@ -233,23 +229,9 @@ get_sub_region_y (gint   mouse_y,
     gfloat real_y_lower_limit = box_y + height - AUTO_SCROLL_OVERLAP + AUTO_SCROLL_TOTAL_REGION;
 
     if (up) {
-        if (mouse_y >= real_y_upper_limit && mouse_y < real_y_upper_limit + AUTO_SCROLL_HIGH_RANGE) {
-            *sub_region = FAST;
-        } else if (mouse_y >= real_y_upper_limit + AUTO_SCROLL_HIGH_RANGE &&
-                   mouse_y < real_y_upper_limit + AUTO_SCROLL_HIGH_RANGE + AUTO_SCROLL_MID_RANGE) {
-            *sub_region = MEDIUM;
-        } else {
-            *sub_region = SLOW;
-        }
+        *sub_region = (real_y_upper_limit + AUTO_SCROLL_TOTAL_REGION) - mouse_y;
     } else {
-        if (mouse_y <= real_y_lower_limit && mouse_y > real_y_lower_limit - AUTO_SCROLL_HIGH_RANGE) {
-            *sub_region = FAST;
-        } else if (mouse_y <= real_y_lower_limit - AUTO_SCROLL_HIGH_RANGE &&
-                   mouse_y > real_y_lower_limit - AUTO_SCROLL_HIGH_RANGE - AUTO_SCROLL_MID_RANGE) {
-            *sub_region = MEDIUM;
-        } else {
-            *sub_region = SLOW;
-        }
+        *sub_region = mouse_y - (real_y_lower_limit - AUTO_SCROLL_TOTAL_REGION);
     }
     return up;
 }
@@ -270,23 +252,10 @@ calculate_and_scroll (ClutterActor  *self,
 
     up = get_sub_region_y (mouse_y, box_y, height, &sub_region);
 
-    switch (sub_region) {
-        case FAST:
-            delta = AUTO_SCROLL_FAST_SPEED;
-            break;
-        case MEDIUM:
-            delta = AUTO_SCROLL_MEDIUM_SPEED;
-            break;
-        case SLOW:
-            delta = AUTO_SCROLL_SLOW_SPEED;
-            break;
-        default:
-            delta = AUTO_SCROLL_SLOW_SPEED;
-            break;
-    }
-
     if (up)
-        delta *= -1.0;
+        delta = sub_region * -1.0 / AUTO_SCROLL_SPEED_DIVISOR;
+    else
+        delta = sub_region / AUTO_SCROLL_SPEED_DIVISOR;
 
     g_object_get (priv->vadjustment,
                     "value", &vvalue,
