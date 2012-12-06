@@ -216,7 +216,7 @@ get_sub_region_y (gint   mouse_y,
                   gfloat height,
                   gint   *sub_region)
 {
-    gboolean up = mouse_y < (box_y + AUTO_SCROLL_TOTAL_REGION);
+    gboolean up = mouse_y < (box_y + (height / 2));
 
     gfloat real_y_upper_limit = box_y + AUTO_SCROLL_OVERLAP - AUTO_SCROLL_TOTAL_REGION;
     gfloat real_y_lower_limit = box_y + height - AUTO_SCROLL_OVERLAP + AUTO_SCROLL_TOTAL_REGION;
