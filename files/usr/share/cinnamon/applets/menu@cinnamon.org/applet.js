@@ -932,8 +932,9 @@ MyApplet.prototype = {
             let scrollBoxHeight = (this.leftBox.get_allocation_box().y2-this.leftBox.get_allocation_box().y1) -
                                     (this.searchBox.get_allocation_box().y2-this.searchBox.get_allocation_box().y1);
             this.applicationsScrollBox.style = "height: "+scrollBoxHeight+"px;";
-            this._select_category(null, this._allAppsCategoryButton);
-    } else {
+
+            Mainloop.idle_add(Lang.bind(this, this._initial_cat_selection));
+        } else {
             this.actor.remove_style_pseudo_class('active');            
             if (this.searchActive) {
                 this.resetSearch();
@@ -947,6 +948,10 @@ MyApplet.prototype = {
             this._clearAllSelections();
             this.destroyVectorBox();
         }
+    },
+
+    _initial_cat_selection: function () {
+        this._select_category(null, this._allAppsCategoryButton);
     },
 
     destroy: function() {
