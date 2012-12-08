@@ -48,7 +48,6 @@ const CIN_LOG_FOLDER = GLib.get_home_dir() + '/.cinnamon/';
 
 let automountManager = null;
 let autorunManager = null;
-let applets = [];
 let panel = null;
 let panel2 = null;
 
