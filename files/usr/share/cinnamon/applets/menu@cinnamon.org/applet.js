@@ -955,7 +955,7 @@ MyApplet.prototype = {
             this._previousTreeSelectedActor = null;
             this._previousSelectedActor = null;
             this.closeApplicationsContextMenus(null, false);
-            this._clearAllSelections();
+            this._clearAllSelections(false);
         }
     },
 
@@ -1674,7 +1674,7 @@ MyApplet.prototype = {
         this.catBoxIter = new VisibleChildIterator(this, this.categoriesBox);
         this.categoriesBox._vis_iter = this.catBoxIter;
         Mainloop.idle_add(Lang.bind(this, function() {
-            this._clearAllSelections();
+            this._clearAllSelections(true);
         }));
     },
 
@@ -1687,12 +1687,14 @@ MyApplet.prototype = {
         }
     },
 
-    _clearAllSelections: function() {
+    _clearAllSelections: function(hide_apps) {
         let actors = this.applicationsBox.get_children();
         for (var i=0; i<actors.length; i++) {
             let actor = actors[i];
             actor.style_class = "menu-application-button";
-            actor.hide();
+	    if (hide_apps) {
+		actor.hide();
+	    }
         }
         let actors = this.categoriesBox.get_children();
         for (var i=0; i<actors.length; i++){
@@ -1853,7 +1855,7 @@ MyApplet.prototype = {
         this.searchEntry.set_text("");
         this._previousSearchPattern = "";
         this.searchActive = false;
-        this._clearAllSelections();
+        this._clearAllSelections(true);
         this._setCategoriesButtonActive(true);
         global.stage.set_key_focus(this.searchEntry);
      },
@@ -1867,6 +1869,7 @@ MyApplet.prototype = {
             this.searchActive = searchString != '';
             this._fileFolderAccessActive = this.searchActive && this.searchFilesystem;
             this._clearAllSelections();
+
             if (this.searchActive) {
                 this.searchEntry.set_secondary_icon(this._searchActiveIcon);
                 if (this._searchIconClickedId == 0) {
