@@ -838,9 +838,20 @@ WindowManager.prototype = {
             Main.layoutManager.addChrome(label, { visibleInFullscreen: false, affectsInputRegion: false });
             let workspace_osd_x = global.settings.get_int("workspace-osd-x");
             let workspace_osd_y = global.settings.get_int("workspace-osd-y");
-            let x = (monitor.width * workspace_osd_x /100 - label.width/2);
-            let y = (monitor.height * workspace_osd_y /100 - label.height/2);
-            label.set_position(x, y);  
+            /*
+             * This aligns the osd edges to the minimum/maximum values from gsettings,
+             * if those are selected to be used. For values in between minimum/maximum,
+             * it shifts the osd by half of the percentage used of the overall space available
+             * for display (100% - (left and right 'padding')).
+             * The horizontal minimum/maximum values are 5% and 95%, resulting in 90% available for positioning
+             * If the user choses 50% as osd position, these calculations result the osd being centered onscreen
+             */
+            let [minX, maxX, minY, maxY] = [5, 95, 5, 95];
+            let delta = (workspace_osd_x - minX) / (maxX - minX);
+            let x = Math.round((monitor.width * workspace_osd_x / 100) - (label.width * delta));
+            delta = (workspace_osd_y - minY) / (maxY - minY);
+            let y = Math.round((monitor.height * workspace_osd_y / 100) - (label.height * delta));
+            label.set_position(x, y);
             let duration = global.settings.get_int("workspace-osd-duration") / 1000;
             Tweener.addTween(label, {   opacity: 255,
                                         time: duration,
