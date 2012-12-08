@@ -8,7 +8,6 @@ const Mainloop = imports.mainloop;
 const Meta = imports.gi.Meta;
 const Cinnamon = imports.gi.Cinnamon;
 const St = imports.gi.St;
-const PointerTracker = imports.misc.pointerTracker;
 
 const AutomountManager = imports.ui.automountManager;
 const AutorunManager = imports.ui.autorunManager;
@@ -48,10 +47,10 @@ const CIN_LOG_FOLDER = GLib.get_home_dir() + '/.cinnamon/';
 
 let automountManager = null;
 let autorunManager = null;
-let applets = [];
 let panel = null;
 let panel2 = null;
 
+let hotCorners = [];
 let placesManager = null;
 let overview = null;
 let expo = null;
@@ -80,7 +79,6 @@ let _cssStylesheet = null;
 let dynamicWorkspaces = null;
 let nWorks = null;
 let tracker = null;
-let desktopShown;
 
 let workspace_names = [];
 
@@ -137,7 +135,6 @@ function _initUserSession() {
     global.screen.override_workspace_layout(Meta.ScreenCorner.TOPLEFT, false, 1, -1);
 
     ExtensionSystem.init();
-    ExtensionSystem.loadExtensions();
 
     Meta.keybindings_set_custom_handler('panel-run-dialog', function() {
        getRunDialog().open();
@@ -194,7 +191,7 @@ function start() {
     // now; to do so we'd need to convert from its async calls
     // back into sync ones.
     DBus.session.flush();
-
+    
     // Ensure CinnamonWindowTracker and CinnamonAppUsage are initialized; this will
     // also initialize CinnamonAppSystem first.  CinnamonAppSystem
     // needs to load all the .desktop files, and CinnamonWindowTracker
@@ -219,8 +216,10 @@ function start() {
     else if (desktop_layout == LAYOUT_CLASSIC) {
         applet_side = St.Side.TOP;        
     }
+
+    _defaultCssStylesheet = global.datadir + '/theme/cinnamon.css';
+    loadTheme();
     
-    _defaultCssStylesheet = global.datadir + '/theme/cinnamon.css';    
     themeManager = new ThemeManager.ThemeManager();
 
     // Set up stage hierarchy to group all UI actors under one container.
@@ -238,29 +237,26 @@ function start() {
     global.top_window_group.reparent(global.stage);
 
     layoutManager = new Layout.LayoutManager();
-    let pointerTracker = new PointerTracker.PointerTracker();
-    pointerTracker.setPosition(layoutManager.primaryMonitor.width/2, layoutManager.primaryMonitor.height/2);
-
     xdndHandler = new XdndHandler.XdndHandler();
     // This overview object is just a stub for non-user sessions
-    overview = new Overview.Overview();
-    expo = new Expo.Expo();
+    overview = new Overview.Overview({ isDummy: false });
+    expo = new Expo.Expo({ isDummy: false });
     magnifier = new Magnifier.Magnifier();
     statusIconDispatcher = new StatusIconDispatcher.StatusIconDispatcher();  
                     
-    if (desktop_layout == LAYOUT_TRADITIONAL) {
-        panel = new Panel.Panel(true, true);
+    if (desktop_layout == LAYOUT_TRADITIONAL) {                                    
+        panel = new Panel.Panel(true);           
         panel.actor.add_style_class_name('panel-bottom');
         layoutManager.panelBox.add(panel.actor);
     }
     else if (desktop_layout == LAYOUT_FLIPPED) {
-        panel = new Panel.Panel(false, true);
+        panel = new Panel.Panel(false);                 
         panel.actor.add_style_class_name('panel-top');
-        layoutManager.panelBox.add(panel.actor);
+        layoutManager.panelBox.add(panel.actor);  
     }
     else if (desktop_layout == LAYOUT_CLASSIC) {
-        panel = new Panel.Panel(false, true);
-        panel2 = new Panel.Panel(true, false);
+        panel = new Panel.Panel(false);         
+        panel2 = new Panel.Panel(true);         
         panel.actor.add_style_class_name('panel-top');
         panel2.actor.add_style_class_name('panel-bottom');
         layoutManager.panelBox.add(panel.actor);   
@@ -325,12 +321,9 @@ function start() {
     global.screen.connect('window-left-monitor', _windowLeftMonitor);
     global.screen.connect('restacked', _windowsRestacked);
 
-    global.window_manager.connect('map', _onWindowMapped);
-
     _nWorkspacesChanged();
     
     AppletManager.init();
-    applets = AppletManager.loadApplets();
 }
 
 function enablePanels() {
@@ -396,10 +389,6 @@ function getWorkspaceName(index) {
         _makeDefaultWorkspaceName(index);
 }
 
-function hasDefaultWorkspaceName(index) {
-    return getWorkspaceName(index) == _makeDefaultWorkspaceName(index);
-}
-
 function _addWorkspace() {
     if (dynamicWorkspaces)
         return false;
@@ -422,20 +411,6 @@ function _removeWorkspace(workspace) {
     global.settings.set_int("number-workspaces", nWorks);
     global.screen.remove_workspace(workspace, global.get_current_time());
     return true;
-}
-
-function moveWindowToNewWorkspace(metaWindow, switchToNewWorkspace) {
-    if (switchToNewWorkspace) {
-        let targetCount = global.screen.n_workspaces + 1;
-        let nnwId = global.screen.connect('notify::n-workspaces', function() {
-            global.screen.disconnect(nnwId);
-            if (global.screen.n_workspaces === targetCount) {
-                let newWs = global.screen.get_workspace_by_index(global.screen.n_workspaces - 1);
-                newWs.activate(global.get_current_time());
-            }
-        });
-    }
-    metaWindow.change_workspace_by_index(global.screen.n_workspaces, true, global.get_current_time());
 }
 
 function _staticWorkspaces() {
@@ -550,10 +525,6 @@ function _windowsRestacked() {
     global.sync_pointer();
 }
 
-function _onWindowMapped() {
-    desktopShown = false;
-}
-
 function _queueCheckWorkspaces() {
     if (!dynamicWorkspaces)
         return false;
@@ -563,10 +534,8 @@ function _queueCheckWorkspaces() {
 }
 
 function _nWorkspacesChanged() {
-    nWorks = global.screen.n_workspaces;
     if (!dynamicWorkspaces)
         return false;
-
     let oldNumWorkspaces = _workspaces.length;
     let newNumWorkspaces = global.screen.n_workspaces;
 
@@ -755,11 +724,8 @@ function logStackTrace(msg) {
 }
 
 function isWindowActorDisplayedOnWorkspace(win, workspaceIndex) {
-    if (win.get_workspace() == workspaceIndex) {return true;}
-    let mwin = win.get_meta_window();
-    return mwin && (mwin.is_on_all_workspaces() ||
-        (wm.workspacesOnlyOnPrimary && mwin.get_monitor() != layoutManager.primaryIndex)
-    );
+    return win.get_workspace() == workspaceIndex ||
+        (win.get_meta_window() && win.get_meta_window().is_on_all_workspaces());
 }
 
 function getWindowActorsForWorkspace(workspaceIndex) {
@@ -987,11 +953,6 @@ function activateWindow(window, time, workspaceNum) {
         workspace.activate_with_focus(window, time);
     } else {
         window.activate(time);
-        Mainloop.idle_add(function() {
-            window.foreach_transient(function(win) {
-                win.activate(time);
-            });
-        });
     }
 
     overview.hide();
@@ -1161,17 +1122,4 @@ function getTabList(workspaceOpt, screenOpt) {
         }
     }
     return windows;
-}
-
-/**
- * toggleDesktop:
- *
- * Shows or unshows desktop
- */
-function toggleDesktop() {
-    if (desktopShown)
-        global.screen.unshow_desktop();
-    else
-        global.screen.show_desktop(global.get_current_time());
-    desktopShown = !desktopShown;
 }

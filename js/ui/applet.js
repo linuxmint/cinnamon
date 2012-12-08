@@ -234,7 +234,7 @@ Applet.prototype = {
         let isEditMode = global.settings.get_boolean('panel-edit-mode');
         let items = this._applet_context_menu._getMenuItems();
         if (isEditMode && items.indexOf(this.context_menu_item_remove) == -1) {
-            this.context_menu_item_remove = new MenuItem(_("Remove this applet"), Gtk.STOCK_REMOVE, Lang.bind(null, AppletManager._removeAppletFromPanel, this._uuid));
+            this.context_menu_item_remove = new MenuItem(_("Remove this applet"), Gtk.STOCK_REMOVE, Lang.bind(null, AppletManager._removeAppletFromPanel, this._uuid, this._applet_id));
             this.context_menu_separator = new PopupMenu.PopupSeparatorMenuItem();
             if (this._applet_context_menu._getMenuItems().length > 0) {
                 this._applet_context_menu.addMenuItem(this.context_menu_separator);
