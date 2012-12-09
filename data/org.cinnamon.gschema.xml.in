@@ -393,6 +393,7 @@
     </key>
     
     <key type="i" name="workspace-osd-x">
+      <range min="15" max="85" />
       <default>50</default>
       <_summary>Workspace horizontal position (in percent of the monitor's width)</_summary>
       <_description>
@@ -401,6 +402,7 @@
     </key>
     
     <key type="i" name="workspace-osd-y">
+      <range min="5" max="95" />
       <default>50</default>
       <_summary>Workspace vertical position (in percent of the monitor's height)</_summary>
       <_description>
