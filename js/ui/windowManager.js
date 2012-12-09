@@ -252,13 +252,13 @@ WindowManager.prototype = {
             this._minimizing.push(actor);
             let monitor;
             let yDest;            
-            if (Main.desktop_layout == Main.LAYOUT_TRADITIONAL || Main.desktop_layout == Main.LAYOUT_CLASSIC) {
-                monitor = Main.layoutManager.bottomMonitor;
-                yDest = monitor.height;
-            }
-            else {
+            if (Main.desktop_layout == Main.LAYOUT_FLIPPED) {
                 monitor = Main.layoutManager.primaryMonitor;
                 yDest = 0;
+            }
+            else {
+                monitor = Main.layoutManager.bottomMonitor;
+                yDest = monitor.height;
             }
 
             let xDest = monitor.x + monitor.width/4;

@@ -8,7 +8,7 @@ class Module:
         self.sidePage = sidePage
         self.name = "panel"
 
-        desktop_layouts = [["traditional", _("Traditional (panel at the bottom)")], ["flipped", _("Flipped (panel at the top)")], ["classic", _("Classic (panels at the top and at the bottom)")]]        
+        desktop_layouts = [["traditional", _("Traditional (panel at the bottom)")], ["flipped", _("Flipped (panel at the top)")], ["classic", _("Classic (main panel at the top, secondary at the bottom)")], ["classic-flipped", _("Classic flipped (main panel at the bottom, secondary at the top)")]]
         desktop_layouts_combo = GSettingsComboBox(_("Panel layout"), "org.cinnamon", "desktop-layout", None, desktop_layouts)
         sidePage.add_widget(desktop_layouts_combo) 
         label = Gtk.Label()
@@ -17,7 +17,7 @@ class Module:
 
         settings = Gio.Settings.new("org.cinnamon")
         layout_type = settings.get_string("desktop-layout")
-        if layout_type != "classic":
+        if layout_type == "classic" or layout_type == "flipped":
             sidePage.add_widget(GSettingsCheckButton(_("Auto-hide panel"), "org.cinnamon", "panel-autohide", None))
             box = IndentedHBox()
             box.add(GSettingsSpinButton(_("Show delay"), "org.cinnamon", "panel-show-delay", "org.cinnamon/panel-autohide", 0, 2000, 50, 200, _("milliseconds")))
@@ -26,14 +26,14 @@ class Module:
             box.add(GSettingsSpinButton(_("Hide delay"), "org.cinnamon", "panel-hide-delay", "org.cinnamon/panel-autohide", 0, 2000, 50, 200, _("milliseconds")))
             sidePage.add_widget(box)
         else:
-            sidePage.add_widget(GSettingsCheckButton(_("Auto-hide top panel"), "org.cinnamon", "panel-autohide", None))
+            sidePage.add_widget(GSettingsCheckButton(_("Auto-hide main panel"), "org.cinnamon", "panel-autohide", None))
             box = IndentedHBox()
             box.add(GSettingsSpinButton(_("Show delay"), "org.cinnamon", "panel-show-delay", "org.cinnamon/panel-autohide", 0, 2000, 50, 200, _("milliseconds")))
             sidePage.add_widget(box)
             box = IndentedHBox()
             box.add(GSettingsSpinButton(_("Hide delay"), "org.cinnamon", "panel-hide-delay", "org.cinnamon/panel-autohide", 0, 2000, 50, 200, _("milliseconds")))
             sidePage.add_widget(box)
-            sidePage.add_widget(GSettingsCheckButton(_("Auto-hide bottom panel"), "org.cinnamon", "panel2-autohide", None))
+            sidePage.add_widget(GSettingsCheckButton(_("Auto-hide secondary panel"), "org.cinnamon", "panel2-autohide", None))
             box = IndentedHBox()
             box.add(GSettingsSpinButton(_("Show delay"), "org.cinnamon", "panel2-show-delay", "org.cinnamon/panel2-autohide", 0, 2000, 50, 200, _("milliseconds")))
             sidePage.add_widget(box)

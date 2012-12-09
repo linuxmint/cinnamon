@@ -184,6 +184,15 @@ LayoutManager.prototype = {
             this.panelBox2.set_size(this.bottomMonitor.width, p2height);
             this.panelBox2.set_position(this.bottomMonitor.x, this.bottomMonitor.y + this.bottomMonitor.height - p2height);
         }
+        else if (Main.desktop_layout == Main.LAYOUT_CLASSIC_FLIPPED) { 
+            let p2height = getPanelHeight(Main.panel2);
+
+            this.panelBox2.set_size(this.primaryMonitor.width, p2height);
+            this.panelBox2.set_position(this.primaryMonitor.x, this.primaryMonitor.y);
+
+            this.panelBox.set_size(this.bottomMonitor.width, p1height);
+            this.panelBox.set_position(this.bottomMonitor.x, this.bottomMonitor.y + this.bottomMonitor.height - p2height);
+        }
 
         this.keyboardBox.set_position(this.bottomMonitor.x,
                                       this.bottomMonitor.y + this.bottomMonitor.height);
@@ -237,7 +246,10 @@ LayoutManager.prototype = {
             global.destroy_pointer_barrier(rightPanelBarrier);
 
         if (panelBox.height) {                        
-            if ((Main.desktop_layout == Main.LAYOUT_TRADITIONAL && panelBox==this.panelBox) || (Main.desktop_layout == Main.LAYOUT_CLASSIC && panelBox==this.panelBox2)) {
+            if ((Main.desktop_layout == Main.LAYOUT_TRADITIONAL && panelBox==this.panelBox) ||
+                (Main.desktop_layout == Main.LAYOUT_CLASSIC && panelBox==this.panelBox2) ||
+                (Main.desktop_layout == Main.LAYOUT_CLASSIC_FLIPPED && panelBox==this.panelBox))
+            {
                 let monitor = this.bottomMonitor;
                 leftPanelBarrier = global.create_pointer_barrier(monitor.x, monitor.y + monitor.height - panelBox.height,
                                                                  monitor.x, monitor.y + monitor.height,
@@ -329,6 +341,10 @@ LayoutManager.prototype = {
           this.panelBox.anchor_y  =   this.panelBox.height;
         }
         else if (Main.desktop_layout == Main.LAYOUT_CLASSIC) {
+          this.panelBox.anchor_y  =   this.panelBox.height;
+          this.panelBox2.anchor_y = -(this.panelBox2.height);
+        }
+        else if (Main.desktop_layout == Main.LAYOUT_CLASSIC_FLIPPED) {
           this.panelBox.anchor_y  =   this.panelBox.height;
           this.panelBox2.anchor_y = -(this.panelBox2.height);
         }

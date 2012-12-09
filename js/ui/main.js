@@ -45,6 +45,7 @@ DEFAULT_BACKGROUND_COLOR.from_pixel(0x2266bbff);
 const LAYOUT_TRADITIONAL = "traditional";
 const LAYOUT_FLIPPED = "flipped";
 const LAYOUT_CLASSIC = "classic";
+const LAYOUT_CLASSIC_FLIPPED = "classic-flipped";
 
 const CIN_LOG_FOLDER = GLib.get_home_dir() + '/.cinnamon/';
 
@@ -281,6 +282,14 @@ function start() {
         panel2 = new Panel.Panel(true, false);
         panel.actor.add_style_class_name('panel-top');
         panel2.actor.add_style_class_name('panel-bottom');
+        layoutManager.panelBox.add(panel.actor);   
+        layoutManager.panelBox2.add(panel2.actor);   
+    }
+    else if (desktop_layout == LAYOUT_CLASSIC_FLIPPED) {
+        panel = new Panel.Panel(true, true);
+        panel2 = new Panel.Panel(false, false);
+        panel.actor.add_style_class_name('panel-bottom');
+        panel2.actor.add_style_class_name('panel-top');
         layoutManager.panelBox.add(panel.actor);   
         layoutManager.panelBox2.add(panel2.actor);   
     }
