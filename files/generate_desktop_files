@@ -26,12 +26,12 @@ Name=Cinnamon Settings
 """)
 
 import gettext
-gettext.install("cinnamon", "/usr/share/cinnamon/locale")
+gettext.install("cinnamon", "/usr/share/locale")
 
-for directory in os.listdir("/usr/share/cinnamon/locale"):
-	if os.path.isdir(os.path.join("/usr/share/cinnamon/locale", directory)):
+for directory in os.listdir("/usr/share/locale"):
+	if os.path.isdir(os.path.join("/usr/share/locale", directory)):
 		try:
-			language = gettext.translation('cinnamon-settings', "/usr/share/cinnamon/locale", languages=[directory])
+			language = gettext.translation('cinnamon-settings', "/usr/share/locale", languages=[directory])
 			language.install()
 			desktopFile.writelines("Name[%s]=%s\n" % (directory, _(menuName)))
 		except:
@@ -39,10 +39,10 @@ for directory in os.listdir("/usr/share/cinnamon/locale"):
 
 desktopFile.writelines("Comment=Fine-tune Cinnamon settings\n")
 
-for directory in os.listdir("/usr/share/cinnamon/locale"):
-	if os.path.isdir(os.path.join("/usr/share/cinnamon/locale", directory)):
+for directory in os.listdir("/usr/share/locale"):
+	if os.path.isdir(os.path.join("/usr/share/locale", directory)):
 		try:
-			language = gettext.translation('cinnamon-settings', "/usr/share/cinnamon/locale", languages=[directory])
+			language = gettext.translation('cinnamon-settings', "/usr/share/locale", languages=[directory])
 			language.install()			
 			desktopFile.writelines("Comment[%s]=%s\n" % (directory, _(menuComment)))
 		except:
