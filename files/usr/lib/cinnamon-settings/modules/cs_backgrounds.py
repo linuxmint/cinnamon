@@ -10,7 +10,7 @@ import dbus
 import imtools
 import gettext
 
-gettext.install("cinnamon", "/usr/share/cinnamon/locale")
+gettext.install("cinnamon", "/usr/share/locale")
 
 BACKGROUND_MODES = [
     ("wallpaper", _("Wallpaper")),

@@ -6,7 +6,7 @@ import math
 import cgi
 import gettext
 
-gettext.install("cinnamon", "/usr/share/cinnamon/locale")
+gettext.install("cinnamon", "/usr/share/locale")
 
 FORBIDDEN_KEYVALS = [
     Gdk.KEY_Home,
