@@ -22,7 +22,6 @@ const Keyboard = imports.ui.keyboard;
 const MessageTray = imports.ui.messageTray;
 const Overview = imports.ui.overview;
 const Expo = imports.ui.expo;
-const Panel = imports.ui.panel;
 const PlacesManager = imports.ui.placesManager;
 const RunDialog = imports.ui.runDialog;
 const Layout = imports.ui.layout;
@@ -42,17 +41,10 @@ const Util = imports.misc.util;
 const DEFAULT_BACKGROUND_COLOR = new Clutter.Color();
 DEFAULT_BACKGROUND_COLOR.from_pixel(0x2266bbff);
 
-const LAYOUT_TRADITIONAL = "traditional";
-const LAYOUT_FLIPPED = "flipped";
-const LAYOUT_CLASSIC = "classic";
-
 const CIN_LOG_FOLDER = GLib.get_home_dir() + '/.cinnamon/';
 
 let automountManager = null;
 let autorunManager = null;
-
-let panel = null;
-let panel2 = null;
 
 let placesManager = null;
 let overview = null;
@@ -88,23 +80,22 @@ let workspace_names = [];
 
 let background = null;
 
-let desktop_layout;
-let applet_side = St.Side.BOTTOM;
 let deskletContainer = null;
-
 let software_rendering = false;
 
 
 let lg_log_file;
 let can_log = false;
 
-
-
 // Override Gettext localization
 const Gettext = imports.gettext;
 Gettext.bindtextdomain('cinnamon', '/usr/share/cinnamon/locale');
 Gettext.textdomain('cinnamon');
 const _ = Gettext.gettext;
+
+// backward-compatibility hack:
+__defineGetter__("panel", function() { return layoutManager.panel; });
+__defineGetter__("panel2", function() { return layoutManager.panel2; });
 
 function _initRecorder() {
     let recorderSettings = new Gio.Settings({ schema: 'org.cinnamon.recorder' });
@@ -216,14 +207,6 @@ function start() {
     global.stage.color = DEFAULT_BACKGROUND_COLOR;
     global.stage.no_clear_hint = true;
     
-    desktop_layout = global.settings.get_string("desktop-layout"); 
-    if (desktop_layout == LAYOUT_FLIPPED) {
-        applet_side = St.Side.TOP;        
-    }
-    else if (desktop_layout == LAYOUT_CLASSIC) {
-        applet_side = St.Side.TOP;        
-    }
-    
     Gtk.IconTheme.get_default().append_search_path("/usr/share/cinnamon/icons/");
     _defaultCssStylesheet = global.datadir + '/theme/cinnamon.css';
 
@@ -277,27 +260,6 @@ function start() {
     expo = new Expo.Expo();
     magnifier = new Magnifier.Magnifier();
     statusIconDispatcher = new StatusIconDispatcher.StatusIconDispatcher();  
-                    
-    if (desktop_layout == LAYOUT_TRADITIONAL) {
-        panel = new Panel.Panel(true, true);
-        panel.actor.add_style_class_name('panel-bottom');
-        layoutManager.panelBox.add(panel.actor);
-    }
-    else if (desktop_layout == LAYOUT_FLIPPED) {
-        panel = new Panel.Panel(false, true);
-        panel.actor.add_style_class_name('panel-top');
-        layoutManager.panelBox.add(panel.actor);
-    }
-    else if (desktop_layout == LAYOUT_CLASSIC) {
-        panel = new Panel.Panel(false, true);
-        panel2 = new Panel.Panel(true, false);
-        panel.actor.add_style_class_name('panel-top');
-        panel2.actor.add_style_class_name('panel-bottom');
-        layoutManager.panelBox.add(panel.actor);   
-        layoutManager.panelBox2.add(panel2.actor);   
-    }
-    layoutManager._updateBoxes();
-    
     wm = new WindowManager.WindowManager();
     messageTray = new MessageTray.MessageTray();
     keyboard = new Keyboard.Keyboard();
@@ -324,7 +286,7 @@ function start() {
     expo.init();
 
     _initUserSession();
-    statusIconDispatcher.start(panel.actor);
+    statusIconDispatcher.start(layoutManager.panel.actor);
 
     // Provide the bus object for gnome-session to
     // initiate logouts.
@@ -364,13 +326,11 @@ function start() {
 }
 
 function enablePanels() {
-    if (panel) panel.enable();
-    if (panel2) panel2.enable();
+    layoutManager.enablePanels();
 }
 
 function disablePanels() {
-    if (panel) panel.disable();
-    if (panel2) panel2.disable();
+    layoutManager.disablePanels();
 }
 
 let _workspaces = [];

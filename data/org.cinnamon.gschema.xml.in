@@ -269,11 +269,21 @@
        Duration of the effect (in milliseconds)    
       </_description>
     </key>
+
+     <key name="desktop-panel-layout" type="s">
+      <default>"traditional"</default>
+      <_summary>Panel-layout style</_summary>
+      <_description>
+       Layout styles: "traditional" (a single panel at the bottom), "flipped" (a single panel at the top),
+       "classic" (main panel at the top, secondary panel at the bottom), "classic-gold" (main panel at the bottom, secondary panel at the top)
+      </_description>
+    </key>
     
     <key name="desktop-layout" type="s">
       <default>"traditional"</default>
       <_summary>Layout style</_summary>
       <_description>
+      Deprecated, retained for backward compatibility. New versions of Cinnamon use "desktop-panel-layout".
        Layout styles: traditional (1 panel at the bottom), flipped (1 panel on top), classic (1 panel on top, 1 panel at the bottom)
       </_description>
     </key>
