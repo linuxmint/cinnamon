@@ -204,7 +204,7 @@ function removeAppletFromPanels(appletDefinition) {
     let applet = appletObj[appletDefinition.applet_id];
     if (applet) {
         try {
-            applet.on_applet_removed_from_panel();
+            applet._onAppletRemovedFromPanel();
         } catch (e) {
             global.logError("Problem with applet: " + appletDefinition.uuid + "/" + appletDefinition.applet_id +
                             " on_applet_removed_from_panel method: " + e);
