@@ -324,6 +324,8 @@ function start() {
     global.screen.connect('window-entered-monitor', _windowEnteredMonitor);
     global.screen.connect('window-left-monitor', _windowLeftMonitor);
     global.screen.connect('restacked', _windowsRestacked);
+    
+    global.settings.connect('changed::number-workspaces', _staticWorkspaces);
 
     global.window_manager.connect('map', _onWindowMapped);
 
@@ -439,6 +441,7 @@ function moveWindowToNewWorkspace(metaWindow, switchToNewWorkspace) {
 }
 
 function _staticWorkspaces() {
+    nWorks = global.settings.get_int('number-workspaces');
     let i;
     let dif = nWorks - global.screen.n_workspaces;
     if (dif > 0) {
