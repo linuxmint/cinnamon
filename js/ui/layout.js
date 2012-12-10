@@ -9,6 +9,7 @@ const St = imports.gi.St;
 const Main = imports.ui.main;
 const Params = imports.misc.params;
 const ScreenSaver = imports.misc.screenSaver;
+const Panel = imports.ui.panel;
 const Tweener = imports.ui.tweener;
 const EdgeFlip = imports.ui.edgeFlip;
 const HotCorner = imports.ui.hotCorner;
@@ -16,6 +17,11 @@ const DeskletManager = imports.ui.deskletManager;
 
 const STARTUP_ANIMATION_TIME = 0.2;
 const KEYBOARD_ANIMATION_TIME = 0.5;
+
+const LAYOUT_TRADITIONAL = "traditional";
+const LAYOUT_FLIPPED = "flipped";
+const LAYOUT_CLASSIC = "classic";
+const LAYOUT_CLASSIC_FLIPPED = "classic-flipped";
 
 function LayoutManager() {
     this._init.apply(this, arguments);
@@ -56,10 +62,22 @@ LayoutManager.prototype = {
         this.addChrome(this.keyboardBox, { visibleInFullscreen: true });
         this._keyboardHeightNotifyId = 0;
 
-        this._processPanelSettings();
+        this._panels = [];
+        this._applet_side = St.Side.BOTTOM;
+        this._desktop_layout = global.settings.get_string("desktop-layout");
+        if (this._desktop_layout == LAYOUT_FLIPPED) {
+            this._applet_side = St.Side.TOP;        
+        }
+        else if (this._desktop_layout == LAYOUT_CLASSIC) {
+            this._applet_side = St.Side.TOP;        
+        }
+
         this._monitorsChanged();
+        this.setupDesktopLayout();
+        this._processPanelSettings();
 
         global.settings.connect("changed::enable-edge-flip", Lang.bind(this, this._onEnableEdgeFlipChanged));
+        global.settings.connect("changed::panel-scale-text-icons", Lang.bind(this, this._processPanelSettings))
         global.settings.connect("changed::panel-autohide", Lang.bind(this, this._processPanelSettings));
         global.settings.connect("changed::panel2-autohide", Lang.bind(this, this._processPanelSettings));
         global.settings.connect("changed::panel-resizable", Lang.bind(this, this._processPanelSettings));
@@ -70,6 +88,67 @@ LayoutManager.prototype = {
                               Lang.bind(this, this._monitorsChanged));
         global.window_manager.connect('switch-workspace',
                                       Lang.bind(this, this._windowsRestacked));
+    },
+
+    setupDesktopLayout: function() {
+        this.setupDesktopLayout = null; // don't call again
+
+        if (this._desktop_layout == LAYOUT_FLIPPED) {
+            this._panels[0] = new Panel.Panel(this, false, true);
+            this._panels[0].actor.add_style_class_name('panel-top');
+            this.panelBox.add(this._panels[0].actor);
+        }
+        else if (this._desktop_layout == LAYOUT_CLASSIC) {
+            this._panels[0] = new Panel.Panel(this, false, true);
+            this._panels[1] = new Panel.Panel(this, true, false);
+            this._panels[0].actor.add_style_class_name('panel-top');
+            this._panels[1].actor.add_style_class_name('panel-bottom');
+            this.panelBox.add(this._panels[0].actor);   
+            this.panelBox2.add(this._panels[1].actor);   
+        }
+        else if (this._desktop_layout == LAYOUT_CLASSIC_FLIPPED) {
+            this._panels[0] = new Panel.Panel(this, true, true);
+            this._panels[1] = new Panel.Panel(this, false, false);
+            this._panels[0].actor.add_style_class_name('panel-bottom');
+            this._panels[1].actor.add_style_class_name('panel-top');
+            this.panelBox.add(this._panels[0].actor);   
+            this.panelBox2.add(this._panels[1].actor);   
+        }
+        else {
+            this._desktop_layout = LAYOUT_TRADITIONAL;
+            this._panels[0] = new Panel.Panel(this, true, true);
+            this._panels[0].actor.add_style_class_name('panel-bottom');
+            this.panelBox.add(this._panels[0].actor);
+        }
+        this._panels.forEach(function(panel) {
+            panel.connect('height-changed', Lang.bind(this, this._processPanelSettings));
+        }, this);
+    },
+
+    get desktop_layout() {
+        return this._desktop_layout;
+    },
+
+    get applet_side() {
+        return this._applet_side;
+    },
+
+    get panel() {
+        return this._panels[0];
+    },
+
+    get panel2() {
+        return this._panels[1];
+    },
+
+    enablePanels: function() {
+        if (this._panels[0]) this._panels[0].enable();
+        if (this._panels[1]) this._panels[1].enable();
+    },
+
+    disablePanels: function() {
+        if (this._panels[0]) this._panels[0].disable();
+        if (this._panels[1]) this._panels[1].disable();
     },
 
     _onEnableEdgeFlipChanged: function(){
@@ -111,16 +190,36 @@ LayoutManager.prototype = {
     },
     
     _processPanelSettings: function() {
-        if (this._processPanelSettingsTimeout) {
-            Mainloop.source_remove(this._processPanelSettingsTimeout);
-        }
-        // delay this action somewhat, to let others do their thing before us
-        this._processPanelSettingsTimeout = Mainloop.timeout_add(0, Lang.bind(this, function() {
-            this._processPanelSettingsTimeout = 0;
-            this._updateBoxes();
-            this._chrome.modifyActorParams(this.panelBox, { affectsStruts: Main.panel && !Main.panel.isHideable() });
-            this._chrome.modifyActorParams(this.panelBox2, { affectsStruts: Main.panel2 && !Main.panel2.isHideable() });
-        }));
+        let panelResizable = global.settings.get_boolean("panel-resizable");
+        let panelScalable = panelResizable && global.settings.get_boolean("panel-scale-text-icons");
+        let ahKeys =["panel-autohide", "panel2-autohide"];
+        this._panels.forEach(function(panel, index) {
+            let panelHeight = null;
+            if (panelResizable) {
+                if (panel.bottomPosition) {
+                    panelHeight = global.settings.get_int("panel-bottom-height");
+                }
+                else {
+                    panelHeight = global.settings.get_int("panel-top-height");
+                }
+            }
+            panel._setPanelHeight(panelHeight, panelScalable);
+            panel._hideable = global.settings.get_boolean(ahKeys[index]);
+            // Show a glimpse of the panel irrespectively of the new setting,
+            // in order to force a region update.
+            // Techically, this should not be necessary if the function is called
+            // when auto-hide is in effect and is not changing, but experience
+            // shows that not flashing the panels may lead to "phantom panels"
+            // where the panels should be if auto-hide was on.
+            panel._hidePanel(true); // force hide
+            panel._showPanel();
+            if (panel._hideable) {
+                panel._hidePanel();
+            }
+        }, this);
+        this._updateBoxes();
+        this._chrome.modifyActorParams(this.panelBox, { affectsStruts: this.panel && !this.panel.isHideable() });
+        this._chrome.modifyActorParams(this.panelBox2, { affectsStruts: this.panel2 && !this.panel2.isHideable() });
     },
     
     _updateMonitors: function() {
@@ -165,18 +264,18 @@ LayoutManager.prototype = {
             return panelHeight;
         };
 
-        let p1height = getPanelHeight(Main.panel);
+        let p1height = getPanelHeight(this.panel);
 
-        if (Main.desktop_layout == Main.LAYOUT_TRADITIONAL) {
+        if (this._desktop_layout == LAYOUT_TRADITIONAL) {
             this.panelBox.set_size(this.bottomMonitor.width, p1height);
             this.panelBox.set_position(this.bottomMonitor.x, this.bottomMonitor.y + this.bottomMonitor.height - p1height);
         }
-        else if (Main.desktop_layout == Main.LAYOUT_FLIPPED) {
+        else if (this._desktop_layout == LAYOUT_FLIPPED) {
             this.panelBox.set_size(this.primaryMonitor.width, p1height);
             this.panelBox.set_position(this.primaryMonitor.x, this.primaryMonitor.y);
         }
-        else if (Main.desktop_layout == Main.LAYOUT_CLASSIC) { 
-            let p2height = getPanelHeight(Main.panel2);
+        else if (this._desktop_layout == LAYOUT_CLASSIC) { 
+            let p2height = getPanelHeight(this.panel2);
 
             this.panelBox.set_size(this.primaryMonitor.width, p1height);
             this.panelBox.set_position(this.primaryMonitor.x, this.primaryMonitor.y);
@@ -184,8 +283,8 @@ LayoutManager.prototype = {
             this.panelBox2.set_size(this.bottomMonitor.width, p2height);
             this.panelBox2.set_position(this.bottomMonitor.x, this.bottomMonitor.y + this.bottomMonitor.height - p2height);
         }
-        else if (Main.desktop_layout == Main.LAYOUT_CLASSIC_FLIPPED) { 
-            let p2height = getPanelHeight(Main.panel2);
+        else if (this._desktop_layout == LAYOUT_CLASSIC_FLIPPED) { 
+            let p2height = getPanelHeight(this.panel2);
 
             this.panelBox2.set_size(this.primaryMonitor.width, p2height);
             this.panelBox2.set_position(this.primaryMonitor.x, this.primaryMonitor.y);
@@ -213,17 +312,17 @@ LayoutManager.prototype = {
             }
             return hideable ? 0 : panelHeight;
         };
-        let p1height = getPanelHeight(Main.panel);
-        if (Main.desktop_layout == Main.LAYOUT_TRADITIONAL) {       
+        let p1height = getPanelHeight(this.panel);
+        if (this._desktop_layout == LAYOUT_TRADITIONAL) {       
             porthole.x = screen.x; porthole.y = screen.y;
             porthole.width = screen.width; porthole.height = screen.height - p1height;
         }
-        else if (Main.desktop_layout == Main.LAYOUT_FLIPPED) {         
+        else if (this._desktop_layout == LAYOUT_FLIPPED) {         
             porthole.x = screen.x; porthole.y = screen.y + p1height;
             porthole.width = screen.width; porthole.height = screen.height - p1height;
         }
-        else if (Main.desktop_layout == Main.LAYOUT_CLASSIC) {
-            let p2height = getPanelHeight(Main.panel2);
+        else if (this._desktop_layout == LAYOUT_CLASSIC) {
+            let p2height = getPanelHeight(this.panel2);
             porthole.x = screen.x; porthole.y = screen.y + p1height;
             porthole.width = screen.width; porthole.height = screen.height - p1height - p2height;
         }
@@ -246,9 +345,9 @@ LayoutManager.prototype = {
             global.destroy_pointer_barrier(rightPanelBarrier);
 
         if (panelBox.height) {                        
-            if ((Main.desktop_layout == Main.LAYOUT_TRADITIONAL && panelBox==this.panelBox) ||
-                (Main.desktop_layout == Main.LAYOUT_CLASSIC && panelBox==this.panelBox2) ||
-                (Main.desktop_layout == Main.LAYOUT_CLASSIC_FLIPPED && panelBox==this.panelBox))
+            if ((this._desktop_layout == LAYOUT_TRADITIONAL && panelBox==this.panelBox) ||
+                (this._desktop_layout == LAYOUT_CLASSIC && panelBox==this.panelBox2) ||
+                (this._desktop_layout == LAYOUT_CLASSIC_FLIPPED && panelBox==this.panelBox))
             {
                 let monitor = this.bottomMonitor;
                 leftPanelBarrier = global.create_pointer_barrier(monitor.x, monitor.y + monitor.height - panelBox.height,
@@ -334,17 +433,17 @@ LayoutManager.prototype = {
                        onCompleteScope: this
                      };
         
-        if (Main.desktop_layout == Main.LAYOUT_TRADITIONAL) {
+        if (this._desktop_layout == LAYOUT_TRADITIONAL) {
           this.panelBox.anchor_y  = -(this.panelBox.height);
         }
-        else if (Main.desktop_layout == Main.LAYOUT_FLIPPED) {
+        else if (this._desktop_layout == LAYOUT_FLIPPED) {
           this.panelBox.anchor_y  =   this.panelBox.height;
         }
-        else if (Main.desktop_layout == Main.LAYOUT_CLASSIC) {
+        else if (this._desktop_layout == LAYOUT_CLASSIC) {
           this.panelBox.anchor_y  =   this.panelBox.height;
           this.panelBox2.anchor_y = -(this.panelBox2.height);
         }
-        else if (Main.desktop_layout == Main.LAYOUT_CLASSIC_FLIPPED) {
+        else if (this._desktop_layout == LAYOUT_CLASSIC_FLIPPED) {
           this.panelBox.anchor_y  =   this.panelBox.height;
           this.panelBox2.anchor_y = -(this.panelBox2.height);
         }

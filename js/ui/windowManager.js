@@ -251,17 +251,9 @@ WindowManager.prototype = {
             actor.set_scale(1.0, 1.0);
             this._minimizing.push(actor);
             let monitor;
-            let yDest;            
-            if (Main.desktop_layout == Main.LAYOUT_FLIPPED) {
-                monitor = Main.layoutManager.primaryMonitor;
-                yDest = 0;
-            }
-            else {
-                monitor = Main.layoutManager.bottomMonitor;
-                yDest = monitor.height;
-            }
+            let yDest = Main.layoutManager.panelBox.y;
+            let xDest = Main.layoutManager.panelBox.x + Main.layoutManager.panelBox.width/4;
 
-            let xDest = monitor.x + monitor.width/4;
             if (St.Widget.get_default_direction() == St.TextDirection.RTL)
                 xDest = monitor.width - monitor.width/4;
 
