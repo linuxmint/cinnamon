@@ -125,6 +125,7 @@ WindowClone.prototype = {
         // to compensate all over the place we insert a ClutterGroup into
         // the hierarchy that is sized to only the visible portion.
         this.actor = new Clutter.Group({ reactive: true,
+            x: this.origX, y: this.origY,
             width: outerRect.width, height: outerRect.height
             });
         this.refreshClone(true);
