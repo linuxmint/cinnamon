@@ -613,7 +613,7 @@ Panel.prototype = {
             this.panel_sd_key = "panel2-show-delay";
             this.panel_hd_key = "panel2-hide-delay";
         }
-    	this._hidden = false;
+        this._hidden = false;
         this._disabled = false;
         this._hidetime = 0;
         this._hideable = false;
@@ -625,6 +625,7 @@ Panel.prototype = {
         this.actor = new Cinnamon.GenericContainer({ name: 'panel',
                                                   reactive: true });
         this.actor._delegate = this;
+        this.actor.add_style_class_name(bottomPosition ? 'panel-bottom' : 'panel-top');
 
         this._menus = new PopupMenu.PopupMenuManager(this);
 
