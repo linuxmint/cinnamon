@@ -299,36 +299,6 @@ LayoutManager.prototype = {
         this._chrome._queueUpdateRegions();
     },
 
-    getPorthole: function() {
-        let porthole = {};
-        let screen = {x: 0, y: 0, width: global.screen_width, height: global.screen_height};
-        
-        let getPanelHeight = function(panel) {
-            let panelHeight = 0;
-            let hideable = true;
-            if (panel) {
-                panelHeight = panel.actor.get_height();
-                hideable = panel.isHideable();
-            }
-            return hideable ? 0 : panelHeight;
-        };
-        let p1height = getPanelHeight(this.panel);
-        if (this._desktop_layout == LAYOUT_TRADITIONAL) {       
-            porthole.x = screen.x; porthole.y = screen.y;
-            porthole.width = screen.width; porthole.height = screen.height - p1height;
-        }
-        else if (this._desktop_layout == LAYOUT_FLIPPED) {         
-            porthole.x = screen.x; porthole.y = screen.y + p1height;
-            porthole.width = screen.width; porthole.height = screen.height - p1height;
-        }
-        else if (this._desktop_layout == LAYOUT_CLASSIC) {
-            let p2height = getPanelHeight(this.panel2);
-            porthole.x = screen.x; porthole.y = screen.y + p1height;
-            porthole.width = screen.width; porthole.height = screen.height - p1height - p2height;
-        }
-        return porthole;
-    },
-
     _updatePanelBarriers: function(panelBox) {
         let leftPanelBarrier;
         let rightPanelBarrier;
