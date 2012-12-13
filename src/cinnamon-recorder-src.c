@@ -296,7 +296,7 @@ cinnamon_recorder_src_register (void)
 			      plugin_init,
 			      "0.1",
 			      "LGPL",
-			      "cinnamon", "cinnamon", "http://live.gnome.org/Cinnamon");
+			      "cinnamon", "cinnamon", "http://cinnamon.linuxmint.com");
 
   registered = TRUE;
 }
