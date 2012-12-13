@@ -85,12 +85,14 @@ LayoutManager.prototype = {
         this.setupDesktopLayout = null; // don't call again
 
         this._applet_side = St.Side.BOTTOM;
-        this._desktop_layout = global.settings.get_string("desktop-layout");
-
-        let newLayoutString = "bottom"; // default
+        this._desktop_layout = global.settings.get_string("desktop-panel-layout");
+        let newLayoutString = "";
         
         if (this._desktop_layout == LAYOUT_FLIPPED) {
             newLayoutString = "top";
+        }
+        else if (this._desktop_layout == LAYOUT_TRADITIONAL) {
+            newLayoutString = "bottom";
         }
         else if (this._desktop_layout == LAYOUT_CLASSIC) {
             newLayoutString = "top+bottom";
@@ -98,18 +100,28 @@ LayoutManager.prototype = {
         else if (this._desktop_layout == LAYOUT_CLASSIC_FLIPPED) {
             newLayoutString = "bottom+top";
         }
-
+        else {
+            newLayoutString = this._desktop_layout; // could be a data string
+        }
+        
         let panelData = [];
-        newLayoutString.trim().split('+').forEach(function(panelString, index) {
-            let panelOpts = panelString.trim().split(',');
-            let isBottom = !panelOpts[0] || panelOpts[0] != 'top';
-            panelData.push({
+        let parse = Lang.bind(this, function(layoutString) {
+            layoutString.trim().split('+').forEach(function(panelString, index) {
+                let panelOpts = panelString.trim().split(',');
+                let isBottom = !panelOpts[0] || panelOpts[0] != 'top';
+                panelData.push({
                     isBottom: isBottom,
                     // use strings to designate monitors, since the actual index may
                     // change if monitors are rearranged during a session
                     monitorIndex: isBottom ? "bottomIndex" : "primaryIndex"
-            });
-        }, this);
+                });
+            }, this);
+            return panelData.length > 0;
+        });
+
+        if (!parse(newLayoutString)) {
+            parse("bottom"); // this should work if all else fails
+        }
 
         let boxes = [this.panelBox, this.panelBox2];
 
