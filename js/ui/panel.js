@@ -680,8 +680,8 @@ Panel.prototype = {
 
         this.actor.connect('button-release-event', Lang.bind(this, this._onButtonReleaseEvent));                            
         
-        this._setDNDstyle();
-        global.settings.connect("changed::panel-edit-mode", Lang.bind(this, this._setDNDstyle));
+        this._handlePanelEditMode();
+        global.settings.connect("changed::panel-edit-mode", Lang.bind(this, this._handlePanelEditMode));
         this._lastSetHeight = null;
         this.actor.connect('style-changed', Lang.bind(this, function() {
             this.emit('height-changed');
@@ -692,13 +692,20 @@ Panel.prototype = {
         return this._hideable;
     },
     
-    _setDNDstyle: function() {
-        if (global.settings.get_boolean("panel-edit-mode")) {
+    _handlePanelEditMode: function() {
+        this._isEditMode = global.settings.get_boolean("panel-edit-mode");
+        if (this._isEditMode) {
+            if (this.isHideable()) {
+                this._showPanel();
+            }
             this._leftBox.add_style_pseudo_class('dnd');
             this._centerBox.add_style_pseudo_class('dnd');
             this._rightBox.add_style_pseudo_class('dnd');
         }
         else {
+            if (this.isHideable()) {
+                this._hidePanel(true);
+            }
             this._leftBox.remove_style_pseudo_class('dnd');
             this._centerBox.remove_style_pseudo_class('dnd');
             this._rightBox.remove_style_pseudo_class('dnd');
@@ -979,7 +986,7 @@ Panel.prototype = {
     _hidePanel: function(force) {
         if (this._disabled) return;
         
-        if ((!this._hideable && !force) || global.menuStackLength > 0 || this.isMouseOverPanel) return;
+        if ((!this._hideable && !force) || global.menuStackLength > 0 || this.isMouseOverPanel || this._isEditMode) return;
 
         // Force the panel to be on top (hack to correct issues when switching workspace)
         this._layoutManager._windowsRestacked();
