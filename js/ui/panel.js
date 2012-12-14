@@ -688,7 +688,7 @@ Panel.prototype = {
         global.settings.connect("changed::" + PANEL_SHOW_DELAY_KEY, Lang.bind(this, this._onPanelShowDelayChanged));
         global.settings.connect("changed::" + PANEL_HIDE_DELAY_KEY, Lang.bind(this, this._onPanelHideDelayChanged));
         global.settings.connect("changed::" + PANEL_HEIGHT_KEY, Lang.bind(this, this._moveResizePanel));
-        global.settings.connect("changed::panel-edit-mode", Lang.bind(this, this._setDNDstyle));
+        global.settings.connect("changed::panel-edit-mode", Lang.bind(this, this._handlePanelEditMode));
         global.settings.connect("changed::panel-resizable", Lang.bind(this, this._moveResizePanel));
         global.settings.connect("changed::panel-scale-text-icons", Lang.bind(this, this._onScaleTextIconsChanged))
 
@@ -698,7 +698,7 @@ Panel.prototype = {
         this._onPanelShowDelayChanged();
         this._onPanelHideDelayChanged();
         this._moveResizePanel();
-        this._setDNDstyle();
+        this._handlePanelEditMode();
 
         // Animate startup
         Main.layoutManager._chrome.freezeUpdateRegions();
@@ -777,13 +777,20 @@ Panel.prototype = {
         }
     },
 
-    _setDNDstyle: function() {
-        if (global.settings.get_boolean("panel-edit-mode")) {
+    _handlePanelEditMode: function() {
+        this._isEditMode = global.settings.get_boolean("panel-edit-mode");
+        if (this._isEditMode) {
+            if (this.isHideable()) {
+                this._showPanel();
+            }
             this._leftBox.add_style_pseudo_class('dnd');
             this._centerBox.add_style_pseudo_class('dnd');
             this._rightBox.add_style_pseudo_class('dnd');
         }
         else {
+            if (this.isHideable()) {
+                this._hidePanel(true);
+            }
             this._leftBox.remove_style_pseudo_class('dnd');
             this._centerBox.remove_style_pseudo_class('dnd');
             this._rightBox.remove_style_pseudo_class('dnd');
@@ -1111,7 +1118,7 @@ Panel.prototype = {
     _hidePanel: function(force) {
         if (this._disabled) return;
         
-        if ((!this._hideable && !force) || global.menuStackLength > 0 || this.isMouseOverPanel) return;
+        if ((!this._hideable && !force) || global.menuStackLength > 0 || this.isMouseOverPanel || this._isEditMode) return;
 
         // Force the panel to be on top (hack to correct issues when switching workspace)
         Main.layoutManager._windowsRestacked();
