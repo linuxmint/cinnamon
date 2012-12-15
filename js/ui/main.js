@@ -4,6 +4,7 @@ const Clutter = imports.gi.Clutter;
 const DBus = imports.dbus;
 const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
+const Gtk = imports.gi.Gtk;
 const Mainloop = imports.mainloop;
 const Meta = imports.gi.Meta;
 const Cinnamon = imports.gi.Cinnamon;
@@ -29,12 +30,12 @@ const NetworkAgent = imports.ui.networkAgent;
 const NotificationDaemon = imports.ui.notificationDaemon;
 const WindowAttentionHandler = imports.ui.windowAttentionHandler;
 const Scripting = imports.ui.scripting;
+const StatusIconDispatcher = imports.ui.statusIconDispatcher;
 const CinnamonDBus = imports.ui.cinnamonDBus;
 const WindowManager = imports.ui.windowManager;
 const ThemeManager = imports.ui.themeManager;
 const Magnifier = imports.ui.magnifier;
 const XdndHandler = imports.ui.xdndHandler;
-const StatusIconDispatcher = imports.ui.statusIconDispatcher;
 const Util = imports.misc.util;
 
 const DEFAULT_BACKGROUND_COLOR = new Clutter.Color();
@@ -206,6 +207,9 @@ function start() {
     tracker = Cinnamon.WindowTracker.get_default();
     Cinnamon.AppUsage.get_default();
 
+    // Add Cinnamon icons to the Gtk icon list
+    Gtk.IconTheme.get_default().append_search_path("/usr/lib/cinnamon-settings/data/icons/");
+
     // The stage is always covered so Clutter doesn't need to clear it; however
     // the color is used as the default contents for the Muffin root background
     // actor so set it anyways.
@@ -246,25 +250,17 @@ function start() {
     overview = new Overview.Overview();
     expo = new Expo.Expo();
     magnifier = new Magnifier.Magnifier();
-    statusIconDispatcher = new StatusIconDispatcher.StatusIconDispatcher();  
-                    
+    statusIconDispatcher = new StatusIconDispatcher.StatusIconDispatcher();
+
     if (desktop_layout == LAYOUT_TRADITIONAL) {
-        panel = new Panel.Panel(true, true);
-        panel.actor.add_style_class_name('panel-bottom');
-        layoutManager.panelBox.add(panel.actor);
+        panel = new Panel.Panel(true, 1, layoutManager.bottomMonitor);
     }
     else if (desktop_layout == LAYOUT_FLIPPED) {
-        panel = new Panel.Panel(false, true);
-        panel.actor.add_style_class_name('panel-top');
-        layoutManager.panelBox.add(panel.actor);
+        panel = new Panel.Panel(false, 1, layoutManager.primaryMonitor);
     }
     else if (desktop_layout == LAYOUT_CLASSIC) {
-        panel = new Panel.Panel(false, true);
-        panel2 = new Panel.Panel(true, false);
-        panel.actor.add_style_class_name('panel-top');
-        panel2.actor.add_style_class_name('panel-bottom');
-        layoutManager.panelBox.add(panel.actor);   
-        layoutManager.panelBox2.add(panel2.actor);   
+        panel = new Panel.Panel(false, 1, layoutManager.primaryMonitor);
+        panel2 = new Panel.Panel(true, 2, layoutManager.bottomMonitor);
     }
     layoutManager._updateBoxes();
     
