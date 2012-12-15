@@ -249,11 +249,12 @@ LayoutManager.prototype = {
         }
         this.primaryMonitor = this.monitors[this.primaryIndex];
         this.bottomMonitor = this.monitors[this.bottomIndex];
+        this.topMonitor = this.monitors[this.topIndex];
     },
 
     _updateHotCorners: function() {
         if (this.hotCornerManager)
-            this.hotCornerManager.updatePosition(this.primaryMonitor, this.bottomMonitor);
+            this.hotCornerManager.updatePosition(this.topMonitor, this.bottomMonitor);
     },
 
     _getMonitor: function(index) {
