@@ -32,6 +32,7 @@ LayoutManager.prototype = {
         this._rtl = (St.Widget.get_default_direction() == St.TextDirection.RTL);
         this.monitors = [];
         this._panels = [];
+        this._panelBoxes = [];
         this.primaryMonitor = null;
         this.primaryIndex = -1;
         this.hotCornerManager = null;
@@ -40,14 +41,6 @@ LayoutManager.prototype = {
         this._chrome = new Chrome(this);
         this.enabledEdgeFlip = global.settings.get_boolean("enable-edge-flip");
 
-        this.panelBox = new St.BoxLayout({ name: 'panelBox',
-                                           vertical: true });
-
-        this.panelBox2 = new St.BoxLayout({ name: 'panelBox',
-                                            vertical: true });        
-
-        this.addChrome(this.panelBox, { addToWindowgroup: false });
-        this.addChrome(this.panelBox2, { addToWindowgroup: false });
         this.keyboardBox = new St.BoxLayout({ name: 'keyboardBox',
                                               reactive: true,
                                               track_hover: true });
@@ -114,8 +107,6 @@ LayoutManager.prototype = {
             parse("bottom"); // this should work if all else fails
         }
 
-        let boxes = [this.panelBox, this.panelBox2];
-
         panelData.forEach(function(data, index) {
             if (index > 1) {
                 global.logError("cannot handle more than two panels");
@@ -125,8 +116,11 @@ LayoutManager.prototype = {
             if (isPrimary) {
                 this._applet_side = data.isBottom ? St.Side.BOTTOM : St.Side.TOP;
             }
+            let box = new St.BoxLayout({ name: 'panelBox', vertical: true });
+            this.addChrome(box, { addToWindowgroup: false });
+            this._panelBoxes.push(box);
+
             let panel = new Panel.Panel(this, data.isBottom, isPrimary);
-            let box = boxes[index];
             box.add(panel.actor);
             box._panelData = data;
             panel.connect('height-changed', Lang.bind(this, this._processPanelSettings));
@@ -148,6 +142,10 @@ LayoutManager.prototype = {
 
     get panel2() {
         return this._panels[1];
+    },
+
+    get panelBox() {
+        return this._panelBoxes[0];
     },
 
     enablePanels: function() {
@@ -227,8 +225,6 @@ LayoutManager.prototype = {
             }
         }, this);
         this._updateBoxes();
-        this._chrome.modifyActorParams(this.panelBox, { affectsStruts: this.panel && !this.panel.isHideable() });
-        this._chrome.modifyActorParams(this.panelBox2, { affectsStruts: this.panel2 && !this.panel2.isHideable() });
     },
     
     _updateMonitors: function() {
@@ -277,29 +273,26 @@ LayoutManager.prototype = {
             return panelHeight;
         };
 
-        let boxes = [this.panelBox, this.panelBox2];
-        let heights = [getPanelHeight(this.panel), getPanelHeight(this.panel2)];
-        boxes.forEach(function(box, index) {
-            if (box._panelData) {
-                let monitor = this._getMonitor(box._panelData.monitorIndex);
-                box.set_size(monitor.width, heights[index]);
-                if (box._panelData.isBottom) {
-                    box.set_position(monitor.x, monitor.y + monitor.height - heights[index]);
-                }
-                else {
-                    box.set_position(monitor.x, monitor.y);
-                }
-                this._updatePanelBarriers(box);
+        this._panelBoxes.forEach(function(box, index) {
+            let height = getPanelHeight(this._panels[index]);
+            let monitor = this._getMonitor(box._panelData.monitorIndex);
+            box.set_size(monitor.width, height);
+            if (box._panelData.isBottom) {
+                box.set_position(monitor.x, monitor.y + monitor.height - height);
             }
             else {
-                box.set_size(0, 0);
+                box.set_position(monitor.x, monitor.y);
             }
+            this._updatePanelBarriers(box);
+            this._chrome.modifyActorParams(box, { affectsStruts: !this._panels[index].isHideable() });
         }, this);
 
         this.keyboardBox.set_position(this.bottomMonitor.x,
                                       this.bottomMonitor.y + this.bottomMonitor.height);
         this.keyboardBox.set_size(this.bottomMonitor.width, -1);
         this._chrome._queueUpdateRegions();
+        this._panelBoxes.forEach(function(box, index) {
+        }, this);
     },
 
     _updatePanelBarriers: function(panelBox) {
@@ -387,23 +380,11 @@ LayoutManager.prototype = {
                        onComplete: this._startupAnimationComplete,
                        onCompleteScope: this
                      };
-        
-        if (this._desktop_layout == LAYOUT_TRADITIONAL) {
-          this.panelBox.anchor_y  = -(this.panelBox.height);
-        }
-        else if (this._desktop_layout == LAYOUT_FLIPPED) {
-          this.panelBox.anchor_y  =   this.panelBox.height;
-        }
-        else if (this._desktop_layout == LAYOUT_CLASSIC) {
-          this.panelBox.anchor_y  =   this.panelBox.height;
-          this.panelBox2.anchor_y = -(this.panelBox2.height);
-        }
-        else if (this._desktop_layout == LAYOUT_CLASSIC_FLIPPED) {
-          this.panelBox.anchor_y  =   this.panelBox.height;
-          this.panelBox2.anchor_y = -(this.panelBox2.height);
-        }
-        Tweener.addTween(this.panelBox, params);
-        Tweener.addTween(this.panelBox2, params);
+
+        this._panelBoxes.forEach(function(box) {
+            box.anchor_y = box._panelData.isBottom ? -box.height : box.height;
+            Tweener.addTween(box, params);
+        }, this);
     },
 
     _startupAnimationComplete: function() {
