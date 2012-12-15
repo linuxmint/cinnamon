@@ -48,27 +48,19 @@
       <_description>Duration of the delay (in milliseconds)</_description>
     </key>
 
-    <key name="panel-resizable" type="b">
-      <default>false</default>
-      <_summary>Resizable panel</_summary>
-      <_description>
-        Whether the panel uses a user-defined height
-      </_description>
-    </key>
-    
-    <key name="panel-top-height" type="i">
-      <default>25</default>
+    <key name="panel-height" type="as">
+      <default>['1:25','2:25']</default>
       <_summary>Panel size</_summary>
       <_description>
         User-defined panel-height for top panel
       </_description>
     </key>
     
-    <key name="panel-bottom-height" type="i">
-      <default>25</default>
-      <_summary>Panel size</_summary>
+    <key name="panel-resizable" type="b">
+      <default>false</default>
+      <_summary>Resizable panel</_summary>
       <_description>
-        User-defined panel-height for bottom panel
+        Whether the panel uses a user-defined height
       </_description>
     </key>
     
