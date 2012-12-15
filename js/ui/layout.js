@@ -264,17 +264,11 @@ LayoutManager.prototype = {
     _updateBoxes: function() {
         this._updateHotCorners();
 
-        let getPanelHeight = function(panel) {
-            let panelHeight = 0;
-            if (panel) {
-                panelHeight = panel.actor.get_height();
-            }
-            return panelHeight;
-        };
-
         this._panelBoxes.forEach(function(box, index) {
-            let height = getPanelHeight(this._panels[index]);
+            let panel = this._panels[index];
+            let height = panel.actor.get_height();
             let monitor = this._getMonitor(box._panelData.monitorIndex);
+            panel.setCurrentMonitor(monitor);
             box.set_size(monitor.width, height);
             if (box._panelData.isBottom) {
                 box.set_position(monitor.x, monitor.y + monitor.height - height);
@@ -283,15 +277,13 @@ LayoutManager.prototype = {
                 box.set_position(monitor.x, monitor.y);
             }
             this._updatePanelBarriers(box);
-            this._chrome.modifyActorParams(box, { affectsStruts: !this._panels[index].isHideable() });
+            this._chrome.modifyActorParams(box, { affectsStruts: !panel.isHideable() });
         }, this);
 
         this.keyboardBox.set_position(this.bottomMonitor.x,
                                       this.bottomMonitor.y + this.bottomMonitor.height);
         this.keyboardBox.set_size(this.bottomMonitor.width, -1);
         this._chrome._queueUpdateRegions();
-        this._panelBoxes.forEach(function(box, index) {
-        }, this);
     },
 
     _updatePanelBarriers: function(panelBox) {

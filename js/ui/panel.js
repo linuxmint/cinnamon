@@ -914,6 +914,10 @@ Panel.prototype = {
         }
     }, 
 
+    setCurrentMonitor: function(monitor) {
+        this._monitor = monitor;
+    },
+
     enable: function() {
         this._disabled = false;
         this.actor.show();
@@ -949,8 +953,8 @@ Panel.prototype = {
         let height = this.actor.get_height();
         let animationTime = AUTOHIDE_ANIMATION_TIME;
         let y = this.bottomPosition ?
-            this._layoutManager.bottomMonitor.y + this._layoutManager.bottomMonitor.height - height :
-            this._layoutManager.primaryMonitor.y;
+            this._monitor.y + this._monitor.height - height :
+            this._monitor.y;
 
 
         let params = { y: height - 1,
@@ -994,8 +998,8 @@ Panel.prototype = {
         let height = this.actor.get_height();
         let animationTime = AUTOHIDE_ANIMATION_TIME;
         let y = this.bottomPosition ?
-            this._layoutManager.bottomMonitor.y + this._layoutManager.bottomMonitor.height - 1 :
-            this._layoutManager.primaryMonitor.y - height + 1;
+            this._monitor.y + this._monitor.height - 1 :
+            this._monitor.y - height + 1;
         
         Tweener.addTween(this.actor.get_parent(), { 
             y: y,
