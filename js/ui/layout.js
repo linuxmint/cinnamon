@@ -124,10 +124,6 @@ LayoutManager.prototype = {
         }
 
         panelData.forEach(function(data, index) {
-            if (index > 1) {
-                global.logError("cannot handle more than two panels");
-                return;
-            }
             let isPrimary = index == 0;
             if (isPrimary) {
                 this._applet_side = data.isBottom ? St.Side.BOTTOM : St.Side.TOP;
@@ -215,7 +211,6 @@ LayoutManager.prototype = {
     _processPanelSettings: function() {
         let panelResizable = global.settings.get_boolean("panel-resizable");
         let panelScalable = panelResizable && global.settings.get_boolean("panel-scale-text-icons");
-        let ahKeys =["panel-autohide", "panel2-autohide"];
         this._panels.forEach(function(panel, index) {
             let panelHeight = null;
             if (panelResizable) {
@@ -227,7 +222,7 @@ LayoutManager.prototype = {
                 }
             }
             panel._setPanelHeight(panelHeight, panelScalable);
-            panel._hideable = global.settings.get_boolean(ahKeys[index]);
+            panel._hideable = global.settings.get_boolean(index == 0 ? "panel-autohide" : "panel2-autohide");
             // Show a glimpse of the panel irrespectively of the new setting,
             // in order to force a region update.
             // Techically, this should not be necessary if the function is called
