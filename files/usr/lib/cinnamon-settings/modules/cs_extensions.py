@@ -4,6 +4,9 @@ from SettingsWidgets import *
 import os
 import os.path
 import dbus
+import zipfile
+import urllib
+import re
 from gi.repository import Gio, Gtk, GObject, Gdk
 
 home = os.path.expanduser("~")
@@ -49,19 +52,29 @@ class ExtensionViewSidePage (SidePage):
         self.settings = Gio.Settings.new("org.cinnamon")
         self.enabled_extensions = self.settings.get_strv("enabled-extensions")
                          
-        self.load_extensions_in('/usr/share/cinnamon/extensions')                                                                          
-        self.load_extensions_in('%s/.local/share/cinnamon/extensions' % home)
+        self.load_extensions()
         
         scrolledWindow.add(treeview)    
         
         scrolledWindow.set_shadow_type(Gtk.ShadowType.IN)
         link = Gtk.LinkButton("http://cinnamon-spices.linuxmint.com/extensions")
-        link.set_label(_("Get new extensions"))                
+		link2 = Gtk.LinkButton("")
+
+        link.set_label(_("Get new extensions"))     
+		link2.set_label(_("Update list of extensions"))
+        link2.connect("clicked", self.lookfor_all_extensions)  
+         
         self.content_box.add(scrolledWindow)
-        self.content_box.pack_start(link, False, False, 2) 
+        self.content_box.pack_start(link, False, False, 1)
+        self.content_box.pack_start(link2, False, False, 1)
                                                         
         self.content_box.show_all()   
-        
+
+	def load_extensions(self):
+        self.model.clear()
+        self.load_extensions_in('/usr/share/cinnamon/extensions')
+        self.load_extensions_in('%s/.local/share/cinnamon/extensions' % home)
+
     def load_extensions_in(self, directory):
         if os.path.exists(directory) and os.path.isdir(directory):
             extensions = os.listdir(directory)
@@ -77,7 +90,28 @@ class ExtensionViewSidePage (SidePage):
                     self.model.set_value(iter, 0, extension_uuid)         
                     self.model.set_value(iter, 1, '<b>%s</b>\n<b><span foreground="#333333" size="xx-small">%s</span></b>\n<i><span foreground="#555555" size="x-small">%s</span></i>' % (extension_name, extension_uuid, extension_description))
                     self.model.set_value(iter, 2, (extension_uuid in self.enabled_extensions))
-        
+	
+	def lookfor_all_extensions(self, button):
+
+        # We read the content of the website to get all extension urls
+        page = urllib.urlopen("http://cinnamon-spices.linuxmint.com/uploads/extensions/")
+        strpage=page.read()
+
+        # We get all extensions from website and extract them
+        for m in re.finditer("([A-Za-z0-9-]+)(\.)zip</a>", strpage):
+
+            # Get the extension
+            extensionNameFile = m.group(0)[:len(m.group(0)) - 4]
+            urlFile = "http://cinnamon-spices.linuxmint.com/uploads/extensions/"+extensionNameFile
+            localFile = urllib.urlretrieve(urlFile)
+
+            # Extract the extension
+            zFile = zipfile.ZipFile(localFile[0], 'r')
+            zFile.extractall('%s/.local/share/cinnamon/extensions' % home)
+            zFile.close()
+
+        self.load_extensions()
+      
     def toggled(self, renderer, path, treeview):        
         iter = self.model.get_iter(path)
         if (iter != None):
