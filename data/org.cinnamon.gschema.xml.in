@@ -600,6 +600,14 @@
   </schema>
 
   <schema id="org.cinnamon.overrides" path="/org/cinnamon/overrides/">
+    <key name="custom-keybindings-to-3-6" type="b">
+      <default>false</default>
+      <summary>Run-once flag to see if custom keybindings have been converted to gsettings</summary>
+      <description>
+        Run-once flag to see if custom keybindings have been converted to gsettings
+      </description>
+    </key>
+
     <key name="attach-modal-dialogs" type="b">
       <default>false</default>
       <summary>Attach modal dialog to the parent window</summary>
