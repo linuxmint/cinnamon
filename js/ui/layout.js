@@ -73,16 +73,16 @@ LayoutManager.prototype = {
         let newLayoutString = "";
         
         if (this._desktop_layout == LAYOUT_FLIPPED) {
-            newLayoutString = "top";
+            newLayoutString = "top,top";
         }
         else if (this._desktop_layout == LAYOUT_TRADITIONAL) {
-            newLayoutString = "bottom";
+            newLayoutString = "bottom,bottom";
         }
         else if (this._desktop_layout == LAYOUT_CLASSIC) {
-            newLayoutString = "top+bottom";
+            newLayoutString = "top,top+bottom,bottom";
         }
         else if (this._desktop_layout == LAYOUT_CLASSIC_FLIPPED) {
-            newLayoutString = "bottom+top";
+            newLayoutString = "bottom,bottom+top,top";
         }
         else {
             newLayoutString = this._desktop_layout; // could be a data string
@@ -93,18 +93,34 @@ LayoutManager.prototype = {
             layoutString.trim().split('+').forEach(function(panelString, index) {
                 let panelOpts = panelString.trim().split(',');
                 let isBottom = !panelOpts[0] || panelOpts[0] != 'top';
+                // we use strings to designate monitors, since the actual index may
+                // change if monitors are rearranged during a session
+                let monitorIndex = isBottom ? "bottomIndex" : "topIndex"
+                let monitor = panelOpts.length > 1 ? panelOpts[1] : null;
+                if (monitor) {
+                    switch (monitor) {
+                        case "top": monitorIndex = "topIndex";
+                            break;
+                        case "bottom": monitorIndex = "bottomIndex";
+                            break;
+                        case "left": monitorIndex = "leftIndex";
+                            break;
+                        case "right": monitorIndex = "rightIndex";
+                            break;
+                        default:
+                            global.logError("Unknown monitor identifier: '" + monitor + "'");
+                    }
+                }
                 panelData.push({
                     isBottom: isBottom,
-                    // use strings to designate monitors, since the actual index may
-                    // change if monitors are rearranged during a session
-                    monitorIndex: isBottom ? "bottomIndex" : "topIndex"
+                    monitorIndex: monitorIndex
                 });
             }, this);
             return panelData.length > 0;
         });
 
         if (!parse(newLayoutString)) {
-            parse("bottom"); // this should work if all else fails
+            parse("bottom,bottom"); // this should work if all else fails
         }
 
         panelData.forEach(function(data, index) {
@@ -235,7 +251,7 @@ LayoutManager.prototype = {
         for (let i = 0; i < nMonitors; i++)
             this.monitors.push(screen.get_monitor_geometry(i));
 
-        this.primaryIndex = this.bottomIndex = this.topIndex = screen.get_primary_monitor();
+        this.primaryIndex = this.bottomIndex = this.topIndex = this.leftIndex = this.rightIndex = screen.get_primary_monitor();
         // If there are monitors below the primary, then we need
         // to split primary from bottom.
         for (let i = 0; i < this.monitors.length; i++) {
@@ -245,6 +261,12 @@ LayoutManager.prototype = {
                     this.bottomIndex = i;
                 if (monitor.y < this.monitors[this.topIndex].y)
                     this.topIndex = i;
+            }
+            else {
+                if (monitor.x > this.monitors[this.rightIndex].x)
+                    this.rightIndex = i;
+                if (monitor.x < this.monitors[this.leftIndex].x)
+                    this.leftIndex = i;
             }
         }
         this.primaryMonitor = this.monitors[this.primaryIndex];
