@@ -250,20 +250,9 @@ WindowManager.prototype = {
         if (effect == "traditional") {
             actor.set_scale(1.0, 1.0);
             this._minimizing.push(actor);
-            let monitor;
-            let yDest;            
-            if (Main.desktop_layout == Main.LAYOUT_TRADITIONAL || Main.desktop_layout == Main.LAYOUT_CLASSIC) {
-                monitor = Main.layoutManager.bottomMonitor;
-                yDest = monitor.height;
-            }
-            else {
-                monitor = Main.layoutManager.primaryMonitor;
-                yDest = 0;
-            }
+            let yDest, xDest;
 
-            let xDest = monitor.x + monitor.width/4;
-            if (St.Widget.get_default_direction() == St.TextDirection.RTL)
-                xDest = monitor.width - monitor.width/4;
+            let success = false;
 
             if (AppletManager.get_role_provider_exists(AppletManager.Roles.WINDOWLIST)) {
                 let windowApplet = AppletManager.get_role_provider(AppletManager.Roles.WINDOWLIST);
@@ -280,33 +269,32 @@ WindowManager.prototype = {
                     actor.get_meta_window()._cinnamonwm_has_origin = true;
                     actor.get_meta_window()._cinnamonwm_minimize_transition = transition;
                     actor.get_meta_window()._cinnamonwm_minimize_time = time;
+                    Tweener.addTween(actor,
+                                     { scale_x: 0.0,
+                                       scale_y: 0.0,
+                                       x: xDest,
+                                       y: yDest,
+                                       time: time,
+                                       transition: transition,
+                                       onComplete: this._minimizeWindowDone,
+                                       onCompleteScope: this,
+                                       onCompleteParams: [cinnamonwm, actor],
+                                       onOverwrite: this._minimizeWindowOverwritten,
+                                       onOverwriteScope: this,
+                                       onOverwriteParams: [cinnamonwm, actor]
+                                     });
+                    success = true;
                 }
             }
-            
-            Tweener.addTween(actor,
-                             { scale_x: 0.0,
-                               scale_y: 0.0,
-                               x: xDest,
-                               y: yDest,
-                               time: time,
-                               transition: transition,
-                               onComplete: this._minimizeWindowDone,
-                               onCompleteScope: this,
-                               onCompleteParams: [cinnamonwm, actor],
-                               onOverwrite: this._minimizeWindowOverwritten,
-                               onOverwriteScope: this,
-                               onOverwriteParams: [cinnamonwm, actor]
-                             });
-        }
-        else if (effect == "fade") {
+            if (!success) // If cannot find suitable position, scale window instead to prevent window from shrinking to awkward positions
+                this._scaleWindow(cinnamonwm, actor, 0.0, 0.0, time, transition, this._minimizeWindowDone, this._minimizeWindowOverwritten);
+        } else if (effect == "fade") {
             this._minimizing.push(actor);
             this._fadeWindow(cinnamonwm, actor, 0, time, transition, this._minimizeWindowDone, this._minimizeWindowOverwritten);            
-        }
-        else if (effect == "scale") {                                
+        } else if (effect == "scale") {                                
             this._minimizing.push(actor);
             this._scaleWindow(cinnamonwm, actor, 0.0, 0.0, time, transition, this._minimizeWindowDone, this._minimizeWindowOverwritten); 
-        }
-        else {
+        } else {
             cinnamonwm.completed_minimize(actor);
         }
     },
