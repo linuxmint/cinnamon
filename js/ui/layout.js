@@ -47,8 +47,8 @@ LayoutManager.prototype = {
         this.addChrome(this.keyboardBox, { visibleInFullscreen: true });
         this._keyboardHeightNotifyId = 0;
 
-        this._monitorsChanged();
         this.setupDesktopLayout();
+        this._monitorsChanged();
         this._processPanelSettings();
 
         global.settings.connect("changed::enable-edge-flip", Lang.bind(this, this._onEnableEdgeFlipChanged));
@@ -97,7 +97,7 @@ LayoutManager.prototype = {
                     isBottom: isBottom,
                     // use strings to designate monitors, since the actual index may
                     // change if monitors are rearranged during a session
-                    monitorIndex: isBottom ? "bottomIndex" : "primaryIndex"
+                    monitorIndex: isBottom ? "bottomIndex" : "topIndex"
                 });
             }, this);
             return panelData.length > 0;
@@ -235,18 +235,16 @@ LayoutManager.prototype = {
         for (let i = 0; i < nMonitors; i++)
             this.monitors.push(screen.get_monitor_geometry(i));
 
-        if (nMonitors == 1) {
-            this.primaryIndex = this.bottomIndex = 0;
-        } else {
-            // If there are monitors below the primary, then we need
-            // to split primary from bottom.
-            this.primaryIndex = this.bottomIndex = screen.get_primary_monitor();
-            for (let i = 0; i < this.monitors.length; i++) {
-                let monitor = this.monitors[i];
-                if (this._isAboveOrBelowPrimary(monitor)) {
-                    if (monitor.y > this.monitors[this.bottomIndex].y)
-                        this.bottomIndex = i;
-                }
+        this.primaryIndex = this.bottomIndex = this.topIndex = screen.get_primary_monitor();
+        // If there are monitors below the primary, then we need
+        // to split primary from bottom.
+        for (let i = 0; i < this.monitors.length; i++) {
+            let monitor = this.monitors[i];
+            if (this._isAboveOrBelowPrimary(monitor)) {
+                if (monitor.y > this.monitors[this.bottomIndex].y)
+                    this.bottomIndex = i;
+                if (monitor.y < this.monitors[this.topIndex].y)
+                    this.topIndex = i;
             }
         }
         this.primaryMonitor = this.monitors[this.primaryIndex];
