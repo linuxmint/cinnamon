@@ -152,8 +152,16 @@ LayoutManager.prototype = {
         return this._panels[0];
     },
 
+    get panels() {
+        return this._panels;
+    },
+
     get panel2() {
         return this._panels[1];
+    },
+
+    getPanel : function(index, safe) {
+        return this._panels[safe ? Math.min(index, this._panels.length - 1) : index];
     },
 
     get panelBox() {
