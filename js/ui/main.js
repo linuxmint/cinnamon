@@ -239,7 +239,8 @@ function start() {
 
     layoutManager = new Layout.LayoutManager();
     let pointerTracker = new PointerTracker.PointerTracker();
-    pointerTracker.setPosition(layoutManager.primaryMonitor.width/2, layoutManager.primaryMonitor.height/2);
+    pointerTracker.setPosition(layoutManager.primaryMonitor.x + layoutManager.primaryMonitor.width/2,
+        layoutManager.primaryMonitor.y + layoutManager.primaryMonitor.height/2);
 
     xdndHandler = new XdndHandler.XdndHandler();
     // This overview object is just a stub for non-user sessions
