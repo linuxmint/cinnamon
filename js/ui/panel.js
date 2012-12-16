@@ -598,15 +598,16 @@ PanelZoneDNDHandler.prototype = {
 }
 
 
-function Panel(bottomPosition, panelID, monitor) {
-    this._init(bottomPosition, panelID, monitor);
+function Panel(bottomPosition, panelID, monitorIndex) {
+    this._init(bottomPosition, panelID, monitorIndex);
 }
 
 Panel.prototype = {
-    _init : function(bottomPosition, panelID, monitor) {
+    _init : function(bottomPosition, panelID, monitorIndex) {
         this.bottomPosition = bottomPosition;
         this.panelID = panelID;
-        this.monitor = monitor;
+        this.monitorIndex = monitorIndex;
+        this.monitor = global.screen.get_monitor_geometry(monitorIndex);
 
     	this._hidden = false;
         this._disabled = false;
@@ -680,27 +681,27 @@ Panel.prototype = {
         this.actor.connect('leave-event', Lang.bind(this, this._leavePanel));
         this.actor.connect('enter-event', Lang.bind(this, this._enterPanel));
         this.actor.connect('button-release-event', Lang.bind(this, this._onButtonReleaseEvent));
-        this.actor.connect('style-changed', Lang.bind(this, this._moveResizePanel));
+        this.actor.connect('style-changed', Lang.bind(this, this._queueMoveResizePanel));
 
         this.panelBox.connect('allocation-changed', Lang.bind(this, this._updateBarriers));
 
         global.settings.connect("changed::" + PANEL_AUTOHIDE_KEY, Lang.bind(this, this._processPanelAutoHide));
         global.settings.connect("changed::" + PANEL_SHOW_DELAY_KEY, Lang.bind(this, this._onPanelShowDelayChanged));
         global.settings.connect("changed::" + PANEL_HIDE_DELAY_KEY, Lang.bind(this, this._onPanelHideDelayChanged));
-        global.settings.connect("changed::" + PANEL_HEIGHT_KEY, Lang.bind(this, this._moveResizePanel));
+        global.settings.connect("changed::" + PANEL_HEIGHT_KEY, Lang.bind(this, this._queueMoveResizePanel));
         global.settings.connect("changed::panel-edit-mode", Lang.bind(this, this._handlePanelEditMode));
-        global.settings.connect("changed::panel-resizable", Lang.bind(this, this._moveResizePanel));
+        global.settings.connect("changed::panel-resizable", Lang.bind(this, this._queueMoveResizePanel));
         global.settings.connect("changed::panel-scale-text-icons", Lang.bind(this, this._onScaleTextIconsChanged))
 
-        global.screen.connect('monitors-changed', Lang.bind(this, this._moveResizePanel));
+        global.screen.connect('monitors-changed', Lang.bind(this, this._queueMoveResizePanel));
 
         // Finalize panel properties
         this._onPanelShowDelayChanged();
         this._onPanelHideDelayChanged();
-        this._moveResizePanel();
+        this._queueMoveResizePanel();
         this._handlePanelEditMode();
 
-        // Animate startup
+/*        // Animate startup
         Main.layoutManager._chrome.freezeUpdateRegions();
 
         let params = { anchor_y: 0,
@@ -717,7 +718,7 @@ Panel.prototype = {
         else
             this.panelBox.anchor_y = this.panelBox.height;
             
-        Tweener.addTween(this.panelBox, params);
+        Tweener.addTween(this.panelBox, params);*/
     },
 
     isHideable: function() {
@@ -754,7 +755,7 @@ Panel.prototype = {
         if (this._rightPanelBarrier)
             global.destroy_pointer_barrier(this._rightPanelBarrier);
 
-        if (this.panelBox.height) {                        
+        if (this.panelBox.height) {
             if (this.bottomPosition) {
                 this._leftPanelBarrier = global.create_pointer_barrier(this.monitor.x, this.monitor.y + this.monitor.height - this.panelBox.height,
                                                                  this.monitor.x, this.monitor.y + this.monitor.height,
@@ -861,7 +862,12 @@ Panel.prototype = {
         Main.layoutManager._chrome.modifyActorParams(this.panelBox, {affectsStruts: !this._hideable});
     },
 
+    _queueMoveResizePanel: function() {
+        Mainloop.timeout_add(1, Lang.bind(this, this._moveResizePanel)); // Give a slight delay
+    },
+
     _moveResizePanel: function() {
+        this.monitor = global.screen.get_monitor_geometry(this.monitorIndex); // Update monitor information
         let panelHeight;
         let panelResizable = global.settings.get_boolean("panel-resizable");
         if (panelResizable) {

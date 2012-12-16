@@ -253,14 +253,14 @@ function start() {
     statusIconDispatcher = new StatusIconDispatcher.StatusIconDispatcher();
 
     if (desktop_layout == LAYOUT_TRADITIONAL) {
-        panel = new Panel.Panel(true, 1, layoutManager.bottomMonitor);
+        panel = new Panel.Panel(true, 1, layoutManager.bottomIndex);
     }
     else if (desktop_layout == LAYOUT_FLIPPED) {
-        panel = new Panel.Panel(false, 1, layoutManager.primaryMonitor);
+        panel = new Panel.Panel(false, 1, layoutManager.primaryIndex);
     }
     else if (desktop_layout == LAYOUT_CLASSIC) {
-        panel = new Panel.Panel(false, 1, layoutManager.primaryMonitor);
-        panel2 = new Panel.Panel(true, 2, layoutManager.bottomMonitor);
+        panel = new Panel.Panel(false, 1, layoutManager.primaryIndex);
+        panel2 = new Panel.Panel(true, 2, layoutManager.bottomIndex);
     }
     layoutManager._updateBoxes();
     
