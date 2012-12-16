@@ -597,7 +597,122 @@ PanelZoneDNDHandler.prototype = {
     }
 }
 
+/**
+ * PanelManager
+ * 
+ * @short_description: Manager of Cinnamon panels
+ *
+ * #PanelManager creates panels and startup and
+ * provides methods for easier access of panels
+ */
+function PanelManager() {
+    this._init();
+}
 
+PanelManager.prototype = {
+    _init: function() {
+        this.panels = [];
+        this.panelsMeta = []; // Properties of panels in format [<monitor index>, <bottomPosition>]
+
+        let panelProperties = global.settings.get_strv("panels-enabled");
+        for (let i = 0; i < panelProperties.length; i ++) {
+            let elements = panelProperties[i].split(":");
+            if (elements.length != 3) {
+                global.log("Invalid panel definition: " + panelProperties[i]);
+                continue;
+            }
+
+            let ID = parseInt(elements[0]);
+            if (this.panels[ID]) {
+                global.log("Multiple panels with same ID (" + ID + ") are found");
+                continue;
+            }
+
+            this.panels.length = Math.max(this.panels.length, ID+1);
+            this.panelsMeta.length = Math.max(this.panels.length, ID+1);
+
+            let repeat = false;
+            for (let i in this.panelsMeta) {
+                if ((this.panelsMeta[i][0] == elements[1]) && (this.panelsMeta[i][1] == elements[2]))
+                    global.log("Conflicting panel definitions: " + panelProperties);
+                repeat = true;
+                break;
+            }
+
+            if (repeat) continue;
+
+            this.panels[ID] = new Panel(elements[2]=="bottom", ID, parseInt(elements[1]));
+            this.panelsMeta[ID] = [elements[1], elements[2]];
+
+            // Main.applet_side: to maintain compatibility
+            if (ID==1) { // Primary panel
+                if (elements[2]=="bottom")
+                    Main.applet_side = St.Side.BOTTOM;
+                else
+                    Main.applet_side = St.Side.TOP;
+            }
+        }
+    },
+
+    /**
+     * disablePanels:
+     *
+     * Disables (hide and lock) all panels
+     */
+    disablePanels: function() {
+        for (let i in this.panels) {
+            if (this.panels[i])
+                this.panels[i].disable();
+        }
+    },
+
+    /**
+     * enablePanels:
+     *
+     * Enables all panels
+     */
+    enablePanels: function() {
+        for (let i in this.panels) {
+            if (this.panels[i])
+                this.panels[i].enable();
+        }
+    },
+
+    /**
+     * getPanelInMonitor:
+     * @monitorIndex: integer, index of monitor
+     *
+     * Retrieves all the panels in the monitor of index @monitorIndex
+     *
+     * Returns: an array of panels
+     */
+    getPanelsInMonitor: function(monitorIndex) {
+        let returnValue = [];
+        for (let i in this.panels) {
+            if (this.panels[i].monitorIndex == monitorIndex)
+                returnValue.push(this.panels[i]);
+        }
+        return returnValue;
+    },
+
+    /**
+     * getPanel:
+     * @monitorIndex: integer, index of monitor
+     * @bottomPosition, boolean, whether the bottom panel is wanted
+     *
+     * Gets a specific panel in monitor @monitorIndex (bottom panel if @bottomPosition is true)
+     *
+     * Returns: the panel required (null if panel not found)
+     */
+    getPanel: function(monitorIndex, bottomPosition) {
+        let panelsInMonitor = getPanelsInMonitor(monitorIndex);
+        for (let i in panelsInMonitor) {
+            if (panelsInMonitor[i].bottomPosition == bottomPosition)
+                return panelsInMonitor[i];
+        }
+        return null;
+    }
+}
 function Panel(bottomPosition, panelID, monitorIndex) {
     this._init(bottomPosition, panelID, monitorIndex);
 }

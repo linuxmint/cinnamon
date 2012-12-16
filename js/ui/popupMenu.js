@@ -1233,9 +1233,9 @@ PopupMenu.prototype = {
             
         global.menuStackLength -= 1;
 
-        for (panel in Main.panels) {
-            if (panel)
-                panel._hidePanel();
+        for (let i in Main.panelManager.panels) {
+            if (Main.panelManager.panels[i])
+                Main.panelManager.panels[i]._hidePanel();
         }
 
         if (this._activeMenuItem)

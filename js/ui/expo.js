@@ -321,7 +321,7 @@ Expo.prototype = {
         }));
 
         this._gradient.show();
-        Main.disablePanels();
+        Main.panelManager.disablePanels();
 
         this._background.dim_factor = 1;
         Tweener.addTween(this._background,
@@ -419,7 +419,7 @@ Expo.prototype = {
                     if (index == Main.layoutManager.monitors.length < 1) {
                         this._group.hide();
                         if (!options || !options.toScale ) {
-                            Main.enablePanels();
+                            Main.panelManager.enablePanels();
                         }
                         this._hideDone();
                     }

@@ -69,7 +69,7 @@ function onEnabledAppletsChanged() {
                 if (elements.length == 4) {
                     let uuid = elements[3];
                     let panelNO = parseInt(elements[0].slice(5));
-                    let panel = Main.panels[panelNO];
+                    let panel = Main.panelManager.panels[panelNO];
 
                     let orientation = St.Side.TOP;
                     if (panel.bottomPosition) {
@@ -137,7 +137,7 @@ function add_applet_to_panels(appletDefinition) {
         let center = false;
         if (elements.length == 4) {
             let panelNO = parseInt(elements[0].slice(5));
-            let panel = Main.panels[panelNO];
+            let panel = Main.panelManager.panels[panelNO];
 
             let location = panel._leftBox;
             if (elements[1] == "center") {
@@ -410,8 +410,8 @@ function _removeAppletFromPanel(menuitem, event, uuid) {
 function saveAppletsPositions() {
     let zones_strings = ["left", "center", "right"];
     let allApplets = new Array();
-    for (var i in Main.panels){
-        let panel = Main.panels[i];
+    for (var i in Main.panelManager.panels){
+        let panel = Main.panelManager.panels[i];
         if (!panel) continue;
         for (var j in zones_strings){
             let zone_string = zones_strings[j];
@@ -421,8 +421,8 @@ function saveAppletsPositions() {
         }
     }
     let applets = new Array();
-    for (var i in Main.panels){
-        let panel = Main.panels[i];
+    for (var i in Main.panelManager.panels){
+        let panel = Main.panelManager.panels[i];
         if (!panel) continue;
         let panel_string = "panel" + i;
         for (var j in zones_strings){
@@ -454,7 +454,7 @@ function updateAppletPanelHeights(force_recalc) {
         if (elements.length == 4) {
             let uuid = elements[3];
             let panelNO = parseInt(elements[0].slice(5));
-            let panel = Main.panels[panelNO];
+            let panel = Main.panelManager.panels[panelNO];
 
             if (appletObj[uuid]) {
                 let newheight = panel.actor.get_height();

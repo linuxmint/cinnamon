@@ -50,8 +50,8 @@ const CIN_LOG_FOLDER = GLib.get_home_dir() + '/.cinnamon/';
 let automountManager = null;
 let autorunManager = null;
 let applets = [];
-let panels = [];
 
+let panelManager = null;
 let placesManager = null;
 let overview = null;
 let expo = null;
@@ -241,27 +241,7 @@ function start() {
     expo = new Expo.Expo();
     magnifier = new Magnifier.Magnifier();
     statusIconDispatcher = new StatusIconDispatcher.StatusIconDispatcher();
-
-    let panelProperties = global.settings.get_strv("panels-enabled");
-    for (let i = 0; i < panelProperties.length; i ++) {
-        let elements = panelProperties[i].split(":");
-        if (elements.length != 3) {
-            global.log("Invalid panel definition: " + panelProperties);
-            continue;
-        }
-        let ID = parseInt(elements[0]);
-        if (!panels[ID]){
-            panels.length = Math.max(panels.length, ID+1);
-            panels[ID] = new Panel.Panel(elements[2]=="bottom", ID, parseInt(elements[1]));
-
-            if (ID==1) { // Primary panel
-                if (elements[2]=="bottom")
-                    applet_side = St.Side.BOTTOM;
-                else
-                    applet_side = St.Side.TOP;
-            }
-        }
-    }
+    panelManager = new Panel.PanelManager();
 
     layoutManager._updateBoxes();
     
@@ -291,7 +271,7 @@ function start() {
     expo.init();
 
     _initUserSession();
-    statusIconDispatcher.start(panels[1].actor); // Temprorary fix. Further investigation on statusIconDispatcher is needed
+    statusIconDispatcher.start(panelManager.panels[1].actor); // Temprorary fix. Further investigation on statusIconDispatcher is needed
 
     // Provide the bus object for gnome-session to
     // initiate logouts.
@@ -330,56 +310,6 @@ function start() {
     
     AppletManager.init();
     applets = AppletManager.loadApplets();
-}
-
-function enablePanels() {
-    for (let i in panels) {
-        if (panels[i])
-            panels[i].enable();
-    }
-}
-
-function disablePanels() {
-    for (let i in panels) {
-        if (panels[i])
-            panels[i].disable();
-    }
-}
-
-/**
- * getPanelInMonitor:
- * @monitorIndex: integer, index of monitor
- *
- * Retrieves all the panels in the monitor of index @monitorIndex
- *
- * Returns: an array of panels
- */
-function getPanelsInMonitor(monitorIndex) {
-    let returnValue = [];
-    for (let i in panels) {
-        if (panels[i].monitorIndex == monitorIndex)
-            returnValue.push(panels[i]);
-    }
-    return returnValue;
-}
-
-/**
- * getPanel:
- * @monitorIndex: integer, index of monitor
- * @bottomPosition, boolean, whether the bottom panel is wanted
- *
- * Gets a specific panel in monitor @monitorIndex (bottom panel if @bottomPosition is true)
- *
- * Returns: the panel required (null if panel not found)
- */
- 
-function getPanel(monitorIndex, bottomPosition) {
-    let panelsInMonitor = getPanelsInMonitor(monitorIndex);
-    for (let i in panelsInMonitor) {
-        if (panelsInMonitor[i].bottomPosition == bottomPosition)
-            return panelsInMonitor[i];
-    }
-    return null;
 }
 
 let _workspaces = [];
