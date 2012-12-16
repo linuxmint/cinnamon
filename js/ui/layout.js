@@ -161,13 +161,15 @@ LayoutManager.prototype = {
     },
 
     enablePanels: function() {
-        if (this._panels[0]) this._panels[0].enable();
-        if (this._panels[1]) this._panels[1].enable();
+        this._panels.forEach(function(panel) {
+            panel.enable();
+        }, this);
     },
 
     disablePanels: function() {
-        if (this._panels[0]) this._panels[0].disable();
-        if (this._panels[1]) this._panels[1].disable();
+        this._panels.forEach(function(panel) {
+            panel.disable();
+        }, this);
     },
 
     _onEnableEdgeFlipChanged: function(){
