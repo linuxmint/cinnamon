@@ -688,6 +688,11 @@ Panel.prototype = {
         }));
     },
 
+    handleDragOver : function(source, actor, x, y, time) {
+        // the default is to allow drop
+        return DND.DragMotionResult.MOVE_DROP;
+    },
+
     isHideable: function() {
         return this._hideable;
     },
