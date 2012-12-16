@@ -68,10 +68,9 @@ function onEnabledAppletsChanged() {
                 let elements = appletDefinition.split(":");
                 if (elements.length == 4) {
                     let uuid = elements[3];
-                    let panel = Main.panel;
-                    if (elements[0] == "panel2") {
-                        panel = Main.panel2;
-                    }
+                    let panelNO = parseInt(elements[0].slice(5));
+                    let panel = Main.panels[panelNO];
+
                     let orientation = St.Side.TOP;
                     if (panel.bottomPosition) {
                         orientation = St.Side.BOTTOM;
@@ -137,10 +136,9 @@ function add_applet_to_panels(appletDefinition) {
         let elements = appletDefinition.split(":");
         let center = false;
         if (elements.length == 4) {
-            let panel = Main.panel;
-            if (elements[0] == "panel2") {
-                panel = Main.panel2;
-            }
+            let panelNO = parseInt(elements[0].slice(5));
+            let panel = Main.panels[panelNO];
+
             let location = panel._leftBox;
             if (elements[1] == "center") {
                 location = panel._centerBox;
@@ -410,11 +408,10 @@ function _removeAppletFromPanel(menuitem, event, uuid) {
 }
 
 function saveAppletsPositions() {
-    let panels = [Main.panel, Main.panel2];
     let zones_strings = ["left", "center", "right"];
     let allApplets = new Array();
-    for (var i in panels){
-        let panel = panels[i];
+    for (var i in Main.panels){
+        let panel = Main.panels[i];
         if (!panel) continue;
         for (var j in zones_strings){
             let zone_string = zones_strings[j];
@@ -424,12 +421,10 @@ function saveAppletsPositions() {
         }
     }
     let applets = new Array();
-    for (var i in panels){
-        let panel = panels[i];
+    for (var i in Main.panels){
+        let panel = Main.panels[i];
         if (!panel) continue;
-        let panel_string;
-        if (panel == Main.panel) panel_string = "panel1";
-        else panel_string = "panel2";
+        let panel_string = "panel" + i;
         for (var j in zones_strings){
             let zone_string = zones_strings[j];
             let zone = panel["_"+zone_string+"Box"];
@@ -458,10 +453,9 @@ function updateAppletPanelHeights(force_recalc) {
         let elements = appletDefinition.split(":");
         if (elements.length == 4) {
             let uuid = elements[3];
-            let panel = Main.panel;
-            if (elements[0] == "panel2") {
-                panel = Main.panel2;
-            }
+            let panelNO = parseInt(elements[0].slice(5));
+            let panel = Main.panels[panelNO];
+
             if (appletObj[uuid]) {
                 let newheight = panel.actor.get_height();
                 if (appletObj[uuid]._panelHeight != newheight || force_recalc) {

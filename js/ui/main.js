@@ -50,8 +50,7 @@ const CIN_LOG_FOLDER = GLib.get_home_dir() + '/.cinnamon/';
 let automountManager = null;
 let autorunManager = null;
 let applets = [];
-let panel = null;
-let panel2 = null;
+let panels = [];
 
 let placesManager = null;
 let overview = null;
@@ -87,8 +86,7 @@ let workspace_names = [];
 
 let background = null;
 
-let desktop_layout;
-let applet_side = St.Side.BOTTOM;
+let applet_side;
 
 let software_rendering = false;
 
@@ -216,14 +214,6 @@ function start() {
     global.stage.color = DEFAULT_BACKGROUND_COLOR;
     global.stage.no_clear_hint = true;
     
-    desktop_layout = global.settings.get_string("desktop-layout"); 
-    if (desktop_layout == LAYOUT_FLIPPED) {
-        applet_side = St.Side.TOP;        
-    }
-    else if (desktop_layout == LAYOUT_CLASSIC) {
-        applet_side = St.Side.TOP;        
-    }
-    
     _defaultCssStylesheet = global.datadir + '/theme/cinnamon.css';    
     themeManager = new ThemeManager.ThemeManager();
 
@@ -252,16 +242,27 @@ function start() {
     magnifier = new Magnifier.Magnifier();
     statusIconDispatcher = new StatusIconDispatcher.StatusIconDispatcher();
 
-    if (desktop_layout == LAYOUT_TRADITIONAL) {
-        panel = new Panel.Panel(true, 1, layoutManager.bottomIndex);
+    let panelProperties = global.settings.get_strv("panels-enabled");
+    for (let i = 0; i < panelProperties.length; i ++) {
+        let elements = panelProperties[i].split(":");
+        if (elements.length != 3) {
+            global.log("Invalid panel definition: " + panelProperties);
+            continue;
+        }
+        let ID = parseInt(elements[0]);
+        if (!panels[ID]){
+            panels.length = Math.max(panels.length, ID+1);
+            panels[ID] = new Panel.Panel(elements[2]=="bottom", ID, parseInt(elements[1]));
+
+            if (ID==1) { // Primary panel
+                if (elements[2]=="bottom")
+                    applet_side = St.Side.BOTTOM;
+                else
+                    applet_side = St.Side.TOP;
+            }
+        }
     }
-    else if (desktop_layout == LAYOUT_FLIPPED) {
-        panel = new Panel.Panel(false, 1, layoutManager.primaryIndex);
-    }
-    else if (desktop_layout == LAYOUT_CLASSIC) {
-        panel = new Panel.Panel(false, 1, layoutManager.primaryIndex);
-        panel2 = new Panel.Panel(true, 2, layoutManager.bottomIndex);
-    }
+
     layoutManager._updateBoxes();
     
     wm = new WindowManager.WindowManager();
@@ -290,7 +291,7 @@ function start() {
     expo.init();
 
     _initUserSession();
-    statusIconDispatcher.start(panel.actor);
+    statusIconDispatcher.start(panels[1].actor); // Temprorary fix. Further investigation on statusIconDispatcher is needed
 
     // Provide the bus object for gnome-session to
     // initiate logouts.
@@ -332,13 +333,53 @@ function start() {
 }
 
 function enablePanels() {
-    if (panel) panel.enable();
-    if (panel2) panel2.enable();
+    for (let i in panels) {
+        if (panels[i])
+            panels[i].enable();
+    }
 }
 
 function disablePanels() {
-    if (panel) panel.disable();
-    if (panel2) panel2.disable();
+    for (let i in panels) {
+        if (panels[i])
+            panels[i].disable();
+    }
+}
+
+/**
+ * getPanelInMonitor:
+ * @monitorIndex: integer, index of monitor
+ *
+ * Retrieves all the panels in the monitor of index @monitorIndex
+ *
+ * Returns: an array of panels
+ */
+function getPanelsInMonitor(monitorIndex) {
+    let returnValue = [];
+    for (let i in panels) {
+        if (panels[i].monitorIndex == monitorIndex)
+            returnValue.push(panels[i]);
+    }
+    return returnValue;
+}
+
+/**
+ * getPanel:
+ * @monitorIndex: integer, index of monitor
+ * @bottomPosition, boolean, whether the bottom panel is wanted
+ *
+ * Gets a specific panel in monitor @monitorIndex (bottom panel if @bottomPosition is true)
+ *
+ * Returns: the panel required (null if panel not found)
+ */
+ 
+function getPanel(monitorIndex, bottomPosition) {
+    let panelsInMonitor = getPanelsInMonitor(monitorIndex);
+    for (let i in panelsInMonitor) {
+        if (panelsInMonitor[i].bottomPosition == bottomPosition)
+            return panelsInMonitor[i];
+    }
+    return null;
 }
 
 let _workspaces = [];

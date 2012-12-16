@@ -30,6 +30,12 @@
       </_description>
     </key>
 
+    <key name="panels-enabled" type="as">
+      <default>['1:0:bottom']</default>
+      <_summary>Lists of panels used</_summary>
+      <_description> Panels are listed in the following format: panelID:monitor:position, where monitor is the monitor number (0 for primary, -1 for bottom), and position is either top or bottom</_description>
+    </key>
+
     <key name="panel-autohide" type="as">
       <default>['1:false', '2:false']</default>
       <_summary>Auto-hide panel</_summary>
@@ -214,14 +220,6 @@
       <_summary>Duration of the effect (in milliseconds)</_summary>
       <_description>
        Duration of the effect (in milliseconds)    
-      </_description>
-    </key>
-    
-    <key name="desktop-layout" type="s">
-      <default>"traditional"</default>
-      <_summary>Layout style</_summary>
-      <_description>
-       Layout styles: traditional (1 panel at the bottom), flipped (1 panel on top), classic (1 panel on top, 1 panel at the bottom)
       </_description>
     </key>
     

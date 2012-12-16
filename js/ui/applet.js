@@ -56,7 +56,7 @@ AppletContextMenu.prototype = {
         PopupMenu.PopupMenu.prototype._init.call(this, launcher.actor, 0.0, orientation, 0);
         Main.uiGroup.add_actor(this.actor);
         this.actor.hide();                    
-    }    
+    }
 }
 
 function AppletPopupMenu(launcher, orientation) {
@@ -66,16 +66,17 @@ function AppletPopupMenu(launcher, orientation) {
 AppletPopupMenu.prototype = {
     __proto__: PopupMenu.PopupMenu.prototype,
 
-    _init: function(launcher, orientation) {    
+    _init: function(launcher, orientation) {
+	this.launcher = launcher;
         PopupMenu.PopupMenu.prototype._init.call(this, launcher.actor, 0.0, orientation, 0);
         Main.uiGroup.add_actor(this.actor);
-        this.actor.hide();                    
+        this.actor.hide();
     },
 
     setMaxHeight: function() {
-        let monitor = Main.layoutManager.primaryMonitor;
+        let monitor = Main.layoutManager.findMonitorForActor(this.launcher.actor);
         this.actor.style = ('max-height: ' +
-                            Math.round(monitor.height - Main.panel.actor.height) +
+                            Math.round(monitor.height - launcher.actor.get_parent().height) +
                             'px;');
     }
 }
