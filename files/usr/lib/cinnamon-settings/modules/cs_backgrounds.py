@@ -157,7 +157,10 @@ class ThreadedIconView(Gtk.IconView):
                 self._loading_queue = self._loading_queue[1:]
             self._loading_queue_lock.release()
             if not finished:
-                pix = PIX_CACHE.get_pix(to_load["filename"], BACKGROUND_ICONS_SIZE)
+                filename = to_load["filename"]
+                if filename.endswith(".xml"):
+                    filename = self.getFirstFileFromBackgroundXml(filename)
+                pix = PIX_CACHE.get_pix(filename, BACKGROUND_ICONS_SIZE)
                 if pix != None:
                     if "name" in to_load:
                         label = to_load["name"]
@@ -170,6 +173,24 @@ class ThreadedIconView(Gtk.IconView):
         self._loading_lock.acquire()
         self._loading = False
         self._loading_lock.release()                 
+        
+    def getFirstFileFromBackgroundXml(self, filename):
+        try:
+            f = open(filename)
+            rootNode = lxml.etree.fromstring(f.read())
+            f.close()
+            if rootNode.tag == "background":
+                for backgroundNode in rootNode:
+                    if backgroundNode.tag == "static":
+                        for staticNode in backgroundNode:
+                            if staticNode.tag == "file":
+                                return staticNode.text
+            print "Could not find filename in %s" % filename
+            return None
+        except Exception, detail:
+                print "Failed to read filename from %s: %s" % (filename, detail)
+            return None
+    
 
 class BackgroundWallpaperPane (Gtk.VBox):
     def __init__(self, sidepage, gnome_background_schema):
