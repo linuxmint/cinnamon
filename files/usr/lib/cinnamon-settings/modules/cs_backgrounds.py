@@ -188,7 +188,7 @@ class ThreadedIconView(Gtk.IconView):
             print "Could not find filename in %s" % filename
             return None
         except Exception, detail:
-                print "Failed to read filename from %s: %s" % (filename, detail)
+            print "Failed to read filename from %s: %s" % (filename, detail)
             return None
     
 
