@@ -469,14 +469,14 @@ function populateSettingsMenu(menu) {
     menu.addMenuItem(panelEditMode);
 }
 
-function PanelContextMenu(launcher, orientation) {
-    this._init(launcher, orientation);
+function PanelContextMenu() {
+    this._init.apply(this, arguments);
 }
 
 PanelContextMenu.prototype = {
     __proto__: PopupMenu.PopupMenu.prototype,
 
-    _init: function(launcher, orientation) {
+    _init: function(launcher, orientation, isHideable, ahKey) {
         PopupMenu.PopupMenu.prototype._init.call(this, launcher.actor, 0.0, orientation, 0);
         Main.uiGroup.add_actor(this.actor);
         this.actor.hide();
@@ -488,6 +488,10 @@ PanelContextMenu.prototype = {
 
         let applet_settings_item = new SettingsLauncher(_("Add applets to the panel"), "applets", "applets", this);
         this.addMenuItem(applet_settings_item);
+
+        this.addAction(isHideable ? _("Make this panel always visible") : _("Make this panel hideable"), function(event) {
+            global.settings.set_boolean(ahKey, !isHideable);
+        });
     }
 }
 
@@ -719,7 +723,9 @@ Panel.prototype = {
                 }
 
                 this._menus = new PopupMenu.PopupMenuManager(this);
-                this._context_menu = new PanelContextMenu(this, orientation);
+                this._context_menu = new PanelContextMenu(this, orientation, this._hideable, this.isPrimary ? 'panel-autohide' : 'panel2-autohide');
+
+
                 this._menus.addMenu(this._context_menu);
                 this._context_menu.open();
 
