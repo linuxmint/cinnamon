@@ -937,6 +937,44 @@ Panel.prototype = {
         });
     }, 
     
+    _updateBoxPosition: function(box) {
+        if (this.leftPanelBarrier) {
+            global.destroy_pointer_barrier(this.leftPanelBarrier);
+            global.destroy_pointer_barrier(this.rightPanelBarrier);
+            this.leftPanelBarrier = null;
+        }
+
+        let height = this.actor.height;
+        let monitor = this._monitor;
+
+        box.set_size(monitor.width, height);
+        if (this.bottomPosition) {
+            box.set_position(monitor.x, monitor.y + monitor.height - height);
+        }
+        else {
+            box.set_position(monitor.x, monitor.y);
+        }
+
+        if (height) {
+            if (this.bottomPosition) {
+                this.leftPanelBarrier = global.create_pointer_barrier(monitor.x, monitor.y + monitor.height - height,
+                                                                 monitor.x, monitor.y + monitor.height,
+                                                                 1 /* BarrierPositiveX */);
+                this.rightPanelBarrier = global.create_pointer_barrier(monitor.x + monitor.width, monitor.y + monitor.height - height,
+                                                                  monitor.x + monitor.width, monitor.y + monitor.height,
+                                                                  4 /* BarrierNegativeX */);
+            }
+            else {
+                this.leftPanelBarrier = global.create_pointer_barrier(monitor.x, monitor.y,
+                                                                 monitor.x, monitor.y + height,
+                                                                 1 /* BarrierPositiveX */);
+                this.rightPanelBarrier = global.create_pointer_barrier(monitor.x + monitor.width, monitor.y,
+                                                                  monitor.x + monitor.width, monitor.y + height,
+                                                                  4 /* BarrierNegativeX */);
+            }
+        }
+    },
+
     _showPanel: function() {
         if (this._disabled) return;
 

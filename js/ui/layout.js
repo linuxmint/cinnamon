@@ -293,17 +293,9 @@ LayoutManager.prototype = {
 
         this._panelBoxes.forEach(function(box, index) {
             let panel = this._panels[index];
-            let height = panel.actor.get_height();
             let monitor = this._getMonitor(box._panelData.monitorIndex);
             panel.setCurrentMonitor(monitor);
-            box.set_size(monitor.width, height);
-            if (box._panelData.isBottom) {
-                box.set_position(monitor.x, monitor.y + monitor.height - height);
-            }
-            else {
-                box.set_position(monitor.x, monitor.y);
-            }
-            this._updatePanelBarriers(box);
+            panel._updateBoxPosition(box);
             this._chrome.modifyActorParams(box, { affectsStruts: !panel.isHideable() });
         }, this);
 
@@ -311,38 +303,6 @@ LayoutManager.prototype = {
                                       this.bottomMonitor.y + this.bottomMonitor.height);
         this.keyboardBox.set_size(this.bottomMonitor.width, -1);
         this._chrome._queueUpdateRegions();
-    },
-
-    _updatePanelBarriers: function(panelBox) {
-        let leftPanelBarrier = panelBox._panelData.leftPanelBarrier;
-        let rightPanelBarrier = panelBox._panelData.rightPanelBarrier;
-        if (leftPanelBarrier) {
-            global.destroy_pointer_barrier(leftPanelBarrier);
-            global.destroy_pointer_barrier(rightPanelBarrier);
-        }
-
-        if (panelBox.height) {
-            let monitor = this._getMonitor(panelBox._panelData.monitorIndex);
-            if (panelBox._panelData.isBottom)
-            {
-                leftPanelBarrier = global.create_pointer_barrier(monitor.x, monitor.y + monitor.height - panelBox.height,
-                                                                 monitor.x, monitor.y + monitor.height,
-                                                                 1 /* BarrierPositiveX */);
-                rightPanelBarrier = global.create_pointer_barrier(monitor.x + monitor.width, monitor.y + monitor.height - panelBox.height,
-                                                                  monitor.x + monitor.width, monitor.y + monitor.height,
-                                                                  4 /* BarrierNegativeX */);
-            }
-            else {
-                leftPanelBarrier = global.create_pointer_barrier(monitor.x, monitor.y,
-                                                                 monitor.x, monitor.y + panelBox.height,
-                                                                 1 /* BarrierPositiveX */);
-                rightPanelBarrier = global.create_pointer_barrier(monitor.x + monitor.width, monitor.y,
-                                                                  monitor.x + monitor.width, monitor.y + panelBox.height,
-                                                                  4 /* BarrierNegativeX */);
-            }
-        }
-        panelBox._panelData.leftPanelBarrier = leftPanelBarrier;
-        panelBox._panelData.rightPanelBarrier = rightPanelBarrier;
     },
 
     _monitorsChanged: function() {
