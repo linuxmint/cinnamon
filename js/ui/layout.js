@@ -232,17 +232,13 @@ LayoutManager.prototype = {
                 }
             }
             panel._setPanelHeight(panelHeight, panelScalable);
-            panel._hideable = global.settings.get_boolean(index == 0 ? "panel-autohide" : "panel2-autohide");
-            // Show a glimpse of the panel irrespectively of the new setting,
-            // in order to force a region update.
-            // Techically, this should not be necessary if the function is called
-            // when auto-hide is in effect and is not changing, but experience
-            // shows that not flashing the panels may lead to "phantom panels"
-            // where the panels should be if auto-hide was on.
-            panel._hidePanel(true); // force hide
-            panel._showPanel();
-            if (panel._hideable) {
+            let wasHideable = panel.isHideable();
+            panel.setHideable(global.settings.get_boolean(index == 0 ? "panel-autohide" : "panel2-autohide"));
+            if (panel.isHideable()) {
                 panel._hidePanel();
+            }
+            else if (wasHideable) {
+                panel._showPanel();
             }
         }, this);
         this._updateBoxes();

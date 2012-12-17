@@ -682,7 +682,11 @@ Panel.prototype = {
     isHideable: function() {
         return this._hideable;
     },
-    
+
+    setHideable: function(hideable) {
+        this._hideable = hideable;
+    },
+
     _handlePanelEditMode: function() {
         this._isEditMode = global.settings.get_boolean("panel-edit-mode");
         if (this._isEditMode) {
