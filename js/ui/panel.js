@@ -467,9 +467,6 @@ function populateSettingsMenu(menu) {
         global.settings.set_boolean("panel-edit-mode", item.state);
     });
     menu.addMenuItem(panelEditMode);
-    global.settings.connect('changed::panel-edit-mode', function() {
-        panelEditMode.setToggleState(global.settings.get_boolean("panel-edit-mode"));
-    });
 }
 
 function PanelContextMenu(launcher, orientation) {
@@ -627,8 +624,6 @@ Panel.prototype = {
         this.actor._delegate = this;
         this.actor.add_style_class_name(bottomPosition ? 'panel-bottom' : 'panel-top');
 
-        this._menus = new PopupMenu.PopupMenuManager(this);
-
         this._leftBox = new St.BoxLayout({ name: 'panelLeft' });
         this.actor.add_actor(this._leftBox);
         this._leftBoxDNDHandler = new PanelZoneDNDHandler(this._leftBox);
@@ -665,20 +660,7 @@ Panel.prototype = {
         global.settings.connect("changed::" + this.panel_sd_key, Lang.bind(this, this._onPanelShowDelayChanged));
         global.settings.connect("changed::" + this.panel_hd_key, Lang.bind(this, this._onPanelHideDelayChanged));
 
-        let orientation = St.Side.TOP;
-        if (bottomPosition) {
-            orientation = St.Side.BOTTOM;
-        }
-        
-        this._context_menu = new PanelContextMenu(this, orientation);
-        this._menus.addMenu(this._context_menu);   
-        
-        this._context_menu._boxPointer._container.connect('allocate', Lang.bind(this._context_menu._boxPointer, function(actor, box, flags){
-                    this._xPosition = this._xpos;
-                    this._shiftActor();
-        }));
-
-        this.actor.connect('button-release-event', Lang.bind(this, this._onButtonReleaseEvent));                            
+        this.actor.connect('button-release-event', Lang.bind(this, this._onButtonReleaseEvent));
         
         this._handlePanelEditMode();
         global.settings.connect("changed::panel-edit-mode", Lang.bind(this, this._handlePanelEditMode));
@@ -718,27 +700,37 @@ Panel.prototype = {
     },
 
     _onButtonReleaseEvent: function (actor, event) {
-        if (event.get_button()==1){
-            if (this._context_menu.isOpen) {
-                this._context_menu.toggle();
-            }
+        if (this._context_menu && this._context_menu.isOpen) {
+            this._context_menu.toggle();
+            this._context_menu.destroy();
+            this._menus = null;
+            this._context_menu = null;
+            return;
         }
+
         if (event.get_button()==3){
-            try {
             let [x, y] = event.get_coords();
             let target = global.stage.get_actor_at_pos(Clutter.PickMode.ALL, x, y);
-            if (this._context_menu._getMenuItems().length > 0 && target.get_parent() == this.actor) { 
-                this._context_menu.toggle();
-                if (!this._context_menu.isOpen) {
-                    return;
+            if (target.get_parent() == this.actor || target == this.actor) { 
+
+                let orientation = St.Side.TOP;
+                if (this.bottomPosition) {
+                    orientation = St.Side.BOTTOM;
                 }
 
+                this._menus = new PopupMenu.PopupMenuManager(this);
+                this._context_menu = new PanelContextMenu(this, orientation);
+                this._menus.addMenu(this._context_menu);
+                this._context_menu.open();
+
+                this._context_menu._boxPointer._container.connect('allocate', Lang.bind(this._context_menu._boxPointer, function(actor, box, flags){
+                    this._xPosition = this._xpos;
+                    this._shiftActor();
+                }));
+
                 x -= this._context_menu._boxPointer._arrowOrigin;
-
                 let monitor = this._layoutManager.findMonitorForActor(this._context_menu._boxPointer.actor);
-
                 let mywidth = this._context_menu._boxPointer.actor.get_allocation_box().x2-this._context_menu._boxPointer.actor.get_allocation_box().x1;//Width of menu
-
                 if (x + mywidth - monitor.x > monitor.width) {
                     x  = monitor.width + monitor.x - mywidth;
                 }
@@ -749,10 +741,6 @@ Panel.prototype = {
                 this._context_menu._boxPointer._xPosition = this._context_menu._boxPointer._xpos;
                 this._context_menu._boxPointer._shiftActor();
             }
-        }
-        catch(e) {
-            global.log(e);
-        }
         }
         return;
     },
