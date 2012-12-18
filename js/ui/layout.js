@@ -733,7 +733,7 @@ Chrome.prototype = {
             if (!window.showing_on_its_workspace())
                 continue;
 
-            if (metaWindow.is_fullscreen()) {
+            if (metaWindow.get_layer() == Meta.StackLayer.FULLSCREEN || metaWindow.is_fullscreen()) {
                 let monitor = this._findMonitorForWindow(window);
                 if (monitor)
                     monitor.inFullscreen = true;
