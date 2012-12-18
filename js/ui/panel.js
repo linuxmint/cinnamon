@@ -28,10 +28,10 @@ const SPINNER_ANIMATION_TIME = 0.2;
 const AUTOHIDE_ANIMATION_TIME = 0.2;
 const STARTUP_ANIMATION_TIME = 0.2;
 
-const PANEL_AUTOHIDE_KEY="panel-autohide";
-const PANEL_SHOW_DELAY_KEY="panel-show-delay";
-const PANEL_HIDE_DELAY_KEY="panel-hide-delay";
-const PANEL_HEIGHT_KEY="panel-height";
+const PANEL_AUTOHIDE_KEY="panels-autohide";
+const PANEL_SHOW_DELAY_KEY="panels-show-delay";
+const PANEL_HIDE_DELAY_KEY="panels-hide-delay";
+const PANEL_HEIGHT_KEY="panels-height";
 
 // To make sure the panel corners blend nicely with the panel,
 // we draw background and borders the same way, e.g. drawing

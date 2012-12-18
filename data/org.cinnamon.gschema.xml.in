@@ -33,32 +33,32 @@
     <key name="panels-enabled" type="as">
       <default>['1:0:bottom']</default>
       <_summary>Lists of panels used</_summary>
-      <_description> Panels are listed in the following format: panelID:monitor:position, where monitor is the monitor number (0 for primary, -1 for bottom), and position is either top or bottom</_description>
+      <_description> Panels are listed in the following format: panelID:monitor:position, where monitor is the monitor number (0 for primary), and position is either top or bottom</_description>
     </key>
 
-    <key name="panel-autohide" type="as">
+    <key name="panels-autohide" type="as">
       <default>['1:false', '2:false']</default>
       <_summary>Auto-hide panel</_summary>
       <_description>Whether the panel autohides or not.</_description>
     </key>
     
-    <key name="panel-show-delay" type="as">
+    <key name="panels-show-delay" type="as">
       <default>['1:0', '2:0']</default>
       <_summary>Duration of the delay before a hidden panel is shown</_summary>
       <_description>Duration of the delay (in milliseconds)</_description>
     </key>
     
-    <key name="panel-hide-delay" type="as">
+    <key name="panels-hide-delay" type="as">
       <default>['1:0', '2:0']</default>
       <_summary>Duration of the delay before a shown panel is hidden</_summary>
       <_description>Duration of the delay (in milliseconds)</_description>
     </key>
 
-    <key name="panel-height" type="as">
+    <key name="panels-height" type="as">
       <default>['1:25','2:25']</default>
       <_summary>Panel size</_summary>
       <_description>
-        User-defined panel-height for top panel
+        User-defined panel-height for panels
       </_description>
     </key>
     
