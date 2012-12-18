@@ -20,7 +20,7 @@ class Module:
         sidePage.add_widget(GSettingsComboBox(_("Window focus mode"),
                                             "org.gnome.desktop.wm.preferences", "focus-mode", None,
                                             [(i, i.title()) for i in ("click","sloppy","mouse")]))
-		sidePage.add_widget(GSettingsComboBox(_("Modifier to use for modified window click actions"),
+        sidePage.add_widget(GSettingsComboBox(_("Modifier to use for modified window click actions"),
                                             "org.gnome.desktop.wm.preferences", "mouse-button-modifier", None,
                                             [(i, i.title()) for i in ("","<Alt>","<Super>","<Control>")]))
 
