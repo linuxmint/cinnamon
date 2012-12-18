@@ -1,21 +1,22 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 
 const Cairo = imports.cairo;
+const Cinnamon = imports.gi.Cinnamon;
 const Clutter = imports.gi.Clutter;
 const Lang = imports.lang;
 const Mainloop = imports.mainloop;
 const Pango = imports.gi.Pango;
-const Cinnamon = imports.gi.Cinnamon;
+const Signals = imports.signals;
 const St = imports.gi.St;
-const PopupMenu = imports.ui.popupMenu;
-const Main = imports.ui.main;
-const Tweener = imports.ui.tweener;
+
 const Applet = imports.ui.applet;
-const DND = imports.ui.dnd;
 const AppletManager = imports.ui.appletManager;
-const Util = imports.misc.util;
+const DND = imports.ui.dnd;
+const Main = imports.ui.main;
 const ModalDialog = imports.ui.modalDialog;
-const Gtk = imports.gi.Gtk;
+const PopupMenu = imports.ui.popupMenu;
+const Tweener = imports.ui.tweener;
+const Util = imports.misc.util;
 
 const BUTTON_DND_ACTIVATION_TIMEOUT = 250;
 const ANIMATED_ICON_UPDATE_TIMEOUT = 100;
@@ -621,37 +622,10 @@ PanelManager.prototype = {
                 global.log("Invalid panel definition: " + panelProperties[i]);
                 continue;
             }
-
-            let ID = parseInt(elements[0]);
-            if (this.panels[ID]) {
-                global.log("Multiple panels with same ID (" + ID + ") are found");
-                continue;
-            }
-
-            this.panels.length = Math.max(this.panels.length, ID+1);
-            this.panelsMeta.length = Math.max(this.panels.length, ID+1);
-
-            let repeat = false;
-            for (let i in this.panelsMeta) {
-                if ((this.panelsMeta[i][0] == elements[1]) && (this.panelsMeta[i][1] == elements[2]))
-                    global.log("Conflicting panel definitions: " + panelProperties);
-                repeat = true;
-                break;
-            }
-
-            if (repeat) continue;
-
-            this.panels[ID] = new Panel(elements[2]=="bottom", ID, parseInt(elements[1]));
-            this.panelsMeta[ID] = [elements[1], elements[2]];
-
-            // Main.applet_side: to maintain compatibility
-            if (ID==1) { // Primary panel
-                if (elements[2]=="bottom")
-                    Main.applet_side = St.Side.BOTTOM;
-                else
-                    Main.applet_side = St.Side.TOP;
-            }
+            this._loadPanel(parseInt(elements[0]), elements[1], elements[2]=="bottom", this.panels);
         }
+
+        global.settings.connect("changed::panels-enabled", Lang.bind(this, this._onPanelsEnabledChanged));
     },
 
     /**
@@ -711,6 +685,73 @@ PanelManager.prototype = {
                 return panelsInMonitor[i];
         }
         return null;
+    },
+
+    _loadPanel: function(ID, monitorIndex, bottomPosition, panelList) {
+        if (panelList[ID]) {
+            global.log("Multiple panels with same ID (" + ID + ") are found");
+            return;
+        }
+
+        panelList.length = Math.max(panelList.length, ID+1);
+        this.panelsMeta.length = Math.max(this.panels.length, ID+1);
+
+        let repeat = false;
+        for (let i in this.panelsMeta) {
+            if ((this.panelsMeta[i][0] == monitorIndex) && (this.panelsMeta[i][1] == bottomPosition))
+                global.log("Conflicting panel definitions: " + ID + ":" + monitorIndex + ":" + (bottomPosition ? "bottom" : "top" ));
+            repeat = true;
+            break;
+        }
+
+        if (repeat) return;
+
+        panelList[ID] = new Panel(bottomPosition, ID, parseInt(monitorIndex));
+        this.panelsMeta[ID] = [monitorIndex, bottomPosition];
+
+        // Main.applet_side: to maintain compatibility
+        if (ID==1) { // Primary panel
+            if (bottomPosition)
+                Main.applet_side = St.Side.BOTTOM;
+            else
+                Main.applet_side = St.Side.TOP;
+        }
+
+        return;
+    },
+
+    _onPanelsEnabledChanged: function(){
+        let newPanels = new Array(this.panels.length);
+        this.panelsMeta = [];
+
+        let panelProperties = global.settings.get_strv("panels-enabled");
+        for (let i = 0; i < panelProperties.length; i ++) {
+            let elements = panelProperties[i].split(":");
+            if (elements.length != 3) {
+                global.log("Invalid panel definition: " + panelProperties[i]);
+                continue;
+            }
+
+            let ID = parseInt(elements[0]);
+
+            // If panel is moved
+            if (this.panels[ID]) {
+                // Move panel object to newPanels
+                newPanels[ID] = this.panels[ID];
+                this.panels[ID] = null;
+
+                newPanels[ID].updatePosition(parseInt(elements[1]),elements[2]=="bottom");
+                this.panelsMeta[ID] = [elements[1], elements[2]];
+            } else {
+                this._loadPanel(ID, elements[1], elements[2]=="bottom", newPanels);
+            }
+        }
+
+        // Destroy removed panels
+        for (let i in this.panels)
+            if (this.panels[i]) this.panels[i].destroy();
+
+        this.panels = newPanels;
     }
 }
 function Panel(bottomPosition, panelID, monitorIndex) {
@@ -731,6 +772,7 @@ Panel.prototype = {
         this._hideTimer = false;
         this._showTimer = false;
         this._themeFontSize = null;
+        this._destroyed = false;
 
         this.panelBox = new St.BoxLayout({ name: 'panelBox', vertical: true});
         Main.layoutManager.addChrome(this.panelBox);
@@ -806,7 +848,7 @@ Panel.prototype = {
         global.settings.connect("changed::" + PANEL_HEIGHT_KEY, Lang.bind(this, this._queueMoveResizePanel));
         global.settings.connect("changed::panel-edit-mode", Lang.bind(this, this._handlePanelEditMode));
         global.settings.connect("changed::panel-resizable", Lang.bind(this, this._queueMoveResizePanel));
-        global.settings.connect("changed::panel-scale-text-icons", Lang.bind(this, this._onScaleTextIconsChanged))
+        global.settings.connect("changed::panel-scale-text-icons", Lang.bind(this, this._onScaleTextIconsChanged));
 
         global.screen.connect('monitors-changed', Lang.bind(this, this._queueMoveResizePanel));
 
@@ -834,6 +876,46 @@ Panel.prototype = {
             this.panelBox.anchor_y = this.panelBox.height;
             
         Tweener.addTween(this.panelBox, params);*/
+    },
+
+    /**
+     * updatePosition:
+     * @monitorIndex: integer, index of monitor
+     * @bottomPosition, boolean, whether it should be placed at bottom
+     *
+     * Moves the panel to the monitor @monitorIndex and position @bottomPosition
+     */
+    updatePosition: function(monitorIndex, bottomPosition) {
+        this.monitorIndex = monitorIndex;
+        this.bottomPosition = bottomPosition;
+
+        this.monitor = global.screen.get_monitor_geometry(monitorIndex);
+        this._queueMoveResizePanel();
+    },
+
+    /**
+     * destroy:
+     *
+     * Destroys the panel
+     */
+    destroy: function() {
+        // TODO: Should destroy all applets first. Pull request for revamping applet system is pending
+        this._leftBox.destroy();
+        this._centerBox.destroy();
+        this._rightBox.destroy();
+
+        this._rightCorner.actor.destroy();
+        this._leftCorner.actor.destroy();
+
+        this.actor.destroy();
+        this.panelBox.destroy();
+        this._context_menu.destroy();
+
+        this._menus = null;
+        this.monitor = null;
+
+        this._destroyed = true;
+//        this.emit('destroy');
     },
 
     isHideable: function() {
@@ -982,6 +1064,7 @@ Panel.prototype = {
     },
 
     _moveResizePanel: function() {
+        if (this._destroyed) return; // Panel is destroyed)
         this.monitor = global.screen.get_monitor_geometry(this.monitorIndex); // Update monitor information
         let panelHeight;
         let panelResizable = global.settings.get_boolean("panel-resizable");
@@ -1018,6 +1101,8 @@ Panel.prototype = {
         // Applet Manager might not be initialized yet when this function is called
         if (AppletManager.enabledApplets)
             AppletManager.updateAppletPanelHeights();
+
+        return;
     },
 
     _onScaleTextIconsChanged: function() {
@@ -1279,3 +1364,4 @@ Panel.prototype = {
     },
 
 };
+//Signals.addSignalMethods(Panel.prototype);

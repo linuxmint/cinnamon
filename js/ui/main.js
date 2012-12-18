@@ -271,7 +271,7 @@ function start() {
     expo.init();
 
     _initUserSession();
-    statusIconDispatcher.start(panelManager.panels[1].actor); // Temprorary fix. Further investigation on statusIconDispatcher is needed
+//    statusIconDispatcher.start(panelManager.panels[1].actor); // Temprorary fix. Further investigation on statusIconDispatcher is needed
 
     // Provide the bus object for gnome-session to
     // initiate logouts.
