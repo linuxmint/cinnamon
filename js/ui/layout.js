@@ -796,7 +796,8 @@ Chrome.prototype = {
 
         for (i = 0; i < this._trackedActors.length; i++) {
             let actorData = this._trackedActors[i];
-            if (!actorData.affectsInputRegion && !actorData.affectsStruts)
+            if ((!actorData.affectsInputRegion && !actorData.affectsStruts) ||
+                 primary.inFullscreen)
                 continue;
 
             let [x, y] = actorData.actor.get_transformed_position();
