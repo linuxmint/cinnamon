@@ -43,8 +43,10 @@ class Module:
         self.name = "backgrounds"
 
 class PixCache(object):
+    
     def __init__(self):
         self._data = {}
+    
     def get_pix(self, filename, size = None):
         if not filename in self._data:
             self._data[filename] = {}
@@ -53,8 +55,9 @@ class PixCache(object):
         else:
             try:
                 img = Image.open(filename)                        
+                (width, height) = img.size
                 if img.mode != 'RGB':
-                    img = img.convert('RGB')
+                    img = img.convert('RGB')                
                 if size:
                     img.thumbnail((size, size), Image.ANTIALIAS)                                                                                                    
                 img = imtools.round_image(img, {}, False, None, 3, 255)  
@@ -64,7 +67,7 @@ class PixCache(object):
                 temp_filename = f.name
                 f.close()        
                 img.save(temp_filename, "png")
-                pix = GdkPixbuf.Pixbuf.new_from_file(temp_filename)
+                pix = [GdkPixbuf.Pixbuf.new_from_file(temp_filename), width, height]
                 os.unlink(temp_filename)
             except Exception, detail:
                 print "Failed to convert %s: %s" % (filename, detail)
@@ -82,7 +85,7 @@ class ThreadedIconView(Gtk.IconView):
         self._model = Gtk.ListStore(object, GdkPixbuf.Pixbuf, str)
         self.set_model(self._model)
         self.set_pixbuf_column(1)
-        self.set_markup_column(2)
+        self.set_markup_column(2)        
         
         self._loading_queue = []
         self._loading_queue_lock = thread.allocate_lock()
@@ -163,8 +166,13 @@ class ThreadedIconView(Gtk.IconView):
                         label = to_load["name"]
                     else:
                         label = os.path.split(to_load["filename"])[1]
+                    if "artist" in to_load:
+                        artist = "\nby %s" % to_load["artist"]
+                    else:
+                        artist = ""
+                    
                     self._loaded_data_lock.acquire()
-                    self._loaded_data.append((to_load, pix, "<sub>%s</sub>" % label))
+                    self._loaded_data.append((to_load, pix[0], "<b>%s</b><sub>%s\n%dx%d</sub>" % (label, artist, pix[1], pix[2])))
                     self._loaded_data_lock.release()
                 
         self._loading_lock.acquire()
@@ -256,7 +264,7 @@ class BackgroundWallpaperPane (Gtk.VBox):
                         for prop in wallpaperNode:
                             if type(prop.tag) == str:
                                 if prop.tag != "name":
-                                    wallpaperData[prop.tag] = prop.text
+                                    wallpaperData[prop.tag] = prop.text                                
                                 else:
                                     propAttr = prop.attrib
                                     wpName = prop.text
