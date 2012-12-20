@@ -709,6 +709,7 @@ function _log(category, msg) {
                          category: category,
                          message: text };
     _errorLogStack.push(out);
+    cinnamonDBusService.notifyLgLogUpdate();
     if (can_log) lg_log_file.write(renderLogLine(out), null);
 }
 
@@ -719,14 +720,6 @@ function _logError(msg) {
 function _logDebug(msg) {
     return _log('debug', msg);
 }
-
-// Used by the error display in lookingGlass.js
-function _getAndClearErrorStack() {
-    let errors = _errorLogStack;
-    _errorLogStack = [];
-    return errors;
-}
-
 
 function formatTime(d) {
     function pad(n) { return n < 10 ? '0' + n : n; }
