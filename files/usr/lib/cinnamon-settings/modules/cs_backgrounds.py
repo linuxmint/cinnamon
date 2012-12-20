@@ -43,8 +43,10 @@ class Module:
         self.name = "backgrounds"
 
 class PixCache(object):
+    
     def __init__(self):
         self._data = {}
+    
     def get_pix(self, filename, size = None):
         if not filename in self._data:
             self._data[filename] = {}
@@ -53,8 +55,9 @@ class PixCache(object):
         else:
             try:
                 img = Image.open(filename)                        
+                (width, height) = img.size
                 if img.mode != 'RGB':
-                    img = img.convert('RGB')
+                    img = img.convert('RGB')                
                 if size:
                     img.thumbnail((size, size), Image.ANTIALIAS)                                                                                                    
                 img = imtools.round_image(img, {}, False, None, 3, 255)  
@@ -64,7 +67,7 @@ class PixCache(object):
                 temp_filename = f.name
                 f.close()        
                 img.save(temp_filename, "png")
-                pix = GdkPixbuf.Pixbuf.new_from_file(temp_filename)
+                pix = [GdkPixbuf.Pixbuf.new_from_file(temp_filename), width, height]
                 os.unlink(temp_filename)
             except Exception, detail:
                 print "Failed to convert %s: %s" % (filename, detail)
@@ -164,12 +167,12 @@ class ThreadedIconView(Gtk.IconView):
                     else:
                         label = os.path.split(to_load["filename"])[1]
                     if "artist" in to_load:
-                        artist = "by %s" % to_load["artist"]
+                        artist = "\nby %s" % to_load["artist"]
                     else:
                         artist = ""
                     
                     self._loaded_data_lock.acquire()
-                    self._loaded_data.append((to_load, pix, "<b>%s</b><sub>\n%s</sub>" % (label, artist)))
+                    self._loaded_data.append((to_load, pix[0], "<b>%s</b><sub>%s\n%dx%d</sub>" % (label, artist, pix[1], pix[2])))
                     self._loaded_data_lock.release()
                 
         self._loading_lock.acquire()
