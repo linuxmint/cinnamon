@@ -57,8 +57,8 @@ class PixCache(object):
                     img = img.convert('RGB')
                 if size:
                     img.thumbnail((size, size), Image.ANTIALIAS)                                                                                                    
-                img = imtools.round_image(img, {}, False, None, 5, 255)  
-                img = imtools.drop_shadow(img, 5, 5, background_color=(255, 255, 255, 0), shadow_color=0x444444, border=8, shadow_blur=3, force_background_color=False, cache=None)        
+                img = imtools.round_image(img, {}, False, None, 3, 255)  
+                img = imtools.drop_shadow(img, 4, 4, background_color=(255, 255, 255, 0), shadow_color=0x444444, border=8, shadow_blur=3, force_background_color=False, cache=None)        
                 # Convert Image -> Pixbuf (save to file, GTK3 is not reliable for that)
                 f = tempfile.NamedTemporaryFile(delete=False)
                 temp_filename = f.name
