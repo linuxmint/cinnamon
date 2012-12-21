@@ -831,9 +831,11 @@ class KeyboardSidePage (SidePage):
                 if response == Gtk.ResponseType.CANCEL:
                     dialog.destroy()
                     return
-                gclient = gconf.client_get_default()
-                gclient.set_string(keybinding.path + "/name", dialog.name_entry.get_text())
-                gclient.set_string(keybinding.path + "/action", dialog.command_entry.get_text())
+
+                keybinding.label = dialog.name_entry.get_text()
+                keybinding.action = dialog.command_entry.get_text()
+                keybinding.writeSettings();
+
                 i = 0
                 for cat in self.cat_store:
                     if cat[1].int_name is "custom":
