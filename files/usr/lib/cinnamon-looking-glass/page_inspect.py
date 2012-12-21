@@ -38,10 +38,10 @@ class ModulePage(pageutils.WindowAndActionBars):
         pageutils.WindowAndActionBars.__init__(self, self.view)
         
         
-        back = pageutils.ImageButton("back")
-        back.set_tooltip_text("Go back")
-        back.connect("clicked", self.onBackButton)
-        self.addToLeftBar(back, 1)
+        self.back = pageutils.ImageButton("back")
+        self.back.set_tooltip_text("Go back")
+        self.back.connect("clicked", self.onBackButton)
+        self.addToLeftBar(self.back, 1)
         
         insert = pageutils.ImageButton("insert-object")
         insert.set_tooltip_text("Insert into results")
@@ -49,19 +49,20 @@ class ModulePage(pageutils.WindowAndActionBars):
         self.addToLeftBar(insert, 1)
         
         
-        self.addToBottomBar(Gtk.Label("Path:"), 1)
+        self.addToBottomBar(Gtk.Label("Path:"), 2)
         self.pathLabel = Gtk.Label("<No selection done yet>")
-        self.addToBottomBar(self.pathLabel, 1)
+        self.addToBottomBar(self.pathLabel, 2)
         
-        self.addToBottomBar(Gtk.Label("; Type:"), 1)
+        self.addToBottomBar(Gtk.Label("; Type:"), 2)
         self.typeLabel = Gtk.Label("")
-        self.addToBottomBar(self.typeLabel, 1)
-        self.addToBottomBar(Gtk.Label("; Name:"), 1)
+        self.addToBottomBar(self.typeLabel, 2)
+        self.addToBottomBar(Gtk.Label("; Name:"), 2)
         self.nameLabel = Gtk.Label("")
-        self.addToBottomBar(self.nameLabel, 1)
+        self.addToBottomBar(self.nameLabel, 2)
         
         self.currentInspection = None
         self.stack = []
+        self.back.set_sensitive(False)
 
     def onInsertButton(self, widget):
         if len(self.stack) == 0:
@@ -76,10 +77,12 @@ class ModulePage(pageutils.WindowAndActionBars):
     def popInspectionElement(self):
         if len(self.stack) > 0:
             self.updateInspector(*self.stack.pop())
+        self.back.set_sensitive(len(self.stack) > 0)
             
     def pushInspectionElement(self):
         if self.currentInspection is not None:
             self.stack.append(self.currentInspection)
+            self.back.set_sensitive(True)
         
     def updateInspector(self, path, objType, name, value, pushToStack=False):
         if objType == "object":
@@ -106,4 +109,5 @@ class ModulePage(pageutils.WindowAndActionBars):
     def inspectElement(self, path, objType, name, value):
         del self.stack[:]
         self.currentInspection = None
+        self.back.set_sensitive(False)
         self.updateInspector(path, objType, name, value)
