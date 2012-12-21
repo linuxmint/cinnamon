@@ -3,10 +3,13 @@
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gio, Gtk, GObject, Gdk, Pango, GLib
-import dbus
+import dbus, dbus.service, dbus.glib
 import pageutils
 import os
 from dbus.mainloop.glib import DBusGMainLoop
+
+LG_DBUS_NAME = "org.Cinnamon.LookingGlass"
+LG_DBUS_PATH = "/org/Cinnamon/LookingGlass"
 
 class ResizeGrip(Gtk.Widget):
     def __init__(self, parent):
@@ -143,16 +146,32 @@ class CommandLine(Gtk.Entry):
             
             cinnamonDBus.lgEval(command)
    
-class CinnamonLog:
-    def delete(self, widget, event=None):
-        Gtk.main_quit()
-        return False
-
-    def __init__(self):
+class CinnamonLog(dbus.service.Object):
+    def __init__ (self, bus, path, name):
+        self.window = None
+        dbus.service.Object.__init__ (self, bus, path, name)
+        
+    @dbus.service.method (LG_DBUS_NAME, in_signature='', out_signature='')
+    def show(self):
+        if self.window is not None:
+            if self.window.get_visible() and self.window.has_toplevel_focus():
+                self.window.hide()
+            else:
+                self.window.present()
+        else:
+            self.run()
+            Gtk.main()
+            
+    def run(self):
+        global cinnamonDBus
+        cinnamonDBus = createCinnamonDBusProxy()
+        
         self.window = Gtk.Window(Gtk.WindowType.TOPLEVEL)
         screen = self.window.get_screen()
         
         self.window.connect("delete_event", self.delete)
+        self.window.connect("configure-event", self.configure)
+        self.window.connect("key-press-event", self.keypress)
 
         self.window.set_border_width(0)
         self.window.set_decorated(False)
@@ -163,7 +182,7 @@ class CinnamonLog:
         self.window.move(0,0)
 
         numRows = 3
-        numColumns = 6
+        numColumns = 5
         table = Gtk.Table(numRows, numColumns, False)
         self.window.add(table)
         
@@ -196,16 +215,23 @@ class CinnamonLog:
         restartButton = Gtk.Button("Restart")
         restartButton.connect("clicked", self.onRestartClicked)
         table.attach(restartButton, column, column+1, 1, 2, 0, 0, 1)
-        column += 1
-        closeButton = Gtk.Button("X")
-        closeButton.connect ('clicked', self.close_clicked)
-        table.attach(closeButton, column, column+1, 1, 2, 0, 0, 1)
         
         sep = ResizeGrip(self.window)
         table.attach(sep, 0, numColumns, 2, 3, Gtk.AttachOptions.EXPAND|Gtk.AttachOptions.FILL, 0, 0, 0)
         
         self.window.show_all()
         self.activatePage("results")
+
+    def keypress(self, widget, event=None):
+        if event.keyval == Gdk.KEY_Escape:
+            self.window.hide()
+        
+    def delete(self, widget, event=None):
+        Gtk.main_quit()
+        return False
+        
+    def configure(self, widget, event=None):
+        self.window.move(0,0)
         
     def onRestartClicked(self, widget):
         #fixme: gets killed when the python process ends, separate it!
@@ -214,9 +240,6 @@ class CinnamonLog:
     def onPickerClicked(self, widget):
         cinnamonDBus.lgStartInspector()
 
-    def close_clicked(self, widget):
-        Gtk.main_quit()
-        
     def createDummyPage(self, text):
         label = Gtk.Label(text)
         self.notebook.append_page(Gtk.Label(""), label)
@@ -242,16 +265,16 @@ def createCinnamonDBusProxy():
         print(e)
         return None
 
-def main():
-    Gtk.main()
-    return 0
-
 if __name__ == "__main__":
     GObject.type_register(ResizeGrip)
     DBusGMainLoop(set_as_default=True)
-    
-    global cinnamonDBus
-    cinnamonDBus = createCinnamonDBusProxy()
-    
-    CinnamonLog()
-    main()
+
+    bus = dbus.SessionBus ()
+    request = bus.request_name(LG_DBUS_NAME, dbus.bus.NAME_FLAG_DO_NOT_QUEUE)
+    if request != dbus.bus.REQUEST_NAME_REPLY_EXISTS:
+        app = CinnamonLog(bus, LG_DBUS_PATH, LG_DBUS_NAME)
+    else:
+        object = bus.get_object(LG_DBUS_NAME, LG_DBUS_PATH)
+        app = dbus.Interface(object, LG_DBUS_NAME)
+
+    app.show()
