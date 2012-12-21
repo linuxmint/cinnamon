@@ -239,6 +239,7 @@ class CinnamonLog(dbus.service.Object):
          
     def onPickerClicked(self, widget):
         cinnamonDBus.lgStartInspector()
+        self.window.hide()
 
     def createDummyPage(self, text):
         label = Gtk.Label(text)
@@ -254,6 +255,7 @@ class CinnamonLog(dbus.service.Object):
         self.notebook.append_page(page, label)
         
     def activatePage(self, moduleName):
+        self.window.present()
         page = self.notebook.page_num(self.pages[moduleName])
         self.notebook.set_current_page(page)
 
