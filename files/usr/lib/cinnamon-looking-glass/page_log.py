@@ -16,6 +16,7 @@ class LogView(Gtk.ScrolledWindow):
     def __init__(self):
         Gtk.ScrolledWindow.__init__(self)
         
+        self.set_shadow_type(Gtk.ShadowType.ETCHED_IN)
         self.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
         textview = Gtk.TextView()
         self.textbuffer = textview.get_buffer()
@@ -65,10 +66,10 @@ class LogView(Gtk.ScrolledWindow):
             self.append(item["category"], float(item["timestamp"])*0.001, item["message"])
         self.updateText()
 
-class ModulePage(pageutils.TableWindowAndActionBarLeft):
+class ModulePage(pageutils.WindowAndActionBars):
     def __init__(self):
         self.view = LogView()
-        pageutils.TableWindowAndActionBarLeft.__init__(self, self.view, 4, 3, 1)
+        pageutils.WindowAndActionBars.__init__(self, self.view)
         
         self.addToggleButton("info", "dialog-information", "Show/Hide Messages tagged as 'info'")
         self.addToggleButton("debug", "dialog-warning", "Show/Hide Messages tagged as 'debug'")
@@ -80,5 +81,5 @@ class ModulePage(pageutils.TableWindowAndActionBarLeft):
         button.connect("toggled", self.view.buttonToggled, logType)
         button.set_active(self.view.enabledTypes[logType])
         button.set_tooltip_text(tooltip)
-        self.addToActionBar(button)
+        self.addToLeftBar(button, 1)
         

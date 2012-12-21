@@ -28,31 +28,38 @@ class InspectView(pageutils.BaseListView):
         for item in data:
             self.store.append([item["name"], item["type"], item["shortValue"], item["value"], path + "." + item["name"]])
         
-class ModulePage(pageutils.TableWindowAndActionBar):
+class ModulePage(pageutils.WindowAndActionBars):
     def __init__(self):
+        self.statusBar = Gtk.Statusbar()
+        context_id = self.statusBar.get_context_id("Statusbar example")
+        message_id = self.statusBar.push(context_id, "Mama")
+        
         self.view = InspectView(self)
-        pageutils.TableWindowAndActionBar.__init__(self, self.view, 8, 3, 1)
+        pageutils.WindowAndActionBars.__init__(self, self.view)
         
-        refresh = Gtk.Button("Back")
-        refresh.set_tooltip_text("Go back")
-        refresh.connect("clicked", self.onBackButton)
-        self.addToActionBar(refresh)
         
-        self.addToActionBar(Gtk.Label("Path:"))
-        self.pathLabel = Gtk.Label("<No selection done yet>")
-        self.addToActionBar(self.pathLabel)
+        back = pageutils.ImageButton("back")
+        back.set_tooltip_text("Go back")
+        back.connect("clicked", self.onBackButton)
+        self.addToLeftBar(back, 1)
         
-        self.addToActionBar(Gtk.Label("; Type:"))
-        self.typeLabel = Gtk.Label("")
-        self.addToActionBar(self.typeLabel)
-        self.addToActionBar(Gtk.Label("; Name:"))
-        self.nameLabel = Gtk.Label("")
-        self.addToActionBar(self.nameLabel)
-        
-        insert = Gtk.Button("Insert")
+        insert = pageutils.ImageButton("insert-object")
         insert.set_tooltip_text("Insert into results")
         insert.connect("clicked", self.onInsertButton)
-        self.addToActionBar(insert)
+        self.addToLeftBar(insert, 1)
+        
+        
+        self.addToBottomBar(Gtk.Label("Path:"), 1)
+        self.pathLabel = Gtk.Label("<No selection done yet>")
+        self.addToBottomBar(self.pathLabel, 1)
+        
+        self.addToBottomBar(Gtk.Label("; Type:"), 1)
+        self.typeLabel = Gtk.Label("")
+        self.addToBottomBar(self.typeLabel, 1)
+        self.addToBottomBar(Gtk.Label("; Name:"), 1)
+        self.nameLabel = Gtk.Label("")
+        self.addToBottomBar(self.nameLabel, 1)
+        
         self.currentInspection = None
         self.stack = []
 

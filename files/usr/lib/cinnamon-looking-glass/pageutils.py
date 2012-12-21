@@ -43,37 +43,24 @@ class BaseListView(Gtk.ScrolledWindow):
         self.treeView.append_column(column)
         return column
 
-class TableWindowAndActionBar(Gtk.Table):
-    def __init__(self, window, numItems, xPadding=0, yPadding=0):
-        Gtk.Table.__init__(self, 2, numItems + 1, False)
-        self.attach(window, 0, numItems+1, 0, 1)
+class WindowAndActionBars(Gtk.Table):
+    def __init__(self, window):
+        Gtk.Table.__init__(self, 2, 2, False)
         
-        self.numItems = numItems
-        self.addedItems = 0
-        self.xPadding = xPadding
-        self.yPadding = yPadding
-
-    def addToActionBar(self, widget):
-        self.attach(widget, self.addedItems, self.addedItems+1, 1, 2, 0, 0, self.xPadding, self.yPadding)
-        self.addedItems += 1
-        if self.addedItems == self.numItems:
-            self.attach(Gtk.Label(""), self.addedItems, self.addedItems+1, 1, 2, Gtk.AttachOptions.EXPAND|Gtk.AttachOptions.FILL, 0, self.xPadding, self.yPadding)
-
-class TableWindowAndActionBarLeft(Gtk.Table):
-    def __init__(self, window, numItems, xPadding=0, yPadding=0):
-        Gtk.Table.__init__(self, numItems + 1, 2, False)
-        self.attach(window, 1, 2, 0, numItems+1)
+        self.bottom = Gtk.HBox()
+        self.left = Gtk.VBox()
         
-        self.numItems = numItems
-        self.addedItems = 0
-        self.xPadding = xPadding
-        self.yPadding = yPadding
+        self.attach(window, 1, 2, 0, 1)
+        self.attach(self.left, 0, 1, 0, 1, 0, Gtk.AttachOptions.EXPAND|Gtk.AttachOptions.FILL)
+        self.attach(self.bottom, 0, 2, 1, 2, Gtk.AttachOptions.EXPAND|Gtk.AttachOptions.FILL, 0)
 
-    def addToActionBar(self, widget):
-        self.attach(widget, 0, 1, self.addedItems, self.addedItems+1, 0, 0, self.xPadding, self.yPadding)
-        self.addedItems += 1
-        if self.addedItems == self.numItems:
-            self.attach(Gtk.Label(""), 0, 1, self.addedItems, self.addedItems+1, 0, Gtk.AttachOptions.EXPAND|Gtk.AttachOptions.FILL, self.xPadding, self.yPadding)
+    def addToLeftBar(self, widget, padding=0):
+        self.left.set_border_width(2)
+        self.left.pack_start(widget, False, False, padding)
+
+    def addToBottomBar(self, widget, padding=0):
+        self.bottom.set_border_width(2)
+        self.bottom.pack_start(widget, False, False, padding)
 
 def loadIcon(name, size=Gtk.IconSize.LARGE_TOOLBAR):
     theme = Gtk.IconTheme.get_default()    

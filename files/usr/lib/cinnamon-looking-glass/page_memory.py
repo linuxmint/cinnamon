@@ -34,17 +34,17 @@ class MemoryView(pageutils.BaseListView):
         cinnamonDBus.lgFullGc()
         self.getUpdates()
 
-class ModulePage(pageutils.TableWindowAndActionBarLeft):
+class ModulePage(pageutils.WindowAndActionBars):
     def __init__(self):
         self.view = MemoryView()
-        pageutils.TableWindowAndActionBarLeft.__init__(self, self.view, 2, 3, 1)
+        pageutils.WindowAndActionBars.__init__(self, self.view)
         
         refresh = pageutils.ImageButton("view-refresh")
         refresh.set_tooltip_text("Refresh")
         refresh.connect("clicked", self.view.getUpdates)
-        self.addToActionBar(refresh)
+        self.addToLeftBar(refresh, 1)
         fullGc = pageutils.ImageButton("user-trash-full")
         fullGc.set_tooltip_text("Full Garbage Collection")
         fullGc.connect ('clicked', self.view.onFullGc)
         
-        self.addToActionBar(fullGc)
+        self.addToLeftBar(fullGc, 1)
