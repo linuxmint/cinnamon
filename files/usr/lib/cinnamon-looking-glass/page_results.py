@@ -10,9 +10,9 @@ class ModulePage(pageutils.BaseListView):
         
         column = self.create_text_column(0, "ID")
         column.set_cell_data_func(self.rendererText, self.celldatafunction_id) 
-        self.create_text_column(1, "Command")
+        self.create_text_column(1, "Name")
         self.create_text_column(2, "Type")
-        self.create_text_column(3, "Object")
+        self.create_text_column(3, "Value")
 
         self.popup = Gtk.Menu()
         clear = Gtk.MenuItem('Clear all results')

@@ -193,7 +193,7 @@ class CinnamonLog(dbus.service.Object):
         self.notebook.set_show_tabs(True)
 
         self.pages = {}
-        self.createPage("Evaluator", "results")
+        self.createPage("Results", "results")
         self.createPage("Inspect", "inspect")
         self.createPage("Memory", "memory")
         self.createPage("Windows", "windows")
