@@ -39,7 +39,7 @@ class ResizeGrip(Gtk.Widget):
         style.set_background(window, Gtk.StateFlags.NORMAL)
         
         self.get_window().set_cursor(Gdk.Cursor(Gdk.CursorType.BOTTOM_SIDE))
-        self.connect("draw", self.on_draw_event)
+        self.connect("draw", self.onDraw)
 
     def do_unrealize(self):
         self.get_window().destroy()
@@ -62,7 +62,11 @@ class ResizeGrip(Gtk.Widget):
         if self.get_realized():
             self.get_window().move_resize(allocation.x, allocation.y, allocation.width, allocation.height)
 
-    def on_draw_event(self, widget, ctx):
+    def do_button_press_event(self, event):
+        self.parentWindow.begin_resize_drag(Gdk.WindowEdge.SOUTH, event.button, int(event.x_root), int(event.y_root), event.time)
+        return True
+
+    def onDraw(self, widget, ctx):
         width = self.get_window().get_width()
         height = self.get_window().get_height()
         # Draw a line at the bottom
@@ -71,10 +75,6 @@ class ResizeGrip(Gtk.Widget):
         cr.rectangle(1, height-4, width-2, 1)
         cr.fill()
 
-    def do_button_press_event(self, event):
-        self.parentWindow.begin_resize_drag(Gdk.WindowEdge.SOUTH, event.button, int(event.x_root), int(event.y_root), event.time)
-        return True
-
 class CommandLine(Gtk.Entry):
     def __init__(self):
         Gtk.Entry.__init__(self)
@@ -82,10 +82,10 @@ class CommandLine(Gtk.Entry):
         self.history = self.settings.get_strv("looking-glass-history")
         self.historyPosition = -1
         self.lastText = ""
-        self.connect('key_press_event', self.on_key_press_event)
-        self.connect("populate-popup", self.populate_popup)
+        self.connect('key-press-event', self.onKeyPress)
+        self.connect("populate-popup", self.populatePopup)
 
-    def populate_popup(self, view, menu):
+    def populatePopup(self, view, menu):
         menu.append(Gtk.SeparatorMenuItem())
         clear = Gtk.MenuItem("Clear History")
         clear.connect('activate', self.historyClear)
@@ -93,7 +93,7 @@ class CommandLine(Gtk.Entry):
         menu.show_all()
         return False
         
-    def on_key_press_event(self, widget, event):
+    def onKeyPress(self, widget, event):
         if event.keyval == Gdk.KEY_Up:
             self.historyPrev()
             return True
@@ -168,10 +168,6 @@ class CinnamonLog(dbus.service.Object):
         
         self.window = Gtk.Window(Gtk.WindowType.TOPLEVEL)
         screen = self.window.get_screen()
-        
-        self.window.connect("delete_event", self.delete)
-        self.window.connect("configure-event", self.configure)
-        self.window.connect("key-press-event", self.keypress)
 
         self.window.set_border_width(0)
         self.window.set_decorated(False)
@@ -180,6 +176,10 @@ class CinnamonLog(dbus.service.Object):
         self.window.set_default_size(screen.get_width(), 200)
         self.window.set_has_resize_grip(False)
         self.window.move(0,0)
+        
+        self.window.connect("delete_event", self.onDelete)
+        self.window.connect("configure-event", self.onConfigure)
+        self.window.connect("key-press-event", self.onKeyPress)
 
         numRows = 3
         numColumns = 5
@@ -208,29 +208,32 @@ class CinnamonLog(dbus.service.Object):
         pickerButton.connect("clicked", self.onPickerClicked)
         table.attach(pickerButton, column, column+1, 1, 2, 0, 0, 2)
         column += 1
+        
         table.attach(Gtk.Label("Exec:"), column, column+1, 1, 2, 0, 0, 3)
         column += 1
+        
         table.attach(CommandLine(), column, column+1, 1, 2, Gtk.AttachOptions.EXPAND|Gtk.AttachOptions.FILL, 0, 3, 2)
         column += 1
+        
         restartButton = Gtk.Button("Restart")
         restartButton.connect("clicked", self.onRestartClicked)
         table.attach(restartButton, column, column+1, 1, 2, 0, 0, 1)
         
-        sep = ResizeGrip(self.window)
-        table.attach(sep, 0, numColumns, 2, 3, Gtk.AttachOptions.EXPAND|Gtk.AttachOptions.FILL, 0, 0, 0)
+        grip = ResizeGrip(self.window)
+        table.attach(grip, 0, numColumns, 2, 3, Gtk.AttachOptions.EXPAND|Gtk.AttachOptions.FILL, 0, 0, 0)
         
         self.window.show_all()
         self.activatePage("results")
 
-    def keypress(self, widget, event=None):
+    def onKeyPress(self, widget, event=None):
         if event.keyval == Gdk.KEY_Escape:
             self.window.hide()
         
-    def delete(self, widget, event=None):
+    def onDelete(self, widget, event=None):
         Gtk.main_quit()
         return False
         
-    def configure(self, widget, event=None):
+    def onConfigure(self, widget, event=None):
         self.window.move(0,0)
         
     def onRestartClicked(self, widget):

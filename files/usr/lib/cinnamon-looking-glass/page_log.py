@@ -18,12 +18,12 @@ class LogView(Gtk.ScrolledWindow):
         
         self.set_shadow_type(Gtk.ShadowType.ETCHED_IN)
         self.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
+        
         textview = Gtk.TextView()
-        self.textbuffer = textview.get_buffer()
-        self.add(textview)
-        self.show()
-        textview.show()
         textview.set_editable(False)
+        self.add(textview)
+        
+        self.textbuffer = textview.get_buffer()
         self.log = []
         
         self.enabledTypes = {'info': True, 'debug': True, 'error': True, 'trace': False }
@@ -33,12 +33,12 @@ class LogView(Gtk.ScrolledWindow):
         #for key in data:
         #    self.enabledTypes[key] = True
         
-        textview.connect('size-allocate', self.textview_changed)
+        textview.connect('size-allocate', self.onTextViewSizeAllocate)
         self.getUpdates()
         
         cinnamonDBus.connect_to_signal("lgLogUpdate", self.getUpdates)
 
-    def textview_changed(self, widget, event, data=None):
+    def onTextViewSizeAllocate(self, widget, event, data=None):
         adj = widget.get_vadjustment()
         adj.set_value( adj.get_upper() - adj.get_page_size() )
 
@@ -51,20 +51,23 @@ class LogView(Gtk.ScrolledWindow):
             if(self.enabledTypes[entry.category]):
                 sb.append(entry.formattedText)
         self.textbuffer.set_text(''.join(sb))
-        return
         
-    def buttonToggled(self, button, data):
+    def onButtonToggled(self, button, data):
         self.enabledTypes[data] = button.get_active()
         self.updateText()
         
     def getUpdates(self):
         success, json_data = cinnamonDBus.lgGetErrorStack()
-        data = json.loads(json_data)
-        #fixme: check first timestamp to make sure we don't have a completely new log here.
-        end = len(self.log)
-        for item in data[end:]:
-            self.append(item["category"], float(item["timestamp"])*0.001, item["message"])
-        self.updateText()
+        if success:
+            try:
+                data = json.loads(json_data)
+                #fixme: check first timestamp to make sure we don't have a completely new log here.
+                end = len(self.log)
+                for item in data[end:]:
+                    self.append(item["category"], float(item["timestamp"])*0.001, item["message"])
+                self.updateText()                
+            except Exception as e:
+                print e
 
 class ModulePage(pageutils.WindowAndActionBars):
     def __init__(self):
@@ -78,7 +81,7 @@ class ModulePage(pageutils.WindowAndActionBars):
 
     def addToggleButton(self, logType, icon, tooltip):
         button = pageutils.ImageToggleButton(icon)
-        button.connect("toggled", self.view.buttonToggled, logType)
+        button.connect("toggled", self.view.onButtonToggled, logType)
         button.set_active(self.view.enabledTypes[logType])
         button.set_tooltip_text(tooltip)
         self.addToLeftBar(button, 1)

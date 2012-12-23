@@ -10,12 +10,12 @@ class ResultTextDialog(Gtk.Dialog):
         label = Gtk.Label(text)
         label.set_selectable(True)
 
-        self.connect("response", self.onResponse)
-        self.connect("close", self.onClose)
-
         box = self.get_content_area()
         box.add(label)
         self.show_all()
+
+        self.connect("response", self.onResponse)
+        self.connect("close", self.onClose)
         
     def onClose(self, data=None):
         self.destroy()
@@ -36,7 +36,7 @@ class BaseListView(Gtk.ScrolledWindow):
         self.rendererText = Gtk.CellRendererText()
         #self.rendererText.set_property('ellipsize', pango.ELLIPSIZE_END)
 
-    def create_text_column(self, index, text):
+    def createTextColumn(self, index, text):
         column = Gtk.TreeViewColumn(text, self.rendererText, text=index)
         column.set_sort_column_id(index)
         column.set_resizable(True)
@@ -64,25 +64,29 @@ class WindowAndActionBars(Gtk.Table):
 
 def loadIcon(name, size=Gtk.IconSize.LARGE_TOOLBAR):
     theme = Gtk.IconTheme.get_default()    
-    Success, width, height = Gtk.icon_size_lookup(size)                                                
-    if theme.has_icon(name):
+    success, width, height = Gtk.icon_size_lookup(size)                                                
+    if success and theme.has_icon(name):
         return theme.load_icon(name, width, 0)
     return None
     
 class ImageButton(Gtk.Button):
-    def __init__(self, icon, size=Gtk.IconSize.LARGE_TOOLBAR):
+    def __init__(self, iconName, size=Gtk.IconSize.LARGE_TOOLBAR):
         Gtk.Button.__init__(self)
-        image = Gtk.Image()
-        ico = loadIcon(icon, size)
-        if ico is not None:
-            image.set_from_gicon(ico, size)
-        self.add(image)
+        
+        icon = loadIcon(iconName, size)
+        
+        if icon is not None:
+            image = Gtk.Image()
+            image.set_from_gicon(icon, size)
+            self.add(image)
 
 class ImageToggleButton(Gtk.ToggleButton):
-    def __init__(self, icon, size=Gtk.IconSize.LARGE_TOOLBAR):
+    def __init__(self, iconName, size=Gtk.IconSize.LARGE_TOOLBAR):
         Gtk.ToggleButton.__init__(self)
-        image = Gtk.Image()
-        ico = loadIcon(icon, size)
-        if ico is not None:
-            image.set_from_gicon(ico, size)
-        self.add(image)
+        
+        icon = loadIcon(iconName, size)
+        
+        if icon is not None:
+            image = Gtk.Image()
+            image.set_from_gicon(icon, size)
+            self.add(image)

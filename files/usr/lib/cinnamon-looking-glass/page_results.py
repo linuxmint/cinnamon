@@ -8,27 +8,27 @@ class ModulePage(pageutils.BaseListView):
         store = Gtk.ListStore(int, str, str, str)
         pageutils.BaseListView.__init__(self, store)
         
-        column = self.create_text_column(0, "ID")
-        column.set_cell_data_func(self.rendererText, self.celldatafunction_id) 
-        self.create_text_column(1, "Name")
-        self.create_text_column(2, "Type")
-        self.create_text_column(3, "Value")
-
-        self.popup = Gtk.Menu()
-        clear = Gtk.MenuItem('Clear all results')
-        self.popup.append(clear)
-        self.popup.show_all()
+        column = self.createTextColumn(0, "ID")
+        column.set_cell_data_func(self.rendererText, self.cellDataFuncID) 
+        self.createTextColumn(1, "Name")
+        self.createTextColumn(2, "Type")
+        self.createTextColumn(3, "Value")
     
-        self.treeView.connect("button-press-event", self.on_button_press_event)
         self.treeView.connect("row-activated", self.onRowActivated)
+        self.treeView.connect("button-press-event", self.onButtonPress)
         
         self.getUpdates()
         cinnamonDBus.connect_to_signal("lgResultUpdate", self.getUpdates)
         cinnamonDBus.connect_to_signal("lgInspectorDone", self.onInspectorDone)
         
-    def onInspectorDone(self):
-        cinnamonLog.activatePage("results")
-        self.getUpdates()
+        #Popup menu
+        self.popup = Gtk.Menu()
+        clear = Gtk.MenuItem('Clear all results')
+        self.popup.append(clear)
+        self.popup.show_all()
+
+    def cellDataFuncID(self, column, cell, model, iter, data=None):
+        cell.set_property("text", "r(%d)" %  model.get_value(iter, 0))
         
     def onRowActivated(self, treeview, path, view_column):
         iter = self.store.get_iter(path)
@@ -39,18 +39,23 @@ class ModulePage(pageutils.BaseListView):
         
         cinnamonLog.pages["inspect"].inspectElement("r(%d)" % id, objType, name, value)
         
-    def on_button_press_event(self, treeview, event):
+    def onButtonPress(self, treeview, event):
         if event.button == 3:
             treeview.grab_focus()
             self.popup.popup( None, None, None, None, event.button, event.time)
             return True
         
     def getUpdates(self):
-        success, json_data = cinnamonDBus.lgGetResults()
-        data = json.loads(json_data)
         self.store.clear()
-        for item in data:
-            self.store.append([int(item["index"]), item["command"], item["type"], item["object"]])
+        success, json_data = cinnamonDBus.lgGetResults()
+        if success:
+            try:
+                data = json.loads(json_data)
+                for item in data:
+                    self.store.append([int(item["index"]), item["command"], item["type"], item["object"]])
+            except Exception as e:
+                print e
 
-    def celldatafunction_id(self, column, cell, model, iter, data=None):
-        cell.set_property("text", "r(%d)" %  model.get_value(iter, 0))
+    def onInspectorDone(self):
+        cinnamonLog.activatePage("results")
+        self.getUpdates()

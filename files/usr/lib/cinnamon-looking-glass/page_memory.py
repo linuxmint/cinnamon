@@ -8,13 +8,14 @@ class MemoryView(pageutils.BaseListView):
         store = Gtk.ListStore(str, int)
         pageutils.BaseListView.__init__(self, store)
         
-        self.create_text_column(0, "Name")
-        self.create_text_column(1, "Size (bytes)")
-        column = self.create_text_column(1, "Size (readable)")
-        column.set_cell_data_func(self.rendererText, self.celldatafunction_size) 
+        self.createTextColumn(0, "Name")
+        self.createTextColumn(1, "Size (bytes)")
+        column = self.createTextColumn(1, "Size (readable)")
+        column.set_cell_data_func(self.rendererText, self.cellDataFuncSize)
+        
         self.getUpdates()
 
-    def celldatafunction_size(self, column, cell, model, iter, data=None):
+    def cellDataFuncSize(self, column, cell, model, iter, data=None):
         value = model.get_value(iter, 1)
         if(value < 1000):
             cell.set_property("text", "%d B" %  value)
@@ -24,11 +25,15 @@ class MemoryView(pageutils.BaseListView):
             cell.set_property("text", "%.2f MB" %  (value/1024.0/1024.0))
         
     def getUpdates(self, igno=None):
-        success, json_data = cinnamonDBus.lgGetMemoryInfo()
-        data = json.loads(json_data)
         self.store.clear()
-        for key in data.keys():
-            self.store.append([key, int(data[key])])
+        success, json_data = cinnamonDBus.lgGetMemoryInfo()
+        if success:
+            try:
+                data = json.loads(json_data)
+                for key in data.keys():
+                    self.store.append([key, int(data[key])])
+            except Exception as e:
+                print e
 
     def onFullGc(self, widget):
         cinnamonDBus.lgFullGc()

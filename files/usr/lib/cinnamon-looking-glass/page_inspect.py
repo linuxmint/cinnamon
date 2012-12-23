@@ -9,9 +9,10 @@ class InspectView(pageutils.BaseListView):
         store = Gtk.ListStore(str, str, str, str, str)
         pageutils.BaseListView.__init__(self, store)
         
-        self.create_text_column(0, "Name")
-        self.create_text_column(1, "Type")
-        self.create_text_column(2, "Value")
+        self.createTextColumn(0, "Name")
+        self.createTextColumn(1, "Type")
+        self.createTextColumn(2, "Value")
+        
         self.treeView.connect("row-activated", self.onRowActivated)
         
     def onRowActivated(self, treeview, path, view_column):
@@ -30,16 +31,12 @@ class InspectView(pageutils.BaseListView):
         
 class ModulePage(pageutils.WindowAndActionBars):
     def __init__(self):
-        self.statusBar = Gtk.Statusbar()
-        context_id = self.statusBar.get_context_id("Statusbar example")
-        message_id = self.statusBar.push(context_id, "Mama")
-        
         self.view = InspectView(self)
         pageutils.WindowAndActionBars.__init__(self, self.view)
         
-        
         self.back = pageutils.ImageButton("back")
         self.back.set_tooltip_text("Go back")
+        self.back.set_sensitive(False)
         self.back.connect("clicked", self.onBackButton)
         self.addToLeftBar(self.back, 1)
         
@@ -47,7 +44,6 @@ class ModulePage(pageutils.WindowAndActionBars):
         insert.set_tooltip_text("Insert into results")
         insert.connect("clicked", self.onInsertButton)
         self.addToLeftBar(insert, 1)
-        
         
         self.addToBottomBar(Gtk.Label("Path:"), 2)
         self.pathLabel = Gtk.Label("<No selection done yet>")
@@ -62,7 +58,6 @@ class ModulePage(pageutils.WindowAndActionBars):
         
         self.currentInspection = None
         self.stack = []
-        self.back.set_sensitive(False)
 
     def onInsertButton(self, widget):
         if len(self.stack) == 0:
@@ -88,6 +83,7 @@ class ModulePage(pageutils.WindowAndActionBars):
         if objType == "object":
             if pushToStack:
                 self.pushInspectionElement()
+                
             self.currentInspection = (path, objType, name, value)
             
             self.pathLabel.set_text(path)
@@ -97,8 +93,12 @@ class ModulePage(pageutils.WindowAndActionBars):
             cinnamonLog.activatePage("inspect")
             success, json_data = cinnamonDBus.lgInspect(path)
             if success:
-                data = json.loads(json_data)
-                self.view.setInspectionData(path, data)
+                try:
+                    data = json.loads(json_data)
+                    self.view.setInspectionData(path, data)
+                except Exception as e:
+                    print e
+                    self.view.store.clear()
             else:
                 self.view.store.clear()
         elif objType == "undefined":
