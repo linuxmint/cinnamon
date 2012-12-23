@@ -3,15 +3,14 @@
 # Todo:
 # - Add new global.log* methods for info and trace.
 #   - Check for exception types in global.logError so they can be printed in addition to errors.
-# - If possible, draw ResizeGrip better (more theme specific)
-# - Applets/Extensions (#1476 needs to be implemented first)
-# - Additional (optional) log file viewers.
 # - cinnamon --replace must work after this process is closed
-# - When cinnamon is completely restarted there are dbus errors, check why/how to fix
 # - When cinnamon is restarted, there will be a new log stack, check how to append it cleanly to the old log.
+# - When cinnamon is completely restarted there are dbus errors, check why/how to fix
 # - Check out how this works with multi-monitor
-# - Remove javascript version ?
 # - Add insert button to "simple types" inspect dialog ? is there actual use for these types inserted as results ?
+# - Additional (optional) log file viewers.
+# - Applets/Extensions (#1476 needs to be implemented first)
+# - Remove javascript version ?
 # - Make CommandLine entry & history work more like a normal terminal
 #   - When navigating through history and modifying a line
 #   - When pressing ctrl + r, search history
