@@ -52,8 +52,8 @@ class ResizeGrip(Gtk.Widget):
         self.set_window(window)
 
         window.set_user_data(self)
-        style = self.get_style()
-        style.set_background(window, Gtk.StateFlags.NORMAL)
+        self.style = self.get_style()
+        self.style.set_background(window, Gtk.StateFlags.NORMAL)
         
         self.get_window().set_cursor(Gdk.Cursor(Gdk.CursorType.BOTTOM_SIDE))
         self.connect("draw", self.onDraw)
@@ -62,7 +62,7 @@ class ResizeGrip(Gtk.Widget):
         self.get_window().destroy()
 
     def do_size_request(self, requisition):
-        requisition.height = 5
+        requisition.height = 4
         requisition.width = -1
 
     def do_get_preferred_width(self):
@@ -78,6 +78,7 @@ class ResizeGrip(Gtk.Widget):
     def do_size_allocate(self, allocation):
         if self.get_realized():
             self.get_window().move_resize(allocation.x, allocation.y, allocation.width, allocation.height)
+            self.queue_draw()
 
     def do_button_press_event(self, event):
         self.parentWindow.begin_resize_drag(Gdk.WindowEdge.SOUTH, event.button, int(event.x_root), int(event.y_root), event.time)
@@ -85,12 +86,9 @@ class ResizeGrip(Gtk.Widget):
 
     def onDraw(self, widget, ctx):
         width = self.get_window().get_width()
-        height = self.get_window().get_height()
-        # Draw a line at the bottom
+        # Draw a line using the current theme
         cr = self.get_window().cairo_create()
-        cr.set_source_rgb(0.5, 0.5, 0.5)
-        cr.rectangle(1, height-4, width-2, 1)
-        cr.fill()
+        self.style.do_draw_hline(self.style, cr, Gtk.StateType.NORMAL, self, "", 1, width-2, 1)
 
 class CommandLine(Gtk.Entry):
     def __init__(self):
