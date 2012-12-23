@@ -40,10 +40,11 @@ class ModulePage(pageutils.WindowAndActionBars):
         self.back.connect("clicked", self.onBackButton)
         self.addToLeftBar(self.back, 1)
         
-        insert = pageutils.ImageButton("insert-object")
-        insert.set_tooltip_text("Insert into results")
-        insert.connect("clicked", self.onInsertButton)
-        self.addToLeftBar(insert, 1)
+        self.insert = pageutils.ImageButton("insert-object")
+        self.insert.set_tooltip_text("Insert into results")
+        self.insert.set_sensitive(False)
+        self.insert.connect("clicked", self.onInsertButton)
+        self.addToLeftBar(self.insert, 1)
         
         self.addToBottomBar(Gtk.Label("Path:"), 2)
         self.pathLabel = Gtk.Label("<No selection done yet>")
@@ -60,9 +61,7 @@ class ModulePage(pageutils.WindowAndActionBars):
         self.stack = []
 
     def onInsertButton(self, widget):
-        if len(self.stack) == 0:
-            pass # message: already available via r(%d), etc.
-        else:
+        if len(self.stack) > 0:
             path, objType, name, value = self.currentInspection
             cinnamonDBus.lgAddResult(path)
         
@@ -72,12 +71,16 @@ class ModulePage(pageutils.WindowAndActionBars):
     def popInspectionElement(self):
         if len(self.stack) > 0:
             self.updateInspector(*self.stack.pop())
-        self.back.set_sensitive(len(self.stack) > 0)
+            
+        sensitive = len(self.stack) > 0
+        self.back.set_sensitive(sensitive)
+        self.insert.set_sensitive(sensitive)
             
     def pushInspectionElement(self):
         if self.currentInspection is not None:
             self.stack.append(self.currentInspection)
             self.back.set_sensitive(True)
+            self.insert.set_sensitive(True)
         
     def updateInspector(self, path, objType, name, value, pushToStack=False):
         if objType == "object":
@@ -110,4 +113,5 @@ class ModulePage(pageutils.WindowAndActionBars):
         del self.stack[:]
         self.currentInspection = None
         self.back.set_sensitive(False)
+        self.insert.set_sensitive(False)
         self.updateInspector(path, objType, name, value)
