@@ -197,9 +197,10 @@ class CinnamonLog(dbus.service.Object):
         self.createPage("Inspect", "inspect")
         self.createPage("Memory", "memory")
         self.createPage("Windows", "windows")
-        self.createDummyPage("Applets")
-        self.createDummyPage("Extensions")
+        self.createDummyPage("Applets", "#1476 needs to be implemented first")
+        self.createDummyPage("Extensions", "#1476 needs to be implemented first")
         self.createPage("Log", "log")
+        self.createDummyPage("+", "on selection, watch a specified file for changes, similar to the log tab")
 
         table.attach(self.notebook, 0, numColumns, 0, 1)
         
@@ -244,9 +245,9 @@ class CinnamonLog(dbus.service.Object):
         cinnamonDBus.lgStartInspector()
         self.window.hide()
 
-    def createDummyPage(self, text):
+    def createDummyPage(self, text, description):
         label = Gtk.Label(text)
-        self.notebook.append_page(Gtk.Label(""), label)
+        self.notebook.append_page(Gtk.Label(description), label)
         
     def createPage(self, text, moduleName):
         module = __import__("page_%s" % moduleName)
