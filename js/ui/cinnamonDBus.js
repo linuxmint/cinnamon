@@ -218,17 +218,31 @@ Cinnamon.prototype = {
     },
     
     lgInspect: function(path) {
-        let result = Main.lookingGlass.inspect(path);
-        return getJsonReturnBS(result);
+        try {
+            let result = Main.createLookingGlass().inspect(path);
+            return getJsonReturnBS(result);
+        } catch (e) {
+            global.log('inspect exception: ' + e);
+            return [false, ''];
+        }
     },
     
     lgGetLatestWindowList: function() {
-        let windowList = Main.lookingGlass.getLatestWindowList();
-        return getJsonReturnBS(windowList);
+        try {
+            let windowList = Main.createLookingGlass().getLatestWindowList();
+            return getJsonReturnBS(windowList);
+        } catch (e) {
+            global.log('window list exception: ' + e);
+            return [false, ''];
+        }
     },
     
     lgStartInspector: function() {
-        Main.lookingGlass.startInspector(true);
+        try {
+            Main.createLookingGlass().startInspector(true);
+        } catch (e) {
+            global.log('starting inspector exception: ' + e);
+        }
     },
     
     notifyLgLogUpdate: function() {

@@ -1011,31 +1011,28 @@ LookingGlass.prototype = {
     inspect : function(path) {
         let fullCmd = commandHeader + path;
 
-        let resultObj;
-  
-        try {
-            let result = eval(fullCmd);
-            resultObj = [];
-            for(key in result) {
-                let type = typeof(result[key]);
-                let value = result[key].toString();
-                let shortValue = value;
-                if (value === undefined) {
-                    value = "";
-                    shortValue = "";
-                } else {
-                    let i = value.indexOf('\n');
-                    let j = value.indexOf('\r');
-                    if( j != -1 && (i == -1 || i > j))
-                        i = j;
-                    if(i != -1)
-                        shortValue = value.substr(0, i) + '.. <more>';
-                }
-                resultObj.push({ name: key, type: type, value: value, shortValue: shortValue});
+        let result = eval(fullCmd);
+        let resultObj = [];
+        for(key in result) {
+            let type = typeof(result[key]);
+            let value = result[key].toString();
+            
+            //fixme: move this shortvalue stuff to python lg
+            let shortValue = value;
+            if (value === undefined) {
+                value = "";
+                shortValue = "";
+            } else {
+                let i = value.indexOf('\n');
+                let j = value.indexOf('\r');
+                if( j != -1 && (i == -1 || i > j))
+                    i = j;
+                if(i != -1)
+                    shortValue = value.substr(0, i) + '.. <more>';
             }
-        } catch (e) {
-            resultObj = '<exception ' + e + '>';
+            resultObj.push({ name: key, type: type, value: value, shortValue: shortValue});
         }
+        
         return resultObj;
     },
 
