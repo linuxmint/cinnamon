@@ -43,7 +43,8 @@ WindowAttentionHandler.prototype = {
             }
         }
         catch (e) {
-            global.logError('' + e);
+            global.logError(e);
+            global.logError('Error showing window demanding attention');
         }
     }
 };
