@@ -19,53 +19,70 @@ class LogView(Gtk.ScrolledWindow):
         self.set_shadow_type(Gtk.ShadowType.ETCHED_IN)
         self.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
         
-        textview = Gtk.TextView()
-        textview.set_editable(False)
-        self.add(textview)
+        self.textview = Gtk.TextView()
+        self.textview.set_editable(False)
+        self.add(self.textview)
         
-        self.textbuffer = textview.get_buffer()
+        self.textbuffer = self.textview.get_buffer()
+        
         self.log = []
+        self.addedMessages = 0
+        self.firstMessageTime = None
         
         self.enabledTypes = {'info': True, 'debug': True, 'error': True, 'trace': False }
+        self.typeTags = {
+            'info': self.textbuffer.create_tag("info", foreground="#1a6f18", invisible=self.enabledTypes["info"] != True, invisible_set=True),
+            'debug': self.textbuffer.create_tag("debug", foreground="#c8bf33", invisible=self.enabledTypes["debug"] != True, invisible_set=True),
+            'error': self.textbuffer.create_tag("error", foreground="#9f1313", invisible=self.enabledTypes["error"] != True, invisible_set=True),
+            'trace': self.textbuffer.create_tag("trace", foreground="#18186f", invisible=self.enabledTypes["trace"] != True, invisible_set=True)
+            }
         
         #fixme: load all enabled types from gsettings
         #self.enabledTypes = {'info': False, 'debug': False, 'error': False, 'trace': False }
         #for key in data:
         #    self.enabledTypes[key] = True
-        
-        textview.connect('size-allocate', self.onTextViewSizeAllocate)
         self.getUpdates()
         
         cinnamonDBus.connect_to_signal("lgLogUpdate", self.getUpdates)
-
-    def onTextViewSizeAllocate(self, widget, event, data=None):
-        adj = widget.get_vadjustment()
-        adj.set_value( adj.get_upper() - adj.get_page_size() )
 
     def append(self, category, time, message):
         self.log.append(LogEntry(category, time, message))
             
     def updateText(self):
-        sb = []
+        self.textbuffer.set_text('')
+                      
+        iter = self.textbuffer.get_end_iter()
         for entry in self.log:
-            if(self.enabledTypes[entry.category]):
-                sb.append(entry.formattedText)
-        self.textbuffer.set_text(''.join(sb))
+            self.textbuffer.insert_with_tags(iter, entry.formattedText, self.typeTags[entry.category])
         
     def onButtonToggled(self, button, data):
-        self.enabledTypes[data] = button.get_active()
-        self.updateText()
+        active = button.get_active()
+        self.enabledTypes[data] = active
+        self.typeTags[data].props.invisible = active != True
+        
+        self.textbuffer.set_modified(True)
+        #print self.textview.get_preferred_height()
+        adj = self.get_vadjustment()
+        #adj.set_upper(self.textview.get_allocated_height())
         
     def getUpdates(self):
         success, json_data = cinnamonDBus.lgGetErrorStack()
         if success:
             try:
                 data = json.loads(json_data)
-                #fixme: check first timestamp to make sure we don't have a completely new log here.
-                end = len(self.log)
-                for item in data[end:]:
-                    self.append(item["category"], float(item["timestamp"])*0.001, item["message"])
-                self.updateText()                
+                
+                # If this is a completely new log, start reading at the beginning
+                dataSize = len(data)
+                if dataSize > 0:
+                    firstMessageTime = data[0]["timestamp"]
+                    if self.addedMessages > dataSize or self.firstMessageTime != firstMessageTime:
+                        self.firstMessageTime = firstMessageTime
+                        self.addedMessages = 0
+                        
+                    for item in data[self.addedMessages:]:
+                        self.append(item["category"], float(item["timestamp"])*0.001, item["message"])
+                        self.addedMessages += 1
+                    self.updateText()
             except Exception as e:
                 print e
 

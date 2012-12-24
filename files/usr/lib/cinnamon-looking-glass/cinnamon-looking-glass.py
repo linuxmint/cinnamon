@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 # Todo:
+# - TextTag.invisible does not work nicely with scrollheight, check why
 # - cinnamon --replace must work after this process is closed
 # - When cinnamon is restarted, there will be a new log stack, check how to append it cleanly to the old log.
 # - When cinnamon is completely restarted there are dbus errors, check why/how to fix
@@ -9,6 +10,7 @@
 # - Additional (optional) log file viewers.
 # - Applets/Extensions (#1476 needs to be implemented first)
 # - Remove javascript version ?
+# - Load all enabled log categories and window height from gsettings
 # - Make CommandLine entry & history work more like a normal terminal
 #   - When navigating through history and modifying a line
 #   - When pressing ctrl + r, search history
