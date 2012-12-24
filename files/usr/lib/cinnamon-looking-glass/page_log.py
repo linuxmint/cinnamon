@@ -1,7 +1,7 @@
 
 import json
 import datetime
-import pageutils
+from pageutils import *
 from gi.repository import Gio, Gtk, GObject, Gdk, Pango, GLib
 
 class LogEntry():
@@ -69,10 +69,10 @@ class LogView(Gtk.ScrolledWindow):
             except Exception as e:
                 print e
 
-class ModulePage(pageutils.WindowAndActionBars):
+class ModulePage(WindowAndActionBars):
     def __init__(self):
         self.view = LogView()
-        pageutils.WindowAndActionBars.__init__(self, self.view)
+        WindowAndActionBars.__init__(self, self.view)
         
         self.addToggleButton("info", "dialog-information", "Show/Hide Messages tagged as 'info'")
         self.addToggleButton("debug", "dialog-warning", "Show/Hide Messages tagged as 'debug'")
@@ -80,7 +80,7 @@ class ModulePage(pageutils.WindowAndActionBars):
         self.addToggleButton("trace", "dialog-question", "Show/Hide Messages tagged as 'trace'")
 
     def addToggleButton(self, logType, icon, tooltip):
-        button = pageutils.ImageToggleButton(icon)
+        button = ImageToggleButton(icon)
         button.connect("toggled", self.view.onButtonToggled, logType)
         button.set_active(self.view.enabledTypes[logType])
         button.set_tooltip_text(tooltip)

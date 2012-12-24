@@ -1,12 +1,12 @@
 
 import json
-import pageutils
+from pageutils import *
 from gi.repository import Gio, Gtk, GObject, Gdk, Pango, GLib
 
-class ModulePage(pageutils.BaseListView):
+class ModulePage(BaseListView):
     def __init__(self):
         store = Gtk.ListStore(int, str, str, str)
-        pageutils.BaseListView.__init__(self, store)
+        BaseListView.__init__(self, store)
         
         column = self.createTextColumn(0, "ID")
         column.set_cell_data_func(self.rendererText, self.cellDataFuncID) 

@@ -1,12 +1,12 @@
 
 import json
-import pageutils
+from pageutils import *
 from gi.repository import Gio, Gtk, GObject, Gdk, Pango, GLib
 
-class MemoryView(pageutils.BaseListView):
+class MemoryView(BaseListView):
     def __init__(self):
         store = Gtk.ListStore(str, int)
-        pageutils.BaseListView.__init__(self, store)
+        BaseListView.__init__(self, store)
         
         self.createTextColumn(0, "Name")
         self.createTextColumn(1, "Size (bytes)")
@@ -39,16 +39,16 @@ class MemoryView(pageutils.BaseListView):
         cinnamonDBus.lgFullGc()
         self.getUpdates()
 
-class ModulePage(pageutils.WindowAndActionBars):
+class ModulePage(WindowAndActionBars):
     def __init__(self):
         self.view = MemoryView()
-        pageutils.WindowAndActionBars.__init__(self, self.view)
+        WindowAndActionBars.__init__(self, self.view)
         
-        refresh = pageutils.ImageButton("view-refresh")
+        refresh = ImageButton("view-refresh")
         refresh.set_tooltip_text("Refresh")
         refresh.connect("clicked", self.view.getUpdates)
         self.addToLeftBar(refresh, 1)
-        fullGc = pageutils.ImageButton("user-trash-full")
+        fullGc = ImageButton("user-trash-full")
         fullGc.set_tooltip_text("Full Garbage Collection")
         fullGc.connect ('clicked', self.view.onFullGc)
         

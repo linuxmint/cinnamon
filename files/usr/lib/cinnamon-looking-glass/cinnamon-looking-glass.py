@@ -20,7 +20,7 @@ import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gio, Gtk, GObject, Gdk, Pango, GLib
 import dbus, dbus.service, dbus.glib
-import pageutils
+from pageutils import *
 import os
 from dbus.mainloop.glib import DBusGMainLoop
 
@@ -219,7 +219,7 @@ class CinnamonLog(dbus.service.Object):
         table.attach(self.notebook, 0, numColumns, 0, 1)
         
         column = 0
-        pickerButton = pageutils.ImageButton("gtk-color-picker", Gtk.IconSize.SMALL_TOOLBAR)
+        pickerButton = ImageButton("gtk-color-picker", Gtk.IconSize.SMALL_TOOLBAR)
         pickerButton.connect("clicked", self.onPickerClicked)
         table.attach(pickerButton, column, column+1, 1, 2, 0, 0, 2)
         column += 1

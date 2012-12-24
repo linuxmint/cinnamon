@@ -1,13 +1,13 @@
 
 import json
-import pageutils
+from pageutils import *
 from gi.repository import Gio, Gtk, GObject, Gdk, Pango, GLib
 
-class InspectView(pageutils.BaseListView):
+class InspectView(BaseListView):
     def __init__(self, parent):
         self.parent = parent
         store = Gtk.ListStore(str, str, str, str, str)
-        pageutils.BaseListView.__init__(self, store)
+        BaseListView.__init__(self, store)
         
         self.createTextColumn(0, "Name")
         self.createTextColumn(1, "Type")
@@ -29,18 +29,18 @@ class InspectView(pageutils.BaseListView):
         for item in data:
             self.store.append([item["name"], item["type"], item["shortValue"], item["value"], path + "." + item["name"]])
         
-class ModulePage(pageutils.WindowAndActionBars):
+class ModulePage(WindowAndActionBars):
     def __init__(self):
         self.view = InspectView(self)
-        pageutils.WindowAndActionBars.__init__(self, self.view)
+        WindowAndActionBars.__init__(self, self.view)
         
-        self.back = pageutils.ImageButton("back")
+        self.back = ImageButton("back")
         self.back.set_tooltip_text("Go back")
         self.back.set_sensitive(False)
         self.back.connect("clicked", self.onBackButton)
         self.addToLeftBar(self.back, 1)
         
-        self.insert = pageutils.ImageButton("insert-object")
+        self.insert = ImageButton("insert-object")
         self.insert.set_tooltip_text("Insert into results")
         self.insert.set_sensitive(False)
         self.insert.connect("clicked", self.onInsertButton)
@@ -105,9 +105,9 @@ class ModulePage(pageutils.WindowAndActionBars):
             else:
                 self.view.store.clear()
         elif objType == "undefined":
-            pageutils.ResultTextDialog("Value for '" + name + "'", "Value is <undefined>")
+            ResultTextDialog("Value for '" + name + "'", "Value is <undefined>")
         else:
-            pageutils.ResultTextDialog("Value for " + objType + " '" + name + "'", value)
+            ResultTextDialog("Value for " + objType + " '" + name + "'", value)
 
     def inspectElement(self, path, objType, name, value):
         del self.stack[:]
