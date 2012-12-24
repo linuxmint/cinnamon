@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 
 # Todo:
-# - Add new global.log* methods for info and trace.
-#   - Check for exception types in global.logError so they can be printed in addition to errors.
 # - cinnamon --replace must work after this process is closed
 # - When cinnamon is restarted, there will be a new log stack, check how to append it cleanly to the old log.
 # - When cinnamon is completely restarted there are dbus errors, check why/how to fix
@@ -249,7 +247,10 @@ class CinnamonLog(dbus.service.Object):
         return False
         
     def onConfigure(self, widget, event=None):
-        self.window.move(0,0)
+        # Move back in place if necessary
+        x,y=self.window.get_position()
+        if x!= 0 or y != 0:
+            self.window.move(0,0)
         
     def onRestartClicked(self, widget):
         #fixme: gets killed when the python process ends, separate it!
