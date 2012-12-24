@@ -35,6 +35,7 @@ LayoutManager.prototype = {
         this.edgeLeft = null;
         this._chrome = new Chrome(this);
         this.enabledEdgeFlip = global.settings.get_boolean("enable-edge-flip");
+        this.edgeFlipDelay = global.settings.get_int("edge-flip-delay");
 
         this.panelBox = new St.BoxLayout({ name: 'panelBox',
                                            vertical: true });
@@ -58,7 +59,8 @@ LayoutManager.prototype = {
         this._processPanelSettings();
         this._monitorsChanged();
 
-        global.settings.connect("changed::enable-edge-flip", Lang.bind(this, this._onEnableEdgeFlipChanged));
+        global.settings.connect("changed::enable-edge-flip", Lang.bind(this, this._onEdgeFlipChanged));
+        global.settings.connect("changed::edge-flip-delay", Lang.bind(this, this._onEdgeFlipChanged));
         global.settings.connect("changed::panel-autohide", Lang.bind(this, this._processPanelSettings));
         global.settings.connect("changed::panel2-autohide", Lang.bind(this, this._processPanelSettings));
         global.settings.connect("changed::panel-resizable", Lang.bind(this, this._processPanelSettings));
@@ -71,10 +73,13 @@ LayoutManager.prototype = {
                                       Lang.bind(this, this._windowsRestacked));
     },
 
-    _onEnableEdgeFlipChanged: function(){
+    _onEdgeFlipChanged: function(){
         this.enabledEdgeFlip = global.settings.get_boolean("enable-edge-flip");
+        this.edgeFlipDelay = global.settings.get_int("edge-flip-delay");
         this.edgeRight.enabled = this.enabledEdgeFlip;
+        this.edgeRight.delay = this.edgeFlipDelay;
         this.edgeLeft.enabled = this.enabledEdgeFlip;
+        this.edgeLeft.delay = this.edgeFlipDelay;
     },
 
     _windowsRestacked: function() {
@@ -92,7 +97,9 @@ LayoutManager.prototype = {
         this.edgeLeft = new EdgeFlip.EdgeFlipper(St.Side.LEFT, Main.wm.actionFlipWorkspaceLeft);
 
         this.edgeRight.enabled = this.enabledEdgeFlip;
+        this.edgeRight.delay = this.edgeFlipDelay;
         this.edgeLeft.enabled = this.enabledEdgeFlip;
+        this.edgeLeft.delay = this.edgeFlipDelay;
 
         this.hotCornerManager = new HotCorner.HotCornerManager();
     },
