@@ -931,5 +931,29 @@ WindowManager.prototype = {
 
     actionMoveWorkspaceDown: function() {
         global.screen.get_active_workspace().get_neighbor(Meta.MotionDirection.DOWN).activate(global.get_current_time());
+    },
+
+    actionFlipWorkspaceLeft: function() {
+        global.screen.get_active_workspace().get_neighbor(Meta.MotionDirection.LEFT).activate(global.get_current_time());
+        let [x, y, mods] = global.get_pointer();
+        global.set_pointer(global.screen_width - 10, y);
+    },
+
+    actionFlipWorkspaceRight: function() {
+        global.screen.get_active_workspace().get_neighbor(Meta.MotionDirection.RIGHT).activate(global.get_current_time());
+        let [x, y, mods] = global.get_pointer();
+        global.set_pointer(10, y);
+    },
+
+    actionFlipWorkspaceUp: function() {
+        global.screen.get_active_workspace().get_neighbor(Meta.MotionDirection.UP).activate(global.get_current_time());
+        let [x, y, mods] = global.get_pointer();
+        global.set_pointer(x, global.screen_height - 10);
+    },
+
+    actionFlipWorkspaceDown: function() {
+        global.screen.get_active_workspace().get_neighbor(Meta.MotionDirection.DOWN).activate(global.get_current_time());
+        let [x, y, mods] = global.get_pointer();
+        global.set_pointer(x, 10);
     }
 };

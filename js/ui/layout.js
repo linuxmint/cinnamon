@@ -88,8 +88,8 @@ LayoutManager.prototype = {
         this._chrome.init();
 
         this._startupAnimation();
-        this.edgeRight = new EdgeFlip.EdgeFlipper(St.Side.RIGHT, Main.wm.actionMoveWorkspaceRight);
-        this.edgeLeft = new EdgeFlip.EdgeFlipper(St.Side.LEFT, Main.wm.actionMoveWorkspaceLeft);
+        this.edgeRight = new EdgeFlip.EdgeFlipper(St.Side.RIGHT, Main.wm.actionFlipWorkspaceRight);
+        this.edgeLeft = new EdgeFlip.EdgeFlipper(St.Side.LEFT, Main.wm.actionFlipWorkspaceLeft);
 
         this.edgeRight.enabled = this.enabledEdgeFlip;
         this.edgeLeft.enabled = this.enabledEdgeFlip;
