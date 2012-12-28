@@ -421,6 +421,30 @@ SettingsLauncher.prototype = {
     }
 
 };
+function SystemMonitorLauncher(label, menu) {
+    this._init(label, menu);
+}
+
+SystemMonitorLauncher.prototype = {
+    __proto__: PopupMenu.PopupBaseMenuItem.prototype,
+
+    _init: function (label, menu) {
+        PopupMenu.PopupBaseMenuItem.prototype._init.call(this, {});
+
+        this._menu = menu;
+        this.label = new St.Label({ text: label });
+        this.addActor(this.label);
+        this._icon = new St.Icon({icon_name: "utilities-system-monitor", icon_size: 22, icon_type: St.IconType.FULLCOLOR });
+        this.addActor(this._icon, { expand: true });
+    },
+
+    activate: function (event) {
+        this._menu.actor.hide();
+        Util.spawnCommandLine("gnome-system-monitor");
+        return true;
+    }
+
+};
 
 function populateSettingsMenu(menu) {
     menu.settingsItem = new PopupMenu.PopupSubMenuMenuItem(_("Settings"));
@@ -490,6 +514,9 @@ PanelContextMenu.prototype = {
 
         let applet_settings_item = new SettingsLauncher(_("Add applets to the panel"), "applets", "applets", this);
         this.addMenuItem(applet_settings_item);
+
+        let system_monitor_item = new SystemMonitorLauncher(_("System monitor"), this);
+        this.addMenuItem(system_monitor_item);
     }
 }
 
