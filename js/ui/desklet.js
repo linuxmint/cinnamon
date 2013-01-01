@@ -129,7 +129,12 @@ Desklet.prototype = {
 
     _hasMouseWindow: function(){
         let dummy = new Meta.Window(); // meta_screen_get_mouse_window requires a non-null not_this_one
-        return (global.screen.get_mouse_window(dummy) != null);
+        let window = global.screen.get_mouse_window(dummy);
+        if (!window)
+            return false;
+        if (window.window_type == Meta.WindowType.DESKTOP)
+            return false;
+        return true;
     },
 
     _onRemoveDesklet: function(){
