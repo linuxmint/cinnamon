@@ -222,8 +222,8 @@ sort_z_order (gconstpointer a,
 {
   float depth_a, depth_b;
 
-  depth_a = clutter_actor_get_depth (CLUTTER_ACTOR (a));
-  depth_b = clutter_actor_get_depth (CLUTTER_ACTOR (b));
+  depth_a = clutter_actor_get_z_position (CLUTTER_ACTOR (a));
+  depth_b = clutter_actor_get_z_position (CLUTTER_ACTOR (b));
 
   if (depth_a < depth_b)
     return -1;
@@ -250,7 +250,6 @@ st_container_add (ClutterContainer *container,
 
   g_signal_emit_by_name (container, "actor-added", actor);
 
-  clutter_container_sort_depth_order (container);
   st_container_update_pseudo_classes (ST_CONTAINER (container));
 
   g_object_unref (actor);
@@ -338,9 +337,9 @@ st_container_raise (ClutterContainer *container,
    * FIXME: optimise
    */
   if (sibling &&
-      clutter_actor_get_depth (sibling) != clutter_actor_get_depth (actor))
+      clutter_actor_get_z_position (sibling) != clutter_actor_get_z_position (actor))
     {
-      clutter_actor_set_depth (actor, clutter_actor_get_depth (sibling));
+      clutter_actor_set_z_position (actor, clutter_actor_get_z_position (sibling));
     }
 
   st_container_update_pseudo_classes (ST_CONTAINER (container));
@@ -381,9 +380,9 @@ st_container_lower (ClutterContainer *container,
 
   /* See comment in st_container_raise() for this */
   if (sibling &&
-      clutter_actor_get_depth (sibling) != clutter_actor_get_depth (actor))
+      clutter_actor_get_z_position (sibling) != clutter_actor_get_z_position (actor))
     {
-      clutter_actor_set_depth (actor, clutter_actor_get_depth (sibling));
+      clutter_actor_set_z_position (actor, clutter_actor_get_z_position (sibling));
     }
 
   st_container_update_pseudo_classes (ST_CONTAINER (container));
