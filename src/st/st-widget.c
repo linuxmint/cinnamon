@@ -1570,9 +1570,9 @@ st_widget_ensure_tooltip_parented (StWidget *widget, ClutterStage *stage)
   if (G_UNLIKELY (parent != CLUTTER_ACTOR (ui_root)))
     {
       if (parent)
-        clutter_container_remove_actor (CLUTTER_CONTAINER (parent), tooltip);
+        clutter_actor_remove_child (CLUTTER_ACTOR (parent), tooltip);
 
-      clutter_container_add_actor (ui_root, tooltip);
+      clutter_actor_add_child (CLUTTER_ACTOR (ui_root), tooltip);
     }
 }
 

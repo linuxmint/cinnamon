@@ -1313,7 +1313,7 @@ on_sliced_image_loaded (GObject *source_object,
     {
       ClutterActor *actor = load_from_pixbuf (GDK_PIXBUF (list->data));
       clutter_actor_hide (actor);
-      clutter_container_add_actor (CLUTTER_CONTAINER (data->group), actor);
+      clutter_actor_add_child (CLUTTER_ACTOR (data->group), actor);
     }
 }
 

@@ -304,7 +304,8 @@ st_label_init (StLabel *label)
   label->priv->shadow_width = -1.;
   label->priv->shadow_height = -1.;
 
-  clutter_actor_set_parent (priv->label, CLUTTER_ACTOR (label));
+  clutter_actor_add_child (CLUTTER_ACTOR(label),
+                           priv->label);
 }
 
 /**
