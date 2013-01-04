@@ -118,7 +118,6 @@ Desklet.prototype = {
     },
 
     _checkHover: function() {
-        global.log(this._hasMouseWindow());
         if(this._hasMouseWindow()) {
             Mainloop.timeout_add(200, Lang.bind(this, this._checkHover));
             return;
