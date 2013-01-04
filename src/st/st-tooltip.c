@@ -269,7 +269,7 @@ st_tooltip_init (StTooltip *tooltip)
 
   tooltip->priv->tip_area = NULL;
 
-  clutter_actor_add_actor (CLUTTER_ACTOR (tooltip),
+  clutter_actor_add_child (CLUTTER_ACTOR (tooltip),
                            CLUTTER_ACTOR (tooltip->priv->label));
 
   g_object_set (tooltip, "show-on-set-parent", FALSE, NULL);
