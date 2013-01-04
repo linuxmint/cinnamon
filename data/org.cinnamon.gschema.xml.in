@@ -716,4 +716,15 @@
       <_description> The font size to be used to display the time on the clock desklet</_description>
     </key>
   </schema>
+  <schema id="org.cinnamon.desklets.launcher" path="/org/cinnamon/desklets/launcher/"
+        gettext-domain="@GETTEXT_PACKAGE@">
+    <key name="launcher-list" type="as">
+      <default>[]</default>
+      <_summary>Desktop files of the applications to be shown on desktop</_summary>
+      <_description>
+	The "launchers" desklet provides a method to show a launcher on the desktop
+	This list maps the desklet id to the desktop file of application.
+      </_description>
+    </key>
+  </schema>
 </schemalist>
