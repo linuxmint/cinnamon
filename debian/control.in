@@ -42,7 +42,7 @@ Build-Depends: cdbs,
                libpolkit-agent-1-dev (>= 0.100),
                libjson-glib-dev (>= 0.13.2)
 Standards-Version: 3.9.1
-Homepage: http://live.gnome.org/Cinnamon
+Homepage: http://cinnamon.linuxmint.com
 
 Package: cinnamon
 Architecture: any
