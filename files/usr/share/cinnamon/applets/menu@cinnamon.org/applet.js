@@ -712,6 +712,7 @@ MyApplet.prototype = {
                                              icon_type: St.IconType.SYMBOLIC });
             this._searchIconClickedId = 0;
             this._applicationsButtons = new Array();
+	    this._applicationsButtonFromApp = new Object();
             this._favoritesButtons = new Array();
             this._placesButtons = new Array();
             this._selectedItemIndex = null;
@@ -957,6 +958,7 @@ MyApplet.prototype = {
     _refreshApps : function() {
         this.applicationsBox.destroy_all_children();
         this._applicationsButtons = new Array();
+	this._applicationsButtonFromApp = new Object();
         this._placesButtons = new Array();
         this._recentButtons = new Array();
         this._applicationsBoxWidth = 0;
@@ -1009,9 +1011,7 @@ MyApplet.prototype = {
                     let dir = iter.get_directory();
                     if (dir.get_is_nodisplay())
                         continue;
-                    this.applicationsByCategory[dir.get_menu_id()] = new Array();
-                    this._loadCategory(dir);
-                    if (this.applicationsByCategory[dir.get_menu_id()].length>0){
+                    if (this._loadCategory(dir)) {
                         let categoryButton = new CategoryButton(dir);
                         this._addEnterEvent(categoryButton, Lang.bind(this, function() {
                             if (!this.searchActive) {
@@ -1265,40 +1265,38 @@ MyApplet.prototype = {
    
     _loadCategory: function(dir, top_dir) {
         var iter = dir.iter();
-        var dupe = false;
+        var has_entries = false;
         var nextType;
         if (!top_dir) top_dir = dir;
         while ((nextType = iter.next()) != GMenu.TreeItemType.INVALID) {
             if (nextType == GMenu.TreeItemType.ENTRY) {
                 var entry = iter.get_entry();
                 if (!entry.get_app_info().get_nodisplay()) {
+		    has_entries = true;
                     var app = appsys.lookup_app_by_tree_entry(entry);
                     if (!app)
                         app = appsys.lookup_settings_app_by_tree_entry(entry);
-                    dupe = this.find_dupe(app);
-                    if (!dupe) {
+                    var app_id = app.get_id()
+                    if (!(app_id in this._applicationsButtonFromApp)) {
                         let applicationButton = new ApplicationButton(this, app);
                         applicationButton.actor.connect('realize', Lang.bind(this, this._onApplicationButtonRealized));
                         applicationButton.actor.connect('leave-event', Lang.bind(this, this._appLeaveEvent, applicationButton));
                         this._addEnterEvent(applicationButton, Lang.bind(this, this._appEnterEvent, applicationButton));
                         this._applicationsButtons.push(applicationButton);
                         applicationButton.category.push(top_dir.get_menu_id());
-                        this.applicationsByCategory[top_dir.get_menu_id()].push(app.get_name());
+			this._applicationsButtonFromApp[app_id] = applicationButton
                     } else {
-                        for (let i = 0; i < this._applicationsButtons.length; i++) {
-                            if (this._applicationsButtons[i].app == app) {
-                                this._applicationsButtons[i].category.push(dir.get_menu_id());
-                            }
-                        }
-                        this.applicationsByCategory[dir.get_menu_id()].push(app.get_name());
+                        this._applicationsButtonFromApp[app_id].category.push(dir.get_menu_id());
                     }
                 }
             } else if (nextType == GMenu.TreeItemType.DIRECTORY) {
                 let subdir = iter.get_directory();
-                this.applicationsByCategory[subdir.get_menu_id()] = new Array();
-                this._loadCategory(subdir, top_dir);
+                if (this._loadCategory(subdir, top_dir)) {
+		    has_entries = true;
+		}
             }
         }
+	return has_entries;
     },
 
     _appLeaveEvent: function(a, b, applicationButton) {
@@ -1317,17 +1315,6 @@ MyApplet.prototype = {
         this._clearPrevAppSelection(applicationButton.actor);
         applicationButton.actor.style_class = "menu-application-button-selected";
         this._scrollToButton(applicationButton);
-    },
-
-    find_dupe: function(app) {
-        let ret = false;
-        for (let i = 0; i < this._applicationsButtons.length; i++) {
-            if (app == this._applicationsButtons[i].app) {
-                ret = true;
-                break;
-            }
-        }
-        return ret;
     },
 
     _scrollToButton: function(button) {
@@ -1404,8 +1391,6 @@ MyApplet.prototype = {
         this.mainBox.add_actor(rightPane, { span: 1 });
         
         section.actor.add_actor(this.mainBox);
-        
-	this.applicationsByCategory = {};
         this._refreshApps();
 
         this.selectedAppBox = new St.BoxLayout({ style_class: 'menu-selected-app-box', vertical: true });
