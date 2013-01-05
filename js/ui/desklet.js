@@ -4,6 +4,7 @@ const Clutter = imports.gi.Clutter;
 const Lang = imports.lang;
 const Mainloop = imports.mainloop;
 const Meta = imports.gi.Meta;
+const Signals = imports.signals;
 const St = imports.gi.St;
 
 const DeskletManager = imports.ui.deskletManager;
@@ -148,10 +149,15 @@ Desklet.prototype = {
                            onComplete: Lang.bind(this, function(){
                                this.actor.destroy();
                            })});
+        this._menu.destroy();
+
+        this._menu = null;
+        this._menuManager = null;
+        this.emit('destroy');
     },
 
     getDragActor: function(){
         return this.actor;
     }
 };
-
+Signals.addSignalMethods(Desklet.prototype);
