@@ -1,3 +1,4 @@
+//-*- indent-tabs-mode: nil-*-
 const Cinnamon = imports.gi.Cinnamon;
 const Gio = imports.gi.Gio;
 const St = imports.gi.St;
@@ -25,7 +26,9 @@ MyDesklet.prototype = {
         this.setHeader(this._app.get_name());
 
         this.actor.connect('button-release-event', Lang.bind(this, this._onClicked));
-	this._launcherSettings.connect('changed::launcher-list', Lang.bind(this, this._onSettingsChanged));
+        this._settingsSignalId = this._launcherSettings.connect('changed::launcher-list', Lang.bind(this, this._onSettingsChanged));
+
+        this.connect('destroy', Lang.bind(this, this._destroy));
     },
 
     _getApp: function() {
@@ -41,10 +44,10 @@ MyDesklet.prototype = {
             }
         }
 
-	// No desktop file found; Append "cinnamon-settings.desktop" to list
-	settingsList.push(this._id + ":cinnamon-settings.desktop");
-	this._launcherSettings.set_strv('launcher-list', settingsList);
-        return null;
+        // No desktop file found; Append 'cinnamon-settings.desktop' to list
+        settingsList.push(this._id + ':cinnamon-settings.desktop');
+        this._launcherSettings.set_strv('launcher-list', settingsList);
+        return appSys.lookup_settings_app('cinnamon-settings.desktop');
     },
 
     _getIconActor: function() {
@@ -61,6 +64,13 @@ MyDesklet.prototype = {
         this._icon = this._getIconActor();
         this.setContent(this._icon);
         this.setHeader(this._app.get_name());
+    },
+
+    _destroy: function() {
+        this._app = null;
+        this._icon = null;
+        this._launcherSettings.disconnect(this._settingsSignalId);
+        this._launcherSettings = null;
     },
 
     launch: function() {
