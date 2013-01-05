@@ -44,7 +44,7 @@ MyDesklet.prototype = {
         let appSys = Cinnamon.AppSystem.get_default();
         let desktopFile, app;
         for (let i in settingsList) {
-            if (settingsList[i].indexOf(this._id) == 0){
+            if (settingsList[i].split(":")[0] == this._id){
                 desktopFile = settingsList[i].split(":")[1];
                 app = appSys.lookup_app(desktopFile);
                 if (!app) app = appSys.lookup_settings_app(desktopFile);
