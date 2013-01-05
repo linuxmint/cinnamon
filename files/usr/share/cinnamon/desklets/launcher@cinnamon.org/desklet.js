@@ -1,12 +1,16 @@
 //-*- indent-tabs-mode: nil-*-
 const Cinnamon = imports.gi.Cinnamon;
 const Gio = imports.gi.Gio;
+const GLib = imports.gi.GLib;
+const Lang = imports.lang;
+const Mainloop = imports.mainloop;
 const St = imports.gi.St;
 
 const Desklet = imports.ui.desklet;
+const PopupMenu = imports.ui.popupMenu;
+const Util = imports.misc.util;
 
-const Lang = imports.lang;
-const Mainloop = imports.mainloop;
+const CUSTOM_LAUNCHERS_PATH = GLib.get_home_dir() + '/.cinnamon/panel-launchers/';
 
 function MyDesklet(metadata){
     this._init(metadata);
@@ -25,6 +29,10 @@ MyDesklet.prototype = {
         this.setContent(this._icon);
         this.setHeader(this._app.get_name());
 
+        this._menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+        this._menu.addAction(_("Add new launcher"), Lang.bind(this, this._onAddLauncher));
+        this._menu.addAction(_("Edit launcher"), Lang.bind(this, this._onEditLauncher));
+
         this.actor.connect('button-release-event', Lang.bind(this, this._onClicked));
         this._settingsSignalId = this._launcherSettings.connect('changed::launcher-list', Lang.bind(this, this._onSettingsChanged));
 
@@ -40,7 +48,8 @@ MyDesklet.prototype = {
                 desktopFile = settingsList[i].split(":")[1];
                 app = appSys.lookup_app(desktopFile);
                 if (!app) app = appSys.lookup_settings_app(desktopFile);
-                 return app;
+                if (!app) app = Gio.DesktopAppInfo.new_from_filename(CUSTOM_LAUNCHERS_PATH + desktopFile);
+                return app;
             }
         }
 
@@ -51,12 +60,23 @@ MyDesklet.prototype = {
     },
 
     _getIconActor: function() {
-        return this._app.create_icon_texture(48);
+        if (this._app.create_icon_texture) // Test for the existence of the FUNCTION
+            return this._app.create_icon_texture(48);
+        else
+            return St.TextureCache.get_default().load_gicon(null, this._app.get_icon(), 48);
     },
 
     _onClicked: function(actor, event) {
         let button = event.get_button();
         if (button==1) this.launch();
+    },
+
+    _onAddLauncher: function() {
+        Util.spawnCommandLine("/usr/share/cinnamon/desklets/launcher@cinnamon.org/editorDialog.py");
+    },
+
+    _onEditLauncher: function() {
+        Util.spawnCommandLine("/usr/share/cinnamon/desklets/launcher@cinnamon.org/editorDialog.py " + this._id);
     },
 
     _onSettingsChanged: function() {
@@ -74,7 +94,10 @@ MyDesklet.prototype = {
     },
 
     launch: function() {
-        this._app.open_new_window(-1);
+        if (this._app.open_new_window)
+            this._app.open_new_window(-1);
+        else
+            this._app.launch([], null);
     }
 };
 
