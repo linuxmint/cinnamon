@@ -48,7 +48,7 @@ class Module:
         sidePage.add_widget(box)
 
         box = IndentedHBox()
-        box.add(GSettingsSpinButton(_("Top panel height"), "org.cinnamon", "panel-top-height", "org.cinnamon/panel-resizable", 0, 2000, 1, 5, _("Pixels")))
+        box.add(GSettingsSpinButton(_("Top panel height      "), "org.cinnamon", "panel-top-height", "org.cinnamon/panel-resizable", 0, 2000, 1, 5, _("Pixels")))
         sidePage.add_widget(box)
 
         box = IndentedHBox()
