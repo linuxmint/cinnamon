@@ -15,7 +15,8 @@ gettext.install("cinnamon", "/usr/share/cinnamon/locale")
 BACKGROUND_MODES = [
     ("wallpaper", _("Wallpaper")),
     #("slideshow", _("Slideshow")),
-    #("flickr", _("Flickr"))
+    #("onlinePictures", _("Online Pictures"))
+    # Who uses flickr anyway xD
 ]
 
 BACKGROUND_COLOR_SHADING_TYPES = [
