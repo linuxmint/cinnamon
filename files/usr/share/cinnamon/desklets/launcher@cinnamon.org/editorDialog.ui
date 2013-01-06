@@ -22,7 +22,6 @@
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
-                <property name="use_action_appearance">False</property>
                 <property name="use_stock">True</property>
                 <signal name="released" handler="on_edit_close_clicked" swapped="no"/>
               </object>
@@ -38,7 +37,6 @@
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
-                <property name="use_action_appearance">False</property>
                 <property name="use_stock">True</property>
                 <signal name="released" handler="on_edit_ok_clicked" swapped="no"/>
               </object>
@@ -85,8 +83,8 @@
                   <object class="GtkLabel" id="type_label">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="xalign">1</property>
                     <property name="label" translatable="yes">Type:</property>
-		    <property name="xalign">1</property>
                     <attributes>
                       <attribute name="weight" value="bold"/>
                     </attributes>
@@ -102,8 +100,8 @@
                   <object class="GtkLabel" id="name_label">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="xalign">1</property>
                     <property name="label" translatable="yes">Name:</property>
-		    <property name="xalign">1</property>
                     <attributes>
                       <attribute name="weight" value="bold"/>
                     </attributes>
@@ -119,8 +117,8 @@
                   <object class="GtkLabel" id="title_label">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="xalign">1</property>
                     <property name="label" translatable="yes">Title:</property>
-		    <property name="xalign">1</property>
                     <attributes>
                       <attribute name="weight" value="bold"/>
                     </attributes>
@@ -136,8 +134,8 @@
                   <object class="GtkLabel" id="command_label">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="xalign">1</property>
                     <property name="label" translatable="yes">Program:</property>
-		    <property name="xalign">1</property>
                     <attributes>
                       <attribute name="weight" value="bold"/>
                     </attributes>
@@ -153,15 +151,15 @@
                   <object class="GtkLabel" id="icon_name_label">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="xalign">1</property>
                     <property name="label" translatable="yes">Icon Name</property>
-		    <property name="xalign">1</property>
                     <attributes>
                       <attribute name="weight" value="bold"/>
                     </attributes>
                   </object>
                   <packing>
                     <property name="left_attach">0</property>
-                    <property name="top_attach">5</property>
+                    <property name="top_attach">4</property>
                     <property name="width">1</property>
                     <property name="height">1</property>
                   </packing>
@@ -198,12 +196,12 @@
                   </packing>
                 </child>
                 <child>
-		  <object class="GtkEntry" id="title_entry">
-		    <property name="visible">True</property>
-		    <property name="can_focus">True</property>
-		    <property name="invisible_char">●</property>
-		    <property name="invisible_char_set">True</property>
-		  </object>
+                  <object class="GtkEntry" id="title_entry">
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="invisible_char">●</property>
+                    <property name="invisible_char_set">True</property>
+                  </object>
                   <packing>
                     <property name="left_attach">1</property>
                     <property name="top_attach">2</property>
@@ -235,7 +233,7 @@
                   </object>
                   <packing>
                     <property name="left_attach">1</property>
-                    <property name="top_attach">5</property>
+                    <property name="top_attach">4</property>
                     <property name="width">1</property>
                     <property name="height">1</property>
                   </packing>
@@ -285,7 +283,6 @@
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
-                <property name="use_action_appearance">False</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -299,7 +296,6 @@
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
-                <property name="use_action_appearance">False</property>
               </object>
               <packing>
                 <property name="expand">False</property>
