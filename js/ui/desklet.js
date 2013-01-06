@@ -18,6 +18,14 @@ const Tweener = imports.ui.tweener;
 const RIGHT_PANEL_POPUP_ANIMATE_TIME = 0.5;
 const DESKLET_DESTROY_TIME = 0.5;
 
+/**
+ * Desklet
+ *
+ * @short_description: Base class of desklets
+ *
+ * #Desklet is a base class in which other desklets
+ * can inherit
+ */
 function Desklet(metadata){
     this._init(metadata);
 }
@@ -70,6 +78,47 @@ Desklet.prototype = {
         Main.layoutManager.addChrome(this.actor, {doNotAdd: true});
     },
 
+    /**
+     * setHeader:
+     * @header: the header of the desklet
+     *
+     * Sets the header text of the desklet to @header
+     */
+    setHeader: function(header){
+        this._header_label.set_text(header);
+    },
+
+    /**
+     * setContent:
+     * @actor: actor to be set as child
+     * @params: (optional) parameters to be sent
+     *
+     * Sets the content actor of the desklet as @actor
+     */
+    setContent: function(actor, params){
+        this.content.set_child(actor, params);
+    },
+
+    /**
+     * destroy:
+     *
+     * Destroys the actor with an fading animation
+     */
+    destroy: function(){
+        Tweener.addTween(this.actor,
+                         { opacity: 0,
+                           transition: 'linear',
+                           time: DESKLET_DESTROY_TIME,
+                           onComplete: Lang.bind(this, function(){
+                               this.actor.destroy();
+                           })});
+        this._menu.destroy();
+
+        this._menu = null;
+        this._menuManager = null;
+        this.emit('destroy');
+    },
+
     _updateDecoration: function(){
         let dec = global.settings.get_int('desklets-minimum-decoration');
         let localMin = this.metadata['minimum-decoration'];
@@ -93,14 +142,6 @@ Desklet.prototype = {
             this.content.style_class = null;
             break;
         }
-    },
-
-    setHeader: function(header){
-        this._header_label.set_text(header);
-    },
-
-    setContent: function(actor, params){
-        this.content.set_child(actor, params);
     },
 
     _onButtonReleaseEvent: function(actor, event){
@@ -139,21 +180,6 @@ Desklet.prototype = {
 
     _onRemoveDesklet: function(){
         DeskletManager.removeDesklet(this._uuid, this._id);
-    },
-
-    destroy: function(){
-        Tweener.addTween(this.actor,
-                         { opacity: 0,
-                           transition: 'linear',
-                           time: DESKLET_DESTROY_TIME,
-                           onComplete: Lang.bind(this, function(){
-                               this.actor.destroy();
-                           })});
-        this._menu.destroy();
-
-        this._menu = null;
-        this._menuManager = null;
-        this.emit('destroy');
     },
 
     getDragActor: function(){

@@ -20,7 +20,13 @@ let deskletContainer = null;
 let userDeskletsDir;
 
 const ENABLED_DESKLETS_KEY = 'enabled-desklets';
-// Initialize
+
+/**
+ * init:
+ * 
+ * Initialize desklet manager
+ * To be run before loadDesklets()
+ */
 function init(){
     let userDeskletsPath = GLib.build_filenamev([global.userdatadir, 'desklets']);
     userDeskletsDir = Gio.file_new_for_path(userDeskletsPath);
@@ -37,7 +43,39 @@ function init(){
     global.settings.connect('changed::enabled-desklets', onEnabledDeskletsChanged);
 }
 
-// Desklet Container prototype
+/**
+ * removeDesklet:
+ * @uuid: uuid of the desklet
+ * @id: id of the desklet
+ * 
+ * Disable and remove the desklet @uuid:@id
+ */
+function removeDesklet(uuid, id){
+    let list = global.settings.get_strv(ENABLED_DESKLETS_KEY);
+    for (let i = 0; i < list.length; i++){
+        let definition = list[i];
+        let elements = definition.split(":");
+        if (uuid == elements[0] && id == elements[1]) list.splice(i, 1);
+    }
+    global.settings.set_strv(ENABLED_DESKLETS_KEY, list);
+}
+
+/**
+ * loadDesklets:
+ * 
+ * Loads all enabled desklets
+ */
+function loadDesklets(){
+    for (let i = 0; i < enabledDesklets.length; i++){
+        loadDesklet(enabledDesklets[i]);
+    }
+}
+
+/**
+ * DeskletContainer
+ * 
+ * Container that contains manages all desklets actors
+ */
 function DeskletContainer(){
     this._init();
 }
@@ -48,11 +86,22 @@ DeskletContainer.prototype = {
         this.actor._delegate = this;
     },
 
+    /**
+     * addDesklet:
+     * @actor: actor of desklet to be added
+     * 
+     * Adds @actor to the desklet container
+     */
     addDesklet: function(actor){
         this.actor.add_actor(actor);
     },
 
-    // Wrapper
+    /**
+     * contains:
+     * @actor
+     * 
+     * Whether the desklet container contains @actor
+     */
     contains: function(actor){
         return this.actor.contains(actor);
     },
@@ -82,7 +131,7 @@ DeskletContainer.prototype = {
 
         return true;
     }
-}
+};
 
 function onEnabledDeskletsChanged(){
     let newEnabledDesklets = global.settings.get_strv(ENABLED_DESKLETS_KEY);
@@ -125,13 +174,6 @@ function onEnabledDeskletsChanged(){
     }
 
     enabledDesklets = newEnabledDesklets;
-}
-
-// Loads all desklets in the enabledDesklets
-function loadDesklets(){
-    for (let i = 0; i < enabledDesklets.length; i++){
-        loadDesklet(enabledDesklets[i]);
-    }
 }
 
 // Loads the desklet of a particular definition
@@ -312,12 +354,3 @@ function loadDeskletFile(id, uuid, dir){
     return desklet;
 }
 
-function removeDesklet(uuid, id){
-    let list = global.settings.get_strv(ENABLED_DESKLETS_KEY);
-    for (let i = 0; i < list.length; i++){
-        let definition = list[i];
-        let elements = definition.split(":");
-        if (uuid == elements[0] && id == elements[1]) list.splice(i, 1);
-    }
-    global.settings.set_strv(ENABLED_DESKLETS_KEY, list);
-}
