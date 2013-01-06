@@ -40,7 +40,7 @@ function init(){
     deskletContainer = new DeskletContainer();
 
     enabledDesklets = global.settings.get_strv(ENABLED_DESKLETS_KEY);
-    global.settings.connect('changed::enabled-desklets', onEnabledDeskletsChanged);
+    global.settings.connect('changed::enabled-desklets', _onEnabledDeskletsChanged);
 }
 
 /**
@@ -67,7 +67,7 @@ function removeDesklet(uuid, id){
  */
 function loadDesklets(){
     for (let i = 0; i < enabledDesklets.length; i++){
-        loadDesklet(enabledDesklets[i]);
+        _loadDesklet(enabledDesklets[i]);
     }
 }
 
@@ -133,13 +133,13 @@ DeskletContainer.prototype = {
     }
 };
 
-function onEnabledDeskletsChanged(){
+function _onEnabledDeskletsChanged(){
     let newEnabledDesklets = global.settings.get_strv(ENABLED_DESKLETS_KEY);
 
     for (let i = 0; i < newEnabledDesklets.length; i ++) {
         let deskletDefinition = newEnabledDesklets[i];
         // New desklet or changed position
-        if (enabledDesklets.indexOf(deskletDefinition) == -1) loadDesklet(deskletDefinition);
+        if (enabledDesklets.indexOf(deskletDefinition) == -1) _loadDesklet(deskletDefinition);
     }
 
     for (let i = 0; i < enabledDesklets.length; i ++){
@@ -177,7 +177,7 @@ function onEnabledDeskletsChanged(){
 }
 
 // Loads the desklet of a particular definition
-function loadDesklet(definition){
+function _loadDesklet(definition){
     let elements = definition.split(":");
     try{
         if (elements.length == 4){
@@ -187,7 +187,7 @@ function loadDesklet(definition){
             let y = elements[3];
             let directory = _findDesklet(uuid);
             if (directory){
-                let desklet = loadDeskletFile(id, uuid, directory);
+                let desklet = _loadDeskletFile(id, uuid, directory);
                 if (desklet){
                     if (!deskletContainer.contains(desklet.actor)) deskletContainer.addDesklet(desklet.actor);
                     desklet.actor.set_position(x, y);
@@ -250,7 +250,7 @@ function _findDeskletIn(uuid, dir) {
 }
 
 // Loads desklets from a particular file
-function loadDeskletFile(id, uuid, dir){
+function _loadDeskletFile(id, uuid, dir){
     let info;
     let desklet = null;
 
