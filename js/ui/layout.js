@@ -598,6 +598,11 @@ Chrome.prototype = {
     },
 
     _actorReparented: function(actor, oldParent) {
+        let i = this._findActor(actor);
+        if (i == -1)
+            return;
+        let actorData = this._trackedActors[i];
+
         let newParent = actor.get_parent();
         if (!newParent)
             this._untrackActor(actor);
@@ -796,7 +801,8 @@ Chrome.prototype = {
 
         for (i = 0; i < this._trackedActors.length; i++) {
             let actorData = this._trackedActors[i];
-            if (!actorData.affectsInputRegion && !actorData.affectsStruts)
+            if ((!actorData.affectsInputRegion && !actorData.affectsStruts) ||
+                 primary.inFullscreen)
                 continue;
 
             let [x, y] = actorData.actor.get_transformed_position();

@@ -130,7 +130,7 @@ class GSettingsSpinButton(Gtk.HBox):
         self.settings = Gio.Settings.new(schema)        
         self.content_widget.set_value(self.settings.get_int(self.key))
         self.settings.connect("changed::"+self.key, self.on_my_setting_changed)
-        self.content_widget.connect('focus-out-event', self.on_my_value_changed)
+        self.content_widget.connect('value-changed', self.on_my_value_changed)
         self.dependency_invert = False
         if self.dep_key is not None:
             if self.dep_key[0] == '!':
@@ -141,12 +141,20 @@ class GSettingsSpinButton(Gtk.HBox):
             self.dep_key = split[1]
             self.dep_settings.connect("changed::"+self.dep_key, self.on_dependency_setting_changed)
             self.on_dependency_setting_changed(self, None)
+        self._value_changed_timer = None
 
     def on_my_setting_changed(self, settings, key):
         self.content_widget.set_value(self.settings.get_int(self.key))
 
-    def on_my_value_changed(self, widget, data):
+    def on_my_value_changed(self, widget):
+        if self._value_changed_timer:
+            GObject.source_remove(self._value_changed_timer)
+        self._value_changed_timer = GObject.timeout_add(300, self.update_settings_value)
+    
+    def update_settings_value(self):
         self.settings.set_int(self.key, self.content_widget.get_value())
+        self._value_changed_timer = None
+        return False
 
     def on_dependency_setting_changed(self, settings, dep_key):
         if not self.dependency_invert:

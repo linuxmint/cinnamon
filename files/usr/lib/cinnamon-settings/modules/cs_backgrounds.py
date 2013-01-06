@@ -43,24 +43,35 @@ class Module:
         self.name = "backgrounds"
 
 class PixCache(object):
+    
     def __init__(self):
         self._data = {}
+    
     def get_pix(self, filename, size = None):
         if not filename in self._data:
             self._data[filename] = {}
         if size in self._data[filename]:
             pix = self._data[filename][size]
         else:
-            if size:
-                try:
-                    pix = GdkPixbuf.Pixbuf.new_from_file_at_size(filename, size, size)
-                except:
-                    pix = None
-            else:
-                try:
-                    pix = GdkPixbuf.Pixbuf.new_from_file(filename)
-                except:
-                    pix = None
+            try:
+                img = Image.open(filename)                        
+                (width, height) = img.size
+                if img.mode != 'RGB':
+                    img = img.convert('RGB')                
+                if size:
+                    img.thumbnail((size, size), Image.ANTIALIAS)                                                                                                    
+                img = imtools.round_image(img, {}, False, None, 3, 255)  
+                img = imtools.drop_shadow(img, 4, 4, background_color=(255, 255, 255, 0), shadow_color=0x444444, border=8, shadow_blur=3, force_background_color=False, cache=None)        
+                # Convert Image -> Pixbuf (save to file, GTK3 is not reliable for that)
+                f = tempfile.NamedTemporaryFile(delete=False)
+                temp_filename = f.name
+                f.close()        
+                img.save(temp_filename, "png")
+                pix = [GdkPixbuf.Pixbuf.new_from_file(temp_filename), width, height]
+                os.unlink(temp_filename)
+            except Exception, detail:
+                print "Failed to convert %s: %s" % (filename, detail)
+                pix = None
             if pix:
                 self._data[filename][size] = pix
         return pix
@@ -74,7 +85,7 @@ class ThreadedIconView(Gtk.IconView):
         self._model = Gtk.ListStore(object, GdkPixbuf.Pixbuf, str)
         self.set_model(self._model)
         self.set_pixbuf_column(1)
-        self.set_markup_column(2)
+        self.set_markup_column(2)        
         
         self._loading_queue = []
         self._loading_queue_lock = thread.allocate_lock()
@@ -150,29 +161,18 @@ class ThreadedIconView(Gtk.IconView):
             self._loading_queue_lock.release()
             if not finished:
                 pix = PIX_CACHE.get_pix(to_load["filename"], BACKGROUND_ICONS_SIZE)
-                if pix != None:                    
-                    try:
-                        img = Image.open(to_load["filename"])                        
-                        if img.mode != 'RGB':
-                            img = img.convert('RGB')
-                        img.thumbnail((115, 115), Image.ANTIALIAS)                                                                                                    
-                        img = imtools.round_image(img, {}, False, None, 5, 255)  
-                        img = imtools.drop_shadow(img, 5, 5, background_color=(255, 255, 255, 0), shadow_color=0x444444, border=8, shadow_blur=3, force_background_color=False, cache=None)        
-                        # Convert Image -> Pixbuf (save to file, GTK3 is not reliable for that)
-                        f = tempfile.NamedTemporaryFile(delete=False)
-                        filename = f.name
-                        f.close()        
-                        img.save(filename, "png")
-                        pix = PIX_CACHE.get_pix(filename, BACKGROUND_ICONS_SIZE)                     
-                    except Exception, detail:
-                        print "Failed to convert %s: %s" % (to_load["filename"], detail)
-                        pass
+                if pix != None:
                     if "name" in to_load:
                         label = to_load["name"]
                     else:
                         label = os.path.split(to_load["filename"])[1]
+                    if "artist" in to_load:
+                        artist = "\nby %s" % to_load["artist"]
+                    else:
+                        artist = ""
+                    
                     self._loaded_data_lock.acquire()
-                    self._loaded_data.append((to_load, pix, "<sub>%s</sub>" % label))
+                    self._loaded_data.append((to_load, pix[0], "<b>%s</b><sub>%s\n%dx%d</sub>" % (label, artist, pix[1], pix[2])))
                     self._loaded_data_lock.release()
                 
         self._loading_lock.acquire()
@@ -264,7 +264,7 @@ class BackgroundWallpaperPane (Gtk.VBox):
                         for prop in wallpaperNode:
                             if type(prop.tag) == str:
                                 if prop.tag != "name":
-                                    wallpaperData[prop.tag] = prop.text
+                                    wallpaperData[prop.tag] = prop.text                                
                                 else:
                                     propAttr = prop.attrib
                                     wpName = prop.text
@@ -434,13 +434,25 @@ class BackgroundSidePage (SidePage):
         self.background_mode.unparent()
         topbox.pack_start(self.background_mode, False, False, 0)
         
-        self.remove_wallpaper_button = Gtk.Button("-")
+        self.remove_wallpaper_button = Gtk.Button("")
+        imageremove = Gtk.Image()
+        imageremove.set_from_icon_name('remove', Gtk.IconSize.BUTTON)
+        if imageremove.get_pixbuf() == None:
+            imageremove.set_from_stock(Gtk.STOCK_REMOVE, Gtk.IconSize.BUTTON)
+        self.remove_wallpaper_button.set_image(imageremove)
+        self.remove_wallpaper_button.get_image().show()
         self.remove_wallpaper_button.set_no_show_all(True)
         self.remove_wallpaper_button.set_tooltip_text(_("Remove wallpaper"))
         self.remove_wallpaper_button.connect("clicked", lambda w: self._remove_selected_wallpaper())
         self.remove_wallpaper_button.set_sensitive(False)
         topbox.pack_end(self.remove_wallpaper_button, False, False, 0)
-        self.add_wallpaper_button = Gtk.Button("+")
+        self.add_wallpaper_button = Gtk.Button("")
+        imageadd = Gtk.Image()
+        imageadd.set_from_icon_name('add', Gtk.IconSize.BUTTON)
+        if imageadd.get_pixbuf() == None:
+            imageadd.set_from_stock(Gtk.STOCK_ADD, Gtk.IconSize.BUTTON)
+        self.add_wallpaper_button.set_image(imageadd)
+        self.add_wallpaper_button.get_image().show()
         self.add_wallpaper_button.set_tooltip_text(_("Add wallpapers"))
         self.add_wallpaper_button.connect("clicked", lambda w: self._add_wallpapers())
         self.add_wallpaper_button.set_no_show_all(True)

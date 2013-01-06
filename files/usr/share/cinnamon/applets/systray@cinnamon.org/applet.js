@@ -53,7 +53,7 @@ MyApplet.prototype = {
 
     _onTrayIconAdded: function(o, icon, role) {
         try {
-            let hiddenIcons = ["network", "power", "keyboard", "gnome-settings-daemon", "volume", "bluetooth", "bluetooth-manager", "battery", "a11y"];
+            let hiddenIcons = ["network", "power", "keyboard", "gnome-settings-daemon", "volume", "bluetooth", "bluetooth-manager", "battery", "a11y", "banshee"];
             let buggyIcons = ["pidgin", "thunderbird"];
             
             if (hiddenIcons.indexOf(role) != -1 ) {
