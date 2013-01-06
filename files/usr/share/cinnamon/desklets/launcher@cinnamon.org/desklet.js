@@ -23,15 +23,16 @@ MyDesklet.prototype = {
         Desklet.Desklet.prototype._init.call(this, metadata);
         this._launcherSettings = new Gio.Settings({schema: 'org.cinnamon.desklets.launcher'});
         this._id = metadata.id;
-        this._app = this._getApp();
-        this._icon = this._getIconActor();
 
-        this.setContent(this._icon);
-        this.setHeader(this._app.get_name());
+        this._onSettingsChanged();
 
         this._menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-        this._menu.addAction(_("Add new launcher"), Lang.bind(this, this._onAddLauncher));
-        this._menu.addAction(_("Edit launcher"), Lang.bind(this, this._onEditLauncher));
+        this._menu.addAction(_("Add new launcher"), function() {
+                                 Util.spawnCommandLine("/usr/share/cinnamon/desklets/launcher@cinnamon.org/editorDialog.py");
+                             });
+        this._menu.addAction(_("Edit launcher"), Lang.bind(this, function() {
+                                                               Util.spawnCommandLine("/usr/share/cinnamon/desklets/launcher@cinnamon.org/editorDialog.py " + this._id);
+                                                           }));
 
         this.actor.connect('button-release-event', Lang.bind(this, this._onClicked));
         this._settingsSignalId = this._launcherSettings.connect('changed::launcher-list', Lang.bind(this, this._onSettingsChanged));
@@ -53,7 +54,7 @@ MyDesklet.prototype = {
             }
         }
 
-        // No desktop file found; Append 'cinnamon-settings.desktop' to list
+        // No desktop file found; Default to 'cinnamon-settings.desktop'
         settingsList.push(this._id + ':cinnamon-settings.desktop');
         this._launcherSettings.set_strv('launcher-list', settingsList);
         return appSys.lookup_settings_app('cinnamon-settings.desktop');
@@ -68,15 +69,7 @@ MyDesklet.prototype = {
 
     _onClicked: function(actor, event) {
         let button = event.get_button();
-        if (button==1) this.launch();
-    },
-
-    _onAddLauncher: function() {
-        Util.spawnCommandLine("/usr/share/cinnamon/desklets/launcher@cinnamon.org/editorDialog.py");
-    },
-
-    _onEditLauncher: function() {
-        Util.spawnCommandLine("/usr/share/cinnamon/desklets/launcher@cinnamon.org/editorDialog.py " + this._id);
+        if (button==1) this._launch();
     },
 
     _onSettingsChanged: function() {
@@ -93,7 +86,7 @@ MyDesklet.prototype = {
         this._launcherSettings = null;
     },
 
-    launch: function() {
+    _launch: function() {
         if (this._app.open_new_window)
             this._app.open_new_window(-1);
         else
