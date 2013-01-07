@@ -316,7 +316,6 @@ MyApplet.prototype = {
         let apps = new Array();
         for (var i in desktopFiles){
             let app = appSys.lookup_app(desktopFiles[i]);
-            if (!app) app = appSys.lookup_settings_app(desktopFiles[i]);
             let appinfo;
             if (!app) appinfo = Gio.DesktopAppInfo.new_from_filename(CUSTOM_LAUNCHERS_PATH+"/"+desktopFiles[i]);
             if (app || appinfo) apps.push([app, appinfo]);

@@ -243,18 +243,6 @@
                                         <signal handler="on_new_item_button_clicked" name="clicked"/>
                                       </object>
                                     </child>
-                                    <child>
-                                      <object class="GtkButton" id="new_separator_button">
-                                        <property name="visible">True</property>
-                                        <property name="can_default">True</property>
-                                        <property name="can_focus">True</property>
-                                        <property name="label" translatable="yes">New _Separator</property>
-                                        <property name="use_underline">True</property>
-                                        <property name="relief">GTK_RELIEF_NORMAL</property>
-                                        <property name="focus_on_click">True</property>
-                                        <signal handler="on_new_separator_button_clicked" name="clicked"/>
-                                      </object>
-                                    </child>
                                   </object>
                                   <packing>
                                     <property name="padding">0</property>
@@ -309,14 +297,14 @@
                                             <property name="can_focus">True</property>
                                             <property name="receives_default">True</property>
                                             <property name="use_stock">True</property>
-					    <signal handler="on_delete_button_clicked" name="clicked"/>
+                                            <signal handler="on_delete_button_clicked" name="clicked"/>
                                           </object>
                                           <packing>
                                             <property name="expand">False</property>
                                             <property name="fill">False</property>
                                             <property name="position">2</property>
                                           </packing>
-					</child>
+                                        </child>
                                         <child>
                                           <object class="GtkButton" id="properties_button">
                                             <property name="label" translatable="no">gtk-properties</property>
