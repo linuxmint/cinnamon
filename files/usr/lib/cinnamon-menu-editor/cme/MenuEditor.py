@@ -20,7 +20,7 @@ import os
 import xml.dom.minidom
 import xml.parsers.expat
 from gi.repository import GMenu, GLib
-from Alacarte import util
+from cme import util
 
 class MenuEditor(object):
     def __init__(self, name='cinnamon-applications.menu'):
@@ -211,10 +211,6 @@ class MenuEditor(object):
         menu_xml = self.getXmlMenu(self.getPath(parent) + [menu_id], dom.documentElement, dom)
         self.addXmlTextElement(menu_xml, 'Directory', file_id, dom)
         self.positionItem(parent, ('Menu', menu_id), before, after)
-        self.save()
-
-    def createSeparator(self, parent, before=None, after=None):
-        self.positionItem(parent, ('Separator',), before, after)
         self.save()
 
     def editItem(self, item, icon, name, comment, command, use_term, parent=None, final=True):
@@ -497,22 +493,44 @@ class MenuEditor(object):
         self.positionItem(parent, item, before=before, after=after)
         self.save()
 
+    def getIndex(self, item, contents):
+        index = -1
+        if isinstance(item, GMenu.TreeDirectory):
+            for i in range(len(contents)):
+                if type(item) is not type(contents[i]):
+                    continue
+                if item.get_menu_id() == contents[i].get_menu_id():
+                    index = i
+                    return index
+        elif isinstance(item, GMenu.TreeEntry):
+            for i in range(len(contents)):
+                if type(item) is not type(contents[i]):
+                    continue
+                if item.get_desktop_file_id() == contents[i].get_desktop_file_id():
+                    index = i
+                    return index
+        return index
+
     def positionItem(self, parent, item, before=None, after=None):
         contents = self.getContents(parent)
+        index = -1
         if after:
-            index = contents.index(after) + 1
+            index = self.getIndex(after, contents) + 1
+          #  index = contents.index(after) + 1
         elif before:
-            index = contents.index(before)
+            index = self.getIndex(before, contents)
+          #  index = contents.index(before)
         else:
             # append the item to the list
             index = len(contents)
         #if this is a move to a new parent you can't remove the item
-        if item in contents:
+        item_index = self.getIndex(item, contents)
+        if item_index > -1:
             # decrease the destination index, if we shorten the list
-            if (before and (contents.index(item) < index)) \
-                    or (after and (contents.index(item) < index - 1)):
+            if (before and (item_index < index)) \
+                    or (after and (item_index < index - 1)):
                 index -= 1
-            contents.remove(item)
+            contents.remove(contents[item_index])
         contents.insert(index, item)
         layout = self.createLayout(contents)
         dom = self.dom

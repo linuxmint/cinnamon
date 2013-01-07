@@ -55,7 +55,6 @@ struct _CinnamonAppSystemPrivate {
 
 static void cinnamon_app_system_finalize (GObject *object);
 static void on_apps_tree_changed_cb (GMenuTree *tree, gpointer user_data);
-static void on_settings_tree_changed_cb (GMenuTree *tree, gpointer user_data);
 
 G_DEFINE_TYPE(CinnamonAppSystem, cinnamon_app_system, G_TYPE_OBJECT);
 
@@ -98,10 +97,6 @@ cinnamon_app_system_init (CinnamonAppSystem *self)
   priv->id_to_app = g_hash_table_new_full (g_str_hash, g_str_equal,
                                            NULL,
                                            (GDestroyNotify)g_object_unref);
-  priv->setting_id_to_app = g_hash_table_new_full (g_str_hash, g_str_equal,
-                                                   NULL,
-                                                   (GDestroyNotify)g_object_unref);
-
   /* For now, we want to pick up Evince, Nemo, etc.  We'll
    * handle NODISPLAY semantics at a higher level or investigate them
    * case by case.
@@ -109,11 +104,7 @@ cinnamon_app_system_init (CinnamonAppSystem *self)
   priv->apps_tree = gmenu_tree_new ("cinnamon-applications.menu", GMENU_TREE_FLAGS_INCLUDE_NODISPLAY);
   g_signal_connect (priv->apps_tree, "changed", G_CALLBACK (on_apps_tree_changed_cb), self);
 
-  priv->settings_tree = gmenu_tree_new ("cinnamon-settings.menu", GMENU_TREE_FLAGS_INCLUDE_NODISPLAY);
-  g_signal_connect (priv->settings_tree, "changed", G_CALLBACK (on_settings_tree_changed_cb), self);
-
   on_apps_tree_changed_cb (priv->apps_tree, self);
-  on_settings_tree_changed_cb (priv->settings_tree, self);
 }
 
 static void
@@ -124,11 +115,9 @@ cinnamon_app_system_finalize (GObject *object)
 
   g_object_unref (priv->apps_tree);
   g_object_unref (priv->settings_tree);
-
   g_hash_table_destroy (priv->running_apps);
   g_hash_table_destroy (priv->id_to_app);
   g_hash_table_destroy (priv->setting_id_to_app);
-
   g_slist_foreach (priv->known_vendor_prefixes, (GFunc)g_free, NULL);
   g_slist_free (priv->known_vendor_prefixes);
   priv->known_vendor_prefixes = NULL;
@@ -397,40 +386,6 @@ on_apps_tree_changed_cb (GMenuTree *tree,
   g_signal_emit (self, signals[INSTALLED_CHANGED], 0);
 }
 
-static void
-on_settings_tree_changed_cb (GMenuTree *tree,
-                             gpointer   user_data)
-{
-  CinnamonAppSystem *self = CINNAMON_APP_SYSTEM (user_data);
-  GError *error = NULL;
-  GHashTable *new_settings;
-  GHashTableIter iter;
-  gpointer key, value;
-
-  g_assert (tree == self->priv->settings_tree);
-
-  g_hash_table_remove_all (self->priv->setting_id_to_app);
-  if (!gmenu_tree_load_sync (self->priv->settings_tree, &error))
-    {
-      g_warning ("Failed to load settings: %s", error->message);
-      return;
-    }
-
-  new_settings = get_flattened_entries_from_tree (tree);
-
-  g_hash_table_iter_init (&iter, new_settings);
-  while (g_hash_table_iter_next (&iter, &key, &value))
-    {
-      const char *id = key;
-      GMenuTreeEntry *entry = value;
-      CinnamonApp *app;
-
-      app = _cinnamon_app_new (entry);
-      g_hash_table_replace (self->priv->setting_id_to_app, (char*)id, app);
-    }
-  g_hash_table_destroy (new_settings);
-}
-
 /**
  * cinnamon_app_system_get_tree:
  *
@@ -446,32 +401,32 @@ cinnamon_app_system_get_tree (CinnamonAppSystem *self)
  * cinnamon_app_system_get_settings_tree:
  *
  * Return Value: (transfer none): The #GMenuTree for apps
+ * OBSOLETE - ONLY LEFT IN FOR COMPATIBILITY
+ * RETURNS EMPTY GMenuTree
  */
 GMenuTree *
 cinnamon_app_system_get_settings_tree (CinnamonAppSystem *self)
 {
   return self->priv->settings_tree;
 }
-
 /**
  * cinnamon_app_system_lookup_setting:
- * @system:
- * @id: desktop file id
  *
  * Returns: (transfer none): Application in gnomecc.menu, or %NULL if none
+ * OBSOLETE - ONLY LEFT IN FOR COMPATIBILITY
+ * RETURNS NULL IF NOT FOUND IN STANDARD APPS
+ *
  */
 CinnamonApp *
 cinnamon_app_system_lookup_setting (CinnamonAppSystem *self,
                                  const char     *id)
 {
   CinnamonApp *app;
-
   /* Actually defer to the main app set if there's overlap */
   app = cinnamon_app_system_lookup_app (self, id);
   if (app != NULL)
     return app;
-
-  return g_hash_table_lookup (self->priv->setting_id_to_app, id);
+  return NULL;
 }
 
 /**
@@ -527,21 +482,16 @@ cinnamon_app_system_lookup_app (CinnamonAppSystem   *self,
 /**
  * cinnamon_app_system_lookup_settings_app:
  *
- * Find a #CinnamonApp corresponding to an id.
- *
  * Return value: (transfer none): The #CinnamonApp for id, or %NULL if none
+ * OBSOLETE - ONLY LEFT IN FOR COMPATIBILITY
+ * RETURNS NULL
+ *
  */
 CinnamonApp *
 cinnamon_app_system_lookup_settings_app (CinnamonAppSystem   *self,
                              const char       *id)
 {
-  CinnamonApp *result;
-
-  result = g_hash_table_lookup (self->priv->setting_id_to_app, id);
-  if (result == NULL) {
-    result = g_hash_table_find (self->priv->setting_id_to_app, (GHRFunc) case_insensitive_search, id);
-  }
-  return result;
+  return NULL;
 }
 
 /**
@@ -563,23 +513,20 @@ cinnamon_app_system_lookup_app_by_tree_entry (CinnamonAppSystem  *self,
   return cinnamon_app_system_lookup_app (self, gmenu_tree_entry_get_desktop_file_id (entry));
 }
 
+
 /**
  * cinnamon_app_system_lookup_settings_app_by_tree_entry:
- * @system: a #CinnamonAppSystem
- * @entry: a #GMenuTreeEntry
- *
- * Find a #CinnamonApp corresponding to a #GMenuTreeEntry.
  *
  * Return value: (transfer none): The #CinnamonApp for @entry, or %NULL if none
+ * OBSOLETE - ONLY LEFT IN FOR COMPATIBILITY
+ * RETURNS NULL
+ *
  */
 CinnamonApp *
 cinnamon_app_system_lookup_settings_app_by_tree_entry (CinnamonAppSystem  *self,
                                            GMenuTreeEntry  *entry)
 {
-  /* If we looked up directly in ->entry_to_app, we'd lose the
-   * override of running apps.  Thus, indirect through the id.
-   */
-  return cinnamon_app_system_lookup_settings_app (self, gmenu_tree_entry_get_desktop_file_id (entry));
+  return NULL;
 }
 
 /**
@@ -878,5 +825,6 @@ GSList *
 cinnamon_app_system_search_settings (CinnamonAppSystem  *self,
                                   GSList          *terms)
 {
-  return search_tree (self, terms, self->priv->setting_id_to_app);
+  GSList *null_list;
+  return null_list;
 }
