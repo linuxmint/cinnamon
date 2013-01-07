@@ -58,6 +58,7 @@ class EditorDialog:
 
         self.dialog.show_all()
         self.dialog.connect("destroy", Gtk.main_quit)
+        self.dialog.connect("key_release_event", self.on_key_release_event)
         Gtk.main()
 
     def launcher_type_to_index(self,launcher_type):
@@ -94,6 +95,10 @@ class EditorDialog:
             self.title_entry.set_text(application.title)
             self.command_entry.set_text(application.command)
             self.icon_name_entry.set_text(application.icon_name)
+
+    def on_key_release_event(self, widget, event):
+        if event.keyval == 65293: # Enter button
+            self.on_edit_ok_clicked(widget)
 
     def on_edit_close_clicked(self, widget):
         self.dialog.destroy()
