@@ -76,6 +76,10 @@ class EditorDialog:
         self.title_entry.set_sensitive(sensitive)
         self.command_entry.set_sensitive(sensitive)
         self.icon_name_entry.set_sensitive(sensitive)
+        if (self.launcher_type == "Application"):
+            self.name_entry.grab_focus()
+        else:
+            self.title_entry.grab_focus()
 
     def on_launcher_type_combo_box_changed(self, widget):
         self.launcher_type = self.launcher_type_combo_box.get_active_text()
