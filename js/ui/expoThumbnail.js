@@ -14,6 +14,7 @@ const ModalDialog = imports.ui.modalDialog;
 const Tooltips = imports.ui.tooltips;
 const PointerTracker = imports.misc.pointerTracker;
 const GridNavigator = imports.misc.gridNavigator;
+const WindowUtils = imports.misc.windowUtils;
 
 // The maximum size of a thumbnail is 1/8 the width and height of the screen
 let MAX_THUMBNAIL_SCALE = 0.9;
@@ -44,9 +45,6 @@ function ExpoWindowClone() {
 ExpoWindowClone.prototype = {
     _init : function(realWindow) {
         this.actor = new Clutter.Group({reactive: true});
-        this.clone = new Clutter.Clone({ source: realWindow.get_texture(),
-                                         reactive: false });
-        this.actor.add_actor(this.clone);
         this.actor._delegate = this;
         this.realWindow = realWindow;
         this.metaWindow = realWindow.meta_window;
@@ -142,6 +140,20 @@ ExpoWindowClone.prototype = {
             global.display.disconnect(urgentId);
         };
         this.urgencyTimeout = 0;
+    },
+
+    refreshClone: function(withTransients) {
+        if (this.clone) {this.clone.destroy();}
+        this.clone = new St.Group({reactive: false});
+        this.actor.add_actor(this.clone);
+        let [pwidth, pheight] = [this.realWindow.width, this.realWindow.height];
+        let clones = WindowUtils.createWindowClone(this.metaWindow, 0, withTransients);
+        for (i in clones) {
+            let clone = clones[i].actor;
+            this.clone.add_actor(clone);
+            let [width, height] = clone.get_size();
+            clone.set_position(Math.round((pwidth - width) / 2), Math.round((pheight - height) / 2));
+        }
     },
 
     killUrgencyTimeout: function() {
@@ -830,6 +842,7 @@ ExpoWorkspaceThumbnail.prototype = {
             monitorWindows.forEach(function(window, i) {
                 if (window.inDrag) {return;}
                 
+                window.refreshClone(true);
                 window.showUrgencyState();
                 if (row == nRows)
                     offset = lastRowOffset;
@@ -865,7 +878,7 @@ ExpoWorkspaceThumbnail.prototype = {
     overviewModeOff : function(force, override) {
         if (!this.box.scale) {return;}
         this.resetCloneHover();
-        if (!this.overviewMode && !force) {return;}
+        if (this.overviewMode === false && !force) {return;}
         if (forceOverviewMode && !override) {return;}
         
         this.overviewMode = false;
@@ -879,6 +892,7 @@ ExpoWorkspaceThumbnail.prototype = {
             },this).forEach(function(window) {
                 if (window.inDrag) {return;}
                 
+                window.refreshClone(false);
                 window.showUrgencyState();
                 window.icon.hide();
                 window.actor.show();

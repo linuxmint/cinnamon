@@ -14,6 +14,7 @@ nobase_dist_js_DATA = \
 	misc/pointerTracker.js	\
 	misc/screenSaver.js     \
 	misc/util.js		\
+	misc/windowUtils.js		\
 	perf/core.js		\
 	ui/altTab.js		\
 	ui/applet.js		\
