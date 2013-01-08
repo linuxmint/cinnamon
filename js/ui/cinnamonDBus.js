@@ -4,7 +4,6 @@ const DBus = imports.dbus;
 const Lang = imports.lang;
 
 const Config = imports.misc.config;
-const ExtensionSystem = imports.ui.extensionSystem;
 const Flashspot = imports.ui.flashspot;
 const Main = imports.ui.main;
 
@@ -13,18 +12,6 @@ const CinnamonIface = {
     methods: [{ name: 'Eval',
                 inSignature: 's',
                 outSignature: 'bs'
-              },
-              { name: 'ListExtensions',
-                inSignature: '',
-                outSignature: 'a{sa{sv}}'
-              },
-              { name: 'GetExtensionInfo',
-                inSignature: 's',
-                outSignature: 'a{sv}'
-              },
-              { name: 'GetExtensionErrors',
-                inSignature: 's',
-                outSignature: 'as'
               },
               { name: 'ScreenshotArea',
                 inSignature: 'biiiibs',
@@ -42,32 +29,12 @@ const CinnamonIface = {
                 name: 'FlashArea',
                 inSignature: 'iiii',
                 outSignature: ''
-              },
-              { name: 'EnableExtension',
-                inSignature: 's',
-                outSignature: ''
-              },
-              { name: 'DisableExtension',
-                inSignature: 's',
-                outSignature: ''
-              },
-              { name: 'InstallRemoteExtension',
-                inSignature: 'ss',
-                outSignature: ''
-              },
-              { name: 'UninstallExtension',
-                inSignature: 's',
-                outSignature: 'b'
               }
              ],
-    signals: [{ name: 'ExtensionStatusChanged',
-                inSignature: 'sis' }],
+    signals: [],
     properties: [{ name: 'OverviewActive',
                    signature: 'b',
                    access: 'readwrite' },
-                 { name: 'ApiVersion',
-                   signature: 'i',
-                   access: 'read' },
                  { name: 'CinnamonVersion',
                    signature: 's',
                    access: 'read' }]
@@ -80,8 +47,6 @@ function Cinnamon() {
 Cinnamon.prototype = {
     _init: function() {
         DBus.session.exportObject('/org/Cinnamon', this);
-        ExtensionSystem.connect('extension-state-changed',
-                                Lang.bind(this, this._extensionStateChanged));
     },
 
     /**
@@ -191,40 +156,6 @@ Cinnamon.prototype = {
         flashspot.fire();
     },
 
-    ListExtensions: function() {
-        return ExtensionSystem.extensionMeta;
-    },
-
-    GetExtensionInfo: function(uuid) {
-        return ExtensionSystem.extensionMeta[uuid] || {};
-    },
-
-    GetExtensionErrors: function(uuid) {
-        return ExtensionSystem.errors[uuid] || [];
-    },
-
-    EnableExtension: function(uuid) {
-        let enabledExtensions = global.settings.get_strv(ExtensionSystem.ENABLED_EXTENSIONS_KEY);
-        if (enabledExtensions.indexOf(uuid) == -1)
-            enabledExtensions.push(uuid);
-        global.settings.set_strv(ExtensionSystem.ENABLED_EXTENSIONS_KEY, enabledExtensions);
-    },
-
-    DisableExtension: function(uuid) {
-        let enabledExtensions = global.settings.get_strv(ExtensionSystem.ENABLED_EXTENSIONS_KEY);
-        while (enabledExtensions.indexOf(uuid) != -1)
-            enabledExtensions.splice(enabledExtensions.indexOf(uuid), 1);
-        global.settings.set_strv(ExtensionSystem.ENABLED_EXTENSIONS_KEY, enabledExtensions);
-    },
-
-    InstallRemoteExtension: function(uuid, version_tag) {
-        ExtensionSystem.installExtensionFromUUID(uuid, version_tag);
-    },
-
-    UninstallExtension: function(uuid) {
-        return ExtensionSystem.uninstallExtensionFromUUID(uuid);
-    },
-
     get OverviewActive() {
         return Main.overview.visible;
     },
@@ -236,16 +167,7 @@ Cinnamon.prototype = {
             Main.overview.hide();
     },
 
-    ApiVersion: ExtensionSystem.API_VERSION,
-
-    CinnamonVersion: Config.PACKAGE_VERSION,
-
-    _extensionStateChanged: function(_, newState) {
-        DBus.session.emit_signal('/org/Cinnamon',
-                                 'org.Cinnamon',
-                                 'ExtensionStatusChanged', 'sis',
-                                 [newState.uuid, newState.state, newState.error]);
-    }
+    CinnamonVersion: Config.PACKAGE_VERSION
 };
 
 DBus.conformExport(Cinnamon.prototype, CinnamonIface);

@@ -32,6 +32,7 @@ nobase_dist_js_DATA = \
 	ui/environment.js	\
 	ui/expo.js		\
 	ui/expoThumbnail.js	\
+	ui/extension.js	\
 	ui/extensionSystem.js	\
 	ui/flashspot.js		\
 	ui/hotCorner.js		\

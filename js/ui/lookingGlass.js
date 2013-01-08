@@ -13,7 +13,7 @@ const Signals = imports.signals;
 const Lang = imports.lang;
 
 const History = imports.misc.history;
-const ExtensionSystem = imports.ui.extensionSystem;
+const Extension = imports.ui.extension;
 const Link = imports.ui.link;
 const CinnamonEntry = imports.ui.cinnamonEntry;
 const Tweener = imports.ui.tweener;
@@ -631,14 +631,15 @@ Memory.prototype = {
     }
 };
 
-function Extensions() {
-    this._init();
+function Extensions(type) {
+    this._init(type);
 }
 
 Extensions.prototype = {
-    _init: function() {
+    _init: function(type) {
+        this.type = type;
         this.actor = new St.BoxLayout({ vertical: true,
-                                        name: 'lookingGlassExtensions' });
+                                        name: 'lookingGlass' + type.name });
         this._noExtensions = new St.Label({ style_class: 'lg-extensions-none',
                                              text: _("No extensions installed") });
         this._numExtensions = 0;
@@ -646,27 +647,46 @@ Extensions.prototype = {
                                                   style_class: 'lg-extensions-list' });
         this._extensionsList.add(this._noExtensions);
         this.actor.add(this._extensionsList);
-
-        for (let uuid in ExtensionSystem.extensionMeta)
+        
+        this.uuidMap = {};
+        for (let uuid in Extension.meta) {
             this._loadExtension(null, uuid);
+        }
 
-        ExtensionSystem.connect('extension-loaded',
-                                Lang.bind(this, this._loadExtension));
+        type.connect('extension-loaded', Lang.bind(this, this._loadExtension));
+        type.connect('extension-unloaded', Lang.bind(this, this._unloadExtension));
     },
 
     _loadExtension: function(o, uuid) {
-        let extension = ExtensionSystem.extensionMeta[uuid];
+        let meta = Extension.meta[uuid];
         // There can be cases where we create dummy extension metadata
         // that's not really a proper extension. Don't bother with these.
-        if (!extension.name)
+        if (!meta.name)
+            return;
+            
+        // Only load extensions
+        if(Extension.objects[uuid].type.name != this.type.name)
             return;
 
-        let extensionDisplay = this._createExtensionDisplay(extension);
+        let extensionDisplay = this._createExtensionDisplay(meta);
         if (this._numExtensions == 0)
             this._extensionsList.remove_actor(this._noExtensions);
 
         this._numExtensions ++;
         this._extensionsList.add(extensionDisplay);
+        this.uuidMap[uuid] = extensionDisplay;
+    },
+
+    _unloadExtension: function(o, uuid) {
+        //Fixme: not optimal, since extensions added later will only show if no error happens
+        // and extensions failing to reload will be removed.
+        let extensionDisplay = this.uuidMap[uuid];
+        this._extensionsList.remove_actor(extensionDisplay);
+        delete this.uuidMap[uuid];
+        
+        this._numExtensions--;
+        if (this._numExtensions == 0)
+            this._extensionsList.add(this._noExtensions);
     },
 
     _onViewSource: function (actor) {
@@ -677,26 +697,17 @@ Extensions.prototype = {
         Main.lookingGlass.close();
     },
 
+    _onReload: function (actor) {
+        let meta = actor._extensionMeta;
+        Extension.unloadExtension(meta.uuid);
+        Extension.loadExtension(meta.uuid, this.type);
+        Main.lookingGlass.close();
+    },
+    
     _onWebPage: function (actor) {
         let meta = actor._extensionMeta;
         Gio.app_info_launch_default_for_uri(meta.url, global.create_app_launch_context());
         Main.lookingGlass.close();
-    },
-
-    _stateToString: function(extensionState) {
-        switch (extensionState) {
-            case ExtensionSystem.ExtensionState.ENABLED:
-                return _("Enabled");
-            case ExtensionSystem.ExtensionState.DISABLED:
-                return _("Disabled");
-            case ExtensionSystem.ExtensionState.ERROR:
-                return _("Error");
-            case ExtensionSystem.ExtensionState.OUT_OF_DATE:
-                return _("Out of date");
-            case ExtensionSystem.ExtensionState.DOWNLOADING:
-                return _("Downloading");
-        }
-        return 'Unknown'; // Not translated, shouldn't appear
     },
 
     _createExtensionDisplay: function(meta) {
@@ -711,7 +722,7 @@ Extensions.prototype = {
         let metaBox = new St.BoxLayout({ style_class: 'lg-extension-meta' });
         box.add(metaBox);
         let state = new St.Label({ style_class: 'lg-extension-state',
-                                   text: this._stateToString(meta.state) + " "});
+                                   text: Extension.getMetaStateString(meta.state) + " "});
         metaBox.add(state);
         
         let viewsource = new Link.Link({ label: _("View Source") });
@@ -727,7 +738,15 @@ Extensions.prototype = {
             webpage.actor._extensionMeta = meta;
             webpage.actor.connect('clicked', Lang.bind(this, this._onWebPage));
             metaBox.add(webpage.actor);
+        
+            let space = new St.Label({text: " "});
+            metaBox.add(space);
         }
+        
+        let reload = new Link.Link({ label: _("Reload Code") });
+        reload.actor._extensionMeta = meta;
+        reload.actor.connect('clicked', Lang.bind(this, this._onReload));
+        metaBox.add(reload.actor);
 
         return box;
     }
@@ -832,7 +851,10 @@ LookingGlass.prototype = {
         this._memory = new Memory();
         notebook.appendPage('Memory', this._memory.actor);
 
-        this._extensions = new Extensions();
+        this._applets = new Extensions(Extension.Type.APPLET);
+        notebook.appendPage('Applets', this._applets.actor);
+
+        this._extensions = new Extensions(Extension.Type.EXTENSION);
         notebook.appendPage('Extensions', this._extensions.actor);
 
         this._entry.clutter_text.connect('activate', Lang.bind(this, function (o, e) {
