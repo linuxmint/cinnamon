@@ -143,10 +143,21 @@ Desklet.prototype = {
             break;
         }
     },
+        
+    on_desklet_clicked: function(event) {
+        // Implemented by Desklets        
+    },
 
-    _onButtonReleaseEvent: function(actor, event){
-        if (event.get_button() == 1 && this._menu.isOpen) this._menu.toggle();
-        if (event.get_button() == 3) this._menu.toggle();
+    _onButtonReleaseEvent: function(actor, event){        
+        if (event.get_button() == 3) {
+            this._menu.toggle();
+        }
+        else {
+            if (this._menu.isOpen) {
+                this._menu.toggle();
+            }
+            this.on_desklet_clicked(event);
+        }
     },
 
     _onHover: function(){
