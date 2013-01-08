@@ -51,7 +51,7 @@ class PixCache(object):
     def get_pix(self, filename, size = None):
         try:
             mimetype = subprocess.check_output(["file", "-bi", filename]).split(";")[0]
-            if not mimetype.startswith("image/"):
+            if mimetype == "image/svg+xml" or not mimetype.startswith("image/"):
                 print "Not trying to convert %s : not a recognized image file" % filename
                 return None
         except Exception, detail:
