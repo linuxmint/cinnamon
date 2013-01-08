@@ -301,10 +301,11 @@ __proto__: ModalDialog.ModalDialog.prototype,
                     let text = completions.join("\n");
                     this._completionBox.set_text(text);
                 }
+                this._completionBox.visible = global.settings.get_boolean('run-dialog-show-completions');
                 return true;
             }
             if (symbol == Clutter.BackSpace) {
-                this._completionBox.set_text("");
+                this._completionBox.hide();
             }
             if (this._completionBox.get_text() != "") {
                 Mainloop.timeout_add(500, Lang.bind(this, function() { // Don't do it instantly to avoid "flashing"
@@ -411,7 +412,7 @@ __proto__: ModalDialog.ModalDialog.prototype,
         this._history.lastItem();
         this._errorBox.hide();
         this._entryText.set_text('');
-        this._completionBox.set_text("");
+        this._completionBox.hide();
         this._commandError = false;
 
         if (this._lockdownSettings.get_boolean(DISABLE_COMMAND_LINE_KEY))
