@@ -29,6 +29,8 @@ const TERMINAL_SCHEMA = 'org.gnome.desktop.default-applications.terminal';
 const EXEC_KEY = 'exec';
 const EXEC_ARG_KEY = 'exec-arg';
 
+const SHOW_COMPLETIONS_KEY = 'run-dialog-show-completions';
+
 const DIALOG_GROW_TIME = 0.1;
 
 function CommandCompleter() {
@@ -297,17 +299,18 @@ __proto__: ModalDialog.ModalDialog.prototype,
                     if (postfix[postfix.length - 1] == '/')
                         this._getCompletion(text + postfix + 'a');
                 }
-                if (!postfix && completions.length > 0) {
-                    let text = completions.join("\n");
-                    this._completionBox.set_text(text);
+                if (!postfix && completions.length > 0 &&
+                    global.settings.get_boolean(SHOW_COMPLETIONS_KEY)) {
+                    this._completionBox.set_text(completions.join("\n"));
+                    this._completionBox.show();
                 }
-                this._completionBox.visible = global.settings.get_boolean('run-dialog-show-completions');
                 return true;
             }
             if (symbol == Clutter.BackSpace) {
                 this._completionBox.hide();
             }
-            if (this._completionBox.get_text() != "") {
+            if (this._completionBox.get_text() != "" &&
+                this._completionBox.visible) {
                 Mainloop.timeout_add(500, Lang.bind(this, function() { // Don't do it instantly to avoid "flashing"
                     let text = this._entryText.get_text();
                     let prefix;
@@ -317,8 +320,7 @@ __proto__: ModalDialog.ModalDialog.prototype,
                         prefix = text.substr(text.lastIndexOf(' ') + 1);
                     let [postfix, completions] = this._getCompletion(prefix);
                     if (completions.length > 0) {
-                        let text = completions.join("\n");
-                        this._completionBox.set_text(text);
+                        this._completionBox.set_text(completions.join("\n"));
                     }
                 }));
                 return false;
