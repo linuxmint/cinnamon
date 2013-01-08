@@ -514,6 +514,11 @@
       <_summary>Whether edge flip is enabled</_summary>
     </key>
 
+    <key type="a{sv}" name="applet-settings">
+      <default>[]</default>
+      <_summary>The settings stored by applets using set_applet_setting</_summary>
+    </key>
+
     <child name="calendar" schema="org.cinnamon.calendar"/>
     <child name="theme" schema="org.cinnamon.theme"/>   
     <child name="recorder" schema="org.cinnamon.recorder"/>

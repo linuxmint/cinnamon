@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <glib.h>
 #ifdef HAVE_SYS_RESOURCE_H
 #include <sys/resource.h>
 #endif
@@ -45,6 +46,7 @@ static CinnamonGlobal *the_object = NULL;
 static void grab_notify (GtkWidget *widget, gboolean is_grab, gpointer user_data);
 static void cinnamon_global_on_gc (GjsContext   *context,
                                 CinnamonGlobal  *global);
+GVariant *dictionary;
 
 struct _CinnamonGlobal {
   GObject parent;
@@ -1940,4 +1942,49 @@ gboolean _cinnamon_global_check_xdnd_event (CinnamonGlobal  *global,
     }
 
     return FALSE;
+}
+
+/**
+ * cinnamon_global_get_applet_setting:
+ * @key: the key to look up
+ * 
+ * Returns a setting saved in the applet-settings dictionary
+ */
+const gchar *cinnamon_global_get_applet_setting (gchar *key) {
+	CinnamonGlobal *global = cinnamon_global_get ();
+	dictionary = g_settings_get_value(global->settings, "applet-settings");
+	return g_variant_get_string (g_variant_lookup_value (dictionary, key, G_VARIANT_TYPE_STRING), NULL);
+}
+
+void add_value_to_dictionary (gchar *key, gchar *value, gpointer user_data) {
+	g_variant_builder_add(user_data, "{sv}", key, g_variant_new_string(value));
+}
+
+/**
+ * cinnamon_global_set_applet_setting:
+ * @key: the name of the key to set
+ * @value: the value to store for this key
+ * 
+ * If the key does not exist, it is created.
+ */
+void cinnamon_global_set_applet_setting (gchar *key, gchar *value) {
+	/* Converting the dictionary (that can be stored in gsettings)
+	 * into a hashtable because that allows us to edit it */
+	GVariantBuilder *b;
+	CinnamonGlobal *global = cinnamon_global_get ();
+	GHashTable *h = g_hash_table_new (g_str_hash, g_str_equal);
+	GVariantIter iter;
+	gchar *_key;
+	GVariant *_value;
+	dictionary = g_settings_get_value(global->settings, "applet-settings");
+	g_variant_iter_init (&iter, dictionary);
+	while (g_variant_iter_loop (&iter, "{sv}", &_key, &_value)) {
+		g_hash_table_replace (h, _key, g_variant_get_string (_value, NULL));
+	}
+	g_hash_table_replace (h, key, value); /* Now store the new setting */
+	b = g_variant_builder_new (G_VARIANT_TYPE ("a{sv}"));
+	g_hash_table_foreach (h, (GHFunc) &add_value_to_dictionary, b);
+	dictionary = g_variant_builder_end (b);
+	g_variant_builder_unref (b);
+	g_settings_set_value (global->settings, "applet-settings", dictionary);
 }
