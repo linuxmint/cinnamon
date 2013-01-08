@@ -288,7 +288,7 @@ Keyboard.prototype = {
         if (focus && (focus._extended_keys || (focus._key && focus._key.extended_key)))
             return;
 
-        let time = global.current_event_time();
+        let time = global.get_current_time();
         if (focus instanceof Clutter.Text)
             this.Show(time);
         else
