@@ -49,9 +49,13 @@ class PixCache(object):
         self._data = {}
     
     def get_pix(self, filename, size = None):
-        mimetype = subprocess.check_output(["file", "-bi", filename]).split(";")[0]
-        if not mimetype.startswith("image/"):
-            print "Not trying to convert %s : not a recognized image file" % filename
+        try:
+            mimetype = subprocess.check_output(["file", "-bi", filename]).split(";")[0]
+            if not mimetype.startswith("image/"):
+                print "Not trying to convert %s : not a recognized image file" % filename
+                return None
+        except Exception, detail:
+            print "Failed to detect mimetype for %s: %s" % (filename, detail)
             return None
         if not filename in self._data:
             self._data[filename] = {}
