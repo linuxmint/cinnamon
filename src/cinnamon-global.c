@@ -102,6 +102,7 @@ enum {
   PROP_SCREEN_HEIGHT,
   PROP_STAGE,
   PROP_STAGE_INPUT_MODE,
+  PROP_BOTTOM_WINDOW_GROUP,
   PROP_WINDOW_GROUP,
   PROP_TOP_WINDOW_GROUP,
   PROP_BACKGROUND_ACTOR,
@@ -189,6 +190,9 @@ cinnamon_global_get_property(GObject         *object,
       break;
     case PROP_STAGE_INPUT_MODE:
       g_value_set_enum (value, global->input_mode);
+      break;
+    case PROP_BOTTOM_WINDOW_GROUP:
+      g_value_set_object (value, meta_get_bottom_window_group_for_screen (global->meta_screen));
       break;
     case PROP_WINDOW_GROUP:
       g_value_set_object (value, meta_get_window_group_for_screen (global->meta_screen));
@@ -401,6 +405,13 @@ cinnamon_global_class_init (CinnamonGlobalClass *klass)
                                                       CINNAMON_TYPE_STAGE_INPUT_MODE,
                                                       CINNAMON_STAGE_INPUT_MODE_NORMAL,
                                                       G_PARAM_READWRITE));
+  g_object_class_install_property (gobject_class,
+                                   PROP_BOTTOM_WINDOW_GROUP,
+                                   g_param_spec_object ("bottom-window-group",
+                                                        "Bottom Window Group",
+                                                        "Actor holding window actors that must appear below desklets",
+                                                        CLUTTER_TYPE_ACTOR,
+                                                        G_PARAM_READABLE));
   g_object_class_install_property (gobject_class,
                                    PROP_WINDOW_GROUP,
                                    g_param_spec_object ("window-group",
