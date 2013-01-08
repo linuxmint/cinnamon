@@ -9,6 +9,7 @@ from gi.repository import Gio, Gtk, GObject, Gdk
 import dbus
 import imtools
 import gettext
+import subprocess
 
 gettext.install("cinnamon", "/usr/share/cinnamon/locale")
 
@@ -48,6 +49,10 @@ class PixCache(object):
         self._data = {}
     
     def get_pix(self, filename, size = None):
+        mimetype = subprocess.check_output(["file", "-bi", filename]).split(";")[0]
+        if not mimetype.startswith("image/"):
+            print "Not trying to convert %s : not a recognized image file" % filename
+            return None
         if not filename in self._data:
             self._data[filename] = {}
         if size in self._data[filename]:
