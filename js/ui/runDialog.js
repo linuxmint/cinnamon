@@ -299,7 +299,7 @@ __proto__: ModalDialog.ModalDialog.prototype,
                     if (postfix[postfix.length - 1] == '/')
                         this._getCompletion(text + postfix + 'a');
                 }
-                if (!postfix && completions.length > 0 &&
+                if (!postfix && completions.length > 0 && prefix.length > 2 &&
                     global.settings.get_boolean(SHOW_COMPLETIONS_KEY)) {
                     this._completionBox.set_text(completions.join("\n"));
                     this._completionBox.show();
