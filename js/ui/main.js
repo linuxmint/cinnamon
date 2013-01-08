@@ -50,8 +50,9 @@ const CIN_LOG_FOLDER = GLib.get_home_dir() + '/.cinnamon/';
 
 let automountManager = null;
 let autorunManager = null;
-let applets = [];
+
 let desklets = [];
+
 let panel = null;
 let panel2 = null;
 
@@ -140,7 +141,6 @@ function _initUserSession() {
     global.screen.override_workspace_layout(Meta.ScreenCorner.TOPLEFT, false, 1, -1);
 
     ExtensionSystem.init();
-    ExtensionSystem.loadExtensions();
 
     Meta.keybindings_set_custom_handler('panel-run-dialog', function() {
        getRunDialog().open();
@@ -347,9 +347,9 @@ function start() {
     _nWorkspacesChanged();
     
     AppletManager.init();
-    applets = AppletManager.loadApplets();
 
     desklets = DeskletManager.loadDesklets();
+
 }
 
 function enablePanels() {

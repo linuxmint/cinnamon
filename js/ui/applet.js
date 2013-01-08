@@ -117,7 +117,7 @@ Applet.prototype = {
         this.context_menu_separator = null;
 
         this._setAppletReactivity();
-        global.settings.connect('changed::panel-edit-mode', Lang.bind(this, function() {
+        this._panelEditModeChangedId = global.settings.connect('changed::panel-edit-mode', Lang.bind(this, function() {
             this._setAppletReactivity();
             this.finalizeContextMenu();
         }));
@@ -180,10 +180,16 @@ Applet.prototype = {
     on_applet_added_to_panel: function() {       
     },
 
+    // Optionally implemented by Applets,
+    // to destroy UI resources and disconnect from signal handlers, etc.
     on_applet_removed_from_panel: function() {
-        // Implemented by Applets, called by appletManager
-        // handles things that might cause a crash once the applet is
-        // no longer on the stage
+        // dummy, for very simple applets
+    },
+
+    // should only be called by appletManager
+    _onAppletRemovedFromPanel: function() {
+        global.settings.disconnect(this._panelEditModeChangedId);
+        this.on_applet_removed_from_panel();
     },
 
     setOrientation: function (orientation) {
@@ -234,7 +240,7 @@ Applet.prototype = {
         let isEditMode = global.settings.get_boolean('panel-edit-mode');
         let items = this._applet_context_menu._getMenuItems();
         if (isEditMode && items.indexOf(this.context_menu_item_remove) == -1) {
-            this.context_menu_item_remove = new MenuItem(_("Remove this applet"), Gtk.STOCK_REMOVE, Lang.bind(null, AppletManager._removeAppletFromPanel, this._uuid));
+            this.context_menu_item_remove = new MenuItem(_("Remove this applet"), Gtk.STOCK_REMOVE, Lang.bind(null, AppletManager._removeAppletFromPanel, this._uuid, this._applet_id));
             this.context_menu_separator = new PopupMenu.PopupSeparatorMenuItem();
             if (this._applet_context_menu._getMenuItems().length > 0) {
                 this._applet_context_menu.addMenuItem(this.context_menu_separator);

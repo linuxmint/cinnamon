@@ -29,6 +29,12 @@
         which should be loaded.
       </_description>
     </key>
+
+    <key name="next-applet-id" type="i">
+      <default>0</default>
+      <summary>The next applet id to give the next added applet</summary>
+      <description>Do not change manually.</description>
+    </key>
     
     <key name="enabled-desklets" type="as">
       <default>[]</default>
