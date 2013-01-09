@@ -173,7 +173,38 @@ AltTabPopup.prototype = {
         
         this._currentApp = 0;
         this._currentWindow = -1;
-        let windows = Main.getTabList();
+        
+        // Find out the currently active window
+        let wsWindows = Main.getTabList();
+        let currentWindow = wsWindows.length > 0 ? wsWindows[0] : null;
+
+        let windows = [];
+        let [currentIndex, forwardIndex, backwardIndex] = [-1, -1, -1];
+
+        let activeWsIndex = global.screen.get_active_workspace_index();
+        for (let i = 0, numws = global.screen.n_workspaces; i < numws; ++i) {
+            let wlist = Main.getTabList(global.screen.get_workspace_by_index(i));
+            if (!wlist.length && i == activeWsIndex) {
+                // If the current workspace is empty, it's easiest to insert a placeholder window,
+                // for which purpose the desktop should do fine.
+                wlist = global.get_window_actors().filter(function(realWindow) {
+                    let window = realWindow.metaWindow;
+                    if (window.get_window_type() != Meta.WindowType.DESKTOP) return false;
+                    return window.get_workspace().index() == activeWsIndex;
+                }, this).map(function(realWindow){
+                    return realWindow.metaWindow;
+                },this);
+                currentWindow = wlist[0];
+            }
+
+            windows = windows.concat(wlist);
+            if (i == activeWsIndex && wlist.length) {
+                currentIndex = windows.indexOf(currentWindow);
+                forwardIndex = wlist.length > 1 ? currentIndex + 1 : currentIndex;
+                backwardIndex = wlist.length > 1 ? currentIndex + wlist.length - 1 : currentIndex;
+            }
+        }
+
         this._appSwitcher = new AppSwitcher(windows, this._showThumbnails, this);
         this.actor.add_actor(this._appSwitcher.actor);
         if (!this._iconsEnabled && !this._thumbnailsEnabled) {
@@ -191,28 +222,26 @@ AltTabPopup.prototype = {
         this.actor.get_allocation_box();
 
         // Make the initial selection
-        if (this._appIcons.length > 0) {
+        if (this._appIcons.length > 0 && currentIndex >= 0) {
             if (binding == 'switch-group') {
                 if (backward) {
-                    this._select(0, this._appIcons[0].cachedWindows.length - 1);
+                    this._select(currentIndex, this._appIcons[currentIndex].cachedWindows.length - 1);
                 } else {
-                    if (this._appIcons[0].cachedWindows.length > 1)
-                        this._select(0, 1);
+                    if (this._appIcons[currentIndex].cachedWindows.length > 1)
+                        this._select(currentIndex, 1);
                     else
-                        this._select(0, 0);
+                        this._select(currentIndex, 0);
                 }
             } else if (binding == 'switch-group-backward') {
-                this._select(0, this._appIcons[0].cachedWindows.length - 1);
+                this._select(currentIndex, this._appIcons[currentIndex].cachedWindows.length - 1);
             } else if (binding == 'switch-windows-backward') {
-                this._select(this._appIcons.length - 1);
+                this._select(backwardIndex);
             } else if (binding == 'no-switch-windows') {
-                this._select(0);
-            } else if (this._appIcons.length == 1) {
-                this._select(0);
+                this._select(currentIndex);
             } else if (backward) {
-                this._select(this._appIcons.length - 1);
+                this._select(backwardIndex);
             } else {
-                this._select(1);
+                this._select(forwardIndex);
             }
         }
         // There's a race condition; if the user released Alt before
@@ -758,7 +787,7 @@ SwitcherList.prototype = {
 
         this._items = [];
         this._highlighted = -1;
-        this._separator = null;
+        this._separators = [];
         this._squareItems = squareItems;
         this._minSize = 0;
         this._scrollableRight = true;
@@ -807,9 +836,12 @@ SwitcherList.prototype = {
         this._rightArrow.opacity = this._rightGradient.opacity;
     },
 
-    addItem : function(item, label) {
+    addItem : function(item, label, extra_style) {
         let bbox = new St.Button({ style_class: 'item-box',
                                    reactive: true });
+        if (extra_style) {
+            bbox.add_style_class_name(extra_style);
+        }
 
         bbox.set_child(item);
         this._list.add_actor(bbox);
@@ -833,7 +865,7 @@ SwitcherList.prototype = {
 
     addSeparator: function () {
         let box = new St.Bin({ style_class: 'separator' });
-        this._separator = box;
+        this._separators.push(box);
         this._list.add_actor(box);
     },
 
@@ -926,9 +958,9 @@ SwitcherList.prototype = {
         let [maxChildMin, maxChildNat] = this._maxChildWidth(forHeight);
 
         let separatorWidth = 0;
-        if (this._separator) {
-            let [sepMin, sepNat] = this._separator.get_preferred_width(forHeight);
-            separatorWidth = sepNat + this._list.spacing;
+        if (this._separators.length) {
+            let [sepMin, sepNat] = this._separators[0].get_preferred_width(forHeight);
+            separatorWidth = Math.max(1, this._separators.length - 1) * (sepNat + this._list.spacing);
         }
 
         let totalSpacing = this._list.spacing * Math.max(1, (this._items.length - 1));
@@ -964,10 +996,10 @@ SwitcherList.prototype = {
         let totalSpacing = this._list.spacing * (this._items.length - 1);
 
         let separatorWidth = 0;
-        if (this._separator) {
-            let [sepMin, sepNat] = this._separator.get_preferred_width(childHeight);
+        if (this._separators.length) {
+            let [sepMin, sepNat] = this._separators[0].get_preferred_width(childHeight);
             separatorWidth = sepNat;
-            totalSpacing += this._list.spacing;
+            totalSpacing += Math.max(1, this._separators.length - 1) * this._list.spacing;
         }
 
         let childWidth = Math.floor(Math.max(0, box.x2 - box.x1 - totalSpacing - separatorWidth) / this._items.length);
@@ -998,7 +1030,7 @@ SwitcherList.prototype = {
                 children[i].allocate(childBox, flags);
 
                 x += this._list.spacing + childWidth;
-            } else if (children[i] == this._separator) {
+            } else if (this._separators.indexOf(children[i]) != -1) {
                 // We want the separator to be more compact than the rest.
                 childBox.x1 = x;
                 childBox.y1 = 0;
@@ -1101,8 +1133,15 @@ AppSwitcher.prototype = {
 
         this.icons = [];
         this._arrows = [];
-        for (let i = 0; i < workspaceIcons.length; i++)
-            this._addIcon(workspaceIcons[i]);
+        let lastWs = null;
+        workspaceIcons.forEach(function(icon) {
+            let ws = icon.window.get_workspace();
+            if (lastWs != null && ws != lastWs) {
+                this.addSeparator();
+            }
+            lastWs = ws;
+            this._addIcon(icon);
+        }, this);
         if (workspaceIcons.length > 0 && otherIcons.length > 0)
             this.addSeparator();
         for (let i = 0; i < otherIcons.length; i++)
@@ -1129,8 +1168,8 @@ AppSwitcher.prototype = {
         let [iconMinHeight, iconNaturalHeight] = this.icons[j].label.get_preferred_height(-1);
         let iconSpacing = iconNaturalHeight + iconPadding + iconBorder;
         let totalSpacing = this._list.spacing * (this._items.length - 1);
-        if (this._separator)
-           totalSpacing += this._separator.width + this._list.spacing;
+        if (this._separators.length)
+           totalSpacing += Math.max(1, this._separators.length - 1) * (this._separators[0].width + this._list.spacing);
 
         // We just assume the whole screen here due to weirdness happing with the passed width
         let primary = Main.layoutManager.primaryMonitor;
@@ -1220,7 +1259,9 @@ AppSwitcher.prototype = {
 
     _addIcon : function(appIcon) {
         this.icons.push(appIcon);
-        this.addItem(appIcon.actor, appIcon.label);
+        let is_urgent = appIcon.window.is_demanding_attention() || appIcon.window.is_urgent();
+        let style = is_urgent ? "window-list-item-demands-attention" : null;
+        this.addItem(appIcon.actor, appIcon.label, style);
 
         let n = this._arrows.length;
         let arrow = new St.DrawingArea({ style_class: 'switcher-arrow' });
