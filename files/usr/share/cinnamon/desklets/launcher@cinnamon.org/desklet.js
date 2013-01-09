@@ -12,17 +12,17 @@ const Util = imports.misc.util;
 
 const CUSTOM_LAUNCHERS_PATH = GLib.get_home_dir() + '/.cinnamon/panel-launchers/';
 
-function MyDesklet(metadata){
-    this._init(metadata);
+function MyDesklet(metadata, desklet_id){
+    this._init(metadata, desklet_id);
 }
 
 MyDesklet.prototype = {
     __proto__: Desklet.Desklet.prototype,
 
-    _init: function(metadata){
+    _init: function(metadata, desklet_id){
         Desklet.Desklet.prototype._init.call(this, metadata);
         this._launcherSettings = new Gio.Settings({schema: 'org.cinnamon.desklets.launcher'});
-        this._id = metadata.id;
+        this._desklet_id = desklet_id;
 
         this._onSettingsChanged();
 
@@ -31,7 +31,7 @@ MyDesklet.prototype = {
                                  Util.spawnCommandLine("/usr/share/cinnamon/desklets/launcher@cinnamon.org/editorDialog.py");
                              });
         this._menu.addAction(_("Edit launcher"), Lang.bind(this, function() {
-                                                               Util.spawnCommandLine("/usr/share/cinnamon/desklets/launcher@cinnamon.org/editorDialog.py " + this._id);
+                                                               Util.spawnCommandLine("/usr/share/cinnamon/desklets/launcher@cinnamon.org/editorDialog.py " + this._desklet_id);
                                                            }));
 
         this.actor.connect('button-release-event', Lang.bind(this, this._onClicked));
@@ -45,7 +45,7 @@ MyDesklet.prototype = {
         let appSys = Cinnamon.AppSystem.get_default();
         let desktopFile, app;
         for (let i in settingsList) {
-            if (settingsList[i].split(":")[0] == this._id){
+            if (settingsList[i].split(":")[0] == this._desklet_id){
                 desktopFile = settingsList[i].split(":")[1];
                 app = appSys.lookup_app(desktopFile);
                 if (!app) app = appSys.lookup_settings_app(desktopFile);
@@ -55,7 +55,7 @@ MyDesklet.prototype = {
         }
 
         // No desktop file found; Default to 'cinnamon-settings.desktop'
-        settingsList.push(this._id + ':cinnamon-settings.desktop');
+        settingsList.push(this._desklet_id + ':cinnamon-settings.desktop');
         this._launcherSettings.set_strv('launcher-list', settingsList);
         return appSys.lookup_settings_app('cinnamon-settings.desktop');
     },
@@ -94,7 +94,7 @@ MyDesklet.prototype = {
     }
 };
 
-function main(metadata){
-    let desklet = new MyDesklet(metadata);
+function main(metadata, desklet_id){
+    let desklet = new MyDesklet(metadata, desklet_id);
     return desklet;
 }

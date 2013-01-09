@@ -9,6 +9,7 @@ const St = imports.gi.St;
 
 const AppletManager = imports.ui.appletManager;
 const Config = imports.misc.config;
+const DeskletManager = imports.ui.deskletManager;
 const ExtensionSystem = imports.ui.extensionSystem;
 
 const State = {
@@ -71,6 +72,21 @@ const Type = {
         callbacks: {
             finishExtensionLoad: AppletManager.finishExtensionLoad,
             prepareExtensionUnload: AppletManager.prepareExtensionUnload
+        }
+    },
+    DESKLET: {
+        name: 'Desklet',
+        folder: 'desklets',
+        requiredFunctions: ['main'],
+        requiredProperties: ['uuid', 'name', 'description'],
+        niceToHaveProperties: [],
+        roles: {
+            notifications: null,
+            windowlist: null
+        },
+        callbacks: {
+            finishExtensionLoad: DeskletManager.finishExtensionLoad,
+            prepareExtensionUnload: DeskletManager.prepareExtensionUnload
         }
     }
 };

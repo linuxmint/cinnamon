@@ -80,7 +80,7 @@ MyDesklet.prototype = {
     }
 }
 
-function main(metadata){
+function main(metadata, desklet_id){
     let desklet = new MyDesklet(metadata);
     return desklet;
 }
