@@ -61,13 +61,13 @@ Desklet.prototype = {
         this.actor.connect('notify::hover', Lang.bind(this, this._onHover));
 
         this._uuid = null;
-        this._id = null;
+        this._desklet_id = null;
         this._dragging = false;
         this._dragOffset = [0, 0];
         this.actor._desklet = this;
         this.actor._delegate = this;
 
-        this._draggable = DND.makeDraggable(this.actor, {restoreOnSuccess: true}, DeskletManager.deskletContainer.actor);
+        this._draggable = DND.makeDraggable(this.actor, {restoreOnSuccess: true}, Main.deskletContainer.actor);
         this._draggable.connect('drag-begin', Lang.bind(this, function(){
                                                             global.set_stage_input_mode(Cinnamon.StageInputMode.FULLSCREEN);
                                                             Main.layoutManager.untrackChrome(this.actor);
@@ -190,7 +190,7 @@ Desklet.prototype = {
     },
 
     _onRemoveDesklet: function(){
-        DeskletManager.removeDesklet(this._uuid, this._id);
+        DeskletManager.removeDesklet(this._uuid, this._desklet_id);
     },
 
     getDragActor: function(){

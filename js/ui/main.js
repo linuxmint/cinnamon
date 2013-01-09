@@ -51,8 +51,6 @@ const CIN_LOG_FOLDER = GLib.get_home_dir() + '/.cinnamon/';
 let automountManager = null;
 let autorunManager = null;
 
-let desklets = [];
-
 let panel = null;
 let panel2 = null;
 
@@ -92,6 +90,7 @@ let background = null;
 
 let desktop_layout;
 let applet_side = St.Side.BOTTOM;
+let deskletContainer = null;
 
 let software_rendering = false;
 
@@ -227,6 +226,7 @@ function start() {
     _defaultCssStylesheet = global.datadir + '/theme/cinnamon.css';
 
     themeManager = new ThemeManager.ThemeManager();
+    deskletContainer = new DeskletManager.DeskletContainer();
 
     // Set up stage hierarchy to group all UI actors under one container.
     uiGroup = new Cinnamon.GenericContainer({ name: 'uiGroup' });
@@ -238,7 +238,6 @@ function start() {
                     });
     St.set_ui_root(global.stage, uiGroup);
 
-    DeskletManager.init();
 
     global.window_group.remove_child(global.background_actor);
     global.stage.remove_child(global.bottom_window_group);
@@ -247,7 +246,7 @@ function start() {
 
     uiGroup.add_actor(global.background_actor);
     uiGroup.add_actor(global.bottom_window_group);
-    uiGroup.add_actor(DeskletManager.deskletContainer.actor);
+    uiGroup.add_actor(deskletContainer.actor);
     uiGroup.add_actor(global.window_group);
     uiGroup.add_actor(global.overlay_group);
 
@@ -348,9 +347,7 @@ function start() {
     _nWorkspacesChanged();
     
     AppletManager.init();
-
-    desklets = DeskletManager.loadDesklets();
-
+    DeskletManager.init();
 }
 
 function enablePanels() {
