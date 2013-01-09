@@ -6,6 +6,7 @@ const Mainloop = imports.mainloop;
 const Clutter = imports.gi.Clutter;
 const GLib = imports.gi.GLib;
 const Tweener = imports.ui.tweener;
+const Util = imports.misc.util;
 
 function MyDesklet(metadata){
     this._init(metadata);
@@ -68,7 +69,12 @@ MyDesklet.prototype = {
                 fileEnum.close(null);
             }
             
+            if (this.metadata["shuffle"]) {
+                for(var j, x, i = this._files.length; i; j = parseInt(Math.random() * i), x = this._files[--i], this._files[i] = this._files[j], this._files[j] = x);
+            }
+            
             this.updateInProgress = false;
+            this.currentPicture = null;
             this._update_loop();
         }
         catch (e) {
@@ -89,8 +95,7 @@ MyDesklet.prototype = {
         try {            
             let file = this._files.shift();
             if (file != undefined && GLib.file_test(file, GLib.FileTest.EXISTS)) {                
-                this._files.push(file);
-
+                this._files.push(file);                
                 if (this.metadata["fade-delay"] > 0) {
                     Tweener.addTween(this._clutterTexture, { opacity: 0,
                         time: this.metadata["fade-delay"],
@@ -111,6 +116,7 @@ MyDesklet.prototype = {
                         this._photoFrame.set_child(this._clutterBox);
                     } 
                 }
+                this.currentPicture = file;
             }
         }
         catch (e) {
@@ -121,8 +127,18 @@ MyDesklet.prototype = {
         }       
     },
 
-    on_desklet_clicked: function(event){        
-        this._update();        
+    on_desklet_clicked: function(event){  
+        try {             
+            if (event.get_button() == 1) {
+                this._update();
+            }
+            else if (event.get_button() == 2) {     
+                Util.spawnCommandLine("xdg-open " + this.currentPicture);                
+            }            
+        }
+        catch (e) {
+            global.logError(e);
+        }
     }
 }
 
