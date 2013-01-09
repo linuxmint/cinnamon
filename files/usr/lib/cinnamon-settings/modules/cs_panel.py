@@ -8,7 +8,7 @@ class Module:
         self.sidePage = sidePage
         self.name = "panel"
 
-        desktop_layouts = [["traditional", _("Traditional (panel at the bottom)")], ["flipped", _("Flipped (panel at the top)")], ["classic", _("Classic (main panel at the top, secondary at the bottom)")], ["classic-flipped", _("Classic flipped (main panel at the bottom, secondary at the top)")]]
+        desktop_layouts = [["traditional", _("Bottom")], ["flipped", _("Top")], ["classic", _("Top + bottom")], ["classic-flipped", _("Bottom + top")]]
         desktop_layouts_combo = GSettingsComboBox(_("Panel layout"), "org.cinnamon", "desktop-panel-layout", None, desktop_layouts)
         sidePage.add_widget(desktop_layouts_combo) 
         label = Gtk.Label()
