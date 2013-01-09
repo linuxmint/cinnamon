@@ -4,9 +4,11 @@
  "description": "A digital photo frame desklet",
  "minimum-decoration": 1,
  "directory":"~/Pictures",
- "delay": 10,
+ "delay": 5,
  "height": 200,
  "width": 300,
- "quality": 0
+ "quality": 0,
+ "fade-delay": 0.3,
+ "effect": "color"
 }
 

@@ -8,3 +8,9 @@ The "quality" can be:
  - 2: Render the texture with the best quality available using extra memory.
 
 If you're going for a small frame, keep the quality low.
+
+The "effect" can be:
+
+ - "color": Pictures are rendered in full color
+ - "sepia": Pictures are rendered in sepia
+ - "black-and-white": Pictures are rendered in black and white
