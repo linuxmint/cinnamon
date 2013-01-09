@@ -6,6 +6,7 @@ const Lang = imports.lang;
 const Mainloop = imports.mainloop;
 const Pango = imports.gi.Pango;
 const Cinnamon = imports.gi.Cinnamon;
+const Signals = imports.signals;
 const St = imports.gi.St;
 const PopupMenu = imports.ui.popupMenu;
 const Main = imports.ui.main;
@@ -466,19 +467,16 @@ function populateSettingsMenu(menu) {
         global.settings.set_boolean("panel-edit-mode", item.state);
     });
     menu.addMenuItem(panelEditMode);
-    global.settings.connect('changed::panel-edit-mode', function() {
-        panelEditMode.setToggleState(global.settings.get_boolean("panel-edit-mode"));
-    });
 }
 
-function PanelContextMenu(launcher, orientation) {
-    this._init(launcher, orientation);
+function PanelContextMenu() {
+    this._init.apply(this, arguments);
 }
 
 PanelContextMenu.prototype = {
     __proto__: PopupMenu.PopupMenu.prototype,
 
-    _init: function(launcher, orientation) {
+    _init: function(launcher, orientation, isHideable, ahKey) {
         PopupMenu.PopupMenu.prototype._init.call(this, launcher.actor, 0.0, orientation, 0);
         Main.uiGroup.add_actor(this.actor);
         this.actor.hide();
@@ -490,6 +488,10 @@ PanelContextMenu.prototype = {
 
         let applet_settings_item = new SettingsLauncher(_("Add applets to the panel"), "applets", "applets", this);
         this.addMenuItem(applet_settings_item);
+
+        this.addAction(isHideable ? _("Make this panel always visible") : _("Make this panel hideable"), function(event) {
+            global.settings.set_boolean(ahKey, !isHideable);
+        });
     }
 }
 
@@ -593,56 +595,38 @@ PanelZoneDNDHandler.prototype = {
 }
 
 
-function Panel(bottomPosition, isPrimary) {
-    this._init(bottomPosition, isPrimary);
+function Panel() {
+    this._init.apply(this, arguments);
 }
 
 Panel.prototype = {
-    _init : function(bottomPosition, isPrimary) {
+    _init : function(layoutManager, bottomPosition, isPrimary) {
 
         Gtk.IconTheme.get_default().append_search_path("/usr/lib/cinnamon-settings/data/icons/");
 
         this.bottomPosition = bottomPosition;
+        this._layoutManager = layoutManager;
         this.isPrimary = isPrimary;
         if (this.isPrimary) {
-            this.panel_ah_key = "panel-autohide";
             this.panel_sd_key = "panel-show-delay";
             this.panel_hd_key = "panel-hide-delay";
         } else {
-            this.panel_ah_key = "panel2-autohide";
             this.panel_sd_key = "panel2-show-delay";
             this.panel_hd_key = "panel2-hide-delay";
         }
-    	this._hidden = false;
+        this._hidden = false;
         this._disabled = false;
         this._hidetime = 0;
-        this._hideable = global.settings.get_boolean(this.panel_ah_key);
+        this._hideable = false;
         this._hideTimer = false;
         this._showTimer = false;
         this._onPanelShowDelayChanged();
         this._onPanelHideDelayChanged();
-        this._themeFontSize = null;
 
         this.actor = new Cinnamon.GenericContainer({ name: 'panel',
                                                   reactive: true });
         this.actor._delegate = this;
-
-        if (global.settings.get_boolean('panel-resizable')) {
-            if (bottomPosition) {
-                this.actor.set_height(global.settings.get_int('panel-bottom-height'));
-            }
-            else {
-                this.actor.set_height(global.settings.get_int('panel-top-height'));
-            }
-        }
-        if (this.bottomPosition) {
-            global.settings.connect("changed::panel-bottom-height", Lang.bind(this, this._processPanelSize));
-        }
-        else {
-            global.settings.connect("changed::panel-top-height", Lang.bind(this, this._processPanelSize));
-        }
-
-        this._menus = new PopupMenu.PopupMenuManager(this);
+        this.actor.add_style_class_name(bottomPosition ? 'panel-bottom' : 'panel-top');
 
         this._leftBox = new St.BoxLayout({ name: 'panelLeft' });
         this.actor.add_actor(this._leftBox);
@@ -677,43 +661,46 @@ Panel.prototype = {
 
         this.actor.connect('leave-event', Lang.bind(this, this._leavePanel));
         this.actor.connect('enter-event', Lang.bind(this, this._enterPanel));
-        global.settings.connect("changed::" + this.panel_ah_key, Lang.bind(this, this._processPanelAutoHide));
         global.settings.connect("changed::" + this.panel_sd_key, Lang.bind(this, this._onPanelShowDelayChanged));
         global.settings.connect("changed::" + this.panel_hd_key, Lang.bind(this, this._onPanelHideDelayChanged));
 
-        let orientation = St.Side.TOP;
-        if (bottomPosition) {
-            orientation = St.Side.BOTTOM;
-        }
+        this.actor.connect('button-release-event', Lang.bind(this, this._onButtonReleaseEvent));
         
-        this._context_menu = new PanelContextMenu(this, orientation);
-        this._menus.addMenu(this._context_menu);   
-        
-        this._context_menu._boxPointer._container.connect('allocate', Lang.bind(this._context_menu._boxPointer, function(actor, box, flags){
-                    this._xPosition = this._xpos;
-                    this._shiftActor();
+        this._handlePanelEditMode();
+        global.settings.connect("changed::panel-edit-mode", Lang.bind(this, this._handlePanelEditMode));
+        this._lastSetHeight = null;
+        this.actor.connect('style-changed', Lang.bind(this, function() {
+            this.emit('height-changed');
         }));
+    },
 
-        this.actor.connect('button-release-event', Lang.bind(this, this._onButtonReleaseEvent));                            
-        
-        this._setDNDstyle();
-        global.settings.connect("changed::panel-edit-mode", Lang.bind(this, this._setDNDstyle));
-        global.settings.connect("changed::panel-resizable", Lang.bind(this, this._processPanelSize));
-        global.settings.connect("changed::panel-scale-text-icons", Lang.bind(this, this._onScaleTextIconsChanged))
-        this.actor.connect('style-changed', Lang.bind(this, this._processPanelSize));
+    handleDragOver : function(source, actor, x, y, time) {
+        // the default is to allow drop
+        return DND.DragMotionResult.MOVE_DROP;
     },
 
     isHideable: function() {
         return this._hideable;
     },
-    
-    _setDNDstyle: function() {
-        if (global.settings.get_boolean("panel-edit-mode")) {
+
+    setHideable: function(hideable) {
+        this._hideable = hideable;
+    },
+
+    _handlePanelEditMode: function() {
+        this._isEditMode = global.settings.get_boolean("panel-edit-mode");
+        if (this._isEditMode) {
+            if (this.isHideable()) {
+                this._showPanel();
+            }
             this._leftBox.add_style_pseudo_class('dnd');
             this._centerBox.add_style_pseudo_class('dnd');
             this._rightBox.add_style_pseudo_class('dnd');
         }
         else {
+            if (this.isHideable()) {
+                this._hidePanel(true);
+            }
             this._leftBox.remove_style_pseudo_class('dnd');
             this._centerBox.remove_style_pseudo_class('dnd');
             this._rightBox.remove_style_pseudo_class('dnd');
@@ -721,27 +708,39 @@ Panel.prototype = {
     },
 
     _onButtonReleaseEvent: function (actor, event) {
-        if (event.get_button()==1){
-            if (this._context_menu.isOpen) {
-                this._context_menu.toggle();
-            }
+        if (this._context_menu && this._context_menu.isOpen) {
+            this._context_menu.toggle();
+            this._context_menu.destroy();
+            this._menus = null;
+            this._context_menu = null;
+            return;
         }
+
         if (event.get_button()==3){
-            try {
             let [x, y] = event.get_coords();
             let target = global.stage.get_actor_at_pos(Clutter.PickMode.ALL, x, y);
-            if (this._context_menu._getMenuItems().length > 0 && target.get_parent() == this.actor) { 
-                this._context_menu.toggle();
-                if (!this._context_menu.isOpen) {
-                    return;
+            if (target.get_parent() == this.actor || target == this.actor) { 
+
+                let orientation = St.Side.TOP;
+                if (this.bottomPosition) {
+                    orientation = St.Side.BOTTOM;
                 }
 
+                this._menus = new PopupMenu.PopupMenuManager(this);
+                this._context_menu = new PanelContextMenu(this, orientation, this._hideable, this.isPrimary ? 'panel-autohide' : 'panel2-autohide');
+
+
+                this._menus.addMenu(this._context_menu);
+                this._context_menu.open();
+
+                this._context_menu._boxPointer._container.connect('allocate', Lang.bind(this._context_menu._boxPointer, function(actor, box, flags){
+                    this._xPosition = this._xpos;
+                    this._shiftActor();
+                }));
+
                 x -= this._context_menu._boxPointer._arrowOrigin;
-
-                let monitor = Main.layoutManager.findMonitorForActor(this._context_menu._boxPointer.actor);
-
+                let monitor = this._layoutManager.findMonitorForActor(this._context_menu._boxPointer.actor);
                 let mywidth = this._context_menu._boxPointer.actor.get_allocation_box().x2-this._context_menu._boxPointer.actor.get_allocation_box().x1;//Width of menu
-
                 if (x + mywidth - monitor.x > monitor.width) {
                     x  = monitor.width + monitor.x - mywidth;
                 }
@@ -752,10 +751,6 @@ Panel.prototype = {
                 this._context_menu._boxPointer._xPosition = this._context_menu._boxPointer._xpos;
                 this._context_menu._boxPointer._shiftActor();
             }
-        }
-        catch(e) {
-            global.log(e);
-        }
         }
         return;
     },
@@ -768,79 +763,29 @@ Panel.prototype = {
        this._hideDelay = global.settings.get_int(this.panel_hd_key);
     },
     
-    _processPanelAutoHide: function() {  
-        this._hideable = global.settings.get_boolean(this.panel_ah_key);
-        // Show a glimpse of the panel irrespective of the new setting,
-        // in order to force a region update.
-        // Techically, this should not be necessary if the function is called
-        // when auto-hide is in effect and is not changing, but experience
-        // shows that not flashing the panels may lead to "phantom panels"
-        // where the panels should be if auto-hide was on.
-        this._hidePanel(true); // force hide
-        this._showPanel();
-
-        if (this._hideable == true) {
-            this._hidePanel();
-        }
-    },
-
-    _processPanelSize: function() {
-        let panelHeight;
-        let panelResizable = global.settings.get_boolean("panel-resizable");
-        if (panelResizable) {
-            if (this.bottomPosition) {
-                panelHeight = global.settings.get_int("panel-bottom-height");
-            }
-            else {
-                panelHeight = global.settings.get_int("panel-top-height");
-            }
-        }
-        else {
+    _setPanelHeight: function(panelHeight, scalable) {
+        this._lastSetHeight = panelHeight;
+        if (panelHeight === null) {
             let themeNode = this.actor.get_theme_node();
             panelHeight = themeNode.get_length("height");
             if (!panelHeight || panelHeight == 0) {
                 panelHeight = 25;
             }
         }
-        if (!this._themeFontSize) {
-                let themeNode = this.actor.get_theme_node();
-                this._themeFontSize = themeNode.get_length("font-size");
-            }
-        if (global.settings.get_boolean("panel-scale-text-icons") && global.settings.get_boolean("panel-resizable")) {
-            let textheight = (panelHeight / Applet.DEFAULT_PANEL_HEIGHT) * Applet.PANEL_FONT_DEFAULT_HEIGHT;
+        let textheight = 0;
+        if (scalable) {
+            textheight = Math.round(panelHeight / Applet.DEFAULT_PANEL_HEIGHT * Applet.PANEL_FONT_DEFAULT_HEIGHT);
             this.actor.set_style('font-size: ' + textheight + 'px;');
         } else {
-            this.actor.set_style('font-size: ' + this._themeFontSize + 'px;');
+            let themeFontSize = this.actor.get_theme_node().get_length("font-size");
+            this.actor.set_style('font-size: ' + themeFontSize ? themeFontSize + 'px;' : '8.5pt;');
         }
         this.actor.set_height(panelHeight);
-        this._processPanelAutoHide();
-        AppletManager.updateAppletPanelHeights();
-    },
-
-    _onScaleTextIconsChanged: function() {
-        let panelHeight;
-        if (this.bottomPosition) {
-            panelHeight = global.settings.get_int("panel-bottom-height");
-        }
-        else {
-            panelHeight = global.settings.get_int("panel-top-height");
-        }
-        if (!this._themeFontSize) {
-            let themeNode = this.actor.get_theme_node();
-            this._themeFontSize = themeNode.get_length("font-size");
-        }
-        if (global.settings.get_boolean("panel-scale-text-icons") && global.settings.get_boolean("panel-resizable")) {
-            let textheight = (panelHeight / Applet.DEFAULT_PANEL_HEIGHT) * Applet.PANEL_FONT_DEFAULT_HEIGHT;
-            this.actor.set_style('font-size: ' + textheight + 'px;');
-        } else {
-            this.actor.set_style('font-size: ' + this._themeFontSize ? this._themeFontSize + 'px;' : '8.5pt;');
-        }
-        AppletManager.updateAppletPanelHeights(true);
     },
 
     _getPreferredWidth: function(actor, forHeight, alloc) {
         alloc.min_size = -1;
-        alloc.natural_size = Main.layoutManager.primaryMonitor.width;
+        alloc.natural_size = this._layoutManager.primaryMonitor.width;
     },
 
     _getPreferredHeight: function(actor, forWidth, alloc) {
@@ -953,7 +898,7 @@ Panel.prototype = {
         this.isMouseOverPanel = true;
         this._clearTimers();
         if (this._showDelay > 0) {
-            this._showTimer = Mainloop.timeout_add(this._hideDelay, Lang.bind(this, this._showPanel));
+            this._showTimer = Mainloop.timeout_add(this._showDelay, Lang.bind(this, this._showPanel));
         }
         else {
             this._showPanel();
@@ -971,6 +916,10 @@ Panel.prototype = {
             this._hidePanel();
         }
     }, 
+
+    setCurrentMonitor: function(monitor) {
+        this._monitor = monitor;
+    },
 
     enable: function() {
         this._disabled = false;
@@ -992,6 +941,44 @@ Panel.prototype = {
         });
     }, 
     
+    _updateBoxPosition: function(box) {
+        if (this.leftPanelBarrier) {
+            global.destroy_pointer_barrier(this.leftPanelBarrier);
+            global.destroy_pointer_barrier(this.rightPanelBarrier);
+            this.leftPanelBarrier = null;
+        }
+
+        let height = this.actor.height;
+        let monitor = this._monitor;
+
+        box.set_size(monitor.width, height);
+        if (this.bottomPosition) {
+            box.set_position(monitor.x, monitor.y + monitor.height - height);
+        }
+        else {
+            box.set_position(monitor.x, monitor.y);
+        }
+
+        if (height) {
+            if (this.bottomPosition) {
+                this.leftPanelBarrier = global.create_pointer_barrier(monitor.x, monitor.y + monitor.height - height,
+                                                                 monitor.x, monitor.y + monitor.height,
+                                                                 1 /* BarrierPositiveX */);
+                this.rightPanelBarrier = global.create_pointer_barrier(monitor.x + monitor.width, monitor.y + monitor.height - height,
+                                                                  monitor.x + monitor.width, monitor.y + monitor.height,
+                                                                  4 /* BarrierNegativeX */);
+            }
+            else {
+                this.leftPanelBarrier = global.create_pointer_barrier(monitor.x, monitor.y,
+                                                                 monitor.x, monitor.y + height,
+                                                                 1 /* BarrierPositiveX */);
+                this.rightPanelBarrier = global.create_pointer_barrier(monitor.x + monitor.width, monitor.y,
+                                                                  monitor.x + monitor.width, monitor.y + height,
+                                                                  4 /* BarrierNegativeX */);
+            }
+        }
+    },
+
     _showPanel: function() {
         if (this._disabled) return;
 
@@ -1002,13 +989,13 @@ Panel.prototype = {
         }
 
         // Force the panel to be on top (hack to correct issues when switching workspace)
-        Main.layoutManager._windowsRestacked();
+        this._layoutManager._windowsRestacked();
 
         let height = this.actor.get_height();
         let animationTime = AUTOHIDE_ANIMATION_TIME;
         let y = this.bottomPosition ?
-            Main.layoutManager.bottomMonitor.y + Main.layoutManager.bottomMonitor.height - height :
-            Main.layoutManager.primaryMonitor.y;
+            this._monitor.y + this._monitor.height - height :
+            this._monitor.y;
 
 
         let params = { y: height - 1,
@@ -1023,10 +1010,10 @@ Panel.prototype = {
                         { y: y,
                         time: animationTime,
                         transition: 'easeOutQuad',
-                        onUpdate: function() {
+                        onUpdate: Lang.bind(this, function() {
                             // Force the layout manager to update the input region
-                            Main.layoutManager._chrome.updateRegions()
-                        }
+                            this._layoutManager._chrome.updateRegions()
+                        })
                         });
 
         params = { opacity: 255,
@@ -1044,25 +1031,25 @@ Panel.prototype = {
     _hidePanel: function(force) {
         if (this._disabled) return;
         
-        if ((!this._hideable && !force) || global.menuStackLength > 0 || this.isMouseOverPanel) return;
+        if ((!this._hideable && !force) || global.menuStackLength > 0 || this.isMouseOverPanel || this._isEditMode) return;
 
         // Force the panel to be on top (hack to correct issues when switching workspace)
-        Main.layoutManager._windowsRestacked();
+        this._layoutManager._windowsRestacked();
 
         let height = this.actor.get_height();
         let animationTime = AUTOHIDE_ANIMATION_TIME;
         let y = this.bottomPosition ?
-            Main.layoutManager.bottomMonitor.y + Main.layoutManager.bottomMonitor.height - 1 :
-            Main.layoutManager.primaryMonitor.y - height + 1;
+            this._monitor.y + this._monitor.height - 1 :
+            this._monitor.y - height + 1;
         
         Tweener.addTween(this.actor.get_parent(), { 
             y: y,
             time: animationTime,
             transition: 'easeOutQuad',
-            onUpdate: function() {
+            onUpdate: Lang.bind(this, function() {
                 // Force the layout manager to update the input region
-                Main.layoutManager._chrome.updateRegions()
-            }
+                this._layoutManager._chrome.updateRegions()
+            })
         });
 
         let params = { y: 0,
@@ -1086,3 +1073,4 @@ Panel.prototype = {
     },
 
 };
+Signals.addSignalMethods(Panel.prototype);
