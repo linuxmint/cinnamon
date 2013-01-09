@@ -162,4 +162,26 @@
     </Include>
   </Menu> <!-- End Wine -->
 
-</Menu> <!-- End Applications -->
+  <Menu>
+    <Name>Preferences</Name>
+    <Directory>cinnamon-settings.directory</Directory>
+    <Include>
+      <And>
+        <Category>Settings</Category>
+      </And>
+    </Include>
+  </Menu>
+
+  <!-- System Settings -->
+  <Menu>
+    <Name>Administration</Name>
+    <Directory>cinnamon-settings-system.directory</Directory>
+    <Include>
+      <And>
+        <Category>Settings</Category>
+        <Category>System</Category>
+      </And>
+    </Include>
+  </Menu>     <!-- End System Settings -->
+
+</Menu>  <!-- End Applications -->

@@ -9,6 +9,7 @@ const Signals = imports.signals;
 const St = imports.gi.St;
 
 const BoxPointer = imports.ui.boxpointer;
+const DND = imports.ui.dnd;
 const Main = imports.ui.main;
 const Params = imports.misc.params;
 const Tweener = imports.ui.tweener;
@@ -1923,7 +1924,7 @@ else
     },
 
     _onKeyFocusChanged: function() {
-        if (!this.grabbed || !this._activeMenu)
+        if (!this.grabbed || !this._activeMenu || DND.isDragging())
             return;
 
         let focus = global.stage.key_focus;

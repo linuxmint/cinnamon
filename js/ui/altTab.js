@@ -11,6 +11,8 @@ const St = imports.gi.St;
 const Main = imports.ui.main;
 const Tweener = imports.ui.tweener;
 
+const WindowUtils = imports.misc.windowUtils;
+
 const POPUP_APPICON_SIZE = 96;
 const POPUP_SCROLL_TIME = 0.10; // seconds
 const POPUP_DELAY_TIMEOUT = 150; // milliseconds
@@ -547,38 +549,28 @@ AltTabPopup.prototype = {
             let childBox = new Clutter.ActorBox();
 
             let lastClone = null;
-            let that = this;
-            let clones = []
-            let showClone = function(window) {
-                let clone = new Clutter.Clone({source: window.get_compositor_private().get_texture()});
-                clones.push(clone);
-                that.actor.add_actor(clone);
-                clone.lower(that._appSwitcher.actor);
-                if (lastClone) {
-                    lastClone.lower(clone);
-                }
-                lastClone = clone;
-
-                // The clone's rect is not the same as the window's outer rect
-                let or = window.get_outer_rect();
-                let ir = window.get_input_rect();
-                let diffX = (ir.width - or.width)/2;
-                let diffY = (ir.height - or.height)/2;
-
-                childBox.x1 = Math.round(or.x -diffX);
-                childBox.x2 = Math.round(or.x + or.width + diffX);
-                childBox.y1 = Math.round(or.y -diffY);
-                childBox.y2 = Math.round(or.y + or.height + diffY);
-                clone.allocate(childBox, 0);
-            };
-
+            let previewClones = [];
             let window = this._appIcons[this._currentApp].cachedWindows[0];
-            showClone(window);
-            window.foreach_transient(Lang.bind(this, function(win) {
-                showClone(win);
-            }));
+            let clones = WindowUtils.createWindowClone(window, null, true, false);
+            for (let i = 0; i < clones.length; i++) {
+                let clone = clones[i];
+                previewClones.push(clone.actor);
+                this.actor.add_actor(clone.actor);
+                let [width, height] = clone.actor.get_size();
+                childBox.x1 = clone.x;
+                childBox.x2 = clone.x + width;
+                childBox.y1 = clone.y;
+                childBox.y2 = clone.y + height;
+                clone.actor.allocate(childBox, 0);
+                clone.actor.lower(this._appSwitcher.actor);
+                if (lastClone) {
+                    lastClone.lower(clone.actor);
+                }
+                lastClone = clone.actor;
+            }
+            
             this._clearPreview();
-            this._previewClones = clones;
+            this._previewClones = previewClones;
 
             if (!this._previewBackdrop) {
                 let backdrop = this._previewBackdrop = new St.Bin({style_class: 'switcher-preview-backdrop'});
@@ -1063,14 +1055,18 @@ AppIcon.prototype = {
 
     set_size: function(size) {
         if (this.showThumbnail){
-            let windowTexture = this.window.get_compositor_private().get_texture();
-            let [width, height] = windowTexture.get_size();
-            let scale = Math.min(size/Math.max(width, height), 1);
-            this.icon = new Clutter.Clone({source: windowTexture,
-                                           width: width * scale,
-                                           height: height * scale});
+            this.icon = new St.Group();
+            let clones = WindowUtils.createWindowClone(this.window, size, true, true);
+            for (i in clones) {
+                let clone = clones[i];
+                this.icon.add_actor(clone.actor);
+                // the following 2 lines are used when cloning without positions (param #4 = false)
+                //let [width, height] = clone.actor.get_size();
+                //clone.actor.set_position(Math.round((size - width) / 2), Math.round((size - height) / 2));
+                clone.actor.set_position(clone.x, clone.y);
+            }
         } else {
-            this.icon = this.app ? 
+            this.icon = this.app ?
                 this.app.create_icon_texture(size) :
                 new St.Icon({ icon_name: 'application-default-icon',
                               icon_type: St.IconType.FULLCOLOR,
@@ -1304,40 +1300,15 @@ ThumbnailList.prototype = {
         let binHeight = availHeight + this._items[0].get_theme_node().get_vertical_padding() + this.actor.get_theme_node().get_vertical_padding() - spacing;
         binHeight = Math.min(THUMBNAIL_DEFAULT_SIZE, binHeight);
 
-        let addClone = function(metaWindow, parentWindow, container, scaleOpt) {
-            let muffinWindow = metaWindow.get_compositor_private();
-            let windowTexture = muffinWindow.get_texture ();
-            let [width, height] = windowTexture.get_size();
-
-            let [x, y] = [0,0];
-            if (parentWindow) {
-                let parentRect = parentWindow.get_outer_rect();
-                let myRect = metaWindow.get_outer_rect();
-                x = Math.round((0, parentRect.width - myRect.width) / 2);
-                y = Math.round((0, parentRect.height - myRect.height) / 2);
-            }
-
-            let scale = scaleOpt || Math.min(1.0, THUMBNAIL_DEFAULT_SIZE / width, availHeight / height);
-            let clone = new Clutter.Clone ({ source: windowTexture,
-                                                reactive: true,
-                                                width: width * scale,
-                                                x: x * scale, y: y * scale,
-                                                height: height * scale });
-            container.add_actor(clone);
-            return scale;
-        };
         for (let i = 0; i < this._thumbnailBins.length; i++) {
             let metaWindow = this._windows[i];
-            let muffinWindow = metaWindow.get_compositor_private();
-            if (!muffinWindow)
-                continue;
-
             let container = new St.Group();
-            let scale = addClone(metaWindow, null, container);
-            metaWindow.foreach_transient(function(win) {
-                addClone(win, metaWindow, container, scale);
-            });
-
+            let clones = WindowUtils.createWindowClone(metaWindow, availHeight, true, true);
+            for (let j = 0; j < clones.length; j++) {
+              let clone = clones[j];
+              container.add_actor(clone.actor);
+              clone.actor.set_position(clone.x, clone.y);
+            }
             this._thumbnailBins[i].set_height(binHeight);
             this._thumbnailBins[i].add_actor(container);
             this._clones.push(container);

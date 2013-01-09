@@ -130,7 +130,7 @@ class GSettingsSpinButton(Gtk.HBox):
         self.settings = Gio.Settings.new(schema)        
         self.content_widget.set_value(self.settings.get_int(self.key))
         self.settings.connect("changed::"+self.key, self.on_my_setting_changed)
-        self.content_widget.connect('focus-out-event', self.on_my_value_changed)
+        self.content_widget.connect('value-changed', self.on_my_value_changed)
         self.dependency_invert = False
         if self.dep_key is not None:
             if self.dep_key[0] == '!':
@@ -141,12 +141,20 @@ class GSettingsSpinButton(Gtk.HBox):
             self.dep_key = split[1]
             self.dep_settings.connect("changed::"+self.dep_key, self.on_dependency_setting_changed)
             self.on_dependency_setting_changed(self, None)
+        self._value_changed_timer = None
 
     def on_my_setting_changed(self, settings, key):
         self.content_widget.set_value(self.settings.get_int(self.key))
 
-    def on_my_value_changed(self, widget, data):
+    def on_my_value_changed(self, widget):
+        if self._value_changed_timer:
+            GObject.source_remove(self._value_changed_timer)
+        self._value_changed_timer = GObject.timeout_add(300, self.update_settings_value)
+    
+    def update_settings_value(self):
         self.settings.set_int(self.key, self.content_widget.get_value())
+        self._value_changed_timer = None
+        return False
 
     def on_dependency_setting_changed(self, settings, dep_key):
         if not self.dependency_invert:
@@ -424,6 +432,43 @@ class GSettingsComboBox(Gtk.HBox):
             self.set_sensitive(self.dep_settings.get_boolean(self.dep_key))
         else:
             self.set_sensitive(not self.dep_settings.get_boolean(self.dep_key))
+
+class GSettingsIntComboBox(Gtk.HBox):
+    def __init__(self, label, schema, key, options):
+        self.key = key
+        super(GSettingsIntComboBox, self).__init__()
+        self.settings = Gio.Settings.new(schema)
+        self.value = self.settings.get_int(self.key)
+
+        self.label = Gtk.Label(label)
+        self.model = Gtk.ListStore(int, str)
+        selected = None
+        for option in options:
+            iter = self.model.insert_before(None, None)
+            self.model.set_value(iter, 0, option[0])
+            self.model.set_value(iter, 1, option[1])
+            if (option[0] == self.value):
+                selected = iter
+
+        self.content_widget = Gtk.ComboBox.new_with_model(self.model)
+        renderer_text = Gtk.CellRendererText()
+        self.content_widget.pack_start(renderer_text, True)
+        self.content_widget.add_attribute(renderer_text, "text", 1)
+
+        if selected is not None:
+            self.content_widget.set_active_iter(selected)
+
+        if (label != ""):
+            self.pack_start(self.label, False, False, 2)
+        self.pack_start(self.content_widget, False, False, 2)
+        self.content_widget.connect('changed', self.on_my_value_changed)
+        self.content_widget.show_all()
+
+    def on_my_value_changed(self, widget):
+        tree_iter = widget.get_active_iter()
+        if tree_iter != None:
+            value = self.model[tree_iter][0]
+            self.settings.set_int(self.key, value)
 
 class GSettingsColorChooser(Gtk.ColorButton):
     def __init__(self, schema, key, dep_key):

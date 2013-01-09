@@ -49,7 +49,6 @@ MyApplet.prototype = {
                                 
             let client = GConf.Client.get_default();
             client.add_dir(KEY_META_DIR, GConf.ClientPreloadType.PRELOAD_ONELEVEL, null);
-            client.notify_add(KEY_META_DIR, Lang.bind(this, this._keyChanged), null, null);
 
             let highContrast = this._buildHCItem();
             this.menu.addMenuItem(highContrast);
@@ -117,9 +116,6 @@ MyApplet.prototype = {
             function(enabled) {
                 client.set_bool(key, enabled);
             });
-        //this.connect('gconf-changed', function() {
-        //    widget.setToggleState(client.get_bool(key));
-        //});
         return widget;
     },
 
@@ -196,12 +192,7 @@ MyApplet.prototype = {
             widget.setToggleState(active);
         });
         return widget;
-    },
-
-    _keyChanged: function() {
-        this.emit('gconf-changed');
     }
-    
 };
 
 function main(metadata, orientation, panel_height) {  

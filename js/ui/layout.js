@@ -12,6 +12,7 @@ const ScreenSaver = imports.misc.screenSaver;
 const Tweener = imports.ui.tweener;
 const EdgeFlip = imports.ui.edgeFlip;
 const HotCorner = imports.ui.hotCorner;
+const DeskletManager = imports.ui.deskletManager;
 
 const KEYBOARD_ANIMATION_TIME = 0.5;
 
@@ -278,7 +279,8 @@ const defaultParams = {
     visibleInFullscreen: false,
     affectsStruts: false,
     affectsInputRegion: true,
-    addToWindowgroup: false
+    addToWindowgroup: false,
+    doNotAdd: false
 };
 
 function Chrome() {
@@ -327,7 +329,7 @@ Chrome.prototype = {
     addActor: function(actor, params) {
         let actorData = Params.parse(params, defaultParams);
         if (actorData.addToWindowgroup) global.window_group.add_actor(actor);
-        else Main.uiGroup.add_actor(actor);
+        else if (!actorData.doNotAdd) Main.uiGroup.add_actor(actor);
         this._trackActor(actor, params);
     },
 
@@ -426,6 +428,11 @@ Chrome.prototype = {
     },
 
     _actorReparented: function(actor, oldParent) {
+        let i = this._findActor(actor);
+        if (i == -1)
+            return;
+        let actorData = this._trackedActors[i];
+
         let newParent = actor.get_parent();
         if (!newParent)
             this._untrackActor(actor);
@@ -561,7 +568,7 @@ Chrome.prototype = {
             if (!window.showing_on_its_workspace())
                 continue;
 
-            if (metaWindow.is_fullscreen()) {
+            if (metaWindow.get_layer() == Meta.StackLayer.FULLSCREEN || metaWindow.is_fullscreen()) {
                 let monitor = this._findMonitorForWindow(window);
                 if (monitor)
                     monitor.inFullscreen = true;
@@ -624,7 +631,8 @@ Chrome.prototype = {
 
         for (i = 0; i < this._trackedActors.length; i++) {
             let actorData = this._trackedActors[i];
-            if (!actorData.affectsInputRegion && !actorData.affectsStruts)
+            if ((!actorData.affectsInputRegion && !actorData.affectsStruts) ||
+                 primary.inFullscreen)
                 continue;
 
             let [x, y] = actorData.actor.get_transformed_position();

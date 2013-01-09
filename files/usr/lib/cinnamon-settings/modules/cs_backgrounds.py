@@ -9,6 +9,8 @@ from gi.repository import Gio, Gtk, GObject, Gdk
 import dbus
 import imtools
 import gettext
+import subprocess
+import tempfile
 
 gettext.install("cinnamon", "/usr/share/cinnamon/locale")
 
@@ -43,28 +45,47 @@ class Module:
         self.name = "backgrounds"
 
 class PixCache(object):
+    
     def __init__(self):
         self._data = {}
+    
     def get_pix(self, filename, size = None):
+        try:
+            mimetype = subprocess.check_output(["file", "-bi", filename]).split(";")[0]
+            if not mimetype.startswith("image/"):
+                print "Not trying to convert %s : not a recognized image file" % filename
+                return None
+        except Exception, detail:
+            print "Failed to detect mimetype for %s: %s" % (filename, detail)
+            return None
         if not filename in self._data:
             self._data[filename] = {}
         if size in self._data[filename]:
             pix = self._data[filename][size]
         else:
             try:
-                img = Image.open(filename)                        
+                if mimetype == "image/svg+xml":
+                    tmp_pix = GdkPixbuf.Pixbuf.new_from_file(filename)
+                    tmp_fp, tmp_filename = tempfile.mkstemp()
+                    os.close(tmp_fp)
+                    tmp_pix.savev(tmp_filename, "png", [], [])
+                    img = Image.open(tmp_filename)
+                    os.unlink(tmp_filename)
+                else:
+                    img = Image.open(filename)             
+                (width, height) = img.size
                 if img.mode != 'RGB':
-                    img = img.convert('RGB')
+                    img = img.convert('RGB')                
                 if size:
                     img.thumbnail((size, size), Image.ANTIALIAS)                                                                                                    
-                img = imtools.round_image(img, {}, False, None, 5, 255)  
-                img = imtools.drop_shadow(img, 5, 5, background_color=(255, 255, 255, 0), shadow_color=0x444444, border=8, shadow_blur=3, force_background_color=False, cache=None)        
+                img = imtools.round_image(img, {}, False, None, 3, 255)  
+                img = imtools.drop_shadow(img, 4, 4, background_color=(255, 255, 255, 0), shadow_color=0x444444, border=8, shadow_blur=3, force_background_color=False, cache=None)        
                 # Convert Image -> Pixbuf (save to file, GTK3 is not reliable for that)
                 f = tempfile.NamedTemporaryFile(delete=False)
                 temp_filename = f.name
                 f.close()        
                 img.save(temp_filename, "png")
-                pix = GdkPixbuf.Pixbuf.new_from_file(temp_filename)
+                pix = [GdkPixbuf.Pixbuf.new_from_file(temp_filename), width, height]
                 os.unlink(temp_filename)
             except Exception, detail:
                 print "Failed to convert %s: %s" % (filename, detail)
@@ -82,7 +103,7 @@ class ThreadedIconView(Gtk.IconView):
         self._model = Gtk.ListStore(object, GdkPixbuf.Pixbuf, str)
         self.set_model(self._model)
         self.set_pixbuf_column(1)
-        self.set_markup_column(2)
+        self.set_markup_column(2)        
         
         self._loading_queue = []
         self._loading_queue_lock = thread.allocate_lock()
@@ -163,8 +184,13 @@ class ThreadedIconView(Gtk.IconView):
                         label = to_load["name"]
                     else:
                         label = os.path.split(to_load["filename"])[1]
+                    if "artist" in to_load:
+                        artist = "\nby %s" % to_load["artist"]
+                    else:
+                        artist = ""
+                    
                     self._loaded_data_lock.acquire()
-                    self._loaded_data.append((to_load, pix, "<sub>%s</sub>" % label))
+                    self._loaded_data.append((to_load, pix[0], "<b>%s</b><sub>%s\n%dx%d</sub>" % (label, artist, pix[1], pix[2])))
                     self._loaded_data_lock.release()
                 
         self._loading_lock.acquire()
@@ -256,7 +282,7 @@ class BackgroundWallpaperPane (Gtk.VBox):
                         for prop in wallpaperNode:
                             if type(prop.tag) == str:
                                 if prop.tag != "name":
-                                    wallpaperData[prop.tag] = prop.text
+                                    wallpaperData[prop.tag] = prop.text                                
                                 else:
                                     propAttr = prop.attrib
                                     wpName = prop.text
