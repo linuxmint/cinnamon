@@ -34,7 +34,6 @@ MyDesklet.prototype = {
                                                                Util.spawnCommandLine("/usr/share/cinnamon/desklets/launcher@cinnamon.org/editorDialog.py " + this._id);
                                                            }));
 
-        this.actor.connect('button-release-event', Lang.bind(this, this._onClicked));
         this._settingsSignalId = this._launcherSettings.connect('changed::launcher-list', Lang.bind(this, this._onSettingsChanged));
 
         this.connect('destroy', Lang.bind(this, this._destroy));
@@ -67,9 +66,8 @@ MyDesklet.prototype = {
             return St.TextureCache.get_default().load_gicon(null, this._app.get_icon(), 48);
     },
 
-    _onClicked: function(actor, event) {
-        let button = event.get_button();
-        if (button==1) this._launch();
+    on_desklet_clicked: function() {
+        this._launch();
     },
 
     _onSettingsChanged: function() {
