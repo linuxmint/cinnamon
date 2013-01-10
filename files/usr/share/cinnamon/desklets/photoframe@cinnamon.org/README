@@ -1,0 +1,18 @@
+
+To configure this desklet, edit the metadata.json file.
+
+The "quality" can be:
+
+ - 0: Fastest rendering will use nearest neighbour interpolation when rendering. good setting.
+ - 1: Higher quality rendering without using extra resources.
+ - 2: Render the texture with the best quality available using extra memory.
+
+If you're going for a small frame, keep the quality low.
+
+The "effect" can be:
+
+ - "color": Pictures are rendered in full color
+ - "sepia": Pictures are rendered in sepia
+ - "black-and-white": Pictures are rendered in black and white
+
+Note: You can middle-click the photo frame to open up the picture that is being shown.

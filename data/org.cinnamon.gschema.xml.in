@@ -29,7 +29,28 @@
         which should be loaded.
       </_description>
     </key>
+
+    <key name="next-applet-id" type="i">
+      <default>0</default>
+      <summary>The next applet id to give the next added applet</summary>
+      <description>Do not change manually.</description>
+    </key>
     
+    <key name="next-desklet-id" type="i">
+      <default>0</default>
+      <_summary>The next desklet id to give the next added desklet</_summary>
+      <_description>Do not change manually.</_description>
+    </key>
+    
+    <key name="enabled-desklets" type="as">
+      <default>[]</default>
+      <_summary>Uuids of desklets to enable</_summary>
+      <_description>
+        Cinnamon desklets have a uuid property; this key lists desklets
+        which should be loaded. uuids should be put in the form uuid:id:x:y, where id is used to distinguish between multiple instances of the same desklet
+      </_description>
+    </key>
+
     <key name="panel-autohide" type="b">
       <default>false</default>
       <_summary>Auto-hide panel</_summary>
@@ -267,7 +288,7 @@
       <default>"Menu"</default>
       <_summary>Text for the menu</_summary>
       <_description>
-	    The text shown in the Menu label.
+            The text shown in the Menu label.
       </_description>
     </key>
     
@@ -275,7 +296,7 @@
       <default>"/usr/share/cinnamon/theme/menu.png"</default>
       <_summary>Icon for the menu</_summary>
       <_description>
-	    The icon shown in the Menu button.
+            The icon shown in the Menu button.
       </_description>
     </key>
     
@@ -317,10 +338,10 @@
     </key>
 
     <key type="i" name="number-workspaces">
-	<default>2</default>
-	<_summary>Number of workspaces in Cinnamon session</_summary>
-	<_description>
-		Number of Workspaces</_description>
+        <default>2</default>
+        <_summary>Number of workspaces in Cinnamon session</_summary>
+        <_description>
+                Number of Workspaces</_description>
     </key>
 
     <key name="overview-corner" type="as">
@@ -490,6 +511,16 @@
       </description>
     </key>
 
+    <key name="desklets-minimum-decoration" type="i">
+      <default>2</default>
+      <_summary>The minimum decoration level of the desklet</_summary>
+      <_description>The minimum amount of decoration a desklet must have.
+      0 = None;
+      1 = Borders;
+      2 = Borders and header;
+      </_description>
+    </key>
+
     <key type="b" name="enable-edge-flip">
       <default>false</default>
       <_summary>Whether edge flip is enabled</_summary>
@@ -500,6 +531,7 @@
     <child name="recorder" schema="org.cinnamon.recorder"/>
     <child name="keyboard" schema="org.cinnamon.keyboard"/>
     <child name="power" schema="org.cinnamon.power" />
+    <child name="desklets" schema="org.cinnamon.desklets" />
   </schema>
  
   <schema id="org.cinnamon.theme" path="/org/cinnamon/theme/"
@@ -650,7 +682,7 @@
       </description>
     </key>
   </schema>
-  
+
   <schema id="org.cinnamon.background" path="/org/cinnamon/background/">
     <key name="mode" type="s">
       <default>"wallpaper"</default>
@@ -683,4 +715,36 @@
     </key>
   </schema>
   
+  <schema id="org.cinnamon.desklets" path="/org/cinnamon/desklets/"
+        gettext-domain="@GETTEXT_PACKAGE@">
+    <child name="clock" schema="org.cinnamon.desklets.clock"/>
+  </schema>
+
+  <schema id="org.cinnamon.desklets.clock" path="/org/cinnamon/desklets/clock/"
+        gettext-domain="@GETTEXT_PACKAGE@">
+    <key name="date-format" type="s">
+      <default>'%H:%M'</default>
+      <_summary>The date format for the clock desklet</_summary>
+      <_description>
+        The format to be used in the clock desklet
+      </_description>
+    </key>
+
+    <key type="i" name="font-size">
+      <default>50</default>
+      <_summary>The font size for the clock deskelt</_summary>
+      <_description> The font size to be used to display the time on the clock desklet</_description>
+    </key>
+  </schema>
+  <schema id="org.cinnamon.desklets.launcher" path="/org/cinnamon/desklets/launcher/"
+        gettext-domain="@GETTEXT_PACKAGE@">
+    <key name="launcher-list" type="as">
+      <default>[]</default>
+      <_summary>Desktop files of the applications to be shown on desktop</_summary>
+      <_description>
+	The "launchers" desklet provides a method to show a launcher on the desktop
+	This list maps the desklet id to the desktop file of application.
+      </_description>
+    </key>
+  </schema>
 </schemalist>

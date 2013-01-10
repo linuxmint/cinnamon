@@ -388,7 +388,9 @@ Expo.prototype = {
         this._hideInProgress = true;
 
         let activeWorkspace = this._expo.lastActiveWorkspace;
+
         if (!options || !options.toScale ) {
+            Main.enablePanels();
             activeWorkspace.overviewModeOff(true, true);
         }
 
@@ -418,9 +420,6 @@ Expo.prototype = {
                     cover.destroy();
                     if (index == Main.layoutManager.monitors.length < 1) {
                         this._group.hide();
-                        if (!options || !options.toScale ) {
-                            Main.enablePanels();
-                        }
                         this._hideDone();
                     }
                 }
