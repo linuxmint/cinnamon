@@ -63,6 +63,7 @@ STANDALONE_MODULES = [
 ]
 
 class MainWindow:
+
     # Change pages
     def side_view_nav(self, side_view, cat):
         selected_items = side_view.get_selected_items()
@@ -106,7 +107,9 @@ class MainWindow:
         self.search_entry = self.builder.get_object("search_box")
         self.search_entry.connect("changed", self.onSearchTextChanged)
         self.search_entry.connect("icon-press", self.onClearSearchBox)
+
         self.window.connect("destroy", Gtk.main_quit)
+
         self.builder.connect_signals(self)
         self.window.set_has_resize_grip(False)
         self.sidePages = []
@@ -118,7 +121,7 @@ class MainWindow:
 
         for i in range(len(modules)):
             mod = modules[i].Module(self.content_box)
-            if self.loadCheck(mod):
+            if self.loadCheck(mod) and self.setParentRefs(mod):
                 self.sidePages.append((mod.sidePage, mod.name, mod.category))
 
         for item in CONTROL_CENTER_MODULES:
@@ -257,6 +260,13 @@ class MainWindow:
                 if filtered_path is not None:
                     self.side_view[key].select_path(filtered_path)
                     return
+
+    def setParentRefs (self, mod):
+        try:
+            mod._setParentRef(self.window, self.builder)
+        except AttributeError:
+            pass
+        return True
 
     def loadCheck (self, mod):
         try:

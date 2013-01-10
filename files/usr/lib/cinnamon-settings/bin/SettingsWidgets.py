@@ -39,6 +39,8 @@ class SidePage:
         self.exec_name = exec_name
         self.keywords = keywords
         self.advanced = advanced
+        self.topWindow = None
+        self.builder = None
 
     def add_widget(self, widget, advanced = False):
         self.widgets.append(widget)
@@ -49,7 +51,6 @@ class SidePage:
         widgets = self.content_box.get_children()
         for widget in widgets:
             self.content_box.remove(widget)
-
         # Add our own widgets
         # C modules are sort of messy - they check the desktop type
         # (for Unity or GNOME) and show/hide UI items depending on
