@@ -21,7 +21,8 @@ var enabledDeskletDefinitions;
 let userDeskletsDir;
 
 const ENABLED_DESKLETS_KEY = 'enabled-desklets';
-
+const DESKLET_SNAP_KEY = 'desklet-snap';
+const DESKLET_SNAP_INTERVAL_KEY = 'desklet-snap-interval';
 /**
  * init:
  * 
@@ -37,6 +38,8 @@ function init(){
     }
     
     global.settings.connect('changed::' + ENABLED_DESKLETS_KEY, _onEnabledDeskletsChanged);
+    global.settings.connect('changed::' + DESKLET_SNAP_KEY, _onDeskletSnapChanged);
+    global.settings.connect('changed::' + DESKLET_SNAP_INTERVAL_KEY, _onDeskletSnapChanged);
 }
 
 /**
@@ -225,6 +228,25 @@ function _deskletDefinitionsEqual(a, b) {
     return (a.uuid == b.uuid && a.x == b.x && a.y == b.y);
 }
 
+function _onDeskletSnapChanged(){
+    if (!global.settings.get_boolean(DESKLET_SNAP_KEY))
+        return;
+
+    let enabledDesklets = global.settings.get_strv(ENABLED_DESKLETS_KEY);
+
+    for (let i = 0; i < enabledDesklets.length; i++){
+        let elements = enabledDesklets[i].split(":");
+        let interval = global.settings.get_int(DESKLET_SNAP_INTERVAL_KEY);
+
+        elements[2] = Math.floor(elements[2]/interval)*interval;
+        elements[3] = Math.floor(elements[3]/interval)*interval;
+
+        enabledDesklets[i] = elements.join(":");
+    }
+
+    global.settings.set_strv(ENABLED_DESKLETS_KEY, enabledDesklets);
+}
+
 /**
  * DeskletContainer
  * 
@@ -276,6 +298,11 @@ DeskletContainer.prototype = {
                 let elements = definition.split(":");
                 elements[2] = actor.get_x();
                 elements[3] = actor.get_y();
+                if (global.settings.get_boolean(DESKLET_SNAP_KEY)){
+                    let interval = global.settings.get_int(DESKLET_SNAP_INTERVAL_KEY);
+                    elements[2] = Math.floor(elements[2]/interval)*interval;
+                    elements[3] = Math.floor(elements[3]/interval)*interval;
+                }
                 definition = elements.join(":");
                 enabledDesklets[i] = definition;
             }
