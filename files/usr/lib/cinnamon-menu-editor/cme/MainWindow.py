@@ -23,13 +23,13 @@ import os
 import gettext
 import subprocess
 
-from Alacarte import config
+from cme import config
 gettext.bindtextdomain(config.GETTEXT_PACKAGE, config.localedir)
 gettext.textdomain(config.GETTEXT_PACKAGE)
 
 _ = gettext.gettext
-from Alacarte.MenuEditor import MenuEditor
-from Alacarte import util
+from cme.MenuEditor import MenuEditor
+from cme import util
 
 class MainWindow(object):
     timer = None
@@ -52,7 +52,6 @@ class MainWindow(object):
         self.tree.get_object('edit_properties').set_sensitive(False)
         self.tree.get_object('move_up_button').set_sensitive(False)
         self.tree.get_object('move_down_button').set_sensitive(False)
-        self.tree.get_object('new_separator_button').set_sensitive(False)
 
     def run(self):
         self.loadMenus()
@@ -272,18 +271,6 @@ class MainWindow(object):
         process = subprocess.Popen(['gnome-desktop-item-edit', file_path], env=os.environ)
         GObject.timeout_add(100, self.waitForNewItemProcess, process, parent.get_menu_id(), file_path)
 
-    def on_new_separator_button_clicked(self, button):
-        item_tree = self.tree.get_object('item_tree')
-        items, iter = item_tree.get_selection().get_selected()
-        if not iter:
-            return
-        else:
-            after = items[iter][3]
-            menu_tree = self.tree.get_object('menu_tree')
-            menus, iter = menu_tree.get_selection().get_selected()
-            parent = menus[iter][2]
-            self.editor.createSeparator(parent, after=after)
-
     def on_edit_delete_activate(self, menu):
         item_tree = self.tree.get_object('item_tree')
         items, iter = item_tree.get_selection().get_selected()
@@ -337,7 +324,6 @@ class MainWindow(object):
         self.tree.get_object('edit_properties').set_sensitive(False)
         self.tree.get_object('move_up_button').set_sensitive(False)
         self.tree.get_object('move_down_button').set_sensitive(False)
-        self.tree.get_object('new_separator_button').set_sensitive(False)
         self.tree.get_object('properties_button').set_sensitive(False)
         self.tree.get_object('delete_button').set_sensitive(False)
 
@@ -361,7 +347,6 @@ class MainWindow(object):
 
         item = items[iter][3]
         self.tree.get_object('edit_delete').set_sensitive(True)
-        self.tree.get_object('new_separator_button').set_sensitive(True)
         self.tree.get_object('delete_button').set_sensitive(True)
 
         can_edit = not isinstance(item, GMenu.TreeSeparator)
@@ -369,8 +354,8 @@ class MainWindow(object):
         self.tree.get_object('properties_button').set_sensitive(can_edit)
 
         index = items.get_path(iter).get_indices()[0]
-        can_go_up = index > 0
-        can_go_down = index < len(items) - 1
+        can_go_up = index > 0 and isinstance(item, GMenu.TreeDirectory)
+        can_go_down = index < len(items) - 1 and isinstance(item, GMenu.TreeDirectory)
         self.tree.get_object('move_up_button').set_sensitive(can_go_up)
         self.tree.get_object('move_down_button').set_sensitive(can_go_down)
 
@@ -416,7 +401,7 @@ class MainWindow(object):
             return
         item = items[path][3]
         before = items[(path.get_indices()[0] - 1,)][3]
-        self.editor.moveItem(item.get_parent(), item, before=before)
+        self.editor.moveItem(item.get_parent(), item, before=before)    
 
     def on_move_down_button_clicked(self, button):
         item_tree = self.tree.get_object('item_tree')

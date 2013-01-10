@@ -27,7 +27,6 @@ AppFavorites.prototype = {
         let appSys = Cinnamon.AppSystem.get_default();
         let apps = ids.map(function (id) {
                 let app = appSys.lookup_app(id);
-                if (!app) app = appSys.lookup_settings_app(id);
                 return app;
             }).filter(function (app) {
                 return app != null;

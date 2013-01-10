@@ -4,18 +4,20 @@ const Clutter = imports.gi.Clutter;
 const DBus = imports.dbus;
 const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
+const Gtk = imports.gi.Gtk;
 const Mainloop = imports.mainloop;
 const Meta = imports.gi.Meta;
 const Cinnamon = imports.gi.Cinnamon;
 const St = imports.gi.St;
 const PointerTracker = imports.misc.pointerTracker;
 
+const AppletManager = imports.ui.appletManager;
 const AutomountManager = imports.ui.automountManager;
 const AutorunManager = imports.ui.autorunManager;
+const DeskletManager = imports.ui.deskletManager;
 const EndSessionDialog = imports.ui.endSessionDialog;
 const PolkitAuthenticationAgent = imports.ui.polkitAuthenticationAgent;
 const ExtensionSystem = imports.ui.extensionSystem;
-const AppletManager = imports.ui.appletManager;
 const Keyboard = imports.ui.keyboard;
 const MessageTray = imports.ui.messageTray;
 const Overview = imports.ui.overview;
@@ -48,7 +50,9 @@ const CIN_LOG_FOLDER = GLib.get_home_dir() + '/.cinnamon/';
 
 let automountManager = null;
 let autorunManager = null;
-let applets = [];
+
+let desklets = [];
+
 let panel = null;
 let panel2 = null;
 
@@ -137,7 +141,6 @@ function _initUserSession() {
     global.screen.override_workspace_layout(Meta.ScreenCorner.TOPLEFT, false, 1, -1);
 
     ExtensionSystem.init();
-    ExtensionSystem.loadExtensions();
 
     Meta.keybindings_set_custom_handler('panel-run-dialog', function() {
        getRunDialog().open();
@@ -220,7 +223,9 @@ function start() {
         applet_side = St.Side.TOP;        
     }
     
-    _defaultCssStylesheet = global.datadir + '/theme/cinnamon.css';    
+    Gtk.IconTheme.get_default().append_search_path("/usr/share/cinnamon/icons/");
+    _defaultCssStylesheet = global.datadir + '/theme/cinnamon.css';
+
     themeManager = new ThemeManager.ThemeManager();
 
     // Set up stage hierarchy to group all UI actors under one container.
@@ -232,14 +237,27 @@ function start() {
                             children[i].allocate_preferred_size(flags);
                     });
     St.set_ui_root(global.stage, uiGroup);
-    global.window_group.reparent(uiGroup);
-    global.overlay_group.reparent(uiGroup);
+
+    DeskletManager.init();
+
+    global.window_group.remove_child(global.background_actor);
+    global.stage.remove_child(global.bottom_window_group);
+    global.stage.remove_child(global.window_group);
+    global.stage.remove_child(global.overlay_group);
+
+    uiGroup.add_actor(global.background_actor);
+    uiGroup.add_actor(global.bottom_window_group);
+    uiGroup.add_actor(DeskletManager.deskletContainer.actor);
+    uiGroup.add_actor(global.window_group);
+    uiGroup.add_actor(global.overlay_group);
+
     global.stage.add_actor(uiGroup);
     global.top_window_group.reparent(global.stage);
 
     layoutManager = new Layout.LayoutManager();
     let pointerTracker = new PointerTracker.PointerTracker();
-    pointerTracker.setPosition(layoutManager.primaryMonitor.width/2, layoutManager.primaryMonitor.height/2);
+    pointerTracker.setPosition(layoutManager.primaryMonitor.x + layoutManager.primaryMonitor.width/2,
+        layoutManager.primaryMonitor.y + layoutManager.primaryMonitor.height/2);
 
     xdndHandler = new XdndHandler.XdndHandler();
     // This overview object is just a stub for non-user sessions
@@ -307,7 +325,7 @@ function start() {
 
     global.stage.connect('captured-event', _globalKeyPressHandler);
 
-    _log('info', 'loaded at ' + _startDate);
+    _log('info ', 'loaded at ' + _startDate);
     log('Cinnamon started at ' + _startDate);
 
     let perfModuleName = GLib.getenv("CINNAMON_PERF_MODULE");
@@ -330,7 +348,9 @@ function start() {
     _nWorkspacesChanged();
     
     AppletManager.init();
-    applets = AppletManager.loadApplets();
+
+    desklets = DeskletManager.loadDesklets();
+
 }
 
 function enablePanels() {

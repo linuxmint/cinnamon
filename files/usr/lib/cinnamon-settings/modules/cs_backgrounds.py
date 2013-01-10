@@ -9,6 +9,8 @@ from gi.repository import Gio, Gtk, GObject, Gdk
 import dbus
 import imtools
 import gettext
+import subprocess
+import tempfile
 
 gettext.install("cinnamon", "/usr/share/cinnamon/locale")
 
@@ -48,13 +50,29 @@ class PixCache(object):
         self._data = {}
     
     def get_pix(self, filename, size = None):
+        try:
+            mimetype = subprocess.check_output(["file", "-bi", filename]).split(";")[0]
+            if not mimetype.startswith("image/"):
+                print "Not trying to convert %s : not a recognized image file" % filename
+                return None
+        except Exception, detail:
+            print "Failed to detect mimetype for %s: %s" % (filename, detail)
+            return None
         if not filename in self._data:
             self._data[filename] = {}
         if size in self._data[filename]:
             pix = self._data[filename][size]
         else:
             try:
-                img = Image.open(filename)                        
+                if mimetype == "image/svg+xml":
+                    tmp_pix = GdkPixbuf.Pixbuf.new_from_file(filename)
+                    tmp_fp, tmp_filename = tempfile.mkstemp()
+                    os.close(tmp_fp)
+                    tmp_pix.savev(tmp_filename, "png", [], [])
+                    img = Image.open(tmp_filename)
+                    os.unlink(tmp_filename)
+                else:
+                    img = Image.open(filename)             
                 (width, height) = img.size
                 if img.mode != 'RGB':
                     img = img.convert('RGB')                
