@@ -49,18 +49,6 @@ const CinnamonIface = {
                 inSignature: '',
                 outSignature: ''
               },
-              { name: 'ListExtensions',
-                inSignature: '',
-                outSignature: 'a{sa{sv}}'
-              },
-              { name: 'GetExtensionInfo',
-                inSignature: 's',
-                outSignature: 'a{sv}'
-              },
-              { name: 'GetExtensionErrors',
-                inSignature: 's',
-                outSignature: 'as'
-              },
               { name: 'ScreenshotArea',
                 inSignature: 'biiiibs',
                 outSignature: ''
@@ -79,9 +67,7 @@ const CinnamonIface = {
                 outSignature: ''
               }
              ],
-    signals: [{ name: 'ExtensionStatusChanged',
-                inSignature: 'sis' },
-              {
+    signals: [{
                 name: 'lgLogUpdate',
                 inSignature: ''
               },
@@ -96,7 +82,8 @@ const CinnamonIface = {
               {
                 name: 'lgInspectorDone',
                 inSignature: ''
-              }],
+              }
+             ],
     properties: [{ name: 'OverviewActive',
                    signature: 'b',
                    access: 'readwrite' },
