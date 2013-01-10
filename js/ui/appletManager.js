@@ -194,7 +194,8 @@ function onEnabledAppletsChanged() {
         }
     }
     catch(e) {
-        global.logError('Failed to refresh list of applets ' + e);
+        global.logError(e);
+        global.logError('Failed to refresh list of applets ');
     }
 
     Main.statusIconDispatcher.redisplay();
@@ -206,8 +207,8 @@ function removeAppletFromPanels(appletDefinition) {
         try {
             applet._onAppletRemovedFromPanel();
         } catch (e) {
-            global.logError("Problem with applet: " + appletDefinition.uuid + "/" + appletDefinition.applet_id +
-                            " on_applet_removed_from_panel method: " + e);
+            global.logError(e);
+            global.logError("Error during on_applet_removed_from_panel() call on applet: " + appletDefinition.uuid + "/" + appletDefinition.applet_id);
         }
 
         if (applet._panelLocation != null) {

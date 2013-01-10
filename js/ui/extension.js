@@ -106,22 +106,6 @@ for(var key in Type) {
     }
 }
 
-// A special error class used to format the error message with some information about the extension.
-function ExtensionError(extension, message) {
-    this._init(extension, message);
-}
-
-ExtensionError.prototype = {
-    _init: function(extension, message) {
-        this.extension = extension;
-        this.message = message;
-    },
-
-    toString: function() {
-        return '[%s "%s"]: %s'.format(this.extension.type.name, this.extension.uuid, this.message);
-    }
-}
-
 // Create a dummy metadata object when metadata parsing failed or was not done yet.
 function createMetaDummy(uuid, path, state) {
     return { name: uuid, description: 'Metadata load failed', state: state, path: path, error: '' };
@@ -180,12 +164,16 @@ Extension.prototype = {
         global.log('Loaded %s %s in %d ms'.format(this.lowerType, this.uuid, (endTime - this.startTime)));
     },
 
+    formatError:function(message) {
+        return '[%s "%s"]: %s'.format(this.type.name, this.uuid, message);
+    },
+
     logError: function (message, state) {
         this.meta.state = state || State.ERROR;
         this.meta.error += message;
 
-        let err = new ExtensionError(this, message);
-        global.logError('Error ' + err.toString());
+        let err = new Error(this.formatError(message));
+        global.logError(err);
 
         // An error during initialization leads to unloading the extension again.
         if(this.meta.state == State.INITIALIZING) {
@@ -197,8 +185,8 @@ Extension.prototype = {
     },
 
     logWarning: function (message) {
-        let err = new ExtensionError(this, message);
-        global.log('Warning ' + err.toString());
+        let err = new Error(this.formatError('Warning: ' + message));
+        global.log(err);
     },
 
     loadMetaData: function(metadataFile) {
@@ -293,7 +281,8 @@ Extension.prototype = {
             try {
                 this.theme.unload_stylesheet(this.stylesheet);
             } catch (e) {
-                global.logError('Stylesheet unload error: ' + e);
+                global.logError(e);
+                global.logError('Error unloading stylesheet');
             }
         }
     },
@@ -384,7 +373,8 @@ function loadExtension(uuid, type) {
             extension.finalize();
         } catch(e) {
             forgetExtension(uuid, false);
-            global.logError('Could not load ' + type.name.toLowerCase() + ' ' + uuid + ': ' + e);
+            global.logError(e);
+            global.logError('Could not load ' + type.name.toLowerCase() + ' ' + uuid);
             return null;
         }
     }
@@ -402,7 +392,8 @@ function unloadExtension(uuid) {
         try {
             extension.type.callbacks.prepareExtensionUnload(extension);
         } catch(e) {
-            global.logError('Error disabling ' + extension.lowerType + ' ' + extension.uuid + ': ' + e);
+            global.logError(e);
+            global.logError('Error disabling ' + extension.lowerType + ' ' + extension.uuid);
         }
         extension.unloadStylesheet();
 
@@ -457,7 +448,8 @@ function findExtensionDirectoryIn(uuid, dir) {
         fileEnum.close(null);
         return directory;
     } catch (e) {
-        global.logError('' + e);
+        global.logError(e);
+        global.logError('Error looking for extension ' + uuid + ' in directory ' + dir);
        return null;
     }
 }
