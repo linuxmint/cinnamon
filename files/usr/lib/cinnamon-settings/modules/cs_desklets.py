@@ -24,15 +24,11 @@ class DeskletsViewSidePage (SidePage):
         self.active_desklet_path = None
 
         self.settings = Gio.Settings.new("org.cinnamon")
-        self.settings.connect('changed::enabled-desklets', self.on_settings_changed)
 
     def build(self, advanced):
         widgets = self.content_box.get_children()
         for widget in widgets:
             self.content_box.remove(widget)
-
-        # Update enabled desklets list
-        self.enabled_desklets = self.settings.get_strv("enabled-desklets")
 
         # Add our own widgets
         notebook = Gtk.Notebook()
@@ -177,8 +173,9 @@ class DeskletsViewSidePage (SidePage):
         self.settings.set_int("next-desklet-id", i+1);
 
         # Write settings
-        self.enabled_desklets.append("%s:%s:0:0" % (uuid, i))
-        self.settings.set_strv('enabled-desklets', self.enabled_desklets)
+        enabled_desklets = self.settings.get_strv('enabled-desklets')
+        enabled_desklets.append("%s:%s:0:0" % (uuid, i))
+        self.settings.set_strv('enabled-desklets', enabled_desklets)
 
     def query_uninstall(self, button):
         selected_items = self.iconView.get_selected_items()
@@ -210,10 +207,8 @@ class DeskletsViewSidePage (SidePage):
         dialog.destroy()
 
     def remove_desklet(self, uuid):
-        for enabled_desklet in self.enabled_desklets:
+        enabled_desklets_list = self.settings.get_strv('enabled-desklets')
+        for enabled_desklet in enabled_desklets_list:
             if uuid in enabled_desklet:
-                self.enabled_desklets.remove(enabled_desklet)
-        self.settings.set_strv('enabled-desklets', self.enabled_desklets)
-
-    def on_settings_changed(self, settings, key):
-        self.build()
+                enabled_desklets_list.remove(enabled_desklet)
+        self.settings.set_strv('enabled-desklets', enabled_desklets_list)
