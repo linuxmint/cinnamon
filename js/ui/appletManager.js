@@ -14,6 +14,7 @@ var appletMeta;
 var applets;
 // Maps appletId -> applet objects
 const appletObj = {};
+var appletsLoaded = false;
 
 // An applet can assume a role
 // Instead of hardcoding looking for a particular applet,
@@ -34,6 +35,7 @@ function init() {
     applets = Extension.importObjects;
 
     let foundAtLeastOneApplet = false;
+    appletsLoaded = false;
     
     // Load all applet extensions, the applets themselves will be added in finishExtensionLoad
     enabledAppletDefinitions = getEnabledAppletDefinitions();
@@ -41,6 +43,7 @@ function init() {
         Extension.loadExtension(uuid, Extension.Type.APPLET);
         foundAtLeastOneApplet = true;
     }
+    appletsLoaded = true;
     
     global.settings.connect('changed::enabled-applets', onEnabledAppletsChanged);
     
@@ -275,7 +278,7 @@ function addAppletToPanels(extension, appletDefinition) {
         }
         extension._loadedDefinitions[appletDefinition.appletId] = appletDefinition;
         
-        applet.onAppletAddedToPanel();
+        applet.on_applet_added_to_panel(appletsLoaded);
     }
     catch(e) {
         extension.unlockRole();
