@@ -51,6 +51,18 @@
       </_description>
     </key>
 
+    <key name="desklet-snap" type="b">
+      <default>true</default>
+      <_summary> Whether desklets "snap" to a grid position</_summary>
+      <_description> Enabling this allows desklets' position to be snapped into a regular grid</_description>
+    </key>
+
+    <key name="desklet-snap-interval" type="i">
+      <default>25</default>
+      <_summary>The interval between each possible grid position when desklets "snap"</_summary>
+      <_description>If desklet-snap is enabled, the possible positions of desklets will be all integer multiples of the value of "desklet-snap-size"</_description>
+    </key>
+
     <key name="panel-autohide" type="b">
       <default>false</default>
       <_summary>Auto-hide panel</_summary>
