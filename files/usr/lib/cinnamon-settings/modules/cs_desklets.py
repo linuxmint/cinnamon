@@ -108,8 +108,14 @@ class DeskletsViewSidePage (SidePage):
 
         label = Gtk.Label()
         label.set_markup("<i><small>%s\n%s</small></i>" % (_("Note: Some desklets require the border/header to be always preset"), _("Such requirements override the settings selected here")))
+
+        desklet_snap = GSettingsCheckButton(_("Snap desklets to grip"), "org.cinnamon", "desklet-snap", None)
+        desklet_snap_interval = GSettingsSpinButton(_("Width of desklet snap grid"), "org.cinnamon", "desklet-snap-interval", "org.cinnamon/desklet-snap", 0, 100, 1, 5, "")
+
         config_vbox.pack_start(min_dec_combo, False, False, 2)
         config_vbox.pack_start(label, False, False, 2)
+        config_vbox.pack_start(desklet_snap, False, False, 2)
+        config_vbox.pack_start(desklet_snap_interval, False, False, 2)
 
         # Show widgets
         self.content_box.add(notebook)
