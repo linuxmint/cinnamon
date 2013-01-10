@@ -163,23 +163,9 @@ class DeskletsViewSidePage (SidePage):
         self.active_desklet_path = path
         uuid = self.model.get_value(iterator, 0)
 
-        # Find other instances of the same desklet. Need to find an id for the new desklet
-        other_instances = []
-        for enabled_desklet in self.enabled_desklets:
-            if uuid in enabled_desklet:
-                other_instances.append(enabled_desklet)
-
-        # Replace each desklet definition in other_instances with the id
-        for i in range(len(other_instances)):
-            elements = other_instances[i].split(":")
-            other_instances[i] = int(elements[1])
-
         # Find the smallest possible id
-        i = 0
-        while True:
-            if i not in other_instances:
-                break
-            i = i + 1
+        i = self.settings.get_int("next-desklet-id")
+        self.settings.set_int("next-desklet-id", i+1);
 
         # Write settings
         self.enabled_desklets.append("%s:%s:0:0" % (uuid, i))
