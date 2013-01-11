@@ -3,6 +3,7 @@
 from SettingsWidgets import *
 import os
 import os.path
+import shutil
 from gi.repository import Gio, Gtk, GObject, Gdk
 
 home = os.path.expanduser("~")
@@ -183,21 +184,17 @@ class DeskletsViewSidePage (SidePage):
         name = self.model.get_value(iterator, 3)
         directory = self.model.get_value(iterator, 4)
 
-        dialog = Gtk.Dialog(_("Uninstall " + name),
-                            self.content_box.get_window(),
-                            Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT)
-        dialog.add_button(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL)
-        dialog.add_button(Gtk.STOCK_OK, Gtk.ResponseType.YES)
-
-        content_area = dialog.get_content_area()
-        label = Gtk.Label(_("Are you sure you want to uninstall") + name + _("?"))
-        content_area.add(label)
-        dialog.show_all()
+        dialog = Gtk.MessageDialog(self.content_box.get_toplevel(),
+                                   Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,
+                                   Gtk.MessageType.QUESTION,
+                                   Gtk.ButtonsType.YES_NO,
+                                   _("Are you sure you want to uninstall ") + name + _("?"));
         response = dialog.run()
         if response == Gtk.ResponseType.YES:
             try:
                 shutil.rmtree(directory + "/" + uuid)
                 self.remove_desklet(uuid)
+                self.model.remove(iterator)
             except Exception, details:
                 print "Failed to uninstall desklet %s: %s" % (uuid, details)
 
