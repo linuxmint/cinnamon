@@ -663,7 +663,11 @@ Extensions.prototype = {
         // that's not really a proper extension. Don't bother with these.
         if (!meta.name)
             return;
-            
+
+        // If extension is broken
+        if (!Extension.objects[uuid])
+            return;
+
         // Only load extensions
         if(Extension.objects[uuid].type.name != this.type.name)
             return;
