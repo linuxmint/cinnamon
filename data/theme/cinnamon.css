@@ -1653,6 +1653,10 @@ StScrollBar StButton#vhandle:hover {
     padding: 6px;
 }
 
+.desklet-drag-placeholder { 
+    border: 2px solid #6daa00;
+    background-color: rgba(109,170, 0, 0.3);
+}
 /* ===================================================================
  * Clock Desklet (desklet.js) 
  * ===================================================================*/
