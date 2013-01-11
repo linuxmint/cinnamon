@@ -904,6 +904,9 @@ LookingGlass.prototype = {
         this._extensions = new Extensions(Extension.Type.EXTENSION);
         notebook.appendPage('Extensions', this._extensions.actor);
 
+        this._desklets = new Extensions(Extension.Type.DESKLET);
+        notebook.appendPage('Desklets', this._desklets.actor);
+
         this._entry.clutter_text.connect('activate', Lang.bind(this, function (o, e) {
             let text = o.get_text();
             // Ensure we don't get newlines in the command; the history file is
