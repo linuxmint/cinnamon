@@ -25,7 +25,7 @@ const DESKLET_SNAP_KEY = 'desklet-snap';
 const DESKLET_SNAP_INTERVAL_KEY = 'desklet-snap-interval';
 /**
  * init:
- * 
+ *
  * Initialize desklet manager
  */
 function init(){
@@ -36,7 +36,7 @@ function init(){
     for (let uuid in enabledDeskletDefinitions.uuidMap) {
         Extension.loadExtension(uuid, Extension.Type.DESKLET);
     }
-    
+
     global.settings.connect('changed::' + ENABLED_DESKLETS_KEY, _onEnabledDeskletsChanged);
     global.settings.connect('changed::' + DESKLET_SNAP_KEY, _onDeskletSnapChanged);
     global.settings.connect('changed::' + DESKLET_SNAP_INTERVAL_KEY, _onDeskletSnapChanged);
@@ -46,7 +46,7 @@ function init(){
  * removeDesklet:
  * @uuid: uuid of the desklet
  * @desklet_id: id of the desklet
- * 
+ *
  * Disable and remove the desklet @uuid:@desklet_id
  */
 function removeDesklet(uuid, desklet_id){
@@ -61,7 +61,7 @@ function removeDesklet(uuid, desklet_id){
 
 /**
  * getEnabledDeskletDefinitons:
- * 
+ *
  * Gets the list of enabled desklets. Returns an associative array of three items:
  * raw: the unprocessed array from gsettings
  * uuidMap: maps uuid -> list of desklet definitions
@@ -76,7 +76,7 @@ function getEnabledDeskletDefinitions() {
         // maps desklet_id -> single desklet definition
         idMap: {}
     };
-    
+
     // Parse all definitions
     for (let i=0; i<result.raw.length; i++) {
         let deskletDefinition = _getDeskletDefinition(result.raw[i]);
@@ -87,7 +87,7 @@ function getEnabledDeskletDefinitions() {
             result.idMap[deskletDefinition.desklet_id] = deskletDefinition;
         }
     }
-    
+
     return result;
 }
 
@@ -131,7 +131,7 @@ function _onEnabledDeskletsChanged(){
         for (let desklet_id in newEnabledDeskletDefinitions.idMap) {
             let newDef = newEnabledDeskletDefinitions.idMap[desklet_id];
             let oldDef = enabledDeskletDefinitions.idMap[desklet_id];
-            
+
             if(!oldDef || !_deskletDefinitionsEqual(newDef, oldDef)) {
                 let extension = Extension.objects[newDef.uuid];
                 if(extension) {
@@ -141,7 +141,7 @@ function _onEnabledDeskletsChanged(){
         }
 
         enabledDeskletDefinitions = newEnabledDeskletDefinitions;
-        
+
         // Make sure all desklet extensions are loaded.
         // Once loaded, the desklets will add themselves via finishExtensionLoad
         for (let uuid in enabledDeskletDefinitions.uuidMap) {
@@ -245,11 +245,12 @@ function _onDeskletSnapChanged(){
     }
 
     global.settings.set_strv(ENABLED_DESKLETS_KEY, enabledDesklets);
+    return;
 }
 
 /**
  * DeskletContainer
- * 
+ *
  * Container that contains manages all desklets actors
  */
 function DeskletContainer(){
@@ -260,12 +261,15 @@ DeskletContainer.prototype = {
     _init: function(){
         this.actor = new Clutter.Group();
         this.actor._delegate = this;
+
+        this._dragPlaceholder = new St.Bin({style_class: 'desklet-drag-placeholder'});
+        this._dragPlaceholder.hide();
     },
 
     /**
      * addDesklet:
      * @actor: actor of desklet to be added
-     * 
+     *
      * Adds @actor to the desklet container
      */
     addDesklet: function(actor){
@@ -275,13 +279,29 @@ DeskletContainer.prototype = {
     /**
      * contains:
      * @actor
-     * 
+     *
      * Whether the desklet container contains @actor
      */
     contains: function(actor){
         return this.actor.contains(actor);
     },
 
+    handleDragOver: function(source, actor, x, y, time) {
+        if (!global.settings.get_boolean(DESKLET_SNAP_KEY))
+            return DND.DragMotionResult.MOVE_DROP;
+
+        if (!this._dragPlaceholder.get_parent())
+            Main.uiGroup.add_actor(this._dragPlaceholder);
+
+        this._dragPlaceholder.show();
+        let interval = global.settings.get_int(DESKLET_SNAP_INTERVAL_KEY);
+        x = Math.floor(actor.get_x()/interval)*interval;
+        y = Math.floor(actor.get_y()/interval)*interval;
+        this._dragPlaceholder.set_position(x,y);
+        this._dragPlaceholder.set_size(actor.get_width(), actor.get_height());
+
+        return DND.DragMotionResult.MOVE_DROP;
+    },
 
     acceptDrop: function(source, actor, x, y, time) {
         if (!(source instanceof Desklet.Desklet)) return false;
@@ -310,6 +330,7 @@ DeskletContainer.prototype = {
 
         global.settings.set_strv(ENABLED_DESKLETS_KEY, enabledDesklets);
 
+        this._dragPlaceholder.hide();
         return true;
     }
 };
