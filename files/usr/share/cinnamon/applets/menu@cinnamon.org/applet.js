@@ -1392,18 +1392,15 @@ MyApplet.prototype = {
         this.applicationsScrollBox.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC);
         this.categoriesApplicationsBox.actor.add_actor(this.categoriesBox);
         this.categoriesApplicationsBox.actor.add_actor(this.applicationsScrollBox);
-                     
-        this._refreshFavs();
-                                                          
+
         this.mainBox = new St.BoxLayout({ style_class: 'menu-applications-box', vertical:false });       
-                
+
         this.mainBox.add_actor(leftPane, { span: 1 });
         this.mainBox.add_actor(rightPane, { span: 1 });
-        
+
         section.actor.add_actor(this.mainBox);
-        
-	this.applicationsByCategory = {};
-        this._refreshApps();
+
+        this.applicationsByCategory = {};
 
         this.selectedAppBox = new St.BoxLayout({ style_class: 'menu-selected-app-box', vertical: true });
         this.selectedAppTitle = new St.Label({ style_class: 'menu-selected-app-title', text: "" });
@@ -1411,6 +1408,10 @@ MyApplet.prototype = {
         this.selectedAppDescription = new St.Label({ style_class: 'menu-selected-app-description', text: "" });
         this.selectedAppBox.add_actor(this.selectedAppDescription);
         section.actor.add_actor(this.selectedAppBox);
+
+        this._refreshFavs();
+        this._refreshApps();
+
         this.appBoxIter = new VisibleChildIterator(this, this.applicationsBox);
         this.applicationsBox._vis_iter = this.appBoxIter;
         this.catBoxIter = new VisibleChildIterator(this, this.categoriesBox);
