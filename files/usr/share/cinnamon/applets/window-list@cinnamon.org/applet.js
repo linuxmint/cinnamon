@@ -809,6 +809,7 @@ MyApplet.prototype = {
             this._alertWindows = new Array();
             let tracker = Cinnamon.WindowTracker.get_default();
             tracker.connect('notify::focus-app', Lang.bind(this, this._onFocus));
+            global.screen.get_display().connect('notify::focus-window', Lang.bind(this, this._onFocusWindow));
 
             this.switchWorkspaceHandler = global.window_manager.connect('switch-workspace',
                                             Lang.bind(this, this._refreshItems));
@@ -879,14 +880,14 @@ MyApplet.prototype = {
     _onWindowDemandsAttention : function(display, window) {
         for ( let i=0; i<this._windows.length; ++i ) {
             if ( this._windows[i].metaWindow == window ) {
-                if (!this._windows[i].actor._delegate.getAttention()) {
+                if (this._windows[i].actor._delegate.getAttention()) {
+                    let alertButton = new AppMenuButton(this, window, true, this.orientation, this._panelHeight, false);
+                    this._alertWindows.push(alertButton);
+                    this.calculate_alert_positions();
                     return;
                 }
             }
         }
-        let alertButton = new AppMenuButton(this, window, true, this.orientation, this._panelHeight, false);
-        this._alertWindows.push(alertButton);
-        this.calculate_alert_positions();
     },
 
     _clean_alert_boxes: function() {
@@ -928,6 +929,16 @@ MyApplet.prototype = {
             let window = this._windows[i];                        
             window.set_icon(this._panelHeight);
             window.doFocus();
+        }
+    },
+
+    _onFocusWindow: function(display) {
+        let currentWindow = display.focus_window;
+        if (currentWindow && this._alertWindows.length) {
+            this._alertWindows = this._alertWindows.filter(function(alertWindow) {
+                return alertWindow.metaWindow != currentWindow;
+            }, this);
+            this.calculate_alert_positions();
         }
     },
 
