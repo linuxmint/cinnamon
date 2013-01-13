@@ -730,6 +730,8 @@
   <schema id="org.cinnamon.desklets" path="/org/cinnamon/desklets/"
         gettext-domain="@GETTEXT_PACKAGE@">
     <child name="clock" schema="org.cinnamon.desklets.clock"/>
+    <child name="launcher" schema="org.cinnamon.desklets.launcher"/>
+    <child name="photoframe" schema="org.cinnamon.desklets.photoframe"/>
   </schema>
 
   <schema id="org.cinnamon.desklets.clock" path="/org/cinnamon/desklets/clock/"
@@ -748,15 +750,71 @@
       <_description> The font size to be used to display the time on the clock desklet</_description>
     </key>
   </schema>
+
   <schema id="org.cinnamon.desklets.launcher" path="/org/cinnamon/desklets/launcher/"
         gettext-domain="@GETTEXT_PACKAGE@">
     <key name="launcher-list" type="as">
       <default>[]</default>
       <_summary>Desktop files of the applications to be shown on desktop</_summary>
       <_description>
-	The "launchers" desklet provides a method to show a launcher on the desktop
-	This list maps the desklet id to the desktop file of application.
+        The "launchers" desklet provides a method to show a launcher on the desktop
+        This list maps the desklet id to the desktop file of application.
       </_description>
+    </key>
+  </schema>
+
+  <schema id="org.cinnamon.desklets.photoframe" path="/org/cinnamon/desklets/photoframe/"
+        gettext-domain="@GETTEXT_PACHAGE@">
+    <key name="effect" type="a{ss}">
+      <default>{}</default>
+      <_summary>The special effect applied on the photo when displaying</_summary>
+      <_description>
+        The special effect applied on the photo when displaying. Possible effects
+        are "color" (default), "black-and-white", and "sepia"
+      </_description>
+    </key>
+
+    <key name="directory" type="a{ss}">
+      <default>{}</default>
+      <_summary>The directory to find the photos in</_summary>
+    </key>
+
+    <key name="shuffle" type="a{sb}">
+      <default>{}</default>
+      <_summary>Whether the photos are shuffled into random orders</_summary>
+    </key>
+
+    <key name="delay" type="a{si}">
+      <default>{}</default>
+      <_summary>How long each photo is displayed</_summary>
+    </key>
+
+    <key name="height" type="a{si}">
+      <default>{}</default>
+      <_summary>Height of photo frame</_summary>
+    </key>
+
+    <key name="width" type="a{si}">
+      <default>{}</default>
+      <_summary>Width of photo frame</_summary>
+    </key>
+
+    <key name="quality" type="a{si}">
+      <default>{}</default>
+      <_summary>Display quality of the photo</_summary>
+      <_description>
+        Quality of the photo:
+        0: Fastest rendering will use nearst neighbout interpolation when rendering. Good setting.
+        1: Higher quality rendering wihtout using extra resources.
+        2: Render the texture with the best quality available using extra memory.
+
+        If you're going for a small frame, keep the quality low.
+      </_description>
+    </key>
+
+    <key name="fade-delay" type="a{sd}">
+      <default>{}</default>
+      <_summary>Animation duration when switching between photos</_summary>
     </key>
   </schema>
 </schemalist>
