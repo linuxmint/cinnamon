@@ -176,8 +176,7 @@ function start() {
             }
             can_log = true;
         } catch (e) {
-            global.logError(e);
-            global.logError("Error during looking-glass log initialization");
+            global.logError("Error during looking-glass log initialization", e);
         }
     }
 
@@ -771,8 +770,12 @@ function _logInfo(msg) {
 }
 
 // If msg is an Error, its message will be printed as 'error' and its stack-trace will be printed as 'trace'
-function _logError(msg) {
-    if(isError(msg)) {
+function _logError(msg, error) {
+    if(error && isError(error)) {
+        _log('error', error.message);
+        _LogTraceFormatted(error.stack);
+        _log('error', msg);
+    } else if(isError(msg)) {
         _log('error', msg.message);
         _LogTraceFormatted(msg.stack);
     } else {

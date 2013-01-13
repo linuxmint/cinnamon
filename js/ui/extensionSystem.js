@@ -31,7 +31,7 @@ function prepareExtensionUnload(extension) {
     try {
         extension.module.disable();
     } catch (e) {
-        extension.logError('Failed to evaluate \'disable\' function:' + e);
+        extension.logError('Failed to evaluate \'disable\' function on extension: ' + extension.uuid, e);
     }
     delete extensionStateObjs[extension.uuid];
 }
@@ -46,13 +46,13 @@ function finishExtensionLoad(extension) {
     try {
         stateObj = extension.module.init(extension.meta);
     } catch (e) {
-        extension.logError('Failed to evaluate \'init\' function:' + e);
+        extension.logError('Failed to evaluate \'init\' function on extension: ' + extension.uuid, e);
         return false;
     }
     try {
         extension.module.enable();
     } catch (e) {
-        extension.logError('Failed to evaluate \'enable\' function:' + e);
+        extension.logError('Failed to evaluate \'enable\' function on extension: ' + extension.uuid, e);
         return false;
     }
     

@@ -194,8 +194,7 @@ function onEnabledAppletsChanged() {
         }
     }
     catch(e) {
-        global.logError(e);
-        global.logError('Failed to refresh list of applets ');
+        global.logError('Failed to refresh list of applets', e);
     }
 
     Main.statusIconDispatcher.redisplay();
@@ -207,8 +206,7 @@ function removeAppletFromPanels(appletDefinition) {
         try {
             applet._onAppletRemovedFromPanel();
         } catch (e) {
-            global.logError(e);
-            global.logError("Error during on_applet_removed_from_panel() call on applet: " + appletDefinition.uuid + "/" + appletDefinition.applet_id);
+            global.logError("Error during on_applet_removed_from_panel() call on applet: " + appletDefinition.uuid + "/" + appletDefinition.applet_id, e);
         }
 
         if (applet._panelLocation != null) {
@@ -277,7 +275,7 @@ function addAppletToPanels(extension, appletDefinition) {
     }
     catch(e) {
         extension.unlockRole();
-        extension.logError('Failed to load applet: ' + e);
+        extension.logError('Failed to load applet: ' + appletDefinition.uuid + "/" + appletDefinition.applet_id, e);
     }
 }
 
@@ -310,7 +308,7 @@ function createApplet(extension, appletDefinition) {
     try {
         applet = extension.module.main(extension.meta, orientation, panel_height, applet_id);
     } catch (e) {
-        extension.logError('Failed to evaluate \'main\' function:' + e);
+        extension.logError('Failed to evaluate \'main\' function on applet: ' + appletDefinition.uuid + "/" + appletDefinition.applet_id, e);
         return null;
     }
 

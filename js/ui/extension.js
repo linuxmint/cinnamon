@@ -168,12 +168,15 @@ Extension.prototype = {
         return '[%s "%s"]: %s'.format(this.type.name, this.uuid, message);
     },
 
-    logError: function (message, state) {
+    logError: function (message, error, state) {
         this.meta.state = state || State.ERROR;
         this.meta.error += message;
 
+        let errorMessage = this.formatError(message);
+        if(error)
+            global.logError(error);
+        global.logError(errorMessage);
         let err = new Error(this.formatError(message));
-        global.logError(err);
 
         // An error during initialization leads to unloading the extension again.
         if(this.meta.state == State.INITIALIZING) {
@@ -207,7 +210,7 @@ Extension.prototype = {
         } catch (e) {
             this.meta = createMetaDummy(this.uuid, oldPath, oldState);
             meta[this.uuid] = this.meta;
-            throw this.logError('Failed to load/parse metadata.json:' + e);
+            throw this.logError('Failed to load/parse metadata.json', e);
         }
     },
 
@@ -224,10 +227,10 @@ Extension.prototype = {
 
         // If cinnamon or js version are set, check them
         if('cinnamon-version' in this.meta && !versionCheck(this.meta['cinnamon-version'], Config.PACKAGE_VERSION)) {
-            throw this.logError('Extension is not compatible with current Cinnamon version', State.OUT_OF_DATE);
+            throw this.logError('Extension is not compatible with current Cinnamon version', null, State.OUT_OF_DATE);
         }
         if('js-version' in this.meta && !versionCheck(this.meta['js-version'], Config.GJS_VERSION)) {
-            throw this.logError('Extension is not compatible with current GJS version', State.OUT_OF_DATE);
+            throw this.logError('Extension is not compatible with current GJS version', null, State.OUT_OF_DATE);
         }
 
         // If a role is set, make sure it's a valid one
@@ -264,14 +267,14 @@ Extension.prototype = {
                 let themeContext = St.ThemeContext.get_for_stage(global.stage);
                 this.theme = themeContext.get_theme();
             } catch (e) {
-                throw this.logError('Error trying to get theme: ' + e);
+                throw this.logError('Error trying to get theme', e);
             }
 
             try {
                 this.theme.load_stylesheet(file.get_path());
                 this.stylesheet = file.get_path();
             } catch (e) {
-                throw this.logError('Stylesheet parse error: ' + e);
+                throw this.logError('Stylesheet parse error', e);
             }
         }
     },
@@ -281,8 +284,7 @@ Extension.prototype = {
             try {
                 this.theme.unload_stylesheet(this.stylesheet);
             } catch (e) {
-                global.logError(e);
-                global.logError('Error unloading stylesheet');
+                global.logError('Error unloading stylesheet', e);
             }
         }
     },
@@ -373,8 +375,7 @@ function loadExtension(uuid, type) {
             extension.finalize();
         } catch(e) {
             forgetExtension(uuid, false);
-            global.logError(e);
-            global.logError('Could not load ' + type.name.toLowerCase() + ' ' + uuid);
+            global.logError('Could not load ' + type.name.toLowerCase() + ' ' + uuid, e);
             return null;
         }
     }
@@ -392,8 +393,7 @@ function unloadExtension(uuid) {
         try {
             extension.type.callbacks.prepareExtensionUnload(extension);
         } catch(e) {
-            global.logError(e);
-            global.logError('Error disabling ' + extension.lowerType + ' ' + extension.uuid);
+            global.logError('Error disabling ' + extension.lowerType + ' ' + extension.uuid, e);
         }
         extension.unloadStylesheet();
 
@@ -448,8 +448,7 @@ function findExtensionDirectoryIn(uuid, dir) {
         fileEnum.close(null);
         return directory;
     } catch (e) {
-        global.logError(e);
-        global.logError('Error looking for extension ' + uuid + ' in directory ' + dir);
+        global.logError('Error looking for extension ' + uuid + ' in directory ' + dir, e);
        return null;
     }
 }

@@ -187,7 +187,7 @@ Cinnamon.prototype = {
             let result = Main.createLookingGlass().inspect(path);
             return getJsonReturnBS(result);
         } catch (e) {
-            global.log('inspect exception: ' + e);
+            global.logError('Error inspecting path: ' + path, e);
             return [false, ''];
         }
     },
@@ -197,7 +197,7 @@ Cinnamon.prototype = {
             let windowList = Main.createLookingGlass().getLatestWindowList();
             return getJsonReturnBS(windowList);
         } catch (e) {
-            global.log('window list exception: ' + e);
+            global.logError('Error getting latest window list', e);
             return [false, ''];
         }
     },
@@ -206,7 +206,7 @@ Cinnamon.prototype = {
         try {
             Main.createLookingGlass().startInspector(true);
         } catch (e) {
-            global.log('starting inspector exception: ' + e);
+            global.logError('Error starting inspector', e);
         }
     },
     

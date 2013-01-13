@@ -145,7 +145,7 @@ function _onEnabledDeskletsChanged(){
             Extension.loadExtension(uuid, Extension.Type.DESKLET);
         }
     } catch (e) {
-        global.logError('Failed to refresh list of desklets ' + e);
+        global.logError('Failed to refresh list of desklets', e);
     }
 }
 
@@ -155,7 +155,7 @@ function _unloadDesklet(deskletDefinition) {
         try {
             desklet.destroy();
         } catch (e) {
-            global.logError("Failed to destroy desket: " + deskletDefinition.uuid + "/" + deskletDefinition.desklet_id + ": " + e);
+            global.logError("Failed to destroy desket: " + deskletDefinition.uuid + "/" + deskletDefinition.desklet_id, e);
         }
 
         delete desklet._extension._loadedDefinitions[deskletDefinition.desklet_id];
@@ -179,7 +179,7 @@ function _loadDesklet(extension, deskletDefinition) {
         }
         extension._loadedDefinitions[deskletDefinition.desklet_id] = deskletDefinition;
     } catch (e) {
-        extension.logError('Failed to load desklet: ' + deskletDefinition.uuid + "/" + deskletDefinition.desklet_id + ": " + e);
+        extension.logError('Failed to load desklet: ' + deskletDefinition.uuid + "/" + deskletDefinition.desklet_id, e);
     }
 }
 
@@ -195,7 +195,7 @@ function _createDesklets(extension, deskletDefinition) {
     try {
         desklet = extension.module.main(extension.meta, desklet_id);
     } catch (e) {
-        extension.logError('Failed to evaluate \'main\' function:' + e);
+        extension.logError('Failed to evaluate \'main\' function on desklet: ' + deskletDefinition.uuid + "/" + deskletDefinition.desklet_id, e);
         return null;
     }
 
