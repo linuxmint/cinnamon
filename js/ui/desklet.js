@@ -144,7 +144,7 @@ Desklet.prototype = {
         }
     },
         
-    on_desklet_clicked: function(event) {
+    onDeskletClicked: function(event) {
         // Implemented by Desklets        
     },
 
@@ -156,7 +156,7 @@ Desklet.prototype = {
             if (this._menu.isOpen) {
                 this._menu.toggle();
             }
-            this.on_desklet_clicked(event);
+            this.onDeskletClicked(event);
         }
     },
 

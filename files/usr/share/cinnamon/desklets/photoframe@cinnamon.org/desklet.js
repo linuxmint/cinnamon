@@ -127,22 +127,16 @@ MyDesklet.prototype = {
         }       
     },
 
-    on_desklet_clicked: function(event){  
-        try {             
-            if (event.get_button() == 1) {
-                this._update();
-            }
-            else if (event.get_button() == 2) {     
-                Util.spawnCommandLine("xdg-open " + this.currentPicture);                
-            }            
-        }
-        catch (e) {
-            global.logError(e);
+    onDeskletClicked: function(event){
+        if (event.get_button() == 1) {
+            this._update();
+        } else if (event.get_button() == 2) {
+            Util.spawnCommandLine("xdg-open " + this.currentPicture);
         }
     }
 }
 
-function main(metadata, desklet_id){
+function main(metadata){
     let desklet = new MyDesklet(metadata);
     return desklet;
 }
