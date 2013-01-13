@@ -208,10 +208,13 @@ MyDesklet.prototype = {
                                             }
 
                                             if (respond) {
+                                                if (variable) {
+                                                    if (props[1] == "s")
+                                                        newSettings = "\"" + newSettings + "\""; // Add quotes to the value if it is a string
+                                                    eval(variable + '=' + newSettings);
+                                                }
                                                 if (callback)
                                                     callback();
-                                                if (variable)
-                                                    eval(variable + '=' + newSettings);
                                             }
                                         }, props, variable, callback));
     },
