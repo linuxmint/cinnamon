@@ -921,7 +921,7 @@ MyApplet.prototype = {
                     parent !== this._activeContainer && button !== this._previousTreeSelectedActor) {
                 this._previousTreeSelectedActor.style_class = "menu-category-button";
             }
-            if (parent != this._activeContainer) {
+            if (parent != this._activeContainer && parent._vis_iter) {
                 parent._vis_iter.reloadVisible();
             }
             let _maybePreviousActor = this._activeActor;
