@@ -224,7 +224,7 @@ MyDesklet.prototype = {
                                             }
                                         }, props, variable, callback));
     },
-    on_desklet_clicked: function(event){
+    onDeskletClicked: function(event){
         if (event.get_button() == 1) {
             this._update();
         } else if (event.get_button() == 2) {
@@ -233,7 +233,7 @@ MyDesklet.prototype = {
     }
 };
 
-function main(metadata, desklet_id){
-    let desklet = new MyDesklet(metadata, desklet_id);
+function main(metadata, deskletId){
+    let desklet = new MyDesklet(metadata, deskletId);
     return desklet;
 }
