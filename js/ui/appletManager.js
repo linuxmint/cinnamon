@@ -222,13 +222,17 @@ function removeAppletFromPanels(appletDefinition) {
 
 function addAppletToPanels(extension, appletDefinition) {
     // Try to lock the applets role
-    if(!extension.lockRole())
+    if(!extension.lockRole(null))
         return;
     
     try {
         // Create the applet
         let applet = createApplet(extension, appletDefinition);
         if(applet == null)
+            return;
+        
+        // Now actually lock the applets role and set the provider
+        if(!extension.lockRole(applet))
             return;
 
         applet._order = appletDefinition.order;
@@ -282,7 +286,7 @@ function addAppletToPanels(extension, appletDefinition) {
 
 function get_role_provider(role) {
     if (Extension.Type.APPLET.roles[role]) {
-        return Extension.Type.APPLET.roles[role];
+        return Extension.Type.APPLET.roles[role].roleProvider;
     }
     return null;
 }
