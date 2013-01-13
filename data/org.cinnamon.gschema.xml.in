@@ -812,9 +812,9 @@
       </_description>
     </key>
 
-    <key name="fade-delay" type="a{sd}">
+    <key name="fade-delay" type="a{si}">
       <default>{}</default>
-      <_summary>Animation duration when switching between photos</_summary>
+      <_summary>Animation duration (in milliseconds) when switching between photos</_summary>
     </key>
   </schema>
 </schemalist>

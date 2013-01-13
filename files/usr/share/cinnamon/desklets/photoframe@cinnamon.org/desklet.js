@@ -14,7 +14,7 @@ const SettingsProps = {
     DELAY: ['delay', 'i', 5],
     DIRECTORY: ['directory', 's', '~/Pictures'],
     EFFECT: ['effect', 's', 'color'],
-    FADE_DELAY: ['fade-delay', 'd', 0.3],
+    FADE_DELAY: ['fade-delay', 'i', 300],
     HEIGHT: ['height', 'i', 200],
     QUALITY: ['quality', 'i', 2],
     SHUFFLE: ['shuffle', 'b', true],
@@ -98,14 +98,14 @@ MyDesklet.prototype = {
             if (this.fadeDelay > 0) {
                 Tweener.addTween(this._clutterTexture,
                                  { opacity: 0,
-                                   time: this.fadeDelay,
+                                   time: this.fadeDelay/1000,
                                    transition: 'easeInSine',
                                    onComplete: Lang.bind(this, function() {
                                                              if (this._clutterTexture.set_from_file(file)) {
                                                                  this._photoFrame.set_child(this._clutterBox);
                                                              }
                                                              Tweener.addTween(this._clutterTexture, { opacity: 255,
-                                                                                                      time: this.fadeDelay,
+                                                                                                      time: this.fadeDelay/1000,
                                                                                                       transition: 'easeInSine'
                                                                                                     });
                                                          })
