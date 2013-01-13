@@ -404,6 +404,7 @@ _Draggable.prototype = {
                 global.set_cursor(cursor);
             }
             catch (e) {
+                global.logError(e);
                 global.logError("bad DragMotionResult: " + result);
             }
             return true;

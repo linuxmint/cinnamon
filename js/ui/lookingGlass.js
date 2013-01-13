@@ -35,6 +35,8 @@ var commandHeader = 'const Clutter = imports.gi.Clutter; ' +
                     'const color = function(pixel) { let c= new Clutter.Color(); c.from_pixel(pixel); return c; }; ' +
                     /* Special lookingGlass functions */
                        'const it = Main.lookingGlass.getIt(); ' +
+                    'const a = Lang.bind(Main.lookingGlass, Main.lookingGlass.getWindowApp); '+
+                    'const w = Lang.bind(Main.lookingGlass, Main.lookingGlass.getWindow); '+
                     'const r = Lang.bind(Main.lookingGlass, Main.lookingGlass.getResult); ';
 
 const HISTORY_KEY = 'looking-glass-history';
@@ -220,24 +222,46 @@ function WindowList() {
 
 WindowList.prototype = {
     _init : function () {
+        this.lastId = 0;
+        this.latestWindowList = [];
+        
         this.actor = new St.BoxLayout({ name: 'Windows', vertical: true, style: 'spacing: 8px' });
         let tracker = Cinnamon.WindowTracker.get_default();
         this._updateId = Main.initializeDeferredWork(this.actor, Lang.bind(this, this._updateWindowList));
         global.display.connect('window-created', Lang.bind(this, this._updateWindowList));
         tracker.connect('tracked-windows-changed', Lang.bind(this, this._updateWindowList));
     },
+    
+    getWindowById: function(id) {
+        let windows = global.get_window_actors();
+        for (let i = 0; i < windows.length; i++) {
+            let metaWindow = windows[i].metaWindow;
+            if(metaWindow._lgId === id)
+                return metaWindow;
+        }
+        return null;
+    },
 
     _updateWindowList: function() {
         this.actor.get_children().forEach(function (actor) { actor.destroy(); });
         let windows = global.get_window_actors();
         let tracker = Cinnamon.WindowTracker.get_default();
+        
+        let oldWindowList = this.latestWindowList;
+        this.latestWindowList = [];
         for (let i = 0; i < windows.length; i++) {
             let metaWindow = windows[i].metaWindow;
             // Avoid multiple connections
             if (!metaWindow._lookingGlassManaged) {
                 metaWindow.connect('unmanaged', Lang.bind(this, this._updateWindowList));
                 metaWindow._lookingGlassManaged = true;
+                
+                metaWindow._lgId = this.lastId;
+                this.lastId++;
             }
+            
+            let lgInfo = { id: metaWindow._lgId, title: metaWindow.title, wmclass: metaWindow.get_wm_class(), app: ''};
+            
             let box = new St.BoxLayout({ vertical: true });
             this.actor.add(box);
             let windowLink = new ObjLink(metaWindow, metaWindow.title);
@@ -254,10 +278,32 @@ WindowList.prototype = {
                 let appLink = new ObjLink(app, app.get_id());
                 propBox.add(appLink.actor, { y_fill: false });
                 propBox.add(icon, { y_fill: false });
+                
+                lgInfo.app = app.get_id();
             } else {
                 propsBox.add(new St.Label({ text: '<untracked>' }));
+                
+                lgInfo.app = '<untracked>';
+            }
+            
+            // Ignore menus
+            let wtype = metaWindow.get_window_type();
+            if(wtype != Meta.WindowType.MENU && wtype != Meta.WindowType.DROPDOWN_MENU && wtype != Meta.WindowType.POPUP_MENU)
+                this.latestWindowList.push(lgInfo);
+        }
+        
+        // Make sure the list changed before notifying listeneres
+        let changed = oldWindowList.length != this.latestWindowList.length;
+        if(!changed) {
+            for(let i=0; i<oldWindowList.length; i++) {
+                if(oldWindowList[i].id != this.latestWindowList[i].id) {
+                    changed = true;
+                    break;
+                }
             }
         }
+        if(changed)
+            Main.cinnamonDBusService.notifyLgWindowListUpdate();
     }
 };
 Signals.addSignalMethods(WindowList.prototype);
@@ -555,6 +601,7 @@ ErrorLog.prototype = {
         this.text.clutter_text.ellipsize = Pango.EllipsizeMode.NONE;
         this.text.clutter_text.line_wrap = true;
         this.actor.connect('notify::mapped', Lang.bind(this, this._renderText));
+        this.addedErrors = 0;
     },
 
     _formatTime: function(d){
@@ -570,13 +617,16 @@ ErrorLog.prototype = {
     _renderText: function() {
         if (!this.actor.mapped)
             return;
-        let text = this.text.text;
-        let stack = Main._getAndClearErrorStack();
-        for (let i = 0; i < stack.length; i++) {
-            let logItem = stack[i];
-            text += logItem.category + ' t=' + this._formatTime(new Date(logItem.timestamp)) + ' ' + logItem.message + '\n';
+
+        let stack = Main._errorLogStack;
+        if(stack.length > this.addedErrors) {
+            let text = this.text.text;
+            for (; this.addedErrors < stack.length; this.addedErrors++) {
+                let logItem = stack[this.addedErrors];
+                text += logItem.category + ' t=' + this._formatTime(new Date(logItem.timestamp)) + ' ' + logItem.message + '\n';
+            }
+            this.text.text = text;
         }
-        this.text.text = text;
     }
 };
 
@@ -766,6 +816,7 @@ LookingGlass.prototype = {
 
         this._offset = 0;
         this._results = [];
+        this.rawResults = [];
 
         // Sort of magic, but...eh.
         this._maxItems = 150;
@@ -800,19 +851,7 @@ LookingGlass.prototype = {
                                         icon_size: 24 });
         toolbar.add_actor(inspectIcon);
         inspectIcon.reactive = true;
-        inspectIcon.connect('button-press-event', Lang.bind(this, function () {
-            let inspector = new Inspector();
-            inspector.connect('target', Lang.bind(this, function(i, target, stageX, stageY) {
-                this._pushResult('<inspect x:' + stageX + ' y:' + stageY + '>',
-                                 target);
-            }));
-            inspector.connect('closed', Lang.bind(this, function() {
-                this.actor.show();
-                global.stage.set_key_focus(this._entry);
-            }));
-            this.actor.hide();
-            return true;
-        }));
+        inspectIcon.connect('button-press-event', Lang.bind(this, this.startInspector));
 
         let notebook = new Notebook();
         this._notebook = notebook;
@@ -875,6 +914,30 @@ LookingGlass.prototype = {
 
         this._resize();
     },
+    
+    startInspector: function(closeAfter) {
+        if (!this._open)
+            this.open();
+            
+        let inspector = new Inspector();
+        inspector.connect('target', Lang.bind(this, function(i, target, stageX, stageY) {
+            this._pushResult('<inspect x:' + stageX + ' y:' + stageY + '>',
+                             target);
+            if(closeAfter)
+                this.close();
+        }));
+        inspector.connect('closed', Lang.bind(this, function() {
+            this.actor.show();
+            global.stage.set_key_focus(this._entry);
+            if(closeAfter) {
+                this.actor.hide();
+                this.close();
+            }
+            Main.cinnamonDBusService.notifyLgInspectorDone();
+        }));
+        this.actor.hide();
+        return true;
+    },
 
     _updateFont: function() {
         let fontName = this._interfaceSettings.get_string('monospace-font-name');
@@ -891,6 +954,9 @@ LookingGlass.prototype = {
     _pushResult: function(command, obj) {
         let index = this._results.length + this._offset;
         let result = new Result('>>> ' + command, obj, index);
+        this.rawResults.push({command: command, type: typeof(obj), object: objectToString(obj), index: index});
+        Main.cinnamonDBusService.notifyLgResultUpdate();
+        
         this._results.push(result);
         this._resultsArea.add(result.actor);
         if (this._borderPaintTarget != null) {
@@ -964,12 +1030,69 @@ LookingGlass.prototype = {
         this._entry.text = '';
     },
 
+    inspect : function(path) {
+        let fullCmd = commandHeader + path;
+
+        let result = eval(fullCmd);
+        let resultObj = [];
+        for(key in result) {
+            let type = typeof(result[key]);
+            let value = result[key].toString();
+            
+            //fixme: move this shortvalue stuff to python lg
+            let shortValue = value;
+            if (value === undefined) {
+                value = "";
+                shortValue = "";
+            } else {
+                let i = value.indexOf('\n');
+                let j = value.indexOf('\r');
+                if( j != -1 && (i == -1 || i > j))
+                    i = j;
+                if(i != -1)
+                    shortValue = value.substr(0, i) + '.. <more>';
+            }
+            resultObj.push({ name: key, type: type, value: value, shortValue: shortValue});
+        }
+        
+        return resultObj;
+    },
+
     getIt: function () {
         return this._it;
     },
 
     getResult: function(idx) {
         return this._results[idx - this._offset].o;
+    },
+
+    addResult: function(path) {
+        let fullCmd = commandHeader + path;
+
+        let resultObj;
+        try {
+            resultObj = eval(fullCmd);
+        } catch (e) {
+            resultObj = '<exception ' + e + '>';
+        }
+        this._pushResult(path, resultObj);
+    },
+
+    getWindow: function(idx) {
+        return this._windowList.getWindowById(idx);
+    },
+
+    getWindowApp: function(idx) {
+        let metaWindow = this._windowList.getWindowById(idx)
+        if(metaWindow) {
+            let tracker = Cinnamon.WindowTracker.get_default();
+            return tracker.get_window_app(metaWindow);
+        }
+        return null;
+    },
+    
+    getLatestWindowList: function() {
+        return this._windowList.latestWindowList;
     },
 
     toggle: function() {
