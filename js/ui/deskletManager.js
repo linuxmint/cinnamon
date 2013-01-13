@@ -6,6 +6,7 @@ const GLib = imports.gi.GLib;
 const St = imports.gi.St;
 
 const Desklet = imports.ui.desklet;
+const DND = imports.ui.dnd;
 const Extension = imports.ui.extension;
 const Main = imports.ui.main;
 
