@@ -86,31 +86,36 @@ MyDesklet.prototype = {
         }
         this.updateInProgress = true;
         try {
-            let file = this._files.shift();
-            if (file != undefined && GLib.file_test(file, GLib.FileTest.EXISTS)) {
-                this._files.push(file);
-                if (this.fadeDelay > 0) {
-                    Tweener.addTween(this._clutterTexture, { opacity: 0,
-                        time: this.fadeDelay,
-                        transition: 'easeInSine',
-                        onComplete: Lang.bind(this, function() {
-                            if (this._clutterTexture.set_from_file(file)) {
-                                this._photoFrame.set_child(this._clutterBox);
-                            }
-                            Tweener.addTween(this._clutterTexture, { opacity: 255,
-                                time: this.fadeDealy,
-                                transition: 'easeInSine'
-                            });
-                        })
-                    });
+            let file;
+            if (!this.shuffle){
+                file = this._files.shift();
+                if (file != undefined && GLib.file_test(file, GLib.FileTest.EXISTS)) {
+                    this._files.push(file);
                 }
-                else {
-                    if (this._clutterTexture.set_from_file(file)) {
-                        this._photoFrame.set_child(this._clutterBox);
-                    }
-                }
-                this.currentPicture = file;
+            } else {
+                file = this._files[parseInt(Math.random() * this._files.length)];
             }
+            if (this.fadeDelay > 0) {
+                Tweener.addTween(this._clutterTexture,
+                                 { opacity: 0,
+                                   time: this.fadeDelay,
+                                   transition: 'easeInSine',
+                                   onComplete: Lang.bind(this, function() {
+                                                             if (this._clutterTexture.set_from_file(file)) {
+                                                                 this._photoFrame.set_child(this._clutterBox);
+                                                             }
+                                                             Tweener.addTween(this._clutterTexture, { opacity: 255,
+                                                                                                      time: this.fadeDelay,
+                                                                                                      transition: 'easeInSine'
+                                                                                                    });
+                                                         })
+                                 });
+            } else {
+                if (this._clutterTexture.set_from_file(file)) {
+                    this._photoFrame.set_child(this._clutterBox);
+                }
+            }
+            this.currentPicture = file;
         } catch (e) {
             global.logError(e);
         } finally {
