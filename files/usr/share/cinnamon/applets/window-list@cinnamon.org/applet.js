@@ -881,11 +881,14 @@ MyApplet.prototype = {
         for ( let i=0; i<this._windows.length; ++i ) {
             if ( this._windows[i].metaWindow == window ) {
                 if (this._windows[i].actor._delegate.getAttention()) {
+                    this._alertWindows = this._alertWindows.filter(function(alertWindow) {
+                        return alertWindow.metaWindow != window; // we don't want duplicates
+                    }, this);
                     let alertButton = new AppMenuButton(this, window, true, this.orientation, this._panelHeight, false);
                     this._alertWindows.push(alertButton);
                     this.calculate_alert_positions();
-                    return;
                 }
+                return;
             }
         }
     },
