@@ -144,6 +144,9 @@ void     cinnamon_global_init_xdnd                 (CinnamonGlobal  *global);
 
 void     cinnamon_global_reexec_self               (CinnamonGlobal  *global);
 
+const gchar *cinnamon_global_get_applet_setting (gchar *key);
+void cinnamon_global_set_applet_setting (gchar *key, gchar *value);
+
 G_END_DECLS
 
 #endif /* __CINNAMON_GLOBAL_H__ */
