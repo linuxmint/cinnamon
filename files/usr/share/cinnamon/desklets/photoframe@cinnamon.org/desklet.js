@@ -6,6 +6,7 @@ const Mainloop = imports.mainloop;
 const St = imports.gi.St;
 
 const Desklet = imports.ui.desklet;
+const PopupMenu = imports.ui.popupMenu;
 const Tweener = imports.ui.tweener;
 const Util = imports.misc.util;
 
@@ -73,6 +74,11 @@ MyDesklet.prototype = {
         this.updateInProgress = false;
         this.currentPicture = null;
         this._update_loop();
+
+	this._menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+	this._menu.addAction(_("Settings"), Lang.bind(this, function() {
+							  Util.spawnCommandLine("/usr/share/cinnamon/desklets/photoframe@cinnamon.org/settings.py " + this.deskletId);
+			     }));
     },
 
     _update_loop: function(){
