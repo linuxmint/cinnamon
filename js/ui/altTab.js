@@ -612,12 +612,7 @@ AltTabPopup.prototype = {
                 childBox.y1 = this.actor.y;
                 childBox.y2 = this.actor.y + this.actor.height;
                 backdrop.allocate(childBox, 0);
-                backdrop.opacity = 0;
-                Tweener.addTween(backdrop,
-                                { opacity: 255,
-                                time: PREVIEW_SWITCHER_FADEOUT_TIME,
-                                transition: 'linear'
-                                });
+                backdrop.opacity = 255;
             }
         }; // showPreview
 
