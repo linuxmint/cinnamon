@@ -184,6 +184,14 @@ AltTabPopup.prototype = {
         let activeWsIndex = global.screen.get_active_workspace_index();
         for (let i = 0, numws = global.screen.n_workspaces; i < numws; ++i) {
             let wlist = Main.getTabList(global.screen.get_workspace_by_index(i));
+
+            if (wlist.length && i != activeWsIndex) {
+                wlist = wlist.filter(function(window) {
+                    // We don't want duplicates
+                    return !window.is_on_all_workspaces();
+                }, this);
+            }
+
             if (!wlist.length && i == activeWsIndex) {
                 // If the current workspace is empty, it's easiest to insert a placeholder window,
                 // for which purpose the desktop should do fine.
