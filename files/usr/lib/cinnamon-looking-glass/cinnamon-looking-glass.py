@@ -5,6 +5,7 @@
 # - cinnamon --replace must work after this process is closed
 # - When cinnamon is restarted, there will be a new log stack, check how to append it cleanly to the old log.
 # - When cinnamon is completely restarted there are dbus errors, check why/how to fix
+#   - Add status display to see if cinnamon dbus is available or not
 # - Check out how this works with multi-monitor
 # - Add insert button to "simple types" inspect dialog ? is there actual use for these types inserted as results ?
 # - Additional (optional) log file viewers.
@@ -252,7 +253,9 @@ class CinnamonLog(dbus.service.Object):
         menu = Gtk.Menu()
         menu.append(self.createMenuItem('Restart Cinnamon', self.onRestartClicked))
         menu.append(self.createMenuItem('Reset Cinnamon Settings', self.onResetClicked))
-        menu.append(self.createMenuItem('Exit Looking Glass', self.onExitClicked))
+        menu.append(Gtk.SeparatorMenuItem())
+        menu.append(self.createMenuItem('About Melange', self.onAboutClicked))
+        menu.append(self.createMenuItem('Quit', self.onExitClicked))
         menu.show_all()
 
         button = Gtk.MenuButton(u"Actions \u25BE")
@@ -263,6 +266,19 @@ class CinnamonLog(dbus.service.Object):
         #fixme: gets killed when the python process ends, separate it!
         os.system("cinnamon --replace &")
 
+    def onAboutClicked(self, menuItem):
+        dialog = Gtk.MessageDialog(self.window, 0,
+                                   Gtk.MessageType.QUESTION, Gtk.ButtonsType.CLOSE);
+                                   
+        dialog.set_title("About Melange")
+        dialog.set_markup("<b>Melange</b> is a GTK3 alternative to the built-in javascript debugger <i>Looking Glass</i>"
+                           + "\n\nPressing <i>Escape</i> while Melange has focus will hide the window."
+                           +"\nIf you want to exit Melange, use ALT+F4 or the <u>Actions</u> menu button."
+                           + "\n\nIf you defined a hotkey for Melange, pressing it while Melange has focus will hide the window.")
+
+        dialog.run()
+        dialog.destroy()
+        
     def onExitClicked(self, menuItem):
         Gtk.main_quit()
 
