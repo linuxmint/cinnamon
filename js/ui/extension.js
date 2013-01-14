@@ -188,8 +188,7 @@ Extension.prototype = {
     },
 
     logWarning: function (message) {
-        let err = new Error(this.formatError('Warning: ' + message));
-        global.log(err);
+        global.logWarning(this.formatError(message));
     },
 
     loadMetaData: function(metadataFile) {

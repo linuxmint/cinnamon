@@ -838,7 +838,7 @@ MyApplet.prototype = {
         try{
            this.set_applet_icon_path(icon_file);               
         }catch(e){
-           global.log("WARNING : Could not load icon file \""+icon_file+"\" for menu button");
+           global.logWarning("Could not load icon file \""+icon_file+"\" for menu button");
         }
     },
 
