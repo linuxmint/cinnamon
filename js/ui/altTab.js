@@ -864,6 +864,7 @@ SwitcherList.prototype = {
     },
 
     highlight: function(index, justOutline) {
+        let direction = this._highlighted == -1 ? index - Math.floor(this._items.length/2) : index - this._highlighted;
         if (this._highlighted != -1) {
             this._items[this._highlighted].remove_style_pseudo_class('outlined');
             this._items[this._highlighted].remove_style_pseudo_class('selected');
@@ -877,48 +878,50 @@ SwitcherList.prototype = {
             else
                 this._items[this._highlighted].add_style_pseudo_class('selected');
         }
+        // If we're close to either the left or the right edge, we want to scroll
+        // the edge-most items into view.
+        let scrollMax = Math.min(7, Math.floor(this._items.length/4));
+        let ixScroll = direction > 0 ?
+            Math.min(index + scrollMax, this._items.length - 1) : // right
+            Math.max(index - scrollMax, 0); // left
 
-        let [absItemX, absItemY] = this._items[index].get_transformed_position();
+        let [absItemX, absItemY] = this._items[ixScroll].get_transformed_position();
         let [result, posX, posY] = this.actor.transform_stage_point(absItemX, 0);
         let [containerWidth, containerHeight] = this.actor.get_transformed_size();
-        if (posX + this._items[index].get_width() > containerWidth)
-            this._scrollToRight();
-        else if (posX < 0)
-            this._scrollToLeft();
 
-    },
+        if (direction > 0) {
+            if (ixScroll == this._items.length - 1) {
+                this._scrollableRight = false;
+                this._rightArrow.opacity = this._rightGradient.opacity = 0;
+            }
+            if (posX + this._items[ixScroll].get_width() >= containerWidth) {
+                this._scrollableLeft = true;
+                let monitor = Main.layoutManager.primaryMonitor;
+                let padding = this.actor.get_theme_node().get_horizontal_padding();
+                let parentPadding = this.actor.get_parent().get_theme_node().get_horizontal_padding();
+                let x = this._items[ixScroll].allocation.x2 - monitor.width + padding + parentPadding;
+                Tweener.addTween(this._list, { anchor_x: x,
+                    time: POPUP_SCROLL_TIME,
+                    transition: 'easeOutQuad'
+                });
+            }
+        }
+        else if (direction < 0) {
+            if (ixScroll == 0) {
+                this._scrollableLeft = false;
+                this._leftArrow.opacity = this._leftGradient.opacity = 0;
+            }
+            let padding = this.actor.get_theme_node().get_horizontal_padding();
+            if (posX <= padding) {
+                this._scrollableRight = true;
+                let x = this._items[ixScroll].allocation.x1;
+                Tweener.addTween(this._list, { anchor_x: x,
+                    time: POPUP_SCROLL_TIME,
+                    transition: 'easeOutQuad'
+                });
+            }
+        }
 
-    _scrollToLeft : function() {
-        let x = this._items[this._highlighted].allocation.x1;
-        this._scrollableRight = true;
-        Tweener.addTween(this._list, { anchor_x: x,
-                                        time: POPUP_SCROLL_TIME,
-                                        transition: 'easeOutQuad',
-                                        onComplete: Lang.bind(this, function () {
-                                                                        if (this._highlighted == 0) {
-                                                                            this._scrollableLeft = false;
-                                                                            this.actor.queue_relayout();
-                                                                        }
-                                                             })
-                        });
-    },
-
-    _scrollToRight : function() {
-        this._scrollableLeft = true;
-        let monitor = Main.layoutManager.primaryMonitor;
-        let padding = this.actor.get_theme_node().get_horizontal_padding();
-        let parentPadding = this.actor.get_parent().get_theme_node().get_horizontal_padding();
-        let x = this._items[this._highlighted].allocation.x2 - monitor.width + padding + parentPadding;
-        Tweener.addTween(this._list, { anchor_x: x,
-                                        time: POPUP_SCROLL_TIME,
-                                        transition: 'easeOutQuad',
-                                        onComplete: Lang.bind(this, function () {
-                                                                        if (this._highlighted == this._items.length - 1) {
-                                                                            this._scrollableRight = false;
-                                                                            this.actor.queue_relayout();
-                                                                        }
-                                                             })
-                        });
     },
 
     _itemActivated: function(n) {
