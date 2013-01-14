@@ -205,6 +205,11 @@ class CinnamonLog(dbus.service.Object):
         self.notebook.show()
         self.notebook.set_show_border(True)
         self.notebook.set_show_tabs(True)
+        
+        label = Gtk.Label("Melange")
+        label.set_markup("<u>Melange - Cinnamon Debugger</u> ")
+        label.show()
+        self.notebook.set_action_widget(label, Gtk.PackType.END)
 
         self.pages = {}
         self.createPage("Results", "results")
@@ -250,7 +255,7 @@ class CinnamonLog(dbus.service.Object):
         menu.append(self.createMenuItem('Exit Looking Glass', self.onExitClicked))
         menu.show_all()
 
-        button = Gtk.MenuButton("Actions")
+        button = Gtk.MenuButton(u"Actions \u25BE")
         button.set_popup(menu)
         return button
         
