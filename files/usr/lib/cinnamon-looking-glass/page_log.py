@@ -29,16 +29,16 @@ class LogView(Gtk.ScrolledWindow):
         self.addedMessages = 0
         self.firstMessageTime = None
         
-        self.enabledTypes = {'info': True, 'debug': True, 'error': True, 'trace': False }
+        self.enabledTypes = {'info': True, 'warning': True, 'error': True, 'trace': False }
         self.typeTags = {
             'info': self.textbuffer.create_tag("info", foreground="#1a6f18", invisible=self.enabledTypes["info"] != True, invisible_set=True),
-            'debug': self.textbuffer.create_tag("debug", foreground="#c8bf33", invisible=self.enabledTypes["debug"] != True, invisible_set=True),
+            'warning': self.textbuffer.create_tag("warning", foreground="#c8bf33", invisible=self.enabledTypes["warning"] != True, invisible_set=True),
             'error': self.textbuffer.create_tag("error", foreground="#9f1313", invisible=self.enabledTypes["error"] != True, invisible_set=True),
             'trace': self.textbuffer.create_tag("trace", foreground="#18186f", invisible=self.enabledTypes["trace"] != True, invisible_set=True)
             }
         
         #fixme: load all enabled types from gsettings
-        #self.enabledTypes = {'info': False, 'debug': False, 'error': False, 'trace': False }
+        #self.enabledTypes = {'info': False, 'warning': False, 'error': False, 'trace': False }
         #for key in data:
         #    self.enabledTypes[key] = True
         self.getUpdates()
@@ -92,7 +92,7 @@ class ModulePage(WindowAndActionBars):
         WindowAndActionBars.__init__(self, self.view)
         
         self.addToggleButton("info", "dialog-information", "Show/Hide Messages tagged as 'info'")
-        self.addToggleButton("debug", "dialog-warning", "Show/Hide Messages tagged as 'debug'")
+        self.addToggleButton("warning", "dialog-warning", "Show/Hide Messages tagged as 'warning'")
         self.addToggleButton("error", "dialog-error", "Show/Hide Messages tagged as 'error'")
         self.addToggleButton("trace", "dialog-question", "Show/Hide Messages tagged as 'trace'")
 

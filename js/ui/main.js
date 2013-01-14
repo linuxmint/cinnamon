@@ -156,9 +156,9 @@ function start() {
     // This is easier and faster than indirecting down into global
     // if we want to call back up into JS.
     global.logTrace = _logTrace;
-    global.logInfo = _logInfo;
+    global.logWarning = _logWarning;
     global.logError = _logError;
-    global.log = _logDebug;
+    global.log = _logInfo;
 
     if (global.settings.get_boolean("enable-looking-glass-logs")) {
         try {
@@ -326,7 +326,7 @@ function start() {
 
     global.stage.connect('captured-event', _globalKeyPressHandler);
 
-    global.logInfo('loaded at ' + _startDate);
+    global.log('loaded at ' + _startDate);
     log('Cinnamon started at ' + _startDate);
 
     let perfModuleName = GLib.getenv("CINNAMON_PERF_MODULE");
@@ -759,13 +759,13 @@ function _logTrace(msg) {
     }
 }
 
-// If msg is an Error, its message will be printed as 'info' and its stack-trace will be printed as 'trace'
-function _logInfo(msg) {
+// If msg is an Error, its message will be printed as 'warning' and its stack-trace will be printed as 'trace'
+function _logWarning(msg) {
     if(isError(msg)) {
-        _log('info', msg.message);
+        _log('warning', msg.message);
         _LogTraceFormatted(msg.stack);
     } else {
-        _log('info', msg);
+        _log('warning', msg);
     }
 }
 
@@ -783,13 +783,13 @@ function _logError(msg, error) {
     }
 }
 
-// If msg is an Error, its message will be printed as 'debug' and its stack-trace will be printed as 'trace'
-function _logDebug(msg) {
+// If msg is an Error, its message will be printed as 'info' and its stack-trace will be printed as 'trace'
+function _logInfo(msg) {
     if(isError(msg)) {
-        _log('debug', msg.message);
+        _log('info', msg.message);
         _LogTraceFormatted(msg.stack);
     } else {
-        _log('debug', msg);
+        _log('info', msg);
     }
 }
 
