@@ -228,16 +228,49 @@ class CinnamonLog(dbus.service.Object):
         
         table.attach(CommandLine(), column, column+1, 1, 2, Gtk.AttachOptions.EXPAND|Gtk.AttachOptions.FILL, 0, 3, 2)
         column += 1
-        
-        restartButton = Gtk.Button("Restart")
-        restartButton.connect("clicked", self.onRestartClicked)
-        table.attach(restartButton, column, column+1, 1, 2, 0, 0, 1)
+
+        actionButton = self.createActionButton()
+        table.attach(actionButton, column, column+1, 1, 2, 0, 0, 1)
         
         grip = ResizeGrip(self.window)
         table.attach(grip, 0, numColumns, 2, 3, Gtk.AttachOptions.EXPAND|Gtk.AttachOptions.FILL, 0, 0, 0)
         
         self.window.show_all()
         self.activatePage("results")
+
+    def createMenuItem(self, text, callback):
+        item = Gtk.MenuItem(text)
+        item.connect("activate", callback)
+        return item
+
+    def createActionButton(self):
+        menu = Gtk.Menu()
+        menu.append(self.createMenuItem('Restart Cinnamon', self.onRestartClicked))
+        menu.append(self.createMenuItem('Reset Cinnamon Settings', self.onResetClicked))
+        menu.append(self.createMenuItem('Exit Looking Glass', self.onExitClicked))
+        menu.show_all()
+
+        button = Gtk.MenuButton("Actions")
+        button.set_popup(menu)
+        return button
+        
+    def onRestartClicked(self, menuItem):
+        #fixme: gets killed when the python process ends, separate it!
+        os.system("cinnamon --replace &")
+
+    def onExitClicked(self, menuItem):
+        Gtk.main_quit()
+
+    def onResetClicked(self, menuItem):
+        dialog = Gtk.MessageDialog(self.window, 0,
+                                   Gtk.MessageType.WARNING, Gtk.ButtonsType.YES_NO,
+                                   "Reset all cinnamon settings to default?")
+        dialog.set_title("Warning: Trying to reset all cinnamon settings!")
+
+        response = dialog.run()
+        dialog.destroy()
+        if response == Gtk.ResponseType.YES:
+            os.system("gsettings reset-recursively org.cinnamon &")
 
     def onKeyPress(self, widget, event=None):
         if event.keyval == Gdk.KEY_Escape:
@@ -252,10 +285,6 @@ class CinnamonLog(dbus.service.Object):
         x,y=self.window.get_position()
         if x!= 0 or y != 0:
             self.window.move(0,0)
-        
-    def onRestartClicked(self, widget):
-        #fixme: gets killed when the python process ends, separate it!
-        os.system("cinnamon --replace &")
          
     def onPickerClicked(self, widget):
         cinnamonDBus.lgStartInspector()
