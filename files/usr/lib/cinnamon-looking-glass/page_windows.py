@@ -22,21 +22,21 @@ class ModulePage(BaseListView):
 
         # Popup menu
         self.popup = Gtk.Menu()
-        inspectApp = Gtk.MenuItem('Inspect Application')
-        inspectApp.connect("activate", self.onInspectApplication)
-        self.popup.append(inspectApp)
+
+        inspectWindow = Gtk.MenuItem('Inspect Window')
+        label = inspectWindow.get_children()[0]
+        label.set_markup("<b>" + inspectWindow.get_label() + "</b>")
+        inspectWindow.connect("activate", self.onInspectWindow)
+        self.popup.append(inspectWindow)
+
+        self.inspectApp = Gtk.MenuItem('Inspect Application')
+        self.inspectApp.connect("activate", self.onInspectApplication)
+        self.popup.append(self.inspectApp)
         self.popup.show_all()
 
     def cellDataFuncID(self, column, cell, model, iter, data=None):
         value = model.get_value(iter, 0)
         cell.set_property("text", "w(%d) / a(%d)" %  (value, value))
-        
-    def onInspectApplication(self, menuItem):
-        iter = self.store.get_iter(self.selectedPath)
-        id = self.store.get_value(iter, 0)
-        application = self.store.get_value(iter, 3)
-        
-        cinnamonLog.pages["inspect"].inspectElement("a(%d)" % id, "object", application, "<application>")
 
     def onRowActivated(self, treeview, path, view_column):
         iter = self.store.get_iter(path)
@@ -44,6 +44,20 @@ class ModulePage(BaseListView):
         title = self.store.get_value(iter, 1)
         
         cinnamonLog.pages["inspect"].inspectElement("w(%d)" % id, "object", title, "<window>")
+        
+    def onInspectWindow(self, menuItem):
+        iter = self.store.get_iter(self.selectedPath)
+        id = self.store.get_value(iter, 0)
+        title = self.store.get_value(iter, 1)
+        
+        cinnamonLog.pages["inspect"].inspectElement("w(%d)" % id, "object", title, "<window>")
+
+    def onInspectApplication(self, menuItem):
+        iter = self.store.get_iter(self.selectedPath)
+        id = self.store.get_value(iter, 0)
+        application = self.store.get_value(iter, 3)
+        
+        cinnamonLog.pages["inspect"].inspectElement("a(%d)" % id, "object", application, "<application>")
 
     def onButtonPress(self, treeview, event):
         if event.button == 3:
@@ -56,6 +70,11 @@ class ModulePage(BaseListView):
                 self.selectedPath = path
                 treeview.grab_focus()
                 treeview.set_cursor( path, col, 0)
+
+                iter = self.store.get_iter(self.selectedPath)
+                app = self.store.get_value(iter, 3)
+
+                self.inspectApp.set_sensitive(app != "<untracked>")
                 self.popup.popup( None, None, None, None, event.button, event.time)
             return True
 
