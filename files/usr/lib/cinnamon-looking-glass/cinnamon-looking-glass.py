@@ -211,8 +211,7 @@ class CinnamonLog(dbus.service.Object):
         self.createPage("Inspect", "inspect")
         self.createPage("Memory", "memory")
         self.createPage("Windows", "windows")
-        self.createDummyPage("Applets", "#1476 needs to be implemented first")
-        self.createDummyPage("Extensions", "#1476 needs to be implemented first")
+        self.createPage("Extensions", "extensions")
         self.createPage("Log", "log")
         self.createDummyPage("+", "on selection, watch a specified file for changes, similar to the log tab\nPredefined file viewers for cinnamon glass.log and stdout.log")
 

@@ -6,42 +6,48 @@ from gi.repository import Gio, Gtk, GObject, Gdk, Pango, GLib
 
 class ModulePage(pageutils.BaseListView):
     def __init__(self):
-        store = Gtk.ListStore(str, str, str, str, str, str)
+        store = Gtk.ListStore(str, str, str, str, str, str, str)
         pageutils.BaseListView.__init__(self, store)
         
         column = self.createTextColumn(0, "Status")
-        self.createTextColumn(1, "Name")
-        self.createTextColumn(2, "Description")
+        self.createTextColumn(1, "Type")
+        self.createTextColumn(2, "Name")
+        self.createTextColumn(3, "Description")
         self.getUpdates()
         #cinnamonDBus.connect_to_signal("lgExtensionListUpdate", self.getUpdates)
     
         self.popup = Gtk.Menu()
-        viewSource = Gtk.MenuItem('View Source')
-        viewSource.connect("activate", self.onViewSource)
-        self.popup.append(viewSource)
+
+        self.viewSource = Gtk.MenuItem('View Source')
+        self.viewSource.connect("activate", self.onViewSource)
+        self.popup.append(self.viewSource)
+
         reloadCode = Gtk.MenuItem('Reload Code')
         reloadCode.connect("activate", self.onReloadCode)
         self.popup.append(reloadCode)
-        viewWebPage = Gtk.MenuItem('View Web Page')
-        viewWebPage.connect("activate", self.onViewWebPage)
-        self.popup.append(viewWebPage)
+
+        self.viewWebPage = Gtk.MenuItem('View Web Page')
+        self.viewWebPage.connect("activate", self.onViewWebPage)
+        self.popup.append(self.viewWebPage)
+
         self.popup.show_all()
     
         self.treeView.connect("button-press-event", self.on_button_press_event)
 
     def onViewSource(self, menuItem):
         iter = self.store.get_iter(self.selectedPath)
-        folder = self.store.get_value(iter, 4)
+        folder = self.store.get_value(iter, 5)
         os.system("gnome-open \"" + folder + "\" &")
         
     def onReloadCode(self, menuItem):
         iter = self.store.get_iter(self.selectedPath)
-        uuid = self.store.get_value(iter, 3)
+        uuid = self.store.get_value(iter, 4)
         cinnamonDBus.lgReloadExtension(uuid)
         
     def onViewWebPage(self, menuItem):
         iter = self.store.get_iter(self.selectedPath)
-        url = self.store.get_value(iter, 5)
+        url = self.store.get_value(iter, 6)
+        os.system("gnome-open \"" + url + "\" &")
         
         
     def on_button_press_event(self, treeview, event):
@@ -55,6 +61,13 @@ class ModulePage(pageutils.BaseListView):
                 self.selectedPath = path
                 treeview.grab_focus()
                 treeview.set_cursor( path, col, 0)
+
+                iter = self.store.get_iter(self.selectedPath)
+                uuid = self.store.get_value(iter, 4)
+                url = self.store.get_value(iter, 6)
+
+                self.viewWebPage.set_sensitive(url != "")
+                self.viewSource.set_label(uuid + " (View Source)")
                 self.popup.popup( None, None, None, None, event.button, event.time)
             return True
 
@@ -63,4 +76,4 @@ class ModulePage(pageutils.BaseListView):
         data = json.loads(json_data)
         self.store.clear()
         for item in data:
-            self.store.append([item["status"], item["name"], item["description"], item["uuid"], item["folder"], item["url"]])
+            self.store.append([item["status"], item["type"], item["name"], item["description"], item["uuid"], item["folder"], item["url"]])

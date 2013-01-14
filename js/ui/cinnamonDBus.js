@@ -6,6 +6,7 @@ const Lang = imports.lang;
 const Config = imports.misc.config;
 const Flashspot = imports.ui.flashspot;
 const Main = imports.ui.main;
+const Extension = imports.ui.extension;
 
 const CinnamonIface = {
     name: 'org.Cinnamon',
@@ -48,6 +49,10 @@ const CinnamonIface = {
               { name: 'lgStartInspector',
                 inSignature: '',
                 outSignature: ''
+              },
+              { name: 'lgGetExtensionList',
+                inSignature: '',
+                outSignature: 'bs'
               },
               { name: 'ScreenshotArea',
                 inSignature: 'biiiibs',
@@ -207,6 +212,33 @@ Cinnamon.prototype = {
             Main.createLookingGlass().startInspector(true);
         } catch (e) {
             global.logError('Error starting inspector', e);
+        }
+    },
+    
+    lgGetExtensionList: function() {
+        try {
+            let extensionList = [];
+            for (let uuid in Extension.meta) {
+                let meta = Extension.meta[uuid];
+                // There can be cases where we create dummy extension metadata
+                // that's not really a proper extension. Don't bother with these.
+                if (meta.name) {
+                    extensionList.push({
+                        status: Extension.getMetaStateString(meta.state),
+                        name: meta.name,
+                        description: meta.description,
+                        uuid: uuid,
+                        folder: meta.path,
+                        url: meta.url ? meta.url : '',
+                        type: Extension.objects[uuid].type.name
+                    });
+                }
+            }
+        
+            return getJsonReturnBS(extensionList);
+        } catch (e) {
+            global.logError('Error getting the extension list', e);
+            return [false, ''];
         }
     },
     
