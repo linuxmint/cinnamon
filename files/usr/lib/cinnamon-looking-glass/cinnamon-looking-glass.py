@@ -6,7 +6,6 @@
 # - Check out how this works with multi-monitor
 # - Add insert button to "simple types" inspect dialog ? is there actual use for these types inserted as results ?
 # - Additional (optional) log file viewers.
-# - Applets/Extensions (#1476 needs to be implemented first)
 # - Remove javascript version ?
 # - Load all enabled log categories and window height from gsettings
 # - Make CommandLine entry & history work more like a normal terminal
