@@ -3,9 +3,6 @@
 # Todo:
 # - TextTag.invisible does not work nicely with scrollheight, check why
 # - cinnamon --replace must work after this process is closed
-# - When cinnamon is restarted, there will be a new log stack, check how to append it cleanly to the old log.
-# - When cinnamon is completely restarted there are dbus errors, check why/how to fix
-#   - Add status display to see if cinnamon dbus is available or not
 # - Check out how this works with multi-monitor
 # - Add insert button to "simple types" inspect dialog ? is there actual use for these types inserted as results ?
 # - Additional (optional) log file viewers.

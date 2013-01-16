@@ -14,7 +14,6 @@ class InspectView(BaseListView):
         self.createTextColumn(2, "Value")
         
         self.treeView.connect("row-activated", self.onRowActivated)
-        dbusManager.addReconnectCallback(self.clear)
         
     def onRowActivated(self, treeview, path, view_column):
         iter = self.store.get_iter(path)
@@ -24,9 +23,6 @@ class InspectView(BaseListView):
         path = self.store.get_value(iter, 4)
         
         self.parent.updateInspector(path, type, name, value, True)
-        
-    def clear(self):
-        self.store.clear()
         
     def setInspectionData(self, path, data):
         self.store.clear()
@@ -63,6 +59,13 @@ class ModulePage(WindowAndActionBars):
         
         self.currentInspection = None
         self.stack = []
+        dbusManager.addReconnectCallback(self.clear)
+
+    def clear(self):
+        self.pathLabel.set_text("<No selection done yet>")
+        self.typeLabel.set_text("")
+        self.nameLabel.set_text("")
+        self.view.store.clear()
 
     def onInsertButton(self, widget):
         if len(self.stack) > 0:
