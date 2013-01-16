@@ -43,7 +43,8 @@ class LogView(Gtk.ScrolledWindow):
         #    self.enabledTypes[key] = True
         self.getUpdates()
         
-        cinnamonDBus.connect_to_signal("lgLogUpdate", self.getUpdates)
+        dbusManager.connectToCinnamonSignal("lgLogUpdate", self.getUpdates)
+        dbusManager.addReconnectCallback(self.clear)
 
     def append(self, category, time, message):
         self.log.append(LogEntry(category, time, message))
@@ -65,15 +66,19 @@ class LogView(Gtk.ScrolledWindow):
         adj = self.get_vadjustment()
         #adj.set_upper(self.textview.get_allocated_height())
         
+    def clear(self):
+        self.append("warning", 0, "================ Cinnamon Restart ===============")
+        self.getUpdates()
+        
     def getUpdates(self):
-        success, json_data = cinnamonDBus.lgGetErrorStack()
+        success, json_data = dbusManager.cinnamonDBus.lgGetErrorStack()
         if success:
             try:
                 data = json.loads(json_data)
                 
-                # If this is a completely new log, start reading at the beginning
                 dataSize = len(data)
                 if dataSize > 0:
+                    # If this is a completely new log, start reading at the beginning
                     firstMessageTime = data[0]["timestamp"]
                     if self.addedMessages > dataSize or self.firstMessageTime != firstMessageTime:
                         self.firstMessageTime = firstMessageTime

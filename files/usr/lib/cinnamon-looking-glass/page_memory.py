@@ -14,6 +14,7 @@ class MemoryView(BaseListView):
         column.set_cell_data_func(self.rendererText, self.cellDataFuncSize)
         
         self.getUpdates()
+        dbusManager.addReconnectCallback(self.getUpdates)
 
     def cellDataFuncSize(self, column, cell, model, iter, data=None):
         value = model.get_value(iter, 1)
@@ -26,7 +27,7 @@ class MemoryView(BaseListView):
         
     def getUpdates(self, igno=None):
         self.store.clear()
-        success, json_data = cinnamonDBus.lgGetMemoryInfo()
+        success, json_data = dbusManager.cinnamonDBus.lgGetMemoryInfo()
         if success:
             try:
                 data = json.loads(json_data)
@@ -36,7 +37,7 @@ class MemoryView(BaseListView):
                 print e
 
     def onFullGc(self, widget):
-        cinnamonDBus.lgFullGc()
+        dbusManager.cinnamonDBus.lgFullGc()
         self.getUpdates()
 
 class ModulePage(WindowAndActionBars):

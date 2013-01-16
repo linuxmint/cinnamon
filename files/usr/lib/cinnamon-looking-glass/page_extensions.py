@@ -14,7 +14,8 @@ class ModulePage(pageutils.BaseListView):
         self.createTextColumn(2, "Name")
         self.createTextColumn(3, "Description")
         self.getUpdates()
-        #cinnamonDBus.connect_to_signal("lgExtensionListUpdate", self.getUpdates)
+        #dbusManager.connectToCinnamonSignal("lgExtensionListUpdate", self.getUpdates)
+        dbusManager.addReconnectCallback(self.getUpdates)
     
         self.popup = Gtk.Menu()
 
@@ -42,7 +43,7 @@ class ModulePage(pageutils.BaseListView):
     def onReloadCode(self, menuItem):
         iter = self.store.get_iter(self.selectedPath)
         uuid = self.store.get_value(iter, 4)
-        cinnamonDBus.lgReloadExtension(uuid)
+        dbusManager.cinnamonDBus.lgReloadExtension(uuid)
         
     def onViewWebPage(self, menuItem):
         iter = self.store.get_iter(self.selectedPath)
@@ -72,7 +73,7 @@ class ModulePage(pageutils.BaseListView):
             return True
 
     def getUpdates(self):
-        success, json_data = cinnamonDBus.lgGetExtensionList()
+        success, json_data = dbusManager.cinnamonDBus.lgGetExtensionList()
         data = json.loads(json_data)
         self.store.clear()
         for item in data:

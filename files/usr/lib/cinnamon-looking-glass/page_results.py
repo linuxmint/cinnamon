@@ -18,8 +18,9 @@ class ModulePage(BaseListView):
         self.treeView.connect("button-press-event", self.onButtonPress)
         
         self.getUpdates()
-        cinnamonDBus.connect_to_signal("lgResultUpdate", self.getUpdates)
-        cinnamonDBus.connect_to_signal("lgInspectorDone", self.onInspectorDone)
+        dbusManager.connectToCinnamonSignal("lgResultUpdate", self.getUpdates)
+        dbusManager.connectToCinnamonSignal("lgInspectorDone", self.onInspectorDone)
+        dbusManager.addReconnectCallback(self.getUpdates)
         
         #Popup menu
         self.popup = Gtk.Menu()
@@ -47,7 +48,7 @@ class ModulePage(BaseListView):
         
     def getUpdates(self):
         self.store.clear()
-        success, json_data = cinnamonDBus.lgGetResults()
+        success, json_data = dbusManager.cinnamonDBus.lgGetResults()
         if success:
             try:
                 data = json.loads(json_data)

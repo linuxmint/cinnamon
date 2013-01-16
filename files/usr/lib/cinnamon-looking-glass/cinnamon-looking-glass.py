@@ -159,12 +159,12 @@ class CommandLine(Gtk.Entry):
             self.set_text("")
             self.settings.set_strv("looking-glass-history", self.history)
             
-            cinnamonDBus.lgEval(command)
+            dbusManager.cinnamonDBus.lgEval(command)
    
 class CinnamonLog(dbus.service.Object):
-    def __init__ (self, bus, path, name):
+    def __init__ (self):
         self.window = None
-        dbus.service.Object.__init__ (self, bus, path, name)
+        dbus.service.Object.__init__ (self, dbusManager.sessionBus, LG_DBUS_PATH, LG_DBUS_NAME)
         
     @dbus.service.method (LG_DBUS_NAME, in_signature='', out_signature='')
     def show(self):
@@ -173,14 +173,13 @@ class CinnamonLog(dbus.service.Object):
                 self.window.hide()
             else:
                 self.window.present()
+                self.window.move(0,0)
+                self.window.focus()
         else:
             self.run()
             Gtk.main()
             
     def run(self):
-        global cinnamonDBus
-        cinnamonDBus = createCinnamonDBusProxy()
-        
         self.window = Gtk.Window(Gtk.WindowType.TOPLEVEL)
         screen = self.window.get_screen()
 
@@ -193,11 +192,10 @@ class CinnamonLog(dbus.service.Object):
         self.window.move(0,0)
         
         self.window.connect("delete_event", self.onDelete)
-        self.window.connect("configure-event", self.onConfigure)
         self.window.connect("key-press-event", self.onKeyPress)
 
         numRows = 3
-        numColumns = 5
+        numColumns = 6
         table = Gtk.Table(numRows, numColumns, False)
         self.window.add(table)
         
@@ -235,6 +233,13 @@ class CinnamonLog(dbus.service.Object):
         table.attach(CommandLine(), column, column+1, 1, 2, Gtk.AttachOptions.EXPAND|Gtk.AttachOptions.FILL, 0, 3, 2)
         column += 1
 
+        global statusLabel
+        statusLabel = Gtk.Label("Status")
+        statusLabel.set_markup(" <span foreground='red'>[ Cinnamon is OFFLINE! ]</span> ")
+        statusLabel.set_tooltip_text("The connection to cinnamon is broken")
+        table.attach(statusLabel, column, column+1, 1, 2, 0, 0, 1)
+        column += 1
+        
         actionButton = self.createActionButton()
         table.attach(actionButton, column, column+1, 1, 2, 0, 0, 1)
         
@@ -243,6 +248,7 @@ class CinnamonLog(dbus.service.Object):
         
         self.window.show_all()
         self.activatePage("results")
+        setStatus(True)
 
     def createMenuItem(self, text, callback):
         item = Gtk.MenuItem(text)
@@ -300,15 +306,9 @@ class CinnamonLog(dbus.service.Object):
     def onDelete(self, widget, event=None):
         Gtk.main_quit()
         return False
-        
-    def onConfigure(self, widget, event=None):
-        # Move back in place if necessary
-        x,y=self.window.get_position()
-        if x!= 0 or y != 0:
-            self.window.move(0,0)
          
     def onPickerClicked(self, widget):
-        cinnamonDBus.lgStartInspector()
+        dbusManager.cinnamonDBus.lgStartInspector()
         self.window.hide()
 
     def createDummyPage(self, text, description):
@@ -317,7 +317,7 @@ class CinnamonLog(dbus.service.Object):
         
     def createPage(self, text, moduleName):
         module = __import__("page_%s" % moduleName)
-        module.cinnamonDBus = cinnamonDBus
+        module.dbusManager = dbusManager
         module.cinnamonLog = self
         label = Gtk.Label(text)
         page = module.ModulePage()
@@ -329,24 +329,66 @@ class CinnamonLog(dbus.service.Object):
         page = self.notebook.page_num(self.pages[moduleName])
         self.notebook.set_current_page(page)
 
-def createCinnamonDBusProxy():
-    try:
-        proxy = dbus.SessionBus().get_object("org.Cinnamon", "/org/Cinnamon")
-        return proxy
-    except dbus.exceptions.DBusException as e:
-        print(e)
-        return None
+def setStatus(status):
+    if status:
+        statusLabel.hide()
+    else:
+        statusLabel.show()
+        
+class DBusManager:
+    def __init__ (self):
+        self.sessionBus = dbus.SessionBus ()
+        self.dbus = prox = self.createSessionDBusProxy("org.freedesktop.DBus", "/org/freedesktop/DBus")
+        self.dbus.connect_to_signal("NameOwnerChanged", self.onNameOwnerChanged)
+        
+        self.cinnamonSignals = []
+        self.cinnamonReconnectCallback = []
+        self.initCinnamonProxy()
+
+    def initCinnamonProxy(self):
+        self.cinnamonDBus = self.createSessionDBusProxy("org.Cinnamon", "/org/Cinnamon")
+        for callback in self.cinnamonReconnectCallback:
+            callback()
+        for name, callback in self.cinnamonSignals:
+            self.cinnamonDBus.connect_to_signal(name, callback)
+        
+    def addReconnectCallback(self, callback):
+        self.cinnamonReconnectCallback.append(callback)
+        
+    def connectToCinnamonSignal(self, name, callback):
+        self.cinnamonDBus.connect_to_signal(name, callback)
+        self.cinnamonSignals.append((name, callback))
+
+    def createSessionDBusProxy(self, name, path):
+        try:
+            proxy = self.sessionBus.get_object(name, path)
+            return proxy
+        except dbus.exceptions.DBusException as e:
+            print(e)
+            return None
+            
+    def onNameOwnerChanged(self, name, old, new):
+        if name == "org.Cinnamon":
+            if new == "":
+                print "Cinnamon offline"
+                setStatus(False)
+            else:
+                print "Cinnamon online"
+                setStatus(True)
+                self.initCinnamonProxy()
 
 if __name__ == "__main__":
     GObject.type_register(ResizeGrip)
     DBusGMainLoop(set_as_default=True)
 
-    bus = dbus.SessionBus ()
-    request = bus.request_name(LG_DBUS_NAME, dbus.bus.NAME_FLAG_DO_NOT_QUEUE)
+    global dbusManager
+    dbusManager = DBusManager()
+    
+    request = dbusManager.sessionBus.request_name(LG_DBUS_NAME, dbus.bus.NAME_FLAG_DO_NOT_QUEUE)
     if request != dbus.bus.REQUEST_NAME_REPLY_EXISTS:
-        app = CinnamonLog(bus, LG_DBUS_PATH, LG_DBUS_NAME)
+        app = CinnamonLog()
     else:
-        object = bus.get_object(LG_DBUS_NAME, LG_DBUS_PATH)
+        object = dbusManager.sessionBus.get_object(LG_DBUS_NAME, LG_DBUS_PATH)
         app = dbus.Interface(object, LG_DBUS_NAME)
 
     app.show()

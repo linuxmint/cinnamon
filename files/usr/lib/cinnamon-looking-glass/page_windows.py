@@ -15,7 +15,8 @@ class ModulePage(BaseListView):
         self.createTextColumn(3, "Application")
         
         self.getUpdates()
-        cinnamonDBus.connect_to_signal("lgWindowListUpdate", self.getUpdates)
+        dbusManager.connectToCinnamonSignal("lgWindowListUpdate", self.getUpdates)
+        dbusManager.addReconnectCallback(self.getUpdates)
     
         self.treeView.connect("row-activated", self.onRowActivated)
         self.treeView.connect("button-press-event", self.onButtonPress)
@@ -80,7 +81,7 @@ class ModulePage(BaseListView):
 
     def getUpdates(self):
         self.store.clear()
-        success, json_data = cinnamonDBus.lgGetLatestWindowList()
+        success, json_data = dbusManager.cinnamonDBus.lgGetLatestWindowList()
         if success:
             try:
                 data = json.loads(json_data)

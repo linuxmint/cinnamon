@@ -14,6 +14,7 @@ class InspectView(BaseListView):
         self.createTextColumn(2, "Value")
         
         self.treeView.connect("row-activated", self.onRowActivated)
+        dbusManager.addReconnectCallback(self.clear)
         
     def onRowActivated(self, treeview, path, view_column):
         iter = self.store.get_iter(path)
@@ -23,6 +24,9 @@ class InspectView(BaseListView):
         path = self.store.get_value(iter, 4)
         
         self.parent.updateInspector(path, type, name, value, True)
+        
+    def clear(self):
+        self.store.clear()
         
     def setInspectionData(self, path, data):
         self.store.clear()
@@ -63,7 +67,7 @@ class ModulePage(WindowAndActionBars):
     def onInsertButton(self, widget):
         if len(self.stack) > 0:
             path, objType, name, value = self.currentInspection
-            cinnamonDBus.lgAddResult(path)
+            dbusManager.cinnamonDBus.lgAddResult(path)
         
     def onBackButton(self, widget):
         self.popInspectionElement()
@@ -94,7 +98,7 @@ class ModulePage(WindowAndActionBars):
             self.nameLabel.set_text(name)
         
             cinnamonLog.activatePage("inspect")
-            success, json_data = cinnamonDBus.lgInspect(path)
+            success, json_data = dbusManager.cinnamonDBus.lgInspect(path)
             if success:
                 try:
                     data = json.loads(json_data)
