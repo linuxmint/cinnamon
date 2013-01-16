@@ -166,7 +166,7 @@ class CinnamonLog(dbus.service.Object):
     @dbus.service.method (LG_DBUS_NAME, in_signature='', out_signature='')
     def show(self):
         if self.window is not None:
-            if self.window.get_visible() and self.window.has_toplevel_focus():
+            if self.window.get_visible():
                 self.window.hide()
             else:
                 self.window.present()
@@ -277,7 +277,7 @@ class CinnamonLog(dbus.service.Object):
         dialog.set_markup("<b>Melange</b> is a GTK3 alternative to the built-in javascript debugger <i>Looking Glass</i>"
                            + "\n\nPressing <i>Escape</i> while Melange has focus will hide the window."
                            +"\nIf you want to exit Melange, use ALT+F4 or the <u>Actions</u> menu button."
-                           + "\n\nIf you defined a hotkey for Melange, pressing it while Melange has focus will hide the window.")
+                           + "\n\nIf you defined a hotkey for Melange, pressing it while Melange is visible will be hidden.")
 
         dialog.run()
         dialog.destroy()
