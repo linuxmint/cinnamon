@@ -1099,7 +1099,7 @@ AppSwitcher.prototype = {
     __proto__ : SwitcherList.prototype,
 
     _init : function(windows, showThumbnails, altTabPopup) {
-        SwitcherList.prototype._init.call(this, true);
+        SwitcherList.prototype._init.call(this, false);
 
         // Construct the AppIcons, add to the popup
         let activeWorkspace = global.screen.get_active_workspace();
