@@ -1058,16 +1058,11 @@ AppIcon.prototype = {
 
         this.actor.add(this._iconBin, { x_fill: false, y_fill: false } );
         let title = window.get_title();
-        if (title) {
-            this.label = new St.Label({ text: title });
-            let bin = new St.Bin({ x_align: St.Align.MIDDLE });
-            bin.add_actor(this.label);
-            this.actor.add(bin);
-        }
-        else {
-            this.label = new St.Label({ text: this.app ? this.app.get_name() : window.title });
-            this.actor.add(this.label, { x_fill: false });
-        }
+        this.label = new St.Label({ text: typeof(title) != 'undefined' ? title : (this.app ? this.app.get_name() : "")});
+        this.label.clutter_text.line_wrap = true;
+        this._label_bin = new St.Bin({ x_align: St.Align.MIDDLE });
+        this._label_bin.add_actor(this.label);
+        this.actor.add(this._label_bin);
     },
 
     set_size: function(size) {
@@ -1090,6 +1085,8 @@ AppIcon.prototype = {
                               icon_size: size });
         }
         this._iconBin.set_size(size, size);
+        // Make some room for the window title.
+        this._label_bin.set_size(Math.floor(size * 1.2), Math.floor(size/2));
         this._iconBin.child = this.icon;
     }
 };
