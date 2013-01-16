@@ -1140,14 +1140,21 @@ AppSwitcher.prototype = {
             alloc.min_size = alloc.natural_size = 32;
             return;
         }
-        let j = 0;
-        while(this._items.length > 1 && this._items[j].style_class != 'item-box') {
-                j++;
+        let modelIndex = 0;
+        for (let i = 0; i <  this._items.length && this._items.length > 1; ++i) {
+            // We don't want the model index to be the currently selected index,
+            // or the previous index, since that may lead to differing sizes on
+            // scrolling through the set.
+            let ii = (this._curApp + 2 + i + this._items.length) % this._items.length;
+            if (this._items[ii].style_class == 'item-box') {
+                modelIndex = ii;
+                break;
+            }
         }
-        let themeNode = this._items[j].get_theme_node();
+        let themeNode = this._items[modelIndex].get_theme_node();
         let iconPadding = themeNode.get_horizontal_padding();
         let iconBorder = themeNode.get_border_width(St.Side.LEFT) + themeNode.get_border_width(St.Side.RIGHT);
-        let [iconMinHeight, iconNaturalHeight] = this.icons[j].label.get_preferred_height(-1);
+        let [iconMinHeight, iconNaturalHeight] = this.icons[modelIndex].label.get_preferred_height(-1);
         let iconSpacing = iconNaturalHeight + iconPadding + iconBorder;
         let totalSpacing = this._list.spacing * (this._items.length - 1);
         if (this._separators.length)
