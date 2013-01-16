@@ -31,7 +31,7 @@ class ResizeGrip(Gtk.Widget):
 
     def do_realize(self):
         self.set_realized(True)
-        
+
         allocation = self.get_allocation()
 
         attr = Gdk.WindowAttr()
@@ -50,7 +50,7 @@ class ResizeGrip(Gtk.Widget):
         window.set_user_data(self)
         self.style = self.get_style()
         self.style.set_background(window, Gtk.StateFlags.NORMAL)
-        
+
         self.get_window().set_cursor(Gdk.Cursor(Gdk.CursorType.BOTTOM_SIDE))
         self.connect("draw", self.onDraw)
 
@@ -103,7 +103,7 @@ class CommandLine(Gtk.Entry):
         menu.append(clear)
         menu.show_all()
         return False
-        
+
     def onKeyPress(self, widget, event):
         if event.keyval == Gdk.KEY_Up:
             self.historyPrev()
@@ -120,7 +120,7 @@ class CommandLine(Gtk.Entry):
         self.historyPosition = -1
         self.lastText = ""
         self.settings.set_strv("looking-glass-history", self.history)
-        
+
     def historyPrev(self):
         num = len(self.history)
         if self.historyPosition == 0 or num == 0:
@@ -131,8 +131,8 @@ class CommandLine(Gtk.Entry):
         else:
             self.historyPosition -= 1
         self.set_text(self.history[self.historyPosition])
-        self.select_region(-1, -1) 
-        
+        self.select_region(-1, -1)
+
     def historyNext(self):
         if self.historyPosition == -1:
             return
@@ -143,8 +143,8 @@ class CommandLine(Gtk.Entry):
         else:
             self.historyPosition += 1
             self.set_text(self.history[self.historyPosition])
-        self.select_region(-1, -1) 
-        
+        self.select_region(-1, -1)
+
     def execute(self):
         self.historyPosition = -1
         command = self.get_text()
@@ -154,14 +154,14 @@ class CommandLine(Gtk.Entry):
                 self.history.append(command)
             self.set_text("")
             self.settings.set_strv("looking-glass-history", self.history)
-            
+
             dbusManager.cinnamonDBus.lgEval(command)
-   
+
 class CinnamonLog(dbus.service.Object):
     def __init__ (self):
         self.window = None
         dbus.service.Object.__init__ (self, dbusManager.sessionBus, LG_DBUS_PATH, LG_DBUS_NAME)
-        
+
     @dbus.service.method (LG_DBUS_NAME, in_signature='', out_signature='')
     def show(self):
         if self.window is not None:
@@ -174,7 +174,7 @@ class CinnamonLog(dbus.service.Object):
         else:
             self.run()
             Gtk.main()
-            
+
     def run(self):
         self.window = Gtk.Window(Gtk.WindowType.TOPLEVEL)
         screen = self.window.get_screen()
@@ -186,7 +186,7 @@ class CinnamonLog(dbus.service.Object):
         self.window.set_default_size(screen.get_width(), 200)
         self.window.set_has_resize_grip(False)
         self.window.move(0,0)
-        
+
         self.window.connect("delete_event", self.onDelete)
         self.window.connect("key-press-event", self.onKeyPress)
 
@@ -194,13 +194,13 @@ class CinnamonLog(dbus.service.Object):
         numColumns = 6
         table = Gtk.Table(numRows, numColumns, False)
         self.window.add(table)
-        
+
         self.notebook = Gtk.Notebook()
         self.notebook.set_tab_pos(Gtk.PositionType.BOTTOM)
         self.notebook.show()
         self.notebook.set_show_border(True)
         self.notebook.set_show_tabs(True)
-        
+
         label = Gtk.Label("Melange")
         label.set_markup("<u>Melange - Cinnamon Debugger</u> ")
         label.show()
@@ -216,16 +216,16 @@ class CinnamonLog(dbus.service.Object):
         self.createDummyPage("+", "on selection, watch a specified file for changes, similar to the log tab\nPredefined file viewers for cinnamon glass.log and stdout.log")
 
         table.attach(self.notebook, 0, numColumns, 0, 1)
-        
+
         column = 0
         pickerButton = ImageButton("gtk-color-picker", Gtk.IconSize.SMALL_TOOLBAR)
         pickerButton.connect("clicked", self.onPickerClicked)
         table.attach(pickerButton, column, column+1, 1, 2, 0, 0, 2)
         column += 1
-        
+
         table.attach(Gtk.Label("Exec:"), column, column+1, 1, 2, 0, 0, 3)
         column += 1
-        
+
         table.attach(CommandLine(), column, column+1, 1, 2, Gtk.AttachOptions.EXPAND|Gtk.AttachOptions.FILL, 0, 3, 2)
         column += 1
 
@@ -235,13 +235,13 @@ class CinnamonLog(dbus.service.Object):
         statusLabel.set_tooltip_text("The connection to cinnamon is broken")
         table.attach(statusLabel, column, column+1, 1, 2, 0, 0, 1)
         column += 1
-        
+
         actionButton = self.createActionButton()
         table.attach(actionButton, column, column+1, 1, 2, 0, 0, 1)
-        
+
         grip = ResizeGrip(self.window)
         table.attach(grip, 0, numColumns, 2, 3, Gtk.AttachOptions.EXPAND|Gtk.AttachOptions.FILL, 0, 0, 0)
-        
+
         self.window.show_all()
         self.activatePage("results")
         setStatus(True)
@@ -263,7 +263,7 @@ class CinnamonLog(dbus.service.Object):
         button = Gtk.MenuButton(u"Actions \u25BE")
         button.set_popup(menu)
         return button
-        
+
     def onRestartClicked(self, menuItem):
         #fixme: gets killed when the python process ends, separate it!
         os.system("cinnamon --replace &")
@@ -271,7 +271,7 @@ class CinnamonLog(dbus.service.Object):
     def onAboutClicked(self, menuItem):
         dialog = Gtk.MessageDialog(self.window, 0,
                                    Gtk.MessageType.QUESTION, Gtk.ButtonsType.CLOSE);
-                                   
+
         dialog.set_title("About Melange")
         dialog.set_markup("<b>Melange</b> is a GTK3 alternative to the built-in javascript debugger <i>Looking Glass</i>"
                            + "\n\nPressing <i>Escape</i> while Melange has focus will hide the window."
@@ -280,7 +280,7 @@ class CinnamonLog(dbus.service.Object):
 
         dialog.run()
         dialog.destroy()
-        
+
     def onExitClicked(self, menuItem):
         Gtk.main_quit()
 
@@ -298,11 +298,11 @@ class CinnamonLog(dbus.service.Object):
     def onKeyPress(self, widget, event=None):
         if event.keyval == Gdk.KEY_Escape:
             self.window.hide()
-        
+
     def onDelete(self, widget, event=None):
         Gtk.main_quit()
         return False
-         
+
     def onPickerClicked(self, widget):
         dbusManager.cinnamonDBus.lgStartInspector()
         self.window.hide()
@@ -310,7 +310,7 @@ class CinnamonLog(dbus.service.Object):
     def createDummyPage(self, text, description):
         label = Gtk.Label(text)
         self.notebook.append_page(Gtk.Label(description), label)
-        
+
     def createPage(self, text, moduleName):
         module = __import__("page_%s" % moduleName)
         module.dbusManager = dbusManager
@@ -319,7 +319,7 @@ class CinnamonLog(dbus.service.Object):
         page = module.ModulePage()
         self.pages[moduleName] = page
         self.notebook.append_page(page, label)
-        
+
     def activatePage(self, moduleName):
         self.window.present()
         page = self.notebook.page_num(self.pages[moduleName])
@@ -330,13 +330,13 @@ def setStatus(status):
         statusLabel.hide()
     else:
         statusLabel.show()
-        
+
 class DBusManager:
     def __init__ (self):
         self.sessionBus = dbus.SessionBus ()
         self.dbus = prox = self.createSessionDBusProxy("org.freedesktop.DBus", "/org/freedesktop/DBus")
         self.dbus.connect_to_signal("NameOwnerChanged", self.onNameOwnerChanged)
-        
+
         self.cinnamonSignals = []
         self.cinnamonReconnectCallback = []
         self.initCinnamonProxy()
@@ -347,10 +347,10 @@ class DBusManager:
             callback()
         for name, callback in self.cinnamonSignals:
             self.cinnamonDBus.connect_to_signal(name, callback)
-        
+
     def addReconnectCallback(self, callback):
         self.cinnamonReconnectCallback.append(callback)
-        
+
     def connectToCinnamonSignal(self, name, callback):
         self.cinnamonDBus.connect_to_signal(name, callback)
         self.cinnamonSignals.append((name, callback))
@@ -362,7 +362,7 @@ class DBusManager:
         except dbus.exceptions.DBusException as e:
             print(e)
             return None
-            
+
     def onNameOwnerChanged(self, name, old, new):
         if name == "org.Cinnamon":
             if new == "":
@@ -379,7 +379,7 @@ if __name__ == "__main__":
 
     global dbusManager
     dbusManager = DBusManager()
-    
+
     request = dbusManager.sessionBus.request_name(LG_DBUS_NAME, dbus.bus.NAME_FLAG_DO_NOT_QUEUE)
     if request != dbus.bus.REQUEST_NAME_REPLY_EXISTS:
         app = CinnamonLog()

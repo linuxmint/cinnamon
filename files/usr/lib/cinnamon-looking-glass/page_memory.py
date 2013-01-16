@@ -1,4 +1,3 @@
-
 import json
 from pageutils import *
 from gi.repository import Gio, Gtk, GObject, Gdk, Pango, GLib
@@ -7,12 +6,12 @@ class MemoryView(BaseListView):
     def __init__(self):
         store = Gtk.ListStore(str, int)
         BaseListView.__init__(self, store)
-        
+
         self.createTextColumn(0, "Name")
         self.createTextColumn(1, "Size (bytes)")
         column = self.createTextColumn(1, "Size (readable)")
         column.set_cell_data_func(self.rendererText, self.cellDataFuncSize)
-        
+
         self.getUpdates()
         dbusManager.addReconnectCallback(self.getUpdates)
 
@@ -24,7 +23,7 @@ class MemoryView(BaseListView):
             cell.set_property("text", "%.2f KB" %  (value/1024.0))
         elif(value < 1000000000):
             cell.set_property("text", "%.2f MB" %  (value/1024.0/1024.0))
-        
+
     def getUpdates(self, igno=None):
         self.store.clear()
         success, json_data = dbusManager.cinnamonDBus.lgGetMemoryInfo()
@@ -44,7 +43,7 @@ class ModulePage(WindowAndActionBars):
     def __init__(self):
         self.view = MemoryView()
         WindowAndActionBars.__init__(self, self.view)
-        
+
         refresh = ImageButton("view-refresh")
         refresh.set_tooltip_text("Refresh")
         refresh.connect("clicked", self.view.getUpdates)
@@ -52,5 +51,5 @@ class ModulePage(WindowAndActionBars):
         fullGc = ImageButton("user-trash-full")
         fullGc.set_tooltip_text("Full Garbage Collection")
         fullGc.connect ('clicked', self.view.onFullGc)
-        
+
         self.addToLeftBar(fullGc, 1)

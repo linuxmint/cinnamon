@@ -1,4 +1,3 @@
-
 import json
 import pageutils
 import os
@@ -8,7 +7,7 @@ class ModulePage(pageutils.BaseListView):
     def __init__(self):
         store = Gtk.ListStore(str, str, str, str, str, str, str)
         pageutils.BaseListView.__init__(self, store)
-        
+
         column = self.createTextColumn(0, "Status")
         self.createTextColumn(1, "Type")
         self.createTextColumn(2, "Name")
@@ -16,7 +15,7 @@ class ModulePage(pageutils.BaseListView):
         self.getUpdates()
         dbusManager.connectToCinnamonSignal("lgExtensionListUpdate", self.getUpdates)
         dbusManager.addReconnectCallback(self.getUpdates)
-    
+
         self.popup = Gtk.Menu()
 
         self.viewSource = Gtk.MenuItem('View Source')
@@ -32,25 +31,25 @@ class ModulePage(pageutils.BaseListView):
         self.popup.append(self.viewWebPage)
 
         self.popup.show_all()
-    
+
         self.treeView.connect("button-press-event", self.on_button_press_event)
 
     def onViewSource(self, menuItem):
         iter = self.store.get_iter(self.selectedPath)
         folder = self.store.get_value(iter, 5)
         os.system("gnome-open \"" + folder + "\" &")
-        
+
     def onReloadCode(self, menuItem):
         iter = self.store.get_iter(self.selectedPath)
         uuid = self.store.get_value(iter, 4)
         dbusManager.cinnamonDBus.lgReloadExtension(uuid)
-        
+
     def onViewWebPage(self, menuItem):
         iter = self.store.get_iter(self.selectedPath)
         url = self.store.get_value(iter, 6)
         os.system("gnome-open \"" + url + "\" &")
-        
-        
+
+
     def on_button_press_event(self, treeview, event):
         if event.button == 3:
             x = int(event.x)

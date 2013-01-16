@@ -1,4 +1,3 @@
-
 import json
 from pageutils import *
 from gi.repository import Gio, Gtk, GObject, Gdk, Pango, GLib
@@ -7,17 +6,17 @@ class ModulePage(BaseListView):
     def __init__(self):
         store = Gtk.ListStore(int, str, str, str)
         BaseListView.__init__(self, store)
-        
+
         column = self.createTextColumn(0, "ID")
-        column.set_cell_data_func(self.rendererText, self.cellDataFuncID) 
+        column.set_cell_data_func(self.rendererText, self.cellDataFuncID)
         self.createTextColumn(1, "Title")
         self.createTextColumn(2, "WMClass")
         self.createTextColumn(3, "Application")
-        
+
         self.getUpdates()
         dbusManager.connectToCinnamonSignal("lgWindowListUpdate", self.getUpdates)
         dbusManager.addReconnectCallback(self.getUpdates)
-    
+
         self.treeView.connect("row-activated", self.onRowActivated)
         self.treeView.connect("button-press-event", self.onButtonPress)
 
@@ -43,21 +42,21 @@ class ModulePage(BaseListView):
         iter = self.store.get_iter(path)
         id = self.store.get_value(iter, 0)
         title = self.store.get_value(iter, 1)
-        
+
         cinnamonLog.pages["inspect"].inspectElement("w(%d)" % id, "object", title, "<window>")
-        
+
     def onInspectWindow(self, menuItem):
         iter = self.store.get_iter(self.selectedPath)
         id = self.store.get_value(iter, 0)
         title = self.store.get_value(iter, 1)
-        
+
         cinnamonLog.pages["inspect"].inspectElement("w(%d)" % id, "object", title, "<window>")
 
     def onInspectApplication(self, menuItem):
         iter = self.store.get_iter(self.selectedPath)
         id = self.store.get_value(iter, 0)
         application = self.store.get_value(iter, 3)
-        
+
         cinnamonLog.pages["inspect"].inspectElement("a(%d)" % id, "object", application, "<application>")
 
     def onButtonPress(self, treeview, event):
