@@ -725,6 +725,8 @@ Extensions.prototype = {
         this._numExtensions ++;
         this._extensionsList.add(extensionDisplay);
         this.uuidMap[uuid] = extensionDisplay;
+
+        Main.cinnamonDBusService.notifyLgExtensionListUpdate();
     },
 
     _unloadExtension: function(o, uuid) {
@@ -737,6 +739,8 @@ Extensions.prototype = {
         this._numExtensions--;
         if (this._numExtensions == 0)
             this._extensionsList.add(this._noExtensions);
+
+        Main.cinnamonDBusService.notifyLgExtensionListUpdate();
     },
 
     _onViewSource: function (actor) {

@@ -87,6 +87,10 @@ const CinnamonIface = {
               {
                 name: 'lgInspectorDone',
                 inSignature: ''
+              },
+              {
+                name: 'lgExtensionListUpdate',
+                inSignature: ''
               }
              ],
     properties: [{ name: 'OverviewActive',
@@ -256,6 +260,10 @@ Cinnamon.prototype = {
     
     notifyLgInspectorDone: function() {
         DBus.session.emit_signal('/org/Cinnamon', 'org.Cinnamon', 'lgInspectorDone', '', []);
+    },
+    
+    notifyLgExtensionListUpdate: function() {
+        DBus.session.emit_signal('/org/Cinnamon', 'org.Cinnamon', 'lgExtensionListUpdate', '', []);
     },
 
     _onScreenshotComplete: function(obj, result, area, flash, invocation) {

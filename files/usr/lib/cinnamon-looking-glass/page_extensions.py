@@ -14,7 +14,7 @@ class ModulePage(pageutils.BaseListView):
         self.createTextColumn(2, "Name")
         self.createTextColumn(3, "Description")
         self.getUpdates()
-        #dbusManager.connectToCinnamonSignal("lgExtensionListUpdate", self.getUpdates)
+        dbusManager.connectToCinnamonSignal("lgExtensionListUpdate", self.getUpdates)
         dbusManager.addReconnectCallback(self.getUpdates)
     
         self.popup = Gtk.Menu()
