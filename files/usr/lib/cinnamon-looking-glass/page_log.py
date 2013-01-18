@@ -36,7 +36,7 @@ class LogView(Gtk.ScrolledWindow):
             'trace': self.textbuffer.create_tag("trace", foreground="#18186f", invisible=self.enabledTypes["trace"] != True, invisible_set=True)
             }
 
-        #fixme: load all enabled types from gsettings
+        #todo: load all enabled types from gsettings
         #self.enabledTypes = {'info': False, 'warning': False, 'error': False, 'trace': False }
         #for key in data:
         #    self.enabledTypes[key] = True

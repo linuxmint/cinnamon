@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 
 # Todo:
-# - TextTag.invisible does not work nicely with scrollheight, check why
-# - cinnamon --replace must work after this process is closed
-# - Check out how this works with multi-monitor
+# - TextTag.invisible does not work nicely with scrollheight, find out why
+#   - (Sometimes scrollbars think there is more or less to scroll than there actually is after showing/hiding entries in page_log.py)
+# - if cinnamon --replace was called from Melange, it will be killed when this process is closed
+#   - Currently only occurs when Melange is started by Geany.
+# - Check for issues with multiple monitors
 # - Add insert button to "simple types" inspect dialog ? is there actual use for these types inserted as results ?
 # - Remove javascript version ?
 # - Load all enabled log categories and window height from gsettings
@@ -458,7 +460,7 @@ class CinnamonLog(dbus.service.Object):
         content.destroy()
         
     def onRestartClicked(self, menuItem):
-        #fixme: gets killed when the python process ends, separate it!
+        #todo: gets killed when the python process ends, separate it!
         os.system("cinnamon --replace &")
 
     def onAboutClicked(self, menuItem):
@@ -469,7 +471,7 @@ class CinnamonLog(dbus.service.Object):
         dialog.set_markup("<b>Melange</b> is a GTK3 alternative to the built-in javascript debugger <i>Looking Glass</i>"
                            + "\n\nPressing <i>Escape</i> while Melange has focus will hide the window."
                            +"\nIf you want to exit Melange, use ALT+F4 or the <u>Actions</u> menu button."
-                           + "\n\nIf you defined a hotkey for Melange, pressing it while Melange is visible will be hidden.")
+                           + "\n\nIf you defined a hotkey for Melange, pressing it while Melange is visible it will be hidden.")
 
         dialog.run()
         dialog.destroy()
