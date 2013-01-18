@@ -5,7 +5,6 @@
 # - cinnamon --replace must work after this process is closed
 # - Check out how this works with multi-monitor
 # - Add insert button to "simple types" inspect dialog ? is there actual use for these types inserted as results ?
-# - Additional (optional) log file viewers.
 # - Remove javascript version ?
 # - Load all enabled log categories and window height from gsettings
 # - Make CommandLine entry & history work more like a normal terminal
@@ -13,12 +12,13 @@
 #   - When pressing ctrl + r, search history
 #   - auto-completion ?
 
+import os
+import pyinotify
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gio, Gtk, GObject, Gdk, Pango, GLib
 import dbus, dbus.service, dbus.glib
 from pageutils import *
-import os
 from dbus.mainloop.glib import DBusGMainLoop
 
 LG_DBUS_NAME = "org.Cinnamon.LookingGlass"
@@ -157,6 +157,180 @@ class CommandLine(Gtk.Entry):
 
             dbusManager.cinnamonDBus.lgEval(command)
 
+class NewLogDialog(Gtk.Dialog):
+    def __init__(self, parent):
+        Gtk.Dialog.__init__(self, "Add a new file watcher", parent, 0,
+            (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
+             Gtk.STOCK_OK, Gtk.ResponseType.OK))
+
+        self.set_default_size(150, 100)
+
+        label = Gtk.Label("")
+        label.set_markup("<span size='large'>Add File Watch:</span>\n\nPlease select a file to watch and a name for the tab\n")
+
+        box = self.get_content_area()
+        box.add(label)
+        
+        self.store = Gtk.ListStore(str, str)
+        self.store.append(["glass.log", "~/.cinnamon/glass.log"])
+        self.store.append(["custom", "<Select file>"])
+
+        self.combo = Gtk.ComboBox.new_with_model(self.store)
+        self.combo.connect("changed", self.onComboChanged)
+        renderer_text = Gtk.CellRendererText()
+        self.combo.pack_start(renderer_text, True)
+        self.combo.add_attribute(renderer_text, "text", 1)
+        
+        table = Gtk.Table(2, 2, False)
+        table.attach(Gtk.Label(label="File: ", halign=Gtk.Align.START), 0, 1, 0, 1)
+        table.attach(self.combo, 1, 2, 0, 1)
+        table.attach(Gtk.Label(label="Name: ", halign=Gtk.Align.START), 0, 1, 1, 2)
+        self.entry = Gtk.Entry()
+        table.attach(self.entry, 1, 2, 1, 2)
+        
+        self.filename = None
+        box.add(table)
+        self.show_all()
+        
+    def onComboChanged(self, combo):
+        tree_iter = combo.get_active_iter()
+        if tree_iter != None:
+            model = combo.get_model()
+            name, self.filename = model[tree_iter][:2]
+            self.entry.set_text(name)
+            if name == "custom":
+                newFile = self.selectFile()
+                if newFile is not None:
+                    combo.set_active_iter(self.store.insert(1, ["user", newFile]))
+                else:
+                    combo.set_active(-1)
+            return False
+                    
+    def isValid(self):
+        return self.entry.get_text() != "" and self.filename != None and os.path.isfile(os.path.expanduser(self.filename))
+        
+    def getFile(self):
+        return os.path.expanduser(self.filename)
+        
+    def getName(self):
+        return self.entry.get_text()
+        
+    def selectFile(self):
+        dialog = Gtk.FileChooserDialog("Please select a log file", self,
+            Gtk.FileChooserAction.OPEN,
+            (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
+             Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
+
+        filter_text = Gtk.FileFilter()
+        filter_text.set_name("Text files")
+        filter_text.add_mime_type("text/plain")
+        dialog.add_filter(filter_text)
+
+        filter_any = Gtk.FileFilter()
+        filter_any.set_name("Any files")
+        filter_any.add_pattern("*")
+        dialog.add_filter(filter_any)
+        
+        response = dialog.run()
+        result = None
+        if response == Gtk.ResponseType.OK:
+            result = dialog.get_filename()
+        dialog.destroy()
+        
+        return result
+
+class FileWatchHandler(pyinotify.ProcessEvent):
+    def __init__(self, view):
+        self.view = view
+        
+    def process_IN_CLOSE_WRITE(self, event):
+        self.view.getUpdates()
+
+    def process_IN_CREATE(self, event):
+        self.view.getUpdates()
+
+    def process_IN_DELETE(self, event):
+        self.view.getUpdates()
+
+    def process_IN_MODIFY(self, event):
+        self.view.getUpdates()
+
+class FileWatcherView(Gtk.ScrolledWindow):
+    def __init__(self, filename):
+        Gtk.ScrolledWindow.__init__(self)
+
+        self.filename = filename
+        self.changed = 0
+        self.set_shadow_type(Gtk.ShadowType.ETCHED_IN)
+        self.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
+
+        self.textview = Gtk.TextView()
+        self.textview.set_editable(False)
+        self.add(self.textview)
+
+        self.textbuffer = self.textview.get_buffer()
+
+        self.show_all()
+        self.getUpdates()
+        
+        handler = FileWatchHandler(self)
+        wm = pyinotify.WatchManager()
+        self.notifier = pyinotify.ThreadedNotifier(wm, handler)
+        wdd = wm.add_watch(filename, pyinotify.IN_CLOSE_WRITE | pyinotify.IN_CREATE | pyinotify.IN_DELETE | pyinotify.IN_MODIFY)
+        self.notifier.start()
+        self.connect("destroy", self.onDestroy)
+        self.connect("size-allocate", self.onSizeChanged)
+        
+    def onDestroy(self, widget):
+        if self.notifier:
+            self.notifier.stop()
+            self.notifier = None
+        
+    def onSizeChanged(self, widget, bla):
+        if self.changed > 0:
+            end_iter = self.textbuffer.get_end_iter()
+            self.textview.scroll_to_iter(end_iter, 0, False, 0, 0)
+            self.changed -= 1
+
+    def getUpdates(self):
+        self.changed = 2 # onSizeChanged will be called twice, but only the second time is final
+        self.textbuffer.set_text(open(self.filename, 'r').read())
+                
+class ClosableTabLabel(Gtk.Box):
+    __gsignals__ = {
+        "close-clicked": (GObject.SIGNAL_RUN_FIRST, GObject.TYPE_NONE, ()),
+    }
+    def __init__(self, label_text):
+        Gtk.Box.__init__(self)
+        self.set_orientation(Gtk.Orientation.HORIZONTAL)
+        self.set_spacing(5)
+        
+        label = Gtk.Label(label_text)
+        self.pack_start(label, True, True, 0)
+        
+        button = Gtk.Button()
+        button.set_relief(Gtk.ReliefStyle.NONE)
+        button.set_focus_on_click(False)
+        button.add(Gtk.Image.new_from_stock(Gtk.STOCK_CLOSE, Gtk.IconSize.MENU))
+        button.connect("clicked", self.button_clicked)
+        data =  ".button {\n" \
+                "-GtkButton-default-border : 0px;\n" \
+                "-GtkButton-default-outside-border : 0px;\n" \
+                "-GtkButton-inner-border: 0px;\n" \
+                "-GtkWidget-focus-line-width : 0px;\n" \
+                "-GtkWidget-focus-padding : 0px;\n" \
+                "padding: 0px;\n" \
+                "}"
+        provider = Gtk.CssProvider()
+        provider.load_from_data(data)
+        button.get_style_context().add_provider(provider, 600) 
+        self.pack_start(button, False, False, 0)
+        
+        self.show_all()
+    
+    def button_clicked(self, button, data=None):
+        self.emit("close-clicked")
+
 class CinnamonLog(dbus.service.Object):
     def __init__ (self):
         self.window = None
@@ -213,7 +387,6 @@ class CinnamonLog(dbus.service.Object):
         self.createPage("Windows", "windows")
         self.createPage("Extensions", "extensions")
         self.createPage("Log", "log")
-        self.createDummyPage("+", "on selection, watch a specified file for changes, similar to the log tab\nPredefined file viewers for cinnamon glass.log and stdout.log")
 
         table.attach(self.notebook, 0, numColumns, 0, 1)
 
@@ -253,6 +426,8 @@ class CinnamonLog(dbus.service.Object):
 
     def createActionButton(self):
         menu = Gtk.Menu()
+        menu.append(self.createMenuItem('Add File Watcher', self.onAddFileWatcher))
+        menu.append(Gtk.SeparatorMenuItem())
         menu.append(self.createMenuItem('Restart Cinnamon', self.onRestartClicked))
         menu.append(self.createMenuItem('Reset Cinnamon Settings', self.onResetClicked))
         menu.append(Gtk.SeparatorMenuItem())
@@ -264,6 +439,24 @@ class CinnamonLog(dbus.service.Object):
         button.set_popup(menu)
         return button
 
+    def onAddFileWatcher(self, menuItem):
+        dialog = NewLogDialog(self.window)
+        response = dialog.run()
+
+        if response == Gtk.ResponseType.OK and dialog.isValid():
+            label = ClosableTabLabel(dialog.getName())
+            content = FileWatcherView(dialog.getFile())
+            content.show()
+            label.connect("close-clicked", self.onCloseTab, content)
+            self.notebook.append_page(content, label)
+            self.notebook.set_current_page(self.notebook.get_n_pages()-1)
+
+        dialog.destroy()
+        
+    def onCloseTab(self, label, content):
+        self.notebook.remove_page(self.notebook.page_num(content))
+        content.destroy()
+        
     def onRestartClicked(self, menuItem):
         #fixme: gets killed when the python process ends, separate it!
         os.system("cinnamon --replace &")
