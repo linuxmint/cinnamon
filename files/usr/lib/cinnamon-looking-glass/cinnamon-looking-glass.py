@@ -5,6 +5,7 @@
 #   - (Sometimes scrollbars think there is more or less to scroll than there actually is after showing/hiding entries in page_log.py)
 # - if cinnamon --replace was called from Melange, it will be killed when this process is closed
 #   - Currently only occurs when Melange is started by Geany.
+# - List extensions that failed to load ?
 # - Check for issues with multiple monitors
 # - Add insert button to "simple types" inspect dialog ? is there actual use for these types inserted as results ?
 # - Remove javascript version ?

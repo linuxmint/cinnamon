@@ -54,6 +54,10 @@ const CinnamonIface = {
                 inSignature: '',
                 outSignature: 'bs'
               },
+              { name: 'lgReloadExtension',
+                inSignature: 's',
+                outSignature: ''
+              },
               { name: 'ScreenshotArea',
                 inSignature: 'biiiibs',
                 outSignature: ''
@@ -243,6 +247,15 @@ Cinnamon.prototype = {
         } catch (e) {
             global.logError('Error getting the extension list', e);
             return [false, ''];
+        }
+    },
+    
+    lgReloadExtension: function(uuid) {
+        let extension = Extension.objects[uuid];
+        if (extension) {
+            let type = extension.type;
+            Extension.unloadExtension(uuid);
+            Extension.loadExtension(uuid, type);
         }
     },
     
