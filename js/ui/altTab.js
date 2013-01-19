@@ -329,13 +329,18 @@ AltTabPopup.prototype = {
         let action = global.display.get_keybinding_action(event.get_key_code(), event_state);
 
         this._disableHover();
+        const SCROLL_AMOUNT = 5;
 
         if (keysym == Clutter.Escape) {
             this.destroy();
-        } else if (keysym == Clutter.Home) {
+        } else if (keysym == Clutter.Home || keysym == Clutter.KP_Home) {
             this._select(0);
-        } else if (keysym == Clutter.End) {
+        } else if (keysym == Clutter.End || keysym == Clutter.KP_End) {
             this._select(this._appIcons.length - 1);
+        } else if (keysym == Clutter.Page_Down || keysym == Clutter.KP_Page_Down) {
+            this._select(Math.min(this._appIcons.length - 1, this._currentApp + SCROLL_AMOUNT));
+        } else if (keysym == Clutter.Page_Up || keysym == Clutter.KP_Page_Up) {
+            this._select(Math.max(0, this._currentApp - SCROLL_AMOUNT));
         } else if (keysym == Clutter.Return) {
             this._finish();
             return true;
