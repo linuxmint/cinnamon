@@ -67,7 +67,6 @@ AltTabPopup.prototype = {
         this._haveModal = false;
         this._modifierMask = 0;
 
-        this._currentApp = -1;
         this._currentWindow = -1;
         this._thumbnailTimeoutId = 0;
         this._motionTimeoutId = 0;
@@ -177,6 +176,18 @@ AltTabPopup.prototype = {
         }
     },
 
+    set _currentApp(val) {
+        this._appSwitcher._curApp = val;
+    },
+
+    get _currentApp() {
+        return this._appSwitcher._curApp;
+    },
+
+    get _appIcons() {
+        return this._appSwitcher.icons;
+    },
+
     refresh : function(binding, backward) {
         if (this._appSwitcher) {
             this._clearPreview();
@@ -185,7 +196,6 @@ AltTabPopup.prototype = {
             this._appSwitcher.actor.destroy();
         }
         
-        this._currentApp = -1;
         this._currentWindow = -1;
         
         // Find out the currently active window
@@ -224,8 +234,6 @@ AltTabPopup.prototype = {
         }
         this._appSwitcher.connect('item-activated', Lang.bind(this, this._appActivated));
         this._appSwitcher.connect('item-entered', Lang.bind(this, this._appEntered));
-
-        this._appIcons = this._appSwitcher.icons;
 
         // Need to force an allocation so we can figure out whether we
         // need to scroll when selecting
@@ -1143,6 +1151,7 @@ AppSwitcher.prototype = {
             this._addIcon(otherIcons[i]);
 
         this._curApp = -1;
+        this._prevApp = -1;
         this._iconSize = 0;
         this._altTabPopup = altTabPopup;
         this._mouseTimeOutId = 0;
@@ -1247,12 +1256,12 @@ AppSwitcher.prototype = {
     // We override SwitcherList's highlight() method to also deal with
     // the AppSwitcher->ThumbnailList arrows.
     highlight : function(n, justOutline) {
-        if (this._curApp != -1) {
-            this._arrows[this._curApp].hide();
+        if (this._prevApp != -1) {
+            this._arrows[this._prevApp].hide();
         }
 
         SwitcherList.prototype.highlight.call(this, n, justOutline);
-        this._curApp = n;
+        this._prevApp = this._curApp = n;
  
         if (this._curApp != -1 && this._altTabPopup._thumbnailsEnabled && this._altTabPopup._iconsEnabled) {
             this._arrows[this._curApp].show();
