@@ -207,8 +207,13 @@ SearchableButton.prototype = {
         // in theory this allows for better sorting
         let addScore = Math.pow(10, this.searchTexts.length);
         for(let i=0; i<this.searchTexts.length; i++) {
-            if(this.searchTexts[i].indexOf(pattern) != -1)
+            let pos = this.searchTexts[i].indexOf(pattern);
+            if(pos != -1) {
                 this.searchScore += addScore;
+                // extra score for beginning
+                if(pos == 0)
+                    this.searchScore += addScore/2;
+            }
             addScore /= 10;
         }
         return this.searchScore > 0;
@@ -748,6 +753,7 @@ MyApplet.prototype = {
                                          icon_type: St.IconType.SYMBOLIC });
         this._searchIconClickedId = 0;
         this._applicationsButtons = new Array();
+        this._allListButtons = new Array();
         this._favoritesButtons = new Array();
         this._placesButtons = new Array();
         this._selectedItemIndex = null;
@@ -1003,9 +1009,42 @@ MyApplet.prototype = {
         }
     },
 
+    _resortButtons: function(bySearchScore) {
+        for (let i = 0; i < this._allListButtons.length; i++) {
+            let button = this._allListButtons[i];
+            this.applicationsBox.remove_actor(button.actor);
+            if(button instanceof ApplicationButton) {
+                this.applicationsBox.remove_actor(button.menu.actor);
+            }
+        }
+        // Sort apps and add to applicationsBox
+        if(bySearchScore) {
+            global.log("sorting by score");
+            this._allListButtons.sort(function(a, b) {
+                let sr = b.searchScore - a.searchScore;
+                if(sr == 0)
+                    sr = a.name.toLowerCase() > b.name.toLowerCase();
+                return sr;
+            });
+        } else {
+            this._allListButtons.sort(function(a, b) {
+                let sr = a.name.toLowerCase() > b.name.toLowerCase();
+                return sr;
+            });
+        }
+        for (let i = 0; i < this._allListButtons.length; i++) {
+            let button = this._allListButtons[i];
+            this.applicationsBox.add_actor(button.actor);
+            if(button instanceof ApplicationButton) {
+                button.actor.realize();
+                this.applicationsBox.add_actor(button.menu.actor);
+            }
+        }
+    },
     _refreshApps : function() {
         this.applicationsBox.destroy_all_children();
         this._applicationsButtons = new Array();
+        this._allListButtons = new Array();
         this._placesButtons = new Array();
         this._recentButtons = new Array();
         this._applicationsBoxWidth = 0;
@@ -1097,17 +1136,6 @@ MyApplet.prototype = {
                 }
             }
         }
-        // Sort apps and add to applicationsBox
-        this._applicationsButtons.sort(function(a, b) {
-            let sr = a.app.get_name().toLowerCase() > b.app.get_name().toLowerCase();
-            return sr;
-        });
-
-        for (let i = 0; i < this._applicationsButtons.length; i++) {
-            this.applicationsBox.add_actor(this._applicationsButtons[i].actor);
-            this._applicationsButtons[i].actor.realize();
-            this.applicationsBox.add_actor(this._applicationsButtons[i].menu.actor);
-        }
 
         // Now generate Places category and places buttons and add to the list
         if (this.showPlaces) {
@@ -1146,7 +1174,7 @@ MyApplet.prototype = {
                 this._addEnterEvent(button, Lang.bind(this, this._enterButton, button));
                 button.actor.connect('leave-event', Lang.bind(this, this._leaveButton, button));
                 this._placesButtons.push(button);
-                this.applicationsBox.add_actor(button.actor);
+                this._allListButtons.push(button);
             }
         }
         // Now generate recent category and recent files buttons and add to the list
@@ -1183,17 +1211,19 @@ MyApplet.prototype = {
                 this._addEnterEvent(button, Lang.bind(this, this._enterButton, button));
                 button.actor.connect('leave-event', Lang.bind(this, this._leaveButton, button));
                 this._recentButtons.push(button);
-                this.applicationsBox.add_actor(button.actor);
+                this._allListButtons.push(button);
             }
             if (this.RecentManager._infosByTimestamp.length > 0) {
                 let button = new RecentClearButton(this);
                 this._addEnterEvent(button, Lang.bind(this, this._enterButton, button));
                 button.actor.connect('leave-event', Lang.bind(this, this._leaveButton, button));
                 this._recentButtons.push(button);
-                this.applicationsBox.add_actor(button.actor);
+                this._allListButtons.push(button);
             }
         }
 
+        this._resortButtons(false);
+        
         this._setCategoriesButtonActive(!this.searchActive);
     },
 
@@ -1344,6 +1374,7 @@ MyApplet.prototype = {
                         applicationButton.actor.connect('leave-event', Lang.bind(this, this._leaveButton, applicationButton));
                         this._addEnterEvent(applicationButton, Lang.bind(this, this._enterButton, applicationButton));
                         this._applicationsButtons.push(applicationButton);
+                        this._allListButtons.push(applicationButton);
                         applicationButton.category.push(top_dir.get_menu_id());
                         this.applicationsByCategory[top_dir.get_menu_id()].push(app.get_name());
                     } else {
@@ -1595,6 +1626,7 @@ MyApplet.prototype = {
         this.searchEntry.set_text("");
         this.searchActive = false;
         this._clearAllSelections();
+        this._resortButtons(false);
         this._setCategoriesButtonActive(true);
         global.stage.set_key_focus(this.searchEntry);
      },
@@ -1622,6 +1654,7 @@ MyApplet.prototype = {
                     this.searchEntry.disconnect(this._searchIconClickedId);
                 this._searchIconClickedId = 0;
                 this.searchEntry.set_secondary_icon(this._searchInactiveIcon);
+                this._resortButtons(false);
                 this._setCategoriesButtonActive(true);
                 this._select_category(null, this._allAppsCategoryButton);
             }
@@ -1669,6 +1702,7 @@ MyApplet.prototype = {
         var placesResults = this._listButtons(this._placesButtons, pattern);
         var recentResults = this._listButtons(this._recentButtons, pattern);
 
+        this._resortButtons(true);
         this._displayButtons(appResults, this._applicationsButtons);
         this._displayButtons(placesResults, this._placesButtons);
         this._displayButtons(recentResults, this._recentButtons);
