@@ -8,6 +8,7 @@ const Cinnamon = imports.gi.Cinnamon;
 const Signals = imports.signals;
 const St = imports.gi.St;
 
+const Connector = imports.misc.connector;
 const Main = imports.ui.main;
 const Tweener = imports.ui.tweener;
 
@@ -83,6 +84,14 @@ AltTabPopup.prototype = {
         // Initially disable hover so we ignore the enter-event if
         // the switcher appears underneath the current pointer location
         this._disableHover();
+
+        this._workspaceConnector = new Connector.Connector();
+        for (let i = 0, numws = global.screen.n_workspaces; i < numws; ++i) {
+            let workspace = global.screen.get_workspace_by_index(i);
+                this._workspaceConnector.addConnection(workspace, 'window-removed', Lang.bind(this, function(ws, metaWindow) {
+                    this.refresh('no-switch-windows');
+                }));
+        }
 
         Main.uiGroup.add_actor(this.actor);
 
@@ -516,6 +525,7 @@ AltTabPopup.prototype = {
     },
 
     destroy : function() {
+        this._workspaceConnector.destroy();
         var doDestroy = Lang.bind(this, function() {
            Main.uiGroup.remove_actor(this.actor);
            this.actor.destroy();
