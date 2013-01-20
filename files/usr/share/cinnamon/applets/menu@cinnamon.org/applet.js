@@ -43,7 +43,7 @@ let appsys = Cinnamon.AppSystem.get_default();
  * but we really only need it when we start keyboard
  * navigating, so increase speed, we reload only when we
  * want to use it.
- */ 
+ */
 
 function VisibleChildIterator(parent, container) {
     this._init(parent, container);
@@ -150,18 +150,88 @@ ApplicationContextMenuItem.prototype = {
 
 };
 
-function GenericApplicationButton(appsMenuButton, app) {
-    this._init(appsMenuButton, app);
+
+function SimpleButton(appsMenuButton, icon, buttonStyle, labelStyle, name, description) {
+    this._init(appsMenuButton, icon, buttonStyle, labelStyle, name, description);
+}
+
+SimpleButton.prototype = {
+    __proto__: PopupMenu.PopupBaseMenuItem.prototype,
+
+    _init: function(appsMenuButton, icon, buttonStyle, labelStyle, name, description) {
+        PopupMenu.PopupBaseMenuItem.prototype._init.call(this, {hover: false});
+        this.appsMenuButton = appsMenuButton;
+        this.name = name;
+        this.description = description;
+        this.buttonStyle = buttonStyle;
+        this.actor.set_style_class_name(buttonStyle);
+        this.actor._delegate = this;
+        if(icon) {
+            this.icon = icon;
+            this.addActor(this.icon);
+        }
+        if(labelStyle) {
+            this.label = new St.Label({ text: this.name, style_class: labelStyle });
+            this.addActor(this.label);
+        }
+    },
+
+    _onButtonReleaseEvent: function (actor, event) {
+        if (event.get_button()==1){
+            this.activate(event);
+        }
+    }
+};
+
+
+
+function SearchableButton(appsMenuButton, icon, buttonStyle, labelStyle, name, description, searchTexts) {
+    this._init(appsMenuButton, icon, buttonStyle, labelStyle, name, description, searchTexts);
+}
+
+SearchableButton.prototype = {
+    __proto__: SimpleButton.prototype,
+
+    _init: function(appsMenuButton, icon, buttonStyle, labelStyle, name, description, searchTexts) {
+        SimpleButton.prototype._init.call(this, appsMenuButton, icon, buttonStyle, labelStyle, name, description);
+        this.searchTexts = new Array();
+        for(let i=0; i<searchTexts.length; i++) {
+            let s = searchTexts[i];
+            if(s && typeof(s) == 'string')
+                this.searchTexts.push(s.toLowerCase());
+        }
+    },
+
+    search: function(pattern) {
+        this.searchScore = 0;
+        // in theory this allows for better sorting
+        let addScore = Math.pow(10, this.searchTexts.length);
+        for(let i=0; i<this.searchTexts.length; i++) {
+            if(this.searchTexts[i].indexOf(pattern) != -1)
+                this.searchScore += addScore;
+            addScore /= 10;
+        }
+        return this.searchScore > 0;
+    }
+};
+
+function GenericApplicationButton(appsMenuButton, app, withMenu, buttonStyle, labelStyle, icon) {
+    this._init(appsMenuButton, app, withMenu, buttonStyle, labelStyle, icon);
 }
 
 GenericApplicationButton.prototype = {
-    __proto__: PopupMenu.PopupSubMenuMenuItem.prototype,
-    
-    _init: function(appsMenuButton, app, withMenu) {
+    __proto__: SearchableButton.prototype,
+
+    _init: function(appsMenuButton, app, withMenu, buttonStyle, labelStyle, icon) {
         this.app = app;
-        this.appsMenuButton = appsMenuButton;
-        PopupMenu.PopupBaseMenuItem.prototype._init.call(this, {hover: false});
-        
+        let appId = app.get_id() ? app.get_id().slice(0, -8) : null;
+
+        SearchableButton.prototype._init.call(this,
+            appsMenuButton, icon,
+            buttonStyle, labelStyle,
+            app.get_name(), app.get_description(),
+            [app.get_name(), app.get_description(), appId]);
+
         this.withMenu = withMenu;
         if (this.withMenu){
             this.menu = new PopupMenu.PopupSubMenu(this.actor);
@@ -169,7 +239,7 @@ GenericApplicationButton.prototype = {
             this.menu.connect('open-state-changed', Lang.bind(this, this._subMenuOpenStateChanged));
         }
     },
-    
+
     _onButtonReleaseEvent: function (actor, event) {
         if (event.get_button()==1){
             this.activate(event);
@@ -181,19 +251,19 @@ GenericApplicationButton.prototype = {
         }
         return true;
     },
-    
+
     activate: function(event) {
         this.app.open_new_window(-1);
         this.appsMenuButton.menu.close();
     },
-    
+
     closeMenu: function() {
         if (this.withMenu) this.menu.close();
     },
-    
+
     toggleMenu: function() {
         if (!this.withMenu) return;
-        
+
         if (!this.menu.isOpen){
             let children = this.menu.box.get_children();
             for (var i in children) {
@@ -216,7 +286,7 @@ GenericApplicationButton.prototype = {
         }
         this.menu.toggle();
     },
-    
+
     _subMenuOpenStateChanged: function() {
         if (this.menu.isOpen) this.appsMenuButton._scrollToButton(this.menu);
     }
@@ -228,24 +298,15 @@ function ApplicationButton(appsMenuButton, app) {
 
 ApplicationButton.prototype = {
     __proto__: GenericApplicationButton.prototype,
-    
+
     _init: function(appsMenuButton, app) {
-        GenericApplicationButton.prototype._init.call(this, appsMenuButton, app, true);
+        GenericApplicationButton.prototype._init.call(this, appsMenuButton, app, true, 'menu-application-button', 'menu-application-button-label', app.create_icon_texture(APPLICATION_ICON_SIZE));
         this.category = new Array();
-        this.actor.set_style_class_name('menu-application-button');
-        this.icon = this.app.create_icon_texture(APPLICATION_ICON_SIZE);
-        this.addActor(this.icon);
-        this.name = this.app.get_name();
-        this.label = new St.Label({ text: this.name, style_class: 'menu-application-button-label' });
-        this.addActor(this.label);
+
         this._draggable = DND.makeDraggable(this.actor);
         this.isDraggableApp = true;
     },
-    
-    get_app_id: function() {
-        return this.app.get_id();
-    },
-    
+
     getDragActor: function() {
         let favorites = AppFavorites.getAppFavorites().getFavorites();
         let nbFavorites = favorites.length;
@@ -263,31 +324,22 @@ ApplicationButton.prototype = {
     }
 };
 
-function PlaceButton(appsMenuButton, place, button_name) {
-    this._init(appsMenuButton, place, button_name);
+function PlaceButton(appsMenuButton, place, name) {
+    this._init(appsMenuButton, place, name);
 }
 
 PlaceButton.prototype = {
-    __proto__: PopupMenu.PopupBaseMenuItem.prototype,
+    __proto__: SearchableButton.prototype,
 
-    _init: function(appsMenuButton, place, button_name) {
-        PopupMenu.PopupBaseMenuItem.prototype._init.call(this, {hover: false});
-        this.appsMenuButton = appsMenuButton;
+    _init: function(appsMenuButton, place, name) {
         this.place = place;
-        this.button_name = button_name;
-        this.actor.set_style_class_name('menu-application-button');
-        this.actor._delegate = this;
-        this.label = new St.Label({ text: this.button_name, style_class: 'menu-application-button-label' });
-        this.icon = place.iconFactory(APPLICATION_ICON_SIZE);
-        this.addActor(this.icon);
-        this.addActor(this.label);
-    },
+        let description = place.id.slice(16);
 
-    _onButtonReleaseEvent: function (actor, event) {
-        if (event.get_button()==1){
-            this.place.launch();
-            this.appsMenuButton.menu.close();
-        }
+        SearchableButton.prototype._init.call(this,
+            appsMenuButton, place.iconFactory(APPLICATION_ICON_SIZE),
+            'menu-application-button', 'menu-application-button-label',
+            name, description,
+            [name, description]);
     },
 
     activate: function(event) {
@@ -301,26 +353,17 @@ function RecentButton(appsMenuButton, file) {
 }
 
 RecentButton.prototype = {
-    __proto__: PopupMenu.PopupBaseMenuItem.prototype,
+    __proto__: SearchableButton.prototype,
 
     _init: function(appsMenuButton, file) {
-        PopupMenu.PopupBaseMenuItem.prototype._init.call(this, {hover: false});
         this.file = file;
-        this.appsMenuButton = appsMenuButton;
-        this.button_name = this.file.name;
-        this.actor.set_style_class_name('menu-application-button');
-        this.actor._delegate = this;
-        this.label = new St.Label({ text: this.button_name, style_class: 'menu-application-button-label' });
-        this.icon = file.createIcon(APPLICATION_ICON_SIZE);
-        this.addActor(this.icon);
-        this.addActor(this.label);
-    },
+        let description = file.uri.slice(7);
 
-    _onButtonReleaseEvent: function (actor, event) {
-        if (event.get_button()==1){
-            Gio.app_info_launch_default_for_uri(this.file.uri, global.create_app_launch_context());
-            this.appsMenuButton.menu.close();
-        }
+        SearchableButton.prototype._init.call(this,
+            appsMenuButton, file.createIcon(APPLICATION_ICON_SIZE),
+            'menu-application-button', 'menu-application-button-label',
+            file.name, description,
+            [file.name, description]);
     },
 
     activate: function(event) {
@@ -334,94 +377,89 @@ function RecentClearButton(appsMenuButton) {
 }
 
 RecentClearButton.prototype = {
-    __proto__: PopupMenu.PopupBaseMenuItem.prototype,
+    __proto__: SearchableButton.prototype,
 
     _init: function(appsMenuButton) {
-        PopupMenu.PopupBaseMenuItem.prototype._init.call(this, {hover: false});
-        this.appsMenuButton = appsMenuButton;
-        this.actor.set_style_class_name('menu-application-button');
-        this.button_name = _("Clear list");
-        this.actor._delegate = this;
-        this.label = new St.Label({ text: this.button_name, style_class: 'menu-application-button-label' });
-        this.icon = new St.Icon({ icon_name: 'edit-clear', icon_type: St.IconType.SYMBOLIC, icon_size: APPLICATION_ICON_SIZE });
-        this.addActor(this.icon);
-        this.addActor(this.label);
+        let name = _("Clear list");
+        let description = _("Clear recent history");
+        SearchableButton.prototype._init.call(this,
+            appsMenuButton, new St.Icon({ icon_name: 'edit-clear', icon_type: St.IconType.SYMBOLIC, icon_size: APPLICATION_ICON_SIZE }),
+            'menu-application-button', 'menu-application-button-label',
+            name, description,
+            [name, description]);
     },
-    
-    _onButtonReleaseEvent: function (actor, event) {
-        if (event.get_button()==1){
-            this.appsMenuButton.menu.close();
-            let GtkRecent = new Gtk.RecentManager();
-            GtkRecent.purge_items();
-        }
+
+    activate: function(event) {
+        this.appsMenuButton.menu.close();
+        let GtkRecent = new Gtk.RecentManager();
+        GtkRecent.purge_items();
     }
 };
 
-function CategoryButton(app) {
-    this._init(app);
+function CategoryButton(category) {
+    this._init(category);
 }
 
 CategoryButton.prototype = {
-    __proto__: PopupMenu.PopupBaseMenuItem.prototype,
+    __proto__: SearchableButton.prototype,
 
     _init: function(category) {
-        PopupMenu.PopupBaseMenuItem.prototype._init.call(this, {hover: false});
+        let icon = null;
+        let name = null;
 
-        this.actor.set_style_class_name('menu-category-button');
-        var label;
         if (category) {
-            let icon = category.get_icon();
-            if (icon && icon.get_names)
-                this.icon_name = icon.get_names().toString();
-            else
-                this.icon_name = "";
-            label = category.get_name();
-        } else
-            label = _("All Applications");
-        
-        this.actor._delegate = this;
-        this.label = new St.Label({ text: label, style_class: 'menu-category-button-label' });
-        if (category && this.icon_name) {
-            this.icon = new St.Icon({icon_name: this.icon_name, icon_size: CATEGORY_ICON_SIZE, icon_type: St.IconType.FULLCOLOR});
-            this.addActor(this.icon);
+            let categoryIcon = category.get_icon();
+            if (categoryIcon && categoryIcon.get_names) {
+                icon = new St.Icon({icon_name: categoryIcon.get_names().toString(), icon_size: CATEGORY_ICON_SIZE, icon_type: St.IconType.FULLCOLOR});
+            }
+
+            name = category.get_name();
+        } else {
+            name = _("All Applications");
         }
-        this.addActor(this.label);
+        let description = name;
+
+        SearchableButton.prototype._init.call(this,
+            null, icon,
+            'menu-category-button', 'menu-category-button-label',
+            name, description,
+            [name, description]);
     }
 };
 
-function PlaceCategoryButton(app) {
-    this._init(app);
+function PlaceCategoryButton() {
+    this._init();
 }
 
 PlaceCategoryButton.prototype = {
-    __proto__: PopupMenu.PopupBaseMenuItem.prototype,
+    __proto__: SearchableButton.prototype,
 
-    _init: function(category) {
-        PopupMenu.PopupBaseMenuItem.prototype._init.call(this, {hover: false});
-        this.actor.set_style_class_name('menu-category-button');
-        this.actor._delegate = this;
-        this.label = new St.Label({ text: _("Places"), style_class: 'menu-category-button-label' });
-        this.icon = new St.Icon({icon_name: "folder", icon_size: CATEGORY_ICON_SIZE, icon_type: St.IconType.FULLCOLOR});
-        this.addActor(this.icon);
-        this.addActor(this.label);
+    _init: function() {
+        let name = _("Places");
+        let description = name;
+        SearchableButton.prototype._init.call(this,
+            null, new St.Icon({icon_name: "folder", icon_size: CATEGORY_ICON_SIZE, icon_type: St.IconType.FULLCOLOR}),
+            'menu-category-button', 'menu-category-button-label',
+            name, description,
+            [name, description]);
     }
 };
 
-function RecentCategoryButton(app) {
-    this._init(app);
+function RecentCategoryButton() {
+    this._init();
 }
 
 RecentCategoryButton.prototype = {
-    __proto__: PopupMenu.PopupBaseMenuItem.prototype,
+    __proto__: SearchableButton.prototype,
 
-    _init: function(category) {
-        PopupMenu.PopupBaseMenuItem.prototype._init.call(this, {hover: false});
-        this.actor.set_style_class_name('menu-category-button');
-        this.actor._delegate = this;
-        this.label = new St.Label({ text: _("Recent Files"), style_class: 'menu-category-button-label' });
-        this.icon = new St.Icon({icon_name: "folder-recent", icon_size: CATEGORY_ICON_SIZE, icon_type: St.IconType.FULLCOLOR});
-        this.addActor(this.icon);
-        this.addActor(this.label);
+    _init: function() {
+        let name = _("Recent Files");
+        let description = name;
+        SearchableButton.prototype._init.call(this,
+            null, new St.Icon({icon_name: "folder-recent", icon_size: CATEGORY_ICON_SIZE, icon_type: St.IconType.FULLCOLOR}),
+            'menu-category-button', 'menu-category-button-label',
+            name, description,
+            [name, description]);
     }
 };
 
@@ -431,26 +469,20 @@ function FavoritesButton(appsMenuButton, app, nbFavorites) {
 
 FavoritesButton.prototype = {
     __proto__: GenericApplicationButton.prototype,
-    
+
     _init: function(appsMenuButton, app, nbFavorites) {
-        GenericApplicationButton.prototype._init.call(this, appsMenuButton, app);        
         let monitorHeight = Main.layoutManager.primaryMonitor.height;
         let real_size = (0.7*monitorHeight) / nbFavorites;
         let icon_size = 0.6*real_size;
         if (icon_size>MAX_FAV_ICON_SIZE) icon_size = MAX_FAV_ICON_SIZE;
+
+        GenericApplicationButton.prototype._init.call(this, appsMenuButton, app, false, 'menu-favorites-button', null, app.create_icon_texture(icon_size));
         this.actor.style = "padding-top: "+(icon_size/3)+"px;padding-bottom: "+(icon_size/3)+"px; margin:auto;"
 
-        this.actor.add_style_class_name('menu-favorites-button');
-        this.addActor(app.create_icon_texture(icon_size));  
-        
-        this._draggable = DND.makeDraggable(this.actor);     
+        this._draggable = DND.makeDraggable(this.actor);
         this.isDraggableApp = true;
     },
-    
-    get_app_id: function() {
-        return this.app.get_id();
-    },
-    
+
     getDragActor: function() {
         return new Clutter.Clone({ source: this.actor });
     },
@@ -467,17 +499,21 @@ function SystemButton(appsMenuButton, icon, nbFavorites) {
 }
 
 SystemButton.prototype = {
-    _init: function(appsMenuButton, icon, nbFavorites) {
-        this.actor = new St.Button({ reactive: true, style_class: 'menu-favorites-button' });        
+    _init: function(appsMenuButton, icon, nbFavorites, name, description) {
+        this.actor = new St.Button({ reactive: true, style_class: 'menu-favorites-button' });
         let monitorHeight = Main.layoutManager.primaryMonitor.height;
         let real_size = (0.7*monitorHeight) / nbFavorites;
         let icon_size = 0.6*real_size;
         if (icon_size>MAX_FAV_ICON_SIZE) icon_size = MAX_FAV_ICON_SIZE;
         this.actor.style = "padding-top: "+(icon_size/3)+"px;padding-bottom: "+(icon_size/3)+"px; margin:auto;"
         let iconObj = new St.Icon({icon_name: icon, icon_size: icon_size, icon_type: St.IconType.FULLCOLOR});
-        this.actor.set_child(iconObj);             
+        this.actor.set_child(iconObj);
+
+        this.name = name;
+        this.description = description;
     }
 };
+
 
 function CategoriesApplicationsBox() {
     this._init();
@@ -488,7 +524,7 @@ CategoriesApplicationsBox.prototype = {
         this.actor = new St.BoxLayout();
         this.actor._delegate = this;
     },
-    
+
     acceptDrop : function(source, actor, x, y, time) {
         if (source instanceof FavoritesButton){
             source.actor.destroy();
@@ -508,12 +544,12 @@ FavoritesBox.prototype = {
     _init: function() {
         this.actor = new St.BoxLayout({ vertical: true });
         this.actor._delegate = this;
-        
+
         this._dragPlaceholder = null;
         this._dragPlaceholderPos = -1;
         this._animatingPlaceholdersCount = 0;
     },
-    
+
     _clearDragPlaceholder: function() {
         if (this._dragPlaceholder) {
             this._dragPlaceholder.animateOutAndDestroy();
@@ -521,7 +557,7 @@ FavoritesBox.prototype = {
             this._dragPlaceholderPos = -1;
         }
     },
-    
+
     handleDragOver : function(source, actor, x, y, time) {
         let app = source.app;
 
@@ -600,7 +636,7 @@ FavoritesBox.prototype = {
 
         return DND.DragMotionResult.COPY_DROP;
     },
-    
+
     // Draggable target interface
     acceptDrop : function(source, actor, x, y, time) {
         let app = source.app;
@@ -622,7 +658,7 @@ FavoritesBox.prototype = {
             if (this._dragPlaceholder &&
                 children[i] == this._dragPlaceholder.actor)
                 continue;
-            
+
             if (!(children[i]._delegate instanceof FavoritesButton)) continue;
 
             let childId = children[i]._delegate.app.get_id();
@@ -652,133 +688,143 @@ function MyApplet(orientation, panel_height) {
 
 MyApplet.prototype = {
     __proto__: Applet.TextIconApplet.prototype,
-
-    _init: function(orientation, panel_height) {        
+    
+    _init: function(orientation, panel_height) {
         Applet.TextIconApplet.prototype._init.call(this, orientation, panel_height);
+
+        this.set_applet_tooltip(_("Menu"));
+
+        this.menuManager = new PopupMenu.PopupMenuManager(this);
+        this.menu = new Applet.AppletPopupMenu(this, orientation);
+        this.menuManager.addMenu(this.menu);
+
+        this.actor.connect('key-press-event', Lang.bind(this, this._onSourceKeyPress));
         
-        try {                    
-            this.set_applet_tooltip(_("Menu"));
-                                    
-            this.menuManager = new PopupMenu.PopupMenuManager(this);
-            this.menu = new Applet.AppletPopupMenu(this, orientation);
-            this.menuManager.addMenu(this.menu);   
-                        
-            this.actor.connect('key-press-event', Lang.bind(this, this._onSourceKeyPress));
-            this.showRecent = global.settings.get_boolean("menu-show-recent");
-            global.settings.connect("changed::menu-show-recent", Lang.bind(this, function() {
-                this.showRecent = global.settings.get_boolean("menu-show-recent");
-                this._refreshApps();
-            }));
-            this.showPlaces = global.settings.get_boolean("menu-show-places");
-            global.settings.connect("changed::menu-show-places", Lang.bind(this, function() {
-                this.showPlaces = global.settings.get_boolean("menu-show-places");
-                this._refreshApps();
-            }));
-            let updateActivateOnHover = Lang.bind(this, function() {
-                if (this._openMenuId) {
-                    this.actor.disconnect(this._openMenuId);
-                    this._openMenuId = 0;
-                }
-                let openOnHover = global.settings.get_boolean("activate-menu-applet-on-hover");
-                if (openOnHover) {
-                    this._openMenuId = this.actor.connect('enter-event', Lang.bind(this, this.openMenu));
-                }
-            });
-            updateActivateOnHover();
-            global.settings.connect("changed::activate-menu-applet-on-hover", updateActivateOnHover);
-                        
-            this.menu.actor.add_style_class_name('menu-background');
-            this.menu.connect('open-state-changed', Lang.bind(this, this._onOpenStateChanged));                                
-                                    
+        this._connectSetting("menu-show-recent", "showRecent", Lang.bind(this, this._refreshApps));
+        this._connectSetting("menu-show-places", "showPlaces", Lang.bind(this, this._refreshApps));
+        this._connectSetting("menu-show-favorites", "showFavorites", Lang.bind(this, this._refreshFavs));
+        this._connectSetting("menu-show-system-buttons", "showSystemButtons", Lang.bind(this, this._refreshFavs));
+        this._connectSetting("menu-show-appinfo-title", "showAppInfoTitle", Lang.bind(this, this._refreshAppInfo));
+        this._connectSetting("menu-show-appinfo-description", "showAppInfoDescription", Lang.bind(this, this._refreshAppInfo));
+        this._connectSetting("menu-use-multiline-appinfo", "useMultilineAppInfoDescription", Lang.bind(this, this._refreshAppInfo));
+        this._connectSetting("menu-align-appinfo-right", "alignAppInfoRight", Lang.bind(this, this._refreshAppInfo));
+        this._connectSetting("menu-flip-search-appinfo", "flipSearchAppInfo", Lang.bind(this, this._refreshFlipSearchAppInfo));
+        
+        let updateActivateOnHover = Lang.bind(this, function() {
+            if (this._openMenuId) {
+                this.actor.disconnect(this._openMenuId);
+                this._openMenuId = 0;
+            }
+            let openOnHover = global.settings.get_boolean("activate-menu-applet-on-hover");
+            if (openOnHover) {
+                this._openMenuId = this.actor.connect('enter-event', Lang.bind(this, this.openMenu));
+            }
+        });
+        updateActivateOnHover();
+        global.settings.connect("changed::activate-menu-applet-on-hover", updateActivateOnHover);
+
+        this.menu.actor.add_style_class_name('menu-background');
+        this.menu.connect('open-state-changed', Lang.bind(this, this._onOpenStateChanged));
+
+        this._updateIcon();
+
+        global.settings.connect("changed::menu-icon", Lang.bind(this, function() {
             this._updateIcon();
-            
-            global.settings.connect("changed::menu-icon", Lang.bind(this, function() {
-                this._updateIcon();
-            })); 
-            
-            this.set_applet_label(_("Menu"));                                            
-            let menuLabel = global.settings.get_string("menu-text");
-            if (menuLabel != "Menu") {
-                this.set_applet_label(menuLabel);                 
-            } 
-            global.settings.connect("changed::menu-text", Lang.bind(this, function() {
-                    this.set_applet_label(global.settings.get_string("menu-text"));
-                })); 
-            this._searchInactiveIcon = new St.Icon({ style_class: 'menu-search-entry-icon',
-                                               icon_name: 'edit-find',
-                                               icon_type: St.IconType.SYMBOLIC });
-            this._searchActiveIcon = new St.Icon({ style_class: 'menu-search-entry-icon',
-                                             icon_name: 'edit-clear',
-                                             icon_type: St.IconType.SYMBOLIC });
-            this._searchIconClickedId = 0;
-            this._applicationsButtons = new Array();
-            this._favoritesButtons = new Array();
-            this._placesButtons = new Array();
-            this._selectedItemIndex = null;
-            this._previousTreeItemIndex = null;
-            this._previousSelectedActor = null;
-            this._previousTreeSelectedActor = null;
-            this._activeContainer = null;
-            this._activeActor = null;
-            this._applicationsBoxWidth = 0;
-            this.menuIsOpening = false;
-            
-            this.RecentManager = new DocInfo.DocManager();
+        }));
 
-            this._display();
-            appsys.connect('installed-changed', Lang.bind(this, this._refreshApps));
-            AppFavorites.getAppFavorites().connect('changed', Lang.bind(this, this._refreshFavs));
-
-            this.hover_delay = global.settings.get_int("menu-hover-delay") / 1000;
-            global.settings.connect("changed::menu-hover-delay", Lang.bind(this, function() {
-                    this.hover_delay = global.settings.get_int("menu-hover-delay") / 1000;
-            })); 
-                
-            global.display.connect('overlay-key', Lang.bind(this, function(){
-                try{
-                    this.menu.toggle();
-                }
-                catch(e) {
-                    global.logError(e);
-                }
+        this.set_applet_label(_("Menu"));
+        let menuLabel = global.settings.get_string("menu-text");
+        if (menuLabel != "Menu") {
+            this.set_applet_label(menuLabel);
+        }
+        global.settings.connect("changed::menu-text", Lang.bind(this, function() {
+                this.set_applet_label(global.settings.get_string("menu-text"));
             }));
-            Main.placesManager.connect('places-updated', Lang.bind(this, this._refreshApps));
-            this.RecentManager.connect('changed', Lang.bind(this, this._refreshApps));
+        this._searchInactiveIcon = new St.Icon({ style_class: 'menu-search-entry-icon',
+                                           icon_name: 'edit-find',
+                                           icon_type: St.IconType.SYMBOLIC });
+        this._searchActiveIcon = new St.Icon({ style_class: 'menu-search-entry-icon',
+                                         icon_name: 'edit-clear',
+                                         icon_type: St.IconType.SYMBOLIC });
+        this._searchIconClickedId = 0;
+        this._applicationsButtons = new Array();
+        this._favoritesButtons = new Array();
+        this._placesButtons = new Array();
+        this._selectedItemIndex = null;
+        this._previousTreeItemIndex = null;
+        this._previousSelectedActor = null;
+        this._previousTreeSelectedActor = null;
+        this._activeContainer = null;
+        this._activeActor = null;
+        this._applicationsBoxWidth = 0;
+        this.menuIsOpening = false;
 
-            this.edit_menu_item = new Applet.MenuItem(_("Edit menu"), Gtk.STOCK_EDIT, Lang.bind(this, this._launch_editor));
-            this._applet_context_menu.addMenuItem(this.edit_menu_item);
-            let settings_menu_item = new Applet.MenuItem(_("Menu settings"), null, function() {
-                Util.spawnCommandLine("cinnamon-settings menu");
-            });
-            this._applet_context_menu.addMenuItem(settings_menu_item);
-        }
-        catch (e) {
-            global.logError(e);
-        }
+        this.RecentManager = new DocInfo.DocManager();
+
+        this._display();
+        appsys.connect('installed-changed', Lang.bind(this, this._refreshApps));
+        AppFavorites.getAppFavorites().connect('changed', Lang.bind(this, this._refreshFavs));
+
+        this.hover_delay = global.settings.get_int("menu-hover-delay") / 1000;
+        global.settings.connect("changed::menu-hover-delay", Lang.bind(this, function() {
+                this.hover_delay = global.settings.get_int("menu-hover-delay") / 1000;
+        }));
+
+        global.display.connect('overlay-key', Lang.bind(this, function(){
+            try{
+                this.menu.toggle();
+            }
+            catch(e) {
+                global.logError(e);
+            }
+        }));
+        Main.placesManager.connect('places-updated', Lang.bind(this, this._refreshApps));
+        this.RecentManager.connect('changed', Lang.bind(this, this._refreshApps));
+
+        this.edit_menu_item = new Applet.MenuItem(_("Edit menu"), Gtk.STOCK_EDIT, Lang.bind(this, this._launch_editor));
+        this._applet_context_menu.addMenuItem(this.edit_menu_item);
+        let settings_menu_item = new Applet.MenuItem(_("Menu settings"), null, function() {
+            Util.spawnCommandLine("cinnamon-settings menu");
+        });
+        this._applet_context_menu.addMenuItem(settings_menu_item);
+    },
+
+    _connectSetting: function(configKey, varKey, refreshCallback) {
+        this[varKey] = global.settings.get_boolean(configKey);
+        
+        global.settings.connect("changed::" + configKey, Lang.bind(this, function() {
+            this[varKey] = global.settings.get_boolean(configKey);
+            
+            if(refreshCallback) {
+                try {
+                refreshCallback();
+            }
+        }));
     },
 
     openMenu: function() {
-        this.menu.open(true);
+        if(!this._applet_context_menu.actor.visible)
+            this.menu.open(true);
     },
 
     on_orientation_changed: function (orientation) {
         this.menu.destroy();
         this.menu = new Applet.AppletPopupMenu(this, orientation);
         this.menuManager.addMenu(this.menu);
-        
+
         this.menu.actor.add_style_class_name('menu-background');
         this.menu.connect('open-state-changed', Lang.bind(this, this._onOpenStateChanged));
         this._display();
     },
-    
+
     _launch_editor: function() {
         Util.spawnCommandLine("cinnamon-menu-editor");
     },
-    
+
     on_applet_clicked: function(event) {
-        this.menu.toggle();     
-    },        
-           
+        this.menu.toggle();
+    },
+
     _onSourceKeyPress: function(actor, event) {
         let symbol = event.get_key_symbol();
 
@@ -799,6 +845,8 @@ MyApplet.prototype = {
 
     _onOpenStateChanged: function(menu, open) {
         if (open) {
+            let showLeftPane = (this.showSystemButtons || this.showFavorites);
+        
             this.menuIsOpening = true;
             this.actor.add_style_pseudo_class('active');
             global.stage.set_key_focus(this.searchEntry);
@@ -807,17 +855,19 @@ MyApplet.prototype = {
             this._activeActor = null;
             let monitorHeight = Main.layoutManager.primaryMonitor.height;
             let applicationsBoxHeight = this.applicationsBox.get_allocation_box().y2-this.applicationsBox.get_allocation_box().y1;
-            let scrollBoxHeight = (this.leftBox.get_allocation_box().y2-this.leftBox.get_allocation_box().y1) -
-                                    (this.searchBox.get_allocation_box().y2-this.searchBox.get_allocation_box().y1);
+            let scrollBoxHeight = 200;
+            if(showLeftPane) {
+                scrollBoxHeight = (this.leftBox.get_allocation_box().y2-this.leftBox.get_allocation_box().y1) -
+                                     (this.searchBox.get_allocation_box().y2-this.searchBox.get_allocation_box().y1);
+            }
             this.applicationsScrollBox.style = "height: "+scrollBoxHeight+"px;";
             this._select_category(null, this._allAppsCategoryButton);
-	} else {
-            this.actor.remove_style_pseudo_class('active');            
+            } else {
+            this.actor.remove_style_pseudo_class('active');
             if (this.searchActive) {
-		this.resetSearch();
-	    }
-            this.selectedAppTitle.set_text("");
-            this.selectedAppDescription.set_text("");
+                this.resetSearch();
+            }
+            this._updateAppInfo("", "");
             this._previousTreeItemIndex = null;
             this._previousTreeSelectedActor = null;
             this._previousSelectedActor = null;
@@ -832,11 +882,11 @@ MyApplet.prototype = {
         this.actor.destroy();
         this.emit('destroy');
     },
-    
+
     _updateIcon: function(){
         let icon_file = global.settings.get_string("menu-icon");
         try{
-           this.set_applet_icon_path(icon_file);               
+           this.set_applet_icon_path(icon_file);
         }catch(e){
            global.log("WARNING : Could not load icon file \""+icon_file+"\" for menu button");
         }
@@ -854,7 +904,7 @@ MyApplet.prototype = {
             this.menu.close();
             return true;
         }
-        let index = this._selectedItemIndex;   
+        index = this._selectedItemIndex;
 
         if (this._activeContainer === null && symbol == Clutter.KEY_Up) {
             this._activeContainer = this.applicationsBox;
@@ -953,7 +1003,7 @@ MyApplet.prototype = {
             this._previousSelectedActor.style_class = "menu-category-button";
         }
     },
-    
+
     _refreshApps : function() {
         this.applicationsBox.destroy_all_children();
         this._applicationsButtons = new Array();
@@ -961,8 +1011,8 @@ MyApplet.prototype = {
         this._recentButtons = new Array();
         this._applicationsBoxWidth = 0;
         //Remove all categories
-    	this.categoriesBox.destroy_all_children();
-        
+        this.categoriesBox.destroy_all_children();
+
         this._allAppsCategoryButton = new CategoryButton(null);
         this._addEnterEvent(this._allAppsCategoryButton, Lang.bind(this, function() {
             if (!this.searchActive) {
@@ -1001,7 +1051,7 @@ MyApplet.prototype = {
         for (var i in trees) {
             let tree = trees[i];
             let root = tree.get_root_directory();
-            
+
             let iter = root.iter();
             let nextType;
             while ((nextType = iter.next()) != GMenu.TreeItemType.INVALID) {
@@ -1046,7 +1096,7 @@ MyApplet.prototype = {
                       this.categoriesBox.add_actor(categoryButton.actor);
                     }
                 }
-            } 
+            }
         }
         // Sort apps and add to applicationsBox
         this._applicationsButtons.sort(function(a, b) {
@@ -1072,7 +1122,9 @@ MyApplet.prototype = {
                             if (this.placesButton.isHovered) {
                                 this.placesButton.actor.style_class = "menu-category-button-selected";
                                 this._clearPrevCatSelection(this.placesButton);
-                                this._displayButtons(null, -1);
+                                this._displayButtons(null, this._applicationsButtons);
+                                this._displayButtons(-1, this._placesButtons);
+                                this._displayButtons(null, this._recentButtons);
                             }
                         }
                     });
@@ -1087,23 +1139,13 @@ MyApplet.prototype = {
             }));
             this.categoriesBox.add_actor(this.placesButton.actor);
 
-            let bookmarks = this._listBookmarks();
-            let devices = this._listDevices();
-            let places = bookmarks.concat(devices);
+            let bookmarks = Main.placesManager.getBookmarks().slice();
+            let places = bookmarks.concat(Main.placesManager.getMounts());
             for (var i = 0; i < places.length; i++) {
                 let place = places[i];
                 let button = new PlaceButton(this, place, place.name);
-                this._addEnterEvent(button, Lang.bind(this, function() {
-                        this._clearPrevAppSelection(button.actor);
-                        button.actor.style_class = "menu-application-button-selected";
-                        this._scrollToButton(button);
-                        this.selectedAppDescription.set_text(button.place.id.slice(16));
-                        }));
-                button.actor.connect('leave-event', Lang.bind(this, function() {
-                            button.actor.style_class = "menu-application-button";
-                            this._previousSelectedActor = button.actor;
-                            this.selectedAppDescription.set_text("");
-                            }));
+                this._addEnterEvent(button, Lang.bind(this, this._enterButton, button));
+                button.actor.connect('leave-event', Lang.bind(this, this._leaveButton, button));
                 this._placesButtons.push(button);
                 this.applicationsBox.add_actor(button.actor);
             }
@@ -1120,7 +1162,9 @@ MyApplet.prototype = {
                             if (this.recentButton.isHovered) {
                                 this.recentButton.actor.style_class = "menu-category-button-selected";
                                 this._clearPrevCatSelection(this.recentButton.actor);
-                                this._displayButtons(null, null, -1);
+                                this._displayButtons(null, this._applicationsButtons);
+                                this._displayButtons(null, this._placesButtons);
+                                this._displayButtons(-1, this._recentButtons);
                             }
                         }
                     });
@@ -1137,32 +1181,15 @@ MyApplet.prototype = {
 
             for (let id = 0; id < MAX_RECENT_FILES && id < this.RecentManager._infosByTimestamp.length; id++) {
                 let button = new RecentButton(this, this.RecentManager._infosByTimestamp[id]);
-                this._addEnterEvent(button, Lang.bind(this, function() {
-                        this._clearPrevAppSelection(button.actor);
-                        button.actor.style_class = "menu-application-button-selected";
-                        this._scrollToButton(button);
-                        this.selectedAppDescription.set_text(button.file.uri.slice(7));
-                        }));
-                button.actor.connect('leave-event', Lang.bind(this, function() {
-                        button.actor.style_class = "menu-application-button";
-                        this._previousSelectedActor = button.actor;
-                        this.selectedAppTitle.set_text("");
-                        this.selectedAppDescription.set_text("");
-                        }));
+                this._addEnterEvent(button, Lang.bind(this, this._enterButton, button));
+                button.actor.connect('leave-event', Lang.bind(this, this._leaveButton, button));
                 this._recentButtons.push(button);
                 this.applicationsBox.add_actor(button.actor);
             }
             if (this.RecentManager._infosByTimestamp.length > 0) {
                 let button = new RecentClearButton(this);
-                this._addEnterEvent(button, Lang.bind(this, function() {
-                        this._clearPrevAppSelection(button.actor);
-                        button.actor.style_class = "menu-application-button-selected";
-                        this._scrollToButton(button);
-                        }));
-                button.actor.connect('leave-event', Lang.bind(this, function() {
-                        button.actor.style_class = "menu-application-button";
-                        this._previousSelectedActor = button.actor;
-                        }));
+                this._addEnterEvent(button, Lang.bind(this, this._enterButton, button));
+                button.actor.connect('leave-event', Lang.bind(this, this._leaveButton, button));
                 this._recentButtons.push(button);
                 this.applicationsBox.add_actor(button.actor);
             }
@@ -1171,97 +1198,136 @@ MyApplet.prototype = {
         this._setCategoriesButtonActive(!this.searchActive);
     },
 
+    _enterButton: function(button) {
+        this._updateAppInfo(button.name, button.description);
+        
+        this._clearPrevAppSelection(button.actor);
+        button.actor.style_class = button.buttonStyle + "-selected";
+        this._scrollToButton(button);
+    },
+
+    _leaveButton: function(a, b, button) {
+        this._updateAppInfo("", "");
+        
+        this._previousSelectedActor = button.actor;
+        button.actor.style_class = button.buttonStyle;
+    },
+
+    _enterSideButton: function(button) {
+        this._updateAppInfo(button.name, button.description);
+    },
+
+    _leaveSideButton: function(a, b, button) {
+        this._updateAppInfo("", "");
+    },
+
+    _refreshAppInfo: function() {
+        this.selectedAppBox.visible = (this.showAppInfoTitle || this.showAppInfoDescription);
+        this.selectedAppDescription.visible = this.showAppInfoDescription;
+        this.selectedAppTitle.visible = this.showAppInfoTitle;
+        this.selectedAppDescription.clutter_text.set_line_wrap(this.useMultilineAppInfoDescription);
+        this.selectedAppDescription.style = this.alignAppInfoRight ? 'text-align:right;' : 'text-align:left;';
+        this.selectedAppTitle.style = this.selectedAppDescription.style;
+    },
+
+    _refreshFlipSearchAppInfo: function() {
+        if(!this.flipSearchAppInfo)
+            this.searchBox.reparent(this.topRightPane);
+        else
+            this.searchBox.reparent(this.bottomRightPane);
+            
+        if(this.flipSearchAppInfo)
+            this.selectedAppBox.reparent(this.topPane);
+        else
+            this.selectedAppBox.reparent(this.bottomPane);
+        
+        
+        let showLeftPane = (this.showSystemButtons || this.showFavorites);
+        let scrollBoxHeight = 200;
+        if(showLeftPane) {
+            scrollBoxHeight = (this.leftBox.get_allocation_box().y2-this.leftBox.get_allocation_box().y1) -
+                                 (this.searchBox.get_allocation_box().y2-this.searchBox.get_allocation_box().y1);
+        }
+        this.applicationsScrollBox.style = "height: "+scrollBoxHeight+"px;";
+    },
+    
     _refreshFavs : function() {
-    	//Remove all favorites
-    	this.leftBox.get_children().forEach(Lang.bind(this, function (child) {
+        //Remove all favorites
+        this.leftBox.get_children().forEach(Lang.bind(this, function (child) {
             child.destroy();
         }));
+
+        let numFavorites = 0;
+
+        this.leftPane.visible = (this.showFavorites || this.showSystemButtons);
         
-        let favoritesBox = new FavoritesBox();
-        this.leftBox.add_actor(favoritesBox.actor, { y_align: St.Align.END, y_fill: false });
-    	 
-        //Load favorites again
-        this._favoritesButtons = new Array();
-        let launchers = global.settings.get_strv('favorite-apps');
-        let appSys = Cinnamon.AppSystem.get_default();
-        let j = 0;
-        for ( let i = 0; i < launchers.length; ++i ) {
-            let app = appSys.lookup_app(launchers[i]);
-            if (app) {
-                let button = new FavoritesButton(this, app, launchers.length + 3); // + 3 because we're adding 3 system buttons at the bottom
-                this._favoritesButtons[app] = button;
-                favoritesBox.actor.add_actor(button.actor, { y_align: St.Align.END, y_fill: false });
-                button.actor.connect('enter-event', Lang.bind(this, function() {
-                   this.selectedAppTitle.set_text(button.app.get_name());
-                   if (button.app.get_description()) this.selectedAppDescription.set_text(button.app.get_description().split("\n")[0]);
-                   else this.selectedAppDescription.set_text("");
-                }));
-                button.actor.connect('leave-event', Lang.bind(this, function() {
-                   this.selectedAppTitle.set_text("");
-                   this.selectedAppDescription.set_text("");
-                }));
-                ++j;
+        if(this.showFavorites) {
+            let favoritesBox = new FavoritesBox();
+            this.leftBox.add_actor(favoritesBox.actor, { y_align: St.Align.END, y_fill: false });
+
+            //Load favorites again
+            this._favoritesButtons = new Array();
+            let launchers = global.settings.get_strv('favorite-apps');
+            let appSys = Cinnamon.AppSystem.get_default();
+            let j = 0;
+            numFavorites = launchers.length;
+
+            for ( let i = 0; i < launchers.length; ++i ) {
+                let app = appSys.lookup_app(launchers[i]);
+                if (app) {
+                    let button = new FavoritesButton(this, app, launchers.length + 3); // + 3 because we're adding 3 system buttons at the bottom
+                    this._favoritesButtons[app] = button;
+                    favoritesBox.actor.add_actor(button.actor, { y_align: St.Align.END, y_fill: false });
+                    button.actor.connect('enter-event', Lang.bind(this, this._enterSideButton, button));
+                    button.actor.connect('leave-event', Lang.bind(this, this._leaveSideButton, button));
+                    ++j;
+                }
             }
         }
-        
-        //Separator
-	if (launchers.length!=0){
-            let separator = new PopupMenu.PopupSeparatorMenuItem();
-            this.leftBox.add_actor(separator.actor, { y_align: St.Align.END, y_fill: false });                   
-        }
 
-        //Lock screen
-        let button = new SystemButton(this, "gnome-lockscreen", launchers.length + 3);        
-        button.actor.connect('enter-event', Lang.bind(this, function() {
-				this.selectedAppTitle.set_text(_("Lock screen"));
-				this.selectedAppDescription.set_text(_("Lock the screen"));				
-			}));
-		button.actor.connect('leave-event', Lang.bind(this, function() {
-				this.selectedAppTitle.set_text("");
-				this.selectedAppDescription.set_text("");
-			}));        
-        button.actor.connect('clicked', Lang.bind(this, function() {            
-            this.menu.close();
-            this._screenSaverProxy.LockRemote();
-        }));
-        
-        this.leftBox.add_actor(button.actor, { y_align: St.Align.END, y_fill: false });                  
-        
-        //Logout button
-        let button = new SystemButton(this, "gnome-logout", launchers.length + 3);        
-        button.actor.connect('enter-event', Lang.bind(this, function() {
-				this.selectedAppTitle.set_text(_("Logout"));
-				this.selectedAppDescription.set_text(_("Leave the session"));				
-			}));
-		button.actor.connect('leave-event', Lang.bind(this, function() {
-				this.selectedAppTitle.set_text("");
-				this.selectedAppDescription.set_text("");
-			}));        
-        button.actor.connect('clicked', Lang.bind(this, function() {            
-            this.menu.close();
-            this._session.LogoutRemote(0);
-        }));
-        
-        this.leftBox.add_actor(button.actor, { y_align: St.Align.END, y_fill: false }); 
-                        
-        //Shutdown button
-        let button = new SystemButton(this, "gnome-shutdown", launchers.length + 3);        
-        button.actor.connect('enter-event', Lang.bind(this, function() {
-				this.selectedAppTitle.set_text(_("Quit"));
-				this.selectedAppDescription.set_text(_("Shutdown the computer"));				
-			}));
-		button.actor.connect('leave-event', Lang.bind(this, function() {
-				this.selectedAppTitle.set_text("");
-				this.selectedAppDescription.set_text("");
-			}));        
-        button.actor.connect('clicked', Lang.bind(this, function() {            
-            this.menu.close();
-            this._session.ShutdownRemote();
-        }));
-        
-        this.leftBox.add_actor(button.actor, { y_align: St.Align.END, y_fill: false });                
+        if(this.showSystemButtons) {
+            //Separator
+            if (numFavorites > 0){
+                numFavorites++;
+                let separator = new PopupMenu.PopupSeparatorMenuItem();
+                this.leftBox.add_actor(separator.actor, { y_align: St.Align.END, y_fill: false });
+            }
+
+            //Lock screen
+            let button = new SystemButton(this, "gnome-lockscreen", numFavorites + 3, _("Lock screen"), _("Lock the screen"));
+            button.actor.connect('enter-event', Lang.bind(this, this._enterSideButton, button));
+            button.actor.connect('leave-event', Lang.bind(this, this._leaveSideButton, button));
+            button.actor.connect('clicked', Lang.bind(this, function() {
+                this.menu.close();
+                this._screenSaverProxy.LockRemote();
+            }));
+
+            this.leftBox.add_actor(button.actor, { y_align: St.Align.END, y_fill: false });
+
+            //Logout button
+            button = new SystemButton(this, "gnome-logout", numFavorites + 3, _("Logout"), _("Leave the session"));
+            button.actor.connect('enter-event', Lang.bind(this, this._enterSideButton, button));
+            button.actor.connect('leave-event', Lang.bind(this, this._leaveSideButton, button));
+            button.actor.connect('clicked', Lang.bind(this, function() {
+                this.menu.close();
+                this._session.LogoutRemote(0);
+            }));
+
+            this.leftBox.add_actor(button.actor, { y_align: St.Align.END, y_fill: false });
+
+            //Shutdown button
+            button = new SystemButton(this, "gnome-shutdown", numFavorites + 3, _("Quit"), _("Shutdown the computer"));
+            button.actor.connect('enter-event', Lang.bind(this, this._enterSideButton, button));
+            button.actor.connect('leave-event', Lang.bind(this, this._leaveSideButton, button));
+            button.actor.connect('clicked', Lang.bind(this, function() {
+                this.menu.close();
+                this._session.ShutdownRemote();
+            }));
+
+            this.leftBox.add_actor(button.actor, { y_align: St.Align.END, y_fill: false });
+        }
     },
-   
+
     _loadCategory: function(dir, top_dir) {
         var iter = dir.iter();
         var dupe = false;
@@ -1276,8 +1342,8 @@ MyApplet.prototype = {
                     if (!dupe) {
                         let applicationButton = new ApplicationButton(this, app);
                         applicationButton.actor.connect('realize', Lang.bind(this, this._onApplicationButtonRealized));
-                        applicationButton.actor.connect('leave-event', Lang.bind(this, this._appLeaveEvent, applicationButton));
-                        this._addEnterEvent(applicationButton, Lang.bind(this, this._appEnterEvent, applicationButton));
+                        applicationButton.actor.connect('leave-event', Lang.bind(this, this._leaveButton, applicationButton));
+                        this._addEnterEvent(applicationButton, Lang.bind(this, this._enterButton, applicationButton));
                         this._applicationsButtons.push(applicationButton);
                         applicationButton.category.push(top_dir.get_menu_id());
                         this.applicationsByCategory[top_dir.get_menu_id()].push(app.get_name());
@@ -1296,24 +1362,6 @@ MyApplet.prototype = {
                 this._loadCategory(subdir, top_dir);
             }
         }
-    },
-
-    _appLeaveEvent: function(a, b, applicationButton) {
-        this._previousSelectedActor = applicationButton.actor;
-        applicationButton.actor.style_class = "menu-application-button";
-        this.selectedAppTitle.set_text("");
-        this.selectedAppDescription.set_text("");
-    },
-
-    _appEnterEvent: function(applicationButton) {
-        this.selectedAppTitle.set_text(applicationButton.app.get_name());
-        if (applicationButton.app.get_description())
-            this.selectedAppDescription.set_text(applicationButton.app.get_description());
-        else
-            this.selectedAppDescription.set_text("");
-        this._clearPrevAppSelection(applicationButton.actor);
-        applicationButton.actor.style_class = "menu-application-button-selected";
-        this._scrollToButton(applicationButton);
     },
 
     find_dupe: function(app) {
@@ -1335,27 +1383,15 @@ MyApplet.prototype = {
         if (box_height+current_scroll_value < button.actor.get_allocation_box().y2+10) new_scroll_value = button.actor.get_allocation_box().y2-box_height+10;
         if (new_scroll_value!=current_scroll_value) this.applicationsScrollBox.get_vscroll_bar().get_adjustment().set_value(new_scroll_value);
     },
-               
+
     _display : function() {
         this._activeContainer = null;
         this._activeActor = null;
         let section = new PopupMenu.PopupMenuSection();
         this.menu.addMenuItem(section);
         
-        let leftPane = new St.BoxLayout({ vertical: true });
-                  
-        this.leftBox = new St.BoxLayout({ style_class: 'menu-favorites-box', vertical: true });        
-        
-        this._session = new GnomeSession.SessionManager();
-        this._screenSaverProxy = new ScreenSaver.ScreenSaverProxy();            
-                                       
-        leftPane.add_actor(this.leftBox, { y_align: St.Align.END, y_fill: false });        
-        
-        let rightPane = new St.BoxLayout({ vertical: true });
-        
+        // Prepare search box
         this.searchBox = new St.BoxLayout({ style_class: 'menu-search-box' });
-        rightPane.add_actor(this.searchBox);
-        
         this.searchEntry = new St.Entry({ name: 'menu-search-entry',
                                      hint_text: _("Type to search..."),
                                      track_hover: true,
@@ -1367,6 +1403,14 @@ MyApplet.prototype = {
         this.searchEntryText.connect('text-changed', Lang.bind(this, this._onSearchTextChanged));
         this.searchEntryText.connect('key-press-event', Lang.bind(this, this._onMenuKeyPress));
         this._previousSearchPattern = "";
+
+        this._session = new GnomeSession.SessionManager();
+        this._screenSaverProxy = new ScreenSaver.ScreenSaverProxy();
+
+        let rightPane = new St.BoxLayout({ style_class: 'menu-right-pane', vertical: true });
+        
+        this.topRightPane = new St.BoxLayout({ vertical: true });
+        rightPane.add_actor(this.topRightPane);
 
         this.categoriesApplicationsBox = new CategoriesApplicationsBox();
         rightPane.add_actor(this.categoriesApplicationsBox.actor);
@@ -1386,31 +1430,49 @@ MyApplet.prototype = {
                         Lang.bind(this, function() {
                                       this.menu.passEvents = false;
                                   }));
-        
+
         this.applicationsBox = new St.BoxLayout({ style_class: 'menu-applications-box', vertical:true });
         this.applicationsScrollBox.add_actor(this.applicationsBox);
         this.applicationsScrollBox.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC);
         this.categoriesApplicationsBox.actor.add_actor(this.categoriesBox);
         this.categoriesApplicationsBox.actor.add_actor(this.applicationsScrollBox);
-                     
-        this._refreshFavs();
-                                                          
-        this.mainBox = new St.BoxLayout({ style_class: 'menu-applications-box', vertical:false });       
-                
-        this.mainBox.add_actor(leftPane, { span: 1 });
-        this.mainBox.add_actor(rightPane, { span: 1 });
-        
-        section.actor.add_actor(this.mainBox);
-        
-	this.applicationsByCategory = {};
+
+        this.applicationsByCategory = {};
         this._refreshApps();
 
+        this.bottomRightPane = new St.BoxLayout({ vertical: true });
+        rightPane.add_actor(this.bottomRightPane);
+        
         this.selectedAppBox = new St.BoxLayout({ style_class: 'menu-selected-app-box', vertical: true });
+
         this.selectedAppTitle = new St.Label({ style_class: 'menu-selected-app-title', text: "" });
         this.selectedAppBox.add_actor(this.selectedAppTitle);
         this.selectedAppDescription = new St.Label({ style_class: 'menu-selected-app-description', text: "" });
         this.selectedAppBox.add_actor(this.selectedAppDescription);
-        section.actor.add_actor(this.selectedAppBox);
+
+        this.topPane = new St.BoxLayout({ vertical: true });
+        section.actor.add_actor(this.topPane);
+        
+        this.leftPane = new St.BoxLayout({ style_class: 'menu-left-pane', vertical: true });
+        this.leftPane.visible = (this.showFavorites || this.showSystemButtons);
+        this.leftBox = new St.BoxLayout({ style_class: 'menu-favorites-box', vertical: true });
+        this.leftPane.add_actor(this.leftBox, { y_align: St.Align.END, y_fill: false });
+
+        this._refreshFavs();
+
+        this.mainBox = new St.BoxLayout({ style_class: 'menu-applications-box', vertical:false });
+
+        this.mainBox.add_actor(this.leftPane, { span: 1 });
+        this.mainBox.add_actor(rightPane, { span: 1 });
+
+        section.actor.add_actor(this.mainBox);
+
+        this.bottomPane = new St.BoxLayout({ vertical: true });
+        section.actor.add_actor(this.bottomPane);
+        
+        this._refreshAppInfo();
+        this._refreshFlipSearchAppInfo();
+        
         this.appBoxIter = new VisibleChildIterator(this, this.applicationsBox);
         this.applicationsBox._vis_iter = this.appBoxIter;
         this.catBoxIter = new VisibleChildIterator(this, this.categoriesBox);
@@ -1436,7 +1498,7 @@ MyApplet.prototype = {
             actor.style_class = "menu-application-button";
             actor.hide();
         }
-        let actors = this.categoriesBox.get_children();
+        actors = this.categoriesBox.get_children();
         for (var i=0; i<actors.length; i++){
             let actor = actors[i];
             actor.style_class = "menu-category-button";
@@ -1445,10 +1507,10 @@ MyApplet.prototype = {
     },
 
     _select_category : function(dir, categoryButton) {
-        if (dir)
-            this._displayButtons(this._listApplications(dir.get_menu_id()));
-        else
-            this._displayButtons(this._listApplications(null));
+        let category = 'all';
+        if (dir && dir.get_menu_id())
+            category = dir.get_menu_id();
+        this._displayAppButtonsForCategory(category);
         this.closeApplicationsContextMenus(null, false);
     },
 
@@ -1462,109 +1524,59 @@ MyApplet.prototype = {
             }
         }
     },
-    
+
     _onApplicationButtonRealized: function(actor) {
         if (actor.get_width() > this._applicationsBoxWidth){
             this._applicationsBoxWidth = actor.get_width();
             this.applicationsBox.set_width(this._applicationsBoxWidth + 20);
         }
     },
-    
-    _displayButtons: function(appCategory, places, recent, apps){
-        if (appCategory) {
-            if (appCategory == "all") {
-                this._applicationsButtons.forEach( function (item, index) {
-                    if (!item.actor.visible) {
-                        item.actor.show();
-                    }
-                });
-            } else {
-                this._applicationsButtons.forEach( function (item, index) {
-                    if (item.category.indexOf(appCategory) != -1) {
-                        if (!item.actor.visible) {
-                            item.actor.show();
-                        }
-                    } else {
-                        if (item.actor.visible) {
-                            item.actor.hide();
-                        }
-                    }
-                });
-            }
-        } else if (apps) {
-            for (let i = 0; i < this._applicationsButtons.length; i++) {
-                    if (apps.indexOf(this._applicationsButtons[i].name) != -1) {
-                        if (!this._applicationsButtons[i].actor.visible) {
-                            this._applicationsButtons[i].actor.show();
-                        }
-                    } else {
-                        if (this._applicationsButtons[i].actor.visible) {
-                            this._applicationsButtons[i].actor.hide();
-                        }
-                    }
-            }
+
+    _displayAppButtonsForCategory: function(appCategory){
+        this._displayButtons(null, this._placesButtons);
+        this._displayButtons(null, this._recentButtons);
+        if (appCategory == "all") {
+            this._displayButtons(-1, this._applicationsButtons);
         } else {
             this._applicationsButtons.forEach( function (item, index) {
-                    if (item.actor.visible) {
-                        item.actor.hide();
-                    }
-            });
-        }
-        if (places) {
-            if (places == -1) {
-                this._placesButtons.forEach( function (item, index) {
-                   item.actor.show();
-                });
-            } else {
-                for (let i = 0; i < this._placesButtons.length; i++) {
-                    if (places.indexOf(this._placesButtons[i].button_name) != -1) {
-                        if (!this._placesButtons[i].actor.visible) {
-                            this._placesButtons[i].actor.show();
-                        }
-                    } else {
-                        if (this._placesButtons[i].actor.visible) {
-                            this._placesButtons[i].actor.hide();
-                        }
-                    }
-                }
-            }
-        } else {
-            this._placesButtons.forEach( function (item, index) {
-                    if (item.actor.visible) {
-                        item.actor.hide();
-                    }
-            });
-        }
-        if (recent) {
-            if (recent == -1) {
-                this._recentButtons.forEach( function (item, index) {
+                if (item.category.indexOf(appCategory) != -1) {
                     if (!item.actor.visible) {
                         item.actor.show();
                     }
-                });
-            } else {
-                for (let i = 0; i < this._recentButtons.length; i++) {
-                    if (recent.indexOf(this._recentButtons[i].button_name) != -1) {
-                        if (!this._recentButtons[i].actor.visible) {
-                            this._recentButtons[i].actor.show();
-                        }
-                    } else {
-                        if (this._recentButtons[i].actor.visible) {
-                            this._recentButtons[i].actor.hide();
-                        }
-                    }
-                }
-            }
-        } else {
-            this._recentButtons.forEach( function (item, index) {
+                } else {
                     if (item.actor.visible) {
                         item.actor.hide();
                     }
+                }
             });
         }
     },
 
-    _setCategoriesButtonActive: function(active) {         
+    _displayButtons: function(nameList, buttonList){
+        if(nameList == null) {
+            buttonList.forEach( function (item, index) {
+                if (item.actor.visible)
+                    item.actor.hide();
+            });
+        }
+        else if (nameList == -1) {
+            buttonList.forEach( function (item, index) {
+                if (!item.actor.visible)
+                    item.actor.show();
+            });
+        } else {
+            buttonList.forEach( function (item, index) {
+                if (nameList.indexOf(item.name) != -1) {
+                    if (!item.actor.visible)
+                        item.actor.show();
+                }
+                else if (item.actor.visible)
+                        item.actor.hide();
+            });
+        }
+    },
+
+    _setCategoriesButtonActive: function(active) {
         try {
             let categoriesButtons = this.categoriesBox.get_children();
             for (var i in categoriesButtons) {
@@ -1587,7 +1599,7 @@ MyApplet.prototype = {
         this._setCategoriesButtonActive(true);
         global.stage.set_key_focus(this.searchEntry);
      },
-     
+
      _onSearchTextChanged: function (se, prop) {
         if (this.menuIsOpening) {
             this.menuIsOpening = false;
@@ -1617,43 +1629,24 @@ MyApplet.prototype = {
         }
     },
 
-    _listBookmarks: function(pattern){
-       let bookmarks = Main.placesManager.getBookmarks();
-       var res = new Array();
-       for (let id = 0; id < bookmarks.length; id++) {
-          if (!pattern || bookmarks[id].name.toLowerCase().indexOf(pattern)!=-1) res.push(bookmarks[id]);
-       }
-       return res;
-    },
-    
-    _listDevices: function(pattern){
-       let devices = Main.placesManager.getMounts();
-       var res = new Array();
-       for (let id = 0; id < devices.length; id++) {
-          if (!pattern || devices[id].name.toLowerCase().indexOf(pattern)!=-1) res.push(devices[id]);
-       }
-       return res;
-    },
-    
-    _listApplications: function(category_menu_id, pattern){
-        var applist = new Array();
-        if (category_menu_id) {
-            applist = category_menu_id;
-        } else {
-            applist = "all";
-        }
-        let res;
+    _listButtons: function(buttons, pattern) {
+        let res = new Array();
         if (pattern){
-            res = new Array();
-            for (var i in this._applicationsButtons) {
-                let app = this._applicationsButtons[i].app;
-                if (app.get_name().toLowerCase().indexOf(pattern)!=-1 || (app.get_description() && app.get_description().toLowerCase().indexOf(pattern)!=-1) ||
-                        (app.get_id() && app.get_id().slice(0, -8).toLowerCase().indexOf(pattern)!=-1)) res.push(app.get_name());
+            for (var i in buttons) {
+                if (buttons[i].search(pattern))
+                    res.push(buttons[i].name);
             }
-        } else res = applist;
+        }
         return res;
     },
     
+    _updateAppInfo: function(name, description) {
+        if(this.selectedAppTitle)
+            this.selectedAppTitle.set_text(name);
+        if(this.selectedAppDescription)
+            this.selectedAppDescription.set_text(description ? description : "");
+    },
+
     _doSearch: function(){
         let pattern = this.searchEntryText.get_text().replace(/^\s+/g, '').replace(/\s+$/g, '').toLowerCase();
         if (pattern==this._previousSearchPattern) return false;
@@ -1664,30 +1657,26 @@ MyApplet.prototype = {
         this._previousTreeItemIndex = null;
         this._previousTreeSelectedActor = null;
         this._previousSelectedActor = null;
-       
-       // _listApplications returns all the applications when the search
+
+       // _listButtons returns all the applications when the search
        // string is zero length. This will happend if you type a space
        // in the search entry.
         if (pattern.length == 0) {
+            this._updateAppInfo("", "");
             return false;
         }
 
-        var appResults = this._listApplications(null, pattern);
-        var placesResults = new Array();
-        var bookmarks = this._listBookmarks(pattern);
-        for (var i in bookmarks)
-            placesResults.push(bookmarks[i].name);
-        var devices = this._listDevices(pattern);
-        for (var i in devices)
-            placesResults.push(devices[i].name);
-        var recentResults = new Array();
-        for (let i = 0; i < this._recentButtons.length; i++) {
-            if (!(this._recentButtons[i] instanceof RecentClearButton) && this._recentButtons[i].button_name.toLowerCase().indexOf(pattern) != -1)
-                recentResults.push(this._recentButtons[i].button_name);
+        var appResults = this._listButtons(this._applicationsButtons, pattern);
+        var placesResults = this._listButtons(this._placesButtons, pattern);
+        var recentResults = this._listButtons(this._recentButtons, pattern);
+
+        this._displayButtons(appResults, this._applicationsButtons);
+        this._displayButtons(placesResults, this._placesButtons);
+        this._displayButtons(recentResults, this._recentButtons);
+        if(appResults.length == 0 && placesResults.length == 0 && recentResults.length == 0) {
+            this._updateAppInfo("", "");
         }
 
-        this._displayButtons(null, placesResults, recentResults, appResults);
-       
         this.appBoxIter.reloadVisible();
         if (this.appBoxIter.getNumVisibleChildren() > 0) {
             let item_actor = this.appBoxIter.getFirstVisible();
@@ -1701,7 +1690,6 @@ MyApplet.prototype = {
     }
 };
 
-function main(metadata, orientation, panel_height) {  
-    let myApplet = new MyApplet(orientation, panel_height);
-    return myApplet;      
+function main(metadata, orientation, panel_height) {
+    return new MyApplet(orientation, panel_height);
 }

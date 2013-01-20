@@ -337,6 +337,62 @@
       </_description>
     </key>
 
+    <key type="b" name="menu-show-favorites">
+      <default>true</default>
+      <_summary>Enable or disable display of favorites in menu applet</_summary>
+      <_description>
+            Toggles displaying the 'Favorites' section in the menu applet
+      </_description>
+    </key>
+
+    <key type="b" name="menu-show-system-buttons">
+      <default>true</default>
+      <_summary>Enable or disable display of system buttons in menu applet</_summary>
+      <_description>
+            Toggles displaying the 'Lockscreen/Log out/Shutdown' buttons in the menu applet
+      </_description>
+    </key>
+
+    <key type="b" name="menu-show-appinfo-title">
+      <default>true</default>
+      <_summary>Enable or disable display of AppInfo title in menu applet</_summary>
+      <_description>
+            Toggles displaying the title of the currently selected application in the menu applet
+      </_description>
+    </key>
+
+    <key type="b" name="menu-show-appinfo-description">
+      <default>true</default>
+      <_summary>Enable or disable display of AppInfo description in menu applet</_summary>
+      <_description>
+            Toggles displaying the description of the currently selected application in the menu applet
+      </_description>
+    </key>
+
+    <key type="b" name="menu-use-multiline-appinfo">
+      <default>false</default>
+      <_summary>Enable or disable text wrapping on AppInfo description in menu applet</_summary>
+      <_description>
+            Toggles text wrapping on the description of the currently selected application in the menu applet
+      </_description>
+    </key>
+
+    <key type="b" name="menu-align-appinfo-right">
+      <default>true</default>
+      <_summary>Align AppInfo title  and description on the right side in menu applet</_summary>
+      <_description>
+            Changes text align of the description and title of the currently selected application in the menu applet
+      </_description>
+    </key>
+
+    <key type="b" name="menu-flip-search-appinfo">
+      <default>false</default>
+      <_summary>Flip Searchbox and AppInfoposition menu applet</_summary>
+      <_description>
+            Searchbox will appear on the bottom and AppInfo on the top the menu applet
+      </_description>
+    </key>
+
     <key type="i" name="number-workspaces">
         <default>2</default>
         <_summary>Number of workspaces in Cinnamon session</_summary>
