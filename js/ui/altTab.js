@@ -73,6 +73,11 @@ AltTabPopup.prototype = {
         this._initialDelayTimeoutId = 0;
         this._displayPreviewTimeoutId = 0;
 
+        // Keeps track of the number of "primary" items, which is the number
+        // of windows on the current workspace. This information is used to
+        // size the icons to a size that fits the current working set.
+        var _numPrimaryItems = 0;
+
         this.thumbnailsVisible = false;
 
         // Initially disable hover so we ignore the enter-event if
@@ -199,6 +204,9 @@ AltTabPopup.prototype = {
                 backwardIndex = wlist.length > 1 ? currentIndex + wlist.length - 1 : currentIndex;
             }
         }
+        // Size the icon bar primarily to fit the windows of the current workspace, with some
+        // added space for windows from the other workspaces, if any.
+        this._numPrimaryItems = Math.max(2, wsWindows.length + (windows.length > wsWindows.length ? 2 : 0));
 
         this._appSwitcher = new AppSwitcher(windows, this._showThumbnails, this);
         this.actor.add_actor(this._appSwitcher.actor);
@@ -1174,7 +1182,7 @@ AppSwitcher.prototype = {
         for(let i =  0; i < iconSizes.length; i++) {
                 this._iconSize = iconSizes[i];
                 height = iconSizes[i] + iconSpacing;
-                let w = height * this._items.length + totalSpacing;
+                let w = height * this._altTabPopup._numPrimaryItems + totalSpacing;
                 if (w <= availWidth)
                         break;
         }
