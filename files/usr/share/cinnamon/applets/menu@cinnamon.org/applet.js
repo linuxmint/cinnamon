@@ -796,7 +796,6 @@ MyApplet.prototype = {
             this[varKey] = global.settings.get_boolean(configKey);
             
             if(refreshCallback) {
-                try {
                 refreshCallback();
             }
         }));
