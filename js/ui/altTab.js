@@ -551,16 +551,7 @@ AltTabPopup.prototype = {
         if (this._previewClones) {
             for (let i = 0; i < this._previewClones.length; ++i) {
                 let clone = this._previewClones[i];
-                Tweener.addTween(clone, {
-                    opacity: 0,
-                    time: PREVIEW_SWITCHER_FADEOUT_TIME / 4,
-                    transition: 'linear',
-                    onCompleteScope: this,
-                    onComplete: function() {
-                        this.actor.remove_actor(clone);
-                        clone.destroy();
-                    }
-                });
+                clone.destroy();
             }
             this._previewClones = null;
         }
@@ -702,18 +693,9 @@ AltTabPopup.prototype = {
         if (!this._thumbnails) {
             return;
         }
-        let thumbnailsActor = this._thumbnails.actor;
+        this.thumbnailsVisible = false;
+        this._thumbnails.actor.destroy();
         this._thumbnails = null;
-        Tweener.addTween(thumbnailsActor,
-            { opacity: 0,
-                time: THUMBNAIL_FADE_TIME,
-                transition: 'easeOutQuad',
-                onComplete: Lang.bind(this, function() {
-                    this.actor.remove_actor(thumbnailsActor);
-                    thumbnailsActor.destroy();
-                    this.thumbnailsVisible = false;
-                })
-            });
     },
 
     _createThumbnails : function() {
