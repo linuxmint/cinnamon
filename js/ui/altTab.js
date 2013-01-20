@@ -341,6 +341,8 @@ AltTabPopup.prototype = {
 
         if (keysym == Clutter.Escape) {
             this.destroy();
+        } else if (keysym == Clutter.KEY_space) {
+            this._persistent = true;
         } else if (keysym == Clutter.Home || keysym == Clutter.KP_Home) {
             this._select(0);
         } else if (keysym == Clutter.End || keysym == Clutter.KP_End) {
@@ -387,7 +389,7 @@ AltTabPopup.prototype = {
         let [x, y, mods] = global.get_pointer();
         let state = mods & this._modifierMask;
 
-        if (state == 0)
+        if (state == 0 && !this._persistent)
             this._finish();
 
         return true;
