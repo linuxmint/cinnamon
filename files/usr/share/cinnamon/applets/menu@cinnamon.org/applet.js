@@ -229,7 +229,7 @@ GenericApplicationButton.prototype = {
 
     _init: function(appsMenuButton, app, withMenu, buttonStyle, labelStyle, icon) {
         this.app = app;
-        let appId = app.get_id() ? app.get_id().slice(0, -8) : null;
+        let appId = app.get_id() ? app.get_id().slice(0, -8) : '';
 
         SearchableButton.prototype._init.call(this,
             appsMenuButton, icon,
