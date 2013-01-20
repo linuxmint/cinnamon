@@ -261,10 +261,12 @@ AltTabPopup.prototype = {
         // https://bugzilla.gnome.org/show_bug.cgi?id=596695 for
         // details.) So we check now. (Have to do this after updating
         // selection.)
-        let [x, y, mods] = global.get_pointer();
-        if (!(mods & this._modifierMask)) {
-            this._finish();
-            return false;
+        if (!this._persistent) {
+            let [x, y, mods] = global.get_pointer();
+            if (!(mods & this._modifierMask)) {
+                this._finish();
+                return false;
+            }
         }
 
         if (this._appIcons.length > 0) {
@@ -350,8 +352,12 @@ AltTabPopup.prototype = {
 
         if (keysym == Clutter.Escape) {
             this.destroy();
-        } else if (keysym == Clutter.KEY_space) {
+        } else if (keysym == Clutter.KEY_space && !this._persistent) {
             this._persistent = true;
+        } else if (this._persistent && keysym == Clutter.w && (event_state & Clutter.ModifierType.CONTROL_MASK)) {
+            if (this._currentApp >= 0) {
+                this._appIcons[this._currentApp].window.delete(global.get_current_time());
+            }
         } else if (keysym == Clutter.Home || keysym == Clutter.KP_Home) {
             this._select(0);
         } else if (keysym == Clutter.End || keysym == Clutter.KP_End) {
