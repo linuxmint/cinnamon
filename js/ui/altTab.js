@@ -1125,7 +1125,6 @@ AppSwitcher.prototype = {
         // Construct the AppIcons, add to the popup
         let activeWorkspace = global.screen.get_active_workspace();
         let workspaceIcons = [];
-        let otherIcons = [];
         for (let i = 0; i < windows.length; i++) {
             let appIcon = new AppIcon(windows[i], showThumbnails);
             // Cache the window list now; we don't handle dynamic changes here,
@@ -1145,10 +1144,6 @@ AppSwitcher.prototype = {
             lastWs = ws;
             this._addIcon(icon);
         }, this);
-        if (workspaceIcons.length > 0 && otherIcons.length > 0)
-            this.addSeparator();
-        for (let i = 0; i < otherIcons.length; i++)
-            this._addIcon(otherIcons[i]);
 
         this._curApp = -1;
         this._prevApp = -1;
