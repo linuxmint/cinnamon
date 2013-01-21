@@ -20,6 +20,9 @@ const DESKLET_DESTROY_TIME = 0.5;
 
 /**
  * #Desklet
+ * @metadata (dictionary): metadata of desklet
+ * @actor (St.Actor): actor of desklet
+ * @content (St.Bin): the actor containing the content of the actor
  *
  * #Desklet is a base class in which other desklets
  * can inherit
