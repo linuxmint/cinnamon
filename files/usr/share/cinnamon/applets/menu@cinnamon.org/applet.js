@@ -401,50 +401,44 @@ RecentClearButton.prototype = {
     }
 };
 
-function CategoryButton(category) {
-    this._init(category);
+function CategoryButton(name, iconName) {
+    this._init(name, iconName);
 }
 
 CategoryButton.prototype = {
-    __proto__: SearchableButton.prototype,
+    __proto__: SimpleButton.prototype,
+
+    _init: function(name, iconName) {
+        let description = name;
+        let icon = !iconName ? null : new St.Icon({icon_name: iconName, icon_size: CATEGORY_ICON_SIZE, icon_type: St.IconType.FULLCOLOR});
+        SimpleButton.prototype._init.call(this,
+            null, icon,
+            'menu-category-button', 'menu-category-button-label',
+            name, description);
+    }
+};
+
+function AppCategoryButton(category) {
+    this._init(category);
+}
+
+AppCategoryButton.prototype = {
+    __proto__: CategoryButton.prototype,
 
     _init: function(category) {
-        let icon = null;
+        let iconName = null;
         let name = null;
 
         if (category) {
             let categoryIcon = category.get_icon();
-            if (categoryIcon && categoryIcon.get_names) {
-                icon = new St.Icon({icon_name: categoryIcon.get_names().toString(), icon_size: CATEGORY_ICON_SIZE, icon_type: St.IconType.FULLCOLOR});
-            }
+            if (categoryIcon && categoryIcon.get_names)
+                iconName = categoryIcon.get_names().toString();
 
             name = category.get_name();
         } else {
             name = _("All Applications");
         }
-        let description = name;
-
-        SearchableButton.prototype._init.call(this,
-            null, icon,
-            'menu-category-button', 'menu-category-button-label',
-            name, description,
-            [name, description]);
-    }
-};
-
-function OtherCategoryButton(name, iconName) {
-    this._init(name, iconName);
-}
-
-OtherCategoryButton.prototype = {
-    __proto__: SimpleButton.prototype,
-
-    _init: function(name, iconName) {
-        let description = name;
-        SimpleButton.prototype._init.call(this,
-            null, new St.Icon({icon_name: iconName, icon_size: CATEGORY_ICON_SIZE, icon_type: St.IconType.FULLCOLOR}),
-            'menu-category-button', 'menu-category-button-label',
-            name, description);
+        CategoryButton.prototype._init.call(this, name, iconName);
     }
 };
 
@@ -1055,7 +1049,7 @@ MyApplet.prototype = {
         this._removeButtons(this._recentButtons);
         this.categoriesBox.destroy_all_children();
         
-        this._allAppsCategoryButton = new CategoryButton(null);
+        this._allAppsCategoryButton = new AppCategoryButton(null);
         this._addEnterEvent(this._allAppsCategoryButton, Lang.bind(this, function() {
             if (!this.searchActive) {
                 this._allAppsCategoryButton.isHovered = true;
@@ -1117,7 +1111,7 @@ MyApplet.prototype = {
                         this._loadCategory(dir);
                     }
                     if (this.applicationsByCategory[dir.get_menu_id()].length>0){
-                        let categoryButton = new CategoryButton(dir);
+                        let categoryButton = new AppCategoryButton(dir);
                         this._addEnterEvent(categoryButton, Lang.bind(this, function() {
                             if (!this.searchActive) {
                                 categoryButton.isHovered = true;
@@ -1156,7 +1150,7 @@ MyApplet.prototype = {
         
         // Now generate Places category and places buttons and add to the list
         if (this.showPlaces) {
-            this.placesButton = new OtherCategoryButton(_("Places"), "folder");
+            this.placesButton = new CategoryButton(_("Places"), "folder");
             this._addEnterEvent(this.placesButton, Lang.bind(this, function() {
                 if (!this.searchActive) {
                     this.placesButton.isHovered = true;
@@ -1203,7 +1197,7 @@ MyApplet.prototype = {
 
         // Now generate recent category and recent files buttons and add to the list
         if (this.showRecent) {
-            this.recentButton = new OtherCategoryButton(_("Recent Files"), "folder-recent");
+            this.recentButton = new CategoryButton(_("Recent Files"), "folder-recent");
             this._addEnterEvent(this.recentButton, Lang.bind(this, function() {
                 if (!this.searchActive) {
                     this.recentButton.isHovered = true;
