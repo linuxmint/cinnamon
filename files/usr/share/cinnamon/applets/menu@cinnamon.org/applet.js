@@ -705,8 +705,8 @@ MyApplet.prototype = {
 
         this.actor.connect('key-press-event', Lang.bind(this, this._onSourceKeyPress));
         
-        this._connectSetting("menu-show-recent", "showRecent", Lang.bind(this, this._refreshApps));
-        this._connectSetting("menu-show-places", "showPlaces", Lang.bind(this, this._refreshApps));
+        this._connectSetting("menu-show-recent", "showRecent", Lang.bind(this, this._refreshRecent));
+        this._connectSetting("menu-show-places", "showPlaces", Lang.bind(this, this._refreshPlaces));
         this._connectSetting("menu-show-favorites", "showFavorites", Lang.bind(this, this._refreshFavs));
         this._connectSetting("menu-show-system-buttons", "showSystemButtons", Lang.bind(this, this._refreshFavs));
         this._connectSetting("menu-show-appinfo-title", "showAppInfoTitle", Lang.bind(this, this._refreshAppInfo));
@@ -753,9 +753,9 @@ MyApplet.prototype = {
                                          icon_type: St.IconType.SYMBOLIC });
         this._searchIconClickedId = 0;
         this._applicationsButtons = new Array();
-        this._allListButtons = new Array();
         this._favoritesButtons = new Array();
         this._placesButtons = new Array();
+        this._recentButtons = new Array();
         this._selectedItemIndex = null;
         this._previousTreeItemIndex = null;
         this._previousSelectedActor = null;
@@ -764,6 +764,7 @@ MyApplet.prototype = {
         this._activeActor = null;
         this._applicationsBoxWidth = 0;
         this.menuIsOpening = false;
+        this._refresh = {places: true, recent: true, apps: true};
 
         this.RecentManager = new DocInfo.DocManager();
 
@@ -784,8 +785,8 @@ MyApplet.prototype = {
                 global.logError(e);
             }
         }));
-        Main.placesManager.connect('places-updated', Lang.bind(this, this._refreshApps));
-        this.RecentManager.connect('changed', Lang.bind(this, this._refreshApps));
+        Main.placesManager.connect('places-updated', Lang.bind(this, this._refreshPlaces));
+        this.RecentManager.connect('changed', Lang.bind(this, this._refreshRecent));
 
         this.edit_menu_item = new Applet.MenuItem(_("Edit menu"), Gtk.STOCK_EDIT, Lang.bind(this, this._launch_editor));
         this._applet_context_menu.addMenuItem(this.edit_menu_item);
@@ -850,24 +851,21 @@ MyApplet.prototype = {
 
     _onOpenStateChanged: function(menu, open) {
         if (open) {
-            let showLeftPane = (this.showSystemButtons || this.showFavorites);
-        
             this.menuIsOpening = true;
             this.actor.add_style_pseudo_class('active');
             global.stage.set_key_focus(this.searchEntry);
             this._selectedItemIndex = null;
             this._activeContainer = null;
             this._activeActor = null;
-            let monitorHeight = Main.layoutManager.primaryMonitor.height;
-            let applicationsBoxHeight = this.applicationsBox.get_allocation_box().y2-this.applicationsBox.get_allocation_box().y1;
             let scrollBoxHeight = 200;
-            if(showLeftPane) {
+            if(this.showSystemButtons || this.showFavorites) {
                 scrollBoxHeight = (this.leftBox.get_allocation_box().y2-this.leftBox.get_allocation_box().y1) -
                                      (this.searchBox.get_allocation_box().y2-this.searchBox.get_allocation_box().y1);
             }
             this.applicationsScrollBox.style = "height: "+scrollBoxHeight+"px;";
+            this._refreshApplicationsBox();
             this._select_category(null, this._allAppsCategoryButton);
-            } else {
+        } else {
             this.actor.remove_style_pseudo_class('active');
             if (this.searchActive) {
                 this.resetSearch();
@@ -1009,31 +1007,37 @@ MyApplet.prototype = {
         }
     },
 
-    _resortButtons: function(bySearchScore) {
-        for (let i = 0; i < this._allListButtons.length; i++) {
-            let button = this._allListButtons[i];
-            this.applicationsBox.remove_actor(button.actor);
-            if(button instanceof ApplicationButton) {
-                this.applicationsBox.remove_actor(button.menu.actor);
+    _removeButtons: function(buttons) {
+        for (let i = 0; i < buttons.length; i++) {
+            let button = buttons[i];
+            if(button.actor.get_parent()) {
+                this.applicationsBox.remove_actor(button.actor);
+                if(button instanceof ApplicationButton) {
+                    this.applicationsBox.remove_actor(button.menu.actor);
+                }
             }
         }
+    },
+    _resortButtons: function(bySearchScore) {
+        let allListButtons = this._applicationsButtons.slice().concat(this._placesButtons).concat(this._recentButtons);
+        this._removeButtons(allListButtons);
+        
         // Sort apps and add to applicationsBox
         if(bySearchScore) {
-            global.log("sorting by score");
-            this._allListButtons.sort(function(a, b) {
+            allListButtons.sort(function(a, b) {
                 let sr = b.searchScore - a.searchScore;
                 if(sr == 0)
                     sr = a.name.toLowerCase() > b.name.toLowerCase();
                 return sr;
             });
         } else {
-            this._allListButtons.sort(function(a, b) {
+            allListButtons.sort(function(a, b) {
                 let sr = a.name.toLowerCase() > b.name.toLowerCase();
                 return sr;
             });
         }
-        for (let i = 0; i < this._allListButtons.length; i++) {
-            let button = this._allListButtons[i];
+        for (let i = 0; i < allListButtons.length; i++) {
+            let button = allListButtons[i];
             this.applicationsBox.add_actor(button.actor);
             if(button instanceof ApplicationButton) {
                 button.actor.realize();
@@ -1041,16 +1045,36 @@ MyApplet.prototype = {
             }
         }
     },
+    
+    _refreshPlaces : function() {
+        this._refresh.places = true;
+    },
+    
+    _refreshRecent : function() {
+        this._refresh.recent = true;
+    },
+    
     _refreshApps : function() {
-        this.applicationsBox.destroy_all_children();
-        this._applicationsButtons = new Array();
-        this._allListButtons = new Array();
-        this._placesButtons = new Array();
-        this._recentButtons = new Array();
-        this._applicationsBoxWidth = 0;
-        //Remove all categories
+        this._refresh.apps = true;
+    },
+    
+    _refreshApplicationsBox : function() {
+        let refreshApps = this._refresh.apps;
+        let refreshPlaces = this._refresh.places;
+        let refreshRecent = this._refresh.recent;
+        this._refresh.apps = false;
+        this._refresh.places = false;
+        this._refresh.recent = false;
+        
+        if(refreshApps == false && refreshPlaces == false && refreshRecent == false)
+            return;
+        
+        //Remove all applications and categories
+        this._removeButtons(this._applicationsButtons);
+        this._removeButtons(this._placesButtons);
+        this._removeButtons(this._recentButtons);
         this.categoriesBox.destroy_all_children();
-
+        
         this._allAppsCategoryButton = new CategoryButton(null);
         this._addEnterEvent(this._allAppsCategoryButton, Lang.bind(this, function() {
             if (!this.searchActive) {
@@ -1075,15 +1099,26 @@ MyApplet.prototype = {
                 }
             }
          }));
-         this._allAppsCategoryButton.actor.connect('leave-event', Lang.bind(this, function () {
-            if (!this.searchActive) {
-                this._allAppsCategoryButton.actor.style_class = "menu-category-button";
-            }
-            this._previousSelectedActor = this._allAppsCategoryButton.actor;
-            this._allAppsCategoryButton.isHovered = false;
-         }));
-         this.categoriesBox.add_actor(this._allAppsCategoryButton.actor);
 
+        this._allAppsCategoryButton.actor.connect('leave-event', Lang.bind(this, function () {
+           if (!this.searchActive) {
+               this._allAppsCategoryButton.actor.style_class = "menu-category-button";
+           }
+           this._previousSelectedActor = this._allAppsCategoryButton.actor;
+           this._allAppsCategoryButton.isHovered = false;
+        }));
+        this.categoriesBox.add_actor(this._allAppsCategoryButton.actor);
+
+        if(refreshApps) {
+            for (let i = 0; i < this._applicationsButtons.length; i++) {
+                let button = this._applicationsButtons[i];
+                button.menu.actor.destroy();
+                button.actor.destroy();
+            }
+            this._applicationsButtons = new Array();
+            this._applicationsBoxWidth = 0;
+        }
+        
         let trees = [appsys.get_tree()];
 
         for (var i in trees) {
@@ -1097,8 +1132,10 @@ MyApplet.prototype = {
                     let dir = iter.get_directory();
                     if (dir.get_is_nodisplay())
                         continue;
-                    this.applicationsByCategory[dir.get_menu_id()] = new Array();
-                    this._loadCategory(dir);
+                    if(refreshApps) {
+                        this.applicationsByCategory[dir.get_menu_id()] = new Array();
+                        this._loadCategory(dir);
+                    }
                     if (this.applicationsByCategory[dir.get_menu_id()].length>0){
                         let categoryButton = new CategoryButton(dir);
                         this._addEnterEvent(categoryButton, Lang.bind(this, function() {
@@ -1136,7 +1173,7 @@ MyApplet.prototype = {
                 }
             }
         }
-
+        
         // Now generate Places category and places buttons and add to the list
         if (this.showPlaces) {
             this.placesButton = new PlaceCategoryButton();
@@ -1166,17 +1203,24 @@ MyApplet.prototype = {
             }));
             this.categoriesBox.add_actor(this.placesButton.actor);
 
-            let bookmarks = Main.placesManager.getBookmarks().slice();
-            let places = bookmarks.concat(Main.placesManager.getMounts());
-            for (var i = 0; i < places.length; i++) {
-                let place = places[i];
-                let button = new PlaceButton(this, place, place.name);
-                this._addEnterEvent(button, Lang.bind(this, this._enterButton, button));
-                button.actor.connect('leave-event', Lang.bind(this, this._leaveButton, button));
-                this._placesButtons.push(button);
-                this._allListButtons.push(button);
+            if (refreshPlaces) {
+                for (let i = 0; i < this._placesButtons.length; i++)
+                    this._placesButtons[i].actor.destroy();
+                
+                this._placesButtons = new Array();
+
+                let bookmarks = Main.placesManager.getBookmarks().slice();
+                let places = bookmarks.concat(Main.placesManager.getMounts());
+                for (var i = 0; i < places.length; i++) {
+                    let place = places[i];
+                    let button = new PlaceButton(this, place, place.name);
+                    this._addEnterEvent(button, Lang.bind(this, this._enterButton, button));
+                    button.actor.connect('leave-event', Lang.bind(this, this._leaveButton, button));
+                    this._placesButtons.push(button);
+                }
             }
         }
+
         // Now generate recent category and recent files buttons and add to the list
         if (this.showRecent) {
             this.recentButton = new RecentCategoryButton();
@@ -1205,23 +1249,27 @@ MyApplet.prototype = {
                 this.recentButton.isHovered = false;
             }));
             this.categoriesBox.add_actor(this.recentButton.actor);
+            
+            if (refreshRecent) {
+                for (let i = 0; i < this._recentButtons.length; i++)
+                    this._recentButtons[i].actor.destroy();
+                this._recentButtons = new Array();
 
-            for (let id = 0; id < MAX_RECENT_FILES && id < this.RecentManager._infosByTimestamp.length; id++) {
-                let button = new RecentButton(this, this.RecentManager._infosByTimestamp[id]);
-                this._addEnterEvent(button, Lang.bind(this, this._enterButton, button));
-                button.actor.connect('leave-event', Lang.bind(this, this._leaveButton, button));
-                this._recentButtons.push(button);
-                this._allListButtons.push(button);
-            }
-            if (this.RecentManager._infosByTimestamp.length > 0) {
-                let button = new RecentClearButton(this);
-                this._addEnterEvent(button, Lang.bind(this, this._enterButton, button));
-                button.actor.connect('leave-event', Lang.bind(this, this._leaveButton, button));
-                this._recentButtons.push(button);
-                this._allListButtons.push(button);
+                for (let id = 0; id < MAX_RECENT_FILES && id < this.RecentManager._infosByTimestamp.length; id++) {
+                    let button = new RecentButton(this, this.RecentManager._infosByTimestamp[id]);
+                    this._addEnterEvent(button, Lang.bind(this, this._enterButton, button));
+                    button.actor.connect('leave-event', Lang.bind(this, this._leaveButton, button));
+                    this._recentButtons.push(button);
+                }
+                if (this.RecentManager._infosByTimestamp.length > 0) {
+                    let button = new RecentClearButton(this);
+                    this._addEnterEvent(button, Lang.bind(this, this._enterButton, button));
+                    button.actor.connect('leave-event', Lang.bind(this, this._leaveButton, button));
+                    this._recentButtons.push(button);
+                }
             }
         }
-
+        
         this._resortButtons(false);
         
         this._setCategoriesButtonActive(!this.searchActive);
@@ -1374,7 +1422,6 @@ MyApplet.prototype = {
                         applicationButton.actor.connect('leave-event', Lang.bind(this, this._leaveButton, applicationButton));
                         this._addEnterEvent(applicationButton, Lang.bind(this, this._enterButton, applicationButton));
                         this._applicationsButtons.push(applicationButton);
-                        this._allListButtons.push(applicationButton);
                         applicationButton.category.push(top_dir.get_menu_id());
                         this.applicationsByCategory[top_dir.get_menu_id()].push(app.get_name());
                     } else {
@@ -1468,7 +1515,6 @@ MyApplet.prototype = {
         this.categoriesApplicationsBox.actor.add_actor(this.applicationsScrollBox);
 
         this.applicationsByCategory = {};
-        this._refreshApps();
 
         this.bottomRightPane = new St.BoxLayout({ vertical: true });
         rightPane.add_actor(this.bottomRightPane);
