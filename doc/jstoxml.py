@@ -89,7 +89,7 @@ def parseCommentBlock(lines):
             itemName = nameLine[1:]
         elif nameLine.find("FILE:") == 0:
             itemType = ITEM_TYPE_FILE
-            itemName = nameLine[8:].lstrip()
+            itemName = nameLine[5:].lstrip()
         else:
             itemType = ITEM_TYPE_FUNCTION
             itemName = nameLine
@@ -132,6 +132,7 @@ def parseCommentBlock(lines):
             returnData[1] = returnData[1].strip() # Strip whitespaces
         else:
             returnData = ["void", None]
+
 
         return [itemType, itemName, itemProps, itemDescription, returnData]
     except Exception:
@@ -236,7 +237,6 @@ def convertJStoXML(filename):
                 [itemType, itemName, itemProps, itemDescription, itemReturn] = parseCommentBlock(newLines)
                 if itemType == ITEM_TYPE_FUNCTION:
                     __start = inStart
-                    print __start
                     [__start, __end] = getFunctionBlock(inlines, __start)
                     if itemName + ":function(" not in inlines[__start].replace(" ", ""):
                         del inlines[:__end]
