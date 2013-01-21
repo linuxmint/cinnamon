@@ -29,17 +29,23 @@ def getFunctionBlock(lines, init_line = 0):
     end = 0 # Ending line number of the block
 
     i = init_line
-    while "{" not in lines[i]:
-        i = i + 1
-    # Now we are at the first line of the block
-    start = i
-    brackets = brackets + lines[i].count("{") - lines[i].count("}")
-    
-    while brackets > 0:
-        i = i + 1
+    try:
+        while "{" not in lines[i]:
+            i = i + 1
+        # Now we are at the first line of the block
+        start = i
         brackets = brackets + lines[i].count("{") - lines[i].count("}")
+    except:
+        start = i-1
 
-    end = i
+    try:
+        while brackets > 0:
+            i = i + 1
+            brackets = brackets + lines[i].count("{") - lines[i].count("}")
+        end = i
+    except:
+        end = i - 1
+
     return [start,end]
 
 def getCommentBlock(lines, init_line = 0):
@@ -229,9 +235,10 @@ def convertJStoXML(filename):
                 newLines = inlines[inStart:inEnd+1]
                 [itemType, itemName, itemProps, itemDescription, itemReturn] = parseCommentBlock(newLines)
                 if itemType == ITEM_TYPE_FUNCTION:
-                    __start = _end
+                    __start = inStart
+                    print __start
                     [__start, __end] = getFunctionBlock(inlines, __start)
-                    if "function" + itemName + "(" not in inlines[__start].replace(" ", ""):
+                    if itemName + ":function(" not in inlines[__start].replace(" ", ""):
                         del inlines[:__end]
                         continue
                     subelement = ET.SubElement(element, 'function')

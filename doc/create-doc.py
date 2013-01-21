@@ -14,7 +14,19 @@ HTML_DIR = CURRDIR + "output-html/"
 
 if __name__ == "__main__":
     files = os.listdir(JS_DIR)
+    files.sort()
+    try:
+        os.mkdir(XML_DIR)
+    except Exception:
+        pass
+
+    try:
+        os.mkdir(HTML_DIR)
+    except Exception:
+        pass
+
     for _file in files:
+        print "Parsing " + _file
         _file = _file[:-3]
 
         xml = jstoxml.convertJStoXML(JS_DIR + _file + ".js")
