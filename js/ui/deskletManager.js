@@ -41,8 +41,8 @@ function init(){
 
 /**
  * removeDesklet:
- * @uuid: uuid of the desklet
- * @desklet_id: id of the desklet
+ * @uuid (string): uuid of the desklet
+ * @desklet_id (int): id of the desklet
  * 
  * Disable and remove the desklet @uuid:@desklet_id
  */
@@ -63,6 +63,8 @@ function removeDesklet(uuid, desklet_id){
  * raw: the unprocessed array from gsettings
  * uuidMap: maps uuid -> list of desklet definitions
  * idMap: maps desklet_id -> single desklet definition
+ *
+ * Returns (dictionary): Associative array of three items
  */
 function getEnabledDeskletDefinitions() {
     let result = {
@@ -234,7 +236,7 @@ function _deskletDefinitionsEqual(a, b) {
 }
 
 /**
- * DeskletContainer
+ * #DeskletContainer
  * 
  * Container that contains manages all desklets actors
  */
@@ -250,7 +252,7 @@ DeskletContainer.prototype = {
 
     /**
      * addDesklet:
-     * @actor: actor of desklet to be added
+     * @actor (Clutter.Actor): actor of desklet to be added
      * 
      * Adds @actor to the desklet container
      */
@@ -260,9 +262,11 @@ DeskletContainer.prototype = {
 
     /**
      * contains:
-     * @actor
+     * @actor (Clutter.Actor): actor to be tested
      * 
      * Whether the desklet container contains @actor
+     *
+     * Returns (boolean): whether the desklet container contains the actor
      */
     contains: function(actor){
         return this.actor.contains(actor);
