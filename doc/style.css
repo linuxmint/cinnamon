@@ -1,0 +1,83 @@
+.page-header {
+    font-size: 180%;
+    font-weight: bold;
+}
+
+.index-page-list {
+}
+
+.root-description, .object-description{
+}
+
+.var-func-separator {
+}
+
+.obj-func-header, .obj-var-header {
+    font-size: 140%;
+    font-weight: bold;
+}
+
+.root-func-header, .root-var-header {
+    font-size: 150%;
+    font-weight: bold;
+}
+
+.root-func-table, .obj-func-table, .root-var-table, .obj-var-table{
+    border-style: outset;
+    border-width: 1px;
+    padding: 5px;
+}
+
+.root-func-table-return, .obj-func-table-return, .root-var-table-type, .obj-var-table-type {
+}
+
+.root-func-table-name, .obj-func-table-name, .root-var-table-name, .obj-var-table-name {
+    padding-left: 50px;
+}
+
+.root-func-table-arg, .obj-func-table-arg {
+    padding-left: 50px;
+}
+
+.root-func-table-arg-type, .obj-func-table-arg-type {
+    color: #666;
+}
+
+.root-func-table-arg-name, .obj-func-table-arg-name {
+}
+
+.root-func-table-line-break, .obj-func-table-line-break, .root-var-table-line-break, .obj-var-table-line-break {
+    height: 5px;
+}
+
+.root-func-arg-table, .obj-func-arg-table {
+    padding-left: 50px;
+}
+
+.root-func-arg-name, .obj-func-arg-name {
+    background-color: #ccc;
+    padding: 2px 5px;
+}
+
+.root-func-arg-description, .obj-func-arg-description {
+    padding-left: 5px;
+}
+
+.root-func-return-name, .obj-func-return-name {
+    background-color: #ccc;
+    padding: 2px 5px;
+}
+
+.root-func-return-description, .obj-func-return-description {
+    padding-left: 5px;
+}
+
+.root-individual-func-header, .root-individual-var-header {
+    font-size: 120%;
+    font-weight: bold;
+}
+
+.obj-individual-func-header, .obj-individual-var-header {
+    font-size: 110%;
+    font-weight: bold;
+}
