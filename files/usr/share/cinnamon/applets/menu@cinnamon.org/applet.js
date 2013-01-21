@@ -1222,7 +1222,14 @@ MyApplet.prototype = {
 			}));        
         button.actor.connect('clicked', Lang.bind(this, function() {            
             this.menu.close();
-            this._screenSaverProxy.LockRemote();
+            
+            let screensaver_settings = new Gio.Settings({ schema: "org.cinnamon.screensaver" });
+            if (GLib.file_test("/usr/bin/cinnamon-screensaver-command", GLib.FileTest.EXISTS) && screensaver_settings.get_boolean("ask-for-away-message")) {
+                Util.spawnCommandLine("cinnamon-screensaver-lock-dialog");
+            }
+            else {
+                this._screenSaverProxy.LockRemote();
+            }            
         }));
         
         this.leftBox.add_actor(button.actor, { y_align: St.Align.END, y_fill: false });                  
