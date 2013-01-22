@@ -29,14 +29,16 @@ GType cinnamon_global_get_type (void) G_GNUC_CONST;
 
 CinnamonGlobal   *cinnamon_global_get                       (void);
 
-ClutterStage  *cinnamon_global_get_stage                 (CinnamonGlobal *global);
-MetaScreen    *cinnamon_global_get_screen                (CinnamonGlobal *global);
-GdkScreen     *cinnamon_global_get_gdk_screen            (CinnamonGlobal *global);
-MetaDisplay   *cinnamon_global_get_display               (CinnamonGlobal *global);
-GList         *cinnamon_global_get_window_actors         (CinnamonGlobal *global);
-GSettings     *cinnamon_global_get_settings              (CinnamonGlobal *global);
-guint32        cinnamon_global_get_current_time          (CinnamonGlobal *global);
-pid_t          cinnamon_global_get_pid                      (void);
+ClutterStage          *cinnamon_global_get_stage                  (CinnamonGlobal *global);
+MetaScreen            *cinnamon_global_get_screen                 (CinnamonGlobal *global);
+GdkScreen             *cinnamon_global_get_gdk_screen             (CinnamonGlobal *global);
+MetaDisplay           *cinnamon_global_get_display                (CinnamonGlobal *global);
+GList                 *cinnamon_global_get_window_actors          (CinnamonGlobal *global);
+GSettings             *cinnamon_global_get_settings               (CinnamonGlobal *global);
+GSettingsSchemaSource *cinnamon_global_get_local_settings_source  (CinnamonGlobal *global);
+GSettings             *cinnamon_global_get_local_settings_from_id (CinnamonGlobal *global, gchar *schema_id);
+guint32               cinnamon_global_get_current_time            (CinnamonGlobal *global);
+pid_t                 cinnamon_global_get_pid                     (void);
 
 /* Input/event handling */
 gboolean cinnamon_global_begin_modal            (CinnamonGlobal         *global,

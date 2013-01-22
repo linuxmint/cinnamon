@@ -75,6 +75,7 @@ struct _CinnamonGlobal {
   MetaPlugin *plugin;
   CinnamonWM *wm;
   GSettings *settings;
+  GSettingsSchemaSource *local_settings_source;
   const char *datadir;
   const char *imagedir;
   const char *userdatadir;
@@ -108,6 +109,7 @@ enum {
   PROP_BACKGROUND_ACTOR,
   PROP_WINDOW_MANAGER,
   PROP_SETTINGS,
+  PROP_LOCAL_SETTINGS_SOURCE,
   PROP_DATADIR,
   PROP_IMAGEDIR,
   PROP_USERDATADIR,
@@ -209,6 +211,9 @@ cinnamon_global_get_property(GObject         *object,
     case PROP_SETTINGS:
       g_value_set_object (value, global->settings);
       break;
+    case PROP_LOCAL_SETTINGS_SOURCE:
+      g_value_set_object (value, global->local_settings_source);
+      break;
     case PROP_DATADIR:
       g_value_set_string (value, global->datadir);
       break;
@@ -256,7 +261,8 @@ cinnamon_global_init (CinnamonGlobal *global)
   g_mkdir_with_parents (global->userdatadir, 0700);
 
   global->settings = g_settings_new ("org.cinnamon");
-  
+  global->local_settings_source = g_settings_schema_source_new_from_directory(g_build_filename(g_get_home_dir(), ".local/share/cinnamon/schemas", NULL), g_settings_schema_source_get_default(), False, NULL);
+
   global->grab_notifier = GTK_WINDOW (gtk_window_new (GTK_WINDOW_TOPLEVEL));
   g_signal_connect (global->grab_notifier, "grab-notify", G_CALLBACK (grab_notify), global);
   global->gtk_grab_active = FALSE;
@@ -288,6 +294,7 @@ cinnamon_global_finalize (GObject *object)
   g_object_unref (global->js_context);
   gtk_widget_destroy (GTK_WIDGET (global->grab_notifier));
   g_object_unref (global->settings);
+  g_object_unref (global->local_settings_source);
 
   the_object = NULL;
 
@@ -446,6 +453,13 @@ cinnamon_global_class_init (CinnamonGlobalClass *klass)
                                                         "Settings",
                                                         "GSettings instance for cinnamon configuration",
                                                         G_TYPE_SETTINGS,
+                                                        G_PARAM_READABLE));
+  g_object_class_install_property (gobject_class,
+                                   PROP_LOCAL_SETTINGS_SOURCE,
+                                   g_param_spec_object ("local-settings-source",
+                                                        "Local Settings Source",
+                                                        "Source of local settings for applets and extensions",
+                                                        G_TYPE_SETTINGS_SCHEMA_SOURCE,
                                                         G_PARAM_READABLE));
   g_object_class_install_property (gobject_class,
                                    PROP_DATADIR,
@@ -1626,6 +1640,38 @@ GSettings *
 cinnamon_global_get_settings (CinnamonGlobal *global)
 {
   return global->settings;
+}
+
+/**
+ * cinnamon_global_get_local_settings_source:
+ * @global: A #CinnamonGlobal
+ *
+ * Get the global GSettingsSchemaSource instance
+ *
+ * Return value: (transfer none): The GSettingsSchemaSource object
+ */
+GSettingsSchemaSource *
+cinnamon_global_get_local_settings_source (CinnamonGlobal *global)
+{
+  return global->local_settings_source;
+}
+
+/**
+ * cinnamon_global_get_local_settings_from_id:
+ * @global: A #CinnamonGlobal
+ * @schema_id: A #gchar
+ *
+ * Get a local GSettings from an id
+ *
+ * Return value: (transfer none): The GSettings object
+ */
+GSettings *
+cinnamon_global_get_local_settings_from_id (CinnamonGlobal *global, gchar *schema_id)
+{
+  GSettingsSchema *schema = g_settings_schema_source_lookup (global->local_settings_source,
+                                                            schema_id,
+                                                            TRUE);
+  return g_settings_new_full (schema, NULL, NULL);
 }
 
 /**
