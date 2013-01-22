@@ -294,7 +294,7 @@ AltTabPopup.prototype = {
         let screen = global.screen;
         let display = screen.get_display();
 
-        this._showThumbnails = this._thumbnailsEnabled && !this._iconsEnabled;
+        this._showThumbnails = (this._thumbnailsEnabled && !this._iconsEnabled) || this._previewEnabled;
 
         if (!Main.pushModal(this.actor))
             return false;
@@ -1087,7 +1087,7 @@ AppIcon.prototype = {
     },
 
     set_size: function(size) {
-        if (this.showThumbnail){
+        if (this.showThumbnail) {
             this.icon = new St.Group();
             let clones = WindowUtils.createWindowClone(this.window, size, true, true);
             for (i in clones) {
@@ -1098,17 +1098,28 @@ AppIcon.prototype = {
                 //clone.actor.set_position(Math.round((size - width) / 2), Math.round((size - height) / 2));
                 clone.actor.set_position(clone.x, clone.y);
             }
-        } else {
+            let [width, height] = clones[0].actor.get_size();
+            clones[0].actor.set_position(0, 0);
+            let isize = Math.max(Math.ceil(size/4*3), iconSizes[iconSizes.length - 1]);
+            let icon = this.app ?
+                this.app.create_icon_texture(isize) :
+                new St.Icon({ icon_name: 'application-default-icon',
+                              icon_type: St.IconType.FULLCOLOR,
+                              icon_size: isize });
+            this.icon.add_actor(icon);
+            icon.set_position(Math.floor((size - isize)/2), Math.floor((size - isize)/2));
+        }
+        else {
             this.icon = this.app ?
                 this.app.create_icon_texture(size) :
                 new St.Icon({ icon_name: 'application-default-icon',
                               icon_type: St.IconType.FULLCOLOR,
                               icon_size: size });
         }
-        this._iconBin.set_size(size, size);
         // Make some room for the window title.
         this._label_bin.set_size(Math.floor(size * 1.2), Math.floor(size/2));
         this._iconBin.child = this.icon;
+        this._iconBin.set_size(size, size);
     }
 };
 
