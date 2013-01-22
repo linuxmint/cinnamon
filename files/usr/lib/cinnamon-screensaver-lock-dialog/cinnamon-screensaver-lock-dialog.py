@@ -48,12 +48,15 @@ class MainWindow:
         self.window.connect("destroy", gtk.main_quit)
         self.button_cancel.connect("clicked", gtk.main_quit)
         self.button_ok.connect('clicked', self.lock_screen)
+        self.entry.connect('activate', self.lock_screen)
+        
+        self.wTree.get_widget("dialog-action_area1").set_focus_chain((self.button_ok, self.button_cancel))
           
         self.window.show()                    
         
     def lock_screen(self, data):
         os.system("cinnamon-screensaver-command --lock --away-message \"%s\" &" % self.entry.get_text())
-        gtk.main_quit
+        gtk.main_quit()
    
 if __name__ == "__main__":    
     MainWindow()
