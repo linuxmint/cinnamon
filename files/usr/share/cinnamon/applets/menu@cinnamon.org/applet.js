@@ -1223,13 +1223,14 @@ MyApplet.prototype = {
         button.actor.connect('clicked', Lang.bind(this, function() {            
             this.menu.close();
             
-            let screensaver_settings = new Gio.Settings({ schema: "org.cinnamon.screensaver" });
-            if (GLib.file_test("/usr/bin/cinnamon-screensaver-command", GLib.FileTest.EXISTS) && screensaver_settings.get_boolean("ask-for-away-message")) {
+            let screensaver_settings = new Gio.Settings({ schema: "org.cinnamon.screensaver" });                        
+            let screensaver_dialog = Gio.file_new_for_path("/usr/bin/cinnamon-screensaver-command");    
+            if (screensaver_dialog.query_exists(null) && screensaver_settings.get_boolean("ask-for-away-message")) {                                    
                 Util.spawnCommandLine("cinnamon-screensaver-lock-dialog");
             }
-            else {
+            else {                
                 this._screenSaverProxy.LockRemote();
-            }            
+            }                        
         }));
         
         this.leftBox.add_actor(button.actor, { y_align: St.Align.END, y_fill: false });                  
