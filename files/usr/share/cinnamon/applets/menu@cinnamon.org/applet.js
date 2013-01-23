@@ -1532,8 +1532,12 @@ MyApplet.prototype = {
                     var app = appsys.lookup_app_by_tree_entry(entry);
                     if (!app)
                         app = appsys.lookup_settings_app_by_tree_entry(entry);
-                    var app_id = app.get_id()
-                    if (!(app_id in this._applicationsButtonFromApp)) {
+                    var app_key = app.get_id()
+                    if (app_key == null) {
+                        app_key = app.get_name() + ":" + 
+                            app.get_description();
+                    }
+                    if (!(app_key in this._applicationsButtonFromApp)) {
 
                         let applicationButton = new ApplicationButton(this, app);
                         applicationButton.actor.connect('realize', Lang.bind(this, this._onApplicationButtonRealized));
@@ -1541,9 +1545,9 @@ MyApplet.prototype = {
                         this._addEnterEvent(applicationButton, Lang.bind(this, this._appEnterEvent, applicationButton));
                         this._applicationsButtons.push(applicationButton);
                         applicationButton.category.push(top_dir.get_menu_id());
-                        this._applicationsButtonFromApp[app_id] = applicationButton;
+                        this._applicationsButtonFromApp[app_key] = applicationButton;
                     } else {
-                        this._applicationsButtonFromApp[app_id].category.push(dir.get_menu_id());
+                        this._applicationsButtonFromApp[app_key].category.push(dir.get_menu_id());
                     }
                 }
             } else if (nextType == GMenu.TreeItemType.DIRECTORY) {
