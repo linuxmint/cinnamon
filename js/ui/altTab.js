@@ -1146,13 +1146,13 @@ AppSwitcher.prototype = {
 
         this.icons = [];
         this._arrows = [];
-        let lastWs = null;
+        let lastWsIndex = 0;
         workspaceIcons.forEach(function(icon) {
-            let ws = icon.window.get_workspace();
-            if (lastWs != null && ws != lastWs) {
+            let wsIndex = icon.window.get_workspace().index();
+            for (let i = wsIndex - lastWsIndex; i > 0; --i) {
                 this.addSeparator();
+                lastWsIndex = wsIndex;
             }
-            lastWs = ws;
             this._addIcon(icon);
         }, this);
 
