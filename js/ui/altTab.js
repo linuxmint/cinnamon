@@ -612,7 +612,7 @@ AltTabPopup.prototype = {
             this._previewClones = previewClones;
 
             if (!this._previewBackdrop) {
-                let backdrop = this._previewBackdrop = new St.Bin({style_class: 'switcher-preview-backdrop'});
+                let backdrop = this._previewBackdrop = new St.Bin();
                 this.actor.add_actor(backdrop);
                 // Make sure that the backdrop does not overlap the switcher.
                 backdrop.lower(this._appSwitcher.actor);
@@ -622,7 +622,7 @@ AltTabPopup.prototype = {
                 childBox.y1 = this.actor.y;
                 childBox.y2 = this.actor.y + this.actor.height;
                 backdrop.allocate(childBox, 0);
-                backdrop.opacity = 255;
+                backdrop.style = "background-color: rgba(0,0,0,0.9)";
             }
         }; // showPreview
 
