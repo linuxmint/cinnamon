@@ -1269,7 +1269,7 @@ AppSwitcher.prototype = {
         SwitcherList.prototype.highlight.call(this, n, justOutline);
         this._prevApp = this._curApp = n;
  
-        if (this._curApp != -1 && this._altTabPopup._thumbnailsEnabled && this._altTabPopup._iconsEnabled) {
+        if (this._curApp != -1 && this._altTabPopup._iconsEnabled) {
             this._arrows[this._curApp].show();
         }
     },
@@ -1282,7 +1282,9 @@ AppSwitcher.prototype = {
 
         let n = this._arrows.length;
         let arrow = new St.DrawingArea({ style_class: 'switcher-arrow' });
-        arrow.connect('repaint', function() { _drawArrow(arrow, St.Side.BOTTOM); });
+        arrow.connect('repaint', Lang.bind(this, function() {
+            _drawArrow(arrow, this._altTabPopup._thumbnailsEnabled ? St.Side.BOTTOM : St.Side.TOP);
+        }));
         this._list.add_actor(arrow);
         this._arrows.push(arrow);
 
