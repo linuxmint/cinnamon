@@ -573,10 +573,7 @@ AltTabPopup.prototype = {
     
     _clearPreview: function() {
         if (this._previewClones) {
-            for (let i = 0; i < this._previewClones.length; ++i) {
-                let clone = this._previewClones[i];
-                clone.destroy();
-            }
+            this._previewClones.destroy();
             this._previewClones = null;
         }
     },
@@ -594,27 +591,23 @@ AltTabPopup.prototype = {
 
             let childBox = new Clutter.ActorBox();
 
-            let lastClone = null;
-            let previewClones = [];
             let window = this._appIcons[this._currentApp].cachedWindows[0];
+            let previewClones = new St.Group();
+            this.actor.add_actor(previewClones);
+
             let clones = WindowUtils.createWindowClone(window, null, true, false);
             for (let i = 0; i < clones.length; i++) {
                 let clone = clones[i];
-                previewClones.push(clone.actor);
-                this.actor.add_actor(clone.actor);
+                previewClones.add_actor(clone.actor);
                 let [width, height] = clone.actor.get_size();
                 childBox.x1 = clone.x;
                 childBox.x2 = clone.x + width;
                 childBox.y1 = clone.y;
                 childBox.y2 = clone.y + height;
                 clone.actor.allocate(childBox, 0);
-                clone.actor.lower(this._appSwitcher.actor);
-                if (lastClone) {
-                    lastClone.lower(clone.actor);
-                }
-                lastClone = clone.actor;
             }
-            
+            previewClones.lower(this._appSwitcher.actor);
+
             this._clearPreview();
             this._previewClones = previewClones;
 
@@ -623,7 +616,7 @@ AltTabPopup.prototype = {
                 this.actor.add_actor(backdrop);
                 // Make sure that the backdrop does not overlap the switcher.
                 backdrop.lower(this._appSwitcher.actor);
-                backdrop.lower(lastClone);
+                backdrop.lower(previewClones);
                 childBox.x1 = this.actor.x;
                 childBox.x2 = this.actor.x + this.actor.width;
                 childBox.y1 = this.actor.y;
