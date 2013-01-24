@@ -1079,8 +1079,9 @@ AppIcon.prototype = {
         this.actor.add(this._label_bin);
     },
 
-    set_size: function(size) {
-        if (this.showThumbnail) {
+    set_size: function(size, fullSize) {
+        if (this.icon) {this.icon.destroy();}
+        if (this.showThumbnail && !fullSize) {
             this.icon = new St.Group();
             let clones = WindowUtils.createWindowClone(this.window, size, true, true);
             for (i in clones) {
@@ -1092,7 +1093,7 @@ AppIcon.prototype = {
                 clone.actor.set_position(clone.x, clone.y);
             }
             let [width, height] = clones[0].actor.get_size();
-            clones[0].actor.set_position(0, 0);
+            clones[0].actor.set_position(Math.floor((size - width)/2), 0);
             let isize = Math.max(Math.ceil(size/4*3), iconSizes[iconSizes.length - 1]);
             let icon = this.app ?
                 this.app.create_icon_texture(isize) :
@@ -1100,7 +1101,7 @@ AppIcon.prototype = {
                               icon_type: St.IconType.FULLCOLOR,
                               icon_size: isize });
             this.icon.add_actor(icon);
-            icon.set_position(Math.floor((size - isize)/2), Math.floor((size - isize)/2));
+            icon.set_position(Math.floor((size - isize)/2), size - isize);
         }
         else {
             this.icon = this.app ?
@@ -1257,12 +1258,14 @@ AppSwitcher.prototype = {
     highlight : function(n, justOutline) {
         if (this._prevApp != -1) {
             this._arrows[this._prevApp].hide();
+            this.icons[this._prevApp].set_size(this._iconSize);
         }
 
         SwitcherList.prototype.highlight.call(this, n, justOutline);
         this._prevApp = this._curApp = n;
  
         if (this._curApp != -1 && this._altTabPopup._iconsEnabled) {
+            this.icons[this._curApp].set_size(this._iconSize, true);
             this._arrows[this._curApp].show();
         }
     },
