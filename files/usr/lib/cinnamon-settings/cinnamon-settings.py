@@ -8,7 +8,8 @@ try:
     import os
     import glob
     import gettext
-    from gi.repository import Gtk, GObject, GdkPixbuf
+    import SettingsWidgets
+    from gi.repository import Gio, Gtk, GObject, GdkPixbuf
 # Standard setting pages... this can be expanded to include applet dirs maybe?
     mod_files = glob.glob('/usr/lib/cinnamon-settings/modules/*.py')
     mod_files.sort()
@@ -31,6 +32,14 @@ menuName = _("Desktop Settings")
 menuGenericName = _("Desktop Configuration Tool")
 menuComment = _("Fine-tune desktop settings")
 
+CONTROL_CENTER_MODULES = [
+#         Label                  Module ID              Icon
+    [_("Networking"),        "cinnamon-network",   "network.svg"],
+    [_("Display"),           "cinnamon-display",   "display.svg"],
+    [_("Region & Language"), "cinnamon-region",    "region.svg"],
+    [_("Bluetooth"),         "cinnamon-bluetooth", "bluetooth.svg"]
+]
+
 class MainWindow:
 
     # Change pages
@@ -45,6 +54,7 @@ class MainWindow:
             sidePage.build()
             self.content_box_sw.show_all()
             self.top_button_box.show_all()
+
 
     ''' Create the UI '''
     def __init__(self):
@@ -69,6 +79,10 @@ class MainWindow:
             mod = modules[i].Module(self.content_box)
             if self.loadCheck(mod):
                 self.sidePages.append((mod.sidePage, mod.name))
+
+        for item in CONTROL_CENTER_MODULES:
+            ccmodule = SettingsWidgets.CCModule(item[0], item[1], item[2], self.content_box)
+            self.sidePages.append((ccmodule.sidePage, ccmodule.name))
 
         # create the backing store for the side nav-view.
         self.store = Gtk.ListStore(str, GdkPixbuf.Pixbuf, object)

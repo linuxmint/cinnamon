@@ -22,10 +22,19 @@ try:
     from PIL import Image
     import tempfile
     import math
+    import ctypes
+    from ctypes import *
+    import capi
 
 except Exception, detail:
     print detail
     sys.exit(1)
+
+c_api = capi.PyGObjectCPAI()
+gio = CDLL("libgio-2.0.so.0")
+libgobject = CDLL('libgobject-2.0.so.0')
+ext_point = gio.g_io_extension_point_register ("cinnamon-control-center-1")
+modules = gio.g_io_modules_load_all_in_directory ("/usr/lib/cinnamon-control-center-1/panels")
 
 class SidePage:
     def __init__(self, name, icon, content_box):        
@@ -47,6 +56,19 @@ class SidePage:
         for widget in self.widgets:
             self.content_box.pack_start(widget, False, False, 2)            
         self.content_box.show_all()
+
+class CCModule:
+    def __init__(self, label, mod_id, icon, content_box):
+        sidePage = SidePage(label, icon, content_box)
+        self.sidePage = sidePage
+        self.name = mod_id
+        extension = gio.g_io_extension_point_get_extension_by_name (ext_point, self.name)
+        gio.g_io_extension_get_type.restype = c_int
+        panel_type = gio.g_io_extension_get_type (extension)
+        libgobject.g_object_new.restype = ctypes.POINTER(ctypes.py_object)
+        ptr = libgobject.g_object_new(panel_type, None)
+        widget = c_api.pygobject_new(ptr)
+        sidePage.add_widget(widget)
 
 def walk_directories(dirs, filter_func):
     valid = []
