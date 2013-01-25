@@ -920,7 +920,7 @@ SwitcherList.prototype = {
             let padding = this.actor.get_theme_node().get_horizontal_padding();
             if (posX <= padding) {
                 this._scrollableRight = true;
-                let x = this._items[ixScroll].allocation.x1;
+                let x = this._list.get_children()[ixScroll].allocation.x1;
                 Tweener.addTween(this._list, { anchor_x: x,
                     time: POPUP_SCROLL_TIME,
                     transition: 'easeOutQuad'
