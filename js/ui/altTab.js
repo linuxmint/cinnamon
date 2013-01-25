@@ -362,6 +362,10 @@ AltTabPopup.prototype = {
             this.destroy();
         } else if (keysym == Clutter.KEY_space && !this._persistent) {
             this._persistent = true;
+        } else if (this._persistent && keysym == Clutter.Tab) {
+            this._select(this._nextApp());
+        } else if (this._persistent && keysym == Clutter.ISO_Left_Tab) {
+            this._select(this._previousApp());
         } else if (this._persistent && keysym == Clutter.w && (event_state & Clutter.ModifierType.CONTROL_MASK)) {
             if (this._currentApp >= 0) {
                 this._appIcons[this._currentApp].window.delete(global.get_current_time());
