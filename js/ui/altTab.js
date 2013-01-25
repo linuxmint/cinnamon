@@ -1080,9 +1080,9 @@ AppIcon.prototype = {
         this.actor.add(this._label_bin);
     },
 
-    set_size: function(size, fullSize) {
+    set_size: function(size, focused) {
         if (this.icon) {this.icon.destroy();}
-        if (this.showThumbnail && !fullSize) {
+        if (this.showThumbnail) {
             this.icon = new St.Group();
             let clones = WindowUtils.createWindowClone(this.window, size, true, true);
             for (i in clones) {
@@ -1095,7 +1095,7 @@ AppIcon.prototype = {
             }
             let [width, height] = clones[0].actor.get_size();
             clones[0].actor.set_position(Math.floor((size - width)/2), 0);
-            let isize = Math.max(Math.ceil(size/4*3), iconSizes[iconSizes.length - 1]);
+            let isize = Math.max(Math.ceil(size*(!focused?3/4:7/8)), iconSizes[iconSizes.length - 1]);
             let icon = this.app ?
                 this.app.create_icon_texture(isize) :
                 new St.Icon({ icon_name: 'application-default-icon',
