@@ -30,7 +30,7 @@ const THUMBNAIL_FADE_TIME = 0.1; // seconds
 const PREVIEW_DELAY_TIMEOUT = 180; // milliseconds
 var PREVIEW_SWITCHER_FADEOUT_TIME = 0.5; // seconds
 
-const iconSizes = [96, 64, 48, 32, 22];
+const iconSizes = [96, 80, 64, 48, 32, 22];
 
 function mod(a, b) {
     return (a + b) % b;
