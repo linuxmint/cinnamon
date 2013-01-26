@@ -37,7 +37,8 @@ CONTROL_CENTER_MODULES = [
     [_("Networking"),        "cinnamon-network",   "network.svg"],
     [_("Display"),           "cinnamon-display",   "display.svg"],
     [_("Region & Language"), "cinnamon-region",    "region.svg"],
-    [_("Bluetooth"),         "cinnamon-bluetooth", "bluetooth.svg"]
+    [_("Bluetooth"),         "cinnamon-bluetooth", "bluetooth.svg"],
+    [_("Details"),           "cinnamon-info",   "details.svg"]
 ]
 
 class MainWindow:

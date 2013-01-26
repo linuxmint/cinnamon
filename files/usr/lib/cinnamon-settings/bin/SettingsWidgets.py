@@ -70,7 +70,6 @@ class CCModule:
             return False
         gio.g_io_extension_get_type.restype = c_int
         panel_type = gio.g_io_extension_get_type (extension)
-        print panel_type
         libgobject.g_object_new.restype = ctypes.POINTER(ctypes.py_object)
         ptr = libgobject.g_object_new(panel_type, None)
         widget = c_api.pygobject_new(ptr)
