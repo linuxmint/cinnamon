@@ -1377,11 +1377,13 @@ MyApplet.prototype = {
                 this.menu.close();
                 let screensaver_settings = new Gio.Settings({ schema: "org.cinnamon.screensaver" });
                 let screensaver_dialog = Gio.file_new_for_path("/usr/bin/cinnamon-screensaver-command");
-                if (screensaver_dialog.query_exists(null) && screensaver_settings.get_boolean("ask-for-away-message")) {
-                    Util.spawnCommandLine("cinnamon-screensaver-lock-dialog");
-                }
-                else {
-                    this._screenSaverProxy.LockRemote();
+                if (screensaver_dialog.query_exists(null)) {
+                    if (screensaver_settings.get_boolean("ask-for-away-message")) {
+                        Util.spawnCommandLine("cinnamon-screensaver-lock-dialog");
+                    }
+                    else {
+                        Util.spawnCommandLine("cinnamon-screensaver-command --lock");
+                    }
                 }
             });
 
