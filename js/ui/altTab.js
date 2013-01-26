@@ -52,6 +52,8 @@ function AltTabPopup() {
     this._init();
 }
 
+var g_allWsMode;
+
 AltTabPopup.prototype = {
     _init : function() {
         this.actor = new Cinnamon.GenericContainer({ name: 'altTabPopup',
@@ -88,7 +90,22 @@ AltTabPopup.prototype = {
         for (let i = 0, numws = global.screen.n_workspaces; i < numws; ++i) {
             let workspace = global.screen.get_workspace_by_index(i);
                 this._workspaceConnector.addConnection(workspace, 'window-removed', Lang.bind(this, function(ws, metaWindow) {
-                    this.refresh('no-switch-windows');
+                    let index = -1;
+                    this._appIcons.some(function(ai, ix) {
+                        if (ai.window == metaWindow) {
+                            index = ix;
+                            return true; // break
+                        }
+                        return false; // continue
+                    }, this);
+                    if (index >= 0) {
+                        if (index == this._currentApp) {
+                            this._clearPreview();
+                            this._destroyThumbnails();
+                        }
+                        this._appSwitcher._removeIcon(index);
+                        this._select(this._currentApp);
+                    }
                 }));
         }
 
@@ -195,7 +212,6 @@ AltTabPopup.prototype = {
             this.actor.remove_actor(this._appSwitcher.actor);
             this._appSwitcher.actor.destroy();
         }
-        
         this._currentWindow = -1;
         
         // Find out the currently active window
@@ -205,6 +221,7 @@ AltTabPopup.prototype = {
         let windows = [];
         let [currentIndex, forwardIndex, backwardIndex] = [-1, -1, -1];
 
+        g_allWsMode = binding.search(/group/) < 0;
         let activeWsIndex = global.screen.get_active_workspace_index();
         for (let i = 0, numws = global.screen.n_workspaces; i < numws; ++i) {
             let wlist = Main.getTabList(global.screen.get_workspace_by_index(i));
@@ -214,7 +231,9 @@ AltTabPopup.prototype = {
                     return !window.is_on_all_workspaces();
                 }, this);
             }
-            windows = windows.concat(wlist);
+            if (g_allWsMode || i == activeWsIndex) {
+                windows = windows.concat(wlist);
+            }
             if (i == activeWsIndex && wlist.length) {
                 currentIndex = windows.indexOf(currentWindow);
                 // Quick alt-tabbing (with no use of the switcher) should only
@@ -490,7 +509,7 @@ AltTabPopup.prototype = {
         if (!this._mouseActive)
             return;
 
-        this._select(n);
+        // this._select(n);
     },
 
     _windowActivated : function(thumbnailList, n) {
@@ -754,6 +773,9 @@ SwitcherList.prototype = {
         this.actor.connect('get-preferred-width', Lang.bind(this, this._getPreferredWidth));
         this.actor.connect('get-preferred-height', Lang.bind(this, this._getPreferredHeight));
         this.actor.connect('allocate', Lang.bind(this, this._allocateTop));
+        this.actor.connect('destroy', Lang.bind(this, function() {
+            if (this._highlightTimeout) {Mainloop.source_remove(this._highlightTimeout);}
+        }));
 
         // Here we use a GenericContainer so that we can force all the
         // children except the separator to have the same width.
@@ -881,7 +903,10 @@ SwitcherList.prototype = {
             this._highlightTimeout = 0;
 
             let prevIndex = this._highlighted;
-            let direction = prevIndex == -1 ? index - Math.floor(this._items.length/2) : index - prevIndex;
+            // If previous index is negative, we are probably initializing, and we want
+            // to show as many of the current workspace's windows as possible.
+
+            let direction = prevIndex == -1 ? 1 : index - prevIndex;
             if (this._highlighted != -1) {
                 this._items[this._highlighted].remove_style_pseudo_class('outlined');
                 this._items[this._highlighted].remove_style_pseudo_class('selected');
@@ -895,7 +920,7 @@ SwitcherList.prototype = {
             }
             // If we're close to either the left or the right edge, we want to scroll
             // the edge-most items into view.
-            let scrollMax = Math.min(5, Math.floor(this._items.length/4));
+            let scrollMax = prevIndex == -1 && this._altTabPopup ? this._altTabPopup._numPrimaryItems : Math.min(5, Math.floor(this._items.length/4));
             let ixScroll = direction > 0 ?
                 Math.min(index + scrollMax, this._items.length - 1) : // right
                 Math.max(index - scrollMax, 0); // left
@@ -1159,15 +1184,14 @@ AppSwitcher.prototype = {
         let lastWsIndex = 0;
         workspaceIcons.forEach(function(icon) {
             let wsIndex = icon.window.get_workspace().index();
-            for (let i = wsIndex - lastWsIndex; i > 0; --i) {
+            for (let i = wsIndex - lastWsIndex; g_allWsMode && i > 0; --i) {
                 this.addSeparator();
                 lastWsIndex = wsIndex;
             }
             this._addIcon(icon);
         }, this);
 
-        this._curApp = -1;
-        this._prevApp = -1;
+        this._prevApp = this._curApp = -1;
         this._iconSize = 0;
         this._altTabPopup = altTabPopup;
         this._mouseTimeOutId = 0;
@@ -1284,6 +1308,30 @@ AppSwitcher.prototype = {
             this.icons[this._curApp].set_size(this._iconSize, true);
             this._arrows[this._curApp].show();
         }
+    },
+
+    _removeIcon : function(index) {
+        let icon = this.icons[index];
+        this.icons.splice(index, 1);
+        this._items[index].destroy();
+        this._items.splice(index, 1);
+        this._arrows[index].destroy();
+        this._arrows.splice(index, 1);
+        if (index < this._prevApp) {
+            this._prevApp = this._prevApp - 1;
+        }
+        else if (index == this._prevApp) {
+            this._prevApp = -1;
+        }
+        
+        if (index < this._curApp) {
+            this._highlighted = this._curApp = this._curApp - 1;
+        }
+        else if (index == this._curApp) {
+            this._curApp = Math.min(this._curApp, this.icons.length - 1);
+            this._highlighted = -1;
+        }
+        icon.actor.destroy();
     },
 
     _addIcon : function(appIcon) {
