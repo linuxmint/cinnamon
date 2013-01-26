@@ -755,7 +755,7 @@ MyApplet.prototype = {
 
         global.display.connect('overlay-key', Lang.bind(this, function(){
             try{
-                this.menu.toggleWithOptions(false);
+                this.menu.toggleWithOptions(true);
             }
             catch(e) {
                 global.logError(e);
@@ -804,7 +804,7 @@ MyApplet.prototype = {
     },
 
     on_applet_clicked: function(event) {
-        this.menu.toggleWithOptions(false);
+        this.menu.toggleWithOptions(true);
     },
 
     _onSourceKeyPress: function(actor, event) {
