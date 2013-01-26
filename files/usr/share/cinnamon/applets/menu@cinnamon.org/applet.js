@@ -1800,7 +1800,9 @@ MyApplet.prototype = {
         this._displayButtons(recentResults, this._recentButtons);
         this.applicationsBox.show();
         
-        if(appResults.length == 0 && placesResults.length == 0 && recentResults.length == 0) {
+        if(appResults.length == 0
+            && (!placesResults || placesResults.length == 0)
+            && (!recentResults || recentResults.length == 0)) {
             this._updateAppInfo("", "");
         }
 
