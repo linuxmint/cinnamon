@@ -15,6 +15,7 @@ const Tweener = imports.ui.tweener;
 const WindowUtils = imports.misc.windowUtils;
 
 const POPUP_APPICON_SIZE = 96;
+const LIST_SCROLL_TIME = 1; // seconds
 const POPUP_SCROLL_TIME = 0.10; // seconds
 const POPUP_DELAY_TIMEOUT = 150; // milliseconds
 const POPUP_FADE_OUT_TIME = 0.1; // seconds
@@ -312,11 +313,15 @@ AltTabPopup.prototype = {
         return true;
     },
 
-    _nextApp : function() {
-        return mod(this._currentApp + 1, this._appIcons.length);
+    _nextApp : function(wrap) {
+        return wrap ?
+            mod(this._currentApp + 1, this._appIcons.length) :
+            Math.min(this._currentApp + 1, this._appIcons.length - 1);
     },
-    _previousApp : function() {
-        return mod(this._currentApp - 1, this._appIcons.length);
+    _previousApp : function(wrap) {
+        return wrap ?
+            mod(this._currentApp - 1, this._appIcons.length) :
+            Math.max(this._currentApp - 1, 0);
     },
 
     _nextWindow : function() {
@@ -363,9 +368,9 @@ AltTabPopup.prototype = {
         } else if (keysym == Clutter.KEY_space && !this._persistent) {
             this._persistent = true;
         } else if (this._persistent && keysym == Clutter.Tab) {
-            this._select(this._nextApp());
+            this._select(this._nextApp(false));
         } else if (this._persistent && keysym == Clutter.ISO_Left_Tab) {
-            this._select(this._previousApp());
+            this._select(this._previousApp(false));
         } else if (this._persistent && keysym == Clutter.w && (event_state & Clutter.ModifierType.CONTROL_MASK)) {
             if (this._currentApp >= 0) {
                 this._appIcons[this._currentApp].window.delete(global.get_current_time());
@@ -386,9 +391,9 @@ AltTabPopup.prototype = {
         } else if (action == Meta.KeyBindingAction.SWITCH_GROUP_BACKWARD) {
             this._select(this._currentApp, this._previousWindow());
         } else if (action == Meta.KeyBindingAction.SWITCH_WINDOWS) {
-            this._select(backwards ? this._previousApp() : this._nextApp());
+            this._select(backwards ? this._previousApp(false) : this._nextApp(false));
         } else if (action == Meta.KeyBindingAction.SWITCH_WINDOWS_BACKWARD) {
-            this._select(this._previousApp());
+            this._select(this._previousApp(false));
         } else {
             let ctrlDown = event_state & Clutter.ModifierType.CONTROL_MASK;
             if (keysym == Clutter.Left) {
@@ -397,7 +402,7 @@ AltTabPopup.prototype = {
                         return false;
                     }
                 }
-                this._select(this._previousApp());
+                this._select(this._previousApp(false));
             }
             else if (keysym == Clutter.Right) {
                 if (ctrlDown) {
@@ -405,7 +410,7 @@ AltTabPopup.prototype = {
                         return false;
                     }
                 }
-                this._select(this._nextApp());
+                this._select(this._nextApp(false));
             }
         }
 
@@ -901,14 +906,15 @@ SwitcherList.prototype = {
                 this._rightArrow.opacity = this._rightGradient.opacity = 0;
             }
             if (posX + this._items[ixScroll].get_width() >= containerWidth) {
+                Tweener.removeTweens(this._list);
                 this._scrollableLeft = true;
                 let monitor = Main.layoutManager.primaryMonitor;
                 let padding = this.actor.get_theme_node().get_horizontal_padding();
                 let parentPadding = this.actor.get_parent().get_theme_node().get_horizontal_padding();
                 let x = this._items[ixScroll].allocation.x2 - monitor.width + padding + parentPadding;
                 Tweener.addTween(this._list, { anchor_x: x,
-                    time: POPUP_SCROLL_TIME,
-                    transition: 'easeOutQuad'
+                    time: LIST_SCROLL_TIME,
+                    transition: 'linear'
                 });
             }
         }
@@ -919,11 +925,12 @@ SwitcherList.prototype = {
             }
             let padding = this.actor.get_theme_node().get_horizontal_padding();
             if (posX <= padding) {
+                Tweener.removeTweens(this._list);
                 this._scrollableRight = true;
                 let x = this._list.get_children()[ixScroll].allocation.x1;
                 Tweener.addTween(this._list, { anchor_x: x,
-                    time: POPUP_SCROLL_TIME,
-                    transition: 'easeOutQuad'
+                    time: LIST_SCROLL_TIME,
+                    transition: 'linear'
                 });
             }
         }
