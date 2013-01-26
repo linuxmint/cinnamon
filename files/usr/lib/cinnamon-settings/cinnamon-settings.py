@@ -40,7 +40,8 @@ CONTROL_CENTER_MODULES = [
     [_("Bluetooth"),         "cinnamon-bluetooth",          "bluetooth.svg"],
     [_("Printers"),          "cinnamon-printers",           "printer.svg"],
     [_("Details"),           "cinnamon-info",               "details.svg"],
-    [_("Universal Access"),  "cinnamon-universal-access",   "universal-access.svg"]
+    [_("Universal Access"),  "cinnamon-universal-access",   "universal-access.svg"],
+    [_("User Accounts"),     "cinnamon-user-accounts",      "user-accounts.svg"]
 ]
 
 class MainWindow:
