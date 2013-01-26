@@ -15,7 +15,6 @@ const Tweener = imports.ui.tweener;
 const WindowUtils = imports.misc.windowUtils;
 
 const POPUP_APPICON_SIZE = 96;
-const LIST_SCROLL_TIME = 1; // seconds
 const POPUP_SCROLL_TIME = 0.10; // seconds
 const POPUP_DELAY_TIMEOUT = 150; // milliseconds
 const POPUP_FADE_OUT_TIME = 0.1; // seconds
@@ -875,66 +874,71 @@ SwitcherList.prototype = {
     },
 
     highlight: function(index, justOutline) {
-        let direction = this._highlighted == -1 ? index - Math.floor(this._items.length/2) : index - this._highlighted;
-        if (this._highlighted != -1) {
-            this._items[this._highlighted].remove_style_pseudo_class('outlined');
-            this._items[this._highlighted].remove_style_pseudo_class('selected');
+        if (this._highlightTimeout) {
+            Mainloop.source_remove(this._highlightTimeout); this._highlightTimeout = 0;
         }
+        this._highlightTimeout = Mainloop.timeout_add(25, Lang.bind(this, function() {
+            this._highlightTimeout = 0;
 
-        this._highlighted = index;
-
-        if (this._highlighted != -1) {
-            if (justOutline)
-                this._items[this._highlighted].add_style_pseudo_class('outlined');
-            else
-                this._items[this._highlighted].add_style_pseudo_class('selected');
-        }
-        // If we're close to either the left or the right edge, we want to scroll
-        // the edge-most items into view.
-        let scrollMax = Math.min(7, Math.floor(this._items.length/4));
-        let ixScroll = direction > 0 ?
-            Math.min(index + scrollMax, this._items.length - 1) : // right
-            Math.max(index - scrollMax, 0); // left
-
-        let [absItemX, absItemY] = this._items[ixScroll].get_transformed_position();
-        let [result, posX, posY] = this.actor.transform_stage_point(absItemX, 0);
-        let [containerWidth, containerHeight] = this.actor.get_transformed_size();
-
-        if (direction > 0) {
-            if (ixScroll == this._items.length - 1) {
-                this._scrollableRight = false;
-                this._rightArrow.opacity = this._rightGradient.opacity = 0;
+            let prevIndex = this._highlighted;
+            let direction = prevIndex == -1 ? index - Math.floor(this._items.length/2) : index - prevIndex;
+            if (this._highlighted != -1) {
+                this._items[this._highlighted].remove_style_pseudo_class('outlined');
+                this._items[this._highlighted].remove_style_pseudo_class('selected');
             }
-            if (posX + this._items[ixScroll].get_width() >= containerWidth) {
-                Tweener.removeTweens(this._list);
-                this._scrollableLeft = true;
-                let monitor = Main.layoutManager.primaryMonitor;
+            this._highlighted = index;
+            if (this._highlighted != -1) {
+                if (justOutline)
+                    this._items[this._highlighted].add_style_pseudo_class('outlined');
+                else
+                    this._items[this._highlighted].add_style_pseudo_class('selected');
+            }
+            // If we're close to either the left or the right edge, we want to scroll
+            // the edge-most items into view.
+            let scrollMax = Math.min(5, Math.floor(this._items.length/4));
+            let ixScroll = direction > 0 ?
+                Math.min(index + scrollMax, this._items.length - 1) : // right
+                Math.max(index - scrollMax, 0); // left
+
+            let [absItemX, absItemY] = this._items[ixScroll].get_transformed_position();
+            let [result, posX, posY] = this.actor.transform_stage_point(absItemX, 0);
+            let [containerWidth, containerHeight] = this.actor.get_transformed_size();
+
+            if (direction > 0) {
+                if (ixScroll == this._items.length - 1) {
+                    this._scrollableRight = false;
+                    this._rightArrow.opacity = this._rightGradient.opacity = 0;
+                }
+                if (posX + this._items[ixScroll].get_width() >= containerWidth) {
+                    Tweener.removeTweens(this._list);
+                    this._scrollableLeft = true;
+                    let monitor = Main.layoutManager.primaryMonitor;
+                    let padding = this.actor.get_theme_node().get_horizontal_padding();
+                    let parentPadding = this.actor.get_parent().get_theme_node().get_horizontal_padding();
+                    let x = this._items[ixScroll].allocation.x2 - monitor.width + padding + parentPadding;
+                    Tweener.addTween(this._list, { anchor_x: x,
+                        time: prevIndex < 0 ? 0 : POPUP_SCROLL_TIME,
+                        transition: 'linear'
+                    });
+                }
+            }
+            else if (direction < 0) {
+                if (ixScroll == 0) {
+                    this._scrollableLeft = false;
+                    this._leftArrow.opacity = this._leftGradient.opacity = 0;
+                }
                 let padding = this.actor.get_theme_node().get_horizontal_padding();
-                let parentPadding = this.actor.get_parent().get_theme_node().get_horizontal_padding();
-                let x = this._items[ixScroll].allocation.x2 - monitor.width + padding + parentPadding;
-                Tweener.addTween(this._list, { anchor_x: x,
-                    time: LIST_SCROLL_TIME,
-                    transition: 'linear'
-                });
+                if (posX <= padding) {
+                    Tweener.removeTweens(this._list);
+                    this._scrollableRight = true;
+                    let x = (ixScroll == 0 ? this._list.get_children() : this._items)[ixScroll].allocation.x1;
+                    Tweener.addTween(this._list, { anchor_x: x,
+                        time: prevIndex < 0 ? 0 : POPUP_SCROLL_TIME,
+                        transition: 'linear'
+                    });
+                }
             }
-        }
-        else if (direction < 0) {
-            if (ixScroll == 0) {
-                this._scrollableLeft = false;
-                this._leftArrow.opacity = this._leftGradient.opacity = 0;
-            }
-            let padding = this.actor.get_theme_node().get_horizontal_padding();
-            if (posX <= padding) {
-                Tweener.removeTweens(this._list);
-                this._scrollableRight = true;
-                let x = this._list.get_children()[ixScroll].allocation.x1;
-                Tweener.addTween(this._list, { anchor_x: x,
-                    time: LIST_SCROLL_TIME,
-                    transition: 'linear'
-                });
-            }
-        }
-
+        }));
     },
 
     _itemActivated: function(n) {
