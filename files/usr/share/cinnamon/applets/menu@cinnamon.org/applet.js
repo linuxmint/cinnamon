@@ -151,16 +151,16 @@ ApplicationContextMenuItem.prototype = {
 };
 
 
-function SimpleButton(appsMenuButton, icon, buttonStyle, labelStyle, name, description) {
-    this._init(appsMenuButton, icon, buttonStyle, labelStyle, name, description);
+function SimpleButton(menuApplet, icon, buttonStyle, labelStyle, name, description) {
+    this._init(menuApplet, icon, buttonStyle, labelStyle, name, description);
 }
 
 SimpleButton.prototype = {
     __proto__: PopupMenu.PopupBaseMenuItem.prototype,
 
-    _init: function(appsMenuButton, icon, buttonStyle, labelStyle, name, description) {
+    _init: function(menuApplet, icon, buttonStyle, labelStyle, name, description) {
         PopupMenu.PopupBaseMenuItem.prototype._init.call(this, {hover: false});
-        this.appsMenuButton = appsMenuButton;
+        this.menuApplet = menuApplet;
         this.name = name;
         this.description = description;
         this.buttonStyle = buttonStyle;
@@ -185,15 +185,15 @@ SimpleButton.prototype = {
 
 
 
-function SearchableButton(appsMenuButton, icon, buttonStyle, labelStyle, name, description, searchTexts) {
-    this._init(appsMenuButton, icon, buttonStyle, labelStyle, name, description, searchTexts);
+function SearchableButton(menuApplet, icon, buttonStyle, labelStyle, name, description, searchTexts) {
+    this._init(menuApplet, icon, buttonStyle, labelStyle, name, description, searchTexts);
 }
 
 SearchableButton.prototype = {
     __proto__: SimpleButton.prototype,
 
-    _init: function(appsMenuButton, icon, buttonStyle, labelStyle, name, description, searchTexts) {
-        SimpleButton.prototype._init.call(this, appsMenuButton, icon, buttonStyle, labelStyle, name, description);
+    _init: function(menuApplet, icon, buttonStyle, labelStyle, name, description, searchTexts) {
+        SimpleButton.prototype._init.call(this, menuApplet, icon, buttonStyle, labelStyle, name, description);
         this.searchTexts = new Array();
         for(let i=0; i<searchTexts.length; i++) {
             let s = searchTexts[i];
@@ -220,19 +220,19 @@ SearchableButton.prototype = {
     }
 };
 
-function GenericApplicationButton(appsMenuButton, app, withMenu, buttonStyle, labelStyle, icon) {
-    this._init(appsMenuButton, app, withMenu, buttonStyle, labelStyle, icon);
+function GenericApplicationButton(menuApplet, app, withMenu, buttonStyle, labelStyle, icon) {
+    this._init(menuApplet, app, withMenu, buttonStyle, labelStyle, icon);
 }
 
 GenericApplicationButton.prototype = {
     __proto__: SearchableButton.prototype,
 
-    _init: function(appsMenuButton, app, withMenu, buttonStyle, labelStyle, icon) {
+    _init: function(menuApplet, app, withMenu, buttonStyle, labelStyle, icon) {
         this.app = app;
         let appId = app.get_id() ? app.get_id().slice(0, -8) : '';
 
         SearchableButton.prototype._init.call(this,
-            appsMenuButton, icon,
+            menuApplet, icon,
             buttonStyle, labelStyle,
             app.get_name(), app.get_description(),
             [app.get_name(), app.get_description(), appId]);
@@ -251,7 +251,7 @@ GenericApplicationButton.prototype = {
         }
         if (event.get_button()==3){
             if (this.withMenu && !this.menu.isOpen)
-                this.appsMenuButton.closeApplicationsContextMenus(this.app, true);
+                this.menuApplet.closeApplicationsContextMenus(this.app, true);
             this.toggleMenu();
         }
         return true;
@@ -259,7 +259,7 @@ GenericApplicationButton.prototype = {
 
     activate: function(event) {
         this.app.open_new_window(-1);
-        this.appsMenuButton.menu.close();
+        this.menuApplet.menu.close();
     },
 
     closeMenu: function() {
@@ -293,19 +293,19 @@ GenericApplicationButton.prototype = {
     },
 
     _subMenuOpenStateChanged: function() {
-        if (this.menu.isOpen) this.appsMenuButton._scrollToButton(this.menu);
+        if (this.menu.isOpen) this.menuApplet._scrollToButton(this.menu);
     }
 }
 
-function ApplicationButton(appsMenuButton, app) {
-    this._init(appsMenuButton, app);
+function ApplicationButton(menuApplet, app) {
+    this._init(menuApplet, app);
 }
 
 ApplicationButton.prototype = {
     __proto__: GenericApplicationButton.prototype,
 
-    _init: function(appsMenuButton, app) {
-        GenericApplicationButton.prototype._init.call(this, appsMenuButton, app, true, 'menu-application-button', 'menu-application-button-label', app.create_icon_texture(APPLICATION_ICON_SIZE));
+    _init: function(menuApplet, app) {
+        GenericApplicationButton.prototype._init.call(this, menuApplet, app, true, 'menu-application-button', 'menu-application-button-label', app.create_icon_texture(APPLICATION_ICON_SIZE));
         this.category = new Array();
 
         this._draggable = DND.makeDraggable(this.actor);
@@ -329,19 +329,19 @@ ApplicationButton.prototype = {
     }
 };
 
-function PlaceButton(appsMenuButton, place, name) {
-    this._init(appsMenuButton, place, name);
+function PlaceButton(menuApplet, place, name) {
+    this._init(menuApplet, place, name);
 }
 
 PlaceButton.prototype = {
     __proto__: SearchableButton.prototype,
 
-    _init: function(appsMenuButton, place, name) {
+    _init: function(menuApplet, place, name) {
         this.place = place;
         let description = place.id.slice(16);
 
         SearchableButton.prototype._init.call(this,
-            appsMenuButton, place.iconFactory(APPLICATION_ICON_SIZE),
+            menuApplet, place.iconFactory(APPLICATION_ICON_SIZE),
             'menu-application-button', 'menu-application-button-label',
             name, description,
             [name, description]);
@@ -349,23 +349,23 @@ PlaceButton.prototype = {
 
     activate: function(event) {
         this.place.launch();
-        this.appsMenuButton.menu.close();
+        this.menuApplet.menu.close();
     }
 };
 
-function RecentButton(appsMenuButton, file) {
-    this._init(appsMenuButton, file);
+function RecentButton(menuApplet, file) {
+    this._init(menuApplet, file);
 }
 
 RecentButton.prototype = {
     __proto__: SearchableButton.prototype,
 
-    _init: function(appsMenuButton, file) {
+    _init: function(menuApplet, file) {
         this.file = file;
         let description = file.uri.slice(7);
 
         SearchableButton.prototype._init.call(this,
-            appsMenuButton, file.createIcon(APPLICATION_ICON_SIZE),
+            menuApplet, file.createIcon(APPLICATION_ICON_SIZE),
             'menu-application-button', 'menu-application-button-label',
             file.name, description,
             [file.name, description]);
@@ -373,29 +373,29 @@ RecentButton.prototype = {
 
     activate: function(event) {
         Gio.app_info_launch_default_for_uri(this.file.uri, global.create_app_launch_context());
-        this.appsMenuButton.menu.close();
+        this.menuApplet.menu.close();
     }
 };
 
-function RecentClearButton(appsMenuButton) {
-    this._init(appsMenuButton);
+function RecentClearButton(menuApplet) {
+    this._init(menuApplet);
 }
 
 RecentClearButton.prototype = {
     __proto__: SearchableButton.prototype,
 
-    _init: function(appsMenuButton) {
+    _init: function(menuApplet) {
         let name = _("Clear list");
         let description = _("Clear recent history");
         SearchableButton.prototype._init.call(this,
-            appsMenuButton, new St.Icon({ icon_name: 'edit-clear', icon_type: St.IconType.SYMBOLIC, icon_size: APPLICATION_ICON_SIZE }),
+            menuApplet, new St.Icon({ icon_name: 'edit-clear', icon_type: St.IconType.SYMBOLIC, icon_size: APPLICATION_ICON_SIZE }),
             'menu-application-button', 'menu-application-button-label',
             name, description,
             [name, description]);
     },
 
     activate: function(event) {
-        this.appsMenuButton.menu.close();
+        this.menuApplet.menu.close();
         let GtkRecent = new Gtk.RecentManager();
         GtkRecent.purge_items();
     }
@@ -442,20 +442,20 @@ AppCategoryButton.prototype = {
     }
 };
 
-function FavoritesButton(appsMenuButton, app, nbFavorites) {
-    this._init(appsMenuButton, app, nbFavorites);
+function FavoritesButton(menuApplet, app, nbFavorites) {
+    this._init(menuApplet, app, nbFavorites);
 }
 
 FavoritesButton.prototype = {
     __proto__: GenericApplicationButton.prototype,
 
-    _init: function(appsMenuButton, app, nbFavorites) {
+    _init: function(menuApplet, app, nbFavorites) {
         let monitorHeight = Main.layoutManager.primaryMonitor.height;
         let real_size = (0.7*monitorHeight) / nbFavorites;
         let icon_size = 0.6*real_size;
         if (icon_size>MAX_FAV_ICON_SIZE) icon_size = MAX_FAV_ICON_SIZE;
 
-        GenericApplicationButton.prototype._init.call(this, appsMenuButton, app, false, 'menu-favorites-button', null, app.create_icon_texture(icon_size));
+        GenericApplicationButton.prototype._init.call(this, menuApplet, app, false, 'menu-favorites-button', null, app.create_icon_texture(icon_size));
         this.actor.style = "padding-top: "+(icon_size/3)+"px;padding-bottom: "+(icon_size/3)+"px; margin:auto;"
 
         this._draggable = DND.makeDraggable(this.actor);
@@ -473,21 +473,21 @@ FavoritesButton.prototype = {
     }
 };
 
-function SystemButton(appsMenuButton, icon, nbFavorites, name, description) {
-    this._init(appsMenuButton, icon, nbFavorites, name, description);
+function SystemButton(menuApplet, icon, nbFavorites, name, description) {
+    this._init(menuApplet, icon, nbFavorites, name, description);
 }
 
 SystemButton.prototype = {
     __proto__: SimpleButton.prototype,
     
-    _init: function(appsMenuButton, icon, nbFavorites, name, description) {
+    _init: function(menuApplet, icon, nbFavorites, name, description) {
         let monitorHeight = Main.layoutManager.primaryMonitor.height;
         let real_size = (0.7*monitorHeight) / nbFavorites;
         let icon_size = 0.6*real_size;
         if (icon_size>MAX_FAV_ICON_SIZE) icon_size = MAX_FAV_ICON_SIZE;
 
         SimpleButton.prototype._init.call(this,
-            appsMenuButton, new St.Icon({icon_name: icon, icon_size: icon_size, icon_type: St.IconType.FULLCOLOR}),
+            menuApplet, new St.Icon({icon_name: icon, icon_size: icon_size, icon_type: St.IconType.FULLCOLOR}),
             'menu-favorites-button', null,
             name, description);
         this.actor.style = "padding-top: "+(icon_size/3)+"px;padding-bottom: "+(icon_size/3)+"px; margin:auto;";
