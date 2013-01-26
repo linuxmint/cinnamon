@@ -38,6 +38,7 @@ CONTROL_CENTER_MODULES = [
     [_("Display"),           "cinnamon-display",   "display.svg"],
     [_("Region & Language"), "cinnamon-region",    "region.svg"],
     [_("Bluetooth"),         "cinnamon-bluetooth", "bluetooth.svg"],
+    [_("Printers"),          "cinnamon-printers",  "printer.svg"],
     [_("Details"),           "cinnamon-info",   "details.svg"]
 ]
 
