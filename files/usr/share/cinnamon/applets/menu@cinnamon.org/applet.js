@@ -473,23 +473,24 @@ FavoritesButton.prototype = {
     }
 };
 
-function SystemButton(appsMenuButton, icon, nbFavorites) {
-    this._init(appsMenuButton, icon, nbFavorites);
+function SystemButton(appsMenuButton, icon, nbFavorites, name, description) {
+    this._init(appsMenuButton, icon, nbFavorites, name, description);
 }
 
 SystemButton.prototype = {
+    __proto__: SimpleButton.prototype,
+    
     _init: function(appsMenuButton, icon, nbFavorites, name, description) {
-        this.actor = new St.Button({ reactive: true, style_class: 'menu-favorites-button' });
         let monitorHeight = Main.layoutManager.primaryMonitor.height;
         let real_size = (0.7*monitorHeight) / nbFavorites;
         let icon_size = 0.6*real_size;
         if (icon_size>MAX_FAV_ICON_SIZE) icon_size = MAX_FAV_ICON_SIZE;
-        this.actor.style = "padding-top: "+(icon_size/3)+"px;padding-bottom: "+(icon_size/3)+"px; margin:auto;"
-        let iconObj = new St.Icon({icon_name: icon, icon_size: icon_size, icon_type: St.IconType.FULLCOLOR});
-        this.actor.set_child(iconObj);
 
-        this.name = name;
-        this.description = description;
+        SimpleButton.prototype._init.call(this,
+            appsMenuButton, new St.Icon({icon_name: icon, icon_size: icon_size, icon_type: St.IconType.FULLCOLOR}),
+            'menu-favorites-button', null,
+            name, description);
+        this.actor.style = "padding-top: "+(icon_size/3)+"px;padding-bottom: "+(icon_size/3)+"px; margin:auto;";
     }
 };
 
@@ -954,6 +955,12 @@ MyApplet.prototype = {
         return true;
     },
 
+    _addSideEnterEvent: function(button, callback) {
+        let _callback = function() { callback(); };
+        button.connect('enter-event', _callback);
+        button.actor.connect('enter-event', _callback);
+    },
+
     _addEnterEvent: function(button, callback) {
         let _callback = Lang.bind(this, function() {
             let parent = button.actor.get_parent();
@@ -1347,7 +1354,7 @@ MyApplet.prototype = {
                     let button = new FavoritesButton(this, app, launchers.length + 3); // + 3 because we're adding 3 system buttons at the bottom
                     this._favoritesButtons[app] = button;
                     favoritesBox.actor.add_actor(button.actor, { y_align: St.Align.END, y_fill: false });
-                    button.actor.connect('enter-event', Lang.bind(this, this._enterSideButton, button));
+                    this._addSideEnterEvent(button, Lang.bind(this, this._enterSideButton, button));
                     button.actor.connect('leave-event', Lang.bind(this, this._leaveSideButton, button));
                     ++j;
                 }
@@ -1364,9 +1371,9 @@ MyApplet.prototype = {
 
             //Lock screen
             let button = new SystemButton(this, "gnome-lockscreen", numFavorites + 3, _("Lock screen"), _("Lock the screen"));
-            button.actor.connect('enter-event', Lang.bind(this, this._enterSideButton, button));
+            this._addSideEnterEvent(button, Lang.bind(this, this._enterSideButton, button));
             button.actor.connect('leave-event', Lang.bind(this, this._leaveSideButton, button));
-            button.actor.connect('clicked', Lang.bind(this, function() {
+            button.activate =  Lang.bind(this, function() {
                 this.menu.close();
                 let screensaver_settings = new Gio.Settings({ schema: "org.cinnamon.screensaver" });
                 let screensaver_dialog = Gio.file_new_for_path("/usr/bin/cinnamon-screensaver-command");
@@ -1376,29 +1383,29 @@ MyApplet.prototype = {
                 else {
                     this._screenSaverProxy.LockRemote();
                 }
-            }));
+            });
 
             this.leftBox.add_actor(button.actor, { y_align: St.Align.END, y_fill: false });
 
             //Logout button
             button = new SystemButton(this, "gnome-logout", numFavorites + 3, _("Logout"), _("Leave the session"));
-            button.actor.connect('enter-event', Lang.bind(this, this._enterSideButton, button));
+            this._addSideEnterEvent(button, Lang.bind(this, this._enterSideButton, button));
             button.actor.connect('leave-event', Lang.bind(this, this._leaveSideButton, button));
-            button.actor.connect('clicked', Lang.bind(this, function() {
+            button.activate = Lang.bind(this, function() {
                 this.menu.close();
                 this._session.LogoutRemote(0);
-            }));
+            });
 
             this.leftBox.add_actor(button.actor, { y_align: St.Align.END, y_fill: false });
 
             //Shutdown button
             button = new SystemButton(this, "gnome-shutdown", numFavorites + 3, _("Quit"), _("Shutdown the computer"));
-            button.actor.connect('enter-event', Lang.bind(this, this._enterSideButton, button));
+            this._addSideEnterEvent(button, Lang.bind(this, this._enterSideButton, button));
             button.actor.connect('leave-event', Lang.bind(this, this._leaveSideButton, button));
-            button.actor.connect('clicked', Lang.bind(this, function() {
+            button.activate = Lang.bind(this, function() {
                 this.menu.close();
                 this._session.ShutdownRemote();
-            }));
+            });
 
             this.leftBox.add_actor(button.actor, { y_align: St.Align.END, y_fill: false });
         }
