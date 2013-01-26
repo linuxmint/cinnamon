@@ -33,13 +33,14 @@ menuGenericName = _("Desktop Configuration Tool")
 menuComment = _("Fine-tune desktop settings")
 
 CONTROL_CENTER_MODULES = [
-#         Label                  Module ID              Icon
-    [_("Networking"),        "cinnamon-network",   "network.svg"],
-    [_("Display"),           "cinnamon-display",   "display.svg"],
-    [_("Region & Language"), "cinnamon-region",    "region.svg"],
-    [_("Bluetooth"),         "cinnamon-bluetooth", "bluetooth.svg"],
-    [_("Printers"),          "cinnamon-printers",  "printer.svg"],
-    [_("Details"),           "cinnamon-info",   "details.svg"]
+#         Label                  Module ID                       Icon
+    [_("Networking"),        "cinnamon-network",            "network.svg"],
+    [_("Display"),           "cinnamon-display",            "display.svg"],
+    [_("Region & Language"), "cinnamon-region",             "region.svg"],
+    [_("Bluetooth"),         "cinnamon-bluetooth",          "bluetooth.svg"],
+    [_("Printers"),          "cinnamon-printers",           "printer.svg"],
+    [_("Details"),           "cinnamon-info",               "details.svg"],
+    [_("Universal Access"),  "cinnamon-universal-access",   "universal-access.svg"]
 ]
 
 class MainWindow:
