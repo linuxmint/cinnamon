@@ -21,6 +21,7 @@ try:
     import imtools
     import Image
     import tempfile
+    import math
 
 except Exception, detail:
     print detail
@@ -290,25 +291,84 @@ class GSettingsFontButton(Gtk.HBox):
         else:
             self.set_sensitive(not self.dep_settings.get_boolean(self.dep_key))
 
+#class GSettingsRange(Gtk.HBox):
+#    def __init__(self, label, schema, key, dep_key, **options):
+#        self.key = key
+#        self.dep_key = dep_key
+#        super(GSettingsRange, self).__init__()
+#        self.settings = Gio.Settings.new(schema)
+#        self.value = self.settings.get_double(self.key)
+#        
+#        self.label = Gtk.Label(label)
+#
+#        #returned variant is range:(min, max)
+#        _min, _max = self.settings.get_range(self.key)[1]
+#
+#        self.content_widget = Gtk.HScale.new_with_range(_min, _max, options.get('adjustment_step', 1))
+#        self.content_widget.set_value(self.value)
+#        if (label != ""):
+#            self.pack_start(self.label, False, False, 2)
+#        self.pack_start(self.content_widget, True, True, 2)
+#        self.content_widget.connect('value-changed', self.on_my_value_changed)
+#        self.content_widget.show_all()
+#        self.dependency_invert = False
+#        if self.dep_key is not None:
+#            if self.dep_key[0] == '!':
+#                self.dependency_invert = True
+#                self.dep_key = self.dep_key[1:]
+#            split = self.dep_key.split('/')
+#            self.dep_settings = Gio.Settings.new(split[0])
+#            self.dep_key = split[1]
+#            self.dep_settings.connect("changed::"+self.dep_key, self.on_dependency_setting_changed)
+#            self.on_dependency_setting_changed(self, None)
+#
+#    def on_my_value_changed(self, widget):
+#        self.settings.set_double(self.key, widget.get_value())
+#
+#    def on_dependency_setting_changed(self, settings, dep_key):
+#        if not self.dependency_invert:
+#            self.set_sensitive(self.dep_settings.get_boolean(self.dep_key))
+#        else:
+#            self.set_sensitive(not self.dep_settings.get_boolean(self.dep_key))
+
 class GSettingsRange(Gtk.HBox):
-    def __init__(self, label, schema, key, dep_key, **options):
+    def __init__(self, label, low_label, hi_label, low_limit, hi_limit, inverted, valtype, exponential, schema, key, dep_key, **options):
+        super(GSettingsRange, self).__init__()
         self.key = key
         self.dep_key = dep_key
-        super(GSettingsRange, self).__init__()
         self.settings = Gio.Settings.new(schema)
-        self.value = self.settings.get_double(self.key)
-        
+        self.valtype = valtype
+        if self.valtype == "int":
+            self.value = self.settings.get_int(self.key) * 1.0
+        elif self.valtype == "uint":
+            self.value = self.settings.get_uint(self.key) * 1.0
+        elif self.valtype == "double":
+            self.value = self.settings.get_double(self.key) * 1.0
         self.label = Gtk.Label(label)
-
-        #returned variant is range:(min, max)
-        _min, _max = self.settings.get_range(self.key)[1]
-
-        self.content_widget = Gtk.HScale.new_with_range(_min, _max, options.get('adjustment_step', 1))
-        self.content_widget.set_value(self.value)
+        self.low_label = Gtk.Label()
+        self.hi_label = Gtk.Label()
+        self.low_label.set_markup("<i><small>%s</small></i>" % low_label)
+        self.hi_label.set_markup("<i><small>%s</small></i>" % hi_label)
+        self.inverted = inverted
+        self.exponential = exponential
+        self._range = (hi_limit - low_limit) * 1.0
+        self._step = options.get('adjustment_step', 1)
+        self._min = low_limit * 1.0
+        self._max = hi_limit * 1.0
+        self.content_widget = Gtk.Scale.new_with_range(Gtk.Orientation.HORIZONTAL, 0, 1, (self._step / self._range))
+        self.content_widget.set_value(self.to_corrected(self.value))
+        self.content_widget.set_draw_value(False);
         if (label != ""):
             self.pack_start(self.label, False, False, 2)
+        if (low_label != ""):
+            self.pack_start(self.low_label, False, False, 2)
         self.pack_start(self.content_widget, True, True, 2)
+        if (hi_label != ""):
+            self.pack_start(self.hi_label, False, False, 2)
+        self._dragging = False
         self.content_widget.connect('value-changed', self.on_my_value_changed)
+        self.content_widget.connect('button-press-event', self.on_mouse_down)
+        self.content_widget.connect('button-release-event', self.on_mouse_up)
         self.content_widget.show_all()
         self.dependency_invert = False
         if self.dep_key is not None:
@@ -321,14 +381,68 @@ class GSettingsRange(Gtk.HBox):
             self.dep_settings.connect("changed::"+self.dep_key, self.on_dependency_setting_changed)
             self.on_dependency_setting_changed(self, None)
 
+# halt writing gsettings during dragging
+# it can take a long time to process all
+# those updates, and the system can crash
+
+    def on_mouse_down(self, widget, event):
+        self._dragging = True
+
+    def on_mouse_up(self, widget, event):
+        self._dragging = False
+        self.on_my_value_changed(widget)
+
     def on_my_value_changed(self, widget):
-        self.settings.set_double(self.key, widget.get_value())
+        if self._dragging:
+            return
+        corrected = self.from_corrected(widget.get_value())
+        if self.valtype == "int":
+            self.settings.set_int(self.key, corrected)
+        elif self.valtype == "uint":
+            self.settings.set_uint(self.key, corrected)
+        elif self.valtype == "double":
+            self.settings.set_double(self.key, corrected)
 
     def on_dependency_setting_changed(self, settings, dep_key):
         if not self.dependency_invert:
             self.set_sensitive(self.dep_settings.get_boolean(self.dep_key))
         else:
             self.set_sensitive(not self.dep_settings.get_boolean(self.dep_key))
+
+    def to_corrected(self, value):
+        result = 0.0
+        if self.exponential:
+            k = (math.log(self._max) - math.log(self._min)) / (self._range / self._step)
+            a = self._max / math.exp(k * self._range)
+            cur_val_step = (1 / (k / math.log(value / a))) / self._range
+            if self.inverted:
+                result = 1 - cur_val_step
+            else:
+                result = cur_val_step
+        else:
+            if self.inverted:
+                result = 1 - ((value - self._min) / self._range)
+            else:
+                result = (value - self._min) / self._range
+        return result
+
+    def from_corrected(self, value):
+        result = 0.0
+        if self.exponential:
+            k = (math.log(self._max)-math.log(self._min))/(self._range / self._step)
+            a = self._max / math.exp(k * self._range)
+            if self.inverted:
+                cur_val_step = (1 - value) * self._range
+                result = a * math.exp(k * cur_val_step)
+            else:
+                cur_val_step = value * self._range
+                result =  a * math.exp(k * cur_val_step)
+        else:
+            if self.inverted:
+                result = ((1 - value) * self._range) + self._min
+            else:
+                result =  (value * self._range) + self._min
+        return round(result)
 
 class GSettingsRangeSpin(Gtk.HBox):
     def __init__(self, label, schema, key, dep_key, **options):
