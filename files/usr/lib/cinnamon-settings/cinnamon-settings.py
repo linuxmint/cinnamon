@@ -82,7 +82,8 @@ class MainWindow:
 
         for item in CONTROL_CENTER_MODULES:
             ccmodule = SettingsWidgets.CCModule(item[0], item[1], item[2], self.content_box)
-            self.sidePages.append((ccmodule.sidePage, ccmodule.name))
+            if ccmodule.process():
+                self.sidePages.append((ccmodule.sidePage, ccmodule.name))
 
         # create the backing store for the side nav-view.
         self.store = Gtk.ListStore(str, GdkPixbuf.Pixbuf, object)
