@@ -839,15 +839,23 @@ MyApplet.prototype = {
                                      (this.searchBox.get_allocation_box().y2-this.searchBox.get_allocation_box().y1);
             }
             this.applicationsScrollBox.style = "height: "+scrollBoxHeight+"px;";
+            this.applicationsBox.hide();
             this._refreshApplicationsBox();
+            // Reset scrollbar
+            this.applicationsScrollBox.get_vscroll_bar().get_adjustment().set_value(0);
 
             this.initButtonLoad = 30;
-            let n = Math.min(this._applicationsButtons.length, this.initButtonLoad)
-            for (let i = 0; i < n; i++) {
-                if (!this._applicationsButtons[i].actor.visible) {
-                    this._applicationsButtons[i].actor.show();
+            for (let i = 0; i < this._applicationsButtons.length; i++) {
+                let visible = i < this.initButtonLoad;
+                if(visible != this._applicationsButtons[i].actor.visible) {
+                    if (visible) {
+                        this._applicationsButtons[i].actor.show();
+                    }else {
+                        this._applicationsButtons[i].actor.hide();
+                    }
                 }
             }
+            this.applicationsBox.show();
             Mainloop.idle_add(Lang.bind(this, this._initialCatSelection));
         } else {
             this.actor.remove_style_pseudo_class('active');
@@ -1017,6 +1025,7 @@ MyApplet.prototype = {
             }
         }
     },
+    
     _resortButtons: function(bySearchScore) {
         let allListButtons = this._applicationsButtons.slice().concat(this._placesButtons).concat(this._recentButtons);
         this._removeButtons(allListButtons);
@@ -1035,6 +1044,7 @@ MyApplet.prototype = {
                 return sr;
             });
         }
+        
         for (let i = 0; i < allListButtons.length; i++) {
             let button = allListButtons[i];
             this.applicationsBox.add_actor(button.actor);
@@ -1134,6 +1144,12 @@ MyApplet.prototype = {
                     if(refreshApps || !(dir.get_menu_id() in this.applicationsByCategory)) {
                         this.applicationsByCategory[dir.get_menu_id()] = new Array();
                         this._loadCategory(dir);
+                        
+                        // Sort the applications buttons, so the initial 30 buttons are the first ones in alphabetical order
+                        this._applicationsButtons.sort(function(a, b) {
+                            let sr = a.name.toLowerCase() > b.name.toLowerCase();
+                            return sr;
+                        });
                     }
                     if (this.applicationsByCategory[dir.get_menu_id()].length>0){
                         let categoryButton = new AppCategoryButton(dir);
@@ -1578,6 +1594,8 @@ MyApplet.prototype = {
     },
 
     _clearAllSelections: function(hideApps) {
+        if(hideApps)
+            this.applicationsBox.hide();
         let actors = this.applicationsBox.get_children();
         for (var i=0; i<actors.length; i++) {
             let actor = actors[i];
@@ -1586,6 +1604,8 @@ MyApplet.prototype = {
                 actor.hide();
             }
         }
+        if(hideApps)
+            this.applicationsBox.show();
         actors = this.categoriesBox.get_children();
         for (var i=0; i<actors.length; i++){
             let actor = actors[i];
@@ -1595,6 +1615,9 @@ MyApplet.prototype = {
     },
 
     _selectCategory : function(dir, categoryButton) {
+        // Reset scrollbar
+        this.applicationsScrollBox.get_vscroll_bar().get_adjustment().set_value(0);
+        
         let category = 'all';
         if (dir && dir.get_menu_id())
             category = dir.get_menu_id();
@@ -1621,6 +1644,7 @@ MyApplet.prototype = {
     },
 
     _displayAppButtonsForCategory: function(appCategory){
+        this.applicationsBox.hide();
         this._displayButtons(null, this._placesButtons);
         this._displayButtons(null, this._recentButtons);
         if (appCategory == "all") {
@@ -1638,6 +1662,7 @@ MyApplet.prototype = {
                 }
             });
         }
+        this.applicationsBox.show();
     },
 
     _displayButtons: function(nameList, buttonList){
@@ -1683,8 +1708,12 @@ MyApplet.prototype = {
      resetSearch: function(){
         this.searchEntry.set_text("");
         this.searchActive = false;
+        
+        this.applicationsBox.hide();
         this._clearAllSelections(true);
         this._resortButtons(false);
+        this.applicationsBox.show();
+        
         this._setCategoriesButtonActive(true);
         global.stage.set_key_focus(this.searchEntry);
      },
@@ -1712,7 +1741,11 @@ MyApplet.prototype = {
                     this.searchEntry.disconnect(this._searchIconClickedId);
                 this._searchIconClickedId = 0;
                 this.searchEntry.set_secondary_icon(this._searchInactiveIcon);
+                
+                this.applicationsBox.hide();
                 this._resortButtons(false);
+                this.applicationsBox.show();
+                
                 this._setCategoriesButtonActive(true);
                 this._selectCategory(null, this._allAppsCategoryButton);
             }
@@ -1760,10 +1793,13 @@ MyApplet.prototype = {
         var placesResults = !this.showPlaces ? null : this._listButtons(this._placesButtons, pattern);
         var recentResults = !this.showRecent ? null : this._listButtons(this._recentButtons, pattern);
 
+        this.applicationsBox.hide();
         this._resortButtons(true);
         this._displayButtons(appResults, this._applicationsButtons);
         this._displayButtons(placesResults, this._placesButtons);
         this._displayButtons(recentResults, this._recentButtons);
+        this.applicationsBox.show();
+        
         if(appResults.length == 0 && placesResults.length == 0 && recentResults.length == 0) {
             this._updateAppInfo("", "");
         }
