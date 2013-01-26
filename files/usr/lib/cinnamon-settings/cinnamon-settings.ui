@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
-  <requires lib="gtk+" version="2.18"/>
+  <!-- interface-requires gtk+ 3.0 -->
   <object class="GtkImage" id="image1">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
@@ -13,8 +13,8 @@
     <property name="border_width">6</property>
     <property name="title" translatable="yes">mintDesktop</property>
     <property name="window_position">center</property>
-    <property name="default_width">640</property>
-    <property name="default_height">480</property>
+    <property name="default_width">800</property>
+    <property name="default_height">520</property>
     <property name="icon_name">preferences-system</property>
     <child>
       <object class="GtkBox" id="box1">
@@ -32,7 +32,6 @@
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
-                <property name="use_action_appearance">False</property>
                 <property name="image">image1</property>
               </object>
               <packing>
@@ -57,7 +56,7 @@
                 <property name="height_request">125</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
-                <property name="vscrollbar_policy">never</property>
+                <property name="hscrollbar_policy">never</property>
                 <property name="shadow_type">in</property>
                 <child>
                   <object class="GtkIconView" id="side_view">
@@ -129,7 +128,6 @@
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-                <property name="use_action_appearance">False</property>
                 <property name="use_stock">True</property>
               </object>
               <packing>
