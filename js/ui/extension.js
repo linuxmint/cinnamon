@@ -185,7 +185,7 @@ Extension.prototype = {
             this.unloadStylesheet();
             forgetExtension(this.uuid);
         }
-        return err;
+        return error;
     },
 
     logWarning: function (message) {
