@@ -136,13 +136,13 @@ Extension.prototype = {
         try {
             global.add_extension_importer('imports.ui.extension.importObjects', this.uuid, this.meta.path);
         } catch (e) {
-            throw this.logError(e);
+            throw this.logError('Error importing extension ' + this.uuid + ' from path ' + this.meta.path, e);
         }
 
         try {
             this.module = importObjects[this.uuid][this.lowerType]; // get [extension/applet/desklet].js
         } catch (e) {
-            throw this.logError(e);
+            throw this.logError('Error importing ' + this.lowerType + '.js from ' + this.uuid, e);
         }
 
         for (let i = 0; i < this.type.requiredFunctions.length; i++) {
@@ -173,10 +173,11 @@ Extension.prototype = {
         this.meta.error += message;
 
         let errorMessage = this.formatError(message);
-        if(error)
-            global.logError(error);
+        if(!error)
+            error = new Error(errorMessage);
+
+        global.logError(error);
         global.logError(errorMessage);
-        let err = new Error(this.formatError(message));
 
         // An error during initialization leads to unloading the extension again.
         if(this.meta.state == State.INITIALIZING) {
