@@ -11,9 +11,6 @@ const MessageTray = imports.ui.messageTray;
 const Urgency = imports.ui.messageTray.Urgency;
 const NotificationDestroyedReason = imports.ui.messageTray.NotificationDestroyedReason;
 
-let MT = Main.messageTray;
-
-
 function MyApplet(metadata, orientation, panel_height) {
     this._init(metadata, orientation, panel_height);
 }
@@ -24,54 +21,45 @@ MyApplet.prototype = {
     _init: function(metadata, orientation, panel_height) {
         Applet.TextIconApplet.prototype._init.call(this, orientation, panel_height);
 
-        try {
-            Gtk.IconTheme.get_default().append_search_path(metadata.path);
-            this._orientation = orientation;
-            this.menuManager = new PopupMenu.PopupMenuManager(this);
-            this.set_applet_icon_symbolic_name("empty-notif");
-            this.set_applet_tooltip(_("Notifications"));
-            this.notif_count = 0;
-            this.notifications = [];
-            this._initContextMenu();
-            this._maincontainer = new St.BoxLayout({name: 'traycontainer', vertical: true});
-            this._notificationbin = new St.BoxLayout({vertical:true});
-            this.button_label_box = new St.BoxLayout();
-            
-            this.menu_text = stringify(this.notif_count);            
-            this.menu_label = new PopupMenu.PopupMenuItem(this.menu_text);
-            this.menu_label.actor.reactive = false;
-			this.menu_label.actor.can_focus = false;
-            this.menu_label.label.add_style_class_name('popup-subtitle-menu-item');
-            this.menu.addMenuItem(this.menu_label);
-            
-            this.menu.addActor(this._maincontainer);
-            
-            this.clear_separator = new PopupMenu.PopupSeparatorMenuItem();            
-            this.menu.addMenuItem(this.clear_separator);
-            
-            this.clear_action = new PopupMenu.PopupMenuItem(_("Clear notifications"));
-            this.menu.addMenuItem(this.clear_action);
-            this.clear_action.connect('activate', Lang.bind(this, this._clear_all));
-            this.clear_action.actor.hide();
-            this.scrollview = new St.ScrollView({ x_fill: true, y_fill: true, y_align: St.Align.START});
-            
-            this._maincontainer.add(this.scrollview);
-            this.scrollview.add_actor(this._notificationbin);
-            this.scrollview.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC);
-            MT.connect('notify-applet-update', Lang.bind(this, this._notification_added));
-            global.settings.connect('changed::panel-edit-mode', Lang.bind(this, this.on_panel_edit_mode_changed));            
-            
-            this._calendarSettings = new Gio.Settings({ schema: 'org.cinnamon.calendar' });
-            this._calendarSettings.connect('changed', Lang.bind(this, this._update_timestamp));
+        Gtk.IconTheme.get_default().append_search_path(metadata.path);
+        this._orientation = orientation;
+        this.menuManager = new PopupMenu.PopupMenuManager(this);
+        this.notif_count = 0;
+        this.notifications = [];
+        Main.messageTray.connect('notify-applet-update', Lang.bind(this, this._notification_added));
+        global.settings.connect('changed::panel-edit-mode', Lang.bind(this, this.on_panel_edit_mode_changed));
+        this._calendarSettings = new Gio.Settings({ schema: 'org.cinnamon.calendar' });
+        this._calendarSettings.connect('changed', Lang.bind(this, this._update_timestamp));
+        this._blinking = false;
+        this._blink_toggle = false;
+    },
 
-            this._crit_icon = new St.Icon({icon_name: 'critical-notif', icon_type: St.IconType.SYMBOLIC, reactive: true, track_hover: true, style_class: 'system-status-icon' });
-            this._alt_crit_icon = new St.Icon({icon_name: 'alt-critical-notif', icon_type: St.IconType.SYMBOLIC, reactive: true, track_hover: true, style_class: 'system-status-icon' });
-            this._blinking = false;
-            this._blink_toggle = false;
-        }
-        catch (e) {
-            global.logError(e);
-        }
+    _display: function() {
+        this.set_applet_icon_symbolic_name("empty-notif");
+        this.set_applet_tooltip(_("Notifications"));
+        this._maincontainer = new St.BoxLayout({name: 'traycontainer', vertical: true});
+        this._notificationbin = new St.BoxLayout({vertical:true});
+        this.button_label_box = new St.BoxLayout();
+        this.menu_text = stringify(this.notif_count);
+        this.menu_label = new PopupMenu.PopupMenuItem(this.menu_text);
+        this.menu_label.actor.reactive = false;
+        this.menu_label.actor.can_focus = false;
+        this.menu_label.label.add_style_class_name('popup-subtitle-menu-item');
+        this.menu.addMenuItem(this.menu_label);
+        this.menu.addActor(this._maincontainer);
+        this.clear_separator = new PopupMenu.PopupSeparatorMenuItem();
+        this.menu.addMenuItem(this.clear_separator);
+        this.clear_action = new PopupMenu.PopupMenuItem(_("Clear notifications"));
+        this.menu.addMenuItem(this.clear_action);
+        this.clear_action.connect('activate', Lang.bind(this, this._clear_all));
+        this.clear_action.actor.hide();
+        this.scrollview = new St.ScrollView({ x_fill: true, y_fill: true, y_align: St.Align.START});
+        this._maincontainer.add(this.scrollview);
+        this.scrollview.add_actor(this._notificationbin);
+        this.scrollview.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC);
+        this._crit_icon = new St.Icon({icon_name: 'critical-notif', icon_type: St.IconType.SYMBOLIC, reactive: true, track_hover: true, style_class: 'system-status-icon' });
+        this._alt_crit_icon = new St.Icon({icon_name: 'alt-critical-notif', icon_type: St.IconType.SYMBOLIC, reactive: true, track_hover: true, style_class: 'system-status-icon' });
+        this.update_list();
     },
 
     _notification_added: function (mtray, notification) {
@@ -105,7 +93,7 @@ MyApplet.prototype = {
         }
         this.update_list();
     },
-    
+
     update_list: function () {
         try {
             this.notif_count = this.notifications.length;
@@ -150,7 +138,7 @@ MyApplet.prototype = {
             global.logError(e);
         }
     },
-    
+
     _clear_all: function() {
         let count = this.notifications.length;
         if (count > 0) {
@@ -160,35 +148,31 @@ MyApplet.prototype = {
             }
         }
         this.notifications = [];
-        this.update_list();        
+        this.update_list();
     },
-    
+
     on_panel_edit_mode_changed: function () {
+    },
+
+    on_applet_added_to_panel: function() {
+        this.on_orientation_changed(this._orientation);
     },
 
     on_orientation_changed: function (orientation) {
         this._orientation = orientation;
-        this._initContextMenu();
+        if (this.menu) {
+            this.menu.destroy();
+        }
+        this.menu = new Applet.AppletPopupMenu(this, orientation);
+        this.menuManager.addMenu(this.menu);
+        this._display();
     },
-    
+
     on_applet_clicked: function(event) {
         this._update_timestamp();
         this.menu.toggle();
     },
 
-    _initContextMenu: function () {
-        if (this._maincontainer) this._maincontainer.unparent();
-        if (this.menu) this.menuManager.removeMenu(this.menu);
-        
-        this.menu = new Applet.AppletPopupMenu(this, this._orientation);
-        this.menuManager.addMenu(this.menu);
-        
-        if (this._maincontainer){
-            this.menu.addActor(this._maincontainer);
-            this._maincontainer.show_all();
-        }
-    },
-    
     _update_timestamp: function () {
         let dateFormat = this._calendarSettings.get_string('date-format');       
         let actors = this._notificationbin.get_children();

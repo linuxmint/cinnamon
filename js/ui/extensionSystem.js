@@ -38,7 +38,7 @@ function prepareExtensionUnload(extension) {
 
 // Callback for extension.js
 function finishExtensionLoad(extension) {
-    if(!extension.lockRole()) {
+    if(!extension.lockRole(extension.module)) {
         return false;
     }
     
