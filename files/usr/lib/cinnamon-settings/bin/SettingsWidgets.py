@@ -67,7 +67,6 @@ class SidePage:
             for widget in widgets:
                 widget.show()
         else:
-            print "show all what"
             self.content_box.show_all()
 
 class CCModule:
