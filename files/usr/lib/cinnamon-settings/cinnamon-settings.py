@@ -170,6 +170,9 @@ class MainWindow:
     def back_to_icon_view(self, widget):
         self.window.set_title(_("Cinnamon Settings"))
         self.content_box_sw.hide()
+        widgets = self.content_box.get_children()
+        for widget in widgets:
+            widget.hide()
         self.top_button_box.hide()
         self.side_view_sw.show_all()
 
