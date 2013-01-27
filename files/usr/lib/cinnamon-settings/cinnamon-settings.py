@@ -118,16 +118,10 @@ class MainWindow:
             sidePagesIters[sidePageID] = self.store[sidePageCategory].append([sidePage.name, img, sidePage])
 
         # set up the side view - navigation.
-        self.side_view["feel"].set_text_column(0)
-        self.side_view["feel"].set_pixbuf_column(1)
-        self.side_view["prefs"].set_text_column(0)
-        self.side_view["prefs"].set_pixbuf_column(1)
-        self.side_view["admin"].set_text_column(0)
-        self.side_view["admin"].set_pixbuf_column(1)
+        self.prepSideView("feel")
+        self.prepSideView("prefs")
+        self.prepSideView("admin")
 
-        self.side_view["feel"].set_model(self.store["feel"])
-        self.side_view["prefs"].set_model(self.store["prefs"])
-        self.side_view["admin"].set_model(self.store["admin"])
         self.side_view["feel"].connect("selection_changed", self.side_view_nav_feel )
         self.side_view["prefs"].connect("selection_changed", self.side_view_nav_prefs )
         self.side_view["admin"].connect("selection_changed", self.side_view_nav_admin )
@@ -141,10 +135,28 @@ class MainWindow:
         # Select the first sidePage
         if len(sys.argv)==2 and sys.argv[1] in sidePagesIters.keys():
             first_page_iter = sidePagesIters[sys.argv[1]]
-            path = self.store.get_path(first_page_iter)
-            self.side_view.select_path(path)
+            self.findPath(first_page_iter)
 
         self.window.show()
+
+    def findPath (self, name):
+        path = self.store["feel"].get_path(name)
+        if path is not None:
+            self.side_view["feel"].select_path(path)
+            return
+        path = self.store["prefs"].get_path(name)
+        if path is not None:
+            self.side_view["prefs"].select_path(path)
+            return
+        path = self.store["admin"].get_path(name)
+        if path is not None:
+            self.side_view["admin"].select_path(path)
+            return
+
+    def prepSideView (self, cat):
+        self.side_view[cat].set_text_column(0)
+        self.side_view[cat].set_pixbuf_column(1)
+        self.side_view[cat].set_model(self.store[cat])
 
     def loadCheck (self, mod):
         try:
