@@ -69,7 +69,6 @@ AltTabPopup.prototype = {
         this._haveModal = false;
         this._modifierMask = 0;
 
-        this._currentWindow = -1;
         this._thumbnailTimeoutId = 0;
         this._motionTimeoutId = 0;
         this._initialDelayTimeoutId = 0;
@@ -212,8 +211,7 @@ AltTabPopup.prototype = {
             this.actor.remove_actor(this._appSwitcher.actor);
             this._appSwitcher.actor.destroy();
         }
-        this._currentWindow = -1;
-        
+       
         // Find out the currently active window
         let wsWindows = Main.getTabList();
         let currentWindow = wsWindows.length > 0 ? wsWindows[0] : null;
@@ -252,7 +250,6 @@ AltTabPopup.prototype = {
             this._appSwitcher.actor.hide();
         }
         this._appSwitcher.connect('item-activated', Lang.bind(this, this._appActivated));
-        this._appSwitcher.connect('item-entered', Lang.bind(this, this._appEntered));
 
         // Need to force an allocation so we can figure out whether we
         // need to scroll when selecting
@@ -318,30 +315,11 @@ AltTabPopup.prototype = {
         return true;
     },
 
-    _nextApp : function(wrap) {
-        return wrap ?
-            mod(this._currentApp + 1, this._appIcons.length) :
-            Math.min(this._currentApp + 1, this._appIcons.length - 1);
+    _nextApp : function() {
+        return mod(this._currentApp + 1, this._appIcons.length);
     },
-    _previousApp : function(wrap) {
-        return wrap ?
-            mod(this._currentApp - 1, this._appIcons.length) :
-            Math.max(this._currentApp - 1, 0);
-    },
-
-    _nextWindow : function() {
-        // We actually want the second window if we're in the unset state
-        if (this._currentWindow == -1)
-            this._currentWindow = 0;
-        return mod(this._currentWindow + 1,
-                   this._appIcons[this._currentApp].cachedWindows.length);
-    },
-    _previousWindow : function() {
-        // Also assume second window here
-        if (this._currentWindow == -1)
-            this._currentWindow = 1;
-        return mod(this._currentWindow - 1,
-                   this._appIcons[this._currentApp].cachedWindows.length);
+    _previousApp : function() {
+        return mod(this._currentApp - 1, this._appIcons.length);
     },
 
     _keyPressEvent : function(actor, event) {
@@ -374,9 +352,9 @@ AltTabPopup.prototype = {
         } else if (keysym == Clutter.KEY_space && !this._persistent) {
             this._persistent = true;
         } else if (this._persistent && keysym == Clutter.Tab) {
-            this._select(this._nextApp(false));
+            this._select(this._nextApp());
         } else if (this._persistent && keysym == Clutter.ISO_Left_Tab) {
-            this._select(this._previousApp(false));
+            this._select(this._previousApp());
         } else if (this._persistent && keysym == Clutter.w && ctrlDown) {
             if (this._currentApp >= 0) {
                 this._appIcons[this._currentApp].window.delete(global.get_current_time());
@@ -393,7 +371,7 @@ AltTabPopup.prototype = {
             this._finish();
             return true;
         } else if (action == Meta.KeyBindingAction.SWITCH_GROUP || action == Meta.KeyBindingAction.SWITCH_WINDOWS) {
-            this._select(backwards ? this._previousApp(false) : this._nextApp(false));
+            this._select(backwards ? this._previousApp() : this._nextApp());
         } else {
             if (keysym == Clutter.Left) {
                 if (ctrlDown) {
@@ -401,7 +379,7 @@ AltTabPopup.prototype = {
                         return false;
                     }
                 }
-                this._select(this._previousApp(false));
+                this._select(this._previousApp());
             }
             else if (keysym == Clutter.Right) {
                 if (ctrlDown) {
@@ -409,7 +387,7 @@ AltTabPopup.prototype = {
                         return false;
                     }
                 }
-                this._select(this._nextApp(false));
+                this._select(this._nextApp());
             }
         }
 
@@ -429,31 +407,9 @@ AltTabPopup.prototype = {
     _onScroll : function(actor, event) {
         let direction = event.get_scroll_direction();
         if (direction == Clutter.ScrollDirection.UP) {
-            if (this._thumbnailsFocused) {
-                if (this._currentWindow == 0 || this._currentWindow == -1)
-                    this._select(this._previousApp());
-                else
-                    this._select(this._currentApp, this._previousWindow());
-            } else {
-                let nwindows = this._appIcons[this._currentApp].cachedWindows.length;
-                if (nwindows > 1)
-                    this._select(this._currentApp, nwindows - 1);
-                else
-                    this._select(this._previousApp());
-            }
+            this._select(this._previousApp());
         } else if (direction == Clutter.ScrollDirection.DOWN) {
-            if (this._thumbnailsFocused) {
-                if (this._currentWindow == this._appIcons[this._currentApp].cachedWindows.length - 1)
-                    this._select(this._nextApp());
-                else
-                    this._select(this._currentApp, this._nextWindow());
-            } else {
-                let nwindows = this._appIcons[this._currentApp].cachedWindows.length;
-                if (nwindows > 1)
-                    this._select(this._currentApp, 0);
-                else
-                    this._select(this._nextApp());
-            }
+            this._select(this._nextApp());
         }
     },
 
@@ -463,39 +419,15 @@ AltTabPopup.prototype = {
 
     _appActivated : function(appSwitcher, n) {
         // If the user clicks on the selected app, activate the
-        // selected window; otherwise (eg, they click on an app while
-        // !mouseActive) activate the the clicked-on app.
-        if (n == this._currentApp) {
-            let window;
-            if (this._currentWindow >= 0)
-                window = this._appIcons[this._currentApp].cachedWindows[this._currentWindow];
-            else
-                window = null;
-            this._appIcons[this._currentApp].app.activate_window(window, global.get_current_time());
-        }
-        else if (this._appIcons[n].app) {
-            this._appIcons[n].app.activate_window(null, global.get_current_time());
-        }
-        else if (this._appIcons[n].cachedWindows.length > 0) {
-            // can this happen?
-            Main.activateWindow(this._appIcons[n].cachedWindows[0]);
-        }
-        else {
-            // and this?
-        }
+        // selected window; otherwise (e.g., they click on an app while
+        // !mouseActive) activate the clicked-on app.
+        this._appIcons[n].app.activate_window(this._appIcons[n].window, global.get_current_time());
         this.destroy();
-    },
-
-    _appEntered : function(appSwitcher, n) {
-        if (!this._mouseActive)
-            return;
-
-        // this._select(n);
     },
 
     _windowActivated : function(thumbnailList, n) {
         let appIcon = this._appIcons[this._currentApp];
-        Main.activateWindow(appIcon.cachedWindows[n]);
+        Main.activateWindow(appIcon.window);
         this.destroy();
     },
 
@@ -523,18 +455,7 @@ AltTabPopup.prototype = {
     _finish : function() {
         if (this._appIcons.length > 0 && this._currentApp > -1) {
             let app = this._appIcons[this._currentApp];
-            if (this._currentWindow >= 0) {
-                Main.activateWindow(app.cachedWindows[this._currentWindow]);
-            }
-            else if (app.app) {
-                app.app.activate_window(null, global.get_current_time());
-            }
-            else if (app.cachedWindows.length > 0) {
-                Main.activateWindow(app.cachedWindows[0]);
-            }
-            else {
-                // what to do???
-            }
+            Main.activateWindow(app.window);
         }
         this.destroy();
     },
@@ -587,8 +508,7 @@ AltTabPopup.prototype = {
     },
     
     _doWindowPreview: function() {
-        if (!this._previewEnabled || this._appIcons.length < 1 || this._currentApp < 0 ||
-            !this._appIcons[this._currentApp].cachedWindows.length)
+        if (!this._previewEnabled || this._appIcons.length < 1 || this._currentApp < 0)
         {
             return;
         }
@@ -599,7 +519,7 @@ AltTabPopup.prototype = {
 
             let childBox = new Clutter.ActorBox();
 
-            let window = this._appIcons[this._currentApp].cachedWindows[0];
+            let window = this._appIcons[this._currentApp].window;
             let previewClones = new St.Group();
             this.actor.add_actor(previewClones);
 
@@ -693,7 +613,6 @@ AltTabPopup.prototype = {
     _createThumbnails : function() {
         this._thumbnails = new ThumbnailList (this._appIcons[this._currentApp].cachedWindows);
         this._thumbnails.connect('item-activated', Lang.bind(this, this._windowActivated));
-        this._thumbnails.connect('item-entered', Lang.bind(this, this._windowEntered));
 
         this.actor.add_actor(this._thumbnails.actor);
 
@@ -822,7 +741,6 @@ SwitcherList.prototype = {
 
         let n = this._items.length;
         bbox.connect('clicked', Lang.bind(this, function() { this._onItemClicked(n); }));
-        bbox.connect('enter-event', Lang.bind(this, function() { this._onItemEnter(n); }));
 
         bbox.label_actor = label;
 
@@ -831,10 +749,6 @@ SwitcherList.prototype = {
 
     _onItemClicked: function (index) {
         this._itemActivated(index);
-    },
-
-    _onItemEnter: function (index) {
-        this._itemEntered(index);
     },
 
     addSeparator: function () {
@@ -916,10 +830,6 @@ SwitcherList.prototype = {
 
     _itemActivated: function(n) {
         this.emit('item-activated', n);
-    },
-
-    _itemEntered: function(n) {
-        this.emit('item-entered', n);
     },
 
     _maxChildWidth: function (forHeight) {
@@ -1216,29 +1126,6 @@ AppSwitcher.prototype = {
             childBox.y2 = childBox.y1 + arrowHeight;
             this._arrows[i].allocate(childBox, flags);
         }
-    },
-
-    // We override SwitcherList's _onItemEnter method to delay
-    // activation when the thumbnail list is open
-    _onItemEnter: function (index) {
-        if (this._mouseTimeOutId != 0)
-            Mainloop.source_remove(this._mouseTimeOutId);
-        if (this._altTabPopup.thumbnailsVisible) {
-            this._mouseTimeOutId = Mainloop.timeout_add(APP_ICON_HOVER_TIMEOUT,
-                                                        Lang.bind(this, function () {
-                                                                            this._enterItem(index);
-                                                                            this._mouseTimeOutId = 0;
-                                                                            return false;
-                                                        }));
-        } else
-           this._itemEntered(index);
-    },
-
-    _enterItem: function(index) {
-        let [x, y, mask] = global.get_pointer();
-        let pickedActor = global.stage.get_actor_at_pos(Clutter.PickMode.ALL, x, y);
-        if (this._items[index].contains(pickedActor))
-            this._itemEntered(index);
     },
 
     // We override SwitcherList's highlight() method to also deal with
