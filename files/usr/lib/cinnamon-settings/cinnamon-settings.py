@@ -59,7 +59,7 @@ class MainWindow:
             sidePage = self.store[cat].get_value(iterator,2)
             self.window.set_title(_("Cinnamon Settings") + " - " + sidePage.name)
             sidePage.build()
-            self.content_box_sw.show_all()
+            self.content_box_sw.show()
             self.top_button_box.show_all()
 
     def side_view_nav_feel(self, side_view):

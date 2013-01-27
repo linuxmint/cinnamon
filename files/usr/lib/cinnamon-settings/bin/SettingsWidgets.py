@@ -37,11 +37,12 @@ ext_point = gio.g_io_extension_point_register ("cinnamon-control-center-1")
 modules = gio.g_io_modules_load_all_in_directory ("/usr/lib/cinnamon-control-center-1/panels")
 
 class SidePage:
-    def __init__(self, name, icon, content_box):        
+    def __init__(self, name, icon, content_box, is_c_mod = False):        
         self.name = name
         self.icon = icon
         self.content_box = content_box
         self.widgets = []
+        self.is_c_mod = is_c_mod
         
     def add_widget(self, widget):
         self.widgets.append(widget)
@@ -51,15 +52,26 @@ class SidePage:
         widgets = self.content_box.get_children()
         for widget in widgets:
             self.content_box.remove(widget)
-        
+
         # Add our own widgets
+        # C modules are sort of messy - they check the desktop type
+        # (for Unity or GNOME) and show/hide UI items depending on
+        # the result - so we can't just show_all on the widget, it will
+        # mess up these modifications - so for these, we just show the
+        # top-level widget
         for widget in self.widgets:
-            self.content_box.pack_start(widget, False, False, 2)            
-        self.content_box.show_all()
+            self.content_box.pack_start(widget, False, False, 2)
+        if self.is_c_mod:  
+            self.content_box.show()
+            widgets = self.content_box.get_children()
+            for widget in widgets:
+                widget.show()
+        else:
+            self.content_box.show_all()
 
 class CCModule:
     def __init__(self, label, mod_id, icon, category, content_box):
-        sidePage = SidePage(label, icon, content_box)
+        sidePage = SidePage(label, icon, content_box, True)
         self.sidePage = sidePage
         self.name = mod_id
         self.category = category
