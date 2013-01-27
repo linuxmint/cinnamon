@@ -124,6 +124,7 @@ class HotCornerViewSidePage(SidePage):
         self.func_combo.connect('changed', self.on_func_combo_changed)
         self.custom_command_entry.connect('changed', self.on_search_entry_changed)
         self.on_settings_changed(self.settings, "overview-corner")
+        self.content_box.show_all()
 
     def on_pos_changed(self, widget):
         titer = widget.get_active_iter()

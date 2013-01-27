@@ -548,7 +548,8 @@ class BackgroundSidePage (SidePage):
         self.secondary_color = GSettingsColorChooser("org.gnome.desktop.background", "secondary-color", None)
         hbox.pack_start(self.secondary_color, False, False, 2)
         advanced_options_box.pack_start(hbox, False, False, 0)
-    
+        self.content_box.show_all()
+
     def _add_wallpapers(self):
         filenames = self._add_wallpapers_dialog.run()
         if filenames:
