@@ -41,7 +41,10 @@ CONTROL_CENTER_MODULES = [
     [_("Printers"),          "cinnamon-printers",           "printer.svg",                    "admin"],
     [_("Details"),           "cinnamon-info",               "details.svg",                    "admin"],
     [_("Universal Access"),  "cinnamon-universal-access",   "universal-access.svg",           "prefs"],
-    [_("User Accounts"),     "cinnamon-user-accounts",      "user-accounts.svg",              "admin"]
+    [_("User Accounts"),     "cinnamon-user-accounts",      "user-accounts.svg",              "admin"],
+    [_("Power Management"),  "cinnamon-power",              "power.svg",                      "admin"],
+    [_("Sound"),             "cinnamon-sound-nua",          "sound.svg",                      "admin"],
+    [_("Screen"),            "cinnamon-screen",             "screen.svg",                     "prefs"]
 ]
 
 class MainWindow:
