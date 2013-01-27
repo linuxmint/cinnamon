@@ -1400,6 +1400,8 @@ MyApplet.prototype = {
                     else {
                         Util.spawnCommandLine("cinnamon-screensaver-command --lock");
                     }
+                } else {
+                    this._screenSaverProxy.LockRemote();
                 }
             });
 
