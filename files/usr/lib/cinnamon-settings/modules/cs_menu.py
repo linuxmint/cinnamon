@@ -7,6 +7,7 @@ class Module:
         sidePage = SidePage(_("Menu"), "menu.svg", content_box)
         self.sidePage = sidePage
         self.name = "menu"
+        self.category = "prefs"
         sidePage.add_widget(GSettingsEntry(_("Menu text"), "org.cinnamon", "menu-text", None))
         sidePage.add_widget(GSettingsFileChooser(_("Menu icon"), "org.cinnamon", "menu-icon", None, True))
         sidePage.add_widget(GSettingsSpinButton(_("Menu hover delay"), "org.cinnamon", "menu-hover-delay", None, 0, 2000, 50, 200, _("milliseconds")))

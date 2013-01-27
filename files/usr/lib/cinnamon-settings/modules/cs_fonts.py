@@ -7,6 +7,7 @@ class Module:
         sidePage = SidePage(_("Fonts"), "fonts.svg", content_box)
         self.sidePage = sidePage
         self.name = "fonts"
+        self.category = "prefs"
         sidePage.add_widget(GSettingsRangeSpin(_("Text scaling factor"), "org.gnome.desktop.interface", "text-scaling-factor", None, adjustment_step = 0.1))
         sidePage.add_widget(GSettingsFontButton(_("Default font"), "org.gnome.desktop.interface", "font-name", None))
         sidePage.add_widget(GSettingsFontButton(_("Document font"), "org.gnome.desktop.interface", "document-font-name", None))

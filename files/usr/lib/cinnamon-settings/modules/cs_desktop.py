@@ -8,6 +8,7 @@ class Module:
         sidePage = SidePage(_("Desktop"), "desktop.svg", content_box)
         self.sidePage = sidePage
         self.name = "desktop"
+        self.category = "prefs"
 
     def _loadCheck(self):
         if 'org.nemo' in Gio.Settings.list_schemas():

@@ -33,31 +33,40 @@ menuGenericName = _("Desktop Configuration Tool")
 menuComment = _("Fine-tune desktop settings")
 
 CONTROL_CENTER_MODULES = [
-#         Label                  Module ID                       Icon
-    [_("Networking"),        "cinnamon-network",            "network.svg"],
-    [_("Display"),           "cinnamon-display",            "display.svg"],
-    [_("Region & Language"), "cinnamon-region",             "region.svg"],
-    [_("Bluetooth"),         "cinnamon-bluetooth",          "bluetooth.svg"],
-    [_("Printers"),          "cinnamon-printers",           "printer.svg"],
-    [_("Details"),           "cinnamon-info",               "details.svg"],
-    [_("Universal Access"),  "cinnamon-universal-access",   "universal-access.svg"],
-    [_("User Accounts"),     "cinnamon-user-accounts",      "user-accounts.svg"]
+#         Label                  Module ID                       Icon                         Category
+    [_("Networking"),        "cinnamon-network",            "network.svg",                    "admin"],
+    [_("Display"),           "cinnamon-display",            "display.svg",                    "prefs"],
+    [_("Region & Language"), "cinnamon-region",             "region.svg",                     "prefs"],
+    [_("Bluetooth"),         "cinnamon-bluetooth",          "bluetooth.svg",                  "admin"],
+    [_("Printers"),          "cinnamon-printers",           "printer.svg",                    "admin"],
+    [_("Details"),           "cinnamon-info",               "details.svg",                    "admin"],
+    [_("Universal Access"),  "cinnamon-universal-access",   "universal-access.svg",           "prefs"],
+    [_("User Accounts"),     "cinnamon-user-accounts",      "user-accounts.svg",              "admin"]
 ]
 
 class MainWindow:
 
     # Change pages
-    def side_view_nav(self, side_view):
+    def side_view_nav(self, side_view, cat):
         selected_items = side_view.get_selected_items()
         if len(selected_items) > 0:
             self.side_view_sw.hide()
             path = selected_items[0]
-            iterator = self.store.get_iter(path)
-            sidePage = self.store.get_value(iterator,2)
+            iterator = self.store[cat].get_iter(path)
+            sidePage = self.store[cat].get_value(iterator,2)
             self.window.set_title(_("Cinnamon Settings") + " - " + sidePage.name)
             sidePage.build()
             self.content_box_sw.show_all()
             self.top_button_box.show_all()
+
+    def side_view_nav_feel(self, side_view):
+        self.side_view_nav(side_view, "feel")
+
+    def side_view_nav_prefs(self, side_view):
+        self.side_view_nav(side_view, "prefs")
+
+    def side_view_nav_admin(self, side_view):
+        self.side_view_nav(side_view, "admin")
 
 
     ''' Create the UI '''
@@ -66,8 +75,12 @@ class MainWindow:
         self.builder = Gtk.Builder()
         self.builder.add_from_file("/usr/lib/cinnamon-settings/cinnamon-settings.ui")
         self.window = self.builder.get_object("main_window")
-        self.side_view = self.builder.get_object("side_view")
+        self.side_view = {}
+        self.side_view["feel"] = self.builder.get_object("side_view_look_and_feel")
+        self.side_view["prefs"] = self.builder.get_object("side_view_user_prefs")
+        self.side_view["admin"] = self.builder.get_object("side_view_admin")
         self.side_view_sw = self.builder.get_object("side_view_sw")
+        self.side_view_sw.show_all()
         self.content_box = self.builder.get_object("content_box")
         self.content_box_sw = self.builder.get_object("content_box_sw")
         self.button_cancel = self.builder.get_object("button_cancel")
@@ -82,29 +95,42 @@ class MainWindow:
         for i in range(len(modules)):
             mod = modules[i].Module(self.content_box)
             if self.loadCheck(mod):
-                self.sidePages.append((mod.sidePage, mod.name))
+                self.sidePages.append((mod.sidePage, mod.name, mod.category))
 
         for item in CONTROL_CENTER_MODULES:
-            ccmodule = SettingsWidgets.CCModule(item[0], item[1], item[2], self.content_box)
+            ccmodule = SettingsWidgets.CCModule(item[0], item[1], item[2], item[3], self.content_box)
             if ccmodule.process():
-                self.sidePages.append((ccmodule.sidePage, ccmodule.name))
+                self.sidePages.append((ccmodule.sidePage, ccmodule.name, ccmodule.category))
 
         # create the backing store for the side nav-view.
-        self.store = Gtk.ListStore(str, GdkPixbuf.Pixbuf, object)
+        self.store = {}
+        self.store["feel"] = Gtk.ListStore(str, GdkPixbuf.Pixbuf, object)
+        self.store["prefs"] = Gtk.ListStore(str, GdkPixbuf.Pixbuf, object)
+        self.store["admin"] = Gtk.ListStore(str, GdkPixbuf.Pixbuf, object)
+
         sidePagesIters = {}
-        for sidePage, sidePageID in self.sidePages:
+        for sidePage, sidePageID, sidePageCategory in self.sidePages:
             iconFile = "/usr/lib/cinnamon-settings/data/icons/%s" % sidePage.icon
             if os.path.exists(iconFile):
                 img = GdkPixbuf.Pixbuf.new_from_file_at_size( iconFile, 48, 48)
             else:
                 img = None
-            sidePagesIters[sidePageID] = self.store.append([sidePage.name, img, sidePage])
+            sidePagesIters[sidePageID] = self.store[sidePageCategory].append([sidePage.name, img, sidePage])
 
         # set up the side view - navigation.
-        self.side_view.set_text_column(0)
-        self.side_view.set_pixbuf_column(1)
-        self.side_view.set_model(self.store)
-        self.side_view.connect("selection_changed", self.side_view_nav )
+        self.side_view["feel"].set_text_column(0)
+        self.side_view["feel"].set_pixbuf_column(1)
+        self.side_view["prefs"].set_text_column(0)
+        self.side_view["prefs"].set_pixbuf_column(1)
+        self.side_view["admin"].set_text_column(0)
+        self.side_view["admin"].set_pixbuf_column(1)
+
+        self.side_view["feel"].set_model(self.store["feel"])
+        self.side_view["prefs"].set_model(self.store["prefs"])
+        self.side_view["admin"].set_model(self.store["admin"])
+        self.side_view["feel"].connect("selection_changed", self.side_view_nav_feel )
+        self.side_view["prefs"].connect("selection_changed", self.side_view_nav_prefs )
+        self.side_view["admin"].connect("selection_changed", self.side_view_nav_admin )
 
         # set up larger components.
         self.window.set_title(_("Cinnamon Settings"))

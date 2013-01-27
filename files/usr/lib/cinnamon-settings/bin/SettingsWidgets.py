@@ -58,10 +58,11 @@ class SidePage:
         self.content_box.show_all()
 
 class CCModule:
-    def __init__(self, label, mod_id, icon, content_box):
+    def __init__(self, label, mod_id, icon, category, content_box):
         sidePage = SidePage(label, icon, content_box)
         self.sidePage = sidePage
         self.name = mod_id
+        self.category = category
 
     def process (self):
         extension = gio.g_io_extension_point_get_extension_by_name (ext_point, self.name)

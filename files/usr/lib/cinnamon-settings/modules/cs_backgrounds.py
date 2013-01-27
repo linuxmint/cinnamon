@@ -43,6 +43,7 @@ class Module:
         sidePage = BackgroundSidePage(_("Backgrounds"), "backgrounds.svg", content_box)
         self.sidePage = sidePage
         self.name = "backgrounds"
+        self.category = "feel"
 
 class PixCache(object):
     

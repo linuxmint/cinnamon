@@ -8,6 +8,7 @@ class Module:
         sidePage = SidePage(_("Windows"), "windows.svg", content_box)
         self.sidePage = sidePage
         self.name = "windows"
+        self.category = "prefs"
         sidePage.add_widget(GSettingsComboBox(_("Action on title bar double-click"),
                                             "org.gnome.desktop.wm.preferences", "action-double-click-titlebar", None,
                                             [(i, i.replace("-", " ").title()) for i in ('toggle-shade', 'toggle-maximize', 'toggle-maximize-horizontally', 'toggle-maximize-vertically', 'minimize', 'shade', 'menu', 'lower', 'none')]))

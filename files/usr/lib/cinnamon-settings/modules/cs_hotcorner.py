@@ -8,6 +8,7 @@ class Module:
         sidePage = HotCornerViewSidePage(_("Hot corner"), "overview.svg", content_box)
         self.sidePage = sidePage
         self.name = "hotcorner"
+        self.category = "prefs"
 
 class HotCornerViewSidePage(SidePage):
     def __init__(self, name, icon, content_box):   

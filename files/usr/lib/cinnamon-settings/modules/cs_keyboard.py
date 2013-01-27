@@ -149,6 +149,7 @@ class Module:
         sidePage = KeyboardSidePage(_("Keyboard"), "keyboard.svg", content_box)
         self.sidePage = sidePage
         self.name = "keyboard"
+        self.category = "prefs"
 
         # Let's transition any existing gconf shortcuts over to gsettings
         # Since we're still going to support both, and really only track gconf (for now)
