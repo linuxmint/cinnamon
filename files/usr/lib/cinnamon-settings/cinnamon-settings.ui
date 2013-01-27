@@ -77,11 +77,12 @@
                           <object class="GtkLabel" id="label1">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
+                            <property name="margin_left">10</property>
                             <property name="xalign">0</property>
                             <property name="label" translatable="yes">Look and Feel</property>
-                            <property name="ellipsize">middle</property>
+                            <property name="ellipsize">end</property>
                             <attributes>
-                              <attribute name="font-desc" value="Sans Bold 12"/>
+                              <attribute name="font-desc" value="Sans 12"/>
                             </attributes>
                           </object>
                           <packing>
@@ -111,6 +112,9 @@
                             <property name="item_width">110</property>
                             <property name="row_spacing">0</property>
                             <property name="column_spacing">0</property>
+                            <style>
+                              <class name="button"/>
+                            </style>
                           </object>
                           <packing>
                             <property name="expand">True</property>
@@ -133,10 +137,11 @@
                           <object class="GtkLabel" id="label2">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
+                            <property name="margin_left">10</property>
                             <property name="xalign">0</property>
                             <property name="label" translatable="yes">User Preferences</property>
                             <attributes>
-                              <attribute name="font-desc" value="Sans Bold 12"/>
+                              <attribute name="font-desc" value="Sans 12"/>
                             </attributes>
                           </object>
                           <packing>
@@ -166,6 +171,9 @@
                             <property name="item_width">110</property>
                             <property name="row_spacing">0</property>
                             <property name="column_spacing">0</property>
+                            <style>
+                              <class name="button"/>
+                            </style>
                           </object>
                           <packing>
                             <property name="expand">True</property>
@@ -188,10 +196,11 @@
                           <object class="GtkLabel" id="label3">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
+                            <property name="margin_left">10</property>
                             <property name="xalign">0</property>
                             <property name="label" translatable="yes">System Settings</property>
                             <attributes>
-                              <attribute name="font-desc" value="Sans Bold 12"/>
+                              <attribute name="font-desc" value="Sans 12"/>
                             </attributes>
                           </object>
                           <packing>
@@ -221,6 +230,9 @@
                             <property name="item_width">110</property>
                             <property name="row_spacing">0</property>
                             <property name="column_spacing">0</property>
+                            <style>
+                              <class name="button"/>
+                            </style>
                           </object>
                           <packing>
                             <property name="expand">True</property>
