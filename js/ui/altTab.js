@@ -262,20 +262,7 @@ AltTabPopup.prototype = {
 
         // Make the initial selection
         if (this._appIcons.length > 0 && currentIndex >= 0) {
-            if (binding == 'switch-group') {
-                if (backward) {
-                    this._select(currentIndex, this._appIcons[currentIndex].cachedWindows.length - 1);
-                } else {
-                    if (this._appIcons[currentIndex].cachedWindows.length > 1)
-                        this._select(currentIndex, 1);
-                    else
-                        this._select(currentIndex, 0);
-                }
-            } else if (binding == 'switch-group-backward') {
-                this._select(currentIndex, this._appIcons[currentIndex].cachedWindows.length - 1);
-            } else if (binding == 'switch-windows-backward') {
-                this._select(backwardIndex);
-            } else if (binding == 'no-switch-windows') {
+            if (binding == 'no-switch-windows') {
                 this._select(currentIndex);
             } else if (backward) {
                 this._select(backwardIndex);
@@ -376,6 +363,7 @@ AltTabPopup.prototype = {
         let keysym = event.get_key_symbol();
         let event_state = Cinnamon.get_event_state(event);
         let backwards = event_state & Clutter.ModifierType.SHIFT_MASK;
+        let ctrlDown = event_state & Clutter.ModifierType.CONTROL_MASK;
         let action = global.display.get_keybinding_action(event.get_key_code(), event_state);
 
         this._disableHover();
@@ -389,7 +377,7 @@ AltTabPopup.prototype = {
             this._select(this._nextApp(false));
         } else if (this._persistent && keysym == Clutter.ISO_Left_Tab) {
             this._select(this._previousApp(false));
-        } else if (this._persistent && keysym == Clutter.w && (event_state & Clutter.ModifierType.CONTROL_MASK)) {
+        } else if (this._persistent && keysym == Clutter.w && ctrlDown) {
             if (this._currentApp >= 0) {
                 this._appIcons[this._currentApp].window.delete(global.get_current_time());
             }
@@ -404,16 +392,9 @@ AltTabPopup.prototype = {
         } else if (keysym == Clutter.Return) {
             this._finish();
             return true;
-        } else if (action == Meta.KeyBindingAction.SWITCH_GROUP) {
-            this._select(this._currentApp, backwards ? this._previousWindow() : this._nextWindow());
-        } else if (action == Meta.KeyBindingAction.SWITCH_GROUP_BACKWARD) {
-            this._select(this._currentApp, this._previousWindow());
-        } else if (action == Meta.KeyBindingAction.SWITCH_WINDOWS) {
+        } else if (action == Meta.KeyBindingAction.SWITCH_GROUP || action == Meta.KeyBindingAction.SWITCH_WINDOWS) {
             this._select(backwards ? this._previousApp(false) : this._nextApp(false));
-        } else if (action == Meta.KeyBindingAction.SWITCH_WINDOWS_BACKWARD) {
-            this._select(this._previousApp(false));
         } else {
-            let ctrlDown = event_state & Clutter.ModifierType.CONTROL_MASK;
             if (keysym == Clutter.Left) {
                 if (ctrlDown) {
                     if (switchWorkspace(-1)) {
@@ -664,31 +645,9 @@ AltTabPopup.prototype = {
     /**
      * _select:
      * @app: index of the app to select
-     * @window: (optional) index of which of @app's windows to select
-     * @forceAppFocus: optional flag, see below
-     *
-     * Selects the indicated @app, and optional @window, and sets
-     * this._thumbnailsFocused appropriately to indicate whether the
-     * arrow keys should act on the app list or the thumbnail list.
-     *
-     * If @app is specified and @window is unspecified or %null, then
-     * the app is highlighted (ie, given a light background), and the
-     * current thumbnail list, if any, is destroyed. If @app has
-     * multiple windows, and @forceAppFocus is not %true, then a
-     * timeout is started to open a thumbnail list.
-     *
-     * If @app and @window are specified (and @forceAppFocus is not),
-     * then @app will be outlined, a thumbnail list will be created
-     * and focused (if it hasn't been already), and the @window'th
-     * window in it will be highlighted.
-     *
-     * If @app and @window are specified and @forceAppFocus is %true,
-     * then @app will be highlighted, and @window outlined, and the
-     * app list will have the keyboard focus.
      */
-    _select : function(app, window, forceAppFocus) {
-        if (window==null) window = 0;
-        if (app != this._currentApp || window == null) {
+    _select : function(app) {
+        if (app != this._currentApp) {
             this._destroyThumbnails();
         }
 
@@ -697,31 +656,20 @@ AltTabPopup.prototype = {
             this._thumbnailTimeoutId = 0;
         }
 
-        this._thumbnailsFocused = false;//(window != null) && !forceAppFocus;
-
         this._currentApp = app;
-        this._currentWindow = window ? window : -1;
         if (this._appIcons.length < 1) {
             return;
         }
-        this._appSwitcher.highlight(app, this._thumbnailsFocused);
 
-        if (window != null) {
-            this._currentWindow = window;
-            this._doWindowPreview();
-            if (this._thumbnailsEnabled && this._iconsEnabled) {
-                this._thumbnailTimeoutId = Mainloop.timeout_add(
-                    THUMBNAIL_POPUP_TIME, Lang.bind(this, function() {
-                        if (!this._thumbnails)
-                            this._createThumbnails();
-                        this._thumbnails.highlight(window, forceAppFocus);
-                }));
-            }
-        } else if (this._appIcons[this._currentApp].cachedWindows.length > 1 &&
-                   !forceAppFocus) {
-            this._thumbnailTimeoutId = Mainloop.timeout_add (
-                THUMBNAIL_POPUP_TIME,
-                Lang.bind(this, this._timeoutPopupThumbnails));
+        this._appSwitcher.highlight(app, false);
+        this._doWindowPreview();
+        if (this._thumbnailsEnabled && this._iconsEnabled) {
+            this._thumbnailTimeoutId = Mainloop.timeout_add(
+                THUMBNAIL_POPUP_TIME, Lang.bind(this, function() {
+                    if (!this._thumbnails)
+                        this._createThumbnails();
+                    this._thumbnails.highlight(0, false);
+            }));
         }
     },
 
