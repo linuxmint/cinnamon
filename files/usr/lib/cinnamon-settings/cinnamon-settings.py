@@ -52,6 +52,7 @@ class MainWindow:
     def side_view_nav(self, side_view, cat):
         selected_items = side_view.get_selected_items()
         if len(selected_items) > 0:
+            self.deselect(cat)
             self.side_view_sw.hide()
             path = selected_items[0]
             iterator = self.store[cat].get_iter(path)
@@ -70,6 +71,13 @@ class MainWindow:
     def side_view_nav_admin(self, side_view):
         self.side_view_nav(side_view, "admin")
 
+    def deselect(self, cat):
+        if cat is not "feel":
+            self.side_view["feel"].unselect_all()
+        if cat is not "prefs":
+            self.side_view["prefs"].unselect_all()
+        if cat is not "admin":
+            self.side_view["admin"].unselect_all()
 
     ''' Create the UI '''
     def __init__(self):
