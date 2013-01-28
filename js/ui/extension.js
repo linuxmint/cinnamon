@@ -1,16 +1,16 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 
-const Lang = imports.lang;
-const Signals = imports.signals;
-
+const Cinnamon = imports.gi.Cinnamon;
 const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
+const Lang = imports.lang;
+const Signals = imports.signals;
 const St = imports.gi.St;
-const Cinnamon = imports.gi.Cinnamon;
-const ExtensionSystem = imports.ui.extensionSystem;
-const AppletManager = imports.ui.appletManager;
 
+const AppletManager = imports.ui.appletManager;
 const Config = imports.misc.config;
+const DeskletManager = imports.ui.deskletManager;
+const ExtensionSystem = imports.ui.extensionSystem;
 
 const State = {
     INITIALIZING: 0,
@@ -28,54 +28,67 @@ const objects = {};
 // Maps uuid -> metadata object
 const meta = {};
 
-// Extension types with some attributes helping to load these extension types
+/**
+ * const Type:
+ * @EXTENSION: Cinnamon extensions
+ * @APPLET: Cinnamon panel applets
+ * 
+ * @name: Upper case first character name for printing messages
+ *        Also converted to lowercase to find the correct javascript file
+ * @folder: The folder name within the system and user cinnamon folders
+ * @requiredFunctions: Functions that must exist in the main javascript file
+ * @requiredProperties: Properties that must be set in the metadata.json file
+ * @niceToHaveProperties: Properties that are encouraged to be set in the metadata.json file
+ * @roles: Roles an extension can assume. Values will be set internally, set to null.
+ *         key => name of the role, value => reference to the extension object
+ * @callbacks: Callbacks used to do some manual actions on load / unload
+ * 
+ * Extension types with some attributes helping to load these extension types.
+ * Properties are nested, with lowerCamelCase properties (e.g. requiredFunctions) as sub-properties of CAPITAL one (EXTENSION). Thus they are refered to as, e.g., Type.EXTENSION.requiredFunctions
+ */
 const Type = {
     EXTENSION: {
-        // Upper case first character name for printing messages
-        // Also converted to lowercase to find the correct javascript file
         name: 'Extension',
-        // The folder name within the system and user cinnamon folders.
         folder: 'extensions',
-        // Functions that must exist in the main javascript file
         requiredFunctions: ['init', 'disable', 'enable'],
-        // Properties that must be set in the metadata.json file
         requiredProperties: ['uuid', 'name', 'description', 'cinnamon-version'],
-        // Properties that are encouraged to be set in the metadata.json file
         niceToHaveProperties: ['url'],
-        // Roles an extension can assume. Values will be set internally, set to null.
-        // key => name of the role, value => reference to the extension object
         roles: {},
-        // Callbacks used to do some manual actions on load / unload
         callbacks: {
             finishExtensionLoad: ExtensionSystem.finishExtensionLoad,
             prepareExtensionUnload: ExtensionSystem.prepareExtensionUnload
         }
     },
     APPLET: {
-        // Upper case first character name for printing messages
-        // Also converted to lowercase to find the correct javascript file
         name: 'Applet',
-        // The folder name within the system and user cinnamon folders.
         folder: 'applets',
-        // Functions that must exist in the main javascript file
         requiredFunctions: ['main'],
-        // Properties that must be set in the metadata.json file
         requiredProperties: ['uuid', 'name', 'description'],
-        // Properties that are encouraged to be set in the metadata.json file
         niceToHaveProperties: [],
-        // Roles an extension can assume. Values will be set internally, set to null.
-        // key => name of the role, value => reference to the extension object
         roles: {
             notifications: null,
             windowlist: null
         },
-        // Callbacks used to do some manual actions on load / unload
         callbacks: {
             finishExtensionLoad: AppletManager.finishExtensionLoad,
             prepareExtensionUnload: AppletManager.prepareExtensionUnload
         }
+    },
+    DESKLET: {
+        name: 'Desklet',
+        folder: 'desklets',
+        requiredFunctions: ['main'],
+        requiredProperties: ['uuid', 'name', 'description'],
+        niceToHaveProperties: [],
+        roles: {
+            notifications: null,
+            windowlist: null
+        },
+        callbacks: {
+            finishExtensionLoad: DeskletManager.finishExtensionLoad,
+            prepareExtensionUnload: DeskletManager.prepareExtensionUnload
+        }
     }
-    // Add more if needed, for example desklets ?
 };
 
 // Add signal methods to all types and create user directories if they don't exist.
@@ -291,11 +304,19 @@ Extension.prototype = {
         }
     },
 
-    lockRole: function() {
+    lockRole: function(roleProvider) {
         let role = this.meta['role'];
-        if(role && this.type.roles[role] != null) {
-            this.logError('Role ' + role + ' already taken by ' + this.lowerType + ': ' + this.type.roles[role].uuid);
-            return false;
+        if(role && this.type.roles[role] != this) {
+            if(this.type.roles[role] != null) {
+                this.logError('Role ' + role + ' already taken by ' + this.lowerType + ': ' + this.type.roles[role].uuid);
+                return false;
+            }
+        
+            if(roleProvider != null) {
+                this.type.roles[role] = this;
+                this.roleProvider = roleProvider;
+                global.log("Role locked: " + role);
+            }
         }
 
         return true;
@@ -305,6 +326,8 @@ Extension.prototype = {
         let role = this.meta['role'];
         if(role && this.type.roles[role] == this) {
             this.type.roles[role] = null;
+            this.roleProvider = null;
+            global.log("Role unlocked: " + role);
         }
     }
 }
