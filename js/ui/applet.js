@@ -336,54 +336,35 @@ IconApplet.prototype = {
     }
 };
 
-function TextApplet(orientation, panel_height) {
-    this._init(orientation, panel_height);
+function initTextAppletCommon(proto) {
+    return {
+        __proto__: proto,
+
+        _init: function(orientation, panel_height) {
+            proto._init.call(this, orientation, panel_height);
+            this._applet_label = new St.Label({ reactive: true, track_hover: true, style_class: 'applet-label'});
+            this._label_height = (this._panelHeight / DEFAULT_PANEL_HEIGHT) * PANEL_FONT_DEFAULT_HEIGHT;
+            this._applet_label.clutter_text.ellipsize = Pango.EllipsizeMode.NONE;
+            this.actor.add(this._applet_label, { y_align: St.Align.MIDDLE, y_fill: false });    
+        },
+
+        set_applet_label: function (text) {
+            this._applet_label.clutter_text.set_text(text);
+        }
+    };
+ };
+
+function TextApplet() {
+    this._init.call(this.arguments);
 }
 
-TextApplet.prototype = {
-    __proto__: Applet.prototype,
+TextApplet.prototype = initTextAppletCommon(Applet.prototype);
 
-    _init: function(orientation, panel_height) {
-        Applet.prototype._init.call(this, orientation, panel_height);
-        this._applet_label = new St.Label({ reactive: true, track_hover: true, style_class: 'applet-label'});
-        this._label_height = (this._panelHeight / DEFAULT_PANEL_HEIGHT) * PANEL_FONT_DEFAULT_HEIGHT;
-        this._applet_label.clutter_text.ellipsize = Pango.EllipsizeMode.NONE;
-        this.actor.add(this._applet_label, { y_align: St.Align.MIDDLE, y_fill: false });    
-    },
-
-    set_applet_label: function (text) {
-        this._applet_label.clutter_text.set_text(text);
-	},
-    
-    on_applet_added_to_panel: function() {       
-                        
-    }
-};
-
-function TextIconApplet(orientation, panel_height) {
-    this._init(orientation, panel_height);
+function TextIconApplet() {
+    this._init.call(this.arguments);
 }
 
-TextIconApplet.prototype = {
-    __proto__: IconApplet.prototype,
-
-    _init: function(orientation, panel_height) {
-        IconApplet.prototype._init.call(this, orientation, panel_height);
-        this._applet_label = new St.Label({ reactive: true, track_hover: true, style_class: 'applet-label'});
-        this._label_height = (this._panelHeight / DEFAULT_PANEL_HEIGHT) * PANEL_FONT_DEFAULT_HEIGHT;
-        this._applet_label.clutter_text.ellipsize = Pango.EllipsizeMode.NONE;     
-        this.actor.add(this._applet_label, { y_align: St.Align.MIDDLE, y_fill: false });
-    },
-
-    set_applet_label: function (text) {
-        this._applet_label.clutter_text.set_text(text);
-    },
-
-    hide_applet_icon: function () {
+TextIconApplet.prototype = initTextAppletCommon(IconApplet.prototype);
+TextIconApplet.prototype.hide_applet_icon = function () {
         this._applet_icon_box.child = null;
-    },
-    
-    on_applet_added_to_panel: function() {       
-                                
-    }
 };
