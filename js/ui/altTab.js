@@ -261,10 +261,13 @@ AltTabPopup.prototype = {
         if (this._appIcons.length > 0 && currentIndex >= 0) {
             if (binding == 'no-switch-windows') {
                 this._select(currentIndex);
+                this._appSwitcher._scrollTo(currentIndex, -1, 2, true);
             } else if (backward) {
                 this._select(backwardIndex);
+                this._appSwitcher._scrollTo(backwardIndex, 1, 2, true);
             } else {
                 this._select(forwardIndex);
+                this._appSwitcher._scrollTo(forwardIndex, -1, 2, true);
             }
         }
         // There's a race condition; if the user released Alt before
@@ -782,50 +785,55 @@ SwitcherList.prototype = {
             }
             // If we're close to either the left or the right edge, we want to scroll
             // the edge-most items into view.
-            let scrollMax = prevIndex == -1 && this._altTabPopup ? this._altTabPopup._numPrimaryItems : Math.min(5, Math.floor(this._items.length/4));
-            let ixScroll = direction > 0 ?
-                Math.min(index + scrollMax, this._items.length - 1) : // right
-                Math.max(index - scrollMax, 0); // left
-
-            let [absItemX, absItemY] = this._items[ixScroll].get_transformed_position();
-            let [result, posX, posY] = this.actor.transform_stage_point(absItemX, 0);
-            let [containerWidth, containerHeight] = this.actor.get_transformed_size();
-
-            if (direction > 0) {
-                if (ixScroll == this._items.length - 1) {
-                    this._scrollableRight = false;
-                    this._rightArrow.opacity = this._rightGradient.opacity = 0;
-                }
-                if (posX + this._items[ixScroll].get_width() >= containerWidth) {
-                    Tweener.removeTweens(this._list);
-                    this._scrollableLeft = true;
-                    let monitor = Main.layoutManager.primaryMonitor;
-                    let padding = this.actor.get_theme_node().get_horizontal_padding();
-                    let parentPadding = this.actor.get_parent().get_theme_node().get_horizontal_padding();
-                    let x = this._items[ixScroll].allocation.x2 - monitor.width + padding + parentPadding;
-                    Tweener.addTween(this._list, { anchor_x: x,
-                        time: prevIndex < 0 ? 0 : POPUP_SCROLL_TIME,
-                        transition: 'linear'
-                    });
-                }
-            }
-            else if (direction < 0) {
-                if (ixScroll == 0) {
-                    this._scrollableLeft = false;
-                    this._leftArrow.opacity = this._leftGradient.opacity = 0;
-                }
-                let padding = this.actor.get_theme_node().get_horizontal_padding();
-                if (posX <= padding) {
-                    Tweener.removeTweens(this._list);
-                    this._scrollableRight = true;
-                    let x = (ixScroll == 0 ? this._list.get_children() : this._items)[ixScroll].allocation.x1;
-                    Tweener.addTween(this._list, { anchor_x: x,
-                        time: prevIndex < 0 ? 0 : POPUP_SCROLL_TIME,
-                        transition: 'linear'
-                    });
-                }
-            }
+            let scrollMax = Math.min(5, Math.floor(this._items.length/4));
+            this._scrollTo(index, direction, scrollMax, prevIndex == -1);
         }));
+    },
+
+    _scrollTo: function(index, direction, scrollMax_, fast) {
+        let scrollMax = scrollMax_ ? scrollMax_ : 1;
+        let ixScroll = direction > 0 ?
+            Math.min(index + scrollMax, this._items.length - 1) : // right
+            Math.max(index - scrollMax, 0); // left
+
+        let [absItemX, absItemY] = this._items[ixScroll].get_transformed_position();
+        let [result, posX, posY] = this.actor.transform_stage_point(absItemX, 0);
+        let [containerWidth, containerHeight] = this.actor.get_transformed_size();
+
+        if (direction > 0) {
+            if (ixScroll == this._items.length - 1) {
+                this._scrollableRight = false;
+                this._rightArrow.opacity = this._rightGradient.opacity = 0;
+            }
+            if (posX + this._items[ixScroll].get_width() >= containerWidth) {
+                Tweener.removeTweens(this._list);
+                this._scrollableLeft = true;
+                let monitor = Main.layoutManager.primaryMonitor;
+                let padding = this.actor.get_theme_node().get_horizontal_padding();
+                let parentPadding = this.actor.get_parent().get_theme_node().get_horizontal_padding();
+                let x = this._items[ixScroll].allocation.x2 - monitor.width + padding + parentPadding;
+                Tweener.addTween(this._list, { anchor_x: x,
+                    time: fast ? 0 : POPUP_SCROLL_TIME,
+                    transition: 'linear'
+                });
+            }
+        }
+        else if (direction < 0) {
+            if (ixScroll == 0) {
+                this._scrollableLeft = false;
+                this._leftArrow.opacity = this._leftGradient.opacity = 0;
+            }
+            let padding = this.actor.get_theme_node().get_horizontal_padding();
+            if (posX <= padding) {
+                Tweener.removeTweens(this._list);
+                this._scrollableRight = true;
+                let x = (ixScroll == 0 ? this._list.get_children() : this._items)[ixScroll].allocation.x1;
+                Tweener.addTween(this._list, { anchor_x: x,
+                    time: fast ? 0 : POPUP_SCROLL_TIME,
+                    transition: 'linear'
+                });
+            }
+        }
     },
 
     _itemActivated: function(n) {
