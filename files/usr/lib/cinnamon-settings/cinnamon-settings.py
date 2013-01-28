@@ -36,7 +36,7 @@ CONTROL_CENTER_MODULES = [
 #         Label                              Module ID                Icon                         Category
     [_("Networking"),                       "network",            "network.svg",                    "admin"],
     [_("Display"),                          "display",            "display.svg",                    "prefs"],
-    [_("Region & Language"),                "region",             "region.svg",                     "prefs"],
+    [_("Region & Keyboard Layout"),         "region",             "region.svg",                     "prefs"],
     [_("Bluetooth"),                        "bluetooth",          "bluetooth.svg",                  "admin"],
     [_("Printers"),                         "printers",           "printer.svg",                    "admin"],
     [_("System Info & Default Programs"),   "info",               "details.svg",                    "admin"],
@@ -46,6 +46,15 @@ CONTROL_CENTER_MODULES = [
     [_("Sound"),                            "sound-nua",          "sound.svg",                      "admin"]
 ]
 
+STANDALONE_MODULES = [
+#         Label                             Executable                       Icon                         Category
+    [_("Firewall"),                          "gufw",                     "firewall.svg",                  "admin"],
+    [_("Install/Remove Languages"),       "gnome-language-selector",    "language.svg",                  "admin"]
+]
+
+
+
+
 class MainWindow:
 
     # Change pages
@@ -53,14 +62,18 @@ class MainWindow:
         selected_items = side_view.get_selected_items()
         if len(selected_items) > 0:
             self.deselect(cat)
-            self.side_view_sw.hide()
             path = selected_items[0]
             iterator = self.store[cat].get_iter(path)
             sidePage = self.store[cat].get_value(iterator,2)
-            self.window.set_title(_("Cinnamon Settings") + " - " + sidePage.name)
-            sidePage.build()
-            self.content_box_sw.show()
-            self.top_button_box.show_all()
+            if not sidePage.is_standalone:
+                self.side_view_sw.hide()
+                self.window.set_title(_("Cinnamon Settings") + " - " + sidePage.name)
+                sidePage.build()
+                self.content_box_sw.show()
+                self.top_button_box.show_all()
+            else:
+                sidePage.build()
+
 
     def side_view_nav_feel(self, side_view):
         self.side_view_nav(side_view, "feel")
@@ -111,6 +124,12 @@ class MainWindow:
             ccmodule = SettingsWidgets.CCModule(item[0], item[1], item[2], item[3], self.content_box)
             if ccmodule.process():
                 self.sidePages.append((ccmodule.sidePage, ccmodule.name, ccmodule.category))
+
+        for item in STANDALONE_MODULES:
+            samodule = SettingsWidgets.SAModule(item[0], item[1], item[2], item[3], self.content_box)
+            if samodule.process():
+                self.sidePages.append((samodule.sidePage, samodule.name, samodule.category))
+
 
         # create the backing store for the side nav-view.
         self.store = {}

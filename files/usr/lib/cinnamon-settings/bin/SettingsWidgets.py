@@ -23,19 +23,22 @@ try:
     import tempfile
     import math
     import capi
+    import subprocess
 
 except Exception, detail:
     print detail
     sys.exit(1)
 
 class SidePage:
-    def __init__(self, name, icon, content_box, is_c_mod = False):        
+    def __init__(self, name, icon, content_box, is_c_mod = False, is_standalone = False, exec_name = None):
         self.name = name
         self.icon = icon
         self.content_box = content_box
         self.widgets = []
         self.is_c_mod = is_c_mod
-        
+        self.is_standalone = is_standalone
+        self.exec_name = exec_name
+
     def add_widget(self, widget):
         self.widgets.append(widget)
         
@@ -51,19 +54,22 @@ class SidePage:
         # the result - so we can't just show_all on the widget, it will
         # mess up these modifications - so for these, we just show the
         # top-level widget
-        for widget in self.widgets:
-            self.content_box.pack_start(widget, False, False, 2)
-        if self.is_c_mod:  
-            self.content_box.show()
-            widgets = self.content_box.get_children()
-            for widget in widgets:
-                widget.show()
+        if not self.is_standalone:
+            for widget in self.widgets:
+                self.content_box.pack_start(widget, False, False, 2)
+            if self.is_c_mod:
+                self.content_box.show()
+                widgets = self.content_box.get_children()
+                for widget in widgets:
+                    widget.show()
+            else:
+                self.content_box.show_all()
         else:
-            self.content_box.show_all()
+            subprocess.Popen([self.exec_name])
 
 class CCModule:
     def __init__(self, label, mod_id, icon, category, content_box):
-        sidePage = SidePage(label, icon, content_box, True)
+        sidePage = SidePage(label, icon, content_box, True, False, None)
         self.sidePage = sidePage
         self.name = mod_id
         self.category = category
@@ -75,6 +81,28 @@ class CCModule:
             return True
         else:
             return False
+
+class SAModule:
+    def __init__(self, label, mod_id, icon, category, content_box):
+        sidePage = SidePage(label, icon, content_box, False, True, mod_id)
+        self.sidePage = sidePage
+        self.name = mod_id
+        self.category = category
+
+    def process (self):
+        return fileexists(self.name)
+
+def fileexists(program):
+
+    def is_exe(fpath):
+        return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
+
+    for path in os.environ["PATH"].split(os.pathsep):
+        path = path.strip('"')
+        exe_file = os.path.join(path, program)
+        if is_exe(exe_file):
+            return True
+    return False
 
 def walk_directories(dirs, filter_func):
     valid = []
