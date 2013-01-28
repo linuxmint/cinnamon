@@ -10,6 +10,7 @@ const PopupMenu = imports.ui.popupMenu;
 const AppFavorites = imports.ui.appFavorites;
 const Gtk = imports.gi.Gtk;
 const Gio = imports.gi.Gio;
+const GLib = imports.gi.GLib;
 const Signals = imports.signals;
 const GnomeSession = imports.misc.gnomeSession;
 const ScreenSaver = imports.misc.screenSaver;
@@ -218,7 +219,56 @@ SimpleButton.prototype = {
     }
 };
 
+function PathButton(menuApplet, file) {
+    this._init(menuApplet, file);
+}
 
+PathButton.prototype = {
+    __proto__: SimpleButton.prototype,
+
+    _init: function(menuApplet, file) {
+        SimpleButton.prototype._init.call(this,
+            menuApplet, new St.Bin(),
+            'menu-application-button', 'menu-application-button-label',
+            file.get_basename(), file.get_path());
+        
+        this.file = file;
+        this.isPath = GLib.file_test(file.get_path(), GLib.FileTest.IS_DIR);
+        this.handler = null;
+        this.icon.child = null;
+        try {
+            this.handler = this.file.query_default_handler(null);
+            if(this.isPath) {
+                throw new Error("Directory");
+            }
+            let fileInfo = this.file.query_info(Gio.FILE_ATTRIBUTE_STANDARD_TYPE, Gio.FileQueryInfoFlags.NONE, null);
+            let contentType = Gio.content_type_guess(file.get_path(), null);
+            let themedIcon = Gio.content_type_get_icon(contentType[0]);
+            this.icon.child = new St.Icon({gicon: themedIcon, icon_size: APPLICATION_ICON_SIZE, icon_type: St.IconType.FULLCOLOR });
+        } catch (e) {
+        }
+        
+        if(this.icon.child == null) {
+            let iconName = this.isPath ? 'folder' : 'unknown';
+            this.icon.child = new St.Icon({icon_name: iconName, icon_size: APPLICATION_ICON_SIZE, icon_type: St.IconType.FULLCOLOR});
+        }
+    },
+
+    activate: function(event) {
+        if (this.handler != null) {
+            this.handler.launch([this.file], null)
+        } else {
+            // Try anyway, even though we probably shouldn't.
+            try {
+                Util.spawn(['gvfs-open', this.file.get_uri()])
+            } catch (e) {
+                global.logError("No handler available to open " + this.file.get_uri());
+            }
+        }
+        
+        this.menuApplet.menu.close();
+    }
+};
 
 function SearchableButton(menuApplet, icon, buttonStyle, labelStyle, name, description, searchTexts) {
     this._init(menuApplet, icon, buttonStyle, labelStyle, name, description, searchTexts);
@@ -797,6 +847,7 @@ MyApplet.prototype = {
         this._favoritesButtons = new Array();
         this._placesButtons = new Array();
         this._recentButtons = new Array();
+        this._pathButtons = new Array();
         this._selectedItemIndex = null;
         this._previousSelectedActor = null;
         this._selectedCategoryButton = null;
@@ -808,6 +859,10 @@ MyApplet.prototype = {
 
         this.RecentManager = new DocInfo.DocManager();
 
+        this._pathCompleter = new Gio.FilenameCompleter();
+        this._pathCompleter.set_dirs_only(false);
+        this._pathCompleter.connect('got-completion-data', Lang.bind(this, this._onCompletionData));
+            
         this._display();
         appsys.connect('installed-changed', Lang.bind(this, this._refreshApps));
         AppFavorites.getAppFavorites().connect('changed', Lang.bind(this, this._refreshFavs));
@@ -1037,6 +1092,14 @@ MyApplet.prototype = {
         } else if (this._activeContainer === this.applicationsBox && (symbol == Clutter.KEY_Return || symbol == Clutter.KP_Enter)) {
             item_actor = this.applicationsBox.get_child_at_index(this._selectedItemIndex);
             item_actor._delegate.activate();
+            return true;
+            
+        } else if (symbol == Clutter.Tab) {
+            if(this.searchFilesystem) {
+                item_actor = this.applicationsBox.get_child_at_index(this._selectedItemIndex);
+                if(item_actor)
+                    this.searchEntry.set_text(item_actor._delegate.file.get_path());
+            }
             return true;
         } else {
             return false;
@@ -1444,6 +1507,7 @@ MyApplet.prototype = {
         this.searchEntry.set_secondary_icon(this._searchInactiveIcon);
         this.searchBox.add_actor(this.searchEntry);
         this.searchActive = false;
+        this.searchFilesystem = false;
         this.searchEntryText = this.searchEntry.clutter_text;
         this.searchEntryText.connect('text-changed', Lang.bind(this, this._onSearchTextChanged));
         this.searchEntryText.connect('key-press-event', Lang.bind(this, this._onMenuKeyPress));
@@ -1656,7 +1720,9 @@ MyApplet.prototype = {
 
      resetSearch: function(){
         this.searchEntry.set_text("");
+        this._previousSearchPattern = "";
         this.searchActive = false;
+        this.searchFilesystem = false;
         
         this.applicationsBox.hide();
         this._clearAllSelections(true);
@@ -1665,6 +1731,8 @@ MyApplet.prototype = {
         
         this._setCategoriesButtonActive(true);
         global.stage.set_key_focus(this.searchEntry);
+        
+        this._removeButtons(this._pathButtons);
      },
 
      _onSearchTextChanged: function (se, prop) {
@@ -1684,8 +1752,14 @@ MyApplet.prototype = {
                         }));
                 }
                 this._setCategoriesButtonActive(false);
-                this._doSearch();
+                let ch1 = this.searchEntry.get_text().charAt(0);
+                this.searchFilesystem = ch1 == '/' || ch1 == '~';
+                if(this.searchFilesystem)
+                    this._doSearchFilesystem();
+                else
+                    this._doSearch();
             } else {
+                this._previousSearchPattern = "";
                 if (this._searchIconClickedId > 0)
                     this.searchEntry.disconnect(this._searchIconClickedId);
                 this._searchIconClickedId = 0;
@@ -1697,6 +1771,7 @@ MyApplet.prototype = {
                 
                 this._setCategoriesButtonActive(true);
                 this._selectCategory(this._allAppsCategoryButton);
+                this._removeButtons(this._pathButtons);
             }
         }
     },
@@ -1718,7 +1793,57 @@ MyApplet.prototype = {
         if(this.selectedAppDescription)
             this.selectedAppDescription.set_text(description ? description : "");
     },
+    
+    _onCompletionData: function() {
+        this._addCompletionData(this._pathCompleter.get_completions(this._previousSearchPattern));
+    },
+    
+    _addCompletionData: function(acResults) {
+        for (let i = 0; i < acResults.length; i++) {
+            let path = acResults[i];
+            let button = new PathButton(this, Gio.file_new_for_path(path));
+            
+            this._pathButtons.push(button);
+            this.applicationsBox.add_actor(button.actor);
+            if(button instanceof ApplicationButton) {
+                this.applicationsBox.add_actor(button.menu.actor);
+            }
+        }
+        this._selectFirstResult();
+    },
 
+    _doSearchFilesystem: function() {
+        let search = this.searchEntryText.get_text();
+        if(search.charAt(0) == '~')
+            search = GLib.get_home_dir() + search.substr(1);
+        
+        this._displayButtons(null, this._applicationsButtons);
+        this._displayButtons(null, this._placesButtons);
+        this._displayButtons(null, this._recentButtons);
+
+        for (let i = 0; i < this._pathButtons.length; i++) {
+            let button = this._pathButtons[i];
+            this.applicationsBox.remove_actor(button.actor);
+            button.destroy();
+        }
+        this._pathButtons = new Array();
+        
+        this._addCompletionData(this._pathCompleter.get_completions(search));
+        this._previousSearchPattern = search;
+    },
+    
+    _selectFirstResult: function() {
+        this.appBoxIter.reloadVisible();
+        if (this.appBoxIter.getNumVisibleChildren() > 0) {
+            let item_actor = this.appBoxIter.getFirstVisible();
+            this._selectedItemIndex = this.appBoxIter.getAbsoluteIndexOfChild(item_actor);
+            this._activeContainer = this.applicationsBox;
+            if (item_actor && item_actor != this.searchEntry) {
+                item_actor._delegate.emit('enter-event');
+            }
+        }
+    },
+    
     _doSearch: function(){
         let pattern = this.searchEntryText.get_text().replace(/^\s+/g, '').replace(/\s+$/g, '').toLowerCase();
         if (pattern==this._previousSearchPattern) return false;
@@ -1754,15 +1879,7 @@ MyApplet.prototype = {
             this._updateAppInfo("", "");
         }
 
-        this.appBoxIter.reloadVisible();
-        if (this.appBoxIter.getNumVisibleChildren() > 0) {
-            let item_actor = this.appBoxIter.getFirstVisible();
-            this._selectedItemIndex = this.appBoxIter.getAbsoluteIndexOfChild(item_actor);
-            this._activeContainer = this.applicationsBox;
-            if (item_actor && item_actor != this.searchEntry) {
-                item_actor._delegate.emit('enter-event');
-            }
-        }
+        this._selectFirstResult();
         return false;
     }
 };
