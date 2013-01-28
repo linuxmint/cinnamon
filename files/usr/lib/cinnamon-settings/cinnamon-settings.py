@@ -214,7 +214,7 @@ class MainWindow:
         for widget in widgets:
             widget.hide()
         self.top_button_box.hide()
-        self.side_view_sw.show_all()
+        self.side_view_sw.show()
 
 if __name__ == "__main__":
     GObject.threads_init()
