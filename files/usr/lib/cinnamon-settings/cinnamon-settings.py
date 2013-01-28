@@ -33,17 +33,17 @@ menuGenericName = _("Desktop Configuration Tool")
 menuComment = _("Fine-tune desktop settings")
 
 CONTROL_CENTER_MODULES = [
-#         Label                  Module ID                       Icon                         Category
-    [_("Networking"),        "cinnamon-network",            "network.svg",                    "admin"],
-    [_("Display"),           "cinnamon-display",            "display.svg",                    "prefs"],
-    [_("Region & Language"), "cinnamon-region",             "region.svg",                     "prefs"],
-    [_("Bluetooth"),         "cinnamon-bluetooth",          "bluetooth.svg",                  "admin"],
-    [_("Printers"),          "cinnamon-printers",           "printer.svg",                    "admin"],
-    [_("Details"),           "cinnamon-info",               "details.svg",                    "admin"],
-    [_("Universal Access"),  "cinnamon-universal-access",   "universal-access.svg",           "prefs"],
-    [_("User Accounts"),     "cinnamon-user-accounts",      "user-accounts.svg",              "admin"],
-    [_("Power Management"),  "cinnamon-power",              "power.svg",                      "admin"],
-    [_("Sound"),             "cinnamon-sound-nua",          "sound.svg",                      "admin"]
+#         Label                              Module ID                Icon                         Category
+    [_("Networking"),                       "network",            "network.svg",                    "admin"],
+    [_("Display"),                          "display",            "display.svg",                    "prefs"],
+    [_("Region & Language"),                "region",             "region.svg",                     "prefs"],
+    [_("Bluetooth"),                        "bluetooth",          "bluetooth.svg",                  "admin"],
+    [_("Printers"),                         "printers",           "printer.svg",                    "admin"],
+    [_("System Info & Default Programs"),   "info",               "details.svg",                    "admin"],
+    [_("Universal Access"),                 "universal-access",   "universal-access.svg",           "prefs"],
+    [_("User Accounts"),                    "user-accounts",      "user-accounts.svg",              "admin"],
+    [_("Power Management"),                 "power",              "power.svg",                      "admin"],
+    [_("Sound"),                            "sound-nua",          "sound.svg",                      "admin"]
 ]
 
 class MainWindow:

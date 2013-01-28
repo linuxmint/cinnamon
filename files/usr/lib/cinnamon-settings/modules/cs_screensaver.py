@@ -14,7 +14,6 @@ class Module:
             sidePage.add_widget(GSettingsCheckButton(_("Ask for an away message when locking the screen from the menu"), "org.cinnamon.screensaver", "ask-for-away-message", None))
             sidePage.add_widget(GSettingsEntry(_("Default message"), "org.cinnamon.screensaver", "default-message", None))
 
-
-        widget = capi.get_c_widget("cinnamon-screen")
+        widget = capi.get_c_widget("screen")
         if widget is not None:
             self.sidePage.add_widget(widget)
