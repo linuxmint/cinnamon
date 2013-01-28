@@ -1,0 +1,5 @@
+#!/usr/bin/python
+
+import os
+
+os.system("/usr/lib/cinnamon-screensaver-lock-dialog/cinnamon-screensaver-lock-dialog.py")

@@ -304,11 +304,19 @@ Extension.prototype = {
         }
     },
 
-    lockRole: function() {
+    lockRole: function(roleProvider) {
         let role = this.meta['role'];
-        if(role && this.type.roles[role] != null) {
-            this.logError('Role ' + role + ' already taken by ' + this.lowerType + ': ' + this.type.roles[role].uuid);
-            return false;
+        if(role && this.type.roles[role] != this) {
+            if(this.type.roles[role] != null) {
+                this.logError('Role ' + role + ' already taken by ' + this.lowerType + ': ' + this.type.roles[role].uuid);
+                return false;
+            }
+        
+            if(roleProvider != null) {
+                this.type.roles[role] = this;
+                this.roleProvider = roleProvider;
+                global.log("Role locked: " + role);
+            }
         }
 
         return true;
@@ -318,6 +326,8 @@ Extension.prototype = {
         let role = this.meta['role'];
         if(role && this.type.roles[role] == this) {
             this.type.roles[role] = null;
+            this.roleProvider = null;
+            global.log("Role unlocked: " + role);
         }
     }
 }

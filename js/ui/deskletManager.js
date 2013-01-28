@@ -164,9 +164,17 @@ function _unloadDesklet(deskletDefinition) {
 }
 
 function _loadDesklet(extension, deskletDefinition) {
+    // Try to lock the desklets role
+    if(!extension.lockRole(null))
+        return;
+    
     try {
         let desklet = _createDesklets(extension, deskletDefinition);
         if (!desklet)
+            return;
+        
+        // Now actually lock the desklets role and set the provider
+        if(!extension.lockRole(desklet))
             return;
 
         desklet._extension = extension;
