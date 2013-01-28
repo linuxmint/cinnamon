@@ -14,6 +14,12 @@
 # along with this program.  If not, see http://www.gnu.org/licenses/
 import gi
 import ctypes
+from ctypes import *
+
+gio = CDLL("libgio-2.0.so.0")
+libgobject = CDLL('libgobject-2.0.so.0')
+ext_point = gio.g_io_extension_point_register ("cinnamon-control-center-1")
+modules = gio.g_io_modules_load_all_in_directory ("/usr/lib/cinnamon-control-center-1/panels")
 
 class _PyGObject_Functions(ctypes.Structure):
    _fields_ = [
@@ -30,13 +36,25 @@ class _PyGObject_Functions(ctypes.Structure):
        ]
 
 class PyGObjectCPAI(object):
-   def __init__(self):
-       PyCObject_AsVoidPtr = ctypes.pythonapi.PyCObject_AsVoidPtr
-       PyCObject_AsVoidPtr.restype = ctypes.c_void_p
-       PyCObject_AsVoidPtr.argtypes = [ctypes.py_object]
-       addr = PyCObject_AsVoidPtr(ctypes.py_object(
+    def __init__(self):
+        PyCObject_AsVoidPtr = ctypes.pythonapi.PyCObject_AsVoidPtr
+        PyCObject_AsVoidPtr.restype = ctypes.c_void_p
+        PyCObject_AsVoidPtr.argtypes = [ctypes.py_object]
+        addr = PyCObject_AsVoidPtr(ctypes.py_object(
            gi._gobject._PyGObject_API))
-       self._api = _PyGObject_Functions.from_address(addr)
+        self._api = _PyGObject_Functions.from_address(addr)
 
-   def pygobject_new(self, addr):
-       return self._api.newgobj(addr)
+    def pygobject_new(self, addr):
+        return self._api.newgobj(addr)
+
+def get_c_widget(mod_id):
+    extension = gio.g_io_extension_point_get_extension_by_name (ext_point, mod_id)
+    if extension == 0:
+        print "Problem occurred loading cinnamon-control-center module: " + mod_id
+        return None
+    gio.g_io_extension_get_type.restype = c_int
+    panel_type = gio.g_io_extension_get_type (extension)
+    libgobject.g_object_new.restype = ctypes.POINTER(ctypes.py_object)
+    ptr = libgobject.g_object_new(panel_type, None)
+    return PyGObjectCPAI().pygobject_new(ptr)
+
