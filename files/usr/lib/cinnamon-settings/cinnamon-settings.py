@@ -47,16 +47,12 @@ CONTROL_CENTER_MODULES = [
 ]
 
 STANDALONE_MODULES = [
-#         Label                             Executable                       Icon                         Category
-    [_("Firewall"),                          "gufw",                     "firewall.svg",                  "admin"],
-    [_("Install/Remove Languages"),       "gnome-language-selector",    "language.svg",                  "admin"]
+#         Label                          Executable                          Icon                         Category
+    [_("Firewall"),                      "gufw",                         "firewall.svg",                  "admin"],
+    [_("Install/Remove Languages"),      "gnome-language-selector",      "language.svg",                  "admin"]
 ]
 
-
-
-
 class MainWindow:
-
     # Change pages
     def side_view_nav(self, side_view, cat):
         selected_items = side_view.get_selected_items()
@@ -73,7 +69,6 @@ class MainWindow:
                 self.top_button_box.show_all()
             else:
                 sidePage.build()
-
 
     def side_view_nav_feel(self, side_view):
         self.side_view_nav(side_view, "feel")
