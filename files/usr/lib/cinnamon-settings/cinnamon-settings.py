@@ -106,6 +106,14 @@ class MainWindow:
         self.button_back.set_label(_("All Settings"))
         self.top_button_box = self.builder.get_object("top_button_box")
 
+        # Translations for categories
+        label = self.builder.get_object("label_feel")
+        label.set_label(_("Look and Feel"))
+        label = self.builder.get_object("label_prefs")
+        label.set_label(_("User Preferences"))
+        label = self.builder.get_object("label_admin")
+        label.set_label(_("System Settings"))
+
         self.window.connect("destroy", Gtk.main_quit)
 
         self.sidePages = []
