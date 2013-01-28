@@ -71,10 +71,18 @@
                         <property name="can_focus">False</property>
                         <property name="orientation">vertical</property>
                         <child>
-                          <placeholder/>
+                          <object class="GtkSeparator" id="pre_sep_feel">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">0</property>
+                          </packing>
                         </child>
                         <child>
-                          <object class="GtkLabel" id="label1">
+                          <object class="GtkLabel" id="label_feel">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <property name="margin_left">10</property>
@@ -93,7 +101,7 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkSeparator" id="separator3">
+                          <object class="GtkSeparator" id="post_sep_feel">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                           </object>
@@ -104,7 +112,7 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkIconView" id="side_view_look_and_feel">
+                          <object class="GtkIconView" id="side_view_feel">
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="hexpand">True</property>
@@ -123,7 +131,7 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkSeparator" id="separator4">
+                          <object class="GtkSeparator" id="pre_sep_prefs">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                           </object>
@@ -134,7 +142,7 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkLabel" id="label2">
+                          <object class="GtkLabel" id="label_prefs">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <property name="margin_left">10</property>
@@ -152,7 +160,7 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkSeparator" id="separator5">
+                          <object class="GtkSeparator" id="post_sep_prefs">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                           </object>
@@ -163,7 +171,7 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkIconView" id="side_view_user_prefs">
+                          <object class="GtkIconView" id="side_view_prefs">
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="hexpand">True</property>
@@ -182,7 +190,7 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkSeparator" id="separator6">
+                          <object class="GtkSeparator" id="pre_sep_admin">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                           </object>
@@ -193,7 +201,7 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkLabel" id="label3">
+                          <object class="GtkLabel" id="label_admin">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <property name="margin_left">10</property>
@@ -211,7 +219,7 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkSeparator" id="separator2">
+                          <object class="GtkSeparator" id="post_sep_admin">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                           </object>

@@ -86,8 +86,8 @@ class MainWindow:
         self.builder.add_from_file("/usr/lib/cinnamon-settings/cinnamon-settings.ui")
         self.window = self.builder.get_object("main_window")
         self.side_view = {}
-        self.side_view["feel"] = self.builder.get_object("side_view_look_and_feel")
-        self.side_view["prefs"] = self.builder.get_object("side_view_user_prefs")
+        self.side_view["feel"] = self.builder.get_object("side_view_feel")
+        self.side_view["prefs"] = self.builder.get_object("side_view_prefs")
         self.side_view["admin"] = self.builder.get_object("side_view_admin")
         self.side_view_sw = self.builder.get_object("side_view_sw")
         self.side_view_sw.show_all()
@@ -118,6 +118,8 @@ class MainWindow:
         self.store["prefs"] = Gtk.ListStore(str, GdkPixbuf.Pixbuf, object)
         self.store["admin"] = Gtk.ListStore(str, GdkPixbuf.Pixbuf, object)
 
+        self.show_cat = {"feel": False, "prefs": False, "admin": False}
+
         sidePagesIters = {}
         for sidePage, sidePageID, sidePageCategory in self.sidePages:
             iconFile = "/usr/lib/cinnamon-settings/data/icons/%s" % sidePage.icon
@@ -126,6 +128,7 @@ class MainWindow:
             else:
                 img = None
             sidePagesIters[sidePageID] = self.store[sidePageCategory].append([sidePage.name, img, sidePage])
+            self.show_cat[sidePageCategory] = True
 
         # set up the side view - navigation.
         self.prepSideView("feel")
@@ -167,6 +170,22 @@ class MainWindow:
         self.side_view[cat].set_text_column(0)
         self.side_view[cat].set_pixbuf_column(1)
         self.side_view[cat].set_model(self.store[cat])
+        label = self.builder.get_object("label_" + cat)
+        pre_sep = self.builder.get_object("pre_sep_" + cat)
+        post_sep = self.builder.get_object("post_sep_" + cat)
+        if self.show_cat[cat]:
+            self.side_view[cat].show()
+            label.show()
+            if cat is "feel":
+                pre_sep.hide()
+            else:
+                pre_sep.show()
+            post_sep.show()
+        else:
+            self.side_view[cat].hide()
+            label.hide()
+            pre_sep.hide()
+            post_sep.hide()
 
     def loadCheck (self, mod):
         try:
