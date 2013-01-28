@@ -38,7 +38,6 @@ CONTROL_CENTER_MODULES = [
     [_("Display"),                          "display",            "display.svg",                    "prefs"],
     [_("Region & Keyboard Layout"),         "region",             "region.svg",                     "prefs"],
     [_("Bluetooth"),                        "bluetooth",          "bluetooth.svg",                  "admin"],
-    [_("Printers"),                         "printers",           "printer.svg",                    "admin"],
     [_("System Info & Default Programs"),   "info",               "details.svg",                    "admin"],
     [_("Universal Access"),                 "universal-access",   "universal-access.svg",           "prefs"],
     [_("User Accounts"),                    "user-accounts",      "user-accounts.svg",              "admin"],
@@ -48,6 +47,7 @@ CONTROL_CENTER_MODULES = [
 
 STANDALONE_MODULES = [
 #         Label                          Executable                          Icon                         Category
+    [_("Printers"),                      "system-config-printer",        "printer.svg",                   "admin"],
     [_("Firewall"),                      "gufw",                         "firewall.svg",                  "admin"],
     [_("Install/Remove Languages"),      "gnome-language-selector",      "language.svg",                  "admin"]
 ]
