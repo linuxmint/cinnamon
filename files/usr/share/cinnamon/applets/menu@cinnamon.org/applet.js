@@ -1716,26 +1716,14 @@ MyApplet.prototype = {
         } catch (e) {
             global.log(e);
         }
-     },
+    },
 
-     resetSearch: function(){
+    resetSearch: function(){
         this.searchEntry.set_text("");
-        this._previousSearchPattern = "";
-        this.searchActive = false;
-        this.searchFilesystem = false;
-        
-        this.applicationsBox.hide();
-        this._clearAllSelections(true);
-        this._resortButtons(false);
-        this.applicationsBox.show();
-        
-        this._setCategoriesButtonActive(true);
         global.stage.set_key_focus(this.searchEntry);
-        
-        this._removeButtons(this._pathButtons);
-     },
+    },
 
-     _onSearchTextChanged: function (se, prop) {
+    _onSearchTextChanged: function (se, prop) {
         if (this.menuIsOpening) {
             this.menuIsOpening = false;
             return;
@@ -1743,6 +1731,7 @@ MyApplet.prototype = {
             this.searchActive = this.searchEntry.get_text() != '';
             this._clearAllSelections(true);
             if (this.searchActive) {
+                this._updateAppInfo("", "");
                 this.searchEntry.set_secondary_icon(this._searchActiveIcon);
                 if (this._searchIconClickedId == 0) {
                     this._searchIconClickedId = this.searchEntry.connect('secondary-icon-clicked',
@@ -1764,11 +1753,17 @@ MyApplet.prototype = {
                     this.searchEntry.disconnect(this._searchIconClickedId);
                 this._searchIconClickedId = 0;
                 this.searchEntry.set_secondary_icon(this._searchInactiveIcon);
-                
+
+                this._updateAppInfo("", "");
+                this._previousSearchPattern = "";
+                this.searchActive = false;
+                this.searchFilesystem = false;
+
                 this.applicationsBox.hide();
+                this._clearAllSelections(true);
                 this._resortButtons(false);
                 this.applicationsBox.show();
-                
+
                 this._setCategoriesButtonActive(true);
                 this._selectCategory(this._allAppsCategoryButton);
                 this._removeButtons(this._pathButtons);
