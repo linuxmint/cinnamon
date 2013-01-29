@@ -75,7 +75,9 @@ class MainWindow:
                 self.window.set_title(_("Cinnamon Settings") + " - " + sidePage.name)
                 sidePage.build()
                 self.content_box_sw.show()
-                self.button_back.show()
+                self.button_sub.show()
+                self.button_sub.set_label(sidePage.name)
+                self.button_back.get_style_context().set_junction_sides(Gtk.JunctionSides.RIGHT)
             else:
                 sidePage.build()
 
@@ -99,7 +101,11 @@ class MainWindow:
         self.button_cancel = self.builder.get_object("button_cancel")
         self.button_back = self.builder.get_object("button_back")
         self.button_back.set_label(_("All Settings"))
-        self.button_back.hide()
+        self.button_back.show()
+        self.button_back.get_style_context().set_junction_sides(Gtk.JunctionSides.NONE)
+        self.button_sub = self.builder.get_object("button_sub")
+        self.button_sub.hide()
+        self.button_sub.get_style_context().set_junction_sides(Gtk.JunctionSides.LEFT)
         self.search_entry = self.builder.get_object("search_box")
         self.search_entry.connect("changed", self.onSearchTextChanged)
         self.search_entry.connect("icon-press", self.onClearSearchBox)
@@ -245,7 +251,8 @@ class MainWindow:
         widgets = self.content_box.get_children()
         for widget in widgets:
             widget.hide()
-        self.button_back.hide()
+        self.button_back.get_style_context().set_junction_sides(Gtk.JunctionSides.NONE)
+        self.button_sub.hide()
         self.side_view_sw.show()
         self.search_entry.show()
         self.search_entry.grab_focus()
