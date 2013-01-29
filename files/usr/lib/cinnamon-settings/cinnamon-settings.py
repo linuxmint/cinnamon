@@ -75,7 +75,7 @@ class MainWindow:
                 self.window.set_title(_("Cinnamon Settings") + " - " + sidePage.name)
                 sidePage.build()
                 self.content_box_sw.show()
-                self.top_button_box.show_all()
+                self.button_back.show()
             else:
                 sidePage.build()
 
@@ -99,7 +99,7 @@ class MainWindow:
         self.button_cancel = self.builder.get_object("button_cancel")
         self.button_back = self.builder.get_object("button_back")
         self.button_back.set_label(_("All Settings"))
-        self.top_button_box = self.builder.get_object("top_button_box")
+        self.button_back.hide()
         self.search_entry = self.builder.get_object("search_box")
         self.search_entry.connect("changed", self.onSearchTextChanged)
         self.search_entry.connect("icon-press", self.onClearSearchBox)
@@ -245,7 +245,7 @@ class MainWindow:
         widgets = self.content_box.get_children()
         for widget in widgets:
             widget.hide()
-        self.top_button_box.hide()
+        self.button_back.hide()
         self.side_view_sw.show()
         self.search_entry.show()
         self.search_entry.grab_focus()

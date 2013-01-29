@@ -51,7 +51,7 @@ class AppletViewSidePage (SidePage):
         self.treeview.append_column(column2)
         self.treeview.append_column(column3)        
         self.treeview.set_headers_visible(False)        
-            
+        self.treeview.set_vexpand(True)
         self.model = Gtk.TreeStore(str, str, int, int, GdkPixbuf.Pixbuf)
         #                          uuid, name, enabled, icon        
         self.model.set_sort_column_id(1, Gtk.SortType.ASCENDING)
@@ -81,7 +81,7 @@ class AppletViewSidePage (SidePage):
         link.set_label(_("Get new applets"))                
                          
         self.content_box.pack_start(self.search_entry, False, False, 2)
-        self.content_box.add(scrolledWindow)        
+        self.content_box.pack_start(scrolledWindow, False, True, 2)        
         self.content_box.pack_start(self.instanceButton, False, False, 2) 
         self.content_box.pack_start(restoreButton, False, False, 2) 
         self.content_box.pack_start(link, False, False, 2) 
