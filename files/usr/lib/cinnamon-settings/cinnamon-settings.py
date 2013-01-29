@@ -207,12 +207,12 @@ class MainWindow:
         widget.set_row_spacing(0)
         widget.set_column_spacing(0)
         widget.set_hexpand(True)
-        widget.set_vexpand(True)
+        widget.set_vexpand(False)
         c = widget.get_style_context()
         c.add_class("button")
         self.side_view[category["id"]] = widget
 
-        self.side_view_container.pack_start(self.side_view[category["id"]], True, True, 0)
+        self.side_view_container.pack_start(self.side_view[category["id"]], False, False, 0)
         self.first_category_done = True
         self.side_view[category["id"]].connect("selection_changed", self.side_view_nav, category["id"])
 
