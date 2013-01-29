@@ -11,14 +11,15 @@ home = os.path.expanduser("~")
 class Module:
     def __init__(self, content_box):
         keywords = _("applets")
-        sidePage = AppletViewSidePage(_("Applets"), "applets.svg", keywords, content_box)
+        tooltip = _("Download, install and manage Cinnamon applets")
+        sidePage = AppletViewSidePage(_("Applets"), "applets.svg", keywords, tooltip, content_box)
         self.sidePage = sidePage
         self.name = "applets"
         self.category = "feel"
 
 class AppletViewSidePage (SidePage):
-    def __init__(self, name, icon, keywords, content_box):   
-        SidePage.__init__(self, name, icon, keywords, content_box)        
+    def __init__(self, name, icon, keywords, tooltip, content_box):
+        SidePage.__init__(self, name, icon, keywords, tooltip, content_box)
         self.icons = []
         
         self.search_entry = Gtk.Entry()

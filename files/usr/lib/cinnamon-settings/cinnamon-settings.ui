@@ -30,7 +30,6 @@
                   <object class="GtkButtonBox" id="buttonbox2">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="margin_right">2</property>
                     <property name="layout_style">start</property>
                     <style>
                       <class name="linked"/>
@@ -47,7 +46,6 @@
                         <property name="expand">False</property>
                         <property name="fill">True</property>
                         <property name="position">0</property>
-                        <property name="non_homogeneous">True</property>
                       </packing>
                     </child>
                     <child>
@@ -60,9 +58,8 @@
                       </object>
                       <packing>
                         <property name="expand">False</property>
-                        <property name="fill">True</property>
+                        <property name="fill">False</property>
                         <property name="position">1</property>
-                        <property name="non_homogeneous">True</property>
                       </packing>
                     </child>
                   </object>
@@ -70,7 +67,6 @@
               </object>
               <packing>
                 <property name="expand">False</property>
-                <property name="homogeneous">True</property>
               </packing>
             </child>
             <child>

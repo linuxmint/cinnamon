@@ -7,7 +7,8 @@ import capi
 class Module:
     def __init__(self, content_box):
         keywords = _("screensaver, brightness, lock, password, away, message")
-        sidePage = SidePage(_("Screensaver & Brightness"), "screensaver.svg", keywords, content_box)
+        tooltip = _("Give your lockscreen an Away message, adjust display brightness, and configure lock settings")
+        sidePage = SidePage(_("Screensaver & Brightness"), "screensaver.svg", keywords, tooltip, content_box)
         self.sidePage = sidePage
         self.name = "screensaver"
         self.category = "prefs"

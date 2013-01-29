@@ -8,7 +8,8 @@ from gi.repository import Gio, Gtk, GObject, Gdk
 class Module:
     def __init__(self, content_box):
         keywords = _("time, date, calendar, format, network, sync")
-        sidePage = SidePage(_("Calendar"), "clock.svg", keywords, content_box)
+        tooltip = _("Configure how the time and date are displayed in the panel and calendar")
+        sidePage = SidePage(_("Calendar"), "clock.svg", keywords, tooltip, content_box)
         self.sidePage = sidePage
         self.name = "calendar"
         self.category = "prefs"

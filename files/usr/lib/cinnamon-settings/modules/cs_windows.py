@@ -6,7 +6,8 @@ from gi.repository import Gio, Gtk, GObject, Gdk
 class Module:
     def __init__(self, content_box):
         keywords = _("windows, titlebar, edge, switcher, window list, attention, focus")
-        sidePage = SidePage(_("Windows"), "windows.svg", keywords, content_box)
+        tooltip = _("Configure window management options, such as Alt-Tab behavior, edge Flip, and edge tiling")
+        sidePage = SidePage(_("Windows"), "windows.svg", keywords, tooltip, content_box)
         self.sidePage = sidePage
         self.name = "windows"
         self.category = "prefs"

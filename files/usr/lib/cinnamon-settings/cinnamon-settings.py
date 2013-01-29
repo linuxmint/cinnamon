@@ -41,23 +41,23 @@ CATEGORIES = [
 ]
 
 CONTROL_CENTER_MODULES = [
-#         Label                              Module ID                Icon                         Category                         Keywords for filter
-    [_("Networking"),                       "network",            "network.svg",                 "hardware",    _("network, wireless, wifi, ethernet, broadband, internet")],
-    [_("Display"),                          "display",            "display.svg",                 "hardware",    _("display, screen, monitor, layout, resolution, dual, lcd")],
-    [_("Region & Keyboard Layout"),         "region",             "region.svg",                     "prefs",    _("region, layout, keyboard, language")],
-    [_("Bluetooth"),                        "bluetooth",          "bluetooth.svg",               "hardware",    _("bluetooth, dongle, transfer, mobile")],
-    [_("System Info & Default Programs"),   "info",               "details.svg",                    "admin",    _("defaults, programs, info, details, version, cd, autostart")],
-    [_("Universal Access"),                 "universal-access",   "universal-access.svg",           "prefs",    _("magnifier, talk, access, zoom, keys, contrast")],
-    [_("User Accounts"),                    "user-accounts",      "user-accounts.svg",              "admin",    _("users, accounts, add, password, picture")],
-    [_("Power Management"),                 "power",              "power.svg",                      "admin",    _("power, suspend, hibernate, laptop, desktop")],
-    [_("Sound"),                            "sound-nua",          "sound.svg",                   "hardware",    _("sound, speakers, headphones, test")]
+#         Label                              Module ID                Icon                         Category                         Keywords for filter                                 Tooltip
+    [_("Networking"),                       "network",            "network.svg",                 "hardware",    _("network, wireless, wifi, ethernet, broadband, internet"),    _("Configure network connections")],
+    [_("Display"),                          "display",            "display.svg",                 "hardware",    _("display, screen, monitor, layout, resolution, dual, lcd"),   _("Change your resolution and primary display")],
+    [_("Region & Keyboard Layout"),         "region",             "region.svg",                     "prefs",    _("region, layout, keyboard, language"),                        _("Set your current language and regional settings")],
+    [_("Bluetooth"),                        "bluetooth",          "bluetooth.svg",               "hardware",    _("bluetooth, dongle, transfer, mobile"),                       _("Set up and connect to Bluetooth devices")],
+    [_("System Info & Default Programs"),   "info",               "details.svg",                    "admin",    _("defaults, programs, info, details, version, cd, autostart"), _("Get a system overview, and configure defaults programs and media autostart behavior")],
+    [_("Universal Access"),                 "universal-access",   "universal-access.svg",           "prefs",    _("magnifier, talk, access, zoom, keys, contrast"),             _("Configure accessibility features such as the on-screen magnifier, high-contrast mode, and sticky-keys")],
+    [_("User Accounts"),                    "user-accounts",      "user-accounts.svg",              "admin",    _("users, accounts, add, password, picture"),                   _("Add new users or modify existing ones")],
+    [_("Power Management"),                 "power",              "power.svg",                      "admin",    _("power, suspend, hibernate, laptop, desktop"),                _("Monitor laptop battery status and configure shutdown options")],
+    [_("Sound"),                            "sound-nua",          "sound.svg",                   "hardware",    _("sound, speakers, headphones, test"),                         _("Configure and test audio input and output devices")]
 ]
 
 STANDALONE_MODULES = [
-#         Label                          Executable                          Icon                         Category
-    [_("Printers"),                      "system-config-printer",        "printer.svg",                "hardware",      _("printers, laser, inkjet")],
-    [_("Firewall"),                      "gufw",                         "firewall.svg",                  "admin",      _("firewall, block, filter, programs")],
-    [_("Install/Remove Languages"),      "gnome-language-selector",      "language.svg",                  "admin",      _("language, install, foreign")]
+#         Label                          Executable                          Icon                         Category            Keywords for filter                                       Tooltip
+    [_("Printers"),                      "system-config-printer",        "printer.svg",                "hardware",      _("printers, laser, inkjet"),                           _("Add and configure system and network printers")],
+    [_("Firewall"),                      "gufw",                         "firewall.svg",                  "admin",      _("firewall, block, filter, programs"),                 _("Configure this system's firewall")],
+    [_("Install/Remove Languages"),      "gnome-language-selector",      "language.svg",                  "admin",      _("language, install, foreign"),                        _("Install new language packs onto this system")]
 ]
 
 class MainWindow:
@@ -119,12 +119,12 @@ class MainWindow:
                 self.sidePages.append((mod.sidePage, mod.name, mod.category))
 
         for item in CONTROL_CENTER_MODULES:
-            ccmodule = SettingsWidgets.CCModule(item[0], item[1], item[2], item[3], item[4], self.content_box)
+            ccmodule = SettingsWidgets.CCModule(item[0], item[1], item[2], item[3], item[4], item[5], self.content_box)
             if ccmodule.process():
                 self.sidePages.append((ccmodule.sidePage, ccmodule.name, ccmodule.category))
 
         for item in STANDALONE_MODULES:
-            samodule = SettingsWidgets.SAModule(item[0], item[1], item[2], item[3], item[4], self.content_box)
+            samodule = SettingsWidgets.SAModule(item[0], item[1], item[2], item[3], item[4], item[5], self.content_box)
             if samodule.process():
                 self.sidePages.append((samodule.sidePage, samodule.name, samodule.category))
 
@@ -136,7 +136,7 @@ class MainWindow:
         for sidepage in self.sidePages:
             sp, sp_id, sp_cat = sidepage
             if not self.store.has_key(sp_cat):
-                self.store[sidepage[2]] = Gtk.ListStore(str, GdkPixbuf.Pixbuf, object, bool)
+                self.store[sidepage[2]] = Gtk.ListStore(str, GdkPixbuf.Pixbuf, object, bool, str)
                 self.storeFilter[sidepage[2]] = self.store[sidepage[2]].filter_new()
                 self.storeFilter[sidepage[2]].set_visible_func(self.filter_visible_function, None)
                 self.storeFilter[sidepage[2]].set_visible_column(3)
@@ -148,7 +148,7 @@ class MainWindow:
                 img = GdkPixbuf.Pixbuf.new_from_file_at_size( iconFile, 48, 48)
             else:
                 img = None
-            sidePagesIters[sp_id] = self.store[sp_cat].append([sp.name, img, sp, True])
+            sidePagesIters[sp_id] = self.store[sp_cat].append([sp.name, img, sp, True, sp.tooltip])
 
         self.displayCategories()
 
@@ -177,7 +177,9 @@ class MainWindow:
     def filter_visible_function(self, model, iter, user_data):
         sidePage = model.get_value(iter, 2)
         text = self.search_entry.get_text().lower()
-        if sidePage.name.lower().find(text) > -1 or sidePage.keywords.lower().find(text) > -1:
+        if sidePage.name.lower().find(text) > -1 or \
+           sidePage.keywords.lower().find(text) > -1 or \
+           sidePage.tooltip.lower().find(text) > -1:
             return True
         else:
             return False
@@ -209,6 +211,7 @@ class MainWindow:
         widget = Gtk.IconView.new_with_model(self.storeFilter[category["id"]])
         widget.set_text_column(0)
         widget.set_pixbuf_column(1)
+        widget.set_tooltip_column(4)
         widget.set_item_width(110)
         widget.set_row_spacing(0)
         widget.set_column_spacing(0)

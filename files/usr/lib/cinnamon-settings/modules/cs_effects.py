@@ -5,7 +5,8 @@ from SettingsWidgets import *
 class Module:
     def __init__(self, content_box):
         keywords = _("effects, fancy, window")
-        sidePage = SidePage(_("Effects"), "desktop-effects.svg", keywords, content_box)
+        tooltip = _("Configure window effects for actions such as maximize and minimize")
+        sidePage = SidePage(_("Effects"), "desktop-effects.svg", keywords, tooltip, content_box)
         self.sidePage = sidePage
         self.name = "effects"
         self.category = "feel"
