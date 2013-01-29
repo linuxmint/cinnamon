@@ -6,6 +6,7 @@ const Meta = imports.gi.Meta;
 const St = imports.gi.St;
 const Cinnamon = imports.gi.Cinnamon;
 const Mainloop = imports.mainloop;
+const Gio = imports.gi.Gio;
 
 const AppletManager = imports.ui.appletManager;
 const AltTab = imports.ui.altTab;
@@ -150,6 +151,8 @@ WindowManager.prototype = {
             for (let i = 0; i < this._dimmedWindows.length; i++)
                 this._dimWindow(this._dimmedWindows[i], true);
         }));
+        let workspaceSettings = new Gio.Settings({ schema: 'org.cinnamon.overrides' });
+        this.workspacesOnlyOnPrimary = workspaceSettings.get_boolean("workspaces-only-on-primary");
     },
 
     blockAnimations: function() {
@@ -831,23 +834,27 @@ WindowManager.prototype = {
     showWorkspaceOSD : function() {
         if (global.settings.get_boolean("workspace-osd-visible")) {
             let current_workspace_index = global.screen.get_active_workspace_index();
-            let monitor = Main.layoutManager.primaryMonitor;
-            let label = new St.Label({style_class:'workspace-osd'});
-            label.set_text(Main.getWorkspaceName(current_workspace_index));
-            label.set_opacity = 0;
-            Main.layoutManager.addChrome(label, { visibleInFullscreen: false, affectsInputRegion: false });
+            
             let workspace_osd_x = global.settings.get_int("workspace-osd-x");
             let workspace_osd_y = global.settings.get_int("workspace-osd-y");
-            let x = (monitor.width * workspace_osd_x /100 - label.width/2);
-            let y = (monitor.height * workspace_osd_y /100 - label.height/2);
-            label.set_position(x, y);  
             let duration = global.settings.get_int("workspace-osd-duration") / 1000;
-            Tweener.addTween(label, {   opacity: 255,
-                                        time: duration,
-                                        transition: 'linear',
-                                        onComplete: function() {
-                                            Main.layoutManager.removeChrome(label);
-                                        }});
+            Main.layoutManager.monitors.filter(function(monitor, index) {
+                return index === Main.layoutManager.primaryIndex || !this.workspacesOnlyOnPrimary;
+            }, this).forEach(function(monitor) {
+                let label = new St.Label({style_class:'workspace-osd'});
+                label.set_text(Main.getWorkspaceName(current_workspace_index));
+                label.set_opacity = 0;
+                Main.layoutManager.addChrome(label, { visibleInFullscreen: false, affectsInputRegion: false });
+                let x = (monitor.x + (monitor.width * workspace_osd_x /100 - label.width/2));
+                let y = (monitor.y + (monitor.height * workspace_osd_y /100 - label.height/2));
+                label.set_position(x, y);  
+                Tweener.addTween(label, {   opacity: 255,
+                    time: duration,
+                    transition: 'linear',
+                    onComplete: function() {
+                        Main.layoutManager.removeChrome(label);
+                    }});
+            }, this);
         }
     },
 
