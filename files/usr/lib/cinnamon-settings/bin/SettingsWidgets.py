@@ -78,7 +78,11 @@ class CCModule:
     def process (self):
         widget = capi.get_c_widget(self.name)
         if widget is not None:
-            self.sidePage.add_widget(widget)
+            cheat_box = Gtk.Box.new(Gtk.Orientation.VERTICAL, 2)
+            cheat_box.pack_start(widget, False, False, 2)
+            cheat_box.set_vexpand(False)
+            widget.show()
+            self.sidePage.add_widget(cheat_box)
             return True
         else:
             return False
