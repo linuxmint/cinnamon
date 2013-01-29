@@ -9,7 +9,7 @@ class Module:
         sidePage = SidePage(_("Mouse and Touchpad"), "mouse.svg", content_box)
         self.sidePage = sidePage
         self.name = "mouse"
-        self.category = "prefs"
+        self.category = "hardware"
         title = Gtk.Label()
         title.set_markup("<b>%s</b>" % _("General"))
         title.set_alignment(0,0)

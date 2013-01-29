@@ -32,22 +32,30 @@ menuName = _("Desktop Settings")
 menuGenericName = _("Desktop Configuration Tool")
 menuComment = _("Fine-tune desktop settings")
 
+CATEGORIES = [
+#        Display name                         Key                 Show it?
+    {"label": _("Look and Feel"),         "id": "feel",        "show": False},
+    {"label": _("User Preferences"),      "id": "prefs",       "show": False},
+    {"label": _("System Settings"),       "id": "admin",       "show": False},
+    {"label": _("Hardware"),              "id": "hardware",    "show": False}
+]
+
 CONTROL_CENTER_MODULES = [
 #         Label                              Module ID                Icon                         Category
-    [_("Networking"),                       "network",            "network.svg",                    "admin"],
-    [_("Display"),                          "display",            "display.svg",                    "prefs"],
+    [_("Networking"),                       "network",            "network.svg",                 "hardware"],
+    [_("Display"),                          "display",            "display.svg",                 "hardware"],
     [_("Region & Keyboard Layout"),         "region",             "region.svg",                     "prefs"],
-    [_("Bluetooth"),                        "bluetooth",          "bluetooth.svg",                  "admin"],
+    [_("Bluetooth"),                        "bluetooth",          "bluetooth.svg",               "hardware"],
     [_("System Info & Default Programs"),   "info",               "details.svg",                    "admin"],
     [_("Universal Access"),                 "universal-access",   "universal-access.svg",           "prefs"],
     [_("User Accounts"),                    "user-accounts",      "user-accounts.svg",              "admin"],
     [_("Power Management"),                 "power",              "power.svg",                      "admin"],
-    [_("Sound"),                            "sound-nua",          "sound.svg",                      "admin"]
+    [_("Sound"),                            "sound-nua",          "sound.svg",                   "hardware"]
 ]
 
 STANDALONE_MODULES = [
 #         Label                          Executable                          Icon                         Category
-    [_("Printers"),                      "system-config-printer",        "printer.svg",                   "admin"],
+    [_("Printers"),                      "system-config-printer",        "printer.svg",                "hardware"],
     [_("Firewall"),                      "gufw",                         "firewall.svg",                  "admin"],
     [_("Install/Remove Languages"),      "gnome-language-selector",      "language.svg",                  "admin"]
 ]
@@ -70,22 +78,10 @@ class MainWindow:
             else:
                 sidePage.build()
 
-    def side_view_nav_feel(self, side_view):
-        self.side_view_nav(side_view, "feel")
-
-    def side_view_nav_prefs(self, side_view):
-        self.side_view_nav(side_view, "prefs")
-
-    def side_view_nav_admin(self, side_view):
-        self.side_view_nav(side_view, "admin")
-
     def deselect(self, cat):
-        if cat is not "feel":
-            self.side_view["feel"].unselect_all()
-        if cat is not "prefs":
-            self.side_view["prefs"].unselect_all()
-        if cat is not "admin":
-            self.side_view["admin"].unselect_all()
+        for key in self.side_view.keys():
+            if key is not cat:
+                self.side_view[key].unselect_all()
 
     ''' Create the UI '''
     def __init__(self):
@@ -94,9 +90,7 @@ class MainWindow:
         self.builder.add_from_file("/usr/lib/cinnamon-settings/cinnamon-settings.ui")
         self.window = self.builder.get_object("main_window")
         self.side_view = {}
-        self.side_view["feel"] = self.builder.get_object("side_view_feel")
-        self.side_view["prefs"] = self.builder.get_object("side_view_prefs")
-        self.side_view["admin"] = self.builder.get_object("side_view_admin")
+        self.side_view_container = self.builder.get_object("category_box")
         self.side_view_sw = self.builder.get_object("side_view_sw")
         self.side_view_sw.show_all()
         self.content_box = self.builder.get_object("content_box")
@@ -105,14 +99,6 @@ class MainWindow:
         self.button_back = self.builder.get_object("button_back")
         self.button_back.set_label(_("All Settings"))
         self.top_button_box = self.builder.get_object("top_button_box")
-
-        # Translations for categories
-        label = self.builder.get_object("label_feel")
-        label.set_label(_("Look and Feel"))
-        label = self.builder.get_object("label_prefs")
-        label.set_label(_("User Preferences"))
-        label = self.builder.get_object("label_admin")
-        label.set_label(_("System Settings"))
 
         self.window.connect("destroy", Gtk.main_quit)
 
@@ -134,32 +120,28 @@ class MainWindow:
                 self.sidePages.append((samodule.sidePage, samodule.name, samodule.category))
 
 
-        # create the backing store for the side nav-view.
-        self.store = {}
-        self.store["feel"] = Gtk.ListStore(str, GdkPixbuf.Pixbuf, object)
-        self.store["prefs"] = Gtk.ListStore(str, GdkPixbuf.Pixbuf, object)
-        self.store["admin"] = Gtk.ListStore(str, GdkPixbuf.Pixbuf, object)
-
-        self.show_cat = {"feel": False, "prefs": False, "admin": False}
-
+        # create the backing stores for the side nav-view.
         sidePagesIters = {}
-        for sidePage, sidePageID, sidePageCategory in self.sidePages:
-            iconFile = "/usr/lib/cinnamon-settings/data/icons/%s" % sidePage.icon
+        self.store = {}
+        for sidepage in self.sidePages:
+            sp, sp_id, sp_cat = sidepage
+            if not self.store.has_key(sp_cat):
+                self.store[sidepage[2]] = Gtk.ListStore(str, GdkPixbuf.Pixbuf, object)
+                for category in CATEGORIES:
+                    if category["id"] == sp_cat:
+                        category["show"] = True
+            iconFile = "/usr/lib/cinnamon-settings/data/icons/%s" % sp.icon
             if os.path.exists(iconFile):
                 img = GdkPixbuf.Pixbuf.new_from_file_at_size( iconFile, 48, 48)
             else:
                 img = None
-            sidePagesIters[sidePageID] = self.store[sidePageCategory].append([sidePage.name, img, sidePage])
-            self.show_cat[sidePageCategory] = True
+            sidePagesIters[sp_id] = self.store[sp_cat].append([sp.name, img, sp])
 
-        # set up the side view - navigation.
-        self.prepSideView("feel")
-        self.prepSideView("prefs")
-        self.prepSideView("admin")
-
-        self.side_view["feel"].connect("selection_changed", self.side_view_nav_feel )
-        self.side_view["prefs"].connect("selection_changed", self.side_view_nav_prefs )
-        self.side_view["admin"].connect("selection_changed", self.side_view_nav_admin )
+        self.first_category_done = False # This is just to prevent an extra separator showing up before the first category
+        for category in CATEGORIES:
+            if category["show"] is True:
+                self.prepCategory(category)
+        self.side_view_container.show_all()
 
         # set up larger components.
         self.window.set_title(_("Cinnamon Settings"))
@@ -174,40 +156,38 @@ class MainWindow:
 
         self.window.show()
 
-    def findPath (self, name):
-        path = self.store["feel"].get_path(name)
-        if path is not None:
-            self.side_view["feel"].select_path(path)
-            return
-        path = self.store["prefs"].get_path(name)
-        if path is not None:
-            self.side_view["prefs"].select_path(path)
-            return
-        path = self.store["admin"].get_path(name)
-        if path is not None:
-            self.side_view["admin"].select_path(path)
-            return
+    def prepCategory(self, category):
+        if self.first_category_done:
+            widget = Gtk.Separator.new(Gtk.Orientation.HORIZONTAL)
+            self.side_view_container.pack_start(widget, False, False, 0)
+        widget = Gtk.Label(category["label"])
+        widget.set_padding(10, 0)
+        widget.set_alignment(0, .5)
+        self.side_view_container.pack_start(widget, False, True, 4)
+        widget = Gtk.Separator.new(Gtk.Orientation.HORIZONTAL)
+        self.side_view_container.pack_start(widget, False, True, 0)
+        widget = Gtk.IconView.new_with_model(self.store[category["id"]])
+        widget.set_text_column(0)
+        widget.set_pixbuf_column(1)
+        widget.set_item_width(110)
+        widget.set_row_spacing(0)
+        widget.set_column_spacing(0)
+        widget.set_hexpand(True)
+        widget.set_vexpand(True)
+        c = widget.get_style_context()
+        c.add_class("button")
+        self.side_view[category["id"]] = widget
 
-    def prepSideView (self, cat):
-        self.side_view[cat].set_text_column(0)
-        self.side_view[cat].set_pixbuf_column(1)
-        self.side_view[cat].set_model(self.store[cat])
-        label = self.builder.get_object("label_" + cat)
-        pre_sep = self.builder.get_object("pre_sep_" + cat)
-        post_sep = self.builder.get_object("post_sep_" + cat)
-        if self.show_cat[cat]:
-            self.side_view[cat].show()
-            label.show()
-            if cat is "feel":
-                pre_sep.hide()
-            else:
-                pre_sep.show()
-            post_sep.show()
-        else:
-            self.side_view[cat].hide()
-            label.hide()
-            pre_sep.hide()
-            post_sep.hide()
+        self.side_view_container.pack_start(self.side_view[category["id"]], True, True, 0)
+        self.first_category_done = True
+        self.side_view[category["id"]].connect("selection_changed", self.side_view_nav, category["id"])
+
+    def findPath (self, name):
+        for key in self.store.keys():
+            path = self.store[key].get_path(name)
+            if path is not None:
+                self.side_view[key].select_path(path)
+                return
 
     def loadCheck (self, mod):
         try:
