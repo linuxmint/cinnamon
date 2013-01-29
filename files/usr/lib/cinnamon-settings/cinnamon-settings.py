@@ -67,8 +67,8 @@ class MainWindow:
         if len(selected_items) > 0:
             self.deselect(cat)
             path = selected_items[0]
-            iterator = self.store[cat].get_iter(path)
-            sidePage = self.store[cat].get_value(iterator,2)
+            iterator = self.storeFilter[cat].get_iter(path)
+            sidePage = self.storeFilter[cat].get_value(iterator,2)
             if not sidePage.is_standalone:
                 self.side_view_sw.hide()
                 self.search_entry.hide()
