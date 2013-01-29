@@ -11,14 +11,15 @@ CINNAMON_SPICES_WEBSITE_LINK = "http://cinnamon-spices.linuxmint.com/"
 
 class Module:
     def __init__(self, content_box):
-        sidePage = DeskletsViewSidePage(_("Desklets"), "desklets.svg", content_box)
+        keywords = _("desklets, desktop, applet, slideshow, background")
+        sidePage = DeskletsViewSidePage(_("Desklets"), "desklets.svg", keywords, content_box)
         self.sidePage = sidePage
         self.name = "desklets"
         self.category = "feel"
 
 class DeskletsViewSidePage (SidePage):
-    def __init__(self, name, icon, content_box):
-        SidePage.__init__(self, name, icon, content_box)
+    def __init__(self, name, icon, keywords, content_box):
+        SidePage.__init__(self, name, icon, keywords, content_box)
         self.active_desklet_path = None
 
         self.settings = Gio.Settings.new("org.cinnamon")

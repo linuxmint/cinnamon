@@ -4,8 +4,8 @@ from SettingsWidgets import *
 
 class Module:
     def __init__(self, content_box):
-
-        sidePage = SidePage(_("Effects"), "desktop-effects.svg", content_box)
+        keywords = _("effects, fancy, window")
+        sidePage = SidePage(_("Effects"), "desktop-effects.svg", keywords, content_box)
         self.sidePage = sidePage
         self.name = "effects"
         self.category = "feel"

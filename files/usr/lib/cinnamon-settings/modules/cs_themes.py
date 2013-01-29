@@ -10,14 +10,15 @@ home = os.path.expanduser("~")
 
 class Module:
     def __init__(self, content_box):
-         sidePage = ThemeViewSidePage(_("Themes"), "themes.svg", content_box)
+         keywords = _("themes, style")
+         sidePage = ThemeViewSidePage(_("Themes"), "themes.svg", keywords, content_box)
          self.sidePage = sidePage
          self.name = "themes"
          self.category = "feel"
 
 class ThemeViewSidePage (SidePage):
-    def __init__(self, name, icon, content_box):   
-        SidePage.__init__(self, name, icon, content_box)        
+    def __init__(self, name, icon, keywords, content_box):
+        SidePage.__init__(self, name, icon, keywords, content_box)
         self.icons = []
                   
     def build(self):

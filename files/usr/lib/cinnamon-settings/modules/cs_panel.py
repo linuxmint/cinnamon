@@ -4,7 +4,8 @@ from SettingsWidgets import *
 
 class Module:
     def __init__(self, content_box):
-        sidePage = SidePage(_("Panel"), "panel.svg", content_box)
+        keywords = _("panel, height, bottom, top, autohide, size, traditional, layout")
+        sidePage = SidePage(_("Panel"), "panel.svg", keywords, content_box)
         self.sidePage = sidePage
         self.name = "panel"
         self.category = "prefs"

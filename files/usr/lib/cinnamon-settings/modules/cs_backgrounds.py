@@ -40,7 +40,8 @@ BACKGROUND_ICONS_SIZE = 115
 
 class Module:
     def __init__(self, content_box):
-        sidePage = BackgroundSidePage(_("Backgrounds"), "backgrounds.svg", content_box)
+        keywords = _("background, picture, screenshot, slideshow")
+        sidePage = BackgroundSidePage(_("Backgrounds"), "backgrounds.svg", keywords, content_box)
         self.sidePage = sidePage
         self.name = "backgrounds"
         self.category = "feel"
@@ -436,8 +437,8 @@ class BackgroundSlideshowPane(Gtk.Table):
             Gio.Settings("org.gnome.desktop.background").set_string("picture-uri", "file://" + filename)
 
 class BackgroundSidePage (SidePage):
-    def __init__(self, name, icon, content_box):   
-        SidePage.__init__(self, name, icon, content_box)
+    def __init__(self, name, icon, keywords, content_box):   
+        SidePage.__init__(self, name, icon, keywords, content_box)
         self._gnome_background_schema = Gio.Settings("org.gnome.desktop.background")
         self._cinnamon_background_schema = Gio.Settings("org.cinnamon.background")
         self._add_wallpapers_dialog = AddWallpapersDialog()

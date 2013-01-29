@@ -6,7 +6,8 @@ from SettingsWidgets import *
 
 class Module:
     def __init__(self, content_box):
-        sidePage = SidePage(_("Mouse and Touchpad"), "mouse.svg", content_box)
+        keywords = _("mouse, touchpad, synaptic, double-click")
+        sidePage = SidePage(_("Mouse and Touchpad"), "mouse.svg", keywords, content_box)
         self.sidePage = sidePage
         self.name = "mouse"
         self.category = "hardware"

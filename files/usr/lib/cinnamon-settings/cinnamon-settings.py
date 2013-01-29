@@ -41,23 +41,23 @@ CATEGORIES = [
 ]
 
 CONTROL_CENTER_MODULES = [
-#         Label                              Module ID                Icon                         Category
-    [_("Networking"),                       "network",            "network.svg",                 "hardware"],
-    [_("Display"),                          "display",            "display.svg",                 "hardware"],
-    [_("Region & Keyboard Layout"),         "region",             "region.svg",                     "prefs"],
-    [_("Bluetooth"),                        "bluetooth",          "bluetooth.svg",               "hardware"],
-    [_("System Info & Default Programs"),   "info",               "details.svg",                    "admin"],
-    [_("Universal Access"),                 "universal-access",   "universal-access.svg",           "prefs"],
-    [_("User Accounts"),                    "user-accounts",      "user-accounts.svg",              "admin"],
-    [_("Power Management"),                 "power",              "power.svg",                      "admin"],
-    [_("Sound"),                            "sound-nua",          "sound.svg",                   "hardware"]
+#         Label                              Module ID                Icon                         Category                         Keywords for filter
+    [_("Networking"),                       "network",            "network.svg",                 "hardware",    _("network, wireless, wifi, ethernet, broadband, internet")],
+    [_("Display"),                          "display",            "display.svg",                 "hardware",    _("display, screen, monitor, layout, resolution, dual, lcd")],
+    [_("Region & Keyboard Layout"),         "region",             "region.svg",                     "prefs",    _("region, layout, keyboard, language")],
+    [_("Bluetooth"),                        "bluetooth",          "bluetooth.svg",               "hardware",    _("bluetooth, dongle, transfer, mobile")],
+    [_("System Info & Default Programs"),   "info",               "details.svg",                    "admin",    _("defaults, programs, info, details, version, cd, autostart")],
+    [_("Universal Access"),                 "universal-access",   "universal-access.svg",           "prefs",    _("magnifier, talk, access, zoom, keys, contrast")],
+    [_("User Accounts"),                    "user-accounts",      "user-accounts.svg",              "admin",    _("users, accounts, add, password, picture")],
+    [_("Power Management"),                 "power",              "power.svg",                      "admin",    _("power, suspend, hibernate, laptop, desktop")],
+    [_("Sound"),                            "sound-nua",          "sound.svg",                   "hardware",    _("sound, speakers, headphones, test")]
 ]
 
 STANDALONE_MODULES = [
 #         Label                          Executable                          Icon                         Category
-    [_("Printers"),                      "system-config-printer",        "printer.svg",                "hardware"],
-    [_("Firewall"),                      "gufw",                         "firewall.svg",                  "admin"],
-    [_("Install/Remove Languages"),      "gnome-language-selector",      "language.svg",                  "admin"]
+    [_("Printers"),                      "system-config-printer",        "printer.svg",                "hardware",      _("printers, laser, inkjet")],
+    [_("Firewall"),                      "gufw",                         "firewall.svg",                  "admin",      _("firewall, block, filter, programs")],
+    [_("Install/Remove Languages"),      "gnome-language-selector",      "language.svg",                  "admin",      _("language, install, foreign")]
 ]
 
 class MainWindow:
@@ -101,7 +101,8 @@ class MainWindow:
         self.button_back.set_label(_("All Settings"))
         self.top_button_box = self.builder.get_object("top_button_box")
         self.search_entry = self.builder.get_object("search_box")
-        self.search_entry.connect("activate", self.onSearchTextChanged)
+        self.search_entry.connect("changed", self.onSearchTextChanged)
+        self.search_entry.connect("icon-press", self.onClearSearchBox)
         self.window.connect("destroy", Gtk.main_quit)
 
         self.sidePages = []
@@ -112,12 +113,12 @@ class MainWindow:
                 self.sidePages.append((mod.sidePage, mod.name, mod.category))
 
         for item in CONTROL_CENTER_MODULES:
-            ccmodule = SettingsWidgets.CCModule(item[0], item[1], item[2], item[3], self.content_box)
+            ccmodule = SettingsWidgets.CCModule(item[0], item[1], item[2], item[3], item[4], self.content_box)
             if ccmodule.process():
                 self.sidePages.append((ccmodule.sidePage, ccmodule.name, ccmodule.category))
 
         for item in STANDALONE_MODULES:
-            samodule = SettingsWidgets.SAModule(item[0], item[1], item[2], item[3], self.content_box)
+            samodule = SettingsWidgets.SAModule(item[0], item[1], item[2], item[3], item[4], self.content_box)
             if samodule.process():
                 self.sidePages.append((samodule.sidePage, samodule.name, samodule.category))
 
@@ -163,11 +164,14 @@ class MainWindow:
     def onSearchTextChanged(self, widget):
         self.displayCategories()
 
+    def onClearSearchBox(self, widget, position, event):
+        if position == Gtk.EntryIconPosition.SECONDARY:
+            self.search_entry.set_text("")
 
     def filter_visible_function(self, model, iter, user_data):
         sidePage = model.get_value(iter, 2)
         text = self.search_entry.get_text().lower()
-        if sidePage.name.lower().find(text) > -1:
+        if sidePage.name.lower().find(text) > -1 or sidePage.keywords.lower().find(text) > -1:
             return True
         else:
             return False

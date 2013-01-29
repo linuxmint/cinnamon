@@ -10,14 +10,15 @@ home = os.path.expanduser("~")
 
 class Module:
     def __init__(self, content_box):
-        sidePage = ExtensionViewSidePage(_("Extensions"), "extensions.svg", content_box)
+        keywords = _("extensions, addons")
+        sidePage = ExtensionViewSidePage(_("Extensions"), "extensions.svg", keywords, content_box)
         self.sidePage = sidePage
         self.name = "extensions"
         self.category = "feel"
 
 class ExtensionViewSidePage (SidePage):
-    def __init__(self, name, icon, content_box):
-        SidePage.__init__(self, name, icon, content_box)
+    def __init__(self, name, icon, keywords, content_box):
+        SidePage.__init__(self, name, icon, keywords, content_box)
         self.icons = []
                   
     def build(self):

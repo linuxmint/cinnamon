@@ -4,7 +4,8 @@ from SettingsWidgets import *
 
 class Module:
     def __init__(self, content_box):
-        sidePage = SidePage(_("Workspaces"), "workspaces.svg", content_box)
+        keywords = _("workspace, osd, expo, monitor")
+        sidePage = SidePage(_("Workspaces"), "workspaces.svg", keywords, content_box)
         self.sidePage = sidePage
         self.name = "workspaces"
         self.category = "prefs"

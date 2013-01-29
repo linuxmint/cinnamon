@@ -146,7 +146,8 @@ if HAS_DEDICATED_TERMINAL_SHORTCUT:
 
 class Module:
     def __init__(self, content_box):
-        sidePage = KeyboardSidePage(_("Keyboard"), "keyboard.svg", content_box)
+        keywords = _("keyboard, shortcut, hotkey")
+        sidePage = KeyboardSidePage(_("Keyboard"), "keyboard.svg", keywords, content_box)
         self.sidePage = sidePage
         self.name = "keyboard"
         self.category = "hardware"
@@ -347,8 +348,8 @@ class NotebookPage:
         self.content_box.show_all()
 
 class KeyboardSidePage (SidePage):
-    def __init__(self, name, icon, content_box):
-        SidePage.__init__(self, name, icon, content_box)
+    def __init__(self, name, icon, keywords, content_box):
+        SidePage.__init__(self, name, icon, keywords, content_box)
         self.tabs = []
 
     def build(self):

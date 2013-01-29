@@ -5,14 +5,15 @@ from gi.repository import Gio
 
 class Module:
     def __init__(self, content_box):
-        sidePage = HotCornerViewSidePage(_("Hot corner"), "overview.svg", content_box)
+        keywords = "hotcorner, overview, scale, expo"
+        sidePage = HotCornerViewSidePage(_("Hot corner"), "overview.svg", keywords, content_box)
         self.sidePage = sidePage
         self.name = "hotcorner"
         self.category = "prefs"
 
 class HotCornerViewSidePage(SidePage):
-    def __init__(self, name, icon, content_box):   
-        SidePage.__init__(self, name, icon, content_box)
+    def __init__(self, name, icon, keywords, content_box):   
+        SidePage.__init__(self, name, icon, keywords, content_box)
 
         self.hc_list = Gtk.ListStore(int, str)
 
