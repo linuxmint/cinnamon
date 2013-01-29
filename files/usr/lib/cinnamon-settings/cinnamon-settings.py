@@ -33,7 +33,7 @@ menuGenericName = _("Desktop Configuration Tool")
 menuComment = _("Fine-tune desktop settings")
 
 CATEGORIES = [
-#        Display name                         Key                 Show it?
+#        Display name                         ID              Show it? Always False to start
     {"label": _("Look and Feel"),         "id": "feel",        "show": False},
     {"label": _("User Preferences"),      "id": "prefs",       "show": False},
     {"label": _("System Settings"),       "id": "admin",       "show": False},
@@ -71,6 +71,7 @@ class MainWindow:
             sidePage = self.store[cat].get_value(iterator,2)
             if not sidePage.is_standalone:
                 self.side_view_sw.hide()
+                self.search_entry.hide()
                 self.window.set_title(_("Cinnamon Settings") + " - " + sidePage.name)
                 sidePage.build()
                 self.content_box_sw.show()
@@ -99,7 +100,8 @@ class MainWindow:
         self.button_back = self.builder.get_object("button_back")
         self.button_back.set_label(_("All Settings"))
         self.top_button_box = self.builder.get_object("top_button_box")
-
+        self.search_entry = self.builder.get_object("search_box")
+        self.search_entry.connect("activate", self.onSearchTextChanged)
         self.window.connect("destroy", Gtk.main_quit)
 
         self.sidePages = []
@@ -123,10 +125,14 @@ class MainWindow:
         # create the backing stores for the side nav-view.
         sidePagesIters = {}
         self.store = {}
+        self.storeFilter = {}
         for sidepage in self.sidePages:
             sp, sp_id, sp_cat = sidepage
             if not self.store.has_key(sp_cat):
-                self.store[sidepage[2]] = Gtk.ListStore(str, GdkPixbuf.Pixbuf, object)
+                self.store[sidepage[2]] = Gtk.ListStore(str, GdkPixbuf.Pixbuf, object, bool)
+                self.storeFilter[sidepage[2]] = self.store[sidepage[2]].filter_new()
+                self.storeFilter[sidepage[2]].set_visible_func(self.filter_visible_function, None)
+                self.storeFilter[sidepage[2]].set_visible_column(3)
                 for category in CATEGORIES:
                     if category["id"] == sp_cat:
                         category["show"] = True
@@ -135,13 +141,9 @@ class MainWindow:
                 img = GdkPixbuf.Pixbuf.new_from_file_at_size( iconFile, 48, 48)
             else:
                 img = None
-            sidePagesIters[sp_id] = self.store[sp_cat].append([sp.name, img, sp])
+            sidePagesIters[sp_id] = self.store[sp_cat].append([sp.name, img, sp, True])
 
-        self.first_category_done = False # This is just to prevent an extra separator showing up before the first category
-        for category in CATEGORIES:
-            if category["show"] is True:
-                self.prepCategory(category)
-        self.side_view_container.show_all()
+        self.displayCategories()
 
         # set up larger components.
         self.window.set_title(_("Cinnamon Settings"))
@@ -153,10 +155,38 @@ class MainWindow:
         if len(sys.argv)==2 and sys.argv[1] in sidePagesIters.keys():
             first_page_iter = sidePagesIters[sys.argv[1]]
             self.findPath(first_page_iter)
+        else:
+            self.search_entry.grab_focus()
 
         self.window.show()
 
+    def onSearchTextChanged(self, widget):
+        self.displayCategories()
+
+
+    def filter_visible_function(self, model, iter, user_data):
+        sidePage = model.get_value(iter, 2)
+        text = self.search_entry.get_text().lower()
+        if sidePage.name.lower().find(text) > -1:
+            return True
+        else:
+            return False
+
+    def displayCategories(self):
+        widgets = self.side_view_container.get_children()
+        for widget in widgets:
+            widget.destroy()
+        self.first_category_done = False # This is just to prevent an extra separator showing up before the first category
+        for category in CATEGORIES:
+            if category["show"] is True:
+                self.prepCategory(category)
+        self.side_view_container.show_all()
+
     def prepCategory(self, category):
+        self.storeFilter[category["id"]].refilter()
+        if not self.anyVisibleInCategory(category):
+            return
+
         if self.first_category_done:
             widget = Gtk.Separator.new(Gtk.Orientation.HORIZONTAL)
             self.side_view_container.pack_start(widget, False, False, 0)
@@ -166,7 +196,7 @@ class MainWindow:
         self.side_view_container.pack_start(widget, False, True, 4)
         widget = Gtk.Separator.new(Gtk.Orientation.HORIZONTAL)
         self.side_view_container.pack_start(widget, False, True, 0)
-        widget = Gtk.IconView.new_with_model(self.store[category["id"]])
+        widget = Gtk.IconView.new_with_model(self.storeFilter[category["id"]])
         widget.set_text_column(0)
         widget.set_pixbuf_column(1)
         widget.set_item_width(110)
@@ -181,6 +211,16 @@ class MainWindow:
         self.side_view_container.pack_start(self.side_view[category["id"]], True, True, 0)
         self.first_category_done = True
         self.side_view[category["id"]].connect("selection_changed", self.side_view_nav, category["id"])
+
+    def anyVisibleInCategory(self, category):
+        id = category["id"]
+        iter = self.storeFilter[id].get_iter_first()
+        visible = False
+        while iter is not None:
+            visible = self.storeFilter[id].get_value(iter, 3)
+            iter = self.storeFilter[id].iter_next(iter)
+        return visible
+
 
     def findPath (self, name):
         for key in self.store.keys():
@@ -203,6 +243,8 @@ class MainWindow:
             widget.hide()
         self.top_button_box.hide()
         self.side_view_sw.show()
+        self.search_entry.show()
+        self.search_entry.grab_focus()
 
 if __name__ == "__main__":
     GObject.threads_init()
