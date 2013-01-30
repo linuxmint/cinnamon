@@ -15,6 +15,7 @@
 #   - When pressing ctrl + r, search history
 #   - auto-completion ?
 
+import sys
 import os
 import pyinotify
 import gi
@@ -339,17 +340,23 @@ class CinnamonLog(dbus.service.Object):
         self.window = None
         dbus.service.Object.__init__ (self, dbusManager.sessionBus, LG_DBUS_PATH, LG_DBUS_NAME)
 
-    @dbus.service.method (LG_DBUS_NAME, in_signature='', out_signature='')
-    def show(self):
+    @dbus.service.method (LG_DBUS_NAME, in_signature='b', out_signature='')
+    def show(self, startInspector):
         if self.window is not None:
-            if self.window.get_visible():
+            if startInspector:
+                dbusManager.cinnamonDBus.lgStartInspector()
+                self.window.hide()
+            elif self.window.get_visible():
                 self.window.hide()
             else:
                 self.window.present()
                 self.window.move(0,0)
-                self.window.focus()
+                #self.window.focus()
         else:
             self.run()
+            if startInspector:
+                dbusManager.cinnamonDBus.lgStartInspector()
+                self.window.hide()
             Gtk.main()
 
     def run(self):
@@ -583,4 +590,5 @@ if __name__ == "__main__":
         object = dbusManager.sessionBus.get_object(LG_DBUS_NAME, LG_DBUS_PATH)
         app = dbus.Interface(object, LG_DBUS_NAME)
 
-    app.show()
+    startInspector = len(sys.argv) == 2 and sys.argv[1] == 'inspect'
+    app.show(startInspector)
