@@ -1,3 +1,12 @@
+cinnamon (1.6.7+nmu1) UNRELEASED; urgency=low
+
+  * Temporary version to make sure the split into cinnamon and
+    cinnamon-common does not break developers test environment. For
+    cleanliness purpose, remove this version from this changelog file just
+    before the next release.
+
+ -- Nicolas Bourdaud <nicolas.bourdaud@gmail.com>  Mon, 19 Nov 2012 21:36:11 +0100
+
 cinnamon (1.6.7) nadia; urgency=low
 
   * 1.6.7
