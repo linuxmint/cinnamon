@@ -23,7 +23,7 @@ class ExtensionViewSidePage (SidePage):
         SidePage.__init__(self, name, icon, keywords, tooltip, advanced, content_box)
         self.icons = []
                   
-    def build(self):
+    def build(self, advanced):
         # Clear all the widgets from the content box
         widgets = self.content_box.get_children()
         for widget in widgets:

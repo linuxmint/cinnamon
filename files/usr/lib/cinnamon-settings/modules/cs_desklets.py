@@ -27,7 +27,7 @@ class DeskletsViewSidePage (SidePage):
         self.settings = Gio.Settings.new("org.cinnamon")
         self.settings.connect('changed::enabled-desklets', self.on_settings_changed)
 
-    def build(self):
+    def build(self, advanced):
         widgets = self.content_box.get_children()
         for widget in widgets:
             self.content_box.remove(widget)

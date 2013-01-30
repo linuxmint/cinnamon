@@ -28,7 +28,7 @@ class AppletViewSidePage (SidePage):
                                   or self.load_applets_in('/usr/share/cinnamon/applets') 
                                   or self.load_applets_in('%s/.local/share/cinnamon/applets' % home) )
                   
-    def build(self):
+    def build(self, advanced):
         # Clear all the widgets from the content box
         widgets = self.content_box.get_children()
         for widget in widgets:

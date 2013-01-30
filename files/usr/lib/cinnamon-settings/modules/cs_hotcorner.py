@@ -64,7 +64,7 @@ class HotCornerViewSidePage(SidePage):
                 action_no = 1
             self.func_combo.set_active(action_no)
 
-    def build(self):
+    def build(self, advanced):
         # Clear all existing widgets
         widgets = self.content_box.get_children()
         for widget in widgets:

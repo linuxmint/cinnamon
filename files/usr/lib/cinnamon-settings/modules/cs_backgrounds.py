@@ -461,7 +461,7 @@ class BackgroundSidePage (SidePage):
             self.remove_wallpaper_button.show()
         self.mainbox.show_all()
     
-    def build(self):
+    def build(self, advanced):
         # Clear all the widgets from the content box
         widgets = self.content_box.get_children()
         for widget in widgets:
