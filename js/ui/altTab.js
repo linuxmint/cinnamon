@@ -553,8 +553,9 @@ AltTabPopup.prototype = {
         if (this._displayPreviewTimeoutId) {
             Mainloop.source_remove(this._displayPreviewTimeoutId);
         }
-        let delay = PREVIEW_DELAY_TIMEOUT;
+        let delay = this._previewOnce ? PREVIEW_DELAY_TIMEOUT : PREVIEW_DELAY_TIMEOUT/2;
         this._displayPreviewTimeoutId = Mainloop.timeout_add(delay, Lang.bind(this, showPreview));
+        this._previewOnce = true;
     },
     
     /**
