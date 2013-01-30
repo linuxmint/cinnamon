@@ -75,13 +75,14 @@ class MainWindow:
                 self.side_view_sw.hide()
                 self.search_entry.hide()
                 self.window.set_title(_("Cinnamon Settings") + " - " + sidePage.name)
-                sidePage.build()
+                sidePage.build(self.advanced_mode)
                 self.content_box_sw.show()
                 self.button_sub.show()
                 self.button_sub.set_label(sidePage.name)
                 self.button_back.get_style_context().set_junction_sides(Gtk.JunctionSides.RIGHT)
+                self.current_sidepage = sidePage
             else:
-                sidePage.build()
+                sidePage.build(self.advanced_mode)
 
     def deselect(self, cat):
         for key in self.side_view.keys():
@@ -117,6 +118,7 @@ class MainWindow:
         self.sidePages = []
         self.settings = Gio.Settings.new("org.cinnamon")
         self.advanced_mode = self.settings.get_boolean(ADVANCED_GSETTING)
+        self.current_sidepage = None
 
         for i in range(len(modules)):
             mod = modules[i].Module(self.content_box)
@@ -285,6 +287,8 @@ class MainWindow:
         self.side_view_sw.show()
         self.search_entry.show()
         self.search_entry.grab_focus()
+        self.current_sidepage = None
+        self.displayCategories()
 
     def on_menu_button_clicked(self, widget):
         popup = Gtk.Menu()
@@ -307,11 +311,15 @@ class MainWindow:
     def on_advanced_mode(self, popup):
         self.advanced_mode = True
         self.settings.set_boolean(ADVANCED_GSETTING, True)
+        if self.current_sidepage is not None:
+            self.current_sidepage.build(self.advanced_mode)
         self.displayCategories()
 
     def on_normal_mode(self, popup):
         self.advanced_mode = False
         self.settings.set_boolean(ADVANCED_GSETTING, False)
+        if self.current_sidepage is not None:
+            self.current_sidepage.build(self.advanced_mode)
         self.displayCategories()
 
 if __name__ == "__main__":

@@ -42,10 +42,11 @@ class SidePage:
         self.tooltip = tooltip
         self.advanced = advanced
 
-    def add_widget(self, widget):
+    def add_widget(self, widget, advanced = False):
         self.widgets.append(widget)
-        
-    def build(self):
+        widget.advanced = advanced
+
+    def build(self, mode_advanced):
         # Clear all the widgets from the content box
         widgets = self.content_box.get_children()
         for widget in widgets:
@@ -59,6 +60,9 @@ class SidePage:
         # top-level widget
         if not self.is_standalone:
             for widget in self.widgets:
+                if widget.advanced:
+                    if not mode_advanced:
+                        continue
                 self.content_box.pack_start(widget, False, False, 2)
             if self.is_c_mod:
                 self.content_box.show()
