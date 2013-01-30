@@ -6,7 +6,8 @@ class Module:
     def __init__(self, content_box):
         keywords = _("menu, start, bookmarks, places, recent")
         tooltip = _("Configure menu applet behavior")
-        sidePage = SidePage(_("Menu"), "menu.svg", keywords, tooltip, content_box)
+        advanced = False
+        sidePage = SidePage(_("Menu"), "menu.svg", keywords, tooltip, advanced, content_box)
         self.sidePage = sidePage
         self.name = "menu"
         self.category = "prefs"

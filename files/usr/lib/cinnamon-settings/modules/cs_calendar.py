@@ -9,7 +9,8 @@ class Module:
     def __init__(self, content_box):
         keywords = _("time, date, calendar, format, network, sync")
         tooltip = _("Configure how the time and date are displayed in the panel and calendar")
-        sidePage = SidePage(_("Calendar"), "clock.svg", keywords, tooltip, content_box)
+        advanced = False
+        sidePage = SidePage(_("Calendar"), "clock.svg", keywords, tooltip, advanced, content_box)
         self.sidePage = sidePage
         self.name = "calendar"
         self.category = "prefs"

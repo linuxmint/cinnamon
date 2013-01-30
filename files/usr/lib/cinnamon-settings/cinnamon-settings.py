@@ -32,6 +32,8 @@ menuName = _("Desktop Settings")
 menuGenericName = _("Desktop Configuration Tool")
 menuComment = _("Fine-tune desktop settings")
 
+ADVANCED_GSETTING = "cinnamon-settings-advanced"
+
 CATEGORIES = [
 #        Display name                         ID              Show it? Always False to start              Icon
     {"label": _("Appearance"),            "id": "appear",      "show": False,                       "icon": "cat-appearance.svg"},
@@ -40,24 +42,24 @@ CATEGORIES = [
 ]
 
 CONTROL_CENTER_MODULES = [
-#         Label                              Module ID                Icon                         Category                         Keywords for filter                                 Tooltip
-    [_("Networking"),                       "network",            "network.svg",                 "hardware",    _("network, wireless, wifi, ethernet, broadband, internet"),    _("Configure network connections")],
-    [_("Display"),                          "display",            "display.svg",                 "hardware",    _("display, screen, monitor, layout, resolution, dual, lcd"),   _("Change your resolution and primary display")],
-    [_("Keyboard Layout"),                  "region",             "region.svg",                     "prefs",    _("region, layout, keyboard, language"),                        _("Set your current language and regional settings")],
-    [_("Bluetooth"),                        "bluetooth",          "bluetooth.svg",               "hardware",    _("bluetooth, dongle, transfer, mobile"),                       _("Set up and connect to Bluetooth devices")],
-    [_("Default Programs"),                 "info",               "details.svg",                    "prefs",    _("defaults, programs, info, details, version, cd, autostart"), _("Get a system overview, and configure defaults programs and media autostart behavior")],
-    [_("Universal Access"),                 "universal-access",   "universal-access.svg",           "prefs",    _("magnifier, talk, access, zoom, keys, contrast"),             _("Configure accessibility features such as the on-screen magnifier, high-contrast mode, and sticky-keys")],
-    [_("User Accounts"),                    "user-accounts",      "user-accounts.svg",              "prefs",    _("users, accounts, add, password, picture"),                   _("Add new users or modify existing ones")],
-    [_("Power Management"),                 "power",              "power.svg",                   "hardware",    _("power, suspend, hibernate, laptop, desktop"),                _("Monitor laptop battery status and configure shutdown options")],
-    [_("Sound"),                            "sound-nua",          "sound.svg",                   "hardware",    _("sound, speakers, headphones, test"),                         _("Configure and test audio input and output devices")],
-    [_("Color"),                            "color",              "color.svg",                   "hardware",    _("color, profile, display, printer, output"),                  _("Manage and calibrate color profiles for display and other color output devices")]
+#         Label                              Module ID                Icon                         Category      Advanced?                      Keywords for filter                                 Tooltip
+    [_("Networking"),                       "network",            "network.svg",                 "hardware",      False,          _("network, wireless, wifi, ethernet, broadband, internet"),    _("Configure network connections")],
+    [_("Display"),                          "display",            "display.svg",                 "hardware",      True,           _("display, screen, monitor, layout, resolution, dual, lcd"),   _("Change your resolution and primary display")],
+    [_("Keyboard Layout"),                  "region",             "region.svg",                     "prefs",      False,          _("region, layout, keyboard, language"),                        _("Set your current language and regional settings")],
+    [_("Bluetooth"),                        "bluetooth",          "bluetooth.svg",               "hardware",      False,          _("bluetooth, dongle, transfer, mobile"),                       _("Set up and connect to Bluetooth devices")],
+    [_("Default Programs"),                 "info",               "details.svg",                    "prefs",      False,          _("defaults, programs, info, details, version, cd, autostart"), _("Get a system overview, and configure defaults programs and media autostart behavior")],
+    [_("Universal Access"),                 "universal-access",   "universal-access.svg",           "prefs",      False,          _("magnifier, talk, access, zoom, keys, contrast"),             _("Configure accessibility features such as the on-screen magnifier, high-contrast mode, and sticky-keys")],
+    [_("User Accounts"),                    "user-accounts",      "user-accounts.svg",              "prefs",      True,           _("users, accounts, add, password, picture"),                   _("Add new users or modify existing ones")],
+    [_("Power Management"),                 "power",              "power.svg",                   "hardware",      False,          _("power, suspend, hibernate, laptop, desktop"),                _("Monitor laptop battery status and configure shutdown options")],
+    [_("Sound"),                            "sound-nua",          "sound.svg",                   "hardware",      False,          _("sound, speakers, headphones, test"),                         _("Configure and test audio input and output devices")],
+    [_("Color"),                            "color",              "color.svg",                   "hardware",      True,           _("color, profile, display, printer, output"),                  _("Manage and calibrate color profiles for display and other color output devices")]
 ]
 
 STANDALONE_MODULES = [
-#         Label                          Executable                          Icon                         Category            Keywords for filter                                       Tooltip
-    [_("Printers"),                      "system-config-printer",        "printer.svg",                "hardware",      _("printers, laser, inkjet"),                           _("Add and configure system and network printers")],
-    [_("Firewall"),                      "gufw",                         "firewall.svg",               "prefs",         _("firewall, block, filter, programs"),                 _("Configure this system's firewall")],
-    [_("Languages"),                     "gnome-language-selector",      "language.svg",               "prefs",         _("language, install, foreign"),                        _("Install new language packs onto this system")]
+#         Label                          Executable                          Icon                Category        Advanced?               Keywords for filter                                       Tooltip
+    [_("Printers"),                      "system-config-printer",        "printer.svg",         "hardware",       False,          _("printers, laser, inkjet"),                           _("Add and configure system and network printers")],
+    [_("Firewall"),                      "gufw",                         "firewall.svg",        "prefs",          True,           _("firewall, block, filter, programs"),                 _("Configure this system's firewall")],
+    [_("Languages"),                     "gnome-language-selector",      "language.svg",        "prefs",          False,          _("language, install, foreign"),                        _("Install new language packs onto this system")]
 ]
 
 class MainWindow:
@@ -110,8 +112,11 @@ class MainWindow:
         self.search_entry.connect("changed", self.onSearchTextChanged)
         self.search_entry.connect("icon-press", self.onClearSearchBox)
         self.window.connect("destroy", Gtk.main_quit)
+        self.builder.connect_signals(self)
         self.window.set_has_resize_grip(False)
         self.sidePages = []
+        self.settings = Gio.Settings.new("org.cinnamon")
+        self.advanced_mode = self.settings.get_boolean(ADVANCED_GSETTING)
 
         for i in range(len(modules)):
             mod = modules[i].Module(self.content_box)
@@ -119,12 +124,12 @@ class MainWindow:
                 self.sidePages.append((mod.sidePage, mod.name, mod.category))
 
         for item in CONTROL_CENTER_MODULES:
-            ccmodule = SettingsWidgets.CCModule(item[0], item[1], item[2], item[3], item[4], item[5], self.content_box)
+            ccmodule = SettingsWidgets.CCModule(item[0], item[1], item[2], item[3], item[4], item[5], item[6], self.content_box)
             if ccmodule.process():
                 self.sidePages.append((ccmodule.sidePage, ccmodule.name, ccmodule.category))
 
         for item in STANDALONE_MODULES:
-            samodule = SettingsWidgets.SAModule(item[0], item[1], item[2], item[3], item[4], item[5], self.content_box)
+            samodule = SettingsWidgets.SAModule(item[0], item[1], item[2], item[3], item[4], item[5], item[6], self.content_box)
             if samodule.process():
                 self.sidePages.append((samodule.sidePage, samodule.name, samodule.category))
 
@@ -178,6 +183,9 @@ class MainWindow:
     def filter_visible_function(self, model, iter, user_data = None):
         sidePage = model.get_value(iter, 2)
         text = self.search_entry.get_text().lower()
+        if sidePage.advanced:
+            if not self.advanced_mode:
+                return False
         if sidePage.name.lower().find(text) > -1 or \
            sidePage.keywords.lower().find(text) > -1 or \
            sidePage.tooltip.lower().find(text) > -1:
@@ -277,6 +285,34 @@ class MainWindow:
         self.side_view_sw.show()
         self.search_entry.show()
         self.search_entry.grab_focus()
+
+    def on_menu_button_clicked(self, widget):
+        popup = Gtk.Menu()
+        popup.attach_to_widget(widget, None)
+        popup_normal_mode = Gtk.CheckMenuItem(_("Normal Mode"))
+        popup_normal_mode.set_draw_as_radio(True)
+        popup_normal_mode.set_active(not self.advanced_mode)
+        popup_normal_mode.show()
+        popup.append(popup_normal_mode)
+        popup_advanced_mode = Gtk.CheckMenuItem(_("Advanced Mode"))
+        popup_advanced_mode.set_draw_as_radio(True)
+        popup_advanced_mode.set_active(self.advanced_mode)
+        popup_advanced_mode.show()
+        popup.append(popup_advanced_mode)
+
+        popup_normal_mode.connect('activate', self.on_normal_mode)
+        popup_advanced_mode.connect('activate', self.on_advanced_mode)
+        popup.popup(None, None, None, None, 0, 0)
+
+    def on_advanced_mode(self, popup):
+        self.advanced_mode = True
+        self.settings.set_boolean(ADVANCED_GSETTING, True)
+        self.displayCategories()
+
+    def on_normal_mode(self, popup):
+        self.advanced_mode = False
+        self.settings.set_boolean(ADVANCED_GSETTING, False)
+        self.displayCategories()
 
 if __name__ == "__main__":
     GObject.threads_init()

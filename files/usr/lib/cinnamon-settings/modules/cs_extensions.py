@@ -12,14 +12,15 @@ class Module:
     def __init__(self, content_box):
         keywords = _("extensions, addons")
         tooltip = _("Download, install and manage Cinnamon extensions")
-        sidePage = ExtensionViewSidePage(_("Extensions"), "extensions.svg", keywords, tooltip, content_box)
+        advanced = False
+        sidePage = ExtensionViewSidePage(_("Extensions"), "extensions.svg", keywords, tooltip, advanced, content_box)
         self.sidePage = sidePage
         self.name = "extensions"
         self.category = "prefs"
 
 class ExtensionViewSidePage (SidePage):
-    def __init__(self, name, icon, keywords, tooltip, content_box):
-        SidePage.__init__(self, name, icon, keywords, tooltip, content_box)
+    def __init__(self, name, icon, keywords, tooltip, advanced, content_box):
+        SidePage.__init__(self, name, icon, keywords, tooltip, advanced, content_box)
         self.icons = []
                   
     def build(self):

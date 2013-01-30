@@ -6,7 +6,8 @@ class Module:
     def __init__(self, content_box):
         keywords = _("panel, height, bottom, top, autohide, size, traditional, layout")
         tooltip = _("Make changes to your panel layout, including size, layout, and scaling")
-        sidePage = SidePage(_("Panel"), "panel.svg", keywords, tooltip, content_box)
+        advanced = False
+        sidePage = SidePage(_("Panel"), "panel.svg", keywords, tooltip, advanced, content_box)
         self.sidePage = sidePage
         self.name = "panel"
         self.category = "prefs"

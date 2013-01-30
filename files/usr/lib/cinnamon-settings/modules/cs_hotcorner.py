@@ -7,14 +7,15 @@ class Module:
     def __init__(self, content_box):
         keywords = _("hotcorner, overview, scale, expo")
         tooltip = _("Configure hot corner actions and behavior")
-        sidePage = HotCornerViewSidePage(_("Hot corner"), "overview.svg", keywords, tooltip, content_box)
+        advanced = False
+        sidePage = HotCornerViewSidePage(_("Hot corner"), "overview.svg", keywords, tooltip, advanced, content_box)
         self.sidePage = sidePage
         self.name = "hotcorner"
         self.category = "prefs"
 
 class HotCornerViewSidePage(SidePage):
-    def __init__(self, name, icon, keywords, tooltip, content_box):
-        SidePage.__init__(self, name, icon, keywords, tooltip, content_box)
+    def __init__(self, name, icon, keywords, tooltip, advanced, content_box):
+        SidePage.__init__(self, name, icon, keywords, tooltip, advanced, content_box)
 
         self.hc_list = Gtk.ListStore(int, str)
 

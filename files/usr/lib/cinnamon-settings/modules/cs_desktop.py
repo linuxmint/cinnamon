@@ -7,7 +7,8 @@ class Module:
     def __init__(self, content_box):
         keywords = _("desktop, home, button, trash")
         tooltip = _("Configure what system icons appear on your desktop")
-        sidePage = SidePage(_("Desktop"), "desktop.svg", keywords, tooltip, content_box)
+        advanced = False
+        sidePage = SidePage(_("Desktop"), "desktop.svg", keywords, tooltip, advanced, content_box)
         self.sidePage = sidePage
         self.name = "desktop"
         self.category = "prefs"
