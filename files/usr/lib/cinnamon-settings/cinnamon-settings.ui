@@ -16,6 +16,9 @@
         <property name="can_focus">False</property>
         <property name="orientation">vertical</property>
         <property name="spacing">10</property>
+        <style>
+          <class name="trough"/>
+        </style>
         <child>
           <object class="GtkToolbar" id="toolbar1">
             <property name="visible">True</property>
@@ -110,9 +113,6 @@
             <property name="padding">6</property>
             <property name="position">0</property>
           </packing>
-        </child>
-        <child>
-          <placeholder/>
         </child>
         <child>
           <object class="GtkVBox" id="vbox1">
@@ -242,9 +242,6 @@
             <property name="fill">True</property>
             <property name="position">3</property>
           </packing>
-        </child>
-        <child>
-          <placeholder/>
         </child>
       </object>
     </child>

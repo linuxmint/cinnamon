@@ -226,7 +226,7 @@ class MainWindow:
         widget.set_hexpand(True)
         widget.set_vexpand(False)
         c = widget.get_style_context()
-        c.add_class("default")
+        c.add_class("button")
         self.side_view[category["id"]] = widget
 
         self.side_view_container.pack_start(self.side_view[category["id"]], False, False, 0)
