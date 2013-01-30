@@ -420,17 +420,20 @@ AltTabPopup.prototype = {
         this.destroy();
     },
 
+    _activateWindow : function(window) {
+        Main.activateWindow(window);
+    },
+
     _appActivated : function(appSwitcher, n) {
         // If the user clicks on the selected app, activate the
         // selected window; otherwise (e.g., they click on an app while
         // !mouseActive) activate the clicked-on app.
-        this._appIcons[n].app.activate_window(this._appIcons[n].window, global.get_current_time());
+        this._activateWindow(this._appIcons[n].window);
         this.destroy();
     },
 
     _windowActivated : function(thumbnailList, n) {
-        let appIcon = this._appIcons[this._currentApp];
-        Main.activateWindow(appIcon.window);
+        this._activateWindow(this._appIcons[this._currentApp].window);
         this.destroy();
     },
 
@@ -456,9 +459,10 @@ AltTabPopup.prototype = {
     },
 
     _finish : function() {
+        this._exiting = true;
         if (this._appIcons.length > 0 && this._currentApp > -1) {
             let app = this._appIcons[this._currentApp];
-            Main.activateWindow(app.window);
+            this._activateWindow(app.window);
         }
         this.destroy();
     },
@@ -471,6 +475,7 @@ AltTabPopup.prototype = {
     },
 
     destroy : function() {
+        this._exiting = true;
         this._workspaceConnector.destroy();
         var doDestroy = Lang.bind(this, function() {
            Main.uiGroup.remove_actor(this.actor);
@@ -518,7 +523,7 @@ AltTabPopup.prototype = {
 
         let showPreview = function() {
             this._displayPreviewTimeoutId = null;
-            if (this._currentApp < 0) {return;}
+            if (this._exiting || this._currentApp < 0) {return;}
 
             let childBox = new Clutter.ActorBox();
 
