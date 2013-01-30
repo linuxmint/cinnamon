@@ -13,3 +13,4 @@ class Module:
         sidePage.add_widget(GSettingsCheckButton(_("Activate menu on hover"), "org.cinnamon", "activate-menu-applet-on-hover", None))
         sidePage.add_widget(GSettingsCheckButton(_("Show bookmarks and places"), "org.cinnamon", "menu-show-places", None))
         sidePage.add_widget(GSettingsCheckButton(_("Show recent files"), "org.cinnamon", "menu-show-recent", None))
+        sidePage.add_widget(GSettingsCheckButton(_("Enable filesystem path entry in search box"), "org.cinnamon", "menu-search-filesystem", None))
