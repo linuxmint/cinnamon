@@ -238,11 +238,22 @@ function start() {
                     });
     St.set_ui_root(global.stage, uiGroup);
 
-
-    global.window_group.remove_child(global.background_actor);
-    global.stage.remove_child(global.bottom_window_group);
-    global.stage.remove_child(global.window_group);
-    global.stage.remove_child(global.overlay_group);
+    let parent = global.background_actor.get_parent();
+    if (parent) {
+      parent.remove_child(global.background_actor);
+    }
+    parent = global.bottom_window_group.get_parent();
+    if (parent) {
+      parent.remove_child(global.bottom_window_group);
+    }
+    parent = global.window_group.get_parent();
+    if (parent) {
+      parent.remove_child(global.window_group);
+    }
+    parent = global.overlay_group.get_parent();
+    if (parent) {
+      parent.remove_child(global.overlay_group);
+    }
 
     uiGroup.add_actor(global.background_actor);
     uiGroup.add_actor(global.bottom_window_group);
