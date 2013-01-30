@@ -101,6 +101,7 @@
     
     <key name="panel-top-height" type="i">
       <default>25</default>
+      <range min="20" />
       <_summary>Panel size</_summary>
       <_description>
         User-defined panel-height for top panel
@@ -109,6 +110,7 @@
     
     <key name="panel-bottom-height" type="i">
       <default>25</default>
+      <range min="20" />
       <_summary>Panel size</_summary>
       <_description>
         User-defined panel-height for bottom panel
@@ -412,6 +414,7 @@
     </key>
     
     <key type="i" name="workspace-osd-x">
+      <range min="5" max="95" />
       <default>50</default>
       <_summary>Workspace horizontal position (in percent of the monitor's width)</_summary>
       <_description>
@@ -420,6 +423,7 @@
     </key>
     
     <key type="i" name="workspace-osd-y">
+      <range min="5" max="95" />
       <default>50</default>
       <_summary>Workspace vertical position (in percent of the monitor's height)</_summary>
       <_description>

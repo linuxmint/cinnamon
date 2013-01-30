@@ -114,21 +114,33 @@ class GSettingsCheckButton(Gtk.CheckButton):
 class GSettingsSpinButton(Gtk.HBox):    
     def __init__(self, label, schema, key, dep_key, min, max, step, page, units):
         self.key = key
+        self.min = min
+        self.max = max
         self.dep_key = dep_key
         super(GSettingsSpinButton, self).__init__()        
         self.label = Gtk.Label(label)       
         self.content_widget = Gtk.SpinButton()
         self.units = Gtk.Label(units)        
         if (label != ""):       
-            self.pack_start(self.label, False, False, 2)                
-        self.pack_start(self.content_widget, False, False, 2)              
+            self.pack_start(self.label, False, False, 2)
+        self.pack_start(self.content_widget, False, False, 2)
         if (units != ""):
-            self.pack_start(self.units, False, False, 2)              
+            self.pack_start(self.units, False, False, 2)
         
-        self.content_widget.set_range(min, max)
-        self.content_widget.set_increments(step, page)
         #self.content_widget.set_editable(False)
-        self.settings = Gio.Settings.new(schema)        
+        self.settings = Gio.Settings.new(schema)
+        range = self.settings.get_range(self.key)
+        if range[0] == "range":
+            rangeDefault = (1 << 32) - 1
+            rangeMin = rangeDefault
+            rangeMax = rangeDefault
+            range = range[1]
+            rangeMin = range[0] if range[0] < rangeDefault else rangeDefault
+            rangeMax = range[1] if range[1] < rangeDefault else rangeDefault
+            self.min = min if min > rangeMin else rangeMin
+            self.max = max if max < rangeMax else rangeMax
+        self.content_widget.set_range(self.min, self.max)
+        self.content_widget.set_increments(step, page)
         self.content_widget.set_value(self.settings.get_int(self.key))
         self.settings.connect("changed::"+self.key, self.on_my_setting_changed)
         self.content_widget.connect('value-changed', self.on_my_value_changed)
