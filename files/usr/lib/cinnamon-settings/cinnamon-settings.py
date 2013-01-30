@@ -43,9 +43,9 @@ CONTROL_CENTER_MODULES = [
 #         Label                              Module ID                Icon                         Category                         Keywords for filter                                 Tooltip
     [_("Networking"),                       "network",            "network.svg",                 "hardware",    _("network, wireless, wifi, ethernet, broadband, internet"),    _("Configure network connections")],
     [_("Display"),                          "display",            "display.svg",                 "hardware",    _("display, screen, monitor, layout, resolution, dual, lcd"),   _("Change your resolution and primary display")],
-    [_("Region & Keyboard Layout"),         "region",             "region.svg",                     "prefs",    _("region, layout, keyboard, language"),                        _("Set your current language and regional settings")],
+    [_("Keyboard Layout"),                  "region",             "region.svg",                     "prefs",    _("region, layout, keyboard, language"),                        _("Set your current language and regional settings")],
     [_("Bluetooth"),                        "bluetooth",          "bluetooth.svg",               "hardware",    _("bluetooth, dongle, transfer, mobile"),                       _("Set up and connect to Bluetooth devices")],
-    [_("System Info & Default Programs"),   "info",               "details.svg",                    "prefs",    _("defaults, programs, info, details, version, cd, autostart"), _("Get a system overview, and configure defaults programs and media autostart behavior")],
+    [_("Default Programs"),                 "info",               "details.svg",                    "prefs",    _("defaults, programs, info, details, version, cd, autostart"), _("Get a system overview, and configure defaults programs and media autostart behavior")],
     [_("Universal Access"),                 "universal-access",   "universal-access.svg",           "prefs",    _("magnifier, talk, access, zoom, keys, contrast"),             _("Configure accessibility features such as the on-screen magnifier, high-contrast mode, and sticky-keys")],
     [_("User Accounts"),                    "user-accounts",      "user-accounts.svg",              "prefs",    _("users, accounts, add, password, picture"),                   _("Add new users or modify existing ones")],
     [_("Power Management"),                 "power",              "power.svg",                   "hardware",    _("power, suspend, hibernate, laptop, desktop"),                _("Monitor laptop battery status and configure shutdown options")],
@@ -56,7 +56,7 @@ STANDALONE_MODULES = [
 #         Label                          Executable                          Icon                         Category            Keywords for filter                                       Tooltip
     [_("Printers"),                      "system-config-printer",        "printer.svg",                "hardware",      _("printers, laser, inkjet"),                           _("Add and configure system and network printers")],
     [_("Firewall"),                      "gufw",                         "firewall.svg",               "prefs",         _("firewall, block, filter, programs"),                 _("Configure this system's firewall")],
-    [_("Install/Remove Languages"),      "gnome-language-selector",      "language.svg",               "prefs",         _("language, install, foreign"),                        _("Install new language packs onto this system")]
+    [_("Languages"),                     "gnome-language-selector",      "language.svg",               "prefs",         _("language, install, foreign"),                        _("Install new language packs onto this system")]
 ]
 
 class MainWindow:
