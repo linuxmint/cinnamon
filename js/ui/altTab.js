@@ -264,9 +264,11 @@ AltTabPopup.prototype = {
                 this._appSwitcher._scrollTo(currentIndex, -1, 2, true);
             } else if (backward) {
                 this._select(backwardIndex);
-                this._appSwitcher._scrollTo(backwardIndex, 1, 2, true);
+                this._appSwitcher._scrollTo(backwardIndex, 1, 0, true);
             } else {
                 this._select(forwardIndex);
+                // ensure that all the windows of the current workspace are in view
+                this._appSwitcher._scrollTo(backwardIndex, 1, 3, true);
                 this._appSwitcher._scrollTo(forwardIndex, -1, 2, true);
             }
         }
