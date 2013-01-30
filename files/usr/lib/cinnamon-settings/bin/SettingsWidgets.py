@@ -19,7 +19,7 @@ try:
     import lxml.etree
     import locale    
     import imtools
-    import Image
+    from PIL import Image
     import tempfile
     import math
 
