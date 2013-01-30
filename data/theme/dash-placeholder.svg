@@ -1,84 +1,18 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!-- Created with Inkscape (http://www.inkscape.org/) -->
-
-<svg
-   xmlns:svg="http://www.w3.org/2000/svg"
-   xmlns="http://www.w3.org/2000/svg"
-   xmlns:xlink="http://www.w3.org/1999/xlink"
-   width="76"
-   height="27"
-   id="svg11252"
-   version="1.1">
-  <defs
-     id="defs11254">
-    <radialGradient
-       xlink:href="#linearGradient39563-4-2"
-       id="radialGradient68155-2-3"
-       gradientUnits="userSpaceOnUse"
-       gradientTransform="matrix(1,0,0,0.3486842,0,317.8421)"
-       cx="49"
-       cy="488"
-       fx="49"
-       fy="488"
-       r="38" />
-    <linearGradient
-       id="linearGradient39563-4-2">
-      <stop
-         style="stop-color:#ffffff;stop-opacity:1;"
-         offset="0"
-         id="stop39565-1-4" />
-      <stop
-         style="stop-color:#ffffff;stop-opacity:0;"
-         offset="1"
-         id="stop39567-7-9" />
-    </linearGradient>
-    <radialGradient
-       xlink:href="#linearGradient39573-6-1"
-       id="radialGradient68157-0-8"
-       gradientUnits="userSpaceOnUse"
-       cx="50.5"
-       cy="487.5"
-       fx="50.5"
-       fy="487.5"
-       r="10.5" />
-    <linearGradient
-       id="linearGradient39573-6-1">
-      <stop
-         style="stop-color:#ffffff;stop-opacity:1;"
-         offset="0"
-         id="stop39575-5-6" />
-      <stop
-         style="stop-color:#ffffff;stop-opacity:0;"
-         offset="1"
-         id="stop39577-1-2" />
-    </linearGradient>
-  </defs>
-  <g
-     id="layer1"
-     transform="translate(-337,-518.86218)">
-    <g
-       id="g99967"
-       style="display:inline"
-       transform="translate(326,44.862171)">
-      <rect
-         style="opacity:0.49375;color:#000000;fill:url(#radialGradient68155-2-3);fill-opacity:1;stroke:none;stroke-width:1;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
-         id="rect99969"
-         width="76"
-         height="2"
-         x="11"
-         y="487"
-         rx="0"
-         ry="0" />
-      <path
-         style="opacity:0.43125;color:#000000;fill:url(#radialGradient68157-0-8);fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:1;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
-         id="path99971"
-         d="M 61,487.5 C 61,493.29899 56.29899,498 50.5,498 44.70101,498 40,493.29899 40,487.5 40,481.70101 44.70101,477 50.5,477 c 5.79899,0 10.5,4.70101 10.5,10.5 z"
-         transform="matrix(1.2857143,0,0,1.2857143,-14.428572,-139.28571)" />
-      <path
-         transform="matrix(0.43589747,0,0,0.43589747,28.487179,275)"
-         d="M 61,487.5 C 61,493.29899 56.29899,498 50.5,498 44.70101,498 40,493.29899 40,487.5 40,481.70101 44.70101,477 50.5,477 c 5.79899,0 10.5,4.70101 10.5,10.5 z"
-         id="path99973"
-         style="color:#000000;fill:#ffffff;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:1;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate" />
-    </g>
-  </g>
+<svg xmlns="http://www.w3.org/2000/svg" height="27" width="76" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink">
+ <defs>
+  <radialGradient id="b" stop-color="#fff" gradientUnits="userSpaceOnUse" cy="487.5" cx="50.5" gradientTransform="matrix(1.2857 0 0 1.2857 -26.928 -613.28)" r="10.5">
+   <stop offset="0"/>
+   <stop stop-opacity="0" offset="1"/>
+  </radialGradient>
+  <radialGradient id="a" stop-color="#fff" gradientUnits="userSpaceOnUse" cy="488" cx="49" gradientTransform="matrix(1 0 0 .34868 -11 -156.66)" r="38">
+   <stop offset="0"/>
+   <stop stop-opacity="0" offset="1"/>
+  </radialGradient>
+ </defs>
+ <g style="color:#000000">
+  <rect opacity=".49375" rx="0" ry="0" height="2" width="76" y="12.5" x="0" fill="url(#a)"/>
+  <path opacity=".43125" d="m51.5 13.5c0 7.457-6.044 13.5-13.5 13.5s-13.5-6.043-13.5-13.5c0-7.4571 6.044-13.5 13.5-13.5 7.4558 0 13.5 6.0441 13.5 13.5z" fill="url(#b)"/>
+  <path d="m42.577 13.5c0 2.5282-2.0492 4.577-4.577 4.577s-4.577-2.0487-4.577-4.577c0-2.5282 2.0492-4.577 4.577-4.577s4.577 2.0492 4.577 4.577z" fill="#fff"/>
+ </g>
 </svg>
