@@ -358,6 +358,15 @@ AltTabPopup.prototype = {
             if (this._currentApp >= 0) {
                 this._appIcons[this._currentApp].window.delete(global.get_current_time());
             }
+        } else if (this._persistent && keysym == Clutter.m && ctrlDown) {
+            let monitorCount = Main.layoutManager.monitors.length;
+            if (this._currentApp >= 0 && monitorCount > 1) {
+                let window = this._appIcons[this._currentApp].window;
+                let index = window.get_monitor();
+                let newIndex = (index + monitorCount + 1) % monitorCount;
+                window.move_to_monitor(newIndex);
+                this._select(this._currentApp); // refresh
+            }
         } else if (keysym == Clutter.Home || keysym == Clutter.KP_Home) {
             this._select(0);
         } else if (keysym == Clutter.End || keysym == Clutter.KP_End) {
