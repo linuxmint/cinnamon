@@ -526,6 +526,12 @@
       <_summary>Whether edge flip is enabled</_summary>
     </key>
 
+    <key type="i" name="edge-flip-delay">
+      <default>1000</default>
+      <summary>Duration of the delay before switching the workspace</summary>
+      <description>Duration of the delay (in milliseconds)</description>
+    </key>
+
     <child name="calendar" schema="org.cinnamon.calendar"/>
     <child name="theme" schema="org.cinnamon.theme"/>   
     <child name="recorder" schema="org.cinnamon.recorder"/>
