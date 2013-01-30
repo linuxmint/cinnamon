@@ -16,7 +16,7 @@ class Module:
         sidePage = DeskletsViewSidePage(_("Desklets"), "desklets.svg", keywords, tooltip, content_box)
         self.sidePage = sidePage
         self.name = "desklets"
-        self.category = "feel"
+        self.category = "prefs"
 
 class DeskletsViewSidePage (SidePage):
     def __init__(self, name, icon, keywords, tooltip, content_box):

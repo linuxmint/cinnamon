@@ -5,7 +5,6 @@
     <property name="visible">True</property>
     <property name="can_focus">False</property>
     <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-    <property name="border_width">6</property>
     <property name="title" translatable="yes">mintDesktop</property>
     <property name="window_position">center</property>
     <property name="default_width">800</property>
@@ -22,11 +21,17 @@
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="toolbar_style">both</property>
-            <property name="icon_size">10</property>
+            <style>
+              <class name="primary-toolbar"/>
+            </style>
             <child>
               <object class="GtkToolItem" id="toolbutton2">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
+                <property name="margin_bottom">6</property>
+                <style>
+                  <class name="raised"/>
+                </style>
                 <child>
                   <object class="GtkBox" id="box3">
                     <property name="height_request">24</property>
@@ -35,15 +40,14 @@
                     <property name="halign">start</property>
                     <style>
                       <class name="linked"/>
-                      <class name="breadcrumbs"/>
                     </style>
                     <child>
                       <object class="GtkButton" id="button_back">
                         <property name="label" translatable="yes">button</property>
-                        <property name="height_request">30</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
+                        <property name="margin_left">6</property>
                         <property name="focus_on_click">False</property>
                       </object>
                       <packing>
@@ -55,7 +59,6 @@
                     <child>
                       <object class="GtkButton" id="button_sub">
                         <property name="label" translatable="yes">button</property>
-                        <property name="height_request">30</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
@@ -84,6 +87,7 @@
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="halign">start</property>
+                    <property name="margin_right">6</property>
                     <property name="invisible_char">●</property>
                     <property name="width_chars">25</property>
                     <property name="invisible_char_set">True</property>
@@ -103,6 +107,7 @@
           <packing>
             <property name="expand">False</property>
             <property name="fill">True</property>
+            <property name="padding">6</property>
             <property name="position">0</property>
           </packing>
         </child>
@@ -119,7 +124,6 @@
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="hscrollbar_policy">never</property>
-                <property name="shadow_type">in</property>
                 <child>
                   <object class="GtkViewport" id="viewport2">
                     <property name="visible">True</property>
@@ -132,6 +136,7 @@
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="valign">start</property>
+                        <property name="border_width">10</property>
                         <property name="orientation">vertical</property>
                         <child>
                           <placeholder/>
@@ -152,7 +157,6 @@
                 <property name="can_focus">True</property>
                 <property name="hexpand">True</property>
                 <property name="vexpand">True</property>
-                <property name="shadow_type">in</property>
                 <child>
                   <object class="GtkViewport" id="viewport1">
                     <property name="visible">True</property>

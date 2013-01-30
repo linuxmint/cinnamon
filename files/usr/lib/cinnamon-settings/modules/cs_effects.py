@@ -9,7 +9,7 @@ class Module:
         sidePage = SidePage(_("Effects"), "desktop-effects.svg", keywords, tooltip, content_box)
         self.sidePage = sidePage
         self.name = "effects"
-        self.category = "feel"
+        self.category = "appear"
         sidePage.add_widget(GSettingsCheckButton(_("Enable desktop effects"), "org.cinnamon", "desktop-effects", None))
 
         box = IndentedHBox()

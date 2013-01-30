@@ -15,7 +15,7 @@ class Module:
         sidePage = AppletViewSidePage(_("Applets"), "applets.svg", keywords, tooltip, content_box)
         self.sidePage = sidePage
         self.name = "applets"
-        self.category = "feel"
+        self.category = "prefs"
 
 class AppletViewSidePage (SidePage):
     def __init__(self, name, icon, keywords, tooltip, content_box):

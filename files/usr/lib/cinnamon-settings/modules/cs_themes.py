@@ -15,7 +15,7 @@ class Module:
          sidePage = ThemeViewSidePage(_("Themes"), "themes.svg", keywords, tooltip, content_box)
          self.sidePage = sidePage
          self.name = "themes"
-         self.category = "feel"
+         self.category = "appear"
 
 class ThemeViewSidePage (SidePage):
     def __init__(self, name, icon, keywords, tooltip, content_box):

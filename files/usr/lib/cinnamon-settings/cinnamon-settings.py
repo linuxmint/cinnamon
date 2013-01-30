@@ -33,11 +33,10 @@ menuGenericName = _("Desktop Configuration Tool")
 menuComment = _("Fine-tune desktop settings")
 
 CATEGORIES = [
-#        Display name                         ID              Show it? Always False to start
-    {"label": _("Look and Feel"),         "id": "feel",        "show": False},
-    {"label": _("User Preferences"),      "id": "prefs",       "show": False},
-    {"label": _("System Settings"),       "id": "admin",       "show": False},
-    {"label": _("Hardware"),              "id": "hardware",    "show": False}
+#        Display name                         ID              Show it? Always False to start              Icon
+    {"label": _("Appearance"),            "id": "appear",      "show": False,                       "icon": "cat-appearance.svg"},
+    {"label": _("Preferences"),           "id": "prefs",       "show": False,                       "icon": "cat-prefs.svg"},
+    {"label": _("Hardware"),              "id": "hardware",    "show": False,                       "icon": "cat-hardware.svg"}
 ]
 
 CONTROL_CENTER_MODULES = [
@@ -46,18 +45,18 @@ CONTROL_CENTER_MODULES = [
     [_("Display"),                          "display",            "display.svg",                 "hardware",    _("display, screen, monitor, layout, resolution, dual, lcd"),   _("Change your resolution and primary display")],
     [_("Region & Keyboard Layout"),         "region",             "region.svg",                     "prefs",    _("region, layout, keyboard, language"),                        _("Set your current language and regional settings")],
     [_("Bluetooth"),                        "bluetooth",          "bluetooth.svg",               "hardware",    _("bluetooth, dongle, transfer, mobile"),                       _("Set up and connect to Bluetooth devices")],
-    [_("System Info & Default Programs"),   "info",               "details.svg",                    "admin",    _("defaults, programs, info, details, version, cd, autostart"), _("Get a system overview, and configure defaults programs and media autostart behavior")],
+    [_("System Info & Default Programs"),   "info",               "details.svg",                    "prefs",    _("defaults, programs, info, details, version, cd, autostart"), _("Get a system overview, and configure defaults programs and media autostart behavior")],
     [_("Universal Access"),                 "universal-access",   "universal-access.svg",           "prefs",    _("magnifier, talk, access, zoom, keys, contrast"),             _("Configure accessibility features such as the on-screen magnifier, high-contrast mode, and sticky-keys")],
-    [_("User Accounts"),                    "user-accounts",      "user-accounts.svg",              "admin",    _("users, accounts, add, password, picture"),                   _("Add new users or modify existing ones")],
-    [_("Power Management"),                 "power",              "power.svg",                      "admin",    _("power, suspend, hibernate, laptop, desktop"),                _("Monitor laptop battery status and configure shutdown options")],
+    [_("User Accounts"),                    "user-accounts",      "user-accounts.svg",              "prefs",    _("users, accounts, add, password, picture"),                   _("Add new users or modify existing ones")],
+    [_("Power Management"),                 "power",              "power.svg",                   "hardware",    _("power, suspend, hibernate, laptop, desktop"),                _("Monitor laptop battery status and configure shutdown options")],
     [_("Sound"),                            "sound-nua",          "sound.svg",                   "hardware",    _("sound, speakers, headphones, test"),                         _("Configure and test audio input and output devices")]
 ]
 
 STANDALONE_MODULES = [
 #         Label                          Executable                          Icon                         Category            Keywords for filter                                       Tooltip
     [_("Printers"),                      "system-config-printer",        "printer.svg",                "hardware",      _("printers, laser, inkjet"),                           _("Add and configure system and network printers")],
-    [_("Firewall"),                      "gufw",                         "firewall.svg",                  "admin",      _("firewall, block, filter, programs"),                 _("Configure this system's firewall")],
-    [_("Install/Remove Languages"),      "gnome-language-selector",      "language.svg",                  "admin",      _("language, install, foreign"),                        _("Install new language packs onto this system")]
+    [_("Firewall"),                      "gufw",                         "firewall.svg",               "prefs",         _("firewall, block, filter, programs"),                 _("Configure this system's firewall")],
+    [_("Install/Remove Languages"),      "gnome-language-selector",      "language.svg",               "prefs",         _("language, install, foreign"),                        _("Install new language packs onto this system")]
 ]
 
 class MainWindow:
@@ -201,13 +200,22 @@ class MainWindow:
 
         if self.first_category_done:
             widget = Gtk.Separator.new(Gtk.Orientation.HORIZONTAL)
-            self.side_view_container.pack_start(widget, False, False, 0)
-        widget = Gtk.Label(category["label"])
-        widget.set_padding(10, 0)
-        widget.set_alignment(0, .5)
-        self.side_view_container.pack_start(widget, False, True, 4)
-        widget = Gtk.Separator.new(Gtk.Orientation.HORIZONTAL)
-        self.side_view_container.pack_start(widget, False, True, 0)
+            self.side_view_container.pack_start(widget, False, False, 10)
+        box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 4)
+
+        iconFile = "/usr/lib/cinnamon-settings/data/icons/%s" % category["icon"]
+        if os.path.exists(iconFile):
+            img = GdkPixbuf.Pixbuf.new_from_file_at_size( iconFile, 30, 30)
+            box.pack_start(Gtk.Image.new_from_pixbuf(img), False, False, 4)
+        else:
+            img = None
+
+        widget = Gtk.Label()
+        widget.set_use_markup(True)
+        widget.set_markup('<span size="12000">%s</span>' % category["label"])
+        widget.set_alignment(.5, .5)
+        box.pack_start(widget, False, True, 1)
+        self.side_view_container.pack_start(box, False, False, 0)
         widget = Gtk.IconView.new_with_model(self.storeFilter[category["id"]])
         widget.set_text_column(0)
         widget.set_pixbuf_column(1)
@@ -218,7 +226,7 @@ class MainWindow:
         widget.set_hexpand(True)
         widget.set_vexpand(False)
         c = widget.get_style_context()
-        c.add_class("button")
+        c.add_class("default")
         self.side_view[category["id"]] = widget
 
         self.side_view_container.pack_start(self.side_view[category["id"]], False, False, 0)

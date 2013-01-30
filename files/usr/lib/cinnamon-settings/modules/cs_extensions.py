@@ -15,7 +15,7 @@ class Module:
         sidePage = ExtensionViewSidePage(_("Extensions"), "extensions.svg", keywords, tooltip, content_box)
         self.sidePage = sidePage
         self.name = "extensions"
-        self.category = "feel"
+        self.category = "prefs"
 
 class ExtensionViewSidePage (SidePage):
     def __init__(self, name, icon, keywords, tooltip, content_box):
