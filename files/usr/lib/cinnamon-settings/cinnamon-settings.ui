@@ -21,16 +21,18 @@
           <object class="GtkToolbar" id="toolbar1">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
+            <property name="toolbar_style">both</property>
             <property name="icon_size">10</property>
             <child>
-              <object class="GtkToolItem" id="toolbutton1">
+              <object class="GtkToolItem" id="toolbutton2">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <child>
-                  <object class="GtkButtonBox" id="buttonbox2">
+                  <object class="GtkBox" id="box3">
+                    <property name="height_request">24</property>
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="layout_style">start</property>
+                    <property name="halign">start</property>
                     <style>
                       <class name="linked"/>
                       <class name="breadcrumbs"/>
@@ -38,27 +40,30 @@
                     <child>
                       <object class="GtkButton" id="button_back">
                         <property name="label" translatable="yes">button</property>
+                        <property name="height_request">30</property>
                         <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="receives_default">True</property>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="position">0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkButton" id="button_sub">
-                        <property name="label" translatable="yes">button</property>
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
+                        <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
                         <property name="focus_on_click">False</property>
                       </object>
                       <packing>
                         <property name="expand">False</property>
                         <property name="fill">False</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="button_sub">
+                        <property name="label" translatable="yes">button</property>
+                        <property name="height_request">30</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">True</property>
+                        <property name="focus_on_click">False</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
                         <property name="position">1</property>
                       </packing>
                     </child>
@@ -66,7 +71,7 @@
                 </child>
               </object>
               <packing>
-                <property name="expand">False</property>
+                <property name="expand">True</property>
               </packing>
             </child>
             <child>
@@ -239,5 +244,13 @@
         </child>
       </object>
     </child>
+  </object>
+  <object class="GtkSizeGroup" id="sizegroup1">
+    <property name="mode">vertical</property>
+    <widgets>
+      <widget name="button_back"/>
+      <widget name="button_sub"/>
+      <widget name="search_box"/>
+    </widgets>
   </object>
 </interface>
