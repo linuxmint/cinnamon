@@ -367,6 +367,18 @@ AltTabPopup.prototype = {
                 window.move_to_monitor(newIndex);
                 this._select(this._currentApp); // refresh
             }
+        } else if (this._persistent && keysym == Clutter.n && ctrlDown) {
+            if (this._currentApp >= 0) {
+                let window = this._appIcons[this._currentApp].window;
+                window.minimize(global.get_current_time());
+                this._select(this._currentApp); // refresh
+            }
+        } else if (this._persistent && keysym == Clutter.r && ctrlDown) {
+            if (this._currentApp >= 0) {
+                let window = this._appIcons[this._currentApp].window;
+                window.unminimize(global.get_current_time());
+                this._select(this._currentApp); // refresh
+            }
         } else if (keysym == Clutter.Home || keysym == Clutter.KP_Home) {
             this._select(0);
         } else if (keysym == Clutter.End || keysym == Clutter.KP_End) {
@@ -599,6 +611,7 @@ AltTabPopup.prototype = {
             return;
         }
 
+        this._appIcons[app].updateLabel();
         this._appSwitcher.highlight(app, false);
         this._doWindowPreview();
         if (this._thumbnailsEnabled && this._iconsEnabled) {
@@ -988,12 +1001,18 @@ AppIcon.prototype = {
         this._iconBin = new St.Bin();
 
         this.actor.add(this._iconBin, { x_fill: false, y_fill: false } );
-        let title = window.get_title();
-        this.label = new St.Label({ text: typeof(title) != 'undefined' ? title : (this.app ? this.app.get_name() : "")});
+        this.label = new St.Label();
         this.label.clutter_text.line_wrap = true;
+        this.updateLabel();
         this._label_bin = new St.Bin({ x_align: St.Align.MIDDLE });
         this._label_bin.add_actor(this.label);
         this.actor.add(this._label_bin);
+    },
+
+    updateLabel: function() {
+        let title = this.window.get_title();
+        title = typeof(title) != 'undefined' ? title : (this.app ? this.app.get_name() : "");
+        this.label.set_text(title.length && this.window.minimized ? "[" + title + "]" : title);
     },
 
     set_size: function(size, focused) {
