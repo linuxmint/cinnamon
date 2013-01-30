@@ -356,7 +356,7 @@ GenericApplicationButton.prototype = {
 
         if (!this.menu.isOpen){
             let children = this.menu.box.get_children();
-            for (var i in children) {
+            for (let i in children) {
                 this.menu.box.remove_actor(children[i]);
             }
             let menuItem;
@@ -1249,7 +1249,7 @@ MyApplet.prototype = {
         
         let trees = [appsys.get_tree()];
 
-        for (var i in trees) {
+        for (let i in trees) {
             let tree = trees[i];
             let root = tree.get_root_directory();
 
@@ -1297,7 +1297,7 @@ MyApplet.prototype = {
 
                 let bookmarks = Main.placesManager.getBookmarks().slice();
                 let places = bookmarks.concat(Main.placesManager.getMounts());
-                for (var i = 0; i < places.length; i++) {
+                for (let i = 0; i < places.length; i++) {
                     let place = places[i];
                     let button = new PlaceButton(this, place, place.name);
                     this._placesButtons.push(button);
@@ -1604,7 +1604,7 @@ MyApplet.prototype = {
             this.applicationsBox.hide();
             
         let actors = this.applicationsBox.get_children();
-        for (var i=0; i<actors.length; i++) {
+        for (let i=0; i<actors.length; i++) {
             let actor = actors[i];
             if(actor._delegate.buttonStyle) {
                 actor.style_class = actor._delegate.buttonStyle;
@@ -1619,7 +1619,7 @@ MyApplet.prototype = {
             this.applicationsBox.show();
             
         actors = this.categoriesBox.get_children();
-        for (var i=0; i<actors.length; i++){
+        for (let i=0; i<actors.length; i++){
             let actor = actors[i];
             actor.style_class = actor._delegate.buttonStyle;
             actor.show();
@@ -1638,7 +1638,7 @@ MyApplet.prototype = {
     },
 
     closeApplicationsContextMenus: function(excludeApp, animate) {
-        for (var app in this._applicationsButtons){
+        for (let app in this._applicationsButtons){
             if (app!=excludeApp && this._applicationsButtons[app].menu.isOpen){
                 if (animate)
                     this._applicationsButtons[app].toggleMenu();
@@ -1705,7 +1705,7 @@ MyApplet.prototype = {
     _setCategoriesButtonActive: function(active) {
         try {
             let categoriesButtons = this.categoriesBox.get_children();
-            for (var i in categoriesButtons) {
+            for (let i in categoriesButtons) {
                 let button = categoriesButtons[i];
                 if (active){
                     button.style_class = button._delegate.buttonStyle;
@@ -1774,7 +1774,7 @@ MyApplet.prototype = {
     _listButtons: function(buttons, pattern) {
         let res = new Array();
         if (pattern){
-            for (var i in buttons) {
+            for (let i in buttons) {
                 if (buttons[i].search(pattern))
                     res.push(buttons[i].name);
             }
