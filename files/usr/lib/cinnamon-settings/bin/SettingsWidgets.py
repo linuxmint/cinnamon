@@ -61,9 +61,12 @@ class SidePage:
                 self.content_box.pack_start(widget, False, False, 2)
             if self.is_c_mod:
                 self.content_box.show()
-                widgets = self.content_box.get_children()
-                for widget in widgets:
+                cheatboxes = self.content_box.get_children()
+                for cheatbox in cheatboxes:
                     widget.show()
+                    widgets = cheatbox.get_children()
+                    for widget in widgets:
+                        widget.show()
             else:
                 self.content_box.show_all()
         else:
@@ -82,7 +85,6 @@ class CCModule:
             cheat_box = Gtk.Box.new(Gtk.Orientation.VERTICAL, 2)
             cheat_box.pack_start(widget, False, False, 2)
             cheat_box.set_vexpand(False)
-            widget.show()
             self.sidePage.add_widget(cheat_box)
             return True
         else:

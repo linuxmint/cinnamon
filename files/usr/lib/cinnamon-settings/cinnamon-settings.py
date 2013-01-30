@@ -226,8 +226,11 @@ class MainWindow:
         widget.set_row_spacing(0)
         widget.set_hexpand(True)
         widget.set_vexpand(False)
+
+        css_provider = Gtk.CssProvider()
+        css_provider.load_from_data("GtkIconView {background-color: @bg_color;}")
         c = widget.get_style_context()
-        c.add_class("cell")
+        c.add_provider(css_provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
         self.side_view[category["id"]] = widget
 
         self.side_view_container.pack_start(self.side_view[category["id"]], False, False, 0)
@@ -260,9 +263,15 @@ class MainWindow:
     def back_to_icon_view(self, widget):
         self.window.set_title(_("Cinnamon Settings"))
         self.content_box_sw.hide()
-        widgets = self.content_box.get_children()
-        for widget in widgets:
-            widget.hide()
+        cheatboxes = self.content_box.get_children()
+        for cheatbox in cheatboxes:
+            cheatbox.hide()
+            try:
+                widgets = cheatbox.get_children()
+                for widget in widgets:
+                    widget.hide()
+            except:
+                pass
         self.button_back.get_style_context().set_junction_sides(Gtk.JunctionSides.NONE)
         self.button_sub.hide()
         self.side_view_sw.show()

@@ -15,9 +15,6 @@
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <property name="orientation">vertical</property>
-        <style>
-          <class name="trough"/>
-        </style>
         <child>
           <object class="GtkToolbar" id="toolbar1">
             <property name="visible">True</property>
@@ -124,9 +121,6 @@
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="hscrollbar_policy">never</property>
-                <style>
-                  <class name="cell"/>
-                </style>
                 <child>
                   <object class="GtkViewport" id="viewport2">
                     <property name="visible">True</property>
