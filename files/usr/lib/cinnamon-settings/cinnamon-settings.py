@@ -109,7 +109,7 @@ class MainWindow:
         self.search_entry.connect("changed", self.onSearchTextChanged)
         self.search_entry.connect("icon-press", self.onClearSearchBox)
         self.window.connect("destroy", Gtk.main_quit)
-
+        self.window.set_has_resize_grip(False)
         self.sidePages = []
 
         for i in range(len(modules)):
@@ -214,7 +214,7 @@ class MainWindow:
         widget.set_use_markup(True)
         widget.set_markup('<span size="12000">%s</span>' % category["label"])
         widget.set_alignment(.5, .5)
-        box.pack_start(widget, False, True, 1)
+        box.pack_start(widget, False, False, 1)
         self.side_view_container.pack_start(box, False, False, 0)
         widget = Gtk.IconView.new_with_model(self.storeFilter[category["id"]])
         widget.set_text_column(0)
@@ -223,10 +223,11 @@ class MainWindow:
         widget.set_item_width(110)
         widget.set_row_spacing(0)
         widget.set_column_spacing(0)
+        widget.set_row_spacing(0)
         widget.set_hexpand(True)
         widget.set_vexpand(False)
         c = widget.get_style_context()
-        c.add_class("button")
+        c.add_class("cell")
         self.side_view[category["id"]] = widget
 
         self.side_view_container.pack_start(self.side_view[category["id"]], False, False, 0)
