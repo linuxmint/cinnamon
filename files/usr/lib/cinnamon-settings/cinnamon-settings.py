@@ -49,7 +49,8 @@ CONTROL_CENTER_MODULES = [
     [_("Universal Access"),                 "universal-access",   "universal-access.svg",           "prefs",    _("magnifier, talk, access, zoom, keys, contrast"),             _("Configure accessibility features such as the on-screen magnifier, high-contrast mode, and sticky-keys")],
     [_("User Accounts"),                    "user-accounts",      "user-accounts.svg",              "prefs",    _("users, accounts, add, password, picture"),                   _("Add new users or modify existing ones")],
     [_("Power Management"),                 "power",              "power.svg",                   "hardware",    _("power, suspend, hibernate, laptop, desktop"),                _("Monitor laptop battery status and configure shutdown options")],
-    [_("Sound"),                            "sound-nua",          "sound.svg",                   "hardware",    _("sound, speakers, headphones, test"),                         _("Configure and test audio input and output devices")]
+    [_("Sound"),                            "sound-nua",          "sound.svg",                   "hardware",    _("sound, speakers, headphones, test"),                         _("Configure and test audio input and output devices")],
+    [_("Color"),                            "color",              "color.svg",                   "hardware",    _("color, profile, display, printer, output"),                  _("Manage and calibrate color profiles for display and other color output devices")]
 ]
 
 STANDALONE_MODULES = [
@@ -134,11 +135,8 @@ class MainWindow:
         self.storeFilter = {}
         for sidepage in self.sidePages:
             sp, sp_id, sp_cat = sidepage
-            if not self.store.has_key(sp_cat):
-                self.store[sidepage[2]] = Gtk.ListStore(str, GdkPixbuf.Pixbuf, object, bool, str)
-                self.storeFilter[sidepage[2]] = self.store[sidepage[2]].filter_new()
-                self.storeFilter[sidepage[2]].set_visible_func(self.filter_visible_function, None)
-                self.storeFilter[sidepage[2]].set_visible_column(3)
+            if not self.store.has_key(sp_cat):  #       Label         Icon          sidePage     Advanced?   Tooltip
+                self.store[sidepage[2]] = Gtk.ListStore(str,    GdkPixbuf.Pixbuf,    object,       bool,       str)
                 for category in CATEGORIES:
                     if category["id"] == sp_cat:
                         category["show"] = True
@@ -148,6 +146,10 @@ class MainWindow:
             else:
                 img = None
             sidePagesIters[sp_id] = self.store[sp_cat].append([sp.name, img, sp, True, sp.tooltip])
+
+        for key in self.store.keys():
+            self.storeFilter[key] = self.store[key].filter_new()
+            self.storeFilter[key].set_visible_func(self.filter_visible_function)
 
         self.displayCategories()
 
@@ -173,7 +175,7 @@ class MainWindow:
         if position == Gtk.EntryIconPosition.SECONDARY:
             self.search_entry.set_text("")
 
-    def filter_visible_function(self, model, iter, user_data):
+    def filter_visible_function(self, model, iter, user_data = None):
         sidePage = model.get_value(iter, 2)
         text = self.search_entry.get_text().lower()
         if sidePage.name.lower().find(text) > -1 or \
