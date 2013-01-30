@@ -17,7 +17,6 @@ const WindowUtils = imports.misc.windowUtils;
 const POPUP_APPICON_SIZE = 96;
 const POPUP_SCROLL_TIME = 0.10; // seconds
 const POPUP_DELAY_TIMEOUT = 150; // milliseconds
-const POPUP_FADE_OUT_TIME = 0.1; // seconds
 
 const APP_ICON_HOVER_TIMEOUT = 200; // milliseconds
 
@@ -68,11 +67,6 @@ AltTabPopup.prototype = {
 
         this._haveModal = false;
         this._modifierMask = 0;
-
-        this._thumbnailTimeoutId = 0;
-        this._motionTimeoutId = 0;
-        this._initialDelayTimeoutId = 0;
-        this._displayPreviewTimeoutId = 0;
 
         // Keeps track of the number of "primary" items, which is the number
         // of windows on the current workspace. This information is used to
@@ -449,7 +443,7 @@ AltTabPopup.prototype = {
     _disableHover : function() {
         this._mouseActive = false;
 
-        if (this._motionTimeoutId != 0)
+        if (this._motionTimeoutId)
             Mainloop.source_remove(this._motionTimeoutId);
 
         this._motionTimeoutId = Mainloop.timeout_add(DISABLE_HOVER_TIMEOUT, Lang.bind(this, this._mouseTimedOut));
@@ -485,16 +479,7 @@ AltTabPopup.prototype = {
         });
         
         this._popModal();
-        if (this.actor.visible) {
-            Tweener.addTween(this.actor,
-                             { opacity: 0,
-                               time: POPUP_FADE_OUT_TIME,
-                               transition: 'easeOutQuad',
-                               onComplete: doDestroy
-                             });
-        } else {
-            doDestroy();
-        }
+        doDestroy();
     },
 
     _onDestroy : function() {
@@ -581,7 +566,7 @@ AltTabPopup.prototype = {
             this._destroyThumbnails();
         }
 
-        if (this._thumbnailTimeoutId != 0) {
+        if (this._thumbnailTimeoutId) {
             Mainloop.source_remove(this._thumbnailTimeoutId);
             this._thumbnailTimeoutId = 0;
         }
@@ -594,6 +579,9 @@ AltTabPopup.prototype = {
         this._appSwitcher.highlight(app, false);
         this._doWindowPreview();
         if (this._thumbnailsEnabled && this._iconsEnabled) {
+            if (this._thumbnailTimeoutId) {
+                Mainloop.source_remove(this._thumbnailTimeoutId);
+            }
             this._thumbnailTimeoutId = Mainloop.timeout_add(
                 THUMBNAIL_POPUP_TIME, Lang.bind(this, function() {
                     if (!this._thumbnails)
@@ -601,14 +589,6 @@ AltTabPopup.prototype = {
                     this._thumbnails.highlight(0, false);
             }));
         }
-    },
-
-    _timeoutPopupThumbnails: function() {
-        if (!this._thumbnails)
-            this._createThumbnails();
-        this._thumbnailTimeoutId = 0;
-        this._thumbnailsFocused = false;
-        return false;
     },
 
     _destroyThumbnails : function() {
