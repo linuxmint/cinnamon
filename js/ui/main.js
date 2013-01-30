@@ -155,8 +155,10 @@ function start() {
     // Monkey patch utility functions into the global proxy;
     // This is easier and faster than indirecting down into global
     // if we want to call back up into JS.
+    global.logTrace = _logTrace;
+    global.logWarning = _logWarning;
     global.logError = _logError;
-    global.log = _logDebug;
+    global.log = _logInfo;
 
     if (global.settings.get_boolean("enable-looking-glass-logs")) {
         try {
@@ -174,7 +176,7 @@ function start() {
             }
             can_log = true;
         } catch (e) {
-            global.logError(e);
+            global.logError("Error during looking-glass log initialization", e);
         }
     }
 
@@ -335,7 +337,7 @@ function start() {
 
     global.stage.connect('captured-event', _globalKeyPressHandler);
 
-    _log('info ', 'loaded at ' + _startDate);
+    global.log('loaded at ' + _startDate);
     log('Cinnamon started at ' + _startDate);
 
     let perfModuleName = GLib.getenv("CINNAMON_PERF_MODULE");
@@ -737,24 +739,70 @@ function _log(category, msg) {
                          category: category,
                          message: text };
     _errorLogStack.push(out);
+    if(cinnamonDBusService)
+        cinnamonDBusService.notifyLgLogUpdate();
     if (can_log) lg_log_file.write(renderLogLine(out), null);
 }
 
-function _logError(msg) {
-    return _log('error', msg);
+function isError(obj) {
+    return typeof(obj) == 'object' && 'message' in obj && 'stack' in obj;
 }
 
-function _logDebug(msg) {
-    return _log('debug', msg);
+function _LogTraceFormatted(stack) {
+    _log('trace', '\n<----------------\n' + stack + '---------------->');
 }
 
-// Used by the error display in lookingGlass.js
-function _getAndClearErrorStack() {
-    let errors = _errorLogStack;
-    _errorLogStack = [];
-    return errors;
+// If msg is an Error, its stack-trace will be printed, otherwise a stack-trace will be generated from this call
+// If you want to print the message of an Error as well, use the other log functions instead.
+function _logTrace(msg) {
+    if(isError(msg)) {
+        _LogTraceFormatted(msg.stack);
+    } else {
+        try {
+            throw new Error();
+        } catch (e) {
+            // e.stack must have at least two lines, with the first being
+            // _logTrace() (which we strip off), and the second being
+            // our caller.
+            let trace = e.stack.substr(e.stack.indexOf('\n') + 1);
+            _LogTraceFormatted(stack);
+        }
+    }
 }
 
+// If msg is an Error, its message will be printed as 'warning' and its stack-trace will be printed as 'trace'
+function _logWarning(msg) {
+    if(isError(msg)) {
+        _log('warning', msg.message);
+        _LogTraceFormatted(msg.stack);
+    } else {
+        _log('warning', msg);
+    }
+}
+
+// If msg is an Error, its message will be printed as 'error' and its stack-trace will be printed as 'trace'
+function _logError(msg, error) {
+    if(error && isError(error)) {
+        _log('error', error.message);
+        _LogTraceFormatted(error.stack);
+        _log('error', msg);
+    } else if(isError(msg)) {
+        _log('error', msg.message);
+        _LogTraceFormatted(msg.stack);
+    } else {
+        _log('error', msg);
+    }
+}
+
+// If msg is an Error, its message will be printed as 'info' and its stack-trace will be printed as 'trace'
+function _logInfo(msg) {
+    if(isError(msg)) {
+        _log('info', msg.message);
+        _LogTraceFormatted(msg.stack);
+    } else {
+        _log('info', msg);
+    }
+}
 
 function formatTime(d) {
     function pad(n) { return n < 10 ? '0' + n : n; }
@@ -1126,7 +1174,7 @@ function initializeDeferredWork(actor, callback, props) {
 function queueDeferredWork(workId) {
     let data = _deferredWorkData[workId];
     if (!data) {
-        global.logError('invalid work id ', workId);
+        global.logError('invalid work id: ' +  workId);
         return;
     }
     if (_deferredWorkQueue.indexOf(workId) < 0)
