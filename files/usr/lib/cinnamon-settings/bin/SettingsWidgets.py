@@ -61,12 +61,13 @@ class SidePage:
                 self.content_box.pack_start(widget, False, False, 2)
             if self.is_c_mod:
                 self.content_box.show()
-                cheatboxes = self.content_box.get_children()
-                for cheatbox in cheatboxes:
-                    widget.show()
-                    widgets = cheatbox.get_children()
-                    for widget in widgets:
-                        widget.show()
+                children = self.content_box.get_children()
+                for child in children:
+                    child.show()
+                    if child.get_name() == "c_box":
+                        c_widgets = child.get_children()
+                        for c_widget in c_widgets:
+                            c_widget.show()
             else:
                 self.content_box.show_all()
         else:
@@ -82,10 +83,11 @@ class CCModule:
     def process (self):
         widget = capi.get_c_widget(self.name)
         if widget is not None:
-            cheat_box = Gtk.Box.new(Gtk.Orientation.VERTICAL, 2)
-            cheat_box.pack_start(widget, False, False, 2)
-            cheat_box.set_vexpand(False)
-            self.sidePage.add_widget(cheat_box)
+            c_box = Gtk.Box.new(Gtk.Orientation.VERTICAL, 2)
+            c_box.pack_start(widget, False, False, 2)
+            c_box.set_vexpand(False)
+            c_box.set_name("c_box")
+            self.sidePage.add_widget(c_box)
             return True
         else:
             return False

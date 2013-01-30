@@ -263,15 +263,13 @@ class MainWindow:
     def back_to_icon_view(self, widget):
         self.window.set_title(_("Cinnamon Settings"))
         self.content_box_sw.hide()
-        cheatboxes = self.content_box.get_children()
-        for cheatbox in cheatboxes:
-            cheatbox.hide()
-            try:
-                widgets = cheatbox.get_children()
-                for widget in widgets:
-                    widget.hide()
-            except:
-                pass
+        children = self.content_box.get_children()
+        for child in children:
+            child.hide()
+            if child.get_name() == "c_box":
+                c_widgets = child.get_children()
+                for c_widget in c_widgets:
+                    c_widget.hide()
         self.button_back.get_style_context().set_junction_sides(Gtk.JunctionSides.NONE)
         self.button_sub.hide()
         self.side_view_sw.show()
