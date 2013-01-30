@@ -205,11 +205,14 @@
           <object class="GtkToolbar" id="toolbar2">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="margin_right">6</property>
+            <style>
+              <class name="toolbar"/>
+            </style>
             <child>
               <object class="GtkToolItem" id="toolbutton1">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
+                <property name="margin_right">4</property>
                 <child>
                   <object class="GtkButtonBox" id="buttonbox1">
                     <property name="visible">True</property>
