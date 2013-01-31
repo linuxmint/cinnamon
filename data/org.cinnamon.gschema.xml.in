@@ -387,14 +387,6 @@
       </_description>
     </key>
 
-    <key type="b" name="menu-flip-search-appinfo">
-      <default>false</default>
-      <_summary>Flip Searchbox and AppInfoposition menu applet</_summary>
-      <_description>
-            Searchbox will appear on the bottom and AppInfo on the top the menu applet
-      </_description>
-    </key>
-
     <key type="i" name="number-workspaces">
         <default>2</default>
         <_summary>Number of workspaces in Cinnamon session</_summary>

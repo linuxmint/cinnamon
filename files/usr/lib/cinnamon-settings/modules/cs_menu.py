@@ -46,4 +46,3 @@ class Module:
         appInfoFrame.add_right(GSettingsCheckButton(_("Align title and description right"), "org.cinnamon", "menu-align-appinfo-right", None))
         appInfoFrame.add_right(GSettingsCheckButton(_("Use multiple lines for description"), "org.cinnamon", "menu-use-multiline-appinfo", None))
 
-        sidePage.add_widget(GSettingsCheckButton(_("Flip searchbox and selected application information"), "org.cinnamon", "menu-flip-search-appinfo", None))

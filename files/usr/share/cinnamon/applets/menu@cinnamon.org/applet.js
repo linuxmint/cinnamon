@@ -20,7 +20,6 @@ const Tweener = imports.ui.tweener;
 const DND = imports.ui.dnd;
 const Meta = imports.gi.Meta;
 const DocInfo = imports.misc.docInfo;
-const GLib = imports.gi.GLib;
 
 const ICON_SIZE = 16;
 const MAX_FAV_ICON_SIZE = 32;
@@ -787,6 +786,7 @@ MyApplet.prototype = {
     
     _init: function(orientation, panel_height) {
         Applet.TextIconApplet.prototype._init.call(this, orientation, panel_height);
+        this._orientation = orientation;
 
         this.set_applet_tooltip(_("Menu"));
 
@@ -804,20 +804,9 @@ MyApplet.prototype = {
         this._connectSetting("menu-show-appinfo-description", "showAppInfoDescription", Lang.bind(this, this._refreshAppInfo));
         this._connectSetting("menu-use-multiline-appinfo", "useMultilineAppInfoDescription", Lang.bind(this, this._refreshAppInfo));
         this._connectSetting("menu-align-appinfo-right", "alignAppInfoRight", Lang.bind(this, this._refreshAppInfo));
-        this._connectSetting("menu-flip-search-appinfo", "flipSearchAppInfo", Lang.bind(this, this._refreshFlipSearchAppInfo));
         
-        let updateActivateOnHover = Lang.bind(this, function() {
-            if (this._openMenuId) {
-                this.actor.disconnect(this._openMenuId);
-                this._openMenuId = 0;
-            }
-            let openOnHover = global.settings.get_boolean("activate-menu-applet-on-hover");
-            if (openOnHover) {
-                this._openMenuId = this.actor.connect('enter-event', Lang.bind(this, this.openMenu));
-            }
-        });
-        updateActivateOnHover();
-        global.settings.connect("changed::activate-menu-applet-on-hover", updateActivateOnHover);
+        this._refreshActivateOnHover();
+        global.settings.connect("changed::activate-menu-applet-on-hover", Lang.bind(this, this._refreshActivateOnHover));
 
         this.menu.actor.add_style_class_name('menu-background');
         this.menu.connect('open-state-changed', Lang.bind(this, this._onOpenStateChanged));
@@ -836,27 +825,6 @@ MyApplet.prototype = {
         global.settings.connect("changed::menu-text", Lang.bind(this, function() {
                 this.set_applet_label(global.settings.get_string("menu-text"));
             }));
-        this._searchInactiveIcon = new St.Icon({ style_class: 'menu-search-entry-icon',
-                                           icon_name: 'edit-find',
-                                           icon_type: St.IconType.SYMBOLIC });
-        this._searchActiveIcon = new St.Icon({ style_class: 'menu-search-entry-icon',
-                                         icon_name: 'edit-clear',
-                                         icon_type: St.IconType.SYMBOLIC });
-        this._searchIconClickedId = 0;
-        this._applicationsButtons = new Array();
-        this._applicationsButtonFromApp = {};
-        this._favoritesButtons = new Array();
-        this._placesButtons = new Array();
-        this._recentButtons = new Array();
-        this._pathButtons = new Array();
-        this._selectedItemIndex = null;
-        this._previousSelectedActor = null;
-        this._selectedCategoryButton = null;
-        this._activeContainer = null;
-        this._activeActor = null;
-        this._applicationsBoxWidth = 0;
-        this.menuIsOpening = false;
-        this._refresh = {places: true, recent: true, apps: true};
 
         this.RecentManager = new DocInfo.DocManager();
 
@@ -891,6 +859,17 @@ MyApplet.prototype = {
         });
         this._applet_context_menu.addMenuItem(settings_menu_item);
     },
+    
+    _refreshActivateOnHover: function() {
+        if (this._openMenuId) {
+            this.actor.disconnect(this._openMenuId);
+            this._openMenuId = 0;
+        }
+        let openOnHover = global.settings.get_boolean("activate-menu-applet-on-hover");
+        if (openOnHover) {
+            this._openMenuId = this.actor.connect('enter-event', Lang.bind(this, this.openMenu));
+        }
+    },
 
     _connectSetting: function(configKey, varKey, refreshCallback) {
         this[varKey] = global.settings.get_boolean(configKey);
@@ -910,7 +889,9 @@ MyApplet.prototype = {
     },
 
     on_orientation_changed: function (orientation) {
+        this._orientation = orientation;
         this.menu.destroy();
+        
         this.menu = new Applet.AppletPopupMenu(this, orientation);
         this.menuManager.addMenu(this.menu);
 
@@ -1102,49 +1083,6 @@ MyApplet.prototype = {
                     this.searchEntry.set_text(item_actor._delegate.file.get_path());
             }
             return true;
-        } else if (this.searchFilesystem && (this._fileFolderAccessActive || symbol == Clutter.slash)) {
-            if (symbol == Clutter.Return || symbol == Clutter.KP_Enter) {
-                if (this._run(this.searchEntry.get_text())) {
-                    this.menu.close();
-                }
-                return true;
-            }
-            if (symbol == Clutter.Escape) {
-                this.searchEntry.set_text('');
-                this._fileFolderAccessActive = false;
-            }
-            if (symbol == Clutter.slash) {
-                // Need preload data before get completion. GFilenameCompleter load content of parent directory.
-                // Parent directory for /usr/include/ is /usr/. So need to add fake name('a').
-                let text = this.searchEntry.get_text().concat('/a');
-                let prefix;
-                if (text.lastIndexOf(' ') == -1)
-                    prefix = text;
-                else
-                    prefix = text.substr(text.lastIndexOf(' ') + 1);
-                this._getCompletion(prefix);
-
-                return false;
-            }
-            if (symbol == Clutter.Tab) {
-                let text = actor.get_text();
-                let prefix;
-                if (text.lastIndexOf(' ') == -1)
-                    prefix = text;
-                else
-                    prefix = text.substr(text.lastIndexOf(' ') + 1);
-                let postfix = this._getCompletion(prefix);
-                if (postfix != null && postfix.length > 0) {
-                    actor.insert_text(postfix, -1);
-                    actor.set_cursor_position(text.length + postfix.length);
-                    if (postfix[postfix.length - 1] == '/')
-                        this._getCompletion(text + postfix + 'a');
-                }
-
-                return true;
-            }
-            return false;
-
         } else {
             return false;
         }
@@ -1390,27 +1328,6 @@ MyApplet.prototype = {
         this.selectedAppTitle.style = this.selectedAppDescription.style;
     },
 
-    _refreshFlipSearchAppInfo: function() {
-        if(!this.flipSearchAppInfo)
-            this.searchBox.reparent(this.topRightPane);
-        else
-            this.searchBox.reparent(this.bottomRightPane);
-            
-        if(this.flipSearchAppInfo)
-            this.selectedAppBox.reparent(this.topPane);
-        else
-            this.selectedAppBox.reparent(this.bottomPane);
-        
-        
-        let showLeftPane = (this.showSystemButtons || this.showFavorites);
-        let scrollBoxHeight = 200;
-        if(showLeftPane) {
-            scrollBoxHeight = (this.leftBox.get_allocation_box().y2-this.leftBox.get_allocation_box().y1) -
-                                 (this.searchBox.get_allocation_box().y2-this.searchBox.get_allocation_box().y1);
-        }
-        this.applicationsScrollBox.style = "height: "+scrollBoxHeight+"px;";
-    },
-    
     _refreshFavs : function() {
         //Remove all favorites
         this.leftBox.get_children().forEach(Lang.bind(this, function (child) {
@@ -1537,12 +1454,32 @@ MyApplet.prototype = {
     },
 
     _display : function() {
+        this._applicationsButtons = new Array();
+        this._applicationsButtonFromApp = {};
+        this._favoritesButtons = new Array();
+        this._placesButtons = new Array();
+        this._recentButtons = new Array();
+        this._pathButtons = new Array();
+        this._selectedItemIndex = null;
+        this._previousSelectedActor = null;
+        this._selectedCategoryButton = null;
         this._activeContainer = null;
         this._activeActor = null;
+        this._applicationsBoxWidth = 0;
+        this.menuIsOpening = false;
+        this._refresh = {places: true, recent: true, apps: true};
+        
         let section = new PopupMenu.PopupMenuSection();
         this.menu.addMenuItem(section);
         
         // Prepare search box
+        this._searchIconClickedId = 0;
+        this._searchInactiveIcon = new St.Icon({ style_class: 'menu-search-entry-icon',
+                                           icon_name: 'edit-find',
+                                           icon_type: St.IconType.SYMBOLIC });
+        this._searchActiveIcon = new St.Icon({ style_class: 'menu-search-entry-icon',
+                                         icon_name: 'edit-clear',
+                                         icon_type: St.IconType.SYMBOLIC });
         this.searchBox = new St.BoxLayout({ style_class: 'menu-search-box' });
         this.searchEntry = new St.Entry({ name: 'menu-search-entry',
                                      hint_text: _("Type to search..."),
@@ -1623,7 +1560,13 @@ MyApplet.prototype = {
         section.actor.add_actor(this.bottomPane);
         
         this._refreshAppInfo();
-        this._refreshFlipSearchAppInfo();
+        if(this._orientation == St.Side.TOP) {
+            this.topRightPane.add_actor(this.searchBox);
+            this.bottomPane.add_actor(this.selectedAppBox);
+        } else {
+            this.topPane.add_actor(this.selectedAppBox);
+            this.bottomRightPane.add_actor(this.searchBox);
+        }
         
         this.appBoxIter = new VisibleChildIterator(this, this.applicationsBox);
         this.applicationsBox._vis_iter = this.appBoxIter;
@@ -1744,17 +1687,6 @@ MyApplet.prototype = {
                         item.actor.hide();
             });
         }
-        if (autocompletes) {
-            for (let i = 0; i < autocompletes.length; i++) {
-                let button = new TransientButton(this, autocompletes[i]);
-                button.actor.connect('realize', Lang.bind(this, this._onApplicationButtonRealized));
-                button.actor.connect('leave-event', Lang.bind(this, this._appLeaveEvent, button));
-                this._addEnterEvent(button, Lang.bind(this, this._appEnterEvent, button));
-                this._transientButtons.push(button);
-                this.applicationsBox.add_actor(button.actor);
-                button.actor.realize();
-            }
-        }
     },
 
     _setCategoriesButtonActive: function(active) {
@@ -1781,7 +1713,7 @@ MyApplet.prototype = {
     _onSearchTextChanged: function (se, prop) {
         if (this.menuIsOpening) {
             this.menuIsOpening = false;
-            return false;
+            return;
         } else {
             this.searchActive = this.searchEntry.get_text() != '';
             this._clearAllSelections(true);
@@ -1823,7 +1755,6 @@ MyApplet.prototype = {
                 this._selectCategory(this._allAppsCategoryButton);
                 this._removeButtons(this._pathButtons);
             }
-            return false;
         }
     },
 
@@ -1932,61 +1863,6 @@ MyApplet.prototype = {
 
         this._selectFirstResult();
         return false;
-    },
-
-    _getCompletion : function(text) {
-        if (text.indexOf('/') != -1) {
-            if (text.substr(text.length - 1) == '/') {
-                return '';
-            } else {
-                return this._pathCompleter.get_completion_suffix(text);
-            }
-        } else {
-            return false;
-        }
-    },
-
-    _getCompletions : function(text) {
-        if (text.indexOf('/') != -1) {
-            return this._pathCompleter.get_completions(text);
-        } else {
-            return new Array();
-        }
-    },
-
-    _run : function(input) {
-        let command = input;
-
-        this._commandError = false;
-        if (input) {
-            let path = null;
-            if (input.charAt(0) == '/') {
-                path = input;
-            } else {
-                if (input.charAt(0) == '~')
-                    input = input.slice(1);
-                path = GLib.get_home_dir() + '/' + input;
-            }
-
-            if (GLib.file_test(path, GLib.FileTest.EXISTS)) {
-                let file = Gio.file_new_for_path(path);
-                try {
-                    Gio.app_info_launch_default_for_uri(file.get_uri(),
-                                                        global.create_app_launch_context());
-                } catch (e) {
-                    // The exception from gjs contains an error string like:
-                    //     Error invoking Gio.app_info_launch_default_for_uri: No application
-                    //     is registered as handling this file
-                    // We are only interested in the part after the first colon.
-                    //let message = e.message.replace(/[^:]*: *(.+)/, '$1');
-                    return false;
-                }
-            } else {
-                return false;
-            }
-        }
-
-        return true;
     }
 };
 
