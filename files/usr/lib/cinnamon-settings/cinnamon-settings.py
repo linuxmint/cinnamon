@@ -42,24 +42,24 @@ CATEGORIES = [
 ]
 
 CONTROL_CENTER_MODULES = [
-#         Label                              Module ID                Icon                         Category      Advanced?                      Keywords for filter                                 Tooltip
-    [_("Networking"),                       "network",            "network.svg",                 "hardware",      False,          _("network, wireless, wifi, ethernet, broadband, internet"),    _("Configure network connections")],
-    [_("Display"),                          "display",            "display.svg",                 "hardware",      True,           _("display, screen, monitor, layout, resolution, dual, lcd"),   _("Change your resolution and primary display")],
-    [_("Keyboard Layout"),                  "region",             "region.svg",                     "prefs",      False,          _("region, layout, keyboard, language"),                        _("Set your current language and regional settings")],
-    [_("Bluetooth"),                        "bluetooth",          "bluetooth.svg",               "hardware",      False,          _("bluetooth, dongle, transfer, mobile"),                       _("Set up and connect to Bluetooth devices")],
-    [_("Default Programs"),                 "info",               "details.svg",                    "prefs",      False,          _("defaults, programs, info, details, version, cd, autostart"), _("Get a system overview, and configure defaults programs and media autostart behavior")],
-    [_("Universal Access"),                 "universal-access",   "universal-access.svg",           "prefs",      False,          _("magnifier, talk, access, zoom, keys, contrast"),             _("Configure accessibility features such as the on-screen magnifier, high-contrast mode, and sticky-keys")],
-    [_("User Accounts"),                    "user-accounts",      "user-accounts.svg",              "prefs",      True,           _("users, accounts, add, password, picture"),                   _("Add new users or modify existing ones")],
-    [_("Power Management"),                 "power",              "power.svg",                   "hardware",      False,          _("power, suspend, hibernate, laptop, desktop"),                _("Monitor laptop battery status and configure shutdown options")],
-    [_("Sound"),                            "sound-nua",          "sound.svg",                   "hardware",      False,          _("sound, speakers, headphones, test"),                         _("Configure and test audio input and output devices")],
-    [_("Color"),                            "color",              "color.svg",                   "hardware",      True,           _("color, profile, display, printer, output"),                  _("Manage and calibrate color profiles for display and other color output devices")]
+#         Label                              Module ID                Icon                         Category      Advanced?                      Keywords for filter
+    [_("Networking"),                       "network",            "network.svg",                 "hardware",      False,          _("network, wireless, wifi, ethernet, broadband, internet")],
+    [_("Display"),                          "display",            "display.svg",                 "hardware",      True,           _("display, screen, monitor, layout, resolution, dual, lcd")],
+    [_("Keyboard Layout"),                  "region",             "region.svg",                     "prefs",      False,          _("region, layout, keyboard, language")],
+    [_("Bluetooth"),                        "bluetooth",          "bluetooth.svg",               "hardware",      False,          _("bluetooth, dongle, transfer, mobile")],
+    [_("Default Programs"),                 "info",               "details.svg",                    "prefs",      False,          _("defaults, programs, info, details, version, cd, autostart")],
+    [_("Universal Access"),                 "universal-access",   "universal-access.svg",           "prefs",      False,          _("magnifier, talk, access, zoom, keys, contrast")],
+    [_("User Accounts"),                    "user-accounts",      "user-accounts.svg",              "prefs",      True,           _("users, accounts, add, password, picture")],
+    [_("Power Management"),                 "power",              "power.svg",                   "hardware",      False,          _("power, suspend, hibernate, laptop, desktop")],
+    [_("Sound"),                            "sound-nua",          "sound.svg",                   "hardware",      False,          _("sound, speakers, headphones, test")],
+    [_("Color"),                            "color",              "color.svg",                   "hardware",      True,           _("color, profile, display, printer, output")]
 ]
 
 STANDALONE_MODULES = [
-#         Label                          Executable                          Icon                Category        Advanced?               Keywords for filter                                       Tooltip
-    [_("Printers"),                      "system-config-printer",        "printer.svg",         "hardware",       False,          _("printers, laser, inkjet"),                           _("Add and configure system and network printers")],
-    [_("Firewall"),                      "gufw",                         "firewall.svg",        "prefs",          True,           _("firewall, block, filter, programs"),                 _("Configure this system's firewall")],
-    [_("Languages"),                     "gnome-language-selector",      "language.svg",        "prefs",          False,          _("language, install, foreign"),                        _("Install new language packs onto this system")]
+#         Label                          Executable                          Icon                Category        Advanced?               Keywords for filter
+    [_("Printers"),                      "system-config-printer",        "printer.svg",         "hardware",       False,          _("printers, laser, inkjet")],
+    [_("Firewall"),                      "gufw",                         "firewall.svg",        "prefs",          True,           _("firewall, block, filter, programs")],
+    [_("Languages"),                     "gnome-language-selector",      "language.svg",        "prefs",          False,          _("language, install, foreign")]
 ]
 
 class MainWindow:
@@ -77,11 +77,8 @@ class MainWindow:
                 self.window.set_title(_("Cinnamon Settings") + " - " + sidePage.name)
                 sidePage.build(self.advanced_mode)
                 self.content_box_sw.show()
-                self.button_sub.show()
-                self.button_sub.set_label(sidePage.name)
-                self.button_back.get_style_context().set_junction_sides(Gtk.JunctionSides.RIGHT)
+                self.button_back.show()
                 self.current_sidepage = sidePage
-                self.tooltip_label.set_text("")
             else:
                 sidePage.build(self.advanced_mode)
 
@@ -105,11 +102,7 @@ class MainWindow:
         self.button_cancel = self.builder.get_object("button_cancel")
         self.button_back = self.builder.get_object("button_back")
         self.button_back.set_label(_("All Settings"))
-        self.button_back.show()
-        self.button_back.get_style_context().set_junction_sides(Gtk.JunctionSides.NONE)
-        self.button_sub = self.builder.get_object("button_sub")
-        self.button_sub.hide()
-        self.button_sub.get_style_context().set_junction_sides(Gtk.JunctionSides.LEFT)
+        self.button_back.hide()
         self.search_entry = self.builder.get_object("search_box")
         self.search_entry.connect("changed", self.onSearchTextChanged)
         self.search_entry.connect("icon-press", self.onClearSearchBox)
@@ -120,7 +113,6 @@ class MainWindow:
         self.settings = Gio.Settings.new("org.cinnamon")
         self.advanced_mode = self.settings.get_boolean(ADVANCED_GSETTING)
         self.current_sidepage = None
-        self.tooltip_label = self.builder.get_object("tooltip_label")
 
         for i in range(len(modules)):
             mod = modules[i].Module(self.content_box)
@@ -128,12 +120,12 @@ class MainWindow:
                 self.sidePages.append((mod.sidePage, mod.name, mod.category))
 
         for item in CONTROL_CENTER_MODULES:
-            ccmodule = SettingsWidgets.CCModule(item[0], item[1], item[2], item[3], item[4], item[5], item[6], self.content_box)
+            ccmodule = SettingsWidgets.CCModule(item[0], item[1], item[2], item[3], item[4], item[5], self.content_box)
             if ccmodule.process():
                 self.sidePages.append((ccmodule.sidePage, ccmodule.name, ccmodule.category))
 
         for item in STANDALONE_MODULES:
-            samodule = SettingsWidgets.SAModule(item[0], item[1], item[2], item[3], item[4], item[5], item[6], self.content_box)
+            samodule = SettingsWidgets.SAModule(item[0], item[1], item[2], item[3], item[4], item[5], self.content_box)
             if samodule.process():
                 self.sidePages.append((samodule.sidePage, samodule.name, samodule.category))
 
@@ -144,8 +136,8 @@ class MainWindow:
         self.storeFilter = {}
         for sidepage in self.sidePages:
             sp, sp_id, sp_cat = sidepage
-            if not self.store.has_key(sp_cat):  #       Label         Icon          sidePage     Advanced?   Tooltip
-                self.store[sidepage[2]] = Gtk.ListStore(str,    GdkPixbuf.Pixbuf,    object,       bool,       str)
+            if not self.store.has_key(sp_cat):  #       Label         Icon          sidePage     Category
+                self.store[sidepage[2]] = Gtk.ListStore(str,    GdkPixbuf.Pixbuf,    object,     str)
                 for category in CATEGORIES:
                     if category["id"] == sp_cat:
                         category["show"] = True
@@ -154,7 +146,7 @@ class MainWindow:
                 img = GdkPixbuf.Pixbuf.new_from_file_at_size( iconFile, 48, 48)
             else:
                 img = None
-            sidePagesIters[sp_id] = self.store[sp_cat].append([sp.name, img, sp, True, sp.tooltip])
+            sidePagesIters[sp_id] = self.store[sp_cat].append([sp.name, img, sp, sp_cat])
 
         for key in self.store.keys():
             self.storeFilter[key] = self.store[key].filter_new()
@@ -191,8 +183,7 @@ class MainWindow:
             if not self.advanced_mode:
                 return False
         if sidePage.name.lower().find(text) > -1 or \
-           sidePage.keywords.lower().find(text) > -1 or \
-           sidePage.tooltip.lower().find(text) > -1:
+           sidePage.keywords.lower().find(text) > -1:
             return True
         else:
             return False
@@ -211,12 +202,10 @@ class MainWindow:
         self.storeFilter[category["id"]].refilter()
         if not self.anyVisibleInCategory(category):
             return
-
         if self.first_category_done:
             widget = Gtk.Separator.new(Gtk.Orientation.HORIZONTAL)
             self.side_view_container.pack_start(widget, False, False, 10)
         box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 4)
-
         iconFile = "/usr/lib/cinnamon-settings/data/icons/%s" % category["icon"]
         if os.path.exists(iconFile):
             img = GdkPixbuf.Pixbuf.new_from_file_at_size( iconFile, 30, 30)
@@ -239,14 +228,11 @@ class MainWindow:
         widget.set_row_spacing(0)
         widget.set_hexpand(True)
         widget.set_vexpand(False)
-        widget.connect("motion-notify-event", self.motion)
-
         css_provider = Gtk.CssProvider()
         css_provider.load_from_data("GtkIconView {background-color: @bg_color;}")
         c = widget.get_style_context()
         c.add_provider(css_provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
         self.side_view[category["id"]] = widget
-
         self.side_view_container.pack_start(self.side_view[category["id"]], False, False, 0)
         self.first_category_done = True
         self.side_view[category["id"]].connect("selection_changed", self.side_view_nav, category["id"])
@@ -256,19 +242,10 @@ class MainWindow:
         iter = self.storeFilter[id].get_iter_first()
         visible = False
         while iter is not None:
-            visible = self.storeFilter[id].get_value(iter, 3)
+            cat = self.storeFilter[id].get_value(iter, 3)
+            visible = cat == category["id"]
             iter = self.storeFilter[id].iter_next(iter)
         return visible
-
-    def motion(self, widget, event):
-        path = widget.get_path_at_pos(event.x, event.y)
-        if path is None:
-            self.tooltip_label.set_text("")
-        else:
-            iter = widget.get_model().get_iter(path)
-            sidePage = widget.get_model().get_value(iter, 2)
-            self.tooltip_label.set_text(sidePage.tooltip)
-        return False
 
     def findPath (self, name):
         for key in self.store.keys():
@@ -293,8 +270,7 @@ class MainWindow:
                 c_widgets = child.get_children()
                 for c_widget in c_widgets:
                     c_widget.hide()
-        self.button_back.get_style_context().set_junction_sides(Gtk.JunctionSides.NONE)
-        self.button_sub.hide()
+        self.button_back.hide()
         self.side_view_sw.show()
         self.search_entry.show()
         self.search_entry.grab_focus()

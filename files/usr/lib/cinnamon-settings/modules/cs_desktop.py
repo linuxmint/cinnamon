@@ -6,9 +6,8 @@ from gi.repository import Gio
 class Module:
     def __init__(self, content_box):
         keywords = _("desktop, home, button, trash")
-        tooltip = _("Configure what system icons appear on your desktop")
         advanced = False
-        sidePage = SidePage(_("Desktop"), "desktop.svg", keywords, tooltip, advanced, content_box)
+        sidePage = SidePage(_("Desktop"), "desktop.svg", keywords, advanced, content_box)
         self.sidePage = sidePage
         self.name = "desktop"
         self.category = "prefs"

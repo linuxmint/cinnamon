@@ -11,16 +11,15 @@ home = os.path.expanduser("~")
 class Module:
     def __init__(self, content_box):
          keywords = _("themes, style")
-         tooltip = _("Download, install and manage Cinnamon themes")
          advanced = False
-         sidePage = ThemeViewSidePage(_("Themes"), "themes.svg", keywords, tooltip, advanced, content_box)
+         sidePage = ThemeViewSidePage(_("Themes"), "themes.svg", keywords, advanced, content_box)
          self.sidePage = sidePage
          self.name = "themes"
          self.category = "appear"
 
 class ThemeViewSidePage (SidePage):
-    def __init__(self, name, icon, keywords, tooltip, advanced, content_box):
-        SidePage.__init__(self, name, icon, keywords, tooltip, advanced, content_box)
+    def __init__(self, name, icon, keywords, advanced, content_box):
+        SidePage.__init__(self, name, icon, keywords, advanced, content_box)
         self.icons = []
                   
     def build(self, advanced):

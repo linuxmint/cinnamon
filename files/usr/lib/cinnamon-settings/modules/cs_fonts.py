@@ -5,9 +5,8 @@ from SettingsWidgets import *
 class Module:
     def __init__(self, content_box):
         keywords = _("font, size, small, large")
-        tooltip = _("Manage system fonts and text scaling")
         advanced = False
-        sidePage = SidePage(_("Fonts"), "fonts.svg", keywords, tooltip, advanced, content_box)
+        sidePage = SidePage(_("Fonts"), "fonts.svg", keywords, advanced, content_box)
         self.sidePage = sidePage
         self.name = "fonts"
         self.category = "appear"

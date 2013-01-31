@@ -30,7 +30,7 @@ except Exception, detail:
     sys.exit(1)
 
 class SidePage:
-    def __init__(self, name, icon, keywords, tooltip, advanced, content_box, is_c_mod = False, is_standalone = False, exec_name = None):
+    def __init__(self, name, icon, keywords, advanced, content_box, is_c_mod = False, is_standalone = False, exec_name = None):
         self.name = name
         self.icon = icon
         self.content_box = content_box
@@ -39,7 +39,6 @@ class SidePage:
         self.is_standalone = is_standalone
         self.exec_name = exec_name
         self.keywords = keywords
-        self.tooltip = tooltip
         self.advanced = advanced
 
     def add_widget(self, widget, advanced = False):
@@ -79,8 +78,8 @@ class SidePage:
             subprocess.Popen([self.exec_name])
 
 class CCModule:
-    def __init__(self, label, mod_id, icon, category, advanced, keywords, tooltip, content_box):
-        sidePage = SidePage(label, icon, keywords, tooltip, advanced, content_box, True, False, None)
+    def __init__(self, label, mod_id, icon, category, advanced, keywords, content_box):
+        sidePage = SidePage(label, icon, keywords, advanced, content_box, True, False, None)
         self.sidePage = sidePage
         self.name = mod_id
         self.category = category
@@ -98,8 +97,8 @@ class CCModule:
             return False
 
 class SAModule:
-    def __init__(self, label, mod_id, icon, category, keywords, advanced, tooltip, content_box):
-        sidePage = SidePage(label, icon, keywords, tooltip, advanced, content_box, False, True, mod_id)
+    def __init__(self, label, mod_id, icon, category, advanced, keywords, content_box):
+        sidePage = SidePage(label, icon, keywords, advanced, content_box, False, True, mod_id)
         self.sidePage = sidePage
         self.name = mod_id
         self.category = category
