@@ -298,7 +298,6 @@ class MainWindow:
         self.search_entry.show()
         self.search_entry.grab_focus()
         self.current_sidepage = None
-        self.displayCategories()
 
     def on_menu_button_clicked(self, widget):
         popup = Gtk.Menu()
