@@ -267,6 +267,7 @@ class MainWindow:
             iter = widget.get_model().get_iter(path)
             sidePage = widget.get_model().get_value(iter, 2)
             self.tooltip_label.set_text(sidePage.tooltip)
+        return False
 
     def findPath (self, name):
         for key in self.store.keys():
