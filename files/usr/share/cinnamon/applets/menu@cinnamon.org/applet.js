@@ -20,6 +20,7 @@ const Tweener = imports.ui.tweener;
 const DND = imports.ui.dnd;
 const Meta = imports.gi.Meta;
 const DocInfo = imports.misc.docInfo;
+const GLib = imports.gi.GLib;
 
 const ICON_SIZE = 16;
 const MAX_FAV_ICON_SIZE = 32;
@@ -1024,7 +1025,7 @@ MyApplet.prototype = {
         try{
            this.set_applet_icon_path(icon_file);
         }catch(e){
-           global.log("WARNING : Could not load icon file \""+icon_file+"\" for menu button");
+           global.logWarning("Could not load icon file \""+icon_file+"\" for menu button");
         }
     },
 
@@ -1101,6 +1102,49 @@ MyApplet.prototype = {
                     this.searchEntry.set_text(item_actor._delegate.file.get_path());
             }
             return true;
+        } else if (this.searchFilesystem && (this._fileFolderAccessActive || symbol == Clutter.slash)) {
+            if (symbol == Clutter.Return || symbol == Clutter.KP_Enter) {
+                if (this._run(this.searchEntry.get_text())) {
+                    this.menu.close();
+                }
+                return true;
+            }
+            if (symbol == Clutter.Escape) {
+                this.searchEntry.set_text('');
+                this._fileFolderAccessActive = false;
+            }
+            if (symbol == Clutter.slash) {
+                // Need preload data before get completion. GFilenameCompleter load content of parent directory.
+                // Parent directory for /usr/include/ is /usr/. So need to add fake name('a').
+                let text = this.searchEntry.get_text().concat('/a');
+                let prefix;
+                if (text.lastIndexOf(' ') == -1)
+                    prefix = text;
+                else
+                    prefix = text.substr(text.lastIndexOf(' ') + 1);
+                this._getCompletion(prefix);
+
+                return false;
+            }
+            if (symbol == Clutter.Tab) {
+                let text = actor.get_text();
+                let prefix;
+                if (text.lastIndexOf(' ') == -1)
+                    prefix = text;
+                else
+                    prefix = text.substr(text.lastIndexOf(' ') + 1);
+                let postfix = this._getCompletion(prefix);
+                if (postfix != null && postfix.length > 0) {
+                    actor.insert_text(postfix, -1);
+                    actor.set_cursor_position(text.length + postfix.length);
+                    if (postfix[postfix.length - 1] == '/')
+                        this._getCompletion(text + postfix + 'a');
+                }
+
+                return true;
+            }
+            return false;
+
         } else {
             return false;
         }
@@ -1700,6 +1744,17 @@ MyApplet.prototype = {
                         item.actor.hide();
             });
         }
+        if (autocompletes) {
+            for (let i = 0; i < autocompletes.length; i++) {
+                let button = new TransientButton(this, autocompletes[i]);
+                button.actor.connect('realize', Lang.bind(this, this._onApplicationButtonRealized));
+                button.actor.connect('leave-event', Lang.bind(this, this._appLeaveEvent, button));
+                this._addEnterEvent(button, Lang.bind(this, this._appEnterEvent, button));
+                this._transientButtons.push(button);
+                this.applicationsBox.add_actor(button.actor);
+                button.actor.realize();
+            }
+        }
     },
 
     _setCategoriesButtonActive: function(active) {
@@ -1726,7 +1781,7 @@ MyApplet.prototype = {
     _onSearchTextChanged: function (se, prop) {
         if (this.menuIsOpening) {
             this.menuIsOpening = false;
-            return;
+            return false;
         } else {
             this.searchActive = this.searchEntry.get_text() != '';
             this._clearAllSelections(true);
@@ -1768,6 +1823,7 @@ MyApplet.prototype = {
                 this._selectCategory(this._allAppsCategoryButton);
                 this._removeButtons(this._pathButtons);
             }
+            return false;
         }
     },
 
@@ -1876,6 +1932,61 @@ MyApplet.prototype = {
 
         this._selectFirstResult();
         return false;
+    },
+
+    _getCompletion : function(text) {
+        if (text.indexOf('/') != -1) {
+            if (text.substr(text.length - 1) == '/') {
+                return '';
+            } else {
+                return this._pathCompleter.get_completion_suffix(text);
+            }
+        } else {
+            return false;
+        }
+    },
+
+    _getCompletions : function(text) {
+        if (text.indexOf('/') != -1) {
+            return this._pathCompleter.get_completions(text);
+        } else {
+            return new Array();
+        }
+    },
+
+    _run : function(input) {
+        let command = input;
+
+        this._commandError = false;
+        if (input) {
+            let path = null;
+            if (input.charAt(0) == '/') {
+                path = input;
+            } else {
+                if (input.charAt(0) == '~')
+                    input = input.slice(1);
+                path = GLib.get_home_dir() + '/' + input;
+            }
+
+            if (GLib.file_test(path, GLib.FileTest.EXISTS)) {
+                let file = Gio.file_new_for_path(path);
+                try {
+                    Gio.app_info_launch_default_for_uri(file.get_uri(),
+                                                        global.create_app_launch_context());
+                } catch (e) {
+                    // The exception from gjs contains an error string like:
+                    //     Error invoking Gio.app_info_launch_default_for_uri: No application
+                    //     is registered as handling this file
+                    // We are only interested in the part after the first colon.
+                    //let message = e.message.replace(/[^:]*: *(.+)/, '$1');
+                    return false;
+                }
+            } else {
+                return false;
+            }
+        }
+
+        return true;
     }
 };
 

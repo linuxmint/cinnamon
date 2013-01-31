@@ -20,6 +20,9 @@ class Module:
         sidePage.add_widget(GSettingsComboBox(_("Window focus mode"),
                                             "org.gnome.desktop.wm.preferences", "focus-mode", None,
                                             [(i, i.title()) for i in ("click","sloppy","mouse")]))
+        sidePage.add_widget(GSettingsComboBox(_("Modifier to use for modified window click actions"),
+                                            "org.gnome.desktop.wm.preferences", "mouse-button-modifier", None,
+                                            [(i, i.title()) for i in ("","<Alt>","<Super>","<Control>")]))
 
         sidePage.add_widget(TitleBarButtonsOrderSelector())
         sidePage.add_widget(GSettingsCheckButton(_("Enable Edge Tiling (\"Aero Snap\")"), "org.cinnamon.overrides", "edge-tiling", None))
@@ -71,12 +74,13 @@ class TitleBarButtonsOrderSelector(Gtk.Table):
         
         self.left_side_widgets = []
         self.right_side_widgets = []
-        for i in range(3):
+        for i in range(4):
             self.left_side_widgets.append(Gtk.ComboBox())
             self.right_side_widgets.append(Gtk.ComboBox())
         
         buttons = [
             ("", ""),
+            ("menu", _("Menu")),
             ("close", _("Close")),
             ("minimize", _("Minimize")),
             ("maximize", _("Maximize"))

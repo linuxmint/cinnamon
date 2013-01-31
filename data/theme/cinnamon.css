@@ -1761,3 +1761,7 @@ StScrollBar StButton#vhandle:hover {
    font-size: 0.9em;
    box-shadow: none;
 }
+
+.flashspot {
+   background-color: white;
+}

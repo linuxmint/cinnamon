@@ -50,6 +50,7 @@ Depends: ${gir:Depends},
          gjs (>= 1.29.18),
          ${shlibs:Depends},
          ${misc:Depends},
+         cinnamon-common (= ${source:Version}),
          caribou,
          cups-pk-helper,
          gnome-settings-daemon (>= 2.91.5.1),
@@ -88,3 +89,22 @@ Description: Cinnamon desktop
  by the GNOME Panel and by the window manager in previous versions of
  GNOME. Cinnamon has rich visual effects enabled by new
  graphical technologies.
+
+Package: cinnamon-common
+Replaces: cinnamon (<< 1.6.7+nmu1)
+Breaks: cinnamon (<< 1.6.7+nmu1)
+Architecture: all
+Depends: ${misc:Depends}, python
+Description: Cinnamon desktop (Common data files)
+ Cinnamon redefines user interactions with the GNOME desktop.
+ In particular, it offers new paradigms for launching applications,
+ accessing documents, and organizing open windows in GNOME. Later, it
+ will introduce a new applets eco-system and offer new solutions for
+ other desktop features, such as notifications and contacts
+ management. Cinnamon is intended to replace functions handled
+ by the GNOME Panel and by the window manager in previous versions of
+ GNOME. Cinnamon has rich visual effects enabled by new
+ graphical technologies.
+ .
+ This package contains the architecture independent files needed by Cinnamon
+

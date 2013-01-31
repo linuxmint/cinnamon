@@ -53,8 +53,7 @@ function startAppForMount(app, mount) {
         retval = app.launch(files, 
                             global.create_app_launch_context())
     } catch (e) {
-        log('Unable to launch the application ' + app.get_name()
-            + ': ' + e.toString());
+        global.logError('Unable to launch the application ' + app.get_name(), e);
     }
 
     return retval;
@@ -104,8 +103,7 @@ ContentTypeDiscoverer.prototype = {
         try {
             contentTypes = mount.guess_content_type_finish(res);
         } catch (e) {
-            log('Unable to guess content types on added mount ' + mount.get_name()
-                + ': ' + e.toString());
+            global.logError('Unable to guess content types on added mount ' + mount.get_name(), e);
         }
 
         if (contentTypes.length) {
@@ -239,8 +237,7 @@ AutorunManager.prototype = {
             // FIXME: we need to ignore G_IO_ERROR_FAILED_HANDLED errors here
             // but we can't access the error code from JS.
             // See https://bugzilla.gnome.org/show_bug.cgi?id=591480
-            log('Unable to eject the mount ' + mount.get_name() 
-                + ': ' + e.toString());
+            global.logError('Unable to eject the mount ' + mount.get_name() , e);
         }
     },
 
@@ -251,8 +248,7 @@ AutorunManager.prototype = {
             // FIXME: we need to ignore G_IO_ERROR_FAILED_HANDLED errors here
             // but we can't access the error code from JS.
             // See https://bugzilla.gnome.org/show_bug.cgi?id=591480
-            log('Unable to eject the drive ' + source.get_name() 
-                + ': ' + e.toString());
+            global.logError('Unable to eject the drive ' + source.get_name(), e);
         }
     },
 
@@ -263,8 +259,7 @@ AutorunManager.prototype = {
             // FIXME: we need to ignore G_IO_ERROR_FAILED_HANDLED errors here
             // but we can't access the error code from JS.
             // See https://bugzilla.gnome.org/show_bug.cgi?id=591480
-            log('Unable to stop the drive ' + drive.get_name() 
-                + ': ' + e.toString());
+            global.logError('Unable to stop the drive ' + drive.get_name(), e);
         }
     },
 }
