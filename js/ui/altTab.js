@@ -534,10 +534,24 @@ AltTabPopup.prototype = {
             this._clearPreview();
             this._previewClones = previewClones;
 
-            if (!this._previewBackdrop) {
-                let backdrop = this._previewBackdrop = new St.Bin();
+            if (this._previewBackdrop) {return;}
+
+            let backdrop = null;
+            let desktopActor = global.get_window_actors().filter(function(realWindow) {
+                return realWindow.metaWindow.get_window_type() == Meta.WindowType.DESKTOP;
+            },this)[0];
+            if (desktopActor) {
+                backdrop = new Clutter.Clone({source: desktopActor});
+            }
+
+            if (!backdrop) {
+                backdrop = this._previewBackdrop = new St.Bin();
+                backdrop.style = "background-color: rgba(0,0,0,0.9)";
+            }
+
+            if (backdrop) {
+                this._previewBackdrop = backdrop;
                 this.actor.add_actor(backdrop);
-                // Make sure that the backdrop does not overlap the switcher.
                 backdrop.lower(this._appSwitcher.actor);
                 backdrop.lower(previewClones);
                 childBox.x1 = this.actor.x;
@@ -545,7 +559,6 @@ AltTabPopup.prototype = {
                 childBox.y1 = this.actor.y;
                 childBox.y2 = this.actor.y + this.actor.height;
                 backdrop.allocate(childBox, 0);
-                backdrop.style = "background-color: rgba(0,0,0,0.9)";
             }
         }; // showPreview
 
