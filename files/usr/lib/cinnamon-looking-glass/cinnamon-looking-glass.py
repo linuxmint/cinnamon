@@ -28,6 +28,31 @@ from dbus.mainloop.glib import DBusGMainLoop
 LG_DBUS_NAME = "org.Cinnamon.LookingGlass"
 LG_DBUS_PATH = "/org/Cinnamon/LookingGlass"
 
+class MenuButton(Gtk.Button):
+    def __init__(self, text):
+        Gtk.Button.__init__(self, text)
+        self.connect("clicked", self.onClicked)
+
+    def set_popup(self, menu):
+        self.menu = menu
+
+    def onClicked(self, widget):
+        x, y, w, h = self.getScreenCoordinates()
+        self.menu.popup(None, None, lambda menu, data: (x, y+h, True), None, 1, 0)
+                
+    def getScreenCoordinates(self):
+        parent = self.get_parent_window()
+        x, y = parent.get_root_origin()
+        w = parent.get_width()
+        h = parent.get_height()
+        extents = parent.get_frame_extents()
+        allocation = self.get_allocation()
+        return (x + (extents.width-w)/2 + allocation.x,
+                y + (extents.height-h)-(extents.width-w)/2 + allocation.y,
+                allocation.width,
+                allocation.height)
+
+
 class ResizeGrip(Gtk.Widget):
     def __init__(self, parent):
         Gtk.Widget.__init__(self)
@@ -445,7 +470,10 @@ class CinnamonLog(dbus.service.Object):
         menu.append(self.createMenuItem('Quit', self.onExitClicked))
         menu.show_all()
 
-        button = Gtk.MenuButton(u"Actions \u25BE")
+        if hasattr(Gtk, 'MenuButton'):
+            button = Gtk.MenuButton(u"Actions \u25BE")
+        else:
+            button = MenuButton(u"Actions \u25BE")
         button.set_popup(menu)
         return button
 
