@@ -29,6 +29,8 @@ const THUMBNAIL_FADE_TIME = 0.1; // seconds
 const PREVIEW_DELAY_TIMEOUT = 180; // milliseconds
 var PREVIEW_SWITCHER_FADEOUT_TIME = 0.5; // seconds
 
+const DEMANDS_ATTENTION_CLASS_NAME = "window-list-item-demands-attention";
+
 const iconSizes = [96, 80, 64, 48, 32, 22];
 
 function mod(a, b) {
@@ -79,18 +81,11 @@ AltTabPopup.prototype = {
         // the switcher appears underneath the current pointer location
         this._disableHover();
 
-        this._workspaceConnector = new Connector.Connector();
+        this._connector = new Connector.Connector();
         for (let i = 0, numws = global.screen.n_workspaces; i < numws; ++i) {
             let workspace = global.screen.get_workspace_by_index(i);
-                this._workspaceConnector.addConnection(workspace, 'window-removed', Lang.bind(this, function(ws, metaWindow) {
-                    let index = -1;
-                    this._appIcons.some(function(ai, ix) {
-                        if (ai.window == metaWindow) {
-                            index = ix;
-                            return true; // break
-                        }
-                        return false; // continue
-                    }, this);
+                this._connector.addConnection(workspace, 'window-removed', Lang.bind(this, function(ws, metaWindow) {
+                    let index = this._indexOfWindow(metaWindow);
                     if (index >= 0) {
                         if (index == this._currentApp) {
                             this._clearPreview();
@@ -101,6 +96,8 @@ AltTabPopup.prototype = {
                     }
                 }));
         }
+        this._connector.addConnection(global.display, 'window-demands-attention', Lang.bind(this, this._onWindowDemandsAttention));
+        this._connector.addConnection(global.display, 'window-marked-urgent', Lang.bind(this, this._onWindowDemandsAttention));
 
         Main.uiGroup.add_actor(this.actor);
 
@@ -126,6 +123,25 @@ AltTabPopup.prototype = {
         }
         if (!found) {
             this._iconsEnabled = true;
+        }
+    },
+
+    _indexOfWindow: function(metaWindow) {
+        let index = -1;
+        this._appIcons.some(function(ai, ix) {
+            if (ai.window == metaWindow) {
+                index = ix;
+                return true; // break
+            }
+            return false; // continue
+        }, this);
+        return index;
+    },
+
+    _onWindowDemandsAttention: function(display, metaWindow) {
+        let index = this._indexOfWindow(metaWindow);
+        if (index >= 0) {
+            this._appIcons[index]._demandAttention(true);
         }
     },
 
@@ -493,7 +509,7 @@ AltTabPopup.prototype = {
 
     destroy : function() {
         this._exiting = true;
-        this._workspaceConnector.destroy();
+        this._connector.destroy();
         var doDestroy = Lang.bind(this, function() {
            Main.uiGroup.remove_actor(this.actor);
            this.actor.destroy();
@@ -755,13 +771,10 @@ SwitcherList.prototype = {
         this._rightArrow.opacity = this._rightGradient.opacity;
     },
 
-    addItem : function(item, label, extra_style) {
+    addItem : function(item, label) {
         let bbox = new St.Button({ style_class: 'item-box',
                                    reactive: true });
-        if (extra_style) {
-            bbox.add_style_class_name(extra_style);
-        }
-
+        item._bbox = bbox;
         bbox.set_child(item);
         this._list.add_actor(bbox);
 
@@ -997,6 +1010,11 @@ AppIcon.prototype = {
         this.app = tracker.get_window_app(window);
         this.actor = new St.BoxLayout({ style_class: 'alt-tab-app',
                                          vertical: true });
+        this.actor.connect('destroy', Lang.bind(this, function() {
+            if (this._urgencyTimeout) {
+                Mainloop.source_remove(this._urgencyTimeout);
+            }
+        }));
         this.icon = null;
         this._iconBin = new St.Bin();
 
@@ -1007,6 +1025,21 @@ AppIcon.prototype = {
         this._label_bin = new St.Bin({ x_align: St.Align.MIDDLE });
         this._label_bin.add_actor(this.label);
         this.actor.add(this._label_bin);
+    },
+
+    _demandAttention: function(show) {
+        if (!this.actor._bbox || this._urgencyTimeout) {return;}
+        let bbox = this.actor._bbox;
+        if (show && !bbox.has_style_class_name(DEMANDS_ATTENTION_CLASS_NAME)) {
+            bbox.add_style_class_name(DEMANDS_ATTENTION_CLASS_NAME);
+        }
+        else if (!show && bbox.has_style_class_name(DEMANDS_ATTENTION_CLASS_NAME)) {
+            bbox.remove_style_class_name(DEMANDS_ATTENTION_CLASS_NAME);
+        }
+        this._urgencyTimeout = Mainloop.timeout_add(750, Lang.bind(this, function() {
+            this._urgencyTimeout = 0;
+            this._demandAttention(!show);
+        }));
     },
 
     updateLabel: function() {
@@ -1208,9 +1241,12 @@ AppSwitcher.prototype = {
 
     _addIcon : function(appIcon) {
         this.icons.push(appIcon);
+        this.addItem(appIcon.actor, appIcon.label);
         let is_urgent = appIcon.window.is_demanding_attention() || appIcon.window.is_urgent();
-        let style = is_urgent ? "window-list-item-demands-attention" : null;
-        this.addItem(appIcon.actor, appIcon.label, style);
+        if (is_urgent) {
+            appIcon._demandAttention(true);
+        }
+
 
         let n = this._arrows.length;
         let arrow = new St.DrawingArea({ style_class: 'switcher-arrow' });
