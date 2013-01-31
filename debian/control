@@ -70,12 +70,13 @@ Depends: ${gir:Depends},
          gir1.2-upowerglib-1.0,
          python,
          python-dbus,
-	 python-gconf,
-	 python-imaging,
-	 python-gtk2,
+         python-gconf,
+         python-imaging,
+         python-gtk2,
          pkg-config,
          mesa-utils,
-	 gkbd-capplet
+         gkbd-capplet,
+         python-pyinotify
 Recommends: gnome-control-center, gnome-user-guide, gnome-themes-standard, gnome-session-fallback, gnome-terminal, nemo
 Breaks: gnome-control-center (<< 1:3.0)
 Conflicts: cinnamon-session, cinnamon-settings
