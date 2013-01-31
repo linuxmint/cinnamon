@@ -152,6 +152,14 @@ ApplicationContextMenuItem.prototype = {
             case "remove_from_favorites":
                 AppFavorites.getAppFavorites().removeFavorite(this._appButton.app.get_id());
                 break;
+            case "uninstall":
+                if (this._appButton.app.get_id()){
+                    let uninstallScript = Gio.file_new_for_path("/usr/bin/cinnamon-remove-app");
+                    if (uninstallScript.query_exists(null)) {
+                        Util.spawnCommandLine("/usr/bin/cinnamon-remove-app " + this._appButton.app.get_id());
+                    }
+                }
+                break;
         }
         this._appButton.toggleMenu();
         return false;
@@ -372,6 +380,13 @@ GenericApplicationButton.prototype = {
             }else{
                 menuItem = new ApplicationContextMenuItem(this, _("Add to favorites"), "add_to_favorites");
                 this.menu.addMenuItem(menuItem);
+            }
+            if (this.app.get_id()){
+                let uninstallScript = Gio.file_new_for_path("/usr/bin/cinnamon-remove-app");
+                if (uninstallScript.query_exists(null)) {
+                    menuItem = new ApplicationContextMenuItem(this, _("Uninstall"), "uninstall");
+                    this.menu.addMenuItem(menuItem);
+                }
             }
         }
         this.menu.toggle();
