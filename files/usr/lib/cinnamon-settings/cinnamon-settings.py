@@ -119,6 +119,7 @@ class MainWindow:
         self.settings = Gio.Settings.new("org.cinnamon")
         self.advanced_mode = self.settings.get_boolean(ADVANCED_GSETTING)
         self.current_sidepage = None
+        self.tooltip_label = self.builder.get_object("tooltip_label")
 
         for i in range(len(modules)):
             mod = modules[i].Module(self.content_box)
@@ -231,13 +232,13 @@ class MainWindow:
         widget = Gtk.IconView.new_with_model(self.storeFilter[category["id"]])
         widget.set_text_column(0)
         widget.set_pixbuf_column(1)
-        widget.set_tooltip_column(4)
         widget.set_item_width(110)
         widget.set_row_spacing(0)
         widget.set_column_spacing(0)
         widget.set_row_spacing(0)
         widget.set_hexpand(True)
         widget.set_vexpand(False)
+        widget.connect("motion-notify-event", self.motion)
 
         css_provider = Gtk.CssProvider()
         css_provider.load_from_data("GtkIconView {background-color: @bg_color;}")
@@ -258,6 +259,14 @@ class MainWindow:
             iter = self.storeFilter[id].iter_next(iter)
         return visible
 
+    def motion(self, widget, event):
+        path = widget.get_path_at_pos(event.x, event.y)
+        if path is None:
+            self.tooltip_label.set_text("")
+        else:
+            iter = widget.get_model().get_iter(path)
+            sidePage = widget.get_model().get_value(iter, 2)
+            self.tooltip_label.set_text(sidePage.tooltip)
 
     def findPath (self, name):
         for key in self.store.keys():
