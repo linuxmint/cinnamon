@@ -421,7 +421,7 @@ _Draggable.prototype = {
             this._dragActor.set_position(stageX + this._dragOffsetX,
                                          stageY + this._dragOffsetY);
 
-            let target = this._dragActor.get_stage().get_actor_at_pos(Clutter.PickMode.ALL,
+            let target = this._dragActor.get_stage().get_actor_at_pos(Clutter.PickMode.REACTIVE,
                                                                       stageX, stageY);
 
             // We call observers only once per motion with the innermost
