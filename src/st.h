@@ -1,5 +1,6 @@
 #define ST_H_INSIDE 1
 #include <st/st-adjustment.h>
+#include <st/st-background-effect.h>
 #include <st/st-bin.h>
 #include <st/st-border-image.h>
 #include <st/st-box-layout.h>

@@ -67,6 +67,7 @@ st-enum-types.c: stamp-st-enum-types.h $(srcdir)/st/st-enum-types.c.in
 # please, keep this sorted alphabetically
 st_source_h =					\
 	st/st-adjustment.h			\
+	st/st-background-effect.h               \
 	st/st-bin.h				\
 	st/st-border-image.h			\
 	st/st-box-layout.h			\
@@ -124,6 +125,7 @@ st_source_private_h =				\
 # please, keep this sorted alphabetically
 st_source_c =					\
 	st/st-adjustment.c			\
+	st/st-background-effect.c               \
 	st/st-bin.c				\
 	st/st-border-image.c			\
 	st/st-box-layout.c			\

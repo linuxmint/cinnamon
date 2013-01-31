@@ -129,10 +129,10 @@ gboolean st_theme_node_lookup_double (StThemeNode  *node,
                                       const char   *property_name,
                                       gboolean      inherit,
                                       double       *value);
-gboolean st_theme_node_lookup_length (StThemeNode *node,
-                                      const char  *property_name,
-                                      gboolean     inherit,
-                                      gdouble     *length);
+gboolean st_theme_node_lookup_length (StThemeNode  *node,
+                                      const char   *property_name,
+                                      gboolean      inherit,
+                                      gdouble      *length);
 gboolean st_theme_node_lookup_shadow (StThemeNode  *node,
                                       const char   *property_name,
                                       gboolean      inherit,
@@ -160,7 +160,8 @@ void st_theme_node_get_background_gradient (StThemeNode   *node,
                                             ClutterColor   *start,
                                             ClutterColor   *end);
 
-const char *st_theme_node_get_background_image (StThemeNode *node);
+const char *st_theme_node_get_background_image   (StThemeNode *node);
+const char *st_theme_node_get_background_bumpmap (StThemeNode *node);
 
 int    st_theme_node_get_border_width  (StThemeNode  *node,
                                         StSide        side);
