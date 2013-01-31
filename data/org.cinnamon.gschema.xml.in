@@ -371,22 +371,6 @@
       </_description>
     </key>
 
-    <key type="b" name="menu-use-multiline-appinfo">
-      <default>false</default>
-      <_summary>Enable or disable text wrapping on AppInfo description in menu applet</_summary>
-      <_description>
-            Toggles text wrapping on the description of the currently selected application in the menu applet
-      </_description>
-    </key>
-
-    <key type="b" name="menu-align-appinfo-right">
-      <default>true</default>
-      <_summary>Align AppInfo title  and description on the right side in menu applet</_summary>
-      <_description>
-            Changes text align of the description and title of the currently selected application in the menu applet
-      </_description>
-    </key>
-
     <key type="i" name="number-workspaces">
         <default>2</default>
         <_summary>Number of workspaces in Cinnamon session</_summary>

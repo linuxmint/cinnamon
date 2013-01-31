@@ -33,16 +33,10 @@ class Module:
         visibleItemsFrame = DoubleListFrame(_("Visible Items"))
         sidePage.add_widget(visibleItemsFrame)
         
-        visibleItemsFrame.add_left(GSettingsCheckButton(_("Show bookmarks and places"), "org.cinnamon", "menu-show-places", None))
-        visibleItemsFrame.add_left(GSettingsCheckButton(_("Show recent files"), "org.cinnamon", "menu-show-recent", None))
-        visibleItemsFrame.add_right(GSettingsCheckButton(_("Show favorites"), "org.cinnamon", "menu-show-favorites", None))
-        visibleItemsFrame.add_right(GSettingsCheckButton(_("Show system buttons"), "org.cinnamon", "menu-show-system-buttons", None))
-        
-        appInfoFrame = DoubleListFrame(_("Selected Application Information"))
-        sidePage.add_widget(appInfoFrame)
-        
-        appInfoFrame.add_left(GSettingsCheckButton(_("Show title"), "org.cinnamon", "menu-show-appinfo-title", None))
-        appInfoFrame.add_left(GSettingsCheckButton(_("Show description"), "org.cinnamon", "menu-show-appinfo-description", None))
-        appInfoFrame.add_right(GSettingsCheckButton(_("Align title and description right"), "org.cinnamon", "menu-align-appinfo-right", None))
-        appInfoFrame.add_right(GSettingsCheckButton(_("Use multiple lines for description"), "org.cinnamon", "menu-use-multiline-appinfo", None))
+        visibleItemsFrame.add_left(GSettingsCheckButton(_("Bookmarks and places"), "org.cinnamon", "menu-show-places", None))
+        visibleItemsFrame.add_left(GSettingsCheckButton(_("Recent files"), "org.cinnamon", "menu-show-recent", None))
+        visibleItemsFrame.add_right(GSettingsCheckButton(_("Favorites"), "org.cinnamon", "menu-show-favorites", None))
+        visibleItemsFrame.add_right(GSettingsCheckButton(_("System buttons"), "org.cinnamon", "menu-show-system-buttons", None))
+        visibleItemsFrame.add_left(GSettingsCheckButton(_("Selected application title"), "org.cinnamon", "menu-show-appinfo-title", None))
+        visibleItemsFrame.add_right(GSettingsCheckButton(_("Selected application description"), "org.cinnamon", "menu-show-appinfo-description", None))
 

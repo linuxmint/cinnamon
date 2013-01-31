@@ -817,8 +817,6 @@ MyApplet.prototype = {
         this._connectSetting("menu-show-system-buttons", "showSystemButtons", Lang.bind(this, this._refreshFavs));
         this._connectSetting("menu-show-appinfo-title", "showAppInfoTitle", Lang.bind(this, this._refreshAppInfo));
         this._connectSetting("menu-show-appinfo-description", "showAppInfoDescription", Lang.bind(this, this._refreshAppInfo));
-        this._connectSetting("menu-use-multiline-appinfo", "useMultilineAppInfoDescription", Lang.bind(this, this._refreshAppInfo));
-        this._connectSetting("menu-align-appinfo-right", "alignAppInfoRight", Lang.bind(this, this._refreshAppInfo));
         
         this._refreshActivateOnHover();
         global.settings.connect("changed::activate-menu-applet-on-hover", Lang.bind(this, this._refreshActivateOnHover));
@@ -1338,9 +1336,6 @@ MyApplet.prototype = {
         this.selectedAppBox.visible = (this.showAppInfoTitle || this.showAppInfoDescription);
         this.selectedAppDescription.visible = this.showAppInfoDescription;
         this.selectedAppTitle.visible = this.showAppInfoTitle;
-        this.selectedAppDescription.clutter_text.set_line_wrap(this.useMultilineAppInfoDescription);
-        this.selectedAppDescription.style = this.alignAppInfoRight ? 'text-align:right;' : 'text-align:left;';
-        this.selectedAppTitle.style = this.selectedAppDescription.style;
     },
 
     _refreshFavs : function() {
@@ -1552,6 +1547,7 @@ MyApplet.prototype = {
         this.selectedAppTitle = new St.Label({ style_class: 'menu-selected-app-title', text: "" });
         this.selectedAppBox.add_actor(this.selectedAppTitle);
         this.selectedAppDescription = new St.Label({ style_class: 'menu-selected-app-description', text: "" });
+        this.selectedAppDescription.clutter_text.set_line_wrap(true);
         this.selectedAppBox.add_actor(this.selectedAppDescription);
 
         this.topPane = new St.BoxLayout({ vertical: true });
