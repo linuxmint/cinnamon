@@ -31,16 +31,17 @@
               <object class="GtkToolItem" id="toolbutton2">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="margin_bottom">6</property>
+                <property name="valign">center</property>
                 <style>
                   <class name="raised"/>
                 </style>
                 <child>
-                  <object class="GtkBox" id="box3">
-                    <property name="height_request">24</property>
+                  <object class="GtkButtonBox" id="buttonbox2">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="halign">start</property>
+                    <property name="valign">start</property>
+                    <property name="layout_style">start</property>
                     <style>
                       <class name="linked"/>
                     </style>
@@ -57,6 +58,7 @@
                         <property name="expand">False</property>
                         <property name="fill">False</property>
                         <property name="position">0</property>
+                        <property name="non_homogeneous">True</property>
                       </packing>
                     </child>
                     <child>
@@ -73,6 +75,7 @@
                         <property name="expand">False</property>
                         <property name="fill">True</property>
                         <property name="position">1</property>
+                        <property name="non_homogeneous">True</property>
                       </packing>
                     </child>
                   </object>
@@ -303,13 +306,5 @@
         </child>
       </object>
     </child>
-  </object>
-  <object class="GtkSizeGroup" id="sizegroup1">
-    <property name="mode">vertical</property>
-    <widgets>
-      <widget name="button_back"/>
-      <widget name="button_sub"/>
-      <widget name="search_box"/>
-    </widgets>
   </object>
 </interface>

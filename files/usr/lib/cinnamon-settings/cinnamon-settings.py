@@ -81,6 +81,7 @@ class MainWindow:
                 self.button_sub.set_label(sidePage.name)
                 self.button_back.get_style_context().set_junction_sides(Gtk.JunctionSides.RIGHT)
                 self.current_sidepage = sidePage
+                self.tooltip_label.set_text("")
             else:
                 sidePage.build(self.advanced_mode)
 
