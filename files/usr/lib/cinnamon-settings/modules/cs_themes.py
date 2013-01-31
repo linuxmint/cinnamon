@@ -8,6 +8,8 @@ import os.path
 
 home = os.path.expanduser("~")
 
+THUMB_SIZE = 88
+
 class Module:
     def __init__(self, content_box):
          keywords = _("themes, style")
@@ -37,16 +39,16 @@ class ThemeViewSidePage (SidePage):
         
         cinnamon_theme_vbox = Gtk.VBox()
         
-        scrolledWindow = Gtk.ScrolledWindow()   
+        scrolledWindow = Gtk.ScrolledWindow()
         cinnamon_theme_vbox.pack_start(scrolledWindow, True, True, 2)
         
         iconView = Gtk.IconView()    
         iconView.set_columns(4)
         iconView.set_item_padding(2)  
-        iconView.set_row_spacing(2)
+        iconView.set_row_spacing(0)
         self.model = Gtk.ListStore(str, GdkPixbuf.Pixbuf)
                  
-        img = GdkPixbuf.Pixbuf.new_from_file_at_size( "/usr/share/cinnamon/theme/thumbnail.png", 64, 64 )
+        img = GdkPixbuf.Pixbuf.new_from_file_at_size( "/usr/share/cinnamon/theme/thumbnail.png", THUMB_SIZE, THUMB_SIZE)
 
         self.active_theme_iter = self.model.append(["Cinnamon", img])
                      
@@ -146,9 +148,9 @@ class ThemeViewSidePage (SidePage):
                 try:
                     if os.path.exists("%s/%s/cinnamon/cinnamon.css" % (directory, theme)):
                         if os.path.exists("%s/%s/cinnamon/thumbnail.png" % (directory, theme)):
-                            img = GdkPixbuf.Pixbuf.new_from_file_at_size( "%s/%s/cinnamon/thumbnail.png" % (directory, theme), 64, 64 )
+                            img = GdkPixbuf.Pixbuf.new_from_file_at_size( "%s/%s/cinnamon/thumbnail.png" % (directory, theme), THUMB_SIZE, THUMB_SIZE )
                         else:
-                            img = GdkPixbuf.Pixbuf.new_from_file_at_size( "/usr/share/cinnamon/theme/thumbnail-generic.png", 64, 64 )
+                            img = GdkPixbuf.Pixbuf.new_from_file_at_size( "/usr/share/cinnamon/theme/thumbnail-generic.png", THUMB_SIZE, THUMB_SIZE )
                         theme_iter = self.model.append([theme, img])
                         if theme==self.current_theme:
                             self.active_theme_iter = theme_iter
