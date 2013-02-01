@@ -73,20 +73,26 @@ class ThemeViewSidePage (SidePage):
         scrolledWindow.add_with_viewport(other_settings_box)
         other_settings_box.set_border_width(5)
         
-        windowThemeSwitcher = GSettingsComboBox(_("Window theme"), "org.gnome.desktop.wm.preferences", "theme", None, self._load_window_themes())
-        other_settings_box.pack_start(windowThemeSwitcher, False, False, 2)
-        menusHaveIconsCB = GSettingsCheckButton(_("Menus Have Icons"), "org.gnome.desktop.interface", "menus-have-icons", None)
-        other_settings_box.pack_start(menusHaveIconsCB, False, False, 2)
-        buttonsHaveIconsCB = GSettingsCheckButton(_("Buttons Have Icons"), "org.gnome.desktop.interface", "buttons-have-icons", None)
-        other_settings_box.pack_start(buttonsHaveIconsCB, False, False, 2)
-        cursorThemeSwitcher = GSettingsComboBox(_("Cursor theme"), "org.gnome.desktop.interface", "cursor-theme", None, self._load_cursor_themes())
-        other_settings_box.pack_start(cursorThemeSwitcher, False, False, 2)
-        keybindingThemeSwitcher = GSettingsComboBox(_("Keybinding theme"), "org.gnome.desktop.interface", "gtk-key-theme", None, self._load_keybinding_themes())
-        other_settings_box.pack_start(keybindingThemeSwitcher, False, False, 2)
-        iconThemeSwitcher = GSettingsComboBox(_("Icon theme"), "org.gnome.desktop.interface", "icon-theme", None, self._load_icon_themes())
-        other_settings_box.pack_start(iconThemeSwitcher, False, False, 2)
-        gtkThemeSwitcher = GSettingsComboBox(_("GTK+ theme"), "org.gnome.desktop.interface", "gtk-theme", None, self._load_gtk_themes())
+        gtkThemeSwitcher = GSettingsComboBox(_("Controls"), "org.gnome.desktop.interface", "gtk-theme", None, self._load_gtk_themes())
         other_settings_box.pack_start(gtkThemeSwitcher, False, False, 2)
+        
+        iconThemeSwitcher = GSettingsComboBox(_("Icons"), "org.gnome.desktop.interface", "icon-theme", None, self._load_icon_themes())
+        other_settings_box.pack_start(iconThemeSwitcher, False, False, 2)            
+        
+        windowThemeSwitcher = GSettingsComboBox(_("Window borders"), "org.gnome.desktop.wm.preferences", "theme", None, self._load_window_themes())
+        other_settings_box.pack_start(windowThemeSwitcher, False, False, 2)
+                
+        cursorThemeSwitcher = GSettingsComboBox(_("Mouse pointer"), "org.gnome.desktop.interface", "cursor-theme", None, self._load_cursor_themes())
+        other_settings_box.pack_start(cursorThemeSwitcher, False, False, 2)
+        
+        keybindingThemeSwitcher = GSettingsComboBox(_("Keybindings"), "org.gnome.desktop.interface", "gtk-key-theme", None, self._load_keybinding_themes())
+        other_settings_box.pack_start(keybindingThemeSwitcher, False, False, 2)            
+        
+        menusHaveIconsCB = GSettingsCheckButton(_("Show icons in menus"), "org.gnome.desktop.interface", "menus-have-icons", None)
+        other_settings_box.pack_start(menusHaveIconsCB, False, False, 2)
+        
+        buttonsHaveIconsCB = GSettingsCheckButton(_("Show icons on buttons"), "org.gnome.desktop.interface", "buttons-have-icons", None)
+        other_settings_box.pack_start(buttonsHaveIconsCB, False, False, 2)
         
         notebook.append_page(scrolledWindow, Gtk.Label(_("Other settings")))
                     
