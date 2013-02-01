@@ -1470,6 +1470,19 @@ StScrollBar StButton#vhandle:hover {
 	padding-right: 15px;	
 	max-width: 220px;
 }
+.sound-seek-box {
+   padding-left: 20px;
+}
+.sound-seek-box StLabel {
+   padding-top: 2px;
+}
+.sound-seek-box StIcon {
+   icon-size: 1em;
+}
+.sound-seek-slider {
+   min-width: 150px;
+   max-width: 180px;
+}
 .sound-volume-menu-item {
 	padding: .4em 1.75em;
 }
