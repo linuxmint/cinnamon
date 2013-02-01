@@ -11,6 +11,7 @@ import imtools
 import gettext
 import subprocess
 import tempfile
+import pango
 
 gettext.install("cinnamon", "/usr/share/cinnamon/locale")
 
@@ -105,13 +106,18 @@ class ThreadedIconView(Gtk.IconView):
         self.set_item_width(BACKGROUND_ICONS_SIZE * 1.1)
         self._model = Gtk.ListStore(object, GdkPixbuf.Pixbuf, str)
         self.set_model(self._model)
-        self.set_pixbuf_column(1)
-        self.set_markup_column(2)
 
         area = self.get_area()
-        renderers = area.get_cells()
-        renderers[0].set_fixed_size(BACKGROUND_ICONS_SIZE/2, BACKGROUND_ICONS_SIZE/1.5)
-        renderers[1].set_fixed_size(BACKGROUND_ICONS_SIZE/2, 40)
+
+        pixbuf_renderer = Gtk.CellRendererPixbuf()
+        text_renderer = Gtk.CellRendererText()
+
+        text_renderer.set_alignment(.5, .5)
+        area.pack_start(pixbuf_renderer, True, False, False)
+        area.pack_start(text_renderer, True, False, False)
+        self.add_attribute (pixbuf_renderer, "pixbuf", 1);
+        self.add_attribute (text_renderer, "markup", 2)
+        text_renderer.set_property("alignment", pango.ALIGN_CENTER)
 
         self._loading_queue = []
         self._loading_queue_lock = thread.allocate_lock()
