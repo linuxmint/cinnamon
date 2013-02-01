@@ -743,8 +743,8 @@ MyApplet.prototype = {
 
             this.mute_out_switch = new PopupMenu.PopupSwitchMenuItem(_("Mute output"), false);
             this.mute_in_switch = new PopupMenu.PopupSwitchMenuItem(_("Mute input"), false);
-            this._applet_context_menu.addMenuItem(this.mute_out_switch);
-            this._applet_context_menu.addMenuItem(this.mute_in_switch);
+            this._appletContextMenu.addMenuItem(this.mute_out_switch);
+            this._appletContextMenu.addMenuItem(this.mute_in_switch);
             this.mute_out_switch.connect('toggled', Lang.bind(this, this._toggle_out_mute));
             this.mute_in_switch.connect('toggled', Lang.bind(this, this._toggle_in_mute));
 
