@@ -50,7 +50,7 @@ class PyGObjectCPAI(object):
 def get_c_widget(mod_id):
     extension = gio.g_io_extension_point_get_extension_by_name (ext_point, mod_id)
     if extension == 0:
-        print "Problem occurred loading cinnamon-control-center module: " + mod_id
+        print("Could not load %s module; is the cinnamon-control-center package installed?" % mod_id)
         return None
     gio.g_io_extension_get_type.restype = c_int
     panel_type = gio.g_io_extension_get_type (extension)
