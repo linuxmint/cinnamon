@@ -43,7 +43,6 @@ class ThemeViewSidePage (SidePage):
         cinnamon_theme_vbox.pack_start(scrolledWindow, True, True, 2)
         
         iconView = Gtk.IconView()    
-        iconView.set_columns(4)
         iconView.set_item_padding(2)  
         iconView.set_row_spacing(0)
         self.model = Gtk.ListStore(str, GdkPixbuf.Pixbuf)
