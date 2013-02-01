@@ -22,31 +22,101 @@ try:
     from PIL import Image
     import tempfile
     import math
+    import capi
+    import subprocess
 
 except Exception, detail:
     print detail
     sys.exit(1)
 
 class SidePage:
-    def __init__(self, name, icon, content_box):        
+    def __init__(self, name, icon, keywords, advanced, content_box, is_c_mod = False, is_standalone = False, exec_name = None):
         self.name = name
         self.icon = icon
         self.content_box = content_box
         self.widgets = []
-        
-    def add_widget(self, widget):
+        self.is_c_mod = is_c_mod
+        self.is_standalone = is_standalone
+        self.exec_name = exec_name
+        self.keywords = keywords
+        self.advanced = advanced
+
+    def add_widget(self, widget, advanced = False):
         self.widgets.append(widget)
-        
-    def build(self):
+        widget.advanced = advanced
+
+    def build(self, mode_advanced):
         # Clear all the widgets from the content box
         widgets = self.content_box.get_children()
         for widget in widgets:
             self.content_box.remove(widget)
-        
+
         # Add our own widgets
-        for widget in self.widgets:
-            self.content_box.pack_start(widget, False, False, 2)            
-        self.content_box.show_all()
+        # C modules are sort of messy - they check the desktop type
+        # (for Unity or GNOME) and show/hide UI items depending on
+        # the result - so we can't just show_all on the widget, it will
+        # mess up these modifications - so for these, we just show the
+        # top-level widget
+        if not self.is_standalone:
+            for widget in self.widgets:
+                if widget.advanced:
+                    if not mode_advanced:
+                        continue
+                self.content_box.pack_start(widget, False, False, 2)
+            if self.is_c_mod:
+                self.content_box.show()
+                children = self.content_box.get_children()
+                for child in children:
+                    child.show()
+                    if child.get_name() == "c_box":
+                        c_widgets = child.get_children()
+                        for c_widget in c_widgets:
+                            c_widget.show()
+            else:
+                self.content_box.show_all()
+        else:
+            subprocess.Popen([self.exec_name])
+
+class CCModule:
+    def __init__(self, label, mod_id, icon, category, advanced, keywords, content_box):
+        sidePage = SidePage(label, icon, keywords, advanced, content_box, True, False, None)
+        self.sidePage = sidePage
+        self.name = mod_id
+        self.category = category
+
+    def process (self):
+        widget = capi.get_c_widget(self.name)
+        if widget is not None:
+            c_box = Gtk.Box.new(Gtk.Orientation.VERTICAL, 2)
+            c_box.pack_start(widget, False, False, 2)
+            c_box.set_vexpand(False)
+            c_box.set_name("c_box")
+            self.sidePage.add_widget(c_box)
+            return True
+        else:
+            return False
+
+class SAModule:
+    def __init__(self, label, mod_id, icon, category, advanced, keywords, content_box):
+        sidePage = SidePage(label, icon, keywords, advanced, content_box, False, True, mod_id)
+        self.sidePage = sidePage
+        self.name = mod_id
+        self.category = category
+
+    def process (self):
+        return fileexists(self.name)
+
+def fileexists(program):
+
+    def is_exe(fpath):
+        return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
+
+    for path in os.environ["PATH"].split(os.pathsep):
+        path = path.strip('"')
+        exe_file = os.path.join(path, program)
+        if is_exe(exe_file):
+            return True
+    return False
 
 def walk_directories(dirs, filter_func):
     valid = []

@@ -5,9 +5,12 @@ from gi.repository import Gio
 
 class Module:
     def __init__(self, content_box):
-        sidePage = SidePage(_("Desktop"), "desktop.svg", content_box)
+        keywords = _("desktop, home, button, trash")
+        advanced = False
+        sidePage = SidePage(_("Desktop"), "desktop.svg", keywords, advanced, content_box)
         self.sidePage = sidePage
         self.name = "desktop"
+        self.category = "prefs"
 
     def _loadCheck(self):
         if 'org.nemo' in Gio.Settings.list_schemas():

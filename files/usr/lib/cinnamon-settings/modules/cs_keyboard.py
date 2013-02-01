@@ -146,9 +146,12 @@ if HAS_DEDICATED_TERMINAL_SHORTCUT:
 
 class Module:
     def __init__(self, content_box):
-        sidePage = KeyboardSidePage(_("Keyboard"), "keyboard.svg", content_box)
+        keywords = _("keyboard, shortcut, hotkey")
+        advanced = True
+        sidePage = KeyboardSidePage(_("Keyboard"), "keyboard.svg", keywords, advanced, content_box)
         self.sidePage = sidePage
         self.name = "keyboard"
+        self.category = "hardware"
 
         # Let's transition any existing gconf shortcuts over to gsettings
         # Since we're still going to support both, and really only track gconf (for now)
@@ -346,11 +349,11 @@ class NotebookPage:
         self.content_box.show_all()
 
 class KeyboardSidePage (SidePage):
-    def __init__(self, name, icon, content_box):
-        SidePage.__init__(self, name, icon, content_box)
+    def __init__(self, name, icon, keywords, advanced, content_box):
+        SidePage.__init__(self, name, icon, keywords, advanced, content_box)
         self.tabs = []
 
-    def build(self):
+    def build(self, advanced):
         # Clear all the widgets from the content box
         widgets = self.content_box.get_children()
         for widget in widgets:
