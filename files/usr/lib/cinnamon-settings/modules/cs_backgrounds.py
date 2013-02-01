@@ -36,7 +36,7 @@ BACKGROUND_PICTURE_OPTIONS = [
     ("spanned", _("Spanned"))
 ]
 
-BACKGROUND_ICONS_SIZE = 115
+BACKGROUND_ICONS_SIZE = 330
 
 class Module:
     def __init__(self, content_box):
@@ -106,8 +106,13 @@ class ThreadedIconView(Gtk.IconView):
         self._model = Gtk.ListStore(object, GdkPixbuf.Pixbuf, str)
         self.set_model(self._model)
         self.set_pixbuf_column(1)
-        self.set_markup_column(2)        
-        
+        self.set_markup_column(2)
+
+        area = self.get_area()
+        renderers = area.get_cells()
+        renderers[0].set_fixed_size(BACKGROUND_ICONS_SIZE/2, BACKGROUND_ICONS_SIZE/1.5)
+        renderers[1].set_fixed_size(BACKGROUND_ICONS_SIZE/2, 40)
+
         self._loading_queue = []
         self._loading_queue_lock = thread.allocate_lock()
         
@@ -236,7 +241,6 @@ class BackgroundWallpaperPane (Gtk.VBox):
         self.icon_view = ThreadedIconView()
         scw.add(self.icon_view)
         self.icon_view.connect("selection-changed", self._on_selection_changed)
-        
         self.update_icon_view()
         
     def get_selected_wallpaper(self):
