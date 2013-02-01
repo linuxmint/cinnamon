@@ -771,19 +771,17 @@ MyApplet.prototype = {
         }
     },
     
-    on_applet_clicked: function(event) {
-            
+    onAppletClicked: function(event) {
     },
 
     on_panel_edit_mode_changed: function() {
         this.actor.reactive = global.settings.get_boolean("panel-edit-mode");
-    }, 
+    },
     
-           
     _onWindowDemandsAttention : function(display, window) {
         for ( let i=0; i<this._windows.length; ++i ) {
-            if ( this._windows[i].metaWindow == window ) {                
-                this._windows[i].actor.add_style_class_name("window-list-item-demands-attention");                
+            if ( this._windows[i].metaWindow == window ) {
+                this._windows[i].actor.add_style_class_name("window-list-item-demands-attention");
             }
         }
     },
@@ -796,7 +794,7 @@ MyApplet.prototype = {
         }
     },
 
-    on_panel_height_changed: function() {
+    onPanelHeightChanged: function() {
         this._refreshItems();
     },
     

@@ -104,9 +104,9 @@ MyApplet.prototype = {
             
             this.menuManager = new PopupMenu.PopupMenuManager(this);
             this.menu = new Applet.AppletPopupMenu(this, orientation);
-            this.menuManager.addMenu(this.menu);            
+            this.menuManager.addMenu(this.menu);
             
-            this.set_applet_icon_symbolic_name('display-brightness-symbolic');
+            this.setAppletIconSymbolicName('display-brightness-symbolic');
 
             //this is exactly the same type of label as in sound@cinnamon.org, it uses the same style.
             this._brightnessTitle = new TextImageMenuItem(_("Brightness"), "display-brightness-symbolic", false, "right", "sound-volume-menu-item");
@@ -140,7 +140,7 @@ MyApplet.prototype = {
                     this._proxy.connect('Changed', Lang.bind(this, this._getBrightness));
                     this.actor.connect('scroll-event', Lang.bind(this, this._onScrollEvent));
                 } else {
-                    this.set_applet_tooltip(_("Brightness"));
+                    this.setAppletTooltip(_("Brightness"));
                     this.menu.addMenuItem(new PopupMenu.PopupMenuItem(_("Brightness not available"), { reactive: false }));
                     this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
                 }
@@ -153,9 +153,9 @@ MyApplet.prototype = {
         }
     },
 
-    on_applet_clicked: function(event) {
+    onAppletClicked: function(event) {
         this._getBrightnessForcedUpdate();
-        this.menu.toggle();        
+        this.menu.toggle();
     },
     
     /* taken from a11y@cinnamon.org */
@@ -225,9 +225,9 @@ MyApplet.prototype = {
         this._brightnessTitle.setText(_("Brightness") + ": " + value + "%");
         
         if (value != undefined)
-            this.set_applet_tooltip(_("Brightness") + ": " + value + "%");
+            this.setAppletTooltip(_("Brightness") + ": " + value + "%");
         else
-            this.set_applet_tooltip(_("Brightness"));
+            this.setAppletTooltip(_("Brightness"));
     }
 };
 

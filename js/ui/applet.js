@@ -123,8 +123,8 @@ Applet.prototype = {
             this.finalizeContextMenu();
         }));
 
-	// Backward compatibility
-	this._applet_context_menu = this.appletContextMenu;
+        // Backward compatibility
+        this._applet_context_menu = this._appletContextMenu;
     },
     
     _setAppletReactivity: function() {
@@ -443,7 +443,7 @@ TextIconApplet.prototype = {
     },
 
     set_applet_label: function(text){
-	global.log("set_applet_label is depreacted. Use setAppletIcon instead");
+	global.log("set_applet_label is deprecated. Use setAppletIcon instead");
 	this.setAppletLabel(text);
     }
 };

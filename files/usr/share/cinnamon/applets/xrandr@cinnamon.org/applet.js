@@ -37,12 +37,12 @@ function MyApplet(orientation, panel_height) {
 MyApplet.prototype = {
     __proto__: Applet.IconApplet.prototype,
 
-    _init: function(orientation, panel_height) {        
+    _init: function(orientation, panel_height) {
         Applet.IconApplet.prototype._init.call(this, orientation, panel_height);
         
-        try {        
-            this.set_applet_icon_symbolic_name("preferences-desktop-display");
-            this.set_applet_tooltip(_("Display"));
+        try {
+            this.setAppletIconSymbolicName("preferences-desktop-display");
+            this.setAppletTooltip(_("Display"));
             
             this.menuManager = new PopupMenu.PopupMenuManager(this);
             this.menu = new Applet.AppletPopupMenu(this, orientation);
@@ -68,8 +68,8 @@ MyApplet.prototype = {
         }
     },
     
-    on_applet_clicked: function(event) {
-        this.menu.toggle();        
+    onAppletClicked: function(event) {
+        this.menu.toggle();
     },
     
     _randrEvent: function() {

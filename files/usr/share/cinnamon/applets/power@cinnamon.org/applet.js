@@ -136,15 +136,15 @@ function MyApplet(orientation, panel_height) {
 MyApplet.prototype = {
     __proto__: Applet.TextIconApplet.prototype,
 
-    _init: function(orientation, panel_height) {        
+    _init: function(orientation, panel_height) {
         Applet.TextIconApplet.prototype._init.call(this, orientation, panel_height);
         
-        try {                                
+        try {
             this.menuManager = new PopupMenu.PopupMenuManager(this);
             this.menu = new Applet.AppletPopupMenu(this, orientation);
-            this.menuManager.addMenu(this.menu);            
+            this.menuManager.addMenu(this.menu);
             
-            this.set_applet_icon_symbolic_name('battery-missing');            
+            this.setAppletIconSymbolicName('battery-missing');            
             this._proxy = new PowerManagerProxy(DBus.session, BUS_NAME, OBJECT_PATH);
             this._smProxy = new SettingsManagerProxy(DBus.session, BUS_NAME, OBJECT_PATH);
             
@@ -209,8 +209,8 @@ MyApplet.prototype = {
         }
     },
     
-    on_applet_clicked: function(event) {
-        this.menu.toggle();        
+    onAppletClicked: function(event) {
+        this.menu.toggle();
     },
 
     _switchLabelDisplay: function(display) {
@@ -265,7 +265,7 @@ MyApplet.prototype = {
                     } else
                         timestring = ngettext("%d minute remaining", "%d minutes remaining", minutes).format(minutes);
                     this._batteryItem.label.text = timestring;
-                    this.set_applet_tooltip(timestring);
+                    this.setAppletTooltip(timestring);
                 }
                 this._primaryPercentage.text = C_("percent of battery remaining", "%d%%").format(Math.round(percentage));
                 this._batteryItem.actor.show();
@@ -294,7 +294,7 @@ MyApplet.prototype = {
                     continue;
 
                 let item = new DeviceItem (devices[i]);
-                this.set_applet_tooltip(item._label.text);
+                this.setAppletTooltip(item._label.text);
                 this._deviceItems.push(item);
                 this.menu.addMenuItem(item, this._otherDevicePosition + position);
                 position++;
@@ -302,14 +302,14 @@ MyApplet.prototype = {
         }));
     },
 
-    on_panel_height_changed: function() {
+    onPanelHeightChanged: function() {
         this._devicesChanged();
     },
 
     _devicesChanged: function() {
-        this.set_applet_icon_symbolic_name('battery-missing');
+        this.setAppletIconSymbolicName('battery-missing');
         this._proxy.GetRemote('Icon', Lang.bind(this, function(icon, error) {
-            if (icon) {    
+            if (icon) {
                 let gicon = Gio.icon_new_for_string(icon);
                 this._applet_icon.gicon = gicon;
                 this.actor.show();
