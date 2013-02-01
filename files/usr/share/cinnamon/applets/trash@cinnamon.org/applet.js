@@ -13,13 +13,13 @@ function MyApplet(orientation, panel_height) {
 MyApplet.prototype = {
     __proto__: Applet.IconApplet.prototype,
 
-    _init: function(orientation, panel_height) {        
+    _init: function(orientation, panel_height) {
         Applet.IconApplet.prototype._init.call(this, orientation, panel_height);
         
         try {        
-            this.set_applet_icon_symbolic_name("user-trash");
-            this.set_applet_tooltip(_("Trash"));
-                   
+            this.setAppletIconSymbolicName("user-trash");
+            this.setAppletTooltip(_("Trash"));
+            
             this.trash_path = 'trash:///';
             this.trash_directory =  Gio.file_new_for_uri(this.trash_path);
             
@@ -43,7 +43,7 @@ MyApplet.prototype = {
         this._applet_context_menu.addMenuItem(this.open_item);
     },
     
-    on_applet_clicked: function(event) {
+    onAppletClicked: function(event) {
         this._openTrash();
     },
 
@@ -53,12 +53,12 @@ MyApplet.prototype = {
    
     _onTrashChange: function() {
       if (this.trash_directory.query_exists(null)) {
-          let children = this.trash_directory.enumerate_children('standard::*', Gio.FileQueryInfoFlags.NONE, null);          
+          let children = this.trash_directory.enumerate_children('standard::*', Gio.FileQueryInfoFlags.NONE, null);
           if (children.next_file(null, null) == null) {
-              this.set_applet_icon_symbolic_name("user-trash");        
+              this.setAppletIconSymbolicName("user-trash");        
           } else {
-              //this.set_applet_icon_name("user-trash-full");
-              this.set_applet_icon_symbolic_name("user-trash");        
+              //this.setAppletIconName("user-trash-full");
+              this.setAppletIconSymbolicName("user-trash");        
           }
       }
     },
@@ -75,10 +75,10 @@ MyApplet.prototype = {
                 let child = this.trash_directory.get_child(child_info.get_name());
                 child.delete(null);
               }
-        }      
+        }
     },
     
-    on_orientation_changed: function (orientation) {
+    onOrientationChanged: function (orientation) {
         this._initContextMenu();
     }
 };

@@ -15,7 +15,7 @@ MyApplet.prototype = {
         try {
             this.actor.set_style_class_name("workspace-switcher-box");
             this.actor.connect('scroll-event', this.hook.bind(this));
-            this.set_applet_tooltip(_("Switch workspace"));
+            this.setAppletTooltip(_("Switch workspace"));
             this.button = [];
             this._createButtons();
             global.screen.connect('notify::n-workspaces', Lang.bind(this, this._createButtons));
@@ -28,8 +28,7 @@ MyApplet.prototype = {
         }
     },
     
-    on_applet_clicked: function(event) {
-        
+    onAppletClicked: function(event) {
     },
     
     on_panel_edit_mode_changed: function() {
@@ -85,7 +84,7 @@ MyApplet.prototype = {
         }
     },
 
-    on_panel_height_changed: function() {
+    onPanelHeightChanged: function() {
         this._scaleMode = global.settings.get_boolean('panel-scale-text-icons');
         this._createButtons();
     },
