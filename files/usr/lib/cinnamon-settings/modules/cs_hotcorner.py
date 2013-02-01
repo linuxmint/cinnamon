@@ -6,7 +6,7 @@ from gi.repository import Gio
 class Module:
     def __init__(self, content_box):
         keywords = _("hotcorner, overview, scale, expo")
-        advanced = False
+        advanced = True
         sidePage = HotCornerViewSidePage(_("Hot corner"), "overview.svg", keywords, advanced, content_box)
         self.sidePage = sidePage
         self.name = "hotcorner"

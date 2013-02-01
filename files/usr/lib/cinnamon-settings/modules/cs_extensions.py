@@ -11,7 +11,7 @@ home = os.path.expanduser("~")
 class Module:
     def __init__(self, content_box):
         keywords = _("extensions, addons")
-        advanced = False
+        advanced = True
         sidePage = ExtensionViewSidePage(_("Extensions"), "extensions.svg", keywords, advanced, content_box)
         self.sidePage = sidePage
         self.name = "extensions"

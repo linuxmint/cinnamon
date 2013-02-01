@@ -5,7 +5,7 @@ from SettingsWidgets import *
 class Module:
     def __init__(self, content_box):
         keywords = _("logging, click, notifications")
-        advanced = False
+        advanced = True
         sidePage = SidePage(_("General"), "general.svg", keywords, advanced, content_box)
         self.sidePage = sidePage
         self.name = "general"
