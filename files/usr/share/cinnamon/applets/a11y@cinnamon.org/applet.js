@@ -39,9 +39,9 @@ MyApplet.prototype = {
     _init: function(orientation, panel_height) {        
         Applet.IconApplet.prototype._init.call(this, orientation, panel_height);
         
-        try {        
-            this.set_applet_icon_symbolic_name("preferences-desktop-accessibility");
-            this.set_applet_tooltip(_("Accessibility"));
+        try {
+            this.setAppletIconSymbolicName("preferences-desktop-accessibility");
+            this.setAppletTooltip(_("Accessibility"));
             
             this.menuManager = new PopupMenu.PopupMenuManager(this);
             this.menu = new Applet.AppletPopupMenu(this, orientation);
@@ -91,8 +91,8 @@ MyApplet.prototype = {
         }
     },
     
-    on_applet_clicked: function(event) {
-        this.menu.toggle();        
+    onAppletClicked: function(event) {
+        this.menu.toggle();
     },
     
      _buildItemExtended: function(string, initial_value, writable, on_set) {

@@ -15,8 +15,8 @@ MyApplet.prototype = {
 
         try {
             Gtk.IconTheme.get_default().append_search_path(metadata.path);
-            this.set_applet_icon_symbolic_name("cinnamon-expo");
-            this.set_applet_tooltip(_("Expo"));
+            this.setAppletIconSymbolicName("cinnamon-expo");
+            this.setAppletTooltip(_("Expo"));
             this._hover_activates = false;
             global.settings.connect('changed::panel-edit-mode', Lang.bind(this, this.on_panel_edit_mode_changed));
             global.settings.connect('changed::expo-applet-hover', Lang.bind(this, this._reload_settings));
@@ -34,7 +34,7 @@ MyApplet.prototype = {
         }
     },
 
-    on_applet_clicked: function(event) {
+    onAppletClicked: function(event) {
         if (this._hover_activates)
             return;
         this.doAction();

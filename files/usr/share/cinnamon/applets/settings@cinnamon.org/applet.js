@@ -20,23 +20,22 @@ function MyApplet(orientation, panel_height) {
 MyApplet.prototype = {
     __proto__: Applet.IconApplet.prototype,
 
-    _init: function(orientation, panel_height) {        
+    _init: function(orientation, panel_height) {
         Applet.IconApplet.prototype._init.call(this, orientation, panel_height);
         
         try {        
-            this.set_applet_icon_symbolic_name("go-up");
-            this.set_applet_tooltip(_("Settings"));                            
+            this.setAppletIconSymbolicName("go-up");
+            this.setAppletTooltip(_("Settings"));                            
             this.menuManager = new PopupMenu.PopupMenuManager(this);
             this._buildMenu(orientation);
-                        
         }
         catch (e) {
             global.logError(e);
         }
     },
     
-    on_applet_clicked: function(event) {
-        this.menu.toggle();        
+    onAppletClicked: function(event) {
+        this.menu.toggle();
     },
     
     _buildMenu: function(orientation) {
@@ -45,7 +44,7 @@ MyApplet.prototype = {
         Panel.populateSettingsMenu(this.menu);
     },
     
-    on_orientation_changed: function(orientation){
+    onOrientationChanged: function(orientation){
         this.menu.destroy();
         this._buildMenu(orientation);
     }

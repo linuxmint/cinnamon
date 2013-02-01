@@ -20,8 +20,8 @@ MyApplet.prototype = {
 
         try {
             Gtk.IconTheme.get_default().append_search_path(metadata.path);
-            this.set_applet_icon_symbolic_name("windows-quick-list");
-            this.set_applet_tooltip(_("All windows"));
+            this.setAppletIconSymbolicName("windows-quick-list");
+            this.setAppletTooltip(_("All windows"));
             this.menu = new Applet.AppletPopupMenu(this, orientation);
             this.menuManager = new PopupMenu.PopupMenuManager(this);
             this.menuManager.addMenu(this.menu);
@@ -117,7 +117,7 @@ MyApplet.prototype = {
         metaWindow.activate(global.get_current_time());
     },
 
-    on_applet_clicked: function(event) {
+    onAppletClicked: function(event) {
         this.updateMenu();
         this.menu.toggle();
     }

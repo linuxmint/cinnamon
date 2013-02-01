@@ -199,16 +199,16 @@ function MyApplet(orientation, panel_height) {
 MyApplet.prototype = {
     __proto__: Applet.TextIconApplet.prototype,
 
-    _init: function(orientation, panel_height) {        
+    _init: function(orientation, panel_height) {
         Applet.TextIconApplet.prototype._init.call(this, orientation, panel_height);
         
-        try {                                
+        try {
             this.menuManager = new PopupMenu.PopupMenuManager(this);
             this.menu = new Applet.AppletPopupMenu(this, orientation);
-            this.menuManager.addMenu(this.menu);            
+            this.menuManager.addMenu(this.menu);
             
-            this.set_applet_icon_symbolic_name('bluetooth-disabled');
-            this.set_applet_tooltip(_("Bluetooth"));
+            this.setAppletIconSymbolicName('bluetooth-disabled');
+            this.setAppletTooltip(_("Bluetooth"));
                         
             GLib.spawn_command_line_sync ('pkill -f "^bluetooth-applet$"');
             this._applet = new GnomeBluetoothApplet.Applet();
@@ -288,8 +288,8 @@ MyApplet.prototype = {
         }
     },
     
-    on_applet_clicked: function(event) {
-        this.menu.toggle();        
+    onAppletClicked: function(event) {
+        this.menu.toggle();
     },
     
    
@@ -323,10 +323,10 @@ MyApplet.prototype = {
 
         if (on) {
             this._discoverable.actor.show();
-            this.set_applet_icon_symbolic_name('bluetooth-active');
+            this.setAppletIconSymbolicName('bluetooth-active');
         } else {
             this._discoverable.actor.hide();
-            this.set_applet_icon_symbolic_name('bluetooth-disabled');
+            this.setAppletIconSymbolicName('bluetooth-disabled');
         }
     },
 
