@@ -5,9 +5,12 @@ from gi.repository import Gio, Gtk, GObject, Gdk
 
 class Module:
     def __init__(self, content_box):
-        sidePage = SidePage(_("Windows"), "windows.svg", content_box)
+        keywords = _("windows, titlebar, edge, switcher, window list, attention, focus")
+        advanced = True
+        sidePage = SidePage(_("Windows"), "windows.svg", keywords, advanced, content_box)
         self.sidePage = sidePage
         self.name = "windows"
+        self.category = "prefs"
         sidePage.add_widget(GSettingsComboBox(_("Action on title bar double-click"),
                                             "org.gnome.desktop.wm.preferences", "action-double-click-titlebar", None,
                                             [(i, i.replace("-", " ").title()) for i in ('toggle-shade', 'toggle-maximize', 'toggle-maximize-horizontally', 'toggle-maximize-vertically', 'minimize', 'shade', 'menu', 'lower', 'none')]))

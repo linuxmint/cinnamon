@@ -10,16 +10,19 @@ home = os.path.expanduser("~")
 
 class Module:
     def __init__(self, content_box):
-        sidePage = ExtensionViewSidePage(_("Extensions"), "extensions.svg", content_box)
+        keywords = _("extensions, addons")
+        advanced = False
+        sidePage = ExtensionViewSidePage(_("Extensions"), "extensions.svg", keywords, advanced, content_box)
         self.sidePage = sidePage
         self.name = "extensions"
+        self.category = "prefs"
 
 class ExtensionViewSidePage (SidePage):
-    def __init__(self, name, icon, content_box):
-        SidePage.__init__(self, name, icon, content_box)
+    def __init__(self, name, icon, keywords, advanced, content_box):
+        SidePage.__init__(self, name, icon, keywords, advanced, content_box)
         self.icons = []
                   
-    def build(self):
+    def build(self, advanced):
         # Clear all the widgets from the content box
         widgets = self.content_box.get_children()
         for widget in widgets:

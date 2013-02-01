@@ -271,7 +271,10 @@ main (int argc, char **argv)
    */
   g_setenv ("GJS_DEBUG_OUTPUT", "stderr", TRUE);
   g_setenv ("GJS_DEBUG_TOPICS", "JS ERROR;JS LOG", TRUE);
-  
+
+  g_setenv ("CINNAMON_VERSION", VERSION, TRUE);
+
+
   center_pointer_on_screen();
 
   cinnamon_dbus_init (meta_get_replace_current_wm ());
