@@ -1050,7 +1050,9 @@ AppIcon.prototype = {
 
     set_size: function(size, focused) {
         if (this.icon) {this.icon.destroy();}
-        if (this.showThumbnail) {
+        // we only show thumbnails if there are more than one window belonging to the same "app",
+        // otherwise the icon should be enough.
+        if (this.showThumbnail && this.app && this.app.get_windows().length > 1) {
             this.icon = new St.Group();
             let clones = WindowUtils.createWindowClone(this.window, size, true, true);
             for (i in clones) {
