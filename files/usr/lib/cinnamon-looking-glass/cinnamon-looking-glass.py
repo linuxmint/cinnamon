@@ -387,12 +387,17 @@ class CinnamonLog(dbus.service.Object):
     def run(self):
         self.window = Gtk.Window(Gtk.WindowType.TOPLEVEL)
         screen = self.window.get_screen()
+        if screen.get_n_monitors() > 1:
+            geom = screen.get_monitor_geometry(0)
+            appWidth = geom.width
+        else:
+            appWidth = screen.get_width()
 
         self.window.set_border_width(0)
         self.window.set_decorated(False)
         self.window.set_skip_taskbar_hint(True)
         self.window.set_keep_above(True)
-        self.window.set_default_size(screen.get_width(), 200)
+        self.window.set_default_size(appWidth, 200)
         self.window.set_has_resize_grip(False)
         self.window.move(0,0)
 
