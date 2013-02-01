@@ -1812,7 +1812,7 @@ st_theme_node_get_background_image (StThemeNode *node)
 }
 
 /**
- * st_theme_node_get_background_image:
+ * st_theme_node_get_background_bumpmap:
  * @node: a #StThemeNode
  *
  * Returns @node's background bumpmap.
