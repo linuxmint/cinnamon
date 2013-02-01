@@ -250,8 +250,10 @@ class MainWindow:
         for key in self.store.keys():
             path = self.store[key].get_path(name)
             if path is not None:
-                self.side_view[key].select_path(path)
-                return
+                filtered_path = self.side_view[key].get_model().convert_child_path_to_path(path)
+                if filtered_path is not None:
+                    self.side_view[key].select_path(filtered_path)
+                    return
 
     def loadCheck (self, mod):
         try:
