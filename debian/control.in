@@ -51,6 +51,7 @@ Depends: ${gir:Depends},
          ${shlibs:Depends},
          ${misc:Depends},
          cinnamon-common (= ${source:Version}),
+	 cinnamon-control-center,
          caribou,
          cups-pk-helper,
          gnome-settings-daemon (>= 2.91.5.1),
@@ -75,7 +76,7 @@ Depends: ${gir:Depends},
          python-lxml,
          gkbd-capplet,
          python-pyinotify
-Recommends: cinnamon-control-center, gnome-themes-standard, gnome-terminal, nemo, cinnamon-screensaver
+Recommends: gnome-themes-standard, gnome-terminal, nemo, cinnamon-screensaver
 Conflicts: cinnamon-session, cinnamon-settings
 Provides: cinnamon-session, cinnamon-settings, notification-daemon
 Replaces: cinnamon-session, cinnamon-settings

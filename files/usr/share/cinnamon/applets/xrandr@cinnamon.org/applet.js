@@ -86,7 +86,7 @@ MyApplet.prototype = {
         }
         this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
         this.menu.addAction(_("Configure display settings..."), function() {
-            GLib.spawn_command_line_async('gnome-control-center display');
+            GLib.spawn_command_line_async('cinnamon-settings display');
         });
     },
 
