@@ -28,9 +28,8 @@ except Exception, detail:
 # i18n
 gettext.install("cinnamon", "/usr/share/cinnamon/locale")
 # i18n for menu item
-menuName = _("Desktop Settings")
-menuGenericName = _("Desktop Configuration Tool")
-menuComment = _("Fine-tune desktop settings")
+menuName = _("System Settings")
+menuComment = _("Control Center")
 
 ADVANCED_GSETTING = "cinnamon-settings-advanced"
 
@@ -74,7 +73,7 @@ class MainWindow:
             if not sidePage.is_standalone:
                 self.side_view_sw.hide()
                 self.search_entry.hide()
-                self.window.set_title(_("Cinnamon Settings") + " - " + sidePage.name)
+                self.window.set_title(_("System Settings") + " - " + sidePage.name)
                 sidePage.build(self.advanced_mode)
                 self.content_box_sw.show()
                 self.button_back.show()
@@ -155,7 +154,7 @@ class MainWindow:
         self.displayCategories()
 
         # set up larger components.
-        self.window.set_title(_("Cinnamon Settings"))
+        self.window.set_title(_("System Settings"))
         self.window.connect("destroy", Gtk.main_quit)
         self.button_cancel.connect("clicked", Gtk.main_quit)
         self.button_back.connect('clicked', self.back_to_icon_view)
@@ -261,7 +260,7 @@ class MainWindow:
             return True
 
     def back_to_icon_view(self, widget):
-        self.window.set_title(_("Cinnamon Settings"))
+        self.window.set_title(_("System Settings"))
         self.content_box_sw.hide()
         children = self.content_box.get_children()
         for child in children:

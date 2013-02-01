@@ -78,8 +78,7 @@ Depends: ${gir:Depends},
          mesa-utils,
          gkbd-capplet,
          python-pyinotify
-Recommends: gnome-control-center, gnome-user-guide, gnome-themes-standard, gnome-session-fallback, gnome-terminal, nemo
-Breaks: gnome-control-center (<< 1:3.0)
+Recommends: cinnamon-control-center, gnome-themes-standard, gnome-terminal, nemo, cinnamon-screensaver
 Conflicts: cinnamon-session, cinnamon-settings
 Provides: cinnamon-session, cinnamon-settings
 Replaces: cinnamon-session, cinnamon-settings
