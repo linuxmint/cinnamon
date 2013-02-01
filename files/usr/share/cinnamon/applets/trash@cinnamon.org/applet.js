@@ -37,10 +37,10 @@ MyApplet.prototype = {
     
     _initContextMenu: function () {
         this.empty_item = new Applet.MenuItem(_("Empty Trash"), Gtk.STOCK_REMOVE, Lang.bind(this, this._emptyTrash));
-        this._applet_context_menu.addMenuItem(this.empty_item);
+        this._appletContextMenu.addMenuItem(this.empty_item);
 
         this.open_item = new Applet.MenuItem(_("Open Trash"), Gtk.STOCK_OPEN, Lang.bind(this, this._openTrash));
-        this._applet_context_menu.addMenuItem(this.open_item);
+        this._appletContextMenu.addMenuItem(this.open_item);
     },
     
     onAppletClicked: function(event) {
