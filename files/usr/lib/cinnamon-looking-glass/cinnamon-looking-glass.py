@@ -6,7 +6,6 @@
 # - if cinnamon --replace was called from Melange, it will be killed when this process is closed
 #   - Currently only occurs when Melange is started by Geany.
 # - List extensions that failed to load ?
-# - Check for issues with multiple monitors
 # - Add insert button to "simple types" inspect dialog ? is there actual use for these types inserted as results ?
 # - Remove javascript version ?
 # - Load all enabled log categories and window height from gsettings
@@ -375,8 +374,10 @@ class CinnamonLog(dbus.service.Object):
                 self.window.hide()
             else:
                 self.window.present()
-                self.window.move(0,0)
-                #self.window.focus()
+                screen = self.window.get_screen()
+                geom = screen.get_monitor_geometry(screen.get_primary_monitor())
+                self.window.move(geom.x, geom.y)
+                self.window.set_focus(self.commandline)
         else:
             self.run()
             if startInspector:
@@ -387,19 +388,15 @@ class CinnamonLog(dbus.service.Object):
     def run(self):
         self.window = Gtk.Window(Gtk.WindowType.TOPLEVEL)
         screen = self.window.get_screen()
-        if screen.get_n_monitors() > 1:
-            geom = screen.get_monitor_geometry(0)
-            appWidth = geom.width
-        else:
-            appWidth = screen.get_width()
+        geom = screen.get_monitor_geometry(screen.get_primary_monitor())
 
         self.window.set_border_width(0)
         self.window.set_decorated(False)
         self.window.set_skip_taskbar_hint(True)
         self.window.set_keep_above(True)
-        self.window.set_default_size(appWidth, 200)
+        self.window.set_default_size(geom.width, 200)
         self.window.set_has_resize_grip(False)
-        self.window.move(0,0)
+        self.window.move(geom.x,geom.y)
 
         self.window.connect("delete_event", self.onDelete)
         self.window.connect("key-press-event", self.onKeyPress)
@@ -439,7 +436,8 @@ class CinnamonLog(dbus.service.Object):
         table.attach(Gtk.Label("Exec:"), column, column+1, 1, 2, 0, 0, 3)
         column += 1
 
-        table.attach(CommandLine(), column, column+1, 1, 2, Gtk.AttachOptions.EXPAND|Gtk.AttachOptions.FILL, 0, 3, 2)
+        self.commandline = CommandLine()
+        table.attach(self.commandline, column, column+1, 1, 2, Gtk.AttachOptions.EXPAND|Gtk.AttachOptions.FILL, 0, 3, 2)
         column += 1
 
         global statusLabel
@@ -458,6 +456,7 @@ class CinnamonLog(dbus.service.Object):
         self.window.show_all()
         self.activatePage("results")
         setStatus(True)
+        self.window.set_focus(self.commandline)
 
     def createMenuItem(self, text, callback):
         item = Gtk.MenuItem(text)
