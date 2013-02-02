@@ -863,12 +863,12 @@ MyApplet.prototype = {
         Main.placesManager.connect('places-updated', Lang.bind(this, this._refreshPlaces));
         this.RecentManager.connect('changed', Lang.bind(this, this._refreshRecent));
 
-        this.edit_menu_item = new Applet.MenuItem(_("Edit menu"), Gtk.STOCK_EDIT, Lang.bind(this, this._launch_editor));
-        this._applet_context_menu.addMenuItem(this.edit_menu_item);
+        this.edit_menu_item = new Applet.MenuItem(_("Edit menu"), Gtk.STOCK_EDIT, Lang.bind(this, this._launchEditor));
+        this._appletContextMenu.addMenuItem(this.edit_menu_item);
         let settings_menu_item = new Applet.MenuItem(_("Menu settings"), null, function() {
             Util.spawnCommandLine("cinnamon-settings menu");
         });
-        this._applet_context_menu.addMenuItem(settings_menu_item);
+        this._appletContextMenu.addMenuItem(settings_menu_item);
     },
     
     _refreshActivateOnHover: function() {
@@ -895,11 +895,11 @@ MyApplet.prototype = {
     },
 
     openMenu: function() {
-        if(!this._applet_context_menu.actor.visible)
+        if(!this._appletContextMenu.actor.visible)
             this.menu.open(false);
     },
 
-    on_orientation_changed: function (orientation) {
+    onOrientationChanged: function (orientation) {
         this._orientation = orientation;
         this.menu.destroy();
         
@@ -911,11 +911,11 @@ MyApplet.prototype = {
         this._display();
     },
 
-    _launch_editor: function() {
+    _launchEditor: function() {
         Util.spawnCommandLine("cinnamon-menu-editor");
     },
 
-    on_applet_clicked: function(event) {
+    onAppletClicked: function(event) {
         this.menu.toggleWithOptions(true);
     },
 
