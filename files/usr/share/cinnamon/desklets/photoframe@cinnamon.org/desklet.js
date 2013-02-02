@@ -25,20 +25,17 @@ MyDesklet.prototype = {
         this.setHeader(_("Photo Frame"));
 
         this._photoFrame = new St.Bin({style_class: 'photoframe-box', x_align: St.Align.START});
-        this._binLayout = new Clutter.BinLayout();
-        this._clutterBox = new Clutter.Box();
-        this._clutterTexture = new Clutter.Texture({height: this.metadata["height"], keep_aspect_ratio: true, filter_quality: this.metadata["quality"]});
-        this._clutterTexture.set_load_async(true);
-        this._clutterBox.set_layout_manager(this._binLayout);
-        this._clutterBox.set_width(this.metadata["width"]);
-        this._clutterBox.add_actor(this._clutterTexture);
-        this._photoFrame.set_child(this._clutterBox);
+
+        this._bin = new St.Bin();
+        this._bin.set_size(this.metadata["width"], this.metadata["height"]);
+
+        this._images = [];
+        this._photoFrame.set_child(this._bin);
         this.setContent(this._photoFrame);
 
-        // Set the effect
         if (this.metadata["effect"] == "black-and-white") {
             let effect = new Clutter.DesaturateEffect();
-            this._clutterTexture.add_effect(effect);
+            this._bin.add_effect(effect);
         } else if (this.metadata["effect"] == "sepia") {
             let color = new Clutter.Color();
             color.from_hls(17.0, 0.59, 0.40);
@@ -48,12 +45,10 @@ MyDesklet.prototype = {
             desaturate_effect.set_factor(0.41);
             contrast_effect.set_brightness(0.1, 0.1, 0.1);
             contrast_effect.set_contrast(0.1, 0.1, 0.1);
-            this._clutterTexture.add_effect(desaturate_effect);
-            this._clutterTexture.add_effect(colorize_effect);
-            this._clutterTexture.add_effect(contrast_effect);
+            this._bin.add_effect(colorize_effect);
+            this._bin.add_effect(contrast_effect);
+            this._bin.add_effect(desaturate_effect);
         }
-
-        this._files = new Array();
 
         let dir_path = this.metadata["directory"];
         dir_path = dir_path.replace('~', GLib.get_home_dir());
@@ -64,7 +59,7 @@ MyDesklet.prototype = {
             while ((info = fileEnum.next_file(null)) != null) {
                 let fileType = info.get_file_type();
                 if (fileType != Gio.FileType.DIRECTORY) {
-                    this._files.push(dir_path + "/" + info.get_name());
+                    this._loadImage(dir_path + "/" + info.get_name());
                 }
             }
             fileEnum.close(null);
@@ -86,37 +81,35 @@ MyDesklet.prototype = {
         }
         this.updateInProgress = true;
         try {
-            let file;
+            let image;
             if (!this.metadata["shuffle"]){
-                let file = this._files.shift();
-                if (file != undefined && GLib.file_test(file, GLib.FileTest.EXISTS)) {
-                    this._files.push(file);
-                }
+                image = this._images.shift();
+                this._images.push(image);
             } else {
-                file = this._files[Math.floor(Math.random() * this._files.length)];
+                image = this._images[Math.floor(Math.random() * this._images.length)];
             }
 
-            if (this.metadata["fade-delay"] > 0) {
-                Tweener.addTween(this._clutterTexture, { opacity: 0,
-                                                         time: this.metadata["fade-delay"],
-                                                         transition: 'easeInSine',
-                                                         onComplete: Lang.bind(this, function() {
-                                                                                   if (this._clutterTexture.set_from_file(file)) {
-                                                                                       this._photoFrame.set_child(this._clutterBox);
-                                                                                   }
-                                                                                   Tweener.addTween(this._clutterTexture, { opacity: 255,
-                                                                                                                            time: this.metadata["fade-delay"],
-                                                                                                                            transition: 'easeInSine'
-                                                                                                                          });
-                                                                               })
-                                                       });
-            }
-            else {
-                if (this._clutterTexture.set_from_file(file)) {
-                    this._photoFrame.set_child(this._clutterBox);
+            if (image){
+                this.currentPicture = image;
+                if (this.metadata["fade-delay"] > 0) {
+                    Tweener.addTween(this._bin,
+                                     { opacity: 0,
+                                       time: this.metadata["fade-delay"],
+                                       transition: 'easeInSine',
+                                       onComplete: Lang.bind(this, function() {
+                                                                 this._bin.set_child(this.currentPicture);
+                                                                 Tweener.addTween(this._bin,
+                                                                                  { opacity: 255,
+                                                                                    time: this.metadata["fade-delay"],
+                                                                                    transition: 'easeInSine'
+                                                                                  });
+                                                             })
+                                     });
+                } else {
+                    this._bin.set_child(this.currentPicture);
                 }
+                
             }
-            this.currentPicture = file;
         }  catch (e) {
             global.logError(e);
         } finally {
@@ -124,11 +117,39 @@ MyDesklet.prototype = {
         }
     },
 
+    _loadImage: function(filePath) {
+        try {
+            let file = Gio.file_new_for_path(filePath);
+            let uri = file.get_uri();
+
+            let image = St.TextureCache.get_default().load_uri_sync(St.TextureCachePolicy.FOREVER, uri, -1, -1);
+
+            let frameRatio = this.metadata["height"]/this.metadata["width"];
+            let imageRatio = image.height/image.width;
+
+            let height, width;            
+            if (frameRatio > imageRatio) {
+                width = this.metadata["width"];
+                height = width * imageRatio;
+            } else {
+                height = this.metadata["height"];
+                width = height / imageRatio;
+            }
+
+            image.set_size(width, height);
+
+            image._path = filePath;
+            this._images.push(image);
+        } catch (x) {
+            // Do nothing. Probably a non-image is in the folder
+        }
+    },
+
     onDeskletClicked: function(event){
         if (event.get_button() == 1) {
             this._update();
         } else if (event.get_button() == 2) {
-            Util.spawnCommandLine("xdg-open " + this.currentPicture);
+            Util.spawnCommandLine("xdg-open " + this.currentPicture._path);
         }
     }
 };
