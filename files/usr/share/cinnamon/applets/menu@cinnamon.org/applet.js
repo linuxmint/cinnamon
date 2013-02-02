@@ -409,7 +409,6 @@ ApplicationButton.prototype = {
         this.category = new Array();
 
         this._draggable = DND.makeDraggable(this.actor);
-        this.isDraggableApp = true;
     },
 
     getDragActor: function() {
@@ -588,7 +587,6 @@ FavoritesButton.prototype = {
         this.buttonStyleSelected = this.buttonStyle;
 
         this._draggable = DND.makeDraggable(this.actor);
-        this.isDraggableApp = true;
     },
 
     getDragActor: function() {
@@ -1348,6 +1346,10 @@ MyApplet.prototype = {
 
         this.leftPane.visible = (this.showFavorites || this.showSystemButtons);
         
+        for (let app in this._applicationsButtons) {
+            this._applicationsButtons[app]._draggable.inhibit = !this.showFavorites;
+        }
+        
         if(this.showFavorites) {
             let favoritesBox = new FavoritesBox();
             this.leftBox.add_actor(favoritesBox.actor, { y_align: St.Align.END, y_fill: false });
@@ -1436,6 +1438,7 @@ MyApplet.prototype = {
                     }
                     if (!(app_key in this._applicationsButtonFromApp)) {
                         let applicationButton = new ApplicationButton(this, app);
+                        applicationButton._draggable.inhibit = !this.showFavorites;
                         applicationButton.actor.connect('realize', Lang.bind(this, this._onApplicationButtonRealized));
                         this._applicationsButtons.push(applicationButton);
                         applicationButton.category.push(top_dir.get_menu_id());
