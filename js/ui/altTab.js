@@ -362,10 +362,20 @@ AltTabPopup.prototype = {
         this._disableHover();
         const SCROLL_AMOUNT = 5;
 
+        
         if (keysym == Clutter.Escape) {
             this.destroy();
         } else if (keysym == Clutter.KEY_space && !this._persistent) {
             this._persistent = true;
+        } else if (keysym == Clutter.h) {
+            if (this._hiding) {
+                this._hiding = false;
+                this._appSwitcher.actor.opacity = 255;
+            }
+            else {
+                this._hiding = true;
+                this._appSwitcher.actor.opacity = 25;
+            }
         } else if (this._persistent && keysym == Clutter.Tab) {
             this._select(this._nextApp());
         } else if (this._persistent && keysym == Clutter.ISO_Left_Tab) {
