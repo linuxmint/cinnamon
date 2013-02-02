@@ -9,7 +9,9 @@ const Mainloop = imports.mainloop;
 
 const AppletManager = imports.ui.appletManager;
 const AltTab = imports.ui.altTab;
+const Connector = imports.misc.connector;
 const Main = imports.ui.main;
+const MessageTray = imports.ui.messageTray;
 const Tweener = imports.ui.tweener;
 
 const WINDOW_ANIMATION_TIME = 0.25;
@@ -111,6 +113,9 @@ WindowManager.prototype = {
             this._destroyWindowDone(cinnamonwm, actor);
         }));
 
+        global.display.connect('window-demands-attention', Lang.bind(this, this._onWindowDemandsAttention, false));
+        global.display.connect('window-marked-urgent', Lang.bind(this, this._onWindowDemandsAttention, true));
+
         this._cinnamonwm.connect('switch-workspace', Lang.bind(this, this._switchWorkspace));
         this._cinnamonwm.connect('minimize', Lang.bind(this, this._minimizeWindow));
         this._cinnamonwm.connect('maximize', Lang.bind(this, this._maximizeWindow));
@@ -150,6 +155,98 @@ WindowManager.prototype = {
             for (let i = 0; i < this._dimmedWindows.length; i++)
                 this._dimWindow(this._dimmedWindows[i], true);
         }));
+    },
+
+    _onWindowDemandsAttention: function(display, window, urgent) {
+        if (window._mtSource) {
+            return;
+        }
+        if (!Main.messageTray) {
+            return;
+        }
+        let source = window._mtSource = new MessageTray.Source(window.title);
+        window._mtSource.connect('destroy', Lang.bind(this, function() {
+            delete window._mtSource;
+        }));
+        Main.messageTray.add(source);
+
+        let wsIndex = window.get_workspace().index();
+        let wsText = (wsIndex != global.screen.get_active_workspace_index()) ?
+            _(" on workspace %s").format(Main.getWorkspaceName(wsIndex)) :
+            "";
+        let reason = urgent ?
+            _("Window marked urgent") :
+            _("Window demanding attention");
+        let text = reason + wsText;
+        let tracker = Cinnamon.WindowTracker.get_default();
+        let app = tracker.get_window_app(window);
+        let icon = app ?
+            app.create_icon_texture(64) :
+            new St.Icon({ icon_name: 'application-default-icon',
+                          icon_type: St.IconType.FULLCOLOR,
+                          icon_size: 64 });
+        let notification = new MessageTray.Notification(source, window.title, text,
+                                                            { icon: icon });
+        notification.setUrgency(window.is_demanding_attention() ? MessageTray.Urgency.CRITICAL : MessageTray.Urgency.HIGH);
+        notification.setTransient(false);
+        source.notify(notification);
+
+        let cleanup = null;
+        let wDestroyId = null;
+        let handler = function(destroyed) {
+            if (destroyed) {
+                wDestroyId.forget();
+            }
+            cleanup(true);
+        };
+
+        const TIMEOUT = 5000;
+        let timeoutId = null;
+        let timerFunction = function() {
+            timeoutId = null;
+            let is_alerting = window.is_demanding_attention() || window.is_urgent();
+            if (!is_alerting) {
+                cleanup(true);
+                return;
+            }
+            if (window.is_demanding_attention()) {
+                Main.activateWindow(window);
+                return;
+            }
+            timeoutId = Mainloop.timeout_add(TIMEOUT, timerFunction);
+        };
+        timeoutId = Mainloop.timeout_add(TIMEOUT, timerFunction);
+        
+        
+        wDestroyId = Connector.makeConnection(window.get_compositor_private(), 'destroy', function() {
+            handler(true);
+        });
+        let wFocusId = Connector.makeConnection(display, 'notify::focus-window', function(display) {
+            if (display.focus_window == window) {
+                handler(false);
+            }
+        });
+
+        cleanup = function(destroy) {
+            if (destroy) {
+                notification.destroy();
+            }
+            wDestroyId.disconnect();
+            wFocusId.disconnect();
+            if (timeoutId) {
+                Mainloop.source_remove(timeoutId);
+            }
+            window = null;
+            notification = null;
+        };
+
+        notification.connect('clicked', function() {
+            Main.activateWindow(window);
+        });
+
+        notification.connect('destroy', function() {
+            cleanup(false);
+        });
     },
 
     blockAnimations: function() {
