@@ -1288,6 +1288,14 @@ StScrollBar StButton#vhandle:hover {
 .menu-application-button-label:rtl { 
 	padding-right: 5px;
 }
+.menu-application-button-label-highlighted:ltr { 
+	padding-left: 5px;
+	font-weight: bold;
+}
+.menu-application-button-label-highlighted:rtl { 
+	padding-right: 5px;
+	font-weight: bold;
+}
 .menu-category-button {
 	padding-top: 7px;
 	padding-left: 7px;

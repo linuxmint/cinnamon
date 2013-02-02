@@ -397,15 +397,16 @@ GenericApplicationButton.prototype = {
     }
 }
 
-function ApplicationButton(menuApplet, app) {
-    this._init(menuApplet, app);
+function ApplicationButton(menuApplet, app, highlight) {
+    this._init(menuApplet, app, highlight);
 }
 
 ApplicationButton.prototype = {
     __proto__: GenericApplicationButton.prototype,
 
-    _init: function(menuApplet, app) {
-        GenericApplicationButton.prototype._init.call(this, menuApplet, app, true, 'menu-application-button', 'menu-application-button-label', app.create_icon_texture(APPLICATION_ICON_SIZE));
+    _init: function(menuApplet, app, highlight) {
+        let labelStyle = highlight ? 'menu-application-button-label-highlighted': 'menu-application-button-label';
+        GenericApplicationButton.prototype._init.call(this, menuApplet, app, true, 'menu-application-button', labelStyle, app.create_icon_texture(APPLICATION_ICON_SIZE));
         this.category = new Array();
 
         this._draggable = DND.makeDraggable(this.actor);
@@ -801,7 +802,7 @@ MyApplet.prototype = {
         Applet.TextIconApplet.prototype._init.call(this, orientation, panel_height);
         this._orientation = orientation;
 
-        this.set_applet_tooltip(_("Menu"));
+        this.setAppletTooltip(_("Menu"));
 
         this.menuManager = new PopupMenu.PopupMenuManager(this);
         this.menu = new Applet.AppletPopupMenu(this, orientation);
@@ -828,13 +829,13 @@ MyApplet.prototype = {
             this._updateIcon();
         }));
 
-        this.set_applet_label(_("Menu"));
+        this.setAppletLabel(_("Menu"));
         let menuLabel = global.settings.get_string("menu-text");
         if (menuLabel != "Menu") {
-            this.set_applet_label(menuLabel);
+            this.setAppletLabel(menuLabel);
         }
         global.settings.connect("changed::menu-text", Lang.bind(this, function() {
-                this.set_applet_label(global.settings.get_string("menu-text"));
+                this.setAppletLabel(global.settings.get_string("menu-text"));
             }));
 
         this.RecentManager = new DocInfo.DocManager();
@@ -842,7 +843,8 @@ MyApplet.prototype = {
         this._pathCompleter = new Gio.FilenameCompleter();
         this._pathCompleter.set_dirs_only(false);
         this._pathCompleter.connect('got-completion-data', Lang.bind(this, this._onCompletionData));
-            
+
+        this._loadInitialApps();
         this._display();
         appsys.connect('installed-changed', Lang.bind(this, this._refreshApps));
         AppFavorites.getAppFavorites().connect('changed', Lang.bind(this, this._refreshFavs));
@@ -869,6 +871,52 @@ MyApplet.prototype = {
             Util.spawnCommandLine("cinnamon-settings menu");
         });
         this._appletContextMenu.addMenuItem(settings_menu_item);
+    },
+    
+    _loadInitialApps: function() {
+        this._initialApps = {};
+        let trees = [appsys.get_tree()];
+
+        for (let i in trees) {
+            let tree = trees[i];
+            let root = tree.get_root_directory();
+
+            let iter = root.iter();
+            let nextType;
+            while ((nextType = iter.next()) != GMenu.TreeItemType.INVALID) {
+                if (nextType == GMenu.TreeItemType.DIRECTORY) {
+                    let dir = iter.get_directory();
+                    if (dir.get_is_nodisplay())
+                        continue;
+                    
+                    this._loadInitialAppsCategory(dir);
+                }
+            }
+        }
+    },
+    
+    _loadInitialAppsCategory: function(dir, top_dir) {
+        var iter = dir.iter();
+        var nextType;
+        if (!top_dir) top_dir = dir;
+        while ((nextType = iter.next()) != GMenu.TreeItemType.INVALID) {
+            if (nextType == GMenu.TreeItemType.ENTRY) {
+                var entry = iter.get_entry();
+                if (!entry.get_app_info().get_nodisplay()) {
+                    var app = appsys.lookup_app_by_tree_entry(entry);
+                    if (!app)
+                        app = appsys.lookup_settings_app_by_tree_entry(entry);
+                    var app_key = app.get_id();
+                    if (app_key == null) {
+                        app_key = app.get_name() + ":" + 
+                            app.get_description();
+                    }
+                    this._initialApps[app_key] = true;
+                }
+            } else if (nextType == GMenu.TreeItemType.DIRECTORY) {
+                this._loadInitialAppsCategory(iter.get_directory(), top_dir);
+            }
+        }
     },
     
     _refreshActivateOnHover: function() {
@@ -1015,7 +1063,7 @@ MyApplet.prototype = {
     _updateIcon: function(){
         let icon_file = global.settings.get_string("menu-icon");
         try{
-           this.set_applet_icon_path(icon_file);
+           this.setAppletIconPath(icon_file);
         }catch(e){
            global.logWarning("Could not load icon file \""+icon_file+"\" for menu button");
         }
@@ -1237,6 +1285,7 @@ MyApplet.prototype = {
                 button.actor.destroy();
             }
             this._applicationsButtons = new Array();
+            this._applicationsButtonFromApp = {};
             this._applicationsBoxWidth = 0;
         }
         
@@ -1256,12 +1305,6 @@ MyApplet.prototype = {
                     if(refreshApps || !(dir.get_menu_id() in this.applicationsByCategory)) {
                         this.applicationsByCategory[dir.get_menu_id()] = new Array();
                         this._loadCategory(dir);
-                        
-                        // Sort the applications buttons, so the initial 30 buttons are the first ones in alphabetical order
-                        this._applicationsButtons.sort(function(a, b) {
-                            let sr = a.name.toLowerCase() > b.name.toLowerCase();
-                            return sr;
-                        });
                     }
                     if (this.applicationsByCategory[dir.get_menu_id()].length>0){
                         let categoryButton = new AppCategoryButton(this, dir);
@@ -1269,6 +1312,14 @@ MyApplet.prototype = {
                     }
                 }
             }
+        }
+        
+        if(refreshApps) {
+            // Sort the applications buttons, so the initial 30 buttons are the first ones in alphabetical order
+            this._applicationsButtons.sort(function(a, b) {
+                let sr = a.name.toLowerCase() > b.name.toLowerCase();
+                return sr;
+            });
         }
         
         // Now generate Places category and places buttons and add to the list
@@ -1437,7 +1488,7 @@ MyApplet.prototype = {
                             app.get_description();
                     }
                     if (!(app_key in this._applicationsButtonFromApp)) {
-                        let applicationButton = new ApplicationButton(this, app);
+                        let applicationButton = new ApplicationButton(this, app, !this._initialApps[app_key]);
                         applicationButton._draggable.inhibit = !this.showFavorites;
                         applicationButton.actor.connect('realize', Lang.bind(this, this._onApplicationButtonRealized));
                         this._applicationsButtons.push(applicationButton);
