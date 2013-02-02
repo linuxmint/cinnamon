@@ -22,7 +22,9 @@ class DoubleListFrame(Gtk.Frame):
 
 class Module:
     def __init__(self, content_box):
-        sidePage = SidePage(_("Menu"), "menu.svg", content_box)
+        keywords = _("menu, start, bookmarks, places, recent")
+        advanced = False
+        sidePage = SidePage(_("Menu"), "menu.svg", keywords, advanced, content_box)
         self.sidePage = sidePage
         self.name = "menu"
         sidePage.add_widget(GSettingsEntry(_("Menu text"), "org.cinnamon", "menu-text", None))

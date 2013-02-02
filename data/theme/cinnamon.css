@@ -103,6 +103,7 @@ StScrollBar StButton#vhandle:hover {
 	color: #ffffff;
 	font-size: 9.5pt;
 	min-width: 100px;
+	background-bumpmap: url("/usr/share/cinnamon/bumpmaps/frost.png");
 }
 .popup-submenu-menu-item:open {
 	background-color: #4c4c4c;

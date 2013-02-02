@@ -10,13 +10,16 @@ home = os.path.expanduser("~")
 
 class Module:
     def __init__(self, content_box):
-        sidePage = AppletViewSidePage(_("Applets"), "applets.svg", content_box)
+        keywords = _("applets")
+        advanced = False
+        sidePage = AppletViewSidePage(_("Applets"), "applets.svg", keywords, advanced, content_box)
         self.sidePage = sidePage
         self.name = "applets"
+        self.category = "prefs"
 
 class AppletViewSidePage (SidePage):
-    def __init__(self, name, icon, content_box):   
-        SidePage.__init__(self, name, icon, content_box)        
+    def __init__(self, name, icon, keywords, advanced, content_box):
+        SidePage.__init__(self, name, icon, keywords, advanced, content_box)
         self.icons = []
         
         self.search_entry = Gtk.Entry()
@@ -24,7 +27,7 @@ class AppletViewSidePage (SidePage):
                                   or self.load_applets_in('/usr/share/cinnamon/applets') 
                                   or self.load_applets_in('%s/.local/share/cinnamon/applets' % home) )
                   
-    def build(self):
+    def build(self, advanced):
         # Clear all the widgets from the content box
         widgets = self.content_box.get_children()
         for widget in widgets:
@@ -49,7 +52,7 @@ class AppletViewSidePage (SidePage):
         self.treeview.append_column(column2)
         self.treeview.append_column(column3)        
         self.treeview.set_headers_visible(False)        
-            
+        self.treeview.set_vexpand(True)
         self.model = Gtk.TreeStore(str, str, int, int, GdkPixbuf.Pixbuf)
         #                          uuid, name, enabled, icon        
         self.model.set_sort_column_id(1, Gtk.SortType.ASCENDING)
@@ -79,7 +82,7 @@ class AppletViewSidePage (SidePage):
         link.set_label(_("Get new applets"))                
                          
         self.content_box.pack_start(self.search_entry, False, False, 2)
-        self.content_box.add(scrolledWindow)        
+        self.content_box.pack_start(scrolledWindow, False, True, 2)        
         self.content_box.pack_start(self.instanceButton, False, False, 2) 
         self.content_box.pack_start(restoreButton, False, False, 2) 
         self.content_box.pack_start(link, False, False, 2) 

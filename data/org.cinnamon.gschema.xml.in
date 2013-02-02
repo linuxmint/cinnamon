@@ -568,6 +568,11 @@
       <description>Duration of the delay (in milliseconds)</description>
     </key>
 
+    <key type="b" name="cinnamon-settings-advanced">
+      <default>false</default>
+      <_summary>Whether advanced mode is enabled in cinnamon-settings</_summary>
+    </key>
+
     <child name="calendar" schema="org.cinnamon.calendar"/>
     <child name="theme" schema="org.cinnamon.theme"/>   
     <child name="recorder" schema="org.cinnamon.recorder"/>

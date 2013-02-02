@@ -51,6 +51,7 @@ Depends: ${gir:Depends},
          ${shlibs:Depends},
          ${misc:Depends},
          cinnamon-common (= ${source:Version}),
+	 cinnamon-control-center,
          caribou,
          cups-pk-helper,
          gnome-settings-daemon (>= 2.91.5.1),
@@ -69,13 +70,13 @@ Depends: ${gir:Depends},
          python-dbus,
          python-gconf,
          python-imaging,
-	 python-gtk2,
+         python-gtk2,
          pkg-config,
          mesa-utils,
          python-lxml,
-         gkbd-capplet                
-Recommends: gnome-control-center, gnome-user-guide, gnome-themes-standard, gnome-session-fallback, gnome-terminal, nemo, cinnamon-screensaver
-Breaks: gnome-control-center (<< 1:3.0)
+         gkbd-capplet,
+         python-pyinotify
+Recommends: gnome-themes-standard, gnome-terminal, nemo, cinnamon-screensaver
 Conflicts: cinnamon-session, cinnamon-settings
 Provides: cinnamon-session, cinnamon-settings, notification-daemon
 Replaces: cinnamon-session, cinnamon-settings
@@ -107,4 +108,3 @@ Description: Cinnamon desktop (Common data files)
  graphical technologies.
  .
  This package contains the architecture independent files needed by Cinnamon
-

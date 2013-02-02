@@ -11,6 +11,7 @@ import imtools
 import gettext
 import subprocess
 import tempfile
+import pango
 
 gettext.install("cinnamon", "/usr/share/cinnamon/locale")
 
@@ -36,13 +37,16 @@ BACKGROUND_PICTURE_OPTIONS = [
     ("spanned", _("Spanned"))
 ]
 
-BACKGROUND_ICONS_SIZE = 115
+BACKGROUND_ICONS_SIZE = 330
 
 class Module:
     def __init__(self, content_box):
-        sidePage = BackgroundSidePage(_("Backgrounds"), "backgrounds.svg", content_box)
+        keywords = _("background, picture, screenshot, slideshow")
+        advanced = False
+        sidePage = BackgroundSidePage(_("Backgrounds"), "backgrounds.svg", keywords, advanced, content_box)
         self.sidePage = sidePage
         self.name = "backgrounds"
+        self.category = "appear"
 
 class PixCache(object):
     
@@ -102,9 +106,19 @@ class ThreadedIconView(Gtk.IconView):
         self.set_item_width(BACKGROUND_ICONS_SIZE * 1.1)
         self._model = Gtk.ListStore(object, GdkPixbuf.Pixbuf, str)
         self.set_model(self._model)
-        self.set_pixbuf_column(1)
-        self.set_markup_column(2)        
-        
+
+        area = self.get_area()
+
+        pixbuf_renderer = Gtk.CellRendererPixbuf()
+        text_renderer = Gtk.CellRendererText()
+
+        text_renderer.set_alignment(.5, .5)
+        area.pack_start(pixbuf_renderer, True, False, False)
+        area.pack_start(text_renderer, True, False, False)
+        self.add_attribute (pixbuf_renderer, "pixbuf", 1);
+        self.add_attribute (text_renderer, "markup", 2)
+        text_renderer.set_property("alignment", pango.ALIGN_CENTER)
+
         self._loading_queue = []
         self._loading_queue_lock = thread.allocate_lock()
         
@@ -233,7 +247,6 @@ class BackgroundWallpaperPane (Gtk.VBox):
         self.icon_view = ThreadedIconView()
         scw.add(self.icon_view)
         self.icon_view.connect("selection-changed", self._on_selection_changed)
-        
         self.update_icon_view()
         
     def get_selected_wallpaper(self):
@@ -435,8 +448,8 @@ class BackgroundSlideshowPane(Gtk.Table):
             Gio.Settings("org.gnome.desktop.background").set_string("picture-uri", "file://" + filename)
 
 class BackgroundSidePage (SidePage):
-    def __init__(self, name, icon, content_box):   
-        SidePage.__init__(self, name, icon, content_box)
+    def __init__(self, name, icon, keywords, advanced, content_box):
+        SidePage.__init__(self, name, icon, keywords, advanced, content_box)
         self._gnome_background_schema = Gio.Settings("org.gnome.desktop.background")
         self._cinnamon_background_schema = Gio.Settings("org.cinnamon.background")
         self._add_wallpapers_dialog = AddWallpapersDialog()
@@ -457,7 +470,7 @@ class BackgroundSidePage (SidePage):
             self.remove_wallpaper_button.show()
         self.mainbox.show_all()
     
-    def build(self):
+    def build(self, advanced):
         # Clear all the widgets from the content box
         widgets = self.content_box.get_children()
         for widget in widgets:
@@ -547,7 +560,8 @@ class BackgroundSidePage (SidePage):
         self.secondary_color = GSettingsColorChooser("org.gnome.desktop.background", "secondary-color", None)
         hbox.pack_start(self.secondary_color, False, False, 2)
         advanced_options_box.pack_start(hbox, False, False, 0)
-    
+        self.content_box.show_all()
+
     def _add_wallpapers(self):
         filenames = self._add_wallpapers_dialog.run()
         if filenames:

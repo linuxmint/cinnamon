@@ -17,6 +17,7 @@ Build-Depends: cdbs,
                gobject-introspection (>= 1.29.15),
                gir1.2-json-1.0,
                gnome-bluetooth (>= 3.1.0),
+               gnome-common,
                gsettings-desktop-schemas-dev (>= 0.1.7),
                libcaribou-dev,
                libcroco3-dev (>= 0.6.2),
@@ -54,6 +55,7 @@ Depends: ${gir:Depends},
          gjs (>= 1.29.18),
          ${shlibs:Depends},
          ${misc:Depends},
+	 cinnamon-control-center,
          caribou,
          cups-pk-helper,
          gnome-settings-daemon (>= 2.91.5.1),
@@ -70,14 +72,14 @@ Depends: ${gir:Depends},
          gir1.2-upowerglib-1.0,
          python,
          python-dbus,
-	 python-gconf,
-	 python-imaging,
-	 python-gtk2,
+         python-gconf,
+         python-imaging,
+         python-gtk2,
          pkg-config,
          mesa-utils,
-	 gkbd-capplet
-Recommends: gnome-control-center, gnome-user-guide, gnome-themes-standard, gnome-session-fallback, gnome-terminal, nemo
-Breaks: gnome-control-center (<< 1:3.0)
+         gkbd-capplet,
+         python-pyinotify
+Recommends: gnome-themes-standard, gnome-terminal, nemo, cinnamon-screensaver
 Conflicts: cinnamon-session, cinnamon-settings
 Provides: cinnamon-session, cinnamon-settings
 Replaces: cinnamon-session, cinnamon-settings
