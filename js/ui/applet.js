@@ -125,6 +125,8 @@ Applet.prototype = {
 
         // Backward compatibility
         this._applet_context_menu = this._appletContextMenu;
+	this._applet_tooltip = this._appletTooltip;
+	this._applet_tooltip_text = this._appletTooltipText;
     },
     
     _setAppletReactivity: function() {
@@ -305,8 +307,12 @@ IconApplet.prototype = {
         Applet.prototype._init.call(this, orientation, panelHeight);
         this._appletIconBox = new St.Bin();
         this.actor.add(this._appletIconBox, { y_align: St.Align.MIDDLE, y_fill: false });
+	this._appletIcon = null;
         this.__iconType = null;
         this.__iconName = null;
+
+	// Backward compatibility
+	this._applet_icon = this._appletIcon;
     },
 
     setAppletIconName: function (iconName) {
@@ -400,6 +406,9 @@ TextApplet.prototype = {
         this._label_height = (this._panelHeight / DEFAULT_PANEL_HEIGHT) * PANEL_FONT_DEFAULT_HEIGHT;
         this._appletLabel.clutter_text.ellipsize = Pango.EllipsizeMode.NONE;
         this.actor.add(this._appletLabel, { y_align: St.Align.MIDDLE, y_fill: false });    
+
+	// Backward compatibility;
+	this._applet_label = this._appletLabel;
     },
 
     setAppletLabel: function (text) {
@@ -426,6 +435,9 @@ TextIconApplet.prototype = {
         this._label_height = (this._panelHeight / DEFAULT_PANEL_HEIGHT) * PANEL_FONT_DEFAULT_HEIGHT;
         this._appletLabel.clutter_text.ellipsize = Pango.EllipsizeMode.NONE;     
         this.actor.add(this._appletLabel, { y_align: St.Align.MIDDLE, y_fill: false });
+
+	// Backward compatibility;
+	this._applet_label = this._appletLabel;
     },
 
     setAppletLabel: function (text) {
