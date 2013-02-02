@@ -12,7 +12,9 @@ var makeConnection = function() {
     let target = args.shift();
     let id = target.connect.apply(target, args);
     return {
-        disconnect: function() {target.disconnect(id);}
+        disconnect: function() {if (target) {target.disconnect(id); target = null;}},
+        forget: function() {target = null;},
+        getTarget: function() {return target;}
     };
 };
 
