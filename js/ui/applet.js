@@ -10,6 +10,7 @@ const AppletManager = imports.ui.appletManager;
 const Gtk = imports.gi.Gtk;
 const Util = imports.misc.util;
 const Pango = imports.gi.Pango;
+const Mainloop = imports.mainloop;
 
 const COLOR_ICON_HEIGHT_FACTOR = .875;  // Panel height factor for normal color icons
 const PANEL_FONT_DEFAULT_HEIGHT = 11.5; // px
@@ -125,8 +126,18 @@ Applet.prototype = {
 
         // Backward compatibility
         this._applet_context_menu = this._appletContextMenu;
-	this._applet_tooltip = this._appletTooltip;
-	this._applet_tooltip_text = this._appletTooltipText;
+        this._applet_tooltip = this._appletTooltip;
+        this._applet_tooltip_text = this._appletTooltipText;
+    },
+
+    _logDeprecated: function(oldFunc, newFunc) {
+        if (!this._loggedDeprecated) {
+            // Wait for a while so that appletManager assigns us the uuid
+            Mainloop.idle_add(Lang.bind(this, function() {
+                global.logWarning(this._uuid + ": " + oldFunc + " is deprecated. Use " + newFunc + "instead.");
+            }));
+            this._loggedDeprecated = true;
+        }
     },
     
     _setAppletReactivity: function() {
@@ -184,7 +195,7 @@ Applet.prototype = {
         // Backward compatibility
         if (this.on_applet_clicked) {
             this.on_applet_clicked(event);
-            global.log("on_applet_clicked is deprecated. Use onAppletClicked instead");
+            this._logDeprecated("on_applet_clicked", "onAppletClicked");
         }
     },
     
@@ -192,7 +203,7 @@ Applet.prototype = {
         // Backward compatibility
         if (this.on_applet_added_to_panel) {
             this.on_applet_added_to_panel();
-            global.log("on_applet_added_to_panel is deprecated. Use onAppletAddedToPanel instead");
+            this._logDeprecated("on_applet_added_to_panel", "onAppletAddedToPanel");
         }
     },
 
@@ -203,8 +214,8 @@ Applet.prototype = {
         // Backward compatibility
         if (this.on_applet_removed_from_panel) {
             this.on_applet_removed_from_panel();
-            global.log("on_applet_removed_from_panel is deprecated. use onAppletRemovedFromPamel instead");
-            }
+            this._logDeprecated("on_applet_removed_from_panel", "onAppletRemovedFromPanel");
+        }
     },
 
     // should only be called by appletManager
@@ -244,7 +255,7 @@ Applet.prototype = {
     onOrientationChanged: function(event) {
         // Backward compatibility
         if (this.on_orientation_changed) {
-            global.log("on_orientation_changed is deprecated. Use onOrientationChanged instead");
+            this._logDeprecated("on_orientation_changed", "onOrientationChanged");
             this.on_orientation_changed(event);
         }
         // Implemented by Applets        
@@ -260,7 +271,7 @@ Applet.prototype = {
     onPanelHeightChanged: function() {
         // Backward compatibility
         if (this.on_panel_height_changed) {
-            global.log("on_panel_height_changed is deprecated. Use onPanelHeightChanged instead");
+            this._logDeprecated("on_panel_height_changed", "onPanelHeightChanged");
             this.on_panel_height_changed();
         }
         // Implemented by Applets
@@ -291,7 +302,7 @@ Applet.prototype = {
 
     // Backward compatibility
     set_applet_tooltip: function (text) {
-        global.log("set_applet_tooltip is deprecated. Use setAppletTooltip instead");
+        this._logDeprecated("set_applet_tooltip", "setAppletTooltip");
         this.setAppletTooltip(text);
     }
 };
@@ -307,12 +318,12 @@ IconApplet.prototype = {
         Applet.prototype._init.call(this, orientation, panelHeight);
         this._appletIconBox = new St.Bin();
         this.actor.add(this._appletIconBox, { y_align: St.Align.MIDDLE, y_fill: false });
-	this._appletIcon = null;
+        this._appletIcon = null;
         this.__iconType = null;
         this.__iconName = null;
 
-	// Backward compatibility
-	this._applet_icon = this._appletIcon;
+        // Backward compatibility
+        this._applet_icon = this._appletIcon;
     },
 
     setAppletIconName: function (iconName) {
@@ -378,17 +389,17 @@ IconApplet.prototype = {
 
     // Backward compatibility
     set_applet_icon_name: function(icon_name) {
-        global.log("set_applet_icon_name is deprecated. Use setAppletIconName instead");
+        this._logDeprecated("set_applet_icon_name", "setAppletIconName");
         this.setAppletIconName(icon_name);
     },
 
     set_applet_icon_symbolic_name: function (icon_name) {
-        global.log("set_applet_icon_symbolic_name is deprecated. Use setAppletIconSymbolicName instead");
+        this._logDeprecated("set_applet_icon_symbolic_name", "setAppletIconSymbolicName");
         this.setAppletIconSymbolicName(icon_name);
     },
 
     set_applet_icon_path: function (icon_path) {
-        global.log("set_applet_icon_path is deprecated. Use setAppletIconPath instead");
+        this._logDeprecated("set_applet_icon_path", "setAppletIconPath");
         this.setAppletIconPath(icon_path);
     }
 };
@@ -407,8 +418,8 @@ TextApplet.prototype = {
         this._appletLabel.clutter_text.ellipsize = Pango.EllipsizeMode.NONE;
         this.actor.add(this._appletLabel, { y_align: St.Align.MIDDLE, y_fill: false });    
 
-	// Backward compatibility;
-	this._applet_label = this._appletLabel;
+        // Backward compatibility;
+        this._applet_label = this._appletLabel;
     },
 
     setAppletLabel: function (text) {
@@ -417,8 +428,8 @@ TextApplet.prototype = {
 
     // Backward compatibility
     set_applet_label: function(text){
-	global.log("set_applet_label is depreacted. Use setAppletIcon instead");
-	this.setAppletLabel(text);
+        this._logDeprecated("set_applet_label is depreacted. Use setAppletIcon");
+        this.setAppletLabel(text);
     }
 };
 
@@ -436,8 +447,8 @@ TextIconApplet.prototype = {
         this._appletLabel.clutter_text.ellipsize = Pango.EllipsizeMode.NONE;     
         this.actor.add(this._appletLabel, { y_align: St.Align.MIDDLE, y_fill: false });
 
-	// Backward compatibility;
-	this._applet_label = this._appletLabel;
+        // Backward compatibility;
+        this._applet_label = this._appletLabel;
     },
 
     setAppletLabel: function (text) {
@@ -450,12 +461,12 @@ TextIconApplet.prototype = {
 
     // Backward compatibility
     hide_applet_icon: function () {
-	global.log("hide_applet_icon is deprecated. Use hideAppletIcon instead");
-	this.hideAppletIcon();
+        this._logDeprecated("hide_applet_icon", "hideAppletIcon");
+        this.hideAppletIcon();
     },
 
     set_applet_label: function(text){
-	global.log("set_applet_label is deprecated. Use setAppletIcon instead");
-	this.setAppletLabel(text);
+        this._logDeprecated("set_applet_label", "setAppletIcon");
+        this.setAppletLabel(text);
     }
 };
