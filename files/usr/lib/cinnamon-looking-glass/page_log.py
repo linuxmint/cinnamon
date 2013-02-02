@@ -46,16 +46,12 @@ class LogView(Gtk.ScrolledWindow):
         dbusManager.addReconnectCallback(self.clear)
 
     def append(self, category, time, message):
-        self.log.append(LogEntry(category, time, message))
-
-    def updateText(self):
-        self.textbuffer.set_text('')
-
-        iter = self.textbuffer.get_end_iter()
-        for entry in self.log:
-            self.textbuffer.insert_with_tags(iter, entry.formattedText, self.typeTags[entry.category])
+        entry = LogEntry(category, time, message)
+        self.log.append(entry)
+        return entry
 
     def onButtonToggled(self, button, data):
+        self.textview.hide()
         active = button.get_active()
         self.enabledTypes[data] = active
         self.typeTags[data].props.invisible = active != True
@@ -64,6 +60,7 @@ class LogView(Gtk.ScrolledWindow):
         #print self.textview.get_preferred_height()
         adj = self.get_vadjustment()
         #adj.set_upper(self.textview.get_allocated_height())
+        self.textview.show()
 
     def clear(self):
         self.append("warning", 0, "================ Cinnamon Restart ===============")
@@ -83,10 +80,13 @@ class LogView(Gtk.ScrolledWindow):
                         self.firstMessageTime = firstMessageTime
                         self.addedMessages = 0
 
+                    self.textview.hide()
+                    iter = self.textbuffer.get_end_iter()
                     for item in data[self.addedMessages:]:
-                        self.append(item["category"], float(item["timestamp"])*0.001, item["message"])
+                        entry = self.append(item["category"], float(item["timestamp"])*0.001, item["message"])
+                        self.textbuffer.insert_with_tags(iter, entry.formattedText, self.typeTags[entry.category])
                         self.addedMessages += 1
-                    self.updateText()
+                    self.textview.show()
             except Exception as e:
                 print e
 
