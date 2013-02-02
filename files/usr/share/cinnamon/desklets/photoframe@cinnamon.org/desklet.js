@@ -138,10 +138,6 @@ MyDesklet.prototype = {
                 fileEnum.close(null);
             }
             
-            if (this.shuffle) {
-                for(var j, x, i = this._files.length; i; j = parseInt(Math.random() * i), x = this._files[--i], this._files[i] = this._files[j], this._files[j] = x);
-            }
-            
             this.updateInProgress = false;
             this.currentPicture = null;
             this._update_loop();
@@ -160,37 +156,41 @@ MyDesklet.prototype = {
             return;
         }
         this.updateInProgress = true;
-        try {            
-            let file = this._files.shift();
-            if (file != undefined && GLib.file_test(file, GLib.FileTest.EXISTS)) {                
-                this._files.push(file);                
-                if (this.fade_delay > 0) {
-                    Tweener.addTween(this._clutterTexture, { opacity: 0,
-                        time: this.fade_delay,
-                        transition: 'easeInSine',
-                        onComplete: Lang.bind(this, function() {
-                            if (this._clutterTexture.set_from_file(file)) {
-                                this._photoFrame.set_child(this._clutterBox);                                
-                            }                                    
-                            Tweener.addTween(this._clutterTexture, { opacity: 255,
-                                time: this.fade_delay,
-                                transition: 'easeInSine'
-                            });
-                        })
-                    });
+        try {
+            let file;
+            if (!this.metadata["shuffle"]){
+                let file = this._files.shift();
+                if (file != undefined && GLib.file_test(file, GLib.FileTest.EXISTS)) {
+                    this._files.push(file);
                 }
-                else {
-                    if (this._clutterTexture.set_from_file(file)) {
-                        this._photoFrame.set_child(this._clutterBox);
-                    } 
-                }
-                this.currentPicture = file;
+            } else {
+                file = this._files[Math.floor(Math.random() * this._files.length)];
             }
-        }
-        catch (e) {
+
+            if (this.metadata["fade-delay"] > 0) {
+                Tweener.addTween(this._clutterTexture, { opacity: 0,
+                                                         time: this.metadata["fade-delay"],
+                                                         transition: 'easeInSine',
+                                                         onComplete: Lang.bind(this, function() {
+                                                                                   if (this._clutterTexture.set_from_file(file)) {
+                                                                                       this._photoFrame.set_child(this._clutterBox);
+                                                                                   }
+                                                                                   Tweener.addTween(this._clutterTexture, { opacity: 255,
+                                                                                                                            time: this.metadata["fade-delay"],
+                                                                                                                            transition: 'easeInSine'
+                                                                                                                          });
+                                                                               })
+                                                       });
+            }
+            else {
+                if (this._clutterTexture.set_from_file(file)) {
+                    this._photoFrame.set_child(this._clutterBox);
+                }
+            }
+            this.currentPicture = file;
+        } catch (e) {
             global.logError(e);
-        }
-        finally {
+        } finally {
             this.updateInProgress = false;
         }       
     },
