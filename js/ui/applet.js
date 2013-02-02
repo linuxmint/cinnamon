@@ -423,7 +423,7 @@ TextApplet.prototype = {
     },
 
     setAppletLabel: function (text) {
-        this._appletLabel.clutter_text.set_text(text);
+        this._appletLabel.set_text(text);
     },
 
     // Backward compatibility
@@ -452,7 +452,7 @@ TextIconApplet.prototype = {
     },
 
     setAppletLabel: function (text) {
-        this._appletLabel.clutter_text.set_text(text);
+        this._appletLabel.set_text(text);
     },
 
     hideAppletIcon: function () {
