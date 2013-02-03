@@ -124,7 +124,7 @@ Applet.prototype = {
         }));
 
 	// Backward compatibility
-	this._applet_context_menu = this.appletContextMenu;
+	this._applet_context_menu = this._appletContextMenu;
     },
     
     _setAppletReactivity: function() {
