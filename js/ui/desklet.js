@@ -32,6 +32,12 @@ function Desklet(metadata){
 }
 
 Desklet.prototype = {
+    /**
+     * _init:
+     * @metadata (dictionary): the metadata of the desklet
+     * 
+     * Constructor function
+     */
     _init: function(metadata){
         this.metadata = metadata;
 

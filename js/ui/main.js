@@ -842,7 +842,7 @@ function isError(obj) {
 
 /**
  * _LogTraceFormatted:
- * @stack (String): the stack trace
+ * @stack (string): the stack trace
  * 
  * Prints the stack trace to the LookingGlass
  * error stream in a predefined format
