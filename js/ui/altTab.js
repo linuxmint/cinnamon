@@ -218,7 +218,6 @@ AltTabPopup.prototype = {
         if (this._appSwitcher) {
             this._clearPreview();
             this._destroyThumbnails();
-            this.actor.remove_actor(this._appSwitcher.actor);
             this._appSwitcher.actor.destroy();
         }
        
@@ -252,15 +251,12 @@ AltTabPopup.prototype = {
         }
         // Size the icon bar primarily to fit the windows of the current workspace, with some
         // added space for windows from the other workspaces, if any.
-        this._numPrimaryItems = Math.max(2, wsWindows.length + (windows.length > wsWindows.length ? 2 : 0));
+        this._numPrimaryItems_Orig = Math.max(2, wsWindows.length + (windows.length > wsWindows.length ? 2 : 0));
+        this._numPrimaryItems = this._numPrimaryItems_Orig;
 
-        this._appSwitcher = new AppSwitcher(windows, this._showThumbnails, this);
-        this.actor.add_actor(this._appSwitcher.actor);
-        if (!this._iconsEnabled && !this._thumbnailsEnabled) {
-            this._appSwitcher.actor.hide();
-        }
-        this._appSwitcher.connect('item-activated', Lang.bind(this, this._appActivated));
 
+        this._createAppswitcher(windows);
+        
         // Need to force an allocation so we can figure out whether we
         // need to scroll when selecting
         this._appSwitcher.actor.opacity = 0;
@@ -308,6 +304,18 @@ AltTabPopup.prototype = {
         return true;
     },
 
+    _createAppswitcher: function(windows) {
+        if (this._appSwitcher) {
+            this._appSwitcher.actor.destroy();
+        }
+        this._appSwitcher = new AppSwitcher(windows, this._showThumbnails, this);
+        this.actor.add_actor(this._appSwitcher.actor);
+        if (!this._iconsEnabled && !this._thumbnailsEnabled) {
+            this._appSwitcher.actor.hide();
+        }
+        this._appSwitcher.connect('item-activated', Lang.bind(this, this._appActivated));
+    },
+    
     show : function(backward, binding, mask) {
         let screen = global.screen;
         let display = screen.get_display();
@@ -335,6 +343,27 @@ AltTabPopup.prototype = {
     },
     _previousApp : function() {
         return mod(this._currentApp - 1, this._appIcons.length);
+    },
+
+    _toggleZoom : function() {
+        if (this._selectTimeoutId) {Mainloop.source_remove(this._selectTimeoutId);}
+        this._selectTimeoutId = Mainloop.idle_add(Lang.bind(this, function() {
+            this._selectTimeoutId = null;
+            if (this._zoomedOut) {
+                this._zoomedOut = false;
+                this._numPrimaryItems = this._numPrimaryItems_Orig;
+            }
+            else {
+                this._zoomedOut = true;
+                this._numPrimaryItems = this._appIcons.length - 1;
+            }
+            let current = this._currentApp; // save before re-creating the app switcher
+            let windows = this._appIcons.map(function(appIcon) {return appIcon.window;});
+            this._createAppswitcher(windows);
+            if (current >= 0) {
+                Mainloop.idle_add(Lang.bind(this, this._select, current)); // async refresh
+            }
+        })); // async refresh
     },
 
     _keyPressEvent : function(actor, event) {
@@ -385,7 +414,9 @@ AltTabPopup.prototype = {
             this.destroy();
         } else if (keysym == Clutter.KEY_space && !this._persistent) {
             this._persistent = true;
-        } else if (keysym == Clutter.h) {
+        } else if (keysym == Clutter.z) {
+            this._toggleZoom();
+        } else if (keysym == Clutter.h) { // toggle hide
             if (this._hiding) {
                 this._hiding = false;
                 this._appSwitcher.actor.opacity = 255;
