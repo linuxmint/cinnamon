@@ -1,23 +1,49 @@
 #!/usr/bin/make -f
+# -*- makefile -*-
 
-include /usr/share/cdbs/1/rules/debhelper.mk
-include /usr/share/cdbs/1/class/autotools.mk
-include /usr/share/cdbs/1/rules/utils.mk
-include debian/cinnamon.mk
-include /usr/share/gnome-pkg-tools/1/rules/uploaders.mk
--include /usr/share/gnome-pkg-tools/1/rules/gnome-get-source.mk
+# Uncomment this to turn on verbose mode.
+#export DH_VERBOSE=1
 
-ifeq ($(cinnamon dpkg-vendor --query vendor),Ubuntu)
-	DEB_DH_GENCONTROL_ARGS += -- -Vicon-theme:Depends=gnome-icon-theme-full
+export LDFLAGS+=-Wl,--as-needed
+
+# To avoid running configure twice (because gnome-autogen.sh)
+export NOCONFIGURE=yes
+
+ifneq (,$(filter parallel=%,$(DEB_BUILD_OPTIONS)))
+  DH_PARALLEL_OPTION=--parallel
 endif
 
-$(patsubst %,binary-predeb/%,$(DEB_ALL_PACKAGES)) ::
-	dh_girepository -p$(cdbs_curpkg) -l src -p /usr/lib/muffin \
-		/usr/lib/cinnamon
-	find debian/$(cdbs_curpkg) -name '*.la' -exec rm -f '{}' ';'
+ifeq ($(cinnamon dpkg-vendor --query vendor),Ubuntu)
+DH_GENCONTROL_ARGS = -Vicon-theme:Depends=gnome-icon-theme-full
+endif
 
-DEB_CONFIGURE_EXTRA_FLAGS += --enable-compile-warnings=yes
+%:
+	dh  $@ --with autoreconf,python2 $(DH_PARALLEL_OPTION)
 
-DEB_DBG_PACKAGES = cinnamon-dbg
-DEB_DH_MAKESHLIBS_ARGS_cinnamon = -Xlibcinnamon
-DEB_SHLIBDEPS_INCLUDE = /usr/lib/gnome-bluetooth
+
+override_dh_autoreconf:
+	dh_autoreconf --as-needed ./autogen.sh
+
+override_dh_auto_configure:
+	dh_auto_configure -- --enable-compile-warnings=yes \
+	                     --disable-schemas-install \
+	                     BROWSER_PLUGIN_DIR=/usr/lib/mozilla/plugins
+
+# Disable checks since they are not functional for the moment
+override_dh_auto_test:
+
+override_dh_install:
+	dh_install -X.la
+
+override_dh_strip:
+	dh_strip --dbg-package=cinnamon-dbg
+
+override_dh_makeshlibs:
+	dh_makeshlibs -Xplugin
+
+override_dh_shlibdeps:
+	dh_shlibdeps
+	dh_girepository -l src -p/usr/lib/muffin /usr/lib/cinnamon
+
+override_dh_gencontrol:
+	dh_gencontrol -- $(DH_GENCONTROL_ARGS)
