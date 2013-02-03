@@ -338,21 +338,39 @@ AltTabPopup.prototype = {
     },
 
     _keyPressEvent : function(actor, event) {
-        let that = this;
-        var switchWorkspace = function(direction) {
-            if (global.screen.n_workspaces < 2) {
-                return false;
+        let findFirstWorkspaceWindow = Lang.bind(this, function(startIndex) {
+            let wsCurIx = this._appIcons[startIndex].window.get_workspace().index();
+            for (let i = startIndex; i >= 0; --i) {
+                if (this._appIcons[i].window.get_workspace().index() == wsCurIx) {
+                    continue;
+                }
+                return i + 1;
+             }
+            return 0;
+        });
+
+        let switchWorkspace = Lang.bind(this, function(direction) {
+            let wsCurIx = this._appIcons[this._currentApp].window.get_workspace().index();
+            if (direction > 0) {
+                for (let i = this._currentApp + 1, iLen = this._appIcons.length; i < iLen; ++i) {
+                    if (i == iLen - 1 || this._appIcons[i].window.get_workspace().index() > wsCurIx) {
+                        this._select(i);
+                        return true;
+                    }
+                }
             }
-            let current = global.screen.get_active_workspace_index();
-            let nextIndex = (global.screen.n_workspaces + current + direction) % global.screen.n_workspaces;
-            global.screen.get_workspace_by_index(nextIndex).activate(global.get_current_time());
-            if (current == global.screen.get_active_workspace_index()) {
-                return false;
+            if (direction < 0) {
+                let ix = findFirstWorkspaceWindow(this._currentApp);
+                if (ix == 0 || this._currentApp - ix > 0) {
+                    this._select(ix);
+                    return true;
+                }
+                this._select(findFirstWorkspaceWindow(ix - 1));
+                return true;
             }
-            Main.wm.showWorkspaceOSD();
-            that.refresh('no-switch-windows');
-            return true;
-        };
+            return false;
+        });
+
         let keysym = event.get_key_symbol();
         let event_state = Cinnamon.get_event_state(event);
         let backwards = event_state & Clutter.ModifierType.SHIFT_MASK;
