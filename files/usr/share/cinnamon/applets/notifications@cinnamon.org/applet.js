@@ -35,8 +35,8 @@ MyApplet.prototype = {
     },
 
     _display: function() {
-        this.set_applet_icon_symbolic_name("empty-notif");
-        this.set_applet_tooltip(_("Notifications"));
+        this.setAppletIconSymbolicName("empty-notif");
+        this.setAppletTooltip(_("Notifications"));
         this._maincontainer = new St.BoxLayout({name: 'traycontainer', vertical: true});
         this._notificationbin = new St.BoxLayout({vertical:true});
         this.button_label_box = new St.BoxLayout();
@@ -100,7 +100,7 @@ MyApplet.prototype = {
             if (this.notif_count > 0) {
                 //this.clear_separator.actor.show();
                 this.clear_action.actor.show();
-                this.set_applet_label(this.notif_count.toString());
+                this.setAppletLabel(this.notif_count.toString());
                 let max_urgency = -1;
                 for (let i = 0; i < this.notif_count; i++) {
                     let cur_urgency = this.notifications[i].urgency;
@@ -110,12 +110,12 @@ MyApplet.prototype = {
                 switch (max_urgency) {
                     case Urgency.LOW:
                         this._blinking = false;
-                        this.set_applet_icon_symbolic_name("low-notif");
+                        this.setAppletIconSymbolicName("low-notif");
                         break;
                     case Urgency.NORMAL:
                     case Urgency.HIGH:
                         this._blinking = false;
-                        this.set_applet_icon_symbolic_name("normal-notif");
+                        this.setAppletIconSymbolicName("normal-notif");
                         break;
                     case Urgency.CRITICAL:
                         if (!this._blinking) {
@@ -126,8 +126,8 @@ MyApplet.prototype = {
                 }
             } else {
                 this._blinking = false;
-                this.set_applet_label('');
-                this.set_applet_icon_symbolic_name("empty-notif");
+                this.setAppletLabel('');
+                this.setAppletIconSymbolicName("empty-notif");
                 //this.clear_separator.actor.hide();
                 this.clear_action.actor.hide();
             }
@@ -154,11 +154,11 @@ MyApplet.prototype = {
     on_panel_edit_mode_changed: function () {
     },
 
-    on_applet_added_to_panel: function() {
-        this.on_orientation_changed(this._orientation);
+    onAppletAddedToPanel: function() {
+        this.onOrientationChanged(this._orientation);
     },
 
-    on_orientation_changed: function (orientation) {
+    onOrientationChanged: function (orientation) {
         this._orientation = orientation;
         if (this.menu) {
             this.menu.destroy();
@@ -168,7 +168,7 @@ MyApplet.prototype = {
         this._display();
     },
 
-    on_applet_clicked: function(event) {
+    onAppletClicked: function(event) {
         this._update_timestamp();
         this.menu.toggle();
     },

@@ -136,13 +136,13 @@ function MyApplet(orientation, panel_height) {
 MyApplet.prototype = {
     __proto__: Applet.TextIconApplet.prototype,
 
-    _init: function(orientation, panel_height) {        
+    _init: function(orientation, panel_height) {
         Applet.TextIconApplet.prototype._init.call(this, orientation, panel_height);
         
-        try {                                
+        try {
             this.menuManager = new PopupMenu.PopupMenuManager(this);
             this.menu = new Applet.AppletPopupMenu(this, orientation);
-            this.menuManager.addMenu(this.menu);            
+            this.menuManager.addMenu(this.menu);
             
             this.setAppletIconSymbolicName('battery-missing');            
             this._proxy = new PowerManagerProxy(DBus.session, BUS_NAME, OBJECT_PATH);
@@ -302,14 +302,14 @@ MyApplet.prototype = {
         }));
     },
 
-    on_panel_height_changed: function() {
+    onPanelHeightChanged: function() {
         this._devicesChanged();
     },
 
     _devicesChanged: function() {
         this.setAppletIconSymbolicName('battery-missing');
         this._proxy.GetRemote('Icon', Lang.bind(this, function(icon, error) {
-            if (icon) {    
+            if (icon) {
                 let gicon = Gio.icon_new_for_string(icon);
                 this._appletIcon.gicon = gicon;
                 this.actor.show();

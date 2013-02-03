@@ -74,7 +74,7 @@ MyApplet.prototype = {
             this.menu.addSettingsAction(_("Region and Language Settings"), 'gnome-region-panel.desktop'); 
             
             this.show_flags_switch = new PopupMenu.PopupSwitchMenuItem(_("Show flags"), this._showFlags);
-            this._applet_context_menu.addMenuItem(this.show_flags_switch);            
+            this._appletContextMenu.addMenuItem(this.show_flags_switch);            
             this.show_flags_switch.connect('toggled', Lang.bind(this, this._toggle_flags));
                       
         }
@@ -83,8 +83,8 @@ MyApplet.prototype = {
         }
     },
     
-    on_applet_clicked: function(event) {
-        this.menu.toggle();        
+    onAppletClicked: function(event) {
+        this.menu.toggle();
     },
     
     _toggle_flags: function() {
@@ -180,12 +180,12 @@ MyApplet.prototype = {
         let selectedLabel = this._labelActors[selected];
 
         if (this._showFlags) {
-            this.set_applet_icon_name(item._icon_name);
-            this.set_applet_label("");
+            this.setAppletIconName(item._icon_name);
+            this.setAppletLabel("");
         } else {
-            this.hide_applet_icon();
-            this.set_applet_label(selectedLabel.text);
-        }       
+            this.hideAppletIcon();
+            this.setAppletLabel(selectedLabel.text);
+        }
 
         this._selectedLayout = item;
     }    

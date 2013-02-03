@@ -101,7 +101,7 @@ MyApplet.prototype = {
         }
     },
     
-    on_applet_clicked: function(event) {
+    onAppletClicked: function(event) {
         this.menu.toggle();
     },
     
@@ -113,10 +113,10 @@ MyApplet.prototype = {
     _updateClockAndDate: function() {
         let displayDate = new Date();
         let dateFormattedFull = displayDate.toLocaleFormat(this._dateFormatFull);
-        this.set_applet_label(displayDate.toLocaleFormat(this._dateFormat));
+        this.setAppletLabel(displayDate.toLocaleFormat(this._dateFormat));
         if (dateFormattedFull !== this._lastDateFormattedFull) {
             this._date.set_text(dateFormattedFull);
-            this.set_applet_tooltip(dateFormattedFull);
+            this.setAppletTooltip(dateFormattedFull);
             this._lastDateFormattedFull = dateFormattedFull;
         }
     },
@@ -126,7 +126,7 @@ MyApplet.prototype = {
         this._periodicTimeoutId = Mainloop.timeout_add_seconds(1, Lang.bind(this, this._updateClockAndDatePeriodic));
     },
     
-    on_applet_removed_from_panel: function() {
+    onAppletRemovedFromPanel: function() {
         if (this._periodicTimeoutId){
             Mainloop.source_remove(this._periodicTimeoutId);
         }
@@ -168,7 +168,7 @@ MyApplet.prototype = {
         }));
     },
     
-    on_orientation_changed: function (orientation) {
+    onOrientationChanged: function (orientation) {
         this._orientation = orientation;
         this._initContextMenu();
     }

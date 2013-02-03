@@ -765,13 +765,13 @@ MyApplet.prototype = {
     _init: function(orientation, panel_height) {        
         Applet.TextIconApplet.prototype._init.call(this, orientation, panel_height);
         
-        try {                    
-            this.set_applet_tooltip(_("Menu"));
-                                    
+        try {
+            this.setAppletTooltip(_("Menu"));
+            
             this.menuManager = new PopupMenu.PopupMenuManager(this);
             this.menu = new Applet.AppletPopupMenu(this, orientation);
-            this.menuManager.addMenu(this.menu);   
-                        
+            this.menuManager.addMenu(this.menu);
+            
             this.actor.connect('key-press-event', Lang.bind(this, this._onSourceKeyPress));
             this.showRecent = global.settings.get_boolean("menu-show-recent");
             global.settings.connect("changed::menu-show-recent", Lang.bind(this, function() {
@@ -803,16 +803,16 @@ MyApplet.prototype = {
             
             global.settings.connect("changed::menu-icon", Lang.bind(this, function() {
                 this._updateIcon();
-            })); 
+            }));
             
-            this.set_applet_label(_("Menu"));                                            
+            this.setAppletLabel(_("Menu"));                                            
             let menuLabel = global.settings.get_string("menu-text");
             if (menuLabel != "Menu") {
-                this.set_applet_label(menuLabel);                 
-            } 
+                this.setAppletLabel(menuLabel);                 
+            }
             global.settings.connect("changed::menu-text", Lang.bind(this, function() {
-                    this.set_applet_label(global.settings.get_string("menu-text"));
-                })); 
+                    this.setAppletLabel(global.settings.get_string("menu-text"));
+                }));
             this._searchInactiveIcon = new St.Icon({ style_class: 'menu-search-entry-icon',
                                                icon_name: 'edit-find',
                                                icon_type: St.IconType.SYMBOLIC });
@@ -857,11 +857,11 @@ MyApplet.prototype = {
             this.RecentManager.connect('changed', Lang.bind(this, this._refreshApps));
 
             this.edit_menu_item = new Applet.MenuItem(_("Edit menu"), Gtk.STOCK_EDIT, Lang.bind(this, this._launch_editor));
-            this._applet_context_menu.addMenuItem(this.edit_menu_item);
+            this._appletContextMenu.addMenuItem(this.edit_menu_item);
             let settings_menu_item = new Applet.MenuItem(_("Menu settings"), null, function() {
                 Util.spawnCommandLine("cinnamon-settings menu");
             });
-            this._applet_context_menu.addMenuItem(settings_menu_item);
+            this._appletContextMenu.addMenuItem(settings_menu_item);
 
             this._fileFolderAccessActive = false;
 
@@ -884,7 +884,7 @@ MyApplet.prototype = {
         this.menu.open(true);
     },
 
-    on_orientation_changed: function (orientation) {
+    onOrientationChanged: function (orientation) {
         this.menu.destroy();
         this.menu = new Applet.AppletPopupMenu(this, orientation);
         this.menuManager.addMenu(this.menu);
@@ -898,10 +898,10 @@ MyApplet.prototype = {
         Util.spawnCommandLine("cinnamon-menu-editor");
     },
     
-    on_applet_clicked: function(event) {
+    onAppletClicked: function(event) {
         this.menu.toggle();     
-    },        
-           
+    },
+    
     _onSourceKeyPress: function(actor, event) {
         let symbol = event.get_key_symbol();
 
@@ -959,7 +959,7 @@ MyApplet.prototype = {
     _updateIcon: function(){
         let icon_file = global.settings.get_string("menu-icon");
         try{
-           this.set_applet_icon_path(icon_file);               
+           this.setAppletIconPath(icon_file);               
         }catch(e){
            global.logWarning("Could not load icon file \""+icon_file+"\" for menu button");
         }

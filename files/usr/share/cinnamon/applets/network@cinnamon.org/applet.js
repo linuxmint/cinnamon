@@ -1731,13 +1731,13 @@ MyApplet.prototype = {
     
     _setIcon: function(name) {
         if (this._currentIconName !== name) {
-            this.set_applet_icon_symbolic_name(name);
+            this.setAppletIconSymbolicName(name);
             this._currentIconName = name;
         }
     },
     
-    on_applet_clicked: function(event) {
-        this.menu.toggle();        
+    onAppletClicked: function(event) {
+        this.menu.toggle();
     },
     
     _ensureSource: function() {
@@ -2102,32 +2102,32 @@ MyApplet.prototype = {
             let hasMobileIcon = false;
 
             if (!mc) {
-                this._setIcon('network-offline');         
-                this.set_applet_tooltip(_("No connection"));   
+                this._setIcon('network-offline');
+                this.setAppletTooltip(_("No connection"));
             } else if (mc.state == NetworkManager.ActiveConnectionState.ACTIVATING) {
                 this._updateFrequencySeconds = FAST_PERIODIC_UPDATE_FREQUENCY_SECONDS;
                 switch (mc._section) {
                 case NMConnectionCategory.WWAN:
                     this._setIcon('network-cellular-acquiring');
-                    this.set_applet_tooltip(_("Connecting to the cellular network..."));
+                    this.setAppletTooltip(_("Connecting to the cellular network..."));
                     break;
                 case NMConnectionCategory.WIRELESS:
                     this._setIcon('network-wireless-acquiring');
-                    this.set_applet_tooltip(_("Connecting to the wireless network..."));
+                    this.setAppletTooltip(_("Connecting to the wireless network..."));
                     break;
                 case NMConnectionCategory.WIRED:
                     this._setIcon('network-wired-acquiring');
-                    this.set_applet_tooltip(_("Connecting to the wired network..."));
+                    this.setAppletTooltip(_("Connecting to the wired network..."));
                     break;
                 case NMConnectionCategory.VPN:
                     this._setIcon('network-vpn-acquiring');
-                    this.set_applet_tooltip(_("Connecting to the VPN..."));
+                    this.setAppletTooltip(_("Connecting to the VPN..."));
                     break;
                 default:
                     // fallback to a generic connected icon
                     // (it could be a private connection of some other user)
                     this._setIcon('network-wired-acquiring');
-                    this.set_applet_tooltip(_("Connecting to the network..."));
+                    this.setAppletTooltip(_("Connecting to the network..."));
                 }
             } else {
                 let dev;
@@ -2143,10 +2143,10 @@ MyApplet.prototype = {
                                 break;
                             }
                             this._setIcon('network-wireless-connected');
-                            this.set_applet_tooltip(_("Connected to the wireless network"));
-                        } else {                          
-                            this._setIcon('network-wireless-signal-' + signalToIcon(ap.strength));                            
-                            this.set_applet_tooltip(_("Wireless connection") + ": " + ap.get_ssid() + " ("+ ap.strength +"%)");
+                            this.setAppletTooltip(_("Connected to the wireless network"));
+                        } else {
+                            this._setIcon('network-wireless-signal-' + signalToIcon(ap.strength));
+                            this.setAppletTooltip(_("Wireless connection") + ": " + ap.get_ssid() + " ("+ ap.strength +"%)");
                             hasApIcon = true;
                         }
                         break;
@@ -2156,7 +2156,7 @@ MyApplet.prototype = {
                     }
                 case NMConnectionCategory.WIRED:
                     this._setIcon('network-wired');
-                    this.set_applet_tooltip(_("Connected to the wired network"));
+                    this.setAppletTooltip(_("Connected to the wired network"));
                     break;
                 case NMConnectionCategory.WWAN:
                     dev = mc._primaryDevice;
@@ -2167,26 +2167,26 @@ MyApplet.prototype = {
                     if (!dev.mobileDevice) {
                         // this can happen for bluetooth in PAN mode
                         this._setIcon('network-cellular-connected');
-                        this.set_applet_tooltip(_("Connected to the cellular network"));
+                        this.setAppletTooltip(_("Connected to the cellular network"));
                         break;
                     }
 
                     this._setIcon('network-cellular-signal-' + signalToIcon(dev.mobileDevice.signal_quality));
-                    this.set_applet_tooltip(_("Connected to the cellular network"));
+                    this.setAppletTooltip(_("Connected to the cellular network"));
                     hasMobileIcon = true;
                     break;
                 case NMConnectionCategory.VPN:
                     this._setIcon('network-vpn');
-                    this.set_applet_tooltip(_("Connected to the VPN"));
+                    this.setAppletTooltip(_("Connected to the VPN"));
                     break;
                 default:
                     // fallback to a generic connected icon
                     // (it could be a private connection of some other user)
                     this._setIcon('network-wired');
-                    this.set_applet_tooltip(_("Connected to the network"));
+                    this.setAppletTooltip(_("Connected to the network"));
                     break;
                 }
-            }            
+            }
         }
         catch (e) {
             global.logError(e);
@@ -2199,7 +2199,7 @@ MyApplet.prototype = {
         this._periodicTimeoutId = Mainloop.timeout_add_seconds(this._updateFrequencySeconds, Lang.bind(this, this._periodicUpdateIcon));
     },
 
-    on_applet_removed_from_panel: function() {
+    onAppletRemovedFromPanel: function() {
         if (this._periodicTimeoutId){
             Mainloop.source_remove(this._periodicTimeoutId);
         }

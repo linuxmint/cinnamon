@@ -323,7 +323,7 @@ MyApplet.prototype = {
         return apps;
     },
 
-    on_panel_height_changed: function() {
+    onPanelHeightChanged: function() {
         this.reload();
     },
 
