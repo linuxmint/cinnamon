@@ -187,7 +187,7 @@ WindowManager.prototype = {
                           icon_size: 64 });
         let notification = new MessageTray.Notification(source, window.title, text,
                                                             { icon: icon });
-        notification.setUrgency(window.is_demanding_attention() ? MessageTray.Urgency.CRITICAL : MessageTray.Urgency.HIGH);
+        notification.setUrgency(MessageTray.Urgency.CRITICAL);
         notification.setTransient(false);
         source.notify(notification);
 
@@ -200,7 +200,9 @@ WindowManager.prototype = {
             cleanup(true);
         };
 
-        const TIMEOUT = 5000;
+        const TIMEOUT = 3000;
+        const ATTENTION_LIMIT = 10000;
+        let then = new Date();
         let timeoutId = null;
         let timerFunction = function() {
             timeoutId = null;
@@ -210,8 +212,10 @@ WindowManager.prototype = {
                 return;
             }
             if (window.is_demanding_attention()) {
-                Main.activateWindow(window);
-                return;
+                if ((new Date()).getTime() - then.getTime() > ATTENTION_LIMIT) {
+                    Main.activateWindow(window);
+                    return;
+                }
             }
             timeoutId = Mainloop.timeout_add(TIMEOUT, timerFunction);
         };
