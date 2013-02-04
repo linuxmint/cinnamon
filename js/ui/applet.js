@@ -134,7 +134,7 @@ Applet.prototype = {
         if (!this._loggedDeprecated) {
             // Wait for a while so that appletManager assigns us the uuid
             Mainloop.idle_add(Lang.bind(this, function() {
-                global.logWarning(this._uuid + ": " + oldFunc + " is deprecated. Use " + newFunc + "instead.");
+                global.logWarning(this._uuid + ": " + oldFunc + " is deprecated. Use " + newFunc + " instead.");
             }));
             this._loggedDeprecated = true;
         }
