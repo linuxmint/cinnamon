@@ -9,6 +9,7 @@ try:
     import glob
     import gettext
     import SettingsWidgets
+    import capi
     from gi.repository import Gio, Gtk, GObject, GdkPixbuf
 # Standard setting pages... this can be expanded to include applet dirs maybe?
     mod_files = glob.glob('/usr/lib/cinnamon-settings/modules/*.py')
@@ -112,6 +113,8 @@ class MainWindow:
         self.settings = Gio.Settings.new("org.cinnamon")
         self.advanced_mode = self.settings.get_boolean(ADVANCED_GSETTING)
         self.current_sidepage = None
+        self.c_manager = capi.CManager()
+        self.content_box.c_manager = self.c_manager
 
         for i in range(len(modules)):
             mod = modules[i].Module(self.content_box)
@@ -120,7 +123,7 @@ class MainWindow:
 
         for item in CONTROL_CENTER_MODULES:
             ccmodule = SettingsWidgets.CCModule(item[0], item[1], item[2], item[3], item[4], item[5], self.content_box)
-            if ccmodule.process():
+            if ccmodule.process(self.c_manager):
                 self.sidePages.append((ccmodule.sidePage, ccmodule.name, ccmodule.category))
 
         for item in STANDALONE_MODULES:

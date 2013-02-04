@@ -2,7 +2,6 @@
 
 import os
 from SettingsWidgets import *
-import capi
 
 class Module:
     def __init__(self, content_box):
@@ -16,7 +15,7 @@ class Module:
             sidePage.add_widget(GSettingsCheckButton(_("Ask for an away message when locking the screen from the menu"), "org.cinnamon.screensaver", "ask-for-away-message", None))
             sidePage.add_widget(GSettingsEntry(_("Default away message"), "org.cinnamon.screensaver", "default-message", None))
 
-        widget = capi.get_c_widget("screen")
+        widget = content_box.c_manager.get_c_widget("screen")
         if widget is not None:
             cheat_box = Gtk.Box.new(Gtk.Orientation.VERTICAL, 2)
             cheat_box.pack_start(widget, False, False, 2)

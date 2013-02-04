@@ -22,7 +22,6 @@ try:
     from PIL import Image
     import tempfile
     import math
-    import capi
     import subprocess
 
 except Exception, detail:
@@ -84,8 +83,8 @@ class CCModule:
         self.name = mod_id
         self.category = category
 
-    def process (self):
-        widget = capi.get_c_widget(self.name)
+    def process (self, c_manager):
+        widget = c_manager.get_c_widget(self.name)
         if widget is not None:
             c_box = Gtk.Box.new(Gtk.Orientation.VERTICAL, 2)
             c_box.pack_start(widget, False, False, 2)
