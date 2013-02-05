@@ -158,6 +158,10 @@ WindowManager.prototype = {
     },
 
     _onWindowDemandsAttention: function(display, window, urgent) {
+        if (window.get_window_type() == Meta.WindowType.DESKTOP) {
+            // this seems to happen after monitor setups has changed
+            return;
+        }
         if (window._mtSource) {
             return;
         }
@@ -187,6 +191,8 @@ WindowManager.prototype = {
                           icon_size: 64 });
         let notification = new MessageTray.Notification(source, window.title, text,
                                                             { icon: icon });
+        // Must use highest urgency level to prevent notification
+        // from ending up in the message tray.
         notification.setUrgency(MessageTray.Urgency.CRITICAL);
         notification.setTransient(false);
         source.notify(notification);
