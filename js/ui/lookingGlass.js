@@ -450,22 +450,20 @@ Inspector.prototype = {
         Main.uiGroup.add_actor(container);
 
         let eventHandler = new St.BoxLayout({ name: 'LookingGlassDialog',
-                                              vertical: false,
+                                              vertical: true,
                                               reactive: true });
         this._eventHandler = eventHandler;
+        Main.pushModal(this._eventHandler);
         container.add_actor(eventHandler);
         this._displayText = new St.Label();
         eventHandler.add(this._displayText, { expand: true });
+        this._passThroughText = new St.Label({style: 'text-align: center;'});
+        eventHandler.add(this._passThroughText, { expand: true });
 
         this._borderPaintTarget = null;
         this._borderPaintId = null;
         eventHandler.connect('destroy', Lang.bind(this, this._onDestroy));
-        eventHandler.connect('key-press-event', Lang.bind(this, this._onKeyPressEvent));
-        eventHandler.connect('button-press-event', Lang.bind(this, this._onButtonPressEvent));
-        eventHandler.connect('scroll-event', Lang.bind(this, this._onScrollEvent));
-        eventHandler.connect('motion-event', Lang.bind(this, this._onMotionEvent));
-        Clutter.grab_pointer(eventHandler);
-        Clutter.grab_keyboard(eventHandler);
+        this._capturedEventId = global.stage.connect('captured-event', Lang.bind(this, this._onCapturedEvent));
 
         // this._target is the actor currently shown by the inspector.
         // this._pointerTarget is the actor directly under the pointer.
@@ -474,6 +472,39 @@ Inspector.prototype = {
         // out, or move the pointer outside of _pointerTarget.
         this._target = null;
         this._pointerTarget = null;
+        this.passThroughEvents = false;
+        this._updatePassthroughText();
+    },
+    
+    _updatePassthroughText: function() {
+        if(this.passThroughEvents)
+            this._passThroughText.text = '(Press Pause to disable event pass through)';
+        else
+            this._passThroughText.text = '(Press Pause to enable event pass through)';
+    },
+
+    _onCapturedEvent: function (actor, event) {
+        if(event.type() == Clutter.EventType.KEY_PRESS && event.get_key_symbol() == Clutter.Pause) {
+            this.passThroughEvents = !this.passThroughEvents;
+            this._updatePassthroughText();
+            return true;
+        }
+        
+        if(this.passThroughEvents)
+            return false;
+        
+        switch (event.type()) {
+            case Clutter.EventType.KEY_PRESS:
+                return this._onKeyPressEvent(actor, event);
+            case Clutter.EventType.BUTTON_PRESS:
+                return this._onButtonPressEvent(actor, event);
+            case Clutter.EventType.SCROLL:
+                return this._onScrollEvent(actor, event);
+            case Clutter.EventType.MOTION:
+                return this._onMotionEvent(actor, event);
+            default:
+                return true;
+        }
     },
 
     _allocate: function(actor, box, flags) {
@@ -494,8 +525,9 @@ Inspector.prototype = {
     },
 
     _close: function() {
-        Clutter.ungrab_pointer(this._eventHandler);
-        Clutter.ungrab_keyboard(this._eventHandler);
+        global.stage.disconnect(this._capturedEventId);
+        Main.popModal(this._eventHandler);
+
         this._eventHandler.destroy();
         this._eventHandler = null;
         this.emit('closed');
@@ -927,17 +959,16 @@ LookingGlass.prototype = {
         inspector.connect('target', Lang.bind(this, function(i, target, stageX, stageY) {
             this._pushResult('<inspect x:' + stageX + ' y:' + stageY + '>',
                              target);
-            if(closeAfter)
-                this.close();
         }));
         inspector.connect('closed', Lang.bind(this, function() {
-            this.actor.show();
-            global.stage.set_key_focus(this._entry);
-            if(closeAfter) {
+            if(closeAfter === true) {
                 this.actor.hide();
                 this.close();
+                Main.cinnamonDBusService.notifyLgInspectorDone();
+            } else {
+                this.actor.show();
+                global.stage.set_key_focus(this._entry);
             }
-            Main.cinnamonDBusService.notifyLgInspectorDone();
         }));
         this.actor.hide();
         return true;
