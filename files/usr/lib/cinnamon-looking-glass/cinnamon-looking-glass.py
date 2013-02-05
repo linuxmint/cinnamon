@@ -373,17 +373,20 @@ class CinnamonLog(dbus.service.Object):
             elif self.window.get_visible():
                 self.window.hide()
             else:
-                self.window.present()
-                screen = self.window.get_screen()
-                geom = screen.get_monitor_geometry(screen.get_primary_monitor())
-                self.window.move(geom.x, geom.y)
-                self.window.set_focus(self.commandline)
+                self.showAndFocus()
         else:
             self.run()
             if startInspector:
                 dbusManager.cinnamonDBus.lgStartInspector()
                 self.window.hide()
             Gtk.main()
+
+    def showAndFocus(self):
+        self.window.present()
+        screen = self.window.get_screen()
+        geom = screen.get_monitor_geometry(screen.get_primary_monitor())
+        self.window.move(geom.x, geom.y)
+        self.window.set_focus(self.commandline)
 
     def run(self):
         self.window = Gtk.Window(Gtk.WindowType.TOPLEVEL)
@@ -556,7 +559,7 @@ class CinnamonLog(dbus.service.Object):
         self.notebook.append_page(page, label)
 
     def activatePage(self, moduleName):
-        self.window.present()
+        self.showAndFocus()
         page = self.notebook.page_num(self.pages[moduleName])
         self.notebook.set_current_page(page)
 
