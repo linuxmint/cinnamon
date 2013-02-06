@@ -184,7 +184,7 @@ ObjLink.prototype = {
     },
 
     _onClicked: function (link) {
-        Main.lookingGlass.inspectObject(this._obj, this.actor);
+        Main.lookingGlass.inspectObject(this._obj);
     }
 };
 
@@ -380,18 +380,6 @@ ObjInspector.prototype = {
         this._previousObj = null;
         this._open = true;
         this.actor.show();
-        if (sourceActor) {
-            this.actor.set_scale(0, 0);
-            let [sourceX, sourceY] = sourceActor.get_transformed_position();
-            let [sourceWidth, sourceHeight] = sourceActor.get_transformed_size();
-            this.actor.move_anchor_point(Math.floor(sourceX + sourceWidth / 2),
-                                         Math.floor(sourceY + sourceHeight / 2));
-            Tweener.addTween(this.actor, { scale_x: 1, scale_y: 1,
-                                           transition: 'easeOutQuad',
-                                           time: 0.2 });
-        } else {
-            this.actor.set_scale(1, 1);
-        }
     },
 
     close: function() {
@@ -1143,44 +1131,43 @@ LookingGlass.prototype = {
     },
 
     _resize: function() {
+        let primary = Main.layoutManager.primaryMonitor;
+        let myWidth = primary.width * 0.7;
+        let availableHeight = primary.height - Main.layoutManager.keyboardBox.height;
+        let myHeight = Math.min(primary.height * 0.7, availableHeight * 0.9);
+        this.actor.x = (primary.width - myWidth) / 2;
+        
+        let yOffset;
         if (Main.desktop_layout == Main.LAYOUT_TRADITIONAL) {
-            let primary = Main.layoutManager.primaryMonitor;
-            let myWidth = primary.width * 0.7;
-            let availableHeight = primary.height - Main.layoutManager.keyboardBox.height;
-            let myHeight = Math.min(primary.height * 0.7, availableHeight * 0.9);
-            this.actor.x = (primary.width - myWidth) / 2;
-            this._targetY = -myHeight; // -4 to hide the top corners
+            this._targetY = -myHeight;
             this._hiddenY = -this.actor.get_parent().height;
-            this.actor.y = this._hiddenY;
-            this.actor.width = myWidth;
-            this.actor.height = myHeight;
-            this._objInspector.actor.set_size(Math.floor(myWidth * 0.8), Math.floor(myHeight * 0.8));
-            this._objInspector.actor.set_position(this.actor.x + Math.floor(myWidth * 0.1),
-                                                  this._hiddenY + Math.floor(myHeight * 0.1));
-        }
-        else {                                                
-            let primary = Main.layoutManager.primaryMonitor;
-            let myWidth = primary.width * 0.7;
-            let availableHeight = primary.height - Main.layoutManager.keyboardBox.height;
-            let myHeight = Math.min(primary.height * 0.7, availableHeight * 0.9);
-            this.actor.x = (primary.width - myWidth) / 2;            
+            yOffset = this._hiddenY;
+        } else {       
             this._hiddenY = this.actor.get_parent().height - myHeight - 4; // -4 to hide the top corners
             this._targetY = this._hiddenY + myHeight;
-            this.actor.y = this._hiddenY;
-            this.actor.width = myWidth;
-            this.actor.height = myHeight;
-            this._objInspector.actor.set_size(Math.floor(myWidth * 0.8), Math.floor(myHeight * 0.8));
-            this._objInspector.actor.set_position(this.actor.x + Math.floor(myWidth * 0.1),
-                                                  this._targetY + Math.floor(myHeight * 0.1));                                 
-        }                                
+            yOffset = this._targetY;
+        }
+        
+        this.actor.y = this._hiddenY;
+        this.actor.width = myWidth;
+        this.actor.height = myHeight;
+        this._objInspector.actor.set_size(Math.floor(myWidth * 0.8), Math.floor(myHeight * 0.8));
+        
+        // Use the position of primary.x, y to reposition the
+        // objInspector with respect to multiple monitors.
+        this._objInspector.actor.set_anchor_point(0, 0); // reset anchor point
+        this._objInspector.actor.set_position(
+                    primary.x + this.actor.x + Math.floor(myWidth * 0.1),
+                    primary.y + yOffset + Math.floor(myHeight * 0.1)
+        );
     },
 
     insertObject: function(obj) {
         this._pushResult('<insert>', obj);
     },
 
-    inspectObject: function(obj, sourceActor) {
-        this._objInspector.open(sourceActor);
+    inspectObject: function(obj) {
+        this._objInspector.open();
         this._objInspector.selectObject(obj);
     },
 

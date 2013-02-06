@@ -385,6 +385,8 @@ class CinnamonLog(dbus.service.Object):
         self.window.present()
         screen = self.window.get_screen()
         geom = screen.get_monitor_geometry(screen.get_primary_monitor())
+        w, h = self.window.get_size()
+        self.window.resize(geom.width, h)
         self.window.move(geom.x, geom.y)
         self.window.set_focus(self.commandline)
 
