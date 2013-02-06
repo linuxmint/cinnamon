@@ -13,6 +13,7 @@ const Connector = imports.misc.connector;
 const Main = imports.ui.main;
 const MessageTray = imports.ui.messageTray;
 const Tweener = imports.ui.tweener;
+const WindowUtils = imports.misc.windowUtils;
 
 const WINDOW_ANIMATION_TIME = 0.25;
 const DIM_TIME = 0.500;
@@ -183,18 +184,31 @@ WindowManager.prototype = {
             _("Window demanding attention");
         let text = reason + wsText;
         let tracker = Cinnamon.WindowTracker.get_default();
+        const size = 64;
+
+        let icon = new St.Group();
+        let clones = WindowUtils.createWindowClone(window, size, true, true);
+        for (i in clones) {
+            let clone = clones[i];
+            icon.add_actor(clone.actor);
+            clone.actor.set_position(clone.x, clone.y);
+        }
+        let [width, height] = clones[0].actor.get_size();
+        clones[0].actor.set_position(Math.floor((size - width)/2), 0);
+
         let app = tracker.get_window_app(window);
-        let icon = app ?
-            app.create_icon_texture(64) :
-            new St.Icon({ icon_name: 'application-default-icon',
-                          icon_type: St.IconType.FULLCOLOR,
-                          icon_size: 64 });
+        let isize = Math.ceil(size*(3/4));
+        let icon2 = app ? app.create_icon_texture(isize) : null;
+        if (icon2) {
+            icon.add_actor(icon2);
+            icon2.set_position(Math.floor((size - isize)/2), size - isize);
+        }
         let notification = new MessageTray.Notification(source, window.title, text,
                                                             { icon: icon });
         // Must use highest urgency level to prevent notification
         // from ending up in the message tray.
         notification.setUrgency(MessageTray.Urgency.CRITICAL);
-        notification.setTransient(false);
+        notification.setTransient(true);
         source.notify(notification);
 
         let cleanup = null;
