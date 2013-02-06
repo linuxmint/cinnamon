@@ -10,7 +10,7 @@ try:
     import gettext
     import SettingsWidgets
     import capi
-    from gi.repository import Gio, Gtk, GObject, GdkPixbuf, Clutter, Gst
+    from gi.repository import Gio, Gtk, GObject, GdkPixbuf, GtkClutter, Gst
 # Standard setting pages... this can be expanded to include applet dirs maybe?
     mod_files = glob.glob('/usr/lib/cinnamon-settings/modules/*.py')
     mod_files.sort()
@@ -314,7 +314,7 @@ class MainWindow:
 
 if __name__ == "__main__":
     GObject.threads_init()
-    Clutter.init(None)
+    GtkClutter.init(None)
     Gst.init(None)
     MainWindow()
     Gtk.main()
