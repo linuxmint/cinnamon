@@ -66,7 +66,7 @@ Depends: ${gir:Depends},
          gir1.2-polkit-1.0,
          gir1.2-soup-2.4,
          gir1.2-upowerglib-1.0,
-         gir1.2-gtkclutter-1.0
+         gir1.2-gtkclutter-1.0,
          python,
          python-dbus,
          python-gconf,
