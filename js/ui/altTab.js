@@ -82,7 +82,7 @@ AltTabPopup.prototype = {
         this._disableHover();
 
         this._connector = new Connector.Connector();
-        for (let i = 0, numws = global.screen.n_workspaces; i < numws; ++i) {
+        for (let [i, numws] = [0, global.screen.n_workspaces]; i < numws; ++i) {
             let workspace = global.screen.get_workspace_by_index(i);
                 this._connector.addConnection(workspace, 'window-removed', Lang.bind(this, function(ws, metaWindow) {
                     let index = this._indexOfWindow(metaWindow);
@@ -230,7 +230,7 @@ AltTabPopup.prototype = {
 
         g_allWsMode = binding.search(/group/) < 0;
         let activeWsIndex = global.screen.get_active_workspace_index();
-        for (let i = 0, numws = global.screen.n_workspaces; i < numws; ++i) {
+        for (let [i, numws] = [0, global.screen.n_workspaces]; i < numws; ++i) {
             let wlist = Main.getTabList(global.screen.get_workspace_by_index(i));
             if (wlist.length && i != activeWsIndex) {
                 wlist = wlist.filter(function(window) {
@@ -381,7 +381,7 @@ AltTabPopup.prototype = {
         let switchWorkspace = Lang.bind(this, function(direction) {
             let wsCurIx = this._appIcons[this._currentApp].window.get_workspace().index();
             if (direction > 0) {
-                for (let i = this._currentApp + 1, iLen = this._appIcons.length; i < iLen; ++i) {
+                for (let [i, iLen] = [this._currentApp + 1, this._appIcons.length]; i < iLen; ++i) {
                     if (i == iLen - 1 || this._appIcons[i].window.get_workspace().index() > wsCurIx) {
                         this._select(i);
                         return true;
