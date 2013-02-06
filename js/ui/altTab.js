@@ -141,7 +141,7 @@ AltTabPopup.prototype = {
     _onWindowDemandsAttention: function(display, metaWindow) {
         let index = this._indexOfWindow(metaWindow);
         if (index >= 0) {
-            this._appIcons[index]._demandAttention(true);
+            this._appIcons[index]._checkAttention();
         }
     },
 
@@ -1086,19 +1086,24 @@ AppIcon.prototype = {
         this.actor.add(this._label_bin);
     },
 
-    _demandAttention: function(show) {
-        if (!this.actor._bbox || this._urgencyTimeout) {return;}
+    _checkAttention: function() {
+        if (!this.actor._bbox) {return;}
+        if (this._urgencyTimeout) {
+            Mainloop.source_remove(this._urgencyTimeout);
+            this._urgencyTimeout = 0;
+        }
         let bbox = this.actor._bbox;
-        if (show && !bbox.has_style_class_name(DEMANDS_ATTENTION_CLASS_NAME)) {
+        let is_urgent = this.window.is_demanding_attention() || this.window.is_urgent();
+
+        if (is_urgent && !bbox.has_style_class_name(DEMANDS_ATTENTION_CLASS_NAME)) {
             bbox.add_style_class_name(DEMANDS_ATTENTION_CLASS_NAME);
         }
-        else if (!show && bbox.has_style_class_name(DEMANDS_ATTENTION_CLASS_NAME)) {
+        else if (!is_urgent && bbox.has_style_class_name(DEMANDS_ATTENTION_CLASS_NAME)) {
             bbox.remove_style_class_name(DEMANDS_ATTENTION_CLASS_NAME);
         }
-        this._urgencyTimeout = Mainloop.timeout_add(750, Lang.bind(this, function() {
-            this._urgencyTimeout = 0;
-            this._demandAttention(!show);
-        }));
+        if (is_urgent) {
+            this._urgencyTimeout = Mainloop.timeout_add(5000, Lang.bind(this, this._checkAttention));
+        }
     },
 
     updateLabel: function() {
@@ -1303,11 +1308,7 @@ AppSwitcher.prototype = {
     _addIcon : function(appIcon) {
         this.icons.push(appIcon);
         this.addItem(appIcon.actor, appIcon.label);
-        let is_urgent = appIcon.window.is_demanding_attention() || appIcon.window.is_urgent();
-        if (is_urgent) {
-            appIcon._demandAttention(true);
-        }
-
+        appIcon._checkAttention();
 
         let n = this._arrows.length;
         let arrow = new St.DrawingArea({ style_class: 'switcher-arrow' });
