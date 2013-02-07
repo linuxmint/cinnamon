@@ -227,7 +227,7 @@ WindowManager.prototype = {
         let timerFunction = function() {
             timeoutId = null;
             let is_alerting = window.is_demanding_attention() || window.is_urgent();
-            if (!is_alerting) {
+            if (!is_alerting || display.focus_window == window) {
                 cleanup(true);
                 return;
             }
