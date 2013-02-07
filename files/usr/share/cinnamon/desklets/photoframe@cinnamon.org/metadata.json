@@ -3,13 +3,5 @@
  "name": "Digital photo frame",
  "description": "A digital photo frame desklet",
  "prevent-decorations": true,
- "directory":"~/Pictures",
- "shuffle": true,
- "delay": 5,
- "height": 200,
- "width": 300,
- "quality": 2,
- "fade-delay": 0.3,
- "effect": "sepia"
 }
 

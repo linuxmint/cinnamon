@@ -1,0 +1,68 @@
+{
+ "head" : {
+    "type" : "header",
+    "description" : "First Section"
+ },
+ "icon-name": {
+    "type": "iconfilechooser",
+    "default" : "help",
+    "description" : "The icon to use in the panel:"
+ },
+ "color" : {
+    "type": "colorchooser",
+    "default" : "red",
+    "description" : "The background color for the applet:"
+ },
+ "spinner-number" : {
+    "type": "spinbutton",
+    "default" : 150,
+    "min" : 0,
+    "max" : 400,
+    "step" : 5,
+    "units" : "pixels",
+    "description" : "Applet width in the panel:"
+ },
+ "combo-selection" : {
+    "type": "combobox",
+    "default" : "option 1",
+    "description" : "Please pick an option:",
+    "options" : {
+        "First Choice" : "option 1",
+        "Second Choice" : "option 2",
+        "Third Choice" : "option 3",
+        "Fourth Choice" : "option 4"
+    }
+ },
+ "scale-demo" : {
+    "type" : "scale",
+    "default" : 0.5,
+    "min" : 0.0,
+    "max" : 1.0,
+    "step" : 0.05,
+    "description" : "Here is a demonstration of bidirectional control:"
+ },
+ "div1" : {
+    "type" : "separator"
+ },
+ "head1" : {
+    "type" : "header",
+    "description" : "Here's a new section"
+ },
+ "use-custom-label" : {
+    "type" : "checkbox",
+    "default" : false,
+    "description": "Check this to use a custom label:"
+ },
+ "custom-label" : {
+    "type" : "entry",
+    "default" : "custom",
+    "description" : "Custom Applet Label:",
+    "indent": true,
+    "dependency" : "use-custom-label"
+ },
+ "demo-button" : {
+    "type" : "button",
+    "description" : "Don't Press This Button!!!",
+    "callback" : "on_config_button_pressed"
+ }
+}

@@ -2,6 +2,7 @@
 
 try:
     from SettingsWidgets import *
+    import XletSettings
     from Spices import Spice_Harvester
     #from Spices import *
     import pygtk
@@ -53,7 +54,7 @@ class AppletViewSidePage (SidePage):
             self.content_box.remove(widget)
         
         scrolledWindow = Gtk.ScrolledWindow()    
-        notebook = Gtk.Notebook()
+        self.notebook = Gtk.Notebook()
         applets_vbox = Gtk.VBox()
         
         self.search_entry = Gtk.Entry()
@@ -61,9 +62,9 @@ class AppletViewSidePage (SidePage):
         self.search_entry.set_placeholder_text(_("Search applets"))
         self.search_entry.connect('changed', self.on_entry_refilter)
 
-        notebook.append_page(applets_vbox, Gtk.Label(_("Installed")))
+        self.notebook.append_page(applets_vbox, Gtk.Label(_("Installed")))
         
-        self.content_box.add(notebook)
+        self.content_box.add(self.notebook)
         self.treeview = Gtk.TreeView()
         
         cr = Gtk.CellRendererToggle()
@@ -111,12 +112,16 @@ class AppletViewSidePage (SidePage):
         scrolledWindow.add(self.treeview)
         self.treeview.connect('button_press_event', self.on_button_press_event)
 
-        self.instanceButton = Gtk.Button(_("Add to panel"))       
+        self.instanceButton = Gtk.Button(_("Add to panel"))
         self.instanceButton.connect("clicked", lambda x: self._add_another_instance())
         self.instanceButton.set_tooltip_text(_("Some applets can be added multiple times.\nUse this to add another instance. Use panel edit mode to remove a single instance."))
         self.instanceButton.set_sensitive(False);
-        
-        restoreButton = Gtk.Button(_("Restore to default"))       
+
+        self.configureButton = Gtk.Button(_("Configure"))
+        self.configureButton.connect("clicked", self._configure_applet)
+        self.configureButton.set_tooltip_text(_("Configure this applet"))
+
+        restoreButton = Gtk.Button(_("Restore to default"))
         restoreButton.connect("clicked", lambda x: self._restore_default_applets())
         # Installed 
         hbox = Gtk.HBox()
@@ -141,22 +146,25 @@ class AppletViewSidePage (SidePage):
         hbox = Gtk.HBox()
         applets_vbox.pack_start(hbox, False, True, 5)
 
-        align = Gtk.Alignment()
-        align.set(1.0, 0.5, 0, 0)
-        buttonbox = Gtk.ButtonBox.new(Gtk.Orientation.HORIZONTAL)
-        buttonbox.pack_start(self.instanceButton, False, False, 0)
-        buttonbox.pack_end(restoreButton, False, False, 0)
-        hbox.pack_start(buttonbox, True, True, 5)
-        hbox.xalign = 1.0
-        
+        img = Gtk.Image.new_from_stock("gtk-add", Gtk.IconSize.BUTTON)
+        self.instanceButton.set_image(img)
+        img = Gtk.Image.new_from_stock("gtk-properties", Gtk.IconSize.BUTTON)
+        self.configureButton.set_image(img)
+        hbox.pack_start(self.instanceButton, False, False, 2)
+        hbox.pack_start(self.configureButton, False, False, 2)
+        hbox.pack_end(restoreButton, False, False, 2)
+
+        self.configureButton.hide()
+        self.configureButton.set_no_show_all(True)
+
         # Get More - Variables prefixed with "gm_" where necessary
         gm_scrolled_window = Gtk.ScrolledWindow()
         getmore_vbox = Gtk.VBox()
         getmore_vbox.set_border_width(0)
 
         getmore_label = Gtk.Label(_("Get more online"))
-        notebook.append_page(getmore_vbox, getmore_label)
-        notebook.connect("switch-page", self.on_page_changed)
+        self.notebook.append_page(getmore_vbox, getmore_label)
+        self.notebook.connect("switch-page", self.on_page_changed)
 
         self.gm_combosort = Gtk.ComboBox()
         renderer_text = Gtk.CellRendererText()
@@ -260,6 +268,20 @@ class AppletViewSidePage (SidePage):
         if not self.spices.get_webkit_enabled():
             getmore_label.set_sensitive(False)
             reload_button.set_sensitive(False)
+
+        self.spices.scrubConfigDirs(self.enabled_applets)
+
+        if len(sys.argv) > 2:
+            for row in self.model:
+                uuid = self.model.get_value(row.iter, 0)
+                if uuid == sys.argv[2]:
+                    path = self.model.get_path(row.iter)
+                    filtered = self.treeview.get_model().convert_child_path_to_path(path)
+                    if filtered is not None:
+                        self.treeview.get_selection().select_path(filtered)
+                        self.treeview.scroll_to_cell(filtered, None, False, 0, 0)
+                        if self.configureButton.get_visible() and self.configureButton.get_sensitive():
+                            self.configureButton.clicked()
 
     def _filter_toggle(self, widget):
         if widget == self.activeButton:
@@ -647,7 +669,34 @@ class AppletViewSidePage (SidePage):
                 tip += _("\nThis applet supports max %d instances.") % max_instances
         self.instanceButton.set_sensitive(enabled);
         self.instanceButton.set_tooltip_text(tip)
-    
+        if treeiter and self._has_settings(model.get_value(treeiter, 0)):
+            self.configureButton.show()
+            if checked:
+                self.configureButton.set_sensitive(True)
+            else:
+                self.configureButton.set_sensitive(False)
+        else:
+            self.configureButton.hide()
+
+    def _has_settings(self, uuid):
+        if os.path.exists("%s/.cinnamon/configs/%s" % (home, uuid)):
+            if len(os.listdir("%s/.cinnamon/configs/%s" % (home, uuid))) > 0:
+                return True
+        return False
+
+    def _configure_applet(self, widget):
+        model, treeiter = self.treeview.get_selection().get_selected()
+        if treeiter:
+            uuid = model.get_value(treeiter, 0)
+            settingContainer = XletSettings.XletSetting(uuid, self, "applet")
+            self.content_box.pack_start(settingContainer.content, True, True, 2)
+            self.notebook.hide()
+            settingContainer.show()
+
+    def _close_configure(self, settingContainer):
+        settingContainer.content.hide()
+        self.notebook.show_all()
+
     def _restore_default_applets(self):
         os.system('gsettings reset org.cinnamon next-applet-id')
         os.system('gsettings reset org.cinnamon enabled-applets')

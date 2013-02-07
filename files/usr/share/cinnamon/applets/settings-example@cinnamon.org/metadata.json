@@ -1,0 +1,6 @@
+{
+ "uuid": "settings-example@cinnamon.org",
+ "name": "Applet/Desklet Settings Example",
+ "description": "A sample applet for demonstrating the capabilities and usage of the applet and desklet settings API",
+ "icon": "preferences-desktop"
+}

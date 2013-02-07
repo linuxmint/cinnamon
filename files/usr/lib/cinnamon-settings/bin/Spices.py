@@ -514,3 +514,35 @@ class Spice_Harvester:
 
         del urlobj
         f.close()
+
+    def scrubConfigDirs(self, enabled_list):
+        active_list = {}
+        for enabled in enabled_list:
+            panel, align, order, uuid, id = enabled.split(":")
+            if uuid not in active_list:
+                id_list = []
+                active_list[uuid] = id_list
+                active_list[uuid].append(id)
+            else:
+                active_list[uuid].append(id)
+
+        for uuid in active_list.keys():
+            if (os.path.exists(os.path.join(settings_dir, uuid))):
+                dir_list = os.listdir(os.path.join(settings_dir, uuid))
+                for id in active_list[uuid]:
+                    fn = str(id) + ".json"
+                    if fn in dir_list:
+                        dir_list.remove(fn)
+                fn = str(uuid) + ".json"
+                if fn in dir_list:
+                    dir_list.remove(fn)
+                for jetsam in dir_list:
+                    try:
+                        os.remove(os.path.join(settings_dir, uuid, jetsam))
+                    except:
+                        pass
+
+
+
+
+

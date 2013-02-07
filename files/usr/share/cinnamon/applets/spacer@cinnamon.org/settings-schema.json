@@ -1,0 +1,12 @@
+{
+ "width": {
+    "type": "scale",
+    "default" : 10,
+    "min" : 2,
+    "max" : 400,
+    "step" : 1,
+    "description" : "Amount of space in pixels",
+    "indent" : true
+ }
+}
+
