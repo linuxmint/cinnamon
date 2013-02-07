@@ -6,7 +6,6 @@ const GLib = imports.gi.GLib;
 const St = imports.gi.St;
 
 const Desklet = imports.ui.desklet;
-const DND = imports.ui.dnd;
 const Extension = imports.ui.extension;
 const Main = imports.ui.main;
 
@@ -269,10 +268,6 @@ function DeskletContainer(){
 DeskletContainer.prototype = {
     _init: function(){
         this.actor = new Clutter.Group();
-        this.actor._delegate = this;
-
-        this._dragPlaceholder = new St.Bin({style_class: 'desklet-drag-placeholder'});
-        this._dragPlaceholder.hide();
     },
 
     /**
@@ -293,53 +288,5 @@ DeskletContainer.prototype = {
      */
     contains: function(actor){
         return this.actor.contains(actor);
-    },
-
-    handleDragOver: function(source, actor, x, y, time) {
-        if (!global.settings.get_boolean(DESKLET_SNAP_KEY))
-            return DND.DragMotionResult.MOVE_DROP;
-
-        if (!this._dragPlaceholder.get_parent())
-            Main.uiGroup.add_actor(this._dragPlaceholder);
-
-        this._dragPlaceholder.show();
-        let interval = global.settings.get_int(DESKLET_SNAP_INTERVAL_KEY);
-        x = Math.floor(actor.get_x()/interval)*interval;
-        y = Math.floor(actor.get_y()/interval)*interval;
-        this._dragPlaceholder.set_position(x,y);
-        this._dragPlaceholder.set_size(actor.get_width(), actor.get_height());
-
-        return DND.DragMotionResult.MOVE_DROP;
-    },
-
-    acceptDrop: function(source, actor, x, y, time) {
-        if (!(source instanceof Desklet.Desklet)) return false;
-
-        Main.uiGroup.remove_actor(actor);
-        this.actor.add_actor(actor);
-        Main.layoutManager.addChrome(actor, {doNotAdd: true});
-
-        // Update GSettings
-        let enabledDesklets = global.settings.get_strv(ENABLED_DESKLETS_KEY);
-        for (let i = 0; i < enabledDesklets.length; i++){
-            let definition = enabledDesklets[i];
-            if (definition.indexOf(source._uuid + ":" + source._deskletId) == 0){
-                let elements = definition.split(":");
-                elements[2] = actor.get_x();
-                elements[3] = actor.get_y();
-                if (global.settings.get_boolean(DESKLET_SNAP_KEY)){
-                    let interval = global.settings.get_int(DESKLET_SNAP_INTERVAL_KEY);
-                    elements[2] = Math.floor(elements[2]/interval)*interval;
-                    elements[3] = Math.floor(elements[3]/interval)*interval;
-                }
-                definition = elements.join(":");
-                enabledDesklets[i] = definition;
-            }
-        }
-
-        global.settings.set_strv(ENABLED_DESKLETS_KEY, enabledDesklets);
-
-        this._dragPlaceholder.hide();
-        return true;
     }
 };
