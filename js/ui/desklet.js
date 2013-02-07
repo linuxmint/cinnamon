@@ -288,7 +288,7 @@ Desklet.prototype = {
         global.settings.set_strv(ENABLED_DESKLETS_KEY, enabledDesklets);
 
         Main.uiGroup.remove_actor(this.actor);
-        Main.deskletContainer.actor.add_actor(this.actor);
+        Main.deskletContainer.add_actor(this.actor);
         Main.layoutManager.addChrome(this.actor, {doNotAdd: true});
 
         dragPlaceholder.hide();
@@ -334,7 +334,7 @@ Desklet.prototype = {
     _startDrag: function () {
         // Move actor to Main.uiGroup so that it is on top
         Main.layoutManager.untrackChrome(this.actor);
-        Main.deskletContainer.actor.remove_actor(this.actor);
+        Main.deskletContainer.remove_actor(this.actor);
         Main.uiGroup.add_actor(this.actor);
 
         global.set_stage_input_mode(Cinnamon.StageInputMode.FULLSCREEN);

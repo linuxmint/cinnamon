@@ -228,7 +228,7 @@ function start() {
     _defaultCssStylesheet = global.datadir + '/theme/cinnamon.css';
 
     themeManager = new ThemeManager.ThemeManager();
-    deskletContainer = new DeskletManager.DeskletContainer();
+    deskletContainer = new Clutter.Group();
 
     // Set up stage hierarchy to group all UI actors under one container.
     uiGroup = new Cinnamon.GenericContainer({ name: 'uiGroup' });
@@ -259,7 +259,7 @@ function start() {
 
     uiGroup.add_actor(global.background_actor);
     uiGroup.add_actor(global.bottom_window_group);
-    uiGroup.add_actor(deskletContainer.actor);
+    uiGroup.add_actor(deskletContainer);
     uiGroup.add_actor(global.window_group);
     uiGroup.add_actor(global.overlay_group);
 

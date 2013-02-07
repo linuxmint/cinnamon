@@ -182,7 +182,9 @@ function _loadDesklet(extension, deskletDefinition) {
 
         desklet._extension = extension;
 
-        if (!Main.deskletContainer.contains(desklet.actor)) Main.deskletContainer.addDesklet(desklet.actor);
+        if (!Main.deskletContainer.contains(desklet.actor))
+            Main.deskletContainer.add_actor(desklet.actor);
+
         desklet.actor.set_position(deskletDefinition.x, deskletDefinition.y);
 
         if(!extension._loadedDefinitions) {
@@ -255,38 +257,3 @@ function _onDeskletSnapChanged(){
     global.settings.set_strv(ENABLED_DESKLETS_KEY, enabledDesklets);
     return;
 }
-
-/**
- * DeskletContainer
- *
- * Container that contains manages all desklets actors
- */
-function DeskletContainer(){
-    this._init();
-}
-
-DeskletContainer.prototype = {
-    _init: function(){
-        this.actor = new Clutter.Group();
-    },
-
-    /**
-     * addDesklet:
-     * @actor: actor of desklet to be added
-     *
-     * Adds @actor to the desklet container
-     */
-    addDesklet: function(actor){
-        this.actor.add_actor(actor);
-    },
-
-    /**
-     * contains:
-     * @actor
-     *
-     * Whether the desklet container contains @actor
-     */
-    contains: function(actor){
-        return this.actor.contains(actor);
-    }
-};
