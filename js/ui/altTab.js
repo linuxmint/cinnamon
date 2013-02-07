@@ -233,7 +233,7 @@ AltTabPopup.prototype = {
         let windows = [];
         let [currentIndex, forwardIndex, backwardIndex] = [-1, -1, -1];
 
-        g_allWsMode = binding.search(/group/) < 0;
+        g_allWsMode = binding && binding.search(/group/) < 0;
         let activeWsIndex = global.screen.get_active_workspace_index();
         for (let [i, numws] = [0, global.screen.n_workspaces]; i < numws; ++i) {
             let wlist = Main.getTabList(global.screen.get_workspace_by_index(i));
@@ -442,6 +442,11 @@ AltTabPopup.prototype = {
             } else if (keysym == Clutter.Return) {
                 this._finish();
                 return true;
+            } else if (action == Meta.KeyBindingAction.PANEL_RUN_DIALOG) {
+                this.destroy();
+                Mainloop.idle_add(function() {
+                    Main.getRunDialog().open();
+                });
             } else if (action == Meta.KeyBindingAction.SWITCH_GROUP || action == Meta.KeyBindingAction.SWITCH_WINDOWS) {
                 this._select(backwards ? this._previousApp() : this._nextApp());
             } else {
