@@ -637,6 +637,9 @@ AltTabPopup.prototype = {
                 clone.actor.allocate(childBox, 0);
             }
             previewClones.lower(this._appSwitcher.actor);
+            if (window.minimized) {
+                previewClones.opacity = 192;
+            }
             let app = this._appIcons[this._currentApp].app;
             const size = 64;
             let icon = app ? app.create_icon_texture(size) : null;
