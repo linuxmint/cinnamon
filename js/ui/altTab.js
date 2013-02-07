@@ -425,15 +425,15 @@ AltTabPopup.prototype = {
                 this._hiding = true;
                 this._appSwitcher.actor.opacity = 25;
             }
-        } else if (this._persistent && keysym == Clutter.Tab) {
+        } else if (keysym == Clutter.Tab) {
             this._select(this._nextApp());
-        } else if (this._persistent && keysym == Clutter.ISO_Left_Tab) {
+        } else if (keysym == Clutter.ISO_Left_Tab) {
             this._select(this._previousApp());
-        } else if (this._persistent && keysym == Clutter.w && ctrlDown) {
+        } else if (keysym == Clutter.w && ctrlDown) {
             if (this._currentApp >= 0) {
                 this._appIcons[this._currentApp].window.delete(global.get_current_time());
             }
-        } else if (this._persistent && keysym == Clutter.m && ctrlDown) {
+        } else if (keysym == Clutter.m && ctrlDown) {
             let monitorCount = Main.layoutManager.monitors.length;
             if (this._currentApp >= 0 && monitorCount > 1) {
                 let window = this._appIcons[this._currentApp].window;
@@ -442,16 +442,10 @@ AltTabPopup.prototype = {
                 window.move_to_monitor(newIndex);
                 this._select(this._currentApp); // refresh
             }
-        } else if (this._persistent && keysym == Clutter.n && ctrlDown) {
+        } else if (keysym == Clutter.n && ctrlDown) {
             if (this._currentApp >= 0) {
                 let window = this._appIcons[this._currentApp].window;
-                window.minimize(global.get_current_time());
-                this._select(this._currentApp); // refresh
-            }
-        } else if (this._persistent && keysym == Clutter.r && ctrlDown) {
-            if (this._currentApp >= 0) {
-                let window = this._appIcons[this._currentApp].window;
-                window.unminimize(global.get_current_time());
+                (window.minimized ? window.unminimize : window.minimize).call(window, global.get_current_time());
                 this._select(this._currentApp); // refresh
             }
         } else if (keysym == Clutter.Home || keysym == Clutter.KP_Home) {
