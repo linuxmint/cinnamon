@@ -33,6 +33,11 @@ const DEMANDS_ATTENTION_CLASS_NAME = "window-list-item-demands-attention";
 
 const iconSizes = [96, 80, 64, 48, 32, 22];
 
+const KeyState = {
+    PRESSED: 1,
+    RELEASED: 2
+};
+
 function mod(a, b) {
     return (a + b) % b;
 }
@@ -330,8 +335,8 @@ AltTabPopup.prototype = {
             return false;
         }
         
-        this.actor.connect('key-press-event', Lang.bind(this, this._keyPressEvent));
-        this.actor.connect('key-release-event', Lang.bind(this, this._keyReleaseEvent));
+        this.actor.connect('key-press-event', Lang.bind(this, this._keyPressReleaseEvent, KeyState.PRESSED));
+        this.actor.connect('key-release-event', Lang.bind(this, this._keyPressReleaseEvent, KeyState.RELEASED));
 
         this.actor.connect('button-press-event', Lang.bind(this, this._clickedOutside));
         this.actor.connect('scroll-event', Lang.bind(this, this._onScroll));
@@ -346,27 +351,36 @@ AltTabPopup.prototype = {
     },
 
     _toggleZoom : function() {
-        if (this._selectTimeoutId) {Mainloop.source_remove(this._selectTimeoutId);}
-        this._selectTimeoutId = Mainloop.idle_add(Lang.bind(this, function() {
-            this._selectTimeoutId = null;
-            if (this._zoomedOut) {
-                this._zoomedOut = false;
-                this._numPrimaryItems = this._numPrimaryItems_Orig;
-            }
-            else {
-                this._zoomedOut = true;
-                this._numPrimaryItems = this._appIcons.length - 1;
-            }
-            let current = this._currentApp; // save before re-creating the app switcher
-            let windows = this._appIcons.map(function(appIcon) {return appIcon.window;});
-            this._createAppswitcher(windows);
-            if (current >= 0) {
-                Mainloop.idle_add(Lang.bind(this, this._select, current)); // async refresh
-            }
-        })); // async refresh
+        if (this._zoomedOut) {
+            this._zoomedOut = false;
+            this._numPrimaryItems = this._numPrimaryItems_Orig;
+        }
+        else {
+            this._zoomedOut = true;
+            this._numPrimaryItems = this._appIcons.length - 1;
+        }
+        let current = this._currentApp; // save before re-creating the app switcher
+        let windows = this._appIcons.map(function(appIcon) {return appIcon.window;});
+        this._createAppswitcher(windows);
+        if (current >= 0) {
+            Mainloop.idle_add(Lang.bind(this, this._select, current)); // async refresh
+        }
     },
 
-    _keyPressEvent : function(actor, event) {
+    _keyPressReleaseEvent : function(actor, event, keyState) {
+        let released = keyState === KeyState.RELEASED;
+        let pressed = keyState === KeyState.PRESSED;
+
+        if (released) {
+            let [x, y, mods] = global.get_pointer();
+            let state = mods & this._modifierMask;
+
+            if (state == 0 && !this._persistent) {
+                this._finish();
+                return true;
+            }
+        }
+        
         let findFirstWorkspaceWindow = Lang.bind(this, function(startIndex) {
             let wsCurIx = this._appIcons[startIndex].window.get_workspace().index();
             for (let i = startIndex; i >= 0; --i) {
@@ -409,88 +423,86 @@ AltTabPopup.prototype = {
         this._disableHover();
         const SCROLL_AMOUNT = 5;
 
-        
-        if (keysym == Clutter.Escape) {
-            this.destroy();
-        } else if (keysym == Clutter.KEY_space && !this._persistent) {
-            this._persistent = true;
-        } else if (keysym == Clutter.z) {
-            this._toggleZoom();
-        } else if (keysym == Clutter.h) { // toggle hide
-            if (this._hiding) {
-                this._hiding = false;
-                this._appSwitcher.actor.opacity = 255;
-            }
-            else {
-                this._hiding = true;
-                this._appSwitcher.actor.opacity = 25;
-            }
-        } else if (keysym == Clutter.Tab) {
-            this._select(this._nextApp());
-        } else if (keysym == Clutter.ISO_Left_Tab) {
-            this._select(this._previousApp());
-        } else if (keysym == Clutter.w && ctrlDown) {
-            if (this._currentApp >= 0) {
-                this._appIcons[this._currentApp].window.delete(global.get_current_time());
-            }
-        } else if (keysym == Clutter.m && ctrlDown) {
-            let monitorCount = Main.layoutManager.monitors.length;
-            if (this._currentApp >= 0 && monitorCount > 1) {
-                let window = this._appIcons[this._currentApp].window;
-                let index = window.get_monitor();
-                let newIndex = (index + monitorCount + 1) % monitorCount;
-                window.move_to_monitor(newIndex);
-                this._select(this._currentApp); // refresh
-            }
-        } else if (keysym == Clutter.n && ctrlDown) {
-            if (this._currentApp >= 0) {
-                let window = this._appIcons[this._currentApp].window;
-                (window.minimized ? window.unminimize : window.minimize).call(window, global.get_current_time());
-                this._select(this._currentApp); // refresh
-            }
-        } else if (keysym == Clutter.Home || keysym == Clutter.KP_Home) {
-            this._select(0);
-        } else if (keysym == Clutter.End || keysym == Clutter.KP_End) {
-            this._select(this._appIcons.length - 1);
-        } else if (keysym == Clutter.Page_Down || keysym == Clutter.KP_Page_Down) {
-            this._select(Math.min(this._appIcons.length - 1, this._currentApp + SCROLL_AMOUNT));
-        } else if (keysym == Clutter.Page_Up || keysym == Clutter.KP_Page_Up) {
-            this._select(Math.max(0, this._currentApp - SCROLL_AMOUNT));
-        } else if (keysym == Clutter.Return) {
-            this._finish();
-            return true;
-        } else if (action == Meta.KeyBindingAction.SWITCH_GROUP || action == Meta.KeyBindingAction.SWITCH_WINDOWS) {
-            this._select(backwards ? this._previousApp() : this._nextApp());
-        } else {
-            if (keysym == Clutter.Left) {
-                if (ctrlDown) {
-                    if (switchWorkspace(-1)) {
-                        return false;
-                    }
-                }
-                this._select(this._previousApp());
-            }
-            else if (keysym == Clutter.Right) {
-                if (ctrlDown) {
-                    if (switchWorkspace(1)) {
-                        return false;
-                    }
-                }
+        if (pressed) {
+            if (false) {
+            } else if (keysym == Clutter.Escape) {
+                this.destroy();
+            } else if (keysym == Clutter.Tab) {
                 this._select(this._nextApp());
+            } else if (keysym == Clutter.ISO_Left_Tab) {
+                this._select(this._previousApp());
+            } else if (keysym == Clutter.Home || keysym == Clutter.KP_Home) {
+                this._select(0);
+            } else if (keysym == Clutter.End || keysym == Clutter.KP_End) {
+                this._select(this._appIcons.length - 1);
+            } else if (keysym == Clutter.Page_Down || keysym == Clutter.KP_Page_Down) {
+                this._select(Math.min(this._appIcons.length - 1, this._currentApp + SCROLL_AMOUNT));
+            } else if (keysym == Clutter.Page_Up || keysym == Clutter.KP_Page_Up) {
+                this._select(Math.max(0, this._currentApp - SCROLL_AMOUNT));
+            } else if (keysym == Clutter.Return) {
+                this._finish();
+                return true;
+            } else if (action == Meta.KeyBindingAction.SWITCH_GROUP || action == Meta.KeyBindingAction.SWITCH_WINDOWS) {
+                this._select(backwards ? this._previousApp() : this._nextApp());
+            } else {
+                if (keysym == Clutter.Left) {
+                    if (ctrlDown) {
+                        if (switchWorkspace(-1)) {
+                            return false;
+                        }
+                    }
+                    this._select(this._previousApp());
+                }
+                else if (keysym == Clutter.Right) {
+                    if (ctrlDown) {
+                        if (switchWorkspace(1)) {
+                            return false;
+                        }
+                    }
+                    this._select(this._nextApp());
+                }
             }
+            return true;
         }
-
-        return true;
-    },
-
-    _keyReleaseEvent : function(actor, event) {
-        let [x, y, mods] = global.get_pointer();
-        let state = mods & this._modifierMask;
-
-        if (state == 0 && !this._persistent)
-            this._finish();
-
-        return true;
+        else if (released) {
+            if (false) {
+            } else if (keysym == Clutter.KEY_space && !this._persistent) {
+                this._persistent = true;
+            } else if (keysym == Clutter.z) {
+                this._toggleZoom();
+            } else if (keysym == Clutter.h) { // toggle hide
+                if (this._hiding) {
+                    this._hiding = false;
+                    this._appSwitcher.actor.opacity = 255;
+                }
+                else {
+                    this._hiding = true;
+                    this._appSwitcher.actor.opacity = 25;
+                }
+            } else if (keysym == Clutter.w && ctrlDown) {
+                if (this._currentApp >= 0) {
+                    this._appIcons[this._currentApp].window.delete(global.get_current_time());
+                }
+            } else if (keysym == Clutter.m && ctrlDown) {
+                let monitorCount = Main.layoutManager.monitors.length;
+                if (this._currentApp >= 0 && monitorCount > 1) {
+                    let window = this._appIcons[this._currentApp].window;
+                    let index = window.get_monitor();
+                    let newIndex = (index + monitorCount + 1) % monitorCount;
+                    window.move_to_monitor(newIndex);
+                    this._select(this._currentApp); // refresh
+                }
+            } else if (keysym == Clutter.n && ctrlDown) {
+                if (this._currentApp >= 0) {
+                    let window = this._appIcons[this._currentApp].window;
+                    (window.minimized ? window.unminimize : window.minimize).call(window, global.get_current_time());
+                    this._select(this._currentApp); // refresh
+                }
+            }
+            return true;
+        }
+        
+        return false;
     },
 
     _onScroll : function(actor, event) {
