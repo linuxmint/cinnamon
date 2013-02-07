@@ -19,6 +19,7 @@ nobase_dist_js_DATA = \
 	ui/altTab.js		\
 	ui/applet.js		\
 	ui/appletManager.js	\
+    ui/appletSettings.js \
 	ui/appFavorites.js	\
 	ui/automountManager.js  \
 	ui/autorunManager.js    \
@@ -28,6 +29,7 @@ nobase_dist_js_DATA = \
 	ui/radioButton.js	\
 	ui/desklet.js		\
 	ui/deskletManager.js	\
+    ui/deskletSettings.js \
 	ui/dnd.js		\
 	ui/edgeFlip.js  	\
 	ui/endSessionDialog.js	\
@@ -35,6 +37,7 @@ nobase_dist_js_DATA = \
 	ui/expo.js		\
 	ui/expoThumbnail.js	\
 	ui/extension.js	\
+    ui/extensionSettings.js \
 	ui/extensionSystem.js	\
 	ui/flashspot.js		\
 	ui/hotCorner.js		\
