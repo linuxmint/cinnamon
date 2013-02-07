@@ -620,6 +620,17 @@ AltTabPopup.prototype = {
                 clone.actor.allocate(childBox, 0);
             }
             previewClones.lower(this._appSwitcher.actor);
+            let app = this._appIcons[this._currentApp].app;
+            const size = 64;
+            let icon = app ? app.create_icon_texture(size) : null;
+            if (icon) {
+                previewClones.add_actor(icon);
+                let x1 = childBox.x1 = clones[0].x;
+                childBox.x2 = x1 + size;
+                let y1 = childBox.y1 = clones[0].y;
+                childBox.y2 = y1 + size;
+                icon.allocate(childBox, 0);
+            }
 
             this._clearPreview();
             this._previewClones = previewClones;
