@@ -488,7 +488,7 @@ AltTabPopup.prototype = {
                 if (this._currentApp >= 0) {
                     this._appIcons[this._currentApp].window.delete(global.get_current_time());
                 }
-            } else if (keysym == Clutter.m && ctrlDown) {
+            } else if (keysym == Clutter.m && !ctrlDown) {
                 let monitorCount = Main.layoutManager.monitors.length;
                 if (this._currentApp >= 0 && monitorCount > 1) {
                     let window = this._appIcons[this._currentApp].window;
@@ -497,7 +497,7 @@ AltTabPopup.prototype = {
                     window.move_to_monitor(newIndex);
                     this._select(this._currentApp); // refresh
                 }
-            } else if (keysym == Clutter.n && ctrlDown) {
+            } else if (keysym == Clutter.n && !ctrlDown) {
                 if (this._currentApp >= 0) {
                     let window = this._appIcons[this._currentApp].window;
                     (window.minimized ? window.unminimize : window.minimize).call(window, global.get_current_time());
