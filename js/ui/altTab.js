@@ -503,6 +503,12 @@ AltTabPopup.prototype = {
                     (window.minimized ? window.unminimize : window.minimize).call(window, global.get_current_time());
                     this._select(this._currentApp); // refresh
                 }
+            } else if (keysym == Clutter.a && !ctrlDown) {
+                if (this._currentApp >= 0) {
+                    let window = this._appIcons[this._currentApp].window;
+                    Main.activateWindow(window);
+                    this._select(this._currentApp); // refresh
+                }
             }
             return true;
         }
