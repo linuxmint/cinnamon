@@ -568,7 +568,6 @@ AltTabPopup.prototype = {
     },
 
     _finish : function() {
-        this._exiting = true;
         if (this._appIcons.length > 0 && this._currentApp > -1) {
             let app = this._appIcons[this._currentApp];
             this._activateWindow(app.window);
@@ -584,20 +583,13 @@ AltTabPopup.prototype = {
     },
 
     destroy : function() {
-        this._exiting = true;
-        this._connector.destroy();
-        var doDestroy = Lang.bind(this, function() {
-           Main.uiGroup.remove_actor(this.actor);
-           this.actor.destroy();
-        });
-        
-        this._popModal();
-        doDestroy();
+        this.actor.destroy();
     },
 
     _onDestroy : function() {
         this._popModal();
 
+        this._connector.destroy();
         if (this._motionTimeoutId)
             Mainloop.source_remove(this._motionTimeoutId);
         if (this._thumbnailTimeoutId)
@@ -623,7 +615,7 @@ AltTabPopup.prototype = {
 
         let showPreview = function() {
             this._displayPreviewTimeoutId = null;
-            if (this._exiting || this._currentApp < 0) {return;}
+            if (!this._haveModal || this._currentApp < 0) {return;}
 
             let childBox = new Clutter.ActorBox();
 
