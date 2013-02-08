@@ -452,6 +452,15 @@ AltTabPopup.prototype = {
                 Mainloop.idle_add(function() {
                     Main.getRunDialog().open();
                 });
+            } else if (action == Meta.KeyBindingAction.WORKSPACE_DOWN || action == Meta.KeyBindingAction.WORKSPACE_UP) {
+                if (this._currentApp >= 0) {
+                    let window = this._appIcons[this._currentApp].window;
+                    Main.activateWindow(window);
+                }
+                this.destroy();
+                Mainloop.idle_add(function() {
+                    (action == Meta.KeyBindingAction.WORKSPACE_DOWN ? Main.overview : Main.expo).show();
+                });
             } else if (action == Meta.KeyBindingAction.SWITCH_GROUP || action == Meta.KeyBindingAction.SWITCH_WINDOWS) {
                 this._select(backwards ? this._previousApp() : this._nextApp());
             } else {
