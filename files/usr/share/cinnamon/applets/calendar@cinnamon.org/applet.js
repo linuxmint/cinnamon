@@ -112,8 +112,14 @@ MyApplet.prototype = {
 
     _updateClockAndDate: function() {
         let displayDate = new Date();
+        let dateFormatted = displayDate.toLocaleFormat(this._dateFormat);
         let dateFormattedFull = displayDate.toLocaleFormat(this._dateFormatFull);
-        this.set_applet_label(displayDate.toLocaleFormat(this._dateFormat));
+
+        // this.set_applet_* is expensive -> call it only if necessary
+        if (dateFormatted !== this._lastDateFormatted) {
+            this.set_applet_label(dateFormatted);
+            this._lastDateFormatted = dateFormatted;
+        }
         if (dateFormattedFull !== this._lastDateFormattedFull) {
             this._date.set_text(dateFormattedFull);
             this.set_applet_tooltip(dateFormattedFull);
