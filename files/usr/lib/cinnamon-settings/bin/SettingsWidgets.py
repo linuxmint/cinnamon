@@ -81,7 +81,7 @@ class SidePage:
             else:
                 self.content_box.show_all()
         else:
-            subprocess.Popen([self.exec_name])
+            subprocess.Popen(self.exec_name.split())
 
 class CCModule:
     def __init__(self, label, mod_id, icon, category, advanced, keywords, content_box):
@@ -109,7 +109,7 @@ class SAModule:
         self.category = category
 
     def process (self):
-        return fileexists(self.name)
+        return fileexists(self.name.split()[0])
 
 def fileexists(program):
 
