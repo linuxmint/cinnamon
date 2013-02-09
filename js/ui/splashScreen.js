@@ -25,10 +25,19 @@ SplashScreen.prototype = {
         eventHandler.add(this._titleText, { expand: true });
         this._displayText = new St.Label({style: 'text-align: center;'});
         eventHandler.add(this._displayText, { expand: true });
+        this._progessFrame = new St.BoxLayout({ clip_to_allocation: true,
+                                    style: 'width: 200px; height: 15px; border: 1px solid #333333;' });
+        this._progessBar = new St.Group({ clip_to_allocation: true,
+                                    style: 'width: 0px; height: 15px; background-color: red;' });
+        eventHandler.add(this._progessFrame, { expand: false });
+        this._progessFrame.add(this._progessBar, { expand: false });
         
         this._lastSection = null;
         this._updatePrimaryMonitor();
         global.screen.connect('monitors-changed', Lang.bind(this, this._updatePrimaryMonitor));
+        
+        this._totalSections = 0;
+        this._processedSections = 0;
     },
     
     _updatePrimaryMonitor: function() {
@@ -71,6 +80,7 @@ SplashScreen.prototype = {
             this._lastSection.next = section;
         
         this._lastSection = section;
+        this._totalSections++;
         return section;
     },
 
@@ -79,6 +89,13 @@ SplashScreen.prototype = {
     },
     
     _runNextSection: function(section) {
+        let progress = this._processedSections / this._totalSections;
+        this._processedSections++;
+        
+        let width = Math.round(progress * this._progessFrame.get_width());
+        let height = this._progessFrame.get_height();
+        this._progessBar.style = 'width: ' + width + 'px; height: ' + height + 'px; background-color: #00bb00;';
+        
         let t = new Date().getTime();
         if(this._time)
             global.log(this._lastSectionName + " took " + (t - this._time) + " ms");
