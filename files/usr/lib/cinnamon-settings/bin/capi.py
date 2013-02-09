@@ -27,3 +27,11 @@ class CManager():
             return None
         panel_type = extension.get_type()
         return GObject.new(panel_type)
+
+    def lookup_c_module(self, mod_id):
+        extension = self.extension_point.get_extension_by_name(mod_id)
+        if extension is None:
+            print("Could not find %s module; is the cinnamon-control-center package installed?" % mod_id)
+            return False
+        else:
+            return True

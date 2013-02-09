@@ -70,8 +70,14 @@ class SidePage:
                     child.show()
                     if child.get_name() == "c_box":
                         c_widgets = child.get_children()
-                        for c_widget in c_widgets:
-                            c_widget.show()
+                        if not c_widgets:
+                            c_widget = self.content_box.c_manager.get_c_widget(self.exec_name)
+                            if c_widget is not None:
+                                child.pack_start(c_widget, False, False, 2)
+                                c_widget.show()
+                        else:
+                            for c_widget in c_widgets:
+                                c_widget.show()
             else:
                 self.content_box.show_all()
         else:
@@ -79,16 +85,15 @@ class SidePage:
 
 class CCModule:
     def __init__(self, label, mod_id, icon, category, advanced, keywords, content_box):
-        sidePage = SidePage(label, icon, keywords, advanced, content_box, True, False, None)
+        sidePage = SidePage(label, icon, keywords, advanced, content_box, True, False, mod_id)
         self.sidePage = sidePage
         self.name = mod_id
         self.category = category
 
     def process (self, c_manager):
-        widget = c_manager.get_c_widget(self.name)
-        if widget is not None:
+ #       return False
+        if c_manager.lookup_c_module(self.name):
             c_box = Gtk.Box.new(Gtk.Orientation.VERTICAL, 2)
-            c_box.pack_start(widget, False, False, 2)
             c_box.set_vexpand(False)
             c_box.set_name("c_box")
             self.sidePage.add_widget(c_box)
