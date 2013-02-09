@@ -91,7 +91,6 @@ class CCModule:
         self.category = category
 
     def process (self, c_manager):
- #       return False
         if c_manager.lookup_c_module(self.name):
             c_box = Gtk.Box.new(Gtk.Orientation.VERTICAL, 2)
             c_box.set_vexpand(False)
