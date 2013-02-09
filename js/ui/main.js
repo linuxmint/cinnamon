@@ -394,7 +394,6 @@ function start() {
         _startDate = new Date();
         global.log('loaded at ' + _startDate);
         log('Cinnamon started at ' + _startDate);
-        splashScreen.destroy();
     });
     
     splashScreen.runAllSections();

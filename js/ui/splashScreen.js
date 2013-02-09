@@ -109,6 +109,8 @@ SplashScreen.prototype = {
             Mainloop.timeout_add(10, Lang.bind(this, function() {
                 this._runNextSection(section.next);
             }));
+        } else {
+            this.destroy();
         }
     }
 };
