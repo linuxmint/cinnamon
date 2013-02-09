@@ -154,7 +154,17 @@ function _initUserSession() {
 
 let splashScreen = null;
 
+function _reparentActor(actor, newParent) {
+    let parent = actor.get_parent();
+    if (parent)
+      parent.remove_child(actor);
+    if(newParent)
+        newParent.add_actor(actor);
+}
+
 function start() {
+    global.reparentActor = _reparentActor;
+        
     // Monkey patch utility functions into the global proxy;
     // This is easier and faster than indirecting down into global
     // if we want to call back up into JS.
@@ -209,37 +219,31 @@ function start() {
                         for (let i = 0; i < children.length; i++)
                             children[i].allocate_preferred_size(flags);
                     });
+    uiGroup.connect('get-preferred-width',
+                    function(actor, forHeight, alloc) {
+                        let width = global.stage.width;
+                        [alloc.min_size, alloc.natural_size] = [width, width];
+                    });
+    uiGroup.connect('get-preferred-height',
+                    function(actor, forWidth, alloc) {
+                        let height = global.stage.height;
+                        [alloc.min_size, alloc.natural_size] = [height, height];
+                    });
     St.set_ui_root(global.stage, uiGroup);
 
-    let parent = global.background_actor.get_parent();
-    if (parent) {
-      parent.remove_child(global.background_actor);
-    }
-    parent = global.bottom_window_group.get_parent();
-    if (parent) {
-      parent.remove_child(global.bottom_window_group);
-    }
-    parent = global.window_group.get_parent();
-    if (parent) {
-      parent.remove_child(global.window_group);
-    }
-    parent = global.overlay_group.get_parent();
-    if (parent) {
-      parent.remove_child(global.overlay_group);
-    }
+    global.reparentActor(global.background_actor, uiGroup);
+    global.reparentActor(global.bottom_window_group, uiGroup);
 
-    uiGroup.add_actor(global.background_actor);
-    uiGroup.add_actor(global.bottom_window_group);
     deskletContainer = new DeskletManager.DeskletContainer();
-
     uiGroup.add_actor(deskletContainer.actor);
-    uiGroup.add_actor(global.window_group);
-    uiGroup.add_actor(global.overlay_group);
+    
+    global.reparentActor(global.window_group, uiGroup);
+    global.reparentActor(global.overlay_group, uiGroup);
     
     splashScreen = new SplashScreen.SplashScreen();
 
     global.stage.add_actor(uiGroup);
-    global.top_window_group.reparent(global.stage);
+    global.reparentActor(global.top_window_group, global.stage);
 
     global.window_group.hide();
 
@@ -340,7 +344,7 @@ function start() {
         }
     });
     
-    splashScreen.addSection("Connecting events", function() {
+    splashScreen.addSection("Connecting Events", function() {
         global.stage.connect('captured-event', _globalKeyPressHandler);
 
         workspace_names = global.settings.get_strv("workspace-name-overrides");  
@@ -356,10 +360,8 @@ function start() {
     
     splashScreen.addSection("Workspaces", _nWorkspacesChanged);
     
-    splashScreen.addSection("AppletManager / Desklet Manager", function() {
-        AppletManager.init();
-        DeskletManager.init();
-    });
+    splashScreen.addSection("Applet Manager", AppletManager.init);
+    splashScreen.addSection("Desklet Manager", DeskletManager.init);
     
 
     splashScreen.addSection("Window Tracker", function() {
@@ -374,11 +376,11 @@ function start() {
         tracker = Cinnamon.WindowTracker.get_default();
     });
     
-    splashScreen.addSection("Seting up Cinnamon.AppUsage", function() {
+    splashScreen.addSection("App Usage", function() {
         Cinnamon.AppUsage.get_default();
     });
     
-    splashScreen.addSection("Creating cinnamon dbus service", function() {
+    splashScreen.addSection("Cinnamon DBus Service", function() {
         cinnamonDBusService = new CinnamonDBus.Cinnamon();
         // Force a connection now; dbus.js will do this internally
         // if we use its name acquisition stuff but we aren't right
@@ -389,10 +391,10 @@ function start() {
     
     splashScreen.addSection("Finishing", function() {
         global.window_group.show();
-        splashScreen.destroy();
         _startDate = new Date();
         global.log('loaded at ' + _startDate);
         log('Cinnamon started at ' + _startDate);
+        splashScreen.destroy();
     });
     
     splashScreen.runAllSections();
