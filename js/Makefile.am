@@ -61,6 +61,7 @@ nobase_dist_js_DATA = \
 	ui/scripting.js		\
 	ui/search.js		\
 	ui/cinnamonDBus.js		\
+	ui/splashScreeen.js	\
 	ui/statusIconDispatcher.js	\
 	ui/themeManager.js	\
 	ui/tooltips.js	\

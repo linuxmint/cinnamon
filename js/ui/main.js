@@ -152,8 +152,6 @@ function _initUserSession() {
     
 }
 
-let splashScreen = null;
-
 function _reparentActor(actor, newParent) {
     let parent = actor.get_parent();
     if (parent)
@@ -254,7 +252,7 @@ function start() {
     global.reparentActor(global.window_group, uiGroup);
     global.reparentActor(global.overlay_group, uiGroup);
     
-    splashScreen = new SplashScreen.SplashScreen();
+    let splashScreen = new SplashScreen.SplashScreen();
 
     global.stage.add_actor(uiGroup);
     global.reparentActor(global.top_window_group, global.stage);
@@ -327,7 +325,7 @@ function start() {
         }
     });
     
-    splashScreen.addSection("Some Inits", function() {
+    splashScreen.addSection("Overlay", function() {
         layoutManager.init();
         keyboard.init();
         overview.init();
