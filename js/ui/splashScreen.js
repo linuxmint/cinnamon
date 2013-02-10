@@ -4,6 +4,7 @@ const St = imports.gi.St;
 const Lang = imports.lang;
 const Main = imports.ui.main;
 const Mainloop = imports.mainloop;
+const Config = imports.misc.config;
 
 function SplashScreen() {
     this._init();
@@ -21,7 +22,7 @@ SplashScreen.prototype = {
                                               reactive: true });
         this._eventHandler = eventHandler;
         this._container.add_actor(eventHandler);
-        this._titleText = new St.Label({text: 'Loading Cinnamon:\n', style: 'text-align: center;'});
+        this._titleText = new St.Label({text: 'Loading Cinnamon ' + Config.PACKAGE_VERSION + '\n', style: 'text-align: center;'});
         eventHandler.add(this._titleText, { expand: true });
         this._displayText = new St.Label({style: 'text-align: center;'});
         eventHandler.add(this._displayText, { expand: true });
