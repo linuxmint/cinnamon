@@ -12,30 +12,31 @@ function SplashScreen() {
 
 SplashScreen.prototype = {
     _init: function() {
+        this._updatePrimaryMonitor();
         this._container = new Cinnamon.GenericContainer({ width: 0,
                                                      height: 0 });
-        this._container.connect('allocate', Lang.bind(this, this._allocate));
-        Main.uiGroup.add_actor(this._container);
 
-        let eventHandler = new St.BoxLayout({ name: 'LookingGlassDialog',
+        this._eventHandler = new St.BoxLayout({ name: 'LookingGlassDialog', style: 'width: 400px; height: 80px; padding: 20px;',
                                               vertical: true,
                                               reactive: true });
-        this._eventHandler = eventHandler;
-        this._container.add_actor(eventHandler);
-        this._titleText = new St.Label({text: 'Loading Cinnamon ' + Config.PACKAGE_VERSION + '\n', style: 'text-align: center;'});
-        eventHandler.add(this._titleText, { expand: true });
-        this._displayText = new St.Label({style: 'text-align: center;'});
-        eventHandler.add(this._displayText, { expand: true });
+                                          
+        this._container.add_actor(this._eventHandler);
+        this._titleText = new St.Label({text: 'Loading Cinnamon ' + Config.PACKAGE_VERSION + '\n', style: 'text-align: center; font-size: 14pt; font-weight: bold;'});
+        this._eventHandler.add(this._titleText, { expand: true });
+        this._displayText = new St.Label({style: 'text-align: center; padding-bottom: 3px;'});
+        this._eventHandler.add(this._displayText, { expand: true });
         this._progessFrame = new St.BoxLayout({ clip_to_allocation: true,
                                     style: 'width: 200px; height: 15px; border: 1px solid #333333;' });
         this._progessBar = new St.Group({ clip_to_allocation: true,
                                     style: 'width: 0px; height: 15px; background-color: red;' });
-        eventHandler.add(this._progessFrame, { expand: false });
+        this._eventHandler.add(this._progessFrame, { expand: false });
         this._progessFrame.add(this._progessBar, { expand: false });
         
         this._lastSection = null;
-        this._updatePrimaryMonitor();
         global.screen.connect('monitors-changed', Lang.bind(this, this._updatePrimaryMonitor));
+        
+        this._container.connect('allocate', Lang.bind(this, this._allocate));
+        Main.uiGroup.add_actor(this._container);
         
         this._totalSections = 0;
         this._processedSections = 0;
