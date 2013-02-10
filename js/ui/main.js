@@ -162,8 +162,22 @@ function _reparentActor(actor, newParent) {
         newParent.add_actor(actor);
 }
 
+function _showWindowGroups() {
+    global.bottom_window_group.show();
+    global.window_group.show();
+    global.top_window_group.show();
+}
+
+function _hideWindowGroups() {
+    global.bottom_window_group.hide();
+    global.window_group.hide();
+    global.top_window_group.hide();
+}
+
 function start() {
     global.reparentActor = _reparentActor;
+    global.showWindowGroups = _showWindowGroups;
+    global.hideWindowGroups = _hideWindowGroups;
         
     // Monkey patch utility functions into the global proxy;
     // This is easier and faster than indirecting down into global
@@ -245,7 +259,7 @@ function start() {
     global.stage.add_actor(uiGroup);
     global.reparentActor(global.top_window_group, global.stage);
 
-    global.window_group.hide();
+    global.hideWindowGroups();
 
     splashScreen.addSection("Theme Manager", function() {
         Gtk.IconTheme.get_default().append_search_path("/usr/share/cinnamon/icons/");
@@ -390,7 +404,7 @@ function start() {
     });
     
     splashScreen.addSection("Finishing", function() {
-        global.window_group.show();
+        global.showWindowGroups();
         _startDate = new Date();
         global.log('loaded at ' + _startDate);
         log('Cinnamon started at ' + _startDate);
