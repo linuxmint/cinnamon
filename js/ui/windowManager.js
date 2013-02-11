@@ -242,10 +242,10 @@ WindowManager.prototype = {
         timeoutId = Mainloop.timeout_add(TIMEOUT, timerFunction);
         
         
-        wDestroyId = Connector.makeConnection(window.get_compositor_private(), 'destroy', function() {
+        wDestroyId = Connector.connect(window.get_compositor_private(), 'destroy', function() {
             handler(true);
         });
-        let wFocusId = Connector.makeConnection(display, 'notify::focus-window', function(display) {
+        let wFocusId = Connector.connect(display, 'notify::focus-window', function(display) {
             if (display.focus_window == window) {
                 handler(false);
             }
