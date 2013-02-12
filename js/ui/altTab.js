@@ -59,6 +59,7 @@ function AltTabPopup() {
 }
 
 var g_allWsMode;
+var g_windowsToIgnore = [];
 
 AltTabPopup.prototype = {
     _init : function() {
@@ -90,15 +91,7 @@ AltTabPopup.prototype = {
         for (let [i, numws] = [0, global.screen.n_workspaces]; i < numws; ++i) {
             let workspace = global.screen.get_workspace_by_index(i);
                 this._connector.addConnection(workspace, 'window-removed', Lang.bind(this, function(ws, metaWindow) {
-                    let index = this._indexOfWindow(metaWindow);
-                    if (index >= 0) {
-                        if (index == this._currentApp) {
-                            this._clearPreview();
-                            this._destroyThumbnails();
-                        }
-                        this._appSwitcher._removeIcon(index);
-                        this._select(this._currentApp);
-                    }
+                    this._removeWindow(metaWindow);
                 }));
         }
         this._connector.addConnection(global.display, 'window-demands-attention', Lang.bind(this, this._onWindowDemandsAttention));
@@ -144,6 +137,18 @@ AltTabPopup.prototype = {
             return false; // continue
         }, this);
         return index;
+    },
+
+    _removeWindow: function(metaWindow) {
+        let index = this._indexOfWindow(metaWindow);
+        if (index >= 0) {
+            if (index == this._currentApp) {
+                this._clearPreview();
+                this._destroyThumbnails();
+            }
+            this._appSwitcher._removeIcon(index);
+            this._select(this._currentApp);
+        }
     },
 
     _onWindowDemandsAttention: function(display, metaWindow) {
@@ -242,8 +247,8 @@ AltTabPopup.prototype = {
             let wlist = Main.getTabList(global.screen.get_workspace_by_index(i));
             if (wlist.length && i != activeWsIndex) {
                 wlist = wlist.filter(function(window) {
-                    // We don't want duplicates
-                    return !window.is_on_all_workspaces();
+                    // We don't want duplicates. Ignored windows from other workspaces are not welcome.
+                    return !window.is_on_all_workspaces() && g_windowsToIgnore.indexOf(window) < 0;
                 }, this);
             }
             if (g_allWsMode || i == activeWsIndex) {
@@ -502,6 +507,13 @@ AltTabPopup.prototype = {
                 if (this._currentApp >= 0) {
                     this._appIcons[this._currentApp].window.delete(global.get_current_time());
                 }
+            } else if (keysym == Clutter.i && ctrlDown) {
+                if (this._currentApp >= 0) {
+                    if (g_windowsToIgnore.indexOf(this._appIcons[this._currentApp].window) < 0) {
+                        g_windowsToIgnore.push(this._appIcons[this._currentApp].window);
+                        this._removeWindow(this._appIcons[this._currentApp].window);
+                    }
+                }
             } else if (keysym == Clutter.m && !ctrlDown) {
                 let monitorCount = Main.layoutManager.monitors.length;
                 if (this._currentApp >= 0 && monitorCount > 1) {
@@ -522,6 +534,11 @@ AltTabPopup.prototype = {
                     let window = this._appIcons[this._currentApp].window;
                     Main.activateWindow(window);
                     this._select(this._currentApp); // refresh
+                    // If the window was ignored, unignore it
+                    let ignoredIndex = g_windowsToIgnore.indexOf(window);
+                    if (ignoredIndex >= 0) {
+                        g_windowsToIgnore.splice(ignoredIndex, 1);
+                    }
                 }
             }
             return true;
