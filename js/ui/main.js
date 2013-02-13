@@ -738,7 +738,7 @@ function _log(category, msg) {
                 text += ' ';
         }
     }
-    let out = {timestamp: new Date().getTime(),
+    let out = {timestamp: new Date().getTime().toString(),
                          category: category,
                          message: text };
     _errorLogStack.push(out);

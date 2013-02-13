@@ -1,4 +1,3 @@
-import json
 from pageutils import *
 from gi.repository import Gio, Gtk, GObject, Gdk, Pango, GLib
 
@@ -104,10 +103,9 @@ class ModulePage(WindowAndActionBars):
             self.nameLabel.set_text(name)
 
             cinnamonLog.activatePage("inspect")
-            success, json_data = lookingGlassProxy.Inspect(path)
+            success, data = lookingGlassProxy.Inspect(path)
             if success:
                 try:
-                    data = json.loads(json_data)
                     self.view.setInspectionData(path, data)
                 except Exception as e:
                     print e

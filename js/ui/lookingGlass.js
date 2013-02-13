@@ -260,7 +260,7 @@ WindowList.prototype = {
                 this.lastId++;
             }
             
-            let lgInfo = { id: metaWindow._lgId, title: metaWindow.title, wmclass: metaWindow.get_wm_class(), app: ''};
+            let lgInfo = { id: metaWindow._lgId.toString(), title: metaWindow.title, wmclass: metaWindow.get_wm_class(), app: ''};
             
             let box = new St.BoxLayout({ vertical: true });
             this.actor.add(box);
@@ -977,7 +977,7 @@ LookingGlass.prototype = {
     _pushResult: function(command, obj) {
         let index = this._results.length + this._offset;
         let result = new Result('>>> ' + command, obj, index);
-        this.rawResults.push({command: command, type: typeof(obj), object: objectToString(obj), index: index});
+        this.rawResults.push({command: command, type: typeof(obj), object: objectToString(obj), index: index.toString()});
         Main.lookingGlassDBusService.emitResultUpdate();
         
         this._results.push(result);

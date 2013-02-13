@@ -1,4 +1,3 @@
-import json
 from pageutils import *
 from gi.repository import Gio, Gtk, GObject, Gdk, Pango, GLib
 
@@ -30,14 +29,11 @@ class MemoryView(BaseListView):
 
     def getUpdates(self, igno=None):
         self.store.clear()
-        success, json_data = lookingGlassProxy.GetMemoryInfo()
+        success, time_last_gc, data = lookingGlassProxy.GetMemoryInfo()
         if success:
-            try:
-                data = json.loads(json_data)
-                for key in data.keys():
-                    self.store.append([key, int(data[key])])
-            except Exception as e:
-                print e
+            self.secondsLabel.set_text("%d" % time_last_gc)
+            for key in data.keys():
+                self.store.append([key, data[key]])
 
     def onFullGc(self, widget):
         lookingGlassProxy.FullGc()
@@ -57,3 +53,6 @@ class ModulePage(WindowAndActionBars):
         fullGc.connect ('clicked', self.view.onFullGc)
 
         self.addToLeftBar(fullGc, 1)
+        self.addToBottomBar(Gtk.Label("Time since last GC:"), 2)
+        self.view.secondsLabel = Gtk.Label("")
+        self.addToBottomBar(self.view.secondsLabel, 2)

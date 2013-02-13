@@ -1,4 +1,3 @@
-import json
 from pageutils import *
 from gi.repository import Gio, Gtk, GObject, Gdk, Pango, GLib
 
@@ -84,10 +83,9 @@ class ModulePage(BaseListView):
 
     def getUpdates(self):
         self.store.clear()
-        success, json_data = lookingGlassProxy.GetLatestWindowList()
+        success, data = lookingGlassProxy.GetLatestWindowList()
         if success:
             try:
-                data = json.loads(json_data)
                 for item in data:
                     self.store.append([int(item["id"]), item["title"], item["wmclass"], item["app"]])
             except Exception as e:

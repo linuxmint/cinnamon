@@ -12,36 +12,36 @@ const LookingGlassIface = <interface name={LG_SERVICE_NAME}>
 </method>
 <method name="GetResults">
     <arg type="b" direction="out" name="success"/>
-    <arg type="s" direction="out" name="json object"/>
+    <arg type="aa{ss}" direction="out" name="array of dictionary containing keys: command, type, object, index"/>
 </method>
 <method name="AddResult">
     <arg type="s" direction="in" name="code"/>
 </method>
 <method name="GetErrorStack">
     <arg type="b" direction="out" name="success"/>
-    <arg type="s" direction="out" name="json object"/>
+    <arg type="aa{ss}" direction="out" name="array of dictionary containing keys: timestamp, category, message"/>
 </method>
 <method name="GetMemoryInfo">
-    <!-- bi{si} -->
     <arg type="b" direction="out" name="success"/>
-    <arg type="s" direction="out" name="json object"/>
+    <arg type="i" direction="out" name="time since last garbage collect"/>
+    <arg type="a{si}" direction="out" name="dictionary mapping name(string) to number of bytes used(int)"/>
 </method>
 <method name="FullGc">
 </method>
 <method name="Inspect">
     <arg type="s" direction="in" name="code"/>
     <arg type="b" direction="out" name="success"/>
-    <arg type="s" direction="out" name="json object"/>
+    <arg type="aa{ss}" direction="out" name="array of dictionary containing keys: name, type, value, shortValue"/>
 </method>
 <method name="GetLatestWindowList">
     <arg type="b" direction="out" name="success"/>
-    <arg type="s" direction="out" name="json object"/>
+    <arg type="aa{ss}" direction="out" name="array of dictionary containing keys: id, title, wmclass, app"/>
 </method>
 <method name="StartInspector">
 </method>
 <method name="GetExtensionList">
     <arg type="b" direction="out" name="success"/>
-    <arg type="s" direction="out" name="json object"/>
+    <arg type="aa{ss}" direction="out" name="array of dictionary containing keys: status, name, description, uuid, folder, url, type"/>
 </method>
 <method name="ReloadExtension">
     <arg type="s" direction="in" name="uuid"/>
@@ -52,22 +52,6 @@ const LookingGlassIface = <interface name={LG_SERVICE_NAME}>
 <signal name="InspectorDone"></signal>
 <signal name="ExtensionListUpdate"></signal>
 </interface>;
-
-function getJsonReturnBS(object) {
-    let returnValue;
-    let success;
-    try {
-        returnValue = JSON.stringify(object);
-        // A hack; DBus doesn't have null/undefined
-        if (returnValue == undefined)
-            returnValue = '';
-        success = true;
-    } catch (e) {
-        returnValue = JSON.stringify(e);
-        success = false;
-    }
-    return [success, returnValue];
-}
 
 function CinnamonLookingGlass() {
     this._init();
@@ -86,7 +70,7 @@ CinnamonLookingGlass.prototype = {
     },
     
     GetResults: function() {
-        return getJsonReturnBS(Main.createLookingGlass().rawResults);
+        return [true, Main.createLookingGlass().rawResults];
     },
     
     AddResult: function(path) {
@@ -94,22 +78,24 @@ CinnamonLookingGlass.prototype = {
     },
     
     GetErrorStack: function() {
-        return getJsonReturnBS(Main._errorLogStack);
+        return [true, Main._errorLogStack];
     },
     
     GetMemoryInfo: function() {
-        // can't use it raw, need to store it again
         let memInfo = global.get_memory_info();
-        let memdata = {
-            'glibc_uordblks': (memInfo.glibc_uordblks),
-            'js_bytes': (memInfo.js_bytes),
-            'gjs_boxed': (memInfo.gjs_boxed),
-            'gjs_gobject': (memInfo.gjs_gobject),
-            'gjs_function': (memInfo.gjs_function),
-            'gjs_closure': (memInfo.gjs_closure),
-            'last_gc_seconds_ago': (memInfo.last_gc_seconds_ago)
-        };
-        return getJsonReturnBS(memdata);
+        let result = [
+            true,
+            memInfo.last_gc_seconds_ago,
+            {
+                'glibc_uordblks': (memInfo.glibc_uordblks),
+                'js_bytes': (memInfo.js_bytes),
+                'gjs_boxed': (memInfo.gjs_boxed),
+                'gjs_gobject': (memInfo.gjs_gobject),
+                'gjs_function': (memInfo.gjs_function),
+                'gjs_closure': (memInfo.gjs_closure)
+            }
+        ]
+        return result;
     },
     
     FullGc: function() {
@@ -119,20 +105,20 @@ CinnamonLookingGlass.prototype = {
     Inspect: function(path) {
         try {
             let result = Main.createLookingGlass().inspect(path);
-            return getJsonReturnBS(result);
+            return [true, result];
         } catch (e) {
             global.logError('Error inspecting path: ' + path, e);
-            return [false, ''];
+            return [false, []];
         }
     },
     
     GetLatestWindowList: function() {
         try {
-            let windowList = Main.createLookingGlass().getLatestWindowList();
-            return getJsonReturnBS(windowList);
+            let result = Main.createLookingGlass().getLatestWindowList();
+            return [true, result];
         } catch (e) {
             global.logError('Error getting latest window list', e);
-            return [false, ''];
+            return [false, []];
         }
     },
     
@@ -164,10 +150,10 @@ CinnamonLookingGlass.prototype = {
                 }
             }
         
-            return getJsonReturnBS(extensionList);
+            return [true, extensionList];
         } catch (e) {
             global.logError('Error getting the extension list', e);
-            return [false, ''];
+            return [false, []];
         }
     },
     

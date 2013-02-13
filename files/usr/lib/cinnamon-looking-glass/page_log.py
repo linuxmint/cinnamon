@@ -1,4 +1,3 @@
-import json
 import datetime
 from pageutils import *
 from gi.repository import Gio, Gtk, GObject, Gdk, Pango, GLib
@@ -72,11 +71,9 @@ class LogView(Gtk.ScrolledWindow):
         self.getUpdates()
 
     def getUpdates(self):
-        success, json_data = lookingGlassProxy.GetErrorStack()
+        success, data = lookingGlassProxy.GetErrorStack()
         if success:
             try:
-                data = json.loads(json_data)
-
                 dataSize = len(data)
                 if dataSize > 0:
                     # If this is a completely new log, start reading at the beginning
