@@ -14,8 +14,8 @@ class ModulePage(BaseListView):
         self.createTextColumn(3, "Application")
 
         self.getUpdates()
-        dbusManager.connectToCinnamonSignal("lgWindowListUpdate", self.getUpdates)
-        dbusManager.addReconnectCallback(self.getUpdates)
+        lookingGlassProxy.connect("WindowListUpdate", self.getUpdates)
+        lookingGlassProxy.addStatusChangeCallback(self.onStatusChange)
 
         self.treeView.connect("row-activated", self.onRowActivated)
         self.treeView.connect("button-press-event", self.onButtonPress)
@@ -78,9 +78,13 @@ class ModulePage(BaseListView):
                 self.popup.popup( None, None, None, None, event.button, event.time)
             return True
 
+    def onStatusChange(self, online):
+        if online:
+            self.getUpdates()
+
     def getUpdates(self):
         self.store.clear()
-        success, json_data = dbusManager.cinnamonDBus.lgGetLatestWindowList()
+        success, json_data = lookingGlassProxy.GetLatestWindowList()
         if success:
             try:
                 data = json.loads(json_data)

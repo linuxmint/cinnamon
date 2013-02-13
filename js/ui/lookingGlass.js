@@ -303,7 +303,7 @@ WindowList.prototype = {
             }
         }
         if(changed)
-            Main.cinnamonDBusService.notifyLgWindowListUpdate();
+            Main.lookingGlassDBusService.emitWindowListUpdate();
     }
 };
 Signals.addSignalMethods(WindowList.prototype);
@@ -746,7 +746,7 @@ Extensions.prototype = {
         this._extensionsList.add(extensionDisplay);
         this.uuidMap[uuid] = extensionDisplay;
 
-        Main.cinnamonDBusService.notifyLgExtensionListUpdate();
+        Main.lookingGlassDBusService.emitExtensionListUpdate();
     },
 
     _unloadExtension: function(o, uuid) {
@@ -760,7 +760,7 @@ Extensions.prototype = {
         if (this._numExtensions == 0)
             this._extensionsList.add(this._noExtensions);
 
-        Main.cinnamonDBusService.notifyLgExtensionListUpdate();
+        Main.lookingGlassDBusService.emitExtensionListUpdate();
     },
 
     _onViewSource: function (actor) {
@@ -952,7 +952,7 @@ LookingGlass.prototype = {
             if(closeAfter === true) {
                 this.actor.hide();
                 this.close();
-                Main.cinnamonDBusService.notifyLgInspectorDone();
+                Main.lookingGlassDBusService.emitInspectorDone();
             } else {
                 this.actor.show();
                 global.stage.set_key_focus(this._entry);
@@ -978,7 +978,7 @@ LookingGlass.prototype = {
         let index = this._results.length + this._offset;
         let result = new Result('>>> ' + command, obj, index);
         this.rawResults.push({command: command, type: typeof(obj), object: objectToString(obj), index: index});
-        Main.cinnamonDBusService.notifyLgResultUpdate();
+        Main.lookingGlassDBusService.emitResultUpdate();
         
         this._results.push(result);
         this._resultsArea.add(result.actor);

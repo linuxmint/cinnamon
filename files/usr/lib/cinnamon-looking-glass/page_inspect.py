@@ -58,7 +58,11 @@ class ModulePage(WindowAndActionBars):
 
         self.currentInspection = None
         self.stack = []
-        dbusManager.addReconnectCallback(self.clear)
+        lookingGlassProxy.addStatusChangeCallback(self.onStatusChange)
+
+    def onStatusChange(self, online):
+        if online:
+            self.clear()
 
     def clear(self):
         self.pathLabel.set_text("<No selection done yet>")
@@ -69,7 +73,7 @@ class ModulePage(WindowAndActionBars):
     def onInsertButton(self, widget):
         if len(self.stack) > 0:
             path, objType, name, value = self.currentInspection
-            dbusManager.cinnamonDBus.lgAddResult(path)
+            lookingGlassProxy.AddResult(path)
 
     def onBackButton(self, widget):
         self.popInspectionElement()
@@ -100,7 +104,7 @@ class ModulePage(WindowAndActionBars):
             self.nameLabel.set_text(name)
 
             cinnamonLog.activatePage("inspect")
-            success, json_data = dbusManager.cinnamonDBus.lgInspect(path)
+            success, json_data = lookingGlassProxy.Inspect(path)
             if success:
                 try:
                     data = json.loads(json_data)

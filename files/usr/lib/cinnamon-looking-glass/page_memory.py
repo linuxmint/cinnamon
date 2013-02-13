@@ -13,7 +13,7 @@ class MemoryView(BaseListView):
         column.set_cell_data_func(self.rendererText, self.cellDataFuncSize)
 
         self.getUpdates()
-        dbusManager.addReconnectCallback(self.getUpdates)
+        lookingGlassProxy.addStatusChangeCallback(self.onStatusChange)
 
     def cellDataFuncSize(self, column, cell, model, iter, data=None):
         value = model.get_value(iter, 1)
@@ -24,9 +24,13 @@ class MemoryView(BaseListView):
         elif(value < 1000000000):
             cell.set_property("text", "%.2f MB" %  (value/1024.0/1024.0))
 
+    def onStatusChange(self, online):
+        if online:
+            self.getUpdates()
+
     def getUpdates(self, igno=None):
         self.store.clear()
-        success, json_data = dbusManager.cinnamonDBus.lgGetMemoryInfo()
+        success, json_data = lookingGlassProxy.GetMemoryInfo()
         if success:
             try:
                 data = json.loads(json_data)
@@ -36,7 +40,7 @@ class MemoryView(BaseListView):
                 print e
 
     def onFullGc(self, widget):
-        dbusManager.cinnamonDBus.lgFullGc()
+        lookingGlassProxy.FullGc()
         self.getUpdates()
 
 class ModulePage(WindowAndActionBars):

@@ -42,8 +42,8 @@ class LogView(Gtk.ScrolledWindow):
         #    self.enabledTypes[key] = True
         self.getUpdates()
 
-        dbusManager.connectToCinnamonSignal("lgLogUpdate", self.getUpdates)
-        dbusManager.addReconnectCallback(self.clear)
+        lookingGlassProxy.connect("LogUpdate", self.getUpdates)
+        lookingGlassProxy.addStatusChangeCallback(self.onStatusChange)
 
     def append(self, category, time, message):
         entry = LogEntry(category, time, message)
@@ -62,12 +62,17 @@ class LogView(Gtk.ScrolledWindow):
         #adj.set_upper(self.textview.get_allocated_height())
         self.textview.show()
 
-    def clear(self):
-        self.append("warning", 0, "================ Cinnamon Restart ===============")
+    def onStatusChange(self, online):
+        iter = self.textbuffer.get_end_iter()
+        if online:
+            entry = self.append("info", 0, "================ DBus connection established ===============")
+        else:
+            entry = self.append("warning", 0, "================ DBus connection lost ===============")
+        self.textbuffer.insert_with_tags(iter, entry.formattedText, self.typeTags[entry.category])
         self.getUpdates()
 
     def getUpdates(self):
-        success, json_data = dbusManager.cinnamonDBus.lgGetErrorStack()
+        success, json_data = lookingGlassProxy.GetErrorStack()
         if success:
             try:
                 data = json.loads(json_data)

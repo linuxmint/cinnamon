@@ -22,10 +22,11 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gio, Gtk, GObject, Gdk, Pango, GLib
 import dbus, dbus.service, dbus.glib
 from pageutils import *
+from lookingglass_proxy import LookingGlassProxy
 from dbus.mainloop.glib import DBusGMainLoop
 
-LG_DBUS_NAME = "org.Cinnamon.LookingGlass"
-LG_DBUS_PATH = "/org/Cinnamon/LookingGlass"
+MELANGE_DBUS_NAME = "org.Cinnamon.Melange"
+MELANGE_DBUS_PATH = "/org/Cinnamon/Melange"
 
 class MenuButton(Gtk.Button):
     def __init__(self, text):
@@ -183,7 +184,7 @@ class CommandLine(Gtk.Entry):
             self.set_text("")
             self.settings.set_strv("looking-glass-history", self.history)
 
-            dbusManager.cinnamonDBus.lgEval(command)
+            lookingGlassProxy.Eval(command)
 
 class NewLogDialog(Gtk.Dialog):
     def __init__(self, parent):
@@ -362,13 +363,13 @@ class ClosableTabLabel(Gtk.Box):
 class CinnamonLog(dbus.service.Object):
     def __init__ (self):
         self.window = None
-        dbus.service.Object.__init__ (self, dbusManager.sessionBus, LG_DBUS_PATH, LG_DBUS_NAME)
+        dbus.service.Object.__init__ (self, dbus.SessionBus (), MELANGE_DBUS_PATH, MELANGE_DBUS_NAME)
 
-    @dbus.service.method (LG_DBUS_NAME, in_signature='b', out_signature='')
+    @dbus.service.method (MELANGE_DBUS_NAME, in_signature='b', out_signature='')
     def show(self, startInspector):
         if self.window is not None:
-            if startInspector:
-                dbusManager.cinnamonDBus.lgStartInspector()
+            if startInspector and lookingGlassProxy:
+                lookingGlassProxy.StartInspector()
                 self.window.hide()
             elif self.window.get_visible():
                 self.window.hide()
@@ -376,8 +377,8 @@ class CinnamonLog(dbus.service.Object):
                 self.showAndFocus()
         else:
             self.run()
-            if startInspector:
-                dbusManager.cinnamonDBus.lgStartInspector()
+            if startInspector and lookingGlassProxy:
+                lookingGlassProxy.StartInspector()
                 self.window.hide()
             Gtk.main()
 
@@ -544,7 +545,7 @@ class CinnamonLog(dbus.service.Object):
         return False
 
     def onPickerClicked(self, widget):
-        dbusManager.cinnamonDBus.lgStartInspector()
+        lookingGlassProxy.StartInspector()
         self.window.hide()
 
     def createDummyPage(self, text, description):
@@ -553,7 +554,7 @@ class CinnamonLog(dbus.service.Object):
 
     def createPage(self, text, moduleName):
         module = __import__("page_%s" % moduleName)
-        module.dbusManager = dbusManager
+        module.lookingGlassProxy = lookingGlassProxy
         module.cinnamonLog = self
         label = Gtk.Label(text)
         page = module.ModulePage()
@@ -571,61 +572,21 @@ def setStatus(status):
     else:
         statusLabel.show()
 
-class DBusManager:
-    def __init__ (self):
-        self.sessionBus = dbus.SessionBus ()
-        self.dbus = prox = self.createSessionDBusProxy("org.freedesktop.DBus", "/org/freedesktop/DBus")
-        self.dbus.connect_to_signal("NameOwnerChanged", self.onNameOwnerChanged)
-
-        self.cinnamonSignals = []
-        self.cinnamonReconnectCallback = []
-        self.initCinnamonProxy()
-
-    def initCinnamonProxy(self):
-        self.cinnamonDBus = self.createSessionDBusProxy("org.Cinnamon", "/org/Cinnamon")
-        for callback in self.cinnamonReconnectCallback:
-            callback()
-        for name, callback in self.cinnamonSignals:
-            self.cinnamonDBus.connect_to_signal(name, callback)
-
-    def addReconnectCallback(self, callback):
-        self.cinnamonReconnectCallback.append(callback)
-
-    def connectToCinnamonSignal(self, name, callback):
-        self.cinnamonDBus.connect_to_signal(name, callback)
-        self.cinnamonSignals.append((name, callback))
-
-    def createSessionDBusProxy(self, name, path):
-        try:
-            proxy = self.sessionBus.get_object(name, path)
-            return proxy
-        except dbus.exceptions.DBusException as e:
-            print(e)
-            return None
-
-    def onNameOwnerChanged(self, name, old, new):
-        if name == "org.Cinnamon":
-            if new == "":
-                print "Cinnamon offline"
-                setStatus(False)
-            else:
-                print "Cinnamon online"
-                setStatus(True)
-                self.initCinnamonProxy()
-
 if __name__ == "__main__":
     GObject.type_register(ResizeGrip)
     DBusGMainLoop(set_as_default=True)
 
-    global dbusManager
-    dbusManager = DBusManager()
+    global lookingGlassProxy
+    lookingGlassProxy = LookingGlassProxy()
+    lookingGlassProxy.addStatusChangeCallback(setStatus)
 
-    request = dbusManager.sessionBus.request_name(LG_DBUS_NAME, dbus.bus.NAME_FLAG_DO_NOT_QUEUE)
+    sessionBus = dbus.SessionBus ()
+    request = sessionBus.request_name(MELANGE_DBUS_NAME, dbus.bus.NAME_FLAG_DO_NOT_QUEUE)
     if request != dbus.bus.REQUEST_NAME_REPLY_EXISTS:
         app = CinnamonLog()
     else:
-        object = dbusManager.sessionBus.get_object(LG_DBUS_NAME, LG_DBUS_PATH)
-        app = dbus.Interface(object, LG_DBUS_NAME)
+        object = sessionBus.get_object(MELANGE_DBUS_NAME, MELANGE_DBUS_PATH)
+        app = dbus.Interface(object, MELANGE_DBUS_NAME)
 
     startInspector = len(sys.argv) == 2 and sys.argv[1] == 'inspect'
     app.show(startInspector)

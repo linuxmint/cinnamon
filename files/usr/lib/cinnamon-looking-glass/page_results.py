@@ -17,9 +17,9 @@ class ModulePage(BaseListView):
         self.treeView.connect("button-press-event", self.onButtonPress)
 
         self.getUpdates()
-        dbusManager.connectToCinnamonSignal("lgResultUpdate", self.getUpdates)
-        dbusManager.connectToCinnamonSignal("lgInspectorDone", self.onInspectorDone)
-        dbusManager.addReconnectCallback(self.getUpdates)
+        lookingGlassProxy.connect("ResultUpdate", self.getUpdates)
+        lookingGlassProxy.connect("InspectorDone", self.onInspectorDone)
+        lookingGlassProxy.addStatusChangeCallback(self.onStatusChange)
 
         #Popup menu
         self.popup = Gtk.Menu()
@@ -45,9 +45,13 @@ class ModulePage(BaseListView):
             self.popup.popup( None, None, None, None, event.button, event.time)
             return True
 
+    def onStatusChange(self, online):
+        if online:
+            self.getUpdates()
+
     def getUpdates(self):
         self.store.clear()
-        success, json_data = dbusManager.cinnamonDBus.lgGetResults()
+        success, json_data = lookingGlassProxy.GetResults()
         if success:
             try:
                 data = json.loads(json_data)
