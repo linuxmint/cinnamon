@@ -133,6 +133,9 @@ AltTabPopup.prototype = {
 
     _indexOfWindow: function(metaWindow) {
         let index = -1;
+        if (!this._appIcons) {
+            return index;
+        }
         this._appIcons.some(function(ai, ix) {
             if (ai.window == metaWindow) {
                 index = ix;
@@ -327,8 +330,10 @@ AltTabPopup.prototype = {
 
         this._showThumbnails = (this._thumbnailsEnabled && !this._iconsEnabled) || this._previewEnabled;
 
-        if (!Main.pushModal(this.actor))
+        if (!Main.pushModal(this.actor)) {
+            this.destroy();
             return false;
+        }
         this._haveModal = true;
         this._modifierMask = primaryModifier(mask);
         if (!this.refresh(binding, backward)) {
