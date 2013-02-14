@@ -669,14 +669,7 @@ AltTabPopup.prototype = {
 
             if (this._previewBackdrop) {return;}
 
-            let backdrop = null;
-            let desktopActor = global.get_window_actors().filter(function(realWindow) {
-                return realWindow.metaWindow.get_window_type() == Meta.WindowType.DESKTOP;
-            },this)[0];
-            if (desktopActor) {
-                backdrop = new Clutter.Clone({source: desktopActor});
-            }
-
+            let backdrop = Meta.BackgroundActor.new_for_screen(global.screen);
             if (!backdrop) {
                 backdrop = this._previewBackdrop = new St.Bin();
                 backdrop.style = "background-color: rgba(0,0,0,0.9)";
