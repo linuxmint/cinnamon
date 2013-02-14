@@ -643,7 +643,7 @@ ErrorLog.prototype = {
             let text = this.text.text;
             for (; this.addedErrors < stack.length; this.addedErrors++) {
                 let logItem = stack[this.addedErrors];
-                text += logItem.category + ' t=' + this._formatTime(new Date(logItem.timestamp)) + ' ' + logItem.message + '\n';
+                text += logItem.category + ' t=' + this._formatTime(new Date(parseInt(logItem.timestamp))) + ' ' + logItem.message + '\n';
             }
             this.text.text = text;
         }
