@@ -5,7 +5,7 @@ const PACKAGE_NAME = 'cinnamon';
 /* The version of this package */
 const PACKAGE_VERSION = '1.6.7';
 /* The version of GJS we're linking to */
-const GJS_VERSION = '1.32.0';
+const GJS_VERSION = '1.34.0';
 /* 1 if gnome-bluetooth is available, 0 otherwise */
 const HAVE_BLUETOOTH = 1;
 /* The system TLS CA list */
