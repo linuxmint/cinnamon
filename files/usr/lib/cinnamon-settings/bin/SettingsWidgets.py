@@ -136,6 +136,9 @@ def rec_mkdir(path):
         return
     
     rec_mkdir(os.path.split(path)[0])
+
+    if os.path.exists(path):
+        return
     os.mkdir(path)
 
 class IndentedHBox(Gtk.HBox):
