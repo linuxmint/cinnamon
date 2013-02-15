@@ -90,6 +90,7 @@ class Spice_Harvester:
         self.abort_download = False
         self.download_total_files = 0
         self.download_current_file = 0
+        self._sigLoadFinished = None
 
         self.progress_button_activate.connect("clicked", lambda x: self.on_activate_clicked())
         self.progress_button_abort.connect("clicked", self.on_abort_clicked)
@@ -102,6 +103,8 @@ class Spice_Harvester:
         self.spiceDetailSelectButton.connect("clicked", lambda x: self.close_select_detail())
         self.spiceDetailCloseButton = self.spiceDetail.add_button(_("Close"), Gtk.ResponseType.CANCEL)
         self.spiceDetailCloseButton.connect("clicked", lambda x: self.close_detail())
+        self.spiceDetail.connect("destroy", lambda x, y: self.on_close_detail(y))
+        self.spiceDetail.connect("delete_event", lambda x, y: self.on_close_detail(y))
         self.spiceDetail.set_default_size(640, 440)
         self.spiceDetail.set_size_request(640, 440)
         content_area = self.spiceDetail.get_content_area()
@@ -136,6 +139,10 @@ class Spice_Harvester:
         self.spiceDetail.hide()
         if callable(self.on_detail_select):
             self.on_detail_select(self)
+
+    def on_close_detail(self, event):
+        self.close_detail()
+        return True
 
     def close_detail(self):
         self.spiceDetail.hide()
@@ -172,10 +179,15 @@ class Spice_Harvester:
         subs = {}
         subs['appletData'] = json.dumps(appletData, sort_keys=False, indent=3)
         html = string.Template(template).safe_substitute(subs)
+
+        # Prevent flashing previously viewed
+        self._sigLoadFinished = self.browser.connect("document-load-finished", lambda x, y: self.real_show_detail())
         self.browser.load_html_string(html, "file:///")
 
+    def real_show_detail(self):
         self.browser.show()
         self.spiceDetail.show()
+        self.browser.disconnect(self._sigLoadFinished)
 
     def browser_title_changed(self, view, frame, title):
         if title.startswith("nop"):
@@ -410,13 +422,15 @@ class Spice_Harvester:
         self.progress_button_activate.set_sensitive(False)
         self.progress_button_close.set_sensitive(False)
         self.progressbar.set_fraction(0)
+        self.progressbar.set_text('0%')
         self.progress_window.set_title(_("Progress"))
         self.progresslabel.set_text(caption)
         self.progress_window.show()
 
         while Gtk.events_pending():
             Gtk.main_iteration()
-        time.sleep(0.5)
+        
+        self.progress_bar_pulse()
         self.download(outfd, outfile)
 
         if not waitForClose:
@@ -463,7 +477,11 @@ class Spice_Harvester:
                 (blockSize))
             self.progressbar.set_text(str(int(fraction * 100)) + '%')
 
-        self.progressbar.set_fraction(fraction)
+        if fraction > 0:
+            self.progressbar.set_fraction(fraction)
+        else:
+            self.progress_bar_pulse()
+
         while Gtk.events_pending():
             Gtk.main_iteration()
 
