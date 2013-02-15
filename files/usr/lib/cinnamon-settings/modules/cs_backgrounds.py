@@ -4,14 +4,12 @@ import sys
 sys.path.append('/usr/lib/cinnamon-settings/bin')
 from SettingsWidgets import *
 import os
-from SettingsWidgets import *
-from gi.repository import Gio, Gtk, GObject, Gdk
+from gi.repository import Gio, Gtk, GObject, Gdk, Pango
 import dbus
 import imtools
 import gettext
 import subprocess
 import tempfile
-import pango
 
 gettext.install("cinnamon", "/usr/share/cinnamon/locale")
 
@@ -117,7 +115,7 @@ class ThreadedIconView(Gtk.IconView):
         area.pack_start(text_renderer, True, False, False)
         self.add_attribute (pixbuf_renderer, "pixbuf", 1);
         self.add_attribute (text_renderer, "markup", 2)
-        text_renderer.set_property("alignment", pango.ALIGN_CENTER)
+        text_renderer.set_property("alignment", Pango.Alignment.CENTER)
 
         self._loading_queue = []
         self._loading_queue_lock = thread.allocate_lock()
