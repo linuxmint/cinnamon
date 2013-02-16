@@ -10,8 +10,10 @@ const St = imports.gi.St;
 
 const Connector = imports.misc.connector;
 const Main = imports.ui.main;
+const ModalDialog = imports.ui.modalDialog;
 const Tweener = imports.ui.tweener;
 
+const Util = imports.misc.util;
 const WindowUtils = imports.misc.windowUtils;
 
 const POPUP_APPICON_SIZE = 96;
@@ -32,6 +34,26 @@ var PREVIEW_SWITCHER_FADEOUT_TIME = 0.5; // seconds
 const DEMANDS_ATTENTION_CLASS_NAME = "window-list-item-demands-attention";
 
 const iconSizes = [96, 80, 64, 48, 32, 22];
+
+const HELP_TEXT = [
+    "",
+    _("Escape: Close Alt-Tab and return to the currently active window"),
+    _("Return: Activate the currently selected window and close Alt-Tab"),
+    _("Tab/Right arrow: Select next right"),
+    _("Shift+Tab/Left arrow: Select next left"),
+    _("Home: Select first window"),
+    _("End: Select last window"),
+    _("Ctrl+Right arrow: Skip right"),
+    _("Ctrl+Left arrow: Skip left"),
+    _("Ctrl+Space: Enter \"persistent mode\", in which Alt-Tab will remain open until actively closed"),
+    _("m: Move selected window to next monitor"),
+    _("n: Minimize selected window"),
+    _("a: Activate selected window without closing Alt-Tab"),
+    _("h: Hide Alt-Tab so you can see what's underneath (toggle)"),
+    _("Ctrl+w: Close selected window. Use with care!"),
+    _("F1: Show this quick-help screen"),
+    "",
+];
 
 const KeyState = {
     PRESSED: 1,
@@ -490,6 +512,8 @@ AltTabPopup.prototype = {
         }
         else if (released) {
             if (false) {
+            } else if (keysym == Clutter.F1) {
+                this._showHelp();
             } else if (keysym == Clutter.KEY_space && !this._persistent) {
                 this._persistent = true;
             } else if (keysym == Clutter.z) {
@@ -545,6 +569,41 @@ AltTabPopup.prototype = {
         }
         
         return false;
+    },
+
+    _showHelp : function() {
+        this._persistent = true;
+        let dialog = new ModalDialog.ModalDialog();
+
+        let label = new St.Label({text: _("Alt-Tab Quick Help")});
+        let bin = new St.Bin();
+        bin.child = label;
+        dialog.contentLayout.add(bin);
+        HELP_TEXT.forEach(function(text) {
+            let label = new St.Label({text: text});
+            dialog.contentLayout.add(label);
+        }, this);
+
+        let altTab = this;
+        dialog.setButtons([
+            {
+                label: _("Open Window Settings"),
+                focused: false,
+                action: function() {
+                    altTab.destroy();
+                    dialog.close();
+                    Util.spawnCommandLine("cinnamon-settings windows");
+                }
+            },
+            {
+                label: _("Close"),
+                focused: true,
+                action: function() {
+                    dialog.close();
+                }
+            }
+        ]);
+        dialog.open();
     },
 
     _onScroll : function(actor, event) {
