@@ -339,13 +339,35 @@
       </_description>
     </key>
 
-    <key type="b" name="menu-search-filesystem">
-      <default>false</default>
-      <_summary>Enable or disable filesystem path entry in search box</_summary>
+    <key type="b" name="menu-show-favorites">
+      <default>true</default>
+      <_summary>Enable or disable display of favorites in menu applet</_summary>
       <_description>
-            Toggles whether pressing TAB within the search box autocompletes
-            paths within the filesystem. Matches are also shown in the 
-            application list and can be clicked to open with default handler.
+            Toggles displaying the 'Favorites' section in the menu applet
+      </_description>
+    </key>
+
+    <key type="b" name="menu-show-system-buttons">
+      <default>true</default>
+      <_summary>Enable or disable display of system buttons in menu applet</_summary>
+      <_description>
+            Toggles displaying the 'Lockscreen/Log out/Shutdown' buttons in the menu applet
+      </_description>
+    </key>
+
+    <key type="b" name="menu-show-appinfo-title">
+      <default>true</default>
+      <_summary>Enable or disable display of AppInfo title in menu applet</_summary>
+      <_description>
+            Toggles displaying the title of the currently selected application in the menu applet
+      </_description>
+    </key>
+
+    <key type="b" name="menu-show-appinfo-description">
+      <default>true</default>
+      <_summary>Enable or disable display of AppInfo description in menu applet</_summary>
+      <_description>
+            Toggles displaying the description of the currently selected application in the menu applet
       </_description>
     </key>
 
