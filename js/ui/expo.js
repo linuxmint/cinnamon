@@ -276,7 +276,7 @@ Expo.prototype = {
         //
         // Disable unredirection while in the overview
         Meta.disable_unredirect_for_screen(global.screen);
-        global.window_group.hide();
+        global.hideWindowGroups();
         this._group.show();
         this._background.show();
         this._addWorkspaceButton.show();
@@ -446,7 +446,7 @@ Expo.prototype = {
         // Re-enable unredirection
         Meta.enable_unredirect_for_screen(global.screen);
 
-        global.window_group.show();
+        global.showWindowGroups();
 
         this._expo.hide();
         this._expo = null;

@@ -10,7 +10,9 @@ const Meta = imports.gi.Meta;
 const Cinnamon = imports.gi.Cinnamon;
 const St = imports.gi.St;
 const PointerTracker = imports.misc.pointerTracker;
+const Lang = imports.lang;
 
+const SplashScreen = imports.ui.splashScreen;
 const AppletManager = imports.ui.appletManager;
 const AutomountManager = imports.ui.automountManager;
 const AutorunManager = imports.ui.autorunManager;
@@ -89,7 +91,6 @@ let workspace_names = [];
 let background = null;
 
 let desktop_layout;
-let applet_side = St.Side.BOTTOM;
 let deskletContainer = null;
 
 let software_rendering = false;
@@ -151,7 +152,31 @@ function _initUserSession() {
     
 }
 
+function _reparentActor(actor, newParent) {
+    let parent = actor.get_parent();
+    if (parent)
+      parent.remove_child(actor);
+    if(newParent)
+        newParent.add_actor(actor);
+}
+
+function _showWindowGroups() {
+    global.bottom_window_group.show();
+    global.window_group.show();
+    global.top_window_group.show();
+}
+
+function _hideWindowGroups() {
+    global.bottom_window_group.hide();
+    global.window_group.hide();
+    global.top_window_group.hide();
+}
+
 function start() {
+    global.reparentActor = _reparentActor;
+    global.showWindowGroups = _showWindowGroups;
+    global.hideWindowGroups = _hideWindowGroups;
+        
     // Monkey patch utility functions into the global proxy;
     // This is easier and faster than indirecting down into global
     // if we want to call back up into JS.
@@ -192,44 +217,12 @@ function start() {
 
     Gio.DesktopAppInfo.set_desktop_env('GNOME');
 
-    cinnamonDBusService = new CinnamonDBus.Cinnamon();
-    // Force a connection now; dbus.js will do this internally
-    // if we use its name acquisition stuff but we aren't right
-    // now; to do so we'd need to convert from its async calls
-    // back into sync ones.
-    DBus.session.flush();
-
-    // Ensure CinnamonWindowTracker and CinnamonAppUsage are initialized; this will
-    // also initialize CinnamonAppSystem first.  CinnamonAppSystem
-    // needs to load all the .desktop files, and CinnamonWindowTracker
-    // will use those to associate with windows.  Right now
-    // the Monitor doesn't listen for installed app changes
-    // and recalculate application associations, so to avoid
-    // races for now we initialize it here.  It's better to
-    // be predictable anyways.
-    tracker = Cinnamon.WindowTracker.get_default();
-    Cinnamon.AppUsage.get_default();
-
     // The stage is always covered so Clutter doesn't need to clear it; however
     // the color is used as the default contents for the Muffin root background
     // actor so set it anyways.
     global.stage.color = DEFAULT_BACKGROUND_COLOR;
     global.stage.no_clear_hint = true;
-    
-    desktop_layout = global.settings.get_string("desktop-layout"); 
-    if (desktop_layout == LAYOUT_FLIPPED) {
-        applet_side = St.Side.TOP;        
-    }
-    else if (desktop_layout == LAYOUT_CLASSIC) {
-        applet_side = St.Side.TOP;        
-    }
-    
-    Gtk.IconTheme.get_default().append_search_path("/usr/share/cinnamon/icons/");
-    _defaultCssStylesheet = global.datadir + '/theme/cinnamon.css';
-
-    themeManager = new ThemeManager.ThemeManager();
-    deskletContainer = new DeskletManager.DeskletContainer();
-
+        
     // Set up stage hierarchy to group all UI actors under one container.
     uiGroup = new Cinnamon.GenericContainer({ name: 'uiGroup' });
     uiGroup.connect('allocate',
@@ -238,129 +231,184 @@ function start() {
                         for (let i = 0; i < children.length; i++)
                             children[i].allocate_preferred_size(flags);
                     });
+    uiGroup.connect('get-preferred-width',
+                    function(actor, forHeight, alloc) {
+                        let width = global.stage.width;
+                        [alloc.min_size, alloc.natural_size] = [width, width];
+                    });
+    uiGroup.connect('get-preferred-height',
+                    function(actor, forWidth, alloc) {
+                        let height = global.stage.height;
+                        [alloc.min_size, alloc.natural_size] = [height, height];
+                    });
     St.set_ui_root(global.stage, uiGroup);
 
-    let parent = global.background_actor.get_parent();
-    if (parent) {
-      parent.remove_child(global.background_actor);
-    }
-    parent = global.bottom_window_group.get_parent();
-    if (parent) {
-      parent.remove_child(global.bottom_window_group);
-    }
-    parent = global.window_group.get_parent();
-    if (parent) {
-      parent.remove_child(global.window_group);
-    }
-    parent = global.overlay_group.get_parent();
-    if (parent) {
-      parent.remove_child(global.overlay_group);
-    }
+    global.reparentActor(global.background_actor, uiGroup);
+    global.reparentActor(global.bottom_window_group, uiGroup);
 
-    uiGroup.add_actor(global.background_actor);
-    uiGroup.add_actor(global.bottom_window_group);
+    deskletContainer = new DeskletManager.DeskletContainer();
     uiGroup.add_actor(deskletContainer.actor);
-    uiGroup.add_actor(global.window_group);
-    uiGroup.add_actor(global.overlay_group);
+    
+    global.reparentActor(global.window_group, uiGroup);
+    global.reparentActor(global.overlay_group, uiGroup);
+    
+    let splashScreen = new SplashScreen.SplashScreen();
 
     global.stage.add_actor(uiGroup);
-    global.top_window_group.reparent(global.stage);
+    global.reparentActor(global.top_window_group, global.stage);
 
-    layoutManager = new Layout.LayoutManager();
-    let pointerTracker = new PointerTracker.PointerTracker();
-    pointerTracker.setPosition(layoutManager.primaryMonitor.x + layoutManager.primaryMonitor.width/2,
-        layoutManager.primaryMonitor.y + layoutManager.primaryMonitor.height/2);
+    global.hideWindowGroups();
 
-    xdndHandler = new XdndHandler.XdndHandler();
-    // This overview object is just a stub for non-user sessions
-    overview = new Overview.Overview();
-    expo = new Expo.Expo();
-    magnifier = new Magnifier.Magnifier();
-    statusIconDispatcher = new StatusIconDispatcher.StatusIconDispatcher();  
-                    
-    if (desktop_layout == LAYOUT_TRADITIONAL) {
-        panel = new Panel.Panel(true, true);
-        panel.actor.add_style_class_name('panel-bottom');
-        layoutManager.panelBox.add(panel.actor);
-    }
-    else if (desktop_layout == LAYOUT_FLIPPED) {
-        panel = new Panel.Panel(false, true);
-        panel.actor.add_style_class_name('panel-top');
-        layoutManager.panelBox.add(panel.actor);
-    }
-    else if (desktop_layout == LAYOUT_CLASSIC) {
-        panel = new Panel.Panel(false, true);
-        panel2 = new Panel.Panel(true, false);
-        panel.actor.add_style_class_name('panel-top');
-        panel2.actor.add_style_class_name('panel-bottom');
-        layoutManager.panelBox.add(panel.actor);   
-        layoutManager.panelBox2.add(panel2.actor);   
-    }
-    layoutManager._updateBoxes();
+    splashScreen.addSection("Theme Manager", function() {
+        Gtk.IconTheme.get_default().append_search_path("/usr/share/cinnamon/icons/");
+        _defaultCssStylesheet = global.datadir + '/theme/cinnamon.css';
+        
+        themeManager = new ThemeManager.ThemeManager();
+    });
     
-    wm = new WindowManager.WindowManager();
-    messageTray = new MessageTray.MessageTray();
-    keyboard = new Keyboard.Keyboard();
-    notificationDaemon = new NotificationDaemon.NotificationDaemon();
-    windowAttentionHandler = new WindowAttentionHandler.WindowAttentionHandler();
+    splashScreen.addSection("Layout Manager", function() {
+        desktop_layout = global.settings.get_string("desktop-layout"); 
+        layoutManager = new Layout.LayoutManager();
+        let pointerTracker = new PointerTracker.PointerTracker();
+        pointerTracker.setPosition(layoutManager.primaryMonitor.x + layoutManager.primaryMonitor.width/2,
+            layoutManager.primaryMonitor.y + layoutManager.primaryMonitor.height/2);
 
-    placesManager = new PlacesManager.PlacesManager();    
-    automountManager = new AutomountManager.AutomountManager();
-    //autorunManager = new AutorunManager.AutorunManager();
-    //networkAgent = new NetworkAgent.NetworkAgent();
+        xdndHandler = new XdndHandler.XdndHandler();
+        // This overview object is just a stub for non-user sessions
+        overview = new Overview.Overview();
+        expo = new Expo.Expo();
+        magnifier = new Magnifier.Magnifier();
+        statusIconDispatcher = new StatusIconDispatcher.StatusIconDispatcher();  
 
-    Meta.later_add(Meta.LaterType.BEFORE_REDRAW, _checkWorkspaces);
-
-    nWorks = global.settings.get_int("number-workspaces");
-    dynamicWorkspaces = false; // This should be configurable
-
-    if (!dynamicWorkspaces) {
-        _staticWorkspaces();
-    }
+        if (desktop_layout == LAYOUT_TRADITIONAL) {
+            panel = new Panel.Panel(true, true);
+            panel.actor.add_style_class_name('panel-bottom');
+            layoutManager.panelBox.add(panel.actor);
+        }
+        else if (desktop_layout == LAYOUT_FLIPPED) {
+            panel = new Panel.Panel(false, true);
+            panel.actor.add_style_class_name('panel-top');
+            layoutManager.panelBox.add(panel.actor);
+        }
+        else if (desktop_layout == LAYOUT_CLASSIC) {
+            panel = new Panel.Panel(false, true);
+            panel2 = new Panel.Panel(true, false);
+            panel.actor.add_style_class_name('panel-top');
+            panel2.actor.add_style_class_name('panel-bottom');
+            layoutManager.panelBox.add(panel.actor);   
+            layoutManager.panelBox2.add(panel2.actor);   
+        }
+        layoutManager._updateBoxes();
+    });
     
-    layoutManager.init();
-    keyboard.init();
-    overview.init();
-    expo.init();
+    splashScreen.addSection("Window manager / message tray / ..", function() {
+        wm = new WindowManager.WindowManager();
+        messageTray = new MessageTray.MessageTray();
+        keyboard = new Keyboard.Keyboard();
+        notificationDaemon = new NotificationDaemon.NotificationDaemon();
+        windowAttentionHandler = new WindowAttentionHandler.WindowAttentionHandler();
 
-    _initUserSession();
-    statusIconDispatcher.start(panel.actor);
+        placesManager = new PlacesManager.PlacesManager();    
+        automountManager = new AutomountManager.AutomountManager();
+        //autorunManager = new AutorunManager.AutorunManager();
+        //networkAgent = new NetworkAgent.NetworkAgent();
 
-    // Provide the bus object for gnome-session to
-    // initiate logouts.
-    //EndSessionDialog.init();
+        Meta.later_add(Meta.LaterType.BEFORE_REDRAW, _checkWorkspaces);
 
-    // Attempt to become a PolicyKit authentication agent
-    PolkitAuthenticationAgent.init()
-
-    _startDate = new Date();
-
-    global.stage.connect('captured-event', _globalKeyPressHandler);
-
-    global.log('loaded at ' + _startDate);
-    log('Cinnamon started at ' + _startDate);
-
-    let perfModuleName = GLib.getenv("CINNAMON_PERF_MODULE");
-    if (perfModuleName) {
-        let perfOutput = GLib.getenv("CINNAMON_PERF_OUTPUT");
-        let module = eval('imports.perf.' + perfModuleName + ';');
-        Scripting.runPerfScript(module, perfOutput);
-    }
+        nWorks = global.settings.get_int("number-workspaces");
+    });
     
-    workspace_names = global.settings.get_strv("workspace-name-overrides");  
-
-    global.screen.connect('notify::n-workspaces', _nWorkspacesChanged);
-
-    global.screen.connect('window-entered-monitor', _windowEnteredMonitor);
-    global.screen.connect('window-left-monitor', _windowLeftMonitor);
-    global.screen.connect('restacked', _windowsRestacked);
-
-    global.window_manager.connect('map', _onWindowMapped);
-
-    _nWorkspacesChanged();
+    splashScreen.addSection("Static Workspaces", function() {
+        dynamicWorkspaces = false; // This should be configurable
+        if (!dynamicWorkspaces) {
+            _staticWorkspaces();
+        }
+    });
     
-    AppletManager.init();
-    DeskletManager.init();
+    splashScreen.addSection("Overlay", function() {
+        layoutManager.init();
+        keyboard.init();
+        overview.init();
+        expo.init();
+    });
+    
+    splashScreen.addSection("User Session", function() {
+        _initUserSession();
+        statusIconDispatcher.start(panel.actor);
+
+        // Provide the bus object for gnome-session to
+        // initiate logouts.
+        //EndSessionDialog.init();
+    });
+    
+    splashScreen.addSection("PolkitAuthenticationAgent", function() {
+        // Attempt to become a PolicyKit authentication agent
+        PolkitAuthenticationAgent.init();
+    });
+
+
+    splashScreen.addSection("Performance Module", function() {
+        let perfModuleName = GLib.getenv("CINNAMON_PERF_MODULE");
+        if (perfModuleName) {
+            let perfOutput = GLib.getenv("CINNAMON_PERF_OUTPUT");
+            let module = eval('imports.perf.' + perfModuleName + ';');
+            Scripting.runPerfScript(module, perfOutput);
+        }
+    });
+    
+    splashScreen.addSection("Connecting Events", function() {
+        global.stage.connect('captured-event', _globalKeyPressHandler);
+
+        workspace_names = global.settings.get_strv("workspace-name-overrides");  
+
+        global.screen.connect('notify::n-workspaces', _nWorkspacesChanged);
+
+        global.screen.connect('window-entered-monitor', _windowEnteredMonitor);
+        global.screen.connect('window-left-monitor', _windowLeftMonitor);
+        global.screen.connect('restacked', _windowsRestacked);
+
+        global.window_manager.connect('map', _onWindowMapped);
+    });
+    
+    splashScreen.addSection("Workspaces", _nWorkspacesChanged);
+    
+    splashScreen.addSection("Applet Manager", AppletManager.init);
+    splashScreen.addSection("Desklet Manager", DeskletManager.init);
+    
+
+    splashScreen.addSection("Window Tracker", function() {
+        // Ensure CinnamonWindowTracker and CinnamonAppUsage are initialized; this will
+        // also initialize CinnamonAppSystem first.  CinnamonAppSystem
+        // needs to load all the .desktop files, and CinnamonWindowTracker
+        // will use those to associate with windows.  Right now
+        // the Monitor doesn't listen for installed app changes
+        // and recalculate application associations, so to avoid
+        // races for now we initialize it here.  It's better to
+        // be predictable anyways.
+        tracker = Cinnamon.WindowTracker.get_default();
+    });
+    
+    splashScreen.addSection("App Usage", function() {
+        Cinnamon.AppUsage.get_default();
+    });
+    
+    splashScreen.addSection("Cinnamon DBus Service", function() {
+        cinnamonDBusService = new CinnamonDBus.Cinnamon();
+        // Force a connection now; dbus.js will do this internally
+        // if we use its name acquisition stuff but we aren't right
+        // now; to do so we'd need to convert from its async calls
+        // back into sync ones.
+        DBus.session.flush();
+    });
+    
+    splashScreen.addSection("Finishing", function() {
+        global.showWindowGroups();
+        _startDate = new Date();
+        global.log('loaded at ' + _startDate);
+        log('Cinnamon started at ' + _startDate);
+    });
+    
+    splashScreen.runAllSections();
 }
 
 function enablePanels() {

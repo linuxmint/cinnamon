@@ -285,7 +285,7 @@ Overview.prototype = {
         //
         // Disable unredirection while in the overview
         Meta.disable_unredirect_for_screen(global.screen);
-        global.window_group.hide();
+        global.hideWindowGroups();
         this._group.show();
         this._background.show();
 
@@ -439,7 +439,7 @@ Overview.prototype = {
         // Re-enable unredirection
         Meta.enable_unredirect_for_screen(global.screen);
 
-        global.window_group.show();
+        global.showWindowGroups();
 
         this.workspacesView.destroy();
         this.workspacesView = null;

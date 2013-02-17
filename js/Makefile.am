@@ -54,7 +54,6 @@ nobase_dist_js_DATA = \
 	ui/notificationDaemon.js \
 	ui/overview.js		\
 	ui/panel.js		\
-	ui/panelMenu.js		\
 	ui/placesManager.js  \
 	ui/polkitAuthenticationAgent.js \
 	ui/popupMenu.js		\
@@ -62,6 +61,7 @@ nobase_dist_js_DATA = \
 	ui/scripting.js		\
 	ui/search.js		\
 	ui/cinnamonDBus.js		\
+	ui/splashScreeen.js	\
 	ui/statusIconDispatcher.js	\
 	ui/themeManager.js	\
 	ui/tooltips.js	\

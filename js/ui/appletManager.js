@@ -387,6 +387,8 @@ function saveAppletsPositions() {
 }
 
 function updateAppletPanelHeights(force_recalc) {
+    if(!enabledAppletDefinitions)
+        return;
     for (let appletId in enabledAppletDefinitions.idMap) {
         if (appletObj[appletId]) {
             let appletDefinition = enabledAppletDefinitions.idMap[appletId];
