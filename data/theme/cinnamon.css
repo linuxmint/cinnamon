@@ -1213,6 +1213,10 @@ StScrollBar StButton#vhandle:hover {
  * ===================================================================*/
 /* Main menu title */
 
+.menu-left-pane {
+    padding-bottom: 5px;
+    padding-left: 10px;
+}
 .menu-favorites-box {
 	margin: auto;
 	padding: 10px;
@@ -1250,13 +1254,13 @@ StScrollBar StButton#vhandle:hover {
 }
 .menu-categories-box {
 	padding-top: 10px;
-	padding-left: 30px;
-	padding-right: 30px;
+	padding-left: 10px;
+	padding-right: 10px;
 	padding-bottom: 10px;
 }
 .menu-applications-box {
-	padding-top: 10px;
-	padding-left: 10px;
+	padding-top: 5px;
+	padding-left: 0px;
 	padding-right: 10px;
 	padding-bottom: 0px;
 }
@@ -1283,6 +1287,14 @@ StScrollBar StButton#vhandle:hover {
 }
 .menu-application-button-label:rtl { 
 	padding-right: 5px;
+}
+.menu-application-button-label-highlighted:ltr { 
+	padding-left: 5px;
+	font-weight: bold;
+}
+.menu-application-button-label-highlighted:rtl { 
+	padding-right: 5px;
+	font-weight: bold;
 }
 .menu-category-button {
 	padding-top: 7px;
@@ -1327,8 +1339,8 @@ StScrollBar StButton#vhandle:hover {
  * This appears on the bottom right hand corner of the menu*/
 .menu-selected-app-box {
 	padding-right: 30px;
-	padding-left: 28px;
-	text-align: right;
+	padding-left: 15px;
+	text-align: left;
 }
 
 .menu-selected-app-box:rtl {
@@ -1340,13 +1352,18 @@ StScrollBar StButton#vhandle:hover {
 	font-weight: bold;
 }
 .menu-selected-app-description {
-	max-width: 150px;
+	font-size: 10pt;
+	color: #cccccc;
+	font-style: italic;
+	max-width:250px
 }
 .menu-search-box:ltr {
-	padding-left: 30px;
+	padding-top: 5px;
+	padding-left: 15px;
 }
 .menu-search-box:rtl {
-	padding-right: 30px;
+	padding-top: 5px;
+	padding-right: 15px;
 }
 #menu-search-entry {
 	padding: 5px;
