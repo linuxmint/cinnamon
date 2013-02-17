@@ -4,6 +4,8 @@ const Clutter = imports.gi.Clutter;
 const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
 const St = imports.gi.St;
+const Meta = imports.gi.Meta;
+const Mainloop = imports.mainloop;
 
 const Desklet = imports.ui.desklet;
 const DND = imports.ui.dnd;
@@ -21,6 +23,10 @@ var enabledDeskletDefinitions;
 
 let userDeskletsDir;
 
+let dummyMetaWindow = new Meta.Window();
+let mouseTrackEnabled = false;
+let mouseTrackTimoutId = null;
+
 const ENABLED_DESKLETS_KEY = 'enabled-desklets';
 const DESKLET_SNAP_KEY = 'desklet-snap';
 const DESKLET_SNAP_INTERVAL_KEY = 'desklet-snap-interval';
@@ -34,13 +40,50 @@ function init(){
     desklets = Extension.importObjects;
 
     enabledDeskletDefinitions = getEnabledDeskletDefinitions();
+    let hasDesklets = false;
     for (let uuid in enabledDeskletDefinitions.uuidMap) {
-        Extension.loadExtension(uuid, Extension.Type.DESKLET);
+        if(Extension.loadExtension(uuid, Extension.Type.DESKLET))
+            hasDesklets = true;
     }
 
     global.settings.connect('changed::' + ENABLED_DESKLETS_KEY, _onEnabledDeskletsChanged);
     global.settings.connect('changed::' + DESKLET_SNAP_KEY, _onDeskletSnapChanged);
     global.settings.connect('changed::' + DESKLET_SNAP_INTERVAL_KEY, _onDeskletSnapChanged);
+    
+    enableMouseTracking(hasDesklets);
+}
+
+function enableMouseTracking(enable) {
+    if(enable && !mouseTrackTimoutId)
+        mouseTrackTimoutId = Mainloop.timeout_add(500, checkMouseTracking);
+    else if (!enable && mouseTrackTimoutId) {
+        Mainloop.source_remove(mouseTrackTimoutId);
+        for(let desklet_id in deskletObj) {
+            deskletObj[desklet_id]._untrackMouse();
+        }
+    }
+}
+
+function hasMouseWindow(){
+    let window = global.screen.get_mouse_window(dummyMetaWindow);
+    return window && window.window_type != Meta.WindowType.DESKTOP;
+}
+
+function checkMouseTracking() {
+    let enable = !hasMouseWindow();
+    if(mouseTrackEnabled != enable) {
+        mouseTrackEnabled = enable;
+        if(enable) {
+            for(let desklet_id in deskletObj) {
+                deskletObj[desklet_id]._trackMouse();
+            }
+        } else {
+            for(let desklet_id in deskletObj) {
+                deskletObj[desklet_id]._untrackMouse();
+            }
+        }
+    }
+    return true;
 }
 
 /**
@@ -145,9 +188,12 @@ function _onEnabledDeskletsChanged(){
 
         // Make sure all desklet extensions are loaded.
         // Once loaded, the desklets will add themselves via finishExtensionLoad
+        let hasDesklets = false;
         for (let uuid in enabledDeskletDefinitions.uuidMap) {
-            Extension.loadExtension(uuid, Extension.Type.DESKLET);
+            if(Extension.loadExtension(uuid, Extension.Type.DESKLET))
+                hasDesklets = true;
         }
+        enableMouseTracking(hasDesklets);
     } catch (e) {
         global.logError('Failed to refresh list of desklets', e);
     }
