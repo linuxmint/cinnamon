@@ -121,7 +121,7 @@ class XletSetting:
 
         for instance_key in self.applet_settings.keys():
             for setting_key in self.applet_settings[instance_key].keys():
-                if setting_key == "__md5__" or setting_key == "generic":
+                if setting_key == "__md5__" or self.applet_settings[instance_key][setting_key]["type"] == "generic":
                     continue
                 self.setting_factories[instance_key].create(setting_key,
                                                             self.applet_settings[instance_key][setting_key]["type"],
@@ -149,7 +149,7 @@ class XletSetting:
             view.add_with_viewport(content_box)
             content_box.set_border_width(5)
             for setting_key in self.applet_settings[instance_key].keys():
-                if setting_key == "__md5__" or setting_key == "generic":
+                if setting_key == "__md5__" or self.applet_settings[instance_key][setting_key]["type"] == "generic":
                     continue
                 self.setting_factories[instance_key].create(setting_key,
                                                             self.applet_settings[instance_key][setting_key]["type"],

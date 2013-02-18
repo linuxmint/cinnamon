@@ -689,7 +689,7 @@ class AppletViewSidePage (SidePage):
             self.configureButton.hide()
             self.extConfigureButton.hide()
             return
-        if ext_override not None:
+        if ext_override != "":
             self.configureButton.hide()
             self.extConfigureButton.show()
             if checked:
@@ -727,6 +727,7 @@ class AppletViewSidePage (SidePage):
         model, treeiter = self.treeview.get_selection().get_selected()
         if treeiter:
             app = model.get_value(treeiter, 8)
+            print app + " blah"
             if app is not None:
                 subprocess.Popen([app])
 
@@ -767,9 +768,9 @@ class AppletViewSidePage (SidePage):
                         except KeyError: hide_config_button = False
                         except ValueError: hide_config_button = False
 
-                        try: ext_config_app = data["external-configuration-app"]
-                        except KeyError: ext_config_app = None
-                        except ValueError: ext_config_app = None
+                        try: ext_config_app = os.path.join(directory, applet, data["external-configuration-app"])
+                        except KeyError: ext_config_app = ""
+                        except ValueError: ext_config_app = ""
 
                         if applet_max_instances < -1:
                             applet_max_instances = -1
@@ -800,8 +801,8 @@ class AppletViewSidePage (SidePage):
                             self.model.set_value(iter, 4, img)
                             self.model.set_value(iter, 5, applet_name)
                             self.model.set_value(iter, 6, os.access(directory, os.W_OK))
-                            self.model.set_value(iter, 7, hide_config_app)
-                            self.model.set_value(iter, 8, os.path.join(directory, applet, ext_config_app))
+                            self.model.set_value(iter, 7, hide_config_button)
+                            self.model.set_value(iter, 8, ext_config_app)
 
                 except Exception, detail:
                     print "Failed to load applet %s: %s" % (applet, detail)
