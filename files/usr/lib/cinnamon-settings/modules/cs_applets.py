@@ -17,6 +17,7 @@ try:
     import os.path
     from gi.repository import Gio, Gtk, GObject, Gdk
     import dbus
+    import subprocess
 except Exception, detail:
     print detail
     sys.exit(1)
@@ -89,8 +90,8 @@ class AppletViewSidePage (SidePage):
         self.treeview.append_column(actionColumn)
         self.treeview.set_headers_visible(False)
         
-        self.model = Gtk.TreeStore(str, str, int, int, GdkPixbuf.Pixbuf, str, int)
-        #                          uuid, desc, enabled, max-instances, icon, name, read-only
+        self.model = Gtk.TreeStore(str, str, int, int, GdkPixbuf.Pixbuf, str, int, bool, str)
+        #                          uuid, desc, enabled, max-instances, icon, name, read-only, hide-config-button, ext-setting-app
 
         self.modelfilter = self.model.filter_new()
         self.onlyActive = True
@@ -121,6 +122,11 @@ class AppletViewSidePage (SidePage):
         self.configureButton.connect("clicked", self._configure_applet)
         self.configureButton.set_tooltip_text(_("Configure this applet"))
 
+        self.extConfigureButton = Gtk.Button(_("Configure"))
+        self.extConfigureButton.connect("clicked", self._external_configure_launch)
+        self.extConfigureButton.set_tooltip_text(_("Configure this applet"))
+
+
         restoreButton = Gtk.Button(_("Restore to default"))
         restoreButton.connect("clicked", lambda x: self._restore_default_applets())
         # Installed 
@@ -150,12 +156,18 @@ class AppletViewSidePage (SidePage):
         self.instanceButton.set_image(img)
         img = Gtk.Image.new_from_stock("gtk-properties", Gtk.IconSize.BUTTON)
         self.configureButton.set_image(img)
+        img = Gtk.Image.new_from_stock("gtk-properties", Gtk.IconSize.BUTTON)
+        self.extConfigureButton.set_image(img)
+
         hbox.pack_start(self.instanceButton, False, False, 2)
         hbox.pack_start(self.configureButton, False, False, 2)
+        hbox.pack_start(self.extConfigureButton, False, False, 2)
         hbox.pack_end(restoreButton, False, False, 2)
 
         self.configureButton.hide()
         self.configureButton.set_no_show_all(True)
+        self.extConfigureButton.hide()
+        self.extConfigureButton.set_no_show_all(True)
 
         # Get More - Variables prefixed with "gm_" where necessary
         gm_scrolled_window = Gtk.ScrolledWindow()
@@ -282,6 +294,8 @@ class AppletViewSidePage (SidePage):
                         self.treeview.scroll_to_cell(filtered, None, False, 0, 0)
                         if self.configureButton.get_visible() and self.configureButton.get_sensitive():
                             self.configureButton.clicked()
+                        elif self.extConfigureButton.get_visible() and self.extConfigureButton.get_sensitive():
+                            self.extConfigureButton.clicked()
 
     def _filter_toggle(self, widget):
         if widget == self.activeButton:
@@ -669,7 +683,22 @@ class AppletViewSidePage (SidePage):
                 tip += _("\nThis applet supports max %d instances.") % max_instances
         self.instanceButton.set_sensitive(enabled);
         self.instanceButton.set_tooltip_text(tip)
+        hide_override = model.get_value(treeiter, 7)
+        ext_override = model.get_value(treeiter, 8)
+        if hide_override:
+            self.configureButton.hide()
+            self.extConfigureButton.hide()
+            return
+        if ext_override not None:
+            self.configureButton.hide()
+            self.extConfigureButton.show()
+            if checked:
+                self.extConfigureButton.set_sensitive(True)
+            else:
+                self.extConfigureButton.set_sensitive(False)
+            return
         if treeiter and self._has_settings(model.get_value(treeiter, 0)):
+            self.extConfigureButton.hide()
             self.configureButton.show()
             if checked:
                 self.configureButton.set_sensitive(True)
@@ -677,6 +706,7 @@ class AppletViewSidePage (SidePage):
                 self.configureButton.set_sensitive(False)
         else:
             self.configureButton.hide()
+            self.extConfigureButton.hide()
 
     def _has_settings(self, uuid):
         if os.path.exists("%s/.cinnamon/configs/%s" % (home, uuid)):
@@ -692,6 +722,13 @@ class AppletViewSidePage (SidePage):
             self.content_box.pack_start(settingContainer.content, True, True, 2)
             self.notebook.hide()
             settingContainer.show()
+
+    def _external_configure_launch(self, widget):
+        model, treeiter = self.treeview.get_selection().get_selected()
+        if treeiter:
+            app = model.get_value(treeiter, 8)
+            if app is not None:
+                subprocess.Popen([app])
 
     def _close_configure(self, settingContainer):
         settingContainer.content.hide()
@@ -726,6 +763,14 @@ class AppletViewSidePage (SidePage):
                         except KeyError: applet_role = None
                         except ValueError: applet_role = None
 
+                        try: hide_config_button = data["hide-configuration"]
+                        except KeyError: hide_config_button = False
+                        except ValueError: hide_config_button = False
+
+                        try: ext_config_app = data["external-configuration-app"]
+                        except KeyError: ext_config_app = None
+                        except ValueError: ext_config_app = None
+
                         if applet_max_instances < -1:
                             applet_max_instances = -1
                             
@@ -755,6 +800,8 @@ class AppletViewSidePage (SidePage):
                             self.model.set_value(iter, 4, img)
                             self.model.set_value(iter, 5, applet_name)
                             self.model.set_value(iter, 6, os.access(directory, os.W_OK))
+                            self.model.set_value(iter, 7, hide_config_app)
+                            self.model.set_value(iter, 8, os.path.join(directory, applet, ext_config_app))
 
                 except Exception, detail:
                     print "Failed to load applet %s: %s" % (applet, detail)

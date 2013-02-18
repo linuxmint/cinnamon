@@ -23,6 +23,12 @@ var BOOLEAN_TYPES = {
             "default",
             "description"
         ]
+    },
+    "generic" : {
+        "required-fields": [
+            "type",
+            "default"
+        ]
     }
 };
 
@@ -70,6 +76,12 @@ var STRING_TYPES = {
             "description",
             "options"
         ]
+    },
+    "generic" : {
+        "required-fields": [
+            "type",
+            "default"
+        ]
     }
 };
 
@@ -111,9 +123,15 @@ var NUMBER_TYPES = {
             "options"
         ]
     },
+    "generic" : {
+        "required-fields": [
+            "type",
+            "default"
+        ]
+    }
 };
 
-var NON_SETTING_TYPES = {
+var GENERIC_TYPES = {
     "header" : {
         "required-fields": [
             "type",
@@ -292,9 +310,9 @@ AppletSettings.prototype = {
                     }
                 }
                 return true;
-            } else if (node["type"] in NON_SETTING_TYPES) {
-                for (let req_field in NON_SETTING_TYPES[node["type"]]["required-fields"]) {
-                    if (NON_SETTING_TYPES[node["type"]]["required-fields"][req_field] in node) {
+            } else if (node["type"] in GENERIC_TYPES) {
+                for (let req_field in GENERIC_TYPES[node["type"]]["required-fields"]) {
+                    if (GENERIC_TYPES[node["type"]]["required-fields"][req_field] in node) {
                         continue;
                     } else {
                         return false;
