@@ -1253,28 +1253,24 @@ StScrollBar StButton#vhandle:hover {
 	padding-bottom: 10px;
 }
 .menu-categories-box {
-	padding-top: 10px;
+	padding-top: 5px;
 	padding-left: 10px;
 	padding-right: 10px;
-	padding-bottom: 10px;
+	padding-bottom: 5px;
 }
 .menu-applications-box {
 	padding-top: 5px;
 	padding-left: 0px;
 	padding-right: 10px;
-	padding-bottom: 0px;
+	padding-bottom: 5px;
 }
 .menu-application-button {
-	padding-top: 7px;
-	padding-left: 7px;
-	padding-right: 7px;
-	padding-bottom: 7px;
+	height: 34px;
+	padding: 0px 7px;
 }
 .menu-application-button-selected {
-	padding-top: 7px;
-	padding-left: 7px;
-	padding-right: 7px;
-	padding-bottom: 7px;
+	height: 34px;
+	padding: 0px 7px;
 	color: white;
 	background-gradient-direction: vertical;
 	background-gradient-start: rgba(255,255,255,0.2);
@@ -1297,25 +1293,19 @@ StScrollBar StButton#vhandle:hover {
 	font-weight: bold;
 }
 .menu-category-button {
-	padding-top: 7px;
-	padding-left: 7px;
-	padding-right: 7px;
-	padding-bottom: 7px;
+	height: 34px;
+	padding: 0px 7px;
 	transition-duration: 75;
 }
 .menu-category-button-greyed {
-	padding-top: 7px;
-	padding-left: 7px;
-	padding-right: 7px;
-	padding-bottom: 7px;
+	height: 34px;
+	padding: 0px 7px;
 	color: #9C9C9C;
 	font-style: italic;
 }
 .menu-category-button-selected {
-	padding-top: 7px;
-	padding-left: 7px;
-	padding-right: 7px;
-	padding-bottom: 7px;
+	height: 34px;
+	padding: 0px 7px;
 	color: white;
 	background-gradient-direction: vertical;
 	background-gradient-start: rgba(255,255,255,0.2);
