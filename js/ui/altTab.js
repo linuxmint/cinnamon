@@ -258,7 +258,7 @@ AltTabPopup.prototype = {
        
         // Find out the currently active window
         let wsWindows = Main.getTabList();
-        let currentWindow = wsWindows.length > 0 ? wsWindows[0] : null;
+        let [currentWindow, forwardWindow, backwardWindow] = [(wsWindows.length > 0 ? wsWindows[0] : null), null, null];
 
         let windows = [];
         let [currentIndex, forwardIndex, backwardIndex] = [-1, -1, -1];
@@ -280,10 +280,23 @@ AltTabPopup.prototype = {
                 currentIndex = windows.indexOf(currentWindow);
                 // Quick alt-tabbing (with no use of the switcher) should only
                 // select between the windows of the active workspace.
-                forwardIndex = wlist.length > 1 ? currentIndex + 1 : currentIndex;
-                backwardIndex = wlist.length > 1 ? currentIndex + wlist.length - 1 : currentIndex;
+                forwardWindow = windows[wlist.length > 1 ? currentIndex + 1 : currentIndex];
+                backwardWindow = windows[wlist.length > 1 ? currentIndex + wlist.length - 1 : currentIndex];
             }
         }
+        windows.sort(function(a, b) {
+            let wsDiff = a.get_workspace().index() - b.get_workspace().index();
+            if (wsDiff != 0) { return wsDiff; }
+            if (a == currentWindow) {return -1;}
+            if (a == forwardWindow) {return -1;}
+            let ignoredDiff = (g_windowsToIgnore.indexOf(a) >= 0 ? 1 : -1) - (g_windowsToIgnore.indexOf(b) >= 0 ? 1 : -1);
+            if (ignoredDiff != 0) { return ignoredDiff; }
+            return windows.indexOf(a) - windows.indexOf(b);
+        }, this);
+
+        if (forwardWindow) {forwardIndex = windows.indexOf(forwardWindow)};
+        if (backwardWindow) {backwardIndex = windows.indexOf(backwardWindow)};
+
         // Size the icon bar primarily to fit the windows of the current workspace, with some
         // added space for windows from the other workspaces, if any.
         this._numPrimaryItems_Orig = Math.max(2, wsWindows.length + (windows.length > wsWindows.length ? 2 : 0));
@@ -535,7 +548,6 @@ AltTabPopup.prototype = {
                 if (this._currentApp >= 0) {
                     if (g_windowsToIgnore.indexOf(this._appIcons[this._currentApp].window) < 0) {
                         g_windowsToIgnore.push(this._appIcons[this._currentApp].window);
-                        this._removeWindow(this._appIcons[this._currentApp].window);
                     }
                 }
             } else if (keysym == Clutter.m && !ctrlDown) {
