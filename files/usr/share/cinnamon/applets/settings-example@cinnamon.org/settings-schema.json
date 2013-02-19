@@ -72,5 +72,10 @@
     "description" : "Don't Press This Button!!!",
     "callback" : "on_config_button_pressed",
     "tooltip" : "Pressing this button activates a callback method in the applet - go ahead, press it."
+ },
+ "signal-test" : {
+    "type" : "checkbox",
+    "description" : "This is a test widget for individual key signal firing",
+    "default" : false
  }
 }

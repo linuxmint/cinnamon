@@ -60,6 +60,8 @@ MyApplet.prototype = {
                                  this.on_settings_changed,
                                  null);
 
+        this.settings.connect("changed::signal-test", Lang.bind(this, this.on_signal_test_fired))
+
         /* Lets create and add our menu items - we'll set their true values after */
 
         this.spinner_val_demo = new PopupMenu.PopupMenuItem("");
@@ -95,6 +97,10 @@ MyApplet.prototype = {
         this.slider_demo.setValue(this.scale_val);
 
         this.actor.style = "background-color:" + this.bg_color + "; width:" + this.spinner_number + "px";
+    },
+
+    on_signal_test_fired: function(setting_prov, oldval, newval) {
+        global.logError("Test signal fired.  Old value was " + oldval + ".  New value is " + newval + ".");
     },
 
     on_slider_changed: function(slider, value) {
