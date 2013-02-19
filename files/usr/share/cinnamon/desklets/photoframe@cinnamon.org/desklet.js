@@ -27,49 +27,49 @@ MyDesklet.prototype = {
 
             this.settings = new DeskletSettings.DeskletSettings(this, this.metadata["uuid"], this.instance_id);
 
-            this.settings.bindString(DeskletSettings.BindingDirection.ONE_WAY,
+            this.settings.bindProperty(DeskletSettings.BindingDirection.ONE_WAY,
                                      "directory",
                                      "dir",
                                      this.on_setting_changed,
                                      null);
 
-            this.settings.bindBoolean(DeskletSettings.BindingDirection.ONE_WAY,
+            this.settings.bindProperty(DeskletSettings.BindingDirection.ONE_WAY,
                                       "shuffle",
                                       "shuffle",
                                       this.on_setting_changed,
                                       null);
 
-            this.settings.bindNumber(DeskletSettings.BindingDirection.ONE_WAY,
+            this.settings.bindProperty(DeskletSettings.BindingDirection.ONE_WAY,
                                      "delay",
                                      "delay",
                                      this.on_setting_changed,
                                      null);
 
-            this.settings.bindNumber(DeskletSettings.BindingDirection.ONE_WAY,
+            this.settings.bindProperty(DeskletSettings.BindingDirection.ONE_WAY,
                                      "height",
                                      "height",
                                      this.on_setting_changed,
                                      null);
 
-            this.settings.bindNumber(DeskletSettings.BindingDirection.ONE_WAY,
+            this.settings.bindProperty(DeskletSettings.BindingDirection.ONE_WAY,
                                      "width",
                                      "width",
                                      this.on_setting_changed,
                                      null);
 
-            this.settings.bindNumber(DeskletSettings.BindingDirection.ONE_WAY,
+            this.settings.bindProperty(DeskletSettings.BindingDirection.ONE_WAY,
                                      "quality",
                                      "quality",
                                      this.on_setting_changed,
                                      null);
 
-            this.settings.bindNumber(DeskletSettings.BindingDirection.ONE_WAY,
+            this.settings.bindProperty(DeskletSettings.BindingDirection.ONE_WAY,
                                      "fade-delay",
                                      "fade_delay",
                                      this.on_setting_changed,
                                      null);
 
-            this.settings.bindString(DeskletSettings.BindingDirection.ONE_WAY,
+            this.settings.bindProperty(DeskletSettings.BindingDirection.ONE_WAY,
                                      "effect",
                                      "effect",
                                      this.on_setting_changed,
