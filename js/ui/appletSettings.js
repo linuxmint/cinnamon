@@ -452,58 +452,18 @@ AppletSettings.prototype = {
  *        user_data:  Any extra data/object you wish to pass to the callback (or null)
  */
 
-        bindBoolean: function (sync_type, key_name, applet_var, applet_callback, user_data) {
+        bindProperty: function (sync_type, key_name, applet_var, applet_callback, user_data) {
             if (!this.valid) {
                 settings_not_initialized_error(this.uuid);
                 return false;
             }
             let type = this.settings_obj.get_key_exists_and_type(key_name);
             if (type) {
-                if (type in BOOLEAN_TYPES) {
+                if (type in BOOLEAN_TYPES || type in STRING_TYPES || type in NUMBER_TYPES) {
                     this.metaBindings[key_name] = new _boolean_setting(sync_type, this.xlet, key_name, this.settings_obj, applet_var, Lang.bind (this.xlet, applet_callback), user_data);
                     return true;
                 } else {
-                    invalid_setting_type_error(key_name, this.uuid, "boolean");
-                    return false;
-                }
-            } else {
-                key_not_found_error(key_name, this.uuid);
-                return false;
-            }
-        },
-
-        bindString: function (sync_type, key_name, applet_var, applet_callback, user_data) {
-            if (!this.valid) {
-                settings_not_initialized_error(this.uuid);
-                return false;
-            }
-            let type = this.settings_obj.get_key_exists_and_type(key_name);
-            if (type) {
-                if (type in STRING_TYPES) {
-                    this.metaBindings[key_name] = new _string_setting(sync_type, this.xlet, key_name, this.settings_obj, applet_var, Lang.bind (this.xlet, applet_callback), user_data);
-                    return true;
-                } else {
-                    invalid_setting_type_error(key_name, this.uuid, "boolean");
-                    return false;
-                }
-            } else {
-                key_not_found_error(key_name, this.uuid);
-                return false;
-            }
-        },
-
-        bindNumber: function (sync_type, key_name, applet_var, applet_callback, user_data) {
-            if (!this.valid) {
-                settings_not_initialized_error(this.uuid);
-                return false;
-            }
-            let type = this.settings_obj.get_key_exists_and_type(key_name);
-            if (type) {
-                if (type in NUMBER_TYPES) {
-                    this.metaBindings[key_name] = new _num_setting(sync_type, this.xlet, key_name, this.settings_obj, applet_var, Lang.bind (this.xlet, applet_callback), user_data);
-                    return true;
-                } else {
-                    invalid_setting_type_error(key_name, this.uuid, "boolean");
+                    invalid_setting_type_error(key_name, this.uuid, type);
                     return false;
                 }
             } else {
@@ -544,7 +504,7 @@ function key_not_found_error (key_name, uuid) {
 }
 
 function invalid_setting_type_error (key_name, uuid, type) {
-    global.logError("Mismatched setting type '" + type + "' for setting key '" + key_name + "' of applet/desklet uuid " + uuid);
+    global.logError("Invalid setting type '" + type + "'' for setting key '" + key_name + "' of applet/desklet uuid " + uuid);
 }
 
 
@@ -646,11 +606,25 @@ _setting.prototype = {
                 this.obj.unwatch(this.applet_var);
     },
 
-    _on_applet_changed_value: function(obj, oldval, newval) {
+    _on_applet_changed_value: function (obj, oldval, newval) {
+        this.set_val(newval);
         return newval;
     },
 
-    _setting_file_changed: function() {
+    _setting_file_changed: function () {
+        if (this.sync_type > BindingDirection.SYNC_ONCE) {
+            let new_val = this.get_val();
+            if (new_val != this.obj[this.applet_var]) {
+                this._monitor_applet_var(false);
+                this.obj[this.applet_var] = this.get_val();
+                if (this.user_data) {
+                    this.cb(user_data);
+                } else {
+                    this.cb();
+                }
+                this._monitor_applet_var(true);
+            }
+        }
     },
 
     get_data: function() {
@@ -675,110 +649,3 @@ _setting.prototype = {
 };
 Signals.addSignalMethods(_setting.prototype);
 
-
-function _boolean_setting(sync_type, obj, key_name, settings_obj, applet_var, applet_callback, user_data) {
-    this._init(sync_type, obj, key_name, settings_obj, applet_var, applet_callback, user_data);
-}
-
-_boolean_setting.prototype = {
-    __proto__: _setting.prototype,
-
-    _init: function (sync_type, obj, key_name, settings_obj, applet_var, applet_callback, user_data) {
-        _setting.prototype._init.call(this, sync_type, obj, key_name, settings_obj, applet_var, applet_callback, user_data);
-    },
-
-    _setting_file_changed: function () {
-        if (this.sync_type > BindingDirection.SYNC_ONCE) {
-            let new_val = this.get_val();
-            if (new_val != this.obj[this.applet_var]) {
-                this._monitor_applet_var(false);
-                this.obj[this.applet_var] = this.get_val();
-                if (this.user_data) {
-                    this.cb(user_data);
-                } else {
-                    this.cb();
-                }
-                this._monitor_applet_var(true);
-            }
-        }
-    },
-
-    _on_applet_changed_value: function (obj, oldval, newval) {
-        this.set_val(newval);
-        return newval;
-    }
-};
-
-
-function _string_setting(sync_type, obj, key_name, settings_obj, applet_var, applet_callback, user_data) {
-    this._init(sync_type, obj, key_name, settings_obj, applet_var, applet_callback, user_data);
-}
-
-_string_setting.prototype = {
-    __proto__: _setting.prototype,
-
-    _init: function (sync_type, obj, key_name, settings_obj, applet_var, applet_callback, user_data) {
-        _setting.prototype._init.call(this, sync_type, obj, key_name, settings_obj, applet_var, applet_callback, user_data);
-    },
-
-    _setting_file_changed: function () {
-        if (this.sync_type > BindingDirection.SYNC_ONCE) {
-            let new_val = this.get_val();
-            if (new_val != this.obj[this.applet_var]) {
-                this._monitor_applet_var(false);
-                this.obj[this.applet_var] = this.get_val();
-                if (this.user_data) {
-                    this.cb(user_data);
-                } else {
-                    this.cb();
-                }
-                this._monitor_applet_var(true);
-            }
-        }
-    },
-
-    _on_applet_changed_value: function (obj, oldval, newval) {
-        this.set_val(newval);
-        return newval;
-    }
-};
-
-
-function _num_setting(sync_type, obj, key_name, settings_obj, applet_var, applet_callback, user_data) {
-    this._init(sync_type, obj, key_name, settings_obj, applet_var, applet_callback, user_data);
-}
-
-_num_setting.prototype = {
-    __proto__: _setting.prototype,
-
-    _init: function (sync_type, obj, key_name, settings_obj, applet_var, applet_callback, user_data) {
-        _setting.prototype._init.call(this, sync_type, obj, key_name, settings_obj, applet_var, applet_callback, user_data);
-    },
-
-    _setting_file_changed: function () {
-        if (this.sync_type > BindingDirection.SYNC_ONCE) {
-            let new_val = this.get_val();
-            new_val = (new_val < this.get_min()) ? this.get_min() : new_val;
-            new_val = (new_val > this.get_max()) ? this.get_max() : new_val;
-            let oor = new_val != this.get_val();
-            if (new_val != this.obj[this.applet_var]) {
-                this._monitor_applet_var(false);
-                this.obj[this.applet_var] = new_val;
-                if (this.user_data) {
-                    this.cb(user_data);
-                } else {
-                    this.cb();
-                }
-                this._monitor_applet_var(true);
-            }
-            if (oor) {
-                this.set_val(this.obj[this.applet_var]);
-            }
-        }
-    },
-
-    _on_applet_changed_value: function (obj, oldval, newval) {
-        this.set_val(newval);
-        return newval;
-    }
-};
