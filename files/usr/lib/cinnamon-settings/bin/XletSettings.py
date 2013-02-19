@@ -113,6 +113,7 @@ class XletSetting:
         return False
 
     def build_single(self):
+        self.nb = None
         self.view = Gtk.ScrolledWindow()
         self.view.set_shadow_type(Gtk.ShadowType.IN)
         self.content_box = Gtk.VBox()
@@ -199,7 +200,7 @@ class XletSetting:
             elif self.multi_instance and self.current_id not in xlet:
                 new_enabled.append(xlet)
 
-        if self.nb is None or self.nb.get_n_pages() == 1:
+        if self.nb is None or (self.nb is not None and self.nb.get_n_pages() == 1):
             self.parent._close_configure(self)
         else:
             current_index = self.nb.get_current_page()
