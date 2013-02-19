@@ -226,6 +226,12 @@ class BaseWidget():
             print ("Could not find description for key '%s' in xlet '%s'" % (self.key, self.uuid))
             return ""
 
+    def get_tooltip(self):
+        try:
+            return self.settings_obj.get_data(self.key)["tooltip"]
+        except:
+            return ""
+
     def get_units(self):
         try:
             return self.settings_obj.get_data(self.key)["units"]
@@ -316,6 +322,11 @@ class BaseWidget():
         except:
             return False
 
+def set_tt(tt, *widgets):
+    for widget in widgets:
+        widget.set_tooltip_text(tt)
+
+
 class IndentedHBox(Gtk.HBox):
     def __init__(self):
         super(IndentedHBox, self).__init__()
@@ -348,6 +359,7 @@ class CheckButton(Gtk.CheckButton, BaseWidget):
         super(CheckButton, self).__init__(self.get_desc())
         self.set_active(self.get_val())
         self.handler = self.connect('toggled', self.on_my_value_changed)
+        set_tt(self.get_tooltip(), self)
         self._value_changed_timer = None
 
     def add_dependent(self, widget):
@@ -397,6 +409,7 @@ class SpinButton(Gtk.HBox, BaseWidget):
         self.spinner.set_range(self.get_min(), self.get_max())
         self.spinner.set_increments(self.get_step(), self.get_step() * 2)
         self.spinner.set_value(self.get_val())
+        set_tt(self.get_tooltip(), self.spinner, self.units, self.label)
         self.handler = self.spinner.connect('value-changed', self.on_my_value_changed)
         self._value_changed_timer = None
 
@@ -428,6 +441,7 @@ class Entry(Gtk.HBox, BaseWidget):
         self.add(self.entry)
         self.entry.set_text(self.get_val())
         self.handler = self.entry.connect("changed", self.on_my_value_changed)
+        set_tt(self.get_tooltip(), self.label, self.entry)
         self._value_changed_timer = None
 
     def on_my_value_changed(self, widget):
@@ -460,6 +474,7 @@ class ColorChooser(Gtk.HBox, BaseWidget):
         color = Gdk.RGBA()
         Gdk.RGBA.parse(color, self.get_val())
         self.chooser.set_rgba(color)
+        set_tt(self.get_tooltip(), self.label, self.chooser)
         self.handler = self.chooser.connect("color-set", self.on_my_value_changed)
 
     def on_my_value_changed(self, *args):
@@ -505,6 +520,7 @@ class ComboBox(Gtk.HBox, BaseWidget):
         renderer_text = Gtk.CellRendererText()
         self.combo.pack_start(renderer_text, True)
         self.combo.add_attribute(renderer_text, "text", 0)
+        set_tt(self.get_tooltip(), self.label, self.combo)
 
         if selected is not None:
             self.combo.set_active_iter(selected)
@@ -544,6 +560,7 @@ class RadioGroup(Gtk.VBox, BaseWidget):
         if self.get_desc() != "":
             hbox.pack_start(self.label, False, False, 2)
             self.pack_start(hbox, False, False, 2)
+            set_tt(self.get_tooltip(), self.label)
         group = None
         for key in self.model.keys():
             hbox = IndentedHBox()
@@ -571,6 +588,7 @@ class RadioGroup(Gtk.VBox, BaseWidget):
             self.entry.set_text(self.get_custom_val())
             self.entry.connect("focus-in-event", self.on_custom_focus)
             self.entry.handler = self.entry.connect("changed", self.on_entry_changed)
+            set_tt(self.get_tooltip(), self.entry)
 
         self.group = group.get_group()
         for button in self.group:
@@ -582,6 +600,7 @@ class RadioGroup(Gtk.VBox, BaseWidget):
             elif self.get_val() == self.model[label]:
                 button.set_active(True)
             button.handler = button.connect("toggled", self.on_button_activated)
+            set_tt(self.get_tooltip(), button)
         self._value_changed_timer = None
 
     def on_custom_focus(self, event, widget):
@@ -667,6 +686,7 @@ class FileChooser(Gtk.HBox, BaseWidget):
             self.dir_handler = self.chooser.connect("current-folder-changed", self.on_my_value_changed)
         if self.show_none_cb is not None:
             self.show_none_cb.connect("toggled", self.on_my_value_changed)
+        set_tt(self.get_tooltip(), self.label, self.chooser)
 
     def on_my_value_changed(self, widget):
         value = ""
@@ -719,6 +739,7 @@ class IconFileChooser(Gtk.HBox, BaseWidget):
         self.image_button.connect("clicked", self.on_button_pressed)
         self.handler = self.entry.connect("changed", self.on_entry_changed)
         self._value_changed_timer = None
+        set_tt(self.get_tooltip(), self.label, self.image_button, self.entry)
 
     def setup_image(self):
         val = self.get_val()
@@ -784,6 +805,7 @@ class Scale(Gtk.HBox, BaseWidget):
         self.pack_start(self.scale, True, True, 2)
         self.handler = self.scale.connect('value-changed', self.on_my_value_changed)
         self.scale.show_all()
+        set_tt(self.get_tooltip(), self.label, self.scale)
         self._value_changed_timer = None
 
     def on_my_value_changed(self, widget):
@@ -809,6 +831,7 @@ class Button(Gtk.Button, BaseWidget):
         BaseWidget.__init__(self, key, settings_obj, uuid)
         super(Button, self).__init__(self.get_desc())
         self.connect('clicked', self.on_clicked)
+        set_tt(self.get_tooltip(), self)
 
     def on_clicked(self, widget):
         session_bus = dbus.SessionBus()
