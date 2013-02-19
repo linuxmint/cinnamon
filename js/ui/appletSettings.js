@@ -460,7 +460,7 @@ AppletSettings.prototype = {
             let type = this.settings_obj.get_key_exists_and_type(key_name);
             if (type) {
                 if (type in BOOLEAN_TYPES || type in STRING_TYPES || type in NUMBER_TYPES) {
-                    this.metaBindings[key_name] = new _boolean_setting(sync_type, this.xlet, key_name, this.settings_obj, applet_var, Lang.bind (this.xlet, applet_callback), user_data);
+                    this.metaBindings[key_name] = new _setting(sync_type, this.xlet, key_name, this.settings_obj, applet_var, Lang.bind (this.xlet, applet_callback), user_data);
                     return true;
                 } else {
                     invalid_setting_type_error(key_name, this.uuid, type);

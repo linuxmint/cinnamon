@@ -13,7 +13,7 @@ MyApplet.prototype = {
 
         this.settings = new AppletSettings.AppletSettings(this, "spacer@cinnamon.org", this.instance_id);
 
-        this.settings.bindNumber(AppletSettings.BindingDirection.ONE_WAY,  // Setting type
+        this.settings.bindProperty(AppletSettings.BindingDirection.ONE_WAY,  // Setting type
                                  "width",             // The setting key
                                  "width",             // The property to manage (this.width)
                                  this.width_changed,  // Callback when value changes
