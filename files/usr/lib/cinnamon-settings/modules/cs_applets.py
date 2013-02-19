@@ -772,6 +772,9 @@ class AppletViewSidePage (SidePage):
                         except KeyError: ext_config_app = ""
                         except ValueError: ext_config_app = ""
 
+                        if ext_config_app != "" and not os.path.exists(ext_config_app):
+                            ext_config_app = ""
+
                         if applet_max_instances < -1:
                             applet_max_instances = -1
                             
