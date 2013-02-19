@@ -154,10 +154,13 @@ class AppletViewSidePage (SidePage):
 
         img = Gtk.Image.new_from_stock("gtk-add", Gtk.IconSize.BUTTON)
         self.instanceButton.set_image(img)
+        self.instanceButton.set_always_show_image(True)
         img = Gtk.Image.new_from_stock("gtk-properties", Gtk.IconSize.BUTTON)
         self.configureButton.set_image(img)
+        self.configureButton.set_always_show_image(True)
         img = Gtk.Image.new_from_stock("gtk-properties", Gtk.IconSize.BUTTON)
         self.extConfigureButton.set_image(img)
+        self.extConfigureButton.set_always_show_image(True)
 
         hbox.pack_start(self.instanceButton, False, False, 2)
         hbox.pack_start(self.configureButton, False, False, 2)
