@@ -229,9 +229,9 @@ AppletSettings.prototype = {
         },
 
         _get_is_multi_instance_xlet: function(uuid) {
-            let num = -1;
+            let num = 1;
             num = AppletManager.get_num_instances_for_applet(uuid);
-            return num > 1 || num == -1;
+            return num > 1;
         },
 
         _create_settings_file: function () {

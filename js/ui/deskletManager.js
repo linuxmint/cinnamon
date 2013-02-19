@@ -273,7 +273,7 @@ function get_num_instances_for_desklet (uuid) {
             return parseInt(deskletMeta[uuid]["max-instances"]);
         }
     }
-    return -1;
+    return 1;
 }
 
 /**
