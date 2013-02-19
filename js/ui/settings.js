@@ -1,4 +1,3 @@
-
 const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
 const Lang = imports.lang;
@@ -6,6 +5,8 @@ const Cinnamon = imports.gi.Cinnamon;
 const Main = imports.ui.main;
 const Signals = imports.signals;
 const AppletManager = imports.ui.appletManager;
+const DeskletManager = imports.ui.deskletManager;
+const ExtensionSystem = imports.ui.extensionSystem;
 const Extension = imports.ui.extension;
 
 const SETTING_SCHEMA_FILE = "settings-schema.json"
@@ -152,12 +153,65 @@ var GENERIC_TYPES = {
     }
 };
 
-
 function AppletSettings(xlet, uuid, instanceId) {
-    this._init(xlet, uuid, instanceId, Extension.Type.APPLET, "Applet");
+    this._init(xlet, uuid, instanceId);
 }
 
 AppletSettings.prototype = {
+    __proto__: _provider.prototype,
+
+    _init: function (xlet, uuid, instanceId) {
+        _provider.prototype._init.call(this, xlet, uuid, instanceId, Extension.Type.APPLET, "Applet");
+    },
+
+    _get_is_multi_instance_xlet: function(uuid) {
+        let num = -1;
+        num = AppletManager.get_num_instances_for_applet(uuid);
+        return num > 1 || num == -1;
+    }
+};
+
+
+function DeskletSettings(xlet, uuid, instanceId) {
+    this._init(xlet, uuid, instanceId);
+}
+
+DeskletSettings.prototype = {
+    __proto__: _provider.prototype,
+
+    _init: function (xlet, uuid, instanceId) {
+        _provider.prototype._init.call(this, xlet, uuid, instanceId, Extension.Type.DESKLET, "Desklet");
+    },
+
+    _get_is_multi_instance_xlet: function(uuid) {
+        let num = -1;
+        num = DeskletManager.get_num_instances_for_desklet(uuid);
+        return num > 1 || num == -1;
+    }
+};
+
+
+function ExtensionSettings(xlet, uuid) {
+    this._init(xlet, uuid);
+}
+
+ExtensionSettings.prototype = {
+    __proto__: _provider.prototype,
+
+    _init: function (xlet, uuid) {
+        _provider.prototype._init.call(this, xlet, uuid, null, Extension.Type.EXTENSION, "Extension");
+    },
+
+    _get_is_multi_instance_xlet: function(uuid) {
+        return false;
+    }
+};
+
+function _provider(xlet, uuid, instanceId) {
+    this._init(xlet, uuid, instanceId, type, string);
+}
+
+_provider.prototype = {
         _init: function (xlet, uuid, instanceId, type, string) {
             if (type && string) {
                 this.ext_type = type;
@@ -222,17 +276,14 @@ AppletSettings.prototype = {
             if (!this.instanceId) {
                 this.instanceId = 0; 
             }
-            this.settings_obj = new SettingObj(this.settings_file, this.uuid, this.instanceId);
-            this.settings_obj.connect("setting-file-changed", Lang.bind(this, this._setting_file_changed));
+            this.settings_obj = new SettingObj(this, this.settings_file, this.uuid, this.instanceId);
+            this.settings_obj.connect("setting-file-changed", Lang.bind(this, this._setting_file_changed_notify));
             this.settings_obj.connect("setting-value-changed", Lang.bind(this, this._value_changed_notify));
 
             this.valid = true;
         },
 
         _get_is_multi_instance_xlet: function(uuid) {
-            let num = 1;
-            num = AppletManager.get_num_instances_for_applet(uuid);
-            return num > 1;
         },
 
         _create_settings_file: function () {
@@ -439,13 +490,13 @@ AppletSettings.prototype = {
  * you can call AppletSettings.getValue(key) to update your props
  */
 
-        _setting_file_changed: function() {
+        _setting_file_changed_notify: function() {
             this.emit("settings-changed");
         },
 
 /* individual key notification, sends old and new value with signal */
 
-        _value_changed_notify: function(settings_obj, key, oldval, newval) {
+        _value_changed_notify: function(key, oldval, newval) {
             this.emit("changed::" + key, oldval, newval);
         },
 
@@ -499,7 +550,7 @@ AppletSettings.prototype = {
             }
         }
 };
-Signals.addSignalMethods(AppletSettings.prototype);
+Signals.addSignalMethods(_provider.prototype);
 
 function settings_not_initialized_error(uuid) {
     global.logError("Could not set up binding - settings object was not initialized successfully for " + uuid);
@@ -518,12 +569,13 @@ function invalid_setting_type_error (key_name, uuid, type) {
  * retrieves, etc.. to the individual settings during runtime
  */
 
-function SettingObj(file, uuid, instanceId) {
-    this._init(file, uuid, instanceId);
+function SettingObj(provider, file, uuid, instanceId) {
+    this._init(provider, file, uuid, instanceId);
 }
 
 SettingObj.prototype = {
-    _init: function (file, uuid, instanceId) {
+    _init: function (provider, file, uuid, instanceId) {
+        this.provider = provider;
         this.file = file;
         this.uuid = uuid;
         this.instanceId = instanceId;
@@ -572,16 +624,15 @@ SettingObj.prototype = {
                     let oldval = this.json[key]['value'];
                     let newval = new_json[key]['value'];
                     this.json[key]['value'] = new_json[key]['value'];
-                    this.emit("setting-value-changed", key, oldval, newval);
+                    this.provider._value_changed_notify(key, oldval, newval);
                 }
             }
-            this.emit("setting-file-changed")
+            this.provider._setting_file_changed_notify();
         } else {
             this.settings_file_monitor.disconnect(this.monitor_id);
         }
     }
 };
-Signals.addSignalMethods(SettingObj.prototype);
 
 
 // Individual setting types
@@ -646,17 +697,9 @@ _setting.prototype = {
         return this.settings_obj.get_data(this.key_name)["value"];
     },
 
-    get_min: function() {
-        return this.settings_obj.get_data(this.key_name)["min"];
-    },
-
-    get_max: function() {
-        return this.settings_obj.get_data(this.key_name)["max"];
-    },
-
     set_val: function(val) {
         this.settings_obj.set_value(this.key_name, val);
     }
 };
-Signals.addSignalMethods(_setting.prototype);
+
 
