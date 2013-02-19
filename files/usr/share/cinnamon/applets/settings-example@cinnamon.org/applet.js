@@ -2,7 +2,7 @@ const Applet = imports.ui.applet;
 const Lang = imports.lang;
 const PopupMenu = imports.ui.popupMenu;
 const Mainloop = imports.mainloop;
-const AppletSettings = imports.ui.appletSettings;  // Needed for settings API
+const Settings = imports.ui.settings;  // Needed for settings API
 const Gio = imports.gi.Gio
 
 function MyApplet(orientation, panel_height, instance_id) {
@@ -20,47 +20,47 @@ MyApplet.prototype = {
         this.menuManager.addMenu(this.menu);
 
         /* Initialize your settings handler instance      this,            the uuid              instance id  */
-        this.settings = new AppletSettings.AppletSettings(this, "settings-example@cinnamon.org", instance_id);
+        this.settings = new Settings.AppletSettings(this, "settings-example@cinnamon.org", instance_id);
 
         /* Now we'll proceed with setting up individual setting bindings. */
 
-        this.settings.bindProperty(AppletSettings.BindingDirection.ONE_WAY,   // The binding direction - ONE_WAY means we only listen for changes from this applet
+        this.settings.bindProperty(Settings.BindingDirection.ONE_WAY,   // The binding direction - ONE_WAY means we only listen for changes from this applet
                                  "icon-name",                               // The setting key, from the setting schema file
                                  "icon_name",                               // The property to bind the setting to - in this case it will initialize this.icon_name to the setting value
                                  this.on_settings_changed,                  // The method to call when this.icon_name has changed, so you can update your applet
                                  null);                                     // Any extra information you want to pass to the callback (optional - pass null or just leave out this last argument)
-        this.settings.bindProperty(AppletSettings.BindingDirection.ONE_WAY,
+        this.settings.bindProperty(Settings.BindingDirection.ONE_WAY,
                                  "color",
                                  "bg_color",
                                  this.on_settings_changed,
                                  null);
-        this.settings.bindProperty(AppletSettings.BindingDirection.ONE_WAY,
+        this.settings.bindProperty(Settings.BindingDirection.ONE_WAY,
                                  "spinner-number",
                                  "spinner_number",
                                  this.on_settings_changed,
                                  null);
-        this.settings.bindProperty(AppletSettings.BindingDirection.ONE_WAY,
+        this.settings.bindProperty(Settings.BindingDirection.ONE_WAY,
                                  "combo-selection",
                                  "combo_choice",
                                  this.on_settings_changed,
                                  null);
-        this.settings.bindProperty(AppletSettings.BindingDirection.BIDIRECTIONAL, // BIDIRECTIONAL means the applet will listen
+        this.settings.bindProperty(Settings.BindingDirection.BIDIRECTIONAL, // BIDIRECTIONAL means the applet will listen
                                  "scale-demo",                                  // for changes to the stored setting, AND the
                                  "scale_val",                                   // settings daemon will listen for changes made
                                  this.on_settings_changed,                      // to this.scale_val by the APPLET
                                  null);
-        this.settings.bindProperty(AppletSettings.BindingDirection.ONE_WAY,
+        this.settings.bindProperty(Settings.BindingDirection.ONE_WAY,
                                   "use-custom-label",
                                   "use_custom",
                                   this.on_settings_changed,
                                   null);
-        this.settings.bindProperty(AppletSettings.BindingDirection.ONE_WAY,
+        this.settings.bindProperty(Settings.BindingDirection.ONE_WAY,
                                  "custom-label",
                                  "custom_label",
                                  this.on_settings_changed,
                                  null);
 
-        this.settings.connect("changed::signal-test", Lang.bind(this, this.on_signal_test_fired))
+        this.settings.connect("changed::signal-test", Lang.bind(this, this.on_signal_test_fired));
 
         /* Lets create and add our menu items - we'll set their true values after */
 

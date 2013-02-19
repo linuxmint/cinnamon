@@ -132,7 +132,7 @@ var NUMBER_TYPES = {
     }
 };
 
-var GENERIC_TYPES = {
+var NON_SETTING_TYPES = {
     "header" : {
         "required-fields": [
             "type",
@@ -362,9 +362,9 @@ _provider.prototype = {
                     }
                 }
                 return true;
-            } else if (node["type"] in GENERIC_TYPES) {
-                for (let req_field in GENERIC_TYPES[node["type"]]["required-fields"]) {
-                    if (GENERIC_TYPES[node["type"]]["required-fields"][req_field] in node) {
+            } else if (node["type"] in NON_SETTING_TYPES) {
+                for (let req_field in NON_SETTING_TYPES[node["type"]]["required-fields"]) {
+                    if (NON_SETTING_TYPES[node["type"]]["required-fields"][req_field] in node) {
                         continue;
                     } else {
                         return false;

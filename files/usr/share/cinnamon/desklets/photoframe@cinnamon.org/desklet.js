@@ -7,7 +7,7 @@ const Clutter = imports.gi.Clutter;
 const GLib = imports.gi.GLib;
 const Tweener = imports.ui.tweener;
 const Util = imports.misc.util;
-const DeskletSettings = imports.ui.deskletSettings;
+const Settings = imports.ui.settings;
 
 function MyDesklet(metadata, desklet_id){
     this._init(metadata, desklet_id);
@@ -25,51 +25,51 @@ MyDesklet.prototype = {
 
         try {
 
-            this.settings = new DeskletSettings.DeskletSettings(this, this.metadata["uuid"], this.instance_id);
+            this.settings = new Settings.DeskletSettings(this, this.metadata["uuid"], this.instance_id);
 
-            this.settings.bindProperty(DeskletSettings.BindingDirection.ONE_WAY,
+            this.settings.bindProperty(Settings.BindingDirection.ONE_WAY,
                                      "directory",
                                      "dir",
                                      this.on_setting_changed,
                                      null);
 
-            this.settings.bindProperty(DeskletSettings.BindingDirection.ONE_WAY,
+            this.settings.bindProperty(Settings.BindingDirection.ONE_WAY,
                                       "shuffle",
                                       "shuffle",
                                       this.on_setting_changed,
                                       null);
 
-            this.settings.bindProperty(DeskletSettings.BindingDirection.ONE_WAY,
+            this.settings.bindProperty(Settings.BindingDirection.ONE_WAY,
                                      "delay",
                                      "delay",
                                      this.on_setting_changed,
                                      null);
 
-            this.settings.bindProperty(DeskletSettings.BindingDirection.ONE_WAY,
+            this.settings.bindProperty(Settings.BindingDirection.ONE_WAY,
                                      "height",
                                      "height",
                                      this.on_setting_changed,
                                      null);
 
-            this.settings.bindProperty(DeskletSettings.BindingDirection.ONE_WAY,
+            this.settings.bindProperty(Settings.BindingDirection.ONE_WAY,
                                      "width",
                                      "width",
                                      this.on_setting_changed,
                                      null);
 
-            this.settings.bindProperty(DeskletSettings.BindingDirection.ONE_WAY,
+            this.settings.bindProperty(Settings.BindingDirection.ONE_WAY,
                                      "quality",
                                      "quality",
                                      this.on_setting_changed,
                                      null);
 
-            this.settings.bindProperty(DeskletSettings.BindingDirection.ONE_WAY,
+            this.settings.bindProperty(Settings.BindingDirection.ONE_WAY,
                                      "fade-delay",
                                      "fade_delay",
                                      this.on_setting_changed,
                                      null);
 
-            this.settings.bindProperty(DeskletSettings.BindingDirection.ONE_WAY,
+            this.settings.bindProperty(Settings.BindingDirection.ONE_WAY,
                                      "effect",
                                      "effect",
                                      this.on_setting_changed,
