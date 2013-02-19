@@ -484,12 +484,7 @@ class ComboBox(Gtk.HBox, BaseWidget):
         self.label = Gtk.Label(self.get_desc())
         options = self.get_options()
         for option_name in options.keys():
-            if isinstance(options[option_name], basestring):
-                self.model = Gtk.ListStore(str, str)
-            elif isinstance(options[option_name], int):
-                self.model = Gtk.ListStore(str, int)
-            else:
-                self.model = Gtk.ListStore(str, float)
+            self.model = Gtk.ListStore(str, type(options[option_name]))
             break
         selected = None
         for option_name in options.keys():
