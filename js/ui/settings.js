@@ -12,8 +12,8 @@ const Extension = imports.ui.extension;
 const SETTING_SCHEMA_FILE = "settings-schema.json"
 
 const BindingDirection = {
-    SYNC_ONCE : 1,  // Applet property set at initialization only, manual updating required
-    ONE_WAY : 2,  // Applet property is updated automatically from settings.json
+    IN : 1,  // Applet property is updated automatically from settings.json
+    OUT : 2,  // Setting value is kept updated by applet property changes
     BIDIRECTIONAL : 3 // Applet property updated automatically from settings.json, and vise-versa
 };
 
@@ -277,8 +277,6 @@ _provider.prototype = {
                 this.instanceId = 0; 
             }
             this.settings_obj = new SettingObj(this, this.settings_file, this.uuid, this.instanceId);
-            this.settings_obj.connect("setting-file-changed", Lang.bind(this, this._setting_file_changed_notify));
-            this.settings_obj.connect("setting-value-changed", Lang.bind(this, this._value_changed_notify));
 
             this.valid = true;
         },
@@ -502,7 +500,7 @@ _provider.prototype = {
 
 /* Public api:  bind an applet property/variable to a setting
  *
- *        sync_type:  BindingDirection.SYNC_ONCE, .ONE_WAY, or .BIDIRECTIONAL (see declaration at top of file)
+ *        sync_type:  BindingDirection.OUT, .IN, or .BIDIRECTIONAL (see declaration at top of file)
  *         key_name:  The id of the setting
  *       applet_var:  The applet's property that is used to hold the setting, passed as a string
  *                    (i.e. your applet's this.value passes as simply "value")
@@ -627,12 +625,14 @@ SettingObj.prototype = {
                     this.provider._value_changed_notify(key, oldval, newval);
                 }
             }
+            this.emit("setting-file-changed");
             this.provider._setting_file_changed_notify();
         } else {
             this.settings_file_monitor.disconnect(this.monitor_id);
         }
     }
 };
+Signals.addSignalMethods(SettingObj.prototype);
 
 
 // Individual setting types
@@ -653,16 +653,14 @@ _setting.prototype = {
         if (user_data) {
             this.user_data = user_data;
         }
-        if (this.sync_type == BindingDirection.ONE_WAY) {
+        if (this.sync_type != BindingDirection.OUT) {
             this.settings_obj.connect("setting-file-changed", Lang.bind(this, this._setting_file_changed));
-        } else if (this.sync_type == BindingDirection.BIDIRECTIONAL) {
-            this.settings_obj.connect("setting-file-changed", Lang.bind(this, this._setting_file_changed));
-            this._monitor_applet_var(true);
         }
+        this._monitor_applet_var(true);
     },
 
     _monitor_applet_var: function (state) {
-        if (this.sync_type != BindingDirection.BIDIRECTIONAL)
+        if (this.sync_type < BindingDirection.OUT)
             return;
         state ? this.obj.watch(this.applet_var, Lang.bind(this, this._on_applet_changed_value)) :
                 this.obj.unwatch(this.applet_var);
@@ -674,7 +672,7 @@ _setting.prototype = {
     },
 
     _setting_file_changed: function () {
-        if (this.sync_type > BindingDirection.SYNC_ONCE) {
+        if (this.sync_type != BindingDirection.OUT) {
             let new_val = this.get_val();
             if (new_val != this.obj[this.applet_var]) {
                 this._monitor_applet_var(false);
