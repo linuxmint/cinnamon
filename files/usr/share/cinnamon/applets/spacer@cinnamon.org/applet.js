@@ -1,5 +1,5 @@
 const Applet = imports.ui.applet;
-const AppletSettings = imports.ui.appletSettings;
+const Settings = imports.ui.settings;
 
 function MyApplet(metadata, orientation, panelHeight, instance_id) {
     this._init(metadata, orientation, panelHeight, instance_id);
@@ -11,9 +11,9 @@ MyApplet.prototype = {
     _init: function(metadata, orientation, panelHeight, instance_id) {
         Applet.IconApplet.prototype._init.call(this, orientation, panelHeight, instance_id);
 
-        this.settings = new AppletSettings.AppletSettings(this, "spacer@cinnamon.org", this.instance_id);
+        this.settings = new Settings.AppletSettings(this, "spacer@cinnamon.org", this.instance_id);
 
-        this.settings.bindProperty(AppletSettings.BindingDirection.ONE_WAY,  // Setting type
+        this.settings.bindProperty(Settings.BindingDirection.ONE_WAY,  // Setting type
                                  "width",             // The setting key
                                  "width",             // The property to manage (this.width)
                                  this.width_changed,  // Callback when value changes
