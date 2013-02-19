@@ -676,7 +676,7 @@ class AppletViewSidePage (SidePage):
         if treeiter:
             checked = model.get_value(treeiter, 2);
             max_instances = model.get_value(treeiter, 3);
-            enabled = max_instances == -1 or ((max_instances > 1) and (max_instances > checked))
+            enabled = max_instances > checked
             if max_instances == 1:
                 tip += _("\nThis applet does not support multiple instances.")
             else:
@@ -756,8 +756,8 @@ class AppletViewSidePage (SidePage):
                         applet_name = data["name"]                                        
                         applet_description = data["description"]                          
                         try: applet_max_instances = int(data["max-instances"])
-                        except KeyError: applet_max_instances = -1
-                        except ValueError: applet_max_instances = -1
+                        except KeyError: applet_max_instances = 1
+                        except ValueError: applet_max_instances = 1
 
                         try: applet_role = data["role"]
                         except KeyError: applet_role = None
@@ -775,7 +775,7 @@ class AppletViewSidePage (SidePage):
                             ext_config_app = ""
 
                         if applet_max_instances < -1:
-                            applet_max_instances = -1
+                            applet_max_instances = 1
                             
                         if self.search_entry.get_text().upper() in (applet_name + applet_description).upper():
                             iter = self.model.insert_before(None, None)

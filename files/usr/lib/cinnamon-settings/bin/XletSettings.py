@@ -94,7 +94,7 @@ class XletSetting:
         if "max-instances" in self.applet_meta:
             self.multi_instance = int(self.applet_meta["max-instances"]) > 1
         else:
-            self.multi_instance = True
+            self.multi_instance = False
         if os.path.exists(path) and os.path.isdir(path):
             instances = os.listdir(path)
             if len(instances) != 0:
