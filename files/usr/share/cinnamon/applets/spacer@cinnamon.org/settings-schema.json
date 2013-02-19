@@ -6,7 +6,7 @@
     "max" : 400,
     "step" : 1,
     "description" : "Amount of space in pixels",
-    "indent" : true
+    "tooltip" : "Adjust this to increase or decrease the width of this spacer"
  }
 }
 
