@@ -727,7 +727,6 @@ class AppletViewSidePage (SidePage):
         model, treeiter = self.treeview.get_selection().get_selected()
         if treeiter:
             app = model.get_value(treeiter, 8)
-            print app + " blah"
             if app is not None:
                 subprocess.Popen([app])
 
