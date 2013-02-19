@@ -170,6 +170,7 @@ class XletSetting:
             i += 1
 
         self.content.pack_start(self.nb, True, True, 2)
+        self.nb.set_scrollable(True)
         self.nb.connect("switch-page", self.on_page_changed)
 
     def on_page_changed(self, nb, page, num):
