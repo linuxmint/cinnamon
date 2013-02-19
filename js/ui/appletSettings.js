@@ -224,6 +224,7 @@ AppletSettings.prototype = {
             }
             this.settings_obj = new SettingObj(this.settings_file, this.uuid, this.instanceId);
             this.settings_obj.connect("setting-file-changed", Lang.bind(this, this._setting_file_changed));
+            this.settings_obj.connect("setting-value-changed", Lang.bind(this, this._value_changed_notify));
 
             this.valid = true;
         },
@@ -442,6 +443,12 @@ AppletSettings.prototype = {
             this.emit("settings-changed");
         },
 
+/* individual key notification, sends old and new value with signal */
+
+        _value_changed_notify: function(settings_obj, key, oldval, newval) {
+            this.emit("changed::" + key, oldval, newval);
+        },
+
 /* Public api:  bind an applet property/variable to a setting
  *
  *        sync_type:  BindingDirection.SYNC_ONCE, .ONE_WAY, or .BIDIRECTIONAL (see declaration at top of file)
@@ -489,7 +496,6 @@ AppletSettings.prototype = {
                 }
             } else {
                 key_not_found_error(key_name, this.uuid);
-                return null;
             }
         }
 };
@@ -562,7 +568,12 @@ SettingObj.prototype = {
             let raw_file = Cinnamon.get_file_contents_utf8_sync(this.file.get_path());
             let new_json = JSON.parse(raw_file);
             for (let key in new_json) {
-                this.json[key]['value'] = new_json[key]['value'];
+                if (this.json[key]['value'] != new_json[key]['value']) {
+                    let oldval = this.json[key]['value'];
+                    let newval = new_json[key]['value'];
+                    this.json[key]['value'] = new_json[key]['value'];
+                    this.emit("setting-value-changed", key, oldval, newval);
+                }
             }
             this.emit("setting-file-changed")
         } else {
