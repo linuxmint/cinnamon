@@ -9,7 +9,7 @@ const DeskletManager = imports.ui.deskletManager;
 const ExtensionSystem = imports.ui.extensionSystem;
 const Extension = imports.ui.extension;
 
-const SETTING_SCHEMA_FILE = "settings-schema.json"
+const SETTING_SCHEMA_FILE = "settings-schema.json";
 
 const BindingDirection = {
     IN : 1,  // Applet property is updated automatically from settings.json
@@ -153,59 +153,6 @@ var NON_SETTING_TYPES = {
     }
 };
 
-function AppletSettings(xlet, uuid, instanceId) {
-    this._init(xlet, uuid, instanceId);
-}
-
-AppletSettings.prototype = {
-    __proto__: _provider.prototype,
-
-    _init: function (xlet, uuid, instanceId) {
-        _provider.prototype._init.call(this, xlet, uuid, instanceId, Extension.Type.APPLET, "Applet");
-    },
-
-    _get_is_multi_instance_xlet: function(uuid) {
-        let num = -1;
-        num = AppletManager.get_num_instances_for_applet(uuid);
-        return num > 1 || num == -1;
-    }
-};
-
-
-function DeskletSettings(xlet, uuid, instanceId) {
-    this._init(xlet, uuid, instanceId);
-}
-
-DeskletSettings.prototype = {
-    __proto__: _provider.prototype,
-
-    _init: function (xlet, uuid, instanceId) {
-        _provider.prototype._init.call(this, xlet, uuid, instanceId, Extension.Type.DESKLET, "Desklet");
-    },
-
-    _get_is_multi_instance_xlet: function(uuid) {
-        let num = -1;
-        num = DeskletManager.get_num_instances_for_desklet(uuid);
-        return num > 1 || num == -1;
-    }
-};
-
-
-function ExtensionSettings(xlet, uuid) {
-    this._init(xlet, uuid);
-}
-
-ExtensionSettings.prototype = {
-    __proto__: _provider.prototype,
-
-    _init: function (xlet, uuid) {
-        _provider.prototype._init.call(this, xlet, uuid, null, Extension.Type.EXTENSION, "Extension");
-    },
-
-    _get_is_multi_instance_xlet: function(uuid) {
-        return false;
-    }
-};
 
 function _provider(xlet, uuid, instanceId) {
     this._init(xlet, uuid, instanceId, type, string);
@@ -282,6 +229,8 @@ _provider.prototype = {
         },
 
         _get_is_multi_instance_xlet: function(uuid) {
+            global.logError("SDFDSFSDFDSFDSFDSFDS");
+            return false;
         },
 
         _create_settings_file: function () {
@@ -701,3 +650,56 @@ _setting.prototype = {
 };
 
 
+function AppletSettings(xlet, uuid, instanceId) {
+    this._init(xlet, uuid, instanceId);
+}
+
+AppletSettings.prototype = {
+    __proto__: _provider.prototype,
+
+    _init: function (xlet, uuid, instanceId) {
+        _provider.prototype._init.call(this, xlet, uuid, instanceId, Extension.Type.APPLET, "Applet");
+    },
+
+    _get_is_multi_instance_xlet: function(uuid) {
+        let num = -1;
+        num = AppletManager.get_num_instances_for_applet(uuid);
+        return num > 1 || num == -1;
+    },
+};
+
+
+function DeskletSettings(xlet, uuid, instanceId) {
+    this._init(xlet, uuid, instanceId);
+}
+
+DeskletSettings.prototype = {
+    __proto__: _provider.prototype,
+
+    _init: function (xlet, uuid, instanceId) {
+        _provider.prototype._init.call(this, xlet, uuid, instanceId, Extension.Type.DESKLET, "Desklet");
+    },
+
+    _get_is_multi_instance_xlet: function(uuid) {
+        let num = -1;
+        num = DeskletManager.get_num_instances_for_desklet(uuid);
+        return num > 1 || num == -1;
+    }
+};
+
+
+function ExtensionSettings(xlet, uuid) {
+    this._init(xlet, uuid);
+}
+
+ExtensionSettings.prototype = {
+    __proto__: _provider.prototype,
+
+    _init: function (xlet, uuid) {
+        _provider.prototype._init.call(this, xlet, uuid, null, Extension.Type.EXTENSION, "Extension");
+    },
+
+    _get_is_multi_instance_xlet: function(uuid) {
+        return false;
+    }
+};
