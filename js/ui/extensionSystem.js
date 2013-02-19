@@ -65,11 +65,11 @@ function onEnabledExtensionsChanged() {
     enabledExtensions = global.settings.get_strv(ENABLED_EXTENSIONS_KEY);
 
     for(uuid in Extension.objects) {
-        if(enabledExtensions.indexOf(uuid) == -1)
+        if(Extension.objects[uuid].type == Extension.Type.EXTENSION && enabledExtensions.indexOf(uuid) == -1)
             Extension.unloadExtension(uuid);
     }
     
-    for(let i=0; i<enabledExtensions; i++) {
+    for(let i=0; i<enabledExtensions.length; i++) {
         Extension.loadExtension(enabledExtensions[i], Extension.Type.EXTENSION);
     }
 }
