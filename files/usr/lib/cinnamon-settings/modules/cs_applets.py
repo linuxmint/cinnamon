@@ -152,20 +152,28 @@ class AppletViewSidePage (SidePage):
         hbox = Gtk.HBox()
         applets_vbox.pack_start(hbox, False, True, 5)
 
+        buttonbox = Gtk.ButtonBox.new(Gtk.Orientation.HORIZONTAL)
+        buttonbox.set_layout(Gtk.ButtonBoxStyle.START);
+        buttonbox.set_spacing(5)
+        hbox.pack_start(buttonbox, True, True, 5)
+        hbox.xalign = 1.0
+
         img = Gtk.Image.new_from_stock("gtk-add", Gtk.IconSize.BUTTON)
         self.instanceButton.set_image(img)
-        self.instanceButton.set_always_show_image(True)
         img = Gtk.Image.new_from_stock("gtk-properties", Gtk.IconSize.BUTTON)
         self.configureButton.set_image(img)
-        self.configureButton.set_always_show_image(True)
         img = Gtk.Image.new_from_stock("gtk-properties", Gtk.IconSize.BUTTON)
         self.extConfigureButton.set_image(img)
-        self.extConfigureButton.set_always_show_image(True)
 
-        hbox.pack_start(self.instanceButton, False, False, 2)
-        hbox.pack_start(self.configureButton, False, False, 2)
-        hbox.pack_start(self.extConfigureButton, False, False, 2)
-        hbox.pack_end(restoreButton, False, False, 2)
+        buttonbox.pack_start(self.instanceButton, False, False, 0)
+        buttonbox.pack_start(self.configureButton, False, False, 0)
+        buttonbox.pack_start(self.extConfigureButton, False, False, 0)
+
+        rightbuttonbox = Gtk.ButtonBox.new(Gtk.Orientation.HORIZONTAL);
+        rightbuttonbox.set_layout(Gtk.ButtonBoxStyle.END);
+        rightbuttonbox.pack_start(restoreButton, False, False, 0)
+
+        hbox.pack_end(rightbuttonbox, False, False, 5)
 
         self.configureButton.hide()
         self.configureButton.set_no_show_all(True)
