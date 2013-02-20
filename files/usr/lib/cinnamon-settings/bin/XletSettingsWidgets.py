@@ -278,13 +278,6 @@ class BaseWidget():
         except:
             return ""
 
-    def get_allow_none(self):
-        try:
-            return self.settings_obj.get_data(self.key)["allow-none"]
-        except:
-            print ("Could not find allow-none field for key '%s' in xlet '%s'" % (self.key, self.uuid))
-            return False
-
     def get_select_dir(self):
         try:
             return self.settings_obj.get_data(self.key)["select-dir"]
