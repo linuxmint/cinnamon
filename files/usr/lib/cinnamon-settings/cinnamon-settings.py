@@ -51,7 +51,7 @@ CONTROL_CENTER_MODULES = [
     [_("Universal Access"),                 "universal-access",   "universal-access.svg",           "prefs",      False,          _("magnifier, talk, access, zoom, keys, contrast")],
     [_("User Accounts"),                    "user-accounts",      "user-accounts.svg",              "prefs",      True,           _("users, accounts, add, password, picture")],
     [_("Power Management"),                 "power",              "power.svg",                   "hardware",      False,          _("power, suspend, hibernate, laptop, desktop")],
-    [_("Sound"),                            "sound-nua",          "sound.svg",                   "hardware",      False,          _("sound, speakers, headphones, test")],
+    [_("Sound"),                            "sound",              "sound.svg",                   "hardware",      False,          _("sound, speakers, headphones, test")],
     [_("Color"),                            "color",              "color.svg",                   "hardware",      True,           _("color, profile, display, printer, output")]
 ]
 
