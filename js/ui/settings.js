@@ -571,8 +571,11 @@ SettingObj.prototype = {
         this.file_changed_timeout = Mainloop.timeout_add(300, Lang.bind(this, this._on_file_changed_timeout))
     },
 
-    _on_file_changed_timeout: function() {
+    _on_file_changed_timeout: function(monitor, file, n, eventType) {
         if (this.file.query_exists(null)) {
+            if (eventType !== undefined && eventType != Gio.FileMonitorEvent.CHANGES_DONE_HINT) {
+                return;
+            }
             let raw_file = Cinnamon.get_file_contents_utf8_sync(this.file.get_path());
             let new_json = JSON.parse(raw_file);
             for (let key in new_json) {
