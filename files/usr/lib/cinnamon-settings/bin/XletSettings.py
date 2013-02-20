@@ -41,6 +41,7 @@ class XletSetting:
         if "icon" in self.applet_meta:
             image = Gtk.Image().new_from_icon_name(self.applet_meta["icon"], Gtk.IconSize.BUTTON)
             self.back_to_list_button.set_image(image)
+            self.back_to_list_button.get_property('image').set_padding(5, 0)
         self.back_to_list_button.set_label(self.applet_meta["name"])
         self.back_to_list_button.set_tooltip_text(_("Back to list"))
         self.more_button.set_tooltip_text(_("More actions..."))
@@ -61,6 +62,10 @@ class XletSetting:
 
     def show (self):
         self.content.show_all()
+        try:
+            self.back_to_list_button.get_property('image').show()
+        except:
+            pass
 
     def on_hide (self, widget):
         self.content.hide()
