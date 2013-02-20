@@ -84,7 +84,7 @@ MyApplet.prototype = {
             this.menu.addMenuItem(mouseKeys);
 
             this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-            this.menu.addSettingsAction(_("Universal Access Settings"), 'gnome-universal-access-panel.desktop');
+            this.menu.addSettingsAction(_("Universal Access Settings"), 'universal-access');
         }
         catch (e) {
             global.logError(e);
