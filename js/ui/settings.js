@@ -444,7 +444,7 @@ _provider.prototype = {
 /* individual key notification, sends old and new value with signal */
 
         _value_changed_notify: function(key, oldval, newval) {
-            this.emit("changed::" + key, oldval, newval);
+            this.emit("changed::" + key, key, oldval, newval);
         },
 
 /* Public api:  bind an applet property/variable to a setting

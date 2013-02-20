@@ -99,8 +99,8 @@ MyApplet.prototype = {
         this.actor.style = "background-color:" + this.bg_color + "; width:" + this.spinner_number + "px";
     },
 
-    on_signal_test_fired: function(setting_prov, oldval, newval) {
-        global.logError("Test signal fired.  Old value was " + oldval + ".  New value is " + newval + ".");
+    on_signal_test_fired: function(setting_prov, key, oldval, newval) {
+        global.logError("Test signal fired.  Old value for key "+ key + " was " + oldval + ".  New value is " + newval + ".");
     },
 
     on_slider_changed: function(slider, value) {
