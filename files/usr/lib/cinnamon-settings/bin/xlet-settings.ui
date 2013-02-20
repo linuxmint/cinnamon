@@ -33,7 +33,6 @@
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
             <property name="image">image3</property>
-            <property name="always_show_image">True</property>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -65,7 +64,6 @@
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
             <property name="image">image2</property>
-            <property name="always_show_image">True</property>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -83,7 +81,6 @@
             <property name="receives_default">True</property>
             <property name="no_show_all">True</property>
             <property name="image">image1</property>
-            <property name="always_show_image">True</property>
           </object>
           <packing>
             <property name="expand">False</property>
