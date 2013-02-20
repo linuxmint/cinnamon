@@ -8,6 +8,7 @@ const AppletManager = imports.ui.appletManager;
 const DeskletManager = imports.ui.deskletManager;
 const ExtensionSystem = imports.ui.extensionSystem;
 const Extension = imports.ui.extension;
+const Mainloop = imports.mainloop;
 
 const SETTING_SCHEMA_FILE = "settings-schema.json";
 
@@ -530,6 +531,7 @@ SettingObj.prototype = {
         this.json = JSON.parse(raw_file);
         this.settings_file_monitor = this.file.monitor_file(Gio.FileMonitorFlags.NONE, null);
         this.monitor_id = this.settings_file_monitor.connect('changed', Lang.bind(this, this._on_file_changed));
+        this.file_changed_timeout = null;
     },
 
     save: function() {
@@ -563,6 +565,13 @@ SettingObj.prototype = {
     },
 
     _on_file_changed: function() {
+        if (this.file_changed_timeout) {
+            Mainloop.source_remove(this.file_changed_timeout);
+        }
+        this.file_changed_timeout = Mainloop.timeout_add(300, Lang.bind(this, this._on_file_changed_timeout))
+    },
+
+    _on_file_changed_timeout: function() {
         if (this.file.query_exists(null)) {
             let raw_file = Cinnamon.get_file_contents_utf8_sync(this.file.get_path());
             let new_json = JSON.parse(raw_file);
@@ -579,6 +588,8 @@ SettingObj.prototype = {
         } else {
             this.settings_file_monitor.disconnect(this.monitor_id);
         }
+        this.file_changed_timeout = null;
+        return false;
     }
 };
 Signals.addSignalMethods(SettingObj.prototype);
