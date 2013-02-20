@@ -660,65 +660,86 @@ class RadioGroup(Gtk.VBox, BaseWidget):
         if self.entry is not None:
             self.entry.set_sensitive(active)
 
+
 class FileChooser(Gtk.HBox, BaseWidget):
     def __init__(self, key, settings_obj, uuid):
         BaseWidget.__init__(self, key, settings_obj, uuid)
         super(FileChooser, self).__init__()
+
         self.label = Gtk.Label(self.get_desc())
-        self.chooser = Gtk.FileChooserButton()
-        if self.get_select_dir():
-            self.chooser.set_action(Gtk.FileChooserAction.SELECT_FOLDER)
+        self.entry = Gtk.Entry()
+        self.button = Gtk.Button("")
+        self.button.set_image(Gtk.Image().new_from_stock(Gtk.STOCK_OPEN, Gtk.IconSize.BUTTON))
+        self.button.get_property('image').show()
         if self.get_desc() != "":
             self.pack_start(self.label, False, False, 2)
-        self.add(self.chooser)
-        if self.get_allow_none():
-            self.show_none_cb = Gtk.CheckButton(_("None"))
-            self.show_none_cb.set_active(self.get_val() == "")
-            self.pack_start(self.show_none_cb, False, False, 5)
-        else:
-            self.show_none_cb = None
-        if self.get_val() == "":
-            self.chooser.set_sensitive(False)
-        else:
-            self.chooser.set_current_folder(self.get_val().replace("~", home))
-        self.handler = self.chooser.connect("file-set", self.on_my_value_changed)
-        if self.get_select_dir():
-            self.dir_handler = self.chooser.connect("current-folder-changed", self.on_my_value_changed)
-        if self.show_none_cb is not None:
-            self.show_none_cb.connect("toggled", self.on_my_value_changed)
-        set_tt(self.get_tooltip(), self.label, self.chooser)
 
-    def on_my_value_changed(self, widget):
-        value = ""
-        if self.show_none_cb and self.show_none_cb.get_active():
-            value = ""
-            self.chooser.set_sensitive(False)
+        self.pack_start(self.entry, True, True, 2)
+        self.pack_start(self.button, False, False, 5)
+
+        self.entry.set_text(self.get_val())
+
+        self.button.connect("clicked", self.on_button_pressed)
+        self.handler = self.entry.connect("changed", self.on_entry_changed)
+        self._value_changed_timer = None
+        set_tt(self.get_tooltip(), self.label, self.button, self.entry)
+
+    def on_button_pressed(self, widget):
+        if self.get_select_dir():
+            mode = Gtk.FileChooserAction.SELECT_FOLDER
+            string = _("Select a directory to use")
         else:
-            if self.get_select_dir():
-                value = self.chooser.get_current_folder()
-            else:
-                value = self.chooser.get_filename()
-            if value==None:
-                value = ""
-            self.chooser.set_sensitive(True)
-        self.set_val(value)
+            mode = Gtk.FileChooserAction.OPEN
+            string = _("Select a file")
+        dialog = Gtk.FileChooserDialog(string,
+                                       None,
+                                       mode,
+                                       (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
+                                        Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
+        if self.get_select_dir():
+            filt = Gtk.FileFilter()
+            filt.set_name(_("Directories"))
+            filt.add_custom(Gtk.FileFilterFlags.FILENAME, self.filter_func, None)
+            dialog.add_filter(filt)
+
+        dialog.set_filename(self.get_val())
+        response = dialog.run()
+
+        if response == Gtk.ResponseType.OK:
+            filename = dialog.get_filename()
+            self.entry.set_text(filename)
+            self.set_val(filename)
+        dialog.destroy()
+
+    def filter_func(chooser, info, data):
+        return os.path.isdir(info.filename)
+
+    def on_entry_changed(self, widget):
+        if self._value_changed_timer:
+            GObject.source_remove(self._value_changed_timer)
+        self._value_changed_timer = GObject.timeout_add(300, self.update_from_entry)
+
+    def update_from_entry(self):
+        self.set_val(self.entry.get_text())
+        self._value_changed_timer = None
+        return False
 
     def on_settings_file_changed(self):
-        self.chooser.handler_block(self.handler)
-        self.chooser.handler_block(self.dir_handler)
-        self.chooser.set_filename(self.get_val())
-        self.chooser.handler_unblock(self.handler)
-        self.chooser.handler_unblock(self.dir_handler)
+        self.entry.handler_block(self.handler)
+        self.entry.set_text(self.get_val())
+        self.entry.handler_unblock(self.handler)
 
     def update_dep_state(self, active):
-        self.chooser.set_sensitive(active)
+        self.entry.set_sensitive(active)
+        self.button.set_sensitive(active)
+
 
 class IconFileChooser(Gtk.HBox, BaseWidget):
     def __init__(self, key, settings_obj, uuid):
         BaseWidget.__init__(self, key, settings_obj, uuid)
         super(IconFileChooser, self).__init__()
 
-        valid, self.width, self.height = Gtk.icon_size_lookup(Gtk.IconSize.DND)
+        valid, self.width, self.height = Gtk.icon_size_lookup(Gtk.IconSize.BUTTON)
 
         self.label = Gtk.Label(self.get_desc())
         self.entry = Gtk.Entry()
@@ -731,9 +752,9 @@ class IconFileChooser(Gtk.HBox, BaseWidget):
         self.setup_image()
 
         self.image_button.set_image(self.preview)
-        self.pack_start(self.image_button, False, False, 5)
-        self.pack_start(self.entry, True, True, 2)
 
+        self.pack_start(self.entry, True, True, 2)
+        self.pack_start(self.image_button, False, False, 5)
         self.entry.set_text(self.get_val())
 
         self.image_button.connect("clicked", self.on_button_pressed)
@@ -747,7 +768,7 @@ class IconFileChooser(Gtk.HBox, BaseWidget):
             img = GdkPixbuf.Pixbuf.new_from_file_at_size(val, self.width, self.height)
             self.preview.set_from_pixbuf(img)
         else:
-            self.preview.set_from_icon_name(val, Gtk.IconSize.DND)
+            self.preview.set_from_icon_name(val, Gtk.IconSize.BUTTON)
 
     def on_button_pressed(self, widget):
         dialog = Gtk.FileChooserDialog(_("Pick a new icon file"),
