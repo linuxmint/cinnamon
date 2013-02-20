@@ -694,20 +694,21 @@ class AppletViewSidePage (SidePage):
                 tip += _("\nThis applet supports max %d instances.") % max_instances
         self.instanceButton.set_sensitive(enabled);
         self.instanceButton.set_tooltip_text(tip)
-        hide_override = model.get_value(treeiter, 7)
-        ext_override = model.get_value(treeiter, 8)
-        if hide_override:
-            self.configureButton.hide()
-            self.extConfigureButton.hide()
-            return
-        if ext_override != "":
-            self.configureButton.hide()
-            self.extConfigureButton.show()
-            if checked:
-                self.extConfigureButton.set_sensitive(True)
-            else:
-                self.extConfigureButton.set_sensitive(False)
-            return
+        if treeiter:
+            hide_override = model.get_value(treeiter, 7)
+            ext_override = model.get_value(treeiter, 8)
+            if hide_override:
+                self.configureButton.hide()
+                self.extConfigureButton.hide()
+                return
+            if ext_override != "":
+                self.configureButton.hide()
+                self.extConfigureButton.show()
+                if checked:
+                    self.extConfigureButton.set_sensitive(True)
+                else:
+                    self.extConfigureButton.set_sensitive(False)
+                return
         if treeiter and self._has_settings(model.get_value(treeiter, 0)):
             self.extConfigureButton.hide()
             self.configureButton.show()
