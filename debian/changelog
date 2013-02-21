@@ -1,11 +1,8 @@
-cinnamon (1.6.7+nmu1) UNRELEASED; urgency=low
+cinnamon (1.7.1) olivia; urgency=low
 
-  * Temporary version to make sure the split into cinnamon and
-    cinnamon-common does not break developers test environment. For
-    cleanliness purpose, remove this version from this changelog file just
-    before the next release.
+  * 1.7.1
 
- -- Nicolas Bourdaud <nicolas.bourdaud@gmail.com>  Mon, 19 Nov 2012 21:36:11 +0100
+ -- Clement Lefebvre <root@linuxmint.com>  Thu, 21 Feb 2013 16:21:59 +0000
 
 cinnamon (1.6.7) nadia; urgency=low
 
