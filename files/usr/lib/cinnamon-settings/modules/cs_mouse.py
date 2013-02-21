@@ -35,7 +35,7 @@ class Module:
         title.set_alignment(0,0)
         sidePage.add_widget(title, True)    
         
-        slider = GSettingsRange(_("Treshold:"), _("Small"), _("Large"), 1, 10, False, "int", False, "org.gnome.settings-daemon.peripherals.mouse", "drag-threshold", None, adjustment_step = 1)
+        slider = GSettingsRange(_("Threshold:"), _("Small"), _("Large"), 1, 10, False, "int", False, "org.gnome.settings-daemon.peripherals.mouse", "drag-threshold", None, adjustment_step = 1)
         sidePage.add_widget(slider, True) 
         
         title = Gtk.Label()
