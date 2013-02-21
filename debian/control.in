@@ -95,8 +95,8 @@ Description: Cinnamon desktop
  graphical technologies.
 
 Package: cinnamon-common
-Replaces: cinnamon (<< 1.6.7+nmu1)
-Breaks: cinnamon (<< 1.6.7+nmu1)
+Replaces: cinnamon (<< 1.7.1)
+Breaks: cinnamon (<< 1.7.1)
 Architecture: all
 Depends: ${misc:Depends}, python
 Description: Cinnamon desktop (Common data files)
