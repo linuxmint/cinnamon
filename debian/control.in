@@ -81,7 +81,7 @@ Depends: ${gir:Depends},
          python-pyinotify
 Recommends: gnome-themes-standard, gnome-terminal, nemo, cinnamon-screensaver
 Conflicts: cinnamon-session, cinnamon-settings
-Provides: cinnamon-session, cinnamon-settings, notification-daemon
+Provides: cinnamon-session, cinnamon-settings, notification-daemon, x-window-manager
 Replaces: cinnamon-session, cinnamon-settings
 Description: Cinnamon desktop
  Cinnamon redefines user interactions with the GNOME desktop.

@@ -2,7 +2,6 @@
 # 
 # Modifications should be made to debian/control.in instead.
 # This file is regenerated automatically in the clean target.
-
 Source: cinnamon
 Section: gnome
 Priority: optional
@@ -55,6 +54,7 @@ Depends: ${gir:Depends},
          gjs (>= 1.29.18),
          ${shlibs:Depends},
          ${misc:Depends},
+         cinnamon-common (= ${source:Version}),
 	 cinnamon-control-center | gnome-control-center,
          caribou,
          cups-pk-helper,
@@ -71,6 +71,8 @@ Depends: ${gir:Depends},
          gir1.2-soup-2.4,
          gir1.2-upowerglib-1.0,
          gir1.2-gtkclutter-1.0,
+         gir1.2-javascriptcoregtk-3.0,
+         gir1.2-webkit-3.0,
          python,
          python-dbus,
          python-gconf,
@@ -78,11 +80,12 @@ Depends: ${gir:Depends},
          python-gtk2,
          pkg-config,
          mesa-utils,
+         python-lxml,
          gkbd-capplet,
          python-pyinotify
 Recommends: gnome-themes-standard, gnome-terminal, nemo, cinnamon-screensaver
 Conflicts: cinnamon-session, cinnamon-settings
-Provides: cinnamon-session, cinnamon-settings
+Provides: cinnamon-session, cinnamon-settings, notification-daemon, x-window-manager
 Replaces: cinnamon-session, cinnamon-settings
 Description: Cinnamon desktop
  Cinnamon redefines user interactions with the GNOME desktop.
@@ -94,3 +97,21 @@ Description: Cinnamon desktop
  by the GNOME Panel and by the window manager in previous versions of
  GNOME. Cinnamon has rich visual effects enabled by new
  graphical technologies.
+
+Package: cinnamon-common
+Replaces: cinnamon (<< 1.7.1)
+Breaks: cinnamon (<< 1.7.1)
+Architecture: all
+Depends: ${misc:Depends}, python
+Description: Cinnamon desktop (Common data files)
+ Cinnamon redefines user interactions with the GNOME desktop.
+ In particular, it offers new paradigms for launching applications,
+ accessing documents, and organizing open windows in GNOME. Later, it
+ will introduce a new applets eco-system and offer new solutions for
+ other desktop features, such as notifications and contacts
+ management. Cinnamon is intended to replace functions handled
+ by the GNOME Panel and by the window manager in previous versions of
+ GNOME. Cinnamon has rich visual effects enabled by new
+ graphical technologies.
+ .
+ This package contains the architecture independent files needed by Cinnamon
