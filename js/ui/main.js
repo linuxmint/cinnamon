@@ -159,35 +159,9 @@ function _reparentActor(actor, newParent) {
 }
 
 function start() {
+    _initLogging();
+    
     global.reparentActor = _reparentActor;
-
-    // Monkey patch utility functions into the global proxy;
-    // This is easier and faster than indirecting down into global
-    // if we want to call back up into JS.
-    global.logTrace = _logTrace;
-    global.logWarning = _logWarning;
-    global.logError = _logError;
-    global.log = _logInfo;
-
-    if (global.settings.get_boolean("enable-looking-glass-logs")) {
-        try {
-            let log_filename = Gio.file_parse_name(CIN_LOG_FOLDER + '/glass.log');
-            let log_backup_filename = Gio.file_parse_name(CIN_LOG_FOLDER + '/glass.log.last');
-            let log_dir = Gio.file_new_for_path(CIN_LOG_FOLDER);
-            if (!log_filename.query_exists(null)) {
-                if (!log_dir.query_exists(null))
-                    log_dir.make_directory_with_parents(null);
-                lg_log_file = log_filename.append_to(0, null);
-            } else {
-                log_filename.copy(log_backup_filename, 1, null, null, null);
-                log_filename.delete(null);
-                lg_log_file = log_filename.append_to(0, null);
-            }
-            can_log = true;
-        } catch (e) {
-            global.logError("Error during looking-glass log initialization", e);
-        }
-    }
 
     log("About to start Cinnamon");
     if (GLib.getenv('CINNAMON_SOFTWARE_RENDERING')) {
@@ -698,6 +672,36 @@ function notifyError(msg, details) {
     else
         log('error: ' + msg);
     notify(msg, details);
+}
+
+function _initLogging() {
+    // Monkey patch utility functions into the global proxy;
+    // This is easier and faster than indirecting down into global
+    // if we want to call back up into JS.
+    global.logTrace = _logTrace;
+    global.logWarning = _logWarning;
+    global.logError = _logError;
+    global.log = _logInfo;
+
+    if (global.settings.get_boolean("enable-looking-glass-logs")) {
+        try {
+            let log_filename = Gio.file_parse_name(CIN_LOG_FOLDER + '/glass.log');
+            let log_backup_filename = Gio.file_parse_name(CIN_LOG_FOLDER + '/glass.log.last');
+            let log_dir = Gio.file_new_for_path(CIN_LOG_FOLDER);
+            if (!log_filename.query_exists(null)) {
+                if (!log_dir.query_exists(null))
+                    log_dir.make_directory_with_parents(null);
+                lg_log_file = log_filename.append_to(0, null);
+            } else {
+                log_filename.copy(log_backup_filename, 1, null, null, null);
+                log_filename.delete(null);
+                lg_log_file = log_filename.append_to(0, null);
+            }
+            can_log = true;
+        } catch (e) {
+            global.logError("Error during looking-glass log initialization", e);
+        }
+    }
 }
 
 /**
