@@ -318,7 +318,7 @@ WindowClone.prototype = {
         this._zoomGlobalOrig.setPosition.apply(this._zoomGlobalOrig, this.actor.get_transformed_position());
         this._zoomGlobalOrig.setScale(width / this.actor.width, height / this.actor.height);
 
-        this.actor.reparent(Main.uiGroup);
+        global.reparentActor(this.actor, Main.uiGroup);
         this._zoomLightbox.highlight(this.actor);
 
         [this.actor.x, this.actor.y]             = this._zoomGlobalOrig.getPosition();
@@ -338,7 +338,7 @@ WindowClone.prototype = {
         this._zooming = false;
         this.emit('zoom-end');
 
-        this.actor.reparent(this._origParent);
+        global.reparentActor(this.actor, this._origParent);
         if (this._stackAbove == null)
             this.actor.lower_bottom();
         // If the workspace has been destroyed while we were reparented to

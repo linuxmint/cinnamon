@@ -89,7 +89,6 @@ let workspace_names = [];
 let background = null;
 
 let desktop_layout;
-let applet_side = St.Side.BOTTOM;
 let deskletContainer = null;
 
 let software_rendering = false;
@@ -151,7 +150,17 @@ function _initUserSession() {
     
 }
 
+function _reparentActor(actor, newParent) {
+    let parent = actor.get_parent();
+    if (parent)
+      parent.remove_child(actor);
+    if(newParent)
+        newParent.add_actor(actor);
+}
+
 function start() {
+    global.reparentActor = _reparentActor;
+
     // Monkey patch utility functions into the global proxy;
     // This is easier and faster than indirecting down into global
     // if we want to call back up into JS.
@@ -217,12 +226,6 @@ function start() {
     global.stage.no_clear_hint = true;
     
     desktop_layout = global.settings.get_string("desktop-layout"); 
-    if (desktop_layout == LAYOUT_FLIPPED) {
-        applet_side = St.Side.TOP;        
-    }
-    else if (desktop_layout == LAYOUT_CLASSIC) {
-        applet_side = St.Side.TOP;        
-    }
     
     Gtk.IconTheme.get_default().append_search_path("/usr/share/cinnamon/icons/");
     _defaultCssStylesheet = global.datadir + '/theme/cinnamon.css';
@@ -240,31 +243,14 @@ function start() {
                     });
     St.set_ui_root(global.stage, uiGroup);
 
-    let parent = global.background_actor.get_parent();
-    if (parent) {
-      parent.remove_child(global.background_actor);
-    }
-    parent = global.bottom_window_group.get_parent();
-    if (parent) {
-      parent.remove_child(global.bottom_window_group);
-    }
-    parent = global.window_group.get_parent();
-    if (parent) {
-      parent.remove_child(global.window_group);
-    }
-    parent = global.overlay_group.get_parent();
-    if (parent) {
-      parent.remove_child(global.overlay_group);
-    }
-
-    uiGroup.add_actor(global.background_actor);
-    uiGroup.add_actor(global.bottom_window_group);
+    global.reparentActor(global.background_actor, uiGroup);
+    global.reparentActor(global.bottom_window_group, uiGroup);
     uiGroup.add_actor(deskletContainer.actor);
-    uiGroup.add_actor(global.window_group);
-    uiGroup.add_actor(global.overlay_group);
+    global.reparentActor(global.window_group, uiGroup);
+    global.reparentActor(global.overlay_group, uiGroup);
 
     global.stage.add_actor(uiGroup);
-    global.top_window_group.reparent(global.stage);
+    global.reparentActor(global.top_window_group, global.stage);
 
     layoutManager = new Layout.LayoutManager();
     let pointerTracker = new PointerTracker.PointerTracker();

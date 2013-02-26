@@ -67,7 +67,7 @@ MyApplet.prototype = {
         let existing_index = this.notifications.indexOf(notification);
         if (existing_index != -1) {
             notification._inNotificationBin = true;
-            notification.actor.reparent(this._notificationbin);
+            global.reparentActor(notification.actor, this._notificationbin);
             notification.expand();
             notification._timeLabel.show();
             this.update_list();
