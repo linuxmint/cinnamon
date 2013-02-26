@@ -3,7 +3,6 @@ const St = imports.gi.St;
 
 const Applet = imports.ui.applet;
 const Main = imports.ui.main;
-const PanelMenu = imports.ui.panelMenu;
 
 const ICON_SCALE_FACTOR = .88; // for custom panel heights, 22 (default icon size) / 25 (default panel height)
 
