@@ -818,7 +818,7 @@ function formatTime(d) {
 }
 
 function renderLogLine(line) {
-    return line.category + ' t=' + formatTime(new Date(line.timestamp)) + ' ' + line.message + '\n';
+    return line.category + ' t=' + formatTime(new Date(parseInt(line.timestamp))) + ' ' + line.message + '\n';
 }
 
 function logStackTrace(msg) {
