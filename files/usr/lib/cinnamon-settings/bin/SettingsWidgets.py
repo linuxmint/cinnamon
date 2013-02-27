@@ -154,11 +154,104 @@ class IndentedHBox(Gtk.HBox):
     def add(self, item):
         self.pack_start(item, False, False, 0)
 
-class GSettingsCheckButton(Gtk.CheckButton):    
+
+class BaseWidget():
+    def __init__(self, parent = None):
+        self.connect("button-press-event", self.on_button_pressed)
+        self.connect("button-release-event", self.on_context_menu_popup)
+        self.connect("popup-menu", self.on_context_menu_popup)
+        self.parent = parent
+        self.pressed = False
+
+    def on_button_pressed (self, widget, event = None):
+        if event:
+            if event.button == 1:
+                self.pressed = True
+        return True
+
+    def on_context_menu_popup (self, widget, event = None):
+        if event:
+            if event.button != 3:
+                return False
+        popup = Gtk.Menu()
+        popup.attach_to_widget(self, None)
+        reset_option = Gtk.MenuItem(_("Reset to default"))
+        popup.append(reset_option)
+        reset_option.connect("activate", self.on_reset_to_default)
+        reset_option.show()
+
+        popup.popup(None, None, None, None, 0, 0)
+        return True
+
+    def on_reset_to_default (self, popup):
+        if self.parent is not None:
+            self.parent.settings.reset(self.parent.key)
+        else:
+            self.settings.reset(self.key)
+
+
+class ComboWrapper(Gtk.EventBox, BaseWidget):
+    def __init__(self, parent):
+        super(ComboWrapper, self).__init__()
+        BaseWidget.__init__(self, parent)
+        self.set_visible_window(False)
+        self.set_above_child(True)
+
+    def on_context_menu_popup (self, widget, event = None):
+        if event:
+            if event.button == 1 and self.pressed:
+                self.get_child().grab_focus()
+                try:
+                    self.get_child().popup()
+                except:
+                    self.get_child().clicked()
+                self.pressed = False
+                return True
+            elif event.button != 3:
+                return False
+        popup = Gtk.Menu()
+        popup.attach_to_widget(self, None)
+        reset_option = Gtk.MenuItem(_("Reset to default"))
+        popup.append(reset_option)
+        reset_option.connect("activate", self.on_reset_to_default)
+        reset_option.show()
+
+        popup.popup(None, None, None, None, 0, 0)
+        return True
+
+    def add_combo(self, combobox):
+        self.add(combobox)
+
+class EntryBaseWidget():
+    def __init__(self, parent):
+        self.parent = parent;
+        self.connect("populate-popup", self.on_context_menu_popup)
+
+    def on_context_menu_popup (self, entry, menu):
+        reset_option = Gtk.MenuItem(_("Reset to default"))
+        menu.prepend(reset_option)
+        reset_option.connect("activate", self.on_reset_to_default)
+        reset_option.show()
+
+    def on_reset_to_default (self, popup):
+        self.parent.settings.reset(self.parent.key)
+
+class ExtendedGtkSpinButton(Gtk.SpinButton, EntryBaseWidget):
+    def __init__(self, parent):
+        super(ExtendedGtkSpinButton, self).__init__()
+        EntryBaseWidget.__init__(self, parent)
+
+class ExtendedGtkEntry(Gtk.Entry, EntryBaseWidget):
+    def __init__(self, parent):
+        super(ExtendedGtkEntry, self).__init__()
+        EntryBaseWidget.__init__(self, parent)
+
+class GSettingsCheckButton(Gtk.CheckButton, BaseWidget):    
     def __init__(self, label, schema, key, dep_key):
         self.key = key
         self.dep_key = dep_key
         super(GSettingsCheckButton, self).__init__(label)
+        BaseWidget.__init__(self)
         self.settings = Gio.Settings.new(schema)        
         self.set_active(self.settings.get_boolean(self.key))
         self.settings.connect("changed::"+self.key, self.on_my_setting_changed)
@@ -188,15 +281,16 @@ class GSettingsCheckButton(Gtk.CheckButton):
         else:
             self.set_sensitive(not self.dep_settings.get_boolean(self.dep_key))
 
-class GSettingsSpinButton(Gtk.HBox):    
+
+class GSettingsSpinButton(Gtk.HBox):
     def __init__(self, label, schema, key, dep_key, min, max, step, page, units):
         self.key = key
         self.min = min
         self.max = max
         self.dep_key = dep_key
-        super(GSettingsSpinButton, self).__init__()        
+        super(GSettingsSpinButton, self).__init__()
         self.label = Gtk.Label(label)       
-        self.content_widget = Gtk.SpinButton()
+        self.content_widget = ExtendedGtkSpinButton(self)
         self.units = Gtk.Label(units)        
         if (label != ""):       
             self.pack_start(self.label, False, False, 2)
@@ -252,13 +346,13 @@ class GSettingsSpinButton(Gtk.HBox):
         else:
             self.set_sensitive(not self.dep_settings.get_boolean(self.dep_key))
 
-class GSettingsEntry(Gtk.HBox):    
+class GSettingsEntry(Gtk.HBox):
     def __init__(self, label, schema, key, dep_key):
         self.key = key
         self.dep_key = dep_key
         super(GSettingsEntry, self).__init__()
         self.label = Gtk.Label(label)       
-        self.content_widget = Gtk.Entry()
+        self.content_widget = ExtendedGtkEntry(self)
         self.pack_start(self.label, False, False, 5)        
         self.add(self.content_widget)     
         self.settings = Gio.Settings.new(schema)        
@@ -290,30 +384,28 @@ class GSettingsEntry(Gtk.HBox):
             self.set_sensitive(not self.dep_settings.get_boolean(self.dep_key))
 
 
-class GSettingsFileChooser(Gtk.HBox):
-    def __init__(self, label, schema, key, dep_key, show_none_cb = False):
+class GSettingsFileChooser(Gtk.HBox, BaseWidget):
+    def __init__(self, label, schema, key, dep_key):
+        super(GSettingsFileChooser, self).__init__()
+        BaseWidget.__init__(self)
         self.key = key
         self.dep_key = dep_key
-        super(GSettingsFileChooser, self).__init__()
-        self.label = Gtk.Label(label)       
-        self.content_widget = Gtk.FileChooserButton()
+        self.label = Gtk.Label(label)
+        self.entry = ExtendedGtkEntry(self)
+        self.button = Gtk.Button(_("..."))
+
         self.pack_start(self.label, False, False, 2)
-        self.add(self.content_widget)
+        self.add(self.entry)
+        self.pack_start(self.button, False, False, 2)
         self.settings = Gio.Settings.new(schema)
-        value = self.settings.get_string(self.key)     
-        if show_none_cb:
-            self.show_none_cb = Gtk.CheckButton(_("None"))
-            self.show_none_cb.set_active(value=="")
-            self.pack_start(self.show_none_cb, False, False, 5)
-        else:
-            self.show_none_cb = None
-        if value=="":
-            self.content_widget.set_sensitive(False)
-        else:
-            self.content_widget.set_filename(value)
-        self.content_widget.connect('file-set', self.on_my_value_changed)
-        self.show_none_cb.connect('toggled', self.on_my_value_changed)
-        self.content_widget.show_all()
+        self.value = self.settings.get_string(self.key)
+
+        self.entry.set_text(self.value)
+
+        self.handler = self.entry.connect('changed', self.on_entry_changed)
+        self.button.connect("clicked", self.on_button_pressed)
+        self.settings.connect("changed::"+self.key, self.on_my_setting_changed)
+        self.show_all()
         self.dependency_invert = False
         if self.dep_key is not None:
             if self.dep_key[0] == '!':
@@ -324,17 +416,41 @@ class GSettingsFileChooser(Gtk.HBox):
             self.dep_key = split[1]
             self.dep_settings.connect("changed::"+self.dep_key, self.on_dependency_setting_changed)
             self.on_dependency_setting_changed(self, None)
+        self._value_changed_timer = None
 
-    def on_my_value_changed(self, widget):
-        if self.show_none_cb.get_active():
-            value = ""
-            self.content_widget.set_sensitive(False)
-        else:
-            value = self.content_widget.get_filename()
-            if value==None:
-                value = ""
-            self.content_widget.set_sensitive(True)
-        self.settings.set_string(self.key, value)
+    def on_button_pressed(self, widget):
+        mode = Gtk.FileChooserAction.OPEN
+        string = _("Select a file")
+        dialog = Gtk.FileChooserDialog(string,
+                                       None,
+                                       mode,
+                                       (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
+                                        Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
+
+        dialog.set_filename(self.value)
+        response = dialog.run()
+
+        if response == Gtk.ResponseType.OK:
+            filename = dialog.get_filename()
+            self.entry.set_text(filename)
+        dialog.destroy()
+
+    def on_entry_changed(self, widget):
+        if self._value_changed_timer:
+            GObject.source_remove(self._value_changed_timer)
+        self._value_changed_timer = GObject.timeout_add(300, self.update_from_entry)
+
+    def update_from_entry(self):
+        self.value = self.entry.get_text()
+        self.settings.set_string(self.key, self.value)
+        self._value_changed_timer = None
+        return False
+
+    def on_my_setting_changed(self, schema, key):
+        self.value = self.settings.get_string(self.key)
+        self.entry.handler_block(self.handler)
+        self.entry.set_text(self.value)
+        self.entry.handler_unblock(self.handler)
 
     def on_dependency_setting_changed(self, settings, dep_key):
         if not self.dependency_invert:
@@ -342,22 +458,27 @@ class GSettingsFileChooser(Gtk.HBox):
         else:
             self.set_sensitive(not self.dep_settings.get_boolean(self.dep_key))
 
-class GSettingsFontButton(Gtk.HBox):
+class GSettingsFontButton(Gtk.EventBox, BaseWidget):
     def __init__(self, label, schema, key, dep_key):
         self.key = key
         self.dep_key = dep_key
         super(GSettingsFontButton, self).__init__()
+        BaseWidget.__init__(self)
+        self.set_visible_window(False)
         self.settings = Gio.Settings.new(schema)
         self.value = self.settings.get_string(key)
         
         self.label = Gtk.Label(label)
-
+        self.settings.connect("changed::"+self.key, self.on_my_setting_changed)
         self.content_widget = Gtk.FontButton()
         self.content_widget.set_font_name(self.value)
-        
+        hbox = Gtk.HBox()
         if (label != ""):
-            self.pack_start(self.label, False, False, 2)
-        self.pack_start(self.content_widget, False, False, 2)
+            hbox.pack_start(self.label, False, False, 2)
+        cw = ComboWrapper(self)
+        cw.add_combo(self.content_widget)
+        hbox.pack_start(cw, False, False, 2)
+        self.add(hbox)
         self.content_widget.connect('font-set', self.on_my_value_changed)
         self.content_widget.show_all()
         self.dependency_invert = False
@@ -379,6 +500,10 @@ class GSettingsFontButton(Gtk.HBox):
             self.set_sensitive(self.dep_settings.get_boolean(self.dep_key))
         else:
             self.set_sensitive(not self.dep_settings.get_boolean(self.dep_key))
+
+    def on_my_setting_changed(self, schema, key):
+        self.value = self.settings.get_string(self.key)
+        self.content_widget.set_font_name(self.value)
 
 #class GSettingsRange(Gtk.HBox):
 #    def __init__(self, label, schema, key, dep_key, **options):
@@ -420,9 +545,11 @@ class GSettingsFontButton(Gtk.HBox):
 #        else:
 #            self.set_sensitive(not self.dep_settings.get_boolean(self.dep_key))
 
-class GSettingsRange(Gtk.HBox):
+class GSettingsRange(Gtk.EventBox, BaseWidget):
     def __init__(self, label, low_label, hi_label, low_limit, hi_limit, inverted, valtype, exponential, schema, key, dep_key, **options):
         super(GSettingsRange, self).__init__()
+        BaseWidget.__init__(self)
+        self.set_visible_window(False)
         self.key = key
         self.dep_key = dep_key
         self.settings = Gio.Settings.new(schema)
@@ -447,18 +574,21 @@ class GSettingsRange(Gtk.HBox):
         self.content_widget = Gtk.Scale.new_with_range(Gtk.Orientation.HORIZONTAL, 0, 1, (self._step / self._range))
         self.content_widget.set_value(self.to_corrected(self.value))
         self.content_widget.set_draw_value(False);
+        hbox = Gtk.HBox()
         if (label != ""):
-            self.pack_start(self.label, False, False, 2)
+            hbox.pack_start(self.label, False, False, 2)
         if (low_label != ""):
-            self.pack_start(self.low_label, False, False, 2)
-        self.pack_start(self.content_widget, True, True, 2)
+            hbox.pack_start(self.low_label, False, False, 2)
+        hbox.pack_start(self.content_widget, True, True, 2)
         if (hi_label != ""):
-            self.pack_start(self.hi_label, False, False, 2)
+            hbox.pack_start(self.hi_label, False, False, 2)
+        self.add(hbox)
         self._dragging = False
         self.content_widget.connect('value-changed', self.on_my_value_changed)
         self.content_widget.connect('button-press-event', self.on_mouse_down)
         self.content_widget.connect('button-release-event', self.on_mouse_up)
         self.content_widget.show_all()
+        self.settings.connect("changed::"+self.key, self.on_my_setting_changed)
         self.dependency_invert = False
         if self.dep_key is not None:
             if self.dep_key[0] == '!':
@@ -533,13 +663,24 @@ class GSettingsRange(Gtk.HBox):
                 result =  (value * self._range) + self._min
         return round(result)
 
-class GSettingsRangeSpin(Gtk.HBox):
+    def on_my_setting_changed(self, schema, key):
+        if self.valtype == "int":
+            self.value = self.settings.get_int(self.key) * 1.0
+        elif self.valtype == "uint":
+            self.value = self.settings.get_uint(self.key) * 1.0
+        elif self.valtype == "double":
+            self.value = self.settings.get_double(self.key) * 1.0
+        self.content_widget.set_value(self.to_corrected(self.value))
+
+
+class GSettingsRangeSpin(Gtk.HBox, BaseWidget):
     def __init__(self, label, schema, key, dep_key, **options):
         self.key = key
         self.dep_key = dep_key
         super(GSettingsRangeSpin, self).__init__()
+        BaseWidget.__init__(self)
         self.label = Gtk.Label(label)
-        self.content_widget = Gtk.SpinButton()
+        self.content_widget = ExtendedGtkSpinButton(self)
 
         if (label != ""):
             self.pack_start(self.label, False, False, 2)
@@ -581,14 +722,16 @@ class GSettingsRangeSpin(Gtk.HBox):
         else:
             self.set_sensitive(not self.dep_settings.get_boolean(self.dep_key))
 
-class GSettingsComboBox(Gtk.HBox):    
+class GSettingsComboBox(Gtk.EventBox, BaseWidget):    
     def __init__(self, label, schema, key, dep_key, options):
         self.key = key
         self.dep_key = dep_key
         super(GSettingsComboBox, self).__init__()
+        BaseWidget.__init__(self)
+        self.set_visible_window(False)
         self.settings = Gio.Settings.new(schema)        
         self.value = self.settings.get_string(self.key)
-                      
+        self.options = options
         self.label = Gtk.Label(label)       
         self.model = Gtk.ListStore(str, str)
         selected = None
@@ -598,18 +741,22 @@ class GSettingsComboBox(Gtk.HBox):
             self.model.set_value(iter, 1, option[1])                        
             if (option[0] == self.value):
                 selected = iter
-                                
+
         self.content_widget = Gtk.ComboBox.new_with_model(self.model)   
+        self.content_widget.set_id_column(0)
         renderer_text = Gtk.CellRendererText()
         self.content_widget.pack_start(renderer_text, True)
         self.content_widget.add_attribute(renderer_text, "text", 1)     
-        
+        self.settings.connect("changed::"+self.key, self.on_my_setting_changed)
         if selected is not None:
             self.content_widget.set_active_iter(selected)
-        
+        hbox = Gtk.HBox()
         if (label != ""):
-            self.pack_start(self.label, False, False, 2)                
-        self.pack_start(self.content_widget, False, False, 2)                     
+            hbox.pack_start(self.label, False, False, 2)
+        cw = ComboWrapper(self)
+        cw.add_combo(self.content_widget)
+        hbox.pack_start(cw, False, False, 2)
+        self.add(hbox)
         self.content_widget.connect('changed', self.on_my_value_changed)
         self.content_widget.show_all()
         self.dependency_invert = False
@@ -636,10 +783,18 @@ class GSettingsComboBox(Gtk.HBox):
         else:
             self.set_sensitive(not self.dep_settings.get_boolean(self.dep_key))
 
-class GSettingsIntComboBox(Gtk.HBox):
+    def on_my_setting_changed(self, settings, key):
+        self.value = self.settings.get_string(self.key)
+        for val, name in self.options:
+            if val == self.value:
+                self.content_widget.set_active_id(val)
+
+class GSettingsIntComboBox(Gtk.EventBox, BaseWidget):
     def __init__(self, label, schema, key, options):
         self.key = key
         super(GSettingsIntComboBox, self).__init__()
+        BaseWidget.__init__(self)
+        self.set_visible_window(False)
         self.settings = Gio.Settings.new(schema)
         self.value = self.settings.get_int(self.key)
 
@@ -654,6 +809,7 @@ class GSettingsIntComboBox(Gtk.HBox):
                 selected = iter
 
         self.content_widget = Gtk.ComboBox.new_with_model(self.model)
+        self.content_widget.set_id_column(0)
         renderer_text = Gtk.CellRendererText()
         self.content_widget.pack_start(renderer_text, True)
         self.content_widget.add_attribute(renderer_text, "text", 1)
@@ -661,9 +817,14 @@ class GSettingsIntComboBox(Gtk.HBox):
         if selected is not None:
             self.content_widget.set_active_iter(selected)
 
+        hbox = Gtk.HBox()
         if (label != ""):
-            self.pack_start(self.label, False, False, 2)
-        self.pack_start(self.content_widget, False, False, 2)
+            hbox.pack_start(self.label, False, False, 2)
+        cw = ComboWrapper(self)
+        cw.add_combo(self.content_widget)
+        hbox.pack_start(cw, False, False, 2)
+        self.add(hbox)
+        self.settings.connect("changed::"+self.key, self.on_my_setting_changed)
         self.content_widget.connect('changed', self.on_my_value_changed)
         self.content_widget.show_all()
 
@@ -673,15 +834,24 @@ class GSettingsIntComboBox(Gtk.HBox):
             value = self.model[tree_iter][0]
             self.settings.set_int(self.key, value)
 
-class GSettingsColorChooser(Gtk.ColorButton):
+    def on_my_setting_changed(self, settings, key):
+        self.value = self.settings.get_string(self.key)
+        for val, name in self.options:
+            if val == self.value:
+                self.content_widget.set_active_id(val)
+
+
+class GSettingsColorChooser(Gtk.ColorButton, BaseWidget):
     def __init__(self, schema, key, dep_key):
         Gtk.ColorButton.__init__(self)
-        self._schema = Gio.Settings.new(schema)
-        self._key = key
+        BaseWidget.__init__(self)
+        self.settings = Gio.Settings.new(schema)
+        self.key = key
         self.dep_key = dep_key
-        self.set_value(self._schema[self._key])
+        self.value = self.settings.get_string(self.key)
+        self.set_value(self.value)
         self.connect("color-set", self._on_color_set)
-        self._schema.connect("changed::"+key, self._on_settings_value_changed)
+        self.settings.connect("changed::"+key, self._on_settings_value_changed)
         self.dependency_invert = False
         if self.dep_key is not None:
             if self.dep_key[0] == '!':
@@ -694,9 +864,9 @@ class GSettingsColorChooser(Gtk.ColorButton):
             self.on_dependency_setting_changed(self, None)
 
     def _on_settings_value_changed(self, schema, key):
-        self.set_value(schema[key])
+        self.set_value(self.settings.get_string(self.key))
     def _on_color_set(self, *args):
-        self._schema.set_string(self._key, self.get_value())
+        self.settings.set_string(self.key, self.get_value())
     def get_value(self):
         return self.get_color().to_string()
     def set_value(self, value):
@@ -714,6 +884,7 @@ class GSettingsColorChooser(Gtk.ColorButton):
 #         super(GConfFontButton, self).__init__()
 #         self.settings = gconf.client_get_default()
 #         self.value = self.settings.get_string(key)
+
         
 #         self.label = Gtk.Label(label)
 

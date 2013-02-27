@@ -40,16 +40,17 @@ class Module:
 
 
 
-class TitleBarButtonsOrderSelector(Gtk.Table):
+class TitleBarButtonsOrderSelector(Gtk.EventBox, BaseWidget):
     def __init__(self):        
         self.schema = "org.cinnamon.overrides"
         self.key = "button-layout"
         
         super(TitleBarButtonsOrderSelector, self).__init__()
-        
+        BaseWidget.__init__(self)
         self.settings = Gio.Settings.new(self.schema)        
         self.value = self.settings.get_string(self.key)
-                
+        self.table = Gtk.Table()
+        self.add(self.table)
         try:
             left_items, right_items = self.value.split(":")
         except:
@@ -65,23 +66,27 @@ class TitleBarButtonsOrderSelector(Gtk.Table):
         
         label = Gtk.Label(_("Left side title bar buttons"))
         label.set_alignment(0, 0.5)
-        self.attach(label, 0, 1, 0, 1, xoptions = Gtk.AttachOptions.FILL, yoptions=0, xpadding=2)
+        self.table.attach(label, 0, 1, 0, 1, xoptions = Gtk.AttachOptions.FILL, yoptions=0, xpadding=2)
         left_side_box = Gtk.HBox()
-        self.attach(left_side_box, 1, 2, 0, 1, yoptions=0, xpadding=2)
+        self.table.attach(left_side_box, 1, 2, 0, 1, yoptions=0, xpadding=2)
         
         label = Gtk.Label(_("Right side title bar buttons"))
         label.set_alignment(0, 0.5)
-        self.attach(label, 0, 1, 1, 2, xoptions = Gtk.AttachOptions.FILL, yoptions=0, xpadding=2)
+        self.table.attach(label, 0, 1, 1, 2, xoptions = Gtk.AttachOptions.FILL, yoptions=0, xpadding=2)
         right_side_box = Gtk.HBox()
-        self.attach(right_side_box, 1, 2, 1, 2, yoptions=0, xpadding=2)
+        self.table.attach(right_side_box, 1, 2, 1, 2, yoptions=0, xpadding=2)
         
         self.left_side_widgets = []
         self.right_side_widgets = []
         for i in range(4):
-            self.left_side_widgets.append(Gtk.ComboBox())
-            self.right_side_widgets.append(Gtk.ComboBox())
+            cw = ComboWrapper(self)
+            cw.add_combo(Gtk.ComboBox())
+            self.left_side_widgets.append(cw)
+            cw = ComboWrapper(self)
+            cw.add_combo(Gtk.ComboBox())
+            self.right_side_widgets.append(cw)
         
-        buttons = [
+        self.buttons = [
             ("", ""),
             ("menu", _("Menu")),
             ("close", _("Close")),
@@ -89,6 +94,7 @@ class TitleBarButtonsOrderSelector(Gtk.Table):
             ("maximize", _("Maximize"))
         ]
         
+        self.signals = {}
         for i in self.left_side_widgets + self.right_side_widgets:
             if i in self.left_side_widgets:
                 ref_list = left_items
@@ -98,25 +104,30 @@ class TitleBarButtonsOrderSelector(Gtk.Table):
                 index = self.right_side_widgets.index(i)
             model = Gtk.ListStore(str, str)
             selected_iter = None
-            for button in buttons:
+            for button in self.buttons:
                 iter = model.insert_before(None, None)
                 model.set_value(iter, 0, button[0])                
                 model.set_value(iter, 1, button[1])
                 if index < len(ref_list) and ref_list[index] == button[0]:
                     selected_iter = iter
-            i.set_model(model)
+            combo = i.get_child()
+            combo.set_model(model)
+            combo.set_id_column(0)
             renderer_text = Gtk.CellRendererText()
-            i.pack_start(renderer_text, True)
-            i.add_attribute(renderer_text, "text", 1)
+            combo.pack_start(renderer_text, True)
+            combo.add_attribute(renderer_text, "text", 1)
             if selected_iter is not None:
-                i.set_active_iter(selected_iter)
-            i.connect("changed", self.on_my_value_changed)
-        
+                combo.set_active_iter(selected_iter)
+
+            self.signals[combo] = combo.connect("changed", self.on_my_value_changed)
+
         for i in self.left_side_widgets:
             left_side_box.pack_start(i, False, False, 2)
         for i in self.right_side_widgets:
             right_side_box.pack_start(i, False, False, 2)
-    
+
+        self.settings.connect("changed::"+self.key, self.on_my_setting_changed)
+
     def on_my_value_changed(self, widget):
         active_iter = widget.get_active_iter()
         if active_iter:
@@ -126,11 +137,12 @@ class TitleBarButtonsOrderSelector(Gtk.Table):
         left_items = []
         right_items = []
         for i in self.left_side_widgets + self.right_side_widgets:
-            active_iter = i.get_active_iter()
+            combo = i.get_child()
+            active_iter = combo.get_active_iter()
             if active_iter:
-                value = i.get_model()[i.get_active_iter()][0]
-                if i != widget and value == new_value:
-                    i.set_active_iter(None)
+                value = combo.get_model()[combo.get_active_iter()][0]
+                if combo != widget and value == new_value:
+                    combo.set_active_iter(None)
                 elif value != "":
                     if i in self.left_side_widgets:
                         left_items.append(value)
@@ -138,6 +150,35 @@ class TitleBarButtonsOrderSelector(Gtk.Table):
                         right_items.append(value)
         self.settings.set_string(self.key, ','.join(str(item) for item in left_items) + ':' + ','.join(str(item) for item in right_items))
 
+    def on_my_setting_changed(self, settings, key):
+        self.value = self.settings.get_string(self.key)
 
+        try:
+            left_items, right_items = self.value.split(":")
+        except:
+            left_items = right_items = ""
+        if len(left_items) > 0:
+            left_items = left_items.split(",")
+        else:
+            left_items = []
+        if len(right_items) > 0:
+            right_items = right_items.split(",")
+        else:
+            right_items = []
 
-
+        for i in self.left_side_widgets + self.right_side_widgets:
+            combo = i.get_child()
+            combo.handler_block(self.signals[combo])
+            if i in self.left_side_widgets:
+                ref_list = left_items
+                index = self.left_side_widgets.index(i)
+            else:
+                ref_list = right_items
+                index = self.right_side_widgets.index(i)
+            for val, name in self.buttons:
+                if index < len(ref_list):
+                    if ref_list[index] == val:
+                        combo.set_active_id(val)
+                else:
+                    combo.set_active_id("")
+            combo.handler_unblock(self.signals[combo])
