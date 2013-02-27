@@ -30,6 +30,10 @@ class Module:
         sidePage.add_widget(TitleBarButtonsOrderSelector())
         sidePage.add_widget(GSettingsCheckButton(_("Enable Edge Tiling (\"Aero Snap\")"), "org.cinnamon.overrides", "edge-tiling", None))
         sidePage.add_widget(GSettingsCheckButton(_("Enable Edge Flip"), "org.cinnamon", "enable-edge-flip", None))
+
+        sidePage.add_widget(GSettingsSpinButton(_("Window edge tile theshold"), "org.cinnamon.muffin", "edge-tile-threshold", None, 1, 400, 1, 1, _("Pixels")), True)
+        sidePage.add_widget(GSettingsSpinButton(_("Window drag detach threshold"), "org.cinnamon.muffin", "edge-detach-threshold", None, 1, 400, 1, 1, _("Pixels")), True)
+
         sidePage.add_widget(GSettingsCheckButton(_("Attach dialog windows to their parent window's titlebar"), "org.cinnamon.overrides", "attach-modal-dialogs", None))
         alttab_styles = [["icons", _("Icons only")],["icons+thumbnails", _("Icons and thumbnails")],["icons+preview", _("Icons and window preview")],["preview", _("Window preview (no icons)")]]
         alttab_styles_combo = GSettingsComboBox(_("ALT-tab switcher style"), "org.cinnamon", "alttab-switcher-style", None, alttab_styles)
