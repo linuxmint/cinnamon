@@ -29,12 +29,7 @@ class Module:
         
         slider = GSettingsRange(_("Sensitivity:"), _("Low"), _("High"), 1, 10, False, "int", False, "org.gnome.settings-daemon.peripherals.mouse", "motion-threshold", None, adjustment_step = 1)
         sidePage.add_widget(slider, True) 
-        
-        title = Gtk.Label()
-        title.set_markup("<b>%s</b>" % _("Drag and Drop"))
-        title.set_alignment(0,0)
-        sidePage.add_widget(title, True)    
-        
+
         title = Gtk.Label()
         title.set_markup("<b>%s</b>" % _("Double-Click Timeout"))
         title.set_alignment(0,0)
