@@ -58,4 +58,6 @@ class Module:
         box.add(GSettingsSpinButton(_("Bottom panel height"), "org.cinnamon", "panel-bottom-height", "org.cinnamon/panel-resizable",  0, 2000, 1, 5, _("Pixels")))
         sidePage.add_widget(box, True)
 
+        sidePage.add_widget(GSettingsSpinButton(_("Panel drag threshold"), "org.cinnamon", "dnd-drag-threshold", None, 1, 200, 1, 1, _("Pixels")), True)
+
         sidePage.add_widget(GSettingsCheckButton(_("Panel edit mode"), "org.cinnamon", "panel-edit-mode", None))
