@@ -167,7 +167,7 @@ class BaseWidget():
         if event:
             if event.button == 1:
                 self.pressed = True
-        return True
+        return False
 
     def on_context_menu_popup (self, widget, event = None):
         if event:
