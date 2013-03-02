@@ -22,7 +22,6 @@ try:
     from PIL import Image
     import tempfile
     import math
-    import capi
     import subprocess
 
 except Exception, detail:
@@ -40,6 +39,8 @@ class SidePage:
         self.exec_name = exec_name
         self.keywords = keywords
         self.advanced = advanced
+        self.topWindow = None
+        self.builder = None
 
     def add_widget(self, widget, advanced = False):
         self.widgets.append(widget)
@@ -50,7 +51,6 @@ class SidePage:
         widgets = self.content_box.get_children()
         for widget in widgets:
             self.content_box.remove(widget)
-
         # Add our own widgets
         # C modules are sort of messy - they check the desktop type
         # (for Unity or GNOME) and show/hide UI items depending on
@@ -70,25 +70,29 @@ class SidePage:
                     child.show()
                     if child.get_name() == "c_box":
                         c_widgets = child.get_children()
-                        for c_widget in c_widgets:
-                            c_widget.show()
+                        if not c_widgets:
+                            c_widget = self.content_box.c_manager.get_c_widget(self.exec_name)
+                            if c_widget is not None:
+                                child.pack_start(c_widget, False, False, 2)
+                                c_widget.show()
+                        else:
+                            for c_widget in c_widgets:
+                                c_widget.show()
             else:
                 self.content_box.show_all()
         else:
-            subprocess.Popen([self.exec_name])
+            subprocess.Popen(self.exec_name.split())
 
 class CCModule:
     def __init__(self, label, mod_id, icon, category, advanced, keywords, content_box):
-        sidePage = SidePage(label, icon, keywords, advanced, content_box, True, False, None)
+        sidePage = SidePage(label, icon, keywords, advanced, content_box, True, False, mod_id)
         self.sidePage = sidePage
         self.name = mod_id
         self.category = category
 
-    def process (self):
-        widget = capi.get_c_widget(self.name)
-        if widget is not None:
+    def process (self, c_manager):
+        if c_manager.lookup_c_module(self.name):
             c_box = Gtk.Box.new(Gtk.Orientation.VERTICAL, 2)
-            c_box.pack_start(widget, False, False, 2)
             c_box.set_vexpand(False)
             c_box.set_name("c_box")
             self.sidePage.add_widget(c_box)
@@ -104,7 +108,7 @@ class SAModule:
         self.category = category
 
     def process (self):
-        return fileexists(self.name)
+        return fileexists(self.name.split()[0])
 
 def fileexists(program):
 
@@ -136,6 +140,9 @@ def rec_mkdir(path):
         return
     
     rec_mkdir(os.path.split(path)[0])
+
+    if os.path.exists(path):
+        return
     os.mkdir(path)
 
 class IndentedHBox(Gtk.HBox):

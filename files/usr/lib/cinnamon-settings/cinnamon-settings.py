@@ -9,7 +9,8 @@ try:
     import glob
     import gettext
     import SettingsWidgets
-    from gi.repository import Gio, Gtk, GObject, GdkPixbuf
+    import capi
+    from gi.repository import Gio, Gtk, GObject, GdkPixbuf, GtkClutter, Gst
 # Standard setting pages... this can be expanded to include applet dirs maybe?
     mod_files = glob.glob('/usr/lib/cinnamon-settings/modules/*.py')
     mod_files.sort()
@@ -50,7 +51,7 @@ CONTROL_CENTER_MODULES = [
     [_("Universal Access"),                 "universal-access",   "universal-access.svg",           "prefs",      False,          _("magnifier, talk, access, zoom, keys, contrast")],
     [_("User Accounts"),                    "user-accounts",      "user-accounts.svg",              "prefs",      True,           _("users, accounts, add, password, picture")],
     [_("Power Management"),                 "power",              "power.svg",                   "hardware",      False,          _("power, suspend, hibernate, laptop, desktop")],
-    [_("Sound"),                            "sound-nua",          "sound.svg",                   "hardware",      False,          _("sound, speakers, headphones, test")],
+    [_("Sound"),                            "sound",              "sound.svg",                   "hardware",      False,          _("sound, speakers, headphones, test")],
     [_("Color"),                            "color",              "color.svg",                   "hardware",      True,           _("color, profile, display, printer, output")]
 ]
 
@@ -58,10 +59,12 @@ STANDALONE_MODULES = [
 #         Label                          Executable                          Icon                Category        Advanced?               Keywords for filter
     [_("Printers"),                      "system-config-printer",        "printer.svg",         "hardware",       False,          _("printers, laser, inkjet")],
     [_("Firewall"),                      "gufw",                         "firewall.svg",        "prefs",          True,           _("firewall, block, filter, programs")],
-    [_("Languages"),                     "gnome-language-selector",      "language.svg",        "prefs",          False,          _("language, install, foreign")]
+    [_("Languages"),                     "gnome-language-selector",      "language.svg",        "prefs",          False,          _("language, install, foreign")],
+    [_("Login Screen"),                  "gksu /usr/sbin/mdmsetup",      "login.svg",           "prefs",          True,           _("login, mdm, gdm, manager, user, password, startup, switch")]
 ]
 
 class MainWindow:
+
     # Change pages
     def side_view_nav(self, side_view, cat):
         selected_items = side_view.get_selected_items()
@@ -105,22 +108,26 @@ class MainWindow:
         self.search_entry = self.builder.get_object("search_box")
         self.search_entry.connect("changed", self.onSearchTextChanged)
         self.search_entry.connect("icon-press", self.onClearSearchBox)
+
         self.window.connect("destroy", Gtk.main_quit)
+
         self.builder.connect_signals(self)
         self.window.set_has_resize_grip(False)
         self.sidePages = []
         self.settings = Gio.Settings.new("org.cinnamon")
         self.advanced_mode = self.settings.get_boolean(ADVANCED_GSETTING)
         self.current_sidepage = None
+        self.c_manager = capi.CManager()
+        self.content_box.c_manager = self.c_manager
 
         for i in range(len(modules)):
             mod = modules[i].Module(self.content_box)
-            if self.loadCheck(mod):
+            if self.loadCheck(mod) and self.setParentRefs(mod):
                 self.sidePages.append((mod.sidePage, mod.name, mod.category))
 
         for item in CONTROL_CENTER_MODULES:
             ccmodule = SettingsWidgets.CCModule(item[0], item[1], item[2], item[3], item[4], item[5], self.content_box)
-            if ccmodule.process():
+            if ccmodule.process(self.c_manager):
                 self.sidePages.append((ccmodule.sidePage, ccmodule.name, ccmodule.category))
 
         for item in STANDALONE_MODULES:
@@ -250,8 +257,17 @@ class MainWindow:
         for key in self.store.keys():
             path = self.store[key].get_path(name)
             if path is not None:
-                self.side_view[key].select_path(path)
-                return
+                filtered_path = self.side_view[key].get_model().convert_child_path_to_path(path)
+                if filtered_path is not None:
+                    self.side_view[key].select_path(filtered_path)
+                    return
+
+    def setParentRefs (self, mod):
+        try:
+            mod._setParentRef(self.window, self.builder)
+        except AttributeError:
+            pass
+        return True
 
     def loadCheck (self, mod):
         try:
@@ -309,5 +325,7 @@ class MainWindow:
 
 if __name__ == "__main__":
     GObject.threads_init()
+    GtkClutter.init(None)
+    Gst.init(None)
     MainWindow()
     Gtk.main()

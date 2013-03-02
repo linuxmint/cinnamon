@@ -12,49 +12,26 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see http://www.gnu.org/licenses/
-import gi
-import ctypes
-from ctypes import *
 
-gio = CDLL("libgio-2.0.so.0")
-libgobject = CDLL('libgobject-2.0.so.0')
-ext_point = gio.g_io_extension_point_register ("cinnamon-control-center-1")
-modules = gio.g_io_modules_load_all_in_directory ("/usr/lib/cinnamon-control-center-1/panels")
+from gi.repository import Gio, GObject
 
-class _PyGObject_Functions(ctypes.Structure):
-   _fields_ = [
-       ('register_class',
-        ctypes.PYFUNCTYPE(ctypes.c_void_p, ctypes.c_char_p,
-                          ctypes.c_int, ctypes.py_object,
-                          ctypes.py_object)),
-       ('register_wrapper',
-        ctypes.PYFUNCTYPE(ctypes.c_void_p, ctypes.py_object)),
-       ('lookup_class',
-        ctypes.PYFUNCTYPE(ctypes.py_object, ctypes.c_int)),
-       ('newgobj',
-        ctypes.PYFUNCTYPE(ctypes.py_object, ctypes.c_void_p)),
-       ]
-
-class PyGObjectCPAI(object):
+class CManager():
     def __init__(self):
-        PyCObject_AsVoidPtr = ctypes.pythonapi.PyCObject_AsVoidPtr
-        PyCObject_AsVoidPtr.restype = ctypes.c_void_p
-        PyCObject_AsVoidPtr.argtypes = [ctypes.py_object]
-        addr = PyCObject_AsVoidPtr(ctypes.py_object(
-           gi._gobject._PyGObject_API))
-        self._api = _PyGObject_Functions.from_address(addr)
+        self.extension_point = Gio.io_extension_point_register ("cinnamon-control-center-1")
+        self.modules = Gio.io_modules_load_all_in_directory ("/usr/lib/cinnamon-control-center-1/panels")
 
-    def pygobject_new(self, addr):
-        return self._api.newgobj(addr)
+    def get_c_widget(self, mod_id):
+        extension = self.extension_point.get_extension_by_name(mod_id)
+        if extension is None:
+            print("Could not load %s module; is the cinnamon-control-center package installed?" % mod_id)
+            return None
+        panel_type = extension.get_type()
+        return GObject.new(panel_type)
 
-def get_c_widget(mod_id):
-    extension = gio.g_io_extension_point_get_extension_by_name (ext_point, mod_id)
-    if extension == 0:
-        print "Problem occurred loading cinnamon-control-center module: " + mod_id
-        return None
-    gio.g_io_extension_get_type.restype = c_int
-    panel_type = gio.g_io_extension_get_type (extension)
-    libgobject.g_object_new.restype = ctypes.POINTER(ctypes.py_object)
-    ptr = libgobject.g_object_new(panel_type, None)
-    return PyGObjectCPAI().pygobject_new(ptr)
-
+    def lookup_c_module(self, mod_id):
+        extension = self.extension_point.get_extension_by_name(mod_id)
+        if extension is None:
+            print("Could not find %s module; is the cinnamon-control-center package installed?" % mod_id)
+            return False
+        else:
+            return True

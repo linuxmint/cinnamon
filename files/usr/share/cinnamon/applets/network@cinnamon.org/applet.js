@@ -1675,7 +1675,7 @@ MyApplet.prototype = {
             this._devices.vpn.section.actor.hide();
             this.menu.addMenuItem(this._devices.vpn.section);
             this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-            this.menu.addSettingsAction(_("Network Settings"), 'gnome-network-panel.desktop');
+            this.menu.addSettingsAction(_("Network Settings"), 'network');
 
             this._activeConnections = [ ];
             this._connections = [ ];

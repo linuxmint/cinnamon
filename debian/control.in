@@ -51,7 +51,7 @@ Depends: ${gir:Depends},
          ${shlibs:Depends},
          ${misc:Depends},
          cinnamon-common (= ${source:Version}),
-	 cinnamon-control-center,
+	 cinnamon-control-center | gnome-control-center,
          caribou,
          cups-pk-helper,
          gnome-settings-daemon (>= 2.91.5.1),
@@ -66,6 +66,9 @@ Depends: ${gir:Depends},
          gir1.2-polkit-1.0,
          gir1.2-soup-2.4,
          gir1.2-upowerglib-1.0,
+         gir1.2-gtkclutter-1.0,
+         gir1.2-javascriptcoregtk-3.0,
+         gir1.2-webkit-3.0,
          python,
          python-dbus,
          python-gconf,
@@ -78,7 +81,7 @@ Depends: ${gir:Depends},
          python-pyinotify
 Recommends: gnome-themes-standard, gnome-terminal, nemo, cinnamon-screensaver
 Conflicts: cinnamon-session, cinnamon-settings
-Provides: cinnamon-session, cinnamon-settings, notification-daemon
+Provides: cinnamon-session, cinnamon-settings, notification-daemon, x-window-manager
 Replaces: cinnamon-session, cinnamon-settings
 Description: Cinnamon desktop
  Cinnamon redefines user interactions with the GNOME desktop.
@@ -92,8 +95,8 @@ Description: Cinnamon desktop
  graphical technologies.
 
 Package: cinnamon-common
-Replaces: cinnamon (<< 1.6.7+nmu1)
-Breaks: cinnamon (<< 1.6.7+nmu1)
+Replaces: cinnamon (<< 1.7.1)
+Breaks: cinnamon (<< 1.7.1)
 Architecture: all
 Depends: ${misc:Depends}, python
 Description: Cinnamon desktop (Common data files)

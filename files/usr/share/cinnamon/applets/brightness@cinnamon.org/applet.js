@@ -145,7 +145,7 @@ MyApplet.prototype = {
                     this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
                 }
                 
-                this.menu.addSettingsAction(_("Settings"), "gnome-screen-panel.desktop");
+                this.menu.addSettingsAction(_("Settings"), "screen");
 		    }));
         }
         catch (e) {
