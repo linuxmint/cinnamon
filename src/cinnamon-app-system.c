@@ -88,22 +88,17 @@ static void
 setup_merge_dir_symlink(void)
 {
     gchar *user_config = g_get_user_config_dir();
-    gchar *merge_path = g_build_filename (user_config, "menus", "applications-merged");
+    gchar *merge_path = g_build_filename (user_config, "menus", "applications-merged", NULL);
     GFile *merge_file = g_file_new_for_path (merge_path);
-    GError *error;
-    gboolean success = g_file_make_directory_with_parents (merge_file, NULL, &error);
-    if (!success || error == G_IO_ERROR_NOT_SUPPORTED) {
-        return;
-    }
-    g_error_free (error);
 
-    gchar *sym_path = g_build_filename (user_config, "menus", "cinnamon-applications-merged");
+    g_file_make_directory_with_parents (merge_file, NULL, NULL);
+
+    gchar *sym_path = g_build_filename (user_config, "menus", "cinnamon-applications-merged", NULL);
     GFile *sym_file = g_file_new_for_path (sym_path);
     if (!g_file_query_exists (sym_file, NULL)) {
         g_file_make_symbolic_link (sym_file, merge_path, NULL, NULL);
     }
 
-    g_free (user_config);
     g_free (merge_path);
     g_free (sym_path);
     g_object_unref (merge_file);

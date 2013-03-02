@@ -150,17 +150,6 @@
       </And>
     </Include>
   </Menu> <!-- End Other -->
-  
-   <!-- Wine -->
-  <Menu>
-    <Name>Wine</Name>
-    <Directory>wine-wine.directory</Directory>
-    <Include>
-      <And>
-        <Category>Wine</Category>
-      </And>
-    </Include>
-  </Menu> <!-- End Wine -->
 
   <Menu>
     <Name>Preferences</Name>
