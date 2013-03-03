@@ -56,6 +56,7 @@ class MainWindow(object):
         self.tree.get_object('move_up_button').set_sensitive(False)
         self.tree.get_object('move_down_button').set_sensitive(False)
         self.cut_copy_buffer = None
+        self.file_id = None
         self.last_tree = None
 
     def run(self):
@@ -322,7 +323,7 @@ class MainWindow(object):
             return
         if not isinstance(item, GMenu.TreeEntry):
             return
-        self.cut_copy_buffer = self.editor.cutItem(item)
+        (self.cut_copy_buffer, self.file_id) = self.editor.cutItem(item)
 
     def on_edit_copy_activate(self, menu):
         item_tree = self.tree.get_object('item_tree')
@@ -332,7 +333,7 @@ class MainWindow(object):
             return
         if not isinstance(item, GMenu.TreeEntry):
             return
-        self.cut_copy_buffer = self.editor.copyItem(item)
+        (self.cut_copy_buffer, self.file_id) = self.editor.copyItem(item)
 
     def on_edit_paste_activate(self, menu):
         item_tree = self.tree.get_object('item_tree')
@@ -345,11 +346,11 @@ class MainWindow(object):
         item = items[iter][3]
         if not isinstance(item, GMenu.TreeDirectory):
             return
-        cat = item.get_menu_id()
         if self.cut_copy_buffer is not None:
-            success = self.editor.pasteItem(self.cut_copy_buffer, cat)
+            success = self.editor.pasteItem(self.cut_copy_buffer, item, self.file_id)
             if success:
                 self.cut_copy_buffer = None
+                self.file_id = None
 
     def on_menu_tree_cursor_changed(self, treeview):
         selection = treeview.get_selection()

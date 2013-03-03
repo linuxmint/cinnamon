@@ -168,6 +168,7 @@
                                 <property name="fixed_height_mode">False</property>
                                 <property name="hover_selection">False</property>
                                 <property name="hover_expand">False</property>
+                                <signal handler="on_item_tree_row_activated" name="row-activated"/>
                                 <signal handler="on_menu_tree_cursor_changed" name="cursor-changed"/>
                                 <signal handler="on_menu_tree_popup_menu" name="popup-menu"/>
                                 <signal handler="on_menu_tree_popup_menu" name="button_press_event"/>
