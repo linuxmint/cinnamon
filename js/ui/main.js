@@ -153,7 +153,7 @@ function _initUserSession() {
 function _reparentActor(actor, newParent) {
     let parent = actor.get_parent();
     if (parent)
-      parent.remove_child(actor);
+      parent.remove_actor(actor);
     if(newParent)
         newParent.add_actor(actor);
 }
