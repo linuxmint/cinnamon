@@ -1,83 +1,82 @@
+body { 
+}
 .page-header {
     font-size: 180%;
     font-weight: bold;
 }
 
+h2 { 
+    font-family: Cantarell, 'Droid Sans', Ubuntu, 'DejaVu Sans', Arial, sans-serif;
+    color: #0489b7;
+}
 .index-page-list {
 }
 
-.root-description, .object-description{
+.description{
 }
 
-.var-func-separator {
+.prop-prop-separator { 
+    color: #babdb6;
+    background: #babdb6;
+    border: none 0px;
+    height: 1px;
+    clear: both;
 }
 
-.obj-func-header, .obj-var-header {
-    font-size: 140%;
-    font-weight: bold;
+.obj-obj-separator { 
 }
 
-.root-func-header, .root-var-header {
-    font-size: 150%;
-    font-weight: bold;
+.prop-table{
+    background: #eeeeee;
+    border: solid 1px #babdb6;
+    padding: 0.5em;
 }
 
-.root-func-table, .obj-func-table, .root-var-table, .obj-var-table{
-    border-style: outset;
-    border-width: 1px;
-    padding: 5px;
+.prop-table-return {
 }
 
-.root-func-table-return, .obj-func-table-return, .root-var-table-type, .obj-var-table-type {
-}
-
-.root-func-table-name, .obj-func-table-name, .root-var-table-name, .obj-var-table-name {
+.prop-table-name {
     padding-left: 50px;
 }
 
-.root-func-table-arg, .obj-func-table-arg {
+.prop-table-arg {
     padding-left: 50px;
 }
 
-.root-func-table-arg-type, .obj-func-table-arg-type {
+.prop-table-arg-type {
     color: #666;
 }
 
-.root-func-table-arg-name, .obj-func-table-arg-name {
+.prop-table-arg-name {
 }
 
-.root-func-table-line-break, .obj-func-table-line-break, .root-var-table-line-break, .obj-var-table-line-break {
+.prop-table-line-break {
     height: 5px;
 }
 
-.root-func-arg-table, .obj-func-arg-table {
+.prop-arg-table {
     padding-left: 50px;
 }
 
-.root-func-arg-name, .obj-func-arg-name {
+.prop-arg-name {
+    background-color: #e5e5e5;
+    padding: 2px 5px;
+}
+
+.prop-arg-description {
+    padding-left: 5px;
+}
+n
+.prop-return-name {
     background-color: #ccc;
     padding: 2px 5px;
 }
 
-.root-func-arg-description, .obj-func-arg-description {
+.prop-return-description {
     padding-left: 5px;
 }
 
-.root-func-return-name, .obj-func-return-name {
-    background-color: #ccc;
-    padding: 2px 5px;
-}
-
-.root-func-return-description, .obj-func-return-description {
-    padding-left: 5px;
-}
-
-.root-individual-func-header, .root-individual-var-header {
-    font-size: 120%;
-    font-weight: bold;
-}
-
-.obj-individual-func-header, .obj-individual-var-header {
+.individual-prop-header {
     font-size: 110%;
     font-weight: bold;
 }

@@ -35,7 +35,7 @@ if __name__ == "__main__":
         html = xmltohtml.convertXMLtoHTML(XML_DIR + _file + ".xml")
         open(HTML_DIR + _file + ".html", "w").write(html)
 
-        shutil.copy2('style.css', HTML_DIR)
+    shutil.copy2('style.css', HTML_DIR)
 
     html = []
     html.extend(["<!DOCTYPE html>",
