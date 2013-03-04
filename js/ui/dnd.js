@@ -506,68 +506,49 @@ _Draggable.prototype = {
                 }
         }
 
-        if (this.target) {
-            if (this.target._delegate && this.target._delegate.acceptDrop){
-                let [r, targX, targY] = this.target.transform_stage_point(dropX, dropY);
-                if (this.target._delegate.acceptDrop(this.actor._delegate,
-                                                     this._dragActor,
-                                                     targX,
-                                                     targY,
-                                                     event.get_time())) {
-                    if (this._actorDestroyed)
-                        return true;
-                    // If it accepted the drop without taking the actor,
-                    // handle it ourselves.
-                    if (this._dragActor.get_parent() == Main.uiGroup) {
-                        if (this._restoreOnSuccess) {
-                            this._restoreDragActor(event.get_time());
-                            return true;
-                        } else
-                            this._dragActor.destroy();
-                    }
-
-                    this._dragInProgress = false;
-                    global.unset_cursor();
-                    this.emit('drag-end', event.get_time(), true);
-                    this._dragComplete();
-                    return true;
-                }
-            }
-        }
+        if (this.target && this._dropOnTarget(this.target, event, dropX, dropY))
+            return true;
 
         while (target) {
-            if (target._delegate && target._delegate.acceptDrop) {
-                let [r, targX, targY] = target.transform_stage_point(dropX, dropY);
-                if (target._delegate.acceptDrop(this.actor._delegate,
-                                                this._dragActor,
-                                                targX,
-                                                targY,
-                                                event.get_time())) {
-                    if (this._actorDestroyed)
-                        return true;
-                    // If it accepted the drop without taking the actor,
-                    // handle it ourselves.
-                    if (this._dragActor.get_parent() == Main.uiGroup) {
-                        if (this._restoreOnSuccess) {
-                            this._restoreDragActor(event.get_time());
-                            return true;
-                        } else
-                            this._dragActor.destroy();
-                    }
-
-                    this._dragInProgress = false;
-                    global.unset_cursor();
-                    this.emit('drag-end', event.get_time(), true);
-                    this._dragComplete();
-                    return true;
-                }
-            }
+            if(this._dropOnTarget(target, event, dropX, dropY))
+                return true;
             target = target.get_parent();
         }
 
         this._cancelDrag(event.get_time());
 
         return true;
+    },
+    
+    _dropOnTarget: function(target, event, dropX, dropY) {
+        if (target._delegate && target._delegate.acceptDrop){
+            let [r, targX, targY] = target.transform_stage_point(dropX, dropY);
+            if (target._delegate.acceptDrop(this.actor._delegate,
+                                                 this._dragActor,
+                                                 targX,
+                                                 targY,
+                                                 event.get_time())) {
+                if (this._actorDestroyed)
+                    return true;
+                // If it accepted the drop without taking the actor,
+                // handle it ourselves.
+                if (this._dragActor.get_parent() == Main.uiGroup) {
+                    if (this._restoreOnSuccess) {
+                        this._restoreDragActor(event.get_time());
+                        return true;
+                    } else
+                        this._dragActor.destroy();
+                }
+
+                this._dragInProgress = false;
+                global.unset_cursor();
+                this.emit('drag-end', event.get_time(), true);
+                this._dragComplete();
+                return true;
+            }
+        }
+        
+        return false;
     },
 
     _getRestoreLocation: function() {
