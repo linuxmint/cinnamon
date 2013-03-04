@@ -56,7 +56,7 @@ MyDesklet.prototype = {
         // No desktop file found; Default to 'cinnamon-settings.desktop'
         settingsList.push(this._desklet_id + ':cinnamon-settings.desktop');
         this._launcherSettings.set_strv('launcher-list', settingsList);
-        return appSys.lookup_settings_app('cinnamon-settings.desktop');
+        return appSys.lookup_app('cinnamon-settings.desktop');
     },
 
     _getIconActor: function() {

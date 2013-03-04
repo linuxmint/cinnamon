@@ -21,10 +21,11 @@ var enabledDeskletDefinitions;
 let userDeskletsDir;
 
 const ENABLED_DESKLETS_KEY = 'enabled-desklets';
-
+const DESKLET_SNAP_KEY = 'desklet-snap';
+const DESKLET_SNAP_INTERVAL_KEY = 'desklet-snap-interval';
 /**
  * init:
- * 
+ *
  * Initialize desklet manager
  */
 function init(){
@@ -35,15 +36,17 @@ function init(){
     for (let uuid in enabledDeskletDefinitions.uuidMap) {
         Extension.loadExtension(uuid, Extension.Type.DESKLET);
     }
-    
+
     global.settings.connect('changed::' + ENABLED_DESKLETS_KEY, _onEnabledDeskletsChanged);
+    global.settings.connect('changed::' + DESKLET_SNAP_KEY, _onDeskletSnapChanged);
+    global.settings.connect('changed::' + DESKLET_SNAP_INTERVAL_KEY, _onDeskletSnapChanged);
 }
 
 /**
  * removeDesklet:
  * @uuid: uuid of the desklet
  * @desklet_id: id of the desklet
- * 
+ *
  * Disable and remove the desklet @uuid:@desklet_id
  */
 function removeDesklet(uuid, desklet_id){
@@ -58,7 +61,7 @@ function removeDesklet(uuid, desklet_id){
 
 /**
  * getEnabledDeskletDefinitons:
- * 
+ *
  * Gets the list of enabled desklets. Returns an associative array of three items:
  * raw: the unprocessed array from gsettings
  * uuidMap: maps uuid -> list of desklet definitions
@@ -73,7 +76,7 @@ function getEnabledDeskletDefinitions() {
         // maps desklet_id -> single desklet definition
         idMap: {}
     };
-    
+
     // Parse all definitions
     for (let i=0; i<result.raw.length; i++) {
         let deskletDefinition = _getDeskletDefinition(result.raw[i]);
@@ -84,7 +87,7 @@ function getEnabledDeskletDefinitions() {
             result.idMap[deskletDefinition.desklet_id] = deskletDefinition;
         }
     }
-    
+
     return result;
 }
 
@@ -128,7 +131,7 @@ function _onEnabledDeskletsChanged(){
         for (let desklet_id in newEnabledDeskletDefinitions.idMap) {
             let newDef = newEnabledDeskletDefinitions.idMap[desklet_id];
             let oldDef = enabledDeskletDefinitions.idMap[desklet_id];
-            
+
             if(!oldDef || !_deskletDefinitionsEqual(newDef, oldDef)) {
                 let extension = Extension.objects[newDef.uuid];
                 if(extension) {
@@ -138,7 +141,7 @@ function _onEnabledDeskletsChanged(){
         }
 
         enabledDeskletDefinitions = newEnabledDeskletDefinitions;
-        
+
         // Make sure all desklet extensions are loaded.
         // Once loaded, the desklets will add themselves via finishExtensionLoad
         for (let uuid in enabledDeskletDefinitions.uuidMap) {
@@ -179,7 +182,9 @@ function _loadDesklet(extension, deskletDefinition) {
 
         desklet._extension = extension;
 
-        if (!Main.deskletContainer.contains(desklet.actor)) Main.deskletContainer.addDesklet(desklet.actor);
+        if (!Main.deskletContainer.contains(desklet.actor))
+            Main.deskletContainer.add_actor(desklet.actor);
+
         desklet.actor.set_position(deskletDefinition.x, deskletDefinition.y);
 
         if(!extension._loadedDefinitions) {
@@ -233,64 +238,22 @@ function _deskletDefinitionsEqual(a, b) {
     return (a.uuid == b.uuid && a.x == b.x && a.y == b.y);
 }
 
-/**
- * DeskletContainer
- * 
- * Container that contains manages all desklets actors
- */
-function DeskletContainer(){
-    this._init();
-}
+function _onDeskletSnapChanged(){
+    if (!global.settings.get_boolean(DESKLET_SNAP_KEY))
+        return;
 
-DeskletContainer.prototype = {
-    _init: function(){
-        this.actor = new Clutter.Group();
-        this.actor._delegate = this;
-    },
+    let enabledDesklets = global.settings.get_strv(ENABLED_DESKLETS_KEY);
 
-    /**
-     * addDesklet:
-     * @actor: actor of desklet to be added
-     * 
-     * Adds @actor to the desklet container
-     */
-    addDesklet: function(actor){
-        this.actor.add_actor(actor);
-    },
+    for (let i = 0; i < enabledDesklets.length; i++){
+        let elements = enabledDesklets[i].split(":");
+        let interval = global.settings.get_int(DESKLET_SNAP_INTERVAL_KEY);
 
-    /**
-     * contains:
-     * @actor
-     * 
-     * Whether the desklet container contains @actor
-     */
-    contains: function(actor){
-        return this.actor.contains(actor);
-    },
+        elements[2] = Math.floor(elements[2]/interval)*interval;
+        elements[3] = Math.floor(elements[3]/interval)*interval;
 
-
-    acceptDrop: function(source, actor, x, y, time) {
-        if (!(source instanceof Desklet.Desklet)) return false;
-
-        Main.uiGroup.remove_actor(actor);
-        this.actor.add_actor(actor);
-        Main.layoutManager.addChrome(actor, {doNotAdd: true});
-
-        // Update GSettings
-        let enabledDesklets = global.settings.get_strv(ENABLED_DESKLETS_KEY);
-        for (let i = 0; i < enabledDesklets.length; i++){
-            let definition = enabledDesklets[i];
-            if (definition.indexOf(source._uuid + ":" + source._desklet_id) == 0){
-                let elements = definition.split(":");
-                elements[2] = actor.get_x();
-                elements[3] = actor.get_y();
-                definition = elements.join(":");
-                enabledDesklets[i] = definition;
-            }
-        }
-
-        global.settings.set_strv(ENABLED_DESKLETS_KEY, enabledDesklets);
-
-        return true;
+        enabledDesklets[i] = elements.join(":");
     }
-};
+
+    global.settings.set_strv(ENABLED_DESKLETS_KEY, enabledDesklets);
+    return;
+}
