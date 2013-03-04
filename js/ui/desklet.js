@@ -66,13 +66,18 @@ Desklet.prototype = {
         this.actor._delegate = this;
 
         this._draggable = DND.makeDraggable(this.actor, {restoreOnSuccess: true}, Main.deskletContainer.actor);
-        this._draggable.connect('drag-begin', Lang.bind(this, function(){
-                                                            global.set_stage_input_mode(Cinnamon.StageInputMode.FULLSCREEN);
-                                                            Main.layoutManager.untrackChrome(this.actor);
-                                                        }));
-        this._draggable.connect('drag-end', function(){
-                                    global.set_stage_input_mode(Cinnamon.StageInputMode.NORMAL);
-                                });
+        this._draggable.connect('drag-begin', Lang.bind(this, this._onDragBegin));
+        this._draggable.connect('drag-end', Lang.bind(this, this._onDragEnd));
+        this._draggable.connect('drag-cancelled', Lang.bind(this, this._onDragEnd));
+    },
+    
+    _onDragBegin: function() {
+        global.set_stage_input_mode(Cinnamon.StageInputMode.FULLSCREEN);
+        this._untrackMouse();
+    },
+    
+    _onDragEnd: function() {
+        global.set_stage_input_mode(Cinnamon.StageInputMode.NORMAL);
     },
 
     /**
@@ -171,10 +176,6 @@ Desklet.prototype = {
 
     _onRemoveDesklet: function(){
         DeskletManager.removeDesklet(this._uuid, this.instance_id);
-    },
-
-    getDragActor: function(){
-        return this.actor;
     }
 };
 Signals.addSignalMethods(Desklet.prototype);

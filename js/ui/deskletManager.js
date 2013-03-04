@@ -406,7 +406,8 @@ DeskletContainer.prototype = {
 
         Main.uiGroup.remove_actor(actor);
         this.actor.add_actor(actor);
-        Main.layoutManager.addChrome(actor, {doNotAdd: true});
+        mouseTrackEnabled = -1; // forces an update of all desklet mouse tracks
+        checkMouseTracking();
 
         // Update GSettings
         let enabledDesklets = global.settings.get_strv(ENABLED_DESKLETS_KEY);
