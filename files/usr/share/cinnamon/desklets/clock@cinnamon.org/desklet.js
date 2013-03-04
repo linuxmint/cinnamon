@@ -36,7 +36,7 @@ MyDesklet.prototype = {
     }
 }
 
-function main(metadata, deskletId){
-    let desklet = new MyDesklet(metadata);
+function main(metadata, desklet_id){
+    let desklet = new MyDesklet(metadata, desklet_id);
     return desklet;
 }

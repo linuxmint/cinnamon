@@ -145,7 +145,7 @@ MyDesklet.prototype = {
         }
     },
 
-    onDeskletClicked: function(event){
+    on_desklet_clicked: function(event){
         if (event.get_button() == 1) {
             this._update();
         } else if (event.get_button() == 2) {
@@ -154,7 +154,7 @@ MyDesklet.prototype = {
     }
 };
 
-function main(metadata){
+function main(metadata, desklet_id){
     let desklet = new MyDesklet(metadata);
     return desklet;
 }
