@@ -47,7 +47,7 @@ Desklet.prototype = {
         this.actor.add_actor(this.content);
 
         this._updateDecoration();
-        global.settings.connect('changed::desklets-minimum-decoration', Lang.bind(this, this._updateDecoration));
+        global.settings.connect('changed::desklet-decorations', Lang.bind(this, this._updateDecoration));
 
         this._menu = new PopupMenu.PopupMenu(this.actor, 0.0, St.Side.LEFT, 0);
         this._menuManager = new PopupMenu.PopupMenuManager(this);
@@ -120,26 +120,24 @@ Desklet.prototype = {
     },
 
     _updateDecoration: function(){
-        let dec = global.settings.get_int('desklets-minimum-decoration');
-        let localMin = this.metadata['minimum-decoration'];
-        if (localMin){
-            dec = Math.max(dec, localMin);
+        let dec = global.settings.get_int('desklet-decorations');
+        let preventDecorations = this.metadata['prevent-decorations'];
+        if (preventDecorations == true){
+            dec = 0;
         }
-
+                      
         switch(dec){
-        case 2:
-            this._header.show();
-            this.content.remove_style_pseudo_class('no-header');
-            this.content.style_class = 'desklet-box';
+        case 0:
+            this._header.hide();    
+            this.content.style_class = 'desklet';        
             break;
         case 1:
-            this._header.hide();
-            this.content.style_class = 'desklet-box';
-            this.content.add_style_pseudo_class('no-header');
+            this._header.hide();            
+            this.content.style_class = 'desklet-with-borders';
             break;
-        case 0:
-            this._header.hide();
-            this.content.style_class = null;
+        case 2:
+            this._header.show();
+            this.content.style_class = 'desklet-with-borders-and-header';
             break;
         }
     },
