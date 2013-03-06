@@ -347,7 +347,7 @@ StScrollBar StButton#vhandle:hover {
 .window-caption#selected {
 	background-color: white;
 	color: black;
-	font-weight: bold;
+	spacing: 25px;
 }
 
 .workspace-controls {
