@@ -525,10 +525,10 @@
       </description>
     </key>
 
-    <key name="desklets-minimum-decoration" type="i">
-      <default>2</default>
-      <_summary>The minimum decoration level of the desklet</_summary>
-      <_description>The minimum amount of decoration a desklet must have.
+    <key name="desklet-decorations" type="i">
+      <default>1</default>
+      <_summary>The decoration level of the desklets</_summary>
+      <_description>The amount of decoration desklets must have.
       0 = None;
       1 = Borders;
       2 = Borders and header;
