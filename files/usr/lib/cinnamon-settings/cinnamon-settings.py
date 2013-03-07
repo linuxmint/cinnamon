@@ -76,7 +76,7 @@ class MainWindow:
             if not sidePage.is_standalone:
                 self.side_view_sw.hide()
                 self.search_entry.hide()
-                self.window.set_title(_("System Settings") + " - " + sidePage.name)
+                self.window.set_title(sidePage.name)
                 sidePage.build(self.advanced_mode)
                 self.content_box_sw.show()
                 self.button_back.show()
