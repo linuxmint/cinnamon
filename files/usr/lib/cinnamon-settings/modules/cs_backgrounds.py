@@ -35,7 +35,7 @@ BACKGROUND_PICTURE_OPTIONS = [
     ("spanned", _("Spanned"))
 ]
 
-BACKGROUND_ICONS_SIZE = 330
+BACKGROUND_ICONS_SIZE = 200
 
 class Module:
     def __init__(self, content_box):
@@ -108,14 +108,14 @@ class ThreadedIconView(Gtk.IconView):
         area = self.get_area()
 
         pixbuf_renderer = Gtk.CellRendererPixbuf()
-        text_renderer = Gtk.CellRendererText()
+        text_renderer = Gtk.CellRendererText(ellipsize=Pango.EllipsizeMode.END)
 
         text_renderer.set_alignment(.5, .5)
         area.pack_start(pixbuf_renderer, True, False, False)
         area.pack_start(text_renderer, True, False, False)
-        self.add_attribute (pixbuf_renderer, "pixbuf", 1);
+        self.add_attribute (pixbuf_renderer, "pixbuf", 1)
         self.add_attribute (text_renderer, "markup", 2)
-        text_renderer.set_property("alignment", Pango.Alignment.CENTER)
+        text_renderer.set_property("alignment", Pango.Alignment.CENTER)        
 
         self._loading_queue = []
         self._loading_queue_lock = thread.allocate_lock()
@@ -200,12 +200,13 @@ class ThreadedIconView(Gtk.IconView):
                     else:
                         label = os.path.split(to_load["filename"])[1]
                     if "artist" in to_load:
-                        artist = "\nby %s" % to_load["artist"]
+                        artist = "%s\n" % to_load["artist"]
                     else:
                         artist = ""
+                    dimensions = "%dx%d" % (pix[1], pix[2])
                     
                     self._loaded_data_lock.acquire()
-                    self._loaded_data.append((to_load, pix[0], "<b>%s</b><sub>%s\n%dx%d</sub>" % (label, artist, pix[1], pix[2])))
+                    self._loaded_data.append((to_load, pix[0], "<b>%s</b>\n<sub>%s<span foreground='#555555'>%s</span></sub>" % (label, artist, dimensions)))                    
                     self._loaded_data_lock.release()
                 
         self._loading_lock.acquire()
@@ -240,6 +241,7 @@ class BackgroundWallpaperPane (Gtk.VBox):
         
         scw = Gtk.ScrolledWindow()
         scw.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
+        scw.set_shadow_type(Gtk.ShadowType.ETCHED_IN)
         self.pack_start(scw, True, True, 0)
         
         self.icon_view = ThreadedIconView()
@@ -475,16 +477,17 @@ class BackgroundSidePage (SidePage):
             self.content_box.remove(widget)
         
         topbox = Gtk.HBox()
-        self.content_box.pack_start(topbox, False, False, 0)
+        self.content_box.pack_start(topbox, False, False, 3)
         topbox.set_spacing(5)
         
-        l = Gtk.Label(_("Mode"))
-        topbox.pack_start(l, False, False, 0)
-        self.background_mode = GSettingsComboBox("", "org.cinnamon.background", "mode", None, BACKGROUND_MODES).content_widget
-        self.background_mode.unparent()
-        topbox.pack_start(self.background_mode, False, False, 0)
-        
-        self.remove_wallpaper_button = Gtk.Button("")
+        # Hide the background mode selection for now since we only support one mode at the moment.. 
+        #l = Gtk.Label(_("Mode"))
+        #topbox.pack_start(l, False, False, 0)
+        #self.background_mode = GSettingsComboBox("", "org.cinnamon.background", "mode", None, BACKGROUND_MODES).content_widget
+        #self.background_mode.unparent()
+        #topbox.pack_start(self.background_mode, False, False, 0)
+                        
+        self.remove_wallpaper_button = Gtk.Button(_("Remove"))
         imageremove = Gtk.Image()
         imageremove.set_from_icon_name('remove', Gtk.IconSize.BUTTON)
         if imageremove.get_pixbuf() == None:
@@ -496,7 +499,7 @@ class BackgroundSidePage (SidePage):
         self.remove_wallpaper_button.connect("clicked", lambda w: self._remove_selected_wallpaper())
         self.remove_wallpaper_button.set_sensitive(False)
         topbox.pack_end(self.remove_wallpaper_button, False, False, 0)
-        self.add_wallpaper_button = Gtk.Button("")
+        self.add_wallpaper_button = Gtk.Button(_("Add"))
         imageadd = Gtk.Image()
         imageadd.set_from_icon_name('add', Gtk.IconSize.BUTTON)
         if imageadd.get_pixbuf() == None:
@@ -507,12 +510,10 @@ class BackgroundSidePage (SidePage):
         self.add_wallpaper_button.connect("clicked", lambda w: self._add_wallpapers())
         self.add_wallpaper_button.set_no_show_all(True)
         topbox.pack_end(self.add_wallpaper_button, False, False, 0)
-        
-        self.content_box.pack_start(Gtk.HSeparator(), False, False, 2)
-        
+                
         self.mainbox = Gtk.EventBox()
         self.mainbox.set_visible_window(False)
-        self.content_box.pack_start(self.mainbox, True, True, 0)
+        self.content_box.pack_start(self.mainbox, True, True, 3)
         
         self.wallpaper_pane = BackgroundWallpaperPane(self, self._gnome_background_schema)
         self.slideshow_pane = BackgroundSlideshowPane(self, self._gnome_background_schema, self._cinnamon_background_schema)
@@ -522,17 +523,11 @@ class BackgroundSidePage (SidePage):
             self.mainbox.add(self.wallpaper_pane)
             self.add_wallpaper_button.show()
             self.remove_wallpaper_button.show()
-        
-        self.content_box.pack_start(Gtk.HSeparator(), False, False, 2)
-        
-        scrolled_window = Gtk.ScrolledWindow()
-        scrolled_window.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.NEVER)
-
+                
         expander = Gtk.Expander()
         expander.set_label(_("Advanced options"))
-        
-        self.content_box.pack_start(scrolled_window, False, True, 0)
-        self.content_box.pack_start(expander, False, True, 0)
+               
+        self.content_box.pack_start(expander, False, True, 3)
         
         advanced_options_box = Gtk.HBox()
         expander.add(advanced_options_box)
