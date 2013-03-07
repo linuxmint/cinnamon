@@ -54,7 +54,9 @@ class AppletViewSidePage (SidePage):
         for widget in widgets:
             self.content_box.remove(widget)
         
-        scrolledWindow = Gtk.ScrolledWindow()    
+        scrolledWindow = Gtk.ScrolledWindow()   
+        scrolledWindow.set_shadow_type(Gtk.ShadowType.ETCHED_IN)   
+        scrolledWindow.set_border_width(6) 
         self.notebook = Gtk.Notebook()
         applets_vbox = Gtk.VBox()
         
@@ -139,6 +141,7 @@ class AppletViewSidePage (SidePage):
         self.inactiveHandler = self.inactiveButton.connect("toggled", self._filter_toggle)
 
         buttonbox = Gtk.ButtonBox.new(Gtk.Orientation.HORIZONTAL)
+        buttonbox.set_spacing(6)
         buttonbox.pack_start(self.activeButton, False, False, 0)
         buttonbox.pack_start(self.inactiveButton, False, False, 0)
         hbox.pack_start(buttonbox, False, False, 4)
@@ -182,6 +185,8 @@ class AppletViewSidePage (SidePage):
 
         # Get More - Variables prefixed with "gm_" where necessary
         gm_scrolled_window = Gtk.ScrolledWindow()
+        gm_scrolled_window.set_shadow_type(Gtk.ShadowType.ETCHED_IN)
+        gm_scrolled_window.set_border_width(6)
         getmore_vbox = Gtk.VBox()
         getmore_vbox.set_border_width(0)
 
@@ -194,8 +199,8 @@ class AppletViewSidePage (SidePage):
         self.gm_combosort.pack_start(renderer_text, True)
         sortTypes=Gtk.ListStore(int, str)
         sortTypes.append([self.SORT_NAME, _("Name")])
-        sortTypes.append([self.SORT_RATING, _("Rating")])
-        sortTypes.append([self.SORT_DATE_EDITED, _("Date changed")])
+        sortTypes.append([self.SORT_RATING, _("Most popular")])
+        sortTypes.append([self.SORT_DATE_EDITED, _("Latest")])
         self.gm_combosort.set_model(sortTypes)
         self.gm_combosort.set_entry_text_column(1)
         self.gm_combosort.set_active(1) #Rating
@@ -274,6 +279,7 @@ class AppletViewSidePage (SidePage):
 
         hbox = Gtk.HBox()
         buttonbox = Gtk.ButtonBox.new(Gtk.Orientation.HORIZONTAL)
+        buttonbox.set_spacing(6)
         self.install_button = Gtk.Button(_("Install selected"))
         reload_button = Gtk.Button(_("Refresh list"))
         buttonbox.pack_start(self.install_button, False, False, 2)
