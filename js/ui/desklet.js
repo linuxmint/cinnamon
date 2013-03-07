@@ -26,14 +26,14 @@ const DESKLET_DESTROY_TIME = 0.5;
  * #Desklet is a base class in which other desklets
  * can inherit
  */
-function Desklet(metadata){
-    this._init(metadata);
+function Desklet(metadata, desklet_id){
+    this._init(metadata, desklet_id);
 }
 
 Desklet.prototype = {
-    _init: function(metadata){
+    _init: function(metadata, desklet_id){
         this.metadata = metadata;
-
+        this.instance_id = desklet_id;
         this.actor = new St.BoxLayout({reactive: true, track_hover: true, vertical: true});
 
         this._header = new St.Bin({style_class: 'desklet-header'});
@@ -61,7 +61,6 @@ Desklet.prototype = {
         this.actor.connect('notify::hover', Lang.bind(this, this._onHover));
 
         this._uuid = null;
-        this._desklet_id = null;
         this._dragging = false;
         this._dragOffset = [0, 0];
         this.actor._desklet = this;
@@ -188,7 +187,7 @@ Desklet.prototype = {
     },
 
     _onRemoveDesklet: function(){
-        DeskletManager.removeDesklet(this._uuid, this._desklet_id);
+        DeskletManager.removeDesklet(this._uuid, this.instance_id);
     },
 
     getDragActor: function(){
