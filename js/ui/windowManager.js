@@ -882,11 +882,11 @@ WindowManager.prototype = {
         }
         let workspace = global.screen.get_active_workspace().get_neighbor(direction);
         if (workspace != global.screen.get_active_workspace()) {
+            window.change_workspace(workspace);
             workspace.activate(global.get_current_time());
             this.showWorkspaceOSD();
             Mainloop.idle_add(Lang.bind(this, function() {
-                // Unless this is done a bit later, window is sometimes not activated
-                window.change_workspace(workspace);
+                // Unless this is done a bit later, window is sometimes not activated                
                 window.activate(global.get_current_time());
             }));
         }

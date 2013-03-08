@@ -29,6 +29,16 @@ const CinnamonIface = {
                 name: 'FlashArea',
                 inSignature: 'iiii',
                 outSignature: ''
+              },
+              {
+                name: 'highlightApplet',
+                inSignature: 'sb',
+                outSignature: ''
+              },
+              {
+                name: 'activateCallback',
+                inSignature: 'ssb',
+                outSignature: ''
               }
              ],
     signals: [],
@@ -165,6 +175,39 @@ Cinnamon.prototype = {
             Main.overview.show();
         else
             Main.overview.hide();
+    },
+
+    _getXletObject: function(id, id_is_instance) {
+        let obj = null;
+        if (id_is_instance) {
+            obj = AppletManager.get_object_for_instance(id)
+            if (!obj)
+                obj = DeskletManager.get_object_for_instance(id)
+        } else {
+            obj = AppletManager.get_object_for_uuid(id)
+            if (!obj)
+                obj = DeskletManager.get_object_for_uuid(id)
+        }
+        return obj
+    },
+
+    highlightApplet: function(id, id_is_instance) {
+        let obj = this._getXletObject(id, id_is_instance);
+        if (!obj)
+            return;
+        let actor = obj.actor;
+
+        if (actor) {
+            let [x, y] = actor.get_transformed_position();
+            let [w, h] = actor.get_transformed_size();
+            this.FlashArea(x, y, w, h)
+        }
+    },
+
+    activateCallback: function(callback, id, id_is_instance) {
+        let obj = this._getXletObject(id, id_is_instance);
+        let cb = Lang.bind(obj, obj[callback]);
+        cb();
     },
 
     CinnamonVersion: Config.PACKAGE_VERSION

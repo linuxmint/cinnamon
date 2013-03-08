@@ -20,9 +20,8 @@ MyDesklet.prototype = {
     __proto__: Desklet.Desklet.prototype,
 
     _init: function(metadata, desklet_id){
-        Desklet.Desklet.prototype._init.call(this, metadata);
+        Desklet.Desklet.prototype._init.call(this, metadata, desklet_id);
         this._launcherSettings = new Gio.Settings({schema: 'org.cinnamon.desklets.launcher'});
-        this._desklet_id = desklet_id;
 
         this._onSettingsChanged();
 
@@ -31,7 +30,7 @@ MyDesklet.prototype = {
                                  Util.spawnCommandLine("/usr/share/cinnamon/desklets/launcher@cinnamon.org/editorDialog.py");
                              });
         this._menu.addAction(_("Edit launcher"), Lang.bind(this, function() {
-                                                               Util.spawnCommandLine("/usr/share/cinnamon/desklets/launcher@cinnamon.org/editorDialog.py " + this._desklet_id);
+                                                               Util.spawnCommandLine("/usr/share/cinnamon/desklets/launcher@cinnamon.org/editorDialog.py " + this.instanceId);
                                                            }));
 
         this._settingsSignalId = this._launcherSettings.connect('changed::launcher-list', Lang.bind(this, this._onSettingsChanged));
@@ -44,7 +43,7 @@ MyDesklet.prototype = {
         let appSys = Cinnamon.AppSystem.get_default();
         let desktopFile, app;
         for (let i in settingsList) {
-            if (settingsList[i].split(":")[0] == this._desklet_id){
+            if (settingsList[i].split(":")[0] == this.instanceId){
                 desktopFile = settingsList[i].split(":")[1];
                 app = appSys.lookup_app(desktopFile);
                 if (!app) app = appSys.lookup_settings_app(desktopFile);
@@ -54,7 +53,7 @@ MyDesklet.prototype = {
         }
 
         // No desktop file found; Default to 'cinnamon-settings.desktop'
-        settingsList.push(this._desklet_id + ':cinnamon-settings.desktop');
+        settingsList.push(this.instanceId + ':cinnamon-settings.desktop');
         this._launcherSettings.set_strv('launcher-list', settingsList);
         return appSys.lookup_settings_app('cinnamon-settings.desktop');
     },

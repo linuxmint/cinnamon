@@ -936,7 +936,7 @@ MyApplet.prototype = {
         this.menu.addMenuItem(this._inputTitle);
         this.menu.addMenuItem(this._inputSlider);
         this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-        this.menu.addSettingsAction(_("Sound Settings"), 'gnome-sound-panel.desktop');
+        this.menu.addSettingsAction(_("Sound Settings"), 'sound');
 
         this._selectDeviceItem = new PopupMenu.PopupSubMenuMenuItem(_("Output device..."));
         this.menu.addMenuItem(this._selectDeviceItem);

@@ -275,7 +275,7 @@ MyApplet.prototype = {
             this._applet.connect('notify::show-full-menu', Lang.bind(this, this._updateFullMenu));
             this._updateFullMenu();
 
-            this.menu.addSettingsAction(_("Bluetooth Settings"), 'bluetooth-properties.desktop');
+            this.menu.addSettingsAction(_("Bluetooth Settings"), 'bluetooth');
 
             this._applet.connect('pincode-request', Lang.bind(this, this._pinRequest));
             this._applet.connect('confirm-request', Lang.bind(this, this._confirmRequest));
@@ -474,15 +474,15 @@ MyApplet.prototype = {
 
         switch (device.type) {
         case GnomeBluetoothApplet.Type.KEYBOARD:
-            item.menu.addSettingsAction(_("Keyboard Settings"), 'gnome-keyboard-panel.desktop');
+            item.menu.addSettingsAction(_("Keyboard Settings"), 'keyboard');
             break;
         case GnomeBluetoothApplet.Type.MOUSE:
-            item.menu.addSettingsAction(_("Mouse Settings"), 'gnome-mouse-panel.desktop');
+            item.menu.addSettingsAction(_("Mouse Settings"), 'mouse');
             break;
         case GnomeBluetoothApplet.Type.HEADSET:
         case GnomeBluetoothApplet.Type.HEADPHONES:
         case GnomeBluetoothApplet.Type.OTHER_AUDIO:
-            item.menu.addSettingsAction(_("Sound Settings"), 'gnome-sound-panel.desktop');
+            item.menu.addSettingsAction(_("Sound Settings"), 'sound');
             break;
         default:
             break;

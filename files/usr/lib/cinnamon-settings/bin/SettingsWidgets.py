@@ -9,7 +9,7 @@ try:
     import gettext
     from gi.repository import Gio, Gtk, GObject, Gdk
     from gi.repository import GdkPixbuf 
-    import gconf
+#    import gconf
     import json
     import dbus
     import time
@@ -70,25 +70,29 @@ class SidePage:
                     child.show()
                     if child.get_name() == "c_box":
                         c_widgets = child.get_children()
-                        for c_widget in c_widgets:
-                            c_widget.show()
+                        if not c_widgets:
+                            c_widget = self.content_box.c_manager.get_c_widget(self.exec_name)
+                            if c_widget is not None:
+                                child.pack_start(c_widget, False, False, 2)
+                                c_widget.show()
+                        else:
+                            for c_widget in c_widgets:
+                                c_widget.show()
             else:
                 self.content_box.show_all()
         else:
-            subprocess.Popen([self.exec_name])
+            subprocess.Popen(self.exec_name.split())
 
 class CCModule:
     def __init__(self, label, mod_id, icon, category, advanced, keywords, content_box):
-        sidePage = SidePage(label, icon, keywords, advanced, content_box, True, False, None)
+        sidePage = SidePage(label, icon, keywords, advanced, content_box, True, False, mod_id)
         self.sidePage = sidePage
         self.name = mod_id
         self.category = category
 
     def process (self, c_manager):
-        widget = c_manager.get_c_widget(self.name)
-        if widget is not None:
+        if c_manager.lookup_c_module(self.name):
             c_box = Gtk.Box.new(Gtk.Orientation.VERTICAL, 2)
-            c_box.pack_start(widget, False, False, 2)
             c_box.set_vexpand(False)
             c_box.set_name("c_box")
             self.sidePage.add_widget(c_box)
@@ -104,7 +108,7 @@ class SAModule:
         self.category = category
 
     def process (self):
-        return fileexists(self.name)
+        return fileexists(self.name.split()[0])
 
 def fileexists(program):
 
@@ -672,7 +676,7 @@ class GSettingsIntComboBox(Gtk.HBox):
 class GSettingsColorChooser(Gtk.ColorButton):
     def __init__(self, schema, key, dep_key):
         Gtk.ColorButton.__init__(self)
-        self._schema = Gio.Settings(schema)
+        self._schema = Gio.Settings.new(schema)
         self._key = key
         self.dep_key = dep_key
         self.set_value(self._schema[self._key])
@@ -704,85 +708,85 @@ class GSettingsColorChooser(Gtk.ColorButton):
         else:
             self.set_sensitive(not self.dep_settings.get_boolean(self.dep_key))
 
-class GConfFontButton(Gtk.HBox):
-    def __init__(self, label, key):
-        self.key = key
-        super(GConfFontButton, self).__init__()
-        self.settings = gconf.client_get_default()
-        self.value = self.settings.get_string(key)
+# class GConfFontButton(Gtk.HBox):
+#     def __init__(self, label, key):
+#         self.key = key
+#         super(GConfFontButton, self).__init__()
+#         self.settings = gconf.client_get_default()
+#         self.value = self.settings.get_string(key)
         
-        self.label = Gtk.Label(label)
+#         self.label = Gtk.Label(label)
 
-        self.content_widget = Gtk.FontButton()
-        self.content_widget.set_font_name(self.value)
+#         self.content_widget = Gtk.FontButton()
+#         self.content_widget.set_font_name(self.value)
         
-        if (label != ""):
-            self.pack_start(self.label, False, False, 2)
-        self.pack_start(self.content_widget, False, False, 2)
-        self.content_widget.connect('font-set', self.on_my_value_changed)
-        self.content_widget.show_all()
-    def on_my_value_changed(self, widget):
-        self.settings.set_string(self.key, widget.get_font_name())
+#         if (label != ""):
+#             self.pack_start(self.label, False, False, 2)
+#         self.pack_start(self.content_widget, False, False, 2)
+#         self.content_widget.connect('font-set', self.on_my_value_changed)
+#         self.content_widget.show_all()
+#     def on_my_value_changed(self, widget):
+#         self.settings.set_string(self.key, widget.get_font_name())
 
-class GConfComboBox(Gtk.HBox):    
-    def __init__(self, label, key, options, init_value = ""):  
-        self.key = key
-        super(GConfComboBox, self).__init__()
-        self.settings = gconf.client_get_default()  
-        self.value = self.settings.get_string(self.key)
-        if not self.value:
-            self.value = init_value
+# class GConfComboBox(Gtk.HBox):    
+#     def __init__(self, label, key, options, init_value = ""):  
+#         self.key = key
+#         super(GConfComboBox, self).__init__()
+#         self.settings = gconf.client_get_default()  
+#         self.value = self.settings.get_string(self.key)
+#         if not self.value:
+#             self.value = init_value
                       
-        self.label = Gtk.Label(label)       
-        self.model = Gtk.ListStore(str, str)
-        selected = None
-        for option in options:
-            iter = self.model.insert_before(None, None)
-            self.model.set_value(iter, 0, option[0])                
-            self.model.set_value(iter, 1, option[1])                        
-            if (option[0] == self.value):
-                selected = iter
+#         self.label = Gtk.Label(label)       
+#         self.model = Gtk.ListStore(str, str)
+#         selected = None
+#         for option in options:
+#             iter = self.model.insert_before(None, None)
+#             self.model.set_value(iter, 0, option[0])                
+#             self.model.set_value(iter, 1, option[1])                        
+#             if (option[0] == self.value):
+#                 selected = iter
                                 
-        self.content_widget = Gtk.ComboBox.new_with_model(self.model)   
-        renderer_text = Gtk.CellRendererText()
-        self.content_widget.pack_start(renderer_text, True)
-        self.content_widget.add_attribute(renderer_text, "text", 1)     
+#         self.content_widget = Gtk.ComboBox.new_with_model(self.model)   
+#         renderer_text = Gtk.CellRendererText()
+#         self.content_widget.pack_start(renderer_text, True)
+#         self.content_widget.add_attribute(renderer_text, "text", 1)     
         
-        if selected is not None:
-            self.content_widget.set_active_iter(selected)
+#         if selected is not None:
+#             self.content_widget.set_active_iter(selected)
         
-        if (label != ""):
-            self.pack_start(self.label, False, False, 2)                
-        self.pack_start(self.content_widget, False, False, 2)                     
-        self.content_widget.connect('changed', self.on_my_value_changed)
-        # The on_my_setting_changed callback raises a segmentation fault, need to investigate that
-        #self.settings.add_dir(os.path.split(key)[0], gconf.CLIENT_PRELOAD_NONE)
-        #self.settings.notify_add(self.key, self.on_my_setting_changed)
-        self.content_widget.show_all()
+#         if (label != ""):
+#             self.pack_start(self.label, False, False, 2)                
+#         self.pack_start(self.content_widget, False, False, 2)                     
+#         self.content_widget.connect('changed', self.on_my_value_changed)
+#         # The on_my_setting_changed callback raises a segmentation fault, need to investigate that
+#         #self.settings.add_dir(os.path.split(key)[0], gconf.CLIENT_PRELOAD_NONE)
+#         #self.settings.notify_add(self.key, self.on_my_setting_changed)
+#         self.content_widget.show_all()
         
-    def on_my_value_changed(self, widget):
-        tree_iter = widget.get_active_iter()
-        if tree_iter != None:            
-            value = self.model[tree_iter][0]            
-            self.settings.set_string(self.key, value)
-    def on_my_setting_changed(self, client, cnxn_id, entry, args):
-        print entry
+#     def on_my_value_changed(self, widget):
+#         tree_iter = widget.get_active_iter()
+#         if tree_iter != None:            
+#             value = self.model[tree_iter][0]            
+#             self.settings.set_string(self.key, value)
+#     def on_my_setting_changed(self, client, cnxn_id, entry, args):
+#         print entry
 
-class GConfCheckButton(Gtk.CheckButton):    
-    def __init__(self, label, key):        
-        self.key = key
-        super(GConfCheckButton, self).__init__(label)       
-        self.settings = gconf.client_get_default()
-        self.set_active(self.settings.get_bool(self.key))
-        self.settings.notify_add(self.key, self.on_my_setting_changed)
-        self.connect('toggled', self.on_my_value_changed)            
+# class GConfCheckButton(Gtk.CheckButton):    
+#     def __init__(self, label, key):        
+#         self.key = key
+#         super(GConfCheckButton, self).__init__(label)       
+#         self.settings = gconf.client_get_default()
+#         self.set_active(self.settings.get_bool(self.key))
+#         self.settings.notify_add(self.key, self.on_my_setting_changed)
+#         self.connect('toggled', self.on_my_value_changed)            
     
-    def on_my_setting_changed(self, client, cnxn_id, entry):
-        value = entry.value.get_bool()
-        self.set_active(value)
+#     def on_my_setting_changed(self, client, cnxn_id, entry):
+#         value = entry.value.get_bool()
+#         self.set_active(value)
         
-    def on_my_value_changed(self, widget):
-        self.settings.set_bool(self.key, self.get_active())
+#     def on_my_value_changed(self, widget):
+#         self.settings.set_bool(self.key, self.get_active())
 
 class DBusCheckButton(Gtk.CheckButton):    
     def __init__(self, label, service, path, get_method, set_method):        

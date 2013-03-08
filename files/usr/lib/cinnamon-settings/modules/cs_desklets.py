@@ -103,12 +103,12 @@ class DeskletsViewSidePage (SidePage):
 
         # Construct "Desklets Settings"
         
-        min_dec = [[0, _("No decoration")], [1, _("Border only")], [2, _("Border and header")]]
-        min_dec_combo = GSettingsIntComboBox(_("Decoration of desklets"), "org.cinnamon", "desklets-minimum-decoration", min_dec)
+        dec = [[0, _("No decoration")], [1, _("Border only")], [2, _("Border and header")]]
+        dec_combo = GSettingsIntComboBox(_("Decoration of desklets"), "org.cinnamon", "desklet-decorations", dec)
 
         label = Gtk.Label()
         label.set_markup("<i><small>%s\n%s</small></i>" % (_("Note: Some desklets require the border/header to be always preset"), _("Such requirements override the settings selected here")))
-        config_vbox.pack_start(min_dec_combo, False, False, 2)
+        config_vbox.pack_start(dec_combo, False, False, 2)
         config_vbox.pack_start(label, False, False, 2)
 
         # Show widgets

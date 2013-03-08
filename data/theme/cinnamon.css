@@ -347,7 +347,7 @@ StScrollBar StButton#vhandle:hover {
 .window-caption#selected {
 	background-color: white;
 	color: black;
-	font-weight: bold;
+	spacing: 25px;
 }
 
 .workspace-controls {
@@ -1611,17 +1611,27 @@ StScrollBar StButton#vhandle:hover {
 /* ===================================================================
  * Desklets (desklet.js) 
  * ===================================================================*/
-.desklet-box {
+.desklet {        
+    color: #fff;    
+}
+
+.desklet-with-borders {
     border: 2px solid #a5a5a5;
     background-color: rgba(80, 80, 80, 0.8);
     color: #fff;
     border-radius-bottomleft: 12px;
     border-radius-bottomright: 12px;
-}
-
-.desklet-box:no-header{
     border-radius-topleft: 12px;
     border-radius-topright: 12px;
+}
+
+.desklet-with-borders-and-header {
+    border: 2px solid #a5a5a5;
+    background-color: rgba(80, 80, 80, 0.8);
+    color: #fff;
+    border-top: 1px;
+    border-radius-bottomleft: 12px;
+    border-radius-bottomright: 12px;
 }
 
 .desklet-header { 
@@ -1632,6 +1642,7 @@ StScrollBar StButton#vhandle:hover {
     border-bottom: 0px;
     background-color: rgba(80, 80, 80, 0.8);
     color: #fff;
+    padding: 6px;
 }
 
 /* ===================================================================

@@ -2,5 +2,5 @@
  "uuid": "clock@cinnamon.org",
  "name": "Clock desklet",
  "description": "A desklet that displays the time",
- "minimum-decoration": 1
+ "prevent-decorations": false
 }
