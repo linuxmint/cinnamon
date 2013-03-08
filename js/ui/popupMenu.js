@@ -14,6 +14,8 @@ const Main = imports.ui.main;
 const Params = imports.misc.params;
 const Tweener = imports.ui.tweener;
 
+const Util = imports.misc.util;
+
 const SLIDER_SCROLL_STEP = 0.05; /* Slider scrolling step in % */
 
 function _ensureStyle(actor) {
@@ -872,17 +874,9 @@ PopupMenuBase.prototype = {
         return menuItem;
     },
 
-    addSettingsAction: function(title, desktopFile) {
+    addSettingsAction: function(title, module) {		
         let menuItem = this.addAction(title, function() {
-                           let app = Cinnamon.AppSystem.get_default().lookup_setting(desktopFile);
-
-                           if (!app) {
-                               log('Settings panel for desktop file ' + desktopFile + ' could not be loaded!');
-                               return;
-                           }
-
-                           Main.overview.hide();
-                           app.activate();
+                           Util.spawnCommandLine("cinnamon-settings " + module);
                        });
         return menuItem;
     },
