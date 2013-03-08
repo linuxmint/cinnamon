@@ -87,6 +87,8 @@ class Spice_Harvester:
         self.progressbar.set_text(_(''))
         self.progressbar.set_fraction(0)
 
+        self.progress_window.set_title("")
+
         self.abort_download = False
         self.download_total_files = 0
         self.download_current_file = 0
@@ -149,7 +151,7 @@ class Spice_Harvester:
         if callable(self.on_detail_close):
             self.on_detail_close(self)
 
-    def show_detail(self, uuid, onSelect=None, onClose=None):
+    def show_detail(self, uuid, onSelect=None, onClose=None):        
         self.on_detail_select = onSelect
         self.on_detail_close = onClose
 
@@ -163,8 +165,15 @@ class Spice_Harvester:
             return
 
         self.load_assets([uuid])
-
-        appletData = self.index_cache[uuid]
+        
+        appletData = self.index_cache[uuid] 
+        
+        # Browsing the info within the app would be great (ala mintinstall) but until it's fully ready 
+        # and it gives a better experience (layout, comments, reviewing) than 
+        # browsing online we'll open the link with an external browser 
+        os.system("xdg-open '%s/applets/view/%s'" % (URL_SPICES_HOME, appletData['spices-id']))
+        return
+        
         screenshot_filename = os.path.basename(appletData['screenshot'])
         screenshot_path = os.path.join(self.get_cache_folder(), screenshot_filename)
         appletData['screenshot_path'] = screenshot_path
@@ -334,8 +343,7 @@ class Spice_Harvester:
         
         self.progress_button_activate.set_sensitive(False)
         self.progress_button_close.set_sensitive(False)
-        self.progress_window.show()
-        self.progress_window.set_title(_("Progress"))
+        self.progress_window.show()        
 
         self.progresslabel.set_text(_("Installing %s...") % title)
         self.progressbar.set_fraction(0)
@@ -372,8 +380,7 @@ class Spice_Harvester:
 
     def uninstall(self, uuid, name=None, onFinished=None):
         self.progress_button_activate.set_sensitive(False)
-        self.progress_button_close.set_sensitive(False)
-        self.progress_window.set_title(_("Progress"))
+        self.progress_button_close.set_sensitive(False)        
         self.progresslabel.set_text(_("Uninstalling %s...") % name)
         self.progress_window.show()
         
@@ -422,8 +429,7 @@ class Spice_Harvester:
         self.progress_button_activate.set_sensitive(False)
         self.progress_button_close.set_sensitive(False)
         self.progressbar.set_fraction(0)
-        self.progressbar.set_text('0%')
-        self.progress_window.set_title(_("Progress"))
+        self.progressbar.set_text('0%')        
         self.progresslabel.set_text(caption)
         self.progress_window.show()
 
@@ -461,7 +467,7 @@ class Spice_Harvester:
             self.url_retrieve(url, outfd, self.reporthook)
         except KeyboardInterrupt:
             try:
-                os.remove(outname)
+                os.remove(outfile)
             except OSError:
                 pass
             raise Exception(_('Aborted.'))
@@ -514,3 +520,35 @@ class Spice_Harvester:
 
         del urlobj
         f.close()
+
+    def scrubConfigDirs(self, enabled_list):
+        active_list = {}
+        for enabled in enabled_list:
+            panel, align, order, uuid, id = enabled.split(":")
+            if uuid not in active_list:
+                id_list = []
+                active_list[uuid] = id_list
+                active_list[uuid].append(id)
+            else:
+                active_list[uuid].append(id)
+
+        for uuid in active_list.keys():
+            if (os.path.exists(os.path.join(settings_dir, uuid))):
+                dir_list = os.listdir(os.path.join(settings_dir, uuid))
+                for id in active_list[uuid]:
+                    fn = str(id) + ".json"
+                    if fn in dir_list:
+                        dir_list.remove(fn)
+                fn = str(uuid) + ".json"
+                if fn in dir_list:
+                    dir_list.remove(fn)
+                for jetsam in dir_list:
+                    try:
+                        os.remove(os.path.join(settings_dir, uuid, jetsam))
+                    except:
+                        pass
+
+
+
+
+

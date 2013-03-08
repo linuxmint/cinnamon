@@ -8,9 +8,9 @@ try:
     import os
     import glob
     import gettext
+    from gi.repository import Gio, Gtk, GObject, GdkPixbuf, GtkClutter, Gst
     import SettingsWidgets
     import capi
-    from gi.repository import Gio, Gtk, GObject, GdkPixbuf, GtkClutter, Gst
 # Standard setting pages... this can be expanded to include applet dirs maybe?
     mod_files = glob.glob('/usr/lib/cinnamon-settings/modules/*.py')
     mod_files.sort()
@@ -76,7 +76,7 @@ class MainWindow:
             if not sidePage.is_standalone:
                 self.side_view_sw.hide()
                 self.search_entry.hide()
-                self.window.set_title(_("System Settings") + " - " + sidePage.name)
+                self.window.set_title(sidePage.name)
                 sidePage.build(self.advanced_mode)
                 self.content_box_sw.show()
                 self.button_back.show()
@@ -167,7 +167,7 @@ class MainWindow:
         self.button_back.connect('clicked', self.back_to_icon_view)
 
         # Select the first sidePage
-        if len(sys.argv)==2 and sys.argv[1] in sidePagesIters.keys():
+        if len(sys.argv) > 1 and sys.argv[1] in sidePagesIters.keys():
             first_page_iter = sidePagesIters[sys.argv[1]]
             self.findPath(first_page_iter)
         else:

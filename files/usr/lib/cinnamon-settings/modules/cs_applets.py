@@ -2,6 +2,7 @@
 
 try:
     from SettingsWidgets import *
+    import XletSettings
     from Spices import Spice_Harvester
     #from Spices import *
     import pygtk
@@ -16,6 +17,7 @@ try:
     import os.path
     from gi.repository import Gio, Gtk, GObject, Gdk
     import dbus
+    import subprocess
 except Exception, detail:
     print detail
     sys.exit(1)
@@ -52,8 +54,10 @@ class AppletViewSidePage (SidePage):
         for widget in widgets:
             self.content_box.remove(widget)
         
-        scrolledWindow = Gtk.ScrolledWindow()    
-        notebook = Gtk.Notebook()
+        scrolledWindow = Gtk.ScrolledWindow()   
+        scrolledWindow.set_shadow_type(Gtk.ShadowType.ETCHED_IN)   
+        scrolledWindow.set_border_width(6) 
+        self.notebook = Gtk.Notebook()
         applets_vbox = Gtk.VBox()
         
         self.search_entry = Gtk.Entry()
@@ -61,9 +65,9 @@ class AppletViewSidePage (SidePage):
         self.search_entry.set_placeholder_text(_("Search applets"))
         self.search_entry.connect('changed', self.on_entry_refilter)
 
-        notebook.append_page(applets_vbox, Gtk.Label(_("Installed")))
+        self.notebook.append_page(applets_vbox, Gtk.Label(_("Installed")))
         
-        self.content_box.add(notebook)
+        self.content_box.add(self.notebook)
         self.treeview = Gtk.TreeView()
         
         cr = Gtk.CellRendererToggle()
@@ -88,8 +92,8 @@ class AppletViewSidePage (SidePage):
         self.treeview.append_column(actionColumn)
         self.treeview.set_headers_visible(False)
         
-        self.model = Gtk.TreeStore(str, str, int, int, GdkPixbuf.Pixbuf, str, int)
-        #                          uuid, desc, enabled, max-instances, icon, name, read-only
+        self.model = Gtk.TreeStore(str, str, int, int, GdkPixbuf.Pixbuf, str, int, bool, str)
+        #                          uuid, desc, enabled, max-instances, icon, name, read-only, hide-config-button, ext-setting-app
 
         self.modelfilter = self.model.filter_new()
         self.onlyActive = True
@@ -111,12 +115,21 @@ class AppletViewSidePage (SidePage):
         scrolledWindow.add(self.treeview)
         self.treeview.connect('button_press_event', self.on_button_press_event)
 
-        self.instanceButton = Gtk.Button(_("Add to panel"))       
+        self.instanceButton = Gtk.Button(_("Add to panel"))
         self.instanceButton.connect("clicked", lambda x: self._add_another_instance())
         self.instanceButton.set_tooltip_text(_("Some applets can be added multiple times.\nUse this to add another instance. Use panel edit mode to remove a single instance."))
         self.instanceButton.set_sensitive(False);
-        
-        restoreButton = Gtk.Button(_("Restore to default"))       
+
+        self.configureButton = Gtk.Button(_("Configure"))
+        self.configureButton.connect("clicked", self._configure_applet)
+        self.configureButton.set_tooltip_text(_("Configure this applet"))
+
+        self.extConfigureButton = Gtk.Button(_("Configure"))
+        self.extConfigureButton.connect("clicked", self._external_configure_launch)
+        self.extConfigureButton.set_tooltip_text(_("Configure this applet"))
+
+
+        restoreButton = Gtk.Button(_("Restore to default"))
         restoreButton.connect("clicked", lambda x: self._restore_default_applets())
         # Installed 
         hbox = Gtk.HBox()
@@ -128,6 +141,7 @@ class AppletViewSidePage (SidePage):
         self.inactiveHandler = self.inactiveButton.connect("toggled", self._filter_toggle)
 
         buttonbox = Gtk.ButtonBox.new(Gtk.Orientation.HORIZONTAL)
+        buttonbox.set_spacing(6)
         buttonbox.pack_start(self.activeButton, False, False, 0)
         buttonbox.pack_start(self.inactiveButton, False, False, 0)
         hbox.pack_start(buttonbox, False, False, 4)
@@ -141,30 +155,52 @@ class AppletViewSidePage (SidePage):
         hbox = Gtk.HBox()
         applets_vbox.pack_start(hbox, False, True, 5)
 
-        align = Gtk.Alignment()
-        align.set(1.0, 0.5, 0, 0)
         buttonbox = Gtk.ButtonBox.new(Gtk.Orientation.HORIZONTAL)
-        buttonbox.pack_start(self.instanceButton, False, False, 0)
-        buttonbox.pack_end(restoreButton, False, False, 0)
+        buttonbox.set_layout(Gtk.ButtonBoxStyle.START);
+        buttonbox.set_spacing(5)
         hbox.pack_start(buttonbox, True, True, 5)
         hbox.xalign = 1.0
-        
+
+        img = Gtk.Image.new_from_stock("gtk-add", Gtk.IconSize.BUTTON)
+        self.instanceButton.set_image(img)
+        img = Gtk.Image.new_from_stock("gtk-properties", Gtk.IconSize.BUTTON)
+        self.configureButton.set_image(img)
+        img = Gtk.Image.new_from_stock("gtk-properties", Gtk.IconSize.BUTTON)
+        self.extConfigureButton.set_image(img)
+
+        buttonbox.pack_start(self.instanceButton, False, False, 0)
+        buttonbox.pack_start(self.configureButton, False, False, 0)
+        buttonbox.pack_start(self.extConfigureButton, False, False, 0)
+
+        rightbuttonbox = Gtk.ButtonBox.new(Gtk.Orientation.HORIZONTAL);
+        rightbuttonbox.set_layout(Gtk.ButtonBoxStyle.END);
+        rightbuttonbox.pack_start(restoreButton, False, False, 0)
+
+        hbox.pack_end(rightbuttonbox, False, False, 5)
+
+        self.configureButton.hide()
+        self.configureButton.set_no_show_all(True)
+        self.extConfigureButton.hide()
+        self.extConfigureButton.set_no_show_all(True)
+
         # Get More - Variables prefixed with "gm_" where necessary
         gm_scrolled_window = Gtk.ScrolledWindow()
+        gm_scrolled_window.set_shadow_type(Gtk.ShadowType.ETCHED_IN)
+        gm_scrolled_window.set_border_width(6)
         getmore_vbox = Gtk.VBox()
         getmore_vbox.set_border_width(0)
 
         getmore_label = Gtk.Label(_("Get more online"))
-        notebook.append_page(getmore_vbox, getmore_label)
-        notebook.connect("switch-page", self.on_page_changed)
+        self.notebook.append_page(getmore_vbox, getmore_label)
+        self.notebook.connect("switch-page", self.on_page_changed)
 
         self.gm_combosort = Gtk.ComboBox()
         renderer_text = Gtk.CellRendererText()
         self.gm_combosort.pack_start(renderer_text, True)
         sortTypes=Gtk.ListStore(int, str)
         sortTypes.append([self.SORT_NAME, _("Name")])
-        sortTypes.append([self.SORT_RATING, _("Rating")])
-        sortTypes.append([self.SORT_DATE_EDITED, _("Date changed")])
+        sortTypes.append([self.SORT_RATING, _("Most popular")])
+        sortTypes.append([self.SORT_DATE_EDITED, _("Latest")])
         self.gm_combosort.set_model(sortTypes)
         self.gm_combosort.set_entry_text_column(1)
         self.gm_combosort.set_active(1) #Rating
@@ -243,6 +279,7 @@ class AppletViewSidePage (SidePage):
 
         hbox = Gtk.HBox()
         buttonbox = Gtk.ButtonBox.new(Gtk.Orientation.HORIZONTAL)
+        buttonbox.set_spacing(6)
         self.install_button = Gtk.Button(_("Install selected"))
         reload_button = Gtk.Button(_("Refresh list"))
         buttonbox.pack_start(self.install_button, False, False, 2)
@@ -260,6 +297,22 @@ class AppletViewSidePage (SidePage):
         if not self.spices.get_webkit_enabled():
             getmore_label.set_sensitive(False)
             reload_button.set_sensitive(False)
+
+        self.spices.scrubConfigDirs(self.enabled_applets)
+
+        if len(sys.argv) > 2:
+            for row in self.model:
+                uuid = self.model.get_value(row.iter, 0)
+                if uuid == sys.argv[2]:
+                    path = self.model.get_path(row.iter)
+                    filtered = self.treeview.get_model().convert_child_path_to_path(path)
+                    if filtered is not None:
+                        self.treeview.get_selection().select_path(filtered)
+                        self.treeview.scroll_to_cell(filtered, None, False, 0, 0)
+                        if self.configureButton.get_visible() and self.configureButton.get_sensitive():
+                            self.configureButton.clicked()
+                        elif self.extConfigureButton.get_visible() and self.extConfigureButton.get_sensitive():
+                            self.extConfigureButton.clicked()
 
     def _filter_toggle(self, widget):
         if widget == self.activeButton:
@@ -640,14 +693,65 @@ class AppletViewSidePage (SidePage):
         if treeiter:
             checked = model.get_value(treeiter, 2);
             max_instances = model.get_value(treeiter, 3);
-            enabled = max_instances == -1 or ((max_instances > 1) and (max_instances > checked))
+            enabled = max_instances > checked
             if max_instances == 1:
                 tip += _("\nThis applet does not support multiple instances.")
             else:
                 tip += _("\nThis applet supports max %d instances.") % max_instances
         self.instanceButton.set_sensitive(enabled);
         self.instanceButton.set_tooltip_text(tip)
-    
+        if treeiter:
+            hide_override = model.get_value(treeiter, 7)
+            ext_override = model.get_value(treeiter, 8)
+            if hide_override:
+                self.configureButton.hide()
+                self.extConfigureButton.hide()
+                return
+            if ext_override != "":
+                self.configureButton.hide()
+                self.extConfigureButton.show()
+                if checked:
+                    self.extConfigureButton.set_sensitive(True)
+                else:
+                    self.extConfigureButton.set_sensitive(False)
+                return
+        if treeiter and self._has_settings(model.get_value(treeiter, 0)):
+            self.extConfigureButton.hide()
+            self.configureButton.show()
+            if checked:
+                self.configureButton.set_sensitive(True)
+            else:
+                self.configureButton.set_sensitive(False)
+        else:
+            self.configureButton.hide()
+            self.extConfigureButton.hide()
+
+    def _has_settings(self, uuid):
+        if os.path.exists("%s/.cinnamon/configs/%s" % (home, uuid)):
+            if len(os.listdir("%s/.cinnamon/configs/%s" % (home, uuid))) > 0:
+                return True
+        return False
+
+    def _configure_applet(self, widget):
+        model, treeiter = self.treeview.get_selection().get_selected()
+        if treeiter:
+            uuid = model.get_value(treeiter, 0)
+            settingContainer = XletSettings.XletSetting(uuid, self, "applet")
+            self.content_box.pack_start(settingContainer.content, True, True, 2)
+            self.notebook.hide()
+            settingContainer.show()
+
+    def _external_configure_launch(self, widget):
+        model, treeiter = self.treeview.get_selection().get_selected()
+        if treeiter:
+            app = model.get_value(treeiter, 8)
+            if app is not None:
+                subprocess.Popen([app])
+
+    def _close_configure(self, settingContainer):
+        settingContainer.content.hide()
+        self.notebook.show_all()
+
     def _restore_default_applets(self):
         os.system('gsettings reset org.cinnamon next-applet-id')
         os.system('gsettings reset org.cinnamon enabled-applets')
@@ -670,15 +774,26 @@ class AppletViewSidePage (SidePage):
                         applet_name = data["name"]                                        
                         applet_description = data["description"]                          
                         try: applet_max_instances = int(data["max-instances"])
-                        except KeyError: applet_max_instances = -1
-                        except ValueError: applet_max_instances = -1
+                        except KeyError: applet_max_instances = 1
+                        except ValueError: applet_max_instances = 1
 
                         try: applet_role = data["role"]
                         except KeyError: applet_role = None
                         except ValueError: applet_role = None
 
+                        try: hide_config_button = data["hide-configuration"]
+                        except KeyError: hide_config_button = False
+                        except ValueError: hide_config_button = False
+
+                        try: ext_config_app = os.path.join(directory, applet, data["external-configuration-app"])
+                        except KeyError: ext_config_app = ""
+                        except ValueError: ext_config_app = ""
+
+                        if ext_config_app != "" and not os.path.exists(ext_config_app):
+                            ext_config_app = ""
+
                         if applet_max_instances < -1:
-                            applet_max_instances = -1
+                            applet_max_instances = 1
                             
                         if self.search_entry.get_text().upper() in (applet_name + applet_description).upper():
                             iter = self.model.insert_before(None, None)
@@ -706,6 +821,8 @@ class AppletViewSidePage (SidePage):
                             self.model.set_value(iter, 4, img)
                             self.model.set_value(iter, 5, applet_name)
                             self.model.set_value(iter, 6, os.access(directory, os.W_OK))
+                            self.model.set_value(iter, 7, hide_config_button)
+                            self.model.set_value(iter, 8, ext_config_app)
 
                 except Exception, detail:
                     print "Failed to load applet %s: %s" % (applet, detail)
