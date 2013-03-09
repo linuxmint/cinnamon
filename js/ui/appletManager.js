@@ -444,7 +444,7 @@ function get_object_for_uuid (uuid) {
     return null;
 }
 
-function get_num_instances_for_applet (uuid) {
+function get_max_instances_for_applet (uuid) {
     if (uuid in appletMeta) {
         if ("max-instances" in appletMeta[uuid]) {
             return parseInt(appletMeta[uuid]["max-instances"]);

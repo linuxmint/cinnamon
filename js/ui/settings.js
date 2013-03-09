@@ -676,9 +676,8 @@ AppletSettings.prototype = {
     },
 
     _get_is_multi_instance_xlet: function(uuid) {
-        let num = -1;
-        num = AppletManager.get_num_instances_for_applet(uuid);
-        return num > 1 || num == -1;
+        let max = AppletManager.get_max_instances_for_applet(uuid);
+        return max > 1 || max == -1;
     },
 };
 
@@ -695,9 +694,8 @@ DeskletSettings.prototype = {
     },
 
     _get_is_multi_instance_xlet: function(uuid) {
-        let num = -1;
-        num = DeskletManager.get_num_instances_for_desklet(uuid);
-        return num > 1 || num == -1;
+        let max = DeskletManager.get_max_instances_for_desklet(uuid);
+        return max > 1 || max == -1;
     }
 };
 

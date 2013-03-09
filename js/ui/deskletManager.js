@@ -267,7 +267,7 @@ function get_object_for_uuid (uuid) {
     return null;
 }
 
-function get_num_instances_for_desklet (uuid) {
+function get_max_instances_for_desklet (uuid) {
     if (uuid in deskletMeta) {
         if ("max-instances" in deskletMeta[uuid]) {
             return parseInt(deskletMeta[uuid]["max-instances"]);
