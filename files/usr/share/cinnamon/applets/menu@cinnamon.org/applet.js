@@ -20,6 +20,7 @@ const Tweener = imports.ui.tweener;
 const DND = imports.ui.dnd;
 const Meta = imports.gi.Meta;
 const DocInfo = imports.misc.docInfo;
+const Settings = imports.ui.settings; 
 
 const ICON_SIZE = 16;
 const MAX_FAV_ICON_SIZE = 32;
@@ -520,9 +521,9 @@ CategoryButton.prototype = {
     _onEnter: function(manual) {
         if (!this.menuApplet.searchActive) {
             this.isHovered = true;
-            if (!manual && this.menuApplet.hover_delay > 0) {
+            if (!manual && this.menuApplet.categoryHoverDelay > 0) {
                 Tweener.addTween(this, {
-                        time: this.menuApplet.hover_delay,
+                        time: this.menuApplet.categoryHoverDelay / 1000,
                         onComplete: function() { if (this.isHovered) { this._onSelected() } }
                 });
             } else {
@@ -791,15 +792,15 @@ FavoritesBox.prototype = {
     }
 }
 
-function MyApplet(orientation, panel_height) {
-    this._init(orientation, panel_height);
+function MyApplet(orientation, panel_height, instance_id) {
+    this._init(orientation, panel_height, instance_id);
 }
 
 MyApplet.prototype = {
     __proto__: Applet.TextIconApplet.prototype,
     
-    _init: function(orientation, panel_height) {
-        Applet.TextIconApplet.prototype._init.call(this, orientation, panel_height);
+    _init: function(orientation, panel_height, instance_id) {
+        Applet.TextIconApplet.prototype._init.call(this, orientation, panel_height, instance_id);
         this._orientation = orientation;
 
         this.set_applet_tooltip(_("Menu"));
@@ -809,35 +810,19 @@ MyApplet.prototype = {
         this.menuManager.addMenu(this.menu);
 
         this.actor.connect('key-press-event', Lang.bind(this, this._onSourceKeyPress));
-        
-        this._connectSetting("menu-show-recent", "showRecent", Lang.bind(this, this._refreshRecent));
-        this._connectSetting("menu-show-places", "showPlaces", Lang.bind(this, this._refreshPlaces));
-        this._connectSetting("menu-show-favorites", "showFavorites", Lang.bind(this, this._refreshFavs));
-        this._connectSetting("menu-show-system-buttons", "showSystemButtons", Lang.bind(this, this._refreshFavs));
-        this._connectSetting("menu-show-appinfo-title", "showAppInfoTitle", Lang.bind(this, this._refreshAppInfo));
-        this._connectSetting("menu-show-appinfo-description", "showAppInfoDescription", Lang.bind(this, this._refreshAppInfo));
+    
+        this._initSettings(instance_id);
         
         this._refreshActivateOnHover();
-        global.settings.connect("changed::activate-menu-applet-on-hover", Lang.bind(this, this._refreshActivateOnHover));
-
+        this._updateIcon();
+        
         this.menu.actor.add_style_class_name('menu-background');
         this.menu.connect('open-state-changed', Lang.bind(this, this._onOpenStateChanged));
 
-        this._updateIcon();
-
-        global.settings.connect("changed::menu-icon", Lang.bind(this, function() {
-            this._updateIcon();
-        }));
-
         this.set_applet_label(_("Menu"));
-        let menuLabel = global.settings.get_string("menu-text");
-        if (menuLabel != "Menu") {
-            this.set_applet_label(menuLabel);
+        if (this.menuText != "Menu") {
+            this.set_applet_label(this.menuText);
         }
-        global.settings.connect("changed::menu-text", Lang.bind(this, function() {
-                this.set_applet_label(global.settings.get_string("menu-text"));
-            }));
-
         this.RecentManager = new DocInfo.DocManager();
 
         this._pathCompleter = new Gio.FilenameCompleter();
@@ -848,11 +833,6 @@ MyApplet.prototype = {
         this._display();
         appsys.connect('installed-changed', Lang.bind(this, this._refreshApps));
         AppFavorites.getAppFavorites().connect('changed', Lang.bind(this, this._refreshFavs));
-
-        this.hover_delay = global.settings.get_int("menu-hover-delay") / 1000;
-        global.settings.connect("changed::menu-hover-delay", Lang.bind(this, function() {
-                this.hover_delay = global.settings.get_int("menu-hover-delay") / 1000;
-        }));
 
         global.display.connect('overlay-key', Lang.bind(this, function(){
             try{
@@ -871,6 +851,25 @@ MyApplet.prototype = {
             Util.spawnCommandLine("cinnamon-settings menu");
         });
         this._applet_context_menu.addMenuItem(settings_menu_item);
+    },
+    
+    _initSettings: function(instance_id) {
+        // Init settings
+        this.settings = new Settings.AppletSettings(this, "menu@cinnamon.org", instance_id);
+
+        /* Now we'll proceed with setting up individual setting bindings. */
+
+        this.settings.bindProperty(Settings.BindingDirection.ONE_WAY, "show-recent", "showRecent", this._refreshRecent);
+        this.settings.bindProperty(Settings.BindingDirection.ONE_WAY, "show-places", "showPlaces", this._refreshPlaces);
+        this.settings.bindProperty(Settings.BindingDirection.ONE_WAY, "show-favorites", "showFavorites", this._refreshFavs);
+        this.settings.bindProperty(Settings.BindingDirection.ONE_WAY, "show-system-buttons", "showSystemButtons", this._refreshFavs);
+        this.settings.bindProperty(Settings.BindingDirection.ONE_WAY, "show-appinfo-title", "showAppInfoTitle", this._refreshAppInfo);
+        this.settings.bindProperty(Settings.BindingDirection.ONE_WAY, "show-appinfo-description", "showAppInfoDescription", this._refreshAppInfo);
+        this.settings.bindProperty(Settings.BindingDirection.ONE_WAY, "activate-on-hover", "activateOnHover", this._refreshActivateOnHover);
+        this.settings.bindProperty(Settings.BindingDirection.ONE_WAY, "category-hover-delay", "categoryHoverDelay", function() {});
+        this.settings.bindProperty(Settings.BindingDirection.ONE_WAY, "icon", "menuIcon", this._updateIcon);
+        this.settings.bindProperty(Settings.BindingDirection.ONE_WAY, "icon-symbolic", "useSymbolicIcon", this._updateIcon);
+        this.settings.bindProperty(Settings.BindingDirection.ONE_WAY, "text", "menuText", this._updateLabel);
     },
     
     _loadInitialApps: function() {
@@ -924,22 +923,9 @@ MyApplet.prototype = {
             this.actor.disconnect(this._openMenuId);
             this._openMenuId = 0;
         }
-        let openOnHover = global.settings.get_boolean("activate-menu-applet-on-hover");
-        if (openOnHover) {
+        if (this.activateOnHover) {
             this._openMenuId = this.actor.connect('enter-event', Lang.bind(this, this.openMenu));
         }
-    },
-
-    _connectSetting: function(configKey, varKey, refreshCallback) {
-        this[varKey] = global.settings.get_boolean(configKey);
-        
-        global.settings.connect("changed::" + configKey, Lang.bind(this, function() {
-            this[varKey] = global.settings.get_boolean(configKey);
-            
-            if(refreshCallback) {
-                refreshCallback();
-            }
-        }));
     },
 
     openMenu: function() {
@@ -1061,12 +1047,21 @@ MyApplet.prototype = {
     },
 
     _updateIcon: function(){
-        let icon_file = global.settings.get_string("menu-icon");
         try{
-           this.set_applet_icon_path(icon_file);
+            let file = Gio.file_new_for_path(this.menuIcon);
+            if (file.query_exists(null))
+                this.set_applet_icon_path(this.menuIcon);
+            else if(this.useSymbolicIcon)
+                this.set_applet_icon_symbolic_name(this.menuIcon);
+            else
+                this.set_applet_icon_name(this.menuIcon);
         }catch(e){
-           global.logWarning("Could not load icon file \""+icon_file+"\" for menu button");
+           global.logWarning("Could not load icon file \""+this.menuIcon+"\" for menu button");
         }
+    },
+
+    _updateLabel: function(){
+        this.set_applet_label(this.menuText);
     },
 
     _onMenuKeyPress: function(actor, event) {
@@ -1931,6 +1926,6 @@ MyApplet.prototype = {
     }
 };
 
-function main(metadata, orientation, panel_height) {
-    return new MyApplet(orientation, panel_height);
+function main(metadata, orientation, panel_height, instance_id) {
+    return new MyApplet(orientation, panel_height, instance_id);
 }
