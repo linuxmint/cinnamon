@@ -7,38 +7,107 @@ const Clutter = imports.gi.Clutter;
 const GLib = imports.gi.GLib;
 const Tweener = imports.ui.tweener;
 const Util = imports.misc.util;
+const Settings = imports.ui.settings;
 
-function MyDesklet(metadata){
-    this._init(metadata);
+function MyDesklet(metadata, desklet_id){
+    this._init(metadata, desklet_id);
 }
 
 MyDesklet.prototype = {
     __proto__: Desklet.Desklet.prototype,
 
-    _init: function(metadata){
-        try {            
-            Desklet.Desklet.prototype._init.call(this, metadata);
+    _init: function(metadata, desklet_id){
+        Desklet.Desklet.prototype._init.call(this, metadata, desklet_id);
 
-            this.metadata = metadata
 
-            this.setHeader(_("Photo Frame"));
+        this.metadata = metadata
+        this.update_id = null;
 
+        try {
+
+            this.settings = new Settings.DeskletSettings(this, this.metadata["uuid"], this.instance_id);
+
+            this.settings.bindProperty(Settings.BindingDirection.ONE_WAY,
+                                     "directory",
+                                     "dir",
+                                     this.on_setting_changed,
+                                     null);
+
+            this.settings.bindProperty(Settings.BindingDirection.ONE_WAY,
+                                      "shuffle",
+                                      "shuffle",
+                                      this.on_setting_changed,
+                                      null);
+
+            this.settings.bindProperty(Settings.BindingDirection.ONE_WAY,
+                                     "delay",
+                                     "delay",
+                                     this.on_setting_changed,
+                                     null);
+
+            this.settings.bindProperty(Settings.BindingDirection.ONE_WAY,
+                                     "height",
+                                     "height",
+                                     this.on_setting_changed,
+                                     null);
+
+            this.settings.bindProperty(Settings.BindingDirection.ONE_WAY,
+                                     "width",
+                                     "width",
+                                     this.on_setting_changed,
+                                     null);
+
+            this.settings.bindProperty(Settings.BindingDirection.ONE_WAY,
+                                     "quality",
+                                     "quality",
+                                     this.on_setting_changed,
+                                     null);
+
+            this.settings.bindProperty(Settings.BindingDirection.ONE_WAY,
+                                     "fade-delay",
+                                     "fade_delay",
+                                     this.on_setting_changed,
+                                     null);
+
+            this.settings.bindProperty(Settings.BindingDirection.ONE_WAY,
+                                     "effect",
+                                     "effect",
+                                     this.on_setting_changed,
+                                     null);
+        } catch (e) {
+            global.logError(e);
+        }
+
+        this.setHeader(_("Photo Frame"));
+        this.setup_display();
+    },
+
+    on_setting_changed: function() {
+        if (this.update_id > 0)
+            Mainloop.source_remove(this.update_id);
+        this.update_id = null;
+        this._photoFrame.destroy();
+        this.setup_display();
+    },
+
+    setup_display: function() {
+        try {
             this._photoFrame = new St.Bin({style_class: 'photoframe-box', x_align: St.Align.START});
             this._binLayout = new Clutter.BinLayout();
             this._clutterBox = new Clutter.Box();
-            this._clutterTexture = new Clutter.Texture({height: this.metadata["height"], keep_aspect_ratio: true, filter_quality: this.metadata["quality"]});
+            this._clutterTexture = new Clutter.Texture({height: this.height, keep_aspect_ratio: true, filter_quality: this.quality});
             this._clutterTexture.set_load_async(true);
             this._clutterBox.set_layout_manager(this._binLayout);
-            this._clutterBox.set_width(this.metadata["width"]);
+            this._clutterBox.set_width(this.width);
             this._clutterBox.add_actor(this._clutterTexture);
             this._photoFrame.set_child(this._clutterBox);            
             this.setContent(this._photoFrame);
 
-            if (this.metadata["effect"] == "black-and-white") {
+            if (this.effect == "black-and-white") {
                 let effect = new Clutter.DesaturateEffect();
                 this._clutterTexture.add_effect(effect);
             }
-            else if (this.metadata["effect"] == "sepia") {
+            else if (this.effect == "sepia") {
                 let color = new Clutter.Color();
                 color.from_hls(17.0, 0.59, 0.40);
                 let colorize_effect = new Clutter.ColorizeEffect(color);   
@@ -54,7 +123,7 @@ MyDesklet.prototype = {
 
             this._files = new Array();
 
-            let dir_path = this.metadata["directory"];
+            let dir_path = this.dir;
             dir_path = dir_path.replace('~', GLib.get_home_dir());
             let dir = Gio.file_new_for_path(dir_path);
             if (dir.query_exists(null)) {
@@ -69,22 +138,21 @@ MyDesklet.prototype = {
                 fileEnum.close(null);
             }
             
-            if (this.metadata["shuffle"]) {
+            if (this.shuffle) {
                 for(var j, x, i = this._files.length; i; j = parseInt(Math.random() * i), x = this._files[--i], this._files[i] = this._files[j], this._files[j] = x);
             }
             
             this.updateInProgress = false;
             this.currentPicture = null;
             this._update_loop();
-        }
-        catch (e) {
+        } catch (e) {
             global.logError(e);
         }
     },
 
     _update_loop: function(){
         this._update();
-        Mainloop.timeout_add_seconds(this.metadata["delay"], Lang.bind(this, this._update_loop));
+        this.update_id = Mainloop.timeout_add_seconds(this.delay, Lang.bind(this, this._update_loop));
     },
 
     _update: function(){       
@@ -96,16 +164,16 @@ MyDesklet.prototype = {
             let file = this._files.shift();
             if (file != undefined && GLib.file_test(file, GLib.FileTest.EXISTS)) {                
                 this._files.push(file);                
-                if (this.metadata["fade-delay"] > 0) {
+                if (this.fade_delay > 0) {
                     Tweener.addTween(this._clutterTexture, { opacity: 0,
-                        time: this.metadata["fade-delay"],
+                        time: this.fade_delay,
                         transition: 'easeInSine',
                         onComplete: Lang.bind(this, function() {
                             if (this._clutterTexture.set_from_file(file)) {
                                 this._photoFrame.set_child(this._clutterBox);                                
                             }                                    
                             Tweener.addTween(this._clutterTexture, { opacity: 255,
-                                time: this.metadata["fade-delay"],
+                                time: this.fade_delay,
                                 transition: 'easeInSine'
                             });
                         })
@@ -143,6 +211,6 @@ MyDesklet.prototype = {
 }
 
 function main(metadata, desklet_id){
-    let desklet = new MyDesklet(metadata);
+    let desklet = new MyDesklet(metadata, desklet_id);
     return desklet;
 }

@@ -8,9 +8,9 @@ try:
     import os
     import glob
     import gettext
+    from gi.repository import Gio, Gtk, GObject, GdkPixbuf, GtkClutter, Gst
     import SettingsWidgets
     import capi
-    from gi.repository import Gio, Gtk, GObject, GdkPixbuf, GtkClutter, Gst
 # Standard setting pages... this can be expanded to include applet dirs maybe?
     mod_files = glob.glob('/usr/lib/cinnamon-settings/modules/*.py')
     mod_files.sort()
@@ -51,7 +51,7 @@ CONTROL_CENTER_MODULES = [
     [_("Universal Access"),                 "universal-access",   "universal-access.svg",           "prefs",      False,          _("magnifier, talk, access, zoom, keys, contrast")],
     [_("User Accounts"),                    "user-accounts",      "user-accounts.svg",              "prefs",      True,           _("users, accounts, add, password, picture")],
     [_("Power Management"),                 "power",              "power.svg",                   "hardware",      False,          _("power, suspend, hibernate, laptop, desktop")],
-    [_("Sound"),                            "sound-nua",          "sound.svg",                   "hardware",      False,          _("sound, speakers, headphones, test")],
+    [_("Sound"),                            "sound",              "sound.svg",                   "hardware",      False,          _("sound, speakers, headphones, test")],
     [_("Color"),                            "color",              "color.svg",                   "hardware",      True,           _("color, profile, display, printer, output")]
 ]
 
@@ -59,10 +59,12 @@ STANDALONE_MODULES = [
 #         Label                          Executable                          Icon                Category        Advanced?               Keywords for filter
     [_("Printers"),                      "system-config-printer",        "printer.svg",         "hardware",       False,          _("printers, laser, inkjet")],
     [_("Firewall"),                      "gufw",                         "firewall.svg",        "prefs",          True,           _("firewall, block, filter, programs")],
-    [_("Languages"),                     "gnome-language-selector",      "language.svg",        "prefs",          False,          _("language, install, foreign")]
+    [_("Languages"),                     "gnome-language-selector",      "language.svg",        "prefs",          False,          _("language, install, foreign")],
+    [_("Login Screen"),                  "gksu /usr/sbin/mdmsetup",      "login.svg",           "prefs",          True,           _("login, mdm, gdm, manager, user, password, startup, switch")]
 ]
 
 class MainWindow:
+
     # Change pages
     def side_view_nav(self, side_view, cat):
         selected_items = side_view.get_selected_items()
@@ -74,7 +76,7 @@ class MainWindow:
             if not sidePage.is_standalone:
                 self.side_view_sw.hide()
                 self.search_entry.hide()
-                self.window.set_title(_("System Settings") + " - " + sidePage.name)
+                self.window.set_title(sidePage.name)
                 sidePage.build(self.advanced_mode)
                 self.content_box_sw.show()
                 self.button_back.show()
@@ -106,7 +108,9 @@ class MainWindow:
         self.search_entry = self.builder.get_object("search_box")
         self.search_entry.connect("changed", self.onSearchTextChanged)
         self.search_entry.connect("icon-press", self.onClearSearchBox)
+
         self.window.connect("destroy", Gtk.main_quit)
+
         self.builder.connect_signals(self)
         self.window.set_has_resize_grip(False)
         self.sidePages = []
@@ -118,7 +122,7 @@ class MainWindow:
 
         for i in range(len(modules)):
             mod = modules[i].Module(self.content_box)
-            if self.loadCheck(mod):
+            if self.loadCheck(mod) and self.setParentRefs(mod):
                 self.sidePages.append((mod.sidePage, mod.name, mod.category))
 
         for item in CONTROL_CENTER_MODULES:
@@ -163,7 +167,7 @@ class MainWindow:
         self.button_back.connect('clicked', self.back_to_icon_view)
 
         # Select the first sidePage
-        if len(sys.argv)==2 and sys.argv[1] in sidePagesIters.keys():
+        if len(sys.argv) > 1 and sys.argv[1] in sidePagesIters.keys():
             first_page_iter = sidePagesIters[sys.argv[1]]
             self.findPath(first_page_iter)
         else:
@@ -257,6 +261,13 @@ class MainWindow:
                 if filtered_path is not None:
                     self.side_view[key].select_path(filtered_path)
                     return
+
+    def setParentRefs (self, mod):
+        try:
+            mod._setParentRef(self.window, self.builder)
+        except AttributeError:
+            pass
+        return True
 
     def loadCheck (self, mod):
         try:

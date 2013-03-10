@@ -2,5 +2,20 @@
 
 import os, sys
 
-os.execvp("/usr/lib/cinnamon-settings/cinnamon-settings.py", ("",) + tuple(sys.argv[1:]))
+if len(sys.argv) > 1:
+	module = sys.argv[1]
+	if os.path.exists("/usr/lib/cinnamon-settings/modules/cs_%s.py" % module):
+		print "Python module"
+		os.execvp("/usr/lib/cinnamon-settings/cinnamon-settings.py", ("",) + tuple(sys.argv[1:]))
+	elif os.path.exists("/usr/bin/cinnamon-control-center"):
+		print "Unknown module %s, using cinnamon-control-center" % module
+		os.execvp("/usr/lib/cinnamon-settings/cinnamon-settings.py", ("",) + tuple(sys.argv[1:]))
+	elif os.path.exists("/usr/bin/gnome-control-center"):
+		print "Unknown module %s, calling gnome-control-center" % module
+		os.execvp("gnome-control-center", ("",) + tuple(sys.argv[1:]))
+	else:
+		print "Unkown module %s" % module
+		os.execvp("/usr/lib/cinnamon-settings/cinnamon-settings.py", ("",) + tuple(sys.argv[1:]))	
+else:
+	os.execvp("/usr/lib/cinnamon-settings/cinnamon-settings.py", ("",) + tuple(sys.argv[1:]))
 

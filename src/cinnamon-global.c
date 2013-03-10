@@ -1712,6 +1712,18 @@ cinnamon_global_get_pid ()
 }
 
 /**
+ * cinnamon_global_get_md5_for_string:
+ *
+ * Returns: the MD5 sum for the given string
+ */
+
+gchar *
+cinnamon_global_get_md5_for_string (const gchar *string)
+{
+    return g_compute_checksum_for_string (G_CHECKSUM_MD5, string, -1);
+}
+
+/**
  * cinnamon_global_create_app_launch_context:
  * @global: A #CinnamonGlobal
  *

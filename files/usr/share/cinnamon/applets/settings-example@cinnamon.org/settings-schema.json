@@ -1,0 +1,81 @@
+{
+ "head" : {
+    "type" : "header",
+    "description" : "First Section"
+ },
+ "icon-name": {
+    "type": "iconfilechooser",
+    "default" : "help",
+    "description" : "The icon to use in the panel:",
+    "tooltip" : "Select an icon file, or you can type an icon name into the entry box"
+ },
+ "color" : {
+    "type": "colorchooser",
+    "default" : "red",
+    "description" : "The background color for the applet:",
+    "tooltip" : "Click the button to select a new background color for this applet"
+ },
+ "spinner-number" : {
+    "type": "spinbutton",
+    "default" : 150,
+    "min" : 0,
+    "max" : 400,
+    "step" : 5,
+    "units" : "pixels",
+    "description" : "Applet width in the panel:",
+    "tooltip" : "Increase or decrease this spinner value to make the applet wider or narrower in the panel"
+ },
+ "combo-selection" : {
+    "type": "combobox",
+    "default" : "option 1",
+    "description" : "Please pick an option:",
+    "options" : {
+        "First Choice" : "option 1",
+        "Second Choice" : "option 2",
+        "Third Choice" : "option 3",
+        "Fourth Choice" : "option 4"
+    },
+    "tooltip" : "A combo selection can select between int, boolean, float, and string values"
+ },
+ "scale-demo" : {
+    "type" : "scale",
+    "default" : 0.5,
+    "min" : 0.0,
+    "max" : 1.0,
+    "step" : 0.05,
+    "description" : "Here is a demonstration of bidirectional control:",
+    "tooltip" : "If you adjust this scale, it updates in the applet.  If you adjust the scale in the applet, it updates here"
+ },
+ "div1" : {
+    "type" : "separator"
+ },
+ "head1" : {
+    "type" : "header",
+    "description" : "Here's a new section"
+ },
+ "use-custom-label" : {
+    "type" : "checkbox",
+    "default" : false,
+    "description": "Check this to use a custom label:",
+    "tooltip": "Checking this box allows you to set a custom label in the field below - this demonstrates setting dependencies"
+ },
+ "custom-label" : {
+    "type" : "entry",
+    "default" : "custom",
+    "description" : "Custom Applet Label:",
+    "indent": true,
+    "dependency" : "use-custom-label",
+    "tooltip" : "Set your custom label here.  This field is unavailable unless the checkbox above is enabled"
+ },
+ "demo-button" : {
+    "type" : "button",
+    "description" : "Don't Press This Button!!!",
+    "callback" : "on_config_button_pressed",
+    "tooltip" : "Pressing this button activates a callback method in the applet - go ahead, press it."
+ },
+ "signal-test" : {
+    "type" : "checkbox",
+    "description" : "This is a test widget for individual key signal firing",
+    "default" : false
+ }
+}
