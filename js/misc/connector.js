@@ -115,9 +115,11 @@ Connector.prototype = {
      * Any previously set master will be disconnected from.
      * 
      * @master the object to watch for a destruction signal
-     * @signal the destruction signal to watch for
+     * @signal the destruction signal to watch for (default value is 'destroy')
      */
     setMaster: function(master, signal) {
+        if(!signal)
+            signal = 'destroy';
         if(this.master) {
             this.master.disconnect();
             this.master = null;
