@@ -9,7 +9,7 @@ try:
     import gettext
     from gi.repository import Gio, Gtk, GObject, Gdk
     from gi.repository import GdkPixbuf 
-#    import gconf
+    from gi.repository import GConf
     import json
     import dbus
     import time
