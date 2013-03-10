@@ -8,6 +8,7 @@ const DND = imports.ui.dnd;
 const Clutter = imports.gi.Clutter;
 const AppletManager = imports.ui.appletManager;
 const Gtk = imports.gi.Gtk;
+const Connector = imports.misc.connector;
 const Util = imports.misc.util;
 const Pango = imports.gi.Pango;
 
@@ -89,7 +90,7 @@ Applet.prototype = {
     _init: function(orientation, panel_height) {
         this.actor = new St.BoxLayout({ style_class: 'applet-box', reactive: true, track_hover: true });        
         this._applet_tooltip = new Tooltips.PanelItemTooltip(this, "", orientation);                                        
-        this.actor.connect('button-release-event', Lang.bind(this, this._onButtonReleaseEvent));  
+        this.createConnection(this.actor, 'button-release-event', Lang.bind(this, this._onButtonReleaseEvent));  
 
         this._menuManager = new PopupMenu.PopupMenuManager(this);
         this._applet_context_menu = new AppletContextMenu(this, orientation);
@@ -106,9 +107,9 @@ Applet.prototype = {
         this._hook = null; // Defined in metadata.json, set by appletManager
         this._dragging = false;                
         this._draggable = DND.makeDraggable(this.actor);
-        this._draggable.connect('drag-begin', Lang.bind(this, this._onDragBegin));
-    	this._draggable.connect('drag-cancelled', Lang.bind(this, this._onDragCancelled));
-        this._draggable.connect('drag-end', Lang.bind(this, this._onDragEnd));        
+        this.createConnection(this._draggable, 'drag-begin', Lang.bind(this, this._onDragBegin));
+    	this.createConnection(this._draggable, 'drag-cancelled', Lang.bind(this, this._onDragCancelled));
+        this.createConnection(this._draggable, 'drag-end', Lang.bind(this, this._onDragEnd));        
 
         this._scaleMode = false;
         this._applet_tooltip_text = "";
@@ -117,7 +118,7 @@ Applet.prototype = {
         this.context_menu_separator = null;
 
         this._setAppletReactivity();
-        this._panelEditModeChangedId = global.settings.connect('changed::panel-edit-mode', Lang.bind(this, function() {
+        this.createConnection(global.settings, 'changed::panel-edit-mode', Lang.bind(this, function() {
             this._setAppletReactivity();
             this.finalizeContextMenu();
         }));
@@ -188,7 +189,7 @@ Applet.prototype = {
 
     // should only be called by appletManager
     _onAppletRemovedFromPanel: function() {
-        global.settings.disconnect(this._panelEditModeChangedId);
+        this.destroyConnections();
         this.on_applet_removed_from_panel();
     },
 
@@ -258,6 +259,8 @@ Applet.prototype = {
         }
     },
 };
+
+Connector.addConnectorMethods(Applet.prototype);
 
 function IconApplet(orientation, panel_height) {
     this._init(orientation, panel_height);
