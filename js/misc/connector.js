@@ -118,14 +118,15 @@ Connector.prototype = {
      * @signal the destruction signal to watch for (default value is 'destroy')
      */
     setMaster: function(master, signal) {
-        if(!signal)
-            signal = 'destroy';
         if(this.master) {
             this.master.disconnect();
             this.master = null;
         }
-        if(master)
+        if(master) {
+            if(!signal)
+                signal = 'destroy';
             this.master = createConnection(master, signal, Lang.bind(this, this._onMasterDestroyed));
+        }
     },
     
     _onMasterDestroyed: function() {
