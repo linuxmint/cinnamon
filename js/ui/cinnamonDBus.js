@@ -6,6 +6,8 @@ const Lang = imports.lang;
 const Config = imports.misc.config;
 const Flashspot = imports.ui.flashspot;
 const Main = imports.ui.main;
+const AppletManager = imports.ui.appletManager;
+const DeskletManager = imports.ui.deskletManager;
 
 const CinnamonIface = {
     name: 'org.Cinnamon',
