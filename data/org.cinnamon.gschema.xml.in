@@ -286,89 +286,9 @@
       </_description>
     </key>
     
-    <key type="s" name="menu-text">
-      <default>"Menu"</default>
-      <_summary>Text for the menu</_summary>
-      <_description>
-            The text shown in the Menu label.
-      </_description>
-    </key>
-    
-    <key type="s" name="menu-icon">
-      <default>"/usr/share/cinnamon/theme/menu.png"</default>
-      <_summary>Icon for the menu</_summary>
-      <_description>
-            The icon shown in the Menu button.
-      </_description>
-    </key>
-    
-     <key type="i" name="menu-hover-delay">
-      <default>0</default>
-      <_summary>Duration of the delay before which a category is selected when it is hovered</_summary>
-      <_description>
-       Duration of the delay (in milliseconds)    
-      </_description>
-    </key>
-
-    <key type="b" name="activate-menu-applet-on-hover">
-      <default>false</default>
-      <_summary>Enable or disable activation menu applet on hover</_summary>
-      <_description>
-            Another way to open the menu by just hovering the mouse pointer as opposed to clicking on it.
-      </_description>
-    </key>
-
     <key type="b" name="display-notifications">
       <default>true</default>
       <_summary>Whether notifications are to be displayed</_summary>
-    </key>
-
-    <key type="b" name="menu-show-places">
-      <default>true</default>
-      <_summary>Enable or disable display of places in menu applet</_summary>
-      <_description>
-            Toggles displaying the 'Places' category in the menu applet
-      </_description>
-    </key>
-
-    <key type="b" name="menu-show-recent">
-      <default>true</default>
-      <_summary>Enable or disable display of recent files in menu applet</_summary>
-      <_description>
-            Toggles displaying the 'Recent files' category in the menu applet
-      </_description>
-    </key>
-
-    <key type="b" name="menu-show-favorites">
-      <default>true</default>
-      <_summary>Enable or disable display of favorites in menu applet</_summary>
-      <_description>
-            Toggles displaying the 'Favorites' section in the menu applet
-      </_description>
-    </key>
-
-    <key type="b" name="menu-show-system-buttons">
-      <default>true</default>
-      <_summary>Enable or disable display of system buttons in menu applet</_summary>
-      <_description>
-            Toggles displaying the 'Lockscreen/Log out/Shutdown' buttons in the menu applet
-      </_description>
-    </key>
-
-    <key type="b" name="menu-show-appinfo-title">
-      <default>true</default>
-      <_summary>Enable or disable display of AppInfo title in menu applet</_summary>
-      <_description>
-            Toggles displaying the title of the currently selected application in the menu applet
-      </_description>
-    </key>
-
-    <key type="b" name="menu-show-appinfo-description">
-      <default>true</default>
-      <_summary>Enable or disable display of AppInfo description in menu applet</_summary>
-      <_description>
-            Toggles displaying the description of the currently selected application in the menu applet
-      </_description>
     </key>
 
     <key type="i" name="number-workspaces">
