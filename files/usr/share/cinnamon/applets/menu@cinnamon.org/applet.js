@@ -1168,6 +1168,18 @@ MyApplet.prototype = {
         this.vectorBox.raise_top();
 
         this.vectorBox.connect("leave-event", Lang.bind(this, this.destroyVectorBox));
+        this.vectorBox.connect("motion-event", Lang.bind(this, function(actor) {
+            let [mx, my, mask] = global.get_pointer();
+            let [bx, by] = this.categoriesApplicationsBox.actor.get_transformed_position();
+            let xformed_mouse_x = mx-bx;
+            let [appbox_x, appbox_y] = this.applicationsBox.get_transformed_position();
+            let right_x = appbox_x - bx;
+            this.vectorBox.width = right_x-xformed_mouse_x;
+            this.vectorBox.set_position(xformed_mouse_x,0);
+            this.vectorBox.urc_x = this.vectorBox.width;
+            this.vectorBox.lrc_x = this.vectorBox.width;
+            this.vectorBox.queue_repaint();
+        }))
     },
 
     destroyVectorBox: function(actor) {
