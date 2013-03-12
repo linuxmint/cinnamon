@@ -1151,10 +1151,10 @@ MyApplet.prototype = {
         let xformed_mouse_x = mx-bx;
         let w = right_x-xformed_mouse_x;
 
-        let ulc_y = ay-by > 0 ? ay-by :  by-ay;
-        let llc_y = (ay+ah)-by > 0 ? (ay+ah)-by : by-(ay+ah);
+        let ulc_y = ay-by > 0 ? ay-by-5 :  by-ay-5;
+        let llc_y = (ay+ah)-by > 0 ? (ay+ah)-by+5 : by-(ay+ah)+5;
 
-        this.vectorBox = new St.Polygon({ debug: true, width: w, height: bh,
+        this.vectorBox = new St.Polygon({ debug: false, width: w, height: bh,
                                           ulc_x: 0, ulc_y: ulc_y,
                                           llc_x: 0, llc_y: llc_y,
                                           urc_x: w, urc_y: 0,
@@ -1180,12 +1180,30 @@ MyApplet.prototype = {
             this.vectorBox.lrc_x = this.vectorBox.width;
             this.vectorBox.queue_repaint();
         }))
+        this.current_motion_actor = actor;
+        this.actor_motion_id = actor.connect("motion-event", Lang.bind(this, function(actor) {
+            let [mx, my, mask] = global.get_pointer();
+            let [bx, by] = this.categoriesApplicationsBox.actor.get_transformed_position();
+            let xformed_mouse_x = mx-bx;
+            let [appbox_x, appbox_y] = this.applicationsBox.get_transformed_position();
+            let right_x = appbox_x - bx;
+            this.vectorBox.width = right_x-xformed_mouse_x;
+            this.vectorBox.set_position(xformed_mouse_x,0);
+            this.vectorBox.urc_x = this.vectorBox.width;
+            this.vectorBox.lrc_x = this.vectorBox.width;
+            this.vectorBox.queue_repaint();
+        }))
     },
 
     destroyVectorBox: function(actor) {
         if (this.vectorBox != null) {
             this.vectorBox.destroy();
             this.vectorBox = null;
+        }
+        if (this.actor_motion_id > 0 && this.current_motion_actor != null) {
+            this.current_motion_actor.disconnect(this.actor_motion_id);
+            this.actor_motion_id = 0;
+            this.current_motion_actor = null;
         }
     },
 
@@ -1620,6 +1638,8 @@ MyApplet.prototype = {
         this._activeContainer = null;
         this._activeActor = null;
         this.vectorBox = null;
+        this.actor_motion_id = 0;
+        this.current_motion_actor = null;
         let section = new PopupMenu.PopupMenuSection();
         this.menu.addMenuItem(section);
         
