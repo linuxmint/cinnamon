@@ -938,8 +938,8 @@ MyApplet.prototype = {
     } else {
             this.actor.remove_style_pseudo_class('active');            
             if (this.searchActive) {
-        this.resetSearch();
-        }
+                this.resetSearch();
+            }
             this.selectedAppTitle.set_text("");
             this.selectedAppDescription.set_text("");
             this._previousTreeItemIndex = null;
@@ -947,6 +947,7 @@ MyApplet.prototype = {
             this._previousSelectedActor = null;
             this.closeApplicationsContextMenus(null, false);
             this._clearAllSelections();
+            this.destroyVectorBox();
         }
     },
 
@@ -1158,7 +1159,7 @@ MyApplet.prototype = {
         let ulc_y = ay-by > 0 ? ay-by-3 :  by-ay-3;
         let llc_y = (ay+ah)-by > 0 ? (ay+ah)-by+3 : by-(ay+ah)+3;
 
-        this.vectorBox = new St.Polygon({ debug: true, width: w, height: bh,
+        this.vectorBox = new St.Polygon({ debug: false, width: w, height: bh,
                                           ulc_x: 0, ulc_y: ulc_y,
                                           llc_x: 0, llc_y: llc_y,
                                           urc_x: w, urc_y: 0,
