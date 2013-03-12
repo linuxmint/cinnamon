@@ -1135,6 +1135,10 @@ MyApplet.prototype = {
                 this._previousVisibleIndex = null;
                 this._previousTreeSelectedActor = actor;
             }
+        } else {
+            this.categoriesBox.get_children().forEach(Lang.bind(this, function (child) {
+                child.style_class = "menu-category-button";
+            }));
         }
     },
 
@@ -1154,7 +1158,7 @@ MyApplet.prototype = {
         let ulc_y = ay-by > 0 ? ay-by-3 :  by-ay-3;
         let llc_y = (ay+ah)-by > 0 ? (ay+ah)-by+3 : by-(ay+ah)+3;
 
-        this.vectorBox = new St.Polygon({ debug: false, width: w, height: bh,
+        this.vectorBox = new St.Polygon({ debug: true, width: w, height: bh,
                                           ulc_x: 0, ulc_y: ulc_y,
                                           llc_x: 0, llc_y: llc_y,
                                           urc_x: w, urc_y: 0,
@@ -1226,8 +1230,8 @@ MyApplet.prototype = {
                            time: this.hover_delay,
                            onComplete: function () {
                                if (this._allAppsCategoryButton.isHovered) {
-                                   this._allAppsCategoryButton.actor.style_class = "menu-category-button-selected";
                                    this._clearPrevCatSelection(this._allAppsCategoryButton.actor);
+                                   this._allAppsCategoryButton.actor.style_class = "menu-category-button-selected";
                                    this._select_category(null, this._allAppsCategoryButton);
                                } else {
                                    this._allAppsCategoryButton.actor.style_class = "menu-category-button";
@@ -1235,17 +1239,14 @@ MyApplet.prototype = {
                            }
                     });
                 } else {
-                    this._allAppsCategoryButton.actor.style_class = "menu-category-button-selected";
                     this._clearPrevCatSelection(this._allAppsCategoryButton.actor);
+                    this._allAppsCategoryButton.actor.style_class = "menu-category-button-selected";
                     this._select_category(null, this._allAppsCategoryButton);
                 }
                 this.makeVectorBox(this._allAppsCategoryButton.actor);
             }
          }));
          this._allAppsCategoryButton.actor.connect('leave-event', Lang.bind(this, function () {
-            if (!this.searchActive) {
-                this._allAppsCategoryButton.actor.style_class = "menu-category-button";
-            }
             this._previousSelectedActor = this._allAppsCategoryButton.actor;
             this._allAppsCategoryButton.isHovered = false;
          }));
@@ -1276,8 +1277,8 @@ MyApplet.prototype = {
                                             time: this.hover_delay,
                                             onComplete: function () {
                                                 if (categoryButton.isHovered) {
-                                                    categoryButton.actor.style_class = "menu-category-button-selected";
                                                     this._clearPrevCatSelection(categoryButton.actor);
+                                                    categoryButton.actor.style_class = "menu-category-button-selected";
                                                     this._select_category(dir, categoryButton);
                                                 } else {
                                                     categoryButton.actor.style_class = "menu-category-button";
@@ -1285,8 +1286,8 @@ MyApplet.prototype = {
                                             }
                                     });
                                 } else {
-                                    categoryButton.actor.style_class = "menu-category-button-selected";
                                     this._clearPrevCatSelection(categoryButton.actor);
+                                    categoryButton.actor.style_class = "menu-category-button-selected";
                                     this._select_category(dir, categoryButton);
                                 }
                                 this.makeVectorBox(categoryButton.actor);
@@ -1331,8 +1332,8 @@ MyApplet.prototype = {
                         time: this.hover_delay,
                         onComplete: function () {
                             if (this.placesButton.isHovered) {
-                                this.placesButton.actor.style_class = "menu-category-button-selected";
                                 this._clearPrevCatSelection(this.placesButton);
+                                this.placesButton.actor.style_class = "menu-category-button-selected";
                                 this._displayButtons(null, -1);
                             }
                         }
@@ -1369,7 +1370,6 @@ MyApplet.prototype = {
                         this.selectedAppDescription.set_text(button.place.id.slice(16));
                         }));
                 button.actor.connect('leave-event', Lang.bind(this, function() {
-                            button.actor.style_class = "menu-application-button";
                             this._previousSelectedActor = button.actor;
                             this.selectedAppDescription.set_text("");
                             }));
@@ -1387,8 +1387,8 @@ MyApplet.prototype = {
                         time: this.hover_delay,
                         onComplete: function () {
                             if (this.recentButton.isHovered) {
-                                this.recentButton.actor.style_class = "menu-category-button-selected";
                                 this._clearPrevCatSelection(this.recentButton.actor);
+                                this.recentButton.actor.style_class = "menu-category-button-selected";
                                 this._displayButtons(null, null, -1);
                             }
                         }
@@ -1397,10 +1397,7 @@ MyApplet.prototype = {
                 }
             }));
             this.recentButton.actor.connect('leave-event', Lang.bind(this, function () {
-                if (!this.searchActive) {
-                    this.recentButton.actor.style_class = "menu-category-button";
-                }
-                
+               
                 if (this._previousTreeSelectedActor === null) {
                     this._previousTreeSelectedActor = this.recentButton.actor;
                 } else {
