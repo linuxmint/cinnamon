@@ -795,6 +795,7 @@ CategorySelectionHelper.prototype = {
     _init: function(menuApplet) {
         this._menuApplet = menuApplet;
         this._activationDelay = 300;
+        this._tolerance = 75;
         this._historySize = 3;
         this._history = [],
         this._lastDelayPos = null,
@@ -871,10 +872,9 @@ CategorySelectionHelper.prototype = {
         if (this._lastDelayPos && loc[0] == this._lastDelayPos[0] && loc[1] == this._lastDelayPos[1])
             return 0;
 
-        let tolerance = 75;
         let box = this._menuApplet.applicationsBox.get_transformed_position();
-        let upper = [ box[0], box[1] - tolerance ];
-        let lower = [ box[0], box[1] + this._menuApplet.applicationsBox.get_height() + tolerance ];
+        let upper = [ box[0], box[1] - this._tolerance ];
+        let lower = [ box[0], box[1] + this._menuApplet.applicationsBox.get_height() + this._tolerance ];
         
         if (this._pointInTriangle(loc, prevLoc, lower, upper)) {
             this._lastDelayPos = loc;
