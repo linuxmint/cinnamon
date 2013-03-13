@@ -1230,7 +1230,7 @@ msgstr "Esvaziar lixeira?"
 
 #: files/usr/share/cinnamon/applets/trash@cinnamon.org/applet.js:125
 msgid "Empty"
-msgstr "Vazio"
+msgstr "Esvaziar"
 
 #: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:41
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2546
