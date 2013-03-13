@@ -18,16 +18,6 @@
     "description": "Use a symbolic icon instead of a full color icon",
     "tooltip": "This only affects icon names. If you specify a file, this option is not used."
  },
- "category-hover-delay" : {
-    "type": "spinbutton",
-    "default" : 0,
-    "min" : 0,
-    "max" : 2000,
-    "step" : 50,
-    "units" : "milliseconds",
-    "description" : "Category button hover delay:",
-    "tooltip" : "Waits x milliseconds before activating a category via hover"
- },
  "activate-on-hover" : {
     "type" : "checkbox",
     "default" : false,

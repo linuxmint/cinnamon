@@ -520,20 +520,15 @@ CategoryButton.prototype = {
     
     _onEnter: function(manual) {
         if (!this.menuApplet.searchActive) {
-            this.isHovered = true;
-            if (!manual && this.menuApplet.categoryHoverDelay > 0) {
-                Tweener.addTween(this, {
-                        time: this.menuApplet.categoryHoverDelay / 1000,
-                        onComplete: function() { if (this.isHovered) { this._onSelected() } }
-                });
-            } else {
+            if(manual)
                 this._onSelected();
-            }
+            else
+                this.menuApplet._categorySelectionHelper.enterCategoryButton(this);
         }
     },
     
     _onLeave: function() {
-        this.isHovered = false;
+        this.menuApplet._categorySelectionHelper.leaveCategoryButton(this);
     },
     
     _onSelected: function() {
@@ -792,16 +787,116 @@ FavoritesBox.prototype = {
     }
 }
 
-function MyApplet(orientation, panel_height, instance_id) {
-    this._init(orientation, panel_height, instance_id);
+function CategorySelectionHelper(menuApplet) {
+    this._init(menuApplet);
+}
+
+CategorySelectionHelper.prototype = {
+    _init: function(menuApplet) {
+        this._menuApplet = menuApplet;
+        this._activationDelay = 300;
+        this._historySize = 3;
+        this._history = [],
+        this._lastDelayPos = null,
+        this._activateTimeoutId = null;
+        this._motionEventId = 0;
+    },
+    
+    onOpenStateChanged: function(open) {
+        if(this._motionEventId)
+			global.stage.disconnect(this._motionEventId);
+        if(open) {
+            this._motionEventId = global.stage.connect('motion-event', Lang.bind(this, this._onMotionEvent));
+        } else {
+            this._motionEventId = 0;
+            this._clearActivationTimeout();
+        }
+    },
+
+    enterCategoryButton: function(button) {
+        button.isHovered = true;
+        this._clearActivationTimeout();
+        this._possiblyActivateCategory(button);
+    },
+    
+    leaveCategoryButton: function(button) {
+        button.isHovered = false;
+    },
+
+    _onMotionEvent: function() {
+        this._history.push(global.get_pointer());
+        if (this._history.length > this._historySize)
+            this._history.shift();
+    },
+    
+    _clearActivationTimeout: function() {
+        if (this._activateTimeoutId) {
+            Mainloop.source_remove(this._activateTimeoutId);
+            this._activateTimeoutId = 0;
+        }
+    },
+
+    _possiblyActivateCategory: function(button) {
+        if(button.isHovered) {
+            let delay = this._getActivationDelay();
+            if (delay) {
+                this._activateTimeoutId = Mainloop.timeout_add(delay,
+                    Lang.bind(this, function () { this._possiblyActivateCategory(button); }));
+            } else {
+                this._activateTimeoutId = 0;
+                button._onSelected();
+            }
+        } else {
+            this._activateTimeoutId = 0;
+        }
+    },
+
+    _pointInTriangle: function(p, tp1, tp2, tp3) {
+        let b1 = (p[0] - tp2[0]) * (tp1[1] - tp2[1]) < (tp1[0] - tp2[0]) * (p[1] - tp2[1]);
+        let b2 = (p[0] - tp3[0]) * (tp2[1] - tp3[1]) < (tp2[0] - tp3[0]) * (p[1] - tp3[1]);
+        if(b1 != b2)
+            return false;
+        let b3 = (p[0] - tp1[0]) * (tp3[1] - tp1[1]) < (tp3[0] - tp1[0]) * (p[1] - tp1[1]);
+        return b2 == b3;
+    },
+    
+    _getActivationDelay: function() {
+        if (this._history.length < this._historySize)
+            return 0;
+        
+        let loc = this._history[this._history.length - 1];
+        let prevLoc = this._history[0];
+
+        // Mouse has not moved since last delay
+        if (this._lastDelayPos && loc[0] == this._lastDelayPos[0] && loc[1] == this._lastDelayPos[1])
+            return 0;
+
+        let tolerance = 75;
+        let box = this._menuApplet.applicationsBox.get_transformed_position();
+        let upper = [ box[0], box[1] - tolerance ];
+        let lower = [ box[0], box[1] + this._menuApplet.applicationsBox.get_height() + tolerance ];
+        
+        if (this._pointInTriangle(loc, prevLoc, lower, upper)) {
+            this._lastDelayPos = loc;
+            return this._activationDelay;
+        }
+
+        this._lastDelayPos = null;
+        return 0;
+    }
+};
+
+function MyApplet(metadata, orientation, panel_height, instance_id) {
+    this._init(metadata, orientation, panel_height, instance_id);
 }
 
 MyApplet.prototype = {
     __proto__: Applet.TextIconApplet.prototype,
     
-    _init: function(orientation, panel_height, instance_id) {
+    _init: function(metadata, orientation, panel_height, instance_id) {
         Applet.TextIconApplet.prototype._init.call(this, orientation, panel_height, instance_id);
         this._orientation = orientation;
+        this._categorySelectionHelper = new CategorySelectionHelper(this);
 
         this.set_applet_tooltip(_("Menu"));
 
@@ -811,7 +906,8 @@ MyApplet.prototype = {
 
         this.actor.connect('key-press-event', Lang.bind(this, this._onSourceKeyPress));
     
-        this._initSettings(instance_id);
+        let uuid = metadata['uuid'];
+        this._initSettings(instance_id, uuid);
         
         this._refreshActivateOnHover();
         this._updateIcon();
@@ -848,14 +944,14 @@ MyApplet.prototype = {
         this.edit_menu_item = new Applet.MenuItem(_("Edit menu"), Gtk.STOCK_EDIT, Lang.bind(this, this._launchEditor));
         this._applet_context_menu.addMenuItem(this.edit_menu_item);
         let settings_menu_item = new Applet.MenuItem(_("Menu settings"), null, function() {
-            Util.spawnCommandLine("cinnamon-settings applets menu@cinnamon.org");
+            Util.spawnCommandLine("cinnamon-settings applets " + uuid);
         });
         this._applet_context_menu.addMenuItem(settings_menu_item);
     },
     
-    _initSettings: function(instance_id) {
+    _initSettings: function(instance_id, uuid) {
         // Init settings
-        this.settings = new Settings.AppletSettings(this, "menu@cinnamon.org", instance_id);
+        this.settings = new Settings.AppletSettings(this, uuid, instance_id);
 
         /* Now we'll proceed with setting up individual setting bindings. */
 
@@ -866,7 +962,6 @@ MyApplet.prototype = {
         this.settings.bindProperty(Settings.BindingDirection.ONE_WAY, "show-appinfo-title", "showAppInfoTitle", this._refreshAppInfo);
         this.settings.bindProperty(Settings.BindingDirection.ONE_WAY, "show-appinfo-description", "showAppInfoDescription", this._refreshAppInfo);
         this.settings.bindProperty(Settings.BindingDirection.ONE_WAY, "activate-on-hover", "activateOnHover", this._refreshActivateOnHover);
-        this.settings.bindProperty(Settings.BindingDirection.ONE_WAY, "category-hover-delay", "categoryHoverDelay", function() {});
         this.settings.bindProperty(Settings.BindingDirection.ONE_WAY, "icon", "menuIcon", this._updateIcon);
         this.settings.bindProperty(Settings.BindingDirection.ONE_WAY, "icon-symbolic", "useSymbolicIcon", this._updateIcon);
         this.settings.bindProperty(Settings.BindingDirection.ONE_WAY, "text", "menuText", this._updateLabel);
@@ -1028,6 +1123,8 @@ MyApplet.prototype = {
             this.closeApplicationsContextMenus(null, false);
             this._clearAllSelections(false);
         }
+        
+        this._categorySelectionHelper.onOpenStateChanged(open);
     },
     
     _initialCatSelection: function () {
@@ -1094,7 +1191,6 @@ MyApplet.prototype = {
                 index = this.appBoxIter.getAbsoluteIndexOfChild(item_actor);
             } else {
                 this._selectedCategoryButton = this.categoriesBox.get_child_at_index(index)._delegate;
-                this._selectedCategoryButton.isHovered = false;
                 item_actor = this.catBoxIter.getPrevVisible(this._activeActor)
                 index = this.catBoxIter.getAbsoluteIndexOfChild(item_actor);
                 this._selectedCategoryButton.emit('leave-event');
@@ -1106,9 +1202,7 @@ MyApplet.prototype = {
                 this._previousVisibleIndex = this.appBoxIter.getVisibleIndex(item_actor);
                 index = this.appBoxIter.getAbsoluteIndexOfChild(item_actor);
             } else {
-                this._selectedCategoryButton.isHovered = false;
                 this._selectedCategoryButton = this.categoriesBox.get_child_at_index(index)._delegate;
-                this._selectedCategoryButton.isHovered = false;
                 item_actor = this.catBoxIter.getNextVisible(this._activeActor)
                 index = this.catBoxIter.getAbsoluteIndexOfChild(item_actor);
                 this._selectedCategoryButton.emit('enter-event');
@@ -1927,5 +2021,5 @@ MyApplet.prototype = {
 };
 
 function main(metadata, orientation, panel_height, instance_id) {
-    return new MyApplet(orientation, panel_height, instance_id);
+    return new MyApplet(metadata, orientation, panel_height, instance_id);
 }
