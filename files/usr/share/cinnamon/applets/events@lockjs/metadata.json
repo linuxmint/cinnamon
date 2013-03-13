@@ -1,0 +1,6 @@
+{
+	"uuid": "events@lockjs",
+	"name": "Cinnamon Events",
+	"description": "Display upcoming events from Google Calendar and Public Holidays",
+	"icon": ""
+}

@@ -1,3 +1,6 @@
+# Ignore Donloaded calendars #
+files/usr/share/cinnamon/applets/events@lockjs/en_gb.json
+
 ABOUT-NLS
 Makefile.in
 !files/Makefile.in
@@ -22,3 +25,6 @@ po/Makefile.in.in
 src/Makefile.in
 tests/Makefile.in
 .pc
+/Cinnamon/nbproject/private
+/nbproject/private
+*.idea/*
