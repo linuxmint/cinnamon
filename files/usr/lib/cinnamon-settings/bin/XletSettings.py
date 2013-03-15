@@ -10,6 +10,7 @@ try:
     import collections
     import XletSettingsWidgets
     import dbus
+    from SettingsWidgets import SidePage
     from gi.repository import Gio, Gtk, GObject, GdkPixbuf
 except Exception, detail:
     print detail
@@ -27,7 +28,6 @@ class XletSetting:
         self.builder = Gtk.Builder()
         self.builder.add_from_file("/usr/lib/cinnamon-settings/bin/xlet-settings.ui")
         self.content = self.builder.get_object("content")
-        self.back_to_list_button = self.builder.get_object("back_to_list")
         self.highlight_button = self.builder.get_object("highlight_button")
         self.more_button = self.builder.get_object("more_button")
         self.remove_button = self.builder.get_object("remove_xlet")
@@ -40,10 +40,6 @@ class XletSetting:
         self.load_applet_data (self.uuid)
         if "icon" in self.applet_meta:
             image = Gtk.Image().new_from_icon_name(self.applet_meta["icon"], Gtk.IconSize.BUTTON)
-            self.back_to_list_button.set_image(image)
-            self.back_to_list_button.get_property('image').set_padding(5, 0)
-        self.back_to_list_button.set_label(self.applet_meta["name"])
-        self.back_to_list_button.set_tooltip_text(_("Back to list"))
         self.more_button.set_tooltip_text(_("More actions..."))
         self.remove_button.set_tooltip_text(_("Remove the current instance of this %s") % self.type)
         self.highlight_button.set_tooltip_text(_("Momentarily highlight the %s on your desktop") % self.type)
@@ -51,7 +47,6 @@ class XletSetting:
             self.build_notebook()
         else:
             self.build_single()
-        self.back_to_list_button.connect("clicked", self.on_back_to_list_button_clicked)
         if self.type != "extension":
             self.highlight_button.connect("clicked", self.on_highlight_button_clicked)
             self.highlight_button.show()
@@ -62,10 +57,6 @@ class XletSetting:
 
     def show (self):
         self.content.show_all()
-        try:
-            self.back_to_list_button.get_property('image').show()
-        except:
-            pass
 
     def on_hide (self, widget):
         self.content.hide()
@@ -186,9 +177,6 @@ class XletSetting:
         highlight_applet = cinnamon_dbus.get_dbus_method('highlightApplet', 'org.Cinnamon')
         highlight_applet(self.current_id, self.multi_instance)
 
-    def on_back_to_list_button_clicked(self, widget):
-        self.parent._close_configure(self)
-
     def on_remove_button_clicked(self, widget):
         settings = Gio.Settings.new("org.cinnamon")
         if self.type == "applet":
@@ -207,7 +195,7 @@ class XletSetting:
                 new_enabled.append(xlet)
 
         if self.nb is None or (self.nb is not None and self.nb.get_n_pages() == 1):
-            self.parent._close_configure(self)
+            self.parent._remove_configure(self)
         else:
             current_index = self.nb.get_current_page()
             tab = self.nb.get_nth_page(current_index)
@@ -288,3 +276,19 @@ class XletSetting:
             self.setting_factories[self.current_id].export_to_file(filename)
 
         dialog.destroy()
+
+class XletSettingsSidePage (SidePage):
+    def __init__(self, name, icon, keywords, advanced, content_box, settings_container):
+        SidePage.__init__(self, name, icon, keywords, advanced, content_box)
+        self.settings_container = settings_container
+    
+    def build(self, advanced):
+        # Clear all the widgets from the content box
+        widgets = self.content_box.get_children()
+        for widget in widgets:
+            self.content_box.remove(widget)
+        
+        self.content_box.pack_start(self.settings_container.content, True, True, 2)
+        self.settings_container.show()
+        self.content_box.show_all()
+        

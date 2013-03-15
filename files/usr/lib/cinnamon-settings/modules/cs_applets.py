@@ -737,9 +737,9 @@ class AppletViewSidePage (SidePage):
         if treeiter:
             uuid = model.get_value(treeiter, 0)
             settingContainer = XletSettings.XletSetting(uuid, self, "applet")
-            self.content_box.pack_start(settingContainer.content, True, True, 2)
-            self.notebook.hide()
-            settingContainer.show()
+            sidePage = XletSettings.XletSettingsSidePage(settingContainer.applet_meta["name"], "applets.svg", _("applets"), False, self.content_box, settingContainer)
+            self.mainWindow.breadcrumbs.pushCrumb(sidePage.name, sidePage)
+            self.mainWindow.showSidePage(sidePage)
 
     def _external_configure_launch(self, widget):
         model, treeiter = self.treeview.get_selection().get_selected()
@@ -748,9 +748,8 @@ class AppletViewSidePage (SidePage):
             if app is not None:
                 subprocess.Popen([app])
 
-    def _close_configure(self, settingContainer):
-        settingContainer.content.hide()
-        self.notebook.show_all()
+    def _remove_configure(self, settingContainer):
+        self.mainWindow.breadcrumbs.popCrumb()
 
     def _restore_default_applets(self):
         os.system('gsettings reset org.cinnamon next-applet-id')

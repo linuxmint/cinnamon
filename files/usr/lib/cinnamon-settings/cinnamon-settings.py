@@ -63,6 +63,94 @@ STANDALONE_MODULES = [
     [_("Login Screen"),                  "gksu /usr/sbin/mdmsetup",      "login.svg",           "prefs",          True,           _("login, mdm, gdm, manager, user, password, startup, switch")]
 ]
 
+class BreadCrumbsManager:
+    def __init__(self, box, callback):
+        self.callback = callback
+        self.box = box
+        self.buttons = []
+        self.activeButton = None
+        self.ignoreClicks = False
+        
+    def createCssProvider(self, data):
+        provider = Gtk.CssProvider()
+        provider.load_from_data(data)
+        return provider
+    
+    def dropRightCrumbs(self):
+        buttons = self.buttons
+        self.buttons = []
+        right = False
+        for button in buttons:
+            if right == False:
+                self.buttons.append(button)
+                if button == self.activeButton:
+                    right = True
+            else:
+                self.box.remove(button)
+                button.destroy()
+                
+    def popCrumb(self):
+        self.activeButton = self.buttons[len(self.buttons)-2]
+        self.dropRightCrumbs()
+        self.setActiveCrumb(self.activeButton)
+        self.callback(self.activeButton.__data)
+        
+    def pushCrumb(self, label, data):
+        self.dropRightCrumbs()
+        
+        button = Gtk.ToggleToolButton()
+        button.set_label(label)
+        button.connect("clicked", self.onButtonClicked)
+        button.set_name("testor")
+        button.__data = data
+        
+        self.buttons.append(button)
+        self.box.add(button)
+        self.setActiveCrumb(button)
+        button.show()
+        return button
+    
+    def setActiveCrumb(self, button):
+        self.ignoreClicks = True
+        self.activeButton = None
+        num = len(self.buttons)
+        index = 0
+        for button2 in self.buttons:
+            if button2 != button:
+                button2.set_active(False)
+            else:
+                self.activeButton = button
+                
+            styleContext = button2.get_child().get_style_context()
+            styleContext.set_junction_sides(Gtk.JunctionSides.NONE)
+            if num > 1:
+                if index == 0:
+                    styleContext.set_junction_sides(Gtk.JunctionSides.RIGHT)
+                elif index == num-1:
+                    styleContext.set_junction_sides(Gtk.JunctionSides.LEFT)
+                elif num > 2:
+                    styleContext.set_junction_sides(Gtk.JunctionSides.LEFT|Gtk.JunctionSides.RIGHT)
+            button2.get_child().reset_style()
+            index += 1
+            
+        if self.activeButton == None:
+            print "Error: active button not found, this should never happen!"
+        button.set_active(True)
+        self.ignoreClicks = False
+        
+    def onButtonClicked(self, button):
+        if self.ignoreClicks == False:
+            changed = button != self.activeButton
+            self.setActiveCrumb(button)
+            if changed:
+                self.callback(button.__data)
+    
+    def hide(self):
+        self.box.hide()
+        
+    def show(self):
+        self.box.show_all()
+
 class MainWindow:
 
     # Change pages
@@ -74,16 +162,21 @@ class MainWindow:
             iterator = self.storeFilter[cat].get_iter(path)
             sidePage = self.storeFilter[cat].get_value(iterator,2)
             if not sidePage.is_standalone:
-                self.side_view_sw.hide()
-                self.search_entry.hide()
-                self.window.set_title(sidePage.name)
-                sidePage.build(self.advanced_mode)
-                self.content_box_sw.show()
-                self.button_back.show()
-                self.current_sidepage = sidePage
+                self.breadcrumbs.pushCrumb(sidePage.name, sidePage)
+                self.showSidePage(sidePage)
             else:
                 sidePage.build(self.advanced_mode)
 
+    def showSidePage(self, sidePage):
+        self.side_view_sw.hide()
+        self.search_entry.hide()
+        self.window.set_title(sidePage.name)
+        sidePage.mainWindow = self
+        sidePage.build(self.advanced_mode)
+        self.content_box_sw.show()
+        self.breadcrumbs.show()
+        self.current_sidepage = sidePage
+        
     def deselect(self, cat):
         for key in self.side_view.keys():
             if key is not cat:
@@ -102,12 +195,12 @@ class MainWindow:
         self.content_box = self.builder.get_object("content_box")
         self.content_box_sw = self.builder.get_object("content_box_sw")
         self.button_cancel = self.builder.get_object("button_cancel")
-        self.button_back = self.builder.get_object("button_back")
-        self.button_back.set_label(_("All Settings"))
-        self.button_back.hide()
         self.search_entry = self.builder.get_object("search_box")
         self.search_entry.connect("changed", self.onSearchTextChanged)
         self.search_entry.connect("icon-press", self.onClearSearchBox)
+        
+        self.breadcrumbs = BreadCrumbsManager(self.builder.get_object("breadcrumbs"), self.on_breadcrumb_selected)
+        self.breadcrumbs.pushCrumb(_("All Settings"), None)
 
         self.window.connect("destroy", Gtk.main_quit)
 
@@ -164,7 +257,6 @@ class MainWindow:
         self.window.set_title(_("System Settings"))
         self.window.connect("destroy", Gtk.main_quit)
         self.button_cancel.connect("clicked", Gtk.main_quit)
-        self.button_back.connect('clicked', self.back_to_icon_view)
 
         # Select the first sidePage
         if len(sys.argv) > 1 and sys.argv[1] in sidePagesIters.keys():
@@ -275,6 +367,12 @@ class MainWindow:
         except:
             return True
 
+    def on_breadcrumb_selected(self, sidePage):
+        if sidePage == None:
+            self.back_to_icon_view(None)
+        else:
+            self.showSidePage(sidePage)
+        
     def back_to_icon_view(self, widget):
         self.window.set_title(_("System Settings"))
         self.content_box_sw.hide()
@@ -285,7 +383,6 @@ class MainWindow:
                 c_widgets = child.get_children()
                 for c_widget in c_widgets:
                     c_widget.hide()
-        self.button_back.hide()
         self.side_view_sw.show()
         self.search_entry.show()
         self.search_entry.grab_focus()
