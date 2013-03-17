@@ -166,7 +166,7 @@ CommandCompleter.prototype = {
             }
         }
         if (common.length)
-            return [common.substr(text.length), completions];
+            return [common.substr(text.length).replace(/ /g, "\\ "), completions];
         return [common, completions];
     }
 };
