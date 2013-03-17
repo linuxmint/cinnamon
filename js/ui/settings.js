@@ -79,6 +79,13 @@ var STRING_TYPES = {
             "options"
         ]
     },
+    "keybinding" : {
+        "required-fields": [
+            "type",
+            "default",
+            "description"
+        ]
+    },
     "generic" : {
         "required-fields": [
             "type",

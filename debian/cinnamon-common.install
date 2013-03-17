@@ -4,3 +4,4 @@
 /usr/share/glib-2.0
 /usr/share/gnome-session
 /usr/share/xsessions
+/etc/xdg/autostart

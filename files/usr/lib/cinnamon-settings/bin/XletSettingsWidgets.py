@@ -28,6 +28,7 @@ setting_dict = {
     "colorchooser"    :   "ColorChooser",
     "radiogroup"      :   "RadioGroup",
     "iconfilechooser" :   "IconFileChooser",
+    "keybinding"      :   "Keybinding",
     "button"          :   "Button" # Not a setting, provides a button which triggers a callback in the applet/desklet
 }
 
@@ -839,6 +840,62 @@ class Scale(Gtk.HBox, BaseWidget):
 
     def update_dep_state(self, active):
         self.scale.set_sensitive(active)
+
+class Keybinding(Gtk.HBox, BaseWidget):
+    def __init__(self, key, settings_obj, uuid):
+        BaseWidget.__init__(self, key, settings_obj, uuid)
+        super(Keybinding, self).__init__()
+        self.label = Gtk.Label(self.get_desc())
+        self.model = Gtk.ListStore(str, object)
+        self.tree = Gtk.TreeView.new()
+        self.tree.set_headers_visible(False)
+        self.cell = Gtk.CellRendererAccel()
+        self.cell.set_alignment(.5, .5)
+        self.change_id = self.cell.connect('accel-edited', self.on_my_value_changed)
+        self.clear_id = self.cell.connect('accel-cleared', self.on_my_value_cleared)
+        self.cell.set_property('editable', True)
+        try:
+            self.cell.set_property('accel-mode', Gtk.CellRendererAccelMode.MODIFIER_TAP)
+        except Exception:
+            self.cell.set_property('accel-mode', Gtk.CellRendererAccelMode.OTHER)
+        col = Gtk.TreeViewColumn("col", self.cell, text=0)
+        col.set_min_width(200)
+        col.set_alignment(.5)
+        self.tree.append_column(col)
+        self.value = self.get_val()
+        self.tree.set_model(self.model)
+        self.model.append((self.value, self))
+        if self.get_desc() != "":
+            self.pack_start(self.label, False, False, 2)
+
+        shadow = Gtk.Frame()
+        shadow.set_shadow_type(Gtk.ShadowType.ETCHED_IN)
+        shadow.add(self.tree)
+        self.pack_start(shadow, False, False, 2)
+        self.show_all()
+
+    def on_my_value_changed(self, cell, path, keyval, mask, keycode):
+        accel_string = Gtk.accelerator_name(keyval, mask)
+        accel_string = accel_string.replace("<Mod2>", "")
+        self.value = accel_string
+        self.set_val(self.value)
+        self.on_settings_file_changed()
+
+    def on_my_value_cleared(self, cell, path):
+        self.value = ""
+        self.set_val(self.value)
+
+    def on_settings_file_changed(self):
+        self.cell.handler_block(self.change_id)
+        self.cell.handler_block(self.clear_id)
+        self.value = self.get_val()
+        self.model.clear()
+        self.model.append((self.value, self))
+        self.cell.handler_unblock(self.change_id)
+        self.cell.handler_unblock(self.clear_id)
+
+    def update_dep_state(self, active):
+        self.tree.set_sensitive(active)
 
 class Button(Gtk.Button, BaseWidget):
     def __init__(self, key, settings_obj, uuid):
