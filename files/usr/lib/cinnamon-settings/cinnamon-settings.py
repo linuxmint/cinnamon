@@ -10,6 +10,7 @@ try:
     import gettext
     from gi.repository import Gio, Gtk, GObject, GdkPixbuf, GtkClutter, Gst
     import SettingsWidgets
+    from BreadCrumbs import BreadCrumbsManager
     import capi
 # Standard setting pages... this can be expanded to include applet dirs maybe?
     mod_files = glob.glob('/usr/lib/cinnamon-settings/modules/*.py')
@@ -62,94 +63,6 @@ STANDALONE_MODULES = [
     [_("Languages"),                     "gnome-language-selector",      "language.svg",        "prefs",          False,          _("language, install, foreign")],
     [_("Login Screen"),                  "gksu /usr/sbin/mdmsetup",      "login.svg",           "prefs",          True,           _("login, mdm, gdm, manager, user, password, startup, switch")]
 ]
-
-class BreadCrumbsManager:
-    def __init__(self, box, callback):
-        self.callback = callback
-        self.box = box
-        self.buttons = []
-        self.activeButton = None
-        self.ignoreClicks = False
-        
-    def createCssProvider(self, data):
-        provider = Gtk.CssProvider()
-        provider.load_from_data(data)
-        return provider
-    
-    def dropRightCrumbs(self):
-        buttons = self.buttons
-        self.buttons = []
-        right = False
-        for button in buttons:
-            if right == False:
-                self.buttons.append(button)
-                if button == self.activeButton:
-                    right = True
-            else:
-                self.box.remove(button)
-                button.destroy()
-                
-    def popCrumb(self):
-        self.activeButton = self.buttons[len(self.buttons)-2]
-        self.dropRightCrumbs()
-        self.setActiveCrumb(self.activeButton)
-        self.callback(self.activeButton.__data)
-        
-    def pushCrumb(self, label, data):
-        self.dropRightCrumbs()
-        
-        button = Gtk.ToggleToolButton()
-        button.set_label(label)
-        button.connect("clicked", self.onButtonClicked)
-        button.set_name("testor")
-        button.__data = data
-        
-        self.buttons.append(button)
-        self.box.add(button)
-        self.setActiveCrumb(button)
-        button.show()
-        return button
-    
-    def setActiveCrumb(self, button):
-        self.ignoreClicks = True
-        self.activeButton = None
-        num = len(self.buttons)
-        index = 0
-        for button2 in self.buttons:
-            if button2 != button:
-                button2.set_active(False)
-            else:
-                self.activeButton = button
-                
-            styleContext = button2.get_child().get_style_context()
-            styleContext.set_junction_sides(Gtk.JunctionSides.NONE)
-            if num > 1:
-                if index == 0:
-                    styleContext.set_junction_sides(Gtk.JunctionSides.RIGHT)
-                elif index == num-1:
-                    styleContext.set_junction_sides(Gtk.JunctionSides.LEFT)
-                elif num > 2:
-                    styleContext.set_junction_sides(Gtk.JunctionSides.LEFT|Gtk.JunctionSides.RIGHT)
-            button2.get_child().reset_style()
-            index += 1
-            
-        if self.activeButton == None:
-            print "Error: active button not found, this should never happen!"
-        button.set_active(True)
-        self.ignoreClicks = False
-        
-    def onButtonClicked(self, button):
-        if self.ignoreClicks == False:
-            changed = button != self.activeButton
-            self.setActiveCrumb(button)
-            if changed:
-                self.callback(button.__data)
-    
-    def hide(self):
-        self.box.hide()
-        
-    def show(self):
-        self.box.show_all()
 
 class MainWindow:
 
