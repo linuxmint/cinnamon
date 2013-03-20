@@ -866,6 +866,10 @@ function _globalKeyPressHandler(actor, event) {
     // This relies on the fact that Clutter.ModifierType is the same as Gdk.ModifierType
     let action = global.display.get_keybinding_action(keyCode, modifierState);
 
+    if (action == Meta.KeyBindingAction.CUSTOM) {
+        global.display.keybinding_action_invoke_by_code(keyCode, modifierState);
+    }
+
     // Other bindings are only available when the overview is up and no modal dialog is present
     if (((!overview.visible && !expo.visible) || modalCount > 1))
         return false;
