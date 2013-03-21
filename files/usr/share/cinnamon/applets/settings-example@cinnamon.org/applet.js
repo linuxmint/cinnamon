@@ -124,6 +124,12 @@ MyApplet.prototype = {
     on_applet_clicked: function(event) {
         this.menu.toggle();
     },
+
+    on_applet_removed_from_panel: function() {
+        this.settings.finalize();    // This is called when a user removes the applet from the panel.. we want to
+                                     // Remove any connections and file listeners here, which our settings object
+                                     // has a few of
+    }
 };
 
 function main(metadata, orientation, panel_height, instance_id) {  // Make sure you collect and pass on instanceId

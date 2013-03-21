@@ -11,13 +11,13 @@
  },
  "color" : {
     "type": "colorchooser",
-    "default" : "red",
+    "default" : "grey",
     "description" : "The background color for the applet:",
     "tooltip" : "Click the button to select a new background color for this applet"
  },
  "spinner-number" : {
     "type": "spinbutton",
-    "default" : 150,
+    "default" : 250,
     "min" : 0,
     "max" : 400,
     "step" : 5,
