@@ -490,7 +490,7 @@ _provider.prototype = {
         finalize: function () {
             this.settings_obj.finalize();
             for (let setting in this.metaBindings) {
-                setting.finalize();
+                this.metaBindings[setting].finalize();
             }
             this.metaBindings = undefined;
             this.settings_obj = undefined;
@@ -592,7 +592,7 @@ SettingObj.prototype = {
     _on_file_changed_timeout: function(monitor, file, n, eventType) {
         if (this.file.query_exists(null)) {
             if (eventType !== undefined && eventType != Gio.FileMonitorEvent.CHANGES_DONE_HINT) {
-                return;
+                return false;
             }
             let raw_file = Cinnamon.get_file_contents_utf8_sync(this.file.get_path());
             let new_json = JSON.parse(raw_file);
