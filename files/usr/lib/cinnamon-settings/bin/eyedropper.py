@@ -10,12 +10,16 @@ class EyeDropper(Gtk.HBox):
         Gtk.HBox.__init__ (self)
 
         self.button = Gtk.Button("")
+        self.button.set_tooltip_text(_("Click the eyedropper, then click a color anywhere on your screen to select that color"))
         self.button.set_image(Gtk.Image().new_from_stock(Gtk.STOCK_COLOR_PICKER, Gtk.IconSize.BUTTON))
         self.button.get_property('image').show()
         self.button.set_events(Gdk.EventMask.POINTER_MOTION_MASK | Gdk.EventMask.POINTER_MOTION_HINT_MASK);
 
-
         self.pack_start(self.button, False, False, 2)
+
+        self.bp_handler = None
+        self.br_handler = None
+        self.kp_handler = None
 
         self.button.connect("clicked", self.on_button_clicked)
 
@@ -39,7 +43,7 @@ class EyeDropper(Gtk.HBox):
 
         window = self.grab_widget.get_window()
 
-        picker_cursor = Gdk.Cursor(screen.get_display(), Gdk.CursorType.PENCIL);
+        picker_cursor = Gdk.Cursor(screen.get_display(), Gdk.CursorType.CROSSHAIR);
 
         grab_status = self.device.grab(window, Gdk.GrabOwnership.APPLICATION, False,
                                   Gdk.EventMask.BUTTON_RELEASE_MASK | Gdk.EventMask.BUTTON_PRESS_MASK | Gdk.EventMask.POINTER_MOTION_MASK,
@@ -50,12 +54,12 @@ class EyeDropper(Gtk.HBox):
 
         Gtk.device_grab_add(self.grab_widget, self.device, True)
 
-        self.grab_widget.connect("button-press-event", self.mouse_press)
-        self.grab_widget.connect("key-press-event", self.key_press)
+        self.bp_handler = self.grab_widget.connect("button-press-event", self.mouse_press)
+        self.kp_handler = self.grab_widget.connect("key-press-event", self.key_press)
 
     def mouse_press(self, widget, event):
         if event.type == Gdk.EventType.BUTTON_PRESS and event.button == 1:
-            widget.connect("button-release-event", self.mouse_release)
+            self.br_handler = widget.connect("button-release-event", self.mouse_release)
             return True
         return False
 
@@ -94,6 +98,9 @@ class EyeDropper(Gtk.HBox):
     def ungrab(self, device):
         device.ungrab(self.time)
         Gtk.device_grab_remove(self.grab_widget, device)
+        self.grab_widget.handler_disconnect(self.bp_handler)
+        self.grab_widget.handler_disconnect(self.br_handler)
+        self.grab_widget.handler_disconnect(self.kp_handler)
 
 def pixbuf2Image(pb):
     width,height = pb.get_width(),pb.get_height()
