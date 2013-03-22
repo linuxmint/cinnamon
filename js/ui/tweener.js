@@ -60,6 +60,8 @@ function addTween(target, tweeningParameters) {
 }
 
 function _wrapTweening(target, tweeningParameters) {
+    if (!tweeningParameters.FORCE_ANIMATION && !global.settings.get_boolean('desktop-effects'))
+        tweeningParameters.time = 0.001;
     let state = _getTweenState(target);
 
     if (!state.destroyedId) {
