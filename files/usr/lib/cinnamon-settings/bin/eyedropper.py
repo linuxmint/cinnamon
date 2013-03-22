@@ -70,6 +70,7 @@ class EyeDropper(Gtk.HBox):
         return False
 
     def mouse_release(self, widget, event):
+        screen, x, y = self.device.get_position()
         if event.button != 1:
             return False
         self.grab_color_at_pointer(event, screen, event.x_root, event.y_root)
