@@ -230,7 +230,6 @@ _provider.prototype = {
         },
 
         _get_is_multi_instance_xlet: function(uuid) {
-            global.logError("SDFDSFSDFDSFDSFDSFDS");
             return false;
         },
 
@@ -478,6 +477,25 @@ _provider.prototype = {
             }
         },
 
+        unbindProperty: function (key_name) {
+            if (this.metaBindings[key_name]) {
+                this.metaBindings[key_name].finalize();
+                this.metaBindings[key_name] = undefined;
+                return true;
+            }
+            global.logError("unbindProperty failed for " + this.uuid + ".  Key name '" + key_name + "' did not exist.");
+            return false;
+        },
+
+        finalize: function () {
+            this.settings_obj.finalize();
+            for (let setting in this.metaBindings) {
+                this.metaBindings[setting].finalize();
+            }
+            this.metaBindings = undefined;
+            this.settings_obj = undefined;
+        },
+
         getValue: function (key_name) {
             if (key_name in this.settings_obj.json) {
                 return this.settings_obj.get_data(key_name)["value"];
@@ -574,7 +592,7 @@ SettingObj.prototype = {
     _on_file_changed_timeout: function(monitor, file, n, eventType) {
         if (this.file.query_exists(null)) {
             if (eventType !== undefined && eventType != Gio.FileMonitorEvent.CHANGES_DONE_HINT) {
-                return;
+                return false;
             }
             let raw_file = Cinnamon.get_file_contents_utf8_sync(this.file.get_path());
             let new_json = JSON.parse(raw_file);
@@ -593,6 +611,16 @@ SettingObj.prototype = {
         }
         this.file_changed_timeout = null;
         return false;
+    },
+
+    finalize: function() {
+        if (this.file_changed_timeout) {
+            Mainloop.source_remove(this.file_changed_timeout);
+        }
+        if (this.monitor_id > 0) {
+            this.settings_file_monitor.disconnect(this.monitor_id);
+        }
+        this.settings_file_monitor = null;
     }
 };
 Signals.addSignalMethods(SettingObj.prototype);
@@ -613,11 +641,12 @@ _setting.prototype = {
         obj[applet_var] = this.settings_obj.get_data(this.key_name)["value"];
         this.obj = obj;
         this.cb = applet_callback;
+        this.settings_obj_connection_id = null;
         if (user_data) {
             this.user_data = user_data;
         }
         if (this.sync_type != BindingDirection.OUT) {
-            this.settings_obj.connect("setting-file-changed", Lang.bind(this, this._setting_file_changed));
+            this.settings_obj_connection_id = this.settings_obj.connect("setting-file-changed", Lang.bind(this, this._setting_file_changed));
         }
         this._monitor_applet_var(true);
     },
@@ -660,6 +689,20 @@ _setting.prototype = {
 
     set_val: function(val) {
         this.settings_obj.set_value(this.key_name, val);
+    },
+
+    finalize: function() {
+        this._monitor_applet_var(false);
+        if (this.settings_obj_connection_id) {
+            this.settings_obj.disconnect(this.settings_obj_connection_id);
+            this.settings_obj_connection_id = null;
+        }
+        this.settings_obj = null;
+        this.applet_var = null;
+        this.sync_type = null;
+        this.obj = null;
+        this.cb = null;
+        this.user_data = null;
     }
 };
 
