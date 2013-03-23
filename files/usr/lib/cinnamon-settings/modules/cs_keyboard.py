@@ -8,7 +8,7 @@ import gettext
 gettext.install("cinnamon", "/usr/share/cinnamon/locale")
 
 # Keybindings page - check if we need to store custom
-# keybindings to gsettings key as well as gconf (In Mint 14 this is changed)
+# keybindings to gsettings key as well as GConf (In Mint 14 this is changed)
 CUSTOM_KEYS_BASENAME = "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings"
 CUSTOM_KEYS_SCHEMA = "org.gnome.settings-daemon.plugins.media-keys.custom-keybinding"
 CUSTOM_KEYBINDINGS_GSETTINGS = False
@@ -160,7 +160,7 @@ class Module:
         first_run_completed = schema.get_boolean("custom-keybindings-to-3-6")
 
         if CUSTOM_KEYBINDINGS_GSETTINGS and not first_run_completed:
-            gclient = gconf.client_get_default()
+            gclient = GConf.Client.get_default()
             path = "/desktop/gnome/keybindings"
             subdirs = gclient.all_dirs(path)
             for subdir in subdirs:
@@ -251,7 +251,7 @@ class CustomKeyBinding():
         self.writeSettings()
 
     def writeSettings(self):
-        gclient = gconf.client_get_default()
+        gclient = GConf.Client.get_default()
         gclient.set_string(self.path + "/name", self.label)
         gclient.set_string(self.path + "/action", self.action)
         gclient.set_string(self.path + "/binding", self.entries[0])
@@ -537,7 +537,7 @@ class KeyboardSidePage (SidePage):
         for category in self.main_store:
             if category.int_name is "custom":
                 category.clear()
-        gclient = gconf.client_get_default()
+        gclient = GConf.Client.get_default()
         path = "/desktop/gnome/keybindings"
         subdirs = gclient.all_dirs(path)
         for subdir in subdirs:
@@ -645,7 +645,7 @@ class KeyboardSidePage (SidePage):
             dialog.destroy()
             return
 
-        gclient = gconf.client_get_default()
+        gclient = GConf.Client.get_default()
         path = "/desktop/gnome/keybindings/custom"
         i = 0
         while gclient.dir_exists(path + str(i)):
@@ -670,7 +670,7 @@ class KeyboardSidePage (SidePage):
         keybindings, iter = self.kb_tree.get_selection().get_selected()
         if iter:
             keybinding = keybindings[iter][1]
-            gclient = gconf.client_get_default()
+            gclient = GConf.Client.get_default()
             if gclient.dir_exists(keybinding.path):
                 gclient.unset(keybinding.path + "/name")
                 gclient.unset(keybinding.path + "/action")
