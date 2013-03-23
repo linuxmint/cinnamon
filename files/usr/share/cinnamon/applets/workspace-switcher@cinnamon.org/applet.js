@@ -75,7 +75,7 @@ MyApplet.prototype = {
             this.button[i].set_child(label);
             this.actor.add(this.button[i]);
             if (this._scaleMode) {
-                this.button[i].set_width(this._panelHeight);
+                this.button[i].set_height(this._panelHeight);
             }
             let index = i;
             this.button[i].connect('button-release-event', Lang.bind(this, function() {
