@@ -52,6 +52,8 @@ class HotCornerDisplay(Gtk.Label):
         
         self.activeColor = self._getColor(context, "success_color", "question_bg_color")
         self.inactiveColor = self._getColor(context, "error_color", "error_bg_color")
+        self.inactiveColor.alpha *= 0.35
+        self.activeColor.alpha *= 0.9
         
         allocation = self.get_allocation()
 
