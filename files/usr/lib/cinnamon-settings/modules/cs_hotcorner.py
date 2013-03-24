@@ -24,61 +24,82 @@ class HotCornerDisplay(Gtk.Label):
         Gtk.Label.__init__(self, "")
         self.connect('draw', self.expose)
         
-        self.corners = []
-        self.corners.append(True)
-        self.corners.append(True)
-        self.corners.append(True)
-        self.corners.append(True)
+        self.cornerEnabled = []
+        self.cornerEnabled.append(True)
+        self.cornerEnabled.append(True)
+        self.cornerEnabled.append(True)
+        self.cornerEnabled.append(True)
         
-    def setCorner(self, index, value):
-        self.corners[index] = value
+    def setCornerEnabled(self, index, value):
+        self.cornerEnabled[index] = value
         
     def _setCornerColor(self, cr, index):
-        if self.corners[index]:
-            cr.set_source_rgba(1, 0, 0, 1)
+        if self.cornerEnabled[index]:
+            cr.set_source_rgba(self.activeColor.red, self.activeColor.green, self.activeColor.blue, self.activeColor.alpha)
         else:
-            cr.set_source_rgba(0.4, 0.4, 0.4, 1)
+            cr.set_source_rgba(self.inactiveColor.red, self.inactiveColor.green, self.inactiveColor.blue, self.inactiveColor.alpha)
+    
+    def _getColor(self, context, default, alternative):
+        (succ, color) = context.lookup_color(default)
+        if not succ:
+            (succ, color) = context.lookup_color(alternative)
+        return color
         
     def expose(self, widget, cr):
+        context = self.get_style_context()
+        context.save()
+        context.add_class(Gtk.STYLE_CLASS_BUTTON)
+        
+        self.activeColor = self._getColor(context, "success_color", "question_bg_color")
+        self.inactiveColor = self._getColor(context, "error_color", "error_bg_color")
+        
         allocation = self.get_allocation()
 
-        width = allocation.width
-        height = allocation.height
+        self.allocWidth = allocation.width
+        self.allocHeight = allocation.height
         
         cr.save()
         cr.set_antialias(cairo.ANTIALIAS_SUBPIXEL)
         
-        cr.set_source_rgba(0.7, 0.7, 0.7, 1)
-        cr.rectangle(0, 0, width, height)
-        cr.fill()
+        cr.rectangle(0, 0, self.allocWidth, self.allocHeight)
+        cr.clip()
+        Gtk.render_background(context, cr, -10, -10, self.allocWidth+20, self.allocHeight+20)
+        
+        cr.rectangle(0, 0, self.allocWidth, self.allocHeight)
+        cr.clip()
+        
+        cr.set_line_width(1)
         
         self._setCornerColor(cr, 0)
-        
-        cr.move_to(0,50)
-        cr.line_to(0,0)
-        cr.arc(0, 0, 50, _0_DEG, _90_DEG)
+        cr.move_to(1,51)
+        cr.line_to(1,1)
+        cr.arc(1, 1, 51, _0_DEG, _90_DEG)
         cr.fill()
         
         self._setCornerColor(cr, 1)
-        
-        cr.move_to(width,0)
-        cr.line_to(width,50)
-        cr.arc(width, 0, 50, _90_DEG, _180_DEG)
+        cr.move_to(self.allocWidth-1,1)
+        cr.line_to(self.allocWidth-1,51)
+        cr.arc(self.allocWidth-1, 1, 51, _90_DEG, _180_DEG)
         cr.fill()
         
         self._setCornerColor(cr, 2)
-        
-        cr.move_to(0,height)
-        cr.line_to(0,height-50)
-        cr.arc(0, height, 50, _270_DEG, _90_DEG)
+        cr.move_to(1,self.allocHeight-1)
+        cr.line_to(1,self.allocHeight-51)
+        cr.arc(1, self.allocHeight, 51, _270_DEG, _90_DEG)
         cr.fill()
         
         self._setCornerColor(cr, 3)
-        
-        cr.move_to(width,height-50)
-        cr.line_to(width,height)
-        cr.arc(width, height, 50, _180_DEG, _270_DEG)
+        cr.move_to(self.allocWidth,self.allocHeight-50)
+        cr.line_to(self.allocWidth,self.allocHeight)
+        cr.arc(self.allocWidth, self.allocHeight, 50, _180_DEG, _270_DEG)
         cr.fill()
+
+        cr.set_source_rgba(0, 0, 0, 1)
+        cr.rectangle(0, 0, self.allocWidth, self.allocHeight)
+        cr.stroke()
+            
+        context.restore()
+
         
         cr.stroke_preserve()
 
@@ -215,7 +236,7 @@ class HotCornerViewSidePage(SidePage):
             else:
                 function = "disabled"
             corner.setValues(function, visible)
-            self.cornerDisplay.setCorner(corner.index, enabled)
+            self.cornerDisplay.setCornerEnabled(corner.index, enabled)
         self.cornerDisplay.queue_draw()
 
     def build(self, advanced):
@@ -244,7 +265,7 @@ class HotCornerViewSidePage(SidePage):
         self.on_settings_changed(self.settings, "overview-corner")
         
     def onConfigChanged(self, index, function, visible):
-        self.cornerDisplay.setCorner(index, visible)
+        self.cornerDisplay.setCornerEnabled(index, visible)
         self.cornerDisplay.queue_draw()
         
         props = self.properties[index]
