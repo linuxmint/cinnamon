@@ -12,7 +12,7 @@ class Module:
         self.category = "prefs"
         
         
-        sidePage.add_widget(GSettingsFileChooser(_("Icon"), "org.cinnamon", "menu-icon", None, True))
+        sidePage.add_widget(GSettingsFileChooser(_("Icon"), "org.cinnamon", "menu-icon", None))
         sidePage.add_widget(GSettingsEntry(_("Text"), "org.cinnamon", "menu-text", None))
                 
         sidePage.add_widget(GSettingsCheckButton(_("Show bookmarks and places"), "org.cinnamon", "menu-show-places", None))

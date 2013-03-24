@@ -83,6 +83,9 @@ class HotCornerViewSidePage(SidePage):
         pos_combo.set_active(0)
         pos_combo.connect('changed', self.on_pos_changed)
         pos_box.pack_start(pos_combo, True, True, 0)
+        reset_button = Gtk.Button(_("Reset to defaults"))
+        pos_box.pack_start(reset_button, False, False, 2)
+        reset_button.connect('clicked', self.on_reset_button_clicked)
 
         label = Gtk.Label()
         label.set_markup("<i><small>Select the hot corner you wish to configure</small></i>")
@@ -133,6 +136,9 @@ class HotCornerViewSidePage(SidePage):
         if titer != None:
             self.hc_selected = self.hc_list[titer][0]
             self.update()
+
+    def on_reset_button_clicked(self, widget):
+        self.settings.reset("overview-corner")
 
     def on_enabled_changed(self, widget):
         value = "false"
