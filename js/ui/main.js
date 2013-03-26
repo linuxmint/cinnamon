@@ -949,7 +949,7 @@ function _logInfo(msg) {
  * formatTime:
  * @d (Date): date object to be formatted
  *
- * Formats a date object into a YYYY-MM-DDTHH-MM-SS format
+ * Formats a date object into a ISO-8601 format (YYYY-MM-DDTHH:MM:SSZ) in UTC+0
  *
  * Returns (string): a formatted string showing the date
  */
