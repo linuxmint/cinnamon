@@ -13,16 +13,22 @@ function _destroyConnections() {
         this._connectionManager.destroyConnections();
 }
 
-function _setConnectionMaster(master, signal) {
+function _addConnectionMaster(master, signal) {
     if (!('_connectionManager' in this))
         this._connectionManager = new Connector();
-    this._connectionManager.setMaster(master, signal);
+    return this._connectionManager.addMaster(master, signal);
+}
+
+function _removeConnectionMasters() {
+    if ('_connectionManager' in this)
+        this._connectionManager.removeMasters();
 }
 
 function addConnectorMethods(proto) {
     proto.createConnection = _createConnection;
     proto.destroyConnections = _destroyConnections;
-    proto.setConnectionMaster = _setConnectionMaster;
+    proto.addConnectionMaster = _addConnectionMaster;
+    proto.removeConnectionMasters = _removeConnectionMasters;
 }
 
 /* A class that takes care of a connection.
@@ -75,7 +81,7 @@ function createConnection() {
 
 /* A class that takes care of your connections.
  * Just remember to call destroyConnections when it is time to disconnect.
- * Alternatively you can watch an object for a destruction signal (setMaster)
+ * Alternatively you can watch an object for a destruction signal (addMaster)
  */
 function Connector() {
     this._init.apply(this, arguments);
@@ -84,7 +90,7 @@ function Connector() {
 Connector.prototype = {
     _init: function() {
         this.connections = [];
-        this.master = null;
+        this.masters = [];
     },
 
     /* usage: "createConnection(target, 'signal', callback [, ...])"
@@ -112,25 +118,32 @@ Connector.prototype = {
     },
     
     /* Watch an object for a destruction signal and when it happens, destroy all connections.
-     * Any previously set master will be disconnected from.
      * 
      * @master the object to watch for a destruction signal
      * @signal the destruction signal to watch for (default value is 'destroy')
+     * 
+     * @return a Connection, which you can optionally disconnect later on.
      */
-    setMaster: function(master, signal) {
-        if(this.master) {
-            this.master.disconnect();
-            this.master = null;
-        }
-        if(master) {
-            if(!signal)
-                signal = 'destroy';
-            this.master = createConnection(master, signal, Lang.bind(this, this._onMasterDestroyed));
-        }
+    addMaster: function(master, signal) {
+        if(!signal)
+            signal = 'destroy';
+        
+        let connection = createConnection(master, signal, Lang.bind(this, this._onMasterDestroyed));
+        this.masters.push(connection);
+        return connection;
+    },
+    
+    /* remove all masters
+     */
+    removeMasters: function() {
+        this.masters.forEach(function(connection) {
+            connection.disconnect();
+        }, this);
+        this.masters = [];
     },
     
     _onMasterDestroyed: function() {
         this.destroyConnections();
-        this.setMaster(null);
+        this.removeMasters();
     }
 };
