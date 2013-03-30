@@ -325,7 +325,5 @@ class MainWindow:
 
 if __name__ == "__main__":
     GObject.threads_init()
-    GtkClutter.init(None)
-    Gst.init(None)
     MainWindow()
     Gtk.main()
