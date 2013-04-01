@@ -862,11 +862,13 @@ class Keybinding(Gtk.HBox, BaseWidget):
 
         self.button = Gtk.Button(self.value)
         self.button.set_tooltip_text(_("Click to set a new accelerator key.") +
-                                     _("Press Escape or click again to cancel the operation"))
+                                     _("  Press Escape or click again to cancel the operation." +
+                                       "  Press Backspace to clear the existing keybinding."))
         self.button.connect("clicked", self.clicked)
         self.button.set_size_request(200, -1)
         self.pack_start(self.button, False, False, 4)
-
+        if self.value == "":
+            self.unset()
         self.show_all()
         self.event_id = None
         self.teaching = False
@@ -891,7 +893,7 @@ class Keybinding(Gtk.HBox, BaseWidget):
                 self.disconnect(self.event_id)
             self.ungrab()
             if self.value == "":
-                self.button.set_label(_("<not set>"))
+                self.unset()
             else:
                 self.button.set_label(self.value)
             self.teaching = False
@@ -905,7 +907,7 @@ class Keybinding(Gtk.HBox, BaseWidget):
             self.teaching = False
             return True
         if event.keyval == Gdk.KEY_BackSpace:
-            self.button.set_label(_("<not set>"))
+            self.unset()
             self.ungrab()
             self.teaching = False
             self.value = ""
@@ -927,6 +929,9 @@ class Keybinding(Gtk.HBox, BaseWidget):
             if single in accel_string and mod in accel_string:
                 accel_string = accel_string.replace(mod, "")
         return accel_string
+
+    def unset(self):
+        self.button.set_label(_("<not set>"))
 
     def ungrab(self):
         self.keyboard.ungrab(Gdk.CURRENT_TIME)
