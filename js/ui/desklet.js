@@ -102,11 +102,20 @@ Desklet.prototype = {
     },
 
     /**
+     * on_desklet_removed:
+     *
+     * Callback when desklet is removed. To be overridden by individual desklets
+     */
+    on_desklet_removed: function() {
+    },
+
+    /**
      * destroy:
      *
      * Destroys the actor with an fading animation
      */
     destroy: function(){
+        this.on_desklet_removed();
         Tweener.addTween(this.actor,
                          { opacity: 0,
                            transition: 'linear',
