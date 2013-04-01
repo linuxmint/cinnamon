@@ -896,14 +896,13 @@ class Keybinding(Gtk.HBox, BaseWidget):
 
     def on_key_release(self, widget, event):
         self.disconnect(self.event_id)
+        self.ungrab()
         self.event_id = None
         if event.keyval == Gdk.KEY_Escape:
             self.button.set_label(self.value)
-            self.ungrab()
             self.teaching = False
             return True
         if event.keyval == Gdk.KEY_BackSpace:
-            self.ungrab()
             self.teaching = False
             self.value = ""
             self.set_button_text()
@@ -914,7 +913,6 @@ class Keybinding(Gtk.HBox, BaseWidget):
         self.value = accel_string
         self.set_button_text()
         self.set_val(self.value)
-        self.ungrab()
         self.teaching = False
         return True
 
@@ -937,7 +935,7 @@ class Keybinding(Gtk.HBox, BaseWidget):
 
     def on_settings_file_changed(self):
         self.value = self.get_val()
-        self.button.set_label(self.value)
+        self.set_button_text()
 
     def update_dep_state(self, active):
         self.button.set_sensitive(active)
