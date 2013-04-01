@@ -867,8 +867,7 @@ class Keybinding(Gtk.HBox, BaseWidget):
         self.button.connect("clicked", self.clicked)
         self.button.set_size_request(200, -1)
         self.pack_start(self.button, False, False, 4)
-        if self.value == "":
-            self.unset()
+        self.set_button_text()
         self.show_all()
         self.event_id = None
         self.teaching = False
@@ -892,10 +891,7 @@ class Keybinding(Gtk.HBox, BaseWidget):
             if self.event_id:
                 self.disconnect(self.event_id)
             self.ungrab()
-            if self.value == "":
-                self.unset()
-            else:
-                self.button.set_label(self.value)
+            self.set_button_text()
             self.teaching = False
 
     def on_key_release(self, widget, event):
@@ -907,16 +903,16 @@ class Keybinding(Gtk.HBox, BaseWidget):
             self.teaching = False
             return True
         if event.keyval == Gdk.KEY_BackSpace:
-            self.unset()
             self.ungrab()
             self.teaching = False
             self.value = ""
+            self.set_button_text()
             self.set_val(self.value)
             return True
         accel_string = Gtk.accelerator_name(event.keyval, event.state)
         accel_string = self.sanitize(accel_string)
         self.value = accel_string
-        self.button.set_label(self.value)
+        self.set_button_text()
         self.set_val(self.value)
         self.ungrab()
         self.teaching = False
@@ -930,8 +926,11 @@ class Keybinding(Gtk.HBox, BaseWidget):
                 accel_string = accel_string.replace(mod, "")
         return accel_string
 
-    def unset(self):
-        self.button.set_label(_("<not set>"))
+    def set_button_text(self):
+        if self.value == "":
+            self.button.set_label(_("<not set>"))
+        else:
+            self.button.set_label(self.value)
 
     def ungrab(self):
         self.keyboard.ungrab(Gdk.CURRENT_TIME)
