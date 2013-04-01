@@ -93,16 +93,16 @@ MyDesklet.prototype = {
         this._photoFrame = new St.Bin({style_class: 'photoframe-box', x_align: St.Align.START});
 
         this._bin = new St.Bin();
-        this._bin.set_size(this.metadata["width"], this.metadata["height"]);
+        this._bin.set_size(this.width, this.height);
 
         this._images = [];
         this._photoFrame.set_child(this._bin);
         this.setContent(this._photoFrame);
-
-        if (this.metadata["effect"] == "black-and-white") {
+ 
+        if (this.effect == "black-and-white") {
             let effect = new Clutter.DesaturateEffect();
             this._bin.add_effect(effect);
-        } else if (this.metadata["effect"] == "sepia") {
+        } else if (this.effect == "sepia") {
             let color = new Clutter.Color();
             color.from_hls(17.0, 0.59, 0.40);
             let colorize_effect = new Clutter.ColorizeEffect(color);
@@ -116,7 +116,7 @@ MyDesklet.prototype = {
             this._bin.add_effect(desaturate_effect);
         }
 
-        let dir_path = this.metadata["directory"];
+        let dir_path = this.dir;
         dir_path = dir_path.replace('~', GLib.get_home_dir());
         let dir = Gio.file_new_for_path(dir_path);
         if (dir.query_exists(null)) {
@@ -127,8 +127,9 @@ MyDesklet.prototype = {
                 if (fileType != Gio.FileType.DIRECTORY) {
                     this._loadImage(dir_path + "/" + info.get_name());
                 }
-                fileEnum.close(null);
             }
+
+            fileEnum.close(null);
             
             this.updateInProgress = false;
             this.currentPicture = null;
@@ -148,7 +149,7 @@ MyDesklet.prototype = {
         this.updateInProgress = true;
         try {
             let image;
-            if (!this.metadata["shuffle"]){
+            if (!this.shuffle){
                 image = this._images.shift();
                 this._images.push(image);
             } else {
@@ -157,16 +158,16 @@ MyDesklet.prototype = {
 
             if (image){
                 this.currentPicture = image;
-                if (this.metadata["fade-delay"] > 0) {
+                if (this.fade_delay > 0) {
                     Tweener.addTween(this._bin,
                                      { opacity: 0,
-                                       time: this.metadata["fade-delay"],
+                                       time: this.fade_delay,
                                        transition: 'easeInSine',
                                        onComplete: Lang.bind(this, function() {
                                                                  this._bin.set_child(this.currentPicture);
                                                                  Tweener.addTween(this._bin,
                                                                                   { opacity: 255,
-                                                                                    time: this.metadata["fade-delay"],
+                                                                                    time: this.fade_delay,
                                                                                     transition: 'easeInSine'
                                                                                   });
                                                              })
@@ -195,7 +196,7 @@ MyDesklet.prototype = {
         catch (e) {
             global.logError(e);
 	}
-    }
+    },
 
     _loadImage: function(filePath) {
         try {
@@ -204,15 +205,15 @@ MyDesklet.prototype = {
 
             let image = St.TextureCache.get_default().load_uri_sync(St.TextureCachePolicy.FOREVER, uri, -1, -1);
 
-            let frameRatio = this.metadata["height"]/this.metadata["width"];
+            let frameRatio = this.height/this.width;
             let imageRatio = image.height/image.width;
 
             let height, width;            
             if (frameRatio > imageRatio) {
-                width = this.metadata["width"];
+                width = this.width;
                 height = width * imageRatio;
             } else {
-                height = this.metadata["height"];
+                height = this.height;
                 width = height / imageRatio;
             }
 

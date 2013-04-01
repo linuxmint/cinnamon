@@ -413,7 +413,7 @@ DeskletContainer.prototype = {
         let enabledDesklets = global.settings.get_strv(ENABLED_DESKLETS_KEY);
         for (let i = 0; i < enabledDesklets.length; i++){
             let definition = enabledDesklets[i];
-            if (definition.indexOf(source._uuid + ":" + source.instanceId) == 0){
+            if (definition.indexOf(source._uuid + ":" + source.instance_id) == 0){
                 let elements = definition.split(":");
                 elements[2] = actor.get_x();
                 elements[3] = actor.get_y();
