@@ -31,6 +31,7 @@ LayoutManager.prototype = {
         this.edgeLeft = null;
         this._chrome = new Chrome(this);
         this.enabledEdgeFlip = global.settings.get_boolean("enable-edge-flip");
+        this.edgeFlipDelay = global.settings.get_int("edge-flip-delay");
 
         this.keyboardBox = new St.BoxLayout({ name: 'keyboardBox',
                                               reactive: true,
@@ -40,7 +41,8 @@ LayoutManager.prototype = {
 
         this._monitorsChanged();
 
-        global.settings.connect("changed::enable-edge-flip", Lang.bind(this, this._onEnableEdgeFlipChanged));
+        global.settings.connect("changed::enable-edge-flip", Lang.bind(this, this._onEdgeFlipChanged));
+        global.settings.connect("changed::edge-flip-delay", Lang.bind(this, this._onEdgeFlipChanged));
         global.screen.connect('restacked', Lang.bind(this, this._windowsRestacked));
         global.screen.connect('monitors-changed',
                               Lang.bind(this, this._monitorsChanged));
@@ -48,10 +50,13 @@ LayoutManager.prototype = {
                                       Lang.bind(this, this._windowsRestacked));
     },
 
-    _onEnableEdgeFlipChanged: function(){
+    _onEdgeFlipChanged: function(){
         this.enabledEdgeFlip = global.settings.get_boolean("enable-edge-flip");
+        this.edgeFlipDelay = global.settings.get_int("edge-flip-delay");
         this.edgeRight.enabled = this.enabledEdgeFlip;
+        this.edgeRight.delay = this.edgeFlipDelay;
         this.edgeLeft.enabled = this.enabledEdgeFlip;
+        this.edgeLeft.delay = this.edgeFlipDelay;
     },
 
     _windowsRestacked: function() {
@@ -64,11 +69,14 @@ LayoutManager.prototype = {
     init: function() {
         this._chrome.init();
 
-        this.edgeRight = new EdgeFlip.EdgeFlipper(St.Side.RIGHT, Main.wm.actionMoveWorkspaceRight);
-        this.edgeLeft = new EdgeFlip.EdgeFlipper(St.Side.LEFT, Main.wm.actionMoveWorkspaceLeft);
+        this._startupAnimation();
+        this.edgeRight = new EdgeFlip.EdgeFlipper(St.Side.RIGHT, Main.wm.actionFlipWorkspaceRight);
+        this.edgeLeft = new EdgeFlip.EdgeFlipper(St.Side.LEFT, Main.wm.actionFlipWorkspaceLeft);
 
         this.edgeRight.enabled = this.enabledEdgeFlip;
+        this.edgeRight.delay = this.edgeFlipDelay;
         this.edgeLeft.enabled = this.enabledEdgeFlip;
+        this.edgeLeft.delay = this.edgeFlipDelay;
 
         this.hotCornerManager = new HotCorner.HotCornerManager();
     },

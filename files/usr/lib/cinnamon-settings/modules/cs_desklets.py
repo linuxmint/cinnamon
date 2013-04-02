@@ -11,19 +11,22 @@ CINNAMON_SPICES_WEBSITE_LINK = "http://cinnamon-spices.linuxmint.com/"
 
 class Module:
     def __init__(self, content_box):
-        sidePage = DeskletsViewSidePage(_("Desklets"), "desklets.svg", content_box)
+        keywords = _("desklets, desktop, applet, slideshow, background")
+        advanced = False
+        sidePage = DeskletsViewSidePage(_("Desklets"), "desklets.svg", keywords, advanced, content_box)
         self.sidePage = sidePage
         self.name = "desklets"
+        self.category = "prefs"
 
 class DeskletsViewSidePage (SidePage):
-    def __init__(self, name, icon, content_box):
-        SidePage.__init__(self, name, icon, content_box)
+    def __init__(self, name, icon, keywords, advanced, content_box):
+        SidePage.__init__(self, name, icon, keywords, advanced, content_box)
         self.active_desklet_path = None
 
         self.settings = Gio.Settings.new("org.cinnamon")
         self.settings.connect('changed::enabled-desklets', self.on_settings_changed)
 
-    def build(self):
+    def build(self, advanced):
         widgets = self.content_box.get_children()
         for widget in widgets:
             self.content_box.remove(widget)
@@ -100,12 +103,12 @@ class DeskletsViewSidePage (SidePage):
 
         # Construct "Desklets Settings"
         
-        min_dec = [[0, _("No decoration")], [1, _("Border only")], [2, _("Border and header")]]
-        min_dec_combo = GSettingsIntComboBox(_("Decoration of desklets"), "org.cinnamon", "desklets-minimum-decoration", min_dec)
+        dec = [[0, _("No decoration")], [1, _("Border only")], [2, _("Border and header")]]
+        dec_combo = GSettingsIntComboBox(_("Decoration of desklets"), "org.cinnamon", "desklet-decorations", dec)
 
         label = Gtk.Label()
         label.set_markup("<i><small>%s\n%s</small></i>" % (_("Note: Some desklets require the border/header to be always preset"), _("Such requirements override the settings selected here")))
-        config_vbox.pack_start(min_dec_combo, False, False, 2)
+        config_vbox.pack_start(dec_combo, False, False, 2)
         config_vbox.pack_start(label, False, False, 2)
 
         # Show widgets
@@ -163,23 +166,9 @@ class DeskletsViewSidePage (SidePage):
         self.active_desklet_path = path
         uuid = self.model.get_value(iterator, 0)
 
-        # Find other instances of the same desklet. Need to find an id for the new desklet
-        other_instances = []
-        for enabled_desklet in self.enabled_desklets:
-            if uuid in enabled_desklet:
-                other_instances.append(enabled_desklet)
-
-        # Replace each desklet definition in other_instances with the id
-        for i in range(len(other_instances)):
-            elements = other_instances[i].split(":")
-            other_instances[i] = int(elements[1])
-
         # Find the smallest possible id
-        i = 0
-        while True:
-            if i not in other_instances:
-                break
-            i = i + 1
+        i = self.settings.get_int("next-desklet-id")
+        self.settings.set_int("next-desklet-id", i+1);
 
         # Write settings
         self.enabled_desklets.append("%s:%s:0:0" % (uuid, i))

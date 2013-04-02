@@ -34,6 +34,7 @@
 
 #include "st-widget.h"
 
+#include "st-background-effect.h"
 #include "st-label.h"
 #include "st-marshal.h"
 #include "st-private.h"
@@ -426,6 +427,21 @@ st_widget_paint (ClutterActor *actor)
                                     opacity);
   else
     st_theme_node_paint (theme_node, &allocation, opacity);
+
+  ClutterEffect *effect = clutter_actor_get_effect (actor, "background-effect");
+
+  if (effect == NULL)
+    {
+      effect = st_background_effect_new ();
+      clutter_actor_add_effect_with_name (actor, "background-effect", effect);
+    }
+
+  const char *bumpmap_path = st_theme_node_get_background_bumpmap(theme_node);
+
+  g_object_set (effect,
+                "bumpmap",
+                bumpmap_path,
+                NULL);
 }
 
 static void

@@ -26,14 +26,14 @@ const DESKLET_DESTROY_TIME = 0.5;
  * #Desklet is a base class in which other desklets
  * can inherit
  */
-function Desklet(metadata){
-    this._init(metadata);
+function Desklet(metadata, desklet_id){
+    this._init(metadata, desklet_id);
 }
 
 Desklet.prototype = {
-    _init: function(metadata){
+    _init: function(metadata, desklet_id){
         this.metadata = metadata;
-
+        this.instance_id = desklet_id;
         this.actor = new St.BoxLayout({reactive: true, track_hover: true, vertical: true});
 
         this._header = new St.Bin({style_class: 'desklet-header'});
@@ -47,7 +47,7 @@ Desklet.prototype = {
         this.actor.add_actor(this.content);
 
         this._updateDecoration();
-        global.settings.connect('changed::desklets-minimum-decoration', Lang.bind(this, this._updateDecoration));
+        global.settings.connect('changed::desklet-decorations', Lang.bind(this, this._updateDecoration));
 
         this._menu = new PopupMenu.PopupMenu(this.actor, 0.0, St.Side.LEFT, 0);
         this._menuManager = new PopupMenu.PopupMenuManager(this);
@@ -61,13 +61,12 @@ Desklet.prototype = {
         this.actor.connect('notify::hover', Lang.bind(this, this._onHover));
 
         this._uuid = null;
-        this._id = null;
         this._dragging = false;
         this._dragOffset = [0, 0];
         this.actor._desklet = this;
         this.actor._delegate = this;
 
-        this._draggable = DND.makeDraggable(this.actor, {restoreOnSuccess: true}, DeskletManager.deskletContainer.actor);
+        this._draggable = DND.makeDraggable(this.actor, {restoreOnSuccess: true}, Main.deskletContainer.actor);
         this._draggable.connect('drag-begin', Lang.bind(this, function(){
                                                             global.set_stage_input_mode(Cinnamon.StageInputMode.FULLSCREEN);
                                                             Main.layoutManager.untrackChrome(this.actor);
@@ -120,26 +119,24 @@ Desklet.prototype = {
     },
 
     _updateDecoration: function(){
-        let dec = global.settings.get_int('desklets-minimum-decoration');
-        let localMin = this.metadata['minimum-decoration'];
-        if (localMin){
-            dec = Math.max(dec, localMin);
+        let dec = global.settings.get_int('desklet-decorations');
+        let preventDecorations = this.metadata['prevent-decorations'];
+        if (preventDecorations == true){
+            dec = 0;
         }
-
+                      
         switch(dec){
-        case 2:
-            this._header.show();
-            this.content.remove_style_pseudo_class('no-header');
-            this.content.style_class = 'desklet-box';
+        case 0:
+            this._header.hide();    
+            this.content.style_class = 'desklet';        
             break;
         case 1:
-            this._header.hide();
-            this.content.style_class = 'desklet-box';
-            this.content.add_style_pseudo_class('no-header');
+            this._header.hide();            
+            this.content.style_class = 'desklet-with-borders';
             break;
-        case 0:
-            this._header.hide();
-            this.content.style_class = null;
+        case 2:
+            this._header.show();
+            this.content.style_class = 'desklet-with-borders-and-header';
             break;
         }
     },
@@ -190,7 +187,7 @@ Desklet.prototype = {
     },
 
     _onRemoveDesklet: function(){
-        DeskletManager.removeDesklet(this._uuid, this._id);
+        DeskletManager.removeDesklet(this._uuid, this.instance_id);
     },
 
     getDragActor: function(){

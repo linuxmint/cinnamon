@@ -1117,7 +1117,7 @@ cinnamon_app_launch (CinnamonApp     *app,
   gapp = gmenu_tree_entry_get_app_info (app->entry);
   ret = g_desktop_app_info_launch_uris_as_manager (gapp, uris,
                                                    G_APP_LAUNCH_CONTEXT (context),
-                                                   G_SPAWN_SEARCH_PATH | G_SPAWN_DO_NOT_REAP_CHILD,
+                                                   G_SPAWN_SEARCH_PATH | G_SPAWN_DO_NOT_REAP_CHILD | G_SPAWN_STDOUT_TO_DEV_NULL  | G_SPAWN_STDERR_TO_DEV_NULL,
                                                    NULL, NULL,
                                                    _gather_pid_callback, app,
                                                    error);

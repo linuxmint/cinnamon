@@ -71,7 +71,7 @@ MyApplet.prototype = {
                 Main.overview.hide();
                 Util.spawn(['gucharmap']);
             }));
-            this.menu.addSettingsAction(_("Region and Language Settings"), 'gnome-region-panel.desktop'); 
+            this.menu.addSettingsAction(_("Region and Language Settings"), 'region'); 
             
             this.show_flags_switch = new PopupMenu.PopupSwitchMenuItem(_("Show flags"), this._showFlags);
             this._applet_context_menu.addMenuItem(this.show_flags_switch);            

@@ -7,6 +7,7 @@ const Cinnamon = imports.gi.Cinnamon;
 const Main = imports.ui.main;
 const Applet = imports.ui.applet;
 const Extension = imports.ui.extension;
+const DBus = imports.dbus;
 
 // Maps uuid -> metadata object
 var appletMeta;
@@ -14,6 +15,7 @@ var appletMeta;
 var applets;
 // Maps applet_id -> applet objects
 const appletObj = {};
+var appletsLoaded = false;
 
 // An applet can assume a role
 // Instead of hardcoding looking for a particular applet,
@@ -34,6 +36,7 @@ function init() {
     applets = Extension.importObjects;
 
     let foundAtLeastOneApplet = false;
+    appletsLoaded = false;
     
     // Load all applet extensions, the applets themselves will be added in finishExtensionLoad
     enabledAppletDefinitions = getEnabledAppletDefinitions();
@@ -41,6 +44,7 @@ function init() {
         Extension.loadExtension(uuid, Extension.Type.APPLET);
         foundAtLeastOneApplet = true;
     }
+    appletsLoaded = true;
     
     global.settings.connect('changed::enabled-applets', onEnabledAppletsChanged);
     
@@ -194,7 +198,7 @@ function onEnabledAppletsChanged() {
         }
     }
     catch(e) {
-        global.logError('Failed to refresh list of applets ' + e);
+        global.logError('Failed to refresh list of applets', e);
     }
 
     Main.statusIconDispatcher.redisplay();
@@ -206,29 +210,51 @@ function removeAppletFromPanels(appletDefinition) {
         try {
             applet._onAppletRemovedFromPanel();
         } catch (e) {
-            global.logError("Problem with applet: " + appletDefinition.uuid + "/" + appletDefinition.applet_id +
-                            " on_applet_removed_from_panel method: " + e);
+            global.logError("Error during on_applet_removed_from_panel() call on applet: " + appletDefinition.uuid + "/" + appletDefinition.applet_id, e);
         }
 
         if (applet._panelLocation != null) {
             applet._panelLocation.remove_actor(applet.actor);
             applet._panelLocation = null;
         }
-        
+
         delete applet._extension._loadedDefinitions[appletDefinition.applet_id];
         delete appletObj[appletDefinition.applet_id];
+
+        _removeAppletConfigFile(appletDefinition.uuid, appletDefinition.applet_id);
+
+    }
+}
+
+function _removeAppletConfigFile(uuid, instanceId) {
+    let config_path = (GLib.get_home_dir() + "/" +
+                               ".cinnamon" + "/" +
+                                 "configs" + "/" +
+                                      uuid + "/" +
+                                instanceId + ".json");
+    let file = Gio.File.new_for_path(config_path);
+    if (file.query_exists(null)) {
+        try {
+            file.delete(null, null);
+        } catch (e) {
+            global.logError("Problem removing applet config file during cleanup.  UUID is " + uuid + " and filename is " + config_path);
+        }
     }
 }
 
 function addAppletToPanels(extension, appletDefinition) {
     // Try to lock the applets role
-    if(!extension.lockRole())
+    if(!extension.lockRole(null))
         return;
     
     try {
         // Create the applet
         let applet = createApplet(extension, appletDefinition);
         if(applet == null)
+            return;
+        
+        // Now actually lock the applets role and set the provider
+        if(!extension.lockRole(applet))
             return;
 
         applet._order = appletDefinition.order;
@@ -272,17 +298,17 @@ function addAppletToPanels(extension, appletDefinition) {
         }
         extension._loadedDefinitions[appletDefinition.applet_id] = appletDefinition;
         
-        applet.on_applet_added_to_panel();
+        applet.on_applet_added_to_panel(appletsLoaded);
     }
     catch(e) {
         extension.unlockRole();
-        extension.logError('Failed to load applet: ' + e);
+        extension.logError('Failed to load applet: ' + appletDefinition.uuid + "/" + appletDefinition.applet_id, e);
     }
 }
 
 function get_role_provider(role) {
     if (Extension.Type.APPLET.roles[role]) {
-        return Extension.Type.APPLET.roles[role];
+        return Extension.Type.APPLET.roles[role].roleProvider;
     }
     return null;
 }
@@ -309,13 +335,13 @@ function createApplet(extension, appletDefinition) {
     try {
         applet = extension.module.main(extension.meta, orientation, panel_height, applet_id);
     } catch (e) {
-        extension.logError('Failed to evaluate \'main\' function:' + e);
+        extension.logError('Failed to evaluate \'main\' function on applet: ' + appletDefinition.uuid + "/" + appletDefinition.applet_id, e);
         return null;
     }
 
     appletObj[applet_id] = applet;
     applet._uuid = extension.uuid;
-    applet._applet_id = applet_id;
+    applet.instance_id = applet_id;
 
     applet.finalizeContextMenu();
 
@@ -366,7 +392,8 @@ function saveAppletsPositions() {
                 let appletOrder;
                 if (applet._newOrder != null) appletOrder = applet._newOrder;
                 else appletOrder = applet._order;
-                if (appletZone == zone) applets.push(panel_string+":"+zone_string+":"+appletOrder+":"+applet._uuid+":"+applet._applet_id);
+
+                if (appletZone == zone) applets.push(panel_string+":"+zone_string+":"+appletOrder+":"+applet._uuid+":"+applet.instance_id);
             }
         }
     }
@@ -378,6 +405,9 @@ function saveAppletsPositions() {
 }
 
 function updateAppletPanelHeights(force_recalc) {
+    if(!enabledAppletDefinitions)
+        return;
+    
     for (let applet_id in enabledAppletDefinitions.idMap) {
         if (appletObj[applet_id]) {
             let appletDefinition = enabledAppletDefinitions.idMap[applet_id];
@@ -392,4 +422,30 @@ function updateAppletPanelHeights(force_recalc) {
 // Deprecated, kept for compatibility reasons
 function _find_applet(uuid) {
     return Extension.findExtensionDirectory(uuid, Extension.Type.APPLET);
+}
+
+function get_object_for_instance (appletId) {
+    if (appletId in appletObj) {
+        return appletObj[appletId];
+    } else {
+        return null;
+    }
+}
+
+function get_object_for_uuid (uuid) {
+    for (let instanceid in appletObj) {
+        if (appletObj[instanceid]._uuid == uuid) {
+            return appletObj[instanceid]
+        }
+    }
+    return null;
+}
+
+function get_num_instances_for_applet (uuid) {
+    if (uuid in appletMeta) {
+        if ("max-instances" in appletMeta[uuid]) {
+            return parseInt(appletMeta[uuid]["max-instances"]);
+       }
+    }
+    return 1;
 }

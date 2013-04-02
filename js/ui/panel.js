@@ -1156,7 +1156,7 @@ Panel.prototype = {
                 leftWidth = Math.max(leftWidth - space_missing, leftMinWidth);
             }
             else if (centerWidth >= rightWidth) {
-                centerWidth = Math.max(centerWidth - space_mising, centerMinWidth);
+                centerWidth = Math.max(centerWidth - space_missing, centerMinWidth);
             }
             else {
                 rightWidth = Math.max(rightWidth - space_missing, rightMinWidth);

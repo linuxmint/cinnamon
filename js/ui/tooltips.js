@@ -44,7 +44,6 @@ Tooltip.prototype = {
     },
 
     _onEnterEvent: function(actor, event) {
-        this.preventShow = false;
         Tweener.addTween(this, {time: 0.3, onComplete: Lang.bind(this, this._onTimerComplete)});
         this._mousePosition = event.get_coords();
     },
@@ -60,7 +59,6 @@ Tooltip.prototype = {
     },
 
     _onReleaseEvent: function(actor, event) {
-        this.preventShow = true;
         this.hide();
     },
 

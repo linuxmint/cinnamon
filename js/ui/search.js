@@ -413,7 +413,7 @@ SearchSystem.prototype = {
                     let providerResults = provider.getSubsearchResultSet(previousResults, terms);
                     results.push([provider, providerResults]);
                 } catch (error) {
-                    global.log ('A ' + error.name + ' has occured in ' + provider.title + ': ' + error.message);
+                    global.logError('A ' + error.name + ' has occured in ' + provider.title, error);
                 }
             }
         } else {
@@ -424,7 +424,7 @@ SearchSystem.prototype = {
                     let providerResults = provider.getInitialResultSet(terms);
                     results.push([provider, providerResults]);
                 } catch (error) {
-                    global.log ('A ' + error.name + ' has occured in ' + provider.title + ': ' + error.message);
+                    global.logError('A ' + error.name + ' has occured in ' + provider.title, error);
                 }
             }
         }

@@ -826,9 +826,20 @@ WindowManager.prototype = {
             Main.layoutManager.addChrome(label, { visibleInFullscreen: false, affectsInputRegion: false });
             let workspace_osd_x = global.settings.get_int("workspace-osd-x");
             let workspace_osd_y = global.settings.get_int("workspace-osd-y");
-            let x = (monitor.width * workspace_osd_x /100 - label.width/2);
-            let y = (monitor.height * workspace_osd_y /100 - label.height/2);
-            label.set_position(x, y);  
+            /*
+             * This aligns the osd edges to the minimum/maximum values from gsettings,
+             * if those are selected to be used. For values in between minimum/maximum,
+             * it shifts the osd by half of the percentage used of the overall space available
+             * for display (100% - (left and right 'padding')).
+             * The horizontal minimum/maximum values are 5% and 95%, resulting in 90% available for positioning
+             * If the user choses 50% as osd position, these calculations result the osd being centered onscreen
+             */
+            let [minX, maxX, minY, maxY] = [5, 95, 5, 95];
+            let delta = (workspace_osd_x - minX) / (maxX - minX);
+            let x = Math.round((monitor.width * workspace_osd_x / 100) - (label.width * delta));
+            delta = (workspace_osd_y - minY) / (maxY - minY);
+            let y = Math.round((monitor.height * workspace_osd_y / 100) - (label.height * delta));
+            label.set_position(x, y);
             let duration = global.settings.get_int("workspace-osd-duration") / 1000;
             Tweener.addTween(label, {   opacity: 255,
                                         time: duration,
@@ -859,11 +870,11 @@ WindowManager.prototype = {
         }
         let workspace = global.screen.get_active_workspace().get_neighbor(direction);
         if (workspace != global.screen.get_active_workspace()) {
+            window.change_workspace(workspace);
             workspace.activate(global.get_current_time());
             this.showWorkspaceOSD();
             Mainloop.idle_add(Lang.bind(this, function() {
-                // Unless this is done a bit later, window is sometimes not activated
-                window.change_workspace(workspace);
+                // Unless this is done a bit later, window is sometimes not activated                
                 window.activate(global.get_current_time());
             }));
         }
@@ -919,5 +930,25 @@ WindowManager.prototype = {
 
     actionMoveWorkspaceDown: function() {
         global.screen.get_active_workspace().get_neighbor(Meta.MotionDirection.DOWN).activate(global.get_current_time());
+    },
+
+    actionFlipWorkspaceLeft: function() {
+        var active = global.screen.get_active_workspace();
+        var neighbor = active.get_neighbor(Meta.MotionDirection.LEFT);
+        if (active != neighbor) {
+            neighbor.activate(global.get_current_time());
+            let [x, y, mods] = global.get_pointer();
+            global.set_pointer(global.screen_width - 10, y);
+        }
+    },
+
+    actionFlipWorkspaceRight: function() {
+        var active = global.screen.get_active_workspace();
+        var neighbor = active.get_neighbor(Meta.MotionDirection.RIGHT);
+        if (active != neighbor) {
+            neighbor.activate(global.get_current_time());
+            let [x, y, mods] = global.get_pointer();
+            global.set_pointer(10, y);
+        }
     }
 };

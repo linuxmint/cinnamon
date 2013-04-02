@@ -5,9 +5,12 @@ from gi.repository import Gio, Gtk, GObject, Gdk
 
 class Module:
     def __init__(self, content_box):
-        sidePage = SidePage(_("Windows"), "windows.svg", content_box)
+        keywords = _("windows, titlebar, edge, switcher, window list, attention, focus")
+        advanced = True
+        sidePage = SidePage(_("Windows"), "windows.svg", keywords, advanced, content_box)
         self.sidePage = sidePage
         self.name = "windows"
+        self.category = "prefs"
         sidePage.add_widget(GSettingsComboBox(_("Action on title bar double-click"),
                                             "org.gnome.desktop.wm.preferences", "action-double-click-titlebar", None,
                                             [(i, i.replace("-", " ").title()) for i in ('toggle-shade', 'toggle-maximize', 'toggle-maximize-horizontally', 'toggle-maximize-vertically', 'minimize', 'shade', 'menu', 'lower', 'none')]))
@@ -20,6 +23,9 @@ class Module:
         sidePage.add_widget(GSettingsComboBox(_("Window focus mode"),
                                             "org.gnome.desktop.wm.preferences", "focus-mode", None,
                                             [(i, i.title()) for i in ("click","sloppy","mouse")]))
+        sidePage.add_widget(GSettingsComboBox(_("Modifier to use for modified window click actions"),
+                                            "org.gnome.desktop.wm.preferences", "mouse-button-modifier", None,
+                                            [(i, i.title()) for i in ("","<Alt>","<Super>","<Control>")]))
 
         sidePage.add_widget(TitleBarButtonsOrderSelector())
         sidePage.add_widget(GSettingsCheckButton(_("Enable Edge Tiling (\"Aero Snap\")"), "org.cinnamon.overrides", "edge-tiling", None))
@@ -71,12 +77,13 @@ class TitleBarButtonsOrderSelector(Gtk.Table):
         
         self.left_side_widgets = []
         self.right_side_widgets = []
-        for i in range(3):
+        for i in range(4):
             self.left_side_widgets.append(Gtk.ComboBox())
             self.right_side_widgets.append(Gtk.ComboBox())
         
         buttons = [
             ("", ""),
+            ("menu", _("Menu")),
             ("close", _("Close")),
             ("minimize", _("Minimize")),
             ("maximize", _("Maximize"))

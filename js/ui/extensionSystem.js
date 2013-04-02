@@ -31,14 +31,14 @@ function prepareExtensionUnload(extension) {
     try {
         extension.module.disable();
     } catch (e) {
-        extension.logError('Failed to evaluate \'disable\' function:' + e);
+        extension.logError('Failed to evaluate \'disable\' function on extension: ' + extension.uuid, e);
     }
     delete extensionStateObjs[extension.uuid];
 }
 
 // Callback for extension.js
 function finishExtensionLoad(extension) {
-    if(!extension.lockRole()) {
+    if(!extension.lockRole(extension.module)) {
         return false;
     }
     
@@ -46,13 +46,13 @@ function finishExtensionLoad(extension) {
     try {
         stateObj = extension.module.init(extension.meta);
     } catch (e) {
-        extension.logError('Failed to evaluate \'init\' function:' + e);
+        extension.logError('Failed to evaluate \'init\' function on extension: ' + extension.uuid, e);
         return false;
     }
     try {
         extension.module.enable();
     } catch (e) {
-        extension.logError('Failed to evaluate \'enable\' function:' + e);
+        extension.logError('Failed to evaluate \'enable\' function on extension: ' + extension.uuid, e);
         return false;
     }
     
@@ -65,11 +65,11 @@ function onEnabledExtensionsChanged() {
     enabledExtensions = global.settings.get_strv(ENABLED_EXTENSIONS_KEY);
 
     for(uuid in Extension.objects) {
-        if(enabledExtensions.indexOf(uuid) == -1)
+        if(Extension.objects[uuid].type == Extension.Type.EXTENSION && enabledExtensions.indexOf(uuid) == -1)
             Extension.unloadExtension(uuid);
     }
     
-    for(let i=0; i<enabledExtensions; i++) {
+    for(let i=0; i<enabledExtensions.length; i++) {
         Extension.loadExtension(enabledExtensions[i], Extension.Type.EXTENSION);
     }
 }

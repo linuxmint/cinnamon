@@ -18,10 +18,10 @@ from cStringIO import StringIO
 from itertools import cycle
 from urllib import urlopen
 
-import Image
-import ImageDraw
-import ImageEnhance
-import ImageOps, ImageChops, ImageFilter
+from PIL import Image
+from PIL import ImageDraw
+from PIL import ImageEnhance
+from PIL import ImageOps, ImageChops, ImageFilter
 
 ALL_PALETTE_INDICES = set(range(256))
 CHECKBOARD = {}

@@ -859,7 +859,7 @@ NMDeviceModem.prototype = {
     _createAutomaticConnection: function() {
         // Mobile wizard is too complex for Cinnamon UI and
         // is handled by the network panel
-        Util.spawn(['gnome-control-center', 'network',
+        Util.spawn(['cinnamon-settings', 'network',
                     'connect-3g', this.device.get_path()]);
         return null;
     }
@@ -988,7 +988,7 @@ NMDeviceWireless.prototype = {
                 // hidden access point cannot be added, we need to know
                 // the SSID and security details to connect
                 // nevertheless, the access point can acquire a SSID when
-                // NetworkManager connects to it (via nmcli or the control-center)
+                // NetworkManager connects to it (via nmcli or cinnamon-settings)
                 ap._notifySsidId = ap.connect('notify::ssid', Lang.bind(this, this._notifySsidCb));
                 continue;
             }
@@ -1535,8 +1535,8 @@ NMDeviceWireless.prototype = {
                 if (   (accessPoints[0]._secType == NMAccessPointSecurity.WPA2_ENT)
                     || (accessPoints[0]._secType == NMAccessPointSecurity.WPA_ENT)) {
                     // 802.1x-enabled APs require further configuration, so they're
-                    // handled in gnome-control-center
-                    Util.spawn(['gnome-control-center', 'network', 'connect-8021x-wifi',
+                    // handled in cinnamon-settings
+                    Util.spawn(['cinnamon-settings', 'network', 'connect-8021x-wifi',
                                 this.device.get_path(), accessPoints[0].dbus_path]);
                 } else {
                     let connection = this._createAutomaticConnection(apObj);
@@ -1675,7 +1675,7 @@ MyApplet.prototype = {
             this._devices.vpn.section.actor.hide();
             this.menu.addMenuItem(this._devices.vpn.section);
             this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-            this.menu.addSettingsAction(_("Network Settings"), 'gnome-network-panel.desktop');
+            this.menu.addSettingsAction(_("Network Settings"), 'network');
 
             this._activeConnections = [ ];
             this._connections = [ ];

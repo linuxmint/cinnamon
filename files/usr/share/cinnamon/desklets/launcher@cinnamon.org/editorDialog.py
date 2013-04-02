@@ -108,38 +108,22 @@ class EditorDialog:
         self.dialog.destroy()
 
     def on_edit_ok_clicked(self, widget):
+        if not self.name_entry.get_text():
+            return None
+
         if (self.launcher_type == "Application"):
             launcher_name = self.name_entry.get_text() + ".desktop"
         elif (self.launcher_type == "Custom Application"):
             launcher_name = self.write_custom_application()
 
-        if not launcher_name:
-            return None
-
         enabled_desklets = None
 
         if self.desklet_id == -1: # Add new launcher
             settings = Gio.Settings.new("org.cinnamon")
+            self.desklet_id = settings.get_int("next-desklet-id")
+            settings.set_int("next-desklet-id", self.desklet_id + 1)
+
             enabled_desklets = settings.get_strv("enabled-desklets")
-
-            # Find other launchers. Need to find an id for the new desklet
-            other_instances = []
-            for enabled_desklet in enabled_desklets:
-                if "launcher@cinnamon.org" in enabled_desklet:
-                    other_instances.append(enabled_desklet)
-
-            # Replace each desklet definition in other_instances with the id
-            for i in range(len(other_instances)):
-                elements = other_instances[i].split(":")
-                other_instances[i] = int(elements[1])
-
-            # Find the smallest possible id
-            self.desklet_id = 0
-            while True:
-                if self.desklet_id not in other_instances:
-                    break
-                self.desklet_id = self.desklet_id + 1
-
             enabled_desklets.append("launcher@cinnamon.org:%s:0:0" % self.desklet_id)
 
         launcher_list = self.launcher_settings.get_strv(LAUNCHER_KEY)

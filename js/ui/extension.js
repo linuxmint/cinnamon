@@ -1,16 +1,16 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 
-const Lang = imports.lang;
-const Signals = imports.signals;
-
+const Cinnamon = imports.gi.Cinnamon;
 const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
+const Lang = imports.lang;
+const Signals = imports.signals;
 const St = imports.gi.St;
-const Cinnamon = imports.gi.Cinnamon;
-const ExtensionSystem = imports.ui.extensionSystem;
-const AppletManager = imports.ui.appletManager;
 
+const AppletManager = imports.ui.appletManager;
 const Config = imports.misc.config;
+const DeskletManager = imports.ui.deskletManager;
+const ExtensionSystem = imports.ui.extensionSystem;
 
 const State = {
     INITIALIZING: 0,
@@ -28,54 +28,67 @@ const objects = {};
 // Maps uuid -> metadata object
 const meta = {};
 
-// Extension types with some attributes helping to load these extension types
+/**
+ * const Type:
+ * @EXTENSION: Cinnamon extensions
+ * @APPLET: Cinnamon panel applets
+ * 
+ * @name: Upper case first character name for printing messages
+ *        Also converted to lowercase to find the correct javascript file
+ * @folder: The folder name within the system and user cinnamon folders
+ * @requiredFunctions: Functions that must exist in the main javascript file
+ * @requiredProperties: Properties that must be set in the metadata.json file
+ * @niceToHaveProperties: Properties that are encouraged to be set in the metadata.json file
+ * @roles: Roles an extension can assume. Values will be set internally, set to null.
+ *         key => name of the role, value => reference to the extension object
+ * @callbacks: Callbacks used to do some manual actions on load / unload
+ * 
+ * Extension types with some attributes helping to load these extension types.
+ * Properties are nested, with lowerCamelCase properties (e.g. requiredFunctions) as sub-properties of CAPITAL one (EXTENSION). Thus they are refered to as, e.g., Type.EXTENSION.requiredFunctions
+ */
 const Type = {
     EXTENSION: {
-        // Upper case first character name for printing messages
-        // Also converted to lowercase to find the correct javascript file
         name: 'Extension',
-        // The folder name within the system and user cinnamon folders.
         folder: 'extensions',
-        // Functions that must exist in the main javascript file
         requiredFunctions: ['init', 'disable', 'enable'],
-        // Properties that must be set in the metadata.json file
         requiredProperties: ['uuid', 'name', 'description', 'cinnamon-version'],
-        // Properties that are encouraged to be set in the metadata.json file
         niceToHaveProperties: ['url'],
-        // Roles an extension can assume. Values will be set internally, set to null.
-        // key => name of the role, value => reference to the extension object
         roles: {},
-        // Callbacks used to do some manual actions on load / unload
         callbacks: {
             finishExtensionLoad: ExtensionSystem.finishExtensionLoad,
             prepareExtensionUnload: ExtensionSystem.prepareExtensionUnload
         }
     },
     APPLET: {
-        // Upper case first character name for printing messages
-        // Also converted to lowercase to find the correct javascript file
         name: 'Applet',
-        // The folder name within the system and user cinnamon folders.
         folder: 'applets',
-        // Functions that must exist in the main javascript file
         requiredFunctions: ['main'],
-        // Properties that must be set in the metadata.json file
         requiredProperties: ['uuid', 'name', 'description'],
-        // Properties that are encouraged to be set in the metadata.json file
         niceToHaveProperties: [],
-        // Roles an extension can assume. Values will be set internally, set to null.
-        // key => name of the role, value => reference to the extension object
         roles: {
             notifications: null,
             windowlist: null
         },
-        // Callbacks used to do some manual actions on load / unload
         callbacks: {
             finishExtensionLoad: AppletManager.finishExtensionLoad,
             prepareExtensionUnload: AppletManager.prepareExtensionUnload
         }
+    },
+    DESKLET: {
+        name: 'Desklet',
+        folder: 'desklets',
+        requiredFunctions: ['main'],
+        requiredProperties: ['uuid', 'name', 'description'],
+        niceToHaveProperties: [],
+        roles: {
+            notifications: null,
+            windowlist: null
+        },
+        callbacks: {
+            finishExtensionLoad: DeskletManager.finishExtensionLoad,
+            prepareExtensionUnload: DeskletManager.prepareExtensionUnload
+        }
     }
-    // Add more if needed, for example desklets ?
 };
 
 // Add signal methods to all types and create user directories if they don't exist.
@@ -90,22 +103,6 @@ for(var key in Type) {
             type.userDir.make_directory_with_parents(null);
     } catch (e) {
         global.logError(e);
-    }
-}
-
-// A special error class used to format the error message with some information about the extension.
-function ExtensionError(extension, message) {
-    this._init(extension, message);
-}
-
-ExtensionError.prototype = {
-    _init: function(extension, message) {
-        this.extension = extension;
-        this.message = message;
-    },
-
-    toString: function() {
-        return '[%s "%s"]: %s'.format(this.extension.type.name, this.extension.uuid, this.message);
     }
 }
 
@@ -139,13 +136,13 @@ Extension.prototype = {
         try {
             global.add_extension_importer('imports.ui.extension.importObjects', this.uuid, this.meta.path);
         } catch (e) {
-            throw this.logError(e);
+            throw this.logError('Error importing extension ' + this.uuid + ' from path ' + this.meta.path, e);
         }
 
         try {
             this.module = importObjects[this.uuid][this.lowerType]; // get [extension/applet/desklet].js
         } catch (e) {
-            throw this.logError(e);
+            throw this.logError('Error importing ' + this.lowerType + '.js from ' + this.uuid, e);
         }
 
         for (let i = 0; i < this.type.requiredFunctions.length; i++) {
@@ -167,12 +164,20 @@ Extension.prototype = {
         global.log('Loaded %s %s in %d ms'.format(this.lowerType, this.uuid, (endTime - this.startTime)));
     },
 
-    logError: function (message, state) {
+    formatError:function(message) {
+        return '[%s "%s"]: %s'.format(this.type.name, this.uuid, message);
+    },
+
+    logError: function (message, error, state) {
         this.meta.state = state || State.ERROR;
         this.meta.error += message;
 
-        let err = new ExtensionError(this, message);
-        global.logError('Error ' + err.toString());
+        let errorMessage = this.formatError(message);
+        if(!error)
+            error = new Error(errorMessage);
+
+        global.logError(error);
+        global.logError(errorMessage);
 
         // An error during initialization leads to unloading the extension again.
         if(this.meta.state == State.INITIALIZING) {
@@ -180,12 +185,11 @@ Extension.prototype = {
             this.unloadStylesheet();
             forgetExtension(this.uuid);
         }
-        return err;
+        return error;
     },
 
     logWarning: function (message) {
-        let err = new ExtensionError(this, message);
-        global.log('Warning ' + err.toString());
+        global.logWarning(this.formatError(message));
     },
 
     loadMetaData: function(metadataFile) {
@@ -206,7 +210,7 @@ Extension.prototype = {
         } catch (e) {
             this.meta = createMetaDummy(this.uuid, oldPath, oldState);
             meta[this.uuid] = this.meta;
-            throw this.logError('Failed to load/parse metadata.json:' + e);
+            throw this.logError('Failed to load/parse metadata.json', e);
         }
     },
 
@@ -223,10 +227,10 @@ Extension.prototype = {
 
         // If cinnamon or js version are set, check them
         if('cinnamon-version' in this.meta && !versionCheck(this.meta['cinnamon-version'], Config.PACKAGE_VERSION)) {
-            throw this.logError('Extension is not compatible with current Cinnamon version', State.OUT_OF_DATE);
+            throw this.logError('Extension is not compatible with current Cinnamon version', null, State.OUT_OF_DATE);
         }
         if('js-version' in this.meta && !versionCheck(this.meta['js-version'], Config.GJS_VERSION)) {
-            throw this.logError('Extension is not compatible with current GJS version', State.OUT_OF_DATE);
+            throw this.logError('Extension is not compatible with current GJS version', null, State.OUT_OF_DATE);
         }
 
         // If a role is set, make sure it's a valid one
@@ -263,14 +267,14 @@ Extension.prototype = {
                 let themeContext = St.ThemeContext.get_for_stage(global.stage);
                 this.theme = themeContext.get_theme();
             } catch (e) {
-                throw this.logError('Error trying to get theme: ' + e);
+                throw this.logError('Error trying to get theme', e);
             }
 
             try {
                 this.theme.load_stylesheet(file.get_path());
                 this.stylesheet = file.get_path();
             } catch (e) {
-                throw this.logError('Stylesheet parse error: ' + e);
+                throw this.logError('Stylesheet parse error', e);
             }
         }
     },
@@ -280,7 +284,7 @@ Extension.prototype = {
             try {
                 this.theme.unload_stylesheet(this.stylesheet);
             } catch (e) {
-                global.logError('Stylesheet unload error: ' + e);
+                global.logError('Error unloading stylesheet', e);
             }
         }
     },
@@ -291,11 +295,19 @@ Extension.prototype = {
         }
     },
 
-    lockRole: function() {
+    lockRole: function(roleProvider) {
         let role = this.meta['role'];
-        if(role && this.type.roles[role] != null) {
-            this.logError('Role ' + role + ' already taken by ' + this.lowerType + ': ' + this.type.roles[role].uuid);
-            return false;
+        if(role && this.type.roles[role] != this) {
+            if(this.type.roles[role] != null) {
+                this.logError('Role ' + role + ' already taken by ' + this.lowerType + ': ' + this.type.roles[role].uuid);
+                return false;
+            }
+        
+            if(roleProvider != null) {
+                this.type.roles[role] = this;
+                this.roleProvider = roleProvider;
+                global.log("Role locked: " + role);
+            }
         }
 
         return true;
@@ -305,6 +317,8 @@ Extension.prototype = {
         let role = this.meta['role'];
         if(role && this.type.roles[role] == this) {
             this.type.roles[role] = null;
+            this.roleProvider = null;
+            global.log("Role unlocked: " + role);
         }
     }
 }
@@ -371,7 +385,7 @@ function loadExtension(uuid, type) {
             extension.finalize();
         } catch(e) {
             forgetExtension(uuid, false);
-            global.logError('Could not load ' + type.name.toLowerCase() + ' ' + uuid + ': ' + e);
+            global.logError('Could not load ' + type.name.toLowerCase() + ' ' + uuid, e);
             return null;
         }
     }
@@ -389,7 +403,7 @@ function unloadExtension(uuid) {
         try {
             extension.type.callbacks.prepareExtensionUnload(extension);
         } catch(e) {
-            global.logError('Error disabling ' + extension.lowerType + ' ' + extension.uuid + ': ' + e);
+            global.logError('Error disabling ' + extension.lowerType + ' ' + extension.uuid, e);
         }
         extension.unloadStylesheet();
 
@@ -444,7 +458,7 @@ function findExtensionDirectoryIn(uuid, dir) {
         fileEnum.close(null);
         return directory;
     } catch (e) {
-        global.logError('' + e);
+        global.logError('Error looking for extension ' + uuid + ' in directory ' + dir, e);
        return null;
     }
 }

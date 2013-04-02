@@ -5,13 +5,16 @@ from gi.repository import Gio
 
 class Module:
     def __init__(self, content_box):
-        sidePage = HotCornerViewSidePage(_("Hot corner"), "overview.svg", content_box)
+        keywords = _("hotcorner, overview, scale, expo")
+        advanced = True
+        sidePage = HotCornerViewSidePage(_("Hot corner"), "overview.svg", keywords, advanced, content_box)
         self.sidePage = sidePage
         self.name = "hotcorner"
+        self.category = "prefs"
 
 class HotCornerViewSidePage(SidePage):
-    def __init__(self, name, icon, content_box):   
-        SidePage.__init__(self, name, icon, content_box)
+    def __init__(self, name, icon, keywords, advanced, content_box):
+        SidePage.__init__(self, name, icon, keywords, advanced, content_box)
 
         self.hc_list = Gtk.ListStore(int, str)
 
@@ -60,7 +63,7 @@ class HotCornerViewSidePage(SidePage):
                 action_no = 1
             self.func_combo.set_active(action_no)
 
-    def build(self):
+    def build(self, advanced):
         # Clear all existing widgets
         widgets = self.content_box.get_children()
         for widget in widgets:
@@ -123,6 +126,7 @@ class HotCornerViewSidePage(SidePage):
         self.func_combo.connect('changed', self.on_func_combo_changed)
         self.custom_command_entry.connect('changed', self.on_search_entry_changed)
         self.on_settings_changed(self.settings, "overview-corner")
+        self.content_box.show_all()
 
     def on_pos_changed(self, widget):
         titer = widget.get_active_iter()
