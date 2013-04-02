@@ -69,7 +69,6 @@ LayoutManager.prototype = {
     init: function() {
         this._chrome.init();
 
-        this._startupAnimation();
         this.edgeRight = new EdgeFlip.EdgeFlipper(St.Side.RIGHT, Main.wm.actionFlipWorkspaceRight);
         this.edgeLeft = new EdgeFlip.EdgeFlipper(St.Side.LEFT, Main.wm.actionFlipWorkspaceLeft);
 
