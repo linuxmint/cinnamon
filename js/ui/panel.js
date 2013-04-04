@@ -921,6 +921,20 @@ Panel.prototype = {
 //        this.emit('destroy');
     },
 
+    /**
+     * highlight:
+     * @highlight: whether to turn on or off
+     * 
+     * Turns on/off the highlight of the panel
+     */
+    highlight: function(highlight) {
+	if (highlight) {
+            this.actor.add_style_pseudo_class('highlight');
+	} else {
+            this.actor.remove_style_pseudo_class('highlight');
+	}
+    },
+
     isHideable: function() {
         return this._hideable;
     },
