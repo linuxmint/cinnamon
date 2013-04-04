@@ -99,6 +99,22 @@
       </_description>
     </key>
     
+    <key name="panel-resizable" type="b">
+      <default>false</default>
+      <_summary>(Deprecated) Resizable panel</_summary>
+      <_description>
+	Deprecated. Kept to avoid crashing applets.
+      </_description>
+    </key>
+    
+    <key name="panels-scale-text-icons" type="as">
+      <default>false</default>
+      <_summary>(Deprecated) Scale panel applet text and icons</_summary>
+      <_description>
+	Deprecated. Kept to avoid crashing applets.
+      </_description>
+    </key>
+
     <key name="keyboard-applet-use-flags" type="b">
       <default>true</default>
       <_summary>Use flags to display the keyboard layouts</_summary>
