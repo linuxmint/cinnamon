@@ -477,21 +477,21 @@ function populateSettingsMenu(menu) {
     });
 }
 
-function PanelContextMenu(launcher, orientation) {
-    this._init(launcher, orientation);
+function PanelContextMenu(launcher, orientation, panelID) {
+    this._init(launcher, orientation, panelID);
 }
 
 PanelContextMenu.prototype = {
     __proto__: PopupMenu.PopupMenu.prototype,
 
-    _init: function(launcher, orientation) {
+    _init: function(launcher, orientation, panelID) {
         PopupMenu.PopupMenu.prototype._init.call(this, launcher.actor, 0.0, orientation, 0);
         Main.uiGroup.add_actor(this.actor);
         this.actor.hide();
 
         populateSettingsMenu(this);
 
-        let menuItem = new SettingsLauncher(_("Panel settings"), "panel", "panel", this);
+        let menuItem = new SettingsLauncher(_("Panel settings"), "panel " + panelID, "panel", this);
         this.addMenuItem(menuItem);
 
         let applet_settings_item = new SettingsLauncher(_("Add applets to the panel"), "applets", "applets", this);
@@ -799,7 +799,7 @@ Panel.prototype = {
         if (bottomPosition) {
             orientation = St.Side.BOTTOM;
         }
-        this._context_menu = new PanelContextMenu(this, orientation);
+        this._context_menu = new PanelContextMenu(this, orientation, this.panelID);
         this._menus.addMenu(this._context_menu);
 
         // Hack to position the menu at where the mouse right-clicked (instead of the center of the panel)
