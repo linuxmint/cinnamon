@@ -1252,7 +1252,7 @@ Panel.prototype = {
         this.isMouseOverPanel = true;
         this._clearTimers();
         if (this._showDelay > 0) {
-            this._showTimer = Mainloop.timeout_add(this._hideDelay, Lang.bind(this, this._showPanel));
+            this._showTimer = Mainloop.timeout_add(this._showDelay, Lang.bind(this, this._showPanel));
         }
         else {
             this._showPanel();
