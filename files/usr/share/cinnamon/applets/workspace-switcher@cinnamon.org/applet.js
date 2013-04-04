@@ -86,7 +86,7 @@ MyApplet.prototype = {
     },
 
     on_panel_height_changed: function() {
-        this._scaleMode = global.settings.get_boolean('panel-scale-text-icons');
+//        this._scaleMode = global.settings.get_boolean('panel-scale-text-icons');
         this._createButtons();
     },
 

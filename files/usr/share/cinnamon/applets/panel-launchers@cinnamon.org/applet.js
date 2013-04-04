@@ -105,13 +105,13 @@ PanelAppLauncher.prototype = {
         this.actor.add_actor(this._iconBox);
         this._iconBottomClip = 0;
 
-        if (global.settings.get_boolean(PANEL_SCALE_TEXT_ICONS_KEY) && global.settings.get_boolean(PANEL_RESIZABLE_KEY)) {
-            this.icon_height = Math.floor(panel_height * ICON_HEIGHT_FACTOR);
-            this.icon_anim_height = Math.floor(panel_height * ICON_ANIM_FACTOR);
-        } else {
+//        if (global.settings.get_boolean(PANEL_SCALE_TEXT_ICONS_KEY) && global.settings.get_boolean(PANEL_RESIZABLE_KEY)) {
+//            this.icon_height = Math.floor(panel_height * ICON_HEIGHT_FACTOR);
+//            this.icon_anim_height = Math.floor(panel_height * ICON_ANIM_FACTOR);
+//        } else {
             this.icon_height = DEFAULT_ICON_SIZE;
             this.icon_anim_height = DEFAULT_ANIM_SIZE;
-        }
+//        }
         this.icon = this._getIconActor();
         this._iconBox.set_child(this.icon);
 

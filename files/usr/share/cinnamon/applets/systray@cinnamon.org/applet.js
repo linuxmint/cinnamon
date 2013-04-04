@@ -79,10 +79,10 @@ MyApplet.prototype = {
                 height = themeNode.get_length('height');
             }
 
-            if (global.settings.get_boolean('panel-scale-text-icons')) {
+/*            if (global.settings.get_boolean('panel-scale-text-icons')) {
                 width = Math.floor(this._panelHeight * ICON_SCALE_FACTOR);
                 height = Math.floor(this._panelHeight * ICON_SCALE_FACTOR);
-            }
+            }*/
 
             if (icon.get_width() == 1 || icon.get_height() == 1 || buggyIcons.indexOf(role) != -1) {
                 icon.set_height(height);

@@ -850,8 +850,8 @@ Panel.prototype = {
         global.settings.connect("changed::" + PANEL_HIDE_DELAY_KEY, Lang.bind(this, this._onPanelHideDelayChanged));
         global.settings.connect("changed::" + PANEL_HEIGHT_KEY, Lang.bind(this, this._queueMoveResizePanel));
         global.settings.connect("changed::panel-edit-mode", Lang.bind(this, this._handlePanelEditMode));
-        global.settings.connect("changed::panel-resizable", Lang.bind(this, this._queueMoveResizePanel));
-        global.settings.connect("changed::panel-scale-text-icons", Lang.bind(this, this._onScaleTextIconsChanged));
+        global.settings.connect("changed::panels-resizable", Lang.bind(this, this._queueMoveResizePanel));
+        global.settings.connect("changed::panels-scale-text-icons", Lang.bind(this, this._onScaleTextIconsChanged));
 
         global.screen.connect('monitors-changed', Lang.bind(this, this._queueMoveResizePanel));
 
@@ -1084,7 +1084,7 @@ Panel.prototype = {
         if (this._destroyed) return; // Panel is destroyed)
         this.monitor = global.screen.get_monitor_geometry(this.monitorIndex); // Update monitor information
         let panelHeight;
-        let panelResizable = global.settings.get_boolean("panel-resizable");
+        let panelResizable = this._getProperty("panels-resizable", "b");
         if (panelResizable) {
             panelHeight = this._getProperty(PANEL_HEIGHT_KEY, "i");
         }
@@ -1099,7 +1099,7 @@ Panel.prototype = {
             let themeNode = this.actor.get_theme_node();
             this._themeFontSize = themeNode.get_length("font-size");
         }
-        if (global.settings.get_boolean("panel-scale-text-icons") && global.settings.get_boolean("panel-resizable")) {
+        if (this._getProperty("panels-scale-text-icons", "b") && this._getProperty("panels-resizable")) {
             let textheight = (panelHeight / Applet.DEFAULT_PANEL_HEIGHT) * Applet.PANEL_FONT_DEFAULT_HEIGHT;
             this.actor.set_style('font-size: ' + textheight + 'px;');
         } else {
@@ -1128,7 +1128,7 @@ Panel.prototype = {
             let themeNode = this.actor.get_theme_node();
             this._themeFontSize = themeNode.get_length("font-size");
         }
-        if (global.settings.get_boolean("panel-scale-text-icons") && global.settings.get_boolean("panel-resizable")) {
+        if (this._getProperty("panels-scale-text-icons", "b") && this._getProperty("panels-resizable", "b")) {
             let textheight = (panelHeight / Applet.DEFAULT_PANEL_HEIGHT) * Applet.PANEL_FONT_DEFAULT_HEIGHT;
             this.actor.set_style('font-size: ' + textheight + 'px;');
         } else {

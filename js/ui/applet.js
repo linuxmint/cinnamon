@@ -117,7 +117,7 @@ Applet.prototype = {
 
         this._scaleMode = false;
         this._applet_tooltip_text = "";
-        this._scaleMode = global.settings.get_boolean('panel-scale-text-icons') && global.settings.get_boolean('panel-resizable');
+//        this._scaleMode = global.settings.get_boolean('panel-scale-text-icons') && global.settings.get_boolean('panel-resizable');
         this.context_menu_item_remove = null;
         this.context_menu_separator = null;
 
@@ -335,7 +335,7 @@ IconApplet.prototype = {
     },
 
     on_panel_height_changed: function() {
-        this._scaleMode = global.settings.get_boolean('panel-scale-text-icons') && global.settings.get_boolean('panel-resizable');
+//        this._scaleMode = global.settings.get_boolean('panel-scale-text-icons') && global.settings.get_boolean('panel-resizable');
         if (this._applet_icon_box.child) {
             this._applet_icon_box.child.destroy();
         }

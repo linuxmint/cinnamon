@@ -83,16 +83,16 @@
       </_description>
     </key>
     
-    <key name="panel-resizable" type="b">
-      <default>false</default>
+    <key name="panels-resizable" type="as">
+      <default>['1:false','2:false']</default>
       <_summary>Resizable panel</_summary>
       <_description>
         Whether the panel uses a user-defined height
       </_description>
     </key>
     
-    <key name="panel-scale-text-icons" type="b">
-      <default>false</default>
+    <key name="panels-scale-text-icons" type="as">
+      <default>['1:false','2:false']</default>
       <_summary>Scale panel applet text and icons</_summary>
       <_description>
         Whether the panel icons and text from applets is resized according to the custom panel height
