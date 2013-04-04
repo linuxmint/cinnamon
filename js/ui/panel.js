@@ -622,7 +622,7 @@ PanelManager.prototype = {
                 global.log("Invalid panel definition: " + panelProperties[i]);
                 continue;
             }
-            this._loadPanel(parseInt(elements[0]), elements[1], elements[2]=="bottom");
+            this._loadPanel(parseInt(elements[0]), elements[1], elements[2]=="bottom", this.panels);
         }
 
         global.settings.connect("changed::panels-enabled", Lang.bind(this, this._onPanelsEnabledChanged));
@@ -687,14 +687,14 @@ PanelManager.prototype = {
         return null;
     },
 
-    _loadPanel: function(ID, monitorIndex, bottomPosition) {
+    _loadPanel: function(ID, monitorIndex, bottomPosition, panelList) {
         if (this.panels[ID]) {
             global.log("Multiple panels with same ID (" + ID + ") are found");
             return;
         }
 
-        this.panels.length = Math.max(this.panels.length, ID+1);
-        this.panelsMeta.length = Math.max(this.panels.length, ID+1);
+        panelList.length = Math.max(panelList.length, ID+1);
+        this.panelsMeta.length = panelList.length;
 
         let repeat = false;
         for (let i in this.panelsMeta) {
@@ -707,7 +707,7 @@ PanelManager.prototype = {
 
         if (repeat) return;
 
-        this.panels[ID] = new Panel(bottomPosition, ID, parseInt(monitorIndex));
+        panelList[ID] = new Panel(bottomPosition, ID, parseInt(monitorIndex));
         this.panelsMeta[ID] = [monitorIndex, bottomPosition];
 
         // Main.applet_side: to maintain compatibility
