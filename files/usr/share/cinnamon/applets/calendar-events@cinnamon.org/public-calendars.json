@@ -1,246 +1,210 @@
 {
     "base" : "http://www.google.com/calendar/feeds/",
     "generic" : "%23holiday%40group.v.calendar.google.com/public/full",
-    "qString" : "?orderby=starttime&sortorder=ascending&futureevents=true&alt=json",
     "locales" : [
                 {
                 "locale" : "en_gb",
                 "country": "uk",
-                "name": "English Public Holidays",
                 "enOnly": true
                 },
 
                 {
                 "locale": "en_us",
                 "country": "usa",
-                "name": "American Public Holidays",
                 "enOnly": true
                 },
                 {
                 "locale": "zh_cn",
                 "country": "china",
-                "name": "Chinese Public Holidays",
                 "enOnly": false
                 },
                 {
                 "locale": "zh_hk",
                 "country": "hong_kong",
-                "name": "Hong Kong Public Holidays",
                 "enOnly": false
                 },
                 {
                 "locale": "zh_sg",
                 "country": "singapore",
-                "name": "Singapore Public Holidays",
                 "enOnly": false
                 },
                 {
                 "locale": "zh_tw",
                 "country": "taiwan",
-                "name": "x",
                 "enOnly": false
                 },
 
                 {
                 "locale": "da",
                 "country": "danish",
-                "name": "Danish Public Holidays",
                 "enOnly": false
                 },
 
                 {
                 "locale": "nl_nl",
                 "country": "dutch",
-                "name": "Dutch Public Holidays",
                 "enOnly": false
                 },
 
                 {
                 "locale": "en_au",
                 "country": "australia",
-                "name": "Australian Public Holidays",
                 "enOnly": false
                 },
 
                 {
                 "locale": "en_ca",
                 "country": "canadian",
-                "name": "Canadian Public Holidays",
                 "enOnly": false
                 },
 
                 {
                 "locale": "en_in",
                 "country": "indian",
-                "name": "Indian Public Holidays",
                 "enOnly": false
                 },
 
                 {
                 "locale": "en_ie",
                 "country": "irish",
-                "name": "Irish Public Holidays",
                 "enOnly": false
                 },
 
                 {
                 "locale": "en_nz",
                 "country": "new_zealand",
-                "name": "New Zealand Public Holidays",
                 "enOnly": false
                 },
 
                 {
                 "locale": "en_ph",
                 "country": "phillipines",
-                "name": "x",
                 "enOnly": false
                 },
 
                 {
                 "locale": "en_za",
                 "country": "south_africa",
-                "name": "South African Public Holidays",
                 "enOnly": false
                 },
 
                 {
                 "locale": "fi",
                 "country": "finnish",
-                "name": "x",
                 "enOnly": false
                 },
 
                 {
                 "locale": "fr_fr",
                 "country": "french",
-                "name": "French Public Holidays",
                 "enOnly": false
                 },
 
                 {
                 "locale": "de_at",
                 "country": "austrian",
-                "name": "Austrian Public Holidays",
                 "enOnly": false
                 },
 
                 {
                 "locale": "de_de",
                 "country": "german",
-                "name": "German Public Holidays",
                 "enOnly": false
                 },
 
                 {
                 "locale": "el",
                 "country": "greek",
-                "name": "Greek Public Holidays",
                 "enOnly": false
                 },
 
                 {
                 "locale": "id",
                 "country": "indonesian",
-                "name": "x",
                 "enOnly": false
                 },
 
                 {
                 "locale": "it_it",
                 "country": "italian",
-                "name": "Italian Public Holidays",
                 "enOnly": false
                 },
 
                 {
                 "locale": "ja",
                 "country": "japanese",
-                "name": "Japanese Public Holidays",
                 "enOnly": false
                 },
 
                 {
                 "locale": "ko",
                 "country": "south_korea",
-                "name": "South Korean Public Holidays",
                 "enOnly": false
                 },
 
                 {
                 "locale": "ms_my",
                 "country": "malaysia",
-                "name": "Malaysian Public Holidays",
                 "enOnly": false
                 },
 
                 {
                 "locale": "no_no",
                 "country": "norwegian",
-                "name": "Norwegian Public Holidays",
                 "enOnly": false
                 },
 
                 {
                 "locale": "pl",
                 "country": "polish",
-                "name": "Polish Public Holidays",
                 "enOnly": false
                 },
 
                 {
                 "locale": "pt_br",
                 "country": "brazilian",
-                "name": "Brazilian Public Holidays",
                 "enOnly": false
                 },
 
                 {
                 "locale": "pt_pt",
                 "country": "portuguese",
-                "name": "Portuguese Public Holidays",
                 "enOnly": false
                 },
 
                 {
                 "locale": "ru",
                 "country": "russian",
-                "name": "Russian Public Holidays",
                 "enOnly": false
                 },
 
                 {
                 "locale": "es_mx",
                 "country": "mexican",
-                "name": "Mexican Public Holidays",
                 "enOnly": false
                 },
 
                 {
                 "locale": "es_es",
                 "country": "spain",
-                "name": "Spanish Public Holidays",
                 "enOnly": false
                 },
 
                 {
                 "locale": "sv_se",
                 "country": "swedish",
-                "name": "Swedish Public Calendars",
                 "enOnly": false
                 },
 
                 {
                 "locale": "th",
                 "country": "thai",
-                "name": "Thai Public Holidays",
                 "enOnly": false
                 },
 
                 {
                 "locale": "vi",
                 "country": "vietnamese",
-                "name": "Vietnamese Public Holidays",
                 "enOnly": false
                 }
                 ]
