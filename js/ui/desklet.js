@@ -115,12 +115,12 @@ Desklet.prototype = {
      * Destroys the actor with an fading animation
      */
     destroy: function(){
-        this.on_desklet_removed();
         Tweener.addTween(this.actor,
                          { opacity: 0,
                            transition: 'linear',
                            time: DESKLET_DESTROY_TIME,
                            onComplete: Lang.bind(this, function(){
+                               this.on_desklet_removed();
                                this.actor.destroy();
                            })});
         this._menu.destroy();
