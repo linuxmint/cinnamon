@@ -420,15 +420,6 @@ MyApplet.prototype = {
 
             //Section 2 - Settings Panels ==============================================================================
 
-            // If Cinnamon = 1.7+ use the settings API, otherwise display basic settings options, show hide calendar, remove calendar
-            if ( parseFloat(cinnamonVersion) >= 2 ) //CHANGE BACK TO 1.7
-            {
-                let eventSettings = new PopupMenu.PopupImageMenuItem( _('Event Settings'), 'gtk-edit' );
-                eventSettings.connect('activate', Lang.bind( this, onLaunchEventSettings ) );
-                this._applet_context_menu.addMenuItem( eventSettings );
-            }
-            else
-            {
                 let editCalendarSubMenu = new PopupMenu.PopupSubMenuMenuItem( _("Edit Calendars") );   // SubMenuMenuItem is a Menu object so has method .menu
                 this._applet_context_menu.addMenuItem( editCalendarSubMenu );
 
@@ -471,7 +462,7 @@ MyApplet.prototype = {
 
                 editAppletSubMenu.menu.addMenuItem(displayEventsNum);
 
-            }
+
 
             let datetimeSettings = new PopupMenu.PopupImageMenuItem( _('Date and Time Settings'), 'preferences-system-time' );
             datetimeSettings.connect("activate", Lang.bind(this, onLaunchDateTimeSettings ));
