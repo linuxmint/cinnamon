@@ -9,6 +9,7 @@ G_DEFINE_TYPE (StBackgroundEffect, st_background_effect, CLUTTER_TYPE_OFFSCREEN_
 
 #include "cogl/cogl.h"
 #include <gio/gio.h>
+#include <math.h>
 
 typedef enum
 {
@@ -123,6 +124,17 @@ extern gboolean
 cogl_pipeline_set_blend (CoglPipeline *pipeline,
                          const char *blend_string,
                          GError **error);
+
+extern void
+cogl_pipeline_set_uniform_1i (CoglPipeline *pipeline,
+                              int uniform_location,
+                              int value);
+
+extern gboolean
+cogl_pipeline_set_layer_combine (CoglPipeline *pipeline,
+                                 int           layer_index,
+                                 const char   *blend_string,
+                                 GError      **error);
 
 static const gchar *box_blur_glsl_declarations =
   "uniform vec3 pixel_step;\n"
@@ -403,7 +415,7 @@ st_background_effect_paint_target (ClutterOffscreenEffect *effect)
 
       CoglOffscreen *vertical_FBO;
       vertical_FBO = cogl_offscreen_new_to_texture (self->bg_sub_texture);
-      cogl_push_framebuffer (vertical_FBO);
+      cogl_push_framebuffer ((CoglFramebuffer*)vertical_FBO);
       cogl_push_source (self->pipeline0);
       cogl_rectangle (-1.0f, 1.0f, 1.0f, -1.0f);
       cogl_pop_source ();
