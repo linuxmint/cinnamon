@@ -5,8 +5,6 @@ try:
     import XletSettings
     from Spices import Spice_Harvester
     #from Spices import *
-    import pygtk
-    pygtk.require('2.0')
     import gettext
     import locale
     import os.path
