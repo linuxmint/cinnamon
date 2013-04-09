@@ -1,7 +1,5 @@
 try:
     from SettingsWidgets import rec_mkdir
-    import pygtk
-    pygtk.require('2.0')
     import gettext
     from gi.repository import Gio, Gtk, GObject, Gdk, GdkPixbuf
     # WebKit requires gir1.2-javascriptcoregtk-3.0 and gir1.2-webkit-3.0
