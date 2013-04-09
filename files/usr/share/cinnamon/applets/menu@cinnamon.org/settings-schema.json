@@ -1,0 +1,63 @@
+{
+ "text" : {
+    "type" : "entry",
+    "default" : "Menu",
+    "description" : "Menu text:",
+    "tooltip" : "Set your custom label here."
+ },
+ "icon": {
+    "type": "iconfilechooser",
+    "default" : "/usr/share/cinnamon/theme/menu.png",
+    "description" : "Menu icon (leave empty to disable):",
+    "tooltip" : "Select an icon file. You can also type an icon name into the entry box"
+ },
+ "icon-symbolic": {
+    "type" : "checkbox",
+    "default" : true,
+    "indent" : true,
+    "description": "Use a symbolic icon instead of a full color icon",
+    "tooltip": "This only affects icon names. If you specify a file, this option is not used."
+ },
+ "activate-on-hover" : {
+    "type" : "checkbox",
+    "default" : false,
+    "description": "Activate menu on hover",
+    "tooltip": "Activate the menu by hovering the mouse over it"
+ },
+ "show-favorites" : {
+    "type" : "checkbox",
+    "default" : true,
+    "description": "Show favorites",
+    "tooltip": "Show your selected favorites on the left side of the menu"
+ },
+ "show-system-buttons" : {
+    "type" : "checkbox",
+    "default" : true,
+    "description": "Show system buttons",
+    "tooltip": "Show the system buttons (lock, logout and shutdown) on the left side of the menu"
+ },
+ "show-places" : {
+    "type" : "checkbox",
+    "default" : false,
+    "description": "Show bookmarks and places",
+    "tooltip": "Show an extra category containing bookmarks and places"
+ },
+ "show-recent" : {
+    "type" : "checkbox",
+    "default" : false,
+    "description": "Show recent files",
+    "tooltip": "Show an extra category containing recently used files and folders"
+ },
+ "show-appinfo-title" : {
+    "type" : "checkbox",
+    "default" : true,
+    "description": "Show selected application title",
+    "tooltip": "Show the title of the currently selected application"
+ },
+ "show-appinfo-description" : {
+    "type" : "checkbox",
+    "default" : true,
+    "description": "Show selected application description",
+    "tooltip": "Show the description of the currently selected application"
+ }
+}

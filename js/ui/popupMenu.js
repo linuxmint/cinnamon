@@ -1119,6 +1119,14 @@ PopupMenuBase.prototype = {
         else
             this.open(true);
     },
+    
+    toggleWithOptions: function (animate, onComplete) {
+        if (this.isOpen) {
+            this.close(animate, onComplete);
+        } else {
+            this.open(animate, onComplete);
+        }
+    },
 
     destroy: function() {
         this.removeAll();
