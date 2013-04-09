@@ -1803,8 +1803,9 @@ PopupMenuManager.prototype = {
     },
 
     _grab: function() {
-        Main.pushModal(this._owner.actor);
-
+        if (!Main.pushModal(this._owner.actor)) {
+            return;
+        }
         this._eventCaptureId = global.stage.connect('captured-event', Lang.bind(this, this._onEventCapture));
         // captured-event doesn't see enter/leave events
         this._enterEventId = global.stage.connect('enter-event', Lang.bind(this, this._onEventCapture));
@@ -1815,6 +1816,9 @@ PopupMenuManager.prototype = {
     },
 
     _ungrab: function() {
+        if (!this.grabbed) {
+            return;
+        }
         global.stage.disconnect(this._eventCaptureId);
         this._eventCaptureId = 0;
         global.stage.disconnect(this._enterEventId);
@@ -1857,7 +1861,7 @@ PopupMenuManager.prototype = {
 
             if (hadFocus)
                 focus.grab_key_focus();
-else
+            else
                 menu.actor.grab_key_focus();
         } else if (menu == this._activeMenu) {
             if (this.grabbed)
