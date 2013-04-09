@@ -1218,7 +1218,6 @@ MyApplet.prototype = {
                 this._addEnterEvent(button, Lang.bind(this, function() {
                         this._clearPrevAppSelection(button.actor);
                         button.actor.style_class = "menu-application-button-selected";
-                        this._scrollToButton(button);
                         this.selectedAppDescription.set_text(button.place.id.slice(16));
                         }));
                 button.actor.connect('leave-event', Lang.bind(this, function() {
@@ -1275,7 +1274,6 @@ MyApplet.prototype = {
                 this._addEnterEvent(button, Lang.bind(this, function() {
                         this._clearPrevAppSelection(button.actor);
                         button.actor.style_class = "menu-application-button-selected";
-                        this._scrollToButton(button);
                         this.selectedAppDescription.set_text(button.file.uri.slice(7));
                         }));
                 button.actor.connect('leave-event', Lang.bind(this, function() {
@@ -1576,7 +1574,6 @@ MyApplet.prototype = {
         this._previousVisibleIndex = this.appBoxIter.getVisibleIndex(applicationButton.actor);
         this._clearPrevAppSelection(applicationButton.actor);
         applicationButton.actor.style_class = "menu-application-button-selected";
-        this._scrollToButton(applicationButton);
     },
 
     _scrollToButton: function(button) {
@@ -1628,7 +1625,8 @@ MyApplet.prototype = {
         this.a11y_settings = new Gio.Settings({ schema: "org.gnome.desktop.a11y.applications" });
         this.a11y_settings.connect("changed::screen-magnifier-enabled", Lang.bind(this, this._updateVFade));
         this._updateVFade();
-
+        global.settings.connect("changed::menu-enable-autoscroll", Lang.bind(this, this._update_autoscroll));
+        this._update_autoscroll();
         let vscroll = this.applicationsScrollBox.get_vscroll_bar();
         vscroll.connect('scroll-start',
                         Lang.bind(this, function() {
@@ -1679,14 +1677,19 @@ MyApplet.prototype = {
         }
     },
 
+    _update_autoscroll: function() {
+        let enabled = global.settings.get_boolean("menu-enable-autoscroll");
+        this.applicationsScrollBox.set_auto_scrolling(enabled);
+    },
+
     _clearAllSelections: function(hide_apps) {
         let actors = this.applicationsBox.get_children();
         for (var i=0; i<actors.length; i++) {
             let actor = actors[i];
             actor.style_class = "menu-application-button";
-	    if (hide_apps) {
-		actor.hide();
-	    }
+            if (hide_apps) {
+                actor.hide();
+            }
         }
         let actors = this.categoriesBox.get_children();
         for (var i=0; i<actors.length; i++){
