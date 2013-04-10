@@ -10,6 +10,7 @@ try:
     import gettext
     from gi.repository import Gio, Gtk, GObject, GdkPixbuf, GtkClutter, Gst
     import SettingsWidgets
+    from BreadCrumbs import BreadCrumbsManager
     import capi
 # Standard setting pages... this can be expanded to include applet dirs maybe?
     mod_files = glob.glob('/usr/lib/cinnamon-settings/modules/*.py')
@@ -74,16 +75,21 @@ class MainWindow:
             iterator = self.storeFilter[cat].get_iter(path)
             sidePage = self.storeFilter[cat].get_value(iterator,2)
             if not sidePage.is_standalone:
-                self.side_view_sw.hide()
-                self.search_entry.hide()
-                self.window.set_title(sidePage.name)
-                sidePage.build(self.advanced_mode)
-                self.content_box_sw.show()
-                self.button_back.show()
-                self.current_sidepage = sidePage
+                self.breadcrumbs.pushCrumb(sidePage.name, sidePage)
+                self.showSidePage(sidePage)
             else:
                 sidePage.build(self.advanced_mode)
 
+    def showSidePage(self, sidePage):
+        self.side_view_sw.hide()
+        self.search_entry.hide()
+        self.window.set_title(sidePage.name)
+        sidePage.mainWindow = self
+        sidePage.build(self.advanced_mode)
+        self.content_box_sw.show()
+        self.breadcrumbs.show()
+        self.current_sidepage = sidePage
+        
     def deselect(self, cat):
         for key in self.side_view.keys():
             if key is not cat:
@@ -102,12 +108,12 @@ class MainWindow:
         self.content_box = self.builder.get_object("content_box")
         self.content_box_sw = self.builder.get_object("content_box_sw")
         self.button_cancel = self.builder.get_object("button_cancel")
-        self.button_back = self.builder.get_object("button_back")
-        self.button_back.set_label(_("All Settings"))
-        self.button_back.hide()
         self.search_entry = self.builder.get_object("search_box")
         self.search_entry.connect("changed", self.onSearchTextChanged)
         self.search_entry.connect("icon-press", self.onClearSearchBox)
+        
+        self.breadcrumbs = BreadCrumbsManager(self.builder.get_object("breadcrumbs"), self.on_breadcrumb_selected)
+        self.breadcrumbs.pushCrumb(_("All Settings"), None)
 
         self.window.connect("destroy", Gtk.main_quit)
 
@@ -164,7 +170,6 @@ class MainWindow:
         self.window.set_title(_("System Settings"))
         self.window.connect("destroy", Gtk.main_quit)
         self.button_cancel.connect("clicked", Gtk.main_quit)
-        self.button_back.connect('clicked', self.back_to_icon_view)
 
         # Select the first sidePage
         if len(sys.argv) > 1 and sys.argv[1] in sidePagesIters.keys():
@@ -275,6 +280,12 @@ class MainWindow:
         except:
             return True
 
+    def on_breadcrumb_selected(self, sidePage):
+        if sidePage == None:
+            self.back_to_icon_view(None)
+        else:
+            self.showSidePage(sidePage)
+        
     def back_to_icon_view(self, widget):
         self.window.set_title(_("System Settings"))
         self.content_box_sw.hide()
@@ -285,7 +296,6 @@ class MainWindow:
                 c_widgets = child.get_children()
                 for c_widget in c_widgets:
                     c_widget.hide()
-        self.button_back.hide()
         self.side_view_sw.show()
         self.search_entry.show()
         self.search_entry.grab_focus()
