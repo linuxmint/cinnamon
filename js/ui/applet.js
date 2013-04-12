@@ -280,8 +280,8 @@ Applet.prototype = {
 
 Connector.addConnectorMethods(Applet.prototype);
 
-function IconApplet(orientation, panel_height) {
-    this._init(orientation, panel_height);
+function IconApplet(orientation, panel_height, instance_id) {
+    this._init(orientation, panel_height, instance_id);
 }
 
 IconApplet.prototype = {
