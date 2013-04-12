@@ -775,12 +775,12 @@ MyApplet.prototype = {
             this.showRecent = global.settings.get_boolean("menu-show-recent");
             global.settings.connect("changed::menu-show-recent", Lang.bind(this, function() {
                 this.showRecent = global.settings.get_boolean("menu-show-recent");
-                this._refreshApps();
+                this._refreshPlacesAndRecent();
             }));
             this.showPlaces = global.settings.get_boolean("menu-show-places");
             global.settings.connect("changed::menu-show-places", Lang.bind(this, function() {
                 this.showPlaces = global.settings.get_boolean("menu-show-places");
-                this._refreshApps();
+                this._refreshPlacesAndRecent();
             }));
             let updateActivateOnHover = Lang.bind(this, function() {
                 if (this._openMenuId) {
@@ -823,6 +823,8 @@ MyApplet.prototype = {
             this._favoritesButtons = new Array();
             this._placesButtons = new Array();
             this._transientButtons = new Array();
+            this._recentButtons = new Array();
+            this._categoryButtons = new Array();
             this._selectedItemIndex = null;
             this._previousTreeItemIndex = null;
             this._previousSelectedActor = null;
@@ -852,8 +854,8 @@ MyApplet.prototype = {
                     global.logError(e);
                 }
             }));
-            Main.placesManager.connect('places-updated', Lang.bind(this, this._refreshApps));
-            this.RecentManager.connect('changed', Lang.bind(this, this._refreshApps));
+            Main.placesManager.connect('places-updated', Lang.bind(this, this._refreshPlacesAndRecent));
+            this.RecentManager.connect('changed', Lang.bind(this, this._refreshPlacesAndRecent));
 
             this.edit_menu_item = new Applet.MenuItem(_("Edit menu"), Gtk.STOCK_EDIT, Lang.bind(this, this._launch_editor));
             this._applet_context_menu.addMenuItem(this.edit_menu_item);
@@ -1223,11 +1225,153 @@ MyApplet.prototype = {
         }
     },
 
+    _refreshPlacesAndRecent : function() {
+        for (let i = 0; i < this._placesButtons.length; i ++) {
+            this._placesButtons[i].actor.destroy();
+        }
+        for (let i = 0; i < this._recentButtons.length; i ++) {
+            this._recentButtons[i].actor.destroy();
+        }
+        for (let i = 0; i < this._categoryButtons.length; i++) {
+            if (this._categoryButtons[i] instanceof PlaceCategoryButton ||
+                this._categoryButtons[i] instanceof RecentCategoryButton) {
+                this._categoryButtons[i].actor.destroy();
+            }
+        this._placesButtons = new Array();
+        this._recentButtons = new Array();
+
+        // Now generate Places category and places buttons and add to the list
+        if (this.showPlaces) {
+            this.placesButton = new PlaceCategoryButton();
+            this._addEnterEvent(this.placesButton, Lang.bind(this, function() {
+                if (!this.searchActive) {
+                    this.placesButton.isHovered = true;
+                    Tweener.addTween(this, {
+                        time: this.hover_delay,
+                        onComplete: function () {
+                            if (this.placesButton.isHovered) {
+                                this._clearPrevCatSelection(this.placesButton);
+                                this.placesButton.actor.style_class = "menu-category-button-selected";
+                                this._displayButtons(null, -1);
+                            }
+                        }
+                    });
+                    this.makeVectorBox(this.placesButton.actor);
+                }
+            }));
+            this.placesButton.actor.connect('leave-event', Lang.bind(this, function () {
+                if (this._previousTreeSelectedActor === null) {
+                    this._previousTreeSelectedActor = this.placesButton.actor;
+                } else {
+                    let prevIdx = this.catBoxIter.getVisibleIndex(this._previousTreeSelectedActor);
+                    let nextIdx = this.catBoxIter.getVisibleIndex(this.placesButton.actor);
+                    let idxDiff = Math.abs(prevIdx - nextIdx);
+                    let numVisible = this.catBoxIter.getNumVisibleChildren();
+                    if (idxDiff <= 1 || Math.min(prevIdx, nextIdx) < 0) {
+                        this._previousTreeSelectedActor = this.placesButton.actor;
+                    }
+                }
+
+                this.placesButton.isHovered = false;
+            }));
+            this._categoryButtons.push(this.placesButton);
+            this.categoriesBox.add_actor(this.placesButton.actor);
+
+            let bookmarks = this._listBookmarks();
+            let devices = this._listDevices();
+            let places = bookmarks.concat(devices);
+            for (var i = 0; i < places.length; i++) {
+                let place = places[i];
+                let button = new PlaceButton(this, place, place.name);
+                this._addEnterEvent(button, Lang.bind(this, function() {
+                        this._clearPrevAppSelection(button.actor);
+                        button.actor.style_class = "menu-application-button-selected";
+                        this.selectedAppDescription.set_text(button.place.id.slice(16));
+                        }));
+                button.actor.connect('leave-event', Lang.bind(this, function() {
+                            this._previousSelectedActor = button.actor;
+                            this.selectedAppDescription.set_text("");
+                            }));
+                this._placesButtons.push(button);
+                this.applicationsBox.add_actor(button.actor);
+            }
+        }
+        // Now generate recent category and recent files buttons and add to the list
+        if (this.showRecent) {
+            this.recentButton = new RecentCategoryButton();
+            this._addEnterEvent(this.recentButton, Lang.bind(this, function() {
+                if (!this.searchActive) {
+                    this.recentButton.isHovered = true;
+                    Tweener.addTween(this, {
+                        time: this.hover_delay,
+                        onComplete: function () {
+                            if (this.recentButton.isHovered) {
+                                this._clearPrevCatSelection(this.recentButton.actor);
+                                this.recentButton.actor.style_class = "menu-category-button-selected";
+                                this._displayButtons(null, null, -1);
+                            }
+                        }
+                    });
+                    this.makeVectorBox(this.recentButton.actor);
+                }
+            }));
+            this.recentButton.actor.connect('leave-event', Lang.bind(this, function () {
+               
+                if (this._previousTreeSelectedActor === null) {
+                    this._previousTreeSelectedActor = this.recentButton.actor;
+                } else {
+                    let prevIdx = this.catBoxIter.getVisibleIndex(this._previousTreeSelectedActor);
+                    let nextIdx = this.catBoxIter.getVisibleIndex(this.recentButton.actor);
+                    let numVisible = this.catBoxIter.getNumVisibleChildren();
+                    
+                    if (Math.abs(prevIdx - nextIdx) <= 1) {
+                        this._previousTreeSelectedActor = this.recentButton.actor;
+                    }
+                }
+
+                this.recentButton.isHovered = false;
+            }));
+            this.categoriesBox.add_actor(this.recentButton.actor);
+            this._categoryButtons.push(this.recentButton);
+
+            for (let id = 0; id < MAX_RECENT_FILES && id < this.RecentManager._infosByTimestamp.length; id++) {
+                let button = new RecentButton(this, this.RecentManager._infosByTimestamp[id]);
+                this._addEnterEvent(button, Lang.bind(this, function() {
+                        this._clearPrevAppSelection(button.actor);
+                        button.actor.style_class = "menu-application-button-selected";
+                        this.selectedAppDescription.set_text(button.file.uri.slice(7));
+                        }));
+                button.actor.connect('leave-event', Lang.bind(this, function() {
+                        button.actor.style_class = "menu-application-button";
+                        this._previousSelectedActor = button.actor;
+                        this.selectedAppTitle.set_text("");
+                        this.selectedAppDescription.set_text("");
+                        }));
+                this._recentButtons.push(button);
+                this.applicationsBox.add_actor(button.actor);
+            }
+            if (this.RecentManager._infosByTimestamp.length > 0) {
+                let button = new RecentClearButton(this);
+                this._addEnterEvent(button, Lang.bind(this, function() {
+                        this._clearPrevAppSelection(button.actor);
+                        button.actor.style_class = "menu-application-button-selected";
+                        this._scrollToButton(button);
+                        }));
+                button.actor.connect('leave-event', Lang.bind(this, function() {
+                        button.actor.style_class = "menu-application-button";
+                        this._previousSelectedActor = button.actor;
+                        }));
+                this._recentButtons.push(button);
+                this.applicationsBox.add_actor(button.actor);
+            }
+        }
+
+        this._setCategoriesButtonActive(!this.searchActive);
+    },
+
     _refreshApps : function() {
         this.applicationsBox.destroy_all_children();
         this._applicationsButtons = new Array();
-        this._placesButtons = new Array();
-        this._recentButtons = new Array();
         this._transientButtons = new Array();
         this._applicationsBoxWidth = 0;
         //Remove all categories
@@ -1334,131 +1478,7 @@ MyApplet.prototype = {
             this.applicationsBox.add_actor(this._applicationsButtons[i].menu.actor);
         }
 
-        // Now generate Places category and places buttons and add to the list
-        if (this.showPlaces) {
-            this.placesButton = new PlaceCategoryButton();
-            this._addEnterEvent(this.placesButton, Lang.bind(this, function() {
-                if (!this.searchActive) {
-                    this.placesButton.isHovered = true;
-                    Tweener.addTween(this, {
-                        time: this.hover_delay,
-                        onComplete: function () {
-                            if (this.placesButton.isHovered) {
-                                this._clearPrevCatSelection(this.placesButton);
-                                this.placesButton.actor.style_class = "menu-category-button-selected";
-                                this._displayButtons(null, -1);
-                            }
-                        }
-                    });
-                    this.makeVectorBox(this.placesButton.actor);
-                }
-            }));
-            this.placesButton.actor.connect('leave-event', Lang.bind(this, function () {
-                if (this._previousTreeSelectedActor === null) {
-                    this._previousTreeSelectedActor = this.placesButton.actor;
-                } else {
-                    let prevIdx = this.catBoxIter.getVisibleIndex(this._previousTreeSelectedActor);
-                    let nextIdx = this.catBoxIter.getVisibleIndex(this.placesButton.actor);
-                    let idxDiff = Math.abs(prevIdx - nextIdx);
-                    let numVisible = this.catBoxIter.getNumVisibleChildren();
-                    if (idxDiff <= 1 || Math.min(prevIdx, nextIdx) < 0) {
-                        this._previousTreeSelectedActor = this.placesButton.actor;
-                    }
-                }
-
-                this.placesButton.isHovered = false;
-            }));
-            this.categoriesBox.add_actor(this.placesButton.actor);
-
-            let bookmarks = this._listBookmarks();
-            let devices = this._listDevices();
-            let places = bookmarks.concat(devices);
-            for (var i = 0; i < places.length; i++) {
-                let place = places[i];
-                let button = new PlaceButton(this, place, place.name);
-                this._addEnterEvent(button, Lang.bind(this, function() {
-                        this._clearPrevAppSelection(button.actor);
-                        button.actor.style_class = "menu-application-button-selected";
-                        this.selectedAppDescription.set_text(button.place.id.slice(16));
-                        }));
-                button.actor.connect('leave-event', Lang.bind(this, function() {
-                            this._previousSelectedActor = button.actor;
-                            this.selectedAppDescription.set_text("");
-                            }));
-                this._placesButtons.push(button);
-                this.applicationsBox.add_actor(button.actor);
-            }
-        }
-        // Now generate recent category and recent files buttons and add to the list
-        if (this.showRecent) {
-            this.recentButton = new RecentCategoryButton();
-            this._addEnterEvent(this.recentButton, Lang.bind(this, function() {
-                if (!this.searchActive) {
-                    this.recentButton.isHovered = true;
-                    Tweener.addTween(this, {
-                        time: this.hover_delay,
-                        onComplete: function () {
-                            if (this.recentButton.isHovered) {
-                                this._clearPrevCatSelection(this.recentButton.actor);
-                                this.recentButton.actor.style_class = "menu-category-button-selected";
-                                this._displayButtons(null, null, -1);
-                            }
-                        }
-                    });
-                    this.makeVectorBox(this.recentButton.actor);
-                }
-            }));
-            this.recentButton.actor.connect('leave-event', Lang.bind(this, function () {
-               
-                if (this._previousTreeSelectedActor === null) {
-                    this._previousTreeSelectedActor = this.recentButton.actor;
-                } else {
-                    let prevIdx = this.catBoxIter.getVisibleIndex(this._previousTreeSelectedActor);
-                    let nextIdx = this.catBoxIter.getVisibleIndex(this.recentButton.actor);
-                    let numVisible = this.catBoxIter.getNumVisibleChildren();
-                    
-                    if (Math.abs(prevIdx - nextIdx) <= 1) {
-                        this._previousTreeSelectedActor = this.recentButton.actor;
-                    }
-                }
-
-                this.recentButton.isHovered = false;
-            }));
-            this.categoriesBox.add_actor(this.recentButton.actor);
-
-            for (let id = 0; id < MAX_RECENT_FILES && id < this.RecentManager._infosByTimestamp.length; id++) {
-                let button = new RecentButton(this, this.RecentManager._infosByTimestamp[id]);
-                this._addEnterEvent(button, Lang.bind(this, function() {
-                        this._clearPrevAppSelection(button.actor);
-                        button.actor.style_class = "menu-application-button-selected";
-                        this.selectedAppDescription.set_text(button.file.uri.slice(7));
-                        }));
-                button.actor.connect('leave-event', Lang.bind(this, function() {
-                        button.actor.style_class = "menu-application-button";
-                        this._previousSelectedActor = button.actor;
-                        this.selectedAppTitle.set_text("");
-                        this.selectedAppDescription.set_text("");
-                        }));
-                this._recentButtons.push(button);
-                this.applicationsBox.add_actor(button.actor);
-            }
-            if (this.RecentManager._infosByTimestamp.length > 0) {
-                let button = new RecentClearButton(this);
-                this._addEnterEvent(button, Lang.bind(this, function() {
-                        this._clearPrevAppSelection(button.actor);
-                        button.actor.style_class = "menu-application-button-selected";
-                        this._scrollToButton(button);
-                        }));
-                button.actor.connect('leave-event', Lang.bind(this, function() {
-                        button.actor.style_class = "menu-application-button";
-                        this._previousSelectedActor = button.actor;
-                        }));
-                this._recentButtons.push(button);
-                this.applicationsBox.add_actor(button.actor);
-            }
-        }
-
-        this._setCategoriesButtonActive(!this.searchActive);
+        this._refreshPlacesAndRecent();
     },
 
     _refreshFavs : function() {
