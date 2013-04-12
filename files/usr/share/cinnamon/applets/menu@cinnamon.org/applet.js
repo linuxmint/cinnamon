@@ -1179,7 +1179,7 @@ MyApplet.prototype = {
         let ulc_y = ay-by > 0 ? ay-by :  by-ay;
         let llc_y = (ay+ah)-by > 0 ? (ay+ah)-by : by-(ay+ah);
 
-        this.vectorBox = new St.Polygon({ debug: false, width: w, height: bh,
+        this.vectorBox = new St.Polygon({ debug: true, width: w, height: bh,
                                           ulc_x: 0, ulc_y: ulc_y,
                                           llc_x: 0, llc_y: llc_y,
                                           urc_x: w, urc_y: 0,
@@ -1252,6 +1252,7 @@ MyApplet.prototype = {
                 this._categoryButtons[i] instanceof RecentCategoryButton) {
                 this._categoryButtons[i].actor.destroy();
             }
+        }
         this._placesButtons = new Array();
         this._recentButtons = new Array();
 
@@ -1295,7 +1296,7 @@ MyApplet.prototype = {
             let bookmarks = this._listBookmarks();
             let devices = this._listDevices();
             let places = bookmarks.concat(devices);
-            for (var i = 0; i < places.length; i++) {
+            for (let i = 0; i < places.length; i++) {
                 let place = places[i];
                 let button = new PlaceButton(this, place, place.name);
                 this._addEnterEvent(button, Lang.bind(this, function() {
