@@ -84,6 +84,7 @@ st_source_h =					\
 	st/st-im-text.h				\
 	st/st-label.h				\
 	st/st-overflow-box.h			\
+    st/st-polygon.h             \
 	st/st-private.h				\
 	st/st-scrollable.h			\
 	st/st-scroll-bar.h			\
@@ -142,6 +143,7 @@ st_source_c =					\
 	st/st-im-text.c				\
 	st/st-label.c				\
 	st/st-overflow-box.c			\
+    st/st-polygon.c             \
 	st/st-private.c				\
 	st/st-scrollable.c			\
 	st/st-scroll-bar.c			\
