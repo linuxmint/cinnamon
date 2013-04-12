@@ -944,9 +944,10 @@ MyApplet.prototype = {
                     this._applicationsButtons[i].actor.show();
                 }
             }
+            this._allAppsCategoryButton.actor.style_class = "menu-category-button-selected";
             Mainloop.idle_add(Lang.bind(this, this._initial_cat_selection));
         } else {
-            this.actor.remove_style_pseudo_class('active');            
+            this.actor.remove_style_pseudo_class('active');
             if (this.searchActive) {
                 this.resetSearch();
             }
