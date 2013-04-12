@@ -1,0 +1,1356 @@
+# S'gaw Karen translation for linuxmint
+# Copyright (c) 2013 Rosetta Contributors and Canonical Ltd 2013
+# This file is distributed under the same license as the linuxmint package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2013.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: linuxmint\n"
+"Report-Msgid-Bugs-To: FULL NAME <EMAIL@ADDRESS>\n"
+"POT-Creation-Date: 2013-01-26 00:36+0000\n"
+"PO-Revision-Date: 2013-02-23 16:18+0000\n"
+"Last-Translator: Ross Hansen <hansen.ross@live.com.au>\n"
+"Language-Team: S'gaw Karen <ksw@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Launchpad-Export-Date: 2013-04-11 14:39+0000\n"
+"X-Generator: Launchpad (build 16550)\n"
+
+#: src/cinnamon-app.c:347 src/cinnamon-app.c:355
+#: js/ui/notificationDaemon.js:458
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:126
+msgid "Unknown"
+msgstr "ta thay nya ba"
+
+#: src/cinnamon-app.c:581
+#, c-format
+msgid "Failed to launch '%s'"
+msgstr ""
+
+#: src/cinnamon-mobile-providers.c:80
+msgid "United Kingdom"
+msgstr "United Kingdom"
+
+#: src/cinnamon-mobile-providers.c:526
+msgid "Default"
+msgstr ""
+
+#: src/cinnamon-polkit-authentication-agent.c:334
+msgid "Authentication dialog was dismissed by the user"
+msgstr ""
+
+#: src/cinnamon-util.c:89
+msgid "Home"
+msgstr "hee"
+
+#: src/cinnamon-util.c:98
+msgid "File System"
+msgstr ""
+
+#: src/cinnamon-util.c:244
+msgid "Search"
+msgstr "koo"
+
+#: src/cinnamon-util.c:294
+#, c-format
+msgid "%1$s: %2$s"
+msgstr "%1$s: %2$s"
+
+#: src/gvc/gvc-mixer-control.c:1082
+msgid "Disabled"
+msgstr ""
+
+#: src/gvc/gvc-mixer-control.c:1089
+#, c-format
+msgid "%u Output"
+msgid_plural "%u Outputs"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/gvc/gvc-mixer-control.c:1099
+#, c-format
+msgid "%u Input"
+msgid_plural "%u Inputs"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/gvc/gvc-mixer-control.c:1397
+msgid "System Sounds"
+msgstr ""
+
+#: js/misc/util.js:89
+msgid "Command not found"
+msgstr ""
+
+#: js/misc/util.js:116
+msgid "Could not parse command:"
+msgstr ""
+
+#: js/misc/util.js:124
+#, c-format
+msgid "Execution of '%s' failed:"
+msgstr ""
+
+#: js/ui/applet.js:243
+msgid "Remove this applet"
+msgstr ""
+
+#: js/ui/autorunManager.js:280
+msgid "Removable Devices"
+msgstr ""
+
+#: js/ui/autorunManager.js:590
+#, c-format
+msgid "Open with %s"
+msgstr ""
+
+#: js/ui/autorunManager.js:616
+msgid "Eject"
+msgstr ""
+
+#: js/ui/calendar.js:704
+msgid "Nothing Scheduled"
+msgstr ""
+
+#: js/ui/calendar.js:733
+msgid "Today"
+msgstr "ta nēe ēe"
+
+#: js/ui/calendar.js:737
+msgid "Tomorrow"
+msgstr "keh mu hsày"
+
+#: js/ui/calendar.js:746
+msgid "This week"
+msgstr ""
+
+#: js/ui/calendar.js:754
+msgid "Next week"
+msgstr ""
+
+#: js/ui/cinnamonEntry.js:30
+msgid "Copy"
+msgstr ""
+
+#: js/ui/cinnamonEntry.js:35
+msgid "Paste"
+msgstr ""
+
+#: js/ui/cinnamonEntry.js:81
+msgid "Show Text"
+msgstr ""
+
+#: js/ui/cinnamonEntry.js:83
+msgid "Hide Text"
+msgstr ""
+
+#: js/ui/cinnamonMountOperation.js:285
+msgid "Wrong password, please try again"
+msgstr ""
+
+#: js/ui/desklet.js:58
+msgid "Remove this desklet"
+msgstr ""
+
+#: js/ui/endSessionDialog.js:58
+#, c-format
+msgid "Log Out %s"
+msgstr ""
+
+#: js/ui/endSessionDialog.js:59 js/ui/endSessionDialog.js:73
+msgid "Log Out"
+msgstr ""
+
+#: js/ui/endSessionDialog.js:60
+msgid "Click Log Out to quit these applications and log out of the system."
+msgstr ""
+
+#: js/ui/endSessionDialog.js:62
+#, c-format
+msgid "%s will be logged out automatically in %d second."
+msgid_plural "%s will be logged out automatically in %d seconds."
+msgstr[0] ""
+msgstr[1] ""
+
+#: js/ui/endSessionDialog.js:67
+#, c-format
+msgid "You will be logged out automatically in %d second."
+msgid_plural "You will be logged out automatically in %d seconds."
+msgstr[0] ""
+msgstr[1] ""
+
+#: js/ui/endSessionDialog.js:71
+msgid "Logging out of the system."
+msgstr ""
+
+#: js/ui/endSessionDialog.js:78 js/ui/endSessionDialog.js:89
+msgid "Power Off"
+msgstr ""
+
+#: js/ui/endSessionDialog.js:79
+msgid "Click Power Off to quit these applications and power off the system."
+msgstr ""
+
+#: js/ui/endSessionDialog.js:81
+#, c-format
+msgid "The system will power off automatically in %d second."
+msgid_plural "The system will power off automatically in %d seconds."
+msgstr[0] ""
+msgstr[1] ""
+
+#: js/ui/endSessionDialog.js:85
+msgid "Powering off the system."
+msgstr ""
+
+#: js/ui/endSessionDialog.js:87 js/ui/endSessionDialog.js:95
+#: js/ui/endSessionDialog.js:104
+msgid "Restart"
+msgstr ""
+
+#: js/ui/endSessionDialog.js:96
+msgid "Click Restart to quit these applications and restart the system."
+msgstr ""
+
+#: js/ui/endSessionDialog.js:98
+#, c-format
+msgid "The system will restart automatically in %d second."
+msgid_plural "The system will restart automatically in %d seconds."
+msgstr[0] ""
+msgstr[1] ""
+
+#: js/ui/endSessionDialog.js:102
+msgid "Restarting the system."
+msgstr ""
+
+#: js/ui/endSessionDialog.js:428 js/ui/networkAgent.js:144
+#: js/ui/polkitAuthenticationAgent.js:173
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:165
+#: files/usr/share/cinnamon/applets/trash@cinnamon.org/applet.js:118
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/cinnamon-add-panel-launcher.py:141
+msgid "Cancel"
+msgstr ""
+
+#: js/ui/expoThumbnail.js:309 js/ui/panel.js:384
+msgid "Yes"
+msgstr "may"
+
+#: js/ui/expoThumbnail.js:317 js/ui/panel.js:391
+msgid "No"
+msgstr "ta may bà"
+
+#: js/ui/expoThumbnail.js:957
+#, c-format
+msgid ""
+"Are you sure you want to remove workspace \"%s\"?\n"
+"\n"
+msgstr ""
+
+#: js/ui/extension.js:369
+msgid "Initializing"
+msgstr ""
+
+#: js/ui/extension.js:371
+msgid "Loaded"
+msgstr ""
+
+#: js/ui/extension.js:373
+msgid "Error"
+msgstr ""
+
+#: js/ui/extension.js:375
+msgid "Out of date"
+msgstr ""
+
+#: js/ui/hotCorner.js:41
+msgid "Invalid overview options: Incorrect number of corners"
+msgstr ""
+
+#: js/ui/keyboard.js:324
+msgid "tray"
+msgstr ""
+
+#: js/ui/keyboard.js:555
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:114
+msgid "Keyboard"
+msgstr ""
+
+#: js/ui/lookingGlass.js:644
+msgid "No extensions installed"
+msgstr ""
+
+#: js/ui/lookingGlass.js:728
+msgid "View Source"
+msgstr ""
+
+#: js/ui/lookingGlass.js:737
+msgid "Web Page"
+msgstr ""
+
+#: js/ui/lookingGlass.js:746
+msgid "Reload Code"
+msgstr ""
+
+#: js/ui/main.js:391
+msgid "WORKSPACE"
+msgstr ""
+
+#: js/ui/messageTray.js:1259
+msgid "Open"
+msgstr "öh htàw"
+
+#: js/ui/messageTray.js:1266
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/applet.js:58
+msgid "Remove"
+msgstr ""
+
+#: js/ui/messageTray.js:1853
+msgid "System Information"
+msgstr ""
+
+#: js/ui/networkAgent.js:139
+msgid "Connect"
+msgstr ""
+
+#: js/ui/networkAgent.js:234 js/ui/networkAgent.js:246
+#: js/ui/networkAgent.js:273 js/ui/networkAgent.js:293
+#: js/ui/networkAgent.js:303
+msgid "Password: "
+msgstr ""
+
+#: js/ui/networkAgent.js:239
+msgid "Key: "
+msgstr ""
+
+#: js/ui/networkAgent.js:271 js/ui/networkAgent.js:289
+msgid "Username: "
+msgstr ""
+
+#: js/ui/networkAgent.js:277
+msgid "Identity: "
+msgstr ""
+
+#: js/ui/networkAgent.js:279
+msgid "Private key password: "
+msgstr ""
+
+#: js/ui/networkAgent.js:291
+msgid "Service: "
+msgstr ""
+
+#: js/ui/networkAgent.js:320
+msgid "Authentication required by wireless network"
+msgstr ""
+
+#: js/ui/networkAgent.js:321
+#, c-format
+msgid ""
+"Passwords or encryption keys are required to access the wireless network "
+"'%s'."
+msgstr ""
+
+#: js/ui/networkAgent.js:325
+msgid "Wired 802.1X authentication"
+msgstr ""
+
+#: js/ui/networkAgent.js:327
+msgid "Network name: "
+msgstr ""
+
+#: js/ui/networkAgent.js:332
+msgid "DSL authentication"
+msgstr ""
+
+#: js/ui/networkAgent.js:339
+msgid "PIN code required"
+msgstr ""
+
+#: js/ui/networkAgent.js:340
+msgid "PIN code is needed for the mobile broadband device"
+msgstr ""
+
+#: js/ui/networkAgent.js:341
+msgid "PIN: "
+msgstr ""
+
+#: js/ui/networkAgent.js:347
+msgid "Mobile broadband network password"
+msgstr ""
+
+#: js/ui/networkAgent.js:348
+#, c-format
+msgid "A password is required to connect to '%s'."
+msgstr ""
+
+#: js/ui/panel.js:426
+#: files/usr/share/cinnamon/applets/brightness@cinnamon.org/applet.js:148
+#: files/usr/share/cinnamon/applets/settings@cinnamon.org/applet.js:28
+msgid "Settings"
+msgstr ""
+
+#: js/ui/panel.js:428
+msgid "Themes"
+msgstr ""
+
+#: js/ui/panel.js:431
+msgid "Applets"
+msgstr ""
+
+#: js/ui/panel.js:434
+msgid "Panel"
+msgstr ""
+
+#: js/ui/panel.js:437
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:660
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:699
+msgid "Menu"
+msgstr ""
+
+#: js/ui/panel.js:440
+msgid "All settings"
+msgstr ""
+
+#: js/ui/panel.js:445
+msgid "Troubleshoot"
+msgstr ""
+
+#: js/ui/panel.js:446
+msgid "Restart Cinnamon"
+msgstr ""
+
+#: js/ui/panel.js:450
+msgid "Looking Glass"
+msgstr ""
+
+#: js/ui/panel.js:454
+msgid "Restore all settings to default"
+msgstr ""
+
+#: js/ui/panel.js:464
+msgid "Panel Edit mode"
+msgstr ""
+
+#: js/ui/panel.js:488
+msgid "Panel settings"
+msgstr ""
+
+#: js/ui/panel.js:491
+msgid "Add applets to the panel"
+msgstr ""
+
+#: js/ui/placesManager.js:120
+#, c-format
+msgid "Failed to unmount '%s'"
+msgstr ""
+
+#: js/ui/placesManager.js:127
+msgid "Retry"
+msgstr ""
+
+#: js/ui/placesManager.js:170
+msgid "Connect to..."
+msgstr ""
+
+#: js/ui/polkitAuthenticationAgent.js:73
+msgid "Authentication Required"
+msgstr ""
+
+#: js/ui/polkitAuthenticationAgent.js:107
+msgid "Administrator"
+msgstr ""
+
+#: js/ui/polkitAuthenticationAgent.js:177
+msgid "Authenticate"
+msgstr ""
+
+#: js/ui/polkitAuthenticationAgent.js:258
+msgid "Sorry, that didn't work. Please try again."
+msgstr ""
+
+#: js/ui/polkitAuthenticationAgent.js:270
+msgid "Password:"
+msgstr ""
+
+#: js/ui/runDialog.js:209
+msgid "Please enter a command:"
+msgstr ""
+
+#: js/ui/workspace.js:1464
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:44
+msgid "Close"
+msgstr ""
+
+#: js/ui/workspace.js:1468
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:53
+msgid "Restore"
+msgstr ""
+
+#: js/ui/workspace.js:1470
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:53
+msgid "Minimize"
+msgstr ""
+
+#: js/ui/workspace.js:1473 js/ui/workspace.js:1546
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:56
+msgid "Maximize"
+msgstr ""
+
+#: js/ui/workspace.js:1476
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:59
+msgid "Move to left workspace"
+msgstr ""
+
+#: js/ui/workspace.js:1479
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:62
+msgid "Move to right workspace"
+msgstr ""
+
+#: js/ui/workspace.js:1482 js/ui/workspace.js:1531
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:65
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:73
+msgid "Visible on all workspaces"
+msgstr ""
+
+#: js/ui/workspace.js:1485
+msgid "Move to a new workspace"
+msgstr ""
+
+#: js/ui/workspace.js:1495
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:90
+#, c-format
+msgid "Move to monitor %d"
+msgstr ""
+
+#: js/ui/workspace.js:1529
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:69
+msgid "Only on this workspace"
+msgstr ""
+
+#: js/ui/workspace.js:1544
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:56
+msgid "Unmaximize"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:44
+msgid "Accessibility"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:56
+msgid "Zoom"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:67
+msgid "Screen Keyboard"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:71
+msgid "Visual Alerts"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:74
+msgid "Sticky Keys"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:77
+msgid "Slow Keys"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:80
+msgid "Bounce Keys"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:83
+msgid "Mouse Keys"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:87
+msgid "Universal Access Settings"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:142
+msgid "High Contrast"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:179
+msgid "Large Text"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:32
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:66
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:106
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:139
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:211
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:215
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:467
+msgid "Bluetooth"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:67
+#, c-format
+msgid "Authorization request from %s"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:73
+#, c-format
+msgid "Device %s wants access to the service '%s'"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:75
+msgid "Always grant access"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:76
+msgid "Grant this time only"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:77
+msgid "Reject"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:107
+#, c-format
+msgid "Pairing confirmation for %s"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:113
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:147
+#, c-format
+msgid "Device %s wants to pair with this computer"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:114
+#, c-format
+msgid "Please confirm whether the PIN '%s' matches the one on the device."
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:116
+msgid "Matches"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:117
+msgid "Does not match"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:140
+#, c-format
+msgid "Pairing request for %s"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:148
+msgid "Please enter the PIN mentioned on the device."
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:164
+msgid "OK"
+msgstr "ghāy"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:239
+msgid "Visibility"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:253
+msgid "Send Files to Device..."
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:254
+msgid "Set up a New Device..."
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:278
+msgid "Bluetooth Settings"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:317
+msgid "hardware disabled"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:414
+msgid "Connection"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:423
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:508
+msgid "disconnecting..."
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:436
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:514
+msgid "connecting..."
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:454
+msgid "Send Files..."
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:459
+msgid "Browse Files..."
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:468
+msgid "Error browsing device"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:469
+#, c-format
+msgid "The requested device cannot be browsed, error is '%s'"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:477
+msgid "Keyboard Settings"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:480
+msgid "Mouse Settings"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:485
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:939
+msgid "Sound Settings"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/brightness@cinnamon.org/applet.js:112
+#: files/usr/share/cinnamon/applets/brightness@cinnamon.org/applet.js:143
+#: files/usr/share/cinnamon/applets/brightness@cinnamon.org/applet.js:225
+#: files/usr/share/cinnamon/applets/brightness@cinnamon.org/applet.js:228
+#: files/usr/share/cinnamon/applets/brightness@cinnamon.org/applet.js:230
+msgid "Brightness"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/brightness@cinnamon.org/applet.js:117
+msgid "Dimming settings"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/brightness@cinnamon.org/applet.js:119
+msgid "Dim screen on AC power"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/brightness@cinnamon.org/applet.js:121
+msgid "Dim screen on battery"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/brightness@cinnamon.org/applet.js:144
+msgid "Brightness not available"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/calendar@cinnamon.org/applet.js:65
+msgid "Date and Time Settings"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/expo@cinnamon.org/applet.js:19
+msgid "Expo"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/keyboard@cinnamon.org/applet.js:66
+msgid "Show Keyboard Layout"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/keyboard@cinnamon.org/applet.js:70
+msgid "Show Character Table"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/keyboard@cinnamon.org/applet.js:74
+msgid "Region and Language Settings"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/keyboard@cinnamon.org/applet.js:76
+msgid "Show flags"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:203
+msgid "Add to panel"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:206
+msgid "Add to desktop"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:210
+msgid "Remove from favorites"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:213
+msgid "Add to favorites"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:343
+#: files/usr/share/cinnamon/applets/recent@cinnamon.org/applet.js:70
+msgid "Clear list"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:380
+msgid "All Applications"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:403
+msgid "Places"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:421
+msgid "Recent Files"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:748
+msgid "Edit menu"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:750
+msgid "Menu settings"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1216
+#: files/usr/lib/cinnamon-screensaver-lock-dialog/cinnamon-screensaver-lock-dialog.py:37
+msgid "Lock screen"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1217
+msgid "Lock the screen"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1241
+msgid "Logout"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1242
+msgid "Leave the session"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1258
+msgid "Quit"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1259
+msgid "Shutdown the computer"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1368
+msgid "Type to search..."
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:96
+msgid "<unknown>"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:306
+msgid "disabled"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:506
+msgid "unmanaged"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:517
+msgid "authentication required"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:527
+msgid "firmware missing"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:534
+msgid "cable unplugged"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:539
+msgid "unavailable"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:541
+msgid "connection failed"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:597
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1554
+msgid "More..."
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:633
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1489
+msgid "Connected (private)"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:711
+msgid "Auto Ethernet"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:775
+msgid "Auto broadband"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:778
+msgid "Auto dial-up"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:900
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1501
+#, c-format
+msgid "Auto %s"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:902
+msgid "Auto bluetooth"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1503
+msgid "Auto wireless"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1591
+msgid "Network Manager"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1624
+msgid "Enable networking"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1636
+msgid "Wired"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1647
+msgid "Wireless"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1657
+msgid "Mobile broadband"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1667
+msgid "VPN Connections"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1678
+msgid "Network Settings"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1829
+msgid "Connection failed"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1830
+msgid "Activation of network connection failed"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2087
+msgid "Networking is disabled"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2106
+msgid "No connection"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2112
+msgid "Connecting to the cellular network..."
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2116
+msgid "Connecting to the wireless network..."
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2120
+msgid "Connecting to the wired network..."
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2124
+msgid "Connecting to the VPN..."
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2130
+msgid "Connecting to the network..."
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2146
+msgid "Connected to the wireless network"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2149
+msgid "Wireless connection"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2159
+msgid "Connected to the wired network"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2170
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2175
+msgid "Connected to the cellular network"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2180
+msgid "Connected to the VPN"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2186
+msgid "Connected to the network"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:39
+msgid "Notifications"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:52
+msgid "Clear notifications"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:210
+msgid "No notifications"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:213
+msgid " notification"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:216
+msgid " notifications"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:230
+msgid " (Just now)"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:233
+#, c-format
+msgid " (%s seconds ago)"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:236
+#, c-format
+msgid " (%s minute ago)"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:239
+#, c-format
+msgid " (%s minutes ago)"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/applet.js:46
+msgid "Launch"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/applet.js:50
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/cinnamon-add-panel-launcher.py:151
+msgid "Add"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/applet.js:54
+msgid "Edit"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:104
+msgid "AC adapter"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:106
+msgid "Laptop battery"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:108
+msgid "UPS"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:110
+msgid "Monitor"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:112
+msgid "Mouse"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:116
+msgid "PDA"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:118
+msgid "Cell phone"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:120
+msgid "Media player"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:122
+msgid "Tablet"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:124
+msgid "Computer"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:182
+#: files/usr/share/cinnamon/applets/xrandr@cinnamon.org/applet.js:45
+msgid "Display"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:184
+msgid "Show percentage"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:189
+msgid "Show time remaining"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:194
+msgid "Hide label"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:202
+msgid "Power Settings"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:251
+msgid "Estimating..."
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:258
+#, c-format
+msgid "%d hour remaining"
+msgid_plural "%d hours remaining"
+msgstr[0] ""
+msgstr[1] ""
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:261
+#, c-format
+msgid "%d %s %d %s remaining"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:263
+msgid "hour"
+msgid_plural "hours"
+msgstr[0] ""
+msgstr[1] ""
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:263
+msgid "minute"
+msgid_plural "minutes"
+msgstr[0] ""
+msgstr[1] ""
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:266
+#, c-format
+msgid "%d minute remaining"
+msgid_plural "%d minutes remaining"
+msgstr[0] ""
+msgstr[1] ""
+
+#: files/usr/share/cinnamon/applets/recent@cinnamon.org/applet.js:41
+msgid "Recent documents"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/recent@cinnamon.org/applet.js:74
+msgid "No recent documents"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/removable-drives@cinnamon.org/applet.js:53
+msgid "Removable drives"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/removable-drives@cinnamon.org/applet.js:65
+msgid "Open file manager"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/scale@cinnamon.org/applet.js:19
+msgid "Scale"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/show-desktop@cinnamon.org/applet.js:15
+msgid "Show desktop"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:105
+msgid "Playing"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:106
+msgid "Paused"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:107
+msgid "Stopped"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:373
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:489
+msgid "Unknown Artist"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:374
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:493
+msgid "Unknown Album"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:375
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:497
+msgid "Unknown Title"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:386
+msgid "Previous"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:389
+msgid "Play"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:392
+msgid "Stop"
+msgstr "pa tụ"
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:395
+msgid "Next"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:409
+msgid "Open Player"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:419
+msgid "Quit Player"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:744
+msgid "Mute output"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:745
+msgid "Mute input"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:912
+msgid "Launch player..."
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:925
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:988
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:989
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:994
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:995
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1014
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1015
+msgid "Volume"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:932
+msgid "Microphone"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:941
+msgid "Output device..."
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/trash@cinnamon.org/applet.js:21
+msgid "Trash"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/trash@cinnamon.org/applet.js:39
+msgid "Empty Trash"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/trash@cinnamon.org/applet.js:42
+msgid "Open Trash"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/trash@cinnamon.org/applet.js:86
+msgid "Are you sure you want to delete all items from the trash?"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/trash@cinnamon.org/applet.js:86
+msgid "This operation cannot be undone."
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/trash@cinnamon.org/applet.js:107
+msgid "Empty Trash?"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/trash@cinnamon.org/applet.js:125
+msgid "Empty"
+msgstr "òh ga law"
+
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:47
+msgid "Close all"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:50
+msgid "Close others"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/windows-quick-list@cinnamon.org/applet.js:24
+msgid "All windows"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/windows-quick-list@cinnamon.org/applet.js:106
+msgid "No open windows"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/workspace-switcher@cinnamon.org/applet.js:18
+msgid "Switch workspace"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/xrandr@cinnamon.org/applet.js:88
+msgid "Configure display settings..."
+msgstr ""
+
+#: files/usr/share/cinnamon/desklets/clock@cinnamon.org/desklet.js:20
+msgid "Clock"
+msgstr "nà rèe"
+
+#: files/usr/share/cinnamon/desklets/launcher@cinnamon.org/desklet.js:30
+msgid "Add new launcher"
+msgstr ""
+
+#: files/usr/share/cinnamon/desklets/launcher@cinnamon.org/desklet.js:33
+msgid "Edit launcher"
+msgstr ""
+
+#: files/usr/share/cinnamon/desklets/photoframe@cinnamon.org/desklet.js:24
+msgid "Photo Frame"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:30
+msgid "Desktop Settings"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:31
+msgid "Desktop Configuration Tool"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:32
+msgid "Fine-tune desktop settings"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:44
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:91
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:111
+msgid "Cinnamon Settings"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:61
+msgid "All Settings"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/cinnamon-add-panel-launcher.py:59
+msgid "Custom Launcher"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/cinnamon-add-panel-launcher.py:138
+msgid "Name"
+msgstr "mēe"
+
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/cinnamon-add-panel-launcher.py:139
+msgid "Application"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/cinnamon-add-panel-launcher.py:140
+msgid "Icon"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/cinnamon-add-panel-launcher.py:142
+msgid "Add panel launcher..."
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/cinnamon-add-panel-launcher.py:148
+msgid "Update"
+msgstr ""
+
+#: files/usr/lib/cinnamon-screensaver-lock-dialog/cinnamon-screensaver-lock-dialog.py:40
+msgid "Please type an away message for the lock screen"
+msgstr ""

@@ -7,16 +7,16 @@ msgid ""
 msgstr ""
 "Project-Id-Version: linuxmint\n"
 "Report-Msgid-Bugs-To: FULL NAME <EMAIL@ADDRESS>\n"
-"POT-Creation-Date: 2012-10-20 15:43+0100\n"
-"PO-Revision-Date: 2012-10-29 23:11+0000\n"
-"Last-Translator: StratosJL <stratos@laspas.gr>\n"
+"POT-Creation-Date: 2013-01-26 00:36+0000\n"
+"PO-Revision-Date: 2012-11-21 10:07+0000\n"
+"Last-Translator: Takis Pournaras <Unknown>\n"
 "Language-Team: Greek <el@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Launchpad-Export-Date: 2012-11-13 13:18+0000\n"
-"X-Generator: Launchpad (build 16251)\n"
+"X-Launchpad-Export-Date: 2013-04-11 14:38+0000\n"
+"X-Generator: Launchpad (build 16550)\n"
 
 #: src/cinnamon-app.c:347 src/cinnamon-app.c:355
 #: js/ui/notificationDaemon.js:458
@@ -50,7 +50,6 @@ msgid "File System"
 msgstr "Σύστημα Αρχείων"
 
 #: src/cinnamon-util.c:244
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:135
 msgid "Search"
 msgstr "Αναζήτηση"
 
@@ -59,7 +58,7 @@ msgstr "Αναζήτηση"
 msgid "%1$s: %2$s"
 msgstr "%1$s: %2$s"
 
-#: src/gvc/gvc-mixer-control.c:1082 js/ui/lookingGlass.js:691
+#: src/gvc/gvc-mixer-control.c:1082
 msgid "Disabled"
 msgstr "Απενεργοποιημένο"
 
@@ -94,7 +93,7 @@ msgstr "Αδυναμία ανάλυσης εντολής:"
 msgid "Execution of '%s' failed:"
 msgstr "Η εκτέλεση του '%s' απέτυχε:"
 
-#: js/ui/applet.js:237
+#: js/ui/applet.js:243
 msgid "Remove this applet"
 msgstr "Αφαίρεση του εφαρμογιδίου"
 
@@ -108,7 +107,6 @@ msgid "Open with %s"
 msgstr "Άνοιγμα με %s"
 
 #: js/ui/autorunManager.js:616
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:147
 msgid "Eject"
 msgstr "Αποβολή"
 
@@ -151,6 +149,10 @@ msgstr "Απόκρυψη Κειμένου"
 #: js/ui/cinnamonMountOperation.js:285
 msgid "Wrong password, please try again"
 msgstr "Εσφαλμένος κωδικός πρόσβασης, παρακαλώ δοκιμάστε ξανά"
+
+#: js/ui/desklet.js:58
+msgid "Remove this desklet"
+msgstr ""
 
 #: js/ui/endSessionDialog.js:58
 #, c-format
@@ -228,23 +230,48 @@ msgstr[1] "Το σύστημα θα επανεκκινηθεί αυτόματα 
 msgid "Restarting the system."
 msgstr "Επανεκκίνηση συστήματος."
 
-#: js/ui/endSessionDialog.js:428 js/ui/extensionSystem.js:477
-#: js/ui/networkAgent.js:144 js/ui/polkitAuthenticationAgent.js:173
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:170
+#: js/ui/endSessionDialog.js:428 js/ui/networkAgent.js:144
+#: js/ui/polkitAuthenticationAgent.js:173
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:165
 #: files/usr/share/cinnamon/applets/trash@cinnamon.org/applet.js:118
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1414
-#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/add-panel-launcher.py:141
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/cinnamon-add-panel-launcher.py:141
 msgid "Cancel"
 msgstr "Ακύρωση"
 
-#: js/ui/extensionSystem.js:481
-msgid "Install"
-msgstr "Εγκατάσταση"
+#: js/ui/expoThumbnail.js:309 js/ui/panel.js:384
+msgid "Yes"
+msgstr "Ναι"
 
-#: js/ui/extensionSystem.js:485
+#: js/ui/expoThumbnail.js:317 js/ui/panel.js:391
+msgid "No"
+msgstr "Όχι"
+
+#: js/ui/expoThumbnail.js:957
 #, c-format
-msgid "Download and install '%s' from extensions.gnome.org?"
-msgstr "Λήψη και εγκατάσταση της '%s' από extensions.gnome.org;"
+msgid ""
+"Are you sure you want to remove workspace \"%s\"?\n"
+"\n"
+msgstr ""
+
+#: js/ui/extension.js:369
+msgid "Initializing"
+msgstr ""
+
+#: js/ui/extension.js:371
+msgid "Loaded"
+msgstr ""
+
+#: js/ui/extension.js:373
+msgid "Error"
+msgstr "Σφάλμα"
+
+#: js/ui/extension.js:375
+msgid "Out of date"
+msgstr "Μη ενημερωμένο"
+
+#: js/ui/hotCorner.js:41
+msgid "Invalid overview options: Incorrect number of corners"
+msgstr ""
 
 #: js/ui/keyboard.js:324
 msgid "tray"
@@ -252,39 +279,26 @@ msgstr "περιοχή ελαχιστοποίησης"
 
 #: js/ui/keyboard.js:555
 #: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:114
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2921
 msgid "Keyboard"
 msgstr "Πληκτρολόγιο"
 
-#: js/ui/lookingGlass.js:643
+#: js/ui/lookingGlass.js:644
 msgid "No extensions installed"
 msgstr "Δεν έχουν εγκατασταθεί επεκτάσεις"
 
-#: js/ui/lookingGlass.js:689
-msgid "Enabled"
-msgstr "Ενεργοποιημένο"
-
-#: js/ui/lookingGlass.js:693
-msgid "Error"
-msgstr "Σφάλμα"
-
-#: js/ui/lookingGlass.js:695
-msgid "Out of date"
-msgstr "Μη ενημερωμένο"
-
-#: js/ui/lookingGlass.js:697
-msgid "Downloading"
-msgstr "Λήψη σε εξέλιξη"
-
-#: js/ui/lookingGlass.js:717
+#: js/ui/lookingGlass.js:728
 msgid "View Source"
 msgstr "Προβολή Πηγαίου Κώδικα"
 
-#: js/ui/lookingGlass.js:726
+#: js/ui/lookingGlass.js:737
 msgid "Web Page"
 msgstr "Ιστοσελίδα"
 
-#: js/ui/main.js:370
+#: js/ui/lookingGlass.js:746
+msgid "Reload Code"
+msgstr ""
+
+#: js/ui/main.js:391
 msgid "WORKSPACE"
 msgstr "Επιφάνεια Εργασίας"
 
@@ -293,7 +307,7 @@ msgid "Open"
 msgstr "Άνοιγμα"
 
 #: js/ui/messageTray.js:1266
-#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/applet.js:59
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/applet.js:58
 msgid "Remove"
 msgstr "Αφαίρεση"
 
@@ -377,24 +391,6 @@ msgstr "Κωδικός πρόσβασης κινητού ευρυζωνικού 
 msgid "A password is required to connect to '%s'."
 msgstr "Απαιτείται κωδικός πρόσβασης για σύνδεση στο '%s'."
 
-#: js/ui/overview.js:80
-msgid "Undo"
-msgstr "Αναίρεση"
-
-#: js/ui/overview.js:193
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1598
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2860
-msgid "Windows"
-msgstr "Παράθυρα"
-
-#: js/ui/panel.js:384
-msgid "Yes"
-msgstr "Ναι"
-
-#: js/ui/panel.js:391
-msgid "No"
-msgstr "Όχι"
-
 #: js/ui/panel.js:426
 #: files/usr/share/cinnamon/applets/brightness@cinnamon.org/applet.js:148
 #: files/usr/share/cinnamon/applets/settings@cinnamon.org/applet.js:28
@@ -402,24 +398,20 @@ msgid "Settings"
 msgstr "Ρυθμίσεις"
 
 #: js/ui/panel.js:428
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2737
 msgid "Themes"
 msgstr "Θέματα"
 
 #: js/ui/panel.js:431
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2836
 msgid "Applets"
 msgstr "Μικροεφαρμογές"
 
 #: js/ui/panel.js:434
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2653
 msgid "Panel"
 msgstr "Γραμμή εργασιών"
 
 #: js/ui/panel.js:437
 #: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:660
 #: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:699
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2644
 msgid "Menu"
 msgstr "Μενού"
 
@@ -455,16 +447,16 @@ msgstr "Ρυθμίσεις γραμμής εργασιών"
 msgid "Add applets to the panel"
 msgstr "Προσθήκη μικροεφαρμογών στη γραμμή εργασιών"
 
-#: js/ui/placesManager.js:119
+#: js/ui/placesManager.js:120
 #, c-format
 msgid "Failed to unmount '%s'"
 msgstr "Αποτυχία αποπροσάρτησης '%s'"
 
-#: js/ui/placesManager.js:122
+#: js/ui/placesManager.js:127
 msgid "Retry"
 msgstr "Δοκιμάστε πάλι"
 
-#: js/ui/placesManager.js:162
+#: js/ui/placesManager.js:170
 msgid "Connect to..."
 msgstr "Σύνδεση σε ..."
 
@@ -492,182 +484,237 @@ msgstr "Κωδικός Πρόσβασης:"
 msgid "Please enter a command:"
 msgstr "Παρακαλώ εισάγετε μια εντολή:"
 
+#: js/ui/workspace.js:1464
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:44
+msgid "Close"
+msgstr "Κλείσιμο"
+
+#: js/ui/workspace.js:1468
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:53
+msgid "Restore"
+msgstr "Επαναφορά"
+
+#: js/ui/workspace.js:1470
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:53
+msgid "Minimize"
+msgstr "Ελαχιστοποίηση"
+
+#: js/ui/workspace.js:1473 js/ui/workspace.js:1546
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:56
+msgid "Maximize"
+msgstr "Μεγιστοποίηση"
+
+#: js/ui/workspace.js:1476
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:59
+msgid "Move to left workspace"
+msgstr "Μεταφορά στην αριστερή επιφάνεια εργασίας"
+
+#: js/ui/workspace.js:1479
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:62
+msgid "Move to right workspace"
+msgstr "Μεταφορά στη δεξιά επιφάνεια εργασίας"
+
+#: js/ui/workspace.js:1482 js/ui/workspace.js:1531
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:65
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:73
+msgid "Visible on all workspaces"
+msgstr "Ορατό σε όλεςς τις επιφάνειες εργασίας"
+
+#: js/ui/workspace.js:1485
+msgid "Move to a new workspace"
+msgstr ""
+
+#: js/ui/workspace.js:1495
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:90
+#, c-format
+msgid "Move to monitor %d"
+msgstr ""
+
+#: js/ui/workspace.js:1529
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:69
+msgid "Only on this workspace"
+msgstr "Μόνο σε αυτή την επιφάνεια εργασίας"
+
+#: js/ui/workspace.js:1544
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:56
+msgid "Unmaximize"
+msgstr "Απο-μεγιστοποίηση"
+
 #: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:44
 msgid "Accessibility"
 msgstr "Προσβασιμότητα"
 
-#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:57
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:178
+#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:56
 msgid "Zoom"
 msgstr "Μεγέθυνση"
 
-#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:68
+#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:67
 msgid "Screen Keyboard"
 msgstr "Πληκτρολόγιο Οθόνης"
 
-#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:72
+#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:71
 msgid "Visual Alerts"
 msgstr "Οπτικές προειδοποιήσεις"
 
-#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:75
+#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:74
 msgid "Sticky Keys"
 msgstr "Ασύγχρονα πλήκτρα"
 
-#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:78
+#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:77
 msgid "Slow Keys"
 msgstr "Πλήκτρα αργής ανάδρασης"
 
-#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:81
+#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:80
 msgid "Bounce Keys"
 msgstr "Πλήκτρα Bounce"
 
-#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:84
+#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:83
 msgid "Mouse Keys"
 msgstr "Πλήκτρα ποντικιού"
 
-#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:88
+#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:87
 msgid "Universal Access Settings"
 msgstr "Ρυθμίσεις καθολικής πρόσβασης"
 
-#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:146
+#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:142
 msgid "High Contrast"
 msgstr "Υψηλή Αντίθεση"
 
-#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:183
+#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:179
 msgid "Large Text"
 msgstr "Μεγάλο Κείμενο"
 
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:37
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:71
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:111
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:144
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:216
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:221
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:453
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:32
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:66
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:106
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:139
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:211
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:215
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:467
 msgid "Bluetooth"
 msgstr "Bluetooth"
 
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:72
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:67
 #, c-format
 msgid "Authorization request from %s"
 msgstr "Αίτηση πιστοποίησης από %s"
 
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:78
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:73
 #, c-format
 msgid "Device %s wants access to the service '%s'"
 msgstr "Η συσκευή %s θέλει να αποκτήσει πρόσβαση στην υπηρεσία '%s'"
 
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:80
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:75
 msgid "Always grant access"
 msgstr "Να επιτρέπεται πάντα η πρόσβαση"
 
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:81
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:76
 msgid "Grant this time only"
 msgstr "Εκχώρηση  πρόσβασης μόνο αυτή την φορά"
 
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:82
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:77
 msgid "Reject"
 msgstr "Απόρριψη"
 
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:112
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:107
 #, c-format
 msgid "Pairing confirmation for %s"
 msgstr "Επιβεβαίωση σύζευξης για %s"
 
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:118
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:152
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:113
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:147
 #, c-format
 msgid "Device %s wants to pair with this computer"
 msgstr "Η συσκευή %s επιθυμεί σύζευξη με αυτόν τον υπολογιστή"
 
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:119
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:114
 #, c-format
 msgid "Please confirm whether the PIN '%s' matches the one on the device."
 msgstr ""
 "Παρακαλώ επιβεβαιώστε ότι ο PIN '%s' ταιριάζει με τον κωδικό της συσκευής."
 
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:121
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:116
 msgid "Matches"
 msgstr "Ταιριάζει"
 
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:122
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:117
 msgid "Does not match"
 msgstr "Δεν ταιριάζει"
 
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:145
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:140
 #, c-format
 msgid "Pairing request for %s"
 msgstr "Αίτηση σύζευξης για %s"
 
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:153
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:148
 msgid "Please enter the PIN mentioned on the device."
 msgstr "Παρακαλώ εισάγετε τον PIN, που αναφέρεται στην συσκευή."
 
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:169
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:164
 msgid "OK"
 msgstr "Εντάξει"
 
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:234
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:239
 msgid "Visibility"
 msgstr "Ορατότητα"
 
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:248
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:253
 msgid "Send Files to Device..."
 msgstr "Αποστολή Αρχείων στην Συσκευή ..."
 
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:249
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:254
 msgid "Set up a New Device..."
 msgstr "Εγκατάσταση και ρύθμιση νέας συσκευής"
 
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:273
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:278
 msgid "Bluetooth Settings"
 msgstr "Ρυθμίσεις Bluetooth"
 
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:303
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:317
 msgid "hardware disabled"
 msgstr "υλικό απενεργοποιήθηκε"
 
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:400
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:414
 msgid "Connection"
 msgstr "Σύνδεση"
 
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:409
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:423
 #: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:508
 msgid "disconnecting..."
 msgstr "Αποσύνδεση σε εξέλιξη ..."
 
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:422
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:436
 #: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:514
 msgid "connecting..."
 msgstr "Σύνδεση σε εξελιξη ..."
 
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:440
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:454
 msgid "Send Files..."
 msgstr "Αποστολή Αρχείων..."
 
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:445
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:459
 msgid "Browse Files..."
 msgstr "Περιήγηση Αρχείων…"
 
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:454
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:468
 msgid "Error browsing device"
 msgstr "Σφάλμα κατά την περιήγηση στη συσκευή"
 
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:455
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:469
 #, c-format
 msgid "The requested device cannot be browsed, error is '%s'"
 msgstr "Αδυναμία περιήγησης συσκευής, σφάλμα '%s'"
 
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:463
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:477
 msgid "Keyboard Settings"
 msgstr "Ρυθμίσεις Πληκτρολογίου"
 
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:466
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:480
 msgid "Mouse Settings"
 msgstr "Ρυθμίσεις Ποντικιού"
 
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:471
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:911
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:485
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:939
 msgid "Sound Settings"
 msgstr "Ρυθμίσεις Ήχου"
 
@@ -752,40 +799,40 @@ msgstr "Τοποθεσίες"
 msgid "Recent Files"
 msgstr "Πρόσφατα αρχεία"
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:749
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:748
 msgid "Edit menu"
 msgstr "Επεξεργασία μενού"
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:751
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:750
 msgid "Menu settings"
 msgstr "Ρυθμίσεις μενού"
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1218
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:126
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1216
+#: files/usr/lib/cinnamon-screensaver-lock-dialog/cinnamon-screensaver-lock-dialog.py:37
 msgid "Lock screen"
 msgstr "Κλείδωμα οθόνης"
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1219
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1217
 msgid "Lock the screen"
 msgstr "Κλείδωμα της οθόνης"
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1235
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1241
 msgid "Logout"
 msgstr "Αποσύνδεση"
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1236
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1242
 msgid "Leave the session"
 msgstr "Έξοδος από την συνεδρία"
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1252
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1258
 msgid "Quit"
 msgstr "Έξοδος"
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1253
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1259
 msgid "Shutdown the computer"
 msgstr "Κλείσιμο του υπολογιστή"
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1364
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1368
 msgid "Type to search..."
 msgstr "Πληκτρολογήστε για αναζήτηση..."
 
@@ -946,7 +993,7 @@ msgstr "Συνδέθηκε στο VPN"
 msgid "Connected to the network"
 msgstr "Συνδέθηκε στο δίκτυο"
 
-#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:32
+#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:39
 msgid "Notifications"
 msgstr "Ειδοποιήσεις"
 
@@ -954,48 +1001,47 @@ msgstr "Ειδοποιήσεις"
 msgid "Clear notifications"
 msgstr "Εκκαθάριση Ειδοποιήσεων"
 
-#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:226
+#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:210
 msgid "No notifications"
 msgstr "Δεν υπάρχουν ειδοποιήσεις"
 
-#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:229
+#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:213
 msgid " notification"
 msgstr " ειδοποίηση"
 
-#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:232
+#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:216
 msgid " notifications"
 msgstr " ειδοποιήσεις"
 
-#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:246
+#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:230
 msgid " (Just now)"
 msgstr " (Μόλις πριν λίγο)"
 
-#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:249
+#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:233
 #, c-format
 msgid " (%s seconds ago)"
 msgstr " (πριν %s δευτερόλεπτα)"
 
-#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:252
+#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:236
 #, c-format
 msgid " (%s minute ago)"
 msgstr " (πριν %s λεπτό)"
 
-#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:255
+#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:239
 #, c-format
 msgid " (%s minutes ago)"
 msgstr " (πριν %s λεπτά)"
 
-#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/applet.js:47
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/applet.js:46
 msgid "Launch"
 msgstr "Εκκίνηση"
 
-#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/applet.js:51
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1409
-#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/add-panel-launcher.py:151
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/applet.js:50
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/cinnamon-add-panel-launcher.py:151
 msgid "Add"
 msgstr "Προσθήκη"
 
-#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/applet.js:55
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/applet.js:54
 msgid "Edit"
 msgstr "Επεξεργασία"
 
@@ -1112,16 +1158,10 @@ msgid "Open file manager"
 msgstr "Άνοιγμα διαχειριστή αρχείων"
 
 #: files/usr/share/cinnamon/applets/scale@cinnamon.org/applet.js:19
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2786
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2797
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2808
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2819
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2830
 msgid "Scale"
 msgstr "Scale"
 
-#: files/usr/share/cinnamon/applets/show-desktop@cinnamon.org/applet.js:16
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:74
+#: files/usr/share/cinnamon/applets/show-desktop@cinnamon.org/applet.js:15
 msgid "Show desktop"
 msgstr "Εμφάνιση επιφάνειας εργασίας"
 
@@ -1157,7 +1197,6 @@ msgid "Previous"
 msgstr "Προηγούμενο"
 
 #: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:389
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:142
 msgid "Play"
 msgstr "Αναπαραγωγή"
 
@@ -1185,25 +1224,25 @@ msgstr "Σίγαση ήχου εξόδου"
 msgid "Mute input"
 msgstr "Σίγαση ήχου εισόδου"
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:884
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:912
 msgid "Launch player..."
 msgstr "Εκκίνηση αναπαραγωγής ..."
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:897
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:960
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:961
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:966
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:967
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:986
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:987
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:925
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:988
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:989
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:994
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:995
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1014
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1015
 msgid "Volume"
 msgstr "Ένταση"
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:904
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:932
 msgid "Microphone"
 msgstr "Μικρόφωνο"
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:913
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:941
 msgid "Output device..."
 msgstr "Συσκευή εξόδου ..."
 
@@ -1237,60 +1276,21 @@ msgstr "Άδειασμα Κάδου Απορριμμάτων;"
 msgid "Empty"
 msgstr "Άδειο"
 
-#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:41
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2546
-msgid "Close"
-msgstr "Κλείσιμο"
-
-#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:44
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:47
 msgid "Close all"
 msgstr "Τερματισμός όλων"
 
-#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:47
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:50
 msgid "Close others"
 msgstr "Τερματισμός άλλων"
-
-#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:51
-#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:832
-msgid "Restore"
-msgstr "Επαναφορά"
-
-#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:53
-#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:837
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2547
-msgid "Minimize"
-msgstr "Ελαχιστοποίηση"
-
-#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:56
-#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:117
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2548
-msgid "Maximize"
-msgstr "Μεγιστοποίηση"
-
-#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:59
-msgid "Move to left workspace"
-msgstr "Μεταφορά στην αριστερή επιφάνεια εργασίας"
-
-#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:62
-msgid "Move to right workspace"
-msgstr "Μεταφορά στη δεξιά επιφάνεια εργασίας"
-
-#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:65
-#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:103
-msgid "Visible on all workspaces"
-msgstr "Ορατό σε όλεςς τις επιφάνειες εργασίας"
-
-#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:99
-msgid "Only on this workspace"
-msgstr "Μόνο σε αυτή την επιφάνεια εργασίας"
-
-#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:115
-msgid "Unmaximize"
-msgstr "Απο-μεγιστοποίηση"
 
 #: files/usr/share/cinnamon/applets/windows-quick-list@cinnamon.org/applet.js:24
 msgid "All windows"
 msgstr "Όλα τα παράθυρα"
+
+#: files/usr/share/cinnamon/applets/windows-quick-list@cinnamon.org/applet.js:106
+msgid "No open windows"
+msgstr ""
 
 #: files/usr/share/cinnamon/applets/workspace-switcher@cinnamon.org/applet.js:18
 msgid "Switch workspace"
@@ -1300,1123 +1300,68 @@ msgstr "Αλλαγή επιφάνειας εργασίας"
 msgid "Configure display settings..."
 msgstr "Διαμόρφωση ρυθμίσεων οθόνης ..."
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:36
+#: files/usr/share/cinnamon/desklets/clock@cinnamon.org/desklet.js:20
+msgid "Clock"
+msgstr ""
+
+#: files/usr/share/cinnamon/desklets/launcher@cinnamon.org/desklet.js:30
+msgid "Add new launcher"
+msgstr ""
+
+#: files/usr/share/cinnamon/desklets/launcher@cinnamon.org/desklet.js:33
+msgid "Edit launcher"
+msgstr ""
+
+#: files/usr/share/cinnamon/desklets/photoframe@cinnamon.org/desklet.js:24
+msgid "Photo Frame"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:30
 msgid "Desktop Settings"
 msgstr "Ρυθμίσεις Επιφάνειας Εργασίας"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:37
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:31
 msgid "Desktop Configuration Tool"
 msgstr "Εργαλείο Ρύθμισης Επιφάνειας Εργασίας"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:38
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:32
 msgid "Fine-tune desktop settings"
 msgstr "Λεπτομερής ρύθμιση επιφάνειας εργασίας"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:60
-msgid "Toggle Scale"
-msgstr ""
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:61
-msgid "Toggle Expo"
-msgstr ""
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:62
-msgid "Cycle through open windows"
-msgstr ""
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:63
-msgid "Cycle backwards though open windows"
-msgstr ""
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:64
-msgid "Run dialog (must restart Cinnamon)"
-msgstr ""
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:65
-msgid "Menu button (must restart Cinnamon)"
-msgstr ""
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:68
-msgid "Maximize window"
-msgstr "Μεγιστοποίηση παραθύρου"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:69
-msgid "Unmaximize window"
-msgstr "Απομεγιστοποίηση παραθύρου"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:70
-msgid "Minimize window"
-msgstr "Ελαχιστοποίηση παραθύρου"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:71
-msgid "Toggle tiled left (must restart Cinnamon)"
-msgstr ""
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:72
-msgid "Toggle tiled right (must restart Cinnamon)"
-msgstr ""
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:73
-msgid "Close window"
-msgstr "Κλείσιμο παραθύρου"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:75
-msgid "Activate window menu"
-msgstr "Ενεργοποίηση μενού παραθύρου"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:76
-msgid "Toggle maximization state"
-msgstr "Εναλλαγή  κατάστασης μεγιστοποίησης"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:77
-msgid "Toggle fullscreen state"
-msgstr ""
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:78
-msgid "Toggle shaded state"
-msgstr "Εναλλαγή σκιασμένης κατάστασης"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:79
-msgid "Maximize vertically"
-msgstr "Μεγιστοποίηση καθέτως"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:80
-msgid "Maximize horizontally"
-msgstr "Μεγιστοποίηση οριζοντίως"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:81
-msgid "Resize window"
-msgstr "Αλλαγή μεγέθους παραθύρου"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:82
-msgid "Move window"
-msgstr "Μετακίνηση παραθύρου"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:83
-msgid "Center window in screen"
-msgstr "Κεντράρισμα παραθύρου στην οθόνη"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:84
-msgid "Move window to upper-right"
-msgstr "Μετακίνηση παραθύρου πάνω-δεξιά"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:85
-msgid "Move window to upper-left"
-msgstr "Μετακίνηση παραθύρου πάνω-αριστερά"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:86
-msgid "Move window to lower-right"
-msgstr "Μετακίνηση παραθύρου κάτω-δεξιά"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:87
-msgid "Move window to lower-left"
-msgstr "Μετακίνηση παραθύρου κάτω-αριστερά"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:88
-msgid "Move window to right edge"
-msgstr "Μετακίνηση παραθύρου στο δεξιό όριο"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:89
-msgid "Move window to top edge"
-msgstr "Μετακίνηση παραθύρου στο άνω όριο"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:90
-msgid "Move window to bottom edge"
-msgstr "Μετακίνηση παραθύρου στο κάτω όριο"
-
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:44
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:91
-msgid "Move window to left edge"
-msgstr "Μετακίνηση παραθύρου στο αριστερό όριο"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:94
-msgid "Toggle showing window on all workspaces"
-msgstr "Εναλλαγή εμφάνισης παραθύρου σε όλες τις επιφάνειες εργασίας"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:95
-msgid "Switch to left workspace"
-msgstr "Μετακίνηση σε αριστερή επιφάνεια εργασίας"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:96
-msgid "Switch to right workspace"
-msgstr "Μετακίνηση σε δεξιά επιφάνεια εργασίας"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:97
-msgid "Switch to workspace 1"
-msgstr "Μετακίνηση σε επιφάνεια εργασίας 1"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:98
-msgid "Switch to workspace 2"
-msgstr "Μετακίνηση σε επιφάνεια εργασίας 2"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:99
-msgid "Switch to workspace 3"
-msgstr "Μετακίνηση σε επιφάνεια εργασίας 3"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:100
-msgid "Switch to workspace 4"
-msgstr "Μετακίνηση σε επιφάνεια εργασίας 4"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:101
-msgid "Switch to workspace 5"
-msgstr "Μετακίνηση σε επιφάνεια εργασίας 5"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:102
-msgid "Switch to workspace 6"
-msgstr "Μετακίνηση σε επιφάνεια εργασίας 6"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:103
-msgid "Switch to workspace 7"
-msgstr "Μετακίνηση σε επιφάνεια εργασίας 7"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:104
-msgid "Switch to workspace 8"
-msgstr "Μετακίνηση σε επιφάνεια εργασίας 8"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:105
-msgid "Switch to workspace 9"
-msgstr "Μετακίνηση σε επιφάνεια εργασίας 9"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:106
-msgid "Switch to workspace 10"
-msgstr "Μετακίνηση σε επιφάνεια εργασίας 10"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:107
-msgid "Switch to workspace 11"
-msgstr "Μετακίνηση σε επιφάνεια εργασίας 11"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:108
-msgid "Switch to workspace 12"
-msgstr "Μετακίνηση σε επιφάνεια εργασίας 12"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:109
-msgid "Move window to left workspace"
-msgstr "Μεταφορά παραθύρου στην αριστερή επιφάνεια εργασίας"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:110
-msgid "Move window to right workspace"
-msgstr "Μεταφορά παραθύρου στην αριστερή επιφάνεια εργασίας"
-
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:111
-msgid "Move window to workspace 1"
-msgstr "Μεταφορά παραθύρου στην επιφάνεια εργασίας 1"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:112
-msgid "Move window to workspace 2"
-msgstr "Μεταφορά παραθύρου στην επιφάνεια εργασίας 2"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:113
-msgid "Move window to workspace 3"
-msgstr "Μεταφορά παραθύρου στην επιφάνεια εργασίας 3"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:114
-msgid "Move window to workspace 4"
-msgstr "Μεταφορά παραθύρου στην επιφάνεια εργασίας 4"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:115
-msgid "Move window to workspace 5"
-msgstr "Μεταφορά παραθύρου στην επιφάνεια εργασίας 5"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:116
-msgid "Move window to workspace 6"
-msgstr "Μεταφορά παραθύρου στην επιφάνεια εργασίας 6"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:117
-msgid "Move window to workspace 7"
-msgstr "Μεταφορά παραθύρου στην επιφάνεια εργασίας 7"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:118
-msgid "Move window to workspace 8"
-msgstr "Μεταφορά παραθύρου στην επιφάνεια εργασίας 8"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:119
-msgid "Move window to workspace 9"
-msgstr "Μεταφορά παραθύρου στην επιφάνεια εργασίας 9"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:120
-msgid "Move window to workspace 10"
-msgstr "Μεταφορά παραθύρου στην επιφάνεια εργασίας 10"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:121
-msgid "Move window to workspace 11"
-msgstr "Μεταφορά παραθύρου στην επιφάνεια εργασίας 11"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:122
-msgid "Move window to workspace 12"
-msgstr "Μεταφορά παραθύρου στην επιφάνεια εργασίας 12"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:125
-msgid "Log out"
-msgstr ""
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:127
-msgid "Toggle recording desktop (must restart Cinnamon)"
-msgstr ""
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:130
-msgid "Launch help browser"
-msgstr ""
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:131
-msgid "Launch calculator"
-msgstr ""
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:132
-msgid "Launch email client"
-msgstr ""
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:133
-msgid "Launch web browser"
-msgstr ""
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:134
-msgid "Home folder"
-msgstr ""
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:138
-msgid "Volume mute"
-msgstr ""
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:139
-msgid "Volume down"
-msgstr ""
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:140
-msgid "Volume up"
-msgstr ""
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:141
-msgid "Launch media player"
-msgstr ""
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:143
-msgid "Pause playback"
-msgstr ""
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:144
-msgid "Stop playback"
-msgstr ""
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:145
-msgid "Previous track"
-msgstr ""
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:146
-msgid "Next track"
-msgstr ""
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:150
-msgid "Turn zoom on or off"
-msgstr ""
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:151
-msgid "Zoom in"
-msgstr ""
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:152
-msgid "Zoom out"
-msgstr ""
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:153
-msgid "Turn screen reader on or off"
-msgstr ""
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:154
-msgid "Turn on-screen keyboard on or off"
-msgstr ""
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:155
-msgid "Increase text size"
-msgstr ""
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:156
-msgid "Decrease text size"
-msgstr ""
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:157
-msgid "High contrast on or off"
-msgstr ""
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:161
-msgid "Wallpaper"
-msgstr "Φόντο"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:167
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2025
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2786
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2797
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2808
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2819
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2830
-msgid "None"
-msgstr "Κανένα"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:168
-msgid "Horizontal"
-msgstr "Οριζοντίως"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:169
-msgid "Vertical"
-msgstr "Καθέτως"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:173
-msgid "No picture"
-msgstr "Καμμία εικόνα"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:174
-msgid "Mosaic"
-msgstr "Μωσαϊκό"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:175
-msgid "Centered"
-msgstr "Στο κέντρο"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:176
-msgid "Scaled"
-msgstr "Υπό κλίμακα"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:177
-msgid "Stretched"
-msgstr "Τεντωμένο"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:179
-msgid "Spanned"
-msgstr "Επεκταμένο"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:602
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:747
-msgid "Add wallpapers"
-msgstr "Προσθήκη παρασκηνίου"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:625
-msgid "Folder"
-msgstr "Φάκελος"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:633
-msgid "Recursive listing"
-msgstr "Αναδρομική καταχώρηση"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:638
-msgid "Delay"
-msgstr "Καθυστέρηση"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:734
-msgid "Mode"
-msgstr "Τρόπος Λειτουργίας"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:742
-msgid "Remove wallpaper"
-msgstr "Αφαίρεση Παρασκηνίου"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:773
-msgid "Advanced options"
-msgstr "Προηγμένες επιλογές"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:781
-msgid "Picture aspect"
-msgstr "Αναλογίες εικόνας"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:787
-msgid "Gradient"
-msgstr "Διαβάθμιση"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:794
-msgid "Colors"
-msgstr "Χρώματα"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:868
-msgid "Get new themes"
-msgstr "Ανάκτηση νέων θεμάτων"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:871
-msgid "Cinnamon themes"
-msgstr "Θέματα Cinnamon"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:878
-msgid "Window theme"
-msgstr "Θέμα Παραθύρου"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:880
-msgid "Menus Have Icons"
-msgstr "Μενού με Εικονίδια"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:882
-msgid "Buttons Have Icons"
-msgstr "Κουμπιά με Εικονίδια"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:885
-msgid "Always Use Location Entry In Nemo"
-msgstr "Μόνιμη Χρήση Ένδειξης Τοποθεσίας στον Νέμο"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:887
-msgid "Cursor theme"
-msgstr "Θέμα δρομέα"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:889
-msgid "Keybinding theme"
-msgstr "Θέμα δέσμευσης πλήκτρων"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:891
-msgid "Icon theme"
-msgstr "Θέμα Εικονιδίων"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:893
-msgid "GTK+ theme"
-msgstr "Θέμα GTK+"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:896
-msgid "Other settings"
-msgstr "Άλλες ρυθμίσεις"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:990
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1081
-msgid "Enable"
-msgstr "Ενεργοποίηση"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:994
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1088
-msgid "Description"
-msgstr "Περιγραφή"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1016
-msgid "Get new extensions"
-msgstr "Λήψη νέων επεκτάσεων"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1085
-#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/add-panel-launcher.py:140
-msgid "Icon"
-msgstr "Εικονίδιο"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1111
-msgid "Restore to default"
-msgstr "Επαναφορά προεπιλογών"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1115
-msgid "Get new applets"
-msgstr "Λήψη νέων applets"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1283
-msgid "unassigned"
-msgstr ""
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1284
-msgid "Super-"
-msgstr ""
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1285
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1288
-msgid "Ctrl-"
-msgstr ""
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1286
-msgid "Shift-"
-msgstr ""
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1287
-msgid "Alt-"
-msgstr ""
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1407
-#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/add-panel-launcher.py:148
-msgid "Update"
-msgstr "Ενημέρωση"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1410
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1543
-msgid "Add custom shortcut"
-msgstr ""
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1418
-msgid "Name:"
-msgstr ""
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1419
-msgid "Command:"
-msgstr ""
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1427
-msgid "Select a file"
-msgstr ""
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1477
-msgid "Typing"
-msgstr ""
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1478
-msgid "Enable key repeat"
-msgstr ""
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1480
-msgid "Repeat delay:"
-msgstr ""
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1480
-msgid "Short"
-msgstr ""
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1480
-msgid "Long"
-msgstr ""
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1485
-msgid "Repeat speed:"
-msgstr ""
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1485
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1493
-msgid "Slow"
-msgstr ""
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1485
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1493
-msgid "Fast"
-msgstr ""
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1491
-msgid "Text cursor blinks"
-msgstr ""
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1493
-msgid "Blink speed:"
-msgstr ""
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1498
-msgid "Test Box"
-msgstr ""
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1502
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1579
-msgid "Keyboard shortcuts"
-msgstr ""
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1507
-msgid ""
-"To edit a keyboard binding, click it and press the new keys, or press "
-"backspace to clear it."
-msgstr ""
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1545
-msgid "Remove custom shortcut"
-msgstr ""
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1570
-msgid "Categories"
-msgstr ""
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1590
-msgid "Keyboard bindings"
-msgstr ""
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1599
-msgid "Workspace Management"
-msgstr "Διαχείριση Επιφανειών Εργασίας"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1600
-msgid "System"
-msgstr ""
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1601
-msgid "Launchers"
-msgstr ""
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1602
-msgid "Sound and Media"
-msgstr ""
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1603
-msgid "Universal Access"
-msgstr ""
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1604
-msgid "Custom Shortcuts"
-msgstr ""
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1705
-#, c-format
-msgid ""
-"\n"
-"This key combination, '<b>%s</b>' cannot be used because it would become "
-"impossible to type using this key.\n"
-"\n"
-msgstr ""
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1706
-msgid ""
-"Please try again with a modifier key such as Control, Alt or Super (Windows "
-"key) at the same time.\n"
-msgstr ""
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1724
-#, c-format
-msgid ""
-"This key combination, '<b>%s</b>' is currently in use by '<b>%s</b>'.  "
-msgstr ""
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1725
-#, c-format
-msgid ""
-"If you continue, the combination will be reassigned to '<b>%s</b>.'\n"
-"\n"
-msgstr ""
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1726
-msgid "Do you want to continue with this operation?"
-msgstr ""
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1846
-msgid "Reset to default"
-msgstr ""
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2276
-msgid "Region"
-msgstr "Περιοχή"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2298
-msgid "City"
-msgstr "Πόλη"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2404
-msgid ":"
-msgstr ":"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2411
-msgid "Date : "
-msgstr "Ημερομηνία: "
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2413
-msgid "Time : "
-msgstr "Ώρα: "
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2526
-msgid "Left side title bar buttons"
-msgstr "Πλήκτρα μπάρας τίτλου στα αριστερά"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2532
-msgid "Right side title bar buttons"
-msgstr "Πλήκτρα μπάρας τίτλου στα δεξιά"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2620
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2950
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2964
 msgid "Cinnamon Settings"
 msgstr "Ρυθμίσεις Cinnamon"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2637
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:61
 msgid "All Settings"
 msgstr "Όλες οι Ρυθμίσεις"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2646
-msgid "Menu text"
-msgstr "Κείμενο μενού"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2647
-msgid "Menu icon"
-msgstr "Εικονίδιο μενού"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2648
-msgid "Menu hover delay"
-msgstr "Χρόνος καθυστέρησης εμφάνισης μενού"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2648
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2658
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2662
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2789
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2800
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2811
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2822
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2833
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2890
-msgid "milliseconds"
-msgstr "χιλιοστά του δευτερολέπτου"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2649
-msgid "Activate menu on hover"
-msgstr "Ενεργοποίηση μενού σε αιώρηση"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2650
-msgid "Show bookmarks and places"
-msgstr "Εμφάνιση των σελιδοδεικτών και των τοποθεσιών"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2651
-msgid "Show recent files"
-msgstr "Εμφάνιση πρόσφατων αρχείων"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2655
-msgid "Auto-hide panel"
-msgstr "Αυτόματη απόκρυψη γραμμής εργασιών"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2658
-msgid "Show delay"
-msgstr "Εμφάνιση καθυστέρησης"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2662
-msgid "Hide delay"
-msgstr "Απόκρυψη καθυστέρησης"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2665
-msgid "Traditional (panel at the bottom)"
-msgstr "Παραδοσιακό (γραμμή εργασιών κάτω)"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2665
-msgid "Flipped (panel at the top)"
-msgstr "Αντεστραμμένο (γραμμή εργασιών επάνω)"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2665
-msgid "Classic (panels at the top and at the bottom)"
-msgstr "Κλασικό (επάνω και κάτω γραμμές εργασιών)"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2666
-msgid "Panel layout"
-msgstr "Διάρθρωση γραμμής εργασιών"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2669
-msgid "Note: If you change the layout you will need to restart Cinnamon."
-msgstr ""
-"Σημείωση: Αν αλλάξετε την διάταξη, θα χρειαστεί να επανεκκινήσετε το "
-"Cinnamon."
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2672
-msgid "Use customized panel size (otherwise it's defined by the theme)"
-msgstr ""
-"Χρήση προσαρμοσμένου μεγέθους γραμμής εργασιών (διαφορετικά καθορίζεται από "
-"το θέμα)"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2675
-msgid ""
-"Allow Cinnamon to scale panel text and icons according to the panel heights"
-msgstr ""
-"Επίτρεψε στο Cinnamon να κλιμακώσει το κείμενο και τα εικονίδια της γραμμής "
-"εργασιών αναλογικά προς το ύψος της γραμμής εργασιών"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2679
-msgid "Top panel height"
-msgstr "Ύψος άνω γραμμής εργασιών"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2679
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2683
-msgid "Pixels"
-msgstr "Εικονοστοιχεία"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2683
-msgid "Bottom panel height"
-msgstr "Ύψος κάτω γραμμής εργασιών"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2686
-msgid "Panel edit mode"
-msgstr "Λειτουργία επεξεργασίας γραμμής εργασιών"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2687
-msgid "Calendar"
-msgstr "Ημερολόγιο"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2689
-msgid "Show week dates in calendar"
-msgstr "Εμφάνιση αριθμού εβδομάδων στο ημερολόγιο"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2690
-msgid "Date format for the panel"
-msgstr "Μορφή ημερομηνίας για την γραμμή εργασιών"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2691
-msgid "Date format inside the date applet"
-msgstr "Μορφή ημερομηνίας μέσα στη μικροεφαρμογή ημερομηνίας"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2692
-msgid "Generate your own date formats"
-msgstr "Δημιουργήστε την δική σας μορφή ημερομηνίας"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2698
-msgid "Use network time"
-msgstr "Χρήση ώρας διαδικτύου"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2714
-msgid "Hot corner"
-msgstr "Ενεργή γωνία"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2716
-msgid "Hot corner icon visible"
-msgstr "Εικονίδιο ενεργής γωνίας ορατό"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2717
-msgid "Hot corner enabled"
-msgstr "Ενεργοποίηση ενεργής γωνίας"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2720
-msgid "Hot corner position:"
-msgstr "Θέση ενεργής γωνίας:"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2722
-msgid "Top left"
-msgstr "Επάνω αριστερά"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2722
-msgid "Top right"
-msgstr "Επάνω δεξιά"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2722
-msgid "Bottom left"
-msgstr "Κάτω αριστερά"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2722
-msgid "Bottom right"
-msgstr "Κάτω δεξιά"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2728
-msgid "Hot corner function:"
-msgstr "Λειτουργία ενεργής γωνίας:"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2730
-msgid "Workspace selection (ala Compiz Expo)"
-msgstr "Επιλογή επιφάνειας εργασίας (σαν Compiz Expo)"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2730
-msgid "Window selection (ala Compiz Scale)"
-msgstr "Επιλογή παραθύρου (σαν Compiz Scale)"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2734
-msgid "Expo applet: activate on hover"
-msgstr "Εφαρμογίδιο Expo: ενεργοποίηση με την αιώρηση"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2735
-msgid "Scale applet: activate on hover"
-msgstr "Εφαρμογίδιο κλιμάκωσης: ενεργοποίηση με την αιώρηση"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2740
-msgid "Effects"
-msgstr "Εφέ"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2742
-msgid "Enable desktop effects"
-msgstr "Ενεργοποίηση εφέ επιφάνειας εργασίας"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2745
-msgid "Enable desktop effects on dialog boxes"
-msgstr "Ενεργοποίηση των εφέ της επιφάνειας εργασίας στα κουτιά διαλόγου"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2784
-msgid "Closing windows:"
-msgstr "Κλείσιμο παραθύρων:"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2786
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2797
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2808
-msgid "Fade"
-msgstr "Ξεθώριασμα"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2795
-msgid "Mapping windows:"
-msgstr "Χαρτογράφηση των παραθύρων"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2806
-msgid "Minimizing windows:"
-msgstr "Ελαχιστοποίηση παραθύρων:"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2808
-msgid "Traditional"
-msgstr "Παραδοσιακό"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2817
-msgid "Maximizing windows:"
-msgstr "Μεγιστοποίηση παραθύρων:"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2828
-msgid "Unmaximizing windows:"
-msgstr "Απομεγιστοποίηση παραθύρων:"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2839
-msgid "Extensions"
-msgstr "Επεκτάσεις"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2846
-msgid "Desktop"
-msgstr "Επιφάνεια εργασίας"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2850
-msgid "Computer icon visible on desktop"
-msgstr "Εικονίδιο υπολογιστή ορατό στην επιφάνεια εργασίας"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2852
-msgid "Home icon visible on desktop"
-msgstr "Εικονίδιο προσωπικού φακέλου ορατό στην επιφάνεια εργασίας"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2854
-msgid "Network Servers icon visible on desktop"
-msgstr "Εικονίδιο Διακομιστών Δικτύου ορατό στην επιφάνεια εργασίας"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2856
-msgid "Trash icon visible on desktop"
-msgstr "Εικονίδιο κάδου απορριμμάτων ορατό στην επιφάνεια εργασίας"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2858
-msgid "Show mounted volumes on the desktop"
-msgstr "Εμφάνιση προσαρτημένων τόμων στην επιφάνεια εργασίας"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2862
-msgid "Action on title bar double-click"
-msgstr "Ενέργεια κατά το διπλό κλικ στη μπάρα τίτλου"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2865
-msgid "Action on title bar middle-click"
-msgstr "Ενέργεια κατά το μεσαίο κλικ στη μπάρα τίτλου"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2868
-msgid "Action on title bar right-click"
-msgstr "Ενέργεια κατά το δεξί κλικ στη μπάρα τίτλου"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2871
-msgid "Window focus mode"
-msgstr "Λειτουργία εστίασης παραθύρου"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2876
-msgid "Enable Edge Tiling (\"Aero Snap\")"
-msgstr "Ενεργοποίηση συνταιριάσματος ακμής (\"Aero Snap\")"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2877
-msgid "Enable Edge Flip"
-msgstr "Ενεργοποίηση αναστροφής ακμής"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2878
-msgid "Attach dialog windows to their parent window's titlebar"
-msgstr ""
-"Επισύναψη παραθύρου διαλόγων στήν γραμμή τίτλου του γονικού παραθύρου"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2879
-msgid "Icons only"
-msgstr "Μόνο εικονίδια"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2879
-msgid "Icons and thumbnails"
-msgstr "Εικονίδια και μικρογραφίες"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2879
-msgid "Icons and window preview"
-msgstr "Εικονίδια και προεπισκόπηση παραθύρου"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2879
-msgid "Window preview (no icons)"
-msgstr "Προεπισκόπηση παραθύρου (χωρίς εικονίδια)"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2880
-msgid "ALT-tab switcher style"
-msgstr "Στυλ εναλλάκτη ALT-tab"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2882
-msgid "Enable mouse-wheel scrolling in Window List applet"
-msgstr ""
-"Ενεργοποίηση κύλισης με τροχό ποντικιού στη μικροεφαρμογή Window List"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2883
-msgid ""
-"Bring windows which require attention to the current workspace (instead of "
-"switching to the window's workspace)"
-msgstr ""
-"Εμφάνιζε στην τρέχουσα επιφάνεια εργασίας τα παράθυρα που απαιτούν ενέργεια "
-"(αντί της αλλαγής επιφάνειας σε εκείνη του παραθύρου)"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2885
-msgid "Workspaces"
-msgstr "Επιφάνειες εργασίας"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2887
-msgid "Enable workspace OSD"
-msgstr "Ενεργοποίηση OSD για τις επιφάνειες εργασίας"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2890
-msgid "Workspace OSD duration"
-msgstr "Διάρκεια OSD για την επιφάνεια εργασίας"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2894
-msgid "Workspace OSD horizontal position"
-msgstr "Οριζόντια θέση OSD επιφάνειας εργασίας"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2894
-msgid "percent of the monitor's width"
-msgstr "εκατοστιαίο ποσοστό του εύρους της οθόνης"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2898
-msgid "Workspace OSD vertical position"
-msgstr "Κατακόρυφη θέση OSD επιφάνειας εργασίας"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2898
-msgid "percent of the monitor's height"
-msgstr "εκατοστιαίο ποσοστό του ύψους της οθόνης"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2901
-msgid "Only use workspaces on primary monitor (requires Cinnamon restart)"
-msgstr ""
-"Χρήση των επιφανειών εργασίας μόνο στην πρωτεύουσα οθόνη (απαιτείται "
-"επανεκκίνηση του Cinnamon)"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2902
-msgid "Display Expo view as a grid"
-msgstr "Προβολή Expo ως πλέγματος"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2904
-msgid "Fonts"
-msgstr "Γραμματοσειρά"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2906
-msgid "Text scaling factor"
-msgstr "Συντελεστής κλίμακας Κειμένου"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2907
-msgid "Default font"
-msgstr "Προεπιλεγμένη γραμματοσειρά"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2908
-msgid "Document font"
-msgstr "Γραμματοσειρά εγγράφου"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2909
-msgid "Monospace font"
-msgstr "Γραμματοσειρά σταθερού πλάτους"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2910
-msgid "Window title font"
-msgstr "Γραμματοσειρά τίτλου παραθύρου"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2911
-msgid "Hinting"
-msgstr "Hinting"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2912
-msgid "Antialiasing"
-msgstr "Antialiasing"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2914
-msgid "General"
-msgstr "Γενικά"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2916
-msgid ""
-"Log LookingGlass output to ~/.cinnamon/glass.log (Requires Cinnamon restart)"
-msgstr ""
-"Καταγραφή ειδοποιήσεων LookingGlass στο ~/.cinnamon/glass.log (Απαιτεί "
-"επανεκκίνηση του Cinnamon)"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2917
-msgid "Emulate middle click by clicking both left and right buttons"
-msgstr "Προσομοίωση  μεσαίου κλικ πατώντας μαζί αριστερό και δεξί κλικ"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2918
-msgid "Display notifications"
-msgstr "Εμφάνιση ειδοποιήσεων"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2928
-msgid "Backgrounds"
-msgstr "Παρασκήνια"
-
-#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/add-panel-launcher.py:59
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/cinnamon-add-panel-launcher.py:59
 msgid "Custom Launcher"
 msgstr "Προσαρμοσμένος Εκκινητής"
 
-#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/add-panel-launcher.py:138
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/cinnamon-add-panel-launcher.py:138
 msgid "Name"
 msgstr "Όνομα"
 
-#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/add-panel-launcher.py:139
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/cinnamon-add-panel-launcher.py:139
 msgid "Application"
 msgstr "Εφαρμογή"
 
-#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/add-panel-launcher.py:142
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/cinnamon-add-panel-launcher.py:140
+msgid "Icon"
+msgstr "Εικονίδιο"
+
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/cinnamon-add-panel-launcher.py:142
 msgid "Add panel launcher..."
 msgstr "Προσθήκη εκκινητή στη γραμμή εργασιών"
+
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/cinnamon-add-panel-launcher.py:148
+msgid "Update"
+msgstr "Ενημέρωση"
+
+#: files/usr/lib/cinnamon-screensaver-lock-dialog/cinnamon-screensaver-lock-dialog.py:40
+msgid "Please type an away message for the lock screen"
+msgstr ""

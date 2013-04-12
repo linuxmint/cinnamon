@@ -1620,6 +1620,7 @@ _st_theme_node_ensure_background (StThemeNode *node)
                     {
                       st_theme_node_get_background_color (node->parent_node, &node->background_color);
                       node->background_image = g_strdup (st_theme_node_get_background_image (node->parent_node));
+                      node->background_bumpmap = g_strdup (st_theme_node_get_background_bumpmap (node->parent_node));
                     }
                 }
               else if (term_is_none (term))
@@ -1710,6 +1711,36 @@ _st_theme_node_ensure_background (StThemeNode *node)
               node->background_image = NULL;
             }
         }
+      else if (strcmp (property_name, "-bumpmap") == 0)
+        {
+          if (decl->value == NULL || decl->value->next != NULL)
+            continue;
+
+          if (decl->value->type == TERM_URI)
+            {
+              CRStyleSheet *base_stylesheet;
+
+              if (decl->parent_statement != NULL)
+                base_stylesheet = decl->parent_statement->parent_sheet;
+              else
+                base_stylesheet = NULL;
+
+              g_free (node->background_bumpmap);
+              node->background_bumpmap = _st_theme_resolve_url (node->theme,
+                                                                base_stylesheet,
+                                                                decl->value->content.str->stryng->str);
+              
+            }
+          else if (term_is_inherit (decl->value))
+            {
+              g_free (node->background_bumpmap);
+              node->background_bumpmap = g_strdup (st_theme_node_get_background_bumpmap (node->parent_node));
+            }
+          else if (term_is_none(decl->value))
+            {
+              g_free (node->background_bumpmap);
+            }
+        }
       else if (strcmp (property_name, "-gradient-direction") == 0)
         {
           CRTerm *term = decl->value;
@@ -1764,6 +1795,12 @@ st_theme_node_get_background_color (StThemeNode  *node,
   *color = node->background_color;
 }
 
+/**
+ * st_theme_node_get_background_image:
+ * @node: a #StThemeNode
+ *
+ * Returns @node's background image.
+ */
 const char *
 st_theme_node_get_background_image (StThemeNode *node)
 {
@@ -1772,6 +1809,22 @@ st_theme_node_get_background_image (StThemeNode *node)
   _st_theme_node_ensure_background (node);
 
   return node->background_image;
+}
+
+/**
+ * st_theme_node_get_background_bumpmap:
+ * @node: a #StThemeNode
+ *
+ * Returns @node's background bumpmap.
+ */
+const char *
+st_theme_node_get_background_bumpmap (StThemeNode *node)
+{
+  g_return_val_if_fail (ST_IS_THEME_NODE (node), NULL);
+
+  _st_theme_node_ensure_background (node);
+
+  return node->background_bumpmap;
 }
 
 /**

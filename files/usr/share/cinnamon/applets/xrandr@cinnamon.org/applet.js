@@ -86,7 +86,7 @@ MyApplet.prototype = {
         }
         this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
         this.menu.addAction(_("Configure display settings..."), function() {
-            GLib.spawn_command_line_async('gnome-control-center display');
+            GLib.spawn_command_line_async('cinnamon-settings display');
         });
     },
 
@@ -114,7 +114,7 @@ MyApplet.prototype = {
                         config.save();
                         this._proxy.ApplyConfigurationRemote(0, event.get_time());
                     } catch (e) {
-                        log ('Could not save monitor configuration: ' + e);
+                        global.logError('Could not save monitor configuration', e);
                     }
                 }));
                 this.menu.addMenuItem(item);

@@ -78,6 +78,17 @@ G_DEFINE_TYPE_WITH_CODE (StScrollView, st_scroll_view, ST_TYPE_BIN,
                                                              ST_TYPE_SCROLL_VIEW, \
                                                              StScrollViewPrivate))
 
+#define AUTO_SCROLL_POLL_INTERVAL 15
+
+#define AUTO_SCROLL_TOTAL_REGION 100
+
+#define AUTO_SCROLL_OVERLAP 10 /* autoscroll region extends this far into the scroll view
+                                * remaining portion of region is above or below the view
+                                */
+
+/* gdouble - from 0 to TOTAL_REGION / this number to get scroll delta */
+#define AUTO_SCROLL_SPEED_DIVISOR 4.0
+
 struct _StScrollViewPrivate
 {
   /* a pointer to the child; this is actually stored
@@ -90,6 +101,7 @@ struct _StScrollViewPrivate
   ClutterActor *hscroll;
   StAdjustment *vadjustment;
   ClutterActor *vscroll;
+  ClutterInputDevice *mouse_pointer;
 
   GtkPolicyType hscrollbar_policy;
   GtkPolicyType vscrollbar_policy;
@@ -104,6 +116,8 @@ struct _StScrollViewPrivate
   guint         mouse_scroll : 1;
   guint         hscrollbar_visible : 1;
   guint         vscrollbar_visible : 1;
+  gboolean      auto_scroll : 1;
+  guint         auto_scroll_timeout_id : 1;
 };
 
 enum {
@@ -116,6 +130,7 @@ enum {
   PROP_HSCROLLBAR_VISIBLE,
   PROP_VSCROLLBAR_VISIBLE,
   PROP_MOUSE_SCROLL,
+  PROP_AUTO_SCROLL
 };
 
 static void
@@ -149,6 +164,8 @@ st_scroll_view_get_property (GObject    *object,
     case PROP_MOUSE_SCROLL:
       g_value_set_boolean (value, priv->mouse_scroll);
       break;
+    case PROP_AUTO_SCROLL:
+      g_value_set_boolean (value, priv->auto_scroll);
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
     }
@@ -193,6 +210,130 @@ st_scroll_view_update_vfade_effect (StScrollView *self,
   clutter_actor_queue_redraw (CLUTTER_ACTOR (self));
 }
 
+static gboolean
+get_sub_region_y (gint   mouse_y,
+                  gfloat box_y,
+                  gfloat height,
+                  gint   *sub_region)
+{
+    gboolean up = mouse_y < (box_y + (height / 2));
+
+    gfloat real_y_upper_limit = box_y + AUTO_SCROLL_OVERLAP - AUTO_SCROLL_TOTAL_REGION;
+    gfloat real_y_lower_limit = box_y + height - AUTO_SCROLL_OVERLAP + AUTO_SCROLL_TOTAL_REGION;
+
+    if (up) {
+        *sub_region = (real_y_upper_limit + AUTO_SCROLL_TOTAL_REGION) - mouse_y;
+    } else {
+        *sub_region = mouse_y - (real_y_lower_limit - AUTO_SCROLL_TOTAL_REGION);
+    }
+    return up;
+}
+
+static void
+calculate_and_scroll (ClutterActor  *self,
+                             gint    mouse_x,
+                             gint    mouse_y,
+                             gfloat  box_x,
+                             gfloat  box_y,
+                             gfloat  width,
+                             gfloat  height)
+{
+    StScrollViewPrivate *priv = ST_SCROLL_VIEW (self)->priv;
+    gboolean up;
+    gint sub_region;
+    gdouble delta, vvalue;
+
+    up = get_sub_region_y (mouse_y, box_y, height, &sub_region);
+
+    if (up)
+        delta = sub_region * -1.0 / AUTO_SCROLL_SPEED_DIVISOR;
+    else
+        delta = sub_region / AUTO_SCROLL_SPEED_DIVISOR;
+
+    g_object_get (priv->vadjustment,
+                    "value", &vvalue,
+                    NULL);
+    st_adjustment_set_value (priv->vadjustment, vvalue + delta);
+}
+
+static void
+get_pointer_and_view_coords (ClutterActor *self,
+                             gint         *mouse_x,
+                             gint         *mouse_y,
+                             gfloat       *box_x,
+                             gfloat       *box_y,
+                             gfloat       *width,
+                             gfloat       *height)
+{
+    StScrollViewPrivate *priv = ST_SCROLL_VIEW (self)->priv;
+
+    clutter_input_device_get_device_coords (priv->mouse_pointer, mouse_x, mouse_y);
+    clutter_actor_get_transformed_position (self, box_x, box_y);
+    clutter_actor_get_transformed_size (self, width, height);
+}
+
+static gboolean
+is_in_auto_scroll_regions (gint   mouse_x,
+                           gint   mouse_y,
+                           gfloat box_x,
+                           gfloat box_y,
+                           gfloat width,
+                           gfloat height)
+{
+
+    gfloat real_y_upper_limit = box_y + AUTO_SCROLL_OVERLAP - AUTO_SCROLL_TOTAL_REGION;
+    gfloat real_y_lower_limit = box_y + height - AUTO_SCROLL_OVERLAP + AUTO_SCROLL_TOTAL_REGION;
+
+    if (mouse_x < box_x || mouse_x > box_x + width)
+        return FALSE;
+
+    if (((mouse_y < real_y_upper_limit + AUTO_SCROLL_TOTAL_REGION) && (mouse_y > real_y_upper_limit))
+        || ((mouse_y > real_y_lower_limit - AUTO_SCROLL_TOTAL_REGION) && (mouse_y < real_y_lower_limit))) {
+        return TRUE;
+    } else {
+        return FALSE;
+    }
+}
+
+static gboolean
+do_auto_scroll (ClutterActor *self)
+{
+
+
+    StScrollViewPrivate *priv = ST_SCROLL_VIEW (self)->priv;
+    gfloat box_x, box_y, width, height;
+    gint mouse_x, mouse_y;
+
+    get_pointer_and_view_coords (self, &mouse_x, &mouse_y, &box_x, &box_y, &width, &height);
+
+    if (is_in_auto_scroll_regions (mouse_x, mouse_y, box_x, box_y, width, height)) {
+        calculate_and_scroll (self, mouse_x, mouse_y, box_x, box_y, width, height);
+        return TRUE;
+    } else {
+        priv->auto_scroll_timeout_id = 0;
+        return FALSE;
+    }
+}
+
+static void
+motion_event_cb (ClutterActor *self,
+                 ClutterMotionEvent *event,
+                 gpointer data)
+{
+    StScrollViewPrivate *priv = ST_SCROLL_VIEW (self)->priv;
+    gfloat box_x, box_y, width, height;
+    gint mouse_x, mouse_y;
+
+    if (priv->auto_scroll_timeout_id > 0)
+        return;
+
+    get_pointer_and_view_coords (self, &mouse_x, &mouse_y, &box_x, &box_y, &width, &height);
+
+    if (is_in_auto_scroll_regions (mouse_x, mouse_y, box_x, box_y, width, height)) {
+        priv->auto_scroll_timeout_id = g_timeout_add (AUTO_SCROLL_POLL_INTERVAL, (GSourceFunc) do_auto_scroll, self);
+    }
+}
+
 static void
 st_scroll_view_set_property (GObject      *object,
                              guint         property_id,
@@ -218,6 +359,9 @@ st_scroll_view_set_property (GObject      *object,
                                  priv->hscrollbar_policy,
                                  g_value_get_enum (value));
       break;
+    case PROP_AUTO_SCROLL:
+      st_scroll_view_set_auto_scrolling (self,
+                                         g_value_get_boolean (value));
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
     }
@@ -258,6 +402,8 @@ st_scroll_view_dispose (GObject *object)
       g_object_unref (priv->vadjustment);
       priv->vadjustment = NULL;
     }
+
+  g_signal_handlers_disconnect_by_func (ST_SCROLL_VIEW (object), motion_event_cb, ST_SCROLL_VIEW (object));
 
   G_OBJECT_CLASS (st_scroll_view_parent_class)->dispose (object);
 }
@@ -829,6 +975,15 @@ st_scroll_view_class_init (StScrollViewClass *klass)
                                    PROP_MOUSE_SCROLL,
                                    pspec);
 
+  pspec = g_param_spec_boolean ("enable-auto-scrolling",
+                                "Enable Auto Scrolling",
+                                "Enable automatic scrolling",
+                                FALSE,
+                                G_PARAM_READWRITE);
+  g_object_class_install_property (object_class,
+                                   PROP_AUTO_SCROLL,
+                                   pspec);
+
 }
 
 static void
@@ -857,6 +1012,11 @@ st_scroll_view_init (StScrollView *self)
   /* mouse scroll is enabled by default, so we also need to be reactive */
   priv->mouse_scroll = TRUE;
   g_object_set (G_OBJECT (self), "reactive", TRUE, NULL);
+
+  priv->auto_scroll = FALSE;
+  priv->auto_scroll_timeout_id = 0;
+  priv->mouse_pointer = clutter_device_manager_get_core_device (clutter_device_manager_get_default (),
+                                                                      CLUTTER_POINTER_DEVICE);
 }
 
 static void
@@ -1089,6 +1249,43 @@ st_scroll_view_get_mouse_scrolling (StScrollView *scroll)
   priv = ST_SCROLL_VIEW (scroll)->priv;
 
   return priv->mouse_scroll;
+}
+
+void
+st_scroll_view_set_auto_scrolling (StScrollView *scroll,
+                                   gboolean      enabled)
+{
+  StScrollViewPrivate *priv;
+
+  g_return_if_fail (ST_IS_SCROLL_VIEW (scroll));
+
+  priv = ST_SCROLL_VIEW (scroll)->priv;
+
+  if (priv->auto_scroll != enabled)
+    {
+      priv->auto_scroll = enabled;
+
+      /* make sure we can receive mouse wheel events */
+      if (enabled) {
+        clutter_actor_set_reactive ((ClutterActor *) scroll, TRUE);
+        g_signal_connect (scroll, "motion-event",
+                          G_CALLBACK (motion_event_cb), scroll);
+      } else {
+        g_signal_handlers_disconnect_by_func (scroll, motion_event_cb, scroll);
+      }
+    }
+}
+
+gboolean
+st_scroll_view_get_auto_scrolling (StScrollView *scroll)
+{
+  StScrollViewPrivate *priv;
+
+  g_return_val_if_fail (ST_IS_SCROLL_VIEW (scroll), FALSE);
+
+  priv = ST_SCROLL_VIEW (scroll)->priv;
+
+  return priv->auto_scroll;
 }
 
 /**

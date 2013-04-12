@@ -101,6 +101,7 @@
     
     <key name="panel-top-height" type="i">
       <default>25</default>
+      <range min="20" />
       <_summary>Panel size</_summary>
       <_description>
         User-defined panel-height for top panel
@@ -109,6 +110,7 @@
     
     <key name="panel-bottom-height" type="i">
       <default>25</default>
+      <range min="20" />
       <_summary>Panel size</_summary>
       <_description>
         User-defined panel-height for bottom panel
@@ -316,6 +318,14 @@
       </_description>
     </key>
 
+    <key type="b" name="menu-enable-autoscroll">
+      <default>true</default>
+      <_summary>Enable or disable autoscrolling in application list</_summary>
+      <_description>
+            Toggles the auto-scrolling regions at the top and bottom of the app list
+      </_description>
+    </key>
+
     <key type="b" name="display-notifications">
       <default>true</default>
       <_summary>Whether notifications are to be displayed</_summary>
@@ -334,6 +344,16 @@
       <_summary>Enable or disable display of recent files in menu applet</_summary>
       <_description>
             Toggles displaying the 'Recent files' category in the menu applet
+      </_description>
+    </key>
+
+    <key type="b" name="menu-search-filesystem">
+      <default>false</default>
+      <_summary>Enable or disable filesystem path entry in search box</_summary>
+      <_description>
+            Toggles whether pressing TAB within the search box autocompletes
+            paths within the filesystem. Matches are also shown in the 
+            application list and can be clicked to open with default handler.
       </_description>
     </key>
 
@@ -412,6 +432,7 @@
     </key>
     
     <key type="i" name="workspace-osd-x">
+      <range min="5" max="95" />
       <default>50</default>
       <_summary>Workspace horizontal position (in percent of the monitor's width)</_summary>
       <_description>
@@ -420,6 +441,7 @@
     </key>
     
     <key type="i" name="workspace-osd-y">
+      <range min="5" max="95" />
       <default>50</default>
       <_summary>Workspace vertical position (in percent of the monitor's height)</_summary>
       <_description>
@@ -511,10 +533,10 @@
       </description>
     </key>
 
-    <key name="desklets-minimum-decoration" type="i">
-      <default>2</default>
-      <_summary>The minimum decoration level of the desklet</_summary>
-      <_description>The minimum amount of decoration a desklet must have.
+    <key name="desklet-decorations" type="i">
+      <default>1</default>
+      <_summary>The decoration level of the desklets</_summary>
+      <_description>The amount of decoration desklets must have.
       0 = None;
       1 = Borders;
       2 = Borders and header;
@@ -524,6 +546,17 @@
     <key type="b" name="enable-edge-flip">
       <default>false</default>
       <_summary>Whether edge flip is enabled</_summary>
+    </key>
+
+    <key type="i" name="edge-flip-delay">
+      <default>1000</default>
+      <summary>Duration of the delay before switching the workspace</summary>
+      <description>Duration of the delay (in milliseconds)</description>
+    </key>
+
+    <key type="b" name="cinnamon-settings-advanced">
+      <default>false</default>
+      <_summary>Whether advanced mode is enabled in cinnamon-settings</_summary>
     </key>
 
     <child name="calendar" schema="org.cinnamon.calendar"/>
@@ -713,6 +746,23 @@
         This key defines the delay for the slideshow.
       </description>
     </key>
+  </schema>
+  
+  <schema id="org.cinnamon.screensaver" path="/org/cinnamon/screensaver/">
+    <key name="default-message" type="s">
+      <default>""</default>
+      <summary>Default message for the screensaver</summary>
+      <description>
+        This is the message that appears on the lock screen by default.
+      </description>
+    </key>
+    <key name="ask-for-away-message" type="b">
+      <default>true</default>
+      <summary>Whether to ask for an away message when locking the screen</summary>
+      <description>
+        Whether to ask for an away message when locking the screen.
+      </description>
+    </key>   
   </schema>
   
   <schema id="org.cinnamon.desklets" path="/org/cinnamon/desklets/"

@@ -14,6 +14,8 @@ const Main = imports.ui.main;
 const Params = imports.misc.params;
 const Tweener = imports.ui.tweener;
 
+const Util = imports.misc.util;
+
 const SLIDER_SCROLL_STEP = 0.05; /* Slider scrolling step in % */
 
 function _ensureStyle(actor) {
@@ -872,17 +874,9 @@ PopupMenuBase.prototype = {
         return menuItem;
     },
 
-    addSettingsAction: function(title, desktopFile) {
+    addSettingsAction: function(title, module) {		
         let menuItem = this.addAction(title, function() {
-                           let app = Cinnamon.AppSystem.get_default().lookup_setting(desktopFile);
-
-                           if (!app) {
-                               log('Settings panel for desktop file ' + desktopFile + ' could not be loaded!');
-                               return;
-                           }
-
-                           Main.overview.hide();
-                           app.activate();
+                           Util.spawnCommandLine("cinnamon-settings " + module);
                        });
         return menuItem;
     },
@@ -1809,8 +1803,9 @@ PopupMenuManager.prototype = {
     },
 
     _grab: function() {
-        Main.pushModal(this._owner.actor);
-
+        if (!Main.pushModal(this._owner.actor)) {
+            return;
+        }
         this._eventCaptureId = global.stage.connect('captured-event', Lang.bind(this, this._onEventCapture));
         // captured-event doesn't see enter/leave events
         this._enterEventId = global.stage.connect('enter-event', Lang.bind(this, this._onEventCapture));
@@ -1821,6 +1816,9 @@ PopupMenuManager.prototype = {
     },
 
     _ungrab: function() {
+        if (!this.grabbed) {
+            return;
+        }
         global.stage.disconnect(this._eventCaptureId);
         this._eventCaptureId = 0;
         global.stage.disconnect(this._enterEventId);
@@ -1863,7 +1861,7 @@ PopupMenuManager.prototype = {
 
             if (hadFocus)
                 focus.grab_key_focus();
-else
+            else
                 menu.actor.grab_key_focus();
         } else if (menu == this._activeMenu) {
             if (this.grabbed)

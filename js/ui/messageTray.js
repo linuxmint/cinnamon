@@ -685,7 +685,6 @@ Notification.prototype = {
     // Puts @actor into the action area of the notification, replacing
     // the previous contents
     setActionArea: function(actor, props) {
-    	return;
         if (this._actionArea) {
             this._actionArea.destroy();
             this._actionArea = null;

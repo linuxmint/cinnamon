@@ -1,0 +1,7 @@
+{
+ "uuid": "spacer@cinnamon.org",
+ "name": "Spacer",
+ "description": "Add some space between your other applets",
+ "icon": "view-restore",
+ "max-instances": "100"
+}

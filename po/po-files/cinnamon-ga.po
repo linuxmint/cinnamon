@@ -1,0 +1,1379 @@
+# Irish translation for linuxmint
+# Copyright (c) 2013 Rosetta Contributors and Canonical Ltd 2013
+# This file is distributed under the same license as the linuxmint package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2013.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: linuxmint\n"
+"Report-Msgid-Bugs-To: FULL NAME <EMAIL@ADDRESS>\n"
+"POT-Creation-Date: 2013-01-26 00:36+0000\n"
+"PO-Revision-Date: 2013-04-07 19:25+0000\n"
+"Last-Translator: Gearóid  Ó Maelearcaidh <gearoid@omaelearcaidh.com>\n"
+"Language-Team: Irish <ga@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=n==1 ? 0 : n==2 ? 1 : 2;\n"
+"X-Launchpad-Export-Date: 2013-04-11 14:39+0000\n"
+"X-Generator: Launchpad (build 16550)\n"
+
+#: src/cinnamon-app.c:347 src/cinnamon-app.c:355
+#: js/ui/notificationDaemon.js:458
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:126
+msgid "Unknown"
+msgstr "Anaithnid"
+
+#: src/cinnamon-app.c:581
+#, c-format
+msgid "Failed to launch '%s'"
+msgstr "Theip ar láinseáil '%s'"
+
+#: src/cinnamon-mobile-providers.c:80
+msgid "United Kingdom"
+msgstr "An Ríocht Aontaithe"
+
+#: src/cinnamon-mobile-providers.c:526
+msgid "Default"
+msgstr "Réamhshocrú"
+
+#: src/cinnamon-polkit-authentication-agent.c:334
+msgid "Authentication dialog was dismissed by the user"
+msgstr "Dialóg ar bharántúlacht diúltaithe ag an úsaideoir"
+
+#: src/cinnamon-util.c:89
+msgid "Home"
+msgstr "Baile"
+
+#: src/cinnamon-util.c:98
+msgid "File System"
+msgstr "Córas Comhad"
+
+#: src/cinnamon-util.c:244
+msgid "Search"
+msgstr "Cuardach"
+
+#: src/cinnamon-util.c:294
+#, c-format
+msgid "%1$s: %2$s"
+msgstr "%1$s: %2$s"
+
+#: src/gvc/gvc-mixer-control.c:1082
+msgid "Disabled"
+msgstr "Díchumasaithe"
+
+#: src/gvc/gvc-mixer-control.c:1089
+#, c-format
+msgid "%u Output"
+msgid_plural "%u Outputs"
+msgstr[0] "%u Aschur"
+msgstr[1] "%u Aschur"
+msgstr[2] "%u Aschur"
+
+#: src/gvc/gvc-mixer-control.c:1099
+#, c-format
+msgid "%u Input"
+msgid_plural "%u Inputs"
+msgstr[0] "%u Ionchur"
+msgstr[1] "%u Ionchur"
+msgstr[2] "%u Ionchur"
+
+#: src/gvc/gvc-mixer-control.c:1397
+msgid "System Sounds"
+msgstr "Fuaimeanna Córais"
+
+#: js/misc/util.js:89
+msgid "Command not found"
+msgstr "Ordú nár bhfuarthas"
+
+#: js/misc/util.js:116
+msgid "Could not parse command:"
+msgstr "Níorbh fhéidir parsáil an t-ordú:"
+
+#: js/misc/util.js:124
+#, c-format
+msgid "Execution of '%s' failed:"
+msgstr "Theip ar '%s' a rith:"
+
+#: js/ui/applet.js:243
+msgid "Remove this applet"
+msgstr "Bain an feidhmcháirín seo as"
+
+#: js/ui/autorunManager.js:280
+msgid "Removable Devices"
+msgstr "Gléasanna Inbhainte"
+
+#: js/ui/autorunManager.js:590
+#, c-format
+msgid "Open with %s"
+msgstr "Oscail le %s"
+
+#: js/ui/autorunManager.js:616
+msgid "Eject"
+msgstr "Díchuir"
+
+#: js/ui/calendar.js:704
+msgid "Nothing Scheduled"
+msgstr "Tada sceideálta"
+
+#: js/ui/calendar.js:733
+msgid "Today"
+msgstr "Inniu"
+
+#: js/ui/calendar.js:737
+msgid "Tomorrow"
+msgstr "Amárach"
+
+#: js/ui/calendar.js:746
+msgid "This week"
+msgstr "An tseachtain seo"
+
+#: js/ui/calendar.js:754
+msgid "Next week"
+msgstr "An tSeachtain Seo Chugainn"
+
+#: js/ui/cinnamonEntry.js:30
+msgid "Copy"
+msgstr "Cóipeáil"
+
+#: js/ui/cinnamonEntry.js:35
+msgid "Paste"
+msgstr "Greamaigh"
+
+#: js/ui/cinnamonEntry.js:81
+msgid "Show Text"
+msgstr "Taispeáin Téacs"
+
+#: js/ui/cinnamonEntry.js:83
+msgid "Hide Text"
+msgstr "Cuir Téacs Faoi Cheilt"
+
+#: js/ui/cinnamonMountOperation.js:285
+msgid "Wrong password, please try again"
+msgstr "Focal Faire mícheart, triail é arís le'd thoil"
+
+#: js/ui/desklet.js:58
+msgid "Remove this desklet"
+msgstr "Bain an desklet seo as"
+
+#: js/ui/endSessionDialog.js:58
+#, c-format
+msgid "Log Out %s"
+msgstr "Logáil %s Amach"
+
+#: js/ui/endSessionDialog.js:59 js/ui/endSessionDialog.js:73
+msgid "Log Out"
+msgstr "Logáil Amach"
+
+#: js/ui/endSessionDialog.js:60
+msgid "Click Log Out to quit these applications and log out of the system."
+msgstr ""
+"Cliceáil ar Logáil Amach chun scor ó na feidhmchláir seo agus logáil amach "
+"ón gcóras."
+
+#: js/ui/endSessionDialog.js:62
+#, c-format
+msgid "%s will be logged out automatically in %d second."
+msgid_plural "%s will be logged out automatically in %d seconds."
+msgstr[0] "Logailfear %s amach go huathoibreach i gceann %d soicind"
+msgstr[1] "Logailfear %s amach go huathoibreach i gceann %d soicind"
+msgstr[2] "Logailfear %s amach go huathoibreach i gceann %d soicind"
+
+#: js/ui/endSessionDialog.js:67
+#, c-format
+msgid "You will be logged out automatically in %d second."
+msgid_plural "You will be logged out automatically in %d seconds."
+msgstr[0] "Logailfear amach thú go huathoibreach i gceann %d soicind."
+msgstr[1] "Logailfear amach thú go huathoibreach i gceann %d soicind."
+msgstr[2] "Logailfear amach thú go huathoibreach i gceann %d soicind."
+
+#: js/ui/endSessionDialog.js:71
+msgid "Logging out of the system."
+msgstr "Ag logáil amach ón gcóras."
+
+#: js/ui/endSessionDialog.js:78 js/ui/endSessionDialog.js:89
+msgid "Power Off"
+msgstr "Cumhachtaigh As"
+
+#: js/ui/endSessionDialog.js:79
+msgid "Click Power Off to quit these applications and power off the system."
+msgstr ""
+"Cliceáil ar Chumhachtaigh As chun scor ó na feidhmchláir seo is cumhachtú as "
+"an gcóras."
+
+#: js/ui/endSessionDialog.js:81
+#, c-format
+msgid "The system will power off automatically in %d second."
+msgid_plural "The system will power off automatically in %d seconds."
+msgstr[0] "Cumhachtóidh an córas as go huaithoibreach i gceann %d soicind."
+msgstr[1] "Cumhachtóidh an córas as go huaithoibreach i gceann %d soicind."
+msgstr[2] "Cumhachtóidh an córas as go huaithoibreach i gceann %d soicind."
+
+#: js/ui/endSessionDialog.js:85
+msgid "Powering off the system."
+msgstr "Ag Cumhachtú as an gcóras."
+
+#: js/ui/endSessionDialog.js:87 js/ui/endSessionDialog.js:95
+#: js/ui/endSessionDialog.js:104
+msgid "Restart"
+msgstr "Atosaigh"
+
+#: js/ui/endSessionDialog.js:96
+msgid "Click Restart to quit these applications and restart the system."
+msgstr ""
+"Cliceáil ar Atosaigh chun scor ó na feidhmchláir seo agus atosú an córas."
+
+#: js/ui/endSessionDialog.js:98
+#, c-format
+msgid "The system will restart automatically in %d second."
+msgid_plural "The system will restart automatically in %d seconds."
+msgstr[0] "Atosóidh an córas go huathoibreach i gceann %d soicind."
+msgstr[1] "Atosóidh an córas go huathoibreach i gceann %d soicind."
+msgstr[2] "Atosóidh an córas go huathoibreach i gceann %d soicind."
+
+#: js/ui/endSessionDialog.js:102
+msgid "Restarting the system."
+msgstr "Ag atosú an córais."
+
+#: js/ui/endSessionDialog.js:428 js/ui/networkAgent.js:144
+#: js/ui/polkitAuthenticationAgent.js:173
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:165
+#: files/usr/share/cinnamon/applets/trash@cinnamon.org/applet.js:118
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/cinnamon-add-panel-launcher.py:141
+msgid "Cancel"
+msgstr "Cealaigh"
+
+#: js/ui/expoThumbnail.js:309 js/ui/panel.js:384
+msgid "Yes"
+msgstr "Sea"
+
+#: js/ui/expoThumbnail.js:317 js/ui/panel.js:391
+msgid "No"
+msgstr "Ní hea"
+
+#: js/ui/expoThumbnail.js:957
+#, c-format
+msgid ""
+"Are you sure you want to remove workspace \"%s\"?\n"
+"\n"
+msgstr ""
+"An bhfuil tú cinnte gur mhaith leat spás oibre \"%s\" a bhaint ?\n"
+"\n"
+
+#: js/ui/extension.js:369
+msgid "Initializing"
+msgstr "Á Thúsú"
+
+#: js/ui/extension.js:371
+msgid "Loaded"
+msgstr "Luchtaithe"
+
+#: js/ui/extension.js:373
+msgid "Error"
+msgstr "Earráid"
+
+#: js/ui/extension.js:375
+msgid "Out of date"
+msgstr "As dáta"
+
+#: js/ui/hotCorner.js:41
+msgid "Invalid overview options: Incorrect number of corners"
+msgstr "Roghanna osamhairc neamhbhailí: Méid coirnéal míchearta"
+
+#: js/ui/keyboard.js:324
+msgid "tray"
+msgstr "tráidire"
+
+#: js/ui/keyboard.js:555
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:114
+msgid "Keyboard"
+msgstr "Méarchlár"
+
+#: js/ui/lookingGlass.js:644
+msgid "No extensions installed"
+msgstr "Níl iarmhíreanna suiteáilte"
+
+#: js/ui/lookingGlass.js:728
+msgid "View Source"
+msgstr "Amharc ar an bhFoinse"
+
+#: js/ui/lookingGlass.js:737
+msgid "Web Page"
+msgstr "Leathanach Gréasáin"
+
+#: js/ui/lookingGlass.js:746
+msgid "Reload Code"
+msgstr "Athluchtaigh Cód"
+
+#: js/ui/main.js:391
+msgid "WORKSPACE"
+msgstr "SPÁS OIBRE"
+
+#: js/ui/messageTray.js:1259
+msgid "Open"
+msgstr "Oscail"
+
+#: js/ui/messageTray.js:1266
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/applet.js:58
+msgid "Remove"
+msgstr "Bain"
+
+#: js/ui/messageTray.js:1853
+msgid "System Information"
+msgstr "Córas Fáisnéise"
+
+#: js/ui/networkAgent.js:139
+msgid "Connect"
+msgstr "Ceangail"
+
+#: js/ui/networkAgent.js:234 js/ui/networkAgent.js:246
+#: js/ui/networkAgent.js:273 js/ui/networkAgent.js:293
+#: js/ui/networkAgent.js:303
+msgid "Password: "
+msgstr "Focal Faire: "
+
+#: js/ui/networkAgent.js:239
+msgid "Key: "
+msgstr "Eochair "
+
+#: js/ui/networkAgent.js:271 js/ui/networkAgent.js:289
+msgid "Username: "
+msgstr "Ainm úsáideora "
+
+#: js/ui/networkAgent.js:277
+msgid "Identity: "
+msgstr "Féiniúlacht "
+
+#: js/ui/networkAgent.js:279
+msgid "Private key password: "
+msgstr "Focal Faire le heochair phríomháideach "
+
+#: js/ui/networkAgent.js:291
+msgid "Service: "
+msgstr "Seirbhís "
+
+#: js/ui/networkAgent.js:320
+msgid "Authentication required by wireless network"
+msgstr "Fíordheimhniú ag teastáil ón líonra gan sreang"
+
+#: js/ui/networkAgent.js:321
+#, c-format
+msgid ""
+"Passwords or encryption keys are required to access the wireless network "
+"'%s'."
+msgstr ""
+"Focail Faire nó eochracha criptiúcháin ag teastáil do rochtain ar an líonra "
+"gan sreang  '%s'."
+
+#: js/ui/networkAgent.js:325
+msgid "Wired 802.1X authentication"
+msgstr "Fíordheimhniúchán sreinge 802.1X"
+
+#: js/ui/networkAgent.js:327
+msgid "Network name: "
+msgstr "Ainm an líonra "
+
+#: js/ui/networkAgent.js:332
+msgid "DSL authentication"
+msgstr "Fíordheimhniúchán DSL"
+
+#: js/ui/networkAgent.js:339
+msgid "PIN code required"
+msgstr "Cód PIN ag teastáil"
+
+#: js/ui/networkAgent.js:340
+msgid "PIN code is needed for the mobile broadband device"
+msgstr "Cód PIN ag teastáil don ghléas leathanbhanda móibíleach"
+
+#: js/ui/networkAgent.js:341
+msgid "PIN: "
+msgstr "PIN "
+
+#: js/ui/networkAgent.js:347
+msgid "Mobile broadband network password"
+msgstr "Focal Faire ar líonra leathanbhanda móibileach"
+
+#: js/ui/networkAgent.js:348
+#, c-format
+msgid "A password is required to connect to '%s'."
+msgstr "Focal Faire ag teastáil chun ceangal le '%s'."
+
+#: js/ui/panel.js:426
+#: files/usr/share/cinnamon/applets/brightness@cinnamon.org/applet.js:148
+#: files/usr/share/cinnamon/applets/settings@cinnamon.org/applet.js:28
+msgid "Settings"
+msgstr "Socruithe"
+
+#: js/ui/panel.js:428
+msgid "Themes"
+msgstr "Téamaí"
+
+#: js/ui/panel.js:431
+msgid "Applets"
+msgstr "Feidhmchláiríní"
+
+#: js/ui/panel.js:434
+msgid "Panel"
+msgstr "Painéal"
+
+#: js/ui/panel.js:437
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:660
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:699
+msgid "Menu"
+msgstr "Roghchlár"
+
+#: js/ui/panel.js:440
+msgid "All settings"
+msgstr "Na Socruithe uile"
+
+#: js/ui/panel.js:445
+msgid "Troubleshoot"
+msgstr "Fabhtcheartaigh"
+
+#: js/ui/panel.js:446
+msgid "Restart Cinnamon"
+msgstr "Atosaigh Cinnamon"
+
+#: js/ui/panel.js:450
+msgid "Looking Glass"
+msgstr "Looking Glass"
+
+#: js/ui/panel.js:454
+msgid "Restore all settings to default"
+msgstr "Cur réamhshocrú ar ais"
+
+#: js/ui/panel.js:464
+msgid "Panel Edit mode"
+msgstr "Mód Eagarthóireachta Panéil"
+
+#: js/ui/panel.js:488
+msgid "Panel settings"
+msgstr "Socruithe Panéil"
+
+#: js/ui/panel.js:491
+msgid "Add applets to the panel"
+msgstr "Cuir feidhmchláiríní leis an bhpainéal"
+
+#: js/ui/placesManager.js:120
+#, c-format
+msgid "Failed to unmount '%s'"
+msgstr "Theip ar '%s' a dhíghléas"
+
+#: js/ui/placesManager.js:127
+msgid "Retry"
+msgstr "Triail Arís"
+
+#: js/ui/placesManager.js:170
+msgid "Connect to..."
+msgstr "Ceangail le..."
+
+#: js/ui/polkitAuthenticationAgent.js:73
+msgid "Authentication Required"
+msgstr "Fíordheimhniú ag Teastáil"
+
+#: js/ui/polkitAuthenticationAgent.js:107
+msgid "Administrator"
+msgstr "Riarthóir"
+
+#: js/ui/polkitAuthenticationAgent.js:177
+msgid "Authenticate"
+msgstr "Fíordheimhnigh"
+
+#: js/ui/polkitAuthenticationAgent.js:258
+msgid "Sorry, that didn't work. Please try again."
+msgstr "Faraoir, níor oibrigh é sin. Bain triail as arís"
+
+#: js/ui/polkitAuthenticationAgent.js:270
+msgid "Password:"
+msgstr "Focal Faire:"
+
+#: js/ui/runDialog.js:209
+msgid "Please enter a command:"
+msgstr "Iontráil ordú le d' thoil"
+
+#: js/ui/workspace.js:1464
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:44
+msgid "Close"
+msgstr "Dún"
+
+#: js/ui/workspace.js:1468
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:53
+msgid "Restore"
+msgstr "Aischuir"
+
+#: js/ui/workspace.js:1470
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:53
+msgid "Minimize"
+msgstr "Íoslaghdaigh"
+
+#: js/ui/workspace.js:1473 js/ui/workspace.js:1546
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:56
+msgid "Maximize"
+msgstr "Uasmhéadaigh"
+
+#: js/ui/workspace.js:1476
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:59
+msgid "Move to left workspace"
+msgstr "Bog go spásoibre ar chlé"
+
+#: js/ui/workspace.js:1479
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:62
+msgid "Move to right workspace"
+msgstr "Bog go spásoibre ar dheis"
+
+#: js/ui/workspace.js:1482 js/ui/workspace.js:1531
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:65
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:73
+msgid "Visible on all workspaces"
+msgstr "Le feiceáil ar spásanna oibre uile"
+
+#: js/ui/workspace.js:1485
+msgid "Move to a new workspace"
+msgstr "Bog go spásoibre nua"
+
+#: js/ui/workspace.js:1495
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:90
+#, c-format
+msgid "Move to monitor %d"
+msgstr "Bog go monatóir %d"
+
+#: js/ui/workspace.js:1529
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:69
+msgid "Only on this workspace"
+msgstr "Ar an spásoibre seo amháin"
+
+#: js/ui/workspace.js:1544
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:56
+msgid "Unmaximize"
+msgstr "Cealaigh uasmhéadú"
+
+#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:44
+msgid "Accessibility"
+msgstr "Inrochtaineacht"
+
+#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:56
+msgid "Zoom"
+msgstr "Zúmáil"
+
+#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:67
+msgid "Screen Keyboard"
+msgstr "Méarchlár Scáileáin"
+
+#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:71
+msgid "Visual Alerts"
+msgstr "Foláirimh amhairc"
+
+#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:74
+msgid "Sticky Keys"
+msgstr "Greimeochracha"
+
+#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:77
+msgid "Slow Keys"
+msgstr "Eochracha Malla"
+
+#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:80
+msgid "Bounce Keys"
+msgstr "Eochracha preabtha"
+
+#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:83
+msgid "Mouse Keys"
+msgstr "Lucheochracha"
+
+#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:87
+msgid "Universal Access Settings"
+msgstr "Socruithe Rochtana Uilíoch"
+
+#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:142
+msgid "High Contrast"
+msgstr "Ardchodarsnacht"
+
+#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:179
+msgid "Large Text"
+msgstr "Téacs Mór"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:32
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:66
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:106
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:139
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:211
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:215
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:467
+msgid "Bluetooth"
+msgstr "Bluetooth"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:67
+#, c-format
+msgid "Authorization request from %s"
+msgstr "Iarratas údaraithe ó %s"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:73
+#, c-format
+msgid "Device %s wants access to the service '%s'"
+msgstr "Iarann Gléas %s  rochtan ar an tseirbhís '%s'"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:75
+msgid "Always grant access"
+msgstr "Ceadú ar rochtain i gcónaí"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:76
+msgid "Grant this time only"
+msgstr "Ceadú an uair amháin seo"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:77
+msgid "Reject"
+msgstr "Diúltaigh"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:107
+#, c-format
+msgid "Pairing confirmation for %s"
+msgstr "Deimhniú ar phéireáil %s"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:113
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:147
+#, c-format
+msgid "Device %s wants to pair with this computer"
+msgstr "Iarrann gléas %s péireáil leis an ríomhaire seo"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:114
+#, c-format
+msgid "Please confirm whether the PIN '%s' matches the one on the device."
+msgstr ""
+"Deimhnigh go bhfuil an PIN '%s' mar a gcéanna leis an gceann ar an ngléas le "
+"d'thoil."
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:116
+msgid "Matches"
+msgstr "Meaitseálacha"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:117
+msgid "Does not match"
+msgstr "Níltear mar a gcéanna"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:140
+#, c-format
+msgid "Pairing request for %s"
+msgstr "Iarratas péireála ar %s"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:148
+msgid "Please enter the PIN mentioned on the device."
+msgstr "Iontráil an PIN luaite ar an ngléas le d' thoil."
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:164
+msgid "OK"
+msgstr "OK"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:239
+msgid "Visibility"
+msgstr "Sofheictheacht"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:253
+msgid "Send Files to Device..."
+msgstr "Seol Comhaid chuig Gléas..."
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:254
+msgid "Set up a New Device..."
+msgstr "Socraigh suas Gléas Nua"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:278
+msgid "Bluetooth Settings"
+msgstr "Socruithe Bluetooth"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:317
+msgid "hardware disabled"
+msgstr "Crua-earraí neamhchumasaithe"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:414
+msgid "Connection"
+msgstr "Ceangal"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:423
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:508
+msgid "disconnecting..."
+msgstr "Á dínascadh..."
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:436
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:514
+msgid "connecting..."
+msgstr "Á ceangal..."
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:454
+msgid "Send Files..."
+msgstr "Seol Comhaid..."
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:459
+msgid "Browse Files..."
+msgstr "Brabhsáil Comhaid..."
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:468
+msgid "Error browsing device"
+msgstr "Erráid ag brabhsáil gléis"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:469
+#, c-format
+msgid "The requested device cannot be browsed, error is '%s'"
+msgstr "Ní féidir brabhsáil an gléas iarrtha, is í earráid '%s' í"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:477
+msgid "Keyboard Settings"
+msgstr "Socruithe Méarchláir"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:480
+msgid "Mouse Settings"
+msgstr "Socruithe Luiche"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:485
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:939
+msgid "Sound Settings"
+msgstr "Socruithe Fuaime"
+
+#: files/usr/share/cinnamon/applets/brightness@cinnamon.org/applet.js:112
+#: files/usr/share/cinnamon/applets/brightness@cinnamon.org/applet.js:143
+#: files/usr/share/cinnamon/applets/brightness@cinnamon.org/applet.js:225
+#: files/usr/share/cinnamon/applets/brightness@cinnamon.org/applet.js:228
+#: files/usr/share/cinnamon/applets/brightness@cinnamon.org/applet.js:230
+msgid "Brightness"
+msgstr "Gile"
+
+#: files/usr/share/cinnamon/applets/brightness@cinnamon.org/applet.js:117
+msgid "Dimming settings"
+msgstr "Socruithe Maolú"
+
+#: files/usr/share/cinnamon/applets/brightness@cinnamon.org/applet.js:119
+msgid "Dim screen on AC power"
+msgstr "Maolaigh scáileán más ar chumhacht AC"
+
+#: files/usr/share/cinnamon/applets/brightness@cinnamon.org/applet.js:121
+msgid "Dim screen on battery"
+msgstr "Maolaigh scáileán más ar chumhacht cadhnra"
+
+#: files/usr/share/cinnamon/applets/brightness@cinnamon.org/applet.js:144
+msgid "Brightness not available"
+msgstr "Níl Socrú gile ar fáil"
+
+#: files/usr/share/cinnamon/applets/calendar@cinnamon.org/applet.js:65
+msgid "Date and Time Settings"
+msgstr "Socruithe Dátaí is Amanna"
+
+#: files/usr/share/cinnamon/applets/expo@cinnamon.org/applet.js:19
+msgid "Expo"
+msgstr "Expo"
+
+#: files/usr/share/cinnamon/applets/keyboard@cinnamon.org/applet.js:66
+msgid "Show Keyboard Layout"
+msgstr "Taispeáin leagan amach mearchláir"
+
+#: files/usr/share/cinnamon/applets/keyboard@cinnamon.org/applet.js:70
+msgid "Show Character Table"
+msgstr "Taispeáin Tábla Caractar"
+
+#: files/usr/share/cinnamon/applets/keyboard@cinnamon.org/applet.js:74
+msgid "Region and Language Settings"
+msgstr "Socruithe Reigiúnda agus Teanga"
+
+#: files/usr/share/cinnamon/applets/keyboard@cinnamon.org/applet.js:76
+msgid "Show flags"
+msgstr "Taispeáin Bratacha"
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:203
+msgid "Add to panel"
+msgstr "Cuir ar an bpainéal"
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:206
+msgid "Add to desktop"
+msgstr "Cuir ar dheasc"
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:210
+msgid "Remove from favorites"
+msgstr "Bain ón na ceanáin"
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:213
+msgid "Add to favorites"
+msgstr "Cuir leis na ceanáin"
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:343
+#: files/usr/share/cinnamon/applets/recent@cinnamon.org/applet.js:70
+msgid "Clear list"
+msgstr "Glan liosta"
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:380
+msgid "All Applications"
+msgstr "Feidhmchláir Uile"
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:403
+msgid "Places"
+msgstr "Áiteanna"
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:421
+msgid "Recent Files"
+msgstr "Comhaid Is Déanaí"
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:748
+msgid "Edit menu"
+msgstr "Roghchlár Cuir in Eagar"
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:750
+msgid "Menu settings"
+msgstr "Socruithe roghchláir"
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1216
+#: files/usr/lib/cinnamon-screensaver-lock-dialog/cinnamon-screensaver-lock-dialog.py:37
+msgid "Lock screen"
+msgstr "Cuir scáileán faoi ghlas"
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1217
+msgid "Lock the screen"
+msgstr "Cuir an scáileán faoi ghlas"
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1241
+msgid "Logout"
+msgstr "Logáil Amach"
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1242
+msgid "Leave the session"
+msgstr "Fág slán leis an seisiún"
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1258
+msgid "Quit"
+msgstr "Scoir"
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1259
+msgid "Shutdown the computer"
+msgstr "Múch an ríomhaire"
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1368
+msgid "Type to search..."
+msgstr "Clóscríobh chun cuardach ar..."
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:96
+msgid "<unknown>"
+msgstr "<anaithnid>"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:306
+msgid "disabled"
+msgstr "díchumasaithe"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:506
+msgid "unmanaged"
+msgstr "Ní faoi bhainistíocht"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:517
+msgid "authentication required"
+msgstr "fíordheimhniú ag teastáil"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:527
+msgid "firmware missing"
+msgstr "dochtearraí ar iarraidh"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:534
+msgid "cable unplugged"
+msgstr "cábla díphlugáilte"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:539
+msgid "unavailable"
+msgstr "níl fáil air"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:541
+msgid "connection failed"
+msgstr "Theip ar cheangal"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:597
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1554
+msgid "More..."
+msgstr "Tuilleadh..."
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:633
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1489
+msgid "Connected (private)"
+msgstr "Ceangailte (go príobháideach)"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:711
+msgid "Auto Ethernet"
+msgstr "Uath-Ethernet"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:775
+msgid "Auto broadband"
+msgstr "Uath-leathanbhanda"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:778
+msgid "Auto dial-up"
+msgstr "Uath-diailigh"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:900
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1501
+#, c-format
+msgid "Auto %s"
+msgstr "Uath %s"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:902
+msgid "Auto bluetooth"
+msgstr "Uath-bluetooth"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1503
+msgid "Auto wireless"
+msgstr "Uath-Ghléas gan sreang"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1591
+msgid "Network Manager"
+msgstr "Bainisteoir líonra"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1624
+msgid "Enable networking"
+msgstr "Líonrú cumasaithe"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1636
+msgid "Wired"
+msgstr "Sreangaithe"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1647
+msgid "Wireless"
+msgstr "Gan Sreang"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1657
+msgid "Mobile broadband"
+msgstr "Leathanbanda móibileach"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1667
+msgid "VPN Connections"
+msgstr "Ceangail VPN"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1678
+msgid "Network Settings"
+msgstr "Socruithe Líonra"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1829
+msgid "Connection failed"
+msgstr "Theip ar cheangal"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1830
+msgid "Activation of network connection failed"
+msgstr "Theip ar Ghníomhachtú an cheangail líonra"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2087
+msgid "Networking is disabled"
+msgstr "Líonrú díchumasaithe"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2106
+msgid "No connection"
+msgstr "Níl ceangal ann"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2112
+msgid "Connecting to the cellular network..."
+msgstr "Á ceangal leis an ngréasán ceallach"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2116
+msgid "Connecting to the wireless network..."
+msgstr "Á ceangal le líonra gan sreang..."
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2120
+msgid "Connecting to the wired network..."
+msgstr "Á ceangal le líonra sreinge ..."
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2124
+msgid "Connecting to the VPN..."
+msgstr "Á ceangal leis an VPN.."
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2130
+msgid "Connecting to the network..."
+msgstr "Á ceangal leis an líonra"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2146
+msgid "Connected to the wireless network"
+msgstr "Ceangailte le líonra gan sreang"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2149
+msgid "Wireless connection"
+msgstr "Ceangal gan sreang"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2159
+msgid "Connected to the wired network"
+msgstr "Ceangailte leis an líonra sreinge"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2170
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2175
+msgid "Connected to the cellular network"
+msgstr "Ceangailte leis an líonra ceallach"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2180
+msgid "Connected to the VPN"
+msgstr "Ceangailte leis an VPN"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2186
+msgid "Connected to the network"
+msgstr "Ceangailte leis an líonra"
+
+#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:39
+msgid "Notifications"
+msgstr "Fógairtí"
+
+#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:52
+msgid "Clear notifications"
+msgstr "Fógairtí glanta"
+
+#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:210
+msgid "No notifications"
+msgstr "Níl fógairtí ann"
+
+#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:213
+msgid " notification"
+msgstr " fógairt"
+
+#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:216
+msgid " notifications"
+msgstr " fógairtí"
+
+#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:230
+msgid " (Just now)"
+msgstr " (Anois díreach)"
+
+#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:233
+#, c-format
+msgid " (%s seconds ago)"
+msgstr " (%s soicind ó shin)"
+
+#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:236
+#, c-format
+msgid " (%s minute ago)"
+msgstr " (%s nóiméad ó shin)"
+
+#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:239
+#, c-format
+msgid " (%s minutes ago)"
+msgstr " (%s nóiméad ó shin)"
+
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/applet.js:46
+msgid "Launch"
+msgstr "Lainseáil"
+
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/applet.js:50
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/cinnamon-add-panel-launcher.py:151
+msgid "Add"
+msgstr "Cuir Leis"
+
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/applet.js:54
+msgid "Edit"
+msgstr "Eagar"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:104
+msgid "AC adapter"
+msgstr "Cuibheoir SA"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:106
+msgid "Laptop battery"
+msgstr "Cadhnra ríomhaire glúine"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:108
+msgid "UPS"
+msgstr "UPS"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:110
+msgid "Monitor"
+msgstr "Monatóir"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:112
+msgid "Mouse"
+msgstr "Luch"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:116
+msgid "PDA"
+msgstr "PDA"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:118
+msgid "Cell phone"
+msgstr "Fón póca"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:120
+msgid "Media player"
+msgstr "Seinnteoir meán"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:122
+msgid "Tablet"
+msgstr "Táibléad"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:124
+msgid "Computer"
+msgstr "Ríomhaire"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:182
+#: files/usr/share/cinnamon/applets/xrandr@cinnamon.org/applet.js:45
+msgid "Display"
+msgstr "Taispeáin"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:184
+msgid "Show percentage"
+msgstr "Taispeáin céatadán"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:189
+msgid "Show time remaining"
+msgstr "Taispeáin an t-am atá fanta"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:194
+msgid "Hide label"
+msgstr "Cuir lipéid faoi cheilt"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:202
+msgid "Power Settings"
+msgstr "Socruithe Cumhachta"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:251
+msgid "Estimating..."
+msgstr "Meastachán á dhéanamh..."
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:258
+#, c-format
+msgid "%d hour remaining"
+msgid_plural "%d hours remaining"
+msgstr[0] "%d uair fágtha"
+msgstr[1] "%d uair fagtha"
+msgstr[2] "%d uair fágtha"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:261
+#, c-format
+msgid "%d %s %d %s remaining"
+msgstr "%d %s %d %s fágtha"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:263
+msgid "hour"
+msgid_plural "hours"
+msgstr[0] "uair"
+msgstr[1] "uair"
+msgstr[2] "Uair"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:263
+msgid "minute"
+msgid_plural "minutes"
+msgstr[0] "nóiméad"
+msgstr[1] "nóiméad"
+msgstr[2] "nóiméad"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:266
+#, c-format
+msgid "%d minute remaining"
+msgid_plural "%d minutes remaining"
+msgstr[0] "%d nóiméad atá fanta"
+msgstr[1] "%d nóiméad atá fanta"
+msgstr[2] "%d nóiméad atá fanta"
+
+#: files/usr/share/cinnamon/applets/recent@cinnamon.org/applet.js:41
+msgid "Recent documents"
+msgstr "Cáipéisí is déanaí"
+
+#: files/usr/share/cinnamon/applets/recent@cinnamon.org/applet.js:74
+msgid "No recent documents"
+msgstr "Níl cáipéisí ar oscailt le déanaí"
+
+#: files/usr/share/cinnamon/applets/removable-drives@cinnamon.org/applet.js:53
+msgid "Removable drives"
+msgstr "Tiomántán inaistrithe"
+
+#: files/usr/share/cinnamon/applets/removable-drives@cinnamon.org/applet.js:65
+msgid "Open file manager"
+msgstr "Oscail bainisteoir comhad"
+
+#: files/usr/share/cinnamon/applets/scale@cinnamon.org/applet.js:19
+msgid "Scale"
+msgstr "Scála"
+
+#: files/usr/share/cinnamon/applets/show-desktop@cinnamon.org/applet.js:15
+msgid "Show desktop"
+msgstr "Taispeáin an deasc"
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:105
+msgid "Playing"
+msgstr "Ag Seinm"
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:106
+msgid "Paused"
+msgstr "Ar Sos"
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:107
+msgid "Stopped"
+msgstr "Stoptha"
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:373
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:489
+msgid "Unknown Artist"
+msgstr "Ceoltóir gan ainm"
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:374
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:493
+msgid "Unknown Album"
+msgstr "Albam gan teideal"
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:375
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:497
+msgid "Unknown Title"
+msgstr "Gan teideal"
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:386
+msgid "Previous"
+msgstr "Roimhe Seo"
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:389
+msgid "Play"
+msgstr "Seinn"
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:392
+msgid "Stop"
+msgstr "Stad"
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:395
+msgid "Next"
+msgstr "An chéad cheann eile"
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:409
+msgid "Open Player"
+msgstr "Oscail seinnteoir"
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:419
+msgid "Quit Player"
+msgstr "Scoir den seinnteoir"
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:744
+msgid "Mute output"
+msgstr "Balbhaigh aschur"
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:745
+msgid "Mute input"
+msgstr "Balbhaigh ionchur"
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:912
+msgid "Launch player..."
+msgstr "Lainseáil seinnteoir..."
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:925
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:988
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:989
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:994
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:995
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1014
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1015
+msgid "Volume"
+msgstr "Rialú Fuaime"
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:932
+msgid "Microphone"
+msgstr "Micreafón"
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:941
+msgid "Output device..."
+msgstr "Gléas aischur"
+
+#: files/usr/share/cinnamon/applets/trash@cinnamon.org/applet.js:21
+msgid "Trash"
+msgstr "Bruscar"
+
+#: files/usr/share/cinnamon/applets/trash@cinnamon.org/applet.js:39
+msgid "Empty Trash"
+msgstr "Folmhaigh Bruscar"
+
+#: files/usr/share/cinnamon/applets/trash@cinnamon.org/applet.js:42
+msgid "Open Trash"
+msgstr "Oscail Bruscair"
+
+#: files/usr/share/cinnamon/applets/trash@cinnamon.org/applet.js:86
+msgid "Are you sure you want to delete all items from the trash?"
+msgstr ""
+"An bhfuil tú cinnte gur mhaith leat gach rud sa bruscar a scriosadh ?"
+
+#: files/usr/share/cinnamon/applets/trash@cinnamon.org/applet.js:86
+msgid "This operation cannot be undone."
+msgstr "Ní féidir an beart a chealú."
+
+#: files/usr/share/cinnamon/applets/trash@cinnamon.org/applet.js:107
+msgid "Empty Trash?"
+msgstr "Folmhaigh bruscar ?"
+
+#: files/usr/share/cinnamon/applets/trash@cinnamon.org/applet.js:125
+msgid "Empty"
+msgstr "Folmhaigh"
+
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:47
+msgid "Close all"
+msgstr "Dún síos gach rud"
+
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:50
+msgid "Close others"
+msgstr "Dún cinn eile"
+
+#: files/usr/share/cinnamon/applets/windows-quick-list@cinnamon.org/applet.js:24
+msgid "All windows"
+msgstr "Na fuinneoga uile"
+
+#: files/usr/share/cinnamon/applets/windows-quick-list@cinnamon.org/applet.js:106
+msgid "No open windows"
+msgstr "Níl fuinneoga ar oscailt"
+
+#: files/usr/share/cinnamon/applets/workspace-switcher@cinnamon.org/applet.js:18
+msgid "Switch workspace"
+msgstr "Bogadh ón spásoibre"
+
+#: files/usr/share/cinnamon/applets/xrandr@cinnamon.org/applet.js:88
+msgid "Configure display settings..."
+msgstr "Cumraigh na socruithe taispeána..."
+
+#: files/usr/share/cinnamon/desklets/clock@cinnamon.org/desklet.js:20
+msgid "Clock"
+msgstr "Clog"
+
+#: files/usr/share/cinnamon/desklets/launcher@cinnamon.org/desklet.js:30
+msgid "Add new launcher"
+msgstr "Cuir láinseálaí nua leis"
+
+#: files/usr/share/cinnamon/desklets/launcher@cinnamon.org/desklet.js:33
+msgid "Edit launcher"
+msgstr "Cuir eagar ar láinseálaí"
+
+#: files/usr/share/cinnamon/desklets/photoframe@cinnamon.org/desklet.js:24
+msgid "Photo Frame"
+msgstr "Fráma Grianghraif"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:30
+msgid "Desktop Settings"
+msgstr "Socruithe na Deisce"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:31
+msgid "Desktop Configuration Tool"
+msgstr "Uirlís Chumraíochta Deisce"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:32
+msgid "Fine-tune desktop settings"
+msgstr "Mionchoigeartaigh ar shocruithe deisce"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:44
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:91
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:111
+msgid "Cinnamon Settings"
+msgstr "Socruithe Cinnamon"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:61
+msgid "All Settings"
+msgstr "Na Socruithe uile"
+
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/cinnamon-add-panel-launcher.py:59
+msgid "Custom Launcher"
+msgstr "Láinseálaí saincheaptha"
+
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/cinnamon-add-panel-launcher.py:138
+msgid "Name"
+msgstr "Ainm"
+
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/cinnamon-add-panel-launcher.py:139
+msgid "Application"
+msgstr "Feidhmchlár"
+
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/cinnamon-add-panel-launcher.py:140
+msgid "Icon"
+msgstr "Deilbhín"
+
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/cinnamon-add-panel-launcher.py:142
+msgid "Add panel launcher..."
+msgstr "Cuir lainseálaí painéil leis..."
+
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/cinnamon-add-panel-launcher.py:148
+msgid "Update"
+msgstr "Nuashonraigh"
+
+#: files/usr/lib/cinnamon-screensaver-lock-dialog/cinnamon-screensaver-lock-dialog.py:40
+msgid "Please type an away message for the lock screen"
+msgstr ""
+"Clóscríobh teachtaireacht asláithreachta don glasáil scáileáin le d' thoil"

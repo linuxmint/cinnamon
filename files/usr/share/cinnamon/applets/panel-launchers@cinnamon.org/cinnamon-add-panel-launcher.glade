@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
   <!-- interface-requires gtk+ 3.0 -->
+  <object class="GtkImage" id="image-gtk-cancel">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="stock">gtk-cancel</property>
+  </object>
   <object class="GtkDialog" id="add-panel-launcher-dialog">
     <property name="can_focus">False</property>
     <property name="border_width">5</property>
@@ -20,14 +25,14 @@
             <property name="can_focus">False</property>
             <property name="layout_style">end</property>
             <child>
-              <object class="GtkButton" id="add_button">
-                <property name="label" translatable="yes">Add</property>
-                <property name="use_action_appearance">False</property>
+              <object class="GtkButton" id="cancel_button">
+                <property name="label" translatable="yes">_Cancel</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
-                <property name="use_action_appearance">False</property>
-                <signal name="clicked" handler="onAdd" swapped="no"/>
+                <property name="image">image-gtk-cancel</property>
+                <property name="use_underline">True</property>
+                <signal name="clicked" handler="onDeleteWindow" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -36,14 +41,14 @@
               </packing>
             </child>
             <child>
-              <object class="GtkButton" id="cancel_button">
-                <property name="label" translatable="yes">Cancel</property>
-                <property name="use_action_appearance">False</property>
+              <object class="GtkButton" id="add_button">
+                <property name="label" translatable="yes">_Add</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
-                <property name="use_action_appearance">False</property>
-                <signal name="clicked" handler="onDeleteWindow" swapped="no"/>
+                <property name="image">image-gtk-save</property>
+                <property name="use_underline">True</property>
+                <signal name="clicked" handler="onAdd" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -60,142 +65,208 @@
           </packing>
         </child>
         <child>
-          <object class="GtkLayout" id="layout1">
-            <property name="width_request">549</property>
-            <property name="height_request">110</property>
+          <object class="GtkBox" id="box1">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
+            <property name="border_width">6</property>
+            <property name="spacing">12</property>
             <child>
-              <object class="GtkGrid" id="grid1">
-                <property name="width_request">430</property>
-                <property name="height_request">85</property>
+              <object class="GtkBox" id="box2">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
+                <property name="orientation">vertical</property>
+                <property name="spacing">6</property>
                 <child>
-                  <object class="GtkLabel" id="name_label">
+                  <object class="GtkBox" id="box3">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="label" translatable="yes">Name </property>
+                    <property name="spacing">12</property>
+                    <child>
+                      <object class="GtkLabel" id="name_label">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="xalign">1</property>
+                        <property name="label" translatable="yes">_Name:</property>
+                        <property name="use_underline">True</property>
+                        <property name="mnemonic_widget">app_name</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkEntry" id="app_name">
+                        <property name="width_request">300</property>
+                        <property name="height_request">35</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="invisible_char">●</property>
+                        <property name="invisible_char_set">True</property>
+                        <signal name="changed" handler="onNameChanged" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
                   </object>
                   <packing>
-                    <property name="left_attach">0</property>
-                    <property name="top_attach">0</property>
-                    <property name="width">1</property>
-                    <property name="height">1</property>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkLabel" id="application_label">
+                  <object class="GtkBox" id="box4">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="label" translatable="yes">Application  </property>
+                    <property name="spacing">12</property>
+                    <child>
+                      <object class="GtkLabel" id="application_label">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="xalign">0</property>
+                        <property name="label" translatable="yes">A_pplication:</property>
+                        <property name="use_underline">True</property>
+                        <property name="mnemonic_widget">app_path</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkBox" id="box6">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="spacing">6</property>
+                        <child>
+                          <object class="GtkEntry" id="app_path">
+                            <property name="width_request">300</property>
+                            <property name="height_request">35</property>
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="invisible_char">●</property>
+                            <property name="invisible_char_set">True</property>
+                            <signal name="changed" handler="onAppChanged" swapped="no"/>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkFileChooserButton" id="app_picker">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="halign">start</property>
+                            <property name="orientation">vertical</property>
+                            <property name="preview_widget_active">False</property>
+                            <property name="use_preview_label">False</property>
+                            <signal name="file-set" handler="onAppPicked" swapped="no"/>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
                   </object>
                   <packing>
-                    <property name="left_attach">0</property>
-                    <property name="top_attach">1</property>
-                    <property name="width">1</property>
-                    <property name="height">1</property>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">1</property>
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkLabel" id="icon_label">
+                  <object class="GtkBox" id="box5">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="label" translatable="yes">Icon</property>
+                    <property name="spacing">12</property>
+                    <child>
+                      <object class="GtkLabel" id="icon_label">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="xalign">1</property>
+                        <property name="label" translatable="yes">_Icon:</property>
+                        <property name="use_underline">True</property>
+                        <property name="mnemonic_widget">icon_path</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkBox" id="box7">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="spacing">6</property>
+                        <child>
+                          <object class="GtkEntry" id="icon_path">
+                            <property name="width_request">300</property>
+                            <property name="height_request">35</property>
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="invisible_char">●</property>
+                            <property name="invisible_char_set">True</property>
+                            <signal name="changed" handler="onIconChanged" swapped="no"/>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkFileChooserButton" id="icon_picker">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="halign">start</property>
+                            <property name="orientation">vertical</property>
+                            <property name="preview_widget_active">False</property>
+                            <property name="use_preview_label">False</property>
+                            <signal name="file-set" handler="onIconPicked" swapped="no"/>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
                   </object>
                   <packing>
-                    <property name="left_attach">0</property>
-                    <property name="top_attach">2</property>
-                    <property name="width">1</property>
-                    <property name="height">1</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkEntry" id="app_name">
-                    <property name="width_request">300</property>
-                    <property name="height_request">35</property>
-                    <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="invisible_char">●</property>
-                    <signal name="changed" handler="onNameChanged" swapped="no"/>
-                  </object>
-                  <packing>
-                    <property name="left_attach">1</property>
-                    <property name="top_attach">0</property>
-                    <property name="width">1</property>
-                    <property name="height">1</property>
-                  </packing>
-                </child>
-                <child>
-                  <placeholder/>
-                </child>
-                <child>
-                  <object class="GtkEntry" id="app_path">
-                    <property name="width_request">300</property>
-                    <property name="height_request">35</property>
-                    <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="invisible_char">●</property>
-                    <signal name="changed" handler="onAppChanged" swapped="no"/>
-                  </object>
-                  <packing>
-                    <property name="left_attach">1</property>
-                    <property name="top_attach">1</property>
-                    <property name="width">1</property>
-                    <property name="height">1</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkEntry" id="icon_path">
-                    <property name="width_request">300</property>
-                    <property name="height_request">35</property>
-                    <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="invisible_char">●</property>
-                    <signal name="changed" handler="onIconChanged" swapped="no"/>
-                  </object>
-                  <packing>
-                    <property name="left_attach">1</property>
-                    <property name="top_attach">2</property>
-                    <property name="width">1</property>
-                    <property name="height">1</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkFileChooserButton" id="app_picker">
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="halign">start</property>
-                    <property name="orientation">vertical</property>
-                    <property name="preview_widget_active">False</property>
-                    <property name="use_preview_label">False</property>
-                    <signal name="file-set" handler="onAppPicked" swapped="no"/>
-                  </object>
-                  <packing>
-                    <property name="left_attach">2</property>
-                    <property name="top_attach">1</property>
-                    <property name="width">1</property>
-                    <property name="height">1</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkFileChooserButton" id="icon_picker">
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="halign">start</property>
-                    <property name="orientation">vertical</property>
-                    <property name="preview_widget_active">False</property>
-                    <property name="use_preview_label">False</property>
-                    <signal name="file-set" handler="onIconPicked" swapped="no"/>
-                  </object>
-                  <packing>
-                    <property name="left_attach">2</property>
-                    <property name="top_attach">2</property>
-                    <property name="width">1</property>
-                    <property name="height">1</property>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">2</property>
                   </packing>
                 </child>
               </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
             </child>
             <child>
               <object class="GtkImage" id="icon">
@@ -207,13 +278,14 @@
                 <property name="icon-size">6</property>
               </object>
               <packing>
-                <property name="x">441</property>
-                <property name="y">11</property>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
               </packing>
             </child>
           </object>
           <packing>
-            <property name="expand">True</property>
+            <property name="expand">False</property>
             <property name="fill">True</property>
             <property name="position">1</property>
           </packing>
@@ -221,8 +293,26 @@
       </object>
     </child>
     <action-widgets>
-      <action-widget response="0">add_button</action-widget>
       <action-widget response="0">cancel_button</action-widget>
+      <action-widget response="0">add_button</action-widget>
     </action-widgets>
+  </object>
+  <object class="GtkImage" id="image-gtk-save">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="stock">gtk-save</property>
+  </object>
+  <object class="GtkSizeGroup" id="sizegroup_filechooserbuttons">
+    <widgets>
+      <widget name="app_picker"/>
+      <widget name="icon_picker"/>
+    </widgets>
+  </object>
+  <object class="GtkSizeGroup" id="sizegroup_labels">
+    <widgets>
+      <widget name="name_label"/>
+      <widget name="application_label"/>
+      <widget name="icon_label"/>
+    </widgets>
   </object>
 </interface>

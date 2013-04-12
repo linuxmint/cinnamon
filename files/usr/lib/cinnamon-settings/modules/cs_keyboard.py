@@ -2,14 +2,13 @@
 
 from SettingsWidgets import *
 from gi.repository import Gio, Gtk, GObject, Gdk
-import math
 import cgi
 import gettext
 
 gettext.install("cinnamon", "/usr/share/cinnamon/locale")
 
 # Keybindings page - check if we need to store custom
-# keybindings to gsettings key as well as gconf (In Mint 14 this is changed)
+# keybindings to gsettings key as well as GConf (In Mint 14 this is changed)
 CUSTOM_KEYS_BASENAME = "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings"
 CUSTOM_KEYS_SCHEMA = "org.gnome.settings-daemon.plugins.media-keys.custom-keybinding"
 CUSTOM_KEYBINDINGS_GSETTINGS = False
@@ -147,9 +146,12 @@ if HAS_DEDICATED_TERMINAL_SHORTCUT:
 
 class Module:
     def __init__(self, content_box):
-        sidePage = KeyboardSidePage(_("Keyboard"), "keyboard.svg", content_box)
+        keywords = _("keyboard, shortcut, hotkey")
+        advanced = True
+        sidePage = KeyboardSidePage(_("Keyboard"), "keyboard.svg", keywords, advanced, content_box)
         self.sidePage = sidePage
         self.name = "keyboard"
+        self.category = "hardware"
 
         # Let's transition any existing gconf shortcuts over to gsettings
         # Since we're still going to support both, and really only track gconf (for now)
@@ -158,7 +160,7 @@ class Module:
         first_run_completed = schema.get_boolean("custom-keybindings-to-3-6")
 
         if CUSTOM_KEYBINDINGS_GSETTINGS and not first_run_completed:
-            gclient = gconf.client_get_default()
+            gclient = GConf.Client.get_default()
             path = "/desktop/gnome/keybindings"
             subdirs = gclient.all_dirs(path)
             for subdir in subdirs:
@@ -249,7 +251,7 @@ class CustomKeyBinding():
         self.writeSettings()
 
     def writeSettings(self):
-        gclient = gconf.client_get_default()
+        gclient = GConf.Client.get_default()
         gclient.set_string(self.path + "/name", self.label)
         gclient.set_string(self.path + "/action", self.action)
         gclient.set_string(self.path + "/binding", self.entries[0])
@@ -284,119 +286,6 @@ def clean_kb(keybinding):
     keybinding = keybinding.replace("<Alt>", _("Alt-"))
     keybinding = keybinding.replace("<Control>", _("Ctrl-"))
     return cgi.escape(keybinding)
-
-class KeyboardRange(Gtk.HBox):
-    def __init__(self, label, low_label, hi_label, low_limit, hi_limit, inverted, valtype, exponential, schema, key, dep_key, **options):
-        super(KeyboardRange, self).__init__()
-        self.key = key
-        self.dep_key = dep_key
-        self.settings = Gio.Settings.new(schema)
-        self.valtype = valtype
-        if self.valtype == "int":
-            self.value = self.settings.get_int(self.key) * 1.0
-        elif self.valtype == "uint":
-            self.value = self.settings.get_uint(self.key) * 1.0
-        elif self.valtype == "double":
-            self.value = self.settings.get_double(self.key) * 1.0
-        self.label = Gtk.Label(label)
-        self.low_label = Gtk.Label()
-        self.hi_label = Gtk.Label()
-        self.low_label.set_markup("<i><small>%s</small></i>" % low_label)
-        self.hi_label.set_markup("<i><small>%s</small></i>" % hi_label)
-        self.inverted = inverted
-        self.exponential = exponential
-        self._range = (hi_limit - low_limit) * 1.0
-        self._step = options.get('adjustment_step', 1)
-        self._min = low_limit * 1.0
-        self._max = hi_limit * 1.0
-        self.content_widget = Gtk.Scale.new_with_range(Gtk.Orientation.HORIZONTAL, 0, 1, (self._step / self._range))
-        self.content_widget.set_value(self.to_corrected(self.value))
-        self.content_widget.set_draw_value(False);
-        if (label != ""):
-            self.pack_start(self.label, False, False, 2)
-        if (low_label != ""):
-            self.pack_start(self.low_label, False, False, 2)
-        self.pack_start(self.content_widget, True, True, 2)
-        if (hi_label != ""):
-            self.pack_start(self.hi_label, False, False, 2)
-        self._dragging = False
-        self.content_widget.connect('value-changed', self.on_my_value_changed)
-        self.content_widget.connect('button-press-event', self.on_mouse_down)
-        self.content_widget.connect('button-release-event', self.on_mouse_up)
-        self.content_widget.show_all()
-        self.dependency_invert = False
-        if self.dep_key is not None:
-            if self.dep_key[0] == '!':
-                self.dependency_invert = True
-                self.dep_key = self.dep_key[1:]
-            split = self.dep_key.split('/')
-            self.dep_settings = Gio.Settings.new(split[0])
-            self.dep_key = split[1]
-            self.dep_settings.connect("changed::"+self.dep_key, self.on_dependency_setting_changed)
-            self.on_dependency_setting_changed(self, None)
-
-# halt writing gsettings during dragging
-# it can take a long time to process all
-# those updates, and the system can crash
-
-    def on_mouse_down(self, widget, event):
-        self._dragging = True
-
-    def on_mouse_up(self, widget, event):
-        self._dragging = False
-        self.on_my_value_changed(widget)
-
-    def on_my_value_changed(self, widget):
-        if self._dragging:
-            return
-        corrected = self.from_corrected(widget.get_value())
-        if self.valtype == "int":
-            self.settings.set_int(self.key, corrected)
-        elif self.valtype == "uint":
-            self.settings.set_uint(self.key, corrected)
-        elif self.valtype == "double":
-            self.settings.set_double(self.key, corrected)
-
-    def on_dependency_setting_changed(self, settings, dep_key):
-        if not self.dependency_invert:
-            self.set_sensitive(self.dep_settings.get_boolean(self.dep_key))
-        else:
-            self.set_sensitive(not self.dep_settings.get_boolean(self.dep_key))
-
-    def to_corrected(self, value):
-        result = 0.0
-        if self.exponential:
-            k = (math.log(self._max) - math.log(self._min)) / (self._range / self._step)
-            a = self._max / math.exp(k * self._range)
-            cur_val_step = (1 / (k / math.log(value / a))) / self._range
-            if self.inverted:
-                result = 1 - cur_val_step
-            else:
-                result = cur_val_step
-        else:
-            if self.inverted:
-                result = 1 - ((value - self._min) / self._range)
-            else:
-                result = (value - self._min) / self._range
-        return result
-
-    def from_corrected(self, value):
-        result = 0.0
-        if self.exponential:
-            k = (math.log(self._max)-math.log(self._min))/(self._range / self._step)
-            a = self._max / math.exp(k * self._range)
-            if self.inverted:
-                cur_val_step = (1 - value) * self._range
-                result = a * math.exp(k * cur_val_step)
-            else:
-                cur_val_step = value * self._range
-                result =  a * math.exp(k * cur_val_step)
-        else:
-            if self.inverted:
-                result = ((1 - value) * self._range) + self._min
-            else:
-                result =  (value * self._range) + self._min
-        return round(result)
 
 class AddCustomDialog(Gtk.Dialog):
     def __init__(self, edit_mode):
@@ -460,11 +349,11 @@ class NotebookPage:
         self.content_box.show_all()
 
 class KeyboardSidePage (SidePage):
-    def __init__(self, name, icon, content_box):
-        SidePage.__init__(self, name, icon, content_box)
+    def __init__(self, name, icon, keywords, advanced, content_box):
+        SidePage.__init__(self, name, icon, keywords, advanced, content_box)
         self.tabs = []
 
-    def build(self):
+    def build(self, advanced):
         # Clear all the widgets from the content box
         widgets = self.content_box.get_children()
         for widget in widgets:
@@ -474,12 +363,12 @@ class KeyboardSidePage (SidePage):
         tab = NotebookPage(_("Typing"))
         tab.add_widget(GSettingsCheckButton(_("Enable key repeat"), "org.gnome.settings-daemon.peripherals.keyboard", "repeat", None))
         box = IndentedHBox()
-        slider = KeyboardRange(_("Repeat delay:"), _("Short"), _("Long"), 100, 2000, False, "uint", False, "org.gnome.settings-daemon.peripherals.keyboard", "delay",
+        slider = GSettingsRange(_("Repeat delay:"), _("Short"), _("Long"), 100, 2000, False, "uint", False, "org.gnome.settings-daemon.peripherals.keyboard", "delay",
                                                                         "org.gnome.settings-daemon.peripherals.keyboard/repeat", adjustment_step = 10)
         box.pack_start(slider, True, True, 0)
         tab.add_widget(box)
         box = IndentedHBox()
-        slider = KeyboardRange(_("Repeat speed:"), _("Slow"), _("Fast"), 20, 2000, True, "uint", True, "org.gnome.settings-daemon.peripherals.keyboard", "repeat-interval",
+        slider = GSettingsRange(_("Repeat speed:"), _("Slow"), _("Fast"), 20, 2000, True, "uint", True, "org.gnome.settings-daemon.peripherals.keyboard", "repeat-interval",
                                                                         "org.gnome.settings-daemon.peripherals.keyboard/repeat", adjustment_step = 1)
         box.pack_start(slider, True, True, 0)
         tab.add_widget(box)
@@ -487,7 +376,7 @@ class KeyboardSidePage (SidePage):
         
         tab.add_widget(GSettingsCheckButton(_("Text cursor blinks"), "org.gnome.desktop.interface", "cursor-blink", None))
         box = IndentedHBox()
-        slider = KeyboardRange(_("Blink speed:"), _("Slow"), _("Fast"), 100, 2500, True, "int", False, "org.gnome.desktop.interface", "cursor-blink-time",
+        slider = GSettingsRange(_("Blink speed:"), _("Slow"), _("Fast"), 100, 2500, True, "int", False, "org.gnome.desktop.interface", "cursor-blink-time",
                                                                         "org.gnome.desktop.interface/cursor-blink", adjustment_step = 10)
         box.pack_start(slider, True, True, 0)
         tab.add_widget(box)
@@ -648,7 +537,7 @@ class KeyboardSidePage (SidePage):
         for category in self.main_store:
             if category.int_name is "custom":
                 category.clear()
-        gclient = gconf.client_get_default()
+        gclient = GConf.Client.get_default()
         path = "/desktop/gnome/keybindings"
         subdirs = gclient.all_dirs(path)
         for subdir in subdirs:
@@ -756,7 +645,7 @@ class KeyboardSidePage (SidePage):
             dialog.destroy()
             return
 
-        gclient = gconf.client_get_default()
+        gclient = GConf.Client.get_default()
         path = "/desktop/gnome/keybindings/custom"
         i = 0
         while gclient.dir_exists(path + str(i)):
@@ -781,7 +670,7 @@ class KeyboardSidePage (SidePage):
         keybindings, iter = self.kb_tree.get_selection().get_selected()
         if iter:
             keybinding = keybindings[iter][1]
-            gclient = gconf.client_get_default()
+            gclient = GConf.Client.get_default()
             if gclient.dir_exists(keybinding.path):
                 gclient.unset(keybinding.path + "/name")
                 gclient.unset(keybinding.path + "/action")

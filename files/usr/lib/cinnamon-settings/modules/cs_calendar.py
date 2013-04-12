@@ -7,13 +7,12 @@ from gi.repository import Gio, Gtk, GObject, Gdk
 
 class Module:
     def __init__(self, content_box):
-        sidePage = SidePage(_("Calendar"), "clock.svg", content_box)
+        keywords = _("time, date, calendar, format, network, sync")
+        advanced = False
+        sidePage = SidePage(_("Calendar"), "clock.svg", keywords, advanced, content_box)
         self.sidePage = sidePage
         self.name = "calendar"
-        sidePage.add_widget(GSettingsCheckButton(_("Show week dates in calendar"), "org.cinnamon.calendar", "show-weekdate", None))
-        sidePage.add_widget(GSettingsEntry(_("Date format for the panel"), "org.cinnamon.calendar", "date-format", None))
-        sidePage.add_widget(GSettingsEntry(_("Date format inside the date applet"), "org.cinnamon.calendar", "date-format-full", None))
-        sidePage.add_widget(Gtk.LinkButton.new_with_label("http://www.foragoodstrftime.com/", _("Generate your own date formats")))
+        self.category = "prefs"        
         
         try:
             self.changeTimeWidget = ChangeTimeWidget()  
@@ -34,6 +33,11 @@ class Module:
                 self.changeTimeWidget.change_using_ntp( self.ntpCheckButton.get_active() )
         except Exception, detail:
             print detail
+            
+        sidePage.add_widget(GSettingsCheckButton(_("Show week numbers in calendar"), "org.cinnamon.calendar", "show-weekdate", None), True)
+        sidePage.add_widget(GSettingsEntry(_("Date format for the panel"), "org.cinnamon.calendar", "date-format", None), True)
+        sidePage.add_widget(GSettingsEntry(_("Date format inside the date applet"), "org.cinnamon.calendar", "date-format-full", None), True)
+        sidePage.add_widget(Gtk.LinkButton.new_with_label("http://www.foragoodstrftime.com/", _("Generate your own date formats")), True)
 
     def _ntp_toggled(self, widget):
         self.changeTimeWidget.change_using_ntp( self.ntpCheckButton.get_active() )
