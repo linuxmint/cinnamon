@@ -52,10 +52,9 @@ BoxPointer.prototype = {
         let themeNode = this.actor.get_theme_node();
         let rise = themeNode.get_length('-arrow-rise');
 
-        this.opacity = 0;
-        this.actor.show();
-
         if (animate) {
+            this.opacity = 0;
+            this.actor.show();
             switch (this._arrowSide) {
                 case St.Side.TOP:
                     this.yOffset = -rise;
@@ -70,14 +69,16 @@ BoxPointer.prototype = {
                     this.xOffset = rise;
                     break;
             }
+            Tweener.addTween(this, { opacity: 255,
+                                     xOffset: 0,
+                                     yOffset: 0,
+                                     transition: 'linear',
+                                     onComplete: onComplete,
+                                     time: POPUP_ANIMATION_TIME });
+        } else {
+            this.opacity = 255;
+            this.actor.show();
         }
-
-        Tweener.addTween(this, { opacity: 255,
-                                 xOffset: 0,
-                                 yOffset: 0,
-                                 transition: 'linear',
-                                 onComplete: onComplete,
-                                 time: POPUP_ANIMATION_TIME });
     },
 
     hide: function(animate, onComplete) {
@@ -101,21 +102,22 @@ BoxPointer.prototype = {
                     xOffset = -rise;
                     break;
             }
+            Tweener.addTween(this, { opacity: 0,
+                                     xOffset: xOffset,
+                                     yOffset: yOffset,
+                                     transition: 'linear',
+                                     time: POPUP_ANIMATION_TIME,
+                                     onComplete: Lang.bind(this, function () {
+                                         this.actor.hide();
+                                         this.xOffset = 0;
+                                         this.yOffset = 0;
+                                         if (onComplete)
+                                             onComplete();
+                                         })
+                                     });
+        } else {
+            this.actor.hide();
         }
-
-        Tweener.addTween(this, { opacity: 0,
-                                 xOffset: xOffset,
-                                 yOffset: yOffset,
-                                 transition: 'linear',
-                                 time: POPUP_ANIMATION_TIME,
-                                 onComplete: Lang.bind(this, function () {
-                                     this.actor.hide();
-                                     this.xOffset = 0;
-                                     this.yOffset = 0;
-                                     if (onComplete)
-                                         onComplete();
-                                 })
-                               });
     },
 
     _adjustAllocationForArrow: function(isWidth, alloc) {
