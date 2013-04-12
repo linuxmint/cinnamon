@@ -431,6 +431,9 @@ function populateSettingsMenu(menu) {
     menuItem = new SettingsLauncher(_("Applets"), "applets", "applets", menu.settingsItem.menu);
     menu.settingsItem.menu.addMenuItem(menuItem);
 
+    menuItem = new SettingsLauncher(_("Desklets"), "desklets", "desklets", menu.settingsItem.menu);
+    menu.settingsItem.menu.addMenuItem(menuItem);  
+
     menuItem = new SettingsLauncher(_("Panel"), "panel", "panel", menu.settingsItem.menu);
     menu.settingsItem.menu.addMenuItem(menuItem);
 
