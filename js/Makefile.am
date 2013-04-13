@@ -16,7 +16,11 @@ nobase_dist_js_DATA = \
 	misc/util.js		\
 	misc/windowUtils.js		\
 	perf/core.js		\
-	ui/altTab.js		\
+	ui/appSwitcher/appSwitcher.js	\
+	ui/appSwitcher/appSwitcher3D.js	\
+	ui/appSwitcher/classicSwitcher.js	\
+	ui/appSwitcher/coverflowSwitcher.js	\
+	ui/appSwitcher/timelineSwitcher.js	\
 	ui/applet.js		\
 	ui/appletManager.js	\
 	ui/appFavorites.js	\
