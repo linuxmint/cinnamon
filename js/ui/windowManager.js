@@ -8,7 +8,6 @@ const Cinnamon = imports.gi.Cinnamon;
 const Mainloop = imports.mainloop;
 
 const AppletManager = imports.ui.appletManager;
-const AltTab = imports.ui.altTab;
 const CoverflowSwitcher = imports.ui.appSwitcher.coverflowSwitcher;
 const TimelineSwitcher = imports.ui.appSwitcher.timelineSwitcher;
 const ClassicSwitcher = imports.ui.appSwitcher.classicSwitcher;
