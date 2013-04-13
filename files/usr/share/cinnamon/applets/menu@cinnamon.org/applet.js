@@ -1178,10 +1178,10 @@ MyApplet.prototype = {
         let xformed_mouse_y = my-by;
         let w = right_x-xformed_mouse_x;
 
-        let ulc_y = xformed_mouse_y - 1;
-        let llc_y = xformed_mouse_y + 1;
+        let ulc_y = xformed_mouse_y + 0;
+        let llc_y = xformed_mouse_y + 0;
 
-        this.vectorBox = new St.Polygon({ debug: false, width: w, height: bh,
+        this.vectorBox = new St.Polygon({ debug: true, width: w, height: bh,
                                           ulc_x: 0, ulc_y: ulc_y,
                                           llc_x: 0, llc_y: llc_y,
                                           urc_x: w, urc_y: 0,
