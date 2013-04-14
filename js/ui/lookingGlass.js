@@ -184,7 +184,7 @@ ObjLink.prototype = {
     },
 
     _onClicked: function (link) {
-        Main.lookingGlass.inspectObject(this._obj, this.actor);
+        Main.lookingGlass.inspectObject(this._obj);
     }
 };
 
@@ -260,7 +260,7 @@ WindowList.prototype = {
                 this.lastId++;
             }
             
-            let lgInfo = { id: metaWindow._lgId, title: metaWindow.title, wmclass: metaWindow.get_wm_class(), app: ''};
+            let lgInfo = { id: metaWindow._lgId.toString(), title: metaWindow.title, wmclass: metaWindow.get_wm_class(), app: ''};
             
             let box = new St.BoxLayout({ vertical: true });
             this.actor.add(box);
@@ -303,7 +303,7 @@ WindowList.prototype = {
             }
         }
         if(changed)
-            Main.cinnamonDBusService.notifyLgWindowListUpdate();
+            Main.lookingGlassDBusService.emitWindowListUpdate();
     }
 };
 Signals.addSignalMethods(WindowList.prototype);
@@ -380,18 +380,6 @@ ObjInspector.prototype = {
         this._previousObj = null;
         this._open = true;
         this.actor.show();
-        if (sourceActor) {
-            this.actor.set_scale(0, 0);
-            let [sourceX, sourceY] = sourceActor.get_transformed_position();
-            let [sourceWidth, sourceHeight] = sourceActor.get_transformed_size();
-            this.actor.move_anchor_point(Math.floor(sourceX + sourceWidth / 2),
-                                         Math.floor(sourceY + sourceHeight / 2));
-            Tweener.addTween(this.actor, { scale_x: 1, scale_y: 1,
-                                           transition: 'easeOutQuad',
-                                           time: 0.2 });
-        } else {
-            this.actor.set_scale(1, 1);
-        }
     },
 
     close: function() {
@@ -450,22 +438,20 @@ Inspector.prototype = {
         Main.uiGroup.add_actor(container);
 
         let eventHandler = new St.BoxLayout({ name: 'LookingGlassDialog',
-                                              vertical: false,
+                                              vertical: true,
                                               reactive: true });
         this._eventHandler = eventHandler;
+        Main.pushModal(this._eventHandler);
         container.add_actor(eventHandler);
         this._displayText = new St.Label();
         eventHandler.add(this._displayText, { expand: true });
+        this._passThroughText = new St.Label({style: 'text-align: center;'});
+        eventHandler.add(this._passThroughText, { expand: true });
 
         this._borderPaintTarget = null;
         this._borderPaintId = null;
         eventHandler.connect('destroy', Lang.bind(this, this._onDestroy));
-        eventHandler.connect('key-press-event', Lang.bind(this, this._onKeyPressEvent));
-        eventHandler.connect('button-press-event', Lang.bind(this, this._onButtonPressEvent));
-        eventHandler.connect('scroll-event', Lang.bind(this, this._onScrollEvent));
-        eventHandler.connect('motion-event', Lang.bind(this, this._onMotionEvent));
-        Clutter.grab_pointer(eventHandler);
-        Clutter.grab_keyboard(eventHandler);
+        this._capturedEventId = global.stage.connect('captured-event', Lang.bind(this, this._onCapturedEvent));
 
         // this._target is the actor currently shown by the inspector.
         // this._pointerTarget is the actor directly under the pointer.
@@ -474,6 +460,39 @@ Inspector.prototype = {
         // out, or move the pointer outside of _pointerTarget.
         this._target = null;
         this._pointerTarget = null;
+        this.passThroughEvents = false;
+        this._updatePassthroughText();
+    },
+    
+    _updatePassthroughText: function() {
+        if(this.passThroughEvents)
+            this._passThroughText.text = '(Press Pause to disable event pass through)';
+        else
+            this._passThroughText.text = '(Press Pause to enable event pass through)';
+    },
+
+    _onCapturedEvent: function (actor, event) {
+        if(event.type() == Clutter.EventType.KEY_PRESS && event.get_key_symbol() == Clutter.Pause) {
+            this.passThroughEvents = !this.passThroughEvents;
+            this._updatePassthroughText();
+            return true;
+        }
+        
+        if(this.passThroughEvents)
+            return false;
+        
+        switch (event.type()) {
+            case Clutter.EventType.KEY_PRESS:
+                return this._onKeyPressEvent(actor, event);
+            case Clutter.EventType.BUTTON_PRESS:
+                return this._onButtonPressEvent(actor, event);
+            case Clutter.EventType.SCROLL:
+                return this._onScrollEvent(actor, event);
+            case Clutter.EventType.MOTION:
+                return this._onMotionEvent(actor, event);
+            default:
+                return true;
+        }
     },
 
     _allocate: function(actor, box, flags) {
@@ -494,8 +513,9 @@ Inspector.prototype = {
     },
 
     _close: function() {
-        Clutter.ungrab_pointer(this._eventHandler);
-        Clutter.ungrab_keyboard(this._eventHandler);
+        global.stage.disconnect(this._capturedEventId);
+        Main.popModal(this._eventHandler);
+
         this._eventHandler.destroy();
         this._eventHandler = null;
         this.emit('closed');
@@ -623,7 +643,7 @@ ErrorLog.prototype = {
             let text = this.text.text;
             for (; this.addedErrors < stack.length; this.addedErrors++) {
                 let logItem = stack[this.addedErrors];
-                text += logItem.category + ' t=' + this._formatTime(new Date(logItem.timestamp)) + ' ' + logItem.message + '\n';
+                text += logItem.category + ' t=' + this._formatTime(new Date(parseInt(logItem.timestamp))) + ' ' + logItem.message + '\n';
             }
             this.text.text = text;
         }
@@ -726,7 +746,7 @@ Extensions.prototype = {
         this._extensionsList.add(extensionDisplay);
         this.uuidMap[uuid] = extensionDisplay;
 
-        Main.cinnamonDBusService.notifyLgExtensionListUpdate();
+        Main.lookingGlassDBusService.emitExtensionListUpdate();
     },
 
     _unloadExtension: function(o, uuid) {
@@ -740,7 +760,7 @@ Extensions.prototype = {
         if (this._numExtensions == 0)
             this._extensionsList.add(this._noExtensions);
 
-        Main.cinnamonDBusService.notifyLgExtensionListUpdate();
+        Main.lookingGlassDBusService.emitExtensionListUpdate();
     },
 
     _onViewSource: function (actor) {
@@ -927,17 +947,16 @@ LookingGlass.prototype = {
         inspector.connect('target', Lang.bind(this, function(i, target, stageX, stageY) {
             this._pushResult('<inspect x:' + stageX + ' y:' + stageY + '>',
                              target);
-            if(closeAfter)
-                this.close();
         }));
         inspector.connect('closed', Lang.bind(this, function() {
-            this.actor.show();
-            global.stage.set_key_focus(this._entry);
-            if(closeAfter) {
+            if(closeAfter === true) {
                 this.actor.hide();
                 this.close();
+                Main.lookingGlassDBusService.emitInspectorDone();
+            } else {
+                this.actor.show();
+                global.stage.set_key_focus(this._entry);
             }
-            Main.cinnamonDBusService.notifyLgInspectorDone();
         }));
         this.actor.hide();
         return true;
@@ -958,8 +977,8 @@ LookingGlass.prototype = {
     _pushResult: function(command, obj) {
         let index = this._results.length + this._offset;
         let result = new Result('>>> ' + command, obj, index);
-        this.rawResults.push({command: command, type: typeof(obj), object: objectToString(obj), index: index});
-        Main.cinnamonDBusService.notifyLgResultUpdate();
+        this.rawResults.push({command: command, type: typeof(obj), object: objectToString(obj), index: index.toString()});
+        Main.lookingGlassDBusService.emitResultUpdate();
         
         this._results.push(result);
         this._resultsArea.add(result.actor);
@@ -1112,44 +1131,43 @@ LookingGlass.prototype = {
     },
 
     _resize: function() {
+        let primary = Main.layoutManager.primaryMonitor;
+        let myWidth = primary.width * 0.7;
+        let availableHeight = primary.height - Main.layoutManager.keyboardBox.height;
+        let myHeight = Math.min(primary.height * 0.7, availableHeight * 0.9);
+        this.actor.x = (primary.width - myWidth) / 2;
+        
+        let yOffset;
         if (Main.desktop_layout == Main.LAYOUT_TRADITIONAL) {
-            let primary = Main.layoutManager.primaryMonitor;
-            let myWidth = primary.width * 0.7;
-            let availableHeight = primary.height - Main.layoutManager.keyboardBox.height;
-            let myHeight = Math.min(primary.height * 0.7, availableHeight * 0.9);
-            this.actor.x = (primary.width - myWidth) / 2;
-            this._targetY = -myHeight; // -4 to hide the top corners
+            this._targetY = -myHeight;
             this._hiddenY = -this.actor.get_parent().height;
-            this.actor.y = this._hiddenY;
-            this.actor.width = myWidth;
-            this.actor.height = myHeight;
-            this._objInspector.actor.set_size(Math.floor(myWidth * 0.8), Math.floor(myHeight * 0.8));
-            this._objInspector.actor.set_position(this.actor.x + Math.floor(myWidth * 0.1),
-                                                  this._hiddenY + Math.floor(myHeight * 0.1));
-        }
-        else {                                                
-            let primary = Main.layoutManager.primaryMonitor;
-            let myWidth = primary.width * 0.7;
-            let availableHeight = primary.height - Main.layoutManager.keyboardBox.height;
-            let myHeight = Math.min(primary.height * 0.7, availableHeight * 0.9);
-            this.actor.x = (primary.width - myWidth) / 2;            
+            yOffset = this._hiddenY;
+        } else {       
             this._hiddenY = this.actor.get_parent().height - myHeight - 4; // -4 to hide the top corners
             this._targetY = this._hiddenY + myHeight;
-            this.actor.y = this._hiddenY;
-            this.actor.width = myWidth;
-            this.actor.height = myHeight;
-            this._objInspector.actor.set_size(Math.floor(myWidth * 0.8), Math.floor(myHeight * 0.8));
-            this._objInspector.actor.set_position(this.actor.x + Math.floor(myWidth * 0.1),
-                                                  this._targetY + Math.floor(myHeight * 0.1));                                 
-        }                                
+            yOffset = this._targetY;
+        }
+        
+        this.actor.y = this._hiddenY;
+        this.actor.width = myWidth;
+        this.actor.height = myHeight;
+        this._objInspector.actor.set_size(Math.floor(myWidth * 0.8), Math.floor(myHeight * 0.8));
+        
+        // Use the position of primary.x, y to reposition the
+        // objInspector with respect to multiple monitors.
+        this._objInspector.actor.set_anchor_point(0, 0); // reset anchor point
+        this._objInspector.actor.set_position(
+                    primary.x + this.actor.x + Math.floor(myWidth * 0.1),
+                    primary.y + yOffset + Math.floor(myHeight * 0.1)
+        );
     },
 
     insertObject: function(obj) {
         this._pushResult('<insert>', obj);
     },
 
-    inspectObject: function(obj, sourceActor) {
-        this._objInspector.open(sourceActor);
+    inspectObject: function(obj) {
+        this._objInspector.open();
         this._objInspector.selectObject(obj);
     },
 
