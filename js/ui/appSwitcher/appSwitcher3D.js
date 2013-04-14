@@ -57,7 +57,7 @@ AppSwitcher3D.prototype = {
     _show: function() {
         this._enableMonitorFix();
         
-        let monitor = this._updateActiveMonitor();
+        let monitor = this._activeMonitor;
         this.actor.set_position(monitor.x, monitor.y);
         this.actor.set_size(monitor.width, monitor.height);
 
@@ -240,7 +240,6 @@ AppSwitcher3D.prototype = {
         if(global.screen.get_n_monitors() < 2)
             return;
         
-        this._updateActiveMonitor();
         this._monitorFix = true;
         this._oldWidth = global.stage.width;
         this._oldHeight = global.stage.height;

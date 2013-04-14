@@ -65,6 +65,7 @@ AppSwitcher.prototype = {
         this._mcid = this._windowManager.connect('map', Lang.bind(this, this._activateSelected));
         
         this._enforcePrimaryMonitor = false;// fixme: setting
+        this._updateActiveMonitor();
     },
 
     _setupModal: function() {
