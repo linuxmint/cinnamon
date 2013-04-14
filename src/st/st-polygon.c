@@ -185,7 +185,6 @@ st_polygon_paint (ClutterActor *self)
 
     StPolygon *area = ST_POLYGON (self);
     StPolygonPrivate *priv = area->priv;
-    (CLUTTER_ACTOR_CLASS (st_polygon_parent_class))->paint (self);
     if (priv->debug) {
         cogl_set_source_color4f (.50,
                                  .50,

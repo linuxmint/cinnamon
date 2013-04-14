@@ -1176,10 +1176,10 @@ MyApplet.prototype = {
         let right_x = appbox_x - bx;
         let xformed_mouse_x = mx-bx;
         let xformed_mouse_y = my-by;
-        let w = right_x-xformed_mouse_x + 2;
+        let w = right_x-xformed_mouse_x;
 
-        let ulc_y = xformed_mouse_y - 1;
-        let llc_y = xformed_mouse_y + 1;
+        let ulc_y = xformed_mouse_y + 0;
+        let llc_y = xformed_mouse_y + 0;
 
         this.vectorBox = new St.Polygon({ debug: false, width: w, height: bh,
                                           ulc_x: 0, ulc_y: ulc_y,
@@ -1188,7 +1188,7 @@ MyApplet.prototype = {
                                           lrc_x: w, lrc_y: bh });
 
         this.categoriesApplicationsBox.actor.add_actor(this.vectorBox);
-        this.vectorBox.set_position(xformed_mouse_x - 2, 0);
+        this.vectorBox.set_position(xformed_mouse_x, 0);
 
         this.vectorBox.show();
         this.vectorBox.set_reactive(true);
@@ -1214,8 +1214,8 @@ MyApplet.prototype = {
             let xformed_mouse_x = mx-bx;
             let [appbox_x, appbox_y] = this.applicationsBox.get_transformed_position();
             let right_x = appbox_x - bx;
-            this.vectorBox.width = right_x-xformed_mouse_x + 2;
-            this.vectorBox.set_position(xformed_mouse_x - 2, 0);
+            this.vectorBox.width = right_x-xformed_mouse_x;
+            this.vectorBox.set_position(xformed_mouse_x, 0);
             this.vectorBox.urc_x = this.vectorBox.width;
             this.vectorBox.lrc_x = this.vectorBox.width;
             this.vectorBox.queue_repaint();
