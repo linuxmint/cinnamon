@@ -551,7 +551,7 @@ AltTabPopup.prototype = {
             let lastClone = null;
             let previewClones = [];
             let window = this._appIcons[this._currentApp].cachedWindows[0];
-            let clones = WindowUtils.createWindowClone(window, null, true, false);
+            let clones = WindowUtils.createWindowClone(window, null, null, true, false);
             for (let i = 0; i < clones.length; i++) {
                 let clone = clones[i];
                 previewClones.push(clone.actor);
@@ -1056,7 +1056,7 @@ AppIcon.prototype = {
     set_size: function(size) {
         if (this.showThumbnail){
             this.icon = new St.Group();
-            let clones = WindowUtils.createWindowClone(this.window, size, true, true);
+            let clones = WindowUtils.createWindowClone(this.window, size, size, true, true);
             for (i in clones) {
                 let clone = clones[i];
                 this.icon.add_actor(clone.actor);
@@ -1303,7 +1303,7 @@ ThumbnailList.prototype = {
         for (let i = 0; i < this._thumbnailBins.length; i++) {
             let metaWindow = this._windows[i];
             let container = new St.Group();
-            let clones = WindowUtils.createWindowClone(metaWindow, availHeight, true, true);
+            let clones = WindowUtils.createWindowClone(metaWindow, availHeight, 0, true, true);
             for (let j = 0; j < clones.length; j++) {
               let clone = clones[j];
               container.add_actor(clone.actor);
