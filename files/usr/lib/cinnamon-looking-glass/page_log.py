@@ -1,4 +1,3 @@
-import json
 import datetime
 from pageutils import *
 from gi.repository import Gio, Gtk, GObject, Gdk, Pango, GLib
@@ -42,20 +41,16 @@ class LogView(Gtk.ScrolledWindow):
         #    self.enabledTypes[key] = True
         self.getUpdates()
 
-        dbusManager.connectToCinnamonSignal("lgLogUpdate", self.getUpdates)
-        dbusManager.addReconnectCallback(self.clear)
+        lookingGlassProxy.connect("LogUpdate", self.getUpdates)
+        lookingGlassProxy.addStatusChangeCallback(self.onStatusChange)
 
     def append(self, category, time, message):
-        self.log.append(LogEntry(category, time, message))
-
-    def updateText(self):
-        self.textbuffer.set_text('')
-
-        iter = self.textbuffer.get_end_iter()
-        for entry in self.log:
-            self.textbuffer.insert_with_tags(iter, entry.formattedText, self.typeTags[entry.category])
+        entry = LogEntry(category, time, message)
+        self.log.append(entry)
+        return entry
 
     def onButtonToggled(self, button, data):
+        self.textview.hide()
         active = button.get_active()
         self.enabledTypes[data] = active
         self.typeTags[data].props.invisible = active != True
@@ -64,17 +59,21 @@ class LogView(Gtk.ScrolledWindow):
         #print self.textview.get_preferred_height()
         adj = self.get_vadjustment()
         #adj.set_upper(self.textview.get_allocated_height())
+        self.textview.show()
 
-    def clear(self):
-        self.append("warning", 0, "================ Cinnamon Restart ===============")
+    def onStatusChange(self, online):
+        iter = self.textbuffer.get_end_iter()
+        if online:
+            entry = self.append("info", 0, "================ DBus connection established ===============")
+        else:
+            entry = self.append("warning", 0, "================ DBus connection lost ===============")
+        self.textbuffer.insert_with_tags(iter, entry.formattedText, self.typeTags[entry.category])
         self.getUpdates()
 
     def getUpdates(self):
-        success, json_data = dbusManager.cinnamonDBus.lgGetErrorStack()
+        success, data = lookingGlassProxy.GetErrorStack()
         if success:
             try:
-                data = json.loads(json_data)
-
                 dataSize = len(data)
                 if dataSize > 0:
                     # If this is a completely new log, start reading at the beginning
@@ -83,10 +82,13 @@ class LogView(Gtk.ScrolledWindow):
                         self.firstMessageTime = firstMessageTime
                         self.addedMessages = 0
 
+                    self.textview.hide()
+                    iter = self.textbuffer.get_end_iter()
                     for item in data[self.addedMessages:]:
-                        self.append(item["category"], float(item["timestamp"])*0.001, item["message"])
+                        entry = self.append(item["category"], float(item["timestamp"])*0.001, item["message"])
+                        self.textbuffer.insert_with_tags(iter, entry.formattedText, self.typeTags[entry.category])
                         self.addedMessages += 1
-                    self.updateText()
+                    self.textview.show()
             except Exception as e:
                 print e
 
