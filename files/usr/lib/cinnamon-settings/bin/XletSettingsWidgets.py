@@ -9,6 +9,7 @@ try:
     import collections
     import json
     import dbus
+    import eyedropper
     from gi.repository import Gio, Gtk, GObject, Gdk, GdkPixbuf
 except Exception, detail:
     print detail
@@ -462,13 +463,22 @@ class ColorChooser(Gtk.HBox, BaseWidget):
         self.label = Gtk.Label(self.get_desc())
         self.chooser = Gtk.ColorButton()
         self.chooser.set_use_alpha(True)
+        self.eyedropper = eyedropper.EyeDropper()
         self.pack_start(self.label, False, False, 2)
         self.pack_start(self.chooser, False, False, 2)
+        self.pack_start(self.eyedropper, False, False, 2)
+        self.eyedropper.connect("color-picked", self.on_eyedropper_picked)
         color = Gdk.RGBA()
         Gdk.RGBA.parse(color, self.get_val())
         self.chooser.set_rgba(color)
         set_tt(self.get_tooltip(), self.label, self.chooser)
         self.handler = self.chooser.connect("color-set", self.on_my_value_changed)
+
+    def on_eyedropper_picked(self, widget, color):
+        new = Gdk.RGBA()
+        rgba = Gdk.RGBA.parse(new, color)
+        self.chooser.set_rgba(new)
+        self.set_val(color)
 
     def on_my_value_changed(self, *args):
         color = Gdk.RGBA()
