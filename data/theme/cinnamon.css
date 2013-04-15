@@ -913,6 +913,10 @@ StScrollBar StButton#vhandle:hover {
 	padding-top: 15px;
 	spacing: 5px;
 }
+.run-dialog-completion-box { 
+        padding-left: 15px;
+        font-size: 10px;
+}
 .run-dialog-entry {
 	font-size: 10.5pt;
 	font-weight: bold;
