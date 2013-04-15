@@ -1,7 +1,6 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 
 const Lang = imports.lang;
-const DBus = imports.dbus;
 const Gio = imports.gi.Gio;
 const St = imports.gi.St;
 
@@ -61,25 +60,19 @@ function startAppForMount(app, mount) {
 
 /******************************************/
 
-const HotplugSnifferIface = {
-    name: 'org.Cinnamon.HotplugSniffer',
-    methods: [{ name: 'SniffURI',
-                inSignature: 's',
-                outSignature: 'as' }]
-};
+const HotplugSnifferIface = <interface name="org.Cinnamon.HotplugSniffer">
+<method name="SniffURI">
+    <arg type="s" direction="in" />
+    <arg type="as" direction="out" />
+</method>
+</interface>;
 
-const HotplugSniffer = function() {
-    this._init();
-};
-
-HotplugSniffer.prototype = {
-    _init: function() {
-        DBus.session.proxifyObject(this,
+const HotplugSnifferProxy = Gio.DBusProxy.makeProxyWrapper(HotplugSnifferIface);
+function HotplugSniffer() {
+    return new HotplugSnifferProxy(Gio.DBus.session,
                                    'org.Cinnamon.HotplugSniffer',
                                    '/org/Cinnamon/HotplugSniffer');
-    },
-};
-DBus.proxifyPrototype(HotplugSniffer.prototype, HotplugSnifferIface);
+}
 
 function ContentTypeDiscoverer(callback) {
     this._init(callback);

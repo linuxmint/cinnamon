@@ -5,7 +5,6 @@ const St = imports.gi.St;
 const PopupMenu = imports.ui.popupMenu;
 const GLib = imports.gi.GLib;
 const Gio = imports.gi.Gio;
-const DBus = imports.dbus;
 
 /* constants */
 const DimSettingsSchema = "org.gnome.settings-daemon.plugins.power";
@@ -14,24 +13,25 @@ const DimSettingsBattery = "idle-dim-battery";
 const PowerBusName = 'org.gnome.SettingsDaemon';
 const PowerObjectPath = '/org/gnome/SettingsDaemon/Power';
 
-/* DBus interface */
-const PowerManagerInterface = {
-    name: 'org.gnome.SettingsDaemon.Power.Screen',
-    methods:
-        [
-            { name: 'GetPercentage', inSignature: '', outSignature: 'u' },
-            { name: 'SetPercentage', inSignature: 'u', outSignature: 'u' },
-            { name: 'StepUp', inSignature: '', outSignature: 'u' },
-            { name: 'StepDown', inSignature: '', outSignature: 'u' },
-        ],
-    signals:
-        [
-            { name: 'Changed', inSignature: '', outSignature: '' },
-        ]
-};
+const PowerManagerInterface = <interface name="org.gnome.SettingsDaemon.Power.Screen">
+<method name="GetPercentage">
+    <arg type="u" direction="out"/>
+</method>
+<method name="SetPercentage">
+    <arg type="u" direction="in"/>
+    <arg type="u" direction="out"/>
+</method>
+<method name="StepUp">
+    <arg type="u" direction="out"/>
+</method>
+<method name="StepDown">
+    <arg type="u" direction="out"/>
+</method>
+<signal name="Changed" />
+</interface>;
 
 /* DBus magic */
-let PowerManagerProxy = DBus.makeProxyClass(PowerManagerInterface);
+const PowerManagerProxy = Gio.DBusProxy.makeProxyWrapper(PowerManagerInterface);
 
 /* TextImageMenuItem taken from sound@cinnamon.org applet */
 let icon_path = "/usr/share/cinnamon/theme/";
@@ -100,7 +100,7 @@ MyApplet.prototype = {
         Applet.IconApplet.prototype._init.call(this, orientation, panel_height);
         
         try {
-            this._proxy = new PowerManagerProxy(DBus.session, PowerBusName, PowerObjectPath);
+            this._proxy = new PowerManagerProxy(Gio.DBus.session, PowerBusName, PowerObjectPath);
             
             this.menuManager = new PopupMenu.PopupMenuManager(this);
             this.menu = new Applet.AppletPopupMenu(this, orientation);
@@ -137,7 +137,8 @@ MyApplet.prototype = {
                     this.menu.addMenuItem(this._settingsMenu);
                 
                     //get notified
-                    this._proxy.connect('Changed', Lang.bind(this, this._getBrightness));
+                    this._proxy.connectSignal('Changed', Lang.bind(this, this._getBrightness));
+                    
                     this.actor.connect('scroll-event', Lang.bind(this, this._onScrollEvent));
                 } else {
                     this.set_applet_tooltip(_("Brightness"));
