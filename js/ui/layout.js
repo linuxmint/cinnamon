@@ -488,12 +488,14 @@ Chrome.prototype = {
 
         this._screenSaverActive = false;
         this._screenSaverProxy = new ScreenSaver.ScreenSaverProxy();
-        this._screenSaverProxy.connect('ActiveChanged', Lang.bind(this, this._onScreenSaverActiveChanged));
-        this._screenSaverProxy.GetActiveRemote(Lang.bind(this,
-            function(result, err) {
-                if (!err)
-                    this._onScreenSaverActiveChanged(this._screenSaverProxy, result);
-            }));
+        this._screenSaverProxy.connectSignal('ActiveChanged', Lang.bind(this, function(proxy, senderName, [isActive]) {
+            this._onScreenSaverActiveChanged(isActive);
+        }));
+        this._screenSaverProxy.GetActiveRemote(Lang.bind(this, function(result, err) {
+            if (!err)
+                this._onScreenSaverActiveChanged(result[0]);
+        }));
+
 
         this._relayout();
     },

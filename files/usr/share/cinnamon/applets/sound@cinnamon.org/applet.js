@@ -1,7 +1,6 @@
 const Applet = imports.ui.applet;
 const Mainloop = imports.mainloop;
 const Gio = imports.gi.Gio;
-const DBus = imports.dbus;
 const Lang = imports.lang;
 const Cinnamon = imports.gi.Cinnamon;
 const Clutter = imports.gi.Clutter;
@@ -12,90 +11,45 @@ const Gvc = imports.gi.Gvc;
 const Pango = imports.gi.Pango;
 const Tooltips = imports.ui.tooltips;
 
-const PropIFace = {
-    name: 'org.freedesktop.DBus.Properties',
-    signals: [{ name: 'PropertiesChanged',
-                inSignature: 'a{sv}'}]
-};
+const PropIFace = <interface name="org.freedesktop.DBus.Properties">
+<signal name="PropertiesChanged">
+    <arg type="a{sv}"/>
+</signal>
+</interface>;
 
-const MediaServer2IFace = {
-    name: 'org.mpris.MediaPlayer2',
-    methods: [{ name: 'Raise',
-                inSignature: '',
-                outSignature: '' },
-              { name: 'Quit',
-                inSignature: '',
-                outSignature: '' }],
-    properties: [{ name: 'CanRaise',
-                   signature: 'b',
-                   access: 'read'},
-                 { name: 'CanQuit',
-                   signature: 'b',
-                   access: 'read'}],
-};
+const MediaServer2IFace = <interface name="org.mpris.MediaPlayer2">
+<method name="Raise" />
+<method name="Quit" />
+<property name="CanRaise" type="b" access="read" />
+<property name="CanQuit" type="b" access="read" />
+</interface>;
 
-const MediaServer2PlayerIFace = {
-    name: 'org.mpris.MediaPlayer2.Player',
-    methods: [{ name: 'PlayPause',
-                inSignature: '',
-                outSignature: '' },
-              { name: 'Pause',
-                inSignature: '',
-                outSignature: '' },
-              { name: 'Play',
-                inSignature: '',
-                outSignature: '' },
-              { name: 'Stop',
-                inSignature: '',
-                outSignature: '' },
-              { name: 'Next',
-                inSignature: '',
-                outSignature: '' },
-              { name: 'Previous',
-                inSignature: '',
-                outSignature: '' },
-              { name: 'SetPosition',
-                inSignature: 'a{ov}',
-                outSignature: '' }],
-    properties: [{ name: 'Metadata',
-                   signature: 'a{sv}',
-                   access: 'read'},
-                 { name: 'Shuffle',
-                   signature: 'b',
-                   access: 'readwrite'},
-                 { name: 'Rate',
-                   signature: 'd',
-                   access: 'readwrite'},
-                 { name: 'LoopStatus',
-                   signature: 'b',
-                   access: 'readwrite'},
-                 { name: 'Volume',
-                   signature: 'd',
-                   access: 'readwrite'},
-                 { name: 'PlaybackStatus',
-                   signature: 's',
-                   access: 'read'},
-                 { name: 'Position',
-                   signature: 'x',
-                   access: 'read'},
-                 { name: 'CanGoNext',
-                   signature: 'b',
-                   access: 'read'},
-                 { name: 'CanGoPrevious',
-                   signature: 'b',
-                   access: 'read'},
-                 { name: 'CanPlay',
-                   signature: 'b',
-                   access: 'read'},
-                 { name: 'CanPause',
-                   signature: 'b',
-                   access: 'read'},
-                 { name: 'CanSeek',
-                   signature: 'b',
-                   access: 'read'}],
-    signals: [{ name: 'Seeked',
-                inSignature: 'x' }]
-};
+const MediaServer2PlayerIFace = <interface name="org.mpris.MediaPlayer2.Player">
+<method name="PlayPause" />
+<method name="Pause" />
+<method name="Play" />
+<method name="Stop" />
+<method name="Next" />
+<method name="Previous" />
+<method name="SetPosition">
+    <arg type="a{ov}" direction="in"/>
+</method>
+<property name='Metadata' access='read' type='a{sv}' />
+<property name='Shuffle' access='readwrite' type='b' />
+<property name='Rate' access='readwrite' type='d' />
+<property name='LoopStatus' access='readwrite' type='b' />
+<property name='Volume' access='readwrite' type='d' />
+<property name='PlaybackStatus' access='read' type='s' />
+<property name='Position' access='read' type='x' />
+<property name="CanGoNext" type="b" access="read" />
+<property name="CanGoPrevious" type="b" access="read" />
+<property name="CanPlay" type="b" access="read" />
+<property name="CanPause" type="b" access="read" />
+<property name="CanSeek" type="b" access="read" />
+<signal name="Seeked">
+    <arg type="x"/>
+</signal>
+</interface>;
 
 /* global values */
 let icon_path = "/usr/share/cinnamon/theme/";
@@ -112,120 +66,20 @@ const VOLUME_ADJUSTMENT_STEP = 0.05; /* Volume adjustment step in % */
 const ICON_SIZE = 28;
 
 
-function Prop() {
-    this._init.apply(this, arguments);
+var PropProxy = Gio.DBusProxy.makeProxyWrapper(PropIFace);
+function Prop(owner, initCallback, cancellable) {
+    return new PropProxy(Gio.DBus.session, owner, '/org/mpris/MediaPlayer2', initCallback, cancellable);
 }
 
-Prop.prototype = {
-    _init: function(owner) {
-        DBus.session.proxifyObject(this, owner, '/org/mpris/MediaPlayer2', this);
-    }
-}
-DBus.proxifyPrototype(Prop.prototype, PropIFace)
-
-function MediaServer2() {
-    this._init.apply(this, arguments);
+var MediaServer2Proxy = Gio.DBusProxy.makeProxyWrapper(MediaServer2IFace);
+function MediaServer2(owner, initCallback, cancellable) {
+    return new MediaServer2Proxy(Gio.DBus.session, owner, '/org/mpris/MediaPlayer2', initCallback, cancellable);
 }
 
-MediaServer2.prototype = {
-    _init: function(owner) {
-        DBus.session.proxifyObject(this, owner, '/org/mpris/MediaPlayer2', this);
-    },
-    getRaise: function(callback) {
-        this.GetRemote('CanRaise', Lang.bind(this,
-            function(raise, ex) {
-                if (!ex)
-                    callback(this, raise);
-            }));
-    },
-    getQuit: function(callback) {
-        this.GetRemote('CanQuit', Lang.bind(this,
-            function(quit, ex) {
-                if (!ex)
-                    callback(this, quit);
-            }));
-    }
+var MediaServer2PlayerProxy = Gio.DBusProxy.makeProxyWrapper(MediaServer2PlayerIFace);
+function MediaServer2Player(owner, initCallback, cancellable) {
+    return new MediaServer2PlayerProxy(Gio.DBus.session, owner, '/org/mpris/MediaPlayer2', initCallback, cancellable);
 }
-DBus.proxifyPrototype(MediaServer2.prototype, MediaServer2IFace)
-
-function MediaServer2Player() {
-    this._init.apply(this, arguments);
-}
-
-MediaServer2Player.prototype = {
-    _init: function(owner) {
-        this._owner = owner;
-        DBus.session.proxifyObject(this, owner, '/org/mpris/MediaPlayer2', this);
-    },
-    getMetadata: function(callback) {
-        this.GetRemote('Metadata', Lang.bind(this,
-            function(metadata, ex) {
-                if (!ex)
-                    callback(this, metadata);
-            }));
-    },
-    getPlaybackStatus: function(callback) {
-        this.GetRemote('PlaybackStatus', Lang.bind(this,
-            function(status, ex) {
-                if (!ex)
-                    callback(this, status);
-            }));
-    },
-    getRate: function(callback) {
-        this.GetRemote('Rate', Lang.bind(this,
-            function(rate, ex) {
-                if (!ex)
-                    callback(this, rate);
-            }));
-    },
-    getPosition: function(callback) {
-        this.GetRemote('Position', Lang.bind(this,
-            function(position, ex) {
-                if (!ex)
-                    callback(this, position);
-            }));
-    },
-    getShuffle: function(callback) {
-        this.GetRemote('Shuffle', Lang.bind(this,
-            function(shuffle, ex) {
-                if (!ex)
-                    callback(this, shuffle);
-            }));
-    },
-    setShuffle: function(value) {
-        this.SetRemote('Shuffle', value);
-    },
-    getVolume: function(callback) {
-        this.GetRemote('Volume', Lang.bind(this,
-            function(volume, ex) {
-                if (!ex)
-                    callback(this, volume);
-            }));
-    },
-    setVolume: function(value) {
-        this.SetRemote('Volume', parseFloat(value));
-    },
-    getRepeat: function(callback) {
-        this.GetRemote('LoopStatus', Lang.bind(this,
-            function(repeat, ex) {
-                if (!ex) {
-                    if (repeat == "None")
-                        repeat = false
-                    else
-                        repeat = true
-                    callback(this, repeat);
-                }
-            }));
-    },
-    setRepeat: function(value) {
-        if (value)
-            value = "Playlist"
-        else
-            value = "None"
-        this.SetRemote('LoopStatus', value);
-    }
-}
-DBus.proxifyPrototype(MediaServer2Player.prototype, MediaServer2PlayerIFace)
 
 function TrackInfo() {
     this._init.apply(this, arguments);
@@ -715,7 +569,7 @@ MyApplet.prototype = {
             this._players = {};
             // watch players
             for (var p=0; p<compatible_players.length; p++) {
-                DBus.session.watch_name('org.mpris.MediaPlayer2.'+compatible_players[p], false,
+                Gio.DBus.session.watch_name('org.mpris.MediaPlayer2.'+compatible_players[p], false,
                     Lang.bind(this, this._addPlayer),
                     Lang.bind(this, this._removePlayer)
                 );
