@@ -18,5 +18,6 @@ $(patsubst %,binary-predeb/%,$(DEB_ALL_PACKAGES)) ::
 
 DEB_CONFIGURE_EXTRA_FLAGS += --enable-compile-warnings=yes
 
+DEB_DBG_PACKAGES = cinnamon-dbg
 DEB_DH_MAKESHLIBS_ARGS_cinnamon = -Xlibcinnamon
 DEB_SHLIBDEPS_INCLUDE = /usr/lib/gnome-bluetooth
