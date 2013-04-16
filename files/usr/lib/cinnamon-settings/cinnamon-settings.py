@@ -34,6 +34,10 @@ menuComment = _("Control Center")
 
 ADVANCED_GSETTING = "cinnamon-settings-advanced"
 
+WIN_WIDTH = 800
+WIN_HEIGHT = 600
+WIN_H_PADDING = 10
+
 CATEGORIES = [
 #        Display name                         ID              Show it? Always False to start              Icon
     {"label": _("Appearance"),            "id": "appear",      "show": False,                       "icon": "cat-appearance.svg"},
@@ -81,8 +85,12 @@ class MainWindow:
                 self.content_box_sw.show()
                 self.button_back.show()
                 self.current_sidepage = sidePage
+                if not sidePage.no_resize:
+                    m, n = self.content_box.get_preferred_size()
+                    self.window.resize(WIN_WIDTH, n.height + self.bar_heights + WIN_H_PADDING)
             else:
                 sidePage.build(self.advanced_mode)
+
 
     def deselect(self, cat):
         for key in self.side_view.keys():
@@ -95,6 +103,8 @@ class MainWindow:
         self.builder = Gtk.Builder()
         self.builder.add_from_file("/usr/lib/cinnamon-settings/cinnamon-settings.ui")
         self.window = self.builder.get_object("main_window")
+        self.top_bar = self.builder.get_object("top_bar")
+        self.bottom_bar = self.builder.get_object("bottom_bar")
         self.side_view = {}
         self.side_view_container = self.builder.get_object("category_box")
         self.side_view_sw = self.builder.get_object("side_view_sw")
@@ -108,7 +118,6 @@ class MainWindow:
         self.search_entry = self.builder.get_object("search_box")
         self.search_entry.connect("changed", self.onSearchTextChanged)
         self.search_entry.connect("icon-press", self.onClearSearchBox)
-
         self.window.connect("destroy", Gtk.main_quit)
 
         self.builder.connect_signals(self)
@@ -119,6 +128,7 @@ class MainWindow:
         self.current_sidepage = None
         self.c_manager = capi.CManager()
         self.content_box.c_manager = self.c_manager
+        self.bar_heights = 0
 
         for i in range(len(modules)):
             mod = modules[i].Module(self.content_box)
@@ -174,6 +184,15 @@ class MainWindow:
             self.search_entry.grab_focus()
 
         self.window.show()
+        self.calculate_bar_heights()
+
+    def calculate_bar_heights(self):
+        h = 0
+        m, n = self.top_bar.get_preferred_size()
+        h += n.height
+        m, n = self.bottom_bar.get_preferred_size()
+        h += n.height
+        self.bar_heights = h
 
     def onSearchTextChanged(self, widget):
         self.displayCategories()
@@ -277,6 +296,7 @@ class MainWindow:
 
     def back_to_icon_view(self, widget):
         self.window.set_title(_("System Settings"))
+        self.window.resize(WIN_WIDTH, WIN_HEIGHT)
         self.content_box_sw.hide()
         children = self.content_box.get_children()
         for child in children:
