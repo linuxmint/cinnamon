@@ -232,11 +232,11 @@ class ThreadedIconView(Gtk.IconView):
     
 
 class BackgroundWallpaperPane (Gtk.VBox):
-    def __init__(self, sidepage, gnome_background_schema):
+    def __init__(self, sidepage, cinnamon_background_schema):
         Gtk.VBox.__init__(self)
         self.set_spacing(5)
         
-        self._gnome_background_schema = gnome_background_schema
+        self._cinnamon_background_schema = cinnamon_background_schema
         self._sidepage = sidepage
         
         scw = Gtk.ScrolledWindow()
@@ -263,15 +263,15 @@ class BackgroundWallpaperPane (Gtk.VBox):
         if wallpaper:
             for key in wallpaper:
                 if key == "filename":
-                    self._gnome_background_schema.set_string("picture-uri", "file://" + wallpaper[key])
+                    self._cinnamon_background_schema.set_string("picture-uri", "file://" + wallpaper[key])
                 elif key == "pcolor":
-                    self._gnome_background_schema.set_string("primary-color", wallpaper[key])
+                    self._cinnamon_background_schema.set_string("primary-color", wallpaper[key])
                 elif key == "scolor":
-                    self._gnome_background_schema.set_string("secondary-color", wallpaper[key])
+                    self._cinnamon_background_schema.set_string("secondary-color", wallpaper[key])
                 elif key == "shade_type":
-                    self._gnome_background_schema.set_string("color-shading-type", wallpaper[key])
+                    self._cinnamon_background_schema.set_string("color-shading-type", wallpaper[key])
                 elif key == "options":
-                    self._gnome_background_schema.set_string("picture-options", wallpaper[key])
+                    self._cinnamon_background_schema.set_string("picture-options", wallpaper[key])
             if (not "metadataFile" in wallpaper) or (wallpaper["metadataFile"] == ""):
                 self._sidepage.remove_wallpaper_button.set_sensitive(True)
     
@@ -364,7 +364,7 @@ class AddWallpapersDialog(Gtk.FileChooserDialog):
         return res
 
 class BackgroundSlideshowPane(Gtk.Table):
-    def __init__(self, sidepage, gnome_background_schema, cinnamon_background_schema):
+    def __init__(self, sidepage, cinnamon_background_schema):
         Gtk.Table.__init__(self)
         self.set_col_spacings(5)
         self.set_row_spacings(5)
@@ -445,12 +445,11 @@ class BackgroundSlideshowPane(Gtk.Table):
             f = open(filename, "w")
             f.write(xml_data)
             f.close()
-            Gio.Settings("org.gnome.desktop.background").set_string("picture-uri", "file://" + filename)
+            Gio.Settings("org.cinnamon.background").set_string("picture-uri", "file://" + filename)
 
 class BackgroundSidePage (SidePage):
     def __init__(self, name, icon, keywords, advanced, content_box):
         SidePage.__init__(self, name, icon, keywords, advanced, content_box, True)
-        self._gnome_background_schema = Gio.Settings("org.gnome.desktop.background")
         self._cinnamon_background_schema = Gio.Settings("org.cinnamon.background")
         self._add_wallpapers_dialog = AddWallpapersDialog()
         
@@ -515,8 +514,8 @@ class BackgroundSidePage (SidePage):
         self.mainbox.set_visible_window(False)
         self.content_box.pack_start(self.mainbox, True, True, 3)
         
-        self.wallpaper_pane = BackgroundWallpaperPane(self, self._gnome_background_schema)
-        self.slideshow_pane = BackgroundSlideshowPane(self, self._gnome_background_schema, self._cinnamon_background_schema)
+        self.wallpaper_pane = BackgroundWallpaperPane(self, self._cinnamon_background_schema)
+        self.slideshow_pane = BackgroundSlideshowPane(self, self._cinnamon_background_schema)
         if self._cinnamon_background_schema["mode"] == "slideshow":
             self.mainbox.add(self.slideshow_pane)
         else:
@@ -536,21 +535,21 @@ class BackgroundSidePage (SidePage):
         l = Gtk.Label(_("Picture aspect"))
         l.set_alignment(0, 0.5)
         advanced_options_box.pack_start(l, False, False, 0)
-        self.picture_options = GSettingsComboBox("", "org.gnome.desktop.background", "picture-options", None, BACKGROUND_PICTURE_OPTIONS)
+        self.picture_options = GSettingsComboBox("", "org.cinnamon.background", "picture-options", None, BACKGROUND_PICTURE_OPTIONS)
         advanced_options_box.pack_start(self.picture_options, False, False, 0)
         
         l = Gtk.Label(_("Gradient"))
         l.set_alignment(0, 0.5)
         advanced_options_box.pack_start(l, False, False, 0)
-        self.color_shading_type = GSettingsComboBox("", "org.gnome.desktop.background", "color-shading-type", None, BACKGROUND_COLOR_SHADING_TYPES)
+        self.color_shading_type = GSettingsComboBox("", "org.cinnamon.background", "color-shading-type", None, BACKGROUND_COLOR_SHADING_TYPES)
         advanced_options_box.pack_start(self.color_shading_type, False, False, 0)
         
         hbox = Gtk.HBox()
         l = Gtk.Label(_("Colors"))
         hbox.pack_start(l, False, False, 2)
-        self.primary_color = GSettingsColorChooser("org.gnome.desktop.background", "primary-color", None)
+        self.primary_color = GSettingsColorChooser("org.cinnamon.background", "primary-color", None)
         hbox.pack_start(self.primary_color, False, False, 2)
-        self.secondary_color = GSettingsColorChooser("org.gnome.desktop.background", "secondary-color", None)
+        self.secondary_color = GSettingsColorChooser("org.cinnamon.background", "secondary-color", None)
         hbox.pack_start(self.secondary_color, False, False, 2)
         advanced_options_box.pack_start(hbox, False, False, 0)
         self.content_box.show_all()

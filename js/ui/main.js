@@ -86,6 +86,7 @@ let _cssStylesheet = null;
 let dynamicWorkspaces = null;
 let nWorks = null;
 let tracker = null;
+let backgroundManager = null;
 let desktopShown;
 
 let workspace_names = [];
@@ -214,7 +215,7 @@ function start() {
     // be predictable anyways.
     tracker = Cinnamon.WindowTracker.get_default();
     Cinnamon.AppUsage.get_default();
-
+    backgroundManager = Cinnamon.BackgroundManager.get_default();
     // The stage is always covered so Clutter doesn't need to clear it; however
     // the color is used as the default contents for the Muffin root background
     // actor so set it anyways.
