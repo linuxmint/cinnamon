@@ -83,7 +83,7 @@ AppSwitcher3D.prototype = {
         this._next();
     },
     
-    _hide: function() {
+    _hidePreviews: function(endOpacity) {
         let monitor = this._activeMonitor;
         
         // preview windows
@@ -106,7 +106,7 @@ AppSwitcher3D.prototype = {
 
             Tweener.addTween(preview, {
                 opacity: (!metaWin.minimized && metaWin.get_workspace() == currentWorkspace
-                    || metaWin.is_on_all_workspaces()) ? 255 : 0,
+                    || metaWin.is_on_all_workspaces()) ? endOpacity : 0,
                 x: ((metaWin.minimized) ? 0 : compositor.x) - monitor.x,
                 y: ((metaWin.minimized) ? 0 : compositor.y) - monitor.y,
                 width: (metaWin.minimized) ? 0 : compositor.width,
@@ -114,9 +114,14 @@ AppSwitcher3D.prototype = {
                 rotation_angle_y: 0.0,
                 time: ANIMATION_TIME,
                 transition: TRANSITION_TYPE,
+                onComplete: Lang.bind(preview, preview.destroy),
             });
         }
-
+    },
+    
+    _hide: function() {
+        this._hidePreviews(255);
+        
         // window title and icon
         if(this._windowTitle) {
             this._windowTitle.hide();
@@ -145,6 +150,17 @@ AppSwitcher3D.prototype = {
 
         this._lastTime = t;
         return true;
+    },
+
+    _onWorkspaceSelected: function() {
+        this._hidePreviews(0);
+        
+        this._windows = this._getWindowsForBinding(this._binding);
+        this._currentIndex = this._windows.indexOf(global.display.focus_window);
+        
+        // create previews
+        this._createList();
+        this._next();
     },
     
     _setCurrentWindow: function(window) {
