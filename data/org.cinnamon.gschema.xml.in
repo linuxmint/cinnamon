@@ -816,7 +816,7 @@
       </_description>
     </key>
     <key name="picture-uri" type="s">
-      <default>'file://@datadir@/themes/Adwaita/backgrounds/adwaita-timed.xml'</default>
+      <default>'file:///usr/share/backgrounds/linuxmint/default_background.jpg'</default>
       <_summary>Picture URI</_summary>
       <_description>
         URI to use for the background image. Not that the backend only supports
