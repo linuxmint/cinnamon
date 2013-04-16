@@ -754,6 +754,23 @@
     </key>
   </schema>
 
+
+  <enum id="bg_style">
+    <value nick="none" value="0"/>
+    <value nick="wallpaper" value="1"/>
+    <value nick="centered" value="2"/>
+    <value nick="scaled" value="3"/>
+    <value nick="stretched" value="4"/>
+    <value nick="zoom" value="5"/>
+    <value nick="spanned" value="6"/>
+  </enum>
+
+  <enum id="bg_shading">
+    <value nick="solid" value="0"/>
+    <value nick="vertical" value="1"/>
+    <value nick="horizontal" value="2"/>
+  </enum>
+
   <schema id="org.cinnamon.background" path="/org/cinnamon/background/">
     <key name="mode" type="s">
       <default>"wallpaper"</default>
@@ -784,8 +801,60 @@
         This key defines the delay for the slideshow.
       </description>
     </key>
+    <key name="draw-background" type="b">
+      <default>true</default>
+      <_summary>Draw Desktop Background</_summary>
+      <_description>Have GNOME draw the desktop background.</_description>
+    </key>
+    <key name="picture-options" enum="bg_style">
+      <default>'zoom'</default>
+      <_summary>Picture Options</_summary>
+      <_description>
+        Determines how the image set by wallpaper_filename is rendered.
+        Possible values are "none", "wallpaper", "centered", "scaled",
+        "stretched", "zoom", "spanned".
+      </_description>
+    </key>
+    <key name="picture-uri" type="s">
+      <default>'file://@datadir@/themes/Adwaita/backgrounds/adwaita-timed.xml'</default>
+      <_summary>Picture URI</_summary>
+      <_description>
+        URI to use for the background image. Not that the backend only supports
+        local (file://) URIs.
+      </_description>
+    </key>
+    <key name="picture-opacity" type="i">
+      <range min="0" max="100"/>
+      <default>100</default>
+      <_summary>Picture Opacity</_summary>
+      <_description>
+        Opacity with which to draw the background picture.
+      </_description>
+    </key>
+    <key name="primary-color" type="s">
+      <default>'#023c88'</default>
+      <_summary>Primary Color</_summary>
+      <_description>
+        Left or Top color when drawing gradients, or the solid color.
+      </_description>
+    </key>
+    <key name="secondary-color" type="s">
+      <default>'#5789ca'</default>
+      <_summary>Secondary Color</_summary>
+      <_description>
+        Right or Bottom color when drawing gradients, not used for solid color.
+      </_description>
+    </key>
+    <key name="color-shading-type" enum="bg_shading">
+      <default>'solid'</default>
+      <_summary>Color Shading Type</_summary>
+      <_description>
+        How to shade the background color. Possible values are "horizontal",
+        "vertical", and "solid".
+      </_description>
+    </key>
   </schema>
-  
+
   <schema id="org.cinnamon.screensaver" path="/org/cinnamon/screensaver/">
     <key name="default-message" type="s">
       <default>""</default>
