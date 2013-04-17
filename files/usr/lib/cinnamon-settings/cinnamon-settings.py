@@ -199,10 +199,7 @@ class MainWindow:
     def do_fade_in(self):
         self.opacity += 0.1
         self.window.set_opacity(self.opacity)
-        if self.opacity < 1.0:
-            return True
-        else:
-            return False
+        return self.opacity < 1.0
 
     def calculate_bar_heights(self):
         h = 0
