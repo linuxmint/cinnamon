@@ -1,6 +1,6 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 
-const DBus = imports.dbus;
+const Gio = imports.gi.Gio;
 const Lang = imports.lang;
 const Cinnamon = imports.gi.Cinnamon;
 const Signals = imports.signals;
@@ -8,21 +8,21 @@ const Signals = imports.signals;
 // The following are not the complete interfaces, just the methods we need
 // (or may need in the future)
 
-const ModemGsmNetworkInterface = {
-    name: 'org.freedesktop.ModemManager.Modem.Gsm.Network',
-    methods: [
-        { name: 'GetRegistrationInfo', inSignature: '', outSignature: 'uss' },
-        { name: 'GetSignalQuality', inSignature: '', outSignature: 'u' }
-    ],
-    properties: [
-        { name: 'AccessTechnology', signature: 'u', access: 'read' }
-    ],
-    signals: [
-        { name: 'SignalQuality', inSignature: 'u' },
-        { name: 'RegistrationInfo', inSignature: 'uss' }
-    ]
-};
-const ModemGsmNetworkProxy = DBus.makeProxyClass(ModemGsmNetworkInterface);
+const ModemGsmNetworkInterface = <interface name="org.freedesktop.ModemManager.Modem.Gsm.Network">
+<method name="GetRegistrationInfo">
+    <arg type="u" direction="out" />
+    <arg type="s" direction="out" />
+    <arg type="s" direction="out" />
+</method>
+<method name="GetSignalQuality">
+    <arg type="u" direction="out" />
+</method>
+<property name="AccessTechnology" type="u" access="read"/>
+<signal name="SignalQuality">
+    <arg type="u" direction="in" />
+</signal>
+
+const ModemGsmNetworkProxy = Gio.DBusProxy.makeProxyWrapper(ModemGsmNetworkInterface);
 
 const ModemCdmaInterface = {
     name: 'org.freedesktop.ModemManager.Modem.Cdma',
