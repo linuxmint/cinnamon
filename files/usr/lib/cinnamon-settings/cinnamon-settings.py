@@ -85,12 +85,14 @@ class MainWindow:
                 self.content_box_sw.show()
                 self.button_back.show()
                 self.current_sidepage = sidePage
-                if not sidePage.no_resize:
-                    m, n = self.content_box.get_preferred_size()
-                    self.window.resize(WIN_WIDTH, n.height + self.bar_heights + WIN_H_PADDING)
+                self.maybe_resize(sidePage)
             else:
                 sidePage.build(self.advanced_mode)
 
+    def maybe_resize(self, sidePage):
+        if not sidePage.no_resize:
+            m, n = self.content_box.get_preferred_size()
+            self.window.resize(WIN_WIDTH, n.height + self.bar_heights + WIN_H_PADDING)
 
     def deselect(self, cat):
         for key in self.side_view.keys():
@@ -334,6 +336,7 @@ class MainWindow:
         self.settings.set_boolean(ADVANCED_GSETTING, True)
         if self.current_sidepage is not None:
             self.current_sidepage.build(self.advanced_mode)
+            self.maybe_resize(self.current_sidepage)
         self.displayCategories()
 
     def on_normal_mode(self, popup):
@@ -341,6 +344,7 @@ class MainWindow:
         self.settings.set_boolean(ADVANCED_GSETTING, False)
         if self.current_sidepage is not None:
             self.current_sidepage.build(self.advanced_mode)
+            self.maybe_resize(self.current_sidepage)
         self.displayCategories()
 
 if __name__ == "__main__":
