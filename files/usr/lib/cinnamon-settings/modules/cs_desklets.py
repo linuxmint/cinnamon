@@ -20,7 +20,7 @@ class Module:
 
 class DeskletsViewSidePage (SidePage):
     def __init__(self, name, icon, keywords, advanced, content_box):
-        SidePage.__init__(self, name, icon, keywords, advanced, content_box)
+        SidePage.__init__(self, name, icon, keywords, advanced, content_box, True)
         self.active_desklet_path = None
 
         self.settings = Gio.Settings.new("org.cinnamon")
