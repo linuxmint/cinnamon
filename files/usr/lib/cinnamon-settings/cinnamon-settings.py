@@ -193,11 +193,11 @@ class MainWindow:
 
     def start_fade_in(self):
         if self.opacity < 1.0:
-            GObject.timeout_add(30, self.do_fade_in)
+            GObject.timeout_add(10, self.do_fade_in)
         return False
 
     def do_fade_in(self):
-        self.opacity += 0.1
+        self.opacity += 0.05
         self.window.set_opacity(self.opacity)
         return self.opacity < 1.0
 
