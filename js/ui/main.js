@@ -39,6 +39,7 @@ const Magnifier = imports.ui.magnifier;
 const XdndHandler = imports.ui.xdndHandler;
 const StatusIconDispatcher = imports.ui.statusIconDispatcher;
 const Util = imports.misc.util;
+const Keybindings = imports.ui.keybindings;
 
 const DEFAULT_BACKGROUND_COLOR = new Clutter.Color();
 DEFAULT_BACKGROUND_COLOR.from_pixel(0x2266bbff);
@@ -76,6 +77,7 @@ let statusIconDispatcher = null;
 let keyboard = null;
 let layoutManager = null;
 let themeManager = null;
+let keybindingManager = null;
 let networkAgent = null;
 let _errorLogStack = [];
 let _startDate;
@@ -309,6 +311,8 @@ function start() {
 
     placesManager = new PlacesManager.PlacesManager();    
     automountManager = new AutomountManager.AutomountManager();
+
+    keybindingManager = new Keybindings.KeybindingManager();
     //autorunManager = new AutorunManager.AutorunManager();
     //networkAgent = new NetworkAgent.NetworkAgent();
 
@@ -858,6 +862,10 @@ function _globalKeyPressHandler(actor, event) {
 
     // This relies on the fact that Clutter.ModifierType is the same as Gdk.ModifierType
     let action = global.display.get_keybinding_action(keyCode, modifierState);
+
+    if (action == Meta.KeyBindingAction.CUSTOM) {
+        global.display.keybinding_action_invoke_by_code(keyCode, modifierState);
+    }
 
     // Other bindings are only available when the overview is up and no modal dialog is present
     if (((!overview.visible && !expo.visible) || modalCount > 1))

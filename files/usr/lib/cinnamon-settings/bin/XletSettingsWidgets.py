@@ -29,6 +29,7 @@ setting_dict = {
     "colorchooser"    :   "ColorChooser",
     "radiogroup"      :   "RadioGroup",
     "iconfilechooser" :   "IconFileChooser",
+    "keybinding"      :   "Keybinding",
     "button"          :   "Button" # Not a setting, provides a button which triggers a callback in the applet/desklet
 }
 
@@ -849,6 +850,105 @@ class Scale(Gtk.HBox, BaseWidget):
 
     def update_dep_state(self, active):
         self.scale.set_sensitive(active)
+
+
+SPECIAL_MODS = (["Super_L",    "<Super>"],
+                ["Super_R",    "<Super>"],
+                ["Alt_L",      "<Alt>"],
+                ["Alt_R",      "<Alt>"],
+                ["Control_L",  "<Primary>"],
+                ["Control_R",  "<Primary>"],
+                ["Shift_L",    "<Shift>"],
+                ["Shift_R",    "<Shift>"])
+
+class Keybinding(Gtk.HBox, BaseWidget):
+    def __init__(self, key, settings_obj, uuid):
+        BaseWidget.__init__(self, key, settings_obj, uuid)
+        super(Keybinding, self).__init__()
+        self.label = Gtk.Label(self.get_desc())
+        self.value = self.get_val()
+        if self.get_desc() != "":
+            self.pack_start(self.label, False, False, 2)
+
+        self.button = Gtk.Button(self.value)
+        self.button.set_tooltip_text(_("Click to set a new accelerator key.") +
+                                     _("  Press Escape or click again to cancel the operation." +
+                                       "  Press Backspace to clear the existing keybinding."))
+        self.button.connect("clicked", self.clicked)
+        self.button.set_size_request(200, -1)
+        self.pack_start(self.button, False, False, 4)
+        self.set_button_text()
+        self.show_all()
+        self.event_id = None
+        self.teaching = False
+
+    def clicked(self, widget):
+        if not self.teaching:
+            device = Gtk.get_current_event_device()
+            if device.get_source() == Gdk.InputSource.KEYBOARD:
+                self.keyboard = device
+            else:
+                self.keyboard = device.get_associated_device()
+
+            self.keyboard.grab(self.get_window(), Gdk.GrabOwnership.WINDOW, False,
+                               Gdk.EventMask.KEY_PRESS_MASK | Gdk.EventMask.KEY_RELEASE_MASK,
+                               None, Gdk.CURRENT_TIME)
+
+            self.button.set_label(_("Pick an accelerator"))
+            self.event_id = self.connect( "key-release-event", self.on_key_release )
+            self.teaching = True
+        else:
+            if self.event_id:
+                self.disconnect(self.event_id)
+            self.ungrab()
+            self.set_button_text()
+            self.teaching = False
+
+    def on_key_release(self, widget, event):
+        self.disconnect(self.event_id)
+        self.ungrab()
+        self.event_id = None
+        if event.keyval == Gdk.KEY_Escape:
+            self.button.set_label(self.value)
+            self.teaching = False
+            return True
+        if event.keyval == Gdk.KEY_BackSpace:
+            self.teaching = False
+            self.value = ""
+            self.set_button_text()
+            self.set_val(self.value)
+            return True
+        accel_string = Gtk.accelerator_name(event.keyval, event.state)
+        accel_string = self.sanitize(accel_string)
+        self.value = accel_string
+        self.set_button_text()
+        self.set_val(self.value)
+        self.teaching = False
+        return True
+
+    def sanitize(self, string):
+        accel_string = string.replace("<Mod2>", "")
+        accel_string = accel_string.replace("<Mod4>", "")
+        for single, mod in SPECIAL_MODS:
+            if single in accel_string and mod in accel_string:
+                accel_string = accel_string.replace(mod, "")
+        return accel_string
+
+    def set_button_text(self):
+        if self.value == "":
+            self.button.set_label(_("<not set>"))
+        else:
+            self.button.set_label(self.value)
+
+    def ungrab(self):
+        self.keyboard.ungrab(Gdk.CURRENT_TIME)
+
+    def on_settings_file_changed(self):
+        self.value = self.get_val()
+        self.set_button_text()
+
+    def update_dep_state(self, active):
+        self.button.set_sensitive(active)
 
 class Button(Gtk.Button, BaseWidget):
     def __init__(self, key, settings_obj, uuid):
