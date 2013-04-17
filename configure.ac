@@ -68,6 +68,7 @@ GTK_MIN_VERSION=3.0.0
 GIO_MIN_VERSION=2.29.10
 POLKIT_MIN_VERSION=0.100
 STARTUP_NOTIFICATION_MIN_VERSION=0.11
+GNOME_DESKTOP_MIN_VERSION=3.0.0
 
 # Collect more than 20 libraries for a prize!
 PKG_CHECK_MODULES(CINNAMON, gio-2.0 >= $GIO_MIN_VERSION
@@ -82,7 +83,8 @@ PKG_CHECK_MODULES(CINNAMON, gio-2.0 >= $GIO_MIN_VERSION
                                gobject-introspection-1.0 >= $GOBJECT_INTROSPECTION_MIN_VERSION
 			       libcanberra
                                polkit-agent-1 >= $POLKIT_MIN_VERSION xfixes
-                               libnm-glib libnm-util gnome-keyring-1)
+                               libnm-glib libnm-util gnome-keyring-1
+                               gnome-desktop-3.0 >= GNOME_DESKTOP_MIN_VERSION)
 
 PKG_CHECK_MODULES(CINNAMON_PERF_HELPER, gtk+-3.0 gio-2.0)
 
@@ -106,7 +108,8 @@ AC_CHECK_FUNCS(JS_NewGlobalObject XFixesCreatePointerBarrier)
 CFLAGS=$saved_CFLAGS
 LIBS=$saved_LIBS
 
-PKG_CHECK_MODULES(ST, clutter-1.0 gtk+-3.0 libcroco-0.6 >= 0.6.2 gnome-desktop-3.0 >= 2.90.0 x11)
+PKG_CHECK_MODULES(ST, clutter-1.0 gtk+-3.0 libcroco-0.6 >= 0.6.2 
+                      gnome-desktop-3.0 >= GNOME_DESKTOP_MIN_VERSION x11)
 PKG_CHECK_MODULES(GDMUSER, dbus-glib-1 gtk+-3.0)
 PKG_CHECK_MODULES(TRAY, gtk+-3.0)
 PKG_CHECK_MODULES(GVC, libpulse libpulse-mainloop-glib gobject-2.0)

@@ -105,6 +105,7 @@ cinnamon_public_headers_h =		\
 	cinnamon-app-system.h		\
 	cinnamon-app-usage.h		\
 	cinnamon-arrow.h			\
+	cinnamon-background-manager.h	\
 	cinnamon-doc-system.h		\
 	cinnamon-embedded-window.h		\
 	cinnamon-generic-container.h	\
@@ -142,6 +143,7 @@ libcinnamon_la_SOURCES =		\
 	cinnamon-app-system.c		\
 	cinnamon-app-usage.c		\
 	cinnamon-arrow.c			\
+	cinnamon-background-manager.c	\
 	cinnamon-doc-system.c		\
 	cinnamon-embedded-window.c		\
 	cinnamon-generic-container.c	\
