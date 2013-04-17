@@ -989,17 +989,20 @@ MyApplet.prototype = {
     },
 
     _onMenuKeyPress: function(actor, event) {
-
         let symbol = event.get_key_symbol();
         let item_actor;
         let index = 0;
         this.appBoxIter.reloadVisible();
         this.catBoxIter.reloadVisible();
 
-        if (symbol==Clutter.KEY_Super_L && this.menu.isOpen) {
+        let keyCode = event.get_key_code();
+        let modifierState = Cinnamon.get_event_state(event);
+
+        if (global.display.get_is_overlay_key(keyCode, modifierState) && this.menu.isOpen) {
             this.menu.close();
             return true;
         }
+
         let index = this._selectedItemIndex;   
 
         if (this._activeContainer === null && symbol == Clutter.KEY_Up) {
