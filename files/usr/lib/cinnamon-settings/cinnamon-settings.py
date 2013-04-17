@@ -86,6 +86,7 @@ class MainWindow:
                 self.button_back.show()
                 self.current_sidepage = sidePage
                 self.maybe_resize(sidePage)
+                GObject.idle_add(self.start_fade_in)
             else:
                 sidePage.build(self.advanced_mode)
 
@@ -131,6 +132,7 @@ class MainWindow:
         self.c_manager = capi.CManager()
         self.content_box.c_manager = self.c_manager
         self.bar_heights = 0
+        self.opacity = 0
 
         for i in range(len(modules)):
             mod = modules[i].Module(self.content_box)
@@ -177,7 +179,7 @@ class MainWindow:
         self.window.connect("destroy", Gtk.main_quit)
         self.button_cancel.connect("clicked", Gtk.main_quit)
         self.button_back.connect('clicked', self.back_to_icon_view)
-
+        self.window.set_opacity(self.opacity)
         self.window.show()
         self.calculate_bar_heights()
 
@@ -187,6 +189,20 @@ class MainWindow:
             self.findPath(first_page_iter)
         else:
             self.search_entry.grab_focus()
+            GObject.idle_add(self.start_fade_in)
+
+    def start_fade_in(self):
+        if self.opacity < 1.0:
+            GObject.timeout_add(30, self.do_fade_in)
+        return False
+
+    def do_fade_in(self):
+        self.opacity += 0.1
+        self.window.set_opacity(self.opacity)
+        if self.opacity < 1.0:
+            return True
+        else:
+            return False
 
     def calculate_bar_heights(self):
         h = 0
