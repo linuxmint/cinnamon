@@ -36,7 +36,7 @@ ADVANCED_GSETTING = "cinnamon-settings-advanced"
 
 WIN_WIDTH = 800
 WIN_HEIGHT = 600
-WIN_H_PADDING = 10
+WIN_H_PADDING = 20
 
 CATEGORIES = [
 #        Display name                         ID              Show it? Always False to start              Icon
