@@ -176,15 +176,15 @@ class MainWindow:
         self.button_cancel.connect("clicked", Gtk.main_quit)
         self.button_back.connect('clicked', self.back_to_icon_view)
 
+        self.window.show()
+        self.calculate_bar_heights()
+
         # Select the first sidePage
         if len(sys.argv) > 1 and sys.argv[1] in sidePagesIters.keys():
             first_page_iter = sidePagesIters[sys.argv[1]]
             self.findPath(first_page_iter)
         else:
             self.search_entry.grab_focus()
-
-        self.window.show()
-        self.calculate_bar_heights()
 
     def calculate_bar_heights(self):
         h = 0
