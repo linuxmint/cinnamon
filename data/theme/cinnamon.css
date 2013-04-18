@@ -103,7 +103,6 @@ StScrollBar StButton#vhandle:hover {
 	color: #ffffff;
 	font-size: 9.5pt;
 	min-width: 100px;
-	background-bumpmap: url("/usr/share/cinnamon/bumpmaps/frost.png");
 }
 .popup-submenu-menu-item:open {
 	background-color: #4c4c4c;
@@ -913,6 +912,10 @@ StScrollBar StButton#vhandle:hover {
 	padding-top: 15px;
 	spacing: 5px;
 }
+.run-dialog-completion-box { 
+        padding-left: 15px;
+        font-size: 10px;
+}
 .run-dialog-entry {
 	font-size: 10.5pt;
 	font-weight: bold;
@@ -1579,6 +1582,14 @@ StScrollBar StButton#vhandle:hover {
 /* ===================================================================
  * Applets (applet.js) 
  * ===================================================================*/
+.applet-separator {
+	padding: 5px 4px;
+}
+.applet-separator-line {
+	width: 2px;
+	background: rgba(255,255,255,.5);
+}
+
 .applet-box {
 	padding-left: 3px;
 	padding-right: 3px;

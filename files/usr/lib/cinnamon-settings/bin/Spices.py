@@ -1,7 +1,5 @@
 try:
     from SettingsWidgets import rec_mkdir
-    import pygtk
-    pygtk.require('2.0')
     import gettext
     from gi.repository import Gio, Gtk, GObject, Gdk, GdkPixbuf
     # WebKit requires gir1.2-javascriptcoregtk-3.0 and gir1.2-webkit-3.0
@@ -105,8 +103,8 @@ class Spice_Harvester:
         self.spiceDetailSelectButton.connect("clicked", lambda x: self.close_select_detail())
         self.spiceDetailCloseButton = self.spiceDetail.add_button(_("Close"), Gtk.ResponseType.CANCEL)
         self.spiceDetailCloseButton.connect("clicked", lambda x: self.close_detail())
-        self.spiceDetail.connect("destroy", lambda x, y: self.on_close_detail(y))
-        self.spiceDetail.connect("delete_event", lambda x, y: self.on_close_detail(y))
+        self.spiceDetail.connect("destroy", self.on_close_detail)
+        self.spiceDetail.connect("delete_event", self.on_close_detail)
         self.spiceDetail.set_default_size(640, 440)
         self.spiceDetail.set_size_request(640, 440)
         content_area = self.spiceDetail.get_content_area()
@@ -142,13 +140,13 @@ class Spice_Harvester:
         if callable(self.on_detail_select):
             self.on_detail_select(self)
 
-    def on_close_detail(self, event):
+    def on_close_detail(self, *args):
         self.close_detail()
         return True
 
     def close_detail(self):
         self.spiceDetail.hide()
-        if callable(self.on_detail_close):
+        if hasattr(self, 'on_detail_close') and callable(self.on_detail_close):
             self.on_detail_close(self)
 
     def show_detail(self, uuid, onSelect=None, onClose=None):        

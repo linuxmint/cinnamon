@@ -318,6 +318,14 @@
       </_description>
     </key>
 
+    <key type="b" name="menu-enable-autoscroll">
+      <default>true</default>
+      <_summary>Enable or disable autoscrolling in application list</_summary>
+      <_description>
+            Toggles the auto-scrolling regions at the top and bottom of the app list
+      </_description>
+    </key>
+
     <key type="b" name="display-notifications">
       <default>true</default>
       <_summary>Whether notifications are to be displayed</_summary>
@@ -549,6 +557,10 @@
     <key type="b" name="cinnamon-settings-advanced">
       <default>false</default>
       <_summary>Whether advanced mode is enabled in cinnamon-settings</_summary>
+    </key>
+    <key type="b" name="run-dialog-show-completions">
+      <default>true</default>
+      <_summary>Whether or not to show possible completions in the run dialog (Alt-F2)</_summary>
     </key>
 
     <child name="calendar" schema="org.cinnamon.calendar"/>

@@ -4,6 +4,7 @@ const Clutter = imports.gi.Clutter;
 const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
 const Lang = imports.lang;
+const Mainloop = imports.mainloop;
 const Meta = imports.gi.Meta;
 const St = imports.gi.St;
 const Cinnamon = imports.gi.Cinnamon;
@@ -27,6 +28,8 @@ const DISABLE_COMMAND_LINE_KEY = 'disable-command-line';
 const TERMINAL_SCHEMA = 'org.gnome.desktop.default-applications.terminal';
 const EXEC_KEY = 'exec';
 const EXEC_ARG_KEY = 'exec-arg';
+
+const SHOW_COMPLETIONS_KEY = 'run-dialog-show-completions';
 
 const DIALOG_GROW_TIME = 0.1;
 
@@ -130,6 +133,8 @@ CommandCompleter.prototype = {
     getCompletion: function(text) {
         let common = '';
         let notInit = true;
+        let completions = [];
+
         if (!this._valid) {
             this._update(0);
             return common;
@@ -156,11 +161,13 @@ CommandCompleter.prototype = {
                     notInit = false;
                 }
                 common = _getCommon(common, this._childs[i][k]);
+                if (completions.indexOf(this._childs[i][k]) == -1) // Don't add duplicates
+                    completions.push(this._childs[i][k]);
             }
         }
         if (common.length)
-            return common.substr(text.length);
-        return common;
+            return [common.substr(text.length).replace(/ /g, "\\ "), completions];
+        return [common, completions];
     }
 };
 
@@ -216,6 +223,9 @@ __proto__: ModalDialog.ModalDialog.prototype,
         this._entryText = entry.clutter_text;
         this.contentLayout.add(entry, { y_align: St.Align.START });
         this.setInitialKeyFocus(this._entryText);
+
+        this._completionBox = new St.Label({style_class: 'run-dialog-completion-box'});
+        this.contentLayout.add(this._completionBox);
 
         this._errorBox = new St.BoxLayout({ style_class: 'run-dialog-error-box' });
 
@@ -282,14 +292,38 @@ __proto__: ModalDialog.ModalDialog.prototype,
                     prefix = text;
                 else
                     prefix = text.substr(text.lastIndexOf(' ') + 1);
-                let postfix = this._getCompletion(prefix);
+                let [postfix, completions] = this._getCompletion(prefix);
                 if (postfix != null && postfix.length > 0) {
                     o.insert_text(postfix, -1);
                     o.set_cursor_position(text.length + postfix.length);
                     if (postfix[postfix.length - 1] == '/')
                         this._getCompletion(text + postfix + 'a');
                 }
+                if (!postfix && completions.length > 0 && prefix.length > 2 &&
+                    global.settings.get_boolean(SHOW_COMPLETIONS_KEY)) {
+                    this._completionBox.set_text(completions.join("\n"));
+                    this._completionBox.show();
+                }
                 return true;
+            }
+            if (symbol == Clutter.BackSpace) {
+                this._completionBox.hide();
+            }
+            if (this._completionBox.get_text() != "" &&
+                this._completionBox.visible) {
+                Mainloop.timeout_add(500, Lang.bind(this, function() { // Don't do it instantly to avoid "flashing"
+                    let text = this._entryText.get_text();
+                    let prefix;
+                    if (text.lastIndexOf(' ') == -1)
+                        prefix = text;
+                    else
+                        prefix = text.substr(text.lastIndexOf(' ') + 1);
+                    let [postfix, completions] = this._getCompletion(prefix);
+                    if (completions.length > 0) {
+                        this._completionBox.set_text(completions.join("\n"));
+                    }
+                }));
+                return false;
             }
             return false;
         }));
@@ -297,7 +331,7 @@ __proto__: ModalDialog.ModalDialog.prototype,
 
     _getCompletion : function(text) {
         if (text.indexOf('/') != -1) {
-            return this._pathCompleter.get_completion_suffix(text);
+            return [this._pathCompleter.get_completion_suffix(text), this._pathCompleter.get_completions(text)];
         } else {
             return this._commandCompleter.getCompletion(text);
         }
@@ -380,6 +414,7 @@ __proto__: ModalDialog.ModalDialog.prototype,
         this._history.lastItem();
         this._errorBox.hide();
         this._entryText.set_text('');
+        this._completionBox.hide();
         this._commandError = false;
 
         if (this._lockdownSettings.get_boolean(DISABLE_COMMAND_LINE_KEY))

@@ -66,11 +66,19 @@ MyApplet.prototype = {
         notification.actor.unparent();
         let existing_index = this.notifications.indexOf(notification);
         if (existing_index != -1) {
-            notification._inNotificationBin = true;
-            global.reparentActor(notification.actor, this._notificationbin);
-            notification.expand();
-            notification._timeLabel.show();
+            if (notification._destroyed) {
+                this.notifications.splice(existing_index, 1);
+            }
+            else {
+                notification._inNotificationBin = true;
+                notification.actor.reparent(this._notificationbin);
+                notification.expand();
+                notification._timeLabel.show();
+            }
             this.update_list();
+            return;
+        }
+        if (notification._destroyed) {
             return;
         }
         notification._inNotificationBin = true;
@@ -79,17 +87,19 @@ MyApplet.prototype = {
         this._notificationbin.add(notification.actor)
         notification.actor._parent_container = this._notificationbin;
         notification.actor.add_style_class_name('notification-applet-padding');
-        notification.connect('clicked', Lang.bind(this, this._item_clicked));
-        notification.connect('destroy', Lang.bind(this, this._item_clicked));
+        notification.connect('clicked', Lang.bind(this, this._item_clicked, false));
+        notification.connect('destroy', Lang.bind(this, this._item_clicked, true));
         notification._timeLabel.show();
         this.update_list();
     },
 
-    _item_clicked: function(notification) {
+    _item_clicked: function(notification, destroyed) {
         let i = this.notifications.indexOf(notification);
         if (i != -1) {
             this.notifications.splice(i, 1);
-            notification.destroy(NotificationDestroyedReason.DISMISSED);
+            if (!destroyed) {
+                notification.destroy(NotificationDestroyedReason.DISMISSED);
+            }
         }
         this.update_list();
     },

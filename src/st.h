@@ -17,6 +17,7 @@
 #include <st/st-im-text.h>
 #include <st/st-label.h>
 #include <st/st-overflow-box.h>
+#include <st/st-polygon.h>
 #include <st/st-private.h>
 #include <st/st-scrollable.h>
 #include <st/st-scroll-bar.h>

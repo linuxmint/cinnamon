@@ -99,8 +99,8 @@ const MediaServer2PlayerIFace = {
 
 /* global values */
 let icon_path = "/usr/share/cinnamon/theme/";
-let compatible_players = [ "clementine", "mpd", "exaile", "banshee", "rhythmbox", "rhythmbox3", "pragha", "quodlibet", "guayadeque", "amarok", "googlemusicframe", "xbmc", "xnoise", "gmusicbrowser", "spotify", "audacious", "vlc", "beatbox", "songbird", "pithos", "gnome-mplayer", "nuvolaplayer" ];
-let support_seek = [ "clementine", "banshee", "rhythmbox", "rhythmbox3", "pragha", "quodlibet", "amarok", "xnoise", "gmusicbrowser", "spotify", "vlc", "beatbox", "gnome-mplayer" ];
+let compatible_players = [ "clementine", "mpd", "exaile", "banshee", "rhythmbox", "rhythmbox3", "pragha", "quodlibet", "guayadeque", "amarok", "googlemusicframe", "xbmc", "noise", "xnoise", "gmusicbrowser", "spotify", "audacious", "vlc", "beatbox", "songbird", "pithos", "gnome-mplayer", "nuvolaplayer" ];
+let support_seek = [ "clementine", "banshee", "rhythmbox", "rhythmbox3", "pragha", "quodlibet", "amarok", "noise", "xnoise", "gmusicbrowser", "spotify", "vlc", "beatbox", "gnome-mplayer" ];
 /* dummy vars for translation */
 let x = _("Playing");
 x = _("Paused");

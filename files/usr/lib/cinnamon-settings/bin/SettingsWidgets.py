@@ -9,7 +9,7 @@ try:
     import gettext
     from gi.repository import Gio, Gtk, GObject, Gdk
     from gi.repository import GdkPixbuf 
-#    import gconf
+    from gi.repository import GConf
     import json
     import dbus
     import time
@@ -29,7 +29,7 @@ except Exception, detail:
     sys.exit(1)
 
 class SidePage:
-    def __init__(self, name, icon, keywords, advanced, content_box, is_c_mod = False, is_standalone = False, exec_name = None):
+    def __init__(self, name, icon, keywords, advanced, content_box, no_resize = False, is_c_mod = False, is_standalone = False, exec_name = None):
         self.name = name
         self.icon = icon
         self.content_box = content_box
@@ -39,6 +39,7 @@ class SidePage:
         self.exec_name = exec_name
         self.keywords = keywords
         self.advanced = advanced
+        self.no_resize = no_resize
         self.topWindow = None
         self.builder = None
 
@@ -85,7 +86,7 @@ class SidePage:
 
 class CCModule:
     def __init__(self, label, mod_id, icon, category, advanced, keywords, content_box):
-        sidePage = SidePage(label, icon, keywords, advanced, content_box, True, False, mod_id)
+        sidePage = SidePage(label, icon, keywords, advanced, content_box, False, True, False, mod_id)
         self.sidePage = sidePage
         self.name = mod_id
         self.category = category
@@ -102,7 +103,7 @@ class CCModule:
 
 class SAModule:
     def __init__(self, label, mod_id, icon, category, advanced, keywords, content_box):
-        sidePage = SidePage(label, icon, keywords, advanced, content_box, False, True, mod_id)
+        sidePage = SidePage(label, icon, keywords, advanced, content_box, False, False, True, mod_id)
         self.sidePage = sidePage
         self.name = mod_id
         self.category = category

@@ -5,8 +5,6 @@ try:
     import XletSettings
     from Spices import Spice_Harvester
     #from Spices import *
-    import pygtk
-    pygtk.require('2.0')
     import gettext
     import locale
     import os.path
@@ -45,7 +43,7 @@ class AppletViewSidePage (SidePage):
     SORT_REMOVABLE = 4
 
     def __init__(self, name, icon, keywords, advanced, content_box):
-        SidePage.__init__(self, name, icon, keywords, advanced, content_box)
+        SidePage.__init__(self, name, icon, keywords, advanced, content_box, True)
         self.icons = []
 
     def build(self, advanced):
