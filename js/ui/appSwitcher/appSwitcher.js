@@ -64,7 +64,7 @@ AppSwitcher.prototype = {
         this._dcid = this._windowManager.connect('destroy', Lang.bind(this, this._windowDestroyed));
         this._mcid = this._windowManager.connect('map', Lang.bind(this, this._activateSelected));
         
-        this._enforcePrimaryMonitor = false;// fixme: setting
+        this._enforcePrimaryMonitor = global.settings.get_boolean("alttab-switcher-enforce-primary-monitor");
         this._updateActiveMonitor();
     },
 
