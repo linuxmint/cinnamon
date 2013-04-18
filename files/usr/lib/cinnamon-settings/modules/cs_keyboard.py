@@ -350,7 +350,7 @@ class NotebookPage:
 
 class KeyboardSidePage (SidePage):
     def __init__(self, name, icon, keywords, advanced, content_box):
-        SidePage.__init__(self, name, icon, keywords, advanced, content_box)
+        SidePage.__init__(self, name, icon, keywords, advanced, content_box, True)
         self.tabs = []
 
     def build(self, advanced):

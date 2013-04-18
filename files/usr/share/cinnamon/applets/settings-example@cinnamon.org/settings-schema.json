@@ -77,5 +77,10 @@
     "type" : "checkbox",
     "description" : "This is a test widget for individual key signal firing",
     "default" : false
+ },
+ "keybinding-test" : {
+    "type" : "keybinding",
+    "description" : "Set the keybinding here to activate an action: ",
+    "default" : "<Control>F8"
  }
 }

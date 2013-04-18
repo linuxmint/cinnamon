@@ -1421,10 +1421,6 @@ MessageTray.prototype = {
         this._notificationState = State.HIDDEN;
         this._notificationTimeoutId = 0;
         this._notificationExpandedId = 0;
-        if (Main.overview.visible || Main.expo.visible)
-            this._overviewVisible = true;
-        else
-            this._overviewVisible = false;
         this._notificationRemoved = false;
         this._reNotifyAfterHideNotification = null;
         
@@ -1433,45 +1429,26 @@ MessageTray.prototype = {
 
         Main.layoutManager.connect('monitors-changed', Lang.bind(this, this._setSizePosition));
 
+        let onNotificationEnabledUpdated = Lang.bind(this, function() {
+            this._notificationsEnabled = global.settings.get_boolean("display-notifications");
+        });
+        global.settings.connect('changed::display-notifications', onNotificationEnabledUpdated);
+        onNotificationEnabledUpdated();
+
         this._setSizePosition();
 
-        Main.overview.connect('showing', Lang.bind(this,
-            function() {
-                this._overviewVisible = true;
-                if (this._locked) {
-                    this._unlock();
-                } else {
-                    this._updateState();
-                }
-            }));
-        Main.overview.connect('hiding', Lang.bind(this,
-            function() {
-                this._overviewVisible = false;
-                if (this._locked) {
-                    this._unlock();
-                } else {
-                    this._updateState();
-                }
-            }));
+        let updateLockState = Lang.bind(this, function() {
+            if (this._locked) {
+                this._unlock();
+            } else {
+                this._updateState();
+            }
+        });
 
-        Main.expo.connect('showing', Lang.bind(this,
-            function() {
-                this._overviewVisible = true;
-                if (this._locked) {
-                    this._unlock();
-                } else {
-                    this._updateState();
-                }
-            }));
-        Main.expo.connect('hiding', Lang.bind(this,
-            function() {
-                this._overviewVisible = false;
-                if (this._locked) {
-                    this._unlock();
-                } else {
-                    this._updateState();
-                }
-            }));
+        Main.overview.connect('showing', updateLockState);
+        Main.overview.connect('hiding', updateLockState);
+        Main.expo.connect('showing', updateLockState);
+        Main.expo.connect('hiding', updateLockState);
     },
 
     _setSizePosition: function() {
@@ -1607,27 +1584,30 @@ MessageTray.prototype = {
         let notificationsPending = this._notificationQueue.length > 0 && (!this._busy || notificationUrgent);
         let notificationExpanded = this._notificationBin.y < 0;
 
-        let notificationExpired = (this._notificationTimeoutId == 0 && !(this._notification && this._notification.urgency == Urgency.CRITICAL) && !this._pointerInTray && !this._locked && !(this._pointerInKeyboard && notificationExpanded)) || this._notificationRemoved;
-        let notificationsEnabled = global.settings.get_boolean("display-notifications");
-        let canShowNotification = notificationsPending && notificationsEnabled;
+        let notificationExpired = (this._notificationTimeoutId == 0 &&
+                !(this._notification && this._notification.urgency == Urgency.CRITICAL) &&
+                !this._pointerInTray &&
+                !this._locked &&
+                !(this._pointerInKeyboard && notificationExpanded)
+            ) || this._notificationRemoved;
+        let canShowNotification = notificationsPending && this._notificationsEnabled;
 
         if (this._notificationState == State.HIDDEN) {
-            if (canShowNotification)
+            if (canShowNotification) {
                 this._showNotification();
-            else if (!notificationsEnabled) {
-                this._notification = this._notificationQueue.shift();
-                if (AppletManager.get_role_provider_exists(AppletManager.Roles.NOTIFICATIONS)) {
-                    this.emit('notify-applet-update', this._notification);
+            }
+            else if (!this._notificationsEnabled) {
+                if (notificationsPending) {
+                    this._notification = this._notificationQueue.shift();
+                    if (AppletManager.get_role_provider_exists(AppletManager.Roles.NOTIFICATIONS)) {
+                        this.emit('notify-applet-update', this._notification);
+                    }
                 }
             }
         } else if (this._notificationState == State.SHOWN) {
             if (notificationExpired)
                 this._hideNotification();
         }
-
-        let notificationsVisible = (this._notificationState == State.SHOWING ||
-                                    this._notificationState == State.SHOWN);
-        let notificationsDone = !notificationsVisible && !notificationsPending;
     },
 
     _tween: function(actor, statevar, value, params) {

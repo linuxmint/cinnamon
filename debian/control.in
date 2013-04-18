@@ -62,6 +62,7 @@ Depends: ${gir:Depends},
          gir1.2-gconf-2.0,
          gir1.2-gkbd-3.0,
          gir1.2-gnomebluetooth-1.0,
+         gir1.2-gstreamer-0.10,
          gir1.2-networkmanager-1.0,
          gir1.2-polkit-1.0,
          gir1.2-soup-2.4,
@@ -93,6 +94,25 @@ Description: Cinnamon desktop
  by the GNOME Panel and by the window manager in previous versions of
  GNOME. Cinnamon has rich visual effects enabled by new
  graphical technologies.
+
+Package: cinnamon-dbg
+Section: debug
+Priority: extra
+Architecture: any
+Depends: cinnamon (= ${binary:Version}),
+         ${misc:Depends}
+Description: Debugging symbols for the Cinnamon desktop
+ Cinnamon redefines user interactions with the GNOME desktop.
+ In particular, it offers new paradigms for launching applications,
+ accessing documents, and organizing open windows in GNOME. Later, it
+ will introduce a new applets eco-system and offer new solutions for
+ other desktop features, such as notifications and contacts
+ management. Cinnamon is intended to replace functions handled
+ by the GNOME Panel and by the window manager in previous versions of
+ GNOME. Cinnamon has rich visual effects enabled by new
+ graphical technologies.
+ .
+ This package contains the debugging symbols.
 
 Package: cinnamon-common
 Replaces: cinnamon (<< 1.7.1)

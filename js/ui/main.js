@@ -32,12 +32,14 @@ const NotificationDaemon = imports.ui.notificationDaemon;
 const WindowAttentionHandler = imports.ui.windowAttentionHandler;
 const Scripting = imports.ui.scripting;
 const CinnamonDBus = imports.ui.cinnamonDBus;
+const LookingGlassDBus = imports.ui.lookingGlassDBus;
 const WindowManager = imports.ui.windowManager;
 const ThemeManager = imports.ui.themeManager;
 const Magnifier = imports.ui.magnifier;
 const XdndHandler = imports.ui.xdndHandler;
 const StatusIconDispatcher = imports.ui.statusIconDispatcher;
 const Util = imports.misc.util;
+const Keybindings = imports.ui.keybindings;
 
 const DEFAULT_BACKGROUND_COLOR = new Clutter.Color();
 DEFAULT_BACKGROUND_COLOR.from_pixel(0x2266bbff);
@@ -65,6 +67,7 @@ let notificationDaemon = null;
 let windowAttentionHandler = null;
 let recorder = null;
 let cinnamonDBusService = null;
+let lookingGlassDBusService = null;
 let modalCount = 0;
 let modalActorFocusStack = [];
 let uiGroup = null;
@@ -74,6 +77,7 @@ let statusIconDispatcher = null;
 let keyboard = null;
 let layoutManager = null;
 let themeManager = null;
+let keybindingManager = null;
 let networkAgent = null;
 let _errorLogStack = [];
 let _startDate;
@@ -193,6 +197,7 @@ function start() {
     Gio.DesktopAppInfo.set_desktop_env('GNOME');
 
     cinnamonDBusService = new CinnamonDBus.Cinnamon();
+    lookingGlassDBusService = new LookingGlassDBus.CinnamonLookingGlass();
     // Force a connection now; dbus.js will do this internally
     // if we use its name acquisition stuff but we aren't right
     // now; to do so we'd need to convert from its async calls
@@ -306,6 +311,8 @@ function start() {
 
     placesManager = new PlacesManager.PlacesManager();    
     automountManager = new AutomountManager.AutomountManager();
+
+    keybindingManager = new Keybindings.KeybindingManager();
     //autorunManager = new AutorunManager.AutorunManager();
     //networkAgent = new NetworkAgent.NetworkAgent();
 
@@ -744,12 +751,12 @@ function _log(category, msg) {
                 text += ' ';
         }
     }
-    let out = {timestamp: new Date().getTime(),
+    let out = {timestamp: new Date().getTime().toString(),
                          category: category,
                          message: text };
     _errorLogStack.push(out);
-    if(cinnamonDBusService)
-        cinnamonDBusService.notifyLgLogUpdate();
+    if(lookingGlassDBusService)
+        lookingGlassDBusService.emitLogUpdate();
     if (can_log) lg_log_file.write(renderLogLine(out), null);
 }
 
@@ -814,17 +821,11 @@ function _logInfo(msg) {
 }
 
 function formatTime(d) {
-    function pad(n) { return n < 10 ? '0' + n : n; }
-    return d.getUTCFullYear()+'-'
-        + pad(d.getUTCMonth()+1)+'-'
-        + pad(d.getUTCDate())+'T'
-        + pad(d.getUTCHours())+':'
-        + pad(d.getUTCMinutes())+':'
-        + pad(d.getUTCSeconds())+'Z';
+    return d.toISOString();
 }
 
 function renderLogLine(line) {
-    return line.category + ' t=' + formatTime(new Date(line.timestamp)) + ' ' + line.message + '\n';
+    return line.category + ' t=' + formatTime(new Date(parseInt(line.timestamp))) + ' ' + line.message + '\n';
 }
 
 function logStackTrace(msg) {
@@ -870,6 +871,10 @@ function _globalKeyPressHandler(actor, event) {
 
     // This relies on the fact that Clutter.ModifierType is the same as Gdk.ModifierType
     let action = global.display.get_keybinding_action(keyCode, modifierState);
+
+    if (action == Meta.KeyBindingAction.CUSTOM) {
+        global.display.keybinding_action_invoke_by_code(keyCode, modifierState);
+    }
 
     // Other bindings are only available when the overview is up and no modal dialog is present
     if (((!overview.visible && !expo.visible) || modalCount > 1))
