@@ -10,7 +10,6 @@ const AppSwitcher3D = imports.ui.appSwitcher.appSwitcher3D;
 const TRANSITION_TYPE = 'easeOutQuad';
 const SIDE_ANGLE = 60;
 const BLEND_OUT_ANGLE = 30;
-const PREVIEW_SCALE = 0.5;
 
 function appendParams(base, extra) {
     for (let key in extra) { base[key] = extra[key]; }
@@ -25,50 +24,12 @@ CoverflowSwitcher.prototype = {
 
     _init: function() {
         AppSwitcher3D.AppSwitcher3D.prototype._init.apply(this, arguments);
-    },
-
-    _createList: function() {
-        let monitor = this._activeMonitor;
-        let currentWorkspace = global.screen.get_active_workspace();
         
+        let monitor = this._activeMonitor;
         this._yOffset = monitor.height / 2;
         this._xOffsetLeft = monitor.width * 0.1;
         this._xOffsetRight = monitor.width - this._xOffsetLeft;
         this._xOffsetCenter = monitor.width / 2;
-        
-        this._previews = [];
-        
-        for (i in this._windows) {
-            let metaWin = this._windows[i];
-            let compositor = this._windows[i].get_compositor_private();
-            if (compositor) {
-                let texture = compositor.get_texture();
-                let [width, height] = texture.get_size();
-
-                let scale = 1.0;
-                let previewWidth = monitor.width * PREVIEW_SCALE;
-                let previewHeight = monitor.height * PREVIEW_SCALE;
-                if (width > previewWidth || height > previewHeight)
-                    scale = Math.min(previewWidth / width, previewHeight / height);
-
-                let clone = new Clutter.Clone({
-                    opacity: (!metaWin.minimized && metaWin.get_workspace() == currentWorkspace || metaWin.is_on_all_workspaces()) ? 255 : 0,
-                    source: texture,
-                    reactive: true,
-                    anchor_gravity: Clutter.Gravity.CENTER,
-                    x: ((metaWin.minimized) ? 0 : compositor.x + compositor.width / 2) - monitor.x,
-                    y: ((metaWin.minimized) ? 0 : compositor.y + compositor.height / 2) - monitor.y
-                });
-
-                clone.target_width = Math.round(width * scale);
-                clone.target_height = Math.round(height * scale);
-                clone.target_width_side = clone.target_width * 2/3;
-                clone.target_height_side = clone.target_height;
-
-                this._previews.push(clone);
-                this.previewActor.add_actor(clone);
-            }
-        }
     },
 
     _selectNext: function() {

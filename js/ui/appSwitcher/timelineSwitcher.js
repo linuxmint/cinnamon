@@ -8,7 +8,6 @@ const Tweener = imports.ui.tweener;
 const AppSwitcher3D = imports.ui.appSwitcher.appSwitcher3D;
 
 const TRANSITION_TYPE = 'easeOutQuad';
-const PREVIEW_SCALE = 0.5;
 
 function TimelineSwitcher() {
     this._init.apply(this, arguments);
@@ -21,45 +20,15 @@ TimelineSwitcher.prototype = {
         AppSwitcher3D.AppSwitcher3D.prototype._init.apply(this, arguments);
     },
 
-    _createList: function() {
+    _adaptClones: function() {
         let monitor = this._activeMonitor;
-        let currentWorkspace = global.screen.get_active_workspace();
-        this._previews = [];
-        for (i in this._windows) {
-            let metaWin = this._windows[i];
-            let compositor = this._windows[i].get_compositor_private();
-            if (compositor) {
-                let texture = compositor.get_texture();
-                let [width, height] = texture.get_size();
-
-                let scale = 1.0;
-                let previewWidth = monitor.width * PREVIEW_SCALE;
-                let previewHeight = monitor.height * PREVIEW_SCALE;
-                if (width > previewWidth || height > previewHeight)
-                    scale = Math.min(previewWidth / width, previewHeight / height);
-
-                let clone = new Clutter.Clone({
-                    opacity: (!metaWin.minimized && metaWin.get_workspace() == currentWorkspace || metaWin.is_on_all_workspaces()) ? 255 : 0,
-                    source: texture,
-                    reactive: true,
-                    anchor_gravity: Clutter.Gravity.WEST,
-                    rotation_angle_y: 12,
-                    x: ((metaWin.minimized) ? 0 : compositor.x + compositor.width / 2) - monitor.x,
-                    y: ((metaWin.minimized) ? 0 : compositor.y + compositor.height / 2) - monitor.y
-                });
-
-                clone.target_width = Math.round(width * scale);
-                clone.target_height = Math.round(height * scale);
-                clone.target_width_side = clone.target_width * 2/3;
-                clone.target_height_side = clone.target_height;
-
-                clone.target_x = Math.round(monitor.width * 0.3);
-                clone.target_y = Math.round(monitor.height * 0.5);
-
-                this._previews.push(clone);
-                this.previewActor.add_actor(clone);
-                clone.lower_bottom();
-            }
+        for (let i in this._previews) {
+            let clone = this._previews[i];
+            clone.anchor_gravity = Clutter.Gravity.WEST;
+            clone.rotation_angle_y = 12;
+            clone.target_x = Math.round(monitor.width * 0.3);
+            clone.target_y = Math.round(monitor.height * 0.5);
+            clone.lower_bottom();
         }
     },
 

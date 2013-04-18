@@ -19,6 +19,7 @@ const TRANSITION_TYPE = 'easeOutQuad';
 const ICON_SIZE = 64;
 const ICON_SIZE_BIG = 128;
 const ICON_TITLE_SPACING = 10;
+const PREVIEW_SCALE = 0.5;
 
 const TITLE_POSITION = 7/8; // percent position
 const ANIMATION_TIME = 0.25; // seconds
@@ -161,6 +162,59 @@ AppSwitcher3D.prototype = {
         // create previews
         this._createList();
         this._next();
+    },
+
+    _createList: function() {
+        let monitor = this._activeMonitor;
+        let currentWorkspace = global.screen.get_active_workspace();
+        
+        this._previews = [];
+        
+        for (i in this._windows) {
+            let metaWin = this._windows[i];
+            let compositor = this._windows[i].get_compositor_private();
+            if (compositor) {
+                let texture = compositor.get_texture();
+                let [width, height] = texture.get_size();
+
+                let scale = 1.0;
+                let previewWidth = monitor.width * PREVIEW_SCALE;
+                let previewHeight = monitor.height * PREVIEW_SCALE;
+                if (width > previewWidth || height > previewHeight)
+                    scale = Math.min(previewWidth / width, previewHeight / height);
+
+                let preview = new St.Button({
+                    opacity: (!metaWin.minimized && metaWin.get_workspace() == currentWorkspace || metaWin.is_on_all_workspaces()) ? 255 : 0,
+                    reactive: true,
+                    anchor_gravity: Clutter.Gravity.CENTER,
+                    x: ((metaWin.minimized) ? 0 : compositor.x + compositor.width / 2) - monitor.x,
+                    y: ((metaWin.minimized) ? 0 : compositor.y + compositor.height / 2) - monitor.y
+                });
+
+                preview.target_width = Math.round(width * scale);
+                preview.target_height = Math.round(height * scale);
+                preview.target_width_side = preview.target_width * 2/3;
+                preview.target_height_side = preview.target_height;
+
+                
+                preview.set_child(new Clutter.Clone({ source: texture }));
+                preview.metaWindow = metaWin;
+                preview.connect('clicked', Lang.bind(this, this._cloneClicked));
+
+                this._previews.push(preview);
+                this.previewActor.add_actor(preview);
+            }
+        }
+        
+        this._adaptClones();
+    },
+    
+    _adaptClones: function() {
+    },
+
+    _cloneClicked: function(actor) {
+        this._currentIndex = this._previews.indexOf(actor);
+        this._activateSelected();
     },
     
     _setCurrentWindow: function(window) {
