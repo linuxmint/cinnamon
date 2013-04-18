@@ -93,7 +93,6 @@ let workspace_names = [];
 let background = null;
 
 let desktop_layout;
-let applet_side = St.Side.BOTTOM;
 let deskletContainer = null;
 
 let software_rendering = false;
@@ -155,34 +154,18 @@ function _initUserSession() {
     
 }
 
-function start() {
-    // Monkey patch utility functions into the global proxy;
-    // This is easier and faster than indirecting down into global
-    // if we want to call back up into JS.
-    global.logTrace = _logTrace;
-    global.logWarning = _logWarning;
-    global.logError = _logError;
-    global.log = _logInfo;
+function _reparentActor(actor, newParent) {
+    let parent = actor.get_parent();
+    if (parent)
+      parent.remove_actor(actor);
+    if(newParent)
+        newParent.add_actor(actor);
+}
 
-    if (global.settings.get_boolean("enable-looking-glass-logs")) {
-        try {
-            let log_filename = Gio.file_parse_name(CIN_LOG_FOLDER + '/glass.log');
-            let log_backup_filename = Gio.file_parse_name(CIN_LOG_FOLDER + '/glass.log.last');
-            let log_dir = Gio.file_new_for_path(CIN_LOG_FOLDER);
-            if (!log_filename.query_exists(null)) {
-                if (!log_dir.query_exists(null))
-                    log_dir.make_directory_with_parents(null);
-                lg_log_file = log_filename.append_to(0, null);
-            } else {
-                log_filename.copy(log_backup_filename, 1, null, null, null);
-                log_filename.delete(null);
-                lg_log_file = log_filename.append_to(0, null);
-            }
-            can_log = true;
-        } catch (e) {
-            global.logError("Error during looking-glass log initialization", e);
-        }
-    }
+function start() {
+    _initLogging();
+    
+    global.reparentActor = _reparentActor;
 
     log("About to start Cinnamon");
     if (GLib.getenv('CINNAMON_SOFTWARE_RENDERING')) {
@@ -222,12 +205,6 @@ function start() {
     global.stage.no_clear_hint = true;
     
     desktop_layout = global.settings.get_string("desktop-layout"); 
-    if (desktop_layout == LAYOUT_FLIPPED) {
-        applet_side = St.Side.TOP;        
-    }
-    else if (desktop_layout == LAYOUT_CLASSIC) {
-        applet_side = St.Side.TOP;        
-    }
     
     Gtk.IconTheme.get_default().append_search_path("/usr/share/cinnamon/icons/");
     _defaultCssStylesheet = global.datadir + '/theme/cinnamon.css';
@@ -245,31 +222,14 @@ function start() {
                     });
     St.set_ui_root(global.stage, uiGroup);
 
-    let parent = global.background_actor.get_parent();
-    if (parent) {
-      parent.remove_child(global.background_actor);
-    }
-    parent = global.bottom_window_group.get_parent();
-    if (parent) {
-      parent.remove_child(global.bottom_window_group);
-    }
-    parent = global.window_group.get_parent();
-    if (parent) {
-      parent.remove_child(global.window_group);
-    }
-    parent = global.overlay_group.get_parent();
-    if (parent) {
-      parent.remove_child(global.overlay_group);
-    }
-
-    uiGroup.add_actor(global.background_actor);
-    uiGroup.add_actor(global.bottom_window_group);
+    global.reparentActor(global.background_actor, uiGroup);
+    global.reparentActor(global.bottom_window_group, uiGroup);
     uiGroup.add_actor(deskletContainer.actor);
-    uiGroup.add_actor(global.window_group);
-    uiGroup.add_actor(global.overlay_group);
+    global.reparentActor(global.window_group, uiGroup);
+    global.reparentActor(global.overlay_group, uiGroup);
 
     global.stage.add_actor(uiGroup);
-    global.top_window_group.reparent(global.stage);
+    global.reparentActor(global.top_window_group, global.stage);
 
     layoutManager = new Layout.LayoutManager();
     let pointerTracker = new PointerTracker.PointerTracker();
@@ -719,6 +679,36 @@ function notifyError(msg, details) {
     else
         log('error: ' + msg);
     notify(msg, details);
+}
+
+function _initLogging() {
+    // Monkey patch utility functions into the global proxy;
+    // This is easier and faster than indirecting down into global
+    // if we want to call back up into JS.
+    global.logTrace = _logTrace;
+    global.logWarning = _logWarning;
+    global.logError = _logError;
+    global.log = _logInfo;
+
+    if (global.settings.get_boolean("enable-looking-glass-logs")) {
+        try {
+            let log_filename = Gio.file_parse_name(CIN_LOG_FOLDER + '/glass.log');
+            let log_backup_filename = Gio.file_parse_name(CIN_LOG_FOLDER + '/glass.log.last');
+            let log_dir = Gio.file_new_for_path(CIN_LOG_FOLDER);
+            if (!log_filename.query_exists(null)) {
+                if (!log_dir.query_exists(null))
+                    log_dir.make_directory_with_parents(null);
+                lg_log_file = log_filename.append_to(0, null);
+            } else {
+                log_filename.copy(log_backup_filename, 1, null, null, null);
+                log_filename.delete(null);
+                lg_log_file = log_filename.append_to(0, null);
+            }
+            can_log = true;
+        } catch (e) {
+            global.logError("Error during looking-glass log initialization", e);
+        }
+    }
 }
 
 /**
