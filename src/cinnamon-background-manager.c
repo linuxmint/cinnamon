@@ -66,8 +66,6 @@ static void connect_screen_signals (CinnamonBackgroundManager *manager);
 
 G_DEFINE_TYPE (CinnamonBackgroundManager, cinnamon_background_manager, G_TYPE_OBJECT)
 
-static gpointer manager_object = NULL;
-
 static gboolean
 dont_draw_background (CinnamonBackgroundManager *manager)
 {
@@ -223,36 +221,6 @@ on_session_manager_signal (GDBusProxy   *proxy,
 }
 
 static void
-draw_background_after_session_loads (CinnamonBackgroundManager *manager)
-{
-        GError *error = NULL;
-        GDBusProxyFlags flags;
-
-        flags = G_DBUS_PROXY_FLAGS_DO_NOT_LOAD_PROPERTIES |
-                G_DBUS_PROXY_FLAGS_DO_NOT_AUTO_START;
-        manager->priv->proxy = g_dbus_proxy_new_for_bus_sync (G_BUS_TYPE_SESSION,
-                                                              flags,
-                                                              NULL, /* GDBusInterfaceInfo */
-                                                              "org.gnome.SessionManager",
-                                                              "/org/gnome/SessionManager",
-                                                              "org.gnome.SessionManager",
-                                                              NULL, /* GCancellable */
-                                                              &error);
-        if (manager->priv->proxy == NULL) {
-                g_warning ("Could not listen to session manager: %s",
-                           error->message);
-                g_error_free (error);
-                return;
-        }
-
-        manager->priv->proxy_signal_id = g_signal_connect (manager->priv->proxy,
-                                                           "g-signal",
-                                                           G_CALLBACK (on_session_manager_signal),
-                                                           manager);
-}
-
-
-static void
 disconnect_screen_signals (CinnamonBackgroundManager *manager)
 {
         GdkDisplay *display;
@@ -312,8 +280,6 @@ cinnamon_background_manager_start (CinnamonBackgroundManager *manager)
                           G_CALLBACK (draw_background_changed), manager);
 
         setup_bg_and_draw_background (manager);
-            //draw_background_after_session_loads (manager);
-
 
         return TRUE;
 }
