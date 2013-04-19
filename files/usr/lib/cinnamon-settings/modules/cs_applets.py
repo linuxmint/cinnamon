@@ -43,7 +43,7 @@ class AppletViewSidePage (SidePage):
     SORT_REMOVABLE = 4
 
     def __init__(self, name, icon, keywords, advanced, content_box):
-        SidePage.__init__(self, name, icon, keywords, advanced, content_box)
+        SidePage.__init__(self, name, icon, keywords, advanced, content_box, True)
         self.icons = []
 
     def build(self, advanced):

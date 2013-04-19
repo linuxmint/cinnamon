@@ -155,7 +155,7 @@ MyApplet.prototype = {
             this.menu = new Applet.AppletPopupMenu(this, orientation);
             this.menuManager.addMenu(this.menu);            
             
-            this.set_applet_icon_symbolic_name('battery-missing');            
+            //this.set_applet_icon_symbolic_name('battery-missing');            
             this._proxy = new PowerManagerProxy(Gio.DBus.session, BUS_NAME, OBJECT_PATH);
             this._smProxy = new SettingsManagerProxy(Gio.DBus.session, BUS_NAME, OBJECT_PATH);
             
@@ -317,17 +317,17 @@ MyApplet.prototype = {
         this._devicesChanged();
     },
 
-    _devicesChanged: function() {
-        this.set_applet_icon_symbolic_name('battery-missing');
-        let icon = this._proxy.Icon;
-        if (icon) {
-            let gicon = Gio.icon_new_for_string(icon);
-            this.setGIcon(gicon);
-            this.actor.show();
-        } else {
-            this.menu.close();
-            this.actor.hide();
-        }
+    _devicesChanged: function() {        
+        this._proxy.GetRemote('Icon', Lang.bind(this, function(icon, error) {
+            if (icon) {    
+                let gicon = Gio.icon_new_for_string(icon);
+                this._applet_icon.gicon = gicon;
+                this.actor.show();
+            } else {
+                this.menu.close();
+                this.actor.hide();
+            }
+        }));
 
         this._readPrimaryDevice();
         this._readOtherDevices();

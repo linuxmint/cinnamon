@@ -449,7 +449,7 @@ class BackgroundSlideshowPane(Gtk.Table):
 
 class BackgroundSidePage (SidePage):
     def __init__(self, name, icon, keywords, advanced, content_box):
-        SidePage.__init__(self, name, icon, keywords, advanced, content_box)
+        SidePage.__init__(self, name, icon, keywords, advanced, content_box, True)
         self._gnome_background_schema = Gio.Settings("org.gnome.desktop.background")
         self._cinnamon_background_schema = Gio.Settings("org.cinnamon.background")
         self._add_wallpapers_dialog = AddWallpapersDialog()
