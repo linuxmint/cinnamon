@@ -323,7 +323,7 @@ MyApplet.prototype = {
         let icon = this._proxy.Icon;
         if (icon) {
             let gicon = Gio.icon_new_for_string(icon);
-            this.setGIcon(gicon);
+            this._applet_icon.gicon = gicon
             this.actor.show();
         } else {
             this.menu.close();
