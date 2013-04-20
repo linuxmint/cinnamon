@@ -1,0 +1,2 @@
+#!/bin/bash
+CLUTTER_DISABLE_XINPUT=1 cinnamon $@
