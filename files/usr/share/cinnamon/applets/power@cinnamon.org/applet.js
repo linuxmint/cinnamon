@@ -48,39 +48,10 @@ const PowerManagerInterface = <interface name="org.gnome.SettingsDaemon.Power">
 <method name="GetPrimaryDevice">
     <arg type="(susdut)" direction="out"/>
 </method>
-<signal name="PropertiesChanged">
-    <arg type="s"/>
-    <arg type="a{sv}"/>
-    <arg type="a[s]"/>
-</signal>
 <property name="Icon" type="s" access="read" />
 </interface>;
 
 const PowerManagerProxy = Gio.DBusProxy.makeProxyWrapper(PowerManagerInterface);
-
-const SettingsManagerInterface = <interface name="org.freedesktop.DBus.Properties">
-<method name="Get">
-    <arg type="s" direction="in"/>
-    <arg type="s" direction="in"/>
-    <arg type="v" direction="out"/>
-</method>
-<method name="GetAll">
-    <arg type="s" direction="in"/>
-    <arg type="a{sv}" direction="out"/>
-</method>
-<method name="Set">
-    <arg type="s" direction="in"/>
-    <arg type="s" direction="in"/>
-    <arg type="v" direction="in"/>
-</method>
-<signal name="PropertiesChanged">
-    <arg type="s"/>
-    <arg type="a{sv}"/>
-    <arg type="a[s]"/>
-</signal>
-</interface>;
-
-const SettingsManagerProxy = Gio.DBusProxy.makeProxyWrapper(SettingsManagerInterface);
 
 function DeviceItem() {
     this._init.apply(this, arguments);
@@ -156,8 +127,16 @@ MyApplet.prototype = {
             this.menuManager.addMenu(this.menu);            
 
             //this.set_applet_icon_symbolic_name('battery-missing');            
-            this._proxy = new PowerManagerProxy(Gio.DBus.session, BUS_NAME, OBJECT_PATH);
-            this._smProxy = new SettingsManagerProxy(Gio.DBus.session, BUS_NAME, OBJECT_PATH);
+            this._proxy = new PowerManagerProxy(Gio.DBus.session, BUS_NAME, OBJECT_PATH,
+                                               Lang.bind(this, function(proxy, error) {
+                                                             if (error) {
+                                                                 global.log(error.message);
+
+                                                                 return;
+                                                             }
+                                                             this._proxy.connect('g-properties-changed', Lang.bind(this, this._devicesChanged));
+                                                             this._devicesChanged();
+                                               }));
 
             let icon = this.actor.get_children()[0];
             this.actor.remove_actor(icon);
@@ -211,9 +190,6 @@ MyApplet.prototype = {
 
             this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
             this.menu.addSettingsAction(_("Power Settings"), 'power');
-
-            this._smProxy.connectSignal('PropertiesChanged', Lang.bind(this, this._devicesChanged));
-            this._devicesChanged();            
         }
         catch (e) {
             global.logError(e);
@@ -245,14 +221,14 @@ MyApplet.prototype = {
     },
     
     _readPrimaryDevice: function() {
-        this._proxy.GetPrimaryDeviceRemote(Lang.bind(this, function(device, error) {
+        this._proxy.GetPrimaryDeviceRemote(Lang.bind(this, function(result, error) {
             if (error) {
                 this._hasPrimary = false;
                 this._primaryDeviceId = null;
                 this._batteryItem.actor.hide();                
                 return;
             }
-            let [device_id, device_type, icon, percentage, state, seconds] = device;
+            let [[device_id, device_type, icon, percentage, state, seconds]] = result;
             if (device_type == UPDeviceType.BATTERY) {
                 this._hasPrimary = true;
                 let time = Math.round(seconds / 60);
@@ -290,7 +266,7 @@ MyApplet.prototype = {
     },
 
     _readOtherDevices: function() {
-        this._proxy.GetDevicesRemote(Lang.bind(this, function(devices, error) {
+        this._proxy.GetDevicesRemote(Lang.bind(this, function([devices], error) {
             this._deviceItems.forEach(function(i) { i.destroy(); });
             this._deviceItems = [];
 
@@ -336,7 +312,7 @@ MyApplet.prototype = {
     },
     
     _updateLabel: function() {
-        this._proxy.GetDevicesRemote(Lang.bind(this, function(devices, error) {
+        this._proxy.GetDevicesRemote(Lang.bind(this, function([devices], error) {
             if (error) {
                 this._mainLabel.set_text("");
                 return;
