@@ -102,7 +102,7 @@ def createSystemInfos():
 class Module:
     def __init__(self, content_box):
         keywords = _("system, information, details, graphic, sound, kernel, version")
-        advanced = True
+        advanced = False
         sidePage = SidePage(_("System Info"), "details.svg", keywords, advanced, content_box)
         self.sidePage = sidePage
         self.name = "info"
@@ -112,17 +112,17 @@ class Module:
         
         image = Gtk.Image()
         image.set_from_file("/usr/share/cinnamon-control-center/ui/cinnamon.png")
-        sidePage.add_widget(image, True)
+        sidePage.add_widget(image, False)
         
         label = Gtk.Label("?")
         if 'CINNAMON_VERSION' in os.environ:
             label.set_markup('<span size="12000">%s: %s\n</span>' % (_("Version"), os.environ['CINNAMON_VERSION']))
-        sidePage.add_widget(label, True)
+        sidePage.add_widget(label, False)
         
         table = Gtk.Table(len(infos), 2, False)
         table.set_row_spacings(8)
         table.set_col_spacings(15)
-        sidePage.add_widget(table, True)
+        sidePage.add_widget(table, False)
 
         row = 0
         for (key, value) in infos:

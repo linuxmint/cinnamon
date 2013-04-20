@@ -299,7 +299,7 @@ class OtherTypeDialog(Gtk.Dialog):
 class Module:
     def __init__(self, content_box):
         keywords = _("media, defaults, applications, programs, removable, browser, email, calendar, music, videos, photos, images, cd, autostart")
-        advanced = True
+        advanced = False
         sidePage = SidePage(_("Applications & Removable Media"), "details.svg", keywords, advanced, content_box)
         self.sidePage = sidePage
         self.name = "default"
@@ -307,7 +307,7 @@ class Module:
 
         hbox = Gtk.HBox()
         hbox.set_homogeneous(True)
-        sidePage.add_widget(hbox, True)
+        sidePage.add_widget(hbox, False)
         hbox.pack_start(self.setupDefaultApps(), False, False, 0)
         hbox.pack_start(self.setupMedia(), False, False, 0)
 
