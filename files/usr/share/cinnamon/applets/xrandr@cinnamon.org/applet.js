@@ -1,6 +1,6 @@
 /* -*- mode: js2; js2-basic-offset: 4; indent-tabs-mode: nil -*- */
 
-const DBus = imports.dbus;
+const Gio = imports.gi.Gio;
 const Gdk = imports.gi.Gdk;
 const GLib = imports.gi.GLib;
 const GnomeDesktop = imports.gi.GnomeDesktop;
@@ -22,13 +22,14 @@ let rotations = [ [ GnomeDesktop.RRRotation.ROTATION_0, N_("Normal") ],
 		  [ GnomeDesktop.RRRotation.ROTATION_180, N_("Upside-down") ]
 		];
 
-const XRandr2Iface = {
-    name: 'org.gnome.SettingsDaemon.XRANDR_2',
-    methods: [
-	{ name: 'ApplyConfiguration', inSignature: 'xx', outSignature: '' },
-    ]
-};
-let XRandr2 = DBus.makeProxyClass(XRandr2Iface);
+const XRandr2Iface = <interface name="org.gnome.SettingsDaemon.XRANDR_2">
+<method name="ApplyConfiguration">
+    <arg type="x" direction="in"/>
+    <arg type="x" direction="in"/>
+</method>
+</interface>;
+
+const XRandr2 = Gio.DBusProxy.makeProxyWrapper(XRandr2Iface);
 
 function MyApplet(orientation, panel_height) {
     this._init(orientation, panel_height);
@@ -48,7 +49,7 @@ MyApplet.prototype = {
             this.menu = new Applet.AppletPopupMenu(this, orientation);
             this.menuManager.addMenu(this.menu);            
                                 
-            this._proxy = new XRandr2(DBus.session, 'org.gnome.SettingsDaemon', '/org/gnome/SettingsDaemon/XRANDR');
+            this._proxy = new XRandr2(Gio.DBus.session, 'org.gnome.SettingsDaemon', '/org/gnome/SettingsDaemon/XRANDR');
 
             try {
                 this._screen = new GnomeDesktop.RRScreen({ gdk_screen: Gdk.Screen.get_default() });

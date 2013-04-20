@@ -1,6 +1,6 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 
-const DBus = imports.dbus;
+const Gio = imports.gi.Gio;
 const Lang = imports.lang;
 const Cinnamon = imports.gi.Cinnamon;
 const Signals = imports.signals;
@@ -8,33 +8,43 @@ const Signals = imports.signals;
 // The following are not the complete interfaces, just the methods we need
 // (or may need in the future)
 
-const ModemGsmNetworkInterface = {
-    name: 'org.freedesktop.ModemManager.Modem.Gsm.Network',
-    methods: [
-        { name: 'GetRegistrationInfo', inSignature: '', outSignature: 'uss' },
-        { name: 'GetSignalQuality', inSignature: '', outSignature: 'u' }
-    ],
-    properties: [
-        { name: 'AccessTechnology', signature: 'u', access: 'read' }
-    ],
-    signals: [
-        { name: 'SignalQuality', inSignature: 'u' },
-        { name: 'RegistrationInfo', inSignature: 'uss' }
-    ]
-};
-const ModemGsmNetworkProxy = DBus.makeProxyClass(ModemGsmNetworkInterface);
+const ModemGsmNetworkInterface = <interface name="org.freedesktop.ModemManager.Modem.Gsm.Network">
+<method name="GetRegistrationInfo">
+    <arg type="u" direction="out" />
+    <arg type="s" direction="out" />
+    <arg type="s" direction="out" />
+</method>
+<method name="GetSignalQuality">
+    <arg type="u" direction="out" />
+</method>
+<property name="AccessTechnology" type="u" access="read" />
+<signal name="SignalQuality">
+    <arg type="u" direction="out" />
+</signal>
+<signal name="RegistrationInfo">
+    <arg type="u" direction="out" />
+    <arg type="s" direction="out" />
+    <arg type="s" direction="out" />
+</signal>
+</interface>;
 
-const ModemCdmaInterface = {
-    name: 'org.freedesktop.ModemManager.Modem.Cdma',
-    methods: [
-        { name: 'GetSignalQuality', inSignature: '', outSignature: 'u' },
-        { name: 'GetServingSystem', inSignature: '', outSignature: 'usu' }
-    ],
-    signals: [
-        { name: 'SignalQuality', inSignature: 'u' }
-    ]
-};
-const ModemCdmaProxy = DBus.makeProxyClass(ModemCdmaInterface);
+const ModemGsmNetworkProxy = Gio.DBusProxy.makeProxyWrapper(ModemGsmNetworkInterface);
+
+const ModemCdmaInterface = <interface name="org.freedesktop.ModemManager.Modem.Cdma">
+<method name="GetSignalQuality">
+    <arg type="u" direction="out" />
+</method>
+<method name="GetServingSystem">
+    <arg type="u" direction="out" />
+    <arg type="s" direction="out" />
+    <arg type="u" direction="out" />
+</method>
+<signal name="SignalQuality">
+    <arg type="u" direction="out" />
+</signal>
+</interface>;
+
+const ModemCdmaProxy = Gio.DBusProxy.makeProxyWrapper(ModemCdmaInterface);
 
 let _providersTable;
 function _getProvidersTable() {
@@ -50,17 +60,17 @@ function ModemGsm() {
 
 ModemGsm.prototype = {
     _init: function(path) {
-        this._proxy = new ModemGsmNetworkProxy(DBus.system, 'org.freedesktop.ModemManager', path);
+        this._proxy = new ModemGsmNetworkProxy(Gio.DBus.system, 'org.freedesktop.ModemManager', path);
 
         this.signal_quality = 0;
         this.operator_name = null;
 
         // Code is duplicated because the function have different signatures
-        this._proxy.connect('SignalQuality', Lang.bind(this, function(proxy, quality) {
+        this._proxy.connectSignal('SignalQuality', Lang.bind(this, function(proxy, sender, [quality]) {
             this.signal_quality = quality;
             this.emit('notify::signal-quality');
         }));
-        this._proxy.connect('RegistrationInfo', Lang.bind(this, function(proxy, status, code, name) {
+        this._proxy.connectSignal('RegistrationInfo', Lang.bind(this, function(proxy, sender, [status, code, name]) {
             this.operator_name = this._findOperatorName(name, code);
             this.emit('notify::operator-name');
         }));
@@ -154,12 +164,13 @@ function ModemCdma() {
 }
 
 ModemCdma.prototype = {
-    _init: function(path) {
-        this._proxy = new ModemCdmaProxy(DBus.system, 'org.freedesktop.ModemManager', path);
+    _init: function(path) {        
+        this._proxy = new ModemCdmaProxy(Gio.DBus.system, 'org.freedesktop.ModemManager', path);
 
         this.signal_quality = 0;
         this.operator_name = null;
-        this._proxy.connect('SignalQuality', Lang.bind(this, function(proxy, quality) {
+        this._proxy.connect('SignalQuality', Lang.bind(this, function(proxy, sender, params) {
+            this.signal_quality = params[0];
             this.signal_quality = quality;
             this.emit('notify::signal-quality');
 

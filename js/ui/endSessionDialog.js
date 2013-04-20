@@ -18,19 +18,19 @@
  * 02110-1335, USA.
  */
 
-const DBus = imports.dbus;
 const Lang = imports.lang;
 const Signals = imports.signals;
 
 const AccountsService = imports.gi.AccountsService;
 const Clutter = imports.gi.Clutter;
+const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
 const Gtk = imports.gi.Gtk;
 const Pango = imports.gi.Pango;
 const St = imports.gi.St;
 const Cinnamon = imports.gi.Cinnamon;
 
-const GnomeSession = imports.misc.gnomeSession
+const GnomeSession = imports.misc.gnomeSession;
 const ModalDialog = imports.ui.modalDialog;
 const Tweener = imports.ui.tweener;
 
@@ -40,20 +40,20 @@ const _ITEM_ICON_SIZE = 48;
 const _DIALOG_ICON_SIZE = 32;
 
 const GSM_SESSION_MANAGER_LOGOUT_FORCE = 2;
-
-const EndSessionDialogIface = {
-    name: 'org.gnome.SessionManager.EndSessionDialog',
-    methods: [{ name: 'Open',
-                inSignature: 'uuuao',
-                outSignature: ''
-              }
-             ],
-    signals: [{ name: 'Canceled',
-                inSignature: '',
-              }],
-    properties: []
-};
-
+const EndSessionDialogIface = <interface name="org.gnome.SessionManager.EndSessionDialog">
+<method name="Open">
+    <arg type="u" direction="in" />
+    <arg type="u" direction="in" />
+    <arg type="u" direction="in" />
+    <arg type="ao" direction="in" />
+</method>
+<signal name="ConfirmedLogout" />
+<signal name="ConfirmedReboot" />
+<signal name="ConfirmedShutdown" />
+<signal name="Canceled" />
+<signal name="Closed" />
+</interface>;
+ 
 const logoutDialogContent = {
     subjectWithUser: _("Log Out %s"),
     subject: _("Log Out"),
@@ -230,8 +230,6 @@ function _setLabelText(label, text) {
 function EndSessionDialog() {
     if (_endSessionDialog == null) {
         this._init();
-        DBus.session.exportObject('/org/gnome/SessionManager/EndSessionDialog',
-                                  this);
         _endSessionDialog = this;
     }
 
@@ -328,6 +326,9 @@ EndSessionDialog.prototype = {
                                           if (this._applicationList.get_children().length == 0)
                                               scrollView.hide();
                                       }));
+
+        this._dbusImpl = Gio.DBusExportedObject.wrapJSObject(EndSessionDialogIface, this);
+        this._dbusImpl.export(Gio.DBus.session, '/org/gnome/SessionManager/EndSessionDialog');
     },
 
     _onDestroy: function() {
@@ -442,25 +443,19 @@ EndSessionDialog.prototype = {
 
     close: function() {
         ModalDialog.ModalDialog.prototype.close.call(this);
-        DBus.session.emit_signal('/org/gnome/SessionManager/EndSessionDialog',
-                                 'org.gnome.SessionManager.EndSessionDialog',
-                                 'Closed', '', []);
+        this._dbusImpl.emit_signal('Closed', null);
     },
 
     cancel: function() {
         this._stopTimer();
-        DBus.session.emit_signal('/org/gnome/SessionManager/EndSessionDialog',
-                                 'org.gnome.SessionManager.EndSessionDialog',
-                                 'Canceled', '', []);
+        this._dbusImpl.emit_signal('Canceled', null);
         this.close(global.get_current_time());
     },
 
     _confirm: function(signal) {
         this._fadeOutDialog();
         this._stopTimer();
-        DBus.session.emit_signal('/org/gnome/SessionManager/EndSessionDialog',
-                                 'org.gnome.SessionManager.EndSessionDialog',
-                                 signal, '', []);
+        this._dbusImpl.emit_signal(signal, null);
     },
 
     _onOpened: function() {
@@ -512,39 +507,41 @@ EndSessionDialog.prototype = {
         this._updateContent();
     },
 
-    OpenAsync: function(type, timestamp, totalSecondsToStayOpen, inhibitorObjectPaths, callback) {
+    OpenAsync: function(parameters, invocation) {
+        let [type, timestamp, totalSecondsToStayOpen, inhibitorObjectPaths] = parameters;
         this._totalSecondsToStayOpen = totalSecondsToStayOpen;
         this._inhibitors = [];
         this._applicationList.destroy_children();
         this._type = type;
 
-        if (!(this._type in DialogContent))
-            throw new DBus.DBusError('org.Cinnamon.ModalDialog.TypeError',
-                                     "Unknown dialog type requested");
+        if (!(this._type in DialogContent)) {
+            invocation.report_dbus_error('org.Cinnamon.ModalDialog.TypeError',
+                                         "Unknown dialog type requested");
+            return;
+        }
 
         for (let i = 0; i < inhibitorObjectPaths.length; i++) {
-            let inhibitor = new GnomeSession.Inhibitor(inhibitorObjectPaths[i]);
+            let inhibitor = new GnomeSession.Inhibitor(inhibitorObjectPaths[i], Lang.bind(this, function(proxy, error) {
+                this._onInhibitorLoaded(proxy);
+            }));
 
-            inhibitor.connect('is-loaded',
-                              Lang.bind(this, function() {
-                                  this._onInhibitorLoaded(inhibitor);
-                              }));
             this._inhibitors.push(inhibitor);
         }
 
         this._updateButtons();
 
-        if (!this.open(timestamp))
-            throw new DBus.DBusError('org.Cinnamon.ModalDialog.GrabError',
-                                     "Cannot grab pointer and keyboard");
+        if (!this.open(timestamp)) {
+            invocation.report_dbus_error('org.Cinnamon.ModalDialog.GrabError',
+                                         "Cannot grab pointer and keyboard");
+            return;
+        }
 
         this._updateContent();
 
         let signalId = this.connect('opened',
                                     Lang.bind(this, function() {
-                                        callback();
+                                        invocation.return_value(null);
                                         this.disconnect(signalId);
                                     }));
     }
 };
-DBus.conformExport(EndSessionDialog.prototype, EndSessionDialogIface);

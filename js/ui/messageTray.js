@@ -1388,12 +1388,17 @@ function MessageTray() {
 
 MessageTray.prototype = {
     _init: function() {
-        this._presence = new GnomeSession.Presence();
+        this._presence = new GnomeSession.Presence(Lang.bind(this, function(proxy, error) {
+            this._onStatusChanged(proxy.status);
+        }));
+
         this._userStatus = GnomeSession.PresenceStatus.AVAILABLE;
         this._busy = false;
         this._backFromAway = false;
-        this._presence.connect('StatusChanged', Lang.bind(this, this._onStatusChanged));
-        this._presence.getStatus(Lang.bind(this, this._onStatusChanged));
+        this._presence.connectSignal('StatusChanged', Lang.bind(this, function(proxy, senderName, [status]) {
+            this._onStatusChanged(status);
+        }));
+
 
         this._notificationBin = new St.Bin();
         this._notificationBin.hide();
@@ -1548,7 +1553,7 @@ MessageTray.prototype = {
         this._updateState();
     },
 
-    _onStatusChanged: function(presence, status) {
+    _onStatusChanged: function(status) {
         this._backFromAway = (this._userStatus == GnomeSession.PresenceStatus.IDLE && this._userStatus != status);
         this._userStatus = status;
 
