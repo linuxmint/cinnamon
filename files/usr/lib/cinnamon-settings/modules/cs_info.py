@@ -83,19 +83,19 @@ def createSystemInfos():
     (memsize, memunit) = procInfos['mem_total'].split(" ")
     processorName = procInfos['cpu_name'].replace("(R)", u"\u00A9").replace("(TM)", u"\u2122") + " x " + procInfos['cpu_cores']
     
-    infos.append(('Device Name', platform.node()))
-    infos.append(('Distribution', dname + " " + dversion +  ": " + dsuffix + " (" + arch + ")"))
-    infos.append(('Kernel / Build', platform.release() + " / " + platform.version()))
-    infos.append(('Processor', processorName))
+    infos.append((_('Device Name'), platform.node()))
+    infos.append((_('Distribution'), dname + " " + dversion +  ": " + dsuffix + " (" + arch + ")"))
+    infos.append((_('Kernel / Build'), platform.release() + " / " + platform.version()))
+    infos.append((_('Processor'), processorName))
     if memunit == "kB":
-        infos.append(('Memory', '%.1f GiB' % (float(memsize)/(1024*1024))))
+        infos.append((_('Memory'), '%.1f GiB' % (float(memsize)/(1024*1024))))
     else:
-        infos.append(('Memory', procInfos['mem_total']))
-    infos.append(('Disk Size', '%.1f GB' % (getDiskSize() / (1000*1000))))
+        infos.append((_('Memory'), procInfos['mem_total']))
+    infos.append((_('Disk Size'), '%.1f GB' % (getDiskSize() / (1000*1000))))
 
     cards = getGraphicsInfos()
     for card in cards:
-        infos.append(('Graphics Card %s' % card, cards[card]))
+        infos.append((_('Graphics Card %s') % card, cards[card]))
 
     return infos
 
