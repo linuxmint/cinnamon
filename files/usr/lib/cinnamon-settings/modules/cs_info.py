@@ -116,7 +116,7 @@ class Module:
         
         label = Gtk.Label("?")
         if 'CINNAMON_VERSION' in os.environ:
-            label.set_markup('<span size="12000">Version: %s\n</span>' % os.environ['CINNAMON_VERSION'])
+            label.set_markup('<span size="12000">%s: %s\n</span>' % (_("Version"), os.environ['CINNAMON_VERSION']))
         sidePage.add_widget(label, True)
         
         table = Gtk.Table(len(infos), 2, False)
