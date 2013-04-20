@@ -1,3 +1,3 @@
 #! /bin/sh
-exec gnome-session --session cinnamon "$@"
+exec CLUTTER_DISABLE_XINPUT=1 gnome-session --session cinnamon "$@"
 
