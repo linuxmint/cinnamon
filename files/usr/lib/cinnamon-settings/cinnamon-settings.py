@@ -8,7 +8,7 @@ try:
     import os
     import glob
     import gettext
-    from gi.repository import Gio, Gtk, GObject, GdkPixbuf, GtkClutter, Gst
+    from gi.repository import Gio, Gtk, GObject, GdkPixbuf
     import SettingsWidgets
     import capi
 # Standard setting pages... this can be expanded to include applet dirs maybe?
