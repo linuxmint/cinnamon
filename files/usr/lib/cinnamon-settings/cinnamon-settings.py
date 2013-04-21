@@ -85,12 +85,15 @@ class MainWindow:
                 self.content_box_sw.show()
                 self.button_back.show()
                 self.current_sidepage = sidePage
-                if not sidePage.no_resize:
-                    m, n = self.content_box.get_preferred_size()
-                    self.window.resize(WIN_WIDTH, n.height + self.bar_heights + WIN_H_PADDING)
+                self.maybe_resize(sidePage)
+                GObject.idle_add(self.start_fade_in)
             else:
                 sidePage.build(self.advanced_mode)
 
+    def maybe_resize(self, sidePage):
+        if not sidePage.no_resize:
+            m, n = self.content_box.get_preferred_size()
+            self.window.resize(WIN_WIDTH, n.height + self.bar_heights + WIN_H_PADDING)
 
     def deselect(self, cat):
         for key in self.side_view.keys():
@@ -129,6 +132,7 @@ class MainWindow:
         self.c_manager = capi.CManager()
         self.content_box.c_manager = self.c_manager
         self.bar_heights = 0
+        self.opacity = 0
 
         for i in range(len(modules)):
             mod = modules[i].Module(self.content_box)
@@ -175,7 +179,7 @@ class MainWindow:
         self.window.connect("destroy", Gtk.main_quit)
         self.button_cancel.connect("clicked", Gtk.main_quit)
         self.button_back.connect('clicked', self.back_to_icon_view)
-
+        self.window.set_opacity(self.opacity)
         self.window.show()
         self.calculate_bar_heights()
 
@@ -185,6 +189,17 @@ class MainWindow:
             self.findPath(first_page_iter)
         else:
             self.search_entry.grab_focus()
+            GObject.idle_add(self.start_fade_in)
+
+    def start_fade_in(self):
+        if self.opacity < 1.0:
+            GObject.timeout_add(10, self.do_fade_in)
+        return False
+
+    def do_fade_in(self):
+        self.opacity += 0.05
+        self.window.set_opacity(self.opacity)
+        return self.opacity < 1.0
 
     def calculate_bar_heights(self):
         h = 0
@@ -334,6 +349,7 @@ class MainWindow:
         self.settings.set_boolean(ADVANCED_GSETTING, True)
         if self.current_sidepage is not None:
             self.current_sidepage.build(self.advanced_mode)
+            self.maybe_resize(self.current_sidepage)
         self.displayCategories()
 
     def on_normal_mode(self, popup):
@@ -341,6 +357,7 @@ class MainWindow:
         self.settings.set_boolean(ADVANCED_GSETTING, False)
         if self.current_sidepage is not None:
             self.current_sidepage.build(self.advanced_mode)
+            self.maybe_resize(self.current_sidepage)
         self.displayCategories()
 
 if __name__ == "__main__":
