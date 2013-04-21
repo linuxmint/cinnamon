@@ -375,7 +375,7 @@ function start() {
 }
 
 function notifyCinnamon2d() {
-    let icon = new St.Icon({ icon_name: 'desktop-effects',
+    let icon = new St.Icon({ icon_name: 'display',
                              icon_type: St.IconType.FULLCOLOR,
                              icon_size: 36 });
     criticalNotify(_("Running in 2D Mode"),
