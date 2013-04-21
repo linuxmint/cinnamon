@@ -1,7 +1,6 @@
 const Applet = imports.ui.applet;
 const Mainloop = imports.mainloop;
 const Gio = imports.gi.Gio;
-const DBus = imports.dbus;
 const Lang = imports.lang;
 const Cinnamon = imports.gi.Cinnamon;
 const Clutter = imports.gi.Clutter;
@@ -12,90 +11,45 @@ const Gvc = imports.gi.Gvc;
 const Pango = imports.gi.Pango;
 const Tooltips = imports.ui.tooltips;
 
-const PropIFace = {
-    name: 'org.freedesktop.DBus.Properties',
-    signals: [{ name: 'PropertiesChanged',
-                inSignature: 'a{sv}'}]
-};
+const PropIFace = <interface name="org.freedesktop.DBus.Properties">
+<signal name="PropertiesChanged">
+    <arg type="a{sv}"/>
+</signal>
+</interface>;
 
-const MediaServer2IFace = {
-    name: 'org.mpris.MediaPlayer2',
-    methods: [{ name: 'Raise',
-                inSignature: '',
-                outSignature: '' },
-              { name: 'Quit',
-                inSignature: '',
-                outSignature: '' }],
-    properties: [{ name: 'CanRaise',
-                   signature: 'b',
-                   access: 'read'},
-                 { name: 'CanQuit',
-                   signature: 'b',
-                   access: 'read'}],
-};
+const MediaServer2IFace = <interface name="org.mpris.MediaPlayer2">
+<method name="Raise" />
+<method name="Quit" />
+<property name="CanRaise" type="b" access="read" />
+<property name="CanQuit" type="b" access="read" />
+</interface>;
 
-const MediaServer2PlayerIFace = {
-    name: 'org.mpris.MediaPlayer2.Player',
-    methods: [{ name: 'PlayPause',
-                inSignature: '',
-                outSignature: '' },
-              { name: 'Pause',
-                inSignature: '',
-                outSignature: '' },
-              { name: 'Play',
-                inSignature: '',
-                outSignature: '' },
-              { name: 'Stop',
-                inSignature: '',
-                outSignature: '' },
-              { name: 'Next',
-                inSignature: '',
-                outSignature: '' },
-              { name: 'Previous',
-                inSignature: '',
-                outSignature: '' },
-              { name: 'SetPosition',
-                inSignature: 'a{ov}',
-                outSignature: '' }],
-    properties: [{ name: 'Metadata',
-                   signature: 'a{sv}',
-                   access: 'read'},
-                 { name: 'Shuffle',
-                   signature: 'b',
-                   access: 'readwrite'},
-                 { name: 'Rate',
-                   signature: 'd',
-                   access: 'readwrite'},
-                 { name: 'LoopStatus',
-                   signature: 'b',
-                   access: 'readwrite'},
-                 { name: 'Volume',
-                   signature: 'd',
-                   access: 'readwrite'},
-                 { name: 'PlaybackStatus',
-                   signature: 's',
-                   access: 'read'},
-                 { name: 'Position',
-                   signature: 'x',
-                   access: 'read'},
-                 { name: 'CanGoNext',
-                   signature: 'b',
-                   access: 'read'},
-                 { name: 'CanGoPrevious',
-                   signature: 'b',
-                   access: 'read'},
-                 { name: 'CanPlay',
-                   signature: 'b',
-                   access: 'read'},
-                 { name: 'CanPause',
-                   signature: 'b',
-                   access: 'read'},
-                 { name: 'CanSeek',
-                   signature: 'b',
-                   access: 'read'}],
-    signals: [{ name: 'Seeked',
-                inSignature: 'x' }]
-};
+const MediaServer2PlayerIFace = <interface name="org.mpris.MediaPlayer2.Player">
+<method name="PlayPause" />
+<method name="Pause" />
+<method name="Play" />
+<method name="Stop" />
+<method name="Next" />
+<method name="Previous" />
+<method name="SetPosition">
+    <arg type="a{ov}" direction="in"/>
+</method>
+<property name='Metadata' access='read' type='a{sv}' />
+<property name='Shuffle' access='readwrite' type='b' />
+<property name='Rate' access='readwrite' type='d' />
+<property name='LoopStatus' access='readwrite' type='s' />
+<property name='Volume' access='readwrite' type='d' />
+<property name='PlaybackStatus' access='read' type='s' />
+<property name='Position' access='read' type='x' />
+<property name="CanGoNext" type="b" access="read" />
+<property name="CanGoPrevious" type="b" access="read" />
+<property name="CanPlay" type="b" access="read" />
+<property name="CanPause" type="b" access="read" />
+<property name="CanSeek" type="b" access="read" />
+<signal name="Seeked">
+    <arg type="x"/>
+</signal>
+</interface>;
 
 /* global values */
 let icon_path = "/usr/share/cinnamon/theme/";
@@ -112,120 +66,20 @@ const VOLUME_ADJUSTMENT_STEP = 0.05; /* Volume adjustment step in % */
 const ICON_SIZE = 28;
 
 
-function Prop() {
-    this._init.apply(this, arguments);
+var PropProxy = Gio.DBusProxy.makeProxyWrapper(PropIFace);
+function Prop(owner, initCallback, cancellable) {
+    return new PropProxy(Gio.DBus.session, owner, '/org/mpris/MediaPlayer2', initCallback, cancellable);
 }
 
-Prop.prototype = {
-    _init: function(owner) {
-        DBus.session.proxifyObject(this, owner, '/org/mpris/MediaPlayer2', this);
-    }
-}
-DBus.proxifyPrototype(Prop.prototype, PropIFace)
-
-function MediaServer2() {
-    this._init.apply(this, arguments);
+var MediaServer2Proxy = Gio.DBusProxy.makeProxyWrapper(MediaServer2IFace);
+function MediaServer2(owner, initCallback, cancellable) {
+    return new MediaServer2Proxy(Gio.DBus.session, owner, '/org/mpris/MediaPlayer2', initCallback, cancellable);
 }
 
-MediaServer2.prototype = {
-    _init: function(owner) {
-        DBus.session.proxifyObject(this, owner, '/org/mpris/MediaPlayer2', this);
-    },
-    getRaise: function(callback) {
-        this.GetRemote('CanRaise', Lang.bind(this,
-            function(raise, ex) {
-                if (!ex)
-                    callback(this, raise);
-            }));
-    },
-    getQuit: function(callback) {
-        this.GetRemote('CanQuit', Lang.bind(this,
-            function(quit, ex) {
-                if (!ex)
-                    callback(this, quit);
-            }));
-    }
+var MediaServer2PlayerProxy = Gio.DBusProxy.makeProxyWrapper(MediaServer2PlayerIFace);
+function MediaServer2Player(owner, initCallback, cancellable) {
+    return new MediaServer2PlayerProxy(Gio.DBus.session, owner, '/org/mpris/MediaPlayer2', initCallback, cancellable);
 }
-DBus.proxifyPrototype(MediaServer2.prototype, MediaServer2IFace)
-
-function MediaServer2Player() {
-    this._init.apply(this, arguments);
-}
-
-MediaServer2Player.prototype = {
-    _init: function(owner) {
-        this._owner = owner;
-        DBus.session.proxifyObject(this, owner, '/org/mpris/MediaPlayer2', this);
-    },
-    getMetadata: function(callback) {
-        this.GetRemote('Metadata', Lang.bind(this,
-            function(metadata, ex) {
-                if (!ex)
-                    callback(this, metadata);
-            }));
-    },
-    getPlaybackStatus: function(callback) {
-        this.GetRemote('PlaybackStatus', Lang.bind(this,
-            function(status, ex) {
-                if (!ex)
-                    callback(this, status);
-            }));
-    },
-    getRate: function(callback) {
-        this.GetRemote('Rate', Lang.bind(this,
-            function(rate, ex) {
-                if (!ex)
-                    callback(this, rate);
-            }));
-    },
-    getPosition: function(callback) {
-        this.GetRemote('Position', Lang.bind(this,
-            function(position, ex) {
-                if (!ex)
-                    callback(this, position);
-            }));
-    },
-    getShuffle: function(callback) {
-        this.GetRemote('Shuffle', Lang.bind(this,
-            function(shuffle, ex) {
-                if (!ex)
-                    callback(this, shuffle);
-            }));
-    },
-    setShuffle: function(value) {
-        this.SetRemote('Shuffle', value);
-    },
-    getVolume: function(callback) {
-        this.GetRemote('Volume', Lang.bind(this,
-            function(volume, ex) {
-                if (!ex)
-                    callback(this, volume);
-            }));
-    },
-    setVolume: function(value) {
-        this.SetRemote('Volume', parseFloat(value));
-    },
-    getRepeat: function(callback) {
-        this.GetRemote('LoopStatus', Lang.bind(this,
-            function(repeat, ex) {
-                if (!ex) {
-                    if (repeat == "None")
-                        repeat = false
-                    else
-                        repeat = true
-                    callback(this, repeat);
-                }
-            }));
-    },
-    setRepeat: function(value) {
-        if (value)
-            value = "Playlist"
-        else
-            value = "None"
-        this.SetRemote('LoopStatus', value);
-    }
-}
-DBus.proxifyPrototype(MediaServer2Player.prototype, MediaServer2PlayerIFace)
 
 function TrackInfo() {
     this._init.apply(this, arguments);
@@ -402,23 +256,20 @@ Player.prototype = {
         this._trackControls.set_child(this.controls);
         this.addActor(this._trackControls);
 
-        this._mediaServer.getRaise(Lang.bind(this, function(sender, raise) {
-            if (raise) {
-                this._raiseButton = new ControlButton('go-up',
-                    Lang.bind(this, function () { this._mediaServer.RaiseRemote(); this._system_status_button.menu.actor.hide(); }));
-                this._raiseButtonTooltip = new Tooltips.Tooltip(this._raiseButton.button, _("Open Player"));
-                this.controls.add_actor(this._raiseButton.getActor());
-            }
-        }));
-
-        this._mediaServer.getQuit(Lang.bind(this, function(sender, quit) {
-            if (quit) {
-                this._quitButton = new ControlButton('window-close',
-                    Lang.bind(this, function () { this._mediaServer.QuitRemote(); }));
-                this.controls.add_actor(this._quitButton.getActor());
-                this._quitButtonTooltip = new Tooltips.Tooltip(this._quitButton.button, _("Quit Player"));
-            }
-        }));
+	let CanRaise = this._mediaServer.CanRaise;
+	let CanQuit = this._mediaServer.CanQuit;
+	if (CanRaise) {
+            this._raiseButton = new ControlButton('go-up',
+						  Lang.bind(this, function () { this._mediaServer.RaiseRemote(); this._system_status_button.menu.actor.hide(); }));
+            this._raiseButtonTooltip = new Tooltips.Tooltip(this._raiseButton.button, _("Open Player"));
+            this.controls.add_actor(this._raiseButton.getActor());
+	}
+	if (CanQuit) {
+            this._quitButton = new ControlButton('window-close',
+						 Lang.bind(this, function () { this._mediaServer.QuitRemote(); }));
+            this.controls.add_actor(this._quitButton.getActor());
+            this._quitButtonTooltip = new Tooltips.Tooltip(this._quitButton.button, _("Quit Player"));
+	}
 
         /* this players don't support seek */
         if (support_seek.indexOf(this._name) == -1)
@@ -429,14 +280,14 @@ Player.prototype = {
         this._currentTime = 0;
         this._getPosition();
 
-        this._prop.connect('PropertiesChanged', Lang.bind(this, function(sender, iface, value) {
+        this._prop.connectSignal('PropertiesChanged', Lang.bind(this, function(sender, iface, value) {
             if (value["PlaybackStatus"])
-                this._setStatus(iface, value["PlaybackStatus"]);
+                this._setStatus(value["PlaybackStatus"]);
             if (value["Metadata"])
-                this._setMetadata(iface, value["Metadata"]);
+                this._setMetadata(value["Metadata"]);
         }));
 
-        this._mediaServerPlayer.connect('Seeked', Lang.bind(this, function(sender, value) {
+        this._mediaServerPlayer.connectSignal('Seeked', Lang.bind(this, function(sender, iface, [value]) {
             this._setPosition(sender, value);
         }));
 
@@ -461,19 +312,17 @@ Player.prototype = {
     },
 
     _getPosition: function() {
-        this._mediaServerPlayer.getPosition(Lang.bind(this,
-            this._setPosition
-        ));
+	this._setPosition(this._mediaServerPlayer.Position);
         Mainloop.timeout_add(1000, Lang.bind(this, this._getPosition));
     },
 
-    _setMetadata: function(sender, metadata) {
+    _setMetadata: function(metadata) {
         if (metadata["mpris:length"]) {
             // song length in secs
-            this._songLength = metadata["mpris:length"] / 1000000;
+            this._songLength = metadata["mpris:length"].unpack() / 1000000;
             // FIXME upstream
             if (this._name == "quodlibet")
-                this._songLength = metadata["mpris:length"] / 1000;
+                this._songLength = metadata["mpris:length"].unpack() / 1000;
             // reset timer
             this._stopTimer();
             if (this._playerStatus == "Playing")
@@ -484,15 +333,15 @@ Player.prototype = {
             this._stopTimer();
         }
         if (metadata["xesam:artist"])
-            this._artist.setLabel(metadata["xesam:artist"].toString());
+            this._artist.setLabel(metadata["xesam:artist"].unpack());
         else
             this._artist.setLabel(_("Unknown Artist"));
         if (metadata["xesam:album"])
-            this._album.setLabel(metadata["xesam:album"].toString());
+            this._album.setLabel(metadata["xesam:album"].unpack());
         else
             this._album.setLabel(_("Unknown Album"));
         if (metadata["xesam:title"])
-            this._title.setLabel(metadata["xesam:title"].toString());
+            this._title.setLabel(metadata["xesam:title"].unpack());
         else
             this._title.setLabel(_("Unknown Title"));
         /*if (metadata["mpris:trackid"]) {
@@ -505,8 +354,8 @@ Player.prototype = {
 
         let change = false;
         if (metadata["mpris:artUrl"]) {
-            if (this._trackCoverFile != metadata["mpris:artUrl"].toString()) {
-                this._trackCoverFile = metadata["mpris:artUrl"].toString();
+            if (this._trackCoverFile != metadata["mpris:artUrl"].unpack()) {
+                this._trackCoverFile = metadata["mpris:artUrl"].unpack();
                 change = true;
             }
         }
@@ -538,12 +387,10 @@ Player.prototype = {
     },
 
     _getMetadata: function() {
-        this._mediaServerPlayer.getMetadata(Lang.bind(this,
-            this._setMetadata
-        ));
+	this._setMetadata(this._mediaServerPlayer.Metadata);
     },
 
-    _setStatus: function(sender, status) {
+    _setStatus: function(status) {
         this._playerStatus = status;
         if (status == "Playing") {
             this._playButton.setIcon("media-playback-pause");
@@ -562,15 +409,11 @@ Player.prototype = {
     },
 
     _getStatus: function() {
-        this._mediaServerPlayer.getPlaybackStatus(Lang.bind(this,
-            this._setStatus
-        ));
+	this._setStatus(this._mediaServerPlayer.PlaybackStatus);
     },
 
     _updateRate: function() {
-        this._mediaServerPlayer.getRate(Lang.bind(this, function(sender, rate) {
-            this._rate = rate;
-        }));
+	this._rate = this._mediaServerPlayer.Rate;
     },
 
     _updateTimer: function() {
@@ -715,7 +558,7 @@ MyApplet.prototype = {
             this._players = {};
             // watch players
             for (var p=0; p<compatible_players.length; p++) {
-                DBus.session.watch_name('org.mpris.MediaPlayer2.'+compatible_players[p], false,
+                Gio.DBus.session.watch_name('org.mpris.MediaPlayer2.'+compatible_players[p], Gio.BusNameWatcherFlags.NONE,
                     Lang.bind(this, this._addPlayer),
                     Lang.bind(this, this._removePlayer)
                 );
@@ -846,7 +689,7 @@ MyApplet.prototype = {
         return Object.keys(this._players).length;
     },
 
-    _addPlayer: function(owner) {
+    _addPlayer: function(connection, owner) {
         // ensure menu is empty
         this._cleanup();
         this._volumeControlShown = false;
@@ -861,12 +704,12 @@ MyApplet.prototype = {
         this._readOutput();
     },
 
-    _removePlayer: function(owner) {
+    _removePlayer: function(connection, owner) {
         delete this._players[owner];
         this._cleanup();
         this._volumeControlShown = false;
         for (owner in this._players) {
-            this._addPlayer(owner);
+            this._addPlayer(connection, owner);
         }
         this.menu.emit('players-loaded', true);
 

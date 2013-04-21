@@ -1,6 +1,5 @@
 const Applet = imports.ui.applet;
 const Gio = imports.gi.Gio;
-const DBus = imports.dbus;
 const Lang = imports.lang;
 const St = imports.gi.St;
 const PopupMenu = imports.ui.popupMenu;
@@ -42,34 +41,46 @@ const LabelDisplay = {
     TIME: 'time'
 };
 
-const PowerManagerInterface = {
-    name: 'org.gnome.SettingsDaemon.Power',
-    methods: [
-        { name: 'GetDevices', inSignature: '', outSignature: 'a(susdut)' },
-        { name: 'GetPrimaryDevice', inSignature: '', outSignature: '(susdut)' },
-        ],
-    signals: [
-        { name: 'PropertiesChanged', inSignature: 's,a{sv},a[s]' },
-        ],
-    properties: [
-        { name: 'Icon', signature: 's', access: 'read' },
-        ]
-};
-let PowerManagerProxy = DBus.makeProxyClass(PowerManagerInterface);
+const PowerManagerInterface = <interface name="org.gnome.SettingsDaemon.Power">
+<method name="GetDevices">
+    <arg type="a(susdut)" direction="out"/>
+</method>
+<method name="GetPrimaryDevice">
+    <arg type="(susdut)" direction="out"/>
+</method>
+<signal name="PropertiesChanged">
+    <arg type="s"/>
+    <arg type="a{sv}"/>
+    <arg type="a[s]"/>
+</signal>
+<property name="Icon" type="s" access="read" />
+</interface>;
 
-const SettingsManagerInterface = {
-	name: 'org.freedesktop.DBus.Properties',
-	methods: [
-		{ name: 'Get', inSignature: 's,s', outSignature: 'v' },
-		{ name: 'GetAll', inSignature: 's', outSignature: 'a{sv}' },
-		{ name: 'Set', inSignature: 's,s,v', outSignature: '' }
-	],
-	signals: [
-	{name: 'PropertiesChanged', inSignature:'s,a{sv},a[s]', outSignature:''}
-	]
-};
+const PowerManagerProxy = Gio.DBusProxy.makeProxyWrapper(PowerManagerInterface);
 
-let SettingsManagerProxy = DBus.makeProxyClass(SettingsManagerInterface);
+const SettingsManagerInterface = <interface name="org.freedesktop.DBus.Properties">
+<method name="Get">
+    <arg type="s" direction="in"/>
+    <arg type="s" direction="in"/>
+    <arg type="v" direction="out"/>
+</method>
+<method name="GetAll">
+    <arg type="s" direction="in"/>
+    <arg type="a{sv}" direction="out"/>
+</method>
+<method name="Set">
+    <arg type="s" direction="in"/>
+    <arg type="s" direction="in"/>
+    <arg type="v" direction="in"/>
+</method>
+<signal name="PropertiesChanged">
+    <arg type="s"/>
+    <arg type="a{sv}"/>
+    <arg type="a[s]"/>
+</signal>
+</interface>;
+
+const SettingsManagerProxy = Gio.DBusProxy.makeProxyWrapper(SettingsManagerInterface);
 
 function DeviceItem() {
     this._init.apply(this, arguments);
@@ -145,8 +156,8 @@ MyApplet.prototype = {
             this.menuManager.addMenu(this.menu);            
             
             //this.set_applet_icon_symbolic_name('battery-missing');            
-            this._proxy = new PowerManagerProxy(DBus.session, BUS_NAME, OBJECT_PATH);
-            this._smProxy = new SettingsManagerProxy(DBus.session, BUS_NAME, OBJECT_PATH);
+            this._proxy = new PowerManagerProxy(Gio.DBus.session, BUS_NAME, OBJECT_PATH);
+            this._smProxy = new SettingsManagerProxy(Gio.DBus.session, BUS_NAME, OBJECT_PATH);
             
             let icon = this.actor.get_children()[0];
             this.actor.remove_actor(icon);
@@ -201,7 +212,7 @@ MyApplet.prototype = {
             this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
             this.menu.addSettingsAction(_("Power Settings"), 'power');
 
-            this._smProxy.connect('PropertiesChanged', Lang.bind(this, this._devicesChanged));
+            this._smProxy.connectSignal('PropertiesChanged', Lang.bind(this, this._devicesChanged));
             this._devicesChanged();            
         }
         catch (e) {
@@ -309,7 +320,6 @@ MyApplet.prototype = {
     _devicesChanged: function() {        
         this._proxy.GetRemote('Icon', Lang.bind(this, function(icon, error) {
             if (icon) {    
-                this.set_applet_icon_symbolic_name('battery-missing');
                 let gicon = Gio.icon_new_for_string(icon);
                 this._applet_icon.gicon = gicon;
                 this.actor.show();
@@ -318,6 +328,7 @@ MyApplet.prototype = {
                 this.actor.hide();
             }
         }));
+
         this._readPrimaryDevice();
         this._readOtherDevices();
         this._updateLabel();

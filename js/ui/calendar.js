@@ -1,6 +1,5 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 
-const DBus = imports.dbus;
 const Clutter = imports.gi.Clutter;
 const Gio = imports.gi.Gio;
 const Lang = imports.lang;
@@ -194,30 +193,34 @@ EmptyEventSource.prototype = {
 };
 Signals.addSignalMethods(EmptyEventSource.prototype);
 
-const CalendarServerIface = {
-    name: 'org.Cinnamon.CalendarServer',
-    methods: [{ name: 'GetEvents',
-                inSignature: 'xxb',
-                outSignature: 'a(sssbxxa{sv})' }],
-    signals: [{ name: 'Changed',
-                inSignature: '' }]
-};
+const CalendarServerIface = <interface name="org.Cinnamon.CalendarServer">
+<method name="GetEvents">
+    <arg type="x" direction="in" />
+    <arg type="x" direction="in" />
+    <arg type="b" direction="in" />
+    <arg type="a(sssbxxa{sv})" direction="out" />
+</method>
+<signal name="Changed" />
+</interface>;
 
-const CalendarServer = function () {
-    this._init();
-};
+const CalendarServerInfo  = Gio.DBusInterfaceInfo.new_for_xml(CalendarServerIface);
 
-CalendarServer.prototype = {
-     _init: function() {
-         DBus.session.proxifyObject(this, 'org.Cinnamon.CalendarServer', '/org/Cinnamon/CalendarServer');
-     }
-};
+function CalendarServer() {
+    var self = new Gio.DBusProxy({ g_connection: Gio.DBus.session,
+				   g_interface_name: CalendarServerInfo.name,
+				   g_interface_info: CalendarServerInfo,
+				   g_name: 'org.Cinnamon.CalendarServer',
+				   g_object_path: '/org/Cinnamon/CalendarServer',
+                                   g_flags: (Gio.DBusProxyFlags.DO_NOT_AUTO_START |
+                                             Gio.DBusProxyFlags.DO_NOT_LOAD_PROPERTIES) });
 
-DBus.proxifyPrototype(CalendarServer.prototype, CalendarServerIface);
+    self.init(null);
+    return self;
+}
 
 // an implementation that reads data from a session bus service
-function DBusEventSource(owner) {
-    this._init(owner);
+function DBusEventSource() {
+    this._init();
 }
 
 function _datesEqual(a, b) {
@@ -240,16 +243,18 @@ function _dateIntervalsOverlap(a0, a1, b0, b1)
 
 
 DBusEventSource.prototype = {
-    _init: function(owner) {
+    _init: function() {
         this._resetCache();
 
-        this._dbusProxy = new CalendarServer(owner);
-        this._dbusProxy.connect('Changed', Lang.bind(this, this._onChanged));
+        this._dbusProxy = new CalendarServer();
+        this._dbusProxy.connectSignal('Changed', Lang.bind(this, this._onChanged));
 
-        DBus.session.watch_name('org.Cinnamon.CalendarServer',
-                                false, // do not launch a name-owner if none exists
-                                Lang.bind(this, this._onNameAppeared),
-                                Lang.bind(this, this._onNameVanished));
+        this._dbusProxy.connect('notify::g-name-owner', Lang.bind(this, function() {
+            if (this._dbusProxy.g_name_owner)
+                this._onNameAppeared();
+            else
+                this._onNameVanished();
+        }));
     },
 
     _resetCache: function() {
@@ -272,7 +277,7 @@ DBusEventSource.prototype = {
         this._loadEvents(false);
     },
 
-    _onEventsReceived: function(appointments) {
+    _onEventsReceived: function([appointments]) {
         let newEvents = [];
         if (appointments != null) {
             for (let n = 0; n < appointments.length; n++) {
@@ -295,9 +300,9 @@ DBusEventSource.prototype = {
 
     _loadEvents: function(forceReload) {
         if (this._curRequestBegin && this._curRequestEnd){
-            let callFlags = 0;
+            let callFlags = Gio.DBusCallFlags.NO_AUTO_START;
             if (forceReload)
-                callFlags |= DBus.CALL_FLAG_START;
+                callFlags = Gio.DBusCallFlags.NONE;
             this._dbusProxy.GetEventsRemote(this._curRequestBegin.getTime() / 1000,
                                             this._curRequestEnd.getTime() / 1000,
                                             forceReload,
