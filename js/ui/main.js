@@ -368,6 +368,20 @@ function start() {
     
     AppletManager.init();
     DeskletManager.init();
+
+    if (software_rendering) {
+        notifyCinnamon2d();
+    }
+}
+
+function notifyCinnamon2d() {
+    let icon = new St.Icon({ icon_name: 'display',
+                             icon_type: St.IconType.FULLCOLOR,
+                             icon_size: 36 });
+    criticalNotify(_("Running in 2D Mode"),
+                   _("Cinnamon is currently running without video hardware acceleration and, as a result, you may observe much higher than normal CPU usage.\n\n") +
+                   _("There could be a problem with your drivers or some other issue.  For the best experience, it is recommended that you only use this mode for") +
+                   _(" troubleshooting purposes."), icon);
 }
 
 function enablePanels() {
@@ -702,6 +716,20 @@ function notify(msg, details) {
     messageTray.add(source);
     let notification = new MessageTray.Notification(source, msg, details);
     notification.setTransient(true);
+    source.notify(notification);
+}
+
+/**
+ * criticalNotify:
+ * @msg: A critical message
+ * @details: Additional information
+ */
+function criticalNotify(msg, details, icon) {
+    let source = new MessageTray.SystemNotificationSource();
+    messageTray.add(source);
+    let notification = new MessageTray.Notification(source, msg, details, { icon: icon });
+    notification.setTransient(true);
+    notification.setUrgency(MessageTray.Urgency.CRITICAL);
     source.notify(notification);
 }
 
