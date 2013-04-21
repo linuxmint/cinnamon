@@ -203,7 +203,7 @@ MyDesklet.prototype = {
             let file = Gio.file_new_for_path(filePath);
             let uri = file.get_uri();
 
-            let image = St.TextureCache.get_default().load_uri_sync(St.TextureCachePolicy.FOREVER, uri, -1, -1);
+            let image = St.TextureCache.get_default().load_uri_sync(St.TextureCachePolicy.FOREVER, uri, this.width, this.height);
 
             let frameRatio = this.height/this.width;
             let imageRatio = image.height/image.width;
