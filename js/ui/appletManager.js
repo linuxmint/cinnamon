@@ -215,6 +215,7 @@ function removeAppletFromPanels(appletDefinition) {
 
         if (applet._panelLocation != null) {
             applet._panelLocation.remove_actor(applet.actor);
+            applet.actor.destroy();
             applet._panelLocation = null;
         }
 
