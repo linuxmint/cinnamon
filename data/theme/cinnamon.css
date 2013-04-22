@@ -797,7 +797,7 @@ StScrollBar StButton#vhandle:hover {
 .switcher-list {
 	background: rgba(80,80,80,0.8);
 	border: 2px solid #a5a5a5;
-	border-radius: 24px;
+	border-radius: 8px;
 	padding: 20px;
 	font-size: 9pt;
 	color: white;
