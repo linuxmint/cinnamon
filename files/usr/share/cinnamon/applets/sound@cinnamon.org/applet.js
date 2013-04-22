@@ -53,8 +53,8 @@ const MediaServer2PlayerIFace = <interface name="org.mpris.MediaPlayer2.Player">
 
 /* global values */
 let icon_path = "/usr/share/cinnamon/theme/";
-let compatible_players = [ "clementine", "mpd", "exaile", "banshee", "rhythmbox", "rhythmbox3", "pragha", "quodlibet", "guayadeque", "amarok", "googlemusicframe", "xbmc", "noise", "xnoise", "gmusicbrowser", "spotify", "audacious", "vlc", "beatbox", "songbird", "pithos", "gnome-mplayer", "nuvolaplayer" ];
-let support_seek = [ "clementine", "banshee", "rhythmbox", "rhythmbox3", "pragha", "quodlibet", "amarok", "noise", "xnoise", "gmusicbrowser", "spotify", "vlc", "beatbox", "gnome-mplayer" ];
+let compatible_players = [ "clementine", "mpd", "exaile", "banshee", "rhythmbox", "rhythmbox3", "pragha", "quodlibet", "guayadeque", "amarok", "googlemusicframe", "xbmc", "noise", "xnoise", "gmusicbrowser", "spotify", "audacious", "vlc", "beatbox", "songbird", "pithos", "gnome-mplayer", "nuvolaplayer", "qmmp"];
+let support_seek = [ "clementine", "banshee", "rhythmbox", "rhythmbox3", "pragha", "quodlibet", "amarok", "noise", "xnoise", "gmusicbrowser", "spotify", "vlc", "beatbox", "gnome-mplayer", "qmmp" ];
 /* dummy vars for translation */
 let x = _("Playing");
 x = _("Paused");
@@ -289,6 +289,13 @@ Player.prototype = {
                 this._setStatus(value["PlaybackStatus"]);
             if (value["Metadata"])
                 this._setMetadata(value["Metadata"]);
+            // qmmp
+            if (sender._dbusBusName == 'org.mpris.MediaPlayer2.qmmp') {
+                if (value["playbackStatus"])
+                    this._setStatus(value["playbackStatus"]);
+                if (value["metadata"])
+                    this._setMetadata(value["metadata"]);
+            }
         }));
 
         this._mediaServerPlayer.connectSignal('Seeked', Lang.bind(this, function(sender, iface, [value]) {
@@ -397,7 +404,8 @@ Player.prototype = {
                     cover.read_async(null, null, Lang.bind(this, this._onReadCover));
                 }
                 else {
-                    cover_path = decodeURIComponent(this._trackCoverFile.substr(7));
+                    cover_path = decodeURIComponent(this._trackCoverFile;
+                    cover_path = cover_path.replace("file://", "");
                     this._showCover(cover_path);
                 }
             }
