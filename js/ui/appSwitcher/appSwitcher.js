@@ -49,6 +49,7 @@ function AppSwitcher() {
 
 AppSwitcher.prototype = {
     _init: function(binding) {
+        this._initialDelayTimeoutId = null;
         this._binding = binding;
         this._windows = this._getWindowsForBinding(binding);
         
@@ -310,7 +311,7 @@ AppSwitcher.prototype = {
         let state = mods & this._modifierMask;
 
         if (state == 0) {
-            if (this._initialDelayTimeoutId != 0)
+            if (this._initialDelayTimeoutId !== 0)
                 this._currentIndex = (this._currentIndex + 1) % this._windows.length;
             this._activateSelected();
         }
@@ -362,7 +363,7 @@ AppSwitcher.prototype = {
     },
 
     _windowDestroyed: function(wm, actor) {
-	this._removeDestroyedWindow(actor.meta_window);
+        this._removeDestroyedWindow(actor.meta_window);
     },
 
     _checkDestroyed: function(window) {
@@ -410,9 +411,12 @@ AppSwitcher.prototype = {
     destroy: function() {
         this._popModal();
         
-        if (this._initialDelayTimeoutId == 0)
+        if (this._initialDelayTimeoutId !== 0)
+            this._destroyActors();
+        else
             this._hide();
-        else{
+            
+        if(this._initialDelayTimeoutId !== null && this._initialDelayTimeoutId > 0) {
             Mainloop.source_remove(this._initialDelayTimeoutId);
             this._initialDelayTimeoutId = 0;
         }
