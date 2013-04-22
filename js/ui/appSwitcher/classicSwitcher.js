@@ -49,10 +49,6 @@ ClassicSwitcher.prototype = {
         this.actor = new Cinnamon.GenericContainer({ name: 'altTabPopup',
                                                   reactive: true,
                                                   visible: false });
-
-        this.actor.connect('get-preferred-width', Lang.bind(this, this._getPreferredWidth));
-        this.actor.connect('get-preferred-height', Lang.bind(this, this._getPreferredHeight));
-        this.actor.connect('allocate', Lang.bind(this, this._allocate));
         
         this._thumbnailTimeoutId = 0;
         this.thumbnailsVisible = false;
@@ -63,41 +59,28 @@ ClassicSwitcher.prototype = {
         if (!this._setupModal())
             return;
             
-        this._previewEnabled = false;
-        this._iconsEnabled = false;
-        this._thumbnailsEnabled = false;
         let styleSettings = global.settings.get_string("alttab-switcher-style");
         let features = styleSettings.split('+');
-        let found = false;
-        for (let i in features) {
-            if (features[i] === 'icons') {
-                this._iconsEnabled = true;
-                found = true;
-            }
-            if (features[i] === 'preview') {
-                this._previewEnabled = true;
-                found = true;
-            }
-            if (features[i] === 'thumbnails') {
-                this._thumbnailsEnabled = true;
-                found = true;
-            }
-        }
-        if (!found) {
+        this._iconsEnabled = features.indexOf('icons') !== -1;
+        this._previewEnabled = features.indexOf('preview') !== -1;
+        this._thumbnailsEnabled = features.indexOf('thumbnails') !== -1;
+        if (!this._iconsEnabled && !this._previewEnabled && !this._thumbnailsEnabled)
             this._iconsEnabled = true;
-        }
+
         this._showThumbnails = this._thumbnailsEnabled && !this._iconsEnabled;
         this._showArrows = this._thumbnailsEnabled && this._iconsEnabled;
         
         this._updateList(0);
+
+        this.actor.connect('get-preferred-width', Lang.bind(this, this._getPreferredWidth));
+        this.actor.connect('get-preferred-height', Lang.bind(this, this._getPreferredHeight));
+        this.actor.connect('allocate', Lang.bind(this, this._allocate));
         
         // Need to force an allocation so we can figure out whether we
         // need to scroll when selecting
         this.actor.opacity = 0;
         this.actor.show();
         this.actor.get_allocation_box();
-
-        this._next();
     },
 
     _getPreferredWidth: function (actor, forHeight, alloc) {
@@ -163,6 +146,7 @@ ClassicSwitcher.prototype = {
         
         this.actor.opacity = 255;
         this._initialDelayTimeoutId = 0;
+        this._next();
     },
     
     _hide: function() {
@@ -179,11 +163,11 @@ ClassicSwitcher.prototype = {
         Tweener.addTween(this.actor, { opacity: 0,
             time: POPUP_FADE_OUT_TIME,
             transition: 'easeOutQuad',
-            onComplete: Lang.bind(this, this._onFadeCompleted)
+            onComplete: Lang.bind(this, this._destroyActors)
         });
     },
 
-    _onFadeCompleted: function() {
+    _destroyActors: function() {
         Main.uiGroup.remove_actor(this.actor);
         this.actor.destroy();
     },
@@ -986,7 +970,7 @@ ThumbnailList.prototype = {
         for (let i = 0; i < this._thumbnailBins.length; i++) {
             let metaWindow = this._windows[i];
             let container = new St.Group();
-            let clones = WindowUtils.createWindowClone(metaWindow, availHeight, 0, true, true);
+            let clones = WindowUtils.createWindowClone(metaWindow, 0, availHeight, true, true);
             for (let j = 0; j < clones.length; j++) {
               let clone = clones[j];
               container.add_actor(clone.actor);
