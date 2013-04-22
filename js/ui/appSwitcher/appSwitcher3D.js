@@ -139,7 +139,7 @@ AppSwitcher3D.prototype = {
             dim_factor: 1.0,
             time: ANIMATION_TIME,
             transition: TRANSITION_TYPE,
-            onComplete: Lang.bind(this, this._onHideBackgroundCompleted),
+            onComplete: Lang.bind(this, this._destroyActors),
         });
         this._disableMonitorFix();
     },
@@ -290,7 +290,7 @@ AppSwitcher3D.prototype = {
         });
     },
 
-    _onHideBackgroundCompleted: function() {
+    _destroyActors: function() {
         global.overlay_group.remove_actor(this._background);
         Main.uiGroup.remove_actor(this.actor);
         this.actor.destroy();
