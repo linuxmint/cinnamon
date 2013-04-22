@@ -9,6 +9,7 @@ const Signals = imports.signals;
 const Tweener = imports.ui.tweener;
 const Main = imports.ui.main;
 const Mainloop = imports.mainloop;
+const Gio = imports.gi.Gio;
 
 const Params = imports.misc.params;
 
@@ -127,6 +128,14 @@ _Draggable.prototype = {
         this._lastEnterActor = null;
 
         this._eventsGrabbed = false;
+
+        this._dragThreshold = 8;
+        global.settings.connect('changed::dnd-drag-threshold', Lang.bind(this, this._onDragThresholdChanged));
+        this._onDragThresholdChanged();
+    },
+
+    _onDragThresholdChanged : function (settings, key) {
+        this._dragThreshold = global.settings.get_int("dnd-drag-threshold");
     },
 
     _onButtonPress : function (actor, event) {
@@ -387,7 +396,7 @@ _Draggable.prototype = {
         let [stageX, stageY] = event.get_coords();
 
         // See if the user has moved the mouse enough to trigger a drag
-        let threshold = Gtk.Settings.get_default().gtk_dnd_drag_threshold;
+        let threshold = this._dragThreshold;
         if ((Math.abs(stageX - this._dragStartX) > threshold ||
              Math.abs(stageY - this._dragStartY) > threshold)) {
                 this.startDrag(stageX, stageY, event.get_time());

@@ -29,15 +29,7 @@ class Module:
         
         slider = GSettingsRange(_("Sensitivity:"), _("Low"), _("High"), 1, 10, False, "int", False, "org.gnome.settings-daemon.peripherals.mouse", "motion-threshold", None, adjustment_step = 1)
         sidePage.add_widget(slider, True) 
-        
-        title = Gtk.Label()
-        title.set_markup("<b>%s</b>" % _("Drag and Drop"))
-        title.set_alignment(0,0)
-        sidePage.add_widget(title, True)    
-        
-        slider = GSettingsRange(_("Threshold:"), _("Small"), _("Large"), 1, 10, False, "int", False, "org.gnome.settings-daemon.peripherals.mouse", "drag-threshold", None, adjustment_step = 1)
-        sidePage.add_widget(slider, True) 
-        
+
         title = Gtk.Label()
         title.set_markup("<b>%s</b>" % _("Double-Click Timeout"))
         title.set_alignment(0,0)
@@ -46,4 +38,6 @@ class Module:
         slider = GSettingsRange(_("Timeout:"), _("Short"), _("Long"), 100, 1000, False, "int", False, "org.gnome.settings-daemon.peripherals.mouse", "double-click", None, adjustment_step = 1)
         sidePage.add_widget(slider, True)   
 
+        sidePage.add_widget(GSettingsSpinButton(_("Cinnamon drag threshold"), "org.cinnamon", "dnd-drag-threshold", None, 1, 400, 1, 1, _("Pixels")), True)
+        sidePage.add_widget(GSettingsSpinButton(_("GTK drag threshold"), "org.gnome.settings-daemon.peripherals.mouse", "drag-threshold", None, 1, 400, 1, 1, _("Pixels")), True)
 
