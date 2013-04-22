@@ -111,7 +111,7 @@ class Module:
         infos = createSystemInfos()
         
         image = Gtk.Image()
-        image.set_from_file("/usr/share/cinnamon-control-center/ui/cinnamon.png")
+        image.set_from_file("/usr/lib/cinnamon-settings/data/cinnamon.png")
         sidePage.add_widget(image, False)
         
         label = Gtk.Label("?")
