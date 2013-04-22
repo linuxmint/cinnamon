@@ -8,7 +8,10 @@ const Cinnamon = imports.gi.Cinnamon;
 const Mainloop = imports.mainloop;
 
 const AppletManager = imports.ui.appletManager;
-const AltTab = imports.ui.altTab;
+const CoverflowSwitcher = imports.ui.appSwitcher.coverflowSwitcher;
+const TimelineSwitcher = imports.ui.appSwitcher.timelineSwitcher;
+const ClassicSwitcher = imports.ui.appSwitcher.classicSwitcher;
+
 const Main = imports.ui.main;
 const Tweener = imports.ui.tweener;
 
@@ -862,18 +865,22 @@ WindowManager.prototype = {
         }
     },
 
-    _startAppSwitcher : function(display, screen, window, binding) {
-        
-        let tabPopup = new AltTab.AltTabPopup();
+    _createAppSwitcher : function(binding) {
+        let style = global.settings.get_string("alttab-switcher-style");
+        if(style == 'coverflow')
+            new CoverflowSwitcher.CoverflowSwitcher(binding);
+        else if(style == 'timeline')
+            new TimelineSwitcher.TimelineSwitcher(binding);
+        else
+            new ClassicSwitcher.ClassicSwitcher(binding);
+    },
 
-        let modifiers = binding.get_modifiers();
-        let backwards = modifiers & Meta.VirtualModifier.SHIFT_MASK;
-        if (!tabPopup.show(backwards, binding.get_name(), binding.get_mask()))
-            tabPopup.destroy();
+    _startAppSwitcher : function(display, screen, window, binding) {
+        this._createAppSwitcher(binding);
     },
 
     _startA11ySwitcher : function(display, screen, window, binding) {
-        
+        this._createAppSwitcher(binding);
     },
 
     _shiftWindowToWorkspace : function(window, direction) {

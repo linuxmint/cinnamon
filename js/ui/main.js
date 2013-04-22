@@ -394,6 +394,15 @@ function disablePanels() {
     if (panel2) panel2.disable();
 }
 
+function getPanels() {
+    let panels = [];
+    if(panel)
+        panels.push(panel);
+    if(panel2)
+        panels.push(panel2);
+    return panels;
+}
+
 let _workspaces = [];
 let _checkWorkspacesId = 0;
 
