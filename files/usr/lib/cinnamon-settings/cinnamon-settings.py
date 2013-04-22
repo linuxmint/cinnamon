@@ -31,6 +31,8 @@ gettext.install("cinnamon", "/usr/share/cinnamon/locale")
 # i18n for menu item
 menuName = _("System Settings")
 menuComment = _("Control Center")
+NormalMode = _("Normal Mode")
+AdvancedMode = _("Advanced Mode")
 
 ADVANCED_GSETTING = "cinnamon-settings-advanced"
 
@@ -117,6 +119,7 @@ class MainWindow:
         self.button_back = self.builder.get_object("button_back")
         self.button_back.set_label(_("All Settings"))
         self.button_back.hide()
+
         self.search_entry = self.builder.get_object("search_box")
         self.search_entry.connect("changed", self.onSearchTextChanged)
         self.search_entry.connect("icon-press", self.onClearSearchBox)
@@ -127,6 +130,12 @@ class MainWindow:
         self.sidePages = []
         self.settings = Gio.Settings.new("org.cinnamon")
         self.advanced_mode = self.settings.get_boolean(ADVANCED_GSETTING)
+        self.mode_label = self.builder.get_object("mode_label")
+        if self.advanced_mode:
+            self.mode_label.set_text(AdvancedMode)
+        else:
+            self.mode_label.set_text(NormalMode)
+
         self.current_sidepage = None
         self.c_manager = capi.CManager()
         self.content_box.c_manager = self.c_manager
@@ -328,12 +337,12 @@ class MainWindow:
     def on_menu_button_clicked(self, widget):
         popup = Gtk.Menu()
         popup.attach_to_widget(widget, None)
-        popup_normal_mode = Gtk.CheckMenuItem(_("Normal Mode"))
+        popup_normal_mode = Gtk.CheckMenuItem(NormalMode)
         popup_normal_mode.set_draw_as_radio(True)
         popup_normal_mode.set_active(not self.advanced_mode)
         popup_normal_mode.show()
         popup.append(popup_normal_mode)
-        popup_advanced_mode = Gtk.CheckMenuItem(_("Advanced Mode"))
+        popup_advanced_mode = Gtk.CheckMenuItem(AdvancedMode)
         popup_advanced_mode.set_draw_as_radio(True)
         popup_advanced_mode.set_active(self.advanced_mode)
         popup_advanced_mode.show()
@@ -346,6 +355,7 @@ class MainWindow:
     def on_advanced_mode(self, popup):
         self.advanced_mode = True
         self.settings.set_boolean(ADVANCED_GSETTING, True)
+        self.mode_label.set_text(AdvancedMode)
         if self.current_sidepage is not None:
             self.current_sidepage.build(self.advanced_mode)
             self.maybe_resize(self.current_sidepage)
@@ -354,6 +364,7 @@ class MainWindow:
     def on_normal_mode(self, popup):
         self.advanced_mode = False
         self.settings.set_boolean(ADVANCED_GSETTING, False)
+        self.mode_label.set_text(NormalMode)
         if self.current_sidepage is not None:
             self.current_sidepage.build(self.advanced_mode)
             self.maybe_resize(self.current_sidepage)
