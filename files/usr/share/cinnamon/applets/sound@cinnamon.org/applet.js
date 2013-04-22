@@ -55,7 +55,7 @@ const MediaServer2PlayerIFace = {
                 inSignature: '',
                 outSignature: '' },
               { name: 'SetPosition',
-                inSignature: 'a{ov}',
+                inSignature: 'ox',
                 outSignature: '' }],
     properties: [{ name: 'Metadata',
                    signature: 'a{sv}',
@@ -185,6 +185,9 @@ MediaServer2Player.prototype = {
                     callback(this, position);
             }));
     },
+    setPosition: function(value) {
+        this.SetRemote('Position', value);
+    },
     getShuffle: function(callback) {
         this.GetRemote('Shuffle', Lang.bind(this,
             function(shuffle, ex) {
@@ -223,6 +226,13 @@ MediaServer2Player.prototype = {
         else
             value = "None"
         this.SetRemote('LoopStatus', value);
+    },
+    getCanSeek: function(callback) {
+        this.GetRemote('CanSeek', Lang.bind(this,
+            function(canSeek, ex) {
+                if (!ex)
+                    callback(this, canSeek);
+            }));
     }
 }
 DBus.proxifyPrototype(MediaServer2Player.prototype, MediaServer2PlayerIFace)
@@ -344,6 +354,7 @@ Player.prototype = {
     _init: function(system_status_button, owner) {
         PopupMenu.PopupMenuSection.prototype._init.call(this);
 
+        this.showPosition = true; // @todo: Get from settings
         this._owner = owner;
         this._system_status_button = system_status_button;
         this._name = this._owner.split('.')[3];
@@ -380,6 +391,18 @@ Player.prototype = {
         this.infos_bottom.add_actor(this._time.getActor());
         this._trackInfosTop.set_child(this.infos_top);
         this._trackInfosBottom.set_child(this.infos_bottom);
+
+        this._positionSlider = new PopupMenu.PopupSliderMenuItem(0);
+        this._positionSlider.connect('value-changed', Lang.bind(this, function(item) {
+            let time = item._value * this._songLength;
+            this._time.setLabel(this._formatTime(time) + " / " + this._formatTime(this._songLength));
+        }));
+        this._positionSlider.connect('drag-end', Lang.bind(this, function(item) {
+            let time = item._value * this._songLength;
+            this._time.setLabel(this._formatTime(time) + " / " + this._formatTime(this._songLength));
+            this._mediaServerPlayer.SetPositionRemote(this._trackObj, time * 1000000);
+        }));
+        this.addMenuItem(this._positionSlider);
 
         this._prevButton = new ControlButton('media-skip-backward',
             Lang.bind(this, function () { this._mediaServerPlayer.PreviousRemote(); }));
@@ -421,13 +444,17 @@ Player.prototype = {
         }));
 
         /* this players don't support seek */
-        if (support_seek.indexOf(this._name) == -1)
+        if (support_seek.indexOf(this._name) == -1) {
             this._time.hide();
+            this.showPosition = false;
+            this._positionSlider.actor.hide();
+        }
         this._getStatus();
         this._trackId = {};
         this._getMetadata();
         this._currentTime = 0;
         this._getPosition();
+        this._updatePositionSlider();
 
         this._prop.connect('PropertiesChanged', Lang.bind(this, function(sender, iface, value) {
             if (value["PlaybackStatus"])
@@ -450,6 +477,20 @@ Player.prototype = {
 
     _setName: function(status) {
         this._playerInfo.setText(this._getName() + " - " + _(status));
+    },
+
+    _updatePositionSlider: function(position) {
+        this._mediaServerPlayer.getCanSeek(Lang.bind(this, function(sender, canSeek) {
+            this._canSeek = canSeek;
+
+            if (this._songLength == 0 || position == false)
+                this._canSeek = false;
+
+            if (this._playerStatus == "Playing" && this._canSeek && this.showPosition)
+                this._positionSlider.actor.show();
+            else
+                this._positionSlider.actor.hide();
+        }));
     },
 
     _setPosition: function(sender, value) {
@@ -495,13 +536,8 @@ Player.prototype = {
             this._title.setLabel(metadata["xesam:title"].toString());
         else
             this._title.setLabel(_("Unknown Title"));
-        /*if (metadata["mpris:trackid"]) {
-            this._trackId = {
-                _init: function() {
-                    DBus.session.proxifyObject(this, this._owner, metadata["mpris:trackid"]);
-                }
-            }
-        }*/
+        if (metadata["mpris:trackid"])
+            this._trackObj = metadata["mpris:trackid"];
 
         let change = false;
         if (metadata["mpris:artUrl"]) {
@@ -544,6 +580,7 @@ Player.prototype = {
     },
 
     _setStatus: function(sender, status) {
+        this._updatePositionSlider();
         this._playerStatus = status;
         if (status == "Playing") {
             this._playButton.setIcon("media-playback-pause");
@@ -574,6 +611,12 @@ Player.prototype = {
     },
 
     _updateTimer: function() {
+        if (this.showPosition && this._canSeek) {
+            if (!isNaN(this._currentTime) && !isNaN(this._songLength) && this._currentTime > 0)
+                this._positionSlider.setValue(this._currentTime / this._songLength);
+            else
+                this._positionSlider.setValue(0);
+        }
         this._time.setLabel(this._formatTime(this._currentTime) + " / " + this._formatTime(this._songLength));
     },
 
