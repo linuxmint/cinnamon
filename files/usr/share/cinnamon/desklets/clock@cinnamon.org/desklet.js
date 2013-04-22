@@ -28,11 +28,15 @@ MyDesklet.prototype = {
         this._date.style="font-size: " + this._dateSettings.get_int("font-size") + "pt";
     },
 
+    on_desklet_removed: function() {
+	Mainloop.source_remove(this.timeout);
+    },
+
     _updateDate: function(){
         let dateFormat = this._dateSettings.get_string('date-format');
         let displayDate = new Date();
         this._date.set_text(displayDate.toLocaleFormat(dateFormat));
-        Mainloop.timeout_add_seconds(1, Lang.bind(this, this._updateDate));
+        this.timeout = Mainloop.timeout_add_seconds(1, Lang.bind(this, this._updateDate));
     }
 }
 

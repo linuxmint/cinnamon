@@ -733,7 +733,11 @@ Extensions.prototype = {
         // that's not really a proper extension. Don't bother with these.
         if (!meta.name)
             return;
-            
+
+        // If extension is broken
+        if (!Extension.objects[uuid])
+            return;
+
         // Only load extensions
         if(Extension.objects[uuid].type.name != this.type.name)
             return;
@@ -919,6 +923,9 @@ LookingGlass.prototype = {
 
         this._extensions = new Extensions(Extension.Type.EXTENSION);
         notebook.appendPage('Extensions', this._extensions.actor);
+
+        this._desklets = new Extensions(Extension.Type.DESKLET);
+        notebook.appendPage('Desklets', this._desklets.actor);
 
         this._entry.clutter_text.connect('activate', Lang.bind(this, function (o, e) {
             let text = o.get_text();

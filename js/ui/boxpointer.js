@@ -120,6 +120,21 @@ BoxPointer.prototype = {
         }
     },
 
+    /**
+     * setArrowSide:
+     * @side (St.Side): The new side of the menu
+     * 
+     * Sets the arrow side of the menu. Note that the side is the side
+     * of the source actor, not the menu, e.g. If St.Side.TOP is set, 
+     * then the menu will appear below the source actor (the source
+     * actor will be on top of the menu)
+     */
+    setArrowSide: function(side) {
+	// Need not trigger any other function. Menu position is
+        // recalculated every time it is shown
+	this._arrowSide = side;
+    },
+
     _adjustAllocationForArrow: function(isWidth, alloc) {
         let themeNode = this.actor.get_theme_node();
         let borderWidth = themeNode.get_length('-arrow-border-width');
