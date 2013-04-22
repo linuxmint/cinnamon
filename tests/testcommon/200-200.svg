@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns="http://www.w3.org/2000/svg"
+	viewBox="0 0 200 200" width="200" height="200">
+  <path
+    d="
+      M 2,2 h 196 v 196 h -196 v -196
+      M 8,8 h 184 v 184 h -184 v -184
+    "
+    fill="white"
+    stroke="blue"
+    stroke-width="2"
+    stroke-linecap="square"
+    />
+  <path
+    d="
+      M 10,10 h 20 v 20 h -20 v -20
+    "
+    fill="green"
+    />
+</svg>
