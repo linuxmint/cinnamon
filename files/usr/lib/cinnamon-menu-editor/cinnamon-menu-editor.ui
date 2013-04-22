@@ -4,6 +4,28 @@
   <object class="GtkUIManager" id="uimanager1">
     <child>
       <object class="GtkActionGroup" id="actiongroup1">
+
+        <child>
+          <object class="GtkAction" id="edit_cut">
+            <property name="stock_id">gtk-cut</property>
+            <property name="name">edit_cut</property>
+            <signal handler="on_edit_cut_activate" name="activate"/>
+          </object>
+        </child>
+        <child>
+          <object class="GtkAction" id="edit_copy">
+            <property name="stock_id">gtk-copy</property>
+            <property name="name">edit_copy</property>
+            <signal handler="on_edit_copy_activate" name="activate"/>
+          </object>
+        </child>
+        <child>
+          <object class="GtkAction" id="edit_paste">
+            <property name="stock_id">gtk-paste</property>
+            <property name="name">edit_paste</property>
+            <signal handler="on_edit_paste_activate" name="activate"/>
+          </object>
+        </child>
         <child>
           <object class="GtkAction" id="edit_properties">
             <property name="stock_id">gtk-properties</property>
@@ -22,20 +44,19 @@
     </child>
     <ui>
       <popup name="edit_menu">
-        <menuitem action="edit_properties"/>
+        <menuitem action="edit_cut"/>
+        <menuitem action="edit_copy"/>
+        <menuitem action="edit_paste"/>
+        <separator/>
         <menuitem action="edit_delete"/>
+        <separator/>
+        <menuitem action="edit_properties"/>
       </popup>
     </ui>
   </object>
   <object class="GtkMenu" constructor="uimanager1" id="edit_menu">
 
-  
 
-  
-
-  
-
-  
 </object>
   <object class="GtkDialog" id="mainwindow">
     <property name="border_width">5</property>
@@ -147,7 +168,10 @@
                                 <property name="fixed_height_mode">False</property>
                                 <property name="hover_selection">False</property>
                                 <property name="hover_expand">False</property>
+                                <signal handler="on_item_tree_row_activated" name="row-activated"/>
                                 <signal handler="on_menu_tree_cursor_changed" name="cursor-changed"/>
+                                <signal handler="on_menu_tree_popup_menu" name="popup-menu"/>
+                                <signal handler="on_menu_tree_popup_menu" name="button_press_event"/>
                               </object>
                             </child>
                           </object>
@@ -290,6 +314,76 @@
                                             <signal handler="on_move_down_button_clicked" name="clicked"/>
                                           </object>
                                         </child>
+                                      </object>
+                                    </child>
+                                  </object>
+                                  <packing>
+                                    <property name="padding">0</property>
+                                    <property name="expand">True</property>
+                                    <property name="fill">True</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkAlignment" id="alignment20">
+                                    <property name="visible">True</property>
+                                    <property name="xalign">0.5</property>
+                                    <property name="yalign">0.5</property>
+                                    <property name="xscale">1</property>
+                                    <property name="yscale">1</property>
+                                    <property name="top_padding">12</property>
+                                    <property name="bottom_padding">0</property>
+                                    <property name="left_padding">0</property>
+                                    <property name="right_padding">0</property>
+                                    <child>
+                                      <object class="GtkVButtonBox" id="vbuttonbox5">
+                                        <property name="visible">True</property>
+                                        <property name="layout_style">GTK_BUTTONBOX_START</property>
+                                        <property name="spacing">6</property>
+                                        <child>
+                                          <object class="GtkButton" id="cut_button">
+                                            <property name="label" translatable="no">gtk-cut</property>
+                                            <property name="visible">True</property>
+                                            <property name="can_focus">True</property>
+                                            <property name="receives_default">True</property>
+                                            <property name="use_stock">True</property>
+                                            <signal handler="on_cut_button_clicked" name="clicked"/>
+                                          </object>
+                                          <packing>
+                                            <property name="expand">False</property>
+                                            <property name="fill">False</property>
+                                            <property name="position">0</property>
+                                          </packing>
+                                        </child>
+                                        <child>
+                                          <object class="GtkButton" id="copy_button">
+                                            <property name="label" translatable="no">gtk-copy</property>
+                                            <property name="visible">True</property>
+                                            <property name="can_focus">True</property>
+                                            <property name="receives_default">True</property>
+                                            <property name="use_stock">True</property>
+                                            <signal handler="on_copy_button_clicked" name="clicked"/>
+                                          </object>
+                                          <packing>
+                                            <property name="expand">False</property>
+                                            <property name="fill">False</property>
+                                            <property name="position">1</property>
+                                          </packing>
+                                        </child>
+                                        <child>
+                                          <object class="GtkButton" id="paste_button">
+                                            <property name="label" translatable="no">gtk-paste</property>
+                                            <property name="visible">True</property>
+                                            <property name="can_focus">True</property>
+                                            <property name="receives_default">True</property>
+                                            <property name="use_stock">True</property>
+                                            <signal handler="on_paste_button_clicked" name="clicked"/>
+                                          </object>
+                                          <packing>
+                                            <property name="expand">False</property>
+                                            <property name="fill">False</property>
+                                            <property name="position">2</property>
+                                          </packing>
+                                        </child>
                                         <child>
                                           <object class="GtkButton" id="delete_button">
                                             <property name="label" translatable="no">gtk-delete</property>
@@ -302,7 +396,7 @@
                                           <packing>
                                             <property name="expand">False</property>
                                             <property name="fill">False</property>
-                                            <property name="position">2</property>
+                                            <property name="position">3</property>
                                           </packing>
                                         </child>
                                         <child>
@@ -312,12 +406,12 @@
                                             <property name="can_focus">True</property>
                                             <property name="receives_default">True</property>
                                             <property name="use_stock">True</property>
-					    <signal handler="on_properties_button_clicked" name="clicked"/>
+                                            <signal handler="on_properties_button_clicked" name="clicked"/>
                                           </object>
                                           <packing>
                                             <property name="expand">False</property>
                                             <property name="fill">False</property>
-                                            <property name="position">3</property>
+                                            <property name="position">4</property>
                                           </packing>
                                         </child>
                                       </object>

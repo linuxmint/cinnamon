@@ -37,6 +37,9 @@ def fillKeyFile(keyfile, items):
         elif isinstance(item, basestring):
             keyfile.set_string(DESKTOP_GROUP, key, item)
 
+def getNameFromKeyFile(keyfile):
+    return keyfile.get_string(DESKTOP_GROUP, "Name")
+
 def getUniqueFileId(name, extension):
     while 1:
         filename = name + '-' + str(uuid.uuid1()) + extension

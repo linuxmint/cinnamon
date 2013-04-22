@@ -241,32 +241,46 @@ class MenuEditor(object):
             self.addXmlTextElement(menu_xml, 'DirectoryDir', util.getUserDirectoryPath(), dom)
         self.save()
 
-    def copyItem(self, item, new_parent, before=None, after=None):
+    def copyItem(self, item):
         dom = self.dom
         file_path = item.get_desktop_file_path()
-        keyfile = GLib.KeyFile()
-        keyfile.load_from_file(file_path, util.KEY_FILE_FLAGS)
+        copy_buffer = GLib.KeyFile()
+        copy_buffer.load_from_file(file_path, util.KEY_FILE_FLAGS)
+        return (copy_buffer, None)
 
-        util.fillKeyFile(keyfile, dict(Categories=[], Hidden=False))
+    def cutItem(self, item):
+        copy_buffer, file_id = self.copyItem(item)
+        file_id = self.deleteItem(item)
+        return (copy_buffer, file_id)
 
-        app_info = item.get_app_info()
-        file_id = util.getUniqueFileId(app_info.get_name().replace(os.sep, '-'), '.desktop')
-        out_path = os.path.join(util.getUserItemPath(), file_id)
-
-        contents, length = keyfile.to_data()
-
-        f = open(out_path, 'w')
-        f.write(contents)
-        f.close()
-
-        self.addItem(new_parent, file_id, dom)
-        self.positionItem(new_parent, ('Item', file_id), before, after)
-        self.save()
-        return file_id
+    def pasteItem(self, cut_copy_buffer, menu, file_id = None):
+        try:
+            path = self.getPath(menu)
+            util.fillKeyFile(cut_copy_buffer, dict(Hidden=False, NoDisplay=False))
+            name = util.getNameFromKeyFile(cut_copy_buffer)
+            if file_id is None:
+                file_id = util.getUniqueFileId(name.replace(os.sep, '-'), '.desktop')
+            out_path = os.path.join(util.getUserItemPath(), file_id)
+            contents, length = cut_copy_buffer.to_data()
+            f = open(out_path, 'w')
+            f.write(contents)
+            f.close()
+            menu_xml = self.getXmlMenu(path, self.dom.documentElement, self.dom)
+            self.addXmlFilename(menu_xml, self.dom, file_id, 'Include')
+            self.addXmlTextElement(menu_xml, 'AppDir', util.getUserItemPath(), self.dom)
+            self.save()
+            return True
+        except:
+            return False
 
     def deleteItem(self, item):
-        self.writeItem(item, Hidden=True)
+        file_id = self.writeItem(item, Hidden=True)
+        item_xml = self.getXmlMenu(self.getPath(item.get_parent()), self.dom.documentElement, self.dom)
+
+        self.removeXmlFilename(item_xml, self.dom, file_id)
+
         self.save()
+        return file_id
 
     def deleteMenu(self, menu):
         dom = self.dom
@@ -315,7 +329,10 @@ class MenuEditor(object):
         names = []
         current = menu
         while current is not None:
-            names.append(current.get_menu_id())
+            try:
+                names.append(current.get_menu_id())
+            except:
+                names.append(current.get_desktop_file_id())
             current = current.get_parent()
 
         # XXX - don't append root menu name, alacarte doesn't
@@ -364,6 +381,11 @@ class MenuEditor(object):
         node = dom.createElement(type)
         node.appendChild(self.addXmlTextElement(node, 'Filename', filename, dom))
         return element.appendChild(node)
+
+    def removeXmlFilename(self, element, dom, filename):
+        for node in self.getXmlNodesByName(['Include'], element):
+            if node.childNodes[0].nodeName == 'Filename' and node.childNodes[0].childNodes[0].nodeValue == filename:
+                element.removeChild(node)
 
     def addDeleted(self, element, dom):
         node = dom.createElement('Deleted')
