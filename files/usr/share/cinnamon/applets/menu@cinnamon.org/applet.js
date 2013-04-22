@@ -1207,7 +1207,7 @@ MyApplet.prototype = {
         if (this.vector_update_loop) {
             Mainloop.source_remove(this.vector_update_loop);
         }
-        this.vector_update_loop = Mainloop.timeout_add(200, Lang.bind(this, this.updateVectorBox));
+        this.vector_update_loop = Mainloop.timeout_add(35, Lang.bind(this, this.updateVectorBox));
     },
 
     updateVectorBox: function(actor) {
