@@ -2,6 +2,6 @@
  "uuid": "photoframe@cinnamon.org",
  "name": "Digital photo frame",
  "description": "A digital photo frame desklet",
- "prevent-decorations": true,
+ "prevent-decorations": true
 }
 
