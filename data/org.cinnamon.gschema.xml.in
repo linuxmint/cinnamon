@@ -528,6 +528,11 @@
        Controls the style of the ALT-tab window switcher. Can be any combination of "icons", "preview" and "thumbnails", separated by "+".
       </_description>
     </key>
+    
+    <key type="b" name="alttab-switcher-enforce-primary-monitor">
+      <default>false</default>
+      <_summary>Enforce displaying the alt-tab switcher on the primary monitor instead of the active one</_summary>
+    </key>
 
     <key name="window-list-applet-scroll" type="b">
       <default>false</default>
