@@ -150,10 +150,10 @@
       </And>
     </Include>
   </Menu> <!-- End Other -->
-  
-   <!-- Wine -->
+
+ <!-- Wine -->
   <Menu>
-    <Name>Wine</Name>
+    <Name>wine-wine</Name>
     <Directory>wine-wine.directory</Directory>
     <Include>
       <And>
