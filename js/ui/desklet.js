@@ -19,9 +19,11 @@ const RIGHT_PANEL_POPUP_ANIMATE_TIME = 0.5;
 const DESKLET_DESTROY_TIME = 0.5;
 
 /**
- * Desklet
- *
- * @short_description: Base class of desklets
+ * #Desklet
+ * @metadata (dictionary): Metadata of desklet
+ * @actor (St.Actor): Actor of desklet
+ * @content (St.Bin): The actor containing the content of the actor
+ * @instance_id (int): Instance id of the desklet
  *
  * #Desklet is a base class in which other desklets
  * can inherit
@@ -31,6 +33,13 @@ function Desklet(metadata, desklet_id){
 }
 
 Desklet.prototype = {
+    /**
+     * _init:
+     * @metadata (dictionary): the metadata of the desklet
+     * @desklet_id (int): instance id of the desklet
+     * 
+     * Constructor function
+     */
     _init: function(metadata, desklet_id){
         this.metadata = metadata;
         this.instance_id = desklet_id;
@@ -82,7 +91,7 @@ Desklet.prototype = {
 
     /**
      * setHeader:
-     * @header: the header of the desklet
+     * @header (string): the header of the desklet
      *
      * Sets the header text of the desklet to @header
      */
@@ -92,8 +101,8 @@ Desklet.prototype = {
 
     /**
      * setContent:
-     * @actor: actor to be set as child
-     * @params: (optional) parameters to be sent
+     * @actor (Clutter.Actor): actor to be set as child
+     * @params (dictionary): (optional) parameters to be sent
      *
      * Sets the content actor of the desklet as @actor
      */
@@ -152,7 +161,7 @@ Desklet.prototype = {
             break;
         }
     },
-        
+
     on_desklet_clicked: function(event) {
         // Implemented by Desklets        
     },
