@@ -1120,6 +1120,14 @@ PopupMenuBase.prototype = {
             this.open(true);
     },
 
+    toggle_with_options: function (animate, onComplete) {
+        if (this.isOpen) {
+            this.close(animate, onComplete);
+        } else {
+            this.open(animate, onComplete);
+        }
+    },
+
     destroy: function() {
         this.removeAll();
         this.actor.destroy();
@@ -1161,6 +1169,20 @@ PopupMenu.prototype = {
 
         global.focus_manager.add_group(this.actor);
         this.actor.reactive = true;
+    },
+
+    /**
+     * setArrowSide:
+     * @side (St.Side): The new side of the menu
+     * 
+     * Sets the arrow side of the menu. Note that the side is the side
+     * of the source actor, not the menu, e.g. If St.Side.TOP is set, 
+     * then the menu will appear below the source actor (the source
+     * actor will be on top of the menu)
+     */
+    setArrowSide: function(side) {
+	this._arrowSide = side;
+	this._boxPointer.setArrowSide(side);
     },
 
     _boxGetPreferredWidth: function (actor, forHeight, alloc) {
@@ -1803,8 +1825,9 @@ PopupMenuManager.prototype = {
     },
 
     _grab: function() {
-        Main.pushModal(this._owner.actor);
-
+        if (!Main.pushModal(this._owner.actor)) {
+            return;
+        }
         this._eventCaptureId = global.stage.connect('captured-event', Lang.bind(this, this._onEventCapture));
         // captured-event doesn't see enter/leave events
         this._enterEventId = global.stage.connect('enter-event', Lang.bind(this, this._onEventCapture));
@@ -1815,6 +1838,9 @@ PopupMenuManager.prototype = {
     },
 
     _ungrab: function() {
+        if (!this.grabbed) {
+            return;
+        }
         global.stage.disconnect(this._eventCaptureId);
         this._eventCaptureId = 0;
         global.stage.disconnect(this._enterEventId);
@@ -1857,7 +1883,7 @@ PopupMenuManager.prototype = {
 
             if (hadFocus)
                 focus.grab_key_focus();
-else
+            else
                 menu.actor.grab_key_focus();
         } else if (menu == this._activeMenu) {
             if (this.grabbed)

@@ -19,7 +19,7 @@ class Module:
 
 class ExtensionViewSidePage (SidePage):
     def __init__(self, name, icon, keywords, advanced, content_box):
-        SidePage.__init__(self, name, icon, keywords, advanced, content_box)
+        SidePage.__init__(self, name, icon, keywords, advanced, content_box, True)
         self.icons = []
                   
     def build(self, advanced):

@@ -8,7 +8,10 @@ const Cinnamon = imports.gi.Cinnamon;
 const Mainloop = imports.mainloop;
 
 const AppletManager = imports.ui.appletManager;
-const AltTab = imports.ui.altTab;
+const CoverflowSwitcher = imports.ui.appSwitcher.coverflowSwitcher;
+const TimelineSwitcher = imports.ui.appSwitcher.timelineSwitcher;
+const ClassicSwitcher = imports.ui.appSwitcher.classicSwitcher;
+
 const Main = imports.ui.main;
 const Tweener = imports.ui.tweener;
 
@@ -862,18 +865,22 @@ WindowManager.prototype = {
         }
     },
 
-    _startAppSwitcher : function(display, screen, window, binding) {
-        
-        let tabPopup = new AltTab.AltTabPopup();
+    _createAppSwitcher : function(binding) {
+        let style = global.settings.get_string("alttab-switcher-style");
+        if(style == 'coverflow')
+            new CoverflowSwitcher.CoverflowSwitcher(binding);
+        else if(style == 'timeline')
+            new TimelineSwitcher.TimelineSwitcher(binding);
+        else
+            new ClassicSwitcher.ClassicSwitcher(binding);
+    },
 
-        let modifiers = binding.get_modifiers();
-        let backwards = modifiers & Meta.VirtualModifier.SHIFT_MASK;
-        if (!tabPopup.show(backwards, binding.get_name(), binding.get_mask()))
-            tabPopup.destroy();
+    _startAppSwitcher : function(display, screen, window, binding) {
+        this._createAppSwitcher(binding);
     },
 
     _startA11ySwitcher : function(display, screen, window, binding) {
-        
+        this._createAppSwitcher(binding);
     },
 
     _shiftWindowToWorkspace : function(window, direction) {
@@ -882,11 +889,11 @@ WindowManager.prototype = {
         }
         let workspace = global.screen.get_active_workspace().get_neighbor(direction);
         if (workspace != global.screen.get_active_workspace()) {
+            window.change_workspace(workspace);
             workspace.activate(global.get_current_time());
             this.showWorkspaceOSD();
             Mainloop.idle_add(Lang.bind(this, function() {
-                // Unless this is done a bit later, window is sometimes not activated
-                window.change_workspace(workspace);
+                // Unless this is done a bit later, window is sometimes not activated                
                 window.activate(global.get_current_time());
             }));
         }

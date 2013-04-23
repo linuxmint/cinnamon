@@ -14,13 +14,14 @@
     <property name="default_width">800</property>
     <property name="default_height">600</property>
     <property name="icon_name">preferences-system</property>
+    <property name="opacity">0</property>
     <child>
       <object class="GtkBox" id="box1">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <property name="orientation">vertical</property>
         <child>
-          <object class="GtkToolbar" id="toolbar1">
+          <object class="GtkToolbar" id="top_bar">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="toolbar_style">icons</property>
@@ -41,6 +42,7 @@
                     <property name="can_focus">False</property>
                     <property name="halign">start</property>
                     <property name="valign">start</property>
+                    <property name="homogeneous">True</property>
                     <property name="layout_style">start</property>
                     <child>
                       <object class="GtkButton" id="button_back">
@@ -90,23 +92,11 @@
                 <property name="expand">True</property>
               </packing>
             </child>
-            <child>
-              <object class="GtkToolButton" id="menu_toggle_button">
-                <property name="related_action">action1</property>
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="label" translatable="yes">toolbutton3</property>
-                <property name="use_underline">True</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="homogeneous">True</property>
-              </packing>
-            </child>
           </object>
           <packing>
             <property name="expand">False</property>
             <property name="fill">True</property>
+            <property name="padding">4</property>
             <property name="position">0</property>
           </packing>
         </child>
@@ -201,12 +191,45 @@
           </packing>
         </child>
         <child>
-          <object class="GtkToolbar" id="toolbar2">
+          <object class="GtkToolbar" id="bottom_bar">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <style>
               <class name="toolbar"/>
             </style>
+            <child>
+              <object class="GtkToolButton" id="menu_toggle_button">
+                <property name="related_action">action1</property>
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">toolbutton3</property>
+                <property name="use_underline">True</property>
+                <property name="stock_id">gtk-execute</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="homogeneous">True</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkToolItem" id="mode_label_container">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <child>
+                  <object class="GtkLabel" id="mode_label">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label" translatable="yes">Normal Mode</property>
+                    <attributes>
+                      <attribute name="weight" value="bold"/>
+                    </attributes>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+              </packing>
+            </child>
             <child>
               <object class="GtkToolItem" id="toolbutton1">
                 <property name="visible">True</property>
@@ -254,8 +277,9 @@
   </object>
   <object class="GtkDialog" id="progress_window">
     <property name="can_focus">False</property>
-    <property name="border_width">5</property>
-    <property name="type">popup</property>
+    <property name="halign">start</property>
+    <property name="valign">start</property>
+    <property name="border_width">6</property>
     <property name="resizable">False</property>
     <property name="modal">True</property>
     <property name="window_position">center</property>
@@ -264,20 +288,21 @@
     <child internal-child="vbox">
       <object class="GtkBox" id="dialog-vbox3">
         <property name="can_focus">False</property>
+        <property name="halign">start</property>
+        <property name="valign">start</property>
         <property name="orientation">vertical</property>
-        <property name="spacing">2</property>
+        <property name="spacing">6</property>
         <child internal-child="action_area">
           <object class="GtkButtonBox" id="dialog-action_area3">
             <property name="can_focus">False</property>
             <property name="layout_style">end</property>
             <child>
               <object class="GtkButton" id="btnProgressAbort">
-                <property name="label" translatable="yes">Abort</property>
-                <property name="use_action_appearance">False</property>
+                <property name="label">gtk-cancel</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
-                <property name="use_action_appearance">False</property>
+                <property name="use_stock">True</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -289,12 +314,10 @@
             <child>
               <object class="GtkButton" id="btnProgressActivate">
                 <property name="label" translatable="yes">Enable</property>
-                <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="sensitive">False</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
-                <property name="use_action_appearance">False</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -304,12 +327,11 @@
             </child>
             <child>
               <object class="GtkButton" id="btnProgressClose">
-                <property name="label" translatable="yes">Close</property>
-                <property name="use_action_appearance">False</property>
+                <property name="label">gtk-close</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
-                <property name="use_action_appearance">False</property>
+                <property name="use_stock">True</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -330,6 +352,7 @@
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="orientation">vertical</property>
+            <property name="spacing">6</property>
             <child>
               <object class="GtkLabel" id="progresslabel">
                 <property name="visible">True</property>

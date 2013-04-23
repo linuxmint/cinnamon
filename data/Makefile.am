@@ -27,22 +27,13 @@ dist_theme_DATA = \
 	theme/close-window.svg			\
 	theme/close.svg				\
 	theme/corner-ripple.png			\
-	theme/dash-placeholder.svg		\
-	theme/filter-selected-ltr.svg		\
-	theme/filter-selected-rtl.svg		\
 	theme/cinnamon.css			\
 	theme/menu.png				\
 	theme/overview.png			\
 	theme/overview-hover.png		\
-	theme/panel-border.svg			\
-	theme/panel-button-border.svg		\
-	theme/panel-button-highlight-narrow.svg	\
-	theme/panel-button-highlight-wide.svg	\
 	theme/process-working.svg		\
-	theme/running-indicator.svg		\
 	theme/scroll-hhandle.svg		\
 	theme/scroll-vhandle.svg		\
-	theme/source-button-border.svg		\
 	theme/thumbnail.png			\
 	theme/thumbnail-generic.png		\
 	theme/toggle-off-us.svg			\
@@ -50,9 +41,7 @@ dist_theme_DATA = \
 	theme/toggle-on-us.svg			\
 	theme/toggle-on-intl.svg		\
 	theme/trash-icon.png			\
-	theme/ws-switch-arrow-up.svg		\
-	theme/ws-switch-arrow-down.svg		\
-	theme/player-paused.svg		\
+	theme/player-paused.svg			\
 	theme/player-playing.svg		\
 	theme/player-stopped.svg
 

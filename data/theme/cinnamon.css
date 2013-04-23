@@ -103,7 +103,6 @@ StScrollBar StButton#vhandle:hover {
 	color: #ffffff;
 	font-size: 9.5pt;
 	min-width: 100px;
-	background-bumpmap: url("/usr/share/cinnamon/bumpmaps/frost.png");
 }
 .popup-submenu-menu-item:open {
 	background-color: #4c4c4c;
@@ -347,7 +346,7 @@ StScrollBar StButton#vhandle:hover {
 .window-caption#selected {
 	background-color: white;
 	color: black;
-	font-weight: bold;
+	spacing: 25px;
 }
 
 .workspace-controls {
@@ -798,7 +797,7 @@ StScrollBar StButton#vhandle:hover {
 .switcher-list {
 	background: rgba(80,80,80,0.8);
 	border: 2px solid #a5a5a5;
-	border-radius: 24px;
+	border-radius: 8px;
 	padding: 20px;
 	font-size: 9pt;
 	color: white;
@@ -912,6 +911,10 @@ StScrollBar StButton#vhandle:hover {
 .run-dialog-error-box {
 	padding-top: 15px;
 	spacing: 5px;
+}
+.run-dialog-completion-box { 
+        padding-left: 15px;
+        font-size: 10px;
 }
 .run-dialog-entry {
 	font-size: 10.5pt;
@@ -1447,7 +1450,7 @@ StScrollBar StButton#vhandle:hover {
 .sound-button StIcon {
 	icon-size: 1.4em;
 }
-.sound-track-infos {
+.sound-track-infos {	
 	padding-left: 5px;
 	padding-right: 5px;
 	padding-top: 5px;
@@ -1469,6 +1472,18 @@ StScrollBar StButton#vhandle:hover {
 	padding-left: 15px;
 	padding-right: 15px;	
 	max-width: 220px;
+}
+.sound-seek-box {
+   padding-left: 20px;
+}
+.sound-seek-box StLabel {
+   padding-top: 2px;
+}
+.sound-seek-box StIcon {
+   icon-size: 1em;
+}
+.sound-seek-slider {
+   width: 140px;   
 }
 .sound-volume-menu-item {
 	padding: .4em 1.75em;
@@ -1579,6 +1594,14 @@ StScrollBar StButton#vhandle:hover {
 /* ===================================================================
  * Applets (applet.js) 
  * ===================================================================*/
+.applet-separator {
+	padding: 5px 4px;
+}
+.applet-separator-line {
+	width: 2px;
+	background: rgba(255,255,255,.5);
+}
+
 .applet-box {
 	padding-left: 3px;
 	padding-right: 3px;
@@ -1611,17 +1634,27 @@ StScrollBar StButton#vhandle:hover {
 /* ===================================================================
  * Desklets (desklet.js) 
  * ===================================================================*/
-.desklet-box {
+.desklet {        
+    color: #fff;    
+}
+
+.desklet-with-borders {
     border: 2px solid #a5a5a5;
     background-color: rgba(80, 80, 80, 0.8);
     color: #fff;
     border-radius-bottomleft: 12px;
     border-radius-bottomright: 12px;
-}
-
-.desklet-box:no-header{
     border-radius-topleft: 12px;
     border-radius-topright: 12px;
+}
+
+.desklet-with-borders-and-header {
+    border: 2px solid #a5a5a5;
+    background-color: rgba(80, 80, 80, 0.8);
+    color: #fff;
+    border-top: 1px;
+    border-radius-bottomleft: 12px;
+    border-radius-bottomright: 12px;
 }
 
 .desklet-header { 
@@ -1632,8 +1665,13 @@ StScrollBar StButton#vhandle:hover {
     border-bottom: 0px;
     background-color: rgba(80, 80, 80, 0.8);
     color: #fff;
+    padding: 6px;
 }
 
+.desklet-drag-placeholder { 
+    border: 2px solid #6daa00;
+    background-color: rgba(109,170, 0, 0.3);
+}
 /* ===================================================================
  * Clock Desklet (desklet.js) 
  * ===================================================================*/

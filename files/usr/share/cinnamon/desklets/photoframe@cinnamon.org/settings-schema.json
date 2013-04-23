@@ -1,0 +1,70 @@
+{
+    "directory": {
+        "default": "~/Pictures", 
+        "type": "filechooser", 
+        "description" : "Folder:", 
+        "allow-none" : false,
+        "select-dir" : true
+    },
+    "shuffle": {
+        "default": true,
+        "description": "Shuffle",
+        "type" : "checkbox"
+    },
+    "delay": {
+        "default": 5,
+        "type": "spinbutton",
+        "min": 1,
+        "max": 3600,
+        "description" : "Delay:",
+        "units" : "seconds",
+        "step": 5
+    },
+    "height": {
+        "default": 200,
+        "type": "spinbutton",
+        "min": 50,
+        "max": 1600,
+        "description" : "Height:",
+        "units" : "pixels",
+        "step": 50
+    },
+    "width": {
+        "default": 300,
+        "type": "spinbutton",
+        "min": 50,
+        "max": 1600,
+        "description" : "Width:",
+        "units" : "pixels",
+        "step": 50
+    },
+    "quality": {
+        "type": "combobox",
+        "description": "Image quality:",
+        "default": 2,
+        "options": {
+            "Low": 0,
+            "Medium": 1,
+            "High": 2
+        }
+    },
+    "fade-delay": {
+        "default": 0.3,
+        "type": "spinbutton",
+        "min": 0.0,
+        "max": 10.0,
+        "description" : "Fade delay:",
+        "step": 0.1,
+        "units": "seconds"
+    },
+    "effect": {
+        "type": "combobox",
+        "description": "Special effect:",
+        "default": "",
+        "options": {
+            "None": "",
+            "Sepia": "sepia",
+            "Black and White": "black-and-white"
+        }
+    }
+}

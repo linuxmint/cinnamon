@@ -1,4 +1,3 @@
-import json
 from pageutils import *
 from gi.repository import Gio, Gtk, GObject, Gdk, Pango, GLib
 
@@ -13,7 +12,7 @@ class MemoryView(BaseListView):
         column.set_cell_data_func(self.rendererText, self.cellDataFuncSize)
 
         self.getUpdates()
-        dbusManager.addReconnectCallback(self.getUpdates)
+        lookingGlassProxy.addStatusChangeCallback(self.onStatusChange)
 
     def cellDataFuncSize(self, column, cell, model, iter, data=None):
         value = model.get_value(iter, 1)
@@ -24,19 +23,20 @@ class MemoryView(BaseListView):
         elif(value < 1000000000):
             cell.set_property("text", "%.2f MB" %  (value/1024.0/1024.0))
 
+    def onStatusChange(self, online):
+        if online:
+            self.getUpdates()
+
     def getUpdates(self, igno=None):
         self.store.clear()
-        success, json_data = dbusManager.cinnamonDBus.lgGetMemoryInfo()
+        success, time_last_gc, data = lookingGlassProxy.GetMemoryInfo()
         if success:
-            try:
-                data = json.loads(json_data)
-                for key in data.keys():
-                    self.store.append([key, int(data[key])])
-            except Exception as e:
-                print e
+            self.secondsLabel.set_text("%d" % time_last_gc)
+            for key in data.keys():
+                self.store.append([key, data[key]])
 
     def onFullGc(self, widget):
-        dbusManager.cinnamonDBus.lgFullGc()
+        lookingGlassProxy.FullGc()
         self.getUpdates()
 
 class ModulePage(WindowAndActionBars):
@@ -53,3 +53,6 @@ class ModulePage(WindowAndActionBars):
         fullGc.connect ('clicked', self.view.onFullGc)
 
         self.addToLeftBar(fullGc, 1)
+        self.addToBottomBar(Gtk.Label("Time since last GC:"), 2)
+        self.view.secondsLabel = Gtk.Label("")
+        self.addToBottomBar(self.view.secondsLabel, 2)

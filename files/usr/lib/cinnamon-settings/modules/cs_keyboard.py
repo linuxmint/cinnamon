@@ -8,7 +8,7 @@ import gettext
 gettext.install("cinnamon", "/usr/share/cinnamon/locale")
 
 # Keybindings page - check if we need to store custom
-# keybindings to gsettings key as well as gconf (In Mint 14 this is changed)
+# keybindings to gsettings key as well as GConf (In Mint 14 this is changed)
 CUSTOM_KEYS_BASENAME = "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings"
 CUSTOM_KEYS_SCHEMA = "org.gnome.settings-daemon.plugins.media-keys.custom-keybinding"
 CUSTOM_KEYBINDINGS_GSETTINGS = False
@@ -160,7 +160,7 @@ class Module:
         first_run_completed = schema.get_boolean("custom-keybindings-to-3-6")
 
         if CUSTOM_KEYBINDINGS_GSETTINGS and not first_run_completed:
-            gclient = gconf.client_get_default()
+            gclient = GConf.Client.get_default()
             path = "/desktop/gnome/keybindings"
             subdirs = gclient.all_dirs(path)
             for subdir in subdirs:
@@ -251,7 +251,7 @@ class CustomKeyBinding():
         self.writeSettings()
 
     def writeSettings(self):
-        gclient = gconf.client_get_default()
+        gclient = GConf.Client.get_default()
         gclient.set_string(self.path + "/name", self.label)
         gclient.set_string(self.path + "/action", self.action)
         gclient.set_string(self.path + "/binding", self.entries[0])
@@ -328,9 +328,10 @@ class AddCustomDialog(Gtk.Dialog):
         self.set_response_sensitive(Gtk.ResponseType.OK, ok_enabled)
 
 class NotebookPage:
-    def __init__(self, name):
+    def __init__(self, name, expanding):
         self.name = name
         self.widgets = []
+        self.expanding = expanding
         self.tab = Gtk.ScrolledWindow()
         self.content_box = Gtk.VBox()
 
@@ -343,9 +344,10 @@ class NotebookPage:
         for widget in widgets:
             self.content_box.remove(widget)
         for widget in self.widgets:
-            self.content_box.pack_start(widget, True, True, 2)
+            self.content_box.pack_start(widget, self.expanding, self.expanding, 2)
         self.tab.add_with_viewport(self.content_box)
         self.content_box.set_border_width(5)
+        self.tab.set_min_content_height(320)
         self.content_box.show_all()
 
 class KeyboardSidePage (SidePage):
@@ -360,7 +362,7 @@ class KeyboardSidePage (SidePage):
             self.content_box.remove(widget)
         self.notebook = Gtk.Notebook()
 
-        tab = NotebookPage(_("Typing"))
+        tab = NotebookPage(_("Typing"), False)
         tab.add_widget(GSettingsCheckButton(_("Enable key repeat"), "org.gnome.settings-daemon.peripherals.keyboard", "repeat", None))
         box = IndentedHBox()
         slider = GSettingsRange(_("Repeat delay:"), _("Short"), _("Long"), 100, 2000, False, "uint", False, "org.gnome.settings-daemon.peripherals.keyboard", "delay",
@@ -385,7 +387,7 @@ class KeyboardSidePage (SidePage):
         tab.add_widget(Gtk.Entry())
         self.addNotebookTab(tab)
 
-        tab = NotebookPage(_("Keyboard shortcuts"))
+        tab = NotebookPage(_("Keyboard shortcuts"), True)
 
         headingbox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 2)
         mainbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 2)
@@ -537,7 +539,7 @@ class KeyboardSidePage (SidePage):
         for category in self.main_store:
             if category.int_name is "custom":
                 category.clear()
-        gclient = gconf.client_get_default()
+        gclient = GConf.Client.get_default()
         path = "/desktop/gnome/keybindings"
         subdirs = gclient.all_dirs(path)
         for subdir in subdirs:
@@ -645,7 +647,7 @@ class KeyboardSidePage (SidePage):
             dialog.destroy()
             return
 
-        gclient = gconf.client_get_default()
+        gclient = GConf.Client.get_default()
         path = "/desktop/gnome/keybindings/custom"
         i = 0
         while gclient.dir_exists(path + str(i)):
@@ -670,7 +672,7 @@ class KeyboardSidePage (SidePage):
         keybindings, iter = self.kb_tree.get_selection().get_selected()
         if iter:
             keybinding = keybindings[iter][1]
-            gclient = gconf.client_get_default()
+            gclient = GConf.Client.get_default()
             if gclient.dir_exists(keybinding.path):
                 gclient.unset(keybinding.path + "/name")
                 gclient.unset(keybinding.path + "/action")

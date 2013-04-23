@@ -51,6 +51,18 @@
       </_description>
     </key>
 
+    <key name="desklet-snap" type="b">
+      <default>true</default>
+      <_summary> Whether desklets "snap" to a grid position</_summary>
+      <_description> Enabling this allows desklets' position to be snapped into a regular grid</_description>
+    </key>
+
+    <key name="desklet-snap-interval" type="i">
+      <default>25</default>
+      <_summary>The interval between each possible grid position when desklets "snap"</_summary>
+      <_description>If desklet-snap is enabled, the possible positions of desklets will be all integer multiples of the value of "desklet-snap-size"</_description>
+    </key>
+
     <key name="panel-autohide" type="b">
       <default>false</default>
       <_summary>Auto-hide panel</_summary>
@@ -124,7 +136,16 @@
         Whether the panel icons and text from applets is resized according to the custom panel height
       </_description>
     </key>
-    
+
+    <key name="dnd-drag-threshold" type="i">
+      <default>8</default>
+      <range min="1" max="200" />
+      <_summary>DND drag threshold</_summary>
+      <_description>
+        Amount of motion to ignore before registering a drag-and-drop intent on panel objects
+      </_description>
+    </key>
+
     <key name="keyboard-applet-use-flags" type="b">
       <default>true</default>
       <_summary>Use flags to display the keyboard layouts</_summary>
@@ -318,6 +339,14 @@
       </_description>
     </key>
 
+    <key type="b" name="menu-enable-autoscroll">
+      <default>true</default>
+      <_summary>Enable or disable autoscrolling in application list</_summary>
+      <_description>
+            Toggles the auto-scrolling regions at the top and bottom of the app list
+      </_description>
+    </key>
+
     <key type="b" name="display-notifications">
       <default>true</default>
       <_summary>Whether notifications are to be displayed</_summary>
@@ -508,6 +537,11 @@
        Controls the style of the ALT-tab window switcher. Can be any combination of "icons", "preview" and "thumbnails", separated by "+".
       </_description>
     </key>
+    
+    <key type="b" name="alttab-switcher-enforce-primary-monitor">
+      <default>false</default>
+      <_summary>Enforce displaying the alt-tab switcher on the primary monitor instead of the active one</_summary>
+    </key>
 
     <key name="window-list-applet-scroll" type="b">
       <default>false</default>
@@ -525,10 +559,10 @@
       </description>
     </key>
 
-    <key name="desklets-minimum-decoration" type="i">
-      <default>2</default>
-      <_summary>The minimum decoration level of the desklet</_summary>
-      <_description>The minimum amount of decoration a desklet must have.
+    <key name="desklet-decorations" type="i">
+      <default>1</default>
+      <_summary>The decoration level of the desklets</_summary>
+      <_description>The amount of decoration desklets must have.
       0 = None;
       1 = Borders;
       2 = Borders and header;
@@ -549,6 +583,10 @@
     <key type="b" name="cinnamon-settings-advanced">
       <default>false</default>
       <_summary>Whether advanced mode is enabled in cinnamon-settings</_summary>
+    </key>
+    <key type="b" name="run-dialog-show-completions">
+      <default>true</default>
+      <_summary>Whether or not to show possible completions in the run dialog (Alt-F2)</_summary>
     </key>
 
     <child name="calendar" schema="org.cinnamon.calendar"/>

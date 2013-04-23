@@ -22,9 +22,6 @@ import uuid
 from collections import Sequence
 from gi.repository import Gtk, GdkPixbuf, GMenu, GLib
 
-# XXX: look into pygobject error marshalling
-from gi._glib import GError
-
 DESKTOP_GROUP = GLib.KEY_FILE_DESKTOP_GROUP
 KEY_FILE_FLAGS = GLib.KeyFileFlags.KEEP_COMMENTS | GLib.KeyFileFlags.KEEP_TRANSLATIONS
 
@@ -39,6 +36,9 @@ def fillKeyFile(keyfile, items):
             keyfile.set_string_list(DESKTOP_GROUP, key, item)
         elif isinstance(item, basestring):
             keyfile.set_string(DESKTOP_GROUP, key, item)
+
+def getNameFromKeyFile(keyfile):
+    return keyfile.get_string(DESKTOP_GROUP, "Name")
 
 def getUniqueFileId(name, extension):
     while 1:
@@ -143,7 +143,7 @@ def getIcon(item):
         return None
     try:
         pixbuf = info.load_icon()
-    except GError:
+    except GLib.GError:
         return None
     if pixbuf is None:
         return None

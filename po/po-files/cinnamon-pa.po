@@ -1,0 +1,1361 @@
+# Punjabi translation for linuxmint
+# Copyright (c) 2012 Rosetta Contributors and Canonical Ltd 2012
+# This file is distributed under the same license as the linuxmint package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2012.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: linuxmint\n"
+"Report-Msgid-Bugs-To: FULL NAME <EMAIL@ADDRESS>\n"
+"POT-Creation-Date: 2013-01-26 00:36+0000\n"
+"PO-Revision-Date: 2013-03-06 14:58+0000\n"
+"Last-Translator: A S Alam <aalam@users.sf.net>\n"
+"Language-Team: Punjabi <pa@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Launchpad-Export-Date: 2013-04-11 14:38+0000\n"
+"X-Generator: Launchpad (build 16550)\n"
+
+#: src/cinnamon-app.c:347 src/cinnamon-app.c:355
+#: js/ui/notificationDaemon.js:458
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:126
+msgid "Unknown"
+msgstr "ਅਣਜਾਣ"
+
+#: src/cinnamon-app.c:581
+#, c-format
+msgid "Failed to launch '%s'"
+msgstr "'%s' ਚਲਾਉਣ ਲਈ ਫੇਲ੍ਹ ਹੈ"
+
+#: src/cinnamon-mobile-providers.c:80
+msgid "United Kingdom"
+msgstr "ਬਰਤਾਨੀਆ"
+
+#: src/cinnamon-mobile-providers.c:526
+msgid "Default"
+msgstr "ਡਿਫਾਲਟ"
+
+#: src/cinnamon-polkit-authentication-agent.c:334
+msgid "Authentication dialog was dismissed by the user"
+msgstr "ਪਰਮਾਣਕਿਤਾ ਡਾਈਲਾਗ ਯੂਜ਼ਰ ਵਲੋਂ ਰੱਦ ਕੀਤਾ ਗਿਆ"
+
+#: src/cinnamon-util.c:89
+msgid "Home"
+msgstr "ਘਰ"
+
+#: src/cinnamon-util.c:98
+msgid "File System"
+msgstr "ਫਾਇਲ ਸਿਸਟਮ"
+
+#: src/cinnamon-util.c:244
+msgid "Search"
+msgstr "ਖੋਜ"
+
+#: src/cinnamon-util.c:294
+#, c-format
+msgid "%1$s: %2$s"
+msgstr "%1$s: %2$s"
+
+#: src/gvc/gvc-mixer-control.c:1082
+msgid "Disabled"
+msgstr "ਬੰਦ ਹੈ"
+
+#: src/gvc/gvc-mixer-control.c:1089
+#, c-format
+msgid "%u Output"
+msgid_plural "%u Outputs"
+msgstr[0] "%u ਆਉਟਪੁੱਟ"
+msgstr[1] "%u ਆਉਟਪੁੱਟ"
+
+#: src/gvc/gvc-mixer-control.c:1099
+#, c-format
+msgid "%u Input"
+msgid_plural "%u Inputs"
+msgstr[0] "%u ਇੰਪੁੱਟ"
+msgstr[1] "%u ਇੰਪੁੱਟ"
+
+#: src/gvc/gvc-mixer-control.c:1397
+msgid "System Sounds"
+msgstr "ਸਿਸਟਮ ਸਾਊਂਡ"
+
+#: js/misc/util.js:89
+msgid "Command not found"
+msgstr "ਕਮਾਂਡ ਨਹੀਂ ਮਿਲੀ"
+
+#: js/misc/util.js:116
+msgid "Could not parse command:"
+msgstr "ਕਮਾਂਡ ਪਾਰਸ ਨਹੀਂ ਕੀਤੀ ਜਾ ਸਕਦੀ:"
+
+#: js/misc/util.js:124
+#, c-format
+msgid "Execution of '%s' failed:"
+msgstr "'%s' ਚਲਾਉਣ ਲਈ ਫੇਲ੍ਹ ਹੈ:"
+
+#: js/ui/applet.js:243
+msgid "Remove this applet"
+msgstr "ਇਹ ਐਪਲਿਟ ਹਟਾਓ"
+
+#: js/ui/autorunManager.js:280
+msgid "Removable Devices"
+msgstr "ਹਟਾਉਣਯੋਗ ਜੰਤਰ"
+
+#: js/ui/autorunManager.js:590
+#, c-format
+msgid "Open with %s"
+msgstr "%s ਨਾਲ ਖੋਲ੍ਹੋ"
+
+#: js/ui/autorunManager.js:616
+msgid "Eject"
+msgstr "ਬਾਹਰ ਕੱਢੋ"
+
+#: js/ui/calendar.js:704
+msgid "Nothing Scheduled"
+msgstr "ਕੋਈ ਵੀ  ਸੈਡਿਊਲ ਨਹੀਂ ਹੈ"
+
+#: js/ui/calendar.js:733
+msgid "Today"
+msgstr "ਅੱਜ"
+
+#: js/ui/calendar.js:737
+msgid "Tomorrow"
+msgstr "ਭਲਕ"
+
+#: js/ui/calendar.js:746
+msgid "This week"
+msgstr "ਇਸ ਹਫ਼ਤੇ"
+
+#: js/ui/calendar.js:754
+msgid "Next week"
+msgstr "ਅਗਲੇ ਹਫ਼ਤੇ"
+
+#: js/ui/cinnamonEntry.js:30
+msgid "Copy"
+msgstr "ਕਾਪੀ ਕਰੋ"
+
+#: js/ui/cinnamonEntry.js:35
+msgid "Paste"
+msgstr "ਚੇਪੋ"
+
+#: js/ui/cinnamonEntry.js:81
+msgid "Show Text"
+msgstr "ਟੈਕਸਟ ਵੇਖੋ"
+
+#: js/ui/cinnamonEntry.js:83
+msgid "Hide Text"
+msgstr "ਟੈਕਸਟ ਓਹਲੇ"
+
+#: js/ui/cinnamonMountOperation.js:285
+msgid "Wrong password, please try again"
+msgstr "ਗਲਤ ਪਾਸਵਰਡ, ਫੇਰ ਕੋਸ਼ਿਸ਼ ਕਰੋ"
+
+#: js/ui/desklet.js:58
+msgid "Remove this desklet"
+msgstr "ਇਹ ਡੈਸਕਲਿਟ ਹਟਾਓ"
+
+#: js/ui/endSessionDialog.js:58
+#, c-format
+msgid "Log Out %s"
+msgstr "%s ਲਾਗ ਆਉਟ"
+
+#: js/ui/endSessionDialog.js:59 js/ui/endSessionDialog.js:73
+msgid "Log Out"
+msgstr "ਬਾਹਰੀ ਦਰ"
+
+#: js/ui/endSessionDialog.js:60
+msgid "Click Log Out to quit these applications and log out of the system."
+msgstr ""
+"ਇਹ ਐਪਲੀਕੇਸ਼ਨ ਬੰਦ ਕਰਨ ਲਈ ਲਾਗਆਉਟ ਉੱਤੇ ਕਲਿੱਕ ਕਰੋ ਅਤੇ ਸਿਸਟਮ ਤੋਂ ਲਾਗ ਆਉਟ ਕਰੋ।"
+
+#: js/ui/endSessionDialog.js:62
+#, c-format
+msgid "%s will be logged out automatically in %d second."
+msgid_plural "%s will be logged out automatically in %d seconds."
+msgstr[0] "%s %d ਸਕਿੰਟ ਵਿੱਚ ਆਪਣੇ-ਆਪ ਲਾਗਆਉਟ ਹੋਵੇਗਾ।"
+msgstr[1] "%s %d ਸਕਿੰਟਾਂ ਵਿੱਚ ਆਪਣੇ-ਆਪ ਲਾਗਆਉਟ ਹੋਵੇਗਾ।"
+
+#: js/ui/endSessionDialog.js:67
+#, c-format
+msgid "You will be logged out automatically in %d second."
+msgid_plural "You will be logged out automatically in %d seconds."
+msgstr[0] "ਤੁਸੀਂ %d ਸਕਿੰਟ ਵਿੱਚ ਆਪਣੇ-ਆਪ ਲਾਗਆਉਟ ਹੋਵੋਗੇ।"
+msgstr[1] "ਤੁਸੀਂ %d ਸਕਿੰਟਾਂ ਵਿੱਚ ਆਪਣੇ-ਆਪ ਲਾਗਆਉਟ ਹੋਵੋਗੇ।"
+
+#: js/ui/endSessionDialog.js:71
+msgid "Logging out of the system."
+msgstr "ਸਿਸਟਮ ਲਈ ਲਾਗਆਉਟ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ।"
+
+#: js/ui/endSessionDialog.js:78 js/ui/endSessionDialog.js:89
+msgid "Power Off"
+msgstr "ਬੰਦ ਕਰੋ"
+
+#: js/ui/endSessionDialog.js:79
+msgid "Click Power Off to quit these applications and power off the system."
+msgstr ""
+"ਇਹਨਾਂ ਐਪਲੀਕੇਸ਼ਨ ਅਤੇ ਸਿਸਟਮ ਨੂੰ ਬੰਦ ਕਰਨ ਲਈ ਬੰਦ ਕਰੋ (ਪਾਵਰ ਆਫ) ਉੱਤੇ ਕਲਿੱਕ ਕਰੋ।"
+
+#: js/ui/endSessionDialog.js:81
+#, c-format
+msgid "The system will power off automatically in %d second."
+msgid_plural "The system will power off automatically in %d seconds."
+msgstr[0] "ਸਿਸਟਮ %d ਸਕਿੰਟ ਵਿੱਚ ਆਪਣੇ-ਆਪ ਬੰਦ ਹੋਵੇਗਾ।"
+msgstr[1] "ਸਿਸਟਮ %d ਸਕਿੰਟਾਂ ਵਿੱਚ ਆਪਣੇ-ਆਪ ਬੰਦ ਹੋਵੇਗਾ।"
+
+#: js/ui/endSessionDialog.js:85
+msgid "Powering off the system."
+msgstr "ਸਿਸਟਮ ਬੰਦ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ"
+
+#: js/ui/endSessionDialog.js:87 js/ui/endSessionDialog.js:95
+#: js/ui/endSessionDialog.js:104
+msgid "Restart"
+msgstr "ਮੁੜ-ਚਾਲੂ ਕਰੋ"
+
+#: js/ui/endSessionDialog.js:96
+msgid "Click Restart to quit these applications and restart the system."
+msgstr ""
+"ਇਹ ਐਪਲੀਕੇਸ਼ਨ ਬੰਦ ਕਰਨ ਅਤੇ ਸਿਸਟਮ ਨੂੰ ਮੁੜ-ਚਾਲੂ ਕਰਨ ਲਈ ਮੁੜ-ਚਾਲੂ ਕਰੋ ਨੂੰ ਕਲਿੱਕ ਕਰੋ।"
+
+#: js/ui/endSessionDialog.js:98
+#, c-format
+msgid "The system will restart automatically in %d second."
+msgid_plural "The system will restart automatically in %d seconds."
+msgstr[0] "ਸਿਸਟਮ %d ਸਕਿੰਟ ਵਿੱਚ ਆਪਣੇ-ਆਪ ਮੁੜ-ਚਾਲੂ ਕੀਤਾ ਜਾਵੇਗਾ।"
+msgstr[1] "ਸਿਸਟਮ %d ਸਕਿੰਟਾਂ ਵਿੱਚ ਆਪਣੇ-ਆਪ ਮੁੜ-ਚਾਲੂ ਕੀਤਾ ਜਾਵੇਗਾ।"
+
+#: js/ui/endSessionDialog.js:102
+msgid "Restarting the system."
+msgstr "ਸਿਸਟਮ ਮੁੜ-ਚਾਲੂ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ।"
+
+#: js/ui/endSessionDialog.js:428 js/ui/networkAgent.js:144
+#: js/ui/polkitAuthenticationAgent.js:173
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:165
+#: files/usr/share/cinnamon/applets/trash@cinnamon.org/applet.js:118
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/cinnamon-add-panel-launcher.py:141
+msgid "Cancel"
+msgstr "ਰੱਦ ਕਰੋ"
+
+#: js/ui/expoThumbnail.js:309 js/ui/panel.js:384
+msgid "Yes"
+msgstr "ਹਾਂ"
+
+#: js/ui/expoThumbnail.js:317 js/ui/panel.js:391
+msgid "No"
+msgstr "ਨਹੀਂ"
+
+#: js/ui/expoThumbnail.js:957
+#, c-format
+msgid ""
+"Are you sure you want to remove workspace \"%s\"?\n"
+"\n"
+msgstr ""
+"ਕੀ ਤੁਸੀਂ \"%s\" ਵਰਕਸਪੇਸ ਹਟਾਉਣਾ ਚਾਹੁੰਦੇ ਹੋ?\n"
+"\n"
+
+#: js/ui/extension.js:369
+msgid "Initializing"
+msgstr "ਸ਼ੁਰੂ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ"
+
+#: js/ui/extension.js:371
+msgid "Loaded"
+msgstr "ਲੋਡ ਕੀਤਾ"
+
+#: js/ui/extension.js:373
+msgid "Error"
+msgstr "ਗਲਤੀ"
+
+#: js/ui/extension.js:375
+msgid "Out of date"
+msgstr "ਪੁਰਾਣਾ"
+
+#: js/ui/hotCorner.js:41
+msgid "Invalid overview options: Incorrect number of corners"
+msgstr "ਅਵੈਧ ਓਵਰਵੀਯੂ ਆਪਸ਼ਨ: ਨੁਕਰਾਂ ਦੀ ਗਲਤ ਗਿਣਤੀ"
+
+#: js/ui/keyboard.js:324
+msgid "tray"
+msgstr "ਟਰੇ"
+
+#: js/ui/keyboard.js:555
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:114
+msgid "Keyboard"
+msgstr "ਕੀਬੋਰਡ"
+
+#: js/ui/lookingGlass.js:644
+msgid "No extensions installed"
+msgstr "ਕੋਈ ਇਕਸਟੈਨਸ਼ਨ ਇੰਸਟਾਲ ਨਹੀਂ ਹੈ"
+
+#: js/ui/lookingGlass.js:728
+msgid "View Source"
+msgstr "ਸਰੋਤ ਵੇਖੋ"
+
+#: js/ui/lookingGlass.js:737
+msgid "Web Page"
+msgstr "ਵੈਬ ਪੇਜ਼"
+
+#: js/ui/lookingGlass.js:746
+msgid "Reload Code"
+msgstr "ਕੋਡ ਮੁੜ-ਲੋਡ"
+
+#: js/ui/main.js:391
+msgid "WORKSPACE"
+msgstr "ਵਰਕਸਪੇਸ"
+
+#: js/ui/messageTray.js:1259
+msgid "Open"
+msgstr "ਖੋਲ੍ਹੋ"
+
+#: js/ui/messageTray.js:1266
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/applet.js:58
+msgid "Remove"
+msgstr "ਹਟਾਓ"
+
+#: js/ui/messageTray.js:1853
+msgid "System Information"
+msgstr "ਸਿਸਟਮ ਜਾਣਕਾਰੀ"
+
+#: js/ui/networkAgent.js:139
+msgid "Connect"
+msgstr "ਕੁਨੈਕਟ ਕਰੋ"
+
+#: js/ui/networkAgent.js:234 js/ui/networkAgent.js:246
+#: js/ui/networkAgent.js:273 js/ui/networkAgent.js:293
+#: js/ui/networkAgent.js:303
+msgid "Password: "
+msgstr "ਪਾਸਵਰਡ: "
+
+#: js/ui/networkAgent.js:239
+msgid "Key: "
+msgstr "ਕੁੰਜੀ: "
+
+#: js/ui/networkAgent.js:271 js/ui/networkAgent.js:289
+msgid "Username: "
+msgstr "ਯੂਜ਼ਰ-ਨਾਂ: "
+
+#: js/ui/networkAgent.js:277
+msgid "Identity: "
+msgstr "ਪਛਾਣ: "
+
+#: js/ui/networkAgent.js:279
+msgid "Private key password: "
+msgstr "ਪ੍ਰਾਈਵੇਟ ਕੁੰਜੀ ਪਾਸਵਰਡ: "
+
+#: js/ui/networkAgent.js:291
+msgid "Service: "
+msgstr "ਸਰਵਿਸ: "
+
+#: js/ui/networkAgent.js:320
+msgid "Authentication required by wireless network"
+msgstr "ਬੇਤਾਰ ਨੈੱਟਵਰਕ ਵਲੋਂ ਪਰਮਾਣਕਿਤਾ ਲੋੜੀਦੀ ਹੈ"
+
+#: js/ui/networkAgent.js:321
+#, c-format
+msgid ""
+"Passwords or encryption keys are required to access the wireless network "
+"'%s'."
+msgstr "ਬੇਤਾਰ ਨੈੱਟਵਰਕ '%s' ਵਰਤਣ ਲਈ ਪਾਸਵਰਡ ਜਾਂ ਇੰਕ੍ਰਿਪਸ਼ਨ ਕੁੰਜੀਆਂ ਦੀ ਲੋੜ ਹੈ।"
+
+#: js/ui/networkAgent.js:325
+msgid "Wired 802.1X authentication"
+msgstr "ਤਾਰ 802.1X ਪਰਮਾਣਕਿਤਾ"
+
+#: js/ui/networkAgent.js:327
+msgid "Network name: "
+msgstr "ਨੈੱਟਵਰਕ ਨਾਂ: "
+
+#: js/ui/networkAgent.js:332
+msgid "DSL authentication"
+msgstr "DSL ਪਰਮਾਣਕਿਤਾ"
+
+#: js/ui/networkAgent.js:339
+msgid "PIN code required"
+msgstr "PIN ਕੋਡ ਲੋੜੀਦਾ ਹੈ"
+
+#: js/ui/networkAgent.js:340
+msgid "PIN code is needed for the mobile broadband device"
+msgstr "ਮੋਬਾਇਲ ਬਰਾਡਬੈਂਡ ਜੰਤਰ ਲਈ PIN ਕੋਡ ਚਾਹੀਦਾ ਹੈ"
+
+#: js/ui/networkAgent.js:341
+msgid "PIN: "
+msgstr "ਪਿੰਨ: "
+
+#: js/ui/networkAgent.js:347
+msgid "Mobile broadband network password"
+msgstr "ਮੋਬਾਇਲ ਬਰਾਡਬੈਂਡ ਨੈੱਟਵਰਕ ਪਾਸਵਰਡ"
+
+#: js/ui/networkAgent.js:348
+#, c-format
+msgid "A password is required to connect to '%s'."
+msgstr "'%s' ਨਾਲ ਕੁਨੈਕਟ ਹੋਣ ਲਈ ਪਾਸਵਰਡ ਦੀ ਲੋੜ ਹੈ।"
+
+#: js/ui/panel.js:426
+#: files/usr/share/cinnamon/applets/brightness@cinnamon.org/applet.js:148
+#: files/usr/share/cinnamon/applets/settings@cinnamon.org/applet.js:28
+msgid "Settings"
+msgstr "ਸੈਟਿੰਗ"
+
+#: js/ui/panel.js:428
+msgid "Themes"
+msgstr "ਥੀਮ"
+
+#: js/ui/panel.js:431
+msgid "Applets"
+msgstr "ਐਪਲਿਟ"
+
+#: js/ui/panel.js:434
+msgid "Panel"
+msgstr "ਪੈਨਲ"
+
+#: js/ui/panel.js:437
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:660
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:699
+msgid "Menu"
+msgstr "ਮੇਨੂ"
+
+#: js/ui/panel.js:440
+msgid "All settings"
+msgstr "ਸਭ ਸੈਟਿੰਗ"
+
+#: js/ui/panel.js:445
+msgid "Troubleshoot"
+msgstr "ਸਮੱਸਿਆ ਹੱਲ਼"
+
+#: js/ui/panel.js:446
+msgid "Restart Cinnamon"
+msgstr "ਕੈਨਾਮੋਨ ਮੁੜ-ਚਾਲੂ ਕਰੋ"
+
+#: js/ui/panel.js:450
+msgid "Looking Glass"
+msgstr "ਸ਼ੀਸ਼ਾ ਵੇਖੋ"
+
+#: js/ui/panel.js:454
+msgid "Restore all settings to default"
+msgstr "ਸਭ ਸੈਟਿੰਗ ਡਿਫਾਲਟ ਲਈ ਮੁੜ-ਲੋਡ ਕਰੋ"
+
+#: js/ui/panel.js:464
+msgid "Panel Edit mode"
+msgstr "ਪੈਨਲ ਸੋਧ ਮੋਡ"
+
+#: js/ui/panel.js:488
+msgid "Panel settings"
+msgstr "ਪੈਨਲ ਸੈਟਿੰਗ"
+
+#: js/ui/panel.js:491
+msgid "Add applets to the panel"
+msgstr "ਪੈਨਲ ਵਿੱਚ ਐਪਲਿਟ ਸ਼ਾਮਿਲ ਕਰੋ"
+
+#: js/ui/placesManager.js:120
+#, c-format
+msgid "Failed to unmount '%s'"
+msgstr "'%s' ਅਣ-ਮਾਊਂਟ ਕਰਨ ਲਈ ਫੇਲ੍ਹ ਹੈ"
+
+#: js/ui/placesManager.js:127
+msgid "Retry"
+msgstr "ਮੁਡ਼ ਕੋਸ਼ਿਸ਼"
+
+#: js/ui/placesManager.js:170
+msgid "Connect to..."
+msgstr "...ਨਾਲ ਕੁਨੈਕਟ ਕਰੋ"
+
+#: js/ui/polkitAuthenticationAgent.js:73
+msgid "Authentication Required"
+msgstr "ਪ੍ਰਮਾਣਕਿਤਾ ਲੋੜੀਦੀ ਹੈ"
+
+#: js/ui/polkitAuthenticationAgent.js:107
+msgid "Administrator"
+msgstr "ਪਰਸ਼ਾਸ਼ਕੀ"
+
+#: js/ui/polkitAuthenticationAgent.js:177
+msgid "Authenticate"
+msgstr "ਪਰਮਾਣਕਿਤਾ"
+
+#: js/ui/polkitAuthenticationAgent.js:258
+msgid "Sorry, that didn't work. Please try again."
+msgstr "ਅਫਸੋਸ, ਇਸਨੇ ਕੰਮ ਨਹੀਂ ਕੀਤਾ। ਫੇਰ ਕੋਸ਼ਿਸ਼ ਕਰੋ ਜੀ।"
+
+#: js/ui/polkitAuthenticationAgent.js:270
+msgid "Password:"
+msgstr "ਪਾਸਵਰਡ:"
+
+#: js/ui/runDialog.js:209
+msgid "Please enter a command:"
+msgstr "ਕਮਾਂਡ ਦਿਉ ਜੀ:"
+
+#: js/ui/workspace.js:1464
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:44
+msgid "Close"
+msgstr "ਬੰਦ ਕਰੋ"
+
+#: js/ui/workspace.js:1468
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:53
+msgid "Restore"
+msgstr "ਮੁੜ-ਸਟੋਰ"
+
+#: js/ui/workspace.js:1470
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:53
+msgid "Minimize"
+msgstr "ਘੱਟੋ-ਘੱਟ"
+
+#: js/ui/workspace.js:1473 js/ui/workspace.js:1546
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:56
+msgid "Maximize"
+msgstr "ਵੱਧੋ-ਵੱਧ"
+
+#: js/ui/workspace.js:1476
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:59
+msgid "Move to left workspace"
+msgstr "ਖੱਬੇ ਵਰਕਸਪੇਸ ਵਿੱਚ ਭੇਜੋ"
+
+#: js/ui/workspace.js:1479
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:62
+msgid "Move to right workspace"
+msgstr "ਸੱਜੇ ਵਰਕਸਪੇਸ ਵਿੱਚ ਭੇਜੋ"
+
+#: js/ui/workspace.js:1482 js/ui/workspace.js:1531
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:65
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:73
+msgid "Visible on all workspaces"
+msgstr "ਸਭ ਵਰਕਸਪੇਸ ਵਿੱਚ ਵੇਖਾਓ"
+
+#: js/ui/workspace.js:1485
+msgid "Move to a new workspace"
+msgstr "ਨਵੇਂ ਵਰਕਸਪੇਸ ਵਿੱਚ ਭੇਜੋ"
+
+#: js/ui/workspace.js:1495
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:90
+#, c-format
+msgid "Move to monitor %d"
+msgstr "ਮਨਿਟਰ %d 'ਤੇ ਭੇਜੋ"
+
+#: js/ui/workspace.js:1529
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:69
+msgid "Only on this workspace"
+msgstr "ਕੇਵਲ ਇਹ ਵਰਕਸਪੇਸ ਵਿੱਚ ਹੀ"
+
+#: js/ui/workspace.js:1544
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:56
+msgid "Unmaximize"
+msgstr "ਵੱਡੇ ਤੌਂ ਛੋਟਾ ਕਰੋ"
+
+#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:44
+msgid "Accessibility"
+msgstr "ਅਸੈੱਸਬਿਲਟੀ"
+
+#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:56
+msgid "Zoom"
+msgstr "ਜ਼ੂਮ"
+
+#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:67
+msgid "Screen Keyboard"
+msgstr "ਸਕਰੀਨ ਕੀਬੋਰਡ"
+
+#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:71
+msgid "Visual Alerts"
+msgstr "ਦਿੱਖ ਚੇਤਾਵਨੀ"
+
+#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:74
+msgid "Sticky Keys"
+msgstr "ਸਟਿੱਕੀ ਸਵਿੱਚਾਂ"
+
+#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:77
+msgid "Slow Keys"
+msgstr "ਹੌਲੀ-ਸਵਿੱਚਾਂ"
+
+#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:80
+msgid "Bounce Keys"
+msgstr "ਬਾਊਂਸ ਸਵਿੱਚਾਂ"
+
+#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:83
+msgid "Mouse Keys"
+msgstr "ਮਾਊਸ ਸਵਿੱਚਾਂ"
+
+#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:87
+msgid "Universal Access Settings"
+msgstr "ਯੂਨੀਵਰਸਲ ਪਹੁੰਚ ਸੈਟਿੰਗ"
+
+#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:142
+msgid "High Contrast"
+msgstr "ਵੱਧ ਕਨਟਰਾਸਟ"
+
+#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:179
+msgid "Large Text"
+msgstr "ਵੱਡਾ ਟੈਕਸਟ"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:32
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:66
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:106
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:139
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:211
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:215
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:467
+msgid "Bluetooth"
+msgstr "ਬਲਿਊਟੁੱਥ"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:67
+#, c-format
+msgid "Authorization request from %s"
+msgstr "%s ਵਲੋਂ ਪਰਮਾਣਕਿਤਾ ਦੀ ਮੰਗ"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:73
+#, c-format
+msgid "Device %s wants access to the service '%s'"
+msgstr "%s ਜੰਤਰ '%s' ਸਰਵਿਸ ਦੀ ਵਰਤੋਂ ਕਰਨੀ ਚਾਹੁੰਦਾ ਹੈ"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:75
+msgid "Always grant access"
+msgstr "ਹਮੇਸ਼ਾ ਮਨਜ਼ੂਰ ਕਰੋ"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:76
+msgid "Grant this time only"
+msgstr "ਕੇਵਲ ਇਸ ਵਾਰ ਹੀ ਮਨਜ਼ੂਰ"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:77
+msgid "Reject"
+msgstr "ਇਨਕਾਰ"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:107
+#, c-format
+msgid "Pairing confirmation for %s"
+msgstr "%s ਲਈ ਪੇਅਰ ਕਰਨ ਦੀ ਪੁਸ਼ਟੀ"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:113
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:147
+#, c-format
+msgid "Device %s wants to pair with this computer"
+msgstr "%s ਜੰਤਰ ਇਸ ਕੰਪਿਊਟਰ ਨਾਲ ਪੇਅਰ ਹੋਣਾ ਚਾਹੁੰਦਾ ਹੈ"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:114
+#, c-format
+msgid "Please confirm whether the PIN '%s' matches the one on the device."
+msgstr "ਕਿਰਪਾ ਕਰਕੇ ਪੜਤਾਲ ਕਰੋ ਕਿ PIN '%s' ਡਿਵਾਇਸ ਉੱਪਰ ਇੱਕ ਨਾਲ ਮੇਲ ਖਾਂਧਾ ਹੈ |"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:116
+msgid "Matches"
+msgstr "ਮਿਲਦਾ"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:117
+msgid "Does not match"
+msgstr "ਨਹੀਂ ਮਿਲਦਾ"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:140
+#, c-format
+msgid "Pairing request for %s"
+msgstr "%s ਲਈ ਪੇਅਰ ਹੋਣ ਦੀ ਮੰਗ"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:148
+msgid "Please enter the PIN mentioned on the device."
+msgstr "ਕਿਰਪਾ ਕਰਕੇ ਡਿਵਾਇਸ ਉੱਪਰ ਦਿੱਤਾ PIN ਭਰੋ |"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:164
+msgid "OK"
+msgstr "ਠੀਕ ਹੈ"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:239
+msgid "Visibility"
+msgstr "ਦਿੱਖ"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:253
+msgid "Send Files to Device..."
+msgstr "...ਜੰਤਰ ਨੂੰ ਫਾਇਲਾਂ ਭੇਜੋ"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:254
+msgid "Set up a New Device..."
+msgstr "..ਨਵੇਂ ਜੰਤਰ ਲਈ ਸੈਟਅੱਪ ਕਰੋ"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:278
+msgid "Bluetooth Settings"
+msgstr "ਬਲਿਊਟੁੱਥ ਸੈਟਿੰਗ"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:317
+msgid "hardware disabled"
+msgstr "ਹਾਰਡਵੇਅਰ ਆਯੋਗ ਹੈ"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:414
+msgid "Connection"
+msgstr "ਕੁਨੈਕਸ਼ਨ"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:423
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:508
+msgid "disconnecting..."
+msgstr "...ਡਿਸ-ਕੁਨੈਕਟ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:436
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:514
+msgid "connecting..."
+msgstr "...ਕੁਨੈਕਟ ਕੀਤਾਜਾ ਰਿਹਾ ਹੈ"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:454
+msgid "Send Files..."
+msgstr "...ਫਾਇਲਾਂ ਭੇਜੋ"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:459
+msgid "Browse Files..."
+msgstr "...ਫਾਇਲਾਂ ਦੀ ਝਲਕ"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:468
+msgid "Error browsing device"
+msgstr "ਡਿਵਾਇਸ ਬਰਾਓਸਿੰਗ ਗਲਤੀ |"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:469
+#, c-format
+msgid "The requested device cannot be browsed, error is '%s'"
+msgstr "ਮੰਗੀ ਹੋਈ ਡਿਵਾਇਸ ਬਰਾਓਸ ਨਹੀਂ ਕੀਤੀ ਜਾ ਸਕਦੀ, ਗਲਤੀ '%s'"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:477
+msgid "Keyboard Settings"
+msgstr "ਕੀਬੋਰਡ ਸੈਟਿੰਗ"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:480
+msgid "Mouse Settings"
+msgstr "ਮਾਊਸ ਸੈਟਿੰਗ"
+
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:485
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:939
+msgid "Sound Settings"
+msgstr "ਸਾਊਂਡ ਸੈਟਿੰਗ"
+
+#: files/usr/share/cinnamon/applets/brightness@cinnamon.org/applet.js:112
+#: files/usr/share/cinnamon/applets/brightness@cinnamon.org/applet.js:143
+#: files/usr/share/cinnamon/applets/brightness@cinnamon.org/applet.js:225
+#: files/usr/share/cinnamon/applets/brightness@cinnamon.org/applet.js:228
+#: files/usr/share/cinnamon/applets/brightness@cinnamon.org/applet.js:230
+msgid "Brightness"
+msgstr "ਚਮਕ"
+
+#: files/usr/share/cinnamon/applets/brightness@cinnamon.org/applet.js:117
+msgid "Dimming settings"
+msgstr "ਡਿਮ ਕਰਨ ਸੈਟਿੰਗ"
+
+#: files/usr/share/cinnamon/applets/brightness@cinnamon.org/applet.js:119
+msgid "Dim screen on AC power"
+msgstr "ਏਸੀ ਪਾਵਰ ਉੱਤੇ ਸਕਰੀਨ ਡਿਮ ਕਰੋ"
+
+#: files/usr/share/cinnamon/applets/brightness@cinnamon.org/applet.js:121
+msgid "Dim screen on battery"
+msgstr "ਬੈਟਰੀ ਉੱਤੇ ਸਕਰੀਨ ਡਿਮ ਕਰੋ"
+
+#: files/usr/share/cinnamon/applets/brightness@cinnamon.org/applet.js:144
+msgid "Brightness not available"
+msgstr "ਚਮਕ ਉਪਲੱਬਧ ਨਹੀਂ"
+
+#: files/usr/share/cinnamon/applets/calendar@cinnamon.org/applet.js:65
+msgid "Date and Time Settings"
+msgstr "ਮਿਤੀ ਤੇ ਸਮਾਂ ਸੈਟਿੰਗ"
+
+#: files/usr/share/cinnamon/applets/expo@cinnamon.org/applet.js:19
+msgid "Expo"
+msgstr "ਐਕਸਪੋ"
+
+#: files/usr/share/cinnamon/applets/keyboard@cinnamon.org/applet.js:66
+msgid "Show Keyboard Layout"
+msgstr "ਕੀਬੋਰਡ ਲੇਆਉਟ ਵੇਖਾਓ"
+
+#: files/usr/share/cinnamon/applets/keyboard@cinnamon.org/applet.js:70
+msgid "Show Character Table"
+msgstr "ਅੱਖਰ ਟੇਬਲ ਵੇਖਾਓ"
+
+#: files/usr/share/cinnamon/applets/keyboard@cinnamon.org/applet.js:74
+msgid "Region and Language Settings"
+msgstr "ਖੇਤਰ ਤੇ ਭਾਸ਼ਾ ਸੈਟਿੰਗ"
+
+#: files/usr/share/cinnamon/applets/keyboard@cinnamon.org/applet.js:76
+msgid "Show flags"
+msgstr "ਝੰਡੇ ਵੇਖਾਓ"
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:203
+msgid "Add to panel"
+msgstr "ਪੈਨਲ 'ਚ ਸ਼ਾਮਲ"
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:206
+msgid "Add to desktop"
+msgstr "ਡੈਸਕਟਾਪ 'ਚ ਸ਼ਾਮਲ"
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:210
+msgid "Remove from favorites"
+msgstr "ਪਸੰਦ ਵਿੱਚੋਂ ਹਟਾਓ"
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:213
+msgid "Add to favorites"
+msgstr "ਪਸੰਦ ਵਿੱਚ ਸ਼ਾਮਲ"
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:343
+#: files/usr/share/cinnamon/applets/recent@cinnamon.org/applet.js:70
+msgid "Clear list"
+msgstr "ਸੂਚੀ ਸਾਫ਼ ਕਰੋ"
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:380
+msgid "All Applications"
+msgstr "ਸਭ ਐਪਲੀਕੇਸ਼ਨ"
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:403
+msgid "Places"
+msgstr "ਥਾਵਾਂ"
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:421
+msgid "Recent Files"
+msgstr "ਤਾਜ਼ਾ ਫਾਇਲਾਂ"
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:748
+msgid "Edit menu"
+msgstr "ਮੇਨੂ ਸੋਧ"
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:750
+msgid "Menu settings"
+msgstr "ਮੇਨੂ ਸੈਟਿੰਗ"
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1216
+#: files/usr/lib/cinnamon-screensaver-lock-dialog/cinnamon-screensaver-lock-dialog.py:37
+msgid "Lock screen"
+msgstr "ਸਕਰੀਨ ਲਾਕ ਕਰੋ"
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1217
+msgid "Lock the screen"
+msgstr "ਸਕਰੀਨ ਲਾਕ ਕਰੋ"
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1241
+msgid "Logout"
+msgstr "ਲਾਗ ਆਉਟ"
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1242
+msgid "Leave the session"
+msgstr "ਸ਼ੈਸ਼ਨ ਛੱਡੋ"
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1258
+msgid "Quit"
+msgstr "ਬਾਹਰ ਜਾਓ"
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1259
+msgid "Shutdown the computer"
+msgstr "ਕੰਪਿਊਟਰ ਬੰਦ ਕਰੋ"
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1368
+msgid "Type to search..."
+msgstr "...ਲੱਭਣ ਲਈ ਲਿਖੋ"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:96
+msgid "<unknown>"
+msgstr "<ਅਣਜਾਣ>"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:306
+msgid "disabled"
+msgstr "ਬੰਦ ਹੈ"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:506
+msgid "unmanaged"
+msgstr "ਬਿਨ-ਪਰਬੰਧ"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:517
+msgid "authentication required"
+msgstr "ਪ੍ਰਮਾਣਿਕਤਾ ਦੀ ਲੋੜ ਹੈ"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:527
+msgid "firmware missing"
+msgstr "ਫਿਰਮਵੇਅਰ ਮੌਜੂਦ ਨਹੀਂ"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:534
+msgid "cable unplugged"
+msgstr "ਤਾਰ ਕੱਢੀ ਹੋਈ ਹੈ"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:539
+msgid "unavailable"
+msgstr "ਨਾ-ਉਪਲੱਬਧ"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:541
+msgid "connection failed"
+msgstr "ਕੁਨੈਕਸ਼ਨ ਫੇਲ੍ਹ ਹੋਇਆ"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:597
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1554
+msgid "More..."
+msgstr "...ਹੋਰ"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:633
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1489
+msgid "Connected (private)"
+msgstr "ਕੁਨੈਕਟ ਹੈ (ਪ੍ਰਾਈਵੇ)"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:711
+msgid "Auto Ethernet"
+msgstr "ਆਟੋ ਈਥਰਨੈੱਟ"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:775
+msgid "Auto broadband"
+msgstr "ਆਟੋ ਬਰਾਡਬੈਂਡ"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:778
+msgid "Auto dial-up"
+msgstr "ਆਟੋ ਡਾਇਲਅੱਪ"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:900
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1501
+#, c-format
+msgid "Auto %s"
+msgstr "ਆਟੋ %s"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:902
+msgid "Auto bluetooth"
+msgstr "ਆਟੋ ਬਲਿਊਟੁੱਥ"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1503
+msgid "Auto wireless"
+msgstr "ਆਟੋ ਬੇਤਾਰ"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1591
+msgid "Network Manager"
+msgstr "ਨੈੱਟਵਰਕ ਮੈਨੇਜਰ"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1624
+msgid "Enable networking"
+msgstr "ਨੈੱਟਵਰਕਿੰਗ ਯੋਗ"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1636
+msgid "Wired"
+msgstr "ਤਾਰ ਵਾਲਾ"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1647
+msgid "Wireless"
+msgstr "ਬੇਤਾਰ"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1657
+msgid "Mobile broadband"
+msgstr "ਮੋਬਾਇਲ ਬਰਾਡਬੈਂਡ"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1667
+msgid "VPN Connections"
+msgstr "VPN ਕੁਨੈਕਸ਼ਨ"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1678
+msgid "Network Settings"
+msgstr "ਨੈੱਟਵਰਕ ਸੈਟਿੰਗ"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1829
+msgid "Connection failed"
+msgstr "ਕੁਨੈਕਸ਼ਨ ਫੇਲ੍ਹ ਹੈ"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1830
+msgid "Activation of network connection failed"
+msgstr "ਨੈੱਟਵਰਕ ਕੁਨੈਕਸ਼ਨ ਸਰਗਰਮ ਕਰਨ ਲਈ ਫੇਲ੍ਹ"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2087
+msgid "Networking is disabled"
+msgstr "ਨੈੱਟਵਰਕਿੰਗ ਬੰਦ ਹੈ"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2106
+msgid "No connection"
+msgstr "ਕੋਈ ਕੁਨੈਕਸ਼ਨ ਨਹੀਂ"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2112
+msgid "Connecting to the cellular network..."
+msgstr "...ਸੈਲੂਲਰ ਨੈੱਟਵਰਕ ਨਾਲ ਕੁਨੈਕਟ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2116
+msgid "Connecting to the wireless network..."
+msgstr "...ਬੇਤਾਰ ਨੈੱਟਵਰਕ ਨਾਲ ਕੁਨੈਕਟ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2120
+msgid "Connecting to the wired network..."
+msgstr "..ਤਾਰ ਵਾਲੇ ਨੈੱਟਵਰਕ ਨਾਲ ਕੁਨੈਕਟ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2124
+msgid "Connecting to the VPN..."
+msgstr "...VPN ਨਾਲ ਕੁਨੈਕਟ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2130
+msgid "Connecting to the network..."
+msgstr "...ਨੈੱਟਵਰਕ ਨਾਲ ਕੁਨੈਕਟ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2146
+msgid "Connected to the wireless network"
+msgstr "ਬੇਤਾਰ ਨੈੱਟਵਰਕ ਨਾਲ ਕੁਨੈਕਟ ਹੈ"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2149
+msgid "Wireless connection"
+msgstr "ਬੇਤਾਰ ਕੁਨੈਕਸ਼ਨ"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2159
+msgid "Connected to the wired network"
+msgstr "ਤਾਰ ਵਾਲੇ ਨੈੱਟਵਰਕ ਨਾਲ ਕੁਨੈਕਟ ਹੈ"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2170
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2175
+msgid "Connected to the cellular network"
+msgstr "ਸੈਲੂਲਰ ਨੈੱਟਵਰਕ ਨਾਲ ਕੁਨੈਕਟ ਹੈ"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2180
+msgid "Connected to the VPN"
+msgstr "VPN ਨਾਲ ਕੁਨੈਕਟ ਹੈ"
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2186
+msgid "Connected to the network"
+msgstr "ਨੈੱਟਵਰਕ ਨਾਲ ਕੁਨੈਕਟ ਹੈ"
+
+#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:39
+msgid "Notifications"
+msgstr "ਸੂਚਨਾਵਾਂ"
+
+#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:52
+msgid "Clear notifications"
+msgstr "ਸੂਚਨਾਵਾਂ ਸਾਫ ਕਰੋ"
+
+#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:210
+msgid "No notifications"
+msgstr "ਕੋਈ ਸੂਚਨਾ ਨਹੀਂ"
+
+#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:213
+msgid " notification"
+msgstr " ਸੂਚਨਾ"
+
+#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:216
+msgid " notifications"
+msgstr " ਸੂਚਨਾਵਾਂ"
+
+#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:230
+msgid " (Just now)"
+msgstr " (ਹੁਣੇ ਹੀ)"
+
+#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:233
+#, c-format
+msgid " (%s seconds ago)"
+msgstr " (%s ਸਕਿੰਟ ਪਹਿਲਾਂ)"
+
+#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:236
+#, c-format
+msgid " (%s minute ago)"
+msgstr " (%s ਮਿੰਟ ਪਹਿਲਾਂ)"
+
+#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:239
+#, c-format
+msgid " (%s minutes ago)"
+msgstr " (%s ਮਿੰਟ ਪਹਿਲਾਂ)"
+
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/applet.js:46
+msgid "Launch"
+msgstr "ਚਲਾਓ"
+
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/applet.js:50
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/cinnamon-add-panel-launcher.py:151
+msgid "Add"
+msgstr "ਸ਼ਾਮਲ"
+
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/applet.js:54
+msgid "Edit"
+msgstr "ਸੋਧ"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:104
+msgid "AC adapter"
+msgstr "AC ਐਡਪਟਰ"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:106
+msgid "Laptop battery"
+msgstr "ਲੈਪਟਾਪ ਬੈਟਰੀ"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:108
+msgid "UPS"
+msgstr "UPS"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:110
+msgid "Monitor"
+msgstr "ਮਾਨੀਟਰ"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:112
+msgid "Mouse"
+msgstr "ਮਾਊਸ"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:116
+msgid "PDA"
+msgstr "PDA"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:118
+msgid "Cell phone"
+msgstr "ਸੈੱਲ ਫੋਨ"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:120
+msgid "Media player"
+msgstr "ਮੀਡਿਆ ਪਲੇਅਰ"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:122
+msgid "Tablet"
+msgstr "ਟੈਬਲੇਟ"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:124
+msgid "Computer"
+msgstr "ਕੰਪਿਊਟਰ"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:182
+#: files/usr/share/cinnamon/applets/xrandr@cinnamon.org/applet.js:45
+msgid "Display"
+msgstr "ਡਿਸਪਲੇਅ"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:184
+msgid "Show percentage"
+msgstr "ਫੀਸਦੀ ਵੇਖਾਓ"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:189
+msgid "Show time remaining"
+msgstr "ਬਾਕੀ ਰਹਿੰਦਾ ਸਮਾਂ ਵੇਖਾਓ"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:194
+msgid "Hide label"
+msgstr "ਲੇਬਲ ਓਹਲੇ"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:202
+msgid "Power Settings"
+msgstr "ਪਾਵਰ ਸੈਟਿੰਗ"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:251
+msgid "Estimating..."
+msgstr "...ਅੰਦਾਜ਼ਾ ਲਗਾਇਆ ਜਾ ਰਿਹਾ ਹੈ"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:258
+#, c-format
+msgid "%d hour remaining"
+msgid_plural "%d hours remaining"
+msgstr[0] "%d ਘੰਟਾ ਬਾਕੀ"
+msgstr[1] "%d ਘੰਟੇ ਬਾਕੀ"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:261
+#, c-format
+msgid "%d %s %d %s remaining"
+msgstr "%d %s %d %s ਬਾਕੀ"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:263
+msgid "hour"
+msgid_plural "hours"
+msgstr[0] "ਘੰਟਾ"
+msgstr[1] "ਘੰਟੇ"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:263
+msgid "minute"
+msgid_plural "minutes"
+msgstr[0] "ਮਿੰਟ"
+msgstr[1] "ਮਿੰਟ"
+
+#: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:266
+#, c-format
+msgid "%d minute remaining"
+msgid_plural "%d minutes remaining"
+msgstr[0] "%d ਮਿੰਟ ਬਾਕੀ"
+msgstr[1] "%d ਮਿੰਟ ਬਾਕੀ"
+
+#: files/usr/share/cinnamon/applets/recent@cinnamon.org/applet.js:41
+msgid "Recent documents"
+msgstr "ਤਾਜ਼ਾ ਡੌਕੂਮੈਂਟ"
+
+#: files/usr/share/cinnamon/applets/recent@cinnamon.org/applet.js:74
+msgid "No recent documents"
+msgstr "ਕੋਈ ਤਾਜ਼ਾ ਡੌਕੂਮੈਂਟ ਨਹੀਂ ਹਨ"
+
+#: files/usr/share/cinnamon/applets/removable-drives@cinnamon.org/applet.js:53
+msgid "Removable drives"
+msgstr "ਹਟਾਉਣਯੋਗ ਜੰਤਰ"
+
+#: files/usr/share/cinnamon/applets/removable-drives@cinnamon.org/applet.js:65
+msgid "Open file manager"
+msgstr "ਫਾਇਲ ਮੈਨੇਜਰ ਖੋਲ੍ਹੋ"
+
+#: files/usr/share/cinnamon/applets/scale@cinnamon.org/applet.js:19
+msgid "Scale"
+msgstr "ਸਕੇਲ"
+
+#: files/usr/share/cinnamon/applets/show-desktop@cinnamon.org/applet.js:15
+msgid "Show desktop"
+msgstr "ਡੈਸਕਟਾਪ ਵੇਖੋ"
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:105
+msgid "Playing"
+msgstr "ਚੱਲ ਰਿਹਾ ਹੈ"
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:106
+msgid "Paused"
+msgstr "ਪੌਜ਼ ਹੈ"
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:107
+msgid "Stopped"
+msgstr "ਰੁਕਿਆ"
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:373
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:489
+msgid "Unknown Artist"
+msgstr "ਅਣਜਾਣ ਕਲਾਕਾਰ"
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:374
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:493
+msgid "Unknown Album"
+msgstr "ਅਣਜਾਣ ਐਲਬਮ"
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:375
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:497
+msgid "Unknown Title"
+msgstr "ਅਣਜਾਣ ਟਾਇਟਲ"
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:386
+msgid "Previous"
+msgstr "ਪਿੱਛੇ"
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:389
+msgid "Play"
+msgstr "ਚੱਲ ਰਿਹਾ ਹੈ"
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:392
+msgid "Stop"
+msgstr "ਰੋਕੋ"
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:395
+msgid "Next"
+msgstr "ਅੱਗੇ"
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:409
+msgid "Open Player"
+msgstr "ਪਲੇਅਰ ਖੋਲ੍ਹੋ"
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:419
+msgid "Quit Player"
+msgstr "ਪਲੇਅਰ ਬੰਦ ਕਰੋ"
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:744
+msgid "Mute output"
+msgstr "ਆਉਟਪੁੱਟ ਚੁੱਪ"
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:745
+msgid "Mute input"
+msgstr "ਇੰਪੁੱਟ ਚੁੱਪ"
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:912
+msgid "Launch player..."
+msgstr "...ਪਲੇਅਰ ਚਲਾਓ"
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:925
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:988
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:989
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:994
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:995
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1014
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1015
+msgid "Volume"
+msgstr "ਆਵਾਜ਼"
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:932
+msgid "Microphone"
+msgstr "ਮਾਈਕਰੋਫੋਨ"
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:941
+msgid "Output device..."
+msgstr "...ਆਉਟਪੁੱਟ ਜੰਤਰ"
+
+#: files/usr/share/cinnamon/applets/trash@cinnamon.org/applet.js:21
+msgid "Trash"
+msgstr "ਰੱਦੀ"
+
+#: files/usr/share/cinnamon/applets/trash@cinnamon.org/applet.js:39
+msgid "Empty Trash"
+msgstr "ਰੱਦੀ ਖਾਲੀ ਕਰੋ"
+
+#: files/usr/share/cinnamon/applets/trash@cinnamon.org/applet.js:42
+msgid "Open Trash"
+msgstr "ਰੱਦੀ ਖੋਲ੍ਹੋ"
+
+#: files/usr/share/cinnamon/applets/trash@cinnamon.org/applet.js:86
+msgid "Are you sure you want to delete all items from the trash?"
+msgstr "ਕੀ ਤੁਸੀਂ ਰੱਦੀ ਵਿੱਚੋਂ ਸਭ ਫਾਇਲਾਂ ਨੂੰ ਹਟਾਉਣਾ ਚਾਹੁੰਦੇ ਹੋ?"
+
+#: files/usr/share/cinnamon/applets/trash@cinnamon.org/applet.js:86
+msgid "This operation cannot be undone."
+msgstr "ਇਹ ਕਾਰਵਾਈ ਨੂੰ ਮੁੜ-ਵਾਪਿਸ ਨਹੀਂ ਲਿਆ ਜਾ ਸਕਦਾ ਹੈ।"
+
+#: files/usr/share/cinnamon/applets/trash@cinnamon.org/applet.js:107
+msgid "Empty Trash?"
+msgstr "ਰੱਦੀ ਖਾਲੀ ਕਰਨੀ ਹੈ?"
+
+#: files/usr/share/cinnamon/applets/trash@cinnamon.org/applet.js:125
+msgid "Empty"
+msgstr "ਖਾਲੀ ਕਰੋ"
+
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:47
+msgid "Close all"
+msgstr "ਸਭ ਬੰਦ ਕਰੋ"
+
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:50
+msgid "Close others"
+msgstr "ਹੋਰ ਬੰਦ ਕਰੋ"
+
+#: files/usr/share/cinnamon/applets/windows-quick-list@cinnamon.org/applet.js:24
+msgid "All windows"
+msgstr "ਸਭ ਵਿੰਡੋ"
+
+#: files/usr/share/cinnamon/applets/windows-quick-list@cinnamon.org/applet.js:106
+msgid "No open windows"
+msgstr "ਕੋਈ ਖੁੱਲ੍ਹੀ ਵਿੰਡੋ ਨਹੀਂ"
+
+#: files/usr/share/cinnamon/applets/workspace-switcher@cinnamon.org/applet.js:18
+msgid "Switch workspace"
+msgstr "ਵਰਕਸਪੇਸ ਬਦਲੋ"
+
+#: files/usr/share/cinnamon/applets/xrandr@cinnamon.org/applet.js:88
+msgid "Configure display settings..."
+msgstr "...ਡਿਸਪਲੇਅ ਸੈਟਿੰਗ ਸੰਰਚਨਾ"
+
+#: files/usr/share/cinnamon/desklets/clock@cinnamon.org/desklet.js:20
+msgid "Clock"
+msgstr "ਘੜੀ"
+
+#: files/usr/share/cinnamon/desklets/launcher@cinnamon.org/desklet.js:30
+msgid "Add new launcher"
+msgstr "ਨਵਾਂ ਲਾਂਚਰ ਸ਼ਾਮਿਲ"
+
+#: files/usr/share/cinnamon/desklets/launcher@cinnamon.org/desklet.js:33
+msgid "Edit launcher"
+msgstr "ਲਾਂਚਰ ਸੋਧ"
+
+#: files/usr/share/cinnamon/desklets/photoframe@cinnamon.org/desklet.js:24
+msgid "Photo Frame"
+msgstr "ਫੋਟੋ ਫਰੇਮ"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:30
+msgid "Desktop Settings"
+msgstr "ਡੈਸਕਟਾਪ ਸੈਟਿੰਗ"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:31
+msgid "Desktop Configuration Tool"
+msgstr "ਡੈਸਕਟਾਪ ਸੰਰਚਨਾ ਟੂਲ"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:32
+msgid "Fine-tune desktop settings"
+msgstr "ਢੁੱਕਵੀਂ ਡੈਸਕਟਾਪ ਸੈਟਿੰਗ"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:44
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:91
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:111
+msgid "Cinnamon Settings"
+msgstr "ਕੈਨਾਮੋਨ ਸੈਟਿੰਗ"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:61
+msgid "All Settings"
+msgstr "ਸਭ ਸੈਟਿੰਗ"
+
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/cinnamon-add-panel-launcher.py:59
+msgid "Custom Launcher"
+msgstr "ਪਸੰਦੀਦਾ ਲਾਂਚਰ"
+
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/cinnamon-add-panel-launcher.py:138
+msgid "Name"
+msgstr "ਨਾਂ"
+
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/cinnamon-add-panel-launcher.py:139
+msgid "Application"
+msgstr "ਐਪਲੀਕੇਸ਼ਨ"
+
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/cinnamon-add-panel-launcher.py:140
+msgid "Icon"
+msgstr "ਆਈਕਾਨ"
+
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/cinnamon-add-panel-launcher.py:142
+msgid "Add panel launcher..."
+msgstr "...ਪੈਨਲ ਲਾਂਚਰ ਸ਼ਾਮਲ"
+
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/cinnamon-add-panel-launcher.py:148
+msgid "Update"
+msgstr "ਅੱਪਡੇਟ"
+
+#: files/usr/lib/cinnamon-screensaver-lock-dialog/cinnamon-screensaver-lock-dialog.py:40
+msgid "Please type an away message for the lock screen"
+msgstr "ਲਾਕ ਸਕਰੀਨ ਲਈ ਦੂਰ ਸੁਨੇਹਾ ਲਿਖੋ ਜੀ"

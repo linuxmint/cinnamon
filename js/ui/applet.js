@@ -99,7 +99,7 @@ AppletContextMenu.prototype = {
         Main.uiGroup.add_actor(this.actor);
         this.actor.hide();                    
     }    
-}
+};
 
 /**
  * #AppletPopupMenu:
@@ -147,6 +147,7 @@ AppletPopupMenu.prototype = {
  * #Applet
  * @actor (St.BoxLayout): Actor of the applet
  * @_uuid (string): UUID of the applet
+ * @instance_id (int): Instance id of the applet
  * @_panelLocation (St.BoxLayout): Panel sector containing the applet
  * @_order (int): The order of the applet within a panel location
  * @_draggable (DND._Draggable): The draggable object of the applet
@@ -158,8 +159,8 @@ AppletPopupMenu.prototype = {
  * 
  * Base applet class that other applets can inherit
  */
-function Applet(orientation, panel_height) {
-    this._init(orientation, panel_height);
+function Applet(orientation, panelHeight, instance_id) {
+    this._init(orientation, panelHeight, instance_id);
 }
 
 Applet.prototype = {
@@ -168,9 +169,9 @@ Applet.prototype = {
      * _init:
      * @orientation (St.Side): orientation of the applet; Orientation of panel containing the actor
      * @panelHeight (int): height of the panel containing the applet
+     * @instance_id (int): instance id of the applet
      */
-    _init: function(orientation, panel_height) {
-
+    _init: function(orientation, panel_height, instance_id) {
         this.actor = new St.BoxLayout({ style_class: 'applet-box', reactive: true, track_hover: true });        
         this._applet_tooltip = new Tooltips.PanelItemTooltip(this, "", orientation);                                        
         this.actor.connect('button-release-event', Lang.bind(this, this._onButtonReleaseEvent));  
@@ -185,7 +186,9 @@ Applet.prototype = {
         this._newOrder = null; //  Used when moving an applet
         this._panelLocation = null; // Backlink to the panel location our applet is in, set by Cinnamon.
         this._newPanelLocation = null; //  Used when moving an applet
+
         this._panelHeight = panel_height ? panel_height : 25;
+        this.instance_id = instance_id; // Needed by appletSettings
         this._uuid = null; // Defined in gsettings, set by Cinnamon.
         this._hook = null; // Defined in metadata.json, set by appletManager
         this._dragging = false;                
@@ -206,7 +209,7 @@ Applet.prototype = {
             this.finalizeContextMenu();
         }));
     },
-    
+
     _setAppletReactivity: function() {
         this._draggable.inhibit = !global.settings.get_boolean('panel-edit-mode');
     },
@@ -393,7 +396,7 @@ Applet.prototype = {
         let isEditMode = global.settings.get_boolean('panel-edit-mode');
         let items = this._applet_context_menu._getMenuItems();
         if (isEditMode && items.indexOf(this.context_menu_item_remove) == -1) {
-            this.context_menu_item_remove = new MenuItem(_("Remove this applet"), Gtk.STOCK_REMOVE, Lang.bind(null, AppletManager._removeAppletFromPanel, this._uuid, this._applet_id));
+            this.context_menu_item_remove = new MenuItem(_("Remove this applet"), Gtk.STOCK_REMOVE, Lang.bind(null, AppletManager._removeAppletFromPanel, this._uuid, this.instance_id));
             this.context_menu_separator = new PopupMenu.PopupSeparatorMenuItem();
             if (this._applet_context_menu._getMenuItems().length > 0) {
                 this._applet_context_menu.addMenuItem(this.context_menu_separator);
@@ -422,8 +425,8 @@ Applet.prototype = {
  * 
  * Inherits: Applet.Applet
  */
-function IconApplet(orientation, panel_height) {
-    this._init(orientation, panel_height);
+function IconApplet(orientation, panel_height, instance_id) {
+    this._init(orientation, panel_height, instance_id);
 }
 
 IconApplet.prototype = {
@@ -433,9 +436,10 @@ IconApplet.prototype = {
      * _init:
      * @orientation (St.Side): orientation of the applet; Orientation of panel containing the actor
      * @panelHeight (int): height of the panel containing the applet
+     * @instance_id (int): instance id of the applet
      */
-    _init: function(orientation, panel_height) {
-        Applet.prototype._init.call(this, orientation, panel_height);
+    _init: function(orientation, panel_height, instance_id) {
+        Applet.prototype._init.call(this, orientation, panel_height, instance_id);
         this._applet_icon_box = new St.Bin();
         this.actor.add(this._applet_icon_box, { y_align: St.Align.MIDDLE, y_fill: false });
         this.__icon_type = null;
@@ -534,8 +538,8 @@ IconApplet.prototype = {
  * 
  * Inherits: Applet.Applet
  */
-function TextApplet(orientation, panel_height) {
-    this._init(orientation, panel_height);
+function TextApplet(orientation, panel_height, instance_id) {
+    this._init(orientation, panel_height, instance_id);
 }
 
 TextApplet.prototype = {
@@ -545,9 +549,10 @@ TextApplet.prototype = {
      * _init:
      * @orientation (St.Side): orientation of the applet; Orientation of panel containing the actor
      * @panelHeight (int): height of the panel containing the applet
+     * @instance_id (int): instance id of the applet
      */
-    _init: function(orientation, panel_height) {
-        Applet.prototype._init.call(this, orientation, panel_height);
+    _init: function(orientation, panel_height, instance_id) {
+        Applet.prototype._init.call(this, orientation, panel_height, instance_id);
         this._applet_label = new St.Label({ reactive: true, track_hover: true, style_class: 'applet-label'});
         this._label_height = (this._panelHeight / DEFAULT_PANEL_HEIGHT) * PANEL_FONT_DEFAULT_HEIGHT;
         this._applet_label.clutter_text.ellipsize = Pango.EllipsizeMode.NONE;
@@ -577,8 +582,8 @@ TextApplet.prototype = {
  * 
  * Inherits: Applet.IconApplet
  */
-function TextIconApplet(orientation, panel_height) {
-    this._init(orientation, panel_height);
+function TextIconApplet(orientation, panel_height, instance_id) {
+    this._init(orientation, panel_height, instance_id);
 }
 
 TextIconApplet.prototype = {
@@ -588,9 +593,10 @@ TextIconApplet.prototype = {
      * _init:
      * @orientation (St.Side): orientation of the applet; Orientation of panel containing the actor
      * @panelHeight (int): height of the panel containing the applet
+     * @instance_id (int): instance id of the applet
      */
-    _init: function(orientation, panel_height) {
-        IconApplet.prototype._init.call(this, orientation, panel_height);
+    _init: function(orientation, panel_height, instance_id) {
+        IconApplet.prototype._init.call(this, orientation, panel_height, instance_id);
         this._applet_label = new St.Label({ reactive: true, track_hover: true, style_class: 'applet-label'});
         this._label_height = (this._panelHeight / DEFAULT_PANEL_HEIGHT) * PANEL_FONT_DEFAULT_HEIGHT;
         this._applet_label.clutter_text.ellipsize = Pango.EllipsizeMode.NONE;     

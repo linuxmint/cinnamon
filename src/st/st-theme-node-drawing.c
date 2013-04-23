@@ -391,67 +391,127 @@ st_theme_node_lookup_corner (StThemeNode    *node,
 }
 
 static void
-get_background_position (StThemeNode             *self,
-                         const ClutterActorBox   *allocation,
-                         ClutterActorBox         *result)
+get_background_scale (StThemeNode *node,
+                      gdouble      painting_area_width,
+                      gdouble      painting_area_height,
+                      gdouble      background_image_width,
+                      gdouble      background_image_height,
+                      gdouble     *scale_w,
+                      gdouble     *scale_h)
 {
-  gfloat w, h;
+  *scale_w = -1.0;
+  *scale_h = -1.0;
 
-  result->x1 = result->y1 = 0;
-  result->x2 = allocation->x2 - allocation->x1;
-  result->y2 = allocation->y2 - allocation->y1;
-
-  w = cogl_texture_get_width (self->background_texture);
-  h = cogl_texture_get_height (self->background_texture);
-
-  /* scale the background into the allocated bounds, when not being absolutely positioned */
-  if ((w > result->x2 || h > result->y2) && !self->background_position_set)
+  switch (node->background_size)
     {
-      gint new_h, new_w, offset;
-      gint box_w, box_h;
+      case ST_BACKGROUND_SIZE_AUTO:
+        *scale_w = 1.0;
+        break;
+      case ST_BACKGROUND_SIZE_CONTAIN:
+        if (background_image_width > background_image_height)
+          *scale_w = painting_area_width / background_image_width;
+        else
+          *scale_w = painting_area_height / background_image_height;
+        break;
+      case ST_BACKGROUND_SIZE_COVER:
+        if (background_image_width < background_image_height)
+          *scale_w = painting_area_width / background_image_width;
+        else
+          *scale_w = painting_area_height / background_image_height;
+        break;
+      case ST_BACKGROUND_SIZE_FIXED:
+        if (node->background_size_w > -1)
+          {
+            *scale_w = node->background_size_w / background_image_width;
+            if (node->background_size_h > -1)
+              *scale_h = node->background_size_h / background_image_height;
+          }
+        else if (node->background_size_h > -1)
+          *scale_w = node->background_size_h / background_image_height;
+        break;
+    }
+  if (*scale_h < 0.0)
+    *scale_h = *scale_w;
+}
 
-      box_w = (int) result->x2;
-      box_h = (int) result->y2;
-
-      /* scale to fit */
-      new_h = (int)((h / w) * ((gfloat) box_w));
-      new_w = (int)((w / h) * ((gfloat) box_h));
-
-      if (new_h > box_h)
-        {
-          /* center for new width */
-          offset = ((box_w) - new_w) * 0.5;
-          result->x1 = offset;
-          result->x2 = offset + new_w;
-
-          result->y2 = box_h;
-        }
-      else
-        {
-          /* center for new height */
-          offset = ((box_h) - new_h) * 0.5;
-          result->y1 = offset;
-          result->y2 = offset + new_h;
-
-          result->x2 = box_w;
-        }
+static void
+get_background_coordinates (StThemeNode *node,
+                            gdouble      painting_area_width,
+                            gdouble      painting_area_height,
+                            gdouble      background_image_width,
+                            gdouble      background_image_height,
+                            gdouble     *x,
+                            gdouble     *y)
+{
+  /* honor the specified position if any */
+  if (node->background_position_set)
+    {
+      *x = node->background_position_x;
+      *y = node->background_position_y;
     }
   else
     {
-      /* honor the specified position if any */
-      if (self->background_position_set)
-        {
-          result->x1 = self->background_position_x;
-          result->y1 = self->background_position_y;
-        }
-      else
-        {
-          /* center the background on the widget */
-          result->x1 = (int)(((allocation->x2 - allocation->x1) / 2) - (w / 2));
-          result->y1 = (int)(((allocation->y2 - allocation->y1) / 2) - (h / 2));
-        }
-      result->x2 = result->x1 + w;
-      result->y2 = result->y1 + h;
+      /* center the background on the widget */
+      *x = (painting_area_width / 2.0) - (background_image_width / 2.0);
+      *y = (painting_area_height / 2.0) - (background_image_height / 2.0);
+    }
+}
+
+static void
+get_background_position (StThemeNode             *self,
+                         const ClutterActorBox   *allocation,
+                         ClutterActorBox         *result,
+                         ClutterActorBox         *texture_coords)
+{
+  gdouble painting_area_width, painting_area_height;
+  gdouble background_image_width, background_image_height;
+  gdouble x1, y1;
+  gdouble scale_w, scale_h;
+
+  /* get the background image size */
+  background_image_width = cogl_texture_get_width (self->background_texture);
+  background_image_height = cogl_texture_get_height (self->background_texture);
+
+  /* get the painting area size */
+  painting_area_width = allocation->x2 - allocation->x1;
+  painting_area_height = allocation->y2 - allocation->y1;
+
+  /* scale if requested */
+  get_background_scale (self,
+                        painting_area_width, painting_area_height,
+                        background_image_width, background_image_height,
+                        &scale_w, &scale_h);
+  background_image_width *= scale_w;
+  background_image_height *= scale_h;
+
+  /* get coordinates */
+  get_background_coordinates (self,
+                              painting_area_width, painting_area_height,
+                              background_image_width, background_image_height,
+                              &x1, &y1);
+
+  if (self->background_repeat)
+    {
+      gdouble width = allocation->x2 - allocation->x1 + x1;
+      gdouble height = allocation->y2 - allocation->y1 + y1;
+
+      *result = *allocation;
+
+      /* reference image is at x1, y1 */
+      texture_coords->x1 = x1 / background_image_width;
+      texture_coords->y1 = y1 / background_image_height;
+      texture_coords->x2 = width / background_image_width;
+      texture_coords->y2 = height / background_image_height;
+    }
+  else
+    {
+      result->x1 = x1;
+      result->y1 = y1;
+      result->x2 = x1 + background_image_width;
+      result->y2 = y1 + background_image_height;
+
+      texture_coords->x1 = texture_coords->y1 = 0;
+      texture_coords->x2 = texture_coords->y2 = 1;
     }
 }
 
@@ -533,11 +593,12 @@ create_cairo_pattern_of_background_image (StThemeNode *node,
   cairo_content_t  content;
   cairo_matrix_t   matrix;
   const char *file;
-  double height_ratio, width_ratio;
-  int file_width;
-  int file_height;
 
   StTextureCache *texture_cache;
+
+  gdouble background_image_width, background_image_height;
+  gdouble x, y;
+  gdouble scale_w, scale_h;
 
   file = st_theme_node_get_background_image (node);
 
@@ -553,90 +614,45 @@ create_cairo_pattern_of_background_image (StThemeNode *node,
   content = cairo_surface_get_content (surface);
   pattern = cairo_pattern_create_for_surface (surface);
 
-  file_width = cairo_image_surface_get_width (surface);
-  file_height = cairo_image_surface_get_height (surface);
-
-  height_ratio = file_height / node->alloc_height;
-  width_ratio = file_width / node->alloc_width;
+  background_image_width = cairo_image_surface_get_width (surface);
+  background_image_height = cairo_image_surface_get_height (surface);
 
   *needs_background_fill = TRUE;
-  if ((file_width > node->alloc_width || file_height > node->alloc_height)
-      && !node->background_position_set)
+
+  cairo_matrix_init_identity (&matrix);
+
+  get_background_scale (node,
+                        node->alloc_width, node->alloc_height,
+                        background_image_width, background_image_height,
+                        &scale_w, &scale_h);
+  if ((scale_w != 1) || (scale_h != 1))
+    cairo_matrix_scale (&matrix, 1.0/scale_w, 1.0/scale_h);
+  background_image_width *= scale_w;
+  background_image_height *= scale_h;
+
+  get_background_coordinates (node,
+                              node->alloc_width, node->alloc_height,
+                              background_image_width, background_image_height,
+                              &x, &y);
+  cairo_matrix_translate (&matrix, -x, -y);
+
+  if (node->background_repeat)
+    cairo_pattern_set_extend (pattern, CAIRO_EXTEND_REPEAT);
+
+  /* If it's opaque, fills up the entire allocated
+   * area, then don't bother doing a background fill first
+   */
+  if (content != CAIRO_CONTENT_COLOR_ALPHA)
     {
-      double scale_factor;
-      double x_offset, y_offset;
-
-      if (width_ratio > height_ratio)
-        {
-          double scaled_height;
-
-          /* center vertically */
-
-          scale_factor = width_ratio;
-          scaled_height = file_height / scale_factor;
-
-          x_offset = 0.;
-          y_offset = - (node->alloc_height / 2. - scaled_height / 2.);
-        }
-      else
-        {
-          double scaled_width;
-
-          /* center horizontally */
-
-          scale_factor = height_ratio;
-          scaled_width = file_width / scale_factor;
-
-          y_offset = 0.;
-          x_offset = - (node->alloc_width / 2. - scaled_width / 2.);
-        }
-
-      cairo_matrix_init_scale (&matrix, scale_factor, scale_factor);
-      cairo_matrix_translate (&matrix, x_offset, y_offset);
-
-      cairo_pattern_set_matrix (pattern, &matrix);
-
-      /* If it's opaque, and when scaled, fills up the entire allocated
-       * area, then don't bother doing a background fill first
-       */
-      if (content != CAIRO_CONTENT_COLOR_ALPHA && width_ratio == height_ratio)
+      if (node->background_repeat ||
+          (x >= 0 &&
+           y >= 0 &&
+           background_image_width - x >= node->alloc_width &&
+           background_image_height -y >= node->alloc_height))
         *needs_background_fill = FALSE;
     }
-  else
-    {
-      double x_offset, y_offset;
 
-      if (node->background_position_set)
-        {
-          x_offset = -node->background_position_x;
-          y_offset = -node->background_position_y;
-        }
-      else
-        {
-          if (node->alloc_width > file_width)
-            x_offset = - (node->alloc_width / 2.0 - file_width / 2.0);
-          else
-            x_offset = - (file_width / 2.0 - node->alloc_width / 2.0);
-
-          if (node->alloc_height > file_height)
-            y_offset = - (node->alloc_height / 2.0 - file_height / 2.0);
-          else
-            y_offset = - (file_height / 2.0 - node->alloc_height / 2.0);
-        }
-
-      /* If it's opaque, and when translated, fills up the entire allocated
-       * area, then don't bother doing a background fill first
-       */
-      if (content != CAIRO_CONTENT_COLOR_ALPHA
-          && -x_offset <= 0
-          && -x_offset + file_width >= node->alloc_width
-          && -y_offset <= 0
-          && -y_offset + file_height >= node->alloc_height)
-        *needs_background_fill = FALSE;
-
-      cairo_matrix_init_translate (&matrix, x_offset, y_offset);
-      cairo_pattern_set_matrix (pattern, &matrix);
-    }
+  cairo_pattern_set_matrix (pattern, &matrix);
 
   return pattern;
 }
@@ -1453,36 +1469,11 @@ st_theme_node_render_resources (StThemeNode   *node,
   background_image_shadow_spec = st_theme_node_get_background_image_shadow (node);
   if (background_image != NULL && !has_border && !has_border_radius)
     {
-      CoglHandle texture;
-
-      texture = st_texture_cache_load_file_to_cogl_texture (texture_cache, background_image);
-
-      /* If no background position is specified, then we will automatically scale
-       * the background to fit within the node allocation. But, if a background
-       * position is specified, we won't scale the background, and it could
-       * potentially leak out of bounds. To prevent that, we subtexture from the
-       * in bounds area when necessary.
-       */
-      if (node->background_position_set &&
-          (cogl_texture_get_width (texture) > width ||
-           cogl_texture_get_height (texture) > height))
-        {
-          CoglHandle subtexture;
-
-          subtexture = cogl_texture_new_from_sub_texture (texture,
-                                                          0, 0,
-                                                          width - node->background_position_x,
-                                                          height - node->background_position_y);
-          cogl_handle_unref (texture);
-
-          node->background_texture = subtexture;
-        }
-      else
-        {
-          node->background_texture = texture;
-        }
-
+      node->background_texture = st_texture_cache_load_file_to_cogl_texture (texture_cache, background_image);
       node->background_material = _st_create_texture_material (node->background_texture);
+
+      if (node->background_repeat)
+        cogl_material_set_layer_wrap_mode (node->background_material, 0, COGL_MATERIAL_WRAP_MODE_REPEAT);
 
       if (background_image_shadow_spec)
         {
@@ -1504,20 +1495,25 @@ st_theme_node_render_resources (StThemeNode   *node,
 static void
 paint_material_with_opacity (CoglHandle       material,
                              ClutterActorBox *box,
+                             ClutterActorBox *coords,
                              guint8           paint_opacity)
 {
   cogl_material_set_color4ub (material,
                               paint_opacity, paint_opacity, paint_opacity, paint_opacity);
 
   cogl_set_source (material);
-  cogl_rectangle (box->x1, box->y1, box->x2, box->y2);
+
+  if (coords)
+    cogl_rectangle_with_texture_coords (box->x1, box->y1, box->x2, box->y2,
+                                        coords->x1, coords->y1, coords->x2, coords->y2);
+  else
+    cogl_rectangle (box->x1, box->y1, box->x2, box->y2);
 }
 
 static void
 st_theme_node_paint_borders (StThemeNode           *node,
                              const ClutterActorBox *box,
                              guint8                 paint_opacity)
-
 {
   float width, height;
   int border_width[4];
@@ -1988,6 +1984,7 @@ st_theme_node_paint (StThemeNode           *node,
 
           paint_material_with_opacity (node->prerendered_material,
                                        &paint_box,
+                                       NULL,
                                        paint_opacity);
         }
 
@@ -2004,17 +2001,18 @@ st_theme_node_paint (StThemeNode           *node,
   if (node->background_texture != COGL_INVALID_HANDLE)
     {
       ClutterActorBox background_box;
+      ClutterActorBox texture_coords;
       gboolean has_visible_outline;
 
-      /* If the background doesn't have a border or opaque background,
-       * then we let its background image shadows leak out, but other
-       * wise we clip it.
+      /* If the node doesn't have an opaque or repeating background or
+       * a border then we let its background image shadows leak out,
+       * but otherwise we clip it.
        */
       has_visible_outline = st_theme_node_has_visible_outline (node);
 
-      get_background_position (node, &allocation, &background_box);
+      get_background_position (node, &allocation, &background_box, &texture_coords);
 
-      if (has_visible_outline)
+      if (has_visible_outline || node->background_repeat)
         cogl_clip_push_rectangle (allocation.x1, allocation.y1, allocation.x2, allocation.y2);
 
       /* CSS based drop shadows
@@ -2036,9 +2034,12 @@ st_theme_node_paint (StThemeNode           *node,
                                        &background_box,
                                        paint_opacity);
 
-      paint_material_with_opacity (node->background_material, &background_box, paint_opacity);
+      paint_material_with_opacity (node->background_material,
+                                   &background_box,
+                                   &texture_coords,
+                                   paint_opacity);
 
-      if (has_visible_outline)
+      if (has_visible_outline || node->background_repeat)
         cogl_clip_pop ();
     }
 }
