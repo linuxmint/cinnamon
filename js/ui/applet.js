@@ -18,6 +18,17 @@ const PANEL_FONT_DEFAULT_HEIGHT = 11.5; // px
 const PANEL_SYMBOLIC_ICON_DEFAULT_HEIGHT = 1.14 * PANEL_FONT_DEFAULT_HEIGHT; // ems conversion
 const DEFAULT_PANEL_HEIGHT = 25;
 
+/**
+ * #MenuItem
+ * @_text (string): Text to be displayed in the menu item
+ * @_icon (string): Name of icon to be displayed in the menu item
+ * @_callback (Function): Callback function when the menu item is clicked
+ * @icon (St.Icon): Icon of the menu item
+ * 
+ * A menu item that contains an icon, a text and responds to clicks
+ * 
+ * Inherits: PopupMenu.PopupBaseMenuItem
+ */
 function MenuItem(label, icon, callback) {
     this._init(label, icon, callback);
 }
@@ -25,6 +36,14 @@ function MenuItem(label, icon, callback) {
 MenuItem.prototype = {
     __proto__: PopupMenu.PopupBaseMenuItem.prototype,
 
+    /**
+     * _init:
+     * @text (string): text to be displayed in the menu item
+     * @icon (string): name of icon to be displayed in the menu item
+     * @callback (Function): callback function to be called when the menu item is clicked
+     * 
+     * Constructor function
+     */
     _init: function(text, icon, callback) {
         PopupMenu.PopupBaseMenuItem.prototype._init.call(this);
         
@@ -42,11 +61,25 @@ MenuItem.prototype = {
         this.connect('activate', callback);
     },
     
+    /**
+     * clone:
+     * 
+     * Clones the menu item
+     * 
+     * Returns (MenuItem): a clone of this menu item
+     */
     clone: function(){
         return new MenuItem(this._text, this._icon, this._callback);
     }
 };
 
+/**
+ * #AppletContextMenu
+ * 
+ * A context menu (right-click menu) to be used by an applet
+ * 
+ * Inherits: PopupMenu.PopupMenu
+ */
 function AppletContextMenu(launcher, orientation) {
     this._init(launcher, orientation);
 }
@@ -54,6 +87,13 @@ function AppletContextMenu(launcher, orientation) {
 AppletContextMenu.prototype = {
     __proto__: PopupMenu.PopupMenu.prototype,
 
+    /**
+     * _init:
+     * @launcher (Applet.Applet): The applet that contains the context menu
+     * @orientation (St.Side): The orientation of the applet
+     * 
+     * Constructor function
+     */
     _init: function(launcher, orientation) {    
         PopupMenu.PopupMenu.prototype._init.call(this, launcher.actor, 0.0, orientation, 0);
         Main.uiGroup.add_actor(this.actor);
@@ -61,6 +101,13 @@ AppletContextMenu.prototype = {
     }    
 };
 
+/**
+ * #AppletPopupMenu:
+ * 
+ * A popupmenu menu (left-click menu) to be used by an applet
+ * 
+ * Inherits: PopupMenu.PopupMenu
+ */
 function AppletPopupMenu(launcher, orientation) {
     this._init(launcher, orientation);
 }
@@ -68,12 +115,26 @@ function AppletPopupMenu(launcher, orientation) {
 AppletPopupMenu.prototype = {
     __proto__: PopupMenu.PopupMenu.prototype,
 
+    /**
+     * _init:
+     * @launcher (Applet.Applet): The applet that contains the context menu
+     * @orientation (St.Side): The orientation of the applet
+     * 
+     * Constructor function
+     */
     _init: function(launcher, orientation) {    
         PopupMenu.PopupMenu.prototype._init.call(this, launcher.actor, 0.0, orientation, 0);
         Main.uiGroup.add_actor(this.actor);
         this.actor.hide();                    
     },
 
+    /**
+     * setMaxHeight:
+     * 
+     * Sets the maximum height of the monitor so that
+     * it does not expand pass the monitor when it has
+     * too many children
+     */
     setMaxHeight: function() {
         let monitor = Main.layoutManager.primaryMonitor;
         this.actor.style = ('max-height: ' +
@@ -82,12 +143,34 @@ AppletPopupMenu.prototype = {
     }
 }
 
+/**
+ * #Applet
+ * @actor (St.BoxLayout): Actor of the applet
+ * @_uuid (string): UUID of the applet
+ * @instance_id (int): Instance id of the applet
+ * @_panelLocation (St.BoxLayout): Panel sector containing the applet
+ * @_order (int): The order of the applet within a panel location
+ * @_draggable (DND._Draggable): The draggable object of the applet
+ * @_scaleMode (boolean): Whether the applet scales according to the panel size
+ * @_applet_tooltip (Tooltips.PanelItemTooltip): The tooltip of the applet
+ * @_menuManager (PopupMenu.PopupMenuManager): The menu manager of the applet
+ * @_applet_context_menu (AppletContextMenu): The context menu of the applet
+ * @_applet_tooltip_text (string): Text of the tooltip
+ * 
+ * Base applet class that other applets can inherit
+ */
 function Applet(orientation, panelHeight, instance_id) {
     this._init(orientation, panelHeight, instance_id);
 }
 
 Applet.prototype = {
 
+    /**
+     * _init:
+     * @orientation (St.Side): orientation of the applet; Orientation of panel containing the actor
+     * @panelHeight (int): height of the panel containing the applet
+     * @instance_id (int): instance id of the applet
+     */
     _init: function(orientation, panel_height, instance_id) {
         this.actor = new St.BoxLayout({ style_class: 'applet-box', reactive: true, track_hover: true });        
         this._applet_tooltip = new Tooltips.PanelItemTooltip(this, "", orientation);                                        
@@ -132,6 +215,7 @@ Applet.prototype = {
     },
 
     _onDragBegin: function() {
+
         this._dragging = true;
         this._applet_tooltip.hide();
         this._applet_tooltip.preventShow = true;                
@@ -172,15 +256,36 @@ Applet.prototype = {
         return true;
     },
 
+    /**
+     * set_applet_tooltip:
+     * @text (string): the tooltip text to be set
+     * 
+     * Sets the tooltip of the applet
+     */
     set_applet_tooltip: function (text) {
         this._applet_tooltip_text = text;
         this._applet_tooltip.set_text(text);
     },
 
+    /**
+     * on_applet_clicked:
+     * @event (Clutter.Event): the event object
+     * 
+     * This function is called when the applet is clicked.
+     * 
+     * This is meant to be overriden in individual applets.
+     */
     on_applet_clicked: function(event) {
         // Implemented by Applets        
     },
-
+    
+    /**
+     * on_applet_added_to_panel:
+     * 
+     * This function is called by appletManager when the applet is added to the panel.
+     * 
+     * This is meant to be overridden in individual applets.
+     */
     on_applet_added_to_panel: function(userEnabled) {
         if (userEnabled) {
             let [x, y] = this.actor.get_transformed_position();
@@ -198,10 +303,14 @@ Applet.prototype = {
         }
     },
 
-    // Optionally implemented by Applets,
-    // to destroy UI resources and disconnect from signal handlers, etc.
+    /**
+     * on_applet_removed_from_panel:
+     * 
+     * This function is called by appletManager when the applet is removed from the panel.
+     * 
+     * This is meant to be overridden in individual applets.
+     */
     on_applet_removed_from_panel: function() {
-        // dummy, for very simple applets
     },
 
     // should only be called by appletManager
@@ -210,6 +319,14 @@ Applet.prototype = {
         this.on_applet_removed_from_panel();
     },
 
+    /**
+     * setOrientation:
+     * @orientation (St.Side): the orientation
+     * 
+     * Sets the orientation of the applet.
+     * 
+     * This function should only be called by appletManager
+     */
     setOrientation: function (orientation) {
         let menuItems = new Array();
         let oldMenuItems = this._applet_context_menu._getMenuItems();
@@ -238,10 +355,24 @@ Applet.prototype = {
         this.finalizeContextMenu();
     },
     
-    on_orientation_changed: function(event) {
+    /**
+     * on_orientation_changed:
+     * @orientation (St.Side): new orientation of the applet
+     * 
+     * This function is called when the applet is changes orientation.
+     * 
+     * This is meant to be overridden in individual applets.
+     */    
+    on_orientation_changed: function(orientation) {
         // Implemented by Applets        
     },
 
+    /**
+     * setPanelHeight:
+     * @panelHeight (int): panelHeight
+     * 
+     * Sets the panel height property of the applet.
+     */
     setPanelHeight: function (panel_height) {
         if (panel_height && panel_height > 0) {
             this._panelHeight = panel_height;
@@ -249,6 +380,13 @@ Applet.prototype = {
         this.on_panel_height_changed();
     },
     
+    /**
+     * on_panel_height_changed:
+     * 
+     * This function is called when the panel containing the applet changes height
+     * 
+     * This is meant to be overridden in individual applets.
+     */    
     on_panel_height_changed: function() {
         // Implemented byApplets
     },
@@ -277,6 +415,16 @@ Applet.prototype = {
     }
 };
 
+/**
+ * #IconApplet:
+ * @_applet_icon (St.Icon): Actor of the icon
+ * @__icon_type (St.IconType): Type of the icon (FULLCOLOR/SYMBOLIC)
+ * @__icon_name (string): Name of icon
+ * 
+ * Applet that contains an icon
+ * 
+ * Inherits: Applet.Applet
+ */
 function IconApplet(orientation, panel_height, instance_id) {
     this._init(orientation, panel_height, instance_id);
 }
@@ -284,6 +432,12 @@ function IconApplet(orientation, panel_height, instance_id) {
 IconApplet.prototype = {
     __proto__: Applet.prototype,
 
+    /**
+     * _init:
+     * @orientation (St.Side): orientation of the applet; Orientation of panel containing the actor
+     * @panelHeight (int): height of the panel containing the applet
+     * @instance_id (int): instance id of the applet
+     */
     _init: function(orientation, panel_height, instance_id) {
         Applet.prototype._init.call(this, orientation, panel_height, instance_id);
         this._applet_icon_box = new St.Bin();
@@ -292,6 +446,14 @@ IconApplet.prototype = {
         this.__icon_name = null;
     },
 
+    /**
+     * set_applet_icon_name:
+     * @icon_name (string): Name of the icon
+     * 
+     * Sets the icon of the applet to @icon_name.
+     * 
+     * The icon will be full color
+     */
     set_applet_icon_name: function (icon_name) {
         if (this._scaleMode) {
             this._applet_icon = new St.Icon({icon_name: icon_name, icon_size: this._panelHeight * COLOR_ICON_HEIGHT_FACTOR,
@@ -304,6 +466,14 @@ IconApplet.prototype = {
         this.__icon_name = icon_name;
     },
 
+    /**
+     * set_applet_icon_symbolic_name:
+     * @icon_name (string): Name of the icon
+     * 
+     * Sets the icon of the applet to @icon_name.
+     * 
+     * The icon will be symbolic
+     */
     set_applet_icon_symbolic_name: function (icon_name) {
         if (this._scaleMode) {
             let height = (this._panelHeight / DEFAULT_PANEL_HEIGHT) * PANEL_SYMBOLIC_ICON_DEFAULT_HEIGHT;
@@ -316,6 +486,12 @@ IconApplet.prototype = {
         this.__icon_name = icon_name;
     },
 
+    /**
+     * set_applet_icon:path:
+     * @icon_path (string): path of the icon
+     * 
+     * Sets the icon of the applet to the image file at @icon_path
+     */
     set_applet_icon_path: function (icon_path) {
         if (this._applet_icon_box.child) this._applet_icon_box.child.destroy();
 
@@ -354,6 +530,14 @@ IconApplet.prototype = {
     }
 };
 
+/**
+ * #TextApplet:
+ * @_applet_label (St.Label): Label of the applet
+ *
+ * Applet that displays a text
+ * 
+ * Inherits: Applet.Applet
+ */
 function TextApplet(orientation, panel_height, instance_id) {
     this._init(orientation, panel_height, instance_id);
 }
@@ -361,6 +545,12 @@ function TextApplet(orientation, panel_height, instance_id) {
 TextApplet.prototype = {
     __proto__: Applet.prototype,
 
+    /**
+     * _init:
+     * @orientation (St.Side): orientation of the applet; Orientation of panel containing the actor
+     * @panelHeight (int): height of the panel containing the applet
+     * @instance_id (int): instance id of the applet
+     */
     _init: function(orientation, panel_height, instance_id) {
         Applet.prototype._init.call(this, orientation, panel_height, instance_id);
         this._applet_label = new St.Label({ reactive: true, track_hover: true, style_class: 'applet-label'});
@@ -369,6 +559,12 @@ TextApplet.prototype = {
         this.actor.add(this._applet_label, { y_align: St.Align.MIDDLE, y_fill: false });    
     },
 
+    /**
+     * set_applet_label:
+     * @text (string): text to be displayed at the label
+     * 
+     * Sets the text of the actor to @text
+     */
     set_applet_label: function (text) {
         this._applet_label.set_text(text);
     },
@@ -378,6 +574,14 @@ TextApplet.prototype = {
     }
 };
 
+/**
+ * #TextIconApplet:
+ * @_applet_label (St.Label): Label of the applet
+ *
+ * Applet that displays an icon and a text. The icon is on the left of the text
+ * 
+ * Inherits: Applet.IconApplet
+ */
 function TextIconApplet(orientation, panel_height, instance_id) {
     this._init(orientation, panel_height, instance_id);
 }
@@ -385,6 +589,12 @@ function TextIconApplet(orientation, panel_height, instance_id) {
 TextIconApplet.prototype = {
     __proto__: IconApplet.prototype,
 
+    /**
+     * _init:
+     * @orientation (St.Side): orientation of the applet; Orientation of panel containing the actor
+     * @panelHeight (int): height of the panel containing the applet
+     * @instance_id (int): instance id of the applet
+     */
     _init: function(orientation, panel_height, instance_id) {
         IconApplet.prototype._init.call(this, orientation, panel_height, instance_id);
         this._applet_label = new St.Label({ reactive: true, track_hover: true, style_class: 'applet-label'});
@@ -393,10 +603,21 @@ TextIconApplet.prototype = {
         this.actor.add(this._applet_label, { y_align: St.Align.MIDDLE, y_fill: false });
     },
 
+    /**
+     * set_applet_label:
+     * @text (string): text to be displayed at the label
+     * 
+     * Sets the text of the actor to @text
+     */
     set_applet_label: function (text) {
         this._applet_label.set_text(text);
     },
 
+    /**
+     * hide_applet_icon:
+     * 
+     * Hides the icon of the applet
+     */
     hide_applet_icon: function () {
         this._applet_icon_box.child = null;
     },
