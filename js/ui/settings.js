@@ -723,8 +723,7 @@ AppletSettings.prototype = {
     },
 
     _get_is_multi_instance_xlet: function(uuid) {
-        let max = Extension.get_max_instances(uuid);
-        return max > 1 || max == -1;
+        return Extension.get_max_instances(uuid) > 1;
     },
 };
 
@@ -741,8 +740,7 @@ DeskletSettings.prototype = {
     },
 
     _get_is_multi_instance_xlet: function(uuid) {
-        let max = Extension.get_max_instances(uuid);
-        return max > 1 || max == -1;
+        return Extension.get_max_instances(uuid) > 1;
     }
 };
 
