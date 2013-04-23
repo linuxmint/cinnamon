@@ -462,3 +462,12 @@ function findExtensionDirectoryIn(uuid, dir) {
        return null;
     }
 }
+
+function get_max_instances (uuid) {
+    if (uuid in meta) {
+        if ("max-instances" in meta[uuid]) {
+            return parseInt(meta[uuid]["max-instances"]);
+        }
+    }
+    return 1;
+}
