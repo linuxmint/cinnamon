@@ -4,9 +4,6 @@ const Lang = imports.lang;
 const Cinnamon = imports.gi.Cinnamon;
 const Main = imports.ui.main;
 const Signals = imports.signals;
-const AppletManager = imports.ui.appletManager;
-const DeskletManager = imports.ui.deskletManager;
-const ExtensionSystem = imports.ui.extensionSystem;
 const Extension = imports.ui.extension;
 const Mainloop = imports.mainloop;
 
@@ -726,9 +723,8 @@ AppletSettings.prototype = {
     },
 
     _get_is_multi_instance_xlet: function(uuid) {
-        let num = -1;
-        num = AppletManager.get_num_instances_for_applet(uuid);
-        return num > 1 || num == -1;
+        let max = Extension.get_max_instances(uuid);
+        return max > 1 || max == -1;
     },
 };
 
@@ -745,9 +741,8 @@ DeskletSettings.prototype = {
     },
 
     _get_is_multi_instance_xlet: function(uuid) {
-        let num = -1;
-        num = DeskletManager.get_num_instances_for_desklet(uuid);
-        return num > 1 || num == -1;
+        let max = Extension.get_max_instances(uuid);
+        return max > 1 || max == -1;
     }
 };
 
