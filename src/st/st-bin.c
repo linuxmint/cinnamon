@@ -462,7 +462,7 @@ st_bin_set_child (StBin        *bin,
       g_object_ref (old_child);
 
       priv->child = NULL;
-      clutter_actor_unparent (old_child);
+      clutter_actor_remove_child (CLUTTER_ACTOR (bin), old_child);
 
       g_signal_emit_by_name (bin, "actor-removed", old_child);
 
@@ -472,7 +472,7 @@ st_bin_set_child (StBin        *bin,
   if (child)
     {
       priv->child = child;
-      clutter_actor_set_parent (child, CLUTTER_ACTOR (bin));
+      clutter_actor_add_child (CLUTTER_ACTOR (bin), child);
 
       g_signal_emit_by_name (bin, "actor-added", priv->child);
     }
