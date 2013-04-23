@@ -173,10 +173,11 @@ Extension.prototype = {
         this.meta.error += message;
 
         let errorMessage = this.formatError(message);
-        if(!error)
+        if(error)
+            global.logError(error);
+        else
             error = new Error(errorMessage);
-
-        global.logError(error);
+        
         global.logError(errorMessage);
 
         // An error during initialization leads to unloading the extension again.
@@ -185,6 +186,7 @@ Extension.prototype = {
             this.unloadStylesheet();
             forgetExtension(this.uuid);
         }
+        error._alreadyLogged = true;
         return error;
     },
 
@@ -371,6 +373,7 @@ function getMetaStateString(state) {
 function loadExtension(uuid, type) {
     let extension = objects[uuid];
     if(!extension) {
+        var forgetMeta = true;
         try {
             let dir = findExtensionDirectory(uuid, type);
             if(dir == null) {
@@ -378,13 +381,16 @@ function loadExtension(uuid, type) {
                 return null;
             }
             extension = new Extension(dir, type);
+            forgetMeta = false;
 
             if(!type.callbacks.finishExtensionLoad(extension))
                 return null;
 
             extension.finalize();
         } catch(e) {
-            forgetExtension(uuid, false);
+            forgetExtension(uuid, forgetMeta);
+            if(e._alreadyLogged)
+                e = undefined;
             global.logError('Could not load ' + type.name.toLowerCase() + ' ' + uuid, e);
             return null;
         }
