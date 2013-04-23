@@ -71,7 +71,7 @@ MyApplet.prototype = {
             }
             else {
                 notification._inNotificationBin = true;
-                notification.actor.reparent(this._notificationbin);
+                global.reparentActor(notification.actor, this._notificationbin);
                 notification.expand();
                 notification._timeLabel.show();
             }
