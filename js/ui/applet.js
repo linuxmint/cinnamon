@@ -214,7 +214,7 @@ Applet.prototype = {
         this._draggable.inhibit = !global.settings.get_boolean('panel-edit-mode');
     },
 
-    _onDragBegin: function() {d
+    _onDragBegin: function() {
 
         this._dragging = true;
         this._applet_tooltip.hide();
