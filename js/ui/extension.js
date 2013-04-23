@@ -334,8 +334,7 @@ Extension.prototype = {
 * @required is an array, and at least one version must match.
 * @current must be in the format <major>.<minor>.<point>.<micro>
 * <micro> is always ignored
-* <point> is ignored if <minor> is even (so you can target the
-* whole stable release)
+* <point> is ignored if not specified (so you can target the whole release)
 * <minor> and <major> must match
 * Each target version must be at least <major> and <minor>
 */
@@ -348,8 +347,7 @@ function versionCheck(required, current) {
         let requiredArray = required[i].split('.');
         if (requiredArray[0] == major &&
             requiredArray[1] == minor &&
-            (requiredArray[2] == point ||
-            (requiredArray[2] == undefined && parseInt(minor) % 2 == 0)))
+            (requiredArray[2] == point || requiredArray[2] === undefined))
             return true;
     }
     return false;
