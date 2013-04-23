@@ -25,15 +25,21 @@ if __name__ == "__main__":
     except Exception:
         pass
 
+    errors = [] # Store the files that failed to parse
+                # Removing them in loop will break the loop
     for _file in files:
         print "Parsing " + _file
-        _file = _file[:-3]
+        __file = _file[:-3]
 
-        xml = jstoxml.convertJStoXML(JS_DIR + _file + ".js")
-        xml.write(XML_DIR + _file + ".xml")
+        try: 
+            xml = jstoxml.convertJStoXML(JS_DIR + __file + ".js")
+            xml.write(XML_DIR + __file + ".xml")
 
-        html = xmltohtml.convertXMLtoHTML(XML_DIR + _file + ".xml")
-        open(HTML_DIR + _file + ".html", "w").write(html)
+            html = xmltohtml.convertXMLtoHTML(XML_DIR + __file + ".xml")
+            open(HTML_DIR + __file + ".html", "w").write(html)
+        except:
+            print "Error parsing " + _file + ". Skipping"
+            errors.append(_file)
 
     shutil.copy2('style.css', HTML_DIR)
 
@@ -48,7 +54,8 @@ if __name__ == "__main__":
                  "<ul class=\"index-page-list\">"])
 
     for _file in files:
-        html.extend(["<li><a href=\"%s.html\">%s</a></li>" % (_file[:-3], _file)])
+        if _file not in errors:
+            html.extend(["<li><a href=\"%s.html\">%s</a></li>" % (_file[:-3], _file)])
 
     html.extend(["</ul>",
                  "</body>",
