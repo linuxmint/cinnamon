@@ -1,7 +1,5 @@
 [GNOME Session]
 Name=Cinnamon
 RequiredComponents=cinnamon;gnome-settings-daemon;
-IsRunnableHelper=/usr/lib/gnome-session/gnome-session-check-accelerated
-FallbackSession=cinnamon2d
 DesktopName=GNOME
 
