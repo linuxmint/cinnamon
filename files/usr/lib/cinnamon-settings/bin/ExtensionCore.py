@@ -650,7 +650,7 @@ class ExtensionSidePage (SidePage):
         uuidCount = {}
         for enabled_extension in self.enabled_extensions:
             try:
-                uuid, instanceId = self.fromSettingString(enabled_extension)
+                uuid = self.fromSettingString(enabled_extension)
                 if uuid in uuidCount:
                     uuidCount[uuid] += 1
                 else:

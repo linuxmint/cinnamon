@@ -1,10 +1,6 @@
 #!/usr/bin/env python
 
 from ExtensionCore import ExtensionSidePage
-import os
-import os.path
-import shutil
-from gi.repository import Gio, Gtk, GObject, Gdk
 
 class Module:
     def __init__(self, content_box):
@@ -29,4 +25,4 @@ class AppletsViewSidePage (ExtensionSidePage):
 
     def fromSettingString(self, string):
         panel, side, position, uuid, instanceId = string.split(":")
-        return uuid, instanceId
+        return uuid
