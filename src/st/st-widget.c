@@ -1586,9 +1586,9 @@ st_widget_ensure_tooltip_parented (StWidget *widget, ClutterStage *stage)
   if (G_UNLIKELY (parent != CLUTTER_ACTOR (ui_root)))
     {
       if (parent)
-        clutter_actor_remove_child (CLUTTER_ACTOR (parent), tooltip);
+        clutter_container_remove_actor (CLUTTER_CONTAINER (parent), tooltip);
 
-      clutter_actor_add_child (CLUTTER_ACTOR (ui_root), tooltip);
+      clutter_container_add_actor (ui_root, tooltip);
     }
 }
 
@@ -1745,7 +1745,7 @@ st_widget_do_show_tooltip (StWidget *widget)
     {
       tooltip = CLUTTER_ACTOR (widget->priv->tooltip);
       st_widget_ensure_tooltip_parented (widget, CLUTTER_STAGE (stage));
-      clutter_actor_set_child_above_sibling (stage, tooltip, NULL);
+      clutter_actor_raise (tooltip, NULL);
       clutter_actor_show_all (tooltip);
     }
 }
