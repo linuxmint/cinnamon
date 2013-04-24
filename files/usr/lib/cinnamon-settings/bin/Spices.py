@@ -522,7 +522,10 @@ class Spice_Harvester:
     def scrubConfigDirs(self, enabled_list):
         active_list = {}
         for enabled in enabled_list:
-            panel, align, order, uuid, id = enabled.split(":")
+            if self.collection_type == "applets":
+                panel, align, order, uuid, id = enabled.split(":")
+            elif self.collection_type == "desklets":
+                uuid, id, x, y = enabled.split(":")
             if uuid not in active_list:
                 id_list = []
                 active_list[uuid] = id_list
