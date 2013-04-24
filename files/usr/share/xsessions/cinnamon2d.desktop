@@ -1,5 +1,5 @@
 [Desktop Entry]
-Name=Cinnamon 2D
+Name=Cinnamon (Software Rendering)
 Comment=This session logs you into Cinnamon (using software rendering)
 Exec=gnome-session-cinnamon2d
 TryExec=/usr/bin/cinnamon2d
