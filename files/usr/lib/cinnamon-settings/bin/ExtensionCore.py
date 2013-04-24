@@ -850,7 +850,7 @@ class ExtensionSidePage (SidePage):
                 if uuid not in enabled_extension:
                     newExtensions.append(enabled_extension)
             self.enabled_extensions = newExtensions
-            self.settings.set_strv("enabled-extensions", self.enabled_extensions)
+            self.settings.set_strv(("enabled-%ss") % (self.collection_type), self.enabled_extensions)
     
     def celldatafunction_checkbox(self, column, cell, model, iter, data=None):
         cell.set_property("activatable", True)
