@@ -134,6 +134,7 @@ class MainWindow:
         self.settings = Gio.Settings.new("org.cinnamon")
         self.advanced_mode = self.settings.get_boolean(ADVANCED_GSETTING)
         self.mode_button = self.builder.get_object("mode_button")
+        self.mode_button.set_size_request(self.get_mode_size(), -1)
         if self.advanced_mode:
             self.mode_button.set_label(NormalMode)
         else:
@@ -201,6 +202,13 @@ class MainWindow:
         else:
             self.search_entry.grab_focus()
             GObject.idle_add(self.start_fade_in)
+
+    def get_mode_size(self):
+        self.mode_button.set_label(AdvancedMode)
+        amw, apw = self.mode_button.get_preferred_width()
+        self.mode_button.set_label(NormalMode)
+        nmw, npw = self.mode_button.get_preferred_width()
+        return max(apw, npw)
 
     def start_fade_in(self):
         if self.opacity < 1.0:
