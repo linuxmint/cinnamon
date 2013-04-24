@@ -31,8 +31,8 @@ gettext.install("cinnamon", "/usr/share/cinnamon/locale")
 # i18n for menu item
 menuName = _("System Settings")
 menuComment = _("Control Center")
-NormalMode = _("Normal Mode")
-AdvancedMode = _("Advanced Mode")
+NormalMode = _("Switch to Normal Mode")
+AdvancedMode = _("Switch to Advanced Mode")
 
 ADVANCED_GSETTING = "cinnamon-settings-advanced"
 
@@ -133,11 +133,12 @@ class MainWindow:
         self.sidePages = []
         self.settings = Gio.Settings.new("org.cinnamon")
         self.advanced_mode = self.settings.get_boolean(ADVANCED_GSETTING)
-        self.mode_label = self.builder.get_object("mode_label")
+        self.mode_button = self.builder.get_object("mode_button")
+        self.mode_button.set_size_request(self.get_mode_size(), -1)
         if self.advanced_mode:
-            self.mode_label.set_text(AdvancedMode)
+            self.mode_button.set_label(NormalMode)
         else:
-            self.mode_label.set_text(NormalMode)
+            self.mode_button.set_label(AdvancedMode)
 
         self.current_sidepage = None
         self.c_manager = capi.CManager()
@@ -201,6 +202,13 @@ class MainWindow:
         else:
             self.search_entry.grab_focus()
             GObject.idle_add(self.start_fade_in)
+
+    def get_mode_size(self):
+        self.mode_button.set_label(AdvancedMode)
+        amw, apw = self.mode_button.get_preferred_width()
+        self.mode_button.set_label(NormalMode)
+        nmw, npw = self.mode_button.get_preferred_width()
+        return max(apw, npw)
 
     def start_fade_in(self):
         if self.opacity < 1.0:
@@ -338,36 +346,26 @@ class MainWindow:
         self.current_sidepage = None
 
     def on_menu_button_clicked(self, widget):
-        popup = Gtk.Menu()
-        popup.attach_to_widget(widget, None)
-        popup_normal_mode = Gtk.CheckMenuItem(NormalMode)
-        popup_normal_mode.set_draw_as_radio(True)
-        popup_normal_mode.set_active(not self.advanced_mode)
-        popup_normal_mode.show()
-        popup.append(popup_normal_mode)
-        popup_advanced_mode = Gtk.CheckMenuItem(AdvancedMode)
-        popup_advanced_mode.set_draw_as_radio(True)
-        popup_advanced_mode.set_active(self.advanced_mode)
-        popup_advanced_mode.show()
-        popup.append(popup_advanced_mode)
+        if self.advanced_mode:
+            self.mode_button.set_label(AdvancedMode)
+            self.on_normal_mode()
+        else:
+            self.mode_button.set_label(NormalMode)
+            self.on_advanced_mode()
+        return True
 
-        popup_normal_mode.connect('activate', self.on_normal_mode)
-        popup_advanced_mode.connect('activate', self.on_advanced_mode)
-        popup.popup(None, None, None, None, 0, 0)
 
-    def on_advanced_mode(self, popup):
+    def on_advanced_mode(self):
         self.advanced_mode = True
         self.settings.set_boolean(ADVANCED_GSETTING, True)
-        self.mode_label.set_text(AdvancedMode)
         if self.current_sidepage is not None:
             self.current_sidepage.build(self.advanced_mode)
             self.maybe_resize(self.current_sidepage)
         self.displayCategories()
 
-    def on_normal_mode(self, popup):
+    def on_normal_mode(self):
         self.advanced_mode = False
         self.settings.set_boolean(ADVANCED_GSETTING, False)
-        self.mode_label.set_text(NormalMode)
         if self.current_sidepage is not None:
             self.current_sidepage.build(self.advanced_mode)
             self.maybe_resize(self.current_sidepage)
