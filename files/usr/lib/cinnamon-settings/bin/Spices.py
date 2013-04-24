@@ -212,13 +212,13 @@ class Spice_Harvester:
         #print msg
 
     def get_index_url(self):
-        if self.collection_type == 'applets':
+        if self.collection_type == 'applet':
             return URL_SPICES_APPLET_LIST
-        elif self.collection_type == 'extensions':
+        elif self.collection_type == 'extension':
             return URL_SPICES_EXTENSION_LIST
         elif self.collection_type == 'themes':
             return URL_SPICES_THEME_LIST
-        elif self.collection_type == 'desklets':
+        elif self.collection_type == 'desklet':
             return URL_SPICES_DESKLET_LIST
         else:
             return False
@@ -231,7 +231,7 @@ class Spice_Harvester:
         return cache_folder
 
     def get_install_folder(self):
-        if self.collection_type in ['applets','desklets','extensions']:
+        if self.collection_type in ['applet','desklet','extension']:
             install_folder = '%s/.local/share/cinnamon/%s/' % (home, self.collection_type)
         elif self.collection_type == 'themes':
             install_folder = '%s/.themes/' % (home)
@@ -522,7 +522,10 @@ class Spice_Harvester:
     def scrubConfigDirs(self, enabled_list):
         active_list = {}
         for enabled in enabled_list:
-            panel, align, order, uuid, id = enabled.split(":")
+            if self.collection_type == "applet":
+                panel, align, order, uuid, id = enabled.split(":")
+            elif self.collection_type == "desklet":
+                uuid, id, x, y = enabled.split(":")
             if uuid not in active_list:
                 id_list = []
                 active_list[uuid] = id_list
