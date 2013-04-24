@@ -7,7 +7,7 @@ from SettingsWidgets import *
 class Module:
     def __init__(self, content_box):
         keywords = _("mouse, touchpad, synaptic, double-click")
-        advanced = True
+        advanced = False
         sidePage = SidePage(_("Mouse and Touchpad"), "mouse.svg", keywords, advanced, content_box)
         self.sidePage = sidePage
         self.name = "mouse"
@@ -22,21 +22,21 @@ class Module:
         title = Gtk.Label()
         title.set_markup("<b>%s</b>" % _("Pointer Speed"))
         title.set_alignment(0,0)
-        sidePage.add_widget(title, True)
+        sidePage.add_widget(title, None)
 
         slider = GSettingsRange(_("Acceleration:"), _("Slow"), _("Fast"), 1.0, 10.0, False, "double", False, "org.gnome.settings-daemon.peripherals.mouse", "motion-acceleration", None, adjustment_step = 1.0)
-        sidePage.add_widget(slider, True)
+        sidePage.add_widget(slider, None)
 
         slider = GSettingsRange(_("Sensitivity:"), _("Low"), _("High"), 1, 10, False, "int", False, "org.gnome.settings-daemon.peripherals.mouse", "motion-threshold", None, adjustment_step = 1)
-        sidePage.add_widget(slider, True) 
+        sidePage.add_widget(slider, None) 
 
         title = Gtk.Label()
         title.set_markup("<b>%s</b>" % _("Double-Click Timeout"))
         title.set_alignment(0,0)
-        sidePage.add_widget(title, True)
+        sidePage.add_widget(title, None)
 
         slider = GSettingsRange(_("Timeout:"), _("Short"), _("Long"), 100, 1000, False, "int", False, "org.gnome.settings-daemon.peripherals.mouse", "double-click", None, adjustment_step = 1)
-        sidePage.add_widget(slider, True)
+        sidePage.add_widget(slider, None)
 
         sidePage.add_widget(GSettingsSpinButton(_("Cinnamon drag threshold"), "org.cinnamon", "dnd-drag-threshold", None, 1, 400, 1, 1, _("Pixels")), True)
         sidePage.add_widget(GSettingsSpinButton(_("GTK drag threshold"), "org.gnome.settings-daemon.peripherals.mouse", "drag-threshold", None, 1, 400, 1, 1, _("Pixels")), True)
