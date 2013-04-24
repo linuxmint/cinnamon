@@ -7,7 +7,7 @@ class Module:
         keywords = _("desklet, desktop, slideshow")
         advanced = False
         self.name = "desklets"
-        sidePage = DeskletsViewSidePage(_("Desklets"), "desklets.svg", keywords, advanced, content_box, "desklet")
+        sidePage = DeskletsViewSidePage(_("Desklets"), "desklets.svg", keywords, advanced, content_box, "desklet", "desktop")
         self.sidePage = sidePage
 
         self.category = "prefs"
@@ -17,8 +17,9 @@ class Module:
         self.sidePage.builder = builder
 
 class DeskletsViewSidePage (ExtensionSidePage):
-    def __init__(self, name, icon, keywords, advanced, content_box, collection_type):
-        ExtensionSidePage.__init__(self, name, icon, keywords, advanced, content_box, collection_type)
+    def __init__(self, name, icon, keywords, advanced, content_box, collection_type, target):
+        self.RemoveString = _("You can remove specific instances from the desktop via that desklet's context menu")
+        ExtensionSidePage.__init__(self, name, icon, keywords, advanced, content_box, collection_type, target)
 
     def toSettingString(self, uuid, instanceId):
         return ("%s:%d:0:100") % (uuid, instanceId)

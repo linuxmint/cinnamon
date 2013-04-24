@@ -32,9 +32,10 @@ class ExtensionSidePage (SidePage):
     SORT_ENABLED = 3
     SORT_REMOVABLE = 4
 
-    def __init__(self, name, icon, keywords, advanced, content_box, collection_type):
+    def __init__(self, name, icon, keywords, advanced, content_box, collection_type, target):
         SidePage.__init__(self, name, icon, keywords, advanced, content_box, True)
         self.collection_type = collection_type
+        self.target = target
         self.icons = []
 
     def build(self, advanced):
@@ -51,7 +52,7 @@ class ExtensionSidePage (SidePage):
         
         self.search_entry = Gtk.Entry()
         self.search_entry.set_icon_from_icon_name(Gtk.EntryIconPosition.PRIMARY, 'edit-find')
-        self.search_entry.set_placeholder_text(_("Search extensions"))
+        self.search_entry.set_placeholder_text(_("Search %ss") % (self.collection_type))
         self.search_entry.connect('changed', self.on_entry_refilter)
 
         self.notebook.append_page(extensions_vbox, Gtk.Label(_("Installed")))
@@ -104,18 +105,21 @@ class ExtensionSidePage (SidePage):
         scrolledWindow.add(self.treeview)
         self.treeview.connect('button_press_event', self.on_button_press_event)
 
-        self.instanceButton = Gtk.Button(_("Add to panel"))
+        self.instanceButton = Gtk.Button(_("Add to %s") % (self.target))
         self.instanceButton.connect("clicked", lambda x: self._add_another_instance())
-        self.instanceButton.set_tooltip_text(_("Some extensions can be added multiple times.\nUse this to add another instance. Use panel edit mode to remove a single instance."))
+        if self.collection_type in ("desklet", "applet"):
+            self.instanceButton.set_tooltip_text(_("Some %ss can be added multiple times.\nUse this to add another instance. Use panel edit mode to remove a single instance.") % (self.collection_type))
+        else:
+            self.instanceButton.set_tooltip_text(_("Click to enable this %s") % (self.collection_type))
         self.instanceButton.set_sensitive(False);
 
         self.configureButton = Gtk.Button(_("Configure"))
         self.configureButton.connect("clicked", self._configure_extension)
-        self.configureButton.set_tooltip_text(_("Configure this extension"))
+        self.configureButton.set_tooltip_text(_("Configure this %s") % (self.collection_type))
 
         self.extConfigureButton = Gtk.Button(_("Configure"))
         self.extConfigureButton.connect("clicked", self._external_configure_launch)
-        self.extConfigureButton.set_tooltip_text(_("Configure this extension"))
+        self.extConfigureButton.set_tooltip_text(_("Configure this %s") % (self.collection_type))
 
 
         restoreButton = Gtk.Button(_("Restore to default"))
@@ -209,7 +213,7 @@ class ExtensionSidePage (SidePage):
         self.gm_search_entry = Gtk.Entry()
         self.gm_search_entry.connect('changed', self.gm_on_entry_refilter)
         self.gm_search_entry.set_icon_from_icon_name(Gtk.EntryIconPosition.PRIMARY, 'edit-find')
-        self.gm_search_entry.set_placeholder_text(_("Search extensions"))
+        self.gm_search_entry.set_placeholder_text(_("Search %ss") % (self.collection_type))
         hbox.pack_end(self.gm_search_entry, False, False, 4)
         self.search_entry.show()
         
@@ -349,19 +353,19 @@ class ExtensionSidePage (SidePage):
                     name = self.modelfilter.get_value(iter, 5)
 
                     if self.modelfilter.get_value(iter, 2) > 0:
-                        item = Gtk.MenuItem(_("Remove all from panel"))
-                        item.connect('activate', lambda x: self.disable_extension(uuid))
+                        checked = self.modelfilter.get_value(iter, 2)
+                        item = Gtk.MenuItem(_("Remove from %s") % (self.target))
+                        item.connect('activate', lambda x: self.disable_extension(uuid, checked))
                         popup.add(item)
 
-                        checked = self.modelfilter.get_value(iter, 2)
                         max_instances = self.modelfilter.get_value(iter, 3);
                         can_instance = max_instances == -1 or ((max_instances > 0) and (max_instances > checked))
                         if can_instance:
-                            item = Gtk.MenuItem(_("Add to panel"))
+                            item = Gtk.MenuItem(_("Add to %s") % (self.target))
                             item.connect('activate', lambda x: self.instance_extension(uuid))
                             popup.add(item)
                     else:
-                        item = Gtk.MenuItem(_("Add to panel"))
+                        item = Gtk.MenuItem(_("Add to %s") % (self.target))
                         item.connect('activate', lambda x: self.enable_extension(uuid))
                         popup.add(item)
                         
@@ -614,7 +618,15 @@ class ExtensionSidePage (SidePage):
         self.enabled_extensions.append(self.toSettingString(uuid, extension_id))
         self.settings.set_strv(("enabled-%ss") % (self.collection_type), self.enabled_extensions)
 
-    def disable_extension(self, uuid):
+    def disable_extension(self, uuid, checked):
+
+        if (checked > 1):
+            msg = _("There are multiple instances of this %s, do you want to remove them all?\n\n") % (self.collection_type)
+            msg += self.RemoveString
+
+            if self.show_prompt(msg) == False:
+                return
+
         newExtensions = []
         for enabled_extension in self.enabled_extensions:
             if uuid not in enabled_extension:
@@ -677,16 +689,19 @@ class ExtensionSidePage (SidePage):
     def _selection_changed(self):
         model, treeiter = self.treeview.get_selection().get_selected()
         enabled = False;
-        
-        tip = _("Some extensions can be added multiple times.\nUse this to add another instance. Use panel edit mode to remove a single instance.")
+        if self.collection_type in ("applet", "desklet"):
+            tip = _("Some %ss can be added multiple times.\nUse this to add another instance. Use panel edit mode to remove a single instance.") % (self.collection_type)
+        else:
+            tip = _("Click to enable this %s") % (self.collection_type)
         if treeiter:
             checked = model.get_value(treeiter, 2);
             max_instances = model.get_value(treeiter, 3);
             enabled = max_instances > checked
-            if max_instances == 1:
-                tip += _("\nThis extension does not support multiple instances.")
-            else:
-                tip += _("\nThis extension supports max %d instances.") % max_instances
+            if self.collection_type in ("applet", "desklet"):
+                if max_instances == 1:
+                    tip += _("\nThis %s does not support multiple instances.") % (self.collection_type)
+                else:
+                    tip += _("\nThis %s supports max %d instances.") % (self.collection_type, max_instances)
         self.instanceButton.set_sensitive(enabled);
         self.instanceButton.set_tooltip_text(tip)
         if treeiter:
@@ -839,11 +854,11 @@ class ExtensionSidePage (SidePage):
                 return
             
             if (checked > 1):
-                msg = _("There are multiple instances of this extension, do you want to remove them all?\n\n")
-                msg += _("You can remove specific instances in panel edit mode via the context menu.")
+                msg = _("There are multiple instances of this %s, do you want to remove them all?\n\n") % (self.collection_type)
+                msg += self.RemoveString
+
                 if self.show_prompt(msg) == False:
                     return
-                    
             self.model.set_value(iter, 2, 0)
             newExtensions = []
             for enabled_extension in self.enabled_extensions:
