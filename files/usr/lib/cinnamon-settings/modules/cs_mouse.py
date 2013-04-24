@@ -18,6 +18,7 @@ class Module:
         sidePage.add_widget(title)
         sidePage.add_widget(CheckButton(_("Left handed (mouse buttons inverted)"), "org.gnome.settings-daemon.peripherals.mouse", "left-handed", None))
         sidePage.add_widget(GSettingsCheckButton(_("Show position of pointer when the Control key is pressed"), "org.gnome.settings-daemon.peripherals.mouse", "locate-pointer", None))
+        sidePage.add_widget(GSettingsCheckButton(_("Emulate middle click by clicking both left and right buttons"), "org.gnome.settings-daemon.peripherals.mouse", "middle-button-enabled", None), True)
 
         title = Gtk.Label()
         title.set_markup("<b>%s</b>" % _("Pointer Speed"))
