@@ -287,9 +287,9 @@ class ExtensionSidePage (SidePage):
         self.install_list = []
         
         self.spices = Spice_Harvester(self.collection_type, self.window, self.builder, self.on_enable_new_extension)
-        if not self.spices.get_webkit_enabled():
-            getmore_label.set_sensitive(False)
-            reload_button.set_sensitive(False)
+        # if not self.spices.get_webkit_enabled():
+        #     getmore_label.set_sensitive(False)
+        #     reload_button.set_sensitive(False)
 
         self.spices.scrubConfigDirs(self.enabled_extensions)
 
@@ -573,8 +573,8 @@ class ExtensionSidePage (SidePage):
         self.enable_extension(uuid)
 
     def load_spices(self, force=False):
-        if self.spices.get_webkit_enabled():
-            self.spices.load(self.on_spice_load, force)
+        # if self.spices.get_webkit_enabled():
+        self.spices.load(self.on_spice_load, force)
 
     def install_extensions(self):
         if len(self.install_list) > 0:
