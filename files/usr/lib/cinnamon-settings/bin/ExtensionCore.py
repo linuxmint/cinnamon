@@ -641,14 +641,14 @@ class ExtensionSidePage (SidePage):
         if len(self.install_list) > 0:
             self.spices.install_all(self.install_list, self.install_finished)
     
-    def install_finished(self, did_update):
+    def install_finished(self, need_restart):
         for row in self.gm_model:
             self.gm_model.set_value(row.iter, 2, 0)
 
         self.install_list = []
         self.load_extensions()
-        if did_update:
-            self.show_info(_("One or more active %ss have been updated.  You probably need to restart Cinnamon for the changes to take effect") % (self.collection_type))
+        if need_restart:
+            self.show_info(_("One or more active %ss may have been updated.  You probably need to restart Cinnamon for the changes to take effect") % (self.collection_type))
 
     def on_spice_load(self, spicesData):
         #print "total spices loaded: %d" % len(spicesData)

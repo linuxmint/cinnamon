@@ -308,14 +308,15 @@ class Spice_Harvester:
         self.download_current_file = 0
 
     def install_all(self, install_list=[], onFinished=None):
-        did_update = False
+        need_restart = False
+        success = False
         for uuid, is_update, is_active in install_list:
-            did_update = did_update or is_update
-            self.install(uuid, is_update, is_active)
+            success = self.install(uuid, is_update, is_active)
+            need_restart = need_restart or (is_update and is_active and success)
 
         if callable(onFinished):
             try:
-                onFinished(did_update)
+                onFinished(need_restart)
             except:
                 pass
 
@@ -396,6 +397,7 @@ class Spice_Harvester:
         self.progress_button_activate.set_sensitive(not is_active)
         self.progress_button_abort.set_sensitive(False)
         self.progress_window.show()
+        return True
 
     def uninstall(self, uuid, name=None, onFinished=None):
         self.progress_button_activate.set_sensitive(False)
