@@ -468,6 +468,12 @@ class Spice_Harvester:
                 os.remove(outfile)
             except OSError:
                 pass
+            self.progress_window.hide()
+            dialog = Gtk.MessageDialog(None, Gtk.DialogFlags.MODAL, Gtk.MessageType.ERROR, Gtk.ButtonsType.OK, None)
+            dialog.set_markup(_("An error occurred while trying to access the server.  Please try again in a little while."))
+            dialog.show_all()
+            response = dialog.run()
+            dialog.destroy()
             raise Exception(_('Aborted.'))
 
         return outfile
@@ -497,8 +503,13 @@ class Spice_Harvester:
         '''
         count = 0
         blockSize = 1024 * 8
+        try:
+            urlobj = urllib2.urlopen(url)
+        except:
+            f.close()
+            self.abort_download = True
+            raise KeyboardInterrupt
 
-        urlobj = urllib2.urlopen(url)
         totalSize = int(urlobj.info()['content-length'])
 
         try:
