@@ -25,4 +25,4 @@ class ExtensionViewSidePage (ExtensionSidePage):
         return uuid
 
     def fromSettingString(self, string):
-        return uuid
+        return string

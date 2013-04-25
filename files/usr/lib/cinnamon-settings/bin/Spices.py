@@ -541,6 +541,9 @@ class Spice_Harvester:
                 panel, align, order, uuid, id = enabled.split(":")
             elif self.collection_type == "desklet":
                 uuid, id, x, y = enabled.split(":")
+            else:
+                uuid = enabled
+                id = 0
             if uuid not in active_list:
                 id_list = []
                 active_list[uuid] = id_list

@@ -626,8 +626,11 @@ class ExtensionSidePage (SidePage):
             self.gm_model.set_value(iter, 6, int(extensionData['last_edited']))
 
     def enable_extension(self, uuid):
-        extension_id = self.settings.get_int(("next-%s-id") % (self.collection_type));
-        self.settings.set_int(("next-%s-id") % (self.collection_type), (extension_id+1));
+        if self.collection_type in ("applet", "desklet"):
+            extension_id = self.settings.get_int(("next-%s-id") % (self.collection_type));
+            self.settings.set_int(("next-%s-id") % (self.collection_type), (extension_id+1));
+        else:
+            extension_id = 0
         self.enabled_extensions.append(self.toSettingString(uuid, extension_id))
         self.settings.set_strv(("enabled-%ss") % (self.collection_type), self.enabled_extensions)
 
@@ -655,8 +658,11 @@ class ExtensionSidePage (SidePage):
         self.load_extensions()
 
     def instance_extension(self, uuid):
-        extension_id = self.settings.get_int(("next-%s-id") % (self.collection_type));
-        self.settings.set_int(("next-%s-id") % (self.collection_type), (extension_id+1));
+        if self.collection_type in ("applet", "desklet"):
+            extension_id = self.settings.get_int(("next-%s-id") % (self.collection_type));
+            self.settings.set_int(("next-%s-id") % (self.collection_type), (extension_id+1));
+        else:
+            extension_id = 0
         self.enabled_extensions.append(self.toSettingString(uuid, extension_id))
         self.settings.set_strv(("enabled-%ss") % (self.collection_type), self.enabled_extensions)
 
