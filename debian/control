@@ -78,7 +78,9 @@ Depends: ${gir:Depends},
          mesa-utils,
          python-lxml,
          gkbd-capplet,
-         python-pyinotify
+         python-pyinotify,
+         metacity,
+         gnome-panel | tint2
 Recommends: gnome-themes-standard, gnome-terminal, nemo, cinnamon-screensaver
 Conflicts: cinnamon-session, cinnamon-settings
 Provides: cinnamon-session, cinnamon-settings, notification-daemon, x-window-manager
