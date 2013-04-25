@@ -14,7 +14,7 @@ try:
     import os
     import os.path
     import json
-    from gi.repository import Gio, Gtk, GObject, Gdk, GdkPixbuf
+    from gi.repository import Gio, Gtk, GObject, Gdk, GdkPixbuf, Pango
     import dbus
     import subprocess
 except Exception, detail:
@@ -23,7 +23,8 @@ except Exception, detail:
 
 home = os.path.expanduser("~")
 
-
+ACTIVE = 1 << 0
+INACTIVE = 1 << 1
 
 class ExtensionSidePage (SidePage):
     SORT_NAME = 0
@@ -68,25 +69,34 @@ class ExtensionSidePage (SidePage):
 
         column2 = Gtk.TreeViewColumn(_("Icon"), Gtk.CellRendererPixbuf(), pixbuf=4)        
         column2.set_resizable(True)
+        column2.set_min_width(50)
 
         column3 = Gtk.TreeViewColumn(_("Description"), Gtk.CellRendererText(), markup=1)        
         column3.set_resizable(True)      
-        column3.set_max_width(450)
+        column3.set_min_width(500)
+        column3.set_max_width(501)
 
         cr = Gtk.CellRendererText()
         actionColumn = Gtk.TreeViewColumn(_("Action"), cr)
+        actionColumn.set_min_width(100)
         actionColumn.set_cell_data_func(cr, self._action_data_func)
+
+        cr = Gtk.CellRendererText()
+        isActiveColumn = Gtk.TreeViewColumn(_("Active"), cr)
+        isActiveColumn.set_min_width(100)
+        isActiveColumn.set_cell_data_func(cr, self._is_active_data_func)
         
         self.treeview.append_column(column2)
         self.treeview.append_column(column3)
         self.treeview.append_column(actionColumn)
+        self.treeview.append_column(isActiveColumn)
         self.treeview.set_headers_visible(False)
         
         self.model = Gtk.TreeStore(str, str, int, int, GdkPixbuf.Pixbuf, str, int, bool, str)
         #                          uuid, desc, enabled, max-instances, icon, name, read-only, hide-config-button, ext-setting-app
 
         self.modelfilter = self.model.filter_new()
-        self.onlyActive = True
+        self.onlyActive = ACTIVE
         self.modelfilter.set_visible_func(self.only_active)
         
         self.treeview.set_model(self.modelfilter)
@@ -130,8 +140,8 @@ class ExtensionSidePage (SidePage):
         self.inactiveButton = Gtk.ToggleButton(_("Inactive"))
         self.activeButton.set_active(True)
         self.inactiveButton.set_active(False)
-        self.activeHandler = self.activeButton.connect("toggled", self._filter_toggle)
-        self.inactiveHandler = self.inactiveButton.connect("toggled", self._filter_toggle)
+        self.activeHandler = self.activeButton.connect("toggled", self._filter_toggle_active)
+        self.inactiveHandler = self.inactiveButton.connect("toggled", self._filter_toggle_inactive)
 
         buttonbox = Gtk.ButtonBox.new(Gtk.Orientation.HORIZONTAL)
         buttonbox.set_spacing(6)
@@ -309,28 +319,19 @@ class ExtensionSidePage (SidePage):
                         elif self.extConfigureButton.get_visible() and self.extConfigureButton.get_sensitive():
                             self.extConfigureButton.clicked()
 
-    def _filter_toggle(self, widget):
-        if widget == self.activeButton:
-            self.activeButton.handler_block(self.activeHandler)
-            self.activeButton.set_active(True)
-            self.activeButton.handler_unblock(self.activeHandler)
-
-            self.inactiveButton.handler_block(self.inactiveHandler)
-            self.inactiveButton.set_active(False)
-            self.inactiveButton.handler_unblock(self.inactiveHandler)
-
-            self.onlyActive = True
+    def _filter_toggle_active(self, widget):
+        if widget.get_active():
+            self.onlyActive |= ACTIVE
         else:
-            self.inactiveButton.handler_block(self.inactiveHandler)
-            self.inactiveButton.set_active(True)
-            self.inactiveButton.handler_unblock(self.inactiveHandler)
+            self.onlyActive &= ~ACTIVE
+        self.modelfilter.refilter()
+        return False
 
-            self.activeButton.handler_block(self.activeHandler)
-            self.activeButton.set_active(False)
-            self.activeButton.handler_unblock(self.activeHandler)
-
-            self.onlyActive = False
-
+    def _filter_toggle_inactive(self, widget):
+        if widget.get_active():
+            self.onlyActive |= INACTIVE
+        else:
+            self.onlyActive &= ~INACTIVE
         self.modelfilter.refilter()
         return False
 
@@ -390,10 +391,18 @@ class ExtensionSidePage (SidePage):
 
             return True
 
-    def _action_data_func(self, column,cell, model, iter, data=None):
+    def _action_data_func(self, column, cell, model, iter, data=None):
         readonly = model.get_value(iter, 6)
         label = '(System)' if not readonly else ''
         cell.set_property('markup',"<span color='#999999'>%s</span>" % label)
+
+    def _is_active_data_func(self, column, cell, model, iter, data=None):
+        enabled = model.get_value(iter, 2) > 0
+        if enabled:
+            label = _("Active")
+        else:
+            label = ""
+        cell.set_property('markup',"<span color='black' weight='bold' size='large'>%s</span>" % label)
 
     def gm_view_details(self, uuid):
         self.spices.show_detail(uuid, lambda x: self.gm_mark(uuid, True))
@@ -526,11 +535,14 @@ class ExtensionSidePage (SidePage):
         if extensionName == None:
             return False
 
-        if self.onlyActive == True:
+        if self.onlyActive == ACTIVE | INACTIVE:
+            return enabled >= 0 and (query == "" or query in extensionName.lower())
+        elif self.onlyActive == ACTIVE:
             return enabled > 0 and (query == "" or query in extensionName.lower())
-        else:
+        elif self.onlyActive == INACTIVE:
             return enabled == 0 and (query == "" or query in extensionName.lower())
-
+        else:
+            return False
 
     def match_func(self, model, iterr, data=None):
         query = self.search_entry.get_buffer().get_text()
