@@ -232,7 +232,7 @@ class Spice_Harvester:
 
     def get_install_folder(self):
         if self.collection_type in ['applet','desklet','extension']:
-            install_folder = '%s/.local/share/cinnamon/%s/' % (home, self.collection_type)
+            install_folder = '%s/.local/share/cinnamon/%ss/' % (home, self.collection_type)
         elif self.collection_type == 'themes':
             install_folder = '%s/.themes/' % (home)
 
