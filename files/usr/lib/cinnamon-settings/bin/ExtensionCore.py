@@ -290,7 +290,7 @@ class ExtensionSidePage (SidePage):
         hbox = Gtk.HBox()
         buttonbox = Gtk.ButtonBox.new(Gtk.Orientation.HORIZONTAL)
         buttonbox.set_spacing(6)
-        self.install_button = Gtk.Button(_("Install selected"))
+        self.install_button = Gtk.Button(_("Install or update selected"))
         reload_button = Gtk.Button(_("Refresh list"))
         buttonbox.pack_start(self.install_button, False, False, 2)
         buttonbox.pack_end(reload_button, False, False, 2)
@@ -411,6 +411,23 @@ class ExtensionSidePage (SidePage):
             label = ""
         cell.set_property('markup',"<span color='black' weight='bold' size='large'>%s</span>" % label)
 
+    def version_compare(self, uuid, date):
+        installed = False
+        can_update = False
+        is_active = False
+
+        installed_iter = self.model.get_iter_first()
+        while installed_iter != None:
+            installed_uuid = self.model.get_value(installed_iter, 0)
+            installed_date = self.model.get_value(installed_iter, 9)
+            if uuid == installed_uuid:
+                installed = True
+                can_update = date > installed_date
+                is_active = self.model.get_value(installed_iter, 2) > 0
+                break
+            installed_iter = self.model.iter_next(installed_iter)
+        return installed, can_update, is_active
+
     def gm_view_details(self, uuid):
         self.spices.show_detail(uuid, lambda x: self.gm_mark(uuid, True))
 
@@ -418,16 +435,18 @@ class ExtensionSidePage (SidePage):
         for row in self.gm_model:
             if uuid == self.gm_model.get_value(row.iter, 0):
                 self.gm_model.set_value(row.iter, 2, 1 if shouldMark else 0)
+                date = self.gm_model.get_value(row.iter, 6)
 
         if not shouldMark:
             newExtensions = []
-            for i_uuid in self.install_list:
+            for i_uuid, is_update in self.install_list:
                 if uuid != i_uuid:
-                    newExtensions += [i_uuid]
+                    newExtensions += [(i_uuid, is_update)]
             self.install_list = newExtensions
         else:
             if uuid not in self.install_list:
-                self.install_list += [uuid]
+                installed, is_update, is_active = self.version_compare(uuid, date)
+                self.install_list += [(uuid, is_update, is_active)]
 
         if len(self.install_list) > 0:
             self.install_button.set_sensitive(True)
@@ -475,17 +494,21 @@ class ExtensionSidePage (SidePage):
 
                     uuid = self.gm_modelfilter.get_value(iter, 0)
                     name = self.gm_modelfilter.get_value(iter, 5)
+                    date = self.gm_modelfilter.get_value(iter, 6)
                     marked = self.gm_modelfilter.get_value(iter, 2)
-
+                    installed, can_update, is_active = self.version_compare(uuid, date)
                     if (marked):
                         item = Gtk.MenuItem(_("Unmark"))
                         popup.add(item)
                         item.connect('activate', lambda x: self.gm_mark(uuid, False))
                     else:
-                        item = Gtk.MenuItem(_("Mark for installation"))
-                        popup.add(item)
-                        item.connect('activate', lambda x: self.gm_mark(uuid, True))
-                    
+                        if not installed or can_update:
+                            if can_update:
+                                item = Gtk.MenuItem(_("Mark for upgrade"))
+                            else:
+                                item = Gtk.MenuItem(_("Mark for installation"))
+                            popup.add(item)
+                            item.connect('activate', lambda x: self.gm_mark(uuid, True))
 
                     item = Gtk.MenuItem(_("More info"))
                     item.connect('activate', lambda x: self.gm_view_details(uuid))
@@ -512,20 +535,10 @@ class ExtensionSidePage (SidePage):
         cell.set_property('markup',"<span color='#0000FF'>More info</span>")
 
     def _gm_status_data_func(self, column, cell, model, iter, data=None):
-        installed = False
-        can_update = False
         uuid = model.get_value(iter, 0)
         date = model.get_value(iter, 6)
 
-        installed_iter = self.model.get_iter_first()
-        while installed_iter != None:
-            installed_uuid = self.model.get_value(installed_iter, 0)
-            installed_date = self.model.get_value(installed_iter, 9)
-            if uuid == installed_uuid:
-                installed = True
-                can_update = date > installed_date
-                break
-            installed_iter = self.model.iter_next(installed_iter)
+        installed, can_update, is_active = self.version_compare(uuid, date)
 
         if installed:
             if can_update:
@@ -549,10 +562,13 @@ class ExtensionSidePage (SidePage):
                 self.gm_mark(uuid, True)
 
     def gm_celldatafunction_checkbox(self, column, cell, model, iter, data=None):
-        cell.set_property("activatable", True)
+        uuid = model.get_value(iter, 0)
+        date = model.get_value(iter, 6)
+        installed, can_update, is_active = self.version_compare(uuid, date)
+        cell.set_property("activatable", not installed or can_update)
         checked = model.get_value(iter, 2)
 
-        if (checked > 0):
+        if checked > 0:
             cell.set_property("active", True)
         else:
             cell.set_property("active", False)
@@ -625,14 +641,14 @@ class ExtensionSidePage (SidePage):
         if len(self.install_list) > 0:
             self.spices.install_all(self.install_list, self.install_finished)
     
-    def install_finished(self):
+    def install_finished(self, did_update):
         for row in self.gm_model:
-            uuid = self.gm_model.get_value(row.iter, 0)
-            if uuid in self.install_list:
-                self.gm_model.set_value(row.iter, 2, 0)
+            self.gm_model.set_value(row.iter, 2, 0)
 
         self.install_list = []
         self.load_extensions()
+        if did_update:
+            self.show_info(_("One or more active %ss have been updated.  You probably need to restart Cinnamon for the changes to take effect") % (self.collection_type))
 
     def on_spice_load(self, spicesData):
         #print "total spices loaded: %d" % len(spicesData)
@@ -683,7 +699,7 @@ class ExtensionSidePage (SidePage):
         self.settings.set_strv(("enabled-%ss") % (self.collection_type), self.enabled_extensions)
 
     def uninstall_extension(self, uuid, name):
-        self.disable_extension(uuid)
+        self.disable_extension(uuid, 0)
         self.spices.uninstall(uuid, name, self.on_uninstall_finished)
     
     def on_uninstall_finished(self, uuid):
@@ -899,7 +915,14 @@ class ExtensionSidePage (SidePage):
         response = dialog.run()
         dialog.destroy()
         return response == Gtk.ResponseType.YES
-                            
+
+    def show_info(self, msg):
+        dialog = Gtk.MessageDialog(None, Gtk.DialogFlags.MODAL, Gtk.MessageType.INFO, Gtk.ButtonsType.OK, None)
+        dialog.set_markup(msg)
+        dialog.show_all()
+        response = dialog.run()
+        dialog.destroy()
+
     def toggled(self, renderer, path, treeview):        
         iter = self.model.get_iter(path)
         if (iter != None):

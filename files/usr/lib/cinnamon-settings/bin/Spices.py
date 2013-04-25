@@ -308,12 +308,14 @@ class Spice_Harvester:
         self.download_current_file = 0
 
     def install_all(self, install_list=[], onFinished=None):
-        for uuid in install_list:
-            self.install(uuid)
+        did_update = False
+        for uuid, is_update, is_active in install_list:
+            did_update = did_update or is_update
+            self.install(uuid, is_update, is_active)
 
         if callable(onFinished):
             try:
-                onFinished()
+                onFinished(did_update)
             except:
                 pass
 
@@ -332,18 +334,23 @@ class Spice_Harvester:
                 zipinfo.filename = name[offset:]
                 yield zipinfo
 
-    def install(self, uuid):
+    def install(self, uuid, is_update, is_active):
         #print "Start downloading and installation"
+        self.progress_button_activate.set_visible(False)
         title = self.index_cache[uuid]['name']
+
+        if is_update:
+            verb = _("Updating")
+        else:
+            verb = _("Installing")
 
         self.download_url = URL_SPICES_HOME + self.index_cache[uuid]['file'];
         self.current_uuid = uuid
-        
-        self.progress_button_activate.set_sensitive(False)
+
         self.progress_button_close.set_sensitive(False)
         self.progress_window.show()        
 
-        self.progresslabel.set_text(_("Installing %s...") % title)
+        self.progresslabel.set_text(_("%s %s...") % (verb, title))
         self.progressbar.set_fraction(0)
 
         edited_date = self.index_cache[uuid]['last_edited']
@@ -367,7 +374,7 @@ class Spice_Harvester:
                        rec_mkdir(this_locale_dir)
                        #print "/usr/bin/msgfmt -c %s -o %s" % (os.path.join(dest, file.filename), os.path.join(this_locale_dir, '%s.mo' % uuid))
                        subprocess.call(["msgfmt", "-c", os.path.join(dest, file.filename), "-o", os.path.join(this_locale_dir, '%s.mo' % uuid)])
-                       self.progresslabel.set_text(_("Installing %s...") % title)
+                       self.progresslabel.set_text(_("%s %s...") % (verb, title))
             file = open(os.path.join(dest, "metadata.json"), 'r')
             raw_meta = file.read()
             file.close()
@@ -379,11 +386,11 @@ class Spice_Harvester:
             file.close()
 
         except Exception, detail:
-            print "what", detail
             return False
 
         self.progress_button_close.set_sensitive(True)
-        self.progress_button_activate.set_sensitive(True)
+        self.progress_button_activate.set_visible(not is_active)
+        self.progress_button_activate.set_sensitive(not is_active)
         self.progress_button_abort.set_sensitive(False)
         self.progress_window.show()
 
