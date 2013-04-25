@@ -409,7 +409,7 @@ class ExtensionSidePage (SidePage):
             label = _("Active")
         else:
             label = ""
-        cell.set_property('markup',"<span color='black' weight='bold' size='large'>%s</span>" % label)
+        cell.set_property('markup',"<span color='black' weight='bold'>%s</span>" % label)
 
     def version_compare(self, uuid, date):
         installed = False

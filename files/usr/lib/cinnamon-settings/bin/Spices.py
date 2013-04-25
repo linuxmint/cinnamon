@@ -242,6 +242,7 @@ class Spice_Harvester:
         if (self.has_cache and not force):
             self.load_cache()
         else:
+            self.progresslabel.set_text(_("Refreshing %s index...") % (self.collection_type))
             self.progress_button_activate.hide()
             self.progress_window.show()
             self.refresh_cache()
@@ -266,10 +267,17 @@ class Spice_Harvester:
     def load_cache(self):
         filename = os.path.join(self.cache_folder, "index.json")
         f = open(filename, 'r')
-        self.index_cache = json.load(f)
+        try:
+            self.index_cache = json.load(f)
+        except ValueError, detail:
+            try:
+                os.remove(filename)
+            except:
+                pass
+            self.errorMessage(_("Something went wrong with the spices download.  Please try refreshing the list again."), str(detail))
 
     def load_assets(self, uuids=None):
-        self.progresslabel.set_text(_("Refreshing applet cache..."))
+        self.progresslabel.set_text(_("Refreshing %s cache...") % (self.collection_type))
         needs_refresh = 0
 
         if uuids == None:
@@ -376,6 +384,15 @@ class Spice_Harvester:
                        #print "/usr/bin/msgfmt -c %s -o %s" % (os.path.join(dest, file.filename), os.path.join(this_locale_dir, '%s.mo' % uuid))
                        subprocess.call(["msgfmt", "-c", os.path.join(dest, file.filename), "-o", os.path.join(this_locale_dir, '%s.mo' % uuid)])
                        self.progresslabel.set_text(_("%s %s...") % (verb, title))
+                elif "gschema.xml" in file.filename:
+                    sentence = _("Please enter your password to install the required settings schema for %s") % (uuid)
+                    if os.path.exists("/usr/bin/gksu") and os.path.exists("/usr/lib/cinnamon-settings/bin/installSchema.py"):
+                        launcher = "gksu  --message \"<b>%s</b>\"" % sentence
+                        tool = "/usr/lib/cinnamon-settings/bin/installSchema.py %s" % (file.filename)
+                        command = "%s %s" % (launcher, tool)
+                        os.system(command)
+                    else:
+                        self.errorMessage(_("Could not install the settings schema for %s.  You will have to perform this step yourself.") % (uuid))
             file = open(os.path.join(dest, "metadata.json"), 'r')
             raw_meta = file.read()
             file.close()
@@ -387,7 +404,6 @@ class Spice_Harvester:
             file.close()
 
         except Exception, detail:
-            dialog = Gtk.MessageDialog(None, Gtk.DialogFlags.MODAL, Gtk.MessageType.ERROR, Gtk.ButtonsType.OK, None)
             self.progress_window.hide()
             self.errorMessage(_("An error occurred during installation or updating.  You may wish to report this incident to the developer of %s.") % (uuid), str(detail))
             return False
