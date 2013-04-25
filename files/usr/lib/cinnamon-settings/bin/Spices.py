@@ -386,6 +386,9 @@ class Spice_Harvester:
             file.close()
 
         except Exception, detail:
+            dialog = Gtk.MessageDialog(None, Gtk.DialogFlags.MODAL, Gtk.MessageType.ERROR, Gtk.ButtonsType.OK, None)
+            self.progress_window.hide()
+            self.errorMessage(_("An error occurred during installation or updating.  You may wish to report this incident to the developer of %s.") % (uuid), str(detail))
             return False
 
         self.progress_button_close.set_sensitive(True)
@@ -487,14 +490,7 @@ class Spice_Harvester:
             except OSError:
                 pass
             self.progress_window.hide()
-            dialog = Gtk.MessageDialog(None, Gtk.DialogFlags.MODAL, Gtk.MessageType.ERROR, Gtk.ButtonsType.OK, None)
-            markup = _("An error occurred while trying to access the server.  Please try again in a little while.\n\nError Code:  ")
-            if self.error:
-                markup += str(self.error)
-            dialog.set_markup(markup)
-            dialog.show_all()
-            response = dialog.run()
-            dialog.destroy()
+            self.errorMessage(_("An error occurred while trying to access the server.  Please try again in a little while."), self.error)
             raise Exception(_('Aborted.'))
 
         return outfile
@@ -585,7 +581,12 @@ class Spice_Harvester:
                     except:
                         pass
 
-
-
-
-
+    def errorMessage(self, msg, detail = None):
+        dialog = Gtk.MessageDialog(None, Gtk.DialogFlags.MODAL, Gtk.MessageType.ERROR, Gtk.ButtonsType.OK, None)
+        markup = msg
+        if detail is not None:
+            markup += _("\n\nDetails:  %s") % (str(detail))
+        dialog.set_markup(markup)
+        dialog.show_all()
+        response = dialog.run()
+        dialog.destroy()
