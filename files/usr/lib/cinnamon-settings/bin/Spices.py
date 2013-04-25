@@ -470,7 +470,10 @@ class Spice_Harvester:
                 pass
             self.progress_window.hide()
             dialog = Gtk.MessageDialog(None, Gtk.DialogFlags.MODAL, Gtk.MessageType.ERROR, Gtk.ButtonsType.OK, None)
-            dialog.set_markup(_("An error occurred while trying to access the server.  Please try again in a little while."))
+            markup = _("An error occurred while trying to access the server.  Please try again in a little while.\n\nError Code:  ")
+            if self.error:
+                markup += str(self.error)
+            dialog.set_markup(markup)
             dialog.show_all()
             response = dialog.run()
             dialog.destroy()
@@ -505,9 +508,10 @@ class Spice_Harvester:
         blockSize = 1024 * 8
         try:
             urlobj = urllib2.urlopen(url)
-        except:
+        except Exception, detail:
             f.close()
             self.abort_download = True
+            self.error = detail
             raise KeyboardInterrupt
 
         totalSize = int(urlobj.info()['content-length'])
