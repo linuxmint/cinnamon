@@ -345,7 +345,8 @@ class Spice_Harvester:
 
         self.progresslabel.set_text(_("Installing %s...") % title)
         self.progressbar.set_fraction(0)
-        
+
+        edited_date = self.index_cache[uuid]['last_edited']
         executable_files = ['settings.py']
         
         fd, filename = tempfile.mkstemp()
@@ -367,8 +368,18 @@ class Spice_Harvester:
                        #print "/usr/bin/msgfmt -c %s -o %s" % (os.path.join(dest, file.filename), os.path.join(this_locale_dir, '%s.mo' % uuid))
                        subprocess.call(["msgfmt", "-c", os.path.join(dest, file.filename), "-o", os.path.join(this_locale_dir, '%s.mo' % uuid)])
                        self.progresslabel.set_text(_("Installing %s...") % title)
+            file = open(os.path.join(dest, "metadata.json"), 'r')
+            raw_meta = file.read()
+            file.close()
+            md = json.loads(raw_meta)
+            md["last-edited"] = edited_date
+            raw_meta = json.dumps(md, indent=4)
+            file = open(os.path.join(dest, "metadata.json"), 'w+')
+            file.write(raw_meta)
+            file.close()
 
-        except:
+        except Exception, detail:
+            print "what", detail
             return False
 
         self.progress_button_close.set_sensitive(True)

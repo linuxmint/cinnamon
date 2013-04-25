@@ -92,8 +92,8 @@ class ExtensionSidePage (SidePage):
         self.treeview.append_column(isActiveColumn)
         self.treeview.set_headers_visible(False)
         
-        self.model = Gtk.TreeStore(str, str, int, int, GdkPixbuf.Pixbuf, str, int, bool, str)
-        #                          uuid, desc, enabled, max-instances, icon, name, read-only, hide-config-button, ext-setting-app
+        self.model = Gtk.TreeStore(str, str, int, int, GdkPixbuf.Pixbuf, str, int, bool, str, int)
+        #                          uuid, desc, enabled, max-instances, icon, name, read-only, hide-config-button, ext-setting-app, edit-date
 
         self.modelfilter = self.model.filter_new()
         self.onlyActive = ACTIVE
@@ -230,8 +230,8 @@ class ExtensionSidePage (SidePage):
         getmore_vbox.pack_start(hbox, False, False, 4)
 
         # MODEL
-        self.gm_model = Gtk.TreeStore(str, str, int, GdkPixbuf.Pixbuf, int, str, int)
-        #                            uuid, name, install, icon, score
+        self.gm_model = Gtk.TreeStore(str, str,      int, GdkPixbuf.Pixbuf, int,    str,     int)
+        #                            uuid, name, install, icon,            score,   name,    date-edited
         self.gm_model.set_sort_column_id(4, Gtk.SortType.DESCENDING)
 
         # TREE
@@ -250,12 +250,18 @@ class ExtensionSidePage (SidePage):
 
         gm_column3 = Gtk.TreeViewColumn(_("Description"), Gtk.CellRendererText(), markup=1)
         gm_column3.set_resizable(True)
-        gm_column3.set_max_width(400)
+        gm_column3.set_min_width(400)
+        gm_column3.set_max_width(401)
         
         cr = Gtk.CellRendererText()
         actionColumn = Gtk.TreeViewColumn(_("Action"), cr)
         actionColumn.set_cell_data_func(cr, self._gm_action_data_func)
-        actionColumn.set_max_width(70)
+        actionColumn.set_min_width(90)
+
+        cr = Gtk.CellRendererText()
+        statusColumn = Gtk.TreeViewColumn(_("Status"), cr)
+        statusColumn.set_cell_data_func(cr, self._gm_status_data_func)
+
 
         right = Gtk.CellRendererText()
         right.set_property('xalign', 1.0)
@@ -267,6 +273,7 @@ class ExtensionSidePage (SidePage):
         self.gm_treeview.append_column(gm_column2)
         self.gm_treeview.append_column(gm_column3)
         self.gm_treeview.append_column(actionColumn)
+        self.gm_treeview.append_column(statusColumn)
         self.gm_treeview.append_column(gm_column4)
         self.gm_treeview.set_headers_visible(False)
 
@@ -501,9 +508,34 @@ class ExtensionSidePage (SidePage):
 
             return True
 
-    def _gm_action_data_func(self, column,cell, model, iter, data=None):
+    def _gm_action_data_func(self, column, cell, model, iter, data=None):
         cell.set_property('markup',"<span color='#0000FF'>More info</span>")
 
+    def _gm_status_data_func(self, column, cell, model, iter, data=None):
+        installed = False
+        can_update = False
+        uuid = model.get_value(iter, 0)
+        date = model.get_value(iter, 6)
+
+        installed_iter = self.model.get_iter_first()
+        while installed_iter != None:
+            installed_uuid = self.model.get_value(installed_iter, 0)
+            installed_date = self.model.get_value(installed_iter, 9)
+            if uuid == installed_uuid:
+                installed = True
+                can_update = date > installed_date
+                break
+            installed_iter = self.model.iter_next(installed_iter)
+
+        if installed:
+            if can_update:
+                text = _("Update Available")
+            else:
+                text = _("Installed (Up to date)")
+        else:
+            text = ""
+
+        cell.set_property("markup", "<span color='black' weight='bold'>%s</span>" % (text))
 
     def gm_toggled(self, renderer, path, treeview):
         iter = self.gm_modelfilter.get_iter(path)
@@ -812,6 +844,10 @@ class ExtensionSidePage (SidePage):
                         except KeyError: ext_config_app = ""
                         except ValueError: ext_config_app = ""
 
+                        try: last_edited = data["last-edited"]
+                        except KeyError: last_edited = -1
+                        except ValueError: last_edited = -1
+
                         if ext_config_app != "" and not os.path.exists(ext_config_app):
                             ext_config_app = ""
 
@@ -846,6 +882,7 @@ class ExtensionSidePage (SidePage):
                             self.model.set_value(iter, 6, os.access(directory, os.W_OK))
                             self.model.set_value(iter, 7, hide_config_button)
                             self.model.set_value(iter, 8, ext_config_app)
+                            self.model.set_value(iter, 9, long(last_edited))
 
                 except Exception, detail:
                     print "Failed to load extension %s: %s" % (extension, detail)
