@@ -506,12 +506,11 @@ class ExtensionSidePage (SidePage):
 
 
     def gm_toggled(self, renderer, path, treeview):
-        iter = self.gm_model.get_iter(path)
+        iter = self.gm_modelfilter.get_iter(path)
         if (iter != None):
-            uuid = self.gm_model.get_value(iter, 0)
-            checked = self.gm_model.get_value(iter, 2)
+            uuid = self.gm_modelfilter.get_value(iter, 0)
+            checked = self.gm_modelfilter.get_value(iter, 2)
 
-            
             if checked == True:
                 self.gm_mark(uuid, False)
             else:
