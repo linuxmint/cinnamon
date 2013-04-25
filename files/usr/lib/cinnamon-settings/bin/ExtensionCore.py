@@ -293,6 +293,8 @@ class ExtensionSidePage (SidePage):
 
         self.spices.scrubConfigDirs(self.enabled_extensions)
 
+        self.search_entry.grab_focus()
+
         if len(sys.argv) > 2:
             for row in self.model:
                 uuid = self.model.get_value(row.iter, 0)
