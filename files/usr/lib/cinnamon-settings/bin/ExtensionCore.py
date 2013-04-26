@@ -23,15 +23,16 @@ except Exception, detail:
 
 home = os.path.expanduser("~")
 
-ACTIVE = 1 << 0
-INACTIVE = 1 << 1
+SHOW_ALL = 0
+SHOW_ACTIVE = 1
+SHOW_INACTIVE = 2
 
 class ExtensionSidePage (SidePage):
     SORT_NAME = 0
     SORT_RATING = 1
     SORT_DATE_EDITED = 2
     SORT_ENABLED = 3
-    SORT_REMOVABLE = 4
+    SORT_REMOVABLE = 4  
 
     def __init__(self, name, icon, keywords, advanced, content_box, collection_type, target):
         SidePage.__init__(self, name, icon, keywords, advanced, content_box, True)
@@ -97,7 +98,7 @@ class ExtensionSidePage (SidePage):
         #                          uuid, desc, enabled, max-instances, icon, name, read-only, hide-config-button, ext-setting-app, edit-date, read-only icon, active icon
 
         self.modelfilter = self.model.filter_new()
-        self.onlyActive = ACTIVE
+        self.showFilter = SHOW_ALL
         self.modelfilter.set_visible_func(self.only_active)
         
         self.treeview.set_model(self.modelfilter)
@@ -136,21 +137,28 @@ class ExtensionSidePage (SidePage):
 
         restoreButton = Gtk.Button(_("Restore to default"))
         restoreButton.connect("clicked", lambda x: self._restore_default_extensions())
-        # Installed 
+        
         hbox = Gtk.HBox()
-        self.activeButton = Gtk.ToggleButton(_("Active"))
-        self.inactiveButton = Gtk.ToggleButton(_("Inactive"))
-        self.activeButton.set_active(True)
-        self.inactiveButton.set_active(False)
-        self.activeHandler = self.activeButton.connect("toggled", self._filter_toggle_active)
-        self.inactiveHandler = self.inactiveButton.connect("toggled", self._filter_toggle_inactive)
-
-        buttonbox = Gtk.ButtonBox.new(Gtk.Orientation.HORIZONTAL)
-        buttonbox.set_spacing(6)
-        buttonbox.pack_start(self.activeButton, False, False, 0)
-        buttonbox.pack_start(self.inactiveButton, False, False, 0)
-        hbox.pack_start(buttonbox, False, False, 4)
-
+        self.comboshow = Gtk.ComboBox()
+        renderer_text = Gtk.CellRendererText()
+        self.comboshow.pack_start(renderer_text, True)
+        showTypes=Gtk.ListStore(int, str)
+        showTypes.append([SHOW_ALL, _("All %ss") % (self.collection_type)])
+        showTypes.append([SHOW_ACTIVE, _("Active %ss") % (self.collection_type)])
+        showTypes.append([SHOW_INACTIVE, _("Inactive %ss") % (self.collection_type)])
+        self.comboshow.set_model(showTypes)
+        self.comboshow.set_entry_text_column(1)
+        self.comboshow.set_active(0) #All
+        self.comboshow.connect('changed', self.comboshow_changed)
+        self.comboshow.add_attribute(renderer_text, "text", 1)
+        self.comboshow.show()
+        
+        showLabel = Gtk.Label()
+        showLabel.set_text(_("Show"))
+        showLabel.show()
+        hbox.pack_start(showLabel, False, False, 4)
+        hbox.pack_start(self.comboshow, False, False, 2)
+        
         hbox.pack_end(self.search_entry, False, False, 4)
         extensions_vbox.pack_start(hbox, False, False, 4)
         hbox.show()
@@ -214,9 +222,9 @@ class ExtensionSidePage (SidePage):
         self.gm_combosort.show()
 
         hbox = Gtk.HBox()
-        #hbox.set_margin_bottom(2)
+        #hbox.set_margin_bottom(2)        
         sortLabel = Gtk.Label()
-        sortLabel.set_text("Sort by")
+        sortLabel.set_text(_("Sort by"))
         sortLabel.show()
         hbox.pack_start(sortLabel, False, False, 4)
         hbox.pack_start(self.gm_combosort, False, False, 2)
@@ -332,23 +340,7 @@ class ExtensionSidePage (SidePage):
     def model_sort_func(self, model, iter1, iter2, data=None):
         s1 = ((not model[iter1][6]), model[iter1][5])
         s2 = ((not model[iter2][6]), model[iter2][5])
-        return cmp( s1, s2 )   
-
-    def _filter_toggle_active(self, widget):
-        if widget.get_active():
-            self.onlyActive |= ACTIVE
-        else:
-            self.onlyActive &= ~ACTIVE
-        self.modelfilter.refilter()
-        return False
-
-    def _filter_toggle_inactive(self, widget):
-        if widget.get_active():
-            self.onlyActive |= INACTIVE
-        else:
-            self.onlyActive &= ~INACTIVE
-        self.modelfilter.refilter()
-        return False
+        return cmp( s1, s2 )       
 
     def on_button_press_event(self, widget, event):
         if event.button == 3:
@@ -413,6 +405,14 @@ class ExtensionSidePage (SidePage):
         else:
             img = GdkPixbuf.Pixbuf.new_from_file( ("/usr/lib/cinnamon-settings/data/inactive.png"))        
         cell.set_property('pixbuf', img)
+
+    def comboshow_changed(self, widget):
+        tree_iter = widget.get_active_iter()
+        if tree_iter != None:
+            model = widget.get_model()
+            value = model[tree_iter][0]
+            self.showFilter = value
+            self.modelfilter.refilter()           
 
     def version_compare(self, uuid, date):
         installed = False
@@ -585,11 +585,11 @@ class ExtensionSidePage (SidePage):
         if extensionName == None:
             return False
 
-        if self.onlyActive == ACTIVE | INACTIVE:
+        if self.showFilter == SHOW_ALL:
             return enabled >= 0 and (query == "" or query in extensionName.lower())
-        elif self.onlyActive == ACTIVE:
+        elif self.showFilter == SHOW_ACTIVE:
             return enabled > 0 and (query == "" or query in extensionName.lower())
-        elif self.onlyActive == INACTIVE:
+        elif self.showFilter == SHOW_INACTIVE:
             return enabled == 0 and (query == "" or query in extensionName.lower())
         else:
             return False
