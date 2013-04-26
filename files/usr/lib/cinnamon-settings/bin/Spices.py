@@ -503,7 +503,7 @@ class Spice_Harvester:
                 pass
             self.progress_window.hide()
             if self.abort_download == ABORT_ERROR:
-                self.errorMessage(_("An error occurred while trying to access the server.  Please try again in a little while."), None)
+                self.errorMessage(_("An error occurred while trying to access the server.  Please try again in a little while."), self.error or None)
             raise Exception(_('Download aborted.'))
 
         return outfile
