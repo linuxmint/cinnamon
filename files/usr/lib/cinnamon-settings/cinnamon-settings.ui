@@ -265,11 +265,14 @@
     <property name="halign">start</property>
     <property name="valign">start</property>
     <property name="border_width">6</property>
+    <property name="type">popup</property>
     <property name="resizable">False</property>
     <property name="modal">True</property>
-    <property name="window_position">center</property>
+    <property name="window_position">center-on-parent</property>
+    <property name="destroy_with_parent">True</property>
     <property name="icon_name">preferences-other</property>
     <property name="type_hint">dialog</property>
+    <property name="transient_for">main_window</property>
     <child internal-child="vbox">
       <object class="GtkBox" id="dialog-vbox3">
         <property name="can_focus">False</property>

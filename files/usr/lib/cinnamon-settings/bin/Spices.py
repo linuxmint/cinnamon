@@ -40,6 +40,9 @@ URL_SPICES_THEME_LIST = URL_SPICES_HOME + "/themes/list_json"
 URL_SPICES_DESKLET_LIST = URL_SPICES_HOME + "/desklets/list_json"
 URL_SPICES_EXTENSION_LIST = URL_SPICES_HOME + "/extensions/list_json"
 
+ABORT_NONE = 0
+ABORT_ERROR = 1
+ABORT_USER = 2
 
 def removeEmptyFolders(path):
     if not os.path.isdir(path):
@@ -87,7 +90,7 @@ class Spice_Harvester:
 
         self.progress_window.set_title("")
 
-        self.abort_download = False
+        self.abort_download = ABORT_NONE
         self.download_total_files = 0
         self.download_current_file = 0
         self._sigLoadFinished = None
@@ -239,6 +242,7 @@ class Spice_Harvester:
         return install_folder
 
     def load(self, onDone, force=False):
+        self.abort_download = ABORT_NONE
         if (self.has_cache and not force):
             self.load_cache()
         else:
@@ -297,7 +301,7 @@ class Spice_Harvester:
         self.download_current_file = 0
 
         for uuid in uuids:
-            if self.abort_download:
+            if self.abort_download > ABORT_NONE:
                 return
 
             icon_path = self.index_cache[uuid]['icon_path']
@@ -422,21 +426,24 @@ class Spice_Harvester:
         self.progress_window.show()
         
         self.progress_bar_pulse()
+        try:
+            shutil.rmtree(os.path.join(self.install_folder, uuid))
 
-        shutil.rmtree(os.path.join(self.install_folder, uuid))
+            # Uninstall spice's localization files, if any
+            if (os.path.exists(locale_inst)):
+                i19_folders = os.listdir(locale_inst)
+                for i19_folder in i19_folders:
+                    if os.path.isfile(os.path.join(locale_inst, i19_folder, 'LC_MESSAGES', "%s.mo" % uuid)):
+                        os.remove(os.path.join(locale_inst, i19_folder, 'LC_MESSAGES', "%s.mo" % uuid))
+                    # Clean-up this locale folder
+                    removeEmptyFolders(os.path.join(locale_inst, i19_folder))
 
-        # Uninstall spice's localization files, if any
-        if (os.path.exists(locale_inst)):
-            i19_folders = os.listdir(locale_inst)
-            for i19_folder in i19_folders:
-                if os.path.isfile(os.path.join(locale_inst, i19_folder, 'LC_MESSAGES', "%s.mo" % uuid)):
-                    os.remove(os.path.join(locale_inst, i19_folder, 'LC_MESSAGES', "%s.mo" % uuid))
-                # Clean-up this locale folder
-                removeEmptyFolders(os.path.join(locale_inst, i19_folder))
-
-        # Uninstall settings file, if any
-        if (os.path.exists(os.path.join(settings_dir, uuid))):
-            shutil.rmtree(os.path.join(settings_dir, uuid))
+            # Uninstall settings file, if any
+            if (os.path.exists(os.path.join(settings_dir, uuid))):
+                shutil.rmtree(os.path.join(settings_dir, uuid))
+        except Exception, detail:
+            self.progress_window.hide()
+            self.errorMessage(_("Problem uninstalling %s.  You may need to manually remove it.") % (uuid), detail)
 
         self.progress_button_close.set_sensitive(True)
         self.progress_window.hide()
@@ -455,7 +462,7 @@ class Spice_Harvester:
         return
 
     def on_abort_clicked(self, button):
-        self.abort_download = True
+        self.abort_download = ABORT_USER
         self.progress_window.hide()
         return
 
@@ -508,8 +515,9 @@ class Spice_Harvester:
             except OSError:
                 pass
             self.progress_window.hide()
-            self.errorMessage(_("An error occurred while trying to access the server.  Please try again in a little while."), self.error)
-            raise Exception(_('Aborted.'))
+            if self.abort_download == ABORT_ERROR:
+                self.errorMessage(_("An error occurred while trying to access the server.  Please try again in a little while."), None)
+            raise Exception(_('Download aborted.'))
 
         return outfile
 
@@ -539,17 +547,18 @@ class Spice_Harvester:
         count = 0
         blockSize = 1024 * 8
         try:
+            self.progress_bar_pulse()
             urlobj = urllib2.urlopen(url)
         except Exception, detail:
             f.close()
-            self.abort_download = True
+            self.abort_download = ABORT_ERROR
             self.error = detail
             raise KeyboardInterrupt
 
         totalSize = int(urlobj.info()['content-length'])
 
         try:
-            while not self.abort_download:
+            while self.abort_download == ABORT_NONE:
                 data = urlobj.read(blockSize)
                 count += 1
                 if not data:
@@ -558,9 +567,9 @@ class Spice_Harvester:
                 reporthook(count, blockSize, totalSize)
         except KeyboardInterrupt:
             f.close()
-            self.abort_download = True
+            self.abort_download = ABORT_USER
 
-        if self.abort_download:
+        if self.abort_download > ABORT_NONE:
             raise KeyboardInterrupt
 
         del urlobj
