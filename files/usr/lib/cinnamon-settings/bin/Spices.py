@@ -3,14 +3,14 @@ try:
     import gettext
     from gi.repository import Gio, Gtk, GObject, Gdk, GdkPixbuf
     # WebKit requires gir1.2-javascriptcoregtk-3.0 and gir1.2-webkit-3.0
-    try:
-        from gi.repository import WebKit
-        HAS_WEBKIT=True
-    except:
-        HAS_WEBKIT=False
-        print "WebKit not found on this system. These packages are needed for adding spices:"
-        print "  gir1.2-javascriptcoregtk-3.0"
-        print "  gir1.2-webkit-3.0"
+    # try:
+    #     from gi.repository import WebKit
+    #     HAS_WEBKIT=True
+    # except:
+    #     HAS_WEBKIT=False
+    #     print "WebKit not found on this system. These packages are needed for adding spices:"
+    #     print "  gir1.2-javascriptcoregtk-3.0"
+    #     print "  gir1.2-webkit-3.0"
     import locale
     import tempfile
     import os
@@ -40,6 +40,9 @@ URL_SPICES_THEME_LIST = URL_SPICES_HOME + "/themes/list_json"
 URL_SPICES_DESKLET_LIST = URL_SPICES_HOME + "/desklets/list_json"
 URL_SPICES_EXTENSION_LIST = URL_SPICES_HOME + "/extensions/list_json"
 
+ABORT_NONE = 0
+ABORT_ERROR = 1
+ABORT_USER = 2
 
 def removeEmptyFolders(path):
     if not os.path.isdir(path):
@@ -77,7 +80,6 @@ class Spice_Harvester:
 
         self.progress_window = self.builder.get_object("progress_window")
         self.progress_button_close = self.builder.get_object("btnProgressClose")
-        self.progress_button_activate = self.builder.get_object("btnProgressActivate")
         self.progress_button_abort = self.builder.get_object("btnProgressAbort")
 
         self.progresslabel = self.builder.get_object('progresslabel')
@@ -87,12 +89,11 @@ class Spice_Harvester:
 
         self.progress_window.set_title("")
 
-        self.abort_download = False
+        self.abort_download = ABORT_NONE
         self.download_total_files = 0
         self.download_current_file = 0
         self._sigLoadFinished = None
 
-        self.progress_button_activate.connect("clicked", lambda x: self.on_activate_clicked())
         self.progress_button_abort.connect("clicked", self.on_abort_clicked)
         self.progress_button_close.connect("clicked", self.on_progress_close)
 
@@ -109,29 +110,26 @@ class Spice_Harvester:
         self.spiceDetail.set_size_request(640, 440)
         content_area = self.spiceDetail.get_content_area()
 
-        if self.get_webkit_enabled():
-            self.browser = WebKit.WebView()
+        # if self.get_webkit_enabled():
+        #     self.browser = WebKit.WebView()
             
-            self.browser.connect('button-press-event', lambda w, e: e.button == 3)
-            self.browser.connect('title-changed', self.browser_title_changed)
-            self.browser.connect('console-message' , self.browser_console_message)
+        #     self.browser.connect('button-press-event', lambda w, e: e.button == 3)
+        #     self.browser.connect('title-changed', self.browser_title_changed)
+        #     self.browser.connect('console-message' , self.browser_console_message)
         
-            settings = WebKit.WebSettings()
-            settings.set_property('enable-xss-auditor', False)
-            settings.set_property('enable-file-access-from-file-uris', True)
-            settings.set_property('enable-accelerated-compositing', True)
-            self.browser.set_settings(settings)
+        #     settings = WebKit.WebSettings()
+        #     settings.set_property('enable-xss-auditor', False)
+        #     settings.set_property('enable-file-access-from-file-uris', True)
+        #     settings.set_property('enable-accelerated-compositing', True)
+        #     self.browser.set_settings(settings)
 
-            scrolled_window = Gtk.ScrolledWindow()
-            scrolled_window.set_shadow_type(Gtk.ShadowType.NONE)
-            scrolled_window.set_border_width(0)
-            scrolled_window.add(self.browser)
-            content_area.pack_start(scrolled_window, True, True, 0)
-            scrolled_window.show()
+        #     scrolled_window = Gtk.ScrolledWindow()
+        #     scrolled_window.set_shadow_type(Gtk.ShadowType.NONE)
+        #     scrolled_window.set_border_width(0)
+        #     scrolled_window.add(self.browser)
+        #     content_area.pack_start(scrolled_window, True, True, 0)
+        #     scrolled_window.show()
 
-        if not callable(self.onActivate):
-            self.progress_button_activate.hide()
-    
     def get_webkit_enabled(self):
         return HAS_WEBKIT
     
@@ -212,13 +210,13 @@ class Spice_Harvester:
         #print msg
 
     def get_index_url(self):
-        if self.collection_type == 'applets':
+        if self.collection_type == 'applet':
             return URL_SPICES_APPLET_LIST
-        elif self.collection_type == 'extensions':
+        elif self.collection_type == 'extension':
             return URL_SPICES_EXTENSION_LIST
         elif self.collection_type == 'themes':
             return URL_SPICES_THEME_LIST
-        elif self.collection_type == 'desklets':
+        elif self.collection_type == 'desklet':
             return URL_SPICES_DESKLET_LIST
         else:
             return False
@@ -231,18 +229,19 @@ class Spice_Harvester:
         return cache_folder
 
     def get_install_folder(self):
-        if self.collection_type in ['applets','desklets','extensions']:
-            install_folder = '%s/.local/share/cinnamon/%s/' % (home, self.collection_type)
+        if self.collection_type in ['applet','desklet','extension']:
+            install_folder = '%s/.local/share/cinnamon/%ss/' % (home, self.collection_type)
         elif self.collection_type == 'themes':
             install_folder = '%s/.themes/' % (home)
 
         return install_folder
 
     def load(self, onDone, force=False):
+        self.abort_download = ABORT_NONE
         if (self.has_cache and not force):
             self.load_cache()
         else:
-            self.progress_button_activate.hide()
+            self.progresslabel.set_text(_("Refreshing %s index...") % (self.collection_type))
             self.progress_window.show()
             self.refresh_cache()
 
@@ -266,10 +265,17 @@ class Spice_Harvester:
     def load_cache(self):
         filename = os.path.join(self.cache_folder, "index.json")
         f = open(filename, 'r')
-        self.index_cache = json.load(f)
+        try:
+            self.index_cache = json.load(f)
+        except ValueError, detail:
+            try:
+                os.remove(filename)
+            except:
+                pass
+            self.errorMessage(_("Something went wrong with the spices download.  Please try refreshing the list again."), str(detail))
 
     def load_assets(self, uuids=None):
-        self.progresslabel.set_text(_("Refreshing applet cache..."))
+        self.progresslabel.set_text(_("Refreshing %s cache...") % (self.collection_type))
         needs_refresh = 0
 
         if uuids == None:
@@ -289,7 +295,7 @@ class Spice_Harvester:
         self.download_current_file = 0
 
         for uuid in uuids:
-            if self.abort_download:
+            if self.abort_download > ABORT_NONE:
                 return
 
             icon_path = self.index_cache[uuid]['icon_path']
@@ -302,18 +308,20 @@ class Spice_Harvester:
                 self.download(f, icon_path)
 
         self.progress_window.hide()
-        self.progress_button_activate.show()
 
         self.download_total_files = 0
         self.download_current_file = 0
 
     def install_all(self, install_list=[], onFinished=None):
-        for uuid in install_list:
-            self.install(uuid)
+        need_restart = False
+        success = False
+        for uuid, is_update, is_active in install_list:
+            success = self.install(uuid, is_update, is_active)
+            need_restart = need_restart or (is_update and is_active and success)
 
         if callable(onFinished):
             try:
-                onFinished()
+                onFinished(need_restart)
             except:
                 pass
 
@@ -332,20 +340,25 @@ class Spice_Harvester:
                 zipinfo.filename = name[offset:]
                 yield zipinfo
 
-    def install(self, uuid):
+    def install(self, uuid, is_update, is_active):
         #print "Start downloading and installation"
         title = self.index_cache[uuid]['name']
 
+        if is_update:
+            verb = _("Updating")
+        else:
+            verb = _("Installing")
+
         self.download_url = URL_SPICES_HOME + self.index_cache[uuid]['file'];
         self.current_uuid = uuid
-        
-        self.progress_button_activate.set_sensitive(False)
+
         self.progress_button_close.set_sensitive(False)
         self.progress_window.show()        
 
-        self.progresslabel.set_text(_("Installing %s...") % title)
+        self.progresslabel.set_text(_("%s %s...") % (verb, title))
         self.progressbar.set_fraction(0)
-        
+
+        edited_date = self.index_cache[uuid]['last_edited']
         executable_files = ['settings.py']
         
         fd, filename = tempfile.mkstemp()
@@ -366,38 +379,60 @@ class Spice_Harvester:
                        rec_mkdir(this_locale_dir)
                        #print "/usr/bin/msgfmt -c %s -o %s" % (os.path.join(dest, file.filename), os.path.join(this_locale_dir, '%s.mo' % uuid))
                        subprocess.call(["msgfmt", "-c", os.path.join(dest, file.filename), "-o", os.path.join(this_locale_dir, '%s.mo' % uuid)])
-                       self.progresslabel.set_text(_("Installing %s...") % title)
+                       self.progresslabel.set_text(_("%s %s...") % (verb, title))
+                elif "gschema.xml" in file.filename:
+                    sentence = _("Please enter your password to install the required settings schema for %s") % (uuid)
+                    if os.path.exists("/usr/bin/gksu") and os.path.exists("/usr/lib/cinnamon-settings/bin/installSchema.py"):
+                        launcher = "gksu  --message \"<b>%s</b>\"" % sentence
+                        tool = "/usr/lib/cinnamon-settings/bin/installSchema.py %s" % (file.filename)
+                        command = "%s %s" % (launcher, tool)
+                        os.system(command)
+                    else:
+                        self.errorMessage(_("Could not install the settings schema for %s.  You will have to perform this step yourself.") % (uuid))
+            file = open(os.path.join(dest, "metadata.json"), 'r')
+            raw_meta = file.read()
+            file.close()
+            md = json.loads(raw_meta)
+            md["last-edited"] = edited_date
+            raw_meta = json.dumps(md, indent=4)
+            file = open(os.path.join(dest, "metadata.json"), 'w+')
+            file.write(raw_meta)
+            file.close()
 
-        except:
+        except Exception, detail:
+            self.progress_window.hide()
+            self.errorMessage(_("An error occurred during installation or updating.  You may wish to report this incident to the developer of %s.") % (uuid), str(detail))
             return False
 
         self.progress_button_close.set_sensitive(True)
-        self.progress_button_activate.set_sensitive(True)
         self.progress_button_abort.set_sensitive(False)
         self.progress_window.show()
+        return True
 
     def uninstall(self, uuid, name=None, onFinished=None):
-        self.progress_button_activate.set_sensitive(False)
         self.progress_button_close.set_sensitive(False)        
         self.progresslabel.set_text(_("Uninstalling %s...") % name)
         self.progress_window.show()
         
         self.progress_bar_pulse()
+        try:
+            shutil.rmtree(os.path.join(self.install_folder, uuid))
 
-        shutil.rmtree(os.path.join(self.install_folder, uuid))
+            # Uninstall spice's localization files, if any
+            if (os.path.exists(locale_inst)):
+                i19_folders = os.listdir(locale_inst)
+                for i19_folder in i19_folders:
+                    if os.path.isfile(os.path.join(locale_inst, i19_folder, 'LC_MESSAGES', "%s.mo" % uuid)):
+                        os.remove(os.path.join(locale_inst, i19_folder, 'LC_MESSAGES', "%s.mo" % uuid))
+                    # Clean-up this locale folder
+                    removeEmptyFolders(os.path.join(locale_inst, i19_folder))
 
-        # Uninstall spice's localization files, if any
-        if (os.path.exists(locale_inst)):
-            i19_folders = os.listdir(locale_inst)
-            for i19_folder in i19_folders:
-                if os.path.isfile(os.path.join(locale_inst, i19_folder, 'LC_MESSAGES', "%s.mo" % uuid)):
-                    os.remove(os.path.join(locale_inst, i19_folder, 'LC_MESSAGES', "%s.mo" % uuid))
-                # Clean-up this locale folder
-                removeEmptyFolders(os.path.join(locale_inst, i19_folder))
-
-        # Uninstall settings file, if any
-        if (os.path.exists(os.path.join(settings_dir, uuid))):
-            shutil.rmtree(os.path.join(settings_dir, uuid))
+            # Uninstall settings file, if any
+            if (os.path.exists(os.path.join(settings_dir, uuid))):
+                shutil.rmtree(os.path.join(settings_dir, uuid))
+        except Exception, detail:
+            self.progress_window.hide()
+            self.errorMessage(_("Problem uninstalling %s.  You may need to manually remove it.") % (uuid), detail)
 
         self.progress_button_close.set_sensitive(True)
         self.progress_window.hide()
@@ -416,7 +451,7 @@ class Spice_Harvester:
         return
 
     def on_abort_clicked(self, button):
-        self.abort_download = True
+        self.abort_download = ABORT_USER
         self.progress_window.hide()
         return
 
@@ -424,7 +459,6 @@ class Spice_Harvester:
         self.load_index()
 
     def download_with_progressbar(self, outfd, outfile, caption='Please wait..', waitForClose=True):
-        self.progress_button_activate.set_sensitive(False)
         self.progress_button_close.set_sensitive(False)
         self.progressbar.set_fraction(0)
         self.progressbar.set_text('0%')        
@@ -442,7 +476,6 @@ class Spice_Harvester:
             self.progress_window.hide()
         else:
             self.progress_button_close.set_sensitive(True)
-            self.progress_button_activate.set_sensitive(True)
             self.progress_button_abort.set_sensitive(False)
 
     def progress_bar_pulse(self):
@@ -468,7 +501,10 @@ class Spice_Harvester:
                 os.remove(outfile)
             except OSError:
                 pass
-            raise Exception(_('Aborted.'))
+            self.progress_window.hide()
+            if self.abort_download == ABORT_ERROR:
+                self.errorMessage(_("An error occurred while trying to access the server.  Please try again in a little while."), None)
+            raise Exception(_('Download aborted.'))
 
         return outfile
 
@@ -497,12 +533,19 @@ class Spice_Harvester:
         '''
         count = 0
         blockSize = 1024 * 8
+        try:
+            self.progress_bar_pulse()
+            urlobj = urllib2.urlopen(url)
+        except Exception, detail:
+            f.close()
+            self.abort_download = ABORT_ERROR
+            self.error = detail
+            raise KeyboardInterrupt
 
-        urlobj = urllib2.urlopen(url)
         totalSize = int(urlobj.info()['content-length'])
 
         try:
-            while not self.abort_download:
+            while self.abort_download == ABORT_NONE:
                 data = urlobj.read(blockSize)
                 count += 1
                 if not data:
@@ -511,9 +554,9 @@ class Spice_Harvester:
                 reporthook(count, blockSize, totalSize)
         except KeyboardInterrupt:
             f.close()
-            self.abort_download = True
+            self.abort_download = ABORT_USER
 
-        if self.abort_download:
+        if self.abort_download > ABORT_NONE:
             raise KeyboardInterrupt
 
         del urlobj
@@ -522,7 +565,13 @@ class Spice_Harvester:
     def scrubConfigDirs(self, enabled_list):
         active_list = {}
         for enabled in enabled_list:
-            panel, align, order, uuid, id = enabled.split(":")
+            if self.collection_type == "applet":
+                panel, align, order, uuid, id = enabled.split(":")
+            elif self.collection_type == "desklet":
+                uuid, id, x, y = enabled.split(":")
+            else:
+                uuid = enabled
+                id = 0
             if uuid not in active_list:
                 id_list = []
                 active_list[uuid] = id_list
@@ -546,7 +595,12 @@ class Spice_Harvester:
                     except:
                         pass
 
-
-
-
-
+    def errorMessage(self, msg, detail = None):
+        dialog = Gtk.MessageDialog(None, Gtk.DialogFlags.MODAL, Gtk.MessageType.ERROR, Gtk.ButtonsType.OK, None)
+        markup = msg
+        if detail is not None:
+            markup += _("\n\nDetails:  %s") % (str(detail))
+        dialog.set_markup(markup)
+        dialog.show_all()
+        response = dialog.run()
+        dialog.destroy()
