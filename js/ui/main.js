@@ -426,7 +426,7 @@ function notifyCinnamon2d() {
     let icon = new St.Icon({ icon_name: 'display',
                              icon_type: St.IconType.FULLCOLOR,
                              icon_size: 36 });
-    criticalNotify(_("Running in software rendering"),
+    criticalNotify(_("Running in software rendering mode"),
                    _("Cinnamon is currently running without video hardware acceleration and, as a result, you may observe much higher than normal CPU usage.\n\n") +
                    _("There could be a problem with your drivers or some other issue.  For the best experience, it is recommended that you only use this mode for") +
                    _(" troubleshooting purposes."), icon);
