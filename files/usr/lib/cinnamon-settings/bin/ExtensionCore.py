@@ -108,7 +108,8 @@ class ExtensionSidePage (SidePage):
                          
         self.load_extensions()
 
-        self.model.set_sort_column_id(5, Gtk.SortType.ASCENDING) # Sort by name 
+        self.model.set_default_sort_func(self.model_sort_func)
+        self.model.set_sort_column_id(-1, Gtk.SortType.ASCENDING)            
         
         self.settings.connect(("changed::enabled-%ss") % (self.collection_type), lambda x,y: self._enabled_extensions_changed())
         
@@ -325,6 +326,11 @@ class ExtensionSidePage (SidePage):
                             self.configureButton.clicked()
                         elif self.extConfigureButton.get_visible() and self.extConfigureButton.get_sensitive():
                             self.extConfigureButton.clicked()
+
+    def model_sort_func(self, model, iter1, iter2, data=None):
+            s1 = ((not model[iter1][6]), model[iter1][5])
+            s2 = ((not model[iter2][6]), model[iter2][5])
+            return cmp( s1, s2 )
 
     def _filter_toggle_active(self, widget):
         if widget.get_active():
