@@ -32,7 +32,7 @@ class DeskletsViewSidePage (ExtensionSidePage):
 
     def getAdditionalPage(self):
         scrolled_window = Gtk.ScrolledWindow()
-        scrolled_window.label = Gtk.Label(_("Genera Desklets Settings"))
+        scrolled_window.label = Gtk.Label(_("General Desklets Settings"))
         config_vbox = Gtk.VBox()
         scrolled_window.add_with_viewport(config_vbox)
         config_vbox.set_border_width(5)

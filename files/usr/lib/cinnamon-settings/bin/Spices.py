@@ -384,7 +384,7 @@ class Spice_Harvester:
                     sentence = _("Please enter your password to install the required settings schema for %s") % (uuid)
                     if os.path.exists("/usr/bin/gksu") and os.path.exists("/usr/lib/cinnamon-settings/bin/installSchema.py"):
                         launcher = "gksu  --message \"<b>%s</b>\"" % sentence
-                        tool = "/usr/lib/cinnamon-settings/bin/installSchema.py %s" % (file.filename)
+                        tool = "/usr/lib/cinnamon-settings/bin/installSchema.py %s" % (os.path.join(dest, file.filename))
                         command = "%s %s" % (launcher, tool)
                         os.system(command)
                     else:
