@@ -28,3 +28,6 @@ class AppletsViewSidePage (ExtensionSidePage):
     def fromSettingString(self, string):
         panel, side, position, uuid, instanceId = string.split(":")
         return uuid
+
+    def getAdditionalPage(self):
+        return None
