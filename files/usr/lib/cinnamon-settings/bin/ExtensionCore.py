@@ -64,25 +64,25 @@ class ExtensionSidePage (SidePage):
         
         cr = Gtk.CellRendererToggle()
         cr.connect("toggled", self.toggled, self.treeview)
-        column1 = Gtk.TreeViewColumn(_("Enable"), cr)
+        column1 = Gtk.TreeViewColumn("Enable", cr)
         column1.set_cell_data_func(cr, self.celldatafunction_checkbox)        
         column1.set_resizable(True)
 
-        column2 = Gtk.TreeViewColumn(_("Icon"), Gtk.CellRendererPixbuf(), pixbuf=4)        
+        column2 = Gtk.TreeViewColumn("Icon", Gtk.CellRendererPixbuf(), pixbuf=4)        
         column2.set_resizable(True)
         column2.set_min_width(50)
 
-        column3 = Gtk.TreeViewColumn(_("Description"), Gtk.CellRendererText(), markup=1)        
+        column3 = Gtk.TreeViewColumn("Description", Gtk.CellRendererText(), markup=1)        
         column3.set_resizable(True)      
         column3.set_min_width(500)
         column3.set_max_width(501)        
 
-        actionColumn = Gtk.TreeViewColumn(_("Read only"), Gtk.CellRendererPixbuf(), pixbuf=10)        
+        actionColumn = Gtk.TreeViewColumn("Read only", Gtk.CellRendererPixbuf(), pixbuf=10)        
         actionColumn.set_resizable(True)
         actionColumn.set_min_width(50)
 
         cr = Gtk.CellRendererPixbuf()
-        isActiveColumn = Gtk.TreeViewColumn(_("Active"), cr, pixbuf=11)        
+        isActiveColumn = Gtk.TreeViewColumn("Active", cr, pixbuf=11)        
         isActiveColumn.set_resizable(True)
         isActiveColumn.set_min_width(50)
         isActiveColumn.set_cell_data_func(cr, self._is_active_data_func)
@@ -244,31 +244,31 @@ class ExtensionSidePage (SidePage):
         
         gm_cr = Gtk.CellRendererToggle()
         gm_cr.connect("toggled", self.gm_toggled, self.gm_treeview)
-        gm_column1 = Gtk.TreeViewColumn(_("Install"), gm_cr)
+        gm_column1 = Gtk.TreeViewColumn("Install", gm_cr)
         gm_column1.set_cell_data_func(gm_cr, self.gm_celldatafunction_checkbox)
         gm_column1.set_resizable(True)
 
-        gm_column2 = Gtk.TreeViewColumn(_("Icon"), Gtk.CellRendererPixbuf(), pixbuf=3)
+        gm_column2 = Gtk.TreeViewColumn("Icon", Gtk.CellRendererPixbuf(), pixbuf=3)
         gm_column2.set_resizable(True)
 
-        gm_column3 = Gtk.TreeViewColumn(_("Description"), Gtk.CellRendererText(), markup=1)
+        gm_column3 = Gtk.TreeViewColumn("Description", Gtk.CellRendererText(), markup=1)
         gm_column3.set_resizable(True)
         gm_column3.set_min_width(400)
         gm_column3.set_max_width(401)
         
         cr = Gtk.CellRendererText()
-        actionColumn = Gtk.TreeViewColumn(_("Action"), cr)
+        actionColumn = Gtk.TreeViewColumn("Action", cr)
         actionColumn.set_cell_data_func(cr, self._gm_action_data_func)
         actionColumn.set_min_width(90)
 
         cr = Gtk.CellRendererText()
-        statusColumn = Gtk.TreeViewColumn(_("Status"), cr)
+        statusColumn = Gtk.TreeViewColumn("Status", cr)
         statusColumn.set_cell_data_func(cr, self._gm_status_data_func)
 
 
         right = Gtk.CellRendererText()
         right.set_property('xalign', 1.0)
-        gm_column4 = Gtk.TreeViewColumn(_("Score"), right, markup=4)
+        gm_column4 = Gtk.TreeViewColumn("Score", right, markup=4)
         gm_column4.set_resizable(True)
         gm_column4.set_alignment(1.0)
 
