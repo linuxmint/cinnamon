@@ -519,10 +519,12 @@ Player.prototype = {
             if (this._songLength == 0 || position == false)
                 this._canSeek = false
 
-            if (this._playerStatus == "Playing" && this._canSeek && this.showPosition)
-                this._positionSlider.actor.show();
-            else
-                this._positionSlider.actor.hide();
+            // Clem: The following code was commented out. When the next song started, it resulted in hiding the sound menu, making it hard for the user to repeatedly click on the next song button.
+            // There's probably a better fix and this was not tested with players which don't support seeking, but it fixes the regression created by the slider (apparently when the slider is hidden it closes the menu)
+            // if (this._playerStatus == "Playing" && this._canSeek && this.showPosition)
+            //     this._positionSlider.actor.show();
+            // else
+            //     this._positionSlider.actor.hide();
         }));
     },
 
