@@ -688,7 +688,7 @@ class ExtensionSidePage (SidePage):
             msg = _("There are multiple instances of this %s, do you want to remove them all?\n\n") % (self.collection_type)
             msg += self.RemoveString
 
-            if self.show_prompt(msg) == False:
+            if not self.show_prompt(msg):
                 return
 
         newExtensions = []
@@ -699,6 +699,8 @@ class ExtensionSidePage (SidePage):
         self.settings.set_strv(("enabled-%ss") % (self.collection_type), self.enabled_extensions)
 
     def uninstall_extension(self, uuid, name):
+        if not self.show_prompt(_("Are you sure you want to completely remove %s?") % (uuid)):
+            return
         self.disable_extension(uuid, 0)
         self.spices.uninstall(uuid, name, self.on_uninstall_finished)
     
@@ -936,7 +938,7 @@ class ExtensionSidePage (SidePage):
                 msg = _("There are multiple instances of this %s, do you want to remove them all?\n\n") % (self.collection_type)
                 msg += self.RemoveString
 
-                if self.show_prompt(msg) == False:
+                if not self.show_prompt(msg):
                     return
             self.model.set_value(iter, 2, 0)
             newExtensions = []
