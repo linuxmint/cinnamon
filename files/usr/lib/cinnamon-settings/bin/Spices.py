@@ -80,7 +80,6 @@ class Spice_Harvester:
 
         self.progress_window = self.builder.get_object("progress_window")
         self.progress_button_close = self.builder.get_object("btnProgressClose")
-        self.progress_button_activate = self.builder.get_object("btnProgressActivate")
         self.progress_button_abort = self.builder.get_object("btnProgressAbort")
 
         self.progresslabel = self.builder.get_object('progresslabel')
@@ -95,7 +94,6 @@ class Spice_Harvester:
         self.download_current_file = 0
         self._sigLoadFinished = None
 
-        self.progress_button_activate.connect("clicked", lambda x: self.on_activate_clicked())
         self.progress_button_abort.connect("clicked", self.on_abort_clicked)
         self.progress_button_close.connect("clicked", self.on_progress_close)
 
@@ -132,9 +130,6 @@ class Spice_Harvester:
         #     content_area.pack_start(scrolled_window, True, True, 0)
         #     scrolled_window.show()
 
-        if not callable(self.onActivate):
-            self.progress_button_activate.hide()
-    
     def get_webkit_enabled(self):
         return HAS_WEBKIT
     
@@ -247,7 +242,6 @@ class Spice_Harvester:
             self.load_cache()
         else:
             self.progresslabel.set_text(_("Refreshing %s index...") % (self.collection_type))
-            self.progress_button_activate.hide()
             self.progress_window.show()
             self.refresh_cache()
 
@@ -314,7 +308,6 @@ class Spice_Harvester:
                 self.download(f, icon_path)
 
         self.progress_window.hide()
-        self.progress_button_activate.show()
 
         self.download_total_files = 0
         self.download_current_file = 0
@@ -349,7 +342,6 @@ class Spice_Harvester:
 
     def install(self, uuid, is_update, is_active):
         #print "Start downloading and installation"
-        self.progress_button_activate.set_visible(False)
         title = self.index_cache[uuid]['name']
 
         if is_update:
@@ -413,14 +405,11 @@ class Spice_Harvester:
             return False
 
         self.progress_button_close.set_sensitive(True)
-        self.progress_button_activate.set_visible(not is_active)
-        self.progress_button_activate.set_sensitive(not is_active)
         self.progress_button_abort.set_sensitive(False)
         self.progress_window.show()
         return True
 
     def uninstall(self, uuid, name=None, onFinished=None):
-        self.progress_button_activate.set_sensitive(False)
         self.progress_button_close.set_sensitive(False)        
         self.progresslabel.set_text(_("Uninstalling %s...") % name)
         self.progress_window.show()
@@ -470,7 +459,6 @@ class Spice_Harvester:
         self.load_index()
 
     def download_with_progressbar(self, outfd, outfile, caption='Please wait..', waitForClose=True):
-        self.progress_button_activate.set_sensitive(False)
         self.progress_button_close.set_sensitive(False)
         self.progressbar.set_fraction(0)
         self.progressbar.set_text('0%')        
@@ -488,7 +476,6 @@ class Spice_Harvester:
             self.progress_window.hide()
         else:
             self.progress_button_close.set_sensitive(True)
-            self.progress_button_activate.set_sensitive(True)
             self.progress_button_abort.set_sensitive(False)
 
     def progress_bar_pulse(self):
