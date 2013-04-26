@@ -60,6 +60,7 @@ class ExtensionSidePage (SidePage):
         
         self.content_box.add(self.notebook)
         self.treeview = Gtk.TreeView()
+        self.treeview.set_rules_hint(True)       
         
         cr = Gtk.CellRendererToggle()
         cr.connect("toggled", self.toggled, self.treeview)
@@ -74,16 +75,16 @@ class ExtensionSidePage (SidePage):
         column3 = Gtk.TreeViewColumn(_("Description"), Gtk.CellRendererText(), markup=1)        
         column3.set_resizable(True)      
         column3.set_min_width(500)
-        column3.set_max_width(501)
+        column3.set_max_width(501)        
 
-        cr = Gtk.CellRendererText()
-        actionColumn = Gtk.TreeViewColumn(_("Action"), cr)
-        actionColumn.set_min_width(100)
-        actionColumn.set_cell_data_func(cr, self._action_data_func)
+        actionColumn = Gtk.TreeViewColumn(_("Read only"), Gtk.CellRendererPixbuf(), pixbuf=10)        
+        actionColumn.set_resizable(True)
+        actionColumn.set_min_width(50)
 
-        cr = Gtk.CellRendererText()
-        isActiveColumn = Gtk.TreeViewColumn(_("Active"), cr)
-        isActiveColumn.set_min_width(100)
+        cr = Gtk.CellRendererPixbuf()
+        isActiveColumn = Gtk.TreeViewColumn(_("Active"), cr, pixbuf=11)        
+        isActiveColumn.set_resizable(True)
+        isActiveColumn.set_min_width(50)
         isActiveColumn.set_cell_data_func(cr, self._is_active_data_func)
         
         self.treeview.append_column(column2)
@@ -92,8 +93,8 @@ class ExtensionSidePage (SidePage):
         self.treeview.append_column(isActiveColumn)
         self.treeview.set_headers_visible(False)
         
-        self.model = Gtk.TreeStore(str, str, int, int, GdkPixbuf.Pixbuf, str, int, bool, str, int)
-        #                          uuid, desc, enabled, max-instances, icon, name, read-only, hide-config-button, ext-setting-app, edit-date
+        self.model = Gtk.TreeStore(str, str, int, int, GdkPixbuf.Pixbuf, str, int, bool, str, int, GdkPixbuf.Pixbuf, GdkPixbuf.Pixbuf)
+        #                          uuid, desc, enabled, max-instances, icon, name, read-only, hide-config-button, ext-setting-app, edit-date, read-only icon, active icon
 
         self.modelfilter = self.model.filter_new()
         self.onlyActive = ACTIVE
@@ -239,6 +240,7 @@ class ExtensionSidePage (SidePage):
         self.gm_modelfilter = self.gm_model.filter_new()
         self.gm_modelfilter.set_visible_func(self.gm_match_func)
         self.gm_treeview = Gtk.TreeView()
+        self.gm_treeview.set_rules_hint(True)
         
         gm_cr = Gtk.CellRendererToggle()
         gm_cr.connect("toggled", self.gm_toggled, self.gm_treeview)
@@ -328,9 +330,9 @@ class ExtensionSidePage (SidePage):
                             self.extConfigureButton.clicked()
 
     def model_sort_func(self, model, iter1, iter2, data=None):
-            s1 = ((not model[iter1][6]), model[iter1][5])
-            s2 = ((not model[iter2][6]), model[iter2][5])
-            return cmp( s1, s2 )
+        s1 = ((not model[iter1][6]), model[iter1][5])
+        s2 = ((not model[iter2][6]), model[iter2][5])
+        return cmp( s1, s2 )   
 
     def _filter_toggle_active(self, widget):
         if widget.get_active():
@@ -403,19 +405,14 @@ class ExtensionSidePage (SidePage):
                     return False
 
             return True
-
-    def _action_data_func(self, column, cell, model, iter, data=None):
-        readonly = model.get_value(iter, 6)
-        label = '(System)' if not readonly else ''
-        cell.set_property('markup',"<span color='#999999'>%s</span>" % label)
-
+   
     def _is_active_data_func(self, column, cell, model, iter, data=None):
         enabled = model.get_value(iter, 2) > 0
-        if enabled:
-            label = _("Active")
+        if (enabled):
+            img = GdkPixbuf.Pixbuf.new_from_file( ("/usr/lib/cinnamon-settings/data/active.png"))
         else:
-            label = ""
-        cell.set_property('markup',"<span color='black' weight='bold'>%s</span>" % label)
+            img = GdkPixbuf.Pixbuf.new_from_file( ("/usr/lib/cinnamon-settings/data/inactive.png"))        
+        cell.set_property('pixbuf', img)
 
     def version_compare(self, uuid, date):
         installed = False
@@ -900,13 +897,28 @@ class ExtensionSidePage (SidePage):
                             
                             if img is None:                                                
                                 img = GdkPixbuf.Pixbuf.new_from_file_at_size( ("/usr/lib/cinnamon-settings/data/icons/%ss.svg") % (self.collection_type), 32, 32)
-                                
+                                                        
                             self.model.set_value(iter, 4, img)
                             self.model.set_value(iter, 5, extension_name)
                             self.model.set_value(iter, 6, os.access(directory, os.W_OK))
                             self.model.set_value(iter, 7, hide_config_button)
                             self.model.set_value(iter, 8, ext_config_app)
                             self.model.set_value(iter, 9, long(last_edited))
+
+                            if (os.access(directory, os.W_OK)):
+                                img = GdkPixbuf.Pixbuf.new_from_file( ("/usr/lib/cinnamon-settings/data/user.png"))
+                            else:
+                                img = GdkPixbuf.Pixbuf.new_from_file( ("/usr/lib/cinnamon-settings/data/system.png"))
+
+                            self.model.set_value(iter, 10, img)
+
+                            if (found):
+                                img = GdkPixbuf.Pixbuf.new_from_file( ("/usr/lib/cinnamon-settings/data/active.png"))
+                            else:
+                                img = GdkPixbuf.Pixbuf.new_from_file( ("/usr/lib/cinnamon-settings/data/inactive.png"))
+
+                            self.model.set_value(iter, 11, img)
+
 
                 except Exception, detail:
                     print "Failed to load extension %s: %s" % (extension, detail)
