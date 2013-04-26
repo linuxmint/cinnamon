@@ -36,9 +36,9 @@ settings_dir = '%s/.cinnamon/configs/' % home
 
 URL_SPICES_HOME = "http://cinnamon-spices.linuxmint.com"
 URL_SPICES_APPLET_LIST = URL_SPICES_HOME + "/applets/json"
-URL_SPICES_THEME_LIST = URL_SPICES_HOME + "/themes/list_json"
-URL_SPICES_DESKLET_LIST = URL_SPICES_HOME + "/desklets/list_json"
-URL_SPICES_EXTENSION_LIST = URL_SPICES_HOME + "/extensions/list_json"
+URL_SPICES_THEME_LIST = URL_SPICES_HOME + "/themes/json"
+URL_SPICES_DESKLET_LIST = URL_SPICES_HOME + "/desklets/json"
+URL_SPICES_EXTENSION_LIST = URL_SPICES_HOME + "/extensions/json"
 
 ABORT_NONE = 0
 ABORT_ERROR = 1
