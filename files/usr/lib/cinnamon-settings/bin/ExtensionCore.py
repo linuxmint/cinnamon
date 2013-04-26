@@ -161,6 +161,7 @@ class ExtensionSidePage (SidePage):
         
         hbox.pack_end(self.search_entry, False, False, 4)
         extensions_vbox.pack_start(hbox, False, False, 4)
+        hbox.set_border_width(6);
         hbox.show()
         self.search_entry.show()
 
@@ -222,7 +223,7 @@ class ExtensionSidePage (SidePage):
         self.gm_combosort.show()
 
         hbox = Gtk.HBox()
-        #hbox.set_margin_bottom(2)        
+        hbox.set_border_width(6);
         sortLabel = Gtk.Label()
         sortLabel.set_text(_("Sort by"))
         sortLabel.show()
@@ -298,7 +299,7 @@ class ExtensionSidePage (SidePage):
 
         getmore_vbox.add(gm_scrolled_window)
 
-        hbox = Gtk.HBox()
+        hbox = Gtk.HBox()        
         buttonbox = Gtk.ButtonBox.new(Gtk.Orientation.HORIZONTAL)
         buttonbox.set_spacing(6)
         self.install_button = Gtk.Button(_("Install or update selected"))
