@@ -318,7 +318,7 @@ class Spice_Harvester:
         for uuid, is_update, is_active in install_list:
             success = self.install(uuid, is_update, is_active)
             need_restart = need_restart or (is_update and is_active and success)
-
+        self.progress_window.hide()
         if callable(onFinished):
             try:
                 onFinished(need_restart)
@@ -534,7 +534,6 @@ class Spice_Harvester:
         count = 0
         blockSize = 1024 * 8
         try:
-            self.progress_bar_pulse()
             urlobj = urllib2.urlopen(url)
         except Exception, detail:
             f.close()
