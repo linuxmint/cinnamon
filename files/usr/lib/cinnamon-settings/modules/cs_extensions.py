@@ -26,3 +26,7 @@ class ExtensionViewSidePage (ExtensionSidePage):
 
     def fromSettingString(self, string):
         return string
+
+    def getAdditionalPage(self):
+        return None
+

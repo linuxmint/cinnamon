@@ -311,7 +311,6 @@ class ExtensionSidePage (SidePage):
 
         reload_button.connect("clicked", lambda x: self.load_spices(True))
         self.install_button.connect("clicked", lambda x: self.install_extensions())
-        self.content_box.show_all()   
         self.treeview.get_selection().connect("changed", lambda x: self._selection_changed());
         self.install_list = []
         
@@ -319,6 +318,12 @@ class ExtensionSidePage (SidePage):
         # if not self.spices.get_webkit_enabled():
         #     getmore_label.set_sensitive(False)
         #     reload_button.set_sensitive(False)
+
+        extra_page = self.getAdditionalPage()
+        if extra_page:
+            self.notebook.append_page(extra_page, extra_page.label)
+
+        self.content_box.show_all()
 
         self.spices.scrubConfigDirs(self.enabled_extensions)
 
@@ -337,6 +342,9 @@ class ExtensionSidePage (SidePage):
                             self.configureButton.clicked()
                         elif self.extConfigureButton.get_visible() and self.extConfigureButton.get_sensitive():
                             self.extConfigureButton.clicked()
+
+    def getAdditionalPage(self):
+        return None
 
     def model_sort_func(self, model, iter1, iter2, data=None):
         s1 = ((not model[iter1][6]), model[iter1][5])
