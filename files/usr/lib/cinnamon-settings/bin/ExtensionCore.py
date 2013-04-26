@@ -161,7 +161,7 @@ class ExtensionSidePage (SidePage):
         
         hbox.pack_end(self.search_entry, False, False, 4)
         extensions_vbox.pack_start(hbox, False, False, 4)
-        hbox.set_border_width(6);
+        hbox.set_border_width(3);
         hbox.show()
         self.search_entry.show()
 
@@ -223,7 +223,7 @@ class ExtensionSidePage (SidePage):
         self.gm_combosort.show()
 
         hbox = Gtk.HBox()
-        hbox.set_border_width(6);
+        hbox.set_border_width(3);
         sortLabel = Gtk.Label()
         sortLabel.set_text(_("Sort by"))
         sortLabel.show()
