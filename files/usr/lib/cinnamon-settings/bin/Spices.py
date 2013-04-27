@@ -279,6 +279,7 @@ class Spice_Harvester:
 
     def load_assets(self, uuids=None):
         self.progresslabel.set_text(_("Refreshing %s cache...") % (self.noun))
+        self.progress_button_abort.set_sensitive(True)
         needs_refresh = 0
 
         if uuids == None:
