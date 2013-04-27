@@ -341,7 +341,8 @@ function start() {
         panel.actor.add_style_class_name('panel-top');
         layoutManager.panelBox.add(panel.actor);
     }
-    else if (desktop_layout == LAYOUT_CLASSIC) {
+    else {
+        desktop_layout == LAYOUT_CLASSIC;
         panel = new Panel.Panel(false, true);
         panel2 = new Panel.Panel(true, false);
         panel.actor.add_style_class_name('panel-top');
