@@ -291,7 +291,7 @@ class ExtensionSidePage (SidePage):
         actionColumn.set_cell_data_func(cr, self._gm_action_data_func)
         actionColumn.set_min_width(90)
 
-        cr = Gtk.CellRendererText()
+        cr = Gtk.CellRendererPixbuf()
         statusColumn = Gtk.TreeViewColumn("Status", cr)
         statusColumn.set_cell_data_func(cr, self._gm_status_data_func)
 
@@ -440,7 +440,7 @@ class ExtensionSidePage (SidePage):
     def _is_active_data_func(self, column, cell, model, iter, data=None):
         enabled = model.get_value(iter, 2) > 0
         if (enabled):
-            img = GdkPixbuf.Pixbuf.new_from_file( ("/usr/lib/cinnamon-settings/data/active.png"))
+            img = GdkPixbuf.Pixbuf.new_from_file( ("/usr/lib/cinnamon-settings/data/running.png"))
         else:
             img = GdkPixbuf.Pixbuf.new_from_file( ("/usr/lib/cinnamon-settings/data/inactive.png"))        
         cell.set_property('pixbuf', img)
@@ -584,13 +584,15 @@ class ExtensionSidePage (SidePage):
 
         if installed:
             if can_update:
+                img = GdkPixbuf.Pixbuf.new_from_file( ("/usr/lib/cinnamon-settings/data/update.png"))
                 text = _("Update Available")
             else:
+                img = GdkPixbuf.Pixbuf.new_from_file( ("/usr/lib/cinnamon-settings/data/installed.png"))
                 text = _("Installed (Up to date)")
         else:
-            text = ""
+            img = GdkPixbuf.Pixbuf.new_from_file( ("/usr/lib/cinnamon-settings/data/inactive.png"))
 
-        cell.set_property("markup", "<span color='black' weight='bold'>%s</span>" % (text))
+        cell.set_property("pixbuf", img)
 
     def gm_toggled(self, renderer, path, treeview):
         iter = self.gm_modelfilter.get_iter(path)

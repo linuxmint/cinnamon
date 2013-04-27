@@ -272,7 +272,6 @@
     <property name="type_hint">normal</property>
     <property name="skip_taskbar_hint">True</property>
     <property name="skip_pager_hint">True</property>
-    <property name="decorated">False</property>
     <property name="transient_for">main_window</property>
     <property name="attached_to">main_window</property>
     <child internal-child="vbox">
