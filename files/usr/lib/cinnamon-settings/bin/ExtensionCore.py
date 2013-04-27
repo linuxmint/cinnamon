@@ -393,7 +393,7 @@ class ExtensionSidePage (SidePage):
                     if self.modelfilter.get_value(iter, 2) > 0 and not self.themes:
                         checked = self.modelfilter.get_value(iter, 2)
                         item = Gtk.MenuItem(_("Remove from %s") % (self.target))
-                        item.connect('activate', lambda x: self.disable_extension(uuid, checked))
+                        item.connect('activate', lambda x: self.disable_extension(uuid, name, checked))
                         popup.add(item)
 
                         max_instances = self.modelfilter.get_value(iter, 3);
@@ -729,7 +729,7 @@ class ExtensionSidePage (SidePage):
         else:
             self.settings.set_string("name", name)
 
-    def disable_extension(self, uuid, checked):
+    def disable_extension(self, uuid, name, checked):
 
         if (checked > 1):
             msg = _("There are multiple instances of this %s, do you want to remove them all?\n\n") % (self.noun)
@@ -737,18 +737,25 @@ class ExtensionSidePage (SidePage):
 
             if not self.show_prompt(msg):
                 return
-
-        newExtensions = []
-        for enabled_extension in self.enabled_extensions:
-            if uuid not in enabled_extension:
-                newExtensions.append(enabled_extension)
-        self.enabled_extensions = newExtensions
-        self.settings.set_strv(("enabled-%ss") % (self.collection_type), self.enabled_extensions)
+        if not self.themes:
+            newExtensions = []
+            for enabled_extension in self.enabled_extensions:
+                if uuid not in enabled_extension:
+                    newExtensions.append(enabled_extension)
+            self.enabled_extensions = newExtensions
+            self.settings.set_strv(("enabled-%ss") % (self.collection_type), self.enabled_extensions)
+        else:
+            if self.enabled_extensions[0] == name:
+                self._restore_default_extensions()
 
     def uninstall_extension(self, uuid, name):
-        if not self.show_prompt(_("Are you sure you want to completely remove %s?") % (uuid)):
+        if not self.themes:
+            obj = uuid
+        else:
+            obj = name
+        if not self.show_prompt(_("Are you sure you want to completely remove %s?") % (obj)):
             return
-        self.disable_extension(uuid, 0)
+        self.disable_extension(uuid, name, 0)
         self.spices.uninstall(uuid, name, self.on_uninstall_finished)
     
     def on_uninstall_finished(self, uuid):
@@ -994,14 +1001,21 @@ class ExtensionSidePage (SidePage):
                     try:
                         path = os.path.join(directory, theme, "cinnamon")
                         if os.path.exists(path) and os.path.isdir(path):
+                            theme_last_edited = -1
+                            theme_uuid = ""
                             metadata = os.path.join(path, "metadata.json")
                             if os.path.exists(metadata):
-                                pass # this is one we've downloaded, thus it has metadata.json
-                            else:
-                                theme_name = theme
-                                theme_uuid = ""
-                                theme_description = ""
-                                theme_last_edited = -1
+                                json_data=open(metadata).read()
+                                data = json.loads(json_data)  
+                                try: theme_last_edited = data["last-edited"]
+                                except KeyError: theme_last_edited = -1
+                                except ValueError: theme_last_edited = -1
+                                try: theme_uuid = data["uuid"]
+                                except KeyError: theme_uuid = ""
+                                except ValueError: theme_uuid = ""
+
+                            theme_name = theme
+                            theme_description = ""
                             iter = self.model.insert_before(None, None)
                             found = 0
                             for enabled_theme in self.enabled_extensions:

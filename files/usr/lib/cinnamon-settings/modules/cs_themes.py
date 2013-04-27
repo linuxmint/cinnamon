@@ -30,7 +30,7 @@ class ThemesViewSidePage (ExtensionSidePage):
         ExtensionSidePage.__init__(self, name, icon, keywords, advanced, content_box, collection_type, noun, pl_noun, target)
 
     def toSettingString(self, uuid, instanceId):
-        return ("panel1:right:0:%s:%d") % (uuid, instanceId)
+        return uuid
 
     def fromSettingString(self, string):
         return string

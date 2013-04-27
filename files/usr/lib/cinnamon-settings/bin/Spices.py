@@ -377,50 +377,72 @@ class Spice_Harvester:
         self.progressbar.set_fraction(0)
 
         edited_date = self.index_cache[uuid]['last_edited']
-        executable_files = ['settings.py']
-        
-        fd, filename = tempfile.mkstemp()
-        f = os.fdopen(fd, 'wb')
-        try:
-            self.download(f, filename)
-            dest = os.path.join(self.install_folder, uuid)
-            zip = zipfile.ZipFile(filename)
-            zip.extractall(dest, self.get_members(zip))
-            for file in self.get_members(zip):
-                if file.filename in executable_files:
-                    os.chmod(os.path.join(dest, file.filename), 0o755)
-                elif file.filename[:3] == 'po/':
-                    parts = os.path.splitext(file.filename)
-                    if parts[1] == '.po':
-                       this_locale_dir = os.path.join(locale_inst, parts[0][3:], 'LC_MESSAGES')
-                       self.progresslabel.set_text(_("Installing translations for %s...") % title)
-                       rec_mkdir(this_locale_dir)
-                       #print "/usr/bin/msgfmt -c %s -o %s" % (os.path.join(dest, file.filename), os.path.join(this_locale_dir, '%s.mo' % uuid))
-                       subprocess.call(["msgfmt", "-c", os.path.join(dest, file.filename), "-o", os.path.join(this_locale_dir, '%s.mo' % uuid)])
-                       self.progresslabel.set_text(_("%s %s...") % (verb, title))
-                elif "gschema.xml" in file.filename:
-                    sentence = _("Please enter your password to install the required settings schema for %s") % (uuid)
-                    if os.path.exists("/usr/bin/gksu") and os.path.exists("/usr/lib/cinnamon-settings/bin/installSchema.py"):
-                        launcher = "gksu  --message \"<b>%s</b>\"" % sentence
-                        tool = "/usr/lib/cinnamon-settings/bin/installSchema.py %s" % (os.path.join(dest, file.filename))
-                        command = "%s %s" % (launcher, tool)
-                        os.system(command)
-                    else:
-                        self.errorMessage(_("Could not install the settings schema for %s.  You will have to perform this step yourself.") % (uuid))
-            file = open(os.path.join(dest, "metadata.json"), 'r')
-            raw_meta = file.read()
-            file.close()
-            md = json.loads(raw_meta)
-            md["last-edited"] = edited_date
-            raw_meta = json.dumps(md, indent=4)
-            file = open(os.path.join(dest, "metadata.json"), 'w+')
-            file.write(raw_meta)
-            file.close()
 
-        except Exception, detail:
-            self.progress_window.hide()
-            self.errorMessage(_("An error occurred during installation or updating.  You may wish to report this incident to the developer of %s.") % (uuid), str(detail))
-            return False
+        if not self.themes:
+            executable_files = ['settings.py']
+            fd, filename = tempfile.mkstemp()
+            f = os.fdopen(fd, 'wb')
+            try:
+                self.download(f, filename)
+                dest = os.path.join(self.install_folder, uuid)
+                zip = zipfile.ZipFile(filename)
+                zip.extractall(dest, self.get_members(zip))
+                for file in self.get_members(zip):
+                    if file.filename in executable_files:
+                        os.chmod(os.path.join(dest, file.filename), 0o755)
+                    elif file.filename[:3] == 'po/':
+                        parts = os.path.splitext(file.filename)
+                        if parts[1] == '.po':
+                           this_locale_dir = os.path.join(locale_inst, parts[0][3:], 'LC_MESSAGES')
+                           self.progresslabel.set_text(_("Installing translations for %s...") % title)
+                           rec_mkdir(this_locale_dir)
+                           #print "/usr/bin/msgfmt -c %s -o %s" % (os.path.join(dest, file.filename), os.path.join(this_locale_dir, '%s.mo' % uuid))
+                           subprocess.call(["msgfmt", "-c", os.path.join(dest, file.filename), "-o", os.path.join(this_locale_dir, '%s.mo' % uuid)])
+                           self.progresslabel.set_text(_("%s %s...") % (verb, title))
+                    elif "gschema.xml" in file.filename:
+                        sentence = _("Please enter your password to install the required settings schema for %s") % (uuid)
+                        if os.path.exists("/usr/bin/gksu") and os.path.exists("/usr/lib/cinnamon-settings/bin/installSchema.py"):
+                            launcher = "gksu  --message \"<b>%s</b>\"" % sentence
+                            tool = "/usr/lib/cinnamon-settings/bin/installSchema.py %s" % (os.path.join(dest, file.filename))
+                            command = "%s %s" % (launcher, tool)
+                            os.system(command)
+                        else:
+                            self.errorMessage(_("Could not install the settings schema for %s.  You will have to perform this step yourself.") % (uuid))
+                file = open(os.path.join(dest, "metadata.json"), 'r')
+                raw_meta = file.read()
+                file.close()
+                md = json.loads(raw_meta)
+                md["last-edited"] = edited_date
+                raw_meta = json.dumps(md, indent=4)
+                file = open(os.path.join(dest, "metadata.json"), 'w+')
+                file.write(raw_meta)
+                file.close()
+
+            except Exception, detail:
+                self.progress_window.hide()
+                self.errorMessage(_("An error occurred during installation or updating.  You may wish to report this incident to the developer of %s.") % (uuid), str(detail))
+                return False
+        else:
+            fd, filename = tempfile.mkstemp()
+            f = os.fdopen(fd, 'wb')
+            try:
+                self.download(f, filename)
+                dest = os.path.join(self.install_folder, title, "cinnamon")
+                zip = zipfile.ZipFile(filename)
+                zip.extractall(dest, self.get_members(zip))
+
+                md = {}
+                md["last-edited"] = edited_date
+                md["uuid"] = uuid
+                raw_meta = json.dumps(md, indent=4)
+                file = open(os.path.join(dest, "metadata.json"), 'w+')
+                file.write(raw_meta)
+                file.close()
+
+            except Exception, detail:
+                self.progress_window.hide()
+                self.errorMessage(_("An error occurred during installation or updating.  You may wish to report this incident to the developer of %s.") % (uuid), str(detail))
+                return False
 
         self.progress_button_close.set_sensitive(True)
         self.progress_button_abort.set_sensitive(False)
@@ -434,20 +456,23 @@ class Spice_Harvester:
         
         self.progress_bar_pulse()
         try:
-            shutil.rmtree(os.path.join(self.install_folder, uuid))
+            if not self.themes:
+                shutil.rmtree(os.path.join(self.install_folder, uuid))
 
-            # Uninstall spice's localization files, if any
-            if (os.path.exists(locale_inst)):
-                i19_folders = os.listdir(locale_inst)
-                for i19_folder in i19_folders:
-                    if os.path.isfile(os.path.join(locale_inst, i19_folder, 'LC_MESSAGES', "%s.mo" % uuid)):
-                        os.remove(os.path.join(locale_inst, i19_folder, 'LC_MESSAGES', "%s.mo" % uuid))
-                    # Clean-up this locale folder
-                    removeEmptyFolders(os.path.join(locale_inst, i19_folder))
+                # Uninstall spice's localization files, if any
+                if (os.path.exists(locale_inst)):
+                    i19_folders = os.listdir(locale_inst)
+                    for i19_folder in i19_folders:
+                        if os.path.isfile(os.path.join(locale_inst, i19_folder, 'LC_MESSAGES', "%s.mo" % uuid)):
+                            os.remove(os.path.join(locale_inst, i19_folder, 'LC_MESSAGES', "%s.mo" % uuid))
+                        # Clean-up this locale folder
+                        removeEmptyFolders(os.path.join(locale_inst, i19_folder))
 
-            # Uninstall settings file, if any
-            if (os.path.exists(os.path.join(settings_dir, uuid))):
-                shutil.rmtree(os.path.join(settings_dir, uuid))
+                # Uninstall settings file, if any
+                if (os.path.exists(os.path.join(settings_dir, uuid))):
+                    shutil.rmtree(os.path.join(settings_dir, uuid))
+            else:
+                shutil.rmtree(os.path.join(self.install_folder, name))
         except Exception, detail:
             self.progress_window.hide()
             self.errorMessage(_("Problem uninstalling %s.  You may need to manually remove it.") % (uuid), detail)
