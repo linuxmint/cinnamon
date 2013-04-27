@@ -9,7 +9,11 @@ class Module:
         keywords = _("desklet, desktop, slideshow")
         advanced = False
         self.name = "desklets"
-        sidePage = DeskletsViewSidePage(_("Desklets"), "desklets.svg", keywords, advanced, content_box, "desklet", "desktop")
+        # for i18n replacement in ExtensionCore.py
+        noun = _("desklet")
+        pl_noun = _("desklets")
+        target = _("desktop")
+        sidePage = DeskletsViewSidePage(_("Desklets"), "desklets.svg", keywords, advanced, content_box, "desklet", noun, pl_noun, target)
         self.sidePage = sidePage
 
         self.category = "prefs"
@@ -19,9 +23,9 @@ class Module:
         self.sidePage.builder = builder
 
 class DeskletsViewSidePage (ExtensionSidePage):
-    def __init__(self, name, icon, keywords, advanced, content_box, collection_type, target):
+    def __init__(self, name, icon, keywords, advanced, content_box, collection_type, noun, pl_noun, target):
         self.RemoveString = _("You can remove specific instances from the desktop via that desklet's context menu")
-        ExtensionSidePage.__init__(self, name, icon, keywords, advanced, content_box, collection_type, target)
+        ExtensionSidePage.__init__(self, name, icon, keywords, advanced, content_box, collection_type, noun, pl_noun, target)
 
     def toSettingString(self, uuid, instanceId):
         return ("%s:%d:0:100") % (uuid, instanceId)
@@ -32,7 +36,7 @@ class DeskletsViewSidePage (ExtensionSidePage):
 
     def getAdditionalPage(self):
         scrolled_window = Gtk.ScrolledWindow()
-        scrolled_window.label = Gtk.Label(_("Genera Desklets Settings"))
+        scrolled_window.label = Gtk.Label(_("General Desklets Settings"))
         config_vbox = Gtk.VBox()
         scrolled_window.add_with_viewport(config_vbox)
         config_vbox.set_border_width(5)

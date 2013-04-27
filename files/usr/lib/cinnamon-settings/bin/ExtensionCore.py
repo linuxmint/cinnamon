@@ -34,10 +34,13 @@ class ExtensionSidePage (SidePage):
     SORT_ENABLED = 3
     SORT_REMOVABLE = 4  
 
-    def __init__(self, name, icon, keywords, advanced, content_box, collection_type, target):
+    def __init__(self, name, icon, keywords, advanced, content_box, collection_type, noun, pl_noun, target):
         SidePage.__init__(self, name, icon, keywords, advanced, content_box, True)
         self.collection_type = collection_type
         self.target = target
+        self.noun = noun
+        self.pl_noun = pl_noun
+        self.themes = collection_type == "theme"
         self.icons = []
 
     def build(self, advanced):
@@ -54,15 +57,17 @@ class ExtensionSidePage (SidePage):
         
         self.search_entry = Gtk.Entry()
         self.search_entry.set_icon_from_icon_name(Gtk.EntryIconPosition.PRIMARY, 'edit-find')
-        self.search_entry.set_placeholder_text(_("Search %ss") % (self.collection_type))
+        self.search_entry.set_placeholder_text(_("Search %s") % (self.pl_noun))
         self.search_entry.connect('changed', self.on_entry_refilter)
 
         self.notebook.append_page(extensions_vbox, Gtk.Label(_("Installed")))
         
         self.content_box.add(self.notebook)
         self.treeview = Gtk.TreeView()
-        self.treeview.set_rules_hint(True)       
-        
+        self.treeview.set_rules_hint(True)
+        if self.themes:
+            self.treeview.connect("row-activated", self.on_row_activated)
+
         cr = Gtk.CellRendererToggle()
         cr.connect("toggled", self.toggled, self.treeview)
         column1 = Gtk.TreeViewColumn("Enable", cr)
@@ -74,17 +79,17 @@ class ExtensionSidePage (SidePage):
         column2.set_min_width(50)
 
         column3 = Gtk.TreeViewColumn("Description", Gtk.CellRendererText(), markup=1)        
-        column3.set_resizable(True)      
-        column3.set_min_width(500)
-        column3.set_max_width(501)        
+        column3.set_sizing(Gtk.TreeViewColumnSizing.FIXED)
+        if not self.themes:
+            column3.set_fixed_width(500)
+        else:
+            column3.set_fixed_width(400)
 
         actionColumn = Gtk.TreeViewColumn("Read only", Gtk.CellRendererPixbuf(), pixbuf=10)        
-        actionColumn.set_resizable(True)
         actionColumn.set_min_width(50)
 
         cr = Gtk.CellRendererPixbuf()
         isActiveColumn = Gtk.TreeViewColumn("Active", cr, pixbuf=11)        
-        isActiveColumn.set_resizable(True)
         isActiveColumn.set_min_width(50)
         isActiveColumn.set_cell_data_func(cr, self._is_active_data_func)
         
@@ -103,39 +108,55 @@ class ExtensionSidePage (SidePage):
         
         self.treeview.set_model(self.modelfilter)
         self.treeview.set_search_column(5)
+        x =  Gtk.Tooltip()
+        x.set_text("test")
+        self.treeview.set_tooltip_cell(x, None, actionColumn, None)
         self.treeview.set_search_entry(self.search_entry)
         # Find the enabled extensions
-        self.settings = Gio.Settings.new("org.cinnamon")
-        self.enabled_extensions = self.settings.get_strv("enabled-%ss" % (self.collection_type))
+        if not self.themes:
+            self.settings = Gio.Settings.new("org.cinnamon")
+            self.enabled_extensions = self.settings.get_strv("enabled-%ss" % (self.collection_type))
+        else:
+            self.settings = Gio.Settings.new("org.cinnamon.theme")
+            self.enabled_extensions = [self.settings.get_string("name")]
                          
         self.load_extensions()
 
         self.model.set_default_sort_func(self.model_sort_func)
         self.model.set_sort_column_id(-1, Gtk.SortType.ASCENDING)            
         
-        self.settings.connect(("changed::enabled-%ss") % (self.collection_type), lambda x,y: self._enabled_extensions_changed())
+        if not self.themes:
+            self.settings.connect(("changed::enabled-%ss") % (self.collection_type), lambda x,y: self._enabled_extensions_changed())
+        else:
+            self.settings.connect("changed::name", lambda x, y: self._enabled_extensions_changed())
         
         scrolledWindow.add(self.treeview)
         self.treeview.connect('button_press_event', self.on_button_press_event)
-
-        self.instanceButton = Gtk.Button(_("Add to %s") % (self.target))
+        if not self.themes:
+            self.instanceButton = Gtk.Button(_("Add to %s") % (self.target))
+        else:
+            self.instanceButton = Gtk.Button(_("Apply theme"))
         self.instanceButton.connect("clicked", lambda x: self._add_another_instance())
         if self.collection_type in ("desklet", "applet"):
-            self.instanceButton.set_tooltip_text(_("Some %ss can be added multiple times.\nUse this to add another instance. Use panel edit mode to remove a single instance.") % (self.collection_type))
+            self.instanceButton.set_tooltip_text(_("Some %s can be added multiple times.\nUse this to add another instance. Use panel edit mode to remove a single instance.") % (self.pl_noun))
+        elif self.collection_type == "extension":
+            self.instanceButton.set_tooltip_text(_("Click to enable this %s") % (self.noun))
         else:
-            self.instanceButton.set_tooltip_text(_("Click to enable this %s") % (self.collection_type))
+            self.instanceButton.set_tooltip_text(_("Click to apply this %s") % (self.noun))
         self.instanceButton.set_sensitive(False);
 
         self.configureButton = Gtk.Button(_("Configure"))
         self.configureButton.connect("clicked", self._configure_extension)
-        self.configureButton.set_tooltip_text(_("Configure this %s") % (self.collection_type))
+        self.configureButton.set_tooltip_text(_("Configure this %s") % (self.noun))
 
         self.extConfigureButton = Gtk.Button(_("Configure"))
         self.extConfigureButton.connect("clicked", self._external_configure_launch)
-        self.extConfigureButton.set_tooltip_text(_("Configure this %s") % (self.collection_type))
+        self.extConfigureButton.set_tooltip_text(_("Configure this %s") % (self.noun))
 
-
-        restoreButton = Gtk.Button(_("Restore to default"))
+        if not self.themes:
+            restoreButton = Gtk.Button(_("Restore to default"))
+        else:
+            restoreButton = Gtk.Button(_("Restore default theme"))
         restoreButton.connect("clicked", lambda x: self._restore_default_extensions())
         
         hbox = Gtk.HBox()
@@ -143,9 +164,9 @@ class ExtensionSidePage (SidePage):
         renderer_text = Gtk.CellRendererText()
         self.comboshow.pack_start(renderer_text, True)
         showTypes=Gtk.ListStore(int, str)
-        showTypes.append([SHOW_ALL, _("All %ss") % (self.collection_type)])
-        showTypes.append([SHOW_ACTIVE, _("Active %ss") % (self.collection_type)])
-        showTypes.append([SHOW_INACTIVE, _("Inactive %ss") % (self.collection_type)])
+        showTypes.append([SHOW_ALL, _("All %s") % (self.pl_noun)])
+        showTypes.append([SHOW_ACTIVE, _("Active %s") % (self.pl_noun)])
+        showTypes.append([SHOW_INACTIVE, _("Inactive %s") % (self.pl_noun)])
         self.comboshow.set_model(showTypes)
         self.comboshow.set_entry_text_column(1)
         self.comboshow.set_active(0) #All
@@ -234,7 +255,7 @@ class ExtensionSidePage (SidePage):
         self.gm_search_entry = Gtk.Entry()
         self.gm_search_entry.connect('changed', self.gm_on_entry_refilter)
         self.gm_search_entry.set_icon_from_icon_name(Gtk.EntryIconPosition.PRIMARY, 'edit-find')
-        self.gm_search_entry.set_placeholder_text(_("Search %ss") % (self.collection_type))
+        self.gm_search_entry.set_placeholder_text(_("Search %s") % (self.pl_noun))
         hbox.pack_end(self.gm_search_entry, False, False, 4)
         self.search_entry.show()
         
@@ -255,15 +276,15 @@ class ExtensionSidePage (SidePage):
         gm_cr.connect("toggled", self.gm_toggled, self.gm_treeview)
         gm_column1 = Gtk.TreeViewColumn("Install", gm_cr)
         gm_column1.set_cell_data_func(gm_cr, self.gm_celldatafunction_checkbox)
-        gm_column1.set_resizable(True)
 
         gm_column2 = Gtk.TreeViewColumn("Icon", Gtk.CellRendererPixbuf(), pixbuf=3)
-        gm_column2.set_resizable(True)
 
         gm_column3 = Gtk.TreeViewColumn("Description", Gtk.CellRendererText(), markup=1)
-        gm_column3.set_resizable(True)
-        gm_column3.set_min_width(400)
-        gm_column3.set_max_width(401)
+        gm_column3.set_sizing(Gtk.TreeViewColumnSizing.FIXED)
+        if not self.themes:
+            gm_column3.set_fixed_width(400)
+        else:
+            gm_column3.set_fixed_width(300)
         
         cr = Gtk.CellRendererText()
         actionColumn = Gtk.TreeViewColumn("Action", cr)
@@ -278,7 +299,6 @@ class ExtensionSidePage (SidePage):
         right = Gtk.CellRendererText()
         right.set_property('xalign', 1.0)
         gm_column4 = Gtk.TreeViewColumn("Score", right, markup=4)
-        gm_column4.set_resizable(True)
         gm_column4.set_alignment(1.0)
 
         self.gm_treeview.append_column(gm_column1)
@@ -314,7 +334,7 @@ class ExtensionSidePage (SidePage):
         self.treeview.get_selection().connect("changed", lambda x: self._selection_changed());
         self.install_list = []
         
-        self.spices = Spice_Harvester(self.collection_type, self.window, self.builder, self.on_enable_new_extension)
+        self.spices = Spice_Harvester(self.collection_type, self.window, self.builder, self.noun, self.pl_noun)
         # if not self.spices.get_webkit_enabled():
         #     getmore_label.set_sensitive(False)
         #     reload_button.set_sensitive(False)
@@ -325,7 +345,8 @@ class ExtensionSidePage (SidePage):
 
         self.content_box.show_all()
 
-        self.spices.scrubConfigDirs(self.enabled_extensions)
+        if not self.themes:
+            self.spices.scrubConfigDirs(self.enabled_extensions)
 
         self.search_entry.grab_focus()
 
@@ -351,6 +372,12 @@ class ExtensionSidePage (SidePage):
         s2 = ((not model[iter2][6]), model[iter2][5])
         return cmp( s1, s2 )       
 
+    def on_row_activated(self, treeview, path, column): # Only used in themes
+        iter = self.modelfilter.get_iter(path)
+        uuid = self.modelfilter.get_value(iter, 0)
+        name = self.modelfilter.get_value(iter, 5)
+        self.enable_extension(uuid, name)
+
     def on_button_press_event(self, widget, event):
         if event.button == 3:
             data = widget.get_path_at_pos(int(event.x),int(event.y))
@@ -371,10 +398,10 @@ class ExtensionSidePage (SidePage):
                     uuid = self.modelfilter.get_value(iter, 0)
                     name = self.modelfilter.get_value(iter, 5)
 
-                    if self.modelfilter.get_value(iter, 2) > 0:
+                    if self.modelfilter.get_value(iter, 2) > 0 and not self.themes:
                         checked = self.modelfilter.get_value(iter, 2)
                         item = Gtk.MenuItem(_("Remove from %s") % (self.target))
-                        item.connect('activate', lambda x: self.disable_extension(uuid, checked))
+                        item.connect('activate', lambda x: self.disable_extension(uuid, name, checked))
                         popup.add(item)
 
                         max_instances = self.modelfilter.get_value(iter, 3);
@@ -384,8 +411,11 @@ class ExtensionSidePage (SidePage):
                             item.connect('activate', lambda x: self.instance_extension(uuid))
                             popup.add(item)
                     else:
-                        item = Gtk.MenuItem(_("Add to %s") % (self.target))
-                        item.connect('activate', lambda x: self.enable_extension(uuid))
+                        if not self.themes:
+                            item = Gtk.MenuItem(_("Add to %s") % (self.target))
+                        else:
+                            item = Gtk.MenuItem(_("Apply theme"))
+                        item.connect('activate', lambda x: self.enable_extension(uuid, name))
                         popup.add(item)
                         
                     
@@ -642,9 +672,6 @@ class ExtensionSidePage (SidePage):
     def gm_on_entry_refilter(self, widget, data=None):
         self.gm_modelfilter.refilter()
 
-    def on_enable_new_extension(self, uuid):
-        self.enable_extension(uuid)
-
     def load_spices(self, force=False):
         # if self.spices.get_webkit_enabled():
         self.spices.load(self.on_spice_load, force)
@@ -660,7 +687,7 @@ class ExtensionSidePage (SidePage):
         self.install_list = []
         self.load_extensions()
         if need_restart:
-            self.show_info(_("One or more active %ss may have been updated.  You probably need to restart Cinnamon for the changes to take effect") % (self.collection_type))
+            self.show_info(_("One or more active %s may have been updated.  You probably need to restart Cinnamon for the changes to take effect") % (self.pl_noun))
 
     def on_spice_load(self, spicesData):
         #print "total spices loaded: %d" % len(spicesData)
@@ -671,49 +698,72 @@ class ExtensionSidePage (SidePage):
             extensionName = extensionData['name'].replace('&', '&amp;')
             iter = self.gm_model.insert_before(None, None)
             self.gm_model.set_value(iter, 0, uuid)
-            self.gm_model.set_value(iter, 1, '<b>%s</b>\n<b><span foreground="#333333" size="xx-small">%s</span></b>\n<i><span foreground="#555555" size="x-small">%s</span></i>' % (extensionName, uuid, "Description not implemented"))
+            if not self.themes:
+                self.gm_model.set_value(iter, 1, '<b>%s</b>\n<b><span foreground="#333333" size="xx-small">%s</span></b>\n<i><span foreground="#555555" size="x-small">%s</span></i>' % (extensionName, uuid, "Description not implemented"))
+            else:
+                self.gm_model.set_value(iter, 1, '<b>%s</b>' % (extensionName))
             self.gm_model.set_value(iter, 2, 0)
             
-            icon_filename = os.path.basename(extensionData['icon'])
-            
-            if not os.path.exists(os.path.join(self.spices.get_cache_folder(), icon_filename)):
-                img = GdkPixbuf.Pixbuf.new_from_file_at_size( ("/usr/lib/cinnamon-settings/data/icons/%ss.svg") % (self.collection_type), 32, 32)
+
+            if not self.themes:
+                icon_filename = os.path.basename(extensionData['icon'])
+                w = 32
+                h = 32
             else:
-                img = GdkPixbuf.Pixbuf.new_from_file_at_size(os.path.join(self.spices.get_cache_folder(), icon_filename), 32, 32)
+                icon_filename = os.path.basename(extensionData['screenshot'])
+                w = -1
+                h = 60
+            if not os.path.exists(os.path.join(self.spices.get_cache_folder(), icon_filename)):
+                img = GdkPixbuf.Pixbuf.new_from_file_at_size( ("/usr/lib/cinnamon-settings/data/icons/%ss.svg") % (self.collection_type), w, h)
+            else:
+                try:
+                    img = GdkPixbuf.Pixbuf.new_from_file_at_size(os.path.join(self.spices.get_cache_folder(), icon_filename), w, h)
+                except:
+                    img = GdkPixbuf.Pixbuf.new_from_file_at_size( ("/usr/lib/cinnamon-settings/data/icons/%ss.svg") % (self.collection_type), w, h)
             self.gm_model.set_value(iter, 3, img)
             self.gm_model.set_value(iter, 4, int(extensionData['score']))
             self.gm_model.set_value(iter, 5, extensionData['name'])
             self.gm_model.set_value(iter, 6, int(extensionData['last_edited']))
 
-    def enable_extension(self, uuid):
-        if self.collection_type in ("applet", "desklet"):
-            extension_id = self.settings.get_int(("next-%s-id") % (self.collection_type));
-            self.settings.set_int(("next-%s-id") % (self.collection_type), (extension_id+1));
+    def enable_extension(self, uuid, name):
+        if not self.themes:
+            if self.collection_type in ("applet", "desklet"):
+                extension_id = self.settings.get_int(("next-%s-id") % (self.collection_type));
+                self.settings.set_int(("next-%s-id") % (self.collection_type), (extension_id+1));
+            else:
+                extension_id = 0
+            self.enabled_extensions.append(self.toSettingString(uuid, extension_id))
+            self.settings.set_strv(("enabled-%ss") % (self.collection_type), self.enabled_extensions)
         else:
-            extension_id = 0
-        self.enabled_extensions.append(self.toSettingString(uuid, extension_id))
-        self.settings.set_strv(("enabled-%ss") % (self.collection_type), self.enabled_extensions)
+            self.settings.set_string("name", name)
 
-    def disable_extension(self, uuid, checked):
+    def disable_extension(self, uuid, name, checked):
 
         if (checked > 1):
-            msg = _("There are multiple instances of this %s, do you want to remove them all?\n\n") % (self.collection_type)
+            msg = _("There are multiple instances of this %s, do you want to remove them all?\n\n") % (self.noun)
             msg += self.RemoveString
 
             if not self.show_prompt(msg):
                 return
-
-        newExtensions = []
-        for enabled_extension in self.enabled_extensions:
-            if uuid not in enabled_extension:
-                newExtensions.append(enabled_extension)
-        self.enabled_extensions = newExtensions
-        self.settings.set_strv(("enabled-%ss") % (self.collection_type), self.enabled_extensions)
+        if not self.themes:
+            newExtensions = []
+            for enabled_extension in self.enabled_extensions:
+                if uuid not in enabled_extension:
+                    newExtensions.append(enabled_extension)
+            self.enabled_extensions = newExtensions
+            self.settings.set_strv(("enabled-%ss") % (self.collection_type), self.enabled_extensions)
+        else:
+            if self.enabled_extensions[0] == name:
+                self._restore_default_extensions()
 
     def uninstall_extension(self, uuid, name):
-        if not self.show_prompt(_("Are you sure you want to completely remove %s?") % (uuid)):
+        if not self.themes:
+            obj = uuid
+        else:
+            obj = name
+        if not self.show_prompt(_("Are you sure you want to completely remove %s?") % (obj)):
             return
-        self.disable_extension(uuid, 0)
+        self.disable_extension(uuid, name, 0)
         self.spices.uninstall(uuid, name, self.on_uninstall_finished)
     
     def on_uninstall_finished(self, uuid):
@@ -738,7 +788,10 @@ class ExtensionSidePage (SidePage):
         last_selection = ''
         model, treeiter = self.treeview.get_selection().get_selected()
 
-        self.enabled_extensions = self.settings.get_strv(("enabled-%ss") % (self.collection_type))
+        if self.themes:
+            self.enabled_extensions = [self.settings.get_string("name")]
+        else:
+            self.enabled_extensions = self.settings.get_strv(("enabled-%ss") % (self.collection_type))
         
         uuidCount = {}
         for enabled_extension in self.enabled_extensions:
@@ -750,9 +803,11 @@ class ExtensionSidePage (SidePage):
                     uuidCount[uuid] = 1
             except:
                 pass
-
         for row in self.model:
-            uuid = self.model.get_value(row.iter, 0)
+            if not self.themes:
+                uuid = self.model.get_value(row.iter, 0)
+            else:
+                uuid = self.model.get_value(row.iter, 5)
             if(uuid in uuidCount):
                 self.model.set_value(row.iter, 2, uuidCount[uuid])
             else:
@@ -765,24 +820,30 @@ class ExtensionSidePage (SidePage):
         
     def _add_another_instance_iter(self, treeiter):
         uuid = self.modelfilter.get_value(treeiter, 0);
-        self.instance_extension(uuid)
+        name = self.modelfilter.get_value(treeiter, 5)
+        if not self.themes:
+            self.instance_extension(uuid)
+        else:
+            self.enable_extension(uuid, name)
         
     def _selection_changed(self):
         model, treeiter = self.treeview.get_selection().get_selected()
         enabled = False;
         if self.collection_type in ("applet", "desklet"):
-            tip = _("Some %ss can be added multiple times.\nUse this to add another instance. Use panel edit mode to remove a single instance.") % (self.collection_type)
+            tip = _("Some %s can be added multiple times.\nUse this to add another instance. Use panel edit mode to remove a single instance.") % (self.pl_noun)
+        elif self.collection_type == "extension":
+            tip = _("Click to enable this %s") % (self.noun)
         else:
-            tip = _("Click to enable this %s") % (self.collection_type)
+            tip = _("Click to apply this %s") % (self.noun)
         if treeiter:
             checked = model.get_value(treeiter, 2);
             max_instances = model.get_value(treeiter, 3);
             enabled = max_instances > checked
             if self.collection_type in ("applet", "desklet"):
                 if max_instances == 1:
-                    tip += _("\nThis %s does not support multiple instances.") % (self.collection_type)
+                    tip += _("\nThis %s does not support multiple instances.") % (self.noun)
                 else:
-                    tip += _("\nThis %s supports max %d instances.") % (self.collection_type, max_instances)
+                    tip += _("\nThis %s supports max %d instances.") % (self.noun, max_instances)
         self.instanceButton.set_sensitive(enabled);
         self.instanceButton.set_tooltip_text(tip)
         if treeiter:
@@ -838,81 +899,152 @@ class ExtensionSidePage (SidePage):
         self.notebook.show_all()
 
     def _restore_default_extensions(self):
-        os.system(('gsettings reset org.cinnamon next-%s-id') % (self.collection_type))
-        os.system(('gsettings reset org.cinnamon enabled-%ss') % (self.collection_type))
-    
+        if not self.themes:
+            os.system(('gsettings reset org.cinnamon next-%s-id') % (self.collection_type))
+            os.system(('gsettings reset org.cinnamon enabled-%ss') % (self.collection_type))
+        else:
+            os.system("gsettings reset org.cinnamon.theme name")
+
+
     def load_extensions(self):
         self.model.clear()
-        self.load_extensions_in(('/usr/share/cinnamon/%ss') % (self.collection_type))
-        self.load_extensions_in(('%s/.local/share/cinnamon/%ss') % (home, self.collection_type))
+        if not self.themes:
+            self.load_extensions_in(('/usr/share/cinnamon/%ss') % (self.collection_type))
+            self.load_extensions_in(('%s/.local/share/cinnamon/%ss') % (home, self.collection_type))
+        else:
+            self.load_extensions_in(('%s/.themes') % (home))
+            self.load_extensions_in('/usr/share/themes')
 
     def load_extensions_in(self, directory):
-        if os.path.exists(directory) and os.path.isdir(directory):
-            extensions = os.listdir(directory)
-            extensions.sort()
-            for extension in extensions:
-                try:           
-                    if os.path.exists("%s/%s/metadata.json" % (directory, extension)):
-                        json_data=open("%s/%s/metadata.json" % (directory, extension)).read()
-                        data = json.loads(json_data)  
-                        extension_uuid = data["uuid"]
-                        extension_name = data["name"]                                        
-                        extension_description = data["description"]                          
-                        try: extension_max_instances = int(data["max-instances"])
-                        except KeyError: extension_max_instances = 1
-                        except ValueError: extension_max_instances = 1
+        if not self.themes:  # Applet, Desklet, Extension handling
+            if os.path.exists(directory) and os.path.isdir(directory):
+                extensions = os.listdir(directory)
+                extensions.sort()
+                for extension in extensions:
+                    try:           
+                        if os.path.exists("%s/%s/metadata.json" % (directory, extension)):
+                            json_data=open("%s/%s/metadata.json" % (directory, extension)).read()
+                            data = json.loads(json_data)  
+                            extension_uuid = data["uuid"]
+                            extension_name = data["name"]                                        
+                            extension_description = data["description"]                          
+                            try: extension_max_instances = int(data["max-instances"])
+                            except KeyError: extension_max_instances = 1
+                            except ValueError: extension_max_instances = 1
 
-                        try: extension_role = data["role"]
-                        except KeyError: extension_role = None
-                        except ValueError: extension_role = None
+                            try: extension_role = data["role"]
+                            except KeyError: extension_role = None
+                            except ValueError: extension_role = None
 
-                        try: hide_config_button = data["hide-configuration"]
-                        except KeyError: hide_config_button = False
-                        except ValueError: hide_config_button = False
+                            try: hide_config_button = data["hide-configuration"]
+                            except KeyError: hide_config_button = False
+                            except ValueError: hide_config_button = False
 
-                        try: ext_config_app = os.path.join(directory, extension, data["external-configuration-app"])
-                        except KeyError: ext_config_app = ""
-                        except ValueError: ext_config_app = ""
+                            try: ext_config_app = os.path.join(directory, extension, data["external-configuration-app"])
+                            except KeyError: ext_config_app = ""
+                            except ValueError: ext_config_app = ""
 
-                        try: last_edited = data["last-edited"]
-                        except KeyError: last_edited = -1
-                        except ValueError: last_edited = -1
+                            try: last_edited = data["last-edited"]
+                            except KeyError: last_edited = -1
+                            except ValueError: last_edited = -1
 
-                        if ext_config_app != "" and not os.path.exists(ext_config_app):
-                            ext_config_app = ""
+                            if ext_config_app != "" and not os.path.exists(ext_config_app):
+                                ext_config_app = ""
 
-                        if extension_max_instances < -1:
-                            extension_max_instances = 1
-                            
-                        if self.search_entry.get_text().upper() in (extension_name + extension_description).upper():
+                            if extension_max_instances < -1:
+                                extension_max_instances = 1
+                                
+                            if self.search_entry.get_text().upper() in (extension_name + extension_description).upper():
+                                iter = self.model.insert_before(None, None)
+                                found = 0
+                                for enabled_extension in self.enabled_extensions:
+                                    if extension_uuid in enabled_extension:
+                                        found += 1
+
+                                self.model.set_value(iter, 0, extension_uuid)                
+                                self.model.set_value(iter, 1, '<b>%s</b>\n<b><span foreground="#333333" size="xx-small">%s</span></b>\n<i><span foreground="#555555" size="x-small">%s</span></i>' % (extension_name, extension_uuid, extension_description))                                  
+                                self.model.set_value(iter, 2, found)
+                                self.model.set_value(iter, 3, extension_max_instances)
+                                img = None                            
+                                if "icon" in data:
+                                    extension_icon = data["icon"]
+                                    theme = Gtk.IconTheme.get_default()                                                    
+                                    if theme.has_icon(extension_icon):
+                                        img = theme.load_icon(extension_icon, 32, 0)
+                                elif os.path.exists("%s/%s/icon.png" % (directory, extension)):
+                                    img = GdkPixbuf.Pixbuf.new_from_file_at_size("%s/%s/icon.png" % (directory, extension), 32, 32)                            
+                                
+                                if img is None:                                                
+                                    img = GdkPixbuf.Pixbuf.new_from_file_at_size( ("/usr/lib/cinnamon-settings/data/icons/%ss.svg") % (self.collection_type), 32, 32)
+                                                            
+                                self.model.set_value(iter, 4, img)
+                                self.model.set_value(iter, 5, extension_name)
+                                self.model.set_value(iter, 6, os.access(directory, os.W_OK))
+                                self.model.set_value(iter, 7, hide_config_button)
+                                self.model.set_value(iter, 8, ext_config_app)
+                                self.model.set_value(iter, 9, long(last_edited))
+
+                                if (os.access(directory, os.W_OK)):
+                                    img = GdkPixbuf.Pixbuf.new_from_file( ("/usr/lib/cinnamon-settings/data/user.png"))
+                                else:
+                                    img = GdkPixbuf.Pixbuf.new_from_file( ("/usr/lib/cinnamon-settings/data/system.png"))
+
+                                self.model.set_value(iter, 10, img)
+
+                                if (found):
+                                    img = GdkPixbuf.Pixbuf.new_from_file( ("/usr/lib/cinnamon-settings/data/active.png"))
+                                else:
+                                    img = GdkPixbuf.Pixbuf.new_from_file( ("/usr/lib/cinnamon-settings/data/inactive.png"))
+
+                                self.model.set_value(iter, 11, img)
+
+
+                    except Exception, detail:
+                        print "Failed to load extension %s: %s" % (extension, detail)
+        else: # Theme handling
+            if os.path.exists(directory) and os.path.isdir(directory):
+                themes = os.listdir(directory)
+                themes.sort()
+                for theme in themes:
+                    try:
+                        path = os.path.join(directory, theme, "cinnamon")
+                        if os.path.exists(path) and os.path.isdir(path):
+                            theme_last_edited = -1
+                            theme_uuid = ""
+                            metadata = os.path.join(path, "metadata.json")
+                            if os.path.exists(metadata):
+                                json_data=open(metadata).read()
+                                data = json.loads(json_data)  
+                                try: theme_last_edited = data["last-edited"]
+                                except KeyError: theme_last_edited = -1
+                                except ValueError: theme_last_edited = -1
+                                try: theme_uuid = data["uuid"]
+                                except KeyError: theme_uuid = ""
+                                except ValueError: theme_uuid = ""
+
+                            theme_name = theme
+                            theme_description = ""
                             iter = self.model.insert_before(None, None)
                             found = 0
-                            for enabled_extension in self.enabled_extensions:
-                                if extension_uuid in enabled_extension:
-                                    found += 1
+                            for enabled_theme in self.enabled_extensions:
+                                if enabled_theme == theme_name:
+                                    found = 1
+                            if os.path.exists(os.path.join(path, "thumbnail.png")):
+                                icon_path = os.path.join(path, "thumbnail.png")
+                            else:
+                                icon_path = "/usr/lib/cinnamon-settings/data/icons/themes.svg"
+                            img = GdkPixbuf.Pixbuf.new_from_file_at_size(icon_path, -1, 60)
 
-                            self.model.set_value(iter, 0, extension_uuid)                
-                            self.model.set_value(iter, 1, '<b>%s</b>\n<b><span foreground="#333333" size="xx-small">%s</span></b>\n<i><span foreground="#555555" size="x-small">%s</span></i>' % (extension_name, extension_uuid, extension_description))                                  
+                            self.model.set_value(iter, 0, theme_uuid)
+                            self.model.set_value(iter, 1, '<b>%s</b>' % (theme_name))
                             self.model.set_value(iter, 2, found)
-                            self.model.set_value(iter, 3, extension_max_instances)
-                            img = None                            
-                            if "icon" in data:
-                                extension_icon = data["icon"]
-                                theme = Gtk.IconTheme.get_default()                                                    
-                                if theme.has_icon(extension_icon):
-                                    img = theme.load_icon(extension_icon, 32, 0)
-                            elif os.path.exists("%s/%s/icon.png" % (directory, extension)):
-                                img = GdkPixbuf.Pixbuf.new_from_file_at_size("%s/%s/icon.png" % (directory, extension), 32, 32)                            
-                            
-                            if img is None:                                                
-                                img = GdkPixbuf.Pixbuf.new_from_file_at_size( ("/usr/lib/cinnamon-settings/data/icons/%ss.svg") % (self.collection_type), 32, 32)
-                                                        
+                            self.model.set_value(iter, 3, 1)
                             self.model.set_value(iter, 4, img)
-                            self.model.set_value(iter, 5, extension_name)
+                            self.model.set_value(iter, 5, theme_name)
                             self.model.set_value(iter, 6, os.access(directory, os.W_OK))
-                            self.model.set_value(iter, 7, hide_config_button)
-                            self.model.set_value(iter, 8, ext_config_app)
-                            self.model.set_value(iter, 9, long(last_edited))
+                            self.model.set_value(iter, 7, True)
+                            self.model.set_value(iter, 8, "")
+                            self.model.set_value(iter, 9, long(theme_last_edited))
 
                             if (os.access(directory, os.W_OK)):
                                 img = GdkPixbuf.Pixbuf.new_from_file( ("/usr/lib/cinnamon-settings/data/user.png"))
@@ -920,17 +1052,13 @@ class ExtensionSidePage (SidePage):
                                 img = GdkPixbuf.Pixbuf.new_from_file( ("/usr/lib/cinnamon-settings/data/system.png"))
 
                             self.model.set_value(iter, 10, img)
-
                             if (found):
                                 img = GdkPixbuf.Pixbuf.new_from_file( ("/usr/lib/cinnamon-settings/data/active.png"))
                             else:
                                 img = GdkPixbuf.Pixbuf.new_from_file( ("/usr/lib/cinnamon-settings/data/inactive.png"))
-
                             self.model.set_value(iter, 11, img)
-
-
-                except Exception, detail:
-                    print "Failed to load extension %s: %s" % (extension, detail)
+                    except Exception, detail:
+                        print "Failed to load extension %s: %s" % (theme, detail)
 
     def show_prompt(self, msg):
         dialog = Gtk.MessageDialog(None,
@@ -962,7 +1090,7 @@ class ExtensionSidePage (SidePage):
                 return
             
             if (checked > 1):
-                msg = _("There are multiple instances of this %s, do you want to remove them all?\n\n") % (self.collection_type)
+                msg = _("There are multiple instances of this %s, do you want to remove them all?\n\n") % (self.noun)
                 msg += self.RemoveString
 
                 if not self.show_prompt(msg):

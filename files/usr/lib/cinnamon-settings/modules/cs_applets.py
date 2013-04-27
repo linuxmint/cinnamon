@@ -7,7 +7,11 @@ class Module:
         keywords = _("applet")
         advanced = False
         self.name = "applets"
-        sidePage = AppletsViewSidePage(_("Applets"), "applets.svg", keywords, advanced, content_box, "applet", "panel")
+        # for i18n replacement in ExtensionCore.py
+        noun = _("applet")
+        pl_noun = _("applets")
+        target = _("panel")
+        sidePage = AppletsViewSidePage(_("Applets"), "applets.svg", keywords, advanced, content_box, "applet", noun, pl_noun, target)
         self.sidePage = sidePage
 
         self.category = "prefs"
@@ -18,9 +22,9 @@ class Module:
 
 class AppletsViewSidePage (ExtensionSidePage):
 
-    def __init__(self, name, icon, keywords, advanced, content_box, collection_type, target):
+    def __init__(self, name, icon, keywords, advanced, content_box, collection_type, noun, pl_noun, target):
         self.RemoveString = _("You can remove specific instances in panel edit mode via the context menu.")
-        ExtensionSidePage.__init__(self, name, icon, keywords, advanced, content_box, collection_type, target)
+        ExtensionSidePage.__init__(self, name, icon, keywords, advanced, content_box, collection_type, noun, pl_noun, target)
 
     def toSettingString(self, uuid, instanceId):
         return ("panel1:right:0:%s:%d") % (uuid, instanceId)
