@@ -289,7 +289,7 @@ class ExtensionSidePage (SidePage):
         cr = Gtk.CellRendererText()
         actionColumn = Gtk.TreeViewColumn("Action", cr)
         actionColumn.set_cell_data_func(cr, self._gm_action_data_func)
-        actionColumn.set_min_width(90)
+        actionColumn.set_min_width(140)
 
         cr = Gtk.CellRendererPixbuf()
         statusColumn = Gtk.TreeViewColumn("Status", cr)
