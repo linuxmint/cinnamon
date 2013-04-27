@@ -64,8 +64,8 @@ class ExtensionSidePage (SidePage):
         
         self.content_box.add(self.notebook)
         self.treeview = Gtk.TreeView()
-        self.treeview.set_rules_hint(True)       
-        
+        self.treeview.set_rules_hint(True)
+
         cr = Gtk.CellRendererToggle()
         cr.connect("toggled", self.toggled, self.treeview)
         column1 = Gtk.TreeViewColumn("Enable", cr)
@@ -77,17 +77,17 @@ class ExtensionSidePage (SidePage):
         column2.set_min_width(50)
 
         column3 = Gtk.TreeViewColumn("Description", Gtk.CellRendererText(), markup=1)        
-        column3.set_resizable(True)      
-        column3.set_min_width(500)
-        column3.set_max_width(501)        
+        column3.set_sizing(Gtk.TreeViewColumnSizing.FIXED)
+        if not self.themes:
+            column3.set_fixed_width(500)
+        else:
+            column3.set_fixed_width(400)
 
         actionColumn = Gtk.TreeViewColumn("Read only", Gtk.CellRendererPixbuf(), pixbuf=10)        
-        actionColumn.set_resizable(True)
         actionColumn.set_min_width(50)
 
         cr = Gtk.CellRendererPixbuf()
         isActiveColumn = Gtk.TreeViewColumn("Active", cr, pixbuf=11)        
-        isActiveColumn.set_resizable(True)
         isActiveColumn.set_min_width(50)
         isActiveColumn.set_cell_data_func(cr, self._is_active_data_func)
         
@@ -106,6 +106,9 @@ class ExtensionSidePage (SidePage):
         
         self.treeview.set_model(self.modelfilter)
         self.treeview.set_search_column(5)
+        x =  Gtk.Tooltip()
+        x.set_text("test")
+        self.treeview.set_tooltip_cell(x, None, actionColumn, None)
         self.treeview.set_search_entry(self.search_entry)
         # Find the enabled extensions
         if not self.themes:
@@ -269,15 +272,15 @@ class ExtensionSidePage (SidePage):
         gm_cr.connect("toggled", self.gm_toggled, self.gm_treeview)
         gm_column1 = Gtk.TreeViewColumn("Install", gm_cr)
         gm_column1.set_cell_data_func(gm_cr, self.gm_celldatafunction_checkbox)
-        gm_column1.set_resizable(True)
 
         gm_column2 = Gtk.TreeViewColumn("Icon", Gtk.CellRendererPixbuf(), pixbuf=3)
-        gm_column2.set_resizable(True)
 
         gm_column3 = Gtk.TreeViewColumn("Description", Gtk.CellRendererText(), markup=1)
-        gm_column3.set_resizable(True)
-        gm_column3.set_min_width(400)
-        gm_column3.set_max_width(401)
+        gm_column3.set_sizing(Gtk.TreeViewColumnSizing.FIXED)
+        if not self.themes:
+            gm_column3.set_fixed_width(400)
+        else:
+            gm_column3.set_fixed_width(300)
         
         cr = Gtk.CellRendererText()
         actionColumn = Gtk.TreeViewColumn("Action", cr)
@@ -292,7 +295,6 @@ class ExtensionSidePage (SidePage):
         right = Gtk.CellRendererText()
         right.set_property('xalign', 1.0)
         gm_column4 = Gtk.TreeViewColumn("Score", right, markup=4)
-        gm_column4.set_resizable(True)
         gm_column4.set_alignment(1.0)
 
         self.gm_treeview.append_column(gm_column1)
