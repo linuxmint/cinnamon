@@ -65,6 +65,7 @@ class ExtensionSidePage (SidePage):
         self.content_box.add(self.notebook)
         self.treeview = Gtk.TreeView()
         self.treeview.set_rules_hint(True)
+        self.treeview.set_has_tooltip(True)
         if self.themes:
             self.treeview.connect("row-activated", self.on_row_activated)
 
@@ -107,6 +108,7 @@ class ExtensionSidePage (SidePage):
         self.modelfilter.set_visible_func(self.only_active)
         
         self.treeview.set_model(self.modelfilter)
+        self.treeview.connect("query-tooltip", self.on_treeview_query_tooltip)
         self.treeview.set_search_column(5)
         x =  Gtk.Tooltip()
         x.set_text("test")
@@ -271,6 +273,7 @@ class ExtensionSidePage (SidePage):
         self.gm_modelfilter.set_visible_func(self.gm_match_func)
         self.gm_treeview = Gtk.TreeView()
         self.gm_treeview.set_rules_hint(True)
+        self.gm_treeview.set_has_tooltip(True)
         
         gm_cr = Gtk.CellRendererToggle()
         gm_cr.connect("toggled", self.gm_toggled, self.gm_treeview)
@@ -316,6 +319,7 @@ class ExtensionSidePage (SidePage):
         gm_scrolled_window.add(self.gm_treeview)
         self.gm_treeview.connect('motion_notify_event', self.gm_on_motion_notify_event)
         self.gm_treeview.connect('button_press_event', self.gm_on_button_press_event)
+        self.gm_treeview.connect("query-tooltip", self.gm_on_treeview_query_tooltip)
 
         getmore_vbox.add(gm_scrolled_window)
 
@@ -366,6 +370,45 @@ class ExtensionSidePage (SidePage):
 
     def getAdditionalPage(self):
         return None
+
+    def on_treeview_query_tooltip(self, treeview, x, y, keyboard_mode, tooltip):
+        data = treeview.get_path_at_pos(x, y)
+        if data:
+            path, column, x, y=data
+            iter = self.modelfilter.get_iter(path)
+            if column.get_property('title')=="Read only" and iter != None:
+                if not self.modelfilter.get_value(iter, 6):
+                    tooltip.set_text(_("This %s is read-only, and cannot be uninstalled") % self.noun)
+                    return True
+                else:
+                    return False
+            elif column.get_property('title') == "Active" and iter != None:
+                count = self.modelfilter.get_value(iter, 2)
+                markup = ""
+                if count > 0:
+                    markup += _("This %s is currently active.") % self.noun
+                    if count > 1:
+                        markup += _("\n\nInstance count: %d") % count
+                    tooltip.set_markup(markup)
+                    return True
+        return False
+
+    def gm_on_treeview_query_tooltip(self, treeview, x, y, keyboard_mode, tooltip):
+        data = treeview.get_path_at_pos(x, y)
+        if data:
+            path, column, x, y = data
+            iter = self.gm_modelfilter.get_iter(path)
+            if column.get_property('title') == "Status":
+                uuid = self.gm_modelfilter.get_value(iter, 0)
+                date = self.gm_modelfilter.get_value(iter, 6)
+                installed, can_update, is_active = self.version_compare(uuid, date)
+                if installed:
+                    if can_update:
+                        tooltip.set_text(_("An update is available for this %s") % (self.noun))
+                    else:
+                        tooltip.set_text(_("This %s is installed and up-to-date") % (self.noun))
+                    return True
+        return False
 
     def model_sort_func(self, model, iter1, iter2, data=None):
         s1 = ((not model[iter1][6]), model[iter1][5])
@@ -585,10 +628,8 @@ class ExtensionSidePage (SidePage):
         if installed:
             if can_update:
                 img = GdkPixbuf.Pixbuf.new_from_file( ("/usr/lib/cinnamon-settings/data/update.png"))
-                text = _("Update Available")
             else:
                 img = GdkPixbuf.Pixbuf.new_from_file( ("/usr/lib/cinnamon-settings/data/installed.png"))
-                text = _("Installed (Up to date)")
         else:
             img = GdkPixbuf.Pixbuf.new_from_file( ("/usr/lib/cinnamon-settings/data/inactive.png"))
 
