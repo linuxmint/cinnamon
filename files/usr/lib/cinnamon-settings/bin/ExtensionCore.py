@@ -65,6 +65,8 @@ class ExtensionSidePage (SidePage):
         self.content_box.add(self.notebook)
         self.treeview = Gtk.TreeView()
         self.treeview.set_rules_hint(True)
+        if self.themes:
+            self.treeview.connect("row-activated", self.on_row_activated)
 
         cr = Gtk.CellRendererToggle()
         cr.connect("toggled", self.toggled, self.treeview)
@@ -369,6 +371,12 @@ class ExtensionSidePage (SidePage):
         s1 = ((not model[iter1][6]), model[iter1][5])
         s2 = ((not model[iter2][6]), model[iter2][5])
         return cmp( s1, s2 )       
+
+    def on_row_activated(self, treeview, path, column): # Only used in themes
+        iter = self.modelfilter.get_iter(path)
+        uuid = self.modelfilter.get_value(iter, 0)
+        name = self.modelfilter.get_value(iter, 5)
+        self.enable_extension(uuid, name)
 
     def on_button_press_event(self, widget, event):
         if event.button == 3:

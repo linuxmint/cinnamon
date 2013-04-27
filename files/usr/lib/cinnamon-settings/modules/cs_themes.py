@@ -112,31 +112,3 @@ class ThemesViewSidePage (ExtensionSidePage):
             res.append((i, i))
         return res
 
-
-    
-    # def load_themes_in(self, directory):
-    #     if os.path.exists(directory) and os.path.isdir(directory):
-    #         themes = os.listdir(directory)
-    #         themes.sort()
-    #         for theme in themes:
-    #             try:
-    #                 if os.path.exists("%s/%s/cinnamon/cinnamon.css" % (directory, theme)):
-    #                     if os.path.exists("%s/%s/cinnamon/thumbnail.png" % (directory, theme)):
-    #                         img = GdkPixbuf.Pixbuf.new_from_file_at_size( "%s/%s/cinnamon/thumbnail.png" % (directory, theme), THUMB_SIZE, THUMB_SIZE )
-    #                     else:
-    #                         img = GdkPixbuf.Pixbuf.new_from_file_at_size( "/usr/share/cinnamon/theme/thumbnail-generic.png", THUMB_SIZE, THUMB_SIZE )
-    #                     theme_iter = self.model.append([theme, img])
-    #                     if theme==self.current_theme:
-    #                         self.active_theme_iter = theme_iter
-    #             except Exception, detail:
-    #                 print detail
-        
-    # def apply_theme(self, iconView):
-    #     selected_items = iconView.get_selected_items()
-    #     if len(selected_items) > 0:
-    #         path = selected_items[0]                  
-    #         iterator = self.model.get_iter(path)
-    #         theme_name = self.model.get_value(iterator, 0)
-    #         if theme_name == "Cinnamon":
-    #             theme_name = ""            
-    #         self.settings.set_string("name", theme_name)

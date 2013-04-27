@@ -431,6 +431,10 @@ class Spice_Harvester:
                 zip = zipfile.ZipFile(filename)
                 zip.extractall(dest, self.get_members(zip))
 
+                # Test for correct folder structure - look for cinnamon.css
+                file = open(os.path.join(dest, "cinnamon.css"), 'r')
+                file.close()
+
                 md = {}
                 md["last-edited"] = edited_date
                 md["uuid"] = uuid
@@ -441,7 +445,11 @@ class Spice_Harvester:
 
             except Exception, detail:
                 self.progress_window.hide()
-                self.errorMessage(_("An error occurred during installation or updating.  You may wish to report this incident to the developer of %s.") % (uuid), str(detail))
+                if not self.themes:
+                    obj = uuid
+                else:
+                    obj = title
+                self.errorMessage(_("An error occurred during installation or updating.  You may wish to report this incident to the developer of %s.") % (obj), str(detail))
                 return False
 
         self.progress_button_close.set_sensitive(True)
