@@ -7,7 +7,12 @@ class Module:
         keywords = _("extension, addon")
         advanced = True
         self.name = "extensions"
-        sidePage = ExtensionViewSidePage(_("Extensions"), "extensions.svg", keywords, advanced, content_box, "extension", "Cinnamon")
+        # for i18n replacement in ExtensionCore.py
+        noun = _("extension")
+        pl_noun = _("extensions")
+        # we don't translate Cinnamon
+        target = "Cinnamon"
+        sidePage = ExtensionViewSidePage(_("Extensions"), "extensions.svg", keywords, advanced, content_box, "extension", noun, pl_noun, target)
         self.sidePage = sidePage
 
         self.category = "prefs"
@@ -17,9 +22,9 @@ class Module:
         self.sidePage.builder = builder
 
 class ExtensionViewSidePage (ExtensionSidePage):
-    def __init__(self, name, icon, keywords, advanced, content_box, collection_type, target):
+    def __init__(self, name, icon, keywords, advanced, content_box, collection_type, noun, pl_noun, target):
         self.RemoveString = ""
-        ExtensionSidePage.__init__(self, name, icon, keywords, advanced, content_box, collection_type, target)
+        ExtensionSidePage.__init__(self, name, icon, keywords, advanced, content_box, collection_type, noun, pl_noun, target)
 
     def toSettingString(self, uuid, instanceId):
         return uuid

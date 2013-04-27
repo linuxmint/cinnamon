@@ -63,11 +63,14 @@ def removeEmptyFolders(path):
         os.rmdir(path)
 
 class Spice_Harvester:
-    def __init__(self, collection_type, window, builder, onActivate=None):
+    def __init__(self, collection_type, window, builder, noun, pl_noun, onActivate=None):
         self.collection_type = collection_type
+        self.noun = noun
+        self.pl_noun = pl_noun
         self.cache_folder = self.get_cache_folder()
         self.install_folder = self.get_install_folder()
         self.index_cache = {}
+        self.themes = collection_type == "theme"
         
         if not os.path.exists(os.path.join(self.cache_folder, "index.json")):
             self.has_cache = False
@@ -167,7 +170,7 @@ class Spice_Harvester:
         # Browsing the info within the app would be great (ala mintinstall) but until it's fully ready 
         # and it gives a better experience (layout, comments, reviewing) than 
         # browsing online we'll open the link with an external browser 
-        os.system("xdg-open '%s/applets/view/%s'" % (URL_SPICES_HOME, appletData['spices-id']))
+        os.system("xdg-open '%s/%ss/view/%s'" % (URL_SPICES_HOME, self.collection_type, appletData['spices-id']))
         return
         
         screenshot_filename = os.path.basename(appletData['screenshot'])
@@ -214,7 +217,7 @@ class Spice_Harvester:
             return URL_SPICES_APPLET_LIST
         elif self.collection_type == 'extension':
             return URL_SPICES_EXTENSION_LIST
-        elif self.collection_type == 'themes':
+        elif self.collection_type == 'theme':
             return URL_SPICES_THEME_LIST
         elif self.collection_type == 'desklet':
             return URL_SPICES_DESKLET_LIST
@@ -231,7 +234,7 @@ class Spice_Harvester:
     def get_install_folder(self):
         if self.collection_type in ['applet','desklet','extension']:
             install_folder = '%s/.local/share/cinnamon/%ss/' % (home, self.collection_type)
-        elif self.collection_type == 'themes':
+        elif self.collection_type == 'theme':
             install_folder = '%s/.themes/' % (home)
 
         return install_folder
@@ -241,7 +244,7 @@ class Spice_Harvester:
         if (self.has_cache and not force):
             self.load_cache()
         else:
-            self.progresslabel.set_text(_("Refreshing %s index...") % (self.collection_type))
+            self.progresslabel.set_text(_("Refreshing %s index...") % (self.noun))
             self.progress_window.show()
             self.refresh_cache()
 
@@ -275,15 +278,19 @@ class Spice_Harvester:
             self.errorMessage(_("Something went wrong with the spices download.  Please try refreshing the list again."), str(detail))
 
     def load_assets(self, uuids=None):
-        self.progresslabel.set_text(_("Refreshing %s cache...") % (self.collection_type))
+        self.progresslabel.set_text(_("Refreshing %s cache...") % (self.noun))
         needs_refresh = 0
 
         if uuids == None:
             uuids = self.index_cache.keys()
 
         for uuid in uuids:
-            icon_basename = os.path.basename(self.index_cache[uuid]['icon'])
-            icon_path = os.path.join(self.cache_folder, icon_basename)
+            if not self.themes:
+                icon_basename = os.path.basename(self.index_cache[uuid]['icon'])
+                icon_path = os.path.join(self.cache_folder, icon_basename)
+            else:
+                icon_basename = self.sanitize_thumb(os.path.basename(self.index_cache[uuid]['screenshot']))
+                icon_path = os.path.join(self.cache_folder, icon_basename)
 
             self.index_cache[uuid]['icon_filename'] = icon_basename
             self.index_cache[uuid]['icon_path'] = icon_path
@@ -303,14 +310,25 @@ class Spice_Harvester:
                 #self.progress_bar_pulse()
                 self.download_current_file += 1
                 f = open(icon_path, 'w')
-                self.download_url = URL_SPICES_HOME + self.index_cache[uuid]['icon']
-                
-                self.download(f, icon_path)
+                if not self.themes:
+                    self.download_url = URL_SPICES_HOME + self.index_cache[uuid]['icon']
+                else:
+                    self.download_url = URL_SPICES_HOME + "/uploads/themes/thumbs/" + self.index_cache[uuid]['icon_filename']
+                valid = True
+                try:
+                    urllib2.urlopen(self.download_url).getcode()
+                except:
+                    valid = False
+                if valid:
+                    self.download(f, icon_path)
 
         self.progress_window.hide()
 
         self.download_total_files = 0
         self.download_current_file = 0
+
+    def sanitize_thumb(self, basename):
+        return basename.replace("jpg", "png").replace("JPG", "png").replace("PNG", "png")
 
     def install_all(self, install_list=[], onFinished=None):
         need_restart = False
