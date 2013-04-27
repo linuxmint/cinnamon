@@ -63,7 +63,7 @@ def removeEmptyFolders(path):
         os.rmdir(path)
 
 class Spice_Harvester:
-    def __init__(self, collection_type, window, builder, noun, pl_noun, onActivate=None):
+    def __init__(self, collection_type, window, builder, noun, pl_noun):
         self.collection_type = collection_type
         self.noun = noun
         self.pl_noun = pl_noun
@@ -79,7 +79,7 @@ class Spice_Harvester:
         
         self.window = window
         self.builder = builder
-        self.onActivate = onActivate
+
 
         self.progress_window = self.builder.get_object("progress_window")
         self.progress_button_close = self.builder.get_object("btnProgressClose")
@@ -459,12 +459,6 @@ class Spice_Harvester:
             onFinished(uuid)
 
     def on_progress_close(self, widget):
-        self.progress_window.hide()
-        return
-
-    def on_activate_clicked(self):
-        if callable(self.onActivate):
-            self.onActivate(self.current_uuid)
         self.progress_window.hide()
         return
 

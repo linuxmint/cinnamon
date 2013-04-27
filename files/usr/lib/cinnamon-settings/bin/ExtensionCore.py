@@ -126,7 +126,7 @@ class ExtensionSidePage (SidePage):
         if not self.themes:
             self.settings.connect(("changed::enabled-%ss") % (self.collection_type), lambda x,y: self._enabled_extensions_changed())
         else:
-            self.settings.connect("changed::name", lambda x, y: self._enabled_extensions_changed)
+            self.settings.connect("changed::name", lambda x, y: self._enabled_extensions_changed())
         
         scrolledWindow.add(self.treeview)
         self.treeview.connect('button_press_event', self.on_button_press_event)
@@ -151,8 +151,10 @@ class ExtensionSidePage (SidePage):
         self.extConfigureButton.connect("clicked", self._external_configure_launch)
         self.extConfigureButton.set_tooltip_text(_("Configure this %s") % (self.noun))
 
-
-        restoreButton = Gtk.Button(_("Restore to default"))
+        if not self.themes:
+            restoreButton = Gtk.Button(_("Restore to default"))
+        else:
+            restoreButton = Gtk.Button(_("Restore default theme"))
         restoreButton.connect("clicked", lambda x: self._restore_default_extensions())
         
         hbox = Gtk.HBox()
@@ -330,7 +332,7 @@ class ExtensionSidePage (SidePage):
         self.treeview.get_selection().connect("changed", lambda x: self._selection_changed());
         self.install_list = []
         
-        self.spices = Spice_Harvester(self.collection_type, self.window, self.builder, self.noun, self.pl_noun, self.on_enable_new_extension)
+        self.spices = Spice_Harvester(self.collection_type, self.window, self.builder, self.noun, self.pl_noun)
         # if not self.spices.get_webkit_enabled():
         #     getmore_label.set_sensitive(False)
         #     reload_button.set_sensitive(False)
@@ -405,7 +407,7 @@ class ExtensionSidePage (SidePage):
                             item = Gtk.MenuItem(_("Add to %s") % (self.target))
                         else:
                             item = Gtk.MenuItem(_("Apply theme"))
-                        item.connect('activate', lambda x: self.enable_extension(uuid))
+                        item.connect('activate', lambda x: self.enable_extension(uuid, name))
                         popup.add(item)
                         
                     
@@ -662,9 +664,6 @@ class ExtensionSidePage (SidePage):
     def gm_on_entry_refilter(self, widget, data=None):
         self.gm_modelfilter.refilter()
 
-    def on_enable_new_extension(self, uuid):
-        self.enable_extension(uuid)
-
     def load_spices(self, force=False):
         # if self.spices.get_webkit_enabled():
         self.spices.load(self.on_spice_load, force)
@@ -718,14 +717,17 @@ class ExtensionSidePage (SidePage):
             self.gm_model.set_value(iter, 5, extensionData['name'])
             self.gm_model.set_value(iter, 6, int(extensionData['last_edited']))
 
-    def enable_extension(self, uuid):
-        if self.collection_type in ("applet", "desklet"):
-            extension_id = self.settings.get_int(("next-%s-id") % (self.collection_type));
-            self.settings.set_int(("next-%s-id") % (self.collection_type), (extension_id+1));
+    def enable_extension(self, uuid, name):
+        if not self.themes:
+            if self.collection_type in ("applet", "desklet"):
+                extension_id = self.settings.get_int(("next-%s-id") % (self.collection_type));
+                self.settings.set_int(("next-%s-id") % (self.collection_type), (extension_id+1));
+            else:
+                extension_id = 0
+            self.enabled_extensions.append(self.toSettingString(uuid, extension_id))
+            self.settings.set_strv(("enabled-%ss") % (self.collection_type), self.enabled_extensions)
         else:
-            extension_id = 0
-        self.enabled_extensions.append(self.toSettingString(uuid, extension_id))
-        self.settings.set_strv(("enabled-%ss") % (self.collection_type), self.enabled_extensions)
+            self.settings.set_string("name", name)
 
     def disable_extension(self, uuid, checked):
 
@@ -786,9 +788,11 @@ class ExtensionSidePage (SidePage):
                     uuidCount[uuid] = 1
             except:
                 pass
-
         for row in self.model:
-            uuid = self.model.get_value(row.iter, 0)
+            if not self.themes:
+                uuid = self.model.get_value(row.iter, 0)
+            else:
+                uuid = self.model.get_value(row.iter, 5)
             if(uuid in uuidCount):
                 self.model.set_value(row.iter, 2, uuidCount[uuid])
             else:
@@ -801,7 +805,11 @@ class ExtensionSidePage (SidePage):
         
     def _add_another_instance_iter(self, treeiter):
         uuid = self.modelfilter.get_value(treeiter, 0);
-        self.instance_extension(uuid)
+        name = self.modelfilter.get_value(treeiter, 5)
+        if not self.themes:
+            self.instance_extension(uuid)
+        else:
+            self.enable_extension(uuid, name)
         
     def _selection_changed(self):
         model, treeiter = self.treeview.get_selection().get_selected()
@@ -876,9 +884,13 @@ class ExtensionSidePage (SidePage):
         self.notebook.show_all()
 
     def _restore_default_extensions(self):
-        os.system(('gsettings reset org.cinnamon next-%s-id') % (self.collection_type))
-        os.system(('gsettings reset org.cinnamon enabled-%ss') % (self.collection_type))
-    
+        if not self.themes:
+            os.system(('gsettings reset org.cinnamon next-%s-id') % (self.collection_type))
+            os.system(('gsettings reset org.cinnamon enabled-%ss') % (self.collection_type))
+        else:
+            os.system("gsettings reset org.cinnamon.theme name")
+
+
     def load_extensions(self):
         self.model.clear()
         if not self.themes:

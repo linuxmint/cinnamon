@@ -33,8 +33,7 @@ class ThemesViewSidePage (ExtensionSidePage):
         return ("panel1:right:0:%s:%d") % (uuid, instanceId)
 
     def fromSettingString(self, string):
-        panel, side, position, uuid, instanceId = string.split(":")
-        return uuid
+        return string
 
     def getAdditionalPage(self):
         scrolledWindow = Gtk.ScrolledWindow()
