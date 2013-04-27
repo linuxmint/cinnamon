@@ -299,7 +299,7 @@ ClassicSwitcher.prototype = {
         let lastClone = null;
         let previewClones = [];
         let window = this._windows[this._currentIndex];
-        let clones = WindowUtils.createWindowClone(window, null, null, true, false);
+        let clones = WindowUtils.createWindowClone(window, 0, 0, true, false);
         for (let i = 0; i < clones.length; i++) {
             let clone = clones[i];
             previewClones.push(clone.actor);
@@ -970,7 +970,7 @@ ThumbnailList.prototype = {
         for (let i = 0; i < this._thumbnailBins.length; i++) {
             let metaWindow = this._windows[i];
             let container = new St.Group();
-            let clones = WindowUtils.createWindowClone(metaWindow, 0, availHeight, true, true);
+            let clones = WindowUtils.createWindowClone(metaWindow, availHeight, availHeight, true, true);
             for (let j = 0; j < clones.length; j++) {
               let clone = clones[j];
               container.add_actor(clone.actor);
