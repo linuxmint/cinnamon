@@ -386,6 +386,7 @@ class Spice_Harvester:
             try:
                 self.download(f, filename)
                 dest = os.path.join(self.install_folder, uuid)
+                schema_filename = ""
                 zip = zipfile.ZipFile(filename)
                 zip.extractall(dest, self.get_members(zip))
                 for file in self.get_members(zip):
@@ -407,6 +408,7 @@ class Spice_Harvester:
                             tool = "/usr/lib/cinnamon-settings/bin/installSchema.py %s" % (os.path.join(dest, file.filename))
                             command = "%s %s" % (launcher, tool)
                             os.system(command)
+                            schema_filename = file.filename
                         else:
                             self.errorMessage(_("Could not install the settings schema for %s.  You will have to perform this step yourself.") % (uuid))
                 file = open(os.path.join(dest, "metadata.json"), 'r')
@@ -414,6 +416,8 @@ class Spice_Harvester:
                 file.close()
                 md = json.loads(raw_meta)
                 md["last-edited"] = edited_date
+                if schema_filename != "":
+                    md["schema-file"] = schema_filename
                 raw_meta = json.dumps(md, indent=4)
                 file = open(os.path.join(dest, "metadata.json"), 'w+')
                 file.write(raw_meta)
@@ -458,7 +462,7 @@ class Spice_Harvester:
         self.progress_window.show()
         return True
 
-    def uninstall(self, uuid, name=None, onFinished=None):
+    def uninstall(self, uuid, name, schema_filename, onFinished=None):
         self.progress_button_close.set_sensitive(False)        
         self.progresslabel.set_text(_("Uninstalling %s...") % name)
         self.progress_window.show()
@@ -466,6 +470,15 @@ class Spice_Harvester:
         self.progress_bar_pulse()
         try:
             if not self.themes:
+                if schema_filename != "":
+                    sentence = _("Please enter your password to remove the settings schema for %s") % (uuid)
+                    if os.path.exists("/usr/bin/gksu") and os.path.exists("/usr/lib/cinnamon-settings/bin/removeSchema.py"):
+                        launcher = "gksu  --message \"<b>%s</b>\"" % sentence
+                        tool = "/usr/lib/cinnamon-settings/bin/removeSchema.py %s" % (schema_filename)
+                        command = "%s %s" % (launcher, tool)
+                        os.system(command)
+                    else:
+                        self.errorMessage(_("Could not remove the settings schema for %s.  You will have to perform this step yourself.  This is not a critical error.") % (uuid))
                 shutil.rmtree(os.path.join(self.install_folder, uuid))
 
                 # Uninstall spice's localization files, if any

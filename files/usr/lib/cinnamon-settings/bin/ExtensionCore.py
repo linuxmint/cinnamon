@@ -100,8 +100,8 @@ class ExtensionSidePage (SidePage):
         self.treeview.append_column(isActiveColumn)
         self.treeview.set_headers_visible(False)
         
-        self.model = Gtk.TreeStore(str, str, int, int, GdkPixbuf.Pixbuf, str, int, bool, str, int, GdkPixbuf.Pixbuf, GdkPixbuf.Pixbuf)
-        #                          uuid, desc, enabled, max-instances, icon, name, read-only, hide-config-button, ext-setting-app, edit-date, read-only icon, active icon
+        self.model = Gtk.TreeStore(str, str, int, int, GdkPixbuf.Pixbuf, str, int, bool, str, int, GdkPixbuf.Pixbuf, GdkPixbuf.Pixbuf, str)
+        #                          uuid, desc, enabled, max-instances, icon, name, read-only, hide-config-button, ext-setting-app, edit-date, read-only icon, active icon, schema file name (for uninstall)
 
         self.modelfilter = self.model.filter_new()
         self.showFilter = SHOW_ALL
@@ -464,7 +464,8 @@ class ExtensionSidePage (SidePage):
                     
                     item = Gtk.MenuItem(_("Uninstall"))
                     if self.modelfilter.get_value(iter, 6):
-                        item.connect('activate', lambda x: self.uninstall_extension(uuid, name))
+                        schema_filename = self.modelfilter.get_value(iter, 12)
+                        item.connect('activate', lambda x: self.uninstall_extension(uuid, name, schema_filename))
                         item.set_sensitive(True)
                     else:
                         item.set_sensitive(False)
@@ -802,7 +803,7 @@ class ExtensionSidePage (SidePage):
             if self.enabled_extensions[0] == name:
                 self._restore_default_extensions()
 
-    def uninstall_extension(self, uuid, name):
+    def uninstall_extension(self, uuid, name, schema_filename):
         if not self.themes:
             obj = uuid
         else:
@@ -810,7 +811,7 @@ class ExtensionSidePage (SidePage):
         if not self.show_prompt(_("Are you sure you want to completely remove %s?") % (obj)):
             return
         self.disable_extension(uuid, name, 0)
-        self.spices.uninstall(uuid, name, self.on_uninstall_finished)
+        self.spices.uninstall(uuid, name, schema_filename, self.on_uninstall_finished)
     
     def on_uninstall_finished(self, uuid):
         self.load_extensions()
@@ -1000,6 +1001,10 @@ class ExtensionSidePage (SidePage):
                             except KeyError: last_edited = -1
                             except ValueError: last_edited = -1
 
+                            try: schema_filename = data["schema-filename"]
+                            except KeyError: schema_filename = ""
+                            except ValueError: schema_filename = ""
+
                             if ext_config_app != "" and not os.path.exists(ext_config_app):
                                 ext_config_app = ""
 
@@ -1049,7 +1054,7 @@ class ExtensionSidePage (SidePage):
                                     img = GdkPixbuf.Pixbuf.new_from_file( ("/usr/lib/cinnamon-settings/data/inactive.png"))
 
                                 self.model.set_value(iter, 11, img)
-
+                                self.model.set_value(iter, 12, schema_filename)
 
                     except Exception, detail:
                         print "Failed to load extension %s: %s" % (extension, detail)
