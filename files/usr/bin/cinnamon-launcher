@@ -7,12 +7,12 @@ FALLBACK_ARGS = ("--replace",)
 import os, sys, gettext
 from gi.repository import Gtk
 
-gettext.install("cinnamon", "/usr/share/linuxmint/locale")
+gettext.install("cinnamon", "/usr/share/cinnamon/locale")
 
-def confirm(message):
-    d = Gtk.MessageDialog(None, 0, Gtk.MessageType.QUESTION, Gtk.ButtonsType.YES_NO)
+def confirm_restart():
+    d = Gtk.MessageDialog(None, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.YES_NO)
     d.set_keep_above(True)
-    d.set_markup("<span size='large'><b>%s</b></span>" % message)
+    d.set_markup("<span size='large'><b>%s</b></span>\n\n%s" % (_("Do you want to restart Cinnamon?"), _("Cinnamon just crashed. You are currently running in Fallback Mode.")))
     d.show_all()
     resp = d.run()
     d.destroy()
@@ -21,12 +21,17 @@ def confirm(message):
 if __name__ == "__main__":
     cinnamon_pid = os.fork()
     if cinnamon_pid == 0:
-        os.execvp("cinnamon", ("",) + tuple(sys.argv[1:]))
+        os.execvp("cinnamon", ("cinnamon", "--replace", ) + tuple(sys.argv[1:]))
     else:
         exit_status = os.waitpid(cinnamon_pid, 0)[1]
         if exit_status != 0:
             if os.fork() == 0:
-                os.execvp(FALLBACK_COMMAND, ("",) + FALLBACK_ARGS)
+                if os.path.exists("/usr/bin/gnome-panel"):
+                    os.system("gnome-panel --replace &")
+                elif os.path.exists("/usr/bin/tint2"):
+                    os.system("killall tint2")
+                    os.system("tint2 &")
+                os.execvp(FALLBACK_COMMAND, (FALLBACK_COMMAND,) + FALLBACK_ARGS)
             else:
-                if confirm(_("Cinnamon crashed.\nDo you want to restart it ?")):
-                    os.execvp(sys.argv[0], ("", "--replace"))
+                if confirm_restart():
+                    os.execvp(sys.argv[0], (sys.argv[0], "--replace"))
