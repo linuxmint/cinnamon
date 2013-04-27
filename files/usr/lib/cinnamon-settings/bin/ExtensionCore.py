@@ -737,7 +737,10 @@ class ExtensionSidePage (SidePage):
             self.enabled_extensions.append(self.toSettingString(uuid, extension_id))
             self.settings.set_strv(("enabled-%ss") % (self.collection_type), self.enabled_extensions)
         else:
-            self.settings.set_string("name", name)
+            if uuid == "STOCK":
+                self.settings.set_string("name", "")
+            else:
+                self.settings.set_string("name", name)
 
     def disable_extension(self, uuid, name, checked):
 
@@ -799,6 +802,8 @@ class ExtensionSidePage (SidePage):
         for enabled_extension in self.enabled_extensions:
             try:
                 uuid = self.fromSettingString(enabled_extension)
+                if uuid == "":
+                    uuid = "STOCK"
                 if uuid in uuidCount:
                     uuidCount[uuid] += 1
                 else:
@@ -809,7 +814,10 @@ class ExtensionSidePage (SidePage):
             if not self.themes:
                 uuid = self.model.get_value(row.iter, 0)
             else:
-                uuid = self.model.get_value(row.iter, 5)
+                if self.model.get_value(row.iter, 0) == "STOCK":
+                    uuid = "STOCK"
+                else:
+                    uuid = self.model.get_value(row.iter, 5)
             if(uuid in uuidCount):
                 self.model.set_value(row.iter, 2, uuidCount[uuid])
             else:
@@ -914,10 +922,11 @@ class ExtensionSidePage (SidePage):
             self.load_extensions_in(('/usr/share/cinnamon/%ss') % (self.collection_type))
             self.load_extensions_in(('%s/.local/share/cinnamon/%ss') % (home, self.collection_type))
         else:
+            self.load_extensions_in('/usr/share', True)
             self.load_extensions_in(('%s/.themes') % (home))
             self.load_extensions_in('/usr/share/themes')
 
-    def load_extensions_in(self, directory):
+    def load_extensions_in(self, directory, stock_theme = False):
         if not self.themes:  # Applet, Desklet, Extension handling
             if os.path.exists(directory) and os.path.isdir(directory):
                 extensions = os.listdir(directory)
@@ -1005,11 +1014,17 @@ class ExtensionSidePage (SidePage):
                         print "Failed to load extension %s: %s" % (extension, detail)
         else: # Theme handling
             if os.path.exists(directory) and os.path.isdir(directory):
-                themes = os.listdir(directory)
+                if stock_theme:
+                    themes = ["cinnamon"]
+                else:
+                    themes = os.listdir(directory)
                 themes.sort()
                 for theme in themes:
                     try:
-                        path = os.path.join(directory, theme, "cinnamon")
+                        if stock_theme:
+                            path = os.path.join(directory, theme, "theme")
+                        else:
+                            path = os.path.join(directory, theme, "cinnamon")
                         if os.path.exists(path) and os.path.isdir(path):
                             theme_last_edited = -1
                             theme_uuid = ""
@@ -1023,8 +1038,11 @@ class ExtensionSidePage (SidePage):
                                 try: theme_uuid = data["uuid"]
                                 except KeyError: theme_uuid = ""
                                 except ValueError: theme_uuid = ""
-
-                            theme_name = theme
+                            if stock_theme:
+                                theme_name = _("Stock Cinnamon Theme")
+                                theme_uuid = "STOCK"
+                            else:
+                                theme_name = theme
                             theme_description = ""
                             iter = self.model.insert_before(None, None)
                             found = 0
