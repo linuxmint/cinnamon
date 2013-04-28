@@ -65,6 +65,7 @@ class ExtensionSidePage (SidePage):
         self.content_box.add(self.notebook)
         self.treeview = Gtk.TreeView()
         self.treeview.set_rules_hint(True)
+        self.treeview.set_has_tooltip(True)
         if self.themes:
             self.treeview.connect("row-activated", self.on_row_activated)
 
@@ -99,14 +100,15 @@ class ExtensionSidePage (SidePage):
         self.treeview.append_column(isActiveColumn)
         self.treeview.set_headers_visible(False)
         
-        self.model = Gtk.TreeStore(str, str, int, int, GdkPixbuf.Pixbuf, str, int, bool, str, int, GdkPixbuf.Pixbuf, GdkPixbuf.Pixbuf)
-        #                          uuid, desc, enabled, max-instances, icon, name, read-only, hide-config-button, ext-setting-app, edit-date, read-only icon, active icon
+        self.model = Gtk.TreeStore(str, str, int, int, GdkPixbuf.Pixbuf, str, int, bool, str, int, GdkPixbuf.Pixbuf, GdkPixbuf.Pixbuf, str)
+        #                          uuid, desc, enabled, max-instances, icon, name, read-only, hide-config-button, ext-setting-app, edit-date, read-only icon, active icon, schema file name (for uninstall)
 
         self.modelfilter = self.model.filter_new()
         self.showFilter = SHOW_ALL
         self.modelfilter.set_visible_func(self.only_active)
         
         self.treeview.set_model(self.modelfilter)
+        self.treeview.connect("query-tooltip", self.on_treeview_query_tooltip)
         self.treeview.set_search_column(5)
         x =  Gtk.Tooltip()
         x.set_text("test")
@@ -271,6 +273,7 @@ class ExtensionSidePage (SidePage):
         self.gm_modelfilter.set_visible_func(self.gm_match_func)
         self.gm_treeview = Gtk.TreeView()
         self.gm_treeview.set_rules_hint(True)
+        self.gm_treeview.set_has_tooltip(True)
         
         gm_cr = Gtk.CellRendererToggle()
         gm_cr.connect("toggled", self.gm_toggled, self.gm_treeview)
@@ -289,9 +292,9 @@ class ExtensionSidePage (SidePage):
         cr = Gtk.CellRendererText()
         actionColumn = Gtk.TreeViewColumn("Action", cr)
         actionColumn.set_cell_data_func(cr, self._gm_action_data_func)
-        actionColumn.set_min_width(90)
+        actionColumn.set_min_width(140)
 
-        cr = Gtk.CellRendererText()
+        cr = Gtk.CellRendererPixbuf()
         statusColumn = Gtk.TreeViewColumn("Status", cr)
         statusColumn.set_cell_data_func(cr, self._gm_status_data_func)
 
@@ -316,6 +319,7 @@ class ExtensionSidePage (SidePage):
         gm_scrolled_window.add(self.gm_treeview)
         self.gm_treeview.connect('motion_notify_event', self.gm_on_motion_notify_event)
         self.gm_treeview.connect('button_press_event', self.gm_on_button_press_event)
+        self.gm_treeview.connect("query-tooltip", self.gm_on_treeview_query_tooltip)
 
         getmore_vbox.add(gm_scrolled_window)
 
@@ -366,6 +370,45 @@ class ExtensionSidePage (SidePage):
 
     def getAdditionalPage(self):
         return None
+
+    def on_treeview_query_tooltip(self, treeview, x, y, keyboard_mode, tooltip):
+        data = treeview.get_path_at_pos(x, y)
+        if data:
+            path, column, x, y=data
+            iter = self.modelfilter.get_iter(path)
+            if column.get_property('title')=="Read only" and iter != None:
+                if not self.modelfilter.get_value(iter, 6):
+                    tooltip.set_text(_("This %s is read-only, and cannot be uninstalled") % self.noun)
+                    return True
+                else:
+                    return False
+            elif column.get_property('title') == "Active" and iter != None:
+                count = self.modelfilter.get_value(iter, 2)
+                markup = ""
+                if count > 0:
+                    markup += _("This %s is currently active.") % self.noun
+                    if count > 1:
+                        markup += _("\n\nInstance count: %d") % count
+                    tooltip.set_markup(markup)
+                    return True
+        return False
+
+    def gm_on_treeview_query_tooltip(self, treeview, x, y, keyboard_mode, tooltip):
+        data = treeview.get_path_at_pos(x, y)
+        if data:
+            path, column, x, y = data
+            iter = self.gm_modelfilter.get_iter(path)
+            if column.get_property('title') == "Status":
+                uuid = self.gm_modelfilter.get_value(iter, 0)
+                date = self.gm_modelfilter.get_value(iter, 6)
+                installed, can_update, is_active = self.version_compare(uuid, date)
+                if installed:
+                    if can_update:
+                        tooltip.set_text(_("An update is available for this %s") % (self.noun))
+                    else:
+                        tooltip.set_text(_("This %s is installed and up-to-date") % (self.noun))
+                    return True
+        return False
 
     def model_sort_func(self, model, iter1, iter2, data=None):
         s1 = ((not model[iter1][6]), model[iter1][5])
@@ -421,7 +464,8 @@ class ExtensionSidePage (SidePage):
                     
                     item = Gtk.MenuItem(_("Uninstall"))
                     if self.modelfilter.get_value(iter, 6):
-                        item.connect('activate', lambda x: self.uninstall_extension(uuid, name))
+                        schema_filename = self.modelfilter.get_value(iter, 12)
+                        item.connect('activate', lambda x: self.uninstall_extension(uuid, name, schema_filename))
                         item.set_sensitive(True)
                     else:
                         item.set_sensitive(False)
@@ -440,7 +484,7 @@ class ExtensionSidePage (SidePage):
     def _is_active_data_func(self, column, cell, model, iter, data=None):
         enabled = model.get_value(iter, 2) > 0
         if (enabled):
-            img = GdkPixbuf.Pixbuf.new_from_file( ("/usr/lib/cinnamon-settings/data/active.png"))
+            img = GdkPixbuf.Pixbuf.new_from_file( ("/usr/lib/cinnamon-settings/data/running.png"))
         else:
             img = GdkPixbuf.Pixbuf.new_from_file( ("/usr/lib/cinnamon-settings/data/inactive.png"))        
         cell.set_property('pixbuf', img)
@@ -584,13 +628,13 @@ class ExtensionSidePage (SidePage):
 
         if installed:
             if can_update:
-                text = _("Update Available")
+                img = GdkPixbuf.Pixbuf.new_from_file( ("/usr/lib/cinnamon-settings/data/update.png"))
             else:
-                text = _("Installed (Up to date)")
+                img = GdkPixbuf.Pixbuf.new_from_file( ("/usr/lib/cinnamon-settings/data/installed.png"))
         else:
-            text = ""
+            img = GdkPixbuf.Pixbuf.new_from_file( ("/usr/lib/cinnamon-settings/data/inactive.png"))
 
-        cell.set_property("markup", "<span color='black' weight='bold'>%s</span>" % (text))
+        cell.set_property("pixbuf", img)
 
     def gm_toggled(self, renderer, path, treeview):
         iter = self.gm_modelfilter.get_iter(path)
@@ -735,7 +779,10 @@ class ExtensionSidePage (SidePage):
             self.enabled_extensions.append(self.toSettingString(uuid, extension_id))
             self.settings.set_strv(("enabled-%ss") % (self.collection_type), self.enabled_extensions)
         else:
-            self.settings.set_string("name", name)
+            if uuid == "STOCK":
+                self.settings.set_string("name", "")
+            else:
+                self.settings.set_string("name", name)
 
     def disable_extension(self, uuid, name, checked):
 
@@ -756,7 +803,7 @@ class ExtensionSidePage (SidePage):
             if self.enabled_extensions[0] == name:
                 self._restore_default_extensions()
 
-    def uninstall_extension(self, uuid, name):
+    def uninstall_extension(self, uuid, name, schema_filename):
         if not self.themes:
             obj = uuid
         else:
@@ -764,7 +811,7 @@ class ExtensionSidePage (SidePage):
         if not self.show_prompt(_("Are you sure you want to completely remove %s?") % (obj)):
             return
         self.disable_extension(uuid, name, 0)
-        self.spices.uninstall(uuid, name, self.on_uninstall_finished)
+        self.spices.uninstall(uuid, name, schema_filename, self.on_uninstall_finished)
     
     def on_uninstall_finished(self, uuid):
         self.load_extensions()
@@ -797,6 +844,8 @@ class ExtensionSidePage (SidePage):
         for enabled_extension in self.enabled_extensions:
             try:
                 uuid = self.fromSettingString(enabled_extension)
+                if uuid == "":
+                    uuid = "STOCK"
                 if uuid in uuidCount:
                     uuidCount[uuid] += 1
                 else:
@@ -807,7 +856,10 @@ class ExtensionSidePage (SidePage):
             if not self.themes:
                 uuid = self.model.get_value(row.iter, 0)
             else:
-                uuid = self.model.get_value(row.iter, 5)
+                if self.model.get_value(row.iter, 0) == "STOCK":
+                    uuid = "STOCK"
+                else:
+                    uuid = self.model.get_value(row.iter, 5)
             if(uuid in uuidCount):
                 self.model.set_value(row.iter, 2, uuidCount[uuid])
             else:
@@ -912,10 +964,11 @@ class ExtensionSidePage (SidePage):
             self.load_extensions_in(('/usr/share/cinnamon/%ss') % (self.collection_type))
             self.load_extensions_in(('%s/.local/share/cinnamon/%ss') % (home, self.collection_type))
         else:
+            self.load_extensions_in('/usr/share', True)
             self.load_extensions_in(('%s/.themes') % (home))
             self.load_extensions_in('/usr/share/themes')
 
-    def load_extensions_in(self, directory):
+    def load_extensions_in(self, directory, stock_theme = False):
         if not self.themes:  # Applet, Desklet, Extension handling
             if os.path.exists(directory) and os.path.isdir(directory):
                 extensions = os.listdir(directory)
@@ -947,6 +1000,10 @@ class ExtensionSidePage (SidePage):
                             try: last_edited = data["last-edited"]
                             except KeyError: last_edited = -1
                             except ValueError: last_edited = -1
+
+                            try: schema_filename = data["schema-filename"]
+                            except KeyError: schema_filename = ""
+                            except ValueError: schema_filename = ""
 
                             if ext_config_app != "" and not os.path.exists(ext_config_app):
                                 ext_config_app = ""
@@ -997,17 +1054,23 @@ class ExtensionSidePage (SidePage):
                                     img = GdkPixbuf.Pixbuf.new_from_file( ("/usr/lib/cinnamon-settings/data/inactive.png"))
 
                                 self.model.set_value(iter, 11, img)
-
+                                self.model.set_value(iter, 12, schema_filename)
 
                     except Exception, detail:
                         print "Failed to load extension %s: %s" % (extension, detail)
         else: # Theme handling
             if os.path.exists(directory) and os.path.isdir(directory):
-                themes = os.listdir(directory)
+                if stock_theme:
+                    themes = ["cinnamon"]
+                else:
+                    themes = os.listdir(directory)
                 themes.sort()
                 for theme in themes:
                     try:
-                        path = os.path.join(directory, theme, "cinnamon")
+                        if stock_theme:
+                            path = os.path.join(directory, theme, "theme")
+                        else:
+                            path = os.path.join(directory, theme, "cinnamon")
                         if os.path.exists(path) and os.path.isdir(path):
                             theme_last_edited = -1
                             theme_uuid = ""
@@ -1021,8 +1084,11 @@ class ExtensionSidePage (SidePage):
                                 try: theme_uuid = data["uuid"]
                                 except KeyError: theme_uuid = ""
                                 except ValueError: theme_uuid = ""
-
-                            theme_name = theme
+                            if stock_theme:
+                                theme_name = _("Stock Cinnamon Theme")
+                                theme_uuid = "STOCK"
+                            else:
+                                theme_name = theme
                             theme_description = ""
                             iter = self.model.insert_before(None, None)
                             found = 0
