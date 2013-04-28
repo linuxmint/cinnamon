@@ -305,8 +305,8 @@ _Draggable.prototype = {
         this._grabEvents();
         global.set_cursor(Cinnamon.Cursor.DND_IN_DRAG);
 
-        this._dragX = this._dragStartX = stageX;
-        this._dragY = this._dragStartY = stageY;
+        this._dragX = stageX;
+        this._dragY = stageY;
 
         if (this.actor._delegate && this.actor._delegate.getDragActor) {
             this._dragActor = this.actor._delegate.getDragActor(this._dragStartX, this._dragStartY);
@@ -334,8 +334,8 @@ _Draggable.prototype = {
             }
             this._dragOrigParent = undefined;
 
-            this._dragOffsetX = this._dragActor.width / 2;
-            this._dragOffsetY = this._dragActor.height / 2;
+            this._dragOffsetX = this._dragStartX - this._dragActor.x;
+            this._dragOffsetY = this._dragStartY - this._dragActor.y;
         } else {
             this._dragActor = this.actor;
             this._dragActorSource = undefined;
@@ -346,8 +346,8 @@ _Draggable.prototype = {
 
             let [actorStageX, actorStageY] = this.actor.get_transformed_position();
             let [w, h] = this.actor.get_transformed_size();
-            this._dragOffsetX = this._dragActor.width / 2;
-            this._dragOffsetY = this._dragActor.height / 2;
+            this._dragOffsetX = this._dragStartX - this._dragActor.x;
+            this._dragOffsetY = this._dragStartY - this._dragActor.y;
 
             // Set the actor's scale such that it will keep the same
             // transformed size when it's reparented to the uiGroup
@@ -414,7 +414,7 @@ _Draggable.prototype = {
     _maybeStartDrag:  function(event) {
         if (this._dragCheckId)
             return true;
-        let [stageX, stageY] = event.get_coords();
+        [this._dragStartX, this._dragStartY] = event.get_coords();
 
         // See if the user has moved the mouse enough to trigger a drag
 
