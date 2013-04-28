@@ -429,11 +429,6 @@ _Draggable.prototype = {
 
     _dragCheckCallback: function() {
         let [x, y, mask] = global.get_pointer();
-        global.logError("CHECK DRAG  " + x + "   " + y);
-        if (mask & Clutter.ModifierType.BUTTON1_MASK) {
-            global.logError("button 1 down");
-            global.logError("this it's down: " + this._buttonDown.toString())
-        }
         return this._checkThreshold(x, y);
     },
 
