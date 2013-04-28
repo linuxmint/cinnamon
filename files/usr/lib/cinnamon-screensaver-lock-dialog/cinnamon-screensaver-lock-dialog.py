@@ -55,7 +55,11 @@ class MainWindow:
         self.window.show()                    
         
     def lock_screen(self, data):
-        os.system("cinnamon-screensaver-command --lock --away-message \"%s\" &" % self.entry.get_text())
+        message = self.entry.get_text()
+        if (message != ""):
+            os.system("cinnamon-screensaver-command --lock --away-message \"%s\" &" % self.entry.get_text())
+        else:
+            os.system("cinnamon-screensaver-command --lock &")
         gtk.main_quit()
    
 if __name__ == "__main__":    
