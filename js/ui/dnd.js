@@ -228,7 +228,12 @@ _Draggable.prototype = {
         } else if (event.type() == Clutter.EventType.BUTTON_RELEASE) {
             this._buttonDown = false;
             if (this._dragInProgress) {
-                return this._dragActorDropped(event);
+                if (this.actor._delegate._isTracked)
+                    return this._dragActorDropped(event);
+                else {
+                    this._cancelDrag();
+                    return true;
+                }
             } else if (this._dragActor != null && !this._animationInProgress) {
                 // Drag must have been cancelled with Esc.
                 this._dragComplete();
