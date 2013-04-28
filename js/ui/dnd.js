@@ -129,6 +129,8 @@ _Draggable.prototype = {
 
         this._eventsGrabbed = false;
 
+        this._dragCheckId = null;
+
         this._dragThreshold = 8;
         global.settings.connect('changed::dnd-drag-threshold', Lang.bind(this, this._onDragThresholdChanged));
         this._onDragThresholdChanged();
@@ -242,7 +244,12 @@ _Draggable.prototype = {
             if (this._dragInProgress) {
                 return this._updateDragPosition(event);
             } else if (this._dragActor == null) {
-                return this._maybeStartDrag(event);
+                if (this._buttonDown)
+                    return this._maybeStartDrag(event);
+                else {
+                    this._dragComplete()
+                    return true;
+                }
             }
         } else if (event.type() == Clutter.EventType.LEAVE) {
             if (this._firstLeaveActor == null)
@@ -392,18 +399,42 @@ _Draggable.prototype = {
         }
     },
 
+    _checkThreshold: function(x, y) {
+        if ((Math.abs(x - this._dragStartX) > this._dragThreshold ||
+             Math.abs(y - this._dragStartY) > this._dragThreshold)) {
+            this.startDrag(x, y, global.get_current_time());
+            this._updateDragPosition(null, x, y);
+            this._dragCheckId = null;
+            return false;
+        }
+        return true;
+    },
+
     _maybeStartDrag:  function(event) {
+        if (this._dragCheckId)
+            return true;
         let [stageX, stageY] = event.get_coords();
 
         // See if the user has moved the mouse enough to trigger a drag
-        let threshold = this._dragThreshold;
-        if ((Math.abs(stageX - this._dragStartX) > threshold ||
-             Math.abs(stageY - this._dragStartY) > threshold)) {
-                this.startDrag(stageX, stageY, event.get_time());
-                this._updateDragPosition(event);
+
+        if (this._dragCheckId) {
+            Mainloop.source_remove(this._dragCheckId);
+            this._dragCheckId = null;
         }
 
+        this._dragCheckId = Mainloop.timeout_add(20, Lang.bind(this, this._dragCheckCallback));
+
         return true;
+    },
+
+    _dragCheckCallback: function() {
+        let [x, y, mask] = global.get_pointer();
+        global.logError("CHECK DRAG  " + x + "   " + y);
+        if (mask & Clutter.ModifierType.BUTTON1_MASK) {
+            global.logError("button 1 down");
+            global.logError("this it's down: " + this._buttonDown.toString())
+        }
+        return this._checkThreshold(x, y);
     },
 
     _setCursor:  function(result) {
@@ -420,8 +451,19 @@ _Draggable.prototype = {
         return false;
     },
     
-    _updateDragPosition : function (event) {
-        let [stageX, stageY] = event.get_coords();
+    _updateDragPosition : function (event, x, y) {
+        let stageX, stageY;
+        let time;
+        if (event) {
+            [stageX, stageY] = event.get_coords();
+            time = event.get_time();
+        }
+        else {
+            stageX = x;
+            stageY = y;
+            time = global.get_current_time();
+        }
+
         this._dragX = stageX;
         this._dragY = stageY;
 
@@ -460,7 +502,7 @@ _Draggable.prototype = {
                                                                       this._dragActor,
                                                                       targX,
                                                                       targY,
-                                                                      event.get_time());
+                                                                      time);
                     if (this._setCursor(result)) {
                         return true;
                     }
@@ -477,7 +519,7 @@ _Draggable.prototype = {
                                                                  this._dragActor,
                                                                  targX,
                                                                  targY,
-                                                                 event.get_time());
+                                                                 time);
                     if (this._setCursor(result)) {
                         return true;
                     }
