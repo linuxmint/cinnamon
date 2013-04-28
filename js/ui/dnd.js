@@ -718,7 +718,7 @@ _Draggable.prototype = {
 
     _dragComplete: function() {
         this._setTimer(false);
-        if (!this._actorDestroyed)
+        if (!this._actorDestroyed && this._dragActor)
             Cinnamon.util_set_hidden_from_pick(this._dragActor, false);
 
         this._ungrabEvents();

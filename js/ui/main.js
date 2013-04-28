@@ -319,6 +319,8 @@ function start() {
     global.stage.add_actor(uiGroup);
     global.top_window_group.reparent(global.stage);
 
+    deskletContainer.actor.lower_bottom()
+
     layoutManager = new Layout.LayoutManager();
     let pointerTracker = new PointerTracker.PointerTracker();
     pointerTracker.setPosition(layoutManager.primaryMonitor.x + layoutManager.primaryMonitor.width/2,
