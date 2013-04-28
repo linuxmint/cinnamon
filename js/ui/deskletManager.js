@@ -406,10 +406,37 @@ DeskletContainer.prototype = {
             this.last_y = actor.get_y();
         }
 
-        x = actor.get_x() < this.last_x ? Math.ceil(actor.get_x()/interval) * interval :
-                                         Math.floor(actor.get_x()/interval) * interval;
-        y = actor.get_y() < this.last_y ? Math.ceil(actor.get_y()/interval) * interval :
-                                         Math.floor(actor.get_y()/interval) * interval;
+        let x_next = Math.abs(actor.get_x() - this.last_x) > interval / 2;
+        let y_next = Math.abs(actor.get_y() - this.last_y) > interval / 2;
+
+        if (actor.get_x() < this.last_x) {
+            if (x_next) {
+                x = Math.floor(actor.get_x()/interval) * interval;
+            } else {
+                x = Math.ceil(actor.get_x()/interval) * interval;
+            }
+        } else {
+            if (x_next) {
+                x = Math.ceil(actor.get_x()/interval) * interval;
+            } else {
+                x = Math.floor(actor.get_x()/interval) * interval;
+            }
+        }
+
+        if (actor.get_y() < this.last_y) {
+            if (y_next) {
+                y = Math.floor(actor.get_y()/interval) * interval;
+            } else {
+                y = Math.ceil(actor.get_y()/interval) * interval;
+            }
+        } else {
+            if (y_next) {
+                y = Math.ceil(actor.get_y()/interval) * interval;
+            } else {
+                y = Math.floor(actor.get_y()/interval) * interval;
+            }
+        }
+
         this._dragPlaceholder.set_position(x,y);
         this._dragPlaceholder.set_size(actor.get_width(), actor.get_height());
         this.last_x = x;
