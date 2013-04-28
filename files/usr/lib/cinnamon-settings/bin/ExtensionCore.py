@@ -73,25 +73,24 @@ class ExtensionSidePage (SidePage):
         cr.connect("toggled", self.toggled, self.treeview)
         column1 = Gtk.TreeViewColumn("Enable", cr)
         column1.set_cell_data_func(cr, self.celldatafunction_checkbox)        
-        column1.set_resizable(True)
 
         column2 = Gtk.TreeViewColumn("Icon", Gtk.CellRendererPixbuf(), pixbuf=4)        
-        column2.set_resizable(True)
         column2.set_min_width(50)
 
-        column3 = Gtk.TreeViewColumn("Description", Gtk.CellRendererText(), markup=1)        
-        column3.set_sizing(Gtk.TreeViewColumnSizing.FIXED)
-        if not self.themes:
-            column3.set_fixed_width(500)
-        else:
-            column3.set_fixed_width(400)
+        cr = Gtk.CellRendererText()
+        column3 = Gtk.TreeViewColumn("Description", cr, markup=1)
+        column3.set_expand(True)
+        if self.themes:
+            column3.set_max_width(300)
+            cr.set_property('wrap-mode', Pango.WrapMode.WORD_CHAR)
+            cr.set_property('wrap-width', 200)
 
-        actionColumn = Gtk.TreeViewColumn("Read only", Gtk.CellRendererPixbuf(), pixbuf=10)        
-        actionColumn.set_min_width(50)
+        actionColumn = Gtk.TreeViewColumn("Read only", Gtk.CellRendererPixbuf(), pixbuf=10)
+        actionColumn.set_expand(True)
 
         cr = Gtk.CellRendererPixbuf()
-        isActiveColumn = Gtk.TreeViewColumn("Active", cr, pixbuf=11)        
-        isActiveColumn.set_min_width(50)
+        isActiveColumn = Gtk.TreeViewColumn("Active", cr, pixbuf=11)
+        isActiveColumn.set_expand(True)
         isActiveColumn.set_cell_data_func(cr, self._is_active_data_func)
         
         self.treeview.append_column(column2)
@@ -282,27 +281,30 @@ class ExtensionSidePage (SidePage):
 
         gm_column2 = Gtk.TreeViewColumn("Icon", Gtk.CellRendererPixbuf(), pixbuf=3)
 
-        gm_column3 = Gtk.TreeViewColumn("Description", Gtk.CellRendererText(), markup=1)
-        gm_column3.set_sizing(Gtk.TreeViewColumnSizing.FIXED)
-        if not self.themes:
-            gm_column3.set_fixed_width(400)
-        else:
-            gm_column3.set_fixed_width(300)
-        
+        gm_cr = Gtk.CellRendererText()
+        gm_column3 = Gtk.TreeViewColumn("Description", gm_cr, markup=1)
+        gm_column3.set_expand(True)
+        if self.themes:
+            gm_column3.set_max_width(300)
+            gm_cr.set_property('wrap-mode', Pango.WrapMode.WORD_CHAR)
+            gm_cr.set_property('wrap-width', 200)
+
         cr = Gtk.CellRendererText()
         actionColumn = Gtk.TreeViewColumn("Action", cr)
         actionColumn.set_cell_data_func(cr, self._gm_action_data_func)
-        actionColumn.set_min_width(140)
+        actionColumn.set_expand(True)
 
         cr = Gtk.CellRendererPixbuf()
         statusColumn = Gtk.TreeViewColumn("Status", cr)
         statusColumn.set_cell_data_func(cr, self._gm_status_data_func)
+        statusColumn.set_expand(True)
 
 
         right = Gtk.CellRendererText()
         right.set_property('xalign', 1.0)
         gm_column4 = Gtk.TreeViewColumn("Score", right, markup=4)
         gm_column4.set_alignment(1.0)
+        gm_column4.set_expand(True)
 
         self.gm_treeview.append_column(gm_column1)
         self.gm_treeview.append_column(gm_column2)
