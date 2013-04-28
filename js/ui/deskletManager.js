@@ -407,7 +407,6 @@ DeskletContainer.prototype = {
 
     acceptDrop: function(source, actor, x, y, time) {
         if (!(source instanceof Desklet.Desklet)) return false;
-
         Main.uiGroup.remove_actor(actor);
         this.actor.add_actor(actor);
         mouseTrackEnabled = -1; // forces an update of all desklet mouse tracks
@@ -435,5 +434,17 @@ DeskletContainer.prototype = {
 
         this._dragPlaceholder.hide();
         return true;
+    },
+
+    cancelDrag: function(source, actor) {
+        if (!(source instanceof Desklet.Desklet)) return false;
+        Main.uiGroup.remove_actor(actor);
+        this.actor.add_actor(actor);
+        mouseTrackEnabled = -1;
+        checkMouseTracking();
+        this._dragPlaceholder.hide();
+        return true;
     }
+
+
 };

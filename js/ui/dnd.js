@@ -599,6 +599,11 @@ _Draggable.prototype = {
         this._dragInProgress = false;
         let [snapBackX, snapBackY, snapBackScale] = this._getRestoreLocation();
 
+        if (this.target && this.target._delegate.cancelDrag)
+            this.target._delegate.cancelDrag(this.actor._delegate, this._dragActor);
+
+
+
         if (this._actorDestroyed) {
             global.unset_cursor();
             if (!this._buttonDown)
@@ -658,8 +663,7 @@ _Draggable.prototype = {
         this.emit('drag-end', eventTime, false);
 
         this._animationInProgress = false;
-        if (!this._buttonDown)
-            this._dragComplete();
+        this._dragComplete();
     },
 
     // Actor is an actor we have entered or left during the drag; call
