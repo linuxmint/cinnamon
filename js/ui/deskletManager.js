@@ -486,7 +486,9 @@ DeskletContainer.prototype = {
         this.last_x = -1;
         this.last_y = -1;
         return true;
+    },
+
+    hideDragPlaceholder: function() {
+        this._dragPlaceholder.hide();
     }
-
-
 };

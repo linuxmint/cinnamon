@@ -655,6 +655,9 @@ _Draggable.prototype = {
             return;
         }
 
+        if (this.target && this.target._delegate.hideDragPlaceholder)
+            this.target._delegate.hideDragPlaceholder();
+
         this._animationInProgress = true;
         // No target, so snap back
         Tweener.addTween(this._dragActor,
