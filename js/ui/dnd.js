@@ -642,12 +642,9 @@ _Draggable.prototype = {
         this._dragInProgress = false;
         let [snapBackX, snapBackY, snapBackScale] = this._getRestoreLocation();
 
-        if (this.target && this.target._delegate.cancelDrag)
-            this.target._delegate.cancelDrag(this.actor._delegate, this._dragActor);
-
-
-
         if (this._actorDestroyed) {
+            if (this.target && this.target._delegate.cancelDrag)
+                this.target._delegate.cancelDrag(this.actor._delegate, this._dragActor);
             global.unset_cursor();
             if (!this._buttonDown)
                 this._dragComplete();
@@ -695,6 +692,9 @@ _Draggable.prototype = {
     },
 
     _onAnimationComplete : function (dragActor, eventTime) {
+        if (this.target && this.target._delegate.cancelDrag)
+            this.target._delegate.cancelDrag(this.actor._delegate, this._dragActor);
+
         if (this._dragOrigParent) {
             dragActor.reparent(this._dragOrigParent);
             dragActor.set_scale(this._dragOrigScale, this._dragOrigScale);
