@@ -1049,7 +1049,7 @@ class ExtensionSidePage (SidePage):
                                 self.model.set_value(iter, 10, img)
 
                                 if (found):
-                                    img = GdkPixbuf.Pixbuf.new_from_file( ("/usr/lib/cinnamon-settings/data/active.png"))
+                                    img = GdkPixbuf.Pixbuf.new_from_file( ("/usr/lib/cinnamon-settings/data/running.png"))
                                 else:
                                     img = GdkPixbuf.Pixbuf.new_from_file( ("/usr/lib/cinnamon-settings/data/inactive.png"))
 
@@ -1095,6 +1095,8 @@ class ExtensionSidePage (SidePage):
                             for enabled_theme in self.enabled_extensions:
                                 if enabled_theme == theme_name:
                                     found = 1
+                                elif enabled_theme == "" and theme_uuid == "STOCK":
+                                    found = 1
                             if os.path.exists(os.path.join(path, "thumbnail.png")):
                                 icon_path = os.path.join(path, "thumbnail.png")
                             else:
@@ -1119,7 +1121,7 @@ class ExtensionSidePage (SidePage):
 
                             self.model.set_value(iter, 10, img)
                             if (found):
-                                img = GdkPixbuf.Pixbuf.new_from_file( ("/usr/lib/cinnamon-settings/data/active.png"))
+                                img = GdkPixbuf.Pixbuf.new_from_file( ("/usr/lib/cinnamon-settings/data/running.png"))
                             else:
                                 img = GdkPixbuf.Pixbuf.new_from_file( ("/usr/lib/cinnamon-settings/data/inactive.png"))
                             self.model.set_value(iter, 11, img)
