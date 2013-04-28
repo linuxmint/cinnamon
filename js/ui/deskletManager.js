@@ -362,6 +362,9 @@ DeskletContainer.prototype = {
         this.actor = new Clutter.Group();
         this.actor._delegate = this;
 
+        this.lastX = 0;
+        this.lastY = 0;
+
         this._dragPlaceholder = new St.Bin({style_class: 'desklet-drag-placeholder'});
         this._dragPlaceholder.hide();
     },
@@ -397,11 +400,20 @@ DeskletContainer.prototype = {
 
         this._dragPlaceholder.show();
         let interval = global.settings.get_int(DESKLET_SNAP_INTERVAL_KEY);
-        x = Math.floor(actor.get_x()/interval)*interval;
-        y = Math.floor(actor.get_y()/interval)*interval;
+
+        if (this.last_x == -1 && this.last_y == -1) {
+            this.last_x = actor.get_x();
+            this.last_y = actor.get_y();
+        }
+
+        x = actor.get_x() < this.last_x ? Math.ceil(actor.get_x()/interval) * interval :
+                                         Math.floor(actor.get_x()/interval) * interval;
+        y = actor.get_y() < this.last_y ? Math.ceil(actor.get_y()/interval) * interval :
+                                         Math.floor(actor.get_y()/interval) * interval;
         this._dragPlaceholder.set_position(x,y);
         this._dragPlaceholder.set_size(actor.get_width(), actor.get_height());
-
+        this.last_x = x;
+        this.last_y = y;
         return DND.DragMotionResult.MOVE_DROP;
     },
 
@@ -421,9 +433,8 @@ DeskletContainer.prototype = {
                 elements[2] = actor.get_x();
                 elements[3] = actor.get_y();
                 if (global.settings.get_boolean(DESKLET_SNAP_KEY)){
-                    let interval = global.settings.get_int(DESKLET_SNAP_INTERVAL_KEY);
-                    elements[2] = Math.floor(elements[2]/interval)*interval;
-                    elements[3] = Math.floor(elements[3]/interval)*interval;
+                    elements[2] = this._dragPlaceholder.x
+                    elements[3] = this._dragPlaceholder.y;
                 }
                 definition = elements.join(":");
                 enabledDesklets[i] = definition;
@@ -433,6 +444,8 @@ DeskletContainer.prototype = {
         global.settings.set_strv(ENABLED_DESKLETS_KEY, enabledDesklets);
 
         this._dragPlaceholder.hide();
+        this.last_x = -1;
+        this.last_y = -1;
         return true;
     },
 
@@ -443,6 +456,8 @@ DeskletContainer.prototype = {
         mouseTrackEnabled = -1;
         checkMouseTracking();
         this._dragPlaceholder.hide();
+        this.last_x = -1;
+        this.last_y = -1;
         return true;
     }
 
