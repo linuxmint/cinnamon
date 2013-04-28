@@ -334,8 +334,8 @@ _Draggable.prototype = {
             }
             this._dragOrigParent = undefined;
 
-            this._dragOffsetX = this._dragActor.x - this._dragStartX;
-            this._dragOffsetY = this._dragActor.y - this._dragStartY;
+            this._dragOffsetX = this._dragActor.width / 2;
+            this._dragOffsetY = this._dragActor.height / 2;
         } else {
             this._dragActor = this.actor;
             this._dragActorSource = undefined;
@@ -345,8 +345,9 @@ _Draggable.prototype = {
             this._dragOrigScale = this._dragActor.scale_x;
 
             let [actorStageX, actorStageY] = this.actor.get_transformed_position();
-            this._dragOffsetX = actorStageX - this._dragStartX;
-            this._dragOffsetY = actorStageY - this._dragStartY;
+            let [w, h] = this.actor.get_transformed_size();
+            this._dragOffsetX = this._dragActor.width / 2;
+            this._dragOffsetY = this._dragActor.height / 2;
 
             // Set the actor's scale such that it will keep the same
             // transformed size when it's reparented to the uiGroup
@@ -363,8 +364,8 @@ _Draggable.prototype = {
         if (this._dragActorOpacity != undefined)
             this._dragActor.opacity = this._dragActorOpacity;
 
-        this._snapBackX = this._dragStartX + this._dragOffsetX;
-        this._snapBackY = this._dragStartY + this._dragOffsetY;
+        this._snapBackX = this._dragStartX - this._dragOffsetX;
+        this._snapBackY = this._dragStartY - this._dragOffsetY;
         this._snapBackScale = this._dragActor.scale_x;
 
         if (this._dragActorMaxSize != undefined) {
@@ -391,8 +392,8 @@ _Draggable.prototype = {
                                        let currentScale = this._dragActor.scale_x / origScale;
                                        this._dragOffsetX = currentScale * origDragOffsetX;
                                        this._dragOffsetY = currentScale * origDragOffsetY;
-                                       this._dragActor.set_position(this._dragX + this._dragOffsetX,
-                                                                    this._dragY + this._dragOffsetY);
+                                       this._dragActor.set_position(this._dragX - this._dragOffsetX,
+                                                                    this._dragY - this._dragOffsetY);
                                    },
                                    onUpdateScope: this });
             }
@@ -464,8 +465,8 @@ _Draggable.prototype = {
 
         // If we are dragging, update the position
         if (this._dragActor) {
-            this._dragActor.set_position(stageX + this._dragOffsetX,
-                                         stageY + this._dragOffsetY);
+            this._dragActor.set_position(stageX - this._dragOffsetX,
+                                         stageY - this._dragOffsetY);
 
             let target = this._dragActor.get_stage().get_actor_at_pos(Clutter.PickMode.ALL,
                                                                       stageX, stageY);
