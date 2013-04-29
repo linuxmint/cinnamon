@@ -753,7 +753,7 @@ class ExtensionSidePage (SidePage):
             iter = self.gm_model.insert_before(None, None)
             self.gm_model.set_value(iter, 0, uuid)
             if not self.themes:
-                self.gm_model.set_value(iter, 1, '<b>%s</b>\n<b><span foreground="#333333" size="xx-small">%s</span></b>\n<i><span foreground="#555555" size="x-small">%s</span></i>' % (extensionName, uuid, "Description not implemented"))
+                self.gm_model.set_value(iter, 1, '<b>%s</b>\n<b><span foreground="#333333" size="x-small">%s</span></b>' % (extensionName, uuid))
             else:
                 self.gm_model.set_value(iter, 1, '<b>%s</b>' % (extensionName))
             self.gm_model.set_value(iter, 2, 0)
