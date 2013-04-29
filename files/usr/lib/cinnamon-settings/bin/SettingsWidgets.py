@@ -155,6 +155,9 @@ class IndentedHBox(Gtk.HBox):
     def add(self, item):
         self.pack_start(item, False, False, 0)
 
+    def add_expand(self, item):
+        self.pack_start(item, True, True, 0)
+
 class GSettingsCheckButton(Gtk.CheckButton):    
     def __init__(self, label, schema, key, dep_key):
         self.key = key

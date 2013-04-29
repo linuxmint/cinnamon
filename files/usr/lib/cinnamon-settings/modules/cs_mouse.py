@@ -8,39 +8,152 @@ class Module:
     def __init__(self, content_box):
         keywords = _("mouse, touchpad, synaptic, double-click")
         advanced = False
-        sidePage = SidePage(_("Mouse and Touchpad"), "mouse.svg", keywords, advanced, content_box)
+        sidePage = MouseTouchpadSidepage(_("Mouse and Touchpad"), "mouse.svg", keywords, advanced, content_box)
         self.sidePage = sidePage
         self.name = "mouse"
         self.category = "hardware"
+
+class MouseTouchpadSidepage (SidePage):
+    def __init__(self, name, icon, keywords, advanced, content_box):
+        SidePage.__init__(self, name, icon, keywords, advanced, content_box, True)
+        self.tabs = []
+        self.mousebox = Gtk.VBox()
+        self.touchbox = Gtk.VBox()
+
+        self.notebook = Gtk.Notebook()
+
+        mouse = Gtk.ScrolledWindow()
+        mouse.add_with_viewport(self.mousebox)
+
+        touch = Gtk.ScrolledWindow()
+        touch.add_with_viewport(self.touchbox)
+        self.notebook.append_page(mouse, Gtk.Label(_("Mouse")))
+        self.notebook.append_page(touch, Gtk.Label(_("Touchpad")))
+
+        # Mouse
+
         title = Gtk.Label()
         title.set_markup("<b>%s</b>" % _("General"))
         title.set_alignment(0,0)
-        sidePage.add_widget(title)
-        sidePage.add_widget(CheckButton(_("Left handed (mouse buttons inverted)"), "org.gnome.settings-daemon.peripherals.mouse", "left-handed", None))
-        sidePage.add_widget(GSettingsCheckButton(_("Show position of pointer when the Control key is pressed"), "org.gnome.settings-daemon.peripherals.mouse", "locate-pointer", None))
-        sidePage.add_widget(GSettingsCheckButton(_("Emulate middle click by clicking both left and right buttons"), "org.gnome.settings-daemon.peripherals.mouse", "middle-button-enabled", None), True)
+        self.add_widget(title, 0, False)
+
+        box = IndentedHBox()
+        box.add(CheckButton(_("Left handed (mouse buttons inverted)"), "org.gnome.settings-daemon.peripherals.mouse", "left-handed", None))
+        self.add_widget(box, 0)
+
+        box = IndentedHBox()
+        box.add(GSettingsCheckButton(_("Show position of pointer when the Control key is pressed"), "org.gnome.settings-daemon.peripherals.mouse", "locate-pointer", None))
+        self.add_widget(box, 0)
+
+        box = IndentedHBox()
+        box.add(GSettingsCheckButton(_("Emulate middle click by clicking both left and right buttons"), "org.gnome.settings-daemon.peripherals.mouse", "middle-button-enabled", None))
+        self.add_widget(box, 0, True)
 
         title = Gtk.Label()
         title.set_markup("<b>%s</b>" % _("Pointer Speed"))
         title.set_alignment(0,0)
-        sidePage.add_widget(title, None)
+        self.add_widget(title, 0, None)
 
+        box = IndentedHBox()
         slider = GSettingsRange(_("Acceleration:"), _("Slow"), _("Fast"), 1.0, 10.0, False, "double", False, "org.gnome.settings-daemon.peripherals.mouse", "motion-acceleration", None, adjustment_step = 1.0)
-        sidePage.add_widget(slider, None)
+        box.add_expand(slider)
+        self.add_widget(box, 0, None)
 
+        box = IndentedHBox()
         slider = GSettingsRange(_("Sensitivity:"), _("Low"), _("High"), 1, 10, False, "int", False, "org.gnome.settings-daemon.peripherals.mouse", "motion-threshold", None, adjustment_step = 1)
-        sidePage.add_widget(slider, None) 
+        box.add_expand(slider)
+        self.add_widget(box, 0, None) 
 
         title = Gtk.Label()
         title.set_markup("<b>%s</b>" % _("Double-Click Timeout"))
         title.set_alignment(0,0)
-        sidePage.add_widget(title, None)
+        self.add_widget(title, 0, None)
 
+        box = IndentedHBox()
         slider = GSettingsRange(_("Timeout:"), _("Short"), _("Long"), 100, 1000, False, "int", False, "org.gnome.settings-daemon.peripherals.mouse", "double-click", None, adjustment_step = 1)
-        sidePage.add_widget(slider, None)
+        box.add_expand(slider)
+        self.add_widget(box, 0, None)
 
-        sidePage.add_widget(GSettingsSpinButton(_("Cinnamon drag threshold"), "org.cinnamon", "dnd-drag-threshold", None, 1, 400, 1, 1, _("Pixels")), True)
-        sidePage.add_widget(GSettingsSpinButton(_("GTK drag threshold"), "org.gnome.settings-daemon.peripherals.mouse", "drag-threshold", None, 1, 400, 1, 1, _("Pixels")), True)
+        box = IndentedHBox()
+        box.add(GSettingsSpinButton(_("Cinnamon drag threshold"), "org.cinnamon", "dnd-drag-threshold", None, 1, 400, 1, 1, _("Pixels")))
+        self.add_widget(box, 0, True)
+
+        box = IndentedHBox()
+        box.add(GSettingsSpinButton(_("GTK drag threshold"), "org.gnome.settings-daemon.peripherals.mouse", "drag-threshold", None, 1, 400, 1, 1, _("Pixels")))
+        self.add_widget(box, 0, True)
+
+        # Touchpad
+
+        title = Gtk.Label()
+        title.set_markup("<b>%s</b>" % _("General"))
+        title.set_alignment(0,0)
+        self.add_widget(title, 1, False)
+
+        box = IndentedHBox()
+        box.add(GSettingsCheckButton(_("Enable touchpad"), "org.gnome.settings-daemon.peripherals.touchpad", "touchpad-enabled", None))
+        self.add_widget(box, 1)
+
+        box = IndentedHBox()
+        box.add(GSettingsCheckButton(_("Disable touchpad while typing"), "org.gnome.settings-daemon.peripherals.touchpad", "disable-while-typing", "org.gnome.settings-daemon.peripherals.touchpad/touchpad-enabled"))
+        self.add_widget(box, 1)
+        box = IndentedHBox()
+        box.add(GSettingsCheckButton(_("Enable mouseclicks with touchpad"), "org.gnome.settings-daemon.peripherals.touchpad", "tap-to-click", "org.gnome.settings-daemon.peripherals.touchpad/touchpad-enabled"))
+        self.add_widget(box, 1)
+
+        title = Gtk.Label()
+        title.set_markup("<b>%s</b>" % _("Scrolling"))
+        title.set_alignment(0,0)
+        self.add_widget(title, 1, False)
+
+        scroll_method = [["disabled", _("Disabled")], ["edge-scrolling", _("Edge Scrolling")], ["two-finger-scrolling", _("Two-finger scrolling")]]
+        scroll_method_combo = GSettingsComboBox(_("Panel layout"), "org.gnome.settings-daemon.peripherals.touchpad", "scroll-method", "org.gnome.settings-daemon.peripherals.touchpad/touchpad-enabled", scroll_method)
+        box = IndentedHBox()
+        box.add(scroll_method_combo)
+        self.add_widget(box, 1)
+        box = IndentedHBox()
+        box.add(GSettingsCheckButton(_("Enable horizontal scrolling"), "org.gnome.settings-daemon.peripherals.touchpad", "horiz-scroll-enabled", "org.gnome.settings-daemon.peripherals.touchpad/touchpad-enabled"))
+        self.add_widget(box, 1)
+
+        title = Gtk.Label()
+        title.set_markup("<b>%s</b>" % _("Pointer Speed"))
+        title.set_alignment(0,0)
+        self.add_widget(title, 1, False)
+
+        slider = GSettingsRange(_("Acceleration:"), _("Slow"), _("Fast"), 1.0, 10.0, False, "double", False, "org.gnome.settings-daemon.peripherals.touchpad", "motion-acceleration", "org.gnome.settings-daemon.peripherals.touchpad/touchpad-enabled", adjustment_step = 1.0)
+        box = IndentedHBox()
+        box.add_expand(slider)
+        self.add_widget(box, 1, None)
+
+        slider = GSettingsRange(_("Sensitivity:"), _("Low"), _("High"), 1, 10, False, "int", False, "org.gnome.settings-daemon.peripherals.touchpad", "motion-threshold", "org.gnome.settings-daemon.peripherals.touchpad/touchpad-enabled", adjustment_step = 1)
+        box = IndentedHBox()
+        box.add_expand(slider)
+        self.add_widget(box, 1, None) 
+
+    def add_widget(self, widget, tab, advanced = False):
+        self.widgets.append(widget)
+        widget.advanced = advanced
+        widget.tab = tab
+
+    def build(self, advanced):
+        for widget in self.mousebox.get_children():
+            self.mousebox.remove(widget)
+        for widget in self.touchbox.get_children():
+            self.touchbox.remove(widget)
+        for widget in self.content_box.get_children():
+            self.content_box.remove(widget)
+
+        for widget in self.widgets:
+            if widget.advanced:
+                if not advanced:
+                    continue
+            if widget.tab == 0:
+                self.mousebox.pack_start(widget, False, False, 2)
+            elif widget.tab == 1:
+                self.touchbox.pack_start(widget, False, False, 2)
+
+        self.content_box.pack_start(self.notebook, True, True, 2)
+        self.content_box.show_all()
+
 
 class CheckButton(Gtk.CheckButton):
     def __init__(self, label, schema, key, dep_key):
