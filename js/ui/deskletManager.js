@@ -319,15 +319,6 @@ function get_object_for_uuid (uuid) {
     return null;
 }
 
-function get_num_instances_for_desklet (uuid) {
-    if (uuid in deskletMeta) {
-        if ("max-instances" in deskletMeta[uuid]) {
-            return parseInt(deskletMeta[uuid]["max-instances"]);
-        }
-    }
-    return 1;
-}
-
 function _onDeskletSnapChanged(){
     if (!global.settings.get_boolean(DESKLET_SNAP_KEY))
         return;
