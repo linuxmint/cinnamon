@@ -95,9 +95,11 @@ class MainWindow:
                 sidePage.build(self.advanced_mode)
 
     def maybe_resize(self, sidePage):
-        if not sidePage.no_resize:
+        if not sidePage.size:
             m, n = self.content_box.get_preferred_size()
             self.window.resize(WIN_WIDTH, n.height + self.bar_heights + WIN_H_PADDING)
+        elif sidePage.size > -1:
+            self.window.resize(WIN_WIDTH, sidePage.size + self.bar_heights + WIN_H_PADDING)
 
     def deselect(self, cat):
         for key in self.side_view.keys():

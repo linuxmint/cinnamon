@@ -15,7 +15,7 @@ class Module:
 
 class MouseTouchpadSidepage (SidePage):
     def __init__(self, name, icon, keywords, advanced, content_box):
-        SidePage.__init__(self, name, icon, keywords, advanced, content_box, True)
+        SidePage.__init__(self, name, icon, keywords, advanced, content_box, 300)
         self.tabs = []
         self.mousebox = Gtk.VBox()
         self.touchbox = Gtk.VBox()

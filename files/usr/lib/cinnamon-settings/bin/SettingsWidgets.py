@@ -29,7 +29,7 @@ except Exception, detail:
     sys.exit(1)
 
 class SidePage:
-    def __init__(self, name, icon, keywords, advanced, content_box, no_resize = False, is_c_mod = False, is_standalone = False, exec_name = None):
+    def __init__(self, name, icon, keywords, advanced, content_box, size = None, is_c_mod = False, is_standalone = False, exec_name = None):
         self.name = name
         self.icon = icon
         self.content_box = content_box
@@ -39,7 +39,7 @@ class SidePage:
         self.exec_name = exec_name
         self.keywords = keywords
         self.advanced = advanced
-        self.no_resize = no_resize
+        self.size = size
         self.topWindow = None
         self.builder = None
 
