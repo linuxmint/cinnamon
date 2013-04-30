@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-04-30 20:50+0100\n"
+"POT-Creation-Date: 2013-04-30 17:30-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -504,132 +504,6 @@ msgstr ""
 
 #: js/ui/runDialog.js:216
 msgid "Please enter a command:"
-msgstr ""
-
-#: js/ui/settings.js:173
-#, c-format
-msgid "%s constructor arguments invalid"
-msgstr ""
-
-#: js/ui/settings.js:174
-#, c-format
-msgid "First argument MUST be a(n) %s object (use 'this' as the first argument"
-msgstr ""
-
-#: js/ui/settings.js:178
-#, c-format
-msgid "%sSettings constructor arguments invalid"
-msgstr ""
-
-#: js/ui/settings.js:179
-msgid "Missing required UUID as second argument - should be a string:"
-msgstr ""
-
-#: js/ui/settings.js:180
-#, c-format
-msgid "<%s-name>@<your-id>.org or something similar"
-msgstr ""
-
-#: js/ui/settings.js:186
-#, c-format
-msgid "%sSettings constructor arguments warning"
-msgstr ""
-
-#: js/ui/settings.js:187
-msgid "Missing instance ID as third argument"
-msgstr ""
-
-#: js/ui/settings.js:188 js/ui/settings.js:201
-#, c-format
-msgid "The %s UUID is %s"
-msgstr ""
-
-#: js/ui/settings.js:194
-#, c-format
-msgid "Could not find %s installation directory for %s."
-msgstr ""
-
-#: js/ui/settings.js:199
-#, c-format
-msgid "%sSettings fatal error!"
-msgstr ""
-
-#: js/ui/settings.js:200
-#, c-format
-msgid "Multi-instanciable %s with no instance ID supplied"
-msgstr ""
-
-#: js/ui/settings.js:217
-#, c-format
-msgid "Problem initializing settings for %s"
-msgstr ""
-
-#: js/ui/settings.js:222
-#, c-format
-msgid "Problem updating settings for %s"
-msgstr ""
-
-#: js/ui/settings.js:246
-#, c-format
-msgid "Failed to locate %s for %s %s"
-msgstr ""
-
-#: js/ui/settings.js:256
-#, c-format
-msgid ""
-"Cannot parse %s file for %s %s.  Check the structure for missing commas, "
-"etc... Error is: %s"
-msgstr ""
-
-#: js/ui/settings.js:260
-#, c-format
-msgid "Initial %s file is not valid for %s %s"
-msgstr ""
-
-#: js/ui/settings.js:333
-#, c-format
-msgid "Failed to locate %s for %s %s to check for updates"
-msgstr ""
-
-#: js/ui/settings.js:334
-msgid "Something may not be right"
-msgstr ""
-
-#: js/ui/settings.js:347
-#, c-format
-msgid ""
-"Problem parsing settings files for %s %s while preparing to perform upgrade"
-msgstr ""
-
-#: js/ui/settings.js:348
-#, c-format
-msgid "Skipping upgrade for now - something may be wrong with the new %s file."
-msgstr ""
-
-#: js/ui/settings.js:352
-#, c-format
-msgid ""
-"Updated settings file detected for %s %s.  Beginning upgrade of existing "
-"settings"
-msgstr ""
-
-#: js/ui/settings.js:362
-#, c-format
-msgid "Upgraded %s file is NOT valid for %s %s."
-msgstr ""
-
-#: js/ui/settings.js:363
-msgid "Aborting settings upgrade."
-msgstr ""
-
-#: js/ui/settings.js:396
-msgid "Upgrade complete"
-msgstr ""
-
-#: js/ui/settings.js:399
-#, c-format
-msgid ""
-"Failed to gain write access to save updated settings for %s %s, instance %s"
 msgstr ""
 
 #: js/ui/workspace.js:1464
@@ -3507,28 +3381,6 @@ msgstr ""
 msgid "Momentarily highlight the %s on your desktop"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/XletSettings.py:84
-#, c-format
-msgid "Could not find %s metadata - are you sure it's installed correctly?"
-msgstr ""
-
-#: files/usr/lib/cinnamon-settings/bin/XletSettings.py:88
-#, c-format
-msgid ""
-"Could not find any instance settings data for this %s - are you sure it is "
-"loaded, and supports settings?"
-msgstr ""
-
-#: files/usr/lib/cinnamon-settings/bin/XletSettings.py:111
-#, c-format
-msgid "Failed to parse settings JSON data for %s %s"
-msgstr ""
-
-#: files/usr/lib/cinnamon-settings/bin/XletSettings.py:117
-#, c-format
-msgid "Could not find any active setting files for %s %s"
-msgstr ""
-
 #: files/usr/lib/cinnamon-settings/bin/XletSettings.py:173
 #, c-format
 msgid "Instance %s"
@@ -3557,11 +3409,6 @@ msgstr ""
 
 #: files/usr/lib/cinnamon-settings/bin/XletSettings.py:271
 msgid "Select or enter file to export to"
-msgstr ""
-
-#: files/usr/lib/cinnamon-settings/bin/XletSettingsWidgets.py:52
-#, c-format
-msgid "Invalid setting type '%s' supplied - please check your json file for %s"
 msgstr ""
 
 #: files/usr/lib/cinnamon-settings/bin/XletSettingsWidgets.py:92
