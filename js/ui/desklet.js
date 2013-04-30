@@ -82,11 +82,11 @@ Desklet.prototype = {
     
     _onDragBegin: function() {
         global.set_stage_input_mode(Cinnamon.StageInputMode.FULLSCREEN);
-        this._untrackMouse();
     },
     
     _onDragEnd: function() {
         global.set_stage_input_mode(Cinnamon.StageInputMode.NORMAL);
+        this._trackMouse();
     },
 
     /**
@@ -199,14 +199,14 @@ Desklet.prototype = {
     },
     
     _trackMouse: function() {
-        if(!this._isTracked) {
+        if(!Main.layoutManager.isTrackingChrome(this.actor)) {
             Main.layoutManager.addChrome(this.actor, {doNotAdd: true});
             this._isTracked = true;
         }
     },
     
     _untrackMouse: function() {
-        if(this._isTracked) {
+        if(Main.layoutManager.isTrackingChrome(this.actor)) {
             Main.layoutManager.untrackChrome(this.actor);
             this._isTracked = false;
         }

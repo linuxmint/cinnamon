@@ -353,6 +353,9 @@ DeskletContainer.prototype = {
         this.actor = new Clutter.Group();
         this.actor._delegate = this;
 
+        this.lastX = 0;
+        this.lastY = 0;
+
         this._dragPlaceholder = new St.Bin({style_class: 'desklet-drag-placeholder'});
         this._dragPlaceholder.hide();
     },
@@ -388,17 +391,52 @@ DeskletContainer.prototype = {
 
         this._dragPlaceholder.show();
         let interval = global.settings.get_int(DESKLET_SNAP_INTERVAL_KEY);
-        x = Math.floor(actor.get_x()/interval)*interval;
-        y = Math.floor(actor.get_y()/interval)*interval;
+
+        if (this.last_x == -1 && this.last_y == -1) {
+            this.last_x = actor.get_x();
+            this.last_y = actor.get_y();
+        }
+
+        let x_next = Math.abs(actor.get_x() - this.last_x) > interval / 2;
+        let y_next = Math.abs(actor.get_y() - this.last_y) > interval / 2;
+
+        if (actor.get_x() < this.last_x) {
+            if (x_next) {
+                x = Math.floor(actor.get_x()/interval) * interval;
+            } else {
+                x = Math.ceil(actor.get_x()/interval) * interval;
+            }
+        } else {
+            if (x_next) {
+                x = Math.ceil(actor.get_x()/interval) * interval;
+            } else {
+                x = Math.floor(actor.get_x()/interval) * interval;
+            }
+        }
+
+        if (actor.get_y() < this.last_y) {
+            if (y_next) {
+                y = Math.floor(actor.get_y()/interval) * interval;
+            } else {
+                y = Math.ceil(actor.get_y()/interval) * interval;
+            }
+        } else {
+            if (y_next) {
+                y = Math.ceil(actor.get_y()/interval) * interval;
+            } else {
+                y = Math.floor(actor.get_y()/interval) * interval;
+            }
+        }
+
         this._dragPlaceholder.set_position(x,y);
         this._dragPlaceholder.set_size(actor.get_width(), actor.get_height());
-
+        this.last_x = x;
+        this.last_y = y;
         return DND.DragMotionResult.MOVE_DROP;
     },
 
     acceptDrop: function(source, actor, x, y, time) {
         if (!(source instanceof Desklet.Desklet)) return false;
-
         Main.uiGroup.remove_actor(actor);
         this.actor.add_actor(actor);
         mouseTrackEnabled = -1; // forces an update of all desklet mouse tracks
@@ -413,9 +451,8 @@ DeskletContainer.prototype = {
                 elements[2] = actor.get_x();
                 elements[3] = actor.get_y();
                 if (global.settings.get_boolean(DESKLET_SNAP_KEY)){
-                    let interval = global.settings.get_int(DESKLET_SNAP_INTERVAL_KEY);
-                    elements[2] = Math.floor(elements[2]/interval)*interval;
-                    elements[3] = Math.floor(elements[3]/interval)*interval;
+                    elements[2] = this._dragPlaceholder.x
+                    elements[3] = this._dragPlaceholder.y;
                 }
                 definition = elements.join(":");
                 enabledDesklets[i] = definition;
@@ -425,6 +462,24 @@ DeskletContainer.prototype = {
         global.settings.set_strv(ENABLED_DESKLETS_KEY, enabledDesklets);
 
         this._dragPlaceholder.hide();
+        this.last_x = -1;
+        this.last_y = -1;
         return true;
+    },
+
+    cancelDrag: function(source, actor) {
+        if (!(source instanceof Desklet.Desklet)) return false;
+        Main.uiGroup.remove_actor(actor);
+        this.actor.add_actor(actor);
+        mouseTrackEnabled = -1;
+        checkMouseTracking();
+        this._dragPlaceholder.hide();
+        this.last_x = -1;
+        this.last_y = -1;
+        return true;
+    },
+
+    hideDragPlaceholder: function() {
+        this._dragPlaceholder.hide();
     }
 };

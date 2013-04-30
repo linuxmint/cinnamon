@@ -129,6 +129,8 @@ _Draggable.prototype = {
 
         this._eventsGrabbed = false;
 
+        this._dragCheckId = null;
+
         this._dragThreshold = 8;
         global.settings.connect('changed::dnd-drag-threshold', Lang.bind(this, this._onDragThresholdChanged));
         this._onDragThresholdChanged();
@@ -226,7 +228,12 @@ _Draggable.prototype = {
         } else if (event.type() == Clutter.EventType.BUTTON_RELEASE) {
             this._buttonDown = false;
             if (this._dragInProgress) {
-                return this._dragActorDropped(event);
+                if (this.actor._delegate._isTracked)
+                    return this._dragActorDropped(event);
+                else {
+                    this._cancelDrag();
+                    return true;
+                }
             } else if (this._dragActor != null && !this._animationInProgress) {
                 // Drag must have been cancelled with Esc.
                 this._dragComplete();
@@ -242,7 +249,12 @@ _Draggable.prototype = {
             if (this._dragInProgress) {
                 return this._updateDragPosition(event);
             } else if (this._dragActor == null) {
-                return this._maybeStartDrag(event);
+                if (this._buttonDown)
+                    return this._maybeStartDrag(event);
+                else {
+                    this._dragComplete()
+                    return true;
+                }
             }
         } else if (event.type() == Clutter.EventType.LEAVE) {
             if (this._firstLeaveActor == null)
@@ -298,8 +310,8 @@ _Draggable.prototype = {
         this._grabEvents();
         global.set_cursor(Cinnamon.Cursor.DND_IN_DRAG);
 
-        this._dragX = this._dragStartX = stageX;
-        this._dragY = this._dragStartY = stageY;
+        this._dragX = stageX;
+        this._dragY = stageY;
 
         if (this.actor._delegate && this.actor._delegate.getDragActor) {
             this._dragActor = this.actor._delegate.getDragActor(this._dragStartX, this._dragStartY);
@@ -327,8 +339,8 @@ _Draggable.prototype = {
             }
             this._dragOrigParent = undefined;
 
-            this._dragOffsetX = this._dragActor.x - this._dragStartX;
-            this._dragOffsetY = this._dragActor.y - this._dragStartY;
+            this._dragOffsetX = this._dragStartX - this._dragActor.x;
+            this._dragOffsetY = this._dragStartY - this._dragActor.y;
         } else {
             this._dragActor = this.actor;
             this._dragActorSource = undefined;
@@ -338,8 +350,9 @@ _Draggable.prototype = {
             this._dragOrigScale = this._dragActor.scale_x;
 
             let [actorStageX, actorStageY] = this.actor.get_transformed_position();
-            this._dragOffsetX = actorStageX - this._dragStartX;
-            this._dragOffsetY = actorStageY - this._dragStartY;
+            let [w, h] = this.actor.get_transformed_size();
+            this._dragOffsetX = this._dragStartX - this._dragActor.x;
+            this._dragOffsetY = this._dragStartY - this._dragActor.y;
 
             // Set the actor's scale such that it will keep the same
             // transformed size when it's reparented to the uiGroup
@@ -356,8 +369,8 @@ _Draggable.prototype = {
         if (this._dragActorOpacity != undefined)
             this._dragActor.opacity = this._dragActorOpacity;
 
-        this._snapBackX = this._dragStartX + this._dragOffsetX;
-        this._snapBackY = this._dragStartY + this._dragOffsetY;
+        this._snapBackX = this._dragStartX - this._dragOffsetX;
+        this._snapBackY = this._dragStartY - this._dragOffsetY;
         this._snapBackScale = this._dragActor.scale_x;
 
         if (this._dragActorMaxSize != undefined) {
@@ -384,26 +397,45 @@ _Draggable.prototype = {
                                        let currentScale = this._dragActor.scale_x / origScale;
                                        this._dragOffsetX = currentScale * origDragOffsetX;
                                        this._dragOffsetY = currentScale * origDragOffsetY;
-                                       this._dragActor.set_position(this._dragX + this._dragOffsetX,
-                                                                    this._dragY + this._dragOffsetY);
+                                       this._dragActor.set_position(this._dragX - this._dragOffsetX,
+                                                                    this._dragY - this._dragOffsetY);
                                    },
                                    onUpdateScope: this });
             }
         }
     },
 
+    _checkThreshold: function(x, y) {
+        if ((Math.abs(x - this._dragStartX) > this._dragThreshold ||
+             Math.abs(y - this._dragStartY) > this._dragThreshold)) {
+            this.startDrag(x, y, global.get_current_time());
+            this._updateDragPosition(null, x, y);
+            this._dragCheckId = null;
+            return false;
+        }
+        return true;
+    },
+
     _maybeStartDrag:  function(event) {
-        let [stageX, stageY] = event.get_coords();
+        if (this._dragCheckId)
+            return true;
+        [this._dragStartX, this._dragStartY] = event.get_coords();
 
         // See if the user has moved the mouse enough to trigger a drag
-        let threshold = this._dragThreshold;
-        if ((Math.abs(stageX - this._dragStartX) > threshold ||
-             Math.abs(stageY - this._dragStartY) > threshold)) {
-                this.startDrag(stageX, stageY, event.get_time());
-                this._updateDragPosition(event);
+
+        if (this._dragCheckId) {
+            Mainloop.source_remove(this._dragCheckId);
+            this._dragCheckId = null;
         }
 
+        this._dragCheckId = Mainloop.timeout_add(20, Lang.bind(this, this._dragCheckCallback));
+
         return true;
+    },
+
+    _dragCheckCallback: function() {
+        let [x, y, mask] = global.get_pointer();
+        return this._checkThreshold(x, y);
     },
 
     _setCursor:  function(result) {
@@ -420,15 +452,26 @@ _Draggable.prototype = {
         return false;
     },
     
-    _updateDragPosition : function (event) {
-        let [stageX, stageY] = event.get_coords();
+    _updateDragPosition : function (event, x, y) {
+        let stageX, stageY;
+        let time;
+        if (event) {
+            [stageX, stageY] = event.get_coords();
+            time = event.get_time();
+        }
+        else {
+            stageX = x;
+            stageY = y;
+            time = global.get_current_time();
+        }
+
         this._dragX = stageX;
         this._dragY = stageY;
 
         // If we are dragging, update the position
         if (this._dragActor) {
-            this._dragActor.set_position(stageX + this._dragOffsetX,
-                                         stageY + this._dragOffsetY);
+            this._dragActor.set_position(stageX - this._dragOffsetX,
+                                         stageY - this._dragOffsetY);
 
             let target = this._dragActor.get_stage().get_actor_at_pos(Clutter.PickMode.ALL,
                                                                       stageX, stageY);
@@ -460,7 +503,7 @@ _Draggable.prototype = {
                                                                       this._dragActor,
                                                                       targX,
                                                                       targY,
-                                                                      event.get_time());
+                                                                      time);
                     if (this._setCursor(result)) {
                         return true;
                     }
@@ -477,7 +520,7 @@ _Draggable.prototype = {
                                                                  this._dragActor,
                                                                  targX,
                                                                  targY,
-                                                                 event.get_time());
+                                                                 time);
                     if (this._setCursor(result)) {
                         return true;
                     }
@@ -600,6 +643,8 @@ _Draggable.prototype = {
         let [snapBackX, snapBackY, snapBackScale] = this._getRestoreLocation();
 
         if (this._actorDestroyed) {
+            if (this.target && this.target._delegate.cancelDrag)
+                this.target._delegate.cancelDrag(this.actor._delegate, this._dragActor);
             global.unset_cursor();
             if (!this._buttonDown)
                 this._dragComplete();
@@ -609,6 +654,9 @@ _Draggable.prototype = {
 
             return;
         }
+
+        if (this.target && this.target._delegate.hideDragPlaceholder)
+            this.target._delegate.hideDragPlaceholder();
 
         this._animationInProgress = true;
         // No target, so snap back
@@ -647,6 +695,9 @@ _Draggable.prototype = {
     },
 
     _onAnimationComplete : function (dragActor, eventTime) {
+        if (this.target && this.target._delegate.cancelDrag)
+            this.target._delegate.cancelDrag(this.actor._delegate, this._dragActor);
+
         if (this._dragOrigParent) {
             dragActor.reparent(this._dragOrigParent);
             dragActor.set_scale(this._dragOrigScale, this._dragOrigScale);
@@ -658,8 +709,7 @@ _Draggable.prototype = {
         this.emit('drag-end', eventTime, false);
 
         this._animationInProgress = false;
-        if (!this._buttonDown)
-            this._dragComplete();
+        this._dragComplete();
     },
 
     // Actor is an actor we have entered or left during the drag; call
@@ -676,7 +726,7 @@ _Draggable.prototype = {
 
     _dragComplete: function() {
         this._setTimer(false);
-        if (!this._actorDestroyed)
+        if (!this._actorDestroyed && this._dragActor)
             Cinnamon.util_set_hidden_from_pick(this._dragActor, false);
 
         this._ungrabEvents();
