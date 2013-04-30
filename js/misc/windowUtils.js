@@ -51,7 +51,7 @@ function createWindowClone(metaWindow, width, height, withTransients, withPositi
     scale = Math.min(scaleWidth, scaleHeight);
   }
   
-  for (i in textures) {
+  for (let i = 0; i < textures.length; i++) {
     let data = textures[i];
     let [texture, texWidth, texHeight, x, y] = [data.t, data.w, data.h, data.x, data.y];
     if (withPositions) {
