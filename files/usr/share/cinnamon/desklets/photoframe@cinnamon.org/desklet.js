@@ -26,49 +26,49 @@ MyDesklet.prototype = {
         try {
             this.settings = new Settings.DeskletSettings(this, this.metadata["uuid"], this.instance_id);
 
-            this.settings.bindProperty(Settings.BindingDirection.ONE_WAY,
+            this.settings.bindProperty(Settings.BindingDirection.IN,
                                      "directory",
                                      "dir",
                                      this.on_setting_changed,
                                      null);
 
-            this.settings.bindProperty(Settings.BindingDirection.ONE_WAY,
+            this.settings.bindProperty(Settings.BindingDirection.IN,
                                       "shuffle",
                                       "shuffle",
                                       this.on_setting_changed,
                                       null);
 
-            this.settings.bindProperty(Settings.BindingDirection.ONE_WAY,
+            this.settings.bindProperty(Settings.BindingDirection.IN,
                                      "delay",
                                      "delay",
                                      this.on_setting_changed,
                                      null);
 
-            this.settings.bindProperty(Settings.BindingDirection.ONE_WAY,
+            this.settings.bindProperty(Settings.BindingDirection.IN,
                                      "height",
                                      "height",
                                      this.on_setting_changed,
                                      null);
 
-            this.settings.bindProperty(Settings.BindingDirection.ONE_WAY,
+            this.settings.bindProperty(Settings.BindingDirection.IN,
                                      "width",
                                      "width",
                                      this.on_setting_changed,
                                      null);
 
-            this.settings.bindProperty(Settings.BindingDirection.ONE_WAY,
+            this.settings.bindProperty(Settings.BindingDirection.IN,
                                      "quality",
                                      "quality",
                                      this.on_setting_changed,
                                      null);
 
-            this.settings.bindProperty(Settings.BindingDirection.ONE_WAY,
+            this.settings.bindProperty(Settings.BindingDirection.IN,
                                      "fade-delay",
                                      "fade_delay",
                                      this.on_setting_changed,
                                      null);
 
-            this.settings.bindProperty(Settings.BindingDirection.ONE_WAY,
+            this.settings.bindProperty(Settings.BindingDirection.IN,
                                      "effect",
                                      "effect",
                                      this.on_setting_changed,
@@ -77,7 +77,13 @@ MyDesklet.prototype = {
             global.logError(e);
         }
 
+        this.dir_monitor_id = null;
+        this.dir_monitor = null;
+        this.dir_file = null;
+
+
         this.setHeader(_("Photo Frame"));
+        this._setup_dir_monitor();
         this.setup_display();
     },
 
@@ -85,8 +91,27 @@ MyDesklet.prototype = {
         if (this.update_id > 0)
             Mainloop.source_remove(this.update_id);
         this.update_id = null;
+        this._setup_dir_monitor();
         this._photoFrame.destroy();
         this.setup_display();
+    },
+
+    _setup_dir_monitor: function() {
+        if (this.dir_monitor_id && this.dir_monitor) {
+            this.dir_monitor.disconnect(this.dir_monitor_id)
+            this.dir_monitor_id = null
+        }
+        this.dir = this.dir.replace('~', GLib.get_home_dir())
+        this.dir_file =  Gio.file_new_for_path(this.dir);
+        this.dir_monitor = this.dir_file.monitor_directory(0, null, null);
+        this.dir_monitor_id = this.dir_monitor.connect('changed', Lang.bind(this, this.on_setting_changed));
+    },
+
+    on_desklet_removed: function() {
+        if (this.dir_monitor_id && this.dir_monitor) {
+            this.dir_monitor.disconnect(this.dir_monitor_id)
+            this.dir_monitor_id = null
+        }
     },
 
     setup_display: function() {
@@ -116,16 +141,13 @@ MyDesklet.prototype = {
             this._bin.add_effect(desaturate_effect);
         }
 
-        let dir_path = this.dir;
-        dir_path = dir_path.replace('~', GLib.get_home_dir());
-        let dir = Gio.file_new_for_path(dir_path);
-        if (dir.query_exists(null)) {
-            let fileEnum = dir.enumerate_children('standard::*', Gio.FileQueryInfoFlags.NONE, null);
+        if (this.dir_file.query_exists(null)) {
+            let fileEnum = this.dir_file.enumerate_children('standard::*', Gio.FileQueryInfoFlags.NONE, null);
             let info;
             while ((info = fileEnum.next_file(null)) != null) {
                 let fileType = info.get_file_type();
                 if (fileType != Gio.FileType.DIRECTORY) {
-                    this._loadImage(dir_path + "/" + info.get_name());
+                    this._loadImage(this.dir + "/" + info.get_name());
                 }
             }
 
