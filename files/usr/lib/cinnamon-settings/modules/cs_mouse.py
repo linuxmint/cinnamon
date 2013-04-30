@@ -74,11 +74,9 @@ class MouseTouchpadSidepage (SidePage):
         box.add_expand(slider)
         self.add_widget(box, 0, None)
 
-        box = IndentedHBox()
         test_button = Gtk.Button(_("Double-click test"))
         test_button.connect("button-press-event", self.test_button_clicked)
-        box.add_expand(test_button)
-        self.add_widget(box, 0, None)
+        self.add_widget(test_button, 0, None)
 
         title = Gtk.Label()
         title.set_markup("<b>%s</b>" % _("Drag and drop"))
