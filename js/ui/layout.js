@@ -444,6 +444,10 @@ LayoutManager.prototype = {
 
     findMonitorForActor: function(actor) {
         return this._chrome.findMonitorForActor(actor);
+    },
+
+    isTrackingChrome: function(actor) {
+        return this._chrome._findActor(actor) != -1;
     }
 };
 Signals.addSignalMethods(LayoutManager.prototype);
