@@ -81,11 +81,11 @@ class XletSetting:
         if not found:
             found = self.get_meta_data_for_applet("%s/.local/share/cinnamon/%ss/%s" % (home, self.type, uuid))
         if not found:
-            print(_("Could not find %s metadata - are you sure it's installed correctly?") % self.type)
+            print("Could not find %s metadata - are you sure it's installed correctly?" % self.type)
             return
         found = self.get_settings_for_applet("%s/.cinnamon/configs/%s" % (home, uuid))
         if not found:
-            print(_("Could not find any instance settings data for this %s - are you sure it is loaded, and supports settings?") % self.type)
+            print("Could not find any instance settings data for this %s - are you sure it is loaded, and supports settings?" % self.type)
 
     def get_meta_data_for_applet(self, path):
         if os.path.exists(path) and os.path.isdir(path):
@@ -108,13 +108,13 @@ class XletSetting:
                     try:
                         js = json.loads(raw_data, object_pairs_hook=collections.OrderedDict)
                     except:
-                        raise Exception(_("Failed to parse settings JSON data for %s %s") % (self.type, self.uuid))
+                        raise Exception("Failed to parse settings JSON data for %s %s" % (self.type, self.uuid))
                     instance_id = instance.split(".json")[0]
                     self.applet_settings[instance_id] = js
                     self.setting_factories[instance_id] = XletSettingsWidgets.Factory("%s/%s" % (path, instance), instance_id, self.multi_instance)
                 return True
             else:
-                raise Exception(_("Could not find any active setting files for %s %s") % (self.type, self.uuid))
+                raise Exception("Could not find any active setting files for %s %s" % (self.type, self.uuid))
         return False
 
     def build_single(self):
