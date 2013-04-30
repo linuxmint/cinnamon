@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import os
-from gi.repository import Gtk
+from gi.repository import Gtk, Gdk, GLib
 from SettingsWidgets import *
 
 class Module:
@@ -15,7 +15,7 @@ class Module:
 
 class MouseTouchpadSidepage (SidePage):
     def __init__(self, name, icon, keywords, advanced, content_box):
-        SidePage.__init__(self, name, icon, keywords, advanced, content_box, 300)
+        SidePage.__init__(self, name, icon, keywords, advanced, content_box, 350)
         self.tabs = []
         self.mousebox = Gtk.VBox()
         self.touchbox = Gtk.VBox()
@@ -73,6 +73,17 @@ class MouseTouchpadSidepage (SidePage):
         slider = GSettingsRange(_("Timeout:"), _("Short"), _("Long"), 100, 1000, False, "int", False, "org.gnome.settings-daemon.peripherals.mouse", "double-click", None, adjustment_step = 1)
         box.add_expand(slider)
         self.add_widget(box, 0, None)
+
+        box = IndentedHBox()
+        test_button = Gtk.Button(_("Double-click test"))
+        test_button.connect("button-press-event", self.test_button_clicked)
+        box.add_expand(test_button)
+        self.add_widget(box, 0, None)
+
+        title = Gtk.Label()
+        title.set_markup("<b>%s</b>" % _("Drag and drop"))
+        title.set_alignment(0,0)
+        self.add_widget(title, 0, True)
 
         box = IndentedHBox()
         box.add(GSettingsSpinButton(_("Cinnamon drag threshold"), "org.cinnamon", "dnd-drag-threshold", None, 1, 400, 1, 1, _("Pixels")))
@@ -154,6 +165,15 @@ class MouseTouchpadSidepage (SidePage):
         self.content_box.pack_start(self.notebook, True, True, 2)
         self.content_box.show_all()
 
+    def test_button_clicked(self, widget, event):
+        if event.type == Gdk.EventType._2BUTTON_PRESS:
+            widget.set_label(_("DOUBLE-CLICK"))
+            GLib.timeout_add(1000, self.reset_test_button, widget)
+        return True
+
+    def reset_test_button(self, widget):
+        widget.set_label(_("Double-click test"))
+        return False
 
 class CheckButton(Gtk.CheckButton):
     def __init__(self, label, schema, key, dep_key):
