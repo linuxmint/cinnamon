@@ -69,29 +69,24 @@ class ExtensionSidePage (SidePage):
         if self.themes:
             self.treeview.connect("row-activated", self.on_row_activated)
 
-        cr = Gtk.CellRendererToggle()
-        cr.connect("toggled", self.toggled, self.treeview)
-        column1 = Gtk.TreeViewColumn("Enable", cr)
-        column1.set_cell_data_func(cr, self.celldatafunction_checkbox)        
-        column1.set_resizable(True)
 
         column2 = Gtk.TreeViewColumn("Icon", Gtk.CellRendererPixbuf(), pixbuf=4)        
-        column2.set_resizable(True)
         column2.set_min_width(50)
 
-        column3 = Gtk.TreeViewColumn("Description", Gtk.CellRendererText(), markup=1)        
-        column3.set_sizing(Gtk.TreeViewColumnSizing.FIXED)
-        if not self.themes:
-            column3.set_fixed_width(500)
-        else:
-            column3.set_fixed_width(400)
+        cr = Gtk.CellRendererText()
+        column3 = Gtk.TreeViewColumn("Description", cr, markup=1)
+        column3.set_expand(True)
+        if self.themes:
+            column3.set_max_width(300)
+            cr.set_property('wrap-mode', Pango.WrapMode.WORD_CHAR)
+            cr.set_property('wrap-width', 200)
 
-        actionColumn = Gtk.TreeViewColumn("Read only", Gtk.CellRendererPixbuf(), pixbuf=10)        
-        actionColumn.set_min_width(50)
+        actionColumn = Gtk.TreeViewColumn("Read only", Gtk.CellRendererPixbuf(), pixbuf=10)
+        actionColumn.set_expand(True)
 
         cr = Gtk.CellRendererPixbuf()
-        isActiveColumn = Gtk.TreeViewColumn("Active", cr, pixbuf=11)        
-        isActiveColumn.set_min_width(50)
+        isActiveColumn = Gtk.TreeViewColumn("Active", cr, pixbuf=11)
+        isActiveColumn.set_expand(True)
         isActiveColumn.set_cell_data_func(cr, self._is_active_data_func)
         
         self.treeview.append_column(column2)
@@ -282,27 +277,30 @@ class ExtensionSidePage (SidePage):
 
         gm_column2 = Gtk.TreeViewColumn("Icon", Gtk.CellRendererPixbuf(), pixbuf=3)
 
-        gm_column3 = Gtk.TreeViewColumn("Description", Gtk.CellRendererText(), markup=1)
-        gm_column3.set_sizing(Gtk.TreeViewColumnSizing.FIXED)
-        if not self.themes:
-            gm_column3.set_fixed_width(400)
-        else:
-            gm_column3.set_fixed_width(300)
-        
+        gm_cr = Gtk.CellRendererText()
+        gm_column3 = Gtk.TreeViewColumn("Description", gm_cr, markup=1)
+        gm_column3.set_expand(True)
+        if self.themes:
+            gm_column3.set_max_width(300)
+            gm_cr.set_property('wrap-mode', Pango.WrapMode.WORD_CHAR)
+            gm_cr.set_property('wrap-width', 200)
+
         cr = Gtk.CellRendererText()
         actionColumn = Gtk.TreeViewColumn("Action", cr)
         actionColumn.set_cell_data_func(cr, self._gm_action_data_func)
-        actionColumn.set_min_width(140)
+        actionColumn.set_expand(True)
 
         cr = Gtk.CellRendererPixbuf()
         statusColumn = Gtk.TreeViewColumn("Status", cr)
         statusColumn.set_cell_data_func(cr, self._gm_status_data_func)
+        statusColumn.set_expand(True)
 
 
         right = Gtk.CellRendererText()
         right.set_property('xalign', 1.0)
         gm_column4 = Gtk.TreeViewColumn("Score", right, markup=4)
         gm_column4.set_alignment(1.0)
+        gm_column4.set_expand(True)
 
         self.gm_treeview.append_column(gm_column1)
         self.gm_treeview.append_column(gm_column2)
@@ -326,18 +324,25 @@ class ExtensionSidePage (SidePage):
         hbox = Gtk.HBox()        
         buttonbox = Gtk.ButtonBox.new(Gtk.Orientation.HORIZONTAL)
         buttonbox.set_spacing(6)
-        self.install_button = Gtk.Button(_("Install or update selected"))
+        self.install_button = Gtk.Button(_("  Install or update selected"))
+        self.select_updated = Gtk.Button("  Select updated")
+        img = Gtk.Image.new_from_icon_name("update-notifier", Gtk.IconSize.BUTTON)
+        self.select_updated.set_image(img)
         reload_button = Gtk.Button(_("Refresh list"))
         buttonbox.pack_start(self.install_button, False, False, 2)
+        buttonbox.pack_start(self.select_updated, False, False, 2)
         buttonbox.pack_end(reload_button, False, False, 2)
         hbox.pack_start(buttonbox, True, True, 5)
         getmore_vbox.pack_end(hbox, False, True, 5)
 
         reload_button.connect("clicked", lambda x: self.load_spices(True))
         self.install_button.connect("clicked", lambda x: self.install_extensions())
+        self.select_updated.connect("clicked", lambda x: self.select_updated_extensions())
+        self.select_updated.hide()
         self.treeview.get_selection().connect("changed", lambda x: self._selection_changed());
         self.install_list = []
-        
+        self.update_list = {}
+
         self.spices = Spice_Harvester(self.collection_type, self.window, self.builder, self.noun, self.pl_noun)
         # if not self.spices.get_webkit_enabled():
         #     getmore_label.set_sensitive(False)
@@ -525,7 +530,7 @@ class ExtensionSidePage (SidePage):
 
         if not shouldMark:
             newExtensions = []
-            for i_uuid, is_update in self.install_list:
+            for i_uuid, is_update, is_active in self.install_list:
                 if uuid != i_uuid:
                     newExtensions += [(i_uuid, is_update)]
             self.install_list = newExtensions
@@ -560,7 +565,6 @@ class ExtensionSidePage (SidePage):
                     uuid = self.gm_modelfilter.get_value(iter, 0)
                     self.gm_view_details(uuid)
                     return False
-
 
         if event.button == 3:
             data = widget.get_path_at_pos(int(event.x),int(event.y))
@@ -629,12 +633,18 @@ class ExtensionSidePage (SidePage):
         if installed:
             if can_update:
                 img = GdkPixbuf.Pixbuf.new_from_file( ("/usr/lib/cinnamon-settings/data/update.png"))
+                self.update_list[uuid] = True
             else:
                 img = GdkPixbuf.Pixbuf.new_from_file( ("/usr/lib/cinnamon-settings/data/installed.png"))
+                if uuid in self.update_list.keys():
+                    del self.update_list[uuid]
         else:
             img = GdkPixbuf.Pixbuf.new_from_file( ("/usr/lib/cinnamon-settings/data/inactive.png"))
+            if uuid in self.update_list.keys():
+                del self.update_list[uuid]
 
         cell.set_property("pixbuf", img)
+        self.refresh_update_button()
 
     def gm_toggled(self, renderer, path, treeview):
         iter = self.gm_modelfilter.get_iter(path)
@@ -743,7 +753,7 @@ class ExtensionSidePage (SidePage):
             iter = self.gm_model.insert_before(None, None)
             self.gm_model.set_value(iter, 0, uuid)
             if not self.themes:
-                self.gm_model.set_value(iter, 1, '<b>%s</b>\n<b><span foreground="#333333" size="xx-small">%s</span></b>\n<i><span foreground="#555555" size="x-small">%s</span></i>' % (extensionName, uuid, "Description not implemented"))
+                self.gm_model.set_value(iter, 1, '<b>%s</b>\n<b><span foreground="#333333" size="x-small">%s</span></b>' % (extensionName, uuid))
             else:
                 self.gm_model.set_value(iter, 1, '<b>%s</b>' % (extensionName))
             self.gm_model.set_value(iter, 2, 0)
@@ -864,12 +874,38 @@ class ExtensionSidePage (SidePage):
                 self.model.set_value(row.iter, 2, uuidCount[uuid])
             else:
                 self.model.set_value(row.iter, 2, 0)
-        
+        self._selection_changed()
+
     def _add_another_instance(self):
         model, treeiter = self.treeview.get_selection().get_selected()
         if treeiter:
             self._add_another_instance_iter(treeiter)
-        
+
+    def select_updated_extensions(self):
+        if len(self.update_list) > 1:
+            noun = self.pl_noun
+        else:
+            noun = self.noun
+        if not self.show_prompt(_("This operation will update %d installed %s.\n\nDo you want to continue?") % (len(self.update_list), noun)):
+            return
+        for row in self.gm_model:
+            uuid = self.gm_model.get_value(row.iter, 0)
+            if uuid in self.update_list.keys():
+                self.gm_mark(uuid, True)
+        self.install_extensions()
+
+    def refresh_update_button(self):
+        num = len(self.update_list)
+        if num > 0:
+            if num > 1:
+                self.select_updated.set_label(_("  %d updates available!") % (len(self.update_list)))
+            else:
+                self.select_updated.set_label(_("  %d update available!") % (len(self.update_list)))
+            self.select_updated.show()
+            self.select_updated.get_property('image').show()
+        else:
+            self.select_updated.hide()
+
     def _add_another_instance_iter(self, treeiter):
         uuid = self.modelfilter.get_value(treeiter, 0);
         name = self.modelfilter.get_value(treeiter, 5)
@@ -1049,7 +1085,7 @@ class ExtensionSidePage (SidePage):
                                 self.model.set_value(iter, 10, img)
 
                                 if (found):
-                                    img = GdkPixbuf.Pixbuf.new_from_file( ("/usr/lib/cinnamon-settings/data/active.png"))
+                                    img = GdkPixbuf.Pixbuf.new_from_file( ("/usr/lib/cinnamon-settings/data/running.png"))
                                 else:
                                     img = GdkPixbuf.Pixbuf.new_from_file( ("/usr/lib/cinnamon-settings/data/inactive.png"))
 
@@ -1095,6 +1131,8 @@ class ExtensionSidePage (SidePage):
                             for enabled_theme in self.enabled_extensions:
                                 if enabled_theme == theme_name:
                                     found = 1
+                                elif enabled_theme == "" and theme_uuid == "STOCK":
+                                    found = 1
                             if os.path.exists(os.path.join(path, "thumbnail.png")):
                                 icon_path = os.path.join(path, "thumbnail.png")
                             else:
@@ -1119,7 +1157,7 @@ class ExtensionSidePage (SidePage):
 
                             self.model.set_value(iter, 10, img)
                             if (found):
-                                img = GdkPixbuf.Pixbuf.new_from_file( ("/usr/lib/cinnamon-settings/data/active.png"))
+                                img = GdkPixbuf.Pixbuf.new_from_file( ("/usr/lib/cinnamon-settings/data/running.png"))
                             else:
                                 img = GdkPixbuf.Pixbuf.new_from_file( ("/usr/lib/cinnamon-settings/data/inactive.png"))
                             self.model.set_value(iter, 11, img)
@@ -1145,34 +1183,3 @@ class ExtensionSidePage (SidePage):
         dialog.show_all()
         response = dialog.run()
         dialog.destroy()
-
-    def toggled(self, renderer, path, treeview):        
-        iter = self.model.get_iter(path)
-        if (iter != None):
-            uuid = self.model.get_value(iter, 0)
-            checked = self.model.get_value(iter, 2)
-            if checked == 0:
-                self._add_another_instance_iter(iter)
-                return
-            
-            if (checked > 1):
-                msg = _("There are multiple instances of this %s, do you want to remove them all?\n\n") % (self.noun)
-                msg += self.RemoveString
-
-                if not self.show_prompt(msg):
-                    return
-            self.model.set_value(iter, 2, 0)
-            newExtensions = []
-            for enabled_extension in self.enabled_extensions:
-                if uuid not in enabled_extension:
-                    newExtensions.append(enabled_extension)
-            self.enabled_extensions = newExtensions
-            self.settings.set_strv(("enabled-%ss") % (self.collection_type), self.enabled_extensions)
-    
-    def celldatafunction_checkbox(self, column, cell, model, iter, data=None):
-        cell.set_property("activatable", True)
-        checked = model.get_value(iter, 2)
-        if (checked > 0):
-            cell.set_property("active", True)
-        else:
-            cell.set_property("active", False)
