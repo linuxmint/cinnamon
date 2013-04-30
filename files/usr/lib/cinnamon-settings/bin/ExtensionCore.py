@@ -95,7 +95,7 @@ class ExtensionSidePage (SidePage):
         self.treeview.append_column(isActiveColumn)
         self.treeview.set_headers_visible(False)
         
-        self.model = Gtk.TreeStore(str, str, int, int, GdkPixbuf.Pixbuf, str, int, bool, str, int, GdkPixbuf.Pixbuf, GdkPixbuf.Pixbuf, str)
+        self.model = Gtk.TreeStore(str, str, int, int, GdkPixbuf.Pixbuf, str, int, bool, str, long, GdkPixbuf.Pixbuf, GdkPixbuf.Pixbuf, str)
         #                          uuid, desc, enabled, max-instances, icon, name, read-only, hide-config-button, ext-setting-app, edit-date, read-only icon, active icon, schema file name (for uninstall)
 
         self.modelfilter = self.model.filter_new()
