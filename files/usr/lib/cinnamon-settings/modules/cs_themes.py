@@ -12,7 +12,7 @@ class Module:
         # for i18n replacement in ExtensionCore.py
         noun = _("theme")
         pl_noun = _("themes")
-        # We don't translate Cinnamon
+        # We do not translate Cinnamon
         target = "Cinnamon"
         sidePage = ThemesViewSidePage(_("Themes"), "themes.svg", keywords, advanced, content_box, "theme", noun, pl_noun, target)
         self.sidePage = sidePage

@@ -10,7 +10,7 @@ class Module:
         # for i18n replacement in ExtensionCore.py
         noun = _("extension")
         pl_noun = _("extensions")
-        # we don't translate Cinnamon
+        # we do not translate Cinnamon
         target = "Cinnamon"
         sidePage = ExtensionViewSidePage(_("Extensions"), "extensions.svg", keywords, advanced, content_box, "extension", noun, pl_noun, target)
         self.sidePage = sidePage

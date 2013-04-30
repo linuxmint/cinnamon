@@ -55,7 +55,7 @@ class SidePage:
         # Add our own widgets
         # C modules are sort of messy - they check the desktop type
         # (for Unity or GNOME) and show/hide UI items depending on
-        # the result - so we can't just show_all on the widget, it will
+        # the result - so we cannot just show_all on the widget, it will
         # mess up these modifications - so for these, we just show the
         # top-level widget
         if not self.is_standalone:

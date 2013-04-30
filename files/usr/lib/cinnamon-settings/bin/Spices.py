@@ -167,9 +167,9 @@ class Spice_Harvester:
         
         appletData = self.index_cache[uuid] 
         
-        # Browsing the info within the app would be great (ala mintinstall) but until it's fully ready 
+        # Browsing the info within the app would be great (ala mintinstall) but until it is fully ready 
         # and it gives a better experience (layout, comments, reviewing) than 
-        # browsing online we'll open the link with an external browser 
+        # browsing online we will open the link with an external browser 
         os.system("xdg-open '%s/%ss/view/%s'" % (URL_SPICES_HOME, self.collection_type, appletData['spices-id']))
         return
         
@@ -481,7 +481,7 @@ class Spice_Harvester:
                         self.errorMessage(_("Could not remove the settings schema for %s.  You will have to perform this step yourself.  This is not a critical error.") % (uuid))
                 shutil.rmtree(os.path.join(self.install_folder, uuid))
 
-                # Uninstall spice's localization files, if any
+                # Uninstall spice localization files, if any
                 if (os.path.exists(locale_inst)):
                     i19_folders = os.listdir(locale_inst)
                     for i19_folder in i19_folders:
@@ -537,10 +537,7 @@ class Spice_Harvester:
             self.progress_button_close.set_sensitive(True)
             self.progress_button_abort.set_sensitive(False)
 
-    def progress_bar_pulse(self):
-        '''
-        Progress bar pulse
-        '''
+    def progress_bar_pulse(self):       
         count = 0
         self.progressbar.set_pulse_step(0.1)
         while count < 1:
@@ -584,12 +581,10 @@ class Spice_Harvester:
         while Gtk.events_pending():
             Gtk.main_iteration()
 
-    def url_retrieve(self, url, f, reporthook):
-        '''
-        Like the one in urllib. Unlike urllib.retrieve url_retrieve
-        can be interrupted. KeyboardInterrupt exception is rasied when
-        interrupted.
-        '''
+    def url_retrieve(self, url, f, reporthook):        
+        #Like the one in urllib. Unlike urllib.retrieve url_retrieve
+        #can be interrupted. KeyboardInterrupt exception is rasied when
+        #interrupted.        
         count = 0
         blockSize = 1024 * 8
         try:

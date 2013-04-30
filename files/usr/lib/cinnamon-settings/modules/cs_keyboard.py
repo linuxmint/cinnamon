@@ -153,9 +153,9 @@ class Module:
         self.name = "keyboard"
         self.category = "hardware"
 
-        # Let's transition any existing gconf shortcuts over to gsettings
-        # Since we're still going to support both, and really only track gconf (for now)
-        # We'll only do this on the first run of Cinnamon Settings after an upgrade.
+        # Let us transition any existing gconf shortcuts over to gsettings
+        # Since we are still going to support both, and really only track gconf (for now)
+        # We will only do this on the first run of Cinnamon Settings after an upgrade.
         schema = Gio.Settings("org.cinnamon.overrides")
         first_run_completed = schema.get_boolean("custom-keybindings-to-3-6")
 
