@@ -29,7 +29,7 @@ except Exception, detail:
     sys.exit(1)
 
 class SidePage:
-    def __init__(self, name, icon, keywords, advanced, content_box, no_resize = False, is_c_mod = False, is_standalone = False, exec_name = None):
+    def __init__(self, name, icon, keywords, advanced, content_box, size = None, is_c_mod = False, is_standalone = False, exec_name = None):
         self.name = name
         self.icon = icon
         self.content_box = content_box
@@ -39,7 +39,7 @@ class SidePage:
         self.exec_name = exec_name
         self.keywords = keywords
         self.advanced = advanced
-        self.no_resize = no_resize
+        self.size = size
         self.topWindow = None
         self.builder = None
 
@@ -154,6 +154,9 @@ class IndentedHBox(Gtk.HBox):
 
     def add(self, item):
         self.pack_start(item, False, False, 0)
+
+    def add_expand(self, item):
+        self.pack_start(item, True, True, 0)
 
 class GSettingsCheckButton(Gtk.CheckButton):    
     def __init__(self, label, schema, key, dep_key):
@@ -428,6 +431,7 @@ class GSettingsRange(Gtk.HBox):
         self.dep_key = dep_key
         self.settings = Gio.Settings.new(schema)
         self.valtype = valtype
+
         if self.valtype == "int":
             self.value = self.settings.get_int(self.key) * 1.0
         elif self.valtype == "uint":
@@ -435,8 +439,14 @@ class GSettingsRange(Gtk.HBox):
         elif self.valtype == "double":
             self.value = self.settings.get_double(self.key) * 1.0
         self.label = Gtk.Label(label)
+        self.label.set_alignment(1.0, 0.5)
+        self.label.set_size_request(100, -1)
         self.low_label = Gtk.Label()
+        self.low_label.set_alignment(0.5, 0.5)
+        self.low_label.set_size_request(60, -1)
         self.hi_label = Gtk.Label()
+        self.hi_label.set_alignment(0.5, 0.5)
+        self.hi_label.set_size_request(60, -1)
         self.low_label.set_markup("<i><small>%s</small></i>" % low_label)
         self.hi_label.set_markup("<i><small>%s</small></i>" % hi_label)
         self.inverted = inverted
@@ -446,15 +456,19 @@ class GSettingsRange(Gtk.HBox):
         self._min = low_limit * 1.0
         self._max = hi_limit * 1.0
         self.content_widget = Gtk.Scale.new_with_range(Gtk.Orientation.HORIZONTAL, 0, 1, (self._step / self._range))
+        self.content_widget.set_size_request(300, 0)
         self.content_widget.set_value(self.to_corrected(self.value))
         self.content_widget.set_draw_value(False);
+
+        self.grid = Gtk.Grid()
         if (label != ""):
-            self.pack_start(self.label, False, False, 2)
+            self.grid.attach(self.label, 0, 0, 1, 1)
         if (low_label != ""):
-            self.pack_start(self.low_label, False, False, 2)
-        self.pack_start(self.content_widget, True, True, 2)
+            self.grid.attach(self.low_label, 1, 0, 1, 1)
+        self.grid.attach(self.content_widget, 2, 0, 1, 1)
         if (hi_label != ""):
-            self.pack_start(self.hi_label, False, False, 2)
+            self.grid.attach(self.hi_label, 3, 0, 1, 1)
+        self.pack_start(self.grid, True, True, 2)
         self._dragging = False
         self.content_widget.connect('value-changed', self.on_my_value_changed)
         self.content_widget.connect('button-press-event', self.on_mouse_down)
