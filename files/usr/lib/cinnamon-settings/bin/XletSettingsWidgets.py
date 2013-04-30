@@ -49,7 +49,7 @@ class Factory():
         try:
             self.widgets[key] = eval(setting_dict[setting_type])(key, self.settings, uuid)
         except Exception, detail:
-            print (_("Invalid setting type '%s' supplied - please check your json file for %s" % (setting_type, uuid)))
+            print ("Invalid setting type '%s' supplied - please check your json file for %s" % (setting_type, uuid))
             print detail
 
     def on_file_changed(self, file, other, event, data):
