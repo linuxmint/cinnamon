@@ -407,6 +407,8 @@ _Draggable.prototype = {
     },
 
     _checkThreshold: function(x, y) {
+        if (!this._buttonDown)
+            return false;
         if ((Math.abs(x - this._dragStartX) > this._dragThreshold ||
              Math.abs(y - this._dragStartY) > this._dragThreshold)) {
             this.startDrag(x, y, global.get_current_time());
@@ -414,6 +416,7 @@ _Draggable.prototype = {
             this._dragCheckId = null;
             return false;
         }
+
         return true;
     },
 
@@ -656,8 +659,8 @@ _Draggable.prototype = {
             return;
         }
 
-        if (this.target && this.target._delegate.hideDragPlaceholder)
-            this.target._delegate.hideDragPlaceholder();
+       if (this.target && this.target._delegate.hideDragPlaceholder)
+           this.target._delegate.hideDragPlaceholder();
 
         this._animationInProgress = true;
         // No target, so snap back
