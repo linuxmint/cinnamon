@@ -10,6 +10,7 @@ const Tweener = imports.ui.tweener;
 const Main = imports.ui.main;
 const Mainloop = imports.mainloop;
 const Gio = imports.gi.Gio;
+const Desklet = imports.ui.desklet;
 
 const Params = imports.misc.params;
 
@@ -228,7 +229,7 @@ _Draggable.prototype = {
         } else if (event.type() == Clutter.EventType.BUTTON_RELEASE) {
             this._buttonDown = false;
             if (this._dragInProgress) {
-                if (this.actor._delegate._isTracked)
+                if (this.actor._delegate._isTracked || !(this.actor._delegate instanceof Desklet.Desklet))
                     return this._dragActorDropped(event);
                 else {
                     this._cancelDrag();
