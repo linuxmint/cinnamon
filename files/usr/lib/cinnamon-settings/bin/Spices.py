@@ -281,6 +281,7 @@ class Spice_Harvester:
         self.progresslabel.set_text(_("Refreshing %s cache...") % (self.noun))
         self.progress_button_abort.set_sensitive(True)
         needs_refresh = 0
+        used_thumbs = []
 
         if uuids == None:
             uuids = self.index_cache.keys()
@@ -289,9 +290,11 @@ class Spice_Harvester:
             if not self.themes:
                 icon_basename = os.path.basename(self.index_cache[uuid]['icon'])
                 icon_path = os.path.join(self.cache_folder, icon_basename)
+                used_thumbs.append(icon_basename)
             else:
                 icon_basename = self.sanitize_thumb(os.path.basename(self.index_cache[uuid]['screenshot']))
                 icon_path = os.path.join(self.cache_folder, icon_basename)
+                used_thumbs.append(icon_basename)
 
             self.index_cache[uuid]['icon_filename'] = icon_basename
             self.index_cache[uuid]['icon_path'] = icon_path
@@ -322,6 +325,18 @@ class Spice_Harvester:
                     valid = False
                 if valid:
                     self.download(f, icon_path)
+
+        # Cleanup obsolete thumbs
+        trash = []
+        flist = os.listdir(self.cache_folder)
+        for f in flist:
+            if f not in used_thumbs and f != "index.json":
+                trash.append(f)
+        for t in trash:
+            try:
+                os.remove(t)
+            except:
+                pass
 
         self.progress_window.hide()
 
