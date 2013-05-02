@@ -382,16 +382,17 @@ class Spice_Harvester:
         if not self.themes:
             executable_files = ['settings.py']
             fd, filename = tempfile.mkstemp()
+            dd, dirname = tempfile.mkdtemp()
             f = os.fdopen(fd, 'wb')
             try:
                 self.download(f, filename)
                 dest = os.path.join(self.install_folder, uuid)
                 schema_filename = ""
                 zip = zipfile.ZipFile(filename)
-                zip.extractall(dest, self.get_members(zip))
+                zip.extractall(dirname, self.get_members(zip))
                 for file in self.get_members(zip):
                     if file.filename in executable_files:
-                        os.chmod(os.path.join(dest, file.filename), 0o755)
+                        os.chmod(os.path.join(dirname, file.filename), 0o755)
                     elif file.filename[:3] == 'po/':
                         parts = os.path.splitext(file.filename)
                         if parts[1] == '.po':
@@ -399,19 +400,19 @@ class Spice_Harvester:
                            self.progresslabel.set_text(_("Installing translations for %s...") % title)
                            rec_mkdir(this_locale_dir)
                            #print "/usr/bin/msgfmt -c %s -o %s" % (os.path.join(dest, file.filename), os.path.join(this_locale_dir, '%s.mo' % uuid))
-                           subprocess.call(["msgfmt", "-c", os.path.join(dest, file.filename), "-o", os.path.join(this_locale_dir, '%s.mo' % uuid)])
+                           subprocess.call(["msgfmt", "-c", os.path.join(dirname, file.filename), "-o", os.path.join(this_locale_dir, '%s.mo' % uuid)])
                            self.progresslabel.set_text(_("%s %s...") % (verb, title))
                     elif "gschema.xml" in file.filename:
                         sentence = _("Please enter your password to install the required settings schema for %s") % (uuid)
                         if os.path.exists("/usr/bin/gksu") and os.path.exists("/usr/lib/cinnamon-settings/bin/installSchema.py"):
                             launcher = "gksu  --message \"<b>%s</b>\"" % sentence
-                            tool = "/usr/lib/cinnamon-settings/bin/installSchema.py %s" % (os.path.join(dest, file.filename))
+                            tool = "/usr/lib/cinnamon-settings/bin/installSchema.py %s" % (os.path.join(dirname, file.filename))
                             command = "%s %s" % (launcher, tool)
                             os.system(command)
                             schema_filename = file.filename
                         else:
                             self.errorMessage(_("Could not install the settings schema for %s.  You will have to perform this step yourself.") % (uuid))
-                file = open(os.path.join(dest, "metadata.json"), 'r')
+                file = open(os.path.join(dirname, "metadata.json"), 'r')
                 raw_meta = file.read()
                 file.close()
                 md = json.loads(raw_meta)
@@ -419,34 +420,47 @@ class Spice_Harvester:
                 if schema_filename != "":
                     md["schema-file"] = schema_filename
                 raw_meta = json.dumps(md, indent=4)
-                file = open(os.path.join(dest, "metadata.json"), 'w+')
+                file = open(os.path.join(dirname, "metadata.json"), 'w+')
                 file.write(raw_meta)
                 file.close()
+                shutil.rmtree(dest)
+                shutil.copytree(dirname, dest)
+                os.close(dd)
+                os.close(fd)
+                shutil.rmtree(dirname)
+                os.remove(filename)
 
             except Exception, detail:
                 self.progress_window.hide()
-                self.errorMessage(_("An error occurred during installation or updating.  You may wish to report this incident to the developer of %s.") % (uuid), str(detail))
+                self.errorMessage(_("An error occurred during installation or updating.  You may wish to report this incident to the developer of %s.\n\nIf this was an update, the previous installation is unchanged") % (uuid), str(detail))
                 return False
         else:
             fd, filename = tempfile.mkstemp()
+            dd, dirname = tempfile.mkdtemp()
             f = os.fdopen(fd, 'wb')
             try:
                 self.download(f, filename)
                 dest = os.path.join(self.install_folder, title, "cinnamon")
                 zip = zipfile.ZipFile(filename)
-                zip.extractall(dest, self.get_members(zip))
+                zip.extractall(dirname, self.get_members(zip))
 
                 # Test for correct folder structure - look for cinnamon.css
-                file = open(os.path.join(dest, "cinnamon.css"), 'r')
+                file = open(os.path.join(dirname, "cinnamon.css"), 'r')
                 file.close()
 
                 md = {}
                 md["last-edited"] = edited_date
                 md["uuid"] = uuid
                 raw_meta = json.dumps(md, indent=4)
-                file = open(os.path.join(dest, "metadata.json"), 'w+')
+                file = open(os.path.join(dirname, "metadata.json"), 'w+')
                 file.write(raw_meta)
                 file.close()
+                shutil.rmtree(dest)
+                shutil.copytree(dirname, dest)
+                os.close(dd)
+                os.close(fd)
+                shutil.rmtree(dirname)
+                os.remove(filename)
 
             except Exception, detail:
                 self.progress_window.hide()
@@ -454,7 +468,7 @@ class Spice_Harvester:
                     obj = uuid
                 else:
                     obj = title
-                self.errorMessage(_("An error occurred during installation or updating.  You may wish to report this incident to the developer of %s.") % (obj), str(detail))
+                self.errorMessage(_("An error occurred during installation or updating.  You may wish to report this incident to the developer of %s.\n\nIf this was an update, the previous installation is unchanged") % (obj), str(detail))
                 return False
 
         self.progress_button_close.set_sensitive(True)
