@@ -382,7 +382,7 @@ class Spice_Harvester:
         if not self.themes:
             executable_files = ['settings.py']
             fd, filename = tempfile.mkstemp()
-            dd, dirname = tempfile.mkdtemp()
+            dirname = tempfile.mkdtemp()
             f = os.fdopen(fd, 'wb')
             try:
                 self.download(f, filename)
@@ -423,20 +423,24 @@ class Spice_Harvester:
                 file = open(os.path.join(dirname, "metadata.json"), 'w+')
                 file.write(raw_meta)
                 file.close()
-                shutil.rmtree(dest)
+                if os.path.exists(dest):
+                    shutil.rmtree(dest)
                 shutil.copytree(dirname, dest)
-                os.close(dd)
-                os.close(fd)
                 shutil.rmtree(dirname)
                 os.remove(filename)
 
             except Exception, detail:
                 self.progress_window.hide()
+                try:
+                    shutil.rmtree(dirname)
+                    os.remove(filename)
+                except:
+                    pass
                 self.errorMessage(_("An error occurred during installation or updating.  You may wish to report this incident to the developer of %s.\n\nIf this was an update, the previous installation is unchanged") % (uuid), str(detail))
                 return False
         else:
             fd, filename = tempfile.mkstemp()
-            dd, dirname = tempfile.mkdtemp()
+            dirname = tempfile.mkdtemp()
             f = os.fdopen(fd, 'wb')
             try:
                 self.download(f, filename)
@@ -455,15 +459,19 @@ class Spice_Harvester:
                 file = open(os.path.join(dirname, "metadata.json"), 'w+')
                 file.write(raw_meta)
                 file.close()
-                shutil.rmtree(dest)
+                if os.path.exists(dest):
+                    shutil.rmtree(dest)
                 shutil.copytree(dirname, dest)
-                os.close(dd)
-                os.close(fd)
                 shutil.rmtree(dirname)
                 os.remove(filename)
 
             except Exception, detail:
                 self.progress_window.hide()
+                try:
+                    shutil.rmtree(dirname)
+                    os.remove(filename)
+                except:
+                    pass
                 if not self.themes:
                     obj = uuid
                 else:
