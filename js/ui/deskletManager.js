@@ -194,7 +194,7 @@ function _onEnabledDeskletsChanged(){
             if(Extension.loadExtension(uuid, Extension.Type.DESKLET))
                 hasDesklets = true;
         }
-        enableMouseTracking(hasDesklets);
+
     } catch (e) {
         global.logError('Failed to refresh list of desklets', e);
     }
