@@ -993,15 +993,29 @@ class ExtensionSidePage (SidePage):
         else:
             os.system("gsettings reset org.cinnamon.theme name")
 
+    def uuid_already_in_list(self, uuid):
+        installed_iter = self.model.get_iter_first()
+        found = False
+        if self.themes:
+            col = 5
+        else:
+            col = 0
+        while installed_iter != None:
+            installed_uuid = self.model.get_value(installed_iter, col)
+            if uuid == installed_uuid:
+                found = True
+                break
+            installed_iter = self.model.iter_next(installed_iter)
+        return found
 
     def load_extensions(self):
         self.model.clear()
         if not self.themes:
-            self.load_extensions_in(('/usr/share/cinnamon/%ss') % (self.collection_type))
             self.load_extensions_in(('%s/.local/share/cinnamon/%ss') % (home, self.collection_type))
+            self.load_extensions_in(('/usr/share/cinnamon/%ss') % (self.collection_type))
         else:
-            self.load_extensions_in('/usr/share', True)
             self.load_extensions_in(('%s/.themes') % (home))
+            self.load_extensions_in('/usr/share', True)
             self.load_extensions_in('/usr/share/themes')
 
     def load_extensions_in(self, directory, stock_theme = False):
@@ -1010,7 +1024,9 @@ class ExtensionSidePage (SidePage):
                 extensions = os.listdir(directory)
                 extensions.sort()
                 for extension in extensions:
-                    try:           
+                    if self.uuid_already_in_list(extension):
+                        continue
+                    try:
                         if os.path.exists("%s/%s/metadata.json" % (directory, extension)):
                             json_data=open("%s/%s/metadata.json" % (directory, extension)).read()
                             data = json.loads(json_data)  
@@ -1102,6 +1118,8 @@ class ExtensionSidePage (SidePage):
                     themes = os.listdir(directory)
                 themes.sort()
                 for theme in themes:
+                    if self.uuid_already_in_list(theme):
+                        continue
                     try:
                         if stock_theme:
                             path = os.path.join(directory, theme, "theme")
