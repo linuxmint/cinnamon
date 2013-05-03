@@ -1219,11 +1219,15 @@ MyApplet.prototype = {
             let xformed_mouse_x = mx-bx;
             let [appbox_x, appbox_y] = this.applicationsBox.get_transformed_position();
             let right_x = appbox_x - bx;
-            this.vectorBox.width = right_x-xformed_mouse_x;
-            this.vectorBox.set_position(xformed_mouse_x, 0);
-            this.vectorBox.urc_x = this.vectorBox.width;
-            this.vectorBox.lrc_x = this.vectorBox.width;
-            this.vectorBox.queue_repaint();
+            if ((right_x-xformed_mouse_x) > 0) {
+                this.vectorBox.width = right_x-xformed_mouse_x;
+                this.vectorBox.set_position(xformed_mouse_x, 0);
+                this.vectorBox.urc_x = this.vectorBox.width;
+                this.vectorBox.lrc_x = this.vectorBox.width;
+                this.vectorBox.queue_repaint();
+            } else {
+                this.destroyVectorBox(actor);
+            }
         }
         if (this.vector_update_loop) {
             this.vector_update_loop = null;
