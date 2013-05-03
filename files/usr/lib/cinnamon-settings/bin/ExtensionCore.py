@@ -1053,7 +1053,7 @@ class ExtensionSidePage (SidePage):
                             except KeyError: last_edited = -1
                             except ValueError: last_edited = -1
 
-                            try: schema_filename = data["schema-filename"]
+                            try: schema_filename = data["schema-file"]
                             except KeyError: schema_filename = ""
                             except ValueError: schema_filename = ""
 
