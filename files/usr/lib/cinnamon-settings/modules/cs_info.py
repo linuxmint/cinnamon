@@ -81,7 +81,9 @@ def createSystemInfos():
     (dname, dversion, dsuffix) = platform.linux_distribution()
     arch = platform.machine().replace("_", "-")
     (memsize, memunit) = procInfos['mem_total'].split(" ")
-    processorName = procInfos['cpu_name'].replace("(R)", u"\u00A9").replace("(TM)", u"\u2122") + " x " + procInfos['cpu_cores']
+    processorName = procInfos['cpu_name'].replace("(R)", u"\u00A9").replace("(TM)", u"\u2122")
+    if 'cpu_cores' in procInfos:
+        processorName = processorName + " x " + procInfos['cpu_cores']
     
     infos.append((_('Device Name'), platform.node()))
     infos.append((_('Distribution'), dname + " " + dversion +  ": " + dsuffix + " (" + arch + ")"))
