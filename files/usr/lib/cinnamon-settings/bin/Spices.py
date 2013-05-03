@@ -334,7 +334,7 @@ class Spice_Harvester:
                 trash.append(f)
         for t in trash:
             try:
-                os.remove(t)
+                os.remove(os.path.join(self.cache_folder, t))
             except:
                 pass
 
