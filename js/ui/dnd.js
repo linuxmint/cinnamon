@@ -311,8 +311,8 @@ _Draggable.prototype = {
         this._grabEvents();
         global.set_cursor(Cinnamon.Cursor.DND_IN_DRAG);
 
-        this._dragX = stageX;
-        this._dragY = stageY;
+        this._dragX = this._dragStartX = stageX;
+        this._dragY = this._dragStartY = stageY;
 
         if (this.actor._delegate && this.actor._delegate.getDragActor) {
             this._dragActor = this.actor._delegate.getDragActor(this._dragStartX, this._dragStartY);
@@ -339,9 +339,8 @@ _Draggable.prototype = {
                 this._dragActorSource = this.actor;
             }
             this._dragOrigParent = undefined;
-
-            this._dragOffsetX = this._dragActor.width / 2;
-            this._dragOffsetY = this._dragActor.height / 2;
+            this._dragOffsetX = this._dragActor.x - this._dragStartX;
+            this._dragOffsetY = this._dragActor.y - this._dragStartY;
         } else {
             this._dragActor = this.actor;
             this._dragActorSource = undefined;
@@ -351,9 +350,8 @@ _Draggable.prototype = {
             this._dragOrigScale = this._dragActor.scale_x;
 
             let [actorStageX, actorStageY] = this.actor.get_transformed_position();
-            let [w, h] = this.actor.get_transformed_size();
-            this._dragOffsetX = this._dragStartX - this._dragActor.x;
-            this._dragOffsetY = this._dragStartY - this._dragActor.y;
+            this._dragOffsetX = actorStageX - this._dragStartX;
+            this._dragOffsetY = actorStageY - this._dragStartY;
 
             // Set the actor's scale such that it will keep the same
             // transformed size when it's reparented to the uiGroup
@@ -370,8 +368,8 @@ _Draggable.prototype = {
         if (this._dragActorOpacity != undefined)
             this._dragActor.opacity = this._dragActorOpacity;
 
-        this._snapBackX = this._dragStartX - this._dragOffsetX;
-        this._snapBackY = this._dragStartY - this._dragOffsetY;
+        this._snapBackX = this._dragStartX + this._dragOffsetX;
+        this._snapBackY = this._dragStartY + this._dragOffsetY;
         this._snapBackScale = this._dragActor.scale_x;
 
         if (this._dragActorMaxSize != undefined) {
@@ -398,8 +396,8 @@ _Draggable.prototype = {
                                        let currentScale = this._dragActor.scale_x / origScale;
                                        this._dragOffsetX = currentScale * origDragOffsetX;
                                        this._dragOffsetY = currentScale * origDragOffsetY;
-                                       this._dragActor.set_position(this._dragX - this._dragOffsetX,
-                                                                    this._dragY - this._dragOffsetY);
+                                       this._dragActor.set_position(this._dragX + this._dragOffsetX,
+                                                                    this._dragY + this._dragOffsetY);
                                    },
                                    onUpdateScope: this });
             }
@@ -423,16 +421,13 @@ _Draggable.prototype = {
     _maybeStartDrag:  function(event) {
         if (this._dragCheckId)
             return true;
-        [this._dragStartX, this._dragStartY] = event.get_coords();
-
         // See if the user has moved the mouse enough to trigger a drag
-
         if (this._dragCheckId) {
             Mainloop.source_remove(this._dragCheckId);
             this._dragCheckId = null;
         }
 
-        this._dragCheckId = Mainloop.timeout_add(20, Lang.bind(this, this._dragCheckCallback));
+        this._dragCheckId = Mainloop.timeout_add(10, Lang.bind(this, this._dragCheckCallback));
 
         return true;
     },
@@ -474,8 +469,8 @@ _Draggable.prototype = {
 
         // If we are dragging, update the position
         if (this._dragActor) {
-            this._dragActor.set_position(stageX - this._dragOffsetX,
-                                         stageY - this._dragOffsetY);
+            this._dragActor.set_position(stageX + this._dragOffsetX,
+                                         stageY + this._dragOffsetY);
 
             let target = this._dragActor.get_stage().get_actor_at_pos(Clutter.PickMode.ALL,
                                                                       stageX, stageY);
