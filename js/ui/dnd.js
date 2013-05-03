@@ -10,6 +10,7 @@ const Tweener = imports.ui.tweener;
 const Main = imports.ui.main;
 const Mainloop = imports.mainloop;
 const Gio = imports.gi.Gio;
+const Desklet = imports.ui.desklet;
 
 const Params = imports.misc.params;
 
@@ -228,7 +229,7 @@ _Draggable.prototype = {
         } else if (event.type() == Clutter.EventType.BUTTON_RELEASE) {
             this._buttonDown = false;
             if (this._dragInProgress) {
-                if (this.actor._delegate._isTracked)
+                if (this.actor._delegate._isTracked || !(this.actor._delegate instanceof Desklet.Desklet))
                     return this._dragActorDropped(event);
                 else {
                     this._cancelDrag();
@@ -406,6 +407,8 @@ _Draggable.prototype = {
     },
 
     _checkThreshold: function(x, y) {
+        if (!this._buttonDown)
+            return false;
         if ((Math.abs(x - this._dragStartX) > this._dragThreshold ||
              Math.abs(y - this._dragStartY) > this._dragThreshold)) {
             this.startDrag(x, y, global.get_current_time());
@@ -413,6 +416,7 @@ _Draggable.prototype = {
             this._dragCheckId = null;
             return false;
         }
+
         return true;
     },
 
@@ -655,8 +659,8 @@ _Draggable.prototype = {
             return;
         }
 
-        if (this.target && this.target._delegate.hideDragPlaceholder)
-            this.target._delegate.hideDragPlaceholder();
+       if (this.target && this.target._delegate.hideDragPlaceholder)
+           this.target._delegate.hideDragPlaceholder();
 
         this._animationInProgress = true;
         // No target, so snap back
