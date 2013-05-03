@@ -340,8 +340,8 @@ _Draggable.prototype = {
             }
             this._dragOrigParent = undefined;
 
-            this._dragOffsetX = this._dragStartX - this._dragActor.x;
-            this._dragOffsetY = this._dragStartY - this._dragActor.y;
+            this._dragOffsetX = this._dragActor.width / 2;
+            this._dragOffsetY = this._dragActor.height / 2;
         } else {
             this._dragActor = this.actor;
             this._dragActorSource = undefined;
