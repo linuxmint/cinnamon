@@ -73,14 +73,14 @@ VisibleChildIterator.prototype = {
 
     getNextVisible: function(cur_child) {
         if (this.visible_children.indexOf(cur_child) == this._num_children-1)
-            return cur_child;
+            return this.visible_children[0];
         else
             return this.visible_children[this.visible_children.indexOf(cur_child)+1];
     },
 
     getPrevVisible: function(cur_child) {
         if (this.visible_children.indexOf(cur_child) == 0)
-            return cur_child;
+            return this.visible_children[this._num_children-1];
         else
             return this.visible_children[this.visible_children.indexOf(cur_child)-1];
     },
