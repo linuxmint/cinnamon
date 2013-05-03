@@ -149,9 +149,14 @@ class MainWindow:
         self.opacity = 0
 
         for i in range(len(modules)):
-            mod = modules[i].Module(self.content_box)
-            if self.loadCheck(mod) and self.setParentRefs(mod):
-                self.sidePages.append((mod.sidePage, mod.name, mod.category))
+            try:
+                mod = modules[i].Module(self.content_box)
+                if self.loadCheck(mod) and self.setParentRefs(mod):
+                    self.sidePages.append((mod.sidePage, mod.name, mod.category))
+            except:
+                print "Failed to load module %s" % modules[i]
+                import traceback
+                traceback.print_exc()
 
         for item in CONTROL_CENTER_MODULES:
             ccmodule = SettingsWidgets.CCModule(item[0], item[1], item[2], item[3], item[4], item[5], self.content_box)
