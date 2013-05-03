@@ -23,7 +23,6 @@ var enabledDeskletDefinitions;
 
 let userDeskletsDir;
 
-let dummyMetaWindow = new Meta.Window();
 let mouseTrackEnabled = false;
 let mouseTrackTimoutId = null;
 
@@ -65,7 +64,7 @@ function enableMouseTracking(enable) {
 }
 
 function hasMouseWindow(){
-    let window = global.screen.get_mouse_window(dummyMetaWindow);
+    let window = global.screen.get_mouse_window(null);
     return window && window.window_type != Meta.WindowType.DESKTOP;
 }
 
