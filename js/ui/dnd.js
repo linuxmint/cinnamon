@@ -405,8 +405,10 @@ _Draggable.prototype = {
     },
 
     _checkThreshold: function(x, y) {
-        if (!this._buttonDown)
+        if (!this._buttonDown) {
+            this._dragCheckId = null;
             return false;
+        }
         if ((Math.abs(x - this._dragStartX) > this._dragThreshold ||
              Math.abs(y - this._dragStartY) > this._dragThreshold)) {
             this.startDrag(x, y, global.get_current_time());
