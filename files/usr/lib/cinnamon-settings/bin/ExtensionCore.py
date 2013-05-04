@@ -14,7 +14,7 @@ try:
     import os
     import os.path
     import json
-    from gi.repository import Gio, Gtk, GObject, Gdk, GdkPixbuf, Pango
+    from gi.repository import Gio, Gtk, GObject, Gdk, GdkPixbuf, Pango, GLib
     import dbus
     import subprocess
 except Exception, detail:
@@ -856,8 +856,14 @@ class ExtensionSidePage (SidePage):
     def on_page_changed(self, notebook, page, page_num):
         if page_num == 1 and len(self.gm_model) == 0:
             self.load_spices()
+        GLib.timeout_add(1, self.focus, page_num)
 
-        return True
+    def focus(self, page_num):
+        if page_num == 0:
+            self.search_entry.grab_focus()
+        else:
+            self.gm_search_entry.grab_focus()
+        return False
 
     def _enabled_extensions_changed(self):
         last_selection = ''
