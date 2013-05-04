@@ -48,7 +48,7 @@ ExpoWindowClone.prototype = {
         this.actor._delegate = this;
         this.realWindow = realWindow;
         this.metaWindow = realWindow.meta_window;
-
+        this.refreshClone();
         let positionChangedId = this.realWindow.connect('position-changed',
                                                           Lang.bind(this, this.onPositionChanged));
         let sizeChangedId = this.realWindow.connect('position-changed',
