@@ -37,46 +37,7 @@ typedef struct _StScrollViewFadeClass  StScrollViewFadeClass;
 
 #define DEFAULT_FADE_OFFSET 68.0f
 
-static const gchar *fade_glsl_shader =
-"uniform sampler2D tex;\n"
-"uniform float height;\n"
-"uniform float width;\n"
-"uniform float offset_bottom;\n"
-"uniform float offset_top;\n"
-/*
- * Used to pass the fade area to the shader
- *
- * [0][0] = x1
- * [0][1] = y1
- * [1][0] = x2
- * [1][1] = y2
- *
- */
-"uniform mat2 fade_area;\n"
-"\n"
-"void main ()\n"
-"{\n"
-" vec4 color = cogl_color_in * texture2D (tex, vec2 (cogl_tex_coord_in[0].xy));\n"
-" float y = height * cogl_tex_coord_in[0].y;\n"
-" float x = width * cogl_tex_coord_in[0].x;\n"
-" float ratio = 1.0;\n"
-" float fade_bottom_start = fade_area[1][1] - offset_bottom;\n"
-" float ratio_top = y / offset_top;\n"
-" float ratio_bottom = (fade_area[1][1] - y)/(fade_area[1][1] - fade_bottom_start);\n"
-" bool in_scroll_area = fade_area[0][0] <= x && fade_area[1][0] >= x;\n"
-" bool fade_top = y < offset_top && in_scroll_area && (y >= fade_area[0][1]);\n"
-" bool fade_bottom = y > fade_bottom_start && in_scroll_area && (y <= fade_area[1][1]);\n"
-"\n"
-" if (fade_top) {\n"
-"  ratio *= ratio_top;\n"
-" }\n"
-"\n"
-" if (fade_bottom) {\n"
-"  ratio *= ratio_bottom;\n"
-" }\n"
-"\n"
-"  cogl_color_out = color * ratio;\n"
-"}";
+#include "st-scroll-view-fade-generated.c"
 
 struct _StScrollViewFade
 {
@@ -92,14 +53,18 @@ struct _StScrollViewFade
   gint height_uniform;
   gint width_uniform;
   gint fade_area_uniform;
-  gint offset_top_uniform;
-  gint offset_bottom_uniform;
+  gint vfade_offset_uniform;
+  gint hfade_offset_uniform;
+  gint vvalue_uniform;
+  gint hvalue_uniform;
 
   StAdjustment *vadjustment;
+  StAdjustment *hadjustment;
 
   guint is_attached : 1;
 
-  float fade_offset;
+  float vfade_offset;
+  float hfade_offset;
 };
 
 struct _StScrollViewFadeClass
@@ -114,7 +79,8 @@ G_DEFINE_TYPE (StScrollViewFade,
 enum {
   PROP_0,
 
-  PROP_FADE_OFFSET,
+  PROP_VFADE_OFFSET,
+  PROP_HFADE_OFFSET
 };
 
 static gboolean
@@ -155,10 +121,14 @@ st_scroll_view_fade_pre_paint (ClutterEffect *effect)
         cogl_program_get_uniform_location (self->program, "width");
       self->fade_area_uniform =
         cogl_program_get_uniform_location (self->program, "fade_area");
-      self->offset_top_uniform =
-        cogl_program_get_uniform_location (self->program, "offset_top");
-      self->offset_bottom_uniform =
-        cogl_program_get_uniform_location (self->program, "offset_bottom");
+      self->vfade_offset_uniform =
+        cogl_program_get_uniform_location (self->program, "vfade_offset");
+      self->hfade_offset_uniform =
+        cogl_program_get_uniform_location (self->program, "hfade_offset");
+      self->vvalue_uniform =
+        cogl_program_get_uniform_location (self->program, "vvalue");
+      self->hvalue_uniform =
+        cogl_program_get_uniform_location (self->program, "hvalue");
     }
 
   parent_class = CLUTTER_EFFECT_CLASS (st_scroll_view_fade_parent_class);
@@ -228,7 +198,7 @@ st_scroll_view_fade_paint_target (ClutterOffscreenEffect *effect)
 
   if (v_scroll_visible)
     {
-      if (st_widget_get_direction (ST_WIDGET (self->actor)) == ST_TEXT_DIRECTION_RTL)
+      if (clutter_actor_get_text_direction (self->actor) == CLUTTER_TEXT_DIRECTION_RTL)
           fade_area[0][0] += clutter_actor_get_width (vscroll);
 
       fade_area[1][0] -= clutter_actor_get_width (vscroll);
@@ -237,22 +207,24 @@ st_scroll_view_fade_paint_target (ClutterOffscreenEffect *effect)
   if (h_scroll_visible)
       fade_area[1][1] -= clutter_actor_get_height (hscroll);
 
-  st_adjustment_get_values (self->vadjustment, &value, &lower, &upper, NULL, NULL, &page_size);
+  if (self->vvalue_uniform > -1)
+    {
+      st_adjustment_get_values (self->vadjustment, &value, &lower, &upper, NULL, NULL, &page_size);
+      value = (value - lower) / (upper - page_size - lower);
+      cogl_program_set_uniform_1f (self->program, self->vvalue_uniform, value);
+    }
 
-  if (self->offset_top_uniform > -1) {
-    if (value > lower + 0.1)
-      cogl_program_set_uniform_1f (self->program, self->offset_top_uniform, self->fade_offset);
-    else
-      cogl_program_set_uniform_1f (self->program, self->offset_top_uniform, 0.0f);
-  }
+  if (self->hvalue_uniform > -1)
+    {
+      st_adjustment_get_values (self->hadjustment, &value, &lower, &upper, NULL, NULL, &page_size);
+      value = (value - lower) / (upper - page_size - lower);
+      cogl_program_set_uniform_1f (self->program, self->hvalue_uniform, value);
+    }
 
-  if (self->offset_bottom_uniform > -1) {
-    if (value < upper - page_size - 0.1)
-      cogl_program_set_uniform_1f (self->program, self->offset_bottom_uniform, self->fade_offset);
-    else
-      cogl_program_set_uniform_1f (self->program, self->offset_bottom_uniform, 0.0f);
-  }
-
+  if (self->vfade_offset_uniform > -1)
+    cogl_program_set_uniform_1f (self->program, self->vfade_offset_uniform, self->vfade_offset);
+  if (self->hfade_offset_uniform > -1)
+    cogl_program_set_uniform_1f (self->program, self->hfade_offset_uniform, self->hfade_offset);
   if (self->tex_uniform > -1)
     cogl_program_set_uniform_1i (self->program, self->tex_uniform, 0);
   if (self->height_uniform > -1)
@@ -271,14 +243,21 @@ out:
 }
 
 static void
-on_vadjustment_changed (StAdjustment *adjustment,
-                        ClutterEffect *effect)
+on_adjustment_changed (StAdjustment *adjustment,
+                       ClutterEffect *effect)
 {
   gdouble value, lower, upper, page_size;
   gboolean needs_fade;
+  StScrollViewFade *self = ST_SCROLL_VIEW_FADE (effect);
 
-  st_adjustment_get_values (adjustment, &value, &lower, &upper, NULL, NULL, &page_size);
+  st_adjustment_get_values (self->vadjustment, &value, &lower, &upper, NULL, NULL, &page_size);
   needs_fade = (value > lower + 0.1) || (value < upper - page_size - 0.1);
+
+  if (!needs_fade)
+    {
+      st_adjustment_get_values (self->hadjustment, &value, &lower, &upper, NULL, NULL, &page_size);
+      needs_fade = (value > lower + 0.1) || (value < upper - page_size - 0.1);
+    }
 
   clutter_actor_meta_set_enabled (CLUTTER_ACTOR_META (effect), needs_fade);
 }
@@ -301,22 +280,37 @@ st_scroll_view_fade_set_actor (ClutterActorMeta *meta,
   if (self->vadjustment)
     {
       g_signal_handlers_disconnect_by_func (self->vadjustment,
-                                            (gpointer)on_vadjustment_changed,
+                                            (gpointer)on_adjustment_changed,
                                             self);
       self->vadjustment = NULL;
     }
+
+  if (self->hadjustment)
+    {
+      g_signal_handlers_disconnect_by_func (self->hadjustment,
+                                            (gpointer)on_adjustment_changed,
+                                            self);
+      self->hadjustment = NULL;
+    }
+
 
   if (actor)
     {
         StScrollView *scroll_view = ST_SCROLL_VIEW (actor);
         StScrollBar *vscroll = ST_SCROLL_BAR (st_scroll_view_get_vscroll_bar (scroll_view));
+        StScrollBar *hscroll = ST_SCROLL_BAR (st_scroll_view_get_hscroll_bar (scroll_view));
         self->vadjustment = ST_ADJUSTMENT (st_scroll_bar_get_adjustment (vscroll));
+        self->hadjustment = ST_ADJUSTMENT (st_scroll_bar_get_adjustment (hscroll));
 
         g_signal_connect (self->vadjustment, "changed",
-                          G_CALLBACK (on_vadjustment_changed),
+                          G_CALLBACK (on_adjustment_changed),
                           self);
 
-        on_vadjustment_changed (self->vadjustment, CLUTTER_EFFECT (self));
+        g_signal_connect (self->hadjustment, "changed",
+                          G_CALLBACK (on_adjustment_changed),
+                          self);
+
+        on_adjustment_changed (NULL, CLUTTER_EFFECT (self));
     }
 
   parent = CLUTTER_ACTOR_META_CLASS (st_scroll_view_fade_parent_class);
@@ -342,9 +336,17 @@ st_scroll_view_fade_dispose (GObject *gobject)
   if (self->vadjustment)
     {
       g_signal_handlers_disconnect_by_func (self->vadjustment,
-                                            (gpointer)on_vadjustment_changed,
+                                            (gpointer)on_adjustment_changed,
                                             self);
       self->vadjustment = NULL;
+    }
+
+  if (self->hadjustment)
+    {
+      g_signal_handlers_disconnect_by_func (self->hadjustment,
+                                            (gpointer)on_adjustment_changed,
+                                            self);
+      self->hadjustment = NULL;
     }
 
   self->actor = NULL;
@@ -353,20 +355,38 @@ st_scroll_view_fade_dispose (GObject *gobject)
 }
 
 static void
-st_scroll_view_fade_set_offset (StScrollViewFade *self,
-                                float fade_offset)
+st_scroll_view_vfade_set_offset (StScrollViewFade *self,
+                                 float fade_offset)
 {
-  if (self->fade_offset == fade_offset)
+  if (self->vfade_offset == fade_offset)
     return;
 
   g_object_freeze_notify (G_OBJECT (self));
 
-  self->fade_offset = fade_offset;
+  self->vfade_offset = fade_offset;
 
   if (self->actor != NULL)
     clutter_actor_queue_redraw (self->actor);
 
-  g_object_notify (G_OBJECT (self), "fade-offset");
+  g_object_notify (G_OBJECT (self), "vfade-offset");
+  g_object_thaw_notify (G_OBJECT (self));
+}
+
+static void
+st_scroll_view_hfade_set_offset (StScrollViewFade *self,
+                                 float fade_offset)
+{
+  if (self->hfade_offset == fade_offset)
+    return;
+
+  g_object_freeze_notify (G_OBJECT (self));
+
+  self->hfade_offset = fade_offset;
+
+  if (self->actor != NULL)
+    clutter_actor_queue_redraw (self->actor);
+
+  g_object_notify (G_OBJECT (self), "hfade-offset");
   g_object_thaw_notify (G_OBJECT (self));
 }
 
@@ -380,8 +400,11 @@ st_scroll_view_fade_set_property (GObject *object,
 
   switch (prop_id)
     {
-    case PROP_FADE_OFFSET:
-      st_scroll_view_fade_set_offset (self, g_value_get_float (value));
+    case PROP_VFADE_OFFSET:
+      st_scroll_view_vfade_set_offset (self, g_value_get_float (value));
+      break;
+    case PROP_HFADE_OFFSET:
+      st_scroll_view_hfade_set_offset (self, g_value_get_float (value));
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -399,8 +422,11 @@ st_scroll_view_fade_get_property (GObject *object,
 
   switch (prop_id)
     {
-    case PROP_FADE_OFFSET:
-      g_value_set_float (value, self->fade_offset);
+    case PROP_HFADE_OFFSET:
+      g_value_set_float (value, self->hfade_offset);
+      break;
+    case PROP_VFADE_OFFSET:
+      g_value_set_float (value, self->vfade_offset);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -429,10 +455,17 @@ st_scroll_view_fade_class_init (StScrollViewFadeClass *klass)
   offscreen_class->paint_target = st_scroll_view_fade_paint_target;
 
   g_object_class_install_property (gobject_class,
-                                   PROP_FADE_OFFSET,
-                                   g_param_spec_float ("fade-offset",
-                                                       "Fade Offset",
+                                   PROP_VFADE_OFFSET,
+                                   g_param_spec_float ("vfade-offset",
+                                                       "Vertical Fade Offset",
                                                        "The height of the area which is faded at the edge",
+                                                       0.f, G_MAXFLOAT, DEFAULT_FADE_OFFSET,
+                                                       G_PARAM_READWRITE));
+  g_object_class_install_property (gobject_class,
+                                   PROP_HFADE_OFFSET,
+                                   g_param_spec_float ("hfade-offset",
+                                                       "Horizontal Fade Offset",
+                                                       "The width of the area which is faded at the edge",
                                                        0.f, G_MAXFLOAT, DEFAULT_FADE_OFFSET,
                                                        G_PARAM_READWRITE));
 
@@ -448,7 +481,7 @@ st_scroll_view_fade_init (StScrollViewFade *self)
       if (clutter_feature_available (CLUTTER_FEATURE_SHADERS_GLSL))
         {
           shader = cogl_create_shader (COGL_SHADER_TYPE_FRAGMENT);
-          cogl_shader_source (shader, fade_glsl_shader);
+          cogl_shader_source (shader, (const char *) st_scroll_view_fade_glsl);
           cogl_shader_compile (shader);
           if (!cogl_shader_is_compiled (shader))
             {
@@ -470,9 +503,12 @@ st_scroll_view_fade_init (StScrollViewFade *self)
   self->height_uniform = -1;
   self->width_uniform = -1;
   self->fade_area_uniform = -1;
-  self->offset_top_uniform = -1;
-  self->offset_bottom_uniform = -1;
-  self->fade_offset = DEFAULT_FADE_OFFSET;
+  self->vfade_offset_uniform = -1;
+  self->hfade_offset_uniform = -1;
+  self->vvalue_uniform = -1;
+  self->hvalue_uniform = -1;
+  self->vfade_offset = DEFAULT_FADE_OFFSET;
+  self->hfade_offset = DEFAULT_FADE_OFFSET;
 
   if (shader != COGL_INVALID_HANDLE)
     cogl_handle_ref (self->shader);
