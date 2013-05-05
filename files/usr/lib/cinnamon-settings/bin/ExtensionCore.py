@@ -14,7 +14,7 @@ try:
     import os
     import os.path
     import json
-    from gi.repository import Gio, Gtk, GObject, Gdk, GdkPixbuf, Pango
+    from gi.repository import Gio, Gtk, GObject, Gdk, GdkPixbuf, Pango, GLib
     import dbus
     import subprocess
 except Exception, detail:
@@ -26,6 +26,10 @@ home = os.path.expanduser("~")
 SHOW_ALL = 0
 SHOW_ACTIVE = 1
 SHOW_INACTIVE = 2
+
+SETTING_TYPE_NONE = 0
+SETTING_TYPE_INTERNAL = 1
+SETTING_TYPE_EXTERNAL = 2
 
 class ExtensionSidePage (SidePage):
     SORT_NAME = 0
@@ -95,8 +99,8 @@ class ExtensionSidePage (SidePage):
         self.treeview.append_column(isActiveColumn)
         self.treeview.set_headers_visible(False)
         
-        self.model = Gtk.TreeStore(str, str, int, int, GdkPixbuf.Pixbuf, str, int, bool, str, long, GdkPixbuf.Pixbuf, GdkPixbuf.Pixbuf, str)
-        #                          uuid, desc, enabled, max-instances, icon, name, read-only, hide-config-button, ext-setting-app, edit-date, read-only icon, active icon, schema file name (for uninstall)
+        self.model = Gtk.TreeStore(str, str, int, int, GdkPixbuf.Pixbuf, str, int, bool, str, long, GdkPixbuf.Pixbuf, GdkPixbuf.Pixbuf, str, int)
+        #                          uuid, desc, enabled, max-instances, icon, name, read-only, hide-config-button, ext-setting-app, edit-date, read-only icon, active icon, schema file name (for uninstall), settings type
 
         self.modelfilter = self.model.filter_new()
         self.showFilter = SHOW_ALL
@@ -445,6 +449,20 @@ class ExtensionSidePage (SidePage):
 
                     uuid = self.modelfilter.get_value(iter, 0)
                     name = self.modelfilter.get_value(iter, 5)
+
+                    if self.should_show_config_button(self.modelfilter, iter):
+                        item = Gtk.MenuItem(_("Configure"))
+                        item.connect('activate', lambda x: self._configure_extension())
+                        item.set_sensitive(self.modelfilter.get_value(iter, 2) > 0)
+                        popup.add(item)
+                        popup.add(Gtk.SeparatorMenuItem())
+
+                    if self.should_show_ext_config_button(self.modelfilter, iter):
+                        item = Gtk.MenuItem(_("Configure"))
+                        item.connect('activate', lambda x: self._external_configure_launch())
+                        item.set_sensitive(self.modelfilter.get_value(iter, 2) > 0)
+                        popup.add(item)
+                        popup.add(Gtk.SeparatorMenuItem())
 
                     if self.modelfilter.get_value(iter, 2) > 0 and not self.themes:
                         checked = self.modelfilter.get_value(iter, 2)
@@ -838,8 +856,14 @@ class ExtensionSidePage (SidePage):
     def on_page_changed(self, notebook, page, page_num):
         if page_num == 1 and len(self.gm_model) == 0:
             self.load_spices()
+        GLib.timeout_add(1, self.focus, page_num)
 
-        return True
+    def focus(self, page_num):
+        if page_num == 0:
+            self.search_entry.grab_focus()
+        else:
+            self.gm_search_entry.grab_focus()
+        return False
 
     def _enabled_extensions_changed(self):
         last_selection = ''
@@ -934,39 +958,24 @@ class ExtensionSidePage (SidePage):
                     tip += _("\nThis %s supports max %d instances.") % (self.noun, max_instances)
         self.instanceButton.set_sensitive(enabled);
         self.instanceButton.set_tooltip_text(tip)
+
         if treeiter:
-            hide_override = model.get_value(treeiter, 7)
-            ext_override = model.get_value(treeiter, 8)
-            if hide_override:
-                self.configureButton.hide()
-                self.extConfigureButton.hide()
-                return
-            if ext_override != "":
-                self.configureButton.hide()
-                self.extConfigureButton.show()
-                if checked:
-                    self.extConfigureButton.set_sensitive(True)
-                else:
-                    self.extConfigureButton.set_sensitive(False)
-                return
-        if treeiter and self._has_settings(model.get_value(treeiter, 0)):
-            self.extConfigureButton.hide()
-            self.configureButton.show()
-            if checked:
-                self.configureButton.set_sensitive(True)
-            else:
-                self.configureButton.set_sensitive(False)
-        else:
-            self.configureButton.hide()
-            self.extConfigureButton.hide()
+            self.configureButton.set_visible(self.should_show_config_button(model, treeiter))
+            self.configureButton.set_sensitive(checked)
+            self.extConfigureButton.set_visible(self.should_show_ext_config_button(model, treeiter))
+            self.extConfigureButton.set_sensitive(checked)
 
-    def _has_settings(self, uuid):
-        if os.path.exists("%s/.cinnamon/configs/%s" % (home, uuid)):
-            if len(os.listdir("%s/.cinnamon/configs/%s" % (home, uuid))) > 0:
-                return True
-        return False
+    def should_show_config_button(self, model, iter):
+        hide_override = model.get_value(iter, 7)
+        setting_type = model.get_value(iter, 13)
+        return setting_type == SETTING_TYPE_INTERNAL and not hide_override
 
-    def _configure_extension(self, widget):
+    def should_show_ext_config_button(self, model, iter):
+        hide_override = model.get_value(iter, 7)
+        setting_type = model.get_value(iter, 13)
+        return setting_type == SETTING_TYPE_EXTERNAL and not hide_override
+
+    def _configure_extension(self, widget = None):
         model, treeiter = self.treeview.get_selection().get_selected()
         if treeiter:
             uuid = model.get_value(treeiter, 0)
@@ -975,7 +984,7 @@ class ExtensionSidePage (SidePage):
             self.notebook.hide()
             settingContainer.show()
 
-    def _external_configure_launch(self, widget):
+    def _external_configure_launch(self, widget = None):
         model, treeiter = self.treeview.get_selection().get_selected()
         if treeiter:
             app = model.get_value(treeiter, 8)
@@ -1029,6 +1038,7 @@ class ExtensionSidePage (SidePage):
                     try:
                         if os.path.exists("%s/%s/metadata.json" % (directory, extension)):
                             json_data=open("%s/%s/metadata.json" % (directory, extension)).read()
+                            setting_type = 0
                             data = json.loads(json_data)  
                             extension_uuid = data["uuid"]
                             extension_name = data["name"]                                        
@@ -1045,9 +1055,14 @@ class ExtensionSidePage (SidePage):
                             except KeyError: hide_config_button = False
                             except ValueError: hide_config_button = False
 
-                            try: ext_config_app = os.path.join(directory, extension, data["external-configuration-app"])
+                            try:
+                                ext_config_app = os.path.join(directory, extension, data["external-configuration-app"])
+                                setting_type = SETTING_TYPE_EXTERNAL
                             except KeyError: ext_config_app = ""
                             except ValueError: ext_config_app = ""
+
+                            if os.path.exists("%s/%s/settings-schema.json" % (directory, extension)):
+                                setting_type = SETTING_TYPE_INTERNAL
 
                             try: last_edited = data["last-edited"]
                             except KeyError: last_edited = -1
@@ -1107,6 +1122,7 @@ class ExtensionSidePage (SidePage):
 
                                 self.model.set_value(iter, 11, img)
                                 self.model.set_value(iter, 12, schema_filename)
+                                self.model.set_value(iter, 13, setting_type)
 
                     except Exception, detail:
                         print "Failed to load extension %s: %s" % (extension, detail)
@@ -1179,6 +1195,7 @@ class ExtensionSidePage (SidePage):
                             else:
                                 img = GdkPixbuf.Pixbuf.new_from_file( ("/usr/lib/cinnamon-settings/data/inactive.png"))
                             self.model.set_value(iter, 11, img)
+                            self.model.set_value(iter, 13, SETTING_TYPE_NONE)
                     except Exception, detail:
                         print "Failed to load extension %s: %s" % (theme, detail)
 
