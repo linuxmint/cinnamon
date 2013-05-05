@@ -38,7 +38,9 @@ class Module:
         sidePage.add_widget(GSettingsDateFormat(_("Date format for the panel"), "org.cinnamon.calendar", "date-format", None), True)
         sidePage.add_widget(GSettingsDateFormat(_("Date format inside the date applet"), "org.cinnamon.calendar", "date-format-full", None), True)
         label = Gtk.Label()
-        label.set_markup("<i><small>%s <b>Sunday 6th April, 1997, 13:08:02</b> %s</small></i>" % (_("Enter the date"), _("in the way you wish the date is formatted")))
+        # Sunday 6th April 1997 13:08:02
+        date_object = datetime(1997, 4, 6, 13, 8, 2)
+        label.set_markup("<i><small>%s <b>%s</b> %s</small></i>" % (_("Enter the date"), date_object.strftime("%A %e %B, %Y, %H:%M:%S"), _("in the way you wish the date is formatted")))
         sidePage.add_widget(label);
 
     def _ntp_toggled(self, widget):

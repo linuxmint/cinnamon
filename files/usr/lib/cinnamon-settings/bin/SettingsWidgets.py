@@ -303,13 +303,13 @@ class GSettingsDateFormat(Gtk.HBox):
         self.pack_start(self.label, False, False, 5)
         self.add(self.content_widget)
 
-        # Sunday 6th April 1997 13:08:02
-        self.mapping = [["%A", "Sunday"],
-                        ["%a", "Sun"],
+        date_object = datetime(1997, 4, 6, 13, 8, 2)
+        self.mapping = [["%A", date_object.strftime("%A")],
+                        ["%a", date_object.strftime("%a")],
                         ["%d", "06"],
                         ["%e", "6"],
-                        ["%B", "April"],
-                        ["%b", "Apr"],
+                        ["%B", date_object.strftime("%B")],
+                        ["%b", date_object.strftime("%b")],
                         ["%Y", "1997"],
                         ["%C", "19"],
                         ["%y", "97"],
@@ -318,8 +318,8 @@ class GSettingsDateFormat(Gtk.HBox):
                         ["%l", "1"],
                         ["%M", "08"],
                         ["%S", "02"],
-                        ["%p", "pm"],
-                        ["%P", "am"]]
+                        ["%p", date_object.strftime("%p")],
+                        ["%P", date_object.strftime("%P")]]
 
         self.settings = Gio.Settings.new(schema)
         self.content_widget.set_text(self.format_to_date(self.settings.get_string(self.key)))
