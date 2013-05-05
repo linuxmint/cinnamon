@@ -307,10 +307,11 @@ class GSettingsDateFormat(Gtk.HBox):
         date_object = datetime(1997, 4, 5, 13, 8, 2)
         self.mapping = [["%A", date_object.strftime("%A")],
                         ["%a", date_object.strftime("%a")],
-                        ["%d", "06"],
-                        ["%e", "6"],
+                        ["%d", "05"],
+                        ["%e", "5"],
                         ["%B", date_object.strftime("%B")],
                         ["%b", date_object.strftime("%b")],
+                        ["%m", "04"],
                         ["%Y", "1997"],
                         ["%C", "19"],
                         ["%y", "97"],

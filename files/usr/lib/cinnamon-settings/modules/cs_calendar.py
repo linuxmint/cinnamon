@@ -40,7 +40,7 @@ class Module:
         label = Gtk.Label()
         # Saturday 5th April 1997 13:08:02
         date_object = datetime(1997, 4, 5, 13, 8, 2)
-        label.set_markup("<i><small>%s <b>%s</b> %s</small></i>" % (_("Enter the date"), date_object.strftime("%A %e %B, %Y, %H:%M:%S"), _("in the way you wish the date is formatted")))
+        label.set_markup("<i><small>%s <b>%s</b></small></i>" % (_("Enter the following date in the way you wish the date is formatted:"), date_object.strftime("%A %Y-%m-%d %H:%M:%S")))
         sidePage.add_widget(label);
 
     def _ntp_toggled(self, widget):
