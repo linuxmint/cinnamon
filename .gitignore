@@ -22,3 +22,5 @@ po/Makefile.in.in
 src/Makefile.in
 tests/Makefile.in
 .pc
+src/st-scroll-view-fade-generated.c
+src/stamp-st-scroll-view-fade-generated.c
