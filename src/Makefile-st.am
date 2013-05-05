@@ -117,18 +117,18 @@ BUILT_SOURCES += st.h
 CLEANFILES += stamp-st.h
 
 st-scroll-view-fade-generated.c: stamp-st-scroll-view-fade-generated.c
-   @true
+	@true
 stamp-st-scroll-view-fade-generated.c: $(srcdir)/st/st-scroll-view-fade.glsl $(srcdir)/data-to-c.pl
-   $(AM_V_GEN) $(srcdir)/data-to-c.pl $(srcdir)/st/st-scroll-view-fade.glsl st_scroll_view_fade_glsl > $@.tmp && \
-   (cmp -s $@.tmp st-scroll-view-fade-generated.c || cp $@.tmp st-scroll-view-fade-generated.c) && \
-   rm -f $@.tmp &&             \
-   echo timestamp > $(@F)
+	$(AM_V_GEN) $(srcdir)/data-to-c.pl $(srcdir)/st/st-scroll-view-fade.glsl st_scroll_view_fade_glsl > $@.tmp && \
+	(cmp -s $@.tmp st-scroll-view-fade-generated.c || cp $@.tmp st-scroll-view-fade-generated.c) && \
+	rm -f $@.tmp &&             \
+	echo timestamp > $(@F)
 
 BUILT_SOURCES += st-scroll-view-fade-generated.c
 EXTRA_DIST +=                  \
-   st/st-scroll-view-fade.glsl     \
-   data-to-c.pl                \
-   $(NULL)
+	st/st-scroll-view-fade.glsl     \
+	data-to-c.pl                \
+	$(NULL)
 
 st_source_private_h =				\
 	st/st-private.h				\
