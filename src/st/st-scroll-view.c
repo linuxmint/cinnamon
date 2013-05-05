@@ -109,7 +109,7 @@ struct _StScrollViewPrivate
   gfloat        row_size;
   gfloat        column_size;
 
-  StScrollViewFade *vfade_effect;
+  StScrollViewFade *fade_effect;
 
   gboolean      row_size_set : 1;
   gboolean      column_size_set : 1;
@@ -172,38 +172,43 @@ st_scroll_view_get_property (GObject    *object,
 }
 
 /**
- * st_scroll_view_update_vfade_effect:
+ * st_scroll_view_update_fade_effect:
  * @self: a #StScrollView
- * @fade_offset: The length of the fade effect, in pixels.
+ * @vfade_offset: The length of the veritcal fade effect, in pixels.
+ * @hfade_offset: The length of the horizontal fade effect, in pixels.
  *
  * Sets the height of the fade area area in pixels. A value of 0
  * disables the effect.
  */
 static void
-st_scroll_view_update_vfade_effect (StScrollView *self,
-                                    float fade_offset)
+st_scroll_view_update_fade_effect (StScrollView *self,
+                                   float vfade_offset,
+                                   float hfade_offset)
 {
   StScrollViewPrivate *priv = ST_SCROLL_VIEW (self)->priv;
 
   /* A fade amount of more than 0 enables the effect. */
-  if (fade_offset > 0.)
+  if (vfade_offset > 0. || hfade_offset > 0.)
     {
-      if (priv->vfade_effect == NULL) {
-        priv->vfade_effect = g_object_new (ST_TYPE_SCROLL_VIEW_FADE, NULL);
+      if (priv->fade_effect == NULL) {
+        priv->fade_effect = g_object_new (ST_TYPE_SCROLL_VIEW_FADE, NULL);
 
-        clutter_actor_add_effect_with_name (CLUTTER_ACTOR (self), "vfade",
-                                            CLUTTER_EFFECT (priv->vfade_effect));
+        clutter_actor_add_effect_with_name (CLUTTER_ACTOR (self), "fade",
+                                            CLUTTER_EFFECT (priv->fade_effect));
       }
 
-      g_object_set (priv->vfade_effect,
-                    "fade-offset", fade_offset,
+      g_object_set (priv->fade_effect,
+                    "vfade-offset", vfade_offset,
+                    NULL);
+      g_object_set (priv->fade_effect,
+                    "hfade-offset", hfade_offset,
                     NULL);
     }
    else
     {
-      if (priv->vfade_effect != NULL) {
-        clutter_actor_remove_effect (CLUTTER_ACTOR (self), CLUTTER_EFFECT (priv->vfade_effect));
-        priv->vfade_effect = NULL;
+      if (priv->fade_effect != NULL) {
+        clutter_actor_remove_effect (CLUTTER_ACTOR (self), CLUTTER_EFFECT (priv->fade_effect));
+        priv->fade_effect = NULL;
       }
     }
 
@@ -372,10 +377,10 @@ st_scroll_view_dispose (GObject *object)
 {
   StScrollViewPrivate *priv = ST_SCROLL_VIEW (object)->priv;
 
-  if (priv->vfade_effect)
+  if (priv->fade_effect)
     {
-      clutter_actor_remove_effect (CLUTTER_ACTOR (object), CLUTTER_EFFECT (priv->vfade_effect));
-      priv->vfade_effect = NULL;
+      clutter_actor_remove_effect (CLUTTER_ACTOR (object), CLUTTER_EFFECT (priv->fade_effect));
+      priv->fade_effect = NULL;
     }
 
   if (priv->vscroll)
@@ -825,8 +830,9 @@ st_scroll_view_style_changed (StWidget *widget)
   StScrollViewPrivate *priv = self->priv;
 
   StThemeNode *theme_node = st_widget_get_theme_node (widget);
-  gdouble fade_offset = st_theme_node_get_length (theme_node, "-st-vfade-offset");
-  st_scroll_view_update_vfade_effect (self, fade_offset);
+  gdouble vfade_offset = st_theme_node_get_length (theme_node, "-st-vfade-offset");
+  gdouble hfade_offset = st_theme_node_get_length (theme_node, "-st-hfade-offset");
+  st_scroll_view_update_fade_effect (self, vfade_offset, hfade_offset);
 
   st_widget_style_changed (ST_WIDGET (priv->hscroll));
   st_widget_style_changed (ST_WIDGET (priv->vscroll));
