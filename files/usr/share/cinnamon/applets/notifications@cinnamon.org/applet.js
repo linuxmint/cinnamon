@@ -45,14 +45,23 @@ MyApplet.prototype = {
         this.menu_label.actor.reactive = false;
         this.menu_label.actor.can_focus = false;
         this.menu_label.label.add_style_class_name('popup-subtitle-menu-item');
-        this.menu.addMenuItem(this.menu_label);
-        this.menu.addActor(this._maincontainer);
         this.clear_separator = new PopupMenu.PopupSeparatorMenuItem();
-        this.menu.addMenuItem(this.clear_separator);
         this.clear_action = new PopupMenu.PopupMenuItem(_("Clear notifications"));
-        this.menu.addMenuItem(this.clear_action);
         this.clear_action.connect('activate', Lang.bind(this, this._clear_all));
         this.clear_action.actor.hide();
+
+        if (this._orientation == St.Side.BOTTOM) {
+            this.menu.addMenuItem(this.menu_label);
+            this.menu.addActor(this._maincontainer);
+            this.menu.addMenuItem(this.clear_separator);
+            this.menu.addMenuItem(this.clear_action);
+        } else {
+            this.menu.addMenuItem(this.clear_action);
+            this.menu.addMenuItem(this.clear_separator);
+            this.menu.addMenuItem(this.menu_label);
+            this.menu.addActor(this._maincontainer);
+        }
+
         this.scrollview = new St.ScrollView({ x_fill: true, y_fill: true, y_align: St.Align.START});
         this._maincontainer.add(this.scrollview);
         this.scrollview.add_actor(this._notificationbin);
