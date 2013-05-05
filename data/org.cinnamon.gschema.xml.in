@@ -595,6 +595,14 @@
     <child name="keyboard" schema="org.cinnamon.keyboard"/>
     <child name="power" schema="org.cinnamon.power" />
     <child name="desklets" schema="org.cinnamon.desklets" />
+
+    <key name="enable-vfade" type="b">
+      <default>false</default>
+      <_summary>Enable the fade effect in Cinnamon scrollviews</_summary>
+      <_description>
+        Whether the vfade effect is enabled or not
+      </_description>
+    </key>
   </schema>
  
   <schema id="org.cinnamon.theme" path="/org/cinnamon/theme/"
