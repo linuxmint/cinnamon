@@ -303,7 +303,8 @@ class GSettingsDateFormat(Gtk.HBox):
         self.pack_start(self.label, False, False, 5)
         self.add(self.content_widget)
 
-        date_object = datetime(1997, 4, 6, 13, 8, 2)
+        # Saturday 5th April 1997 13:08:02
+        date_object = datetime(1997, 4, 5, 13, 8, 2)
         self.mapping = [["%A", date_object.strftime("%A")],
                         ["%a", date_object.strftime("%a")],
                         ["%d", "06"],
