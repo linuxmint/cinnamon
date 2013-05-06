@@ -82,7 +82,7 @@ Depends: ${gir:Depends},
          python-pyinotify,
          metacity,
          gnome-panel | tint2
-Recommends: gnome-themes-standard, gnome-terminal, nemo, cinnamon-screensaver
+Recommends: gnome-themes-standard, gnome-terminal, nemo, cinnamon-screensaver, gnome-session-bin
 Conflicts: cinnamon-session, cinnamon-settings
 Provides: cinnamon-session, cinnamon-settings, notification-daemon, x-window-manager
 Replaces: cinnamon-session, cinnamon-settings
