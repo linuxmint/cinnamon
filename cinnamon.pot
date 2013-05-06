@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-05-05 17:39+0100\n"
+"POT-Creation-Date: 2013-05-06 22:09+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -329,7 +329,7 @@ msgstr ""
 
 #: js/ui/messageTray.js:1265
 #: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/applet.js:58
-#: files/usr/lib/cinnamon-settings/modules/cs_backgrounds.py:490
+#: files/usr/lib/cinnamon-settings/modules/cs_backgrounds.py:491
 msgid "Remove"
 msgstr ""
 
@@ -1067,7 +1067,7 @@ msgid "Launch"
 msgstr ""
 
 #: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/applet.js:50
-#: files/usr/lib/cinnamon-settings/modules/cs_backgrounds.py:502
+#: files/usr/lib/cinnamon-settings/modules/cs_backgrounds.py:503
 #: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:295
 #: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/cinnamon-add-panel-launcher.py:151
 msgid "Add"
@@ -1596,40 +1596,40 @@ msgstr ""
 msgid "Backgrounds"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/modules/cs_backgrounds.py:351
-#: files/usr/lib/cinnamon-settings/modules/cs_backgrounds.py:509
+#: files/usr/lib/cinnamon-settings/modules/cs_backgrounds.py:352
+#: files/usr/lib/cinnamon-settings/modules/cs_backgrounds.py:510
 msgid "Add wallpapers"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/modules/cs_backgrounds.py:374
+#: files/usr/lib/cinnamon-settings/modules/cs_backgrounds.py:375
 msgid "Folder"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/modules/cs_backgrounds.py:382
+#: files/usr/lib/cinnamon-settings/modules/cs_backgrounds.py:383
 msgid "Recursive listing"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/modules/cs_backgrounds.py:387
+#: files/usr/lib/cinnamon-settings/modules/cs_backgrounds.py:388
 msgid "Delay"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/modules/cs_backgrounds.py:498
+#: files/usr/lib/cinnamon-settings/modules/cs_backgrounds.py:499
 msgid "Remove wallpaper"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/modules/cs_backgrounds.py:528
+#: files/usr/lib/cinnamon-settings/modules/cs_backgrounds.py:529
 msgid "Advanced options"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/modules/cs_backgrounds.py:536
+#: files/usr/lib/cinnamon-settings/modules/cs_backgrounds.py:537
 msgid "Picture aspect"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/modules/cs_backgrounds.py:542
+#: files/usr/lib/cinnamon-settings/modules/cs_backgrounds.py:543
 msgid "Gradient"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/modules/cs_backgrounds.py:549
+#: files/usr/lib/cinnamon-settings/modules/cs_backgrounds.py:550
 msgid "Colors"
 msgstr ""
 
@@ -3258,10 +3258,6 @@ msgstr ""
 msgid ""
 "\n"
 "This %s supports max %d instances."
-msgstr ""
-
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:1158
-msgid "Stock Cinnamon Theme"
 msgstr ""
 
 #: files/usr/lib/cinnamon-settings/bin/eyedropper.py:13

@@ -1155,7 +1155,7 @@ class ExtensionSidePage (SidePage):
                                 except KeyError: theme_uuid = ""
                                 except ValueError: theme_uuid = ""
                             if stock_theme:
-                                theme_name = _("Stock Cinnamon Theme")
+                                theme_name = "Cinnamon"
                                 theme_uuid = "STOCK"
                             else:
                                 theme_name = theme
