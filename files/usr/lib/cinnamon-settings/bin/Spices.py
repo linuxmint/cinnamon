@@ -459,24 +459,25 @@ class Spice_Harvester:
             f = os.fdopen(fd, 'wb')
             try:
                 self.download(f, filename)
-                dest = os.path.join(self.install_folder, title, "cinnamon")
+                dest = self.install_folder
                 zip = zipfile.ZipFile(filename)
-                zip.extractall(dirname, self.get_members(zip))
+                zip.extractall(dirname)
 
                 # Test for correct folder structure - look for cinnamon.css
-                file = open(os.path.join(dirname, "cinnamon.css"), 'r')
+                file = open(os.path.join(dirname, title, "cinnamon", "cinnamon.css"), 'r')
                 file.close()
 
                 md = {}
                 md["last-edited"] = edited_date
                 md["uuid"] = uuid
                 raw_meta = json.dumps(md, indent=4)
-                file = open(os.path.join(dirname, "metadata.json"), 'w+')
+                file = open(os.path.join(dirname, title, "cinnamon", "metadata.json"), 'w+')
                 file.write(raw_meta)
                 file.close()
-                if os.path.exists(dest):
-                    shutil.rmtree(dest)
-                shutil.copytree(dirname, dest)
+                labeled_path = os.path.join(dest, title)
+                if os.path.exists(labeled_path):
+                    shutil.rmtree(labeled_path)
+                shutil.copytree(os.path.join(dirname, title), labeled_path)
                 shutil.rmtree(dirname)
                 os.remove(filename)
 
