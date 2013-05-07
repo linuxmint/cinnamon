@@ -49,7 +49,7 @@ function init(){
     global.settings.connect('changed::' + DESKLET_SNAP_KEY, _onDeskletSnapChanged);
     global.settings.connect('changed::' + DESKLET_SNAP_INTERVAL_KEY, _onDeskletSnapChanged);
     
-    enableMouseTracking(hasDesklets);
+    enableMouseTracking(true);
 }
 
 function enableMouseTracking(enable) {

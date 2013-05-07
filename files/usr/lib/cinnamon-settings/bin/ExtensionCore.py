@@ -16,6 +16,7 @@ try:
     import json
     from gi.repository import Gio, Gtk, GObject, Gdk, GdkPixbuf, Pango, GLib
     import dbus
+    import cgi
     import subprocess
 except Exception, detail:
     print detail
@@ -42,8 +43,8 @@ class ExtensionSidePage (SidePage):
         SidePage.__init__(self, name, icon, keywords, advanced, content_box, -1)
         self.collection_type = collection_type
         self.target = target
-        self.noun = noun
-        self.pl_noun = pl_noun
+        self.noun = noun.decode("utf-8")
+        self.pl_noun = pl_noun.decode("utf-8")
         self.themes = collection_type == "theme"
         self.icons = []
 
@@ -755,7 +756,7 @@ class ExtensionSidePage (SidePage):
     def install_finished(self, need_restart):
         for row in self.gm_model:
             self.gm_model.set_value(row.iter, 2, 0)
-
+        self.install_button.set_sensitive(False)
         self.install_list = []
         self.load_extensions()
         if need_restart:
@@ -1206,7 +1207,8 @@ class ExtensionSidePage (SidePage):
                     Gtk.ButtonsType.YES_NO,
                     None)
         dialog.set_default_size(400, 200)
-        dialog.set_markup(msg)
+        esc = cgi.escape(msg)
+        dialog.set_markup(esc)
         dialog.show_all()
         response = dialog.run()
         dialog.destroy()
@@ -1214,7 +1216,8 @@ class ExtensionSidePage (SidePage):
 
     def show_info(self, msg):
         dialog = Gtk.MessageDialog(None, Gtk.DialogFlags.MODAL, Gtk.MessageType.INFO, Gtk.ButtonsType.OK, None)
-        dialog.set_markup(msg)
+        esc = cgi.escape(msg)
+        dialog.set_markup(esc)
         dialog.show_all()
         response = dialog.run()
         dialog.destroy()
