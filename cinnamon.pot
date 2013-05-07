@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-05-06 22:09+0100\n"
+"POT-Creation-Date: 2013-05-07 14:32+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -510,7 +510,7 @@ msgstr ""
 #: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:44
 #: files/usr/lib/cinnamon-settings/modules/cs_default.py:199
 #: files/usr/lib/cinnamon-settings/modules/cs_windows.py:92
-#: files/usr/lib/cinnamon-settings/bin/Spices.py:108
+#: files/usr/lib/cinnamon-settings/bin/Spices.py:109
 msgid "Close"
 msgstr ""
 
@@ -3039,30 +3039,30 @@ msgstr ""
 msgid "Display Expo view as a grid"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:64
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:259
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:65
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:260
 #, c-format
 msgid "Search %s"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:67
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:68
 msgid "Installed"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:137
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:476
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:481
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:138
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:477
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:482
 #, c-format
 msgid "Add to %s"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:139
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:483
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:140
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:484
 msgid "Apply theme"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:142
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:945
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:143
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:946
 #, c-format
 msgid ""
 "Some %s can be added multiple times.\n"
@@ -3070,98 +3070,98 @@ msgid ""
 "instance."
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:144
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:947
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:145
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:948
 #, c-format
 msgid "Click to enable this %s"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:146
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:949
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:147
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:950
 #, c-format
 msgid "Click to apply this %s"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:149
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:153
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:454
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:461
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:150
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:154
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:455
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:462
 msgid "Configure"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:151
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:155
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:152
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:156
 #, c-format
 msgid "Configure this %s"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:158
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:159
 msgid "Restore to default"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:160
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:161
 msgid "Restore default theme"
-msgstr ""
-
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:168
-#, c-format
-msgid "All %s"
 msgstr ""
 
 #: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:169
 #, c-format
-msgid "Active %s"
+msgid "All %s"
 msgstr ""
 
 #: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:170
 #, c-format
+msgid "Active %s"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:171
+#, c-format
 msgid "Inactive %s"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:179
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:180
 msgid "Show"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:229
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:230
 msgid "Get more online"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:237
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:238
 #: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/cinnamon-add-panel-launcher.py:138
 msgid "Name"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:238
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:239
 msgid "Most popular"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:239
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:240
 msgid "Latest"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:250
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:251
 msgid "Sort by"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:331
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:332
 msgid "  Install or update selected"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:335
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:336
 msgid "Refresh list"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:390
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:391
 #, c-format
 msgid "This %s is read-only, and cannot be uninstalled"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:398
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:399
 #, c-format
 msgid "This %s is currently active."
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:400
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:401
 #, c-format
 msgid ""
 "\n"
@@ -3169,66 +3169,66 @@ msgid ""
 "Instance count: %d"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:416
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:417
 #, c-format
 msgid "An update is available for this %s"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:418
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:419
 #, c-format
 msgid "This %s is installed and up-to-date"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:469
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:470
 #, c-format
 msgid "Remove from %s"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:488
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:489
 msgid "Uninstall"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:571
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:581
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:572
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:582
 msgid "Action"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:609
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:610
 msgid "Unmark"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:615
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:616
 msgid "Mark for upgrade"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:617
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:618
 msgid "Mark for installation"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:621
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:622
 msgid "More info"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:762
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:763
 #, c-format
 msgid ""
 "One or more active %s may have been updated.  You probably need to restart "
 "Cinnamon for the changes to take effect"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:818
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:819
 #, c-format
 msgid ""
 "There are multiple instances of this %s, do you want to remove them all?\n"
 "\n"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:839
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:840
 #, c-format
 msgid "Are you sure you want to completely remove %s?"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:913
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:914
 #, c-format
 msgid ""
 "This operation will update %d installed %s.\n"
@@ -3236,24 +3236,24 @@ msgid ""
 "Do you want to continue?"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:925
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:926
 #, c-format
 msgid "  %d updates available!"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:927
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:928
 #, c-format
 msgid "  %d update available!"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:956
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:957
 #, c-format
 msgid ""
 "\n"
 "This %s does not support multiple instances."
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:958
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:959
 #, c-format
 msgid ""
 "\n"
@@ -3266,64 +3266,56 @@ msgid ""
 "that color"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/Spices.py:103
+#: files/usr/lib/cinnamon-settings/bin/Spices.py:104
 msgid "Applet info"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/Spices.py:106
+#: files/usr/lib/cinnamon-settings/bin/Spices.py:107
 msgid "Select and Close"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/Spices.py:247
+#: files/usr/lib/cinnamon-settings/bin/Spices.py:248
 #, c-format
 msgid "Refreshing %s index..."
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/Spices.py:278
+#: files/usr/lib/cinnamon-settings/bin/Spices.py:279
 msgid ""
 "Something went wrong with the spices download.  Please try refreshing the "
 "list again."
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/Spices.py:281
+#: files/usr/lib/cinnamon-settings/bin/Spices.py:282
 #, c-format
 msgid "Refreshing %s cache..."
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/Spices.py:382
-msgid "Updating"
-msgstr ""
-
-#: files/usr/lib/cinnamon-settings/bin/Spices.py:384
-msgid "Installing"
-msgstr ""
-
-#: files/usr/lib/cinnamon-settings/bin/Spices.py:392
-#: files/usr/lib/cinnamon-settings/bin/Spices.py:419
+#: files/usr/lib/cinnamon-settings/bin/Spices.py:389
+#: files/usr/lib/cinnamon-settings/bin/Spices.py:416
 #, c-format
-msgid "%s %s..."
+msgid "Installing %s..."
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/Spices.py:415
+#: files/usr/lib/cinnamon-settings/bin/Spices.py:412
 #, c-format
 msgid "Installing translations for %s..."
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/Spices.py:421
+#: files/usr/lib/cinnamon-settings/bin/Spices.py:418
 #, c-format
 msgid ""
 "Please enter your password to install the required settings schema for %s"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/Spices.py:429
+#: files/usr/lib/cinnamon-settings/bin/Spices.py:426
 #, c-format
 msgid ""
 "Could not install the settings schema for %s.  You will have to perform this "
 "step yourself."
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/Spices.py:454
-#: files/usr/lib/cinnamon-settings/bin/Spices.py:494
+#: files/usr/lib/cinnamon-settings/bin/Spices.py:452
+#: files/usr/lib/cinnamon-settings/bin/Spices.py:501
 #, c-format
 msgid ""
 "An error occurred during installation or updating.  You may wish to report "
@@ -3332,35 +3324,35 @@ msgid ""
 "If this was an update, the previous installation is unchanged"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/Spices.py:504
+#: files/usr/lib/cinnamon-settings/bin/Spices.py:511
 #, c-format
 msgid "Uninstalling %s..."
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/Spices.py:511
+#: files/usr/lib/cinnamon-settings/bin/Spices.py:518
 #, c-format
 msgid "Please enter your password to remove the settings schema for %s"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/Spices.py:518
+#: files/usr/lib/cinnamon-settings/bin/Spices.py:525
 #, c-format
 msgid ""
 "Could not remove the settings schema for %s.  You will have to perform this "
 "step yourself.  This is not a critical error."
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/Spices.py:537
+#: files/usr/lib/cinnamon-settings/bin/Spices.py:544
 #, c-format
 msgid "Problem uninstalling %s.  You may need to manually remove it."
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/Spices.py:599
+#: files/usr/lib/cinnamon-settings/bin/Spices.py:606
 msgid ""
 "An error occurred while trying to access the server.  Please try again in a "
 "little while."
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/Spices.py:692
+#: files/usr/lib/cinnamon-settings/bin/Spices.py:699
 #, c-format
 msgid ""
 "\n"

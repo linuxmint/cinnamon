@@ -461,8 +461,8 @@ class Spice_Harvester:
                 zip = zipfile.ZipFile(filename)
                 zip.extractall(dirname)
 
-                # Check dir name - it may or may not be the same as the theme 'name' from our spices data
-                # Regardless, this will end up being the installed theme's name, whether it matched or not
+                # Check dir name - it may or may not be the same as the theme name from our spices data
+                # Regardless, this will end up being the installed theme name, whether it matched or not
                 temp_path = os.path.join(dirname, title)
                 if not os.path.exists(temp_path):
                     title = os.listdir(dirname)[0] # We assume only a single folder, the theme name
