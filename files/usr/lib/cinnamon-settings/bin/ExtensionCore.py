@@ -16,6 +16,7 @@ try:
     import json
     from gi.repository import Gio, Gtk, GObject, Gdk, GdkPixbuf, Pango, GLib
     import dbus
+    import cgi
     import subprocess
 except Exception, detail:
     print detail
@@ -1206,7 +1207,8 @@ class ExtensionSidePage (SidePage):
                     Gtk.ButtonsType.YES_NO,
                     None)
         dialog.set_default_size(400, 200)
-        dialog.set_markup(msg)
+        esc = cgi.escape(msg)
+        dialog.set_markup(esc)
         dialog.show_all()
         response = dialog.run()
         dialog.destroy()
@@ -1214,7 +1216,8 @@ class ExtensionSidePage (SidePage):
 
     def show_info(self, msg):
         dialog = Gtk.MessageDialog(None, Gtk.DialogFlags.MODAL, Gtk.MessageType.INFO, Gtk.ButtonsType.OK, None)
-        dialog.set_markup(msg)
+        esc = cgi.escape(msg)
+        dialog.set_markup(esc)
         dialog.show_all()
         response = dialog.run()
         dialog.destroy()

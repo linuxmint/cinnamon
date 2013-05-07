@@ -20,6 +20,7 @@ try:
     import zipfile
     import string
     import shutil
+    import cgi
     import subprocess
 except Exception, detail:
     print detail
@@ -84,7 +85,7 @@ class Spice_Harvester:
         self.progress_window = self.builder.get_object("progress_window")
         self.progress_button_close = self.builder.get_object("btnProgressClose")
         self.progress_button_abort = self.builder.get_object("btnProgressAbort")
-
+        self.progress_window.connect("delete-event", self.on_progress_close)
         self.progresslabel = self.builder.get_object('progresslabel')
         self.progressbar = self.builder.get_object("progressbar")
         self.progressbar.set_text('')
@@ -353,6 +354,7 @@ class Spice_Harvester:
             success = self.install(uuid, is_update, is_active)
             need_restart = need_restart or (is_update and is_active and success)
         self.progress_window.hide()
+        self.abort_download = False
         if callable(onFinished):
             try:
                 onFinished(need_restart)
@@ -451,7 +453,8 @@ class Spice_Harvester:
                     os.remove(filename)
                 except:
                     pass
-                self.errorMessage(_("An error occurred during installation or updating.  You may wish to report this incident to the developer of %s.\n\nIf this was an update, the previous installation is unchanged") % (uuid), str(detail))
+                if not self.abort_download:
+                    self.errorMessage(_("An error occurred during installation or updating.  You may wish to report this incident to the developer of %s.\n\nIf this was an update, the previous installation is unchanged") % (uuid), str(detail))
                 return False
         else:
             fd, filename = tempfile.mkstemp()
@@ -499,7 +502,8 @@ class Spice_Harvester:
                     obj = uuid
                 else:
                     obj = title
-                self.errorMessage(_("An error occurred during installation or updating.  You may wish to report this incident to the developer of %s.\n\nIf this was an update, the previous installation is unchanged") % (obj), str(detail))
+                if not self.abort_download:
+                    self.errorMessage(_("An error occurred during installation or updating.  You may wish to report this incident to the developer of %s.\n\nIf this was an update, the previous installation is unchanged") % (obj), str(detail))
                 return False
 
         self.progress_button_close.set_sensitive(True)
@@ -594,7 +598,7 @@ class Spice_Harvester:
 
     def download(self, outfd, outfile):
         url = self.download_url
-        
+        self.progress_button_abort.set_sensitive(True)
         try:
             self.url_retrieve(url, outfd, self.reporthook)
         except KeyboardInterrupt:
@@ -698,7 +702,12 @@ class Spice_Harvester:
         markup = msg
         if detail is not None:
             markup += _("\n\nDetails:  %s") % (str(detail))
-        dialog.set_markup(markup)
+        esc = cgi.escape(markup)
+        dialog.set_markup(esc)
         dialog.show_all()
         response = dialog.run()
         dialog.destroy()
+
+    def on_progress_close(self, widget, event):
+        self.abort_download = True
+        return widget.hide_on_delete()
