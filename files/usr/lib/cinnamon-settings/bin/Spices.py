@@ -20,6 +20,7 @@ try:
     import zipfile
     import string
     import shutil
+    import cgi
     import subprocess
 except Exception, detail:
     print detail
@@ -84,7 +85,7 @@ class Spice_Harvester:
         self.progress_window = self.builder.get_object("progress_window")
         self.progress_button_close = self.builder.get_object("btnProgressClose")
         self.progress_button_abort = self.builder.get_object("btnProgressAbort")
-
+        self.progress_window.connect("delete-event", self.on_progress_close)
         self.progresslabel = self.builder.get_object('progresslabel')
         self.progressbar = self.builder.get_object("progressbar")
         self.progressbar.set_text('')
@@ -353,6 +354,7 @@ class Spice_Harvester:
             success = self.install(uuid, is_update, is_active)
             need_restart = need_restart or (is_update and is_active and success)
         self.progress_window.hide()
+        self.abort_download = False
         if callable(onFinished):
             try:
                 onFinished(need_restart)
@@ -378,18 +380,13 @@ class Spice_Harvester:
         #print "Start downloading and installation"
         title = self.index_cache[uuid]['name']
 
-        if is_update:
-            verb = _("Updating")
-        else:
-            verb = _("Installing")
-
         self.download_url = URL_SPICES_HOME + self.index_cache[uuid]['file'];
         self.current_uuid = uuid
 
         self.progress_button_close.set_sensitive(False)
         self.progress_window.show()        
 
-        self.progresslabel.set_text(_("%s %s...") % (verb, title))
+        self.progresslabel.set_text(_("Installing %s...") % (title))
         self.progressbar.set_fraction(0)
 
         edited_date = self.index_cache[uuid]['last_edited']
@@ -416,7 +413,7 @@ class Spice_Harvester:
                            rec_mkdir(this_locale_dir)
                            #print "/usr/bin/msgfmt -c %s -o %s" % (os.path.join(dest, file.filename), os.path.join(this_locale_dir, '%s.mo' % uuid))
                            subprocess.call(["msgfmt", "-c", os.path.join(dirname, file.filename), "-o", os.path.join(this_locale_dir, '%s.mo' % uuid)])
-                           self.progresslabel.set_text(_("%s %s...") % (verb, title))
+                           self.progresslabel.set_text(_("Installing %s...") % (title))
                     elif "gschema.xml" in file.filename:
                         sentence = _("Please enter your password to install the required settings schema for %s") % (uuid)
                         if os.path.exists("/usr/bin/gksu") and os.path.exists("/usr/lib/cinnamon-settings/bin/installSchema.py"):
@@ -451,7 +448,8 @@ class Spice_Harvester:
                     os.remove(filename)
                 except:
                     pass
-                self.errorMessage(_("An error occurred during installation or updating.  You may wish to report this incident to the developer of %s.\n\nIf this was an update, the previous installation is unchanged") % (uuid), str(detail))
+                if not self.abort_download:
+                    self.errorMessage(_("An error occurred during installation or updating.  You may wish to report this incident to the developer of %s.\n\nIf this was an update, the previous installation is unchanged") % (uuid), str(detail))
                 return False
         else:
             fd, filename = tempfile.mkstemp()
@@ -459,24 +457,32 @@ class Spice_Harvester:
             f = os.fdopen(fd, 'wb')
             try:
                 self.download(f, filename)
-                dest = os.path.join(self.install_folder, title, "cinnamon")
+                dest = self.install_folder
                 zip = zipfile.ZipFile(filename)
-                zip.extractall(dirname, self.get_members(zip))
+                zip.extractall(dirname)
+
+                # Check dir name - it may or may not be the same as the theme 'name' from our spices data
+                # Regardless, this will end up being the installed theme's name, whether it matched or not
+                temp_path = os.path.join(dirname, title)
+                if not os.path.exists(temp_path):
+                    title = os.listdir(dirname)[0] # We assume only a single folder, the theme name
+                    temp_path = os.path.join(dirname, title)
 
                 # Test for correct folder structure - look for cinnamon.css
-                file = open(os.path.join(dirname, "cinnamon.css"), 'r')
+                file = open(os.path.join(temp_path, "cinnamon", "cinnamon.css"), 'r')
                 file.close()
 
                 md = {}
                 md["last-edited"] = edited_date
                 md["uuid"] = uuid
                 raw_meta = json.dumps(md, indent=4)
-                file = open(os.path.join(dirname, "metadata.json"), 'w+')
+                file = open(os.path.join(temp_path, "cinnamon", "metadata.json"), 'w+')
                 file.write(raw_meta)
                 file.close()
-                if os.path.exists(dest):
-                    shutil.rmtree(dest)
-                shutil.copytree(dirname, dest)
+                final_path = os.path.join(dest, title)
+                if os.path.exists(final_path):
+                    shutil.rmtree(final_path)
+                shutil.copytree(temp_path, final_path)
                 shutil.rmtree(dirname)
                 os.remove(filename)
 
@@ -491,7 +497,8 @@ class Spice_Harvester:
                     obj = uuid
                 else:
                     obj = title
-                self.errorMessage(_("An error occurred during installation or updating.  You may wish to report this incident to the developer of %s.\n\nIf this was an update, the previous installation is unchanged") % (obj), str(detail))
+                if not self.abort_download:
+                    self.errorMessage(_("An error occurred during installation or updating.  You may wish to report this incident to the developer of %s.\n\nIf this was an update, the previous installation is unchanged") % (obj), str(detail))
                 return False
 
         self.progress_button_close.set_sensitive(True)
@@ -586,7 +593,7 @@ class Spice_Harvester:
 
     def download(self, outfd, outfile):
         url = self.download_url
-        
+        self.progress_button_abort.set_sensitive(True)
         try:
             self.url_retrieve(url, outfd, self.reporthook)
         except KeyboardInterrupt:
@@ -690,7 +697,12 @@ class Spice_Harvester:
         markup = msg
         if detail is not None:
             markup += _("\n\nDetails:  %s") % (str(detail))
-        dialog.set_markup(markup)
+        esc = cgi.escape(markup)
+        dialog.set_markup(esc)
         dialog.show_all()
         response = dialog.run()
         dialog.destroy()
+
+    def on_progress_close(self, widget, event):
+        self.abort_download = True
+        return widget.hide_on_delete()
