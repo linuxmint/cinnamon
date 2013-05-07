@@ -380,18 +380,13 @@ class Spice_Harvester:
         #print "Start downloading and installation"
         title = self.index_cache[uuid]['name']
 
-        if is_update:
-            verb = _("Updating")
-        else:
-            verb = _("Installing")
-
         self.download_url = URL_SPICES_HOME + self.index_cache[uuid]['file'];
         self.current_uuid = uuid
 
         self.progress_button_close.set_sensitive(False)
         self.progress_window.show()        
 
-        self.progresslabel.set_text(_("%s %s...") % (verb, title))
+        self.progresslabel.set_text(_("Installing %s...") % (title))
         self.progressbar.set_fraction(0)
 
         edited_date = self.index_cache[uuid]['last_edited']
@@ -418,7 +413,7 @@ class Spice_Harvester:
                            rec_mkdir(this_locale_dir)
                            #print "/usr/bin/msgfmt -c %s -o %s" % (os.path.join(dest, file.filename), os.path.join(this_locale_dir, '%s.mo' % uuid))
                            subprocess.call(["msgfmt", "-c", os.path.join(dirname, file.filename), "-o", os.path.join(this_locale_dir, '%s.mo' % uuid)])
-                           self.progresslabel.set_text(_("%s %s...") % (verb, title))
+                           self.progresslabel.set_text(_("Installing %s...") % (title))
                     elif "gschema.xml" in file.filename:
                         sentence = _("Please enter your password to install the required settings schema for %s") % (uuid)
                         if os.path.exists("/usr/bin/gksu") and os.path.exists("/usr/lib/cinnamon-settings/bin/installSchema.py"):
