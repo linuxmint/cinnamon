@@ -408,6 +408,7 @@ st_scroll_view_dispose (GObject *object)
 
   if (priv->setting_connect_id > 0) {
     g_signal_handler_disconnect (priv->settings, priv->setting_connect_id);
+    priv->setting_connect_id = 0;
   }
 
   g_signal_handlers_disconnect_by_func (ST_SCROLL_VIEW (object), motion_event_cb, ST_SCROLL_VIEW (object));
