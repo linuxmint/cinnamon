@@ -756,7 +756,7 @@ class ExtensionSidePage (SidePage):
     def install_finished(self, need_restart):
         for row in self.gm_model:
             self.gm_model.set_value(row.iter, 2, 0)
-
+        self.install_button.set_sensitive(False)
         self.install_list = []
         self.load_extensions()
         if need_restart:
