@@ -463,21 +463,28 @@ class Spice_Harvester:
                 zip = zipfile.ZipFile(filename)
                 zip.extractall(dirname)
 
+                # Check dir name - it may or may not be the same as the theme 'name' from our spices data
+                # Regardless, this will end up being the installed theme's name, whether it matched or not
+                temp_path = os.path.join(dirname, title)
+                if not os.path.exists(temp_path):
+                    title = os.listdir(dirname)[0] # We assume only a single folder, the theme name
+                    temp_path = os.path.join(dirname, title)
+
                 # Test for correct folder structure - look for cinnamon.css
-                file = open(os.path.join(dirname, title, "cinnamon", "cinnamon.css"), 'r')
+                file = open(os.path.join(temp_path, "cinnamon", "cinnamon.css"), 'r')
                 file.close()
 
                 md = {}
                 md["last-edited"] = edited_date
                 md["uuid"] = uuid
                 raw_meta = json.dumps(md, indent=4)
-                file = open(os.path.join(dirname, title, "cinnamon", "metadata.json"), 'w+')
+                file = open(os.path.join(temp_path, "cinnamon", "metadata.json"), 'w+')
                 file.write(raw_meta)
                 file.close()
-                labeled_path = os.path.join(dest, title)
-                if os.path.exists(labeled_path):
-                    shutil.rmtree(labeled_path)
-                shutil.copytree(os.path.join(dirname, title), labeled_path)
+                final_path = os.path.join(dest, title)
+                if os.path.exists(final_path):
+                    shutil.rmtree(final_path)
+                shutil.copytree(temp_path, final_path)
                 shutil.rmtree(dirname)
                 os.remove(filename)
 
