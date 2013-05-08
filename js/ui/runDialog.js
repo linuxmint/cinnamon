@@ -226,6 +226,7 @@ __proto__: ModalDialog.ModalDialog.prototype,
 
         this._completionBox = new St.Label({style_class: 'run-dialog-completion-box'});
         this.contentLayout.add(this._completionBox);
+        this._completionSelected = 0;
 
         this._errorBox = new St.BoxLayout({ style_class: 'run-dialog-error-box' });
 
@@ -287,6 +288,7 @@ __proto__: ModalDialog.ModalDialog.prototype,
             }
             if (symbol == Clutter.Tab) {
                 let text = o.get_text();
+                text = text.slice(0, text.lastIndexOf(o.get_selection())); //Don't include completion
                 let prefix;
                 if (text.lastIndexOf(' ') == -1)
                     prefix = text;
@@ -301,7 +303,7 @@ __proto__: ModalDialog.ModalDialog.prototype,
                 }
                 if (!postfix && completions.length > 0 && prefix.length > 2 &&
                     global.settings.get_boolean(SHOW_COMPLETIONS_KEY)) {
-                    this._completionBox.set_text(completions.join("\n"));
+                    this._showCompletions(completions, prefix.length);
                     this._completionBox.show();
                 }
                 return true;
@@ -320,13 +322,36 @@ __proto__: ModalDialog.ModalDialog.prototype,
                         prefix = text.substr(text.lastIndexOf(' ') + 1);
                     let [postfix, completions] = this._getCompletion(prefix);
                     if (completions.length > 0) {
-                        this._completionBox.set_text(completions.join("\n"));
+                        this._completionSelected = 0;
+                        this._completionBox.text = "";
+                        this._showCompletions(completions, prefix.length);
                     }
                 }));
                 return false;
             }
             return false;
         }));
+    },
+
+    _showCompletions: function(completions, startpos) {
+        if (completions.join("\n") + "\n" == this._completionBox.text) {
+            this._completionSelected ++;
+            this._completionSelected %= completions.length;
+        } else {
+            this._completionSelected = 0;
+        }
+        
+        let text = "";
+        for (let i in completions) {
+            if (i == this._completionSelected) {
+                text = text + "<b>" + completions[i] + "</b>" + "\n";
+                this._entryText.set_text(completions[i]);
+            } else {
+                text = text + completions[i] + "\n";
+            }
+        }
+        this._completionBox.clutter_text.set_markup(text);
+        this._entryText.set_selection(startpos, -1);
     },
 
     _getCompletion : function(text) {
