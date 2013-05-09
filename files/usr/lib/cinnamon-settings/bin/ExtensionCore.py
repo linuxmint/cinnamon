@@ -43,8 +43,8 @@ class ExtensionSidePage (SidePage):
         SidePage.__init__(self, name, icon, keywords, advanced, content_box, -1)
         self.collection_type = collection_type
         self.target = target
-        self.noun = noun.decode("utf-8")
-        self.pl_noun = pl_noun.decode("utf-8")
+        self.noun = str(noun)
+        self.pl_noun = str(pl_noun)
         self.themes = collection_type == "theme"
         self.icons = []
 
