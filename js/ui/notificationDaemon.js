@@ -220,7 +220,12 @@ NotificationDaemon.prototype = {
     NotifyAsync: function(params, invocation) {
         let [appName, replacesId, icon, summary, body, actions, hints, timeout] = params;
         let id;
-        
+
+        for (let hint in hints) {
+            // unpack the variants
+            hints[hint] = hints[hint].deep_unpack();
+        }
+
         let rewrites = rewriteRules[appName];
         if (rewrites) {
             for (let i = 0; i < rewrites.length; i++) {

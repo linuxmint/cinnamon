@@ -404,7 +404,7 @@ Player.prototype = {
                     cover.read_async(null, null, Lang.bind(this, this._onReadCover));
                 }
                 else {
-                    cover_path = decodeURIComponent(this._trackCoverFile;
+                    cover_path = decodeURIComponent(this._trackCoverFile);
                     cover_path = cover_path.replace("file://", "");
                     this._showCover(cover_path);
                 }
