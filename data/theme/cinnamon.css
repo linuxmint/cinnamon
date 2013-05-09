@@ -1292,7 +1292,6 @@ StScrollBar StButton#vhandle:hover {
 	padding-left: 7px;
 	padding-right: 7px;
 	padding-bottom: 7px;
-	transition-duration: 75;
 }
 .menu-category-button-greyed {
 	padding-top: 7px;
@@ -1313,7 +1312,6 @@ StScrollBar StButton#vhandle:hover {
 	background-gradient-end: rgba(255,255,255,0.08);
 	box-shadow: inset 0px 0px 1px 1px rgba(255,255,255,0.06);
 	border-radius: 4px;
-	transition-duration: 75;
 }
 .menu-category-button-label:ltr {
 	padding-left: 5px;
