@@ -403,7 +403,8 @@ function start() {
         Scripting.runPerfScript(module, perfOutput);
     }
     
-    workspace_names = global.settings.get_strv("workspace-name-overrides");  
+    workspace_names = global.settings.get_strv("workspace-name-overrides");
+    global.settings.connect("changed::workspace-name-overrides", onWorkspaceNameOverrideSettingChanged);
 
     global.screen.connect('notify::n-workspaces', _nWorkspacesChanged);
 
@@ -470,7 +471,7 @@ function _fillWorkspaceNames(index) {
     }
 }
 
-function _trimWorkspaceNames(index) {
+function _trimWorkspaceNames() {
     // trim empty or out-of-bounds names from the end.
     for (let i = workspace_names.length - 1;
             i >= 0 && (i >= nWorks || !workspace_names[i].length); --i)
@@ -518,6 +519,17 @@ function getWorkspaceName(index) {
     return wsName.length > 0 ?
         wsName :
         _makeDefaultWorkspaceName(index);
+}
+
+/**
+ * updateWorkspacenames:
+ * 
+ * updates the workspace names if changed in the settings backend
+ * 
+ */
+function onWorkspaceNameOverrideSettingChanged() {
+    workspace_names = global.settings.get_strv("workspace-name-overrides");
+    _trimWorkspaceNames();
 }
 
 /**
