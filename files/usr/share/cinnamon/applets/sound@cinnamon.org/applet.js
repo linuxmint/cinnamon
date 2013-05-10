@@ -99,8 +99,16 @@ const MediaServer2PlayerIFace = {
 
 /* global values */
 let icon_path = "/usr/share/cinnamon/theme/";
-let compatible_players = [ "clementine", "mpd", "exaile", "banshee", "rhythmbox", "rhythmbox3", "pragha", "quodlibet", "guayadeque", "amarok", "googlemusicframe", "xbmc", "noise", "xnoise", "gmusicbrowser", "spotify", "audacious", "vlc", "beatbox", "songbird", "pithos", "gnome-mplayer", "nuvolaplayer", "qmmp" ];
-let support_seek = [ "clementine", "banshee", "rhythmbox", "rhythmbox3", "pragha", "quodlibet", "amarok", "noise", "xnoise", "gmusicbrowser", "spotify", "vlc", "beatbox", "gnome-mplayer", "qmmp" ];
+let compatible_players = [
+    'clementine', 'mpd', 'exaile', 'banshee', 'rhythmbox', 'rhythmbox3',
+    'pragha', 'quodlibet', 'guayadeque', 'amarok', 'googlemusicframe', 'xbmc',
+    'noise', 'xnoise', 'gmusicbrowser', 'spotify', 'audacious', 'vlc',
+    'beatbox', 'songbird', 'pithos', 'gnome-mplayer', 'nuvolaplayer', 'qmmp',
+    'deadbeef'];
+let support_seek = [
+    'clementine', 'banshee', 'rhythmbox', 'rhythmbox3', 'pragha', 'quodlibet',
+    'amarok', 'noise', 'xnoise', 'gmusicbrowser', 'spotify', 'vlc', 'beatbox',
+    'gnome-mplayer', 'qmmp', 'deadbeef'];
 /* dummy vars for translation */
 let x = _("Playing");
 x = _("Paused");
@@ -283,7 +291,7 @@ ControlButton.prototype = {
             style_class: 'sound-button-icon',
         });
         this.button.set_child(this.icon);
-        this.actor.add_actor(this.button);        
+        this.actor.add_actor(this.button);
     },
     getActor: function() {
         return this.actor;
@@ -479,7 +487,7 @@ Player.prototype = {
                     this._setStatus(iface, value["playbackStatus"]);
                 if (value["metadata"])
                     this._setMetadata(sender, value["metadata"]);
-            } 
+            }
         }));
 
         this._mediaServerPlayer.connect('Seeked', Lang.bind(this, function(sender, value) {
@@ -515,7 +523,7 @@ Player.prototype = {
     _updatePositionSlider: function(position) {
         this._mediaServerPlayer.getCanSeek(Lang.bind(this, function(sender, canSeek) {
             this._canSeek = canSeek;
-            
+
             if (this._songLength == 0 || position == false)
                 this._canSeek = false
 
@@ -572,7 +580,7 @@ Player.prototype = {
             this._title.setLabel(metadata["xesam:title"].toString());
         else
             this._title.setLabel(_("Unknown Title"));
-        
+
         if (metadata["mpris:trackid"]) {
             this._trackObj = metadata["mpris:trackid"];
         }
