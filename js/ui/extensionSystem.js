@@ -64,7 +64,7 @@ function finishExtensionLoad(extension) {
 function onEnabledExtensionsChanged() {
     enabledExtensions = global.settings.get_strv(ENABLED_EXTENSIONS_KEY);
 
-    for(uuid in Extension.objects) {
+    for(let uuid in Extension.objects) {
         if(Extension.objects[uuid].type == Extension.Type.EXTENSION && enabledExtensions.indexOf(uuid) == -1)
             Extension.unloadExtension(uuid);
     }
