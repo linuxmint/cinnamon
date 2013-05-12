@@ -109,7 +109,10 @@ class SAModule:
         self.category = category
 
     def process (self):
-        return fileexists(self.name.split()[0])
+        for f in self.name.split():
+            if not fileexists(f):
+                return False
+        return True
 
 def fileexists(program):
 
