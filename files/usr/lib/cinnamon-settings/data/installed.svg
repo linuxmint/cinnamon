@@ -41,9 +41,9 @@
      inkscape:window-height="1005"
      id="namedview53"
      showgrid="true"
-     inkscape:zoom="2.4583334"
-     inkscape:cx="226.56471"
-     inkscape:cy="-12.167469"
+     inkscape:zoom="0.86915209"
+     inkscape:cx="643.02733"
+     inkscape:cy="125.37976"
      inkscape:window-x="0"
      inkscape:window-y="25"
      inkscape:window-maximized="1"
@@ -384,5 +384,21 @@
        d="m 12.307753,46.769233 c -0.0046,0.245059 0,0.497341 0,0.74359 0,19.712285 15.979964,35.692247 35.692247,35.692247 19.712283,0 35.692247,-15.979962 35.692247,-35.692247 0,-0.246249 0.0046,-0.498531 0,-0.74359 C 83.299871,66.141298 67.466034,81.717892 48,81.717892 c -19.466034,0 -35.299871,-15.576594 -35.692247,-34.948659 z"
        id="path3944"
        inkscape:connector-curvature="0" />
+    <rect
+       style="fill:#fafafa;fill-opacity:0.78125;stroke:none"
+       id="rect5888"
+       width="29.888857"
+       height="2.892004"
+       x="49.669792"
+       y="18.212381"
+       transform="matrix(0.71770582,0.69634644,-0.70129503,0.71287116,0,0)" />
+    <rect
+       style="fill:#fafafa;fill-opacity:0.78125;stroke:none"
+       id="rect5890"
+       width="2.4812651"
+       height="44.27108"
+       x="77.703194"
+       y="-33.542992"
+       transform="matrix(0.6294824,0.77701474,-0.69674171,0.71732209,0,0)" />
   </g>
 </svg>
