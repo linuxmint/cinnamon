@@ -172,11 +172,44 @@ function _initRecorder() {
     });
 }
 
+let _numberOfWorkspaceRows = 1;
+let _workspaceRowsTopDown = true;
+
+function getNumberOfWorkspaceRows() {
+    return _numberOfWorkspaceRows;
+}
+/*
+ * Calculates the current workspace geometry, based on the current number
+ * of workspace.
+ * 
+ * @return [num-columns, num-rows]
+ */
+function getWorkspaceGeometry() {
+    let nWorkspaces = global.screen.n_workspaces;
+    let nColumns = Math.ceil(nWorkspaces / _numberOfWorkspaceRows);
+    let nRows = Math.floor((nWorkspaces-1) / nColumns) + 1;
+    return [nColumns, nRows];
+}
+
+function getWorkspaceRowsTopDown() {
+    return _workspaceRowsTopDown;
+}
+
 function _initUserSession() {
     _initRecorder();
 
-    global.screen.override_workspace_layout(Meta.ScreenCorner.TOPLEFT, false, 1, -1);
+    let setupWorkspaceLayout = function() {
+        let enabled = global.settings.get_boolean('multiple-workspace-rows-enabled') || false;
+        _workspaceRowsTopDown = !enabled ? true : global.settings.get_boolean('workspace-rows-top-down');
+        _numberOfWorkspaceRows = !enabled ? 1 : (global.settings.get_int('number-workspace-rows') || 2);
+        global.screen.override_workspace_layout(
+            getWorkspaceRowsTopDown() ? Meta.ScreenCorner.TOPLEFT : Meta.ScreenCorner.BOTTOMLEFT, false, _numberOfWorkspaceRows, -1);
+    };
+    global.settings.connect('changed::number-workspace-rows', setupWorkspaceLayout);
+    global.settings.connect('changed::multiple-workspace-rows-enabled', setupWorkspaceLayout);
+    global.settings.connect('changed::workspace-rows-top-down', setupWorkspaceLayout);
 
+    setupWorkspaceLayout();
     ExtensionSystem.init();
 
     Meta.keybindings_set_custom_handler('panel-run-dialog', function() {
@@ -469,7 +502,15 @@ function _trimWorkspaceNames(index) {
 }
 
 function _makeDefaultWorkspaceName(index) {
-    return _("WORKSPACE") + " " + (index + 1).toString();
+    if (true || _numberOfWorkspaceRows < 2) {
+        return _("WORKSPACE %s").format(index + 1);
+    }
+    else {
+        let numCols = Math.ceil(global.screen.n_workspaces / _numberOfWorkspaceRows);
+        let row = Math.floor(index / numCols) + 1;
+        let col = (index % numCols) + 1;
+        return _("WORKSPACE %s:%s").format(row, col);
+    }
 }
 
 /**
@@ -1089,22 +1130,17 @@ function _globalKeyPressHandler(actor, event) {
     }
 
     switch (action) {
-        // left/right would effectively act as synonyms for up/down if we enabled them;
-        // but that could be considered confusing; we also disable them in the main view.
-        //
          case Meta.KeyBindingAction.WORKSPACE_LEFT:
-             wm.actionMoveWorkspaceLeft();
+             wm.switchWorkspace('switch-to-workspace-left');
              return true;
          case Meta.KeyBindingAction.WORKSPACE_RIGHT:
-             wm.actionMoveWorkspaceRight();
+             wm.switchWorkspace('switch-to-workspace-right');
              return true;
         case Meta.KeyBindingAction.WORKSPACE_UP:
-            overview.hide();   
-            expo.hide();                  
+             wm.switchWorkspace('switch-to-workspace-up');
             return true;
         case Meta.KeyBindingAction.WORKSPACE_DOWN:
-            overview.hide();
-            expo.hide();
+             wm.switchWorkspace('switch-to-workspace-down');
             return true;
         case Meta.KeyBindingAction.PANEL_RUN_DIALOG:
         case Meta.KeyBindingAction.COMMAND_2:

@@ -1058,7 +1058,7 @@ WorkspaceMonitor.prototype = {
     },
 
     _showWindowOverlay: function(clone, fade) {
-        if (this._slotWidth) {
+        if (this._slotWidth && !Main.overview.animationInProgress) {
             // This is a little messy and complicated because when we
             // start the fade-in we may not have done the final positioning
             // of the workspaces. (Tweener doesn't necessarily finish

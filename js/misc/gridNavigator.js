@@ -2,13 +2,17 @@
 const Lang = imports.lang;
 const Clutter = imports.gi.Clutter;
 
-function nextIndex(itemCount, numCols, currentIndex, symbol) {
+function nextIndex(itemCount, numCols, currentIndex, symbolIn, invertUpDown) {
     let result = -1;
+    let symbol = symbolIn;
+    let numRows = Math.ceil(itemCount/numCols);
+    if (invertUpDown && numRows > 1) {
+        if (symbolIn === Clutter.Down) symbol = Clutter.Up;
+        if (symbolIn === Clutter.Up) symbol = Clutter.Down;
+    }
     if (itemCount > 3 // grid navigation is not suited for a low item count
         && (symbol === Clutter.Down || symbol === Clutter.Up))
     {
-        let numRows = Math.ceil(itemCount/numCols);
-
         let curRow = Math.floor(currentIndex/numCols);
         let curCol = currentIndex % numCols;
 

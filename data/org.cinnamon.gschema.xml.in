@@ -331,8 +331,26 @@
     <key type="i" name="number-workspaces">
         <default>2</default>
         <_summary>Number of workspaces in Cinnamon session</_summary>
-        <_description>
-                Number of Workspaces</_description>
+        <_description>Number of Workspaces</_description>
+    </key>
+
+    <key type="b" name="multiple-workspace-rows-enabled">
+        <default>false</default>
+        <_summary>Enable multiple workspace rows</_summary>
+        <_description>Enable or disable having more than one row of workspaces</_description>
+    </key>
+
+    <key type="i" name="number-workspace-rows">
+        <default>2</default>
+        <range min="2" max="8" />
+        <_summary>Number of workspace rows</_summary>
+        <_description>Number of workspace rows, if multiple workspace rows enabled</_description>
+    </key>
+
+    <key type="b" name="workspace-rows-top-down">
+        <default>true</default>
+        <_summary>Enable top-down workspace rows</_summary>
+        <_description>Control whether the first workspace row is at the bottom or at the top, if multiple workspace rows enabled</_description>
     </key>
 
     <key name="overview-corner" type="as">
@@ -425,6 +443,14 @@
       <summary>Display the Expo view as a grid</summary>
       <description>
         When enabled the Expo view will be displayed as a grid.
+      </description>
+    </key>
+
+    <key name="expo-always-scale-mode" type="b">
+      <default>false</default>
+      <summary>Always show all Expo workspace thumbnails in Scale mode</summary>
+      <description>
+        When enabled both the selected and the non-selected workspaces will be shown in Scale mode.
       </description>
     </key>
 
