@@ -23,6 +23,10 @@ MyApplet.prototype = {
 
     width_changed: function() {
         this.actor.width = this.width;
+    },
+
+    on_applet_removed_from_panel: function() {
+        this.settings.finalize();
     }
 };
 
