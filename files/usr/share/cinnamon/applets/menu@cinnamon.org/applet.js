@@ -916,6 +916,7 @@ MyApplet.prototype = {
             if (!this.prevent_open)
                 this.menu.toggle_with_options(false);
         }
+        return true;
     },
 
     _onSourceKeyPress: function(actor, event) {
