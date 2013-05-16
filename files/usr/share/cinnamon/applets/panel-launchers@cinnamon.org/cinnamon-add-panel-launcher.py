@@ -92,6 +92,7 @@ class Handler:
     def onIconPicked(self, *args):
         global iconPath, iface
         iconPath = iface.icon_picker.get_uri()[7:]
+        iconPath = iconPath.strip().replace("%20", " ")
         iface.icon_path.set_text(iconPath)
         updatePreviewIcon(iconPath)
         
