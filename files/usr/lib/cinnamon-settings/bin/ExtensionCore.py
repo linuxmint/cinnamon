@@ -140,7 +140,7 @@ class ExtensionSidePage (SidePage):
             self.instanceButton = Gtk.Button(_("Apply theme"))
         self.instanceButton.connect("clicked", lambda x: self._add_another_instance())
         if self.collection_type in ("desklet", "applet"):
-            self.instanceButton.set_tooltip_text(_("Some %s can be added multiple times.\nUse this to add another instance. Use panel edit mode to remove a single instance.").decode("utf-8") % (self.pl_noun))
+            self.instanceButton.set_tooltip_text(_("Some %s can be added multiple times.\n Use this to add another instance. Use panel edit mode to remove a single instance.").decode("utf-8") % (self.pl_noun))
         elif self.collection_type == "extension":
             self.instanceButton.set_tooltip_text(_("Click to enable this %s").decode("utf-8") % (self.noun))
         else:
