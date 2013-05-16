@@ -13,7 +13,7 @@ MyApplet.prototype = {
 
         this.settings = new Settings.AppletSettings(this, "spacer@cinnamon.org", this.instance_id);
 
-        this.settings.bindProperty(Settings.BindingDirection.ONE_WAY,  // Setting type
+        this.settings.bindProperty(Settings.BindingDirection.IN,  // Setting type
                                  "width",             // The setting key
                                  "width",             // The property to manage (this.width)
                                  this.width_changed,  // Callback when value changes
@@ -22,7 +22,11 @@ MyApplet.prototype = {
         },
 
     width_changed: function() {
-        this.actor.style = "width:" + this.width + "px";
+        this.actor.width = this.width;
+    },
+
+    on_applet_removed_from_panel: function() {
+        this.settings.finalize();
     }
 };
 
