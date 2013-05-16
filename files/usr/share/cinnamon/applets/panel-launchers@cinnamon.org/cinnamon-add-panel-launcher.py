@@ -98,6 +98,7 @@ class Handler:
     def onAppPicked(self, *args):
         global appPath, iface
         appPath = iface.app_picker.get_uri()[7:]
+        appPath = appPath.strip().replace(" ", "\ ").replace("%20", "\ ")
         iface.file_path.set_text(appPath)
 
     def onNameChanged(self, *args):
