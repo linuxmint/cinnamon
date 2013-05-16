@@ -908,9 +908,14 @@ MyApplet.prototype = {
         Util.spawnCommandLine("cinnamon-menu-editor");
     },
     
-    on_click_down: function(event) {
-        if (!this.prevent_open)
-            this.menu.toggle_with_options(false);
+    on_click_down: function(actor, event) {
+        if (event.get_button()==1) {
+            if (this._applet_context_menu.isOpen) {
+                this._applet_context_menu.toggle(); 
+            }
+            if (!this.prevent_open)
+                this.menu.toggle_with_options(false);
+        }
     },
 
     _onSourceKeyPress: function(actor, event) {
