@@ -5,6 +5,7 @@ const GLib = imports.gi.GLib;
 const Lang = imports.lang;
 const Mainloop = imports.mainloop;
 const St = imports.gi.St;
+const Tweener = imports.ui.tweener;
 
 const Desklet = imports.ui.desklet;
 const PopupMenu = imports.ui.popupMenu;
@@ -102,7 +103,34 @@ MyDesklet.prototype = {
         this._icon = null;
     },
 
+    _animateIcon: function(step){
+        if (step>=3) return;
+        Tweener.addTween(this._icon,
+                         { width: 40,
+                           height: 40,
+                           time: 0.2,
+                           transition: 'easeOutQuad',
+                           onComplete: function(){
+                               Tweener.addTween(this._icon,
+                                                { width: 48,
+                                                  height: 48,
+                                                  time: 0.2,
+                                                  transition: 'easeOutQuad',
+                                                  onComplete: function(){
+                                                      this._animateIcon(step+1);
+                                                  },
+                                                  onCompleteScope: this
+                                                });
+                           },
+                           onCompleteScope: this
+                         });
+    },
+
     _launch: function() {
+        let allocation = this.content.get_allocation_box();
+        this.content.width = allocation.x2 - allocation.x1;
+        this.content.height = allocation.y2 - allocation.y1;
+        this._animateIcon(0);
         if (this._app.open_new_window)
             this._app.open_new_window(-1);
         else
