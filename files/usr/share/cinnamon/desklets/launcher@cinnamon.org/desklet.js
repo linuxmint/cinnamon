@@ -24,13 +24,14 @@ MyDesklet.prototype = {
         this._launcherSettings = new Gio.Settings({schema: 'org.cinnamon.desklets.launcher'});
 
         this._onSettingsChanged();
+        this._removing = false;
 
         this._menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
         this._menu.addAction(_("Add new launcher"), function() {
                                  Util.spawnCommandLine("/usr/share/cinnamon/desklets/launcher@cinnamon.org/editorDialog.py");
                              });
         this._menu.addAction(_("Edit launcher"), Lang.bind(this, function() {
-                                                               Util.spawnCommandLine("/usr/share/cinnamon/desklets/launcher@cinnamon.org/editorDialog.py " + this.instanceId);
+                                                               Util.spawnCommandLine("/usr/share/cinnamon/desklets/launcher@cinnamon.org/editorDialog.py " + this.instance_id);
                                                            }));
 
         this._settingsSignalId = this._launcherSettings.connect('changed::launcher-list', Lang.bind(this, this._onSettingsChanged));
@@ -43,7 +44,7 @@ MyDesklet.prototype = {
         let appSys = Cinnamon.AppSystem.get_default();
         let desktopFile, app;
         for (let i in settingsList) {
-            if (settingsList[i].split(":")[0] == this.instanceId){
+            if (settingsList[i].split(":")[0] == this.instance_id){
                 desktopFile = settingsList[i].split(":")[1];
                 app = appSys.lookup_app(desktopFile);
                 if (!app) app = appSys.lookup_settings_app(desktopFile);
@@ -53,8 +54,6 @@ MyDesklet.prototype = {
         }
 
         // No desktop file found; Default to 'cinnamon-settings.desktop'
-        settingsList.push(this.instanceId + ':cinnamon-settings.desktop');
-        this._launcherSettings.set_strv('launcher-list', settingsList);
         return appSys.lookup_app('cinnamon-settings.desktop');
     },
 
@@ -69,18 +68,38 @@ MyDesklet.prototype = {
         this._launch();
     },
 
+    on_desklet_removed: function() {
+        this._removing = true;
+        let settingsList = this._launcherSettings.get_strv('launcher-list');
+        let found = false;
+        let i;
+        for (i = 0; i < settingsList.length; i++) {
+            if (settingsList[i].split(":")[0] == this.instance_id) {
+                found = true;
+                break;
+            }
+        }
+        if (found) {
+            settingsList.splice(i, 1);
+            this._launcherSettings.set_strv('launcher-list', settingsList);
+        }
+
+        this._launcherSettings.disconnect(this._settingsSignalId);
+        this._launcherSettings = null;
+    },
+
     _onSettingsChanged: function() {
-        this._app = this._getApp();
-        this._icon = this._getIconActor();
-        this.setContent(this._icon);
-        this.setHeader(this._app.get_name());
+        if (!this._removing) {
+            this._app = this._getApp();
+            this._icon = this._getIconActor();
+            this.setContent(this._icon);
+            this.setHeader(this._app.get_name());
+        }
     },
 
     _destroy: function() {
         this._app = null;
         this._icon = null;
-        this._launcherSettings.disconnect(this._settingsSignalId);
-        this._launcherSettings = null;
     },
 
     _launch: function() {
