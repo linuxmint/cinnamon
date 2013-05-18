@@ -23,7 +23,7 @@ class EditorDialog:
 
         if not desklet_id == -1:
             launcher_list = self.launcher_settings.get_strv(LAUNCHER_KEY)
-            launcher = None
+            launcher = ""
             for item in launcher_list:
                 if item.split(":")[0] == str(self.desklet_id):
                     launcher = item.split(":")[1][:-8]
@@ -124,7 +124,7 @@ class EditorDialog:
             settings.set_int("next-desklet-id", self.desklet_id + 1)
 
             enabled_desklets = settings.get_strv("enabled-desklets")
-            enabled_desklets.append("launcher@cinnamon.org:%s:0:0" % self.desklet_id)
+            enabled_desklets.append("launcher@cinnamon.org:%s:0:100" % self.desklet_id)
 
         launcher_list = self.launcher_settings.get_strv(LAUNCHER_KEY)
 
