@@ -782,6 +782,11 @@ MyApplet.prototype = {
                 this.showPlaces = global.settings.get_boolean("menu-show-places");
                 this._refreshPlacesAndRecent();
             }));
+
+            global.settings.connect('changed::panel-edit-mode', Lang.bind(this, function() {
+                this.prevent_open = global.settings.get_boolean('panel-edit-mode');
+            }));
+
             let updateActivateOnHover = Lang.bind(this, function() {
                 if (this._openMenuId) {
                     this.actor.disconnect(this._openMenuId);
@@ -803,7 +808,9 @@ MyApplet.prototype = {
             global.settings.connect("changed::menu-icon", Lang.bind(this, function() {
                 this._updateIcon();
             })); 
-            
+
+            this.actor.connect("button-press-event", Lang.bind(this, this.on_click_down));
+
             this.set_applet_label(_("Menu"));                                            
             let menuLabel = global.settings.get_string("menu-text");
             if (menuLabel != "Menu") {
@@ -820,7 +827,7 @@ MyApplet.prototype = {
                                              icon_type: St.IconType.SYMBOLIC });
             this._searchIconClickedId = 0;
             this._applicationsButtons = new Array();
-	    this._applicationsButtonFromApp = new Object();
+            this._applicationsButtonFromApp = new Object();
             this._favoritesButtons = new Array();
             this._placesButtons = new Array();
             this._transientButtons = new Array();
@@ -883,7 +890,8 @@ MyApplet.prototype = {
     },
 
     openMenu: function() {
-        this.menu.open(false);
+        if (!this.prevent_open)
+            this.menu.open(false);
     },
 
     on_orientation_changed: function (orientation) {
@@ -900,10 +908,17 @@ MyApplet.prototype = {
         Util.spawnCommandLine("cinnamon-menu-editor");
     },
     
-    on_applet_clicked: function(event) {
-        this.menu.toggle_with_options(false);
-    },        
-           
+    on_click_down: function(actor, event) {
+        if (event.get_button()==1) {
+            if (this._applet_context_menu.isOpen) {
+                this._applet_context_menu.toggle(); 
+            }
+            if (!this.prevent_open)
+                this.menu.toggle_with_options(false);
+        }
+        return true;
+    },
+
     _onSourceKeyPress: function(actor, event) {
         let symbol = event.get_key_symbol();
 
