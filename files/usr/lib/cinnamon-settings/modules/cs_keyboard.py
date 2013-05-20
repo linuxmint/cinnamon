@@ -7,6 +7,8 @@ import gettext
 
 gettext.install("cinnamon", "/usr/share/cinnamon/locale")
 
+HAS_DEDICATED_TERMINAL_SHORTCUT = False
+
 schema = Gio.Settings("org.gnome.settings-daemon.plugins.media-keys")
 key_list = schema.list_keys()
 for key in key_list:
