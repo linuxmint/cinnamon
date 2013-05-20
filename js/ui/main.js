@@ -920,7 +920,7 @@ function _logTrace(msg) {
             // _logTrace() (which we strip off), and the second being
             // our caller.
             let trace = e.stack.substr(e.stack.indexOf('\n') + 1);
-            _LogTraceFormatted(stack);
+            _LogTraceFormatted(trace);
         }
     }
 }
