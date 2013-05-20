@@ -319,8 +319,11 @@ class MainWindow:
             if path is not None:
                 filtered_path = self.side_view[key].get_model().convert_child_path_to_path(path)
                 if filtered_path is not None:
-                    self.side_view[key].select_path(filtered_path)
-                    return
+                    GObject.idle_add(self.do_side_view, key, filtered_path)
+
+    def do_side_view(self, key, filtered_path):
+        self.side_view[key].select_path(filtered_path)
+        return False
 
     def setParentRefs (self, mod):
         try:
