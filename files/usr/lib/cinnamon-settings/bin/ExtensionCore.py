@@ -45,8 +45,8 @@ class ExtensionSidePage (SidePage):
         SidePage.__init__(self, name, icon, keywords, advanced, content_box, -1)
         self.collection_type = collection_type
         self.target = target
-        self.noun = noun.decode("utf-8")
-        self.pl_noun = pl_noun.decode("utf-8")
+        self.noun = noun
+        self.pl_noun = pl_noun
         self.themes = collection_type == "theme"
         self.icons = []
 
@@ -64,7 +64,7 @@ class ExtensionSidePage (SidePage):
         
         self.search_entry = Gtk.Entry()
         self.search_entry.set_icon_from_icon_name(Gtk.EntryIconPosition.PRIMARY, 'edit-find')
-        self.search_entry.set_placeholder_text(_("Search %s").decode("utf-8") % (self.pl_noun))
+        self.search_entry.set_placeholder_text(_("Search %s") % (self.pl_noun))
         self.search_entry.connect('changed', self.on_entry_refilter)
 
         self.notebook.append_page(extensions_vbox, Gtk.Label(_("Installed")))
@@ -142,20 +142,20 @@ class ExtensionSidePage (SidePage):
             self.instanceButton = Gtk.Button(_("Apply theme"))
         self.instanceButton.connect("clicked", lambda x: self._add_another_instance())
         if self.collection_type in ("desklet", "applet"):
-            self.instanceButton.set_tooltip_text(_("Some %s can be added multiple times.\n Use this to add another instance. Use panel edit mode to remove a single instance.").decode("utf-8") % (self.pl_noun))
+            self.instanceButton.set_tooltip_text(_("Some %s can be added multiple times.\n Use this to add another instance. Use panel edit mode to remove a single instance.") % (self.pl_noun))
         elif self.collection_type == "extension":
-            self.instanceButton.set_tooltip_text(_("Click to enable this %s").decode("utf-8") % (self.noun))
+            self.instanceButton.set_tooltip_text(_("Click to enable this %s") % (self.noun))
         else:
-            self.instanceButton.set_tooltip_text(_("Click to apply this %s").decode("utf-8") % (self.noun))
+            self.instanceButton.set_tooltip_text(_("Click to apply this %s") % (self.noun))
         self.instanceButton.set_sensitive(False);
 
         self.configureButton = Gtk.Button(_("Configure"))
         self.configureButton.connect("clicked", self._configure_extension)
-        self.configureButton.set_tooltip_text(_("Configure this %s").decode("utf-8") % (self.noun))
+        self.configureButton.set_tooltip_text(_("Configure this %s") % (self.noun))
 
         self.extConfigureButton = Gtk.Button(_("Configure"))
         self.extConfigureButton.connect("clicked", self._external_configure_launch)
-        self.extConfigureButton.set_tooltip_text(_("Configure this %s").decode("utf-8") % (self.noun))
+        self.extConfigureButton.set_tooltip_text(_("Configure this %s") % (self.noun))
 
         if not self.themes:
             restoreButton = Gtk.Button(_("Restore to default"))
@@ -168,9 +168,9 @@ class ExtensionSidePage (SidePage):
         renderer_text = Gtk.CellRendererText()
         self.comboshow.pack_start(renderer_text, True)
         showTypes=Gtk.ListStore(int, str)
-        showTypes.append([SHOW_ALL, _("All %s").decode("utf-8") % (self.pl_noun)])
-        showTypes.append([SHOW_ACTIVE, _("Active %s").decode("utf-8") % (self.pl_noun)])
-        showTypes.append([SHOW_INACTIVE, _("Inactive %s").decode("utf-8") % (self.pl_noun)])
+        showTypes.append([SHOW_ALL, _("All %s") % (self.pl_noun)])
+        showTypes.append([SHOW_ACTIVE, _("Active %s") % (self.pl_noun)])
+        showTypes.append([SHOW_INACTIVE, _("Inactive %s") % (self.pl_noun)])
         self.comboshow.set_model(showTypes)
         self.comboshow.set_entry_text_column(1)
         self.comboshow.set_active(0) #All
@@ -259,7 +259,7 @@ class ExtensionSidePage (SidePage):
         self.gm_search_entry = Gtk.Entry()
         self.gm_search_entry.connect('changed', self.gm_on_entry_refilter)
         self.gm_search_entry.set_icon_from_icon_name(Gtk.EntryIconPosition.PRIMARY, 'edit-find')
-        self.gm_search_entry.set_placeholder_text(_("Search %s").decode("utf-8") % (self.pl_noun))
+        self.gm_search_entry.set_placeholder_text(_("Search %s") % (self.pl_noun))
         hbox.pack_end(self.gm_search_entry, False, False, 4)
         self.search_entry.show()
         
@@ -393,7 +393,7 @@ class ExtensionSidePage (SidePage):
             iter = self.modelfilter.get_iter(path)
             if column.get_property('title')=="Read only" and iter != None:
                 if not self.modelfilter.get_value(iter, 6):
-                    tooltip.set_text(_("This %s is read-only, and cannot be uninstalled").decode("utf-8") % self.noun)
+                    tooltip.set_text(_("This %s is read-only, and cannot be uninstalled") % self.noun)
                     return True
                 else:
                     return False
@@ -401,7 +401,7 @@ class ExtensionSidePage (SidePage):
                 count = self.modelfilter.get_value(iter, 2)
                 markup = ""
                 if count > 0:
-                    markup += _("This %s is currently active.").decode("utf-8") % self.noun
+                    markup += _("This %s is currently active.") % self.noun
                     if count > 1:
                         markup += _("\n\nInstance count: %d") % count
                     tooltip.set_markup(markup)
@@ -419,9 +419,9 @@ class ExtensionSidePage (SidePage):
                 installed, can_update, is_active = self.version_compare(uuid, date)
                 if installed:
                     if can_update:
-                        tooltip.set_text(_("An update is available for this %s").decode("utf-8") % (self.noun))
+                        tooltip.set_text(_("An update is available for this %s") % (self.noun))
                     else:
-                        tooltip.set_text(_("This %s is installed and up-to-date").decode("utf-8") % (self.noun))
+                        tooltip.set_text(_("This %s is installed and up-to-date") % (self.noun))
                     return True
         return False
 
@@ -769,7 +769,7 @@ class ExtensionSidePage (SidePage):
         self.install_list = []
         self.load_extensions()
         if need_restart:
-            self.show_info(_("One or more active %s may have been updated.  You probably need to restart Cinnamon for the changes to take effect").decode("utf-8") % (self.pl_noun))
+            self.show_info(_("One or more active %s may have been updated.  You probably need to restart Cinnamon for the changes to take effect") % (self.pl_noun))
 
     def on_spice_load(self, spicesData):
         #print "total spices loaded: %d" % len(spicesData)
@@ -825,7 +825,7 @@ class ExtensionSidePage (SidePage):
     def disable_extension(self, uuid, name, checked):
 
         if (checked > 1):
-            msg = _("There are multiple instances of this %s, do you want to remove them all?\n\n").decode("utf-8") % (self.noun)
+            msg = _("There are multiple instances of this %s, do you want to remove them all?\n\n") % (self.noun)
             msg += self.RemoveString
 
             if not self.show_prompt(msg):
@@ -952,20 +952,20 @@ class ExtensionSidePage (SidePage):
         model, treeiter = self.treeview.get_selection().get_selected()
         enabled = False;
         if self.collection_type in ("applet", "desklet"):
-            tip = _("Some %s can be added multiple times.\nUse this to add another instance. Use panel edit mode to remove a single instance.").decode("utf-8") % (self.pl_noun)
+            tip = _("Some %s can be added multiple times.\nUse this to add another instance. Use panel edit mode to remove a single instance.") % (self.pl_noun)
         elif self.collection_type == "extension":
-            tip = _("Click to enable this %s").decode("utf-8") % (self.noun)
+            tip = _("Click to enable this %s") % (self.noun)
         else:
-            tip = _("Click to apply this %s").decode("utf-8") % (self.noun)
+            tip = _("Click to apply this %s") % (self.noun)
         if treeiter:
             checked = model.get_value(treeiter, 2);
             max_instances = model.get_value(treeiter, 3);
             enabled = max_instances > checked
             if self.collection_type in ("applet", "desklet"):
                 if max_instances == 1:
-                    tip += _("\nThis %s does not support multiple instances.").decode("utf-8") % (self.noun)
+                    tip += _("\nThis %s does not support multiple instances.") % (self.noun)
                 else:
-                    tip += _("\nThis %s supports max %d instances.").decode("utf-8") % (self.noun, max_instances)
+                    tip += _("\nThis %s supports max %d instances.") % (self.noun, max_instances)
         self.instanceButton.set_sensitive(enabled);
         self.instanceButton.set_tooltip_text(tip)
 
