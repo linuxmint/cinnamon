@@ -245,7 +245,7 @@ class Spice_Harvester:
         if (self.has_cache and not force):
             self.load_cache()
         else:
-            self.progresslabel.set_text(_("Refreshing %s index...").decode("utf-8") % (self.noun))
+            self.progresslabel.set_text(_("Refreshing %s index...") % (self.noun))
             self.progress_window.show()
             self.refresh_cache()
 
@@ -279,7 +279,7 @@ class Spice_Harvester:
             self.errorMessage(_("Something went wrong with the spices download.  Please try refreshing the list again."), str(detail))
 
     def load_assets(self, uuids=None):
-        self.progresslabel.set_text(_("Refreshing %s cache...").decode("utf-8") % (self.noun))
+        self.progresslabel.set_text(_("Refreshing %s cache...") % (self.noun))
         self.progress_button_abort.set_sensitive(True)
         needs_refresh = 0
         used_thumbs = []

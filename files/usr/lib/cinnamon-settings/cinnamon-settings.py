@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
 import sys
+reload(sys)
+sys.setdefaultencoding('utf-8')
 
 try:
     sys.path.append('/usr/lib/cinnamon-settings/modules')
