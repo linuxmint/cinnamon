@@ -107,7 +107,7 @@
       </_description>
     </key>
     
-    <key name="panels-scale-text-icons" type="as">
+    <key name="panel-scale-text-icons" type="b">
       <default>false</default>
       <_summary>(Deprecated) Scale panel applet text and icons</_summary>
       <_description>
