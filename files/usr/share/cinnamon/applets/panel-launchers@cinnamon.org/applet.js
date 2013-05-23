@@ -12,6 +12,7 @@ const Tooltips = imports.ui.tooltips;
 const DND = imports.ui.dnd;
 const Tweener = imports.ui.tweener;
 const Util = imports.misc.util;
+const Mainloop = imports.mainloop;
 
 const DEFAULT_ICON_SIZE = 20;
 const DEFAULT_ANIM_SIZE = 13;

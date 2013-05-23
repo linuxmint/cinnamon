@@ -486,7 +486,7 @@ IconApplet.prototype = {
             this._applet_icon_box.child = this._applet_icon;
             this.__icon_type = St.IconType.SYMBOLIC;
             this.__icon_name = icon_name;
-	}
+	}));
     },
 
     /**
@@ -511,7 +511,7 @@ IconApplet.prototype = {
             }
             this.__icon_type = -1;
             this.__icon_name = icon_path;
-	}
+	}));
     },
 
     on_panel_height_changed: function() {

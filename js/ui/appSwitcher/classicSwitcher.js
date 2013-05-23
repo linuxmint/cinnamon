@@ -141,8 +141,7 @@ ClassicSwitcher.prototype = {
     },
 
     _show: function() {
-        let panels = Main.getPanels();
-        panels.forEach(function(panel) { panel.actor.set_reactive(false); });
+        Main.panelManager.panels.forEach(function(panel) { panel.actor.set_reactive(false); });
         
         this.actor.opacity = 255;
         this._initialDelayTimeoutId = 0;
@@ -157,8 +156,7 @@ ClassicSwitcher.prototype = {
         }
 
         // panels
-        let panels = Main.getPanels();
-        panels.forEach(function(panel) { panel.actor.set_reactive(true); });
+        Main.panelManager.panels.forEach(function(panel) { panel.actor.set_reactive(true); });
 
         Tweener.addTween(this.actor, { opacity: 0,
             time: POPUP_FADE_OUT_TIME,
