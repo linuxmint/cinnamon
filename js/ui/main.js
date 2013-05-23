@@ -407,6 +407,30 @@ function notifyCinnamon2d() {
                    _(" troubleshooting purposes."), icon);
 }
 
+    if (software_rendering) {
+        notifyCinnamon2d();
+    }
+}
+
+function notifyCinnamon2d() {
+    let icon = new St.Icon({ icon_name: 'display',
+                             icon_type: St.IconType.FULLCOLOR,
+                             icon_size: 36 });
+    criticalNotify(_("Running in software rendering mode"),
+                   _("Cinnamon is currently running without video hardware acceleration and, as a result, you may observe much higher than normal CPU usage.\n\n") +
+                   _("There could be a problem with your drivers or some other issue.  For the best experience, it is recommended that you only use this mode for") +
+                   _(" troubleshooting purposes."), icon);
+}
+
+function getPanels() {
+    let panels = [];
+    if(panel)
+        panels.push(panel);
+    if(panel2)
+        panels.push(panel2);
+    return panels;
+}
+
 let _workspaces = [];
 let _checkWorkspacesId = 0;
 

@@ -308,23 +308,20 @@ MyApplet.prototype = {
     },
 
     _devicesChanged: function() {
-        Mainloop.idle_add(Lang.bind(this, function() {
-            this._proxy.GetRemote('Icon', Lang.bind(this, function(icon, error) {
-                if (icon) {
-                    this.set_applet_icon_symbolic_name('battery-missing');
-                    let gicon = Gio.icon_new_for_string(icon);
-                    this._applet_icon.gicon = gicon;
-                    this.actor.show();
-                } else {
-                    this.menu.close();
-                    this.actor.hide();
-                }
-            }));
-            this._readPrimaryDevice();
-            this._readOtherDevices();
-            this._updateLabel();
+        this._proxy.GetRemote('Icon', Lang.bind(this, function(icon, error) {
+            if (icon) {
+                this.set_applet_icon_symbolic_name('battery-missing');
+                let gicon = Gio.icon_new_for_string(icon);
+                this._applet_icon.gicon = gicon;
+                this.actor.show();
+            } else {
+                this.menu.close();
+                this.actor.hide();
+            }
         }));
-
+        this._readPrimaryDevice();
+        this._readOtherDevices();
+        this._updateLabel();
     },
     
     _updateLabel: function() {

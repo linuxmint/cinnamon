@@ -129,7 +129,7 @@ AppSwitcher3D.prototype = {
         }
 
         // panels
-        Mani.panelManager.panels.forEach(function(panel) { panel.actor.set_reactive(true); });
+        Main.panelManager.panels.forEach(function(panel) { panel.actor.set_reactive(true); });
 
         // background
         Tweener.removeTweens(this._background);

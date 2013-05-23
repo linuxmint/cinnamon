@@ -1138,6 +1138,7 @@ LookingGlass.prototype = {
         let myWidth = primary.width * 0.7;
         let availableHeight = primary.height - Main.layoutManager.keyboardBox.height;
         let myHeight = Math.min(primary.height * 0.7, availableHeight * 0.9);
+
         this.actor.x = primary.x + (primary.width - myWidth) / 2;
         this._targetY = primary.y + primary.height - myHeight;
         this._hiddenY = this._targetY + myHeight;
