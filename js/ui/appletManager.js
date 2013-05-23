@@ -353,6 +353,7 @@ function createApplet(extension, appletDefinition) {
     appletObj[applet_id] = applet;
     applet._uuid = extension.uuid;
     applet.instance_id = applet_id;
+    applet.panel = appletDefinition.panel;
 
     applet.finalizeContextMenu();
 
@@ -494,7 +495,7 @@ function loadAppletsOnPanel(panel) {
 
 /**
  * updateAppletsOnPanel:
- * @panel (Panel.Panel) The panel
+ * @panel (Panel.Panel): The panel
  *
  * Updates the definition, orientation and height of applets on the panel
  */
@@ -526,7 +527,7 @@ function updateAppletsOnPanel (panel) {
  * unloadAppletsOnPanel:
  * @panel (Panel.Panel) The panel
  *
- * Unlaods all applets on the panel
+ * Unloads all applets on the panel
  */
 function unloadAppletsOnPanel (panel) {
     for (let applet_id in enabledAppletDefinitions.idMap){

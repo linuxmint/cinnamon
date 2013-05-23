@@ -78,12 +78,12 @@ PanelAppLauncherMenu.prototype = {
     }
 }
 
-function PanelAppLauncher(launchersBox, app, appinfo, orientation, panel_height) {
-    this._init(launchersBox, app, appinfo, orientation, panel_height);
+function PanelAppLauncher(launchersBox, app, appinfo, orientation, panel_height, scale) {
+    this._init(launchersBox, app, appinfo, orientation, panel_height, scale);
 }
 
 PanelAppLauncher.prototype = {
-    _init: function(launchersBox, app, appinfo, orientation, panel_height) {
+    _init: function(launchersBox, app, appinfo, orientation, panel_height, scale) {
         this.app = app;
         this.appinfo = appinfo;
         this.launchersBox = launchersBox;
@@ -105,13 +105,13 @@ PanelAppLauncher.prototype = {
         this.actor.add_actor(this._iconBox);
         this._iconBottomClip = 0;
 
-//        if (global.settings.get_boolean(PANEL_SCALE_TEXT_ICONS_KEY) && global.settings.get_boolean(PANEL_RESIZABLE_KEY)) {
-//            this.icon_height = Math.floor(panel_height * ICON_HEIGHT_FACTOR);
-//            this.icon_anim_height = Math.floor(panel_height * ICON_ANIM_FACTOR);
-//        } else {
+        if (scale) {
+            this.icon_height = Math.floor(panel_height * ICON_HEIGHT_FACTOR);
+            this.icon_anim_height = Math.floor(panel_height * ICON_ANIM_FACTOR);
+        } else {
             this.icon_height = DEFAULT_ICON_SIZE;
             this.icon_anim_height = DEFAULT_ANIM_SIZE;
-//        }
+        }
         this.icon = this._getIconActor();
         this._iconBox.set_child(this.icon);
 
@@ -328,16 +328,18 @@ MyApplet.prototype = {
     },
 
     reload: function() {
-        this.myactor.destroy_children();
-        this._launchers = new Array();
+	Mainloop.idle_add(Lang.bind(this, function() { // Wait for a while so that this.panel is set by appletManager
+            this.myactor.destroy_children();
+            this._launchers = new Array();
 
-        let apps = this.loadApps();
-        for (var i in apps){
-            let app = apps[i];
-            let launcher = new PanelAppLauncher(this, app[0], app[1], this.orientation, this._panelHeight);
-            this.myactor.add(launcher.actor);
-            this._launchers.push(launcher);
-        }
+            let apps = this.loadApps();
+            for (var i in apps){
+		let app = apps[i];
+		let launcher = new PanelAppLauncher(this, app[0], app[1], this.orientation, this._panelHeight, this.panel.scaleMode);
+		this.myactor.add(launcher.actor);
+		this._launchers.push(launcher);
+            }
+	}));
     },
 
     removeLauncher: function(launcher, delete_file) {

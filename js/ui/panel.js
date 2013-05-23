@@ -777,6 +777,8 @@ Panel.prototype = {
         this._themeFontSize = null;
         this._destroyed = false;
 
+        this.scaleMode = false;
+
         this.panelBox = new St.BoxLayout({ name: 'panelBox', vertical: true});
         Main.layoutManager.addChrome(this.panelBox);
 
@@ -1116,6 +1118,7 @@ Panel.prototype = {
         this._processPanelAutoHide();
 
         // Applet Manager might not be initialized yet when this function is called
+        this.scaleMode = this._getProperty("panels-scale-text-icons", "b") && this._getProperty("panels-resizable", "b");
         if (AppletManager.enabledApplets)
             AppletManager.updateAppletPanelHeights();
 
@@ -1134,6 +1137,7 @@ Panel.prototype = {
         } else {
             this.actor.set_style('font-size: ' + this._themeFontSize ? this._themeFontSize + 'px;' : '8.5pt;');
         }
+        this.scaleMode = this._getProperty("panels-scale-text-icons", "b") && this._getProperty("panels-resizable", "b");
         AppletManager.updateAppletPanelHeights(true);
     },
 

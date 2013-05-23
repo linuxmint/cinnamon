@@ -598,18 +598,17 @@ AppMenuButton.prototype = {
     },
     
     set_icon: function(panel_height) {
-//      if (global.settings.get_boolean('panel-scale-text-icons') && global.settings.get_boolean('panel-resizable')) {
-//        this.iconSize = Math.round(panel_height * ICON_HEIGHT_FACTOR);
-//      }
-//      else {
-        this.iconSize = DEFAULT_ICON_SIZE;
-//      }
-      let icon = this.app ?
-                            this.app.create_icon_texture(this.iconSize) :
-                            new St.Icon({ icon_name: 'application-default-icon',
-                                         icon_type: St.IconType.FULLCOLOR,
-                                         icon_size: this.iconSize });
-      this._iconBox.set_child(icon);
+	if (this._applet.panel.scaleMode){ 
+            this.iconSize = Math.round(panel_height * ICON_HEIGHT_FACTOR);
+	} else {
+            this.iconSize = DEFAULT_ICON_SIZE;
+	}
+	let icon = this.app ?
+            this.app.create_icon_texture(this.iconSize) :
+            new St.Icon({ icon_name: 'application-default-icon',
+                          icon_type: St.IconType.FULLCOLOR,
+                          icon_size: this.iconSize });
+	this._iconBox.set_child(icon);
     }
 };
 
