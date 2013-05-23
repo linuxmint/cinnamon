@@ -19,9 +19,11 @@ const RIGHT_PANEL_POPUP_ANIMATE_TIME = 0.5;
 const DESKLET_DESTROY_TIME = 0.5;
 
 /**
- * Desklet
- *
- * @short_description: Base class of desklets
+ * #Desklet
+ * @metadata (dictionary): Metadata of desklet
+ * @actor (St.Actor): Actor of desklet
+ * @content (St.Bin): The actor containing the content of the actor
+ * @instance_id (int): Instance id of the desklet
  *
  * #Desklet is a base class in which other desklets
  * can inherit
@@ -31,6 +33,13 @@ function Desklet(metadata, desklet_id){
 }
 
 Desklet.prototype = {
+    /**
+     * _init:
+     * @metadata (dictionary): the metadata of the desklet
+     * @desklet_id (int): instance id of the desklet
+     * 
+     * Constructor function
+     */
     _init: function(metadata, desklet_id){
         this.metadata = metadata;
         this.instance_id = desklet_id;
@@ -58,7 +67,6 @@ Desklet.prototype = {
         this._menu.addAction(_("Remove this desklet"), Lang.bind(this, this._onRemoveDesklet));
 
         this.actor.connect('button-release-event', Lang.bind(this, this._onButtonReleaseEvent));
-        this.actor.connect('notify::hover', Lang.bind(this, this._onHover));
 
         this._uuid = null;
         this._dragging = false;
@@ -67,19 +75,23 @@ Desklet.prototype = {
         this.actor._delegate = this;
 
         this._draggable = DND.makeDraggable(this.actor, {restoreOnSuccess: true}, Main.deskletContainer.actor);
-        this._draggable.connect('drag-begin', Lang.bind(this, function(){
-                                                            global.set_stage_input_mode(Cinnamon.StageInputMode.FULLSCREEN);
-                                                            Main.layoutManager.untrackChrome(this.actor);
-                                                        }));
-        this._draggable.connect('drag-end', function(){
-                                    global.set_stage_input_mode(Cinnamon.StageInputMode.NORMAL);
-                                });
-        Main.layoutManager.addChrome(this.actor, {doNotAdd: true});
+        this._draggable.connect('drag-begin', Lang.bind(this, this._onDragBegin));
+        this._draggable.connect('drag-end', Lang.bind(this, this._onDragEnd));
+        this._draggable.connect('drag-cancelled', Lang.bind(this, this._onDragEnd));
+    },
+    
+    _onDragBegin: function() {
+        global.set_stage_input_mode(Cinnamon.StageInputMode.FULLSCREEN);
+    },
+    
+    _onDragEnd: function() {
+        global.set_stage_input_mode(Cinnamon.StageInputMode.NORMAL);
+        this._trackMouse();
     },
 
     /**
      * setHeader:
-     * @header: the header of the desklet
+     * @header (string): the header of the desklet
      *
      * Sets the header text of the desklet to @header
      */
@@ -89,13 +101,21 @@ Desklet.prototype = {
 
     /**
      * setContent:
-     * @actor: actor to be set as child
-     * @params: (optional) parameters to be sent
+     * @actor (Clutter.Actor): actor to be set as child
+     * @params (dictionary): (optional) parameters to be sent
      *
      * Sets the content actor of the desklet as @actor
      */
     setContent: function(actor, params){
         this.content.set_child(actor, params);
+    },
+
+    /**
+     * on_desklet_removed:
+     *
+     * Callback when desklet is removed. To be overridden by individual desklets
+     */
+    on_desklet_removed: function() {
     },
 
     /**
@@ -109,6 +129,7 @@ Desklet.prototype = {
                            transition: 'linear',
                            time: DESKLET_DESTROY_TIME,
                            onComplete: Lang.bind(this, function(){
+                               this.on_desklet_removed();
                                this.actor.destroy();
                            })});
         this._menu.destroy();
@@ -140,7 +161,7 @@ Desklet.prototype = {
             break;
         }
     },
-        
+
     on_desklet_clicked: function(event) {
         // Implemented by Desklets        
     },
@@ -148,50 +169,51 @@ Desklet.prototype = {
     _onButtonReleaseEvent: function(actor, event){        
         if (event.get_button() == 3) {
             this._menu.toggle();
-        }
-        else {
+            // Check if menu gets out of monitor. Move menu to left side if so
+
+            // Find x-position of right edge of monitor
+            let rightEdge;
+            for (let i = 0; i < Main.layoutManager.monitors.length; i++) {
+                let monitor = Main.layoutManager.monitors[i];
+
+                if (monitor.x <= this.actor.x && monitor.y <= this.actor.y &&
+                    monitor.x + monitor.width > this.actor.x &&
+                    monitor.y + monitor.height > this.actor.y) {
+                    rightEdge = monitor.x + monitor.width;
+                    break;
+                }
+            }
+
+            if (this.actor.x + this.actor.width + this._menu.actor.width > rightEdge) {
+                this._menu.setArrowSide(St.Side.RIGHT);
+            } else {
+                this._menu.setArrowSide(St.Side.LEFT);
+            }
+
+        } else {
             if (this._menu.isOpen) {
                 this._menu.toggle();
             }
             this.on_desklet_clicked(event);
         }
     },
-
-    _onHover: function(){
-        if (!this._draggable._dragInProgress){
-            this._draggable.inhibit = this._hasMouseWindow();
-            if (this._draggable.inhibit) {
-                Main.layoutManager.untrackChrome(this.actor);
-                Mainloop.timeout_add(200, Lang.bind(this, this._checkHover)); // notify::hover no longer works when actor is untracked. Constantly check if the actor should be freed
-            }
+    
+    _trackMouse: function() {
+        if(!Main.layoutManager.isTrackingChrome(this.actor)) {
+            Main.layoutManager.addChrome(this.actor, {doNotAdd: true});
+            this._isTracked = true;
         }
     },
-
-    _checkHover: function() {
-        if(this._hasMouseWindow()) {
-            Mainloop.timeout_add(200, Lang.bind(this, this._checkHover));
-            return;
+    
+    _untrackMouse: function() {
+        if(Main.layoutManager.isTrackingChrome(this.actor)) {
+            Main.layoutManager.untrackChrome(this.actor);
+            this._isTracked = false;
         }
-        Main.layoutManager.addChrome(this.actor, {doNotAdd: true});
-        return;
-    },
-
-    _hasMouseWindow: function(){
-        let dummy = new Meta.Window(); // meta_screen_get_mouse_window requires a non-null not_this_one
-        let window = global.screen.get_mouse_window(dummy);
-        if (!window)
-            return false;
-        if (window.window_type == Meta.WindowType.DESKTOP)
-            return false;
-        return true;
     },
 
     _onRemoveDesklet: function(){
         DeskletManager.removeDesklet(this._uuid, this.instance_id);
-    },
-
-    getDragActor: function(){
-        return this.actor;
     }
 };
 Signals.addSignalMethods(Desklet.prototype);

@@ -107,7 +107,8 @@ function getAppletDefinition(definition) {
     // - order is an integer representing the order of the applet within the panel/location (i.e. 1st, 2nd etc..).
     // - applet_id is a unique id assigned to the applet instance when added.
     let elements = definition.split(":");
-    if (elements.length == 5) {
+
+    if (elements.length > 4) {
         let panel = Main.panelManager.panels[elements[0].slice(5)];
         let orientation;
         let order;
@@ -543,3 +544,4 @@ function unloadAppletsOnPanel (panel) {
         }
     }
 }
+

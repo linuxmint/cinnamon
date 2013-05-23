@@ -334,9 +334,10 @@ class BackgroundWallpaperPane (Gtk.VBox):
     
     def update_icon_view(self):
         pictures_list = []
-        for i in os.listdir("/usr/share/gnome-background-properties"):
-            if i.endswith(".xml"):
-                pictures_list += self.parse_xml_backgrounds_list(os.path.join("/usr/share/gnome-background-properties", i))
+        if os.path.exists("/usr/share/cinnamon-background-properties"):
+            for i in os.listdir("/usr/share/cinnamon-background-properties"):
+                if i.endswith(".xml"):
+                    pictures_list += self.parse_xml_backgrounds_list(os.path.join("/usr/share/cinnamon-background-properties", i))
         
         path = os.path.join(os.getenv("HOME"), ".cinnamon", "backgrounds")
         if os.path.exists(path):
@@ -449,7 +450,7 @@ class BackgroundSlideshowPane(Gtk.Table):
 
 class BackgroundSidePage (SidePage):
     def __init__(self, name, icon, keywords, advanced, content_box):
-        SidePage.__init__(self, name, icon, keywords, advanced, content_box)
+        SidePage.__init__(self, name, icon, keywords, advanced, content_box, -1)
         self._gnome_background_schema = Gio.Settings("org.gnome.desktop.background")
         self._cinnamon_background_schema = Gio.Settings("org.cinnamon.background")
         self._add_wallpapers_dialog = AddWallpapersDialog()

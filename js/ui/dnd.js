@@ -9,6 +9,8 @@ const Signals = imports.signals;
 const Tweener = imports.ui.tweener;
 const Main = imports.ui.main;
 const Mainloop = imports.mainloop;
+const Gio = imports.gi.Gio;
+const Desklet = imports.ui.desklet;
 
 const Params = imports.misc.params;
 
@@ -127,6 +129,16 @@ _Draggable.prototype = {
         this._lastEnterActor = null;
 
         this._eventsGrabbed = false;
+
+        this._dragCheckId = null;
+
+        this._dragThreshold = 8;
+        global.settings.connect('changed::dnd-drag-threshold', Lang.bind(this, this._onDragThresholdChanged));
+        this._onDragThresholdChanged();
+    },
+
+    _onDragThresholdChanged : function (settings, key) {
+        this._dragThreshold = global.settings.get_int("dnd-drag-threshold");
     },
 
     _onButtonPress : function (actor, event) {
@@ -217,7 +229,12 @@ _Draggable.prototype = {
         } else if (event.type() == Clutter.EventType.BUTTON_RELEASE) {
             this._buttonDown = false;
             if (this._dragInProgress) {
-                return this._dragActorDropped(event);
+                if (this.actor._delegate._isTracked || !(this.actor._delegate instanceof Desklet.Desklet))
+                    return this._dragActorDropped(event);
+                else {
+                    this._cancelDrag();
+                    return true;
+                }
             } else if (this._dragActor != null && !this._animationInProgress) {
                 // Drag must have been cancelled with Esc.
                 this._dragComplete();
@@ -233,7 +250,12 @@ _Draggable.prototype = {
             if (this._dragInProgress) {
                 return this._updateDragPosition(event);
             } else if (this._dragActor == null) {
-                return this._maybeStartDrag(event);
+                if (this._buttonDown)
+                    return this._maybeStartDrag(event);
+                else {
+                    this._dragComplete()
+                    return true;
+                }
             }
         } else if (event.type() == Clutter.EventType.LEAVE) {
             if (this._firstLeaveActor == null)
@@ -317,7 +339,6 @@ _Draggable.prototype = {
                 this._dragActorSource = this.actor;
             }
             this._dragOrigParent = undefined;
-
             this._dragOffsetX = this._dragActor.x - this._dragStartX;
             this._dragOffsetY = this._dragActor.y - this._dragStartY;
         } else {
@@ -383,18 +404,39 @@ _Draggable.prototype = {
         }
     },
 
-    _maybeStartDrag:  function(event) {
-        let [stageX, stageY] = event.get_coords();
-
-        // See if the user has moved the mouse enough to trigger a drag
-        let threshold = Gtk.Settings.get_default().gtk_dnd_drag_threshold;
-        if ((Math.abs(stageX - this._dragStartX) > threshold ||
-             Math.abs(stageY - this._dragStartY) > threshold)) {
-                this.startDrag(stageX, stageY, event.get_time());
-                this._updateDragPosition(event);
+    _checkThreshold: function(x, y) {
+        if (!this._buttonDown) {
+            this._dragCheckId = null;
+            return false;
+        }
+        if ((Math.abs(x - this._dragStartX) > this._dragThreshold ||
+             Math.abs(y - this._dragStartY) > this._dragThreshold)) {
+            this.startDrag(x, y, global.get_current_time());
+            this._updateDragPosition(null, x, y);
+            this._dragCheckId = null;
+            return false;
         }
 
         return true;
+    },
+
+    _maybeStartDrag:  function(event) {
+        if (this._dragCheckId)
+            return true;
+        // See if the user has moved the mouse enough to trigger a drag
+        if (this._dragCheckId) {
+            Mainloop.source_remove(this._dragCheckId);
+            this._dragCheckId = null;
+        }
+
+        this._dragCheckId = Mainloop.timeout_add(10, Lang.bind(this, this._dragCheckCallback));
+
+        return true;
+    },
+
+    _dragCheckCallback: function() {
+        let [x, y, mask] = global.get_pointer();
+        return this._checkThreshold(x, y);
     },
 
     _setCursor:  function(result) {
@@ -411,8 +453,19 @@ _Draggable.prototype = {
         return false;
     },
     
-    _updateDragPosition : function (event) {
-        let [stageX, stageY] = event.get_coords();
+    _updateDragPosition : function (event, x, y) {
+        let stageX, stageY;
+        let time;
+        if (event) {
+            [stageX, stageY] = event.get_coords();
+            time = event.get_time();
+        }
+        else {
+            stageX = x;
+            stageY = y;
+            time = global.get_current_time();
+        }
+
         this._dragX = stageX;
         this._dragY = stageY;
 
@@ -451,7 +504,7 @@ _Draggable.prototype = {
                                                                       this._dragActor,
                                                                       targX,
                                                                       targY,
-                                                                      event.get_time());
+                                                                      time);
                     if (this._setCursor(result)) {
                         return true;
                     }
@@ -468,7 +521,7 @@ _Draggable.prototype = {
                                                                  this._dragActor,
                                                                  targX,
                                                                  targY,
-                                                                 event.get_time());
+                                                                 time);
                     if (this._setCursor(result)) {
                         return true;
                     }
@@ -506,68 +559,49 @@ _Draggable.prototype = {
                 }
         }
 
-        if (this.target) {
-            if (this.target._delegate && this.target._delegate.acceptDrop){
-                let [r, targX, targY] = this.target.transform_stage_point(dropX, dropY);
-                if (this.target._delegate.acceptDrop(this.actor._delegate,
-                                                     this._dragActor,
-                                                     targX,
-                                                     targY,
-                                                     event.get_time())) {
-                    if (this._actorDestroyed)
-                        return true;
-                    // If it accepted the drop without taking the actor,
-                    // handle it ourselves.
-                    if (this._dragActor.get_parent() == Main.uiGroup) {
-                        if (this._restoreOnSuccess) {
-                            this._restoreDragActor(event.get_time());
-                            return true;
-                        } else
-                            this._dragActor.destroy();
-                    }
-
-                    this._dragInProgress = false;
-                    global.unset_cursor();
-                    this.emit('drag-end', event.get_time(), true);
-                    this._dragComplete();
-                    return true;
-                }
-            }
-        }
+        if (this.target && this._dropOnTarget(this.target, event, dropX, dropY))
+            return true;
 
         while (target) {
-            if (target._delegate && target._delegate.acceptDrop) {
-                let [r, targX, targY] = target.transform_stage_point(dropX, dropY);
-                if (target._delegate.acceptDrop(this.actor._delegate,
-                                                this._dragActor,
-                                                targX,
-                                                targY,
-                                                event.get_time())) {
-                    if (this._actorDestroyed)
-                        return true;
-                    // If it accepted the drop without taking the actor,
-                    // handle it ourselves.
-                    if (this._dragActor.get_parent() == Main.uiGroup) {
-                        if (this._restoreOnSuccess) {
-                            this._restoreDragActor(event.get_time());
-                            return true;
-                        } else
-                            this._dragActor.destroy();
-                    }
-
-                    this._dragInProgress = false;
-                    global.unset_cursor();
-                    this.emit('drag-end', event.get_time(), true);
-                    this._dragComplete();
-                    return true;
-                }
-            }
+            if(this._dropOnTarget(target, event, dropX, dropY))
+                return true;
             target = target.get_parent();
         }
 
         this._cancelDrag(event.get_time());
 
         return true;
+    },
+    
+    _dropOnTarget: function(target, event, dropX, dropY) {
+        if (target._delegate && target._delegate.acceptDrop){
+            let [r, targX, targY] = target.transform_stage_point(dropX, dropY);
+            if (target._delegate.acceptDrop(this.actor._delegate,
+                                                 this._dragActor,
+                                                 targX,
+                                                 targY,
+                                                 event.get_time())) {
+                if (this._actorDestroyed)
+                    return true;
+                // If it accepted the drop without taking the actor,
+                // handle it ourselves.
+                if (this._dragActor.get_parent() == Main.uiGroup) {
+                    if (this._restoreOnSuccess) {
+                        this._restoreDragActor(event.get_time());
+                        return true;
+                    } else
+                        this._dragActor.destroy();
+                }
+
+                this._dragInProgress = false;
+                global.unset_cursor();
+                this.emit('drag-end', event.get_time(), true);
+                this._dragComplete();
+                return true;
+            }
+        }
+        
+        return false;
     },
 
     _getRestoreLocation: function() {
@@ -610,6 +644,8 @@ _Draggable.prototype = {
         let [snapBackX, snapBackY, snapBackScale] = this._getRestoreLocation();
 
         if (this._actorDestroyed) {
+            if (this.target && this.target._delegate.cancelDrag)
+                this.target._delegate.cancelDrag(this.actor._delegate, this._dragActor);
             global.unset_cursor();
             if (!this._buttonDown)
                 this._dragComplete();
@@ -619,6 +655,9 @@ _Draggable.prototype = {
 
             return;
         }
+
+       if (this.target && this.target._delegate.hideDragPlaceholder)
+           this.target._delegate.hideDragPlaceholder();
 
         this._animationInProgress = true;
         // No target, so snap back
@@ -657,6 +696,9 @@ _Draggable.prototype = {
     },
 
     _onAnimationComplete : function (dragActor, eventTime) {
+        if (this.target && this.target._delegate.cancelDrag)
+            this.target._delegate.cancelDrag(this.actor._delegate, this._dragActor);
+
         if (this._dragOrigParent) {
             dragActor.reparent(this._dragOrigParent);
             dragActor.set_scale(this._dragOrigScale, this._dragOrigScale);
@@ -668,8 +710,7 @@ _Draggable.prototype = {
         this.emit('drag-end', eventTime, false);
 
         this._animationInProgress = false;
-        if (!this._buttonDown)
-            this._dragComplete();
+        this._dragComplete();
     },
 
     // Actor is an actor we have entered or left during the drag; call
@@ -686,7 +727,7 @@ _Draggable.prototype = {
 
     _dragComplete: function() {
         this._setTimer(false);
-        if (!this._actorDestroyed)
+        if (!this._actorDestroyed && this._dragActor)
             Cinnamon.util_set_hidden_from_pick(this._dragActor, false);
 
         this._ungrabEvents();

@@ -1,7 +1,50 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
+/**
+ * FILE:main.js
+ * @automountManager (AutomountManager.AutomountManager): The automount manager
+ * @autorunManager (null): This object no longer in use but is kept
+ *                         in case we change our mind
+ * @placesManager (PlacesManager.PlacesManager): The places manager
+ * @overview (Overview.Overview): The "scale" overview 
+ * @expo (Expo.Expo): The "expo" overview
+ * @runDialog (RunDialog.RunDialog): The run dialog
+ * @lookingGlass (LookingGlass.LookingGlass): The looking glass
+ * @wm (WindowManager.WindowManager): The window manager
+ * @messageTray (MessageTray.MessageTray): The mesesage tray
+ * @notificationDaemon (NotificationDaemon.NotificationDaemon): The notification daemon
+ * @windowAttentionHandler (WindowAttentionHandler.WindowAttentionHandler): The window attention handler
+ * @recorder (Cinnamon.Recorder): The recorder
+ * @cinnamonDBusService (CinnamonDBus.Cinnamon): The cinnamon dbus object
+ * @modalCount (int): The number of modals "pushed"
+ * @modalActorFocusStack (array): Array of pushed modal actors
+ * @uiGroup (Cinnamon.GenericContainer): The group containing all Cinnamon
+ *                                       and Muffin actors
+ * @magnifier (Magnifier.Magnifier): The magnifier
+ * @xdndHandler (XdndHandler.XdndHandler): The X DND handler
+ * @statusIconDispatcher (StatusIconDispatcher.StatusIconDispatcher): The status icon dispatcher
+ * @keyboard (Keyboard.Keyboard): The keyboard object
+ * @layoutManager (Layout.LayoutManager): The layout manager
+ * @themeManager (ThemeManager.ThemeManager): The theme manager
+ * @networkAgent (null): This object is no longer in use, but is kept
+ *                       in case we change our mind
+ * @dynamicWorkspaces (boolean): Whether dynamic workspaces are to be used.
+ *                               This is not yet implemented
+ * @nWorks (int): Number of workspaces
+ * @tracker (Cinnamon.WindowTracker): The window tracker
+ * @desktopShown (boolean): Whether we are in "show desktop" mode
+ * @workspace_names (array): Names of workspace
+ * @background (null): Unused
+ * @deskletContainer (DeskletManager.DeskletContainer): The desklet container 
+ * @software_rendering (boolean): Whether software rendering is used
+ * @lg_log_file (Gio.FileOutputStream): The stream used to log looking messages
+ *                                      to ~/.cinnamon/glass.log
+ * @can_log (boolean): Whether looking glass log to file can be used
+ *
+ * The main file is responsible for launching Cinnamon as well as creating its components. Most components of Cinnamon can be accessed through main
+ */
 
 const Clutter = imports.gi.Clutter;
-const DBus = imports.dbus;
+const DBus= imports.dbus;
 const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
 const Gtk = imports.gi.Gtk;
@@ -33,11 +76,13 @@ const WindowAttentionHandler = imports.ui.windowAttentionHandler;
 const Scripting = imports.ui.scripting;
 const StatusIconDispatcher = imports.ui.statusIconDispatcher;
 const CinnamonDBus = imports.ui.cinnamonDBus;
+const LookingGlassDBus = imports.ui.lookingGlassDBus;
 const WindowManager = imports.ui.windowManager;
 const ThemeManager = imports.ui.themeManager;
 const Magnifier = imports.ui.magnifier;
 const XdndHandler = imports.ui.xdndHandler;
 const Util = imports.misc.util;
+const Keybindings = imports.ui.keybindings;
 
 const DEFAULT_BACKGROUND_COLOR = new Clutter.Color();
 DEFAULT_BACKGROUND_COLOR.from_pixel(0x2266bbff);
@@ -64,6 +109,7 @@ let notificationDaemon = null;
 let windowAttentionHandler = null;
 let recorder = null;
 let cinnamonDBusService = null;
+let lookingGlassDBusService = null;
 let modalCount = 0;
 let modalActorFocusStack = [];
 let uiGroup = null;
@@ -73,6 +119,7 @@ let statusIconDispatcher = null;
 let keyboard = null;
 let layoutManager = null;
 let themeManager = null;
+let keybindingManager = null;
 let networkAgent = null;
 let _errorLogStack = [];
 let _startDate;
@@ -148,6 +195,11 @@ function _initUserSession() {
     
 }
 
+/**
+ * start:
+ *
+ * Starts cinnamon. Should not be called in JavaScript code
+ */
 function start() {
     // Monkey patch utility functions into the global proxy;
     // This is easier and faster than indirecting down into global
@@ -190,6 +242,7 @@ function start() {
     Gio.DesktopAppInfo.set_desktop_env('GNOME');
 
     cinnamonDBusService = new CinnamonDBus.Cinnamon();
+    lookingGlassDBusService = new LookingGlassDBus.CinnamonLookingGlass();
     // Force a connection now; dbus.js will do this internally
     // if we use its name acquisition stuff but we aren't right
     // now; to do so we'd need to convert from its async calls
@@ -281,6 +334,8 @@ function start() {
 
     placesManager = new PlacesManager.PlacesManager();    
     automountManager = new AutomountManager.AutomountManager();
+
+    keybindingManager = new Keybindings.KeybindingManager();
     //autorunManager = new AutorunManager.AutorunManager();
     //networkAgent = new NetworkAgent.NetworkAgent();
 
@@ -336,6 +391,20 @@ function start() {
     
     AppletManager.init();
     DeskletManager.init();
+
+    if (software_rendering) {
+        notifyCinnamon2d();
+    }
+}
+
+function notifyCinnamon2d() {
+    let icon = new St.Icon({ icon_name: 'display',
+                             icon_type: St.IconType.FULLCOLOR,
+                             icon_size: 36 });
+    criticalNotify(_("Running in software rendering mode"),
+                   _("Cinnamon is currently running without video hardware acceleration and, as a result, you may observe much higher than normal CPU usage.\n\n") +
+                   _("There could be a problem with your drivers or some other issue.  For the best experience, it is recommended that you only use this mode for") +
+                   _(" troubleshooting purposes."), icon);
 }
 
 let _workspaces = [];
@@ -369,6 +438,13 @@ function _makeDefaultWorkspaceName(index) {
     return _("WORKSPACE") + " " + (index + 1).toString();
 }
 
+/**
+ * setWorkspaceName:
+ * @index (int): index of workspace
+ * @name (string): name of workspace
+ *
+ * Sets the name of the workspace @index to @name
+ */
 function setWorkspaceName(index, name) {
     name.trim();
     if (name != getWorkspaceName(index)) {
@@ -381,6 +457,14 @@ function setWorkspaceName(index, name) {
     }
 }
 
+/**
+ * getWorkspaceName:
+ * @index (int): index of workspace
+ *
+ * Retrieves the name of the workspace @index
+ *
+ * Returns (string): name of workspace
+ */
 function getWorkspaceName(index) {
     let wsName = index < workspace_names.length ?
         workspace_names[index] :
@@ -391,6 +475,14 @@ function getWorkspaceName(index) {
         _makeDefaultWorkspaceName(index);
 }
 
+/**
+ * hasDefaultWorkspaceName:
+ * @index (int): index of workspace
+ *
+ * Whether the workspace uses the default name
+ *
+ * Returns (boolean): whether the workspace uses the default name
+ */
 function hasDefaultWorkspaceName(index) {
     return getWorkspaceName(index) == _makeDefaultWorkspaceName(index);
 }
@@ -419,6 +511,17 @@ function _removeWorkspace(workspace) {
     return true;
 }
 
+/**
+ * moveWindowToNewWorkspace:
+ * @metaWindow (Meta.Window): the window to be moved
+ * @switchToNewWorkspace (boolean): whether or not to switch to the
+ *                                  new created workspace
+ *
+ * Moves the window to a new workspace.
+ *
+ * If @switchToNewWorkspace is true, it will switch to the new workspace
+ * after moving the window
+ */
 function moveWindowToNewWorkspace(metaWindow, switchToNewWorkspace) {
     if (switchToNewWorkspace) {
         let targetCount = global.screen.n_workspaces + 1;
@@ -612,8 +715,8 @@ function _nWorkspacesChanged() {
  *
  * Get the theme CSS file that Cinnamon will load
  *
- * Returns: A file path that contains the theme CSS,
- *          null if using the default
+ * Returns (string): A file path that contains the theme CSS,
+ *                   null if using the default
  */
 function getThemeStylesheet()
 {
@@ -622,8 +725,8 @@ function getThemeStylesheet()
 
 /**
  * setThemeStylesheet:
- * @cssStylesheet: A file path that contains the theme CSS,
- *                  set it to null to use the default
+ * @cssStylesheet (string): A file path that contains the theme CSS,
+ *                         set it to null to use the default
  *
  * Set the theme CSS file that Cinnamon will load
  */
@@ -652,8 +755,10 @@ function loadTheme() {
 
 /**
  * notify:
- * @msg: A message
- * @details: Additional information
+ * @msg (string): A message
+ * @details (string): Additional information to be
+ *
+ * Sends a notification
  */
 function notify(msg, details) {
     let source = new MessageTray.SystemNotificationSource();
@@ -664,9 +769,23 @@ function notify(msg, details) {
 }
 
 /**
- * notifyError:
- * @msg: An error message
+ * criticalNotify:
+ * @msg: A critical message
  * @details: Additional information
+ */
+function criticalNotify(msg, details, icon) {
+    let source = new MessageTray.SystemNotificationSource();
+    messageTray.add(source);
+    let notification = new MessageTray.Notification(source, msg, details, { icon: icon });
+    notification.setTransient(true);
+    notification.setUrgency(MessageTray.Urgency.CRITICAL);
+    source.notify(notification);
+}
+
+/**
+ * notifyError:
+ * @msg (string): An error message
+ * @details (string): Additional information
  *
  * See cinnamon_global_notify_problem().
  */
@@ -681,10 +800,10 @@ function notifyError(msg, details) {
 
 /**
  * _log:
- * @category: string message type ('info', 'error')
- * @msg: A message string
- * ...: Any further arguments are converted into JSON notation,
- *      and appended to the log message, separated by spaces.
+ * @category (string): string message type ('info', 'error')
+ * @msg (string): A message string
+ * @...: Any further arguments are converted into JSON notation,
+ *       and appended to the log message, separated by spaces.
  *
  * Log a message into the LookingGlass error
  * stream.  This is primarily intended for use by the
@@ -700,25 +819,51 @@ function _log(category, msg) {
                 text += ' ';
         }
     }
-    let out = {timestamp: new Date().getTime(),
+    let out = {timestamp: new Date().getTime().toString(),
                          category: category,
                          message: text };
     _errorLogStack.push(out);
-    if(cinnamonDBusService)
-        cinnamonDBusService.notifyLgLogUpdate();
+    if(lookingGlassDBusService)
+        lookingGlassDBusService.emitLogUpdate();
     if (can_log) lg_log_file.write(renderLogLine(out), null);
 }
 
+/**
+ * isError:
+ * @obj (Object): the object to be tested
+ * 
+ * Tests whether @obj is an error object
+ * 
+ * Returns (boolean): whether @obj is an error object
+ */
 function isError(obj) {
     return typeof(obj) == 'object' && 'message' in obj && 'stack' in obj;
 }
 
+/**
+ * _LogTraceFormatted:
+ * @stack (string): the stack trace
+ * 
+ * Prints the stack trace to the LookingGlass
+ * error stream in a predefined format
+ */
 function _LogTraceFormatted(stack) {
     _log('trace', '\n<----------------\n' + stack + '---------------->');
 }
 
-// If msg is an Error, its stack-trace will be printed, otherwise a stack-trace will be generated from this call
-// If you want to print the message of an Error as well, use the other log functions instead.
+/**
+ * _logTrace:
+ * @msg (Error): An error object
+ *
+ * Prints a stack trace of the given object.
+ *
+ * If msg is an error, its stack-trace will be
+ * printed. Otherwise, a stack-trace of the call
+ * will be generated
+ *
+ * If you want to print the message of an Error
+ * as well, use the other log functions instead.
+ */
 function _logTrace(msg) {
     if(isError(msg)) {
         _LogTraceFormatted(msg.stack);
@@ -730,12 +875,21 @@ function _logTrace(msg) {
             // _logTrace() (which we strip off), and the second being
             // our caller.
             let trace = e.stack.substr(e.stack.indexOf('\n') + 1);
-            _LogTraceFormatted(stack);
+            _LogTraceFormatted(trace);
         }
     }
 }
 
-// If msg is an Error, its message will be printed as 'warning' and its stack-trace will be printed as 'trace'
+/**
+ * _logWarning:
+ * @msg (Error/string): An error object or the message string
+ *
+ * Logs the message to the LookingGlass error
+ * stream.
+ *
+ * If msg is an error, its stack-trace will be
+ * printed.
+ */
 function _logWarning(msg) {
     if(isError(msg)) {
         _log('warning', msg.message);
@@ -745,7 +899,20 @@ function _logWarning(msg) {
     }
 }
 
-// If msg is an Error, its message will be printed as 'error' and its stack-trace will be printed as 'trace'
+/**
+ * _logError:
+ * @msg (string): (optional) The message string
+ * @error (Error): (optional) The error object
+ * 
+ * Logs the following (if present) to the
+ * LookingGlass error stream:
+ * - The message from the error object
+ * - The stack trace of the error object
+ * - The message @msg
+ * 
+ * It can be called in the form of either _logError(msg),
+ * _logError(error) or _logError(msg, error).
+ */
 function _logError(msg, error) {
     if(error && isError(error)) {
         _log('error', error.message);
@@ -760,6 +927,15 @@ function _logError(msg, error) {
 }
 
 // If msg is an Error, its message will be printed as 'info' and its stack-trace will be printed as 'trace'
+/**
+ * _logInfo:
+ * @msg (Error/string): The error object or the message string
+ * 
+ * Logs the message to the LookingGlass
+ * error stream. If @msg is an Error object, 
+ * its stack trace will also be printed
+ */
+
 function _logInfo(msg) {
     if(isError(msg)) {
         _log('info', msg.message);
@@ -769,20 +945,36 @@ function _logInfo(msg) {
     }
 }
 
+/**
+ * formatTime:
+ * @d (Date): date object to be formatted
+ *
+ * Formats a date object into a ISO-8601 format (YYYY-MM-DDTHH:MM:SSZ) in UTC+0
+ *
+ * Returns (string): a formatted string showing the date
+ */
 function formatTime(d) {
-    function pad(n) { return n < 10 ? '0' + n : n; }
-    return d.getUTCFullYear()+'-'
-        + pad(d.getUTCMonth()+1)+'-'
-        + pad(d.getUTCDate())+'T'
-        + pad(d.getUTCHours())+':'
-        + pad(d.getUTCMinutes())+':'
-        + pad(d.getUTCSeconds())+'Z';
+    return d.toISOString();
 }
 
+/**
+ * renderLogLine:
+ * @line (dictionary): a log line
+ * 
+ * Converts a log line object into a string
+ *
+ * Returns (string): line in the format CATEGORY t=TIME MESSAGE
+ */
 function renderLogLine(line) {
-    return line.category + ' t=' + formatTime(new Date(line.timestamp)) + ' ' + line.message + '\n';
+    return line.category + ' t=' + formatTime(new Date(parseInt(line.timestamp))) + ' ' + line.message + '\n';
 }
 
+/**
+ * logStackTrace:
+ * @msg (string): message
+ *
+ * Logs the message @msg to stdout with backtrace
+ */
 function logStackTrace(msg) {
     try {
         throw new Error();
@@ -795,6 +987,15 @@ function logStackTrace(msg) {
     }
 }
 
+/**
+ * isWindowActorDisplayedOnWorkspace:
+ * @win (Meta.WindowActor): window actor
+ * @workspaceIndex (int): index of workspace
+ *
+ * Determines whether the window actor belongs to a specific workspace
+ *
+ * Returns (boolean): whether the window is on the workspace
+ */
 function isWindowActorDisplayedOnWorkspace(win, workspaceIndex) {
     if (win.get_workspace() == workspaceIndex) {return true;}
     let mwin = win.get_meta_window();
@@ -803,6 +1004,14 @@ function isWindowActorDisplayedOnWorkspace(win, workspaceIndex) {
     );
 }
 
+/**
+ * getWindowActorsForWorkspace:
+ * @workspaceIndex (int): index of workspace
+ *
+ * Gets a list of actors on a workspace
+ *
+ * Returns (array): the array of window actors
+ */
 function getWindowActorsForWorkspace(workspaceIndex) {
     return global.get_window_actors().filter(function (win) {
         return isWindowActorDisplayedOnWorkspace(win, workspaceIndex);
@@ -826,6 +1035,10 @@ function _globalKeyPressHandler(actor, event) {
 
     // This relies on the fact that Clutter.ModifierType is the same as Gdk.ModifierType
     let action = global.display.get_keybinding_action(keyCode, modifierState);
+
+    if (action == Meta.KeyBindingAction.CUSTOM) {
+        global.display.keybinding_action_invoke_by_code(keyCode, modifierState);
+    }
 
     // Other bindings are only available when the overview is up and no modal dialog is present
     if (((!overview.visible && !expo.visible) || modalCount > 1))
@@ -884,8 +1097,8 @@ function _findModal(actor) {
 
 /**
  * pushModal:
- * @actor: #ClutterActor which will be given keyboard focus
- * @timestamp: optional timestamp
+ * @actor (Clutter.Actor): actor which will be given keyboard focus
+ * @timestamp (int): optional timestamp
  *
  * Ensure we are in a mode where all keyboard and mouse input goes to
  * the stage, and focus @actor. Multiple calls to this function act in
@@ -900,7 +1113,7 @@ function _findModal(actor) {
  * initiated event.  If not provided then the value of
  * global.get_current_time() is assumed.
  *
- * Returns: true iff we successfully acquired a grab or already had one
+ * Returns (boolean): true iff we successfully acquired a grab or already had one
  */
 function pushModal(actor, timestamp) {
     if (timestamp == undefined)
@@ -919,21 +1132,21 @@ function pushModal(actor, timestamp) {
     let actorDestroyId = actor.connect('destroy', function() {
         let index = _findModal(actor);
         if (index >= 0)
-            modalActorFocusStack.splice(index, 1);
+            popModal(actor);
     });
-    let curFocus = global.stage.get_key_focus();
-    let curFocusDestroyId;
-    if (curFocus != null) {
-        curFocusDestroyId = curFocus.connect('destroy', function() {
-            let index = _findModal(actor);
-            if (index >= 0)
-                modalActorFocusStack[index].actor = null;
+
+    let record = {
+        actor: actor,
+        focus: global.stage.get_key_focus(),
+        destroyId: actorDestroyId
+    };
+    if (record.focus != null) {
+        record.focusDestroyId = record.focus.connect('destroy', function() {
+            record.focus = null;
+            record.focusDestroyId = null;
         });
     }
-    modalActorFocusStack.push({ actor: actor,
-                                focus: curFocus,
-                                destroyId: actorDestroyId,
-                                focusDestroyId: curFocusDestroyId });
+    modalActorFocusStack.push(record);
 
     global.stage.set_key_focus(actor);
     return true;
@@ -941,8 +1154,8 @@ function pushModal(actor, timestamp) {
 
 /**
  * popModal:
- * @actor: #ClutterActor passed to original invocation of pushModal().
- * @timestamp: optional timestamp
+ * @actor (Clutter.Actor): actor passed to original invocation of pushModal().
+ * @timestamp (int): optional timestamp
  *
  * Reverse the effect of pushModal().  If this invocation is undoing
  * the topmost invocation, then the focus will be restored to the
@@ -993,6 +1206,13 @@ function popModal(actor, timestamp) {
     global.set_stage_input_mode(Cinnamon.StageInputMode.NORMAL);
 }
 
+/**
+ * createLookingGlass:
+ *
+ * Obtains the looking glass object. Create if it does not exist
+ *
+ * Returns (LookingGlass.LookingGlass): looking glass object
+ */
 function createLookingGlass() {
     if (lookingGlass == null) {
         lookingGlass = new LookingGlass.LookingGlass();
@@ -1000,6 +1220,13 @@ function createLookingGlass() {
     return lookingGlass;
 }
 
+/**
+ * getRunDialog:
+ *
+ * Obtains the run dialog object. Create if it does not exist
+ *
+ * Returns (RunDialog.RunDialog): run dialog object
+ */
 function getRunDialog() {
     if (runDialog == null) {
         runDialog = new RunDialog.RunDialog();
@@ -1009,9 +1236,9 @@ function getRunDialog() {
 
 /**
  * activateWindow:
- * @window: the Meta.Window to activate
- * @time: (optional) current event time
- * @workspaceNum: (optional) window's workspace number
+ * @window (Meta.Window): the Meta.Window to activate
+ * @time (int): (optional) current event time
+ * @workspaceNum (int): (optional) window's workspace number
  *
  * Activates @window, switching to its workspace first if necessary,
  * and switching out of the overview if it's currently active
@@ -1091,8 +1318,8 @@ function _queueBeforeRedraw(workId) {
 
 /**
  * initializeDeferredWork:
- * @actor: A #ClutterActor
- * @callback: Function to invoke to perform work
+ * @actor (Clutter.Actor): A #ClutterActor
+ * @callback (function): Function to invoke to perform work
  *
  * This function sets up a callback to be invoked when either the
  * given actor is mapped, or after some period of time when the machine
@@ -1105,7 +1332,7 @@ function _queueBeforeRedraw(workId) {
  * initialization as well, under the assumption that new actors
  * will need it.
  *
- * Returns: A string work identifer
+ * Returns (string): A string work identifer
  */
 function initializeDeferredWork(actor, callback, props) {
     // Turn into a string so we can use as an object property
@@ -1129,7 +1356,7 @@ function initializeDeferredWork(actor, callback, props) {
 
 /**
  * queueDeferredWork:
- * @workId: work identifier
+ * @workId (string): work identifier
  *
  * Ensure that the work identified by @workId will be
  * run on map or timeout.  You should call this function
@@ -1156,6 +1383,15 @@ function queueDeferredWork(workId) {
     }
 }
 
+/**
+ * isInteresting:
+ * @metaWindow (Meta.Window): the window to be tested
+ *
+ * Determines whether a window is "interesting", i.e.
+ * ones to be displayed in alt-tab, window list etc.
+ *
+ * Returns (boolean): whether the window is interesting
+ */
 function isInteresting(metaWindow) {
     if (tracker.is_window_interesting(metaWindow)) {
         // The nominal case.
@@ -1173,12 +1409,14 @@ function isInteresting(metaWindow) {
 
 /**
  * getTabList:
- * @workspaceOpt (optional) workspace, defaults to global.screen.get_active_workspace()
- * @screenOpt: (optional) screen, defaults to global.screen
+ * @workspaceOpt (Meta.Workspace): (optional) workspace, defaults to global.screen.get_active_workspace()
+ * @screenOpt (Meta.Screen): (optional) screen, defaults to global.screen
  *
  * Return a list of the interesting windows on a workspace (by default,
  * the active workspace).
  * The list will include app-less dialogs.
+ *
+ * Returns (array): list of windows
  */
 function getTabList(workspaceOpt, screenOpt) {
     let screen = screenOpt || global.screen;

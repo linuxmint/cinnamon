@@ -48,7 +48,7 @@ ExpoWindowClone.prototype = {
         this.actor._delegate = this;
         this.realWindow = realWindow;
         this.metaWindow = realWindow.meta_window;
-
+        this.refreshClone();
         let positionChangedId = this.realWindow.connect('position-changed',
                                                           Lang.bind(this, this.onPositionChanged));
         let sizeChangedId = this.realWindow.connect('position-changed',
@@ -147,7 +147,7 @@ ExpoWindowClone.prototype = {
         this.clone = new St.Group({reactive: false});
         this.actor.add_actor(this.clone);
         let [pwidth, pheight] = [this.realWindow.width, this.realWindow.height];
-        let clones = WindowUtils.createWindowClone(this.metaWindow, 0, withTransients);
+        let clones = WindowUtils.createWindowClone(this.metaWindow, 0, 0, withTransients);
         for (i in clones) {
             let clone = clones[i].actor;
             this.clone.add_actor(clone);

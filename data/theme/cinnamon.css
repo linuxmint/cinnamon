@@ -103,7 +103,6 @@ StScrollBar StButton#vhandle:hover {
 	color: #ffffff;
 	font-size: 9.5pt;
 	min-width: 100px;
-	background-bumpmap: url("/usr/share/cinnamon/bumpmaps/frost.png");
 }
 .popup-submenu-menu-item:open {
 	background-color: #4c4c4c;
@@ -801,7 +800,7 @@ StScrollBar StButton#vhandle:hover {
 .switcher-list {
 	background: rgba(80,80,80,0.8);
 	border: 2px solid #a5a5a5;
-	border-radius: 24px;
+	border-radius: 8px;
 	padding: 20px;
 	font-size: 9pt;
 	color: white;
@@ -915,6 +914,10 @@ StScrollBar StButton#vhandle:hover {
 .run-dialog-error-box {
 	padding-top: 15px;
 	spacing: 5px;
+}
+.run-dialog-completion-box { 
+        padding-left: 15px;
+        font-size: 10px;
 }
 .run-dialog-entry {
 	font-size: 10.5pt;
@@ -1292,7 +1295,6 @@ StScrollBar StButton#vhandle:hover {
 	padding-left: 7px;
 	padding-right: 7px;
 	padding-bottom: 7px;
-	transition-duration: 75;
 }
 .menu-category-button-greyed {
 	padding-top: 7px;
@@ -1313,7 +1315,6 @@ StScrollBar StButton#vhandle:hover {
 	background-gradient-end: rgba(255,255,255,0.08);
 	box-shadow: inset 0px 0px 1px 1px rgba(255,255,255,0.06);
 	border-radius: 4px;
-	transition-duration: 75;
 }
 .menu-category-button-label:ltr {
 	padding-left: 5px;
@@ -1450,7 +1451,7 @@ StScrollBar StButton#vhandle:hover {
 .sound-button StIcon {
 	icon-size: 1.4em;
 }
-.sound-track-infos {
+.sound-track-infos {	
 	padding-left: 5px;
 	padding-right: 5px;
 	padding-top: 5px;
@@ -1472,6 +1473,18 @@ StScrollBar StButton#vhandle:hover {
 	padding-left: 15px;
 	padding-right: 15px;	
 	max-width: 220px;
+}
+.sound-seek-box {
+   padding-left: 20px;
+}
+.sound-seek-box StLabel {
+   padding-top: 2px;
+}
+.sound-seek-box StIcon {
+   icon-size: 1em;
+}
+.sound-seek-slider {
+   width: 140px;   
 }
 .sound-volume-menu-item {
 	padding: .4em 1.75em;
@@ -1656,6 +1669,10 @@ StScrollBar StButton#vhandle:hover {
     padding: 6px;
 }
 
+.desklet-drag-placeholder { 
+    border: 2px solid #6daa00;
+    background-color: rgba(109,170, 0, 0.3);
+}
 /* ===================================================================
  * Clock Desklet (desklet.js) 
  * ===================================================================*/

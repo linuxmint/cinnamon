@@ -1,10 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
   <!-- interface-requires gtk+ 3.0 -->
-  <object class="GtkAction" id="action1">
-    <property name="stock_id">gtk-execute</property>
-    <signal name="activate" handler="on_menu_button_clicked" object="menu_toggle_button" swapped="no"/>
-  </object>
   <object class="GtkWindow" id="main_window">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
@@ -14,13 +10,14 @@
     <property name="default_width">800</property>
     <property name="default_height">600</property>
     <property name="icon_name">preferences-system</property>
+    <property name="opacity">0</property>
     <child>
       <object class="GtkBox" id="box1">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <property name="orientation">vertical</property>
         <child>
-          <object class="GtkToolbar" id="toolbar1">
+          <object class="GtkToolbar" id="top_bar">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="toolbar_style">icons</property>
@@ -41,6 +38,7 @@
                     <property name="can_focus">False</property>
                     <property name="halign">start</property>
                     <property name="valign">start</property>
+                    <property name="homogeneous">True</property>
                     <property name="layout_style">start</property>
                     <child>
                       <object class="GtkButton" id="button_back">
@@ -88,19 +86,6 @@
               </object>
               <packing>
                 <property name="expand">True</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkToolButton" id="menu_toggle_button">
-                <property name="related_action">action1</property>
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="label" translatable="yes">toolbutton3</property>
-                <property name="use_underline">True</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="homogeneous">True</property>
               </packing>
             </child>
           </object>
@@ -201,12 +186,35 @@
           </packing>
         </child>
         <child>
-          <object class="GtkToolbar" id="toolbar2">
+          <object class="GtkToolbar" id="bottom_bar">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <style>
               <class name="toolbar"/>
             </style>
+            <child>
+              <object class="GtkToolItem" id="toolbutton3">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <child>
+                  <object class="GtkLinkButton" id="mode_button">
+                    <property name="label" translatable="yes">button</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="receives_default">True</property>
+                    <property name="border_width">4</property>
+                    <property name="relief">none</property>
+                    <property name="focus_on_click">False</property>
+                    <property name="xalign">0</property>
+                    <signal name="activate-link" handler="on_menu_button_clicked" swapped="no"/>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="homogeneous">True</property>
+              </packing>
+            </child>
             <child>
               <object class="GtkToolItem" id="toolbutton1">
                 <property name="visible">True</property>
@@ -258,12 +266,18 @@
     <property name="valign">start</property>
     <property name="border_width">6</property>
     <property name="resizable">False</property>
-    <property name="modal">True</property>
-    <property name="window_position">center</property>
+    <property name="window_position">center-on-parent</property>
+    <property name="destroy_with_parent">True</property>
     <property name="icon_name">preferences-other</property>
-    <property name="type_hint">dialog</property>
+    <property name="type_hint">normal</property>
+    <property name="skip_taskbar_hint">True</property>
+    <property name="skip_pager_hint">True</property>
+    <property name="transient_for">main_window</property>
+    <property name="attached_to">main_window</property>
     <child internal-child="vbox">
       <object class="GtkBox" id="dialog-vbox3">
+        <property name="width_request">300</property>
+        <property name="height_request">110</property>
         <property name="can_focus">False</property>
         <property name="halign">start</property>
         <property name="valign">start</property>
@@ -272,7 +286,7 @@
         <child internal-child="action_area">
           <object class="GtkButtonBox" id="dialog-action_area3">
             <property name="can_focus">False</property>
-            <property name="layout_style">end</property>
+            <property name="layout_style">spread</property>
             <child>
               <object class="GtkButton" id="btnProgressAbort">
                 <property name="label">gtk-cancel</property>
@@ -286,20 +300,6 @@
                 <property name="fill">True</property>
                 <property name="padding">2</property>
                 <property name="position">0</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkButton" id="btnProgressActivate">
-                <property name="label" translatable="yes">Enable</property>
-                <property name="visible">True</property>
-                <property name="sensitive">False</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">1</property>
               </packing>
             </child>
             <child>
@@ -366,7 +366,6 @@
     </child>
     <action-widgets>
       <action-widget response="0">btnProgressAbort</action-widget>
-      <action-widget response="0">btnProgressActivate</action-widget>
       <action-widget response="0">btnProgressClose</action-widget>
     </action-widgets>
   </object>

@@ -7,17 +7,17 @@ msgid ""
 msgstr ""
 "Project-Id-Version: linuxmint\n"
 "Report-Msgid-Bugs-To: FULL NAME <EMAIL@ADDRESS>\n"
-"POT-Creation-Date: 2012-10-20 15:43+0100\n"
-"PO-Revision-Date: 2012-11-10 14:52+0000\n"
-"Last-Translator: ZDroid <legospace9876@gmail.com>\n"
+"POT-Creation-Date: 2013-04-30 17:30-0400\n"
+"PO-Revision-Date: 2013-04-03 16:02+0000\n"
+"Last-Translator: Саша Петровић <salepetronije@gmail.com>\n"
 "Language-Team: Serbian <sr@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Launchpad-Export-Date: 2012-11-13 13:18+0000\n"
-"X-Generator: Launchpad (build 16251)\n"
+"X-Launchpad-Export-Date: 2013-05-04 16:22+0000\n"
+"X-Generator: Launchpad (build 16598)\n"
 
 #: src/cinnamon-app.c:347 src/cinnamon-app.c:355
 #: js/ui/notificationDaemon.js:458
@@ -51,7 +51,7 @@ msgid "File System"
 msgstr "Систем датотека"
 
 #: src/cinnamon-util.c:244
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:135
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:119
 msgid "Search"
 msgstr "Претрага"
 
@@ -60,7 +60,9 @@ msgstr "Претрага"
 msgid "%1$s: %2$s"
 msgstr "%1$s: %2$s"
 
-#: src/gvc/gvc-mixer-control.c:1082 js/ui/lookingGlass.js:691
+#: src/gvc/gvc-mixer-control.c:1082
+#: files/usr/lib/cinnamon-settings/modules/cs_hotcorner.py:117
+#: files/usr/lib/cinnamon-settings/modules/cs_mouse.py:117
 msgid "Disabled"
 msgstr "Искључено"
 
@@ -97,21 +99,21 @@ msgstr "Није могуће обрадити команду:"
 msgid "Execution of '%s' failed:"
 msgstr "Извршавање '%s' није успело"
 
-#: js/ui/applet.js:237
+#: js/ui/applet.js:399
 msgid "Remove this applet"
 msgstr "Уклони овај аплет"
 
-#: js/ui/autorunManager.js:280
+#: js/ui/autorunManager.js:275
 msgid "Removable Devices"
 msgstr "Уклоњиви уређаји"
 
-#: js/ui/autorunManager.js:590
+#: js/ui/autorunManager.js:585
 #, c-format
 msgid "Open with %s"
 msgstr "Отвори помоћу %s"
 
-#: js/ui/autorunManager.js:616
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:147
+#: js/ui/autorunManager.js:611
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:131
 msgid "Eject"
 msgstr "Избаци"
 
@@ -154,6 +156,10 @@ msgstr "Сакриј текст"
 #: js/ui/cinnamonMountOperation.js:285
 msgid "Wrong password, please try again"
 msgstr "Погрешна лозинка, молим покушајте поново"
+
+#: js/ui/desklet.js:67
+msgid "Remove this desklet"
+msgstr "Уклони ову справицу"
 
 #: js/ui/endSessionDialog.js:58
 #, c-format
@@ -231,23 +237,51 @@ msgstr[2] "Систем ће се  поново покренути за%d сек
 msgid "Restarting the system."
 msgstr "Поновно покретање система."
 
-#: js/ui/endSessionDialog.js:428 js/ui/extensionSystem.js:477
-#: js/ui/networkAgent.js:144 js/ui/polkitAuthenticationAgent.js:173
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:170
+#: js/ui/endSessionDialog.js:428 js/ui/networkAgent.js:144
+#: js/ui/polkitAuthenticationAgent.js:173
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:165
 #: files/usr/share/cinnamon/applets/trash@cinnamon.org/applet.js:118
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1414
-#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/add-panel-launcher.py:141
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:300
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/cinnamon-add-panel-launcher.py:141
 msgid "Cancel"
 msgstr "Откажи"
 
-#: js/ui/extensionSystem.js:481
-msgid "Install"
-msgstr "Инсталирај"
+#: js/ui/expoThumbnail.js:309 js/ui/panel.js:384
+msgid "Yes"
+msgstr "Да"
 
-#: js/ui/extensionSystem.js:485
+#: js/ui/expoThumbnail.js:317 js/ui/panel.js:391
+msgid "No"
+msgstr "Не"
+
+#: js/ui/expoThumbnail.js:957
 #, c-format
-msgid "Download and install '%s' from extensions.gnome.org?"
-msgstr "Преузми и инсталирај '%s' са extensions.gnome.org?"
+msgid ""
+"Are you sure you want to remove workspace \"%s\"?\n"
+"\n"
+msgstr ""
+"Желите да уклоните радни простор \"%s\"?\n"
+"\n"
+
+#: js/ui/extension.js:360
+msgid "Initializing"
+msgstr "Припремам"
+
+#: js/ui/extension.js:362
+msgid "Loaded"
+msgstr "Учитано"
+
+#: js/ui/extension.js:364
+msgid "Error"
+msgstr "Грешка"
+
+#: js/ui/extension.js:366
+msgid "Out of date"
+msgstr "Застарео"
+
+#: js/ui/hotCorner.js:41
+msgid "Invalid overview options: Incorrect number of corners"
+msgstr "Неисправна могућност прегледа: Неисправан број ивица"
 
 #: js/ui/keyboard.js:324
 msgid "tray"
@@ -255,52 +289,62 @@ msgstr "палета"
 
 #: js/ui/keyboard.js:555
 #: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:114
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2921
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:151
 msgid "Keyboard"
 msgstr "Тастатура"
 
-#: js/ui/lookingGlass.js:643
+#: js/ui/lookingGlass.js:714
 msgid "No extensions installed"
 msgstr "Наставци нису инсталирани"
 
-#: js/ui/lookingGlass.js:689
-msgid "Enabled"
-msgstr "Укључено"
-
-#: js/ui/lookingGlass.js:693
-msgid "Error"
-msgstr "Грешка"
-
-#: js/ui/lookingGlass.js:695
-msgid "Out of date"
-msgstr "Застарео"
-
-#: js/ui/lookingGlass.js:697
-msgid "Downloading"
-msgstr "Преузимање"
-
-#: js/ui/lookingGlass.js:717
+#: js/ui/lookingGlass.js:806
 msgid "View Source"
 msgstr "Приказ извора"
 
-#: js/ui/lookingGlass.js:726
+#: js/ui/lookingGlass.js:815
 msgid "Web Page"
 msgstr "Веб страница"
 
-#: js/ui/main.js:370
+#: js/ui/lookingGlass.js:824
+msgid "Reload Code"
+msgstr "Поново учитај код"
+
+#: js/ui/main.js:430
+msgid "Running in software rendering mode"
+msgstr ""
+
+#: js/ui/main.js:431
+msgid ""
+"Cinnamon is currently running without video hardware acceleration and, as a "
+"result, you may observe much higher than normal CPU usage.\n"
+"\n"
+msgstr ""
+
+#: js/ui/main.js:432
+msgid ""
+"There could be a problem with your drivers or some other issue.  For the "
+"best experience, it is recommended that you only use this mode for"
+msgstr ""
+
+#: js/ui/main.js:433
+msgid " troubleshooting purposes."
+msgstr ""
+
+#: js/ui/main.js:483
 msgid "WORKSPACE"
 msgstr "РАДНИ ПРОСТОР"
 
-#: js/ui/messageTray.js:1259
+#: js/ui/messageTray.js:1258
 msgid "Open"
 msgstr "Отвори"
 
-#: js/ui/messageTray.js:1266
-#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/applet.js:59
+#: js/ui/messageTray.js:1265
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/applet.js:58
+#: files/usr/lib/cinnamon-settings/modules/cs_backgrounds.py:490
 msgid "Remove"
 msgstr "Уклони"
 
-#: js/ui/messageTray.js:1853
+#: js/ui/messageTray.js:1832
 msgid "System Information"
 msgstr "Информације о систему"
 
@@ -379,49 +423,29 @@ msgstr "Лозинка мобилне широкопојасне мреже"
 msgid "A password is required to connect to '%s'."
 msgstr "Потребна је лозинка за повезивање на „%s“."
 
-#: js/ui/overview.js:80
-msgid "Undo"
-msgstr "Опозови"
-
-#: js/ui/overview.js:193
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1598
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2860
-msgid "Windows"
-msgstr "Прозори"
-
-#: js/ui/panel.js:384
-msgid "Yes"
-msgstr "Да"
-
-#: js/ui/panel.js:391
-msgid "No"
-msgstr "Не"
-
 #: js/ui/panel.js:426
 #: files/usr/share/cinnamon/applets/brightness@cinnamon.org/applet.js:148
 #: files/usr/share/cinnamon/applets/settings@cinnamon.org/applet.js:28
 msgid "Settings"
 msgstr "Поставке"
 
-#: js/ui/panel.js:428
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2737
+#: js/ui/panel.js:428 files/usr/lib/cinnamon-settings/modules/cs_themes.py:17
 msgid "Themes"
 msgstr "Теме"
 
-#: js/ui/panel.js:431
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2836
+#: js/ui/panel.js:431 files/usr/lib/cinnamon-settings/modules/cs_applets.py:14
 msgid "Applets"
 msgstr "Аплети"
 
-#: js/ui/panel.js:434
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2653
+#: js/ui/panel.js:434 files/usr/lib/cinnamon-settings/modules/cs_panel.py:9
 msgid "Panel"
 msgstr "Табла"
 
 #: js/ui/panel.js:437
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:660
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:699
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2644
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:768
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:807
+#: files/usr/lib/cinnamon-settings/modules/cs_menu.py:9
+#: files/usr/lib/cinnamon-settings/modules/cs_windows.py:91
 msgid "Menu"
 msgstr "Изборник"
 
@@ -457,16 +481,16 @@ msgstr "Поставке окна"
 msgid "Add applets to the panel"
 msgstr "Додај аплете на таблу"
 
-#: js/ui/placesManager.js:119
+#: js/ui/placesManager.js:120
 #, c-format
 msgid "Failed to unmount '%s'"
 msgstr "Није успело демонтирање '%s'"
 
-#: js/ui/placesManager.js:122
+#: js/ui/placesManager.js:127
 msgid "Retry"
 msgstr "Покушај поново"
 
-#: js/ui/placesManager.js:162
+#: js/ui/placesManager.js:170
 msgid "Connect to..."
 msgstr "Повежи се..."
 
@@ -490,185 +514,247 @@ msgstr "Нажалост, то није успело. Покушајте пон�
 msgid "Password:"
 msgstr "Лозинка:"
 
-#: js/ui/runDialog.js:209
+#: js/ui/runDialog.js:216
 msgid "Please enter a command:"
 msgstr "Унесите наредбу:"
+
+#: js/ui/workspace.js:1464
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:44
+#: files/usr/lib/cinnamon-settings/modules/cs_default.py:199
+#: files/usr/lib/cinnamon-settings/modules/cs_windows.py:92
+#: files/usr/lib/cinnamon-settings/bin/Spices.py:108
+msgid "Close"
+msgstr "Затвори"
+
+#: js/ui/workspace.js:1468
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:53
+msgid "Restore"
+msgstr "Врати"
+
+#: js/ui/workspace.js:1470
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:53
+#: files/usr/lib/cinnamon-settings/modules/cs_windows.py:93
+msgid "Minimize"
+msgstr "Умањи"
+
+#: js/ui/workspace.js:1473 js/ui/workspace.js:1546
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:56
+#: files/usr/lib/cinnamon-settings/modules/cs_windows.py:94
+msgid "Maximize"
+msgstr "Увећај"
+
+#: js/ui/workspace.js:1476
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:59
+msgid "Move to left workspace"
+msgstr "Премести на леву радну површину"
+
+#: js/ui/workspace.js:1479
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:62
+msgid "Move to right workspace"
+msgstr "Премести на десну радну површину"
+
+#: js/ui/workspace.js:1482 js/ui/workspace.js:1531
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:65
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:73
+msgid "Visible on all workspaces"
+msgstr "Видљив на свим радним просторима"
+
+#: js/ui/workspace.js:1485
+msgid "Move to a new workspace"
+msgstr "Премести на нови радни простор"
+
+#: js/ui/workspace.js:1495
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:90
+#, c-format
+msgid "Move to monitor %d"
+msgstr "Премести на екран %d"
+
+#: js/ui/workspace.js:1529
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:69
+msgid "Only on this workspace"
+msgstr "Само на овом радном простору"
+
+#: js/ui/workspace.js:1544
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:56
+msgid "Unmaximize"
+msgstr "Обична величина"
 
 #: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:44
 msgid "Accessibility"
 msgstr "Приступачност"
 
-#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:57
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:178
+#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:56
+#: files/usr/lib/cinnamon-settings/modules/cs_backgrounds.py:34
 msgid "Zoom"
 msgstr "Увеличај"
 
-#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:68
+#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:67
 msgid "Screen Keyboard"
 msgstr "Тастатура на екрану"
 
-#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:72
+#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:71
 msgid "Visual Alerts"
 msgstr "Визуелна упозорења"
 
-#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:75
+#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:74
 msgid "Sticky Keys"
 msgstr "Лепљиви тастери"
 
-#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:78
+#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:77
 msgid "Slow Keys"
 msgstr "Спори тастери"
 
-#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:81
+#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:80
 msgid "Bounce Keys"
 msgstr "Одскачући тастери"
 
-#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:84
+#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:83
 msgid "Mouse Keys"
 msgstr "Тастери миша"
 
-#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:88
+#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:87
 msgid "Universal Access Settings"
 msgstr "Поставке универзалног приступа"
 
-#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:146
+#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:142
 msgid "High Contrast"
 msgstr "Јак контраст"
 
-#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:183
+#: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:179
 msgid "Large Text"
 msgstr "Велики текст"
 
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:37
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:71
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:111
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:144
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:216
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:221
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:453
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:32
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:66
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:106
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:139
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:211
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:215
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:467
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:55
 msgid "Bluetooth"
 msgstr "Блутут"
 
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:72
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:67
 #, c-format
 msgid "Authorization request from %s"
 msgstr "Захтев за одобрење од %s"
 
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:78
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:73
 #, c-format
 msgid "Device %s wants access to the service '%s'"
 msgstr "Уређај %s жели да приступи сервису '%s'"
 
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:80
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:75
 msgid "Always grant access"
 msgstr "Увек дозволи приступ"
 
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:81
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:76
 msgid "Grant this time only"
 msgstr "Одобри само овај пут"
 
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:82
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:77
 msgid "Reject"
 msgstr "Одбиј"
 
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:112
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:107
 #, c-format
 msgid "Pairing confirmation for %s"
 msgstr "Упаривање потврде за %s"
 
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:118
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:152
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:113
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:147
 #, c-format
 msgid "Device %s wants to pair with this computer"
 msgstr "Уређај %s жели да се упари са овим рачунаром"
 
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:119
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:114
 #, c-format
 msgid "Please confirm whether the PIN '%s' matches the one on the device."
 msgstr "Молим да потврдите да ли  ПИН  '%s' одговара на уређају."
 
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:121
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:116
 msgid "Matches"
 msgstr "Поклапа се"
 
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:122
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:117
 msgid "Does not match"
 msgstr "Не поклапа се"
 
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:145
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:140
 #, c-format
 msgid "Pairing request for %s"
 msgstr "Захтев са упаривањем са %s"
 
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:153
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:148
 msgid "Please enter the PIN mentioned on the device."
 msgstr "Унесите ПИН за споменути  уређај."
 
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:169
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:164
 msgid "OK"
 msgstr "У реду"
 
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:234
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:239
 msgid "Visibility"
 msgstr "Видљивост"
 
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:248
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:253
 msgid "Send Files to Device..."
 msgstr "Шаљем датотеке на уређај..."
 
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:249
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:254
 msgid "Set up a New Device..."
 msgstr "Постављам нови уређај..."
 
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:273
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:278
 msgid "Bluetooth Settings"
 msgstr "Подешавања Блутута"
 
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:303
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:317
 msgid "hardware disabled"
 msgstr "хардвер је сикључен"
 
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:400
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:414
 msgid "Connection"
 msgstr "Повезивање"
 
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:409
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:508
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:423
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:507
 msgid "disconnecting..."
 msgstr "искључивање..."
 
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:422
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:514
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:436
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:513
 msgid "connecting..."
 msgstr "повезивање..."
 
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:440
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:454
 msgid "Send Files..."
 msgstr "Пошаљи датотеке..."
 
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:445
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:459
 msgid "Browse Files..."
 msgstr "Прегледај датотеке..."
 
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:454
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:468
 msgid "Error browsing device"
 msgstr "Грешка при прегледу уређаја"
 
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:455
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:469
 #, c-format
 msgid "The requested device cannot be browsed, error is '%s'"
 msgstr "Тражени уређај не може да се прегледа, грешка је '%s'"
 
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:463
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:477
 msgid "Keyboard Settings"
 msgstr "Поставке тастатуре"
 
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:466
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:480
 msgid "Mouse Settings"
 msgstr "Подешавања миша"
 
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:471
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:911
+#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:485
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1025
 msgid "Sound Settings"
 msgstr "Подешавања звука"
 
@@ -701,6 +787,7 @@ msgid "Date and Time Settings"
 msgstr "Поставке датума и времена"
 
 #: files/usr/share/cinnamon/applets/expo@cinnamon.org/applet.js:19
+#: files/usr/lib/cinnamon-settings/modules/cs_hotcorner.py:118
 msgid "Expo"
 msgstr "Експозиција"
 
@@ -720,234 +807,235 @@ msgstr "Подешавања подручја и језика"
 msgid "Show flags"
 msgstr "Прикажи заставе"
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:203
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:211
 msgid "Add to panel"
 msgstr "Додај у окно"
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:206
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:214
 msgid "Add to desktop"
 msgstr "Додај на радну површину"
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:210
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:218
 msgid "Remove from favorites"
 msgstr "Уклони из омиљених"
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:213
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:221
 msgid "Add to favorites"
 msgstr "Додај у омиљене"
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:343
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:451
 #: files/usr/share/cinnamon/applets/recent@cinnamon.org/applet.js:70
 msgid "Clear list"
 msgstr "Очисти списак"
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:380
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:488
 msgid "All Applications"
 msgstr "Сви програми"
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:403
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:511
 msgid "Places"
 msgstr "Положаји"
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:421
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:529
 msgid "Recent Files"
 msgstr "Недавне датотеке"
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:749
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:861
 msgid "Edit menu"
 msgstr "Уреди изборник"
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:751
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:863
 msgid "Menu settings"
 msgstr "Поставке изборника"
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1218
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:126
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1547
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:110
+#: files/usr/lib/cinnamon-screensaver-lock-dialog/cinnamon-screensaver-lock-dialog.py:37
 msgid "Lock screen"
 msgstr "Закључај екран"
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1219
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1548
 msgid "Lock the screen"
 msgstr "Закључај екран"
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1235
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1577
 msgid "Logout"
 msgstr "Одјава"
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1236
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1578
 msgid "Leave the session"
 msgstr "Напусти мисију"
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1252
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1594
 msgid "Quit"
 msgstr "Напусти"
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1253
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1595
 msgid "Shutdown the computer"
 msgstr "Угаси рачунар"
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1364
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1702
 msgid "Type to search..."
 msgstr "Откуцај текст за претрагу..."
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:96
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:95
 msgid "<unknown>"
 msgstr "<непознато>"
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:306
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:305
 msgid "disabled"
 msgstr "искључен"
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:506
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:505
 msgid "unmanaged"
 msgstr "неподешено"
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:517
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:516
 msgid "authentication required"
 msgstr "потребна је провера"
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:527
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:526
 msgid "firmware missing"
 msgstr "Недостаје фирмвер"
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:534
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:533
 msgid "cable unplugged"
 msgstr "кабал је искључен"
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:539
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:538
 msgid "unavailable"
 msgstr "недоступно"
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:541
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:540
 msgid "connection failed"
 msgstr "повезивање није успело"
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:597
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1554
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:596
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1553
 msgid "More..."
 msgstr "Још..."
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:633
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1489
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:632
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1488
 msgid "Connected (private)"
 msgstr "Повезан (приватно)"
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:711
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:710
 msgid "Auto Ethernet"
 msgstr "Аутоматска жичана веза"
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:775
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:774
 msgid "Auto broadband"
 msgstr "Аутоматска широкопојасна веза"
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:778
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:777
 msgid "Auto dial-up"
 msgstr "Аутоматска позивна веза"
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:900
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1501
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:899
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1500
 #, c-format
 msgid "Auto %s"
 msgstr "Ауто %s"
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:902
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:901
 msgid "Auto bluetooth"
 msgstr "Аутоматска Блутут веза"
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1503
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1502
 msgid "Auto wireless"
 msgstr "Аутоматска бежична веза"
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1591
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1590
 msgid "Network Manager"
 msgstr "Управник мреже"
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1624
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1623
 msgid "Enable networking"
 msgstr "Омогући умрежавање"
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1636
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1635
 msgid "Wired"
 msgstr "Жичана"
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1647
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1646
 msgid "Wireless"
 msgstr "Бежична"
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1657
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1656
 msgid "Mobile broadband"
 msgstr "Мобилна широкопојасна мрежа"
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1667
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1666
 msgid "VPN Connections"
 msgstr "VPN везе"
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1678
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1677
 msgid "Network Settings"
 msgstr "Поставке мреже"
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1829
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1828
 msgid "Connection failed"
 msgstr "Није успело повезивање"
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1830
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:1829
 msgid "Activation of network connection failed"
 msgstr "Није успело покретање мрежне везе"
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2087
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2086
 msgid "Networking is disabled"
 msgstr "Умрежавање је онемогућено"
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2106
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2105
 msgid "No connection"
 msgstr "Без повезивања"
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2112
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2111
 msgid "Connecting to the cellular network..."
 msgstr "Повезивање на мобилну мрежу..."
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2116
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2115
 msgid "Connecting to the wireless network..."
 msgstr "Повезивање на бежичну мрежу..."
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2120
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2119
 msgid "Connecting to the wired network..."
 msgstr "Повезивање на жичану мрежу..."
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2124
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2123
 msgid "Connecting to the VPN..."
 msgstr "Повезивање на VPN..."
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2130
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2129
 msgid "Connecting to the network..."
 msgstr "Повезивање на мрежу..."
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2146
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2145
 msgid "Connected to the wireless network"
 msgstr "Повезан на бежичну мрежу"
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2149
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2148
 msgid "Wireless connection"
 msgstr "Бежична веза"
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2159
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2158
 msgid "Connected to the wired network"
 msgstr "Повезан на жичану мрежу"
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2170
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2175
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2169
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2174
 msgid "Connected to the cellular network"
 msgstr "Повезан на мрежу мобилне телефоније"
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2180
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2179
 msgid "Connected to the VPN"
 msgstr "Повезан на VPN"
 
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2186
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:2185
 msgid "Connected to the network"
 msgstr "Повезан на мрежу"
 
-#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:32
+#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:39
 msgid "Notifications"
 msgstr "Обавештења"
 
@@ -955,48 +1043,49 @@ msgstr "Обавештења"
 msgid "Clear notifications"
 msgstr "Обриши обавештења"
 
-#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:226
+#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:220
 msgid "No notifications"
 msgstr "Без обавештења"
 
-#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:229
+#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:223
 msgid " notification"
 msgstr " обавештење"
 
-#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:232
+#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:226
 msgid " notifications"
 msgstr " обавештења"
 
-#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:246
+#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:240
 msgid " (Just now)"
 msgstr " (Управо сада)"
 
-#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:249
+#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:243
 #, c-format
 msgid " (%s seconds ago)"
 msgstr " (%s секунде раније)"
 
-#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:252
+#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:246
 #, c-format
 msgid " (%s minute ago)"
 msgstr " (%s минут раније)"
 
-#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:255
+#: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:249
 #, c-format
 msgid " (%s minutes ago)"
 msgstr " (%s минуте раније)"
 
-#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/applet.js:47
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/applet.js:46
 msgid "Launch"
 msgstr "Покрени"
 
-#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/applet.js:51
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1409
-#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/add-panel-launcher.py:151
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/applet.js:50
+#: files/usr/lib/cinnamon-settings/modules/cs_backgrounds.py:502
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:295
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/cinnamon-add-panel-launcher.py:151
 msgid "Add"
 msgstr "Додај"
 
-#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/applet.js:55
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/applet.js:54
 msgid "Edit"
 msgstr "Уреди"
 
@@ -1017,6 +1106,7 @@ msgid "Monitor"
 msgstr "Екран"
 
 #: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:112
+#: files/usr/lib/cinnamon-settings/modules/cs_mouse.py:30
 msgid "Mouse"
 msgstr "Миш"
 
@@ -1042,6 +1132,7 @@ msgstr "Рачунар"
 
 #: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:182
 #: files/usr/share/cinnamon/applets/xrandr@cinnamon.org/applet.js:45
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:53
 msgid "Display"
 msgstr "Приказ"
 
@@ -1117,16 +1208,29 @@ msgid "Open file manager"
 msgstr "Отвори управљача датотека"
 
 #: files/usr/share/cinnamon/applets/scale@cinnamon.org/applet.js:19
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2786
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2797
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2808
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2819
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2830
+#: files/usr/lib/cinnamon-settings/modules/cs_effects.py:57
+#: files/usr/lib/cinnamon-settings/modules/cs_effects.py:68
+#: files/usr/lib/cinnamon-settings/modules/cs_effects.py:79
+#: files/usr/lib/cinnamon-settings/modules/cs_effects.py:90
+#: files/usr/lib/cinnamon-settings/modules/cs_effects.py:101
+#: files/usr/lib/cinnamon-settings/modules/cs_hotcorner.py:119
 msgid "Scale"
 msgstr "Размера"
 
-#: files/usr/share/cinnamon/applets/show-desktop@cinnamon.org/applet.js:16
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:74
+#: files/usr/share/cinnamon/applets/settings-example@cinnamon.org/applet.js:96
+msgid "Hi there!"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/settings-example@cinnamon.org/applet.js:129
+msgid "YOU PRESSED THE BUTTON!!!"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/settings-example@cinnamon.org/applet.js:137
+msgid "YOU USED THE HOTKEY!!!"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/show-desktop@cinnamon.org/applet.js:15
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:58
 msgid "Show desktop"
 msgstr "Прикажи радну површину"
 
@@ -1142,73 +1246,73 @@ msgstr "Прекинуто"
 msgid "Stopped"
 msgstr "Заустављено"
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:373
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:489
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:385
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:566
 msgid "Unknown Artist"
 msgstr "Непознати извођач"
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:374
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:493
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:386
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:570
 msgid "Unknown Album"
 msgstr "Непознати албум"
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:375
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:497
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:387
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:574
 msgid "Unknown Title"
 msgstr "Непознат наслов"
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:386
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:398
 msgid "Previous"
 msgstr "Претходно"
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:389
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:142
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:401
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:126
 msgid "Play"
 msgstr "Пусти"
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:392
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:404
 msgid "Stop"
 msgstr "Стани"
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:395
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:407
 msgid "Next"
 msgstr "Следеће"
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:409
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:443
 msgid "Open Player"
 msgstr "Пусти пуштач"
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:419
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:453
 msgid "Quit Player"
 msgstr "Затвори пуштач"
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:744
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:830
 msgid "Mute output"
 msgstr "Пригуши излаз"
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:745
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:831
 msgid "Mute input"
 msgstr "Пригуши улаз"
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:884
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:998
 msgid "Launch player..."
 msgstr "Покрени пуштач..."
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:897
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:960
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:961
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:966
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:967
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:986
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:987
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1011
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1074
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1075
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1080
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1081
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1100
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1101
 msgid "Volume"
 msgstr "Уређај"
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:904
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1018
 msgid "Microphone"
 msgstr "Микрофон"
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:913
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1027
 msgid "Output device..."
 msgstr "Излазни уређај..."
 
@@ -1240,60 +1344,21 @@ msgstr "Испразни канту?"
 msgid "Empty"
 msgstr "Празно"
 
-#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:41
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2546
-msgid "Close"
-msgstr "Затвори"
-
-#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:44
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:47
 msgid "Close all"
 msgstr "Затвори све"
 
-#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:47
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:50
 msgid "Close others"
 msgstr "Затвори остале"
-
-#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:51
-#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:832
-msgid "Restore"
-msgstr "Врати"
-
-#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:53
-#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:837
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2547
-msgid "Minimize"
-msgstr "Умањи"
-
-#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:56
-#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:117
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2548
-msgid "Maximize"
-msgstr "Увећај"
-
-#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:59
-msgid "Move to left workspace"
-msgstr "Премести на леву радну површину"
-
-#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:62
-msgid "Move to right workspace"
-msgstr "Премести на десну радну површину"
-
-#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:65
-#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:103
-msgid "Visible on all workspaces"
-msgstr "Видљив на свим радним просторима"
-
-#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:99
-msgid "Only on this workspace"
-msgstr "Само на овом радном простору"
-
-#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:115
-msgid "Unmaximize"
-msgstr "Обична величина"
 
 #: files/usr/share/cinnamon/applets/windows-quick-list@cinnamon.org/applet.js:24
 msgid "All windows"
 msgstr "Сви прозори"
+
+#: files/usr/share/cinnamon/applets/windows-quick-list@cinnamon.org/applet.js:106
+msgid "No open windows"
+msgstr "Нема отворених прозора"
 
 #: files/usr/share/cinnamon/applets/workspace-switcher@cinnamon.org/applet.js:18
 msgid "Switch workspace"
@@ -1303,639 +1368,1230 @@ msgstr "Промени радни простор"
 msgid "Configure display settings..."
 msgstr "Уреди поставке екрана..."
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:36
-msgid "Desktop Settings"
-msgstr "Поставке радне површине"
+#: files/usr/share/cinnamon/desklets/clock@cinnamon.org/desklet.js:20
+msgid "Clock"
+msgstr "Сат"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:37
-msgid "Desktop Configuration Tool"
-msgstr "Алатка за подешавање радне површине"
+#: files/usr/share/cinnamon/desklets/launcher@cinnamon.org/desklet.js:29
+msgid "Add new launcher"
+msgstr "Додајте нови покретач"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:38
-msgid "Fine-tune desktop settings"
-msgstr "Фина подешавања радне површине"
+#: files/usr/share/cinnamon/desklets/launcher@cinnamon.org/desklet.js:32
+msgid "Edit launcher"
+msgstr "Уредите покретач"
+
+#: files/usr/share/cinnamon/desklets/photoframe@cinnamon.org/desklet.js:85
+msgid "Photo Frame"
+msgstr "Оквир за слике"
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:32
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:192
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:334
+msgid "System Settings"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:33
+msgid "Control Center"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:34
+msgid "Switch to Normal Mode"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:35
+msgid "Switch to Advanced Mode"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:45
+msgid "Appearance"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:46
+msgid "Preferences"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:47
+msgid "Hardware"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:52
+msgid "Networking"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:52
+msgid "network, wireless, wifi, ethernet, broadband, internet"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:53
+msgid "display, screen, monitor, layout, resolution, dual, lcd"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:54
+msgid "Regional Settings"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:54
+msgid "region, layout, keyboard, language"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:55
+msgid "bluetooth, dongle, transfer, mobile"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:56
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:496
+msgid "Universal Access"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:56
+msgid "magnifier, talk, access, zoom, keys, contrast"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:57
+msgid "User Accounts"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:57
+msgid "users, accounts, add, password, picture"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:58
+msgid "Power Management"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:58
+msgid "power, suspend, hibernate, laptop, desktop"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:59
+msgid "Sound"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:59
+msgid "sound, speakers, headphones, test"
+msgstr ""
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:60
-msgid "Toggle Scale"
-msgstr "Укључи/искључи размеру"
+msgid "Color"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:61
-msgid "Toggle Expo"
-msgstr "Укључи/искључи Expo"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:62
-msgid "Cycle through open windows"
-msgstr "Кружите кроз отворене прозоре"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:63
-msgid "Cycle backwards though open windows"
-msgstr "Кружите уназад кроз отворене прозоре"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:64
-msgid "Run dialog (must restart Cinnamon)"
-msgstr "Покрените дијалог (Cinnamon се мора рестартовати)"
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:60
+msgid "color, profile, display, printer, output"
+msgstr ""
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:65
-msgid "Menu button (must restart Cinnamon)"
-msgstr "Дугме изборника (Cinnamon се мора рестартовати)"
+msgid "Printers"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:65
+msgid "printers, laser, inkjet"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:66
+msgid "Firewall"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:66
+msgid "firewall, block, filter, programs"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:67
+msgid "Languages"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:67
+msgid "language, install, foreign"
+msgstr ""
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:68
-msgid "Maximize window"
-msgstr "Увећава прозор"
+msgid "Login Screen"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:68
+msgid "login, mdm, gdm, manager, user, password, startup, switch"
+msgstr ""
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:69
-msgid "Unmaximize window"
-msgstr "Поништи увећање прозора"
+msgid "Startup Programs"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:69
+msgid "startup, programs, boot, init, session"
+msgstr ""
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:70
-msgid "Minimize window"
-msgstr "Умањи прозор"
+msgid "Device Drivers"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:70
+msgid ""
+"video, driver, wifi, card, hardware, proprietary, nvidia, radeon, nouveau, "
+"fglrx"
+msgstr ""
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:71
-msgid "Toggle tiled left (must restart Cinnamon)"
-msgstr "Пребаци на поплочање лево (Cinnamon се мора рестартовати)"
+msgid "Software Sources"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:72
-msgid "Toggle tiled right (must restart Cinnamon)"
-msgstr "Пребаци на поплочање десно (Cinnamon се мора рестартовати)"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:73
-msgid "Close window"
-msgstr "Затвара прозор"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:75
-msgid "Activate window menu"
-msgstr "Активирај изборни прозор"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:76
-msgid "Toggle maximization state"
-msgstr "Искључује/укључује стање увећања"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:77
-msgid "Toggle fullscreen state"
-msgstr "Искључује/укључује стање целог екрана"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:78
-msgid "Toggle shaded state"
-msgstr "Искључује/укључује стање засенчености"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:79
-msgid "Maximize vertically"
-msgstr "Увећал усправно"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:80
-msgid "Maximize horizontally"
-msgstr "Увећај водоравно"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:81
-msgid "Resize window"
-msgstr "Промени величину прозору"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:82
-msgid "Move window"
-msgstr "Премести прозор"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:83
-msgid "Center window in screen"
-msgstr "Центар прозора на екрану"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:84
-msgid "Move window to upper-right"
-msgstr "Помери прозор у горњи десни"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:85
-msgid "Move window to upper-left"
-msgstr "Помери прозор у горњи леви"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:86
-msgid "Move window to lower-right"
-msgstr "Помери прозор у доњи десни"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:87
-msgid "Move window to lower-left"
-msgstr "Помери прозор у доњи леви"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:88
-msgid "Move window to right edge"
-msgstr "Помери прозор на десну ивицу"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:89
-msgid "Move window to top edge"
-msgstr "Помери прозор на горњу ивицу"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:90
-msgid "Move window to bottom edge"
-msgstr "Помери прозор на доњу ивицу"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:91
-msgid "Move window to left edge"
-msgstr "Помери прозор на леву ивицу"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:94
-msgid "Toggle showing window on all workspaces"
-msgstr "Одабери приказивање прозора на свим радним просторима"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:95
-msgid "Switch to left workspace"
-msgstr "Пребаци на леви радни простор"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:96
-msgid "Switch to right workspace"
-msgstr "Пребаци на десни радни простор"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:97
-msgid "Switch to workspace 1"
-msgstr "Пребаци се на радни простор 1"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:98
-msgid "Switch to workspace 2"
-msgstr "Пребаци се на радни простор 2"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:99
-msgid "Switch to workspace 3"
-msgstr "Пребаци се на радни простор 3"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:100
-msgid "Switch to workspace 4"
-msgstr "Пребаци се на радни простор 4"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:101
-msgid "Switch to workspace 5"
-msgstr "Пребаци се на радни простор 5"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:102
-msgid "Switch to workspace 6"
-msgstr "Пребаци се на радни простор 6"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:103
-msgid "Switch to workspace 7"
-msgstr "Пребаци се на радни простор 7"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:104
-msgid "Switch to workspace 8"
-msgstr "Пребаци се на радни простор 8"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:105
-msgid "Switch to workspace 9"
-msgstr "Пребаци се на радни простор 9"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:106
-msgid "Switch to workspace 10"
-msgstr "Пребаци се на радни простор 10"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:107
-msgid "Switch to workspace 11"
-msgstr "Пребаци се на радни простор 11"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:108
-msgid "Switch to workspace 12"
-msgstr "Пребаци се на радни простор 12"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:109
-msgid "Move window to left workspace"
-msgstr "Помери прозора на леви радни простор"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:110
-msgid "Move window to right workspace"
-msgstr "Помери прозора на десни радни простор"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:111
-msgid "Move window to workspace 1"
-msgstr "Премести прозор на радни простор број 1"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:112
-msgid "Move window to workspace 2"
-msgstr "Премести прозор на радни простор број 2"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:113
-msgid "Move window to workspace 3"
-msgstr "Премести прозор на радни простор број 3"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:114
-msgid "Move window to workspace 4"
-msgstr "Премести прозор на радни простор број 4"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:115
-msgid "Move window to workspace 5"
-msgstr "Премести прозор на радни простор број 5"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:116
-msgid "Move window to workspace 6"
-msgstr "Премести прозор на радни простор број 6"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:117
-msgid "Move window to workspace 7"
-msgstr "Премести прозор на радни простор број 7"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:118
-msgid "Move window to workspace 8"
-msgstr "Премести прозор на радни простор број 8"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:119
-msgid "Move window to workspace 9"
-msgstr "Премести прозор на радни простор број 9"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:120
-msgid "Move window to workspace 10"
-msgstr "Премести прозор на радни простор број 10"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:121
-msgid "Move window to workspace 11"
-msgstr "Премести прозор на радни простор број 11"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:122
-msgid "Move window to workspace 12"
-msgstr "Премести прозор на радни простор број 12"
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:71
+msgid "ppa, repository, package, source, download"
+msgstr ""
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:125
-msgid "Log out"
-msgstr "Одјави ме"
+msgid "All Settings"
+msgstr "Све поставке"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:127
-msgid "Toggle recording desktop (must restart Cinnamon)"
-msgstr "Пребаци на снимањне радне површи (Cinnamon се мора рестартовати)"
+#: files/usr/lib/cinnamon-settings/modules/cs_applets.py:7
+#: files/usr/lib/cinnamon-settings/modules/cs_applets.py:11
+msgid "applet"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:130
-msgid "Launch help browser"
-msgstr "Покрени прегледач помоћи"
+#: files/usr/lib/cinnamon-settings/modules/cs_applets.py:12
+msgid "applets"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:131
-msgid "Launch calculator"
-msgstr "Покрени калкулатор"
+#: files/usr/lib/cinnamon-settings/modules/cs_applets.py:13
+msgid "panel"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:132
-msgid "Launch email client"
-msgstr "Покрени програм е-поште"
+#: files/usr/lib/cinnamon-settings/modules/cs_applets.py:26
+msgid ""
+"You can remove specific instances in panel edit mode via the context menu."
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:133
-msgid "Launch web browser"
-msgstr "Покрени веб прегледач"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:134
-msgid "Home folder"
-msgstr "Почетна фасцикла"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:138
-msgid "Volume mute"
-msgstr "Искључи звук"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:139
-msgid "Volume down"
-msgstr "Утишај звук"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:140
-msgid "Volume up"
-msgstr "Појачај звук"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:141
-msgid "Launch media player"
-msgstr "Покретање програма за звук и филмове"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:143
-msgid "Pause playback"
-msgstr "Прекид репродукције"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:144
-msgid "Stop playback"
-msgstr "Заустави репродукцију"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:145
-msgid "Previous track"
-msgstr "Претходна нумера"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:146
-msgid "Next track"
-msgstr "Следећа нумера"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:150
-msgid "Turn zoom on or off"
-msgstr "Укључи/искључи увећање"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:151
-msgid "Zoom in"
-msgstr "Увећај"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:152
-msgid "Zoom out"
-msgstr "Умањи"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:153
-msgid "Turn screen reader on or off"
-msgstr "Укључи/искључи читач екрана"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:154
-msgid "Turn on-screen keyboard on or off"
-msgstr "Укључи/искључи екранску тастатуру"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:155
-msgid "Increase text size"
-msgstr "Повећај величину текста"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:156
-msgid "Decrease text size"
-msgstr "Смањи величину текста"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:157
-msgid "High contrast on or off"
-msgstr "Укључи/искључи велики контраст"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:161
+#: files/usr/lib/cinnamon-settings/modules/cs_backgrounds.py:17
 msgid "Wallpaper"
-msgstr "Позадина"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:167
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2025
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2786
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2797
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2808
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2819
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2830
+#: files/usr/lib/cinnamon-settings/modules/cs_backgrounds.py:23
+#: files/usr/lib/cinnamon-settings/modules/cs_effects.py:57
+#: files/usr/lib/cinnamon-settings/modules/cs_effects.py:68
+#: files/usr/lib/cinnamon-settings/modules/cs_effects.py:79
+#: files/usr/lib/cinnamon-settings/modules/cs_effects.py:90
+#: files/usr/lib/cinnamon-settings/modules/cs_effects.py:101
 msgid "None"
-msgstr "Ништа"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:168
+#: files/usr/lib/cinnamon-settings/modules/cs_backgrounds.py:24
 msgid "Horizontal"
-msgstr "Водоравно"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:169
+#: files/usr/lib/cinnamon-settings/modules/cs_backgrounds.py:25
 msgid "Vertical"
-msgstr "Усправно"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:173
+#: files/usr/lib/cinnamon-settings/modules/cs_backgrounds.py:29
 msgid "No picture"
-msgstr "Без слике"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:174
+#: files/usr/lib/cinnamon-settings/modules/cs_backgrounds.py:30
 msgid "Mosaic"
-msgstr "Мозаик"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:175
+#: files/usr/lib/cinnamon-settings/modules/cs_backgrounds.py:31
 msgid "Centered"
-msgstr "У средини"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:176
+#: files/usr/lib/cinnamon-settings/modules/cs_backgrounds.py:32
 msgid "Scaled"
-msgstr "Сразмерно"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:177
+#: files/usr/lib/cinnamon-settings/modules/cs_backgrounds.py:33
 msgid "Stretched"
-msgstr "Развучено"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:179
+#: files/usr/lib/cinnamon-settings/modules/cs_backgrounds.py:35
 msgid "Spanned"
-msgstr "Проширено"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:602
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:747
+#: files/usr/lib/cinnamon-settings/modules/cs_backgrounds.py:42
+msgid "background, picture, screenshot, slideshow"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_backgrounds.py:44
+msgid "Backgrounds"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_backgrounds.py:351
+#: files/usr/lib/cinnamon-settings/modules/cs_backgrounds.py:509
 msgid "Add wallpapers"
-msgstr "Додај позадину"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:625
+#: files/usr/lib/cinnamon-settings/modules/cs_backgrounds.py:374
 msgid "Folder"
-msgstr "фасцикла"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:633
+#: files/usr/lib/cinnamon-settings/modules/cs_backgrounds.py:382
 msgid "Recursive listing"
-msgstr "Рекурзивни списак"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:638
+#: files/usr/lib/cinnamon-settings/modules/cs_backgrounds.py:387
 msgid "Delay"
-msgstr "Кашњење"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:734
-msgid "Mode"
-msgstr "Режим"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:742
+#: files/usr/lib/cinnamon-settings/modules/cs_backgrounds.py:498
 msgid "Remove wallpaper"
-msgstr "Уклони позадину"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:773
+#: files/usr/lib/cinnamon-settings/modules/cs_backgrounds.py:528
 msgid "Advanced options"
-msgstr "Напредне могућности"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:781
+#: files/usr/lib/cinnamon-settings/modules/cs_backgrounds.py:536
 msgid "Picture aspect"
-msgstr "Изглед слике"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:787
+#: files/usr/lib/cinnamon-settings/modules/cs_backgrounds.py:542
 msgid "Gradient"
-msgstr "Прелив"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:794
+#: files/usr/lib/cinnamon-settings/modules/cs_backgrounds.py:549
 msgid "Colors"
-msgstr "Боје"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:868
-msgid "Get new themes"
-msgstr "Набави нову тему"
+#: files/usr/lib/cinnamon-settings/modules/cs_calendar.py:10
+msgid "time, date, calendar, format, network, sync"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:871
-msgid "Cinnamon themes"
-msgstr "Теме Cinnamon"
+#: files/usr/lib/cinnamon-settings/modules/cs_calendar.py:12
+msgid "Calendar"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:878
-msgid "Window theme"
-msgstr "Тема за прозор"
+#: files/usr/lib/cinnamon-settings/modules/cs_calendar.py:21
+msgid "Use network time"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:880
-msgid "Menus Have Icons"
-msgstr "Изборници имају иконе"
+#: files/usr/lib/cinnamon-settings/modules/cs_calendar.py:37
+msgid "Show week numbers in calendar"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:882
-msgid "Buttons Have Icons"
-msgstr "Тастери имају иконе"
+#: files/usr/lib/cinnamon-settings/modules/cs_calendar.py:38
+msgid "Date format for the panel"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:885
-msgid "Always Use Location Entry In Nemo"
-msgstr "Увек користите унос места у Nemo"
+#: files/usr/lib/cinnamon-settings/modules/cs_calendar.py:39
+msgid "Date format inside the date applet"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:887
-msgid "Cursor theme"
-msgstr "Тема показивача"
+#: files/usr/lib/cinnamon-settings/modules/cs_calendar.py:40
+msgid "Generate your own date formats"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:889
-msgid "Keybinding theme"
-msgstr "Тема пречица"
+#: files/usr/lib/cinnamon-settings/modules/cs_calendar.py:99
+msgid "Region"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:891
-msgid "Icon theme"
-msgstr "Тема за иконе"
+#: files/usr/lib/cinnamon-settings/modules/cs_calendar.py:121
+msgid "City"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:893
-msgid "GTK+ theme"
-msgstr "GTK+ тема"
+#: files/usr/lib/cinnamon-settings/modules/cs_calendar.py:227
+msgid ":"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:896
-msgid "Other settings"
-msgstr "Остале поставке"
+#: files/usr/lib/cinnamon-settings/modules/cs_calendar.py:234
+msgid "Date : "
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:990
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1081
-msgid "Enable"
-msgstr "Укључи"
+#: files/usr/lib/cinnamon-settings/modules/cs_calendar.py:236
+msgid "Time : "
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:994
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1088
-msgid "Description"
-msgstr "Опис"
+#: files/usr/lib/cinnamon-settings/modules/cs_default.py:24
+msgid "_Web"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1016
-msgid "Get new extensions"
-msgstr "Набави нове наставке"
+#: files/usr/lib/cinnamon-settings/modules/cs_default.py:25
+msgid "_Mail"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1085
-#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/add-panel-launcher.py:140
-msgid "Icon"
-msgstr "Икона"
+#: files/usr/lib/cinnamon-settings/modules/cs_default.py:26
+msgid "_Calendar"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1111
-msgid "Restore to default"
-msgstr "Врати на подразумевано"
+#: files/usr/lib/cinnamon-settings/modules/cs_default.py:27
+msgid "M_usic"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1115
-msgid "Get new applets"
-msgstr "Набави нове апликације"
+#: files/usr/lib/cinnamon-settings/modules/cs_default.py:28
+msgid "_Video"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1283
+#: files/usr/lib/cinnamon-settings/modules/cs_default.py:29
+#: files/usr/lib/cinnamon-settings/modules/cs_default.py:36
+msgid "_Photos"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_default.py:33
+msgid "CD _audio"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_default.py:33
+msgid "Select an application for audio CDs"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_default.py:34
+msgid "_DVD video"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_default.py:34
+msgid "Select an application for video DVDs"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_default.py:35
+msgid "_Music player"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_default.py:35
+msgid "Select an application to run when a music player is connected"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_default.py:36
+msgid "Select an application to run when a camera is connected"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_default.py:37
+msgid "_Software"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_default.py:37
+msgid "Select an application for software CDs"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_default.py:45
+msgid "audio DVD"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_default.py:46
+msgid "blank Blu-ray disc"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_default.py:47
+msgid "blank CD disc"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_default.py:48
+msgid "blank DVD disc"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_default.py:49
+msgid "blank HD DVD disc"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_default.py:50
+msgid "Blu-ray video disc"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_default.py:51
+msgid "e-book reader"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_default.py:52
+msgid "HD DVD video disc"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_default.py:53
+msgid "Picture CD"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_default.py:54
+msgid "Super Video CD"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_default.py:55
+msgid "Video CD"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_default.py:56
+msgid "Windows software"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_default.py:57
+msgid "Software"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_default.py:134
+msgid "Ask what to do"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_default.py:136
+msgid "Open folder"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_default.py:138
+msgid "Do nothing"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_default.py:196
+msgid "Other Media"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_default.py:222
+msgid "_Type:"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_default.py:225
+msgid "Select how other media should be handled"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_default.py:297
+msgid "_Action:"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_default.py:302
+msgid ""
+"media, defaults, applications, programs, removable, browser, email, "
+"calendar, music, videos, photos, images, cd, autostart"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_default.py:304
+msgid "Applications & Removable Media"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_default.py:321
+msgid "Default Applications"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_default.py:341
+msgid "_Other Media..."
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_default.py:345
+msgid "_Never prompt or start programs on media insertion"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_default.py:350
+msgid "Select how media should be handled"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_desklets.py:9
+msgid "desklet, desktop, slideshow"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_desklets.py:13
+msgid "desklet"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_desklets.py:14
+msgid "desklets"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_desklets.py:15
+msgid "desktop"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_desklets.py:16
+msgid "Desklets"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_desklets.py:27
+msgid ""
+"You can remove specific instances from the desktop via that desklet's "
+"context menu"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_desklets.py:39
+msgid "General Desklets Settings"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_desklets.py:44
+msgid "No decoration"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_desklets.py:44
+msgid "Border only"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_desklets.py:44
+msgid "Border and header"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_desklets.py:45
+msgid "Decoration of desklets"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_desklets.py:48
+msgid "Note: Some desklets require the border/header to be always preset"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_desklets.py:48
+msgid "Such requirements override the settings selected here"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_desklets.py:50
+msgid "Snap desklets to grid"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_desklets.py:51
+msgid "Width of desklet snap grid"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_desktop.py:8
+msgid "desktop, home, button, trash"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_desktop.py:10
+msgid "Desktop"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_desktop.py:20
+msgid "Show a computer icon"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_desktop.py:22
+msgid "Show a home icon"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_desktop.py:24
+msgid "Show the trash"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_desktop.py:26
+msgid "Show mounted volumes"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_desktop.py:28
+msgid "Show network servers"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_effects.py:7
+msgid "effects, fancy, window"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_effects.py:9
+msgid "Effects"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_effects.py:13
+msgid "Enable desktop effects"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_effects.py:16
+msgid "Enable desktop effects on dialog boxes"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_effects.py:55
+msgid "Closing windows:"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_effects.py:57
+#: files/usr/lib/cinnamon-settings/modules/cs_effects.py:68
+#: files/usr/lib/cinnamon-settings/modules/cs_effects.py:79
+msgid "Fade"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_effects.py:60
+#: files/usr/lib/cinnamon-settings/modules/cs_effects.py:71
+#: files/usr/lib/cinnamon-settings/modules/cs_effects.py:82
+#: files/usr/lib/cinnamon-settings/modules/cs_effects.py:93
+#: files/usr/lib/cinnamon-settings/modules/cs_effects.py:104
+#: files/usr/lib/cinnamon-settings/modules/cs_menu.py:24
+#: files/usr/lib/cinnamon-settings/modules/cs_panel.py:26
+#: files/usr/lib/cinnamon-settings/modules/cs_panel.py:29
+#: files/usr/lib/cinnamon-settings/modules/cs_panel.py:34
+#: files/usr/lib/cinnamon-settings/modules/cs_panel.py:37
+#: files/usr/lib/cinnamon-settings/modules/cs_panel.py:41
+#: files/usr/lib/cinnamon-settings/modules/cs_panel.py:44
+#: files/usr/lib/cinnamon-settings/modules/cs_workspaces.py:16
+msgid "milliseconds"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_effects.py:66
+msgid "Mapping windows:"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_effects.py:77
+msgid "Minimizing windows:"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_effects.py:79
+msgid "Traditional"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_effects.py:88
+msgid "Maximizing windows:"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_effects.py:99
+msgid "Unmaximizing windows:"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_extensions.py:7
+msgid "extension, addon"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_extensions.py:11
+msgid "extension"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_extensions.py:12
+msgid "extensions"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_extensions.py:15
+msgid "Extensions"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_fonts.py:7
+msgid "font, size, small, large"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_fonts.py:9
+msgid "Fonts"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_fonts.py:13
+msgid "Default font"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_fonts.py:14
+msgid "Document font"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_fonts.py:15
+msgid "Monospace font"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_fonts.py:16
+msgid "Window title font"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_fonts.py:17
+msgid "Text scaling factor"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_fonts.py:18
+msgid "Antialiasing"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_fonts.py:19
+msgid "Hinting"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_general.py:7
+msgid "logging, click, notifications"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_general.py:9
+#: files/usr/lib/cinnamon-settings/modules/cs_mouse.py:36
+#: files/usr/lib/cinnamon-settings/modules/cs_mouse.py:97
+msgid "General"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_general.py:13
+msgid ""
+"Log LookingGlass output to ~/.cinnamon/glass.log (Requires Cinnamon restart)"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_general.py:14
+msgid "Display notifications"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_hotcorner.py:15
+msgid "hotcorner, overview, scale, expo"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_hotcorner.py:17
+msgid "Hot Corners"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_hotcorner.py:120
+msgid "Custom"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_hotcorner.py:132
+msgid "Icon visible"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_info.py:104
+msgid "system, information, details, graphic, sound, kernel, version"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_info.py:106
+msgid "System Info"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_info.py:119
+msgid "Version"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:44
+msgid "Toggle Scale"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:45
+msgid "Toggle Expo"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:46
+msgid "Cycle through open windows"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:47
+msgid "Cycle backwards though open windows"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:48
+msgid "Run dialog (must restart Cinnamon)"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:49
+msgid "Menu button (must restart Cinnamon)"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:52
+msgid "Maximize window"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:53
+msgid "Unmaximize window"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:54
+msgid "Minimize window"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:55
+msgid "Toggle tiled left (must restart Cinnamon)"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:56
+msgid "Toggle tiled right (must restart Cinnamon)"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:57
+msgid "Close window"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:59
+msgid "Activate window menu"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:60
+msgid "Toggle maximization state"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:61
+msgid "Toggle fullscreen state"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:62
+msgid "Toggle shaded state"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:63
+msgid "Maximize vertically"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:64
+msgid "Maximize horizontally"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:65
+msgid "Resize window"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:66
+msgid "Move window"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:67
+msgid "Center window in screen"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:68
+msgid "Move window to upper-right"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:69
+msgid "Move window to upper-left"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:70
+msgid "Move window to lower-right"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:71
+msgid "Move window to lower-left"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:72
+msgid "Move window to right edge"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:73
+msgid "Move window to top edge"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:74
+msgid "Move window to bottom edge"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:75
+msgid "Move window to left edge"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:78
+msgid "Toggle showing window on all workspaces"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:79
+msgid "Switch to left workspace"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:80
+msgid "Switch to right workspace"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:81
+msgid "Switch to workspace 1"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:82
+msgid "Switch to workspace 2"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:83
+msgid "Switch to workspace 3"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:84
+msgid "Switch to workspace 4"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:85
+msgid "Switch to workspace 5"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:86
+msgid "Switch to workspace 6"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:87
+msgid "Switch to workspace 7"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:88
+msgid "Switch to workspace 8"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:89
+msgid "Switch to workspace 9"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:90
+msgid "Switch to workspace 10"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:91
+msgid "Switch to workspace 11"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:92
+msgid "Switch to workspace 12"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:93
+msgid "Move window to left workspace"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:94
+msgid "Move window to right workspace"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:95
+msgid "Move window to workspace 1"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:96
+msgid "Move window to workspace 2"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:97
+msgid "Move window to workspace 3"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:98
+msgid "Move window to workspace 4"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:99
+msgid "Move window to workspace 5"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:100
+msgid "Move window to workspace 6"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:101
+msgid "Move window to workspace 7"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:102
+msgid "Move window to workspace 8"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:103
+msgid "Move window to workspace 9"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:104
+msgid "Move window to workspace 10"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:105
+msgid "Move window to workspace 11"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:106
+msgid "Move window to workspace 12"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:109
+msgid "Log out"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:111
+msgid "Toggle recording desktop (must restart Cinnamon)"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:114
+msgid "Launch help browser"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:115
+msgid "Launch calculator"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:116
+msgid "Launch email client"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:117
+msgid "Launch web browser"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:118
+msgid "Home folder"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:122
+msgid "Volume mute"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:123
+msgid "Volume down"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:124
+msgid "Volume up"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:125
+msgid "Launch media player"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:127
+msgid "Pause playback"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:128
+msgid "Stop playback"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:129
+msgid "Previous track"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:130
+msgid "Next track"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:134
+msgid "Turn zoom on or off"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:135
+msgid "Zoom in"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:136
+msgid "Zoom out"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:137
+msgid "Turn screen reader on or off"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:138
+msgid "Turn on-screen keyboard on or off"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:139
+msgid "Increase text size"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:140
+msgid "Decrease text size"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:141
+msgid "High contrast on or off"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:145
+msgid "Launch terminal"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:149
+msgid "keyboard, shortcut, hotkey"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:282
 msgid "unassigned"
-msgstr "нераспоређено"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1284
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:283
 msgid "Super-"
-msgstr "Super-"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1285
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1288
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:284
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:287
 msgid "Ctrl-"
-msgstr "Ctrl-"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1286
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:285
 msgid "Shift-"
-msgstr "Shift-"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1287
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:286
 msgid "Alt-"
-msgstr "Alt-"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1407
-#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/add-panel-launcher.py:148
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:293
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/cinnamon-add-panel-launcher.py:148
 msgid "Update"
 msgstr "Ажурирај"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1410
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1543
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:296
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:431
 msgid "Add custom shortcut"
-msgstr "Додај прилагођену пречицу"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1418
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:304
 msgid "Name:"
-msgstr "Назив:"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1419
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:305
 msgid "Command:"
-msgstr "Наредба:"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1427
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:313
+#: files/usr/lib/cinnamon-settings/bin/XletSettingsWidgets.py:697
 msgid "Select a file"
-msgstr "Изаберите датотеку"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1477
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:365
 msgid "Typing"
-msgstr "Куца"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1478
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:366
 msgid "Enable key repeat"
-msgstr "Омогући понављање тастера"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1480
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:368
 msgid "Repeat delay:"
-msgstr "Понови кашњење:"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1480
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:368
+#: files/usr/lib/cinnamon-settings/modules/cs_mouse.py:73
 msgid "Short"
-msgstr "Кратко"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1480
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:368
+#: files/usr/lib/cinnamon-settings/modules/cs_mouse.py:73
 msgid "Long"
-msgstr "Дуго"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1485
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:373
 msgid "Repeat speed:"
-msgstr "Поновите брзину:"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1485
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1493
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:373
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:381
+#: files/usr/lib/cinnamon-settings/modules/cs_mouse.py:58
+#: files/usr/lib/cinnamon-settings/modules/cs_mouse.py:131
 msgid "Slow"
-msgstr "Споро"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1485
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1493
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:373
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:381
+#: files/usr/lib/cinnamon-settings/modules/cs_mouse.py:58
+#: files/usr/lib/cinnamon-settings/modules/cs_mouse.py:131
 msgid "Fast"
-msgstr "Брзо"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1491
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:379
 msgid "Text cursor blinks"
-msgstr "Курсор текста трепће"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1493
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:381
 msgid "Blink speed:"
-msgstr "Брзина трепепења:"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1498
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:386
 msgid "Test Box"
-msgstr "Кутија за тестирање"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1502
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1579
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:390
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:467
 msgid "Keyboard shortcuts"
-msgstr "Тастатурне пречице"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1507
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:395
 msgid ""
 "To edit a keyboard binding, click it and press the new keys, or press "
 "backspace to clear it."
 msgstr ""
-"Да би сте изменили пречице на тастатури, клинкните на њу и притисните нове "
-"тастере или притисните тастер за брисање за чишћење."
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1545
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:433
 msgid "Remove custom shortcut"
-msgstr "Уклони прилагођену пречицу"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1570
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:458
 msgid "Categories"
-msgstr "Категорије"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1590
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:483
 msgid "Keyboard bindings"
-msgstr "Пречице на тастатури"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1599
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:491
+#: files/usr/lib/cinnamon-settings/modules/cs_windows.py:10
+msgid "Windows"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:492
 msgid "Workspace Management"
-msgstr "Управљање радним простором"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1600
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:493
 msgid "System"
-msgstr "Систем"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1601
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:494
 msgid "Launchers"
-msgstr "Покретачи"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1602
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:495
 msgid "Sound and Media"
-msgstr "Звук и медији"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1603
-msgid "Universal Access"
-msgstr "Општи приступ"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1604
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:497
 msgid "Custom Shortcuts"
-msgstr "Прилагођене пречице"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1705
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:598
 #, c-format
 msgid ""
 "\n"
@@ -1943,489 +2599,923 @@ msgid ""
 "impossible to type using this key.\n"
 "\n"
 msgstr ""
-"\n"
-"Ова комбинација тастера, '<b>%s</b>' не може се користити зато што би она "
-"постала немогућа да бисте откуцали коришчењем овог тастера.\n"
-"\n"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1706
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:599
 msgid ""
 "Please try again with a modifier key such as Control, Alt or Super (Windows "
 "key) at the same time.\n"
 msgstr ""
-"Молимо покушајте поново са тастерима измене као што су Control, Alt или "
-"Super (Windows тастер) у исто време.\n"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1724
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:617
 #, c-format
 msgid ""
 "This key combination, '<b>%s</b>' is currently in use by '<b>%s</b>'.  "
 msgstr ""
-"Ова комбинација тастера, '<b>%s</b>' је тренутно коришћена од стране "
-"'<b>%s</b>'.  "
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1725
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:618
 #, c-format
 msgid ""
 "If you continue, the combination will be reassigned to '<b>%s</b>.'\n"
 "\n"
 msgstr ""
-"Ако наставите, комбинација ће бити премештена у '<b>%s</b>.'\n"
-"\n"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1726
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:619
 msgid "Do you want to continue with this operation?"
-msgstr "Да ли желите да наставите са овом операцијом?"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:1846
+#: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:765
 msgid "Reset to default"
-msgstr "Подеси на подразумевано"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2276
-msgid "Region"
-msgstr "Област"
+#: files/usr/lib/cinnamon-settings/modules/cs_menu.py:7
+msgid "menu, start, bookmarks, places, recent"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2298
-msgid "City"
-msgstr "Град"
+#: files/usr/lib/cinnamon-settings/modules/cs_menu.py:15
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/cinnamon-add-panel-launcher.py:140
+msgid "Icon"
+msgstr "Икона"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2404
-msgid ":"
-msgstr ":"
+#: files/usr/lib/cinnamon-settings/modules/cs_menu.py:16
+msgid "Text"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2411
-msgid "Date : "
-msgstr "Датум : "
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2413
-msgid "Time : "
-msgstr "Време : "
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2526
-msgid "Left side title bar buttons"
-msgstr "Леви тастери се налазе на насловној траци"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2532
-msgid "Right side title bar buttons"
-msgstr "Налази се десно на тастерима траке наслова"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2620
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2950
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2964
-msgid "Cinnamon Settings"
-msgstr "Поставке Cinnamon"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2637
-msgid "All Settings"
-msgstr "Све поставке"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2646
-msgid "Menu text"
-msgstr "Зекст изборника"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2647
-msgid "Menu icon"
-msgstr "Икона изборника"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2648
-msgid "Menu hover delay"
-msgstr "Кашњење пре приказивања"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2648
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2658
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2662
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2789
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2800
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2811
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2822
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2833
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2890
-msgid "milliseconds"
-msgstr "милисекунди"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2649
-msgid "Activate menu on hover"
-msgstr "Активирај изборник када прелазите"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2650
+#: files/usr/lib/cinnamon-settings/modules/cs_menu.py:18
 msgid "Show bookmarks and places"
-msgstr "Покажи обележиваче и места"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2651
+#: files/usr/lib/cinnamon-settings/modules/cs_menu.py:19
 msgid "Show recent files"
-msgstr "Прикажи недавне датотеке"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2655
-msgid "Auto-hide panel"
-msgstr "Аутоматско скривање окна"
+#: files/usr/lib/cinnamon-settings/modules/cs_menu.py:20
+msgid "Enable auto-scrolling in application list"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2658
-msgid "Show delay"
-msgstr "Прикажи кашњење"
+#: files/usr/lib/cinnamon-settings/modules/cs_menu.py:22
+msgid "Open menu when I move my mouse over it"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2662
-msgid "Hide delay"
-msgstr "Сакриј кашњење"
+#: files/usr/lib/cinnamon-settings/modules/cs_menu.py:23
+msgid "Enable filesystem path entry in search box"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2665
-msgid "Traditional (panel at the bottom)"
-msgstr "Уобичајено (табла на дну)"
+#: files/usr/lib/cinnamon-settings/modules/cs_menu.py:24
+msgid "Menu hover delay"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2665
-msgid "Flipped (panel at the top)"
-msgstr "Окренуто (плоча на врху)"
+#: files/usr/lib/cinnamon-settings/modules/cs_mouse.py:9
+msgid "mouse, touchpad, synaptic, double-click"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2665
-msgid "Classic (panels at the top and at the bottom)"
-msgstr "Класично (табле на врху и на дну)"
+#: files/usr/lib/cinnamon-settings/modules/cs_mouse.py:11
+msgid "Mouse and Touchpad"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2666
+#: files/usr/lib/cinnamon-settings/modules/cs_mouse.py:31
+msgid "Touchpad"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_mouse.py:41
+msgid "Left handed (mouse buttons inverted)"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_mouse.py:45
+msgid "Show position of pointer when the Control key is pressed"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_mouse.py:49
+msgid "Emulate middle click by clicking both left and right buttons"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_mouse.py:53
+#: files/usr/lib/cinnamon-settings/modules/cs_mouse.py:127
+msgid "Pointer Speed"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_mouse.py:58
+#: files/usr/lib/cinnamon-settings/modules/cs_mouse.py:131
+msgid "Acceleration:"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_mouse.py:63
+#: files/usr/lib/cinnamon-settings/modules/cs_mouse.py:136
+msgid "Sensitivity:"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_mouse.py:63
+#: files/usr/lib/cinnamon-settings/modules/cs_mouse.py:136
+msgid "Low"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_mouse.py:63
+#: files/usr/lib/cinnamon-settings/modules/cs_mouse.py:136
+msgid "High"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_mouse.py:68
+msgid "Double-Click Timeout"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_mouse.py:73
+msgid "Timeout:"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_mouse.py:77
+#: files/usr/lib/cinnamon-settings/modules/cs_mouse.py:173
+msgid "Double-click test"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_mouse.py:82
+msgid "Drag and drop"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_mouse.py:87
+msgid "Cinnamon drag threshold"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_mouse.py:87
+#: files/usr/lib/cinnamon-settings/modules/cs_mouse.py:91
+#: files/usr/lib/cinnamon-settings/modules/cs_panel.py:54
+#: files/usr/lib/cinnamon-settings/modules/cs_panel.py:58
+#: files/usr/lib/cinnamon-settings/modules/cs_windows.py:34
+#: files/usr/lib/cinnamon-settings/modules/cs_windows.py:35
+msgid "Pixels"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_mouse.py:91
+msgid "GTK drag threshold"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_mouse.py:102
+msgid "Enable touchpad"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_mouse.py:106
+msgid "Disable touchpad while typing"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_mouse.py:109
+msgid "Enable mouseclicks with touchpad"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_mouse.py:113
+msgid "Scrolling"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_mouse.py:117
+msgid "Edge Scrolling"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_mouse.py:117
+msgid "Two-finger scrolling"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_mouse.py:118
+#: files/usr/lib/cinnamon-settings/modules/cs_panel.py:15
 msgid "Panel layout"
-msgstr "Изглед окна"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2669
-msgid "Note: If you change the layout you will need to restart Cinnamon."
-msgstr "Напомена: Ако промените распоред мораћете поново покренути Cinnamon."
+#: files/usr/lib/cinnamon-settings/modules/cs_mouse.py:123
+msgid "Enable horizontal scrolling"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2672
+#: files/usr/lib/cinnamon-settings/modules/cs_mouse.py:168
+msgid "DOUBLE-CLICK"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_panel.py:7
+msgid "panel, height, bottom, top, autohide, size, traditional, layout"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_panel.py:14
+msgid "Traditional (panel at the bottom)"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_panel.py:14
+msgid "Flipped (panel at the top)"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_panel.py:14
+msgid "Classic (panels at the top and at the bottom)"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_panel.py:18
+msgid ""
+"Note: If you change the layout you will need to restart Cinnamon and "
+"Cinnamon Settings."
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_panel.py:24
+msgid "Auto-hide panel"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_panel.py:26
+#: files/usr/lib/cinnamon-settings/modules/cs_panel.py:34
+#: files/usr/lib/cinnamon-settings/modules/cs_panel.py:41
+msgid "Show delay"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_panel.py:29
+#: files/usr/lib/cinnamon-settings/modules/cs_panel.py:37
+#: files/usr/lib/cinnamon-settings/modules/cs_panel.py:44
+msgid "Hide delay"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_panel.py:32
+msgid "Auto-hide top panel"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_panel.py:39
+msgid "Auto-hide bottom panel"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_panel.py:47
 msgid "Use customized panel size (otherwise it's defined by the theme)"
-msgstr "Користи прилагођену величину окна (иначе је то одређено са темом)"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2675
+#: files/usr/lib/cinnamon-settings/modules/cs_panel.py:50
 msgid ""
 "Allow Cinnamon to scale panel text and icons according to the panel heights"
 msgstr ""
-"Дозволи Cinnamon-у да калибрише текста и иконе екрана у складу са висином "
-"окна"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2679
+#: files/usr/lib/cinnamon-settings/modules/cs_panel.py:54
 msgid "Top panel height"
-msgstr "Висина горњег окна"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2679
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2683
-msgid "Pixels"
-msgstr "Тачкице"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2683
+#: files/usr/lib/cinnamon-settings/modules/cs_panel.py:58
 msgid "Bottom panel height"
-msgstr "Висина доњег окна"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2686
+#: files/usr/lib/cinnamon-settings/modules/cs_panel.py:61
 msgid "Panel edit mode"
-msgstr "Окно у режиму уређивања"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2687
-msgid "Calendar"
-msgstr "Календар"
+#: files/usr/lib/cinnamon-settings/modules/cs_screensaver.py:8
+msgid "screensaver, brightness, lock, password, away, message"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2689
-msgid "Show week dates in calendar"
-msgstr "Прикажи број седмице у календару"
+#: files/usr/lib/cinnamon-settings/modules/cs_screensaver.py:10
+msgid "Screensaver & Lock Settings"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2690
-msgid "Date format for the panel"
-msgstr "Формат датума у окну"
+#: files/usr/lib/cinnamon-settings/modules/cs_screensaver.py:15
+msgid "Ask for an away message when locking the screen from the menu"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2691
-msgid "Date format inside the date applet"
-msgstr "Формат датума унутар мале апликације"
+#: files/usr/lib/cinnamon-settings/modules/cs_screensaver.py:16
+msgid "Default away message"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2692
-msgid "Generate your own date formats"
-msgstr "Направи сопствене формате датума"
+#: files/usr/lib/cinnamon-settings/modules/cs_themes.py:9
+msgid "themes, style"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2698
-msgid "Use network time"
-msgstr "Користи време са интернета"
+#: files/usr/lib/cinnamon-settings/modules/cs_themes.py:13
+msgid "theme"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2714
-msgid "Hot corner"
-msgstr "Главни угао"
+#: files/usr/lib/cinnamon-settings/modules/cs_themes.py:14
+msgid "themes"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2716
-msgid "Hot corner icon visible"
-msgstr "Видљива икона главног угла"
+#: files/usr/lib/cinnamon-settings/modules/cs_themes.py:40
+msgid "Other settings"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2717
-msgid "Hot corner enabled"
-msgstr "Укључен је главни угао"
+#: files/usr/lib/cinnamon-settings/modules/cs_themes.py:46
+msgid "Controls"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2720
-msgid "Hot corner position:"
-msgstr "Позиција главног угла:"
+#: files/usr/lib/cinnamon-settings/modules/cs_themes.py:49
+msgid "Icons"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2722
-msgid "Top left"
-msgstr "Горе лево"
+#: files/usr/lib/cinnamon-settings/modules/cs_themes.py:52
+msgid "Window borders"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2722
-msgid "Top right"
-msgstr "Горе десно"
+#: files/usr/lib/cinnamon-settings/modules/cs_themes.py:55
+msgid "Mouse pointer"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2722
-msgid "Bottom left"
-msgstr "Доле лево"
+#: files/usr/lib/cinnamon-settings/modules/cs_themes.py:58
+msgid "Keybindings"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2722
-msgid "Bottom right"
-msgstr "Доле десно"
+#: files/usr/lib/cinnamon-settings/modules/cs_themes.py:61
+msgid "Show icons in menus"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2728
-msgid "Hot corner function:"
-msgstr "Сврха главног угла:"
+#: files/usr/lib/cinnamon-settings/modules/cs_themes.py:64
+msgid "Show icons on buttons"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2730
-msgid "Workspace selection (ala Compiz Expo)"
-msgstr "Избор радног простора (као Compiz Expo)"
+#: files/usr/lib/cinnamon-settings/modules/cs_windows.py:8
+msgid "windows, titlebar, edge, switcher, window list, attention, focus"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2730
-msgid "Window selection (ala Compiz Scale)"
-msgstr "Избор прозора (као Compiz Scale)"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2734
-msgid "Expo applet: activate on hover"
-msgstr "Аплет Expo: активирати кад се пређе"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2735
-msgid "Scale applet: activate on hover"
-msgstr "Аплет размере: активирати кад се пређе"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2740
-msgid "Effects"
-msgstr "Ефекти"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2742
-msgid "Enable desktop effects"
-msgstr "Омогући ефекте радне површине"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2745
-msgid "Enable desktop effects on dialog boxes"
-msgstr "Омогући ефекте на дијалошком пољу"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2784
-msgid "Closing windows:"
-msgstr "Затварање прозора:"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2786
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2797
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2808
-msgid "Fade"
-msgstr "Нестајање"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2795
-msgid "Mapping windows:"
-msgstr "Распоређивање прозора:"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2806
-msgid "Minimizing windows:"
-msgstr "Умањивање прозора:"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2808
-msgid "Traditional"
-msgstr "Традиционални"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2817
-msgid "Maximizing windows:"
-msgstr "Увећавање прозора:"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2828
-msgid "Unmaximizing windows:"
-msgstr "Уобичајена величина прозора:"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2839
-msgid "Extensions"
-msgstr "Наставци"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2846
-msgid "Desktop"
-msgstr "Радна површина"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2850
-msgid "Computer icon visible on desktop"
-msgstr "Икона рачунара видљива на радној површини"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2852
-msgid "Home icon visible on desktop"
-msgstr "Лична икона је приказана на радној површини"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2854
-msgid "Network Servers icon visible on desktop"
-msgstr "Иконе мрежног послужетеља су видљиве на радној површини"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2856
-msgid "Trash icon visible on desktop"
-msgstr "Икона за смеће се налази на радној површини"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2858
-msgid "Show mounted volumes on the desktop"
-msgstr "Прикажи монтиране дискове на радној површини"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2862
+#: files/usr/lib/cinnamon-settings/modules/cs_windows.py:14
 msgid "Action on title bar double-click"
-msgstr "Акција на дупли клик на насловној траци"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2865
+#: files/usr/lib/cinnamon-settings/modules/cs_windows.py:17
 msgid "Action on title bar middle-click"
-msgstr "Акција на средњи клик на насловној траци"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2868
+#: files/usr/lib/cinnamon-settings/modules/cs_windows.py:20
 msgid "Action on title bar right-click"
-msgstr "Акција на десни клик на насловној траци"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2871
+#: files/usr/lib/cinnamon-settings/modules/cs_windows.py:23
 msgid "Window focus mode"
-msgstr "Начин фокуса прозора"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2876
+#: files/usr/lib/cinnamon-settings/modules/cs_windows.py:26
+msgid "Modifier to use for modified window click actions"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_windows.py:31
 msgid "Enable Edge Tiling (\"Aero Snap\")"
-msgstr "Омогући Edge Tiling (\"Aero Snap\")"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2877
+#: files/usr/lib/cinnamon-settings/modules/cs_windows.py:32
 msgid "Enable Edge Flip"
-msgstr "Омогући Edge Flip"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2878
+#: files/usr/lib/cinnamon-settings/modules/cs_windows.py:34
+msgid "Window edge tile theshold"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_windows.py:35
+msgid "Window drag detach threshold"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_windows.py:37
 msgid "Attach dialog windows to their parent window's titlebar"
-msgstr "Придодај дијалозима насловну траку прозора њиховог основног прозора"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2879
+#: files/usr/lib/cinnamon-settings/modules/cs_windows.py:38
 msgid "Icons only"
-msgstr "Само иконице"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2879
+#: files/usr/lib/cinnamon-settings/modules/cs_windows.py:38
 msgid "Icons and thumbnails"
-msgstr "Иконе и сличице"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2879
+#: files/usr/lib/cinnamon-settings/modules/cs_windows.py:38
 msgid "Icons and window preview"
-msgstr "Приказ икона и прозора"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2879
+#: files/usr/lib/cinnamon-settings/modules/cs_windows.py:38
 msgid "Window preview (no icons)"
-msgstr "Приказ прозора  (без икона)"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2880
+#: files/usr/lib/cinnamon-settings/modules/cs_windows.py:38
+msgid "Coverflow (3D)"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_windows.py:38
+msgid "Timeline (3D)"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_windows.py:39
 msgid "ALT-tab switcher style"
-msgstr "ALT-tab пребацивање стила"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2882
+#: files/usr/lib/cinnamon-settings/modules/cs_windows.py:41
+msgid ""
+"Enforce displaying the alt-tab switcher on the primary monitor instead of "
+"the active one"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_windows.py:42
 msgid "Enable mouse-wheel scrolling in Window List applet"
-msgstr "Омогући кретање точка  миша  у  списку прозора аплета"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2883
+#: files/usr/lib/cinnamon-settings/modules/cs_windows.py:43
 msgid ""
 "Bring windows which require attention to the current workspace (instead of "
 "switching to the window's workspace)"
 msgstr ""
-"Доноси прозоре који захтеваљу пажњу у тренутном радном простору (уместо "
-"преласка на радни простор прозора)"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2885
+#: files/usr/lib/cinnamon-settings/modules/cs_windows.py:71
+msgid "Left side title bar buttons"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_windows.py:77
+msgid "Right side title bar buttons"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_workspaces.py:7
+msgid "workspace, osd, expo, monitor"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_workspaces.py:9
 msgid "Workspaces"
-msgstr "Радни простори"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2887
+#: files/usr/lib/cinnamon-settings/modules/cs_workspaces.py:13
 msgid "Enable workspace OSD"
-msgstr "Омогући изборник екрана радног простора"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2890
+#: files/usr/lib/cinnamon-settings/modules/cs_workspaces.py:16
 msgid "Workspace OSD duration"
-msgstr "Трајање изборника екрана радног простора"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2894
+#: files/usr/lib/cinnamon-settings/modules/cs_workspaces.py:20
 msgid "Workspace OSD horizontal position"
-msgstr "Место изборника екрана по хоризонтали"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2894
+#: files/usr/lib/cinnamon-settings/modules/cs_workspaces.py:20
 msgid "percent of the monitor's width"
-msgstr "процентуална ширина екрана"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2898
+#: files/usr/lib/cinnamon-settings/modules/cs_workspaces.py:24
 msgid "Workspace OSD vertical position"
-msgstr "Место изборника екрана  по верзикали"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2898
+#: files/usr/lib/cinnamon-settings/modules/cs_workspaces.py:24
 msgid "percent of the monitor's height"
-msgstr "процентуална висина екрана"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2901
+#: files/usr/lib/cinnamon-settings/modules/cs_workspaces.py:27
+msgid "Allow cycling through workspaces"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_workspaces.py:28
 msgid "Only use workspaces on primary monitor (requires Cinnamon restart)"
 msgstr ""
-"Користите само радне просторе на основном екрану (захтева препокретање "
-"Cinnamon)"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2902
+#: files/usr/lib/cinnamon-settings/modules/cs_workspaces.py:29
 msgid "Display Expo view as a grid"
-msgstr "Приказује Expo  као мрежу"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2904
-msgid "Fonts"
-msgstr "Словоликови"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2906
-msgid "Text scaling factor"
-msgstr "Фактор размере текста"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2907
-msgid "Default font"
-msgstr "Подразумевани словоликови"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2908
-msgid "Document font"
-msgstr "Словолик за документа"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2909
-msgid "Monospace font"
-msgstr "Словолик утврђене ширине"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2910
-msgid "Window title font"
-msgstr "Словолик наслова прозора"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2911
-msgid "Hinting"
-msgstr "Наговештај"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2912
-msgid "Antialiasing"
-msgstr "Умекшавање ивица"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2914
-msgid "General"
-msgstr "Опште"
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2916
-msgid ""
-"Log LookingGlass output to ~/.cinnamon/glass.log (Requires Cinnamon restart)"
 msgstr ""
-"Директан излаз на LookingGlass  ~/.cinnamon/glass.log (потребно је "
-"препокретање Cinnamon)"
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2917
-msgid "Emulate middle click by clicking both left and right buttons"
-msgstr "Опонаша средње дугме миша док држите лево и десно дугме"
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:60
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:255
+#, c-format
+msgid "Search %s"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2918
-msgid "Display notifications"
-msgstr "Приказ обавештења"
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:63
+msgid "Installed"
+msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:2928
-msgid "Backgrounds"
-msgstr "Позадине"
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:133
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:458
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:463
+#, c-format
+msgid "Add to %s"
+msgstr ""
 
-#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/add-panel-launcher.py:59
-msgid "Custom Launcher"
-msgstr "Прилагођено покретање"
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:135
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:465
+msgid "Apply theme"
+msgstr ""
 
-#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/add-panel-launcher.py:138
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:138
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:921
+#, c-format
+msgid ""
+"Some %s can be added multiple times.\n"
+"Use this to add another instance. Use panel edit mode to remove a single "
+"instance."
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:140
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:923
+#, c-format
+msgid "Click to enable this %s"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:142
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:925
+#, c-format
+msgid "Click to apply this %s"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:145
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:149
+msgid "Configure"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:147
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:151
+#, c-format
+msgid "Configure this %s"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:154
+msgid "Restore to default"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:156
+msgid "Restore default theme"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:164
+#, c-format
+msgid "All %s"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:165
+#, c-format
+msgid "Active %s"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:166
+#, c-format
+msgid "Inactive %s"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:175
+msgid "Show"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:225
+msgid "Get more online"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:233
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/cinnamon-add-panel-launcher.py:138
 msgid "Name"
 msgstr "Назив"
 
-#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/add-panel-launcher.py:139
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:234
+msgid "Most popular"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:235
+msgid "Latest"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:246
+msgid "Sort by"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:327
+msgid "  Install or update selected"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:331
+msgid "Refresh list"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:386
+#, c-format
+msgid "This %s is read-only, and cannot be uninstalled"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:394
+#, c-format
+msgid "This %s is currently active."
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:396
+#, c-format
+msgid ""
+"\n"
+"\n"
+"Instance count: %d"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:412
+#, c-format
+msgid "An update is available for this %s"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:414
+#, c-format
+msgid "This %s is installed and up-to-date"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:451
+#, c-format
+msgid "Remove from %s"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:470
+msgid "Uninstall"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:553
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:563
+msgid "Action"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:591
+msgid "Unmark"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:597
+msgid "Mark for upgrade"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:599
+msgid "Mark for installation"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:603
+msgid "More info"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:744
+#, c-format
+msgid ""
+"One or more active %s may have been updated.  You probably need to restart "
+"Cinnamon for the changes to take effect"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:800
+#, c-format
+msgid ""
+"There are multiple instances of this %s, do you want to remove them all?\n"
+"\n"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:821
+#, c-format
+msgid "Are you sure you want to completely remove %s?"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:889
+#, c-format
+msgid ""
+"This operation will update %d installed %s.\n"
+"\n"
+"Do you want to continue?"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:901
+#, c-format
+msgid "  %d updates available!"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:903
+#, c-format
+msgid "  %d update available!"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:932
+#, c-format
+msgid ""
+"\n"
+"This %s does not support multiple instances."
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:934
+#, c-format
+msgid ""
+"\n"
+"This %s supports max %d instances."
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:1124
+msgid "Stock Cinnamon Theme"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/eyedropper.py:13
+msgid ""
+"Click the eyedropper, then click a color anywhere on your screen to select "
+"that color"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/Spices.py:103
+msgid "Applet info"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/Spices.py:106
+msgid "Select and Close"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/Spices.py:247
+#, c-format
+msgid "Refreshing %s index..."
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/Spices.py:278
+msgid ""
+"Something went wrong with the spices download.  Please try refreshing the "
+"list again."
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/Spices.py:281
+#, c-format
+msgid "Refreshing %s cache..."
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/Spices.py:367
+msgid "Updating"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/Spices.py:369
+msgid "Installing"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/Spices.py:377
+#: files/usr/lib/cinnamon-settings/bin/Spices.py:403
+#, c-format
+msgid "%s %s..."
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/Spices.py:399
+#, c-format
+msgid "Installing translations for %s..."
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/Spices.py:405
+#, c-format
+msgid ""
+"Please enter your password to install the required settings schema for %s"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/Spices.py:413
+#, c-format
+msgid ""
+"Could not install the settings schema for %s.  You will have to perform this "
+"step yourself."
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/Spices.py:428
+#: files/usr/lib/cinnamon-settings/bin/Spices.py:457
+#, c-format
+msgid ""
+"An error occurred during installation or updating.  You may wish to report "
+"this incident to the developer of %s."
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/Spices.py:467
+#, c-format
+msgid "Uninstalling %s..."
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/Spices.py:474
+#, c-format
+msgid "Please enter your password to remove the settings schema for %s"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/Spices.py:481
+#, c-format
+msgid ""
+"Could not remove the settings schema for %s.  You will have to perform this "
+"step yourself.  This is not a critical error."
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/Spices.py:500
+#, c-format
+msgid "Problem uninstalling %s.  You may need to manually remove it."
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/Spices.py:562
+msgid ""
+"An error occurred while trying to access the server.  Please try again in a "
+"little while."
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/Spices.py:655
+#, c-format
+msgid ""
+"\n"
+"\n"
+"Details:  %s"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/XletSettings.py:46
+msgid "Back to list"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/XletSettings.py:47
+msgid "More actions..."
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/XletSettings.py:48
+#, c-format
+msgid "Remove the current instance of this %s"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/XletSettings.py:49
+#, c-format
+msgid "Momentarily highlight the %s on your desktop"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/XletSettings.py:173
+#, c-format
+msgid "Instance %s"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/XletSettings.py:231
+msgid "Reset to defaults"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/XletSettings.py:236
+msgid "Import from a file"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/XletSettings.py:241
+msgid "Export to a file"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/XletSettings.py:252
+msgid "Select a JSON file to import"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/XletSettings.py:259
+#: files/usr/lib/cinnamon-settings/bin/XletSettings.py:279
+msgid "JSON files"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/XletSettings.py:271
+msgid "Select or enter file to export to"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/XletSettingsWidgets.py:92
+msgid "Error saving file"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/XletSettingsWidgets.py:93
+msgid "There was a problem exporting the file to the selected location."
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/XletSettingsWidgets.py:105
+msgid "Error importing file"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/XletSettingsWidgets.py:106
+msgid ""
+"There was a problem importing the configuration file.\n"
+"Please check that it is a valid JSON file, and is appropriate for this "
+"applet/desklet/extension.\n"
+"The original configuration file is unchanged."
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/XletSettingsWidgets.py:165
+msgid "Possible incompatible versions"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/XletSettingsWidgets.py:169
+msgid ""
+"The MD5 tags for the file you are trying to import and the existing file do "
+"not match.\n"
+"This means the two files were generated by different versions of this "
+"applet, desklet or extension,\n"
+"or possibly from a different one entirely.  Continuing with this procedure "
+"could yield unpredictable results.\n"
+"\n"
+"Are you sure you want to proceed?"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/XletSettingsWidgets.py:694
+msgid "Select a directory to use"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/XletSettingsWidgets.py:705
+msgid "Directories"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/XletSettingsWidgets.py:778
+msgid "Pick a new icon file"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/XletSettingsWidgets.py:785
+msgid "Image files"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/XletSettingsWidgets.py:874
+msgid "Click to set a new accelerator key."
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/XletSettingsWidgets.py:875
+msgid "  Press Escape or click again to cancel the operation."
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/XletSettingsWidgets.py:897
+msgid "Pick an accelerator"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/bin/XletSettingsWidgets.py:939
+msgid "<not set>"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/cinnamon-add-panel-launcher.py:59
+msgid "Custom Launcher"
+msgstr "Прилагођено покретање"
+
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/cinnamon-add-panel-launcher.py:139
 msgid "Application"
 msgstr "Апликација"
 
-#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/add-panel-launcher.py:142
+#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/cinnamon-add-panel-launcher.py:142
 msgid "Add panel launcher..."
 msgstr "Додај покретач окна..."
+
+#: files/usr/lib/cinnamon-screensaver-lock-dialog/cinnamon-screensaver-lock-dialog.py:40
+msgid "Please type an away message for the lock screen"
+msgstr "Молим, укуцајте одјавну поруку за закључавање екрана"
+
+#: files/usr/bin/cinnamon-launcher:15
+msgid "Do you want to restart Cinnamon?"
+msgstr ""
+
+#: files/usr/bin/cinnamon-launcher:15
+msgid "Cinnamon just crashed. You are currently running in Fallback Mode."
+msgstr ""

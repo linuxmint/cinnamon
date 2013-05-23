@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
 import sys
+reload(sys)
+sys.setdefaultencoding('utf-8')
 
 try:
     sys.path.append('/usr/lib/cinnamon-settings/modules')
@@ -8,7 +10,7 @@ try:
     import os
     import glob
     import gettext
-    from gi.repository import Gio, Gtk, GObject, GdkPixbuf, GtkClutter, Gst
+    from gi.repository import Gio, Gtk, GObject, GdkPixbuf
     import SettingsWidgets
     import capi
 # Standard setting pages... this can be expanded to include applet dirs maybe?
@@ -31,8 +33,14 @@ gettext.install("cinnamon", "/usr/share/cinnamon/locale")
 # i18n for menu item
 menuName = _("System Settings")
 menuComment = _("Control Center")
+NormalMode = _("Switch to Normal Mode")
+AdvancedMode = _("Switch to Advanced Mode")
 
 ADVANCED_GSETTING = "cinnamon-settings-advanced"
+
+WIN_WIDTH = 800
+WIN_HEIGHT = 600
+WIN_H_PADDING = 20
 
 CATEGORIES = [
 #        Display name                         ID              Show it? Always False to start              Icon
@@ -45,9 +53,8 @@ CONTROL_CENTER_MODULES = [
 #         Label                              Module ID                Icon                         Category      Advanced?                      Keywords for filter
     [_("Networking"),                       "network",            "network.svg",                 "hardware",      False,          _("network, wireless, wifi, ethernet, broadband, internet")],
     [_("Display"),                          "display",            "display.svg",                 "hardware",      True,           _("display, screen, monitor, layout, resolution, dual, lcd")],
-    [_("Keyboard Layout"),                  "region",             "region.svg",                     "prefs",      False,          _("region, layout, keyboard, language")],
+    [_("Regional Settings"),                "region",             "region.svg",                     "prefs",      False,          _("region, layout, keyboard, language")],
     [_("Bluetooth"),                        "bluetooth",          "bluetooth.svg",               "hardware",      False,          _("bluetooth, dongle, transfer, mobile")],
-    [_("Default Programs"),                 "info",               "details.svg",                    "prefs",      False,          _("defaults, programs, info, details, version, cd, autostart")],
     [_("Universal Access"),                 "universal-access",   "universal-access.svg",           "prefs",      False,          _("magnifier, talk, access, zoom, keys, contrast")],
     [_("User Accounts"),                    "user-accounts",      "user-accounts.svg",              "prefs",      True,           _("users, accounts, add, password, picture")],
     [_("Power Management"),                 "power",              "power.svg",                   "hardware",      False,          _("power, suspend, hibernate, laptop, desktop")],
@@ -60,7 +67,10 @@ STANDALONE_MODULES = [
     [_("Printers"),                      "system-config-printer",        "printer.svg",         "hardware",       False,          _("printers, laser, inkjet")],
     [_("Firewall"),                      "gufw",                         "firewall.svg",        "prefs",          True,           _("firewall, block, filter, programs")],
     [_("Languages"),                     "gnome-language-selector",      "language.svg",        "prefs",          False,          _("language, install, foreign")],
-    [_("Login Screen"),                  "gksu /usr/sbin/mdmsetup",      "login.svg",           "prefs",          True,           _("login, mdm, gdm, manager, user, password, startup, switch")]
+    [_("Login Screen"),                  "gksu /usr/sbin/mdmsetup",      "login.svg",           "prefs",          True,           _("login, mdm, gdm, manager, user, password, startup, switch")],
+    [_("Startup Programs"),              "gnome-session-properties",     "startup-programs.svg","prefs",          False,          _("startup, programs, boot, init, session")],
+    [_("Device Drivers"),                "mintdrivers",                  "drivers.svg",         "hardware",       False,          _("video, driver, wifi, card, hardware, proprietary, nvidia, radeon, nouveau, fglrx")],
+    [_("Software Sources"),              "mintsources",                  "sources.svg",         "prefs",          True,           _("ppa, repository, package, source, download")]
 ]
 
 class MainWindow:
@@ -81,8 +91,17 @@ class MainWindow:
                 self.content_box_sw.show()
                 self.button_back.show()
                 self.current_sidepage = sidePage
+                self.maybe_resize(sidePage)
+                GObject.idle_add(self.start_fade_in)
             else:
                 sidePage.build(self.advanced_mode)
+
+    def maybe_resize(self, sidePage):
+        if not sidePage.size:
+            m, n = self.content_box.get_preferred_size()
+            self.window.resize(WIN_WIDTH, n.height + self.bar_heights + WIN_H_PADDING)
+        elif sidePage.size > -1:
+            self.window.resize(WIN_WIDTH, sidePage.size + self.bar_heights + WIN_H_PADDING)
 
     def deselect(self, cat):
         for key in self.side_view.keys():
@@ -95,6 +114,8 @@ class MainWindow:
         self.builder = Gtk.Builder()
         self.builder.add_from_file("/usr/lib/cinnamon-settings/cinnamon-settings.ui")
         self.window = self.builder.get_object("main_window")
+        self.top_bar = self.builder.get_object("top_bar")
+        self.bottom_bar = self.builder.get_object("bottom_bar")
         self.side_view = {}
         self.side_view_container = self.builder.get_object("category_box")
         self.side_view_sw = self.builder.get_object("side_view_sw")
@@ -105,10 +126,10 @@ class MainWindow:
         self.button_back = self.builder.get_object("button_back")
         self.button_back.set_label(_("All Settings"))
         self.button_back.hide()
+
         self.search_entry = self.builder.get_object("search_box")
         self.search_entry.connect("changed", self.onSearchTextChanged)
         self.search_entry.connect("icon-press", self.onClearSearchBox)
-
         self.window.connect("destroy", Gtk.main_quit)
 
         self.builder.connect_signals(self)
@@ -116,14 +137,28 @@ class MainWindow:
         self.sidePages = []
         self.settings = Gio.Settings.new("org.cinnamon")
         self.advanced_mode = self.settings.get_boolean(ADVANCED_GSETTING)
+        self.mode_button = self.builder.get_object("mode_button")
+        self.mode_button.set_size_request(self.get_mode_size(), -1)
+        if self.advanced_mode:
+            self.mode_button.set_label(NormalMode)
+        else:
+            self.mode_button.set_label(AdvancedMode)
+
         self.current_sidepage = None
         self.c_manager = capi.CManager()
         self.content_box.c_manager = self.c_manager
+        self.bar_heights = 0
+        self.opacity = 0
 
         for i in range(len(modules)):
-            mod = modules[i].Module(self.content_box)
-            if self.loadCheck(mod) and self.setParentRefs(mod):
-                self.sidePages.append((mod.sidePage, mod.name, mod.category))
+            try:
+                mod = modules[i].Module(self.content_box)
+                if self.loadCheck(mod) and self.setParentRefs(mod):
+                    self.sidePages.append((mod.sidePage, mod.name, mod.category))
+            except:
+                print "Failed to load module %s" % modules[i]
+                import traceback
+                traceback.print_exc()
 
         for item in CONTROL_CENTER_MODULES:
             ccmodule = SettingsWidgets.CCModule(item[0], item[1], item[2], item[3], item[4], item[5], self.content_box)
@@ -165,6 +200,9 @@ class MainWindow:
         self.window.connect("destroy", Gtk.main_quit)
         self.button_cancel.connect("clicked", lambda y: self.window.destroy())
         self.button_back.connect('clicked', self.back_to_icon_view)
+        self.window.set_opacity(self.opacity)
+        self.window.show()
+        self.calculate_bar_heights()
 
         # Select the first sidePage
         if len(sys.argv) > 1 and sys.argv[1] in sidePagesIters.keys():
@@ -172,8 +210,32 @@ class MainWindow:
             self.findPath(first_page_iter)
         else:
             self.search_entry.grab_focus()
+            GObject.idle_add(self.start_fade_in)
 
-        self.window.show()
+    def get_mode_size(self):
+        self.mode_button.set_label(AdvancedMode)
+        amw, apw = self.mode_button.get_preferred_width()
+        self.mode_button.set_label(NormalMode)
+        nmw, npw = self.mode_button.get_preferred_width()
+        return max(apw, npw)
+
+    def start_fade_in(self):
+        if self.opacity < 1.0:
+            GObject.timeout_add(10, self.do_fade_in)
+        return False
+
+    def do_fade_in(self):
+        self.opacity += 0.05
+        self.window.set_opacity(self.opacity)
+        return self.opacity < 1.0
+
+    def calculate_bar_heights(self):
+        h = 0
+        m, n = self.top_bar.get_preferred_size()
+        h += n.height
+        m, n = self.bottom_bar.get_preferred_size()
+        h += n.height
+        self.bar_heights = h
 
     def onSearchTextChanged(self, widget):
         self.displayCategories()
@@ -235,7 +297,7 @@ class MainWindow:
         widget.set_hexpand(True)
         widget.set_vexpand(False)
         css_provider = Gtk.CssProvider()
-        css_provider.load_from_data("GtkIconView {background-color: @bg_color;}")
+        css_provider.load_from_data("GtkIconView {background-color: transparent;}")
         c = widget.get_style_context()
         c.add_provider(css_provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
         self.side_view[category["id"]] = widget
@@ -259,8 +321,11 @@ class MainWindow:
             if path is not None:
                 filtered_path = self.side_view[key].get_model().convert_child_path_to_path(path)
                 if filtered_path is not None:
-                    self.side_view[key].select_path(filtered_path)
-                    return
+                    GObject.idle_add(self.do_side_view, key, filtered_path)
+
+    def do_side_view(self, key, filtered_path):
+        self.side_view[key].select_path(filtered_path)
+        return False
 
     def setParentRefs (self, mod):
         try:
@@ -277,6 +342,7 @@ class MainWindow:
 
     def back_to_icon_view(self, widget):
         self.window.set_title(_("System Settings"))
+        self.window.resize(WIN_WIDTH, WIN_HEIGHT)
         self.content_box_sw.hide()
         children = self.content_box.get_children()
         for child in children:
@@ -292,40 +358,32 @@ class MainWindow:
         self.current_sidepage = None
 
     def on_menu_button_clicked(self, widget):
-        popup = Gtk.Menu()
-        popup.attach_to_widget(widget, None)
-        popup_normal_mode = Gtk.CheckMenuItem(_("Normal Mode"))
-        popup_normal_mode.set_draw_as_radio(True)
-        popup_normal_mode.set_active(not self.advanced_mode)
-        popup_normal_mode.show()
-        popup.append(popup_normal_mode)
-        popup_advanced_mode = Gtk.CheckMenuItem(_("Advanced Mode"))
-        popup_advanced_mode.set_draw_as_radio(True)
-        popup_advanced_mode.set_active(self.advanced_mode)
-        popup_advanced_mode.show()
-        popup.append(popup_advanced_mode)
+        if self.advanced_mode:
+            self.mode_button.set_label(AdvancedMode)
+            self.on_normal_mode()
+        else:
+            self.mode_button.set_label(NormalMode)
+            self.on_advanced_mode()
+        return True
 
-        popup_normal_mode.connect('activate', self.on_normal_mode)
-        popup_advanced_mode.connect('activate', self.on_advanced_mode)
-        popup.popup(None, None, None, None, 0, 0)
 
-    def on_advanced_mode(self, popup):
+    def on_advanced_mode(self):
         self.advanced_mode = True
         self.settings.set_boolean(ADVANCED_GSETTING, True)
         if self.current_sidepage is not None:
             self.current_sidepage.build(self.advanced_mode)
+            self.maybe_resize(self.current_sidepage)
         self.displayCategories()
 
-    def on_normal_mode(self, popup):
+    def on_normal_mode(self):
         self.advanced_mode = False
         self.settings.set_boolean(ADVANCED_GSETTING, False)
         if self.current_sidepage is not None:
             self.current_sidepage.build(self.advanced_mode)
+            self.maybe_resize(self.current_sidepage)
         self.displayCategories()
 
 if __name__ == "__main__":
     GObject.threads_init()
-    GtkClutter.init(None)
-    Gst.init(None)
     MainWindow()
     Gtk.main()

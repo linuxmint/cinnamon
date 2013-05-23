@@ -55,7 +55,7 @@ const MediaServer2PlayerIFace = {
                 inSignature: '',
                 outSignature: '' },
               { name: 'SetPosition',
-                inSignature: 'a{ov}',
+                inSignature: 'ox',
                 outSignature: '' }],
     properties: [{ name: 'Metadata',
                    signature: 'a{sv}',
@@ -99,8 +99,8 @@ const MediaServer2PlayerIFace = {
 
 /* global values */
 let icon_path = "/usr/share/cinnamon/theme/";
-let compatible_players = [ "clementine", "mpd", "exaile", "banshee", "rhythmbox", "rhythmbox3", "pragha", "quodlibet", "guayadeque", "amarok", "googlemusicframe", "xbmc", "xnoise", "gmusicbrowser", "spotify", "audacious", "vlc", "beatbox", "songbird", "pithos", "gnome-mplayer", "nuvolaplayer" ];
-let support_seek = [ "clementine", "banshee", "rhythmbox", "rhythmbox3", "pragha", "quodlibet", "amarok", "xnoise", "gmusicbrowser", "spotify", "vlc", "beatbox", "gnome-mplayer" ];
+let compatible_players = [ "clementine", "mpd", "exaile", "banshee", "rhythmbox", "rhythmbox3", "pragha", "quodlibet", "guayadeque", "amarok", "googlemusicframe", "xbmc", "noise", "xnoise", "gmusicbrowser", "spotify", "audacious", "vlc", "beatbox", "songbird", "pithos", "gnome-mplayer", "nuvolaplayer", "qmmp" ];
+let support_seek = [ "clementine", "banshee", "rhythmbox", "rhythmbox3", "pragha", "quodlibet", "amarok", "noise", "xnoise", "gmusicbrowser", "spotify", "vlc", "beatbox", "gnome-mplayer", "qmmp" ];
 /* dummy vars for translation */
 let x = _("Playing");
 x = _("Paused");
@@ -185,6 +185,9 @@ MediaServer2Player.prototype = {
                     callback(this, position);
             }));
     },
+    setPosition: function(value) {
+        this.SetRemote('Position', value);
+    },
     getShuffle: function(callback) {
         this.GetRemote('Shuffle', Lang.bind(this,
             function(shuffle, ex) {
@@ -223,6 +226,14 @@ MediaServer2Player.prototype = {
         else
             value = "None"
         this.SetRemote('LoopStatus', value);
+    },
+    getCanSeek: function(callback) {
+        this.GetRemote('CanSeek', Lang.bind(this,
+            function(canSeek, err) {
+                if (!err) {
+                    callback(this, canSeek);
+                }
+            }));
     }
 }
 DBus.proxifyPrototype(MediaServer2Player.prototype, MediaServer2PlayerIFace)
@@ -344,6 +355,7 @@ Player.prototype = {
     _init: function(system_status_button, owner) {
         PopupMenu.PopupMenuSection.prototype._init.call(this);
 
+        this.showPosition = true; // @todo: Get from settings
         this._owner = owner;
         this._system_status_button = system_status_button;
         this._name = this._owner.split('.')[3];
@@ -377,7 +389,7 @@ Player.prototype = {
         this.infos_top.add_actor(this._artist.getActor());
         this.infos_bottom.add_actor(this._album.getActor());
         this.infos_top.add_actor(this._title.getActor());
-        this.infos_bottom.add_actor(this._time.getActor());
+
         this._trackInfosTop.set_child(this.infos_top);
         this._trackInfosBottom.set_child(this.infos_bottom);
 
@@ -402,6 +414,28 @@ Player.prototype = {
         this._trackControls.set_child(this.controls);
         this.addActor(this._trackControls);
 
+        this._seekControls = new St.Bin({style_class: 'sound-seek', x_align: St.Align.START});
+        this.seekControls = new St.BoxLayout({style_class: 'sound-seek-box'});
+        this.seekControls.add_actor(this._time.getActor());
+
+        this._positionSlider = new PopupMenu.PopupSliderMenuItem(0);
+        this._positionSlider.connect('value-changed', Lang.bind(this, function(item) {
+            let time = item._value * this._songLength;
+            this._time.setLabel(this._formatTime(time) + " / " + this._formatTime(this._songLength));
+        }));
+        this._positionSlider.connect('drag-end', Lang.bind(this, function(item) {
+            let time = item._value * this._songLength;
+            this._time.setLabel(this._formatTime(time) + " / " + this._formatTime(this._songLength));
+            this._wantedSeekValue = Math.round(time * 1000000);
+            this._mediaServerPlayer.SetPositionRemote(this._trackObj, time * 1000000);
+        }));
+
+        this.sliderBin = new St.Bin({style_class: 'sound-seek-slider'});
+        this.sliderBin.set_child(this._positionSlider.actor);
+        this.seekControls.add_actor(this.sliderBin);
+        this._seekControls.set_child(this.seekControls);
+        this.addActor(this._seekControls);
+
         this._mediaServer.getRaise(Lang.bind(this, function(sender, raise) {
             if (raise) {
                 this._raiseButton = new ControlButton('go-up',
@@ -421,23 +455,49 @@ Player.prototype = {
         }));
 
         /* this players don't support seek */
-        if (support_seek.indexOf(this._name) == -1)
+        if (support_seek.indexOf(this._name) == -1) {
             this._time.hide();
+            this.showPosition = false;
+            this._positionSlider.actor.hide();
+        }
         this._getStatus();
         this._trackId = {};
         this._getMetadata();
         this._currentTime = 0;
         this._getPosition();
+        this._wantedSeekValue = 0;
+        this._updatePositionSlider();
 
         this._prop.connect('PropertiesChanged', Lang.bind(this, function(sender, iface, value) {
             if (value["PlaybackStatus"])
                 this._setStatus(iface, value["PlaybackStatus"]);
             if (value["Metadata"])
                 this._setMetadata(iface, value["Metadata"]);
+            //qmmp
+            if(sender._dbusBusName == 'org.mpris.MediaPlayer2.qmmp') {
+                if (value["playbackStatus"])
+                    this._setStatus(iface, value["playbackStatus"]);
+                if (value["metadata"])
+                    this._setMetadata(sender, value["metadata"]);
+            } 
         }));
 
         this._mediaServerPlayer.connect('Seeked', Lang.bind(this, function(sender, value) {
-            this._setPosition(sender, value);
+            if (value > 0) {
+                this._setPosition(value);
+            }
+            // Seek initiated by the position slider
+            else if (this._wantedSeekValue > 0) {
+                // Some broken gstreamer players (Banshee) reports always 0
+                // when the track is seeked so we set the position at the
+                // value we set on the slider
+                this._setPosition(this._wantedSeekValue);
+            }
+            // Seek value send by the player
+            else
+                this._setPosition(value);
+
+            this._wantedSeekValue = 0;
         }));
 
         Mainloop.timeout_add(1000, Lang.bind(this, this._getPosition));
@@ -452,19 +512,36 @@ Player.prototype = {
         this._playerInfo.setText(this._getName() + " - " + _(status));
     },
 
-    _setPosition: function(sender, value) {
-        this._stopTimer();
-        this._currentTime = value / 1000000;
-        this._updateTimer();
-        if (this._playerStatus == "Playing")
-            this._runTimer();
+    _updatePositionSlider: function(position) {
+        this._mediaServerPlayer.getCanSeek(Lang.bind(this, function(sender, canSeek) {
+            this._canSeek = canSeek;
+            
+            if (this._songLength == 0 || position == false)
+                this._canSeek = false
+
+            // Clem: The following code was commented out. When the next song started, it resulted in hiding the sound menu, making it hard for the user to repeatedly click on the next song button.
+            // There's probably a better fix and this was not tested with players which don't support seeking, but it fixes the regression created by the slider (apparently when the slider is hidden it closes the menu)
+            // if (this._playerStatus == "Playing" && this._canSeek && this.showPosition)
+            //     this._positionSlider.actor.show();
+            // else
+            //     this._positionSlider.actor.hide();
+        }));
+    },
+
+    _setPosition: function(value) {
+        if (value == null && this._playerStatus != 'Stopped') {
+            this._updatePositionSlider(false);
+        }
+        else {
+            this._currentTime = value / 1000000;
+            this._updateTimer();
+        }
     },
 
     _getPosition: function() {
-        this._mediaServerPlayer.getPosition(Lang.bind(this,
-            this._setPosition
-        ));
-        Mainloop.timeout_add(1000, Lang.bind(this, this._getPosition));
+        this._mediaServerPlayer.getPosition(Lang.bind(this, function(sender, value) {
+            this._setPosition(value);
+        }));
     },
 
     _setMetadata: function(sender, metadata) {
@@ -495,13 +572,10 @@ Player.prototype = {
             this._title.setLabel(metadata["xesam:title"].toString());
         else
             this._title.setLabel(_("Unknown Title"));
-        /*if (metadata["mpris:trackid"]) {
-            this._trackId = {
-                _init: function() {
-                    DBus.session.proxifyObject(this, this._owner, metadata["mpris:trackid"]);
-                }
-            }
-        }*/
+        
+        if (metadata["mpris:trackid"]) {
+            this._trackObj = metadata["mpris:trackid"];
+        }
 
         let change = false;
         if (metadata["mpris:artUrl"]) {
@@ -528,7 +602,8 @@ Player.prototype = {
                     cover.read_async(null, null, Lang.bind(this, this._onReadCover));
                 }
                 else {
-                    cover_path = decodeURIComponent(this._trackCoverFile.substr(7));
+                    cover_path = decodeURIComponent(this._trackCoverFile);
+                    cover_path = cover_path.replace("file://", "");
                     this._showCover(cover_path);
                 }
             }
@@ -544,6 +619,7 @@ Player.prototype = {
     },
 
     _setStatus: function(sender, status) {
+        this._updatePositionSlider();
         this._playerStatus = status;
         if (status == "Playing") {
             this._playButton.setIcon("media-playback-pause");
@@ -557,6 +633,7 @@ Player.prototype = {
             this._playButton.setIcon("media-playback-start");
             this._stopTimer();
         }
+
         this._playerInfo.setImage("player-" + status.toLowerCase());
         this._setName(status);
     },
@@ -574,26 +651,35 @@ Player.prototype = {
     },
 
     _updateTimer: function() {
+        if (this.showPosition && this._canSeek) {
+            if (!isNaN(this._currentTime) && !isNaN(this._songLength) && this._currentTime > 0)
+                this._positionSlider.setValue(this._currentTime / this._songLength);
+            else
+                this._positionSlider.setValue(0);
+        }
         this._time.setLabel(this._formatTime(this._currentTime) + " / " + this._formatTime(this._songLength));
     },
 
     _runTimer: function() {
-        /*if (!Tweener.resumeTweens(this)) {
-            Tweener.addTween(this,
-                { time: this._songLength - this._currentTime,
-                  transition: 'linear',
-                  onUpdate: Lang.bind(this, this._updateTimer) });
-        }*/
+        if (this._playerStatus == 'Playing') {
+            this._timeoutId = Mainloop.timeout_add_seconds(1, Lang.bind(this, this._runTimer));
+            this._currentTime += 1;
+            this._updateTimer();
+        }
     },
 
     _pauseTimer: function() {
-        //Tweener.pauseTweens(this);
+        if (this._timeoutId != 0) {
+            Mainloop.source_remove(this._timeoutId);
+            this._timeoutId = 0;
+        }
+        this._updateTimer();
     },
 
     _stopTimer: function() {
-        /*Tweener.removeTweens(this);
         this._currentTime = 0;
-        this._updateTimer();*/
+        this._pauseTimer();
+        this._updateTimer();
     },
 
     _formatTime: function(s) {

@@ -4,6 +4,7 @@ const PopupMenu = imports.ui.popupMenu;
 const Mainloop = imports.mainloop;
 const Settings = imports.ui.settings;  // Needed for settings API
 const Gio = imports.gi.Gio
+const Main = imports.ui.main;
 
 function MyApplet(orientation, panel_height, instance_id) {
     this._init(orientation, panel_height, instance_id); // Be sure to pass instanceId from the main function
@@ -24,22 +25,22 @@ MyApplet.prototype = {
 
         /* Now we'll proceed with setting up individual setting bindings. */
 
-        this.settings.bindProperty(Settings.BindingDirection.ONE_WAY,   // The binding direction - ONE_WAY means we only listen for changes from this applet
+        this.settings.bindProperty(Settings.BindingDirection.IN,   // The binding direction - IN means we only listen for changes from this applet
                                  "icon-name",                               // The setting key, from the setting schema file
                                  "icon_name",                               // The property to bind the setting to - in this case it will initialize this.icon_name to the setting value
                                  this.on_settings_changed,                  // The method to call when this.icon_name has changed, so you can update your applet
                                  null);                                     // Any extra information you want to pass to the callback (optional - pass null or just leave out this last argument)
-        this.settings.bindProperty(Settings.BindingDirection.ONE_WAY,
+        this.settings.bindProperty(Settings.BindingDirection.IN,
                                  "color",
                                  "bg_color",
                                  this.on_settings_changed,
                                  null);
-        this.settings.bindProperty(Settings.BindingDirection.ONE_WAY,
+        this.settings.bindProperty(Settings.BindingDirection.IN,
                                  "spinner-number",
                                  "spinner_number",
                                  this.on_settings_changed,
                                  null);
-        this.settings.bindProperty(Settings.BindingDirection.ONE_WAY,
+        this.settings.bindProperty(Settings.BindingDirection.IN,
                                  "combo-selection",
                                  "combo_choice",
                                  this.on_settings_changed,
@@ -49,15 +50,20 @@ MyApplet.prototype = {
                                  "scale_val",                                   // settings daemon will listen for changes made
                                  this.on_settings_changed,                      // to this.scale_val by the APPLET
                                  null);
-        this.settings.bindProperty(Settings.BindingDirection.ONE_WAY,
+        this.settings.bindProperty(Settings.BindingDirection.IN,
                                   "use-custom-label",
                                   "use_custom",
                                   this.on_settings_changed,
                                   null);
-        this.settings.bindProperty(Settings.BindingDirection.ONE_WAY,
+        this.settings.bindProperty(Settings.BindingDirection.IN,
                                  "custom-label",
                                  "custom_label",
                                  this.on_settings_changed,
+                                 null);
+        this.settings.bindProperty(Settings.BindingDirection.IN,
+                                 "keybinding-test",
+                                 "keybinding",
+                                 this.on_keybinding_changed,
                                  null);
 
         this.settings.connect("changed::signal-test", Lang.bind(this, this.on_signal_test_fired));
@@ -75,7 +81,12 @@ MyApplet.prototype = {
 
 
         /* Let's set up our applet's initial state now that we have our setting properties defined */
-        this.on_settings_changed()
+        this.on_keybinding_changed();
+        this.on_settings_changed();
+    },
+
+    on_keybinding_changed: function() {
+        Main.keybindingManager.addHotKey("must-be-unique-id", this.keybinding, Lang.bind(this, this.on_hotkey_triggered));
     },
 
     on_settings_changed: function() {
@@ -97,6 +108,7 @@ MyApplet.prototype = {
         this.slider_demo.setValue(this.scale_val);
 
         this.actor.style = "background-color:" + this.bg_color + "; width:" + this.spinner_number + "px";
+
     },
 
     on_signal_test_fired: function(setting_prov, key, oldval, newval) {
@@ -115,6 +127,14 @@ MyApplet.prototype = {
  */
     on_config_button_pressed: function() {
         this.set_applet_label(_("YOU PRESSED THE BUTTON!!!"));
+
+        let timeoutId = Mainloop.timeout_add(3000, Lang.bind(this, function() {
+            this.on_settings_changed();
+        }));
+    },
+
+    on_hotkey_triggered: function() {
+        this.set_applet_label(_("YOU USED THE HOTKEY!!!"));
 
         let timeoutId = Mainloop.timeout_add(3000, Lang.bind(this, function() {
             this.on_settings_changed();

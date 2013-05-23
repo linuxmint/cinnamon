@@ -45,14 +45,23 @@ MyApplet.prototype = {
         this.menu_label.actor.reactive = false;
         this.menu_label.actor.can_focus = false;
         this.menu_label.label.add_style_class_name('popup-subtitle-menu-item');
-        this.menu.addMenuItem(this.menu_label);
-        this.menu.addActor(this._maincontainer);
         this.clear_separator = new PopupMenu.PopupSeparatorMenuItem();
-        this.menu.addMenuItem(this.clear_separator);
         this.clear_action = new PopupMenu.PopupMenuItem(_("Clear notifications"));
-        this.menu.addMenuItem(this.clear_action);
         this.clear_action.connect('activate', Lang.bind(this, this._clear_all));
         this.clear_action.actor.hide();
+
+        if (this._orientation == St.Side.BOTTOM) {
+            this.menu.addMenuItem(this.menu_label);
+            this.menu.addActor(this._maincontainer);
+            this.menu.addMenuItem(this.clear_separator);
+            this.menu.addMenuItem(this.clear_action);
+        } else {
+            this.menu.addMenuItem(this.clear_action);
+            this.menu.addMenuItem(this.clear_separator);
+            this.menu.addMenuItem(this.menu_label);
+            this.menu.addActor(this._maincontainer);
+        }
+
         this.scrollview = new St.ScrollView({ x_fill: true, y_fill: true, y_align: St.Align.START});
         this._maincontainer.add(this.scrollview);
         this.scrollview.add_actor(this._notificationbin);
@@ -66,11 +75,19 @@ MyApplet.prototype = {
         notification.actor.unparent();
         let existing_index = this.notifications.indexOf(notification);
         if (existing_index != -1) {
-            notification._inNotificationBin = true;
-            notification.actor.reparent(this._notificationbin);
-            notification.expand();
-            notification._timeLabel.show();
+            if (notification._destroyed) {
+                this.notifications.splice(existing_index, 1);
+            }
+            else {
+                notification._inNotificationBin = true;
+                notification.actor.reparent(this._notificationbin);
+                notification.expand();
+                notification._timeLabel.show();
+            }
             this.update_list();
+            return;
+        }
+        if (notification._destroyed) {
             return;
         }
         notification._inNotificationBin = true;
@@ -79,17 +96,19 @@ MyApplet.prototype = {
         this._notificationbin.add(notification.actor)
         notification.actor._parent_container = this._notificationbin;
         notification.actor.add_style_class_name('notification-applet-padding');
-        notification.connect('clicked', Lang.bind(this, this._item_clicked));
-        notification.connect('destroy', Lang.bind(this, this._item_clicked));
+        notification.connect('clicked', Lang.bind(this, this._item_clicked, false));
+        notification.connect('destroy', Lang.bind(this, this._item_clicked, true));
         notification._timeLabel.show();
         this.update_list();
     },
 
-    _item_clicked: function(notification) {
+    _item_clicked: function(notification, destroyed) {
         let i = this.notifications.indexOf(notification);
         if (i != -1) {
             this.notifications.splice(i, 1);
-            notification.destroy(NotificationDestroyedReason.DISMISSED);
+            if (!destroyed) {
+                notification.destroy(NotificationDestroyedReason.DISMISSED);
+            }
         }
         this.update_list();
     },

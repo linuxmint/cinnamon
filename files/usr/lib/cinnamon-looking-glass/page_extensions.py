@@ -1,4 +1,3 @@
-import json
 import pageutils
 import os
 from gi.repository import Gio, Gtk, GObject, Gdk, Pango, GLib
@@ -13,8 +12,8 @@ class ModulePage(pageutils.BaseListView):
         self.createTextColumn(2, "Name")
         self.createTextColumn(3, "Description")
         self.getUpdates()
-        dbusManager.connectToCinnamonSignal("lgExtensionListUpdate", self.getUpdates)
-        dbusManager.addReconnectCallback(self.getUpdates)
+        lookingGlassProxy.connect("ExtensionListUpdate", self.getUpdates)
+        lookingGlassProxy.addStatusChangeCallback(self.onStatusChange)
 
         self.popup = Gtk.Menu()
 
@@ -42,7 +41,7 @@ class ModulePage(pageutils.BaseListView):
     def onReloadCode(self, menuItem):
         iter = self.store.get_iter(self.selectedPath)
         uuid = self.store.get_value(iter, 4)
-        dbusManager.cinnamonDBus.lgReloadExtension(uuid)
+        lookingGlassProxy.ReloadExtension(uuid)
 
     def onViewWebPage(self, menuItem):
         iter = self.store.get_iter(self.selectedPath)
@@ -71,9 +70,14 @@ class ModulePage(pageutils.BaseListView):
                 self.popup.popup( None, None, None, None, event.button, event.time)
             return True
 
+
+    def onStatusChange(self, online):
+        if online:
+            self.getUpdates()
+
     def getUpdates(self):
-        success, json_data = dbusManager.cinnamonDBus.lgGetExtensionList()
-        data = json.loads(json_data)
-        self.store.clear()
-        for item in data:
-            self.store.append([item["status"], item["type"], item["name"], item["description"], item["uuid"], item["folder"], item["url"]])
+        success, data = lookingGlassProxy.GetExtensionList()
+        if success:
+            self.store.clear()
+            for item in data:
+                self.store.append([item["status"], item["type"], item["name"], item["description"], item["uuid"], item["folder"], item["url"]])

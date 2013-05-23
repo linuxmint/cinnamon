@@ -4,9 +4,6 @@ const Lang = imports.lang;
 const Cinnamon = imports.gi.Cinnamon;
 const Main = imports.ui.main;
 const Signals = imports.signals;
-const AppletManager = imports.ui.appletManager;
-const DeskletManager = imports.ui.deskletManager;
-const ExtensionSystem = imports.ui.extensionSystem;
 const Extension = imports.ui.extension;
 const Mainloop = imports.mainloop;
 
@@ -77,6 +74,13 @@ var STRING_TYPES = {
             "default",
             "description",
             "options"
+        ]
+    },
+    "keybinding" : {
+        "required-fields": [
+            "type",
+            "default",
+            "description"
         ]
     },
     "generic" : {
@@ -166,35 +170,35 @@ _provider.prototype = {
                 this.xlet_str = string;
             }
             if (!xlet) {
-                global.logError(_("%s constructor arguments invalid").format(this.xlet_str));
-                global.logError(_("First argument MUST be a(n) %s object (use 'this' as the first argument").format(this.xlet_str));
+                global.logError(this.xlet_str + " constructor arguments invalid");
+                global.logError("First argument MUST be a(n)" + this.xlet_str + " object (use 'this' as the first argument");
                 return;
             }
             if (!uuid) {
-                global.logError(_("%sSettings constructor arguments invalid").format(this.xlet_str));
-                global.logError(_("Missing required UUID as second argument - should be a string:"));
-                global.logError(_("<%s-name>@<your-id>.org or something similar").format(this.xlet_str));
+                global.logError(this.xlet_str + "Settings constructor arguments invalid");
+                global.logError("Missing required UUID as second argument - should be a string:");
+                global.logError("<xlet-name>@<your-id>.org or something similar");
                 return;
             }
             this.uuid = uuid;
             this.xlet = xlet;
             if (!instanceId && this.ext_type != Extension.Type.EXTENSION) {
-                global.logWarning(_("%sSettings constructor arguments warning").format(this.xlet_str));
-                global.logWarning(_("Missing instance ID as third argument"));
-                global.logWarning(_("The %s UUID is %s").format(this.xlet_str, this.uuid));
+                global.logWarning(this.xlet_str + "Settings constructor arguments warning");
+                global.logWarning("Missing instance ID as third argument");
+                global.logWarning("The UUID is " + this.uuid);
             }
             this.instanceId = instanceId;
             this.valid = false;
             this.applet_dir = Extension.findExtensionDirectory(this.uuid, this.ext_type);
             if (!this.applet_dir) {
-                global.logError(_("Could not find %s installation directory for %s.").format(this.xlet_str, this.uuid));
+                global.logError("Could not find installation directory for " + this.uuid);
                 return;
             }
             this.multi_instance = this._get_is_multi_instance_xlet(this.uuid);
             if (this.multi_instance && !this.instanceId) {
-                global.logError(_("%sSettings fatal error!").format(this.xlet_str));
-                global.logError(_("Multi-instanciable %s with no instance ID supplied").format(this.xlet_str));
-                global.logError(_("The %s UUID is %s").format(this.xlet_str, this.uuid));
+                global.logError(this.xlet_str + "Settings fatal error!");
+                global.logError("Multi-instanciable xlet with no instance ID supplied");
+                global.logError("The UUID is " + this.uuid);
                 return;
             }
 
@@ -210,12 +214,12 @@ _provider.prototype = {
             // If it already exists, check for updates to it (new keys, etc..)
             if (!this.settings_file.query_exists(null)) {
                 if (!this._create_settings_file()) {
-                    global.logError(_("Problem initializing settings for %s").format(this.uuid));
+                    global.logError("Problem initializing settings for " + this.uuid);
                     return;
                 }
             } else {
                 if (!this._maybe_update_settings_file()) {
-                    global.logError(_("Problem updating settings for %s").format(this.uuid));
+                    global.logError("Problem updating settings for " + this.uuid);
                     return;
                 }
             }
@@ -239,7 +243,7 @@ _provider.prototype = {
             }
             let orig_file = this.applet_dir.get_child(SETTING_SCHEMA_FILE);
             if (!orig_file.query_exists(null)) {
-                global.logError(_("Failed to locate %s for %s %s").format(SETTING_SCHEMA_FILE, this.xlet_str, this.uuid));
+                global.logError("Failed to locate settings schema file for " + this.uuid);
                 return false;
             }
             let init_file_contents = Cinnamon.get_file_contents_utf8_sync(orig_file.get_path());
@@ -249,11 +253,11 @@ _provider.prototype = {
             try {
                 init_json = JSON.parse(init_file_contents);
             } catch (e) {
-                global.logError(_("Cannot parse %s file for %s %s.  Check the structure for missing commas, etc... Error is: %s").format(SETTING_SCHEMA_FILE, this.xlet_str, this.uuid, e));
+                global.logError("Cannot parse settings schema file for %s" + this.uuid + ".  Check the structure for missing commas, etc... Error is: " + e);
                 return false;
             }
             if (!this._json_validity_check(init_json)) {
-                global.logError(_("Initial %s file is not valid for %s %s").format(SETTING_SCHEMA_FILE, this.xlet_str, this.uuid));
+                global.logError("Initial settings schema file is not valid for " + this.uuid);
                 return false;
             }
 
@@ -326,8 +330,8 @@ _provider.prototype = {
         _maybe_update_settings_file: function () {
             let orig_file = this.applet_dir.get_child(SETTING_SCHEMA_FILE);
             if (!orig_file.query_exists(null)) {
-                global.logWarning(_("Failed to locate %s for %s %s to check for updates").format(SETTING_SCHEMA_FILE, this.xlet_str, this.uuid));
-                global.logWarning(_("Something may not be right"));
+                global.logWarning("Failed to locate settings schema file to check for updates: " + this.uuid);
+                global.logWarning("Something may not be right");
                 return false;
             }
             let init_file_contents = Cinnamon.get_file_contents_utf8_sync(orig_file.get_path());
@@ -340,12 +344,12 @@ _provider.prototype = {
                 existing_json = JSON.parse(existing_settings_file);
                 new_json = JSON.parse(init_file_contents);
             } catch (e) {
-                global.logError(_("Problem parsing settings files for %s %s while preparing to perform upgrade").format(this.xlet_str, this.uuid));
-                global.logError(_("Skipping upgrade for now - something may be wrong with the new %s file.").format(SETTING_SCHEMA_FILE));
+                global.logError("Problem parsing settings files for " + this.uuid + "while preparing to perform upgrade");
+                global.logError("Skipping upgrade for now - something may be wrong with the new settings schema file.");
                 return false;
             }
             if (existing_json["__md5__"] != checksum) {
-                global.log(_("Updated settings file detected for %s %s.  Beginning upgrade of existing settings").format(this.xlet_str, this.uuid));
+                global.log("Updated settings file detected for " + this.uuid + ".  Beginning upgrade of existing settings");
                 return this._do_upgrade(new_json, existing_json, checksum);
             } else {
                 return true;
@@ -355,8 +359,8 @@ _provider.prototype = {
         _do_upgrade: function(new_json, old_json, checksum) {
             // First, check the new json for validity
             if (!this._json_validity_check(new_json)) {
-                global.logError(_("Upgraded %s file is NOT valid for %s %s.").format(SETTING_SCHEMA_FILE, this.xlet_str, this.uuid));
-                global.logError(_("Aborting settings upgrade."));
+                global.logError("Upgraded settings schema file is NOT valid for " + this.uuid);
+                global.logError("Aborting settings upgrade.");
                 return false;
             }
             /* We're going to iterate through all the keys in the new settings file
@@ -389,10 +393,10 @@ _provider.prototype = {
                 let fp = this.settings_file.create(0, null);
                 fp.write(out_file, null);
                 fp.close;
-                global.log(_("Upgrade complete"));
+                global.log("Upgrade complete");
                 return true;
             } else {
-                global.logError(_("Failed to gain write access to save updated settings for %s %s, instance %s").format(this.xlet_str, this.uuid, this.instanceId));
+                global.logError("Failed to gain write access to save updated settings for " + this.uuid + "..." + this.instanceId)
                 return false;
             }
         },
@@ -719,9 +723,7 @@ AppletSettings.prototype = {
     },
 
     _get_is_multi_instance_xlet: function(uuid) {
-        let num = -1;
-        num = AppletManager.get_num_instances_for_applet(uuid);
-        return num > 1 || num == -1;
+        return Extension.get_max_instances(uuid) > 1;
     },
 };
 
@@ -738,9 +740,7 @@ DeskletSettings.prototype = {
     },
 
     _get_is_multi_instance_xlet: function(uuid) {
-        let num = -1;
-        num = DeskletManager.get_num_instances_for_desklet(uuid);
-        return num > 1 || num == -1;
+        return Extension.get_max_instances(uuid) > 1;
     }
 };
 

@@ -25,7 +25,8 @@ WindowAttentionHandler.prototype = {
         // We are just ignoring the hint on skip_taskbar windows for now.
         // (Which is the same behaviour as with metacity + panel)                  
 
-        if (!window || window.has_focus() || window.is_skip_taskbar() || window.get_wm_class().indexOf("Skype") > -1)
+        if (!window || window.has_focus() || window.is_skip_taskbar() ||
+            (window.get_wm_class() && window.get_wm_class().indexOf("Skype") > -1))
             return;
 
         try {
