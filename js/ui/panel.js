@@ -896,6 +896,12 @@ Panel.prototype = {
 
         this.monitor = global.screen.get_monitor_geometry(monitorIndex);
         this._queueMoveResizePanel();
+
+        let orientation = St.Side.TOP;
+        if (bottomPosition) {
+            orientation = St.Side.BOTTOM;
+        }
+        this._context_menu = new PanelContextMenu(this, orientation, this.panelID);
     },
 
     /**
