@@ -31,7 +31,7 @@ class Module:
         sidePage.add_widget(GSettingsCheckButton(_("Enable Edge Tiling (\"Aero Snap\")"), "org.cinnamon.overrides", "edge-tiling", None))
         sidePage.add_widget(GSettingsCheckButton(_("Enable Edge Flip"), "org.cinnamon", "enable-edge-flip", None))
 
-        sidePage.add_widget(GSettingsSpinButton(_("Window edge tile theshold"), "org.cinnamon.muffin", "edge-tile-threshold", None, 1, 400, 1, 1, _("Pixels")), True)
+        sidePage.add_widget(GSettingsSpinButton(_("Window edge tile threshold"), "org.cinnamon.muffin", "edge-tile-threshold", None, 1, 400, 1, 1, _("Pixels")), True)
         sidePage.add_widget(GSettingsSpinButton(_("Window drag detach threshold"), "org.cinnamon.muffin", "edge-detach-threshold", None, 1, 400, 1, 1, _("Pixels")), True)
 
         sidePage.add_widget(GSettingsCheckButton(_("Attach dialog windows to their parent window's titlebar"), "org.cinnamon.overrides", "attach-modal-dialogs", None))
