@@ -109,7 +109,9 @@ class SAModule:
         self.category = category
 
     def process (self):
-        return fileexists(self.name.split()[0])
+        name = self.name.replace("gksudo ", "")
+        name = name.replace("gksu ", "")
+        return fileexists(name.split()[0])
 
 def fileexists(program):
 

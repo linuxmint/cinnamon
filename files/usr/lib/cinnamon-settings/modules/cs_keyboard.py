@@ -7,20 +7,19 @@ import gettext
 
 gettext.install("cinnamon", "/usr/share/cinnamon/locale")
 
-# Keybindings page - check if we need to store custom
-# keybindings to gsettings key as well as GConf (In Mint 14 this is changed)
-CUSTOM_KEYS_BASENAME = "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings"
-CUSTOM_KEYS_SCHEMA = "org.gnome.settings-daemon.plugins.media-keys.custom-keybinding"
-CUSTOM_KEYBINDINGS_GSETTINGS = False
 HAS_DEDICATED_TERMINAL_SHORTCUT = False
 
 schema = Gio.Settings("org.gnome.settings-daemon.plugins.media-keys")
 key_list = schema.list_keys()
 for key in key_list:
-    if key == "custom-keybindings":
-        CUSTOM_KEYBINDINGS_GSETTINGS = True
     if key == "terminal":
         HAS_DEDICATED_TERMINAL_SHORTCUT = True
+
+# Keybindings page - check if we need to store custom
+# keybindings to gsettings key as well as GConf (In Mint 14 this is changed)
+CUSTOM_KEYS_PARENT_SCHEMA = "org.cinnamon.keybindings"
+CUSTOM_KEYS_BASENAME = "/org/cinnamon/keybindings/custom-keybindings"
+CUSTOM_KEYS_SCHEMA = "org.cinnamon.keybindings.custom-keybinding"
 
 FORBIDDEN_KEYVALS = [
     Gdk.KEY_Home,
@@ -153,26 +152,6 @@ class Module:
         self.name = "keyboard"
         self.category = "hardware"
 
-        # Let us transition any existing gconf shortcuts over to gsettings
-        # Since we are still going to support both, and really only track gconf (for now)
-        # We will only do this on the first run of Cinnamon Settings after an upgrade.
-        schema = Gio.Settings("org.cinnamon.overrides")
-        first_run_completed = schema.get_boolean("custom-keybindings-to-3-6")
-
-        if CUSTOM_KEYBINDINGS_GSETTINGS and not first_run_completed:
-            gclient = GConf.Client.get_default()
-            path = "/desktop/gnome/keybindings"
-            subdirs = gclient.all_dirs(path)
-            for subdir in subdirs:
-                custom_kb = CustomKeyBinding(subdir,
-                                             gclient.get_string(subdir+"/name"),
-                                             gclient.get_string(subdir+"/action"),
-                                             gclient.get_string(subdir+"/binding"))
-                custom_kb.writeSettings()
-            schema.set_boolean("custom-keybindings-to-3-6", True)
-
-        ###### Done with upgrade
-
 class KeyBindingCategory():
     def __init__(self, label, int_name):
         self.label = label
@@ -251,30 +230,17 @@ class CustomKeyBinding():
         self.writeSettings()
 
     def writeSettings(self):
-        gclient = GConf.Client.get_default()
-        gclient.set_string(self.path + "/name", self.label)
-        gclient.set_string(self.path + "/action", self.action)
-        gclient.set_string(self.path + "/binding", self.entries[0])
-        if CUSTOM_KEYBINDINGS_GSETTINGS:
-            temp = self.path.split("/")
-            custom_gconf_id = temp[len(temp)-1] # get the "custom0" or "custom1" id from gconf path
-            custom_path = CUSTOM_KEYS_BASENAME+"/"+custom_gconf_id+"/"
-            custom_schema = Gio.Settings.new_with_path(CUSTOM_KEYS_SCHEMA, custom_path)
-            custom_schema.set_string("name", self.label)
-            custom_schema.set_string("command", self.action)
-            custom_schema.set_string("binding", self.entries[0])
+        custom_path = CUSTOM_KEYS_BASENAME+"/"+self.path+"/"
+        settings = Gio.Settings.new_with_path(CUSTOM_KEYS_SCHEMA, custom_path)
 
-            parent_settings = Gio.Settings("org.gnome.settings-daemon.plugins.media-keys")
-            array = parent_settings.get_strv("custom-keybindings")
+        settings.set_string("name", self.label)
+        settings.set_string("command", self.action)
+        settings.set_string("binding", self.entries[0])
 
-            existing = False
-            for entry in array:
-                if custom_path == entry:
-                    existing = True
-                    break
-            if not existing:
-                array.append(custom_path)
-                parent_settings.set_strv("custom-keybindings", array)
+        # Touch the custom-list key, this will trigger a rebuild in cinnamon
+        parent = Gio.Settings.new(CUSTOM_KEYS_PARENT_SCHEMA)
+        custom_list = parent.get_strv("custom-list")
+        parent.set_strv("custom-list", custom_list)
 
 # Utility to convert key modifier codes to something more friendly
 def clean_kb(keybinding):
@@ -539,14 +505,17 @@ class KeyboardSidePage (SidePage):
         for category in self.main_store:
             if category.int_name is "custom":
                 category.clear()
-        gclient = GConf.Client.get_default()
-        path = "/desktop/gnome/keybindings"
-        subdirs = gclient.all_dirs(path)
-        for subdir in subdirs:
-            custom_kb = CustomKeyBinding(subdir,
-                                         gclient.get_string(subdir+"/name"),
-                                         gclient.get_string(subdir+"/action"),
-                                         gclient.get_string(subdir+"/binding"))
+
+        parent = Gio.Settings.new(CUSTOM_KEYS_PARENT_SCHEMA)
+        custom_list = parent.get_strv("custom-list")
+
+        for entry in custom_list:
+            custom_path = CUSTOM_KEYS_BASENAME+"/"+entry+"/"
+            schema = Gio.Settings.new_with_path(CUSTOM_KEYS_SCHEMA, custom_path)
+            custom_kb = CustomKeyBinding(entry,
+                                         schema.get_string("name"),
+                                         schema.get_string("command"),
+                                         schema.get_string("binding"))
             self.kb_store.append((custom_kb.label, custom_kb))
             for category in self.main_store:
                 if category.int_name is "custom":
@@ -647,15 +616,25 @@ class KeyboardSidePage (SidePage):
             dialog.destroy()
             return
 
-        gclient = GConf.Client.get_default()
-        path = "/desktop/gnome/keybindings/custom"
         i = 0
-        while gclient.dir_exists(path + str(i)):
-            i += 1
-        new_path = path + str(i)
-        gclient.set_string(new_path + "/name", dialog.name_entry.get_text())
-        gclient.set_string(new_path + "/action", dialog.command_entry.get_text())
-        gclient.set_string(new_path + "/binding", "")
+        parent = Gio.Settings.new(CUSTOM_KEYS_PARENT_SCHEMA)
+        array = parent.get_strv("custom-list")
+        for entry in array:
+            if i == int(entry.replace("custom", "")):
+                i += 1
+                continue
+            else:
+                break
+
+        new_str = "custom" + str(i)
+        array.append(new_str)
+        parent.set_strv("custom-list", array)
+
+        new_path = CUSTOM_KEYS_BASENAME + "/custom" + str(i) + "/"
+        new_schema = Gio.Settings.new_with_path(CUSTOM_KEYS_SCHEMA, new_path)
+        new_schema.set_string("name", dialog.name_entry.get_text())
+        new_schema.set_string("command", dialog.command_entry.get_text().replace("%20", "\ "))
+        new_schema.set_string("binding", "")
         i = 0
         for cat in self.cat_store:
             if cat[1].int_name is "custom":
@@ -672,34 +651,27 @@ class KeyboardSidePage (SidePage):
         keybindings, iter = self.kb_tree.get_selection().get_selected()
         if iter:
             keybinding = keybindings[iter][1]
-            gclient = GConf.Client.get_default()
-            if gclient.dir_exists(keybinding.path):
-                gclient.unset(keybinding.path + "/name")
-                gclient.unset(keybinding.path + "/action")
-                gclient.unset(keybinding.path + "/binding")
-            if CUSTOM_KEYBINDINGS_GSETTINGS:
-                temp = keybinding.path.split("/")
-                custom_gconf_id = temp[len(temp)-1] # get the "custom0" or "custom1" id from gconf path
-                custom_path = CUSTOM_KEYS_BASENAME+"/"+custom_gconf_id+"/"
-                custom_schema = Gio.Settings.new_with_path(CUSTOM_KEYS_SCHEMA, custom_path)
-                custom_schema.delay()
-                custom_schema.reset("name")
-                custom_schema.reset("command")
-                custom_schema.reset("binding")
-                custom_schema.apply()
-                Gio.Settings.sync()
 
-                parent_settings = Gio.Settings("org.gnome.settings-daemon.plugins.media-keys")
-                array = parent_settings.get_strv("custom-keybindings")
+            custom_path = CUSTOM_KEYS_BASENAME + "/" + keybinding.path + "/"
+            custom_schema = Gio.Settings.new_with_path(CUSTOM_KEYS_SCHEMA, custom_path)
+            custom_schema.delay()
+            custom_schema.reset("name")
+            custom_schema.reset("command")
+            custom_schema.reset("binding")
+            custom_schema.apply()
+            Gio.Settings.sync()
 
-                existing = False
-                for entry in array:
-                    if custom_path == entry:
-                        existing = True
-                        break
-                if existing:
-                    array.remove(custom_path)
-                    parent_settings.set_strv("custom-keybindings", array)
+            parent_settings = Gio.Settings(CUSTOM_KEYS_PARENT_SCHEMA)
+            array = parent_settings.get_strv("custom-list")
+
+            existing = False
+            for entry in array:
+                if keybinding.path == entry:
+                    existing = True
+                    break
+            if existing:
+                array.remove(keybinding.path)
+                parent_settings.set_strv("custom-list", array)
 
         i = 0
         for cat in self.cat_store:
@@ -724,7 +696,7 @@ class KeyboardSidePage (SidePage):
                     return
 
                 keybinding.label = dialog.name_entry.get_text()
-                keybinding.action = dialog.command_entry.get_text()
+                keybinding.action = dialog.command_entry.get_text().replace("%20", "\ ")
                 keybinding.writeSettings();
 
                 i = 0
