@@ -405,7 +405,6 @@ function notifyCinnamon2d() {
                    _("Cinnamon is currently running without video hardware acceleration and, as a result, you may observe much higher than normal CPU usage.\n\n") +
                    _("There could be a problem with your drivers or some other issue.  For the best experience, it is recommended that you only use this mode for") +
                    _(" troubleshooting purposes."), icon);
-}
 
     if (software_rendering) {
         notifyCinnamon2d();
