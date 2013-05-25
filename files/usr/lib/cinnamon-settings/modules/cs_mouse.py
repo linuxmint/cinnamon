@@ -38,15 +38,15 @@ class MouseTouchpadSidepage (SidePage):
         self.add_widget(title, 0, False)
 
         box = IndentedHBox()
-        box.add(CheckButton(_("Left handed (mouse buttons inverted)"), "org.gnome.settings-daemon.peripherals.mouse", "left-handed", None))
+        box.add(CheckButton(_("Left handed (mouse buttons inverted)"), "org.cinnamon.settings-daemon.peripherals.mouse", "left-handed", None))
         self.add_widget(box, 0)
 
         box = IndentedHBox()
-        box.add(GSettingsCheckButton(_("Show position of pointer when the Control key is pressed"), "org.gnome.settings-daemon.peripherals.mouse", "locate-pointer", None))
+        box.add(GSettingsCheckButton(_("Show position of pointer when the Control key is pressed"), "org.cinnamon.settings-daemon.peripherals.mouse", "locate-pointer", None))
         self.add_widget(box, 0)
 
         box = IndentedHBox()
-        box.add(GSettingsCheckButton(_("Emulate middle click by clicking both left and right buttons"), "org.gnome.settings-daemon.peripherals.mouse", "middle-button-enabled", None))
+        box.add(GSettingsCheckButton(_("Emulate middle click by clicking both left and right buttons"), "org.cinnamon.settings-daemon.peripherals.mouse", "middle-button-enabled", None))
         self.add_widget(box, 0, True)
 
         title = Gtk.Label()
@@ -55,12 +55,12 @@ class MouseTouchpadSidepage (SidePage):
         self.add_widget(title, 0, None)
 
         box = IndentedHBox()
-        slider = GSettingsRange(_("Acceleration:"), _("Slow"), _("Fast"), 1.0, 10.0, False, "double", False, "org.gnome.settings-daemon.peripherals.mouse", "motion-acceleration", None, adjustment_step = 1.0)
+        slider = GSettingsRange(_("Acceleration:"), _("Slow"), _("Fast"), 1.0, 10.0, False, "double", False, "org.cinnamon.settings-daemon.peripherals.mouse", "motion-acceleration", None, adjustment_step = 1.0)
         box.add_expand(slider)
         self.add_widget(box, 0, None)
 
         box = IndentedHBox()
-        slider = GSettingsRange(_("Sensitivity:"), _("Low"), _("High"), 1, 10, False, "int", False, "org.gnome.settings-daemon.peripherals.mouse", "motion-threshold", None, adjustment_step = 1)
+        slider = GSettingsRange(_("Sensitivity:"), _("Low"), _("High"), 1, 10, False, "int", False, "org.cinnamon.settings-daemon.peripherals.mouse", "motion-threshold", None, adjustment_step = 1)
         box.add_expand(slider)
         self.add_widget(box, 0, None) 
 
@@ -70,7 +70,7 @@ class MouseTouchpadSidepage (SidePage):
         self.add_widget(title, 0, None)
 
         box = IndentedHBox()
-        slider = GSettingsRange(_("Timeout:"), _("Short"), _("Long"), 100, 1000, False, "int", False, "org.gnome.settings-daemon.peripherals.mouse", "double-click", None, adjustment_step = 1)
+        slider = GSettingsRange(_("Timeout:"), _("Short"), _("Long"), 100, 1000, False, "int", False, "org.cinnamon.settings-daemon.peripherals.mouse", "double-click", None, adjustment_step = 1)
         box.add_expand(slider)
         self.add_widget(box, 0, None)
 
@@ -88,7 +88,7 @@ class MouseTouchpadSidepage (SidePage):
         self.add_widget(box, 0, True)
 
         box = IndentedHBox()
-        box.add(GSettingsSpinButton(_("GTK drag threshold"), "org.gnome.settings-daemon.peripherals.mouse", "drag-threshold", None, 1, 400, 1, 1, _("Pixels")))
+        box.add(GSettingsSpinButton(_("GTK drag threshold"), "org.cinnamon.settings-daemon.peripherals.mouse", "drag-threshold", None, 1, 400, 1, 1, _("Pixels")))
         self.add_widget(box, 0, True)
 
         # Touchpad
@@ -99,14 +99,14 @@ class MouseTouchpadSidepage (SidePage):
         self.add_widget(title, 1, False)
 
         box = IndentedHBox()
-        box.add(GSettingsCheckButton(_("Enable touchpad"), "org.gnome.settings-daemon.peripherals.touchpad", "touchpad-enabled", None))
+        box.add(GSettingsCheckButton(_("Enable touchpad"), "org.cinnamon.settings-daemon.peripherals.touchpad", "touchpad-enabled", None))
         self.add_widget(box, 1)
 
         box = IndentedHBox()
-        box.add(GSettingsCheckButton(_("Disable touchpad while typing"), "org.gnome.settings-daemon.peripherals.touchpad", "disable-while-typing", "org.gnome.settings-daemon.peripherals.touchpad/touchpad-enabled"))
+        box.add(GSettingsCheckButton(_("Disable touchpad while typing"), "org.cinnamon.settings-daemon.peripherals.touchpad", "disable-while-typing", "org.cinnamon.settings-daemon.peripherals.touchpad/touchpad-enabled"))
         self.add_widget(box, 1)
         box = IndentedHBox()
-        box.add(GSettingsCheckButton(_("Enable mouseclicks with touchpad"), "org.gnome.settings-daemon.peripherals.touchpad", "tap-to-click", "org.gnome.settings-daemon.peripherals.touchpad/touchpad-enabled"))
+        box.add(GSettingsCheckButton(_("Enable mouseclicks with touchpad"), "org.cinnamon.settings-daemon.peripherals.touchpad", "tap-to-click", "org.cinnamon.settings-daemon.peripherals.touchpad/touchpad-enabled"))
         self.add_widget(box, 1)
 
         title = Gtk.Label()
@@ -115,12 +115,12 @@ class MouseTouchpadSidepage (SidePage):
         self.add_widget(title, 1, False)
 
         scroll_method = [["disabled", _("Disabled")], ["edge-scrolling", _("Edge Scrolling")], ["two-finger-scrolling", _("Two-finger scrolling")]]
-        scroll_method_combo = GSettingsComboBox(_("Panel layout"), "org.gnome.settings-daemon.peripherals.touchpad", "scroll-method", "org.gnome.settings-daemon.peripherals.touchpad/touchpad-enabled", scroll_method)
+        scroll_method_combo = GSettingsComboBox(_("Panel layout"), "org.cinnamon.settings-daemon.peripherals.touchpad", "scroll-method", "org.cinnamon.settings-daemon.peripherals.touchpad/touchpad-enabled", scroll_method)
         box = IndentedHBox()
         box.add(scroll_method_combo)
         self.add_widget(box, 1)
         box = IndentedHBox()
-        box.add(GSettingsCheckButton(_("Enable horizontal scrolling"), "org.gnome.settings-daemon.peripherals.touchpad", "horiz-scroll-enabled", "org.gnome.settings-daemon.peripherals.touchpad/touchpad-enabled"))
+        box.add(GSettingsCheckButton(_("Enable horizontal scrolling"), "org.cinnamon.settings-daemon.peripherals.touchpad", "horiz-scroll-enabled", "org.cinnamon.settings-daemon.peripherals.touchpad/touchpad-enabled"))
         self.add_widget(box, 1)
 
         title = Gtk.Label()
@@ -128,12 +128,12 @@ class MouseTouchpadSidepage (SidePage):
         title.set_alignment(0,0)
         self.add_widget(title, 1, False)
 
-        slider = GSettingsRange(_("Acceleration:"), _("Slow"), _("Fast"), 1.0, 10.0, False, "double", False, "org.gnome.settings-daemon.peripherals.touchpad", "motion-acceleration", "org.gnome.settings-daemon.peripherals.touchpad/touchpad-enabled", adjustment_step = 1.0)
+        slider = GSettingsRange(_("Acceleration:"), _("Slow"), _("Fast"), 1.0, 10.0, False, "double", False, "org.cinnamon.settings-daemon.peripherals.touchpad", "motion-acceleration", "org.cinnamon.settings-daemon.peripherals.touchpad/touchpad-enabled", adjustment_step = 1.0)
         box = IndentedHBox()
         box.add_expand(slider)
         self.add_widget(box, 1, None)
 
-        slider = GSettingsRange(_("Sensitivity:"), _("Low"), _("High"), 1, 10, False, "int", False, "org.gnome.settings-daemon.peripherals.touchpad", "motion-threshold", "org.gnome.settings-daemon.peripherals.touchpad/touchpad-enabled", adjustment_step = 1)
+        slider = GSettingsRange(_("Sensitivity:"), _("Low"), _("High"), 1, 10, False, "int", False, "org.cinnamon.settings-daemon.peripherals.touchpad", "motion-threshold", "org.cinnamon.settings-daemon.peripherals.touchpad/touchpad-enabled", adjustment_step = 1)
         box = IndentedHBox()
         box.add_expand(slider)
         self.add_widget(box, 1, None) 

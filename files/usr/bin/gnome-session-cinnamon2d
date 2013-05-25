@@ -1,3 +1,0 @@
-#! /bin/sh
-exec gnome-session --session cinnamon2d "$@"
-

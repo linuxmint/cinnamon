@@ -1,5 +1,0 @@
-[GNOME Session]
-Name=Cinnamon (Software Rendering)
-RequiredComponents=cinnamon2d;gnome-settings-daemon;
-DesktopName=GNOME
-

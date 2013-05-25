@@ -5,7 +5,7 @@ Terminal=false
 Type=Application
 Categories=GNOME;GTK;System;
 StartupNotify=false
-OnlyShowIn=GNOME;
+OnlyShowIn=Cinnamon;
 Keywords=Preferences;Settings;
 
 Name=System Settings

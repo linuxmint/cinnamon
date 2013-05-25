@@ -51,8 +51,8 @@ class DateTimeWrapper:
             self.properties_iface = dbus.Interface(proxy, dbus_interface=dbus.PROPERTIES_IFACE)
             self.timedated = True
         except dbus.exceptions.DBusException:
-            proxy = dbus.SystemBus().get_object("org.gnome.SettingsDaemon.DateTimeMechanism", "/")
-            self.dbus_iface = dbus.Interface(proxy, dbus_interface="org.gnome.SettingsDaemon.DateTimeMechanism")
+            proxy = dbus.SystemBus().get_object("org.cinnamon.SettingsDaemon.DateTimeMechanism", "/")
+            self.dbus_iface = dbus.Interface(proxy, dbus_interface="org.cinnamon.SettingsDaemon.DateTimeMechanism")
             self.timedated = False
 
     def set_time(self, seconds_since_epoch):
