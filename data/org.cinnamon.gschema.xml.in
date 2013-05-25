@@ -75,12 +75,6 @@
       <_description>If desklet-snap is enabled, the possible positions of desklets will be all integer multiples of the value of "desklet-snap-size"</_description>
     </key>
 
-    <key name="desklet-snap-interval" type="i">
-      <default>25</default>
-      <_summary>The interval between each possible grid position when desklets "snap"</_summary>
-      <_description>If desklet-snap is enabled, the possible positions of desklets will be all integer multiples of the value of "desklet-snap-size"</_description>
-    </key>
-
     <key name="panels-show-delay" type="as">
       <default>['1:0', '2:0']</default>
       <_summary>Duration of the delay before a hidden panel is shown</_summary>
