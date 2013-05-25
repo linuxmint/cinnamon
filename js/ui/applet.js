@@ -12,7 +12,7 @@ const Util = imports.misc.util;
 const Pango = imports.gi.Pango;
 const Mainloop = imports.mainloop;
 const Flashspot = imports.ui.flashspot;
-	
+
 const COLOR_ICON_HEIGHT_FACTOR = .875;  // Panel height factor for normal color icons
 const PANEL_FONT_DEFAULT_HEIGHT = 11.5; // px
 const PANEL_SYMBOLIC_ICON_DEFAULT_HEIGHT = 1.14 * PANEL_FONT_DEFAULT_HEIGHT; // ems conversion
@@ -24,9 +24,9 @@ const DEFAULT_PANEL_HEIGHT = 25;
  * @_icon (string): Name of icon to be displayed in the menu item
  * @_callback (Function): Callback function when the menu item is clicked
  * @icon (St.Icon): Icon of the menu item
- * 
+ *
  * A menu item that contains an icon, a text and responds to clicks
- * 
+ *
  * Inherits: PopupMenu.PopupBaseMenuItem
  */
 function MenuItem(label, icon, callback) {
@@ -41,12 +41,12 @@ MenuItem.prototype = {
      * @text (string): text to be displayed in the menu item
      * @icon (string): name of icon to be displayed in the menu item
      * @callback (Function): callback function to be called when the menu item is clicked
-     * 
+     *
      * Constructor function
      */
     _init: function(text, icon, callback) {
         PopupMenu.PopupBaseMenuItem.prototype._init.call(this);
-        
+
         this._text = text;
         this._icon = icon;
         this._callback = callback;
@@ -60,12 +60,12 @@ MenuItem.prototype = {
 
         this.connect('activate', callback);
     },
-    
+
     /**
      * clone:
-     * 
+     *
      * Clones the menu item
-     * 
+     *
      * Returns (MenuItem): a clone of this menu item
      */
     clone: function(){
@@ -75,9 +75,9 @@ MenuItem.prototype = {
 
 /**
  * #AppletContextMenu
- * 
+ *
  * A context menu (right-click menu) to be used by an applet
- * 
+ *
  * Inherits: PopupMenu.PopupMenu
  */
 function AppletContextMenu(launcher, orientation) {
@@ -91,21 +91,21 @@ AppletContextMenu.prototype = {
      * _init:
      * @launcher (Applet.Applet): The applet that contains the context menu
      * @orientation (St.Side): The orientation of the applet
-     * 
+     *
      * Constructor function
      */
-    _init: function(launcher, orientation) {    
+    _init: function(launcher, orientation) {
         PopupMenu.PopupMenu.prototype._init.call(this, launcher.actor, 0.0, orientation, 0);
         Main.uiGroup.add_actor(this.actor);
-        this.actor.hide();                    
-    }    
+        this.actor.hide();
+    }
 };
 
 /**
  * #AppletPopupMenu:
- * 
+ *
  * A popupmenu menu (left-click menu) to be used by an applet
- * 
+ *
  * Inherits: PopupMenu.PopupMenu
  */
 function AppletPopupMenu(launcher, orientation) {
@@ -119,11 +119,11 @@ AppletPopupMenu.prototype = {
      * _init:
      * @launcher (Applet.Applet): The applet that contains the context menu
      * @orientation (St.Side): The orientation of the applet
-     * 
+     *
      * Constructor function
      */
-    _init: function(launcher, orientation) {    
-	this.launcher = launcher;
+    _init: function(launcher, orientation) {
+        this.launcher = launcher;
         PopupMenu.PopupMenu.prototype._init.call(this, launcher.actor, 0.0, orientation, 0);
         Main.uiGroup.add_actor(this.actor);
         this.actor.hide();
@@ -131,7 +131,7 @@ AppletPopupMenu.prototype = {
 
     /**
      * setMaxHeight:
-     * 
+     *
      * Sets the maximum height of the monitor so that
      * it does not expand pass the monitor when it has
      * too many children
@@ -157,7 +157,7 @@ AppletPopupMenu.prototype = {
  * @_menuManager (PopupMenu.PopupMenuManager): The menu manager of the applet
  * @_applet_context_menu (AppletContextMenu): The context menu of the applet
  * @_applet_tooltip_text (string): Text of the tooltip
- * 
+ *
  * Base applet class that other applets can inherit
  */
 function Applet(orientation, panelHeight, instance_id) {
@@ -173,13 +173,13 @@ Applet.prototype = {
      * @instance_id (int): instance id of the applet
      */
     _init: function(orientation, panel_height, instance_id) {
-        this.actor = new St.BoxLayout({ style_class: 'applet-box', reactive: true, track_hover: true });        
-        this._applet_tooltip = new Tooltips.PanelItemTooltip(this, "", orientation);                                        
-        this.actor.connect('button-release-event', Lang.bind(this, this._onButtonReleaseEvent));  
+        this.actor = new St.BoxLayout({ style_class: 'applet-box', reactive: true, track_hover: true });
+        this._applet_tooltip = new Tooltips.PanelItemTooltip(this, "", orientation);
+        this.actor.connect('button-release-event', Lang.bind(this, this._onButtonReleaseEvent));
 
         this._menuManager = new PopupMenu.PopupMenuManager(this);
         this._applet_context_menu = new AppletContextMenu(this, orientation);
-        this._menuManager.addMenu(this._applet_context_menu);     
+        this._menuManager.addMenu(this._applet_context_menu);
 
         this.actor._applet = this; // Backlink to get the applet from its actor (handy when we want to know stuff about a particular applet within the panel)
         this.actor._delegate = this;
@@ -192,11 +192,11 @@ Applet.prototype = {
         this.instance_id = instance_id; // Needed by appletSettings
         this._uuid = null; // Defined in gsettings, set by Cinnamon.
         this._hook = null; // Defined in metadata.json, set by appletManager
-        this._dragging = false;                
+        this._dragging = false;
         this._draggable = DND.makeDraggable(this.actor);
         this._draggable.connect('drag-begin', Lang.bind(this, this._onDragBegin));
-    	this._draggable.connect('drag-cancelled', Lang.bind(this, this._onDragCancelled));
-        this._draggable.connect('drag-end', Lang.bind(this, this._onDragEnd));        
+        this._draggable.connect('drag-cancelled', Lang.bind(this, this._onDragCancelled));
+        this._draggable.connect('drag-end', Lang.bind(this, this._onDragEnd));
 
         this._applet_tooltip_text = "";
         this.context_menu_item_remove = null;
@@ -217,17 +217,17 @@ Applet.prototype = {
 
         this._dragging = true;
         this._applet_tooltip.hide();
-        this._applet_tooltip.preventShow = true;                
+        this._applet_tooltip.preventShow = true;
     },
 
     _onDragEnd: function() {
         this._dragging = false;
-        this._applet_tooltip.preventShow = false;            
+        this._applet_tooltip.preventShow = false;
     },
 
     _onDragCancelled: function() {
         this._dragging = false;
-        this._applet_tooltip.preventShow = false;        
+        this._applet_tooltip.preventShow = false;
     },
 
     getDragActor: function() {
@@ -240,16 +240,16 @@ Applet.prototype = {
         return this.actor;
     },
 
-    _onButtonReleaseEvent: function (actor, event) {                      
+    _onButtonReleaseEvent: function (actor, event) {
         if (event.get_button()==1){
             if (this._applet_context_menu.isOpen) {
-                this._applet_context_menu.toggle(); 
+                this._applet_context_menu.toggle();
             }
             this.on_applet_clicked(event);
         }
-        if (event.get_button()==3){            
+        if (event.get_button()==3){
             if (this._applet_context_menu._getMenuItems().length > 0) {
-                this._applet_context_menu.toggle();			
+                this._applet_context_menu.toggle();
             }
         }
         return true;
@@ -258,7 +258,7 @@ Applet.prototype = {
     /**
      * set_applet_tooltip:
      * @text (string): the tooltip text to be set
-     * 
+     *
      * Sets the tooltip of the applet
      */
     set_applet_tooltip: function (text) {
@@ -269,20 +269,20 @@ Applet.prototype = {
     /**
      * on_applet_clicked:
      * @event (Clutter.Event): the event object
-     * 
+     *
      * This function is called when the applet is clicked.
-     * 
+     *
      * This is meant to be overriden in individual applets.
      */
     on_applet_clicked: function(event) {
-        // Implemented by Applets        
+        // Implemented by Applets
     },
-    
+
     /**
      * on_applet_added_to_panel:
-     * 
+     *
      * This function is called by appletManager when the applet is added to the panel.
-     * 
+     *
      * This is meant to be overridden in individual applets.
      */
     on_applet_added_to_panel: function(userEnabled) {
@@ -304,9 +304,9 @@ Applet.prototype = {
 
     /**
      * on_applet_removed_from_panel:
-     * 
+     *
      * This function is called by appletManager when the applet is removed from the panel.
-     * 
+     *
      * This is meant to be overridden in individual applets.
      */
     on_applet_removed_from_panel: function() {
@@ -321,9 +321,9 @@ Applet.prototype = {
     /**
      * setOrientation:
      * @orientation (St.Side): the orientation
-     * 
+     *
      * Sets the orientation of the applet.
-     * 
+     *
      * This function should only be called by appletManager
      */
     setOrientation: function (orientation) {
@@ -337,7 +337,7 @@ Applet.prototype = {
             }
         }
         this._menuManager.removeMenu(this._applet_context_menu);
-        
+
         this._applet_tooltip.destroy();
         this._applet_tooltip = new Tooltips.PanelItemTooltip(this, this._applet_tooltip_text, orientation);
 
@@ -346,30 +346,30 @@ Applet.prototype = {
         this._menuManager.addMenu(this._applet_context_menu);
 
         this.on_orientation_changed(orientation);
-        
+
         if (this._applet_context_menu.numMenuItems == 0){ // Do not recreate the menu if the applet already handles it in on_orientation_changed
             for (var i in menuItems) this._applet_context_menu.addMenuItem(menuItems[i]);
         }
 
         this.finalizeContextMenu();
     },
-    
+
     /**
      * on_orientation_changed:
      * @orientation (St.Side): new orientation of the applet
-     * 
+     *
      * This function is called when the applet is changes orientation.
-     * 
+     *
      * This is meant to be overridden in individual applets.
-     */    
+     */
     on_orientation_changed: function(orientation) {
-        // Implemented by Applets        
+        // Implemented by Applets
     },
 
     /**
      * setPanelHeight:
      * @panelHeight (int): panelHeight
-     * 
+     *
      * Sets the panel height property of the applet.
      */
     setPanelHeight: function (panel_height) {
@@ -378,18 +378,18 @@ Applet.prototype = {
         }
         this.on_panel_height_changed();
     },
-    
+
     /**
      * on_panel_height_changed:
-     * 
+     *
      * This function is called when the panel containing the applet changes height
-     * 
+     *
      * This is meant to be overridden in individual applets.
-     */    
+     */
     on_panel_height_changed: function() {
         // Implemented byApplets
     },
-    
+
     finalizeContextMenu: function () {
         // Add default context menus if we're in panel edit mode, ensure their removal if we're not
         let isEditMode = global.settings.get_boolean('panel-edit-mode');
@@ -419,9 +419,9 @@ Applet.prototype = {
  * @_applet_icon (St.Icon): Actor of the icon
  * @__icon_type (St.IconType): Type of the icon (FULLCOLOR/SYMBOLIC)
  * @__icon_name (string): Name of icon
- * 
+ *
  * Applet that contains an icon
- * 
+ *
  * Inherits: Applet.Applet
  */
 function IconApplet(orientation, panel_height, instance_id) {
@@ -448,70 +448,70 @@ IconApplet.prototype = {
     /**
      * set_applet_icon_name:
      * @icon_name (string): Name of the icon
-     * 
+     *
      * Sets the icon of the applet to @icon_name.
-     * 
+     *
      * The icon will be full color
      */
     set_applet_icon_name: function (icon_name) {
-	Mainloop.idle_add(Lang.bind(this, function() { // Wait for a while so that this.panel is set by appletManager
+        Mainloop.idle_add(Lang.bind(this, function() { // Wait for a while so that this.panel is set by appletManager
             if (this.panel.scaleMode) {
-		this._applet_icon = new St.Icon({icon_name: icon_name, icon_size: this._panelHeight * COLOR_ICON_HEIGHT_FACTOR,
-						 icon_type: St.IconType.FULLCOLOR, reactive: true, track_hover: true, style_class: 'applet-icon' });
+                this._applet_icon = new St.Icon({icon_name: icon_name, icon_size: this._panelHeight * COLOR_ICON_HEIGHT_FACTOR,
+                                                 icon_type: St.IconType.FULLCOLOR, reactive: true, track_hover: true, style_class: 'applet-icon' });
             } else {
-		this._applet_icon = new St.Icon({icon_name: icon_name, icon_size: 22, icon_type: St.IconType.FULLCOLOR, reactive: true, track_hover: true, style_class: 'applet-icon' });
+                this._applet_icon = new St.Icon({icon_name: icon_name, icon_size: 22, icon_type: St.IconType.FULLCOLOR, reactive: true, track_hover: true, style_class: 'applet-icon' });
             }
             this._applet_icon_box.child = this._applet_icon;
             this.__icon_type = St.IconType.FULLCOLOR;
             this.__icon_name = icon_name;
-	}));
+        }));
     },
 
     /**
      * set_applet_icon_symbolic_name:
      * @icon_name (string): Name of the icon
-     * 
+     *
      * Sets the icon of the applet to @icon_name.
-     * 
+     *
      * The icon will be symbolic
      */
     set_applet_icon_symbolic_name: function (icon_name) {
-	Mainloop.idle_add(Lang.bind(this, function() { // Wait for a while so that this.panel is set by appletManager
+        Mainloop.idle_add(Lang.bind(this, function() { // Wait for a while so that this.panel is set by appletManager
             if (this.panel.scaleMode) {
-		let height = (this._panelHeight / DEFAULT_PANEL_HEIGHT) * PANEL_SYMBOLIC_ICON_DEFAULT_HEIGHT;
-		this._applet_icon = new St.Icon({icon_name: icon_name, icon_size: height, icon_type: St.IconType.SYMBOLIC, reactive: true, track_hover: true, style_class: 'system-status-icon' });
+                let height = (this._panelHeight / DEFAULT_PANEL_HEIGHT) * PANEL_SYMBOLIC_ICON_DEFAULT_HEIGHT;
+                this._applet_icon = new St.Icon({icon_name: icon_name, icon_size: height, icon_type: St.IconType.SYMBOLIC, reactive: true, track_hover: true, style_class: 'system-status-icon' });
             } else {
-		this._applet_icon = new St.Icon({icon_name: icon_name, icon_type: St.IconType.SYMBOLIC, reactive: true, track_hover: true, style_class: 'system-status-icon' });
+                this._applet_icon = new St.Icon({icon_name: icon_name, icon_type: St.IconType.SYMBOLIC, reactive: true, track_hover: true, style_class: 'system-status-icon' });
             }
             this._applet_icon_box.child = this._applet_icon;
             this.__icon_type = St.IconType.SYMBOLIC;
             this.__icon_name = icon_name;
-	}));
+        }));
     },
 
     /**
      * set_applet_icon:path:
      * @icon_path (string): path of the icon
-     * 
+     *
      * Sets the icon of the applet to the image file at @icon_path
      */
     set_applet_icon_path: function (icon_path) {
-	Mainloop.idle_add(Lang.bind(this, function() { // Wait for a while so that this.panel is set by appletManager
+        Mainloop.idle_add(Lang.bind(this, function() { // Wait for a while so that this.panel is set by appletManager
             if (this._applet_icon_box.child) this._applet_icon_box.child.destroy();
 
             if (icon_path){
-		let file = Gio.file_new_for_path(icon_path);
-		let icon_uri = file.get_uri();
-		let square_size = 22;
-		if (this.panel.scaleMode) {
+                let file = Gio.file_new_for_path(icon_path);
+                let icon_uri = file.get_uri();
+                let square_size = 22;
+                if (this.panel.scaleMode) {
                     square_size = Math.floor(this._panelHeight * COLOR_ICON_HEIGHT_FACTOR);
-		}
-		this._applet_icon = St.TextureCache.get_default().load_uri_async(icon_uri, square_size, square_size);
-		this._applet_icon_box.child = this._applet_icon;
+                }
+                this._applet_icon = St.TextureCache.get_default().load_uri_async(icon_uri, square_size, square_size);
+                this._applet_icon_box.child = this._applet_icon;
             }
             this.__icon_type = -1;
             this.__icon_name = icon_path;
-	}));
+        }));
     },
 
     on_panel_height_changed: function() {
@@ -539,7 +539,7 @@ IconApplet.prototype = {
  * @_applet_label (St.Label): Label of the applet
  *
  * Applet that displays a text
- * 
+ *
  * Inherits: Applet.Applet
  */
 function TextApplet(orientation, panel_height, instance_id) {
@@ -560,21 +560,21 @@ TextApplet.prototype = {
         this._applet_label = new St.Label({ reactive: true, track_hover: true, style_class: 'applet-label'});
         this._label_height = (this._panelHeight / DEFAULT_PANEL_HEIGHT) * PANEL_FONT_DEFAULT_HEIGHT;
         this._applet_label.clutter_text.ellipsize = Pango.EllipsizeMode.NONE;
-        this.actor.add(this._applet_label, { y_align: St.Align.MIDDLE, y_fill: false });    
+        this.actor.add(this._applet_label, { y_align: St.Align.MIDDLE, y_fill: false });
     },
 
     /**
      * set_applet_label:
      * @text (string): text to be displayed at the label
-     * 
+     *
      * Sets the text of the actor to @text
      */
     set_applet_label: function (text) {
         this._applet_label.set_text(text);
     },
-    
-    on_applet_added_to_panel: function() {       
-                        
+
+    on_applet_added_to_panel: function() {
+
     }
 };
 
@@ -583,7 +583,7 @@ TextApplet.prototype = {
  * @_applet_label (St.Label): Label of the applet
  *
  * Applet that displays an icon and a text. The icon is on the left of the text
- * 
+ *
  * Inherits: Applet.IconApplet
  */
 function TextIconApplet(orientation, panel_height, instance_id) {
@@ -603,14 +603,14 @@ TextIconApplet.prototype = {
         IconApplet.prototype._init.call(this, orientation, panel_height, instance_id);
         this._applet_label = new St.Label({ reactive: true, track_hover: true, style_class: 'applet-label'});
         this._label_height = (this._panelHeight / DEFAULT_PANEL_HEIGHT) * PANEL_FONT_DEFAULT_HEIGHT;
-        this._applet_label.clutter_text.ellipsize = Pango.EllipsizeMode.NONE;     
+        this._applet_label.clutter_text.ellipsize = Pango.EllipsizeMode.NONE;
         this.actor.add(this._applet_label, { y_align: St.Align.MIDDLE, y_fill: false });
     },
 
     /**
      * set_applet_label:
      * @text (string): text to be displayed at the label
-     * 
+     *
      * Sets the text of the actor to @text
      */
     set_applet_label: function (text) {
@@ -619,14 +619,14 @@ TextIconApplet.prototype = {
 
     /**
      * hide_applet_icon:
-     * 
+     *
      * Hides the icon of the applet
      */
     hide_applet_icon: function () {
         this._applet_icon_box.child = null;
     },
-    
-    on_applet_added_to_panel: function() {       
-                                
+
+    on_applet_added_to_panel: function() {
+
     }
 };

@@ -17,7 +17,7 @@ MyApplet.prototype = {
             this.actor.connect('scroll-event', this.hook.bind(this));
             this.set_applet_tooltip(_("Switch workspace"));
             this.button = [];
-	    Mainloop.idle_add(Lang.bind(this, this._createButtons));// Wait for a while so that this.panel is set by appletManager
+            Mainloop.idle_add(Lang.bind(this, this._createButtons));// Wait for a while so that this.panel is set by appletManager
             global.screen.connect('notify::n-workspaces', Lang.bind(this, this._createButtons));
             global.window_manager.connect('switch-workspace', Lang.bind(this, this._updateButtons));   
             this.on_panel_edit_mode_changed();

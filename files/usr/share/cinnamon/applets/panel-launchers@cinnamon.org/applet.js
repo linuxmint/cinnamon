@@ -329,18 +329,18 @@ MyApplet.prototype = {
     },
 
     reload: function() {
-	Mainloop.idle_add(Lang.bind(this, function() { // Wait for a while so that this.panel is set by appletManager
+        Mainloop.idle_add(Lang.bind(this, function() { // Wait for a while so that this.panel is set by appletManager
             this.myactor.destroy_children();
             this._launchers = new Array();
 
             let apps = this.loadApps();
             for (var i in apps){
-		let app = apps[i];
-		let launcher = new PanelAppLauncher(this, app[0], app[1], this.orientation, this._panelHeight, this.panel.scaleMode);
-		this.myactor.add(launcher.actor);
-		this._launchers.push(launcher);
+                let app = apps[i];
+                let launcher = new PanelAppLauncher(this, app[0], app[1], this.orientation, this._panelHeight, this.panel.scaleMode);
+                this.myactor.add(launcher.actor);
+                this._launchers.push(launcher);
             }
-	}));
+        }));
     },
 
     removeLauncher: function(launcher, delete_file) {
@@ -422,9 +422,9 @@ MyApplet.prototype = {
                     this._dragPlaceholder.animateOutAndDestroy();
                     this._animatingPlaceholdersCount++;
                     this._dragPlaceholder.actor.connect('destroy',
-							Lang.bind(this, function() {
-							    this._animatingPlaceholdersCount--;
-							}));
+                                                        Lang.bind(this, function() {
+                                                            this._animatingPlaceholdersCount--;
+                                                        }));
                 }
                 this._dragPlaceholder = null;
 
