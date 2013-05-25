@@ -453,7 +453,6 @@ function get_object_for_uuid (uuid) {
     }
     return null;
 }
-<<<<<<< HEAD
 
 function get_num_instances_for_applet (uuid) {
     if (uuid in appletMeta) {
@@ -546,5 +545,3 @@ function unloadAppletsOnPanel (panel) {
     }
 }
 
-=======
->>>>>>> upstream/master
