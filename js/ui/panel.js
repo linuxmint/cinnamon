@@ -1345,7 +1345,7 @@ Panel.prototype = {
                                Main.layoutManager._chrome.updateRegions()
                                this.actor.set_clip(0, 0, this.monitor.width, Math.abs(this.actor.get_parent().y - origY));
                            }),
-                           onUpdateParams: [this.actor.get_parent().y]
+                           onUpdateParams: [this.bottomPosition ? this.monitor.y + this.monitor.height - 1 : this.monitor.y - height + 1]
                          });
 
         params = { opacity: 255,
