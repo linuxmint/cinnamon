@@ -28,10 +28,19 @@ const SPINNER_ANIMATION_TIME = 0.2;
 const AUTOHIDE_ANIMATION_TIME = 0.2;
 const STARTUP_ANIMATION_TIME = 0.2;
 
-const PANEL_AUTOHIDE_KEY="panels-autohide";
-const PANEL_SHOW_DELAY_KEY="panels-show-delay";
-const PANEL_HIDE_DELAY_KEY="panels-hide-delay";
-const PANEL_HEIGHT_KEY="panels-height";
+const PANEL_AUTOHIDE_KEY = "panels-autohide";
+const PANEL_SHOW_DELAY_KEY = "panels-show-delay";
+const PANEL_HIDE_DELAY_KEY = "panels-hide-delay";
+const PANEL_HEIGHT_KEY = "panels-height";
+const PANEL_RESIZABLE_KEY = "panels-resizable";
+const PANEL_SCALE_TEXT_ICONS_KEY = "panels-scale-text-icons";
+
+const DEFAULT_VALUES = {"panels-autohide": "false",
+                        "panels-show-delay": "0",
+                        "panels-hide-delay": "0",
+                        "panels-height": "25",
+                        "panels-resizable": "false",
+                        "panels-scale-text-icons": "false"};
 
 // To make sure the panel corners blend nicely with the panel,
 // we draw background and borders the same way, e.g. drawing
@@ -851,9 +860,9 @@ Panel.prototype = {
         global.settings.connect("changed::" + PANEL_SHOW_DELAY_KEY, Lang.bind(this, this._onPanelShowDelayChanged));
         global.settings.connect("changed::" + PANEL_HIDE_DELAY_KEY, Lang.bind(this, this._onPanelHideDelayChanged));
         global.settings.connect("changed::" + PANEL_HEIGHT_KEY, Lang.bind(this, this._queueMoveResizePanel));
+        global.settings.connect("changed::" + PANEL_RESIZABLE_KEY, Lang.bind(this, this._queueMoveResizePanel));
+        global.settings.connect("changed::" + PANEL_SCALE_TEXT_ICON_KEY, Lang.bind(this, this._onScaleTextIconsChanged));
         global.settings.connect("changed::panel-edit-mode", Lang.bind(this, this._handlePanelEditMode));
-        global.settings.connect("changed::panels-resizable", Lang.bind(this, this._queueMoveResizePanel));
-        global.settings.connect("changed::panels-scale-text-icons", Lang.bind(this, this._onScaleTextIconsChanged));
 
         global.screen.connect('monitors-changed', Lang.bind(this, this._queueMoveResizePanel));
 
@@ -936,11 +945,11 @@ Panel.prototype = {
      * Turns on/off the highlight of the panel
      */
     highlight: function(highlight) {
-	if (highlight) {
+        if (highlight) {
             this.actor.add_style_pseudo_class('highlight');
-	} else {
+        } else {
             this.actor.remove_style_pseudo_class('highlight');
-	}
+        }
     },
 
     isHideable: function() {
@@ -957,17 +966,18 @@ Panel.prototype = {
                 break;
             }
         }
-        if (property){
-            switch (type){
-            case "b":
-                return property=="true";
-            case "i":
-                return parseInt(property);
-            default:
-                return property;
-            }
-        } else {
-            return null;
+        if (!property){
+            property = DEFAULT_VALUES[key];
+            values.push(this.panelID + ":" + property);
+            global.settings.set_strv(key, values);
+        }
+        switch (type){
+        case "b":
+            return property=="true";
+        case "i":
+            return parseInt(property);
+        default:
+            return property;
         }
     },
 
@@ -1092,7 +1102,7 @@ Panel.prototype = {
         if (this._destroyed) return; // Panel is destroyed)
         this.monitor = global.screen.get_monitor_geometry(this.monitorIndex); // Update monitor information
         let panelHeight;
-        let panelResizable = this._getProperty("panels-resizable", "b");
+        let panelResizable = this._getProperty("PANEL_RESIZABLE_KEY", "b");
         if (panelResizable) {
             panelHeight = this._getProperty(PANEL_HEIGHT_KEY, "i");
         }
@@ -1107,7 +1117,7 @@ Panel.prototype = {
             let themeNode = this.actor.get_theme_node();
             this._themeFontSize = themeNode.get_length("font-size");
         }
-        if (this._getProperty("panels-scale-text-icons", "b") && this._getProperty("panels-resizable")) {
+        if (this._getProperty(PANEL_SCALE_TEXT_ICONS_KEY, "b") && this._getProperty("PANEL_RESIZABLE_KEY")) {
             let textheight = (panelHeight / Applet.DEFAULT_PANEL_HEIGHT) * Applet.PANEL_FONT_DEFAULT_HEIGHT;
             this.actor.set_style('font-size: ' + textheight + 'px;');
         } else {
@@ -1123,8 +1133,8 @@ Panel.prototype = {
         this.actor.set_height(panelHeight);
         this._processPanelAutoHide();
 
+        this.scaleMode = this._getProperty(PANEL_SCALE_TEXT_ICONS_KEY, "b") && this._getProperty("PANEL_RESIZABLE_KEY", "b");
         // Applet Manager might not be initialized yet when this function is called
-        this.scaleMode = this._getProperty("panels-scale-text-icons", "b") && this._getProperty("panels-resizable", "b");
         if (AppletManager.enabledApplets)
             AppletManager.updateAppletPanelHeights();
 
@@ -1137,13 +1147,13 @@ Panel.prototype = {
             let themeNode = this.actor.get_theme_node();
             this._themeFontSize = themeNode.get_length("font-size");
         }
-        if (this._getProperty("panels-scale-text-icons", "b") && this._getProperty("panels-resizable", "b")) {
+        if (this._getProperty(PANEL_SCALE_TEXT_ICONS_KEY, "b") && this._getProperty("PANEL_RESIZABLE_KEY", "b")) {
             let textheight = (panelHeight / Applet.DEFAULT_PANEL_HEIGHT) * Applet.PANEL_FONT_DEFAULT_HEIGHT;
             this.actor.set_style('font-size: ' + textheight + 'px;');
         } else {
             this.actor.set_style('font-size: ' + this._themeFontSize ? this._themeFontSize + 'px;' : '8.5pt;');
         }
-        this.scaleMode = this._getProperty("panels-scale-text-icons", "b") && this._getProperty("panels-resizable", "b");
+        this.scaleMode = this._getProperty(PANEL_SCALE_TEXT_ICONS_KEY, "b") && this._getProperty("PANEL_RESIZABLE_KEY", "b");
         AppletManager.updateAppletPanelHeights(true);
     },
 

@@ -37,7 +37,7 @@
     </key>
 
     <key name="panels-autohide" type="as">
-      <default>['1:false', '2:false']</default>
+      <default>['1:false']</default>
       <_summary>Auto-hide panel</_summary>
       <_description>Whether the panel autohides or not.</_description>
     </key>
@@ -76,19 +76,19 @@
     </key>
 
     <key name="panels-show-delay" type="as">
-      <default>['1:0', '2:0']</default>
+      <default>['1:0']</default>
       <_summary>Duration of the delay before a hidden panel is shown</_summary>
       <_description>Duration of the delay (in milliseconds)</_description>
     </key>
 
     <key name="panels-hide-delay" type="as">
-      <default>['1:0', '2:0']</default>
+      <default>['1:0']</default>
       <_summary>Duration of the delay before a shown panel is hidden</_summary>
       <_description>Duration of the delay (in milliseconds)</_description>
     </key>
 
     <key name="panels-height" type="as">
-      <default>['1:25','2:25']</default>
+      <default>['1:25']</default>
       <_summary>Panel size</_summary>
       <_description>
         User-defined panel-height for panels
@@ -96,7 +96,7 @@
     </key>
     
     <key name="panels-resizable" type="as">
-      <default>['1:false','2:false']</default>
+      <default>['1:false']</default>
       <_summary>Resizable panel</_summary>
       <_description>
         Whether the panel uses a user-defined height
@@ -104,7 +104,7 @@
     </key>
     
     <key name="panels-scale-text-icons" type="as">
-      <default>['1:false','2:false']</default>
+      <default>['1:false']</default>
       <_summary>Scale panel applet text and icons</_summary>
       <_description>
         Whether the panel icons and text from applets is resized according to the custom panel height
