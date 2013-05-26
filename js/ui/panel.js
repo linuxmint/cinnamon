@@ -941,7 +941,7 @@ Panel.prototype = {
     /**
      * highlight:
      * @highlight: whether to turn on or off
-     * 
+     *
      * Turns on/off the highlight of the panel
      */
     highlight: function(highlight) {
@@ -1337,14 +1337,16 @@ Panel.prototype = {
         Tweener.addTween(this._rightCorner.actor, params);
 
         Tweener.addTween(this.actor.get_parent(),
-                        { y: y,
-                        time: animationTime,
-                        transition: 'easeOutQuad',
-                        onUpdate: function() {
-                            // Force the layout manager to update the input region
-                            Main.layoutManager._chrome.updateRegions()
-                        }
-                        });
+                         { y: y,
+                           time: animationTime,
+                           transition: 'easeOutQuad',
+                           onUpdate: Lang.bind(this, function(origY) {
+                               // Force the layout manager to update the input region
+                               Main.layoutManager._chrome.updateRegions()
+                               this.actor.set_clip(0, 0, this.monitor.width, Math.abs(this.actor.get_parent().y - origY));
+                           }),
+                           onUpdateParams: [this.actor.get_parent().y]
+                         });
 
         params = { opacity: 255,
                     time: animationTime+0.2,
@@ -1374,16 +1376,18 @@ Panel.prototype = {
             y: y,
             time: animationTime,
             transition: 'easeOutQuad',
-            onUpdate: function() {
+            onUpdate: Lang.bind(this, function(targetY) {
                 // Force the layout manager to update the input region
                 Main.layoutManager._chrome.updateRegions()
-            }
+                this.actor.set_clip(0, 0, this.monitor.width, Math.abs(this.actor.get_parent().y - targetY) + 1);
+            }),
+            onUpdateParams: [y]
         });
 
         let params = { y: 0,
-                        time: animationTime,
-                        transition: 'easeOutQuad'
-                        };
+                       time: animationTime,
+                       transition: 'easeOutQuad'
+                     };
 
         Tweener.addTween(this._leftCorner.actor, params);
         Tweener.addTween(this._rightCorner.actor, params);
