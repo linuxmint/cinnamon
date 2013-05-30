@@ -88,8 +88,6 @@ PKG_CHECK_MODULES(CINNAMON_PERF_HELPER, gtk+-3.0 gio-2.0)
 
 PKG_CHECK_MODULES(CINNAMON_HOTPLUG_SNIFFER, gio-2.0 gdk-pixbuf-2.0)
 
-PKG_CHECK_MODULES(BROWSER_PLUGIN, gio-2.0 >= $GIO_MIN_VERSION json-glib-1.0 >= 0.13.2)
-
 GJS_VERSION=`$PKG_CONFIG --modversion gjs-internals-1.0`
 AC_DEFINE_UNQUOTED([GJS_VERSION], ["$GJS_VERSION"], [The version of GJS we're linking to])
 AC_SUBST([GJS_VERSION], ["$GJS_VERSION"])
@@ -227,7 +225,6 @@ AC_CONFIG_FILES([
   js/Makefile
   js/misc/config.js
   src/Makefile
-  browser-plugin/Makefile
   tests/Makefile
   po/Makefile.in
   man/Makefile

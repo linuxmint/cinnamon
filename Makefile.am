@@ -1,7 +1,7 @@
 # Point to our macro directory and pick up user flags from the environment
 ACLOCAL_AMFLAGS  = -I m4 ${ACLOCAL_FLAGS}
 
-SUBDIRS = data js src browser-plugin tests po man files
+SUBDIRS = data js src tests po man files
 
 EXTRA_DIST =		\
 	.project	\
