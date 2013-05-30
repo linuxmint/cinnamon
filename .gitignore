@@ -2,7 +2,7 @@ ABOUT-NLS
 Makefile.in
 !files/Makefile.in
 aclocal.m4
-browser-plugin/Makefile.in
+browser-plugin/*
 config.h.in
 config/compile
 config/depcomp
