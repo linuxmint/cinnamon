@@ -165,10 +165,8 @@ class Spice_Harvester:
             self.load(lambda x: self.show_detail(uuid))
             return
 
-        self.load_assets([uuid])
-        
         appletData = self.index_cache[uuid] 
-        
+
         # Browsing the info within the app would be great (ala mintinstall) but until it is fully ready 
         # and it gives a better experience (layout, comments, reviewing) than 
         # browsing online we will open the link with an external browser 
@@ -279,14 +277,13 @@ class Spice_Harvester:
                 pass
             self.errorMessage(_("Something went wrong with the spices download.  Please try refreshing the list again."), str(detail))
 
-    def load_assets(self, uuids=None):
+    def load_assets(self):
         self.progresslabel.set_text(_("Refreshing %s cache...") % (self.noun))
         self.progress_button_abort.set_sensitive(True)
         needs_refresh = 0
         used_thumbs = []
 
-        if uuids == None:
-            uuids = self.index_cache.keys()
+        uuids = self.index_cache.keys()
 
         for uuid in uuids:
             if not self.themes:
