@@ -71,6 +71,7 @@ class Spice_Harvester:
         self.cache_folder = self.get_cache_folder()
         self.install_folder = self.get_install_folder()
         self.index_cache = {}
+        self.error = None
         self.themes = collection_type == "theme"
         
         if not os.path.exists(os.path.join(self.cache_folder, "index.json")):
@@ -603,7 +604,7 @@ class Spice_Harvester:
                 pass
             self.progress_window.hide()
             if self.abort_download == ABORT_ERROR:
-                self.errorMessage(_("An error occurred while trying to access the server.  Please try again in a little while."), self.error or None)
+                self.errorMessage(_("An error occurred while trying to access the server.  Please try again in a little while."), self.error)
             raise Exception(_('Download aborted.'))
 
         return outfile
