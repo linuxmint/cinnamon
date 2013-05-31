@@ -1,6 +1,7 @@
 const St = imports.gi.St;
 const Lang = imports.lang;
 const Applet = imports.ui.applet;
+const Mainloop = imports.mainloop;
 
 function MyApplet(orientation, panel_height) {
     this._init(orientation, panel_height);
