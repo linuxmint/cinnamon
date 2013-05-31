@@ -146,6 +146,10 @@ HotCorner.prototype = {
         Main.uiGroup.add_actor(this._ripple2);
         Main.uiGroup.add_actor(this._ripple3);
 
+        this._ripple1.hide();
+        this._ripple2.hide();
+        this._ripple3.hide();
+
         // Construct the overview corner icon
         this.iconActor = new St.Button({name: 'overview-corner', reactive: true, track_hover: true});
         this.iconActor.connect('button-release-event', Lang.bind(this, this.runAction));
@@ -202,6 +206,10 @@ HotCorner.prototype = {
         // Show three concentric ripples expanding outwards; the exact
         // parameters were found by trial and error, so don't look
         // for them to make perfect sense mathematically
+
+        this._ripple1.show();
+        this._ripple2.show();
+        this._ripple3.show();
 
         //                              delay  time  scale opacity => scale
         this._animRipple(this._ripple1, 0.0,   0.83,  0.25,  1.0,     1.5);

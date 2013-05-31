@@ -893,8 +893,10 @@ WindowManager.prototype = {
             workspace.activate(global.get_current_time());
             this.showWorkspaceOSD();
             Mainloop.idle_add(Lang.bind(this, function() {
-                // Unless this is done a bit later, window is sometimes not activated                
-                window.activate(global.get_current_time());
+                // Unless this is done a bit later, window is sometimes not activated        
+                if (window.get_workspace() == global.screen.get_active_workspace()) {
+                    window.activate(global.get_current_time());
+                }
             }));
         }
     },

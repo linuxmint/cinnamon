@@ -109,6 +109,9 @@ struct _StScrollViewPrivate
   gfloat        row_size;
   gfloat        column_size;
 
+  GSettings *settings;
+  gint setting_connect_id;
+
   StScrollViewFade *vfade_effect;
 
   gboolean      row_size_set : 1;
@@ -402,6 +405,10 @@ st_scroll_view_dispose (GObject *object)
       g_object_unref (priv->vadjustment);
       priv->vadjustment = NULL;
     }
+
+  if (priv->setting_connect_id > 0) {
+    g_signal_handler_disconnect (priv->settings, priv->setting_connect_id);
+  }
 
   g_signal_handlers_disconnect_by_func (ST_SCROLL_VIEW (object), motion_event_cb, ST_SCROLL_VIEW (object));
 
@@ -826,12 +833,27 @@ st_scroll_view_style_changed (StWidget *widget)
 
   StThemeNode *theme_node = st_widget_get_theme_node (widget);
   gdouble fade_offset = st_theme_node_get_length (theme_node, "-st-vfade-offset");
+
+  gboolean vfade_enabled = g_settings_get_boolean (priv->settings, "enable-vfade");
+
+  if (!vfade_enabled)
+    fade_offset = 0;
+
   st_scroll_view_update_vfade_effect (self, fade_offset);
 
   st_widget_style_changed (ST_WIDGET (priv->hscroll));
   st_widget_style_changed (ST_WIDGET (priv->vscroll));
 
   ST_WIDGET_CLASS (st_scroll_view_parent_class)->style_changed (widget);
+}
+
+static void
+vfade_setting_changed_cb (GSettings *settings, gchar *key, gpointer user_data)
+{
+    StWidget *widget = ST_WIDGET (user_data);
+    g_return_if_fail (ST_IS_SCROLL_VIEW (widget));
+
+    st_scroll_view_style_changed (widget);
 }
 
 static gboolean
@@ -1017,6 +1039,8 @@ st_scroll_view_init (StScrollView *self)
   priv->auto_scroll_timeout_id = 0;
   priv->mouse_pointer = clutter_device_manager_get_core_device (clutter_device_manager_get_default (),
                                                                       CLUTTER_POINTER_DEVICE);
+  priv->settings = g_settings_new("org.cinnamon");
+  priv->setting_connect_id = g_signal_connect (priv->settings, "changed::enable-vfade", G_CALLBACK (vfade_setting_changed_cb), self);
 }
 
 static void

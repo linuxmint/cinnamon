@@ -1019,6 +1019,7 @@ MyApplet.prototype = {
                 item_actor = this.appBoxIter.getPrevVisible(this._previousSelectedActor);
                 this._previousVisibleIndex = this.appBoxIter.getVisibleIndex(item_actor);
                 index = this.appBoxIter.getAbsoluteIndexOfChild(item_actor);
+                this._scrollToButton(item_actor._delegate);
             } else {
                 this._previousTreeSelectedActor = this.categoriesBox.get_child_at_index(index);
                 this._previousTreeSelectedActor._delegate.isHovered = false;
@@ -1031,6 +1032,7 @@ MyApplet.prototype = {
                 item_actor = this.appBoxIter.getNextVisible(this._previousSelectedActor);
                 this._previousVisibleIndex = this.appBoxIter.getVisibleIndex(item_actor);
                 index = this.appBoxIter.getAbsoluteIndexOfChild(item_actor);
+                this._scrollToButton(item_actor._delegate);
             } else {
                 this._previousTreeSelectedActor = this.categoriesBox.get_child_at_index(index);
                 this._previousTreeSelectedActor._delegate.isHovered = false;
@@ -1217,11 +1219,15 @@ MyApplet.prototype = {
             let xformed_mouse_x = mx-bx;
             let [appbox_x, appbox_y] = this.applicationsBox.get_transformed_position();
             let right_x = appbox_x - bx;
-            this.vectorBox.width = right_x-xformed_mouse_x;
-            this.vectorBox.set_position(xformed_mouse_x, 0);
-            this.vectorBox.urc_x = this.vectorBox.width;
-            this.vectorBox.lrc_x = this.vectorBox.width;
-            this.vectorBox.queue_repaint();
+            if ((right_x-xformed_mouse_x) > 0) {
+                this.vectorBox.width = right_x-xformed_mouse_x;
+                this.vectorBox.set_position(xformed_mouse_x, 0);
+                this.vectorBox.urc_x = this.vectorBox.width;
+                this.vectorBox.lrc_x = this.vectorBox.width;
+                this.vectorBox.queue_repaint();
+            } else {
+                this.destroyVectorBox(actor);
+            }
         }
         if (this.vector_update_loop) {
             this.vector_update_loop = null;
@@ -1376,7 +1382,6 @@ MyApplet.prototype = {
                 this._addEnterEvent(button, Lang.bind(this, function() {
                         this._clearPrevAppSelection(button.actor);
                         button.actor.style_class = "menu-application-button-selected";
-                        this._scrollToButton(button);
                         }));
                 button.actor.connect('leave-event', Lang.bind(this, function() {
                         button.actor.style_class = "menu-application-button";

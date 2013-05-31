@@ -595,6 +595,14 @@
     <child name="keyboard" schema="org.cinnamon.keyboard"/>
     <child name="power" schema="org.cinnamon.power" />
     <child name="desklets" schema="org.cinnamon.desklets" />
+
+    <key name="enable-vfade" type="b">
+      <default>false</default>
+      <_summary>Enable the fade effect in Cinnamon scrollviews</_summary>
+      <_description>
+        Whether the vfade effect is enabled or not
+      </_description>
+    </key>
   </schema>
  
   <schema id="org.cinnamon.theme" path="/org/cinnamon/theme/"
@@ -827,4 +835,32 @@
       </_description>
     </key>
   </schema>
+
+  <schema id="org.cinnamon.keybindings" path="/org/cinnamon/keybindings/">
+    <key name="custom-list" type="as">
+      <default>[]</default>
+      <_summary>List of gsettings custom keybinding paths to look in</_summary>
+      <_description>
+      </_description>
+    </key>
+  </schema>
+
+  <schema id="org.cinnamon.keybindings.custom-keybinding">
+    <key name="name" type="s">
+      <default>''</default>
+      <_summary>Name</_summary>
+      <_description>Name of the custom binding</_description>
+    </key>
+    <key name="binding" type="s">
+      <default>''</default>
+      <_summary>Binding</_summary>
+      <_description>Binding for the custom binding</_description>
+    </key>
+    <key name="command" type="s">
+      <default>''</default>
+      <_summary>Command</_summary>
+      <_description>Command to run when the binding is invoked</_description>
+    </key>
+  </schema>
+
 </schemalist>

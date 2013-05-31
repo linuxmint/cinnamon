@@ -458,7 +458,7 @@ Player.prototype = {
         if (support_seek.indexOf(this._name) == -1) {
             this._time.hide();
             this.showPosition = false;
-            this._positionSlider.hide();
+            this._positionSlider.actor.hide();
         }
         this._getStatus();
         this._trackId = {};
