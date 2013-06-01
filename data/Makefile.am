@@ -19,31 +19,37 @@ dist_searchproviders_DATA =				\
 
 themedir = $(pkgdatadir)/theme
 dist_theme_DATA = \
-	theme/add-workspace.png			\
-	theme/add-workspace-hover.png		\
-	theme/calendar-arrow-left.svg		\
-	theme/calendar-arrow-right.svg		\
-	theme/calendar-today.svg		\
-	theme/close-window.svg			\
-	theme/close.svg				\
-	theme/corner-ripple.png			\
-	theme/cinnamon.css			\
-	theme/menu.png				\
-	theme/overview.png			\
-	theme/overview-hover.png		\
-	theme/process-working.svg		\
-	theme/scroll-hhandle.svg		\
-	theme/scroll-vhandle.svg		\
-	theme/thumbnail.png			\
-	theme/thumbnail-generic.png		\
-	theme/toggle-off-us.svg			\
-	theme/toggle-off-intl.svg		\
-	theme/toggle-on-us.svg			\
-	theme/toggle-on-intl.svg		\
-	theme/trash-icon.png			\
-	theme/player-paused.svg			\
-	theme/player-playing.svg		\
-	theme/player-stopped.svg
+    theme/add-workspace-hover.png  \
+    theme/add-workspace.png        \
+    theme/calendar-arrow-left.svg  \
+    theme/calendar-arrow-right.svg \
+    theme/calendar-today.svg       \
+    theme/checkbox-focused.svg     \
+    theme/checkbox-off-focused.svg \
+    theme/checkbox-off.svg         \
+    theme/checkbox.svg             \
+    theme/cinnamon.css             \
+    theme/close.svg                \
+    theme/close-window.svg         \
+    theme/corner-ripple.png        \
+    theme/menu.png                 \
+    theme/overview-hover.png       \
+    theme/overview.png             \
+    theme/player-paused.svg        \
+    theme/player-playing.svg       \
+    theme/player-stopped.svg       \
+    theme/process-working.svg      \
+    theme/radiobutton-off.svg      \
+    theme/radiobutton.svg          \
+    theme/scroll-hhandle.svg       \
+    theme/scroll-vhandle.svg       \
+    theme/thumbnail-generic.png    \
+    theme/thumbnail.png            \
+    theme/toggle-off-intl.svg      \
+    theme/toggle-off-us.svg        \
+    theme/toggle-on-intl.svg       \
+    theme/toggle-on-us.svg         \
+    theme/trash-icon.png
 
 gsettings_SCHEMAS = org.cinnamon.gschema.xml
 
