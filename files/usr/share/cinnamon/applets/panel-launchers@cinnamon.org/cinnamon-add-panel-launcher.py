@@ -92,12 +92,14 @@ class Handler:
     def onIconPicked(self, *args):
         global iconPath, iface
         iconPath = iface.icon_picker.get_uri()[7:]
+        iconPath = iconPath.strip().replace("%20", " ")
         iface.icon_path.set_text(iconPath)
         updatePreviewIcon(iconPath)
         
     def onAppPicked(self, *args):
         global appPath, iface
         appPath = iface.app_picker.get_uri()[7:]
+        appPath = appPath.strip().replace(" ", "\ ").replace("%20", "\ ")
         iface.file_path.set_text(appPath)
 
     def onNameChanged(self, *args):
