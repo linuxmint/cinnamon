@@ -42,8 +42,8 @@ KEYBINDINGS = [
     # Cinnamon stuff
     [_("Toggle Scale"), "org.gnome.desktop.wm.keybindings", "switch-to-workspace-down", True, "cinnamon"],
     [_("Toggle Expo"), "org.gnome.desktop.wm.keybindings", "switch-to-workspace-up", True, "cinnamon"],
-    [_("Cycle through open windows"), "org.gnome.desktop.wm.keybindings", "switch-windows", True, "cinnamon"],
-    [_("Cycle backwards though open windows"), "org.gnome.desktop.wm.keybindings", "switch-windows-backward", True, "cinnamon"],
+    [_("Cycle through open windows"), "org.gnome.desktop.wm.keybindings", "switch-applications", True, "cinnamon"],
+    [_("Cycle backwards though open windows"), "org.gnome.desktop.wm.keybindings", "switch-applications-backward", True, "cinnamon"],
     [_("Run dialog (must restart Cinnamon)"), "org.gnome.desktop.wm.keybindings", "panel-run-dialog", True, "cinnamon"],
     [_("Menu button (must restart Cinnamon)"), "org.cinnamon.muffin", "overlay-key", False, "cinnamon"],
 

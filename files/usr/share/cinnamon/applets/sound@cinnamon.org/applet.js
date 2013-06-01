@@ -1,7 +1,6 @@
 const Applet = imports.ui.applet;
 const Mainloop = imports.mainloop;
 const Gio = imports.gi.Gio;
-const DBus = imports.dbus;
 const Lang = imports.lang;
 const Cinnamon = imports.gi.Cinnamon;
 const Clutter = imports.gi.Clutter;
@@ -12,94 +11,49 @@ const Gvc = imports.gi.Gvc;
 const Pango = imports.gi.Pango;
 const Tooltips = imports.ui.tooltips;
 
-const PropIFace = {
-    name: 'org.freedesktop.DBus.Properties',
-    signals: [{ name: 'PropertiesChanged',
-                inSignature: 'a{sv}'}]
-};
+const PropIFace = <interface name="org.freedesktop.DBus.Properties">
+<signal name="PropertiesChanged">
+    <arg type="a{sv}"/>
+</signal>
+</interface>;
 
-const MediaServer2IFace = {
-    name: 'org.mpris.MediaPlayer2',
-    methods: [{ name: 'Raise',
-                inSignature: '',
-                outSignature: '' },
-              { name: 'Quit',
-                inSignature: '',
-                outSignature: '' }],
-    properties: [{ name: 'CanRaise',
-                   signature: 'b',
-                   access: 'read'},
-                 { name: 'CanQuit',
-                   signature: 'b',
-                   access: 'read'}],
-};
+const MediaServer2IFace = <interface name="org.mpris.MediaPlayer2">
+<method name="Raise" />
+<method name="Quit" />
+<property name="CanRaise" type="b" access="read" />
+<property name="CanQuit" type="b" access="read" />
+</interface>;
 
-const MediaServer2PlayerIFace = {
-    name: 'org.mpris.MediaPlayer2.Player',
-    methods: [{ name: 'PlayPause',
-                inSignature: '',
-                outSignature: '' },
-              { name: 'Pause',
-                inSignature: '',
-                outSignature: '' },
-              { name: 'Play',
-                inSignature: '',
-                outSignature: '' },
-              { name: 'Stop',
-                inSignature: '',
-                outSignature: '' },
-              { name: 'Next',
-                inSignature: '',
-                outSignature: '' },
-              { name: 'Previous',
-                inSignature: '',
-                outSignature: '' },
-              { name: 'SetPosition',
-                inSignature: 'ox',
-                outSignature: '' }],
-    properties: [{ name: 'Metadata',
-                   signature: 'a{sv}',
-                   access: 'read'},
-                 { name: 'Shuffle',
-                   signature: 'b',
-                   access: 'readwrite'},
-                 { name: 'Rate',
-                   signature: 'd',
-                   access: 'readwrite'},
-                 { name: 'LoopStatus',
-                   signature: 'b',
-                   access: 'readwrite'},
-                 { name: 'Volume',
-                   signature: 'd',
-                   access: 'readwrite'},
-                 { name: 'PlaybackStatus',
-                   signature: 's',
-                   access: 'read'},
-                 { name: 'Position',
-                   signature: 'x',
-                   access: 'read'},
-                 { name: 'CanGoNext',
-                   signature: 'b',
-                   access: 'read'},
-                 { name: 'CanGoPrevious',
-                   signature: 'b',
-                   access: 'read'},
-                 { name: 'CanPlay',
-                   signature: 'b',
-                   access: 'read'},
-                 { name: 'CanPause',
-                   signature: 'b',
-                   access: 'read'},
-                 { name: 'CanSeek',
-                   signature: 'b',
-                   access: 'read'}],
-    signals: [{ name: 'Seeked',
-                inSignature: 'x' }]
-};
+const MediaServer2PlayerIFace = <interface name="org.mpris.MediaPlayer2.Player">
+<method name="PlayPause" />
+<method name="Pause" />
+<method name="Play" />
+<method name="Stop" />
+<method name="Next" />
+<method name="Previous" />
+<method name="SetPosition">
+    <arg type="a{ov}" direction="in"/>
+</method>
+<property name='Metadata' access='read' type='a{sv}' />
+<property name='Shuffle' access='readwrite' type='b' />
+<property name='Rate' access='readwrite' type='d' />
+<property name='LoopStatus' access='readwrite' type='s' />
+<property name='Volume' access='readwrite' type='d' />
+<property name='PlaybackStatus' access='read' type='s' />
+<property name='Position' access='read' type='x' />
+<property name="CanGoNext" type="b" access="read" />
+<property name="CanGoPrevious" type="b" access="read" />
+<property name="CanPlay" type="b" access="read" />
+<property name="CanPause" type="b" access="read" />
+<property name="CanSeek" type="b" access="read" />
+<signal name="Seeked">
+    <arg type="x"/>
+</signal>
+</interface>;
 
 /* global values */
 let icon_path = "/usr/share/cinnamon/theme/";
-let compatible_players = [ "clementine", "mpd", "exaile", "banshee", "rhythmbox", "rhythmbox3", "pragha", "quodlibet", "guayadeque", "amarok", "googlemusicframe", "xbmc", "noise", "xnoise", "gmusicbrowser", "spotify", "audacious", "vlc", "beatbox", "songbird", "pithos", "gnome-mplayer", "nuvolaplayer", "qmmp" ];
+let compatible_players = [ "clementine", "mpd", "exaile", "banshee", "rhythmbox", "rhythmbox3", "pragha", "quodlibet", "guayadeque", "amarok", "googlemusicframe", "xbmc", "noise", "xnoise", "gmusicbrowser", "spotify", "audacious", "vlc", "beatbox", "songbird", "pithos", "gnome-mplayer", "nuvolaplayer", "qmmp"];
 let support_seek = [ "clementine", "banshee", "rhythmbox", "rhythmbox3", "pragha", "quodlibet", "amarok", "noise", "xnoise", "gmusicbrowser", "spotify", "vlc", "beatbox", "gnome-mplayer", "qmmp" ];
 /* dummy vars for translation */
 let x = _("Playing");
@@ -112,131 +66,20 @@ const VOLUME_ADJUSTMENT_STEP = 0.05; /* Volume adjustment step in % */
 const ICON_SIZE = 28;
 
 
-function Prop() {
-    this._init.apply(this, arguments);
+var PropProxy = Gio.DBusProxy.makeProxyWrapper(PropIFace);
+function Prop(owner, initCallback, cancellable) {
+    return new PropProxy(Gio.DBus.session, owner, '/org/mpris/MediaPlayer2', initCallback, cancellable);
 }
 
-Prop.prototype = {
-    _init: function(owner) {
-        DBus.session.proxifyObject(this, owner, '/org/mpris/MediaPlayer2', this);
-    }
-}
-DBus.proxifyPrototype(Prop.prototype, PropIFace)
-
-function MediaServer2() {
-    this._init.apply(this, arguments);
+var MediaServer2Proxy = Gio.DBusProxy.makeProxyWrapper(MediaServer2IFace);
+function MediaServer2(owner, initCallback, cancellable) {
+    return new MediaServer2Proxy(Gio.DBus.session, owner, '/org/mpris/MediaPlayer2', initCallback, cancellable);
 }
 
-MediaServer2.prototype = {
-    _init: function(owner) {
-        DBus.session.proxifyObject(this, owner, '/org/mpris/MediaPlayer2', this);
-    },
-    getRaise: function(callback) {
-        this.GetRemote('CanRaise', Lang.bind(this,
-            function(raise, ex) {
-                if (!ex)
-                    callback(this, raise);
-            }));
-    },
-    getQuit: function(callback) {
-        this.GetRemote('CanQuit', Lang.bind(this,
-            function(quit, ex) {
-                if (!ex)
-                    callback(this, quit);
-            }));
-    }
+var MediaServer2PlayerProxy = Gio.DBusProxy.makeProxyWrapper(MediaServer2PlayerIFace);
+function MediaServer2Player(owner, initCallback, cancellable) {
+    return new MediaServer2PlayerProxy(Gio.DBus.session, owner, '/org/mpris/MediaPlayer2', initCallback, cancellable);
 }
-DBus.proxifyPrototype(MediaServer2.prototype, MediaServer2IFace)
-
-function MediaServer2Player() {
-    this._init.apply(this, arguments);
-}
-
-MediaServer2Player.prototype = {
-    _init: function(owner) {
-        this._owner = owner;
-        DBus.session.proxifyObject(this, owner, '/org/mpris/MediaPlayer2', this);
-    },
-    getMetadata: function(callback) {
-        this.GetRemote('Metadata', Lang.bind(this,
-            function(metadata, ex) {
-                if (!ex)
-                    callback(this, metadata);
-            }));
-    },
-    getPlaybackStatus: function(callback) {
-        this.GetRemote('PlaybackStatus', Lang.bind(this,
-            function(status, ex) {
-                if (!ex)
-                    callback(this, status);
-            }));
-    },
-    getRate: function(callback) {
-        this.GetRemote('Rate', Lang.bind(this,
-            function(rate, ex) {
-                if (!ex)
-                    callback(this, rate);
-            }));
-    },
-    getPosition: function(callback) {
-        this.GetRemote('Position', Lang.bind(this,
-            function(position, ex) {
-                if (!ex)
-                    callback(this, position);
-            }));
-    },
-    setPosition: function(value) {
-        this.SetRemote('Position', value);
-    },
-    getShuffle: function(callback) {
-        this.GetRemote('Shuffle', Lang.bind(this,
-            function(shuffle, ex) {
-                if (!ex)
-                    callback(this, shuffle);
-            }));
-    },
-    setShuffle: function(value) {
-        this.SetRemote('Shuffle', value);
-    },
-    getVolume: function(callback) {
-        this.GetRemote('Volume', Lang.bind(this,
-            function(volume, ex) {
-                if (!ex)
-                    callback(this, volume);
-            }));
-    },
-    setVolume: function(value) {
-        this.SetRemote('Volume', parseFloat(value));
-    },
-    getRepeat: function(callback) {
-        this.GetRemote('LoopStatus', Lang.bind(this,
-            function(repeat, ex) {
-                if (!ex) {
-                    if (repeat == "None")
-                        repeat = false
-                    else
-                        repeat = true
-                    callback(this, repeat);
-                }
-            }));
-    },
-    setRepeat: function(value) {
-        if (value)
-            value = "Playlist"
-        else
-            value = "None"
-        this.SetRemote('LoopStatus', value);
-    },
-    getCanSeek: function(callback) {
-        this.GetRemote('CanSeek', Lang.bind(this,
-            function(canSeek, err) {
-                if (!err) {
-                    callback(this, canSeek);
-                }
-            }));
-    }
-}
-DBus.proxifyPrototype(MediaServer2Player.prototype, MediaServer2PlayerIFace)
 
 function TrackInfo() {
     this._init.apply(this, arguments);
@@ -355,7 +198,6 @@ Player.prototype = {
     _init: function(system_status_button, owner) {
         PopupMenu.PopupMenuSection.prototype._init.call(this);
 
-        this.showPosition = true; // @todo: Get from settings
         this._owner = owner;
         this._system_status_button = system_status_button;
         this._name = this._owner.split('.')[3];
@@ -389,7 +231,7 @@ Player.prototype = {
         this.infos_top.add_actor(this._artist.getActor());
         this.infos_bottom.add_actor(this._album.getActor());
         this.infos_top.add_actor(this._title.getActor());
-
+        this.infos_bottom.add_actor(this._time.getActor());
         this._trackInfosTop.set_child(this.infos_top);
         this._trackInfosBottom.set_child(this.infos_bottom);
 
@@ -414,90 +256,50 @@ Player.prototype = {
         this._trackControls.set_child(this.controls);
         this.addActor(this._trackControls);
 
-        this._seekControls = new St.Bin({style_class: 'sound-seek', x_align: St.Align.START});
-        this.seekControls = new St.BoxLayout({style_class: 'sound-seek-box'});
-        this.seekControls.add_actor(this._time.getActor());
-
-        this._positionSlider = new PopupMenu.PopupSliderMenuItem(0);
-        this._positionSlider.connect('value-changed', Lang.bind(this, function(item) {
-            let time = item._value * this._songLength;
-            this._time.setLabel(this._formatTime(time) + " / " + this._formatTime(this._songLength));
-        }));
-        this._positionSlider.connect('drag-end', Lang.bind(this, function(item) {
-            let time = item._value * this._songLength;
-            this._time.setLabel(this._formatTime(time) + " / " + this._formatTime(this._songLength));
-            this._wantedSeekValue = Math.round(time * 1000000);
-            this._mediaServerPlayer.SetPositionRemote(this._trackObj, time * 1000000);
-        }));
-
-        this.sliderBin = new St.Bin({style_class: 'sound-seek-slider'});
-        this.sliderBin.set_child(this._positionSlider.actor);
-        this.seekControls.add_actor(this.sliderBin);
-        this._seekControls.set_child(this.seekControls);
-        this.addActor(this._seekControls);
-
-        this._mediaServer.getRaise(Lang.bind(this, function(sender, raise) {
-            if (raise) {
-                this._raiseButton = new ControlButton('go-up',
-                    Lang.bind(this, function () { this._mediaServer.RaiseRemote(); this._system_status_button.menu.actor.hide(); }));
-                this._raiseButtonTooltip = new Tooltips.Tooltip(this._raiseButton.button, _("Open Player"));
-                this.controls.add_actor(this._raiseButton.getActor());
-            }
-        }));
-
-        this._mediaServer.getQuit(Lang.bind(this, function(sender, quit) {
-            if (quit) {
-                this._quitButton = new ControlButton('window-close',
-                    Lang.bind(this, function () { this._mediaServer.QuitRemote(); }));
-                this.controls.add_actor(this._quitButton.getActor());
-                this._quitButtonTooltip = new Tooltips.Tooltip(this._quitButton.button, _("Quit Player"));
-            }
-        }));
+    let CanRaise = this._mediaServer.CanRaise;
+    let CanQuit = this._mediaServer.CanQuit;
+    if (CanRaise) {
+            this._raiseButton = new ControlButton('go-up',
+                          Lang.bind(this, function () { this._mediaServer.RaiseRemote(); this._system_status_button.menu.actor.hide(); }));
+            this._raiseButtonTooltip = new Tooltips.Tooltip(this._raiseButton.button, _("Open Player"));
+            this.controls.add_actor(this._raiseButton.getActor());
+    }
+    if (CanQuit) {
+            this._quitButton = new ControlButton('window-close',
+                         Lang.bind(this, function () { this._mediaServer.QuitRemote(); }));
+            this.controls.add_actor(this._quitButton.getActor());
+            this._quitButtonTooltip = new Tooltips.Tooltip(this._quitButton.button, _("Quit Player"));
+    }
 
         /* this players don't support seek */
-        if (support_seek.indexOf(this._name) == -1) {
+        if (support_seek.indexOf(this._name) == -1)
             this._time.hide();
             this.showPosition = false;
             this._positionSlider.actor.hide();
         }
+
         this._getStatus();
         this._trackId = {};
         this._getMetadata();
         this._currentTime = 0;
         this._getPosition();
-        this._wantedSeekValue = 0;
-        this._updatePositionSlider();
 
-        this._prop.connect('PropertiesChanged', Lang.bind(this, function(sender, iface, value) {
+        this._prop.connectSignal('PropertiesChanged', Lang.bind(this, function(sender, iface, value) {
             if (value["PlaybackStatus"])
-                this._setStatus(iface, value["PlaybackStatus"]);
+                this._setStatus(value["PlaybackStatus"]);
             if (value["Metadata"])
-                this._setMetadata(iface, value["Metadata"]);
-            //qmmp
-            if(sender._dbusBusName == 'org.mpris.MediaPlayer2.qmmp') {
+                this._setMetadata(value["Metadata"]);
+            // qmmp
+            if (sender._dbusBusName == 'org.mpris.MediaPlayer2.qmmp') {
                 if (value["playbackStatus"])
-                    this._setStatus(iface, value["playbackStatus"]);
+                    this._setStatus(value["playbackStatus"]);
                 if (value["metadata"])
-                    this._setMetadata(sender, value["metadata"]);
-            } 
+                    this._setMetadata(value["metadata"]);
+            }
         }));
 
-        this._mediaServerPlayer.connect('Seeked', Lang.bind(this, function(sender, value) {
-            if (value > 0) {
-                this._setPosition(value);
-            }
-            // Seek initiated by the position slider
-            else if (this._wantedSeekValue > 0) {
-                // Some broken gstreamer players (Banshee) reports always 0
-                // when the track is seeked so we set the position at the
-                // value we set on the slider
-                this._setPosition(this._wantedSeekValue);
-            }
-            // Seek value send by the player
-            else
-                this._setPosition(value);
-
-            this._wantedSeekValue = 0;
+        this._mediaServerPlayer.connectSignal('Seeked', Lang.bind(this, function(sender, iface, [value]) {
+            this._setPosition(sender, value);
         }));
 
         Mainloop.timeout_add(1000, Lang.bind(this, this._getPosition));
@@ -528,29 +330,26 @@ Player.prototype = {
         }));
     },
 
-    _setPosition: function(value) {
-        if (value == null && this._playerStatus != 'Stopped') {
-            this._updatePositionSlider(false);
-        }
-        else {
-            this._currentTime = value / 1000000;
-            this._updateTimer();
-        }
+    _setPosition: function(sender, value) {
+        this._stopTimer();
+        this._currentTime = value / 1000000;
+        this._updateTimer();
+        if (this._playerStatus == "Playing")
+            this._runTimer();
     },
 
     _getPosition: function() {
-        this._mediaServerPlayer.getPosition(Lang.bind(this, function(sender, value) {
-            this._setPosition(value);
-        }));
+    this._setPosition(this._mediaServerPlayer.Position);
+        Mainloop.timeout_add(1000, Lang.bind(this, this._getPosition));
     },
 
-    _setMetadata: function(sender, metadata) {
+    _setMetadata: function(metadata) {
         if (metadata["mpris:length"]) {
             // song length in secs
-            this._songLength = metadata["mpris:length"] / 1000000;
+            this._songLength = metadata["mpris:length"].unpack() / 1000000;
             // FIXME upstream
             if (this._name == "quodlibet")
-                this._songLength = metadata["mpris:length"] / 1000;
+                this._songLength = metadata["mpris:length"].unpack() / 1000;
             // reset timer
             this._stopTimer();
             if (this._playerStatus == "Playing")
@@ -561,26 +360,29 @@ Player.prototype = {
             this._stopTimer();
         }
         if (metadata["xesam:artist"])
-            this._artist.setLabel(metadata["xesam:artist"].toString());
+            this._artist.setLabel(metadata["xesam:artist"].unpack());
         else
             this._artist.setLabel(_("Unknown Artist"));
         if (metadata["xesam:album"])
-            this._album.setLabel(metadata["xesam:album"].toString());
+            this._album.setLabel(metadata["xesam:album"].unpack());
         else
             this._album.setLabel(_("Unknown Album"));
         if (metadata["xesam:title"])
-            this._title.setLabel(metadata["xesam:title"].toString());
+            this._title.setLabel(metadata["xesam:title"].unpack());
         else
             this._title.setLabel(_("Unknown Title"));
-        
-        if (metadata["mpris:trackid"]) {
-            this._trackObj = metadata["mpris:trackid"];
-        }
+        /*if (metadata["mpris:trackid"]) {
+            this._trackId = {
+                _init: function() {
+                    DBus.session.proxifyObject(this, this._owner, metadata["mpris:trackid"]);
+                }
+            }
+        }*/
 
         let change = false;
         if (metadata["mpris:artUrl"]) {
-            if (this._trackCoverFile != metadata["mpris:artUrl"].toString()) {
-                this._trackCoverFile = metadata["mpris:artUrl"].toString();
+            if (this._trackCoverFile != metadata["mpris:artUrl"].unpack()) {
+                this._trackCoverFile = metadata["mpris:artUrl"].unpack();
                 change = true;
             }
         }
@@ -613,13 +415,10 @@ Player.prototype = {
     },
 
     _getMetadata: function() {
-        this._mediaServerPlayer.getMetadata(Lang.bind(this,
-            this._setMetadata
-        ));
+    this._setMetadata(this._mediaServerPlayer.Metadata);
     },
 
-    _setStatus: function(sender, status) {
-        this._updatePositionSlider();
+    _setStatus: function(status) {
         this._playerStatus = status;
         if (status == "Playing") {
             this._playButton.setIcon("media-playback-pause");
@@ -633,53 +432,39 @@ Player.prototype = {
             this._playButton.setIcon("media-playback-start");
             this._stopTimer();
         }
-
         this._playerInfo.setImage("player-" + status.toLowerCase());
         this._setName(status);
     },
 
     _getStatus: function() {
-        this._mediaServerPlayer.getPlaybackStatus(Lang.bind(this,
-            this._setStatus
-        ));
+    this._setStatus(this._mediaServerPlayer.PlaybackStatus);
     },
 
     _updateRate: function() {
-        this._mediaServerPlayer.getRate(Lang.bind(this, function(sender, rate) {
-            this._rate = rate;
-        }));
+    this._rate = this._mediaServerPlayer.Rate;
     },
 
     _updateTimer: function() {
-        if (this.showPosition && this._canSeek) {
-            if (!isNaN(this._currentTime) && !isNaN(this._songLength) && this._currentTime > 0)
-                this._positionSlider.setValue(this._currentTime / this._songLength);
-            else
-                this._positionSlider.setValue(0);
-        }
         this._time.setLabel(this._formatTime(this._currentTime) + " / " + this._formatTime(this._songLength));
     },
 
     _runTimer: function() {
-        if (this._playerStatus == 'Playing') {
-            this._timeoutId = Mainloop.timeout_add_seconds(1, Lang.bind(this, this._runTimer));
-            this._currentTime += 1;
-            this._updateTimer();
-        }
+        /*if (!Tweener.resumeTweens(this)) {
+            Tweener.addTween(this,
+                { time: this._songLength - this._currentTime,
+                  transition: 'linear',
+                  onUpdate: Lang.bind(this, this._updateTimer) });
+        }*/
     },
 
     _pauseTimer: function() {
-        if (this._timeoutId != 0) {
-            Mainloop.source_remove(this._timeoutId);
-            this._timeoutId = 0;
-        }
-        this._updateTimer();
+        //Tweener.pauseTweens(this);
     },
 
     _stopTimer: function() {
+        /*Tweener.removeTweens(this);
         this._currentTime = 0;
-        this._pauseTimer();
-        this._updateTimer();
+        this._updateTimer();*/
     },
 
     _formatTime: function(s) {
@@ -773,7 +558,7 @@ MediaPlayerLauncher.prototype = {
     },
 
     activate: function (event) {
-    	this._menu.actor.hide();
+        this._menu.actor.hide();
         this._app.activate_full(-1, event.get_time());
         return true;
     }
@@ -801,7 +586,7 @@ MyApplet.prototype = {
             this._players = {};
             // watch players
             for (var p=0; p<compatible_players.length; p++) {
-                DBus.session.watch_name('org.mpris.MediaPlayer2.'+compatible_players[p], false,
+                Gio.DBus.session.watch_name('org.mpris.MediaPlayer2.'+compatible_players[p], Gio.BusNameWatcherFlags.NONE,
                     Lang.bind(this, this._addPlayer),
                     Lang.bind(this, this._removePlayer)
                 );
@@ -932,7 +717,7 @@ MyApplet.prototype = {
         return Object.keys(this._players).length;
     },
 
-    _addPlayer: function(owner) {
+    _addPlayer: function(connection, owner) {
         // ensure menu is empty
         this._cleanup();
         this._volumeControlShown = false;
@@ -947,12 +732,12 @@ MyApplet.prototype = {
         this._readOutput();
     },
 
-    _removePlayer: function(owner) {
+    _removePlayer: function(connection, owner) {
         delete this._players[owner];
         this._cleanup();
         this._volumeControlShown = false;
         for (owner in this._players) {
-            this._addPlayer(owner);
+            this._addPlayer(connection, owner);
         }
         this.menu.emit('players-loaded', true);
 
@@ -976,21 +761,21 @@ MyApplet.prototype = {
         this._volumeControlShown = true;
 
         if (this._nbPlayers()==0){
-        	this._availablePlayers = new Array();
+            this._availablePlayers = new Array();
             let appsys = Cinnamon.AppSystem.get_default();
             let allApps = appsys.get_all();
             let listedDesktopFiles = new Array();
             for (let y=0; y<allApps.length; y++) {
-            	let app = allApps[y];
-            	let entry = app.get_tree_entry();
-            	let path = entry.get_desktop_file_path();
-            	for (var p=0; p<compatible_players.length; p++) {
+                let app = allApps[y];
+                let entry = app.get_tree_entry();
+                let path = entry.get_desktop_file_path();
+                for (var p=0; p<compatible_players.length; p++) {
                     let desktopFile = compatible_players[p]+".desktop";
-            		if (path.indexOf(desktopFile) != -1 && listedDesktopFiles.indexOf(desktopFile) == -1) {
-                		this._availablePlayers.push(app);
+                    if (path.indexOf(desktopFile) != -1 && listedDesktopFiles.indexOf(desktopFile) == -1) {
+                        this._availablePlayers.push(app);
                         listedDesktopFiles.push(desktopFile);
-            		}
-           		}
+                    }
+                }
             }
 
             if (this._availablePlayers.length > 0){
@@ -1139,19 +924,19 @@ MyApplet.prototype = {
             this._mutedChanged (null, null, '_output');
             this._volumeChanged (null, null, '_output');
             let sinks = this._control.get_sinks();
-	        this._selectDeviceItem.menu.removeAll();
-	        for (let i = 0; i < sinks.length; i++) {
-	        	let sink = sinks[i];
-	        	let menuItem = new PopupMenu.PopupMenuItem(sink.get_description());
-	        	if (sinks[i].get_id() == this._output.get_id()) {
-	        		menuItem.setShowDot(true);
-	        	}
-	        	menuItem.connect('activate', Lang.bind(this, function() {
-	        		log('Changing default sink to ' + sink.get_description());
-	                this._control.set_default_sink(sink);
-	            }));
-	            this._selectDeviceItem.menu.addMenuItem(menuItem);
-	        }
+            this._selectDeviceItem.menu.removeAll();
+            for (let i = 0; i < sinks.length; i++) {
+                let sink = sinks[i];
+                let menuItem = new PopupMenu.PopupMenuItem(sink.get_description());
+                if (sinks[i].get_id() == this._output.get_id()) {
+                    menuItem.setShowDot(true);
+                }
+                menuItem.connect('activate', Lang.bind(this, function() {
+                    log('Changing default sink to ' + sink.get_description());
+                    this._control.set_default_sink(sink);
+                }));
+                this._selectDeviceItem.menu.addMenuItem(menuItem);
+            }
         } else {
             this._outputSlider.setValue(0);
             this.setIconName('audio-volume-muted-symbolic');

@@ -134,11 +134,11 @@ WindowManager.prototype = {
                                             Lang.bind(this, this._showWorkspaceSwitcher));
         Meta.keybindings_set_custom_handler('switch-to-workspace-down',
                                             Lang.bind(this, this._showWorkspaceSwitcher));
-        Meta.keybindings_set_custom_handler('switch-windows',
+        Meta.keybindings_set_custom_handler('switch-applications',
                                             Lang.bind(this, this._startAppSwitcher));
         Meta.keybindings_set_custom_handler('switch-group',
                                             Lang.bind(this, this._startAppSwitcher));
-        Meta.keybindings_set_custom_handler('switch-windows-backward',
+        Meta.keybindings_set_custom_handler('switch-applications-backward',
                                             Lang.bind(this, this._startAppSwitcher));
         Meta.keybindings_set_custom_handler('switch-group-backward',
                                             Lang.bind(this, this._startAppSwitcher));
