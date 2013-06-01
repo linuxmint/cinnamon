@@ -1189,18 +1189,17 @@ LookingGlass.prototype = {
             }
             return true;
         } else if (symbol==Clutter.Right) {
-			let newIndex = this._notebook._selectedIndex-1;
-			if (newIndex == 5) {
-				newIndex = 0;
-			}
-			return true;
-		} else if (symbol==Clutter.Left) {
-			let newIndex = this._notebook._selectedIndex-1;
-			if (newIndex == -1){
-				newIndex = 4;
-			}
-			return true;
-		}
+	    let newIndex = this._notebook._selectedIndex-1;
+	    if (newIndex == 5) {
+		newIndex = 0;
+	    }
+	    return true;
+	} else if (symbol==Clutter.Left) {
+	    let newIndex = this._notebook._selectedIndex-1;
+	    if (newIndex == -1){
+		newIndex = 4;
+	    }
+	}
         return false;
     },
 
