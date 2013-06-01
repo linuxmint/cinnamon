@@ -71,6 +71,7 @@ class Spice_Harvester:
         self.cache_folder = self.get_cache_folder()
         self.install_folder = self.get_install_folder()
         self.index_cache = {}
+        self.error = None
         self.themes = collection_type == "theme"
         
         if not os.path.exists(os.path.join(self.cache_folder, "index.json")):
@@ -164,10 +165,8 @@ class Spice_Harvester:
             self.load(lambda x: self.show_detail(uuid))
             return
 
-        self.load_assets([uuid])
-        
         appletData = self.index_cache[uuid] 
-        
+
         # Browsing the info within the app would be great (ala mintinstall) but until it is fully ready 
         # and it gives a better experience (layout, comments, reviewing) than 
         # browsing online we will open the link with an external browser 
@@ -278,14 +277,13 @@ class Spice_Harvester:
                 pass
             self.errorMessage(_("Something went wrong with the spices download.  Please try refreshing the list again."), str(detail))
 
-    def load_assets(self, uuids=None):
+    def load_assets(self):
         self.progresslabel.set_text(_("Refreshing %s cache...") % (self.noun))
         self.progress_button_abort.set_sensitive(True)
         needs_refresh = 0
         used_thumbs = []
 
-        if uuids == None:
-            uuids = self.index_cache.keys()
+        uuids = self.index_cache.keys()
 
         for uuid in uuids:
             if not self.themes:
@@ -603,7 +601,7 @@ class Spice_Harvester:
                 pass
             self.progress_window.hide()
             if self.abort_download == ABORT_ERROR:
-                self.errorMessage(_("An error occurred while trying to access the server.  Please try again in a little while."), self.error or None)
+                self.errorMessage(_("An error occurred while trying to access the server.  Please try again in a little while."), self.error)
             raise Exception(_('Download aborted.'))
 
         return outfile
