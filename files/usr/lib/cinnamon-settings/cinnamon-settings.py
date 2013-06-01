@@ -80,8 +80,10 @@ class MainWindow:
         selected_items = side_view.get_selected_items()
         if len(selected_items) > 0:
             self.deselect(cat)
-            self.go_to_sidepage(cat, selected_items[0])
-            
+            filtered_path = side_view.get_model().convert_path_to_child_path(selected_items[0])
+            if filtered_path is not None:
+                self.go_to_sidepage(cat, filtered_path)
+
     def go_to_sidepage(self, cat, path):        
         iterator = self.store[cat].get_iter(path)
         sidePage = self.store[cat].get_value(iterator,2)
