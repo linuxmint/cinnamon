@@ -52,7 +52,7 @@ CATEGORIES = [
 CONTROL_CENTER_MODULES = [
 #         Label                              Module ID                Icon                         Category      Advanced?                      Keywords for filter
     [_("Networking"),                       "network",            "network.svg",                 "hardware",      False,          _("network, wireless, wifi, ethernet, broadband, internet")],
-    [_("Display"),                          "display",            "display.svg",                 "hardware",      True,           _("display, screen, monitor, layout, resolution, dual, lcd")],
+    [_("Display"),                          "display",            "display.svg",                 "hardware",      False,          _("display, screen, monitor, layout, resolution, dual, lcd")],
     [_("Regional Settings"),                "region",             "region.svg",                     "prefs",      False,          _("region, layout, keyboard, language")],
     [_("Bluetooth"),                        "bluetooth",          "bluetooth.svg",               "hardware",      False,          _("bluetooth, dongle, transfer, mobile")],
     [_("Universal Access"),                 "universal-access",   "universal-access.svg",           "prefs",      False,          _("magnifier, talk, access, zoom, keys, contrast")],
@@ -80,21 +80,23 @@ class MainWindow:
         selected_items = side_view.get_selected_items()
         if len(selected_items) > 0:
             self.deselect(cat)
-            path = selected_items[0]
-            iterator = self.storeFilter[cat].get_iter(path)
-            sidePage = self.storeFilter[cat].get_value(iterator,2)
-            if not sidePage.is_standalone:
-                self.side_view_sw.hide()
-                self.search_entry.hide()
-                self.window.set_title(sidePage.name)
-                sidePage.build(self.advanced_mode)
-                self.content_box_sw.show()
-                self.button_back.show()
-                self.current_sidepage = sidePage
-                self.maybe_resize(sidePage)
-                GObject.idle_add(self.start_fade_in)
-            else:
-                sidePage.build(self.advanced_mode)
+            self.go_to_sidepage(cat, selected_items[0])
+            
+    def go_to_sidepage(self, cat, path):        
+        iterator = self.store[cat].get_iter(path)
+        sidePage = self.store[cat].get_value(iterator,2)
+        if not sidePage.is_standalone:
+            self.side_view_sw.hide()
+            self.search_entry.hide()
+            self.window.set_title(sidePage.name)
+            sidePage.build(self.advanced_mode)
+            self.content_box_sw.show()
+            self.button_back.show()
+            self.current_sidepage = sidePage
+            self.maybe_resize(sidePage)
+            GObject.idle_add(self.start_fade_in)
+        else:
+            sidePage.build(self.advanced_mode)
 
     def maybe_resize(self, sidePage):
         if not sidePage.size:
@@ -319,13 +321,10 @@ class MainWindow:
         for key in self.store.keys():
             path = self.store[key].get_path(name)
             if path is not None:
-                filtered_path = self.side_view[key].get_model().convert_child_path_to_path(path)
-                if filtered_path is not None:
-                    GObject.idle_add(self.do_side_view, key, filtered_path)
+                GObject.idle_add(self.do_side_view, key, path)
 
-    def do_side_view(self, key, filtered_path):
-        self.side_view[key].select_path(filtered_path)
-        return False
+    def do_side_view(self, key, path):
+        self.go_to_sidepage(key, path)
 
     def setParentRefs (self, mod):
         try:
