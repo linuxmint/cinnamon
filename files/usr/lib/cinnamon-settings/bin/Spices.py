@@ -390,7 +390,6 @@ class Spice_Harvester:
         edited_date = self.index_cache[uuid]['last_edited']
 
         if not self.themes:
-            executable_files = ['settings.py']
             fd, filename = tempfile.mkstemp()
             dirname = tempfile.mkdtemp()
             f = os.fdopen(fd, 'wb')
@@ -401,7 +400,7 @@ class Spice_Harvester:
                 zip = zipfile.ZipFile(filename)
                 zip.extractall(dirname, self.get_members(zip))
                 for file in self.get_members(zip):
-                    if file.filename in executable_files:
+                    if not file.filename.endswith('/') and ((file.external_attr >> 16L) & 0o755) == 0o755:
                         os.chmod(os.path.join(dirname, file.filename), 0o755)
                     elif file.filename[:3] == 'po/':
                         parts = os.path.splitext(file.filename)
