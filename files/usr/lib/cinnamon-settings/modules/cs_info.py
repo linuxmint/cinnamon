@@ -55,7 +55,7 @@ def getDiskSize():
 
 def getProcInfos():
     infos = [
-        ("/proc/cpuinfo", [("cpu_name", "model name"), ("cpu_siblings", "siblings"), ("cpu_cores", "cpu cores")]),
+        ("/proc/cpuinfo", [("cpu_name", "model name"), ("cpu_cores", "siblings")]),
         ("/proc/meminfo", [("mem_total", "MemTotal")])
     ]
 
