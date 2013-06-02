@@ -6,16 +6,26 @@ import platform
 import subprocess
 import os
 import re
+import threading
+
+
+def killProcess(process):
+    process.kill()
 
 def getProcessOut(command):
+    timeout = 2.0  # Timeout for any subprocess before aborting it
+
     lines = []
     p = subprocess.Popen(command, stdout=subprocess.PIPE)
+    timer = threading.Timer(timeout, killProcess, [p])
+    timer.start()
     while True:
         line = p.stdout.readline()
         if not line:
             break
         if line != '':
             lines.append(line)
+    timer.cancel()
     return lines
 
 def getGraphicsInfos():
@@ -45,7 +55,7 @@ def getDiskSize():
 
 def getProcInfos():
     infos = [
-        ("/proc/cpuinfo", [("cpu_name", "model name"), ("cpu_siblings", "siblings"), ("cpu_cores", "cpu cores")]),
+        ("/proc/cpuinfo", [("cpu_name", "model name"), ("cpu_cores", "siblings")]),
         ("/proc/meminfo", [("mem_total", "MemTotal")])
     ]
 
