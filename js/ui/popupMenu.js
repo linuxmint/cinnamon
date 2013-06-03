@@ -109,8 +109,8 @@ PopupBaseMenuItem.prototype = {
         this.setActive(actor.hover);
     },
 
-    activate: function (event) {
-        this.emit('activate', event);
+    activate: function (event, keepMenu) {
+        this.emit('activate', event, keepMenu);
     },
 
     setActive: function (active) {
@@ -793,7 +793,7 @@ PopupSwitchMenuItem.prototype = {
             this.toggle();
         }
 
-        PopupBaseMenuItem.prototype.activate.call(this, event);
+        PopupBaseMenuItem.prototype.activate.call(this, event, true);
     },
 
     toggle: function() {
@@ -912,9 +912,11 @@ PopupMenuBase.prototype = {
      * operating the submenu, and stores the ids on @object.
      */
     _connectSubMenuSignals: function(object, menu) {
-        object._subMenuActivateId = menu.connect('activate', Lang.bind(this, function() {
+        object._subMenuActivateId = menu.connect('activate', Lang.bind(this, function(submenu, submenuItem, keepMenu) {
             this.emit('activate');
-            this.close(true);
+            if (!keepMenu){
+                this.close(true);
+            }
         }));
         object._subMenuActiveChangeId = menu.connect('active-changed', Lang.bind(this, function(submenu, submenuItem) {
             if (this._activeMenuItem && this._activeMenuItem != submenuItem)
@@ -947,9 +949,11 @@ PopupMenuBase.prototype = {
                     menuItem.actor.grab_key_focus();
             }
         }));
-        menuItem._activateId = menuItem.connect('activate', Lang.bind(this, function (menuItem, event) {
-            this.emit('activate', menuItem);
-            this.close(true);
+        menuItem._activateId = menuItem.connect('activate', Lang.bind(this, function (menuItem, event, keepMenu) {
+            this.emit('activate', menuItem, keepMenu);
+            if (!keepMenu){
+                this.close(true);
+            }
         }));
         menuItem.connect('destroy', Lang.bind(this, function(emitter) {
             menuItem.disconnect(menuItem._activateId);
