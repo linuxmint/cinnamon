@@ -9,7 +9,7 @@ gettext.install("cinnamon", "/usr/share/cinnamon/locale")
 
 HAS_DEDICATED_TERMINAL_SHORTCUT = False
 
-schema = Gio.Settings("org.gnome.settings-daemon.plugins.media-keys")
+schema = Gio.Settings("org.cinnamon.settings-daemon.plugins.media-keys")
 key_list = schema.list_keys()
 for key in key_list:
     if key == "terminal":
@@ -105,43 +105,43 @@ KEYBINDINGS = [
     [_("Move window to workspace 12"), "org.gnome.desktop.wm.keybindings", "move-to-workspace-12", True, "ws-manage"],
 
     # System
-    [_("Log out"), "org.gnome.settings-daemon.plugins.media-keys", "logout", False, "system"],
-    [_("Lock screen"), "org.gnome.settings-daemon.plugins.media-keys", "screensaver", False, "system"],
+    [_("Log out"), "org.cinnamon.settings-daemon.plugins.media-keys", "logout", False, "system"],
+    [_("Lock screen"), "org.cinnamon.settings-daemon.plugins.media-keys", "screensaver", False, "system"],
     [_("Toggle recording desktop (must restart Cinnamon)"), "org.cinnamon.muffin.keybindings", "toggle-recording", True, "system"],
 
     # Launchers
-    [_("Launch help browser"), "org.gnome.settings-daemon.plugins.media-keys", "help", False, "launchers"],
-    [_("Launch calculator"), "org.gnome.settings-daemon.plugins.media-keys", "calculator", False, "launchers"],
-    [_("Launch email client"), "org.gnome.settings-daemon.plugins.media-keys", "email", False, "launchers"],
-    [_("Launch web browser"), "org.gnome.settings-daemon.plugins.media-keys", "www", False, "launchers"],
-    [_("Home folder"), "org.gnome.settings-daemon.plugins.media-keys", "home", False, "launchers"],
-    [_("Search"), "org.gnome.settings-daemon.plugins.media-keys", "search", False, "launchers"],
+    [_("Launch help browser"), "org.cinnamon.settings-daemon.plugins.media-keys", "help", False, "launchers"],
+    [_("Launch calculator"), "org.cinnamon.settings-daemon.plugins.media-keys", "calculator", False, "launchers"],
+    [_("Launch email client"), "org.cinnamon.settings-daemon.plugins.media-keys", "email", False, "launchers"],
+    [_("Launch web browser"), "org.cinnamon.settings-daemon.plugins.media-keys", "www", False, "launchers"],
+    [_("Home folder"), "org.cinnamon.settings-daemon.plugins.media-keys", "home", False, "launchers"],
+    [_("Search"), "org.cinnamon.settings-daemon.plugins.media-keys", "search", False, "launchers"],
 
     # Sound and Media
-    [_("Volume mute"), "org.gnome.settings-daemon.plugins.media-keys", "volume-mute", False, "media"],
-    [_("Volume down"), "org.gnome.settings-daemon.plugins.media-keys", "volume-down", False, "media"],
-    [_("Volume up"), "org.gnome.settings-daemon.plugins.media-keys", "volume-up", False, "media"],
-    [_("Launch media player"), "org.gnome.settings-daemon.plugins.media-keys", "media", False, "media"],
-    [_("Play"), "org.gnome.settings-daemon.plugins.media-keys", "play", False, "media"],
-    [_("Pause playback"), "org.gnome.settings-daemon.plugins.media-keys", "pause", False, "media"],
-    [_("Stop playback"), "org.gnome.settings-daemon.plugins.media-keys", "stop", False, "media"],
-    [_("Previous track"), "org.gnome.settings-daemon.plugins.media-keys", "previous", False, "media"],
-    [_("Next track"), "org.gnome.settings-daemon.plugins.media-keys", "next", False, "media"],
-    [_("Eject"), "org.gnome.settings-daemon.plugins.media-keys", "eject", False, "media"],
+    [_("Volume mute"), "org.cinnamon.settings-daemon.plugins.media-keys", "volume-mute", False, "media"],
+    [_("Volume down"), "org.cinnamon.settings-daemon.plugins.media-keys", "volume-down", False, "media"],
+    [_("Volume up"), "org.cinnamon.settings-daemon.plugins.media-keys", "volume-up", False, "media"],
+    [_("Launch media player"), "org.cinnamon.settings-daemon.plugins.media-keys", "media", False, "media"],
+    [_("Play"), "org.cinnamon.settings-daemon.plugins.media-keys", "play", False, "media"],
+    [_("Pause playback"), "org.cinnamon.settings-daemon.plugins.media-keys", "pause", False, "media"],
+    [_("Stop playback"), "org.cinnamon.settings-daemon.plugins.media-keys", "stop", False, "media"],
+    [_("Previous track"), "org.cinnamon.settings-daemon.plugins.media-keys", "previous", False, "media"],
+    [_("Next track"), "org.cinnamon.settings-daemon.plugins.media-keys", "next", False, "media"],
+    [_("Eject"), "org.cinnamon.settings-daemon.plugins.media-keys", "eject", False, "media"],
 
     # Universal Access
-    [_("Turn zoom on or off"), "org.gnome.settings-daemon.plugins.media-keys", "magnifier", False, "accessibility"],
-    [_("Zoom in"), "org.gnome.settings-daemon.plugins.media-keys", "magnifier-zoom-in", False, "accessibility"],
-    [_("Zoom out"), "org.gnome.settings-daemon.plugins.media-keys", "magnifier-zoom-out", False, "accessibility"],
-    [_("Turn screen reader on or off"), "org.gnome.settings-daemon.plugins.media-keys", "screenreader", False, "accessibility"],
-    [_("Turn on-screen keyboard on or off"), "org.gnome.settings-daemon.plugins.media-keys", "on-screen-keyboard", False, "accessibility"],
-    [_("Increase text size"), "org.gnome.settings-daemon.plugins.media-keys", "increase-text-size", False, "accessibility"],
-    [_("Decrease text size"), "org.gnome.settings-daemon.plugins.media-keys", "decrease-text-size", False, "accessibility"],
-    [_("High contrast on or off"), "org.gnome.settings-daemon.plugins.media-keys", "toggle-contrast", False, "accessibility"]
+    [_("Turn zoom on or off"), "org.cinnamon.settings-daemon.plugins.media-keys", "magnifier", False, "accessibility"],
+    [_("Zoom in"), "org.cinnamon.settings-daemon.plugins.media-keys", "magnifier-zoom-in", False, "accessibility"],
+    [_("Zoom out"), "org.cinnamon.settings-daemon.plugins.media-keys", "magnifier-zoom-out", False, "accessibility"],
+    [_("Turn screen reader on or off"), "org.cinnamon.settings-daemon.plugins.media-keys", "screenreader", False, "accessibility"],
+    [_("Turn on-screen keyboard on or off"), "org.cinnamon.settings-daemon.plugins.media-keys", "on-screen-keyboard", False, "accessibility"],
+    [_("Increase text size"), "org.cinnamon.settings-daemon.plugins.media-keys", "increase-text-size", False, "accessibility"],
+    [_("Decrease text size"), "org.cinnamon.settings-daemon.plugins.media-keys", "decrease-text-size", False, "accessibility"],
+    [_("High contrast on or off"), "org.cinnamon.settings-daemon.plugins.media-keys", "toggle-contrast", False, "accessibility"]
 ]
 
 if HAS_DEDICATED_TERMINAL_SHORTCUT:
-    KEYBINDINGS.append([_("Launch terminal"), "org.gnome.settings-daemon.plugins.media-keys", "terminal", False, "launchers"])
+    KEYBINDINGS.append([_("Launch terminal"), "org.cinnamon.settings-daemon.plugins.media-keys", "terminal", False, "launchers"])
 
 class Module:
     def __init__(self, content_box):
@@ -329,15 +329,15 @@ class KeyboardSidePage (SidePage):
         self.notebook = Gtk.Notebook()
 
         tab = NotebookPage(_("Typing"), False)
-        tab.add_widget(GSettingsCheckButton(_("Enable key repeat"), "org.gnome.settings-daemon.peripherals.keyboard", "repeat", None))
+        tab.add_widget(GSettingsCheckButton(_("Enable key repeat"), "org.cinnamon.settings-daemon.peripherals.keyboard", "repeat", None))
         box = IndentedHBox()
-        slider = GSettingsRange(_("Repeat delay:"), _("Short"), _("Long"), 100, 2000, False, "uint", False, "org.gnome.settings-daemon.peripherals.keyboard", "delay",
-                                                                        "org.gnome.settings-daemon.peripherals.keyboard/repeat", adjustment_step = 10)
+        slider = GSettingsRange(_("Repeat delay:"), _("Short"), _("Long"), 100, 2000, False, "uint", False, "org.cinnamon.settings-daemon.peripherals.keyboard", "delay",
+                                                                        "org.cinnamon.settings-daemon.peripherals.keyboard/repeat", adjustment_step = 10)
         box.pack_start(slider, True, True, 0)
         tab.add_widget(box)
         box = IndentedHBox()
-        slider = GSettingsRange(_("Repeat speed:"), _("Slow"), _("Fast"), 20, 2000, True, "uint", True, "org.gnome.settings-daemon.peripherals.keyboard", "repeat-interval",
-                                                                        "org.gnome.settings-daemon.peripherals.keyboard/repeat", adjustment_step = 1)
+        slider = GSettingsRange(_("Repeat speed:"), _("Slow"), _("Fast"), 20, 2000, True, "uint", True, "org.cinnamon.settings-daemon.peripherals.keyboard", "repeat-interval",
+                                                                        "org.cinnamon.settings-daemon.peripherals.keyboard/repeat", adjustment_step = 1)
         box.pack_start(slider, True, True, 0)
         tab.add_widget(box)
         tab.add_widget(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))

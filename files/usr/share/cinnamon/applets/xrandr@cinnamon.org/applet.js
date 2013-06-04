@@ -23,7 +23,7 @@ let rotations = [ [ GnomeDesktop.RRRotation.ROTATION_0, N_("Normal") ],
 		];
 
 const XRandr2Iface = {
-    name: 'org.gnome.SettingsDaemon.XRANDR_2',
+    name: 'org.cinnamon.SettingsDaemon.XRANDR_2',
     methods: [
 	{ name: 'ApplyConfiguration', inSignature: 'xx', outSignature: '' },
     ]
@@ -48,7 +48,7 @@ MyApplet.prototype = {
             this.menu = new Applet.AppletPopupMenu(this, orientation);
             this.menuManager.addMenu(this.menu);            
                                 
-            this._proxy = new XRandr2(DBus.session, 'org.gnome.SettingsDaemon', '/org/gnome/SettingsDaemon/XRANDR');
+            this._proxy = new XRandr2(DBus.session, 'org.cinnamon.SettingsDaemon', '/org/cinnamon/SettingsDaemon/XRANDR');
 
             try {
                 this._screen = new GnomeDesktop.RRScreen({ gdk_screen: Gdk.Screen.get_default() });
