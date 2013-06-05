@@ -803,27 +803,6 @@
     </key>   
   </schema>
   
-  <schema id="org.cinnamon.desklets" path="/org/cinnamon/desklets/"
-        gettext-domain="@GETTEXT_PACKAGE@">
-    <child name="clock" schema="org.cinnamon.desklets.clock"/>
-  </schema>
-
-  <schema id="org.cinnamon.desklets.clock" path="/org/cinnamon/desklets/clock/"
-        gettext-domain="@GETTEXT_PACKAGE@">
-    <key name="date-format" type="s">
-      <default>'%H:%M'</default>
-      <_summary>The date format for the clock desklet</_summary>
-      <_description>
-        The format to be used in the clock desklet
-      </_description>
-    </key>
-
-    <key type="i" name="font-size">
-      <default>50</default>
-      <_summary>The font size for the clock deskelt</_summary>
-      <_description> The font size to be used to display the time on the clock desklet</_description>
-    </key>
-  </schema>
   <schema id="org.cinnamon.desklets.launcher" path="/org/cinnamon/desklets/launcher/"
         gettext-domain="@GETTEXT_PACKAGE@">
     <key name="launcher-list" type="as">
