@@ -606,7 +606,7 @@ ZoomRegion.prototype = {
             this._updateMousePosition();
             global.top_window_group.raise_top();
         } else if (!activate && this.isActive()) {
-            global.top_window_group.reparent(global.stage);
+            global.reparentActor(global.top_window_group, global.stage);
             this._destroyActors();
         }
     },
@@ -898,7 +898,7 @@ ZoomRegion.prototype = {
     //// Private methods ////
 
     _createActors: function() {
-        global.top_window_group.reparent(Main.uiGroup);
+        global.reparentActor(global.top_window_group, Main.uiGroup);
         // The root actor for the zoom region
         this._magView = new St.Bin({ style_class: 'magnifier-zoom-region', x_fill: true, y_fill: true });
         global.stage.add_actor(this._magView);

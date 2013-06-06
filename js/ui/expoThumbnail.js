@@ -987,9 +987,7 @@ ExpoWorkspaceThumbnail.prototype = {
         if (dropping) {
             let draggable = source._draggable;
             actor.opacity = draggable._dragOrigOpacity;
-            // Can't use reparent here, it produces strange warnings about widget not being in the stage
-            actor.get_parent().remove_actor(actor);
-            draggable._dragOrigParent.add_actor(actor);
+            global.reparentActor(actor, draggable._dragOrigParent);
         }
 
         if (source == Main.xdndHandler) {
