@@ -71,7 +71,7 @@ MyApplet.prototype = {
                 vbox.add(separator.actor, {y_align: St.Align.END, expand: true, y_fill: false});
 
                 item.actor.can_focus = false;
-                item.actor.reparent(vbox);
+                global.reparentActor(item.actor, vbox);
             }
 
             // Done with hbox for calendar and event list
