@@ -578,12 +578,12 @@ function _staticWorkspaces() {
     let i;
     let dif = nWorks - global.screen.n_workspaces;
     if (dif > 0) {
-        for (i = 0; i < dif; i++)
+        for (let i = 0; i < dif; i++)
             global.screen.append_new_workspace(false, global.get_current_time());
     } else {
         if (nWorks == 0)
             return false;
-        for (i = 0; i > dif; i--){
+        for (let i = 0; i > dif; i--){
             let removeWorkspaceIndex = global.screen.n_workspaces - 1;
             let removeWorkspace = global.screen.get_workspace_by_index(removeWorkspaceIndex);
             let lastRemoved = removeWorkspace._lastRemovedWindow;
@@ -599,7 +599,7 @@ function _checkWorkspaces() {
     let i;
     let emptyWorkspaces = [];
 
-    for (i = 0; i < _workspaces.length; i++) {
+    for (let i = 0; i < _workspaces.length; i++) {
         let lastRemoved = _workspaces[i]._lastRemovedWindow;
         if (lastRemoved &&
             (lastRemoved.get_window_type() == Meta.WindowType.SPLASHSCREEN ||
@@ -611,7 +611,7 @@ function _checkWorkspaces() {
     }
 
     let windows = global.get_window_actors();
-    for (i = 0; i < windows.length; i++) {
+    for (let i = 0; i < windows.length; i++) {
         let win = windows[i];
 
         if (win.get_meta_window().is_on_all_workspaces())
@@ -640,7 +640,7 @@ function _checkWorkspaces() {
     }
 
     // Delete other empty workspaces; do it from the end to avoid index changes
-    for (i = emptyWorkspaces.length - 2; i >= 0; i--) {
+    for (let i = emptyWorkspaces.length - 2; i >= 0; i--) {
         if (emptyWorkspaces[i])
             global.screen.remove_workspace(_workspaces[i], global.get_current_time());
     }
@@ -711,13 +711,11 @@ function _nWorkspacesChanged() {
 
     let lostWorkspaces = [];
     if (newNumWorkspaces > oldNumWorkspaces) {
-        let w;
-
         // Assume workspaces are only added at the end
-        for (w = oldNumWorkspaces; w < newNumWorkspaces; w++)
+        for (let w = oldNumWorkspaces; w < newNumWorkspaces; w++)
             _workspaces[w] = global.screen.get_workspace_by_index(w);
 
-        for (w = oldNumWorkspaces; w < newNumWorkspaces; w++) {
+        for (let w = oldNumWorkspaces; w < newNumWorkspaces; w++) {
             let workspace = _workspaces[w];
             workspace._windowAddedId = workspace.connect('window-added', _queueCheckWorkspaces);
             workspace._windowRemovedId = workspace.connect('window-removed', _windowRemoved);

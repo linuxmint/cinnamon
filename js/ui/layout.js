@@ -812,7 +812,7 @@ Chrome.prototype = {
         }
 
         if (!primary.inFullscreen) {
-            for (i = 0; i < this._trackedActors.length; i++) {
+            for (let i = 0; i < this._trackedActors.length; i++) {
                 let actorData = this._trackedActors[i];
                 if (!actorData.affectsInputRegion && !actorData.affectsStruts)
                     continue;
