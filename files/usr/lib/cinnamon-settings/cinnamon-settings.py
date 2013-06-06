@@ -68,7 +68,7 @@ STANDALONE_MODULES = [
     [_("Firewall"),                      "gufw",                         "firewall.svg",        "prefs",          True,           _("firewall, block, filter, programs")],
     [_("Languages"),                     "gnome-language-selector",      "language.svg",        "prefs",          False,          _("language, install, foreign")],
     [_("Login Screen"),                  "gksu /usr/sbin/mdmsetup",      "login.svg",           "prefs",          True,           _("login, mdm, gdm, manager, user, password, startup, switch")],
-    [_("Startup Programs"),              "gnome-session-properties",     "startup-programs.svg","prefs",          False,          _("startup, programs, boot, init, session")],
+    [_("Startup Programs"),              "cinnamon-session-properties",  "startup-programs.svg","prefs",          False,          _("startup, programs, boot, init, session")],
     [_("Device Drivers"),                "mintdrivers",                  "drivers.svg",         "hardware",       False,          _("video, driver, wifi, card, hardware, proprietary, nvidia, radeon, nouveau, fglrx")],
     [_("Software Sources"),              "mintsources",                  "sources.svg",         "prefs",          True,           _("ppa, repository, package, source, download")]
 ]

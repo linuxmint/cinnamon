@@ -1,0 +1,3 @@
+#! /bin/sh
+exec cinnamon-session --session cinnamon2d "$@"
+
