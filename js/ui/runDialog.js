@@ -140,8 +140,7 @@ CommandCompleter.prototype = {
             return common;
         }
         function _getCommon(s1, s2) {
-            let k = 0;
-            for (; k < s1.length && k < s2.length; k++) {
+            for (var k = 0; k < s1.length && k < s2.length; k++) {
                 if (s1[k] != s2[k])
                     break;
             }

@@ -20,13 +20,13 @@ function parse(params, defaults, allowExtras) {
     if (!params)
         params = {};
 
-    for (prop in params) {
+    for (let prop in params) {
         if (!(prop in defaults) && !allowExtras)
             throw new Error('Unrecognized parameter "' + prop + '"');
         ret[prop] = params[prop];
     }
 
-    for (prop in defaults) {
+    for (let prop in defaults) {
         if (!(prop in params))
             ret[prop] = defaults[prop];
     }
