@@ -470,22 +470,6 @@ MyApplet.prototype = {
                 this._applet.send_to_address(device.bdaddr, device.alias);
             }));
         }
-        if (device.capabilities & GnomeBluetoothApplet.Capabilities.OBEX_FILE_TRANSFER) {
-            item.menu.addAction(_("Browse Files..."), Lang.bind(this, function(event) {
-                this._applet.browse_address(device.bdaddr, event.get_time(),
-                    Lang.bind(this, function(applet, result) {
-                        try {
-                            applet.browse_address_finish(result);
-                        } catch (e) {
-                            this._ensureSource();
-                            this._source.notify(new MessageTray.Notification(this._source,
-                                 _("Bluetooth"),
-                                 _("Error browsing device"),
-                                 { body: _("The requested device cannot be browsed, error is '%s'").format(e) }));
-                        }
-                    }));
-            }));
-        }
 
         switch (device.type) {
         case GnomeBluetoothApplet.Type.KEYBOARD:
