@@ -111,7 +111,7 @@ ConfirmNotification.prototype = {
         this._applet = applet;
         this._devicePath = device_path;
         this.addBody(_("Device %s wants to pair with this computer").format(long_name));
-        this.addBody(_("Please confirm whether the PIN '%06d' matches the one on the device.").format(pin));
+        this.addBody(_("Please confirm whether the Passkey '%06d' matches the one on the device.").format(pin));
 
         this.addButton('matches', _("Matches"));
         this.addButton('does-not-match', _("Does not match"));
