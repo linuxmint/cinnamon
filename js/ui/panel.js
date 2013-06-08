@@ -5,6 +5,7 @@ const Cinnamon = imports.gi.Cinnamon;
 const Clutter = imports.gi.Clutter;
 const Lang = imports.lang;
 const Mainloop = imports.mainloop;
+const Meta = imports.gi.Meta;
 const Pango = imports.gi.Pango;
 const Signals = imports.signals;
 const St = imports.gi.St;
@@ -500,6 +501,13 @@ PanelContextMenu.prototype = {
 
         populateSettingsMenu(this);
 
+        let dragItem = new PopupMenu.PopupSwitchMenuItem(_("Drag Panel"), false);
+        this.addMenuItem(dragItem);
+        dragItem.connect('toggled', Lang.bind(launcher, function(item) {
+            this._moving = item.state;
+            this._onMovingChanged();
+        }));
+
         let menuItem = new SettingsLauncher(_("Panel settings"), "panel " + panelID, "panel", this);
         this.addMenuItem(menuItem);
 
@@ -624,15 +632,7 @@ PanelManager.prototype = {
         this.panels = [];
         this.panelsMeta = []; // Properties of panels in format [<monitor index>, <bottomPosition>]
 
-        let panelProperties = global.settings.get_strv("panels-enabled");
-        for (let i = 0; i < panelProperties.length; i ++) {
-            let elements = panelProperties[i].split(":");
-            if (elements.length != 3) {
-                global.log("Invalid panel definition: " + panelProperties[i]);
-                continue;
-            }
-            this._loadPanel(parseInt(elements[0]), elements[1], elements[2]=="bottom", this.panels);
-        }
+        this.loadAllPanels();
 
         global.settings.connect("changed::panels-enabled", Lang.bind(this, this._onPanelsEnabledChanged));
     },
@@ -658,6 +658,51 @@ PanelManager.prototype = {
         for (let i in this.panels) {
             if (this.panels[i])
                 this.panels[i].enable();
+        }
+    },
+
+    /**
+     * loadAllPanels:
+     * 
+     * Loads all panels as defined in the gsettings key
+     */
+    loadAllPanels: function() {
+        let panelProperties = global.settings.get_strv("panels-enabled");
+        for (let i = 0; i < panelProperties.length; i ++) {
+            let elements = panelProperties[i].split(":");
+            if (elements.length != 3) {
+                global.log("Invalid panel definition: " + panelProperties[i]);
+                continue;
+            }
+            this._loadPanel(parseInt(elements[0]), elements[1], elements[2]=="bottom", this.panels);
+        }
+    },
+
+    /**
+     * reloadAllPanels:
+     * @i (int): id of panel
+     * 
+     * Destroys and then reloads all panels
+     */
+    reloadPanel: function(i) {
+        this.panels[i].destroy();
+        this.panels[i] = false
+        this.panelsMeta[i] = false;
+        let panelProperties = global.settings.get_strv("panels-enabled");
+        for (let j = 0; j < panelProperties.length; j++) {
+            if (panelProperties[j].split(":")[0] != i) 
+                continue;
+
+            let elements = panelProperties[j].split(":");
+            if (elements.length != 3) {
+                global.log("Invalid panel definition: " + panelProperties[j]);
+                return;
+            }
+            this._loadPanel(parseInt(elements[0]), elements[1], elements[2]=="bottom", this.panels);
+
+            AppletManager.unloadAppletsOnPanel(this.panels[i]);
+            AppletManager.loadAppletsOnPanel(this.panels[i]);
+            return;
         }
     },
 
@@ -707,6 +752,8 @@ PanelManager.prototype = {
 
         let repeat = false;
         for (let i in this.panelsMeta) {
+            if (!this.panelsMeta)
+                continue;
             if ((this.panelsMeta[i][0] == monitorIndex) && (this.panelsMeta[i][1] == bottomPosition)) {
                 global.log("Conflicting panel definitions: " + ID + ":" + monitorIndex + ":" + (bottomPosition ? "bottom" : "top" ));
                 repeat = true;
@@ -785,6 +832,7 @@ Panel.prototype = {
         this._showTimer = false;
         this._themeFontSize = null;
         this._destroyed = false;
+        this._moving = false;
 
         this.scaleMode = false;
 
@@ -866,6 +914,14 @@ Panel.prototype = {
 
         global.screen.connect('monitors-changed', Lang.bind(this, this._queueMoveResizePanel));
 
+        this._draggable = DND.makeDraggable(this.actor, {}, this.actor);
+        this._draggable.inhibit = true;
+
+        this._draggable.connect('drag-begin', Lang.bind(this, function() {
+            Main.layoutManager._chrome.freezeUpdateRegions();
+            global.set_stage_input_mode(Cinnamon.StageInputMode.FULLSCREEN);
+        }));
+
         // Finalize panel properties
         this._onPanelShowDelayChanged();
         this._onPanelHideDelayChanged();
@@ -890,6 +946,40 @@ Panel.prototype = {
             this.panelBox.anchor_y = this.panelBox.height;
 
         Tweener.addTween(this.panelBox, params);*/
+    },
+
+    getDragActor: function() {
+        return this.panelBox;
+    },
+
+    acceptDrop: function(source, actor, x, y, time) {
+        Main.layoutManager._chrome.thawUpdateRegions();
+        global.set_stage_input_mode(Cinnamon.StageInputMode.NORMAL);
+        x = this.panelBox.x + this.panelBox.width/2;
+        y = this.panelBox.y + this.panelBox.height/2;
+
+        let rect = new Meta.Rectangle({x: x, y: y, width: 1, height: 1});
+        let numMonitor = global.screen.get_n_monitors();
+        let monitorI = 0;
+        for (let i = 0; i < numMonitor; i ++) {
+            if (global.screen.get_monitor_geometry(i).intersect(rect)[0]) {
+                monitorI = i;
+                break;
+            }
+        }
+        let monitor = global.screen.get_monitor_geometry(monitorI);
+        let bottomPosition = (y > monitor.y + monitor.height/2) ? "bottom" : "top";
+
+        let string = this.panelID + ":" + monitorI + ":" + bottomPosition;
+
+        let panels = global.settings.get_strv("panels-enabled");
+        for (let i in panels) {
+            if (panels[i].split(":")[0] == this.panelID) {
+                panels[i] = string;
+            }
+        }
+        global.settings.set_strv("panels-enabled", panels);
+        Main.panelManager.reloadPanel(this.panelID);
     },
 
     /**
@@ -954,6 +1044,15 @@ Panel.prototype = {
 
     isHideable: function() {
         return this._hideable;
+    },
+
+    _onMovingChanged: function() {
+        if (this._moving) {
+            this.actor.add_style_pseudo_class('highlight');
+        } else {
+            this.actor.remove_style_pseudo_class('highlight');
+        }
+        this._draggable.inhibit = !this._moving;
     },
 
     // Reads the gsettings key @key and finds the value corresponding to this panel
