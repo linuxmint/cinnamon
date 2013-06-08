@@ -360,7 +360,7 @@ _Draggable.prototype = {
                                  scaledHeight / this.actor.height);
         }
 
-        this._dragActor.reparent(Main.uiGroup);
+        global.reparentActor(this._dragActor, Main.uiGroup);
         this._dragActor.raise_top();
         Cinnamon.util_set_hidden_from_pick(this._dragActor, true);
 
@@ -700,7 +700,7 @@ _Draggable.prototype = {
             this.target._delegate.cancelDrag(this.actor._delegate, this._dragActor);
 
         if (this._dragOrigParent) {
-            dragActor.reparent(this._dragOrigParent);
+            global.reparentActor(dragActor, this._dragOrigParent);
             dragActor.set_scale(this._dragOrigScale, this._dragOrigScale);
             dragActor.set_position(this._dragOrigX, this._dragOrigY);
         } else {

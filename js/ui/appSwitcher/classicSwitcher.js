@@ -422,7 +422,7 @@ AppIcon.prototype = {
         if (this.showThumbnail){
             this.icon = new St.Group();
             let clones = WindowUtils.createWindowClone(this.window, size, size, true, true);
-            for (i in clones) {
+            for (let i in clones) {
                 let clone = clones[i];
                 this.icon.add_actor(clone.actor);
                 // the following 2 lines are used when cloning without positions (param #4 = false)

@@ -112,7 +112,7 @@ AppSwitcher.prototype = {
         // Construct a list with all windows
         let windows = [];
         let windowActors = global.get_window_actors();
-        for (i in windowActors)
+        for (let i in windowActors)
             windows.push(windowActors[i].get_meta_window());
 
         switch(binding.get_name()) {
@@ -372,7 +372,7 @@ AppSwitcher.prototype = {
     },
 
     _removeDestroyedWindow: function(window) {
-        for (i in this._windows) {
+        for (let i in this._windows) {
             if (window == this._windows[i]) {
                 if (this._windows.length == 1)
                     this.destroy();
@@ -401,7 +401,7 @@ AppSwitcher.prototype = {
     },
 
     _showDesktop: function() {
-        for (i in this._windows) {
+        for (let i in this._windows) {
             if (!this._windows[i].minimized)
                 this._windows[i].minimize();
         }
