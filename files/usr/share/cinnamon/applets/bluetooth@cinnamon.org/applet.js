@@ -151,7 +151,8 @@ PinNotification.prototype = {
         this._entry.connect('key-release-event', Lang.bind(this, function(entry, event) {
             let key = event.get_key_symbol();
             if (key == Clutter.KEY_Return) {
-                this.emit('action-invoked', 'ok');
+                if (this._canActivateOkButton())
+                    this.emit('action-invoked', 'ok');
                 return true;
             } else if (key == Clutter.KEY_Escape) {
                 this.emit('action-invoked', 'cancel');
@@ -163,6 +164,12 @@ PinNotification.prototype = {
 
         this.addButton('ok', _("OK"));
         this.addButton('cancel', _("Cancel"));
+
+        this.setButtonSensitive('ok', this._canActivateOkButton());
+        this._entry.clutter_text.connect('text-changed', Lang.bind(this,
+            function() {
+                this.setButtonSensitive('ok', this._canActivateOkButton());
+            }));
 
         this.connect('action-invoked', Lang.bind(this, function(self, action) {
             if (action == 'ok') {
@@ -184,6 +191,11 @@ PinNotification.prototype = {
             }
             this.destroy();
         }));
+    },
+
+    _canActivateOkButton: function() {
+        // PINs have a fixed length of 6
+        return this._entry.clutter_text.text.length == 6;
     },
 
     grabFocus: function(lockTray) {
