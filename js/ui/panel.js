@@ -914,7 +914,7 @@ Panel.prototype = {
 
         global.screen.connect('monitors-changed', Lang.bind(this, this._queueMoveResizePanel));
 
-        this._draggable = DND.makeDraggable(this.actor, {}, this.actor);
+        this._draggable = DND.makeDraggable(this.actor, {}, this.actor); // traget = this.actor: Let Panel.Panel handle its own drop event
         this._draggable.inhibit = true;
 
         this._draggable.connect('drag-begin', Lang.bind(this, function() {
@@ -953,6 +953,8 @@ Panel.prototype = {
     },
 
     acceptDrop: function(source, actor, x, y, time) {
+        if (!(source instanceof Panel)) return false;
+
         Main.layoutManager._chrome.thawUpdateRegions();
         global.set_stage_input_mode(Cinnamon.StageInputMode.NORMAL);
         x = this.panelBox.x + this.panelBox.width/2;
