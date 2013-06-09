@@ -7,6 +7,7 @@ const Gtk = imports.gi.Gtk;
 const Main = imports.ui.main;
 const PopupMenu = imports.ui.popupMenu;
 const Util = imports.misc.util;
+const Settings = imports.ui.settings;
 
 function LayoutMenuItem() {
     this._init.apply(this, arguments);
