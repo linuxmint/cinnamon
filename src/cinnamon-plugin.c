@@ -385,7 +385,7 @@ MetaPluginInfo *gnome_cinnamon_plugin_plugin_info (MetaPlugin *plugin)
 
 #if HAVE_BLUETOOTH
 /* HACK:
-   Add a non-static function that calls into libgnome-bluetooth-applet.so,
+   Add a non-static function that calls into libcinnamon-bluetooth-applet.so,
    to avoid the linker being too smart and removing the dependency.
    This function is never actually called.
 */
