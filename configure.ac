@@ -111,13 +111,13 @@ PKG_CHECK_MODULES(GVC, libpulse libpulse-mainloop-glib gobject-2.0)
 PKG_CHECK_MODULES(DESKTOP_SCHEMAS, gsettings-desktop-schemas >= 0.1.7)
 
 AC_MSG_CHECKING([for bluetooth support])
-PKG_CHECK_EXISTS([cinnamon-bluetooth-1.0],
-        [BLUETOOTH_DIR=`$PKG_CONFIG --variable=applet_libdir cinnamon-bluetooth-1.0`
-	 BLUETOOTH_LIBS=`$PKG_CONFIG --variable=applet_libs cinnamon-bluetooth-1.0`
+PKG_CHECK_EXISTS([gnome-bluetooth-1.0 >= 3.1.0],
+        [BLUETOOTH_DIR=`$PKG_CONFIG --variable=applet_libdir gnome-bluetooth-1.0`
+	 BLUETOOTH_LIBS=`$PKG_CONFIG --variable=applet_libs gnome-bluetooth-1.0`
 	 AC_SUBST([BLUETOOTH_LIBS],["$BLUETOOTH_LIBS"])
 	 AC_SUBST([BLUETOOTH_DIR],["$BLUETOOTH_DIR"])
-	 AC_DEFINE_UNQUOTED([BLUETOOTH_DIR],["$BLUETOOTH_DIR"],[Path to installed CinnamonBluetooth typelib and library])
-	 AC_DEFINE([HAVE_BLUETOOTH],[1],[Define if you have libcinnamon-bluetooth-applet])
+	 AC_DEFINE_UNQUOTED([BLUETOOTH_DIR],["$BLUETOOTH_DIR"],[Path to installed GnomeBluetooth typelib and library])
+	 AC_DEFINE([HAVE_BLUETOOTH],[1],[Define if you have libgnome-bluetooth-applet])
 	 AC_SUBST([HAVE_BLUETOOTH],[1])
 	 AC_MSG_RESULT([yes])],
 	[AC_DEFINE([HAVE_BLUETOOTH],[0])
