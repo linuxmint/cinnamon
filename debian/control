@@ -55,7 +55,7 @@ Depends: ${gir:Depends},
          caribou,
          cups-pk-helper,
          cinnamon-settings-daemon,
-	 cinnamon-session,
+         cinnamon-session,
          gsettings-desktop-schemas (>= 0.1.7),
          gnome-icon-theme-symbolic (>= 2.91),
          ${icon-theme:Depends},
@@ -82,7 +82,7 @@ Depends: ${gir:Depends},
          python-pyinotify,
          metacity,
          gnome-panel | tint2
-Recommends: gnome-themes-standard, gnome-terminal, nemo, cinnamon-screensaver, gnome-session-bin, gir1.2-gjsdbus-1.0
+Recommends: gnome-themes-standard, gnome-terminal, nemo, cinnamon-screensaver, gnome-session-bin, gir1.2-gjsdbus-1.0, blueman
 Provides: notification-daemon, x-window-manager
 Description: Cinnamon desktop
  Cinnamon redefines user interactions with the GNOME desktop.
