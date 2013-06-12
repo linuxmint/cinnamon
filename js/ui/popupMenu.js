@@ -881,6 +881,13 @@ PopupMenuBase.prototype = {
         return menuItem;
     },
 
+    addCommandlineAction: function(title, cmd) {
+        let menuItem = this.addAction(title, function() {
+                           Util.spawnCommandLine(cmd);
+                       });
+        return menuItem
+    },
+
     isChildMenu: function(menu) {
         return this._childMenus.indexOf(menu) != -1;
     },
