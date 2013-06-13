@@ -411,7 +411,7 @@ function start() {
     AppletManager.init();
     DeskletManager.init();
 
-    if (software_rendering) {
+    if (software_rendering && !GLib.getenv('CINNAMON_2D')) {
         notifyCinnamon2d();
     }
 }
