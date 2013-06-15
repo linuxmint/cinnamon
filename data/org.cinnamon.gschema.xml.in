@@ -800,7 +800,72 @@
       <description>
         Whether to ask for an away message when locking the screen.
       </description>
-    </key>   
+    </key>
+    <key type="b" name="idle-activation-enabled">
+      <default>true</default>
+      <summary>Activate when idle</summary>
+      <description>Set this to TRUE to activate the screensaver when the session is idle.</description>
+    </key>
+    <key type="b" name="lock-enabled">
+      <default>true</default>
+      <summary>Lock on activation</summary>
+      <description>Set this to TRUE to lock the screen when the screensaver goes active.</description>
+    </key>
+    <key type="u" name="lock-delay">
+      <default>0</default>
+      <summary>Time before locking</summary>
+      <description>The number of seconds after screensaver activation before locking the screen.</description>
+    </key>
+    <key type="b" name="ubuntu-lock-on-suspend">
+      <default>true</default>
+      <summary>Lock on suspend</summary>
+      <description>Set this to TRUE to lock the screen when the system suspends.</description>
+    </key>
+    <key type="b" name="embedded-keyboard-enabled">
+      <default>false</default>
+      <summary>Allow embedding a keyboard into the window</summary>
+      <description>Set this to TRUE to allow embedding a keyboard into the window when trying to unlock. The "keyboard_command" key must be set with the appropriate command.</description>
+    </key>
+    <key type="s" name="embedded-keyboard-command">
+      <default>''</default>
+      <summary>Embedded keyboard command</summary>
+      <description>The command that will be run, if the "embedded_keyboard_enabled" key is set to TRUE, to embed a keyboard widget into the window. This command should implement an XEMBED plug interface and output a window XID on the standard output.</description>
+    </key>
+    <key type="s" name="lock-time-format">
+      <default>'%R'</default>
+      <summary>Time format for screensaver and lockscreen</summary>
+      <description>The strftime formatting string to show on the lockscreen's first line, usually the current time. %R is 24 hour, %l:%m %p is 12 hour. Updates every 60 seconds.</description>
+    </key>
+    <key type="s" name="lock-date-format">
+      <default>'%A, %B, %e'</default>
+      <summary>Date format for screensaver and lockscreen</summary>
+      <description>The strftime formatting string to show on the lockscreen's second line, usually a date. Updates every 60 seconds.</description>
+    </key>
+    <key type="b" name="logout-enabled">
+      <default>false</default>
+      <summary>Allow logout</summary>
+      <description>Set this to TRUE to offer an option in the unlock dialog to allow logging out after a delay. The delay is specified in the "logout_delay" key.</description>
+    </key>
+    <key type="u" name="logout-delay">
+      <default>7200</default>
+      <summary>Time before logout option</summary>
+      <description>The number of seconds after the screensaver activation before a logout option will appear in the unlock dialog. This key has effect only if the "logout_enable" key is set to TRUE.</description>
+    </key>
+    <key type="s" name="logout-command">
+      <default>''</default>
+      <summary>Logout command</summary>
+      <description>The command to invoke when the logout button is clicked. This command should simply log the user out without any interaction. This key has effect only if the "logout_enable" key is set to TRUE.</description>
+    </key>
+    <key type="b" name="user-switch-enabled">
+      <default>true</default>
+      <summary>Allow user switching</summary>
+      <description>Set this to TRUE to offer an option in the unlock dialog to switch to a different user account.</description>
+    </key>
+    <key type="b" name="status-message-enabled">
+      <default>true</default>
+      <summary>Allow the session status message to be displayed</summary>
+      <description>Allow the session status message to be displayed when the screen is locked.</description>
+    </key>
   </schema>
   
   <schema id="org.cinnamon.desklets" path="/org/cinnamon/desklets/"
