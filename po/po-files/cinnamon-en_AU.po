@@ -1901,7 +1901,7 @@ msgid "Decoration of desklets"
 msgstr ""
 
 #: files/usr/lib/cinnamon-settings/modules/cs_desklets.py:48
-msgid "Note: Some desklets require the border/header to be always preset"
+msgid "Note: Some desklets require the border/header to be always present"
 msgstr ""
 
 #: files/usr/lib/cinnamon-settings/modules/cs_desklets.py:48

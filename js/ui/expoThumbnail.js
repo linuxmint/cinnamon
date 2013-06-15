@@ -148,7 +148,7 @@ ExpoWindowClone.prototype = {
         this.actor.add_actor(this.clone);
         let [pwidth, pheight] = [this.realWindow.width, this.realWindow.height];
         let clones = WindowUtils.createWindowClone(this.metaWindow, 0, 0, withTransients);
-        for (i in clones) {
+        for (let i in clones) {
             let clone = clones[i].actor;
             this.clone.add_actor(clone);
             let [width, height] = clone.get_size();
@@ -987,9 +987,7 @@ ExpoWorkspaceThumbnail.prototype = {
         if (dropping) {
             let draggable = source._draggable;
             actor.opacity = draggable._dragOrigOpacity;
-            // Can't use reparent here, it produces strange warnings about widget not being in the stage
-            actor.get_parent().remove_actor(actor);
-            draggable._dragOrigParent.add_actor(actor);
+            global.reparentActor(actor, draggable._dragOrigParent);
         }
 
         if (source == Main.xdndHandler) {

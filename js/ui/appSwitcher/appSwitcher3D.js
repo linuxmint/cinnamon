@@ -88,7 +88,7 @@ AppSwitcher3D.prototype = {
         
         // preview windows
         let currentWorkspace = global.screen.get_active_workspace();
-        for (i in this._previews) {
+        for (let i in this._previews) {
             let preview = this._previews[i];
             let metaWin = this._windows[i];
             let compositor = this._windows[i].get_compositor_private();
@@ -168,7 +168,7 @@ AppSwitcher3D.prototype = {
         
         this._previews = [];
         
-        for (i in this._windows) {
+        for (let i in this._windows) {
             let metaWin = this._windows[i];
             let compositor = this._windows[i].get_compositor_private();
             if (compositor) {

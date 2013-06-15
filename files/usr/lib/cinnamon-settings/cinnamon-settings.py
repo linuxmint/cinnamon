@@ -52,9 +52,8 @@ CATEGORIES = [
 CONTROL_CENTER_MODULES = [
 #         Label                              Module ID                Icon                         Category      Advanced?                      Keywords for filter
     [_("Networking"),                       "network",            "network.svg",                 "hardware",      False,          _("network, wireless, wifi, ethernet, broadband, internet")],
-    [_("Display"),                          "display",            "display.svg",                 "hardware",      True,           _("display, screen, monitor, layout, resolution, dual, lcd")],
+    [_("Display"),                          "display",            "display.svg",                 "hardware",      False,          _("display, screen, monitor, layout, resolution, dual, lcd")],
     [_("Regional Settings"),                "region",             "region.svg",                     "prefs",      False,          _("region, layout, keyboard, language")],
-    [_("Bluetooth"),                        "bluetooth",          "bluetooth.svg",               "hardware",      False,          _("bluetooth, dongle, transfer, mobile")],
     [_("Universal Access"),                 "universal-access",   "universal-access.svg",           "prefs",      False,          _("magnifier, talk, access, zoom, keys, contrast")],
     [_("User Accounts"),                    "user-accounts",      "user-accounts.svg",              "prefs",      True,           _("users, accounts, add, password, picture")],
     [_("Power Management"),                 "power",              "power.svg",                   "hardware",      False,          _("power, suspend, hibernate, laptop, desktop")],
@@ -65,10 +64,11 @@ CONTROL_CENTER_MODULES = [
 STANDALONE_MODULES = [
 #         Label                          Executable                          Icon                Category        Advanced?               Keywords for filter
     [_("Printers"),                      "system-config-printer",        "printer.svg",         "hardware",       False,          _("printers, laser, inkjet")],
+    [_("Bluetooth"),                     "blueman-manager",              "bluetooth.svg",       "hardware",       False,          _("bluetooth, dongle, transfer, mobile")],
     [_("Firewall"),                      "gufw",                         "firewall.svg",        "prefs",          True,           _("firewall, block, filter, programs")],
     [_("Languages"),                     "gnome-language-selector",      "language.svg",        "prefs",          False,          _("language, install, foreign")],
     [_("Login Screen"),                  "gksu /usr/sbin/mdmsetup",      "login.svg",           "prefs",          True,           _("login, mdm, gdm, manager, user, password, startup, switch")],
-    [_("Startup Programs"),              "gnome-session-properties",     "startup-programs.svg","prefs",          False,          _("startup, programs, boot, init, session")],
+    [_("Startup Programs"),              "cinnamon-session-properties",  "startup-programs.svg","prefs",          False,          _("startup, programs, boot, init, session")],
     [_("Device Drivers"),                "mintdrivers",                  "drivers.svg",         "hardware",       False,          _("video, driver, wifi, card, hardware, proprietary, nvidia, radeon, nouveau, fglrx")],
     [_("Software Sources"),              "mintsources",                  "sources.svg",         "prefs",          True,           _("ppa, repository, package, source, download")]
 ]
@@ -80,21 +80,25 @@ class MainWindow:
         selected_items = side_view.get_selected_items()
         if len(selected_items) > 0:
             self.deselect(cat)
-            path = selected_items[0]
-            iterator = self.storeFilter[cat].get_iter(path)
-            sidePage = self.storeFilter[cat].get_value(iterator,2)
-            if not sidePage.is_standalone:
-                self.side_view_sw.hide()
-                self.search_entry.hide()
-                self.window.set_title(sidePage.name)
-                sidePage.build(self.advanced_mode)
-                self.content_box_sw.show()
-                self.button_back.show()
-                self.current_sidepage = sidePage
-                self.maybe_resize(sidePage)
-                GObject.idle_add(self.start_fade_in)
-            else:
-                sidePage.build(self.advanced_mode)
+            filtered_path = side_view.get_model().convert_path_to_child_path(selected_items[0])
+            if filtered_path is not None:
+                self.go_to_sidepage(cat, filtered_path)
+
+    def go_to_sidepage(self, cat, path):        
+        iterator = self.store[cat].get_iter(path)
+        sidePage = self.store[cat].get_value(iterator,2)
+        if not sidePage.is_standalone:
+            self.side_view_sw.hide()
+            self.search_entry.hide()
+            self.window.set_title(sidePage.name)
+            sidePage.build(self.advanced_mode)
+            self.content_box_sw.show()
+            self.button_back.show()
+            self.current_sidepage = sidePage
+            self.maybe_resize(sidePage)
+            GObject.idle_add(self.start_fade_in)
+        else:
+            sidePage.build(self.advanced_mode)
 
     def maybe_resize(self, sidePage):
         if not sidePage.size:
@@ -319,13 +323,10 @@ class MainWindow:
         for key in self.store.keys():
             path = self.store[key].get_path(name)
             if path is not None:
-                filtered_path = self.side_view[key].get_model().convert_child_path_to_path(path)
-                if filtered_path is not None:
-                    GObject.idle_add(self.do_side_view, key, filtered_path)
+                GObject.idle_add(self.do_side_view, key, path)
 
-    def do_side_view(self, key, filtered_path):
-        self.side_view[key].select_path(filtered_path)
-        return False
+    def do_side_view(self, key, path):
+        self.go_to_sidepage(key, path)
 
     def setParentRefs (self, mod):
         try:

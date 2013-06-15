@@ -766,11 +766,11 @@ WindowManager.prototype = {
             if (window.get_workspace() == from) {
                 switchData.windows.push({ window: window,
                                           parent: window.get_parent() });
-                window.reparent(switchData.outGroup);
+                global.reparentActor(window, switchData.outGroup);
             } else if (window.get_workspace() == to) {
                 switchData.windows.push({ window: window,
                                           parent: window.get_parent() });
-                window.reparent(switchData.inGroup);
+                global.reparentActor(window, switchData.inGroup);
                 window.show_all();
             }
         }
@@ -806,10 +806,11 @@ WindowManager.prototype = {
                 if (w.window.is_destroyed()) // Window gone
                     continue;
                 if (w.window.get_parent() == switchData.outGroup) {
-                    w.window.reparent(w.parent);
+                    global.reparentActor(w.window, w.parent);
                     w.window.hide();
-                } else
-                    w.window.reparent(w.parent);
+                } else {
+                    global.reparentActor(w.window, w.parent);
+                }
         }
         Tweener.removeTweens(switchData.inGroup);
         Tweener.removeTweens(switchData.outGroup);

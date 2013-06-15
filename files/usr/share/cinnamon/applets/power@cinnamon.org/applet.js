@@ -9,8 +9,8 @@ const Mainloop = imports.mainloop;
 
 const POWER_SCHEMA = "org.cinnamon.power"
 const SHOW_PERCENTAGE_KEY = "power-label";
-const BUS_NAME = 'org.gnome.SettingsDaemon';
-const OBJECT_PATH = '/org/gnome/SettingsDaemon/Power';
+const BUS_NAME = 'org.cinnamon.SettingsDaemon';
+const OBJECT_PATH = '/org/cinnamon/SettingsDaemon/Power';
 
 const UPDeviceType = {
     UNKNOWN: 0,
@@ -44,7 +44,7 @@ const LabelDisplay = {
 };
 
 const PowerManagerInterface = {
-    name: 'org.gnome.SettingsDaemon.Power',
+    name: 'org.cinnamon.SettingsDaemon.Power',
     methods: [
         { name: 'GetDevices', inSignature: '', outSignature: 'a(susdut)' },
         { name: 'GetPrimaryDevice', inSignature: '', outSignature: '(susdut)' },

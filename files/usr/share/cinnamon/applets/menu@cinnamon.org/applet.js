@@ -73,14 +73,14 @@ VisibleChildIterator.prototype = {
 
     getNextVisible: function(cur_child) {
         if (this.visible_children.indexOf(cur_child) == this._num_children-1)
-            return cur_child;
+            return this.visible_children[0];
         else
             return this.visible_children[this.visible_children.indexOf(cur_child)+1];
     },
 
     getPrevVisible: function(cur_child) {
         if (this.visible_children.indexOf(cur_child) == 0)
-            return cur_child;
+            return this.visible_children[this._num_children-1];
         else
             return this.visible_children[this.visible_children.indexOf(cur_child)-1];
     },
@@ -1313,10 +1313,12 @@ MyApplet.prototype = {
                 this._addEnterEvent(button, Lang.bind(this, function() {
                         this._clearPrevAppSelection(button.actor);
                         button.actor.style_class = "menu-application-button-selected";
+                        this.selectedAppTitle.set_text("");
                         this.selectedAppDescription.set_text(button.place.id.slice(16));
                         }));
                 button.actor.connect('leave-event', Lang.bind(this, function() {
                             this._previousSelectedActor = button.actor;
+                            this.selectedAppTitle.set_text("");
                             this.selectedAppDescription.set_text("");
                             }));
                 this._placesButtons.push(button);
@@ -1366,6 +1368,7 @@ MyApplet.prototype = {
                 this._addEnterEvent(button, Lang.bind(this, function() {
                         this._clearPrevAppSelection(button.actor);
                         button.actor.style_class = "menu-application-button-selected";
+                        this.selectedAppTitle.set_text("");
                         this.selectedAppDescription.set_text(button.file.uri.slice(7));
                         }));
                 button.actor.connect('leave-event', Lang.bind(this, function() {

@@ -275,9 +275,8 @@ _provider.prototype = {
         },
 
         _json_validity_check: function (init_json) {
-            let primary_key;
             let valid = false;
-            for (primary_key in init_json) {
+            for (let primary_key in init_json) {
                 valid = this._check_for_min_props(init_json[primary_key])
                 if (!valid)
                     break;

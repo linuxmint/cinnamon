@@ -142,7 +142,3 @@ class TitleBarButtonsOrderSelector(Gtk.Table):
                     else:
                         right_items.append(value)
         self.settings.set_string(self.key, ','.join(str(item) for item in left_items) + ':' + ','.join(str(item) for item in right_items))
-
-
-
-
