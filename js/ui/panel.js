@@ -1051,8 +1051,12 @@ Panel.prototype = {
     _onMovingChanged: function() {
         if (this._moving) {
             this.actor.add_style_pseudo_class('highlight');
+            if (this._hideable)
+                this._showPanel();
         } else {
             this.actor.remove_style_pseudo_class('highlight');
+            if (this._hideable)
+                this._hidePanel();
         }
         this._draggable.inhibit = !this._moving;
     },
@@ -1467,7 +1471,7 @@ Panel.prototype = {
     _hidePanel: function(force) {
         if (this._disabled) return;
 
-        if ((!this._hideable && !force) || global.menuStackLength > 0 || this.isMouseOverPanel || this._isEditMode) return;
+        if ((!this._hideable && !force) || global.menuStackLength > 0 || this.isMouseOverPanel || this._isEditMode || this._moving) return;
 
         // Force the panel to be on top (hack to correct issues when switching workspace)
         Main.layoutManager._windowsRestacked();
