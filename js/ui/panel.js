@@ -1441,12 +1441,15 @@ Panel.prototype = {
                          { y: y,
                            time: animationTime,
                            transition: 'easeOutQuad',
-                           onUpdate: Lang.bind(this, function(origY) {
+                           onUpdate: Lang.bind(this, function(origY, bottomPosition) {
                                // Force the layout manager to update the input region
-                               Main.layoutManager._chrome.updateRegions()
-                               this.actor.set_clip(0, 0, this.monitor.width, Math.abs(this.actor.get_parent().y - origY));
+                               Main.layoutManager._chrome.updateRegions();
+                               let height = Math.abs(this.actor.get_parent().y - origY);
+                               let y = bottomPosition ? 0 : this.actor.height - height;
+
+                               this.actor.set_clip(0, y, this.monitor.width, height);
                            }),
-                           onUpdateParams: [this.bottomPosition ? this.monitor.y + this.monitor.height - 1 : this.monitor.y - height + 1]
+                           onUpdateParams: [this.bottomPosition ? this.monitor.y + this.monitor.height: this.monitor.y - height, this.bottomPosition]
                          });
 
         params = { opacity: 255,
@@ -1477,12 +1480,15 @@ Panel.prototype = {
             y: y,
             time: animationTime,
             transition: 'easeOutQuad',
-            onUpdate: Lang.bind(this, function(targetY) {
+            onUpdate: Lang.bind(this, function(targetY, bottomPosition) {
                 // Force the layout manager to update the input region
-                Main.layoutManager._chrome.updateRegions()
-                this.actor.set_clip(0, 0, this.monitor.width, Math.abs(this.actor.get_parent().y - targetY) + 1);
+                Main.layoutManager._chrome.updateRegions();
+                let height = Math.abs(this.actor.get_parent().y - targetY) + 1;
+                let y = bottomPosition ? 0 : this.actor.height - height;
+
+                this.actor.set_clip(0, y, this.monitor.width, height);
             }),
-            onUpdateParams: [y]
+            onUpdateParams: [y, this.bottomPosition]
         });
 
         let params = { y: 0,
