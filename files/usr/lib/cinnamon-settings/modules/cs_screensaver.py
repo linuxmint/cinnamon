@@ -14,6 +14,9 @@ class Module:
         if os.path.exists("/usr/bin/cinnamon-screensaver-command"):
             sidePage.add_widget(GSettingsCheckButton(_("Ask for an away message when locking the screen from the menu"), "org.cinnamon.screensaver", "ask-for-away-message", None))
             sidePage.add_widget(GSettingsEntry(_("Default away message"), "org.cinnamon.screensaver", "default-message", None))
+            sidePage.add_widget(GSettingsEntry(_("Time format for the lockscreeen"), "org.cinnamon.screensaver", "lock-time-format", None), True)
+            sidePage.add_widget(GSettingsEntry(_("Date format for the lockscreen"), "org.cinnamon.screensaver", "lock-date-format", None), True)
+            sidePage.add_widget(Gtk.LinkButton.new_with_label("http://www.foragoodstrftime.com/", _("Generate your own date formats")), True)
 
         widget = content_box.c_manager.get_c_widget("screen")
         if widget is not None:
