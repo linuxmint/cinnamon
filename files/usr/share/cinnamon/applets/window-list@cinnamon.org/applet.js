@@ -632,6 +632,9 @@ AppMenuButton.prototype = {
     },
 
     set_icon: function(panel_height) {
+      let tracker = Cinnamon.WindowTracker.get_default();
+      let app = tracker.get_window_app(this.metaWindow);
+
       if (global.settings.get_boolean('panel-scale-text-icons') && global.settings.get_boolean('panel-resizable')) {
         this.iconSize = Math.round(panel_height * ICON_HEIGHT_FACTOR);
       }
