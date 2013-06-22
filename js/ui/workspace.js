@@ -850,6 +850,15 @@ WorkspaceMonitor.prototype = {
         }
     },
 
+    moveSelectedWindowToNextMonitor: function() {
+        if (this._kbWindowIndex > -1 && this._kbWindowIndex < this._windows.length) {
+            let monitorCount = Main.layoutManager.monitors.length;
+            if (monitorCount < 2) return;
+            let nextIndex = (this._windows[this._kbWindowIndex].metaWindow.get_monitor() + monitorCount + 1) % monitorCount;
+            this._windows[this._kbWindowIndex].metaWindow.move_to_monitor(nextIndex);
+        }
+    },
+
     setGeometry: function(x, y, width, height, margin) {
         this._x = x;
         this._y = y;
@@ -1676,6 +1685,11 @@ Workspace.prototype = {
 
         if (symbol === Clutter.w && modifiers & Clutter.ModifierType.CONTROL_MASK) {
             activeMonitor.closeSelectedWindow();
+            return true;
+        }
+
+        if ((symbol === Clutter.m || symbol === Clutter.M) && modifiers & Clutter.ModifierType.CONTROL_MASK) {
+            activeMonitor.moveSelectedWindowToNextMonitor();
             return true;
         }
 
