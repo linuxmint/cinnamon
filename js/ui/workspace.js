@@ -364,6 +364,7 @@ WindowClone.prototype = {
     },
 
     _onButtonPress: function(actor, event) {
+        this.emit('selected', global.get_current_time());
         // a button-press on a clone already showing a menu should
         // not open a new-menu, only close the current menu.
         this.menuCancelled = closeContextMenu(this);
@@ -372,7 +373,7 @@ WindowClone.prototype = {
     _onButtonRelease: function(actor, event) {
         if ( event.get_button()==1 ) {
             this._selected = true;
-            this.emit('selected', global.get_current_time());
+            this.emit('activated', global.get_current_time());
             return true;
         }
         if (event.get_button()==2){
@@ -381,7 +382,7 @@ WindowClone.prototype = {
         }
         if (event.get_button()==3){
             if (!this.menuCancelled) {
-                this.emit('context-menu-requested', global.get_current_time());
+                this.emit('context-menu-requested');
             }
             this.menuCancelled = false;
             return true;
@@ -611,7 +612,7 @@ WindowOverlay.prototype = {
                 // see comment in Workspace._windowAdded
                 Mainloop.idle_add(Lang.bind(this,
                                             function() {
-                                                this._windowClone.emit('selected');
+                                                this._windowClone.emit('activated');
                                                 return false;
                                             }));
             }
@@ -843,7 +844,7 @@ WorkspaceMonitor.prototype = {
 
     activateSelectedWindow: function() {
         if (this._kbWindowIndex > -1 && this._kbWindowIndex < this._windows.length) {
-            this._onCloneSelected(this._windows[this._kbWindowIndex], global.get_current_time());
+            this._onCloneActivated(this._windows[this._kbWindowIndex], global.get_current_time());
             return true;
         }
         return false;
@@ -1377,6 +1378,8 @@ WorkspaceMonitor.prototype = {
         }));
         clone.connect('selected',
                       Lang.bind(this, this._onCloneSelected));
+        clone.connect('activated',
+                      Lang.bind(this, this._onCloneActivated));
         clone.connect('closed',
                       Lang.bind(this, this._onCloneClosed));
         clone.connect('context-menu-requested',
@@ -1440,6 +1443,10 @@ WorkspaceMonitor.prototype = {
     },
 
     _onCloneSelected : function (clone, time) {
+        this.selectClone(clone);
+    },
+
+    _onCloneActivated : function (clone, time) {
         let wsIndex = undefined;
         if (this.metaWorkspace)
             wsIndex = this.metaWorkspace.index();
