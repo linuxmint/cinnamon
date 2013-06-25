@@ -29,7 +29,7 @@ class Module:
         advanced = False
         sidePage = SidePage(_("Menu"), "menu.svg", keywords, advanced, content_box)
         self.sidePage = sidePage
-        self.name = "cinnamon-menu-editor"
+        self.name = "menu"
         self.category = "prefs"
 
         iconHbox = Gtk.HBox()
