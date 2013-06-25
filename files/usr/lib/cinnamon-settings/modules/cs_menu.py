@@ -27,14 +27,14 @@ class Module:
     def __init__(self, content_box):
         keywords = _("menu, start, bookmarks, places, recent")
         advanced = False
-	sidePage = SidePage(_("Menu"), "menu.svg", keywords, advanced, content_box)
+        sidePage = SidePage(_("Menu"), "menu.svg", keywords, advanced, content_box)
         self.sidePage = sidePage
         self.name = "cinnamon-menu-editor"
         self.category = "prefs"
 
-	iconHbox = Gtk.HBox()
-	iconHbox.pack_start(GSettingsFileChooser(_("Icon"), "org.cinnamon", "menu-icon", None, True), False, False, 0)
-	iconHbox.pack_start(GSettingsEntry(_("Text"), "org.cinnamon", "menu-text", None), False, False, 20)
+        iconHbox = Gtk.HBox()
+        iconHbox.pack_start(GSettingsFileChooser(_("Icon"), "org.cinnamon", "menu-icon", None, True), False, False, 0)
+        iconHbox.pack_start(GSettingsEntry(_("Text"), "org.cinnamon", "menu-text", None), False, False, 20)
         sidePage.add_widget(iconHbox)
                 
         sidePage.add_widget(GSettingsCheckButton(_("Show bookmarks and places"), "org.cinnamon", "menu-show-places", None))
@@ -44,10 +44,10 @@ class Module:
         sidePage.add_widget(GSettingsCheckButton(_("Open menu when I move my mouse over it"), "org.cinnamon", "activate-menu-applet-on-hover", None), True)
         sidePage.add_widget(GSettingsCheckButton(_("Enable filesystem path entry in search box"), "org.cinnamon", "menu-search-filesystem", None), True)
         sidePage.add_widget(GSettingsSpinButton(_("Menu hover delay"), "org.cinnamon", "menu-hover-delay", None, 0, 2000, 50, 200, _("milliseconds")), True)
-	
-	mew = MenuEditorWidget(datadir, version)
-	self.sidePage.add_widget(mew.vbox, True)
-	mew.vbox.show_all()
+    
+        mew = MenuEditorWidget(datadir, version)
+        self.sidePage.add_widget(mew.vbox, True)
+        mew.vbox.show_all()
 
 class MenuEditorWidget(MainWindow):
 
@@ -76,8 +76,8 @@ class MenuEditorWidget(MainWindow):
         self.file_id = None
         self.last_tree = None
 
-	self.vbox = self.tree.get_object('mainbox')
-	self.run()
+        self.vbox = self.tree.get_object('mainbox')
+        self.run()
 
     def run(self):
         self.loadMenus()
