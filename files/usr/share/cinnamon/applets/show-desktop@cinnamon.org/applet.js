@@ -16,7 +16,7 @@ MyApplet.prototype = {
     },
     
     on_applet_clicked: function(event) {
-        Main.toggleDesktop();
+        global.screen.toggle_desktop(global.get_current_time());
     }
 };
 
