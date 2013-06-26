@@ -15,10 +15,6 @@ MyApplet.prototype = {
         this.set_applet_tooltip(_("Show desktop"));
     },
     
-    on_window_mapped: function(cinnamonwm, actor) {
-        this._desktopShown = false;        
-    },
-    
     on_applet_clicked: function(event) {
         Main.toggleDesktop();
     }
