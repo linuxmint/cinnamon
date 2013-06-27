@@ -70,7 +70,7 @@ class EditableEntry (Gtk.Notebook):
         return self.entry.get_text()
 
 
-class CSModule:
+class Module:
     def __init__(self, content_box):
         keywords = _("user, account, information, details")
         advanced = False
@@ -262,7 +262,7 @@ class PasswordDialog(Gtk.Dialog):
         for i in range (8):
             index = randint(0, len(characters) -1)
             newpass = newpass + characters[index]
-            
+
         self.new_password.set_text(newpass)
         self.confirm_password.set_text(newpass)
         self.check_passwords()
