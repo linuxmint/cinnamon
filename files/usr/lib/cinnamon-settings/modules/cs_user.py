@@ -6,6 +6,8 @@ import PAM
 import pexpect
 import time
 from random import randint
+import shutil
+import PIL
 
 class EditableEntry (Gtk.Notebook):
 
@@ -86,6 +88,36 @@ class Module:
             self.face_image.set_from_file("/usr/share/pixmaps/faces/user-generic.png")      
         self.face_button.set_alignment(0.0, 0.5)
         self.face_button.set_tooltip_text(_("Click to change your picture"))
+
+        self.menu = Gtk.Menu()
+        face_photo_menuitem = Gtk.MenuItem(_("Take a photo..."))
+        face_photo_menuitem.set_sensitive(False)
+        separator = Gtk.SeparatorMenuItem()
+        face_browse_menuitem = Gtk.MenuItem(_("Browse for more pictures..."))       
+        face_browse_menuitem.connect('activate', self._on_face_browse_menuitem_activated)         
+        self.face_button.connect("button-release-event", self.menu_display)
+
+        row = 0
+        col = 0       
+        num_cols = 4
+        for picture in os.listdir("/usr/share/pixmaps/cinnamon/faces"):
+            path = os.path.join("/usr/share/pixmaps/cinnamon/faces", picture)            
+            file = Gio.File.new_for_path(path)
+            file_icon = Gio.FileIcon().new(file)
+            image = Gtk.Image.new_from_gicon (file_icon, Gtk.IconSize.DIALOG)            
+            menuitem = Gtk.MenuItem()
+            menuitem.add(image)
+            menuitem.connect('activate', self._on_face_menuitem_activated, path)
+            self.menu.attach(menuitem, col, col+1, row, row+1)            
+            col = (col+1) % num_cols            
+            if (col == 0):
+                row = row + 1
+
+        row = row + 1
+
+        self.menu.attach(separator, 0, 4, row, row+1)
+        self.menu.attach(face_photo_menuitem, 0, 4, row+1, row+2)        
+        self.menu.attach(face_browse_menuitem, 0, 4, row+2, row+3)        
        
         self.realname_entry = EditableEntry()
         self.sidePage.add_widget(self.realname_entry, False)         
@@ -127,10 +159,82 @@ class Module:
 
         current_user = GLib.get_user_name()
         self.accountService = AccountsService.UserManager.get_default().get_user(current_user)
-        self.accountService.connect('notify::is-loaded', self.load_user_info)        
+        self.accountService.connect('notify::is-loaded', self.load_user_info)    
     
-    def load_user_info(self, user, param):
+    def update_preview_cb (self, dialog, preview):      
+        filename = dialog.get_preview_filename()
+        dialog.set_preview_widget_active(False)
+        if os.path.isfile(filename):
+            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(filename, 128, 128)
+            if pixbuf is not None:      
+                preview.set_from_pixbuf (pixbuf)      
+                dialog.set_preview_widget_active(True)                            
+    
+    def _on_face_browse_menuitem_activated(self, menuitem):
+        dialog = Gtk.FileChooserDialog(None, None, Gtk.FileChooserAction.OPEN, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
+        dialog.set_current_folder(self.accountService.get_home_dir())
+        filter = Gtk.FileFilter()
+        filter.set_name(_("Images"))
+        filter.add_mime_type("image/*")
+        dialog.add_filter(filter)
         
+        preview = Gtk.Image()
+        dialog.set_preview_widget(preview);
+        dialog.connect("update-preview", self.update_preview_cb, preview)
+        dialog.set_use_preview_label(False)
+
+        response = dialog.run()
+        if response == Gtk.ResponseType.OK:
+            path = dialog.get_filename()
+            image = PIL.Image.open(path)            
+            width, height = image.size            
+            if width > height:
+                new_width = height
+                new_height = height
+            elif height > width:
+                new_width = width
+                new_height = width
+            left = (width - new_width)/2
+            top = (height - new_height)/2
+            right = (width + new_width)/2
+            bottom = (height + new_height)/2            
+            image = image.crop((left, top, right, bottom))
+            image.thumbnail((96, 96), Image.ANTIALIAS)            
+            face_path = os.path.join(self.accountService.get_home_dir(), ".face")
+            image.save(face_path, "png")
+            self.accountService.set_icon_file(face_path)
+            self.face_image.set_from_file(face_path)
+
+        dialog.destroy()
+
+    def _on_face_menuitem_activated(self, menuitem, path):        
+        if os.path.exists(path):
+            self.accountService.set_icon_file(path)
+            self.face_image.set_from_file(path)
+            shutil.copy(path, os.path.join(self.accountService.get_home_dir(), ".face"))
+    
+    def menu_display(self, widget, event):
+        if event.button == 1:
+            self.menu.popup(None, None, self.popup_menu_below_button, self.face_button, event.button, event.time)
+            self.menu.show_all()
+
+    def popup_menu_below_button (self, menu, widget):  
+        # here I get the coordinates of the button relative to
+        # window (self.window)
+        button_x, button_y = widget.get_allocation().x, widget.get_allocation().y
+
+        # now convert them to X11-relative
+        unused_var, window_x, window_y = widget.get_window().get_origin()
+        x = window_x + button_x
+        y = window_y + button_y
+
+        # now move the menu below the button
+        y += widget.get_allocation().height
+
+        push_in = True # push_in is True so all menu is always inside screen
+        return (x, y, push_in)
+
+    def load_user_info(self, user, param):
         self.realname_entry.set_text(user.get_real_name())
         if os.path.exists(user.get_icon_file()):
             self.face_image.set_from_file(user.get_icon_file())        
