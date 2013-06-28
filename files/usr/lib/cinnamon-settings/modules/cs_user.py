@@ -167,7 +167,9 @@ class Module:
         label_name.get_style_context().add_class("dim-label")                        
         table.attach(label_name, 0, 1, 2, 3)
         
-        table.attach(self.face_button, 1, 2, 0, 1, xoptions=0)
+        box = Gtk.Box()
+        box.pack_start(self.face_button, False, False, 0)        
+        table.attach(box, 1, 2, 0, 1, xoptions=Gtk.AttachOptions.EXPAND|Gtk.AttachOptions.FILL)
         table.attach(self.realname_entry, 1, 2, 1, 2, xoptions=Gtk.AttachOptions.EXPAND|Gtk.AttachOptions.FILL)
         table.attach(self.password_button, 1, 2, 2, 3, xoptions=Gtk.AttachOptions.EXPAND|Gtk.AttachOptions.FILL)        
 
