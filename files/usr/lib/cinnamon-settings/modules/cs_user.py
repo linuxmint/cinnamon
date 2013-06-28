@@ -90,8 +90,21 @@ class Module:
         self.face_button.set_tooltip_text(_("Click to change your picture"))
 
         self.menu = Gtk.Menu()
+
+        webcam_detected = False
+        try:
+            import cv
+            capture = cv.CaptureFromCAM(-1)
+            for i in range(10):
+                img = cv.QueryFrame(capture)
+                if img != None:
+                    webcam_detected = True
+        except Exception, detail:
+            print detail
+
         face_photo_menuitem = Gtk.MenuItem(_("Take a photo..."))
-        face_photo_menuitem.set_sensitive(False)
+        face_photo_menuitem.connect('activate', self._on_face_photo_menuitem_activated)         
+
         separator = Gtk.SeparatorMenuItem()
         face_browse_menuitem = Gtk.MenuItem(_("Browse for more pictures..."))       
         face_browse_menuitem.connect('activate', self._on_face_browse_menuitem_activated)         
@@ -116,7 +129,8 @@ class Module:
         row = row + 1
 
         self.menu.attach(separator, 0, 4, row, row+1)
-        self.menu.attach(face_photo_menuitem, 0, 4, row+1, row+2)        
+        if webcam_detected:
+            self.menu.attach(face_photo_menuitem, 0, 4, row+1, row+2)        
         self.menu.attach(face_browse_menuitem, 0, 4, row+2, row+3)        
        
         self.realname_entry = EditableEntry()
@@ -170,6 +184,36 @@ class Module:
                 preview.set_from_pixbuf (pixbuf)      
                 dialog.set_preview_widget_active(True)                            
     
+    def _on_face_photo_menuitem_activated(self, menuitem):
+        try:
+            import cv
+            capture = cv.CaptureFromCAM(-1)
+            for i in range(10):
+                img = cv.QueryFrame(capture)
+                if img is not None:
+                    path = "/tmp/cinnamon-webcam.png"
+                    cv.SaveImage(path, img)
+                    image = PIL.Image.open(path)            
+                    width, height = image.size            
+                    if width > height:
+                        new_width = height
+                        new_height = height
+                    elif height > width:
+                        new_width = width
+                        new_height = width
+                    left = (width - new_width)/2
+                    top = (height - new_height)/2
+                    right = (width + new_width)/2
+                    bottom = (height + new_height)/2            
+                    image = image.crop((left, top, right, bottom))
+                    image.thumbnail((96, 96), Image.ANTIALIAS)            
+                    face_path = os.path.join(self.accountService.get_home_dir(), ".face")
+                    image.save(face_path, "png")
+                    self.accountService.set_icon_file(face_path)
+                    self.face_image.set_from_file(face_path)
+        except Exception, detail:
+            print detail
+
     def _on_face_browse_menuitem_activated(self, menuitem):
         dialog = Gtk.FileChooserDialog(None, None, Gtk.FileChooserAction.OPEN, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
         dialog.set_current_folder(self.accountService.get_home_dir())
