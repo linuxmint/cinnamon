@@ -100,6 +100,8 @@ WindowManager.prototype = {
         this._mapping = [];
         this._destroying = [];
 
+        this._snap_osd = null;
+
         this._dimmedWindows = [];
 
         this._animationBlockCount = 0;
@@ -153,6 +155,9 @@ WindowManager.prototype = {
             for (let i = 0; i < this._dimmedWindows.length; i++)
                 this._dimWindow(this._dimmedWindows[i], true);
         }));
+
+        global.screen.connect ("show-snap-osd", Lang.bind (this, this._showSnapOSD));
+        global.screen.connect ("hide-snap-osd", Lang.bind (this, this._hideSnapOSD));
     },
 
     blockAnimations: function() {
@@ -863,6 +868,33 @@ WindowManager.prototype = {
                                         onComplete: function() {
                                             Main.layoutManager.removeChrome(label);
                                         }});
+        }
+    },
+
+    _showSnapOSD : function() {
+        if (this._snap_osd == null) {
+            this._snap_osd = new St.Label({style_class:'workspace-osd'});
+            this._snap_osd.set_text (_("Hold Control to enter snap mode"));
+            Main.layoutManager.addChrome(this._snap_osd, { visibleInFullscreen: false, affectsInputRegion: false});
+        }
+        this._snap_osd.set_opacity = 0;
+        let monitor = Main.layoutManager.primaryMonitor;
+        let workspace_osd_x = global.settings.get_int("workspace-osd-x");
+        let workspace_osd_y = global.settings.get_int("workspace-osd-y");
+        let [minX, maxX, minY, maxY] = [5, 95, 5, 95];
+        let delta = (workspace_osd_x - minX) / (maxX - minX);
+        let x = Math.round((monitor.width * workspace_osd_x / 100) - (this._snap_osd.width * delta));
+        delta = (workspace_osd_y - minY) / (maxY - minY);
+        let y = Math.round((monitor.height * workspace_osd_y / 100) - (this._snap_osd.height * delta));
+        this._snap_osd.set_position(x, y);
+    },
+
+    _hideSnapOSD : function() {
+        if (this._snap_osd != null) {
+            this._snap_osd.hide();
+            Main.layoutManager.removeChrome(this._snap_osd);
+            this._snap_osd.destroy();
+            this._snap_osd = null;
         }
     },
 
