@@ -874,7 +874,7 @@ WindowManager.prototype = {
     _showSnapOSD : function() {
         if (this._snap_osd == null) {
             this._snap_osd = new St.Label({style_class:'workspace-osd'});
-            this._snap_osd.set_text (_("Hold Control to enter snap mode"));
+            this._snap_osd.set_text (_("Hold Control to enter snap mode\n\nUse the arrow keys to shift workspaces"));
             Main.layoutManager.addChrome(this._snap_osd, { visibleInFullscreen: false, affectsInputRegion: false});
         }
         this._snap_osd.set_opacity = 0;
