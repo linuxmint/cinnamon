@@ -1,0 +1,7 @@
+{
+    "last-edited": "1334576529", 
+    "description": "An applet to help you shutdown, restart and suspend your system with single click", 
+    "icon": "emblem-personal", 
+    "uuid": "user@cinnamon.org", 
+    "name": "User Applet"
+}
