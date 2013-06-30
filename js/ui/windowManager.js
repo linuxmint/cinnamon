@@ -873,8 +873,13 @@ WindowManager.prototype = {
 
     _showSnapOSD : function() {
         if (this._snap_osd == null) {
-            this._snap_osd = new St.Label({style_class:'workspace-osd'});
-            this._snap_osd.set_text (_("Hold Control to enter snap mode\n\nUse the arrow keys to shift workspaces"));
+            this._snap_osd = new St.BoxLayout({ vertical: true, style_class: "snap-osd" });
+            let snap_info = new St.Label();
+            snap_info.set_text (_("Hold Control to enter snap mode"));
+            let flip_info = new St.Label();
+            flip_info.set_text (_("Use the arrow keys to shift workspaces"));
+            this._snap_osd.add (snap_info, { y_align: St.Align.START });
+            this._snap_osd.add (flip_info, { y_align: St.Align.END });
             Main.layoutManager.addChrome(this._snap_osd, { visibleInFullscreen: false, affectsInputRegion: false});
         }
         this._snap_osd.set_opacity = 0;
@@ -887,6 +892,7 @@ WindowManager.prototype = {
         delta = (workspace_osd_y - minY) / (maxY - minY);
         let y = Math.round((monitor.height * workspace_osd_y / 100) - (this._snap_osd.height * delta));
         this._snap_osd.set_position(x, y);
+        this._snap_osd.show_all();
     },
 
     _hideSnapOSD : function() {
