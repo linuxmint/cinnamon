@@ -274,8 +274,10 @@ Player.prototype = {
         /* this players don't support seek */
         if (support_seek.indexOf(this._name) == -1)
             this._time.hide();
+            /*
             this.showPosition = false;
             this._positionSlider.actor.hide();
+            */
         }
 
         this._getStatus();
@@ -749,10 +751,18 @@ MyApplet.prototype = {
     },
 
     _cleanup: function() {
-        if (this._outputTitle) this._outputTitle.destroy();
-        if (this._outputSlider) this._outputSlider.destroy();
-        if (this._inputTitle) this._inputTitle.destroy();
-        if (this._inputSlider) this._inputSlider.destroy();
+        if (this._outputTitle) {
+            this._outputTitle.destroy(); this._outputTitle = 0;
+        }
+        if (this._outputSlider) {
+            this._outputSlider.destroy(); this._outputSlider = 0;
+        }
+        if (this._inputTitle) {
+            this._inputTitle.destroy(); this._inputTitle = 0;
+        }
+        if (this._inputSlider) {
+            this._inputSlider.destroy(); this._inputSlider = 0;
+        }
         this.menu.removeAll();
      },
 
