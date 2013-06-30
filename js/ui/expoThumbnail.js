@@ -259,6 +259,10 @@ ExpoWindowClone.prototype = {
         {
             this.emit('selected', event.get_time());
         }
+        if ((Cinnamon.get_event_state(event) & Clutter.ModifierType.BUTTON2_MASK))
+        {
+            this.emit('middle-button-release', event.get_time());
+        }
         return true;
     },
 
@@ -718,6 +722,9 @@ ExpoWorkspaceThumbnail.prototype = {
                 // Muffin appears not to broadcast when a window turns sticky
                 this.box.emit('sticky-detected', clone.metaWindow);
             }
+        }));
+        clone.connect('middle-button-release', Lang.bind(this, function(sender, time) {
+            clone.metaWindow.delete(time);
         }));
         clone.connect('hovering', Lang.bind(this, this.onCloneHover));
         clone.connect('demanding-attention', Lang.bind(this, function() {this.overviewModeOn();}));
