@@ -12,14 +12,14 @@ class Module:
         self.name = "tiling"
         self.category = "prefs"
 
-        sidePage.add_widget(GSettingsCheckButton(_("Enable Window Tiling and Snapping"), "org.cinnamon.overrides", "edge-tiling", None))
+        sidePage.add_widget(GSettingsCheckButton(_("Enable Window Tiling and Snapping"), "org.cinnamon.muffin", "edge-tiling", None))
         box = IndentedHBox()
-        box.add(GSettingsSpinButton(_("Tiling HUD visibility threshold"), "org.cinnamon.muffin", "tile-hud-threshold", "org.cinnamon.overrides/edge-tiling", 1, 300, 1, 1, _("Pixels")))
+        box.add(GSettingsSpinButton(_("Tiling HUD visibility threshold"), "org.cinnamon.muffin", "tile-hud-threshold", "org.cinnamon.muffin/edge-tiling", 1, 300, 1, 1, _("Pixels")))
         sidePage.add_widget(box, True)
 
         box = IndentedHBox()
         modifiers = [["", "Disabled"],["Super", _("Super (Windows)")],["Alt", _("Alt")],["Shift", _("Shift")],["Control", _("Control")]]
-        box.add(GSettingsComboBox(_("Modifier to use for toggling between tile and snap mode"), "org.cinnamon.muffin", "snap-modifier", "org.cinnamon.overrides/edge-tiling", modifiers))
+        box.add(GSettingsComboBox(_("Modifier to use for toggling between tile and snap mode"), "org.cinnamon.muffin", "snap-modifier", "org.cinnamon.muffin/edge-tiling", modifiers))
         sidePage.add_widget(box, True)
 
         sidePage.add_widget(GSettingsCheckButton(_("Enable Edge Flip"), "org.cinnamon", "enable-edge-flip", None))

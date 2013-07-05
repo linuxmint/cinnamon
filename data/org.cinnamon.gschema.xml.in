@@ -726,58 +726,6 @@
     </key>
   </schema>
 
-  <schema id="org.cinnamon.overrides" path="/org/cinnamon/overrides/">
-    <key name="custom-keybindings-to-3-6" type="b">
-      <default>false</default>
-      <summary>Run-once flag to see if custom keybindings have been converted to gsettings</summary>
-      <description>
-        Run-once flag to see if custom keybindings have been converted to gsettings
-      </description>
-    </key>
-
-    <key name="attach-modal-dialogs" type="b">
-      <default>false</default>
-      <summary>Attach modal dialog to the parent window</summary>
-      <description>
-        This key overrides the key in org.gnome.muffin when running
-        Cinnamon.
-      </description>
-    </key>
-
-    <key name="button-layout" type="s">
-      <default>":minimize,maximize,close"</default>
-      <summary>Arrangement of buttons on the titlebar</summary>
-      <description>
-        This key overrides the key in org.gnome.desktop.wm.preferences when
-        running Cinnamon.
-      </description>
-    </key>
-
-    <key name="edge-tiling" type="b">
-      <default>true</default>
-      <summary>Enable edge tiling when dropping windows on screen edges</summary>
-      <description>
-        This key overrides the key in org.gnome.muffin when running Cinnamon.
-      </description>
-    </key>
-
-    <key type="b" name="workspace-cycle">
-      <default>false</default>
-      <summary>Allow cycling through workspaces</summary>
-      <description>
-        This key overrides the key in org.cinnamon.muffin when running Cinnamon.
-      </description>
-    </key>
-
-    <key name="workspaces-only-on-primary" type="b">
-      <default>false</default>
-      <summary>Workspaces only on primary monitor</summary>
-      <description>
-        This key overrides the key in org.gnome.muffin when running Cinnamon.
-      </description>
-    </key>
-  </schema>
-
   <schema id="org.cinnamon.background" path="/org/cinnamon/background/">
     <key name="mode" type="s">
       <default>"wallpaper"</default>
