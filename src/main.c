@@ -31,8 +31,6 @@ extern GType gnome_cinnamon_plugin_get_type (void);
 #define CINNAMON_DBUS_SERVICE "org.Cinnamon"
 #define MAGNIFIER_DBUS_SERVICE "org.gnome.Magnifier"
 
-#define OVERRIDES_SCHEMA "org.cinnamon.overrides"
-
 static void
 cinnamon_dbus_init (gboolean replace)
 {
@@ -127,21 +125,6 @@ cinnamon_dbus_init (gboolean replace)
     }
 
   g_object_unref (bus);
-}
-
-static void
-cinnamon_prefs_init (void)
-{
-  meta_prefs_override_preference_schema ("attach-modal-dialogs",
-                                         OVERRIDES_SCHEMA);
-  meta_prefs_override_preference_schema ("workspaces-only-on-primary",
-                                         OVERRIDES_SCHEMA);
-  meta_prefs_override_preference_schema ("workspace-cycle",
-                                         OVERRIDES_SCHEMA);
-  meta_prefs_override_preference_schema ("button-layout",
-                                         OVERRIDES_SCHEMA);
-  meta_prefs_override_preference_schema ("edge-tiling",
-                                         OVERRIDES_SCHEMA);
 }
 
 static void
@@ -280,7 +263,6 @@ main (int argc, char **argv)
   cinnamon_dbus_init (meta_get_replace_current_wm ());
   cinnamon_a11y_init ();
   cinnamon_perf_log_init ();
-  cinnamon_prefs_init ();
 
   g_irepository_prepend_search_path (CINNAMON_PKGLIBDIR);
 #if HAVE_BLUETOOTH
