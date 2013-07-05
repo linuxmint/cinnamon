@@ -44,7 +44,7 @@ KEYBINDINGS = [
     [_("Toggle Expo"), "org.gnome.desktop.wm.keybindings", "switch-to-workspace-up", True, "cinnamon"],
     [_("Cycle through open windows"), "org.gnome.desktop.wm.keybindings", "switch-windows", True, "cinnamon"],
     [_("Cycle backwards though open windows"), "org.gnome.desktop.wm.keybindings", "switch-windows-backward", True, "cinnamon"],
-    [_("Run dialog (must restart Cinnamon)"), "org.gnome.desktop.wm.keybindings", "panel-run-dialog", True, "cinnamon"],
+    [_("Run dialog"), "org.gnome.desktop.wm.keybindings", "panel-run-dialog", True, "cinnamon"],
     [_("Menu button (must restart Cinnamon)"), "org.cinnamon.muffin", "overlay-key", False, "cinnamon"],
 
     # Windows - General
@@ -72,14 +72,14 @@ KEYBINDINGS = [
     [_("Move window to left edge"), "org.gnome.desktop.wm.keybindings", "move-to-side-w", True, "windows"],
 
     # Window Tiling and Snapping
-    [_("Push tile left (Cinnamon restart required)"), "org.cinnamon.muffin.keybindings", "push-tile-left", True, "window-tiling"],
-    [_("Push tile right (Cinnamon restart required)"), "org.cinnamon.muffin.keybindings", "push-tile-right", True, "window-tiling"],
-    [_("Push tile up (Cinnamon restart required)"), "org.cinnamon.muffin.keybindings", "push-tile-up", True, "window-tiling"],
-    [_("Push tile down (Cinnamon restart required)"), "org.cinnamon.muffin.keybindings", "push-tile-down", True, "window-tiling"],
-    [_("Push snap left (Cinnamon restart required)"), "org.cinnamon.muffin.keybindings", "push-snap-left", True, "window-tiling"],
-    [_("Push snap right (Cinnamon restart required)"), "org.cinnamon.muffin.keybindings", "push-snap-right", True, "window-tiling"],
-    [_("Push snap up (Cinnamon restart required)"), "org.cinnamon.muffin.keybindings", "push-snap-up", True, "window-tiling"],
-    [_("Push snap down (Cinnamon restart required)"), "org.cinnamon.muffin.keybindings", "push-snap-down", True, "window-tiling"],
+    [_("Push tile left"), "org.cinnamon.muffin.keybindings", "push-tile-left", True, "window-tiling"],
+    [_("Push tile right"), "org.cinnamon.muffin.keybindings", "push-tile-right", True, "window-tiling"],
+    [_("Push tile up"), "org.cinnamon.muffin.keybindings", "push-tile-up", True, "window-tiling"],
+    [_("Push tile down"), "org.cinnamon.muffin.keybindings", "push-tile-down", True, "window-tiling"],
+    [_("Push snap left"), "org.cinnamon.muffin.keybindings", "push-snap-left", True, "window-tiling"],
+    [_("Push snap right"), "org.cinnamon.muffin.keybindings", "push-snap-right", True, "window-tiling"],
+    [_("Push snap up"), "org.cinnamon.muffin.keybindings", "push-snap-up", True, "window-tiling"],
+    [_("Push snap down"), "org.cinnamon.muffin.keybindings", "push-snap-down", True, "window-tiling"],
 
     # Workspace management
     [_("Toggle showing window on all workspaces"), "org.gnome.desktop.wm.keybindings", "toggle-on-all-workspaces", True, "ws-manage"],
