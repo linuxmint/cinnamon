@@ -295,7 +295,6 @@ _cinnamon_wm_tile (CinnamonWM         *wm,
                    int                 target_width,
                    int                 target_height)
 {
-    g_printerr ("TILE WM_TILE\n");
   g_signal_emit (wm, cinnamon_wm_signals[TILE], 0, actor, target_x, target_y, target_width, target_height);
 }
 

@@ -18,7 +18,7 @@ class Module:
         sidePage.add_widget(box, True)
 
         box = IndentedHBox()
-        modifiers = [["Super", _("Super (Windows)")],["Alt", _("Alt")],["Shift", _("Shift")],["Control", _("Control")]]
+        modifiers = [["", "Disabled"],["Super", _("Super (Windows)")],["Alt", _("Alt")],["Shift", _("Shift")],["Control", _("Control")]]
         box.add(GSettingsComboBox(_("Modifier to use for toggling between tile and snap mode"), "org.cinnamon.muffin", "snap-modifier", "org.cinnamon.overrides/edge-tiling", modifiers))
         sidePage.add_widget(box, True)
 
