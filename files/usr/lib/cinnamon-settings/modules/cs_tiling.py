@@ -27,4 +27,6 @@ class Module:
         box.add(GSettingsSpinButton(_("Edge Flip delay"), "org.cinnamon", "edge-flip-delay", "org.cinnamon/enable-edge-flip", 1, 3000, 1, 1, _("ms")))
         sidePage.add_widget(box, True)
 
+        sidePage.add_widget(GSettingsCheckButton(_("Invert the left and right arrow key directions used to shift workspaces during a window drag"), "org.cinnamon.muffin", "invert-workspace-flip-direction", None))
+
         sidePage.add_widget(GSettingsCheckButton(_("Enable legacy window snapping (hold <Shift> while dragging a window)"), "org.cinnamon.muffin", "legacy-snap", None))
