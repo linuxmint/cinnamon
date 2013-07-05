@@ -17,6 +17,11 @@ class Module:
         box.add(GSettingsSpinButton(_("Tiling HUD visibility threshold"), "org.cinnamon.muffin", "tile-hud-threshold", "org.cinnamon.overrides/edge-tiling", 1, 300, 1, 1, _("Pixels")))
         sidePage.add_widget(box, True)
 
+        box = IndentedHBox()
+        modifiers = [["Super", _("Super (Windows)")],["Alt", _("Alt")],["Shift", _("Shift")],["Control", _("Control")]]
+        box.add(GSettingsComboBox(_("Modifier to use for toggling between tile and snap mode"), "org.cinnamon.muffin", "snap-modifier", "org.cinnamon.overrides/edge-tiling", modifiers))
+        sidePage.add_widget(box, True)
+
         sidePage.add_widget(GSettingsCheckButton(_("Enable Edge Flip"), "org.cinnamon", "enable-edge-flip", None))
         box = IndentedHBox()
         box.add(GSettingsSpinButton(_("Edge Flip delay"), "org.cinnamon", "edge-flip-delay", "org.cinnamon/enable-edge-flip", 1, 3000, 1, 1, _("ms")))

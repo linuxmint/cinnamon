@@ -6,7 +6,7 @@ const Meta = imports.gi.Meta;
 const St = imports.gi.St;
 const Cinnamon = imports.gi.Cinnamon;
 const Mainloop = imports.mainloop;
-
+const Gio = imports.gi.Gio;
 const AppletManager = imports.ui.appletManager;
 const CoverflowSwitcher = imports.ui.appSwitcher.coverflowSwitcher;
 const TimelineSwitcher = imports.ui.appSwitcher.timelineSwitcher;
@@ -954,10 +954,20 @@ WindowManager.prototype = {
         if (this._snap_osd == null) {
             this._snap_osd = new St.BoxLayout({ vertical: true, style_class: "snap-osd" });
             let snap_info = new St.Label();
-            snap_info.set_text (_("Hold Control to enter snap mode"));
+            let settings = new Gio.Settings({ schema: "org.cinnamon.muffin" });
+            let mod = settings.get_string("snap-modifier");
+            if (mod == "Super")
+                snap_info.set_text (_("Hold <Super> to enter snap mode"));
+            else if (mod == "Alt")
+                snap_info.set_text (_("Hold <Alt> to enter snap mode"));
+            else if (mod == "Control")
+                snap_info.set_text (_("Hold <Ctrl> to enter snap mode"));
+            else if (mod == "Shift")
+                snap_info.set_text (_("Hold <Shift> to enter snap mode"));
             let flip_info = new St.Label();
             flip_info.set_text (_("Use the arrow keys to shift workspaces"));
-            this._snap_osd.add (snap_info, { y_align: St.Align.START });
+            if (mod != "")
+                this._snap_osd.add (snap_info, { y_align: St.Align.START });
             this._snap_osd.add (flip_info, { y_align: St.Align.END });
             Main.layoutManager.addChrome(this._snap_osd, { visibleInFullscreen: false, affectsInputRegion: false});
         }
