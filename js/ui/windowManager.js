@@ -97,6 +97,7 @@ WindowManager.prototype = {
         this._minimizing = [];
         this._maximizing = [];
         this._unmaximizing = [];
+        this._tiling = [];
         this._mapping = [];
         this._destroying = [];
 
@@ -112,6 +113,7 @@ WindowManager.prototype = {
             this._minimizeWindowDone(cinnamonwm, actor);
             this._maximizeWindowDone(cinnamonwm, actor);
             this._unmaximizeWindowDone(cinnamonwm, actor);
+            this._tileWindowDone(cinnamonwm, actor);
             this._mapWindowDone(cinnamonwm, actor);
             this._destroyWindowDone(cinnamonwm, actor);
         }));
@@ -120,6 +122,7 @@ WindowManager.prototype = {
         this._cinnamonwm.connect('minimize', Lang.bind(this, this._minimizeWindow));
         this._cinnamonwm.connect('maximize', Lang.bind(this, this._maximizeWindow));
         this._cinnamonwm.connect('unmaximize', Lang.bind(this, this._unmaximizeWindow));
+        this._cinnamonwm.connect('tile', Lang.bind(this, this._tileWindow));
         this._cinnamonwm.connect('map', Lang.bind(this, this._mapWindow));
         this._cinnamonwm.connect('destroy', Lang.bind(this, this._destroyWindow));
         
@@ -331,6 +334,72 @@ WindowManager.prototype = {
     _minimizeWindowOverwritten : function(cinnamonwm, actor) {
         if (this._removeEffect(this._minimizing, actor)) {
             cinnamonwm.completed_minimize(actor);
+        }
+    },
+
+    _tileWindow : function (cinnamonwm, actor, targetX, targetY, targetWidth, targetHeight) {
+        if (!this._shouldAnimate(actor)) {
+            cinnamonwm.completed_tile(actor);
+            return;
+        }
+        let transition = "easeInSine";
+        let effect = "scale";
+        let time = 0.25;
+        try{
+            effect = global.settings.get_string("desktop-effects-maximize-effect");
+            transition = global.settings.get_string("desktop-effects-maximize-transition");
+            time = global.settings.get_int("desktop-effects-maximize-time") / 1000;
+        }
+        catch(e) {
+            log(e);
+        }
+
+        if (effect == "scale") {
+            this._tiling.push(actor);
+
+            if (targetWidth == actor.width)
+                targetWidth -= 1;
+            if (targetHeight == actor.height)
+                targetHeight -= 1;
+
+            let scale_x = targetWidth / actor.width;
+            let scale_y = targetHeight / actor.height;
+            let anchor_x = (actor.x - targetX) * actor.width / (targetWidth - actor.width);
+            let anchor_y = (actor.y - targetY) * actor.height / (targetHeight - actor.height);
+
+            actor.move_anchor_point(anchor_x, anchor_y);
+
+            Tweener.addTween(actor,
+                         { scale_x: scale_x,
+                           scale_y: scale_y,
+                           time: time,
+                           transition: transition,
+                           onComplete: this._tileWindowDone,
+                           onCompleteScope: this,
+                           onCompleteParams: [cinnamonwm, actor],
+                           onOverwrite: this._tileWindowOverwrite,
+                           onOverwriteScope: this,
+                           onOverwriteParams: [cinnamonwm, actor]
+                            });
+        }
+        else {
+            cinnamonwm.completed_tile(actor);
+        }
+    },
+
+    _tileWindowDone : function(cinnamonwm, actor) {
+        if (this._removeEffect(this._tiling, actor)) {
+            Tweener.removeTweens(actor);
+            actor.set_scale(1.0, 1.0);
+            actor.opacity = 255;
+            actor.move_anchor_point_from_gravity(Clutter.Gravity.NORTH_WEST);
+            cinnamonwm.completed_tile(actor);
+        }
+    },
+
+    _tileWindowOverwrite : function(cinnamonwm, actor) {
+        if (this._removeEffect(this._tiling, actor)) {
+            cinnamonwm.completed_tile(actor);
         }
     },
 
