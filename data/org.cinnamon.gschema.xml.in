@@ -290,7 +290,31 @@
        Duration of the effect (in milliseconds)    
       </_description>
     </key>
+
+    <key type="s" name="desktop-effects-tile-effect">
+      <default>"none"</default>
+      <_summary>Effect used when maximizing windows</_summary>
+      <_description>
+       An effect: none
+      </_description>
+    </key>
     
+     <key name="desktop-effects-tile-transition" type="s">
+      <default>"easeInBack"</default>
+      <_summary>Transition used when maximizing windows</_summary>
+      <_description>
+       A Tweener transition
+      </_description>
+    </key>
+    
+    <key type="i" name="desktop-effects-tile-time">
+      <default>400</default>
+      <_summary>Duration of the effect (in milliseconds)</_summary>
+      <_description>
+       Duration of the effect (in milliseconds)    
+      </_description>
+    </key>
+
     <key name="desktop-layout" type="s">
       <default>"traditional"</default>
       <_summary>Layout style</_summary>

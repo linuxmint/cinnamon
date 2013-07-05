@@ -346,9 +346,9 @@ WindowManager.prototype = {
         let effect = "scale";
         let time = 0.25;
         try{
-            effect = global.settings.get_string("desktop-effects-maximize-effect");
-            transition = global.settings.get_string("desktop-effects-maximize-transition");
-            time = global.settings.get_int("desktop-effects-maximize-time") / 1000;
+            effect = global.settings.get_string("desktop-effects-tile-effect");
+            transition = global.settings.get_string("desktop-effects-tile-transition");
+            time = global.settings.get_int("desktop-effects-tile-time") / 1000;
         }
         catch(e) {
             log(e);
