@@ -22,6 +22,10 @@ class Module:
         box.add(GSettingsComboBox(_("Modifier to use for toggling between tile and snap mode"), "org.cinnamon.muffin", "snap-modifier", "org.cinnamon.muffin/edge-tiling", modifiers))
         sidePage.add_widget(box, True)
 
+        box = IndentedHBox()
+        box.add(GSettingsCheckButton(_("Prevent the snap on-screen-display from showing"), "org.cinnamon", "hide-snap-osd", "org.cinnamon.muffin/edge-tiling"))
+        sidePage.add_widget(box, True)
+
         sidePage.add_widget(GSettingsCheckButton(_("Enable Edge Flip"), "org.cinnamon", "enable-edge-flip", None))
         box = IndentedHBox()
         box.add(GSettingsSpinButton(_("Edge Flip delay"), "org.cinnamon", "edge-flip-delay", "org.cinnamon/enable-edge-flip", 1, 3000, 1, 1, _("ms")))

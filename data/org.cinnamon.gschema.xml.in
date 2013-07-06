@@ -627,6 +627,15 @@
         Whether the vfade effect is enabled or not
       </_description>
     </key>
+
+    <key name="hide-snap-osd" type="b">
+      <default>false</default>
+      <_summary>Prevent the tile/snap OSD from showing</_summary>
+      <_description>
+        Hide the snap OSD.
+      </_description>
+    </key>
+
   </schema>
  
   <schema id="org.cinnamon.theme" path="/org/cinnamon/theme/"
