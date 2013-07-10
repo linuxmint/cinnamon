@@ -22,6 +22,7 @@ enum
   MINIMIZE,
   MAXIMIZE,
   UNMAXIMIZE,
+  TILE,
   MAP,
   DESTROY,
   SWITCH_WORKSPACE,
@@ -73,6 +74,15 @@ cinnamon_wm_class_init (CinnamonWMClass *klass)
                   META_TYPE_WINDOW_ACTOR, G_TYPE_INT, G_TYPE_INT, G_TYPE_INT, G_TYPE_INT);
   cinnamon_wm_signals[UNMAXIMIZE] =
     g_signal_new ("unmaximize",
+                  G_TYPE_FROM_CLASS (klass),
+                  G_SIGNAL_RUN_LAST,
+                  0,
+                  NULL, NULL,
+                  _cinnamon_marshal_VOID__OBJECT_INT_INT_INT_INT,
+                  G_TYPE_NONE, 5,
+                  META_TYPE_WINDOW_ACTOR, G_TYPE_INT, G_TYPE_INT, G_TYPE_INT, G_TYPE_INT);
+  cinnamon_wm_signals[TILE] =
+    g_signal_new ("tile",
                   G_TYPE_FROM_CLASS (klass),
                   G_SIGNAL_RUN_LAST,
                   0,
@@ -178,6 +188,21 @@ cinnamon_wm_completed_maximize (CinnamonWM         *wm,
 }
 
 /**
+ * cinnamon_wm_completed_tile:
+ * @wm: the CinnamonWM
+ * @actor: the MetaWindowActor actor
+ *
+ * The plugin must call this when it has completed a window tile effect.
+ **/
+void
+cinnamon_wm_completed_tile  (CinnamonWM         *wm,
+                             MetaWindowActor *actor)
+{
+  meta_plugin_tile_completed (wm->plugin, actor);
+}
+
+
+/**
  * cinnamon_wm_completed_unmaximize:
  * @wm: the CinnamonWM
  * @actor: the MetaWindowActor actor
@@ -260,6 +285,17 @@ _cinnamon_wm_unmaximize (CinnamonWM         *wm,
                       int              target_height)
 {
   g_signal_emit (wm, cinnamon_wm_signals[UNMAXIMIZE], 0, actor, target_x, target_y, target_width, target_height);
+}
+
+void
+_cinnamon_wm_tile (CinnamonWM         *wm,
+                   MetaWindowActor    *actor,
+                   int                 target_x,
+                   int                 target_y,
+                   int                 target_width,
+                   int                 target_height)
+{
+  g_signal_emit (wm, cinnamon_wm_signals[TILE], 0, actor, target_x, target_y, target_width, target_height);
 }
 
 void

@@ -41,6 +41,26 @@ const CinnamonIface = {
                 name: 'activateCallback',
                 inSignature: 'ssb',
                 outSignature: ''
+              },
+              {
+                name: 'switchWorkspaceRight',
+                inSignature: '',
+                outSignature: ''
+              },
+              {
+                name: 'switchWorkspaceLeft',
+                inSignature: '',
+                outSignature: ''
+              },
+              {
+                name: 'switchWorkspaceUp',
+                inSignature: '',
+                outSignature: ''
+              },
+              {
+                name: 'switchWorkspaceDown',
+                inSignature: '',
+                outSignature: ''
               }
              ],
     signals: [],
@@ -210,6 +230,22 @@ Cinnamon.prototype = {
         let obj = this._getXletObject(id, id_is_instance);
         let cb = Lang.bind(obj, obj[callback]);
         cb();
+    },
+
+    switchWorkspaceLeft: function() {
+        Main.wm.actionMoveWorkspaceLeft();
+    },
+
+    switchWorkspaceRight: function() {
+        Main.wm.actionMoveWorkspaceRight();
+    },
+
+    switchWorkspaceUp: function() {
+        Main.overview.toggle();
+    },
+
+    switchWorkspaceDown: function() {
+        Main.expo.toggle();
     },
 
     CinnamonVersion: Config.PACKAGE_VERSION

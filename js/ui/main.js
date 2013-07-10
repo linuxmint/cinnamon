@@ -91,6 +91,8 @@ const LAYOUT_TRADITIONAL = "traditional";
 const LAYOUT_FLIPPED = "flipped";
 const LAYOUT_CLASSIC = "classic";
 
+const FALLBACK_THEME_PATH = "/usr/share/cinnamon/theme/cinnamon.css"
+
 const CIN_LOG_FOLDER = GLib.get_home_dir() + '/.cinnamon/';
 
 let automountManager = null;
@@ -783,7 +785,7 @@ function loadTheme() {
     if (_cssStylesheet != null)
         cssStylesheet = _cssStylesheet;
 
-    let theme = new St.Theme ();
+    let theme = new St.Theme( {default_stylesheet: FALLBACK_THEME_PATH} );
     theme.load_stylesheet(cssStylesheet);
     
     themeContext.set_theme (theme);
