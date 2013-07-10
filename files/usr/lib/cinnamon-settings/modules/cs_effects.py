@@ -104,6 +104,17 @@ class Module:
         box.add(GSettingsSpinButton("", "org.cinnamon", "desktop-effects-unmaximize-time", "org.cinnamon/desktop-effects", 0, 2000, 50, 200, _("milliseconds")))
         sidePage.add_widget(box)
 
+        #TILING WINDOWS
+        box = IndentedHBox()
+        label = Gtk.Label()
+        label.set_markup("%s" % _("Tiling and snapping windows:"))
+        box.add(label)
+        effects = [["none", _("None")], ["scale", _("Scale")]]
+        box.add(GSettingsComboBox("", "org.cinnamon", "desktop-effects-tile-effect", "org.cinnamon/desktop-effects", effects))
+        box.add(GSettingsComboBox("", "org.cinnamon", "desktop-effects-tile-transition", "org.cinnamon/desktop-effects", transition_effects))
+        box.add(GSettingsSpinButton("", "org.cinnamon", "desktop-effects-tile-time", "org.cinnamon/desktop-effects", 0, 2000, 50, 200, _("milliseconds")))
+        sidePage.add_widget(box)
+
         sidePage.add_widget(GSettingsCheckButton(_("Enable fade effect on Cinnamon scrollboxes (like the Menu application list)"), "org.cinnamon", "enable-vfade", None))
 
 

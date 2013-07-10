@@ -44,15 +44,13 @@ KEYBINDINGS = [
     [_("Toggle Expo"), "org.gnome.desktop.wm.keybindings", "switch-to-workspace-up", True, "cinnamon"],
     [_("Cycle through open windows"), "org.gnome.desktop.wm.keybindings", "switch-windows", True, "cinnamon"],
     [_("Cycle backwards though open windows"), "org.gnome.desktop.wm.keybindings", "switch-windows-backward", True, "cinnamon"],
-    [_("Run dialog (must restart Cinnamon)"), "org.gnome.desktop.wm.keybindings", "panel-run-dialog", True, "cinnamon"],
+    [_("Run dialog"), "org.gnome.desktop.wm.keybindings", "panel-run-dialog", True, "cinnamon"],
     [_("Menu button (must restart Cinnamon)"), "org.cinnamon.muffin", "overlay-key", False, "cinnamon"],
 
     # Windows - General
     [_("Maximize window"), "org.gnome.desktop.wm.keybindings", "maximize", True, "windows"],
     [_("Unmaximize window"), "org.gnome.desktop.wm.keybindings", "unmaximize", True, "windows"],
     [_("Minimize window"), "org.gnome.desktop.wm.keybindings", "minimize", True, "windows"],
-    [_("Toggle tiled left (must restart Cinnamon)"), "org.cinnamon.muffin.keybindings", "toggle-tiled-left", True, "windows"],
-    [_("Toggle tiled right (must restart Cinnamon)"), "org.cinnamon.muffin.keybindings", "toggle-tiled-right", True, "windows"],
     [_("Close window"), "org.gnome.desktop.wm.keybindings", "close", True, "windows"],
     [_("Show desktop"), "org.gnome.desktop.wm.keybindings", "show-desktop", True, "windows"],
     [_("Activate window menu"), "org.gnome.desktop.wm.keybindings", "activate-window-menu", True, "windows"],
@@ -72,6 +70,16 @@ KEYBINDINGS = [
     [_("Move window to top edge"), "org.gnome.desktop.wm.keybindings", "move-to-side-n", True, "windows"],
     [_("Move window to bottom edge"), "org.gnome.desktop.wm.keybindings", "move-to-side-s", True, "windows"],
     [_("Move window to left edge"), "org.gnome.desktop.wm.keybindings", "move-to-side-w", True, "windows"],
+
+    # Window Tiling and Snapping
+    [_("Push tile left"), "org.cinnamon.muffin.keybindings", "push-tile-left", True, "window-tiling"],
+    [_("Push tile right"), "org.cinnamon.muffin.keybindings", "push-tile-right", True, "window-tiling"],
+    [_("Push tile up"), "org.cinnamon.muffin.keybindings", "push-tile-up", True, "window-tiling"],
+    [_("Push tile down"), "org.cinnamon.muffin.keybindings", "push-tile-down", True, "window-tiling"],
+    [_("Push snap left"), "org.cinnamon.muffin.keybindings", "push-snap-left", True, "window-tiling"],
+    [_("Push snap right"), "org.cinnamon.muffin.keybindings", "push-snap-right", True, "window-tiling"],
+    [_("Push snap up"), "org.cinnamon.muffin.keybindings", "push-snap-up", True, "window-tiling"],
+    [_("Push snap down"), "org.cinnamon.muffin.keybindings", "push-snap-down", True, "window-tiling"],
 
     # Workspace management
     [_("Toggle showing window on all workspaces"), "org.gnome.desktop.wm.keybindings", "toggle-on-all-workspaces", True, "ws-manage"],
@@ -455,6 +463,7 @@ class KeyboardSidePage (SidePage):
         # categories                                Display name        internal category
         self.main_store.append(KeyBindingCategory("Cinnamon", "cinnamon"))
         self.main_store.append(KeyBindingCategory(_("Windows"), "windows"))
+        self.main_store.append(KeyBindingCategory(_("Window Tiling"), "window-tiling"))
         self.main_store.append(KeyBindingCategory(_("Workspace Management"), "ws-manage"))
         self.main_store.append(KeyBindingCategory(_("System"), "system"))
         self.main_store.append(KeyBindingCategory(_("Launchers"), "launchers"))

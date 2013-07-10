@@ -22,6 +22,12 @@ void _cinnamon_wm_unmaximize (CinnamonWM         *wm,
                            gint             y,
                            gint             width,
                            gint             height);
+void _cinnamon_wm_tile       (CinnamonWM         *wm,
+                           MetaWindowActor *actor,
+                           gint             x,
+                           gint             y,
+                           gint             width,
+                           gint             height);
 void _cinnamon_wm_map        (CinnamonWM         *wm,
                            MetaWindowActor *actor);
 void _cinnamon_wm_destroy    (CinnamonWM         *wm,

@@ -6,7 +6,7 @@ const Meta = imports.gi.Meta;
 const St = imports.gi.St;
 const Cinnamon = imports.gi.Cinnamon;
 const Mainloop = imports.mainloop;
-
+const Gio = imports.gi.Gio;
 const AppletManager = imports.ui.appletManager;
 const CoverflowSwitcher = imports.ui.appSwitcher.coverflowSwitcher;
 const TimelineSwitcher = imports.ui.appSwitcher.timelineSwitcher;
@@ -97,8 +97,11 @@ WindowManager.prototype = {
         this._minimizing = [];
         this._maximizing = [];
         this._unmaximizing = [];
+        this._tiling = [];
         this._mapping = [];
         this._destroying = [];
+
+        this._snap_osd = null;
 
         this._dimmedWindows = [];
 
@@ -110,6 +113,7 @@ WindowManager.prototype = {
             this._minimizeWindowDone(cinnamonwm, actor);
             this._maximizeWindowDone(cinnamonwm, actor);
             this._unmaximizeWindowDone(cinnamonwm, actor);
+            this._tileWindowDone(cinnamonwm, actor);
             this._mapWindowDone(cinnamonwm, actor);
             this._destroyWindowDone(cinnamonwm, actor);
         }));
@@ -118,6 +122,7 @@ WindowManager.prototype = {
         this._cinnamonwm.connect('minimize', Lang.bind(this, this._minimizeWindow));
         this._cinnamonwm.connect('maximize', Lang.bind(this, this._maximizeWindow));
         this._cinnamonwm.connect('unmaximize', Lang.bind(this, this._unmaximizeWindow));
+        this._cinnamonwm.connect('tile', Lang.bind(this, this._tileWindow));
         this._cinnamonwm.connect('map', Lang.bind(this, this._mapWindow));
         this._cinnamonwm.connect('destroy', Lang.bind(this, this._destroyWindow));
         
@@ -153,6 +158,9 @@ WindowManager.prototype = {
             for (let i = 0; i < this._dimmedWindows.length; i++)
                 this._dimWindow(this._dimmedWindows[i], true);
         }));
+
+        global.screen.connect ("show-snap-osd", Lang.bind (this, this._showSnapOSD));
+        global.screen.connect ("hide-snap-osd", Lang.bind (this, this._hideSnapOSD));
     },
 
     blockAnimations: function() {
@@ -329,6 +337,72 @@ WindowManager.prototype = {
         }
     },
 
+    _tileWindow : function (cinnamonwm, actor, targetX, targetY, targetWidth, targetHeight) {
+        if (!this._shouldAnimate(actor)) {
+            cinnamonwm.completed_tile(actor);
+            return;
+        }
+        let transition = "easeInSine";
+        let effect = "scale";
+        let time = 0.25;
+        try{
+            effect = global.settings.get_string("desktop-effects-tile-effect");
+            transition = global.settings.get_string("desktop-effects-tile-transition");
+            time = global.settings.get_int("desktop-effects-tile-time") / 1000;
+        }
+        catch(e) {
+            log(e);
+        }
+
+        if (effect == "scale") {
+            this._tiling.push(actor);
+
+            if (targetWidth == actor.width)
+                targetWidth -= 1;
+            if (targetHeight == actor.height)
+                targetHeight -= 1;
+
+            let scale_x = targetWidth / actor.width;
+            let scale_y = targetHeight / actor.height;
+            let anchor_x = (actor.x - targetX) * actor.width / (targetWidth - actor.width);
+            let anchor_y = (actor.y - targetY) * actor.height / (targetHeight - actor.height);
+
+            actor.move_anchor_point(anchor_x, anchor_y);
+
+            Tweener.addTween(actor,
+                         { scale_x: scale_x,
+                           scale_y: scale_y,
+                           time: time,
+                           transition: transition,
+                           onComplete: this._tileWindowDone,
+                           onCompleteScope: this,
+                           onCompleteParams: [cinnamonwm, actor],
+                           onOverwrite: this._tileWindowOverwrite,
+                           onOverwriteScope: this,
+                           onOverwriteParams: [cinnamonwm, actor]
+                            });
+        }
+        else {
+            cinnamonwm.completed_tile(actor);
+        }
+    },
+
+    _tileWindowDone : function(cinnamonwm, actor) {
+        if (this._removeEffect(this._tiling, actor)) {
+            Tweener.removeTweens(actor);
+            actor.set_scale(1.0, 1.0);
+            actor.opacity = 255;
+            actor.move_anchor_point_from_gravity(Clutter.Gravity.NORTH_WEST);
+            cinnamonwm.completed_tile(actor);
+        }
+    },
+
+    _tileWindowOverwrite : function(cinnamonwm, actor) {
+        if (this._removeEffect(this._tiling, actor)) {
+            cinnamonwm.completed_tile(actor);
+        }
+    },
+
     _maximizeWindow : function(cinnamonwm, actor, targetX, targetY, targetWidth, targetHeight) {
         if (!this._shouldAnimate(actor)) {
             cinnamonwm.completed_maximize(actor);
@@ -350,11 +424,16 @@ WindowManager.prototype = {
         if (effect == "scale") {            
             this._maximizing.push(actor);            
             
+            if (targetWidth == actor.width)
+                targetWidth -= 1;
+            if (targetHeight == actor.height)
+                targetHeight -= 1;
+
             let scale_x = targetWidth / actor.width;
             let scale_y = targetHeight / actor.height;
             let anchor_x = (actor.x - targetX) * actor.width / (targetWidth - actor.width);
             let anchor_y = (actor.y - targetY) * actor.height / (targetHeight - actor.height);
-            
+
             actor.move_anchor_point(anchor_x, anchor_y);   
                  
             Tweener.addTween(actor,
@@ -412,7 +491,12 @@ WindowManager.prototype = {
         if (effect == "scale") {
 
             this._unmaximizing.push(actor);
-            
+
+            if (targetWidth == actor.width)
+                targetWidth -= 1;
+            if (targetHeight == actor.height)
+                targetHeight -= 1;
+
             let scale_x = targetWidth / actor.width;
             let scale_y = targetHeight / actor.height;
             let anchor_x = (actor.x - targetX) * actor.width / (targetWidth - actor.width);
@@ -863,6 +947,51 @@ WindowManager.prototype = {
                                         onComplete: function() {
                                             Main.layoutManager.removeChrome(label);
                                         }});
+        }
+    },
+
+    _showSnapOSD : function() {
+        if (!global.settings.get_boolean("hide-snap-osd")) {
+            if (this._snap_osd == null) {
+                this._snap_osd = new St.BoxLayout({ vertical: true, style_class: "snap-osd" });
+                let snap_info = new St.Label();
+                let settings = new Gio.Settings({ schema: "org.cinnamon.muffin" });
+                let mod = settings.get_string("snap-modifier");
+                if (mod == "Super")
+                    snap_info.set_text (_("Hold <Super> to enter snap mode"));
+                else if (mod == "Alt")
+                    snap_info.set_text (_("Hold <Alt> to enter snap mode"));
+                else if (mod == "Control")
+                    snap_info.set_text (_("Hold <Ctrl> to enter snap mode"));
+                else if (mod == "Shift")
+                    snap_info.set_text (_("Hold <Shift> to enter snap mode"));
+                let flip_info = new St.Label();
+                flip_info.set_text (_("Use the arrow keys to shift workspaces"));
+                if (mod != "")
+                    this._snap_osd.add (snap_info, { y_align: St.Align.START });
+                this._snap_osd.add (flip_info, { y_align: St.Align.END });
+                Main.layoutManager.addChrome(this._snap_osd, { visibleInFullscreen: false, affectsInputRegion: false});
+            }
+            this._snap_osd.set_opacity = 0;
+            let monitor = Main.layoutManager.primaryMonitor;
+            let workspace_osd_x = global.settings.get_int("workspace-osd-x");
+            let workspace_osd_y = global.settings.get_int("workspace-osd-y");
+            let [minX, maxX, minY, maxY] = [5, 95, 5, 95];
+            let delta = (workspace_osd_x - minX) / (maxX - minX);
+            let x = Math.round((monitor.width * workspace_osd_x / 100) - (this._snap_osd.width * delta));
+            delta = (workspace_osd_y - minY) / (maxY - minY);
+            let y = Math.round((monitor.height * workspace_osd_y / 100) - (this._snap_osd.height * delta));
+            this._snap_osd.set_position(x, y);
+            this._snap_osd.show_all();
+        }
+    },
+
+    _hideSnapOSD : function() {
+        if (this._snap_osd != null) {
+            this._snap_osd.hide();
+            Main.layoutManager.removeChrome(this._snap_osd);
+            this._snap_osd.destroy();
+            this._snap_osd = null;
         }
     },
 
