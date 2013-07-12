@@ -1,5 +1,7 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 
+const System = imports.system;
+
 const Gio = imports.gi.Gio;
 const Main = imports.ui.main;
 const Extension = imports.ui.extension;
@@ -99,7 +101,7 @@ CinnamonLookingGlass.prototype = {
     },
     
     FullGc: function() {
-        global.gc();
+        System.gc();
     },
     
     Inspect: function(path) {
