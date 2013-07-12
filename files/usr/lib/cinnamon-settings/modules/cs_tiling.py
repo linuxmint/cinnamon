@@ -23,6 +23,10 @@ class Module:
         sidePage.add_widget(box, True)
 
         box = IndentedHBox()
+        box.add(GSettingsCheckButton(_("Maximize, instead of tile, when dragging a window to the top edge"), "org.cinnamon.muffin", "tile-maximize", "org.cinnamon.muffin/edge-tiling"))
+        sidePage.add_widget(box, True)
+
+        box = IndentedHBox()
         box.add(GSettingsCheckButton(_("Prevent the snap on-screen-display from showing"), "org.cinnamon", "hide-snap-osd", "org.cinnamon.muffin/edge-tiling"))
         sidePage.add_widget(box, True)
 
