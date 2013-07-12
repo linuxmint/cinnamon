@@ -161,6 +161,7 @@ WindowManager.prototype = {
 
         global.screen.connect ("show-snap-osd", Lang.bind (this, this._showSnapOSD));
         global.screen.connect ("hide-snap-osd", Lang.bind (this, this._hideSnapOSD));
+        global.screen.connect ("show-workspace-osd", Lang.bind (this, this.showWorkspaceOSD));
     },
 
     blockAnimations: function() {
@@ -917,6 +918,7 @@ WindowManager.prototype = {
     },
 
     showWorkspaceOSD : function() {
+        this._hideSnapOSD();
         if (global.settings.get_boolean("workspace-osd-visible")) {
             let current_workspace_index = global.screen.get_active_workspace_index();
             let monitor = Main.layoutManager.primaryMonitor;
