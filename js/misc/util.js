@@ -3,6 +3,7 @@
 const GLib = imports.gi.GLib;
 
 const Main = imports.ui.main;
+const Meta = imports.gi.Meta;
 
 // http://daringfireball.net/2010/07/improved_regex_for_matching_urls
 const _balancedParens = '\\((?:[^\\s()<>]+|(?:\\(?:[^\\s()<>]+\\)))*\\)';
@@ -228,4 +229,78 @@ function fixupPCIDescription(desc) {
     }
 
     return out.join(' ');
+}
+
+function rectSubtract(rect1, rect2) {
+  let result = [];
+  if (rect1.overlap(rect2)) {
+    let x, y, width, height;
+    // top - relative to rect2
+    y = Math.min(rect1.y, rect2.y);
+    height = Math.min(rect1.height, rect2.y - y);
+    if (height > 0) {
+      // left
+      x = rect1.x;
+      width = Math.min(rect1.width, rect2.x - x);
+      if (width > 0) {
+        result.push(new Meta.Rectangle({x: x, y: y, width: width, height: height}));
+      }
+      // center
+      x = Math.max(rect1.x, rect2.x);
+      width = Math.min(rect1.width, (rect2.x + rect2.width) - x);
+      if (width > 0) {
+        result.push(new Meta.Rectangle({x: x, y: y, width: width, height: height}));
+      }
+      // right
+      x = Math.max(rect1.x, rect2.x + rect2.width);
+      width = Math.min(rect1.width, (rect1.x + rect1.width) - (rect2.x + rect2.width));
+      if (width > 0) {
+        result.push(new Meta.Rectangle({x: x, y: y, width: width, height: height}));
+      }
+    }
+    // vertical center
+    y = Math.max(rect1.y, rect2.y);
+    height = Math.min(rect1.height, (rect2.y + rect2.height) - y);
+    if (height > 0) {
+      // left
+      x = rect1.x;
+      width = Math.min(rect1.width, rect2.x - x);
+      if (width > 0) {
+        result.push(new Meta.Rectangle({x: x, y: y, width: width, height: height}));
+      }
+      // right
+      x = Math.max(rect1.x, rect2.x + rect2.width);
+      width = Math.min(rect1.width, (rect1.x + rect1.width) - (rect2.x + rect2.width));
+      if (width > 0) {
+        result.push(new Meta.Rectangle({x: x, y: y, width: width, height: height}));
+      }
+    }
+    // bottom
+    y = Math.max(rect1.y, rect2.y + rect2.height);
+    height = Math.min(rect1.height, (rect1.y + rect1.height) - (rect2.y + rect2.height));
+    if (height > 0) {
+      // left
+      x = rect1.x;
+      width = Math.min(rect1.width, rect2.x - x);
+      if (width > 0) {
+        result.push(new Meta.Rectangle({x: x, y: y, width: width, height: height}));
+      }
+      // center
+      x = Math.max(rect1.x, rect2.x);
+      width = Math.min(rect1.width, (rect2.x + rect2.width) - x);
+      if (width > 0) {
+        result.push(new Meta.Rectangle({x: x, y: y, width: width, height: height}));
+      }
+      // right
+      x = Math.max(rect1.x, rect2.x + rect2.width);
+      width = Math.min(rect1.width, (rect1.x + rect1.width) - (rect2.x + rect2.width));
+      if (width > 0) {
+        result.push(new Meta.Rectangle({x: x, y: y, width: width, height: height}));
+      }
+    }
+  }
+  else {
+    result.push(rect1);
+  }
+  return result;
 }
