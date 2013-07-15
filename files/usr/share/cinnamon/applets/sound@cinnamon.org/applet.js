@@ -809,6 +809,8 @@ MyApplet.prototype = {
 
             this._control = new Gvc.MixerControl({ name: 'Cinnamon Volume Control' });
             this._control.connect('state-changed', Lang.bind(this, this._onControlStateChanged));
+            this._control.connect('card-added', Lang.bind(this, this._onControlStateChanged));
+            this._control.connect('card-removed', Lang.bind(this, this._onControlStateChanged));
             this._control.connect('default-sink-changed', Lang.bind(this, this._readOutput));
             this._control.connect('default-source-changed', Lang.bind(this, this._readInput));
             this._control.connect('stream-added', Lang.bind(this, this._maybeShowInput));
