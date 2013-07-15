@@ -152,7 +152,7 @@ NotificationDaemon.prototype = {
         for (let i = 0; i < this._sources.length; i++) {
             let source = this._sources[i];
             if (source.pid == pid &&
-                (source.initialTitle == title || source.trayIcon || trayIcon))
+                (source.initialTitle == title || source.trayIcon == trayIcon))
                 return source;
         }
         return null;
