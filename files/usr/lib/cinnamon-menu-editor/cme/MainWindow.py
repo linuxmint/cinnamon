@@ -278,6 +278,7 @@ class MainWindow(object):
             parent = menus[iter][3]
         file_path = os.path.join(util.getUserItemPath(), util.getUniqueFileId('alacarte-made', '.desktop'))
         editor = LauncherEditor(file_path, self.main_window)
+        editor.run()
 
     def on_edit_delete_activate(self, menu):
         item_tree = self.tree.get_object('item_tree')
