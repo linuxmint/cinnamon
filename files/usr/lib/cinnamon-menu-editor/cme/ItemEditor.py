@@ -148,10 +148,15 @@ class ItemEditor(object):
     def save(self):
         util.fillKeyFile(self.keyfile, self.get_keyfile_edits())
         contents, length = self.keyfile.to_data()
+        need_exec = False
         if ".desktop" not in self.item_path:
+            need_exec = True
             self.item_path = os.path.join(self.item_path, (self.builder.get_object('name-entry').get_text() + ".desktop"))
         with open(self.item_path, 'w') as f:
             f.write(contents)
+        if need_exec:
+            os.system("chmod a+x " + self.item_path)
+
 
     def run(self):
         self.dialog.present()
