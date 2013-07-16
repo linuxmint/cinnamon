@@ -22,6 +22,7 @@ import cgi
 import os
 import gettext
 import subprocess
+import shutil
 
 from cme import config
 gettext.bindtextdomain(config.GETTEXT_PACKAGE, config.localedir)
@@ -29,6 +30,7 @@ gettext.textdomain(config.GETTEXT_PACKAGE)
 
 _ = gettext.gettext
 from cme.MenuEditor import MenuEditor
+from cme.ItemEditor import LauncherEditor, DirectoryEditor
 from cme import util
 
 class MainWindow(object):
@@ -58,6 +60,7 @@ class MainWindow(object):
         self.cut_copy_buffer = None
         self.file_id = None
         self.last_tree = None
+        self.main_window = self.tree.get_object('mainwindow')
 
     def run(self):
         self.loadMenus()
@@ -261,8 +264,8 @@ class MainWindow(object):
         else:
             parent = menus[iter][3]
         file_path = os.path.join(util.getUserDirectoryPath(), util.getUniqueFileId('alacarte-made', '.directory'))
-        process = subprocess.Popen(['gnome-desktop-item-edit', file_path], env=os.environ)
-        GObject.timeout_add(100, self.waitForNewMenuProcess, process, parent.get_menu_id(), file_path)
+        editor = DirectoryEditor(file_path, self.main_window)
+        editor.run()
 
     def on_new_item_button_clicked(self, button):
         menu_tree = self.tree.get_object('menu_tree')
@@ -274,8 +277,7 @@ class MainWindow(object):
         else:
             parent = menus[iter][3]
         file_path = os.path.join(util.getUserItemPath(), util.getUniqueFileId('alacarte-made', '.desktop'))
-        process = subprocess.Popen(['gnome-desktop-item-edit', file_path], env=os.environ)
-        GObject.timeout_add(100, self.waitForNewItemProcess, process, parent.get_menu_id(), file_path)
+        editor = LauncherEditor(file_path, self.main_window)
 
     def on_edit_delete_activate(self, menu):
         item_tree = self.tree.get_object('item_tree')
@@ -302,18 +304,17 @@ class MainWindow(object):
         if isinstance(item, GMenu.TreeEntry):
             file_path = os.path.join(util.getUserItemPath(), item.get_desktop_file_id())
             file_type = 'Item'
+            Editor = LauncherEditor
         elif isinstance(item, GMenu.TreeDirectory):
             file_path = os.path.join(util.getUserDirectoryPath(), os.path.split(item.get_desktop_file_path())[1])
             file_type = 'Menu'
+            Editor = DirectoryEditor
 
         if not os.path.isfile(file_path):
-            data = open(item.get_desktop_file_path()).read()
-            open(file_path, 'w').write(data)
+            shutil.copy(item.get_desktop_file_path(), file_path)
 
-        if file_path not in self.edit_pool:
-            self.edit_pool.append(file_path)
-            process = subprocess.Popen(['gnome-desktop-item-edit', file_path], env=os.environ)
-            GObject.timeout_add(100, self.waitForEditProcess, process, file_path)
+        editor = Editor(file_path, self.main_window)
+        editor.run()
 
     def on_edit_cut_activate(self, menu):
         item_tree = self.tree.get_object('item_tree')
