@@ -87,9 +87,11 @@ MyApplet.prototype = {
                 }       
             });
 
-            this.menu.addAction(_("Switch User"), function(event) {
-                Util.spawnCommandLine("mdmflexiserver");
-            });
+            if (GLib.file_test("/usr/bin/mdmflexiserver", GLib.FileTest.EXISTS)) {
+                this.menu.addAction(_("Switch User"), function(event) {
+                    Util.spawnCommandLine("mdmflexiserver");
+                });
+            }
 
             this.menu.addAction(_("Log Out..."), function(event) {
                 this._session.LogoutRemote(0);
