@@ -149,7 +149,7 @@ class ItemEditor(object):
         util.fillKeyFile(self.keyfile, self.get_keyfile_edits())
         contents, length = self.keyfile.to_data()
         need_exec = False
-        if ".desktop" not in self.item_path:
+        if ".desktop" not in self.item_path and ".directory" not in self.item_path:
             need_exec = True
             self.item_path = os.path.join(self.item_path, (self.builder.get_object('name-entry').get_text() + ".desktop"))
         with open(self.item_path, 'w') as f:
