@@ -259,6 +259,10 @@ ExpoWindowClone.prototype = {
         {
             this.emit('selected', event.get_time());
         }
+        if ((Cinnamon.get_event_state(event) & Clutter.ModifierType.BUTTON2_MASK))
+        {
+            this.emit('middle-button-release', event.get_time());
+        }
         return true;
     },
 
@@ -380,23 +384,6 @@ ExpoWorkspaceThumbnail.prototype = {
 
         this.actor.connect('scroll-event', Lang.bind(this, this.onScrollEvent));
         
-        this.closeWindowButton = new St.Button({ style_class: 'window-close' });
-        this.actor.add_actor(this.closeWindowButton);
-        this.closeWindowButton.connect('clicked', Lang.bind(this, function(actor, event) {
-            if (this.lastHoveredClone) {
-                this.lastHoveredClone.metaWindow.delete(global.get_current_time());
-                this.resetCloneHover();
-            }
-        }));
-        this.closeWindowButton.connect('enter-event', Lang.bind(this, function(actor, event) {
-            this.closeWindowButton._oldStyle = this.closeWindowButton.style;
-            this.closeWindowButton.style = "border: 1px solid rgba(255,0,0,0.3);"
-        }));
-        this.closeWindowButton.connect('leave-event', Lang.bind(this, function(actor, event) {
-            this.closeWindowButton.style = this.closeWindowButton._oldStyle;
-        }));
-        this.closeWindowButton.hide();
-
         this.title = new St.Entry({ style_class: 'expo-workspaces-name-entry',                                     
                                      track_hover: true,
                                      can_focus: true });                
@@ -736,6 +723,9 @@ ExpoWorkspaceThumbnail.prototype = {
                 this.box.emit('sticky-detected', clone.metaWindow);
             }
         }));
+        clone.connect('middle-button-release', Lang.bind(this, function(sender, time) {
+            clone.metaWindow.delete(time);
+        }));
         clone.connect('hovering', Lang.bind(this, this.onCloneHover));
         clone.connect('demanding-attention', Lang.bind(this, function() {this.overviewModeOn();}));
         clone.connect('selected', Lang.bind(this, this.activate));
@@ -765,7 +755,6 @@ ExpoWorkspaceThumbnail.prototype = {
     },
 
     resetCloneHover : function () {
-        this.closeWindowButton.hide();
         this.lastHoveredClone = null;
         if (this.tooltip) {
             this.tooltip.destroy();
@@ -789,16 +778,6 @@ ExpoWorkspaceThumbnail.prototype = {
                     this.resetCloneHover();
                     return;
                 }
-                let [x,y] = clone.actor.get_position();
-                let [scaleX, scaleY] = clone.actor.get_scale();
-                let iboxScale = 1/this.box.scale;
-                let themeNode = this.closeWindowButton.get_theme_node();
-                let overlap = (themeNode.get_length('-cinnamon-close-overlap') / 2) * iboxScale;
-                let xOffset = overlap + Math.round((-this.closeWindowButton.width) * iboxScale + clone.actor.width * scaleX);
-                let yOffset = -overlap;
-                this.closeWindowButton.set_scale(iboxScale, iboxScale);
-                this.closeWindowButton.set_position(x + xOffset, y + yOffset);
-                this.closeWindowButton.show();
                 if (this.tooltip) {
                     this.tooltip.destroy();
                 }

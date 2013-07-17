@@ -280,6 +280,38 @@
        Duration of the effect (in milliseconds)    
       </_description>
     </key>
+
+    <key type="s" name="desktop-effects-tile-effect">
+      <default>"none"</default>
+      <_summary>Effect used when maximizing windows</_summary>
+      <_description>
+       An effect: none
+      </_description>
+    </key>
+    
+     <key name="desktop-effects-tile-transition" type="s">
+      <default>"easeInBack"</default>
+      <_summary>Transition used when maximizing windows</_summary>
+      <_description>
+       A Tweener transition
+      </_description>
+    </key>
+    
+    <key type="i" name="desktop-effects-tile-time">
+      <default>400</default>
+      <_summary>Duration of the effect (in milliseconds)</_summary>
+      <_description>
+       Duration of the effect (in milliseconds)    
+      </_description>
+    </key>
+
+    <key name="desktop-layout" type="s">
+      <default>"traditional"</default>
+      <_summary>Layout style</_summary>
+      <_description>
+       Layout styles: traditional (1 panel at the bottom), flipped (1 panel on top), classic (1 panel on top, 1 panel at the bottom)
+      </_description>
+    </key>
     
     <key name="date-format" type="s">
       <default>"YYYY-MM-DD"</default>
@@ -585,6 +617,15 @@
         Whether the vfade effect is enabled or not
       </_description>
     </key>
+
+    <key name="hide-snap-osd" type="b">
+      <default>false</default>
+      <_summary>Prevent the tile/snap OSD from showing</_summary>
+      <_description>
+        Hide the snap OSD.
+      </_description>
+    </key>
+
   </schema>
  
   <schema id="org.cinnamon.theme" path="/org/cinnamon/theme/"
@@ -681,58 +722,6 @@
         based on the current date, and use this extension. It should be
         changed when recording to a different container format.
       </_description>
-    </key>
-  </schema>
-
-  <schema id="org.cinnamon.overrides" path="/org/cinnamon/overrides/">
-    <key name="custom-keybindings-to-3-6" type="b">
-      <default>false</default>
-      <summary>Run-once flag to see if custom keybindings have been converted to gsettings</summary>
-      <description>
-        Run-once flag to see if custom keybindings have been converted to gsettings
-      </description>
-    </key>
-
-    <key name="attach-modal-dialogs" type="b">
-      <default>false</default>
-      <summary>Attach modal dialog to the parent window</summary>
-      <description>
-        This key overrides the key in org.gnome.muffin when running
-        Cinnamon.
-      </description>
-    </key>
-
-    <key name="button-layout" type="s">
-      <default>":minimize,maximize,close"</default>
-      <summary>Arrangement of buttons on the titlebar</summary>
-      <description>
-        This key overrides the key in org.gnome.desktop.wm.preferences when
-        running Cinnamon.
-      </description>
-    </key>
-
-    <key name="edge-tiling" type="b">
-      <default>true</default>
-      <summary>Enable edge tiling when dropping windows on screen edges</summary>
-      <description>
-        This key overrides the key in org.gnome.muffin when running Cinnamon.
-      </description>
-    </key>
-
-    <key type="b" name="workspace-cycle">
-      <default>false</default>
-      <summary>Allow cycling through workspaces</summary>
-      <description>
-        This key overrides the key in org.cinnamon.muffin when running Cinnamon.
-      </description>
-    </key>
-
-    <key name="workspaces-only-on-primary" type="b">
-      <default>false</default>
-      <summary>Workspaces only on primary monitor</summary>
-      <description>
-        This key overrides the key in org.gnome.muffin when running Cinnamon.
-      </description>
     </key>
   </schema>
 

@@ -8,7 +8,7 @@ const Util = imports.misc.util;
 const Layout = imports.ui.layout;
 const Main = imports.ui.main;
 const Tweener = imports.ui.tweener;
-
+const Mainloop = imports.mainloop;
 const HOT_CORNER_ACTIVATION_TIMEOUT = 0.5;
 const OVERVIEW_CORNERS_KEY = 'overview-corner';
 
@@ -137,6 +137,9 @@ HotCorner.prototype = {
         this._corner.connect('leave-event',
                              Lang.bind(this, this._onCornerLeft));
 
+        this.tile_delay = false;
+        global.window_manager.connect('tile', Lang.bind(this, this._tilePerformed));
+
         // Cache the three ripples instead of dynamically creating and destroying them.
         this._ripple1 = new St.BoxLayout({ style_class: 'ripple-box', opacity: 0 });
         this._ripple2 = new St.BoxLayout({ style_class: 'ripple-box', opacity: 0 });
@@ -159,6 +162,16 @@ HotCorner.prototype = {
 
     destroy: function() {
         this.actor.destroy();
+    },
+
+    _tile_delay_cb : function() {
+        this.tile_delay = false;
+        return false;
+    },
+
+    _tilePerformed : function(cinnamonwm, actor, targetX, targetY, targetWidth, targetHeight) {
+        this.tile_delay = true;
+        Mainloop.timeout_add(250, Lang.bind(this, this._tile_delay_cb));
     },
 
     _animRipple : function(ripple, delay, time, startScale, startOpacity, finalScale) {
@@ -246,7 +259,7 @@ HotCorner.prototype = {
     },
 
     _onCornerEntered : function() {
-        if (!this._entered) {
+        if (!this._entered && !this.tile_delay) {
             this._entered = true;
             let run = false;
             if (!(Main.expo.visible || Main.overview.visible)){

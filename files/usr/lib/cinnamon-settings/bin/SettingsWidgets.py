@@ -587,7 +587,9 @@ class GSettingsRangeSpin(Gtk.HBox):
             self.on_dependency_setting_changed(self, None)
 
     def on_my_setting_changed(self, settings, key):
-        self.content_widget.set_value(self.settings.get_double(self.key))
+        value = self.settings.get_double(self.key)
+        if value != self.content_widget.get_value():
+            self.content_widget.set_value(value)
 
     def on_my_value_changed(self, widget):
         self.settings.set_double(self.key, self.content_widget.get_value())

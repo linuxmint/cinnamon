@@ -7,19 +7,22 @@ import gettext
 
 gettext.install("cinnamon", "/usr/share/cinnamon/locale")
 
-HAS_DEDICATED_TERMINAL_SHORTCUT = False
-
-schema = Gio.Settings("org.cinnamon.settings-daemon.plugins.media-keys")
-key_list = schema.list_keys()
-for key in key_list:
-    if key == "terminal":
-        HAS_DEDICATED_TERMINAL_SHORTCUT = True
-
 # Keybindings page - check if we need to store custom
 # keybindings to gsettings key as well as GConf (In Mint 14 this is changed)
 CUSTOM_KEYS_PARENT_SCHEMA = "org.cinnamon.keybindings"
 CUSTOM_KEYS_BASENAME = "/org/cinnamon/keybindings/custom-keybindings"
 CUSTOM_KEYS_SCHEMA = "org.cinnamon.keybindings.custom-keybinding"
+
+MUFFIN_KEYBINDINGS_SCHEMA = "org.cinnamon.muffin.keybindings"
+MEDIA_KEYS_SCHEMA = "org.cinnamon.settings-daemon.plugins.media-keys"
+
+HAS_DEDICATED_TERMINAL_SHORTCUT = False
+
+schema = Gio.Settings(MEDIA_KEYS_SCHEMA)
+key_list = schema.list_keys()
+for key in key_list:
+    if key == "terminal":
+        HAS_DEDICATED_TERMINAL_SHORTCUT = True
 
 FORBIDDEN_KEYVALS = [
     Gdk.KEY_Home,
@@ -40,108 +43,116 @@ FORBIDDEN_KEYVALS = [
 KEYBINDINGS = [
     #   KB Label                        Schema                  Key name               Array?  Category
     # Cinnamon stuff
-    [_("Toggle Scale"), "org.gnome.desktop.wm.keybindings", "switch-to-workspace-down", True, "cinnamon"],
-    [_("Toggle Expo"), "org.gnome.desktop.wm.keybindings", "switch-to-workspace-up", True, "cinnamon"],
-    [_("Cycle through open windows"), "org.gnome.desktop.wm.keybindings", "switch-windows", True, "cinnamon"],
-    [_("Cycle backwards though open windows"), "org.gnome.desktop.wm.keybindings", "switch-windows-backward", True, "cinnamon"],
-    [_("Run dialog (must restart Cinnamon)"), "org.gnome.desktop.wm.keybindings", "panel-run-dialog", True, "cinnamon"],
+    [_("Toggle Scale"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-down", True, "cinnamon"],
+    [_("Toggle Expo"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-up", True, "cinnamon"],
+    [_("Cycle through open windows"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-windows", True, "cinnamon"],
+    [_("Cycle backwards though open windows"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-windows-backward", True, "cinnamon"],
+    [_("Run dialog"), MUFFIN_KEYBINDINGS_SCHEMA, "panel-run-dialog", True, "cinnamon"],
     [_("Menu button (must restart Cinnamon)"), "org.cinnamon.muffin", "overlay-key", False, "cinnamon"],
 
     # Windows - General
-    [_("Maximize window"), "org.gnome.desktop.wm.keybindings", "maximize", True, "windows"],
-    [_("Unmaximize window"), "org.gnome.desktop.wm.keybindings", "unmaximize", True, "windows"],
-    [_("Minimize window"), "org.gnome.desktop.wm.keybindings", "minimize", True, "windows"],
-    [_("Toggle tiled left (must restart Cinnamon)"), "org.cinnamon.muffin.keybindings", "toggle-tiled-left", True, "windows"],
-    [_("Toggle tiled right (must restart Cinnamon)"), "org.cinnamon.muffin.keybindings", "toggle-tiled-right", True, "windows"],
-    [_("Close window"), "org.gnome.desktop.wm.keybindings", "close", True, "windows"],
-    [_("Show desktop"), "org.gnome.desktop.wm.keybindings", "show-desktop", True, "windows"],
-    [_("Activate window menu"), "org.gnome.desktop.wm.keybindings", "activate-window-menu", True, "windows"],
-    [_("Toggle maximization state"), "org.gnome.desktop.wm.keybindings", "toggle-maximized", True, "windows"],
-    [_("Toggle fullscreen state"), "org.gnome.desktop.wm.keybindings", "toggle-fullscreen", True, "windows"],
-    [_("Toggle shaded state"), "org.gnome.desktop.wm.keybindings", "toggle-shaded", True, "windows"],
-    [_("Maximize vertically"), "org.gnome.desktop.wm.keybindings", "maximize-vertically", True, "windows"],
-    [_("Maximize horizontally"), "org.gnome.desktop.wm.keybindings", "maximize-horizontally", True, "windows"],
-    [_("Resize window"), "org.gnome.desktop.wm.keybindings", "begin-resize", True, "windows"],
-    [_("Move window"), "org.gnome.desktop.wm.keybindings", "begin-move", True, "windows"],
-    [_("Center window in screen"), "org.gnome.desktop.wm.keybindings", "move-to-center", True, "windows"],
-    [_("Move window to upper-right"), "org.gnome.desktop.wm.keybindings", "move-to-corner-ne", True, "windows"],
-    [_("Move window to upper-left"), "org.gnome.desktop.wm.keybindings", "move-to-corner-nw", True, "windows"],
-    [_("Move window to lower-right"), "org.gnome.desktop.wm.keybindings", "move-to-corner-se", True, "windows"],
-    [_("Move window to lower-left"), "org.gnome.desktop.wm.keybindings", "move-to-corner-sw", True, "windows"],
-    [_("Move window to right edge"), "org.gnome.desktop.wm.keybindings", "move-to-side-e", True, "windows"],
-    [_("Move window to top edge"), "org.gnome.desktop.wm.keybindings", "move-to-side-n", True, "windows"],
-    [_("Move window to bottom edge"), "org.gnome.desktop.wm.keybindings", "move-to-side-s", True, "windows"],
-    [_("Move window to left edge"), "org.gnome.desktop.wm.keybindings", "move-to-side-w", True, "windows"],
+    [_("Maximize window"), MUFFIN_KEYBINDINGS_SCHEMA, "maximize", True, "windows"],
+    [_("Unmaximize window"), MUFFIN_KEYBINDINGS_SCHEMA, "unmaximize", True, "windows"],
+    [_("Minimize window"), MUFFIN_KEYBINDINGS_SCHEMA, "minimize", True, "windows"],
+    [_("Close window"), MUFFIN_KEYBINDINGS_SCHEMA, "close", True, "windows"],
+    [_("Show desktop"), MUFFIN_KEYBINDINGS_SCHEMA, "show-desktop", True, "windows"],
+    [_("Activate window menu"), MUFFIN_KEYBINDINGS_SCHEMA, "activate-window-menu", True, "windows"],
+    [_("Toggle maximization state"), MUFFIN_KEYBINDINGS_SCHEMA, "toggle-maximized", True, "windows"],
+    [_("Toggle fullscreen state"), MUFFIN_KEYBINDINGS_SCHEMA, "toggle-fullscreen", True, "windows"],
+    [_("Toggle shaded state"), MUFFIN_KEYBINDINGS_SCHEMA, "toggle-shaded", True, "windows"],
+    [_("Maximize vertically"), MUFFIN_KEYBINDINGS_SCHEMA, "maximize-vertically", True, "windows"],
+    [_("Maximize horizontally"), MUFFIN_KEYBINDINGS_SCHEMA, "maximize-horizontally", True, "windows"],
+    [_("Resize window"), MUFFIN_KEYBINDINGS_SCHEMA, "begin-resize", True, "windows"],
+    [_("Move window"), MUFFIN_KEYBINDINGS_SCHEMA, "begin-move", True, "windows"],
+    [_("Center window in screen"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-center", True, "windows"],
+    [_("Move window to upper-right"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-corner-ne", True, "windows"],
+    [_("Move window to upper-left"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-corner-nw", True, "windows"],
+    [_("Move window to lower-right"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-corner-se", True, "windows"],
+    [_("Move window to lower-left"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-corner-sw", True, "windows"],
+    [_("Move window to right edge"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-side-e", True, "windows"],
+    [_("Move window to top edge"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-side-n", True, "windows"],
+    [_("Move window to bottom edge"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-side-s", True, "windows"],
+    [_("Move window to left edge"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-side-w", True, "windows"],
+
+    # Window Tiling and Snapping
+    [_("Push tile left"), MUFFIN_KEYBINDINGS_SCHEMA, "push-tile-left", True, "window-tiling"],
+    [_("Push tile right"), MUFFIN_KEYBINDINGS_SCHEMA, "push-tile-right", True, "window-tiling"],
+    [_("Push tile up"), MUFFIN_KEYBINDINGS_SCHEMA, "push-tile-up", True, "window-tiling"],
+    [_("Push tile down"), MUFFIN_KEYBINDINGS_SCHEMA, "push-tile-down", True, "window-tiling"],
+    [_("Push snap left"), MUFFIN_KEYBINDINGS_SCHEMA, "push-snap-left", True, "window-tiling"],
+    [_("Push snap right"), MUFFIN_KEYBINDINGS_SCHEMA, "push-snap-right", True, "window-tiling"],
+    [_("Push snap up"), MUFFIN_KEYBINDINGS_SCHEMA, "push-snap-up", True, "window-tiling"],
+    [_("Push snap down"), MUFFIN_KEYBINDINGS_SCHEMA, "push-snap-down", True, "window-tiling"],
 
     # Workspace management
-    [_("Toggle showing window on all workspaces"), "org.gnome.desktop.wm.keybindings", "toggle-on-all-workspaces", True, "ws-manage"],
-    [_("Switch to left workspace"), "org.gnome.desktop.wm.keybindings", "switch-to-workspace-left", True, "ws-manage"],
-    [_("Switch to right workspace"), "org.gnome.desktop.wm.keybindings", "switch-to-workspace-right", True, "ws-manage"],
-    [_("Switch to workspace 1"), "org.gnome.desktop.wm.keybindings", "switch-to-workspace-1", True, "ws-manage"],
-    [_("Switch to workspace 2"), "org.gnome.desktop.wm.keybindings", "switch-to-workspace-2", True, "ws-manage"],
-    [_("Switch to workspace 3"), "org.gnome.desktop.wm.keybindings", "switch-to-workspace-3", True, "ws-manage"],
-    [_("Switch to workspace 4"), "org.gnome.desktop.wm.keybindings", "switch-to-workspace-4", True, "ws-manage"],
-    [_("Switch to workspace 5"), "org.gnome.desktop.wm.keybindings", "switch-to-workspace-5", True, "ws-manage"],
-    [_("Switch to workspace 6"), "org.gnome.desktop.wm.keybindings", "switch-to-workspace-6", True, "ws-manage"],
-    [_("Switch to workspace 7"), "org.gnome.desktop.wm.keybindings", "switch-to-workspace-7", True, "ws-manage"],
-    [_("Switch to workspace 8"), "org.gnome.desktop.wm.keybindings", "switch-to-workspace-8", True, "ws-manage"],
-    [_("Switch to workspace 9"), "org.gnome.desktop.wm.keybindings", "switch-to-workspace-9", True, "ws-manage"],
-    [_("Switch to workspace 10"), "org.gnome.desktop.wm.keybindings", "switch-to-workspace-10", True, "ws-manage"],
-    [_("Switch to workspace 11"), "org.gnome.desktop.wm.keybindings", "switch-to-workspace-11", True, "ws-manage"],
-    [_("Switch to workspace 12"), "org.gnome.desktop.wm.keybindings", "switch-to-workspace-12", True, "ws-manage"],
-    [_("Move window to left workspace"), "org.gnome.desktop.wm.keybindings", "move-to-workspace-left", True, "ws-manage"],
-    [_("Move window to right workspace"), "org.gnome.desktop.wm.keybindings", "move-to-workspace-right", True, "ws-manage"],
-    [_("Move window to workspace 1"), "org.gnome.desktop.wm.keybindings", "move-to-workspace-1", True, "ws-manage"],
-    [_("Move window to workspace 2"), "org.gnome.desktop.wm.keybindings", "move-to-workspace-2", True, "ws-manage"],
-    [_("Move window to workspace 3"), "org.gnome.desktop.wm.keybindings", "move-to-workspace-3", True, "ws-manage"],
-    [_("Move window to workspace 4"), "org.gnome.desktop.wm.keybindings", "move-to-workspace-4", True, "ws-manage"],
-    [_("Move window to workspace 5"), "org.gnome.desktop.wm.keybindings", "move-to-workspace-5", True, "ws-manage"],
-    [_("Move window to workspace 6"), "org.gnome.desktop.wm.keybindings", "move-to-workspace-6", True, "ws-manage"],
-    [_("Move window to workspace 7"), "org.gnome.desktop.wm.keybindings", "move-to-workspace-7", True, "ws-manage"],
-    [_("Move window to workspace 8"), "org.gnome.desktop.wm.keybindings", "move-to-workspace-8", True, "ws-manage"],
-    [_("Move window to workspace 9"), "org.gnome.desktop.wm.keybindings", "move-to-workspace-9", True, "ws-manage"],
-    [_("Move window to workspace 10"), "org.gnome.desktop.wm.keybindings", "move-to-workspace-10", True, "ws-manage"],
-    [_("Move window to workspace 11"), "org.gnome.desktop.wm.keybindings", "move-to-workspace-11", True, "ws-manage"],
-    [_("Move window to workspace 12"), "org.gnome.desktop.wm.keybindings", "move-to-workspace-12", True, "ws-manage"],
+    [_("Toggle showing window on all workspaces"), MUFFIN_KEYBINDINGS_SCHEMA, "toggle-on-all-workspaces", True, "ws-manage"],
+    [_("Switch to left workspace"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-left", True, "ws-manage"],
+    [_("Switch to right workspace"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-right", True, "ws-manage"],
+    [_("Switch to workspace 1"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-1", True, "ws-manage"],
+    [_("Switch to workspace 2"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-2", True, "ws-manage"],
+    [_("Switch to workspace 3"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-3", True, "ws-manage"],
+    [_("Switch to workspace 4"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-4", True, "ws-manage"],
+    [_("Switch to workspace 5"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-5", True, "ws-manage"],
+    [_("Switch to workspace 6"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-6", True, "ws-manage"],
+    [_("Switch to workspace 7"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-7", True, "ws-manage"],
+    [_("Switch to workspace 8"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-8", True, "ws-manage"],
+    [_("Switch to workspace 9"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-9", True, "ws-manage"],
+    [_("Switch to workspace 10"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-10", True, "ws-manage"],
+    [_("Switch to workspace 11"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-11", True, "ws-manage"],
+    [_("Switch to workspace 12"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-12", True, "ws-manage"],
+    [_("Move window to left workspace"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-left", True, "ws-manage"],
+    [_("Move window to right workspace"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-right", True, "ws-manage"],
+    [_("Move window to workspace 1"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-1", True, "ws-manage"],
+    [_("Move window to workspace 2"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-2", True, "ws-manage"],
+    [_("Move window to workspace 3"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-3", True, "ws-manage"],
+    [_("Move window to workspace 4"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-4", True, "ws-manage"],
+    [_("Move window to workspace 5"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-5", True, "ws-manage"],
+    [_("Move window to workspace 6"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-6", True, "ws-manage"],
+    [_("Move window to workspace 7"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-7", True, "ws-manage"],
+    [_("Move window to workspace 8"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-8", True, "ws-manage"],
+    [_("Move window to workspace 9"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-9", True, "ws-manage"],
+    [_("Move window to workspace 10"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-10", True, "ws-manage"],
+    [_("Move window to workspace 11"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-11", True, "ws-manage"],
+    [_("Move window to workspace 12"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-12", True, "ws-manage"],
 
     # System
-    [_("Log out"), "org.cinnamon.settings-daemon.plugins.media-keys", "logout", False, "system"],
-    [_("Lock screen"), "org.cinnamon.settings-daemon.plugins.media-keys", "screensaver", False, "system"],
-    [_("Toggle recording desktop (must restart Cinnamon)"), "org.cinnamon.muffin.keybindings", "toggle-recording", True, "system"],
+    [_("Log out"), MEDIA_KEYS_SCHEMA, "logout", False, "system"],
+    [_("Lock screen"), MEDIA_KEYS_SCHEMA, "screensaver", False, "system"],
+    [_("Toggle recording desktop (must restart Cinnamon)"), MUFFIN_KEYBINDINGS_SCHEMA, "toggle-recording", True, "system"],
 
     # Launchers
-    [_("Launch help browser"), "org.cinnamon.settings-daemon.plugins.media-keys", "help", False, "launchers"],
-    [_("Launch calculator"), "org.cinnamon.settings-daemon.plugins.media-keys", "calculator", False, "launchers"],
-    [_("Launch email client"), "org.cinnamon.settings-daemon.plugins.media-keys", "email", False, "launchers"],
-    [_("Launch web browser"), "org.cinnamon.settings-daemon.plugins.media-keys", "www", False, "launchers"],
-    [_("Home folder"), "org.cinnamon.settings-daemon.plugins.media-keys", "home", False, "launchers"],
-    [_("Search"), "org.cinnamon.settings-daemon.plugins.media-keys", "search", False, "launchers"],
+    [_("Launch help browser"), MEDIA_KEYS_SCHEMA, "help", False, "launchers"],
+    [_("Launch calculator"), MEDIA_KEYS_SCHEMA, "calculator", False, "launchers"],
+    [_("Launch email client"), MEDIA_KEYS_SCHEMA, "email", False, "launchers"],
+    [_("Launch web browser"), MEDIA_KEYS_SCHEMA, "www", False, "launchers"],
+    [_("Home folder"), MEDIA_KEYS_SCHEMA, "home", False, "launchers"],
+    [_("Search"), MEDIA_KEYS_SCHEMA, "search", False, "launchers"],
 
     # Sound and Media
-    [_("Volume mute"), "org.cinnamon.settings-daemon.plugins.media-keys", "volume-mute", False, "media"],
-    [_("Volume down"), "org.cinnamon.settings-daemon.plugins.media-keys", "volume-down", False, "media"],
-    [_("Volume up"), "org.cinnamon.settings-daemon.plugins.media-keys", "volume-up", False, "media"],
-    [_("Launch media player"), "org.cinnamon.settings-daemon.plugins.media-keys", "media", False, "media"],
-    [_("Play"), "org.cinnamon.settings-daemon.plugins.media-keys", "play", False, "media"],
-    [_("Pause playback"), "org.cinnamon.settings-daemon.plugins.media-keys", "pause", False, "media"],
-    [_("Stop playback"), "org.cinnamon.settings-daemon.plugins.media-keys", "stop", False, "media"],
-    [_("Previous track"), "org.cinnamon.settings-daemon.plugins.media-keys", "previous", False, "media"],
-    [_("Next track"), "org.cinnamon.settings-daemon.plugins.media-keys", "next", False, "media"],
-    [_("Eject"), "org.cinnamon.settings-daemon.plugins.media-keys", "eject", False, "media"],
+    [_("Volume mute"), MEDIA_KEYS_SCHEMA, "volume-mute", False, "media"],
+    [_("Volume down"), MEDIA_KEYS_SCHEMA, "volume-down", False, "media"],
+    [_("Volume up"), MEDIA_KEYS_SCHEMA, "volume-up", False, "media"],
+    [_("Launch media player"), MEDIA_KEYS_SCHEMA, "media", False, "media"],
+    [_("Play"), MEDIA_KEYS_SCHEMA, "play", False, "media"],
+    [_("Pause playback"), MEDIA_KEYS_SCHEMA, "pause", False, "media"],
+    [_("Stop playback"), MEDIA_KEYS_SCHEMA, "stop", False, "media"],
+    [_("Previous track"), MEDIA_KEYS_SCHEMA, "previous", False, "media"],
+    [_("Next track"), MEDIA_KEYS_SCHEMA, "next", False, "media"],
+    [_("Eject"), MEDIA_KEYS_SCHEMA, "eject", False, "media"],
 
     # Universal Access
-    [_("Turn zoom on or off"), "org.cinnamon.settings-daemon.plugins.media-keys", "magnifier", False, "accessibility"],
-    [_("Zoom in"), "org.cinnamon.settings-daemon.plugins.media-keys", "magnifier-zoom-in", False, "accessibility"],
-    [_("Zoom out"), "org.cinnamon.settings-daemon.plugins.media-keys", "magnifier-zoom-out", False, "accessibility"],
-    [_("Turn screen reader on or off"), "org.cinnamon.settings-daemon.plugins.media-keys", "screenreader", False, "accessibility"],
-    [_("Turn on-screen keyboard on or off"), "org.cinnamon.settings-daemon.plugins.media-keys", "on-screen-keyboard", False, "accessibility"],
-    [_("Increase text size"), "org.cinnamon.settings-daemon.plugins.media-keys", "increase-text-size", False, "accessibility"],
-    [_("Decrease text size"), "org.cinnamon.settings-daemon.plugins.media-keys", "decrease-text-size", False, "accessibility"],
-    [_("High contrast on or off"), "org.cinnamon.settings-daemon.plugins.media-keys", "toggle-contrast", False, "accessibility"]
+    [_("Turn zoom on or off"), MEDIA_KEYS_SCHEMA, "magnifier", False, "accessibility"],
+    [_("Zoom in"), MEDIA_KEYS_SCHEMA, "magnifier-zoom-in", False, "accessibility"],
+    [_("Zoom out"), MEDIA_KEYS_SCHEMA, "magnifier-zoom-out", False, "accessibility"],
+    [_("Turn screen reader on or off"), MEDIA_KEYS_SCHEMA, "screenreader", False, "accessibility"],
+    [_("Turn on-screen keyboard on or off"), MEDIA_KEYS_SCHEMA, "on-screen-keyboard", False, "accessibility"],
+    [_("Increase text size"), MEDIA_KEYS_SCHEMA, "increase-text-size", False, "accessibility"],
+    [_("Decrease text size"), MEDIA_KEYS_SCHEMA, "decrease-text-size", False, "accessibility"],
+    [_("High contrast on or off"), MEDIA_KEYS_SCHEMA, "toggle-contrast", False, "accessibility"]
 ]
 
 if HAS_DEDICATED_TERMINAL_SHORTCUT:
-    KEYBINDINGS.append([_("Launch terminal"), "org.cinnamon.settings-daemon.plugins.media-keys", "terminal", False, "launchers"])
+    KEYBINDINGS.append([_("Launch terminal"), MEDIA_KEYS_SCHEMA, "terminal", False, "launchers"])
 
 class Module:
     def __init__(self, content_box):
@@ -455,6 +466,7 @@ class KeyboardSidePage (SidePage):
         # categories                                Display name        internal category
         self.main_store.append(KeyBindingCategory("Cinnamon", "cinnamon"))
         self.main_store.append(KeyBindingCategory(_("Windows"), "windows"))
+        self.main_store.append(KeyBindingCategory(_("Window Tiling"), "window-tiling"))
         self.main_store.append(KeyBindingCategory(_("Workspace Management"), "ws-manage"))
         self.main_store.append(KeyBindingCategory(_("System"), "system"))
         self.main_store.append(KeyBindingCategory(_("Launchers"), "launchers"))

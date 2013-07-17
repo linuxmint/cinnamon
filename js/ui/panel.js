@@ -826,6 +826,7 @@ Panel.prototype = {
 
         this._hidden = false;
         this._disabled = false;
+        this._panelEditMode = false;
         this._hidetime = 0;
         this._hideable = this._getProperty(PANEL_AUTOHIDE_KEY, "b");
         this._hideTimer = false;
@@ -1116,11 +1117,9 @@ Panel.prototype = {
     },
 
     _handlePanelEditMode: function() {
-        this._isEditMode = global.settings.get_boolean("panel-edit-mode");
-        if (this._isEditMode) {
-            if (this.isHideable()) {
-                this._showPanel();
-            }
+        let old_mode = this._panelEditMode;
+        if (global.settings.get_boolean("panel-edit-mode")) {
+            this._panelEditMode = true;
             this._leftBox.add_style_pseudo_class('dnd');
             this._centerBox.add_style_pseudo_class('dnd');
             this._rightBox.add_style_pseudo_class('dnd');
@@ -1129,9 +1128,14 @@ Panel.prototype = {
             if (this.isHideable()) {
                 this._hidePanel(true);
             }
+            this._panelEditMode = false;
             this._leftBox.remove_style_pseudo_class('dnd');
             this._centerBox.remove_style_pseudo_class('dnd');
             this._rightBox.remove_style_pseudo_class('dnd');
+        }
+
+        if (old_mode != this._panelEditMode) {
+            this._processPanelAutoHide();
         }
     },
 
@@ -1182,7 +1186,8 @@ Panel.prototype = {
     },
 
     _processPanelAutoHide: function() {
-        this._hideable = this._getProperty(PANEL_AUTOHIDE_KEY, "b");
+        this._hideable = this._getProperty(PANEL_AUTOHIDE_KEY, "b") && !this._panelEditMode;
+
         // Show a glimpse of the panel irrespective of the new setting,
         // in order to force a region update.
         // Techically, this should not be necessary if the function is called

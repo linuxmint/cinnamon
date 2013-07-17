@@ -31,7 +31,6 @@
  *                               This is not yet implemented
  * @nWorks (int): Number of workspaces
  * @tracker (Cinnamon.WindowTracker): The window tracker
- * @desktopShown (boolean): Whether we are in "show desktop" mode
  * @workspace_names (array): Names of workspace
  * @background (null): Unused
  * @deskletContainer (DeskletManager.DeskletContainer): The desklet container 
@@ -91,6 +90,8 @@ const LAYOUT_TRADITIONAL = "traditional";
 const LAYOUT_FLIPPED = "flipped";
 const LAYOUT_CLASSIC = "classic";
 
+const FALLBACK_THEME_PATH = "/usr/share/cinnamon/theme/cinnamon.css"
+
 const CIN_LOG_FOLDER = GLib.get_home_dir() + '/.cinnamon/';
 
 let automountManager = null;
@@ -128,7 +129,6 @@ let _cssStylesheet = null;
 let dynamicWorkspaces = null;
 let nWorks = null;
 let tracker = null;
-let desktopShown;
 
 let workspace_names = [];
 
@@ -377,8 +377,6 @@ function start() {
     global.screen.connect('window-entered-monitor', _windowEnteredMonitor);
     global.screen.connect('window-left-monitor', _windowLeftMonitor);
     global.screen.connect('restacked', _windowsRestacked);
-
-    global.window_manager.connect('map', _onWindowMapped);
 
     _nWorkspacesChanged();
     
@@ -664,10 +662,6 @@ function _windowsRestacked() {
     global.sync_pointer();
 }
 
-function _onWindowMapped() {
-    desktopShown = false;
-}
-
 function _queueCheckWorkspaces() {
     if (!dynamicWorkspaces)
         return false;
@@ -761,7 +755,7 @@ function loadTheme() {
     if (_cssStylesheet != null)
         cssStylesheet = _cssStylesheet;
 
-    let theme = new St.Theme ();
+    let theme = new St.Theme( {default_stylesheet: FALLBACK_THEME_PATH} );
     theme.load_stylesheet(cssStylesheet);
     
     themeContext.set_theme (theme);
@@ -1454,17 +1448,4 @@ function getTabList(workspaceOpt, screenOpt) {
         }
     }
     return windows;
-}
-
-/**
- * toggleDesktop:
- *
- * Shows or unshows desktop
- */
-function toggleDesktop() {
-    if (desktopShown)
-        global.screen.unshow_desktop();
-    else
-        global.screen.show_desktop(global.get_current_time());
-    desktopShown = !desktopShown;
 }
