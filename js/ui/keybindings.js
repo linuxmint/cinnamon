@@ -32,7 +32,7 @@ const MediaKeysManagerInterface = {
     name: 'org.cinnamon.SettingsDaemon.KeybindingHandler',
     methods:
         [
-            { name: 'HandleKeybinding', inSignature: 'uu', outSignature: '' }
+            { name: 'HandleKeybinding', inSignature: 'u', outSignature: '' }
         ],
     signals: []
 };
@@ -124,7 +124,7 @@ KeybindingManager.prototype = {
     },
 
     on_media_key_pressed: function(display, screen, event, kb, action) {
-        this._proxy.HandleKeybindingRemote(action, global.get_current_time());
+        this._proxy.HandleKeybindingRemote(action);
     }
 };
 Signals.addSignalMethods(KeybindingManager.prototype);
