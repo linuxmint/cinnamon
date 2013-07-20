@@ -21,7 +21,7 @@
 #include <clutter/x11/clutter-x11.h>
 #include <gdk/gdkx.h>
 #include <gio/gio.h>
-#include <gjs/gjs-module.h>
+#include <cjs/gjs-module.h>
 #include <girepository.h>
 #include <meta/display.h>
 #include <meta/util.h>
