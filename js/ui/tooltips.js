@@ -83,7 +83,7 @@ Tooltip.prototype = {
         var tooltipLeft = this._mousePosition[0];
 
         if (tooltipLeft<0) tooltipLeft = 0;
-        if (tooltipLeft+tooltipWidth>monitor.width) tooltipLeft = monitor.width-tooltipWidth;
+        if (tooltipLeft+tooltipWidth>monitor.x+monitor.width) tooltipLeft = (monitor.x+monitor.width)-tooltipWidth;
 
         this._tooltip.set_position(tooltipLeft, tooltipTop);
 
