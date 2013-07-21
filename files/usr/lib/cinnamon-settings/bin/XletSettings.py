@@ -111,7 +111,7 @@ class XletSetting:
                         raise Exception("Failed to parse settings JSON data for %s %s" % (self.type, self.uuid))
                     instance_id = instance.split(".json")[0]
                     self.applet_settings[instance_id] = js
-                    self.setting_factories[instance_id] = XletSettingsWidgets.Factory("%s/%s" % (path, instance), instance_id, self.multi_instance)
+                    self.setting_factories[instance_id] = XletSettingsWidgets.Factory("%s/%s" % (path, instance), instance_id, self.multi_instance, self.uuid)
                 return True
             else:
                 raise Exception("Could not find any active setting files for %s %s" % (self.type, self.uuid))
