@@ -133,6 +133,13 @@ ApplicationContextMenuItem.prototype = {
                 let desktopFiles = settings.get_strv('panel-launchers');
                 desktopFiles.push(this._appButton.app.get_id());
                 settings.set_strv('panel-launchers', desktopFiles);
+                if (!Main.AppletManager.get_object_for_uuid("panel-launchers@cinnamon.org")){
+                    var new_applet_id = global.settings.get_int("next-applet-id");
+                    global.settings.set_int("next-applet-id", (new_applet_id + 1));
+                    var enabled_applets = global.settings.get_strv("enabled-applets");
+                    enabled_applets.push("panel1:right:0:panel-launchers@cinnamon.org:" + new_applet_id);
+                    global.settings.set_strv("enabled-applets", enabled_applets);
+                }
                 break;
             case "add_to_desktop":
                 let file = Gio.file_new_for_path(this._appButton.app.get_app_info().get_filename());
