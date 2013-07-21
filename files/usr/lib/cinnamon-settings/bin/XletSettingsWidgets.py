@@ -10,6 +10,7 @@ try:
     import json
     import dbus
     import eyedropper
+    import locale
     from gi.repository import Gio, Gtk, GObject, Gdk, GdkPixbuf
 except Exception, detail:
     print detail
@@ -18,8 +19,8 @@ except Exception, detail:
 home = os.path.expanduser("~")
 
 setting_dict = {
-    "header"          :   "Header", # Not a setting, just a boldface header text
-    "separator"       :   "Separator", # not a setting, a horizontal separator
+    "header"          :   "Header",  # Not a setting, just a boldface header text
+    "separator"       :   "Separator",  # not a setting, a horizontal separator
     "entry"           :   "Entry",
     "checkbox"        :   "CheckButton",
     "spinbutton"      :   "SpinButton",
@@ -30,20 +31,21 @@ setting_dict = {
     "radiogroup"      :   "RadioGroup",
     "iconfilechooser" :   "IconFileChooser",
     "keybinding"      :   "Keybinding",
-    "button"          :   "Button" # Not a setting, provides a button which triggers a callback in the applet/desklet
+    "button"          :   "Button"  # Not a setting, provides a button which triggers a callback in the applet/desklet
 }
 
 
 class Factory():
-    def __init__(self, file_name, instance_id, multi_instance):
+    def __init__(self, file_name, instance_id, multi_instance, uuid):
         self.file = file_name
-        self.settings = Settings(file_name, self, instance_id, multi_instance)
+        self.settings = Settings(file_name, self, instance_id, multi_instance, uuid)
         self.widgets = collections.OrderedDict()
         self.file_obj = Gio.File.new_for_path(self.file)
         self.file_monitor = self.file_obj.monitor_file(Gio.FileMonitorFlags.SEND_MOVED, None)
         self.handler = self.file_monitor.connect("changed", self.on_file_changed)
         self.file_changed_timeout = None
         self.resume_timeout = None
+
 
     def create(self, key, setting_type, uuid):
         try:
@@ -109,12 +111,64 @@ class Factory():
             print detail
 
 
+class Translator():
+    def __init__(self, uuid):
+        self.uuid = uuid
+        loc = locale.getlocale()
+        self.locale = loc[0] + "." + loc[1]
+        self.translations_found = False
+        self.translations = None
+        self.find_locale_data()
+
+    def single_translation (self, data):
+        if not isinstance(data, basestring):
+            return data
+        if data[0] == "$" and data[1] != "$":
+            key = data[1:]
+            if self.translations is not None:
+                if key in self.translations.keys():
+                    return self.translations[key]
+                else:
+                    return key
+            else:
+                return key
+        else:
+            return data
+
+    def translate(self, settings_dict):
+        for key in settings_dict.keys():
+            settings_dict[key] = self.single_translation(settings_dict[key])
+            try:
+                self.translate(settings_dict[key])
+            except AttributeError:
+                pass
+
+    def find_locale_data (self):
+        xlets = ("applets", "desklets", "extensions")
+        for xlet in xlets:
+            found = self.get_translation_file_for_xlet("/usr/share/cinnamon/%s/%s/settings-i18n" % (xlet, self.uuid))
+            if not found:
+                found = self.get_translation_file_for_xlet("%s/.local/share/cinnamon/%s/%s/settings-i18n" % (home, xlet, self.uuid))
+            if found:
+                break
+        self.translations_found = found
+
+    def get_translation_file_for_xlet(self, path):
+        if os.path.exists(path) and os.path.isdir(path):
+            if os.path.exists("%s/%s.json" % (path, self.locale)):
+                raw_data = open("%s/%s.json" % (path, self.locale)).read()
+                self.translations = json.loads(raw_data)
+                return True
+        return False
+
 class Settings():
-    def __init__(self, file_name, factory, instance_id, multi_instance):
+    def __init__(self, file_name, factory, instance_id, multi_instance, uuid):
         self.file_name = file_name
         self.factory = factory
         self.instance_id = instance_id
         self.multi_instance = multi_instance
+        self.uuid = uuid
+        self.t = Translator(self.uuid)
         self.reload()
 
     def reload (self):
@@ -123,6 +177,7 @@ class Settings():
         self.data = {}
         self.data = json.loads(raw_data, object_pairs_hook=collections.OrderedDict)
         _file.close()
+        self.t.translate(self.data)
 
     def save (self, name = None):
         if name is None:
@@ -383,6 +438,7 @@ class CheckButton(Gtk.CheckButton, BaseWidget):
     def update_dep_state(self, active):
         self.set_sensitive(active)
 
+
 class SpinButton(Gtk.HBox, BaseWidget):
     def __init__(self, key, settings_obj, uuid):
         BaseWidget.__init__(self, key, settings_obj, uuid)
@@ -426,6 +482,7 @@ class SpinButton(Gtk.HBox, BaseWidget):
     def update_dep_state(self, active):
         self.spinner.set_sensitive(active)
 
+
 class Entry(Gtk.HBox, BaseWidget):
     def __init__(self, key, settings_obj, uuid):
         BaseWidget.__init__(self, key, settings_obj, uuid)
@@ -456,6 +513,7 @@ class Entry(Gtk.HBox, BaseWidget):
 
     def update_dep_state(self, active):
         self.entry.set_sensitive(active)
+
 
 class ColorChooser(Gtk.HBox, BaseWidget):
     def __init__(self, key, settings_obj, uuid):
@@ -498,6 +556,7 @@ class ColorChooser(Gtk.HBox, BaseWidget):
 
     def update_dep_state(self, active):
         self.chooser.set_sensitive(active)
+
 
 class ComboBox(Gtk.HBox, BaseWidget):
     def __init__(self, key, settings_obj, uuid):
@@ -553,6 +612,7 @@ class ComboBox(Gtk.HBox, BaseWidget):
 
     def update_dep_state(self, active):
         self.combo.set_sensitive(active)
+
 
 class RadioGroup(Gtk.VBox, BaseWidget):
     def __init__(self, key, settings_obj, uuid):
