@@ -120,12 +120,10 @@ class Translator():
         self.translations = None
         self.find_locale_data()
 
-    def translate(self, data):
-        # if string is found, return translation
-        # else return string again
-        if not isinstance (data, basestring):
+    def single_translation (self, data):
+        if not isinstance(data, basestring):
             return data
-        if data[0] == "&" and data[1] != "&":
+        if data[0] == "$" and data[1] != "$":
             key = data[1:]
             if self.translations is not None:
                 if key in self.translations.keys():
@@ -137,12 +135,22 @@ class Translator():
         else:
             return data
 
+    def translate(self, settings_dict):
+        for key in settings_dict.keys():
+            settings_dict[key] = self.single_translation(settings_dict[key])
+            try:
+                self.translate(settings_dict[key])
+            except AttributeError:
+                pass
+
     def find_locale_data (self):
         xlets = ("applets", "desklets", "extensions")
         for xlet in xlets:
             found = self.get_translation_file_for_xlet("/usr/share/cinnamon/%s/%s/settings-i18n" % (xlet, self.uuid))
             if not found:
                 found = self.get_translation_file_for_xlet("%s/.local/share/cinnamon/%s/%s/settings-i18n" % (home, xlet, self.uuid))
+            if found:
+                break
         self.translations_found = found
 
     def get_translation_file_for_xlet(self, path):
@@ -169,6 +177,7 @@ class Settings():
         self.data = {}
         self.data = json.loads(raw_data, object_pairs_hook=collections.OrderedDict)
         _file.close()
+        self.t.translate(self.data)
 
     def save (self, name = None):
         if name is None:
@@ -182,7 +191,7 @@ class Settings():
         self.factory.resume_monitor()
 
     def get_data(self, key):
-        return self.t.translate(self.data[key])
+        return self.data[key]
 
     def get_key_exists(self, key):
         return key in self.data.keys()
