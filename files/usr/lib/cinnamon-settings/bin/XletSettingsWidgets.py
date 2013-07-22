@@ -120,7 +120,7 @@ class Settings():
             self.t = gettext.translation(self.uuid, home+"/.local/share/locale").ugettext
         except IOError:
             try:
-                self.t = gettext.translation(self.uuid, home+"/usr/share/locale").ugettext
+                self.t = gettext.translation(self.uuid, "/usr/share/locale").ugettext
             except IOError:
                 try:
                     self.t = gettext.translation("cinnamon", "/usr/share/cinnamon/locale").ugettext
