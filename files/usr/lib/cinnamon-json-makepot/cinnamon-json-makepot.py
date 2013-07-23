@@ -72,7 +72,7 @@ class Main:
                 subprocess.call(["xgettext", "--version"])
             except OSError:
                 print "xgettext not found, you may need to install the gettext package"
-                exit()
+                quit()
             print " "
             print "Running xgettext on JavaScript files..."
             os.system("xgettext --language=C --keyword=_ --output=%s *.js" % (self.potname))
@@ -97,6 +97,7 @@ class Main:
             self.po.save(fpath=self.potpath)
 
         print "Extraction complete"
+        quit()
 
     def scan_dirs(self):
         for root, subFolders, files in os.walk(os.getcwd(), topdown=False):
