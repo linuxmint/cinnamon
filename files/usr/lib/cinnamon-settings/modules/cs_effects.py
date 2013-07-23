@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from SettingsWidgets import *
+from gi.repository.Gtk import SizeGroup, SizeGroupMode
 
 class Module:
     def __init__(self, content_box):
@@ -50,17 +51,29 @@ class Module:
                                "easeInOutBounce"]]
 
         def _make_effect_group(group_label, key, effects):
-            tmin, tmax, tstep, tpage = (0, 2000, 50, 200)
+            tmin, tmax, tstep, tdefault = (0, 2000, 50, 200)
+            self.size_groups = getattr(self, "size_groups", [SizeGroup(SizeGroupMode.HORIZONTAL) for x in range(4)])
             root = "org.cinnamon"
             path = "org.cinnamon/desktop-effects"
             template = "desktop-effects-%s-%s"
+
             box = IndentedHBox()
             label = Gtk.Label()
             label.set_markup(group_label)
+            label.props.xalign = 0.0
+            self.size_groups[0].add_widget(label)
             box.add(label)
-            box.add(GSettingsComboBox("", root, template % (key, "effect"), path, effects))
-            box.add(GSettingsComboBox("", root, template % (key, "transition"), path, transition_effects))
-            box.add(GSettingsSpinButton("", root, template % (key, "time"), path, tmin, tmax, tstep, tpage, _("milliseconds")))
+
+            w = GSettingsComboBox("", root, template % (key, "effect"), path, effects)
+            self.size_groups[1].add_widget(w)
+            box.add(w)
+            w = GSettingsComboBox("", root, template % (key, "transition"), path, transition_effects)
+            self.size_groups[2].add_widget(w)
+            box.add(w)
+            w = GSettingsSpinButton("", root, template % (key, "time"), path, tmin, tmax, tstep, tdefault, _("milliseconds"))
+            self.size_groups[3].add_widget(w)
+            box.add(w)
+
             return box
         
         #CLOSING WINDOWS
