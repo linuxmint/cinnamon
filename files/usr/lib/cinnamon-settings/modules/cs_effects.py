@@ -11,7 +11,50 @@ class Module:
         self.sidePage = sidePage
         self.name = "effects"
         self.category = "appear"
-        sidePage.add_widget(GSettingsCheckButton(_("Enable desktop effects"), "org.cinnamon", "desktop-effects", None))
+        self.subsettings = []
+
+        def _make_heading(label):
+            l = Gtk.Label()
+            l.set_markup("<b>%s</b>" % label)
+            l.props.xalign = 0.0
+            return l
+
+        def _make_effect_group(group_label, key, effects):
+            tmin, tmax, tstep, tpage = (0, 2000, 50, 200)
+            self.size_groups = getattr(self, "size_groups", [SizeGroup(SizeGroupMode.HORIZONTAL) for x in range(4)])
+            root = "org.cinnamon"
+            path = "org.cinnamon/desktop-effects"
+            template = "desktop-effects-%s-%s"
+
+            box = IndentedHBox()
+            label = Gtk.Label()
+            label.set_markup(group_label)
+            label.props.xalign = 0.0
+            self.size_groups[0].add_widget(label)
+            box.add(label)
+
+            w = GSettingsComboBox("", root, template % (key, "effect"), path, effects)
+            self.size_groups[1].add_widget(w)
+            box.add(w)
+            w = GSettingsComboBox("", root, template % (key, "transition"), path, transition_effects)
+            self.size_groups[2].add_widget(w)
+            box.add(w)
+            w = GSettingsSpinButton("", root, template % (key, "time"), path, tmin, tmax, tstep, tpage, _("milliseconds"))
+            self.size_groups[3].add_widget(w)
+            box.add(w)
+
+            self.subsettings += [box]
+            return box
+        
+        sidePage.add_widget(_make_heading(_("Desktop effects")))
+
+        box = IndentedHBox()
+        effects_check = GSettingsCheckButton(_("Enable desktop effects"), "org.cinnamon", "desktop-effects", None)
+        box.add(effects_check)
+        sidePage.add_widget(box)
+
+        def _toggle_enabled(settings, key):
+            [w.set_sensitive(settings.get_boolean(key)) for w in self.subsettings]
 
         box = IndentedHBox()
         box.add(GSettingsCheckButton(_("Enable desktop effects on dialog boxes"), "org.cinnamon", "desktop-effects-on-dialogs", "org.cinnamon/desktop-effects"))
@@ -50,31 +93,6 @@ class Module:
                                "easeOutBounce",
                                "easeInOutBounce"]]
 
-        def _make_effect_group(group_label, key, effects):
-            tmin, tmax, tstep, tdefault = (0, 2000, 50, 200)
-            self.size_groups = getattr(self, "size_groups", [SizeGroup(SizeGroupMode.HORIZONTAL) for x in range(4)])
-            root = "org.cinnamon"
-            path = "org.cinnamon/desktop-effects"
-            template = "desktop-effects-%s-%s"
-
-            box = IndentedHBox()
-            label = Gtk.Label()
-            label.set_markup(group_label)
-            label.props.xalign = 0.0
-            self.size_groups[0].add_widget(label)
-            box.add(label)
-
-            w = GSettingsComboBox("", root, template % (key, "effect"), path, effects)
-            self.size_groups[1].add_widget(w)
-            box.add(w)
-            w = GSettingsComboBox("", root, template % (key, "transition"), path, transition_effects)
-            self.size_groups[2].add_widget(w)
-            box.add(w)
-            w = GSettingsSpinButton("", root, template % (key, "time"), path, tmin, tmax, tstep, tdefault, _("milliseconds"))
-            self.size_groups[3].add_widget(w)
-            box.add(w)
-
-            return box
         
         #CLOSING WINDOWS
         effects = [["none", _("None")], ["scale", _("Scale")], ["fade", _("Fade")]]        
@@ -100,4 +118,7 @@ class Module:
         effects = [["none", _("None")], ["scale", _("Scale")]]
         sidePage.add_widget(_make_effect_group(_("Tiling and snapping windows:"), "tile", effects))
 
-        sidePage.add_widget(GSettingsCheckButton(_("Enable fade effect on Cinnamon scrollboxes (like the Menu application list)"), "org.cinnamon", "enable-vfade", None))
+        sidePage.add_widget(_make_heading(_("Miscellaneous")))
+        box = IndentedHBox()
+        box.add(GSettingsCheckButton(_("Enable fade effect on Cinnamon scrollboxes (like the Menu application list)"), "org.cinnamon", "enable-vfade", None))
+        sidePage.add_widget(box)
