@@ -151,8 +151,7 @@ def rec_mkdir(path):
 class IndentedHBox(Gtk.HBox):
     def __init__(self):
         super(IndentedHBox, self).__init__()
-        indent = Gtk.Label('\t')
-        self.pack_start(indent, False, False, 0)
+        self.props.margin_left = level * 12
 
     def add(self, item):
         self.pack_start(item, False, True, 0)
