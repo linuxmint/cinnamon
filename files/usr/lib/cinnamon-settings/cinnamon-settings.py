@@ -287,7 +287,7 @@ class MainWindow:
 
         widget = Gtk.Label()
         widget.set_use_markup(True)
-        widget.set_markup('<span size="12000">%s</span>' % category["label"])
+        widget.set_markup('<span size="11000"><b>%s</b></span>' % category["label"])
         widget.set_alignment(.5, .5)
         box.pack_start(widget, False, False, 1)
         self.side_view_container.pack_start(box, False, False, 0)
