@@ -5,7 +5,8 @@ import pwd, grp
 from gi.repository import Gtk, GObject, Gio, GdkPixbuf, AccountsService
 import gettext
 import shutil
-
+import PIL
+from PIL import Image
 
 gettext.install("cinnamon", "/usr/share/cinnamon/locale")
 
@@ -430,18 +431,22 @@ class Module:
             row = 0
             col = 0       
             num_cols = 4
-            for picture in os.listdir("/usr/share/pixmaps/cinnamon/faces"):
-                path = os.path.join("/usr/share/pixmaps/cinnamon/faces", picture)            
-                file = Gio.File.new_for_path(path)
-                file_icon = Gio.FileIcon().new(file)
-                image = Gtk.Image.new_from_gicon (file_icon, Gtk.IconSize.DIALOG)            
-                menuitem = Gtk.MenuItem()
-                menuitem.add(image)
-                menuitem.connect('activate', self._on_face_menuitem_activated, path)
-                self.menu.attach(menuitem, col, col+1, row, row+1)            
-                col = (col+1) % num_cols            
-                if (col == 0):
-                    row = row + 1
+            face_dirs = ["/usr/share/cinnamon/faces"]
+            for face_dir in face_dirs:
+                if os.path.exists(face_dir):
+                    pictures = sorted(os.listdir(face_dir))
+                    for picture in pictures:
+                        path = os.path.join(face_dir, picture)            
+                        file = Gio.File.new_for_path(path)
+                        file_icon = Gio.FileIcon().new(file)
+                        image = Gtk.Image.new_from_gicon (file_icon, Gtk.IconSize.DIALOG)            
+                        menuitem = Gtk.MenuItem()
+                        menuitem.add(image)
+                        menuitem.connect('activate', self._on_face_menuitem_activated, path)
+                        self.menu.attach(menuitem, col, col+1, row, row+1)            
+                        col = (col+1) % num_cols            
+                        if (col == 0):
+                            row = row + 1
 
             row = row + 1
 
@@ -540,41 +545,54 @@ class Module:
             model.set_value(treeiter, INDEX_USER_DESCRIPTION, description)            
 
     def _on_face_browse_menuitem_activated(self, menuitem):
-        dialog = Gtk.FileChooserDialog(None, None, Gtk.FileChooserAction.OPEN, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
-        dialog.set_current_folder(self.accountService.get_home_dir())
-        filter = Gtk.FileFilter()
-        filter.set_name(_("Images"))
-        filter.add_mime_type("image/*")
-        dialog.add_filter(filter)
-        
-        preview = Gtk.Image()
-        dialog.set_preview_widget(preview);
-        dialog.connect("update-preview", self.update_preview_cb, preview)
-        dialog.set_use_preview_label(False)
+        model, treeiter = self.users_treeview.get_selection().get_selected()
+        if treeiter != None:
+            user = model[treeiter][INDEX_USER_OBJECT]
+            dialog = Gtk.FileChooserDialog(None, None, Gtk.FileChooserAction.OPEN, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK))        
+            filter = Gtk.FileFilter()
+            filter.set_name(_("Images"))
+            filter.add_mime_type("image/*")
+            dialog.add_filter(filter)
+            
+            preview = Gtk.Image()
+            dialog.set_preview_widget(preview);
+            dialog.connect("update-preview", self.update_preview_cb, preview)
+            dialog.set_use_preview_label(False)
 
-        response = dialog.run()
-        if response == Gtk.ResponseType.OK:
-            path = dialog.get_filename()
-            image = PIL.Image.open(path)            
-            width, height = image.size            
-            if width > height:
-                new_width = height
-                new_height = height
-            elif height > width:
-                new_width = width
-                new_height = width
-            left = (width - new_width)/2
-            top = (height - new_height)/2
-            right = (width + new_width)/2
-            bottom = (height + new_height)/2            
-            image = image.crop((left, top, right, bottom))
-            image.thumbnail((96, 96), Image.ANTIALIAS)            
-            face_path = os.path.join(self.accountService.get_home_dir(), ".face")
-            image.save(face_path, "png")
-            self.accountService.set_icon_file(face_path)
-            self.face_image.set_from_file(face_path)
+            response = dialog.run()
+            if response == Gtk.ResponseType.OK:
+                path = dialog.get_filename()
+                image = PIL.Image.open(path)            
+                width, height = image.size            
+                if width > height:
+                    new_width = height
+                    new_height = height
+                elif height > width:
+                    new_width = width
+                    new_height = width
+                left = (width - new_width)/2
+                top = (height - new_height)/2
+                right = (width + new_width)/2
+                bottom = (height + new_height)/2            
+                image = image.crop((left, top, right, bottom))
+                image.thumbnail((96, 96), Image.ANTIALIAS)            
+                face_path = os.path.join(user.get_home_dir(), ".face")
+                image.save(face_path, "png")
+                user.set_icon_file(face_path)
+                self.face_image.set_from_file(face_path)
+                model.set_value(treeiter, INDEX_USER_PICTURE, GdkPixbuf.Pixbuf.new_from_file_at_size(face_path, 48, 48))
+                model.row_changed(model.get_path(treeiter), treeiter)
 
-        dialog.destroy()
+            dialog.destroy()
+
+    def update_preview_cb (self, dialog, preview):      
+        filename = dialog.get_preview_filename()
+        dialog.set_preview_widget_active(False)
+        if os.path.isfile(filename):
+            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(filename, 128, 128)
+            if pixbuf is not None:      
+                preview.set_from_pixbuf (pixbuf)      
+                dialog.set_preview_widget_active(True)                
 
     def _on_face_menuitem_activated(self, menuitem, path):        
         if os.path.exists(path):

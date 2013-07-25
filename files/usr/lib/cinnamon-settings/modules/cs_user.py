@@ -113,18 +113,22 @@ class Module:
         row = 0
         col = 0       
         num_cols = 4
-        for picture in os.listdir("/usr/share/pixmaps/cinnamon/faces"):
-            path = os.path.join("/usr/share/pixmaps/cinnamon/faces", picture)            
-            file = Gio.File.new_for_path(path)
-            file_icon = Gio.FileIcon().new(file)
-            image = Gtk.Image.new_from_gicon (file_icon, Gtk.IconSize.DIALOG)            
-            menuitem = Gtk.MenuItem()
-            menuitem.add(image)
-            menuitem.connect('activate', self._on_face_menuitem_activated, path)
-            self.menu.attach(menuitem, col, col+1, row, row+1)            
-            col = (col+1) % num_cols            
-            if (col == 0):
-                row = row + 1
+        face_dirs = ["/usr/share/cinnamon/faces"]
+        for face_dir in face_dirs:
+            if os.path.exists(face_dir):
+                pictures = sorted(os.listdir(face_dir))
+                for picture in pictures:
+                    path = os.path.join(face_dir, picture)            
+                    file = Gio.File.new_for_path(path)
+                    file_icon = Gio.FileIcon().new(file)
+                    image = Gtk.Image.new_from_gicon (file_icon, Gtk.IconSize.DIALOG)            
+                    menuitem = Gtk.MenuItem()
+                    menuitem.add(image)
+                    menuitem.connect('activate', self._on_face_menuitem_activated, path)
+                    self.menu.attach(menuitem, col, col+1, row, row+1)            
+                    col = (col+1) % num_cols            
+                    if (col == 0):
+                        row = row + 1
 
         row = row + 1
 
