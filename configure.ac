@@ -74,7 +74,7 @@ PKG_CHECK_MODULES(CINNAMON, gio-2.0 >= $GIO_MIN_VERSION
                                gio-unix-2.0 dbus-glib-1 libxml-2.0
                                gtk+-3.0 >= $GTK_MIN_VERSION
                                libmuffin >= $MUFFIN_MIN_VERSION
-                               gjs-internals-1.0 >= $GJS_MIN_VERSION
+                               cjs-internals-1.0 >= $GJS_MIN_VERSION
 			       libgnome-menu-3.0 $recorder_modules gconf-2.0
                                gdk-x11-3.0 libsoup-2.4 gl
 			       clutter-x11-1.0 >= $CLUTTER_MIN_VERSION
@@ -88,7 +88,7 @@ PKG_CHECK_MODULES(CINNAMON_PERF_HELPER, gtk+-3.0 gio-2.0)
 
 PKG_CHECK_MODULES(CINNAMON_HOTPLUG_SNIFFER, gio-2.0 gdk-pixbuf-2.0)
 
-GJS_VERSION=`$PKG_CONFIG --modversion gjs-internals-1.0`
+GJS_VERSION=`$PKG_CONFIG --modversion cjs-internals-1.0`
 AC_DEFINE_UNQUOTED([GJS_VERSION], ["$GJS_VERSION"], [The version of GJS we're linking to])
 AC_SUBST([GJS_VERSION], ["$GJS_VERSION"])
 
@@ -129,7 +129,7 @@ MUFFIN_TYPELIB_DIR=`$PKG_CONFIG --variable=typelibdir libmuffin`
 AC_SUBST(MUFFIN_GIR_DIR)
 AC_SUBST(MUFFIN_TYPELIB_DIR)
 
-GJS_CONSOLE=`$PKG_CONFIG --variable=gjs_console gjs-1.0`
+GJS_CONSOLE=`$PKG_CONFIG --variable=cjs_console cjs-1.0`
 AC_SUBST(GJS_CONSOLE)
 
 AC_CHECK_FUNCS(fdwalk)

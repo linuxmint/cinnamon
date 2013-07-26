@@ -1132,6 +1132,7 @@ function pushModal(actor, timestamp) {
             log('pushModal: invocation of begin_modal failed');
             return false;
         }
+        Meta.disable_unredirect_for_screen(global.screen);
     }
 
     global.set_stage_input_mode(Cinnamon.StageInputMode.FULLSCREEN);
@@ -1212,6 +1213,7 @@ function popModal(actor, timestamp) {
 
     global.end_modal(timestamp);
     global.set_stage_input_mode(Cinnamon.StageInputMode.NORMAL);
+    Meta.enable_unredirect_for_screen(global.screen);
 }
 
 /**
