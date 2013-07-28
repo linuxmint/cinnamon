@@ -416,8 +416,7 @@ class Module:
             self.face_button = Gtk.Button()
             self.face_image = Gtk.Image()  
             self.face_button.set_image(self.face_image)
-            if os.path.exists("/usr/share/pixmaps/faces/user-generic.png"):
-                self.face_image.set_from_file("/usr/share/pixmaps/faces/user-generic.png")      
+            self.face_image.set_from_file("/usr/share/cinnamon/faces/user-generic.png")      
             self.face_button.set_alignment(0.0, 0.5)
             self.face_button.set_tooltip_text(_("Click to change the picture"))
 
@@ -637,7 +636,7 @@ class Module:
             if os.path.exists(user.get_icon_file()):
                 pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(user.get_icon_file(), 48, 48)
             else:
-                pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size("/usr/share/pixmaps/faces/user-generic.png", 48, 48)
+                pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size("/usr/share/cinnamon/faces/user-generic.png", 48, 48)
             description = "<b>%s</b>\n%s" % (user.get_real_name(), user.get_user_name())
             piter = self.users.append(None, [user, pixbuf, description])            
         self.users_treeview.set_model(self.users)        
@@ -673,7 +672,7 @@ class Module:
             if os.path.exists(user.get_icon_file()):
                 self.face_image.set_from_file(user.get_icon_file())
             else:
-                self.face_image.set_from_file("/usr/share/pixmaps/faces/user-generic.png")
+                self.face_image.set_from_file("/usr/share/cinnamon/faces/user-generic.png")
             
             groups = []
             for group in grp.getgrall():              
@@ -727,7 +726,7 @@ class Module:
             username = dialog.username_entry.get_text()
             new_user = self.accountService.create_user(username, fullname, account_type)
             new_user.set_password_mode(AccountsService.UserPasswordMode.NONE)
-            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size("/usr/share/pixmaps/faces/user-generic.png", 48, 48)
+            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size("/usr/share/cinnamon/faces/user-generic.png", 48, 48)
             description = "<b>%s</b>\n%s" % (fullname, username)
             piter = self.users.append(None, [new_user, pixbuf, description])
             # Add the user to his/her own group and sudo if Administrator was selected

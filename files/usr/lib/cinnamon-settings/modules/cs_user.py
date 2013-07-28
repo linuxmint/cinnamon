@@ -84,8 +84,7 @@ class Module:
         self.face_button = Gtk.Button()
         self.face_image = Gtk.Image()  
         self.face_button.set_image(self.face_image)
-        if os.path.exists("/usr/share/pixmaps/faces/user-generic.png"):
-            self.face_image.set_from_file("/usr/share/pixmaps/faces/user-generic.png")      
+        self.face_image.set_from_file("/usr/share/cinnamon/faces/user-generic.png")      
         self.face_button.set_alignment(0.0, 0.5)
         self.face_button.set_tooltip_text(_("Click to change your picture"))
 
