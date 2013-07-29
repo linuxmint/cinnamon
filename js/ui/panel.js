@@ -695,13 +695,13 @@ Panel.prototype = {
                     this._shiftActor();
         }));
 
-        this.actor.connect('button-release-event', Lang.bind(this, this._onButtonReleaseEvent));                            
-        
-        this._onPanelEditModeChanged();
+        this.actor.connect('button-release-event', Lang.bind(this, this._onButtonReleaseEvent));
+
         global.settings.connect("changed::panel-edit-mode", Lang.bind(this, this._onPanelEditModeChanged));
         global.settings.connect("changed::panel-resizable", Lang.bind(this, this._processPanelSize));
         global.settings.connect("changed::panel-scale-text-icons", Lang.bind(this, this._onScaleTextIconsChanged))
         this.actor.connect('style-changed', Lang.bind(this, this._processPanelSize));
+        this.actor.connect('parent-set', Lang.bind(this, this._onPanelEditModeChanged));
     },
 
     isHideable: function() {
