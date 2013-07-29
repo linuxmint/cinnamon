@@ -348,7 +348,7 @@ function createApplet(extension, appletDefinition) {
     return(applet);
 }
 
-function _removeAppletFromPanel(menuitem, event, uuid, applet_id) {
+function _removeAppletFromPanel(obj, event, keepMenu, uuid, applet_id) {
     let enabledApplets = enabledAppletDefinitions.raw;
     for (let i=0; i<enabledApplets.length; i++) {
         let appletDefinition = getAppletDefinition(enabledApplets[i]);
