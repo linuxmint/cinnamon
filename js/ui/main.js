@@ -777,7 +777,7 @@ function loadTheme() {
 
     let theme;
 
-    if (_cssStylesheet == _defaultCssStylesheet)
+    if (cssStylesheet == _defaultCssStylesheet)
         theme = new St.Theme();
     else
         theme = new St.Theme( {default_stylesheet: _defaultCssStylesheet} );
