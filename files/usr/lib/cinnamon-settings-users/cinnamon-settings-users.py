@@ -642,8 +642,9 @@ class Module:
         self.users_treeview.set_model(self.users)        
 
     def load_groups(self):
-        self.groups.clear()       
-        for group in grp.getgrall():
+        self.groups.clear() 
+        groups = sorted(grp.getgrall(), key=lambda x: x[0], reverse=False)
+        for group in groups:
             (gr_name, gr_passwd, gr_gid, gr_mem) = group                        
             piter = self.groups.append(None, [gr_gid, gr_name])
         self.groups_treeview.set_model(self.groups)   
