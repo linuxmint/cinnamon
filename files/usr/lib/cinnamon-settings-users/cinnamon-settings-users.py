@@ -516,6 +516,7 @@ class Module:
             if response == Gtk.ResponseType.OK:
                 groups = dialog.get_selected_groups()                
                 os.system("usermod %s -G %s" % (user.get_user_name(), ",".join(groups)))
+                groups.sort()
                 self.groups_label.set_text(", ".join(groups))
             dialog.destroy()
 
@@ -532,7 +533,7 @@ class Module:
             for group in grp.getgrall():              
                 if user.get_user_name() in group[3]:                    
                     groups.append(group[0])
-
+            groups.sort()
             self.groups_label.set_text(", ".join(groups))
 
     def _on_realname_changed(self, widget, text):
@@ -679,7 +680,7 @@ class Module:
             for group in grp.getgrall():              
                 if user.get_user_name() in group[3]:                    
                     groups.append(group[0])
-
+            groups.sort()
             self.groups_label.set_text(", ".join(groups))
             self.builder.get_object("box_users").show()
 
