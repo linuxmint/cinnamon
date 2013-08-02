@@ -73,14 +73,14 @@ VisibleChildIterator.prototype = {
 
     getNextVisible: function(cur_child) {
         if (this.visible_children.indexOf(cur_child) == this._num_children-1)
-            return cur_child;
+            return this.visible_children[0];
         else
             return this.visible_children[this.visible_children.indexOf(cur_child)+1];
     },
 
     getPrevVisible: function(cur_child) {
         if (this.visible_children.indexOf(cur_child) == 0)
-            return cur_child;
+            return this.visible_children[this._num_children-1];
         else
             return this.visible_children[this.visible_children.indexOf(cur_child)-1];
     },
@@ -133,6 +133,13 @@ ApplicationContextMenuItem.prototype = {
                 let desktopFiles = settings.get_strv('panel-launchers');
                 desktopFiles.push(this._appButton.app.get_id());
                 settings.set_strv('panel-launchers', desktopFiles);
+                if (!Main.AppletManager.get_object_for_uuid("panel-launchers@cinnamon.org")){
+                    var new_applet_id = global.settings.get_int("next-applet-id");
+                    global.settings.set_int("next-applet-id", (new_applet_id + 1));
+                    var enabled_applets = global.settings.get_strv("enabled-applets");
+                    enabled_applets.push("panel1:right:0:panel-launchers@cinnamon.org:" + new_applet_id);
+                    global.settings.set_strv("enabled-applets", enabled_applets);
+                }
                 break;
             case "add_to_desktop":
                 let file = Gio.file_new_for_path(this._appButton.app.get_app_info().get_filename());
@@ -998,6 +1005,14 @@ MyApplet.prototype = {
         let keyCode = event.get_key_code();
         let modifierState = Cinnamon.get_event_state(event);
 
+        /* check for a keybinding and quit early, otherwise we get a double hit
+           of the keybinding callback */
+        let action = global.display.get_keybinding_action(keyCode, modifierState);
+
+        if (action == Meta.KeyBindingAction.CUSTOM) {
+            return true;
+        }
+
         if (global.display.get_is_overlay_key(keyCode, modifierState) && this.menu.isOpen) {
             this.menu.close();
             return true;
@@ -1313,10 +1328,12 @@ MyApplet.prototype = {
                 this._addEnterEvent(button, Lang.bind(this, function() {
                         this._clearPrevAppSelection(button.actor);
                         button.actor.style_class = "menu-application-button-selected";
+                        this.selectedAppTitle.set_text("");
                         this.selectedAppDescription.set_text(button.place.id.slice(16));
                         }));
                 button.actor.connect('leave-event', Lang.bind(this, function() {
                             this._previousSelectedActor = button.actor;
+                            this.selectedAppTitle.set_text("");
                             this.selectedAppDescription.set_text("");
                             }));
                 this._placesButtons.push(button);
@@ -1366,6 +1383,7 @@ MyApplet.prototype = {
                 this._addEnterEvent(button, Lang.bind(this, function() {
                         this._clearPrevAppSelection(button.actor);
                         button.actor.style_class = "menu-application-button-selected";
+                        this.selectedAppTitle.set_text("");
                         this.selectedAppDescription.set_text(button.file.uri.slice(7));
                         }));
                 button.actor.connect('leave-event', Lang.bind(this, function() {

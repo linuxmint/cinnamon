@@ -28,13 +28,10 @@ class Module:
                                             [(i, i.title()) for i in ("","<Alt>","<Super>","<Control>")]))
 
         sidePage.add_widget(TitleBarButtonsOrderSelector())
-        sidePage.add_widget(GSettingsCheckButton(_("Enable Edge Tiling (\"Aero Snap\")"), "org.cinnamon.overrides", "edge-tiling", None))
-        sidePage.add_widget(GSettingsCheckButton(_("Enable Edge Flip"), "org.cinnamon", "enable-edge-flip", None))
 
-        sidePage.add_widget(GSettingsSpinButton(_("Window edge tile threshold"), "org.cinnamon.muffin", "edge-tile-threshold", None, 1, 400, 1, 1, _("Pixels")), True)
-        sidePage.add_widget(GSettingsSpinButton(_("Window drag detach threshold"), "org.cinnamon.muffin", "edge-detach-threshold", None, 1, 400, 1, 1, _("Pixels")), True)
+        sidePage.add_widget(GSettingsSpinButton(_("Window drag/resize threshold"), "org.cinnamon.muffin", "resize-threshold", None, 1, 100, 1, 1, _("Pixels")), True)
 
-        sidePage.add_widget(GSettingsCheckButton(_("Attach dialog windows to their parent window's titlebar"), "org.cinnamon.overrides", "attach-modal-dialogs", None))
+        sidePage.add_widget(GSettingsCheckButton(_("Attach dialog windows to their parent window's titlebar"), "org.cinnamon.muffin", "attach-modal-dialogs", None))
         alttab_styles = [["icons", _("Icons only")],["icons+thumbnails", _("Icons and thumbnails")],["icons+preview", _("Icons and window preview")],["preview", _("Window preview (no icons)")],["coverflow", _("Coverflow (3D)")],["timeline", _("Timeline (3D)")]]
         alttab_styles_combo = GSettingsComboBox(_("ALT-tab switcher style"), "org.cinnamon", "alttab-switcher-style", None, alttab_styles)
         sidePage.add_widget(alttab_styles_combo)
@@ -46,8 +43,8 @@ class Module:
 
 
 class TitleBarButtonsOrderSelector(Gtk.Table):
-    def __init__(self):        
-        self.schema = "org.cinnamon.overrides"
+    def __init__(self):
+        self.schema = "org.cinnamon.muffin"
         self.key = "button-layout"
         
         super(TitleBarButtonsOrderSelector, self).__init__()

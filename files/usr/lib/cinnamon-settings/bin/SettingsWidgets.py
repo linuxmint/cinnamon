@@ -155,7 +155,7 @@ class IndentedHBox(Gtk.HBox):
         self.pack_start(indent, False, False, 0)
 
     def add(self, item):
-        self.pack_start(item, False, False, 0)
+        self.pack_start(item, False, True, 0)
 
     def add_expand(self, item):
         self.pack_start(item, True, True, 0)
@@ -654,7 +654,9 @@ class GSettingsRangeSpin(Gtk.HBox):
             self.on_dependency_setting_changed(self, None)
 
     def on_my_setting_changed(self, settings, key):
-        self.content_widget.set_value(self.settings.get_double(self.key))
+        value = self.settings.get_double(self.key)
+        if value != self.content_widget.get_value():
+            self.content_widget.set_value(value)
 
     def on_my_value_changed(self, widget):
         self.settings.set_double(self.key, self.content_widget.get_value())
@@ -693,7 +695,7 @@ class GSettingsComboBox(Gtk.HBox):
         
         if (label != ""):
             self.pack_start(self.label, False, False, 2)                
-        self.pack_start(self.content_widget, False, False, 2)                     
+        self.pack_start(self.content_widget, True, True, 2)                     
         self.content_widget.connect('changed', self.on_my_value_changed)
         self.content_widget.show_all()
         self.dependency_invert = False
@@ -747,7 +749,7 @@ class GSettingsIntComboBox(Gtk.HBox):
 
         if (label != ""):
             self.pack_start(self.label, False, False, 2)
-        self.pack_start(self.content_widget, False, False, 2)
+        self.pack_start(self.content_widget, False, True, 2)
         self.content_widget.connect('changed', self.on_my_value_changed)
         self.content_widget.show_all()
 

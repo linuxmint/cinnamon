@@ -482,8 +482,11 @@ class ColorChooser(Gtk.HBox, BaseWidget):
         self.set_val(color)
 
     def on_my_value_changed(self, *args):
-        color = Gdk.RGBA()
-        self.chooser.get_rgba(color)
+        try:
+            color = Gdk.RGBA()
+            self.chooser.get_rgba(color)
+        except TypeError:
+            color = self.chooser.get_rgba()
         self.set_val(color.to_string())
 
     def on_settings_file_changed(self):

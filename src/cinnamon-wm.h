@@ -31,6 +31,8 @@ void     cinnamon_wm_completed_minimize         (CinnamonWM         *wm,
                                               MetaWindowActor *actor);
 void     cinnamon_wm_completed_maximize         (CinnamonWM         *wm,
                                               MetaWindowActor *actor);
+void     cinnamon_wm_completed_tile             (CinnamonWM         *wm,
+                                              MetaWindowActor *actor);
 void     cinnamon_wm_completed_unmaximize       (CinnamonWM         *wm,
                                               MetaWindowActor *actor);
 void     cinnamon_wm_completed_map              (CinnamonWM         *wm,

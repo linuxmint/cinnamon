@@ -34,7 +34,8 @@ class Module:
         except Exception, detail:
             print detail
             
-        sidePage.add_widget(GSettingsCheckButton(_("Show week numbers in calendar"), "org.cinnamon.calendar", "show-weekdate", None), True)
+<<<<<<< HEAD
+        sidePage.add_widget(GSettingsCheckButton(_("Show week numbers in calendar"), "org.cinnamon.calendar", "show-weekdate", None), False)
         sidePage.add_widget(GSettingsDateFormat(_("Date format for the panel"), "org.cinnamon.calendar", "date-format", None), True)
         sidePage.add_widget(GSettingsDateFormat(_("Date format inside the date applet"), "org.cinnamon.calendar", "date-format-full", None), True)
         label = Gtk.Label()
@@ -55,8 +56,8 @@ class DateTimeWrapper:
             self.properties_iface = dbus.Interface(proxy, dbus_interface=dbus.PROPERTIES_IFACE)
             self.timedated = True
         except dbus.exceptions.DBusException:
-            proxy = dbus.SystemBus().get_object("org.gnome.SettingsDaemon.DateTimeMechanism", "/")
-            self.dbus_iface = dbus.Interface(proxy, dbus_interface="org.gnome.SettingsDaemon.DateTimeMechanism")
+            proxy = dbus.SystemBus().get_object("org.cinnamon.SettingsDaemon.DateTimeMechanism", "/")
+            self.dbus_iface = dbus.Interface(proxy, dbus_interface="org.cinnamon.SettingsDaemon.DateTimeMechanism")
             self.timedated = False
 
     def set_time(self, seconds_since_epoch):

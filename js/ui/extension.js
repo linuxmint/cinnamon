@@ -11,6 +11,7 @@ const AppletManager = imports.ui.appletManager;
 const Config = imports.misc.config;
 const DeskletManager = imports.ui.deskletManager;
 const ExtensionSystem = imports.ui.extensionSystem;
+const Main = imports.ui.main;
 
 const State = {
     INITIALIZING: 0,
@@ -132,6 +133,13 @@ Extension.prototype = {
 
         this.ensureFileExists(dir.get_child(this.lowerType + '.js'));
         this.loadStylesheet(dir.get_child('stylesheet.css'));
+        
+        if (this.stylesheet) {
+            Main.themeManager.connect('theme-set', Lang.bind(this, function() {
+                this.unloadStylesheet();
+                this.loadStylesheet(this.dir.get_child('stylesheet.css'));
+            }));
+        }
 
         try {
             global.add_extension_importer('imports.ui.extension.importObjects', this.uuid, this.meta.path);

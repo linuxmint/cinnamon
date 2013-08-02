@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from SettingsWidgets import *
+from gi.repository.Gtk import SizeGroup, SizeGroupMode
 
 class Module:
     def __init__(self, content_box):
@@ -17,93 +18,86 @@ class Module:
         sidePage.add_widget(box)
 
         # Destroy window effects
-        transition_effects = []
-        transition_effects.append(["easeInQuad", "easeInQuad"])
-        transition_effects.append(["easeOutQuad", "easeOutQuad"])
-        transition_effects.append(["easeInOutQuad", "easeInOutQuad"])        
-        transition_effects.append(["easeInCubic", "easeInCubic"])
-        transition_effects.append(["easeOutCubic", "easeOutCubic"])
-        transition_effects.append(["easeInOutCubic", "easeInOutCubic"])        
-        transition_effects.append(["easeInQuart", "easeInQuart"])
-        transition_effects.append(["easeOutQuart", "easeOutQuart"])
-        transition_effects.append(["easeInOutQuart", "easeInOutQuart"])        
-        transition_effects.append(["easeInQuint", "easeInQuint"])
-        transition_effects.append(["easeOutQuint", "easeOutQuint"])
-        transition_effects.append(["easeInOutQuint", "easeInOutQuint"])        
-        transition_effects.append(["easeInSine", "easeInSine"])
-        transition_effects.append(["easeOutSine", "easeOutSine"])
-        transition_effects.append(["easeInOutSine", "easeInOutSine"])        
-        transition_effects.append(["easeInExpo", "easeInExpo"])
-        transition_effects.append(["easeOutEXpo", "easeOutExpo"])
-        transition_effects.append(["easeInOutExpo", "easeInOutExpo"])        
-        transition_effects.append(["easeInCirc", "easeInCirc"])
-        transition_effects.append(["easeOutCirc", "easeOutCirc"])
-        transition_effects.append(["easeInOutCirc", "easeInOutCirc"])        
-        transition_effects.append(["easeInElastic", "easeInElastic"])
-        transition_effects.append(["easeOutElastic", "easeOutElastic"])
-        transition_effects.append(["easeInOutElastic", "easeInOutElastic"])        
-        transition_effects.append(["easeInBack", "easeInBack"])
-        transition_effects.append(["easeOutBack", "easeOutBack"])
-        transition_effects.append(["easeInOutBack", "easeInOutBack"])        
-        transition_effects.append(["easeInBounce", "easeInBounce"])
-        transition_effects.append(["easeOutBounce", "easeOutBounce"])
-        transition_effects.append(["easeInOutBounce", "easeInOutBounce"])
+        transition_effects = [[effect] * 2 for effect in
+                              ["easeInQuad",
+                               "easeOutQuad",
+                               "easeInOutQuad",
+                               "easeInCubic",
+                               "easeOutCubic",
+                               "easeInOutCubic",
+                               "easeInQuart",
+                               "easeOutQuart",
+                               "easeInOutQuart",
+                               "easeInQuint",
+                               "easeOutQuint",
+                               "easeInOutQuint",
+                               "easeInSine",
+                               "easeOutSine",
+                               "easeInOutSine",
+                               "easeInExpo",
+                               "easeOutExpo",
+                               "easeInOutExpo",
+                               "easeInCirc",
+                               "easeOutCirc",
+                               "easeInOutCirc",
+                               "easeInElastic",
+                               "easeOutElastic",
+                               "easeInOutElastic",
+                               "easeInBack",
+                               "easeOutBack",
+                               "easeInOutBack",
+                               "easeInBounce",
+                               "easeOutBounce",
+                               "easeInOutBounce"]]
+
+        def _make_effect_group(group_label, key, effects):
+            tmin, tmax, tstep, tdefault = (0, 2000, 50, 200)
+            self.size_groups = getattr(self, "size_groups", [SizeGroup(SizeGroupMode.HORIZONTAL) for x in range(4)])
+            root = "org.cinnamon"
+            path = "org.cinnamon/desktop-effects"
+            template = "desktop-effects-%s-%s"
+
+            box = IndentedHBox()
+            label = Gtk.Label()
+            label.set_markup(group_label)
+            label.props.xalign = 0.0
+            self.size_groups[0].add_widget(label)
+            box.add(label)
+
+            w = GSettingsComboBox("", root, template % (key, "effect"), path, effects)
+            self.size_groups[1].add_widget(w)
+            box.add(w)
+            w = GSettingsComboBox("", root, template % (key, "transition"), path, transition_effects)
+            self.size_groups[2].add_widget(w)
+            box.add(w)
+            w = GSettingsSpinButton("", root, template % (key, "time"), path, tmin, tmax, tstep, tdefault, _("milliseconds"))
+            self.size_groups[3].add_widget(w)
+            box.add(w)
+
+            return box
         
         #CLOSING WINDOWS
-        box = IndentedHBox()
-        label = Gtk.Label()
-        label.set_markup("%s" % _("Closing windows:"))
-        box.add(label)
         effects = [["none", _("None")], ["scale", _("Scale")], ["fade", _("Fade")]]        
-        box.add(GSettingsComboBox("", "org.cinnamon", "desktop-effects-close-effect", "org.cinnamon/desktop-effects", effects))
-        box.add(GSettingsComboBox("", "org.cinnamon", "desktop-effects-close-transition", "org.cinnamon/desktop-effects", transition_effects))
-        box.add(GSettingsSpinButton("", "org.cinnamon", "desktop-effects-close-time", "org.cinnamon/desktop-effects", 0, 2000, 50, 200, _("milliseconds")))
-        sidePage.add_widget(box) 
+        sidePage.add_widget(_make_effect_group(_("Closing windows:"), "close", effects))
         
         #MAPPING WINDOWS
-        box = IndentedHBox()
-        label = Gtk.Label()
-        label.set_markup("%s" % _("Mapping windows:"))
-        box.add(label)
         effects = [["none", _("None")], ["scale", _("Scale")], ["fade", _("Fade")]]        
-        box.add(GSettingsComboBox("", "org.cinnamon", "desktop-effects-map-effect", "org.cinnamon/desktop-effects", effects))
-        box.add(GSettingsComboBox("", "org.cinnamon", "desktop-effects-map-transition", "org.cinnamon/desktop-effects", transition_effects))
-        box.add(GSettingsSpinButton("", "org.cinnamon", "desktop-effects-map-time", "org.cinnamon/desktop-effects", 0, 2000, 50, 200, _("milliseconds")))
-        sidePage.add_widget(box)
+        sidePage.add_widget(_make_effect_group(_("Mapping windows:"), "map", effects))
         
         #MINIMIZING WINDOWS
-        box = IndentedHBox()
-        label = Gtk.Label()
-        label.set_markup("%s" % _("Minimizing windows:"))
-        box.add(label)
         effects = [["none", _("None")], ["traditional", _("Traditional")], ["scale", _("Scale")], ["fade", _("Fade")]]
-        box.add(GSettingsComboBox("", "org.cinnamon", "desktop-effects-minimize-effect", "org.cinnamon/desktop-effects", effects))
-        box.add(GSettingsComboBox("", "org.cinnamon", "desktop-effects-minimize-transition", "org.cinnamon/desktop-effects", transition_effects))
-        box.add(GSettingsSpinButton("", "org.cinnamon", "desktop-effects-minimize-time", "org.cinnamon/desktop-effects", 0, 2000, 50, 200, _("milliseconds")))
-        sidePage.add_widget(box)
+        sidePage.add_widget(_make_effect_group(_("Minimizing windows:"), "minimize", effects))
         
         #MAXIMIZING WINDOWS
-        box = IndentedHBox()
-        label = Gtk.Label()
-        label.set_markup("%s" % _("Maximizing windows:"))
-        box.add(label)
         effects = [["none", _("None")], ["scale", _("Scale")]]        
-        box.add(GSettingsComboBox("", "org.cinnamon", "desktop-effects-maximize-effect", "org.cinnamon/desktop-effects", effects))
-        box.add(GSettingsComboBox("", "org.cinnamon", "desktop-effects-maximize-transition", "org.cinnamon/desktop-effects", transition_effects))
-        box.add(GSettingsSpinButton("", "org.cinnamon", "desktop-effects-maximize-time", "org.cinnamon/desktop-effects", 0, 2000, 50, 200, _("milliseconds")))
-        sidePage.add_widget(box)
+        sidePage.add_widget(_make_effect_group(_("Maximizing windows:"), "maximize", effects))
         
         #UNMAXIMIZING WINDOWS
-        box = IndentedHBox()
-        label = Gtk.Label()
-        label.set_markup("%s" % _("Unmaximizing windows:"))
-        box.add(label)
         effects = [["none", _("None")], ["scale", _("Scale")]]
-        box.add(GSettingsComboBox("", "org.cinnamon", "desktop-effects-unmaximize-effect", "org.cinnamon/desktop-effects", effects))
-        box.add(GSettingsComboBox("", "org.cinnamon", "desktop-effects-unmaximize-transition", "org.cinnamon/desktop-effects", transition_effects))
-        box.add(GSettingsSpinButton("", "org.cinnamon", "desktop-effects-unmaximize-time", "org.cinnamon/desktop-effects", 0, 2000, 50, 200, _("milliseconds")))
-        sidePage.add_widget(box)
+        sidePage.add_widget(_make_effect_group(_("Unmaximizing windows:"), "unmaximize", effects))
+
+        #TILING WINDOWS
+        effects = [["none", _("None")], ["scale", _("Scale")]]
+        sidePage.add_widget(_make_effect_group(_("Tiling and snapping windows:"), "tile", effects))
 
         sidePage.add_widget(GSettingsCheckButton(_("Enable fade effect on Cinnamon scrollboxes (like the Menu application list)"), "org.cinnamon", "enable-vfade", None))
-
-

@@ -1,0 +1,16 @@
+.user-box {
+  padding: .4em 1.75em;  
+  spacing: 6px;
+}
+
+.user-icon {  
+  border-radius: 4px;
+  border: 2px solid #a5a5a5;
+}
+
+.user-label {
+  color: #fff;
+  font-size: 16px;
+  margin: 6px;
+}
+

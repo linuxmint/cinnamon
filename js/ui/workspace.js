@@ -29,7 +29,7 @@ const SCROLL_SCALE_AMOUNT = 50;
 const LIGHTBOX_FADE_TIME = 0.1;
 const CLOSE_BUTTON_FADE_TIME = 0.1;
 
-const BUTTON_LAYOUT_SCHEMA = 'org.cinnamon.overrides';
+const BUTTON_LAYOUT_SCHEMA = 'org.cinnamon.muffin';
 const BUTTON_LAYOUT_KEY = 'button-layout';
 
 const DEMANDS_ATTENTION_CLASS_NAME = "window-list-item-demands-attention";
@@ -179,7 +179,7 @@ WindowClone.prototype = {
         this.actor.add_actor(this.clone);
         let [pwidth, pheight] = [this.realWindow.width, this.realWindow.height];
         let clones = WindowUtils.createWindowClone(this.metaWindow, 0, 0, withTransients);
-        for (i in clones) {
+        for (let i in clones) {
             let clone = clones[i].actor;
             this.clone.add_actor(clone);
             let [width, height] = clone.get_size();
@@ -318,7 +318,7 @@ WindowClone.prototype = {
         this._zoomGlobalOrig.setPosition.apply(this._zoomGlobalOrig, this.actor.get_transformed_position());
         this._zoomGlobalOrig.setScale(width / this.actor.width, height / this.actor.height);
 
-        this.actor.reparent(Main.uiGroup);
+        global.reparentActor(this.actor, Main.uiGroup);
         this._zoomLightbox.highlight(this.actor);
 
         [this.actor.x, this.actor.y]             = this._zoomGlobalOrig.getPosition();
@@ -338,7 +338,7 @@ WindowClone.prototype = {
         this._zooming = false;
         this.emit('zoom-end');
 
-        this.actor.reparent(this._origParent);
+        global.reparentActor(this.actor, this._origParent);
         if (this._stackAbove == null)
             this.actor.lower_bottom();
         // If the workspace has been destroyed while we were reparented to

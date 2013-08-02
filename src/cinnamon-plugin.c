@@ -35,7 +35,7 @@
 #include <GL/glx.h>
 #include <GL/glxext.h>
 #endif
-#include <gjs/gjs.h>
+#include <cjs/gjs.h>
 #include <meta/display.h>
 #include <meta/meta-plugin.h>
 
@@ -56,6 +56,12 @@ static void gnome_cinnamon_plugin_maximize         (MetaPlugin          *plugin,
                                                  gint                 width,
                                                  gint                 height);
 static void gnome_cinnamon_plugin_unmaximize       (MetaPlugin          *plugin,
+                                                 MetaWindowActor     *actor,
+                                                 gint                 x,
+                                                 gint                 y,
+                                                 gint                 width,
+                                                 gint                 height);
+static void gnome_cinnamon_plugin_tile             (MetaPlugin          *plugin,
                                                  MetaWindowActor     *actor,
                                                  gint                 x,
                                                  gint                 y,
@@ -128,6 +134,7 @@ gnome_cinnamon_plugin_class_init (CinnamonPluginClass *klass)
   plugin_class->map              = gnome_cinnamon_plugin_map;
   plugin_class->minimize         = gnome_cinnamon_plugin_minimize;
   plugin_class->maximize         = gnome_cinnamon_plugin_maximize;
+  plugin_class->tile             = gnome_cinnamon_plugin_tile;
   plugin_class->unmaximize       = gnome_cinnamon_plugin_unmaximize;
   plugin_class->destroy          = gnome_cinnamon_plugin_destroy;
 
@@ -260,6 +267,18 @@ gnome_cinnamon_plugin_maximize (MetaPlugin         *plugin,
 {
   _cinnamon_wm_maximize (get_cinnamon_wm (),
                       actor, x, y, width, height);
+}
+
+static void
+gnome_cinnamon_plugin_tile  (MetaPlugin         *plugin,
+                             MetaWindowActor    *actor,
+                             gint                x,
+                             gint                y,
+                             gint                width,
+                             gint                height)
+{
+  _cinnamon_wm_tile (get_cinnamon_wm (),
+                     actor, x, y, width, height);
 }
 
 static void

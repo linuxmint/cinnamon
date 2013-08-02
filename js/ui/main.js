@@ -31,7 +31,6 @@
  *                               This is not yet implemented
  * @nWorks (int): Number of workspaces
  * @tracker (Cinnamon.WindowTracker): The window tracker
- * @desktopShown (boolean): Whether we are in "show desktop" mode
  * @workspace_names (array): Names of workspace
  * @background (null): Unused
  * @deskletContainer (DeskletManager.DeskletContainer): The desklet container 
@@ -91,6 +90,8 @@ const LAYOUT_TRADITIONAL = "traditional";
 const LAYOUT_FLIPPED = "flipped";
 const LAYOUT_CLASSIC = "classic";
 
+const FALLBACK_THEME_PATH = "/usr/share/cinnamon/theme/cinnamon.css"
+
 const CIN_LOG_FOLDER = GLib.get_home_dir() + '/.cinnamon/';
 
 let automountManager = null;
@@ -129,7 +130,6 @@ let _cssStylesheet = null;
 let dynamicWorkspaces = null;
 let nWorks = null;
 let tracker = null;
-let desktopShown;
 
 let workspace_names = [];
 
@@ -198,12 +198,22 @@ function _initUserSession() {
     
 }
 
+function _reparentActor(actor, newParent) {
+    let parent = actor.get_parent();
+    if (parent)
+      parent.remove_actor(actor);
+    if(newParent)
+        newParent.add_actor(actor);
+}
+
 /**
  * start:
  *
  * Starts cinnamon. Should not be called in JavaScript code
  */
 function start() {
+    global.reparentActor = _reparentActor;
+
     // Monkey patch utility functions into the global proxy;
     // This is easier and faster than indirecting down into global
     // if we want to call back up into JS.
@@ -293,31 +303,14 @@ function start() {
                     });
     St.set_ui_root(global.stage, uiGroup);
 
-    let parent = global.background_actor.get_parent();
-    if (parent) {
-      parent.remove_child(global.background_actor);
-    }
-    parent = global.bottom_window_group.get_parent();
-    if (parent) {
-      parent.remove_child(global.bottom_window_group);
-    }
-    parent = global.window_group.get_parent();
-    if (parent) {
-      parent.remove_child(global.window_group);
-    }
-    parent = global.overlay_group.get_parent();
-    if (parent) {
-      parent.remove_child(global.overlay_group);
-    }
-
-    uiGroup.add_actor(global.background_actor);
-    uiGroup.add_actor(global.bottom_window_group);
+    global.reparentActor(global.background_actor, uiGroup);
+    global.reparentActor(global.bottom_window_group, uiGroup);
     uiGroup.add_actor(deskletContainer.actor);
-    uiGroup.add_actor(global.window_group);
-    uiGroup.add_actor(global.overlay_group);
+    global.reparentActor(global.window_group, uiGroup);
+    global.reparentActor(global.overlay_group, uiGroup);
 
     global.stage.add_actor(uiGroup);
-    global.top_window_group.reparent(global.stage);
+    global.reparentActor(global.top_window_group, global.stage);
 
     layoutManager = new Layout.LayoutManager();
     let pointerTracker = new PointerTracker.PointerTracker();
@@ -411,14 +404,12 @@ function start() {
     global.screen.connect('window-left-monitor', _windowLeftMonitor);
     global.screen.connect('restacked', _windowsRestacked);
 
-    global.window_manager.connect('map', _onWindowMapped);
-
     _nWorkspacesChanged();
     
     AppletManager.init();
     DeskletManager.init();
 
-    if (software_rendering) {
+    if (software_rendering && !GLib.getenv('CINNAMON_2D')) {
         notifyCinnamon2d();
     }
 }
@@ -585,12 +576,12 @@ function _staticWorkspaces() {
     let i;
     let dif = nWorks - global.screen.n_workspaces;
     if (dif > 0) {
-        for (i = 0; i < dif; i++)
+        for (let i = 0; i < dif; i++)
             global.screen.append_new_workspace(false, global.get_current_time());
     } else {
         if (nWorks == 0)
             return false;
-        for (i = 0; i > dif; i--){
+        for (let i = 0; i > dif; i--){
             let removeWorkspaceIndex = global.screen.n_workspaces - 1;
             let removeWorkspace = global.screen.get_workspace_by_index(removeWorkspaceIndex);
             let lastRemoved = removeWorkspace._lastRemovedWindow;
@@ -606,7 +597,7 @@ function _checkWorkspaces() {
     let i;
     let emptyWorkspaces = [];
 
-    for (i = 0; i < _workspaces.length; i++) {
+    for (let i = 0; i < _workspaces.length; i++) {
         let lastRemoved = _workspaces[i]._lastRemovedWindow;
         if (lastRemoved &&
             (lastRemoved.get_window_type() == Meta.WindowType.SPLASHSCREEN ||
@@ -618,7 +609,7 @@ function _checkWorkspaces() {
     }
 
     let windows = global.get_window_actors();
-    for (i = 0; i < windows.length; i++) {
+    for (let i = 0; i < windows.length; i++) {
         let win = windows[i];
 
         if (win.get_meta_window().is_on_all_workspaces())
@@ -647,7 +638,7 @@ function _checkWorkspaces() {
     }
 
     // Delete other empty workspaces; do it from the end to avoid index changes
-    for (i = emptyWorkspaces.length - 2; i >= 0; i--) {
+    for (let i = emptyWorkspaces.length - 2; i >= 0; i--) {
         if (emptyWorkspaces[i])
             global.screen.remove_workspace(_workspaces[i], global.get_current_time());
     }
@@ -693,10 +684,6 @@ function _windowsRestacked() {
     global.sync_pointer();
 }
 
-function _onWindowMapped() {
-    desktopShown = false;
-}
-
 function _queueCheckWorkspaces() {
     if (!dynamicWorkspaces)
         return false;
@@ -718,13 +705,11 @@ function _nWorkspacesChanged() {
 
     let lostWorkspaces = [];
     if (newNumWorkspaces > oldNumWorkspaces) {
-        let w;
-
         // Assume workspaces are only added at the end
-        for (w = oldNumWorkspaces; w < newNumWorkspaces; w++)
+        for (let w = oldNumWorkspaces; w < newNumWorkspaces; w++)
             _workspaces[w] = global.screen.get_workspace_by_index(w);
 
-        for (w = oldNumWorkspaces; w < newNumWorkspaces; w++) {
+        for (let w = oldNumWorkspaces; w < newNumWorkspaces; w++) {
             let workspace = _workspaces[w];
             workspace._windowAddedId = workspace.connect('window-added', _queueCheckWorkspaces);
             workspace._windowRemovedId = workspace.connect('window-removed', _windowRemoved);
@@ -792,7 +777,7 @@ function loadTheme() {
     if (_cssStylesheet != null)
         cssStylesheet = _cssStylesheet;
 
-    let theme = new St.Theme ();
+    let theme = new St.Theme( {default_stylesheet: FALLBACK_THEME_PATH} );
     theme.load_stylesheet(cssStylesheet);
     
     themeContext.set_theme (theme);
@@ -1169,6 +1154,7 @@ function pushModal(actor, timestamp) {
             log('pushModal: invocation of begin_modal failed');
             return false;
         }
+        Meta.disable_unredirect_for_screen(global.screen);
     }
 
     global.set_stage_input_mode(Cinnamon.StageInputMode.FULLSCREEN);
@@ -1249,6 +1235,7 @@ function popModal(actor, timestamp) {
 
     global.end_modal(timestamp);
     global.set_stage_input_mode(Cinnamon.StageInputMode.NORMAL);
+    Meta.enable_unredirect_for_screen(global.screen);
 }
 
 /**
@@ -1485,17 +1472,4 @@ function getTabList(workspaceOpt, screenOpt) {
         }
     }
     return windows;
-}
-
-/**
- * toggleDesktop:
- *
- * Shows or unshows desktop
- */
-function toggleDesktop() {
-    if (desktopShown)
-        global.screen.unshow_desktop();
-    else
-        global.screen.show_desktop(global.get_current_time());
-    desktopShown = !desktopShown;
 }
