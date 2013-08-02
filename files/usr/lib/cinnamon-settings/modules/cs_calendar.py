@@ -34,7 +34,6 @@ class Module:
         except Exception, detail:
             print detail
             
-<<<<<<< HEAD
         sidePage.add_widget(GSettingsCheckButton(_("Show week numbers in calendar"), "org.cinnamon.calendar", "show-weekdate", None), False)
         sidePage.add_widget(GSettingsDateFormat(_("Date format for the panel"), "org.cinnamon.calendar", "date-format", None), True)
         sidePage.add_widget(GSettingsDateFormat(_("Date format inside the date applet"), "org.cinnamon.calendar", "date-format-full", None), True)
