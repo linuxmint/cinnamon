@@ -29,42 +29,27 @@ function _onVertSepRepaint (area)
     cr.stroke();
 };
 
-function getDefaultShort() {
+function getDefaultFormat(long) {
     let format = GLib.spawn_command_line_sync("locale LC_TIME d_t_fmt")[1].toString().split("\n").slice(-2,-1)[0];
     for (let i in L_S_FORMAT) {
-        format = format.replace(L_S_FORMAT[i][0], L_S_FORMAT[i][1]);
+        format = format.replace(L_S_FORMAT[i][long ^ 0], L_S_FORMAT[i][long ^ 1]); // Using bitwise xor "^" swaps 0 and 1 if long is true
     }
     let date = new Date();
     let string = date.toLocaleFormat(format);
     
     let hours = date.getHours();
     if (format.indexOf("%I") != -1 || format.indexOf("%r") != -1) {
-	hours = hours > 12 ? hours - 12 : hours;
-	hours = hours == 0 ? 12 : hours;
-	hours = hours < 10 ? "0" + hours : hours;
+        hours = hours > 12 ? hours - 12 : hours;
+        hours = hours == 0 ? 12 : hours;
+        hours = hours < 10 ? "0" + hours : hours;
     }
 
-    return string.slice(0, string.indexOf(hours+":")).trim() + " " + date.toLocaleFormat("%I:%M %p");
+    string = string.slice(0, string.indexOf(hours+":")).trim();
+    if (!long)
+        string += " " + date.toLocaleFormat("%I:%M %p");
+
+    return string;
 }
-
-function getDefaultLong() {
-    let format = GLib.spawn_command_line_sync("locale LC_TIME d_t_fmt")[1].toString().split("\n").slice(-2,-1)[0];
-    for (let i in L_S_FORMAT) {
-        format = format.replace(L_S_FORMAT[i][1], L_S_FORMAT[i][0]);
-    }
-    let date = new Date();
-    let string = date.toLocaleFormat(format);
-    let hours = date.getHours();
-
-    if (format.indexOf("%I") != -1 || format.indexOf("%r") != -1) {
-	hours = hours > 12 ? hours - 12 : hours;
-	hours = hours == 0 ? 12 : hours;
-	hours = hours < 10 ? "0" + hours : hours;
-    }
-
-    return string.slice(0, string.indexOf(hours+":")).trim();
-}
-
 
 function MyApplet(orientation, panel_height) {
     this._init(orientation, panel_height);
@@ -128,8 +113,8 @@ MyApplet.prototype = {
                 this._dateFormatCustom = this._calendarSettings.get_boolean('date-format-custom');
                 this._dateFormatFullCustom = this._calendarSettings.get_boolean('date-format-full-custom');
 
-                this._dateFormat = this._dateFormatCustom ? this._calendarSettings.get_string('date-format') : getDefaultShort();
-                this._dateFormatFull = this._dateFormatFullCustom ? this._calendarSettings.get_string('date-format-full') : getDefaultLong();
+                this._dateFormat = this._dateFormatCustom ? this._calendarSettings.get_string('date-format') : getDefaultFormat(false);
+                this._dateFormatFull = this._dateFormatFullCustom ? this._calendarSettings.get_string('date-format-full') : getDefaultFormat(true);
 
                 this._updateClockAndDate();
             });
