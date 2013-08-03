@@ -28,6 +28,7 @@ const MAX_RECENT_FILES = 20;
 
 const USER_DESKTOP_PATH = FileUtils.getUserDesktopDir();
 
+const BROWSER = imports.gi.GConf.Client.get_default().get_string("/desktop/gnome/applications/browser/exec");
 
 let appsys = Cinnamon.AppSystem.get_default();
 
@@ -109,6 +110,53 @@ VisibleChildIterator.prototype = {
         return this.abs_index[this.visible_children.indexOf(child)];
     }
 };
+
+function SearchItem(provider, string, parent){
+    this._init(provider, string, parent);
+}
+
+SearchItem.prototype = {
+    __proto__: PopupMenu.PopupMenuItem.prototype,
+
+    _init: function(provider, string, parent){
+        PopupMenu.PopupMenuItem.prototype._init.call(this, "Search " + provider + " for " + string);
+        this.actor.set_style_class_name("menu-category-button");
+        this.provider = provider;
+        this.string = string;
+        this.parent = parent;
+    },
+
+    setActive: function(active){
+        if (active)
+            this.actor.set_style_class_name("menu-category-button-selected");
+        else
+            this.actor.set_style_class_name("menu-category-button");
+    },
+
+    setString: function(string) {
+        this.string = string;
+        this.label.set_text("Search " + this.provider + " for " + string);
+    },
+
+    activate: function(event){
+        while (this.string.indexOf(" ")!= -1){
+            this.string = this.string.replace(" ", "%20");
+        }
+
+        switch(this.provider){
+        case "Google":
+            Util.spawnCommandLine(BROWSER + " https://www.google.com/search?q=" + this.string);
+            break;
+        case "DuckDuckGo":
+            Util.spawnCommandLine(BROWSER + " https://duckduckgo.com/?t=lm&q=" + this.string);
+            break;
+        case "Wikipedia":
+            Util.spawnCommandLine(BROWSER + " https://en.wikipedia.org/wiki/Special:Search?search=" + this.string);
+            break;
+        }
+        this.parent.toggle();
+    }
+}
 
 function ApplicationContextMenuItem(appButton, label, action) {
     this._init(appButton, label, action);
@@ -827,7 +875,7 @@ MyApplet.prototype = {
                                              icon_type: St.IconType.SYMBOLIC });
             this._searchIconClickedId = 0;
             this._applicationsButtons = new Array();
-	    this._applicationsButtonFromApp = new Object();
+            this._applicationsButtonFromApp = new Object();
             this._favoritesButtons = new Array();
             this._placesButtons = new Array();
             this._transientButtons = new Array();
@@ -1770,6 +1818,13 @@ MyApplet.prototype = {
 
         this._refreshApps();
 
+        this._searchItems = [new SearchItem("Google", "", this.menu),
+                             new SearchItem("DuckDuckGo", "", this.menu),
+                             new SearchItem("Wikipedia", "", this.menu)];
+        for (let i in this._searchItems) {
+            this.applicationsBox.add_actor(this._searchItems[i].actor);
+        }
+
         this.selectedAppBox = new St.BoxLayout({ style_class: 'menu-selected-app-box', vertical: true });
         this.selectedAppTitle = new St.Label({ style_class: 'menu-selected-app-title', text: "" });
         this.selectedAppBox.add_actor(this.selectedAppTitle);
@@ -1842,7 +1897,7 @@ MyApplet.prototype = {
         }
     },
     
-    _displayButtons: function(appCategory, places, recent, apps, autocompletes){
+    _displayButtons: function(appCategory, places, recent, apps, autocompletes, search){
         if (appCategory) {
             if (appCategory == "all") {
                 this._applicationsButtons.forEach( function (item, index) {
@@ -1943,6 +1998,16 @@ MyApplet.prototype = {
                 this._transientButtons.push(button);
                 this.applicationsBox.add_actor(button.actor);
                 button.actor.realize();
+            }
+        }
+        if (search) {
+            for (let i in this._searchItems) {
+                this._searchItems[i].actor.show();
+                this._searchItems[i].setString(search);
+            }
+        } else {
+            for (let i in this._searchItems) {
+                this._searchItems[i].actor.hide();
             }
         }
     },
@@ -2082,8 +2147,7 @@ MyApplet.prototype = {
             acResults = this._getCompletions(this.searchEntryText.get_text());
         }
 
-        this._displayButtons(null, placesResults, recentResults, appResults, acResults);
-       
+        this._displayButtons(null, placesResults, recentResults, appResults, acResults, this.searchEntryText.get_text());
         this.appBoxIter.reloadVisible();
         if (this.appBoxIter.getNumVisibleChildren() > 0) {
             let item_actor = this.appBoxIter.getFirstVisible();
