@@ -119,7 +119,7 @@ SearchItem.prototype = {
     __proto__: PopupMenu.PopupMenuItem.prototype,
 
     _init: function(provider, string, parent){
-        PopupMenu.PopupMenuItem.prototype._init.call(this, "Search " + provider + " for " + string);
+        PopupMenu.PopupMenuItem.prototype._init.call(this, _("Search ") + provider + _(" for ") + string);
         this.actor.set_style_class_name("menu-category-button");
         this.provider = provider;
         this.string = string;
@@ -144,13 +144,13 @@ SearchItem.prototype = {
         }
 
         switch(this.provider){
-        case "Google":
+        case _("Google"):
             Util.spawnCommandLine(BROWSER + " https://www.google.com/search?q=" + this.string);
             break;
-        case "DuckDuckGo":
+        case _("DuckDuckGo"):
             Util.spawnCommandLine(BROWSER + " https://duckduckgo.com/?t=lm&q=" + this.string);
             break;
-        case "Wikipedia":
+        case _("Wikipedia"):
             Util.spawnCommandLine(BROWSER + " https://en.wikipedia.org/wiki/Special:Search?search=" + this.string);
             break;
         }
@@ -1818,9 +1818,9 @@ MyApplet.prototype = {
 
         this._refreshApps();
 
-        this._searchItems = [new SearchItem("Google", "", this.menu),
-                             new SearchItem("DuckDuckGo", "", this.menu),
-                             new SearchItem("Wikipedia", "", this.menu)];
+        this._searchItems = [new SearchItem(_("Google"), "", this.menu),
+                             new SearchItem(_("DuckDuckGo"), "", this.menu),
+                             new SearchItem(_("Wikipedia"), "", this.menu)];
         for (let i in this._searchItems) {
             this.applicationsBox.add_actor(this._searchItems[i].actor);
         }
