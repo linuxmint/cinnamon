@@ -36,7 +36,15 @@ function getDefaultShort() {
     }
     let date = new Date();
     let string = date.toLocaleFormat(format);
-    return string.slice(0, string.indexOf(date.getHours()+":")).trim() + " " + date.toLocaleFormat("%I:%M %p");
+    
+    let hours = date.getHours();
+    if (format.indexOf("%I") != -1 || format.indexOf("%r") != -1) {
+	hours = hours > 12 ? hours - 12 : hours;
+	hours = hours == 0 ? 12 : hours;
+	hours = hours < 10 ? "0" + hours : hours;
+    }
+
+    return string.slice(0, string.indexOf(hours+":")).trim() + " " + date.toLocaleFormat("%I:%M %p");
 }
 
 function getDefaultLong() {
@@ -46,7 +54,15 @@ function getDefaultLong() {
     }
     let date = new Date();
     let string = date.toLocaleFormat(format);
-    return string.slice(0, string.indexOf(date.getHours()+":")).trim();
+    let hours = date.getHours();
+
+    if (format.indexOf("%I") != -1 || format.indexOf("%r") != -1) {
+	hours = hours > 12 ? hours - 12 : hours;
+	hours = hours == 0 ? 12 : hours;
+	hours = hours < 10 ? "0" + hours : hours;
+    }
+
+    return string.slice(0, string.indexOf(hours+":")).trim();
 }
 
 
