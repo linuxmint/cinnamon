@@ -1,14 +1,18 @@
-const Applet = imports.ui.applet;
+const Clutter = imports.gi.Clutter;
 const Gio = imports.gi.Gio;
+const GLib = imports.gi.GLib;
 const Lang = imports.lang;
 const Mainloop = imports.mainloop;
-const Clutter = imports.gi.Clutter;
 const St = imports.gi.St;
-const Util = imports.misc.util;
-const PopupMenu = imports.ui.popupMenu;
-const Calendar = imports.ui.calendar;
 const UPowerGlib = imports.gi.UPowerGlib;
 
+const Applet = imports.ui.applet;
+const Calendar = imports.ui.calendar;
+const PopupMenu = imports.ui.popupMenu;
+const Util = imports.misc.util;
+
+const L_S_FORMAT = [["%A","%a"], // Map long date formats (e.g. "Saturday") to short formats (e.g. "Sat")
+                    ["%B","%b"]];
 function _onVertSepRepaint (area)
 {
     let cr = area.get_context();
@@ -25,6 +29,27 @@ function _onVertSepRepaint (area)
     cr.stroke();
 };
 
+function getDefaultShort() {
+    let format = GLib.spawn_command_line_sync("locale LC_TIME d_t_fmt")[1].toString().split("\n").slice(-2,-1)[0];
+    for (let i in L_S_FORMAT) {
+        format = format.replace(L_S_FORMAT[i][0], L_S_FORMAT[i][1]);
+    }
+    let date = new Date();
+    let string = date.toLocaleFormat(format);
+    return string.slice(0, string.indexOf(date.getHours()+":")).trim() + " " + date.toLocaleFormat("%I:%M %p");
+}
+
+function getDefaultLong() {
+    let format = GLib.spawn_command_line_sync("locale LC_TIME d_t_fmt")[1].toString().split("\n").slice(-2,-1)[0];
+    for (let i in L_S_FORMAT) {
+        format = format.replace(L_S_FORMAT[i][1], L_S_FORMAT[i][0]);
+    }
+    let date = new Date();
+    let string = date.toLocaleFormat(format);
+    return string.slice(0, string.indexOf(date.getHours()+":")).trim();
+}
+
+
 function MyApplet(orientation, panel_height) {
     this._init(orientation, panel_height);
 }
@@ -32,16 +57,16 @@ function MyApplet(orientation, panel_height) {
 MyApplet.prototype = {
     __proto__: Applet.TextApplet.prototype,
 
-    _init: function(orientation, panel_height) {        
+    _init: function(orientation, panel_height) {
         Applet.TextApplet.prototype._init.call(this, orientation, panel_height);
-        
-        try {                 
+
+        try {
             this.menuManager = new PopupMenu.PopupMenuManager(this);
-            
+
             this._orientation = orientation;
-            
+
             this._initContextMenu();
-                                     
+
             this._calendarArea = new St.BoxLayout({name: 'calendarArea' });
             this.menu.addActor(this._calendarArea);
 
@@ -54,12 +79,12 @@ MyApplet.prototype = {
             this._date = new St.Label();
             this._date.style_class = 'datemenu-date-label';
             vbox.add(this._date);
-           
+
             this._eventSource = null;
             this._eventList = null;
 
             // Calendar
-            this._calendar = new Calendar.Calendar(this._eventSource);       
+            this._calendar = new Calendar.Calendar(this._eventSource);
             vbox.add(this._calendar.actor);
 
             let item = new PopupMenu.PopupMenuItem(_("Date and Time Settings"))
@@ -76,13 +101,20 @@ MyApplet.prototype = {
 
             // Done with hbox for calendar and event list
 
-            // Track changes to clock settings        
+            // Track changes to clock settings
             this._calendarSettings = new Gio.Settings({ schema: 'org.cinnamon.calendar' });
             this._dateFormat = null;
+            this._dateFormatCustom = true;
             this._dateFormatFull = null;
+            this._dateFormatFullCustom = true;
+
             let getCalendarSettings = Lang.bind(this, function() {
-                this._dateFormat = this._calendarSettings.get_string('date-format');
-                this._dateFormatFull = this._calendarSettings.get_string('date-format-full');
+                this._dateFormatCustom = this._calendarSettings.get_boolean('date-format-custom');
+                this._dateFormatFullCustom = this._calendarSettings.get_boolean('date-format-full-custom');
+
+                this._dateFormat = this._dateFormatCustom ? this._calendarSettings.get_string('date-format') : getDefaultShort();
+                this._dateFormatFull = this._dateFormatFullCustom ? this._calendarSettings.get_string('date-format-full') : getDefaultLong();
+
                 this._updateClockAndDate();
             });
             this._calendarSettings.connect('changed', getCalendarSettings);
@@ -94,17 +126,17 @@ MyApplet.prototype = {
             // Start the clock
             getCalendarSettings();
             this._updateClockAndDatePeriodic();
-     
+
         }
         catch (e) {
             global.logError(e);
         }
     },
-    
+
     on_applet_clicked: function(event) {
         this.menu.toggle();
     },
-    
+
     _onLaunchSettings: function() {
         this.menu.close();
         Util.spawnCommandLine("cinnamon-settings calendar");
@@ -125,7 +157,7 @@ MyApplet.prototype = {
         this._updateClockAndDate();
         this._periodicTimeoutId = Mainloop.timeout_add_seconds(1, Lang.bind(this, this._updateClockAndDatePeriodic));
     },
-    
+
     on_applet_removed_from_panel: function() {
         if (this._periodicTimeoutId){
             Mainloop.source_remove(this._periodicTimeoutId);
@@ -135,15 +167,15 @@ MyApplet.prototype = {
     _initContextMenu: function () {
         if (this._calendarArea) this._calendarArea.unparent();
         if (this.menu) this.menuManager.removeMenu(this.menu);
-        
+
         this.menu = new Applet.AppletPopupMenu(this, this._orientation);
         this.menuManager.addMenu(this.menu);
-        
+
         if (this._calendarArea){
             this.menu.addActor(this._calendarArea);
             this._calendarArea.show_all();
         }
-        
+
         // Whenever the menu is opened, select today
         this.menu.connect('open-state-changed', Lang.bind(this, function(menu, isOpen) {
             if (isOpen) {
@@ -167,15 +199,15 @@ MyApplet.prototype = {
             }
         }));
     },
-    
+
     on_orientation_changed: function (orientation) {
         this._orientation = orientation;
         this._initContextMenu();
     }
-    
+
 };
 
-function main(metadata, orientation, panel_height) {  
+function main(metadata, orientation, panel_height) {
     let myApplet = new MyApplet(orientation, panel_height);
-    return myApplet;      
+    return myApplet;
 }
