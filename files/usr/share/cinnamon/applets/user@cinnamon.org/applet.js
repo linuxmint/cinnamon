@@ -65,13 +65,13 @@ MyApplet.prototype = {
 
             this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
                                                            
-            this.menu.addAction(_("Account Details"), function(event) {
+            this.menu.addAction(_("Account Details"), Lang.bind(this, function() {
                 Util.spawnCommandLine("cinnamon-settings user");
-            });            
+            }));
 
             this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
-            this.menu.addAction(_("Lock Screen"), function(event) {
+            this.menu.addAction(_("Lock Screen"), Lang.bind(this, function() {
                 let screensaver_settings = new Gio.Settings({ schema: "org.cinnamon.screensaver" });                        
                 let screensaver_dialog = Gio.file_new_for_path("/usr/bin/cinnamon-screensaver-command");    
                 if (screensaver_dialog.query_exists(null)) {
@@ -85,23 +85,23 @@ MyApplet.prototype = {
                 else {                    
                     this._screenSaverProxy.LockRemote();
                 }       
-            });
+            }));
 
             if (GLib.file_test("/usr/bin/mdmflexiserver", GLib.FileTest.EXISTS)) {
-                this.menu.addAction(_("Switch User"), function(event) {
+                this.menu.addAction(_("Switch User"), Lang.bind(this, function() {
                     Util.spawnCommandLine("mdmflexiserver");
-                });
+                }));
             }
 
-            this.menu.addAction(_("Log Out..."), function(event) {
+            this.menu.addAction(_("Log Out..."), Lang.bind(this, function() {
                 this._session.LogoutRemote(0);
-            });
+            }));
 
             this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
-            this.menu.addAction(_("Power Off..."), function(event) {
+            this.menu.addAction(_("Power Off..."), Lang.bind(this, function() {
                 this._session.ShutdownRemote();
-            });                    
+            }));
 
             this._user = AccountsService.UserManager.get_default().get_user(GLib.get_user_name());
             this._userLoadedId = this._user.connect('notify::is_loaded', Lang.bind(this, this._onUserChanged));
