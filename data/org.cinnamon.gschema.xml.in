@@ -575,6 +575,14 @@
       </description>
     </key>
     
+    <key name="window-list-applet-alert" type="b">
+      <default>false</default>
+      <summary>Enable window list alerts</summary>
+      <description>
+        Enable window list alerts
+      </description>
+    </key>
+
     <key name="bring-windows-to-current-workspace" type="b">
       <default>false</default>
       <summary>Brings windows requiring attention to the current workspace</summary>
