@@ -1,0 +1,21 @@
+#! /usr/bin/python -OOt
+
+import sys
+sys.path.insert(0,'/usr/lib/cinnamon-menu-editor')
+from cme import ItemEditor, MenuEditor
+
+def main():
+    try:
+        from MenuEditor import config
+        datadir = config.pkgdatadir
+        version = config.VERSION
+    except:
+        datadir = '.'
+        version = '0.9'
+    if len(sys.argv) > 1:
+        app = ItemEditor.DesktopLauncherCreator(sys.argv[1])
+    else:
+        print "Missing path argument for launcher location"
+
+if __name__ == '__main__':
+    main()
