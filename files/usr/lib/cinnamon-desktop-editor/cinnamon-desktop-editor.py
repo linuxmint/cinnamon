@@ -201,9 +201,9 @@ class LauncherEditor(ItemEditor):
         self.builder.get_object('exec-entry').connect('changed', self.resync_validity)
 
     def resync_validity(self, *args):
-        name_text = self.builder.get_object('name-entry').get_text()
-        exec_text = self.builder.get_object('exec-entry').get_text()
-        valid = (name_text is not None and exec_text is not None)
+        name_text = self.builder.get_object('name-entry').get_text().strip()
+        exec_text = self.builder.get_object('exec-entry').get_text().strip()
+        valid = (name_text is not "" and exec_text is not "")
         self.builder.get_object('ok').set_sensitive(valid)
 
     def load(self):
@@ -247,8 +247,8 @@ class DirectoryEditor(ItemEditor):
         self.builder.get_object('name-entry').connect('changed', self.resync_validity)
 
     def resync_validity(self, *args):
-        name_text = self.builder.get_object('name-entry').get_text()
-        valid = (name_text is not None)
+        name_text = self.builder.get_object('name-entry').get_text().strip()
+        valid = (name_text is not "")
         self.builder.get_object('ok').set_sensitive(valid)
 
     def load(self):
@@ -296,9 +296,9 @@ class PanelLauncherEditor(ItemEditor):
             self.item_path = name
 
     def resync_validity(self, *args):
-        name_text = self.builder.get_object('name-entry').get_text()
-        exec_text = self.builder.get_object('exec-entry').get_text()
-        valid = (name_text is not None and exec_text is not None)
+        name_text = self.builder.get_object('name-entry').get_text().strip()
+        exec_text = self.builder.get_object('exec-entry').get_text().strip()
+        valid = (name_text is not "" and exec_text is not "")
         self.builder.get_object('ok').set_sensitive(valid)
 
     def load(self):
