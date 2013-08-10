@@ -758,12 +758,12 @@ Notification.prototype = {
     addButton: function(id, label) {
         if (!this._buttonBox) {
 
-            let box = new St.BoxLayout({ name: 'notification-actions' });
-            this.setActionArea(box, { x_expand: false,
+            let box = new St.BoxLayout({ name: 'notification-actions', vertical: true });
+            this.setActionArea(box, { x_expand: true,
                                       y_expand: false,
-                                      x_fill: false,
+                                      x_fill: true,
                                       y_fill: false,
-                                      x_align: St.Align.END });
+                                      x_align: St.Align.START });
             this._buttonBox = box;
         }
 
