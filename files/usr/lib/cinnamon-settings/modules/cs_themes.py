@@ -57,11 +57,11 @@ class ThemesViewSidePage (ExtensionSidePage):
         
         keybindingThemeSwitcher = GSettingsComboBox(_("Keybindings"), "org.gnome.desktop.interface", "gtk-key-theme", None, self._load_keybinding_themes())
         other_settings_box.pack_start(keybindingThemeSwitcher, False, False, 2)            
-        
-        menusHaveIconsCB = GSettingsCheckButton(_("Show icons in menus"), "org.gnome.desktop.interface", "menus-have-icons", None)
+
+        menusHaveIconsCB = GSettingsCheckButton(_("Show icons in menus"), "org.cinnamon.settings-daemon.plugins.xsettings", "menus-have-icons", None)
         other_settings_box.pack_start(menusHaveIconsCB, False, False, 2)
-        
-        buttonsHaveIconsCB = GSettingsCheckButton(_("Show icons on buttons"), "org.gnome.desktop.interface", "buttons-have-icons", None)
+
+        buttonsHaveIconsCB = GSettingsCheckButton(_("Show icons on buttons"), "org.cinnamon.settings-daemon.plugins.xsettings", "buttons-have-icons", None)
         other_settings_box.pack_start(buttonsHaveIconsCB, False, False, 2)
 
         return scrolledWindow
