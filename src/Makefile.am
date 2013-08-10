@@ -21,7 +21,7 @@ service_DATA = $(service_in_files:.service.in=.service)
 
 %.service: %.service.in Makefile
 	$(AM_V_GEN)									\
-		[ -d $(@D) ] || $(mkdir_p) $(@D) ;					\
+		[ -d $(@D) ] || $(MKDIR_P) $(@D) ;					\
 		sed -e "s|\@libexecdir\@|$(libexecdir)|" \
 		    -e "s|\@pkglibexecdir\@|$(pkglibexecdir)|" $< > $@.tmp && mv $@.tmp $@
 
