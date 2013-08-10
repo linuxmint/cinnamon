@@ -145,7 +145,6 @@ class ItemEditor(object):
     def set_icon(self, ctl, name):
         try:
             val = self.keyfile.get_string(DESKTOP_GROUP, name)
-            print val
         except GLib.GError:
             pass
         else:
@@ -388,13 +387,19 @@ class Main:
                     del launchers[i]
                     launchers.insert(i, os.path.split(dest_path)[1])
             settings.set_strv("panel-launchers", launchers)
+            if self.desktop_file is None:
+                self.ask_menu_launcher(dest_path)
         self.end()
 
     def nemo_launcher_cb(self, success, dest_path):
+        if success:
+            self.ask_menu_launcher(dest_path)
+        self.end()
+
+    def ask_menu_launcher(self, dest_path):
         if ask(_("Would you like to add this launcher to the menu also?  It will be placed in the Other category initially.")):
             new_file_path = os.path.join(util.getUserItemPath(), os.path.split(dest_path)[1])
             shutil.copy(dest_path, new_file_path)
-        self.end()
 
     def get_desktop_path(self):
         self.search_menu_sys()
