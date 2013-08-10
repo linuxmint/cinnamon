@@ -21,6 +21,7 @@ Tooltip.prototype = {
         item.connect('motion-event', Lang.bind(this, this._onMotionEvent));
         item.connect('button-press-event', Lang.bind(this, this.hide));
         item.connect('button-release-event', Lang.bind(this, this._onReleaseEvent));
+        item.connect('destroy', Lang.bind(this, this.destroy));
         item.connect('allocation-changed', Lang.bind(this, function() {
             // An allocation change could mean that the actor has moved,
             // so hide, but wait until after the allocation cycle.
