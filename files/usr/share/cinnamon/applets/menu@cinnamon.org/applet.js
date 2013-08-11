@@ -816,7 +816,9 @@ MyApplet.prototype = {
             this.menuManager = new PopupMenu.PopupMenuManager(this);
             this.menu = new Applet.AppletPopupMenu(this, orientation);
             this.menuManager.addMenu(this.menu);   
-                        
+
+            this._searchItems = [];
+
             this.actor.connect('key-press-event', Lang.bind(this, this._onSourceKeyPress));
             this.showRecent = global.settings.get_boolean("menu-show-recent");
             global.settings.connect("changed::menu-show-recent", Lang.bind(this, function() {
@@ -922,6 +924,7 @@ MyApplet.prototype = {
             global.settings.connect("changed::menu-search-filesystem", Lang.bind(this, function() {
                 this.searchFilesystem = global.settings.get_boolean("menu-search-filesystem");
             }));
+            global.settings.connect("changed::menu-search-engines", Lang.bind(this, this._onSearchEnginesChanged));
         }
         catch (e) {
             global.logError(e);
@@ -1736,7 +1739,7 @@ MyApplet.prototype = {
         if (new_scroll_value!=current_scroll_value) this.applicationsScrollBox.get_vscroll_bar().get_adjustment().set_value(new_scroll_value);
     },
                
-    _display : function() {
+    _display: function() {
         this._activeContainer = null;
         this._activeActor = null;
         this.vectorBox = null;
@@ -1809,14 +1812,7 @@ MyApplet.prototype = {
 
         this._refreshApps();
 
-        this._searchList = global.settings.get_value('menu-search-engines').deep_unpack();
-
-        this._searchItems = [];
-        for (let i in this._searchList) {
-            let item = new SearchItem(this._searchList[i][0], this._searchList[i][1], this.menu);
-            this._searchItems.push(item)
-            this.applicationsBox.add_actor(item.actor);
-        }
+        this._onSearchEnginesChanged();
 
         this.selectedAppBox = new St.BoxLayout({ style_class: 'menu-selected-app-box', vertical: true });
         this.selectedAppTitle = new St.Label({ style_class: 'menu-selected-app-title', text: "" });
@@ -1831,6 +1827,20 @@ MyApplet.prototype = {
         Mainloop.idle_add(Lang.bind(this, function() {
             this._clearAllSelections(true);
         }));
+    },
+
+    _onSearchEnginesChanged: function() {
+        this._searchList = global.settings.get_value('menu-search-engines').deep_unpack();
+
+        this._searchItems.forEach(function(item) {
+            item.actor.destroy();
+        });
+        this._searchItems = [];
+        for (let i in this._searchList) {
+            let item = new SearchItem(this._searchList[i][0], this._searchList[i][1], this.menu);
+            this._searchItems.push(item)
+            this.applicationsBox.add_actor(item.actor);
+        }
     },
 
     _updateVFade: function() {
