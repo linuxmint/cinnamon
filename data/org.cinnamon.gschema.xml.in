@@ -371,6 +371,14 @@
       </_description>
     </key>
 
+    <key type="a(ss)" name="menu-search-engines">
+      <default>[("DuckDuckGo", "https://duckduckgo.com/?t=lm&amp;="), ("Wikipedia", "https://en.wikipedia.org/wiki/Special:Search?search=")]</default>
+      <_summary>List of search engines to be used in the menu</_summary>
+      <_description>
+        List of search engines to be used in the menu in the form (SearchEngineName,SearchEnginePath)
+      </_description>
+    </key>
+
     <key type="b" name="display-notifications">
       <default>true</default>
       <_summary>Whether notifications are to be displayed</_summary>

@@ -111,18 +111,19 @@ VisibleChildIterator.prototype = {
     }
 };
 
-function SearchItem(provider, string, parent){
-    this._init(provider, string, parent);
+function SearchItem(provider, path, parent){
+    this._init(provider, path, parent);
 }
 
 SearchItem.prototype = {
     __proto__: PopupMenu.PopupMenuItem.prototype,
 
-    _init: function(provider, string, parent){
-        PopupMenu.PopupMenuItem.prototype._init.call(this, _("Search ") + provider + _(" for ") + string);
+    _init: function(provider, path, parent){
+        PopupMenu.PopupMenuItem.prototype._init.call(this, "");
         this.actor.set_style_class_name("menu-category-button");
         this.provider = provider;
-        this.string = string;
+        this.path = path;
+        this.string = "";
         this.parent = parent;
     },
 
@@ -143,17 +144,7 @@ SearchItem.prototype = {
             this.string = this.string.replace(" ", "%20");
         }
 
-        switch(this.provider){
-        case _("Google"):
-            Util.spawnCommandLine(BROWSER + " https://www.google.com/search?q=" + this.string);
-            break;
-        case _("DuckDuckGo"):
-            Util.spawnCommandLine(BROWSER + " https://duckduckgo.com/?t=lm&q=" + this.string);
-            break;
-        case _("Wikipedia"):
-            Util.spawnCommandLine(BROWSER + " https://en.wikipedia.org/wiki/Special:Search?search=" + this.string);
-            break;
-        }
+        Util.spawnCommandLine(BROWSER + " " + this.path + this.string);
         this.parent.toggle();
     }
 }
@@ -1818,11 +1809,13 @@ MyApplet.prototype = {
 
         this._refreshApps();
 
-        this._searchItems = [new SearchItem(_("Google"), "", this.menu),
-                             new SearchItem(_("DuckDuckGo"), "", this.menu),
-                             new SearchItem(_("Wikipedia"), "", this.menu)];
-        for (let i in this._searchItems) {
-            this.applicationsBox.add_actor(this._searchItems[i].actor);
+        this._searchList = global.settings.get_value('menu-search-engines').deep_unpack();
+
+        this._searchItems = [];
+        for (let i in this._searchList) {
+            let item = new SearchItem(this._searchList[i][0], this._searchList[i][1], this.menu);
+            this._searchItems.push(item)
+            this.applicationsBox.add_actor(item.actor);
         }
 
         this.selectedAppBox = new St.BoxLayout({ style_class: 'menu-selected-app-box', vertical: true });
