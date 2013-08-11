@@ -372,7 +372,7 @@
     </key>
 
     <key type="a(ss)" name="menu-search-engines">
-      <default>[("DuckDuckGo", "https://duckduckgo.com/?t=lm&amp;="), ("Wikipedia", "https://en.wikipedia.org/wiki/Special:Search?search=")]</default>
+      <default>[("DuckDuckGo", "https://duckduckgo.com/?t=lm&amp;q="), ("Wikipedia", "https://en.wikipedia.org/wiki/Special:Search?search=")]</default>
       <_summary>List of search engines to be used in the menu</_summary>
       <_description>
         List of search engines to be used in the menu in the form (SearchEngineName,SearchEnginePath)
