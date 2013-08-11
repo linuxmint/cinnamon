@@ -254,26 +254,6 @@ st_label_paint (ClutterActor *actor)
 }
 
 static void
-st_label_map (ClutterActor *actor)
-{
-  StLabelPrivate *priv = ST_LABEL (actor)->priv;
-
-  CLUTTER_ACTOR_CLASS (st_label_parent_class)->map (actor);
-
-  clutter_actor_map (priv->label);
-}
-
-static void
-st_label_unmap (ClutterActor *actor)
-{
-  StLabelPrivate *priv = ST_LABEL (actor)->priv;
-
-  CLUTTER_ACTOR_CLASS (st_label_parent_class)->unmap (actor);
-
-  clutter_actor_unmap (priv->label);
-}
-
-static void
 st_label_class_init (StLabelClass *klass)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
@@ -291,8 +271,6 @@ st_label_class_init (StLabelClass *klass)
   actor_class->allocate = st_label_allocate;
   actor_class->get_preferred_width = st_label_get_preferred_width;
   actor_class->get_preferred_height = st_label_get_preferred_height;
-  actor_class->map = st_label_map;
-  actor_class->unmap = st_label_unmap;
 
   widget_class->style_changed = st_label_style_changed;
   widget_class->get_accessible_type = st_label_accessible_get_type;
@@ -482,10 +460,22 @@ st_label_accessible_init (StLabelAccessible *self)
 }
 
 static void
+label_text_notify_cb (StLabel    *label,
+                      GParamSpec *pspec,
+                      AtkObject  *accessible)
+{
+  g_object_notify (G_OBJECT (accessible), "accessible-name");
+}
+
+static void
 st_label_accessible_initialize (AtkObject *obj,
                                 gpointer   data)
 {
   ATK_OBJECT_CLASS (st_label_accessible_parent_class)->initialize (obj, data);
+
+  g_signal_connect (data, "notify::text",
+                    G_CALLBACK (label_text_notify_cb),
+                    obj);
 
   obj->role = ATK_ROLE_LABEL;
 }

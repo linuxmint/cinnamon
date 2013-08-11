@@ -67,6 +67,7 @@ st-enum-types.c: stamp-st-enum-types.h $(srcdir)/st/st-enum-types.c.in
 # please, keep this sorted alphabetically
 st_source_h =					\
 	st/st-adjustment.h			\
+	st/st-background-effect.h               \
 	st/st-bin.h				\
 	st/st-border-image.h			\
 	st/st-box-layout.h			\
@@ -83,6 +84,7 @@ st_source_h =					\
 	st/st-im-text.h				\
 	st/st-label.h				\
 	st/st-overflow-box.h			\
+    st/st-polygon.h             \
 	st/st-private.h				\
 	st/st-scrollable.h			\
 	st/st-scroll-bar.h			\
@@ -124,6 +126,7 @@ st_source_private_h =				\
 # please, keep this sorted alphabetically
 st_source_c =					\
 	st/st-adjustment.c			\
+	st/st-background-effect.c               \
 	st/st-bin.c				\
 	st/st-border-image.c			\
 	st/st-box-layout.c			\
@@ -140,6 +143,7 @@ st_source_c =					\
 	st/st-im-text.c				\
 	st/st-label.c				\
 	st/st-overflow-box.c			\
+    st/st-polygon.c             \
 	st/st-private.c				\
 	st/st-scrollable.c			\
 	st/st-scroll-bar.c			\
@@ -175,7 +179,6 @@ libst_1_0_la_SOURCES =				\
 	$(st_built_sources)			\
 	$(NULL)
 libst_1_0_la_CPPFLAGS = $(st_cflags)
-libst_1_0_la_LDFLAGS = $(LDADD)
 
 noinst_PROGRAMS += test-theme
 

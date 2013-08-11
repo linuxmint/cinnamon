@@ -19,41 +19,37 @@ dist_searchproviders_DATA =				\
 
 themedir = $(pkgdatadir)/theme
 dist_theme_DATA = \
-	theme/calendar-arrow-left.svg		\
-	theme/calendar-arrow-right.svg		\
-	theme/calendar-today.svg		\
-	theme/close-window.svg			\
-	theme/close.svg				\
-	theme/corner-ripple-ltr.png		\
-	theme/corner-ripple-rtl.png		\
-	theme/dash-placeholder.svg		\
-	theme/filter-selected-ltr.svg		\
-	theme/filter-selected-rtl.svg		\
-	theme/gdm.css				\
-	theme/cinnamon.css			\
-	theme/menu.png				\
-	theme/overview.png			\
-	theme/overview-hover.png		\
-	theme/panel-border.svg			\
-	theme/panel-button-border.svg		\
-	theme/panel-button-highlight-narrow.svg	\
-	theme/panel-button-highlight-wide.svg	\
-	theme/process-working.svg		\
-	theme/running-indicator.svg		\
-	theme/scroll-hhandle.svg		\
-	theme/scroll-vhandle.svg		\
-	theme/source-button-border.svg		\
-	theme/thumbnail.png			\
-	theme/thumbnail-generic.png		\
-	theme/toggle-off-us.svg			\
-	theme/toggle-off-intl.svg		\
-	theme/toggle-on-us.svg			\
-	theme/toggle-on-intl.svg		\
-	theme/ws-switch-arrow-up.svg		\
-	theme/ws-switch-arrow-down.svg		\
-	theme/player-paused.svg		\
-	theme/player-playing.svg		\
-	theme/player-stopped.svg
+    theme/add-workspace-hover.png  \
+    theme/add-workspace.png        \
+    theme/calendar-arrow-left.svg  \
+    theme/calendar-arrow-right.svg \
+    theme/calendar-today.svg       \
+    theme/checkbox-focused.svg     \
+    theme/checkbox-off-focused.svg \
+    theme/checkbox-off.svg         \
+    theme/checkbox.svg             \
+    theme/cinnamon.css             \
+    theme/close.svg                \
+    theme/close-window.svg         \
+    theme/corner-ripple.png        \
+    theme/menu.png                 \
+    theme/overview-hover.png       \
+    theme/overview.png             \
+    theme/player-paused.svg        \
+    theme/player-playing.svg       \
+    theme/player-stopped.svg       \
+    theme/process-working.svg      \
+    theme/radiobutton-off.svg      \
+    theme/radiobutton.svg          \
+    theme/scroll-hhandle.svg       \
+    theme/scroll-vhandle.svg       \
+    theme/thumbnail-generic.png    \
+    theme/thumbnail.png            \
+    theme/toggle-off-intl.svg      \
+    theme/toggle-off-us.svg        \
+    theme/toggle-on-intl.svg       \
+    theme/toggle-on-us.svg         \
+    theme/trash-icon.png
 
 gsettings_SCHEMAS = org.cinnamon.gschema.xml
 
@@ -68,23 +64,14 @@ gschemas.compiled: $(gsettings_SCHEMAS:.xml=.valid)
 all-local: gschemas.compiled
 
 
-# GConf schemas: provide defaults for keys from Metacity we are overriding
-gconfschemadir  = @GCONF_SCHEMA_FILE_DIR@
-gconfschema_DATA = cinnamon.schemas
-
 shadersdir = $(pkgdatadir)/shaders
 shaders_DATA = \
 	shaders/dim-window.glsl
-
-install-data-local:
-	GCONF_CONFIG_SOURCE=$(GCONF_SCHEMA_CONFIG_SOURCE) $(GCONFTOOL) --makefile-install-rule $(srcdir)/$(gconfschema_DATA)
-
 
 
 EXTRA_DIST =						\
 	cinnamon.desktop.in.in			\
 	$(menu_DATA)					\
-	$(gconfschema_DATA)				\
 	$(shaders_DATA)					\
 	org.cinnamon.gschema.xml.in
 

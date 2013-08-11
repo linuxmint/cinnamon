@@ -12,16 +12,17 @@ const Cinnamon = imports.gi.Cinnamon;
 const Signals = imports.signals;
 const St = imports.gi.St;
 
-const BoxPointer = imports.ui.boxpointer;
 const GnomeSession = imports.misc.gnomeSession;
 const Main = imports.ui.main;
 const PopupMenu = imports.ui.popupMenu;
 const Params = imports.misc.params;
 const Tweener = imports.ui.tweener;
 const Util = imports.misc.util;
+const AppletManager = imports.ui.appletManager;
 
-const ANIMATION_TIME = 0.2;
+const ANIMATION_TIME = .2;
 const NOTIFICATION_TIMEOUT = 4;
+const NOTIFICATION_CRITICAL_TIMEOUT_WITH_APPLET = 10;
 const SUMMARY_TIMEOUT = 1;
 const LONGER_SUMMARY_TIMEOUT = 4;
 
@@ -242,6 +243,14 @@ FocusGrabber.prototype = {
             function() {
                 this._toggleFocusGrabMode();
             }));
+        Main.expo.connect('showing', Lang.bind(this,
+            function() {
+                this._toggleFocusGrabMode();
+            }));
+        Main.expo.connect('hidden', Lang.bind(this,
+            function() {
+                this._toggleFocusGrabMode();
+            }));
     },
 
     grabFocus: function(actor) {
@@ -434,6 +443,10 @@ Notification.prototype = {
         this._spacing = 0;
         this._scrollPolicy = Gtk.PolicyType.AUTOMATIC;
         this._imageBin = null;
+        this._timestamp = new Date();
+        this._inNotificationBin = false;
+        let calendarSettings = new Gio.Settings({ schema: 'org.cinnamon.calendar' });
+        this.dateFormat = calendarSettings.get_string('date-format');
 
         source.connect('destroy', Lang.bind(this,
             function (source, reason) {
@@ -442,6 +455,7 @@ Notification.prototype = {
 
         this.actor = new St.Button();
         this.actor._delegate = this;
+        this.actor._parent_container = null;
         this.actor.connect('clicked', Lang.bind(this, this._onClicked));
         this.actor.connect('destroy', Lang.bind(this, this._onDestroy));
 
@@ -475,9 +489,11 @@ Notification.prototype = {
                                         col: 2,
                                         y_expand: false,
                                         y_fill: false });
-
+        this._timeLabel = new St.Label();
         this._titleLabel = new St.Label();
         this._bannerBox.add_actor(this._titleLabel);
+        this._bannerBox.add_actor(this._timeLabel);
+        this._timeLabel.hide();
         this._bannerUrlHighlighter = new URLHighlighter();
         this._bannerLabel = this._bannerUrlHighlighter.actor;
         this._bannerBox.add_actor(this._bannerLabel);
@@ -494,6 +510,8 @@ Notification.prototype = {
     // the title/banner. If @params.clear is %true, it will also
     // remove any additional actors/action buttons previously added.
     update: function(title, banner, params) {
+        this._timestamp = new Date();
+        this._inNotificationBin = false;
         params = Params.parse(params, { customContent: false,
                                         body: null,
                                         icon: null,
@@ -549,7 +567,8 @@ Notification.prototype = {
         this.title = title;
         title = title ? _fixMarkup(title.replace(/\n/g, ' '), params.titleMarkup) : '';
         this._titleLabel.clutter_text.set_markup('<b>' + title + '</b>');
-
+        this._timeLabel.clutter_text.set_markup(this._timestamp.toLocaleTimeString(this.dateFormat));
+        this._timeLabel.hide();
         if (Pango.find_base_dir(title, -1) == Pango.Direction.RTL)
             this._titleDirection = St.TextDirection.RTL;
         else
@@ -666,7 +685,6 @@ Notification.prototype = {
     // Puts @actor into the action area of the notification, replacing
     // the previous contents
     setActionArea: function(actor, props) {
-    	return;
         if (this._actionArea) {
             this._actionArea.destroy();
             this._actionArea = null;
@@ -792,14 +810,26 @@ Notification.prototype = {
     _bannerBoxGetPreferredWidth: function(actor, forHeight, alloc) {
         let [titleMin, titleNat] = this._titleLabel.get_preferred_width(forHeight);
         let [bannerMin, bannerNat] = this._bannerLabel.get_preferred_width(forHeight);
-
-        alloc.min_size = titleMin;
-        alloc.natural_size = titleNat + this._spacing + bannerNat;
+        let [timeMin, timeNat] = this._timeLabel.get_preferred_width(forHeight);
+        if (this._inNotificationBin) {
+            alloc.min_size = Math.max(titleMin, timeMin);
+            alloc.natural_size = Math.max(titleNat, timeNat) + this._spacing + bannerNat;
+        } else {
+            alloc.min_size = titleMin;
+            alloc.natural_size = titleNat + this._spacing + bannerNat;
+        }
     },
 
     _bannerBoxGetPreferredHeight: function(actor, forWidth, alloc) {
-        [alloc.min_size, alloc.natural_size] =
-            this._titleLabel.get_preferred_height(forWidth);
+        if (this._inNotificationBin) {
+            let [titleMin, titleNat] = this._titleLabel.get_preferred_height(forWidth);
+            let [timeMin, timeNat] = this._timeLabel.get_preferred_height(forWidth);
+            alloc.min_size = titleMin + timeMin;
+            alloc.natural_size = titleNat + timeNat;
+        } else {
+            [alloc.min_size, alloc.natural_size] =
+                this._titleLabel.get_preferred_height(forWidth);
+        }
     },
 
     _bannerBoxAllocate: function(actor, box, flags) {
@@ -807,23 +837,45 @@ Notification.prototype = {
 
         let [titleMinW, titleNatW] = this._titleLabel.get_preferred_width(-1);
         let [titleMinH, titleNatH] = this._titleLabel.get_preferred_height(availWidth);
+        
+        let [timeMinW, timeNatW] = this._timeLabel.get_preferred_width(-1);
+        let [timeMinH, timeNatH] = this._timeLabel.get_preferred_height(availWidth);
+        
         let [bannerMinW, bannerNatW] = this._bannerLabel.get_preferred_width(availWidth);
 
         let titleBox = new Clutter.ActorBox();
+        let timeBox = new Clutter.ActorBox();
         let titleBoxW = Math.min(titleNatW, availWidth);
+        let timeBoxW = Math.min(timeNatW, availWidth);
         if (this._titleDirection == St.TextDirection.RTL) {
             titleBox.x1 = availWidth - titleBoxW;
             titleBox.x2 = availWidth;
+            timeBox.x1 = availWidth - timeBoxW;
+            timeBox.x2 = availWidth;
         } else {
             titleBox.x1 = 0;
+            timeBox.x1 = 0;
             titleBox.x2 = titleBoxW;
+            timeBox.x2 = timeBoxW;
         }
-        titleBox.y1 = 0;
-        titleBox.y2 = titleNatH;
+        if (this._inNotificationBin) {
+            timeBox.y1 = 0;
+            timeBox.y2 = timeNatH;
+            titleBox.y1 = timeNatH;
+            titleBox.y2 = timeNatH + titleNatH;
+        } else {
+            titleBox.y1 = 0;
+            titleBox.y2 = titleNatH;
+        }
+
         this._titleLabel.allocate(titleBox, flags);
+        if (this._inNotificationBin) {
+            this._timeLabel.allocate(timeBox, flags);
+        }
         this._titleFitsInBannerMode = (titleNatW <= availWidth);
 
         let bannerFits = true;
+        
         if (titleBoxW + this._spacing > availWidth) {
             this._bannerLabel.opacity = 0;
             bannerFits = false;
@@ -841,8 +893,13 @@ Notification.prototype = {
 
                 bannerFits = (bannerBox.x1 + bannerNatW <= availWidth);
             }
-            bannerBox.y1 = 0;
-            bannerBox.y2 = titleNatH;
+            if (this._inNotificationBin) {
+                bannerBox.y1 = timeNatH;
+                bannerBox.y2 = timeNatH + titleNatH;
+            } else {
+                bannerBox.y1 = 0;
+                bannerBox.y2 = titleNatH;
+            }
             this._bannerLabel.allocate(bannerBox, flags);
 
             // Make _bannerLabel visible if the entire notification
@@ -1364,7 +1421,6 @@ MessageTray.prototype = {
         this._notificationState = State.HIDDEN;
         this._notificationTimeoutId = 0;
         this._notificationExpandedId = 0;
-        this._overviewVisible = Main.overview.visible;
         this._notificationRemoved = false;
         this._reNotifyAfterHideNotification = null;
         
@@ -1373,26 +1429,26 @@ MessageTray.prototype = {
 
         Main.layoutManager.connect('monitors-changed', Lang.bind(this, this._setSizePosition));
 
+        let onNotificationEnabledUpdated = Lang.bind(this, function() {
+            this._notificationsEnabled = global.settings.get_boolean("display-notifications");
+        });
+        global.settings.connect('changed::display-notifications', onNotificationEnabledUpdated);
+        onNotificationEnabledUpdated();
+
         this._setSizePosition();
 
-        Main.overview.connect('showing', Lang.bind(this,
-            function() {
-                this._overviewVisible = true;
-                if (this._locked) {
-                    this._unlock();
-                } else {
-                    this._updateState();
-                }
-            }));
-        Main.overview.connect('hiding', Lang.bind(this,
-            function() {
-                this._overviewVisible = false;
-                if (this._locked) {
-                    this._unlock();
-                } else {
-                    this._updateState();
-                }
-            }));
+        let updateLockState = Lang.bind(this, function() {
+            if (this._locked) {
+                this._unlock();
+            } else {
+                this._updateState();
+            }
+        });
+
+        Main.overview.connect('showing', updateLockState);
+        Main.overview.connect('hiding', updateLockState);
+        Main.expo.connect('showing', updateLockState);
+        Main.expo.connect('hiding', updateLockState);
     },
 
     _setSizePosition: function() {
@@ -1527,20 +1583,31 @@ MessageTray.prototype = {
         let notificationUrgent = this._notificationQueue.length > 0 && this._notificationQueue[0].urgency == Urgency.CRITICAL;
         let notificationsPending = this._notificationQueue.length > 0 && (!this._busy || notificationUrgent);
         let notificationExpanded = this._notificationBin.y < 0;
-        let notificationExpired = (this._notificationTimeoutId == 0 && !(this._notification && this._notification.urgency == Urgency.CRITICAL) && !this._pointerInTray && !this._locked && !(this._pointerInKeyboard && notificationExpanded)) || this._notificationRemoved;
-        let canShowNotification = notificationsPending;
+
+        let notificationExpired = (this._notificationTimeoutId == 0 &&
+                !(this._notification && this._notification.urgency == Urgency.CRITICAL) &&
+                !this._pointerInTray &&
+                !this._locked &&
+                !(this._pointerInKeyboard && notificationExpanded)
+            ) || this._notificationRemoved;
+        let canShowNotification = notificationsPending && this._notificationsEnabled;
 
         if (this._notificationState == State.HIDDEN) {
-            if (canShowNotification)
+            if (canShowNotification) {
                 this._showNotification();
+            }
+            else if (!this._notificationsEnabled) {
+                if (notificationsPending) {
+                    this._notification = this._notificationQueue.shift();
+                    if (AppletManager.get_role_provider_exists(AppletManager.Roles.NOTIFICATIONS)) {
+                        this.emit('notify-applet-update', this._notification);
+                    }
+                }
+            }
         } else if (this._notificationState == State.SHOWN) {
             if (notificationExpired)
                 this._hideNotification();
         }
-
-        let notificationsVisible = (this._notificationState == State.SHOWING ||
-                                    this._notificationState == State.SHOWN);
-        let notificationsDone = !notificationsVisible && !notificationsPending;
     },
 
     _tween: function(actor, statevar, value, params) {
@@ -1566,15 +1633,21 @@ MessageTray.prototype = {
     },
 
     _showNotification: function() {
+        this._notificationTimeoutId = 1; // this prevents a race condition with the messagetray wanting
+                                         // to hide a notification before it's done showing it, when updating from applet
         this._notification = this._notificationQueue.shift();
+        if (this._notification.actor._parent_container) {
+            this._notification.collapseCompleted();
+            this._notification.actor._parent_container.remove_actor(this._notification.actor);
+        }
         this._notificationClickedId = this._notification.connect('done-displaying',
                                                                  Lang.bind(this, this._escapeTray));
         this._notificationBin.child = this._notification.actor;
         this._notificationBin.opacity = 0;        
         let monitor = Main.layoutManager.primaryMonitor;
-        this._notificationBin.y = this._notification._table.get_theme_node().get_length('margin-from-top-edge-of-screen') * 2; // Notifications appear from here (for the animation)
+        this._notificationBin.y = monitor.y + (Main.panel.actor.get_height()+5) * 2; // Notifications appear from here (for the animation)
         let margin = this._notification._table.get_theme_node().get_length('margin-from-right-edge-of-screen');                
-        this._notificationBin.x = monitor.width - this._notification._table.width - margin;
+        this._notificationBin.x = monitor.x + monitor.width - this._notification._table.width - margin;
         this._notificationBin.show();
 
         this._updateShowingNotification();
@@ -1625,15 +1698,19 @@ MessageTray.prototype = {
                             onComplete: this._showNotificationCompleted,
                             onCompleteScope: this
                           };
+        let monitor = Main.layoutManager.primaryMonitor;
         if (!this._notification.expanded)        	 
-            tweenParams.y = this._notification._table.get_theme_node().get_length('margin-from-top-edge-of-screen');             
+            tweenParams.y = monitor.y + (Main.panel.actor.get_height()+5);
 
         this._tween(this._notificationBin, '_notificationState', State.SHOWN, tweenParams);
    },
 
     _showNotificationCompleted: function() {
-        if (this._notification.urgency != Urgency.CRITICAL)
+        if (this._notification.urgency != Urgency.CRITICAL) {
             this._updateNotificationTimeout(NOTIFICATION_TIMEOUT * 1000);
+        } else if (AppletManager.get_role_provider_exists(AppletManager.Roles.NOTIFICATIONS)) {
+            this._updateNotificationTimeout(NOTIFICATION_CRITICAL_TIMEOUT_WITH_APPLET * 1000);
+        }
     },
 
     _updateNotificationTimeout: function(timeout) {
@@ -1672,7 +1749,7 @@ MessageTray.prototype = {
         }
 
         this._tween(this._notificationBin, '_notificationState', State.HIDDEN,
-                    { y: 0,
+                    { y: Main.layoutManager.primaryMonitor.y,
                       opacity: 0,
                       time: ANIMATION_TIME,
                       transition: 'easeOutQuad',
@@ -1682,16 +1759,20 @@ MessageTray.prototype = {
     },
 
     _hideNotificationCompleted: function() {
-        this._notificationRemoved = false;
         this._notificationBin.hide();
         this._notificationBin.child = null;
         this._notification.collapseCompleted();
         this._notification.disconnect(this._notificationClickedId);
         this._notificationClickedId = 0;
         let notification = this._notification;
+        if (AppletManager.get_role_provider_exists(AppletManager.Roles.NOTIFICATIONS) && !this._notificationRemoved) {
+            this.emit('notify-applet-update', notification);
+        } else {
+            if (notification.isTransient)
+                notification.destroy(NotificationDestroyedReason.EXPIRED);  
+        }
         this._notification = null;
-        if (notification.isTransient)
-            notification.destroy(NotificationDestroyedReason.EXPIRED);
+        this._notificationRemoved = false;
     },
 
     _expandNotification: function(autoExpanding) {
@@ -1708,19 +1789,26 @@ MessageTray.prototype = {
     },
 
     _onNotificationExpanded: function() {
-        let expandedY = - this._notificationBin.height;
-
+        let expandedY = this._notification.actor.height - this._notificationBin.height;
         // Don't animate the notification to its new position if it has shrunk:
         // there will be a very visible "gap" that breaks the illusion.
+        
+        // This isn't really working at the moment, but it was just crashing before
+        // if it encountered a critical notification.  expandedY is always 0.  For now
+        // just make sure it's not covering the top panel if there is one.
+        
+        let monitor = Main.layoutManager.primaryMonitor;
+        let newY = monitor.y + (Main.panel.actor.get_height()+5);
 
         if (this._notificationBin.y < expandedY)
             this._notificationBin.y = expandedY;
         else if (this._notification.y != expandedY)
             this._tween(this._notificationBin, '_notificationState', State.SHOWN,
-                        { y: expandedY,
+                        { y: newY,
                           time: ANIMATION_TIME,
                           transition: 'easeOutQuad'
                         });
+
    },
 
     // We use this function to grab focus when the user moves the pointer
@@ -1729,6 +1817,9 @@ MessageTray.prototype = {
         this._focusGrabber.grabFocus(this._notification.actor);
     }
 };
+Signals.addSignalMethods(MessageTray.prototype);
+
+
 
 function SystemNotificationSource() {
     this._init();

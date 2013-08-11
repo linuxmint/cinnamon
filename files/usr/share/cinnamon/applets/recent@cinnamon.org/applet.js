@@ -2,7 +2,6 @@ const DocInfo = imports.misc.docInfo;
 const Gtk = imports.gi.Gtk;
 const Gio = imports.gi.Gio;
 const St = imports.gi.St;
-const Main = imports.ui.main;
 const PopupMenu = imports.ui.popupMenu;
 const Lang = imports.lang;
 const Applet = imports.ui.applet;
@@ -27,38 +26,22 @@ MyPopupMenuItem.prototype =
     }
 };
 
-function MyMenu(launcher, orientation) {
-    this._init(launcher, orientation);
-}
-
-MyMenu.prototype = {
-    __proto__: PopupMenu.PopupMenu.prototype,
-    
-    _init: function(launcher, orientation) {
-        this._launcher = launcher;        
-                
-        PopupMenu.PopupMenu.prototype._init.call(this, launcher.actor, 0.0, orientation, 0);
-        Main.uiGroup.add_actor(this.actor);
-        this.actor.hide();            
-    }
-}
-
-function MyApplet(orientation) {
-    this._init(orientation);
+function MyApplet(orientation, panel_height) {
+    this._init(orientation, panel_height);
 }
 
 MyApplet.prototype = {
     __proto__: Applet.IconApplet.prototype,
 
-    _init: function(orientation) {        
-        Applet.IconApplet.prototype._init.call(this, orientation);
+    _init: function(orientation, panel_height) {        
+        Applet.IconApplet.prototype._init.call(this, orientation, panel_height);
         
         try {        
-            this.set_applet_icon_name("document-open-recent");
+            this.set_applet_icon_symbolic_name("document-open-recent");
             this.set_applet_tooltip(_("Recent documents"));
             
             this.menuManager = new PopupMenu.PopupMenuManager(this);
-            this.menu = new MyMenu(this, orientation);
+            this.menu = new Applet.AppletPopupMenu(this, orientation);
             this.menuManager.addMenu(this.menu);            
                                                                 
             this.RecentManager = new DocInfo.DocManager();
@@ -84,9 +67,11 @@ MyApplet.prototype = {
         if (this.RecentManager._infosByTimestamp.length > 0) {
             this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
             let icon = new St.Icon({ icon_name: 'edit-clear', icon_type: St.IconType.SYMBOLIC, icon_size: 22 });
-            let menuItem = new MyPopupMenuItem(icon, 'Clear list', {});
+            let menuItem = new MyPopupMenuItem(icon, _("Clear list"), {});
             this.menu.addMenuItem(menuItem);
             menuItem.connect('activate', Lang.bind(this, this._clearAll));
+        } else {
+            this.menu.addMenuItem(new PopupMenu.PopupMenuItem(_("No recent documents")));
         }
     },
     
@@ -113,7 +98,7 @@ MyApplet.prototype = {
     }
 };
 
-function main(metadata, orientation) {  
-    let myApplet = new MyApplet(orientation);
+function main(metadata, orientation, panel_height) {  
+    let myApplet = new MyApplet(orientation, panel_height);
     return myApplet;      
 }

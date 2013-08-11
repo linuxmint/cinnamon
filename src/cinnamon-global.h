@@ -29,13 +29,15 @@ GType cinnamon_global_get_type (void) G_GNUC_CONST;
 
 CinnamonGlobal   *cinnamon_global_get                       (void);
 
+ClutterStage  *cinnamon_global_get_stage                 (CinnamonGlobal *global);
 MetaScreen    *cinnamon_global_get_screen                (CinnamonGlobal *global);
 GdkScreen     *cinnamon_global_get_gdk_screen            (CinnamonGlobal *global);
 MetaDisplay   *cinnamon_global_get_display               (CinnamonGlobal *global);
 GList         *cinnamon_global_get_window_actors         (CinnamonGlobal *global);
 GSettings     *cinnamon_global_get_settings              (CinnamonGlobal *global);
 guint32        cinnamon_global_get_current_time          (CinnamonGlobal *global);
-
+pid_t          cinnamon_global_get_pid                      (void);
+gchar         *cinnamon_global_get_md5_for_string        (const gchar *string);
 
 /* Input/event handling */
 gboolean cinnamon_global_begin_modal            (CinnamonGlobal         *global,
@@ -81,6 +83,9 @@ void    cinnamon_global_get_pointer             (CinnamonGlobal         *global,
                                               int                 *x,
                                               int                 *y,
                                               ClutterModifierType *mods);
+void    cinnamon_global_set_pointer             (CinnamonGlobal         *global,
+                                              int                 x,
+                                              int                 y);
 
 
 /* JavaScript utilities */
@@ -142,32 +147,6 @@ void     cinnamon_global_notify_error              (CinnamonGlobal  *global,
 void     cinnamon_global_init_xdnd                 (CinnamonGlobal  *global);
 
 void     cinnamon_global_reexec_self               (CinnamonGlobal  *global);
-
-void     cinnamon_global_launch_calendar_server    (CinnamonGlobal  *global);
-
-typedef void (*CinnamonGlobalScreenshotCallback)  (CinnamonGlobal *global, gboolean success);
-
-void    cinnamon_global_screenshot_area           (CinnamonGlobal  *global,
-                                                int x,
-                                                int y,
-                                                int width,
-                                                int height,
-                                                const char *filename,
-                                                CinnamonGlobalScreenshotCallback callback);
-
-gboolean cinnamon_global_screenshot_window         (CinnamonGlobal  *global,
-                                                gboolean include_frame,
-                                                const char *filename);
-
-void    cinnamon_global_screenshot                (CinnamonGlobal  *global,
-                                                const char *filename,
-                                                CinnamonGlobalScreenshotCallback callback);
-typedef enum {
-  CINNAMON_SESSION_USER,
-  CINNAMON_SESSION_GDM
-} CinnamonSessionType;
-
-CinnamonSessionType cinnamon_global_get_session_type  (CinnamonGlobal  *global);
 
 G_END_DECLS
 

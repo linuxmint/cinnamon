@@ -1,30 +1,23 @@
-
 const St = imports.gi.St;
-const Main = imports.ui.main;
-const PopupMenu = imports.ui.popupMenu;
 const ModalDialog = imports.ui.modalDialog;
 const Gio = imports.gi.Gio;
 const Gtk = imports.gi.Gtk;
 const Lang = imports.lang;
 const Clutter = imports.gi.Clutter;
 const Applet = imports.ui.applet;
-const GLib = imports.gi.GLib;
 
-const Gettext = imports.gettext.domain('cinnamon-applets');
-const _ = Gettext.gettext;
-
-function MyApplet(orientation) {
-    this._init(orientation);
+function MyApplet(orientation, panel_height) {
+    this._init(orientation, panel_height);
 }
 
 MyApplet.prototype = {
     __proto__: Applet.IconApplet.prototype,
 
-    _init: function(orientation) {        
-        Applet.IconApplet.prototype._init.call(this, orientation);
+    _init: function(orientation, panel_height) {        
+        Applet.IconApplet.prototype._init.call(this, orientation, panel_height);
         
         try {        
-            this.set_applet_icon_name("user-trash");
+            this.set_applet_icon_symbolic_name("user-trash");
             this.set_applet_tooltip(_("Trash"));
                    
             this.trash_path = 'trash:///';
@@ -43,10 +36,10 @@ MyApplet.prototype = {
     },
     
     _initContextMenu: function () {
-        this.empty_item = new Applet.MenuItem(_('Empty Trash'), Gtk.STOCK_REMOVE, Lang.bind(this, this._emptyTrash));
+        this.empty_item = new Applet.MenuItem(_("Empty Trash"), Gtk.STOCK_REMOVE, Lang.bind(this, this._emptyTrash));
         this._applet_context_menu.addMenuItem(this.empty_item);
 
-        this.open_item = new Applet.MenuItem(_('Open Trash'), Gtk.STOCK_OPEN, Lang.bind(this, this._openTrash));
+        this.open_item = new Applet.MenuItem(_("Open Trash"), Gtk.STOCK_OPEN, Lang.bind(this, this._openTrash));
         this._applet_context_menu.addMenuItem(this.open_item);
     },
     
@@ -62,9 +55,10 @@ MyApplet.prototype = {
       if (this.trash_directory.query_exists(null)) {
           let children = this.trash_directory.enumerate_children('standard::*', Gio.FileQueryInfoFlags.NONE, null);          
           if (children.next_file(null, null) == null) {
-              this.set_applet_icon_name("user-trash");        
+              this.set_applet_icon_symbolic_name("user-trash");        
           } else {
-              this.set_applet_icon_name("user-trash-full");
+              //this.set_applet_icon_name("user-trash-full");
+              this.set_applet_icon_symbolic_name("user-trash");        
           }
       }
     },
@@ -89,8 +83,7 @@ MyApplet.prototype = {
     }
 };
 
-const MESSAGE = _("Are you sure you want to delete all items from the trash?\n\
-This operation cannot be undone.");
+const MESSAGE = _("Are you sure you want to delete all items from the trash?") + "\n" + _("This operation cannot be undone.");
 
 function ConfirmEmptyTrashDialog(emptyMethod) {
   this._init(emptyMethod);
@@ -116,7 +109,7 @@ ConfirmEmptyTrashDialog.prototype = {
     messageBox.add(this._subjectLabel, { y_fill:  false, y_align: St.Align.START });
 
     this._descriptionLabel = new St.Label({ style_class: 'polkit-dialog-description',
-                                            text: Gettext.gettext(MESSAGE) });
+                                            text: MESSAGE });
 
     messageBox.add(this._descriptionLabel, { y_fill:  true, y_align: St.Align.START });
 
@@ -139,8 +132,7 @@ ConfirmEmptyTrashDialog.prototype = {
   }
 };
 
-function main(metadata, orientation) {  
-    imports.gettext.bindtextdomain('cinnamon-applets', metadata.localedir);
-    let myApplet = new MyApplet(orientation);
+function main(metadata, orientation, panel_height) {      
+    let myApplet = new MyApplet(orientation, panel_height);
     return myApplet;      
 }

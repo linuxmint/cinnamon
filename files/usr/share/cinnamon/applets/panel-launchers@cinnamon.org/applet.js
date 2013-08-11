@@ -6,281 +6,156 @@ const Lang = imports.lang;
 const Gio = imports.gi.Gio;
 const PopupMenu = imports.ui.popupMenu;
 const Main = imports.ui.main;
-const ModalDialog = imports.ui.modalDialog;
 const Signals = imports.signals;
 const GLib = imports.gi.GLib;
 const Tooltips = imports.ui.tooltips;
 const DND = imports.ui.dnd;
 const Tweener = imports.ui.tweener;
+const Util = imports.misc.util;
 
-const LAUNCHERS_DROP_ANIMATION_TIME = 0.2;
+const DEFAULT_ICON_SIZE = 20;
+const DEFAULT_ANIM_SIZE = 13;
+const ICON_HEIGHT_FACTOR = .8;
+const ICON_ANIM_FACTOR = .65;
+
+const PANEL_EDIT_MODE_KEY = 'panel-edit-mode';
+const PANEL_LAUNCHERS_KEY = 'panel-launchers';
+const PANEL_LAUNCHERS_DRAGGABLE_KEY = 'panel-launchers-draggable';
+const PANEL_RESIZABLE_KEY = 'panel-resizable';
+const PANEL_SCALE_TEXT_ICONS_KEY = 'panel-scale-text-icons';
+
+let pressLauncher = null;
 
 function PanelAppLauncherMenu(launcher, orientation) {
     this._init(launcher, orientation);
 }
 
+const APPLET_DIR = imports.ui.appletManager._find_applet('panel-launchers@cinnamon.org');
 const CUSTOM_LAUNCHERS_PATH = GLib.get_home_dir() + '/.cinnamon/panel-launchers';
-
-function DashItemContainer() {
-    this._init();
-}
-
-DashItemContainer.prototype = {
-    _init: function() {
-        this.actor = new Cinnamon.GenericContainer({ style_class: 'dash-item-container' });
-        this.actor.connect('get-preferred-width',
-                           Lang.bind(this, this._getPreferredWidth));
-        this.actor.connect('get-preferred-height',
-                           Lang.bind(this, this._getPreferredHeight));
-        this.actor.connect('allocate',
-                           Lang.bind(this, this._allocate));
-        this.actor._delegate = this;
-
-        this.child = null;
-        this._childScale = 1;
-        this._childOpacity = 255;
-        this.animatingOut = false;
-    },
-
-    _allocate: function(actor, box, flags) {
-        if (this.child == null)
-            return;
-
-        let availWidth = box.x2 - box.x1;
-        let availHeight = box.y2 - box.y1;
-        let [minChildWidth, minChildHeight, natChildWidth, natChildHeight] =
-            this.child.get_preferred_size();
-        let [childScaleX, childScaleY] = this.child.get_scale();
-
-        let childWidth = Math.min(natChildWidth * childScaleX, availWidth);
-        let childHeight = Math.min(natChildHeight * childScaleY, availHeight);
-
-        let childBox = new Clutter.ActorBox();
-        childBox.x1 = (availWidth - childWidth) / 2;
-        childBox.y1 = (availHeight - childHeight) / 2;
-        childBox.x2 = childBox.x1 + childWidth;
-        childBox.y2 = childBox.y1 + childHeight;
-
-        this.child.allocate(childBox, flags);
-    },
-
-    _getPreferredHeight: function(actor, forWidth, alloc) {
-        alloc.min_size = 0;
-        alloc.natural_size = 0;
-
-        if (this.child == null)
-            return;
-
-        let [minHeight, natHeight] = this.child.get_preferred_height(forWidth);
-        alloc.min_size += minHeight * this.child.scale_y;
-        alloc.natural_size += natHeight * this.child.scale_y;
-    },
-
-    _getPreferredWidth: function(actor, forHeight, alloc) {
-        alloc.min_size = 0;
-        alloc.natural_size = 0;
-
-        if (this.child == null)
-            return;
-
-        let [minWidth, natWidth] = this.child.get_preferred_width(forHeight);
-        alloc.min_size = minWidth * this.child.scale_y;
-        alloc.natural_size = natWidth * this.child.scale_y;
-    },
-
-    setChild: function(actor) {
-        if (this.child == actor)
-            return;
-
-        this.actor.destroy_children();
-
-        this.child = actor;
-        this.actor.add_actor(this.child);
-    },
-
-    animateIn: function() {
-        if (this.child == null)
-            return;
-
-        this.childScale = 0;
-        this.childOpacity = 0;
-        Tweener.addTween(this,
-                         { childScale: 1.0,
-                           childOpacity: 255,
-                           time: LAUNCHERS_DROP_ANIMATION_TIME,
-                           transition: 'easeOutQuad'
-                         });
-    },
-
-    animateOutAndDestroy: function() {
-        if (this.child == null) {
-            this.actor.destroy();
-            return;
-        }
-
-        this.animatingOut = true;
-        this.childScale = 1.0;
-        Tweener.addTween(this,
-                         { childScale: 0.0,
-                           childOpacity: 0,
-                           time: LAUNCHERS_DROP_ANIMATION_TIME,
-                           transition: 'easeOutQuad',
-                           onComplete: Lang.bind(this, function() {
-                               this.actor.destroy();
-                           })
-                         });
-    },
-
-    set childScale(scale) {
-        this._childScale = scale;
-
-        if (this.child == null)
-            return;
-
-        this.child.set_scale_with_gravity(scale, scale,
-                                          Clutter.Gravity.CENTER);
-        this.actor.queue_relayout();
-    },
-
-    get childScale() {
-        return this._childScale;
-    },
-
-    set childOpacity(opacity) {
-        this._childOpacity = opacity;
-
-        if (this.child == null)
-            return;
-
-        this.child.set_opacity(opacity);
-        this.actor.queue_redraw();
-    },
-
-    get childOpacity() {
-        return this._childOpacity;
-    }
-};
-
-
-function DragPlaceholderItem() {
-    this._init();
-}
-
-DragPlaceholderItem.prototype = {
-    __proto__: DashItemContainer.prototype,
-
-    _init: function() {
-        DashItemContainer.prototype._init.call(this);
-        this.setChild(new St.Bin({ style_class: 'dash-placeholder' }));
-    }
-};
 
 PanelAppLauncherMenu.prototype = {
     __proto__: PopupMenu.PopupMenu.prototype,
-    
+
     _init: function(launcher, orientation) {
-        this._launcher = launcher;        
-                
+        this._launcher = launcher;
+
         PopupMenu.PopupMenu.prototype._init.call(this, launcher.actor, 0.0, orientation, 0);
         Main.uiGroup.add_actor(this.actor);
         this.actor.hide();
-        
-        this.launchItem = new PopupMenu.PopupMenuItem(_('Launch'));
+
+        this.launchItem = new PopupMenu.PopupMenuItem(_("Launch"));
         this.addMenuItem(this.launchItem);
         this.launchItem.connect('activate', Lang.bind(this, this._onLaunchActivate));
-        
-        this.addItem = new PopupMenu.PopupMenuItem(_('Add'));
+
+        this.addItem = new PopupMenu.PopupMenuItem(_("Add"));
         this.addMenuItem(this.addItem);
         this.addItem.connect('activate', Lang.bind(this, this._onAddActivate));
-        
-        this.editItem = new PopupMenu.PopupMenuItem(_('Edit'));
+
+        this.editItem = new PopupMenu.PopupMenuItem(_("Edit"));
         this.addMenuItem(this.editItem);
         this.editItem.connect('activate', Lang.bind(this, this._onEditActivate));
-        
-        this.removeItem = new PopupMenu.PopupMenuItem(_('Remove'));
+
+        this.removeItem = new PopupMenu.PopupMenuItem(_("Remove"));
         this.addMenuItem(this.removeItem);
         this.removeItem.connect('activate', Lang.bind(this, this._onRemoveActivate));
     },
-    
+
     _onLaunchActivate: function(actor, event) {
         this._launcher.launch();
     },
-    
+
     _onRemoveActivate: function(actor, event) {
-        this._launcher.launchersBox.removeLauncher(this._launcher, this._launcher.is_custom());
+        this._launcher.launchersBox.removeLauncher(this._launcher, this._launcher.isCustom());
         this._launcher.actor.destroy();
     },
-    
+
     _onAddActivate: function(actor, event) {
         this._launcher.launchersBox.showAddLauncherDialog(event.get_time());
     },
-    
+
     _onEditActivate: function(actor, event) {
         this._launcher.launchersBox.showAddLauncherDialog(event.get_time(), this._launcher);
     }
 }
 
-function PanelAppLauncher(launchersBox, app, appinfo, orientation) {
-    this._init(launchersBox, app, appinfo, orientation);
+function PanelAppLauncher(launchersBox, app, appinfo, orientation, panel_height) {
+    this._init(launchersBox, app, appinfo, orientation, panel_height);
 }
 
 PanelAppLauncher.prototype = {
-    _init: function(launchersBox, app, appinfo, orientation) {
+    _init: function(launchersBox, app, appinfo, orientation, panel_height) {
         this.app = app;
         this.appinfo = appinfo;
         this.launchersBox = launchersBox;
         this.actor = new St.Bin({ style_class: 'panel-launcher',
-                                      reactive: true,
-                                      can_focus: true,
-                                      x_fill: true,
-                                      y_fill: false,
-                                      track_hover: true });
+                                  reactive: true,
+                                  can_focus: true,
+                                  x_fill: true,
+                                  y_fill: false,
+                                  track_hover: true });
         this.actor._delegate = this;
         this.actor.connect('button-release-event', Lang.bind(this, this._onButtonRelease));
-        
-        this._iconBox = new Cinnamon.Slicer({ name: 'panel-launcher-icon' });
+        this.actor.connect('button-press-event', Lang.bind(this, this._onButtonPress));
+
+        this._iconBox = new St.Bin({ name: 'panel-launcher-icon' });
         this._iconBox.connect('style-changed',
                               Lang.bind(this, this._onIconBoxStyleChanged));
         this._iconBox.connect('notify::allocation',
                               Lang.bind(this, this._updateIconBoxClip));
         this.actor.add_actor(this._iconBox);
         this._iconBottomClip = 0;
-        
+
+        if (global.settings.get_boolean(PANEL_SCALE_TEXT_ICONS_KEY) && global.settings.get_boolean(PANEL_RESIZABLE_KEY)) {
+            this.icon_height = Math.floor(panel_height * ICON_HEIGHT_FACTOR);
+            this.icon_anim_height = Math.floor(panel_height * ICON_ANIM_FACTOR);
+        } else {
+            this.icon_height = DEFAULT_ICON_SIZE;
+            this.icon_anim_height = DEFAULT_ANIM_SIZE;
+        }
         this.icon = this._getIconActor();
         this._iconBox.set_child(this.icon);
-        
+
         this._menuManager = new PopupMenu.PopupMenuManager(this);
         this._menu = new PanelAppLauncherMenu(this, orientation);
         this._menuManager.addMenu(this._menu);
-        
+
         let tooltipText;
-        if (this.is_custom()) tooltipText = appinfo.get_name();
+        if (this.isCustom()) tooltipText = appinfo.get_name();
         else tooltipText = app.get_name();
         this._tooltip = new Tooltips.PanelItemTooltip(this, tooltipText, orientation);
-        
+
         this._dragging = false;
         this._draggable = DND.makeDraggable(this.actor);
+
         this._draggable.connect('drag-begin', Lang.bind(this, this._onDragBegin));
         this._draggable.connect('drag-cancelled', Lang.bind(this, this._onDragCancelled));
         this._draggable.connect('drag-end', Lang.bind(this, this._onDragEnd));
+
+        this._draggable.inhibit = !global.settings.get_boolean(PANEL_LAUNCHERS_DRAGGABLE_KEY) || global.settings.get_boolean(PANEL_EDIT_MODE_KEY);
+        global.settings.connect('changed::' + PANEL_LAUNCHERS_DRAGGABLE_KEY, Lang.bind(this, this._updateInhibit));
+        global.settings.connect('changed::' + PANEL_EDIT_MODE_KEY, Lang.bind(this, this._updateInhibit));
     },
-    
+
     _onDragBegin: function() {
         this._dragging = true;
         this._tooltip.hide();
         this._tooltip.preventShow = true;
     },
-    
+
     _onDragEnd: function() {
         this._dragging = false;
         this._tooltip.preventShow = false;
     },
-    
+
     _onDragCancelled: function() {
         this._dragging = false;
         this._tooltip.preventShow = false;
     },
-    
+
+    _updateInhibit: function(){
+        this._draggable.inhibit = !global.settings.get_boolean(PANEL_LAUNCHERS_DRAGGABLE_KEY) || global.settings.get_boolean(PANEL_EDIT_MODE_KEY);
+    },
+
     getDragActor: function() {
         return this._getIconActor();
     },
@@ -290,36 +165,69 @@ PanelAppLauncher.prototype = {
     getDragActorSource: function() {
         return this.icon;
     },
-    
+
     _getIconActor: function() {
-        if (this.is_custom()) return St.TextureCache.get_default().load_gicon(null, this.appinfo.get_icon(), 20);
-        else return this.app.create_icon_texture(20);
+        if (this.isCustom()) return St.TextureCache.get_default().load_gicon(null, this.appinfo.get_icon(), this.icon_height);
+        else return this.app.create_icon_texture(this.icon_height);
     },
-    
+
+    _animateIcon: function(step){
+        if (step>=3) return;
+        Tweener.addTween(this.icon,
+                         { width: this.icon_anim_height,
+                           height: this.icon_anim_height,
+                           time: 0.2,
+                           transition: 'easeOutQuad',
+                           onComplete: function(){
+                               Tweener.addTween(this.icon,
+                                                { width: this.icon_height,
+                                                  height: this.icon_height,
+                                                  time: 0.2,
+                                                  transition: 'easeOutQuad',
+                                                  onComplete: function(){
+                                                      this._animateIcon(step+1);
+                                                  },
+                                                  onCompleteScope: this
+                                                });
+                           },
+                           onCompleteScope: this
+                         });
+    },
+
     launch: function() {
-        if (this.is_custom()) this.appinfo.launch([], null);
+        let allocation = this._iconBox.get_allocation_box();
+        this._iconBox.width = allocation.x2 - allocation.x1;
+        this._iconBox.height = allocation.y2 - allocation.y1;
+        this._animateIcon(0);
+        if (this.isCustom()) this.appinfo.launch([], null);
         else this.app.open_new_window(-1);
     },
-    
-    get_id: function() {
-        if (this.is_custom()) return Gio.file_new_for_path(this.appinfo.get_filename()).get_basename();
+
+    getId: function() {
+        if (this.isCustom()) return Gio.file_new_for_path(this.appinfo.get_filename()).get_basename();
         else return this.app.get_id();
     },
-    
-    is_custom: function() {
+
+    isCustom: function() {
         return (this.app==null);
     },
-    
+
+    _onButtonPress: function(actor, event) {
+        pressLauncher = this.getAppname();
+    },
+
     _onButtonRelease: function(actor, event) {
-        let button = event.get_button();
-        if (button==1) {
-            if (this._menu.isOpen) this._menu.toggle();
-            else this.launch();
-        }else if (button==3) {
-            this._menu.toggle();
+        if (pressLauncher == this.getAppname()){
+            let button = event.get_button();
+            if (button==1) {
+                if (this._menu.isOpen) this._menu.toggle();
+                else this.launch();
+            }else if (button==3) {
+                this._menu.toggle();
+            }
         }
     },
-    
+
     _onIconBoxStyleChanged: function() {
         let node = this._iconBox.get_theme_node();
         this._iconBottomClip = node.get_length('panel-launcher-bottom-clip');
@@ -333,22 +241,22 @@ PanelAppLauncher.prototype = {
         else
             this._iconBox.remove_clip();
     },
-    
-    get_appinfo: function() {
-        if (this.is_custom()) return this.appinfo;
+
+    getAppInfo: function() {
+        if (this.isCustom()) return this.appinfo;
         else return this.app.get_app_info();
     },
-    
-    get_command: function() {
-        return this.get_appinfo().get_commandline();
+
+    getCommand: function() {
+        return this.getAppInfo().get_commandline();
     },
-    
-    get_appname: function() {
-        return this.get_appinfo().get_name();
+
+    getAppname: function() {
+        return this.getAppInfo().get_name();
     },
-    
-    get_icon: function() {
-        let icon = this.get_appinfo().get_icon();
+
+    getIcon: function() {
+        let icon = this.getAppInfo().get_icon();
         if (icon){
             if (icon instanceof Gio.FileIcon) {
                 return icon.get_file().get_path();
@@ -361,293 +269,116 @@ PanelAppLauncher.prototype = {
     }
 }
 
-function AddLauncherDialog() {
-    this._init();
-}
-
-AddLauncherDialog.prototype = {
-    __proto__: ModalDialog.ModalDialog.prototype,
-    
-    _init: function() {
-        ModalDialog.ModalDialog.prototype._init.call(this, { styleClass: 'panel-launcher-add-dialog' });
-        
-        let box;
-        let label;
-        
-        let box = new St.BoxLayout({ styleClass: 'panel-launcher-add-dialog-content-box' });
-        let leftBox = new St.BoxLayout({vertical: true, styleClass: 'panel-launcher-add-dialog-content-box-left'});
-        let rightBox = new St.BoxLayout({vertical: true, styleClass: 'panel-launcher-add-dialog-content-box-right'});
-                
-        label = new St.Label();
-        label.set_text(_("Name"));
-        leftBox.add(label, { x_align: St.Align.START, x_fill: true, x_expand: true });
-        this._nameEntry = new St.Entry({ styleClass: 'panel-launcher-add-dialog-entry', can_focus: true });
-        rightBox.add(this._nameEntry, { x_align: St.Align.END, x_fill: false, x_expand: false });
-                        
-        label = new St.Label();
-        label.set_text(_("Command"));
-        leftBox.add(label, { x_align: St.Align.START, x_fill: true, x_expand: true });
-        this._commandEntry = new St.Entry({ styleClass: 'panel-launcher-add-dialog-entry', can_focus: true });
-        rightBox.add(this._commandEntry, { x_align: St.Align.END, x_fill: false, x_expand: false });
-        
-        label = new St.Label();
-        label.set_text(_("Icon"));
-        leftBox.add(label, { x_align: St.Align.START, x_fill: true, x_expand: true });
-        this._iconEntry = new St.Entry({ styleClass: 'panel-launcher-add-dialog-entry', can_focus: true });
-        rightBox.add(this._iconEntry, { x_align: St.Align.END, x_fill: false, x_expand: false });
-        
-        box.add(leftBox);
-        box.add(rightBox);
-        this.contentLayout.add(box, { y_align: St.Align.START });
-        
-        this._errorBox = new St.BoxLayout({ style_class: 'run-dialog-error-box' });
-        this.contentLayout.add(this._errorBox, { expand: true });
-
-        let errorIcon = new St.Icon({ icon_name: 'dialog-error', icon_size: 24, style_class: 'run-dialog-error-icon' });
-
-        this._errorBox.add(errorIcon, { y_align: St.Align.MIDDLE });
-
-        this._commandError = false;
-
-        this._errorMessage = new St.Label({ style_class: 'run-dialog-error-label' });
-        this._errorMessage.clutter_text.line_wrap = true;
-
-        this._errorBox.add(this._errorMessage, { expand: true,
-                                                 y_align: St.Align.MIDDLE,
-                                                 y_fill: false });
-
-        this._errorBox.hide();
-        
-        this.connect('opened', Lang.bind(this, this._onOpened));
-        
-        this._currentLauncher = null;
-    },
-    
-    _onOpened: function() {
-        this._nameEntry.grab_key_focus();
-    },
-    
-    _validateAdd: function() {
-        if (this._nameEntry.clutter_text.get_text()==""){
-            this._errorMessage.clutter_text.set_text(_('Name cannot be empty !'));
-            this._errorBox.show();
-            return false;
-        }
-        if (this._commandEntry.clutter_text.get_text()==""){
-            this._errorMessage.clutter_text.set_text(_('Command cannot be empty !'));
-            this._errorBox.show();
-            return false;
-        }
-        
-        
-        let appid = this._saveNewLauncher(this._nameEntry.clutter_text.get_text(), this._commandEntry.clutter_text.get_text(), _("Custom Launcher"), this._iconEntry.clutter_text.get_text());
-        
-        this.close();
-        
-        if (this._currentLauncher) this.emit("launcher-updated", this._currentLauncher, appid);
-        else this.emit("launcher-created", appid);
-        
-        return true;
-    },
-    
-    _saveNewLauncher: function(name, command, description, icon){
-        let file;
-        let i;
-        if (this._currentLauncher && this._currentLauncher.is_custom()){
-            file = Gio.file_parse_name(CUSTOM_LAUNCHERS_PATH+'/'+this._currentLauncher.get_id());
-            file.delete(null);
-        }else{
-            let dir = Gio.file_new_for_path(CUSTOM_LAUNCHERS_PATH);
-            if (!dir.query_exists(null)) dir.make_directory_with_parents(null);
-            i = 1;
-            file = Gio.file_parse_name(CUSTOM_LAUNCHERS_PATH+'/cinnamon-custom-launcher-'+i+'.desktop');
-            while (file.query_exists(null)){
-                i++;
-                file = Gio.file_parse_name(CUSTOM_LAUNCHERS_PATH+'/cinnamon-custom-launcher-'+i+'.desktop');
-            }
-        }
-        
-        let desktopEntry = "[Desktop Entry]\nName="+name+"\nExec="+command+"\nType=Application\n";
-        if (description) desktopEntry += "Description="+description+"\n";
-        if (!icon && this._currentLauncher) icon = this._currentLauncher.get_icon();
-        if (!icon) icon = "application-x-executable";
-        desktopEntry += "Icon="+icon+"\n";
-        
-        let fp = file.create(0, null);
-        fp.write(desktopEntry, null);
-        fp.close(null);
-        
-        if (this._currentLauncher && this._currentLauncher.is_custom()) return this._currentLauncher.get_id();
-        else return 'cinnamon-custom-launcher-'+i+'.desktop';
-    },
-    
-    open: function(timestamp, launcher) {
-        this._currentLauncher = launcher;
-        
-        if (launcher){
-            this._commandEntry.clutter_text.set_text(launcher.get_command());
-            this._nameEntry.clutter_text.set_text(launcher.get_appname());
-            if (launcher.get_icon()) this._iconEntry.clutter_text.set_text(launcher.get_icon());
-            this._errorBox.hide();
-            this.setButtons([
-                {
-                    label: _("Save"),
-                    action: Lang.bind(this, this._validateAdd)
-                },
-                {
-                    label: _("Cancel"),
-                    key: Clutter.KEY_Escape,
-                    action: Lang.bind(this, function(){
-                        this.close();
-                    })
-                }
-            ]);
-        }else{
-            this._commandEntry.clutter_text.set_text('');
-            this._nameEntry.clutter_text.set_text('');
-            this._errorBox.hide();
-            this.setButtons([
-                {
-                    label: _("Add"),
-                    action: Lang.bind(this, this._validateAdd)
-                },
-                {
-                    label: _("Cancel"),
-                    key: Clutter.KEY_Escape,
-                    action: Lang.bind(this, function(){
-                        this.close();
-                    })
-                }
-            ]);
-        }
-
-        ModalDialog.ModalDialog.prototype.open.call(this, timestamp);
-    },
-}
-Signals.addSignalMethods(AddLauncherDialog.prototype);
-
-function MyApplet(orientation) {
-    this._init(orientation);
+function MyApplet(orientation, panel_height) {
+    this._init(orientation, panel_height);
 }
 
 MyApplet.prototype = {
     __proto__: Applet.Applet.prototype,
 
-    _init: function(orientation) {        
-        Applet.Applet.prototype._init.call(this, orientation);
-        
-        try {                    
+    _init: function(orientation, panel_height) {
+        Applet.Applet.prototype._init.call(this, orientation, panel_height);
+        this.actor.set_track_hover(false);
+        try {
             this.orientation = orientation;
             this._dragPlaceholder = null;
             this._dragPlaceholderPos = -1;
             this._animatingPlaceholdersCount = 0;
-            
-            this.actor = new St.BoxLayout({ name: 'panel-launchers-box',
-                                            style_class: 'panel-launchers-box' });
-            this.actor._delegate = this;
-            this.actor._applet = this;
-            
-            this._settings = new Gio.Settings({ schema: 'org.cinnamon' });
-            this._settings.connect('changed', Lang.bind(this, this._onSettingsChanged));
-            
-            this._addLauncherDialog = new AddLauncherDialog();
-            this._addLauncherDialog.connect("launcher-created", Lang.bind(this, this._onLauncherCreated));
-            this._addLauncherDialog.connect("launcher-updated", Lang.bind(this, this._onLauncherUpdated));
-            
+
+            this.myactor = new St.BoxLayout({ name: 'panel-launchers-box',
+                                              style_class: 'panel-launchers-box' });
+            global.settings.connect('changed::' + PANEL_LAUNCHERS_KEY, Lang.bind(this, this._onSettingsChanged));
+
             this._launchers = new Array();
-            
+
             this.reload();
+
+            this.actor.add(this.myactor);
+            this.actor.reactive = global.settings.get_boolean(PANEL_EDIT_MODE_KEY);
+            global.settings.connect('changed::' + PANEL_EDIT_MODE_KEY, Lang.bind(this, this._onPanelEditModeChanged));
         }
         catch (e) {
             global.logError(e);
         }
     },
-    
-    on_applet_clicked: function(event) {
-        
+
+    _onPanelEditModeChanged: function() {
+        this.actor.reactive = global.settings.get_boolean(PANEL_EDIT_MODE_KEY);
     },
-    
+
     _onSettingsChanged: function() {
         this.reload();
     },
-    
-    _onLauncherUpdated: function(obj, launcher, appid){
-        let desktopFiles = this._settings.get_strv('panel-launchers');
-        let i = this._launchers.indexOf(launcher);
-        if (i>=0){
-            desktopFiles.splice(i, 1);
-            desktopFiles.splice(i, 0, appid);
-            this._settings.set_strv('panel-launchers', desktopFiles);
-            this.reload();
-        }
-    },
-    
-    _onLauncherCreated: function(obj, appid){
-        if (appid){
-            let desktopFiles = this._settings.get_strv('panel-launchers');
-            desktopFiles.push(appid);
-            this._settings.set_strv('panel-launchers', desktopFiles);
-            this.reload();
-        }
-    },
-    
+
     loadApps: function() {
-        let desktopFiles = this._settings.get_strv('panel-launchers');
+        let desktopFiles = global.settings.get_strv(PANEL_LAUNCHERS_KEY);
         let appSys = Cinnamon.AppSystem.get_default();
         let apps = new Array();
         for (var i in desktopFiles){
             let app = appSys.lookup_app(desktopFiles[i]);
-            if (!app) app = appSys.lookup_settings_app(desktopFiles[i]);
             let appinfo;
             if (!app) appinfo = Gio.DesktopAppInfo.new_from_filename(CUSTOM_LAUNCHERS_PATH+"/"+desktopFiles[i]);
             if (app || appinfo) apps.push([app, appinfo]);
         }
         return apps;
     },
-    
+
+    on_panel_height_changed: function() {
+        this.reload();
+    },
+
     reload: function() {
-        this.actor.destroy_children();
+        this.myactor.destroy_children();
         this._launchers = new Array();
-        
+
         let apps = this.loadApps();
         for (var i in apps){
             let app = apps[i];
-            let launcher = new PanelAppLauncher(this, app[0], app[1], this.orientation);
-            this.actor.add(launcher.actor);
+            let launcher = new PanelAppLauncher(this, app[0], app[1], this.orientation, this._panelHeight);
+            this.myactor.add(launcher.actor);
             this._launchers.push(launcher);
         }
     },
-    
+
     removeLauncher: function(launcher, delete_file) {
-        let desktopFiles = this._settings.get_strv('panel-launchers');
+        let desktopFiles = global.settings.get_strv(PANEL_LAUNCHERS_KEY);
         let i = this._launchers.indexOf(launcher);
         if (i>=0){
             this._launchers.splice(i, 1);
             desktopFiles.splice(i, 1);
-            this._settings.set_strv('panel-launchers', desktopFiles);
+            global.settings.set_strv(PANEL_LAUNCHERS_KEY, desktopFiles);
         }
         if (delete_file){
-            let appid = launcher.get_id();
+            let appid = launcher.getId();
             let file = new Gio.file_new_for_path(CUSTOM_LAUNCHERS_PATH+"/"+appid);
             if (file.query_exists(null)) file.delete(null);
         }
     },
-    
+
     moveLauncher: function(launcher, pos) {
-        let desktopFiles = this._settings.get_strv('panel-launchers');
+        let desktopFiles = global.settings.get_strv(PANEL_LAUNCHERS_KEY);
         let origpos = this._launchers.indexOf(launcher);
         if (origpos>=0){
             this._launchers.splice(origpos, 1);
             desktopFiles.splice(origpos, 1);
-            desktopFiles.splice(pos, 0, launcher.get_id());
-            this._settings.set_strv('panel-launchers', desktopFiles);
+            desktopFiles.splice(pos, 0, launcher.getId());
+            global.settings.set_strv(PANEL_LAUNCHERS_KEY, desktopFiles);
         }
     },
-    
+
     showAddLauncherDialog: function(timestamp, launcher){
-        this._addLauncherDialog.open(timestamp, launcher);
+        if (launcher) {
+            let cl = APPLET_DIR.get_child('cinnamon-add-panel-launcher.py').get_path() + ' ';
+            cl += '"' + launcher.getId() + '" ';
+            cl += '"' + launcher.getAppname() + '" ';
+            cl += '"' + launcher.getCommand() + '" ';
+            cl += '"' + launcher.getIcon() + '"';
+            Util.spawnCommandLine(cl);
+        } else {
+            Util.spawnCommandLine(APPLET_DIR.get_child('cinnamon-add-panel-launcher.py').get_path());
+        }
     },
-    
+
     _clearDragPlaceholder: function() {
         if (this._dragPlaceholder) {
             this._dragPlaceholder.animateOutAndDestroy();
@@ -655,24 +386,24 @@ MyApplet.prototype = {
             this._dragPlaceholderPos = -1;
         }
     },
-    
+
     handleDragOver: function(source, actor, x, y, time) {
-        if (!source instanceof PanelAppLauncher) return DND.DragMotionResult.NO_DROP;
-        
-        let children = this.actor.get_children();
+        if (!(source.isDraggableApp || (source instanceof PanelAppLauncher))) return DND.DragMotionResult.NO_DROP;
+
+        let children = this.myactor.get_children();
         let numChildren = children.length;
-        let boxWidth = this.actor.width;
-        
+        let boxWidth = this.myactor.width;
+
         if (this._dragPlaceholder) {
             boxWidth -= this._dragPlaceholder.actor.width;
             numChildren--;
         }
-        
+
         let launcherPos = this._launchers.indexOf(source);
-        
+
         let pos = Math.round(x * numChildren / boxWidth);
-        
-        if (pos != this._dragPlaceholderPos && pos <= numChildren) {            
+
+        if (pos != this._dragPlaceholderPos && pos <= numChildren) {
             if (this._animatingPlaceholdersCount > 0) {
                 let launchersChildren = children.filter(function(actor) {
                     return actor._delegate instanceof PanelAppLauncher;
@@ -688,9 +419,9 @@ MyApplet.prototype = {
                     this._dragPlaceholder.animateOutAndDestroy();
                     this._animatingPlaceholdersCount++;
                     this._dragPlaceholder.actor.connect('destroy',
-                        Lang.bind(this, function() {
-                            this._animatingPlaceholdersCount--;
-                        }));
+							Lang.bind(this, function() {
+							    this._animatingPlaceholdersCount--;
+							}));
                 }
                 this._dragPlaceholder = null;
 
@@ -708,41 +439,49 @@ MyApplet.prototype = {
                 fadeIn = true;
             }
 
-            this._dragPlaceholder = new DragPlaceholderItem();
+            this._dragPlaceholder = new DND.GenericDragPlaceholderItem();
             this._dragPlaceholder.child.set_width (20);
             this._dragPlaceholder.child.set_height (10);
-            this.actor.insert_actor(this._dragPlaceholder.actor,
+            this.myactor.insert_actor(this._dragPlaceholder.actor,
                                    this._dragPlaceholderPos);
-            if (fadeIn)
-                this._dragPlaceholder.animateIn();
+            if (fadeIn) this._dragPlaceholder.animateIn();
         }
-        
+
         return DND.DragMotionResult.MOVE_DROP;
     },
-    
+
     acceptDrop: function(source, actor, x, y, time) {
+        if (!(source.isDraggableApp || (source instanceof PanelAppLauncher))) return DND.DragMotionResult.NO_DROP;
+
+        let sourceId;
+        if (source instanceof PanelAppLauncher) sourceId = source.getId();
+        else sourceId = source.get_app_id();
+
         let launcherPos = 0;
-        let children = this.actor.get_children();
+        let children = this.myactor.get_children();
         for (let i = 0; i < this._dragPlaceholderPos; i++) {
             if (this._dragPlaceholder &&
                 children[i] == this._dragPlaceholder.actor)
                 continue;
 
-            let childId = children[i]._delegate.get_id();
-            if (childId == source.get_id())
+            let childId = children[i]._delegate.getId();
+            if (childId == sourceId)
                 continue;
             launcherPos++;
         }
-        this.moveLauncher(source, launcherPos);
+        if (source instanceof PanelAppLauncher) this.moveLauncher(source, launcherPos);
+        else{
+            let desktopFiles = global.settings.get_strv(PANEL_LAUNCHERS_KEY);
+            desktopFiles.splice(launcherPos, 0, sourceId);
+            global.settings.set_strv(PANEL_LAUNCHERS_KEY, desktopFiles);
+        }
         this._clearDragPlaceholder();
         actor.destroy();
         return true;
     }
-    
-     
 };
 
-function main(metadata, orientation) {  
-    let myApplet = new MyApplet(orientation);
-    return myApplet;      
+function main(metadata, orientation, panel_height) {
+    let myApplet = new MyApplet(orientation, panel_height);
+    return myApplet;
 }

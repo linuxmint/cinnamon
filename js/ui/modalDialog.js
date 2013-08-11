@@ -1,12 +1,7 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 
 const Clutter = imports.gi.Clutter;
-const Gdk = imports.gi.Gdk;
-const Gio = imports.gi.Gio;
-const GLib = imports.gi.GLib;
 const Lang = imports.lang;
-const Meta = imports.gi.Meta;
-const Pango = imports.gi.Pango;
 const St = imports.gi.St;
 const Cinnamon = imports.gi.Cinnamon;
 const Signals = imports.signals;
@@ -109,13 +104,15 @@ ModalDialog.prototype = {
 
         this._buttonLayout.destroy_children();
         this._actionKeys = {};
+        let focusSetExplicitly = false;
 
         for (let i = 0; i < buttons.length; i ++) {
             let buttonInfo = buttons[i];
             let label = buttonInfo['label'];
             let action = buttonInfo['action'];
             let key = buttonInfo['key'];
-
+            let wantsfocus = buttonInfo['focused'] === true;
+            let nofocus = buttonInfo['focused'] === false;
             buttonInfo.button = new St.Button({ style_class: 'modal-dialog-button',
                                                 reactive:    true,
                                                 can_focus:   true,
@@ -131,9 +128,16 @@ ModalDialog.prototype = {
             else
                 x_alignment = St.Align.MIDDLE;
 
-            if (this._initialKeyFocus == this._dialogLayout ||
-                this._buttonLayout.contains(this._initialKeyFocus))
+            if (wantsfocus) {
                 this._initialKeyFocus = buttonInfo.button;
+                focusSetExplicitly = true;
+            }
+
+            if (!focusSetExplicitly && !nofocus && (this._initialKeyFocus == this._dialogLayout ||
+                this._buttonLayout.contains(this._initialKeyFocus)))
+            {
+                this._initialKeyFocus = buttonInfo.button;
+            }
             this._buttonLayout.add(buttonInfo.button,
                                    { expand: true,
                                      x_fill: false,
@@ -165,7 +169,14 @@ ModalDialog.prototype = {
     },
 
     _onKeyPressEvent: function(object, keyPressEvent) {
+        let modifiers = Cinnamon.get_event_state(keyPressEvent);
+        let ctrlAltMask = Clutter.ModifierType.CONTROL_MASK | Clutter.ModifierType.MOD1_MASK;
         let symbol = keyPressEvent.get_key_symbol();
+        if (symbol === Clutter.Escape && !(modifiers & ctrlAltMask)) {
+            this.close();
+            return;
+        }
+
         let action = this._actionKeys[symbol];
 
         if (action)

@@ -23,13 +23,28 @@ WindowAttentionHandler.prototype = {
         // toolbar windows which would result into a notification even though GIMP itself is
         // focused.
         // We are just ignoring the hint on skip_taskbar windows for now.
-        // (Which is the same behaviour as with metacity + panel)
+        // (Which is the same behaviour as with metacity + panel)                  
 
-        if (!window || window.has_focus() || window.is_skip_taskbar())
+        if (!window || window.has_focus() || window.is_skip_taskbar() ||
+            (window.get_wm_class() && (window.get_wm_class().indexOf("Skype") > -1 || window.get_wm_class().indexOf("Quassel") > -1)))
             return;
 
-        if (this._tracker.is_window_interesting(window)) {
-            window.activate(global.get_current_time());
+        try {
+
+            if (this._tracker.is_window_interesting(window)) {        
+                if (global.settings.get_boolean("bring-windows-to-current-workspace")) {
+                    window.change_workspace(global.screen.get_active_workspace());
+                }
+                else {
+                    if (global.screen.get_active_workspace().index() != window.get_workspace().index()) {
+                        window.get_workspace().activate(global.get_current_time());
+                    }                    
+                }
+                window.activate(global.get_current_time());
+            }
+        }
+        catch (e) {
+            global.logError('Error showing window demanding attention', e);
         }
     }
 };

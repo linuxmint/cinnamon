@@ -1,24 +1,8 @@
-
-const St = imports.gi.St;
-const Main = imports.ui.main;
 const PopupMenu = imports.ui.popupMenu;
-const ModalDialog = imports.ui.modalDialog;
 const Gio = imports.gi.Gio;
-const Gtk = imports.gi.Gtk;
 const Lang = imports.lang;
-const Clutter = imports.gi.Clutter;
 const Applet = imports.ui.applet;
-const GLib = imports.gi.GLib;
-const DBus = imports.dbus;
 const GConf = imports.gi.GConf;
-const Mainloop = imports.mainloop;
-const Cinnamon = imports.gi.Cinnamon;
-const Signals = imports.signals;
-const PanelMenu = imports.ui.panelMenu;
-const Util = imports.misc.util;
-
-const Gettext = imports.gettext.domain('cinnamon-applets');
-const _ = Gettext.gettext;
 
 const A11Y_SCHEMA = 'org.gnome.desktop.a11y.keyboard';
 const KEY_STICKY_KEYS_ENABLED = 'stickykeys-enable';
@@ -45,44 +29,26 @@ const KEY_TEXT_SCALING_FACTOR = 'text-scaling-factor';
 
 const HIGH_CONTRAST_THEME = 'HighContrast';
 
-
-function MyMenu(launcher, orientation) {
-    this._init(launcher, orientation);
-}
-
-MyMenu.prototype = {
-    __proto__: PopupMenu.PopupMenu.prototype,
-    
-    _init: function(launcher, orientation) {
-        this._launcher = launcher;        
-                
-        PopupMenu.PopupMenu.prototype._init.call(this, launcher.actor, 0.0, orientation, 0);
-        Main.uiGroup.add_actor(this.actor);
-        this.actor.hide();            
-    }
-}
-
-function MyApplet(orientation) {
-    this._init(orientation);
+function MyApplet(orientation, panel_height) {
+    this._init(orientation, panel_height);
 }
 
 MyApplet.prototype = {
     __proto__: Applet.IconApplet.prototype,
 
-    _init: function(orientation) {        
-        Applet.IconApplet.prototype._init.call(this, orientation);
+    _init: function(orientation, panel_height) {        
+        Applet.IconApplet.prototype._init.call(this, orientation, panel_height);
         
         try {        
-            this.set_applet_icon_name("preferences-desktop-accessibility");
+            this.set_applet_icon_symbolic_name("preferences-desktop-accessibility");
             this.set_applet_tooltip(_("Accessibility"));
             
             this.menuManager = new PopupMenu.PopupMenuManager(this);
-            this.menu = new MyMenu(this, orientation);
+            this.menu = new Applet.AppletPopupMenu(this, orientation);
             this.menuManager.addMenu(this.menu);            
                                 
             let client = GConf.Client.get_default();
             client.add_dir(KEY_META_DIR, GConf.ClientPreloadType.PRELOAD_ONELEVEL, null);
-            client.notify_add(KEY_META_DIR, Lang.bind(this, this._keyChanged), null, null);
 
             let highContrast = this._buildHCItem();
             this.menu.addMenuItem(highContrast);
@@ -118,7 +84,7 @@ MyApplet.prototype = {
             this.menu.addMenuItem(mouseKeys);
 
             this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-            this.menu.addSettingsAction(_("Universal Access Settings"), 'gnome-universal-access-panel.desktop');
+            this.menu.addSettingsAction(_("Universal Access Settings"), 'universal-access');
         }
         catch (e) {
             global.logError(e);
@@ -150,9 +116,6 @@ MyApplet.prototype = {
             function(enabled) {
                 client.set_bool(key, enabled);
             });
-        //this.connect('gconf-changed', function() {
-        //    widget.setToggleState(client.get_bool(key));
-        //});
         return widget;
     },
 
@@ -229,15 +192,10 @@ MyApplet.prototype = {
             widget.setToggleState(active);
         });
         return widget;
-    },
-
-    _keyChanged: function() {
-        this.emit('gconf-changed');
     }
-    
 };
 
-function main(metadata, orientation) {  
-    let myApplet = new MyApplet(orientation);
+function main(metadata, orientation, panel_height) {  
+    let myApplet = new MyApplet(orientation, panel_height);
     return myApplet;      
 }

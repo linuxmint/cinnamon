@@ -4,8 +4,6 @@ const Cinnamon = imports.gi.Cinnamon;
 const Lang = imports.lang;
 const Signals = imports.signals;
 
-const Main = imports.ui.main;
-
 function AppFavorites() {
     this._init();
 }
@@ -29,7 +27,6 @@ AppFavorites.prototype = {
         let appSys = Cinnamon.AppSystem.get_default();
         let apps = ids.map(function (id) {
                 let app = appSys.lookup_app(id);
-                if (!app) app = appSys.lookup_settings_app(id);
                 return app;
             }).filter(function (app) {
                 return app != null;
@@ -84,15 +81,7 @@ AppFavorites.prototype = {
     },
 
     addFavoriteAtPos: function(appId, pos) {
-        if (!this._addFavorite(appId, pos))
-            return;
-
-        let app = Cinnamon.AppSystem.get_default().lookup_app(appId);
-        if (!app) app = Cinnamon.AppSystem.get_default().lookup_settings_app(appId);
-
-        Main.overview.setMessage(_("%s has been added to your favorites.").format(app.get_name()), Lang.bind(this, function () {
-            this._removeFavorite(appId);
-        }));
+        this._addFavorite(appId, pos);                            
     },
 
     addFavorite: function(appId) {
@@ -114,17 +103,8 @@ AppFavorites.prototype = {
     },
 
     removeFavorite: function(appId) {
-        let ids = this._getIds();
-        let pos = ids.indexOf(appId);
-
         let app = this._favorites[appId];
-        if (!this._removeFavorite(appId))
-            return;
-
-        Main.overview.setMessage(_("%s has been removed from your favorites.").format(app.get_name()),
-                                 Lang.bind(this, function () {
-            this._addFavorite(appId, pos);
-        }));
+        this._removeFavorite(appId);                    
     }
 };
 Signals.addSignalMethods(AppFavorites.prototype);

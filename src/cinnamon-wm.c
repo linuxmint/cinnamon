@@ -22,13 +22,12 @@ enum
   MINIMIZE,
   MAXIMIZE,
   UNMAXIMIZE,
+  TILE,
   MAP,
   DESTROY,
   SWITCH_WORKSPACE,
   KILL_SWITCH_WORKSPACE,
   KILL_WINDOW_EFFECTS,
-
-  KEYBINDING,
 
   LAST_SIGNAL
 };
@@ -80,7 +79,16 @@ cinnamon_wm_class_init (CinnamonWMClass *klass)
                   0,
                   NULL, NULL,
                   _cinnamon_marshal_VOID__OBJECT_INT_INT_INT_INT,
-                  G_TYPE_NONE, 1,
+                  G_TYPE_NONE, 5,
+                  META_TYPE_WINDOW_ACTOR, G_TYPE_INT, G_TYPE_INT, G_TYPE_INT, G_TYPE_INT);
+  cinnamon_wm_signals[TILE] =
+    g_signal_new ("tile",
+                  G_TYPE_FROM_CLASS (klass),
+                  G_SIGNAL_RUN_LAST,
+                  0,
+                  NULL, NULL,
+                  _cinnamon_marshal_VOID__OBJECT_INT_INT_INT_INT,
+                  G_TYPE_NONE, 5,
                   META_TYPE_WINDOW_ACTOR, G_TYPE_INT, G_TYPE_INT, G_TYPE_INT, G_TYPE_INT);
   cinnamon_wm_signals[MAP] =
     g_signal_new ("map",
@@ -126,34 +134,6 @@ cinnamon_wm_class_init (CinnamonWMClass *klass)
 		  g_cclosure_marshal_VOID__OBJECT,
 		  G_TYPE_NONE, 1,
 		  META_TYPE_WINDOW_ACTOR);
-
-  /**
-   * CinnamonWM::keybinding:
-   * @cinnamonwm: the #CinnamonWM
-   * @binding: the keybinding name
-   * @mask: the modifier mask used
-   * @window: for window keybindings, the #MetaWindow
-   * @backwards: for "reversible" keybindings, whether or not
-   * the backwards (Shifted) variant was invoked
-   *
-   * Emitted when a keybinding captured via
-   * cinnamon_wm_takeover_keybinding() is invoked. The keybinding name
-   * (which has underscores, not hyphens) is also included as the
-   * detail of the signal name, so you can connect just specific
-   * keybindings.
-   */
-  cinnamon_wm_signals[KEYBINDING] =
-    g_signal_new ("keybinding",
-		  G_TYPE_FROM_CLASS (klass),
-		  G_SIGNAL_RUN_LAST | G_SIGNAL_DETAILED,
-		  0,
-		  NULL, NULL,
-		  _cinnamon_marshal_VOID__STRING_UINT_OBJECT_BOOLEAN,
-		  G_TYPE_NONE, 4,
-                  G_TYPE_STRING,
-                  G_TYPE_UINT,
-                  META_TYPE_WINDOW,
-                  G_TYPE_BOOLEAN);
 }
 
 void
@@ -180,7 +160,7 @@ cinnamon_wm_completed_switch_workspace (CinnamonWM *wm)
 }
 
 /**
- * cinnamon_wm_completed_minimize
+ * cinnamon_wm_completed_minimize:
  * @wm: the CinnamonWM
  * @actor: the MetaWindowActor actor
  *
@@ -194,7 +174,7 @@ cinnamon_wm_completed_minimize (CinnamonWM         *wm,
 }
 
 /**
- * cinnamon_wm_completed_maximize
+ * cinnamon_wm_completed_maximize:
  * @wm: the CinnamonWM
  * @actor: the MetaWindowActor actor
  *
@@ -208,7 +188,22 @@ cinnamon_wm_completed_maximize (CinnamonWM         *wm,
 }
 
 /**
- * cinnamon_wm_completed_unmaximize
+ * cinnamon_wm_completed_tile:
+ * @wm: the CinnamonWM
+ * @actor: the MetaWindowActor actor
+ *
+ * The plugin must call this when it has completed a window tile effect.
+ **/
+void
+cinnamon_wm_completed_tile  (CinnamonWM         *wm,
+                             MetaWindowActor *actor)
+{
+  meta_plugin_tile_completed (wm->plugin, actor);
+}
+
+
+/**
+ * cinnamon_wm_completed_unmaximize:
  * @wm: the CinnamonWM
  * @actor: the MetaWindowActor actor
  *
@@ -222,7 +217,7 @@ cinnamon_wm_completed_unmaximize (CinnamonWM         *wm,
 }
 
 /**
- * cinnamon_wm_completed_map
+ * cinnamon_wm_completed_map:
  * @wm: the CinnamonWM
  * @actor: the MetaWindowActor actor
  *
@@ -236,7 +231,7 @@ cinnamon_wm_completed_map (CinnamonWM         *wm,
 }
 
 /**
- * cinnamon_wm_completed_destroy
+ * cinnamon_wm_completed_destroy:
  * @wm: the CinnamonWM
  * @actor: the MetaWindowActor actor
  *
@@ -293,6 +288,17 @@ _cinnamon_wm_unmaximize (CinnamonWM         *wm,
 }
 
 void
+_cinnamon_wm_tile (CinnamonWM         *wm,
+                   MetaWindowActor    *actor,
+                   int                 target_x,
+                   int                 target_y,
+                   int                 target_width,
+                   int                 target_height)
+{
+  g_signal_emit (wm, cinnamon_wm_signals[TILE], 0, actor, target_x, target_y, target_width, target_height);
+}
+
+void
 _cinnamon_wm_map (CinnamonWM         *wm,
                MetaWindowActor *actor)
 {
@@ -325,36 +331,3 @@ cinnamon_wm_new (MetaPlugin *plugin)
   return wm;
 }
 
-static void
-cinnamon_wm_key_handler (MetaDisplay    *display,
-                      MetaScreen     *screen,
-                      MetaWindow     *window,
-                      XEvent         *event,
-                      MetaKeyBinding *binding,
-                      gpointer        data)
-{
-  CinnamonWM *wm = data;
-  gboolean backwards = (event->xkey.state & ShiftMask);
-
-  g_signal_emit (wm, cinnamon_wm_signals[KEYBINDING],
-                 g_quark_from_string (binding->name),
-                 binding->name, binding->mask, window, backwards);
-}
-
-/**
- * cinnamon_wm_takeover_keybinding:
- * @wm: the #CinnamonWM
- * @binding_name: a meta keybinding name
- *
- * Tells muffin to forward keypresses for @binding_name to Cinnamon
- * rather than processing them internally. This will cause a
- * #CinnamonWM::keybinding signal to be emitted when that key is pressed.
- */
-void
-cinnamon_wm_takeover_keybinding (CinnamonWM      *wm,
-                              const char   *binding_name)
-{
-  meta_keybindings_set_custom_handler (binding_name,
-                                       cinnamon_wm_key_handler,
-                                       wm, NULL);
-}

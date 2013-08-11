@@ -88,12 +88,15 @@ st_im_text_dispose (GObject *object)
 {
   StIMTextPrivate *priv = ST_IM_TEXT (object)->priv;
 
-  g_signal_handlers_disconnect_by_func (priv->im_context,
-                                        (void *) st_im_text_commit_cb,
-                                        object);
+  if (priv->im_context != NULL)
+    {
+      g_signal_handlers_disconnect_by_func (priv->im_context,
+                                            (void *) st_im_text_commit_cb,
+                                            object);
 
-  g_object_unref (priv->im_context);
-  priv->im_context = NULL;
+      g_object_unref (priv->im_context);
+      priv->im_context = NULL;
+    }
 
   G_OBJECT_CLASS (st_im_text_parent_class)->dispose (object);
 }
@@ -135,6 +138,72 @@ st_im_text_commit_cb (GtkIMContext *context,
       clutter_text_insert_text (clutter_text, str,
                                 clutter_text_get_cursor_position (clutter_text));
     }
+}
+
+static void
+st_im_text_preedit_changed_cb (GtkIMContext *context,
+                               StIMText     *imtext)
+{
+  ClutterText *clutter_text = CLUTTER_TEXT (imtext);
+  gchar *preedit_str = NULL;
+  PangoAttrList *preedit_attrs = NULL;
+  gint cursor_pos = 0;
+
+  gtk_im_context_get_preedit_string (context,
+                                     &preedit_str,
+                                     &preedit_attrs,
+                                     &cursor_pos);
+
+  clutter_text_set_preedit_string (clutter_text,
+                                   preedit_str,
+                                   preedit_attrs,
+                                   cursor_pos);
+
+  g_free (preedit_str);
+  pango_attr_list_unref (preedit_attrs);
+}
+
+static gboolean
+st_im_text_retrieve_surrounding_cb (GtkIMContext *context,
+                                    StIMText     *imtext)
+{
+  ClutterText *clutter_text = CLUTTER_TEXT (imtext);
+  ClutterTextBuffer *buffer;
+  const gchar *text;
+  gint cursor_pos;
+
+  buffer = clutter_text_get_buffer (clutter_text);
+  text = clutter_text_buffer_get_text (buffer);
+
+  cursor_pos = clutter_text_get_cursor_position (clutter_text);
+  if (cursor_pos < 0)
+    cursor_pos = clutter_text_buffer_get_length (buffer);
+
+  gtk_im_context_set_surrounding (context, text,
+                                  /* length and cursor_index are in bytes */
+                                  clutter_text_buffer_get_bytes (buffer),
+                                  g_utf8_offset_to_pointer (text, cursor_pos) - text);
+
+  return TRUE;
+}
+
+static gboolean
+st_im_text_delete_surrounding_cb (GtkIMContext *context,
+                                  gint          offset,
+                                  gint          n_chars,
+                                  StIMText     *imtext)
+{
+  ClutterText *clutter_text = CLUTTER_TEXT (imtext);
+
+  if (clutter_text_get_editable (clutter_text))
+    {
+      gint cursor_pos = clutter_text_get_cursor_position (clutter_text);
+      clutter_text_delete_text (clutter_text,
+                                cursor_pos + offset,
+                                cursor_pos + offset + n_chars);
+    }
+
+  return TRUE;
 }
 
 static void
@@ -442,6 +511,12 @@ st_im_text_init (StIMText *self)
   priv->im_context = gtk_im_multicontext_new ();
   g_signal_connect (priv->im_context, "commit",
                     G_CALLBACK (st_im_text_commit_cb), self);
+  g_signal_connect (priv->im_context, "preedit-changed",
+                    G_CALLBACK (st_im_text_preedit_changed_cb), self);
+  g_signal_connect (priv->im_context, "retrieve-surrounding",
+                    G_CALLBACK (st_im_text_retrieve_surrounding_cb), self);
+  g_signal_connect (priv->im_context, "delete-surrounding",
+                    G_CALLBACK (st_im_text_delete_surrounding_cb), self);
 }
 
 /**

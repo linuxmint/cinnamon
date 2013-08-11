@@ -90,6 +90,12 @@ st_theme_node_dispose (GObject *gobject)
       node->border_image = NULL;
     }
 
+  if (node->icon_colors)
+    {
+      st_icon_colors_unref (node->icon_colors);
+      node->icon_colors = NULL;
+    }
+
   G_OBJECT_CLASS (st_theme_node_parent_class)->dispose (gobject);
 }
 
@@ -1569,10 +1575,12 @@ _st_theme_node_ensure_background (StThemeNode *node)
   if (node->background_computed)
     return;
 
+  node->background_repeat = FALSE;
   node->background_computed = TRUE;
   node->background_color = TRANSPARENT_COLOR;
   node->background_gradient_type = ST_GRADIENT_NONE;
   node->background_position_set = FALSE;
+  node->background_size = ST_BACKGROUND_SIZE_AUTO;
 
   ensure_properties (node);
 
@@ -1600,6 +1608,7 @@ _st_theme_node_ensure_background (StThemeNode *node)
           g_free (node->background_image);
           node->background_image = NULL;
           node->background_position_set = FALSE;
+          node->background_size = ST_BACKGROUND_SIZE_AUTO;
 
           for (term = decl->value; term; term = term->next)
             {
@@ -1614,6 +1623,7 @@ _st_theme_node_ensure_background (StThemeNode *node)
                     {
                       st_theme_node_get_background_color (node->parent_node, &node->background_color);
                       node->background_image = g_strdup (st_theme_node_get_background_image (node->parent_node));
+                      node->background_bumpmap = g_strdup (st_theme_node_get_background_bumpmap (node->parent_node));
                     }
                 }
               else if (term_is_none (term))
@@ -1645,8 +1655,8 @@ _st_theme_node_ensure_background (StThemeNode *node)
             }
           else
             node->background_position_set = TRUE;
-            
-           result = get_length_from_term_int (node, decl->value->next, FALSE, &node->background_position_y);
+
+          result = get_length_from_term_int (node, decl->value->next, FALSE, &node->background_position_y);
 
           if (result == VALUE_NOT_FOUND)
             {
@@ -1655,6 +1665,52 @@ _st_theme_node_ensure_background (StThemeNode *node)
             }
           else
             node->background_position_set = TRUE;
+        }
+      else if (strcmp (property_name, "-repeat") == 0)
+        {
+          if (decl->value->type == TERM_IDENT)
+            {
+              if (strcmp (decl->value->content.str->stryng->str, "repeat") == 0)
+                node->background_repeat = TRUE;
+            }
+        }
+      else if (strcmp (property_name, "-size") == 0)
+        {
+          if (decl->value->type == TERM_IDENT)
+            {
+              if (strcmp (decl->value->content.str->stryng->str, "contain") == 0)
+                node->background_size = ST_BACKGROUND_SIZE_CONTAIN;
+              else if (strcmp (decl->value->content.str->stryng->str, "cover") == 0)
+                node->background_size = ST_BACKGROUND_SIZE_COVER;
+              else if ((strcmp (decl->value->content.str->stryng->str, "auto") == 0) && (decl->value->next) && (decl->value->next->type == TERM_NUMBER))
+                {
+                  GetFromTermResult result = get_length_from_term_int (node, decl->value->next, FALSE, &node->background_size_h);
+
+                  node->background_size_w = -1;
+                  node->background_size = (result == VALUE_FOUND) ? ST_BACKGROUND_SIZE_FIXED : ST_BACKGROUND_SIZE_AUTO;
+                }
+              else
+                node->background_size = ST_BACKGROUND_SIZE_AUTO;
+            }
+          else if (decl->value->type == TERM_NUMBER)
+            {
+              GetFromTermResult result = get_length_from_term_int (node, decl->value, FALSE, &node->background_size_w);
+              if (result == VALUE_NOT_FOUND)
+                continue;
+
+              node->background_size = ST_BACKGROUND_SIZE_FIXED;
+
+              if ((decl->value->next) && (decl->value->next->type == TERM_NUMBER))
+                {
+                  result = get_length_from_term_int (node, decl->value->next, FALSE, &node->background_size_h);
+
+                  if (result == VALUE_FOUND)
+                    continue;
+                }
+              node->background_size_h = -1;
+            }
+          else
+            node->background_size = ST_BACKGROUND_SIZE_AUTO;
         }
       else if (strcmp (property_name, "-color") == 0)
         {
@@ -1702,6 +1758,36 @@ _st_theme_node_ensure_background (StThemeNode *node)
             {
               g_free (node->background_image);
               node->background_image = NULL;
+            }
+        }
+      else if (strcmp (property_name, "-bumpmap") == 0)
+        {
+          if (decl->value == NULL || decl->value->next != NULL)
+            continue;
+
+          if (decl->value->type == TERM_URI)
+            {
+              CRStyleSheet *base_stylesheet;
+
+              if (decl->parent_statement != NULL)
+                base_stylesheet = decl->parent_statement->parent_sheet;
+              else
+                base_stylesheet = NULL;
+
+              g_free (node->background_bumpmap);
+              node->background_bumpmap = _st_theme_resolve_url (node->theme,
+                                                                base_stylesheet,
+                                                                decl->value->content.str->stryng->str);
+              
+            }
+          else if (term_is_inherit (decl->value))
+            {
+              g_free (node->background_bumpmap);
+              node->background_bumpmap = g_strdup (st_theme_node_get_background_bumpmap (node->parent_node));
+            }
+          else if (term_is_none(decl->value))
+            {
+              g_free (node->background_bumpmap);
             }
         }
       else if (strcmp (property_name, "-gradient-direction") == 0)
@@ -1758,6 +1844,12 @@ st_theme_node_get_background_color (StThemeNode  *node,
   *color = node->background_color;
 }
 
+/**
+ * st_theme_node_get_background_image:
+ * @node: a #StThemeNode
+ *
+ * Returns @node's background image.
+ */
 const char *
 st_theme_node_get_background_image (StThemeNode *node)
 {
@@ -1766,6 +1858,22 @@ st_theme_node_get_background_image (StThemeNode *node)
   _st_theme_node_ensure_background (node);
 
   return node->background_image;
+}
+
+/**
+ * st_theme_node_get_background_bumpmap:
+ * @node: a #StThemeNode
+ *
+ * Returns @node's background bumpmap.
+ */
+const char *
+st_theme_node_get_background_bumpmap (StThemeNode *node)
+{
+  g_return_val_if_fail (ST_IS_THEME_NODE (node), NULL);
+
+  _st_theme_node_ensure_background (node);
+
+  return node->background_bumpmap;
 }
 
 /**

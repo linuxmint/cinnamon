@@ -19,8 +19,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street - Suite 500, Boston, MA
+ * 02110-1335, USA.
  */
 
 #include "config.h"
@@ -35,7 +35,7 @@
 #include <GL/glx.h>
 #include <GL/glxext.h>
 #endif
-#include <gjs/gjs.h>
+#include <cjs/gjs.h>
 #include <meta/display.h>
 #include <meta/meta-plugin.h>
 
@@ -56,6 +56,12 @@ static void gnome_cinnamon_plugin_maximize         (MetaPlugin          *plugin,
                                                  gint                 width,
                                                  gint                 height);
 static void gnome_cinnamon_plugin_unmaximize       (MetaPlugin          *plugin,
+                                                 MetaWindowActor     *actor,
+                                                 gint                 x,
+                                                 gint                 y,
+                                                 gint                 width,
+                                                 gint                 height);
+static void gnome_cinnamon_plugin_tile             (MetaPlugin          *plugin,
                                                  MetaWindowActor     *actor,
                                                  gint                 x,
                                                  gint                 y,
@@ -128,6 +134,7 @@ gnome_cinnamon_plugin_class_init (CinnamonPluginClass *klass)
   plugin_class->map              = gnome_cinnamon_plugin_map;
   plugin_class->minimize         = gnome_cinnamon_plugin_minimize;
   plugin_class->maximize         = gnome_cinnamon_plugin_maximize;
+  plugin_class->tile             = gnome_cinnamon_plugin_tile;
   plugin_class->unmaximize       = gnome_cinnamon_plugin_unmaximize;
   plugin_class->destroy          = gnome_cinnamon_plugin_destroy;
 
@@ -263,6 +270,18 @@ gnome_cinnamon_plugin_maximize (MetaPlugin         *plugin,
 }
 
 static void
+gnome_cinnamon_plugin_tile  (MetaPlugin         *plugin,
+                             MetaWindowActor    *actor,
+                             gint                x,
+                             gint                y,
+                             gint                width,
+                             gint                height)
+{
+  _cinnamon_wm_tile (get_cinnamon_wm (),
+                     actor, x, y, width, height);
+}
+
+static void
 gnome_cinnamon_plugin_unmaximize (MetaPlugin         *plugin,
                                MetaWindowActor    *actor,
                                gint                x,
@@ -316,6 +335,8 @@ static gboolean
 gnome_cinnamon_plugin_xevent_filter (MetaPlugin *plugin,
                                   XEvent     *xev)
 {
+  MetaScreen *screen = meta_plugin_get_screen (plugin);
+  ClutterStage *stage = CLUTTER_STAGE (meta_get_stage_for_screen (screen));
 
   CinnamonPlugin *cinnamon_plugin = CINNAMON_PLUGIN (plugin);
 #ifdef GLX_INTEL_swap_event
@@ -336,7 +357,7 @@ gnome_cinnamon_plugin_xevent_filter (MetaPlugin *plugin,
 #endif
 
   if ((xev->xany.type == EnterNotify || xev->xany.type == LeaveNotify)
-      && xev->xcrossing.window == clutter_x11_get_stage_window (CLUTTER_STAGE (clutter_stage_get_default ())))
+      && xev->xcrossing.window == clutter_x11_get_stage_window (stage))
     {
       /* If the pointer enters a child of the stage window (eg, a
        * trayicon), we want to consider it to still be in the stage,

@@ -3,7 +3,7 @@ BUILT_SOURCES =
 CLEANFILES =
 EXTRA_DIST =
 bin_SCRIPTS =
-libexec_PROGRAMS =
+pkglibexec_PROGRAMS =
 noinst_LTLIBRARIES =
 noinst_PROGRAMS =
 service_in_files =
@@ -21,8 +21,10 @@ service_DATA = $(service_in_files:.service.in=.service)
 
 %.service: %.service.in Makefile
 	$(AM_V_GEN)									\
-		[ -d $(@D) ] || $(mkdir_p) $(@D) ;					\
-		sed -e "s|\@libexecdir\@|$(libexecdir)|" $< > $@.tmp && mv $@.tmp $@
+		[ -d $(@D) ] || $(MKDIR_P) $(@D) ;					\
+		sed -e "s|\@libexecdir\@|$(libexecdir)|" \
+		    -e "s|\@pkglibexecdir\@|$(pkglibexecdir)|" $< > $@.tmp && mv $@.tmp $@
+
 CLEANFILES += $(service_DATA)
 
 CLEANFILES += $(gir_DATA) $(typelib_DATA)
@@ -54,6 +56,7 @@ generated_script_substitutions = \
 	    -e "s|@libdir[@]|$(libdir)|" \
 	    -e "s|@JHBUILD_TYPELIBDIR[@]|$(JHBUILD_TYPELIBDIR)|" \
 	    -e "s|@pkgdatadir[@]|$(pkgdatadir)|" \
+	    -e "s|@pkglibexecdir[@]|$(pkglibexecdir)|" \
 	    -e "s|@PYTHON[@]|$(PYTHON)|" \
 	    -e "s|@VERSION[@]|$(VERSION)|" \
 	    -e "s|@sysconfdir[@]|$(sysconfdir)|"
@@ -71,18 +74,18 @@ CLEANFILES += cinnamon $(bin_SCRIPTS)
 include Makefile-st.am
 include Makefile-tray.am
 include Makefile-gvc.am
-include Makefile-calendar-server.am
 include Makefile-hotplug-sniffer.am
 
 cinnamon_cflags =				\
 	$(CINNAMON_CFLAGS)			\
 	-I$(srcdir)/tray			\
 	-DVERSION=\"$(VERSION)\"		\
-	-DLOCALEDIR=\"$(datadir)/locale\" 	\
+	-DLOCALEDIR=\"$(datadir)/cinnamon/locale\" 	\
 	-DDATADIR=\"$(datadir)\"		\
 	-DCINNAMON_LIBEXECDIR=\"$(libexecdir)\"	\
 	-DCINNAMON_DATADIR=\"$(pkgdatadir)\"	\
 	-DCINNAMON_PKGLIBDIR=\"$(pkglibdir)\" \
+	-DCINNAMON_PKGLIBEXECDIR=\"$(pkglibexecdir)\"	\
 	-DJSDIR=\"$(pkgdatadir)/js\"
 
 privlibdir = $(pkglibdir)
@@ -102,7 +105,6 @@ cinnamon_public_headers_h =		\
 	cinnamon-app-system.h		\
 	cinnamon-app-usage.h		\
 	cinnamon-arrow.h			\
-	cinnamon-contact-system.h	\
 	cinnamon-doc-system.h		\
 	cinnamon-embedded-window.h		\
 	cinnamon-generic-container.h	\
@@ -112,9 +114,10 @@ cinnamon_public_headers_h =		\
 	cinnamon-mount-operation.h		\
 	cinnamon-network-agent.h		\
 	cinnamon-perf-log.h		\
+	cinnamon-screenshot.h	\
+	cinnamon-screen-grabber.h	\
 	cinnamon-slicer.h			\
 	cinnamon-stack.h			\
-	cinnamon-tp-client.h		\
 	cinnamon-tray-icon.h		\
 	cinnamon-tray-manager.h		\
 	cinnamon-util.h			\
@@ -139,7 +142,6 @@ libcinnamon_la_SOURCES =		\
 	cinnamon-app-system.c		\
 	cinnamon-app-usage.c		\
 	cinnamon-arrow.c			\
-	cinnamon-contact-system.c	\
 	cinnamon-doc-system.c		\
 	cinnamon-embedded-window.c		\
 	cinnamon-generic-container.c	\
@@ -151,9 +153,10 @@ libcinnamon_la_SOURCES =		\
 	cinnamon-perf-log.c		\
 	cinnamon-polkit-authentication-agent.h	\
 	cinnamon-polkit-authentication-agent.c	\
+	cinnamon-screenshot.c		\
+	cinnamon-screen-grabber.c	\
 	cinnamon-slicer.c			\
 	cinnamon-stack.c			\
-	cinnamon-tp-client.c			\
 	cinnamon-tray-icon.c		\
 	cinnamon-tray-manager.c		\
 	cinnamon-util.c			\
@@ -196,7 +199,7 @@ endif BUILD_RECORDER
 
 ########################################
 
-libexec_PROGRAMS += cinnamon-perf-helper
+pkglibexec_PROGRAMS += cinnamon-perf-helper
 
 cinnamon_perf_helper_SOURCES = cinnamon-perf-helper.c
 cinnamon_perf_helper_CPPFLAGS = $(CINNAMON_PERF_HELPER_CFLAGS)
@@ -272,12 +275,12 @@ libcinnamon_la_LIBADD =		\
 libcinnamon_la_CPPFLAGS = $(cinnamon_cflags)
 
 Cinnamon-0.1.gir: libcinnamon.la St-1.0.gir
-Cinnamon_0_1_gir_INCLUDES = Clutter-1.0 ClutterX11-1.0 Meta-3.0 TelepathyGLib-0.12 TelepathyLogger-0.2 Soup-2.4 GMenu-3.0 NetworkManager-1.0 NMClient-1.0 Folks-0.6
+Cinnamon_0_1_gir_INCLUDES = Clutter-1.0 ClutterX11-1.0 Meta-Muffin.0 Soup-2.4 GMenu-3.0 NetworkManager-1.0 NMClient-1.0
 Cinnamon_0_1_gir_CFLAGS = $(libcinnamon_la_CPPFLAGS) -I $(srcdir)
 Cinnamon_0_1_gir_LIBS = libcinnamon.la
 Cinnamon_0_1_gir_FILES = $(libcinnamon_la_gir_sources)
 Cinnamon_0_1_gir_SCANNERFLAGS = --include-uninstalled=$(builddir)/St-1.0.gir \
-	--add-include-path=$(MUFFIN_GIR_DIR)
+	--add-include-path=$(MUFFIN_GIR_DIR) $(if $(BLUETOOTH_DIR),-L $(BLUETOOTH_DIR),)
 INTROSPECTION_GIRS += Cinnamon-0.1.gir
 CLEANFILES += Cinnamon-0.1.gir
 

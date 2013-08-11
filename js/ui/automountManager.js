@@ -6,7 +6,6 @@ const Mainloop = imports.mainloop;
 const Gio = imports.gi.Gio;
 const Params = imports.misc.params;
 
-const Main = imports.ui.main;
 const CinnamonMountOperation = imports.ui.cinnamonMountOperation;
 const ScreenSaver = imports.misc.screenSaver;
 
@@ -171,7 +170,7 @@ AutomountManager.prototype = {
                      try {
                          drive.stop_finish(res);
                      } catch (e) {
-                         log("Unable to stop the drive after drive-eject-button " + e.toString());
+                         global.logError("Unable to stop the drive after drive-eject-button",  e);
                      }
                  }));
         } else if (drive.can_eject()) {
@@ -181,7 +180,7 @@ AutomountManager.prototype = {
                      try {
                          drive.eject_with_operation_finish(res);
                      } catch (e) {
-                         log("Unable to eject the drive after drive-eject-button " + e.toString());
+                         global.logError("Unable to eject the drive after drive-eject-button", e);
                      }
                  }));
         }

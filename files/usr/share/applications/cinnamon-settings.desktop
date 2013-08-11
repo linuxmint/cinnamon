@@ -1,10 +1,55 @@
 [Desktop Entry]
-Name=Cinnamon Settings
-Comment=Fine-tune Cinnamon settings
 Exec=cinnamon-settings
 Icon=preferences-system
 Terminal=false
 Type=Application
-Encoding=UTF-8
-Categories=GNOME;GTK;Settings;DesktopSettings;
+Categories=GNOME;GTK;System;
 StartupNotify=false
+OnlyShowIn=GNOME;
+Keywords=Preferences;Settings;
+
+Name=System Settings
+Name[ar]=إعدادات نظام كدي
+Name[ca]=Arranjament del sistema
+Name[ca@valencia]=Arranjament del sistema
+Name[cs]=Nastavení systému
+Name[da]=Systemindstillinger
+Name[de]=Systemeinstellungen
+Name[es]=Preferencias del sistema
+Name[et]=Süsteemi seadistused
+Name[eu]=Sistemaren Ezarpenak
+Name[fi]=järjestelmäasetukset
+Name[fr]=Configuration du système
+Name[ga]=Socruithe an Chórais
+Name[hu]=Rendszerbeállítások
+Name[ia]=Preferentias de systema
+Name[it]=Impostazioni di sistema
+Name[kk]=жүйелік параметрлері
+Name[ko]=시스템 설정
+Name[lt]=sistemos nustatymai
+Name[lv]=sistēmas iestatījumi
+Name[nb]=Systeminnstillinger
+Name[nds]=Systeeminstellen
+Name[nl]=Systeeminstellingen
+Name[pa]=ਸਿਸਟਮ ਸੈਟਿੰਗ
+Name[pl]=Ustawienia systemowe
+Name[pt]=Configuração do Sistema
+Name[pt_BR]=Configurações do sistema
+Name[ro]=Configurări de sistem
+Name[sk]=Nastavenie systému
+Name[sl]=jeve sistemske nastavitve
+Name[sr]=Системске поставке
+Name[sr@ijekavian]=Системске поставке
+Name[sr@ijekavianlatin]=Sistemske postavke
+Name[sr@latin]=Sistemske postavke
+Name[sv]=systeminställningar
+Name[tr]=Sistem Ayarları
+Name[ug]=سىستېما تەڭشىكى
+Name[uk]=Системні параметри
+Name[zh_CN]=系统设置
+Name[zh_TW]=系統設定
+
+Comment=Control Center
+Comment[fr]=Centre de Contrôle
+
+

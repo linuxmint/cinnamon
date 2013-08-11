@@ -1,617 +1,70 @@
-3.2.1
-=====
-* Restore the IM state on startup - if you were available in when you logged
-  out, then you'll be set available again when you log in.
-  [Florian; #65902, #661485]
-* Improve searching for contacts in the overview: search more fields,
-  show a more meaningful name, require that all search terms match.
-  [Florian, Matthias; #660580]
-* Improve search for applications in the overview: take frequency into
-  account and tweak match algorithm [Florian; #623372]
-* Remove the "Show Password" switch from network password prompts, and
-  move the functionality to a right-click menu [Florian; #658948]
-* Add context menus with Cut/Paste options to most entries [Florian; #659275]
-* On screen keyboard:
- - Show the keyboard immediately when it's turned enabled [Dan; #659743]
- - Fix problem where keyboard would hide when starting to type
-   in the search entry [Nohemi; #661340]
- - Fix problem with keyboard hiding when selected accented characters
-   [Nohemi; 661707]
-* Login mode:
-  - Allow hitting Enter to select the first user [Ray; #657996]
-  - Fix flicker of a fingerprint prompt that could show up [Ray; #660492]
-  - Fix password bullets vanishing during login [Ray; #657894]
-  - Misc bug fixes and visual tweaks [Ray; #659763, #660919, #661479]
-* Display a caps-lock warning in password entries [Florian; #660806]
-* Show the state of installed extensions in Looking Glass [Jasper; #660494]
-* Load user extensions after system ones [Jasper; #661815]
-* Fix problem with many applications showing extra-large icons in
-  notifications [Marina; #659158]
-* Fix a problem where alt-Tab had trouble tracking the current
-  application with certain applications such as Emacs. [Dan; #645026]
-* Fix confusion between different users avatar images [Florian; #660585]
-* Remove behavior where you could switch workspaces by bumping
-  a dragged window in the overview against a screen edge; it was
-  leftover and just confusing. [Florian; #660838]
-* Fix long-standing bug where the Dash in the overview could end up mis-sized
-  and run off the screen [Florian; #649248]
-* Fix automatic launching of applications when media is inserted
-  [Cosimo; #660821]
-* Fix handling of vertically stacked monitors with NVIDIA drivers
-  [Florian; #661387]
-* Translation marking fixes [Jasper, Wouter; #660600]
-* Code cleanups and warning fixes [Adel, Dan, Florian, Jasper;
-  #659822, #659940, #660122, #660358, #660968, #661231]
-* Small memory leak fixes [Florian, Jasper; #661231]
-* Misc bug fixes [Adel, Florian, Jasper; #659274, #659861, #660166, #660310,
-  #660397, #660608,  #660606, #660674, #660774. #660848, #661151, #661617]
+Fixes needed
+------------
+ - Administration and preference don't appear in menu editor
+ - Move up and Move down buttons don't work in menu editor (if Gnome 3 broke that we need to switch back to the GTK2 version of this tool, as on the original fork)
+ - Don't hide spotify in systray
+ - Conky/mintupload windows appear (careful not to hide gimp utility windows though or make it configurable)
+ - workspaces can overlap in expo grid 
+ - recommend muffin
+ - depend on gsjdbus
+ - muffin should depend on libmuffin0 and gir-muffin of the same version (currently it's possible to upgrade cinnamon and libmuffin without upgrading other muffin packages and it results in crashes)
+ - Alt-arrow shortcuts don't work in nemo
 
-Contributors:
-  Wouter Bolsterlee, Cosimo Cecchi, Matthias Clasen, Nohemi Fernandez,
-  Adel Gadllah, Florian Müllner, Jasper St. Pierre, Ray Strode, Dan Winship,
-  Marina Zhurakhinskaya
+1.8
+-----
 
-Translations:
- Tiffany Antopolski [eo], Xandru Armesto [ast], Alexander Shopov,
- Ivaylo Valkov [bg], Gil Forcada [ca], Carles Ferrando [ca@valencia],
- Mario Blättermann, Paul Seyfert [de], Bruce Cowan [en_GB],
- Jorge González, Daniel Mustieles [es], Arash Mousavi [fa], Bruno Brouard [fr],
- Seán de Búrca [ga], Fran Diéguez [gl], Gabor Kelemen [hu], Luca Ferretti [it],
- Takayuki Kusano [ja], Changwoo Ryu [ko], Erdal Ronahi [ku],
- Algimantas Margevičius [lt], Rudolfs Mazurs [lv], Wouter Bolsterlee [nl],
- Piotr Drąg [pl], Adorilson Bezerra [pt_BR], Yuri Myasoedov [ru],
- Matej Urbančič [sl], Daniel Nylander [sv], Miroslav Nikolić [sr, sr@latin],
- Tirumurti Vasudevan [ta], Krishnababu Krothapalli [te], Daniel Korostil [uk],
- Nguyễn Thái Ngọc Duy [vi], YunQiang Su [zh_CN]
+ - New theme style class: "workspace-overview-background-shade" allows theming of workspace backgrounds in Scale and Expo.
 
-3.2.0
-=====
-* Prevent the fallback on-screen keyboard from showing up while
-  Cinnamon is running [Dan, #659865]
-* Disable code to reposition windows around the on-screen keyboard;
-  it wasn't finished or working properly. [Dan; #659643]
-* Fix interaction between on-screen keyboard and notifications
-  [Dan; #658603]
-* Fix menu-sizing problems in right-to-left locales. [Florian; #659827]
-* Update chat icons in the message tray when an avatar image changes
-  [Marina; #659768]
-* Fix problem with empty notification bubbles being left [Marina; #659862]
-* Fix problem with chat notifications bouncing when new messages come in.
-  [Marina; #659768]
-* Fix bug that was causing SIP calls to automatically be accepted in some
-  circumstances [Guillaume; #660084]
-* Fix string that should have been marked translatable [Frédéric]
-* Fix a crash that could happen during CSS transitions [Florian; #659676]
-* Build fixes [Colin, Florian]
+1.6.1
+-----
 
-Contributors:
- Guillaume Desmottes, Florian Müllner, Frédéric Péters, Colin Walters,
- Dan Winship, Marina Zhurakhinskaya
+ - Fixed: Administration category missing in menu
+ - Fixed: Blur in Alt-Tab preview
+ - Fixed: Network Manager applet consumes a lot of CPU
+ - Fixed: Calendar applet consumes a lot of CPU
+ - Updated translations
+ - Flags in keyboard applet
+ - Fixed: Removing workspace while editing its name results in crash
+ - Added songbird support to sound applet
+ - Fixed: Scrolling in window list applet brings all windows to the active workspace
+ - Fixed: panels visible in firefox fullscreen mode x-shockwave-flash video
+ - Fixed: two issues with dnd and themes using different background for hovering
+ - Less CPU: We don't need to fetch the pointer actor, if track_hover is not set.
 
-Translations:
- Friedel Wolff [af], Nilamdyuti Goswami [as], Ihar Hrachyshka [be],
- Ivaylo Valkov [bg], Gil Forcada [ca], Carles Ferrando [ca@valencia],
- Petr Kovar [cz], Mario Blättermann [de], Kris Thomsen [dk],
- Tiffany Antopolski, Kristjan Schmidt [eo], Daniel Mustieles [es],
- Inaki Larranaga Murgoitio [eu], Tommi Vainikainen [fi], Bruno Brouard [fr],
- Fran Dieguez [gl], Yaron Shahrabani [he], Gabor Kelemen [hu],
- Andika Triwidada [id], Jiro Matsuzawa [ja], Changwoo Ryu [ko],
- Rudolfs Mazurs [lv], Aurimas Černius [lt], Kjartan Maraas [nb],
- A S Alam [pa], Piotr Drąg [pl], Duarte Loreto [pt], Djavan Fagundes,
- Rodolfo Ribeiro Gomes, Gabriel F. Vilar [pt_BR], Yuri Myasoedov [ru],
- Daniel Nylander [se], Martin Srebotnjak [sl], Michal Štrba [sv],
- Krishnababu Krothapalli, Praveen Illa [te], Cheng-Chia Tseng [zh_KH, zh_TW]
+Muffin 1.1.1
+------------
+ 
+ - Fixed: Menubar issues with all Java programs
 
-3.1.92
-======
+Nemo 1.0.2
+----------
 
-* Login screen
-  - Add the ability to set a logo at the top of the user list [Ray; #658062]
-  - Add fingerprint reader support [Ray; #657823]
-  - Add a power button offering the choice of Suspend/Restart/Power off
-    [Ray; #657822]
-  - Remove the option to view the current keyboad layout [Matthias; #659164]
-  - Make Control-Alt-Tab work for full keyboard access [Ray; #659177]
-* Frequently initiate a full garbage collection; Spidermonkey isn't very good
-  at tracking the amount of resources we have allocated so this hopefully will
-  improve memory usage without affecting performance too much [Colin; #659254]
-* Stop adding a notification when the network connection is lost
-  [Colin; #658954]
-* When disabling notifications; display a notification
-  "Your chat status will be set to busy" [Florian; #652718]
-* Fix keynav in network dialogs [Florian; #659133]
-* Improve calendar styling [Sean; #641135, #651299]
-* Shrink padding around panel buttons for narrow screens [Dan; #651299]
-* Allow enabling the onscreen keyboard through the accessibility menu
-  [Dan; #612662]
-* Fix problem that was causing VPN secret dialogs to be delayed before showing
-  [Florian; #658484]
-* Make custom-keybindings for the window switcher that don't use alt
-  work correctly [Florian; #645200]
-* Fix duplicate application icons in the Activities Overview [Colin; #659351]
-* Bug fixes for dimming windows with attached modal dialogs
-  [Jasper, Owen; #659302, 659634]
-* Add build-time support for BROWSER_PLUGIN_DIR environment variable
-  [Vincent; #659123]
-* Build fixes [Vincent; #659194]
-* Code cleanups and test cases
-  [Adel, Dan, Florian, Jasper; #651299, #658092, #658939]
-* Misc bug fixes
-  [Adel, Colin, Cosimo, Dan, Florian, Giovanni, Jasper, Ray, Xavier;
-  #651299, #652837, #657249, #658004, #658150, #658239, #658469, #658598,
-  #658605, #659050, #659159, #659210, #659270, #659370, #659633]
+ - Dropbox extension
+ - Fileroller extension
+ - Configurable units (decimal by default as well as decimal-long, binary and binary-long)
+ - Use Nautilus style to render the desktop when the theme doesn't support Nemo
 
-Contributors:
- Giovanni Campagna, Cosimo Cecchi, Xavier Claessens, Matthias Clasen,
- Rui Matos, Florian Müllner, Jasper St. Pierre, Owen Taylor,
- Vincent Untz, Colin Walters, Sean Wilson, Dan Winship
 
-Translations:
- Ihar Hrachyshka [be], Alexander Shopov, Ivaylo Valkov [bg],
- Mario Blättermann [de], Jorge González, Daniel Mustieles [es],
- Arash Mousavi [fa], Ville-Pekka Vainio [fi], Fran Dieguez [gl],
- Sweta Kothari [gu], Gabor Kelemen [hu], Jiro Matsuzawa [ja],
- Luca Ferretti [it], Rudolfs Mazurs [lv], Kjartan Maraas [nb], A S Alam [pa],
- Piotr Drąg [pl], Duarte Loreto [pt], Yuri Myasoedov [ru],
- Daniel Nylander [se], Matej Urbančič [sl], Miroslav Nikolić [sr, sr@latin],
- Michal Štrba [sv], Tirumurti Vasudevan [ta], Phương Lê Hoàng [vi],
- Aron Xu [zh_CN], Chao-Hsiung Liao [zh_HK, zh_TW]
+NEMO
+----
 
-3.1.91.1
-========
+ - Add gtk bookmarks to right-click->copy-to/move-to
 
-* Add a browser plugin - this plugin, tied to extensions.gnome.org,
-  allows users to download and install cinnamon extensions, and enable,
-  disable, and uninstall extensions they already have installed.
-  [Jasper; #658070, #658612]
-* Improve adding links to URLs in notifications [Dan; #636252]
-* Remove "connection lost" notifications after reconnecting [Giovanni; #658049]
-* Hide the onscreen keyboard when leaving a text entry [Dan; #658591]
-* Fixes for translated strings [Florian; #639987, #644097, #645037]
-* Bug fixes for network menu [Florian; #658492]
-* Code cleanup [Dan; #646934]
-* Build fixes [Javier, Rico]
-* Misc bug fixes [Emmanuele, Florian, Jasper, Marina, Matthias, Ray;
-  #652837, #658423, #658503, #658525, #658562, #658624, #658640, #658983]
+TODO
+----
 
-Conributors:
- Emmanuele Bassi, Giovanni Campagna, Matthias Clasen, Javier Jardón,
- Florian Muellner, Jasper St. Pierre, Ray Strode, Rico Tzschichholz,
- Dan Winship, Marina Zhurakhinskaya
+ - i18n: Update translations
+ - i18n: Localize menu categories 
+ - Applets: Fix power applet appearing when applets are moved (code refactoring needed)
+ - System: Fallback on Metacity when Cinnamon crashes
+ - System: Improve logging (capture stderr output into log files)
+ - Applet API: Allow applets to provide a gsettings schema (which cinnamon-settings compiles when the applet is installed)
+ - Settings: Fix settings moved to gsettings since 3.4 changes in cinnamon-settings
+ - Settings: In Cinnamon Settings, add the ability to delete themes, extensions and applets located in the user's home
+ - Settings: In Cinnamon Settings, add the ability to view and install themes, extensions and applets from cinnamon-settings
+ - Layout: Give Cinnamon WM tiling features (fill, grid..etc).
+ - Fix menu crashing Cinnamon (show a category, Internet for instance, click elsewhere, open a terminal, install a program in that category, Opera for instance, open the menu)
+ - Fix tooltips on GTK popups appearing behind the popups (and move tooltips when they appear on top of the panel)
+ - Fix https://github.com/linuxmint/Cinnamon/issues/767 
+ - Add one-hand keyboard-shortcuts for scale and expo
 
-Translations:
- Ihar Hrachyshka [be], Bruce Cowan [en_GB], Jorge González,
- Daniel Mustieles [es], Timo Jyrinki [fi], Bruno Brouard, Luc Guillemin,
- Claude Paroz, Luc Pionchon [fr], Fran Dieguez [gl], Rajesh Ranjan [hi],
- Andika Triwidada [id], Luca Ferretti [it], Changwoo Ryu [ko],
- Rudolfs Mazurs [lt], Kjartan Maraas [nb], Manoj Kumar Giri [or],
- A S Alam [pa], Piotr Drąg [pl], Duarte Loreto [pt], Henrique P. Machado,
- Gabriel F. Vilar [pt_BR], Daniel Nylander [se], Matej Urbančič [sl],
- Tirumurti Vasudevan [ta], Yinghua Wang [zh_CN],
- Chao-Hsiung Liao [zh_HK, zh_TW]
-
-3.1.91
-======
-
-* Fix problem with applications vanishing from alt-Tab when
-  desktop files change. [Colin; #657990]
-* Fix interaction of on-screen keyboard with run-dialog and
-  Looking Glass console [Dan; #657986]
-* Add public API for adding and removing search providers
-  [Philippe; #657548, #658113]
-* Allow changing IM status with scroll wheel [Florian; #657973]
-* Limit volume slider to 100% [Bastien; #657607]
-* Change "Do Not Disturb" to "Notifications" in user menu [Florian; #652718]
-* Switch browser in default favorites to Epiphany [Colin; #650616]
-* Misc bug fixes [Dan, Florian, Jasper, Marc-Antoine, Rui;
-  #649631, #655069, #656142, #657703, #657759, #658007, #658065, #658176]
-
-Contributors:
- Rui Matos, Florian Müllner, Philippe Normand, Marc-Antoine Perennou,
- Jasper St. Pierre, Colin Walters, Dan Winship
-
-Translations:
- Ihar Hrachyshka [be], Mario Blättermann [de], Kris Thomsen [da],
- Jorge González [es], Arash Mousavi [fa], Fran Dieguez [gl],
- Takayuki Kusano [ja],Aurimas Černius [lt], Kjartan Maraas [nb], A S Alam [pa],
- Stas Solovey [ru], Daniel Nylander [se], Tirumurti Vasudevan [ta],
- Chao-Hsiung Liao [zh_HK, zh_TW]
-
-3.1.90.1
-========
-
-* Fix typo that was breaking the "Login Screen" mode [Marc-Antoine]
-* Fix build with new gobject-introspection [Dan]
-* Use a better icon for removable devices [Cosimo; #657757]
-* Add support for asynchronous search provides [Philippe, Jasper, Seif; #655220]
-* Misc bug fixes [Alex, Guillaume, Jasper; #657657, #657696]
-* Misc build fixes [Adel; #657697]
-
-Contributors:
- Cosimo Cecchi, Guillaume Desmottes, Adel Gadllah, Alexander Larsson, Seif Lotfy,
- Philippe Normand, Marc-Antoine Perennou, Jasper St. Pierre, Dan Winship
-
-Translations:
- Jorge González, Daniel Mustieles [es], Stas Solovey [ru]
-
-3.1.90
-======
-* Add an on-screen keyboard that uses Caribou as a backend
-  [Nohemi, Dan; #612662]
-* Allow searching for people in the overview using libfolks
-  as the backend [Morten; #643018]
-* Add a "Login Screen" mode to be used when GDM is running; this
-  mode has a stripped down user interface, and also contains the
-  code to display the user list and authentication. [Ray; #657082]
-* Rework user menu to separate out "Do Not Disturb" from the IM
-  status and to visually match GNOME Contacts. [Florian; #652837]
-* Implement displaying images such as cover-art in notifications
-  [Neha, Marina; #621009]
-* Support default actions for notifications [Florian; #655818]
-* Networking
-  - Stop using nm-applet for dialogs; do them as proper system modal
-    dialogs in Cinnamon code. [Giovanni; #650244]
-  - Fix handling of hidden access points [Giovanni; #646454]
-* Telepathy integration
-  - Support subscription requests [Guillaume, Xavier; #653941]
-  - Notify on account connection errors [Alban, Jasper, Xavier; #654159]
-  - Allow approving file transfers [Guillaume; #653940]
-  - Improve styling of messages [Jasper; #640271]
-* Extension system [Jasper; #654770]
-  - Support live enabling and disabling of extensions
-  - Add the ability to install extensions from HTTP
-  - Enhance D-Bus interface for controlling extensions
-  - Collect errors separately for each extension
-* Add Main.panel.addToStatusArea for extension convenience
-  [Giovanni, Jasper, Marc-Antoine; #653205]
-* Port to the new gnome-menus API. Clean up and speed up
-  application information loading [Colin; #648149, #656546]
-* Use the accountsservice library rather than cut-and-pasted GDM code
-  [Florian; #650893]
-* Add a D-Bus interface to take a screenshot; this will avoid various race
-  conditions with the current gnome-screenshot approach [Adel; #652952]
-* Show numeric indicators to distinguish duplicate keyboard names
-  [Giovanni; #650128]
-* Add GNOME Documents to the favorites list [Adel; #657520]
-* Update the clock immediately on resume from suspend [Colin; #656403]
-* Remove animation support from StAdjustment [Ray; #657082]
-* Support configuration of calendar applications via gsettings
-  [Tassilo; #651190]
-* Don't fade in alt-Tab - wait a bit and show it instantly [Rui; #652346]
-* Darken workspace background on all workspaces [Rui; #656433]
-* Improve detection of the starting day of the week [Florian; #649078]
-* Add StButtonAccessible [Alejandro]
-* Visual tweaks to match mockups
-  [Allan, Dan, Jasper, Marina; #640271, #655627, #655428, #656732]
-* Misc bug fixes [Dan, Florian, Giovanni, Guillaume, Jasper, Jeremy, Rui;
-  #645708, #646761, #653119, #654398, #656125, #654707, #654898, #654638,
-  #656335, #657111]
-* Code cleanups [Colin, Dan, Guillaume, Ray;
-  #652718, #654639, #648651, #655813, #657082]
-* String tweaks [Jasper, Jeremy; #652984, #640271]
-* Build fixes [Jasper, Nohemi; #644275, #655812]
-
-Contributors:
- Jeremy Bicha, Giovanni Campagna, Xavier Claessens, Alban Crequy,
- Guillaume Desmottes, Allan Day, Neha Doijode, Nohemi Fernandez,
- Tassilo Horn, Rui Matos, Morten Mjelva, Florian Müllner, Alejandro Piñeiro,
- Jasper St. Pierre, Ray Strode, Colin Walters, Dan Winship,
- Marina Zhurakhinskaya
-
-Translations:
- Ivaylo Valkov [bg], Mario Blättermann [de], Diego Escalante Urrelo,
- Jorge González, Daniel Mustieles [es], Arash Mousavi [fa], Fran Dieguez [gl],
- Yaron Shahrabani [he], Andika Triwidada, Wibiharto [id],
- Aurimas Černius [lt], Umarzuki Bin Mochlis Moktar [ml], Kjartan Maraas [nb],
- A S Alam [pa], Daniel Nylander [se], Ngô Chin, Nguyễn Thái Ngọc Duy [vi],
- Aron Xu [zh_CN], Chao-Hsiung Liao [zh_HK, zh_TW]
-
-3.1.4
-=====
-* Take over inserted media handling and autorun from gnome-session [Cosimo]
-* Message Tray
-  - Display a count of unread notifications on icons
-    [Jasper, Guillaume; #649356, #654139]
-  - Only remove icons when the sender quits from D-Bus, not when it
-    closes its last window [Neha, Marina; #645764]
-  - Solve problems switching chats between cinnamon and Empathy
-    [Guillaume; #654237]
-  - Fix handling of bad GMarkup in messages [Dan; #650298]
-  - Never show notifications when the screensaver is active [Dan; #654550]
-* Telepathy integrationpp
-  - Implement Telepathy Debug interface to enable empathy-debugger
-    [Guillaume; #652816]
-  - Allow approving room invitations, and audio/video calls
-    [Guillaume; #653740 #653939]
-  - Send typing notifications [Jonny; #650196]
-* Fix selection highlighting for light-on-dark entries [Jasper; #643768]
-* Make control-Return in the overview open a new window [Maxim]
-* Delay showing the alt-Tab switcher to reduce visual noise when
-  flipping betweeen windows [Dan; #652346]
-* When we have vertically stacked monitors, put the message tray
-  on the bottom one [Dan; #636963]
-* Fix various problems with keynav and the Activities button
-  [Dan; #641253 #645759]
-* Ensure screensaver is locked when switching users [Colin; #654565]
-* Improve extension creation tool [Jasper; #653206]
-* Fix compatibility with latest GJS [Giovanni; #654349]
-* Code cleanups [Adel, Dan, Jasper; #645759 #654577 #654791 #654987]
-* Misc bug fixes [Richard, Dan, Florian, Giovanni, Jasper, Marc-Antoine, Rui;
-  #647175 #649513 #650452 #651082 #653700 #653989 #654105 #654791 #654267
-  #654269 #654527 #655446]
-* Build fixes [Florian, Siegfried; #654300]
-
-Contributors:
- Giovanni Campagna, Cosimo Cecchi, Guillaume Desmottes, Neha Doijode,
- Maxim Ermilov, Adel Gadllah, Siegfried-Angel Gevatter Pujals, Richard Hughes,
- Jonny Lamb, Rui Matos, Florian Müllner, Marc-Antoine Perennou, Colin Walters,
- Dan Winship, Marina Zhurakhinskaya
-
-Translations:
- Mario Blättermann, Paul Seyfert [de], Jorge González, Daniel Mustieles [es],
- Fran Dieguez [gl], Yaron Shahrabani [he], Luca Ferretti [it],
- Rudolfs Mazurs [lv], Kjartan Maraas [nb], A S Alam [pa], Yuri Kozlov [ru],
- Michal Štrba, Matej Urbančič [sl]
-
-3.1.3
-=====
-* Fix problem with "user theme extension" breaking the CSS for other
-  extensions [Giovanni; #650971]
-* Telepathy IM framework integration
-  - Switch to using telepathy-glib rather than talking to
-    Telepathy via D-Bus [Guillaume, Jasper; #645585, #649633, #651138, #651227]
-  - Acknowledge messages when the user clicks on them [Guillaume, #647893]
-  - Fix problem with telepathy icon blinking for incoming messages
-    even though the user has been notified of them [Guillaume; #643594]
-* Networking
-  - keep wirelesss networks in predictable order [Giovanni; #646580, #652313]
-  - Show unmanaged devices in the menu [Giovanni; #646946]
-  - Fix overflow when too many VPN connections [Giovanni; #651602]
-* Bluetooth
-  - Show "hardware disabled" when disabled by rfkill [Giovanni; #648048]
-  - Fix bug updating status of devices [Giovanni; #647565]
-* LookingGlass console:
-  - Add a "Memory" tab [Colin; #650692]
-  - Make escape work from any page [Dan Winship; #647303]
-  - Provide a way to refer to panel items as, e.g.,
-    Main.panel._activities [Dan Winship; #646915]
-* User menu
-  - Fix problem with suspend menu option locking the screen even when the user
-    disabled that. [Florian; #652327]
-  - Hide "power off..." option if shutdown is disabled via PolicyKit
-    [Florian; #652038]
-* Track changes to WM_CLASS (fixes problems with LibreOffice tracking)
-  [Colin; #649315]
-* Remove app tracking workarounds for Firefox and LibreOffice [Colin; #651015]
-* Use upstream gettext autoconfigury rather than glib version [Javier; #631576]
-* Show messages in the message tray when an application is fullscreen
-  [Dan Winship; #608667]
-* Don't autohide the workspace pager if there is more than one workspace
-  [Florian; #652714, #653078, #653142]
-* Don't always slide out the workspace pager at drag begin [Florian; #652730]
-* Only offer to remove a favorite app when dragging it's icon [Owen; #642895]
-* Allow dropping an icon anywhere on a workspace [Adel; #652079]
-* st-scroll-view: Make the fade effect and offset themable [Jasper; #651813]
-* Obey the user's preference when running an application in a terminal
-  from the run dialog [Florian; #648422]
-* Consistently exit overview when launching external applications
-  [Colin; #653095]
-* Adapt to changes in GJS for how GObject APIs are bound
-  [Alex, Colin, Florian, Jasper, Marc-Antoine; #649981, #652597]
-* Fix problems with scrolling in overflow for alt-Tab switcher
-  [Dan Winship, Adel; #647807]
-* Mark relationships between labels and actors for accessibility [Alejandro]
-* Add org.cinnamon.enabled-extensions complementing disabled-extensions
-  GSetting [Tassilo; #651088]
-* Visual tweaks [Jakub, Jasper; #646261, #652715]
-* Switch to building against clutter-1.7 with independent Cogl [Adel; #653397]
-* Code cleanups [Colin, Dan Winship, Florian; #633620, #645031, #648755, #648758,
-  #648760, #649203, #649517, #650317, #652730]
-* Memory leak fixes [Colin, Maxim; #649508, #650934]
-* Build Fixes [Colin, Dan Winship, Florian, Ionut, Morten, Owen, Sean; #647395,
-  #648006, #650869, #653199, #653275
-* Miscellaneous bug fixes [Adam, Adel, Dan Williams, Dan Winship, Florian,
-  Ionut, Jasper, Maxim, Ray; #620105, #639459, #641570, #642793, #643513,
-  #645848, #646919, #647186, #648305, #648410, #648562, #648894, #649001,
-  #645990, #647893, #647907, #651012, #651086, #651606, #651569, #651866,
-  #652388,  #653511]
-
-Contributors:
- Ionut Biru, Giovanni Campagna, Guillaume Desmottes, Adam Dingle,
- Maxim Ermilov, Adel Gadllah, Tassilo Horn, Javier Jardón, Jonny Lamb,
- Alexander Larsson, Rui Matos, Morten Mjelva, Florian Müllner,
- Marc-Antoine Perennou, Alejandro Piñeiro, Jasper St. Pierre, Jakub Steiner,
- Ray Strode, Owen Taylor, Colin Walters, Dan Williams, Sean Wilson, Dan Winship
-
-Translations:
- Daniel Martinez Cucalon [ar], Ihar Hrachyshka [be], Carles Ferrando,
- Gil Forcada, Sílvia Miranda [ca], Kristjan Schmidt [eo], Jorge González,
- Daniel Mustieles [es], Seán de Búrca [ga], Fran Diéguez [gl],
- Yaron Shahrabani [he], Kjartan Maraas [nb], Misha Shnurapet,
- Yuri Myasoedov [ru], Daniel Nylander [se], Peter Mráz [sk],
- Matej Urbančič [sl], Krishnababu Krothapalli [te], Daniel Korostil [uk],
- Aron Xu [zh_CN]
-
-3.0.2
-=====
-* Network Menu [Dan Williams]
-  - Fix connecting to WPA2 Enterprise access points
-    Fixes https://bugzilla.gnome.org/show_bug.cgi?id=648171
-  - Show the mobile broadband wizard when selecting 3G network
-    Fixes https://bugzilla.gnome.org/show_bug.cgi?id=649318
-  - Miscellaneous bug fixes
-    648648, 650124
-* Fix duplicate icons in the application browser [Owen]
-  https://bugzilla.gnome.org/show_bug.cgi?id=648739
-* Make clicking anywhere on the volume icon slider work [Giovanni]
-  https://bugzilla.gnome.org/show_bug.cgi?id=646660
-* Fix a case where activating and clicking the hot corner
-  at the same time could result in immediately leaving the
-  overview [Rui]
-  https://bugzilla.gnome.org/show_bug.cgi?id=649427
-* Fix a case where applications became misordered in Alt-Tab [Jasper]
-  https://bugzilla.gnome.org/show_bug.cgi?id=643302
-* Fix a bug where messages you send could show up in
-  notifications as if someone else sent them [Jonny]
-  https://bugzilla.gnome.org/show_bug.cgi?id=650219
-* Memory leak fixes [Colin, Maxim]
-  642652, 649508, 649497
-* Miscellaneous minor bug fixes [Adel, Christopher, Jasper]
-  649596, 648765, 648983, 649632
-
-Contributors:
- Christopher Aillon, Giovanni Campagna, Maxim Ermilov,
- Adel Gadllah, Jonny Lamb, Rui Matos, Jasper St. Pierre,
- Owen Taylor, Colin Walters, Dan Williams
-
-Translations:
- Arash Mousavi [fa], Seán de Búrca [ga], Timo Jyrinki [fi],
- Sigurd Gartmann [nb], Daniel Nylander [se], Peter Mráz [sl],
- Abduxukur Abdurixit [ug], Nguyễn Thái Ngọc Duy [vi]
-
-3.0.1
-=====
-
-* Network menu
-  - Fix problems updating the menu for mobile broadband devices [Giovanni]
-    https://bugzilla.gnome.org/show_bug.cgi?id=646395
-  - Fix missing device descriptions with multiple devices of the
-    same type [Giovanni]
-    https://bugzilla.gnome.org/show_bug.cgi?id=646074
-  - Label ad-hoc neworks with an appropriate icon [Dan]
-    https://bugzilla.gnome.org/show_bug.cgi?id=646141
-  - Fix displaying some devices states as "invalid" [Dan]
-    https://bugzilla.gnome.org/show_bug.cgi?id=646946
-  - Fix problems with access points that don't report a SSID [Giovanni]
-    https://bugzilla.gnome.org/show_bug.cgi?id=647040
-  - Miscellaneous minor bug fixes [Dan, Giovanni, Owen]
-    645981, 646558, 646443, 646708, 646968
-* Application menu and icon
-  - Fix bug where application menu icon was missing at Cinnamon
-    startup. [Florian]
-    https://bugzilla.gnome.org/show_bug.cgi?id=644122
-  - Fix missing application menu for dialog windows [Colin]
-    https://bugzilla.gnome.org/show_bug.cgi?id=647082
- -  When launching an application through an alternate launcher
-    (like for a System Settings pane), association the windows with
-    the application, not the launcher. [Colin]
-    https://bugzilla.gnome.org/show_bug.cgi?id=646689
-* Activities overview
-  - Load the applications view incrementally to avoid potentially freezing
-    for multiple seconds [Colin]
-    https://bugzilla.gnome.org/show_bug.cgi?id=647778
-  - Fix bug where package installation while the overview
-    was up could result in a corrupted application display. [Giovanni]
-    https://bugzilla.gnome.org/show_bug.cgi?id=645801
-  - Fix dragging from the search results to launch apps and docs [Florian]
-    https://bugzilla.gnome.org/show_bug.cgi?id=645990
-  - Fix flickering of selection when searching in the overview [Florian]
-    https://bugzilla.gnome.org/show_bug.cgi?id=646019
-  - Fix bug when typing into the search box when text was already
-    selected [Nohemi]
-    https://bugzilla.gnome.org/show_bug.cgi?id=636341
-* Fix layout of notifications for right-to-left languages [Florian]
-  https://bugzilla.gnome.org/show_bug.cgi?id=646921
-* Remove a confusing special case where Alt-Tab sometimes switched
-  to a different window of the same application rather than to
-  a different application. [Rui]
-  https://bugzilla.gnome.org/show_bug.cgi?id=648132
-* Fix a crash that could happen when a window was opened on a
-  workspace that was immediately removed [Dan]
-  https://bugzilla.gnome.org/show_bug.cgi?id=648132
-* Fix keyboard navigation in logout/reboot dialogs [Dan]
-  https://bugzilla.gnome.org/show_bug.cgi?id=646740
-* Fix missing inspector icon in Looking Glass console [Dan]
-* Miscellaneous minor bug fixes [Adel, Colin, Dan, Florian, Nohemi]
-  645648, 646205, 646257, 646855, 647098, 646730
-
-Contributors:
- Giovanni Campagna, Nohemi Fernandez, Adel Gadllah, Rui Matos, Florian Müllner,
- Owen Taylor, Colin Walters, Dan Winship
-
-Translations:
- Hendrik Richter [de], Jorge González [es], Arash Mousavi [fa],
- Fran Diéguez [gl], Jiro Matsuzawa [ja], Piotr Drąg [pl], Daniel Nylander [sv],
- Sira Nokyoongtong [th], Muhammet Kara [tr], Nguyễn Thái Ngọc Duy [vi],
- Aron Xu [zh_CN], Chao-Hsiung Liao [zh_HK, zh_TW]
-
-3.0.0.2
-=======
-
-* Fix missing import that was preventing extensions from loading.
-  [Maxim Ermilov]
-  https://bugzilla.gnome.org/show_bug.cgi?id=646333
-
-Translations:
- Timo Jyrinki [fi]
-
-3.0.0.1
-=======
-
-* Fix problem with stuck event handling if network menu pops down while
-  user is using the scrollbar. [Owen Taylor]
-  https://bugzilla.gnome.org/show_bug.cgi?id=646825
-
-Contributors to Cinnamon 3.0
-===============================
-
-Code:
-
- Josh Adams, Kiyoshi Aman, Nuno Araujo, Emmanuele Bassi, Dirk-Jan C. Binnema,
- Wouter Bolsterlee, Raphael Bosshard, Milan Bouchet-Valat, Christina Boumpouka,
- Mathieu Bridon, Alban Browaeys, Phil Bull, Micro Cai, Giovanni Campagna,
- Cosimo Cecchi, Tor-björn Claesson, Matthias Clasen, Jason D. Clinton,
- Frederic Crozat, Guillaume Desmottes, Sander Dijkhuis, Neha Doijode,
- Maxim Ermilov, Diego Escalante Urrelo, Luca Ferretti, Steve Frécinaux,
- Takao Fujiwara, Adel Gadllah, Vadim Girlin, Nick Glynn, Guido Günther,
- Leon Handreke, Lex Hider, Richard Hughes, Javier Jardón, Abderrahim Kitouni,
- Andre Klapper, Alexander Larsson, Nickolas Lloyd, Ryan Lortie, Kjartan Maraas,
- Koop Mast, Rui Matos, Jonathan Matthew, William Jon McCann, Morten Mjelva,
- Federico Mena Quintero, Florian Müllner, Jon Nettleton, Hellyna Ng,
- Discardi Nicola, Carlos Martín Nieto, Bastien Nocera, Bill Nottingham,
- Matt Novenstern, Marc-Antoine Perennou, Neil Perry, Frédéric Péters,
- Alejandro Piñeiro, Siegfried-Angel Gevatter Pujals, "res", Neil Roberts,
- "Sardem FF7", Florian Scandella, Joseph Scheuhammer, Christian Schramm,
- Gustavo Noronha Silva, Jasper St. Pierre, Eric Springer, Jakub Steiner,
- Jonathan Strander, Ray Strode, Owen Taylor, Rico Tzschichholz,
- Sergey V. Udaltsov, Daiki Ueno, Vincent Untz, Marcelo Jorge Vieira,
- Mads Villadsen, Colin Walters, Dan Winship, William Wolf, Thomas Wood,
- Pierre Yager, David Zeuthen, Marina Zhurakhinskaya
-
-Design:
-
- Allan Day, William Jon McCann, Jeremy Perry, Jakub Steiner
- 2008 Boston GNOME design hackfest participants (especially Neil J. Patel
- for turning the resulting sketches into our first mockups.)
- Everybody on irc.gnome.org:#gnome-design
-
-Translations:
-
- Friedel Wolff (af), Khaled Hosny (ar), Ivaylo Valkov (bg), Jamil Ahmed (bn)
- Runa Bhattacharjee (bn_IN), Gil Forcada, Siegfried-Angel Gevatter Pujals,
- Jordi Serratosa (ca), Andre Klapper, Petr Kovar (cs), Kenneth Nielsen,
- Kris Thomsen (da), Mario Blättermann, Hendrik Brandt, Christian Kirbach,
- Hendrik Richter, Wolfgang Stöggl (de), Michael Kotsarinis, Kostas Papadimas,
- Jennie Petoumenou, Sterios Prosiniklis, Fotis Tsamis, Simos Xenitellis (el),
- Bruce Cowan, Philip Withnall (en_GB), Jorge Gonzalez, Daniel Mustieles (es),
- Mattias Põldaru, Ivar Smolin (et), Inaki Larranaga Murgoitio (eu),
- Mahyar Moghimi (fa), Timo Jyrinki (fi), Cyril Arnaud, Bruno Brouard,
- Pablo Martin-Gomez, Claude Paroz, Frédéric Peters (fr), Seán de Búrca (ga)
- Francisco Diéguez, Antón Méixome (gl), Sweta Kothari (gu), Liel Fridman,
- Yaron Shahrabani (he), Rajesh Ranjan (hi), Gabor Kelemen (hu), Milo Casagrande,
- Luca Ferretti (it), Dirgita, Andika Triwidada (id), Takayuki KUSANO,
- Takayoshi OKANO, Kiyotaka NISHIBORI, Futoshi NISHIO (ja), Shankar Prasad (kn),
- Young-Ho Cha, Changwoo Ryu (ko), Žygimantas Beručka, Gintautas Miliauskas (lt),
- Rudolfs Mazurs (lv), Sandeep Shedmake (mr), Kjartan Maraas (nb),
- Wouter Bolsterlee, Sander Dijkhuis, Reinout van Schouwen (nl),
- Torstein Winterseth (nn), A S Alam (pa), Tomasz Dominikowski, Piotr Drąg (pl),
- Duarte Loreto (pt), Felipe Borges, Rodrigo Padula de Oliveira,
- Rodrigo L. M. Flores, Amanda Magalhães, Og B. Maciel, Gabriel F. Vilar,
- Jonh Wendell (pt_BR), Lucian Adrian Grijincu, Daniel Șerbănescu (ro),
- Sergey V. Kovylov, Andrey Korzinev, Yuri Myasoedov, Marina Zhurakhinskaya (ru),
- Daniel Nylander (se), Matej Urbančič, Andrej Žnidaršič (sl),
- Miloš Popović (sr, sr@latin), Miroslav Nikolić (sr), Tirumurti Vasudevan (ta),
- Sira Nokyoongtong (th), Baris Cicek (tr), Abduxukur Abdurixit,
- Gheyret T. Kenji (ug), Maxim V. Dziumanenko, Daniel Korostil (uk),
- Nguyễn Thái Ngọc Duy (vi), Jessica Ban, 'jiero', Wei Li, YunQiang Su, Ray Wang,
- Aron Xu (zh_CN), Chao-Hsiung Liao (zh_HK, zh_TW)

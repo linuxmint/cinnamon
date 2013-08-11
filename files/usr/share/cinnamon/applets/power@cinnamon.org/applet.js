@@ -2,16 +2,14 @@ const Applet = imports.ui.applet;
 const Gio = imports.gi.Gio;
 const DBus = imports.dbus;
 const Lang = imports.lang;
-const Mainloop = imports.mainloop;
-const Cinnamon = imports.gi.Cinnamon;
 const St = imports.gi.St;
-const Main = imports.ui.main;
-const PanelMenu = imports.ui.panelMenu;
 const PopupMenu = imports.ui.popupMenu;
-const Util = imports.misc.util;
+const Pango = imports.gi.Pango;
 
-const BUS_NAME = 'org.gnome.SettingsDaemon';
-const OBJECT_PATH = '/org/gnome/SettingsDaemon/Power';
+const POWER_SCHEMA = "org.cinnamon.power"
+const SHOW_PERCENTAGE_KEY = "power-label";
+const BUS_NAME = 'org.cinnamon.SettingsDaemon';
+const OBJECT_PATH = '/org/cinnamon/SettingsDaemon/Power';
 
 const UPDeviceType = {
     UNKNOWN: 0,
@@ -38,20 +36,40 @@ const UPDeviceState = {
     PENDING_DISCHARGE: 6
 };
 
+const LabelDisplay = {
+    NONE: 'none',
+    PERCENT: 'percent',
+    TIME: 'time'
+};
+
 const PowerManagerInterface = {
-    name: 'org.gnome.SettingsDaemon.Power',
+    name: 'org.cinnamon.SettingsDaemon.Power',
     methods: [
         { name: 'GetDevices', inSignature: '', outSignature: 'a(susdut)' },
         { name: 'GetPrimaryDevice', inSignature: '', outSignature: '(susdut)' },
         ],
     signals: [
-        { name: 'Changed', inSignature: '' },
+        { name: 'PropertiesChanged', inSignature: 's,a{sv},a[s]' },
         ],
     properties: [
         { name: 'Icon', signature: 's', access: 'read' },
         ]
 };
 let PowerManagerProxy = DBus.makeProxyClass(PowerManagerInterface);
+
+const SettingsManagerInterface = {
+	name: 'org.freedesktop.DBus.Properties',
+	methods: [
+		{ name: 'Get', inSignature: 's,s', outSignature: 'v' },
+		{ name: 'GetAll', inSignature: 's', outSignature: 'a{sv}' },
+		{ name: 'Set', inSignature: 's,s,v', outSignature: '' }
+	],
+	signals: [
+	{name: 'PropertiesChanged', inSignature:'s,a{sv},a[s]', outSignature:''}
+	]
+};
+
+let SettingsManagerProxy = DBus.makeProxyClass(SettingsManagerInterface);
 
 function DeviceItem() {
     this._init.apply(this, arguments);
@@ -110,39 +128,25 @@ DeviceItem.prototype = {
     }
 }
 
-function MyMenu(launcher, orientation) {
-    this._init(launcher, orientation);
+function MyApplet(orientation, panel_height) {
+    this._init(orientation, panel_height);
 }
 
-MyMenu.prototype = {
-    __proto__: PopupMenu.PopupMenu.prototype,
-    
-    _init: function(launcher, orientation) {
-        this._launcher = launcher;        
-                
-        PopupMenu.PopupMenu.prototype._init.call(this, launcher.actor, 0.0, orientation, 0);
-        Main.uiGroup.add_actor(this.actor);
-        this.actor.hide();            
-    }
-}
-
-function MyApplet(orientation) {
-    this._init(orientation);
-}
 
 MyApplet.prototype = {
     __proto__: Applet.TextIconApplet.prototype,
 
-    _init: function(orientation) {        
-        Applet.TextIconApplet.prototype._init.call(this, orientation);
+    _init: function(orientation, panel_height) {        
+        Applet.TextIconApplet.prototype._init.call(this, orientation, panel_height);
         
         try {                                
             this.menuManager = new PopupMenu.PopupMenuManager(this);
-            this.menu = new MyMenu(this, orientation);
+            this.menu = new Applet.AppletPopupMenu(this, orientation);
             this.menuManager.addMenu(this.menu);            
             
-            this.set_applet_icon_symbolic_name('battery-missing');            
+            //this.set_applet_icon_symbolic_name('battery-missing');            
             this._proxy = new PowerManagerProxy(DBus.session, BUS_NAME, OBJECT_PATH);
+            this._smProxy = new SettingsManagerProxy(DBus.session, BUS_NAME, OBJECT_PATH);
             
             let icon = this.actor.get_children()[0];
             this.actor.remove_actor(icon);
@@ -151,12 +155,20 @@ MyApplet.prototype = {
             let iconBox = new St.Bin();
             box.add(iconBox, { y_align: St.Align.MIDDLE, y_fill: false });
             this._mainLabel = new St.Label();
+            this._mainLabel.clutter_text.ellipsize = Pango.EllipsizeMode.NONE;
             box.add(this._mainLabel, { y_align: St.Align.MIDDLE, y_fill: false });
             iconBox.child = icon;
 
             this._deviceItems = [ ];
             this._hasPrimary = false;
             this._primaryDeviceId = null;
+            
+            let settings = new Gio.Settings({ schema: POWER_SCHEMA }); 
+            this._labelDisplay = settings.get_string(SHOW_PERCENTAGE_KEY);
+            let applet = this;
+            settings.connect('changed::'+SHOW_PERCENTAGE_KEY, function() {
+                applet._switchLabelDisplay(settings.get_string(SHOW_PERCENTAGE_KEY));
+            });
 
             this._batteryItem = new PopupMenu.PopupMenuItem('', { reactive: false });
             this._primaryPercentage = new St.Label();
@@ -165,11 +177,31 @@ MyApplet.prototype = {
 
             this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
             this._otherDevicePosition = 2;
+            
+            // Setup label display settings
+            this._displayItem = new PopupMenu.PopupSubMenuMenuItem(_("Display"));
+            this.menu.addMenuItem(this._displayItem);
+            this._displayPercentageItem = new PopupMenu.PopupMenuItem(_("Show percentage"));
+            this._displayPercentageItem.connect('activate', Lang.bind(this, function() {
+                settings.set_string(SHOW_PERCENTAGE_KEY, LabelDisplay.PERCENT);
+            }));
+            this._displayItem.menu.addMenuItem(this._displayPercentageItem);
+            this._displayTimeItem = new PopupMenu.PopupMenuItem(_("Show time remaining"));
+            this._displayTimeItem.connect('activate', Lang.bind(this, function() {
+                settings.set_string(SHOW_PERCENTAGE_KEY, LabelDisplay.TIME);
+            }));
+            this._displayItem.menu.addMenuItem(this._displayTimeItem);
+            this._displayNoneItem = new PopupMenu.PopupMenuItem(_("Hide label"));
+            this._displayNoneItem.connect('activate', Lang.bind(this, function() {
+                settings.set_string(SHOW_PERCENTAGE_KEY, LabelDisplay.NONE);
+            }));
+            this._displayItem.menu.addMenuItem(this._displayNoneItem);
+            this._switchLabelDisplay(this._labelDisplay);
 
             this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-            this.menu.addSettingsAction(_("Power Settings"), 'gnome-power-panel.desktop');
+            this.menu.addSettingsAction(_("Power Settings"), 'power');
 
-            this._proxy.connect('Changed', Lang.bind(this, this._devicesChanged));
+            this._smProxy.connect('PropertiesChanged', Lang.bind(this, this._devicesChanged));
             this._devicesChanged();            
         }
         catch (e) {
@@ -179,6 +211,26 @@ MyApplet.prototype = {
     
     on_applet_clicked: function(event) {
         this.menu.toggle();        
+    },
+
+    _switchLabelDisplay: function(display) {
+            this._labelDisplay = display;
+
+            this._displayPercentageItem.setShowDot(false);
+            this._displayNoneItem.setShowDot(false);
+            this._displayTimeItem.setShowDot(false);
+
+            if (this._labelDisplay == LabelDisplay.PERCENT) {
+                this._displayPercentageItem.setShowDot(true);
+            }
+            else if (this._labelDisplay == LabelDisplay.TIME) {
+                this._displayTimeItem.setShowDot(true);
+            }
+            else {
+                this._displayNoneItem.setShowDot(true);
+            }
+
+            this._updateLabel();
     },
     
     _readPrimaryDevice: function() {
@@ -250,11 +302,16 @@ MyApplet.prototype = {
         }));
     },
 
-    _devicesChanged: function() {
+    on_panel_height_changed: function() {
+        this._devicesChanged();
+    },
+
+    _devicesChanged: function() {        
         this._proxy.GetRemote('Icon', Lang.bind(this, function(icon, error) {
             if (icon) {    
-				let gicon = Gio.icon_new_for_string(icon);
-				this._applet_icon.gicon = gicon;             
+                this.set_applet_icon_symbolic_name('battery-missing');
+                let gicon = Gio.icon_new_for_string(icon);
+                this._applet_icon.gicon = gicon;
                 this.actor.show();
             } else {
                 this.menu.close();
@@ -272,22 +329,36 @@ MyApplet.prototype = {
                 this._mainLabel.set_text("");
                 return;
             }
-            for (let i = 0; i < devices.length; i++) {
-                let [device_id, device_type, icon, percentage, state, time] = devices[i];
-                if (device_type == UPDeviceType.BATTERY || device_id == this._primaryDeviceId) {
-                    let percentageText = C_("percent of battery remaining", "%d%%").format(Math.round(percentage));
-                    this._mainLabel.set_text(percentageText);
-                    return;
+
+            if (this._labelDisplay != LabelDisplay.NONE) {
+                for (let i = 0; i < devices.length; i++) {
+                    let [device_id, device_type, icon, percentage, state, time] = devices[i];
+                    if (device_type == UPDeviceType.BATTERY || device_id == this._primaryDeviceId) {
+                        let labelText = "";
+
+                        if (this._labelDisplay == LabelDisplay.PERCENT || time == 0) {
+                            labelText = C_("percent of battery remaining", "%d%%").format(Math.round(percentage));
+                        }
+                        else if (this._labelDisplay == LabelDisplay.TIME) {
+                            let seconds = time / 60;
+                            let minutes = Math.floor(seconds % 60);
+                            let hours = Math.floor(seconds / 60);
+                            labelText = C_("time of battery remaining", "%d:%02d").format(hours,minutes);
+                        }
+
+                        this._mainLabel.set_text(labelText);
+                        return;
+                    }
                 }
             }
-            // no battery found... hot-unplugged?
+            // Display disabled or no battery found... hot-unplugged?
             this._mainLabel.set_text("");
         }));
     }
     
 };
 
-function main(metadata, orientation) {  
-    let myApplet = new MyApplet(orientation);
+function main(metadata, orientation, panel_height) {  
+    let myApplet = new MyApplet(orientation, panel_height);
     return myApplet;      
 }

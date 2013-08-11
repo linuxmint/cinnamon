@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=Cinnamon (Software Rendering)
+Comment=This session logs you into Cinnamon (using software rendering)
+Exec=cinnamon-session-cinnamon2d
+TryExec=/usr/bin/cinnamon2d
+Icon=
+Type=Application
+X-Ubuntu-Gettext-Domain=cinnamon
+X-GNOME-Provides=cinnamon2d
+

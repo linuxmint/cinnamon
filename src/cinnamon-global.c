@@ -15,12 +15,13 @@
 #endif
 
 #include <X11/extensions/Xfixes.h>
+#include <cogl-pango/cogl-pango.h>
 #include <canberra.h>
 #include <clutter/glx/clutter-glx.h>
 #include <clutter/x11/clutter-x11.h>
 #include <gdk/gdkx.h>
 #include <gio/gio.h>
-#include <gjs/gjs-module.h>
+#include <cjs/gjs-module.h>
 #include <girepository.h>
 #include <meta/display.h>
 #include <meta/util.h>
@@ -58,8 +59,6 @@ struct _CinnamonGlobal {
   MetaScreen *meta_screen;
   GdkScreen *gdk_screen;
 
-  CinnamonSessionType session_type;
-
   /* We use this window to get a notification from GTK+ when
    * a widget in our process does a GTK+ grab.  See
    * http://bugzilla.gnome.org/show_bug.cgi?id=570641
@@ -89,14 +88,12 @@ struct _CinnamonGlobal {
   ca_context *sound_context;
 
   guint32 xdnd_timestamp;
-
   gint64 last_gc_end_time;
 };
 
 enum {
   PROP_0,
 
-  PROP_SESSION_TYPE,
   PROP_OVERLAY_GROUP,
   PROP_SCREEN,
   PROP_GDK_SCREEN,
@@ -105,7 +102,9 @@ enum {
   PROP_SCREEN_HEIGHT,
   PROP_STAGE,
   PROP_STAGE_INPUT_MODE,
+  PROP_BOTTOM_WINDOW_GROUP,
   PROP_WINDOW_GROUP,
+  PROP_TOP_WINDOW_GROUP,
   PROP_BACKGROUND_ACTOR,
   PROP_WINDOW_MANAGER,
   PROP_SETTINGS,
@@ -142,9 +141,6 @@ cinnamon_global_set_property(GObject         *object,
     case PROP_STAGE_INPUT_MODE:
       cinnamon_global_set_stage_input_mode (global, g_value_get_enum (value));
       break;
-    case PROP_SESSION_TYPE:
-      global->session_type = g_value_get_enum (value);
-      break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;
@@ -161,9 +157,6 @@ cinnamon_global_get_property(GObject         *object,
 
   switch (prop_id)
     {
-    case PROP_SESSION_TYPE:
-      g_value_set_enum (value, cinnamon_global_get_session_type (global));
-      break;
     case PROP_OVERLAY_GROUP:
       g_value_set_object (value, meta_get_overlay_group_for_screen (global->meta_screen));
       break;
@@ -198,8 +191,14 @@ cinnamon_global_get_property(GObject         *object,
     case PROP_STAGE_INPUT_MODE:
       g_value_set_enum (value, global->input_mode);
       break;
+    case PROP_BOTTOM_WINDOW_GROUP:
+      g_value_set_object (value, meta_get_bottom_window_group_for_screen (global->meta_screen));
+      break;
     case PROP_WINDOW_GROUP:
       g_value_set_object (value, meta_get_window_group_for_screen (global->meta_screen));
+      break;
+    case PROP_TOP_WINDOW_GROUP:
+      g_value_set_object (value, meta_get_top_window_group_for_screen (global->meta_screen));
       break;
     case PROP_BACKGROUND_ACTOR:
       g_value_set_object (value, meta_get_background_actor_for_screen (global->meta_screen));
@@ -346,14 +345,6 @@ cinnamon_global_class_init (CinnamonGlobalClass *klass)
                     G_TYPE_STRING);
 
   g_object_class_install_property (gobject_class,
-                                   PROP_SESSION_TYPE,
-                                   g_param_spec_enum ("session-type",
-                                                      "Session Type",
-                                                      "The type of session",
-                                                      CINNAMON_TYPE_SESSION_TYPE,
-                                                      CINNAMON_SESSION_USER,
-                                                      G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
-  g_object_class_install_property (gobject_class,
                                    PROP_OVERLAY_GROUP,
                                    g_param_spec_object ("overlay-group",
                                                         "Overlay Group",
@@ -415,10 +406,24 @@ cinnamon_global_class_init (CinnamonGlobalClass *klass)
                                                       CINNAMON_STAGE_INPUT_MODE_NORMAL,
                                                       G_PARAM_READWRITE));
   g_object_class_install_property (gobject_class,
+                                   PROP_BOTTOM_WINDOW_GROUP,
+                                   g_param_spec_object ("bottom-window-group",
+                                                        "Bottom Window Group",
+                                                        "Actor holding window actors that must appear below desklets",
+                                                        CLUTTER_TYPE_ACTOR,
+                                                        G_PARAM_READABLE));
+  g_object_class_install_property (gobject_class,
                                    PROP_WINDOW_GROUP,
                                    g_param_spec_object ("window-group",
                                                         "Window Group",
                                                         "Actor holding window actors",
+                                                        CLUTTER_TYPE_ACTOR,
+                                                        G_PARAM_READABLE));
+  g_object_class_install_property (gobject_class,
+                                   PROP_TOP_WINDOW_GROUP,
+                                   g_param_spec_object ("top-window-group",
+                                                        "Top Window Group",
+                                                        "Actor holding popup menus and other actors which must appear on top of the panels",
                                                         CLUTTER_TYPE_ACTOR,
                                                         G_PARAM_READABLE));
   g_object_class_install_property (gobject_class,
@@ -565,14 +570,18 @@ void
 cinnamon_global_set_stage_input_mode (CinnamonGlobal         *global,
                                    CinnamonStageInputMode  mode)
 {
+  MetaScreen *screen;
+
   g_return_if_fail (CINNAMON_IS_GLOBAL (global));
 
+  screen = meta_plugin_get_screen (global->plugin);
+
   if (mode == CINNAMON_STAGE_INPUT_MODE_NONREACTIVE || global->gtk_grab_active)
-    meta_plugin_set_stage_reactive (global->plugin, FALSE);
+    meta_empty_stage_input_region (screen);
   else if (mode == CINNAMON_STAGE_INPUT_MODE_FULLSCREEN || !global->input_region)
-    meta_plugin_set_stage_reactive (global->plugin, TRUE);
+    meta_set_stage_input_region (screen, None);
   else
-    meta_plugin_set_stage_input_region (global->plugin, global->input_region);
+    meta_set_stage_input_region (screen, global->input_region);
 
   if (mode == CINNAMON_STAGE_INPUT_MODE_FOCUSED)
     cinnamon_global_focus_stage (global);
@@ -636,6 +645,7 @@ cinnamon_global_set_cursor (CinnamonGlobal *global,
           break;
         case CINNAMON_CURSOR_POINTING_HAND:
           cursor_type = GDK_HAND2;
+          break;
         case CINNAMON_CURSOR_DND_UNSUPPORTED_TARGET:
           cursor_type = GDK_X_CURSOR;
           break;
@@ -647,7 +657,7 @@ cinnamon_global_set_cursor (CinnamonGlobal *global,
 
   gdk_window_set_cursor (global->stage_gdk_window, cursor);
 
-  gdk_cursor_unref (cursor);
+  g_object_unref (cursor);
 }
 
 /**
@@ -704,6 +714,17 @@ cinnamon_global_set_stage_input_region (CinnamonGlobal *global,
    * should actually change the input region right now.
    */
   cinnamon_global_set_stage_input_mode (global, global->input_mode);
+}
+
+/**
+ * cinnamon_global_get_stage:
+ *
+ * Return value: (transfer none): The default #ClutterStage
+ */
+ClutterStage *
+cinnamon_global_get_stage (CinnamonGlobal  *global)
+{
+  return global->stage;
 }
 
 /**
@@ -792,6 +813,249 @@ global_stage_after_paint (ClutterStage *stage,
                         "clutter.stagePaintDone");
 }
 
+static void
+constrain_tooltip (StTooltip             *tooltip,
+                   const ClutterGeometry *geometry,
+                   ClutterGeometry       *adjusted_geometry,
+                   gpointer               data)
+{
+  const ClutterGeometry *tip_area = st_tooltip_get_tip_area (tooltip);
+  CinnamonGlobal *global = cinnamon_global_get ();
+  MetaScreen *screen = cinnamon_global_get_screen (global);
+  int n_monitors = meta_screen_get_n_monitors (screen);
+  int i;
+
+  *adjusted_geometry = *geometry;
+
+  /* A point that determines what screen we'll constrain to */
+  int x = tip_area->x + tip_area->width / 2;
+  int y = tip_area->y + tip_area->height / 2;
+
+  for (i = 0; i < n_monitors; i++)
+    {
+      MetaRectangle rect;
+      meta_screen_get_monitor_geometry (screen, i, &rect);
+      if (x >= rect.x && x < rect.x + rect.width &&
+          y >= rect.y && y < rect.y + rect.height)
+        {
+          if (adjusted_geometry->x + adjusted_geometry->width > rect.x + rect.width)
+            adjusted_geometry->x = rect.x + rect.width - adjusted_geometry->width;
+          if (adjusted_geometry->x < rect.x)
+            adjusted_geometry->x = rect.x;
+
+          if (adjusted_geometry->y + adjusted_geometry->height > rect.y + rect.height)
+            adjusted_geometry->y = rect.y + rect.height - adjusted_geometry->height;
+          if (adjusted_geometry->y < rect.y)
+            adjusted_geometry->y = rect.y;
+
+          return;
+        }
+    }
+}
+
+static void
+update_font_options (GtkSettings  *settings,
+                     ClutterStage *stage)
+{
+  StThemeContext *context;
+  ClutterBackend *backend;
+  gint dpi;
+  gint hinting;
+  gchar *hint_style_str;
+  cairo_hint_style_t hint_style = CAIRO_HINT_STYLE_NONE;
+  gint antialias;
+  cairo_antialias_t antialias_mode = CAIRO_ANTIALIAS_NONE;
+  cairo_font_options_t *options;
+
+  g_object_get (settings,
+                "gtk-xft-dpi", &dpi,
+                "gtk-xft-antialias", &antialias,
+                "gtk-xft-hinting", &hinting,
+                "gtk-xft-hintstyle", &hint_style_str,
+                NULL);
+
+  context = st_theme_context_get_for_stage (stage);
+
+  if (dpi != -1)
+    /* GTK stores resolution as 1024 * dots/inch */
+    st_theme_context_set_resolution (context, dpi / 1024);
+  else
+    st_theme_context_set_default_resolution (context);
+
+  st_tooltip_set_constrain_func (stage, constrain_tooltip, NULL, NULL);
+
+  /* Clutter (as of 0.9) passes comprehensively wrong font options
+   * override whatever set_font_flags() did above.
+   *
+   * http://bugzilla.openedhand.com/show_bug.cgi?id=1456
+   */
+  backend = clutter_get_default_backend ();
+  options = cairo_font_options_create ();
+
+  cairo_font_options_set_hint_metrics (options, CAIRO_HINT_METRICS_ON);
+
+  if (hinting >= 0 && !hinting)
+    {
+      hint_style = CAIRO_HINT_STYLE_NONE;
+    }
+  else if (hint_style_str)
+    {
+      if (strcmp (hint_style_str, "hintnone") == 0)
+        hint_style = CAIRO_HINT_STYLE_NONE;
+      else if (strcmp (hint_style_str, "hintslight") == 0)
+        hint_style = CAIRO_HINT_STYLE_SLIGHT;
+      else if (strcmp (hint_style_str, "hintmedium") == 0)
+        hint_style = CAIRO_HINT_STYLE_MEDIUM;
+      else if (strcmp (hint_style_str, "hintfull") == 0)
+        hint_style = CAIRO_HINT_STYLE_FULL;
+    }
+
+  g_free (hint_style_str);
+
+  cairo_font_options_set_hint_style (options, hint_style);
+
+  /* We don't want to turn on subpixel anti-aliasing; since Clutter
+   * doesn't currently have the code to support ARGB masks,
+   * generating them then squashing them back to A8 is pointless.
+   */
+  antialias_mode = (antialias < 0 || antialias) ? CAIRO_ANTIALIAS_GRAY
+                                                : CAIRO_ANTIALIAS_NONE;
+
+  cairo_font_options_set_antialias (options, antialias_mode);
+
+  clutter_backend_set_font_options (backend, options);
+  cairo_font_options_destroy (options);
+}
+
+static void
+settings_notify_cb (GtkSettings *settings,
+                    GParamSpec  *pspec,
+                    gpointer     data)
+{
+  update_font_options (settings, CLUTTER_STAGE (data));
+}
+
+static void
+cinnamon_fonts_init (ClutterStage *stage)
+{
+  GtkSettings *settings;
+  CoglPangoFontMap *fontmap;
+
+  /* Disable text mipmapping; it causes problems on pre-GEM Intel
+   * drivers and we should just be rendering text at the right
+   * size rather than scaling it. If we do effects where we dynamically
+   * zoom labels, then we might want to reconsider.
+   */
+  fontmap = COGL_PANGO_FONT_MAP (clutter_get_font_map ());
+  cogl_pango_font_map_set_use_mipmapping (fontmap, FALSE);
+
+  settings = gtk_settings_get_default ();
+  g_object_connect (settings,
+                    "signal::notify::gtk-xft-dpi",
+                    G_CALLBACK (settings_notify_cb), stage,
+                    "signal::notify::gtk-xft-antialias",
+                    G_CALLBACK (settings_notify_cb), stage,
+                    "signal::notify::gtk-xft-hinting",
+                    G_CALLBACK (settings_notify_cb), stage,
+                    "signal::notify::gtk-xft-hintstyle",
+                    G_CALLBACK (settings_notify_cb), stage,
+                    NULL);
+  update_font_options (settings, stage);
+}
+
+/* This is an IBus workaround. The flow of events with IBus is that every time
+ * it gets gets a key event, it:
+ *
+ *  Sends it to the daemon via D-Bus asynchronously
+ *  When it gets an reply, synthesizes a new GdkEvent and puts it into the
+ *   GDK event queue with gdk_event_put(), including
+ *   IBUS_FORWARD_MASK = 1 << 25 in the state to prevent a loop.
+ *
+ * (Normally, IBus uses the GTK+ key snooper mechanism to get the key
+ * events early, but since our key events aren't visible to GTK+ key snoopers,
+ * IBus will instead get the events via the standard
+ * GtkIMContext.filter_keypress() mechanism.)
+ *
+ * There are a number of potential problems here; probably the worst
+ * problem is that IBus doesn't forward the timestamp with the event
+ * so that every key event that gets delivered ends up with
+ * GDK_CURRENT_TIME.  This creates some very subtle bugs; for example
+ * if you have IBus running and a keystroke is used to trigger
+ * launching an application, focus stealing prevention won't work
+ * right. http://code.google.com/p/ibus/issues/detail?id=1184
+ *
+ * In any case, our normal flow of key events is:
+ *
+ *  GDK filter function => clutter_x11_handle_event => clutter actor
+ *
+ * So, if we see a key event that gets delivered via the GDK event handler
+ * function - then we know it must be one of these synthesized events, and
+ * we should push it back to clutter.
+ *
+ * To summarize, the full key event flow with IBus is:
+ *
+ *   GDK filter function
+ *     => Mutter
+ *     => gnome_cinnamon_plugin_xevent_filter()
+ *     => clutter_x11_handle_event()
+ *     => clutter event delivery to actor
+ *     => gtk_im_context_filter_event()
+ *     => sent to IBus daemon
+ *     => response received from IBus daemon
+ *     => gdk_event_put()
+ *     => GDK event handler
+ *     => <this function>
+ *     => clutter_event_put()
+ *     => clutter event delivery to actor
+ *
+ * Anything else we see here we just pass on to the normal GDK event handler
+ * gtk_main_do_event().
+ */
+static void
+gnome_cinnamon_gdk_event_handler (GdkEvent *event_gdk,
+                               gpointer  data)
+{
+  if (event_gdk->type == GDK_KEY_PRESS || event_gdk->type == GDK_KEY_RELEASE)
+    {
+      ClutterActor *stage;
+      Window stage_xwindow;
+
+      stage = CLUTTER_ACTOR (data);
+      stage_xwindow = clutter_x11_get_stage_window (CLUTTER_STAGE (stage));
+
+      if (GDK_WINDOW_XID (event_gdk->key.window) == stage_xwindow)
+        {
+          ClutterDeviceManager *device_manager = clutter_device_manager_get_default ();
+          ClutterInputDevice *keyboard = clutter_device_manager_get_core_device (device_manager,
+                                                                                 CLUTTER_KEYBOARD_DEVICE);
+
+          ClutterEvent *event_clutter = clutter_event_new ((event_gdk->type == GDK_KEY_PRESS) ?
+                                                           CLUTTER_KEY_PRESS : CLUTTER_KEY_RELEASE);
+          event_clutter->key.time = event_gdk->key.time;
+          event_clutter->key.flags = CLUTTER_EVENT_NONE;
+          event_clutter->key.stage = CLUTTER_STAGE (stage);
+          event_clutter->key.source = NULL;
+
+          /* This depends on ClutterModifierType and GdkModifierType being
+           * identical, which they are currently. (They both match the X
+           * modifier state in the low 16-bits and have the same extensions.) */
+          event_clutter->key.modifier_state = event_gdk->key.state;
+
+          event_clutter->key.keyval = event_gdk->key.keyval;
+          event_clutter->key.hardware_keycode = event_gdk->key.hardware_keycode;
+          event_clutter->key.unicode_value = gdk_keyval_to_unicode (event_clutter->key.keyval);
+          event_clutter->key.device = keyboard;
+
+          clutter_event_put (event_clutter);
+          clutter_event_free (event_clutter);
+
+          return;
+        }
+    }
+
+  gtk_main_do_event (event_gdk);
+}
+
 void
 _cinnamon_global_set_plugin (CinnamonGlobal *global,
                           MetaPlugin  *plugin)
@@ -810,7 +1074,7 @@ _cinnamon_global_set_plugin (CinnamonGlobal *global,
   global->gdk_screen = gdk_display_get_screen (global->gdk_display,
                                                meta_screen_get_screen_number (global->meta_screen));
 
-  global->stage = CLUTTER_STAGE (meta_plugin_get_stage (plugin));
+  global->stage = CLUTTER_STAGE (meta_get_stage_for_screen (global->meta_screen));
   global->stage_xwindow = clutter_x11_get_stage_window (global->stage);
   global->stage_gdk_window = gdk_x11_window_foreign_new_for_display (global->gdk_display,
                                                                      global->stage_xwindow);
@@ -836,6 +1100,10 @@ _cinnamon_global_set_plugin (CinnamonGlobal *global,
 
   g_signal_connect (global->meta_display, "notify::focus-window",
                     G_CALLBACK (focus_window_changed), global);
+
+  cinnamon_fonts_init (global->stage);
+
+  gdk_event_handler_set (gnome_cinnamon_gdk_event_handler, global->stage, NULL);
 
   global->focus_manager = st_focus_manager_get_for_stage (global->stage);
 }
@@ -884,7 +1152,7 @@ cinnamon_global_end_modal (CinnamonGlobal *global,
 }
 
 /**
- * cinnamon_global_create_pointer_barrier
+ * cinnamon_global_create_pointer_barrier:
  * @global: a #CinnamonGlobal
  * @x1: left X coordinate
  * @y1: top Y coordinate
@@ -915,7 +1183,7 @@ cinnamon_global_create_pointer_barrier (CinnamonGlobal *global,
 }
 
 /**
- * cinnamon_global_destroy_pointer_barrier
+ * cinnamon_global_destroy_pointer_barrier:
  * @global: a #CinnamonGlobal
  * @barrier: a pointer barrier
  *
@@ -1181,7 +1449,7 @@ cinnamon_global_get_memory_info (CinnamonGlobal        *global,
   JSContext *context;
   gint64 now;
 
-  memset (meminfo, 0, sizeof (meminfo));
+  memset (meminfo, 0, sizeof (*meminfo));
 #ifdef HAVE_MALLINFO
   {
     struct mallinfo info = mallinfo ();
@@ -1280,10 +1548,44 @@ cinnamon_global_get_pointer (CinnamonGlobal         *global,
                           int                 *y,
                           ClutterModifierType *mods)
 {
+  GdkDeviceManager *gmanager;
+  GdkDevice *gdevice;
+  GdkScreen *gscreen;
   GdkModifierType raw_mods;
-
-  gdk_display_get_pointer (global->gdk_display, NULL, x, y, &raw_mods);
+  
+  gmanager = gdk_display_get_device_manager (global->gdk_display);
+  gdevice = gdk_device_manager_get_client_pointer (gmanager);
+  gdk_device_get_position (gdevice, &gscreen, x, y);
+  gdk_device_get_state (gdevice,
+                        gdk_screen_get_root_window (gscreen),
+                        NULL,
+                        &raw_mods);
   *mods = raw_mods & GDK_MODIFIER_MASK;
+}
+
+/**
+ * cinnamon_global_set_pointer:
+ * @global: the #CinnamonGlobal
+ * @x: (in): the X coordinate of the pointer, in global coordinates
+ * @y: (in): the Y coordinate of the pointer, in global coordinates
+ *
+ * Sets the pointer coordinates.
+ * This is a wrapper around gdk_device_warp().
+ */
+void
+cinnamon_global_set_pointer (CinnamonGlobal         *global,
+                          int                 x,
+                          int                 y)
+{
+  GdkDeviceManager *gmanager;
+  GdkDevice *gdevice;
+  GdkScreen *gscreen;
+  int x2, y2;
+  
+  gmanager = gdk_display_get_device_manager (global->gdk_display);
+  gdevice = gdk_device_manager_get_client_pointer (gmanager);
+  gdk_device_get_position (gdevice, &gscreen, &x2, &y2);
+  gdk_device_warp (gdevice, gscreen, x, y);
 }
 
 /**
@@ -1298,10 +1600,19 @@ void
 cinnamon_global_sync_pointer (CinnamonGlobal *global)
 {
   int x, y;
+  GdkDeviceManager *gmanager;
+  GdkDevice *gdevice;
+  GdkScreen *gscreen;
   GdkModifierType mods;
   ClutterMotionEvent event;
 
-  gdk_display_get_pointer (global->gdk_display, NULL, &x, &y, &mods);
+  gmanager = gdk_display_get_device_manager (global->gdk_display);
+  gdevice = gdk_device_manager_get_client_pointer (gmanager);
+  gdk_device_get_position (gdevice, &gscreen, &x, &y);
+  gdk_device_get_state (gdevice,
+                        gdk_screen_get_root_window (gscreen),
+                        NULL,
+                        &mods);
 
   event.type = CLUTTER_MOTION;
   event.time = cinnamon_global_get_current_time (global);
@@ -1390,6 +1701,29 @@ cinnamon_global_get_current_time (CinnamonGlobal *global)
 }
 
 /**
+ * cinnamon_global_get_pid:
+ *
+ * Returns: the pid of the cinnamon process.
+ */
+pid_t
+cinnamon_global_get_pid ()
+{
+  return getpid();
+}
+
+/**
+ * cinnamon_global_get_md5_for_string:
+ *
+ * Returns: the MD5 sum for the given string
+ */
+
+gchar *
+cinnamon_global_get_md5_for_string (const gchar *string)
+{
+    return g_compute_checksum_for_string (G_CHECKSUM_MD5, string, -1);
+}
+
+/**
  * cinnamon_global_create_app_launch_context:
  * @global: A #CinnamonGlobal
  *
@@ -1403,7 +1737,8 @@ cinnamon_global_create_app_launch_context (CinnamonGlobal *global)
 {
   GdkAppLaunchContext *context;
 
-  context = gdk_app_launch_context_new ();
+  context = gdk_display_get_app_launch_context (global->gdk_display);
+  
   gdk_app_launch_context_set_timestamp (context, cinnamon_global_get_current_time (global));
 
   // Make sure that the app is opened on the current workspace even if
@@ -1642,316 +1977,4 @@ gboolean _cinnamon_global_check_xdnd_event (CinnamonGlobal  *global,
     }
 
     return FALSE;
-}
-
-/**
- * cinnamon_global_launch_calendar_server:
- * @global: The #CinnamonGlobal.
- *
- * Launch the cinnamon-calendar-server helper.
- */
-void
-cinnamon_global_launch_calendar_server (CinnamonGlobal *global)
-{
-  const gchar *bin_dir;
-  gchar *calendar_server_exe;
-  GError *error;
-  gchar *argv[2];
-  gint child_standard_input;
-
-  /* launch calendar-server */
-  bin_dir = g_getenv ("CINNAMON_BINDIR");
-  if (bin_dir != NULL)
-    calendar_server_exe = g_strdup_printf ("%s/cinnamon-calendar-server", bin_dir);
-  else
-    calendar_server_exe = g_strdup_printf (CINNAMON_LIBEXECDIR "/cinnamon-calendar-server");
-
-  argv[0] = calendar_server_exe;
-  argv[1] = NULL;
-  error = NULL;
-  if (!g_spawn_async_with_pipes (NULL, /* working_directory */
-                                 argv,
-                                 NULL, /* envp */
-                                 0, /* GSpawnFlags */
-                                 NULL, /* child_setup */
-                                 NULL, /* user_data */
-                                 NULL, /* GPid *child_pid */
-                                 &child_standard_input,
-                                 NULL, /* gint *stdout */
-                                 NULL, /* gint *stderr */
-                                 &error))
-    {
-      g_warning ("Error launching `%s': %s (%s %d)",
-                 calendar_server_exe,
-                 error->message,
-                 g_quark_to_string (error->domain),
-                 error->code);
-      g_error_free (error);
-    }
-  /* Note that cinnamon-calendar-server exits whenever its stdin
-   * file descriptor is HUP'ed. This means that whenever the Cinnamon
-   * process exits or is being replaced, the calendar server is also
-   * exits...and if Cinnamon is being replaced, a new copy of the
-   * calendar server is launched...
-   */
-
-  g_free (calendar_server_exe);
-}
-
-static void
-grab_screenshot (ClutterActor *stage,
-                 _screenshot_data *screenshot_data)
-{
-  MetaScreen *screen = cinnamon_global_get_screen (screenshot_data->global);
-  cairo_status_t status;
-  cairo_surface_t *image;
-  guchar *data;
-  int width, height;
-
-  meta_plugin_query_screen_size (screenshot_data->global->plugin, &width, &height);
-  image = cairo_image_surface_create (CAIRO_FORMAT_ARGB32, width, height);
-  data = cairo_image_surface_get_data (image);
-
-  cogl_flush();
-
-  cogl_read_pixels (0, 0, width, height, COGL_READ_PIXELS_COLOR_BUFFER, CLUTTER_CAIRO_FORMAT_ARGB32, data);
-
-  cairo_surface_mark_dirty (image);
-
-  if (meta_screen_get_n_monitors (screen) > 1)
-    {
-      cairo_region_t *screen_region = cairo_region_create ();
-      cairo_region_t *stage_region;
-      MetaRectangle monitor_rect;
-      cairo_rectangle_int_t stage_rect;
-      int i;
-      cairo_t *cr;
-
-      for (i = meta_screen_get_n_monitors (screen) - 1; i >= 0; i--)
-        {
-          meta_screen_get_monitor_geometry (screen, i, &monitor_rect);
-          cairo_region_union_rectangle (screen_region, (const cairo_rectangle_int_t *) &monitor_rect);
-        }
-
-      stage_rect.x = 0;
-      stage_rect.y = 0;
-      stage_rect.width = width;
-      stage_rect.height = height;
-
-      stage_region = cairo_region_create_rectangle ((const cairo_rectangle_int_t *) &stage_rect);
-      cairo_region_xor (stage_region, screen_region);
-      cairo_region_destroy (screen_region);
-
-      cr = cairo_create (image);
-
-      for (i = 0; i < cairo_region_num_rectangles (stage_region); i++)
-        {
-          cairo_rectangle_int_t rect;
-          cairo_region_get_rectangle (stage_region, i, &rect);
-          cairo_rectangle (cr, (double) rect.x, (double) rect.y, (double) rect.width, (double) rect.height);
-          cairo_fill (cr);
-        }
-
-      cairo_destroy (cr);
-      cairo_region_destroy (stage_region);
-    }
-
-
-  status = cairo_surface_write_to_png (image, screenshot_data->filename);
-  cairo_surface_destroy (image);
-
-  if (screenshot_data->callback)
-    screenshot_data->callback (screenshot_data->global, status == CAIRO_STATUS_SUCCESS);
-
-  g_signal_handlers_disconnect_by_func (stage, (void *)grab_screenshot, (gpointer)screenshot_data);
-  g_free (screenshot_data->filename);
-  g_free (screenshot_data);
-}
-
-static void
-grab_area_screenshot (ClutterActor *stage,
-                      _screenshot_data *screenshot_data)
-{
-  cairo_status_t status;
-  cairo_surface_t *image = cairo_image_surface_create (CAIRO_FORMAT_ARGB32, screenshot_data->width, screenshot_data->height);
-  guchar *data = cairo_image_surface_get_data (image);
-
-  cogl_flush();
-
-  cogl_read_pixels (screenshot_data->x, screenshot_data->y, screenshot_data->width, screenshot_data->height,
-                    COGL_READ_PIXELS_COLOR_BUFFER, CLUTTER_CAIRO_FORMAT_ARGB32, data);
-
-  cairo_surface_mark_dirty (image);
-  status = cairo_surface_write_to_png (image, screenshot_data->filename);
-  cairo_surface_destroy (image);
-
-  if (screenshot_data->callback)
-    screenshot_data->callback (screenshot_data->global, status == CAIRO_STATUS_SUCCESS);
-
-  g_signal_handlers_disconnect_by_func (stage, (void *)grab_area_screenshot, (gpointer)screenshot_data);
-  g_free (screenshot_data->filename);
-  g_free (screenshot_data);
-}
-
-/**
- * cinnamon_global_screenshot:
- * @global: the #CinnamonGlobal
- * @filename: The filename for the screenshot
- * @callback: (scope async): function to call returning success or failure
- * of the async grabbing
- *
- * Takes a screenshot of the whole screen
- * in @filename as png image.
- *
- */
-void
-cinnamon_global_screenshot (CinnamonGlobal  *global,
-                        const char *filename,
-                        CinnamonGlobalScreenshotCallback callback)
-{
-  ClutterActor *stage;
-  _screenshot_data *data = g_new0 (_screenshot_data, 1);
-
-  data->global = global;
-  data->filename = g_strdup (filename);
-  data->callback = callback;
-
-  stage = CLUTTER_ACTOR (meta_plugin_get_stage (global->plugin));
-
-  g_signal_connect_after (stage, "paint", G_CALLBACK (grab_screenshot), (gpointer)data);
-
-  clutter_actor_queue_redraw (stage);
-}
-
-/**
- * cinnamon_global_screenshot_area:
- * @global: the #CinnamonGlobal
- * @x: The X coordinate of the area
- * @y: The Y coordinate of the area
- * @width: The width of the area
- * @height: The height of the area
- * @filename: The filename for the screenshot
- * @callback: (scope async): function to call returning success or failure
- * of the async grabbing
- *
- * Takes a screenshot of the passed in area and saves it
- * in @filename as png image.
- *
- */
-void
-cinnamon_global_screenshot_area (CinnamonGlobal  *global,
-                              int x,
-                              int y,
-                              int width,
-                              int height,
-                              const char *filename,
-                              CinnamonGlobalScreenshotCallback callback)
-{
-  ClutterActor *stage;
-  _screenshot_data *data = g_new0 (_screenshot_data, 1);
-
-  data->global = global;
-  data->filename = g_strdup (filename);
-  data->x = x;
-  data->y = y;
-  data->width = width;
-  data->height = height;
-  data->callback = callback;
-
-  stage = CLUTTER_ACTOR (meta_plugin_get_stage (global->plugin));
-
-  g_signal_connect_after (stage, "paint", G_CALLBACK (grab_area_screenshot), (gpointer)data);
-
-  clutter_actor_queue_redraw (stage);
-}
-
-/**
- * cinnamon_global_screenshot_window:
- * @global: the #CinnamonGlobal
- * @include_frame: Whether to include the frame or not
- *
- * @filename: The filename for the screenshot
- *
- * Takes a screenshot of the focused window (optionally omitting the frame)
- * in @filename as png image.
- *
- * Return value: success or failure.
- */
-gboolean
-cinnamon_global_screenshot_window (CinnamonGlobal  *global,
-                                gboolean include_frame,
-                                const char *filename)
-{
-  CoglHandle texture;
-  cairo_surface_t *image;
-  guchar *data;
-
-  MetaScreen *screen = meta_plugin_get_screen (global->plugin);
-  MetaDisplay *display = meta_screen_get_display (screen);
-  MetaWindow *window = meta_display_get_focus_window (display);
-  ClutterActor *window_actor;
-
-  cairo_status_t status;
-
-  window_actor = CLUTTER_ACTOR (meta_window_get_compositor_private (window));
-  texture = clutter_texture_get_cogl_texture (CLUTTER_TEXTURE (meta_window_actor_get_texture (META_WINDOW_ACTOR (window_actor))));
-
-  if (!include_frame)
-    {
-      MetaRectangle *window_rect = meta_window_get_rect (window);
-      texture = cogl_texture_new_from_sub_texture (texture,
-                                                   window_rect->x,
-                                                   window_rect->y,
-                                                   window_rect->width,
-                                                   window_rect->height);
-
-      image = cairo_image_surface_create (CAIRO_FORMAT_ARGB32,
-                                          window_rect->width,
-                                          window_rect->height);
-    }
-  else
-    image = cairo_image_surface_create (CAIRO_FORMAT_ARGB32,
-                                        clutter_actor_get_width (window_actor),
-                                        clutter_actor_get_height (window_actor));
-
-  data = cairo_image_surface_get_data (image);
-
-  cogl_flush();
-
-  cogl_texture_get_data (texture, CLUTTER_CAIRO_FORMAT_ARGB32, 0, data);
-
-  cairo_surface_mark_dirty (image);
-  status = cairo_surface_write_to_png (image, filename);
-  cairo_surface_destroy (image);
-
-  return status == CAIRO_STATUS_SUCCESS;
-}
-
-/**
- * cinnamon_global_get_session_type:
- * @global: The #CinnamonGlobal.
- *
- * Gets the type of session cinnamon provides.
- *
- * The type determines what UI elements are displayed,
- * what keybindings work, and generally how Cinnamon
- * behaves.
- *
- * A session type of #CINNAMON_SESSION_USER means cinnamon
- * will enable the activities overview, status menu, run dialog,
- * etc. This is the default.
- *
- * A session type of #CINNAMON_SESSION_GDM means cinnamon
- * will enable a login dialog and run in a more confined
- * way. This type is suitable for the display manager.
- *
- * Returns the type of session cinnamon is providing.
- */
-CinnamonSessionType
-cinnamon_global_get_session_type (CinnamonGlobal  *global)
-{
-  g_return_val_if_fail (CINNAMON_IS_GLOBAL (global),
-                        CINNAMON_SESSION_USER);
-
-  return global->session_type;
 }

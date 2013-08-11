@@ -7,7 +7,6 @@ const Gdk = imports.gi.Gdk;
 const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
 const Lang = imports.lang;
-const Cinnamon = imports.gi.Cinnamon;
 const St = imports.gi.St;
 
 const BoxPointer = imports.ui.boxpointer;
@@ -289,7 +288,7 @@ Keyboard.prototype = {
         if (focus && (focus._extended_keys || (focus._key && focus._key.extended_key)))
             return;
 
-        let time = global.current_event_time();
+        let time = global.get_current_time();
         if (focus instanceof Clutter.Text)
             this.Show(time);
         else
@@ -334,6 +333,15 @@ Keyboard.prototype = {
             trayButton.add_style_pseudo_class('grayed');
         }));
         Main.overview.connect('hiding', Lang.bind(this, function () {
+            trayButton.reactive = true;
+            trayButton.remove_style_pseudo_class('grayed');
+        }));
+
+        Main.expo.connect('showing', Lang.bind(this, function () {
+            trayButton.reactive = false;
+            trayButton.add_style_pseudo_class('grayed');
+        }));
+        Main.expo.connect('hiding', Lang.bind(this, function () {
             trayButton.reactive = true;
             trayButton.remove_style_pseudo_class('grayed');
         }));

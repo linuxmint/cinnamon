@@ -1,0 +1,20 @@
+#! /usr/bin/python -OOt
+
+import sys
+sys.path.insert(0,'/usr/lib/cinnamon-menu-editor')
+from cme import MainWindow
+
+def main():
+	try:
+		from MenuEditor import config
+		datadir = config.pkgdatadir
+		version = config.VERSION
+	except:
+		datadir = '.'
+		version = '0.9'
+	app = MainWindow.MainWindow(datadir, version)
+	app.run()
+
+if __name__ == '__main__':
+	main()
+

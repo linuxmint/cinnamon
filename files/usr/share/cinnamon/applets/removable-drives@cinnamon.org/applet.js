@@ -1,10 +1,7 @@
-const Gio = imports.gi.Gio;
 const Lang = imports.lang;
 const St = imports.gi.St;
 const Cinnamon = imports.gi.Cinnamon;
 const Applet = imports.ui.applet;
-const Gettext = imports.gettext.domain('cinnamon-extensions');
-const _ = Gettext.gettext;
 const Main = imports.ui.main;
 const PopupMenu = imports.ui.popupMenu;
 
@@ -41,38 +38,22 @@ DriveMenuItem.prototype = {
     }
 };
 
-function MyMenu(launcher, orientation) {
-    this._init(launcher, orientation);
-}
-
-MyMenu.prototype = {
-    __proto__: PopupMenu.PopupMenu.prototype,
-    
-    _init: function(launcher, orientation) {
-        this._launcher = launcher;        
-                
-        PopupMenu.PopupMenu.prototype._init.call(this, launcher.actor, 0.0, orientation, 0);
-        Main.uiGroup.add_actor(this.actor);
-        this.actor.hide();            
-    }
-}
-
-function MyApplet(orientation) {
-    this._init(orientation);
+function MyApplet(orientation, panel_height) {
+    this._init(orientation, panel_height);
 }
 
 MyApplet.prototype = {
     __proto__: Applet.IconApplet.prototype,
 
-    _init: function(orientation) {        
-        Applet.IconApplet.prototype._init.call(this, orientation);
+    _init: function(orientation, panel_height) {        
+        Applet.IconApplet.prototype._init.call(this, orientation, panel_height);
         
         try {        
-            this.set_applet_icon_name("media-eject");
+            this.set_applet_icon_symbolic_name("drive-harddisk");
             this.set_applet_tooltip(_("Removable drives"));
             
             this.menuManager = new PopupMenu.PopupMenuManager(this);
-            this.menu = new MyMenu(this, orientation);
+            this.menu = new Applet.AppletPopupMenu(this, orientation);
             this.menuManager.addMenu(this.menu);            
                                             
             this._contentSection = new PopupMenu.PopupMenuSection();
@@ -83,7 +64,7 @@ MyApplet.prototype = {
             this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
             this.menu.addAction(_("Open file manager"), function(event) {
                 let appSystem = Cinnamon.AppSystem.get_default();
-                let app = appSystem.lookup_app('nautilus.desktop');
+                let app = appSystem.lookup_app('nemo.desktop');
                 app.activate_full(-1, event.get_time());
             });     
             
@@ -115,7 +96,7 @@ MyApplet.prototype = {
     
 };
 
-function main(metadata, orientation) {  
-    let myApplet = new MyApplet(orientation);
+function main(metadata, orientation, panel_height) {  
+    let myApplet = new MyApplet(orientation, panel_height);
     return myApplet;      
 }

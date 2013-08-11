@@ -57,7 +57,7 @@ struct _StAdjustment
 };
 
 /**
- * StAdjustmentClass
+ * StAdjustmentClass:
  * @changed: Class handler for the ::changed signal.
  *
  * Base class for #StAdjustment.

@@ -1,16 +1,11 @@
 const Applet = imports.ui.applet;
-const Clutter = imports.gi.Clutter;
-const GdkPixbuf = imports.gi.GdkPixbuf;
 const Gkbd = imports.gi.Gkbd;
-const Gio = imports.gi.Gio;
-const GLib = imports.gi.GLib;
 const Lang = imports.lang;
 const Cinnamon = imports.gi.Cinnamon;
 const St = imports.gi.St;
-
+const Gtk = imports.gi.Gtk;
 const Main = imports.ui.main;
 const PopupMenu = imports.ui.popupMenu;
-const PanelMenu = imports.ui.panelMenu;
 const Util = imports.misc.util;
 
 function LayoutMenuItem() {
@@ -37,65 +32,50 @@ LayoutMenuItem.prototype = {
     }
 };
 
-function MyMenu(launcher, orientation) {
-    this._init(launcher, orientation);
-}
-
-MyMenu.prototype = {
-    __proto__: PopupMenu.PopupMenu.prototype,
-    
-    _init: function(launcher, orientation) {
-        this._launcher = launcher;        
-                
-        PopupMenu.PopupMenu.prototype._init.call(this, launcher.actor, 0.0, orientation, 0);
-        Main.uiGroup.add_actor(this.actor);
-        this.actor.hide();            
-    }
-}
-
-function MyApplet(orientation) {
-    this._init(orientation);
+function MyApplet(metadata, orientation, panel_height) {
+    this._init(metadata, orientation, panel_height);
 }
 
 MyApplet.prototype = {
-    __proto__: Applet.Applet.prototype,
+    __proto__: Applet.TextIconApplet.prototype,
 
-    _init: function(orientation) {        
-        Applet.Applet.prototype._init.call(this, orientation);
+    _init: function(metadata, orientation, panel_height) {        
+        Applet.TextIconApplet.prototype._init.call(this, orientation, panel_height);
         
-        try {                                
+        try {  
+            Gtk.IconTheme.get_default().append_search_path(metadata.path + "/flags");                              
             this.menuManager = new PopupMenu.PopupMenuManager(this);
-            this.menu = new MyMenu(this, orientation);
+            this.menu = new Applet.AppletPopupMenu(this, orientation);
             this.menuManager.addMenu(this.menu);                            
-                        
-            this._container = new Cinnamon.GenericContainer();
-            this._container.connect('get-preferred-width', Lang.bind(this, this._containerGetPreferredWidth));
-            this._container.connect('get-preferred-height', Lang.bind(this, this._containerGetPreferredHeight));
-            this._container.connect('allocate', Lang.bind(this, this._containerAllocate));
-            this.actor.add_actor(this._container);
-            this.actor.add_style_class_name('panel-status-button');
 
-            this._iconActor = new St.Icon({ icon_name: 'keyboard', icon_type: St.IconType.SYMBOLIC, style_class: 'system-status-icon' });
-            this._container.add_actor(this._iconActor);
+            this.actor.add_style_class_name('panel-status-button');            
+
             this._labelActors = [ ];
             this._layoutItems = [ ];
 
-            this._showFlags = false;
+            this._showFlags = global.settings.get_boolean("keyboard-applet-use-flags");
             this._config = Gkbd.Configuration.get();
             this._config.connect('changed', Lang.bind(this, this._syncConfig));
             this._config.connect('group-changed', Lang.bind(this, this._syncGroup));
+            global.settings.connect('changed::keyboard-applet-use-flags', Lang.bind(this, this._reload_settings));
             this._config.start_listen();
 
             this._syncConfig();
 
-            if (global.session_type == Cinnamon.SessionType.USER) {
-                this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-                this.menu.addAction(_("Show Keyboard Layout"), Lang.bind(this, function() {
-                    Main.overview.hide();
-                    Util.spawn(['gkbd-keyboard-display', '-g', String(this._config.get_current_group() + 1)]);
-                }));
-            }
-            this.menu.addSettingsAction(_("Region and Language Settings"), 'gnome-region-panel.desktop'); 
+            this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+            this.menu.addAction(_("Show Keyboard Layout"), Lang.bind(this, function() {
+                Main.overview.hide();
+                Util.spawn(['gkbd-keyboard-display', '-g', String(this._config.get_current_group() + 1)]);
+            }));                                
+            this.menu.addAction(_("Show Character Table"), Lang.bind(this, function() {
+                Main.overview.hide();
+                Util.spawn(['gucharmap']);
+            }));
+            this.menu.addSettingsAction(_("Region and Language Settings"), 'region'); 
+            
+            this.show_flags_switch = new PopupMenu.PopupSwitchMenuItem(_("Show flags"), this._showFlags);
+            this._applet_context_menu.addMenuItem(this.show_flags_switch);            
+            this.show_flags_switch.connect('toggled', Lang.bind(this, this._toggle_flags));
                       
         }
         catch (e) {
@@ -105,6 +85,21 @@ MyApplet.prototype = {
     
     on_applet_clicked: function(event) {
         this.menu.toggle();        
+    },
+    
+    _toggle_flags: function() {
+        if (this._showFlags) {            
+            this.show_flags_switch.setToggleState(false);
+            global.settings.set_boolean("keyboard-applet-use-flags", false);
+        } else {
+            this.show_flags_switch.setToggleState(true);
+            global.settings.set_boolean("keyboard-applet-use-flags", true);
+        }
+    },
+    
+    _reload_settings: function() {
+        this._showFlags = global.settings.get_boolean("keyboard-applet-use-flags");
+        this._syncConfig();
     },
     
    _adjustGroupNames: function(names) {
@@ -130,12 +125,7 @@ MyApplet.prototype = {
     },
 
     _syncConfig: function() {
-        this._showFlags = this._config.if_flags_shown();
-        if (this._showFlags) {
-            this._container.set_skip_paint(this._iconActor, false);
-        } else {
-            this._container.set_skip_paint(this._iconActor, true);
-        }
+        this._showFlags = global.settings.get_boolean("keyboard-applet-use-flags");
 
         let groups = this._config.get_group_names();
         if (groups.length > 1) {
@@ -155,13 +145,12 @@ MyApplet.prototype = {
 
         this._selectedLayout = null;
         this._layoutItems = [ ];
-        this._selectedLabel = null;
         this._labelActors = [ ];
         for (let i = 0; i < groups.length; i++) {
             let icon_name = this._config.get_group_name(i);
             let actor;
             if (this._showFlags)
-                actor = new St.Icon({ icon_name: icon_name, icon_type: St.IconType.SYMBOLIC, style_class: 'popup-menu-icon' });
+                actor = new St.Icon({ icon_name: icon_name, icon_type: St.IconType.FULLCOLOR, style_class: 'popup-menu-icon' });
             else
                 actor = new St.Label({ text: short_names[i] });
             let item = new LayoutMenuItem(this._config, i, actor, groups[i]);
@@ -172,8 +161,6 @@ MyApplet.prototype = {
 
             let shortLabel = new St.Label({ text: short_names[i] });
             this._labelActors.push(shortLabel);
-            this._container.add_actor(shortLabel);
-            this._container.set_skip_paint(shortLabel, true);
         }
 
         this._syncGroup();
@@ -187,73 +174,24 @@ MyApplet.prototype = {
             this._selectedLayout = null;
         }
 
-        if (this._selectedLabel) {
-            this._container.set_skip_paint(this._selectedLabel, true);
-            this._selectedLabel = null;
-        }
-
         let item = this._layoutItems[selected];
         item.setShowDot(true);
 
-        this._iconActor.icon_name = item._icon_name;
-        this._selectedLabel = this._labelActors[selected];
-        this._container.set_skip_paint(this._selectedLabel, this._showFlags);
+        let selectedLabel = this._labelActors[selected];
+
+        if (this._showFlags) {
+            this.set_applet_icon_name(item._icon_name);
+            this.set_applet_label("");
+        } else {
+            this.hide_applet_icon();
+            this.set_applet_label(selectedLabel.text);
+        }       
 
         this._selectedLayout = item;
-    },
-
-    _containerGetPreferredWidth: function(container, for_height, alloc) {
-        // Here, and in _containerGetPreferredHeight, we need to query
-        // for the height of all children, but we ignore the results
-        // for those we don't actually display.
-        let max_min_width = 0, max_natural_width = 0;
-        if (this._showFlags)
-            [max_min_width, max_natural_width] = this._iconActor.get_preferred_width(for_height);
-
-        for (let i = 0; i < this._labelActors.length; i++) {
-            let [min_width, natural_width] = this._labelActors[i].get_preferred_width(for_height);
-            if (!this._showFlags) {
-                max_min_width = Math.max(max_min_width, min_width);
-                max_natural_width = Math.max(max_natural_width, natural_width);
-            }
-        }
-
-        alloc.min_size = max_min_width;
-        alloc.natural_size = max_natural_width;
-    },
-
-    _containerGetPreferredHeight: function(container, for_width, alloc) {
-        let max_min_height = 0, max_natural_height = 0;
-        if (this._showFlags)
-            [max_min_height, max_natural_height] = this._iconActor.get_preferred_height(for_width);
-        
-        for (let i = 0; i < this._labelActors.length; i++) {
-            let [min_height, natural_height] = this._labelActors[i].get_preferred_height(for_width);
-            if (!this._showFlags) {
-                max_min_height = Math.max(max_min_height, min_height);
-                max_natural_height = Math.max(max_natural_height, natural_height);
-            }
-        }
-
-        alloc.min_size = max_min_height;
-        alloc.natural_size = max_natural_height;
-    },
-
-    _containerAllocate: function(container, box, flags) {
-        // translate box to (0, 0)
-        box.x2 -= box.x1;
-        box.x1 = 0;
-        box.y2 -= box.y1;
-        box.y1 = 0;
-
-        this._iconActor.allocate_align_fill(box, 0.5, 0, false, false, flags);
-        for (let i = 0; i < this._labelActors.length; i++)
-            this._labelActors[i].allocate_align_fill(box, 0.5, 0, false, false, flags);
-    }
-    
+    }    
 };
 
-function main(metadata, orientation) {  
-    let myApplet = new MyApplet(orientation);
+function main(metadata, orientation, panel_height) {  
+    let myApplet = new MyApplet(metadata, orientation, panel_height);
     return myApplet;      
 }

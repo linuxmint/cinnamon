@@ -52,7 +52,8 @@ cinnamon_doc_system_get_all (CinnamonDocSystem    *self)
 }
 
 /**
- * @self: A #CinnamonDocSystem
+ * cinnamon_doc_system_lookup_by_uri:
+ * @system: A #CinnamonDocSystem
  * @uri: Url
  *
  * Returns: (transfer none): Recent file info corresponding to given @uri

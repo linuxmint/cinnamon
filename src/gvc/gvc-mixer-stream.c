@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street - Suite 500, Boston, MA 02110-1335, USA.
  *
  */
 
@@ -130,7 +130,6 @@ gvc_mixer_stream_get_channel_map (GvcMixerStream *stream)
 
 /**
  * gvc_mixer_stream_get_volume:
- *
  * @stream:
  *
  * Returns: (type guint32) (transfer none):
@@ -154,7 +153,6 @@ gvc_mixer_stream_get_decibel (GvcMixerStream *stream)
 
 /**
  * gvc_mixer_stream_set_volume:
- *
  * @stream:
  * @volume: (type guint32):
  *
@@ -420,7 +418,6 @@ gvc_mixer_stream_set_icon_name (GvcMixerStream *stream,
 
 /**
  * gvc_mixer_stream_get_base_volume:
- *
  * @stream:
  *
  * Returns: (type guint32) (transfer none):
@@ -435,7 +432,6 @@ gvc_mixer_stream_get_base_volume (GvcMixerStream *stream)
 
 /**
  * gvc_mixer_stream_set_base_volume:
- *
  * @stream:
  * @base_volume: (type guint32):
  *

@@ -4,8 +4,10 @@ const DBus = imports.dbus;
 const Lang = imports.lang;
 
 const Config = imports.misc.config;
-const ExtensionSystem = imports.ui.extensionSystem;
+const Flashspot = imports.ui.flashspot;
 const Main = imports.ui.main;
+const AppletManager = imports.ui.appletManager;
+const DeskletManager = imports.ui.deskletManager;
 
 const CinnamonIface = {
     name: 'org.Cinnamon',
@@ -13,55 +15,58 @@ const CinnamonIface = {
                 inSignature: 's',
                 outSignature: 'bs'
               },
-              { name: 'ListExtensions',
-                inSignature: '',
-                outSignature: 'a{sa{sv}}'
-              },
-              { name: 'GetExtensionInfo',
-                inSignature: 's',
-                outSignature: 'a{sv}'
-              },
-              { name: 'GetExtensionErrors',
-                inSignature: 's',
-                outSignature: 'as'
-              },
               { name: 'ScreenshotArea',
-                inSignature: 'iiiis',
-                outSignature: 'b'
+                inSignature: 'biiiibs',
+                outSignature: ''
               },
               { name: 'ScreenshotWindow',
-                inSignature: 'bs',
-                outSignature: 'b'
+                inSignature: 'bbbs',
+                outSignature: ''
               },
               { name: 'Screenshot',
-                inSignature: 's',
-                outSignature: 'b'
-              },
-              { name: 'EnableExtension',
-                inSignature: 's',
+                inSignature: 'bbs',
                 outSignature: ''
               },
-              { name: 'DisableExtension',
-                inSignature: 's',
+              {
+                name: 'FlashArea',
+                inSignature: 'iiii',
                 outSignature: ''
               },
-              { name: 'InstallRemoteExtension',
-                inSignature: 'ss',
+              {
+                name: 'highlightApplet',
+                inSignature: 'sb',
                 outSignature: ''
               },
-              { name: 'UninstallExtension',
-                inSignature: 's',
-                outSignature: 'b'
+              {
+                name: 'activateCallback',
+                inSignature: 'ssb',
+                outSignature: ''
+              },
+              {
+                name: 'switchWorkspaceRight',
+                inSignature: '',
+                outSignature: ''
+              },
+              {
+                name: 'switchWorkspaceLeft',
+                inSignature: '',
+                outSignature: ''
+              },
+              {
+                name: 'switchWorkspaceUp',
+                inSignature: '',
+                outSignature: ''
+              },
+              {
+                name: 'switchWorkspaceDown',
+                inSignature: '',
+                outSignature: ''
               }
              ],
-    signals: [{ name: 'ExtensionStatusChanged',
-                inSignature: 'sis' }],
+    signals: [],
     properties: [{ name: 'OverviewActive',
                    signature: 'b',
                    access: 'readwrite' },
-                 { name: 'ApiVersion',
-                   signature: 'i',
-                   access: 'read' },
                  { name: 'CinnamonVersion',
                    signature: 's',
                    access: 'read' }]
@@ -74,8 +79,6 @@ function Cinnamon() {
 Cinnamon.prototype = {
     _init: function() {
         DBus.session.exportObject('/org/Cinnamon', this);
-        ExtensionSystem.connect('extension-state-changed',
-                                Lang.bind(this, this._extensionStateChanged));
     },
 
     /**
@@ -108,12 +111,24 @@ Cinnamon.prototype = {
         return [success, returnValue];
     },
 
+    _onScreenshotComplete: function(obj, result, area, flash, invocation) {
+        if (flash) {
+            let flashspot = new Flashspot.Flashspot(area);
+            flashspot.fire();
+        }
+
+        let retval = GLib.Variant.new('(b)', [result]);
+        invocation.return_value(retval);
+    },
+
     /**
      * ScreenshotArea:
+     * @include_cursor: Whether to include the mouse cursor
      * @x: The X coordinate of the area
      * @y: The Y coordinate of the area
      * @width: The width of the area
      * @height: The height of the area
+     * @flash: Whether to flash the edges of area
      * @filename: The filename for the screenshot
      *
      * Takes a screenshot of the passed in area and saves it
@@ -121,13 +136,19 @@ Cinnamon.prototype = {
      * indicating whether the operation was successful or not.
      *
      */
-    ScreenshotAreaAsync : function (x, y, width, height, filename, callback) {
-        global.screenshot_area (x, y, width, height, filename, function (obj, result) { callback(result); });
+    ScreenshotAreaAsync : function (params, invocation) {
+        let [include_cursor, x, y, width, height, flash, filename, callback] = params;
+        let screenshot = new Cinnamon.Screenshot();
+        screenshot.screenshot_area (include_cursor, x, y, width, height, filename,
+                                Lang.bind(this, this._onScreenshotComplete,
+                                          flash, invocation));
     },
 
     /**
      * ScreenshotWindow:
      * @include_frame: Whether to include the frame or not
+     * @include_cursor: Whether to include the mouse cursor
+     * @flash: Whether to flash the edges of the window
      * @filename: The filename for the screenshot
      *
      * Takes a screenshot of the focused window (optionally omitting the frame)
@@ -135,12 +156,18 @@ Cinnamon.prototype = {
      * indicating whether the operation was successful or not.
      *
      */
-    ScreenshotWindow : function (include_frame, filename) {
-        return global.screenshot_window (include_frame, filename);
+    ScreenshotWindowAsync : function (params, invocation) {
+        let [include_frame, include_cursor, flash, filename] = params;
+        let screenshot = new Cinnamon.Screenshot();
+        screenshot.screenshot_window (include_frame, include_cursor, filename,
+                                      Lang.bind(this, this._onScreenshotComplete,
+                                                flash, invocation));
     },
 
     /**
      * Screenshot:
+     * @include_cursor: Whether to include the mouse cursor
+     * @flash: Whether to flash the edges of the screen
      * @filename: The filename for the screenshot
      *
      * Takes a screenshot of the whole screen and saves it
@@ -148,42 +175,17 @@ Cinnamon.prototype = {
      * indicating whether the operation was successful or not.
      *
      */
-    ScreenshotAsync : function (filename, callback) {
-        global.screenshot(filename, function (obj, result) { callback(result); });
+    ScreenshotAsync : function (params, invocation) {
+        let [include_cursor, flash, filename] = params;
+        let screenshot = new Cinnamon.Screenshot();
+        screenshot.screenshot(include_cursor, filename,
+                          Lang.bind(this, this._onScreenshotComplete,
+                                    flash, invocation));
     },
 
-    ListExtensions: function() {
-        return ExtensionSystem.extensionMeta;
-    },
-
-    GetExtensionInfo: function(uuid) {
-        return ExtensionSystem.extensionMeta[uuid] || {};
-    },
-
-    GetExtensionErrors: function(uuid) {
-        return ExtensionSystem.errors[uuid] || [];
-    },
-
-    EnableExtension: function(uuid) {
-        let enabledExtensions = global.settings.get_strv(ExtensionSystem.ENABLED_EXTENSIONS_KEY);
-        if (enabledExtensions.indexOf(uuid) == -1)
-            enabledExtensions.push(uuid);
-        global.settings.set_strv(ExtensionSystem.ENABLED_EXTENSIONS_KEY, enabledExtensions);
-    },
-
-    DisableExtension: function(uuid) {
-        let enabledExtensions = global.settings.get_strv(ExtensionSystem.ENABLED_EXTENSIONS_KEY);
-        while (enabledExtensions.indexOf(uuid) != -1)
-            enabledExtensions.splice(enabledExtensions.indexOf(uuid), 1);
-        global.settings.set_strv(ExtensionSystem.ENABLED_EXTENSIONS_KEY, enabledExtensions);
-    },
-
-    InstallRemoteExtension: function(uuid, version_tag) {
-        ExtensionSystem.installExtensionFromUUID(uuid, version_tag);
-    },
-
-    UninstallExtension: function(uuid) {
-        return ExtensionSystem.uninstallExtensionFromUUID(uuid);
+    FlashArea: function(x, y, width, height) {
+        let flashspot = new Flashspot.Flashspot({ x : x, y : y, width: width, height: height});
+        flashspot.fire();
     },
 
     get OverviewActive() {
@@ -197,16 +199,56 @@ Cinnamon.prototype = {
             Main.overview.hide();
     },
 
-    ApiVersion: ExtensionSystem.API_VERSION,
+    _getXletObject: function(id, id_is_instance) {
+        let obj = null;
+        if (id_is_instance) {
+            obj = AppletManager.get_object_for_instance(id)
+            if (!obj)
+                obj = DeskletManager.get_object_for_instance(id)
+        } else {
+            obj = AppletManager.get_object_for_uuid(id)
+            if (!obj)
+                obj = DeskletManager.get_object_for_uuid(id)
+        }
+        return obj
+    },
 
-    CinnamonVersion: Config.PACKAGE_VERSION,
+    highlightApplet: function(id, id_is_instance) {
+        let obj = this._getXletObject(id, id_is_instance);
+        if (!obj)
+            return;
+        let actor = obj.actor;
 
-    _extensionStateChanged: function(_, newState) {
-        DBus.session.emit_signal('/org/Cinnamon',
-                                 'org.Cinnamon',
-                                 'ExtensionStatusChanged', 'sis',
-                                 [newState.uuid, newState.state, newState.error]);
-    }
+        if (actor) {
+            let [x, y] = actor.get_transformed_position();
+            let [w, h] = actor.get_transformed_size();
+            this.FlashArea(x, y, w, h)
+        }
+    },
+
+    activateCallback: function(callback, id, id_is_instance) {
+        let obj = this._getXletObject(id, id_is_instance);
+        let cb = Lang.bind(obj, obj[callback]);
+        cb();
+    },
+
+    switchWorkspaceLeft: function() {
+        Main.wm.actionMoveWorkspaceLeft();
+    },
+
+    switchWorkspaceRight: function() {
+        Main.wm.actionMoveWorkspaceRight();
+    },
+
+    switchWorkspaceUp: function() {
+        Main.overview.toggle();
+    },
+
+    switchWorkspaceDown: function() {
+        Main.expo.toggle();
+    },
+
+    CinnamonVersion: Config.PACKAGE_VERSION
 };
 
 DBus.conformExport(Cinnamon.prototype, CinnamonIface);

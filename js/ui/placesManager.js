@@ -8,8 +8,8 @@ const Mainloop = imports.mainloop;
 const Signals = imports.signals;
 const St = imports.gi.St;
 
-const DND = imports.ui.dnd;
 const Main = imports.ui.main;
+const MessageTray = imports.ui.messageTray;
 const Params = imports.misc.params;
 const Search = imports.ui.search;
 const Util = imports.misc.util;
@@ -118,9 +118,16 @@ PlaceDeviceInfo.prototype = {
                 this._mount.unmount_finish(res);
         } catch (e) {
             let message = _("Failed to unmount '%s'").format(o.get_name());
-            Main.overview.setMessage(message,
-                                     Lang.bind(this, this.remove),
-                                     _("Retry"));
+            let source = new MessageTray.SystemNotificationSource();
+            if (Main.messageTray) {
+                Main.messageTray.add(source);
+                let notification = new MessageTray.Notification(source, message, null);
+                notification.setTransient(true);
+
+                notification.addButton('system-undo', _("Retry"));
+                notification.connect('action-invoked', Lang.bind(this, this.remove));
+                source.notify(notification);
+            }
         }
     }
 };
@@ -167,11 +174,11 @@ PlacesManager.prototype = {
                                      icon_size: size });
             },
             function (params) {
-                // BUG: nautilus-connect-server doesn't have a desktop file, so we can't
+                // BUG: nemo-connect-server doesn't have a desktop file, so we can't
                 // launch it with the workspace from params. It's probably pretty rare
                 // and odd to drag this place onto a workspace in any case
 
-                Util.spawn(['nautilus-connect-server']);
+                Util.spawn(['nemo-connect-server']);
             });
 
         this._defaultPlaces.push(this._home);
@@ -179,7 +186,7 @@ PlacesManager.prototype = {
         this._defaultPlaces.push(this._connect);
 
         /*
-        * Show devices, code more or less ported from nautilus-places-sidebar.c
+        * Show devices, code more or less ported from nemo-places-sidebar.c
         */
         this._volumeMonitor = Gio.VolumeMonitor.get();
         this._volumeMonitor.connect('volume-added', Lang.bind(this, this._updateDevices));
@@ -193,11 +200,17 @@ PlacesManager.prototype = {
         this._volumeMonitor.connect('drive-changed', Lang.bind(this, this._updateDevices));
         this._updateDevices();
 
-        this._bookmarksPath = GLib.build_filenamev([GLib.get_home_dir(), '.gtk-bookmarks']);
+        this._bookmarksPath = GLib.build_filenamev([GLib.get_user_config_dir(), 'gtk-3.0', 'bookmarks']);
         this._bookmarksFile = Gio.file_new_for_path(this._bookmarksPath);
-        let monitor = this._bookmarksFile.monitor_file(Gio.FileMonitorFlags.NONE, null);
+
+        if (!this._bookmarksFile.query_exists(null)) {
+            this._bookmarksPath = GLib.build_filenamev([GLib.get_home_dir(), '.gtk-bookmarks']);
+            this._bookmarksFile = Gio.file_new_for_path(this._bookmarksPath);
+        }
+
+        this.monitor = this._bookmarksFile.monitor_file(Gio.FileMonitorFlags.NONE, null);
         this._bookmarkTimeoutId = 0;
-        monitor.connect('changed', Lang.bind(this, function () {
+        this.monitor.connect('changed', Lang.bind(this, function () {
             if (this._bookmarkTimeoutId > 0)
                 return;
             /* Defensive event compression */
@@ -291,21 +304,36 @@ PlacesManager.prototype = {
             let bookmark = bookmarksOrder[i];
             let label = bookmarksToLabel[bookmark];
             let file = Gio.file_new_for_uri(bookmark);
-            if (!file.query_exists(null))
-                continue;
             if (label == null)
                 label = Cinnamon.util_get_label_for_uri(bookmark);
             if (label == null)
                 continue;
-            let icon = Cinnamon.util_get_icon_for_uri(bookmark);
-
-            let item = new PlaceInfo('bookmark:' + bookmark, label,
-                function(size) {
-                    return St.TextureCache.get_default().load_gicon(null, icon, size);
-                },
-                function(params) {
-                    Gio.app_info_launch_default_for_uri(bookmark, _makeLaunchContext(params));
-                });
+            
+            let item; 
+            if (file.query_exists(null)) {
+                let icon = Cinnamon.util_get_icon_for_uri(bookmark);
+                item = new PlaceInfo('bookmark:' + bookmark, label,
+                        function(size) {
+                            return St.TextureCache.get_default().load_gicon(null, icon, size);
+                        },
+                        function(params) {
+                            Gio.app_info_launch_default_for_uri(bookmark, _makeLaunchContext(params));
+                        });
+            } else {
+                // Asume the bookmark is an unmounted network location
+                // try to mount and open by the default file manager 
+                let icon = Gio.ThemedIcon.new('gnome-fs-network');          
+                item = new PlaceInfo('bookmark:' + bookmark, label,
+                        function(size) {
+                            return St.TextureCache.get_default().load_gicon(null, icon, size);
+                        },
+                        function(params) {
+                            let fileapp = Gio.app_info_get_default_for_uri_scheme('file');
+                            if (fileapp) {    
+                                fileapp.launch_uris([bookmark], _makeLaunchContext(params));
+                            }
+                        });
+            }                  
             this._bookmarks.push(item);
         }
 
@@ -372,7 +400,7 @@ PlaceSearchProvider.prototype = {
     __proto__: Search.SearchProvider.prototype,
 
     _init: function() {
-        Search.SearchProvider.prototype._init.call(this, _("PLACES & DEVICES"));
+        Search.SearchProvider.prototype._init.call(this, "PLACES & DEVICES");
     },
 
     getResultMeta: function(resultId) {

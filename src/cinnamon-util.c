@@ -75,8 +75,6 @@ cinnamon_util_get_file_display_name_if_mount (GFile *file)
   return ret;
 }
 
-#define HOME_NAME_SCHEMA        "org.gnome.nautilus.desktop"
-#define HOME_NAME_KEY           "home-icon-name"
 static char *
 cinnamon_util_get_file_display_for_common_files (GFile *file)
 {
@@ -85,33 +83,18 @@ cinnamon_util_get_file_display_for_common_files (GFile *file)
   compare = g_file_new_for_path (g_get_home_dir ());
   if (g_file_equal (file, compare))
     {
-      GSettings *settings;
-      char *name;
-
       g_object_unref (compare);
-
-      settings = g_settings_new (HOME_NAME_SCHEMA);
-      name = g_settings_get_string (settings, HOME_NAME_KEY);
-      g_object_unref (settings);
-
-      if (!(name && name[0]))
-        {
-          g_free (name);
-          return g_strdup (_("Home Folder"));
-        }
-      else
-        {
-          return name;
-        }
+      /* Translators: this is the same string as the one found in
+       * nemo */
+      return g_strdup (_("Home"));
     }
-  g_object_unref (compare);
 
   compare = g_file_new_for_path ("/");
   if (g_file_equal (file, compare))
     {
       g_object_unref (compare);
       /* Translators: this is the same string as the one found in
-       * nautilus */
+       * nemo */
       return g_strdup (_("File System"));
     }
   g_object_unref (compare);

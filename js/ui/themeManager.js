@@ -5,6 +5,7 @@ const GLib = imports.gi.GLib;
 const Gio = imports.gi.Gio;
 const Lang = imports.lang;
 const Main = imports.ui.main;
+const Signals = imports.signals;
 
 const SETTINGS_SCHEMA = 'org.cinnamon.theme';
 const SETTINGS_KEY = 'name';
@@ -57,5 +58,7 @@ ThemeManager.prototype = {
             global.log('loading default theme');
         Main.setThemeStylesheet(_stylesheet);
         Main.loadTheme();
+        this.emit("theme-set");
     }
 };
+Signals.addSignalMethods(ThemeManager.prototype);

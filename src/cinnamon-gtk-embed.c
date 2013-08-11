@@ -136,10 +136,11 @@ cinnamon_gtk_embed_get_preferred_width (ClutterActor *actor,
   if (embed->priv->window
       && gtk_widget_get_visible (GTK_WIDGET (embed->priv->window)))
     {
-      GtkRequisition requisition;
-      gtk_widget_size_request (GTK_WIDGET (embed->priv->window), &requisition);
+      GtkRequisition min_req, natural_req;
+      gtk_widget_get_preferred_size (GTK_WIDGET (embed->priv->window), &min_req, &natural_req);
 
-      *min_width_p = *natural_width_p = requisition.width;
+      *min_width_p = min_req.width;
+      *natural_width_p = natural_req.width;
     }
   else
     *min_width_p = *natural_width_p = 0;
@@ -156,10 +157,11 @@ cinnamon_gtk_embed_get_preferred_height (ClutterActor *actor,
   if (embed->priv->window
       && gtk_widget_get_visible (GTK_WIDGET (embed->priv->window)))
     {
-      GtkRequisition requisition;
-      gtk_widget_size_request (GTK_WIDGET (embed->priv->window), &requisition);
+      GtkRequisition min_req, natural_req;
+      gtk_widget_get_preferred_size (GTK_WIDGET (embed->priv->window), &min_req, &natural_req);
 
-      *min_height_p = *natural_height_p = requisition.height;
+      *min_height_p = min_req.height;
+      *natural_height_p = natural_req.height;
     }
   else
     *min_height_p = *natural_height_p = 0;
@@ -210,8 +212,9 @@ static void
 cinnamon_gtk_embed_unrealize (ClutterActor *actor)
 {
   CinnamonGtkEmbed *embed = CINNAMON_GTK_EMBED (actor);
-
-  _cinnamon_embedded_window_unrealize (embed->priv->window);
+  
+  if (embed->priv->window)
+    _cinnamon_embedded_window_unrealize (embed->priv->window);
 
   CLUTTER_ACTOR_CLASS (cinnamon_gtk_embed_parent_class)->unrealize (actor);
 }

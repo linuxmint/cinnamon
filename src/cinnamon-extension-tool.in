@@ -110,7 +110,6 @@ Examples are: "Make windows visible on click", "Block advertisement popups"
     description = raw_input('Description: ').strip()
     underifier = re.compile('[^A-Za-z]')
     sample_uuid = underifier.sub('_', name)
-    # TODO use evolution data server
     hostname = socket.gethostname()
     sample_uuid = sample_uuid + '@' + hostname
 
@@ -148,5 +147,6 @@ use an extension title clicktofocus@janedoe.example.com.'''
         f.close()
 
     print "Created extension in %r" % (extension_path, )
-    subprocess.Popen(['gnome-open', extensionjs_path])
+    extensionjs_path = os.path.join(extension_path, 'extension.js')
+    subprocess.Popen(['xdg-open', extensionjs_path])
     sys.exit(0)

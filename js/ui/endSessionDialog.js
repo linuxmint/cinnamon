@@ -31,8 +31,6 @@ const St = imports.gi.St;
 const Cinnamon = imports.gi.Cinnamon;
 
 const GnomeSession = imports.misc.gnomeSession
-const Lightbox = imports.ui.lightbox;
-const Main = imports.ui.main;
 const ModalDialog = imports.ui.modalDialog;
 const Tweener = imports.ui.tweener;
 
@@ -274,6 +272,10 @@ EndSessionDialog.prototype = {
         this.contentLayout.add(mainContentLayout,
                                { x_fill: true,
                                  y_fill: false });
+
+		// Ensure we have some sort of keyboard usability; the keyboard user will have to tab
+        // to the button of choice.
+        this.setInitialKeyFocus(mainContentLayout);
 
         this._iconBin = new St.Bin();
         mainContentLayout.add(this._iconBin,

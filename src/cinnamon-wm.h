@@ -31,6 +31,8 @@ void     cinnamon_wm_completed_minimize         (CinnamonWM         *wm,
                                               MetaWindowActor *actor);
 void     cinnamon_wm_completed_maximize         (CinnamonWM         *wm,
                                               MetaWindowActor *actor);
+void     cinnamon_wm_completed_tile             (CinnamonWM         *wm,
+                                              MetaWindowActor *actor);
 void     cinnamon_wm_completed_unmaximize       (CinnamonWM         *wm,
                                               MetaWindowActor *actor);
 void     cinnamon_wm_completed_map              (CinnamonWM         *wm,
@@ -38,10 +40,6 @@ void     cinnamon_wm_completed_map              (CinnamonWM         *wm,
 void     cinnamon_wm_completed_destroy          (CinnamonWM         *wm,
                                               MetaWindowActor *actor);
 void     cinnamon_wm_completed_switch_workspace (CinnamonWM         *wm);
-
-/* Keybinding stuff */
-void cinnamon_wm_takeover_keybinding (CinnamonWM    *wm,
-				   const char *binding_name);
 
 G_END_DECLS
 

@@ -2,43 +2,53 @@
 jsdir = $(pkgdatadir)/js
 
 nobase_dist_js_DATA = \
-	gdm/batch.js		\
-	gdm/consoleKit.js	\
-	gdm/fingerprint.js	\
-	gdm/loginDialog.js	\
-	gdm/powerMenu.js	\
 	misc/config.js		\
 	misc/docInfo.js		\
 	misc/fileUtils.js	\
 	misc/format.js		\
 	misc/gnomeSession.js	\
+	misc/gridNavigator.js	\
 	misc/history.js		\
 	misc/modemManager.js	\
 	misc/params.js		\
+	misc/pointerTracker.js	\
 	misc/screenSaver.js     \
 	misc/util.js		\
+	misc/windowUtils.js		\
 	perf/core.js		\
-	ui/altTab.js		\
+	ui/appSwitcher/appSwitcher.js	\
+	ui/appSwitcher/appSwitcher3D.js	\
+	ui/appSwitcher/classicSwitcher.js	\
+	ui/appSwitcher/coverflowSwitcher.js	\
+	ui/appSwitcher/timelineSwitcher.js	\
 	ui/applet.js		\
 	ui/appletManager.js	\
 	ui/appFavorites.js	\
 	ui/automountManager.js  \
 	ui/autorunManager.js    \
 	ui/boxpointer.js	\
-	ui/calendar.js		\	
+	ui/calendar.js		\
+	ui/checkBox.js		\
+	ui/radioButton.js	\
+	ui/desklet.js		\
+	ui/deskletManager.js	\
 	ui/dnd.js		\
+	ui/edgeFlip.js  	\
 	ui/endSessionDialog.js	\
 	ui/environment.js	\
 	ui/expo.js		\
 	ui/expoThumbnail.js	\
-	ui/expoView.js		\
+	ui/extension.js	\
 	ui/extensionSystem.js	\
-	ui/iconGrid.js		\
+	ui/flashspot.js		\
+	ui/hotCorner.js		\
+    ui/keybindings.js   \
 	ui/keyboard.js		\
 	ui/layout.js		\
 	ui/lightbox.js		\
 	ui/link.js		\
 	ui/lookingGlass.js	\
+	ui/lookingGlassDBus.js	\
 	ui/magnifier.js		\
 	ui/magnifierDBus.js	\
 	ui/main.js		\
@@ -49,7 +59,7 @@ nobase_dist_js_DATA = \
 	ui/cinnamonMountOperation.js \
 	ui/notificationDaemon.js \
 	ui/overview.js		\
-	ui/panel.js		\	
+	ui/panel.js		\
 	ui/panelMenu.js		\
 	ui/placesManager.js  \
 	ui/polkitAuthenticationAgent.js \
@@ -57,16 +67,14 @@ nobase_dist_js_DATA = \
 	ui/runDialog.js		\
 	ui/scripting.js		\
 	ui/search.js		\
+	ui/settings.js		\
 	ui/cinnamonDBus.js		\
 	ui/statusIconDispatcher.js	\
 	ui/themeManager.js	\
 	ui/tooltips.js	\
 	ui/tweener.js		\
-	ui/viewSelector.js	\
 	ui/windowAttentionHandler.js	\
 	ui/windowManager.js	\
 	ui/workspace.js		\
-	ui/workspaceThumbnail.js	\
 	ui/workspacesView.js	\
 	ui/xdndHandler.js
-	

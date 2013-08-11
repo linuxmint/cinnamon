@@ -343,6 +343,8 @@ cinnamon_app_get_name (CinnamonApp *app)
 {
   if (app->entry)
     return g_app_info_get_name (G_APP_INFO (gmenu_tree_entry_get_app_info (app->entry)));
+  else if (app->running_state == NULL)
+    return _("Unknown");
   else
     {
       MetaWindow *window = window_backed_app_get_window (app);
@@ -1081,6 +1083,7 @@ cinnamon_app_launch (CinnamonApp     *app,
   gboolean ret;
   CinnamonGlobal *global;
   MetaScreen *screen;
+  GdkDisplay *gdisplay;
 
   if (startup_id)
     *startup_id = NULL;
@@ -1099,6 +1102,7 @@ cinnamon_app_launch (CinnamonApp     *app,
 
   global = cinnamon_global_get ();
   screen = cinnamon_global_get_screen (global);
+  gdisplay = gdk_screen_get_display (cinnamon_global_get_gdk_screen (global));
 
   if (timestamp == 0)
     timestamp = cinnamon_global_get_current_time (global);
@@ -1106,14 +1110,14 @@ cinnamon_app_launch (CinnamonApp     *app,
   if (workspace < 0)
     workspace = meta_screen_get_active_workspace_index (screen);
 
-  context = gdk_app_launch_context_new ();
+  context = gdk_display_get_app_launch_context (gdisplay);
   gdk_app_launch_context_set_timestamp (context, timestamp);
   gdk_app_launch_context_set_desktop (context, workspace);
 
   gapp = gmenu_tree_entry_get_app_info (app->entry);
   ret = g_desktop_app_info_launch_uris_as_manager (gapp, uris,
                                                    G_APP_LAUNCH_CONTEXT (context),
-                                                   G_SPAWN_SEARCH_PATH | G_SPAWN_DO_NOT_REAP_CHILD,
+                                                   G_SPAWN_SEARCH_PATH | G_SPAWN_DO_NOT_REAP_CHILD | G_SPAWN_STDOUT_TO_DEV_NULL  | G_SPAWN_STDERR_TO_DEV_NULL,
                                                    NULL, NULL,
                                                    _gather_pid_callback, app,
                                                    error);
@@ -1261,13 +1265,16 @@ _cinnamon_app_match_search_terms (CinnamonApp  *app,
             current_match = MATCH_SUBSTRING;
         }
 
-      p = strstr (app->casefolded_exec, term);
-      if (p != NULL)
+      if (app->casefolded_exec)
         {
-          if (p == app->casefolded_exec || *(p - 1) == '-')
-            current_match = MATCH_PREFIX;
-          else if (current_match < MATCH_PREFIX)
-            current_match = MATCH_SUBSTRING;
+          p = strstr (app->casefolded_exec, term);
+          if (p != NULL)
+            {
+              if (p == app->casefolded_exec || *(p - 1) == '-')
+                current_match = MATCH_PREFIX;
+              else if (current_match < MATCH_PREFIX)
+                current_match = MATCH_SUBSTRING;
+            }
         }
 
       if (app->casefolded_description && current_match < MATCH_PREFIX)

@@ -34,6 +34,7 @@
 
 #include "st-widget.h"
 
+#include "st-background-effect.h"
 #include "st-label.h"
 #include "st-marshal.h"
 #include "st-private.h"
@@ -426,6 +427,21 @@ st_widget_paint (ClutterActor *actor)
                                     opacity);
   else
     st_theme_node_paint (theme_node, &allocation, opacity);
+
+  ClutterEffect *effect = clutter_actor_get_effect (actor, "background-effect");
+
+  if (effect == NULL)
+    {
+      effect = st_background_effect_new ();
+      clutter_actor_add_effect_with_name (actor, "background-effect", effect);
+    }
+
+  const char *bumpmap_path = st_theme_node_get_background_bumpmap(theme_node);
+
+  g_object_set (effect,
+                "bumpmap",
+                bumpmap_path,
+                NULL);
 }
 
 static void
@@ -593,8 +609,9 @@ st_widget_get_theme_node (StWidget *widget)
 
       if (stage == NULL)
         {
-          g_error ("st_widget_get_theme_node called on the widget %s which is not in the stage.",
+          g_critical ("st_widget_get_theme_node called on the widget %s which is not in the stage.",
                     st_describe_actor (CLUTTER_ACTOR (widget)));
+          return g_object_new (ST_TYPE_THEME_NODE, NULL);
         }
 
       if (parent_node == NULL)
@@ -866,7 +883,7 @@ st_widget_class_init (StWidgetClass *klass)
                                                         ST_PARAM_READWRITE));
 
   /**
-   * StWidget:theme
+   * StWidget:theme:
    *
    * A theme set on this actor overriding the global theming for this actor
    * and its descendants
@@ -1026,7 +1043,7 @@ st_widget_class_init (StWidgetClass *klass)
  */
 void
 st_widget_set_theme (StWidget  *actor,
-                      StTheme  *theme)
+                     StTheme   *theme)
 {
   StWidgetPrivate *priv = actor->priv;
 
@@ -1034,11 +1051,11 @@ st_widget_set_theme (StWidget  *actor,
 
   priv = actor->priv;
 
-  if (theme !=priv->theme)
+  if (theme != priv->theme)
     {
       if (priv->theme)
         g_object_unref (priv->theme);
-      priv->theme = g_object_ref (priv->theme);
+      priv->theme = g_object_ref (theme);
 
       st_widget_style_changed (actor);
 
@@ -1898,15 +1915,17 @@ st_widget_sync_hover (StWidget *widget)
   ClutterDeviceManager *device_manager;
   ClutterInputDevice *pointer;
   ClutterActor *pointer_actor;
-
-  device_manager = clutter_device_manager_get_default ();
-  pointer = clutter_device_manager_get_core_device (device_manager,
-                                                    CLUTTER_POINTER_DEVICE);
-  pointer_actor = clutter_input_device_get_pointer_actor (pointer);
-  if (pointer_actor)
-    st_widget_set_hover (widget, clutter_actor_contains (CLUTTER_ACTOR (widget), pointer_actor));
-  else
-    st_widget_set_hover (widget, FALSE);
+  
+  if (widget->priv->track_hover) {
+    device_manager = clutter_device_manager_get_default ();
+    pointer = clutter_device_manager_get_core_device (device_manager,
+                                                      CLUTTER_POINTER_DEVICE);
+    pointer_actor = clutter_input_device_get_pointer_actor (pointer);
+    if (pointer_actor)
+      st_widget_set_hover (widget, clutter_actor_contains (CLUTTER_ACTOR (widget), pointer_actor));
+    else
+      st_widget_set_hover (widget, FALSE);
+  }
 }
 
 /**
@@ -2110,18 +2129,17 @@ st_describe_actor (ClutterActor *actor)
   if (name)
     g_string_append_printf (desc, " \"%s\"", name);
 
-  if (!append_actor_text (desc, actor) && CLUTTER_IS_CONTAINER (actor))
+  if (!append_actor_text (desc, actor))
     {
       GList *children, *l;
 
       /* Do a limited search of @actor's children looking for a label */
-      children = clutter_container_get_children (CLUTTER_CONTAINER (actor));
+      children = clutter_actor_get_children (actor);
       for (l = children, i = 0; l && i < 20; l = l->next, i++)
         {
           if (append_actor_text (desc, l->data))
             break;
-          else if (CLUTTER_IS_CONTAINER (l->data))
-            children = g_list_concat (children, clutter_container_get_children (l->data));
+          children = g_list_concat (children, clutter_actor_get_children (l->data));
         }
       g_list_free (children);
     }
@@ -2133,7 +2151,6 @@ st_describe_actor (ClutterActor *actor)
 
 /**
  * st_set_slow_down_factor:
- *
  * @factor: new slow-down factor
  *
  * Set a global factor applied to all animation durations
@@ -2441,7 +2458,7 @@ st_ui_root_destroyed (ClutterActor *actor,
 }
 
 /**
- * st_get_ui_root:
+ * st_set_ui_root:
  * @stage: a #ClutterStage
  * @container: (allow-none): the new UI root
  *

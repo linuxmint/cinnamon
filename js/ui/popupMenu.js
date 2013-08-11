@@ -9,9 +9,12 @@ const Signals = imports.signals;
 const St = imports.gi.St;
 
 const BoxPointer = imports.ui.boxpointer;
+const DND = imports.ui.dnd;
 const Main = imports.ui.main;
 const Params = imports.misc.params;
 const Tweener = imports.ui.tweener;
+
+const Util = imports.misc.util;
 
 const SLIDER_SCROLL_STEP = 0.05; /* Slider scrolling step in % */
 
@@ -80,7 +83,7 @@ PopupBaseMenuItem.prototype = {
     },
 
     _onButtonReleaseEvent: function (actor, event) {
-        this.activate(event);
+        this.activate(event, false);
         return true;
     },
 
@@ -106,8 +109,8 @@ PopupBaseMenuItem.prototype = {
         this.setActive(actor.hover);
     },
 
-    activate: function (event) {
-        this.emit('activate', event);
+    activate: function (event, keepMenu) {
+        this.emit('activate', event, keepMenu);
     },
 
     setActive: function (active) {
@@ -728,9 +731,9 @@ Switch.prototype = {
         // Translators: this MUST be either "toggle-switch-us"
         // (for toggle switches containing the English words
         // "ON" and "OFF") or "toggle-switch-intl" (for toggle
-        // switches containing "◯" and "|"). Other values will
+        // switches containing "O" and "|"). Other values will
         // simply result in invisible toggle switches.
-        this.actor.add_style_class_name(_("toggle-switch-us"));
+        this.actor.add_style_class_name("toggle-switch-us");
         this.setToggleState(state);
     },
 
@@ -790,7 +793,7 @@ PopupSwitchMenuItem.prototype = {
             this.toggle();
         }
 
-        PopupBaseMenuItem.prototype.activate.call(this, event);
+        PopupBaseMenuItem.prototype.activate.call(this, event, true);
     },
 
     toggle: function() {
@@ -871,23 +874,18 @@ PopupMenuBase.prototype = {
         return menuItem;
     },
 
-    addSettingsAction: function(title, desktopFile) {
-        // Don't allow user settings to get edited unless we're in a user session
-        if (global.session_type != Cinnamon.SessionType.USER)
-            return null;
-
+    addSettingsAction: function(title, module) {		
         let menuItem = this.addAction(title, function() {
-                           let app = Cinnamon.AppSystem.get_default().lookup_setting(desktopFile);
-
-                           if (!app) {
-                               log('Settings panel for desktop file ' + desktopFile + ' could not be loaded!');
-                               return;
-                           }
-
-                           Main.overview.hide();
-                           app.activate();
+                           Util.spawnCommandLine("cinnamon-settings " + module);
                        });
         return menuItem;
+    },
+
+    addCommandlineAction: function(title, cmd) {
+        let menuItem = this.addAction(title, function() {
+                           Util.spawnCommandLine(cmd);
+                       });
+        return menuItem
     },
 
     isChildMenu: function(menu) {
@@ -921,9 +919,11 @@ PopupMenuBase.prototype = {
      * operating the submenu, and stores the ids on @object.
      */
     _connectSubMenuSignals: function(object, menu) {
-        object._subMenuActivateId = menu.connect('activate', Lang.bind(this, function() {
+        object._subMenuActivateId = menu.connect('activate', Lang.bind(this, function(submenu, submenuItem, keepMenu) {
             this.emit('activate');
-            this.close(true);
+            if (!keepMenu){
+                this.close(true);
+            }
         }));
         object._subMenuActiveChangeId = menu.connect('active-changed', Lang.bind(this, function(submenu, submenuItem) {
             if (this._activeMenuItem && this._activeMenuItem != submenuItem)
@@ -956,9 +956,11 @@ PopupMenuBase.prototype = {
                     menuItem.actor.grab_key_focus();
             }
         }));
-        menuItem._activateId = menuItem.connect('activate', Lang.bind(this, function (menuItem, event) {
-            this.emit('activate', menuItem);
-            this.close(true);
+        menuItem._activateId = menuItem.connect('activate', Lang.bind(this, function (menuItem, event, keepMenu) {
+            this.emit('activate', menuItem, keepMenu);
+            if (!keepMenu){
+                this.close(true);
+            }
         }));
         menuItem.connect('destroy', Lang.bind(this, function(emitter) {
             menuItem.disconnect(menuItem._activateId);
@@ -971,6 +973,7 @@ PopupMenuBase.prototype = {
             }
             if (menuItem == this._activeMenuItem)
                 this._activeMenuItem = null;
+            this.length--;
         }));
     },
 
@@ -1128,6 +1131,14 @@ PopupMenuBase.prototype = {
             this.open(true);
     },
 
+    toggle_with_options: function (animate, onComplete) {
+        if (this.isOpen) {
+            this.close(animate, onComplete);
+        } else {
+            this.open(animate, onComplete);
+        }
+    },
+
     destroy: function() {
         this.removeAll();
         this.actor.destroy();
@@ -1171,6 +1182,20 @@ PopupMenu.prototype = {
         this.actor.reactive = true;
     },
 
+    /**
+     * setArrowSide:
+     * @side (St.Side): The new side of the menu
+     * 
+     * Sets the arrow side of the menu. Note that the side is the side
+     * of the source actor, not the menu, e.g. If St.Side.TOP is set, 
+     * then the menu will appear below the source actor (the source
+     * actor will be on top of the menu)
+     */
+    setArrowSide: function(side) {
+	this._arrowSide = side;
+	this._boxPointer.setArrowSide(side);
+    },
+
     _boxGetPreferredWidth: function (actor, forHeight, alloc) {
         let columnWidths = this.getColumnWidths();
         this.setColumnWidths(columnWidths);
@@ -1208,6 +1233,8 @@ PopupMenu.prototype = {
         if (this.isOpen)
             return;
 
+        this.setMaxHeight();
+
         this.isOpen = true;
         
         if (global.menuStackLength == undefined)
@@ -1222,10 +1249,17 @@ PopupMenu.prototype = {
         this.emit('open-state-changed', true);
     },
 
+    // Setting the max-height won't do any good if the minimum height of the
+    // menu is higher then the screen; it's useful if part of the menu is
+    // scrollable so the minimum height is smaller than the natural height
+    setMaxHeight: function() {
+    },
+
     close: function(animate) {
         if (!this.isOpen)
             return;
             
+        this.isOpen = false;
         global.menuStackLength -= 1;
 
         Main.panel._hidePanel();
@@ -1236,8 +1270,6 @@ PopupMenu.prototype = {
             this._activeMenuItem.setActive(false);
 
         this._boxPointer.hide(animate);
-
-        this.isOpen = false;
         this.emit('open-state-changed', false);
     }
 };
@@ -1331,13 +1363,18 @@ PopupSubMenu.prototype = {
         if (animate && needsScrollbar)
             animate = false;
 
+        let rotation_angle = 90;
+        if (this.actor.get_direction() == St.TextDirection.RTL) {
+            rotation_angle = 270;
+        }
+
         if (animate) {
             let [minHeight, naturalHeight] = this.actor.get_preferred_height(-1);
             this.actor.height = 0;
             if (this._arrow) this.actor._arrow_rotation = this._arrow.rotation_angle_z;
             else this.actor._arrow_rotation = 0;
             Tweener.addTween(this.actor,
-                             { _arrow_rotation: 90,
+                             { _arrow_rotation: rotation_angle,
                                height: naturalHeight,
                                time: 0.25,
                                onUpdateScope: this,
@@ -1351,7 +1388,7 @@ PopupSubMenu.prototype = {
                                }
                              });
         } else {
-            if (this._arrow) this._arrow.rotation_angle_z = 90;
+            if (this._arrow) this._arrow.rotation_angle_z = rotation_angle;
             this.emit('open-state-changed', true);
         }
     },
@@ -1367,10 +1404,15 @@ PopupSubMenu.prototype = {
 
         if (animate && this._needsScrollbar())
             animate = false;
+            
+        let rotation_angle = 90;
+        if (this.actor.get_direction() == St.TextDirection.RTL) {
+            rotation_angle = 270;
+        }
 
         if (animate) {
             if (this._arrow) this.actor._arrow_rotation = this._arrow.rotation_angle_z;
-            else this.actor._arrow_rotation = 90;
+            else this.actor._arrow_rotation = rotation_angle;
             Tweener.addTween(this.actor,
                              { _arrow_rotation: 0,
                                height: 0,
@@ -1451,7 +1493,13 @@ PopupSubMenuMenuItem.prototype = {
 
         this.label = new St.Label({ text: text });
         this.addActor(this.label);
-        this._triangle = new St.Label({ text: '\u25B8' });
+        if (this.actor.get_direction() == St.TextDirection.RTL) {
+            this._triangle = new St.Label({ text: '\u25C2' });
+        }
+        else {
+            this._triangle = new St.Label({ text: '\u25B8' });
+        }
+
         this.addActor(this._triangle, { align: St.Align.END });
 
         this.menu = new PopupSubMenu(this.actor, this._triangle);
@@ -1533,12 +1581,11 @@ PopupComboMenu.prototype = {
 
         this.isOpen = true;
 
-        let [sourceX, sourceY] = this.sourceActor.get_transformed_position();
-        let items = this._getMenuItems();
-        let activeItem = items[this._activeItemPos];
+        let activeItem = this._getMenuItems()[this._activeItemPos];
 
-        this.actor.set_position(sourceX, sourceY - activeItem.actor.y);
-        this.actor.width = Math.max(this.actor.width, this.sourceActor.width);
+        let [sourceX, sourceY] = this.sourceActor.get_transformed_position();
+        this.actor.set_position(Math.round(sourceX), Math.round(sourceY - activeItem.actor.y));
+
         this.actor.raise_top();
 
         this.actor.opacity = 0;
@@ -1549,6 +1596,8 @@ PopupComboMenu.prototype = {
                            transition: 'linear',
                            time: BoxPointer.POPUP_ANIMATION_TIME });
 
+        this.savedFocusActor = global.stage.get_key_focus();
+        global.stage.set_key_focus(this.actor);
         this.emit('open-state-changed', true);
     },
 
@@ -1568,6 +1617,7 @@ PopupComboMenu.prototype = {
                          });
 
         this.emit('open-state-changed', false);
+        global.stage.set_key_focus(this.savedFocusActor);
     },
 
     setActiveItem: function(position) {
@@ -1785,8 +1835,9 @@ PopupMenuManager.prototype = {
     },
 
     _grab: function() {
-        Main.pushModal(this._owner.actor);
-
+        if (!Main.pushModal(this._owner.actor)) {
+            return;
+        }
         this._eventCaptureId = global.stage.connect('captured-event', Lang.bind(this, this._onEventCapture));
         // captured-event doesn't see enter/leave events
         this._enterEventId = global.stage.connect('enter-event', Lang.bind(this, this._onEventCapture));
@@ -1797,6 +1848,9 @@ PopupMenuManager.prototype = {
     },
 
     _ungrab: function() {
+        if (!this.grabbed) {
+            return;
+        }
         global.stage.disconnect(this._eventCaptureId);
         this._eventCaptureId = 0;
         global.stage.disconnect(this._enterEventId);
@@ -1899,7 +1953,7 @@ PopupMenuManager.prototype = {
     },
 
     _onKeyFocusChanged: function() {
-        if (!this.grabbed || !this._activeMenu)
+        if (!this.grabbed || !this._activeMenu || DND.isDragging())
             return;
 
         let focus = global.stage.key_focus;

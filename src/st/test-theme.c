@@ -354,7 +354,7 @@ test_pseudo_class (void)
 
   /* Test the StWidget add/remove pseudo_class interfaces */
   label = st_label_new ("foo");
-  clutter_container_add_actor (CLUTTER_CONTAINER (stage), CLUTTER_ACTOR (label));
+  clutter_actor_add_child (stage, CLUTTER_ACTOR (label));
 
   labelNode = st_widget_get_theme_node (label);
   assert_foreground_color (labelNode, "label", 0x000000ff);
@@ -432,7 +432,7 @@ main (int argc, char **argv)
   theme = st_theme_new ("st/test-theme.css",
                         NULL, NULL);
 
-  stage = clutter_stage_get_default ();
+  stage = clutter_stage_new ();
   context = st_theme_context_get_for_stage (CLUTTER_STAGE (stage));
   st_theme_context_set_theme (context, theme);
   st_theme_context_set_resolution (context, 96.);

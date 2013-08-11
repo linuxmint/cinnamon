@@ -2,7 +2,6 @@
 
 const Clutter = imports.gi.Clutter;
 const Cogl = imports.gi.Cogl;
-const GConf = imports.gi.GConf;
 const GLib = imports.gi.GLib;
 const Gio = imports.gi.Gio;
 const Gtk = imports.gi.Gtk;
@@ -12,10 +11,9 @@ const St = imports.gi.St;
 const Cinnamon = imports.gi.Cinnamon;
 const Signals = imports.signals;
 const Lang = imports.lang;
-const Mainloop = imports.mainloop;
 
 const History = imports.misc.history;
-const ExtensionSystem = imports.ui.extensionSystem;
+const Extension = imports.ui.extension;
 const Link = imports.ui.link;
 const CinnamonEntry = imports.ui.cinnamonEntry;
 const Tweener = imports.ui.tweener;
@@ -28,7 +26,6 @@ var commandHeader = 'const Clutter = imports.gi.Clutter; ' +
                     'const Mainloop = imports.mainloop; ' +
                     'const Meta = imports.gi.Meta; ' +
                     'const Cinnamon = imports.gi.Cinnamon; ' +
-                    'const Tp = imports.gi.TelepathyGLib; ' +
                     'const Main = imports.ui.main; ' +
                     'const Lang = imports.lang; ' +
                     'const Tweener = imports.ui.tweener; ' +
@@ -38,6 +35,8 @@ var commandHeader = 'const Clutter = imports.gi.Clutter; ' +
                     'const color = function(pixel) { let c= new Clutter.Color(); c.from_pixel(pixel); return c; }; ' +
                     /* Special lookingGlass functions */
                        'const it = Main.lookingGlass.getIt(); ' +
+                    'const a = Lang.bind(Main.lookingGlass, Main.lookingGlass.getWindowApp); '+
+                    'const w = Lang.bind(Main.lookingGlass, Main.lookingGlass.getWindow); '+
                     'const r = Lang.bind(Main.lookingGlass, Main.lookingGlass.getResult); ';
 
 const HISTORY_KEY = 'looking-glass-history';
@@ -185,7 +184,7 @@ ObjLink.prototype = {
     },
 
     _onClicked: function (link) {
-        Main.lookingGlass.inspectObject(this._obj, this.actor);
+        Main.lookingGlass.inspectObject(this._obj);
     }
 };
 
@@ -223,24 +222,46 @@ function WindowList() {
 
 WindowList.prototype = {
     _init : function () {
+        this.lastId = 0;
+        this.latestWindowList = [];
+        
         this.actor = new St.BoxLayout({ name: 'Windows', vertical: true, style: 'spacing: 8px' });
         let tracker = Cinnamon.WindowTracker.get_default();
         this._updateId = Main.initializeDeferredWork(this.actor, Lang.bind(this, this._updateWindowList));
         global.display.connect('window-created', Lang.bind(this, this._updateWindowList));
         tracker.connect('tracked-windows-changed', Lang.bind(this, this._updateWindowList));
     },
+    
+    getWindowById: function(id) {
+        let windows = global.get_window_actors();
+        for (let i = 0; i < windows.length; i++) {
+            let metaWindow = windows[i].metaWindow;
+            if(metaWindow._lgId === id)
+                return metaWindow;
+        }
+        return null;
+    },
 
     _updateWindowList: function() {
         this.actor.get_children().forEach(function (actor) { actor.destroy(); });
         let windows = global.get_window_actors();
         let tracker = Cinnamon.WindowTracker.get_default();
+        
+        let oldWindowList = this.latestWindowList;
+        this.latestWindowList = [];
         for (let i = 0; i < windows.length; i++) {
             let metaWindow = windows[i].metaWindow;
             // Avoid multiple connections
             if (!metaWindow._lookingGlassManaged) {
                 metaWindow.connect('unmanaged', Lang.bind(this, this._updateWindowList));
                 metaWindow._lookingGlassManaged = true;
+                
+                metaWindow._lgId = this.lastId;
+                this.lastId++;
             }
+            
+            let lgInfo = { id: metaWindow._lgId.toString(), title: metaWindow.title, wmclass: metaWindow.get_wm_class(), app: ''};
+            
             let box = new St.BoxLayout({ vertical: true });
             this.actor.add(box);
             let windowLink = new ObjLink(metaWindow, metaWindow.title);
@@ -257,10 +278,32 @@ WindowList.prototype = {
                 let appLink = new ObjLink(app, app.get_id());
                 propBox.add(appLink.actor, { y_fill: false });
                 propBox.add(icon, { y_fill: false });
+                
+                lgInfo.app = app.get_id();
             } else {
                 propsBox.add(new St.Label({ text: '<untracked>' }));
+                
+                lgInfo.app = '<untracked>';
+            }
+            
+            // Ignore menus
+            let wtype = metaWindow.get_window_type();
+            if(wtype != Meta.WindowType.MENU && wtype != Meta.WindowType.DROPDOWN_MENU && wtype != Meta.WindowType.POPUP_MENU)
+                this.latestWindowList.push(lgInfo);
+        }
+        
+        // Make sure the list changed before notifying listeneres
+        let changed = oldWindowList.length != this.latestWindowList.length;
+        if(!changed) {
+            for(let i=0; i<oldWindowList.length; i++) {
+                if(oldWindowList[i].id != this.latestWindowList[i].id) {
+                    changed = true;
+                    break;
+                }
             }
         }
+        if(changed)
+            Main.lookingGlassDBusService.emitWindowListUpdate();
     }
 };
 Signals.addSignalMethods(WindowList.prototype);
@@ -337,18 +380,6 @@ ObjInspector.prototype = {
         this._previousObj = null;
         this._open = true;
         this.actor.show();
-        if (sourceActor) {
-            this.actor.set_scale(0, 0);
-            let [sourceX, sourceY] = sourceActor.get_transformed_position();
-            let [sourceWidth, sourceHeight] = sourceActor.get_transformed_size();
-            this.actor.move_anchor_point(Math.floor(sourceX + sourceWidth / 2),
-                                         Math.floor(sourceY + sourceHeight / 2));
-            Tweener.addTween(this.actor, { scale_x: 1, scale_y: 1,
-                                           transition: 'easeOutQuad',
-                                           time: 0.2 });
-        } else {
-            this.actor.set_scale(1, 1);
-        }
     },
 
     close: function() {
@@ -407,22 +438,20 @@ Inspector.prototype = {
         Main.uiGroup.add_actor(container);
 
         let eventHandler = new St.BoxLayout({ name: 'LookingGlassDialog',
-                                              vertical: false,
+                                              vertical: true,
                                               reactive: true });
         this._eventHandler = eventHandler;
+        Main.pushModal(this._eventHandler);
         container.add_actor(eventHandler);
         this._displayText = new St.Label();
         eventHandler.add(this._displayText, { expand: true });
+        this._passThroughText = new St.Label({style: 'text-align: center;'});
+        eventHandler.add(this._passThroughText, { expand: true });
 
         this._borderPaintTarget = null;
         this._borderPaintId = null;
         eventHandler.connect('destroy', Lang.bind(this, this._onDestroy));
-        eventHandler.connect('key-press-event', Lang.bind(this, this._onKeyPressEvent));
-        eventHandler.connect('button-press-event', Lang.bind(this, this._onButtonPressEvent));
-        eventHandler.connect('scroll-event', Lang.bind(this, this._onScrollEvent));
-        eventHandler.connect('motion-event', Lang.bind(this, this._onMotionEvent));
-        Clutter.grab_pointer(eventHandler);
-        Clutter.grab_keyboard(eventHandler);
+        this._capturedEventId = global.stage.connect('captured-event', Lang.bind(this, this._onCapturedEvent));
 
         // this._target is the actor currently shown by the inspector.
         // this._pointerTarget is the actor directly under the pointer.
@@ -431,6 +460,39 @@ Inspector.prototype = {
         // out, or move the pointer outside of _pointerTarget.
         this._target = null;
         this._pointerTarget = null;
+        this.passThroughEvents = false;
+        this._updatePassthroughText();
+    },
+    
+    _updatePassthroughText: function() {
+        if(this.passThroughEvents)
+            this._passThroughText.text = '(Press Pause to disable event pass through)';
+        else
+            this._passThroughText.text = '(Press Pause to enable event pass through)';
+    },
+
+    _onCapturedEvent: function (actor, event) {
+        if(event.type() == Clutter.EventType.KEY_PRESS && event.get_key_symbol() == Clutter.Pause) {
+            this.passThroughEvents = !this.passThroughEvents;
+            this._updatePassthroughText();
+            return true;
+        }
+        
+        if(this.passThroughEvents)
+            return false;
+        
+        switch (event.type()) {
+            case Clutter.EventType.KEY_PRESS:
+                return this._onKeyPressEvent(actor, event);
+            case Clutter.EventType.BUTTON_PRESS:
+                return this._onButtonPressEvent(actor, event);
+            case Clutter.EventType.SCROLL:
+                return this._onScrollEvent(actor, event);
+            case Clutter.EventType.MOTION:
+                return this._onMotionEvent(actor, event);
+            default:
+                return true;
+        }
     },
 
     _allocate: function(actor, box, flags) {
@@ -451,8 +513,9 @@ Inspector.prototype = {
     },
 
     _close: function() {
-        Clutter.ungrab_pointer(this._eventHandler);
-        Clutter.ungrab_keyboard(this._eventHandler);
+        global.stage.disconnect(this._capturedEventId);
+        Main.popModal(this._eventHandler);
+
         this._eventHandler.destroy();
         this._eventHandler = null;
         this.emit('closed');
@@ -558,6 +621,7 @@ ErrorLog.prototype = {
         this.text.clutter_text.ellipsize = Pango.EllipsizeMode.NONE;
         this.text.clutter_text.line_wrap = true;
         this.actor.connect('notify::mapped', Lang.bind(this, this._renderText));
+        this.addedErrors = 0;
     },
 
     _formatTime: function(d){
@@ -573,13 +637,16 @@ ErrorLog.prototype = {
     _renderText: function() {
         if (!this.actor.mapped)
             return;
-        let text = this.text.text;
-        let stack = Main._getAndClearErrorStack();
-        for (let i = 0; i < stack.length; i++) {
-            let logItem = stack[i];
-            text += logItem.category + ' t=' + this._formatTime(new Date(logItem.timestamp)) + ' ' + logItem.message + '\n';
+
+        let stack = Main._errorLogStack;
+        if(stack.length > this.addedErrors) {
+            for (var text = this.text.text; this.addedErrors < stack.length; 
+                 this.addedErrors++) {
+                let logItem = stack[this.addedErrors];
+                text += logItem.category + ' t=' + this._formatTime(new Date(parseInt(logItem.timestamp))) + ' ' + logItem.message + '\n';
+            }
+            this.text.text = text;
         }
-        this.text.text = text;
     }
 };
 
@@ -634,14 +701,15 @@ Memory.prototype = {
     }
 };
 
-function Extensions() {
-    this._init();
+function Extensions(type) {
+    this._init(type);
 }
 
 Extensions.prototype = {
-    _init: function() {
+    _init: function(type) {
+        this.type = type;
         this.actor = new St.BoxLayout({ vertical: true,
-                                        name: 'lookingGlassExtensions' });
+                                        name: 'lookingGlass' + type.name });
         this._noExtensions = new St.Label({ style_class: 'lg-extensions-none',
                                              text: _("No extensions installed") });
         this._numExtensions = 0;
@@ -649,27 +717,54 @@ Extensions.prototype = {
                                                   style_class: 'lg-extensions-list' });
         this._extensionsList.add(this._noExtensions);
         this.actor.add(this._extensionsList);
-
-        for (let uuid in ExtensionSystem.extensionMeta)
+        
+        this.uuidMap = {};
+        for (let uuid in Extension.meta) {
             this._loadExtension(null, uuid);
+        }
 
-        ExtensionSystem.connect('extension-loaded',
-                                Lang.bind(this, this._loadExtension));
+        type.connect('extension-loaded', Lang.bind(this, this._loadExtension));
+        type.connect('extension-unloaded', Lang.bind(this, this._unloadExtension));
     },
 
     _loadExtension: function(o, uuid) {
-        let extension = ExtensionSystem.extensionMeta[uuid];
+        let meta = Extension.meta[uuid];
         // There can be cases where we create dummy extension metadata
         // that's not really a proper extension. Don't bother with these.
-        if (!extension.name)
+        if (!meta.name)
             return;
 
-        let extensionDisplay = this._createExtensionDisplay(extension);
+        // If extension is broken
+        if (!Extension.objects[uuid])
+            return;
+
+        // Only load extensions
+        if(Extension.objects[uuid].type.name != this.type.name)
+            return;
+
+        let extensionDisplay = this._createExtensionDisplay(meta);
         if (this._numExtensions == 0)
             this._extensionsList.remove_actor(this._noExtensions);
 
         this._numExtensions ++;
         this._extensionsList.add(extensionDisplay);
+        this.uuidMap[uuid] = extensionDisplay;
+
+        Main.lookingGlassDBusService.emitExtensionListUpdate();
+    },
+
+    _unloadExtension: function(o, uuid) {
+        //Fixme: not optimal, since extensions added later will only show if no error happens
+        // and extensions failing to reload will be removed.
+        let extensionDisplay = this.uuidMap[uuid];
+        this._extensionsList.remove_actor(extensionDisplay);
+        delete this.uuidMap[uuid];
+        
+        this._numExtensions--;
+        if (this._numExtensions == 0)
+            this._extensionsList.add(this._noExtensions);
+
+        Main.lookingGlassDBusService.emitExtensionListUpdate();
     },
 
     _onViewSource: function (actor) {
@@ -680,26 +775,17 @@ Extensions.prototype = {
         Main.lookingGlass.close();
     },
 
+    _onReload: function (actor) {
+        let meta = actor._extensionMeta;
+        Extension.unloadExtension(meta.uuid);
+        Extension.loadExtension(meta.uuid, this.type);
+        Main.lookingGlass.close();
+    },
+    
     _onWebPage: function (actor) {
         let meta = actor._extensionMeta;
         Gio.app_info_launch_default_for_uri(meta.url, global.create_app_launch_context());
         Main.lookingGlass.close();
-    },
-
-    _stateToString: function(extensionState) {
-        switch (extensionState) {
-            case ExtensionSystem.ExtensionState.ENABLED:
-                return _("Enabled");
-            case ExtensionSystem.ExtensionState.DISABLED:
-                return _("Disabled");
-            case ExtensionSystem.ExtensionState.ERROR:
-                return _("Error");
-            case ExtensionSystem.ExtensionState.OUT_OF_DATE:
-                return _("Out of date");
-            case ExtensionSystem.ExtensionState.DOWNLOADING:
-                return _("Downloading");
-        }
-        return 'Unknown'; // Not translated, shouldn't appear
     },
 
     _createExtensionDisplay: function(meta) {
@@ -713,22 +799,32 @@ Extensions.prototype = {
 
         let metaBox = new St.BoxLayout({ style_class: 'lg-extension-meta' });
         box.add(metaBox);
-        let stateString = this._stateToString(meta.state);
         let state = new St.Label({ style_class: 'lg-extension-state',
-                                   text: this._stateToString(meta.state) });
+                                   text: Extension.getMetaStateString(meta.state) + " "});
         metaBox.add(state);
-
+        
         let viewsource = new Link.Link({ label: _("View Source") });
         viewsource.actor._extensionMeta = meta;
         viewsource.actor.connect('clicked', Lang.bind(this, this._onViewSource));
         metaBox.add(viewsource.actor);
+        
+        let space = new St.Label({text: " "});
+        metaBox.add(space);
 
         if (meta.url) {
             let webpage = new Link.Link({ label: _("Web Page") });
             webpage.actor._extensionMeta = meta;
             webpage.actor.connect('clicked', Lang.bind(this, this._onWebPage));
             metaBox.add(webpage.actor);
+        
+            let space = new St.Label({text: " "});
+            metaBox.add(space);
         }
+        
+        let reload = new Link.Link({ label: _("Reload Code") });
+        reload.actor._extensionMeta = meta;
+        reload.actor.connect('clicked', Lang.bind(this, this._onReload));
+        metaBox.add(reload.actor);
 
         return box;
     }
@@ -748,6 +844,7 @@ LookingGlass.prototype = {
 
         this._offset = 0;
         this._results = [];
+        this.rawResults = [];
 
         // Sort of magic, but...eh.
         this._maxItems = 150;
@@ -782,19 +879,7 @@ LookingGlass.prototype = {
                                         icon_size: 24 });
         toolbar.add_actor(inspectIcon);
         inspectIcon.reactive = true;
-        inspectIcon.connect('button-press-event', Lang.bind(this, function () {
-            let inspector = new Inspector();
-            inspector.connect('target', Lang.bind(this, function(i, target, stageX, stageY) {
-                this._pushResult('<inspect x:' + stageX + ' y:' + stageY + '>',
-                                 target);
-            }));
-            inspector.connect('closed', Lang.bind(this, function() {
-                this.actor.show();
-                global.stage.set_key_focus(this._entry);
-            }));
-            this.actor.hide();
-            return true;
-        }));
+        inspectIcon.connect('button-press-event', Lang.bind(this, this.startInspector));
 
         let notebook = new Notebook();
         this._notebook = notebook;
@@ -833,8 +918,14 @@ LookingGlass.prototype = {
         this._memory = new Memory();
         notebook.appendPage('Memory', this._memory.actor);
 
-        this._extensions = new Extensions();
+        this._applets = new Extensions(Extension.Type.APPLET);
+        notebook.appendPage('Applets', this._applets.actor);
+
+        this._extensions = new Extensions(Extension.Type.EXTENSION);
         notebook.appendPage('Extensions', this._extensions.actor);
+
+        this._desklets = new Extensions(Extension.Type.DESKLET);
+        notebook.appendPage('Desklets', this._desklets.actor);
 
         this._entry.clutter_text.connect('activate', Lang.bind(this, function (o, e) {
             let text = o.get_text();
@@ -854,6 +945,29 @@ LookingGlass.prototype = {
 
         this._resize();
     },
+    
+    startInspector: function(closeAfter) {
+        if (!this._open)
+            this.open();
+            
+        let inspector = new Inspector();
+        inspector.connect('target', Lang.bind(this, function(i, target, stageX, stageY) {
+            this._pushResult('<inspect x:' + stageX + ' y:' + stageY + '>',
+                             target);
+        }));
+        inspector.connect('closed', Lang.bind(this, function() {
+            if(closeAfter === true) {
+                this.actor.hide();
+                this.close();
+                Main.lookingGlassDBusService.emitInspectorDone();
+            } else {
+                this.actor.show();
+                global.stage.set_key_focus(this._entry);
+            }
+        }));
+        this.actor.hide();
+        return true;
+    },
 
     _updateFont: function() {
         let fontName = this._interfaceSettings.get_string('monospace-font-name');
@@ -870,6 +984,9 @@ LookingGlass.prototype = {
     _pushResult: function(command, obj) {
         let index = this._results.length + this._offset;
         let result = new Result('>>> ' + command, obj, index);
+        this.rawResults.push({command: command, type: typeof(obj), object: objectToString(obj), index: index.toString()});
+        Main.lookingGlassDBusService.emitResultUpdate();
+        
         this._results.push(result);
         this._resultsArea.add(result.actor);
         if (this._borderPaintTarget != null) {
@@ -902,14 +1019,73 @@ LookingGlass.prototype = {
         let fullCmd = commandHeader + command;
 
         let resultObj;
+
+        /*  Set up for some reporting about memory impact and execution speed.
+            The performance impact of global.get_memory_info should be 
+            very small, whereas getting a timestamp might involve some 
+            memory allocation, so we grab the timestamp first.
+        */
+        let ts = new Date().getTime();
+        let memInfo = global.get_memory_info();
+        
         try {
             resultObj = eval(fullCmd);
         } catch (e) {
             resultObj = '<exception ' + e + '>';
         }
+        let memInfo2 = global.get_memory_info();
+        let ts2 = new Date().getTime();
 
         this._pushResult(command, resultObj);
+
+        let memdata = [
+            'uordblks: ' + (memInfo2.glibc_uordblks),
+            'js_bytes: ' + (memInfo2.js_bytes),
+            'gjs_boxed: ' + (memInfo2.gjs_boxed),
+            'gjs_gobject: ' + (memInfo2.gjs_gobject),
+            'gjs_function: ' + (memInfo2.gjs_function),
+            'gjs_closure: ' + (memInfo2.gjs_closure)
+        ];
+        this._pushResult("<memstate>", memdata.join('; '));
+        let memdataDiff = [
+            'uordblks: ' + (memInfo2.glibc_uordblks - memInfo.glibc_uordblks),
+            'js_bytes: ' + (memInfo2.js_bytes - memInfo.js_bytes),
+            'gjs_boxed: ' + (memInfo2.gjs_boxed - memInfo.gjs_boxed),
+            'gjs_gobject: ' + (memInfo2.gjs_gobject - memInfo.gjs_gobject),
+            'gjs_function: ' + (memInfo2.gjs_function - memInfo.gjs_function),
+            'gjs_closure: ' + (memInfo2.gjs_closure - memInfo.gjs_closure)
+        ];
+        this._pushResult("<memdiff>", memdataDiff.join('; '));
+        this._pushResult("<execution time (ms)>", ts2 - ts);
         this._entry.text = '';
+    },
+
+    inspect : function(path) {
+        let fullCmd = commandHeader + path;
+
+        let result = eval(fullCmd);
+        let resultObj = [];
+        for(let key in result) {
+            let type = typeof(result[key]);
+            let value = result[key].toString();
+            
+            //fixme: move this shortvalue stuff to python lg
+            let shortValue = value;
+            if (value === undefined) {
+                value = "";
+                shortValue = "";
+            } else {
+                let i = value.indexOf('\n');
+                let j = value.indexOf('\r');
+                if( j != -1 && (i == -1 || i > j))
+                    i = j;
+                if(i != -1)
+                    shortValue = value.substr(0, i) + '.. <more>';
+            }
+            resultObj.push({ name: key, type: type, value: value, shortValue: shortValue});
+        }
+        
+        return resultObj;
     },
 
     getIt: function () {
@@ -918,6 +1094,35 @@ LookingGlass.prototype = {
 
     getResult: function(idx) {
         return this._results[idx - this._offset].o;
+    },
+
+    addResult: function(path) {
+        let fullCmd = commandHeader + path;
+
+        let resultObj;
+        try {
+            resultObj = eval(fullCmd);
+        } catch (e) {
+            resultObj = '<exception ' + e + '>';
+        }
+        this._pushResult(path, resultObj);
+    },
+
+    getWindow: function(idx) {
+        return this._windowList.getWindowById(idx);
+    },
+
+    getWindowApp: function(idx) {
+        let metaWindow = this._windowList.getWindowById(idx)
+        if(metaWindow) {
+            let tracker = Cinnamon.WindowTracker.get_default();
+            return tracker.get_window_app(metaWindow);
+        }
+        return null;
+    },
+    
+    getLatestWindowList: function() {
+        return this._windowList.latestWindowList;
     },
 
     toggle: function() {
@@ -933,44 +1138,43 @@ LookingGlass.prototype = {
     },
 
     _resize: function() {
+        let primary = Main.layoutManager.primaryMonitor;
+        let myWidth = primary.width * 0.7;
+        let availableHeight = primary.height - Main.layoutManager.keyboardBox.height;
+        let myHeight = Math.min(primary.height * 0.7, availableHeight * 0.9);
+        this.actor.x = (primary.width - myWidth) / 2;
+        
+        let yOffset;
         if (Main.desktop_layout == Main.LAYOUT_TRADITIONAL) {
-            let primary = Main.layoutManager.primaryMonitor;
-            let myWidth = primary.width * 0.7;
-            let availableHeight = primary.height - Main.layoutManager.keyboardBox.height;
-            let myHeight = Math.min(primary.height * 0.7, availableHeight * 0.9);
-            this.actor.x = (primary.width - myWidth) / 2;
-            this._targetY = -myHeight; // -4 to hide the top corners
+            this._targetY = -myHeight;
             this._hiddenY = -this.actor.get_parent().height;
-            this.actor.y = this._hiddenY;
-            this.actor.width = myWidth;
-            this.actor.height = myHeight;
-            this._objInspector.actor.set_size(Math.floor(myWidth * 0.8), Math.floor(myHeight * 0.8));
-            this._objInspector.actor.set_position(this.actor.x + Math.floor(myWidth * 0.1),
-                                                  this._hiddenY + Math.floor(myHeight * 0.1));
-        }
-        else {                                                
-            let primary = Main.layoutManager.primaryMonitor;
-            let myWidth = primary.width * 0.7;
-            let availableHeight = primary.height - Main.layoutManager.keyboardBox.height;
-            let myHeight = Math.min(primary.height * 0.7, availableHeight * 0.9);
-            this.actor.x = (primary.width - myWidth) / 2;            
+            yOffset = this._hiddenY;
+        } else {       
             this._hiddenY = this.actor.get_parent().height - myHeight - 4; // -4 to hide the top corners
             this._targetY = this._hiddenY + myHeight;
-            this.actor.y = this._hiddenY;
-            this.actor.width = myWidth;
-            this.actor.height = myHeight;
-            this._objInspector.actor.set_size(Math.floor(myWidth * 0.8), Math.floor(myHeight * 0.8));
-            this._objInspector.actor.set_position(this.actor.x + Math.floor(myWidth * 0.1),
-                                                  this._targetY + Math.floor(myHeight * 0.1));                                 
-        }                                
+            yOffset = this._targetY;
+        }
+        
+        this.actor.y = this._hiddenY;
+        this.actor.width = myWidth;
+        this.actor.height = myHeight;
+        this._objInspector.actor.set_size(Math.floor(myWidth * 0.8), Math.floor(myHeight * 0.8));
+        
+        // Use the position of primary.x, y to reposition the
+        // objInspector with respect to multiple monitors.
+        this._objInspector.actor.set_anchor_point(0, 0); // reset anchor point
+        this._objInspector.actor.set_position(
+                    primary.x + this.actor.x + Math.floor(myWidth * 0.1),
+                    primary.y + yOffset + Math.floor(myHeight * 0.1)
+        );
     },
 
     insertObject: function(obj) {
         this._pushResult('<insert>', obj);
     },
 
-    inspectObject: function(obj, sourceActor) {
-        this._objInspector.open(sourceActor);
+    inspectObject: function(obj) {
+        this._objInspector.open();
         this._objInspector.selectObject(obj);
     },
 
@@ -984,7 +1188,18 @@ LookingGlass.prototype = {
                 this.close();
             }
             return true;
-        }
+        } else if (symbol==Clutter.Right) {
+	    let newIndex = this._notebook._selectedIndex-1;
+	    if (newIndex == 5) {
+		newIndex = 0;
+	    }
+	    return true;
+	} else if (symbol==Clutter.Left) {
+	    let newIndex = this._notebook._selectedIndex-1;
+	    if (newIndex == -1){
+		newIndex = 4;
+	    }
+	}
         return false;
     },
 

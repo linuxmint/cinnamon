@@ -8,7 +8,6 @@ const St = imports.gi.St;
 const Signals = imports.signals;
 const Pango = imports.gi.Pango;
 const Gettext_gtk30 = imports.gettext.domain('gtk30');
-const Mainloop = imports.mainloop;
 const Cinnamon = imports.gi.Cinnamon;
 
 const MSECS_IN_DAY = 24 * 60 * 60 * 1000;
@@ -369,17 +368,17 @@ Calendar.prototype = {
         this._useWeekdate = this._settings.get_boolean(SHOW_WEEKDATE_KEY);
 
         // Find the ordering for month/year in the calendar heading
-        this._headerFormatWithoutYear = '%B';
+
         switch (Gettext_gtk30.gettext('calendar:MY')) {
         case 'calendar:MY':
-            this._headerFormat = '%B %Y';
+            this._headerMonthFirst = true;
             break;
         case 'calendar:YM':
-            this._headerFormat = '%Y %B';
+            this._headerMonthFirst = false;
             break;
         default:
             log('Translation of "calendar:MY" in GTK+ is not correct');
-            this._headerFormat = '%B %Y';
+            this._headerMonthFirst = true;
             break;
         }
 
@@ -412,23 +411,45 @@ Calendar.prototype = {
         let offsetCols = this._useWeekdate ? 1 : 0;
         this.actor.destroy_children();
 
-        // Top line of the calendar '<| September 2009 |>'
-        this._topBox = new St.BoxLayout();
-        this.actor.add(this._topBox,
-                       { row: 0, col: 0, col_span: offsetCols + 7 });
+        // Top line of the calendar '<| September |> <| 2009 |>'
+        this._topBoxMonth = new St.BoxLayout();
+        this._topBoxYear = new St.BoxLayout();
+
+        if (this._headerMonthFirst) {
+            this.actor.add(this._topBoxMonth,
+                       {row: 0, col: 0, col_span: offsetCols + 4});
+            this.actor.add(this._topBoxYear,
+                       {row: 0, col: offsetCols + 4, col_span: 3});
+        } else {
+            this.actor.add(this._topBoxMonth,
+                       {row: 0, col: offsetCols + 3, col_span: 4});
+            this.actor.add(this._topBoxYear,
+                       {row: 0, col: 0, col_span: offsetCols + 3});
+        }
 
         this.actor.connect('style-changed', Lang.bind(this, this._onStyleChange));
 
         let back = new St.Button({ style_class: 'calendar-change-month-back' });
-        this._topBox.add(back);
+        this._topBoxMonth.add(back);
         back.connect('clicked', Lang.bind(this, this._onPrevMonthButtonClicked));
 
         this._monthLabel = new St.Label({style_class: 'calendar-month-label'});
-        this._topBox.add(this._monthLabel, { expand: true, x_fill: false, x_align: St.Align.MIDDLE });
+        this._topBoxMonth.add(this._monthLabel, { expand: true, x_fill: false, x_align: St.Align.MIDDLE });
 
         let forward = new St.Button({ style_class: 'calendar-change-month-forward' });
-        this._topBox.add(forward);
+        this._topBoxMonth.add(forward);
         forward.connect('clicked', Lang.bind(this, this._onNextMonthButtonClicked));
+
+        back = new St.Button({style_class: 'calendar-change-month-back'});
+        this._topBoxYear.add(back);
+        back.connect('clicked', Lang.bind(this, this._onPrevYearButtonClicked));
+
+        this._yearLabel = new St.Label({style_class: 'calendar-month-label'});
+        this._topBoxYear.add(this._yearLabel, {expand: true, x_fill: false, x_align: St.Align.MIDDLE});
+
+        forward = new St.Button({style_class: 'calendar-change-month-forward'});
+        this._topBoxYear.add(forward);
+        forward.connect('clicked', Lang.bind(this, this._onNextYearButtonClicked));
 
         // Add weekday labels...
         //
@@ -480,48 +501,44 @@ Calendar.prototype = {
         }
     },
 
-    _onPrevMonthButtonClicked: function() {
-        let newDate = new Date(this._selectedDate);
-        let oldMonth = newDate.getMonth();
-        if (oldMonth == 0) {
-            newDate.setMonth(11);
-            newDate.setFullYear(newDate.getFullYear() - 1);
-            if (newDate.getMonth() != 11) {
-                let day = 32 - new Date(newDate.getFullYear() - 1, 11, 32).getDate();
-                newDate = new Date(newDate.getFullYear() - 1, 11, day);
-            }
+    _applyDateBrowseAction: function(yearChange, monthChange) {
+        let oldDate = this._selectedDate;
+        let newMonth = oldDate.getMonth() + monthChange;
+
+        if (newMonth> 11) {
+            yearChange = yearChange + 1;
+            newMonth = 0;
+        } else if (newMonth < 0) {
+            yearChange = yearChange - 1;
+            newMonth = 11;
         }
-        else {
-            newDate.setMonth(oldMonth - 1);
-            if (newDate.getMonth() != oldMonth - 1) {
-                let day = 32 - new Date(newDate.getFullYear(), oldMonth - 1, 32).getDate();
-                newDate = new Date(newDate.getFullYear(), oldMonth - 1, day);
-            }
+        let newYear = oldDate.getFullYear() + yearChange;
+
+        let newDayOfMonth = oldDate.getDate();
+        let daysInMonth = 32 - new Date(newYear, newMonth, 32).getDate();
+        if (newDayOfMonth > daysInMonth) {
+            newDayOfMonth = daysInMonth;
         }
 
+        let newDate = new Date();
+        newDate.setFullYear(newYear, newMonth, newDayOfMonth);
         this.setDate(newDate, false);
-   },
+    },
 
-   _onNextMonthButtonClicked: function() {
-        let newDate = new Date(this._selectedDate);
-        let oldMonth = newDate.getMonth();
-        if (oldMonth == 11) {
-            newDate.setMonth(0);
-            newDate.setFullYear(newDate.getFullYear() + 1);
-            if (newDate.getMonth() != 0) {
-                let day = 32 - new Date(newDate.getFullYear() + 1, 0, 32).getDate();
-                newDate = new Date(newDate.getFullYear() + 1, 0, day);
-            }
-        }
-        else {
-            newDate.setMonth(oldMonth + 1);
-            if (newDate.getMonth() != oldMonth + 1) {
-                let day = 32 - new Date(newDate.getFullYear(), oldMonth + 1, 32).getDate();
-                newDate = new Date(newDate.getFullYear(), oldMonth + 1, day);
-            }
-        }
+    _onPrevYearButtonClicked: function() {
+        this._applyDateBrowseAction(-1, 0);
+    },
 
-       this.setDate(newDate, false);
+    _onNextYearButtonClicked: function() {
+        this._applyDateBrowseAction(+1, 0);
+    },
+
+    _onPrevMonthButtonClicked: function() {
+        this._applyDateBrowseAction(0, -1);
+    },
+
+    _onNextMonthButtonClicked: function() {
+        this._applyDateBrowseAction(0, +1);
     },
 
     _onSettingsChange: function() {
@@ -533,10 +550,8 @@ Calendar.prototype = {
     _update: function(forceReload) {
         let now = new Date();
 
-        if (_sameYear(this._selectedDate, now))
-            this._monthLabel.text = this._selectedDate.toLocaleFormat(this._headerFormatWithoutYear);
-        else
-            this._monthLabel.text = this._selectedDate.toLocaleFormat(this._headerFormat);
+        this._monthLabel.text = this._selectedDate.toLocaleFormat('%B');
+        this._yearLabel.text = this._selectedDate.toLocaleFormat('%Y');
 
         // Remove everything but the topBox and the weekday labels
         let children = this.actor.get_children();
@@ -604,10 +619,12 @@ Calendar.prototype = {
 
             iter.setTime(iter.getTime() + MSECS_IN_DAY);
             if (iter.getDay() == this._weekStart) {
-                // We stop on the first "first day of the week" after the month we are displaying
-                if (iter.getMonth() > this._selectedDate.getMonth() || iter.getYear() > this._selectedDate.getYear())
-                    break;
                 row++;
+                // We always stop after placing 6 rows, even if month fits in 4 
+                // to prevent issues with jumping controls, see #226
+                if (row > 7) {
+                    break;
+                }
             }
         }
         // Signal to the event source that we are interested in events

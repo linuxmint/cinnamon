@@ -5,14 +5,9 @@ const Gdk = imports.gi.Gdk;
 const GLib = imports.gi.GLib;
 const GnomeDesktop = imports.gi.GnomeDesktop;
 const Lang = imports.lang;
-const St = imports.gi.St;
 const Applet = imports.ui.applet;
-const Main = imports.ui.main;
 const PopupMenu = imports.ui.popupMenu;
-const Panel = imports.ui.panel;
 
-const Gettext = imports.gettext.domain('gnome-shell-extensions');
-const _ = Gettext.gettext;
 const N_ = function(e) { return e };
 
 const possibleRotations = [ GnomeDesktop.RRRotation.ROTATION_0,
@@ -28,48 +23,32 @@ let rotations = [ [ GnomeDesktop.RRRotation.ROTATION_0, N_("Normal") ],
 		];
 
 const XRandr2Iface = {
-    name: 'org.gnome.SettingsDaemon.XRANDR_2',
+    name: 'org.cinnamon.SettingsDaemon.XRANDR_2',
     methods: [
 	{ name: 'ApplyConfiguration', inSignature: 'xx', outSignature: '' },
     ]
 };
 let XRandr2 = DBus.makeProxyClass(XRandr2Iface);
 
-function MyMenu(launcher, orientation) {
-    this._init(launcher, orientation);
-}
-
-MyMenu.prototype = {
-    __proto__: PopupMenu.PopupMenu.prototype,
-    
-    _init: function(launcher, orientation) {
-        this._launcher = launcher;        
-                
-        PopupMenu.PopupMenu.prototype._init.call(this, launcher.actor, 0.0, orientation, 0);
-        Main.uiGroup.add_actor(this.actor);
-        this.actor.hide();            
-    }
-}
-
-function MyApplet(orientation) {
-    this._init(orientation);
+function MyApplet(orientation, panel_height) {
+    this._init(orientation, panel_height);
 }
 
 MyApplet.prototype = {
     __proto__: Applet.IconApplet.prototype,
 
-    _init: function(orientation) {        
-        Applet.IconApplet.prototype._init.call(this, orientation);
+    _init: function(orientation, panel_height) {        
+        Applet.IconApplet.prototype._init.call(this, orientation, panel_height);
         
         try {        
-            this.set_applet_icon_name("preferences-desktop-display");
+            this.set_applet_icon_symbolic_name("preferences-desktop-display");
             this.set_applet_tooltip(_("Display"));
             
             this.menuManager = new PopupMenu.PopupMenuManager(this);
-            this.menu = new MyMenu(this, orientation);
+            this.menu = new Applet.AppletPopupMenu(this, orientation);
             this.menuManager.addMenu(this.menu);            
                                 
-            this._proxy = new XRandr2(DBus.session, 'org.gnome.SettingsDaemon', '/org/gnome/SettingsDaemon/XRANDR');
+            this._proxy = new XRandr2(DBus.session, 'org.cinnamon.SettingsDaemon', '/org/cinnamon/SettingsDaemon/XRANDR');
 
             try {
                 this._screen = new GnomeDesktop.RRScreen({ gdk_screen: Gdk.Screen.get_default() });
@@ -107,7 +86,7 @@ MyApplet.prototype = {
         }
         this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
         this.menu.addAction(_("Configure display settings..."), function() {
-            GLib.spawn_command_line_async('gnome-control-center display');
+            GLib.spawn_command_line_async('cinnamon-settings display');
         });
     },
 
@@ -123,7 +102,7 @@ MyApplet.prototype = {
         for (let i = 0; i < rotations.length; i++) {
             let [bitmask, name] = rotations[i];
             if (bitmask & allowedRotations) {
-                let item = new PopupMenu.PopupMenuItem(Gettext.gettext(name));
+                let item = new PopupMenu.PopupMenuItem(_(name));
                 if (bitmask & currentRotation)
                     item.setShowDot(true);
                 item.connect('activate', Lang.bind(this, function(item, event) {
@@ -135,7 +114,7 @@ MyApplet.prototype = {
                         config.save();
                         this._proxy.ApplyConfigurationRemote(0, event.get_time());
                     } catch (e) {
-                        log ('Could not save monitor configuration: ' + e);
+                        global.logError('Could not save monitor configuration', e);
                     }
                 }));
                 this.menu.addMenuItem(item);
@@ -167,8 +146,8 @@ MyApplet.prototype = {
     
 };
 
-function main(metadata, orientation) {  
-    let myApplet = new MyApplet(orientation);
+function main(metadata, orientation, panel_height) {  
+    let myApplet = new MyApplet(orientation, panel_height);
     return myApplet;      
 }
 

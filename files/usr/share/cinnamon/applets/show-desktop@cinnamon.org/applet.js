@@ -1,69 +1,26 @@
-const St = imports.gi.St;
-const Lang = imports.lang;
-const Cinnamon = imports.gi.Cinnamon;
 const Applet = imports.ui.applet;
+const Main = imports.ui.main;
 
-function MyApplet(orientation) {
-    this._init(orientation);
+function MyApplet(orientation, panel_height) {
+    this._init(orientation, panel_height);
 }
 
 MyApplet.prototype = {
     __proto__: Applet.IconApplet.prototype,
 
-    _init: function(orientation) {        
-        Applet.IconApplet.prototype._init.call(this, orientation);
+    _init: function(orientation, panel_height) {
+        Applet.IconApplet.prototype._init.call(this, orientation, panel_height);
         
-        try {        
-            this.set_applet_icon_name("desktop");
-            this.set_applet_tooltip(_("Show desktop"));
-                                                                                   
-            this._tracker = Cinnamon.WindowTracker.get_default();        
-            this._desktopShown = false;        
-            this._alreadyMinimizedWindows = [];
-        }
-        catch (e) {
-            global.logError(e);
-        }
+        this.set_applet_icon_name("desktop");
+        this.set_applet_tooltip(_("Show desktop"));
     },
     
     on_applet_clicked: function(event) {
-        let metaWorkspace = global.screen.get_active_workspace();
-        let windows = metaWorkspace.list_windows();
-        
-        if (this._desktopShown) {
-            for ( let i = 0; i < windows.length; ++i ) {
-                if (this._tracker.is_window_interesting(windows[i])){                   
-                    let shouldrestore = true;
-                    for (let j = 0; j < this._alreadyMinimizedWindows.length; j++) {
-                        if (windows[i] == this._alreadyMinimizedWindows[j]) {
-                            shouldrestore = false;
-                            break;
-                        }                        
-                    }    
-                    if (shouldrestore) {
-                        windows[i].unminimize();                                  
-                    }
-                }
-            }            
-            this._alreadyMinimizedWindows.length = [];      
-        }
-        else {
-            for ( let i = 0; i < windows.length; ++i ) {
-                if (this._tracker.is_window_interesting(windows[i])){                   
-                    if (!windows[i].minimized) {
-                        windows[i].minimize();
-                    }
-                    else {
-                        this._alreadyMinimizedWindows.push(windows[i]);
-                    }                    
-                }
-            }
-        }
-        this._desktopShown = !this._desktopShown;
+        global.screen.toggle_desktop(global.get_current_time());
     }
 };
 
-function main(metadata, orientation) {  
-    let myApplet = new MyApplet(orientation);
-    return myApplet;      
+function main(metadata, orientation, panel_height) {
+    let myApplet = new MyApplet(orientation, panel_height);
+    return myApplet;
 }

@@ -44,6 +44,7 @@ CinnamonTrayManager *cinnamon_tray_manager_new          (void);
 void              cinnamon_tray_manager_manage_stage (CinnamonTrayManager *manager,
                                                    ClutterStage     *stage,
                                                    StWidget         *theme_widget);
+void              cinnamon_tray_manager_redisplay (CinnamonTrayManager *manager);
 
 G_END_DECLS
 

@@ -1,7 +1,8 @@
-This package was debianized by Sebastien Bacher <seb128@ubuntu.com> on
-Wed, 01 Jul 2009 23:29:31 +0200.
+This package is based on the Debian packaging of gnome-shell:
+<http://packages.qa.debian.org/g/gnome-shell.html>
 
-It was downloaded from http://ftp.gnome.org/pub/GNOME/sources/cinnamon/2.28/
+The Debian gnome-shell package was debianized by Sebastien Bacher
+<seb128@ubuntu.com> on Wed, 01 Jul 2009 23:29:31 +0200.
 
 Upstream Authors:
 
@@ -23,19 +24,10 @@ Copyright: © 2000 Helix Code, Inc.
            © 2008 Intel Corp.
 License: GPL-2+ (/usr/share/common-licenses/GPL-2)
 
-Files: src/gdmuser/*
-Copyright: © 2007-2008 William Jon McCann <mccann@jhu.edu>
-           © 2004-2005 James M. Cape <jcape@ignore-your.tv>
-License: LGPL-2+ (/usr/share/common-licenses/LGPL-2)
-
 Files: src/tray/*
 Copyright: © 2002 Anders Carlsson <andersca@gnu.org>
            © 2003-2006 Vincent Untz
            © 2008 Red Hat, Inc.
-
-Files: src/big/*
-Copyright: © 2005-2008 Red Hat, Inc.
-           © 2008-2009 litl, LLC
 
 Files: src/st/*
 Copyright: © 2008 OpenedHand

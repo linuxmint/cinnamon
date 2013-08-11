@@ -345,6 +345,25 @@ na_tray_icon_added (NaTrayManager *na_manager, GtkWidget *socket,
 }
 
 static void
+cinnamon_tray_manager_child_redisplay (gpointer socket_pointer, gpointer child_pointer, gpointer user_data)
+{
+  CinnamonTrayManagerChild *child = child_pointer;
+  
+  g_return_if_fail(child != NULL);
+  
+  if (child->actor && CLUTTER_IS_ACTOR(child->actor)) {
+    clutter_actor_destroy(child->actor);
+  }
+  
+  on_plug_added(socket_pointer, child->manager);
+}
+
+void cinnamon_tray_manager_redisplay (CinnamonTrayManager *manager)
+{
+  g_hash_table_foreach(manager->priv->icons, cinnamon_tray_manager_child_redisplay, manager);
+}
+
+static void
 na_tray_icon_removed (NaTrayManager *na_manager, GtkWidget *socket,
                       gpointer user_data)
 {

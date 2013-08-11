@@ -32,6 +32,7 @@
 #include "config.h"
 #endif
 
+#include <math.h>
 #include <clutter/clutter.h>
 
 #include "st-scroll-bar.h"
@@ -244,35 +245,11 @@ st_scroll_bar_pick (ClutterActor       *actor,
 }
 
 static void
-st_scroll_bar_map (ClutterActor *actor)
-{
-  StScrollBarPrivate *priv = ST_SCROLL_BAR (actor)->priv;
-
-  CLUTTER_ACTOR_CLASS (st_scroll_bar_parent_class)->map (actor);
-
-  clutter_actor_map (priv->bw_stepper);
-  clutter_actor_map (priv->fw_stepper);
-  clutter_actor_map (priv->trough);
-
-  if (priv->handle)
-    clutter_actor_map (priv->handle);
-}
-
-static void
 st_scroll_bar_unmap (ClutterActor *actor)
 {
-  StScrollBarPrivate *priv = ST_SCROLL_BAR (actor)->priv;
-
   CLUTTER_ACTOR_CLASS (st_scroll_bar_parent_class)->unmap (actor);
 
   stop_scrolling (ST_SCROLL_BAR (actor));
-
-  clutter_actor_unmap (priv->bw_stepper);
-  clutter_actor_unmap (priv->fw_stepper);
-  clutter_actor_unmap (priv->trough);
-
-  if (priv->handle)
-    clutter_actor_unmap (priv->handle);
 }
 
 static void
@@ -630,14 +607,12 @@ st_scroll_bar_scroll_event (ClutterActor       *actor,
                             ClutterScrollEvent *event)
 {
   StScrollBarPrivate *priv = ST_SCROLL_BAR (actor)->priv;
-  gdouble lower, step, upper, value;
+  gdouble step, value, delta_x, delta_y;
 
   if (priv->adjustment)
     {
       g_object_get (priv->adjustment,
-                    "lower", &lower,
                     "step-increment", &step,
-                    "upper", &upper,
                     "value", &value,
                     NULL);
     }
@@ -648,19 +623,21 @@ st_scroll_bar_scroll_event (ClutterActor       *actor,
 
   switch (event->direction)
     {
+    case CLUTTER_SCROLL_SMOOTH:
+      clutter_event_get_scroll_delta ((ClutterEvent *)event,
+                                      &delta_x, &delta_y);
+      if (fabs (delta_x) > fabs(delta_y))
+        st_adjustment_set_value (priv->adjustment, value + delta_x);
+      else
+        st_adjustment_set_value (priv->adjustment, value + delta_y);
+      break;
     case CLUTTER_SCROLL_UP:
     case CLUTTER_SCROLL_LEFT:
-      if (value == lower)
-        return FALSE;
-      else
-        st_adjustment_set_value (priv->adjustment, value - step);
+      st_adjustment_set_value (priv->adjustment, value - step);
       break;
     case CLUTTER_SCROLL_DOWN:
     case CLUTTER_SCROLL_RIGHT:
-      if (value == upper)
-        return FALSE;
-      else
-        st_adjustment_set_value (priv->adjustment, value + step);
+      st_adjustment_set_value (priv->adjustment, value + step);
       break;
     }
 
@@ -688,7 +665,6 @@ st_scroll_bar_class_init (StScrollBarClass *klass)
   actor_class->paint          = st_scroll_bar_paint;
   actor_class->pick           = st_scroll_bar_pick;
   actor_class->scroll_event   = st_scroll_bar_scroll_event;
-  actor_class->map            = st_scroll_bar_map;
   actor_class->unmap          = st_scroll_bar_unmap;
 
   widget_class->style_changed = st_scroll_bar_style_changed;
@@ -777,16 +753,16 @@ move_slider (StScrollBar *bar,
 static void
 stop_scrolling (StScrollBar *bar)
 {
-  ClutterActor *stage;
+  ClutterStage *stage;
 
   if (!bar->priv->capture_handler)
     return;
 
-  stage = clutter_actor_get_stage (bar->priv->trough);
+  stage = CLUTTER_STAGE (clutter_actor_get_stage (bar->priv->trough));
   g_signal_handler_disconnect (stage, bar->priv->capture_handler);
   bar->priv->capture_handler = 0;
 
-  clutter_set_motion_events_enabled (TRUE);
+  clutter_stage_set_motion_events_enabled (stage, TRUE);
   g_signal_emit (bar, signals[SCROLL_STOP], 0);
 }
 
@@ -829,6 +805,7 @@ handle_button_press_event_cb (ClutterActor       *actor,
                               ClutterButtonEvent *event,
                               StScrollBar        *bar)
 {
+  ClutterStage *stage;
   StScrollBarPrivate *priv = bar->priv;
 
   if (event->button != 1)
@@ -845,8 +822,10 @@ handle_button_press_event_cb (ClutterActor       *actor,
   priv->x_origin += clutter_actor_get_x (priv->trough);
   priv->y_origin += clutter_actor_get_y (priv->trough);
 
+  stage = CLUTTER_STAGE (clutter_actor_get_stage (bar->priv->trough));
+
   /* Turn off picking for motion events */
-  clutter_set_motion_events_enabled (FALSE);
+  clutter_stage_set_motion_events_enabled (stage, FALSE);
 
   priv->capture_handler = g_signal_connect_after (
     clutter_actor_get_stage (priv->trough),

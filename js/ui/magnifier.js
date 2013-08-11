@@ -61,7 +61,7 @@ Magnifier.prototype = {
         this._zoomRegions = [];
 
         // Create small clutter tree for the magnified mouse.
-        let xfixesCursor = Cinnamon.XFixesCursor.get_default();
+        let xfixesCursor = Cinnamon.XFixesCursor.get_for_stage(global.stage);
         this._mouseSprite = new Clutter.Texture();
         xfixesCursor.update_texture_image(this._mouseSprite);
         this._cursorRoot = new Clutter.Group();
@@ -584,7 +584,7 @@ ZoomRegion.prototype = {
         this._viewPortX = 0;
         this._viewPortY = 0;
         this._viewPortWidth = global.screen_width;
-        this._viewPortWidth = global.screen_height;
+        this._viewPortHeight = global.screen_height;
         this._xCenter = this._viewPortWidth / 2;
         this._yCenter = this._viewPortHeight / 2;
         this._xMagFactor = 1;
@@ -604,7 +604,9 @@ ZoomRegion.prototype = {
             this._updateMagViewGeometry();
             this._updateCloneGeometry();
             this._updateMousePosition();
+            global.top_window_group.raise_top();
         } else if (!activate && this.isActive()) {
+            global.reparentActor(global.top_window_group, global.stage);
             this._destroyActors();
         }
     },
@@ -896,6 +898,7 @@ ZoomRegion.prototype = {
     //// Private methods ////
 
     _createActors: function() {
+        global.reparentActor(global.top_window_group, Main.uiGroup);
         // The root actor for the zoom region
         this._magView = new St.Bin({ style_class: 'magnifier-zoom-region', x_fill: true, y_fill: true });
         global.stage.add_actor(this._magView);

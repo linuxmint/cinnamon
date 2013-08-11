@@ -37,7 +37,8 @@ int main (int argc, char **argv)
   clutter_color_from_string (&red, "red");
   clutter_color_from_string (&green, "green");
   clutter_color_from_string (&blue, "blue");
-  stage = clutter_stage_get_default ();
+  stage = clutter_stage_new ();
+  g_signal_connect (stage, "destroy", G_CALLBACK (clutter_main_quit), NULL);
 
   text = g_object_new (CLUTTER_TYPE_TEXT,
 		       "text", "Red",
