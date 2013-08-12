@@ -111,16 +111,25 @@ VisibleChildIterator.prototype = {
     }
 };
 
-function SearchItem(provider, path, parent){
-    this._init(provider, path, parent);
+function SearchItem(provider, search_path, icon_path, parent){
+    this._init(provider, search_path, icon_path, parent);
 }
 
 SearchItem.prototype = {
-    __proto__: PopupMenu.PopupMenuItem.prototype,
+    __proto__: PopupMenu.PopupBaseMenuItem.prototype,
 
-    _init: function(provider, path, parent){
-        PopupMenu.PopupMenuItem.prototype._init.call(this, "");
+    _init: function(provider, path, icon_path, parent){
+        PopupMenu.PopupBaseMenuItem.prototype._init.call(this);
         this.actor.set_style_class_name("menu-category-button");
+
+        let file = Gio.file_new_for_path(icon_path);
+        let icon_uri = file.get_uri();
+        this.icon = St.TextureCache.get_default().load_uri_async(icon_uri, APPLICATION_ICON_SIZE, APPLICATION_ICON_SIZE);
+
+        this.label = new St.Label();
+        this.addActor(this.icon);
+        this.addActor(this.label);
+
         this.provider = provider;
         this.path = path;
         this.string = "";
@@ -136,7 +145,7 @@ SearchItem.prototype = {
 
     setString: function(string) {
         this.string = string;
-        this.label.set_text("Search " + this.provider + " for " + string);
+        this.label.set_text(" Search " + this.provider + " for " + string);
     },
 
     activate: function(event){
@@ -800,19 +809,20 @@ FavoritesBox.prototype = {
     }
 }
 
-function MyApplet(orientation, panel_height) {
-    this._init(orientation, panel_height);
+function MyApplet(metadata, orientation, panel_height) {
+    this._init(metadata, orientation, panel_height);
 }
 
 MyApplet.prototype = {
     __proto__: Applet.TextIconApplet.prototype,
 
-    _init: function(orientation, panel_height) {        
+    _init: function(metadata, orientation, panel_height) {
         Applet.TextIconApplet.prototype._init.call(this, orientation, panel_height);
         
         try {                    
             this.set_applet_tooltip(_("Menu"));
-                                    
+            this.metadata = metadata;
+
             this.menuManager = new PopupMenu.PopupMenuManager(this);
             this.menu = new Applet.AppletPopupMenu(this, orientation);
             this.menuManager.addMenu(this.menu);   
@@ -1837,7 +1847,11 @@ MyApplet.prototype = {
         });
         this._searchItems = [];
         for (let i in this._searchList) {
-            let item = new SearchItem(this._searchList[i][0], this._searchList[i][1], this.menu);
+            let path = this._searchList[i][2];
+            if (path.indexOf("/") == -1)
+                path = this.metadata.path + "/searchIcons/" + path;
+
+            let item = new SearchItem(this._searchList[i][0], this._searchList[i][1], path, this.menu);
             this._searchItems.push(item)
             this.applicationsBox.add_actor(item.actor);
         }
@@ -2220,6 +2234,6 @@ MyApplet.prototype = {
 };
 
 function main(metadata, orientation, panel_height) {  
-    let myApplet = new MyApplet(orientation, panel_height);
+    let myApplet = new MyApplet(metadata, orientation, panel_height);
     return myApplet;      
 }
