@@ -32,10 +32,10 @@ def fillKeyFile(keyfile, items):
 
         if isinstance(item, bool):
             keyfile.set_boolean(DESKTOP_GROUP, key, item)
-        elif isinstance(item, Sequence):
-            keyfile.set_string_list(DESKTOP_GROUP, key, item)
         elif isinstance(item, basestring):
             keyfile.set_string(DESKTOP_GROUP, key, item)
+        elif isinstance(item, Sequence):
+            keyfile.set_string_list(DESKTOP_GROUP, key, item)
 
 def getNameFromKeyFile(keyfile):
     return keyfile.get_string(DESKTOP_GROUP, "Name")

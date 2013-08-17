@@ -22,6 +22,7 @@ import cgi
 import os
 import gettext
 import subprocess
+import shutil
 
 from cme import config
 gettext.bindtextdomain(config.GETTEXT_PACKAGE, config.localedir)
@@ -58,6 +59,7 @@ class MainWindow(object):
         self.cut_copy_buffer = None
         self.file_id = None
         self.last_tree = None
+        self.main_window = self.tree.get_object('mainwindow')
 
     def run(self):
         self.loadMenus()
@@ -261,7 +263,7 @@ class MainWindow(object):
         else:
             parent = menus[iter][3]
         file_path = os.path.join(util.getUserDirectoryPath(), util.getUniqueFileId('alacarte-made', '.directory'))
-        process = subprocess.Popen(['gnome-desktop-item-edit', file_path], env=os.environ)
+        process = subprocess.Popen(['cinnamon-desktop-editor', '-mdirectory', '-o' + file_path], env=os.environ)
         GObject.timeout_add(100, self.waitForNewMenuProcess, process, parent.get_menu_id(), file_path)
 
     def on_new_item_button_clicked(self, button):
@@ -274,7 +276,7 @@ class MainWindow(object):
         else:
             parent = menus[iter][3]
         file_path = os.path.join(util.getUserItemPath(), util.getUniqueFileId('alacarte-made', '.desktop'))
-        process = subprocess.Popen(['gnome-desktop-item-edit', file_path], env=os.environ)
+        process = subprocess.Popen(['cinnamon-desktop-editor', '-mlauncher', '-o' + file_path], env=os.environ)
         GObject.timeout_add(100, self.waitForNewItemProcess, process, parent.get_menu_id(), file_path)
 
     def on_edit_delete_activate(self, menu):
@@ -301,18 +303,17 @@ class MainWindow(object):
 
         if isinstance(item, GMenu.TreeEntry):
             file_path = os.path.join(util.getUserItemPath(), item.get_desktop_file_id())
-            file_type = 'Item'
+            file_type = 'launcher'
         elif isinstance(item, GMenu.TreeDirectory):
             file_path = os.path.join(util.getUserDirectoryPath(), os.path.split(item.get_desktop_file_path())[1])
-            file_type = 'Menu'
+            file_type = 'directory'
 
         if not os.path.isfile(file_path):
-            data = open(item.get_desktop_file_path()).read()
-            open(file_path, 'w').write(data)
+            shutil.copy(item.get_desktop_file_path(), file_path)
 
         if file_path not in self.edit_pool:
             self.edit_pool.append(file_path)
-            process = subprocess.Popen(['gnome-desktop-item-edit', file_path], env=os.environ)
+            process = subprocess.Popen(['cinnamon-desktop-editor', '-m' + file_type, '-o' + file_path], env=os.environ)
             GObject.timeout_add(100, self.waitForEditProcess, process, file_path)
 
     def on_edit_cut_activate(self, menu):
