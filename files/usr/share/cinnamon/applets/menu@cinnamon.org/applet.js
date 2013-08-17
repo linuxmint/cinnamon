@@ -1848,10 +1848,17 @@ MyApplet.prototype = {
         this._searchItems = [];
         for (let i in this._searchList) {
             let path = this._searchList[i][2];
-            if (path.indexOf("/") == -1)
-                path = this.metadata.path + "/searchIcons/" + path;
 
-            let item = new SearchItem(this._searchList[i][0], this._searchList[i][1], path, this.menu);
+            let item;
+
+            if (path == "") {
+                item = new PopupMenu.PopupSeparatorMenuItem();
+            } else {
+                if (path.indexOf("/") == -1)
+                    path = this.metadata.path + "/searchIcons/" + path;
+
+                item = new SearchItem(this._searchList[i][0], this._searchList[i][1], path, this.menu);
+            }
             this._searchItems.push(item)
             this.applicationsBox.add_actor(item.actor);
         }
