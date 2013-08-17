@@ -28,8 +28,6 @@ const MAX_RECENT_FILES = 20;
 
 const USER_DESKTOP_PATH = FileUtils.getUserDesktopDir();
 
-const BROWSER = imports.gi.GConf.Client.get_default().get_string("/desktop/gnome/applications/browser/exec");
-
 let appsys = Cinnamon.AppSystem.get_default();
 
 /* VisibleChildIterator takes a container (boxlayout, etc.)
@@ -153,7 +151,7 @@ SearchItem.prototype = {
             this.string = this.string.replace(" ", "%20");
         }
 
-        Util.spawnCommandLine(BROWSER + " " + this.path + this.string);
+        Util.spawnCommandLine("xdg-open " + this.path + this.string);
         this.parent.toggle();
     }
 }
