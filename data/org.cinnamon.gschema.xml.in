@@ -760,6 +760,11 @@
     </key>   
   </schema>
   
+  <schema id="org.cinnamon.desklets" path="/org/cinnamon/desklets/"
+        gettext-domain="@GETTEXT_PACKAGE@">  
+    <child name="launcher" schema="org.cinnamon.desklets.launcher" />
+  </schema>
+
   <schema id="org.cinnamon.desklets.launcher" path="/org/cinnamon/desklets/launcher/"
         gettext-domain="@GETTEXT_PACKAGE@">
     <key name="launcher-list" type="as">
