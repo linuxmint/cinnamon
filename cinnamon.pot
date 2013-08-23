@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-07-25 00:07+0200\n"
+"POT-Creation-Date: 2013-08-23 12:49+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -233,7 +233,6 @@ msgstr ""
 #: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:165
 #: files/usr/share/cinnamon/applets/trash@cinnamon.org/applet.js:118
 #: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:277
-#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/cinnamon-add-panel-launcher.py:143
 msgid "Cancel"
 msgstr ""
 
@@ -298,27 +297,27 @@ msgstr ""
 msgid "Reload Code"
 msgstr ""
 
-#: js/ui/main.js:421
+#: js/ui/main.js:419
 msgid "Running in software rendering mode"
 msgstr ""
 
-#: js/ui/main.js:422
+#: js/ui/main.js:420
 msgid ""
 "Cinnamon is currently running without video hardware acceleration and, as a result, you may observe much higher than normal CPU usage.\n"
 "\n"
 msgstr ""
 
-#: js/ui/main.js:423
+#: js/ui/main.js:421
 msgid ""
 "There could be a problem with your drivers or some other issue.  For the "
 "best experience, it is recommended that you only use this mode for"
 msgstr ""
 
-#: js/ui/main.js:424
+#: js/ui/main.js:422
 msgid " troubleshooting purposes."
 msgstr ""
 
-#: js/ui/main.js:474
+#: js/ui/main.js:472
 msgid "WORKSPACE"
 msgstr ""
 
@@ -486,8 +485,8 @@ msgid "Authentication Required"
 msgstr ""
 
 #: js/ui/polkitAuthenticationAgent.js:107
-#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:278
-#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:453
+#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:279
+#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:457
 msgid "Administrator"
 msgstr ""
 
@@ -500,7 +499,7 @@ msgid "Sorry, that didn't work. Please try again."
 msgstr ""
 
 #: js/ui/polkitAuthenticationAgent.js:270
-#: files/usr/lib/cinnamon-settings/modules/cs_user.py:165
+#: files/usr/lib/cinnamon-settings/modules/cs_user.py:168
 msgid "Password:"
 msgstr ""
 
@@ -641,7 +640,7 @@ msgstr ""
 #: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:211
 #: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:215
 #: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:467
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:66
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:67
 msgid "Bluetooth"
 msgstr ""
 
@@ -701,8 +700,8 @@ msgid "Please enter the PIN mentioned on the device."
 msgstr ""
 
 #: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:164
-#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:252
-#: files/usr/lib/cinnamon-settings/modules/cs_user.py:457
+#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:253
+#: files/usr/lib/cinnamon-settings/modules/cs_user.py:460
 msgid "OK"
 msgstr ""
 
@@ -798,25 +797,21 @@ msgstr ""
 msgid "Date and Time Settings"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/expo@cinnamon.org/applet.js:19
+#: files/usr/share/cinnamon/applets/expo@cinnamon.org/applet.js:20
 #: files/usr/lib/cinnamon-settings/modules/cs_hotcorner.py:118
 msgid "Expo"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/keyboard@cinnamon.org/applet.js:66
+#: files/usr/share/cinnamon/applets/keyboard@cinnamon.org/applet.js:74
 msgid "Show Keyboard Layout"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/keyboard@cinnamon.org/applet.js:70
+#: files/usr/share/cinnamon/applets/keyboard@cinnamon.org/applet.js:78
 msgid "Show Character Table"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/keyboard@cinnamon.org/applet.js:74
+#: files/usr/share/cinnamon/applets/keyboard@cinnamon.org/applet.js:82
 msgid "Region and Language Settings"
-msgstr ""
-
-#: files/usr/share/cinnamon/applets/keyboard@cinnamon.org/applet.js:76
-msgid "Show flags"
 msgstr ""
 
 #: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:218
@@ -1094,7 +1089,6 @@ msgstr ""
 #: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/applet.js:50
 #: files/usr/lib/cinnamon-settings/modules/cs_backgrounds.py:503
 #: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:272
-#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/cinnamon-add-panel-launcher.py:153
 msgid "Add"
 msgstr ""
 
@@ -1145,7 +1139,7 @@ msgstr ""
 
 #: files/usr/share/cinnamon/applets/power@cinnamon.org/applet.js:182
 #: files/usr/share/cinnamon/applets/xrandr@cinnamon.org/applet.js:45
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:55
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:56
 msgid "Display"
 msgstr ""
 
@@ -1216,7 +1210,7 @@ msgstr ""
 msgid "Open file manager"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/scale@cinnamon.org/applet.js:19
+#: files/usr/share/cinnamon/applets/scale@cinnamon.org/applet.js:20
 #: files/usr/lib/cinnamon-settings/modules/cs_effects.py:80
 #: files/usr/lib/cinnamon-settings/modules/cs_effects.py:84
 #: files/usr/lib/cinnamon-settings/modules/cs_effects.py:88
@@ -1415,8 +1409,8 @@ msgid "Photo Frame"
 msgstr ""
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:34
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:203
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:345
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:204
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:346
 msgid "System Settings"
 msgstr ""
 
@@ -1444,213 +1438,217 @@ msgstr ""
 msgid "Hardware"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:54
-msgid "Networking"
-msgstr ""
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:54
-msgid "network, wireless, wifi, ethernet, broadband, internet"
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:50
+msgid "Administration"
 msgstr ""
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:55
+msgid "Networking"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:55
+msgid "network, wireless, wifi, ethernet, broadband, internet"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:56
 msgid "display, screen, monitor, layout, resolution, dual, lcd"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:56
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:57
 msgid "Regional Settings"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:56
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:57
 msgid "region, layout, keyboard, language"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:57
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:58
 #: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:474
 msgid "Universal Access"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:57
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:58
 msgid "magnifier, talk, access, zoom, keys, contrast"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:58
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:59
 msgid "Power Management"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:58
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:59
 msgid "power, suspend, hibernate, laptop, desktop"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:59
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:60
 msgid "Sound"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:59
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:60
 msgid "sound, speakers, headphones, test"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:60
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:61
 msgid "Color"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:60
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:61
 msgid "color, profile, display, printer, output"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:65
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:66
 msgid "Printers"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:65
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:66
 msgid "printers, laser, inkjet"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:66
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:67
 msgid "bluetooth, dongle, transfer, mobile"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:67
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:68
 msgid "Firewall"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:67
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:68
 msgid "firewall, block, filter, programs"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:68
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:69
 msgid "Languages"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:68
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:69
 msgid "language, install, foreign"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:69
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:70
 msgid "Login Screen"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:69
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:70
 msgid "login, mdm, gdm, manager, user, password, startup, switch"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:70
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:71
 msgid "Startup Programs"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:70
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:71
 msgid "startup, programs, boot, init, session"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:71
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:72
 msgid "Device Drivers"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:71
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:72
 msgid ""
 "video, driver, wifi, card, hardware, proprietary, nvidia, radeon, nouveau, "
 "fglrx"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:72
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:73
 msgid "Software Sources"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:72
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:73
 msgid "ppa, repository, package, source, download"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:73
-#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:370
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:74
+#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:371
 msgid "Users and Groups"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:73
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:74
 msgid "user, users, account, accounts, group, groups, password"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:131
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:132
 msgid "All Settings"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:48
+#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:49
 msgid "The group name cannot contain space characters"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:157
-#: files/usr/lib/cinnamon-settings/modules/cs_user.py:317
+#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:158
+#: files/usr/lib/cinnamon-settings/modules/cs_user.py:320
 msgid "New password"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:157
-#: files/usr/lib/cinnamon-settings/modules/cs_user.py:321
+#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:158
+#: files/usr/lib/cinnamon-settings/modules/cs_user.py:324
 msgid "Confirm password"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:161
-#: files/usr/lib/cinnamon-settings/modules/cs_user.py:332
+#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:162
+#: files/usr/lib/cinnamon-settings/modules/cs_user.py:335
 msgid "Generate a password"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:167
-#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:173
-#: files/usr/lib/cinnamon-settings/modules/cs_user.py:338
-#: files/usr/lib/cinnamon-settings/modules/cs_user.py:344
+#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:168
+#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:174
+#: files/usr/lib/cinnamon-settings/modules/cs_user.py:341
+#: files/usr/lib/cinnamon-settings/modules/cs_user.py:347
 msgid "Your new password needs to be at least 8 characters long"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:181
-#: files/usr/lib/cinnamon-settings/modules/cs_user.py:352
+#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:182
+#: files/usr/lib/cinnamon-settings/modules/cs_user.py:355
 msgid "Show password"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:187
-#: files/usr/lib/cinnamon-settings/modules/cs_user.py:358
+#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:188
+#: files/usr/lib/cinnamon-settings/modules/cs_user.py:361
 msgid "An error occured. Your password was not changed."
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:198
-#: files/usr/lib/cinnamon-settings/modules/cs_user.py:369
+#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:199
+#: files/usr/lib/cinnamon-settings/modules/cs_user.py:372
 msgid "Change"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:245
-#: files/usr/lib/cinnamon-settings/modules/cs_user.py:450
+#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:246
+#: files/usr/lib/cinnamon-settings/modules/cs_user.py:453
 msgid "Passwords do not match"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:249
-#: files/usr/lib/cinnamon-settings/modules/cs_user.py:454
+#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:250
+#: files/usr/lib/cinnamon-settings/modules/cs_user.py:457
 msgid "Too short"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:277
-#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:452
+#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:278
+#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:456
 msgid "Standard"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:288
-#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:482
+#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:289
+#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:486
 msgid "Account Type"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:288
+#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:289
 msgid "Full Name"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:288
+#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:289
 msgid "Username"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:309
+#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:310
 msgid "The username cannot contain space characters"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:371
+#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:372
 msgid "Users"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:372
-#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:482
+#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:373
+#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:486
 msgid "Groups"
 msgstr ""
 
@@ -1659,72 +1657,71 @@ msgid "Click to change the picture"
 msgstr ""
 
 #: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:426
-#: files/usr/lib/cinnamon-settings/modules/cs_user.py:109
+#: files/usr/lib/cinnamon-settings/modules/cs_user.py:108
 msgid "Browse for more pictures..."
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:458
+#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:462
 msgid "Click to change the name"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:465
+#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:469
 msgid "Click to change the password"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:475
+#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:479
 msgid "Click to change the groups"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:482
+#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:486
 msgid "Picture"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:482
+#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:486
 #: files/usr/lib/cinnamon-settings/bin/ExtensionCore.py:240
-#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/cinnamon-add-panel-launcher.py:140
 msgid "Name"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:482
+#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:486
 msgid "Password"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:546
-#: files/usr/lib/cinnamon-settings/modules/cs_user.py:223
+#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:553
+#: files/usr/lib/cinnamon-settings/modules/cs_user.py:226
 msgid "Images"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:646
+#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:665
 msgid "No password set"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:648
+#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:667
 msgid "Set at login"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:671
+#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:690
 msgid "This user is currently logged in"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:684
+#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:703
 #, c-format
 msgid ""
 "Are you sure you want to permanently delete %s and all the files associated "
 "with this user?"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:742
+#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:761
 #, c-format
 msgid "This group is set as %s's primary group"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:754
+#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:773
 #, c-format
 msgid "Are you sure you want to permanently delete %s?"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:769
-#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:780
+#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:788
+#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:799
 msgid "Group Name"
 msgstr ""
 
@@ -2686,7 +2683,6 @@ msgid "Alt-"
 msgstr ""
 
 #: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:270
-#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/cinnamon-add-panel-launcher.py:150
 msgid "Update"
 msgstr ""
 
@@ -2696,7 +2692,7 @@ msgid "Add custom shortcut"
 msgstr ""
 
 #: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:281
-#: files/usr/lib/cinnamon-settings/modules/cs_user.py:160
+#: files/usr/lib/cinnamon-settings/modules/cs_user.py:163
 msgid "Name:"
 msgstr ""
 
@@ -2705,7 +2701,7 @@ msgid "Command:"
 msgstr ""
 
 #: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:290
-#: files/usr/lib/cinnamon-settings/bin/XletSettingsWidgets.py:700
+#: files/usr/lib/cinnamon-settings/bin/XletSettingsWidgets.py:734
 msgid "Select a file"
 msgstr ""
 
@@ -2853,7 +2849,6 @@ msgid "menu, start, bookmarks, places, recent"
 msgstr ""
 
 #: files/usr/lib/cinnamon-settings/modules/cs_menu.py:15
-#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/cinnamon-add-panel-launcher.py:142
 msgid "Icon"
 msgstr ""
 
@@ -3206,31 +3201,31 @@ msgstr ""
 msgid "Account details"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/modules/cs_user.py:90
+#: files/usr/lib/cinnamon-settings/modules/cs_user.py:89
 msgid "Click to change your picture"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/modules/cs_user.py:105
+#: files/usr/lib/cinnamon-settings/modules/cs_user.py:104
 msgid "Take a photo..."
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/modules/cs_user.py:139
+#: files/usr/lib/cinnamon-settings/modules/cs_user.py:142
 msgid "Click to change your name"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/modules/cs_user.py:146
+#: files/usr/lib/cinnamon-settings/modules/cs_user.py:149
 msgid "Picture:"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/modules/cs_user.py:156
+#: files/usr/lib/cinnamon-settings/modules/cs_user.py:159
 msgid "Click to change your password"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/modules/cs_user.py:313
+#: files/usr/lib/cinnamon-settings/modules/cs_user.py:316
 msgid "Current password"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/modules/cs_user.py:435
+#: files/usr/lib/cinnamon-settings/modules/cs_user.py:438
 msgid "Wrong password"
 msgstr ""
 
@@ -3749,11 +3744,11 @@ msgid ""
 "The original configuration file is unchanged."
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/XletSettingsWidgets.py:165
+#: files/usr/lib/cinnamon-settings/bin/XletSettingsWidgets.py:176
 msgid "Possible incompatible versions"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/XletSettingsWidgets.py:169
+#: files/usr/lib/cinnamon-settings/bin/XletSettingsWidgets.py:180
 msgid ""
 "The MD5 tags for the file you are trying to import and the existing file do not match.\n"
 "This means the two files were generated by different versions of this applet, desklet or extension,\n"
@@ -3762,48 +3757,36 @@ msgid ""
 "Are you sure you want to proceed?"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/XletSettingsWidgets.py:697
+#: files/usr/lib/cinnamon-settings/bin/XletSettingsWidgets.py:731
 msgid "Select a directory to use"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/XletSettingsWidgets.py:708
+#: files/usr/lib/cinnamon-settings/bin/XletSettingsWidgets.py:742
 msgid "Directories"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/XletSettingsWidgets.py:781
+#: files/usr/lib/cinnamon-settings/bin/XletSettingsWidgets.py:815
 msgid "Pick a new icon file"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/XletSettingsWidgets.py:788
+#: files/usr/lib/cinnamon-settings/bin/XletSettingsWidgets.py:822
 msgid "Image files"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/XletSettingsWidgets.py:877
+#: files/usr/lib/cinnamon-settings/bin/XletSettingsWidgets.py:911
 msgid "Click to set a new accelerator key."
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/XletSettingsWidgets.py:878
+#: files/usr/lib/cinnamon-settings/bin/XletSettingsWidgets.py:912
 msgid "  Press Escape or click again to cancel the operation."
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/XletSettingsWidgets.py:900
+#: files/usr/lib/cinnamon-settings/bin/XletSettingsWidgets.py:934
 msgid "Pick an accelerator"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/bin/XletSettingsWidgets.py:942
+#: files/usr/lib/cinnamon-settings/bin/XletSettingsWidgets.py:976
 msgid "<not set>"
-msgstr ""
-
-#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/cinnamon-add-panel-launcher.py:59
-msgid "Custom Launcher"
-msgstr ""
-
-#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/cinnamon-add-panel-launcher.py:141
-msgid "Application"
-msgstr ""
-
-#: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/cinnamon-add-panel-launcher.py:144
-msgid "Add panel launcher..."
 msgstr ""
 
 #: files/usr/lib/cinnamon-screensaver-lock-dialog/cinnamon-screensaver-lock-dialog.py:40
