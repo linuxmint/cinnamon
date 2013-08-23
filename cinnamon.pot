@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-08-23 12:49+0100\n"
+"POT-Creation-Date: 2013-08-23 14:17+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -96,8 +96,12 @@ msgstr ""
 msgid "Execution of '%s' failed:"
 msgstr ""
 
-#: js/ui/applet.js:399
+#: js/ui/applet.js:403
 msgid "Remove this applet"
+msgstr ""
+
+#: js/ui/applet.js:410
+msgid "Configure..."
 msgstr ""
 
 #: js/ui/autorunManager.js:275

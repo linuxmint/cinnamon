@@ -341,6 +341,7 @@ function createApplet(extension, appletDefinition) {
 
     appletObj[applet_id] = applet;
     applet._uuid = extension.uuid;
+    applet._meta = extension.meta;
     applet.instance_id = applet_id;
 
     applet.finalizeContextMenu();

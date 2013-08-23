@@ -2,6 +2,7 @@ const St = imports.gi.St;
 const Lang = imports.lang;
 const Tooltips = imports.ui.tooltips;
 const PopupMenu = imports.ui.popupMenu;
+const GLib = imports.gi.GLib;
 const Gio = imports.gi.Gio;
 const Main = imports.ui.main;
 const DND = imports.ui.dnd;
@@ -51,10 +52,14 @@ MenuItem.prototype = {
         this._icon = icon;
         this._callback = callback;
 
-        this.icon = new St.Icon({ icon_name: icon,
+        if (icon != null) {
+
+            this.icon = new St.Icon({ icon_name: icon,
                                   icon_type: St.IconType.FULLCOLOR,
                                   style_class: 'popup-menu-icon' });
-        this.addActor(this.icon);
+            this.addActor(this.icon);
+        }
+
         this.label = new St.Label({ text: text });
         this.addActor(this.label);
 
@@ -191,6 +196,7 @@ Applet.prototype = {
         this.instance_id = instance_id; // Needed by appletSettings
         this._uuid = null; // Defined in gsettings, set by Cinnamon.
         this._hook = null; // Defined in metadata.json, set by appletManager
+        this._meta = null; // set by appletManager
         this._dragging = false;                
         this._draggable = DND.makeDraggable(this.actor);
         this._draggable.connect('drag-begin', Lang.bind(this, this._onDragBegin));
@@ -205,8 +211,7 @@ Applet.prototype = {
 
         this._setAppletReactivity();
         this._panelEditModeChangedId = global.settings.connect('changed::panel-edit-mode', Lang.bind(this, function() {
-            this._setAppletReactivity();
-            this.finalizeContextMenu();
+            this._setAppletReactivity();            
         }));
     },
 
@@ -392,26 +397,23 @@ Applet.prototype = {
     },
     
     finalizeContextMenu: function () {
-        // Add default context menus if we're in panel edit mode, ensure their removal if we're not
-        let isEditMode = global.settings.get_boolean('panel-edit-mode');
+        // Add default context menus if we're in panel edit mode, ensure their removal if we're not       
         let items = this._applet_context_menu._getMenuItems();
-        if (isEditMode && items.indexOf(this.context_menu_item_remove) == -1) {
-            this.context_menu_item_remove = new MenuItem(_("Remove this applet"), Gtk.STOCK_REMOVE, Lang.bind(null, AppletManager._removeAppletFromPanel, this._uuid, this.instance_id));
-            this.context_menu_separator = new PopupMenu.PopupSeparatorMenuItem();
-            if (this._applet_context_menu._getMenuItems().length > 0) {
-                this._applet_context_menu.addMenuItem(this.context_menu_separator);
-            }
-            this._applet_context_menu.addMenuItem(this.context_menu_item_remove);
-        } else {
-            if (items.indexOf(this.context_menu_separator) != -1) {
-                this.context_menu_separator.destroy();
-                this.context_menu_separator = null;
-            }
-            if (items.indexOf(this.context_menu_item_remove) != -1) {
-                this.context_menu_item_remove.destroy();
-                this.context_menu_item_remove = null;
-            }
+
+        this.context_menu_item_remove = new MenuItem(_("Remove this applet"), null, Lang.bind(null, AppletManager._removeAppletFromPanel, this._uuid, this.instance_id));
+        this.context_menu_separator = new PopupMenu.PopupSeparatorMenuItem();
+        if (this._applet_context_menu._getMenuItems().length > 0) {
+            this._applet_context_menu.addMenuItem(this.context_menu_separator);
+         }
+        
+        if (GLib.file_test(this._meta["path"] + "/settings-schema.json", GLib.FileTest.EXISTS)) {            
+            this.context_menu_item_configure = new MenuItem(_("Configure..."), null, Lang.bind(this, function() {
+                Util.spawnCommandLine("cinnamon-settings applets " + this._uuid + " " + this.instance_id)
+            }));
+            this._applet_context_menu.addMenuItem(this.context_menu_item_configure);
         }
+
+        this._applet_context_menu.addMenuItem(this.context_menu_item_remove);            
     }
 };
 
