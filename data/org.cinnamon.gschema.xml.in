@@ -552,7 +552,7 @@
     </key>
     
     <key name="window-list-applet-alert" type="b">
-      <default>false</default>
+      <default>true</default>
       <summary>Enable window list alerts</summary>
       <description>
         Enable window list alerts
