@@ -10,6 +10,9 @@ const Gio = imports.gi.Gio
 const AccountsService = imports.gi.AccountsService;
 const GnomeSession = imports.misc.gnomeSession;
 const ScreenSaver = imports.misc.screenSaver;
+const Main = imports.ui.main;
+const Panel = imports.ui.panel;
+
 
 function MyApplet(orientation) {
     this._init(orientation);
@@ -69,6 +72,10 @@ MyApplet.prototype = {
                 Util.spawnCommandLine("cinnamon-settings user");
             }));
 
+            this.menu.addAction(_("System Settings"), Lang.bind(this, function() {
+                Util.spawnCommandLine("cinnamon-settings");
+            }));
+
             this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
             this.menu.addAction(_("Lock Screen"), Lang.bind(this, function() {
@@ -107,6 +114,38 @@ MyApplet.prototype = {
             this._userLoadedId = this._user.connect('notify::is_loaded', Lang.bind(this, this._onUserChanged));
             this._userChangedId = this._user.connect('changed', Lang.bind(this, this._onUserChanged));
             this._onUserChanged();
+
+
+            // CONTEXT MENU ITEMS
+
+            let troubleshootItem = new PopupMenu.PopupSubMenuMenuItem(_("Troubleshoot"));
+            troubleshootItem.menu.addAction(_("Restart Cinnamon"), function(event) {
+                global.reexec_self();
+            });
+
+            troubleshootItem.menu.addAction(_("Looking Glass"), function(event) {
+                Main.createLookingGlass().open();
+            });
+
+            troubleshootItem.menu.addAction(_("Restore all settings to default"), function(event) {
+                let confirm = new Panel.ConfirmDialog();
+                confirm.open();
+            });
+
+            this._applet_context_menu.addMenuItem(troubleshootItem);
+
+            menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+
+            let editMode = global.settings.get_boolean("panel-edit-mode");
+            let panelEditMode = new PopupMenu.PopupSwitchMenuItem(_("Panel Edit mode"), editMode);
+            panelEditMode.connect('toggled', function(item) {
+                global.settings.set_boolean("panel-edit-mode", item.state);
+            });
+            this._applet_context_menu.addMenuItem(panelEditMode);
+            global.settings.connect('changed::panel-edit-mode', function() {
+                panelEditMode.setToggleState(global.settings.get_boolean("panel-edit-mode"));
+            });
+
         }
         catch (e) {
             global.logError(e);
