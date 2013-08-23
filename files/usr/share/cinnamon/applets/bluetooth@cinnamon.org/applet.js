@@ -111,7 +111,7 @@ ConfirmNotification.prototype = {
         this._applet = applet;
         this._devicePath = device_path;
         this.addBody(_("Device %s wants to pair with this computer").format(long_name));
-        this.addBody(_("Please confirm whether the PIN '%s' matches the one on the device.").format(pin));
+        this.addBody(_("Please confirm whether the Passkey '%06d' matches the one on the device.").format(pin));
 
         this.addButton('matches', _("Matches"));
         this.addButton('does-not-match', _("Does not match"));
@@ -151,7 +151,8 @@ PinNotification.prototype = {
         this._entry.connect('key-release-event', Lang.bind(this, function(entry, event) {
             let key = event.get_key_symbol();
             if (key == Clutter.KEY_Return) {
-                this.emit('action-invoked', 'ok');
+                if (this._canActivateOkButton())
+                    this.emit('action-invoked', 'ok');
                 return true;
             } else if (key == Clutter.KEY_Escape) {
                 this.emit('action-invoked', 'cancel');
@@ -163,6 +164,12 @@ PinNotification.prototype = {
 
         this.addButton('ok', _("OK"));
         this.addButton('cancel', _("Cancel"));
+
+        this.setButtonSensitive('ok', this._canActivateOkButton());
+        this._entry.clutter_text.connect('text-changed', Lang.bind(this,
+            function() {
+                this.setButtonSensitive('ok', this._canActivateOkButton());
+            }));
 
         this.connect('action-invoked', Lang.bind(this, function(self, action) {
             if (action == 'ok') {
@@ -184,6 +191,14 @@ PinNotification.prototype = {
             }
             this.destroy();
         }));
+    },
+
+    _canActivateOkButton: function() {
+        // PINs have a fixed length of 6
+        if (this._numeric)
+            return this._entry.clutter_text.text.length == 6;
+        else
+            return true;
     },
 
     grabFocus: function(lockTray) {
@@ -453,22 +468,6 @@ MyApplet.prototype = {
         if (device.capabilities & GnomeBluetoothApplet.Capabilities.OBEX_PUSH) {
             item.menu.addAction(_("Send Files..."), Lang.bind(this, function() {
                 this._applet.send_to_address(device.bdaddr, device.alias);
-            }));
-        }
-        if (device.capabilities & GnomeBluetoothApplet.Capabilities.OBEX_FILE_TRANSFER) {
-            item.menu.addAction(_("Browse Files..."), Lang.bind(this, function(event) {
-                this._applet.browse_address(device.bdaddr, event.get_time(),
-                    Lang.bind(this, function(applet, result) {
-                        try {
-                            applet.browse_address_finish(result);
-                        } catch (e) {
-                            this._ensureSource();
-                            this._source.notify(new MessageTray.Notification(this._source,
-                                 _("Bluetooth"),
-                                 _("Error browsing device"),
-                                 { body: _("The requested device cannot be browsed, error is '%s'").format(e) }));
-                        }
-                    }));
             }));
         }
 
