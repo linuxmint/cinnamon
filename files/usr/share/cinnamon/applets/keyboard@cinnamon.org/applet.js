@@ -79,12 +79,7 @@ MyApplet.prototype = {
                 Main.overview.hide();
                 Util.spawn(['gucharmap']);
             }));
-            this.menu.addSettingsAction(_("Region and Language Settings"), 'region'); 
-            
-            this.show_flags_switch = new PopupMenu.PopupSwitchMenuItem(_("Show flags"), this._showFlags);
-            this._applet_context_menu.addMenuItem(this.show_flags_switch);            
-            this.show_flags_switch.connect('toggled', Lang.bind(this, this._toggle_flags));
-                      
+            this.menu.addSettingsAction(_("Region and Language Settings"), 'region');                      
         }
         catch (e) {
             global.logError(e);
@@ -93,11 +88,7 @@ MyApplet.prototype = {
     
     on_applet_clicked: function(event) {
         this.menu.toggle();        
-    },
-    
-    _toggle_flags: function() {
-	this._showFlags = !this._showFlags;
-    },
+    },  
 
    _adjustGroupNames: function(names) {
         // Disambiguate duplicate names with a subscript
