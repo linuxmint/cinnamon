@@ -206,7 +206,6 @@ Applet.prototype = {
         this._setAppletReactivity();
         this._panelEditModeChangedId = global.settings.connect('changed::panel-edit-mode', Lang.bind(this, function() {
             this._setAppletReactivity();
-            this.finalizeContextMenu();
         }));
     },
 
@@ -392,26 +391,15 @@ Applet.prototype = {
     },
     
     finalizeContextMenu: function () {
-        // Add default context menus if we're in panel edit mode, ensure their removal if we're not
-        let isEditMode = global.settings.get_boolean('panel-edit-mode');
+        // Add default context menus
         let items = this._applet_context_menu._getMenuItems();
-        if (isEditMode && items.indexOf(this.context_menu_item_remove) == -1) {
-            this.context_menu_item_remove = new MenuItem(_("Remove this applet"), Gtk.STOCK_REMOVE, Lang.bind(null, AppletManager._removeAppletFromPanel, this._uuid, this.instance_id));
-            this.context_menu_separator = new PopupMenu.PopupSeparatorMenuItem();
-            if (this._applet_context_menu._getMenuItems().length > 0) {
-                this._applet_context_menu.addMenuItem(this.context_menu_separator);
-            }
-            this._applet_context_menu.addMenuItem(this.context_menu_item_remove);
-        } else {
-            if (items.indexOf(this.context_menu_separator) != -1) {
-                this.context_menu_separator.destroy();
-                this.context_menu_separator = null;
-            }
-            if (items.indexOf(this.context_menu_item_remove) != -1) {
-                this.context_menu_item_remove.destroy();
-                this.context_menu_item_remove = null;
-            }
+
+        this.context_menu_item_remove = new MenuItem(_("Remove this applet"), Gtk.STOCK_REMOVE, Lang.bind(null, AppletManager._removeAppletFromPanel, this._uuid, this.instance_id));
+        this.context_menu_separator = new PopupMenu.PopupSeparatorMenuItem();
+        if (this._applet_context_menu._getMenuItems().length > 0) {
+            this._applet_context_menu.addMenuItem(this.context_menu_separator);
         }
+        this._applet_context_menu.addMenuItem(this.context_menu_item_remove);
     }
 };
 
