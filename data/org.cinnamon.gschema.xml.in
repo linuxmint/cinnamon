@@ -146,14 +146,6 @@
       </_description>
     </key>
 
-    <key name="keyboard-applet-use-flags" type="b">
-      <default>true</default>
-      <_summary>Use flags to display the keyboard layouts</_summary>
-      <_description>
-        Whether to use flags to display the keyboard layouts.
-      </_description>
-    </key>
-
     <key name="desktop-effects" type="b">
       <default>true</default>
       <_summary>Enable desktop effects</_summary>
@@ -415,22 +407,6 @@
       <_description>Properties of overview corners, in the form functionality:hover:icon. The order in which properties are displayed is top left, top right, bottom left, bottom right.</_description>
     </key>
 
-    <key name="expo-applet-hover" type="b">
-      <default>false</default>
-      <_summary>Expo applet: Activate on hover</_summary>
-      <_description>
-        Whether the expo applet triggers only when you click, or when you hover on it
-      </_description>
-    </key>
-    
-    <key name="scale-applet-hover" type="b">
-      <default>false</default>
-      <_summary>Scale applet: Activate on hover</_summary>
-      <_description>
-        Whether the scale applet triggers only when you click, or when you hover on it
-      </_description>
-    </key>
-    
     <key name="panel-launchers" type="as">
       <default>[ 'firefox.desktop', 'gnome-terminal.desktop', 'nemo.desktop']</default>
       <_summary>Desktop files of the applications to put in the panel launchers applet</_summary>
@@ -784,27 +760,6 @@
     </key>   
   </schema>
   
-  <schema id="org.cinnamon.desklets" path="/org/cinnamon/desklets/"
-        gettext-domain="@GETTEXT_PACKAGE@">
-    <child name="clock" schema="org.cinnamon.desklets.clock"/>
-  </schema>
-
-  <schema id="org.cinnamon.desklets.clock" path="/org/cinnamon/desklets/clock/"
-        gettext-domain="@GETTEXT_PACKAGE@">
-    <key name="date-format" type="s">
-      <default>'%H:%M'</default>
-      <_summary>The date format for the clock desklet</_summary>
-      <_description>
-        The format to be used in the clock desklet
-      </_description>
-    </key>
-
-    <key type="i" name="font-size">
-      <default>50</default>
-      <_summary>The font size for the clock deskelt</_summary>
-      <_description> The font size to be used to display the time on the clock desklet</_description>
-    </key>
-  </schema>
   <schema id="org.cinnamon.desklets.launcher" path="/org/cinnamon/desklets/launcher/"
         gettext-domain="@GETTEXT_PACKAGE@">
     <key name="launcher-list" type="as">
