@@ -24,7 +24,7 @@
 #include "st-texture-cache.h"
 #include <gtk/gtk.h>
 #define GNOME_DESKTOP_USE_UNSTABLE_API
-#include <libgnome-desktop/gnome-desktop-thumbnail.h>
+#include <libcinnamon-desktop/gnome-desktop-thumbnail.h>
 #include <string.h>
 #include <glib.h>
 #include "st.h"

@@ -10,7 +10,7 @@ const CinnamonMountOperation = imports.ui.cinnamonMountOperation;
 const ScreenSaver = imports.misc.screenSaver;
 
 // GSettings keys
-const SETTINGS_SCHEMA = 'org.gnome.desktop.media-handling';
+const SETTINGS_SCHEMA = 'org.cinnamon.desktop.media-handling';
 const SETTING_ENABLE_AUTOMOUNT = 'automount';
 
 const AUTORUN_EXPIRE_TIMEOUT_SECS = 10;

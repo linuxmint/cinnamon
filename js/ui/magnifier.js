@@ -33,10 +33,10 @@ const MOUSE_POLL_FREQUENCY = 50;
 const CROSSHAIRS_CLIP_SIZE = [100, 100];
 
 // Settings
-const APPLICATIONS_SCHEMA       = 'org.gnome.desktop.a11y.applications';
+const APPLICATIONS_SCHEMA       = 'org.cinnamon.desktop.a11y.applications';
 const SHOW_KEY                  = 'screen-magnifier-enabled';
 
-const MAGNIFIER_SCHEMA          = 'org.gnome.desktop.a11y.magnifier';
+const MAGNIFIER_SCHEMA          = 'org.cinnamon.desktop.a11y.magnifier';
 const SCREEN_POSITION_KEY       = 'screen-position';
 const MAG_FACTOR_KEY            = 'mag-factor';
 const LENS_MODE_KEY             = 'lens-mode';

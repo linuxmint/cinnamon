@@ -10,7 +10,7 @@ const MessageTray = imports.ui.messageTray;
 const CinnamonMountOperation = imports.ui.cinnamonMountOperation;
 
 // GSettings keys
-const SETTINGS_SCHEMA = 'org.gnome.desktop.media-handling';
+const SETTINGS_SCHEMA = 'org.cinnamon.desktop.media-handling';
 const SETTING_DISABLE_AUTORUN = 'autorun-never';
 const SETTING_START_APP = 'autorun-x-content-start-app';
 const SETTING_IGNORE = 'autorun-x-content-ignore';

@@ -14,7 +14,7 @@ const MSECS_IN_DAY = 24 * 60 * 60 * 1000;
 const WEEKDATE_HEADER_WIDTH_DIGITS = 3;
 const SHOW_WEEKDATE_KEY = 'show-weekdate';
 
-// in org.gnome.desktop.interface
+// in org.cinnamon.desktop.interface
 const CLOCK_FORMAT_KEY        = 'clock-format';
 
 function _sameDay(dateA, dateB) {
@@ -646,7 +646,7 @@ EventsList.prototype = {
         this._date = new Date();
         this._eventSource = eventSource;
         this._eventSource.connect('changed', Lang.bind(this, this._update));
-        this._desktopSettings = new Gio.Settings({ schema: 'org.gnome.desktop.interface' });
+        this._desktopSettings = new Gio.Settings({ schema: 'org.cinnamon.desktop.interface' });
         this._desktopSettings.connect('changed', Lang.bind(this, this._update));
         this._weekStart = Cinnamon.util_get_week_start();
 

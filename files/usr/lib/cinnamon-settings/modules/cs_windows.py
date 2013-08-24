@@ -12,19 +12,19 @@ class Module:
         self.name = "windows"
         self.category = "prefs"
         sidePage.add_widget(GSettingsComboBox(_("Action on title bar double-click"),
-                                            "org.gnome.desktop.wm.preferences", "action-double-click-titlebar", None,
+                                            "org.cinnamon.desktop.wm.preferences", "action-double-click-titlebar", None,
                                             [(i, i.replace("-", " ").title()) for i in ('toggle-shade', 'toggle-maximize', 'toggle-maximize-horizontally', 'toggle-maximize-vertically', 'minimize', 'shade', 'menu', 'lower', 'none')]))
         sidePage.add_widget(GSettingsComboBox(_("Action on title bar middle-click"),
-                                            "org.gnome.desktop.wm.preferences", "action-middle-click-titlebar", None,
+                                            "org.cinnamon.desktop.wm.preferences", "action-middle-click-titlebar", None,
                                             [(i, i.replace("-", " ").title()) for i in ('toggle-shade', 'toggle-maximize', 'toggle-maximize-horizontally', 'toggle-maximize-vertically', 'minimize', 'shade', 'menu', 'lower', 'none')]))
         sidePage.add_widget(GSettingsComboBox(_("Action on title bar right-click"),
-                                            "org.gnome.desktop.wm.preferences", "action-right-click-titlebar", None,
+                                            "org.cinnamon.desktop.wm.preferences", "action-right-click-titlebar", None,
                                             [(i, i.replace("-", " ").title()) for i in ('toggle-shade', 'toggle-maximize', 'toggle-maximize-horizontally', 'toggle-maximize-vertically', 'minimize', 'shade', 'menu', 'lower', 'none')]))
         sidePage.add_widget(GSettingsComboBox(_("Window focus mode"),
-                                            "org.gnome.desktop.wm.preferences", "focus-mode", None,
+                                            "org.cinnamon.desktop.wm.preferences", "focus-mode", None,
                                             [(i, i.title()) for i in ("click","sloppy","mouse")]))
         sidePage.add_widget(GSettingsComboBox(_("Modifier to use for modified window click actions"),
-                                            "org.gnome.desktop.wm.preferences", "mouse-button-modifier", None,
+                                            "org.cinnamon.desktop.wm.preferences", "mouse-button-modifier", None,
                                             [(i, i.title()) for i in ("","<Alt>","<Super>","<Control>")]))
 
         sidePage.add_widget(TitleBarButtonsOrderSelector())

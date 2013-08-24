@@ -4,13 +4,13 @@ const Lang = imports.lang;
 const Applet = imports.ui.applet;
 const GConf = imports.gi.GConf;
 
-const A11Y_SCHEMA = 'org.gnome.desktop.a11y.keyboard';
+const A11Y_SCHEMA = 'org.cinnamon.desktop.a11y.keyboard';
 const KEY_STICKY_KEYS_ENABLED = 'stickykeys-enable';
 const KEY_BOUNCE_KEYS_ENABLED = 'bouncekeys-enable';
 const KEY_SLOW_KEYS_ENABLED   = 'slowkeys-enable';
 const KEY_MOUSE_KEYS_ENABLED  = 'mousekeys-enable';
 
-const APPLICATIONS_SCHEMA = 'org.gnome.desktop.a11y.applications';
+const APPLICATIONS_SCHEMA = 'org.cinnamon.desktop.a11y.applications';
 
 const DPI_LOW_REASONABLE_VALUE  = 50;
 const DPI_HIGH_REASONABLE_VALUE = 500;
@@ -22,7 +22,7 @@ const DPI_FACTOR_LARGEST = 2.0;
 const KEY_META_DIR       = '/apps/metacity/general';
 const KEY_VISUAL_BELL = KEY_META_DIR + '/visual_bell';
 
-const DESKTOP_INTERFACE_SCHEMA = 'org.gnome.desktop.interface';
+const DESKTOP_INTERFACE_SCHEMA = 'org.cinnamon.desktop.interface';
 const KEY_GTK_THEME      = 'gtk-theme';
 const KEY_ICON_THEME     = 'icon-theme';
 const KEY_TEXT_SCALING_FACTOR = 'text-scaling-factor';
