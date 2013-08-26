@@ -99,7 +99,9 @@ Tooltip.prototype = {
 
     destroy: function() {
         Tweener.removeTweens(this);
-        this._tooltip.destroy();
+        if (this._tooltip != null) {
+            this._tooltip.destroy();
+        }
         this._tooltip = null;
     }
 };
