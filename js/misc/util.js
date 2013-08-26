@@ -236,7 +236,7 @@ function rectSubtract(rect1, rect2) {
   if (rect1.overlap(rect2)) {
     let x, y, width, height;
     // top - relative to rect2
-    y = Math.min(rect1.y, rect2.y);
+    y = rect1.y;
     height = Math.min(rect1.height, rect2.y - y);
     if (height > 0) {
       // left
