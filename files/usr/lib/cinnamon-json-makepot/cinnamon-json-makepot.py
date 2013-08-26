@@ -117,7 +117,8 @@ class Main:
                 comment = "%s->settings-schema.json->%s->%s" % (self.current_parent_dir, parent, key)
                 entry = polib.POEntry(comment=comment)
                 entry.msgid = data[key]
-                self.po.append(entry)
+                if entry.msgid != "":                    
+                    self.po.append(entry)
             elif key in "options":
                 opt_data = data[key]
                 for option in opt_data.keys():
@@ -126,7 +127,8 @@ class Main:
                     comment = "%s->settings-schema.json->%s->%s" % (self.current_parent_dir, parent, key)
                     entry = polib.POEntry(comment=comment)
                     entry.msgid = option
-                    self.po.append(entry)
+                    if entry.msgid != "":                    
+                        self.po.append(entry)
             try:
                 self.extract_strings(data[key], key)
             except AttributeError:
