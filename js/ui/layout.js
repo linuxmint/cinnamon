@@ -13,6 +13,7 @@ const Tweener = imports.ui.tweener;
 const EdgeFlip = imports.ui.edgeFlip;
 const HotCorner = imports.ui.hotCorner;
 const DeskletManager = imports.ui.deskletManager;
+const Util = imports.misc.util;
 
 const STARTUP_ANIMATION_TIME = 0.2;
 const KEYBOARD_ANIMATION_TIME = 0.5;
@@ -907,16 +908,30 @@ Chrome.prototype = {
 
         let enable_stage = true;
         let top_windows = global.top_window_group.get_children();
-        for (var i in top_windows){
-            if (top_windows[i]._windowType != Meta.WindowType.TOOLTIP){
-                enable_stage = false;
-                break;
-            }
+        
+        let newRects = [];
+        let rectSubtracted = false;
+        for (let i = 0; i < top_windows.length; i++) {
+          let windowActor = top_windows[i];
+          let [x, y] = windowActor.get_position();
+          let [w, h] = windowActor.get_size();
+          x = Math.round(x);
+          y = Math.round(y);
+          w = Math.round(w);
+          h = Math.round(h);
+          let winRect = new Meta.Rectangle({x: x, y: y, width: w, height: h});
+          let subRects = [];
+          for (let j = 0; j < rects.length; j++) {
+            subRects = subRects.concat(Util.rectSubtract(rects[j], winRect));
+            rectSubtracted = true;
+          }
+          newRects = newRects.concat(subRects);
         }
-        if (enable_stage)
-            global.set_stage_input_region(rects);
-        else
-            global.set_stage_input_region([]);
+        if (rectSubtracted) {
+          rects = newRects;
+        }
+        
+        global.set_stage_input_region(rects);
 
         let screen = global.screen;
         for (let w = 0; w < screen.n_workspaces; w++) {
