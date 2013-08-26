@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-08-23 14:17+0100\n"
+"POT-Creation-Date: 2013-08-26 11:04+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,6 +17,29 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Language: \n"
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+
+#: generate_additional_files.py:50
+#: files/usr/share/cinnamon/applets/user@cinnamon.org/applet.js:75
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:34
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:204
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:346
+msgid "System Settings"
+msgstr ""
+
+#: generate_additional_files.py:50
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:35
+msgid "Control Center"
+msgstr ""
+
+#: generate_additional_files.py:63
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:74
+#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:371
+msgid "Users and Groups"
+msgstr ""
+
+#: generate_additional_files.py:63
+msgid "Add or remove users and groups"
+msgstr ""
 
 #: src/cinnamon-app.c:347 src/cinnamon-app.c:355
 #: js/ui/notificationDaemon.js:458
@@ -435,7 +458,7 @@ msgstr ""
 #: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:775
 #: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:814
 #: files/usr/lib/cinnamon-settings/modules/cs_menu.py:9
-#: files/usr/lib/cinnamon-settings/modules/cs_windows.py:88
+#: files/usr/lib/cinnamon-settings/modules/cs_windows.py:87
 msgid "Menu"
 msgstr ""
 
@@ -444,22 +467,27 @@ msgid "All settings"
 msgstr ""
 
 #: js/ui/panel.js:445
+#: files/usr/share/cinnamon/applets/user@cinnamon.org/applet.js:121
 msgid "Troubleshoot"
 msgstr ""
 
 #: js/ui/panel.js:446
+#: files/usr/share/cinnamon/applets/user@cinnamon.org/applet.js:122
 msgid "Restart Cinnamon"
 msgstr ""
 
 #: js/ui/panel.js:450
+#: files/usr/share/cinnamon/applets/user@cinnamon.org/applet.js:126
 msgid "Looking Glass"
 msgstr ""
 
 #: js/ui/panel.js:454
+#: files/usr/share/cinnamon/applets/user@cinnamon.org/applet.js:130
 msgid "Restore all settings to default"
 msgstr ""
 
 #: js/ui/panel.js:464
+#: files/usr/share/cinnamon/applets/user@cinnamon.org/applet.js:140
 msgid "Panel Edit mode"
 msgstr ""
 
@@ -534,7 +562,7 @@ msgstr ""
 #: js/ui/workspace.js:1464
 #: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:44
 #: files/usr/lib/cinnamon-settings/modules/cs_default.py:199
-#: files/usr/lib/cinnamon-settings/modules/cs_windows.py:89
+#: files/usr/lib/cinnamon-settings/modules/cs_windows.py:88
 #: files/usr/lib/cinnamon-settings/bin/Spices.py:110
 msgid "Close"
 msgstr ""
@@ -546,13 +574,13 @@ msgstr ""
 
 #: js/ui/workspace.js:1470
 #: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:53
-#: files/usr/lib/cinnamon-settings/modules/cs_windows.py:90
+#: files/usr/lib/cinnamon-settings/modules/cs_windows.py:89
 msgid "Minimize"
 msgstr ""
 
 #: js/ui/workspace.js:1473 js/ui/workspace.js:1546
 #: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:56
-#: files/usr/lib/cinnamon-settings/modules/cs_windows.py:91
+#: files/usr/lib/cinnamon-settings/modules/cs_windows.py:90
 msgid "Maximize"
 msgstr ""
 
@@ -1047,7 +1075,7 @@ msgid "Connected to the network"
 msgstr ""
 
 #: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:39
-#: files/usr/share/cinnamon/applets/user@cinnamon.org/applet.js:54
+#: files/usr/share/cinnamon/applets/user@cinnamon.org/applet.js:57
 msgid "Notifications"
 msgstr ""
 
@@ -1352,23 +1380,23 @@ msgstr ""
 msgid "Empty"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/user@cinnamon.org/applet.js:68
+#: files/usr/share/cinnamon/applets/user@cinnamon.org/applet.js:71
 msgid "Account Details"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/user@cinnamon.org/applet.js:74
+#: files/usr/share/cinnamon/applets/user@cinnamon.org/applet.js:81
 msgid "Lock Screen"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/user@cinnamon.org/applet.js:91
+#: files/usr/share/cinnamon/applets/user@cinnamon.org/applet.js:98
 msgid "Switch User"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/user@cinnamon.org/applet.js:96
+#: files/usr/share/cinnamon/applets/user@cinnamon.org/applet.js:103
 msgid "Log Out..."
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/user@cinnamon.org/applet.js:102
+#: files/usr/share/cinnamon/applets/user@cinnamon.org/applet.js:109
 msgid "Power Off..."
 msgstr ""
 
@@ -1410,16 +1438,6 @@ msgstr ""
 
 #: files/usr/share/cinnamon/desklets/photoframe@cinnamon.org/desklet.js:85
 msgid "Photo Frame"
-msgstr ""
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:34
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:204
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:346
-msgid "System Settings"
-msgstr ""
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:35
-msgid "Control Center"
 msgstr ""
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:36
@@ -1559,11 +1577,6 @@ msgstr ""
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:73
 msgid "ppa, repository, package, source, download"
-msgstr ""
-
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:74
-#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:371
-msgid "Users and Groups"
 msgstr ""
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:74
@@ -3309,11 +3322,17 @@ msgid ""
 "switching to the window's workspace)"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/modules/cs_windows.py:68
+#: files/usr/lib/cinnamon-settings/modules/cs_windows.py:41
+msgid ""
+"Show an alert in the window list when a window from another workspace "
+"requires attention"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_windows.py:67
 msgid "Left side title bar buttons"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/modules/cs_windows.py:74
+#: files/usr/lib/cinnamon-settings/modules/cs_windows.py:73
 msgid "Right side title bar buttons"
 msgstr ""
 
