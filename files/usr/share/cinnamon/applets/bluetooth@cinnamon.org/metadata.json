@@ -1,6 +1,0 @@
-{
- "uuid": "bluetooth@cinnamon.org",
- "name": "Bluetooth",
- "description": "Cinnamon bluetooth management applet",
- "icon": "bluetooth"
-}
