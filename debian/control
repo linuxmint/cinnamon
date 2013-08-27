@@ -83,7 +83,7 @@ Depends: ${gir:Depends},
          python-pyinotify,
          metacity,
          gnome-panel | tint2
-Recommends: gnome-themes-standard, gnome-terminal, nemo, cinnamon-screensaver, gnome-session-bin, gir1.2-cjsdbus-1.0, blueman
+Recommends: gnome-themes-standard, gnome-terminal, nemo, cinnamon-screensaver, gnome-session-bin, gir1.2-cjsdbus-1.0, cinnamon-bluetooth
 Provides: notification-daemon, x-window-manager
 Description: Cinnamon desktop
  Cinnamon redefines user interactions with the GNOME desktop.
