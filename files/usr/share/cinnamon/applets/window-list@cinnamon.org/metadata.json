@@ -1,6 +1,6 @@
 {
  "uuid": "window-list@cinnamon.org",
- "name": "Cinnamon Window list",
+ "name": "Window list",
  "description": "Main Cinnamon window list",
  "icon": "gnome-panel-window-list",
  "role": "windowlist"
