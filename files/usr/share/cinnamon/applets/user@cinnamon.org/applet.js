@@ -134,7 +134,7 @@ MyApplet.prototype = {
 
             this._applet_context_menu.addMenuItem(troubleshootItem);
 
-            menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+            this._applet_context_menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
             let editMode = global.settings.get_boolean("panel-edit-mode");
             let panelEditMode = new PopupMenu.PopupSwitchMenuItem(_("Panel Edit mode"), editMode);
