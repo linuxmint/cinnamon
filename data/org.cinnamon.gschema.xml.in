@@ -603,6 +603,7 @@
     <child name="keyboard" schema="org.cinnamon.keyboard"/>
     <child name="power" schema="org.cinnamon.power" />
     <child name="desklets" schema="org.cinnamon.desklets" />
+    <child name="sounds" schema="org.cinnamon.sounds" />
 
     <key name="enable-vfade" type="b">
       <default>false</default>
@@ -771,6 +772,154 @@
   <schema id="org.cinnamon.desklets" path="/org/cinnamon/desklets/"
         gettext-domain="@GETTEXT_PACKAGE@">  
     <child name="launcher" schema="org.cinnamon.desklets.launcher" />
+  </schema>
+
+  <schema id="org.cinnamon.sounds" path="/org/cinnamon/sounds/">  
+    
+    <key name="switch-enabled" type="b">
+      <default>false</default>
+      <summary>Whether to play a sound when switching workspaces</summary>
+      <description>
+        Whether to play a sound when switching workspaces.
+      </description>
+    </key> 
+   
+    <key name="switch-file" type="s">
+      <default>"/usr/share/cinnamon/sounds/switch.ogg"</default>
+      <summary>Which sound to play when switching workspaces</summary>
+      <description>
+        Which sound to play when switching workspaces.
+      </description>
+    </key>      
+
+    <key name="close-enabled" type="b">
+      <default>false</default>
+      <summary>Whether to play a sound when closing windows</summary>
+      <description>
+        Whether to play a sound when closing windows.
+      </description>
+    </key> 
+   
+    <key name="close-file" type="s">
+      <default>"/usr/share/cinnamon/sounds/close.ogg"</default>
+      <summary>Which sound to play when closing windows</summary>
+      <description>
+        Which sound to play when closing windows.
+      </description>
+    </key>      
+
+    <key name="map-enabled" type="b">
+      <default>false</default>
+      <summary>Whether to play a sound when mapping windows</summary>
+      <description>
+        Whether to play a sound when mapping windows.
+      </description>
+    </key> 
+   
+    <key name="map-file" type="s">
+      <default>"/usr/share/cinnamon/sounds/map.ogg"</default>
+      <summary>Which sound to play when mapping windows</summary>
+      <description>
+        Which sound to play when mapping windows.
+      </description>
+    </key>      
+
+    <key name="minimize-enabled" type="b">
+      <default>false</default>
+      <summary>Whether to play a sound when minimizing windows</summary>
+      <description>
+        Whether to play a sound when minimizing windows.
+      </description>
+    </key> 
+   
+    <key name="minimize-file" type="s">
+      <default>"/usr/share/cinnamon/sounds/minimize.ogg"</default>
+      <summary>Which sound to play when minimizing windows</summary>
+      <description>
+        Which sound to play when minimizing windows.
+      </description>
+    </key>      
+
+    <key name="maximize-enabled" type="b">
+      <default>false</default>
+      <summary>Whether to play a sound when maximizing windows</summary>
+      <description>
+        Whether to play a sound when maximizing windows.
+      </description>
+    </key> 
+   
+    <key name="maximize-file" type="s">
+      <default>"/usr/share/cinnamon/sounds/maximize.ogg"</default>
+      <summary>Which sound to play when maximizing windows</summary>
+      <description>
+        Which sound to play when maximizing windows.
+      </description>
+    </key>      
+
+    <key name="unmaximize-enabled" type="b">
+      <default>false</default>
+      <summary>Whether to play a sound when unmaximizing windows</summary>
+      <description>
+        Whether to play a sound when unmaximizing windows.
+      </description>
+    </key> 
+   
+    <key name="unmaximize-file" type="s">
+      <default>"/usr/share/cinnamon/sounds/unmaximize.ogg"</default>
+      <summary>Which sound to play when unmaximizing windows</summary>
+      <description>
+        Which sound to play when unmaximizing windows.
+      </description>
+    </key>      
+
+    <key name="tile-enabled" type="b">
+      <default>false</default>
+      <summary>Whether to play a sound when tiling windows</summary>
+      <description>
+        Whether to play a sound when tiling windows.
+      </description>
+    </key> 
+   
+    <key name="tile-file" type="s">
+      <default>"/usr/share/cinnamon/sounds/tile.ogg"</default>
+      <summary>Which sound to play when tiling windows</summary>
+      <description>
+        Which sound to play when tiling windows.
+      </description>
+    </key>      
+
+    <key name="login-enabled" type="b">
+      <default>false</default>
+      <summary>Whether to play a sound during login</summary>
+      <description>
+        Whether to play a sound during login.
+      </description>
+    </key> 
+   
+    <key name="login-file" type="s">
+      <default>"/usr/share/cinnamon/sounds/login.ogg"</default>
+      <summary>Which sound to play when switching windows</summary>
+      <description>
+        Which sound to play during login.
+      </description>
+    </key>      
+
+    <key name="logout-enabled" type="b">
+      <default>false</default>
+      <summary>Whether to play a sound during logout</summary>
+      <description>
+        Whether to play a sound during logout.
+      </description>
+    </key> 
+   
+    <key name="logout-file" type="s">
+      <default>"/usr/share/cinnamon/sounds/logout.ogg"</default>
+      <summary>Which sound to play during logout</summary>
+      <description>
+        Which sound to play during logout.
+      </description>
+    </key>      
+
   </schema>
 
   <schema id="org.cinnamon.desklets.launcher" path="/org/cinnamon/desklets/launcher/"

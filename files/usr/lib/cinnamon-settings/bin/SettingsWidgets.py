@@ -300,6 +300,7 @@ class GSettingsFileChooser(Gtk.HBox):
     def __init__(self, label, schema, key, dep_key, show_none_cb = False):
         self.key = key
         self.dep_key = dep_key
+        self.show_none_cb = show_none_cb
         super(GSettingsFileChooser, self).__init__()
         self.label = Gtk.Label(label)       
         self.content_widget = Gtk.FileChooserButton()
@@ -307,18 +308,19 @@ class GSettingsFileChooser(Gtk.HBox):
         self.add(self.content_widget)
         self.settings = Gio.Settings.new(schema)
         value = self.settings.get_string(self.key)     
-        if show_none_cb:
-            self.show_none_cb = Gtk.CheckButton(_("None"))
-            self.show_none_cb.set_active(value=="")
-            self.pack_start(self.show_none_cb, False, False, 5)
-        else:
-            self.show_none_cb = None
-        if value=="":
-            self.content_widget.set_sensitive(False)
-        else:
+        if value != "":
             self.content_widget.set_filename(value)
+
+        if self.show_none_cb:
+            self.show_none_cb_widget = Gtk.CheckButton(_("None"))
+            self.show_none_cb_widget.set_active(value=="")
+            self.pack_start(self.show_none_cb_widget, False, False, 5)        
+            if value=="":
+                self.content_widget.set_sensitive(False)
+        
         self.content_widget.connect('file-set', self.on_my_value_changed)
-        self.show_none_cb.connect('toggled', self.on_my_value_changed)
+        if self.show_none_cb:
+            self.show_none_cb_widget.connect('toggled', self.on_my_value_changed)
         self.content_widget.show_all()
         self.dependency_invert = False
         if self.dep_key is not None:
@@ -332,17 +334,22 @@ class GSettingsFileChooser(Gtk.HBox):
             self.on_dependency_setting_changed(self, None)
 
     def on_my_value_changed(self, widget):
-        if self.show_none_cb.get_active():
-            value = ""
-            self.content_widget.set_sensitive(False)
+        if self.show_none_cb:
+            if self.show_none_cb_widget.get_active():
+                value = ""
+                self.content_widget.set_sensitive(False)
+            else:
+                value = self.content_widget.get_filename()
+                if value==None:
+                    value = ""
+                self.content_widget.set_sensitive(True)
         else:
             value = self.content_widget.get_filename()
             if value==None:
                 value = ""
-            self.content_widget.set_sensitive(True)
         self.settings.set_string(self.key, value)
 
-    def on_dependency_setting_changed(self, settings, dep_key):
+    def on_dependency_setting_changed(self, settings, dep_key):        
         if not self.dependency_invert:
             self.set_sensitive(self.dep_settings.get_boolean(self.dep_key))
         else:

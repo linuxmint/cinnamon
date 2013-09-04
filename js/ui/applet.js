@@ -251,7 +251,7 @@ Applet.prototype = {
             if (this._applet_context_menu.isOpen) {
                 this._applet_context_menu.toggle(); 
             }
-            this.on_applet_clicked(event);
+            this.on_applet_clicked(event);            
         }
         if (event.get_button()==3){            
             if (this._applet_context_menu._getMenuItems().length > 0) {

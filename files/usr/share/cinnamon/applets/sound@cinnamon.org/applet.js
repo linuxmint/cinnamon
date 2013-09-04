@@ -1061,7 +1061,7 @@ MyApplet.prototype = {
     },
 
     _notifyVolumeChange: function() {
-        global.cancel_theme_sound(VOLUME_NOTIFY_ID);
+        global.cancel_sound(VOLUME_NOTIFY_ID);
         global.play_theme_sound(VOLUME_NOTIFY_ID, 'audio-volume-change');
     },
 

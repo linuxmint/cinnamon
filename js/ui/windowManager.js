@@ -235,6 +235,7 @@ WindowManager.prototype = {
     },
 
     _minimizeWindow : function(cinnamonwm, actor) {
+        Main.soundManager.play('minimize');
         if (!this._shouldAnimate(actor)) {
             cinnamonwm.completed_minimize(actor);
             return;
@@ -339,6 +340,7 @@ WindowManager.prototype = {
     },
 
     _tileWindow : function (cinnamonwm, actor, targetX, targetY, targetWidth, targetHeight) {
+        Main.soundManager.play('tile');
         if (!this._shouldAnimate(actor)) {
             cinnamonwm.completed_tile(actor);
             return;
@@ -405,6 +407,7 @@ WindowManager.prototype = {
     },
 
     _maximizeWindow : function(cinnamonwm, actor, targetX, targetY, targetWidth, targetHeight) {
+        Main.soundManager.play('maximize');
         if (!this._shouldAnimate(actor)) {
             cinnamonwm.completed_maximize(actor);
             return;
@@ -472,7 +475,8 @@ WindowManager.prototype = {
     },
 
     _unmaximizeWindow : function(cinnamonwm, actor, targetX, targetY, targetWidth, targetHeight) {
-         if (!this._shouldAnimate(actor)) {
+        Main.soundManager.play('unmaximize');
+        if (!this._shouldAnimate(actor)) {
             cinnamonwm.completed_unmaximize(actor);
             return;
         }
@@ -596,7 +600,7 @@ WindowManager.prototype = {
             getWindowDimmer(actor).dimFraction = 0.0;
     },
 
-    _mapWindow : function(cinnamonwm, actor) {
+    _mapWindow : function(cinnamonwm, actor) {           
         actor._windowType = actor.meta_window.get_window_type();
         actor._notifyWindowTypeSignalId = actor.meta_window.connect('notify::window-type', Lang.bind(this, function () {
             let type = actor.meta_window.get_window_type();
@@ -694,6 +698,9 @@ WindowManager.prototype = {
                 }
             } // if window list doesn't support finding an origin
         }
+        else {
+            Main.soundManager.play('map'); 
+        }
         
         if (effect == "fade") {            
             this._mapping.push(actor);
@@ -729,6 +736,7 @@ WindowManager.prototype = {
     },
 
     _destroyWindow : function(cinnamonwm, actor) {
+        Main.soundManager.play('close');
         let window = actor.meta_window;
         if (actor._notifyWindowTypeSignalId) {
             window.disconnect(actor._notifyWindowTypeSignalId);
@@ -1070,10 +1078,12 @@ WindowManager.prototype = {
     },
 
     actionMoveWorkspaceLeft: function() {
+        Main.soundManager.play('switch');
         global.screen.get_active_workspace().get_neighbor(Meta.MotionDirection.LEFT).activate(global.get_current_time());
     },
 
     actionMoveWorkspaceRight: function() {
+        Main.soundManager.play('switch');
         global.screen.get_active_workspace().get_neighbor(Meta.MotionDirection.RIGHT).activate(global.get_current_time());
     },
 
