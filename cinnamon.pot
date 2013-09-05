@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-08-26 11:51+0100\n"
+"POT-Creation-Date: 2013-09-05 12:57+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -106,15 +106,15 @@ msgstr[1] ""
 msgid "System Sounds"
 msgstr ""
 
-#: js/misc/util.js:89
+#: js/misc/util.js:90
 msgid "Command not found"
 msgstr ""
 
-#: js/misc/util.js:116
+#: js/misc/util.js:117
 msgid "Could not parse command:"
 msgstr ""
 
-#: js/misc/util.js:124
+#: js/misc/util.js:125
 #, c-format
 msgid "Execution of '%s' failed:"
 msgstr ""
@@ -257,7 +257,6 @@ msgstr ""
 
 #: js/ui/endSessionDialog.js:428 js/ui/networkAgent.js:144
 #: js/ui/polkitAuthenticationAgent.js:173
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:165
 #: files/usr/share/cinnamon/applets/trash@cinnamon.org/applet.js:118
 #: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:277
 msgid "Cancel"
@@ -324,28 +323,28 @@ msgstr ""
 msgid "Reload Code"
 msgstr ""
 
-#: js/ui/main.js:419
+#: js/ui/main.js:423
 msgid "Running in software rendering mode"
 msgstr ""
 
-#: js/ui/main.js:420
+#: js/ui/main.js:424
 msgid ""
 "Cinnamon is currently running without video hardware acceleration and, as a "
 "result, you may observe much higher than normal CPU usage.\n"
 "\n"
 msgstr ""
 
-#: js/ui/main.js:421
+#: js/ui/main.js:425
 msgid ""
 "There could be a problem with your drivers or some other issue.  For the "
 "best experience, it is recommended that you only use this mode for"
 msgstr ""
 
-#: js/ui/main.js:422
+#: js/ui/main.js:426
 msgid " troubleshooting purposes."
 msgstr ""
 
-#: js/ui/main.js:472
+#: js/ui/main.js:481
 msgid "WORKSPACE"
 msgstr ""
 
@@ -540,23 +539,23 @@ msgstr ""
 msgid "Please enter a command:"
 msgstr ""
 
-#: js/ui/windowManager.js:963
+#: js/ui/windowManager.js:977
 msgid "Hold <Super> to enter snap mode"
 msgstr ""
 
-#: js/ui/windowManager.js:965
+#: js/ui/windowManager.js:979
 msgid "Hold <Alt> to enter snap mode"
 msgstr ""
 
-#: js/ui/windowManager.js:967
+#: js/ui/windowManager.js:981
 msgid "Hold <Ctrl> to enter snap mode"
 msgstr ""
 
-#: js/ui/windowManager.js:969
+#: js/ui/windowManager.js:983
 msgid "Hold <Shift> to enter snap mode"
 msgstr ""
 
-#: js/ui/windowManager.js:971
+#: js/ui/windowManager.js:985
 msgid "Use the arrow keys to shift workspaces"
 msgstr ""
 
@@ -664,142 +663,6 @@ msgstr ""
 
 #: files/usr/share/cinnamon/applets/a11y@cinnamon.org/applet.js:179
 msgid "Large Text"
-msgstr ""
-
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:32
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:66
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:106
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:139
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:211
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:215
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:467
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:67
-msgid "Bluetooth"
-msgstr ""
-
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:67
-#, c-format
-msgid "Authorization request from %s"
-msgstr ""
-
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:73
-#, c-format
-msgid "Device %s wants access to the service '%s'"
-msgstr ""
-
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:75
-msgid "Always grant access"
-msgstr ""
-
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:76
-msgid "Grant this time only"
-msgstr ""
-
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:77
-msgid "Reject"
-msgstr ""
-
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:107
-#, c-format
-msgid "Pairing confirmation for %s"
-msgstr ""
-
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:113
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:147
-#, c-format
-msgid "Device %s wants to pair with this computer"
-msgstr ""
-
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:114
-#, c-format
-msgid "Please confirm whether the PIN '%s' matches the one on the device."
-msgstr ""
-
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:116
-msgid "Matches"
-msgstr ""
-
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:117
-msgid "Does not match"
-msgstr ""
-
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:140
-#, c-format
-msgid "Pairing request for %s"
-msgstr ""
-
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:148
-msgid "Please enter the PIN mentioned on the device."
-msgstr ""
-
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:164
-#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:253
-#: files/usr/lib/cinnamon-settings/modules/cs_user.py:460
-msgid "OK"
-msgstr ""
-
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:239
-msgid "Visibility"
-msgstr ""
-
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:253
-msgid "Send Files to Device..."
-msgstr ""
-
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:254
-msgid "Set up a New Device..."
-msgstr ""
-
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:278
-msgid "Bluetooth Settings"
-msgstr ""
-
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:317
-msgid "hardware disabled"
-msgstr ""
-
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:414
-msgid "Connection"
-msgstr ""
-
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:423
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:507
-msgid "disconnecting..."
-msgstr ""
-
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:436
-#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:513
-msgid "connecting..."
-msgstr ""
-
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:454
-msgid "Send Files..."
-msgstr ""
-
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:459
-msgid "Browse Files..."
-msgstr ""
-
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:468
-msgid "Error browsing device"
-msgstr ""
-
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:469
-#, c-format
-msgid "The requested device cannot be browsed, error is '%s'"
-msgstr ""
-
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:477
-msgid "Keyboard Settings"
-msgstr ""
-
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:480
-msgid "Mouse Settings"
-msgstr ""
-
-#: files/usr/share/cinnamon/applets/bluetooth@cinnamon.org/applet.js:485
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1027
-msgid "Sound Settings"
 msgstr ""
 
 #: files/usr/share/cinnamon/applets/brightness@cinnamon.org/applet.js:112
@@ -928,6 +791,14 @@ msgstr ""
 
 #: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:505
 msgid "unmanaged"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:507
+msgid "disconnecting..."
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:513
+msgid "connecting..."
 msgstr ""
 
 #: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:516
@@ -1271,71 +1142,71 @@ msgstr ""
 msgid "Show desktop"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:105
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:106
 msgid "Playing"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:106
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:107
 msgid "Paused"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:107
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:108
 msgid "Stopped"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:385
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:566
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:386
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:567
 msgid "Unknown Artist"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:386
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:570
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:387
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:571
 msgid "Unknown Album"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:387
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:574
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:388
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:575
 msgid "Unknown Title"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:398
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:399
 msgid "Previous"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:401
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:402
 #: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:136
 msgid "Play"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:404
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:405
 msgid "Stop"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:407
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:408
 msgid "Next"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:443
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:444
 msgid "Open Player"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:453
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:454
 msgid "Quit Player"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:832
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:833
 msgid "Mute output"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:833
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:834
 msgid "Mute input"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1000
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1001
 msgid "Launch player..."
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1013
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1014
 #: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1076
 #: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1077
 #: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1082
@@ -1345,11 +1216,15 @@ msgstr ""
 msgid "Volume"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1020
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1021
 msgid "Microphone"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1029
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1028
+msgid "Sound Settings"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1030
 msgid "Output device..."
 msgstr ""
 
@@ -1486,48 +1361,52 @@ msgid "region, layout, keyboard, language"
 msgstr ""
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:58
+msgid "Bluetooth"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:58
+msgid "bluetooth, dongle, transfer, mobile"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:59
 #: files/usr/lib/cinnamon-settings/modules/cs_keyboard.py:474
 msgid "Universal Access"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:58
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:59
 msgid "magnifier, talk, access, zoom, keys, contrast"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:59
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:60
 msgid "Power Management"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:59
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:60
 msgid "power, suspend, hibernate, laptop, desktop"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:60
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:61
 msgid "Sound"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:60
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:61
 msgid "sound, speakers, headphones, test"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:61
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:62
 msgid "Color"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:61
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:62
 msgid "color, profile, display, printer, output"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:66
+#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:67
 msgid "Printers"
 msgstr ""
 
-#: files/usr/lib/cinnamon-settings/cinnamon-settings.py:66
-msgid "printers, laser, inkjet"
-msgstr ""
-
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:67
-msgid "bluetooth, dongle, transfer, mobile"
+msgid "printers, laser, inkjet"
 msgstr ""
 
 #: files/usr/lib/cinnamon-settings/cinnamon-settings.py:68
@@ -1637,6 +1516,11 @@ msgstr ""
 #: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:250
 #: files/usr/lib/cinnamon-settings/modules/cs_user.py:457
 msgid "Too short"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:253
+#: files/usr/lib/cinnamon-settings/modules/cs_user.py:460
+msgid "OK"
 msgstr ""
 
 #: files/usr/lib/cinnamon-settings-users/cinnamon-settings-users.py:278
@@ -2194,10 +2078,12 @@ msgid "Fade"
 msgstr ""
 
 #: files/usr/lib/cinnamon-settings/modules/cs_effects.py:81
+#: files/usr/lib/cinnamon-settings/modules/cs_soundeffects.py:18
 msgid "Closing windows:"
 msgstr ""
 
 #: files/usr/lib/cinnamon-settings/modules/cs_effects.py:85
+#: files/usr/lib/cinnamon-settings/modules/cs_soundeffects.py:17
 msgid "Mapping windows:"
 msgstr ""
 
@@ -2206,18 +2092,22 @@ msgid "Traditional"
 msgstr ""
 
 #: files/usr/lib/cinnamon-settings/modules/cs_effects.py:89
+#: files/usr/lib/cinnamon-settings/modules/cs_soundeffects.py:19
 msgid "Minimizing windows:"
 msgstr ""
 
 #: files/usr/lib/cinnamon-settings/modules/cs_effects.py:93
+#: files/usr/lib/cinnamon-settings/modules/cs_soundeffects.py:20
 msgid "Maximizing windows:"
 msgstr ""
 
 #: files/usr/lib/cinnamon-settings/modules/cs_effects.py:97
+#: files/usr/lib/cinnamon-settings/modules/cs_soundeffects.py:21
 msgid "Unmaximizing windows:"
 msgstr ""
 
 #: files/usr/lib/cinnamon-settings/modules/cs_effects.py:101
+#: files/usr/lib/cinnamon-settings/modules/cs_soundeffects.py:22
 msgid "Tiling and snapping windows:"
 msgstr ""
 
@@ -3107,6 +2997,34 @@ msgstr ""
 msgid "Default away message"
 msgstr ""
 
+#: files/usr/lib/cinnamon-settings/modules/cs_soundeffects.py:7
+msgid "sound, effects, sounds, effect"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_soundeffects.py:9
+msgid "Sound Effects"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_soundeffects.py:15
+msgid "Starting Cinnamon:"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_soundeffects.py:16
+msgid "Switching workspace:"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_soundeffects.py:23
+msgid "Inserting a device:"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_soundeffects.py:24
+msgid "Removing a device:"
+msgstr ""
+
+#: files/usr/lib/cinnamon-settings/modules/cs_soundeffects.py:33
+msgid "Changing the sound volume:"
+msgstr ""
+
 #: files/usr/lib/cinnamon-settings/modules/cs_themes.py:9
 msgid "themes, style"
 msgstr ""
@@ -3850,10 +3768,6 @@ msgstr ""
 #. photoframe@cinnamon.org->settings-schema.json->fade-delay->units
 #. #-#-#-#-#  cinnamon-json.pot  #-#-#-#-#
 #. photoframe@cinnamon.org->settings-schema.json->delay->units
-#. #-#-#-#-#  cinnamon-json.pot  #-#-#-#-#
-#. photoframe@cinnamon.org->settings-schema.json->fade-delay->units
-#. #-#-#-#-#  cinnamon-json.pot  #-#-#-#-#
-#. photoframe@cinnamon.org->settings-schema.json->delay->units
 msgid "seconds"
 msgstr ""
 
@@ -3873,12 +3787,6 @@ msgstr ""
 msgid "Height:"
 msgstr ""
 
-#. #-#-#-#-#  cinnamon-json.pot  #-#-#-#-#
-#. photoframe@cinnamon.org->settings-schema.json->height->units
-#. #-#-#-#-#  cinnamon-json.pot  #-#-#-#-#
-#. photoframe@cinnamon.org->settings-schema.json->width->units
-#. #-#-#-#-#  cinnamon-json.pot  #-#-#-#-#
-#. settings-example@cinnamon.org->settings-schema.json->spinner-number->units
 #. #-#-#-#-#  cinnamon-json.pot  #-#-#-#-#
 #. photoframe@cinnamon.org->settings-schema.json->height->units
 #. #-#-#-#-#  cinnamon-json.pot  #-#-#-#-#
