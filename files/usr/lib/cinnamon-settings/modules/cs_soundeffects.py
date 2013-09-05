@@ -11,6 +11,10 @@ class Module:
         self.name = "sound-effects"
         self.category = "appear"            
 
+        self.filter = Gtk.FileFilter()
+        self.filter.set_name(_("Audio files"))
+        self.filter.add_mime_type("audio/*")
+
         events = []
         events.append([_("Starting Cinnamon:"), "login"])
         events.append([_("Switching workspace:"), "switch"])
@@ -31,11 +35,15 @@ class Module:
 
         box = IndentedHBox()
         box.add(GSettingsCheckButton(_("Changing the sound volume:"), "org.cinnamon.desktop.sound", "volume-sound-enabled", None))
-        box.add(GSettingsFileChooser("", "org.cinnamon.desktop.sound", "volume-sound-file", "org.cinnamon.desktop.sound/volume-sound-enabled"))
+        chooser = GSettingsFileChooser("", "org.cinnamon.desktop.sound", "volume-sound-file", "org.cinnamon.desktop.sound/volume-sound-enabled")
+        chooser.content_widget.add_filter(self.filter)
+        box.add(chooser)
         sidePage.add_widget(box)        
 
     def _make_effect_group(self, name, key):
         box = IndentedHBox()
         box.add(GSettingsCheckButton(name, "org.cinnamon.sounds", "%s-enabled" % key, None))
-        box.add(GSettingsFileChooser("", "org.cinnamon.sounds", "%s-file" % key, "org.cinnamon.sounds/%s-enabled" % key))
+        chooser = GSettingsFileChooser("", "org.cinnamon.sounds", "%s-file" % key, "org.cinnamon.sounds/%s-enabled" % key)
+        chooser.content_widget.add_filter(self.filter)
+        box.add(chooser)
         return box
