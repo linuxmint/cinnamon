@@ -11,6 +11,7 @@ const GLib = imports.gi.GLib;
 const Gvc = imports.gi.Gvc;
 const Pango = imports.gi.Pango;
 const Tooltips = imports.ui.tooltips;
+const Main = imports.ui.main;
 
 const PropIFace = {
     name: 'org.freedesktop.DBus.Properties',
@@ -1060,9 +1061,8 @@ MyApplet.prototype = {
         this[property].push_volume();
     },
 
-    _notifyVolumeChange: function() {
-        global.cancel_sound(VOLUME_NOTIFY_ID);
-        global.play_theme_sound(VOLUME_NOTIFY_ID, 'audio-volume-change');
+    _notifyVolumeChange: function() {        
+        Main.soundManager.play('volume');
     },
 
     _mutedChanged: function(object, param_spec, property) {

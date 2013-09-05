@@ -699,7 +699,9 @@ WindowManager.prototype = {
             } // if window list doesn't support finding an origin
         }
         else {
-            Main.soundManager.play('map'); 
+            if (actor.meta_window.get_window_type() == Meta.WindowType.NORMAL) {
+                Main.soundManager.play('map');
+            }            
         }
         
         if (effect == "fade") {            
@@ -735,8 +737,12 @@ WindowManager.prototype = {
         }
     },
 
-    _destroyWindow : function(cinnamonwm, actor) {
-        Main.soundManager.play('close');
+    _destroyWindow : function(cinnamonwm, actor) {  
+        
+        if (actor.meta_window.get_window_type() == Meta.WindowType.NORMAL) {
+            Main.soundManager.play('close');
+        }
+
         let window = actor.meta_window;
         if (actor._notifyWindowTypeSignalId) {
             window.disconnect(actor._notifyWindowTypeSignalId);

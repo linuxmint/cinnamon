@@ -785,7 +785,7 @@
     </key> 
    
     <key name="switch-file" type="s">
-      <default>"/usr/share/cinnamon/sounds/switch.ogg"</default>
+      <default>""</default>
       <summary>Which sound to play when switching workspaces</summary>
       <description>
         Which sound to play when switching workspaces.
@@ -801,7 +801,7 @@
     </key> 
    
     <key name="close-file" type="s">
-      <default>"/usr/share/cinnamon/sounds/close.ogg"</default>
+      <default>""</default>
       <summary>Which sound to play when closing windows</summary>
       <description>
         Which sound to play when closing windows.
@@ -817,7 +817,7 @@
     </key> 
    
     <key name="map-file" type="s">
-      <default>"/usr/share/cinnamon/sounds/map.ogg"</default>
+      <default>""</default>
       <summary>Which sound to play when mapping windows</summary>
       <description>
         Which sound to play when mapping windows.
@@ -833,7 +833,7 @@
     </key> 
    
     <key name="minimize-file" type="s">
-      <default>"/usr/share/cinnamon/sounds/minimize.ogg"</default>
+      <default>""</default>
       <summary>Which sound to play when minimizing windows</summary>
       <description>
         Which sound to play when minimizing windows.
@@ -849,7 +849,7 @@
     </key> 
    
     <key name="maximize-file" type="s">
-      <default>"/usr/share/cinnamon/sounds/maximize.ogg"</default>
+      <default>""</default>
       <summary>Which sound to play when maximizing windows</summary>
       <description>
         Which sound to play when maximizing windows.
@@ -865,7 +865,7 @@
     </key> 
    
     <key name="unmaximize-file" type="s">
-      <default>"/usr/share/cinnamon/sounds/unmaximize.ogg"</default>
+      <default>""</default>
       <summary>Which sound to play when unmaximizing windows</summary>
       <description>
         Which sound to play when unmaximizing windows.
@@ -881,7 +881,7 @@
     </key> 
    
     <key name="tile-file" type="s">
-      <default>"/usr/share/cinnamon/sounds/tile.ogg"</default>
+      <default>""</default>
       <summary>Which sound to play when tiling windows</summary>
       <description>
         Which sound to play when tiling windows.
@@ -897,28 +897,44 @@
     </key> 
    
     <key name="login-file" type="s">
-      <default>"/usr/share/cinnamon/sounds/login.ogg"</default>
+      <default>""</default>
       <summary>Which sound to play when switching windows</summary>
       <description>
         Which sound to play during login.
       </description>
-    </key>      
+    </key>          
 
-    <key name="logout-enabled" type="b">
+    <key name="plug-enabled" type="b">
       <default>false</default>
-      <summary>Whether to play a sound during logout</summary>
+      <summary>Whether to play a sound when a device is plugged</summary>
       <description>
-        Whether to play a sound during logout.
+        Whether to play a sound when a device is plugged.
       </description>
     </key> 
    
-    <key name="logout-file" type="s">
-      <default>"/usr/share/cinnamon/sounds/logout.ogg"</default>
-      <summary>Which sound to play during logout</summary>
+    <key name="plug-file" type="s">
+      <default>""</default>
+      <summary>Which sound to play when a device is plugged</summary>
       <description>
-        Which sound to play during logout.
+        Which sound to play when a device is plugged.
       </description>
-    </key>      
+    </key>     
+
+    <key name="unplug-enabled" type="b">
+      <default>false</default>
+      <summary>Whether to play a sound when a device is unplugged</summary>
+      <description>
+        Whether to play a sound when a device is unplugged.
+      </description>
+    </key> 
+   
+    <key name="unplug-file" type="s">
+      <default>""</default>
+      <summary>Which sound to play when a device is plugged</summary>
+      <description>
+        Which sound to play when a device is unplugged.
+      </description>
+    </key>    
 
   </schema>
 
