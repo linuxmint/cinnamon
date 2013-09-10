@@ -87,7 +87,8 @@ class TitleBarButtonsOrderSelector(Gtk.Table):
             ("menu", _("Menu")),
             ("close", _("Close")),
             ("minimize", _("Minimize")),
-            ("maximize", _("Maximize"))
+            ("maximize", _("Maximize")),
+            ("stick", _("Sticky"))
         ]
         
         for i in self.left_side_widgets + self.right_side_widgets:
