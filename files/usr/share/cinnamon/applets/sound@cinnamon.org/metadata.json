@@ -1,6 +1,6 @@
 {
  "uuid": "sound@cinnamon.org",
  "name": "Sound",
- "description": "Cinnamon sound applet",
+ "description": "A Cinnamon applet to control sound and music",
  "icon": "stock_volume"
 }
