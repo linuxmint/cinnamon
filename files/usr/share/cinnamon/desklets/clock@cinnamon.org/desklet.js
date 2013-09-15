@@ -5,6 +5,7 @@ const St = imports.gi.St;
 
 const Desklet = imports.ui.desklet;
 const Settings = imports.ui.settings;
+const UUID = "clock@cinnamon.org";
 
 function MyDesklet(metadata, desklet_id){
     this._init(metadata, desklet_id);
@@ -18,8 +19,9 @@ MyDesklet.prototype = {
         this._date = new St.Label({style_class: "clock-desklet-label"});
         this.setContent(this._date);
         this.setHeader(_("Clock"));
-
+        this._menu.addSettingsAction(_("Desklet Settings"), "desklets " + UUID);
         this.settings = new Settings.DeskletSettings(this, this.metadata["uuid"], desklet_id);
+
 
         this.settings.bindProperty(Settings.BindingDirection.IN,
                                    "date-format",
