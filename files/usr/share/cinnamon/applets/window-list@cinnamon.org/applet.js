@@ -277,17 +277,32 @@ AppMenuButton.prototype = {
             this._label.set_text(title);
             if (this._tooltip) this._tooltip.set_text(title);
         }));
-                
+        
+
         this._spinner = new Panel.AnimatedIcon('process-working.svg', PANEL_ICON_SIZE);
         this._container.add_actor(this._spinner.actor);
         this._spinner.actor.lower_bottom();
         
         this.set_icon(panel_height);
         let title = this.getDisplayTitle();
-        if (metaWindow.minimized)
-            this._label.set_text("[" + title + "]");
-        else
-            this._label.set_text(title);
+
+        try {       
+            if (metaWindow.minimized) {
+                this._label.set_text("[" + title + "]");
+            }
+            else if (metaWindow.tile_type == Meta.WindowTileType.TILED) {
+                this._label.set_text("|" + title);
+            }
+            else if (metaWindow.tile_type == Meta.WindowTileType.SNAPPED) {
+                this._label.set_text("||" + title);
+            }     
+            else {
+                this._label.set_text(title);
+            }
+        }
+        catch (e) {
+            global.logError(e);
+        }        
         
         if(animation){
 			this.startAnimation(); 
@@ -816,14 +831,17 @@ MyApplet.prototype = {
 
             this.switchWorkspaceHandler = global.window_manager.connect('switch-workspace',
                                             Lang.bind(this, this._refreshItems));
+            
             global.window_manager.connect('minimize',
-                                            Lang.bind(this, this._onMinimize));
+                                            Lang.bind(this, this._onWindowStateChange));
             global.window_manager.connect('maximize',
-                                            Lang.bind(this, this._onMaximize));
+                                            Lang.bind(this, this._onWindowStateChange));
             global.window_manager.connect('unmaximize',
-                                            Lang.bind(this, this._onMaximize));
+                                            Lang.bind(this, this._onWindowStateChange));
             global.window_manager.connect('map',
-                                            Lang.bind(this, this._onMap));
+                                            Lang.bind(this, this._onWindowStateChange));
+            global.window_manager.connect('tile',
+                                            Lang.bind(this, this._onWindowStateChange));
                                             
             this._workspaces = [];
             this._changeWorkspaces();
@@ -965,46 +983,38 @@ MyApplet.prototype = {
         this._onFocus();
     },
 
-    _onWindowStateChange: function(state, actor) {
+    _onWindowStateChange: function(cinnamonwm, actor) {
         for ( let i=0; i<this._windows.length; ++i ) {
             if ( this._windows[i].metaWindow == actor.get_meta_window() ) {
                 let windowReference = this._windows[i];
                 let title = windowReference.getDisplayTitle();
-                
-                if (state == 'minimize') {
-                    windowReference._label.set_text("["+ title +"]");
-                    return;
-                } else if (state == 'map') {
-                    windowReference._label.set_text(title);
-                    return;
+
+                try {
+                    let metaWindow = actor.get_meta_window();
+                    if (metaWindow.minimized) {
+                        windowReference._label.set_text("["+ title +"]");
+                        return;
+                    }                    
+                    else if (metaWindow.tile_type == Meta.WindowTileType.TILED) {
+                        windowReference._label.set_text("|"+ title);
+                        return;
+                    }
+                    else if (metaWindow.tile_type == Meta.WindowTileType.SNAPPED) {
+                        windowReference._label.set_text("||"+ title);
+                        return;
+                    }
+                    else {
+                        windowReference._label.set_text(title);
+                        return;
+                    }
+                }
+                catch (e) {
+                    global.logError(e);
                 }
             }
         }
     },
-    
-    _onMinimize: function(cinnamonwm, actor) {
-        this._onWindowStateChange('minimize', actor);
-    },
-    
-    _onMaximize: function(cinnamonwm, actor) {
-        this._onWindowStateChange('maximize', actor);
-    },
-    
-    _onMap: function(cinnamonwm, actor) {
-    	/* Note by Clem: The call to this._refreshItems() below doesn't look necessary. 
-    	 * When a window is mapped in a quick succession of times (for instance if 
-    	 * the user repeatedly minimize/unminimize the window by clicking on the window list, 
-    	 * or more often when the showDesktop button maps a lot of minimized windows in a quick succession.. 
-    	 * when this happens, many calls to refreshItems are made and this creates a memory leak. 
-    	 * It also slows down all the mapping and so it takes time for all windows to get unminimized after showDesktop is clicked.
-    	 * 
-    	 * For now this was removed. If it needs to be put back, this isn't the place. 
-    	 * If showDesktop needs it, then it should only call it once, not once per window.
-    	 */ 
-        //this._refreshItems();
-        this._onWindowStateChange('map', actor);
-    },
-   
+       
     getOriginFromWindow: function(metaWindow) {
         for ( let i=0; i<this._windows.length; ++i ) {
             if ( this._windows[i].metaWindow == metaWindow ) {
