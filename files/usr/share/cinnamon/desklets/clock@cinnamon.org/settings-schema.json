@@ -3,14 +3,14 @@
         "type": "spinbutton",
         "default": 50,
         "min": 10,
-        "max": 1000,
+        "max": 200,
 	"units": "",
         "description" : "Font size:",
         "step": 1
     },
     "date-format": {
         "type": "entry",
-        "default": "%H:%M",
+        "default": "%I:%M %p",
         "description": "Date format:"
     }
 }
