@@ -1181,6 +1181,8 @@ LookingGlass.prototype = {
     // Handle key events which are relevant for all tabs of the LookingGlass
     _globalKeyPressEvent : function(actor, event) {
         let symbol = event.get_key_symbol();
+        let newIndex;
+
         if (symbol == Clutter.Escape) {
             if (this._objInspector.actor.visible) {
                 this._objInspector.close();
@@ -1188,18 +1190,23 @@ LookingGlass.prototype = {
                 this.close();
             }
             return true;
-        } else if (symbol==Clutter.Right) {
-	    let newIndex = this._notebook._selectedIndex-1;
-	    if (newIndex == 5) {
-		newIndex = 0;
-	    }
-	    return true;
-	} else if (symbol==Clutter.Left) {
-	    let newIndex = this._notebook._selectedIndex-1;
-	    if (newIndex == -1){
-		newIndex = 4;
-	    }
-	}
+        } else if (symbol == Clutter.Page_Down) {
+            newIndex = this._notebook._selectedIndex + 1;
+            if (newIndex == this._notebook._tabs.length) {
+                newIndex = 0;
+            }
+        } else if (symbol == Clutter.Page_Up) {
+            newIndex = this._notebook._selectedIndex - 1;
+            if (newIndex == -1){
+                newIndex = this._notebook._tabs.length - 1;
+            }
+        }
+
+        if(newIndex) {
+            this._notebook.selectIndex(newIndex);
+            return true;
+        }
+
         return false;
     },
 
