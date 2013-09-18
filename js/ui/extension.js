@@ -136,7 +136,6 @@ Extension.prototype = {
         
         if (this.stylesheet) {
             Main.themeManager.connect('theme-set', Lang.bind(this, function() {
-                this.unloadStylesheet();
                 this.loadStylesheet(this.dir.get_child('stylesheet.css'));
             }));
         }
