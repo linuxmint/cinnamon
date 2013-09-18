@@ -18,7 +18,12 @@ function sortWindowsByUserTime(win1, win2) {
     let t2 = win2.get_user_time();
     let m1 = win1.minimized;
     let m2 = win2.minimized;
-    return (m1 ^ m2 ? (m1 ? : 1 : -1) : ((t2 > t1) ? 1 : -1);
+    if (m1 == m2) {
+        return (t2 > t1) ? 1 : -1;   
+    }
+    else {
+        return m1 ? 1 : -1;
+    }    
 }
 
 function matchSkipTaskbar(win) {
