@@ -277,6 +277,12 @@ AppMenuButton.prototype = {
             this._label.set_text(title);
             if (this._tooltip) this._tooltip.set_text(title);
         }));
+
+        this._updateTileTypeId = this.metaWindow.connect('notify::tile-type', Lang.bind(this, function () {
+            let title = this.getDisplayTitle();
+            this._label.set_text(title);
+            if (this._tooltip) this._tooltip.set_text(title);
+        }));
         
 
         this._spinner = new Panel.AnimatedIcon('process-working.svg', PANEL_ICON_SIZE);
@@ -285,24 +291,7 @@ AppMenuButton.prototype = {
         
         this.set_icon(panel_height);
         let title = this.getDisplayTitle();
-
-        try {       
-            if (metaWindow.minimized) {
-                this._label.set_text("[" + title + "]");
-            }
-            else if (metaWindow.tile_type == Meta.WindowTileType.TILED) {
-                this._label.set_text("|" + title);
-            }
-            else if (metaWindow.tile_type == Meta.WindowTileType.SNAPPED) {
-                this._label.set_text("||" + title);
-            }     
-            else {
-                this._label.set_text(title);
-            }
-        }
-        catch (e) {
-            global.logError(e);
-        }        
+        this._label.set_text(title);        
         
         if(animation){
 			this.startAnimation(); 
@@ -400,11 +389,24 @@ AppMenuButton.prototype = {
         let tracker = Cinnamon.WindowTracker.get_default();
         let app = tracker.get_window_app(this.metaWindow);
         if (!title) title = app ? app.get_name() : '?';
-        return title;
+
+        if (this.metaWindow.minimized) {
+            return "["+ title +"]";                        
+        }                    
+        else if (this.metaWindow.tile_type == Meta.WindowTileType.TILED) {
+            return "|"+ title;
+        }
+        else if (this.metaWindow.tile_type == Meta.WindowTileType.SNAPPED) {
+            return "||"+ title;
+        }
+        else {
+            return title;
+        }        
     },
 
     _onDestroy: function() {
         this.metaWindow.disconnect(this._updateCaptionId);
+        this.metaWindow.disconnect(this._updateTileTypeId);        
         this._tooltip.destroy();
         if (this.rightClickMenu) {
             this.rightClickMenu.destroy();
@@ -988,29 +990,7 @@ MyApplet.prototype = {
             if ( this._windows[i].metaWindow == actor.get_meta_window() ) {
                 let windowReference = this._windows[i];
                 let title = windowReference.getDisplayTitle();
-
-                try {
-                    let metaWindow = actor.get_meta_window();
-                    if (metaWindow.minimized) {
-                        windowReference._label.set_text("["+ title +"]");
-                        return;
-                    }                    
-                    else if (metaWindow.tile_type == Meta.WindowTileType.TILED) {
-                        windowReference._label.set_text("|"+ title);
-                        return;
-                    }
-                    else if (metaWindow.tile_type == Meta.WindowTileType.SNAPPED) {
-                        windowReference._label.set_text("||"+ title);
-                        return;
-                    }
-                    else {
-                        windowReference._label.set_text(title);
-                        return;
-                    }
-                }
-                catch (e) {
-                    global.logError(e);
-                }
+                windowReference._label.set_text(title);                
             }
         }
     },
