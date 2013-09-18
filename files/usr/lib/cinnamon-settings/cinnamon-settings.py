@@ -135,7 +135,7 @@ class MainWindow:
         self.search_entry = self.builder.get_object("search_box")
         self.search_entry.connect("changed", self.onSearchTextChanged)
         self.search_entry.connect("icon-press", self.onClearSearchBox)
-        self.window.connect("destroy", Gtk.main_quit)
+        self.window.connect("destroy", self.quit)
 
         self.builder.connect_signals(self)
         self.window.set_has_resize_grip(False)
@@ -202,8 +202,8 @@ class MainWindow:
 
         # set up larger components.
         self.window.set_title(_("System Settings"))
-        self.window.connect("destroy", Gtk.main_quit)
-        self.button_cancel.connect("clicked", Gtk.main_quit)
+        self.window.connect("destroy", self.quit)
+        self.button_cancel.connect("clicked", self.quit)
         self.button_back.connect('clicked', self.back_to_icon_view)
         self.window.set_opacity(self.opacity)
         self.window.show()
@@ -368,7 +368,6 @@ class MainWindow:
             self.on_advanced_mode()
         return True
 
-
     def on_advanced_mode(self):
         self.advanced_mode = True
         self.settings.set_boolean(ADVANCED_GSETTING, True)
@@ -384,8 +383,14 @@ class MainWindow:
             self.current_sidepage.build(self.advanced_mode)
             self.maybe_resize(self.current_sidepage)
         self.displayCategories()
+    
+    def quit(self, *args):
+        Gtk.main_quit()
+
 
 if __name__ == "__main__":
+    import signal
     GObject.threads_init()
-    MainWindow()
+    signal.signal(signal.SIGINT, MainWindow().quit)
     Gtk.main()
+
