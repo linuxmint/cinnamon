@@ -971,8 +971,7 @@ Panel.prototype = {
     _leavePanel:function() {
         this.isMouseOverPanel = false;
         this._clearTimers();
-        if (this._hideDelay > 0) {
-            this._clearTimers();
+        if (this._hideDelay > 0 && !this._disabled) {
             this._hideTimer = Mainloop.timeout_add(this._hideDelay, Lang.bind(this, this._hidePanel));
         }
         else {
@@ -992,6 +991,7 @@ Panel.prototype = {
     
     disable: function() {
         this._disabled = true;
+        this._leavePanel();
         Tweener.addTween(this.actor, {
             opacity: 0, 
             time: AUTOHIDE_ANIMATION_TIME, 
@@ -1050,8 +1050,6 @@ Panel.prototype = {
     },
 
     _hidePanel: function(force) {
-        if (this._disabled) return;
-        
         if ((!this._hideable && !force) || global.menuStackLength > 0 || this.isMouseOverPanel) return;
 
         // Force the panel to be on top (hack to correct issues when switching workspace)
