@@ -1711,7 +1711,7 @@ Workspace.prototype = {
             return true;
         }
 
-        if (symbol === Clutter.Return || symbol === Clutter.KEY_space) {
+        if (symbol === Clutter.Return || symbol === Clutter.KEY_space || symbol === Clutter.KP_Enter) {
             if (activeMonitor.activateSelectedWindow()) {
                 return true;
             }
