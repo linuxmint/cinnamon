@@ -665,7 +665,7 @@
     </key>
     
      <key name="date-format" type="s">
-      <default>'%a %b %e, %H:%M'</default>
+      <default>'%a %b %e, %I:%M %p'</default>
       <_summary>Format for the date in the panel</_summary>
       <_description>
        Format used to show the date in the panel.
