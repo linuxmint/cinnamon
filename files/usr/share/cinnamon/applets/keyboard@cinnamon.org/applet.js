@@ -7,6 +7,7 @@ const Gtk = imports.gi.Gtk;
 const Main = imports.ui.main;
 const PopupMenu = imports.ui.popupMenu;
 const Util = imports.misc.util;
+const Settings = imports.ui.settings;
 
 function LayoutMenuItem() {
     this._init.apply(this, arguments);
@@ -53,11 +54,18 @@ MyApplet.prototype = {
             this._labelActors = [ ];
             this._layoutItems = [ ];
 
-            this._showFlags = global.settings.get_boolean("keyboard-applet-use-flags");
+            this.settings = new Settings.AppletSettings(this, metadata["uuid"], this.instance_id);
+
+            this.settings.bindProperty(Settings.BindingDirection.BIDIRECTIONAL,
+                                       "use-flags",
+                                       "_showFlags",
+                                       this._syncConfig,
+                                       null);
+
             this._config = Gkbd.Configuration.get();
             this._config.connect('changed', Lang.bind(this, this._syncConfig));
             this._config.connect('group-changed', Lang.bind(this, this._syncGroup));
-            global.settings.connect('changed::keyboard-applet-use-flags', Lang.bind(this, this._reload_settings));
+
             this._config.start_listen();
 
             this._syncConfig();
@@ -71,12 +79,7 @@ MyApplet.prototype = {
                 Main.overview.hide();
                 Util.spawn(['gucharmap']);
             }));
-            this.menu.addSettingsAction(_("Region and Language Settings"), 'region'); 
-            
-            this.show_flags_switch = new PopupMenu.PopupSwitchMenuItem(_("Show flags"), this._showFlags);
-            this._applet_context_menu.addMenuItem(this.show_flags_switch);            
-            this.show_flags_switch.connect('toggled', Lang.bind(this, this._toggle_flags));
-                      
+            this.menu.addSettingsAction(_("Region and Language Settings"), 'region');                      
         }
         catch (e) {
             global.logError(e);
@@ -85,23 +88,8 @@ MyApplet.prototype = {
     
     on_applet_clicked: function(event) {
         this.menu.toggle();        
-    },
-    
-    _toggle_flags: function() {
-        if (this._showFlags) {            
-            this.show_flags_switch.setToggleState(false);
-            global.settings.set_boolean("keyboard-applet-use-flags", false);
-        } else {
-            this.show_flags_switch.setToggleState(true);
-            global.settings.set_boolean("keyboard-applet-use-flags", true);
-        }
-    },
-    
-    _reload_settings: function() {
-        this._showFlags = global.settings.get_boolean("keyboard-applet-use-flags");
-        this._syncConfig();
-    },
-    
+    },  
+
    _adjustGroupNames: function(names) {
         // Disambiguate duplicate names with a subscript
         // This is O(N^2) to avoid sorting names
@@ -125,8 +113,6 @@ MyApplet.prototype = {
     },
 
     _syncConfig: function() {
-        this._showFlags = global.settings.get_boolean("keyboard-applet-use-flags");
-
         let groups = this._config.get_group_names();
         if (groups.length > 1) {
             this.actor.show();

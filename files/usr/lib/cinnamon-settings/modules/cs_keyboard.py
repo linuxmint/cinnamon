@@ -353,10 +353,10 @@ class KeyboardSidePage (SidePage):
         tab.add_widget(box)
         tab.add_widget(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))
         
-        tab.add_widget(GSettingsCheckButton(_("Text cursor blinks"), "org.gnome.desktop.interface", "cursor-blink", None))
+        tab.add_widget(GSettingsCheckButton(_("Text cursor blinks"), "org.cinnamon.desktop.interface", "cursor-blink", None))
         box = IndentedHBox()
-        slider = GSettingsRange(_("Blink speed:"), _("Slow"), _("Fast"), 100, 2500, True, "int", False, "org.gnome.desktop.interface", "cursor-blink-time",
-                                                                        "org.gnome.desktop.interface/cursor-blink", adjustment_step = 10)
+        slider = GSettingsRange(_("Blink speed:"), _("Slow"), _("Fast"), 100, 2500, True, "int", False, "org.cinnamon.desktop.interface", "cursor-blink-time",
+                                                                        "org.cinnamon.desktop.interface/cursor-blink", adjustment_step = 10)
         box.pack_start(slider, True, True, 0)
         tab.add_widget(box)
         tab.add_widget(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))

@@ -3,5 +3,6 @@
  "name": "Launcher desklet",
  "description": "A desklet that launches a program",
  "prevent-decorations": false,
- "max-instances": "100"
+ "max-instances": "100",
+ "icon": "gnome-panel-launcher"
 }

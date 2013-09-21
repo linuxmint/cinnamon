@@ -22,7 +22,7 @@
     </key>
     
     <key name="enabled-applets" type="as">
-      <default>['panel1:left:0:menu@cinnamon.org', 'panel1:left:1:show-desktop@cinnamon.org', 'panel1:left:2:panel-launchers@cinnamon.org', 'panel1:left:3:window-list@cinnamon.org', 'panel1:right:0:notifications@cinnamon.org', 'panel1:right:1:settings@cinnamon.org', 'panel1:right:2:removable-drives@cinnamon.org', 'panel1:right:3:keyboard@cinnamon.org', 'panel1:right:4:bluetooth@cinnamon.org', 'panel1:right:5:network@cinnamon.org', 'panel1:right:6:sound@cinnamon.org', 'panel1:right:7:power@cinnamon.org', 'panel1:right:8:systray@cinnamon.org', 'panel1:right:9:calendar@cinnamon.org', 'panel1:right:10:windows-quick-list@cinnamon.org']</default>
+      <default>['panel1:left:0:menu@cinnamon.org', 'panel1:left:1:show-desktop@cinnamon.org', 'panel1:left:2:panel-launchers@cinnamon.org', 'panel1:left:3:window-list@cinnamon.org', 'panel1:right:0:notifications@cinnamon.org', 'panel1:right:1:user@cinnamon.org', 'panel1:right:2:removable-drives@cinnamon.org', 'panel1:right:3:keyboard@cinnamon.org', 'panel1:right:4:bluetooth@cinnamon.org', 'panel1:right:5:network@cinnamon.org', 'panel1:right:6:sound@cinnamon.org', 'panel1:right:7:power@cinnamon.org', 'panel1:right:8:systray@cinnamon.org', 'panel1:right:9:calendar@cinnamon.org', 'panel1:right:10:windows-quick-list@cinnamon.org']</default>
       <_summary>Uuids of applets to enable</_summary>
       <_description>
         Cinnamon applets have a uuid property; this key lists applets
@@ -133,14 +133,6 @@
       <_summary>DND drag threshold</_summary>
       <_description>
         Amount of motion to ignore before registering a drag-and-drop intent on panel objects
-      </_description>
-    </key>
-
-    <key name="keyboard-applet-use-flags" type="b">
-      <default>true</default>
-      <_summary>Use flags to display the keyboard layouts</_summary>
-      <_description>
-        Whether to use flags to display the keyboard layouts.
       </_description>
     </key>
 
@@ -405,22 +397,6 @@
       <_description>Properties of overview corners, in the form functionality:hover:icon. The order in which properties are displayed is top left, top right, bottom left, bottom right.</_description>
     </key>
 
-    <key name="expo-applet-hover" type="b">
-      <default>false</default>
-      <_summary>Expo applet: Activate on hover</_summary>
-      <_description>
-        Whether the expo applet triggers only when you click, or when you hover on it
-      </_description>
-    </key>
-    
-    <key name="scale-applet-hover" type="b">
-      <default>false</default>
-      <_summary>Scale applet: Activate on hover</_summary>
-      <_description>
-        Whether the scale applet triggers only when you click, or when you hover on it
-      </_description>
-    </key>
-    
     <key name="panel-launchers" type="as">
       <default>[ 'firefox.desktop', 'gnome-terminal.desktop', 'nemo.desktop']</default>
       <_summary>Desktop files of the applications to put in the panel launchers applet</_summary>
@@ -565,6 +541,14 @@
       </description>
     </key>
     
+    <key name="window-list-applet-alert" type="b">
+      <default>true</default>
+      <summary>Enable window list alerts</summary>
+      <description>
+        Enable window list alerts
+      </description>
+    </key>
+
     <key name="bring-windows-to-current-workspace" type="b">
       <default>false</default>
       <summary>Brings windows requiring attention to the current workspace</summary>
@@ -609,6 +593,7 @@
     <child name="keyboard" schema="org.cinnamon.keyboard"/>
     <child name="power" schema="org.cinnamon.power" />
     <child name="desklets" schema="org.cinnamon.desklets" />
+    <child name="sounds" schema="org.cinnamon.sounds" />
 
     <key name="enable-vfade" type="b">
       <default>false</default>
@@ -775,26 +760,174 @@
   </schema>
   
   <schema id="org.cinnamon.desklets" path="/org/cinnamon/desklets/"
-        gettext-domain="@GETTEXT_PACKAGE@">
-    <child name="clock" schema="org.cinnamon.desklets.clock"/>
+        gettext-domain="@GETTEXT_PACKAGE@">  
+    <child name="launcher" schema="org.cinnamon.desklets.launcher" />
   </schema>
 
-  <schema id="org.cinnamon.desklets.clock" path="/org/cinnamon/desklets/clock/"
-        gettext-domain="@GETTEXT_PACKAGE@">
-    <key name="date-format" type="s">
-      <default>'%H:%M'</default>
-      <_summary>The date format for the clock desklet</_summary>
-      <_description>
-        The format to be used in the clock desklet
-      </_description>
-    </key>
+  <schema id="org.cinnamon.sounds" path="/org/cinnamon/sounds/">  
+    
+    <key name="switch-enabled" type="b">
+      <default>false</default>
+      <summary>Whether to play a sound when switching workspaces</summary>
+      <description>
+        Whether to play a sound when switching workspaces.
+      </description>
+    </key> 
+   
+    <key name="switch-file" type="s">
+      <default>""</default>
+      <summary>Which sound to play when switching workspaces</summary>
+      <description>
+        Which sound to play when switching workspaces.
+      </description>
+    </key>      
 
-    <key type="i" name="font-size">
-      <default>50</default>
-      <_summary>The font size for the clock deskelt</_summary>
-      <_description> The font size to be used to display the time on the clock desklet</_description>
-    </key>
+    <key name="close-enabled" type="b">
+      <default>false</default>
+      <summary>Whether to play a sound when closing windows</summary>
+      <description>
+        Whether to play a sound when closing windows.
+      </description>
+    </key> 
+   
+    <key name="close-file" type="s">
+      <default>""</default>
+      <summary>Which sound to play when closing windows</summary>
+      <description>
+        Which sound to play when closing windows.
+      </description>
+    </key>      
+
+    <key name="map-enabled" type="b">
+      <default>false</default>
+      <summary>Whether to play a sound when mapping windows</summary>
+      <description>
+        Whether to play a sound when mapping windows.
+      </description>
+    </key> 
+   
+    <key name="map-file" type="s">
+      <default>""</default>
+      <summary>Which sound to play when mapping windows</summary>
+      <description>
+        Which sound to play when mapping windows.
+      </description>
+    </key>      
+
+    <key name="minimize-enabled" type="b">
+      <default>false</default>
+      <summary>Whether to play a sound when minimizing windows</summary>
+      <description>
+        Whether to play a sound when minimizing windows.
+      </description>
+    </key> 
+   
+    <key name="minimize-file" type="s">
+      <default>""</default>
+      <summary>Which sound to play when minimizing windows</summary>
+      <description>
+        Which sound to play when minimizing windows.
+      </description>
+    </key>      
+
+    <key name="maximize-enabled" type="b">
+      <default>false</default>
+      <summary>Whether to play a sound when maximizing windows</summary>
+      <description>
+        Whether to play a sound when maximizing windows.
+      </description>
+    </key> 
+   
+    <key name="maximize-file" type="s">
+      <default>""</default>
+      <summary>Which sound to play when maximizing windows</summary>
+      <description>
+        Which sound to play when maximizing windows.
+      </description>
+    </key>      
+
+    <key name="unmaximize-enabled" type="b">
+      <default>false</default>
+      <summary>Whether to play a sound when unmaximizing windows</summary>
+      <description>
+        Whether to play a sound when unmaximizing windows.
+      </description>
+    </key> 
+   
+    <key name="unmaximize-file" type="s">
+      <default>""</default>
+      <summary>Which sound to play when unmaximizing windows</summary>
+      <description>
+        Which sound to play when unmaximizing windows.
+      </description>
+    </key>      
+
+    <key name="tile-enabled" type="b">
+      <default>false</default>
+      <summary>Whether to play a sound when tiling windows</summary>
+      <description>
+        Whether to play a sound when tiling windows.
+      </description>
+    </key> 
+   
+    <key name="tile-file" type="s">
+      <default>""</default>
+      <summary>Which sound to play when tiling windows</summary>
+      <description>
+        Which sound to play when tiling windows.
+      </description>
+    </key>      
+
+    <key name="login-enabled" type="b">
+      <default>false</default>
+      <summary>Whether to play a sound during login</summary>
+      <description>
+        Whether to play a sound during login.
+      </description>
+    </key> 
+   
+    <key name="login-file" type="s">
+      <default>""</default>
+      <summary>Which sound to play when switching windows</summary>
+      <description>
+        Which sound to play during login.
+      </description>
+    </key>          
+
+    <key name="plug-enabled" type="b">
+      <default>false</default>
+      <summary>Whether to play a sound when a device is plugged</summary>
+      <description>
+        Whether to play a sound when a device is plugged.
+      </description>
+    </key> 
+   
+    <key name="plug-file" type="s">
+      <default>""</default>
+      <summary>Which sound to play when a device is plugged</summary>
+      <description>
+        Which sound to play when a device is plugged.
+      </description>
+    </key>     
+
+    <key name="unplug-enabled" type="b">
+      <default>false</default>
+      <summary>Whether to play a sound when a device is unplugged</summary>
+      <description>
+        Whether to play a sound when a device is unplugged.
+      </description>
+    </key> 
+   
+    <key name="unplug-file" type="s">
+      <default>""</default>
+      <summary>Which sound to play when a device is plugged</summary>
+      <description>
+        Which sound to play when a device is unplugged.
+      </description>
+    </key>    
+
   </schema>
+
   <schema id="org.cinnamon.desklets.launcher" path="/org/cinnamon/desklets/launcher/"
         gettext-domain="@GETTEXT_PACKAGE@">
     <key name="launcher-list" type="as">

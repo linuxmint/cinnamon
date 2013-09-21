@@ -1908,14 +1908,31 @@ cinnamon_global_play_theme_sound (CinnamonGlobal *global,
 }
 
 /**
- * cinnamon_global_cancel_theme_sound:
+ * cinnamon_global_play_sound_file:
  * @global: the #CinnamonGlobal
- * @id: the id previously passed to cinnamon_global_play_theme_sound()
+ * @id: an id, used to cancel later (0 if not needed)
+ * @filename: the filename of the sound
  *
- * Cancels a sound notification.
+ * Plays a simple sound.
+ * Really just a workaround for libcanberra not being introspected.
  */
 void
-cinnamon_global_cancel_theme_sound (CinnamonGlobal *global,
+cinnamon_global_play_sound_file (CinnamonGlobal *global,
+                               guint        id,
+                               const char  *filename)
+{
+  ca_context_play (global->sound_context, id, CA_PROP_MEDIA_FILENAME, filename, NULL);
+}
+
+/**
+ * cinnamon_global_cancel_sound:
+ * @global: the #CinnamonGlobal
+ * @id: the id previously passed to cinnamon_global_play_theme_sound() or cinnamon_global_play_sound_file()
+ *
+ * Cancels a sound being played.
+ */
+void
+cinnamon_global_cancel_sound (CinnamonGlobal *global,
                                  guint id)
 {
   ca_context_cancel (global->sound_context, id);

@@ -11,7 +11,7 @@ CUSTOM_ITEM_ASK = "cc-item-ask"
 CUSTOM_ITEM_DO_NOTHING = "cc-item-do-nothing"
 CUSTOM_ITEM_OPEN_FOLDER = "cc-item-open-folder"
 
-MEDIA_HANDLING_SCHEMA = "org.gnome.desktop.media-handling"
+MEDIA_HANDLING_SCHEMA = "org.cinnamon.desktop.media-handling"
 
 DEF_CONTENT_TYPE = 0
 DEF_LABEL = 1

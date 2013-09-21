@@ -3,23 +3,23 @@
 const DBus = imports.dbus;
 const Gdk = imports.gi.Gdk;
 const GLib = imports.gi.GLib;
-const GnomeDesktop = imports.gi.GnomeDesktop;
+const CinnamonDesktop = imports.gi.CinnamonDesktop;
 const Lang = imports.lang;
 const Applet = imports.ui.applet;
 const PopupMenu = imports.ui.popupMenu;
 
 const N_ = function(e) { return e };
 
-const possibleRotations = [ GnomeDesktop.RRRotation.ROTATION_0,
-			    GnomeDesktop.RRRotation.ROTATION_90,
-			    GnomeDesktop.RRRotation.ROTATION_180,
-			    GnomeDesktop.RRRotation.ROTATION_270
+const possibleRotations = [ CinnamonDesktop.RRRotation.ROTATION_0,
+			    CinnamonDesktop.RRRotation.ROTATION_90,
+			    CinnamonDesktop.RRRotation.ROTATION_180,
+			    CinnamonDesktop.RRRotation.ROTATION_270
 			  ];
 
-let rotations = [ [ GnomeDesktop.RRRotation.ROTATION_0, N_("Normal") ],
-		  [ GnomeDesktop.RRRotation.ROTATION_90, N_("Left") ],
-		  [ GnomeDesktop.RRRotation.ROTATION_270, N_("Right") ],
-		  [ GnomeDesktop.RRRotation.ROTATION_180, N_("Upside-down") ]
+let rotations = [ [ CinnamonDesktop.RRRotation.ROTATION_0, N_("Normal") ],
+		  [ CinnamonDesktop.RRRotation.ROTATION_90, N_("Left") ],
+		  [ CinnamonDesktop.RRRotation.ROTATION_270, N_("Right") ],
+		  [ CinnamonDesktop.RRRotation.ROTATION_180, N_("Upside-down") ]
 		];
 
 const XRandr2Iface = {
@@ -51,7 +51,7 @@ MyApplet.prototype = {
             this._proxy = new XRandr2(DBus.session, 'org.cinnamon.SettingsDaemon', '/org/cinnamon/SettingsDaemon/XRANDR');
 
             try {
-                this._screen = new GnomeDesktop.RRScreen({ gdk_screen: Gdk.Screen.get_default() });
+                this._screen = new CinnamonDesktop.RRScreen({ gdk_screen: Gdk.Screen.get_default() });
                 this._screen.init(null);
             } catch(e) {
                 // an error means there is no XRandR extension
@@ -78,7 +78,7 @@ MyApplet.prototype = {
     },
     
     _createMenu: function() {
-        let config = GnomeDesktop.RRConfig.new_current(this._screen);
+        let config = CinnamonDesktop.RRConfig.new_current(this._screen);
         let outputs = config.get_outputs();
         for (let i = 0; i < outputs.length; i++) {
             if (outputs[i].is_connected())

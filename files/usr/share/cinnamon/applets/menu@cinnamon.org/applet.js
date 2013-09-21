@@ -907,7 +907,7 @@ MyApplet.prototype = {
         Util.spawnCommandLine("cinnamon-menu-editor");
     },
     
-    on_applet_clicked: function(event) {
+    on_applet_clicked: function(event) {        
         this.menu.toggle_with_options(false);
     },        
            
@@ -1738,7 +1738,7 @@ MyApplet.prototype = {
         this.categoriesBox = new St.BoxLayout({ style_class: 'menu-categories-box', vertical: true });
         this.applicationsScrollBox = new St.ScrollView({ x_fill: true, y_fill: false, y_align: St.Align.START, style_class: 'vfade menu-applications-scrollbox' });
 
-        this.a11y_settings = new Gio.Settings({ schema: "org.gnome.desktop.a11y.applications" });
+        this.a11y_settings = new Gio.Settings({ schema: "org.cinnamon.desktop.a11y.applications" });
         this.a11y_settings.connect("changed::screen-magnifier-enabled", Lang.bind(this, this._updateVFade));
         this._updateVFade();
         global.settings.connect("changed::menu-enable-autoscroll", Lang.bind(this, this._update_autoscroll));

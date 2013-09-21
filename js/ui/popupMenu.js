@@ -83,7 +83,7 @@ PopupBaseMenuItem.prototype = {
     },
 
     _onButtonReleaseEvent: function (actor, event) {
-        this.activate(event);
+        this.activate(event, false);
         return true;
     },
 

@@ -27,7 +27,7 @@
 #include "cinnamon-a11y.h"
 
 #define INIT_METHOD "gnome_accessibility_module_init"
-#define DESKTOP_SCHEMA "org.gnome.desktop.interface"
+#define DESKTOP_SCHEMA "org.cinnamon.desktop.interface"
 #define ACCESSIBILITY_ENABLED_KEY "toolkit-accessibility"
 #define AT_SPI_SCHEMA "org.a11y.atspi"
 #define ATK_BRIDGE_LOCATION_KEY "atk-bridge-location"

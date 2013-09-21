@@ -1041,7 +1041,7 @@ Panel.prototype = {
         if (highlight) {
             this.actor.add_style_pseudo_class('highlight');
         } else {
-            this.actor.remove_style_pseudo_class('highlight');
+            this.actor.rpemove_style_pseudo_class('highlight');
         }
     },
 
@@ -1392,8 +1392,7 @@ Panel.prototype = {
     _leavePanel:function() {
         this.isMouseOverPanel = false;
         this._clearTimers();
-        if (this._hideDelay > 0) {
-            this._clearTimers();
+        if (this._hideDelay > 0 && !this._disabled) {
             this._hideTimer = Mainloop.timeout_add(this._hideDelay, Lang.bind(this, this._hidePanel));
         }
         else {
@@ -1413,6 +1412,7 @@ Panel.prototype = {
 
     disable: function() {
         this._disabled = true;
+        this._leavePanel();
         Tweener.addTween(this.actor, {
             opacity: 0,
             time: AUTOHIDE_ANIMATION_TIME,

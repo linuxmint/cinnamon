@@ -35,9 +35,9 @@ setting_dict = {
 
 
 class Factory():
-    def __init__(self, file_name, instance_id, multi_instance):
+    def __init__(self, file_name, instance_id, multi_instance, uuid):
         self.file = file_name
-        self.settings = Settings(file_name, self, instance_id, multi_instance)
+        self.settings = Settings(file_name, self, instance_id, multi_instance, uuid)
         self.widgets = collections.OrderedDict()
         self.file_obj = Gio.File.new_for_path(self.file)
         self.file_monitor = self.file_obj.monitor_file(Gio.FileMonitorFlags.SEND_MOVED, None)
@@ -110,11 +110,22 @@ class Factory():
 
 
 class Settings():
-    def __init__(self, file_name, factory, instance_id, multi_instance):
+    def __init__(self, file_name, factory, instance_id, multi_instance, uuid):
         self.file_name = file_name
         self.factory = factory
         self.instance_id = instance_id
         self.multi_instance = multi_instance
+        self.uuid = uuid
+        try:
+            self.t = gettext.translation(self.uuid, home+"/.local/share/locale").ugettext
+        except IOError:
+            try:
+                self.t = gettext.translation(self.uuid, "/usr/share/locale").ugettext
+            except IOError:
+                try:
+                    self.t = gettext.translation("cinnamon", "/usr/share/cinnamon/locale").ugettext
+                except IOError:
+                    self.t = None
         self.reload()
 
     def reload (self):
@@ -186,6 +197,10 @@ class Settings():
 class BaseWidget():
     def __init__(self, key, settings_obj, uuid):
         self.settings_obj = settings_obj
+        if self.settings_obj.t:
+            self.t = self.settings_obj.t
+        else:
+            self.t = None
         self.key = key
         self.uuid = uuid
         self.handler = None
@@ -223,20 +238,30 @@ class BaseWidget():
 
     def get_desc(self):
         try:
-            return self.settings_obj.get_data(self.key)["description"]
+            if self.t:
+                print self.t(self.settings_obj.get_data(self.key)["description"])
+                return self.t(self.settings_obj.get_data(self.key)["description"])
+            else:
+                return self.settings_obj.get_data(self.key)["description"]
         except:
             print ("Could not find description for key '%s' in xlet '%s'" % (self.key, self.uuid))
             return ""
 
     def get_tooltip(self):
         try:
-            return self.settings_obj.get_data(self.key)["tooltip"]
+            if self.t:
+                return self.t(self.settings_obj.get_data(self.key)["tooltip"])
+            else:
+                return self.settings_obj.get_data(self.key)["tooltip"]
         except:
             return ""
 
     def get_units(self):
         try:
-            return self.settings_obj.get_data(self.key)["units"]
+            if self.t:
+                return self.t(self.settings_obj.get_data(self.key)["units"])
+            else:
+                return self.settings_obj.get_data(self.key)["units"]
         except:
             print ("Could not find description for key '%s' in xlet '%s'" % (self.key, self.uuid))
             return ""
@@ -270,9 +295,18 @@ class BaseWidget():
 
     def get_options(self):
         try:
-            return self.settings_obj.get_data(self.key)["options"]
-        except:
+            if self.t:
+                ret = {}
+                d = self.settings_obj.get_data(self.key)["options"]
+                for key in d.keys():
+                    translated_key = self.t(key)
+                    ret[translated_key] = d[key]
+                return ret
+            else:
+                return self.settings_obj.get_data(self.key)["options"]
+        except Exception, detail:
             print ("Could not find options for key '%s' in xlet '%s'" % (self.key, self.uuid))
+            print detail
 
     def get_custom_val(self):
         try:

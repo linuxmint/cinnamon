@@ -704,12 +704,11 @@ StScrollBar StButton#vhandle:hover {
 	spacing: 10px;
 }
 .notification-button {
-	border-radius: 18px;
-	font-size: 11pt;
-	padding: 4px 42px 5px;
+	border-radius: 5px;
+	padding: 4px 8px 5px;
 }
 .notification-button:focus {
-	padding: 3px 41px 4px;
+	padding: 3px 8px 4px;
 }
 .notification-icon-button {
 	border-radius: 5px;

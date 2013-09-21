@@ -405,7 +405,22 @@ AppIcon.prototype = {
         this.actor.add(this._iconBin, { x_fill: false, y_fill: false } );
         let title = window.get_title();
         if (title) {
-            this.label = new St.Label({ text: title });
+            if (window.minimized) {
+                this.label = new St.Label({ text: "[" + title + "]"});               
+                let contrast_effect = new Clutter.BrightnessContrastEffect();                
+                contrast_effect.set_brightness(-0.5, -0.5, -0.5);                         
+                this._iconBin.add_effect(contrast_effect);                
+            }
+            else if (window.tile_type == Meta.WindowTileType.TILED) {
+                this.label = new St.Label({ text: "|" + title });
+            }
+            else if (window.tile_type == Meta.WindowTileType.SNAPPED) {
+                this.label = new St.Label({ text: "||" + title });
+            }
+            else {
+                this.label = new St.Label({ text: title });    
+            }
+            
             let bin = new St.Bin({ x_align: St.Align.MIDDLE });
             bin.add_actor(this.label);
             this.actor.add(bin);

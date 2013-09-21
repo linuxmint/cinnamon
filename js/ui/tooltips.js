@@ -21,6 +21,7 @@ Tooltip.prototype = {
         item.connect('motion-event', Lang.bind(this, this._onMotionEvent));
         item.connect('button-press-event', Lang.bind(this, this.hide));
         item.connect('button-release-event', Lang.bind(this, this._onReleaseEvent));
+        item.connect('destroy', Lang.bind(this, this.destroy));
         item.connect('allocation-changed', Lang.bind(this, function() {
             // An allocation change could mean that the actor has moved,
             // so hide, but wait until after the allocation cycle.
@@ -83,7 +84,7 @@ Tooltip.prototype = {
         var tooltipLeft = this._mousePosition[0];
 
         if (tooltipLeft<0) tooltipLeft = 0;
-        if (tooltipLeft+tooltipWidth>monitor.width) tooltipLeft = monitor.width-tooltipWidth;
+        if (tooltipLeft+tooltipWidth>monitor.x+monitor.width) tooltipLeft = (monitor.x+monitor.width)-tooltipWidth;
 
         this._tooltip.set_position(tooltipLeft, tooltipTop);
 
@@ -98,7 +99,9 @@ Tooltip.prototype = {
 
     destroy: function() {
         Tweener.removeTweens(this);
-        this._tooltip.destroy();
+        if (this._tooltip != null) {
+            this._tooltip.destroy();
+        }
         this._tooltip = null;
     }
 };

@@ -16,7 +16,7 @@ const MessageTray = imports.ui.messageTray;
 const KEYBOARD_SCHEMA = 'org.cinnamon.keyboard';
 const KEYBOARD_TYPE = 'keyboard-type';
 
-const A11Y_APPLICATIONS_SCHEMA = 'org.gnome.desktop.a11y.applications';
+const A11Y_APPLICATIONS_SCHEMA = 'org.cinnamon.desktop.a11y.applications';
 const SHOW_KEYBOARD = 'screen-keyboard-enabled';
 
 // Key constants taken from Antler

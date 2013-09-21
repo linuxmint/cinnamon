@@ -5,12 +5,12 @@ const DBus = imports.dbus;
 const Mainloop = imports.mainloop;
 const Gio = imports.gi.Gio;
 const Params = imports.misc.params;
-
+const Main = imports.ui.main;
 const CinnamonMountOperation = imports.ui.cinnamonMountOperation;
 const ScreenSaver = imports.misc.screenSaver;
 
 // GSettings keys
-const SETTINGS_SCHEMA = 'org.gnome.desktop.media-handling';
+const SETTINGS_SCHEMA = 'org.cinnamon.desktop.media-handling';
 const SETTING_ENABLE_AUTOMOUNT = 'automount';
 
 const AUTORUN_EXPIRE_TIMEOUT_SECS = 10;
@@ -140,7 +140,7 @@ AutomountManager.prototype = {
         if (this._ssProxy.screenSaverActive)
             return;
 
-        global.play_theme_sound(0, 'device-added-media');
+        Main.soundManager.play('plug');        
     },
 
     _onDriveDisconnected: function() {
@@ -152,7 +152,7 @@ AutomountManager.prototype = {
         if (this._ssProxy.screenSaverActive)
             return;
 
-        global.play_theme_sound(0, 'device-removed-media');        
+        Main.soundManager.play('unplug');      
     },
 
     _onDriveEjectButton: function(monitor, drive) {

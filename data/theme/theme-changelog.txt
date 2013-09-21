@@ -1,0 +1,32 @@
+Since 1.8...
+
+ .notification-button {
+-       border-radius: 18px;
+-       font-size: 11pt;
+-       padding: 4px 42px 5px;
++       border-radius: 5px;
++       padding: 4px 8px 5px;
+ }
+ .notification-button:focus {
+-       padding: 3px 41px 4px;
++       padding: 3px 8px 4px;
+ }
+
++/* Snap/tile OSD popup */
++
++.snap-osd {
++    font-size: 18pt;
++    border-radius: 24px;
++    background-color: rgba(85, 85, 85, 0.9);
++    border: 2px solid #868686;
++    color: #babdb6;
++    padding-right: 20px;
++    padding-left: 20px;
++    padding-bottom: 20px;
++    padding-top: 20px;
++    text-align: center;
++}
+
+
+
+

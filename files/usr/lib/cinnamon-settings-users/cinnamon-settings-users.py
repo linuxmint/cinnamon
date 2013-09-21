@@ -416,8 +416,7 @@ class Module:
             self.face_button = Gtk.Button()
             self.face_image = Gtk.Image()  
             self.face_button.set_image(self.face_image)
-            if os.path.exists("/usr/share/pixmaps/faces/user-generic.png"):
-                self.face_image.set_from_file("/usr/share/pixmaps/faces/user-generic.png")      
+            self.face_image.set_from_file("/usr/share/cinnamon/faces/user-generic.png")      
             self.face_button.set_alignment(0.0, 0.5)
             self.face_button.set_tooltip_text(_("Click to change the picture"))
 
@@ -517,6 +516,7 @@ class Module:
             if response == Gtk.ResponseType.OK:
                 groups = dialog.get_selected_groups()                
                 os.system("usermod %s -G %s" % (user.get_user_name(), ",".join(groups)))
+                groups.sort()
                 self.groups_label.set_text(", ".join(groups))
             dialog.destroy()
 
@@ -533,7 +533,7 @@ class Module:
             for group in grp.getgrall():              
                 if user.get_user_name() in group[3]:                    
                     groups.append(group[0])
-
+            groups.sort()
             self.groups_label.set_text(", ".join(groups))
 
     def _on_realname_changed(self, widget, text):
@@ -637,14 +637,15 @@ class Module:
             if os.path.exists(user.get_icon_file()):
                 pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(user.get_icon_file(), 48, 48)
             else:
-                pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size("/usr/share/pixmaps/faces/user-generic.png", 48, 48)
+                pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size("/usr/share/cinnamon/faces/user-generic.png", 48, 48)
             description = "<b>%s</b>\n%s" % (user.get_real_name(), user.get_user_name())
             piter = self.users.append(None, [user, pixbuf, description])            
         self.users_treeview.set_model(self.users)        
 
     def load_groups(self):
-        self.groups.clear()       
-        for group in grp.getgrall():
+        self.groups.clear() 
+        groups = sorted(grp.getgrall(), key=lambda x: x[0], reverse=False)
+        for group in groups:
             (gr_name, gr_passwd, gr_gid, gr_mem) = group                        
             piter = self.groups.append(None, [gr_gid, gr_name])
         self.groups_treeview.set_model(self.groups)   
@@ -673,13 +674,13 @@ class Module:
             if os.path.exists(user.get_icon_file()):
                 self.face_image.set_from_file(user.get_icon_file())
             else:
-                self.face_image.set_from_file("/usr/share/pixmaps/faces/user-generic.png")
+                self.face_image.set_from_file("/usr/share/cinnamon/faces/user-generic.png")
             
             groups = []
             for group in grp.getgrall():              
                 if user.get_user_name() in group[3]:                    
                     groups.append(group[0])
-
+            groups.sort()
             self.groups_label.set_text(", ".join(groups))
             self.builder.get_object("box_users").show()
 
@@ -727,7 +728,7 @@ class Module:
             username = dialog.username_entry.get_text()
             new_user = self.accountService.create_user(username, fullname, account_type)
             new_user.set_password_mode(AccountsService.UserPasswordMode.NONE)
-            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size("/usr/share/pixmaps/faces/user-generic.png", 48, 48)
+            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size("/usr/share/cinnamon/faces/user-generic.png", 48, 48)
             description = "<b>%s</b>\n%s" % (fullname, username)
             piter = self.users.append(None, [new_user, pixbuf, description])
             # Add the user to his/her own group and sudo if Administrator was selected
