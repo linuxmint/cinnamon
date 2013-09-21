@@ -778,39 +778,41 @@ PanelManager.prototype = {
     },
 
     _onPanelsEnabledChanged: function(){
-        let newPanels = new Array(this.panels.length);
-        this.panelsMeta = [];
+        Mainloop.idle_add(Lang.bind(this, function() {
+            let newPanels = new Array(this.panels.length);
+            this.panelsMeta = [];
 
-        let panelProperties = global.settings.get_strv("panels-enabled");
-        for (let i = 0; i < panelProperties.length; i ++) {
-            let elements = panelProperties[i].split(":");
-            if (elements.length != 3) {
-                global.log("Invalid panel definition: " + panelProperties[i]);
-                continue;
+            let panelProperties = global.settings.get_strv("panels-enabled");
+            for (let i = 0; i < panelProperties.length; i ++) {
+                let elements = panelProperties[i].split(":");
+                if (elements.length != 3) {
+                    global.log("Invalid panel definition: " + panelProperties[i]);
+                    continue;
+                }
+
+                let ID = parseInt(elements[0]);
+
+                // If panel is moved
+                if (this.panels[ID]) {
+                    // Move panel object to newPanels
+                    newPanels[ID] = this.panels[ID];
+                    this.panels[ID] = null;
+
+                    newPanels[ID].updatePosition(parseInt(elements[1]),elements[2]=="bottom");
+                    AppletManager.updateAppletsOnPanel(newPanels[ID]);
+                    this.panelsMeta[ID] = [elements[1], elements[2]];
+                } else {
+                    this._loadPanel(ID, elements[1], elements[2]=="bottom", newPanels);
+                    AppletManager.loadAppletsOnPanel(newPanels[ID]);
+                }
             }
 
-            let ID = parseInt(elements[0]);
+            // Destroy removed panels
+            for (let i in this.panels)
+                if (this.panels[i]) this.panels[i].destroy();
 
-            // If panel is moved
-            if (this.panels[ID]) {
-                // Move panel object to newPanels
-                newPanels[ID] = this.panels[ID];
-                this.panels[ID] = null;
-
-                newPanels[ID].updatePosition(parseInt(elements[1]),elements[2]=="bottom");
-                AppletManager.updateAppletsOnPanel(newPanels[ID]);
-                this.panelsMeta[ID] = [elements[1], elements[2]];
-            } else {
-                this._loadPanel(ID, elements[1], elements[2]=="bottom", newPanels);
-                AppletManager.loadAppletsOnPanel(newPanels[ID]);
-            }
-        }
-
-        // Destroy removed panels
-        for (let i in this.panels)
-            if (this.panels[i]) this.panels[i].destroy();
-
-        this.panels = newPanels;
+            this.panels = newPanels;
+        }));
     }
 }
 function Panel(bottomPosition, panelID, monitorIndex) {
@@ -1041,7 +1043,7 @@ Panel.prototype = {
         if (highlight) {
             this.actor.add_style_pseudo_class('highlight');
         } else {
-            this.actor.rpemove_style_pseudo_class('highlight');
+            this.actor.remove_style_pseudo_class('highlight');
         }
     },
 
