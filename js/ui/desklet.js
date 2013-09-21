@@ -1,11 +1,13 @@
 //-*- indent-tabs-mode: nil-*-
 const Cinnamon = imports.gi.Cinnamon;
 const Clutter = imports.gi.Clutter;
+const GLib = imports.gi.GLib;
 const Lang = imports.lang;
 const Mainloop = imports.mainloop;
 const Meta = imports.gi.Meta;
 const Signals = imports.signals;
 const St = imports.gi.St;
+const Util = imports.misc.util;
 
 const DeskletManager = imports.ui.deskletManager;
 const DND = imports.ui.dnd;
@@ -63,8 +65,6 @@ Desklet.prototype = {
         this._menuManager.addMenu(this._menu);
         Main.uiGroup.add_actor(this._menu.actor);
         this._menu.actor.hide();
-
-        this._menu.addAction(_("Remove this desklet"), Lang.bind(this, this._onRemoveDesklet));
 
         this.actor.connect('button-release-event', Lang.bind(this, this._onButtonReleaseEvent));
 
@@ -214,6 +214,25 @@ Desklet.prototype = {
 
     _onRemoveDesklet: function(){
         DeskletManager.removeDesklet(this._uuid, this.instance_id);
+    },
+    
+    finalizeContextMenu: function() {
+        this.context_menu_separator = new PopupMenu.PopupSeparatorMenuItem();
+        if (this._menu._getMenuItems().length > 0) {
+            this._menu.addMenuItem(this.context_menu_separator);
+        }
+        
+        if (!this._meta["hide-configuration"] && GLib.file_test(this._meta["path"] + "/settings-schema.json", GLib.FileTest.EXISTS)) {            
+            this.context_menu_item_configure = new PopupMenu.PopupMenuItem(_("Configure..."));
+            this.context_menu_item_configure.connect("activate", Lang.bind(this, function() {
+                Util.spawnCommandLine("cinnamon-settings desklets " + this._uuid + " " + this.instance_id)
+            }));
+            this._menu.addMenuItem(this.context_menu_item_configure);
+        }
+        
+        this.context_menu_item_remove = new PopupMenu.PopupMenuItem(_("Remove this desklet"));
+        this.context_menu_item_remove.connect("activate", Lang.bind(this, this._onRemoveDesklet));
+        this._menu.addMenuItem(this.context_menu_item_remove);            
     }
 };
 Signals.addSignalMethods(Desklet.prototype);
