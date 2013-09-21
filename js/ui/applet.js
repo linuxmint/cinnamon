@@ -406,7 +406,7 @@ Applet.prototype = {
             this._applet_context_menu.addMenuItem(this.context_menu_separator);
          }
         
-        if (GLib.file_test(this._meta["path"] + "/settings-schema.json", GLib.FileTest.EXISTS)) {            
+        if (!this._meta["hide-configuration"] && GLib.file_test(this._meta["path"] + "/settings-schema.json", GLib.FileTest.EXISTS)) {            
             this.context_menu_item_configure = new MenuItem(_("Configure..."), null, Lang.bind(this, function() {
                 Util.spawnCommandLine("cinnamon-settings applets " + this._uuid + " " + this.instance_id)
             }));
