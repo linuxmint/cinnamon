@@ -39,6 +39,13 @@ var STRING_TYPES = {
             "description"
         ]
     },
+    "textview" : {
+        "required-fields": [
+            "type",
+            "default",
+            "description"
+        ]
+    },
     "colorchooser" : {
         "required-fields": [
             "type",
