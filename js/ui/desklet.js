@@ -64,6 +64,7 @@ Desklet.prototype = {
         Main.uiGroup.add_actor(this._menu.actor);
         this._menu.actor.hide();
 
+        this._menu.addSettingsAction(_("Desklet Settings"), "desklets " + this.metadata["uuid"]);
         this._menu.addAction(_("Remove this desklet"), Lang.bind(this, this._onRemoveDesklet));
 
         this.actor.connect('button-release-event', Lang.bind(this, this._onButtonReleaseEvent));
