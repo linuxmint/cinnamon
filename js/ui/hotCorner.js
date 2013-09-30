@@ -230,17 +230,6 @@ HotCorner.prototype = {
         this._animRipple(this._ripple3, 0.35,  1.0,   0.0,   0.3,     1);
     },
 
-    handleDragOver: function(source, actor, x, y, time) {
-        if (source != Main.xdndHandler)
-            return;
-
-        if (!Main.overview.visible && !Main.overview.animationInProgress && !Main.expo.visible) {
-            this.rippleAnimation();
-            Main.overview.showTemporarily();
-            Main.overview.beginItemDrag(actor);
-        }
-    },
-
     runAction: function(){
         this._activationTime = Date.now() / 1000;
 
