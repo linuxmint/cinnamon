@@ -1,0 +1,6 @@
+{
+ "uuid": "force-quit@cinnamon.org",
+ "name": "Force Quit Applet",
+ "description": "Kill Misbehaving Windows",
+ "icon": "application-exit"
+}
