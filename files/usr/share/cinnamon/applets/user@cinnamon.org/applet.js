@@ -67,13 +67,13 @@ MyApplet.prototype = {
             this.menu.addMenuItem(this.notificationsSwitch);
 
             this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+            
+            this.menu.addAction(_("System Settings"), Lang.bind(this, function() {
+                Util.spawnCommandLine("cinnamon-settings");
+            }));
                                                            
             this.menu.addAction(_("Account Details"), Lang.bind(this, function() {
                 Util.spawnCommandLine("cinnamon-settings user");
-            }));
-
-            this.menu.addAction(_("System Settings"), Lang.bind(this, function() {
-                Util.spawnCommandLine("cinnamon-settings");
             }));
 
             this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
@@ -100,11 +100,11 @@ MyApplet.prototype = {
                 }));
             }
 
+            this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+            
             this.menu.addAction(_("Log Out..."), Lang.bind(this, function() {
                 this._session.LogoutRemote(0);
             }));
-
-            this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
             this.menu.addAction(_("Power Off..."), Lang.bind(this, function() {
                 this._session.ShutdownRemote();
