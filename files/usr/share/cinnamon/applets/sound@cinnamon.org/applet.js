@@ -108,8 +108,8 @@ let compatible_players = [
     'deadbeef', 'smplayer', 'tomahawk'];
 let support_seek = [
     'clementine', 'banshee', 'rhythmbox', 'rhythmbox3', 'pragha', 'quodlibet',
-    'amarok', 'noise', 'xnoise', 'gmusicbrowser', 'spotify', 'vlc', 'beatbox',
-    'gnome-mplayer', 'qmmp', 'deadbeef', 'tomahawk'];
+    'amarok', 'xnoise', 'gmusicbrowser', 'spotify', 'vlc', 'beatbox',
+    'gnome-mplayer', 'qmmp', 'deadbeef'];
 /* dummy vars for translation */
 let x = _("Playing");
 x = _("Paused");
