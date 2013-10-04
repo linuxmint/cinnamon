@@ -118,7 +118,7 @@ MyApplet.prototype = {
             
             let dimSwitchAc = this._buildItem(_("Dim screen on AC power"), DimSettingsSchema, DimSettingsAc);
             this._settingsMenu.menu.addMenuItem(dimSwitchAc);
-            let dimSwitchBattery = this._buildItem(_("Dim screen on battery"), DimSettingsSchema, DimSettingsBattery);
+            let dimSwitchBattery = this._buildItem(_("Dim screen on battery power"), DimSettingsSchema, DimSettingsBattery);
             this._settingsMenu.menu.addMenuItem(dimSwitchBattery);
                       
             //initial update.
