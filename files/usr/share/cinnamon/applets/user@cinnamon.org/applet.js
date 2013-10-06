@@ -94,7 +94,20 @@ MyApplet.prototype = {
                 }       
             }));
 
-            if (GLib.file_test("/usr/bin/mdmflexiserver", GLib.FileTest.EXISTS)) {
+            if (GLib.getenv("XDG_SEAT_PATH")) {
+                // LightDM
+                this.menu.addAction(_("Switch User"), Lang.bind(this, function() {
+                    Util.spawnCommandLine("cinnamon-screensaver-command --lock");
+                    Util.spawnCommandLine("dm-tool switch-to-greeter");
+                }));
+
+                this.menu.addAction(_("Guest Session"), Lang.bind(this, function() {
+                    Util.spawnCommandLine("cinnamon-screensaver-command --lock");
+                    Util.spawnCommandLine("dm-tool switch-to-guest");
+                }));
+            }
+            else if (GLib.file_test("/usr/bin/mdmflexiserver", GLib.FileTest.EXISTS)) {
+                // MDM                
                 this.menu.addAction(_("Switch User"), Lang.bind(this, function() {
                     Util.spawnCommandLine("mdmflexiserver");
                 }));
