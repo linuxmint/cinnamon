@@ -607,6 +607,7 @@ _st_create_shadow_material_from_actor (StShadow     *shadow_spec,
       ClutterActorBox box;
       CoglColor clear_color;
       float width, height;
+      CoglError *error = NULL;
 
       clutter_actor_get_allocation_box (actor, &box);
       clutter_actor_box_get_size (&box, &width, &height);
@@ -623,6 +624,15 @@ _st_create_shadow_material_from_actor (StShadow     *shadow_spec,
         return COGL_INVALID_HANDLE;
 
       offscreen = cogl_offscreen_new_to_texture (buffer);
+
+      if (!cogl_framebuffer_allocate (offscreen, &error))
+        {
+          g_warning ("Error while creating a shadow material from actor: %s", error->message);
+          cogl_error_free (error);
+          cogl_handle_unref (buffer);
+          return COGL_INVALID_HANDLE;
+        }
+
 
       if (offscreen == COGL_INVALID_HANDLE)
         {
