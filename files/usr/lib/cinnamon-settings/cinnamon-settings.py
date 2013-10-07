@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
 import sys
+import locale
+locale.setlocale(locale.LC_TIME, '') # Set user locale
 reload(sys)
 sys.setdefaultencoding('utf-8')
 

@@ -194,6 +194,47 @@ class GSettingsCheckButton(Gtk.CheckButton):
         else:
             self.set_sensitive(not self.dep_settings.get_boolean(self.dep_key))
 
+class GSettingsSwitch(Gtk.HBox):
+    def __init__(self, label, schema, key, dep_key):
+        self.key = key
+        self.dep_key = dep_key
+        super(GSettingsSwitch, self).__init__()
+        self.label = Gtk.Label(label)
+        self.content_widget = Gtk.Switch()
+        if (label != ""):
+            self.pack_start(self.label, False, False, 2)
+        self.pack_start(self.content_widget, False, False, 2)
+
+        self.settings = Gio.Settings.new(schema)
+        self.content_widget.set_active(self.settings.get_boolean(self.key))
+        self.settings.connect("changed::"+self.key, self.on_my_setting_changed)
+        self.connectorId = self.content_widget.connect('notify::active', self.on_my_value_changed)
+
+        self.dependency_invert = False
+        if self.dep_key is not None:
+            if self.dep_key[0] == '!':
+                self.dependency_invert = True
+                self.dep_key = self.dep_key[1:]
+            split = self.dep_key.split('/')
+            self.dep_settings = Gio.Settings.new(split[0])
+            self.dep_key = split[1]
+            self.dep_settings.connect("changed::"+self.dep_key, self.on_dependency_setting_changed)
+            self.on_dependency_setting_changed(self, None)
+
+    def on_my_setting_changed(self, settings, key):
+        self.content_widget.disconnect(self.connectorId)                     #  panel-edit-mode can trigger changed:: twice in certain instances,
+        self.content_widget.set_active(self.settings.get_boolean(self.key))  #  so disconnect temporarily when we are simply updating the widget state
+        self.connectorId = self.content_widget.connect('notify::active', self.on_my_value_changed)
+
+    def on_my_value_changed(self, widget, value):
+        self.settings.set_boolean(self.key, self.content_widget.get_active())
+
+    def on_dependency_setting_changed(self, settings, dep_key):
+        if not self.dependency_invert:
+            self.content_widget.set_sensitive(self.dep_settings.get_boolean(self.dep_key))
+        else:
+            self.content_widget.set_sensitive(not self.dep_settings.get_boolean(self.dep_key))
+
 class GSettingsSpinButton(Gtk.HBox):    
     def __init__(self, label, schema, key, dep_key, min, max, step, page, units):
         self.key = key
@@ -295,6 +336,73 @@ class GSettingsEntry(Gtk.HBox):
         else:
             self.set_sensitive(not self.dep_settings.get_boolean(self.dep_key))
 
+class GSettingsDateFormat(Gtk.HBox):
+    def __init__(self, label, schema, key, dep_key):
+        self.key = key
+        self.dep_key = dep_key
+        super(GSettingsDateFormat, self).__init__()
+        self.label = Gtk.Label(label)
+        self.content_widget = Gtk.Entry()
+        self.pack_start(self.label, False, False, 5)
+        self.add(self.content_widget)
+
+        # Saturday 5th April 1997 13:08:02
+        date_object = datetime(1997, 4, 5, 13, 8, 2)
+        self.mapping = [["%A", date_object.strftime("%A")],
+                        ["%a", date_object.strftime("%a")],
+                        ["%d", "05"],
+                        ["%e", "5"],
+                        ["%B", date_object.strftime("%B")],
+                        ["%b", date_object.strftime("%b")],
+                        ["%m", "04"],
+                        ["%Y", "1997"],
+                        ["%C", "19"],
+                        ["%y", "97"],
+                        ["%H", "13"],
+                        ["%I", "01"],
+                        ["%l", "1"],
+                        ["%M", "08"],
+                        ["%S", "02"],
+                        ["%p", date_object.strftime("%p")],
+                        ["%P", date_object.strftime("%P")]]
+
+        self.settings = Gio.Settings.new(schema)
+        self.content_widget.set_text(self.format_to_date(self.settings.get_string(self.key)))
+        self.settings.connect("changed::"+self.key, self.on_my_setting_changed)
+        self.content_widget.connect('focus-out-event', self.on_my_value_changed)
+        self.content_widget.show_all()
+        self.dependency_invert = False
+        if self.dep_key is not None:
+            if self.dep_key[0] == '!':
+                self.dependency_invert = True
+                self.dep_key = self.dep_key[1:]
+            split = self.dep_key.split('/')
+            self.dep_settings = Gio.Settings.new(split[0])
+            self.dep_key = split[1]
+            self.dep_settings.connect("changed::"+self.dep_key, self.on_dependency_setting_changed)
+            self.on_dependency_setting_changed(self, None)
+
+    def on_my_setting_changed(self, settings, key):
+        self.content_widget.set_text(self.format_to_date(self.settings.get_string(self.key)))
+
+    def on_my_value_changed(self, event, widget):
+        self.settings.set_string(self.key, self.date_to_format(self.content_widget.get_text()))
+
+    def on_dependency_setting_changed(self, settings, dep_key):
+        if not self.dependency_invert:
+            self.set_sensitive(self.dep_settings.get_boolean(self.dep_key))
+        else:
+            self.set_sensitive(not self.dep_settings.get_boolean(self.dep_key))
+
+    def date_to_format(self, string):
+        for item in self.mapping:
+            string = string.replace(item[1], item[0])
+        return string
+
+    def format_to_date(self, string):
+        for item in self.mapping:
+            string = string.replace(item[0], item[1])
+        return string
 
 class GSettingsFileChooser(Gtk.HBox):
     def __init__(self, label, schema, key, dep_key, show_none_cb = False):

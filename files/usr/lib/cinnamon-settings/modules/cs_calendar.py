@@ -33,11 +33,19 @@ class Module:
                 self.changeTimeWidget.change_using_ntp( self.ntpCheckButton.get_active() )
         except Exception, detail:
             print detail
-            
+
         sidePage.add_widget(GSettingsCheckButton(_("Show week numbers in calendar"), "org.cinnamon.calendar", "show-weekdate", None), False)
-        sidePage.add_widget(GSettingsEntry(_("Date format for the panel"), "org.cinnamon.calendar", "date-format", None), True)
-        sidePage.add_widget(GSettingsEntry(_("Date format inside the date applet"), "org.cinnamon.calendar", "date-format-full", None), True)
-        sidePage.add_widget(Gtk.LinkButton.new_with_label("http://www.foragoodstrftime.com/", _("Generate your own date formats")), True)
+
+        sidePage.add_widget(GSettingsSwitch(_("Custom date format for the panel"), "org.cinnamon.calendar", "date-format-custom", None), False)
+        sidePage.add_widget(GSettingsDateFormat("", "org.cinnamon.calendar", "date-format", "org.cinnamon.calendar/date-format-custom"));
+
+        sidePage.add_widget(GSettingsSwitch(_("Custom date format inside the date applet"), "org.cinnamon.calendar", "date-format-full-custom", None), False)
+        sidePage.add_widget(GSettingsDateFormat("", "org.cinnamon.calendar", "date-format-full", "org.cinnamon.calendar/date-format-full-custom"));
+
+        date_object = datetime(1997, 4, 5, 13, 8, 2)
+        label = Gtk.Label()
+        label.set_markup("<i><small>%s <b>%s</b></small></i>" % (_("Enter the following date in the way you wish the date is formatted:"), date_object.strftime("%A %Y-%m-%d %H:%M:%S")))
+        sidePage.add_widget(label);
 
     def _ntp_toggled(self, widget):
         self.changeTimeWidget.change_using_ntp( self.ntpCheckButton.get_active() )
