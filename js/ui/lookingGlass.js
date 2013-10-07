@@ -855,7 +855,7 @@ LookingGlass.prototype = {
                                         visible: false });
         this.actor.connect('key-press-event', Lang.bind(this, this._globalKeyPressEvent));
 
-        this._interfaceSettings = new Gio.Settings({ schema: 'org.cinnamon.desktop.interface' });
+        this._interfaceSettings = new Gio.Settings({ schema: 'org.gnome.desktop.interface' });
         this._interfaceSettings.connect('changed::monospace-font-name',
                                         Lang.bind(this, this._updateFont));
         this._updateFont();

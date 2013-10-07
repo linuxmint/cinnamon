@@ -11,7 +11,7 @@ class Module:
         self.name = "fonts"
         self.category = "appear"        
         sidePage.add_widget(GSettingsFontButton(_("Default font"), "org.cinnamon.desktop.interface", "font-name", None))
-        sidePage.add_widget(GSettingsFontButton(_("Document font"), "org.cinnamon.desktop.interface", "document-font-name", None))
+        sidePage.add_widget(GSettingsFontButton(_("Document font"), "org.gnome.desktop.interface", "document-font-name", None))
         sidePage.add_widget(GSettingsFontButton(_("Monospace font"), "org.gnome.desktop.interface", "monospace-font-name", None))
         sidePage.add_widget(GSettingsFontButton(_("Window title font"), "org.cinnamon.desktop.wm.preferences", "titlebar-font", None))
         sidePage.add_widget(GSettingsRangeSpin(_("Text scaling factor"), "org.cinnamon.desktop.interface", "text-scaling-factor", None, adjustment_step = 0.1), True)
