@@ -54,6 +54,7 @@ const St = imports.gi.St;
 const PointerTracker = imports.misc.pointerTracker;
 
 const SoundManager = imports.ui.soundManager;
+const BackgroundManager = imports.ui.backgroundManager;
 const AppletManager = imports.ui.appletManager;
 const AutomountManager = imports.ui.automountManager;
 const AutorunManager = imports.ui.autorunManager;
@@ -285,14 +286,16 @@ function start() {
     }
     
     Gtk.IconTheme.get_default().append_search_path("/usr/share/cinnamon/icons/");
-    _defaultCssStylesheet = global.datadir + '/theme/cinnamon.css';
-
+    _defaultCssStylesheet = global.datadir + '/theme/cinnamon.css';    
 
     soundManager = new SoundManager.SoundManager();
 
     soundManager.play('login');
 
     themeManager = new ThemeManager.ThemeManager();
+
+    backgroundManager = new BackgroundManager.BackgroundManager();
+    
     deskletContainer = new DeskletManager.DeskletContainer();
 
     // Set up stage hierarchy to group all UI actors under one container.
