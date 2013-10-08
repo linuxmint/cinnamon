@@ -4,7 +4,6 @@ const Main = imports.ui.main;
 const Gtk = imports.gi.Gtk;
 const PopupMenu = imports.ui.popupMenu;
 const St = imports.gi.St;
-const Gio = imports.gi.Gio;
 const Clutter = imports.gi.Clutter;
 const Mainloop = imports.mainloop;
 const MessageTray = imports.ui.messageTray;
@@ -28,8 +27,6 @@ MyApplet.prototype = {
         this.notifications = [];
         Main.messageTray.connect('notify-applet-update', Lang.bind(this, this._notification_added));
         global.settings.connect('changed::panel-edit-mode', Lang.bind(this, this.on_panel_edit_mode_changed));
-        this._calendarSettings = new Gio.Settings({ schema: 'org.cinnamon.calendar' });
-        this._calendarSettings.connect('changed', Lang.bind(this, this._update_timestamp));
         this._blinking = false;
         this._blink_toggle = false;
     },
@@ -193,7 +190,7 @@ MyApplet.prototype = {
     },
 
     _update_timestamp: function () {
-        let dateFormat = this._calendarSettings.get_string('date-format');       
+        let dateFormat = _("%l:%m %p");
         let actors = this._notificationbin.get_children();
         if (actors) {
             for (let i = 0; i < actors.length; i++) {

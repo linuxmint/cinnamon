@@ -445,8 +445,7 @@ Notification.prototype = {
         this._imageBin = null;
         this._timestamp = new Date();
         this._inNotificationBin = false;
-        let calendarSettings = new Gio.Settings({ schema: 'org.cinnamon.calendar' });
-        this.dateFormat = calendarSettings.get_string('date-format');
+        this.dateFormat = _("%l:%m %p");
 
         source.connect('destroy', Lang.bind(this,
             function (source, reason) {

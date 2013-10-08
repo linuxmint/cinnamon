@@ -664,22 +664,6 @@
       </_description>
     </key>
     
-     <key name="date-format" type="s">
-      <default>'%a %b %e, %H:%M'</default>
-      <_summary>Format for the date in the panel</_summary>
-      <_description>
-       Format used to show the date in the panel.
-      </_description>
-    </key>
-    
-     <key name="date-format-full" type="s">
-      <default>'%A %B %e, %Y'</default>
-      <_summary>Format for the date in the applet menu</_summary>
-      <_description>
-       Format used to show the date in the applet menu.
-      </_description>
-    </key>
-    
   </schema>
 
   <schema id="org.cinnamon.recorder" path="/org/cinnamon/recorder/"
