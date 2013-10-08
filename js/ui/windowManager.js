@@ -1067,13 +1067,21 @@ WindowManager.prototype = {
     },
 
     actionMoveWorkspaceLeft: function() {
-        Main.soundManager.play('switch');
-        global.screen.get_active_workspace().get_neighbor(Meta.MotionDirection.LEFT).activate(global.get_current_time());
+        var active = global.screen.get_active_workspace();        
+        var neighbour = active.get_neighbor(Meta.MotionDirection.LEFT)
+        if (active != neighbour) {
+            Main.soundManager.play('switch');
+            neighbour.activate(global.get_current_time());
+        }
     },
 
     actionMoveWorkspaceRight: function() {
-        Main.soundManager.play('switch');
-        global.screen.get_active_workspace().get_neighbor(Meta.MotionDirection.RIGHT).activate(global.get_current_time());
+        var active = global.screen.get_active_workspace();        
+        var neighbour = active.get_neighbor(Meta.MotionDirection.RIGHT)
+        if (active != neighbour) {
+            Main.soundManager.play('switch');
+            neighbour.activate(global.get_current_time());
+        }
     },
 
     actionMoveWorkspaceUp: function() {
