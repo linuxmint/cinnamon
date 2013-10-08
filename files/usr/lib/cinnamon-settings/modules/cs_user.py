@@ -76,7 +76,7 @@ class Module:
     def __init__(self, content_box):
         keywords = _("user, account, information, details")
         advanced = False
-        sidePage = SidePage(_("Account details"), "user.svg", keywords, advanced, content_box)
+        sidePage = SidePage(_("Account details"), "user.svg", keywords, advanced, content_box, module=self)
         self.sidePage = sidePage
         self.name = "user"
         self.category = "appear"        
@@ -89,27 +89,17 @@ class Module:
         self.face_button.set_tooltip_text(_("Click to change your picture"))
 
         self.menu = Gtk.Menu()
+        self.webcam_presence_checked = False # Only check for the presence of the webcam the first time the module is selected
 
-        webcam_detected = False
-        try:
-            import cv
-            capture = cv.CaptureFromCAM(-1)
-            for i in range(10):
-                img = cv.QueryFrame(capture)
-                if img != None:
-                    webcam_detected = True
-        except Exception, detail:
-            print detail
+        self.face_photo_menuitem = Gtk.MenuItem(_("Take a photo..."))
+        self.face_photo_menuitem.connect('activate', self._on_face_photo_menuitem_activated)         
 
-        face_photo_menuitem = Gtk.MenuItem(_("Take a photo..."))
-        face_photo_menuitem.connect('activate', self._on_face_photo_menuitem_activated)         
-
-        separator = Gtk.SeparatorMenuItem()
-        face_browse_menuitem = Gtk.MenuItem(_("Browse for more pictures..."))       
-        face_browse_menuitem.connect('activate', self._on_face_browse_menuitem_activated)         
+        self.separator = Gtk.SeparatorMenuItem()
+        self.face_browse_menuitem = Gtk.MenuItem(_("Browse for more pictures..."))       
+        self.face_browse_menuitem.connect('activate', self._on_face_browse_menuitem_activated)         
         self.face_button.connect("button-release-event", self.menu_display)
 
-        row = 0
+        self.row = 0
         col = 0       
         num_cols = 4
         face_dirs = ["/usr/share/cinnamon/faces"]
@@ -124,17 +114,10 @@ class Module:
                     menuitem = Gtk.MenuItem()
                     menuitem.add(image)
                     menuitem.connect('activate', self._on_face_menuitem_activated, path)
-                    self.menu.attach(menuitem, col, col+1, row, row+1)            
+                    self.menu.attach(menuitem, col, col+1, self.row, self.row+1)            
                     col = (col+1) % num_cols            
                     if (col == 0):
-                        row = row + 1
-
-        row = row + 1
-
-        self.menu.attach(separator, 0, 4, row, row+1)
-        if webcam_detected:
-            self.menu.attach(face_photo_menuitem, 0, 4, row+1, row+2)        
-        self.menu.attach(face_browse_menuitem, 0, 4, row+2, row+3)        
+                        self.row = self.row + 1
        
         self.realname_entry = EditableEntry()
         self.sidePage.add_widget(self.realname_entry, False)         
@@ -179,6 +162,33 @@ class Module:
         current_user = GLib.get_user_name()
         self.accountService = AccountsService.UserManager.get_default().get_user(current_user)
         self.accountService.connect('notify::is-loaded', self.load_user_info)    
+
+    def on_module_selected(self):
+        if (self.webcam_presence_checked):
+            return # Already checked for the webcam, returning
+
+        self.webcam_presence_checked = True
+
+        self.row = self.row + 1
+        self.menu.attach(self.separator, 0, 4, self.row, self.row+1)    
+
+        webcam_detected = False
+        try:
+            import cv
+            capture = cv.CaptureFromCAM(-1)
+            for i in range(10):
+                img = cv.QueryFrame(capture)
+                if img != None:
+                    webcam_detected = True
+        except Exception, detail:
+            print detail
+
+        if (webcam_detected):
+            self.menu.attach(self.face_photo_menuitem, 0, 4, self.row+1, self.row+2)
+            self.menu.attach(self.face_browse_menuitem, 0, 4, self.row+2, self.row+3)
+        else:
+            self.menu.attach(self.face_browse_menuitem, 0, 4, self.row+1, self.row+2)
+
     
     def update_preview_cb (self, dialog, preview):      
         filename = dialog.get_preview_filename()

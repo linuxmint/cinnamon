@@ -29,7 +29,7 @@ except Exception, detail:
     sys.exit(1)
 
 class SidePage:
-    def __init__(self, name, icon, keywords, advanced, content_box, size = None, is_c_mod = False, is_standalone = False, exec_name = None):
+    def __init__(self, name, icon, keywords, advanced, content_box, size = None, is_c_mod = False, is_standalone = False, exec_name = None, module=None):
         self.name = name
         self.icon = icon
         self.content_box = content_box
@@ -37,6 +37,7 @@ class SidePage:
         self.is_c_mod = is_c_mod
         self.is_standalone = is_standalone
         self.exec_name = exec_name
+        self.module = module # Optionally set by the module so we can call on_module_selected() on it when we show it.
         self.keywords = keywords
         self.advanced = advanced
         self.size = size
@@ -79,8 +80,10 @@ class SidePage:
                         else:
                             for c_widget in c_widgets:
                                 c_widget.show()
-            else:
+            else:                
                 self.content_box.show_all()
+                if (self.module is not None):
+                    self.module.on_module_selected()
         else:
             subprocess.Popen(self.exec_name.split())
 

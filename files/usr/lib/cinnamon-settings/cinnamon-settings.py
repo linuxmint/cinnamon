@@ -13,6 +13,7 @@ try:
     from gi.repository import Gio, Gtk, GObject, GdkPixbuf
     import SettingsWidgets
     import capi
+    import time
 # Standard setting pages... this can be expanded to include applet dirs maybe?
     mod_files = glob.glob('/usr/lib/cinnamon-settings/modules/*.py')
     mod_files.sort()
@@ -74,6 +75,15 @@ STANDALONE_MODULES = [
     [_("Users and Groups"),              "cinnamon-settings-users",      "user-accounts.svg",   "admin",          True,           _("user, users, account, accounts, group, groups, password")]
 ]
 
+def print_timing(func):
+    def wrapper(*arg):
+        t1 = time.time()
+        res = func(*arg)
+        t2 = time.time()
+        print '%s took %0.3f ms' % (func.func_name, (t2-t1)*1000.0)
+        return res
+    return wrapper
+
 class MainWindow:
 
     # Change pages
@@ -114,6 +124,7 @@ class MainWindow:
                 self.side_view[key].unselect_all()
 
     ''' Create the UI '''
+    @print_timing
     def __init__(self):
 
         self.builder = Gtk.Builder()
