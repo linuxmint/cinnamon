@@ -570,6 +570,9 @@ class Module:
                 elif height > width:
                     new_width = width
                     new_height = width
+                else:
+                    new_width = width
+                    new_height = height
                 left = (width - new_width)/2
                 top = (height - new_height)/2
                 right = (width + new_width)/2
