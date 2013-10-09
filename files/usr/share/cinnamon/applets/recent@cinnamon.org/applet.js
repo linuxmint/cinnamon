@@ -80,8 +80,8 @@ MyApplet.prototype = {
         this._display();
     },
 
-    _launchFile: function(a, b, c) {        
-        Gio.app_info_launch_default_for_uri(c, global.create_app_launch_context());
+    _launchFile: function(a, b, c, d) {        
+        Gio.app_info_launch_default_for_uri(d, global.create_app_launch_context());
     },
     
     _clearAll: function() {
