@@ -190,7 +190,7 @@ MyApplet.prototype = {
     },
 
     _update_timestamp: function () {
-        let dateFormat = _("%l:%m %p");
+        let dateFormat = _("%l:%M %p");
         let actors = this._notificationbin.get_children();
         if (actors) {
             for (let i = 0; i < actors.length; i++) {

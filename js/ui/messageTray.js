@@ -445,7 +445,7 @@ Notification.prototype = {
         this._imageBin = null;
         this._timestamp = new Date();
         this._inNotificationBin = false;
-        this.dateFormat = _("%l:%m %p");
+        this.dateFormat = _("%l:%M %p");
 
         source.connect('destroy', Lang.bind(this,
             function (source, reason) {

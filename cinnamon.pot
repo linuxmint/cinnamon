@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-10-08 22:27+0100\n"
+"POT-Creation-Date: 2013-10-09 15:04+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -119,11 +119,11 @@ msgstr ""
 msgid "Execution of '%s' failed:"
 msgstr ""
 
-#: js/ui/applet.js:403
+#: js/ui/applet.js:404
 msgid "Remove this applet"
 msgstr ""
 
-#: js/ui/applet.js:410 js/ui/desklet.js:226
+#: js/ui/applet.js:417 js/ui/desklet.js:226
 msgid "Configure..."
 msgstr ""
 
@@ -323,28 +323,28 @@ msgstr ""
 msgid "Reload Code"
 msgstr ""
 
-#: js/ui/main.js:426
+#: js/ui/main.js:427
 msgid "Running in software rendering mode"
 msgstr ""
 
-#: js/ui/main.js:427
+#: js/ui/main.js:428
 msgid ""
 "Cinnamon is currently running without video hardware acceleration and, as a "
 "result, you may observe much higher than normal CPU usage.\n"
 "\n"
 msgstr ""
 
-#: js/ui/main.js:428
+#: js/ui/main.js:429
 msgid ""
 "There could be a problem with your drivers or some other issue.  For the "
 "best experience, it is recommended that you only use this mode for"
 msgstr ""
 
-#: js/ui/main.js:429
+#: js/ui/main.js:430
 msgid " troubleshooting purposes."
 msgstr ""
 
-#: js/ui/main.js:484
+#: js/ui/main.js:485
 msgid "WORKSPACE"
 msgstr ""
 
@@ -352,7 +352,7 @@ msgstr ""
 #: files/usr/share/cinnamon/applets/calendar@cinnamon.org/applet.js:82
 #: files/usr/share/cinnamon/applets/calendar@cinnamon.org/applet.js:110
 #: files/usr/share/cinnamon/applets/notifications@cinnamon.org/applet.js:193
-msgid "%l:%m %p"
+msgid "%l:%M %p"
 msgstr ""
 
 #: js/ui/messageTray.js:1257
