@@ -333,29 +333,29 @@ Applet.prototype = {
      * This function should only be called by appletManager
      */
     setOrientation: function (orientation) {
-        let menuItems = new Array();
-        let oldMenuItems = this._applet_context_menu._getMenuItems();
-        for (var i in oldMenuItems){
-            if (oldMenuItems[i] instanceof MenuItem) { // in case some applets don't use the standards
-                if (oldMenuItems[i] !== this.context_menu_separator && oldMenuItems[i] !== this.context_menu_item_remove) {
-                    menuItems.push(oldMenuItems[i].clone());
-                }
-            }
-        }
-        this._menuManager.removeMenu(this._applet_context_menu);
+        // let menuItems = new Array();
+        // let oldMenuItems = this._applet_context_menu._getMenuItems();
+        // for (var i in oldMenuItems){
+        //     if (oldMenuItems[i] instanceof MenuItem) { // in case some applets don't use the standards
+        //         if (oldMenuItems[i] !== this.context_menu_separator && oldMenuItems[i] !== this.context_menu_item_remove) {
+        //             menuItems.push(oldMenuItems[i].clone());
+        //         }
+        //     }
+        // }
+        // this._menuManager.removeMenu(this._applet_context_menu);
         
-        this._applet_tooltip.destroy();
-        this._applet_tooltip = new Tooltips.PanelItemTooltip(this, this._applet_tooltip_text, orientation);
+        // this._applet_tooltip.destroy();
+        // this._applet_tooltip = new Tooltips.PanelItemTooltip(this, this._applet_tooltip_text, orientation);
 
-        this._applet_context_menu.destroy();
-        this._applet_context_menu = new AppletContextMenu(this, orientation);
-        this._menuManager.addMenu(this._applet_context_menu);
+        // this._applet_context_menu.destroy();
+        // this._applet_context_menu = new AppletContextMenu(this, orientation);
+        // this._menuManager.addMenu(this._applet_context_menu);
 
         this.on_orientation_changed(orientation);
         
-        if (this._applet_context_menu.numMenuItems == 0){ // Do not recreate the menu if the applet already handles it in on_orientation_changed
-            for (var i in menuItems) this._applet_context_menu.addMenuItem(menuItems[i]);
-        }
+        // if (this._applet_context_menu.numMenuItems == 0){ // Do not recreate the menu if the applet already handles it in on_orientation_changed
+        //     for (var i in menuItems) this._applet_context_menu.addMenuItem(menuItems[i]);
+        // }
 
         this.finalizeContextMenu();
     },
@@ -400,20 +400,32 @@ Applet.prototype = {
         // Add default context menus if we're in panel edit mode, ensure their removal if we're not       
         let items = this._applet_context_menu._getMenuItems();
 
-        this.context_menu_item_remove = new MenuItem(_("Remove this applet"), null, Lang.bind(null, AppletManager._removeAppletFromPanel, this._uuid, this.instance_id));
-        this.context_menu_separator = new PopupMenu.PopupSeparatorMenuItem();
+        if (this.context_menu_item_remove == null) {
+            this.context_menu_item_remove = new MenuItem(_("Remove this applet"), null, Lang.bind(null, AppletManager._removeAppletFromPanel, this._uuid, this.instance_id));
+        }
+
+        if (this.context_menu_separator == null) {
+                this.context_menu_separator = new PopupMenu.PopupSeparatorMenuItem();
+        }
+
         if (this._applet_context_menu._getMenuItems().length > 0) {
             this._applet_context_menu.addMenuItem(this.context_menu_separator);
          }
         
-        if (!this._meta["hide-configuration"] && GLib.file_test(this._meta["path"] + "/settings-schema.json", GLib.FileTest.EXISTS)) {            
-            this.context_menu_item_configure = new MenuItem(_("Configure..."), null, Lang.bind(this, function() {
-                Util.spawnCommandLine("cinnamon-settings applets " + this._uuid + " " + this.instance_id)
-            }));
-            this._applet_context_menu.addMenuItem(this.context_menu_item_configure);
+        if (!this._meta["hide-configuration"] && GLib.file_test(this._meta["path"] + "/settings-schema.json", GLib.FileTest.EXISTS)) {     
+            if (this.context_menu_item_configure == null) {            
+                this.context_menu_item_configure = new MenuItem(_("Configure..."), null, Lang.bind(this, function() {
+                    Util.spawnCommandLine("cinnamon-settings applets " + this._uuid + " " + this.instance_id)
+                }));
+            }
+            if (items.indexOf(this.context_menu_item_configure) == -1) {
+                this._applet_context_menu.addMenuItem(this.context_menu_item_configure);
+            }
         }
 
-        this._applet_context_menu.addMenuItem(this.context_menu_item_remove);            
+        if (items.indexOf(this.context_menu_item_remove) == -1) {
+            this._applet_context_menu.addMenuItem(this.context_menu_item_remove);
+        }
     }
 };
 
