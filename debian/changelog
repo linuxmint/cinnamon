@@ -1,3 +1,9 @@
+cinnamon (2.0.0) petra; urgency=low
+
+  * 2.0.0
+
+ -- Clement Lefebvre <root@linuxmint.com>  Wed, 09 Oct 2013 10:47:58 +0100
+
 cinnamon (1.9.2) petra; urgency=low
 
   * 1.9.2
