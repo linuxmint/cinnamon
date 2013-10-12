@@ -313,7 +313,12 @@ class MainWindow:
         widget.set_hexpand(True)
         widget.set_vexpand(False)
         css_provider = Gtk.CssProvider()
-        css_provider.load_from_data("GtkIconView {background-color: transparent;}")
+        css_provider.load_from_data("GtkIconView {                             \
+                                         background-color: transparent;        \
+                                     }                                         \
+                                     GtkIconView.view.cell:selected {          \
+                                         background-color: @selected_bg_color; \
+                                     }")
         c = widget.get_style_context()
         c.add_provider(css_provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
         self.side_view[category["id"]] = widget
