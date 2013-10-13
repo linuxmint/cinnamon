@@ -120,6 +120,9 @@ class MouseTouchpadSidepage (SidePage):
         box.add(scroll_method_combo)
         self.add_widget(box, 1)
         box = IndentedHBox()
+        box.add(GSettingsCheckButton(_("Enable natural scrolling"), "org.cinnamon.settings-daemon.peripherals.touchpad", "natural-scroll", "org.cinnamon.settings-daemon.peripherals.touchpad/touchpad-enabled"))
+        self.add_widget(box, 1)
+        box = IndentedHBox()
         box.add(GSettingsCheckButton(_("Enable horizontal scrolling"), "org.cinnamon.settings-daemon.peripherals.touchpad", "horiz-scroll-enabled", "org.cinnamon.settings-daemon.peripherals.touchpad/touchpad-enabled"))
         self.add_widget(box, 1)
 
