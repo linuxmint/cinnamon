@@ -394,7 +394,10 @@ PlaceButton.prototype = {
         this.actor._delegate = this;
         this.label = new St.Label({ text: this.button_name, style_class: 'menu-application-button-label' });
         this.icon = place.iconFactory(APPLICATION_ICON_SIZE);
-        this.addActor(this.icon);
+        if (!this.icon)
+            this.icon = new St.Icon({icon_name: "folder", icon_size: APPLICATION_ICON_SIZE, icon_type: St.IconType.FULLCOLOR});
+        if (this.icon)
+            this.addActor(this.icon);
         this.addActor(this.label);
     },
 
