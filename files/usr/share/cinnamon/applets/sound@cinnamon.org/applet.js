@@ -107,7 +107,7 @@ let compatible_players = [
     'beatbox', 'songbird', 'pithos', 'gnome-mplayer', 'nuvolaplayer', 'qmmp',
     'deadbeef', 'smplayer', 'tomahawk', 'potamus'];
 let support_seek = [
-    'banshee', 'rhythmbox', 'rhythmbox3', 'pragha', 'quodlibet',
+    'clementine', 'banshee', 'rhythmbox', 'rhythmbox3', 'pragha', 'quodlibet',
     'amarok', 'xnoise', 'gmusicbrowser', 'spotify', 'vlc', 'beatbox',
     'gnome-mplayer', 'qmmp', 'deadbeef'];
 /* dummy vars for translation */
