@@ -511,15 +511,16 @@ IconApplet.prototype = {
 
         if (icon_path){
             let file = Gio.file_new_for_path(icon_path);
-            let icon_uri = file.get_uri();
-            let square_size = 22;
+            let gicon = new Gio.FileIcon({ file: file });
             if (this._scaleMode) {
-                square_size = Math.floor(this._panelHeight * COLOR_ICON_HEIGHT_FACTOR);
+                this._applet_icon = new St.Icon({gicon: gicon, icon_size: this._panelHeight * COLOR_ICON_HEIGHT_FACTOR,
+                                                icon_type: St.IconType.FULLCOLOR, reactive: true, track_hover: true, style_class: 'applet-icon' });
+            } else {
+                this._applet_icon = new St.Icon({gicon: gicon, icon_size: 22, icon_type: St.IconType.FULLCOLOR, reactive: true, track_hover: true, style_class: 'applet-icon' });
             }
-            this._applet_icon = St.TextureCache.get_default().load_uri_async(icon_uri, square_size, square_size);
             this._applet_icon_box.child = this._applet_icon;
         }
-        this.__icon_type = -1;
+        this.__icon_type = St.IconType.FULLCOLOR;
         this.__icon_name = icon_path;
     },
 
