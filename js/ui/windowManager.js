@@ -8,6 +8,7 @@ const Cinnamon = imports.gi.Cinnamon;
 const Mainloop = imports.mainloop;
 const Gio = imports.gi.Gio;
 const AppletManager = imports.ui.appletManager;
+const AppSwitcher = imports.ui.appSwitcher.appSwitcher;
 const CoverflowSwitcher = imports.ui.appSwitcher.coverflowSwitcher;
 const TimelineSwitcher = imports.ui.appSwitcher.timelineSwitcher;
 const ClassicSwitcher = imports.ui.appSwitcher.classicSwitcher;
@@ -995,6 +996,8 @@ WindowManager.prototype = {
     },
 
     _createAppSwitcher : function(binding) {
+        if (AppSwitcher.getWindowsForBinding(binding).length == 0)
+            return;
         let style = global.settings.get_string("alttab-switcher-style");
         if(style == 'coverflow')
             new CoverflowSwitcher.CoverflowSwitcher(binding);

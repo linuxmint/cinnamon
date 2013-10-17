@@ -50,6 +50,35 @@ function primaryModifier(mask) {
     return primary;
 }
 
+function getWindowsForBinding(binding) {
+    // Construct a list with all windows
+    let windows = [];
+    let windowActors = global.get_window_actors();
+    for (let i in windowActors)
+        windows.push(windowActors[i].get_meta_window());
+
+    switch(binding.get_name()) {
+        case 'switch-panels':
+            // Switch between windows of all workspaces
+            windows = windows.filter( matchSkipTaskbar );
+            break;
+        case 'switch-group':
+            // Switch between windows of same application from all workspaces
+            let focused = global.display.focus_window ? global.display.focus_window : windows[0];
+            windows = windows.filter( matchWmClass, focused.get_wm_class() );
+            break;
+        default:
+            // Switch between windows of current workspace
+            windows = windows.filter( matchWorkspace, global.screen.get_active_workspace() );
+            break;
+    }
+
+    // Sort by user time
+    windows.sort(sortWindowsByUserTime);
+    
+    return windows;
+}
+
 function AppSwitcher() {
     this._init.apply(this, arguments);
 }
@@ -58,7 +87,7 @@ AppSwitcher.prototype = {
     _init: function(binding) {
         this._initialDelayTimeoutId = null;
         this._binding = binding;
-        this._windows = this._getWindowsForBinding(binding);
+        this._windows = getWindowsForBinding(binding);
         
         this._haveModal = false;
         this._motionTimeoutId = 0;
@@ -113,35 +142,6 @@ AppSwitcher.prototype = {
             Main.popModal(this.actor);
             this._haveModal = false;
         }
-    },
-    
-    _getWindowsForBinding: function(binding) {
-        // Construct a list with all windows
-        let windows = [];
-        let windowActors = global.get_window_actors();
-        for (let i in windowActors)
-            windows.push(windowActors[i].get_meta_window());
-
-        switch(binding.get_name()) {
-            case 'switch-panels':
-                // Switch between windows of all workspaces
-                windows = windows.filter( matchSkipTaskbar );
-                break;
-            case 'switch-group':
-                // Switch between windows of same application from all workspaces
-                let focused = global.display.focus_window ? global.display.focus_window : windows[0];
-                windows = windows.filter( matchWmClass, focused.get_wm_class() );
-                break;
-            default:
-                // Switch between windows of current workspace
-                windows = windows.filter( matchWorkspace, global.screen.get_active_workspace() );
-                break;
-        }
-
-        // Sort by user time
-        windows.sort(sortWindowsByUserTime);
-        
-        return windows;
     },
 
     _show: function() {
