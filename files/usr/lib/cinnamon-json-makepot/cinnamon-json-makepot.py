@@ -85,6 +85,13 @@ class Main:
             Will create "fr.po" for the French language.  A translator can use a utility
             such as poedit to add translations to this file, or edit the file manually.
 
+            If you get duplicate message definition errors when running msginit, run:
+
+            msguniq myapplet.pot > fixed.pot
+
+            This will combine any duplicate definitions and allow you to then run msginit with
+            fixed.pot.
+
             .po files can be added to a "po" folder in your applet's directory,
             and will be compiled and installed into the system when the applet is installed
             via Cinnamon Settings.
