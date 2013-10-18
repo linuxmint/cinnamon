@@ -168,6 +168,7 @@
     <Include>
       <And>
         <Category>Settings</Category>
+         <Not><Category>System</Category></Not>
       </And>
     </Include>
   </Menu>
