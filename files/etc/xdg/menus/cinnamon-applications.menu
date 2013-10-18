@@ -128,13 +128,7 @@
   <!-- System Tools-->
   <Menu>
     <Name>System</Name>
-    <Directory>cinnamon-system-tools.directory</Directory>
-    <Include>
-      <And>
-        <Category>System</Category>
-        <Not><Category>Settings</Category></Not>
-      </And>
-    </Include>
+    <Directory>cinnamon-system-tools.directory</Directory>    
   </Menu>   <!-- End System Tools -->
 
   <!-- Other -->
@@ -181,6 +175,12 @@
       <And>
         <Category>Settings</Category>
         <Category>System</Category>
+      </And>
+    </Include>
+    <Include>
+      <And>
+        <Category>System</Category>
+        <Not><Category>Settings</Category></Not>
       </And>
     </Include>
   </Menu>     <!-- End System Settings -->
