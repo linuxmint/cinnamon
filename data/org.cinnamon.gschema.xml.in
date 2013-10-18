@@ -363,6 +363,16 @@
       </_description>
     </key>
 
+    <key type="a(sss)" name="menu-search-engines">
+      <default>[("DuckDuckGo", "https://duckduckgo.com/?t=lm&amp;q=", "duckduckgo.svg"), ("Wikipedia", "https://en.wikipedia.org/wiki/Special:Search?search=", "wikipedia.svg")]</default>
+      <_summary>List of search engines to be used in the menu</_summary>
+      <_description>
+        List of search engines to be used in the menu in the form (SearchEngineName,SearchEnginePath,IconPath). IconPath is either relative to &lt;applet directory&gt;/searchIcons/ or an absolute path.
+
+        Use an array with of three empty strings ("","","") to denote a separator.
+      </_description>
+    </key>
+
     <key type="b" name="display-notifications">
       <default>true</default>
       <_summary>Whether notifications are to be displayed</_summary>
