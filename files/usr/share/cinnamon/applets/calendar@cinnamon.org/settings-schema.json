@@ -8,7 +8,15 @@
  "custom-format" : {
     "type" : "entry",
     "default" : "%A %B %e, %H:%M",
-    "description" : "Date format:",
+    "description" : "Primary date format (panel):",
+    "indent": true,
+    "dependency" : "use-custom-format",
+    "tooltip" : "Set your custom format here."
+ },
+ "custom-format-full" : {
+    "type" : "entry",
+    "default" : "%A %B %e, %H:%M",
+    "description" : "Secondary date format (popup and tooltip):",
     "indent": true,
     "dependency" : "use-custom-format",
     "tooltip" : "Set your custom format here."

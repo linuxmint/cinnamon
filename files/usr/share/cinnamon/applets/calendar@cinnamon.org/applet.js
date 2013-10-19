@@ -83,8 +83,8 @@ MyApplet.prototype = {
             this._dateFormatFull = _("%A %B %e, %Y");
 
             this.settings.bindProperty(Settings.BindingDirection.IN, "use-custom-format", "use_custom_format", this.on_settings_changed, null);
-            this.settings.bindProperty(Settings.BindingDirection.IN, "custom-format", "custom_format", this.on_settings_changed, null);        
-
+            this.settings.bindProperty(Settings.BindingDirection.IN, "custom-format", "custom_format", this.on_settings_changed, null);
+            this.settings.bindProperty(Settings.BindingDirection.IN, "custom-format-full", "custom_format_full", this.on_settings_changed, null);
             // https://bugzilla.gnome.org/show_bug.cgi?id=655129
             this._upClient = new UPowerGlib.Client();
             this._upClient.connect('notify-resume', this._updateClockAndDate);
@@ -106,8 +106,10 @@ MyApplet.prototype = {
     on_settings_changed: function() {
         if (this.use_custom_format) {
             this._dateFormat = this.custom_format;
+            this._dateFormatFull = this.custom_format_full;
         } else {
             this._dateFormat = _("%l:%M %p");
+            this._dateFormatFull = _("%A %B %e, %Y");
         }
         this._updateClockAndDate();
     },
