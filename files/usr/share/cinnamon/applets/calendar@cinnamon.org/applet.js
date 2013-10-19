@@ -85,6 +85,7 @@ MyApplet.prototype = {
             this.settings.bindProperty(Settings.BindingDirection.IN, "use-custom-format", "use_custom_format", this.on_settings_changed, null);
             this.settings.bindProperty(Settings.BindingDirection.IN, "custom-format", "custom_format", this.on_settings_changed, null);
             this.settings.bindProperty(Settings.BindingDirection.IN, "custom-format-full", "custom_format_full", this.on_settings_changed, null);
+
             // https://bugzilla.gnome.org/show_bug.cgi?id=655129
             this._upClient = new UPowerGlib.Client();
             this._upClient.connect('notify-resume', this._updateClockAndDate);
