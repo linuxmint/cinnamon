@@ -10,6 +10,8 @@ const Calendar = imports.ui.calendar;
 const UPowerGlib = imports.gi.UPowerGlib;
 const Settings = imports.ui.settings;
 
+let DEFAULT_FORMAT = _("%l:%M %p");
+
 function _onVertSepRepaint (area)
 {
     let cr = area.get_context();
@@ -79,7 +81,7 @@ MyApplet.prototype = {
             }
 
             // Track changes to clock settings        
-            this._dateFormat = _("%l:%M %p");
+            this._dateFormat = DEFAULT_FORMAT;
             this._dateFormatFull = _("%A %B %e, %Y");
 
             this.settings.bindProperty(Settings.BindingDirection.IN, "use-custom-format", "use_custom_format", this.on_settings_changed, null);
@@ -107,7 +109,7 @@ MyApplet.prototype = {
         if (this.use_custom_format) {
             this._dateFormat = this.custom_format;
         } else {
-            this._dateFormat = _("%l:%M %p");
+            this._dateFormat = DEFAULT_FORMAT;
         }
         this._updateClockAndDate();
     },
@@ -124,7 +126,12 @@ MyApplet.prototype = {
     _updateClockAndDate: function() {
         let displayDate = new Date();
         let dateFormattedFull = displayDate.toLocaleFormat(this._dateFormatFull);
-        this.set_applet_label(displayDate.toLocaleFormat(this._dateFormat));
+        let label_string = displayDate.toLocaleFormat(this._dateFormat);
+        if (!label_string) {
+            global.logError("Calendar applet: bad time format string - check your string.");
+            label_string = "~CLOCK FORMAT ERROR~ " + displayDate.toLocaleFormat(DEFAULT_FORMAT);
+        }
+        this.set_applet_label(label_string);
         if (dateFormattedFull !== this._lastDateFormattedFull) {
             this._date.set_text(dateFormattedFull);
             this.set_applet_tooltip(dateFormattedFull);
