@@ -60,9 +60,7 @@ let PowerManagerProxy = DBus.makeProxyClass(PowerManagerInterface);
 const SettingsManagerInterface = {
 	name: 'org.freedesktop.DBus.Properties',
 	methods: [
-		{ name: 'Get', inSignature: 's,s', outSignature: 'v' },
-		{ name: 'GetAll', inSignature: 's', outSignature: 'a{sv}' },
-		{ name: 'Set', inSignature: 's,s,v', outSignature: '' }
+		{ name: 'GetAll', inSignature: 's', outSignature: 'a{sv}' }
 	],
 	signals: [
 	{name: 'PropertiesChanged', inSignature:'s,a{sv},a[s]', outSignature:''}
