@@ -195,7 +195,7 @@ class Settings():
         self.save()
 
 
-class BaseWidget():
+class BaseWidget(object):
     def __init__(self, key, settings_obj, uuid):
         self.settings_obj = settings_obj
         if self.settings_obj.t:
