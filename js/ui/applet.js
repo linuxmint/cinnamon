@@ -520,7 +520,7 @@ IconApplet.prototype = {
             }
             this._applet_icon_box.child = this._applet_icon;
         }
-        this.__icon_type = St.IconType.FULLCOLOR;
+        this.__icon_type = -1;
         this.__icon_name = icon_path;
     },
 
