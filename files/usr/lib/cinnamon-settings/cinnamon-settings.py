@@ -66,7 +66,7 @@ CONTROL_CENTER_MODULES = [
 STANDALONE_MODULES = [
 #         Label                          Executable                          Icon                Category        Advanced?               Keywords for filter
     [_("Printers"),                      "system-config-printer",        "printer.svg",         "hardware",       False,          _("printers, laser, inkjet")],    
-    [_("Firewall"),                      "gufw",                         "firewall.svg",        "prefs",          True,           _("firewall, block, filter, programs")],
+    [_("Firewall"),                      "gufw",                         "firewall.svg",        "admin",          True,           _("firewall, block, filter, programs")],
     [_("Languages"),                     "gnome-language-selector",      "language.svg",        "prefs",          False,          _("language, install, foreign")],
     [_("Login Screen"),                  "gksu /usr/sbin/mdmsetup",      "login.svg",           "admin",          True,           _("login, mdm, gdm, manager, user, password, startup, switch")],
     [_("Startup Programs"),              "cinnamon-session-properties",  "startup-programs.svg","prefs",          False,          _("startup, programs, boot, init, session")],
