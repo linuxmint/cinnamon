@@ -597,7 +597,6 @@
       <_summary>Whether or not to show possible completions in the run dialog (Alt-F2)</_summary>
     </key>
 
-    <child name="calendar" schema="org.cinnamon.calendar"/>
     <child name="theme" schema="org.cinnamon.theme"/>   
     <child name="recorder" schema="org.cinnamon.recorder"/>
     <child name="keyboard" schema="org.cinnamon.keyboard"/>
@@ -651,19 +650,6 @@
           <_summary>Display percentage in power applet</_summary>
           <_description>Display battery remaining as percentage or time in power applet.</_description>
     </key>
-  </schema>
-
-  <schema id="org.cinnamon.calendar" path="/org/cinnamon/calendar/"
-          gettext-domain="@GETTEXT_PACKAGE@">
-          
-    <key name="show-weekdate" type="b">
-      <default>false</default>
-      <_summary>Show the week date in the calendar</_summary>
-      <_description>
-        If true, display the ISO week date in the calendar.
-      </_description>
-    </key>
-    
   </schema>
 
   <schema id="org.cinnamon.recorder" path="/org/cinnamon/recorder/"

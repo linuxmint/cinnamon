@@ -33,8 +33,6 @@ class Module:
                 self.changeTimeWidget.change_using_ntp( self.ntpCheckButton.get_active() )
         except Exception, detail:
             print detail
-            
-        sidePage.add_widget(GSettingsCheckButton(_("Show week numbers in calendar"), "org.cinnamon.calendar", "show-weekdate", None), False)        
 
     def _ntp_toggled(self, widget):
         self.changeTimeWidget.change_using_ntp( self.ntpCheckButton.get_active() )

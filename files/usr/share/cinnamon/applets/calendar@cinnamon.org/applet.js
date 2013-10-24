@@ -6,9 +6,10 @@ const Clutter = imports.gi.Clutter;
 const St = imports.gi.St;
 const Util = imports.misc.util;
 const PopupMenu = imports.ui.popupMenu;
-const Calendar = imports.ui.calendar;
 const UPowerGlib = imports.gi.UPowerGlib;
 const Settings = imports.ui.settings;
+const AppletDir = imports.ui.appletManager.applets['calendar@cinnamon.org'];
+const Calendar = AppletDir.calendar;
 
 let DEFAULT_FORMAT = _("%l:%M %p");
 
@@ -65,7 +66,7 @@ MyApplet.prototype = {
             this._eventList = null;
 
             // Calendar
-            this._calendar = new Calendar.Calendar(this._eventSource);       
+            this._calendar = new Calendar.Calendar(this._eventSource, this.settings);       
             vbox.add(this._calendar.actor);
 
             let item = new PopupMenu.PopupMenuItem(_("Date and Time Settings"))
