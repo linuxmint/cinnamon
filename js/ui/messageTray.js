@@ -1668,15 +1668,7 @@ MessageTray.prototype = {
     _updateShowingNotification: function() {
         Tweener.removeTweens(this._notificationBin);
 
-        // We auto-expand notifications with CRITICAL urgency.
-        // We use Tweener.removeTweens() to remove a tween that was hiding the notification we are
-        // updating, in case that notification was in the process of being hidden. However,
-        // Tweener.removeTweens() would also remove a tween that was updating the position of the
-        // notification we are updating, in case that notification was already expanded and its height
-        // changed. Therefore we need to call this._expandNotification() for expanded notifications
-        // to make sure their position is updated.
-        if (this._notification.urgency == Urgency.CRITICAL || this._notification.expanded)
-            this._expandNotification(true);		
+        this._expandNotification(true);
 
         // We tween all notifications to full opacity. This ensures that both new notifications and
         // notifications that might have been in the process of hiding get full opacity.
