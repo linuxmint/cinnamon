@@ -41,7 +41,6 @@ SoundManager.prototype = {
 
     play: function(sound) {
         if (this.enabled[sound] && this.file[sound] != "") {
-            global.logError(sound);
             global.play_sound_file(0, this.file[sound]);
         }
     }
