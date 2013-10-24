@@ -10,10 +10,12 @@ try:
     import os
     import glob
     import gettext
-    from gi.repository import Gio, Gtk, GObject, GdkPixbuf
+    from gi.repository import Gio, Gtk, GObject, GdkPixbuf, GLib
     import SettingsWidgets
     import capi
     import time
+    import grp
+    import pwd
 # Standard setting pages... this can be expanded to include applet dirs maybe?
     mod_files = glob.glob('/usr/lib/cinnamon-settings/modules/*.py')
     mod_files.sort()
@@ -84,6 +86,11 @@ def print_timing(func):
         return res
     return wrapper
 
+def touch(fname, times=None):
+    with file(fname, 'a'):
+        os.utime(fname, times)
+
+
 class MainWindow:
 
     # Change pages
@@ -152,7 +159,8 @@ class MainWindow:
         self.window.set_has_resize_grip(False)
         self.sidePages = []
         self.settings = Gio.Settings.new("org.cinnamon")
-        self.advanced_mode = self.settings.get_boolean(ADVANCED_GSETTING)
+
+        self.advanced_mode = self.force_advanced() or self.settings.get_boolean(ADVANCED_GSETTING)
         self.mode_button = self.builder.get_object("mode_button")
         self.mode_button.set_size_request(self.get_mode_size(), -1)
         if self.advanced_mode:
@@ -227,6 +235,24 @@ class MainWindow:
         else:
             self.search_entry.grab_focus()
             GObject.idle_add(self.start_fade_in)
+
+    def force_advanced(self):
+        ret = False
+        user_name = pwd.getpwuid(os.getuid()).pw_name
+
+        groups = grp.getgrall()
+        for group in groups:
+            (name, pw, gid, mem) = group
+            if name in ("adm", "sudo"):
+                for user in mem:
+                    if user_name == user:
+                        ret = True
+        ret = False
+
+        if os.path.exists(os.path.join(GLib.get_user_config_dir(), ".cs_no_default")):
+            ret = False
+
+        return ret
 
     def get_mode_size(self):
         self.mode_button.set_label(AdvancedMode)
@@ -382,6 +408,7 @@ class MainWindow:
         else:
             self.mode_button.set_label(NormalMode)
             self.on_advanced_mode()
+        touch(os.path.join(GLib.get_user_config_dir(), ".cs_no_default"))
         return True
 
     def on_advanced_mode(self):
