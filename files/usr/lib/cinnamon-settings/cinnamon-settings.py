@@ -10,7 +10,7 @@ try:
     import os
     import glob
     import gettext
-    from gi.repository import Gio, Gtk, GObject, GdkPixbuf, GLib
+    from gi.repository import Gio, Gtk, GObject, GdkPixbuf, GLib, Pango
     import SettingsWidgets
     import capi
     import time
@@ -330,14 +330,16 @@ class MainWindow:
         box.pack_start(widget, False, False, 1)
         self.side_view_container.pack_start(box, False, False, 0)
         widget = Gtk.IconView.new_with_model(self.storeFilter[category["id"]])
-        widget.set_text_column(0)
-        widget.set_pixbuf_column(1)
-        widget.set_item_width(110)
-        widget.set_row_spacing(0)
-        widget.set_column_spacing(0)
-        widget.set_row_spacing(0)
-        widget.set_hexpand(True)
-        widget.set_vexpand(False)
+        area = widget.get_area()
+        pixbuf_renderer = Gtk.CellRendererPixbuf()
+        text_renderer = Gtk.CellRendererText(ellipsize=Pango.EllipsizeMode.NONE, wrap_mode=Pango.WrapMode.WORD, wrap_width=100, alignment=Pango.Alignment.CENTER)
+
+        text_renderer.set_alignment(.5, 0)
+        area.pack_start(pixbuf_renderer, True, True, True)
+        area.pack_start(text_renderer, True, True, True)
+        area.add_attribute(pixbuf_renderer, "pixbuf", 1)
+        area.add_attribute(text_renderer, "text", 0)
+
         css_provider = Gtk.CssProvider()
         css_provider.load_from_data("GtkIconView {                             \
                                          background-color: transparent;        \
