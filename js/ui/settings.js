@@ -473,6 +473,8 @@ _provider.prototype = {
                 return false;
             }
             let type = this.settings_obj.get_key_exists_and_type(key_name);
+            if (!applet_callback)
+                applet_callback = function() {};
             if (type) {
                 if (type in BOOLEAN_TYPES || type in STRING_TYPES || type in NUMBER_TYPES) {
                     this.metaBindings[key_name] = new _setting(sync_type, this.xlet, key_name, this.settings_obj, applet_var, Lang.bind (this.xlet, applet_callback), user_data);
