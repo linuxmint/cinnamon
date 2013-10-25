@@ -291,8 +291,6 @@ function start() {
 
     soundManager = new SoundManager.SoundManager();
 
-    soundManager.play('login');
-
     themeManager = new ThemeManager.ThemeManager();
 
     backgroundManager = new BackgroundManager.BackgroundManager();
