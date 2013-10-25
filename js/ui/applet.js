@@ -55,15 +55,12 @@ MenuItem.prototype = {
         let table = new St.Table({ homogeneous: false,
                                       reactive: true });
 
-
         this.icon = new St.Icon({ icon_name: icon,
                               icon_type: St.IconType.FULLCOLOR,
                               style_class: 'popup-menu-icon' });
 
         table.add(this.icon,
                   {row: 0, col: 0, col_span: 1, x_expand: false, x_align: St.Align.START});
-
-
 
         this.label = new St.Label({ text: text });
         this.label.set_margin_left(6.0)
