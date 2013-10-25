@@ -176,8 +176,8 @@ class Main:
                 if parts[1] == '.po':
                     this_locale_dir = os.path.join(locale_inst, parts[0], 'LC_MESSAGES')
                     GLib.mkdir_with_parents(this_locale_dir, 0755)
-                    print "/usr/bin/msgfmt -c %s -o %s" % (os.path.join(root, file), os.path.join(this_locale_dir, '%s.mo' % self.get_uuid()))
-                    #subprocess.call(["msgfmt", "-c", os.path.join(root, file), "-o", os.path.join(this_locale_dir, '%s.mo' % self.get_uuid())])
+                    #print "/usr/bin/msgfmt -c %s -o %s" % (os.path.join(root, file), os.path.join(this_locale_dir, '%s.mo' % self.get_uuid()))
+                    subprocess.call(["msgfmt", "-c", os.path.join(root, file), "-o", os.path.join(this_locale_dir, '%s.mo' % self.get_uuid())])
                     done_one = True
         if done_one:
             print "Install complete for domain: %s" % self.get_uuid()
