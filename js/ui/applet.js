@@ -52,16 +52,25 @@ MenuItem.prototype = {
         this._icon = icon;
         this._callback = callback;
 
-        if (icon != null) {
+        let table = new St.Table({ homogeneous: false,
+                                      reactive: true });
 
-            this.icon = new St.Icon({ icon_name: icon,
-                                  icon_type: St.IconType.FULLCOLOR,
-                                  style_class: 'popup-menu-icon' });
-            this.addActor(this.icon);
-        }
+
+        this.icon = new St.Icon({ icon_name: icon,
+                              icon_type: St.IconType.FULLCOLOR,
+                              style_class: 'popup-menu-icon' });
+
+        table.add(this.icon,
+                  {row: 0, col: 0, col_span: 1, x_expand: false, x_align: St.Align.START});
+
+
 
         this.label = new St.Label({ text: text });
-        this.addActor(this.label);
+        this.label.set_margin_left(6.0)
+        table.add(this.label,
+                  {row: 0, col: 1, col_span: 1, x_align: St.Align.START});
+
+        this.addActor(table, { expand: true, span: 1, align: St.Align.START});
 
         this.connect('activate', callback);
     },
