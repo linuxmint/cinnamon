@@ -114,7 +114,7 @@ class MainWindow:
             self.button_back.show()
             self.current_sidepage = sidePage
             self.maybe_resize(sidePage)
-            GObject.idle_add(self.start_fade_in)
+            GObject.timeout_add(250, self.fade_in)
         else:
             sidePage.build(self.advanced_mode)
 
@@ -172,7 +172,6 @@ class MainWindow:
         self.c_manager = capi.CManager()
         self.content_box.c_manager = self.c_manager
         self.bar_heights = 0
-        self.opacity = 0
 
         for i in range(len(modules)):
             try:
@@ -224,7 +223,7 @@ class MainWindow:
         self.window.connect("destroy", self.quit)
         self.button_cancel.connect("clicked", self.quit)
         self.button_back.connect('clicked', self.back_to_icon_view)
-        self.window.set_opacity(self.opacity)
+        self.window.set_opacity(0)
         self.window.show()
         self.calculate_bar_heights()
 
@@ -234,7 +233,10 @@ class MainWindow:
             self.findPath(first_page_iter)
         else:
             self.search_entry.grab_focus()
-            GObject.idle_add(self.start_fade_in)
+            self.fade_in()
+
+    def fade_in(self):
+        self.window.set_opacity(1.0)
 
     def force_advanced(self):
         ret = False
@@ -260,16 +262,6 @@ class MainWindow:
         self.mode_button.set_label(NormalMode)
         nmw, npw = self.mode_button.get_preferred_width()
         return max(apw, npw)
-
-    def start_fade_in(self):
-        if self.opacity < 1.0:
-            GObject.timeout_add(10, self.do_fade_in)
-        return False
-
-    def do_fade_in(self):
-        self.opacity += 0.05
-        self.window.set_opacity(self.opacity)
-        return self.opacity < 1.0
 
     def calculate_bar_heights(self):
         h = 0
