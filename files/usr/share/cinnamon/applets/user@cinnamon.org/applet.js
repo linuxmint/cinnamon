@@ -40,14 +40,14 @@ MyApplet.prototype = {
             
             this._userIcon = new St.Icon({ style_class: 'user-icon'});
 
-            let user_button = new St.Button({ child:this._userIcon, reactive: true, style_class: 'panel-button' });
+            let user_button = new St.Button({ child:userBox, reactive: true });
             user_button.connect('clicked', Lang.bind(this, function() {
                 this.menu.toggle();
                 Util.spawnCommandLine("cinnamon-settings user");
             }));
 
             this._userIcon.hide();
-            userBox.add(user_button,
+            userBox.add(this._userIcon,
                         { x_fill:  true,
                           y_fill:  false,
                           x_align: St.Align.END,
@@ -59,7 +59,7 @@ MyApplet.prototype = {
                           x_align: St.Align.END,
                           y_align: St.Align.MIDDLE });    
             
-  	        this.menu.addActor(userBox);
+            this.menu.addActor(user_button);
 
             this.notificationsSwitch = new PopupMenu.PopupSwitchMenuItem(_("Notifications"), this._toggleNotifications);
             global.settings.connect('changed::display-notifications', Lang.bind(this, function() {
