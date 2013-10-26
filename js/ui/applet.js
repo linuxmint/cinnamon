@@ -621,7 +621,6 @@ TextIconApplet.prototype = {
         this._applet_label = new St.Label({ reactive: true, track_hover: true, style_class: 'applet-label'});
         this._label_height = (this._panelHeight / DEFAULT_PANEL_HEIGHT) * PANEL_FONT_DEFAULT_HEIGHT;
         this._applet_label.clutter_text.ellipsize = Pango.EllipsizeMode.NONE;
-        this._applet_label.set_margin_left(6.0);
         this.actor.add(this._applet_label, { y_align: St.Align.MIDDLE, y_fill: false });
     },
 
@@ -633,6 +632,10 @@ TextIconApplet.prototype = {
      */
     set_applet_label: function (text) {
         this._applet_label.set_text(text);
+        if (text && text != "")
+            this._applet_label.set_margin_left(6.0);
+        else
+            this._applet_label.set_margin_left(0);
     },
 
     /**
