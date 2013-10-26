@@ -226,7 +226,7 @@ class MainWindow:
             self.storeFilter[key].set_visible_func(self.filter_visible_function)
 
         self.min_label_length += 2
-        self.min_pix_length += 5
+        self.min_pix_length += 4
 
         self.min_label_length = max(self.min_label_length, MIN_LABEL_WIDTH)
         self.min_pix_length = max(self.min_pix_length, MIN_PIX_WIDTH)
