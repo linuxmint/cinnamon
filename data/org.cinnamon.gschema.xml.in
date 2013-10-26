@@ -881,4 +881,12 @@
     </key>
   </schema>
 
+  <schema id="org.cinnamon.settings-daemon.peripherals.touchpad">
+    <key name="tap-to-click" type="b">
+      <default>true</default>
+      <_summary>Enable mouse clicks with touchpad</_summary>
+      <_description>Set this to TRUE to be able to send mouse clicks by tapping on the touchpad.</_description>
+    </key>
+  </schema>
+
 </schemalist>
