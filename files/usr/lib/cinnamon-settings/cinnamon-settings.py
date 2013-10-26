@@ -323,6 +323,7 @@ class MainWindow:
         self.side_view_container.pack_start(box, False, False, 0)
         widget = Gtk.IconView.new_with_model(self.storeFilter[category["id"]])
         area = widget.get_area()
+        widget.set_item_width(105)
         pixbuf_renderer = Gtk.CellRendererPixbuf()
         text_renderer = Gtk.CellRendererText(ellipsize=Pango.EllipsizeMode.NONE, wrap_mode=Pango.WrapMode.WORD, wrap_width=100, alignment=Pango.Alignment.CENTER)
 
