@@ -2,5 +2,5 @@
  "uuid": "menu@cinnamon.org",
  "name": "Menu",
  "description": "Main Cinnamon menu",
- "icon": "applications-other"
+ "icon": "menu-editor"
 }
