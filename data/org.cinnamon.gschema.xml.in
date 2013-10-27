@@ -342,7 +342,7 @@
     </key>
 
     <key name="panel-launchers" type="as">
-       <default>[ 'firefox.desktop', 'gnome-terminal.desktop', 'nemo.desktop']</default>
+      <default>[ 'firefox.desktop', 'gnome-terminal.desktop', 'nemo.desktop']</default>
       <_summary>Desktop files of the applications to put in the panel launchers applet</_summary>
       <_description>
         Cinnamon allows to show applications launchers on the panel.
@@ -881,12 +881,5 @@
     </key>
   </schema>
 
-  <schema id="org.cinnamon.settings-daemon.peripherals.touchpad">
-    <key name="tap-to-click" type="b">
-      <default>true</default>
-      <_summary>Enable mouse clicks with touchpad</_summary>
-      <_description>Set this to TRUE to be able to send mouse clicks by tapping on the touchpad.</_description>
-    </key>
-  </schema>
-
 </schemalist>
+
