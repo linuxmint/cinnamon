@@ -845,10 +845,6 @@ MyApplet.prototype = {
             
             this.edit_menu_item = new Applet.MenuItem(_("Edit menu"), Gtk.STOCK_EDIT, Lang.bind(this, this._launch_editor));
             this._applet_context_menu.addMenuItem(this.edit_menu_item);
-            let settings_menu_item = new Applet.MenuItem(_("Menu settings"), null, function() { 
-                Util.spawnCommandLine("cinnamon-settings menu");
-            });
-            this._applet_context_menu.addMenuItem(settings_menu_item);
 
             this._fileFolderAccessActive = false;
 
