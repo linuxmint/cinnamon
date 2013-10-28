@@ -466,21 +466,23 @@ Inspector.prototype = {
     
     _updatePassthroughText: function() {
         if(this.passThroughEvents)
-            this._passThroughText.text = '(Press Pause to disable event pass through)';
+            this._passThroughText.text = '(Press Pause or Control to disable event pass through)';
         else
-            this._passThroughText.text = '(Press Pause to enable event pass through)';
+            this._passThroughText.text = '(Press Pause or Control to enable event pass through)';
     },
 
     _onCapturedEvent: function (actor, event) {
-        if(event.type() == Clutter.EventType.KEY_PRESS && event.get_key_symbol() == Clutter.Pause) {
+        if(event.type() == Clutter.EventType.KEY_PRESS && (event.get_key_symbol() == Clutter.Control_L ||
+                                                           event.get_key_symbol() == Clutter.Control_R ||
+                                                           event.get_key_symbol() == Clutter.Pause)) {
             this.passThroughEvents = !this.passThroughEvents;
             this._updatePassthroughText();
             return true;
         }
-        
+
         if(this.passThroughEvents)
             return false;
-        
+
         switch (event.type()) {
             case Clutter.EventType.KEY_PRESS:
                 return this._onKeyPressEvent(actor, event);
