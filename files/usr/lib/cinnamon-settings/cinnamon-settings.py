@@ -97,7 +97,7 @@ def touch(fname, times=None):
 class MainWindow:
 
     # Change pages
-    def side_view_nav(self, side_view, cat):
+    def side_view_nav(self, side_view, path, cat):
         selected_items = side_view.get_selected_items()
         if len(selected_items) > 0:
             self.deselect(cat)
@@ -162,6 +162,7 @@ class MainWindow:
         self.window.set_has_resize_grip(False)
         self.sidePages = []
         self.settings = Gio.Settings.new("org.cinnamon")
+        self.current_cat_widget = None
 
         self.advanced_mode = self.force_advanced() or self.settings.get_boolean(ADVANCED_GSETTING)
         self.mode_button = self.builder.get_object("mode_button")
@@ -380,7 +381,108 @@ class MainWindow:
         self.side_view[category["id"]] = widget
         self.side_view_container.pack_start(self.side_view[category["id"]], False, False, 0)
         self.first_category_done = True
-        self.side_view[category["id"]].connect("selection_changed", self.side_view_nav, category["id"])
+        self.side_view[category["id"]].connect("item-activated", self.side_view_nav, category["id"])
+        self.side_view[category["id"]].connect("button-release-event", self.button_press, category["id"])
+        self.side_view[category["id"]].connect("keynav-failed", self.on_keynav_failed, category["id"])
+        self.side_view[category["id"]].connect("selection-changed", self.on_selection_changed, category["id"])
+
+    def bring_selection_into_view(self, iconview):
+        sel = iconview.get_selected_items()
+
+        if sel:
+            path = sel[0]
+            found, rect = iconview.get_cell_rect(path, None)
+
+            cw = self.side_view_container.get_window()
+            cw_x, cw_y = cw.get_position()
+
+            ivw = iconview.get_window()
+            iv_x, iv_y = ivw.get_position()
+
+            final_y = rect.y + (rect.height / 2) + cw_y + iv_y
+
+            adj = self.side_view_sw.get_vadjustment()
+            page = adj.get_page_size()
+            current_pos = adj.get_value()
+
+            if final_y > current_pos + page:
+                adj.set_value(iv_y + rect.y)
+            elif final_y < current_pos:
+                adj.set_value(iv_y + rect.y)
+
+    def on_selection_changed(self, widget, category):
+        sel = widget.get_selected_items()
+        if len(sel) > 0:
+            self.current_cat_widget = widget
+            self.bring_selection_into_view(widget)
+        for iv in self.side_view:
+            if self.side_view[iv] == self.current_cat_widget:
+                continue
+            self.side_view[iv].unselect_all()
+
+    def get_cur_cat_index(self, category):
+        i = 0
+        for cat in CATEGORIES:
+            if category == cat["id"]:
+                return i
+            i += 1
+
+    def get_cur_column(self, iconview):
+        s, path, cell = iconview.get_cursor()
+        if path:
+            col = iconview.get_item_column(path)
+            return col
+
+    def reposition_new_cat(self, sel, iconview):
+        iconview.set_cursor(sel, None, False)
+        iconview.select_path(sel)
+        iconview.grab_focus()
+
+    def on_keynav_failed(self, widget, direction, category):
+        num_cats = len(CATEGORIES)
+        current_idx = self.get_cur_cat_index(category)
+        new_cat = CATEGORIES[current_idx]
+        ret = False
+        dist = 1000
+        sel = None
+
+        if direction == Gtk.DirectionType.DOWN and current_idx < num_cats - 1:
+            new_cat = CATEGORIES[current_idx + 1]
+            col = self.get_cur_column(widget)
+            new_cat_view = self.side_view[new_cat["id"]]
+            model = new_cat_view.get_model()
+            iter = model.get_iter_first()
+            while iter is not None:
+                path = model.get_path(iter)
+                c = new_cat_view.get_item_column(path)
+                d = abs(c - col)
+                if d < dist:
+                    sel = path
+                    dist = d
+                iter = model.iter_next(iter)
+            self.reposition_new_cat(sel, new_cat_view)
+            ret = True
+        elif direction == Gtk.DirectionType.UP and current_idx > 0:
+            new_cat = CATEGORIES[current_idx - 1]
+            col = self.get_cur_column(widget)
+            new_cat_view = self.side_view[new_cat["id"]]
+            model = new_cat_view.get_model()
+            iter = model.get_iter_first()
+            while iter is not None:
+                path = model.get_path(iter)
+                c = new_cat_view.get_item_column(path)
+                d = abs(c - col)
+                if d <= dist:
+                    sel = path
+                    dist = d
+                iter = model.iter_next(iter)
+            self.reposition_new_cat(sel, new_cat_view)
+            ret = True
+        return ret
+
+    def button_press(self, widget, event, category):
+        if event.button == 1:
+            self.side_view_nav(widget, None, category)
 
     def anyVisibleInCategory(self, category):
         id = category["id"]
