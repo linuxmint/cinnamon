@@ -843,6 +843,9 @@ MyApplet.prototype = {
             Main.placesManager.connect('places-updated', Lang.bind(this, this._refreshPlacesAndRecent));
             this.RecentManager.connect('changed', Lang.bind(this, this._refreshPlacesAndRecent));
 
+			this.edit_menu_item = new Applet.MenuItem(_("Edit menu"), Gtk.STOCK_EDIT, Lang.bind(this, this._launch_editor));
+			this._applet_context_menu.addMenuItem(this.edit_menu_item);
+
             this._fileFolderAccessActive = false;
 
             this._pathCompleter = new Gio.FilenameCompleter();
