@@ -10,7 +10,17 @@
     "default" : "Menu",
     "description" : "Text",
     "tooltip" : "Enter custom text to show in the panel."
- }, 
+ },
+ "hover-delay" : {
+    "type": "spinbutton",
+    "default" : 0,
+    "min" : 0,
+    "max" : 1000,
+    "step" : 50,
+    "units" : "milliseconds",
+    "description" : "Menu hover delay:",
+    "tooltip" : "Delay between switching categories"
+ },
  "show-recent" : {
     "type" : "checkbox",
     "default" : true,
@@ -40,16 +50,6 @@
     "default" : false,
     "description": "Open the menu when I move my mouse over it",
     "tooltip": "Enable opening the menu when the mouse enters the applet"
- },
- "hover-delay" : {
-    "type": "spinbutton",
-    "default" : 0,
-    "min" : 0,
-    "max" : 1000,
-    "step" : 50,
-    "units" : "milliseconds",
-    "description" : "Menu hover delay:",
-    "tooltip" : "Delay between switching categories"
  },
   "menu-editor-button" : {
     "type" : "button",
