@@ -10,7 +10,7 @@ try:
     import os
     import glob
     import gettext
-    from gi.repository import Gio, Gtk, GObject, GdkPixbuf, GLib, Pango
+    from gi.repository import Gio, Gtk, GObject, GdkPixbuf, GLib, Pango, Gdk
     import SettingsWidgets
     import capi
     import time
@@ -157,6 +157,7 @@ class MainWindow:
         self.search_entry.connect("changed", self.onSearchTextChanged)
         self.search_entry.connect("icon-press", self.onClearSearchBox)
         self.window.connect("destroy", self.quit)
+        self.window.connect("key-press-event", self.on_keypress)
 
         self.builder.connect_signals(self)
         self.window.set_has_resize_grip(False)
@@ -250,6 +251,13 @@ class MainWindow:
         else:
             self.search_entry.grab_focus()
             self.fade_in()
+
+    def on_keypress(self, widget, event):
+        if event.keyval == Gdk.KEY_BackSpace and type(self.window.get_focus()) != Gtk.Entry and \
+                                                 type(self.window.get_focus()) != Gtk.TreeView:
+            self.back_to_icon_view(None)
+            return True
+        return False
 
     def fade_in(self):
         self.window.set_opacity(1.0)
