@@ -3,7 +3,6 @@
 #include "config.h"
 
 #include "cinnamon-app-system.h"
-#include "cinnamon-app-usage.h"
 #include <string.h>
 
 #include <gio/gio.h>
