@@ -109,9 +109,7 @@ cinnamon_public_headers_h =		\
 	cinnamon-generic-container.h	\
 	cinnamon-gtk-embed.h		\
 	cinnamon-global.h			\
-	cinnamon-mobile-providers.h	\
 	cinnamon-mount-operation.h		\
-	cinnamon-network-agent.h		\
 	cinnamon-perf-log.h		\
 	cinnamon-screenshot.h	\
 	cinnamon-screen-grabber.h	\
@@ -145,12 +143,8 @@ libcinnamon_la_SOURCES =		\
 	cinnamon-generic-container.c	\
 	cinnamon-gtk-embed.c		\
 	cinnamon-global.c			\
-	cinnamon-mobile-providers.c	\
 	cinnamon-mount-operation.c		\
-	cinnamon-network-agent.c		\
 	cinnamon-perf-log.c		\
-	cinnamon-polkit-authentication-agent.h	\
-	cinnamon-polkit-authentication-agent.c	\
 	cinnamon-screenshot.c		\
 	cinnamon-screen-grabber.c	\
 	cinnamon-slicer.c			\
