@@ -2,8 +2,6 @@
 /**
  * FILE:main.js
  * @automountManager (AutomountManager.AutomountManager): The automount manager
- * @autorunManager (null): This object no longer in use but is kept
- *                         in case we change our mind
  * @placesManager (PlacesManager.PlacesManager): The places manager
  * @overview (Overview.Overview): The "scale" overview 
  * @expo (Expo.Expo): The "expo" overview
@@ -57,7 +55,6 @@ const SoundManager = imports.ui.soundManager;
 const BackgroundManager = imports.ui.backgroundManager;
 const AppletManager = imports.ui.appletManager;
 const AutomountManager = imports.ui.automountManager;
-const AutorunManager = imports.ui.autorunManager;
 const DeskletManager = imports.ui.deskletManager;
 const EndSessionDialog = imports.ui.endSessionDialog;
 const ExtensionSystem = imports.ui.extensionSystem;
@@ -94,7 +91,6 @@ const LAYOUT_CLASSIC = "classic";
 const CIN_LOG_FOLDER = GLib.get_home_dir() + '/.cinnamon/';
 
 let automountManager = null;
-let autorunManager = null;
 
 let panel = null;
 let panel2 = null;
@@ -358,8 +354,6 @@ function start() {
     automountManager = new AutomountManager.AutomountManager();
 
     keybindingManager = new Keybindings.KeybindingManager();
-    //autorunManager = new AutorunManager.AutorunManager();
-    //networkAgent = new NetworkAgent.NetworkAgent();
 
     Meta.later_add(Meta.LaterType.BEFORE_REDRAW, _checkWorkspaces);
 
