@@ -25,7 +25,6 @@ nobase_dist_js_DATA = \
 	ui/appletManager.js	\
 	ui/appFavorites.js	\
 	ui/automountManager.js  \
-	ui/autorunManager.js    \
 	ui/backgroundManager.js    \
 	ui/boxpointer.js	\
 	ui/checkBox.js		\
