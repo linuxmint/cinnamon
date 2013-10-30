@@ -63,7 +63,6 @@ StScrollBar StButton#vhandle:hover {
  * Shared button properties 
  * ===================================================================*/
 .notification-button, .notification-icon-button,
-.hotplug-notification-item, .hotplug-resident-eject-button,
 .modal-dialog-button {
 	color: white;
 	border: 1px solid #8b8b8b;
@@ -72,18 +71,16 @@ StScrollBar StButton#vhandle:hover {
 	background-gradient-end: rgba(255, 255, 255, 0);
 }
 .notification-button:hover,
-.notification-icon-button:hover, .hotplug-notification-item:hover,
-.hotplug-resident-eject-button:hover, .modal-dialog-button:hover {
+.notification-icon-button:hover, .modal-dialog-button:hover {
 	background-gradient-start: rgba(255, 255, 255, 0.3);
 	background-gradient-end: rgba(255, 255, 255, 0.1);
 }
 .notification-button:focus,
-.notification-icon-button:focus, .hotplug-notification-item:focus,
+.notification-icon-button:focus,
 .modal-dialog-button:focus {
 	border: 2px solid #8b8b8b;
 }
 .notification-button:active, .notification-icon-button:active,
-.hotplug-notification-item:active, .hotplug-resident-eject-button:active,
 .modal-dialog-button:active, .modal-dialog-button:pressed {
 	background-gradient-start: rgba(255, 255, 255, 0);
 	background-gradient-end: rgba(255, 255, 255, 0.2);
@@ -717,52 +714,6 @@ StScrollBar StButton#vhandle:hover {
 .notification-icon-button > StIcon {
 	icon-size: 36px;
 }
-.hotplug-transient-box {
-	spacing: 6px;
-	padding: 2px 72px 2px 12px;
-}
-.hotplug-notification-item {
-	padding: 2px 10px;
-	border-radius: 18px;
-	font-size: 10.5pt;
-}
-.hotplug-notification-item:focus {
-	padding: 1px 71px 1px 11px;
-}
-.hotplug-notification-item-icon {
-	icon-size: 24px;
-	padding: 2px 5px;
-}
-.hotplug-resident-box {
-	spacing: 8px;
-}
-.hotplug-resident-mount {
-	spacing: 8px;
-	border-radius: 4px;
-	color: #ccc;
-}
-.hotplug-resident-mount:hover {
-	background-gradient-direction: horizontal;
-	background-gradient-start: rgba(255, 255, 255, 0.1);
-	background-gradient-end: rgba(255, 255, 255, 0);
-	color: #fff;
-}
-.hotplug-resident-mount-label {
-	color: inherit;
-	padding-left: 6px;
-}
-.hotplug-resident-mount-icon {
-	icon-size: 24px;
-	padding-left: 6px;
-}
-.hotplug-resident-eject-icon {
-	icon-size: 16px;
-}
-.hotplug-resident-eject-button {
-	padding: 7px;
-	border-radius: 5px;
-	color: #ccc;
-}
 #notification StEntry {
 	padding: 4px;
 	border-radius: 4px;
@@ -933,79 +884,7 @@ StScrollBar StButton#vhandle:hover {
 .lightbox {
 	background-color: rgba(0, 0, 0, 0.4);
 }
-/* ===================================================================
- * End session dialog
- * ===================================================================*/
-.end-session-dialog {
-	spacing: 42px;
-}
-.end-session-dialog-subject {
-	font-size: 12pt;
-	font-weight: bold;
-	color: #666666;
-	padding-top: 10px;
-	padding-left: 17px;
-	padding-bottom: 30px;
-}
-.end-session-dialog-subject:rtl {
-	padding-left: 0px;
-	padding-right: 17px;
-}
-.end-session-dialog-description {
-	font-size: 10pt;
-	color: white;
-	padding-left: 17px;
-	width: 28em;
-}
-.end-session-dialog-description:rtl {
-	padding-right: 17px;
-}
-.end-session-dialog-logout-icon {
-	border: 2px solid #8b8b8b;
-	border-radius: 5px;
-	width: 32px;
-	height: 32px;
-}
-.end-session-dialog-shutdown-icon {
-	width: 32px;
-	height: 32px;
-}
-.end-session-dialog-app-list {
-	font-size: 10pt;
-	max-height: 200px;
-	padding-top: 42px;
-	padding-left: 49px;
-	padding-right: 32px;
-}
-.end-session-dialog-app-list:rtl {
-	padding-right: 49px;
-	padding-left: 32px;
-}
-.end-session-dialog-app-list-item {
-	color: #ccc;
-}
-.end-session-dialog-app-list-item:hover {
-	color: white;
-}
-.end-session-dialog-app-list-item:ltr {
-	padding-right: 1em;
-}
-.end-session-dialog-app-list-item:rtl {
-	padding-left: 1em;
-}
-.end-session-dialog-app-list-item-icon:ltr {
-	padding-right: 17px;
-}
-.end-session-dialog-app-list-item-icon:rtl {
-	padding-left: 17px;
-}
-.end-session-dialog-app-list-item-name {
-	font-size: 10pt;
-}
-.end-session-dialog-app-list-item-description {
-	font-size: 8pt;
-	color: #444444;
-}
+
 /* CinnamonMountOperation Dialogs */
 .cinnamon-mount-operation-icon {
 	icon-size: 48px;
@@ -1073,80 +952,6 @@ StScrollBar StButton#vhandle:hover {
 }
 .show-processes-dialog-app-list-item-name {
 	font-size: 10pt;
-}
-/* ===================================================================
- * Policykit authentication dialog
- * ===================================================================*/
-.polkit-dialog {
-	/* this is the width of the entire modal popup */
-	width: 500px;
-}
-.polkit-dialog-main-layout {
-	spacing: 24px;
-	padding: 10px;
-}
-.polkit-dialog-message-layout {
-	spacing: 16px;
-}
-.polkit-dialog-headline {
-	font-size: 12pt;
-	font-weight: bold;
-	color: #666666;
-}
-.polkit-dialog-description {
-	font-size: 10pt;
-	color: white;
-}
-.polkit-dialog-user-layout {
-	padding-left: 10px;
-	spacing: 10px;
-}
-.polkit-dialog-user-layout:rtl {
-	padding-left: 0px;
-	padding-right: 10px;
-}
-.polkit-dialog-user-root-label {
-	color: #ff0000;
-}
-.polkit-dialog-password-label:ltr {
-	padding-right: 0.5em;
-}
-.polkit-dialog-password-label:rtl {
-	padding-left: 0.5em;
-}
-.polkit-dialog-password-entry {
-	background-gradient-start: rgb(236,236,236);
-	background-gradient-end: white;
-	background-gradient-direction: vertical;
-	color: black;
-	border-radius: 5px;
-	border: 2px solid #555753;
-}
-.polkit-dialog-password-entry:focus {
-	border: 2px solid #3465a4;
-}
-.polkit-dialog-password-entry .capslock-warning {
-	icon-size: 16px;
-	warning-color: #999;
-	padding: 0 4px;
-}
-.polkit-dialog-error-label {
-	font-size: 10pt;
-	color: #ffff00;
-	padding-bottom: 8px;
-}
-.polkit-dialog-info-label {
-	font-size: 10pt;
-	padding-bottom: 8px;
-}
-/* intentionally left transparent to avoid dialog changing size */
-.polkit-dialog-null-label {
-	font-size: 10pt;
-	color: rgba(0,0,0,0);
-	padding-bottom: 8px;
-}
-.network-dialog-secret-table {
-	spacing-rows: 15px;
 }
 /* ===================================================================
  * Magnifier
