@@ -270,7 +270,7 @@ function start() {
     // races for now we initialize it here.  It's better to
     // be predictable anyways.
     tracker = Cinnamon.WindowTracker.get_default();
-    Cinnamon.AppUsage.get_default();
+    Cinnamon.AppSystem.get_default();
 
     // The stage is always covered so Clutter doesn't need to clear it; however
     // the color is used as the default contents for the Muffin root background
