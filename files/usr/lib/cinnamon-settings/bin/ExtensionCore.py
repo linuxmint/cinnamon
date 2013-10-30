@@ -49,6 +49,7 @@ class ExtensionSidePage (SidePage):
         self.pl_noun = pl_noun
         self.themes = collection_type == "theme"
         self.icons = []
+        self.run_once = False
 
     def build(self, advanced):
         # Clear all the widgets from the content box
@@ -369,7 +370,7 @@ class ExtensionSidePage (SidePage):
 
         self.search_entry.grab_focus()
 
-        if len(sys.argv) > 2:
+        if len(sys.argv) > 2 and not self.run_once:
             for row in self.model:
                 uuid = self.model.get_value(row.iter, 0)
                 if uuid == sys.argv[2]:
@@ -378,6 +379,7 @@ class ExtensionSidePage (SidePage):
                     if filtered is not None:
                         self.treeview.get_selection().select_path(filtered)
                         self.treeview.scroll_to_cell(filtered, None, False, 0, 0)
+                        self.run_once = True
                         if self.configureButton.get_visible() and self.configureButton.get_sensitive():
                             self.configureButton.clicked()
                         elif self.extConfigureButton.get_visible() and self.extConfigureButton.get_sensitive():
