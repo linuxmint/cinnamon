@@ -722,7 +722,10 @@ WindowManager.prototype = {
         }
     },
 
-    _destroyWindow : function(cinnamonwm, actor) {  
+    _destroyWindow : function(cinnamonwm, actor) {
+
+        //Fixes [Bug] Very short-lived windows cause stuck "dead window" (issue #1316)
+        Tweener.removeTweens(actor);
         
         if (actor.meta_window.get_window_type() == Meta.WindowType.NORMAL) {
             Main.soundManager.play('close');
