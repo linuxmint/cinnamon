@@ -433,9 +433,11 @@ function populateSettingsMenu(menu) {
 
     menuItem = new SettingsLauncher(_("Panel"), "panel", "panel", menu.settingsItem.menu);
     menu.settingsItem.menu.addMenuItem(menuItem);
-
-    menuItem = new SettingsLauncher(_("Menu"), "menu", "menu", menu.settingsItem.menu);
-    menu.settingsItem.menu.addMenuItem(menuItem);
+	
+	/**
+		menuItem = new SettingsLauncher(_("Menu"), "menu", "menu", menu.settingsItem.menu);
+		menu.settingsItem.menu.addMenuItem(menuItem);
+    */
 
     menuItem = new SettingsLauncher(_("All settings"), "", "preferences-system", menu.settingsItem.menu);
     menu.settingsItem.menu.addMenuItem(menuItem);
