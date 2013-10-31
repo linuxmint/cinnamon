@@ -273,7 +273,6 @@ class MainWindow:
                 for user in mem:
                     if user_name == user:
                         ret = True
-        ret = False
 
         if os.path.exists(os.path.join(GLib.get_user_config_dir(), ".cs_no_default")):
             ret = False
