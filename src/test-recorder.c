@@ -1,5 +1,6 @@
 /* -*- mode: C; c-file-style: "gnu"; indent-tabs-mode: nil; -*- */
 
+#define GST_USE_UNSTABLE_API
 #include "cinnamon-recorder.h"
 #include <clutter/clutter.h>
 #include <gst/gst.h>
@@ -29,7 +30,6 @@ int main (int argc, char **argv)
   ClutterAnimation *animation;
   ClutterColor red, green, blue;
 
-  g_thread_init (NULL);
   gst_init (&argc, &argv);
   if (clutter_init (&argc, &argv) != CLUTTER_INIT_SUCCESS)
     return 1;

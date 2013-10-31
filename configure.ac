@@ -44,15 +44,15 @@ AC_SUBST(PYTHON)
 
 # We need at least this, since gst_plugin_register_static() was added
 # in 0.10.16, but nothing older than 0.10.21 has been tested.
-GSTREAMER_MIN_VERSION=0.10.16
+GSTREAMER_MIN_VERSION=0.11.92
 
 recorder_modules=
 build_recorder=false
 AC_MSG_CHECKING([for GStreamer (needed for recording functionality)])
-if $PKG_CONFIG --exists gstreamer-0.10 '>=' $GSTREAMER_MIN_VERSION ; then
+if $PKG_CONFIG --exists gstreamer-1.0 '>=' $GSTREAMER_MIN_VERSION ; then
    AC_MSG_RESULT(yes)
    build_recorder=true
-   recorder_modules="gstreamer-0.10 gstreamer-base-0.10 x11"
+   recorder_modules="gstreamer-1.0 gstreamer-base-1.0 x11"
    PKG_CHECK_MODULES(TEST_CINNAMON_RECORDER, $recorder_modules clutter-1.0 xfixes)
 else
    AC_MSG_RESULT(no)
