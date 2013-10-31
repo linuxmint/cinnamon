@@ -119,6 +119,13 @@ MyApplet.prototype = {
                     Util.spawnCommandLine("mdmflexiserver");
                 }));
             }
+            else if (GLib.file_test("/usr/bin/gdmflexiserver", GLib.FileTest.EXISTS)) {
+                // GDM
+                this.menu.addAction(_("Switch User"), Lang.bind(this, function() {
+                    Util.spawnCommandLine("cinnamon-screensaver-command --lock");
+                    Util.spawnCommandLine("gdmflexiserver");
+                }));
+            }
 
             this.menu.addAction(_("Log Out..."), Lang.bind(this, function() {
                 this._session.LogoutRemote(0);
