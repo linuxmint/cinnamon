@@ -441,7 +441,7 @@ Notification.prototype = {
         this._titleFitsInBannerMode = true;
         this._titleDirection = St.TextDirection.NONE;
         this._spacing = 0;
-        this._scrollPolicy = Gtk.PolicyType.AUTOMATIC;
+
         this._imageBin = null;
         this._timestamp = new Date();
         this._inNotificationBin = false;
@@ -606,16 +606,10 @@ Notification.prototype = {
         this._icon.visible = visible;
     },
 
-    enableScrolling: function(enableScrolling) {
-        this._scrollPolicy = enableScrolling ? Gtk.PolicyType.AUTOMATIC : Gtk.PolicyType.NEVER;
-        if (this._scrollArea)
-            this._scrollArea.vscrollbar_policy = this._scrollPolicy;
-    },
-
     _createScrollArea: function() {
         this._table.add_style_class_name('multi-line-notification');
         this._scrollArea = new St.ScrollView({ name: 'notification-scrollview',
-                                               vscrollbar_policy: this._scrollPolicy,
+                                               vscrollbar_policy: Gtk.PolicyType.NEVER,
                                                hscrollbar_policy: Gtk.PolicyType.NEVER,
                                                style_class: 'vfade' });
         this._table.add(this._scrollArea, { row: 1,
@@ -1317,7 +1311,6 @@ SummaryItem.prototype = {
             if (notification.actor.get_parent() == this.notificationStack)
                 this.notificationStack.remove_actor(notification.actor);
             notification.setIconVisible(true);
-            notification.enableScrolling(true);
         }
         this._stackedNotifications = [];
     },
@@ -1334,8 +1327,6 @@ SummaryItem.prototype = {
         stackedNotification.notificationDoneDisplayingId = notification.connect('done-displaying', Lang.bind(this, this._notificationDoneDisplaying));
         stackedNotification.notificationDestroyedId = notification.connect('destroy', Lang.bind(this, this._notificationDestroyed));
         this._stackedNotifications.push(stackedNotification);
-        if (!this.source.isChat)
-            notification.enableScrolling(false);
         if (this.notificationStack.get_children().length > 0)
             notification.setIconVisible(false);
         this.notificationStack.add(notification.actor);
