@@ -110,11 +110,12 @@ StThemeNode *st_theme_node_get_parent (StThemeNode *node);
 StTheme *st_theme_node_get_theme (StThemeNode *node);
 
 gboolean    st_theme_node_equal (StThemeNode *node_a, StThemeNode *node_b);
+guint       st_theme_node_hash  (StThemeNode *node);
 
 GType       st_theme_node_get_element_type  (StThemeNode *node);
 const char *st_theme_node_get_element_id    (StThemeNode *node);
-const char *st_theme_node_get_element_class (StThemeNode *node);
-const char *st_theme_node_get_pseudo_class  (StThemeNode *node);
+GStrv       st_theme_node_get_element_classes (StThemeNode *node);
+GStrv       st_theme_node_get_pseudo_classes (StThemeNode *node);
 
 /* Generic getters ... these are not cached so are less efficient. The other
  * reason for adding the more specific version is that we can handle the
