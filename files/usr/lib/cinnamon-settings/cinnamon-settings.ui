@@ -272,6 +272,7 @@
     <property name="type_hint">normal</property>
     <property name="skip_taskbar_hint">True</property>
     <property name="skip_pager_hint">True</property>
+    <property name="deletable">False</property>
     <property name="transient_for">main_window</property>
     <property name="attached_to">main_window</property>
     <child internal-child="vbox">
@@ -300,20 +301,6 @@
                 <property name="fill">True</property>
                 <property name="padding">2</property>
                 <property name="position">0</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkButton" id="btnProgressClose">
-                <property name="label">gtk-close</property>
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
-                <property name="use_stock">True</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">2</property>
               </packing>
             </child>
           </object>
@@ -366,7 +353,6 @@
     </child>
     <action-widgets>
       <action-widget response="0">btnProgressAbort</action-widget>
-      <action-widget response="0">btnProgressClose</action-widget>
     </action-widgets>
   </object>
 </interface>

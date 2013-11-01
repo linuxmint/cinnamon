@@ -84,7 +84,6 @@ class Spice_Harvester:
 
 
         self.progress_window = self.builder.get_object("progress_window")
-        self.progress_button_close = self.builder.get_object("btnProgressClose")
         self.progress_button_abort = self.builder.get_object("btnProgressAbort")
         self.progress_window.connect("delete-event", self.on_progress_close)
         self.progresslabel = self.builder.get_object('progresslabel')
@@ -100,7 +99,6 @@ class Spice_Harvester:
         self._sigLoadFinished = None
 
         self.progress_button_abort.connect("clicked", self.on_abort_clicked)
-        self.progress_button_close.connect("clicked", self.on_progress_close)
 
         self.spiceDetail = Gtk.Dialog(_("Applet info"),
                             self.window,
@@ -545,10 +543,6 @@ class Spice_Harvester:
 
         if callable(onFinished):
             onFinished(uuid)
-
-    def on_progress_close(self, widget):
-        self.progress_window.hide()
-        return
 
     def on_abort_clicked(self, button):
         self.abort_download = ABORT_USER
