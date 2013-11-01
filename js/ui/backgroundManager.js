@@ -10,6 +10,10 @@ function BackgroundManager() {
 BackgroundManager.prototype = {
 
     _init: function() {
+        let schema = Gio.SettingsSchemaSource.get_default();
+        if (!schema.lookup("org.gnome.desktop.background", true))
+            return
+
         this._gnomeSettings = new Gio.Settings({ schema: 'org.gnome.desktop.background' });
         this._cinnamonSettings = new Gio.Settings({ schema: 'org.cinnamon.desktop.background' });
         this._string_keys = ["color-shading-type", "picture-options", "picture-uri", "primary-color", "secondary-color"];
