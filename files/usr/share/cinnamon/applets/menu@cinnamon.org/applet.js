@@ -356,6 +356,7 @@ ApplicationButton.prototype = {
         this.addActor(this.label);
         this._draggable = DND.makeDraggable(this.actor);
         this.isDraggableApp = true;
+        this.icon.realize();
     },
     
     get_app_id: function() {
@@ -400,6 +401,7 @@ PlaceButton.prototype = {
         if (this.icon)
             this.addActor(this.icon);
         this.addActor(this.label);
+        this.icon.realize();
     },
 
     _onButtonReleaseEvent: function (actor, event) {
@@ -433,6 +435,7 @@ RecentButton.prototype = {
         this.icon = file.createIcon(APPLICATION_ICON_SIZE);
         this.addActor(this.icon);
         this.addActor(this.label);
+        this.icon.realize()
     },
 
     _onButtonReleaseEvent: function (actor, event) {
@@ -503,6 +506,7 @@ CategoryButton.prototype = {
         if (category && this.icon_name) {
             this.icon = new St.Icon({icon_name: this.icon_name, icon_size: CATEGORY_ICON_SIZE, icon_type: St.IconType.FULLCOLOR});
             this.addActor(this.icon);
+            this.icon.realize();
         }
         this.addActor(this.label);
     }
@@ -522,6 +526,7 @@ PlaceCategoryButton.prototype = {
         this.label = new St.Label({ text: _("Places"), style_class: 'menu-category-button-label' });
         this.icon = new St.Icon({icon_name: "folder", icon_size: CATEGORY_ICON_SIZE, icon_type: St.IconType.FULLCOLOR});
         this.addActor(this.icon);
+        this.icon.realize();
         this.addActor(this.label);
     }
 };
@@ -540,6 +545,7 @@ RecentCategoryButton.prototype = {
         this.label = new St.Label({ text: _("Recent Files"), style_class: 'menu-category-button-label' });
         this.icon = new St.Icon({icon_name: "folder-recent", icon_size: CATEGORY_ICON_SIZE, icon_type: St.IconType.FULLCOLOR});
         this.addActor(this.icon);
+        this.icon.realize()
         this.addActor(this.label);
     }
 };
@@ -560,8 +566,10 @@ FavoritesButton.prototype = {
         this.actor.style = "padding-top: "+(icon_size/3)+"px;padding-bottom: "+(icon_size/3)+"px; margin:auto;"
 
         this.actor.add_style_class_name('menu-favorites-button');
-        this.addActor(app.create_icon_texture(icon_size));  
-        
+        let icon = app.create_icon_texture(icon_size);
+        this.addActor(icon);
+        icon.realize()
+
         this._draggable = DND.makeDraggable(this.actor);     
         this.isDraggableApp = true;
     },
@@ -594,7 +602,8 @@ SystemButton.prototype = {
         if (icon_size>MAX_FAV_ICON_SIZE) icon_size = MAX_FAV_ICON_SIZE;
         this.actor.style = "padding-top: "+(icon_size/3)+"px;padding-bottom: "+(icon_size/3)+"px; margin:auto;"
         let iconObj = new St.Icon({icon_name: icon, icon_size: icon_size, icon_type: St.IconType.FULLCOLOR});
-        this.actor.set_child(iconObj);             
+        this.actor.set_child(iconObj);
+        iconObj.realize()
     }
 };
 
