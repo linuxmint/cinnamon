@@ -145,6 +145,8 @@ libcinnamon_la_SOURCES =		\
 	cinnamon-global.c			\
 	cinnamon-mount-operation.c		\
 	cinnamon-perf-log.c		\
+	cinnamon-polkit-authentication-agent.h	\
+	cinnamon-polkit-authentication-agent.c	\
 	cinnamon-screenshot.c		\
 	cinnamon-screen-grabber.c	\
 	cinnamon-slicer.c			\
