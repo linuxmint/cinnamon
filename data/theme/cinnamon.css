@@ -954,6 +954,80 @@ StScrollBar StButton#vhandle:hover {
 	font-size: 10pt;
 }
 /* ===================================================================
+ * Policykit authentication dialog
+ * ===================================================================*/
+.polkit-dialog {
+	/* this is the width of the entire modal popup */
+	width: 500px;
+}
+.polkit-dialog-main-layout {
+	spacing: 24px;
+	padding: 10px;
+}
+.polkit-dialog-message-layout {
+	spacing: 16px;
+}
+.polkit-dialog-headline {
+	font-size: 12pt;
+	font-weight: bold;
+	color: #666666;
+}
+.polkit-dialog-description {
+	font-size: 10pt;
+	color: white;
+}
+.polkit-dialog-user-layout {
+	padding-left: 10px;
+	spacing: 10px;
+}
+.polkit-dialog-user-layout:rtl {
+	padding-left: 0px;
+	padding-right: 10px;
+}
+.polkit-dialog-user-root-label {
+	color: #ff0000;
+}
+.polkit-dialog-password-label:ltr {
+	padding-right: 0.5em;
+}
+.polkit-dialog-password-label:rtl {
+	padding-left: 0.5em;
+}
+.polkit-dialog-password-entry {
+	background-gradient-start: rgb(236,236,236);
+	background-gradient-end: white;
+	background-gradient-direction: vertical;
+	color: black;
+	border-radius: 5px;
+	border: 2px solid #555753;
+}
+.polkit-dialog-password-entry:focus {
+	border: 2px solid #3465a4;
+}
+.polkit-dialog-password-entry .capslock-warning {
+	icon-size: 16px;
+	warning-color: #999;
+	padding: 0 4px;
+}
+.polkit-dialog-error-label {
+	font-size: 10pt;
+	color: #ffff00;
+	padding-bottom: 8px;
+}
+.polkit-dialog-info-label {
+	font-size: 10pt;
+	padding-bottom: 8px;
+}
+/* intentionally left transparent to avoid dialog changing size */
+.polkit-dialog-null-label {
+	font-size: 10pt;
+	color: rgba(0,0,0,0);
+	padding-bottom: 8px;
+}
+.network-dialog-secret-table {
+	spacing-rows: 15px;
+}
+/* ===================================================================
  * Magnifier
  * ===================================================================*/
 
