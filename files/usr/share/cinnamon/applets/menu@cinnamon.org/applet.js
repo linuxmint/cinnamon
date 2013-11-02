@@ -357,6 +357,7 @@ ApplicationButton.prototype = {
         this._draggable = DND.makeDraggable(this.actor);
         this.isDraggableApp = true;
         this.icon.realize();
+        this.label.realize();
     },
     
     get_app_id: function() {
@@ -402,6 +403,7 @@ PlaceButton.prototype = {
             this.addActor(this.icon);
         this.addActor(this.label);
         this.icon.realize();
+        this.label.realize();
     },
 
     _onButtonReleaseEvent: function (actor, event) {
@@ -435,7 +437,8 @@ RecentButton.prototype = {
         this.icon = file.createIcon(APPLICATION_ICON_SIZE);
         this.addActor(this.icon);
         this.addActor(this.label);
-        this.icon.realize()
+        this.icon.realize();
+        this.label.realize();
     },
 
     _onButtonReleaseEvent: function (actor, event) {
@@ -509,6 +512,7 @@ CategoryButton.prototype = {
             this.icon.realize();
         }
         this.addActor(this.label);
+        this.label.realize();
     }
 };
 
@@ -528,6 +532,7 @@ PlaceCategoryButton.prototype = {
         this.addActor(this.icon);
         this.icon.realize();
         this.addActor(this.label);
+        this.label.realize();
     }
 };
 
@@ -547,6 +552,7 @@ RecentCategoryButton.prototype = {
         this.addActor(this.icon);
         this.icon.realize()
         this.addActor(this.label);
+        this.label.realize();
     }
 };
 
@@ -1509,7 +1515,6 @@ MyApplet.prototype = {
 
         for (let i = 0; i < this._applicationsButtons.length; i++) {
             this.applicationsBox.add_actor(this._applicationsButtons[i].actor);
-            this._applicationsButtons[i].actor.realize();
             this.applicationsBox.add_actor(this._applicationsButtons[i].menu.actor);
         }
 
