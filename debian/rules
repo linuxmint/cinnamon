@@ -26,8 +26,7 @@ override_dh_autoreconf:
 
 override_dh_auto_configure:
 	dh_auto_configure -- --enable-compile-warnings=yes \
-	                     --disable-schemas-install \
-	                     BROWSER_PLUGIN_DIR=/usr/lib/mozilla/plugins
+	                     --disable-schemas-install
 
 # Disable checks since they are not functional for the moment
 override_dh_auto_test:
