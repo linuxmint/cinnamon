@@ -60,6 +60,13 @@ st_theme_node_class_init (StThemeNodeClass *klass)
   object_class->finalize = st_theme_node_finalize;
 }
 
+static void
+on_custom_stylesheets_changed (StTheme *theme,
+                               gpointer data)
+{
+  StThemeNode *node = data;
+  node->properties_computed = FALSE;
+}
 
 static void
 st_theme_node_dispose (GObject *gobject)
@@ -90,6 +97,10 @@ st_theme_node_dispose (GObject *gobject)
       node->border_image = NULL;
     }
 
+  if (node->theme)
+      g_signal_handlers_disconnect_by_func (node->theme,
+                                            on_custom_stylesheets_changed, node);
+
   if (node->icon_colors)
     {
       st_icon_colors_unref (node->icon_colors);
@@ -105,8 +116,8 @@ st_theme_node_finalize (GObject *object)
   StThemeNode *node = ST_THEME_NODE (object);
 
   g_free (node->element_id);
-  g_free (node->element_class);
-  g_free (node->pseudo_class);
+  g_strfreev (node->element_classes);
+  g_strfreev (node->pseudo_classes);
   g_free (node->inline_style);
 
   if (node->properties)
@@ -152,6 +163,33 @@ st_theme_node_finalize (GObject *object)
   _st_theme_node_free_drawing_state (node);
 
   G_OBJECT_CLASS (st_theme_node_parent_class)->finalize (object);
+}
+
+static GStrv
+split_on_whitespace (const gchar *s)
+{
+  gchar *cur;
+  gchar *l;
+  gchar *temp;
+  GPtrArray *arr;
+
+  if (s == NULL)
+    return NULL;
+
+  arr = g_ptr_array_new ();
+  l = g_strdup (s);
+
+  cur = strtok_r (l, " \t\f\r\n", &temp);
+
+  while (cur != NULL)
+    {
+      g_ptr_array_add (arr, g_strdup (cur));
+      cur = strtok_r (NULL, " \t\f\r\n", &temp);
+    }
+
+  g_free (l);
+  g_ptr_array_add (arr, NULL);
+  return (GStrv) g_ptr_array_free (arr, FALSE);
 }
 
 /**
@@ -203,12 +241,16 @@ st_theme_node_new (StThemeContext    *context,
     theme = parent_node->theme;
 
   if (theme != NULL)
-    node->theme = g_object_ref (theme);
+    {
+      node->theme = g_object_ref (theme);
+      g_signal_connect (node->theme, "custom-stylesheets-changed",
+                        G_CALLBACK (on_custom_stylesheets_changed), node);
+    }
 
   node->element_type = element_type;
   node->element_id = g_strdup (element_id);
-  node->element_class = g_strdup (element_class);
-  node->pseudo_class = g_strdup (pseudo_class);
+  node->element_classes = split_on_whitespace (element_class);
+  node->pseudo_classes = split_on_whitespace (pseudo_class);
   node->inline_style = g_strdup (inline_style);
 
   return node;
@@ -263,20 +305,30 @@ st_theme_node_get_element_id (StThemeNode *node)
   return node->element_id;
 }
 
-const char *
-st_theme_node_get_element_class (StThemeNode *node)
+/**
+ * st_theme_node_get_element_classes:
+ *
+ * Returns: (transfer none): the element's classes
+ */
+GStrv
+st_theme_node_get_element_classes (StThemeNode *node)
 {
   g_return_val_if_fail (ST_IS_THEME_NODE (node), NULL);
 
-  return node->element_class;
+  return node->element_classes;
 }
 
-const char *
-st_theme_node_get_pseudo_class (StThemeNode *node)
+/**
+ * st_theme_node_get_pseudo_classes:
+ *
+ * Returns: (transfer none): the element's pseudo-classes
+ */
+GStrv
+st_theme_node_get_pseudo_classes (StThemeNode *node)
 {
   g_return_val_if_fail (ST_IS_THEME_NODE (node), NULL);
 
-  return node->pseudo_class;
+  return node->pseudo_classes;
 }
 
 /**
@@ -310,16 +362,91 @@ gboolean
 st_theme_node_equal (StThemeNode *node_a, StThemeNode *node_b)
 {
   g_return_val_if_fail (ST_IS_THEME_NODE (node_a), FALSE);
+
+  if (node_a == node_b)
+     return TRUE;
+
   g_return_val_if_fail (ST_IS_THEME_NODE (node_b), FALSE);
 
-  return node_a->parent_node == node_b->parent_node &&
-         node_a->context == node_b->context &&
-         node_a->theme == node_b->theme &&
-         node_a->element_type == node_b->element_type &&
-         !g_strcmp0 (node_a->element_id, node_b->element_id) &&
-         !g_strcmp0 (node_a->element_class, node_b->element_class) &&
-         !g_strcmp0 (node_a->pseudo_class, node_b->pseudo_class) &&
-         !g_strcmp0 (node_a->inline_style, node_b->inline_style);
+  if (node_a->parent_node != node_b->parent_node ||
+      node_a->context != node_b->context ||
+      node_a->theme != node_b->theme ||
+      node_a->element_type != node_b->element_type ||
+      g_strcmp0 (node_a->element_id, node_b->element_id) ||
+      g_strcmp0 (node_a->inline_style, node_b->inline_style))
+    return FALSE;
+
+  if ((node_a->element_classes == NULL) != (node_b->element_classes == NULL))
+    return FALSE;
+
+  if ((node_a->pseudo_classes == NULL) != (node_b->pseudo_classes == NULL))
+    return FALSE;
+
+  if (node_a->element_classes != NULL)
+    {
+      int i;
+
+      for (i = 0; ; i++)
+        {
+          if (g_strcmp0 (node_a->element_classes[i],
+                         node_b->element_classes[i]))
+            return FALSE;
+
+          if (node_a->element_classes[i] == NULL)
+            break;
+        }
+    }
+
+  if (node_a->pseudo_classes != NULL)
+    {
+      int i;
+
+      for (i = 0; ; i++)
+        {
+          if (g_strcmp0 (node_a->pseudo_classes[i],
+                         node_b->pseudo_classes[i]))
+            return FALSE;
+
+          if (node_a->pseudo_classes[i] == NULL)
+            break;
+        }
+    }
+
+  return TRUE;
+}
+
+guint
+st_theme_node_hash (StThemeNode *node)
+{
+  guint hash = GPOINTER_TO_UINT (node->parent_node);
+
+  hash = hash * 33 + GPOINTER_TO_UINT (node->context);
+  hash = hash * 33 + GPOINTER_TO_UINT (node->theme);
+  hash = hash * 33 + ((guint) node->element_type);
+
+  if (node->element_id != NULL)
+    hash = hash * 33 + g_str_hash (node->element_id);
+
+  if (node->inline_style != NULL)
+    hash = hash * 33 + g_str_hash (node->inline_style);
+
+  if (node->element_classes != NULL)
+    {
+      gchar **it;
+
+      for (it = node->element_classes; *it != NULL; it++)
+        hash = hash * 33 + g_str_hash (*it) + 1;
+    }
+
+  if (node->pseudo_classes != NULL)
+    {
+      gchar **it;
+
+      for (it = node->pseudo_classes; *it != NULL; it++)
+        hash = hash * 33 + g_str_hash (*it) + 1;
+    }
+
+  return hash;
 }
 
 static void
@@ -3499,6 +3626,10 @@ st_theme_node_geometry_equal (StThemeNode *node,
   StSide side;
 
   g_return_val_if_fail (ST_IS_THEME_NODE (node), FALSE);
+
+  if (node == other)
+     return TRUE;
+
   g_return_val_if_fail (ST_IS_THEME_NODE (other), FALSE);
 
   _st_theme_node_ensure_geometry (node);
@@ -3543,6 +3674,10 @@ st_theme_node_paint_equal (StThemeNode *node,
   int i;
 
   g_return_val_if_fail (ST_IS_THEME_NODE (node), FALSE);
+
+  if (node == other)
+     return TRUE;
+
   g_return_val_if_fail (ST_IS_THEME_NODE (other), FALSE);
 
   _st_theme_node_ensure_background (node);

@@ -87,6 +87,14 @@ enum
   PROP_DEFAULT_STYLESHEET
 };
 
+enum
+{
+  STYLESHEETS_CHANGED,
+  LAST_SIGNAL
+};
+
+static guint signals[LAST_SIGNAL] = { 0, };
+
 G_DEFINE_TYPE (StTheme, st_theme, G_TYPE_OBJECT)
 
 /* Quick strcmp.  Test only for == 0 or != 0, not < 0 or > 0.  */
@@ -153,6 +161,12 @@ st_theme_class_init (StThemeClass *klass)
                                                         NULL,
                                                         G_PARAM_READABLE | G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY));
 
+  signals[STYLESHEETS_CHANGED] = g_signal_new ("custom-stylesheets-changed",
+                                               G_TYPE_FROM_CLASS (klass),
+                                               G_SIGNAL_RUN_LAST,
+                                               0, /* no default handler slot */
+                                               NULL, NULL, NULL,
+                                               G_TYPE_NONE, 0);  
 }
 
 static CRStyleSheet *
@@ -233,6 +247,7 @@ st_theme_load_stylesheet (StTheme    *theme,
   insert_stylesheet (theme, path, stylesheet);
   cr_stylesheet_ref (stylesheet);
   theme->custom_stylesheets = g_slist_prepend (theme->custom_stylesheets, stylesheet);
+  g_signal_emit (theme, signals[STYLESHEETS_CHANGED], 0);
 
   return TRUE;
 }
@@ -254,6 +269,7 @@ st_theme_unload_stylesheet (StTheme    *theme,
   g_hash_table_remove (theme->stylesheets_by_filename, path);
   g_hash_table_remove (theme->filenames_by_stylesheet, stylesheet);
   cr_stylesheet_unref (stylesheet);
+  g_signal_emit (theme, signals[STYLESHEETS_CHANGED], 0);
 }
 
 /**
@@ -443,25 +459,17 @@ st_theme_new (const char       *application_stylesheet,
 
 static gboolean
 string_in_list (GString    *stryng,
-                const char *list)
+                GStrv       list)
 {
-  const char *cur;
+  gchar **it;
 
-  for (cur = list; *cur;)
+  if (list == NULL)
+    return FALSE;
+
+  for (it = list; *it != NULL; it++)
     {
-      while (*cur && cr_utils_is_white_space (*cur))
-        cur++;
-
-      if (strncmp (cur, stryng->str, stryng->len) == 0)
-        {
-          cur +=  stryng->len;
-          if ((!*cur) || cr_utils_is_white_space (*cur))
-            return TRUE;
-        }
-
-      /*  skip to next whitespace character  */
-      while (*cur && !cr_utils_is_white_space (*cur))
-        cur++;
+      if (!strqcmp (*it, stryng->str, stryng->len))
+        return TRUE;
     }
 
   return FALSE;
@@ -472,7 +480,7 @@ pseudo_class_add_sel_matches_style (StTheme         *a_this,
                                     CRAdditionalSel *a_add_sel,
                                     StThemeNode     *a_node)
 {
-  const char *node_pseudo_class;
+  GStrv node_pseudo_classes;
 
   g_return_val_if_fail (a_this
                         && a_add_sel
@@ -482,12 +490,10 @@ pseudo_class_add_sel_matches_style (StTheme         *a_this,
                         && a_add_sel->content.pseudo->name->stryng->str
                         && a_node, FALSE);
 
-  node_pseudo_class = st_theme_node_get_pseudo_class (a_node);
+  node_pseudo_classes = st_theme_node_get_pseudo_classes (a_node);
 
-  if (node_pseudo_class == NULL)
-    return FALSE;
-
-  return string_in_list (a_add_sel->content.pseudo->name->stryng, node_pseudo_class);
+  return string_in_list (a_add_sel->content.pseudo->name->stryng,
+                         node_pseudo_classes);
 }
 
 /*
@@ -500,7 +506,7 @@ static gboolean
 class_add_sel_matches_style (CRAdditionalSel *a_add_sel,
                              StThemeNode     *a_node)
 {
-  const char *element_class;
+  GStrv element_classes;
 
   g_return_val_if_fail (a_add_sel
                         && a_add_sel->type == CLASS_ADD_SELECTOR
@@ -509,11 +515,10 @@ class_add_sel_matches_style (CRAdditionalSel *a_add_sel,
                         && a_add_sel->content.class_name->stryng->str
                         && a_node, FALSE);
 
-  element_class = st_theme_node_get_element_class (a_node);
-  if (element_class == NULL)
-    return FALSE;
+  element_classes = st_theme_node_get_element_classes (a_node);
 
-  return string_in_list (a_add_sel->content.class_name->stryng, element_class);
+  return string_in_list (a_add_sel->content.class_name->stryng,
+                         element_classes);
 }
 
 /*

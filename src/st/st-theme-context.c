@@ -32,6 +32,9 @@ struct _StThemeContext {
   PangoFontDescription *font;
   StThemeNode *root_node;
   StTheme *theme;
+
+  /* set of StThemeNode */
+  GHashTable *nodes;
 };
 
 struct _StThemeContextClass {
@@ -64,6 +67,8 @@ st_theme_context_finalize (GObject *object)
                                        (gpointer) on_icon_theme_changed,
                                        context);
 
+  if (context->nodes)
+    g_hash_table_unref (context->nodes);
   if (context->root_node)
     g_object_unref (context->root_node);
   if (context->theme)
@@ -101,6 +106,10 @@ st_theme_context_init (StThemeContext *context)
                     "icon-theme-changed",
                     G_CALLBACK (on_icon_theme_changed),
                     context);
+
+  context->nodes = g_hash_table_new_full ((GHashFunc) st_theme_node_hash,
+                                          (GEqualFunc) st_theme_node_equal,
+                                          g_object_unref, NULL);
 }
 
 /**
@@ -130,23 +139,24 @@ on_stage_destroy (ClutterStage *stage)
   g_object_unref (context);
 }
 
-static gboolean
-emit_changed (StThemeContext *context)
-{
-  g_signal_emit (context, signals[CHANGED], 0);
-  return FALSE;
-}
-
 static void
 st_theme_context_changed (StThemeContext *context)
 {
   StThemeNode *old_root = context->root_node;
   context->root_node = NULL;
+  g_hash_table_remove_all (context->nodes);
 
-  emit_changed (context);
+  g_signal_emit (context, signals[CHANGED], 0);
 
   if (old_root)
     g_object_unref (old_root);
+}
+
+static gboolean
+changed_idle (gpointer userdata)
+{
+  st_theme_context_changed (userdata);
+  return FALSE;
 }
 
 static void
@@ -158,7 +168,7 @@ on_icon_theme_changed (StTextureCache *cache,
    * icon_name => icon lookup, faking a theme context change is a good way
    * to force users such as StIcon to look up icons again. Don't bother recreating
    * the root node, though. */
-  g_idle_add ((GSourceFunc) emit_changed, context);
+  g_idle_add ((GSourceFunc) changed_idle, context);
 }
 
 /**
@@ -354,4 +364,28 @@ st_theme_context_get_root_node (StThemeContext *context)
                                             G_TYPE_NONE, NULL, NULL, NULL, NULL);
 
   return context->root_node;
+}
+
+/**
+ * st_theme_context_intern_node:
+ * @context: a #StThemeContext
+ * @node: a #StThemeNode
+ *
+ * Return an existing node matching @node, or if that isn't possible,
+ * @node itself.
+ *
+ * Return value: (transfer none): a node with the same properties as @node
+ */
+StThemeNode *
+st_theme_context_intern_node (StThemeContext *context,
+                              StThemeNode    *node)
+{
+  StThemeNode *mine = g_hash_table_lookup (context->nodes, node);
+
+  /* this might be node or not - it doesn't actually matter */
+  if (mine != NULL)
+    return mine;
+
+  g_hash_table_add (context->nodes, g_object_ref (node));
+  return node;
 }
