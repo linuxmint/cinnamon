@@ -4,7 +4,6 @@ const Gio = imports.gi.Gio;
 const Gdk = imports.gi.Gdk;
 const Lang = imports.lang;
 const Desktop = imports.gi.CinnamonDesktop;
-const Cairo = imports.cairo;
 const Mainloop = imports.mainloop;
 
 function BackgroundManager() {
@@ -77,7 +76,7 @@ BackgroundManager.prototype = {
             screen.connect("size-changed", Lang.bind(this, function() {
                 if (this.screen_signal_timeout_id != 0)
                     Mainloop.source_remove(this.screen_signal_timeout_id);
-                Mainloop.timeout_add(1000, Lang.bind(this, this.screen_signal_timeout_cb))
+                this.screen_signal_timeout_id = Mainloop.timeout_add(1000, Lang.bind(this, this.screen_signal_timeout_cb))
             }));
         }
     },
