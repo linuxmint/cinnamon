@@ -286,7 +286,6 @@ st_widget_dispose (GObject *gobject)
 
   if (priv->theme_node)
     {
-      g_object_run_dispose (G_OBJECT (priv->theme_node));
       g_object_unref (priv->theme_node);
       priv->theme_node = NULL;
     }
