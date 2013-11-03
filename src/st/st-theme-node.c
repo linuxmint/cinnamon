@@ -347,6 +347,10 @@ gboolean
 st_theme_node_equal (StThemeNode *node_a, StThemeNode *node_b)
 {
   g_return_val_if_fail (ST_IS_THEME_NODE (node_a), FALSE);
+
+  if (node_a == node_b)
+     return TRUE;
+
   g_return_val_if_fail (ST_IS_THEME_NODE (node_b), FALSE);
 
   if (node_a->parent_node != node_b->parent_node ||
@@ -3607,6 +3611,10 @@ st_theme_node_geometry_equal (StThemeNode *node,
   StSide side;
 
   g_return_val_if_fail (ST_IS_THEME_NODE (node), FALSE);
+
+  if (node == other)
+     return TRUE;
+
   g_return_val_if_fail (ST_IS_THEME_NODE (other), FALSE);
 
   _st_theme_node_ensure_geometry (node);
@@ -3651,6 +3659,10 @@ st_theme_node_paint_equal (StThemeNode *node,
   int i;
 
   g_return_val_if_fail (ST_IS_THEME_NODE (node), FALSE);
+
+  if (node == other)
+     return TRUE;
+
   g_return_val_if_fail (ST_IS_THEME_NODE (other), FALSE);
 
   _st_theme_node_ensure_background (node);
