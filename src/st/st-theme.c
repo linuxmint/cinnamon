@@ -87,6 +87,14 @@ enum
   PROP_DEFAULT_STYLESHEET
 };
 
+enum
+{
+  STYLESHEETS_CHANGED,
+  LAST_SIGNAL
+};
+
+static guint signals[LAST_SIGNAL] = { 0, };
+
 G_DEFINE_TYPE (StTheme, st_theme, G_TYPE_OBJECT)
 
 /* Quick strcmp.  Test only for == 0 or != 0, not < 0 or > 0.  */
@@ -153,6 +161,12 @@ st_theme_class_init (StThemeClass *klass)
                                                         NULL,
                                                         G_PARAM_READABLE | G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY));
 
+  signals[STYLESHEETS_CHANGED] = g_signal_new ("custom-stylesheets-changed",
+                                               G_TYPE_FROM_CLASS (klass),
+                                               G_SIGNAL_RUN_LAST,
+                                               0, /* no default handler slot */
+                                               NULL, NULL, NULL,
+                                               G_TYPE_NONE, 0);  
 }
 
 static CRStyleSheet *
@@ -233,6 +247,7 @@ st_theme_load_stylesheet (StTheme    *theme,
   insert_stylesheet (theme, path, stylesheet);
   cr_stylesheet_ref (stylesheet);
   theme->custom_stylesheets = g_slist_prepend (theme->custom_stylesheets, stylesheet);
+  g_signal_emit (theme, signals[STYLESHEETS_CHANGED], 0);
 
   return TRUE;
 }
@@ -254,6 +269,7 @@ st_theme_unload_stylesheet (StTheme    *theme,
   g_hash_table_remove (theme->stylesheets_by_filename, path);
   g_hash_table_remove (theme->filenames_by_stylesheet, stylesheet);
   cr_stylesheet_unref (stylesheet);
+  g_signal_emit (theme, signals[STYLESHEETS_CHANGED], 0);
 }
 
 /**

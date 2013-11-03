@@ -60,6 +60,13 @@ st_theme_node_class_init (StThemeNodeClass *klass)
   object_class->finalize = st_theme_node_finalize;
 }
 
+static void
+on_custom_stylesheets_changed (StTheme *theme,
+                               gpointer data)
+{
+  StThemeNode *node = data;
+  node->properties_computed = FALSE;
+}
 
 static void
 st_theme_node_dispose (GObject *gobject)
@@ -89,6 +96,10 @@ st_theme_node_dispose (GObject *gobject)
       g_object_unref (node->border_image);
       node->border_image = NULL;
     }
+
+  if (node->theme)
+      g_signal_handlers_disconnect_by_func (node->theme,
+                                            on_custom_stylesheets_changed, node);
 
   if (node->icon_colors)
     {
@@ -230,7 +241,11 @@ st_theme_node_new (StThemeContext    *context,
     theme = parent_node->theme;
 
   if (theme != NULL)
-    node->theme = g_object_ref (theme);
+    {
+      node->theme = g_object_ref (theme);
+      g_signal_connect (node->theme, "custom-stylesheets-changed",
+                        G_CALLBACK (on_custom_stylesheets_changed), node);
+    }
 
   node->element_type = element_type;
   node->element_id = g_strdup (element_id);
@@ -347,6 +362,10 @@ gboolean
 st_theme_node_equal (StThemeNode *node_a, StThemeNode *node_b)
 {
   g_return_val_if_fail (ST_IS_THEME_NODE (node_a), FALSE);
+
+  if (node_a == node_b)
+     return TRUE;
+
   g_return_val_if_fail (ST_IS_THEME_NODE (node_b), FALSE);
 
   if (node_a->parent_node != node_b->parent_node ||
@@ -3607,6 +3626,10 @@ st_theme_node_geometry_equal (StThemeNode *node,
   StSide side;
 
   g_return_val_if_fail (ST_IS_THEME_NODE (node), FALSE);
+
+  if (node == other)
+     return TRUE;
+
   g_return_val_if_fail (ST_IS_THEME_NODE (other), FALSE);
 
   _st_theme_node_ensure_geometry (node);
@@ -3651,6 +3674,10 @@ st_theme_node_paint_equal (StThemeNode *node,
   int i;
 
   g_return_val_if_fail (ST_IS_THEME_NODE (node), FALSE);
+
+  if (node == other)
+     return TRUE;
+
   g_return_val_if_fail (ST_IS_THEME_NODE (other), FALSE);
 
   _st_theme_node_ensure_background (node);
