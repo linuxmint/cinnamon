@@ -34,6 +34,7 @@ BackgroundManager.prototype = {
         this._cinnamonSettings.connect("changed", Lang.bind(this, this.on_settings_changed_event_cb));
 
         this.bg.load_from_preferences(this._cinnamonSettings);
+        this.draw_background();
     },
 
     draw_background: function() {
