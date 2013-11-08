@@ -793,6 +793,8 @@ WindowManager.prototype = {
         }
         else if (effect == "fade") {
             this._destroying.push(actor);
+                //Fixes ghost windows bug
+            Tweener.removeTweens(actor);
             this._fadeWindow(cinnamonwm, actor, 0, time, transition, this._destroyWindowDone, this._destroyWindowDone);
         }
         else {
