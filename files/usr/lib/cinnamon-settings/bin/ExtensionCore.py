@@ -353,6 +353,7 @@ class ExtensionSidePage (SidePage):
         self.treeview.get_selection().connect("changed", lambda x: self._selection_changed());
         self.install_list = []
         self.update_list = {}
+        self.current_num_updates = 0
 
         self.spices = Spice_Harvester(self.collection_type, self.window, self.builder, self.noun, self.pl_noun)
         # if not self.spices.get_webkit_enabled():
@@ -932,6 +933,9 @@ class ExtensionSidePage (SidePage):
 
     def refresh_update_button(self):
         num = len(self.update_list)
+        if num == self.current_num_updates:
+            return
+        self.current_num_updates = num
         if num > 0:
             if num > 1:
                 self.select_updated.set_label(_("%d updates available!") % (len(self.update_list)))
