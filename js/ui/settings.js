@@ -345,15 +345,22 @@ _provider.prototype = {
 
             let existing_settings_file = Cinnamon.get_file_contents_utf8_sync(this.settings_file.get_path());
             let existing_json;
-            let new_json;
-            try {
-                existing_json = JSON.parse(existing_settings_file);
+	    let new_json;
+            try {             
                 new_json = JSON.parse(init_file_contents);
             } catch (e) {
-                global.logError("Problem parsing settings files for " + this.uuid + "while preparing to perform upgrade");
+                global.logError("Problem parsing " + orig_file.get_path() + " while preparing to perform upgrade.");
                 global.logError("Skipping upgrade for now - something may be wrong with the new settings schema file.");
                 return false;
             }
+	    try {
+                existing_json = JSON.parse(existing_settings_file);
+            } catch (e) {
+                global.logError("Problem parsing " + this.settings_file.get_path() + " while preparing to perform upgrade.");
+                global.log("Re-creating settings file.");   
+		this.settings_file.delete(null, null);
+                return this._create_settings_file();
+            }           
             if (existing_json["__md5__"] != checksum) {
                 global.log("Updated settings file detected for " + this.uuid + ".  Beginning upgrade of existing settings");
                 return this._do_upgrade(new_json, existing_json, checksum);
