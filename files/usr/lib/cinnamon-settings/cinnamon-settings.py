@@ -48,6 +48,8 @@ WIN_H_PADDING = 20
 MIN_LABEL_WIDTH = 16
 MIN_PIX_WIDTH = 100
 
+#Icons should be used from icon theme, not hardcoded
+
 CATEGORIES = [
 #        Display name                         ID              Show it? Always False to start              Icon
     {"label": _("Appearance"),            "id": "appear",      "show": False,                       "icon": "cat-appearance.svg"},
@@ -68,16 +70,27 @@ CONTROL_CENTER_MODULES = [
     [_("Color"),                            "color",              "color.svg",                   "hardware",      True,           _("color, profile, display, printer, output")]
 ]
 
+#This could be defined in a external file for distros/maintainers to edit
 STANDALONE_MODULES = [
 #         Label                          Executable                          Icon                Category        Advanced?               Keywords for filter
+    [_("Nvidia Settings"),               "nvidia-settings",              "nvidia-settings.svg", "hardware",       True,           _("nvidia, gpu, driver, card, hardware, proprietary, video")],    
     [_("Printers"),                      "system-config-printer",        "printer.svg",         "hardware",       False,          _("printers, laser, inkjet")],    
     [_("Firewall"),                      "gufw",                         "firewall.svg",        "admin",          True,           _("firewall, block, filter, programs")],
+    [_("Domain Blocker"),                "mintnanny",                    "mintnanny.svg",       "admin",          True,           _("firewall, block, filter, programs, parental, control, website, stoper")],
     [_("Languages"),                     "gnome-language-selector",      "language.svg",        "prefs",          False,          _("language, install, foreign")],
     [_("Login Screen"),                  "gksu /usr/sbin/mdmsetup",      "login.svg",           "admin",          True,           _("login, mdm, gdm, manager, user, password, startup, switch")],
     [_("Startup Programs"),              "cinnamon-session-properties",  "startup-programs.svg","prefs",          False,          _("startup, programs, boot, init, session")],
+    [_("dconf Editor"),                  "dconf-editor",                 "prefrences.svg",      "prefs",          True,           _("dconf, editor, gschema, regestry")],
+    [_("Software Center"),               "software-center",              "ubuntu-software.svg", "admin",          False,          _("apt, ubuntu, software, apps, install, center, paid")],    
+    [_("Software Manager"),              "mintinstall",                  "mintinstall.svg",     "admin",          False,          _("apt, mint, software, apps, install, manager")],    
+    [_("Package Manager"),               "synaptic-pkexec",              "packages.svg",        "admin",          True,           _("apt, ppa, software, synaptic, install, update, remove")],    
     [_("Device Drivers"),                "mintdrivers",                  "drivers.svg",         "admin",          False,          _("video, driver, wifi, card, hardware, proprietary, nvidia, radeon, nouveau, fglrx")],
     [_("Software Sources"),              "mintsources",                  "sources.svg",         "admin",          True,           _("ppa, repository, package, source, download")],
-    [_("Users and Groups"),              "cinnamon-settings-users",      "user-accounts.svg",   "admin",          True,           _("user, users, account, accounts, group, groups, password")]
+    [_("Users and Groups"),              "cinnamon-settings-users",      "user-accounts.svg",   "admin",          True,           _("user, users, account, accounts, group, groups, password")],
+    [_("Update Manager"),                "mintupdate",                   "update.svg",          "admin",          False,          _("mint, updater, install, apt, upgrader")],
+    [_("System Logs"),                   "gnome-system-log-pkexec",      "log.svg",             "admin",          True,           _("logs, system, information, errors")],
+    [_("GParted"),                       "gparted-pkexec",               "gparted.svg",         "hardware",       True,           _("disks, partitions, formating, harddrives, ssd")],
+    [_("Disks"),                         "gnome-disks",                  "disks.svg",           "hardware",       False,          _("disks, partitions, formating, harddrives, ssd")], 
 ]
 
 def print_timing(func):
