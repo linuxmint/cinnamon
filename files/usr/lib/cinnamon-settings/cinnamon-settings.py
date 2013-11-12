@@ -91,6 +91,7 @@ STANDALONE_MODULES = [
     [_("System Logs"),                   "gnome-system-log-pkexec",      "log.svg",             "admin",          True,           _("logs, system, information, errors")],
     [_("GParted"),                       "gparted-pkexec",               "gparted.svg",         "hardware",       True,           _("disks, partitions, formating, harddrives, ssd")],
     [_("Disks"),                         "gnome-disks",                  "disks.svg",           "hardware",       False,          _("disks, partitions, formating, harddrives, ssd")], 
+    [_("Gksu Properties"),               "gksu-properties",              "prefrences.svg",      "admin",          True,           _("security, password, sudo, root")]
 ]
 
 def print_timing(func):
