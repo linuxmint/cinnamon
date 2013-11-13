@@ -184,7 +184,7 @@ WindowManager.prototype = {
         if (!actor)
             return global.settings.get_boolean("desktop-effects");
         let type = actor.meta_window.get_window_type();
-        if (type == Meta.WindowType.NORMAL) {
+        if (type == Meta.WindowType.NORMAL && !actor.meta_window.is_override_redirect()) {
             return global.settings.get_boolean("desktop-effects");
         }
         if (type == Meta.WindowType.DIALOG || type == Meta.WindowType.MODAL_DIALOG) {
@@ -676,7 +676,7 @@ WindowManager.prototype = {
             } // if window list doesn't support finding an origin
         }
         else {
-            if (actor.meta_window.get_window_type() == Meta.WindowType.NORMAL) {
+            if (actor.meta_window.get_window_type() == Meta.WindowType.NORMAL && !actor.meta_window.is_override_redirect()) {
                 Main.soundManager.play('map');
             }            
         }
@@ -722,7 +722,7 @@ WindowManager.prototype = {
 
     _destroyWindow : function(cinnamonwm, actor) {  
         
-        if (actor.meta_window.get_window_type() == Meta.WindowType.NORMAL) {
+        if (actor.meta_window.get_window_type() == Meta.WindowType.NORMAL && !actor.meta_window.is_override_redirect()) {
             Main.soundManager.play('close');
         }
 
