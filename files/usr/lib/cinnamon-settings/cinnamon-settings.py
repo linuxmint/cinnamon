@@ -46,7 +46,9 @@ WIN_HEIGHT = 600
 WIN_H_PADDING = 20
 
 MIN_LABEL_WIDTH = 16
+MAX_LABEL_WIDTH = 25
 MIN_PIX_WIDTH = 100
+MAX_PIX_WIDTH = 160
 
 CATEGORIES = [
 #        Display name                         ID              Show it? Always False to start              Icon
@@ -233,6 +235,11 @@ class MainWindow:
         self.min_label_length = max(self.min_label_length, MIN_LABEL_WIDTH)
         self.min_pix_length = max(self.min_pix_length, MIN_PIX_WIDTH)
 
+        self.min_label_length = min(self.min_label_length, MAX_LABEL_WIDTH)
+        self.min_pix_length = min(self.min_pix_length, MAX_PIX_WIDTH)
+
+        print self.min_label_length, self.min_pix_length, "what"
+
         self.displayCategories()
 
         # set up larger components.
@@ -368,7 +375,7 @@ class MainWindow:
 
         widget.set_item_width(self.min_pix_length)
         pixbuf_renderer = Gtk.CellRendererPixbuf()
-        text_renderer = Gtk.CellRendererText(ellipsize=Pango.EllipsizeMode.NONE, wrap_mode=Pango.WrapMode.WORD, wrap_width=0, width_chars=self.min_label_length, alignment=Pango.Alignment.CENTER)
+        text_renderer = Gtk.CellRendererText(ellipsize=Pango.EllipsizeMode.NONE, wrap_mode=Pango.WrapMode.WORD_CHAR, wrap_width=0, width_chars=self.min_label_length, alignment=Pango.Alignment.CENTER)
 
         text_renderer.set_alignment(.5, 0)
         area.pack_start(pixbuf_renderer, True, True, False)
