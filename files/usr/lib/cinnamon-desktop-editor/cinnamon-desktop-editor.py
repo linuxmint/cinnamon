@@ -4,7 +4,7 @@ import sys
 import os
 import gettext
 import glob
-from gi.repository import GLib, Gtk, Gio, GMenu
+from gi.repository import GLib, Gtk, Gio, GMenu, GdkPixbuf
 from optparse import OptionParser
 import shutil
 
@@ -108,10 +108,23 @@ class IconPicker(object):
         filter.add_pixbuf_formats ();
         chooser.set_filter(filter);
 
+        preview = Gtk.Image()
+        chooser.set_preview_widget(preview)
+        chooser.connect("update-preview", self.update_icon_preview_cb, preview)
+
         response = chooser.run()
         if response == Gtk.ResponseType.ACCEPT:
             self.image.props.file = chooser.get_filename()
         chooser.destroy()
+
+    def update_icon_preview_cb(self, chooser, preview):
+        filename = chooser.get_preview_filename()
+        chooser.set_preview_widget_active(False)
+        if os.path.isfile(filename):
+            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(filename, 128, 128)
+            if pixbuf is not None:
+                preview.set_from_pixbuf(pixbuf)
+                chooser.set_preview_widget_active(True)
 
 class ItemEditor(object):
     ui_file = None
