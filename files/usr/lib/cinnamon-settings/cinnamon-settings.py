@@ -238,8 +238,6 @@ class MainWindow:
         self.min_label_length = min(self.min_label_length, MAX_LABEL_WIDTH)
         self.min_pix_length = min(self.min_pix_length, MAX_PIX_WIDTH)
 
-        print self.min_label_length, self.min_pix_length, "what"
-
         self.displayCategories()
 
         # set up larger components.

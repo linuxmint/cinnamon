@@ -333,11 +333,12 @@ class ExtensionSidePage (SidePage):
         buttonbox = Gtk.ButtonBox.new(Gtk.Orientation.HORIZONTAL)
         buttonbox.set_spacing(6)
         self.install_button = Gtk.Button(_("  Install or update selected"))
-        self.select_updated = Gtk.Button("  Select updated")
+        self.select_updated = Gtk.Button("Select updated")
 
         b, w, h = Gtk.icon_size_lookup(Gtk.IconSize.BUTTON)
         pb = GdkPixbuf.Pixbuf.new_from_file_at_size("/usr/lib/cinnamon-settings/data/update.svg", w, h)
         img = Gtk.Image.new_from_pixbuf(pb)
+        img.set_padding(5, -1)
         self.select_updated.set_image(img)
         reload_button = Gtk.Button(_("Refresh list"))
         buttonbox.pack_start(self.install_button, False, False, 2)
@@ -350,6 +351,7 @@ class ExtensionSidePage (SidePage):
         self.install_button.connect("clicked", lambda x: self.install_extensions())
         self.select_updated.connect("clicked", lambda x: self.select_updated_extensions())
         self.select_updated.hide()
+        self.select_updated.set_no_show_all(True)
         self.treeview.get_selection().connect("changed", lambda x: self._selection_changed());
         self.install_list = []
         self.update_list = {}
