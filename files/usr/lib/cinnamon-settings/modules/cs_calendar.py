@@ -175,7 +175,7 @@ class ChangeTimeWidget(Gtk.HBox):
         self._time_to_set = None
         
         self.thirtyDays = [3, 5, 8, 10]
-        months = ['January','February','March','April','May','June','July','August','September','October','November','December']
+        months = [_('January'),_('February'),_('March'),_('April'),_('May'),_('June'),_('July'),_('August'),_('September'),_('October'),_('November'),_('December')]
         
         # Boxes
         timeBox = Gtk.HBox()
