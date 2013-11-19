@@ -88,10 +88,10 @@ def createSystemInfos():
     infos.append((_("Linux Kernel"), platform.release()))
     infos.append((_("Processor"), processorName))
     if memunit == "kB":
-        infos.append((_("Memory"), '%.1f GiB' % (float(memsize)/(1024*1024))))
+        infos.append((_("Memory"), '%.1f %s' % ((float(memsize)/(1024*1024)), _("GiB"))))
     else:
         infos.append((_("Memory"), procInfos['mem_total']))
-    infos.append((_("Hard Drive"), '%.1f GB' % (getDiskSize() / (1000*1000))))
+    infos.append((_("Hard Drive"), '%.1f %s' % ((getDiskSize() / (1000*1000)), _("GB"))))
 
     cards = getGraphicsInfos()
     for card in cards:
