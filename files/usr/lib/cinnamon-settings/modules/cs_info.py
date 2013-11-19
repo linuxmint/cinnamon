@@ -72,25 +72,30 @@ def createSystemInfos():
     procInfos = getProcInfos()
     infos = []
     (dname, dversion, dsuffix) = platform.linux_distribution()
-    arch = platform.machine().replace("_", "-")
+    arch = platform.machine().replace("_", "-")    
     (memsize, memunit) = procInfos['mem_total'].split(" ")
     processorName = procInfos['cpu_name'].replace("(R)", u"\u00A9").replace("(TM)", u"\u2122")
     if 'cpu_cores' in procInfos:
         processorName = processorName + " x " + procInfos['cpu_cores']
     
-    infos.append((_('Device Name'), platform.node()))
-    infos.append((_('Distribution'), dname + " " + dversion +  ": " + dsuffix + " (" + arch + ")"))
-    infos.append((_('Kernel / Build'), platform.release() + " / " + platform.version()))
-    infos.append((_('Processor'), processorName))
-    if memunit == "kB":
-        infos.append((_('Memory'), '%.1f GiB' % (float(memsize)/(1024*1024))))
+    if os.path.exists("/etc/linuxmint/info"):
+        title = commands.getoutput("awk -F \"=\" '/GRUB_TITLE/ {print $2}' /etc/linuxmint/info")
+        infos.append((_("Operating System"), title))    
     else:
-        infos.append((_('Memory'), procInfos['mem_total']))
-    infos.append((_('Disk Size'), '%.1f GB' % (getDiskSize() / (1000*1000))))
+        infos.append((_("Operating System"), dname + " " + dversion +  " '" + dsuffix.title() + "' (" + arch + ")"))    
+    if 'CINNAMON_VERSION' in os.environ:            
+        infos.append((_("Cinnamon Version"), os.environ['CINNAMON_VERSION']))
+    infos.append((_("Linux Kernel"), platform.release()))
+    infos.append((_("Processor"), processorName))
+    if memunit == "kB":
+        infos.append((_("Memory"), '%.1f GiB' % (float(memsize)/(1024*1024))))
+    else:
+        infos.append((_("Memory"), procInfos['mem_total']))
+    infos.append((_("Hard Drive"), '%.1f GB' % (getDiskSize() / (1000*1000))))
 
     cards = getGraphicsInfos()
     for card in cards:
-        infos.append((_('Graphics Card %s') % card, cards[card]))
+        infos.append((_("Graphics Card"), cards[card]))
 
     return infos
 
@@ -103,16 +108,7 @@ class Module:
         self.name = "info"
         self.category = "hardware"
         
-        infos = createSystemInfos()
-        
-        image = Gtk.Image()
-        image.set_from_file("/usr/lib/cinnamon-settings/data/cinnamon.png")
-        sidePage.add_widget(image, False)
-        
-        label = Gtk.Label("?")
-        if 'CINNAMON_VERSION' in os.environ:
-            label.set_markup('<span size="12000">%s: %s\n</span>' % (_("Version"), os.environ['CINNAMON_VERSION']))
-        sidePage.add_widget(label, False)
+        infos = createSystemInfos()                        
         
         table = Gtk.Table(len(infos), 2, False)
         table.set_row_spacings(8)

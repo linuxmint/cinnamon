@@ -179,7 +179,7 @@ class Spice_Harvester:
         if not os.path.exists(screenshot_path):
             f = open(screenshot_path, 'w')
             self.download_url = URL_SPICES_HOME + appletData['screenshot']
-            self.download_with_progressbar(f, screenshot_path, _('Downloading screenshot'), False)
+            self.download_with_progressbar(f, screenshot_path, _("Downloading screenshot"), False)
 
         template = open(os.path.realpath(os.path.dirname(os.path.abspath(__file__)) + "/../data/spices/applet-detail.html")).read()
         subs = {}
@@ -589,7 +589,7 @@ class Spice_Harvester:
             self.progress_window.hide()
             if self.abort_download == ABORT_ERROR:
                 self.errorMessage(_("An error occurred while trying to access the server.  Please try again in a little while."), self.error)
-            raise Exception(_('Download aborted.'))
+            raise Exception(_("Download aborted."))
 
         return outfile
 
