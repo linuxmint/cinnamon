@@ -288,11 +288,18 @@ MyApplet.prototype = {
             let position = 0;
             for (let i = 0; i < devices.length; i++) {
                 let [device_id, device_type] = devices[i];
+
+                if (device_type == UPDeviceType.AC_POWER) {
+                    this.set_applet_tooltip(_("AC adapter"));
+                }
+                else if (device_type == UPDeviceType.BATTERY) {
+                    this.set_applet_tooltip(_("Laptop battery"));
+                }
+
                 if (device_type == UPDeviceType.AC_POWER || device_id == this._primaryDeviceId)
                     continue;
 
                 let item = new DeviceItem (devices[i]);
-                this.set_applet_tooltip(item._label.text);
                 this._deviceItems.push(item);
                 this.menu.addMenuItem(item, this._otherDevicePosition + position);
                 position++;
