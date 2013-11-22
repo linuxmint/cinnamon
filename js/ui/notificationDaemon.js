@@ -570,7 +570,16 @@ Source.prototype = {
         // notification-based icons (ie, not a trayicon) or if it was unset before
         if (!this.trayIcon) {
             this.useNotificationIcon = false;
-            this._setSummaryIcon(this.app.create_icon_texture (this.ICON_SIZE));
+            
+            let icon = null;                
+            if (this.app.get_app_info() != null && this.app.get_app_info().get_icon() != null) {
+                icon = new St.Icon({gicon: this.app.get_app_info().get_icon(), icon_size: this.ICON_SIZE, icon_type: St.IconType.FULLCOLOR});
+            }
+            if (icon == null) {
+                icon = new St.Icon({icon_name: "application-x-executable", icon_size: this.ICON_SIZE, icon_type: St.IconType.FULLCOLOR});        
+            }            
+
+            this._setSummaryIcon(icon);
         }
     },
 

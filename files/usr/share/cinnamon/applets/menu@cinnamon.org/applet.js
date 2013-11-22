@@ -351,7 +351,15 @@ ApplicationButton.prototype = {
         GenericApplicationButton.prototype._init.call(this, appsMenuButton, app, true);
         this.category = new Array();
         this.actor.set_style_class_name('menu-application-button');
-        this.icon = this.app.create_icon_texture(APPLICATION_ICON_SIZE);
+
+        this.icon = null;                
+        if (this.app.get_app_info() != null && this.app.get_app_info().get_icon() != null) {
+            this.icon = new St.Icon({gicon: this.app.get_app_info().get_icon(), icon_size: APPLICATION_ICON_SIZE, icon_type: St.IconType.FULLCOLOR});
+        }
+        if (this.icon == null) {
+            this.icon = new St.Icon({icon_name: "application-x-executable", icon_size: APPLICATION_ICON_SIZE, icon_type: St.IconType.FULLCOLOR});        
+        }
+
         this.addActor(this.icon);
         this.name = this.app.get_name();
         this.label = new St.Label({ text: this.name, style_class: 'menu-application-button-label' });
@@ -575,8 +583,16 @@ FavoritesButton.prototype = {
         if (icon_size>MAX_FAV_ICON_SIZE) icon_size = MAX_FAV_ICON_SIZE;
         this.actor.style = "padding-top: "+(icon_size/3)+"px;padding-bottom: "+(icon_size/3)+"px; margin:auto;"
 
-        this.actor.add_style_class_name('menu-favorites-button');
-        let icon = app.create_icon_texture(icon_size);
+        this.actor.add_style_class_name('menu-favorites-button');    
+
+        let icon = null;                
+        if (app.get_app_info() != null && app.get_app_info().get_icon() != null) {
+            icon = new St.Icon({gicon: app.get_app_info().get_icon(), icon_size: icon_size, icon_type: St.IconType.FULLCOLOR});
+        }
+        if (icon == null) {
+            icon = new St.Icon({icon_name: "application-x-executable", icon_size: icon_size, icon_type: St.IconType.FULLCOLOR});        
+        }
+
         this.addActor(icon);
         icon.realize()
 

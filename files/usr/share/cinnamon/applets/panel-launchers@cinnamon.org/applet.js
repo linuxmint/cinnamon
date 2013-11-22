@@ -167,8 +167,19 @@ PanelAppLauncher.prototype = {
     },
 
     _getIconActor: function() {
-        if (this.isCustom()) return St.TextureCache.get_default().load_gicon(null, this.appinfo.get_icon(), this.icon_height);
-        else return this.app.create_icon_texture(this.icon_height);
+        if (this.isCustom()) {
+            return St.TextureCache.get_default().load_gicon(null, this.appinfo.get_icon(), this.icon_height);
+        }
+        else {
+            let icon = null;                
+            if (this.app.get_app_info() != null && this.app.get_app_info().get_icon() != null) {
+                icon = new St.Icon({gicon: this.app.get_app_info().get_icon(), icon_size: this.icon_height, icon_type: St.IconType.FULLCOLOR});
+            }
+            if (icon == null) {
+                icon = new St.Icon({icon_name: "application-x-executable", icon_size: this.icon_height, icon_type: St.IconType.FULLCOLOR});        
+            }
+            return icon;
+        }
     },
 
     _animateIcon: function(step){
