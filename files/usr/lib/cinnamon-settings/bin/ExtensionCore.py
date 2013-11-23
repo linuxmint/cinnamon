@@ -333,7 +333,7 @@ class ExtensionSidePage (SidePage):
         buttonbox = Gtk.ButtonBox.new(Gtk.Orientation.HORIZONTAL)
         buttonbox.set_spacing(6)
         self.install_button = Gtk.Button(_("  Install or update selected"))
-        self.select_updated = Gtk.Button("Select updated")
+        self.select_updated = Gtk.Button("  Select updated")
 
         b, w, h = Gtk.icon_size_lookup(Gtk.IconSize.BUTTON)
         pb = GdkPixbuf.Pixbuf.new_from_file_at_size("/usr/lib/cinnamon-settings/data/update.svg", w, h)
