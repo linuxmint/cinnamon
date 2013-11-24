@@ -167,19 +167,8 @@ PanelAppLauncher.prototype = {
     },
 
     _getIconActor: function() {
-        if (this.isCustom()) {
-            return St.TextureCache.get_default().load_gicon(null, this.appinfo.get_icon(), this.icon_height);
-        }
-        else {
-            let icon = null;                
-            if (this.app.get_app_info() != null && this.app.get_app_info().get_icon() != null) {
-                icon = new St.Icon({gicon: this.app.get_app_info().get_icon(), icon_size: this.icon_height, icon_type: St.IconType.FULLCOLOR});
-            }
-            if (icon == null) {
-                icon = new St.Icon({icon_name: "application-x-executable", icon_size: this.icon_height, icon_type: St.IconType.FULLCOLOR});        
-            }
-            return icon;
-        }
+        if (this.isCustom()) return St.TextureCache.get_default().load_gicon(null, this.appinfo.get_icon(), this.icon_height);
+        else return this.app.create_icon_texture(this.icon_height);
     },
 
     _animateIcon: function(step){
@@ -307,6 +296,8 @@ MyApplet.prototype = {
             this.actor.add(this.myactor);
             this.actor.reactive = global.settings.get_boolean(PANEL_EDIT_MODE_KEY);
             global.settings.connect('changed::' + PANEL_EDIT_MODE_KEY, Lang.bind(this, this._onPanelEditModeChanged));
+
+            St.TextureCache.get_default().connect("icon-theme-changed", Lang.bind(this, this.reload));
         }
         catch (e) {
             global.logError(e);
