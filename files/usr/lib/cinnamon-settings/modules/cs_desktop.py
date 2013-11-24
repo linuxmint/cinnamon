@@ -12,6 +12,8 @@ class Module:
         self.name = "desktop"
         self.category = "prefs"
 
+        self.sidePage.add_widget(GSettingsCheckButton(_("Display notifications"), "org.cinnamon", "display-notifications", None))
+
     def _loadCheck(self):
         if 'org.nemo' in Gio.Settings.list_schemas():
             nemo_desktop_schema = Gio.Settings.new("org.nemo.desktop")
