@@ -920,7 +920,7 @@ MyApplet.prototype = {
     },
     
     _launch_editor: function() {
-        Util.spawnCommandLine("cinnamon-menu-editor");
+        Util.spawnCommandLine("cinnamon-settings menu");
     },
     
     on_applet_clicked: function(event) {        
