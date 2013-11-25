@@ -129,6 +129,8 @@ class CustomAppChooserButton(Gtk.AppChooserButton):
         self.media_settings = media_settings
         content_type = self.get_content_type()
 
+        self.set_show_default_item(True)
+
         #fetch preferences for this content type
         (pref_start_app, pref_ignore, pref_open_folder) = self.getPreferences()
         pref_ask = not pref_start_app and not pref_ignore and not pref_open_folder
