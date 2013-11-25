@@ -26,7 +26,7 @@ _ = gettext.gettext
 class Module:
     def __init__(self, content_box):
         keywords = _("menu, desktop, alacarte")
-        advanced = False
+        advanced = True
         sidePage = SidePage(_("Menu Editor"), "menu.svg", keywords, advanced, content_box)
         self.sidePage = sidePage
         self.name = "menu"
@@ -46,7 +46,7 @@ class Module:
         #sidePage.add_widget(GSettingsSpinButton(_("Menu hover delay"), "org.cinnamon", "menu-hover-delay", None, 0, 2000, 50, 200, _("milliseconds")), True)
     
         mew = MenuEditorWidget(datadir, version)
-        self.sidePage.add_widget(mew.vbox, True)
+        self.sidePage.add_widget(mew.vbox, False)
         mew.vbox.show_all()
 
 class MenuEditorWidget(MainWindow):
