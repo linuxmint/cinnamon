@@ -93,13 +93,16 @@ do_grab_screenshot (_screenshot_data *screenshot_data,
   CinnamonScreenGrabber *grabber;
   static const cairo_user_data_key_t key;
   guchar *data;
+  int stride;
 
   grabber = cinnamon_screen_grabber_new ();
   data = cinnamon_screen_grabber_grab (grabber, x, y, width, height);
   g_object_unref (grabber);
+  
+  stride = cairo_format_stride_for_width (CAIRO_FORMAT_RGB24, width);
 
   screenshot_data->image = cairo_image_surface_create_for_data (data, CAIRO_FORMAT_RGB24,
-                                                               width, height, width * 4);
+                                                               width, height,stride);
   cairo_surface_set_user_data (screenshot_data->image, &key,
                                data, (cairo_destroy_func_t)g_free);
 }
