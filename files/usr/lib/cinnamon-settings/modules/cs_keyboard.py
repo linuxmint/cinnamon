@@ -340,6 +340,12 @@ class KeyboardSidePage (SidePage):
         self.notebook = Gtk.Notebook()
 
         tab = NotebookPage(_("Typing"), False)
+        head1l = "Key Repeat Settings"
+        head1 = Gtk.Label((""))
+        head1.set_markup('<b>%s</b>' %(head1l))
+        head1.set_alignment(xalign=0, yalign=0)
+        tab.add_widget(head1)
+        tab.add_widget(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))
         tab.add_widget(GSettingsCheckButton(_("Enable key repeat"), "org.cinnamon.settings-daemon.peripherals.keyboard", "repeat", None))
         box = IndentedHBox()
         slider = GSettingsRange(_("Repeat delay:"), _("Short"), _("Long"), 100, 2000, False, "uint", False, "org.cinnamon.settings-daemon.peripherals.keyboard", "delay",
@@ -351,6 +357,12 @@ class KeyboardSidePage (SidePage):
                                                                         "org.cinnamon.settings-daemon.peripherals.keyboard/repeat", adjustment_step = 1)
         box.pack_start(slider, True, True, 0)
         tab.add_widget(box)
+        tab.add_widget(Gtk.Label(("")))
+        head2l = "Cursor Blink Settings"
+        head2 = Gtk.Label((""))
+        head2.set_markup('<b>%s</b>' %(head2l))
+        head2.set_alignment(xalign=0, yalign=0)
+        tab.add_widget(head2)
         tab.add_widget(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))
         
         tab.add_widget(GSettingsCheckButton(_("Text cursor blinks"), "org.cinnamon.desktop.interface", "cursor-blink", None))
@@ -359,8 +371,13 @@ class KeyboardSidePage (SidePage):
                                                                         "org.cinnamon.desktop.interface/cursor-blink", adjustment_step = 10)
         box.pack_start(slider, True, True, 0)
         tab.add_widget(box)
+        tab.add_widget(Gtk.Label(("")))
+        head3l = "Test Box"
+        head3 = Gtk.Label((""))
+        head3.set_markup('<b>%s</b>' %(head3l))
+        head3.set_alignment(xalign=0, yalign=0)
+        tab.add_widget(head3)
         tab.add_widget(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))
-        tab.add_widget(Gtk.Label(_("Test Box")))
         tab.add_widget(Gtk.Entry())
         self.addNotebookTab(tab)
 
