@@ -340,9 +340,8 @@ class KeyboardSidePage (SidePage):
         self.notebook = Gtk.Notebook()
 
         tab = NotebookPage(_("Typing"), False)
-        head1l = "Key Repeat Settings"
         head1 = Gtk.Label((""))
-        head1.set_markup('<b>%s</b>' %(head1l))
+        head1.set_markup('<b>%s</b>' % _("Key Repeat Settings"))
         head1.set_alignment(xalign=0, yalign=0)
         tab.add_widget(head1)
         tab.add_widget(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))
@@ -358,9 +357,8 @@ class KeyboardSidePage (SidePage):
         box.pack_start(slider, True, True, 0)
         tab.add_widget(box)
         tab.add_widget(Gtk.Label(("")))
-        head2l = "Cursor Blink Settings"
         head2 = Gtk.Label((""))
-        head2.set_markup('<b>%s</b>' %(head2l))
+        head2.set_markup('<b>%s</b>' % _("Cursor Blink Settings"))
         head2.set_alignment(xalign=0, yalign=0)
         tab.add_widget(head2)
         tab.add_widget(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))
@@ -372,9 +370,8 @@ class KeyboardSidePage (SidePage):
         box.pack_start(slider, True, True, 0)
         tab.add_widget(box)
         tab.add_widget(Gtk.Label(("")))
-        head3l = "Test Box"
         head3 = Gtk.Label((""))
-        head3.set_markup('<b>%s</b>' %(head3l))
+        head3.set_markup('<b>%s</b>' % _("Test Box"))
         head3.set_alignment(xalign=0, yalign=0)
         tab.add_widget(head3)
         tab.add_widget(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))
