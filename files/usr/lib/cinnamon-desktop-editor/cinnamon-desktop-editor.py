@@ -21,6 +21,12 @@ PANEL_LAUNCHER_PATH = os.path.join(home, ".cinnamon", "panel-launchers")
 
 EXTENSIONS = (".png", ".xpm", ".svg")
 
+def escape_space(string):
+    return string.replace(" ", "\ ")
+
+def unescape_space(string):
+    return string.replace("\ ", " ")
+
 def try_icon_name(filename):
     # Detect if the user picked an icon, and make
     # it into an icon name.
@@ -160,7 +166,7 @@ class ItemEditor(object):
         except GLib.GError:
             pass
         else:
-            self.builder.get_object(ctl).set_text(val)
+            self.builder.get_object(ctl).set_text(unescape_space(val))
 
     def set_check(self, ctl, name):
         try:
@@ -191,7 +197,7 @@ class ItemEditor(object):
         contents, length = self.keyfile.to_data()
         need_exec = False
         if self.destdir is not None:
-            self.item_path = os.path.join(self.destdir, (self.builder.get_object('name-entry').get_text() + ".desktop"))
+            self.item_path = os.path.join(self.destdir, self.builder.get_object('name-entry').get_text() + ".desktop")
             need_exec = True
 
         try:
@@ -244,7 +250,7 @@ class LauncherEditor(ItemEditor):
 
     def get_keyfile_edits(self):
         return dict(Name=self.builder.get_object('name-entry').get_text(),
-                    Exec=self.builder.get_object('exec-entry').get_text(),
+                    Exec=escape_space(self.builder.get_object('exec-entry').get_text()),
                     Comment=self.builder.get_object('comment-entry').get_text(),
                     Terminal=self.builder.get_object('terminal-check').get_active(),
                     Icon=get_icon_string(self.builder.get_object('icon-image')),
@@ -339,7 +345,7 @@ class PanelLauncherEditor(ItemEditor):
 
     def get_keyfile_edits(self):
         return dict(Name=self.builder.get_object('name-entry').get_text(),
-                    Exec=self.builder.get_object('exec-entry').get_text(),
+                    Exec=escape_space(self.builder.get_object('exec-entry').get_text()),
                     Comment=self.builder.get_object('comment-entry').get_text(),
                     Terminal=self.builder.get_object('terminal-check').get_active(),
                     Icon=get_icon_string(self.builder.get_object('icon-image')),
