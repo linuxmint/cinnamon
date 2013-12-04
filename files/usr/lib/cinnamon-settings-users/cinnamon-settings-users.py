@@ -7,6 +7,7 @@ import gettext
 import shutil
 import PIL
 from PIL import Image
+from random import randint
 
 gettext.install("cinnamon", "/usr/share/cinnamon/locale")
 
