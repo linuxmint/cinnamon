@@ -52,6 +52,7 @@ BackgroundManager.prototype = {
 
     on_settings_changed_event_cb: function() {
         this.bg.load_from_preferences(this._cinnamonSettings);
+        this.bg.set_accountsservice_background(this.bg.get_filename());
     },
 
     screen_signal_timeout_cb: function() {
