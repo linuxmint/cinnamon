@@ -508,6 +508,10 @@ PanelContextMenu.prototype = {
             this._onMovingChanged();
         }));
 
+        this.addAction(_("Add new panel"), function() {
+            Main.panelManager.panelDummy.show();
+        });
+
         let menuItem = new SettingsLauncher(_("Panel settings"), "panel " + panelID, "panel", this);
         this.addMenuItem(menuItem);
 
@@ -631,6 +635,7 @@ PanelManager.prototype = {
     _init: function() {
         this.panels = [];
         this.panelsMeta = []; // Properties of panels in format [<monitor index>, <bottomPosition>]
+        this.panelDummy = new PanelDummy();
 
         this.loadAllPanels();
 
@@ -815,6 +820,66 @@ PanelManager.prototype = {
         }));
     }
 }
+
+function PanelDummy() {
+    this._init();
+}
+
+PanelDummy.prototype = {
+    _init: function() {
+        this.preview_actor = new St.Bin({ style_class: "desklet-drag-placeholder" });
+        Main.uiGroup.add_actor(this.preview_actor);
+        this.preview_actor.hide();
+
+        this.drag_actor = new St.Bin();
+        this.drag_actor.style = "background-color: #555";
+        Main.layoutManager.addChrome(this.drag_actor);
+        Clutter.grab_pointer(this.drag_actor);
+//        Main.uiGroup.add_actor(this.drag_actor);
+        this.drag_actor.hide();
+
+    },
+
+    show: function() {
+        this.preview_actor.show();
+        this.preview_actor.raise_top();
+
+        this.drag_actor.show();
+        this.drag_actor.raise_top();
+
+        this.updatePosition();
+
+        this.event = this.drag_actor.connect("event", Lang.bind(this, this.updatePosition));
+    },
+
+    updatePosition: function() {
+        global.log("test");
+        let pointer = global.get_pointer();
+        let x = pointer[0];
+        let y = pointer[1];
+
+        let rect = new Meta.Rectangle({x: x, y: y, width: 1, height: 1});
+        let numMonitor = global.screen.get_n_monitors();
+        let monitorI = 0;
+        for (let i = 0; i < numMonitor; i ++) {
+            if (global.screen.get_monitor_geometry(i).intersect(rect)[0]) {
+                monitorI = i;
+                break;
+            }
+        }
+        let monitor = global.screen.get_monitor_geometry(monitorI);
+        let bottomPosition = (y > monitor.y + monitor.height/2) ? "bottom" : "top";
+
+        let box_y = bottomPosition ? monitor.height - 25 : 0;
+        this.preview_actor.set_size(monitor.width, 25);
+        this.preview_actor.set_position(0, box_y);
+        this.preview_actor.raise_top();
+
+        this.drag_actor.set_size(monitor.width, 25);
+        this.drag_actor.set_position(x - monitor.width/2, y - 12);
+    }
+}
+
 function Panel(bottomPosition, panelID, monitorIndex) {
     this._init(bottomPosition, panelID, monitorIndex);
 }
