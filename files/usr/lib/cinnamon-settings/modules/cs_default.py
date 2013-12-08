@@ -27,7 +27,7 @@ preferred_app_defs = [
     # hence the "*" pattern
     ( "x-scheme-handler/http",   "x-scheme-handler/http",      _("_Web") ),
     ( "x-scheme-handler/mailto", "x-scheme-handler/mailto",    _("_Mail") ),
-    ( "text/calendar",           "text/calendar",              _("_Calendar") ),
+    ( "text/plain",              "text",                       _("Text") ), #TODO: Add mnemonic once we're out of M16 release to preserve i18n for now
 
     # 1st mimetype is to let us find apps
     # 2nd mimetype is to set default handler for (so we handle all of that type, not just a specific format)
