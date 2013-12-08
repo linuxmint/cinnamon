@@ -9,19 +9,23 @@ const Mainloop = imports.mainloop;
 const MessageTray = imports.ui.messageTray;
 const Urgency = imports.ui.messageTray.Urgency;
 const NotificationDestroyedReason = imports.ui.messageTray.NotificationDestroyedReason;
+const Settings = imports.ui.settings;
 
-function MyApplet(metadata, orientation, panel_height) {
-    this._init(metadata, orientation, panel_height);
+function MyApplet(metadata, orientation, panel_height, instance_id) {
+    this._init(metadata, orientation, panel_height, instance_id);
 }
 
 MyApplet.prototype = {
     __proto__: Applet.TextIconApplet.prototype,
 
-    _init: function(metadata, orientation, panel_height) {
-        Applet.TextIconApplet.prototype._init.call(this, orientation, panel_height);
+    _init: function(metadata, orientation, panel_height, instance_id) {
+        Applet.TextIconApplet.prototype._init.call(this, orientation, panel_height, instance_id);
 
         Gtk.IconTheme.get_default().append_search_path(metadata.path);
         this._orientation = orientation;
+
+        this.settings = new Settings.AppletSettings(this, "notifications@cinnamon.org", instance_id);
+
         this.menuManager = new PopupMenu.PopupMenuManager(this);
         this.notif_count = 0;
         this.notifications = [];
@@ -29,6 +33,12 @@ MyApplet.prototype = {
         global.settings.connect('changed::panel-edit-mode', Lang.bind(this, this.on_panel_edit_mode_changed));
         this._blinking = false;
         this._blink_toggle = false;
+
+        this.settings.bindProperty(Settings.BindingDirection.IN,
+                                   "keep-transients",
+                                   "keep_transients",
+                                   null,
+                                   null);
     },
 
     _display: function() {
@@ -80,6 +90,10 @@ MyApplet.prototype = {
     },
 
     _notification_added: function (mtray, notification) {
+        if (notification.isTransient && !this.keep_transients) {
+            notification.destroy(NotificationDestroyedReason.EXPIRED);
+            return;
+        }
         notification.actor.unparent();
         let existing_index = this.notifications.indexOf(notification);
         if (existing_index != -1) {
@@ -225,8 +239,8 @@ MyApplet.prototype = {
     }
 };
 
-function main(metadata, orientation, panel_height) {
-    let myApplet = new MyApplet(metadata, orientation, panel_height);
+function main(metadata, orientation, panel_height, instance_id) {
+    let myApplet = new MyApplet(metadata, orientation, panel_height, instance_id);
     return myApplet;
 }
 
