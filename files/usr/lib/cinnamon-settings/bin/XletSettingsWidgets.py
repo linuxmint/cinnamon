@@ -917,7 +917,22 @@ class Scale(Gtk.HBox, BaseWidget):
         self.handler = self.scale.connect('value-changed', self.on_my_value_changed)
         self.scale.show_all()
         set_tt(self.get_tooltip(), self.label, self.scale)
+        self.scale.connect("scroll-event", self.on_mouse_scroll_event)
         self._value_changed_timer = None
+
+# TODO: Should we fix this in GTK?  upscrolling should slide the slider to the right..right?
+#       This is already adjusted in Nemo as well.
+    def on_mouse_scroll_event(self, widget, event):
+        found, delta_x, delta_y = event.get_scroll_deltas()
+        if found:
+            add = delta_y < 0
+            val = widget.get_value()
+            if add:
+                val += self.get_step()
+            else:
+                val -= self.get_step()
+            widget.set_value(val)
+        return True
 
     def on_my_value_changed(self, widget):
         if self._value_changed_timer:
