@@ -475,6 +475,8 @@ IconApplet.prototype = {
      * The icon will be full color
      */
     set_applet_icon_name: function (icon_name) {
+        if (this._applet_icon_box.child) this._applet_icon_box.child.destroy();
+        this._applet_icon_box.child = null;
         if (this._scaleMode) {
             this._applet_icon = new St.Icon({icon_name: icon_name, icon_size: this._panelHeight * COLOR_ICON_HEIGHT_FACTOR,
                                             icon_type: St.IconType.FULLCOLOR, reactive: true, track_hover: true, style_class: 'applet-icon' });
@@ -495,6 +497,8 @@ IconApplet.prototype = {
      * The icon will be symbolic
      */
     set_applet_icon_symbolic_name: function (icon_name) {
+        if (this._applet_icon_box.child) this._applet_icon_box.child.destroy();
+        this._applet_icon_box.child = null;
         if (this._scaleMode) {
             let height = (this._panelHeight / DEFAULT_PANEL_HEIGHT) * PANEL_SYMBOLIC_ICON_DEFAULT_HEIGHT;
             this._applet_icon = new St.Icon({icon_name: icon_name, icon_size: height, icon_type: St.IconType.SYMBOLIC, reactive: true, track_hover: true, style_class: 'system-status-icon' });
@@ -514,7 +518,7 @@ IconApplet.prototype = {
      */
     set_applet_icon_path: function (icon_path) {
         if (this._applet_icon_box.child) this._applet_icon_box.child.destroy();
-
+        this._applet_icon_box.child = null;
         if (icon_path){
             let file = Gio.file_new_for_path(icon_path);
             let gicon = new Gio.FileIcon({ file: file });
@@ -632,10 +636,12 @@ TextIconApplet.prototype = {
      */
     set_applet_label: function (text) {
         this._applet_label.set_text(text);
-        if (text && text != "")
+        if ((text && text != "") && this._applet_icon_box.child) {
             this._applet_label.set_margin_left(6.0);
-        else
+        }
+        else {
             this._applet_label.set_margin_left(0);
+        }
     },
 
     /**

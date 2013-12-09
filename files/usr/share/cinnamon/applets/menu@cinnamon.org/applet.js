@@ -998,14 +998,18 @@ MyApplet.prototype = {
     },
 
     _updateIconAndLabel: function(){
-
-        this.set_applet_label(this.menuLabel);
-
         try {
-           this.set_applet_icon_path(this.menuIcon);
+            if (this.menuIcon == "" ||
+                (GLib.path_is_absolute(this.menuIcon) && GLib.file_test(this.menuIcon, GLib.FileTest.EXISTS)))
+                this.set_applet_icon_path(this.menuIcon);
+            else if (this.menuIcon.search("-symbolic") != -1)
+                this.set_applet_icon_symbolic_name(this.menuIcon);
+            else
+                this.set_applet_icon_name(this.menuIcon);
         } catch(e) {
            global.logWarning("Could not load icon file \""+this.menuIcon+"\" for menu button");
         }
+        this.set_applet_label(this.menuLabel);
     },
 
     _onMenuKeyPress: function(actor, event) {
