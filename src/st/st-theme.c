@@ -184,7 +184,11 @@ parse_stylesheet (const char  *filename,
                                            &stylesheet);
 
   if (status != CR_OK)
+    {
+      g_set_error (error, G_IO_ERROR, G_IO_ERROR_FAILED,
+                   "Error parsing stylesheet '%s'; errcode:%d", filename, status);
       return NULL;
+    }
 
   return stylesheet;
 }
@@ -236,7 +240,7 @@ st_theme_load_stylesheet (StTheme    *theme,
 {
   CRStyleSheet *stylesheet;
 
-  stylesheet = parse_stylesheet (path, error);
+  stylesheet = parse_stylesheet_nofail (path);
   if (!stylesheet)
     return FALSE;
 
