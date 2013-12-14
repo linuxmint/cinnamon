@@ -766,14 +766,17 @@ function setThemeStylesheet(cssStylesheet)
  */
 function loadTheme() {
     let themeContext = St.ThemeContext.get_for_stage (global.stage);
-
-    let cssStylesheet = _defaultCssStylesheet;
-    if (_cssStylesheet != null)
-        cssStylesheet = _cssStylesheet;
-
     let theme = new St.Theme ();
-    theme.load_stylesheet(cssStylesheet);
-    
+
+    if (_cssStylesheet != null && theme.load_stylesheet(_cssStylesheet)) {
+        cssStylesheet = _cssStylesheet;
+    } else {
+        theme.load_stylesheet(_defaultCssStylesheet);
+        cssStylesheet = _defaultCssStylesheet;
+        if (_cssStylesheet != null)
+            global.logError("There was some problem parsing the theme: " + _cssStylesheet + ".  Falling back to the default theme.");
+    }
+
     themeContext.set_theme (theme);
 }
 

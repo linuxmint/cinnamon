@@ -47,9 +47,6 @@ ThemeManager.prototype = {
     
         if (_themeName) {
             _stylesheet = this._findTheme(_themeName, '/cinnamon/cinnamon.css');
-            if (_stylesheet == null) {
-                _stylesheet = this._findTheme(_themeName, '/gnome-shell/gnome-shell.css');
-            }                    
         }
 
         if (_stylesheet)

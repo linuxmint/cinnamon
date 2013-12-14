@@ -184,11 +184,7 @@ parse_stylesheet (const char  *filename,
                                            &stylesheet);
 
   if (status != CR_OK)
-    {
-      g_set_error (error, G_IO_ERROR, G_IO_ERROR_FAILED,
-                   "Error parsing stylesheet '%s'; errcode:%d", filename, status);
       return NULL;
-    }
 
   return stylesheet;
 }
