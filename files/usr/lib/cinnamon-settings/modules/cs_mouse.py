@@ -15,7 +15,7 @@ class Module:
 
 class MouseTouchpadSidepage (SidePage):
     def __init__(self, name, icon, keywords, advanced, content_box):
-        SidePage.__init__(self, name, icon, keywords, advanced, content_box, 350)
+        SidePage.__init__(self, name, icon, keywords, advanced, content_box, 360)
         self.tabs = []
         self.mousebox = Gtk.VBox()
         self.touchbox = Gtk.VBox()
@@ -24,9 +24,12 @@ class MouseTouchpadSidepage (SidePage):
 
         mouse = Gtk.ScrolledWindow()
         mouse.add_with_viewport(self.mousebox)
+        self.mousebox.set_border_width(5)
 
         touch = Gtk.ScrolledWindow()
         touch.add_with_viewport(self.touchbox)
+        self.touchbox.set_border_width(5)
+        
         self.notebook.append_page(mouse, Gtk.Label(_("Mouse")))
         self.notebook.append_page(touch, Gtk.Label(_("Touchpad")))
 
