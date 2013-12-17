@@ -477,12 +477,12 @@ cinnamon_global_class_init (CinnamonGlobalClass *klass)
                                                         G_PARAM_READABLE));
 }
 
-/**•
- * _cinnamon_global_init: (skip)•
+/**
+ * _cinnamon_global_init: (skip)
  * @first_property_name: the name of the first property
  * @...: the value of the first property, followed optionally by more
  *  name/value pairs, followed by %NULL
- *•
+ *
  * Initializes Cinnamon global singleton with the construction-time
  * properties.
  *
