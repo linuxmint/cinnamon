@@ -767,14 +767,15 @@ function setThemeStylesheet(cssStylesheet)
 function loadTheme() {
     let themeContext = St.ThemeContext.get_for_stage (global.stage);
     let theme = new St.Theme ();
-
-    if (_cssStylesheet != null && theme.load_stylesheet(_cssStylesheet)) {
-        cssStylesheet = _cssStylesheet;
-    } else {
+    let stylesheetLoaded = false;
+    if (_cssStylesheet != null) {
+        stylesheetLoaded = theme.load_stylesheet(_cssStylesheet);
+    }
+    if (!stylesheetLoaded) {
         theme.load_stylesheet(_defaultCssStylesheet);
-        cssStylesheet = _defaultCssStylesheet;
-        if (_cssStylesheet != null)
+        if (_cssStylesheet != null) {
             global.logError("There was some problem parsing the theme: " + _cssStylesheet + ".  Falling back to the default theme.");
+        }
     }
 
     themeContext.set_theme (theme);
