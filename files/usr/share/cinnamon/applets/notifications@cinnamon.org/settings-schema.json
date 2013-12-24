@@ -1,9 +1,0 @@
-{
- "keep-transients": {
-    "type": "checkbox",
-    "default" : true,
-    "description" : "Collect all notifications",
-    "tooltip" : "If this is checked, all notifications, including transients, are sent to the tray"
- }
-}
-
