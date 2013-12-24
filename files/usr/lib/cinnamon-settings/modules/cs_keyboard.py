@@ -587,7 +587,13 @@ class KeyboardSidePage (SidePage):
         for category in self.main_store:
             for keybinding in category.keybindings:
                 for entry in keybinding.entries:
-                    if accel_string == entry and keybinding.label != current_keybinding.label:
+                    found = False
+                    if accel_string == entry:
+                        found = True
+                    elif accel_string.replace("<Primary>", "<Control>") == entry:
+                        found = True
+
+                    if found and keybinding.label != current_keybinding.label:
                         dialog = Gtk.MessageDialog(None,
                                     Gtk.DialogFlags.DESTROY_WITH_PARENT,
                                     Gtk.MessageType.QUESTION,
@@ -602,7 +608,7 @@ class KeyboardSidePage (SidePage):
                         response = dialog.run()
                         dialog.destroy()
                         if response == Gtk.ResponseType.YES:
-                            keybinding.setBinding(keybinding.entries.index(accel_string), None)
+                            keybinding.setBinding(keybinding.entries.index(entry), None)
                         elif response == Gtk.ResponseType.NO:
                             return
         current_keybinding.setBinding(int(path), accel_string)
