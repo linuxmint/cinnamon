@@ -278,7 +278,7 @@ AppMenuButton.prototype = {
       
         this.actor._delegate = this;
         this.actor.connect('button-release-event', Lang.bind(this, this._onButtonRelease));
-
+        this.actor.connect('button-press-event', Lang.bind(this, this._onButtonPress));
 		this.metaWindow = metaWindow;	
 
         this._applet = applet;
@@ -478,23 +478,30 @@ AppMenuButton.prototype = {
 
     _onButtonRelease: function(actor, event) {
         this._tooltip.hide();
-        if (!this._draggable) {
-            if ( Cinnamon.get_event_state(event) & Clutter.ModifierType.BUTTON1_MASK ) {
-                this._windowHandle(false);
-            }
-            return;
-        }
-        if ( Cinnamon.get_event_state(event) & Clutter.ModifierType.BUTTON1_MASK ) {
+        if (!this._draggable)
+            return false;
+
+        if (event.get_button() == 1) {
             if ( this.rightClickMenu.isOpen ) {
                 this.rightClickMenu.toggle();
             }
             this._windowHandle(false);
-        } else if (Cinnamon.get_event_state(event) & Clutter.ModifierType.BUTTON2_MASK) {
+        } else if (event.get_button() == 2)
             this.metaWindow.delete(global.get_current_time());
-        } else if (Cinnamon.get_event_state(event) & Clutter.ModifierType.BUTTON3_MASK) {
+        return true;
+    },
+
+    _onButtonPress: function(actor, event) {
+        this._tooltip.hide();
+        if (!this._draggable) {
+            return false;
+        }
+        if (event.get_button() == 3) {
             this.rightClickMenu.mouseEvent = event;
-            this.rightClickMenu.toggle();   
-        }   
+            this.rightClickMenu.toggle();
+            return true;
+        }
+        return false;
     },
 
     _windowHandle: function(fromDrag){

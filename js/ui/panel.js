@@ -697,7 +697,7 @@ Panel.prototype = {
                     this._shiftActor();
         }));
 
-        this.actor.connect('button-release-event', Lang.bind(this, this._onButtonReleaseEvent));
+        this.actor.connect('button-press-event', Lang.bind(this, this._onButtonPressEvent));
 
         global.settings.connect("changed::panel-edit-mode", Lang.bind(this, this._onPanelEditModeChanged));
         global.settings.connect("changed::panel-resizable", Lang.bind(this, this._processPanelSize));
@@ -730,7 +730,7 @@ Panel.prototype = {
         }
     },
 
-    _onButtonReleaseEvent: function (actor, event) {
+    _onButtonPressEvent: function (actor, event) {
         if (event.get_button()==1){
             if (this._context_menu.isOpen) {
                 this._context_menu.toggle();
