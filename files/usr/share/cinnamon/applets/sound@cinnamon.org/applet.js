@@ -590,6 +590,10 @@ Player.prototype = {
         if (metadata["mpris:artUrl"]) {
             if (this._trackCoverFile != metadata["mpris:artUrl"].toString()) {
                 this._trackCoverFile = metadata["mpris:artUrl"].toString();
+                
+                if ( this._name === "spotify" )
+                    this._trackCoverFile = this._trackCoverFile.replace("/thumb/", "/300/");
+
                 change = true;
             }
         }
