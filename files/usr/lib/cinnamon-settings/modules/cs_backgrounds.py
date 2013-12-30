@@ -353,7 +353,14 @@ class AddWallpapersDialog(Gtk.FileChooserDialog):
         self.add_button(Gtk.STOCK_OPEN, Gtk.ResponseType.OK)
         self.add_button(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL)
         self.set_select_multiple(True)
-    
+        filter = Gtk.FileFilter();
+        filter.add_pixbuf_formats ();
+        self.set_filter(filter);
+
+        preview = Gtk.Image()
+        self.set_preview_widget(preview)
+        self.connect("update-preview", self.update_icon_preview_cb, preview)
+
     def run(self):
         self.show_all()
         resp = Gtk.FileChooserDialog.run(self)
@@ -363,6 +370,17 @@ class AddWallpapersDialog(Gtk.FileChooserDialog):
         else:
             res = []
         return res
+
+    def update_icon_preview_cb(self, chooser, preview):
+        filename = chooser.get_preview_filename()
+        if filename is None:
+            return
+        chooser.set_preview_widget_active(False)
+        if os.path.isfile(filename):
+            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(filename, 128, 128)
+            if pixbuf is not None:
+                preview.set_from_pixbuf(pixbuf)
+                chooser.set_preview_widget_active(True)
 
 class BackgroundSlideshowPane(Gtk.Table):
     def __init__(self, sidepage, gnome_background_schema, cinnamon_background_schema):
