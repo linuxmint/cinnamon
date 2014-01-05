@@ -1,5 +1,6 @@
 [Desktop Entry]
 Name=Themes
+Comment=Manage themes to change how your desktop looks
 Icon=/usr/lib/cinnamon-settings/data/icons/themes.svg
 Exec=cinnamon-settings themes
 Type=Application

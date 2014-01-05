@@ -11,6 +11,7 @@ class Module:
         noun = _("applet")
         pl_noun = _("applets")
         target = _("panel")
+        self.comment = _("Manage Cinnamon applets")
         sidePage = AppletsViewSidePage(_("Applets"), "applets.svg", keywords, advanced, content_box, "applet", noun, pl_noun, target)
         self.sidePage = sidePage
 

@@ -1,5 +1,6 @@
 [Desktop Entry]
 Name=General
+Comment=Miscellaneous Cinnamon preferences
 Icon=/usr/lib/cinnamon-settings/data/icons/general.svg
 Exec=cinnamon-settings general
 Type=Application

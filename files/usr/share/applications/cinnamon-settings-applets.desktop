@@ -1,5 +1,6 @@
 [Desktop Entry]
 Name=Applets
+Comment=Manage Cinnamon applets
 Icon=/usr/lib/cinnamon-settings/data/icons/applets.svg
 Exec=cinnamon-settings applets
 Type=Application

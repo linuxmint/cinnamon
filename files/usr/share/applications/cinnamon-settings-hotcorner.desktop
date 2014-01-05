@@ -1,5 +1,6 @@
 [Desktop Entry]
 Name=Hot Corners
+Comment=Manage hotcorner settings
 Icon=/usr/lib/cinnamon-settings/data/icons/overview.svg
 Exec=cinnamon-settings hotcorner
 Type=Application

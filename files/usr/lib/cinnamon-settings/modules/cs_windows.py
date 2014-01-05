@@ -11,6 +11,7 @@ class Module:
         self.sidePage = sidePage
         self.name = "windows"
         self.category = "prefs"
+        self.comment = _("Manage window preferences")
         sidePage.add_widget(GSettingsComboBox(_("Action on title bar double-click"),
                                             "org.cinnamon.desktop.wm.preferences", "action-double-click-titlebar", None,
                                             [(i, i.replace("-", " ").title()) for i in ('toggle-shade', 'toggle-maximize', 'toggle-maximize-horizontally', 'toggle-maximize-vertically', 'minimize', 'shade', 'menu', 'lower', 'none')]))

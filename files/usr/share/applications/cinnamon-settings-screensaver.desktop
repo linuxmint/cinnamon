@@ -1,5 +1,6 @@
 [Desktop Entry]
 Name=Screensaver & Lock Settings
+Comment=Manage screensaver and lock settings
 Icon=/usr/lib/cinnamon-settings/data/icons/screensaver.svg
 Exec=cinnamon-settings screensaver
 Type=Application

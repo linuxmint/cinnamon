@@ -1,5 +1,6 @@
 [Desktop Entry]
 Name=Applications & Removable Media
+Comment=Manage default programs for common file types, and media actions
 Icon=/usr/lib/cinnamon-settings/data/icons/default-applications.svg
 Exec=cinnamon-settings default
 Type=Application

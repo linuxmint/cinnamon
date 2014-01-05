@@ -79,7 +79,8 @@ class Module:
         sidePage = SidePage(_("Account details"), "user.svg", keywords, advanced, content_box, module=self)
         self.sidePage = sidePage
         self.name = "user"
-        self.category = "prefs"        
+        self.category = "prefs"
+        self.comment = _("Change your user preferences and password")
                 
         self.face_button = Gtk.Button()
         self.face_image = Gtk.Image()  

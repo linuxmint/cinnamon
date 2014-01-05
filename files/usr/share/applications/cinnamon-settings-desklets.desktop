@@ -1,5 +1,6 @@
 [Desktop Entry]
 Name=Desklets
+Comment=Manage your Cinnamon desklets
 Icon=/usr/lib/cinnamon-settings/data/icons/desklets.svg
 Exec=cinnamon-settings desklets
 Type=Application

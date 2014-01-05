@@ -1,5 +1,6 @@
 [Desktop Entry]
 Name=Workspaces
+Comment=Manage workspace preferences
 Icon=/usr/lib/cinnamon-settings/data/icons/workspaces.svg
 Exec=cinnamon-settings workspaces
 Type=Application

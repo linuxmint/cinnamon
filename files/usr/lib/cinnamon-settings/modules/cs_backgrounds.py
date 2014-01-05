@@ -45,6 +45,7 @@ class Module:
         self.sidePage = sidePage
         self.name = "backgrounds"
         self.category = "appear"
+        self.comment = _("Change your desktop's background")
 
 class PixCache(object):
     

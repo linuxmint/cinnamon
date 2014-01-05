@@ -7,6 +7,7 @@ from SettingsWidgets import *
 class Module:
     def __init__(self, content_box):
         keywords = _("themes, style")
+        self.comment = _("Manage themes to change how your desktop looks")
         advanced = False
         self.name = "themes"
         # for i18n replacement in ExtensionCore.py

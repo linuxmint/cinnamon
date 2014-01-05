@@ -1,5 +1,6 @@
 [Desktop Entry]
 Name=Date & Time
+Comment=Manage date and time settings
 Icon=/usr/lib/cinnamon-settings/data/icons/date-time.svg
 Exec=cinnamon-settings calendar
 Type=Application

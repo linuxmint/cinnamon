@@ -1,5 +1,6 @@
 [Desktop Entry]
 Name=Mouse and Touchpad
+Comment=Control mouse and touchpad settings
 Icon=/usr/lib/cinnamon-settings/data/icons/mouse.svg
 Exec=cinnamon-settings mouse
 Type=Application

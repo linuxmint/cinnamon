@@ -160,6 +160,7 @@ class Module:
         advanced = True
         sidePage = KeyboardSidePage(_("Keyboard"), "keyboard.svg", keywords, advanced, content_box)
         self.sidePage = sidePage
+        self.comment = _("Manage keyboard settings and shortcuts")
         self.name = "keyboard"
         self.category = "hardware"
 

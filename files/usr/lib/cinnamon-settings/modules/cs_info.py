@@ -107,6 +107,7 @@ class Module:
         self.sidePage = sidePage
         self.name = "info"
         self.category = "hardware"
+        self.comment = _("Display system information")
         
         infos = createSystemInfos()                        
         

@@ -12,6 +12,7 @@ class Module:
         sidePage = SidePage(_("Date & Time"), "date-time.svg", keywords, advanced, content_box)
         self.sidePage = sidePage
         self.name = "calendar"
+        self.comment = _("Manage date and time settings")
         self.category = "prefs"        
         
         try:

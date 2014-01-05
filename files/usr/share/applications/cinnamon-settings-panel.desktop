@@ -1,5 +1,6 @@
 [Desktop Entry]
 Name=Panel
+Comment=Manage Cinnamon panel settings
 Icon=/usr/lib/cinnamon-settings/data/icons/panel.svg
 Exec=cinnamon-settings panel
 Type=Application

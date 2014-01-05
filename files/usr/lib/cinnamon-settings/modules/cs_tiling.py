@@ -10,6 +10,7 @@ class Module:
         sidePage = SidePage(_("Window Tiling and Edge Flip"), "tiling.svg", keywords, advanced, content_box)
         self.sidePage = sidePage
         self.name = "tiling"
+        self.comment = _("Manage window tiling preferences")
         self.category = "prefs"
 
         sidePage.add_widget(GSettingsCheckButton(_("Enable Window Tiling and Snapping"), "org.cinnamon.muffin", "edge-tiling", None))

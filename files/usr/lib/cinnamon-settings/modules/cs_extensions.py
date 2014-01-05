@@ -7,6 +7,7 @@ class Module:
         keywords = _("extension, addon")
         advanced = True
         self.name = "extensions"
+        self.comment = _("Manage your Cinnamon extensions")
         # for i18n replacement in ExtensionCore.py
         noun = _("extension")
         pl_noun = _("extensions")

@@ -10,6 +10,7 @@ class Module:
         advanced = False
         sidePage = MouseTouchpadSidepage(_("Mouse and Touchpad"), "mouse.svg", keywords, advanced, content_box)
         self.sidePage = sidePage
+        self.comment = _("Control mouse and touchpad settings")
         self.name = "mouse"
         self.category = "hardware"
 

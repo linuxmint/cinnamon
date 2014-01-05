@@ -16,6 +16,7 @@ class Module:
         advanced = True
         sidePage = HotCornerViewSidePage(_("Hot Corners"), "overview.svg", keywords, advanced, content_box)
         self.sidePage = sidePage
+        self.comment = _("Manage hotcorner settings")
         self.name = "hotcorner"
         self.category = "prefs"
 

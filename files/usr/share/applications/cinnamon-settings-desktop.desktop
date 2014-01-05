@@ -1,5 +1,6 @@
 [Desktop Entry]
 Name=Desktop
+Comment=Manage your desktop icons
 Icon=/usr/lib/cinnamon-settings/data/icons/desktop.svg
 Exec=cinnamon-settings desktop
 Type=Application

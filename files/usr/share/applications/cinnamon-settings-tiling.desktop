@@ -1,5 +1,6 @@
 [Desktop Entry]
 Name=Window Tiling and Edge Flip
+Comment=Manage window tiling preferences
 Icon=/usr/lib/cinnamon-settings/data/icons/tiling.svg
 Exec=cinnamon-settings tiling
 Type=Application
