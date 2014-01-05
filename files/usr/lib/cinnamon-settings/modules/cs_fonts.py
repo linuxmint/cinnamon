@@ -9,7 +9,8 @@ class Module:
         sidePage = SidePage(_("Fonts"), "fonts.svg", keywords, advanced, content_box)
         self.sidePage = sidePage
         self.name = "fonts"
-        self.category = "appear"        
+        self.category = "appear"
+        self.comment = _("Configure system fonts")
         sidePage.add_widget(GSettingsFontButton(_("Default font"), "org.cinnamon.desktop.interface", "font-name", None))
         sidePage.add_widget(GSettingsFontButton(_("Document font"), "org.gnome.desktop.interface", "document-font-name", None))
         sidePage.add_widget(GSettingsFontButton(_("Monospace font"), "org.gnome.desktop.interface", "monospace-font-name", None))
