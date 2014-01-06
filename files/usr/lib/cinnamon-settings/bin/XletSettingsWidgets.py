@@ -34,7 +34,6 @@ setting_dict = {
     "button"          :   "Button" # Not a setting, provides a button which triggers a callback in the applet/desklet
 }
 
-
 class Factory():
     def __init__(self, file_name, instance_id, multi_instance, uuid):
         self.file = file_name
@@ -153,19 +152,47 @@ class Settings():
     def get_key_exists(self, key):
         return key in self.data.keys()
 
+    def real_update_dbus(self, key):
+        self.factory.pause_monitor()
+        session_bus = dbus.SessionBus()
+        cinnamon_dbus = session_bus.get_object("org.Cinnamon", "/org/Cinnamon")
+        setter = cinnamon_dbus.get_dbus_method('updateSetting', 'org.Cinnamon')
+        payload = json.dumps(self.data[key])
+        setter(self.uuid, self.instance_id, key, payload)
+        self.factory.resume_monitor()
+
+    def try_update_dbus(self, key):
+        try:
+            self.real_update_dbus(key)
+        except Exception, e:
+            print "Cinnamon not running, falling back to python settings engine: ", e
+            self.save()
+
+    def try_update_dbus_foreach(self):
+        failed = False
+        for key in self.data.keys():
+            if "value" in self.data[key] and "default" in self.data[key]:
+                try:
+                    self.real_update_dbus(key)
+                except Exception, e:
+                    failed = True;
+                    print "Cinnamon not running, falling back to python settings engine: ", e
+        if failed:
+            self.save()
+
     def set_value(self, key, val):
         self.data[key]["value"] = val
-        self.save()
+        self.try_update_dbus(key)
 
     def set_custom_value(self, key, val):
         self.data[key]["last-custom-value"] = val
-        self.save()
+        self.try_update_dbus(key)
 
     def reset_to_defaults(self):
         for key in self.data.keys():
             if "value" in self.data[key] and "default" in self.data[key]:
                 self.data[key]["value"] = self.data[key]["default"]
-        self.save()
+        self.try_update_dbus_foreach()
 
     def load_from_file(self, filename):
         new_file = open(filename)
@@ -396,21 +423,13 @@ class CheckButton(Gtk.CheckButton, BaseWidget):
         self.set_active(self.get_val())
         self.handler = self.connect('toggled', self.on_my_value_changed)
         set_tt(self.get_tooltip(), self)
-        self._value_changed_timer = None
 
     def add_dependent(self, widget):
         self.dependents.append(widget)
 
     def on_my_value_changed(self, widget):
-        if self._value_changed_timer:
-            GObject.source_remove(self._value_changed_timer)
-        self._value_changed_timer = GObject.timeout_add(300, self.update_settings_value)
-
-    def update_settings_value(self):
         self.set_val(self.get_active())
         self.update_dependents()
-        self._value_changed_timer = None
-        return False
 
     def update_dependents(self):
         for dep in self.dependents:
@@ -452,7 +471,7 @@ class SpinButton(Gtk.HBox, BaseWidget):
     def on_my_value_changed(self, widget):
         if self._value_changed_timer:
             GObject.source_remove(self._value_changed_timer)
-        self._value_changed_timer = GObject.timeout_add(300, self.update_settings_value)
+        self._value_changed_timer = GObject.timeout_add(100, self.update_settings_value)
 
     def update_settings_value(self):
         self.set_val(self.spinner.get_value())
@@ -483,7 +502,7 @@ class Entry(Gtk.HBox, BaseWidget):
     def on_my_value_changed(self, widget):
         if self._value_changed_timer:
             GObject.source_remove(self._value_changed_timer)
-        self._value_changed_timer = GObject.timeout_add(300, self.update_settings_value)
+        self._value_changed_timer = GObject.timeout_add(100, self.update_settings_value)
 
     def update_settings_value(self):
         self.set_val(self.entry.get_text())
@@ -524,7 +543,7 @@ class TextView(Gtk.HBox, BaseWidget):
     def on_my_value_changed(self, widget):
         if self._value_changed_timer:
             GObject.source_remove(self._value_changed_timer)
-        self._value_changed_timer = GObject.timeout_add(300, self.update_settings_value)
+        self._value_changed_timer = GObject.timeout_add(100, self.update_settings_value)
 
     def update_settings_value(self):
         [start, end] = self.buffer.get_bounds()
@@ -885,7 +904,7 @@ class IconFileChooser(Gtk.HBox, BaseWidget):
     def on_entry_changed(self, widget):
         if self._value_changed_timer:
             GObject.source_remove(self._value_changed_timer)
-        self._value_changed_timer = GObject.timeout_add(300, self.update_from_entry)
+        self._value_changed_timer = GObject.timeout_add(100, self.update_from_entry)
 
     def update_from_entry(self):
         self.set_val(self.entry.get_text())
@@ -937,7 +956,7 @@ class Scale(Gtk.HBox, BaseWidget):
     def on_my_value_changed(self, widget):
         if self._value_changed_timer:
             GObject.source_remove(self._value_changed_timer)
-        self._value_changed_timer = GObject.timeout_add(300, self.update_settings_value)
+        self._value_changed_timer = GObject.timeout_add(100, self.update_settings_value)
 
     def update_settings_value(self):
         self.set_val(self.scale.get_value())

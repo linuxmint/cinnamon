@@ -43,6 +43,11 @@ const CinnamonIface = {
                 outSignature: ''
               },
               {
+                name: 'updateSetting',
+                inSignature: 'ssss',
+                outSignature: ''
+              },
+              {
                 name: 'switchWorkspaceRight',
                 inSignature: '',
                 outSignature: ''
@@ -230,6 +235,10 @@ Cinnamon.prototype = {
         let obj = this._getXletObject(id, id_is_instance);
         let cb = Lang.bind(obj, obj[callback]);
         cb();
+    },
+
+    updateSetting: function(uuid, instance_id, key, payload) {
+        Main.settingsManager.uuids[uuid][instance_id].remote_set(key, payload);
     },
 
     switchWorkspaceLeft: function() {
