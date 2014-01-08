@@ -220,6 +220,7 @@ center_pointer_on_screen ()
 int
 main (int argc, char **argv)
 {
+  XInitThreads();
   GOptionContext *ctx;
   GError *error = NULL;
   int ecode;
