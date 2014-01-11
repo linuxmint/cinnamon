@@ -323,7 +323,7 @@ class BaseWidget(object):
                         elif self.t:
                             translated_key = self.t(key)
                             ret[translated_key] = d[key]
-                    if self.t and not ret[translated_key]:
+                    elif self.t:
                         translated_key = self.t(key)
                         ret[translated_key] = d[key]
                 return ret
