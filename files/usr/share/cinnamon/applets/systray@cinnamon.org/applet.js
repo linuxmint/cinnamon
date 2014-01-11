@@ -20,7 +20,7 @@ MyApplet.prototype = {
         this._signals = { added: null,
                           removed: null,
                           redisplay: null,
-			  registered: null };
+                          registered: null };
 
         this.actor.style="spacing: 5px;";
     },
@@ -32,14 +32,14 @@ MyApplet.prototype = {
         Main.statusIconDispatcher.disconnect(this._signals.added);
         Main.statusIconDispatcher.disconnect(this._signals.removed);
         Main.statusIconDispatcher.disconnect(this._signals.redisplay);
-	Main.systrayManager.disconnect(this._signals.registered);
+        Main.systrayManager.disconnect(this._signals.registered);
     },
 
     on_applet_added_to_panel: function() {
         this._signals.added = Main.statusIconDispatcher.connect('status-icon-added', Lang.bind(this, this._onTrayIconAdded));
         this._signals.removed = Main.statusIconDispatcher.connect('status-icon-removed', Lang.bind(this, this._onTrayIconRemoved));
         this._signals.redisplay = Main.statusIconDispatcher.connect('before-redisplay', Lang.bind(this, this._onBeforeRedisplay));
-	this._signals.registered = Main.systrayManager.connect("changed", Main.statusIconDispatcher.redisplay);
+        this._signals.registered = Main.systrayManager.connect("changed", Main.statusIconDispatcher.redisplay);
     },
 
     on_panel_height_changed: function() {

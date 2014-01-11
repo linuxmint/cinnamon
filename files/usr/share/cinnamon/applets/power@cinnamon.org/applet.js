@@ -139,10 +139,10 @@ MyApplet.prototype = {
         Applet.TextIconApplet.prototype._init.call(this, orientation, panel_height);
         
         try {
-	    this.metadata = metadata;
-	    Main.systrayManager.registerRole("power", metadata.uuid);
-	    Main.systrayManager.registerRole("battery", metadata.uuid);
-	    
+            this.metadata = metadata;
+            Main.systrayManager.registerRole("power", metadata.uuid);
+            Main.systrayManager.registerRole("battery", metadata.uuid);
+            
             this.menuManager = new PopupMenu.PopupMenuManager(this);
             this.menu = new Applet.AppletPopupMenu(this, orientation);
             this.menuManager.addMenu(this.menu);            
@@ -367,7 +367,7 @@ MyApplet.prototype = {
     },
     
     on_applet_removed_from_panel: function() {
-	Main.systrayManager.unregisterId(this.metadata.uuid);
+        Main.systrayManager.unregisterId(this.metadata.uuid);
     }
 };
 

@@ -41,8 +41,8 @@ MyApplet.prototype = {
         Applet.IconApplet.prototype._init.call(this, orientation, panel_height);
         
         try {
-	    this.metadata = metadata;
-	    Main.systrayManager.registerRole("a11y", metadata.uuid);
+            this.metadata = metadata;
+            Main.systrayManager.registerRole("a11y", metadata.uuid);
             
             this.set_applet_icon_symbolic_name("preferences-desktop-accessibility");
             this.set_applet_tooltip(_("Accessibility"));
@@ -199,7 +199,7 @@ MyApplet.prototype = {
     },
 
     on_applet_removed_from_panel: function() {
-	Main.systrayManager.unregisterRole("a11y", this.metadata.uuid);
+        Main.systrayManager.unregisterRole("a11y", this.metadata.uuid);
     }
 };
 
