@@ -260,8 +260,8 @@ class BaseWidget(object):
     def get_tooltip(self):
         try:
             if self.tUser:
-		result = self.tUser(self.settings_obj.get_data(self.key)["tooltip"])
-		if result != self.settings_obj.get_data(self.key)["tooltip"]:
+                result = self.tUser(self.settings_obj.get_data(self.key)["tooltip"])
+                if result != self.settings_obj.get_data(self.key)["tooltip"]:
                     return result
             if self.t:
                 return self.t(self.settings_obj.get_data(self.key)["tooltip"])
@@ -272,8 +272,8 @@ class BaseWidget(object):
     def get_units(self):
         try:
             if self.tUser:
-		result = self.tUser(self.settings_obj.get_data(self.key)["units"])
-		if result != self.settings_obj.get_data(self.key)["units"]:
+                result = self.tUser(self.settings_obj.get_data(self.key)["units"])
+                if result != self.settings_obj.get_data(self.key)["units"]:
                     return result
             if self.t:
                 return self.t(self.settings_obj.get_data(self.key)["units"])
@@ -316,17 +316,17 @@ class BaseWidget(object):
                 ret = {}
                 d = self.settings_obj.get_data(self.key)["options"]
                 for key in d.keys():
-		    if self.tUser:
-                	translated_key = self.tUser(key)
-			if translated_key != key:
-                    	    ret[translated_key] = d[key]
-			elif self.t:
-			    translated_key = self.t(key)
-			    ret[translated_key] = d[key]
+                    if self.tUser:
+                        translated_key = self.tUser(key)
+                        if translated_key != key:
+                            ret[translated_key] = d[key]
+                        elif self.t:
+                            translated_key = self.t(key)
+                            ret[translated_key] = d[key]
                     if self.t and not ret[translated_key]:
-			translated_key = self.t(key)
-			ret[translated_key] = d[key]
-                return ret
+                        translated_key = self.t(key)
+                        ret[translated_key] = d[key]
+                    return ret
             else:
                 return self.settings_obj.get_data(self.key)["options"]
         except Exception, detail:
