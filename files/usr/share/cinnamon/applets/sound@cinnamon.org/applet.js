@@ -789,17 +789,22 @@ MediaPlayerLauncher.prototype = {
 
 };
 
-function MyApplet(orientation, panel_height) {
-    this._init(orientation, panel_height);
+function MyApplet(metadata, orientation, panel_height) {
+    this._init(metadata, orientation, panel_height);
 }
 
 MyApplet.prototype = {
     __proto__: Applet.IconApplet.prototype,
 
-    _init: function(orientation, panel_height) {
+    _init: function(metadata, orientation, panel_height) {
         Applet.IconApplet.prototype._init.call(this, orientation, panel_height);
 
         try {
+            this.metadata = metadata;
+            for (let i = 0; i < support_seek.length; i++) {
+                Main.systrayManager.registerRole(support_seek[i], metadata.uuid);
+            }
+
             this.menuManager = new PopupMenu.PopupMenuManager(this);
             this.menu = new Applet.AppletPopupMenu(this, orientation);
             this.menuManager.addMenu(this.menu);
@@ -857,6 +862,7 @@ MyApplet.prototype = {
     },
 
     on_applet_removed_from_panel : function() {
+        Main.systrayManager.unregisterId(this.metadata.uuid);
         if (this._iconTimeoutId) {
             Mainloop.source_remove(this._iconTimeoutId);
         }
@@ -1215,6 +1221,6 @@ MyApplet.prototype = {
 };
 
 function main(metadata, orientation, panel_height) {
-    let myApplet = new MyApplet(orientation, panel_height);
+    let myApplet = new MyApplet(metadata, orientation, panel_height);
     return myApplet;
 }
