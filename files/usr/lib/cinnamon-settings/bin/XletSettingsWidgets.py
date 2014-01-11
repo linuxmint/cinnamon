@@ -326,7 +326,7 @@ class BaseWidget(object):
                     if self.t and not ret[translated_key]:
                         translated_key = self.t(key)
                         ret[translated_key] = d[key]
-                    return ret
+                return ret
             else:
                 return self.settings_obj.get_data(self.key)["options"]
         except Exception, detail:
