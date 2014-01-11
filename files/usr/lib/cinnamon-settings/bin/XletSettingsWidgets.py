@@ -124,10 +124,10 @@ class Settings():
                 self.tUser = gettext.translation(self.uuid, "/usr/share/locale").ugettext
             except IOError:
                 self.tUser = None
-	try:
-	    self.t = gettext.translation("cinnamon", "/usr/share/cinnamon/locale").ugettext
-	except IOError:
-	    self.t = None
+        try:
+            self.t = gettext.translation("cinnamon", "/usr/share/cinnamon/locale").ugettext
+        except IOError:
+            self.t = None
         self.reload()
 
     def reload (self):
@@ -245,9 +245,9 @@ class BaseWidget(object):
     def get_desc(self):
         try:
             if self.tUser:
-	        result = self.tUser(self.settings_obj.get_data(self.key)["description"])
-		if result != self.settings_obj.get_data(self.key)["description"]:
-		    print result
+                result = self.tUser(self.settings_obj.get_data(self.key)["description"])
+                if result != self.settings_obj.get_data(self.key)["description"]:
+                    print result
                     return result
             if self.t:
                 print self.t(self.settings_obj.get_data(self.key)["description"])
