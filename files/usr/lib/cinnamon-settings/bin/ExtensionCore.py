@@ -1015,8 +1015,9 @@ class ExtensionSidePage (SidePage):
 
     def _restore_default_extensions(self):
         if not self.themes:
-            os.system(('gsettings reset org.cinnamon next-%s-id') % (self.collection_type))
-            os.system(('gsettings reset org.cinnamon enabled-%ss') % (self.collection_type))
+            if self.show_prompt(_("This will restore the default set of enabled %s.  Are you sure you want to do this?") % (self.pl_noun)):
+                os.system(('gsettings reset org.cinnamon next-%s-id') % (self.collection_type))
+                os.system(('gsettings reset org.cinnamon enabled-%ss') % (self.collection_type))
         else:
             os.system("gsettings reset org.cinnamon.theme name")
 
