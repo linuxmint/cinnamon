@@ -15,7 +15,7 @@ class Module:
         self.category = "prefs"
 
         alttab_styles = [["icons", _("Icons only")],["icons+thumbnails", _("Icons and thumbnails")],["icons+preview", _("Icons and window preview")],["preview", _("Window preview (no icons)")],["coverflow", _("Coverflow (3D)")],["timeline", _("Timeline (3D)")]]
-        alttab_styles_combo = self._make_combo_group(_("ALT-TAB switcher style"), "org.cinnamon", "alttab-switcher-style", alttab_styles)
+        alttab_styles_combo = self._make_combo_group(_("Alt-Tab switcher style"), "org.cinnamon", "alttab-switcher-style", alttab_styles)
         sidePage.add_widget(alttab_styles_combo)
 
         sidePage.add_widget(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))
@@ -95,13 +95,13 @@ class TitleBarButtonsOrderSelector(Gtk.Table):
         label.set_alignment(0, 0.5)
         self.attach(label, 0, 1, 0, 1, xoptions = Gtk.AttachOptions.FILL, yoptions=0, xpadding=2)
         left_side_box = Gtk.HBox()
-        self.attach(left_side_box, 1, 2, 0, 1, yoptions=0, xpadding=2)
+        self.attach(left_side_box, 1, 2, 0, 1, yoptions=0, xpadding=2, ypadding=4)
         
         label = Gtk.Label(_("Right side title bar buttons"))
         label.set_alignment(0, 0.5)
         self.attach(label, 0, 1, 1, 2, xoptions = Gtk.AttachOptions.FILL, yoptions=0, xpadding=2)
         right_side_box = Gtk.HBox()
-        self.attach(right_side_box, 1, 2, 1, 2, yoptions=0, xpadding=2)
+        self.attach(right_side_box, 1, 2, 1, 2, yoptions=0, xpadding=2, ypadding=4)
         
         self.left_side_widgets = []
         self.right_side_widgets = []
