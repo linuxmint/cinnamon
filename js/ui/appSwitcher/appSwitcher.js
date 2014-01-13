@@ -57,6 +57,8 @@ function getWindowsForBinding(binding) {
     for (let i in windowActors)
         windows.push(windowActors[i].get_meta_window());
 
+    windows = windows.filter( Main.isInteresting );
+
     switch(binding.get_name()) {
         case 'switch-panels':
             // Switch between windows of all workspaces

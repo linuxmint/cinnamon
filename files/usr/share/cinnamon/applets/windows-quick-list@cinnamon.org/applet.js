@@ -53,6 +53,8 @@ MyApplet.prototype = {
                             }
                                         );
 
+                windows = windows.filter( Main.isInteresting );
+
                 if(sticky_windows.length && (wks==0)) {
                     for ( let i = 0; i < sticky_windows.length; ++i ) {
                         let metaWindow = sticky_windows[i];
