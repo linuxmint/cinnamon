@@ -428,11 +428,11 @@ function populateSettingsMenu(menu) {
     let menuItem = new SettingsLauncher(_("Themes"), "themes", "themes", menu.settingsItem.menu);
     menu.settingsItem.menu.addMenuItem(menuItem);
 
-    menuItem = new SettingsLauncher(_("Applets"), "applets", "applets", menu.settingsItem.menu);
-    menu.settingsItem.menu.addMenuItem(menuItem);
+    //menuItem = new SettingsLauncher(_("Applets"), "applets", "applets", menu.settingsItem.menu);
+    //menu.settingsItem.menu.addMenuItem(menuItem);
 
-    menuItem = new SettingsLauncher(_("Panel"), "panel", "panel", menu.settingsItem.menu);
-    menu.settingsItem.menu.addMenuItem(menuItem);
+    //menuItem = new SettingsLauncher(_("Panel"), "panel", "panel", menu.settingsItem.menu);
+    //menu.settingsItem.menu.addMenuItem(menuItem);
 	
 	/**
 		menuItem = new SettingsLauncher(_("Menu"), "menu", "menu", menu.settingsItem.menu);
