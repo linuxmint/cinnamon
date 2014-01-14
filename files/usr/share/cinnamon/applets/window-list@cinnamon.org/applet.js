@@ -152,10 +152,9 @@ AppMenuButtonRightClickMenu.prototype = {
 
      _onToggled: function(actor, isOpening){
         if (!isOpening) {
-            this.removeAll();
             return;
         }
-
+        this.removeAll();
         this._populateMenu();
     },
     
