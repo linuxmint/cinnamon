@@ -1009,7 +1009,10 @@ MyApplet.prototype = {
         } catch(e) {
            global.logWarning("Could not load icon file \""+this.menuIcon+"\" for menu button");
         }
-        this.set_applet_label(_(this.menuLabel));
+        if (this.menuLabel != "")
+            this.set_applet_label(_(this.menuLabel));
+        else
+            this.set_applet_label("");
     },
 
     _onMenuKeyPress: function(actor, event) {
