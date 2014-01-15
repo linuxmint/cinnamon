@@ -472,14 +472,14 @@ PanelContextMenu.prototype = {
 
         let menuItem = new SettingsLauncher(_("Panel settings"), "panel", "panel", this);
         this.addMenuItem(menuItem);
-        
+
         let menuItem = new SettingsLauncher(_("Themes"), "themes", "themes", this);
-		this.addMenuItem(menuItem);
-        
+        this.addMenuItem(menuItem);
+
         let menuSetting = new SettingsLauncher(_("All settings"), "", "preferences-system", this);
-		this.addMenuItem(menuSetting);
-		
-		populateSettingsMenu(this);
+        this.addMenuItem(menuSetting);
+
+        populateSettingsMenu(this);
     }
 }
 
