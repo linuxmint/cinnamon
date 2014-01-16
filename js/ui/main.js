@@ -285,6 +285,8 @@ function start() {
 
     themeManager = new ThemeManager.ThemeManager();
 
+    settingsManager = new Settings.SettingsManager();
+
     backgroundManager = new BackgroundManager.BackgroundManager();
     
     deskletContainer = new DeskletManager.DeskletContainer();
@@ -396,8 +398,6 @@ function start() {
     global.screen.connect('restacked', _windowsRestacked);
 
     _nWorkspacesChanged();
-
-    settingsManager = new Settings.SettingsManager();
 
     AppletManager.init();
     DeskletManager.init();
