@@ -179,6 +179,7 @@ MyApplet.prototype = {
                 this._userIcon.set_gicon (icon);
                 this._userIcon.show();               
             }
+            this._updateLabel();
         }
     },
     
