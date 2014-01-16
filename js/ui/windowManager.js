@@ -181,8 +181,6 @@ WindowManager.prototype = {
         }
         if (Main.software_rendering)
             return false;
-        if (this._animationsBlocked > 0)
-            return false;
         if (!actor)
             return global.settings.get_boolean("desktop-effects");
         let type = actor.meta_window.get_window_type();
@@ -815,7 +813,7 @@ WindowManager.prototype = {
 
     _switchWorkspace : function(cinnamonwm, from, to, direction) {
         if (!this._shouldAnimate()) {
-            cinnamonwm.completed_switch_workspace();                                
+            cinnamonwm.completed_switch_workspace();
             return;
         }
 
