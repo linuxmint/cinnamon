@@ -54,6 +54,16 @@ class MouseTouchpadSidepage (SidePage):
         self.add_widget(box, 0, True)
 
         title = Gtk.Label()
+        title.set_markup("<b>%s</b>" % _("Pointer Size"))
+        title.set_alignment(0,0)
+        self.add_widget(title, 0, None)
+
+        box = IndentedHBox()
+        slider = GSettingsRange(_("Size:"), _("Small"), _("Large"), 20.0, 50.0, False, "int", False, "org.cinnamon.desktop.interface", "cursor-size", None, adjustment_step = 1.0)
+        box.add_expand(slider)
+        self.add_widget(box, 0, None)
+
+        title = Gtk.Label()
         title.set_markup("<b>%s</b>" % _("Pointer Speed"))
         title.set_alignment(0,0)
         self.add_widget(title, 0, None)
