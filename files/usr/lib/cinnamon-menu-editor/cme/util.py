@@ -20,7 +20,7 @@ import os
 import xml.dom.minidom
 import uuid
 from collections import Sequence
-from gi.repository import Gtk, GdkPixbuf, GMenu, GLib
+from gi.repository import Gtk, GdkPixbuf, CMenu, GLib
 
 DESKTOP_GROUP = GLib.KEY_FILE_DESKTOP_GROUP
 KEY_FILE_FLAGS = GLib.KeyFileFlags.KEEP_COMMENTS | GLib.KeyFileFlags.KEEP_TRANSLATIONS
@@ -126,9 +126,9 @@ def getIcon(item):
     if item is None:
         return None
 
-    if isinstance(item, GMenu.TreeDirectory):
+    if isinstance(item, CMenu.TreeDirectory):
         gicon = item.get_icon()
-    elif isinstance(item, GMenu.TreeEntry):
+    elif isinstance(item, CMenu.TreeEntry):
         app_info = item.get_app_info()
         gicon = app_info.get_icon()
     else:

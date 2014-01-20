@@ -1,6 +1,6 @@
 const Applet = imports.ui.applet;
 const Mainloop = imports.mainloop;
-const GMenu = imports.gi.GMenu;
+const CMenu = imports.gi.CMenu;
 const Lang = imports.lang;
 const Cinnamon = imports.gi.Cinnamon;
 const St = imports.gi.St;
@@ -1484,8 +1484,8 @@ MyApplet.prototype = {
             
             let iter = root.iter();
             let nextType;
-            while ((nextType = iter.next()) != GMenu.TreeItemType.INVALID) {
-                if (nextType == GMenu.TreeItemType.DIRECTORY) {
+            while ((nextType = iter.next()) != CMenu.TreeItemType.INVALID) {
+                if (nextType == CMenu.TreeItemType.DIRECTORY) {
                     let dir = iter.get_directory();
                     if (dir.get_is_nodisplay())
                         continue;
@@ -1656,8 +1656,8 @@ MyApplet.prototype = {
         var has_entries = false;
         var nextType;
         if (!top_dir) top_dir = dir;
-        while ((nextType = iter.next()) != GMenu.TreeItemType.INVALID) {
-            if (nextType == GMenu.TreeItemType.ENTRY) {
+        while ((nextType = iter.next()) != CMenu.TreeItemType.INVALID) {
+            if (nextType == CMenu.TreeItemType.ENTRY) {
                 var entry = iter.get_entry();
                 if (!entry.get_app_info().get_nodisplay()) {
                     has_entries = true;
@@ -1682,7 +1682,7 @@ MyApplet.prototype = {
                         this._applicationsButtonFromApp[app_key].category.push(dir.get_menu_id());
                     }
                 }
-            } else if (nextType == GMenu.TreeItemType.DIRECTORY) {
+            } else if (nextType == CMenu.TreeItemType.DIRECTORY) {
                 let subdir = iter.get_directory();
                 if (this._loadCategory(subdir, top_dir)) {
                     has_entries = true;

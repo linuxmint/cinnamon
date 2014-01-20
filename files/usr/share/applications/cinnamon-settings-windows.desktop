@@ -1,10 +1,9 @@
 [Desktop Entry]
 Name=Windows
-Comment=Manage window preferences
 Icon=/usr/lib/cinnamon-settings/data/icons/windows.svg
 Exec=cinnamon-settings windows
 Type=Application
-OnlyShowIn=GNOME;
+OnlyShowIn=X-Cinnamon;
 Categories=Settings;
 Name[gd]=Uinneagan
 Name[ga]=Fuinneoga

@@ -43,7 +43,7 @@ Terminal=false
 Type=Application
 Categories=Settings;
 StartupNotify=false
-OnlyShowIn=GNOME;
+OnlyShowIn=X-Cinnamon;
 Keywords=Preferences;Settings;
 """
 

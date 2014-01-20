@@ -17,7 +17,7 @@
 #   License along with this library; if not, write to the Free Software
 #   Foundation, Inc., 51 Franklin Street, Suite 500, Boston, MA  02110-1335  USA
 
-from gi.repository import Gtk, GObject, Gio, GdkPixbuf, Gdk, GMenu, GLib
+from gi.repository import Gtk, GObject, Gio, GdkPixbuf, Gdk, CMenu, GLib
 import cgi
 import os
 import gettext
@@ -78,15 +78,15 @@ class MainWindow(object):
         item_id = None
         if iter:
             update_items = True
-            if isinstance(items[iter][3], GMenu.TreeEntry):
+            if isinstance(items[iter][3], CMenu.TreeEntry):
                 item_id = items[iter][3].get_desktop_file_id()
-                update_type = GMenu.TreeItemType.ENTRY
-            elif isinstance(items[iter][3], GMenu.TreeDirectory):
+                update_type = CMenu.TreeItemType.ENTRY
+            elif isinstance(items[iter][3], CMenu.TreeDirectory):
                 item_id = os.path.split(items[iter][3].get_desktop_file_path())[1]
-                update_type = GMenu.TreeItemType.DIRECTORY
-            elif isinstance(items[iter][3], GMenu.TreeSeparator):
+                update_type = CMenu.TreeItemType.DIRECTORY
+            elif isinstance(items[iter][3], CMenu.TreeSeparator):
                 item_id = items.get_path(iter)
-                update_type = GMenu.TreeItemType.SEPARATOR
+                update_type = CMenu.TreeItemType.SEPARATOR
         menus, iter = menu_tree.get_selection().get_selected()
         update_menus = False
         menu_id = None
@@ -108,13 +108,13 @@ class MainWindow(object):
             i = 0
             for item in item_tree.get_model():
                 found = False
-                if update_type != GMenu.TreeItemType.SEPARATOR:
-                    if isinstance (item[3], GMenu.TreeEntry) and item[3].get_desktop_file_id() == item_id:
+                if update_type != CMenu.TreeItemType.SEPARATOR:
+                    if isinstance (item[3], CMenu.TreeEntry) and item[3].get_desktop_file_id() == item_id:
                         found = True
-                    if isinstance (item[3], GMenu.TreeDirectory) and item[3].get_desktop_file_path() and update_type == GMenu.TreeItemType.DIRECTORY:
+                    if isinstance (item[3], CMenu.TreeDirectory) and item[3].get_desktop_file_path() and update_type == CMenu.TreeItemType.DIRECTORY:
                         if os.path.split(item[3].get_desktop_file_path())[1] == item_id:
                             found = True
-                if isinstance(item[3], GMenu.TreeSeparator):
+                if isinstance(item[3], CMenu.TreeSeparator):
                     if not isinstance(item_id, tuple):
                         #we may not skip the increment via "continue"
                         i += 1
@@ -185,7 +185,7 @@ class MainWindow(object):
         items.set_model(self.item_store)
 
     def _cell_data_toggle_func(self, tree_column, renderer, model, treeiter, data=None):
-        if isinstance(model[treeiter][3], GMenu.TreeSeparator):
+        if isinstance(model[treeiter][3], CMenu.TreeSeparator):
             renderer.set_property('visible', False)
         else:
             renderer.set_property('visible', True)
@@ -215,11 +215,11 @@ class MainWindow(object):
         self.item_store.clear()
         for item, show in self.editor.getItems(menu):
             icon = util.getIcon(item)
-            if isinstance(item, GMenu.TreeDirectory):
+            if isinstance(item, CMenu.TreeDirectory):
                 name = item.get_name()
-            elif isinstance(item, GMenu.TreeEntry):
+            elif isinstance(item, CMenu.TreeEntry):
                 name = item.get_app_info().get_display_name()
-            elif isinstance(item, GMenu.TreeSeparator):
+            elif isinstance(item, CMenu.TreeSeparator):
                 name = '---'
             else:
                 assert False, 'should not be reached'
@@ -285,11 +285,11 @@ class MainWindow(object):
         if not iter:
             return
         item = items[iter][3]
-        if isinstance(item, GMenu.TreeEntry):
+        if isinstance(item, CMenu.TreeEntry):
             self.editor.deleteItem(item)
-        elif isinstance(item, GMenu.TreeDirectory):
+        elif isinstance(item, CMenu.TreeDirectory):
             self.editor.deleteMenu(item)
-        elif isinstance(item, GMenu.TreeSeparator):
+        elif isinstance(item, CMenu.TreeSeparator):
             self.editor.deleteSeparator(item)
 
     def on_edit_properties_activate(self, menu):
@@ -298,13 +298,13 @@ class MainWindow(object):
         if not iter:
             return
         item = items[iter][3]
-        if not isinstance(item, GMenu.TreeEntry) and not isinstance(item, GMenu.TreeDirectory):
+        if not isinstance(item, CMenu.TreeEntry) and not isinstance(item, CMenu.TreeDirectory):
             return
 
-        if isinstance(item, GMenu.TreeEntry):
+        if isinstance(item, CMenu.TreeEntry):
             file_path = os.path.join(util.getUserItemPath(), item.get_desktop_file_id())
             file_type = 'launcher'
-        elif isinstance(item, GMenu.TreeDirectory):
+        elif isinstance(item, CMenu.TreeDirectory):
             file_path = os.path.join(util.getUserDirectoryPath(), os.path.split(item.get_desktop_file_path())[1])
             file_type = 'directory'
 
@@ -322,7 +322,7 @@ class MainWindow(object):
         item = items[iter][3]
         if not iter:
             return
-        if not isinstance(item, GMenu.TreeEntry):
+        if not isinstance(item, CMenu.TreeEntry):
             return
         (self.cut_copy_buffer, self.file_id) = self.editor.cutItem(item)
 
@@ -332,7 +332,7 @@ class MainWindow(object):
         item = items[iter][3]
         if not iter:
             return
-        if not isinstance(item, GMenu.TreeEntry):
+        if not isinstance(item, CMenu.TreeEntry):
             return
         (self.cut_copy_buffer, self.file_id) = self.editor.copyItem(item)
 
@@ -345,7 +345,7 @@ class MainWindow(object):
             if not iter:
                 return
         item = items[iter][3]
-        if not isinstance(item, GMenu.TreeDirectory):
+        if not isinstance(item, CMenu.TreeDirectory):
             return
         if self.cut_copy_buffer is not None:
             success = self.editor.pasteItem(self.cut_copy_buffer, item, self.file_id)
@@ -376,22 +376,22 @@ class MainWindow(object):
         self.tree.get_object('cut_button').set_sensitive(False)
         self.tree.get_object('copy_button').set_sensitive(False)
 
-        can_paste = isinstance(menu, GMenu.TreeDirectory) and self.cut_copy_buffer is not None
+        can_paste = isinstance(menu, CMenu.TreeDirectory) and self.cut_copy_buffer is not None
         self.tree.get_object('edit_paste').set_sensitive(can_paste)
         self.tree.get_object('paste_button').set_sensitive(can_paste)
 
         index = menus.get_path(iter).get_indices()[menus.get_path(iter).get_depth() - 1]
         parent_iter = menus.iter_parent(iter)
         count =  menus.iter_n_children(parent_iter)
-        can_go_up = index > 0 and isinstance(menu, GMenu.TreeDirectory)
-        can_go_down = index < count - 1 and isinstance(menu, GMenu.TreeDirectory)
+        can_go_up = index > 0 and isinstance(menu, CMenu.TreeDirectory)
+        can_go_down = index < count - 1 and isinstance(menu, CMenu.TreeDirectory)
         self.tree.get_object('move_up_button').set_sensitive(can_go_up)
         self.tree.get_object('move_down_button').set_sensitive(can_go_down)
         self.last_tree = "menu_tree"
 
     def on_item_tree_show_toggled(self, cell, path):
         item = self.item_store[path][3]
-        if isinstance(item, GMenu.TreeSeparator):
+        if isinstance(item, CMenu.TreeSeparator):
             return
         if self.item_store[path][0]:
             self.editor.setVisible(item, False)
@@ -411,24 +411,24 @@ class MainWindow(object):
         self.tree.get_object('edit_delete').set_sensitive(True)
         self.tree.get_object('delete_button').set_sensitive(True)
 
-        can_edit = not isinstance(item, GMenu.TreeSeparator)
+        can_edit = not isinstance(item, CMenu.TreeSeparator)
         self.tree.get_object('edit_properties').set_sensitive(can_edit)
         self.tree.get_object('properties_button').set_sensitive(can_edit)
 
-        can_cut_copy = not isinstance(item, GMenu.TreeDirectory)
+        can_cut_copy = not isinstance(item, CMenu.TreeDirectory)
         self.tree.get_object('cut_button').set_sensitive(can_cut_copy)
         self.tree.get_object('copy_button').set_sensitive(can_cut_copy)
         self.tree.get_object('edit_cut').set_sensitive(can_cut_copy)
         self.tree.get_object('edit_copy').set_sensitive(can_cut_copy)
 
-        can_paste = isinstance(item, GMenu.TreeDirectory) and self.cut_copy_buffer is not None
+        can_paste = isinstance(item, CMenu.TreeDirectory) and self.cut_copy_buffer is not None
 
         self.tree.get_object('edit_paste').set_sensitive(can_paste)
         self.tree.get_object('paste_button').set_sensitive(can_paste)
 
         index = items.get_path(iter).get_indices()[0]
-        can_go_up = index > 0 and isinstance(item, GMenu.TreeDirectory)
-        can_go_down = index < len(items) - 1 and isinstance(item, GMenu.TreeDirectory)
+        can_go_up = index > 0 and isinstance(item, CMenu.TreeDirectory)
+        can_go_down = index < len(items) - 1 and isinstance(item, CMenu.TreeDirectory)
         self.tree.get_object('move_up_button').set_sensitive(can_go_up)
         self.tree.get_object('move_down_button').set_sensitive(can_go_down)
         self.last_tree = "item_tree"

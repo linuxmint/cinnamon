@@ -53,6 +53,7 @@ Icon=preferences-system
 Terminal=false
 Type=Application
 Encoding=UTF-8
+OnlyShowIn=X-Cinnamon;
 Categories=GNOME;GTK;Settings;DesktopSettings;
 StartupNotify=false
 """)

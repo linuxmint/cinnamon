@@ -50,7 +50,7 @@ class KeyFile:
         self.kf.set_string(DESKTOP_GROUP, DESKTOP_KEY_EXEC, "cinnamon-settings %s" % (mod.name))
 
         self.kf.set_string(DESKTOP_GROUP, DESKTOP_KEY_TYPE, DESKTOP_TYPE_APPLICATION)
-        self.kf.set_string_list(DESKTOP_GROUP, DESKTOP_KEY_ONLY_SHOW_IN, ("GNOME",))
+        self.kf.set_string_list(DESKTOP_GROUP, DESKTOP_KEY_ONLY_SHOW_IN, ("X-Cinnamon",))
 
         if mod.category in ("admin"):
             self.kf.set_string_list(DESKTOP_GROUP, DESKTOP_KEY_CATEGORIES, ("Settings","System"))

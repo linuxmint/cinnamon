@@ -3,6 +3,7 @@ Name=Cinnamon Menu Editor
 Comment=Edit the entries of the Cinnamon menu applet
 Exec=cinnamon-menu-editor
 Icon=alacarte
+OnlyShowIn=X-Cinnamon;
 Terminal=false
 Type=Application
 NoDisplay=true

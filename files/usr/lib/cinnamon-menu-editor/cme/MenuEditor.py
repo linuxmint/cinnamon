@@ -19,14 +19,14 @@
 import os
 import xml.dom.minidom
 import xml.parsers.expat
-from gi.repository import GMenu, GLib
+from gi.repository import CMenu, GLib
 from cme import util
 
 class MenuEditor(object):
     def __init__(self, name='cinnamon-applications.menu'):
         self.name = name
 
-        self.tree = GMenu.Tree.new(name, GMenu.TreeFlags.SHOW_EMPTY|GMenu.TreeFlags.INCLUDE_EXCLUDED|GMenu.TreeFlags.INCLUDE_NODISPLAY|GMenu.TreeFlags.SHOW_ALL_SEPARATORS|GMenu.TreeFlags.SORT_DISPLAY_NAME)
+        self.tree = CMenu.Tree.new(name, CMenu.TreeFlags.SHOW_EMPTY|CMenu.TreeFlags.INCLUDE_EXCLUDED|CMenu.TreeFlags.INCLUDE_NODISPLAY|CMenu.TreeFlags.SHOW_ALL_SEPARATORS|CMenu.TreeFlags.SORT_DISPLAY_NAME)
         self.tree.connect('changed', self.menuChanged)
         self.load()
 
@@ -66,11 +66,11 @@ class MenuEditor(object):
     def restoreTree(self, menu):
         item_iter = menu.iter()
         item_type = item_iter.next()
-        while item_type != GMenu.TreeItemType.INVALID:
-            if item_type == GMenu.TreeItemType.DIRECTORY:
+        while item_type != CMenu.TreeItemType.INVALID:
+            if item_type == CMenu.TreeItemType.DIRECTORY:
                 item = item_iter.get_directory()
                 self.restoreTree(item)
-            elif item_type == GMenu.TreeItemType.ENTRY:
+            elif item_type == CMenu.TreeItemType.ENTRY:
                 item = item_iter.get_entry()
                 self.restoreItem(item)
             item_type = item_iter.next()
@@ -106,8 +106,8 @@ class MenuEditor(object):
 
         item_iter = parent.iter()
         item_type = item_iter.next()
-        while item_type != GMenu.TreeItemType.INVALID:
-            if item_type == GMenu.TreeItemType.DIRECTORY:
+        while item_type != CMenu.TreeItemType.INVALID:
+            if item_type == CMenu.TreeItemType.DIRECTORY:
                 item = item_iter.get_directory()
                 yield (item, self.isVisible(item))
             item_type = item_iter.next()
@@ -117,17 +117,17 @@ class MenuEditor(object):
         item_iter = item.iter()
         item_type = item_iter.next()
 
-        while item_type != GMenu.TreeItemType.INVALID:
+        while item_type != CMenu.TreeItemType.INVALID:
             item = None
-            if item_type == GMenu.TreeItemType.DIRECTORY:
+            if item_type == CMenu.TreeItemType.DIRECTORY:
                 item = item_iter.get_directory()
-            elif item_type == GMenu.TreeItemType.ENTRY:
+            elif item_type == CMenu.TreeItemType.ENTRY:
                 item = item_iter.get_entry()
-            elif item_type == GMenu.TreeItemType.HEADER:
+            elif item_type == CMenu.TreeItemType.HEADER:
                 item = item_iter.get_header()
-            elif item_type == GMenu.TreeItemType.ALIAS:
+            elif item_type == CMenu.TreeItemType.ALIAS:
                 item = item_iter.get_alias()
-            elif item_type == GMenu.TreeItemType.SEPARATOR:
+            elif item_type == CMenu.TreeItemType.SEPARATOR:
                 item = item_iter.get_separator()
             if item:
                 contents.append(item)
@@ -137,28 +137,28 @@ class MenuEditor(object):
     def getItems(self, menu):
         item_iter = menu.iter()
         item_type = item_iter.next()
-        while item_type != GMenu.TreeItemType.INVALID:
+        while item_type != CMenu.TreeItemType.INVALID:
             item = None
-            if item_type == GMenu.TreeItemType.ENTRY:
+            if item_type == CMenu.TreeItemType.ENTRY:
                 item = item_iter.get_entry()
-            elif item_type == GMenu.TreeItemType.DIRECTORY:
+            elif item_type == CMenu.TreeItemType.DIRECTORY:
                 item = item_iter.get_directory()
-            elif item_type == GMenu.TreeItemType.HEADER:
+            elif item_type == CMenu.TreeItemType.HEADER:
                 item = item_iter.get_header()
-            elif item_type == GMenu.TreeItemType.ALIAS:
+            elif item_type == CMenu.TreeItemType.ALIAS:
                 item = item_iter.get_alias()
-            elif item_type == GMenu.TreeItemType.SEPARATOR:
+            elif item_type == CMenu.TreeItemType.SEPARATOR:
                 item = item_iter.get_separator()
             yield (item, self.isVisible(item))
             item_type = item_iter.next()
 
     def canRevert(self, item):
-        if isinstance(item, GMenu.TreeEntry):
+        if isinstance(item, CMenu.TreeEntry):
             if util.getItemPath(item.get_desktop_file_id()) is not None:
                 path = util.getUserItemPath()
                 if os.path.isfile(os.path.join(path, item.get_desktop_file_id())):
                     return True
-        elif isinstance(item, GMenu.TreeDirectory):
+        elif isinstance(item, CMenu.TreeDirectory):
             if item.get_desktop_file_path():
                 file_id = os.path.split(item.get_desktop_file_path())[1]
             else:
@@ -171,7 +171,7 @@ class MenuEditor(object):
 
     def setVisible(self, item, visible):
         dom = self.dom
-        if isinstance(item, GMenu.TreeEntry):
+        if isinstance(item, CMenu.TreeEntry):
             menu_xml = self.getXmlMenu(self.getPath(item.get_parent()), dom.documentElement, dom)
             if visible:
                 self.addXmlFilename(menu_xml, dom, item.get_desktop_file_id(), 'Include')
@@ -179,11 +179,11 @@ class MenuEditor(object):
             else:
                 self.addXmlFilename(menu_xml, dom, item.get_desktop_file_id(), 'Exclude')
             self.addXmlTextElement(menu_xml, 'AppDir', util.getUserItemPath(), dom)
-        elif isinstance(item, GMenu.TreeDirectory):
+        elif isinstance(item, CMenu.TreeDirectory):
             item_iter = item.iter()
             first_child_type = item_iter.next()
             #don't mess with it if it's empty
-            if first_child_type == GMenu.TreeItemType.INVALID:
+            if first_child_type == CMenu.TreeItemType.INVALID:
                 return
             menu_xml = self.getXmlMenu(self.getPath(item), dom.documentElement, dom)
             for node in self.getXmlNodesByName(['Deleted', 'NotDeleted'], menu_xml):
@@ -307,8 +307,8 @@ class MenuEditor(object):
 
         item_iter = parent.iter()
         item_type = item_iter.next()
-        while item_type != GMenu.TreeItemType.INVALID:
-            if item_type == GMenu.TreeItemType.DIRECTORY:
+        while item_type != CMenu.TreeItemType.INVALID:
+            if item_type == CMenu.TreeItemType.DIRECTORY:
                 item = item_iter.get_directory()
                 if item.get_menu_id() == menu_id:
                     return item
@@ -318,10 +318,10 @@ class MenuEditor(object):
             item_type = item_iter.next()
 
     def isVisible(self, item):
-        if isinstance(item, GMenu.TreeEntry):
+        if isinstance(item, CMenu.TreeEntry):
             app_info = item.get_app_info()
             return not (item.get_is_excluded() or app_info.get_nodisplay())
-        elif isinstance(item, GMenu.TreeDirectory):
+        elif isinstance(item, CMenu.TreeDirectory):
             return not item.get_is_nodisplay()
         return True
 
@@ -496,11 +496,11 @@ class MenuEditor(object):
         layout = []
         layout.append(('Merge', 'menus'))
         for item in items:
-            if isinstance(item, GMenu.TreeDirectory):
+            if isinstance(item, CMenu.TreeDirectory):
                 layout.append(('Menuname', item.get_menu_id()))
-            elif isinstance(item, GMenu.TreeEntry):
+            elif isinstance(item, CMenu.TreeEntry):
                 layout.append(('Filename', item.get_desktop_file_id()))
-            elif isinstance(item, GMenu.TreeSeparator):
+            elif isinstance(item, CMenu.TreeSeparator):
                 layout.append(('Separator',))
             else:
                 layout.append(item)
@@ -517,14 +517,14 @@ class MenuEditor(object):
 
     def getIndex(self, item, contents):
         index = -1
-        if isinstance(item, GMenu.TreeDirectory):
+        if isinstance(item, CMenu.TreeDirectory):
             for i in range(len(contents)):
                 if type(item) is not type(contents[i]):
                     continue
                 if item.get_menu_id() == contents[i].get_menu_id():
                     index = i
                     return index
-        elif isinstance(item, GMenu.TreeEntry):
+        elif isinstance(item, CMenu.TreeEntry):
             for i in range(len(contents)):
                 if type(item) is not type(contents[i]):
                     continue
