@@ -32,6 +32,7 @@ class Module:
         sidePage.add_widget(self._make_combo_group(_("Window focus mode"), 
                                             "org.cinnamon.desktop.wm.preferences", "focus-mode", 
                                             [(i, i.title()) for i in ("click","sloppy","mouse")]))
+        sidePage.add_widget(GSettingsCheckButton(_("Automatically raises the focused window"), "org.cinnamon.desktop.wm.preferences", "auto-raise", None))                                   
         sidePage.add_widget(self._make_combo_group(_("Window click action modifier"), 
                                             "org.cinnamon.desktop.wm.preferences", "mouse-button-modifier", 
                                             [(i, i.title()) for i in ("","<Alt>","<Super>","<Control>")]))
