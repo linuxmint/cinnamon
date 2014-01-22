@@ -185,7 +185,7 @@ Applet.prototype = {
     _init: function(orientation, panel_height, instance_id) {
         this.actor = new St.BoxLayout({ style_class: 'applet-box', reactive: true, track_hover: true });        
         this._applet_tooltip = new Tooltips.PanelItemTooltip(this, "", orientation);                                        
-        this.actor.connect('button-release-event', Lang.bind(this, this._onButtonReleaseEvent));  
+        this.actor.connect('button-press-event', Lang.bind(this, this._onButtonPressEvent));  
 
         this._menuManager = new PopupMenu.PopupMenuManager(this);
         this._applet_context_menu = new AppletContextMenu(this, orientation);
@@ -252,7 +252,9 @@ Applet.prototype = {
         return this.actor;
     },
 
-    _onButtonReleaseEvent: function (actor, event) {                      
+    _onButtonPressEvent: function (actor, event) {                      
+        if (!this._draggable.inhibit)
+            return false;
         if (event.get_button()==1){
             if (this._applet_context_menu.isOpen) {
                 this._applet_context_menu.toggle(); 

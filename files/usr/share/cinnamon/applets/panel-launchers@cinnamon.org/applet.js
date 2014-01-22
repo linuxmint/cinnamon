@@ -214,6 +214,9 @@ PanelAppLauncher.prototype = {
 
     _onButtonPress: function(actor, event) {
         pressLauncher = this.getAppname();
+
+        if (event.get_button() == 3)
+            this._menu.toggle();
     },
 
     _onButtonRelease: function(actor, event) {
@@ -222,8 +225,6 @@ PanelAppLauncher.prototype = {
             if (button==1) {
                 if (this._menu.isOpen) this._menu.toggle();
                 else this.launch();
-            }else if (button==3) {
-                this._menu.toggle();
             }
         }
     },

@@ -66,7 +66,7 @@ Desklet.prototype = {
         Main.uiGroup.add_actor(this._menu.actor);
         this._menu.actor.hide();
 
-        this.actor.connect('button-release-event', Lang.bind(this, this._onButtonReleaseEvent));
+        this.actor.connect('button-press-event', Lang.bind(this, this._onButtonPressEvent));
 
         this._uuid = null;
         this._dragging = false;
@@ -166,7 +166,7 @@ Desklet.prototype = {
         // Implemented by Desklets        
     },
 
-    _onButtonReleaseEvent: function(actor, event){        
+    _onButtonPressEvent: function(actor, event){        
         if (event.get_button() == 3) {
             this._menu.toggle();
             // Check if menu gets out of monitor. Move menu to left side if so
