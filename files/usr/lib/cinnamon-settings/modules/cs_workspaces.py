@@ -10,6 +10,7 @@ class Module:
         self.sidePage = sidePage
         self.name = "workspaces"
         self.category = "prefs"
+        self.comment = _("Manage workspace preferences")
         sidePage.add_widget(GSettingsCheckButton(_("Enable workspace OSD"), "org.cinnamon", "workspace-osd-visible", None))
 
         box = IndentedHBox()

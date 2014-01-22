@@ -52,16 +52,22 @@ MenuItem.prototype = {
         this._icon = icon;
         this._callback = callback;
 
-        if (icon != null) {
+        let table = new St.Table({ homogeneous: false,
+                                      reactive: true });
 
-            this.icon = new St.Icon({ icon_name: icon,
-                                  icon_type: St.IconType.FULLCOLOR,
-                                  style_class: 'popup-menu-icon' });
-            this.addActor(this.icon);
-        }
+        this.icon = new St.Icon({ icon_name: icon,
+                              icon_type: St.IconType.FULLCOLOR,
+                              style_class: 'popup-menu-icon' });
+
+        table.add(this.icon,
+                  {row: 0, col: 0, col_span: 1, x_expand: false, x_align: St.Align.START});
 
         this.label = new St.Label({ text: text });
-        this.addActor(this.label);
+        this.label.set_margin_left(6.0)
+        table.add(this.label,
+                  {row: 0, col: 1, col_span: 1, x_align: St.Align.START});
+
+        this.addActor(table, { expand: true, span: 1, align: St.Align.START});
 
         this.connect('activate', callback);
     },
@@ -333,29 +339,29 @@ Applet.prototype = {
      * This function should only be called by appletManager
      */
     setOrientation: function (orientation) {
-        let menuItems = new Array();
-        let oldMenuItems = this._applet_context_menu._getMenuItems();
-        for (var i in oldMenuItems){
-            if (oldMenuItems[i] instanceof MenuItem) { // in case some applets don't use the standards
-                if (oldMenuItems[i] !== this.context_menu_separator && oldMenuItems[i] !== this.context_menu_item_remove) {
-                    menuItems.push(oldMenuItems[i].clone());
-                }
-            }
-        }
-        this._menuManager.removeMenu(this._applet_context_menu);
+        // let menuItems = new Array();
+        // let oldMenuItems = this._applet_context_menu._getMenuItems();
+        // for (var i in oldMenuItems){
+        //     if (oldMenuItems[i] instanceof MenuItem) { // in case some applets don't use the standards
+        //         if (oldMenuItems[i] !== this.context_menu_separator && oldMenuItems[i] !== this.context_menu_item_remove) {
+        //             menuItems.push(oldMenuItems[i].clone());
+        //         }
+        //     }
+        // }
+        // this._menuManager.removeMenu(this._applet_context_menu);
         
-        this._applet_tooltip.destroy();
-        this._applet_tooltip = new Tooltips.PanelItemTooltip(this, this._applet_tooltip_text, orientation);
+        // this._applet_tooltip.destroy();
+        // this._applet_tooltip = new Tooltips.PanelItemTooltip(this, this._applet_tooltip_text, orientation);
 
-        this._applet_context_menu.destroy();
-        this._applet_context_menu = new AppletContextMenu(this, orientation);
-        this._menuManager.addMenu(this._applet_context_menu);
+        // this._applet_context_menu.destroy();
+        // this._applet_context_menu = new AppletContextMenu(this, orientation);
+        // this._menuManager.addMenu(this._applet_context_menu);
 
         this.on_orientation_changed(orientation);
         
-        if (this._applet_context_menu.numMenuItems == 0){ // Do not recreate the menu if the applet already handles it in on_orientation_changed
-            for (var i in menuItems) this._applet_context_menu.addMenuItem(menuItems[i]);
-        }
+        // if (this._applet_context_menu.numMenuItems == 0){ // Do not recreate the menu if the applet already handles it in on_orientation_changed
+        //     for (var i in menuItems) this._applet_context_menu.addMenuItem(menuItems[i]);
+        // }
 
         this.finalizeContextMenu();
     },
@@ -400,20 +406,32 @@ Applet.prototype = {
         // Add default context menus if we're in panel edit mode, ensure their removal if we're not       
         let items = this._applet_context_menu._getMenuItems();
 
-        this.context_menu_item_remove = new MenuItem(_("Remove this applet"), null, Lang.bind(null, AppletManager._removeAppletFromPanel, this._uuid, this.instance_id));
-        this.context_menu_separator = new PopupMenu.PopupSeparatorMenuItem();
+        if (this.context_menu_item_remove == null) {
+            this.context_menu_item_remove = new MenuItem(_("Remove this applet"), Gtk.STOCK_DELETE, Lang.bind(null, AppletManager._removeAppletFromPanel, this._uuid, this.instance_id));
+        }
+
+        if (this.context_menu_separator == null) {
+                this.context_menu_separator = new PopupMenu.PopupSeparatorMenuItem();
+        }
+
         if (this._applet_context_menu._getMenuItems().length > 0) {
             this._applet_context_menu.addMenuItem(this.context_menu_separator);
          }
         
-        if (GLib.file_test(this._meta["path"] + "/settings-schema.json", GLib.FileTest.EXISTS)) {            
-            this.context_menu_item_configure = new MenuItem(_("Configure..."), null, Lang.bind(this, function() {
-                Util.spawnCommandLine("cinnamon-settings applets " + this._uuid + " " + this.instance_id)
-            }));
-            this._applet_context_menu.addMenuItem(this.context_menu_item_configure);
+        if (!this._meta["hide-configuration"] && GLib.file_test(this._meta["path"] + "/settings-schema.json", GLib.FileTest.EXISTS)) {     
+            if (this.context_menu_item_configure == null) {            
+                this.context_menu_item_configure = new MenuItem(_("Configure..."), Gtk.STOCK_PREFERENCES, Lang.bind(this, function() {
+                    Util.spawnCommandLine("cinnamon-settings applets " + this._uuid + " " + this.instance_id)
+                }));
+            }
+            if (items.indexOf(this.context_menu_item_configure) == -1) {
+                this._applet_context_menu.addMenuItem(this.context_menu_item_configure);
+            }
         }
 
-        this._applet_context_menu.addMenuItem(this.context_menu_item_remove);            
+        if (items.indexOf(this.context_menu_item_remove) == -1) {
+            this._applet_context_menu.addMenuItem(this.context_menu_item_remove);
+        }
     }
 };
 
@@ -457,6 +475,8 @@ IconApplet.prototype = {
      * The icon will be full color
      */
     set_applet_icon_name: function (icon_name) {
+        if (this._applet_icon_box.child) this._applet_icon_box.child.destroy();
+        this._applet_icon_box.child = null;
         if (this._scaleMode) {
             this._applet_icon = new St.Icon({icon_name: icon_name, icon_size: this._panelHeight * COLOR_ICON_HEIGHT_FACTOR,
                                             icon_type: St.IconType.FULLCOLOR, reactive: true, track_hover: true, style_class: 'applet-icon' });
@@ -477,6 +497,8 @@ IconApplet.prototype = {
      * The icon will be symbolic
      */
     set_applet_icon_symbolic_name: function (icon_name) {
+        if (this._applet_icon_box.child) this._applet_icon_box.child.destroy();
+        this._applet_icon_box.child = null;
         if (this._scaleMode) {
             let height = (this._panelHeight / DEFAULT_PANEL_HEIGHT) * PANEL_SYMBOLIC_ICON_DEFAULT_HEIGHT;
             this._applet_icon = new St.Icon({icon_name: icon_name, icon_size: height, icon_type: St.IconType.SYMBOLIC, reactive: true, track_hover: true, style_class: 'system-status-icon' });
@@ -493,18 +515,48 @@ IconApplet.prototype = {
      * @icon_path (string): path of the icon
      * 
      * Sets the icon of the applet to the image file at @icon_path
+     * 
+     * The icon will be full color
      */
     set_applet_icon_path: function (icon_path) {
         if (this._applet_icon_box.child) this._applet_icon_box.child.destroy();
-
+        this._applet_icon_box.child = null;
         if (icon_path){
             let file = Gio.file_new_for_path(icon_path);
-            let icon_uri = file.get_uri();
-            let square_size = 22;
+            let gicon = new Gio.FileIcon({ file: file });
             if (this._scaleMode) {
-                square_size = Math.floor(this._panelHeight * COLOR_ICON_HEIGHT_FACTOR);
+                this._applet_icon = new St.Icon({gicon: gicon, icon_size: this._panelHeight * COLOR_ICON_HEIGHT_FACTOR,
+                                                icon_type: St.IconType.FULLCOLOR, reactive: true, track_hover: true, style_class: 'applet-icon' });
+            } else {
+                this._applet_icon = new St.Icon({gicon: gicon, icon_size: 22, icon_type: St.IconType.FULLCOLOR, reactive: true, track_hover: true, style_class: 'applet-icon' });
             }
-            this._applet_icon = St.TextureCache.get_default().load_uri_async(icon_uri, square_size, square_size);
+            this._applet_icon_box.child = this._applet_icon;
+        }
+        this.__icon_type = -1;
+        this.__icon_name = icon_path;
+    },
+
+    /**
+     * set_applet_icon_symbolic_path:
+     * @icon_path (string): path of the icon
+     * 
+     * Sets the icon of the applet to the image file at @icon_path
+     * 
+     * The icon will be symbolic
+     */
+    set_applet_icon_symbolic_path: function(icon_path) {
+        if (this._applet_icon_box.child) this._applet_icon_box.child.destroy();
+        this._applet_icon_box.child = null;
+        if (icon_path){
+            let file = Gio.file_new_for_path(icon_path);
+            let gicon = new Gio.FileIcon({ file: file });
+            if (this._scaleMode) {
+                let height = (this._panelHeight / DEFAULT_PANEL_HEIGHT) * PANEL_SYMBOLIC_ICON_DEFAULT_HEIGHT;
+                this._applet_icon = new St.Icon({gicon: gicon, icon_size: height,
+                                                icon_type: St.IconType.SYMBOLIC, reactive: true, track_hover: true, style_class: 'applet-icon' });
+            } else {
+                this._applet_icon = new St.Icon({gicon: gicon, icon_size: 22, icon_type: St.IconType.FULLCOLOR, reactive: true, track_hover: true, style_class: 'applet-icon' });
+            }
             this._applet_icon_box.child = this._applet_icon;
         }
         this.__icon_type = -1;
@@ -601,7 +653,7 @@ TextIconApplet.prototype = {
         IconApplet.prototype._init.call(this, orientation, panel_height, instance_id);
         this._applet_label = new St.Label({ reactive: true, track_hover: true, style_class: 'applet-label'});
         this._label_height = (this._panelHeight / DEFAULT_PANEL_HEIGHT) * PANEL_FONT_DEFAULT_HEIGHT;
-        this._applet_label.clutter_text.ellipsize = Pango.EllipsizeMode.NONE;     
+        this._applet_label.clutter_text.ellipsize = Pango.EllipsizeMode.NONE;
         this.actor.add(this._applet_label, { y_align: St.Align.MIDDLE, y_fill: false });
     },
 
@@ -613,6 +665,12 @@ TextIconApplet.prototype = {
      */
     set_applet_label: function (text) {
         this._applet_label.set_text(text);
+        if ((text && text != "") && this._applet_icon_box.child) {
+            this._applet_label.set_margin_left(6.0);
+        }
+        else {
+            this._applet_label.set_margin_left(0);
+        }
     },
 
     /**

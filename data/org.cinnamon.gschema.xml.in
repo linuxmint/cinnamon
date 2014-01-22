@@ -323,75 +323,9 @@
       </_description>
     </key>
     
-    <key type="s" name="menu-text">
-      <default>"Menu"</default>
-      <_summary>Text for the menu</_summary>
-      <_description>
-            The text shown in the Menu label.
-      </_description>
-    </key>
-    
-    <key type="s" name="menu-icon">
-      <default>"/usr/share/cinnamon/theme/menu.png"</default>
-      <_summary>Icon for the menu</_summary>
-      <_description>
-            The icon shown in the Menu button.
-      </_description>
-    </key>
-    
-     <key type="i" name="menu-hover-delay">
-      <default>0</default>
-      <_summary>Duration of the delay before which a category is selected when it is hovered</_summary>
-      <_description>
-       Duration of the delay (in milliseconds)    
-      </_description>
-    </key>
-
-    <key type="b" name="activate-menu-applet-on-hover">
-      <default>false</default>
-      <_summary>Enable or disable activation menu applet on hover</_summary>
-      <_description>
-            Another way to open the menu by just hovering the mouse pointer as opposed to clicking on it.
-      </_description>
-    </key>
-
-    <key type="b" name="menu-enable-autoscroll">
-      <default>true</default>
-      <_summary>Enable or disable autoscrolling in application list</_summary>
-      <_description>
-            Toggles the auto-scrolling regions at the top and bottom of the app list
-      </_description>
-    </key>
-
     <key type="b" name="display-notifications">
       <default>true</default>
       <_summary>Whether notifications are to be displayed</_summary>
-    </key>
-
-    <key type="b" name="menu-show-places">
-      <default>true</default>
-      <_summary>Enable or disable display of places in menu applet</_summary>
-      <_description>
-            Toggles displaying the 'Places' category in the menu applet
-      </_description>
-    </key>
-
-    <key type="b" name="menu-show-recent">
-      <default>true</default>
-      <_summary>Enable or disable display of recent files in menu applet</_summary>
-      <_description>
-            Toggles displaying the 'Recent files' category in the menu applet
-      </_description>
-    </key>
-
-    <key type="b" name="menu-search-filesystem">
-      <default>false</default>
-      <_summary>Enable or disable filesystem path entry in search box</_summary>
-      <_description>
-            Toggles whether pressing TAB within the search box autocompletes
-            paths within the filesystem. Matches are also shown in the 
-            application list and can be clicked to open with default handler.
-      </_description>
     </key>
 
     <key type="i" name="number-workspaces">
@@ -597,7 +531,6 @@
       <_summary>Whether or not to show possible completions in the run dialog (Alt-F2)</_summary>
     </key>
 
-    <child name="calendar" schema="org.cinnamon.calendar"/>
     <child name="theme" schema="org.cinnamon.theme"/>   
     <child name="recorder" schema="org.cinnamon.recorder"/>
     <child name="keyboard" schema="org.cinnamon.keyboard"/>
@@ -651,35 +584,6 @@
           <_summary>Display percentage in power applet</_summary>
           <_description>Display battery remaining as percentage or time in power applet.</_description>
     </key>
-  </schema>
-
-  <schema id="org.cinnamon.calendar" path="/org/cinnamon/calendar/"
-          gettext-domain="@GETTEXT_PACKAGE@">
-          
-    <key name="show-weekdate" type="b">
-      <default>false</default>
-      <_summary>Show the week date in the calendar</_summary>
-      <_description>
-        If true, display the ISO week date in the calendar.
-      </_description>
-    </key>
-    
-     <key name="date-format" type="s">
-      <default>'%a %b %e, %H:%M'</default>
-      <_summary>Format for the date in the panel</_summary>
-      <_description>
-       Format used to show the date in the panel.
-      </_description>
-    </key>
-    
-     <key name="date-format-full" type="s">
-      <default>'%A %B %e, %Y'</default>
-      <_summary>Format for the date in the applet menu</_summary>
-      <_description>
-       Format used to show the date in the applet menu.
-      </_description>
-    </key>
-    
   </schema>
 
   <schema id="org.cinnamon.recorder" path="/org/cinnamon/recorder/"

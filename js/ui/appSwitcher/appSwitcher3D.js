@@ -156,7 +156,7 @@ AppSwitcher3D.prototype = {
     _onWorkspaceSelected: function() {
         this._hidePreviews(0);
         
-        this._windows = this._getWindowsForBinding(this._binding);
+        this._windows = AppSwitcher.getWindowsForBinding(this._binding);
         this._currentIndex = this._windows.indexOf(global.display.focus_window);
         
         // create previews

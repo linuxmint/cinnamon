@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 
 from ExtensionCore import ExtensionSidePage
-from gi.repository import Gtk
+from gi.repository.Gtk import SizeGroup, SizeGroupMode
 from SettingsWidgets import *
 
 class Module:
     def __init__(self, content_box):
         keywords = _("themes, style")
+        self.comment = _("Manage themes to change how your desktop looks")
         advanced = False
         self.name = "themes"
         # for i18n replacement in ExtensionCore.py
@@ -34,29 +35,36 @@ class ThemesViewSidePage (ExtensionSidePage):
 
     def fromSettingString(self, string):
         return string
+        
+    def _make_group(self, group_label, root, key, schema):
+        self.size_groups = getattr(self, "size_groups", [SizeGroup(SizeGroupMode.HORIZONTAL) for x in range(2)])
+        
+        box = Gtk.HBox()
+        label = Gtk.Label()
+        label.set_markup(group_label)
+        label.props.xalign = 0.0
+        self.size_groups[0].add_widget(label)
+        box.pack_start(label, False, False, 4)
+
+        w = GSettingsComboBox("", root, key, None, schema)
+        self.size_groups[1].add_widget(w)
+        box.add(w)
+        
+        return box
 
     def getAdditionalPage(self):
         scrolledWindow = Gtk.ScrolledWindow()
         scrolledWindow.label = Gtk.Label(_("Other settings"))
 
         other_settings_box = Gtk.VBox()
+        
         scrolledWindow.add_with_viewport(other_settings_box)
-        other_settings_box.set_border_width(5)
         
-        gtkThemeSwitcher = GSettingsComboBox(_("Controls"), "org.cinnamon.desktop.interface", "gtk-theme", None, self._load_gtk_themes())
-        other_settings_box.pack_start(gtkThemeSwitcher, False, False, 2)
-        
-        iconThemeSwitcher = GSettingsComboBox(_("Icons"), "org.cinnamon.desktop.interface", "icon-theme", None, self._load_icon_themes())
-        other_settings_box.pack_start(iconThemeSwitcher, False, False, 2)            
-        
-        windowThemeSwitcher = GSettingsComboBox(_("Window borders"), "org.cinnamon.desktop.wm.preferences", "theme", None, self._load_window_themes())
-        other_settings_box.pack_start(windowThemeSwitcher, False, False, 2)
-                
-        cursorThemeSwitcher = GSettingsComboBox(_("Mouse pointer"), "org.cinnamon.desktop.interface", "cursor-theme", None, self._load_cursor_themes())
-        other_settings_box.pack_start(cursorThemeSwitcher, False, False, 2)
-        
-        keybindingThemeSwitcher = GSettingsComboBox(_("Keybindings"), "org.cinnamon.desktop.interface", "gtk-key-theme", None, self._load_keybinding_themes())
-        other_settings_box.pack_start(keybindingThemeSwitcher, False, False, 2)            
+        other_settings_box.pack_start(self._make_group(_("Controls"), "org.cinnamon.desktop.interface", "gtk-theme", self._load_gtk_themes()), False, False, 2)
+        other_settings_box.pack_start(self._make_group(_("Icons"), "org.cinnamon.desktop.interface", "icon-theme", self._load_icon_themes()), False, False, 2)
+        other_settings_box.pack_start(self._make_group(_("Window borders"), "org.cinnamon.desktop.wm.preferences", "theme", self._load_window_themes()), False, False, 2)
+        other_settings_box.pack_start(self._make_group(_("Mouse Pointer"), "org.cinnamon.desktop.interface", "cursor-theme", self._load_cursor_themes()), False, False, 2)
+        other_settings_box.pack_start(self._make_group(_("Keybindings"), "org.cinnamon.desktop.interface", "gtk-key-theme", self._load_keybinding_themes()), False, False, 2)
 
         menusHaveIconsCB = GSettingsCheckButton(_("Show icons in menus"), "org.cinnamon.settings-daemon.plugins.xsettings", "menus-have-icons", None)
         other_settings_box.pack_start(menusHaveIconsCB, False, False, 2)
@@ -78,7 +86,7 @@ class ThemesViewSidePage (ExtensionSidePage):
     
     def _load_icon_themes(self):
         dirs = ("/usr/share/icons", os.path.join(os.path.expanduser("~"), ".icons"))
-        valid = walk_directories(dirs, lambda d: os.path.isdir(d) and not os.path.exists(os.path.join(d, "cursors")))
+        valid = walk_directories(dirs, lambda d: os.path.isdir(d) and not os.path.exists(os.path.join(d, "cursors")) and os.path.exists(os.path.join(d, "index.theme")))
         valid.sort(lambda a,b: cmp(a.lower(), b.lower()))
         res = []
         for i in valid:

@@ -296,6 +296,8 @@ MyApplet.prototype = {
             this.actor.add(this.myactor);
             this.actor.reactive = global.settings.get_boolean(PANEL_EDIT_MODE_KEY);
             global.settings.connect('changed::' + PANEL_EDIT_MODE_KEY, Lang.bind(this, this._onPanelEditModeChanged));
+
+            St.TextureCache.get_default().connect("icon-theme-changed", Lang.bind(this, this.reload));
         }
         catch (e) {
             global.logError(e);

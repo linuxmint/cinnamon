@@ -1,0 +1,7 @@
+{
+ "display-name" : {
+    "type" : "checkbox",
+    "default" : false,
+    "description": "Display user name on panel"
+ }
+}

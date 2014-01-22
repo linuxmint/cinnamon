@@ -2,6 +2,8 @@
 
 from SettingsWidgets import *
 from gi.repository import Gio, Gtk, GObject, Gdk
+from gi.repository.Gtk import SizeGroup, SizeGroupMode
+
 
 class Module:
     def __init__(self, content_box):
@@ -11,36 +13,61 @@ class Module:
         self.sidePage = sidePage
         self.name = "windows"
         self.category = "prefs"
-        sidePage.add_widget(GSettingsComboBox(_("Action on title bar double-click"),
-                                            "org.cinnamon.desktop.wm.preferences", "action-double-click-titlebar", None,
+
+        alttab_styles = [["icons", _("Icons only")],["icons+thumbnails", _("Icons and thumbnails")],["icons+preview", _("Icons and window preview")],["preview", _("Window preview (no icons)")],["coverflow", _("Coverflow (3D)")],["timeline", _("Timeline (3D)")]]
+        alttab_styles_combo = self._make_combo_group(_("Alt-Tab switcher style"), "org.cinnamon", "alttab-switcher-style", alttab_styles)
+        sidePage.add_widget(alttab_styles_combo)
+
+        sidePage.add_widget(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))
+        
+        sidePage.add_widget(self._make_combo_group(_("Action on title bar double-click"),
+                                            "org.cinnamon.desktop.wm.preferences", "action-double-click-titlebar",
                                             [(i, i.replace("-", " ").title()) for i in ('toggle-shade', 'toggle-maximize', 'toggle-maximize-horizontally', 'toggle-maximize-vertically', 'minimize', 'shade', 'menu', 'lower', 'none')]))
-        sidePage.add_widget(GSettingsComboBox(_("Action on title bar middle-click"),
-                                            "org.cinnamon.desktop.wm.preferences", "action-middle-click-titlebar", None,
+        sidePage.add_widget(self._make_combo_group(_("Action on title bar middle-click"),
+                                            "org.cinnamon.desktop.wm.preferences", "action-middle-click-titlebar",
                                             [(i, i.replace("-", " ").title()) for i in ('toggle-shade', 'toggle-maximize', 'toggle-maximize-horizontally', 'toggle-maximize-vertically', 'minimize', 'shade', 'menu', 'lower', 'none')]))
-        sidePage.add_widget(GSettingsComboBox(_("Action on title bar right-click"),
-                                            "org.cinnamon.desktop.wm.preferences", "action-right-click-titlebar", None,
+        sidePage.add_widget(self._make_combo_group(_("Action on title bar right-click"),
+                                            "org.cinnamon.desktop.wm.preferences", "action-right-click-titlebar",
                                             [(i, i.replace("-", " ").title()) for i in ('toggle-shade', 'toggle-maximize', 'toggle-maximize-horizontally', 'toggle-maximize-vertically', 'minimize', 'shade', 'menu', 'lower', 'none')]))
-        sidePage.add_widget(GSettingsComboBox(_("Window focus mode"),
-                                            "org.cinnamon.desktop.wm.preferences", "focus-mode", None,
+        sidePage.add_widget(self._make_combo_group(_("Window focus mode"), 
+                                            "org.cinnamon.desktop.wm.preferences", "focus-mode", 
                                             [(i, i.title()) for i in ("click","sloppy","mouse")]))
         sidePage.add_widget(GSettingsCheckButton(_("Automatically raises the focused window"), "org.cinnamon.desktop.wm.preferences", "auto-raise", None))                                   
-        sidePage.add_widget(GSettingsComboBox(_("Modifier to use for modified window click actions"),
-                                            "org.cinnamon.desktop.wm.preferences", "mouse-button-modifier", None,
+        sidePage.add_widget(self._make_combo_group(_("Window click action modifier"), 
+                                            "org.cinnamon.desktop.wm.preferences", "mouse-button-modifier", 
                                             [(i, i.title()) for i in ("","<Alt>","<Super>","<Control>")]))
-
+                                    
+        sidePage.add_widget(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))
+        
         sidePage.add_widget(TitleBarButtonsOrderSelector())
 
+        sidePage.add_widget(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))
+                
+        sidePage.add_widget(GSettingsCheckButton(_("Enable mouse-wheel scrolling in Window List applet"), "org.cinnamon", "window-list-applet-scroll", None))
+        sidePage.add_widget(GSettingsCheckButton(_("Show an alert in the window list when a window from another workspace requires attention"), "org.cinnamon", "window-list-applet-alert", None))
+        sidePage.add_widget(GSettingsCheckButton(_("Bring windows which require attention to the current workspace"), "org.cinnamon", "bring-windows-to-current-workspace", None))
+        sidePage.add_widget(GSettingsCheckButton(_("Attach dialog windows to their parent window's titlebar"), "org.cinnamon.muffin", "attach-modal-dialogs", None), True)
+        sidePage.add_widget(GSettingsCheckButton(_("Enforce displaying the alt-tab switcher on the primary monitor instead of the active one"), "org.cinnamon", "alttab-switcher-enforce-primary-monitor", None), True)
+        
+        sidePage.add_widget(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))
+        
         sidePage.add_widget(GSettingsSpinButton(_("Window drag/resize threshold"), "org.cinnamon.muffin", "resize-threshold", None, 1, 100, 1, 1, _("Pixels")), True)
 
-        sidePage.add_widget(GSettingsCheckButton(_("Attach dialog windows to their parent window's titlebar"), "org.cinnamon.muffin", "attach-modal-dialogs", None))
-        alttab_styles = [["icons", _("Icons only")],["icons+thumbnails", _("Icons and thumbnails")],["icons+preview", _("Icons and window preview")],["preview", _("Window preview (no icons)")],["coverflow", _("Coverflow (3D)")],["timeline", _("Timeline (3D)")]]
-        alttab_styles_combo = GSettingsComboBox(_("ALT-tab switcher style"), "org.cinnamon", "alttab-switcher-style", None, alttab_styles)
-        sidePage.add_widget(alttab_styles_combo)
-        sidePage.add_widget(GSettingsCheckButton(_("Enforce displaying the alt-tab switcher on the primary monitor instead of the active one"), "org.cinnamon", "alttab-switcher-enforce-primary-monitor", None))
-        sidePage.add_widget(GSettingsCheckButton(_("Enable mouse-wheel scrolling in Window List applet"), "org.cinnamon", "window-list-applet-scroll", None))
-        sidePage.add_widget(GSettingsCheckButton(_("Bring windows which require attention to the current workspace (instead of switching to the window's workspace)"), "org.cinnamon", "bring-windows-to-current-workspace", None))
-        sidePage.add_widget(GSettingsCheckButton(_("Show an alert in the window list when a window from another workspace requires attention"), "org.cinnamon", "window-list-applet-alert", None))
+    def _make_combo_group(self, group_label, root, key, stuff):
+        self.size_groups = getattr(self, "size_groups", [SizeGroup(SizeGroupMode.HORIZONTAL) for x in range(2)])
+        
+        box = Gtk.HBox()
+        label = Gtk.Label()
+        label.set_markup(group_label)
+        label.props.xalign = 0.0
+        self.size_groups[0].add_widget(label)
+        box.pack_start(label, False, False, 0)
 
+        w = GSettingsComboBox("", root, key, None, stuff)
+        self.size_groups[1].add_widget(w)
+        box.pack_start(w, False, False, 0)
+        
+        return box
 
 class TitleBarButtonsOrderSelector(Gtk.Table):
     def __init__(self):
@@ -69,13 +96,13 @@ class TitleBarButtonsOrderSelector(Gtk.Table):
         label.set_alignment(0, 0.5)
         self.attach(label, 0, 1, 0, 1, xoptions = Gtk.AttachOptions.FILL, yoptions=0, xpadding=2)
         left_side_box = Gtk.HBox()
-        self.attach(left_side_box, 1, 2, 0, 1, yoptions=0, xpadding=2)
+        self.attach(left_side_box, 1, 2, 0, 1, yoptions=0, xpadding=2, ypadding=4)
         
         label = Gtk.Label(_("Right side title bar buttons"))
         label.set_alignment(0, 0.5)
         self.attach(label, 0, 1, 1, 2, xoptions = Gtk.AttachOptions.FILL, yoptions=0, xpadding=2)
         right_side_box = Gtk.HBox()
-        self.attach(right_side_box, 1, 2, 1, 2, yoptions=0, xpadding=2)
+        self.attach(right_side_box, 1, 2, 1, 2, yoptions=0, xpadding=2, ypadding=4)
         
         self.left_side_widgets = []
         self.right_side_widgets = []

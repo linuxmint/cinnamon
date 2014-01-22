@@ -12,21 +12,23 @@ const GnomeSession = imports.misc.gnomeSession;
 const ScreenSaver = imports.misc.screenSaver;
 const Main = imports.ui.main;
 const Panel = imports.ui.panel;
+const Settings = imports.ui.settings;
 
 
-function MyApplet(orientation) {
-    this._init(orientation);
+function MyApplet(orientation, instance_id) {
+    this._init(orientation, instance_id);
 }
 
 MyApplet.prototype = {
-    __proto__: Applet.IconApplet.prototype,
+    __proto__: Applet.TextIconApplet.prototype,
 
-    _init: function(orientation) {        
-        Applet.IconApplet.prototype._init.call(this, orientation);
+    _init: function(orientation, instance_id) {        
+        Applet.TextIconApplet.prototype._init.call(this, orientation, instance_id);
         
         try {
             this._session = new GnomeSession.SessionManager();
             this._screenSaverProxy = new ScreenSaver.ScreenSaverProxy();
+            this.settings = new Settings.AppletSettings(this, "user@cinnamon.org", instance_id);
 
             this.set_applet_icon_symbolic_name("avatar-default");
                     
@@ -36,9 +38,17 @@ MyApplet.prototype = {
             this._contentSection = new PopupMenu.PopupMenuSection();
             this.menu.addMenuItem(this._contentSection);      
             
-            let userBox = new St.BoxLayout({ style_class: 'user-box', vertical: false });
-            
+            let userBox = new St.BoxLayout({ style_class: 'user-box', reactive: true, vertical: false });
+
             this._userIcon = new St.Icon({ style_class: 'user-icon'});
+            
+			this.settings.bindProperty(Settings.BindingDirection.IN, "display-name", "disp_name", this._updateLabel, null);
+
+            userBox.connect('button-press-event', Lang.bind(this, function() {
+                this.menu.toggle();
+                Util.spawnCommandLine("cinnamon-settings user");
+            }));
+
             this._userIcon.hide();
             userBox.add(this._userIcon,
                         { x_fill:  true,
@@ -51,8 +61,8 @@ MyApplet.prototype = {
                           y_fill:  false,
                           x_align: St.Align.END,
                           y_align: St.Align.MIDDLE });    
-            
-  	        this.menu.addActor(userBox);
+
+            this.menu.addActor(userBox);
 
             this.notificationsSwitch = new PopupMenu.PopupSwitchMenuItem(_("Notifications"), this._toggleNotifications);
             global.settings.connect('changed::display-notifications', Lang.bind(this, function() {
@@ -112,6 +122,13 @@ MyApplet.prototype = {
                     Util.spawnCommandLine("mdmflexiserver");
                 }));
             }
+            else if (GLib.file_test("/usr/bin/gdmflexiserver", GLib.FileTest.EXISTS)) {
+                // GDM
+                this.menu.addAction(_("Switch User"), Lang.bind(this, function() {
+                    Util.spawnCommandLine("cinnamon-screensaver-command --lock");
+                    Util.spawnCommandLine("gdmflexiserver");
+                }));
+            }
 
             this.menu.addAction(_("Log Out..."), Lang.bind(this, function() {
                 this._session.LogoutRemote(0);
@@ -128,37 +145,6 @@ MyApplet.prototype = {
             this._userChangedId = this._user.connect('changed', Lang.bind(this, this._onUserChanged));
             this._onUserChanged();
 
-
-            // CONTEXT MENU ITEMS
-
-            let troubleshootItem = new PopupMenu.PopupSubMenuMenuItem(_("Troubleshoot"));
-            troubleshootItem.menu.addAction(_("Restart Cinnamon"), function(event) {
-                global.reexec_self();
-            });
-
-            troubleshootItem.menu.addAction(_("Looking Glass"), function(event) {
-                Main.createLookingGlass().open();
-            });
-
-            troubleshootItem.menu.addAction(_("Restore all settings to default"), function(event) {
-                let confirm = new Panel.ConfirmDialog();
-                confirm.open();
-            });
-
-            this._applet_context_menu.addMenuItem(troubleshootItem);
-
-            this._applet_context_menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-
-            let editMode = global.settings.get_boolean("panel-edit-mode");
-            let panelEditMode = new PopupMenu.PopupSwitchMenuItem(_("Panel Edit mode"), editMode);
-            panelEditMode.connect('toggled', function(item) {
-                global.settings.set_boolean("panel-edit-mode", item.state);
-            });
-            this._applet_context_menu.addMenuItem(panelEditMode);
-            global.settings.connect('changed::panel-edit-mode', function() {
-                panelEditMode.setToggleState(global.settings.get_boolean("panel-edit-mode"));
-            });
-
         }
         catch (e) {
             global.logError(e);
@@ -168,6 +154,14 @@ MyApplet.prototype = {
     on_applet_clicked: function(event) {
         this.menu.toggle();        
     }, 
+    
+    _updateLabel: function() {
+		if (this.disp_name) {
+			this.set_applet_label(this._user.get_real_name());
+		} else {
+			this.set_applet_label("");
+		}
+	},
 
     _onUserChanged: function() {
         if (this._user.is_loaded) {
@@ -185,11 +179,16 @@ MyApplet.prototype = {
                 this._userIcon.set_gicon (icon);
                 this._userIcon.show();               
             }
+            this._updateLabel();
         }
+    },
+    
+    on_applet_removed_from_panel: function() {
+		this.settings.finalize();
     },
 };
 
-function main(metadata, orientation) {  
-    let myApplet = new MyApplet(orientation);
+function main(metadata, orientation, instance_id) {  
+    let myApplet = new MyApplet(orientation, instance_id);
     return myApplet;      
 }

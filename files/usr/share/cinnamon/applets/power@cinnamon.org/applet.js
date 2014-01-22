@@ -60,9 +60,7 @@ let PowerManagerProxy = DBus.makeProxyClass(PowerManagerInterface);
 const SettingsManagerInterface = {
 	name: 'org.freedesktop.DBus.Properties',
 	methods: [
-		{ name: 'Get', inSignature: 's,s', outSignature: 'v' },
-		{ name: 'GetAll', inSignature: 's', outSignature: 'a{sv}' },
-		{ name: 'Set', inSignature: 's,s,v', outSignature: '' }
+		{ name: 'GetAll', inSignature: 's', outSignature: 'a{sv}' }
 	],
 	signals: [
 	{name: 'PropertiesChanged', inSignature:'s,a{sv},a[s]', outSignature:''}
@@ -290,11 +288,18 @@ MyApplet.prototype = {
             let position = 0;
             for (let i = 0; i < devices.length; i++) {
                 let [device_id, device_type] = devices[i];
+
+                if (device_type == UPDeviceType.AC_POWER) {
+                    this.set_applet_tooltip(_("AC adapter"));
+                }
+                else if (device_type == UPDeviceType.BATTERY) {
+                    this.set_applet_tooltip(_("Laptop battery"));
+                }
+
                 if (device_type == UPDeviceType.AC_POWER || device_id == this._primaryDeviceId)
                     continue;
 
                 let item = new DeviceItem (devices[i]);
-                this.set_applet_tooltip(item._label.text);
                 this._deviceItems.push(item);
                 this.menu.addMenuItem(item, this._otherDevicePosition + position);
                 position++;

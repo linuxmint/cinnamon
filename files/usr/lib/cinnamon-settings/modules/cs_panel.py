@@ -10,6 +10,7 @@ class Module:
         self.sidePage = sidePage
         self.name = "panel"
         self.category = "prefs"
+        self.comment = _("Manage Cinnamon panel settings")
 
         desktop_layouts = [["traditional", _("Traditional (panel at the bottom)")], ["flipped", _("Flipped (panel at the top)")], ["classic", _("Classic (panels at the top and at the bottom)")]]        
         desktop_layouts_combo = GSettingsComboBox(_("Panel layout"), "org.cinnamon", "desktop-layout", None, desktop_layouts)

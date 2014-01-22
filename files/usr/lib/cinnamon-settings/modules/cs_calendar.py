@@ -9,9 +9,10 @@ class Module:
     def __init__(self, content_box):
         keywords = _("time, date, calendar, format, network, sync")
         advanced = False
-        sidePage = SidePage(_("Calendar"), "clock.svg", keywords, advanced, content_box)
+        sidePage = SidePage(_("Date & Time"), "date-time.svg", keywords, advanced, content_box)
         self.sidePage = sidePage
         self.name = "calendar"
+        self.comment = _("Manage date and time settings")
         self.category = "prefs"        
         
         try:
@@ -20,24 +21,19 @@ class Module:
             try:
                 self.ntpCheckButton = NtpCheckButton(_("Use network time"))
                 sidePage.add_widget(self.ntpCheckButton)
-            except:
-                pass
+            except Exception, detail:
+                print detail
             sidePage.add_widget(self.changeTimeWidget)
             try:
                 sidePage.add_widget(TimeZoneSelectorWidget())
-            except:
-                pass
+            except Exception, detail:
+                print detail
             
             if self.ntpCheckButton != None:
                 self.ntpCheckButton.connect('toggled', self._ntp_toggled)
                 self.changeTimeWidget.change_using_ntp( self.ntpCheckButton.get_active() )
         except Exception, detail:
             print detail
-            
-        sidePage.add_widget(GSettingsCheckButton(_("Show week numbers in calendar"), "org.cinnamon.calendar", "show-weekdate", None), False)
-        sidePage.add_widget(GSettingsEntry(_("Date format for the panel"), "org.cinnamon.calendar", "date-format", None), True)
-        sidePage.add_widget(GSettingsEntry(_("Date format inside the date applet"), "org.cinnamon.calendar", "date-format-full", None), True)
-        sidePage.add_widget(Gtk.LinkButton.new_with_label("http://www.foragoodstrftime.com/", _("Generate your own date formats")), True)
 
     def _ntp_toggled(self, widget):
         self.changeTimeWidget.change_using_ntp( self.ntpCheckButton.get_active() )
@@ -92,7 +88,7 @@ class TimeZoneSelectorWidget(Gtk.HBox):
         
         self.date_time_wrapper = DateTimeWrapper()
         
-        self.timezones = tz.load_db()
+        self.timezones = load_db()
         
         self.selected_region, self.selected_city = self.get_selected_zone()
         
@@ -180,7 +176,7 @@ class ChangeTimeWidget(Gtk.HBox):
         self._time_to_set = None
         
         self.thirtyDays = [3, 5, 8, 10]
-        months = ['January','February','March','April','May','June','July','August','September','October','November','December']
+        months = [_("January"),_("February"),_("March"),_("April"),_("May"),_("June"),_("July"),_("August"),_("September"),_("October"),_("November"),_("December")]
         
         # Boxes
         timeBox = Gtk.HBox()

@@ -18,6 +18,42 @@ const DEFAULT_ICON_SIZE = 16; // too bad this can't be defined in theme (cinnamo
 const SPINNER_ANIMATION_TIME = 1;
 const ICON_HEIGHT_FACTOR = .64;
 
+/* TODO: dragHelper will need to be reworked once more flexible panel configuration is merged */
+
+function dragHelper() {
+    this._init();
+}
+
+dragHelper.prototype = {
+    _init: function() {
+        this.dragging = false;
+        this.panel_show_id = 0;
+    },
+
+    temp_show_panels: function() {
+        if (Main.panel && !this.dragging)
+            Main.panel._enterPanel();
+        if (Main.panel2 && !this.dragging)
+            Main.panel2._enterPanel();
+        if (this.panel_show_id > 0) {
+            Mainloop.source_remove(this.panel_show_id);
+            this.panel_show_id = 0;
+        }
+        this.dragging = true;
+        this.panel_show_id = Mainloop.timeout_add(2000, Lang.bind(this, this.temp_unshow_panels));
+    },
+
+    temp_unshow_panels: function() {
+        if (Main.panel)
+            Main.panel._leavePanel();
+        if (Main.panel2)
+            Main.panel2._leavePanel();
+        this.dragging = false;
+        return false;
+    }
+}
+
+let drag_helper = new dragHelper();
 
 function AppMenuButtonRightClickMenu(actor, metaWindow, orientation) {
     this._init(actor, metaWindow, orientation);
@@ -116,10 +152,9 @@ AppMenuButtonRightClickMenu.prototype = {
 
      _onToggled: function(actor, isOpening){
         if (!isOpening) {
-            this.removeAll();
             return;
         }
-
+        this.removeAll();
         this._populateMenu();
     },
     
@@ -499,7 +534,7 @@ AppMenuButton.prototype = {
     handleDragOver: function(source, actor, x, y, time) {
         if (this._inEditMode) return DND.DragMotionResult.MOVE_DROP;
         if (source instanceof AppMenuButton) return DND.DragMotionResult.CONTINUE;
-        
+        drag_helper.temp_show_panels();
         if (typeof(this._applet.dragEnterTime) == 'undefined') {
             this._applet.dragEnterTime = time;
         } else {
@@ -713,8 +748,11 @@ MyAppletBox.prototype = {
     
     handleDragOver: function(source, actor, x, y, time) {
         if (this._inEditMode) return DND.DragMotionResult.MOVE_DROP;
-        if (!(source instanceof AppMenuButton)) return DND.DragMotionResult.NO_DROP;
-        
+        if (!(source instanceof AppMenuButton))  {
+            drag_helper.temp_show_panels();
+            return DND.DragMotionResult.NO_DROP;
+        }
+
         let children = this.actor.get_children();
         let windowPos = children.indexOf(source.actor);
         

@@ -2,8 +2,6 @@
 /**
  * FILE:main.js
  * @automountManager (AutomountManager.AutomountManager): The automount manager
- * @autorunManager (null): This object no longer in use but is kept
- *                         in case we change our mind
  * @placesManager (PlacesManager.PlacesManager): The places manager
  * @overview (Overview.Overview): The "scale" overview 
  * @expo (Expo.Expo): The "expo" overview
@@ -25,8 +23,6 @@
  * @keyboard (Keyboard.Keyboard): The keyboard object
  * @layoutManager (Layout.LayoutManager): The layout manager
  * @themeManager (ThemeManager.ThemeManager): The theme manager
- * @networkAgent (null): This object is no longer in use, but is kept
- *                       in case we change our mind
  * @dynamicWorkspaces (boolean): Whether dynamic workspaces are to be used.
  *                               This is not yet implemented
  * @nWorks (int): Number of workspaces
@@ -54,12 +50,10 @@ const St = imports.gi.St;
 const PointerTracker = imports.misc.pointerTracker;
 
 const SoundManager = imports.ui.soundManager;
+const BackgroundManager = imports.ui.backgroundManager;
 const AppletManager = imports.ui.appletManager;
 const AutomountManager = imports.ui.automountManager;
-const AutorunManager = imports.ui.autorunManager;
 const DeskletManager = imports.ui.deskletManager;
-const EndSessionDialog = imports.ui.endSessionDialog;
-const PolkitAuthenticationAgent = imports.ui.polkitAuthenticationAgent;
 const ExtensionSystem = imports.ui.extensionSystem;
 const Keyboard = imports.ui.keyboard;
 const MessageTray = imports.ui.messageTray;
@@ -70,7 +64,6 @@ const PlacesManager = imports.ui.placesManager;
 const RunDialog = imports.ui.runDialog;
 const Layout = imports.ui.layout;
 const LookingGlass = imports.ui.lookingGlass;
-const NetworkAgent = imports.ui.networkAgent;
 const NotificationDaemon = imports.ui.notificationDaemon;
 const WindowAttentionHandler = imports.ui.windowAttentionHandler;
 const Scripting = imports.ui.scripting;
@@ -83,6 +76,7 @@ const XdndHandler = imports.ui.xdndHandler;
 const StatusIconDispatcher = imports.ui.statusIconDispatcher;
 const Util = imports.misc.util;
 const Keybindings = imports.ui.keybindings;
+const Settings = imports.ui.settings;
 
 const DEFAULT_BACKGROUND_COLOR = new Clutter.Color();
 DEFAULT_BACKGROUND_COLOR.from_pixel(0x2266bbff);
@@ -94,12 +88,12 @@ const LAYOUT_CLASSIC = "classic";
 const CIN_LOG_FOLDER = GLib.get_home_dir() + '/.cinnamon/';
 
 let automountManager = null;
-let autorunManager = null;
 
 let panel = null;
 let panel2 = null;
 
 let soundManager = null;
+let backgroundManager = null;
 let placesManager = null;
 let overview = null;
 let expo = null;
@@ -122,7 +116,6 @@ let keyboard = null;
 let layoutManager = null;
 let themeManager = null;
 let keybindingManager = null;
-let networkAgent = null;
 let _errorLogStack = [];
 let _startDate;
 let _defaultCssStylesheet = null;
@@ -130,6 +123,7 @@ let _cssStylesheet = null;
 let dynamicWorkspaces = null;
 let nWorks = null;
 let tracker = null;
+let settingsManager = null;
 
 let workspace_names = [];
 
@@ -268,7 +262,7 @@ function start() {
     // races for now we initialize it here.  It's better to
     // be predictable anyways.
     tracker = Cinnamon.WindowTracker.get_default();
-    Cinnamon.AppUsage.get_default();
+    Cinnamon.AppSystem.get_default();
 
     // The stage is always covered so Clutter doesn't need to clear it; however
     // the color is used as the default contents for the Muffin root background
@@ -285,14 +279,16 @@ function start() {
     }
     
     Gtk.IconTheme.get_default().append_search_path("/usr/share/cinnamon/icons/");
-    _defaultCssStylesheet = global.datadir + '/theme/cinnamon.css';
-
+    _defaultCssStylesheet = global.datadir + '/theme/cinnamon.css';    
 
     soundManager = new SoundManager.SoundManager();
 
-    soundManager.play('login');
-
     themeManager = new ThemeManager.ThemeManager();
+
+    settingsManager = new Settings.SettingsManager();
+
+    backgroundManager = new BackgroundManager.BackgroundManager();
+    
     deskletContainer = new DeskletManager.DeskletContainer();
 
     // Set up stage hierarchy to group all UI actors under one container.
@@ -357,8 +353,6 @@ function start() {
     automountManager = new AutomountManager.AutomountManager();
 
     keybindingManager = new Keybindings.KeybindingManager();
-    //autorunManager = new AutorunManager.AutorunManager();
-    //networkAgent = new NetworkAgent.NetworkAgent();
 
     Meta.later_add(Meta.LaterType.BEFORE_REDRAW, _checkWorkspaces);
 
@@ -380,9 +374,6 @@ function start() {
     // Provide the bus object for gnome-session to
     // initiate logouts.
     //EndSessionDialog.init();
-
-    // Attempt to become a PolicyKit authentication agent
-    PolkitAuthenticationAgent.init()
 
     _startDate = new Date();
 
@@ -407,7 +398,7 @@ function start() {
     global.screen.connect('restacked', _windowsRestacked);
 
     _nWorkspacesChanged();
-    
+
     AppletManager.init();
     DeskletManager.init();
 
@@ -779,14 +770,18 @@ function setThemeStylesheet(cssStylesheet)
  */
 function loadTheme() {
     let themeContext = St.ThemeContext.get_for_stage (global.stage);
-
-    let cssStylesheet = _defaultCssStylesheet;
-    if (_cssStylesheet != null)
-        cssStylesheet = _cssStylesheet;
-
     let theme = new St.Theme ();
-    theme.load_stylesheet(cssStylesheet);
-    
+    let stylesheetLoaded = false;
+    if (_cssStylesheet != null) {
+        stylesheetLoaded = theme.load_stylesheet(_cssStylesheet);
+    }
+    if (!stylesheetLoaded) {
+        theme.load_stylesheet(_defaultCssStylesheet);
+        if (_cssStylesheet != null) {
+            global.logError("There was some problem parsing the theme: " + _cssStylesheet + ".  Falling back to the default theme.");
+        }
+    }
+
     themeContext.set_theme (theme);
 }
 
@@ -1432,6 +1427,9 @@ function queueDeferredWork(workId) {
  * Returns (boolean): whether the window is interesting
  */
 function isInteresting(metaWindow) {
+    if (metaWindow.get_title() == "JavaEmbeddedFrame")
+        return false;
+
     if (tracker.is_window_interesting(metaWindow)) {
         // The nominal case.
         return true;

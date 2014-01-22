@@ -25,16 +25,14 @@ nobase_dist_js_DATA = \
 	ui/appletManager.js	\
 	ui/appFavorites.js	\
 	ui/automountManager.js  \
-	ui/autorunManager.js    \
+	ui/backgroundManager.js    \
 	ui/boxpointer.js	\
-	ui/calendar.js		\
 	ui/checkBox.js		\
 	ui/radioButton.js	\
 	ui/desklet.js		\
 	ui/deskletManager.js	\
 	ui/dnd.js		\
 	ui/edgeFlip.js  	\
-	ui/endSessionDialog.js	\
 	ui/environment.js	\
 	ui/expo.js		\
 	ui/expoThumbnail.js	\
@@ -54,7 +52,6 @@ nobase_dist_js_DATA = \
 	ui/main.js		\
 	ui/messageTray.js	\
 	ui/modalDialog.js	\
-	ui/networkAgent.js	\
 	ui/cinnamonEntry.js	\
 	ui/cinnamonMountOperation.js \
 	ui/notificationDaemon.js \
@@ -62,7 +59,6 @@ nobase_dist_js_DATA = \
 	ui/panel.js		\
 	ui/panelMenu.js		\
 	ui/placesManager.js  \
-	ui/polkitAuthenticationAgent.js \
 	ui/popupMenu.js		\
 	ui/runDialog.js		\
 	ui/scripting.js		\

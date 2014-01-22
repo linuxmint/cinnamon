@@ -49,6 +49,7 @@ class ExtensionSidePage (SidePage):
         self.pl_noun = pl_noun
         self.themes = collection_type == "theme"
         self.icons = []
+        self.run_once = False
 
     def build(self, advanced):
         # Clear all the widgets from the content box
@@ -337,6 +338,7 @@ class ExtensionSidePage (SidePage):
         b, w, h = Gtk.icon_size_lookup(Gtk.IconSize.BUTTON)
         pb = GdkPixbuf.Pixbuf.new_from_file_at_size("/usr/lib/cinnamon-settings/data/update.svg", w, h)
         img = Gtk.Image.new_from_pixbuf(pb)
+        img.set_padding(5, -1)
         self.select_updated.set_image(img)
         reload_button = Gtk.Button(_("Refresh list"))
         buttonbox.pack_start(self.install_button, False, False, 2)
@@ -349,9 +351,11 @@ class ExtensionSidePage (SidePage):
         self.install_button.connect("clicked", lambda x: self.install_extensions())
         self.select_updated.connect("clicked", lambda x: self.select_updated_extensions())
         self.select_updated.hide()
+        self.select_updated.set_no_show_all(True)
         self.treeview.get_selection().connect("changed", lambda x: self._selection_changed());
         self.install_list = []
         self.update_list = {}
+        self.current_num_updates = 0
 
         self.spices = Spice_Harvester(self.collection_type, self.window, self.builder, self.noun, self.pl_noun)
         # if not self.spices.get_webkit_enabled():
@@ -369,7 +373,7 @@ class ExtensionSidePage (SidePage):
 
         self.search_entry.grab_focus()
 
-        if len(sys.argv) > 2:
+        if len(sys.argv) > 2 and not self.run_once:
             for row in self.model:
                 uuid = self.model.get_value(row.iter, 0)
                 if uuid == sys.argv[2]:
@@ -378,6 +382,7 @@ class ExtensionSidePage (SidePage):
                     if filtered is not None:
                         self.treeview.get_selection().select_path(filtered)
                         self.treeview.scroll_to_cell(filtered, None, False, 0, 0)
+                        self.run_once = True
                         if self.configureButton.get_visible() and self.configureButton.get_sensitive():
                             self.configureButton.clicked()
                         elif self.extConfigureButton.get_visible() and self.extConfigureButton.get_sensitive():
@@ -930,6 +935,9 @@ class ExtensionSidePage (SidePage):
 
     def refresh_update_button(self):
         num = len(self.update_list)
+        if num == self.current_num_updates:
+            return
+        self.current_num_updates = num
         if num > 0:
             if num > 1:
                 self.select_updated.set_label(_("%d updates available!") % (len(self.update_list)))
@@ -1007,8 +1015,9 @@ class ExtensionSidePage (SidePage):
 
     def _restore_default_extensions(self):
         if not self.themes:
-            os.system(('gsettings reset org.cinnamon next-%s-id') % (self.collection_type))
-            os.system(('gsettings reset org.cinnamon enabled-%ss') % (self.collection_type))
+            if self.show_prompt(_("This will restore the default set of enabled %s.  Are you sure you want to do this?") % (self.pl_noun)):
+                os.system(('gsettings reset org.cinnamon next-%s-id') % (self.collection_type))
+                os.system(('gsettings reset org.cinnamon enabled-%ss') % (self.collection_type))
         else:
             os.system("gsettings reset org.cinnamon.theme name")
 

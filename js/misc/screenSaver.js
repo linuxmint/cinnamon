@@ -4,7 +4,7 @@ const DBus = imports.dbus;
 const Lang = imports.lang;
 
 const ScreenSaverIface = {
-    name: 'org.gnome.ScreenSaver',
+    name: 'org.cinnamon.ScreenSaver',
     methods: [{ name: 'GetActive',
                 inSignature: '',
                 outSignature: 'b' },
@@ -23,10 +23,10 @@ function ScreenSaverProxy() {
 ScreenSaverProxy.prototype = {
     _init: function() {
         DBus.session.proxifyObject(this,
-                                   'org.gnome.ScreenSaver',
-                                   '/org/gnome/ScreenSaver');
+                                   'org.cinnamon.ScreenSaver',
+                                   '/org/cinnamon/ScreenSaver');
 
-        DBus.session.watch_name('org.gnome.ScreenSaver',
+        DBus.session.watch_name('org.cinnamon.ScreenSaver',
                                 false, // do not launch a name-owner if none exists
                                 Lang.bind(this, this._onSSAppeared),
                                 Lang.bind(this, this._onSSVanished));
