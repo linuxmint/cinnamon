@@ -117,6 +117,7 @@ KEYBINDINGS = [
 
     # System
     [_("Log out"), MEDIA_KEYS_SCHEMA, "logout", False, "system"],
+    [_("Shut down"), MEDIA_KEYS_SCHEMA, "shutdown", False, "system"],
     [_("Lock screen"), MEDIA_KEYS_SCHEMA, "screensaver", False, "system"],
     [_("Toggle recording desktop (must restart Cinnamon)"), MUFFIN_KEYBINDINGS_SCHEMA, "toggle-recording", True, "system"],
 
