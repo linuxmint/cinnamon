@@ -52,11 +52,15 @@ function findUrls(str) {
 // Runs @argv in the background, handling any errors that occur
 // when trying to start the program.
 function spawn(argv) {
+    let pid;
+
     try {
-        trySpawn(argv);
+        pid = trySpawn(argv);
     } catch (err) {
         _handleSpawnError(argv[0], err);
     }
+
+    return pid;
 }
 
 // spawnCommandLine:
@@ -65,12 +69,16 @@ function spawn(argv) {
 // Runs @command_line in the background, handling any errors that
 // occur when trying to parse or start the program.
 function spawnCommandLine(command_line) {
+    let pid;
+
     try {
         let [success, argv] = GLib.shell_parse_argv(command_line);
-        trySpawn(argv);
+        pid = trySpawn(argv);
     } catch (err) {
         _handleSpawnError(command_line, err);
     }
+
+    return pid;
 }
 
 // trySpawn:
@@ -81,9 +89,10 @@ function spawnCommandLine(command_line) {
 function trySpawn(argv)
 {
     try {
-        GLib.spawn_async(null, argv, null,
+        let [success, pid]  = GLib.spawn_async(null, argv, null,
                          GLib.SpawnFlags.SEARCH_PATH | GLib.SpawnFlags.STDOUT_TO_DEV_NULL  | GLib.SpawnFlags.STDERR_TO_DEV_NULL,
                          null, null);
+        return pid;
     } catch (err) {
         if (err.code == GLib.SpawnError.G_SPAWN_ERROR_NOENT) {
             err.message = _("Command not found");
@@ -106,10 +115,11 @@ function trySpawn(argv)
 // Runs @command_line in the background. If launching @command_line
 // fails, this will throw an error.
 function trySpawnCommandLine(command_line) {
-    let success, argv;
+    let pid;
 
     try {
-        [success, argv] = GLib.shell_parse_argv(command_line);
+        let [success, argv] = GLib.shell_parse_argv(command_line);
+        pid = trySpawn(argv); 
     } catch (err) {
         // Replace "Error invoking GLib.shell_parse_argv: " with
         // something nicer
@@ -117,7 +127,7 @@ function trySpawnCommandLine(command_line) {
         throw err;
     }
 
-    trySpawn(argv);
+    return pid;
 }
 
 function _handleSpawnError(command, err) {
