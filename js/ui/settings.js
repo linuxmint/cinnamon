@@ -814,6 +814,6 @@ SettingsManager.prototype = {
         },
 
         unregister: function (uuid, instance_id) {
-            this.instances[uuid][instance_id] = null;
+            this.uuids[uuid][instance_id] = null;
         }
 };
