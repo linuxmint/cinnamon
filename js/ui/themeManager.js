@@ -3,6 +3,7 @@
 
 const GLib = imports.gi.GLib;
 const Gio = imports.gi.Gio;
+const Gtk = imports.gi.Gtk;
 const Lang = imports.lang;
 const Main = imports.ui.main;
 const Signals = imports.signals;
@@ -21,32 +22,44 @@ ThemeManager.prototype = {
         this._changeTheme();
     },    
     
-    _findTheme: function(themeName, cssPath) {
-        let stylesheet = null;
-        let _userCssStylesheet = GLib.get_home_dir() + '/.themes/' + themeName + cssPath;
-        let file = Gio.file_new_for_path(_userCssStylesheet);
+    _findTheme: function(themeName) {
+        let themeDirectory = null;
+        let path = GLib.get_home_dir() + '/.themes/' + themeName + "/cinnamon/";
+        let file = Gio.file_new_for_path(path + "cinnamon.css");
         if (file.query_exists(null))
-            stylesheet = _userCssStylesheet;
+            themeDirectory = path;
         else {
             let sysdirs = GLib.get_system_data_dirs();
             for (let i = 0; i < sysdirs.length; i++) {
-                _userCssStylesheet = sysdirs[i] + '/themes/' + themeName + cssPath;
-                let file = Gio.file_new_for_path(_userCssStylesheet);
+                path = sysdirs[i] + '/themes/' + themeName + "/cinnamon/";
+                let file = Gio.file_new_for_path(path + "cinnamon.css");
                 if (file.query_exists(null)) {
-                    stylesheet = _userCssStylesheet;
+                    themeDirectory = path;
                     break;
                 }
             }
         }        
-        return stylesheet;
+        return themeDirectory;
     },
 
     _changeTheme: function() {
+        let iconTheme = Gtk.IconTheme.get_default();
+        if (this.themeDirectory) {
+            let searchPath = iconTheme.get_search_path();
+            for (let i = 0; i < searchPath.length; i++) {
+                if (searchPath[i] == this.themeDirectory) {
+                    searchPath.splice(i,1);
+                    iconTheme.set_search_path(searchPath);
+                    break;
+                }
+            }
+        }
         let _stylesheet = null;
         let _themeName = this._settings.get_string(SETTINGS_KEY);        
-    
+
         if (_themeName) {
-            _stylesheet = this._findTheme(_themeName, '/cinnamon/cinnamon.css');
+            this.themeDirectory = this._findTheme(_themeName);
+            if (this.themeDirectory) _stylesheet = this.themeDirectory + "cinnamon.css";
         }
 
         if (_stylesheet)
@@ -55,6 +68,10 @@ ThemeManager.prototype = {
             global.log('loading default theme');
         Main.setThemeStylesheet(_stylesheet);
         Main.loadTheme();
+        if (this.themeDirectory) {
+            iconTheme.append_search_path(this.themeDirectory);
+            global.log('added icon directory: ' + this.themeDirectory);
+        }
         this.emit("theme-set");
     }
 };
