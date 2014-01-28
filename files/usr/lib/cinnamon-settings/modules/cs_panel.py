@@ -11,6 +11,7 @@ class Module:
         self.sidePage = sidePage
         self.name = "panel"
         self.category = "prefs"
+        self.comment = _("Manage Cinnamon panel settings")
 
 
 class PanelViewSidePage (SidePage):

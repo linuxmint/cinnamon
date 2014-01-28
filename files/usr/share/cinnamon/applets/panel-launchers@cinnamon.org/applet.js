@@ -215,6 +215,9 @@ PanelAppLauncher.prototype = {
 
     _onButtonPress: function(actor, event) {
         pressLauncher = this.getAppname();
+
+        if (event.get_button() == 3)
+            this._menu.toggle();
     },
 
     _onButtonRelease: function(actor, event) {
@@ -223,8 +226,6 @@ PanelAppLauncher.prototype = {
             if (button==1) {
                 if (this._menu.isOpen) this._menu.toggle();
                 else this.launch();
-            }else if (button==3) {
-                this._menu.toggle();
             }
         }
     },
@@ -297,6 +298,8 @@ MyApplet.prototype = {
             this.actor.add(this.myactor);
             this.actor.reactive = global.settings.get_boolean(PANEL_EDIT_MODE_KEY);
             global.settings.connect('changed::' + PANEL_EDIT_MODE_KEY, Lang.bind(this, this._onPanelEditModeChanged));
+
+            St.TextureCache.get_default().connect("icon-theme-changed", Lang.bind(this, this.reload));
         }
         catch (e) {
             global.logError(e);

@@ -3,7 +3,6 @@
 #include "config.h"
 
 #include "cinnamon-app-system.h"
-#include "cinnamon-app-usage.h"
 #include <string.h>
 
 #include <gio/gio.h>
@@ -708,34 +707,6 @@ cinnamon_app_system_get_running (CinnamonAppSystem *self)
   return ret;
 }
 
-
-static gint
-compare_apps_by_usage (gconstpointer a,
-                       gconstpointer b,
-                       gpointer      data)
-{
-  CinnamonAppUsage *usage = cinnamon_app_usage_get_default ();
-
-  CinnamonApp *app_a = (CinnamonApp*)a;
-  CinnamonApp *app_b = (CinnamonApp*)b;
-
-  return cinnamon_app_usage_compare (usage, "", app_a, app_b);
-}
-
-static GSList *
-sort_and_concat_results (CinnamonAppSystem *system,
-                         GSList         *prefix_matches,
-                         GSList         *substring_matches)
-{
-  prefix_matches = g_slist_sort_with_data (prefix_matches,
-                                           compare_apps_by_usage,
-                                           system);
-  substring_matches = g_slist_sort_with_data (substring_matches,
-                                              compare_apps_by_usage,
-                                              system);
-  return g_slist_concat (prefix_matches, substring_matches);
-}
-
 /**
  * normalize_terms:
  * @terms: (element-type utf8): Input search terms
@@ -781,8 +752,7 @@ search_tree (CinnamonAppSystem *self,
   g_slist_foreach (normalized_terms, (GFunc)g_free, NULL);
   g_slist_free (normalized_terms);
 
-  return sort_and_concat_results (self, prefix_results, substring_results);
-
+  return g_slist_concat (prefix_results, substring_results);
 }
 
 /**
@@ -838,7 +808,7 @@ cinnamon_app_system_subsearch (CinnamonAppSystem   *system,
   /* Note that a shorter term might have matched as a prefix, but
      when extended only as a substring, so we have to redo the
      sort rather than reusing the existing ordering */
-  return sort_and_concat_results (system, prefix_results, substring_results);
+  return g_slist_concat (prefix_results, substring_results);
 }
 
 /**

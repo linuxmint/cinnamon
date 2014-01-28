@@ -4,7 +4,7 @@ import sys
 import os
 import gettext
 import glob
-from gi.repository import GLib, Gtk, Gio, GMenu
+from gi.repository import GLib, Gtk, Gio, GMenu, GdkPixbuf
 from optparse import OptionParser
 import shutil
 
@@ -20,6 +20,12 @@ home = os.path.expanduser("~")
 PANEL_LAUNCHER_PATH = os.path.join(home, ".cinnamon", "panel-launchers")
 
 EXTENSIONS = (".png", ".xpm", ".svg")
+
+def escape_space(string):
+    return string.replace(" ", "\ ")
+
+def unescape_space(string):
+    return string.replace("\ ", " ")
 
 def try_icon_name(filename):
     # Detect if the user picked an icon, and make
@@ -93,10 +99,38 @@ class IconPicker(object):
                                         parent=self.dialog,
                                         buttons=(Gtk.STOCK_CANCEL, Gtk.ResponseType.REJECT,
                                         Gtk.STOCK_OK, Gtk.ResponseType.ACCEPT))
+        chooser.add_shortcut_folder("/usr/share/pixmaps")
+        chooser.add_shortcut_folder("/usr/share/icons")
+        fn = get_icon_string(self.image)
+        if GLib.path_is_absolute(fn):
+            chooser.set_filename(fn)
+        else:
+            theme = Gtk.IconTheme.get_default()
+            icon_info = theme.lookup_icon(fn, 64, 0)
+            icon_info_fn = icon_info.get_filename()
+            if icon_info_fn:
+                chooser.set_filename(icon_info_fn)
+        filter = Gtk.FileFilter();
+        filter.add_pixbuf_formats ();
+        chooser.set_filter(filter);
+
+        preview = Gtk.Image()
+        chooser.set_preview_widget(preview)
+        chooser.connect("update-preview", self.update_icon_preview_cb, preview)
+
         response = chooser.run()
         if response == Gtk.ResponseType.ACCEPT:
             self.image.props.file = chooser.get_filename()
         chooser.destroy()
+
+    def update_icon_preview_cb(self, chooser, preview):
+        filename = chooser.get_preview_filename()
+        chooser.set_preview_widget_active(False)
+        if os.path.isfile(filename):
+            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(filename, 128, 128)
+            if pixbuf is not None:
+                preview.set_from_pixbuf(pixbuf)
+                chooser.set_preview_widget_active(True)
 
 class ItemEditor(object):
     ui_file = None
@@ -132,7 +166,7 @@ class ItemEditor(object):
         except GLib.GError:
             pass
         else:
-            self.builder.get_object(ctl).set_text(val)
+            self.builder.get_object(ctl).set_text(unescape_space(val))
 
     def set_check(self, ctl, name):
         try:
@@ -163,7 +197,7 @@ class ItemEditor(object):
         contents, length = self.keyfile.to_data()
         need_exec = False
         if self.destdir is not None:
-            self.item_path = os.path.join(self.destdir, (self.builder.get_object('name-entry').get_text() + ".desktop"))
+            self.item_path = os.path.join(self.destdir, self.builder.get_object('name-entry').get_text() + ".desktop")
             need_exec = True
 
         try:
@@ -216,7 +250,7 @@ class LauncherEditor(ItemEditor):
 
     def get_keyfile_edits(self):
         return dict(Name=self.builder.get_object('name-entry').get_text(),
-                    Exec=self.builder.get_object('exec-entry').get_text(),
+                    Exec=escape_space(self.builder.get_object('exec-entry').get_text()),
                     Comment=self.builder.get_object('comment-entry').get_text(),
                     Terminal=self.builder.get_object('terminal-check').get_active(),
                     Icon=get_icon_string(self.builder.get_object('icon-image')),
@@ -311,7 +345,7 @@ class PanelLauncherEditor(ItemEditor):
 
     def get_keyfile_edits(self):
         return dict(Name=self.builder.get_object('name-entry').get_text(),
-                    Exec=self.builder.get_object('exec-entry').get_text(),
+                    Exec=escape_space(self.builder.get_object('exec-entry').get_text()),
                     Comment=self.builder.get_object('comment-entry').get_text(),
                     Terminal=self.builder.get_object('terminal-check').get_active(),
                     Icon=get_icon_string(self.builder.get_object('icon-image')),

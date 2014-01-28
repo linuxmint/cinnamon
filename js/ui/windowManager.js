@@ -8,6 +8,7 @@ const Cinnamon = imports.gi.Cinnamon;
 const Mainloop = imports.mainloop;
 const Gio = imports.gi.Gio;
 const AppletManager = imports.ui.appletManager;
+const AppSwitcher = imports.ui.appSwitcher.appSwitcher;
 const CoverflowSwitcher = imports.ui.appSwitcher.coverflowSwitcher;
 const TimelineSwitcher = imports.ui.appSwitcher.timelineSwitcher;
 const ClassicSwitcher = imports.ui.appSwitcher.classicSwitcher;
@@ -102,6 +103,7 @@ WindowManager.prototype = {
         this._destroying = [];
 
         this._snap_osd = null;
+        this._workspace_osd = null;
 
         this._dimmedWindows = [];
 
@@ -178,8 +180,6 @@ WindowManager.prototype = {
             return false;
         }
         if (Main.software_rendering)
-            return false;
-        if (this._animationsBlocked > 0)
             return false;
         if (!actor)
             return global.settings.get_boolean("desktop-effects");
@@ -791,6 +791,8 @@ WindowManager.prototype = {
         }
         else if (effect == "fade") {
             this._destroying.push(actor);
+                //Fixes ghost windows bug
+            Tweener.removeTweens(actor);
             this._fadeWindow(cinnamonwm, actor, 0, time, transition, this._destroyWindowDone, this._destroyWindowDone);
         }
         else {
@@ -811,7 +813,7 @@ WindowManager.prototype = {
 
     _switchWorkspace : function(cinnamonwm, from, to, direction) {
         if (!this._shouldAnimate()) {
-            cinnamonwm.completed_switch_workspace();                                
+            cinnamonwm.completed_switch_workspace();
             return;
         }
 
@@ -916,13 +918,15 @@ WindowManager.prototype = {
 
     showWorkspaceOSD : function() {
         this._hideSnapOSD();
+        this._hideWorkspaceOSD();
         if (global.settings.get_boolean("workspace-osd-visible")) {
             let current_workspace_index = global.screen.get_active_workspace_index();
             let monitor = Main.layoutManager.primaryMonitor;
-            let label = new St.Label({style_class:'workspace-osd'});
-            label.set_text(Main.getWorkspaceName(current_workspace_index));
-            label.set_opacity = 0;
-            Main.layoutManager.addChrome(label, { visibleInFullscreen: false, affectsInputRegion: false });
+            if (this._workspace_osd == null)
+                this._workspace_osd = new St.Label({style_class:'workspace-osd'});
+            this._workspace_osd.set_text(Main.getWorkspaceName(current_workspace_index));
+            this._workspace_osd.set_opacity = 0;
+            Main.layoutManager.addChrome(this._workspace_osd, { visibleInFullscreen: false, affectsInputRegion: false });
             let workspace_osd_x = global.settings.get_int("workspace-osd-x");
             let workspace_osd_y = global.settings.get_int("workspace-osd-y");
             /*
@@ -935,17 +939,25 @@ WindowManager.prototype = {
              */
             let [minX, maxX, minY, maxY] = [5, 95, 5, 95];
             let delta = (workspace_osd_x - minX) / (maxX - minX);
-            let x = Math.round((monitor.width * workspace_osd_x / 100) - (label.width * delta));
+            let x = Math.round((monitor.width * workspace_osd_x / 100) - (this._workspace_osd.width * delta));
             delta = (workspace_osd_y - minY) / (maxY - minY);
-            let y = Math.round((monitor.height * workspace_osd_y / 100) - (label.height * delta));
-            label.set_position(x, y);
+            let y = Math.round((monitor.height * workspace_osd_y / 100) - (this._workspace_osd.height * delta));
+            this._workspace_osd.set_position(x, y);
             let duration = global.settings.get_int("workspace-osd-duration") / 1000;
-            Tweener.addTween(label, {   opacity: 255,
-                                        time: duration,
-                                        transition: 'linear',
-                                        onComplete: function() {
-                                            Main.layoutManager.removeChrome(label);
-                                        }});
+            Tweener.addTween(this._workspace_osd, {   opacity: 255,
+                                                         time: duration,
+                                                   transition: 'linear',
+                                                   onComplete: this._hideWorkspaceOSD,
+                                              onCompleteScope: this });
+        }
+    },
+
+    _hideWorkspaceOSD : function() {
+        if (this._workspace_osd != null) {
+            this._workspace_osd.hide();
+            Main.layoutManager.removeChrome(this._workspace_osd);
+            this._workspace_osd.destroy();
+            this._workspace_osd = null;
         }
     },
 
@@ -995,6 +1007,8 @@ WindowManager.prototype = {
     },
 
     _createAppSwitcher : function(binding) {
+        if (AppSwitcher.getWindowsForBinding(binding).length == 0)
+            return;
         let style = global.settings.get_string("alttab-switcher-style");
         if(style == 'coverflow')
             new CoverflowSwitcher.CoverflowSwitcher(binding);
@@ -1067,13 +1081,21 @@ WindowManager.prototype = {
     },
 
     actionMoveWorkspaceLeft: function() {
-        Main.soundManager.play('switch');
-        global.screen.get_active_workspace().get_neighbor(Meta.MotionDirection.LEFT).activate(global.get_current_time());
+        var active = global.screen.get_active_workspace();        
+        var neighbour = active.get_neighbor(Meta.MotionDirection.LEFT)
+        if (active != neighbour) {
+            Main.soundManager.play('switch');
+            neighbour.activate(global.get_current_time());
+        }
     },
 
     actionMoveWorkspaceRight: function() {
-        Main.soundManager.play('switch');
-        global.screen.get_active_workspace().get_neighbor(Meta.MotionDirection.RIGHT).activate(global.get_current_time());
+        var active = global.screen.get_active_workspace();        
+        var neighbour = active.get_neighbor(Meta.MotionDirection.RIGHT)
+        if (active != neighbour) {
+            Main.soundManager.play('switch');
+            neighbour.activate(global.get_current_time());
+        }
     },
 
     actionMoveWorkspaceUp: function() {

@@ -117,6 +117,7 @@ KEYBINDINGS = [
 
     # System
     [_("Log out"), MEDIA_KEYS_SCHEMA, "logout", False, "system"],
+    [_("Shut down"), MEDIA_KEYS_SCHEMA, "shutdown", False, "system"],
     [_("Lock screen"), MEDIA_KEYS_SCHEMA, "screensaver", False, "system"],
     [_("Toggle recording desktop (must restart Cinnamon)"), MUFFIN_KEYBINDINGS_SCHEMA, "toggle-recording", True, "system"],
 
@@ -160,6 +161,7 @@ class Module:
         advanced = True
         sidePage = KeyboardSidePage(_("Keyboard"), "keyboard.svg", keywords, advanced, content_box)
         self.sidePage = sidePage
+        self.comment = _("Manage keyboard settings and shortcuts")
         self.name = "keyboard"
         self.category = "hardware"
 
@@ -446,20 +448,19 @@ class KeyboardSidePage (SidePage):
         self.kb_tree.append_column(kb_column)
         self.kb_tree.connect("cursor-changed", self.onKeyBindingChanged)
 
-        entry_cell = Gtk.CellRendererAccel()
+        entry_cell = CellRendererKeybinding(self.entry_tree)
         entry_cell.set_alignment(.5,.5)
         entry_cell.connect('accel-edited', self.onEntryChanged, self.entry_store)
         entry_cell.connect('accel-cleared', self.onEntryCleared, self.entry_store)
         entry_cell.set_property('editable', True)
 
-        try:  # Only Ubuntu allows MODIFIER_TAP - using a single modifier as a keybinding
-            entry_cell.set_property('accel-mode', Gtk.CellRendererAccelMode.MODIFIER_TAP)
-        except Exception:  # Pure GTK does not, so use OTHER
-            entry_cell.set_property('accel-mode', Gtk.CellRendererAccelMode.OTHER)
-
         entry_column = Gtk.TreeViewColumn(_("Keyboard bindings"), entry_cell, text=0)
         entry_column.set_alignment(.5)
         self.entry_tree.append_column(entry_column)
+
+        self.entry_tree.set_tooltip_text(_("Click to set a new accelerator key.") +
+                                         _("  Press Escape or click again to cancel the operation." +
+                                           "  Press Backspace to clear the existing keybinding."))
 
         self.main_store = []
 
@@ -588,7 +589,13 @@ class KeyboardSidePage (SidePage):
         for category in self.main_store:
             for keybinding in category.keybindings:
                 for entry in keybinding.entries:
-                    if accel_string == entry and keybinding.label != current_keybinding.label:
+                    found = False
+                    if accel_string == entry:
+                        found = True
+                    elif accel_string.replace("<Primary>", "<Control>") == entry:
+                        found = True
+
+                    if found and keybinding.label != current_keybinding.label:
                         dialog = Gtk.MessageDialog(None,
                                     Gtk.DialogFlags.DESTROY_WITH_PARENT,
                                     Gtk.MessageType.QUESTION,
@@ -603,7 +610,7 @@ class KeyboardSidePage (SidePage):
                         response = dialog.run()
                         dialog.destroy()
                         if response == Gtk.ResponseType.YES:
-                            keybinding.setBinding(keybinding.entries.index(accel_string), None)
+                            keybinding.setBinding(keybinding.entries.index(entry), None)
                         elif response == Gtk.ResponseType.NO:
                             return
         current_keybinding.setBinding(int(path), accel_string)
@@ -756,3 +763,94 @@ class KeyboardSidePage (SidePage):
     def onResetToDefault(self, popup, keybinding):
         keybinding.resetDefaults()
         self.onKeyBindingChanged(self.kb_tree)
+
+SPECIAL_MODS = (["Super_L",    "<Super>"],
+                ["Super_R",    "<Super>"],
+                ["Alt_L",      "<Alt>"],
+                ["Alt_R",      "<Alt>"],
+                ["Control_L",  "<Primary>"],
+                ["Control_R",  "<Primary>"],
+                ["Shift_L",    "<Shift>"],
+                ["Shift_R",    "<Shift>"])
+
+class CellRendererKeybinding(Gtk.CellRendererText):
+    __gsignals__ = {
+        'accel-edited': (GObject.SignalFlags.RUN_LAST, None, (str, int, Gdk.ModifierType, int)),
+        'accel-cleared': (GObject.SignalFlags.RUN_LAST, None, (str,))
+    }
+
+    def __init__(self, treeview):
+        super(CellRendererKeybinding, self).__init__()
+
+        self.connect("editing-started", self.editing_started)
+        self.cur_val = None
+        self.path = None
+        self.event_id = None
+        self.teaching = False
+        self.treeview = treeview
+
+    def set_label(self, text = None):
+        if not text:
+            text = _("unassigned")
+        self.set_property("text", text)
+
+    def get_label(self):
+        return self.get_property("text")
+
+    def editing_started(self, renderer, editable, path):
+        if not self.teaching:
+            self.cur_val = self.get_label()
+            self.path = path
+            device = Gtk.get_current_event_device()
+            if device.get_source() == Gdk.InputSource.KEYBOARD:
+                self.keyboard = device
+            else:
+                self.keyboard = device.get_associated_device()
+
+            self.keyboard.grab(self.treeview.get_window(), Gdk.GrabOwnership.WINDOW, False,
+                               Gdk.EventMask.KEY_PRESS_MASK | Gdk.EventMask.KEY_RELEASE_MASK,
+                               None, Gdk.CURRENT_TIME)
+
+            editable.set_text(_("Pick an accelerator"))
+
+            self.event_id = self.treeview.connect( "key-release-event", self.on_key_release )
+            self.teaching = True
+        else:
+            if self.event_id:
+                self.treeview.disconnect(self.event_id)
+            self.ungrab()
+            self.set_label()
+            self.teaching = False
+
+    def on_key_release(self, widget, event):
+        widget.disconnect(self.event_id)
+        self.ungrab()
+        self.event_id = None
+        if event.keyval == Gdk.KEY_Escape:
+            self.set_label(self.cur_val)
+            self.teaching = False
+            return True
+        if event.keyval == Gdk.KEY_BackSpace:
+            self.teaching = False
+            self.set_label()
+            self.emit("accel-cleared", self.path)
+            return True
+        accel_string = Gtk.accelerator_name(event.keyval, event.state)
+        accel_string = self.sanitize(accel_string)
+        self.cur_val = accel_string
+        self.set_label(accel_string)
+        self.teaching = False
+        key, codes, mods = Gtk.accelerator_parse_with_keycode(accel_string)
+        self.emit("accel-edited", self.path, key, mods, codes)
+        return True
+
+    def sanitize(self, string):
+        accel_string = string.replace("<Mod2>", "")
+        accel_string = accel_string.replace("<Mod4>", "")
+        for single, mod in SPECIAL_MODS:
+            if single in accel_string and mod in accel_string:
+                accel_string = accel_string.replace(mod, "")
+        return accel_string
+
+    def ungrab(self):
+        self.keyboard.ungrab(Gdk.CURRENT_TIME)

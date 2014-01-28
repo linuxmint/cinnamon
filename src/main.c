@@ -7,7 +7,7 @@
 #endif
 #include <stdlib.h>
 #include <string.h>
-
+#include <X11/Xlib.h>
 #include <clutter/clutter.h>
 #include <clutter/x11/clutter-x11.h>
 #include <dbus/dbus-glib.h>
@@ -220,6 +220,7 @@ center_pointer_on_screen ()
 int
 main (int argc, char **argv)
 {
+  XInitThreads();
   GOptionContext *ctx;
   GError *error = NULL;
   int ecode;

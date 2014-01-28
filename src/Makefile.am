@@ -103,16 +103,13 @@ EXTRA_DIST += cinnamon-marshal.list
 cinnamon_public_headers_h =		\
 	cinnamon-app.h			\
 	cinnamon-app-system.h		\
-	cinnamon-app-usage.h		\
 	cinnamon-arrow.h			\
 	cinnamon-doc-system.h		\
 	cinnamon-embedded-window.h		\
 	cinnamon-generic-container.h	\
 	cinnamon-gtk-embed.h		\
 	cinnamon-global.h			\
-	cinnamon-mobile-providers.h	\
 	cinnamon-mount-operation.h		\
-	cinnamon-network-agent.h		\
 	cinnamon-perf-log.h		\
 	cinnamon-screenshot.h	\
 	cinnamon-screen-grabber.h	\
@@ -140,19 +137,14 @@ libcinnamon_la_SOURCES =		\
 	cinnamon-a11y.h			\
 	cinnamon-a11y.c			\
 	cinnamon-app-system.c		\
-	cinnamon-app-usage.c		\
 	cinnamon-arrow.c			\
 	cinnamon-doc-system.c		\
 	cinnamon-embedded-window.c		\
 	cinnamon-generic-container.c	\
 	cinnamon-gtk-embed.c		\
 	cinnamon-global.c			\
-	cinnamon-mobile-providers.c	\
 	cinnamon-mount-operation.c		\
-	cinnamon-network-agent.c		\
 	cinnamon-perf-log.c		\
-	cinnamon-polkit-authentication-agent.h	\
-	cinnamon-polkit-authentication-agent.c	\
 	cinnamon-screenshot.c		\
 	cinnamon-screen-grabber.c	\
 	cinnamon-slicer.c			\

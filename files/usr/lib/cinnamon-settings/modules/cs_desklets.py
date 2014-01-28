@@ -9,6 +9,7 @@ class Module:
         keywords = _("desklet, desktop, slideshow")
         advanced = False
         self.name = "desklets"
+        self.comment = _("Manage your Cinnamon desklets")
         # for i18n replacement in ExtensionCore.py
         noun = _("desklet")
         pl_noun = _("desklets")

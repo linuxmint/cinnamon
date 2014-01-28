@@ -10,12 +10,13 @@ class Module:
         advanced = False
         sidePage = MouseTouchpadSidepage(_("Mouse and Touchpad"), "mouse.svg", keywords, advanced, content_box)
         self.sidePage = sidePage
+        self.comment = _("Control mouse and touchpad settings")
         self.name = "mouse"
         self.category = "hardware"
 
 class MouseTouchpadSidepage (SidePage):
     def __init__(self, name, icon, keywords, advanced, content_box):
-        SidePage.__init__(self, name, icon, keywords, advanced, content_box, 350)
+        SidePage.__init__(self, name, icon, keywords, advanced, content_box, 360)
         self.tabs = []
         self.mousebox = Gtk.VBox()
         self.touchbox = Gtk.VBox()
@@ -24,9 +25,12 @@ class MouseTouchpadSidepage (SidePage):
 
         mouse = Gtk.ScrolledWindow()
         mouse.add_with_viewport(self.mousebox)
+        self.mousebox.set_border_width(5)
 
         touch = Gtk.ScrolledWindow()
         touch.add_with_viewport(self.touchbox)
+        self.touchbox.set_border_width(5)
+        
         self.notebook.append_page(mouse, Gtk.Label(_("Mouse")))
         self.notebook.append_page(touch, Gtk.Label(_("Touchpad")))
 
@@ -48,6 +52,16 @@ class MouseTouchpadSidepage (SidePage):
         box = IndentedHBox()
         box.add(GSettingsCheckButton(_("Emulate middle click by clicking both left and right buttons"), "org.cinnamon.settings-daemon.peripherals.mouse", "middle-button-enabled", None))
         self.add_widget(box, 0, True)
+
+        title = Gtk.Label()
+        title.set_markup("<b>%s</b>" % _("Pointer Size"))
+        title.set_alignment(0,0)
+        self.add_widget(title, 0, None)
+
+        box = IndentedHBox()
+        slider = GSettingsRange(_("Size:"), _("Small"), _("Large"), 20.0, 50.0, False, "int", False, "org.cinnamon.desktop.interface", "cursor-size", None, adjustment_step = 1.0)
+        box.add_expand(slider)
+        self.add_widget(box, 0, None)
 
         title = Gtk.Label()
         title.set_markup("<b>%s</b>" % _("Pointer Speed"))
@@ -118,6 +132,9 @@ class MouseTouchpadSidepage (SidePage):
         scroll_method_combo = GSettingsComboBox(_("Panel layout"), "org.cinnamon.settings-daemon.peripherals.touchpad", "scroll-method", "org.cinnamon.settings-daemon.peripherals.touchpad/touchpad-enabled", scroll_method)
         box = IndentedHBox()
         box.add(scroll_method_combo)
+        self.add_widget(box, 1)
+        box = IndentedHBox()
+        box.add(GSettingsCheckButton(_("Enable natural scrolling"), "org.cinnamon.settings-daemon.peripherals.touchpad", "natural-scroll", "org.cinnamon.settings-daemon.peripherals.touchpad/touchpad-enabled"))
         self.add_widget(box, 1)
         box = IndentedHBox()
         box.add(GSettingsCheckButton(_("Enable horizontal scrolling"), "org.cinnamon.settings-daemon.peripherals.touchpad", "horiz-scroll-enabled", "org.cinnamon.settings-daemon.peripherals.touchpad/touchpad-enabled"))

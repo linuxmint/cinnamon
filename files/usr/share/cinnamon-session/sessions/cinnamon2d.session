@@ -1,5 +1,5 @@
 [Cinnamon Session]
 Name=Cinnamon (Software Rendering)
-RequiredComponents=cinnamon2d;cinnamon-settings-daemon;
+RequiredComponents=cinnamon;cinnamon-settings-daemon;cinnamon-screensaver;cinnamon-fallback-mount-helper;nemo-autostart;nm-applet;
 DesktopName=GNOME
 

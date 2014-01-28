@@ -29,7 +29,7 @@ except Exception, detail:
     sys.exit(1)
 
 class SidePage:
-    def __init__(self, name, icon, keywords, advanced, content_box, size = None, is_c_mod = False, is_standalone = False, exec_name = None):
+    def __init__(self, name, icon, keywords, advanced, content_box = None, size = None, is_c_mod = False, is_standalone = False, exec_name = None, module=None):
         self.name = name
         self.icon = icon
         self.content_box = content_box
@@ -37,6 +37,7 @@ class SidePage:
         self.is_c_mod = is_c_mod
         self.is_standalone = is_standalone
         self.exec_name = exec_name
+        self.module = module # Optionally set by the module so we can call on_module_selected() on it when we show it.
         self.keywords = keywords
         self.advanced = advanced
         self.size = size
@@ -79,8 +80,10 @@ class SidePage:
                         else:
                             for c_widget in c_widgets:
                                 c_widget.show()
-            else:
+            else:                
                 self.content_box.show_all()
+                if (self.module is not None):
+                    self.module.on_module_selected()
         else:
             subprocess.Popen(self.exec_name.split())
 
@@ -482,6 +485,7 @@ class GSettingsRange(Gtk.HBox):
         self.content_widget.connect('value-changed', self.on_my_value_changed)
         self.content_widget.connect('button-press-event', self.on_mouse_down)
         self.content_widget.connect('button-release-event', self.on_mouse_up)
+        self.content_widget.connect("scroll-event", self.on_mouse_scroll_event)
         self.content_widget.show_all()
         self.dependency_invert = False
         if self.dep_key is not None:
@@ -504,6 +508,18 @@ class GSettingsRange(Gtk.HBox):
     def on_mouse_up(self, widget, event):
         self._dragging = False
         self.on_my_value_changed(widget)
+
+    def on_mouse_scroll_event(self, widget, event):
+        found, delta_x, delta_y = event.get_scroll_deltas()
+        if found:
+            add = delta_y < 0
+            uncorrected = self.from_corrected(widget.get_value())
+            if add:
+                corrected = self.to_corrected(uncorrected + self._step)
+            else:
+                corrected = self.to_corrected(uncorrected - self._step)
+            widget.set_value(corrected)
+        return True
 
     def on_my_value_changed(self, widget):
         if self._dragging:

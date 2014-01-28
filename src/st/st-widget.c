@@ -286,7 +286,6 @@ st_widget_dispose (GObject *gobject)
 
   if (priv->theme_node)
     {
-      g_object_run_dispose (G_OBJECT (priv->theme_node));
       g_object_unref (priv->theme_node);
       priv->theme_node = NULL;
     }
@@ -594,6 +593,8 @@ st_widget_get_theme_node (StWidget *widget)
       StThemeNode *parent_node = NULL;
       ClutterStage *stage = NULL;
       ClutterActor *parent;
+      StThemeContext *context;
+      StThemeNode *tmp_node;
       char *pseudo_class, *direction_pseudo_class;
 
       parent = clutter_actor_get_parent (CLUTTER_ACTOR (widget));
@@ -632,16 +633,20 @@ st_widget_get_theme_node (StWidget *widget)
       else
         pseudo_class = direction_pseudo_class;
 
-      priv->theme_node = st_theme_node_new (st_theme_context_get_for_stage (stage),
-                                            parent_node, priv->theme,
-                                            G_OBJECT_TYPE (widget),
-                                            clutter_actor_get_name (CLUTTER_ACTOR (widget)),
-                                            priv->style_class,
-                                            pseudo_class,
-                                            priv->inline_style);
+      context = st_theme_context_get_for_stage (stage);
+      tmp_node = st_theme_node_new (context, parent_node, priv->theme,
+                                    G_OBJECT_TYPE (widget),
+                                    clutter_actor_get_name (CLUTTER_ACTOR (widget)),
+                                    priv->style_class,
+                                    pseudo_class,
+                                    priv->inline_style);
 
       if (pseudo_class != direction_pseudo_class)
         g_free (pseudo_class);
+
+      priv->theme_node = g_object_ref (st_theme_context_intern_node (context,
+                                                                     tmp_node));
+      g_object_unref (tmp_node);
     }
 
   return priv->theme_node;
@@ -1463,6 +1468,12 @@ st_widget_recompute_style (StWidget    *widget,
   StThemeNode *new_theme_node = st_widget_get_theme_node (widget);
   int transition_duration;
   gboolean paint_equal;
+
+  if (new_theme_node == old_theme_node)
+    {
+      widget->priv->is_style_dirty = FALSE;
+      return;
+    }
 
   if (!old_theme_node ||
       !st_theme_node_geometry_equal (old_theme_node, new_theme_node))

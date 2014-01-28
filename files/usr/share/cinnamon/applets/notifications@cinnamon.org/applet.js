@@ -4,7 +4,6 @@ const Main = imports.ui.main;
 const Gtk = imports.gi.Gtk;
 const PopupMenu = imports.ui.popupMenu;
 const St = imports.gi.St;
-const Gio = imports.gi.Gio;
 const Clutter = imports.gi.Clutter;
 const Mainloop = imports.mainloop;
 const MessageTray = imports.ui.messageTray;
@@ -28,8 +27,6 @@ MyApplet.prototype = {
         this.notifications = [];
         Main.messageTray.connect('notify-applet-update', Lang.bind(this, this._notification_added));
         global.settings.connect('changed::panel-edit-mode', Lang.bind(this, this.on_panel_edit_mode_changed));
-        this._calendarSettings = new Gio.Settings({ schema: 'org.cinnamon.calendar' });
-        this._calendarSettings.connect('changed', Lang.bind(this, this._update_timestamp));
         this._blinking = false;
         this._blink_toggle = false;
     },
@@ -62,10 +59,21 @@ MyApplet.prototype = {
             this.menu.addActor(this._maincontainer);
         }
 
-        this.scrollview = new St.ScrollView({ x_fill: true, y_fill: true, y_align: St.Align.START});
+        this.scrollview = new St.ScrollView({ x_fill: true, y_fill: true, y_align: St.Align.START, style_class: "vfade"});
         this._maincontainer.add(this.scrollview);
         this.scrollview.add_actor(this._notificationbin);
         this.scrollview.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC);
+
+        let vscroll = this.scrollview.get_vscroll_bar();
+        vscroll.connect('scroll-start',
+                        Lang.bind(this, function() {
+                                      this.menu.passEvents = true;
+                                  }));
+        vscroll.connect('scroll-stop',
+                        Lang.bind(this, function() {
+                                      this.menu.passEvents = false;
+                                  }));
+
         this._crit_icon = new St.Icon({icon_name: 'critical-notif', icon_type: St.IconType.SYMBOLIC, reactive: true, track_hover: true, style_class: 'system-status-icon' });
         this._alt_crit_icon = new St.Icon({icon_name: 'alt-critical-notif', icon_type: St.IconType.SYMBOLIC, reactive: true, track_hover: true, style_class: 'system-status-icon' });
         this.update_list();
@@ -193,7 +201,7 @@ MyApplet.prototype = {
     },
 
     _update_timestamp: function () {
-        let dateFormat = this._calendarSettings.get_string('date-format');       
+        let dateFormat = _("%l:%M %p");
         let actors = this._notificationbin.get_children();
         if (actors) {
             for (let i = 0; i < actors.length; i++) {

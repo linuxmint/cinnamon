@@ -20,7 +20,6 @@ home = os.path.expanduser("~")
 class XletSetting:
 
     def __init__(self, uuid, parent, _type):
-        self.session_bus = dbus.SessionBus()
         self.parent = parent
         self.type = _type
         self.current_id = None
@@ -182,7 +181,8 @@ class XletSetting:
         self.current_id = page.key
 
     def on_highlight_button_clicked(self, widget):
-        cinnamon_dbus = self.session_bus.get_object("org.Cinnamon", "/org/Cinnamon")
+        session_bus = dbus.SessionBus()
+        cinnamon_dbus = session_bus.get_object("org.Cinnamon", "/org/Cinnamon")
         highlight_applet = cinnamon_dbus.get_dbus_method('highlightApplet', 'org.Cinnamon')
         highlight_applet(self.current_id, self.multi_instance)
 

@@ -277,8 +277,11 @@ function _createDesklets(extension, deskletDefinition) {
 
     deskletObj[desklet_id] = desklet;
     desklet._uuid = extension.uuid;
+    desklet._meta = extension.meta; 
     desklet.instance_id = desklet_id;  // In case desklet constructor didn't set this
-
+    
+    desklet.finalizeContextMenu();
+    
     return desklet;
 }
 

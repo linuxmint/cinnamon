@@ -10,9 +10,12 @@ try:
     import os
     import glob
     import gettext
-    from gi.repository import Gio, Gtk, GObject, GdkPixbuf
+    from gi.repository import Gio, Gtk, GObject, GdkPixbuf, GLib, Pango, Gdk
     import SettingsWidgets
     import capi
+    import time
+    import grp
+    import pwd
 # Standard setting pages... this can be expanded to include applet dirs maybe?
     mod_files = glob.glob('/usr/lib/cinnamon-settings/modules/*.py')
     mod_files.sort()
@@ -42,6 +45,11 @@ WIN_WIDTH = 800
 WIN_HEIGHT = 600
 WIN_H_PADDING = 20
 
+MIN_LABEL_WIDTH = 16
+MAX_LABEL_WIDTH = 25
+MIN_PIX_WIDTH = 100
+MAX_PIX_WIDTH = 160
+
 CATEGORIES = [
 #        Display name                         ID              Show it? Always False to start              Icon
     {"label": _("Appearance"),            "id": "appear",      "show": False,                       "icon": "cat-appearance.svg"},
@@ -59,13 +67,14 @@ CONTROL_CENTER_MODULES = [
     [_("Universal Access"),                 "universal-access",   "universal-access.svg",           "prefs",      False,          _("magnifier, talk, access, zoom, keys, contrast")],
     [_("Power Management"),                 "power",              "power.svg",                   "hardware",      False,          _("power, suspend, hibernate, laptop, desktop")],
     [_("Sound"),                            "sound",              "sound.svg",                   "hardware",      False,          _("sound, speakers, headphones, test")],
-    [_("Color"),                            "color",              "color.svg",                   "hardware",      True,           _("color, profile, display, printer, output")]
+    [_("Color"),                            "color",              "color.svg",                   "hardware",      True,           _("color, profile, display, printer, output")],
+    [_("Graphics Tablet"),                  "wacom",              "tablet.svg",                  "hardware",      True,           _("wacom, digitize, tablet, graphics, calibrate, stylus")]
 ]
 
 STANDALONE_MODULES = [
 #         Label                          Executable                          Icon                Category        Advanced?               Keywords for filter
     [_("Printers"),                      "system-config-printer",        "printer.svg",         "hardware",       False,          _("printers, laser, inkjet")],    
-    [_("Firewall"),                      "gufw",                         "firewall.svg",        "prefs",          True,           _("firewall, block, filter, programs")],
+    [_("Firewall"),                      "gufw",                         "firewall.svg",        "admin",          True,           _("firewall, block, filter, programs")],
     [_("Languages"),                     "gnome-language-selector",      "language.svg",        "prefs",          False,          _("language, install, foreign")],
     [_("Login Screen"),                  "gksu /usr/sbin/mdmsetup",      "login.svg",           "admin",          True,           _("login, mdm, gdm, manager, user, password, startup, switch")],
     [_("Startup Programs"),              "cinnamon-session-properties",  "startup-programs.svg","prefs",          False,          _("startup, programs, boot, init, session")],
@@ -74,10 +83,24 @@ STANDALONE_MODULES = [
     [_("Users and Groups"),              "cinnamon-settings-users",      "user-accounts.svg",   "admin",          True,           _("user, users, account, accounts, group, groups, password")]
 ]
 
+def print_timing(func):
+    def wrapper(*arg):
+        t1 = time.time()
+        res = func(*arg)
+        t2 = time.time()
+        print '%s took %0.3f ms' % (func.func_name, (t2-t1)*1000.0)
+        return res
+    return wrapper
+
+def touch(fname, times=None):
+    with file(fname, 'a'):
+        os.utime(fname, times)
+
+
 class MainWindow:
 
     # Change pages
-    def side_view_nav(self, side_view, cat):
+    def side_view_nav(self, side_view, path, cat):
         selected_items = side_view.get_selected_items()
         if len(selected_items) > 0:
             self.deselect(cat)
@@ -97,7 +120,7 @@ class MainWindow:
             self.button_back.show()
             self.current_sidepage = sidePage
             self.maybe_resize(sidePage)
-            GObject.idle_add(self.start_fade_in)
+            GObject.timeout_add(250, self.fade_in)
         else:
             sidePage.build(self.advanced_mode)
 
@@ -114,6 +137,7 @@ class MainWindow:
                 self.side_view[key].unselect_all()
 
     ''' Create the UI '''
+    @print_timing
     def __init__(self):
 
         self.builder = Gtk.Builder()
@@ -136,12 +160,15 @@ class MainWindow:
         self.search_entry.connect("changed", self.onSearchTextChanged)
         self.search_entry.connect("icon-press", self.onClearSearchBox)
         self.window.connect("destroy", self.quit)
+        self.window.connect("key-press-event", self.on_keypress)
 
         self.builder.connect_signals(self)
         self.window.set_has_resize_grip(False)
         self.sidePages = []
         self.settings = Gio.Settings.new("org.cinnamon")
-        self.advanced_mode = self.settings.get_boolean(ADVANCED_GSETTING)
+        self.current_cat_widget = None
+
+        self.advanced_mode = self.force_advanced() or self.settings.get_boolean(ADVANCED_GSETTING)
         self.mode_button = self.builder.get_object("mode_button")
         self.mode_button.set_size_request(self.get_mode_size(), -1)
         if self.advanced_mode:
@@ -153,7 +180,6 @@ class MainWindow:
         self.c_manager = capi.CManager()
         self.content_box.c_manager = self.c_manager
         self.bar_heights = 0
-        self.opacity = 0
 
         for i in range(len(modules)):
             try:
@@ -194,9 +220,24 @@ class MainWindow:
                 img = None
             sidePagesIters[sp_id] = self.store[sp_cat].append([sp.name, img, sp, sp_cat])
 
+        self.min_label_length = 0
+        self.min_pix_length = 0
+
         for key in self.store.keys():
+            char, pix = self.get_label_min_width(self.store[key])
+            self.min_label_length = max(char, self.min_label_length)
+            self.min_pix_length = max(pix, self.min_pix_length)
             self.storeFilter[key] = self.store[key].filter_new()
             self.storeFilter[key].set_visible_func(self.filter_visible_function)
+
+        self.min_label_length += 2
+        self.min_pix_length += 4
+
+        self.min_label_length = max(self.min_label_length, MIN_LABEL_WIDTH)
+        self.min_pix_length = max(self.min_pix_length, MIN_PIX_WIDTH)
+
+        self.min_label_length = min(self.min_label_length, MAX_LABEL_WIDTH)
+        self.min_pix_length = min(self.min_pix_length, MAX_PIX_WIDTH)
 
         self.displayCategories()
 
@@ -205,7 +246,7 @@ class MainWindow:
         self.window.connect("destroy", Gtk.main_quit)
         self.button_cancel.connect("clicked", lambda y: self.window.destroy())
         self.button_back.connect('clicked', self.back_to_icon_view)
-        self.window.set_opacity(self.opacity)
+        self.window.set_opacity(0)
         self.window.show()
         self.calculate_bar_heights()
 
@@ -215,7 +256,34 @@ class MainWindow:
             self.findPath(first_page_iter)
         else:
             self.search_entry.grab_focus()
-            GObject.idle_add(self.start_fade_in)
+            self.fade_in()
+
+    def on_keypress(self, widget, event):
+        if event.keyval == Gdk.KEY_BackSpace and type(self.window.get_focus()) != Gtk.Entry and \
+                                                 type(self.window.get_focus()) != Gtk.TreeView:
+            self.back_to_icon_view(None)
+            return True
+        return False
+
+    def fade_in(self):
+        self.window.set_opacity(1.0)
+
+    def force_advanced(self):
+        ret = False
+        user_name = pwd.getpwuid(os.getuid()).pw_name
+
+        groups = grp.getgrall()
+        for group in groups:
+            (name, pw, gid, mem) = group
+            if name in ("adm", "sudo"):
+                for user in mem:
+                    if user_name == user:
+                        ret = True
+
+        if os.path.exists(os.path.join(GLib.get_user_config_dir(), ".cs_no_default")):
+            ret = False
+
+        return ret
 
     def get_mode_size(self):
         self.mode_button.set_label(AdvancedMode)
@@ -223,16 +291,6 @@ class MainWindow:
         self.mode_button.set_label(NormalMode)
         nmw, npw = self.mode_button.get_preferred_width()
         return max(apw, npw)
-
-    def start_fade_in(self):
-        if self.opacity < 1.0:
-            GObject.timeout_add(10, self.do_fade_in)
-        return False
-
-    def do_fade_in(self):
-        self.opacity += 0.05
-        self.window.set_opacity(self.opacity)
-        return self.opacity < 1.0
 
     def calculate_bar_heights(self):
         h = 0
@@ -271,6 +329,24 @@ class MainWindow:
                 self.prepCategory(category)
         self.side_view_container.show_all()
 
+    def get_label_min_width(self, model):
+        min_width_chars = 0
+        min_width_pixels = 0
+        icon_view = Gtk.IconView()
+        iter = model.get_iter_first()
+        while iter != None:
+            string = model.get_value(iter, 0)
+            split_by_word = string.split(" ")
+            for word in split_by_word:
+                layout = icon_view.create_pango_layout(word)
+                item_width, item_height = layout.get_pixel_size()
+                if item_width > min_width_pixels:
+                    min_width_pixels = item_width
+                if len(word) > min_width_chars:
+                    min_width_chars = len(word)
+            iter = model.iter_next(iter)
+        return min_width_chars, min_width_pixels
+
     def prepCategory(self, category):
         self.storeFilter[category["id"]].refilter()
         if not self.anyVisibleInCategory(category):
@@ -293,22 +369,133 @@ class MainWindow:
         box.pack_start(widget, False, False, 1)
         self.side_view_container.pack_start(box, False, False, 0)
         widget = Gtk.IconView.new_with_model(self.storeFilter[category["id"]])
-        widget.set_text_column(0)
-        widget.set_pixbuf_column(1)
-        widget.set_item_width(110)
-        widget.set_row_spacing(0)
-        widget.set_column_spacing(0)
-        widget.set_row_spacing(0)
-        widget.set_hexpand(True)
-        widget.set_vexpand(False)
+
+        area = widget.get_area()
+
+        widget.set_item_width(self.min_pix_length)
+        pixbuf_renderer = Gtk.CellRendererPixbuf()
+        text_renderer = Gtk.CellRendererText(ellipsize=Pango.EllipsizeMode.NONE, wrap_mode=Pango.WrapMode.WORD_CHAR, wrap_width=0, width_chars=self.min_label_length, alignment=Pango.Alignment.CENTER)
+
+        text_renderer.set_alignment(.5, 0)
+        area.pack_start(pixbuf_renderer, True, True, False)
+        area.pack_start(text_renderer, True, True, False)
+        area.add_attribute(pixbuf_renderer, "pixbuf", 1)
+        area.add_attribute(text_renderer, "text", 0)
+
         css_provider = Gtk.CssProvider()
-        css_provider.load_from_data("GtkIconView {background-color: transparent;}")
+        css_provider.load_from_data("GtkIconView {                             \
+                                         background-color: transparent;        \
+                                     }                                         \
+                                     GtkIconView.view.cell:selected {          \
+                                         background-color: @selected_bg_color; \
+                                     }")
         c = widget.get_style_context()
         c.add_provider(css_provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
         self.side_view[category["id"]] = widget
         self.side_view_container.pack_start(self.side_view[category["id"]], False, False, 0)
         self.first_category_done = True
-        self.side_view[category["id"]].connect("selection_changed", self.side_view_nav, category["id"])
+        self.side_view[category["id"]].connect("item-activated", self.side_view_nav, category["id"])
+        self.side_view[category["id"]].connect("button-release-event", self.button_press, category["id"])
+        self.side_view[category["id"]].connect("keynav-failed", self.on_keynav_failed, category["id"])
+        self.side_view[category["id"]].connect("selection-changed", self.on_selection_changed, category["id"])
+
+    def bring_selection_into_view(self, iconview):
+        sel = iconview.get_selected_items()
+
+        if sel:
+            path = sel[0]
+            found, rect = iconview.get_cell_rect(path, None)
+
+            cw = self.side_view_container.get_window()
+            cw_x, cw_y = cw.get_position()
+
+            ivw = iconview.get_window()
+            iv_x, iv_y = ivw.get_position()
+
+            final_y = rect.y + (rect.height / 2) + cw_y + iv_y
+
+            adj = self.side_view_sw.get_vadjustment()
+            page = adj.get_page_size()
+            current_pos = adj.get_value()
+
+            if final_y > current_pos + page:
+                adj.set_value(iv_y + rect.y)
+            elif final_y < current_pos:
+                adj.set_value(iv_y + rect.y)
+
+    def on_selection_changed(self, widget, category):
+        sel = widget.get_selected_items()
+        if len(sel) > 0:
+            self.current_cat_widget = widget
+            self.bring_selection_into_view(widget)
+        for iv in self.side_view:
+            if self.side_view[iv] == self.current_cat_widget:
+                continue
+            self.side_view[iv].unselect_all()
+
+    def get_cur_cat_index(self, category):
+        i = 0
+        for cat in CATEGORIES:
+            if category == cat["id"]:
+                return i
+            i += 1
+
+    def get_cur_column(self, iconview):
+        s, path, cell = iconview.get_cursor()
+        if path:
+            col = iconview.get_item_column(path)
+            return col
+
+    def reposition_new_cat(self, sel, iconview):
+        iconview.set_cursor(sel, None, False)
+        iconview.select_path(sel)
+        iconview.grab_focus()
+
+    def on_keynav_failed(self, widget, direction, category):
+        num_cats = len(CATEGORIES)
+        current_idx = self.get_cur_cat_index(category)
+        new_cat = CATEGORIES[current_idx]
+        ret = False
+        dist = 1000
+        sel = None
+
+        if direction == Gtk.DirectionType.DOWN and current_idx < num_cats - 1:
+            new_cat = CATEGORIES[current_idx + 1]
+            col = self.get_cur_column(widget)
+            new_cat_view = self.side_view[new_cat["id"]]
+            model = new_cat_view.get_model()
+            iter = model.get_iter_first()
+            while iter is not None:
+                path = model.get_path(iter)
+                c = new_cat_view.get_item_column(path)
+                d = abs(c - col)
+                if d < dist:
+                    sel = path
+                    dist = d
+                iter = model.iter_next(iter)
+            self.reposition_new_cat(sel, new_cat_view)
+            ret = True
+        elif direction == Gtk.DirectionType.UP and current_idx > 0:
+            new_cat = CATEGORIES[current_idx - 1]
+            col = self.get_cur_column(widget)
+            new_cat_view = self.side_view[new_cat["id"]]
+            model = new_cat_view.get_model()
+            iter = model.get_iter_first()
+            while iter is not None:
+                path = model.get_path(iter)
+                c = new_cat_view.get_item_column(path)
+                d = abs(c - col)
+                if d <= dist:
+                    sel = path
+                    dist = d
+                iter = model.iter_next(iter)
+            self.reposition_new_cat(sel, new_cat_view)
+            ret = True
+        return ret
+
+    def button_press(self, widget, event, category):
+        if event.button == 1:
+            self.side_view_nav(widget, None, category)
 
     def anyVisibleInCategory(self, category):
         id = category["id"]
@@ -366,6 +553,7 @@ class MainWindow:
         else:
             self.mode_button.set_label(NormalMode)
             self.on_advanced_mode()
+        touch(os.path.join(GLib.get_user_config_dir(), ".cs_no_default"))
         return True
 
     def on_advanced_mode(self):

@@ -3,6 +3,7 @@
 const Lang = imports.lang;
 const Gio = imports.gi.Gio;
 const Main = imports.ui.main;
+const Mainloop = imports.mainloop;
 
 function SoundManager() {
     this._init();
@@ -13,6 +14,7 @@ SoundManager.prototype = {
     _init : function() {
         this.keys = ["switch", "close", "map", "minimize", "maximize", "unmaximize", "tile", "login", "plug", "unplug"];
         this.desktop_keys = ["volume"];
+        this.startup_delay = true;
         this.enabled = {};
         this.file = {};
         this.settings = new Gio.Settings({ schema: 'org.cinnamon.sounds' });
@@ -21,6 +23,9 @@ SoundManager.prototype = {
         this._cacheDesktopSettings();   
         this.settings.connect("changed", Lang.bind(this, this._cacheSettings));
         this.settings.connect("changed", Lang.bind(this, this._cacheDesktopSettings));
+        Mainloop.timeout_add_seconds(10, Lang.bind(this, function() {
+            this.startup_delay = false;
+        }));
     },    
 
     _cacheSettings: function() {
@@ -40,8 +45,9 @@ SoundManager.prototype = {
     },
 
     play: function(sound) {
+        if (this.startup_delay)
+            return;
         if (this.enabled[sound] && this.file[sound] != "") {
-            global.logError(sound);
             global.play_sound_file(0, this.file[sound]);
         }
     }

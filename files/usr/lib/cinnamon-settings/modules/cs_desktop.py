@@ -11,6 +11,7 @@ class Module:
         self.sidePage = sidePage
         self.name = "desktop"
         self.category = "prefs"
+        self.comment = _("Manage your desktop icons")
 
     def _loadCheck(self):
         if 'org.nemo' in Gio.Settings.list_schemas():

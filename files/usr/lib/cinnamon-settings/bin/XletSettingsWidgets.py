@@ -21,6 +21,7 @@ setting_dict = {
     "header"          :   "Header", # Not a setting, just a boldface header text
     "separator"       :   "Separator", # not a setting, a horizontal separator
     "entry"           :   "Entry",
+    "textview"        :   "TextView",    
     "checkbox"        :   "CheckButton",
     "spinbutton"      :   "SpinButton",
     "filechooser"     :   "FileChooser",
@@ -32,7 +33,6 @@ setting_dict = {
     "keybinding"      :   "Keybinding",
     "button"          :   "Button" # Not a setting, provides a button which triggers a callback in the applet/desklet
 }
-
 
 class Factory():
     def __init__(self, file_name, instance_id, multi_instance, uuid):
@@ -117,15 +117,16 @@ class Settings():
         self.multi_instance = multi_instance
         self.uuid = uuid
         try:
-            self.t = gettext.translation(self.uuid, home+"/.local/share/locale").ugettext
+            self.tUser = gettext.translation(self.uuid, home+"/.local/share/locale").ugettext
         except IOError:
             try:
-                self.t = gettext.translation(self.uuid, "/usr/share/locale").ugettext
+                self.tUser = gettext.translation(self.uuid, "/usr/share/locale").ugettext
             except IOError:
-                try:
-                    self.t = gettext.translation("cinnamon", "/usr/share/cinnamon/locale").ugettext
-                except IOError:
-                    self.t = None
+                self.tUser = None
+        try:
+            self.t = gettext.translation("cinnamon", "/usr/share/cinnamon/locale").ugettext
+        except IOError:
+            self.t = None
         self.reload()
 
     def reload (self):
@@ -152,19 +153,47 @@ class Settings():
     def get_key_exists(self, key):
         return key in self.data.keys()
 
+    def real_update_dbus(self, key):
+        self.factory.pause_monitor()
+        session_bus = dbus.SessionBus()
+        cinnamon_dbus = session_bus.get_object("org.Cinnamon", "/org/Cinnamon")
+        setter = cinnamon_dbus.get_dbus_method('updateSetting', 'org.Cinnamon')
+        payload = json.dumps(self.data[key])
+        setter(self.uuid, self.instance_id, key, payload)
+        self.factory.resume_monitor()
+
+    def try_update_dbus(self, key):
+        try:
+            self.real_update_dbus(key)
+        except Exception, e:
+            print "Cinnamon not running, falling back to python settings engine: ", e
+            self.save()
+
+    def try_update_dbus_foreach(self):
+        failed = False
+        for key in self.data.keys():
+            if "value" in self.data[key] and "default" in self.data[key]:
+                try:
+                    self.real_update_dbus(key)
+                except Exception, e:
+                    failed = True;
+                    print "Cinnamon not running, falling back to python settings engine: ", e
+        if failed:
+            self.save()
+
     def set_value(self, key, val):
         self.data[key]["value"] = val
-        self.save()
+        self.try_update_dbus(key)
 
     def set_custom_value(self, key, val):
         self.data[key]["last-custom-value"] = val
-        self.save()
+        self.try_update_dbus(key)
 
     def reset_to_defaults(self):
         for key in self.data.keys():
             if "value" in self.data[key] and "default" in self.data[key]:
                 self.data[key]["value"] = self.data[key]["default"]
-        self.save()
+        self.try_update_dbus_foreach()
 
     def load_from_file(self, filename):
         new_file = open(filename)
@@ -194,9 +223,13 @@ class Settings():
         self.save()
 
 
-class BaseWidget():
+class BaseWidget(object):
     def __init__(self, key, settings_obj, uuid):
         self.settings_obj = settings_obj
+        if self.settings_obj.tUser:
+            self.tUser = self.settings_obj.tUser
+        else:
+            self.tUser = None
         if self.settings_obj.t:
             self.t = self.settings_obj.t
         else:
@@ -238,26 +271,37 @@ class BaseWidget():
 
     def get_desc(self):
         try:
+            if self.tUser:
+                result = self.tUser(self.settings_obj.get_data(self.key)["description"])
+                if result != self.settings_obj.get_data(self.key)["description"]:
+                    print result
+                    return result
             if self.t:
                 print self.t(self.settings_obj.get_data(self.key)["description"])
                 return self.t(self.settings_obj.get_data(self.key)["description"])
-            else:
-                return self.settings_obj.get_data(self.key)["description"]
+            return self.settings_obj.get_data(self.key)["description"]
         except:
             print ("Could not find description for key '%s' in xlet '%s'" % (self.key, self.uuid))
             return ""
 
     def get_tooltip(self):
         try:
+            if self.tUser:
+                result = self.tUser(self.settings_obj.get_data(self.key)["tooltip"])
+                if result != self.settings_obj.get_data(self.key)["tooltip"]:
+                    return result
             if self.t:
                 return self.t(self.settings_obj.get_data(self.key)["tooltip"])
-            else:
-                return self.settings_obj.get_data(self.key)["tooltip"]
+            return self.settings_obj.get_data(self.key)["tooltip"]
         except:
             return ""
 
     def get_units(self):
         try:
+            if self.tUser:
+                result = self.tUser(self.settings_obj.get_data(self.key)["units"])
+                if result != self.settings_obj.get_data(self.key)["units"]:
+                    return result
             if self.t:
                 return self.t(self.settings_obj.get_data(self.key)["units"])
             else:
@@ -295,12 +339,20 @@ class BaseWidget():
 
     def get_options(self):
         try:
-            if self.t:
+            if self.t or self.tUser:
                 ret = {}
                 d = self.settings_obj.get_data(self.key)["options"]
                 for key in d.keys():
-                    translated_key = self.t(key)
-                    ret[translated_key] = d[key]
+                    if self.tUser:
+                        translated_key = self.tUser(key)
+                        if translated_key != key:
+                            ret[translated_key] = d[key]
+                        elif self.t:
+                            translated_key = self.t(key)
+                            ret[translated_key] = d[key]
+                    elif self.t:
+                        translated_key = self.t(key)
+                        ret[translated_key] = d[key]
                 return ret
             else:
                 return self.settings_obj.get_data(self.key)["options"]
@@ -350,6 +402,12 @@ class BaseWidget():
             return self.settings_obj.get_data(self.key)["indent"]
         except:
             return False
+            
+    def get_height(self):
+        try:
+            return self.settings_obj.get_data(self.key)["height"]
+        except:
+            return 200            
 
 def set_tt(tt, *widgets):
     for widget in widgets:
@@ -389,21 +447,13 @@ class CheckButton(Gtk.CheckButton, BaseWidget):
         self.set_active(self.get_val())
         self.handler = self.connect('toggled', self.on_my_value_changed)
         set_tt(self.get_tooltip(), self)
-        self._value_changed_timer = None
 
     def add_dependent(self, widget):
         self.dependents.append(widget)
 
     def on_my_value_changed(self, widget):
-        if self._value_changed_timer:
-            GObject.source_remove(self._value_changed_timer)
-        self._value_changed_timer = GObject.timeout_add(300, self.update_settings_value)
-
-    def update_settings_value(self):
         self.set_val(self.get_active())
         self.update_dependents()
-        self._value_changed_timer = None
-        return False
 
     def update_dependents(self):
         for dep in self.dependents:
@@ -445,7 +495,7 @@ class SpinButton(Gtk.HBox, BaseWidget):
     def on_my_value_changed(self, widget):
         if self._value_changed_timer:
             GObject.source_remove(self._value_changed_timer)
-        self._value_changed_timer = GObject.timeout_add(300, self.update_settings_value)
+        self._value_changed_timer = GObject.timeout_add(100, self.update_settings_value)
 
     def update_settings_value(self):
         self.set_val(self.spinner.get_value())
@@ -476,7 +526,7 @@ class Entry(Gtk.HBox, BaseWidget):
     def on_my_value_changed(self, widget):
         if self._value_changed_timer:
             GObject.source_remove(self._value_changed_timer)
-        self._value_changed_timer = GObject.timeout_add(300, self.update_settings_value)
+        self._value_changed_timer = GObject.timeout_add(100, self.update_settings_value)
 
     def update_settings_value(self):
         self.set_val(self.entry.get_text())
@@ -490,6 +540,48 @@ class Entry(Gtk.HBox, BaseWidget):
 
     def update_dep_state(self, active):
         self.entry.set_sensitive(active)
+
+class TextView(Gtk.HBox, BaseWidget):
+    def __init__(self, key, settings_obj, uuid):
+        BaseWidget.__init__(self, key, settings_obj, uuid)
+        super(TextView, self).__init__()
+        self.label = Gtk.Label(self.get_desc())
+        self.label.set_alignment(xalign=1, yalign=0)
+        self.scrolledwindow = Gtk.ScrolledWindow(hadjustment=None, vadjustment=None)
+        self.scrolledwindow.set_size_request(width=-1, height=self.get_height())
+        self.scrolledwindow.set_policy(hscrollbar_policy=Gtk.PolicyType.AUTOMATIC,
+                                       vscrollbar_policy=Gtk.PolicyType.AUTOMATIC)
+        self.scrolledwindow.set_shadow_type(type=Gtk.ShadowType.ETCHED_IN)
+        self.textview = Gtk.TextView()
+        self.textview.set_border_width(3)
+        self.textview.set_wrap_mode(wrap_mode=Gtk.WrapMode.NONE)
+        self.buffer = self.textview.get_buffer()
+        self.buffer.set_text(self.get_val())
+        self.pack_start(self.label, False, False, 2)
+        self.add(self.scrolledwindow)
+        self.scrolledwindow.add(self.textview)
+        self.handler = self.buffer.connect("changed", self.on_my_value_changed)
+        set_tt(self.get_tooltip(), self.label, self.textview)
+        self._value_changed_timer = None
+
+    def on_my_value_changed(self, widget):
+        if self._value_changed_timer:
+            GObject.source_remove(self._value_changed_timer)
+        self._value_changed_timer = GObject.timeout_add(100, self.update_settings_value)
+
+    def update_settings_value(self):
+        [start, end] = self.buffer.get_bounds()
+        self.set_val(self.buffer.get_text(start, end, False))
+        self._value_changed_timer = None
+        return False
+
+    def on_settings_file_changed(self):
+        self.textview.handler_block(self.handler)
+        self.buffer.set_text(self.get_val())
+        self.textview.handler_unblock(self.handler)
+
+    def update_dep_state(self, active):
+        self.textview.set_sensitive(active)        
 
 class ColorChooser(Gtk.HBox, BaseWidget):
     def __init__(self, key, settings_obj, uuid):
@@ -836,7 +928,7 @@ class IconFileChooser(Gtk.HBox, BaseWidget):
     def on_entry_changed(self, widget):
         if self._value_changed_timer:
             GObject.source_remove(self._value_changed_timer)
-        self._value_changed_timer = GObject.timeout_add(300, self.update_from_entry)
+        self._value_changed_timer = GObject.timeout_add(100, self.update_from_entry)
 
     def update_from_entry(self):
         self.set_val(self.entry.get_text())
@@ -868,12 +960,27 @@ class Scale(Gtk.HBox, BaseWidget):
         self.handler = self.scale.connect('value-changed', self.on_my_value_changed)
         self.scale.show_all()
         set_tt(self.get_tooltip(), self.label, self.scale)
+        self.scale.connect("scroll-event", self.on_mouse_scroll_event)
         self._value_changed_timer = None
+
+# TODO: Should we fix this in GTK? upscrolling should slide the slider to the right..right?
+# This is already adjusted in Nemo as well.
+    def on_mouse_scroll_event(self, widget, event):
+        found, delta_x, delta_y = event.get_scroll_deltas()
+        if found:
+            add = delta_y < 0
+            val = widget.get_value()
+            if add:
+                val += self.get_step()
+            else:
+                val -= self.get_step()
+            widget.set_value(val)
+        return True
 
     def on_my_value_changed(self, widget):
         if self._value_changed_timer:
             GObject.source_remove(self._value_changed_timer)
-        self._value_changed_timer = GObject.timeout_add(300, self.update_settings_value)
+        self._value_changed_timer = GObject.timeout_add(100, self.update_settings_value)
 
     def update_settings_value(self):
         self.set_val(self.scale.get_value())

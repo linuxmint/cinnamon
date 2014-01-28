@@ -128,13 +128,7 @@
   <!-- System Tools-->
   <Menu>
     <Name>System</Name>
-    <Directory>cinnamon-system-tools.directory</Directory>
-    <Include>
-      <And>
-        <Category>System</Category>
-        <Not><Category>Settings</Category></Not>
-      </And>
-    </Include>
+    <Directory>cinnamon-system-tools.directory</Directory>    
   </Menu>   <!-- End System Tools -->
 
   <!-- Other -->
@@ -168,6 +162,7 @@
     <Include>
       <And>
         <Category>Settings</Category>
+        <Not><Category>System</Category></Not>
       </And>
     </Include>
   </Menu>
@@ -182,6 +177,31 @@
         <Category>System</Category>
       </And>
     </Include>
+    <Include>
+      <And>
+        <Category>System</Category>
+        <Not><Category>Settings</Category></Not>
+      </And>
+    </Include>
   </Menu>     <!-- End System Settings -->
+
+  <Layout>
+	<Merge type="menus"/>
+	<Menuname>Accessories</Menuname>
+	<Menuname>Education</Menuname>
+	<Menuname>Games</Menuname>
+	<Menuname>Graphics</Menuname>
+	<Menuname>Internet</Menuname>
+	<Menuname>Office</Menuname>
+	<Menuname>Other</Menuname>
+	<Menuname>Development</Menuname>
+	<Menuname>Multimedia</Menuname>
+	<Menuname>System</Menuname>
+	<Menuname>Universal Access</Menuname>
+	<Menuname>wine-wine</Menuname>
+	<Menuname>Preferences</Menuname>
+	<Menuname>Administration</Menuname>
+	<Merge type="files"/>
+  </Layout>
 
 </Menu>  <!-- End Applications -->

@@ -7,6 +7,7 @@ import gettext
 import shutil
 import PIL
 from PIL import Image
+from random import randint
 
 gettext.install("cinnamon", "/usr/share/cinnamon/locale")
 
@@ -385,6 +386,8 @@ class Module:
             self.groups.set_sort_column_id(1, Gtk.SortType.ASCENDING)
 
             self.users_treeview = self.builder.get_object("treeview_users")
+            self.users_treeview.set_rules_hint(True)
+
             self.groups_treeview = self.builder.get_object("treeview_groups")
 
             self.users_treeview.get_selection().connect("changed", self.on_user_selection)
@@ -393,7 +396,8 @@ class Module:
             column = Gtk.TreeViewColumn()                
             cell = Gtk.CellRendererPixbuf()
             column.pack_start(cell, True)
-            column.add_attribute(cell, 'pixbuf', INDEX_USER_PICTURE)            
+            column.add_attribute(cell, 'pixbuf', INDEX_USER_PICTURE)
+            cell.set_property('ypad', 1)
             self.users_treeview.append_column(column)
 
             column = Gtk.TreeViewColumn()                
@@ -570,6 +574,9 @@ class Module:
                 elif height > width:
                     new_width = width
                     new_height = width
+                else:
+                    new_width = width
+                    new_height = height
                 left = (width - new_width)/2
                 top = (height - new_height)/2
                 right = (width + new_width)/2

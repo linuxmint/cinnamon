@@ -11,11 +11,16 @@ class Module:
         self.sidePage = sidePage
         self.name = "screensaver"
         self.category = "prefs"
+        self.comment = _("Manage screensaver and lock settings")
         if os.path.exists("/usr/bin/cinnamon-screensaver-command"):
             sidePage.add_widget(GSettingsCheckButton(_("Ask for an away message when locking the screen from the menu"), "org.cinnamon.screensaver", "ask-for-away-message", None))
             sidePage.add_widget(GSettingsEntry(_("Default away message"), "org.cinnamon.screensaver", "default-message", None))
 
-        widget = content_box.c_manager.get_c_widget("screen")
+        try:
+            widget = content_box.c_manager.get_c_widget("screen")
+        except:
+            widget = None
+
         if widget is not None:
             cheat_box = Gtk.Box.new(Gtk.Orientation.VERTICAL, 2)
             cheat_box.pack_start(widget, False, False, 2)

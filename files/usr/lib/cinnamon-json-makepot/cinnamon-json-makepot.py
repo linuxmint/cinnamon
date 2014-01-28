@@ -3,6 +3,9 @@
 import sys
 import os
 import json
+import subprocess
+from gi.repository import GLib
+from optparse import OptionParser
 try:
     import polib
 except:
@@ -15,20 +18,53 @@ except:
     """
     quit()
 
+home = os.path.expanduser("~")
+locale_inst = '%s/.local/share/locale' % home
+
+
+def remove_empty_folders(path):
+    if not os.path.isdir(path):
+        return
+
+    # remove empty subfolders
+    files = os.listdir(path)
+    if len(files):
+        for f in files:
+            fullpath = os.path.join(path, f)
+            if os.path.isdir(fullpath):
+                remove_empty_folders(fullpath)
+
+    # if folder empty, delete it
+    files = os.listdir(path)
+    if len(files) == 0:
+        print "Removing empty folder:", path
+        os.rmdir(path)
+
 
 class Main:
     def __init__(self):
-        if (len(sys.argv) < 2 or len(sys.argv) > 3) or \
-           (len(sys.argv) == 2 and sys.argv[1] == "-js") or \
-           (len(sys.argv) == 3 and sys.argv[1] != "-js"):
-            print """
+
+        usage = """
             Usage:
 
-            cinnamon-json-makepot [-js] <potfile name>
+            cinnamon-json-makepot -i | -r | [-js] <potfile name>
 
-            -js - Runs xgettext on any javascript files in your directory before
+            -js, --js - Runs xgettext on any javascript files in your directory before
                   scanning the settings-schema.json file.  This allows you to generate
                   a .pot file for your entire applet at once.
+
+                ***
+                The following two options should only be run in your applet, desklet, or
+                extension's directory
+                ***
+
+            -i, --install - Compiles and installs any .po files contained in a po folder
+                  to the system locale store.  Use this option to test your translations
+                  locally before uploading to Spices.  It will use the applet, desklet,
+                  or extension UUID as the translation domain
+
+            -r, --remove - The opposite of install, removes translations from the store.
+                  Again, it uses the UUID to find the correct files to remove
 
             <potfile name> - name of the .pot file to work with.  This can be pre-existing,
             or the name of a new file to use.  If you leave off the .pot extension, it will
@@ -49,16 +85,36 @@ class Main:
             Will create "fr.po" for the French language.  A translator can use a utility
             such as poedit to add translations to this file, or edit the file manually.
 
+            If you get duplicate message definition errors when running msginit, run:
+
+            msguniq myapplet.pot > fixed.pot
+
+            This will combine any duplicate definitions and allow you to then run msginit with
+            fixed.pot.
+
             .po files can be added to a "po" folder in your applet's directory,
             and will be compiled and installed into the system when the applet is installed
             via Cinnamon Settings.
-            """
+        """
+
+        parser = OptionParser(usage=usage)
+        parser.add_option("-j", "--js", action="store_true", dest="js", default=False)
+        parser.add_option("-i", "--install", action="store_true", dest="install", default=False)
+        parser.add_option("-r", "--remove", action="store_true", dest="remove", default=False)
+
+        (options, args) = parser.parse_args()
+
+        if options.install:
+            self.do_install()
+
+        if options.remove:
+            self.do_remove()
+
+        if not args:
+            parser.print_help()
             quit()
 
-        if len(sys.argv) == 2:
-            self.potname = sys.argv[1]
-        else:
-            self.potname = sys.argv[2]
+        self.potname = args[0]
 
         if not self.potname.endswith(".pot"):
             self.potname = self.potname + ".pot"
@@ -66,7 +122,7 @@ class Main:
         self.domain = self.potname.replace(".pot", "")
         self.potpath = os.path.join(os.getcwd(), self.potname)
 
-        if sys.argv[1] == "-js":
+        if options.js:
             try:
                 import subprocess
                 subprocess.call(["xgettext", "--version"])
@@ -97,6 +153,51 @@ class Main:
             self.po.save(fpath=self.potpath)
 
         print "Extraction complete"
+        quit()
+
+    def get_uuid(self):
+        try:
+            file = open(os.path.join(os.getcwd(), "metadata.json"), 'r')
+            raw_meta = file.read()
+            file.close()
+            md = json.loads(raw_meta)
+            return md["uuid"]
+        except Exception, detail:
+            print "Failed to get UUID - missing, corrupt, or incomplete metadata.json file"
+            print detail
+            quit()
+
+    def do_install(self):
+        podir = os.path.join(os.getcwd(), "po")
+        done_one = False
+        for root, subFolders, files in os.walk(podir, topdown=False):
+            for file in files:
+                parts = os.path.splitext(file)
+                if parts[1] == '.po':
+                    this_locale_dir = os.path.join(locale_inst, parts[0], 'LC_MESSAGES')
+                    GLib.mkdir_with_parents(this_locale_dir, 0755)
+                    #print "/usr/bin/msgfmt -c %s -o %s" % (os.path.join(root, file), os.path.join(this_locale_dir, '%s.mo' % self.get_uuid()))
+                    subprocess.call(["msgfmt", "-c", os.path.join(root, file), "-o", os.path.join(this_locale_dir, '%s.mo' % self.get_uuid())])
+                    done_one = True
+        if done_one:
+            print "Install complete for domain: %s" % self.get_uuid()
+        else:
+            print "Nothing installed"
+        quit()
+
+    def do_remove(self):
+        done_one = False
+        if (os.path.exists(locale_inst)):
+            i19_folders = os.listdir(locale_inst)
+            for i19_folder in i19_folders:
+                if os.path.isfile(os.path.join(locale_inst, i19_folder, 'LC_MESSAGES', "%s.mo" % self.get_uuid())):
+                    done_one = True
+                    os.remove(os.path.join(locale_inst, i19_folder, 'LC_MESSAGES', "%s.mo" % self.get_uuid()))
+                remove_empty_folders(os.path.join(locale_inst, i19_folder))
+        if done_one:
+            print "Removal complete for domain: %s" % self.get_uuid()
+        else:
+            print "Nothing to remove"
         quit()
 
     def scan_dirs(self):

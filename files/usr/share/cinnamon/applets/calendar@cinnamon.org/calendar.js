@@ -9,6 +9,7 @@ const Signals = imports.signals;
 const Pango = imports.gi.Pango;
 const Gettext_gtk30 = imports.gettext.domain('gtk30');
 const Cinnamon = imports.gi.Cinnamon;
+const Settings = imports.ui.settings;
 
 const MSECS_IN_DAY = 24 * 60 * 60 * 1000;
 const WEEKDATE_HEADER_WIDTH_DIGITS = 3;
@@ -344,12 +345,12 @@ Signals.addSignalMethods(DBusEventSource.prototype);
 // Calendar:
 // @eventSource: is an object implementing the EventSource API, e.g. the
 // requestRange(), getEvents(), hasEvents() methods and the ::changed signal.
-function Calendar(eventSource) {
-    this._init(eventSource);
+function Calendar(eventSource, settings) {
+    this._init(eventSource, settings);
 }
 
 Calendar.prototype = {
-    _init: function(eventSource) {
+    _init: function(eventSource, settings) {
         if (eventSource) {
             this._eventSource = eventSource;
 
@@ -362,10 +363,10 @@ Calendar.prototype = {
         this._weekStart = Cinnamon.util_get_week_start();
         this._weekdate = NaN;
         this._digitWidth = NaN;
-        this._settings = new Gio.Settings({ schema: 'org.cinnamon.calendar' });
+        this.settings = settings;
 
-        this._settings.connect('changed::' + SHOW_WEEKDATE_KEY, Lang.bind(this, this._onSettingsChange));
-        this._useWeekdate = this._settings.get_boolean(SHOW_WEEKDATE_KEY);
+        this.settings.connect("changed::show-week-numbers", Lang.bind(this, this._onSettingsChange));
+        this.show_week_numbers = this.settings.getValue("show-week-numbers");
 
         // Find the ordering for month/year in the calendar heading
 
@@ -395,6 +396,12 @@ Calendar.prototype = {
         this._buildHeader ();
     },
 
+    _onSettingsChange: function(object, key, old_val, new_val) {
+        this.show_week_numbers = new_val;
+        this._buildHeader();
+        this._update(false);
+    },
+
     // Sets the calendar to show a specific date
     setDate: function(date, forceReload) {
         if (!_sameDay(date, this._selectedDate)) {
@@ -408,7 +415,7 @@ Calendar.prototype = {
     },
 
     _buildHeader: function() {
-        let offsetCols = this._useWeekdate ? 1 : 0;
+        let offsetCols = this.show_week_numbers ? 1 : 0;
         this.actor.destroy_children();
 
         // Top line of the calendar '<| September |> <| 2009 |>'
@@ -483,7 +490,7 @@ Calendar.prototype = {
     },
 
     _setWeekdateHeaderWidth: function() {
-        if (this.digitWidth != NaN && this._useWeekdate && this._weekdateHeader) {
+        if (this.digitWidth != NaN && this.show_week_numbers && this._weekdateHeader) {
             this._weekdateHeader.set_width (this._digitWidth * WEEKDATE_HEADER_WIDTH_DIGITS);
         }
     },
@@ -539,12 +546,6 @@ Calendar.prototype = {
 
     _onNextMonthButtonClicked: function() {
         this._applyDateBrowseAction(0, +1);
-    },
-
-    _onSettingsChange: function() {
-        this._useWeekdate = this._settings.get_boolean(SHOW_WEEKDATE_KEY);
-        this._buildHeader();
-        this._update(false);
     },
 
     _update: function(forceReload) {
@@ -606,11 +607,11 @@ Calendar.prototype = {
 
             button.style_class = styleClass;
 
-            let offsetCols = this._useWeekdate ? 1 : 0;
+            let offsetCols = this.show_week_numbers ? 1 : 0;
             this.actor.add(button,
                            { row: row, col: offsetCols + (7 + iter.getDay() - this._weekStart) % 7 });
 
-            if (this._useWeekdate && iter.getDay() == 4) {
+            if (this.show_week_numbers && iter.getDay() == 4) {
                 let label = new St.Label({ text: _getCalendarWeekForDate(iter).toString(),
                                            style_class: 'calendar-day-base calendar-week-number'});
                 this.actor.add(label,

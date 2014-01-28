@@ -39,6 +39,13 @@ var STRING_TYPES = {
             "description"
         ]
     },
+    "textview" : {
+        "required-fields": [
+            "type",
+            "default",
+            "description"
+        ]
+    },
     "colorchooser" : {
         "required-fields": [
             "type",
@@ -159,7 +166,7 @@ var NON_SETTING_TYPES = {
 };
 
 
-function _provider(xlet, uuid, instanceId) {
+function _provider(xlet, uuid, instanceId, type, string) {
     this._init(xlet, uuid, instanceId, type, string);
 }
 
@@ -225,12 +232,13 @@ _provider.prototype = {
             }
 
             this.metaBindings = {}
-            if (!this.instanceId) {
-                this.instanceId = 0; 
+            if (!this.multi_instance) {
+                this.instanceId = this.uuid; 
             }
             this.settings_obj = new SettingObj(this, this.settings_file, this.uuid, this.instanceId);
 
             this.valid = true;
+            Main.settingsManager.register(this.uuid, this.instanceId, this);
         },
 
         _get_is_multi_instance_xlet: function(uuid) {
@@ -340,13 +348,20 @@ _provider.prototype = {
             let existing_json;
             let new_json;
             try {
-                existing_json = JSON.parse(existing_settings_file);
                 new_json = JSON.parse(init_file_contents);
             } catch (e) {
-                global.logError("Problem parsing settings files for " + this.uuid + "while preparing to perform upgrade");
+                global.logError("Problem parsing " + orig_file.get_path() + " while preparing to perform upgrade.");
                 global.logError("Skipping upgrade for now - something may be wrong with the new settings schema file.");
                 return false;
             }
+            try {
+                existing_json = JSON.parse(existing_settings_file);
+            } catch (e) {
+                global.logError("Problem parsing " + this.settings_file.get_path() + " while preparing to perform upgrade.");
+                global.log("Re-creating settings file.");   
+                this.settings_file.delete(null, null);
+                return this._create_settings_file();
+            }           
             if (existing_json["__md5__"] != checksum) {
                 global.log("Updated settings file detected for " + this.uuid + ".  Beginning upgrade of existing settings");
                 return this._do_upgrade(new_json, existing_json, checksum);
@@ -434,6 +449,10 @@ _provider.prototype = {
             return true;
         },
 
+        remote_set: function (key, payload) {
+            let node = JSON.parse(payload);
+            this.settings_obj.set_node_from_dbus(key, node);
+        },
 
 /* _settings_file_changed:  For convenience only, if you want to handle updating your applet props yourself,
  * connect to this signal on your AppletSettings object to get notified when the json file changes, then
@@ -466,6 +485,8 @@ _provider.prototype = {
                 return false;
             }
             let type = this.settings_obj.get_key_exists_and_type(key_name);
+            if (!applet_callback)
+                applet_callback = function() {};
             if (type) {
                 if (type in BOOLEAN_TYPES || type in STRING_TYPES || type in NUMBER_TYPES) {
                     this.metaBindings[key_name] = new _setting(sync_type, this.xlet, key_name, this.settings_obj, applet_var, Lang.bind (this.xlet, applet_callback), user_data);
@@ -497,6 +518,7 @@ _provider.prototype = {
             }
             this.metaBindings = undefined;
             this.settings_obj = undefined;
+            Main.settingsManager.unregister(this.uuid, this.instanceId);
         },
 
         getValue: function (key_name) {
@@ -585,6 +607,19 @@ SettingObj.prototype = {
         this.save();
     },
 
+    set_node_from_dbus: function(key, node) {
+        let different = false;
+        let old_val = this.json[key]['value'];
+        let new_val = node['value']
+        if (old_val != new_val) {
+            this.json[key] = node;
+            this.provider._value_changed_notify(key, old_val, new_val);
+            this.emit("setting-file-changed");
+            this.provider._setting_file_changed_notify();
+            this.save(); // TODO: This is probably wrong to have here....should be earlier..but i'd rather do everything else first, for responsiveness
+        }
+    },
+
     _on_file_changed: function() {
         if (this.file_changed_timeout) {
             Mainloop.source_remove(this.file_changed_timeout);
@@ -668,17 +703,20 @@ _setting.prototype = {
 
     _setting_file_changed: function () {
         if (this.sync_type != BindingDirection.OUT) {
-            let new_val = this.get_val();
-            if (new_val != this.obj[this.applet_var]) {
-                this._monitor_applet_var(false);
-                this.obj[this.applet_var] = this.get_val();
-                if (this.user_data) {
-                    this.cb(user_data);
-                } else {
-                    this.cb();
-                }
-                this._monitor_applet_var(true);
+            this.set_applet_var_and_cb(this.get_val());
+        }
+    },
+
+    set_applet_var_and_cb: function (new_val) {
+        if (new_val != this.obj[this.applet_var]) {
+            this._monitor_applet_var(false);
+            this.obj[this.applet_var] = new_val;
+            if (this.user_data) {
+                this.cb(user_data);
+            } else {
+                this.cb();
             }
+            this._monitor_applet_var(true);
         }
     },
 
@@ -758,4 +796,24 @@ ExtensionSettings.prototype = {
     _get_is_multi_instance_xlet: function(uuid) {
         return false;
     }
+};
+
+function SettingsManager() {
+    this._init();
+}
+
+SettingsManager.prototype = {
+        _init: function () {
+            this.uuids = {};
+        },
+
+        register: function (uuid, instance_id, obj) {
+            if (!(uuid in this.uuids))
+                this.uuids[uuid] = {}
+            this.uuids[uuid][instance_id] = obj;
+        },
+
+        unregister: function (uuid, instance_id) {
+            this.uuids[uuid][instance_id] = null;
+        }
 };

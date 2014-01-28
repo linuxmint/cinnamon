@@ -208,7 +208,7 @@ ClassicSwitcher.prototype = {
     },
 
     _onWorkspaceSelected: function() {
-        this._windows = this._getWindowsForBinding(this._binding);
+        this._windows = AppSwitcher.getWindowsForBinding(this._binding);
         this._currentIndex = 0;
         this._updateList(0);
         this._select(0);

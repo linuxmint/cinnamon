@@ -84,7 +84,6 @@ class Spice_Harvester:
 
 
         self.progress_window = self.builder.get_object("progress_window")
-        self.progress_button_close = self.builder.get_object("btnProgressClose")
         self.progress_button_abort = self.builder.get_object("btnProgressAbort")
         self.progress_window.connect("delete-event", self.on_progress_close)
         self.progresslabel = self.builder.get_object('progresslabel')
@@ -100,7 +99,6 @@ class Spice_Harvester:
         self._sigLoadFinished = None
 
         self.progress_button_abort.connect("clicked", self.on_abort_clicked)
-        self.progress_button_close.connect("clicked", self.on_progress_close)
 
         self.spiceDetail = Gtk.Dialog(_("Applet info"),
                             self.window,
@@ -181,7 +179,7 @@ class Spice_Harvester:
         if not os.path.exists(screenshot_path):
             f = open(screenshot_path, 'w')
             self.download_url = URL_SPICES_HOME + appletData['screenshot']
-            self.download_with_progressbar(f, screenshot_path, _('Downloading screenshot'), False)
+            self.download_with_progressbar(f, screenshot_path, _("Downloading screenshot"), False)
 
         template = open(os.path.realpath(os.path.dirname(os.path.abspath(__file__)) + "/../data/spices/applet-detail.html")).read()
         subs = {}
@@ -381,7 +379,6 @@ class Spice_Harvester:
         self.download_url = URL_SPICES_HOME + self.index_cache[uuid]['file'];
         self.current_uuid = uuid
 
-        self.progress_button_close.set_sensitive(False)
         self.progress_window.show()        
 
         self.progresslabel.set_text(_("Installing %s...") % (title))
@@ -498,13 +495,11 @@ class Spice_Harvester:
                     self.errorMessage(_("An error occurred during installation or updating.  You may wish to report this incident to the developer of %s.\n\nIf this was an update, the previous installation is unchanged") % (obj), str(detail))
                 return False
 
-        self.progress_button_close.set_sensitive(True)
         self.progress_button_abort.set_sensitive(False)
         self.progress_window.show()
         return True
 
     def uninstall(self, uuid, name, schema_filename, onFinished=None):
-        self.progress_button_close.set_sensitive(False)        
         self.progresslabel.set_text(_("Uninstalling %s...") % name)
         self.progress_window.show()
         
@@ -540,15 +535,10 @@ class Spice_Harvester:
             self.progress_window.hide()
             self.errorMessage(_("Problem uninstalling %s.  You may need to manually remove it.") % (uuid), detail)
 
-        self.progress_button_close.set_sensitive(True)
         self.progress_window.hide()
 
         if callable(onFinished):
             onFinished(uuid)
-
-    def on_progress_close(self, widget):
-        self.progress_window.hide()
-        return
 
     def on_abort_clicked(self, button):
         self.abort_download = ABORT_USER
@@ -559,7 +549,6 @@ class Spice_Harvester:
         self.load_index()
 
     def download_with_progressbar(self, outfd, outfile, caption='Please wait..', waitForClose=True):
-        self.progress_button_close.set_sensitive(False)
         self.progressbar.set_fraction(0)
         self.progressbar.set_text('0%')        
         self.progresslabel.set_text(caption)
@@ -575,7 +564,6 @@ class Spice_Harvester:
             time.sleep(0.5)
             self.progress_window.hide()
         else:
-            self.progress_button_close.set_sensitive(True)
             self.progress_button_abort.set_sensitive(False)
 
     def progress_bar_pulse(self):       
@@ -601,7 +589,7 @@ class Spice_Harvester:
             self.progress_window.hide()
             if self.abort_download == ABORT_ERROR:
                 self.errorMessage(_("An error occurred while trying to access the server.  Please try again in a little while."), self.error)
-            raise Exception(_('Download aborted.'))
+            raise Exception(_("Download aborted."))
 
         return outfile
 

@@ -105,10 +105,10 @@ let compatible_players = [
     'pragha', 'quodlibet', 'guayadeque', 'amarok', 'googlemusicframe', 'xbmc',
     'noise', 'xnoise', 'gmusicbrowser', 'spotify', 'audacious', 'vlc',
     'beatbox', 'songbird', 'pithos', 'gnome-mplayer', 'nuvolaplayer', 'qmmp',
-    'deadbeef', 'smplayer'];
+    'deadbeef', 'smplayer', 'tomahawk'];
 let support_seek = [
     'clementine', 'banshee', 'rhythmbox', 'rhythmbox3', 'pragha', 'quodlibet',
-    'amarok', 'noise', 'xnoise', 'gmusicbrowser', 'spotify', 'vlc', 'beatbox',
+    'amarok', 'xnoise', 'gmusicbrowser', 'spotify', 'vlc', 'beatbox',
     'gnome-mplayer', 'qmmp', 'deadbeef'];
 /* dummy vars for translation */
 let x = _("Playing");

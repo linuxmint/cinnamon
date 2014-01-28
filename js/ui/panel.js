@@ -439,24 +439,6 @@ SettingsLauncher.prototype = {
 };
 
 function populateSettingsMenu(menu) {
-    menu.settingsItem = new PopupMenu.PopupSubMenuMenuItem(_("Settings"));
-
-    let menuItem = new SettingsLauncher(_("Themes"), "themes", "themes", menu.settingsItem.menu);
-    menu.settingsItem.menu.addMenuItem(menuItem);
-
-    menuItem = new SettingsLauncher(_("Applets"), "applets", "applets", menu.settingsItem.menu);
-    menu.settingsItem.menu.addMenuItem(menuItem);
-
-    menuItem = new SettingsLauncher(_("Panel"), "panel", "panel", menu.settingsItem.menu);
-    menu.settingsItem.menu.addMenuItem(menuItem);
-
-    menuItem = new SettingsLauncher(_("Menu"), "menu", "menu", menu.settingsItem.menu);
-    menu.settingsItem.menu.addMenuItem(menuItem);
-
-    menuItem = new SettingsLauncher(_("All settings"), "", "preferences-system", menu.settingsItem.menu);
-    menu.settingsItem.menu.addMenuItem(menuItem);
-
-    menu.addMenuItem(menu.settingsItem);
 
     menu.troubleshootItem = new PopupMenu.PopupSubMenuMenuItem(_("Troubleshoot"));
     menu.troubleshootItem.menu.addAction(_("Restart Cinnamon"), function(event) {
@@ -471,6 +453,8 @@ function populateSettingsMenu(menu) {
         let confirm = new ConfirmDialog();
         confirm.open();
     });
+
+	menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
     menu.addMenuItem(menu.troubleshootItem);
 
@@ -499,7 +483,8 @@ PanelContextMenu.prototype = {
         Main.uiGroup.add_actor(this.actor);
         this.actor.hide();
 
-        populateSettingsMenu(this);
+        let applet_settings_item = new SettingsLauncher(_("Add applets to the panel"), "applets", "applets", this);
+        this.addMenuItem(applet_settings_item);
 
         let dragItem = new PopupMenu.PopupSwitchMenuItem(_("Drag Panel"), false);
         this.addMenuItem(dragItem);
@@ -515,8 +500,13 @@ PanelContextMenu.prototype = {
         let menuItem = new SettingsLauncher(_("Panel settings"), "panel " + panelID, "panel", this);
         this.addMenuItem(menuItem);
 
-        let applet_settings_item = new SettingsLauncher(_("Add applets to the panel"), "applets", "applets", this);
-        this.addMenuItem(applet_settings_item);
+        let menuItem = new SettingsLauncher(_("Themes"), "themes", "themes", this);
+        this.addMenuItem(menuItem);
+
+        let menuSetting = new SettingsLauncher(_("All settings"), "", "preferences-system", this);
+        this.addMenuItem(menuSetting);
+
+        populateSettingsMenu(this);
     }
 }
 
@@ -967,7 +957,7 @@ Panel.prototype = {
         this.actor.connect('allocate', Lang.bind(this, this._allocate));
         this.actor.connect('leave-event', Lang.bind(this, this._leavePanel));
         this.actor.connect('enter-event', Lang.bind(this, this._enterPanel));
-        this.actor.connect('button-release-event', Lang.bind(this, this._onButtonReleaseEvent));
+        this.actor.connect('button-press-event', Lang.bind(this, this._onButtonPressEvent));
         this.actor.connect('style-changed', Lang.bind(this, this._queueMoveResizePanel));
 
         this.panelBox.connect('allocation-changed', Lang.bind(this, this._updateBarriers));
@@ -1206,7 +1196,7 @@ Panel.prototype = {
         }
     },
 
-    _onButtonReleaseEvent: function (actor, event) {
+    _onButtonPressEvent: function (actor, event) {
         if (event.get_button()==1){
             if (this._context_menu.isOpen) {
                 this._context_menu.toggle();

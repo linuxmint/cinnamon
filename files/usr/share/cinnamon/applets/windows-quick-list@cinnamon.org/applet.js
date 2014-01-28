@@ -53,6 +53,8 @@ MyApplet.prototype = {
                             }
                                         );
 
+                windows = windows.filter( Main.isInteresting );
+
                 if(sticky_windows.length && (wks==0)) {
                     for ( let i = 0; i < sticky_windows.length; ++i ) {
                         let metaWindow = sticky_windows[i];
@@ -112,6 +114,7 @@ MyApplet.prototype = {
     },
 
     activateWindow: function(metaWorkspace, metaWindow) {
+        this.menu.toggle();
         if(!metaWindow.is_on_all_workspaces()) { metaWorkspace.activate(global.get_current_time()); }
         metaWindow.unminimize(global.get_current_time());
         metaWindow.activate(global.get_current_time());

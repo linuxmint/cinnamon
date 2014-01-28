@@ -6,8 +6,12 @@ const Clutter = imports.gi.Clutter;
 const St = imports.gi.St;
 const Util = imports.misc.util;
 const PopupMenu = imports.ui.popupMenu;
-const Calendar = imports.ui.calendar;
 const UPowerGlib = imports.gi.UPowerGlib;
+const Settings = imports.ui.settings;
+const AppletDir = imports.ui.appletManager.applets['calendar@cinnamon.org'];
+const Calendar = AppletDir.calendar;
+
+let DEFAULT_FORMAT = _("%l:%M %p");
 
 function _onVertSepRepaint (area)
 {
@@ -25,17 +29,20 @@ function _onVertSepRepaint (area)
     cr.stroke();
 };
 
-function MyApplet(orientation, panel_height) {
-    this._init(orientation, panel_height);
+function MyApplet(orientation, panel_height, instance_id) {
+    this._init(orientation, panel_height, instance_id);
 }
 
 MyApplet.prototype = {
     __proto__: Applet.TextApplet.prototype,
 
-    _init: function(orientation, panel_height) {        
-        Applet.TextApplet.prototype._init.call(this, orientation, panel_height);
+    _init: function(orientation, panel_height, instance_id) {        
+        Applet.TextApplet.prototype._init.call(this, orientation, panel_height, instance_id);
         
         try {                 
+
+            this.settings = new Settings.AppletSettings(this, "calendar@cinnamon.org", this.instance_id);
+
             this.menuManager = new PopupMenu.PopupMenuManager(this);
             
             this._orientation = orientation;
@@ -59,7 +66,7 @@ MyApplet.prototype = {
             this._eventList = null;
 
             // Calendar
-            this._calendar = new Calendar.Calendar(this._eventSource);       
+            this._calendar = new Calendar.Calendar(this._eventSource, this.settings);       
             vbox.add(this._calendar.actor);
 
             let item = new PopupMenu.PopupMenuItem(_("Date and Time Settings"))
@@ -74,25 +81,19 @@ MyApplet.prototype = {
                 global.reparentActor(item.actor, vbox);
             }
 
-            // Done with hbox for calendar and event list
-
             // Track changes to clock settings        
-            this._calendarSettings = new Gio.Settings({ schema: 'org.cinnamon.calendar' });
-            this._dateFormat = null;
-            this._dateFormatFull = null;
-            let getCalendarSettings = Lang.bind(this, function() {
-                this._dateFormat = this._calendarSettings.get_string('date-format');
-                this._dateFormatFull = this._calendarSettings.get_string('date-format-full');
-                this._updateClockAndDate();
-            });
-            this._calendarSettings.connect('changed', getCalendarSettings);
+            this._dateFormat = DEFAULT_FORMAT;
+            this._dateFormatFull = _("%A %B %e, %Y");
+
+            this.settings.bindProperty(Settings.BindingDirection.IN, "use-custom-format", "use_custom_format", this.on_settings_changed, null);
+            this.settings.bindProperty(Settings.BindingDirection.IN, "custom-format", "custom_format", this.on_settings_changed, null);        
 
             // https://bugzilla.gnome.org/show_bug.cgi?id=655129
             this._upClient = new UPowerGlib.Client();
-            this._upClient.connect('notify-resume', getCalendarSettings);
+            this._upClient.connect('notify-resume', this._updateClockAndDate);
 
             // Start the clock
-            getCalendarSettings();
+            this.on_settings_changed();
             this._updateClockAndDatePeriodic();
      
         }
@@ -104,6 +105,19 @@ MyApplet.prototype = {
     on_applet_clicked: function(event) {
         this.menu.toggle();
     },
+
+    on_settings_changed: function() {
+        if (this.use_custom_format) {
+            this._dateFormat = this.custom_format;
+        } else {
+            this._dateFormat = DEFAULT_FORMAT;
+        }
+        this._updateClockAndDate();
+    },
+
+    on_custom_format_button_pressed: function() {
+        Util.spawnCommandLine("xdg-open http://www.foragoodstrftime.com/");
+    },
     
     _onLaunchSettings: function() {
         this.menu.close();
@@ -113,7 +127,12 @@ MyApplet.prototype = {
     _updateClockAndDate: function() {
         let displayDate = new Date();
         let dateFormattedFull = displayDate.toLocaleFormat(this._dateFormatFull);
-        this.set_applet_label(displayDate.toLocaleFormat(this._dateFormat));
+        let label_string = displayDate.toLocaleFormat(this._dateFormat);
+        if (!label_string) {
+            global.logError("Calendar applet: bad time format string - check your string.");
+            label_string = "~CLOCK FORMAT ERROR~ " + displayDate.toLocaleFormat(DEFAULT_FORMAT);
+        }
+        this.set_applet_label(label_string);
         if (dateFormattedFull !== this._lastDateFormattedFull) {
             this._date.set_text(dateFormattedFull);
             this.set_applet_tooltip(dateFormattedFull);
@@ -175,7 +194,7 @@ MyApplet.prototype = {
     
 };
 
-function main(metadata, orientation, panel_height) {  
-    let myApplet = new MyApplet(orientation, panel_height);
+function main(metadata, orientation, panel_height, instance_id) {  
+    let myApplet = new MyApplet(orientation, panel_height, instance_id);
     return myApplet;      
 }

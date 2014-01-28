@@ -11,6 +11,7 @@ class Module:
         self.sidePage = sidePage
         self.name = "effects"
         self.category = "appear"
+        self.comment = _("Control Cinnamon visual effects.")
         sidePage.add_widget(GSettingsCheckButton(_("Enable desktop effects"), "org.cinnamon", "desktop-effects", None))
 
         box = IndentedHBox()
