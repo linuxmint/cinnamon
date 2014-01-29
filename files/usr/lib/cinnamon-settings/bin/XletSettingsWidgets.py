@@ -133,7 +133,7 @@ class Settings():
         _file = open(self.file_name)
         raw_data = _file.read()
         self.data = {}
-        self.data = json.loads(raw_data, object_pairs_hook=collections.OrderedDict)
+        self.data = json.loads(raw_data.decode('utf-8'), object_pairs_hook=collections.OrderedDict)
         _file.close()
 
     def save (self, name = None):
@@ -198,7 +198,7 @@ class Settings():
     def load_from_file(self, filename):
         new_file = open(filename)
         new_raw = new_file.read()
-        new_json = json.loads(new_raw, object_pairs_hook=collections.OrderedDict)
+        new_json = json.loads(new_raw.decode('utf-8'), object_pairs_hook=collections.OrderedDict)
         new_file.close()
         copy = self.data
         if copy["__md5__"] != new_json["__md5__"]:
@@ -294,6 +294,7 @@ class BaseWidget(object):
                 return self.t(self.settings_obj.get_data(self.key)["tooltip"])
             return self.settings_obj.get_data(self.key)["tooltip"]
         except:
+            print ("Could not find tooltip for key '%s' in xlet '%s'" % (self.key, self.uuid))
             return ""
 
     def get_units(self):
@@ -304,10 +305,9 @@ class BaseWidget(object):
                     return result
             if self.t:
                 return self.t(self.settings_obj.get_data(self.key)["units"])
-            else:
-                return self.settings_obj.get_data(self.key)["units"]
+            return self.settings_obj.get_data(self.key)["units"]
         except:
-            print ("Could not find description for key '%s' in xlet '%s'" % (self.key, self.uuid))
+            print ("Could not find units for key '%s' in xlet '%s'" % (self.key, self.uuid))
             return ""
 
     def get_val(self):
@@ -345,7 +345,7 @@ class BaseWidget(object):
                 for key in d.keys():
                     if self.tUser:
                         translated_key = self.tUser(key)
-                        if translated_key != key:
+                        if translated_key != key or not self.t:
                             ret[translated_key] = d[key]
                         elif self.t:
                             translated_key = self.t(key)
