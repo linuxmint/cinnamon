@@ -165,13 +165,13 @@ var NON_SETTING_TYPES = {
     }
 };
 
-function toUTF8FromAssccii(asscii) {
+function toUTF8FromAscii(ascii) {
     // From: http://phpjs.org/functions
-    if(asscii === null || typeof asscii === "undefined") {
+    if(ascii === null || typeof ascii === "undefined") {
         return "";
     }
 
-    let string = (asscii + ''); // .replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+    let string = (ascii + ''); // .replace(/\r\n/g, "\n").replace(/\r/g, "\n");
     let utftext = '',
         start, end, stringl = 0;
 
@@ -327,7 +327,7 @@ _provider.prototype = {
                 init_json[key]["value"] = init_json[key]["default"]
             }
             init_json["__md5__"] = checksum;
-            let out_file = toUTF8FromAssccii(JSON.stringify(init_json, null, 4));
+            let out_file = toUTF8FromAscii(JSON.stringify(init_json, null, 4));
 
             let fp = this.settings_file.create(0, null);
             fp.write(out_file, null);
@@ -455,7 +455,7 @@ _provider.prototype = {
             }
             new_json["__md5__"] = checksum;
 
-            let out_file = toUTF8FromAssccii(JSON.stringify(new_json, null, 4));
+            let out_file = toUTF8FromAscii(JSON.stringify(new_json, null, 4));
 
             if (this.settings_file.delete(null, null)) {
                 let fp = this.settings_file.create(0, null);
@@ -628,7 +628,7 @@ SettingObj.prototype = {
 
     save: function() {
         this.settings_file_monitor.disconnect(this.monitor_id);
-        let raw_file = toUTF8FromAssccii(JSON.stringify(this.json, null, 4));
+        let raw_file = toUTF8FromAscii(JSON.stringify(this.json, null, 4));
         if (this.file.delete(null, null)) {
             let fp = this.file.create(0, null);
             fp.write(raw_file, null);
