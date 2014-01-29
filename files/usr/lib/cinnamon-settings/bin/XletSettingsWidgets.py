@@ -118,15 +118,16 @@ class Settings():
         self.multi_instance = multi_instance
         self.uuid = uuid
         try:
-            self.t = gettext.translation(self.uuid, home+"/.local/share/locale").ugettext
+            self.tUser = gettext.translation(self.uuid, home+"/.local/share/locale").ugettext
         except IOError:
             try:
-                self.t = gettext.translation(self.uuid, "/usr/share/locale").ugettext
+                self.tUser = gettext.translation(self.uuid, "/usr/share/locale").ugettext
             except IOError:
-                try:
-                    self.t = gettext.translation("cinnamon", "/usr/share/cinnamon/locale").ugettext
-                except IOError:
-                    self.t = None
+                self.tUser = None
+        try:
+            self.t = gettext.translation("cinnamon", "/usr/share/cinnamon/locale").ugettext
+        except IOError:
+            self.t = None
         self.reload()
 
     def reload (self):
@@ -170,7 +171,7 @@ class Settings():
     def load_from_file(self, filename):
         new_file = open(filename)
         new_raw = new_file.read()
-        new_json = json.loads(new_raw, object_pairs_hook=collections.OrderedDict)
+        new_json = json.loads(new_raw.decode('utf-8'), object_pairs_hook=collections.OrderedDict)
         new_file.close()
         copy = self.data
         if copy["__md5__"] != new_json["__md5__"]:
@@ -198,6 +199,10 @@ class Settings():
 class BaseWidget(object):
     def __init__(self, key, settings_obj, uuid):
         self.settings_obj = settings_obj
+        if self.settings_obj.tUser:
+            self.tUser = self.settings_obj.tUser
+        else:
+            self.tUser = None
         if self.settings_obj.t:
             self.t = self.settings_obj.t
         else:
@@ -239,32 +244,43 @@ class BaseWidget(object):
 
     def get_desc(self):
         try:
+            if self.tUser:
+                result = self.tUser(self.settings_obj.get_data(self.key)["description"])
+                if result != self.settings_obj.get_data(self.key)["description"]:
+                    print result
+                    return result
             if self.t:
                 print self.t(self.settings_obj.get_data(self.key)["description"])
-                return self.t(self.settings_obj.get_data(self.key)["description"]).decode('utf-8')
-            else:
-                return self.settings_obj.get_data(self.key)["description"]
+                return self.t(self.settings_obj.get_data(self.key)["description"])
+            return self.settings_obj.get_data(self.key)["description"]
         except:
             print ("Could not find description for key '%s' in xlet '%s'" % (self.key, self.uuid))
             return ""
 
     def get_tooltip(self):
         try:
+            if self.tUser:
+                result = self.tUser(self.settings_obj.get_data(self.key)["tooltip"])
+                if result != self.settings_obj.get_data(self.key)["tooltip"]:
+                    return result
             if self.t:
-                return self.t(self.settings_obj.get_data(self.key)["tooltip"]).decode('utf-8')
-            else:
-                return self.settings_obj.get_data(self.key)["tooltip"]
+                return self.t(self.settings_obj.get_data(self.key)["tooltip"])
+            return self.settings_obj.get_data(self.key)["tooltip"]
         except:
+            print ("Could not find tooltip for key '%s' in xlet '%s'" % (self.key, self.uuid))
             return ""
 
     def get_units(self):
         try:
+            if self.tUser:
+                result = self.tUser(self.settings_obj.get_data(self.key)["units"])
+                if result != self.settings_obj.get_data(self.key)["units"]:
+                    return result
             if self.t:
-                return self.t(self.settings_obj.get_data(self.key)["units"]).decode('utf-8')
-            else:
-                return self.settings_obj.get_data(self.key)["units"]
+                return self.t(self.settings_obj.get_data(self.key)["units"])
+            return self.settings_obj.get_data(self.key)["units"]
         except:
-            print ("Could not find description for key '%s' in xlet '%s'" % (self.key, self.uuid))
+            print ("Could not find units for key '%s' in xlet '%s'" % (self.key, self.uuid))
             return ""
 
     def get_val(self):
@@ -296,12 +312,20 @@ class BaseWidget(object):
 
     def get_options(self):
         try:
-            if self.t:
+            if self.t or self.tUser:
                 ret = {}
                 d = self.settings_obj.get_data(self.key)["options"]
                 for key in d.keys():
-                    translated_key = self.t(key).decode('utf-8')
-                    ret[translated_key] = d[key]
+                    if self.tUser:
+                        translated_key = self.tUser(key)
+                        if translated_key != key or not self.t:
+                            ret[translated_key] = d[key]
+                        elif self.t:
+                            translated_key = self.t(key)
+                            ret[translated_key] = d[key]
+                    elif self.t:
+                        translated_key = self.t(key)
+                        ret[translated_key] = d[key]
                 return ret
             else:
                 return self.settings_obj.get_data(self.key)["options"]
@@ -917,7 +941,22 @@ class Scale(Gtk.HBox, BaseWidget):
         self.handler = self.scale.connect('value-changed', self.on_my_value_changed)
         self.scale.show_all()
         set_tt(self.get_tooltip(), self.label, self.scale)
+        self.scale.connect("scroll-event", self.on_mouse_scroll_event)
         self._value_changed_timer = None
+
+# TODO: Should we fix this in GTK? upscrolling should slide the slider to the right..right?
+# This is already adjusted in Nemo as well.
+    def on_mouse_scroll_event(self, widget, event):
+        found, delta_x, delta_y = event.get_scroll_deltas()
+        if found:
+            add = delta_y < 0
+            val = widget.get_value()
+            if add:
+                val += self.get_step()
+            else:
+                val -= self.get_step()
+            widget.set_value(val)
+        return True
 
     def on_my_value_changed(self, widget):
         if self._value_changed_timer:
