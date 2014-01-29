@@ -318,7 +318,7 @@ class BaseWidget(object):
                 for key in d.keys():
                     if self.tUser:
                         translated_key = self.tUser(key)
-                        if translated_key != key:
+                        if translated_key != key or not self.t:
                             ret[translated_key] = d[key]
                         elif self.t:
                             translated_key = self.t(key)
