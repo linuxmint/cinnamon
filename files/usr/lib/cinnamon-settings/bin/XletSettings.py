@@ -90,7 +90,7 @@ class XletSetting:
         if os.path.exists(path) and os.path.isdir(path):
             if os.path.exists("%s/metadata.json" % path):
                 raw_data = open("%s/metadata.json" % path).read()
-                self.applet_meta = js = json.loads(raw_data.decode('utf-8'))
+                self.applet_meta = json.loads(raw_data.decode('utf-8'))
                 return True
         return False
 
