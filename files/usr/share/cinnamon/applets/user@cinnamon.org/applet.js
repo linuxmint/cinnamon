@@ -42,7 +42,7 @@ MyApplet.prototype = {
 
             this._userIcon = new St.Icon({ style_class: 'user-icon'});
             
-			this.settings.bindProperty(Settings.BindingDirection.IN, "display-name", "disp_name", this._updateLabel, null);
+            this.settings.bindProperty(Settings.BindingDirection.IN, "display-name", "disp_name", this._updateLabel, null);
 
             userBox.connect('button-press-event', Lang.bind(this, function() {
                 this.menu.toggle();
@@ -156,12 +156,12 @@ MyApplet.prototype = {
     }, 
     
     _updateLabel: function() {
-		if (this.disp_name) {
-			this.set_applet_label(this._user.get_real_name());
-		} else {
-			this.set_applet_label("");
-		}
-	},
+        if (this.disp_name) {
+            this.set_applet_label(this._user.get_real_name());
+        } else {
+            this.set_applet_label("");
+        }
+    },
 
     _onUserChanged: function() {
         if (this._user.is_loaded) {
@@ -184,7 +184,7 @@ MyApplet.prototype = {
     },
     
     on_applet_removed_from_panel: function() {
-		this.settings.finalize();
+        this.settings.finalize();
     },
 };
 
