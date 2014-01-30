@@ -569,7 +569,6 @@ IconApplet.prototype = {
         }
         this.__icon_type = -1;
         this.__icon_name = icon_path;
->>>>>>> master
     },
 
     on_panel_height_changed: function() {
