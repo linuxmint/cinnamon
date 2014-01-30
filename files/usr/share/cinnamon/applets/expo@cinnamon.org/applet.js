@@ -28,7 +28,6 @@ MyApplet.prototype = {
                                        function () {});
 
             this.actor.connect('enter-event', Lang.bind(this, this._onEntered));
-            this._reload_settings();
         }
         catch (e) {
             global.logError(e);
