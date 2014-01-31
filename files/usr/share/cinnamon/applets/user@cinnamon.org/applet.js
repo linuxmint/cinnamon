@@ -40,7 +40,7 @@ MyApplet.prototype = {
             
             let userBox = new St.BoxLayout({ style_class: 'user-box', reactive: true, vertical: false });
 
-            this._userIcon = new St.Icon({ style_class: 'user-icon'});
+            this._userIcon = new St.Bin({ style_class: 'user-icon'});
             
             this.settings.bindProperty(Settings.BindingDirection.IN, "display-name", "disp_name", this._updateLabel, null);
 
@@ -176,7 +176,8 @@ MyApplet.prototype = {
                 } else {
                     icon = new Gio.ThemedIcon({name: 'avatar-default'});
                 }
-                this._userIcon.set_gicon (icon);
+                let img = St.TextureCache.get_default().load_gicon(null, icon, 48 * global.ui_scale);
+                this._userIcon.set_child (img);
                 this._userIcon.show();               
             }
             this._updateLabel();

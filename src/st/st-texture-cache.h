@@ -68,77 +68,39 @@ GType st_texture_cache_get_type (void) G_GNUC_CONST;
 
 StTextureCache* st_texture_cache_get_default (void);
 
-ClutterGroup *
-st_texture_cache_load_sliced_image (StTextureCache    *cache,
-                                    const gchar       *path,
-                                    gint               grid_width,
-                                    gint               grid_height);
+ClutterActor *
+st_texture_cache_load_sliced_image (StTextureCache *cache,
+                                    const gchar    *path,
+                                    gint            grid_width,
+                                    gint            grid_height,
+                                    GFunc           load_callback,
+                                    gpointer        user_data);
 
 ClutterActor *st_texture_cache_bind_pixbuf_property (StTextureCache    *cache,
                                                      GObject           *object,
                                                      const char        *property_name);
-
-ClutterActor *st_texture_cache_load_icon_name (StTextureCache *cache,
-                                               StThemeNode    *theme_node,
-                                               const char     *name,
-                                               StIconType      icon_type,
-                                               gint            size);
 
 ClutterActor *st_texture_cache_load_gicon (StTextureCache *cache,
                                            StThemeNode    *theme_node,
                                            GIcon          *icon,
                                            gint            size);
 
-ClutterActor *st_texture_cache_load_thumbnail (StTextureCache *cache,
-                                               int             size,
-                                               const char     *uri,
-                                               const char     *mimetype);
-
-ClutterActor *st_texture_cache_load_recent_thumbnail (StTextureCache    *cache,
-                                                      int                size,
-                                                      GtkRecentInfo     *info);
-
-void st_texture_cache_evict_thumbnail (StTextureCache *cache,
-                                       const char     *uri);
-
-void st_texture_cache_evict_recent_thumbnail (StTextureCache *cache,
-                                              GtkRecentInfo  *info);
+ClutterActor *st_texture_cache_load_icon_name (StTextureCache    *cache,
+                                 StThemeNode       *theme_node,
+                                 const char        *name,
+                                 StIconType         icon_type,
+                                 gint               size);
 
 ClutterActor *st_texture_cache_load_uri_async (StTextureCache    *cache,
                                                const gchar       *uri,
                                                int                available_width,
                                                int                available_height);
 
-ClutterActor *st_texture_cache_load_uri_sync (StTextureCache       *cache,
-                                              StTextureCachePolicy  policy,
-                                              const gchar          *uri,
-                                              int                   available_width,
-                                              int                   available_height,
-                                              GError              **error);
-
 CoglHandle    st_texture_cache_load_file_to_cogl_texture (StTextureCache *cache,
                                                           const gchar    *file_path);
 
 cairo_surface_t *st_texture_cache_load_file_to_cairo_surface (StTextureCache *cache,
                                                               const gchar    *file_path);
-
-ClutterActor *st_texture_cache_load_file_simple (StTextureCache *cache,
-                                                 const gchar    *file_path);
-
-ClutterActor *st_texture_cache_load_from_data (StTextureCache    *cache,
-                                               const guchar      *data,
-                                               gsize              len,
-                                               int                size,
-                                               GError           **error);
-ClutterActor *st_texture_cache_load_from_raw  (StTextureCache    *cache,
-                                               const guchar      *data,
-                                               gsize              len,
-                                               gboolean           has_alpha,
-                                               int                width,
-                                               int                height,
-                                               int                rowstride,
-                                               int                size,
-                                               GError           **error);
 
 /**
  * StTextureCacheLoader: (skip)
@@ -159,7 +121,5 @@ CoglHandle st_texture_cache_load (StTextureCache       *cache,
                                   StTextureCacheLoader  load,
                                   void                 *data,
                                   GError              **error);
-
-gboolean st_texture_cache_pixbuf_equal (StTextureCache *cache, GdkPixbuf *a, GdkPixbuf *b);
 
 #endif /* __ST_TEXTURE_CACHE_H__ */

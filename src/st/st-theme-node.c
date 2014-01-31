@@ -939,16 +939,17 @@ get_length_from_term (StThemeNode *node,
       return VALUE_NOT_FOUND;
     }
 
+  double resolution;
+
   switch (type)
     {
     case ABSOLUTE:
-      *length = num->val * multiplier;
+      resolution = clutter_backend_get_resolution (clutter_get_default_backend ());
+      *length = num->val * multiplier * (resolution / 96.);
       break;
     case POINTS:
-      {
-        double resolution = st_theme_context_get_resolution (node->context);
-        *length = num->val * multiplier * (resolution / 72.);
-      }
+      resolution = clutter_backend_get_resolution (clutter_get_default_backend ());
+      *length = num->val * multiplier * (resolution / 72.);
       break;
     case FONT_RELATIVE:
       {
@@ -968,7 +969,7 @@ get_length_from_term (StThemeNode *node,
           }
         else
           {
-            double resolution = st_theme_context_get_resolution (node->context);
+            double resolution = clutter_backend_get_resolution (clutter_get_default_backend ());
             *length = num->val * multiplier * (resolution / 72.) * font_size;
           }
       }
@@ -2327,7 +2328,7 @@ font_size_from_term (StThemeNode *node,
 {
   if (term->type == TERM_IDENT)
     {
-      double resolution = st_theme_context_get_resolution (node->context);
+      double resolution = clutter_backend_get_resolution (clutter_get_default_backend ());
       /* We work in integers to avoid double comparisons when converting back
        * from a size in pixels to a logical size.
        */
@@ -2534,7 +2535,7 @@ st_theme_node_get_font (StThemeNode *node)
   parent_size = pango_font_description_get_size (node->font_desc);
   if (!pango_font_description_get_size_is_absolute (node->font_desc))
     {
-      double resolution = st_theme_context_get_resolution (node->context);
+      double resolution = clutter_backend_get_resolution (clutter_get_default_backend ());
       parent_size *= (resolution / 72.);
     }
 

@@ -10,7 +10,7 @@ try:
     import os
     import glob
     import gettext
-    from gi.repository import Gio, Gtk, GObject, GdkPixbuf, GLib, Pango, Gdk
+    from gi.repository import Gio, Gtk, GObject, GdkPixbuf, GLib, Pango, Gdk, cairo
     import SettingsWidgets
     import capi
     import time
@@ -94,6 +94,9 @@ def touch(fname, times=None):
     with file(fname, 'a'):
         os.utime(fname, times)
 
+class SurfaceWrapper:
+    def __init__(self, surface):
+        self.surface = surface
 
 class MainWindow:
 
@@ -207,16 +210,20 @@ class MainWindow:
         for sidepage in self.sidePages:
             sp, sp_id, sp_cat = sidepage
             if not self.store.has_key(sp_cat):  #       Label         Icon          sidePage     Category
-                self.store[sidepage[2]] = Gtk.ListStore(str,    GdkPixbuf.Pixbuf,    object,     str)
+                self.store[sidepage[2]] = Gtk.ListStore(str,          object,    object,     str)
                 for category in CATEGORIES:
                     if category["id"] == sp_cat:
                         category["show"] = True
             iconFile = "/usr/lib/cinnamon-settings/data/icons/%s" % sp.icon
             if os.path.exists(iconFile):
-                img = GdkPixbuf.Pixbuf.new_from_file_at_size( iconFile, 48, 48)
+                size = 48 * self.window.get_scale_factor()
+                pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size( iconFile, size, size)
+                surface = Gdk.cairo_surface_create_from_pixbuf (pixbuf, self.window.get_scale_factor(), self.window.get_window())
+                wrapper = SurfaceWrapper(surface)
             else:
-                img = None
-            sidePagesIters[sp_id] = self.store[sp_cat].append([sp.name, img, sp, sp_cat])
+                wrapper = None
+
+            sidePagesIters[sp_id] = self.store[sp_cat].append([sp.name, wrapper, sp, sp_cat])
 
         self.min_label_length = 0
         self.min_pix_length = 0
@@ -345,6 +352,11 @@ class MainWindow:
             iter = model.iter_next(iter)
         return min_width_chars, min_width_pixels
 
+    def pixbuf_data_func(self, column, cell, model, iter, data=None):
+        wrapper = model.get_value(iter, 1)
+        if wrapper:
+            cell.set_property('surface', wrapper.surface)
+
     def prepCategory(self, category):
         self.storeFilter[category["id"]].refilter()
         if not self.anyVisibleInCategory(category):
@@ -355,10 +367,12 @@ class MainWindow:
         box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 4)
         iconFile = "/usr/lib/cinnamon-settings/data/icons/%s" % category["icon"]
         if os.path.exists(iconFile):
-            img = GdkPixbuf.Pixbuf.new_from_file_at_size( iconFile, 30, 30)
-            box.pack_start(Gtk.Image.new_from_pixbuf(img), False, False, 4)
-        else:
-            img = None
+            scale = 30 * self.window.get_scale_factor()
+            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size( iconFile, scale, scale)
+            surface = Gdk.cairo_surface_create_from_pixbuf (pixbuf, self.window.get_scale_factor(), self.window.get_window())
+            img = Gtk.Image()
+            img.set_property("surface", surface)
+            box.pack_start(img, False, False, 4)
 
         widget = Gtk.Label()
         widget.set_use_markup(True)
@@ -377,7 +391,7 @@ class MainWindow:
         text_renderer.set_alignment(.5, 0)
         area.pack_start(pixbuf_renderer, True, True, False)
         area.pack_start(text_renderer, True, True, False)
-        area.add_attribute(pixbuf_renderer, "pixbuf", 1)
+        widget.set_cell_data_func(pixbuf_renderer, self.pixbuf_data_func)
         area.add_attribute(text_renderer, "text", 0)
 
         css_provider = Gtk.CssProvider()

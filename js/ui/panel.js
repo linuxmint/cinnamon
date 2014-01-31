@@ -90,7 +90,7 @@ AnimatedIcon.prototype = {
 
         this._timeoutId = 0;
         this._i = 0;
-        this._animations = St.TextureCache.get_default().load_sliced_image (global.datadir + '/theme/' + name, size, size);
+        this._animations = St.TextureCache.get_default().load_sliced_image (global.datadir + '/theme/' + name, size, size, null, null);
         this.actor.set_child(this._animations);
     },
 
@@ -98,11 +98,11 @@ AnimatedIcon.prototype = {
         this._animations.hide_all();
         this._animations.show();
         if (this._i && this._i < this._animations.get_n_children())
-            this._animations.get_nth_child(this._i++).show();
+            this._animations.get_child_at_index(this._i++).show();
         else {
             this._i = 1;
             if (this._animations.get_n_children())
-                this._animations.get_nth_child(0).show();
+                this._animations.get_child_at_index(0).show();
         }
         return true;
     },
@@ -628,20 +628,20 @@ Panel.prototype = {
                                                   reactive: true });
         this.actor._delegate = this;
 
-        if (global.settings.get_boolean('panel-resizable')) {
-            if (bottomPosition) {
-                this.actor.set_height(global.settings.get_int('panel-bottom-height'));
-            }
-            else {
-                this.actor.set_height(global.settings.get_int('panel-top-height'));
-            }
-        }
-        if (this.bottomPosition) {
-            global.settings.connect("changed::panel-bottom-height", Lang.bind(this, this._processPanelSize));
-        }
-        else {
-            global.settings.connect("changed::panel-top-height", Lang.bind(this, this._processPanelSize));
-        }
+        // if (global.settings.get_boolean('panel-resizable')) {
+        //     if (bottomPosition) {
+        //         this.actor.set_height(global.settings.get_int('panel-bottom-height'));
+        //     }
+        //     else {
+        //         this.actor.set_height(global.settings.get_int('panel-top-height'));
+        //     }
+        // }
+        // if (this.bottomPosition) {
+        //     global.settings.connect("changed::panel-bottom-height", Lang.bind(this, this._processPanelSize));
+        // }
+        // else {
+        //     global.settings.connect("changed::panel-top-height", Lang.bind(this, this._processPanelSize));
+        // }
 
         this._menus = new PopupMenu.PopupMenuManager(this);
 
@@ -793,6 +793,7 @@ Panel.prototype = {
     },
 
     _processPanelSize: function() {
+        return;
         let panelHeight;
         let panelResizable = global.settings.get_boolean("panel-resizable");
         if (panelResizable) {

@@ -231,6 +231,8 @@ main (int argc, char **argv)
   bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
   textdomain (GETTEXT_PACKAGE);
 
+  g_setenv ("GDK_SCALE", "1", TRUE);
+
   ctx = meta_get_option_context ();
   g_option_context_add_main_entries (ctx, gnome_cinnamon_options, GETTEXT_PACKAGE);
   if (!g_option_context_parse (ctx, &argc, &argv, &error))
@@ -280,6 +282,8 @@ main (int argc, char **argv)
 
   /* Initialize the global object */
   _cinnamon_global_init (NULL);
+
+  g_unsetenv ("GDK_SCALE");
 
   ecode = meta_run ();
 

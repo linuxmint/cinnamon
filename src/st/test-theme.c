@@ -435,7 +435,6 @@ main (int argc, char **argv)
   stage = clutter_stage_new ();
   context = st_theme_context_get_for_stage (CLUTTER_STAGE (stage));
   st_theme_context_set_theme (context, theme);
-  st_theme_context_set_resolution (context, 96.);
   st_theme_context_set_font (context,
 				pango_font_description_from_string ("sans-serif 12"));
 

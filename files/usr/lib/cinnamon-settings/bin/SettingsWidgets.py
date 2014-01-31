@@ -738,6 +738,44 @@ class GSettingsIntComboBox(Gtk.HBox):
         else:
             self.set_sensitive(not self.dep_settings.get_boolean(self.dep_key))
 
+class GSettingsUIntComboBox(Gtk.HBox):
+    def __init__(self, label, schema, key, options):
+        self.key = key
+        super(GSettingsUIntComboBox, self).__init__()
+        self.settings = Gio.Settings.new(schema)
+        self.value = self.settings.get_uint(self.key)
+
+        self.label = Gtk.Label(label)
+        self.model = Gtk.ListStore(int, str)
+        selected = None
+        for option in options:
+            iter = self.model.insert_before(None, None)
+            self.model.set_value(iter, 0, option[0])
+            self.model.set_value(iter, 1, option[1])
+            if (option[0] == self.value):
+                selected = iter
+
+        self.content_widget = Gtk.ComboBox.new_with_model(self.model)
+        renderer_text = Gtk.CellRendererText()
+        self.content_widget.pack_start(renderer_text, True)
+        self.content_widget.add_attribute(renderer_text, "text", 1)
+
+        if selected is not None:
+            self.content_widget.set_active_iter(selected)
+
+        if (label != ""):
+            self.pack_start(self.label, False, False, 2)
+        self.pack_start(self.content_widget, False, True, 2)
+        self.content_widget.connect('changed', self.on_my_value_changed)
+        self.content_widget.show_all()
+
+    def on_my_value_changed(self, widget):
+        tree_iter = widget.get_active_iter()
+        if tree_iter != None:
+            value = self.model[tree_iter][0]
+            self.settings.set_uint(self.key, value)
+
+
 class GSettingsColorChooser(Gtk.ColorButton):
     def __init__(self, schema, key, dep_key):
         Gtk.ColorButton.__init__(self)
