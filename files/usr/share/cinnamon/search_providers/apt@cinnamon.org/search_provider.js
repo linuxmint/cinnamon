@@ -19,7 +19,14 @@ function perform_search(pattern){
         push_results(results_cache[pattern]);
     }else{
         try{
-            let [res, pid, in_fd, out_fd, err_fd] = GLib.spawn_async_with_pipes(null, ["apt-cache", "search", pattern], null, GLib.SpawnFlags.SEARCH_PATH, null);
+            var argv = ["apt-cache", "search"];
+            var words = pattern.split(" ");
+            for (var i in words){
+                if (words[i]){
+                    argv.push(words[i]);
+                }
+            }
+            let [res, pid, in_fd, out_fd, err_fd] = GLib.spawn_async_with_pipes(null, argv, null, GLib.SpawnFlags.SEARCH_PATH, null);
             out_reader = new Gio.DataInputStream({base_stream: new Gio.UnixInputStream({fd: out_fd})});
             
             last_search_pid = pid;
