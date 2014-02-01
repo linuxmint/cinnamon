@@ -22,6 +22,7 @@ const DocInfo = imports.misc.docInfo;
 const GLib = imports.gi.GLib;
 const Settings = imports.ui.settings;
 const Pango = imports.gi.Pango;
+const SearchProviderManager = imports.ui.searchProviderManager;
 
 const ICON_SIZE = 16;
 const MAX_FAV_ICON_SIZE = 32;
@@ -383,6 +384,71 @@ ApplicationButton.prototype = {
         return this.actor;
     }
 };
+
+function SearchProviderResultButton(appsMenuButton, provider, result) {
+    this._init(appsMenuButton, provider, result);
+}
+
+SearchProviderResultButton.prototype = {
+    __proto__: PopupMenu.PopupSubMenuMenuItem.prototype,
+    
+    _init: function(appsMenuButton, provider, result) {
+        this.provider = provider;
+        this.result = result;
+
+        this.appsMenuButton = appsMenuButton;
+        PopupMenu.PopupBaseMenuItem.prototype._init.call(this, {hover: false});
+        this.actor.set_style_class_name('menu-application-button');
+
+        // We need this fake app to help appEnterEvent/appLeaveEvent 
+        // work with our search result.
+        this.app = {
+            get_app_info: {
+                get_filename: function() {
+                    return result.id;
+                }
+            },
+            get_id: function() {
+                return -1;
+            },
+            get_description: function() {
+                return result.label;
+            },
+            get_name: function() {
+                return '';
+            }
+        };
+        
+        this.icon = null;
+        if (result.icon){
+            this.icon = result.icon;
+        }else if (result.icon_app){
+            this.icon = result.icon_app.create_icon_texture(APPLICATION_ICON_SIZE);
+        }
+        
+        if (this.icon){
+            this.addActor(this.icon);
+        }
+
+        this.label = new St.Label({ text: result.label, style_class: 'menu-application-button-label' });
+        this.addActor(this.label);
+        this.isDraggableApp = false;
+        this.icon.realize();
+        this.label.realize();
+    },
+    
+    _onButtonReleaseEvent: function (actor, event) {
+        if (event.get_button() == 1){
+            this.activate(event);
+        }
+        return true;
+    },
+    
+    activate: function(event) {
+        this.provider.on_result_selected(this.result);
+        this.appsMenuButton.menu.close();
+    }
+}
 
 function PlaceButton(appsMenuButton, place, button_name) {
     this._init(appsMenuButton, place, button_name);
@@ -835,6 +901,7 @@ MyApplet.prototype = {
             this._transientButtons = new Array();
             this._recentButtons = new Array();
             this._categoryButtons = new Array();
+            this._searchProviderButtons = new Array();
             this._selectedItemIndex = null;
             this._previousTreeItemIndex = null;
             this._previousSelectedActor = null;
@@ -1965,6 +2032,12 @@ MyApplet.prototype = {
                 button.actor.realize();
             }
         }
+        
+        this._searchProviderButtons.forEach( function (item, index) {
+            if (item.actor.visible) {
+                item.actor.hide();
+            }
+        });
     },
 
     _setCategoriesButtonActive: function(active) {         
@@ -2113,6 +2186,21 @@ MyApplet.prototype = {
                 item_actor._delegate.emit('enter-event');
             }
         }
+        
+        SearchProviderManager.launch_all(pattern, Lang.bind(this, function(provider, results){
+            try{
+            for (var i in results){
+                let button = new SearchProviderResultButton(this, provider, results[i]);
+                button.actor.connect('realize', Lang.bind(this, this._onApplicationButtonRealized));
+                button.actor.connect('leave-event', Lang.bind(this, this._appLeaveEvent, button));
+                this._addEnterEvent(button, Lang.bind(this, this._appEnterEvent, button));
+                this._searchProviderButtons.push(button);
+                this.applicationsBox.add_actor(button.actor);
+                button.actor.realize();
+            }
+            }catch(e){global.log(e);}
+        }));
+        
         return false;
     },
 
