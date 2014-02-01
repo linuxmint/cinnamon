@@ -13,9 +13,9 @@ var last_search_pid;
 var default_icon_app = Cinnamon.AppSystem.get_default().lookup_app("mintInstall.desktop");
 
 function perform_search(pattern){
-    global.log("perform_search:" + pattern);
     if (results_cache[pattern])
     {
+        last_search_pid = 0;
         push_results(results_cache[pattern]);
     }else{
         try{
