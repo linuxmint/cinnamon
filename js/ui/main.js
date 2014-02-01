@@ -52,6 +52,7 @@ const PointerTracker = imports.misc.pointerTracker;
 const SoundManager = imports.ui.soundManager;
 const BackgroundManager = imports.ui.backgroundManager;
 const AppletManager = imports.ui.appletManager;
+const SearchProviderManager = imports.ui.searchProviderManager;
 const AutomountManager = imports.ui.automountManager;
 const DeskletManager = imports.ui.deskletManager;
 const ExtensionSystem = imports.ui.extensionSystem;
@@ -401,6 +402,7 @@ function start() {
 
     AppletManager.init();
     DeskletManager.init();
+    SearchProviderManager.init();
 
     if (software_rendering && !GLib.getenv('CINNAMON_2D')) {
         notifyCinnamon2d();
