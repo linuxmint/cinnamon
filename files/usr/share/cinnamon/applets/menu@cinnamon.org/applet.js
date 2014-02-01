@@ -433,7 +433,9 @@ SearchProviderResultButton.prototype = {
         this.label = new St.Label({ text: result.label, style_class: 'menu-application-button-label' });
         this.addActor(this.label);
         this.isDraggableApp = false;
-        this.icon.realize();
+        if (this.icon) {
+            this.icon.realize();
+        }
         this.label.realize();
     },
     
