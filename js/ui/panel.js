@@ -408,10 +408,22 @@ SettingsLauncher.prototype = {
 
         this._menu = menu;
         this._keyword = keyword;
+        let table = new St.Table({ homogeneous: false,
+                                      reactive: true });
+
         this.label = new St.Label({ text: label });
-        this.addActor(this.label);
-        this._icon = new St.Icon({icon_name: icon, icon_size: 22, icon_type: St.IconType.FULLCOLOR });
-        this.addActor(this._icon, { expand: true });
+        this._icon = new St.Icon({icon_name: icon, icon_type: St.IconType.FULLCOLOR,
+                                  style_class: 'popup-menu-icon' });
+
+        table.add(this._icon,
+                  {row: 0, col: 0, col_span: 1, x_expand: false, x_align: St.Align.START});
+
+        table.add(this.label,
+                  {row: 0, col: 1, col_span: 1, x_align: St.Align.START});
+
+        this.label.set_margin_left(6.0)
+
+        this.addActor(table, { expand: true, span: 1, align: St.Align.START });
     },
 
     activate: function (event) {
@@ -437,8 +449,6 @@ function populateSettingsMenu(menu) {
         let confirm = new ConfirmDialog();
         confirm.open();
     });
-
-	menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
     menu.addMenuItem(menu.troubleshootItem);
 

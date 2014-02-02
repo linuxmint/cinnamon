@@ -1491,16 +1491,22 @@ PopupSubMenuMenuItem.prototype = {
 
         this.actor.add_style_class_name('popup-submenu-menu-item');
 
-        this.label = new St.Label({ text: text });
-        this.addActor(this.label);
-        if (this.actor.get_direction() == St.TextDirection.RTL) {
-            this._triangle = new St.Label({ text: '\u25C2' });
-        }
-        else {
-            this._triangle = new St.Label({ text: '\u25B8' });
-        }
+        let table = new St.Table({ homogeneous: false,
+                                      reactive: true });
 
-        this.addActor(this._triangle, { align: St.Align.END });
+        this._triangle = new St.Icon({ icon_name: "media-playback-start",
+                              icon_type: St.IconType.SYMBOLIC,
+                              style_class: 'popup-menu-icon' });
+
+        table.add(this._triangle,
+                  {row: 0, col: 0, col_span: 1, x_expand: false, x_align: St.Align.START});
+
+        this.label = new St.Label({ text: text });
+        this.label.set_margin_left(6.0);
+        table.add(this.label,
+                  {row: 0, col: 1, col_span: 1, x_align: St.Align.START});
+
+        this.addActor(table, { expand: true, span: 1, align: St.Align.START });
 
         this.menu = new PopupSubMenu(this.actor, this._triangle);
         this.menu.connect('open-state-changed', Lang.bind(this, this._subMenuOpenStateChanged));
