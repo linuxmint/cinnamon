@@ -424,6 +424,8 @@ SearchProviderResultButton.prototype = {
             this.icon = result.icon;
         }else if (result.icon_app){
             this.icon = result.icon_app.create_icon_texture(APPLICATION_ICON_SIZE);
+        }else if (result.icon_filename){
+            this.icon = new St.Icon({gicon: new Gio.FileIcon({file: Gio.file_new_for_path(result.icon_filename)}), icon_size: APPLICATION_ICON_SIZE});
         }
         
         if (this.icon){
