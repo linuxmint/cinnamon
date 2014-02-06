@@ -9,6 +9,7 @@ const Mainloop = imports.mainloop;
 const Gio = imports.gi.Gio;
 const AppletManager = imports.ui.appletManager;
 const AppSwitcher = imports.ui.appSwitcher.appSwitcher;
+const Connector = imports.misc.connector;
 const CoverflowSwitcher = imports.ui.appSwitcher.coverflowSwitcher;
 const TimelineSwitcher = imports.ui.appSwitcher.timelineSwitcher;
 const ClassicSwitcher = imports.ui.appSwitcher.classicSwitcher;
@@ -109,8 +110,7 @@ WindowManager.prototype = {
 
         this._animationBlockCount = 0;
 
-        this._switchData = null;
-        this._cinnamonwm.connect('kill-switch-workspace', Lang.bind(this, this._switchWorkspaceDone));
+        this._cinnamonwm.connect('kill-switch-workspace', Lang.bind(this, this._onKillSwitchWorkspace));
         this._cinnamonwm.connect('kill-window-effects', Lang.bind(this, function (cinnamonwm, actor) {
             this._minimizeWindowDone(cinnamonwm, actor);
             this._maximizeWindowDone(cinnamonwm, actor);
@@ -127,12 +127,7 @@ WindowManager.prototype = {
         this._cinnamonwm.connect('tile', Lang.bind(this, this._tileWindow));
         this._cinnamonwm.connect('map', Lang.bind(this, this._mapWindow));
         this._cinnamonwm.connect('destroy', Lang.bind(this, this._destroyWindow));
-        
-        Meta.keybindings_set_custom_handler('move-to-workspace-left',
-                                            Lang.bind(this, this._moveWindowToWorkspaceLeft));
-        Meta.keybindings_set_custom_handler('move-to-workspace-right',
-                                            Lang.bind(this, this._moveWindowToWorkspaceRight));
-        
+
         Meta.keybindings_set_custom_handler('switch-to-workspace-left',
                                             Lang.bind(this, this._showWorkspaceSwitcher));
         Meta.keybindings_set_custom_handler('switch-to-workspace-right',
@@ -160,6 +155,8 @@ WindowManager.prototype = {
             for (let i = 0; i < this._dimmedWindows.length; i++)
                 this._dimWindow(this._dimmedWindows[i], true);
         }));
+        let workspaceSettings = new Gio.Settings({ schema: 'org.cinnamon.muffin' });
+        this.workspacesOnlyOnPrimary = workspaceSettings.get_boolean("workspaces-only-on-primary");
 
         global.screen.connect ("show-snap-osd", Lang.bind (this, this._showSnapOSD));
         global.screen.connect ("hide-snap-osd", Lang.bind (this, this._hideSnapOSD));
@@ -175,7 +172,7 @@ WindowManager.prototype = {
     },
 
     _shouldAnimate : function(actor) {
-        if (Main.modalCount) {
+        if (Main.modalCount && !this.forceAnimation) {
             // system is in modal state
             return false;
         }
@@ -812,152 +809,183 @@ WindowManager.prototype = {
     },
 
     _switchWorkspace : function(cinnamonwm, from, to, direction) {
-        if (!this._shouldAnimate()) {
-            cinnamonwm.completed_switch_workspace();
+        if (this._shouldAnimate()) {
+            this.showWorkspaceOSD();
+        }
+        else {
+            cinnamonwm.completed_switch_workspace();                                
             return;
         }
+
+        let chunks = [];
+
+        this._finishSwitchWorkspace = Lang.bind(this, function(killed) {
+            this._finishSwitchWorkspace = null;
+            chunks.forEach(function(chunk) {
+                chunk.windows.forEach(function(w) {
+                    if (!w.window.is_destroyed()) {
+                        global.reparentActor(w.window, w.parent);
+                    }
+                },this);
+                if (killed) {
+                    Tweener.removeTweens(chunk.inGroup);
+                    Tweener.removeTweens(chunk.outGroup);
+                }
+                chunk.cover.destroy();
+            }, this);
+            cinnamonwm.completed_switch_workspace();
+        });
 
         let windows = global.get_window_actors();
+        let lastIndex = 0;
+        // In a multi-monitor scenario, we need to work one monitor at a time,
+        // protecting the other monitors from having unrelated windows swooshing by.
+        this._forEachWorkspaceMonitor(function(monitor, index) {
+            lastIndex = index;
+            let chunk = {};
+            chunks.push(chunk);
+            
+            chunk.cover = new Clutter.Group();
+            chunk.cover.set_position(0, 0);
+            chunk.cover.set_clip(monitor.x, monitor.y, monitor.width, monitor.height);
 
-        /* @direction is the direction that the "camera" moves, so the
-         * screen contents have to move one screen's worth in the
-         * opposite direction.
-         */
-        let xDest = 0, yDest = 0;
+            chunk.inGroup = new Clutter.Group();
+            chunk.cover.add_actor(chunk.inGroup);
+            chunk.outGroup = new Clutter.Group();
+            chunk.cover.add_actor(chunk.outGroup);
 
-        if (direction == Meta.MotionDirection.UP ||
-            direction == Meta.MotionDirection.UP_LEFT ||
-            direction == Meta.MotionDirection.UP_RIGHT)
-                yDest = global.screen_height;
-        else if (direction == Meta.MotionDirection.DOWN ||
-            direction == Meta.MotionDirection.DOWN_LEFT ||
-            direction == Meta.MotionDirection.DOWN_RIGHT)
-                yDest = -global.screen_height;
+            let wgroup = global.window_group;
+            wgroup.add_actor(chunk.cover);
 
-        if (direction == Meta.MotionDirection.LEFT ||
-            direction == Meta.MotionDirection.UP_LEFT ||
-            direction == Meta.MotionDirection.DOWN_LEFT)
-                xDest = global.screen_width;
-        else if (direction == Meta.MotionDirection.RIGHT ||
-                 direction == Meta.MotionDirection.UP_RIGHT ||
-                 direction == Meta.MotionDirection.DOWN_RIGHT)
-                xDest = -global.screen_width;
+            chunk.windows = [];
+            for (let i = 0; i < windows.length; i++) {
+                let window = windows[i];
 
-        let switchData = {};
-        this._switchData = switchData;
-        switchData.inGroup = new Clutter.Group();
-        switchData.outGroup = new Clutter.Group();
-        switchData.windows = [];
+                if (window.meta_window.get_monitor() !== index)
+                    continue;
 
-        let wgroup = global.window_group;
-        wgroup.add_actor(switchData.inGroup);
-        wgroup.add_actor(switchData.outGroup);
+                if (!window.meta_window.showing_on_its_workspace())
+                    continue;
 
-        for (let i = 0; i < windows.length; i++) {
-            let window = windows[i];
-
-            if (!window.meta_window.showing_on_its_workspace())
-                continue;
-
-            if (window.get_workspace() == from) {
-                switchData.windows.push({ window: window,
-                                          parent: window.get_parent() });
-                global.reparentActor(window, switchData.outGroup);
-            } else if (window.get_workspace() == to) {
-                switchData.windows.push({ window: window,
-                                          parent: window.get_parent() });
-                global.reparentActor(window, switchData.inGroup);
-                window.show_all();
+                if (window.get_workspace() == from || window.meta_window.is_on_all_workspaces()) {
+                    chunk.windows.push({ window: window,
+                                              parent: window.get_parent() });
+                    global.reparentActor(window, chunk.outGroup);
+                } else if (window.get_workspace() == to || window.meta_window.is_on_all_workspaces()) {
+                    chunk.windows.push({ window: window,
+                                              parent: window.get_parent() });
+                    global.reparentActor(window, chunk.inGroup);
+                }
             }
-        }
 
-        switchData.inGroup.set_position(-xDest, -yDest);
-        switchData.inGroup.raise_top();
+            /* @direction is the direction that the "camera" moves, so the
+             * screen contents have to move one screen's worth in the
+             * opposite direction.
+             */
+            let xDest = 0, yDest = 0;
 
-        Tweener.addTween(switchData.outGroup,
-                         { x: xDest,
-                           y: yDest,
-                           time: WINDOW_ANIMATION_TIME,
-                           transition: 'easeOutQuad',
-                           onComplete: this._switchWorkspaceDone,
-                           onCompleteScope: this,
-                           onCompleteParams: [cinnamonwm]
-                         });
-        Tweener.addTween(switchData.inGroup,
-                         { x: 0,
-                           y: 0,
-                           time: WINDOW_ANIMATION_TIME,
-                           transition: 'easeOutQuad'
-                         });
+            if (direction == Meta.MotionDirection.UP ||
+                direction == Meta.MotionDirection.UP_LEFT ||
+                direction == Meta.MotionDirection.UP_RIGHT)
+            {
+                yDest = global.screen_height;
+            }
+            else if (direction == Meta.MotionDirection.DOWN ||
+                direction == Meta.MotionDirection.DOWN_LEFT ||
+                direction == Meta.MotionDirection.DOWN_RIGHT)
+            {
+                yDest = -global.screen_height;
+            }
+            
+            if (direction == Meta.MotionDirection.LEFT ||
+                direction == Meta.MotionDirection.UP_LEFT ||
+                direction == Meta.MotionDirection.DOWN_LEFT)
+            {
+                xDest = global.screen_width;
+            }
+            else if (direction == Meta.MotionDirection.RIGHT ||
+                     direction == Meta.MotionDirection.UP_RIGHT ||
+                     direction == Meta.MotionDirection.DOWN_RIGHT)
+            {
+                xDest = -global.screen_width;
+            }
+
+            chunk.inGroup.set_position(-xDest, -yDest);
+            chunk.inGroup.set_size(0, global.screen_height);
+            chunk.inGroup.raise_top();
+
+            Tweener.addTween(chunk.outGroup, {
+                x: xDest,
+                y: yDest,
+                time: WINDOW_ANIMATION_TIME,
+                transition: 'easeOutQuad',
+                onComplete: Lang.bind(this, function() {
+                    if (index == lastIndex && this._finishSwitchWorkspace) {
+                        this._finishSwitchWorkspace(false);
+                    }
+                })
+            });
+            Tweener.addTween(chunk.inGroup, {
+                x: 0,
+                y: 0,
+                time: WINDOW_ANIMATION_TIME,
+                transition: 'easeOutQuad'
+            });
+        }, this);
     },
 
-    _switchWorkspaceDone : function(cinnamonwm) {
-        let switchData = this._switchData;
-        if (!switchData)
-            return;
-        this._switchData = null;
-
-        for (let i = 0; i < switchData.windows.length; i++) {
-                let w = switchData.windows[i];
-                if (w.window.is_destroyed()) // Window gone
-                    continue;
-                if (w.window.get_parent() == switchData.outGroup) {
-                    global.reparentActor(w.window, w.parent);
-                    w.window.hide();
-                } else {
-                    global.reparentActor(w.window, w.parent);
-                }
+    _onKillSwitchWorkspace : function(cinnamonwm) {
+        if (this._finishSwitchWorkspace) {
+            this._finishSwitchWorkspace(true);
         }
-        Tweener.removeTweens(switchData.inGroup);
-        Tweener.removeTweens(switchData.outGroup);
-        switchData.inGroup.destroy();
-        switchData.outGroup.destroy();
-
-        cinnamonwm.completed_switch_workspace();                        
     },
 
     showWorkspaceOSD : function() {
         this._hideSnapOSD();
-        this._hideWorkspaceOSD();
         if (global.settings.get_boolean("workspace-osd-visible")) {
             let current_workspace_index = global.screen.get_active_workspace_index();
-            let monitor = Main.layoutManager.primaryMonitor;
-            if (this._workspace_osd == null)
-                this._workspace_osd = new St.Label({style_class:'workspace-osd'});
-            this._workspace_osd.set_text(Main.getWorkspaceName(current_workspace_index));
-            this._workspace_osd.set_opacity = 0;
-            Main.layoutManager.addChrome(this._workspace_osd, { visibleInFullscreen: false, affectsInputRegion: false });
+            
             let workspace_osd_x = global.settings.get_int("workspace-osd-x");
             let workspace_osd_y = global.settings.get_int("workspace-osd-y");
-            /*
-             * This aligns the osd edges to the minimum/maximum values from gsettings,
-             * if those are selected to be used. For values in between minimum/maximum,
-             * it shifts the osd by half of the percentage used of the overall space available
-             * for display (100% - (left and right 'padding')).
-             * The horizontal minimum/maximum values are 5% and 95%, resulting in 90% available for positioning
-             * If the user choses 50% as osd position, these calculations result the osd being centered onscreen
-             */
-            let [minX, maxX, minY, maxY] = [5, 95, 5, 95];
-            let delta = (workspace_osd_x - minX) / (maxX - minX);
-            let x = Math.round((monitor.width * workspace_osd_x / 100) - (this._workspace_osd.width * delta));
-            delta = (workspace_osd_y - minY) / (maxY - minY);
-            let y = Math.round((monitor.height * workspace_osd_y / 100) - (this._workspace_osd.height * delta));
-            this._workspace_osd.set_position(x, y);
             let duration = global.settings.get_int("workspace-osd-duration") / 1000;
-            Tweener.addTween(this._workspace_osd, {   opacity: 255,
-                                                         time: duration,
-                                                   transition: 'linear',
-                                                   onComplete: this._hideWorkspaceOSD,
-                                              onCompleteScope: this });
+            this._forEachWorkspaceMonitor(function(monitor, mIndex) {
+                this._hideWorkspaceOSD(monitor);
+                monitor._workspace_osd = new St.Label({style_class:'workspace-osd'});
+                monitor._workspace_osd.set_text(Main.getWorkspaceName(current_workspace_index));
+                monitor._workspace_osd.set_opacity = 0;
+                this._showWorkspaceGridForMonitor(mIndex, monitor._workspace_osd);
+                Main.layoutManager.addChrome(monitor._workspace_osd, { visibleInFullscreen: false, affectsInputRegion: false });
+                /*
+                 * This aligns the osd edges to the minimum/maximum values from gsettings,
+                 * if those are selected to be used. For values in between minimum/maximum,
+                 * it shifts the osd by half of the percentage used of the overall space available
+                 * for display (100% - (left and right 'padding')).
+                 * The horizontal minimum/maximum values are 5% and 95%, resulting in 90% available for positioning
+                 * If the user choses 50% as osd position, these calculations result the osd being centered onscreen
+                 */
+                let [minX, maxX, minY, maxY] = [5, 95, 5, 95];
+                let delta = (workspace_osd_x - minX) / (maxX - minX);
+                let x = Math.round((monitor.width * workspace_osd_x / 100) - (monitor._workspace_osd.width * delta));
+                delta = (workspace_osd_y - minY) / (maxY - minY);
+                let y = Math.round(monitor.y + (monitor.height * workspace_osd_y / 100) - (monitor._workspace_osd.height * delta));
+                monitor._workspace_osd.set_position(x, y);
+                Tweener.addTween(monitor._workspace_osd, {   opacity: 255,
+                    time: duration,
+                    transition: 'linear',
+                    onCompleteScope: this,
+                    onComplete: function() {
+                        this._hideWorkspaceOSD(monitor);
+                    }});
+            }, this);
         }
     },
 
-    _hideWorkspaceOSD : function() {
-        if (this._workspace_osd != null) {
-            this._workspace_osd.hide();
-            Main.layoutManager.removeChrome(this._workspace_osd);
-            this._workspace_osd.destroy();
-            this._workspace_osd = null;
+    _hideWorkspaceOSD : function(monitor) {
+        if (monitor._workspace_osd != null) {
+            monitor._workspace_osd.hide();
+            Main.layoutManager.removeChrome(monitor._workspace_osd);
+            monitor._workspace_osd.destroy();
+            monitor._workspace_osd = null;
         }
     },
 
@@ -1026,84 +1054,258 @@ WindowManager.prototype = {
         this._createAppSwitcher(binding);
     },
 
-    _shiftWindowToWorkspace : function(window, direction) {
-        if (window.get_window_type() === Meta.WindowType.DESKTOP) {
-            return;
-        }
-        let workspace = global.screen.get_active_workspace().get_neighbor(direction);
-        if (workspace != global.screen.get_active_workspace()) {
-            window.change_workspace(workspace);
-            workspace.activate(global.get_current_time());
-            this.showWorkspaceOSD();
-            Mainloop.idle_add(Lang.bind(this, function() {
-                // Unless this is done a bit later, window is sometimes not activated        
-                if (window.get_workspace() == global.screen.get_active_workspace()) {
-                    window.activate(global.get_current_time());
-                }
-            }));
-        }
-    },
-
-    _moveWindowToWorkspaceLeft : function(display, screen, window, binding) {
-        this._shiftWindowToWorkspace(window, Meta.MotionDirection.LEFT);
-    },
-
-    _moveWindowToWorkspaceRight : function(display, screen, window, binding) {
-        this._shiftWindowToWorkspace(window, Meta.MotionDirection.RIGHT);
-    },
-
     _showWorkspaceSwitcher : function(display, screen, window, binding) {
-        if (binding.get_name() == 'switch-to-workspace-up') {
-        	Main.expo.toggle();
-        	return;                   
-        }
-        if (binding.get_name() == 'switch-to-workspace-down') {
-            Main.overview.toggle();
-            return;
-        }
-        
-        if (screen.n_workspaces == 1)
-            return;
+        this.switchWorkspace(binding.get_name(), true);
+    },
 
-        let current_workspace_index = global.screen.get_active_workspace_index();
-        if (binding.get_name() == 'switch-to-workspace-left') {
-           this.actionMoveWorkspaceLeft();
-           if (current_workspace_index !== global.screen.get_active_workspace_index()) {
-                this.showWorkspaceOSD();
-           }
+    _forEachWorkspaceMonitor : function(callback, scope) {
+        Main.layoutManager.monitors.filter(function(monitor, index) {
+            return index === Main.layoutManager.primaryIndex || !this.workspacesOnlyOnPrimary;
+        }, this).forEach(callback, scope);
+    },
+
+    _showWorkspaceGrid : function(guardian) {
+        this._forEachWorkspaceMonitor(function(monitor, mIndex) {
+            this._showWorkspaceGridForMonitor(mIndex, guardian);
+        }, this);
+    },
+
+    _showWorkspaceGridForMonitor : function(mIndex, guardian) {
+        let monitor = Main.layoutManager.monitors[mIndex];
+        if (monitor._showingOsdGrid) { return;}
+
+        const INACTIVE_STYLE = "border-color: rgba(127,128,127, 1); border-radius:0";
+        const ACTIVE_STYLE = "border-color: rgba(0,255,0,0.9); border-radius:0";
+        let activeWsIndex = global.screen.get_active_workspace_index();
+        let [columnCount, rowCount] = Main.getWorkspaceGeometry();
+
+        // Find out the correct z-order (to handle always-on-top windows)
+        // Adapted from expoThumbnail.js
+        let stack = global.get_window_actors();
+        let stackIndices = {};
+        for (let i = 0; i < stack.length; i++) {
+            stackIndices[stack[i].get_meta_window()] = i;
         }
-        else if (binding.get_name() == 'switch-to-workspace-right') {
-           this.actionMoveWorkspaceRight();
-           if (current_workspace_index !== global.screen.get_active_workspace_index()) {
-                this.showWorkspaceOSD();
-           }
+
+        if (true) {
+            let osd = new St.Bin({reactive: false});
+            Main.uiGroup.add_actor(osd);
+            let dialogLayout = new St.BoxLayout({ style_class: 'modal-dialog', vertical: true});
+            dialogLayout.style = "padding: 4px; border-radius:0";
+            osd.add_actor(dialogLayout);
+
+            let cells = [];
+            let rows = [];
+            
+            // Find the right size for the workspace thumbnails. We don't want to take up
+            // too much of the monitor, and we want the thumbnails to be thumbnail-sized.
+            let heightAvail = monitor.height/1.1;
+            let widthAvail = monitor.width/1.1;
+            const MAXXOR = 16;
+            let rawdims = [Math.min(widthAvail/columnCount, monitor.width/MAXXOR), Math.min(heightAvail/rowCount, monitor.height/MAXXOR)];
+            let widthFirst = columnCount >= rowCount;
+            let [cWidth, cHeight] = (widthFirst
+                ? [rawdims[0], (rawdims[0]) * (monitor.height/monitor.width)]
+                : [(rawdims[1]) / (monitor.height/monitor.width), (rawdims[1])]
+                );
+            
+            let cellCount = 0;
+            for (let r = 0; r < rowCount; ++r) {
+                let row = new St.BoxLayout({});
+                rows.push(row);
+                for (let c = 0; c < columnCount; ++c) {
+                    let isWs = cellCount < global.screen.n_workspaces;
+                    let cell = new St.BoxLayout({ width: cWidth, height: cHeight, style_class: isWs ? 'modal-dialog' : null});
+                    cell.isWs = isWs;
+                    cell.style = cellCount == activeWsIndex ? ACTIVE_STYLE : INACTIVE_STYLE;
+                    row.add_actor(cell);
+                    ++cellCount;
+                    cells.push(cell);
+                }
+            }
+            (Main.getWorkspaceRowsTopDown() ? rows : rows.reverse()).forEach(function(row) {
+                dialogLayout.add_actor(row);
+            });
+            let populateCell = function(cell) {
+                cell.destroy_children();
+                let windows = Main.getTabList(global.screen.get_workspace_by_index(cell.index)).filter(function(window) {
+                    return window.get_monitor() == mIndex && (cell.index == activeWsIndex || !window.is_on_all_workspaces());
+                }, this);
+                let vBorder = cell.get_theme_node().get_border_width(St.Side.TOP);
+                let [cellWidth, cellHeight] = [cell.width - vBorder*2, cell.height - vBorder*2];
+                let scale_x = cellWidth/monitor.width;
+                let scale_y = cellHeight/monitor.height;
+                let scale = Math.min(scale_x, scale_y);
+
+                windows.sort(function(a, b){
+                    return stackIndices[a] - stackIndices[b];
+                }).forEach(function(window) {
+                    let actor = window.get_compositor_private();
+                    let [x,y] = [actor.x - monitor.x, actor.y - monitor.y];
+                    let [width,height] = [actor.width, actor.height];
+                    let clone = new Clutter.Clone({
+                        source: actor.get_texture(),
+                        x: vBorder + x*scale,
+                        y: vBorder + y*scale,
+                        width:width, height:height, scale_x: scale, scale_y: scale});
+                    cell.add_actor(clone);
+                },this);
+                let dimmer = cell.dimmer = new St.Group({x: vBorder, y:vBorder, width: cellWidth, height: cellHeight,
+                    style: "background-color: rgba(0,0,0,0.3)", visible: cell.index!=activeWsIndex
+                });
+                cell.add_actor(dimmer);
+            }
+            cells.filter(function(cell) {return cell.isWs;}).forEach(function(cell, index) {
+                cell.index = index;
+                populateCell(cell);
+            }, this);
+
+            let switchConnection = Connector.connect(global.window_manager, 'switch-workspace', function() {
+                // Both the old and the new active cell need to be repopulated, due to the possible
+                // presence of windows that are displayed on all workspaces, that we only want to
+                // display on the active workspace.
+                let oldcell = cells[activeWsIndex];
+                activeWsIndex = global.screen.get_active_workspace_index();
+                oldcell.style = INACTIVE_STYLE;
+                populateCell(oldcell);
+                cells[activeWsIndex].style = ACTIVE_STYLE;
+                populateCell(cells[activeWsIndex]);
+            });
+            switchConnection.tie(osd);
+            osd.set_position(monitor.x + Math.floor((monitor.width - osd.width)/2), monitor.y + Math.floor((monitor.height - osd.height)/2));
+            monitor._showingOsdGrid = true;
+
+            if (guardian) {
+                guardian.connect('destroy', Lang.bind(this, function() {osd.destroy(); monitor._showingOsdGrid = false;}));
+            }
         }
     },
 
-    actionMoveWorkspaceLeft: function() {
+    switchWorkspace : function(bindingName, forceAnimation) {
+        // We want to process workspace-switch events on key-release instead
+        // of on key-press, since that leads to less disturbing behavior
+        // when a key is kept pressed down for longer periods of time.
+        // In order to be able to handle key-press and key-release events
+        // more freely, we create a hidden window, make it modal and let
+        // it process keyboard events.
+
+        let fromModal = Main.modalCount > 0; // Important: do this before going modal!
+
+        let actor = new St.Bin({reactive: true});
+        Main.uiGroup.add_actor(actor);
+        if (!Main.pushModal(actor)) {
+            actor.destroy();
+            return;
+        }
+
+        let cleanup = Lang.bind(this, function() {
+            if (!actor) {return;}
+            Main.popModal(actor);
+            actor.destroy();
+            actor = null;
+        });
+
+        let pressEventCount = 0;
+        let done = false;
+        let showing = false;
+        let timestamp = global.get_current_time(); // need to grab a valid timestamp now
+
+        let isMultiRows = Main.getWorkspaceGeometry()[1] > 1;
+        let onKeyPressRelease = function(actor_unused, event, pressEvent, timeout) {
+            let prolongedKeyPress = false;
+            if (!timeout) {
+                pressEventCount += (pressEvent ? 1 : 0);
+                prolongedKeyPress = pressEventCount > 0;
+            }
+            else {
+                prolongedKeyPress = true;
+            }
+
+            if (!done && (!pressEvent || prolongedKeyPress)) {
+                done = true;
+                this.forceAnimation = forceAnimation; // we are in a modal state already, so must override to have animations
+                try {
+                    if (!fromModal && prolongedKeyPress && !showing && global.screen.n_workspaces > 1) {
+                        this._showWorkspaceGrid(actor);
+                        showing = true;
+                    }
+                    if (bindingName == 'switch-to-workspace-up') {
+                        if (!prolongedKeyPress || (!pressEvent && !isMultiRows)) {
+                            cleanup();
+                            if (fromModal) {
+                                Main.overview.hide();
+                                Main.expo.hide();
+                            } else {
+                                Main.expo.toggle();
+                            }
+                        }
+                        else if (isMultiRows) {
+                           this.actionMoveWorkspaceUp(timestamp);
+                        }
+                    }
+                    if (bindingName == 'switch-to-workspace-down') {
+                        if (!prolongedKeyPress || (!pressEvent && !isMultiRows)) {
+                            cleanup();
+                            if (fromModal) {
+                                Main.overview.hide();
+                                Main.expo.hide();
+                            } else {
+                                Main.overview.toggle();
+                            }
+                        }
+                        else if (isMultiRows) {
+                           this.actionMoveWorkspaceDown(timestamp);
+                        }
+                    }
+                    if (bindingName == 'switch-to-workspace-left') {
+                       this.actionMoveWorkspaceLeft(timestamp);
+                    }
+                    if (bindingName == 'switch-to-workspace-right') {
+                       this.actionMoveWorkspaceRight(timestamp);
+                    }
+                }
+                finally {
+                    delete this.forceAnimation;
+                }
+            }
+            if (done && !pressEvent && !timeout) {
+                cleanup();
+            }
+            return true;
+        };
+        // We don't get the first key-press event until after 400 to 500 milliseconds,
+        // so we use a timer to speed up the responsiveness.
+        let timerId = Mainloop.timeout_add(150, Lang.bind(this, function() {
+            (Lang.bind(this, onKeyPressRelease))(null, null, false, true);
+        }));
+        actor.connect('key-press-event', Lang.bind(this, onKeyPressRelease, true));
+        actor.connect('key-release-event', Lang.bind(this, onKeyPressRelease, false));
+    },
+
+    actionMoveWorkspaceLeft: function(time) {
         var active = global.screen.get_active_workspace();        
         var neighbour = active.get_neighbor(Meta.MotionDirection.LEFT)
         if (active != neighbour) {
             Main.soundManager.play('switch');
-            neighbour.activate(global.get_current_time());
+            neighbour.activate(time || global.get_current_time());
         }
     },
 
-    actionMoveWorkspaceRight: function() {
+    actionMoveWorkspaceRight: function(time) {
         var active = global.screen.get_active_workspace();        
         var neighbour = active.get_neighbor(Meta.MotionDirection.RIGHT)
         if (active != neighbour) {
             Main.soundManager.play('switch');
-            neighbour.activate(global.get_current_time());
+            neighbour.activate(time || global.get_current_time());
         }
     },
 
-    actionMoveWorkspaceUp: function() {
-        global.screen.get_active_workspace().get_neighbor(Meta.MotionDirection.UP).activate(global.get_current_time());
+    actionMoveWorkspaceUp: function(time) {
+        global.screen.get_active_workspace().get_neighbor(Meta.MotionDirection.UP).activate(time || global.get_current_time());
     },
 
-    actionMoveWorkspaceDown: function() {
-        global.screen.get_active_workspace().get_neighbor(Meta.MotionDirection.DOWN).activate(global.get_current_time());
+    actionMoveWorkspaceDown: function(time) {
+        global.screen.get_active_workspace().get_neighbor(Meta.MotionDirection.DOWN).activate(time || global.get_current_time());
     },
 
     actionFlipWorkspaceLeft: function() {
