@@ -255,7 +255,10 @@ __proto__: ModalDialog.ModalDialog.prototype,
                                                      deduplicate: true });
         this._entryText.connect('key-press-event', Lang.bind(this, function(o, e) {
             let symbol = e.get_key_symbol();
-            if (symbol == Clutter.Return || symbol == Clutter.KP_Enter) {
+            switch (symbol)
+            {
+            case Clutter.Return:
+            case Clutter.KP_Enter:
                 this.popModal();
                 if (Cinnamon.get_event_state(e) & Clutter.ModifierType.CONTROL_MASK)
                     this._run(o.get_text(), true);
@@ -268,12 +271,10 @@ __proto__: ModalDialog.ModalDialog.prototype,
                         this.close();
                 }
                 return true;
-            }
-            if (symbol == Clutter.Escape) {
+            case Clutter.Escape:
                 this.close();
                 return true;
-            }
-            if (symbol == Clutter.slash) {
+            case Clutter.slash:
                 // Need preload data before get completion. GFilenameCompleter load content of parent directory.
                 // Parent directory for /usr/include/ is /usr/. So need to add fake name('a').
                 let text = o.get_text().concat('/a');
@@ -284,8 +285,22 @@ __proto__: ModalDialog.ModalDialog.prototype,
                     prefix = text.substr(text.lastIndexOf(' ') + 1);
                 this._getCompletion(prefix);
                 return false;
-            }
-            if (symbol == Clutter.Tab) {
+            case Clutter.BackSpace:
+                this._completionSelected = 0;
+                this._completionBox.hide();
+                break;
+            default:
+                {
+                //adjust selection
+                if (this._entryText.get_selection().charAt(0)==String.fromCharCode(Clutter.keysym_to_unicode(symbol)))
+                    this._entryText.set_selection(this._entryText.get_text().indexOf(this._entryText.get_selection())+1, -1);
+                else {
+                    //enter valid symbol into entry
+                    try{
+                        o.set_text(o.get_text().slice(0, this._entryText.get_text().lastIndexOf(this._entryText.get_selection())));
+                        o.set_text(o.get_text()+String.fromCharCode(Clutter.keysym_to_unicode(symbol)));
+                    } catch (e) {}
+                }
                 let text = o.get_text();
                 text = text.slice(0, text.lastIndexOf(o.get_selection()));
                 let prefix;
@@ -299,21 +314,18 @@ __proto__: ModalDialog.ModalDialog.prototype,
                     o.set_cursor_position(text.length + postfix.length);
                     if (postfix[postfix.length - 1] == '/')
                         this._getCompletion(text + postfix + 'a');
-                }
-                if (!postfix && completions.length > 0 && prefix.length > 2 &&
-                    global.settings.get_boolean(SHOW_COMPLETIONS_KEY)) {
-                    if (this._completionBox.visible) {
+                    }
+                    if (/*!postfix &&*/ completions.length > 0 && prefix.length > 2) {
+                        this._showCompletions(completions, prefix.length);
+                        this._completionBox.show();
+                    }
+                    //move through completions with tab
+                    if (global.settings.get_boolean(SHOW_COMPLETIONS_KEY)&&this._completionBox.visible) {
                         this._completionSelected ++;
                         this._completionSelected %= completions.length;
                     }
-                    this._showCompletions(completions, prefix.length);
-                    this._completionBox.show();
+                    return true;
                 }
-                return true;
-            }
-            if (symbol == Clutter.BackSpace) {
-                this._completionSelected = 0;
-                this._completionBox.hide();
             }
             if (this._completionBox.get_text() != "" &&
                 this._completionBox.visible) {
