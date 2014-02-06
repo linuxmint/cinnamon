@@ -63,13 +63,13 @@ AppMenuButtonRightClickMenu.prototype = {
     __proto__: PopupMenu.PopupMenu.prototype,
 
     _init: function(actor, metaWindow, orientation) {
-        //take care of menu initialization        
-        PopupMenu.PopupMenu.prototype._init.call(this, actor, 0.0, orientation, 0);        
+        //take care of menu initialization
+        PopupMenu.PopupMenu.prototype._init.call(this, actor, 0.0, orientation, 0);
         Main.uiGroup.add_actor(this.actor);
         this.actor.hide();
         this.window_list = actor._delegate._applet._windows;
-        actor.connect('key-press-event', Lang.bind(this, this._onSourceKeyPress));        
-        this.connect('open-state-changed', Lang.bind(this, this._onToggled));        
+        actor.connect('key-press-event', Lang.bind(this, this._onSourceKeyPress));
+        this.connect('open-state-changed', Lang.bind(this, this._onToggled));
 
         this.metaWindow = metaWindow;
         this.orientation = orientation;
@@ -91,13 +91,13 @@ AppMenuButtonRightClickMenu.prototype = {
 
         let itemMaximizeWindow = new PopupMenu.PopupMenuItem(mw.get_maximized() ? _("Unmaximize") : _("Maximize"));
         itemMaximizeWindow.connect('activate', Lang.bind(this, this._onMaximizeWindowActivate));
-        
+
         let itemMoveToLeftWorkspace = new PopupMenu.PopupMenuItem(_("Move to left workspace"));
         itemMoveToLeftWorkspace.connect('activate', Lang.bind(this, this._onMoveToLeftWorkspace));
-        
+
         let itemMoveToRightWorkspace = new PopupMenu.PopupMenuItem(_("Move to right workspace"));
         itemMoveToRightWorkspace.connect('activate', Lang.bind(this, this._onMoveToRightWorkspace));
-        
+
         let itemOnAllWorkspaces = new PopupMenu.PopupMenuItem(_("Visible on all workspaces"));
         itemOnAllWorkspaces.connect('activate', Lang.bind(this, this._toggleOnAllWorkspaces));
 
@@ -157,7 +157,7 @@ AppMenuButtonRightClickMenu.prototype = {
         this.removeAll();
         this._populateMenu();
     },
-    
+
     _onCloseWindowActivate: function(actor, event){
         this.metaWindow.delete(global.get_current_time());
     },
@@ -198,7 +198,7 @@ AppMenuButtonRightClickMenu.prototype = {
         }
     },
 
-    _onMaximizeWindowActivate: function(actor, event){      
+    _onMaximizeWindowActivate: function(actor, event){
         if (this.metaWindow.get_maximized()){
             this.metaWindow.unmaximize(Meta.MaximizeFlags.HORIZONTAL | Meta.MaximizeFlags.VERTICAL);
         }else{
@@ -218,7 +218,7 @@ AppMenuButtonRightClickMenu.prototype = {
             });
         }
     },
-    
+
     _onMoveToLeftWorkspace: function(actor, event){
         this._moveToWorkspace(Meta.MotionDirection.LEFT);
     },
@@ -260,39 +260,38 @@ function AppMenuButton(applet, metaWindow, animation, orientation, panel_height,
 AppMenuButton.prototype = {
 //    __proto__ : AppMenuButton.prototype,
 
-    
     _init: function(applet, metaWindow, animation, orientation, panel_height, draggable) {
                
         this.actor = new St.Bin({ style_class: 'window-list-item-box',
-								  reactive: true,
-								  can_focus: true,
-								  x_fill: true,
-								  y_fill: false,
-								  track_hover: true });
-								  
-        if (orientation == St.Side.TOP) 
-	        this.actor.add_style_class_name('window-list-item-box-top');
+                                                                  reactive: true,
+                                                                  can_focus: true,
+                                                                  x_fill: true,
+                                                                  y_fill: false,
+                                                                  track_hover: true });
+
+        if (orientation == St.Side.TOP)
+                this.actor.add_style_class_name('window-list-item-box-top');
         else
-	        this.actor.add_style_class_name('window-list-item-box-bottom');
-      
+                this.actor.add_style_class_name('window-list-item-box-bottom');
+
         this.actor._delegate = this;
-        this.actor.connect('button-release-event', Lang.bind(this, this._onButtonRelease));
         this.actor.connect('button-press-event', Lang.bind(this, this._onButtonPress));
 		this.metaWindow = metaWindow;	
 
         this._applet = applet;
+
         let bin = new St.Bin({ name: 'appMenu' });
         this.actor.set_child(bin);
 
         this._container = new Cinnamon.GenericContainer();
         bin.set_child(this._container);
         this._container.connect('get-preferred-width',
-								Lang.bind(this, this._getContentPreferredWidth));
+                                                                Lang.bind(this, this._getContentPreferredWidth));
         this._container.connect('get-preferred-height',
-								Lang.bind(this, this._getContentPreferredHeight));
+                                                                Lang.bind(this, this._getContentPreferredHeight));
         this._container.connect('allocate', Lang.bind(this, this._contentAllocate));
 
-        
+
         this._iconBox = new Cinnamon.Slicer({ name: 'appMenuIcon' });
         this._iconBox.connect('style-changed',
                               Lang.bind(this, this._onIconBoxStyleChanged));
@@ -303,10 +302,10 @@ AppMenuButton.prototype = {
         this._container.add_actor(this._label);
 
         this._iconBottomClip = 0;
-    	this._visible = true;
+        this._visible = true;
 
         this.actor.connect('destroy', Lang.bind(this, this._onDestroy));
-        
+
         this._updateCaptionId = this.metaWindow.connect('notify::title', Lang.bind(this, function () {
             let title = this.getDisplayTitle();
             this._label.set_text(title);
@@ -323,7 +322,7 @@ AppMenuButton.prototype = {
         this._spinner = new Panel.AnimatedIcon('process-working.svg', PANEL_ICON_SIZE);
         this._container.add_actor(this._spinner.actor);
         this._spinner.actor.lower_bottom();
-        
+
         this.set_icon(panel_height);
         let title = this.getDisplayTitle();
         this._label.set_text(title);        
@@ -359,7 +358,7 @@ AppMenuButton.prototype = {
         this.on_scroll_mode_changed();
         this._needsAttention = false;
     },
-    
+
     on_panel_edit_mode_changed: function() {
         if (this._draggable) {
             this._inEditMode = this._draggable.inhibit = global.settings.get_boolean("panel-edit-mode");
@@ -447,7 +446,7 @@ AppMenuButton.prototype = {
             this.rightClickMenu.destroy();
         }
     },
-    
+
     _hasFocus: function(metaWindow) {
         if (metaWindow.has_focus()) {
             return true;
@@ -459,10 +458,10 @@ AppMenuButton.prototype = {
                 return false;
             }
             return true;
-        }); 
+        });
         return transientHasFocus;
     },
-    
+
     doFocus: function() {
         if (this._hasFocus(this.metaWindow) && !this.metaWindow.minimized) {
             this.actor.add_style_pseudo_class('focus');
@@ -513,7 +512,7 @@ AppMenuButton.prototype = {
         }
         else {
             if (this.metaWindow.minimized) {
-                this.metaWindow.unminimize(global.get_current_time()); 
+                this.metaWindow.unminimize(global.get_current_time());
             }
             let ws = this.metaWindow.get_workspace().index()
             if (ws != global.screen.get_active_workspace_index()) {
@@ -541,6 +540,7 @@ AppMenuButton.prototype = {
     handleDragOver: function(source, actor, x, y, time) {
         if (this._inEditMode) return DND.DragMotionResult.MOVE_DROP;
         if (source instanceof AppMenuButton) return DND.DragMotionResult.CONTINUE;
+
         drag_helper.temp_show_panels();
         if (typeof(this._applet.dragEnterTime) == 'undefined') {
             this._applet.dragEnterTime = time;
@@ -555,11 +555,11 @@ AppMenuButton.prototype = {
         }
         return DND.DragMotionResult.NO_DROP;
     },
-    
+
     acceptDrop: function(source, actor, x, y, time) {
         return false;
     },
-    
+
     show: function() {
         if (this._visible)
             return;
@@ -612,7 +612,7 @@ AppMenuButton.prototype = {
         alloc.min_size = minSize; // minimum size just enough for icon if we ever get that many apps going
         alloc.natural_size = naturalSize;
         [minSize, naturalSize] = this._label.get_preferred_width(forHeight);
-	alloc.min_size = alloc.min_size + Math.max(0, minSize - Math.floor(alloc.min_size / 2));
+        alloc.min_size = alloc.min_size + Math.max(0, minSize - Math.floor(alloc.min_size / 2));
         alloc.natural_size = 150;
     },
 
@@ -679,7 +679,7 @@ AppMenuButton.prototype = {
             this._spinner.actor.allocate(childBox, flags);
         }
     },
-    
+
     getDragActor: function() {
         return new Clutter.Clone({ source: this.actor });
     },
@@ -745,14 +745,14 @@ MyAppletBox.prototype = {
         this.actor = new St.BoxLayout({ name: 'windowList',
                                         style_class: 'window-list-box' });
         this.actor._delegate = this;
-        
+
         this._applet = applet;
-        
+
         this._dragPlaceholder = null;
         this._dragPlaceholderPos = -1;
         this._animatingPlaceholdersCount = 0;
     },
-    
+
     handleDragOver: function(source, actor, x, y, time) {
         if (this._inEditMode) return DND.DragMotionResult.MOVE_DROP;
         if (!(source instanceof AppMenuButton))  {
@@ -762,14 +762,14 @@ MyAppletBox.prototype = {
 
         let children = this.actor.get_children();
         let windowPos = children.indexOf(source.actor);
-        
+
         let pos = 0;
-        
+
         for (var i in children){
             if (x > children[i].get_allocation_box().x1 + children[i].width / 2) pos = i;
         }
-        
-        if (pos != this._dragPlaceholderPos) {            
+
+        if (pos != this._dragPlaceholderPos) {
             this._dragPlaceholderPos = pos;
 
             // Don't allow positioning before or after self
@@ -806,22 +806,22 @@ MyAppletBox.prototype = {
             if (fadeIn)
                 this._dragPlaceholder.animateIn();
         }
-        
+
         return DND.DragMotionResult.MOVE_DROP;
     },
-    
-    acceptDrop: function(source, actor, x, y, time) {  
+
+    acceptDrop: function(source, actor, x, y, time) {
         if (!(source instanceof AppMenuButton)) return false;
-        
+
         this.actor.move_child(source.actor, this._dragPlaceholderPos);
-        
+
         this._clearDragPlaceholder();
         actor.destroy();
-        
+
         return true;
     },
-    
-    _clearDragPlaceholder: function() {        
+
+    _clearDragPlaceholder: function() {
         if (this._dragPlaceholder) {
             this._dragPlaceholder.animateOutAndDestroy();
             this._dragPlaceholder = null;
@@ -850,10 +850,10 @@ function MyApplet(orientation, panel_height) {
 MyApplet.prototype = {
     __proto__: Applet.Applet.prototype,
 
-    _init: function(orientation, panel_height) {        
+    _init: function(orientation, panel_height) {
         Applet.Applet.prototype._init.call(this, orientation, panel_height);
         this.actor.set_track_hover(false);
-        try {                    
+        try {
             this.orientation = orientation;
             this.dragInProgress = false;
 
@@ -943,7 +943,7 @@ MyApplet.prototype = {
 
     on_panel_edit_mode_changed: function() {
         this.actor.reactive = global.settings.get_boolean("panel-edit-mode");
-    }, 
+    },
 
     _onWindowDemandsAttention : function(display, window) {
         for ( let i=0; i<this._windows.length; ++i ) {
@@ -995,9 +995,9 @@ MyApplet.prototype = {
         }
     },
 
-    _onFocus: function() {        
+    _onFocus: function() {
         for ( let i = 0; i < this._windows.length; ++i ) {
-            let window = this._windows[i];                        
+            let window = this._windows[i];
             window.set_icon(this._panelHeight);
             window.doFocus();
         }
@@ -1016,7 +1016,7 @@ MyApplet.prototype = {
     on_panel_height_changed: function() {
         this._refreshItems();
     },
-    
+
     _refreshItems: function() {
         for ( let i = 0; i < this._windows.length; ++i ) {
             let metaWindow = this._windows[i].metaWindow;
@@ -1052,7 +1052,7 @@ MyApplet.prototype = {
 
     _windowAdded: function(metaWorkspace, metaWindow) {
         if (!Main.isInteresting(metaWindow))
-            return;        
+            return;
         for ( let i=0; i<this._windows.length; ++i ) {
             if ( this._windows[i].metaWindow == metaWindow ) {
                 return;
@@ -1077,7 +1077,7 @@ MyApplet.prototype = {
         }
         this.calculate_alert_positions();
     },
-    
+
     _changeWorkspaces: function() {
         for ( let i=0; i<this._workspaces.length; ++i ) {
             let ws = this._workspaces[i];
@@ -1095,54 +1095,54 @@ MyApplet.prototype = {
                                     Lang.bind(this, this._windowRemoved));
         }
     },
-    
-    _allocateBoxes: function(container, box, flags) {	
-		let allocWidth = box.x2 - box.x1;
-		let allocHeight = box.y2 - box.y1;
-		let [leftMinWidth, leftNaturalWidth] = this._leftBox.get_preferred_width(-1);
-		let [centerMinWidth, centerNaturalWidth] = this._centerBox.get_preferred_width(-1);
-		let [rightMinWidth, rightNaturalWidth] = this._rightBox.get_preferred_width(-1);
 
-		let sideWidth, centerWidth;
-		centerWidth = centerNaturalWidth;
-		sideWidth = (allocWidth - centerWidth) / 2;
+    _allocateBoxes: function(container, box, flags) {
+                let allocWidth = box.x2 - box.x1;
+                let allocHeight = box.y2 - box.y1;
+                let [leftMinWidth, leftNaturalWidth] = this._leftBox.get_preferred_width(-1);
+                let [centerMinWidth, centerNaturalWidth] = this._centerBox.get_preferred_width(-1);
+                let [rightMinWidth, rightNaturalWidth] = this._rightBox.get_preferred_width(-1);
 
-		let childBox = new Clutter.ActorBox();
+                let sideWidth, centerWidth;
+                centerWidth = centerNaturalWidth;
+                sideWidth = (allocWidth - centerWidth) / 2;
 
-		childBox.y1 = 0;
-		childBox.y2 = allocHeight;
-		if (this.myactor.get_text_direction() == Clutter.TextDirection.RTL) {
-			childBox.x1 = allocWidth - Math.min(allocWidth - rightNaturalWidth,
-												leftNaturalWidth);
-			childBox.x2 = allocWidth;
-		} else {
-			childBox.x1 = 0;
-			childBox.x2 = Math.min(allocWidth - rightNaturalWidth, leftNaturalWidth);
-		}
-		this._leftBox.allocate(childBox, flags);
+                let childBox = new Clutter.ActorBox();
 
-		childBox.x1 = Math.ceil(sideWidth);
-		childBox.y1 = 0;
-		childBox.x2 = childBox.x1 + centerWidth;
-		childBox.y2 = allocHeight;
-		this._centerBox.allocate(childBox, flags);
+                childBox.y1 = 0;
+                childBox.y2 = allocHeight;
+                if (this.myactor.get_text_direction() == Clutter.TextDirection.RTL) {
+                        childBox.x1 = allocWidth - Math.min(allocWidth - rightNaturalWidth,
+                                                                                                leftNaturalWidth);
+                        childBox.x2 = allocWidth;
+                } else {
+                        childBox.x1 = 0;
+                        childBox.x2 = Math.min(allocWidth - rightNaturalWidth, leftNaturalWidth);
+                }
+                this._leftBox.allocate(childBox, flags);
 
-		childBox.y1 = 0;
-		childBox.y2 = allocHeight;
-		if (this.myactor.get_text_direction() == Clutter.TextDirection.RTL) {
-			childBox.x1 = 0;
-			childBox.x2 = Math.min(Math.floor(sideWidth),
-								   rightNaturalWidth);
-		} else {
-			childBox.x1 = allocWidth - Math.min(Math.floor(sideWidth),
-												rightNaturalWidth);
-			childBox.x2 = allocWidth;
-		}
-		this._rightBox.allocate(childBox, flags);
+                childBox.x1 = Math.ceil(sideWidth);
+                childBox.y1 = 0;
+                childBox.x2 = childBox.x1 + centerWidth;
+                childBox.y2 = allocHeight;
+                this._centerBox.allocate(childBox, flags);
+
+                childBox.y1 = 0;
+                childBox.y2 = allocHeight;
+                if (this.myactor.get_text_direction() == Clutter.TextDirection.RTL) {
+                        childBox.x1 = 0;
+                        childBox.x2 = Math.min(Math.floor(sideWidth),
+                                                                   rightNaturalWidth);
+                } else {
+                        childBox.x1 = allocWidth - Math.min(Math.floor(sideWidth),
+                                                                                                rightNaturalWidth);
+                        childBox.x2 = allocWidth;
+                }
+                this._rightBox.allocate(childBox, flags);
     }
 };
 
-function main(metadata, orientation, panel_height) {  
+function main(metadata, orientation, panel_height) {
     let myApplet = new MyApplet(orientation, panel_height);
-    return myApplet;      
+    return myApplet;
 }

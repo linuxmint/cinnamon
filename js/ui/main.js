@@ -67,13 +67,13 @@ const LookingGlass = imports.ui.lookingGlass;
 const NotificationDaemon = imports.ui.notificationDaemon;
 const WindowAttentionHandler = imports.ui.windowAttentionHandler;
 const Scripting = imports.ui.scripting;
+const StatusIconDispatcher = imports.ui.statusIconDispatcher;
 const CinnamonDBus = imports.ui.cinnamonDBus;
 const LookingGlassDBus = imports.ui.lookingGlassDBus;
 const WindowManager = imports.ui.windowManager;
 const ThemeManager = imports.ui.themeManager;
 const Magnifier = imports.ui.magnifier;
 const XdndHandler = imports.ui.xdndHandler;
-const StatusIconDispatcher = imports.ui.statusIconDispatcher;
 const Util = imports.misc.util;
 const Keybindings = imports.ui.keybindings;
 const Settings = imports.ui.settings;
@@ -89,8 +89,7 @@ const CIN_LOG_FOLDER = GLib.get_home_dir() + '/.cinnamon/';
 
 let automountManager = null;
 
-let panel = null;
-let panel2 = null;
+let panelManager = null;
 
 let soundManager = null;
 let backgroundManager = null;
@@ -129,8 +128,7 @@ let workspace_names = [];
 
 let background = null;
 
-let desktop_layout;
-let applet_side = St.Side.BOTTOM;
+let applet_side;
 let deskletContainer = null;
 
 let software_rendering = false;
@@ -264,19 +262,14 @@ function start() {
     tracker = Cinnamon.WindowTracker.get_default();
     Cinnamon.AppSystem.get_default();
 
+    // Add Cinnamon icons to the Gtk icon list
+    Gtk.IconTheme.get_default().append_search_path("/usr/lib/cinnamon-settings/data/icons/");
+
     // The stage is always covered so Clutter doesn't need to clear it; however
     // the color is used as the default contents for the Muffin root background
     // actor so set it anyways.
     global.stage.color = DEFAULT_BACKGROUND_COLOR;
     global.stage.no_clear_hint = true;
-    
-    desktop_layout = global.settings.get_string("desktop-layout"); 
-    if (desktop_layout == LAYOUT_FLIPPED) {
-        applet_side = St.Side.TOP;        
-    }
-    else if (desktop_layout == LAYOUT_CLASSIC) {
-        applet_side = St.Side.TOP;        
-    }
     
     Gtk.IconTheme.get_default().append_search_path("/usr/share/cinnamon/icons/");
     _defaultCssStylesheet = global.datadir + '/theme/cinnamon.css';    
@@ -320,27 +313,9 @@ function start() {
     overview = new Overview.Overview();
     expo = new Expo.Expo();
     magnifier = new Magnifier.Magnifier();
-    statusIconDispatcher = new StatusIconDispatcher.StatusIconDispatcher();  
-                    
-    if (desktop_layout == LAYOUT_TRADITIONAL) {
-        panel = new Panel.Panel(true, true);
-        panel.actor.add_style_class_name('panel-bottom');
-        layoutManager.panelBox.add(panel.actor);
-    }
-    else if (desktop_layout == LAYOUT_FLIPPED) {
-        panel = new Panel.Panel(false, true);
-        panel.actor.add_style_class_name('panel-top');
-        layoutManager.panelBox.add(panel.actor);
-    }
-    else {
-        desktop_layout == LAYOUT_CLASSIC;
-        panel = new Panel.Panel(false, true);
-        panel2 = new Panel.Panel(true, false);
-        panel.actor.add_style_class_name('panel-top');
-        panel2.actor.add_style_class_name('panel-bottom');
-        layoutManager.panelBox.add(panel.actor);   
-        layoutManager.panelBox2.add(panel2.actor);   
-    }
+    statusIconDispatcher = new StatusIconDispatcher.StatusIconDispatcher();
+    panelManager = new Panel.PanelManager();
+
     layoutManager._updateBoxes();
     
     wm = new WindowManager.WindowManager();
@@ -369,7 +344,7 @@ function start() {
     expo.init();
 
     _initUserSession();
-    statusIconDispatcher.start(panel.actor);
+    statusIconDispatcher.start(panelManager.panels[1].actor); // Temprorary fix. Further investigation on statusIconDispatcher is needed
 
     // Provide the bus object for gnome-session to
     // initiate logouts.
@@ -415,6 +390,7 @@ function notifyCinnamon2d() {
                    _("Cinnamon is currently running without video hardware acceleration and, as a result, you may observe much higher than normal CPU usage.\n\n") +
                    _("There could be a problem with your drivers or some other issue.  For the best experience, it is recommended that you only use this mode for") +
                    _(" troubleshooting purposes."), icon);
+
 }
 
 function loadSoundSettings() {
@@ -422,14 +398,14 @@ function loadSoundSettings() {
 
 }
 
-function enablePanels() {
-    if (panel) panel.enable();
-    if (panel2) panel2.enable();
-}
-
-function disablePanels() {
-    if (panel) panel.disable();
-    if (panel2) panel2.disable();
+function notifyCinnamon2d() {
+    let icon = new St.Icon({ icon_name: 'display',
+                             icon_type: St.IconType.FULLCOLOR,
+                             icon_size: 36 });
+    criticalNotify(_("Running in software rendering mode"),
+                   _("Cinnamon is currently running without video hardware acceleration and, as a result, you may observe much higher than normal CPU usage.\n\n") +
+                   _("There could be a problem with your drivers or some other issue.  For the best experience, it is recommended that you only use this mode for") +
+                   _(" troubleshooting purposes."), icon);
 }
 
 function getPanels() {

@@ -862,11 +862,7 @@ LookingGlass.prototype = {
                                         Lang.bind(this, this._updateFont));
         this._updateFont();
 
-        // We want it to appear to slide out from underneath the panel
-        Main.layoutManager.panelBox.add_actor(this.actor);
-        this.actor.lower_bottom();
-        Main.layoutManager.panelBox.connect('allocation-changed',
-                                            Lang.bind(this, this._queueResize));
+        Main.uiGroup.add_actor(this.actor);
         Main.layoutManager.keyboardBox.connect('allocation-changed',
                                                Lang.bind(this, this._queueResize));
 
@@ -1144,31 +1140,18 @@ LookingGlass.prototype = {
         let myWidth = primary.width * 0.7;
         let availableHeight = primary.height - Main.layoutManager.keyboardBox.height;
         let myHeight = Math.min(primary.height * 0.7, availableHeight * 0.9);
-        this.actor.x = (primary.width - myWidth) / 2;
-        
-        let yOffset;
-        if (Main.desktop_layout == Main.LAYOUT_TRADITIONAL) {
-            this._targetY = -myHeight;
-            this._hiddenY = -this.actor.get_parent().height;
-            yOffset = this._hiddenY;
-        } else {       
-            this._hiddenY = this.actor.get_parent().height - myHeight - 4; // -4 to hide the top corners
-            this._targetY = this._hiddenY + myHeight;
-            yOffset = this._targetY;
-        }
+
+        this.actor.x = primary.x + (primary.width - myWidth) / 2;
+        this._targetY = primary.y + primary.height - myHeight;
+        this._hiddenY = this._targetY + myHeight;
         
         this.actor.y = this._hiddenY;
         this.actor.width = myWidth;
         this.actor.height = myHeight;
+//        this._objInspector.actor.set_anchor_point(0, 0); // reset anchor point
         this._objInspector.actor.set_size(Math.floor(myWidth * 0.8), Math.floor(myHeight * 0.8));
-        
-        // Use the position of primary.x, y to reposition the
-        // objInspector with respect to multiple monitors.
-        this._objInspector.actor.set_anchor_point(0, 0); // reset anchor point
-        this._objInspector.actor.set_position(
-                    primary.x + this.actor.x + Math.floor(myWidth * 0.1),
-                    primary.y + yOffset + Math.floor(myHeight * 0.1)
-        );
+        this._objInspector.actor.set_position(this.actor.x + Math.floor(myWidth * 0.1),
+                                              this._targetY + Math.floor(myHeight * 0.1));
     },
 
     insertObject: function(obj) {

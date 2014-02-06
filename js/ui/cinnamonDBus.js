@@ -38,6 +38,11 @@ const CinnamonIface = {
                 outSignature: ''
               },
               {
+                name: 'highlightPanel',
+                inSignature: 'ib',
+                outSignature: ''
+              },
+              {
                 name: 'activateCallback',
                 inSignature: 'ssb',
                 outSignature: ''
@@ -229,6 +234,10 @@ Cinnamon.prototype = {
             let [w, h] = actor.get_transformed_size();
             this.FlashArea(x, y, w, h)
         }
+    },
+
+    highlightPanel: function(id, highlight) {
+        Main.panelManager.panels[id].highlight(highlight);
     },
 
     activateCallback: function(callback, id, id_is_instance) {

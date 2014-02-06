@@ -5,6 +5,7 @@ const Lang = imports.lang;
 const St = imports.gi.St;
 const PopupMenu = imports.ui.popupMenu;
 const Pango = imports.gi.Pango;
+const Mainloop = imports.mainloop;
 
 const POWER_SCHEMA = "org.cinnamon.power"
 const SHOW_PERCENTAGE_KEY = "power-label";
@@ -311,13 +312,24 @@ MyApplet.prototype = {
         this._devicesChanged();
     },
 
-    _devicesChanged: function() {        
+    _devicesChanged: function() {
         this._proxy.GetRemote('Icon', Lang.bind(this, function(icon, error) {
-            if (icon) {    
-                this.set_applet_icon_symbolic_name('battery-missing');
-                let gicon = Gio.icon_new_for_string(icon);
-                this._applet_icon.gicon = gicon;
-                this.actor.show();
+            if (icon) {
+                Mainloop.idle_add(Lang.bind(this, function() { // Wait for a while so that this.panel is set by appletManager
+                    if (this.panel.scaleMode) {
+                        let height = (this._panelHeight / DEFAULT_PANEL_HEIGHT) * PANEL_SYMBOLIC_ICON_DEFAULT_HEIGHT;
+                        this._applet_icon = new St.Icon({icon_name: 'battery-missing', icon_size: height, icon_type: St.IconType.SYMBOLIC, reactive: true, track_hover: true, style_class: 'system-status-icon' });
+                    } else {
+                        this._applet_icon = new St.Icon({icon_name: 'battery-missing', icon_type: St.IconType.SYMBOLIC, reactive: true, track_hover: true, style_class: 'system-status-icon' });
+                    }
+                    this._applet_icon_box.child = this._applet_icon;
+                    this.__icon_type = St.IconType.SYMBOLIC;
+                    this.__icon_name = 'battery-missing';
+                    let gicon = Gio.icon_new_for_string(icon);
+
+                    this._applet_icon.gicon = gicon;
+                    this.actor.show();
+                }));
             } else {
                 this.menu.close();
                 this.actor.hide();

@@ -284,7 +284,7 @@ WindowManager.prototype = {
                                        onOverwriteScope: this,
                                        onOverwriteParams: [cinnamonwm, actor]
                                      });
-                    return; // done
+                    return;
                 }
             }
             effect = "scale"; // fall-back effect

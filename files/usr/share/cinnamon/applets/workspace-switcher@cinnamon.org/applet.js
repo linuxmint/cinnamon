@@ -1,6 +1,7 @@
 const St = imports.gi.St;
 const Lang = imports.lang;
 const Applet = imports.ui.applet;
+const Mainloop = imports.mainloop;
 
 function MyApplet(orientation, panel_height) {
     this._init(orientation, panel_height);
@@ -17,7 +18,7 @@ MyApplet.prototype = {
             this.actor.connect('scroll-event', this.hook.bind(this));
             this.set_applet_tooltip(_("Switch workspace"));
             this.button = [];
-            this._createButtons();
+            Mainloop.idle_add(Lang.bind(this, this._createButtons));// Wait for a while so that this.panel is set by appletManager
             global.screen.connect('notify::n-workspaces', Lang.bind(this, this._createButtons));
             global.window_manager.connect('switch-workspace', Lang.bind(this, this._updateButtons));   
             this.on_panel_edit_mode_changed();
@@ -74,7 +75,7 @@ MyApplet.prototype = {
             let label = new St.Label({ text: text });
             this.button[i].set_child(label);
             this.actor.add(this.button[i]);
-            if (this._scaleMode) {
+            if (this.panel.scaleMode) {
                 this.button[i].set_height(this._panelHeight);
             }
             let index = i;
@@ -86,7 +87,6 @@ MyApplet.prototype = {
     },
 
     on_panel_height_changed: function() {
-        this._scaleMode = global.settings.get_boolean('panel-scale-text-icons');
         this._createButtons();
     },
 

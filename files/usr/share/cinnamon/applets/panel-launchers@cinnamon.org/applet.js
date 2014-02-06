@@ -12,6 +12,7 @@ const Tooltips = imports.ui.tooltips;
 const DND = imports.ui.dnd;
 const Tweener = imports.ui.tweener;
 const Util = imports.misc.util;
+const Mainloop = imports.mainloop;
 
 const DEFAULT_ICON_SIZE = 20;
 const DEFAULT_ANIM_SIZE = 13;
@@ -78,12 +79,12 @@ PanelAppLauncherMenu.prototype = {
     }
 }
 
-function PanelAppLauncher(launchersBox, app, appinfo, orientation, panel_height) {
-    this._init(launchersBox, app, appinfo, orientation, panel_height);
+function PanelAppLauncher(launchersBox, app, appinfo, orientation, panel_height, scale) {
+    this._init(launchersBox, app, appinfo, orientation, panel_height, scale);
 }
 
 PanelAppLauncher.prototype = {
-    _init: function(launchersBox, app, appinfo, orientation, panel_height) {
+    _init: function(launchersBox, app, appinfo, orientation, panel_height, scale) {
         this.app = app;
         this.appinfo = appinfo;
         this.launchersBox = launchersBox;
@@ -105,7 +106,7 @@ PanelAppLauncher.prototype = {
         this.actor.add_actor(this._iconBox);
         this._iconBottomClip = 0;
 
-        if (global.settings.get_boolean(PANEL_SCALE_TEXT_ICONS_KEY) && global.settings.get_boolean(PANEL_RESIZABLE_KEY)) {
+        if (scale) {
             this.icon_height = Math.floor(panel_height * ICON_HEIGHT_FACTOR);
             this.icon_anim_height = Math.floor(panel_height * ICON_ANIM_FACTOR);
         } else {
@@ -331,16 +332,18 @@ MyApplet.prototype = {
     },
 
     reload: function() {
-        this.myactor.destroy_children();
-        this._launchers = new Array();
+        Mainloop.idle_add(Lang.bind(this, function() { // Wait for a while so that this.panel is set by appletManager
+            this.myactor.destroy_children();
+            this._launchers = new Array();
 
-        let apps = this.loadApps();
-        for (var i in apps){
-            let app = apps[i];
-            let launcher = new PanelAppLauncher(this, app[0], app[1], this.orientation, this._panelHeight);
-            this.myactor.add(launcher.actor);
-            this._launchers.push(launcher);
-        }
+            let apps = this.loadApps();
+            for (var i in apps){
+                let app = apps[i];
+                let launcher = new PanelAppLauncher(this, app[0], app[1], this.orientation, this._panelHeight, this.panel.scaleMode);
+                this.myactor.add(launcher.actor);
+                this._launchers.push(launcher);
+            }
+        }));
     },
 
     removeLauncher: function(launcher, delete_file) {
@@ -418,9 +421,9 @@ MyApplet.prototype = {
                     this._dragPlaceholder.animateOutAndDestroy();
                     this._animatingPlaceholdersCount++;
                     this._dragPlaceholder.actor.connect('destroy',
-							Lang.bind(this, function() {
-							    this._animatingPlaceholdersCount--;
-							}));
+                                                        Lang.bind(this, function() {
+                                                            this._animatingPlaceholdersCount--;
+                                                        }));
                 }
                 this._dragPlaceholder = null;
 

@@ -78,7 +78,7 @@ MyApplet.prototype = {
                 height = themeNode.get_length('height');
             }
 
-            if (global.settings.get_boolean('panel-scale-text-icons')) {
+            if (this.panel.scaleMode) {
                 width = Math.floor(this._panelHeight * ICON_SCALE_FACTOR);
                 height = Math.floor(this._panelHeight * ICON_SCALE_FACTOR);
             }

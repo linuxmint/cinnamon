@@ -243,8 +243,8 @@ class MainWindow:
 
         # set up larger components.
         self.window.set_title(_("System Settings"))
-        self.window.connect("destroy", self.quit)
-        self.button_cancel.connect("clicked", self.quit)
+        self.window.connect("destroy", Gtk.main_quit)
+        self.button_cancel.connect("clicked", lambda y: self.window.destroy())
         self.button_back.connect('clicked', self.back_to_icon_view)
         self.window.set_opacity(0)
         self.window.show()
