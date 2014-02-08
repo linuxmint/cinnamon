@@ -45,7 +45,7 @@ function init() {
     global.settings.connect('changed::' + ENABLED_SEARCH_PROVIDERS_KEY, onEnabledSearchProvidersChanged);
     
     enabledSearchProviders = global.settings.get_strv(ENABLED_SEARCH_PROVIDERS_KEY);
-    for (let i = 0; i < enabledSearchProviders.length; i++) {
+    for (let i = 0; i < enabledSearchProviders.length; i++){
         Extension.loadExtension(enabledSearchProviders[i], Extension.Type.SEARCH_PROVIDER);
     }
 }
