@@ -1,6 +1,7 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 
 const Extension = imports.ui.extension;
+const GLib = imports.gi.GLib;
 
 // Maps uuid -> importer object (extension directory tree)
 var extensions;
@@ -44,7 +45,7 @@ function init() {
     global.settings.connect('changed::' + ENABLED_SEARCH_PROVIDERS_KEY, onEnabledSearchProvidersChanged);
     
     enabledSearchProviders = global.settings.get_strv(ENABLED_SEARCH_PROVIDERS_KEY);
-    for (let i = 0; i < enabledSearchProviders.length; i++) {
+    for (let i = 0; i < enabledSearchProviders.length; i++){
         Extension.loadExtension(enabledSearchProviders[i], Extension.Type.SEARCH_PROVIDER);
     }
 }
@@ -54,15 +55,40 @@ function get_object_for_uuid(uuid){
 }
 
 function launch_all(pattern, callback){
-    var provider;
+    var provider, supports_locale, language_names;
     for (var i in enabledSearchProviders){
         provider = get_object_for_uuid(enabledSearchProviders[i]);
         if (provider)
         {
-            provider.send_results = function(results){
-                callback(provider, results);
-            };
-            provider.perform_search(pattern);
+            if (extensionMeta[enabledSearchProviders[i]] && extensionMeta[enabledSearchProviders[i]].supported_locales){
+                supports_locale = false;
+                language_names = GLib.get_language_names();
+                for (var j in language_names){
+                    if (extensionMeta[enabledSearchProviders[i]].supported_locales.indexOf(language_names[j]) != -1){
+                        supports_locale = true;
+                        break;
+                    }
+                }
+            }else{
+                supports_locale = true;
+            }
+            if (supports_locale){
+                provider.send_results = function(results){
+                    callback(provider, results);
+                };
+                provider.get_locale_string = function(key){
+                    if (extensionMeta[enabledSearchProviders[i]] && extensionMeta[enabledSearchProviders[i]].locale_data && extensionMeta[enabledSearchProviders[i]].locale_data[key]){
+                        language_names = GLib.get_language_names();
+                        for (var j in language_names){
+                            if (extensionMeta[enabledSearchProviders[i]].locale_data[key][language_names[j]]){
+                                return extensionMeta[enabledSearchProviders[i]].locale_data[key][language_names[j]];
+                            }
+                        }
+                    }
+                    return "";
+                }
+                provider.perform_search(pattern);
+            }
         }
     }
 }
