@@ -477,16 +477,16 @@ PanelContextMenu.prototype = {
         Main.uiGroup.add_actor(this.actor);
         this.actor.hide();
 
-        let applet_settings_item = new SettingsLauncher(_("Add applets to the panel"), "applets", "applets", this);
+        let applet_settings_item = new SettingsLauncher(_("Add applets to the panel"), "applets", "gtk-add", this);
         this.addMenuItem(applet_settings_item);
 
-        let menuItem = new SettingsLauncher(_("Panel settings"), "panel", "panel", this);
+        let menuItem = new SettingsLauncher(_("Panel settings"), "panel", "system-run", this);
         this.addMenuItem(menuItem);
 
-        let menuItem = new SettingsLauncher(_("Themes"), "themes", "themes", this);
+        let menuItem = new SettingsLauncher(_("Themes"), "themes", "document-page-setup", this);
         this.addMenuItem(menuItem);
 
-        let menuSetting = new SettingsLauncher(_("All settings"), "", "preferences-system", this);
+        let menuSetting = new SettingsLauncher(_("All settings"), "", "system-run", this);
         this.addMenuItem(menuSetting);
 
         populateSettingsMenu(this);
