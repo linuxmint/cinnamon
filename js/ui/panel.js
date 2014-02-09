@@ -412,7 +412,7 @@ SettingsLauncher.prototype = {
                                       reactive: true });
 
         this.label = new St.Label({ text: label });
-        this._icon = new St.Icon({icon_name: icon, icon_type: St.IconType.FULLCOLOR,
+        this._icon = new St.Icon({icon_name: icon, icon_type: St.IconType.SYMBOLIC,
                                   style_class: 'popup-menu-icon' });
 
         table.add(this._icon,
@@ -477,16 +477,16 @@ PanelContextMenu.prototype = {
         Main.uiGroup.add_actor(this.actor);
         this.actor.hide();
 
-        let applet_settings_item = new SettingsLauncher(_("Add applets to the panel"), "applets", "applets", this);
+        let applet_settings_item = new SettingsLauncher(_("Add applets to the panel"), "applets", "list-add", this);
         this.addMenuItem(applet_settings_item);
 
-        let menuItem = new SettingsLauncher(_("Panel settings"), "panel", "panel", this);
+        let menuItem = new SettingsLauncher(_("Panel settings"), "panel", "content-loading", this);
         this.addMenuItem(menuItem);
 
-        let menuItem = new SettingsLauncher(_("Themes"), "themes", "themes", this);
+        let menuItem = new SettingsLauncher(_("Themes"), "themes", "applications-graphics", this);
         this.addMenuItem(menuItem);
 
-        let menuSetting = new SettingsLauncher(_("All settings"), "", "preferences-system", this);
+        let menuSetting = new SettingsLauncher(_("All settings"), "", "emblem-system", this);
         this.addMenuItem(menuSetting);
 
         populateSettingsMenu(this);
