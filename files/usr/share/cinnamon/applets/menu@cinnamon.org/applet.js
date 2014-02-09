@@ -412,10 +412,10 @@ SearchProviderResultButton.prototype = {
                 return -1;
             },
             get_description: function() {
-                return result.label;
+                return result.description;
             },
             get_name: function() {
-                return '';
+                return result.label;
             }
         };
         
