@@ -34,19 +34,19 @@ var MediaKeyTypes = {
   MUTE_KEY                    : {value: 3,  key: "volume-mute",             kb: null                    },
   VOLUME_DOWN_KEY             : {value: 4,  key: "volume-down",             kb: null                    },
   VOLUME_UP_KEY               : {value: 5,  key: "volume-up",               kb: null                    },
-  EJECT_KEY                   : {value: 10, key: "eject",                   kb: null                    },
-  MEDIA_KEY                   : {value: 12, key: "media",                   kb: null                    },
-  SCREENSHOT_KEY              : {value: 18, key: "screenshot",              kb: null                    },
-  WINDOW_SCREENSHOT_KEY       : {value: 19, key: "window-screenshot",       kb: null                    },
-  PLAY_KEY                    : {value: 26, key: "play",                    kb: null                    },
-  PAUSE_KEY                   : {value: 27, key: "pause",                   kb: null                    },
-  STOP_KEY                    : {value: 28, key: "stop",                    kb: null                    },
-  PREVIOUS_KEY                : {value: 29, key: "previous",                kb: null                    },
-  NEXT_KEY                    : {value: 30, key: "next",                    kb: null                    },
-  REWIND_KEY                  : {value: 31, key: null,                      kb: "XF86AudioRewind"       },
-  FORWARD_KEY                 : {value: 32, key: null,                      kb: "XF86AudioForward"      },
-  REPEAT_KEY                  : {value: 33, key: null,                      kb: "XF86AudioRepeat"       },
-  RANDOM_KEY                  : {value: 34, key: null,                      kb: "XF86AudioRandomPlay"   }
+  EJECT_KEY                   : {value: 11, key: "eject",                   kb: null                    },
+  MEDIA_KEY                   : {value: 13, key: "media",                   kb: null                    },
+  SCREENSHOT_KEY              : {value: 19, key: "screenshot",              kb: null                    },
+  WINDOW_SCREENSHOT_KEY       : {value: 20, key: "window-screenshot",       kb: null                    },
+  PLAY_KEY                    : {value: 27, key: "play",                    kb: null                    },
+  PAUSE_KEY                   : {value: 28, key: "pause",                   kb: null                    },
+  STOP_KEY                    : {value: 29, key: "stop",                    kb: null                    },
+  PREVIOUS_KEY                : {value: 30, key: "previous",                kb: null                    },
+  NEXT_KEY                    : {value: 31, key: "next",                    kb: null                    },
+  REWIND_KEY                  : {value: 32, key: null,                      kb: "XF86AudioRewind"       },
+  FORWARD_KEY                 : {value: 33, key: null,                      kb: "XF86AudioForward"      },
+  REPEAT_KEY                  : {value: 34, key: null,                      kb: "XF86AudioRepeat"       },
+  RANDOM_KEY                  : {value: 35, key: null,                      kb: "XF86AudioRandomPlay"   }
 };
 
 const MediaKeysManagerInterface = {
