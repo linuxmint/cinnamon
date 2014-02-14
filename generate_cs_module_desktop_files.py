@@ -46,7 +46,7 @@ class KeyFile:
             self.kf.set_string(DESKTOP_GROUP, DESKTOP_KEY_COMMENT, mod.comment)
         except:
             pass
-        self.kf.set_string(DESKTOP_GROUP, DESKTOP_KEY_ICON, "/usr/lib/cinnamon-settings/data/icons/%s" % (mod.sidePage.icon))
+        self.kf.set_string(DESKTOP_GROUP, DESKTOP_KEY_ICON, mod.sidePage.icon)
         self.kf.set_string(DESKTOP_GROUP, DESKTOP_KEY_EXEC, "cinnamon-settings %s" % (mod.name))
 
         self.kf.set_string(DESKTOP_GROUP, DESKTOP_KEY_TYPE, DESKTOP_TYPE_APPLICATION)

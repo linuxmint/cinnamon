@@ -159,7 +159,7 @@ class Module:
     def __init__(self, content_box):
         keywords = _("keyboard, shortcut, hotkey")
         advanced = True
-        sidePage = KeyboardSidePage(_("Keyboard"), "keyboard.svg", keywords, advanced, content_box)
+        sidePage = KeyboardSidePage(_("Keyboard"), "cs-keyboard", keywords, advanced, content_box)
         self.sidePage = sidePage
         self.comment = _("Manage keyboard settings and shortcuts")
         self.name = "keyboard"

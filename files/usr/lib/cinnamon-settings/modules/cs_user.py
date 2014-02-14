@@ -76,7 +76,7 @@ class Module:
     def __init__(self, content_box):
         keywords = _("user, account, information, details")
         advanced = False
-        sidePage = SidePage(_("Account details"), "user.svg", keywords, advanced, content_box, module=self)
+        sidePage = SidePage(_("Account details"), "cs-user", keywords, advanced, content_box, module=self)
         self.sidePage = sidePage
         self.name = "user"
         self.category = "prefs"

@@ -7,7 +7,7 @@ class Module:
     def __init__(self, content_box):
         keywords = _("effects, fancy, window")
         advanced = True
-        sidePage = SidePage(_("Effects"), "desktop-effects.svg", keywords, advanced, content_box)
+        sidePage = SidePage(_("Effects"), "cs-desktop-effects", keywords, advanced, content_box)
         self.sidePage = sidePage
         self.name = "effects"
         self.category = "appear"

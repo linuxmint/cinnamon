@@ -14,7 +14,7 @@ class Module:
         noun = _("desklet")
         pl_noun = _("desklets")
         target = _("desktop")
-        sidePage = DeskletsViewSidePage(_("Desklets"), "desklets.svg", keywords, advanced, content_box, "desklet", noun, pl_noun, target)
+        sidePage = DeskletsViewSidePage(_("Desklets"), "cs-desklets", keywords, advanced, content_box, "desklet", noun, pl_noun, target)
         self.sidePage = sidePage
 
         self.category = "prefs"

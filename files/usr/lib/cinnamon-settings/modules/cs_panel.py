@@ -6,7 +6,7 @@ class Module:
     def __init__(self, content_box):
         keywords = _("panel, height, bottom, top, autohide, size, traditional, layout")
         advanced = False
-        sidePage = SidePage(_("Panel"), "panel.svg", keywords, advanced, content_box)
+        sidePage = SidePage(_("Panel"), "cs-panel", keywords, advanced, content_box)
         self.sidePage = sidePage
         self.name = "panel"
         self.category = "prefs"

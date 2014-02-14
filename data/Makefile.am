@@ -81,3 +81,7 @@ CLEANFILES =						\
 	$(gsettings_SCHEMAS)				\
 	gschemas.compiled
 
+SUBDIRS = \
+	icons    \
+	$(NULL)
+

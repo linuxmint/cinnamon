@@ -41,7 +41,7 @@ class Module:
     def __init__(self, content_box):
         keywords = _("background, picture, screenshot, slideshow")
         advanced = False
-        sidePage = BackgroundSidePage(_("Backgrounds"), "backgrounds.svg", keywords, advanced, content_box)
+        sidePage = BackgroundSidePage(_("Backgrounds"), "cs-backgrounds", keywords, advanced, content_box)
         self.sidePage = sidePage
         self.name = "backgrounds"
         self.category = "appear"

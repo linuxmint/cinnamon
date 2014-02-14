@@ -8,7 +8,7 @@ class Module:
     def __init__(self, content_box):
         keywords = _("mouse, touchpad, synaptic, double-click")
         advanced = False
-        sidePage = MouseTouchpadSidepage(_("Mouse and Touchpad"), "mouse.svg", keywords, advanced, content_box)
+        sidePage = MouseTouchpadSidepage(_("Mouse and Touchpad"), "cs-mouse", keywords, advanced, content_box)
         self.sidePage = sidePage
         self.comment = _("Control mouse and touchpad settings")
         self.name = "mouse"

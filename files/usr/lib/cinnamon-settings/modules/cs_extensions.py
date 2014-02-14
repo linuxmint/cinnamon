@@ -13,7 +13,7 @@ class Module:
         pl_noun = _("extensions")
         # we do not translate Cinnamon
         target = "Cinnamon"
-        sidePage = ExtensionViewSidePage(_("Extensions"), "extensions.svg", keywords, advanced, content_box, "extension", noun, pl_noun, target)
+        sidePage = ExtensionViewSidePage(_("Extensions"), "cs-extensions", keywords, advanced, content_box, "extension", noun, pl_noun, target)
         self.sidePage = sidePage
 
         self.category = "prefs"

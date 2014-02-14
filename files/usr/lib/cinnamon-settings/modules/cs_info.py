@@ -103,7 +103,7 @@ class Module:
     def __init__(self, content_box):
         keywords = _("system, information, details, graphic, sound, kernel, version")
         advanced = False
-        sidePage = SidePage(_("System Info"), "details.svg", keywords, advanced, content_box)
+        sidePage = SidePage(_("System Info"), "cs-details", keywords, advanced, content_box)
         self.sidePage = sidePage
         self.name = "info"
         self.category = "hardware"

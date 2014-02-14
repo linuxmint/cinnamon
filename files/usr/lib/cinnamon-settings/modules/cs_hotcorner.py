@@ -14,7 +14,7 @@ class Module:
     def __init__(self, content_box):
         keywords = _("hotcorner, overview, scale, expo")
         advanced = True
-        sidePage = HotCornerViewSidePage(_("Hot Corners"), "overview.svg", keywords, advanced, content_box)
+        sidePage = HotCornerViewSidePage(_("Hot Corners"), "cs-overview", keywords, advanced, content_box)
         self.sidePage = sidePage
         self.comment = _("Manage hotcorner settings")
         self.name = "hotcorner"

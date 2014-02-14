@@ -15,7 +15,7 @@ class Module:
         pl_noun = _("themes")
         # We do not translate Cinnamon
         target = "Cinnamon"
-        sidePage = ThemesViewSidePage(_("Themes"), "themes.svg", keywords, advanced, content_box, "theme", noun, pl_noun, target)
+        sidePage = ThemesViewSidePage(_("Themes"), "cs-themes", keywords, advanced, content_box, "theme", noun, pl_noun, target)
         self.sidePage = sidePage
 
         self.category = "appear"

@@ -9,7 +9,7 @@ class Module:
     def __init__(self, content_box):
         keywords = _("time, date, calendar, format, network, sync")
         advanced = False
-        sidePage = SidePage(_("Date & Time"), "date-time.svg", keywords, advanced, content_box)
+        sidePage = SidePage(_("Date & Time"), "cs-date-time", keywords, advanced, content_box)
         self.sidePage = sidePage
         self.name = "calendar"
         self.comment = _("Manage date and time settings")

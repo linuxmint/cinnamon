@@ -6,7 +6,7 @@ class Module:
     def __init__(self, content_box):
         keywords = _("logging, click, notifications")
         advanced = True
-        sidePage = SidePage(_("General"), "general.svg", keywords, advanced, content_box)
+        sidePage = SidePage(_("General"), "cs-general", keywords, advanced, content_box)
         self.sidePage = sidePage
         self.name = "general"
         self.comment = _("Miscellaneous Cinnamon preferences")

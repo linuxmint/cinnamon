@@ -52,33 +52,33 @@ MAX_PIX_WIDTH = 160
 
 CATEGORIES = [
 #        Display name                         ID              Show it? Always False to start              Icon
-    {"label": _("Appearance"),            "id": "appear",      "show": False,                       "icon": "cat-appearance.svg"},
-    {"label": _("Preferences"),           "id": "prefs",       "show": False,                       "icon": "cat-prefs.svg"},
-    {"label": _("Hardware"),              "id": "hardware",    "show": False,                       "icon": "cat-hardware.svg"},
-    {"label": _("Administration"),        "id": "admin",       "show": False,                       "icon": "cat-admin.svg"}
+    {"label": _("Appearance"),            "id": "appear",      "show": False,                       "icon": "cs-cat-appearance"},
+    {"label": _("Preferences"),           "id": "prefs",       "show": False,                       "icon": "cs-cat-prefs"},
+    {"label": _("Hardware"),              "id": "hardware",    "show": False,                       "icon": "cs-cat-hardware"},
+    {"label": _("Administration"),        "id": "admin",       "show": False,                       "icon": "cs-cat-admin"}
 ]
 
 CONTROL_CENTER_MODULES = [
 #         Label                              Module ID                Icon                         Category      Advanced?                      Keywords for filter
-    [_("Networking"),                       "network",            "network.svg",                 "hardware",      False,          _("network, wireless, wifi, ethernet, broadband, internet")],
-    [_("Display"),                          "display",            "display.svg",                 "hardware",      False,          _("display, screen, monitor, layout, resolution, dual, lcd")],
-    [_("Bluetooth"),                        "bluetooth",          "bluetooth.svg",               "hardware",      False,          _("bluetooth, dongle, transfer, mobile")], 
-    [_("Universal Access"),                 "universal-access",   "universal-access.svg",           "prefs",      False,          _("magnifier, talk, access, zoom, keys, contrast")],
-    [_("Sound"),                            "sound",              "sound.svg",                   "hardware",      False,          _("sound, speakers, headphones, test")],
-    [_("Color"),                            "color",              "color.svg",                   "hardware",      True,           _("color, profile, display, printer, output")],
-    [_("Graphics Tablet"),                  "wacom",              "tablet.svg",                  "hardware",      True,           _("wacom, digitize, tablet, graphics, calibrate, stylus")]
+    [_("Networking"),                       "network",            "cs-network",                 "hardware",      False,          _("network, wireless, wifi, ethernet, broadband, internet")],
+    [_("Display"),                          "display",            "cs-display",                 "hardware",      False,          _("display, screen, monitor, layout, resolution, dual, lcd")],
+    [_("Bluetooth"),                        "bluetooth",          "cs-bluetooth",               "hardware",      False,          _("bluetooth, dongle, transfer, mobile")], 
+    [_("Universal Access"),                 "universal-access",   "cs-universal-access",           "prefs",      False,          _("magnifier, talk, access, zoom, keys, contrast")],
+    [_("Sound"),                            "sound",              "cs-sound",                   "hardware",      False,          _("sound, speakers, headphones, test")],
+    [_("Color"),                            "color",              "cs-color",                   "hardware",      True,           _("color, profile, display, printer, output")],
+    [_("Graphics Tablet"),                  "wacom",              "cs-tablet",                  "hardware",      True,           _("wacom, digitize, tablet, graphics, calibrate, stylus")]
 ]
 
 STANDALONE_MODULES = [
 #         Label                          Executable                          Icon                Category        Advanced?               Keywords for filter
-    [_("Printers"),                      "system-config-printer",        "printer.svg",         "hardware",       False,          _("printers, laser, inkjet")],    
-    [_("Firewall"),                      "gufw",                         "firewall.svg",        "admin",          True,           _("firewall, block, filter, programs")],
-    [_("Languages"),                     "mintlocale",                   "language.svg",        "prefs",          False,          _("language, install, foreign")],
-    [_("Login Screen"),                  "gksu /usr/sbin/mdmsetup",      "login.svg",           "admin",          True,           _("login, mdm, gdm, manager, user, password, startup, switch")],
-    [_("Startup Programs"),              "cinnamon-session-properties",  "startup-programs.svg","prefs",          False,          _("startup, programs, boot, init, session")],
-    [_("Device Drivers"),                "mintdrivers",                  "drivers.svg",         "admin",          False,          _("video, driver, wifi, card, hardware, proprietary, nvidia, radeon, nouveau, fglrx")],
-    [_("Software Sources"),              "mintsources",                  "sources.svg",         "admin",          True,           _("ppa, repository, package, source, download")],
-    [_("Users and Groups"),              "cinnamon-settings-users",      "user-accounts.svg",   "admin",          True,           _("user, users, account, accounts, group, groups, password")]
+    [_("Printers"),                      "system-config-printer",        "cs-printer",         "hardware",       False,          _("printers, laser, inkjet")],    
+    [_("Firewall"),                      "gufw",                         "cs-firewall",        "admin",          True,           _("firewall, block, filter, programs")],
+    [_("Languages"),                     "mintlocale",                   "cs-language",        "prefs",          False,          _("language, install, foreign")],
+    [_("Login Screen"),                  "gksu /usr/sbin/mdmsetup",      "cs-login",           "admin",          True,           _("login, mdm, gdm, manager, user, password, startup, switch")],
+    [_("Startup Programs"),              "cinnamon-session-properties",  "cs-startup-programs","prefs",          False,          _("startup, programs, boot, init, session")],
+    [_("Device Drivers"),                "mintdrivers",                  "cs-drivers",         "admin",          False,          _("video, driver, wifi, card, hardware, proprietary, nvidia, radeon, nouveau, fglrx")],
+    [_("Software Sources"),              "mintsources",                  "cs-sources",         "admin",          True,           _("ppa, repository, package, source, download")],
+    [_("Users and Groups"),              "cinnamon-settings-users",      "cs-user-accounts",   "admin",          True,           _("user, users, account, accounts, group, groups, password")]
 ]
 
 def print_timing(func):
@@ -210,20 +210,12 @@ class MainWindow:
         for sidepage in self.sidePages:
             sp, sp_id, sp_cat = sidepage
             if not self.store.has_key(sp_cat):  #       Label         Icon          sidePage     Category
-                self.store[sidepage[2]] = Gtk.ListStore(str,          object,    object,     str)
+                self.store[sidepage[2]] = Gtk.ListStore(str,          str,    object,     str)
                 for category in CATEGORIES:
                     if category["id"] == sp_cat:
                         category["show"] = True
-            iconFile = "/usr/lib/cinnamon-settings/data/icons/%s" % sp.icon
-            if os.path.exists(iconFile):
-                size = 48 * self.window.get_scale_factor()
-                pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size( iconFile, size, size)
-                surface = Gdk.cairo_surface_create_from_pixbuf (pixbuf, self.window.get_scale_factor(), self.window.get_window())
-                wrapper = SurfaceWrapper(surface)
-            else:
-                wrapper = None
 
-            sidePagesIters[sp_id] = self.store[sp_cat].append([sp.name, wrapper, sp, sp_cat])
+            sidePagesIters[sp_id] = self.store[sp_cat].append([sp.name, sp.icon, sp, sp_cat])
 
         self.min_label_length = 0
         self.min_pix_length = 0
@@ -364,15 +356,10 @@ class MainWindow:
         if self.first_category_done:
             widget = Gtk.Separator.new(Gtk.Orientation.HORIZONTAL)
             self.side_view_container.pack_start(widget, False, False, 10)
+
         box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 4)
-        iconFile = "/usr/lib/cinnamon-settings/data/icons/%s" % category["icon"]
-        if os.path.exists(iconFile):
-            scale = 30 * self.window.get_scale_factor()
-            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size( iconFile, scale, scale)
-            surface = Gdk.cairo_surface_create_from_pixbuf (pixbuf, self.window.get_scale_factor(), self.window.get_window())
-            img = Gtk.Image()
-            img.set_property("surface", surface)
-            box.pack_start(img, False, False, 4)
+        img = Gtk.Image.new_from_icon_name(category["icon"], Gtk.IconSize.BUTTON)
+        box.pack_start(img, False, False, 4)
 
         widget = Gtk.Label()
         widget.set_use_markup(True)
@@ -391,7 +378,9 @@ class MainWindow:
         text_renderer.set_alignment(.5, 0)
         area.pack_start(pixbuf_renderer, True, True, False)
         area.pack_start(text_renderer, True, True, False)
-        widget.set_cell_data_func(pixbuf_renderer, self.pixbuf_data_func)
+        area.add_attribute(pixbuf_renderer, "icon-name", 1)
+        pixbuf_renderer.set_property("stock-size", Gtk.IconSize.DIALOG)
+
         area.add_attribute(text_renderer, "text", 0)
 
         css_provider = Gtk.CssProvider()

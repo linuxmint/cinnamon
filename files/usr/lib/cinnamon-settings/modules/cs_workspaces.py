@@ -6,7 +6,7 @@ class Module:
     def __init__(self, content_box):
         keywords = _("workspace, osd, expo, monitor")
         advanced = True
-        sidePage = SidePage(_("Workspaces"), "workspaces.svg", keywords, advanced, content_box)
+        sidePage = SidePage(_("Workspaces"), "cs-workspaces", keywords, advanced, content_box)
         self.sidePage = sidePage
         self.name = "workspaces"
         self.category = "prefs"

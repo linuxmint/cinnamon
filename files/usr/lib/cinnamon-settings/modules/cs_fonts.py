@@ -8,7 +8,7 @@ class Module:
     def __init__(self, content_box):
         keywords = _("font, size, small, large")
         advanced = False
-        sidePage = SidePage(_("Fonts"), "fonts.svg", keywords, advanced, content_box)
+        sidePage = SidePage(_("Fonts"), "cs-fonts", keywords, advanced, content_box)
         self.sidePage = sidePage
         self.name = "fonts"
         self.category = "appear"

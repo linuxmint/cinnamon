@@ -310,7 +310,9 @@ class Module:
     def __init__(self, content_box):
         keywords = _("media, defaults, applications, programs, removable, browser, email, calendar, music, videos, photos, images, cd, autostart, autoplay")
         advanced = False
-        sidePage = DefaultSidepage(_("Preferred Applications"), "default-applications.svg", keywords, advanced, content_box)
+
+        sidePage = DefaultSidepage(_("Preferred Applications"), "cs-default-applications", keywords, advanced, content_box)
+
         self.sidePage = sidePage
         self.name = "default"
         self.category = "prefs"
