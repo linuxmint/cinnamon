@@ -31,12 +31,12 @@ class MouseTouchpadSidepage (SidePage):
         touch.add_with_viewport(self.touchbox)
         self.touchbox.set_border_width(5)
         
-        self.notebook.append_page(mouse, Gtk.Label(_("Mouse")))
-        self.notebook.append_page(touch, Gtk.Label(_("Touchpad")))
+        self.notebook.append_page(mouse, Gtk.Label.new(_("Mouse")))
+        self.notebook.append_page(touch, Gtk.Label.new(_("Touchpad")))
 
         # Mouse
 
-        title = Gtk.Label()
+        title = Gtk.Label.new()
         title.set_markup("<b>%s</b>" % _("General"))
         title.set_alignment(0,0)
         self.add_widget(title, 0, False)
@@ -53,7 +53,7 @@ class MouseTouchpadSidepage (SidePage):
         box.add(GSettingsCheckButton(_("Emulate middle click by clicking both left and right buttons"), "org.cinnamon.settings-daemon.peripherals.mouse", "middle-button-enabled", None))
         self.add_widget(box, 0, True)
 
-        title = Gtk.Label()
+        title = Gtk.Label.new()
         title.set_markup("<b>%s</b>" % _("Pointer Size"))
         title.set_alignment(0,0)
         self.add_widget(title, 0, None)
@@ -63,7 +63,7 @@ class MouseTouchpadSidepage (SidePage):
         box.add_expand(slider)
         self.add_widget(box, 0, None)
 
-        title = Gtk.Label()
+        title = Gtk.Label.new()
         title.set_markup("<b>%s</b>" % _("Pointer Speed"))
         title.set_alignment(0,0)
         self.add_widget(title, 0, None)
@@ -78,7 +78,7 @@ class MouseTouchpadSidepage (SidePage):
         box.add_expand(slider)
         self.add_widget(box, 0, None) 
 
-        title = Gtk.Label()
+        title = Gtk.Label.new()
         title.set_markup("<b>%s</b>" % _("Double-Click Timeout"))
         title.set_alignment(0,0)
         self.add_widget(title, 0, None)
@@ -88,11 +88,11 @@ class MouseTouchpadSidepage (SidePage):
         box.add_expand(slider)
         self.add_widget(box, 0, None)
 
-        test_button = Gtk.Button(_("Double-click test"))
+        test_button = Gtk.Button.new_with_label(_("Double-click test"))
         test_button.connect("button-press-event", self.test_button_clicked)
         self.add_widget(test_button, 0, None)
 
-        title = Gtk.Label()
+        title = Gtk.Label.new()
         title.set_markup("<b>%s</b>" % _("Drag and drop"))
         title.set_alignment(0,0)
         self.add_widget(title, 0, True)
@@ -107,7 +107,7 @@ class MouseTouchpadSidepage (SidePage):
 
         # Touchpad
 
-        title = Gtk.Label()
+        title = Gtk.Label.new()
         title.set_markup("<b>%s</b>" % _("General"))
         title.set_alignment(0,0)
         self.add_widget(title, 1, False)
@@ -123,7 +123,7 @@ class MouseTouchpadSidepage (SidePage):
         box.add(GSettingsCheckButton(_("Enable mouseclicks with touchpad"), "org.cinnamon.settings-daemon.peripherals.touchpad", "tap-to-click", "org.cinnamon.settings-daemon.peripherals.touchpad/touchpad-enabled"))
         self.add_widget(box, 1)
 
-        title = Gtk.Label()
+        title = Gtk.Label.new()
         title.set_markup("<b>%s</b>" % _("Scrolling"))
         title.set_alignment(0,0)
         self.add_widget(title, 1, False)
@@ -140,7 +140,7 @@ class MouseTouchpadSidepage (SidePage):
         box.add(GSettingsCheckButton(_("Enable horizontal scrolling"), "org.cinnamon.settings-daemon.peripherals.touchpad", "horiz-scroll-enabled", "org.cinnamon.settings-daemon.peripherals.touchpad/touchpad-enabled"))
         self.add_widget(box, 1)
 
-        title = Gtk.Label()
+        title = Gtk.Label.new()
         title.set_markup("<b>%s</b>" % _("Pointer Speed"))
         title.set_alignment(0,0)
         self.add_widget(title, 1, False)
@@ -194,7 +194,7 @@ class CheckButton(Gtk.CheckButton):
     def __init__(self, label, schema, key, dep_key):
         self.key = key
         self.dep_key = dep_key
-        super(CheckButton, self).__init__(label)
+        super(CheckButton, self).__init__(label = label)
         self.settings = Gio.Settings.new(schema)
         self.set_active(self.settings.get_boolean(self.key))
         self.settings.connect("changed::"+self.key, self.on_my_setting_changed)

@@ -34,6 +34,10 @@ SETTING_TYPE_EXTERNAL = 2
 
 ROW_SIZE = 32
 
+class SurfaceWrapper:
+    def __init__(self, surface):
+        self.surface = surface
+
 class ExtensionSidePage (SidePage):
     SORT_NAME = 0
     SORT_RATING = 1
@@ -62,13 +66,13 @@ class ExtensionSidePage (SidePage):
         scrolledWindow.set_border_width(6) 
         self.notebook = Gtk.Notebook()
         extensions_vbox = Gtk.VBox()
-        
+
         self.search_entry = Gtk.Entry()
         self.search_entry.set_icon_from_icon_name(Gtk.EntryIconPosition.PRIMARY, 'edit-find')
         self.search_entry.set_placeholder_text(_("Search %s") % (self.pl_noun))
         self.search_entry.connect('changed', self.on_entry_refilter)
 
-        self.notebook.append_page(extensions_vbox, Gtk.Label(_("Installed")))
+        self.notebook.append_page(extensions_vbox, Gtk.Label.new(_("Installed")))
         
         self.content_box.add(self.notebook)
         self.treeview = Gtk.TreeView()
@@ -77,9 +81,10 @@ class ExtensionSidePage (SidePage):
         if self.themes:
             self.treeview.connect("row-activated", self.on_row_activated)
 
-
-        column2 = Gtk.TreeViewColumn("Icon", Gtk.CellRendererPixbuf(), pixbuf=4)        
+        cr = Gtk.CellRendererPixbuf()
+        column2 = Gtk.TreeViewColumn("Icon", cr)
         column2.set_min_width(50)
+        column2.set_cell_data_func(cr, self.icon_cell_data_func, 4)
 
         cr = Gtk.CellRendererText()
         column3 = Gtk.TreeViewColumn("Description", cr, markup=1)
@@ -89,11 +94,14 @@ class ExtensionSidePage (SidePage):
             cr.set_property('wrap-mode', Pango.WrapMode.WORD_CHAR)
             cr.set_property('wrap-width', 200)
 
-        actionColumn = Gtk.TreeViewColumn("Read only", Gtk.CellRendererPixbuf(), pixbuf=10)
+        cr = Gtk.CellRendererPixbuf()
+        cr.set_property("stock-size", Gtk.IconSize.DND)
+        actionColumn = Gtk.TreeViewColumn("Read only", cr, icon_name=10)
         actionColumn.set_expand(True)
 
         cr = Gtk.CellRendererPixbuf()
-        isActiveColumn = Gtk.TreeViewColumn("Active", cr, pixbuf=11)
+        cr.set_property("stock-size", Gtk.IconSize.DND)
+        isActiveColumn = Gtk.TreeViewColumn("Active", cr, icon_name=11)
         isActiveColumn.set_expand(True)
         isActiveColumn.set_cell_data_func(cr, self._is_active_data_func)
         
@@ -103,7 +111,7 @@ class ExtensionSidePage (SidePage):
         self.treeview.append_column(isActiveColumn)
         self.treeview.set_headers_visible(False)
         
-        self.model = Gtk.TreeStore(str, str, int, int, GdkPixbuf.Pixbuf, str, int, bool, str, long, GdkPixbuf.Pixbuf, GdkPixbuf.Pixbuf, str, int)
+        self.model = Gtk.TreeStore(str, str, int, int, object, str, int, bool, str, long, str, str, str, int)
         #                          uuid, desc, enabled, max-instances, icon, name, read-only, hide-config-button, ext-setting-app, edit-date, read-only icon, active icon, schema file name (for uninstall), settings type
 
         self.modelfilter = self.model.filter_new()
@@ -138,9 +146,9 @@ class ExtensionSidePage (SidePage):
         scrolledWindow.add(self.treeview)
         self.treeview.connect('button_press_event', self.on_button_press_event)
         if not self.themes:
-            self.instanceButton = Gtk.Button(_("Add to %s") % (self.target))
+            self.instanceButton = Gtk.Button.new_with_label(_("Add to %s") % (self.target))
         else:
-            self.instanceButton = Gtk.Button(_("Apply theme"))
+            self.instanceButton = Gtk.Button.new_with_label(_("Apply theme"))
         self.instanceButton.connect("clicked", lambda x: self._add_another_instance())
         if self.collection_type in ("desklet", "applet"):
             self.instanceButton.set_tooltip_text(_("Some %s can be added multiple times.\n Use this to add another instance. Use panel edit mode to remove a single instance.") % (self.pl_noun))
@@ -150,18 +158,18 @@ class ExtensionSidePage (SidePage):
             self.instanceButton.set_tooltip_text(_("Click to apply this %s") % (self.noun))
         self.instanceButton.set_sensitive(False);
 
-        self.configureButton = Gtk.Button(_("Configure"))
+        self.configureButton = Gtk.Button.new_with_label(_("Configure"))
         self.configureButton.connect("clicked", self._configure_extension)
         self.configureButton.set_tooltip_text(_("Configure this %s") % (self.noun))
 
-        self.extConfigureButton = Gtk.Button(_("Configure"))
+        self.extConfigureButton = Gtk.Button.new_with_label(_("Configure"))
         self.extConfigureButton.connect("clicked", self._external_configure_launch)
         self.extConfigureButton.set_tooltip_text(_("Configure this %s") % (self.noun))
 
         if not self.themes:
-            restoreButton = Gtk.Button(_("Restore to default"))
+            restoreButton = Gtk.Button.new_with_label(_("Restore to default"))
         else:
-            restoreButton = Gtk.Button(_("Restore default theme"))
+            restoreButton = Gtk.Button.new_with_label(_("Restore default theme"))
         restoreButton.connect("clicked", lambda x: self._restore_default_extensions())
         
         hbox = Gtk.HBox()
@@ -179,7 +187,7 @@ class ExtensionSidePage (SidePage):
         self.comboshow.add_attribute(renderer_text, "text", 1)
         self.comboshow.show()
         
-        showLabel = Gtk.Label()
+        showLabel = Gtk.Label.new()
         showLabel.set_text(_("Show"))
         showLabel.show()
         hbox.pack_start(showLabel, False, False, 4)
@@ -230,7 +238,7 @@ class ExtensionSidePage (SidePage):
         getmore_vbox = Gtk.VBox()
         getmore_vbox.set_border_width(0)
 
-        getmore_label = Gtk.Label(_("Get more online"))
+        getmore_label = Gtk.Label.new(_("Get more online"))
         self.notebook.append_page(getmore_vbox, getmore_label)
         self.notebook.connect("switch-page", self.on_page_changed)
 
@@ -250,7 +258,7 @@ class ExtensionSidePage (SidePage):
 
         hbox = Gtk.HBox()
         hbox.set_border_width(3);
-        sortLabel = Gtk.Label()
+        sortLabel = Gtk.Label.new()
         sortLabel.set_text(_("Sort by"))
         sortLabel.show()
         hbox.pack_start(sortLabel, False, False, 4)
@@ -267,7 +275,7 @@ class ExtensionSidePage (SidePage):
         getmore_vbox.pack_start(hbox, False, False, 4)
 
         # MODEL
-        self.gm_model = Gtk.TreeStore(str, str,      int, GdkPixbuf.Pixbuf, int,    str,     int)
+        self.gm_model = Gtk.TreeStore(str, str,      int, object, int,    str,     int)
         #                            uuid, name, install, icon,            score,   name,    date-edited
         self.gm_model.set_sort_column_id(4, Gtk.SortType.DESCENDING)
 
@@ -283,7 +291,9 @@ class ExtensionSidePage (SidePage):
         gm_column1 = Gtk.TreeViewColumn("Install", gm_cr)
         gm_column1.set_cell_data_func(gm_cr, self.gm_celldatafunction_checkbox)
 
-        gm_column2 = Gtk.TreeViewColumn("Icon", Gtk.CellRendererPixbuf(), pixbuf=3)
+        gm_cr = Gtk.CellRendererPixbuf()
+        gm_column2 = Gtk.TreeViewColumn("Icon", gm_cr)
+        gm_column2.set_cell_data_func(gm_cr, self.icon_cell_data_func, 3)
 
         gm_cr = Gtk.CellRendererText()
         gm_column3 = Gtk.TreeViewColumn("Description", gm_cr, markup=1)
@@ -299,6 +309,7 @@ class ExtensionSidePage (SidePage):
         actionColumn.set_expand(True)
 
         cr = Gtk.CellRendererPixbuf()
+        cr.set_property("stock-size", Gtk.IconSize.DND)
         statusColumn = Gtk.TreeViewColumn("Status", cr)
         statusColumn.set_cell_data_func(cr, self._gm_status_data_func)
         statusColumn.set_expand(True)
@@ -332,15 +343,11 @@ class ExtensionSidePage (SidePage):
         hbox = Gtk.HBox()        
         buttonbox = Gtk.ButtonBox.new(Gtk.Orientation.HORIZONTAL)
         buttonbox.set_spacing(6)
-        self.install_button = Gtk.Button(_("  Install or update selected"))
-        self.select_updated = Gtk.Button("  Select updated")
+        self.install_button = Gtk.Button.new_with_label(_("Install or update selected"))
+        self.select_updated = Gtk.Button.new_from_icon_name("cs-xlet-update", Gtk.IconSize.BUTTON)
+        self.select_updated.set_label(_("Select updated"))
 
-        b, w, h = Gtk.icon_size_lookup(Gtk.IconSize.BUTTON)
-        pb = GdkPixbuf.Pixbuf.new_from_file_at_size("/usr/lib/cinnamon-settings/data/update.svg", w, h)
-        img = Gtk.Image.new_from_pixbuf(pb)
-        img.set_padding(5, -1)
-        self.select_updated.set_image(img)
-        reload_button = Gtk.Button(_("Refresh list"))
+        reload_button = Gtk.Button.new_with_label(_("Refresh list"))
         buttonbox.pack_start(self.install_button, False, False, 2)
         buttonbox.pack_start(self.select_updated, False, False, 2)
         buttonbox.pack_end(reload_button, False, False, 2)
@@ -361,7 +368,6 @@ class ExtensionSidePage (SidePage):
         # if not self.spices.get_webkit_enabled():
         #     getmore_label.set_sensitive(False)
         #     reload_button.set_sensitive(False)
-
         extra_page = self.getAdditionalPage()
         if extra_page:
             self.notebook.append_page(extra_page, extra_page.label)
@@ -387,6 +393,10 @@ class ExtensionSidePage (SidePage):
                             self.configureButton.clicked()
                         elif self.extConfigureButton.get_visible() and self.extConfigureButton.get_sensitive():
                             self.extConfigureButton.clicked()
+
+    def icon_cell_data_func(self, column, cell, model, iter, data=None):
+        wrapper = model.get_value(iter, data)
+        cell.set_property("surface", wrapper.surface)
 
     def getAdditionalPage(self):
         return None
@@ -519,12 +529,12 @@ class ExtensionSidePage (SidePage):
         enabled = model.get_value(iter, 2) > 0
         if (enabled):
             if not self.themes:
-                img = GdkPixbuf.Pixbuf.new_from_file_at_size("/usr/lib/cinnamon-settings/data/running.svg", ROW_SIZE, ROW_SIZE)
+                icon = "cs-xlet-running"
             else:
-                img = GdkPixbuf.Pixbuf.new_from_file_at_size("/usr/lib/cinnamon-settings/data/installed.svg", ROW_SIZE, ROW_SIZE)
+                icon = "cs-xlet-installed"
         else:
-            img = GdkPixbuf.Pixbuf.new_from_file_at_size("/usr/lib/cinnamon-settings/data/inactive.png", ROW_SIZE, ROW_SIZE)
-        cell.set_property('pixbuf', img)
+            icon = ""
+        cell.set_property('icon-name', icon)
 
     def comboshow_changed(self, widget):
         tree_iter = widget.get_active_iter()
@@ -664,18 +674,18 @@ class ExtensionSidePage (SidePage):
 
         if installed:
             if can_update:
-                img = GdkPixbuf.Pixbuf.new_from_file_at_size("/usr/lib/cinnamon-settings/data/update.svg", ROW_SIZE, ROW_SIZE)
+                name = "cs-xlet-update"
                 self.update_list[uuid] = True
             else:
-                img = GdkPixbuf.Pixbuf.new_from_file_at_size("/usr/lib/cinnamon-settings/data/installed.svg", ROW_SIZE, ROW_SIZE)
+                name = "cs-xlet-installed"
                 if uuid in self.update_list.keys():
                     del self.update_list[uuid]
         else:
-            img = GdkPixbuf.Pixbuf.new_from_file_at_size("/usr/lib/cinnamon-settings/data/inactive.png", ROW_SIZE, ROW_SIZE)
+            name = ""
             if uuid in self.update_list.keys():
                 del self.update_list[uuid]
 
-        cell.set_property("pixbuf", img)
+        cell.set_property("icon-name", name)
         self.refresh_update_button()
 
     def gm_toggled(self, renderer, path, treeview):
@@ -780,7 +790,6 @@ class ExtensionSidePage (SidePage):
             else:
                 self.gm_model.set_value(iter, 1, '<b>%s</b>' % (extensionName))
             self.gm_model.set_value(iter, 2, 0)
-            
 
             if not self.themes:
                 icon_filename = os.path.basename(extensionData['icon'])
@@ -790,14 +799,26 @@ class ExtensionSidePage (SidePage):
                 icon_filename = os.path.basename(extensionData['screenshot'])
                 w = -1
                 h = 60
+            if w != -1:
+                w = w * self.window.get_scale_factor()
+            h = h * self.window.get_scale_factor()
+
             if not os.path.exists(os.path.join(self.spices.get_cache_folder(), icon_filename)):
-                img = GdkPixbuf.Pixbuf.new_from_file_at_size( ("/usr/lib/cinnamon-settings/data/icons/%ss.svg") % (self.collection_type), w, h)
+                theme = Gtk.IconTheme.get_default()
+                if theme.has_icon("cs-%ss" % (self.collection_type)):
+                    img = theme.load_icon("cs-%ss" % (self.collection_type), h, 0)
             else:
                 try:
                     img = GdkPixbuf.Pixbuf.new_from_file_at_size(os.path.join(self.spices.get_cache_folder(), icon_filename), w, h)
                 except:
-                    img = GdkPixbuf.Pixbuf.new_from_file_at_size( ("/usr/lib/cinnamon-settings/data/icons/%ss.svg") % (self.collection_type), w, h)
-            self.gm_model.set_value(iter, 3, img)
+                    theme = Gtk.IconTheme.get_default()
+                    if theme.has_icon("cs-%ss" % (self.collection_type)):
+                        img = theme.load_icon("cs-%ss" % (self.collection_type), h, 0)
+
+            surface = Gdk.cairo_surface_create_from_pixbuf (img, self.window.get_scale_factor(), self.window.get_window())
+            wrapper = SurfaceWrapper(surface)
+
+            self.gm_model.set_value(iter, 3, wrapper)
             self.gm_model.set_value(iter, 4, int(extensionData['score']))
             self.gm_model.set_value(iter, 5, extensionData['name'])
             self.gm_model.set_value(iter, 6, int(extensionData['last_edited']))
@@ -934,7 +955,6 @@ class ExtensionSidePage (SidePage):
             else:
                 self.select_updated.set_label(_("%d update available!") % (len(self.update_list)))
             self.select_updated.show()
-            self.select_updated.get_property('image').show()
         else:
             self.select_updated.hide()
 
@@ -1098,19 +1118,27 @@ class ExtensionSidePage (SidePage):
                                 self.model.set_value(iter, 1, '<b>%s</b>\n<b><span foreground="#333333" size="xx-small">%s</span></b>\n<i><span foreground="#555555" size="x-small">%s</span></i>' % (extension_name, extension_uuid, extension_description))                                  
                                 self.model.set_value(iter, 2, found)
                                 self.model.set_value(iter, 3, extension_max_instances)
-                                img = None                            
+
+                                img = None
+                                size = ROW_SIZE * self.window.get_scale_factor()
                                 if "icon" in data:
                                     extension_icon = data["icon"]
                                     theme = Gtk.IconTheme.get_default()                                                    
                                     if theme.has_icon(extension_icon):
-                                        img = theme.load_icon(extension_icon, ROW_SIZE, 0)
+                                        img = theme.load_icon(extension_icon, size, 0)
                                 elif os.path.exists("%s/%s/icon.png" % (directory, extension)):
-                                    img = GdkPixbuf.Pixbuf.new_from_file_at_size("%s/%s/icon.png" % (directory, extension), ROW_SIZE, ROW_SIZE)                            
+                                    img = GdkPixbuf.Pixbuf.new_from_file_at_size("%s/%s/icon.png" % (directory, extension), size, size)                            
                                 
-                                if img is None:                                                
-                                    img = GdkPixbuf.Pixbuf.new_from_file_at_size( ("/usr/lib/cinnamon-settings/data/icons/%ss.svg") % (self.collection_type), ROW_SIZE, ROW_SIZE)
-                                                            
-                                self.model.set_value(iter, 4, img)
+                                if img is None:
+                                    theme = Gtk.IconTheme.get_default()                                                    
+                                    if theme.has_icon("cs-%ss" % (self.collection_type)):
+                                        img = theme.load_icon("cs-%ss" % (self.collection_type), size, 0)
+
+                                surface = Gdk.cairo_surface_create_from_pixbuf (img, self.window.get_scale_factor(), self.window.get_window())
+                                wrapper = SurfaceWrapper(surface)
+
+                                self.model.set_value(iter, 4, wrapper)
+
                                 self.model.set_value(iter, 5, extension_name)
                                 self.model.set_value(iter, 6, os.access(directory, os.W_OK))
                                 self.model.set_value(iter, 7, hide_config_button)
@@ -1118,18 +1146,18 @@ class ExtensionSidePage (SidePage):
                                 self.model.set_value(iter, 9, long(last_edited))
 
                                 if (os.access(directory, os.W_OK)):
-                                    img = GdkPixbuf.Pixbuf.new_from_file_at_size("/usr/lib/cinnamon-settings/data/user.png", ROW_SIZE, ROW_SIZE)
+                                    icon = ""
                                 else:
-                                    img = GdkPixbuf.Pixbuf.new_from_file_at_size("/usr/lib/cinnamon-settings/data/system.svg", ROW_SIZE, ROW_SIZE)
+                                    icon = "cs-xlet-system"
 
-                                self.model.set_value(iter, 10, img)
+                                self.model.set_value(iter, 10, icon)
 
                                 if (found):
-                                    img = GdkPixbuf.Pixbuf.new_from_file_at_size("/usr/lib/cinnamon-settings/data/running.svg", ROW_SIZE, ROW_SIZE)
+                                    icon = "cs-xlet-running"
                                 else:
-                                    img = GdkPixbuf.Pixbuf.new_from_file_at_size("/usr/lib/cinnamon-settings/data/inactive.png", ROW_SIZE, ROW_SIZE)
+                                    icon = ""
 
-                                self.model.set_value(iter, 11, img)
+                                self.model.set_value(iter, 11, icon)
                                 self.model.set_value(iter, 12, schema_filename)
                                 self.model.set_value(iter, 13, setting_type)
 
@@ -1180,13 +1208,17 @@ class ExtensionSidePage (SidePage):
                                 icon_path = os.path.join(path, "thumbnail.png")
                             else:
                                 icon_path = "/usr/lib/cinnamon-settings/data/icons/themes.svg"
-                            img = GdkPixbuf.Pixbuf.new_from_file_at_size(icon_path, -1, 60)
+                            size = 60 * self.window.get_scale_factor()
+                            img = GdkPixbuf.Pixbuf.new_from_file_at_size(icon_path, -1, size)
+
+                            surface = Gdk.cairo_surface_create_from_pixbuf (img, self.window.get_scale_factor(), self.window.get_window())
+                            wrapper = SurfaceWrapper(surface)
 
                             self.model.set_value(iter, 0, theme_uuid)
                             self.model.set_value(iter, 1, '<b>%s</b>' % (theme_name))
                             self.model.set_value(iter, 2, found)
                             self.model.set_value(iter, 3, 1)
-                            self.model.set_value(iter, 4, img)
+                            self.model.set_value(iter, 4, wrapper)
                             self.model.set_value(iter, 5, theme_name)
                             self.model.set_value(iter, 6, os.access(directory, os.W_OK))
                             self.model.set_value(iter, 7, True)
@@ -1194,16 +1226,16 @@ class ExtensionSidePage (SidePage):
                             self.model.set_value(iter, 9, long(theme_last_edited))
 
                             if (os.access(directory, os.W_OK)):
-                                img = GdkPixbuf.Pixbuf.new_from_file_at_size("/usr/lib/cinnamon-settings/data/user.png", ROW_SIZE, ROW_SIZE)
+                                icon = ""
                             else:
-                                img = GdkPixbuf.Pixbuf.new_from_file_at_size("/usr/lib/cinnamon-settings/data/system.svg", ROW_SIZE, ROW_SIZE)
+                                icon = "cs-xlet-system"
 
-                            self.model.set_value(iter, 10, img)
+                            self.model.set_value(iter, 10, icon)
                             if (found):
-                                img = GdkPixbuf.Pixbuf.new_from_file_at_size("/usr/lib/cinnamon-settings/data/installed.svg", ROW_SIZE, ROW_SIZE)
+                                icon = "cs-xlet-installed"
                             else:
-                                img = GdkPixbuf.Pixbuf.new_from_file_at_size("/usr/lib/cinnamon-settings/data/inactive.png", ROW_SIZE, ROW_SIZE)
-                            self.model.set_value(iter, 11, img)
+                                icon = ""
+                            self.model.set_value(iter, 11, icon)
                             self.model.set_value(iter, 13, SETTING_TYPE_NONE)
                     except Exception, detail:
                         print "Failed to load extension %s: %s" % (theme, detail)

@@ -3,7 +3,7 @@
 import os
 from SettingsWidgets import *
 import dbus
-from gi.repository import Gio, Gtk, GObject, Gdk
+from gi.repository import Gio, Gtk, GObject, Gdk, GLib
 
 class Module:
     def __init__(self, content_box):
@@ -92,7 +92,7 @@ class TimeZoneSelectorWidget(Gtk.HBox):
         
         self.selected_region, self.selected_city = self.get_selected_zone()
         
-        region_label = Gtk.Label(_("Region"))
+        region_label = Gtk.Label.new(_("Region"))
         self.pack_start(region_label, False, False, 2)
         
         regions = self.timezones.keys()
@@ -114,7 +114,7 @@ class TimeZoneSelectorWidget(Gtk.HBox):
             self.region_widget.set_active_iter(selected_region_iter)
         self.pack_start(self.region_widget, False, False, 2)
         
-        city_label = Gtk.Label(_("City"))
+        city_label = Gtk.Label.new(_("City"))
         self.pack_start(city_label, False, False, 2)
         
         self.city_model = Gtk.ListStore(str, str)
@@ -189,28 +189,24 @@ class ChangeTimeWidget(Gtk.HBox):
             self.monthBox.append_text(month)
         
         # Adjustments
-        hourAdj = Gtk.Adjustment(0, 0, 23, 1, 1)
-        minAdj = Gtk.Adjustment(0, 0, 59, 1, 1)
-        yearAdj = Gtk.Adjustment(0, 0, 9999, 1, 5)
-        dayAdj = Gtk.Adjustment(0, 1, 31, 1, 1)
+        hourAdj = Gtk.Adjustment.new(0, 0, 23, 1, 1, 1)
+        minAdj = Gtk.Adjustment.new(0, 0, 59, 1, 1, 1)
+        yearAdj = Gtk.Adjustment.new(0, 0, 9999, 1, 5, 1)
+        dayAdj = Gtk.Adjustment.new(0, 1, 31, 1, 1, 1)
         
         # Spin buttons
-        self.hourSpin = Gtk.SpinButton()
-        self.minSpin = Gtk.SpinButton()
-        self.yearSpin = Gtk.SpinButton()
-        self.daySpin = Gtk.SpinButton()
-        
-        self.hourSpin.configure(hourAdj, 0.5, 0)
-        self.minSpin.configure(minAdj, 0.5, 0)
-        self.yearSpin.configure(yearAdj, 0.5, 0)
-        self.daySpin.configure(dayAdj, 0.5, 0)
+        self.hourSpin = Gtk.SpinButton.new(hourAdj, 0.5, 0)
+        self.minSpin = Gtk.SpinButton.new(minAdj, 0.5, 0)
+        self.yearSpin = Gtk.SpinButton.new(yearAdj, 0.5, 0)
+        self.daySpin = Gtk.SpinButton.new(dayAdj, 0.5, 0)
+
         #self.hourSpin.set_editable(False)
         #self.minSpin.set_editable(False)
         #self.yearSpin.set_editable(False)
         #self.daySpin.set_editable(False)
         
         self.update_time()
-        GObject.timeout_add(1000, self.update_time)
+        GLib.timeout_add(1000, self.update_time)
         
         # Connect to callback
         self.hourSpin.connect('changed', self._change_system_time)
@@ -220,16 +216,16 @@ class ChangeTimeWidget(Gtk.HBox):
         self.daySpin.connect('changed', self._change_system_time)
         
         timeBox.pack_start(self.hourSpin, False, False, 2)
-        timeBox.pack_start(Gtk.Label(_(":")), False, False, 2)
+        timeBox.pack_start(Gtk.Label.new(_(":")), False, False, 2)
         timeBox.pack_start(self.minSpin, False, False, 2)
         
         dateBox.pack_start(self.monthBox, False, False, 2)
         dateBox.pack_start(self.daySpin, False, False, 2)
         dateBox.pack_start(self.yearSpin, False, False, 2)
         
-        self.pack_start(Gtk.Label(_("Date : ")), False, False, 2)
+        self.pack_start(Gtk.Label.new(_("Date : ")), False, False, 2)
         self.pack_start(dateBox, True, True, 2)
-        self.pack_start(Gtk.Label(_("Time : ")), False, False, 2)
+        self.pack_start(Gtk.Label.new(_("Time : ")), False, False, 2)
         self.pack_start(timeBox, True, True, 2)
         
     def update_time(self):
@@ -321,7 +317,7 @@ class ChangeTimeWidget(Gtk.HBox):
 
 class NtpCheckButton(Gtk.CheckButton):
     def __init__(self, label):
-        super(NtpCheckButton, self).__init__(label)
+        super(NtpCheckButton, self).__init__(label = label)
         self.date_time_wrapper = DateTimeWrapper()
         self.set_active(self.date_time_wrapper.get_using_ntp())
         self.connect('toggled', self.on_my_value_changed)

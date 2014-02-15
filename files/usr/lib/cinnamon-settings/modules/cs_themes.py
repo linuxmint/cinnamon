@@ -37,10 +37,10 @@ class ThemesViewSidePage (ExtensionSidePage):
         return string
         
     def _make_group(self, group_label, root, key, schema):
-        self.size_groups = getattr(self, "size_groups", [SizeGroup(SizeGroupMode.HORIZONTAL) for x in range(2)])
+        self.size_groups = getattr(self, "size_groups", [SizeGroup.new(SizeGroupMode.HORIZONTAL) for x in range(2)])
         
         box = Gtk.HBox()
-        label = Gtk.Label()
+        label = Gtk.Label.new()
         label.set_markup(group_label)
         label.props.xalign = 0.0
         self.size_groups[0].add_widget(label)
@@ -54,7 +54,7 @@ class ThemesViewSidePage (ExtensionSidePage):
 
     def getAdditionalPage(self):
         scrolledWindow = Gtk.ScrolledWindow()
-        scrolledWindow.label = Gtk.Label(_("Other settings"))
+        scrolledWindow.label = Gtk.Label.new(_("Other settings"))
 
         other_settings_box = Gtk.VBox()
         

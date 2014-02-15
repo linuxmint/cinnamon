@@ -53,13 +53,13 @@ class Module:
 
         def _make_effect_group(group_label, key, effects):
             tmin, tmax, tstep, tdefault = (0, 2000, 50, 200)
-            self.size_groups = getattr(self, "size_groups", [SizeGroup(SizeGroupMode.HORIZONTAL) for x in range(4)])
+            self.size_groups = getattr(self, "size_groups", [SizeGroup.new(SizeGroupMode.HORIZONTAL) for x in range(4)])
             root = "org.cinnamon"
             path = "org.cinnamon/desktop-effects"
             template = "desktop-effects-%s-%s"
 
             box = IndentedHBox()
-            label = Gtk.Label()
+            label = Gtk.Label.new()
             label.set_markup(group_label)
             label.props.xalign = 0.0
             self.size_groups[0].add_widget(label)

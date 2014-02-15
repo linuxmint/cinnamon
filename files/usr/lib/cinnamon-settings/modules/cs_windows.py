@@ -55,10 +55,10 @@ class Module:
         sidePage.add_widget(GSettingsSpinButton(_("Window drag/resize threshold"), "org.cinnamon.muffin", "resize-threshold", None, 1, 100, 1, 1, _("Pixels")), True)
 
     def _make_combo_group(self, group_label, root, key, stuff):
-        self.size_groups = getattr(self, "size_groups", [SizeGroup(SizeGroupMode.HORIZONTAL) for x in range(2)])
+        self.size_groups = getattr(self, "size_groups", [SizeGroup.new(SizeGroupMode.HORIZONTAL) for x in range(2)])
         
         box = Gtk.HBox()
-        label = Gtk.Label()
+        label = Gtk.Label.new()
         label.set_markup(group_label)
         label.props.xalign = 0.0
         self.size_groups[0].add_widget(label)
@@ -93,13 +93,13 @@ class TitleBarButtonsOrderSelector(Gtk.Table):
         else:
             right_items = []
         
-        label = Gtk.Label(_("Left side title bar buttons"))
+        label = Gtk.Label.new(_("Left side title bar buttons"))
         label.set_alignment(0, 0.5)
         self.attach(label, 0, 1, 0, 1, xoptions = Gtk.AttachOptions.FILL, yoptions=0, xpadding=2)
         left_side_box = Gtk.HBox()
         self.attach(left_side_box, 1, 2, 0, 1, yoptions=0, xpadding=2, ypadding=4)
         
-        label = Gtk.Label(_("Right side title bar buttons"))
+        label = Gtk.Label.new(_("Right side title bar buttons"))
         label.set_alignment(0, 0.5)
         self.attach(label, 0, 1, 1, 2, xoptions = Gtk.AttachOptions.FILL, yoptions=0, xpadding=2)
         right_side_box = Gtk.HBox()

@@ -37,7 +37,7 @@ class DeskletsViewSidePage (ExtensionSidePage):
 
     def getAdditionalPage(self):
         scrolled_window = Gtk.ScrolledWindow()
-        scrolled_window.label = Gtk.Label(_("General Desklets Settings"))
+        scrolled_window.label = Gtk.Label.new(_("General Desklets Settings"))
         config_vbox = Gtk.VBox()
         scrolled_window.add_with_viewport(config_vbox)
         config_vbox.set_border_width(5)
@@ -45,7 +45,7 @@ class DeskletsViewSidePage (ExtensionSidePage):
         dec = [[0, _("No decoration")], [1, _("Border only")], [2, _("Border and header")]]
         dec_combo = GSettingsIntComboBox(_("Decoration of desklets"), "org.cinnamon", "desklet-decorations", None, dec)
 
-        label = Gtk.Label()
+        label = Gtk.Label.new()
         label.set_markup("<i><small>%s\n%s</small></i>" % (_("Note: Some desklets require the border/header to be always present"), _("Such requirements override the settings selected here")))
 
         desklet_snap = GSettingsCheckButton(_("Snap desklets to grid"), "org.cinnamon", "desklet-snap", None)

@@ -94,10 +94,6 @@ def touch(fname, times=None):
     with file(fname, 'a'):
         os.utime(fname, times)
 
-class SurfaceWrapper:
-    def __init__(self, surface):
-        self.surface = surface
-
 class MainWindow:
 
     # Change pages
@@ -121,7 +117,6 @@ class MainWindow:
             self.button_back.show()
             self.current_sidepage = sidePage
             self.maybe_resize(sidePage)
-            GObject.timeout_add(250, self.fade_in)
         else:
             sidePage.build(self.advanced_mode)
 
@@ -162,6 +157,7 @@ class MainWindow:
         self.search_entry.connect("icon-press", self.onClearSearchBox)
         self.window.connect("destroy", self.quit)
         self.window.connect("key-press-event", self.on_keypress)
+        self.window.show()
 
         self.builder.connect_signals(self)
         self.window.set_has_resize_grip(False)
@@ -243,8 +239,7 @@ class MainWindow:
         self.window.connect("destroy", self.quit)
         self.button_cancel.connect("clicked", self.quit)
         self.button_back.connect('clicked', self.back_to_icon_view)
-        self.window.set_opacity(0)
-        self.window.show()
+
         self.calculate_bar_heights()
 
         # Select the first sidePage
@@ -253,7 +248,6 @@ class MainWindow:
             self.findPath(first_page_iter)
         else:
             self.search_entry.grab_focus()
-            self.fade_in()
 
     def on_keypress(self, widget, event):
         if event.keyval == Gdk.KEY_BackSpace and type(self.window.get_focus()) != Gtk.Entry and \
@@ -261,9 +255,6 @@ class MainWindow:
             self.back_to_icon_view(None)
             return True
         return False
-
-    def fade_in(self):
-        self.window.set_opacity(1.0)
 
     def force_advanced(self):
         ret = False
@@ -361,7 +352,7 @@ class MainWindow:
         img = Gtk.Image.new_from_icon_name(category["icon"], Gtk.IconSize.BUTTON)
         box.pack_start(img, False, False, 4)
 
-        widget = Gtk.Label()
+        widget = Gtk.Label.new()
         widget.set_use_markup(True)
         widget.set_markup('<span size="12000">%s</span>' % category["label"])
         widget.set_alignment(.5, .5)
@@ -579,7 +570,6 @@ class MainWindow:
 
 if __name__ == "__main__":
     import signal
-    GObject.threads_init()
     signal.signal(signal.SIGINT, MainWindow().quit)
     Gtk.main()
 

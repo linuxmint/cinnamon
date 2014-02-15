@@ -111,17 +111,17 @@ class Module:
         
         infos = createSystemInfos()                        
         
-        table = Gtk.Table(len(infos), 2, False)
+        table = Gtk.Table.new(len(infos), 2, False)
         table.set_row_spacings(8)
         table.set_col_spacings(15)
         sidePage.add_widget(table, False)
 
         row = 0
         for (key, value) in infos:
-            labelKey = Gtk.Label(key)
+            labelKey = Gtk.Label.new(key)
             labelKey.set_alignment(1, 0.5)
             labelKey.get_style_context().add_class("dim-label")
-            labelValue = Gtk.Label(value)
+            labelValue = Gtk.Label.new(value)
             labelValue.set_alignment(0, 0.5)
             table.attach(labelKey, 0, 1, row, row+1)
             table.attach(labelValue, 1, 2, row, row+1)

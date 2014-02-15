@@ -18,7 +18,7 @@ MEDIA_KEYS_SCHEMA = "org.cinnamon.settings-daemon.plugins.media-keys"
 
 HAS_DEDICATED_TERMINAL_SHORTCUT = False
 
-schema = Gio.Settings(MEDIA_KEYS_SCHEMA)
+schema = Gio.Settings(schema = MEDIA_KEYS_SCHEMA)
 key_list = schema.list_keys()
 for key in key_list:
     if key == "terminal":
@@ -280,8 +280,8 @@ class AddCustomDialog(Gtk.Dialog):
         self.set_default_size(350, 100)
         name_box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 2)
         command_box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 2)
-        name_box.pack_start(Gtk.Label(_("Name:")), False, False, 2)
-        command_box.pack_start(Gtk.Label(_("Command:")), False, False, 2)
+        name_box.pack_start(Gtk.Label.new(_("Name:")), False, False, 2)
+        command_box.pack_start(Gtk.Label.new(_("Command:")), False, False, 2)
         self.name_entry = Gtk.Entry()
         self.name_entry.connect('changed', self.onEntriesChanged)
         self.command_entry  = Gtk.Entry()
@@ -362,7 +362,7 @@ class KeyboardSidePage (SidePage):
         box.pack_start(slider, True, True, 0)
         tab.add_widget(box)
         tab.add_widget(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))
-        tab.add_widget(Gtk.Label(_("Test Box")))
+        tab.add_widget(Gtk.Label.new(_("Test Box")))
         tab.add_widget(Gtk.Entry())
         self.addNotebookTab(tab)
 
@@ -371,7 +371,7 @@ class KeyboardSidePage (SidePage):
         headingbox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 2)
         mainbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 2)
         headingbox.pack_start(mainbox, True, True, 2)
-        headingbox.pack_end(Gtk.Label(_("To edit a keyboard binding, click it and press the new keys, or press backspace to clear it.")), False, False, 1)
+        headingbox.pack_end(Gtk.Label.new(_("To edit a keyboard binding, click it and press the new keys, or press backspace to clear it.")), False, False, 1)
 
         left_vbox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 2)
         right_vbox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 2)
@@ -407,9 +407,9 @@ class KeyboardSidePage (SidePage):
         entry_scroller.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.NEVER)
 
         buttonbox = Gtk.ButtonBox.new(Gtk.Orientation.HORIZONTAL)
-        self.add_custom_button = Gtk.Button(_("Add custom shortcut"))
+        self.add_custom_button = Gtk.Button.new_with_label(_("Add custom shortcut"))
         self.add_custom_button.connect('clicked', self.onAddCustomButtonClicked)
-        self.remove_custom_button = Gtk.Button(_("Remove custom shortcut"))
+        self.remove_custom_button = Gtk.Button.new_with_label(_("Remove custom shortcut"))
         self.remove_custom_button.connect('clicked', self.onRemoveCustomButtonClicked)
         self.remove_custom_button.set_property('sensitive', False)
         buttonbox.pack_start(self.add_custom_button, False, False, 2)
@@ -513,7 +513,7 @@ class KeyboardSidePage (SidePage):
         self.content_box.show_all()
 
     def addNotebookTab(self, tab):
-        self.notebook.append_page(tab.tab, Gtk.Label(tab.name))
+        self.notebook.append_page(tab.tab, Gtk.Label.new(tab.name))
         self.tabs.append(tab)
 
     def onCategoryChanged(self, tree):

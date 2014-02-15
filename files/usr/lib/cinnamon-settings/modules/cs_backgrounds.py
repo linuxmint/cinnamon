@@ -4,7 +4,7 @@ import sys
 sys.path.append('/usr/lib/cinnamon-settings/bin')
 from SettingsWidgets import *
 import os
-from gi.repository import Gio, Gtk, GObject, Gdk, Pango
+from gi.repository import Gio, Gtk, GObject, Gdk, Pango, GLib
 import dbus
 import imtools
 import gettext
@@ -161,7 +161,7 @@ class ThreadedIconView(Gtk.IconView):
         self._loading_lock.release()
         
         if start_loading:
-            GObject.timeout_add(100, self._check_loading_progress)
+            GLib.timeout_add(100, self._check_loading_progress)
             thread.start_new_thread(self._do_load, ())
     
     def _check_loading_progress(self):
@@ -350,7 +350,7 @@ class BackgroundWallpaperPane (Gtk.VBox):
 
 class AddWallpapersDialog(Gtk.FileChooserDialog):
     def __init__(self, parent = None):
-        Gtk.FileChooserDialog.__init__(self, _("Add wallpapers"), parent, Gtk.FileChooserAction.OPEN)
+        Gtk.FileChooserDialog.__init__(self, title = _("Add wallpapers"), transient_for = parent, action = Gtk.FileChooserAction.OPEN)
         self.add_button(Gtk.STOCK_OPEN, Gtk.ResponseType.OK)
         self.add_button(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL)
         self.set_select_multiple(True)
@@ -391,7 +391,7 @@ class BackgroundSlideshowPane(Gtk.Table):
         
         self._cinnamon_background_schema = cinnamon_background_schema
         
-        l = Gtk.Label(_("Folder"))
+        l = Gtk.Label.new(_("Folder"))
         l.set_alignment(0, 0.5)
         self.attach(l, 0, 1, 0, 1, xoptions = Gtk.AttachOptions.FILL, yoptions = 0)
         self.folder_selector = Gtk.FileChooserButton()
@@ -399,12 +399,12 @@ class BackgroundSlideshowPane(Gtk.Table):
         self.folder_selector.connect("file-set", self._on_folder_selected)
         self.folder_selector.set_filename(self._cinnamon_background_schema["slideshow-folder"])
         self.attach(self.folder_selector, 1, 2, 0, 1, xoptions = Gtk.AttachOptions.FILL | Gtk.AttachOptions.EXPAND, yoptions = 0)
-        self.recursive_cb = Gtk.CheckButton(_("Recursive listing"))
+        self.recursive_cb = Gtk.CheckButton.new_with_label(_("Recursive listing"))
         self.recursive_cb.set_active(self._cinnamon_background_schema.get_boolean("slideshow-recursive"))
         self.recursive_cb.connect("toggled", self._on_recursive_toggled)
         self.attach(self.recursive_cb, 2, 3, 0, 1, xoptions = Gtk.AttachOptions.FILL, yoptions = 0)
         
-        l = Gtk.Label(_("Delay"))
+        l = Gtk.Label.new(_("Delay"))
         l.set_alignment(0, 0.5)
         self.attach(l, 0, 1, 1, 2, xoptions = Gtk.AttachOptions.FILL, yoptions = 0)
         self.delay_button = Gtk.SpinButton()
@@ -470,8 +470,8 @@ class BackgroundSlideshowPane(Gtk.Table):
 class BackgroundSidePage (SidePage):
     def __init__(self, name, icon, keywords, advanced, content_box):
         SidePage.__init__(self, name, icon, keywords, advanced, content_box, -1)
-        self._gnome_background_schema = Gio.Settings("org.cinnamon.desktop.background")
-        self._cinnamon_background_schema = Gio.Settings("org.cinnamon.background")
+        self._gnome_background_schema = Gio.Settings(schema = "org.cinnamon.desktop.background")
+        self._cinnamon_background_schema = Gio.Settings(schema = "org.cinnamon.background")
         self._add_wallpapers_dialog = AddWallpapersDialog()
         
         self._cinnamon_background_schema.connect("changed::mode", self._on_mode_changed)
@@ -501,13 +501,13 @@ class BackgroundSidePage (SidePage):
         topbox.set_spacing(5)
         
         # Hide the background mode selection for now since we only support one mode at the moment.. 
-        #l = Gtk.Label(_("Mode"))
+        #l = Gtk.Label.new(_("Mode"))
         #topbox.pack_start(l, False, False, 0)
         #self.background_mode = GSettingsComboBox("", "org.cinnamon.background", "mode", None, BACKGROUND_MODES).content_widget
         #self.background_mode.unparent()
         #topbox.pack_start(self.background_mode, False, False, 0)
                         
-        self.remove_wallpaper_button = Gtk.Button(_("Remove"))
+        self.remove_wallpaper_button = Gtk.Button.new_with_label(_("Remove"))
         imageremove = Gtk.Image()
         imageremove.set_from_icon_name('remove', Gtk.IconSize.BUTTON)
         if imageremove.get_pixbuf() == None:
@@ -519,7 +519,7 @@ class BackgroundSidePage (SidePage):
         self.remove_wallpaper_button.connect("clicked", lambda w: self._remove_selected_wallpaper())
         self.remove_wallpaper_button.set_sensitive(False)
         topbox.pack_end(self.remove_wallpaper_button, False, False, 0)
-        self.add_wallpaper_button = Gtk.Button(_("Add"))
+        self.add_wallpaper_button = Gtk.Button.new_with_label(_("Add"))
         imageadd = Gtk.Image()
         imageadd.set_from_icon_name('add', Gtk.IconSize.BUTTON)
         if imageadd.get_pixbuf() == None:
@@ -550,20 +550,20 @@ class BackgroundSidePage (SidePage):
 
             self.content_box.pack_start(advanced_options_box, False, True, 3)
 
-            l = Gtk.Label(_("Picture aspect"))
+            l = Gtk.Label.new(_("Picture aspect"))
             l.set_alignment(0, 0.5)
             advanced_options_box.pack_start(l, False, False, 0)
             self.picture_options = GSettingsComboBox("", "org.cinnamon.desktop.background", "picture-options", None, BACKGROUND_PICTURE_OPTIONS)
             advanced_options_box.pack_start(self.picture_options, False, False, 0)
 
-            l = Gtk.Label(_("Gradient"))
+            l = Gtk.Label.new(_("Gradient"))
             l.set_alignment(0, 0.5)
             advanced_options_box.pack_start(l, False, False, 0)
             self.color_shading_type = GSettingsComboBox("", "org.cinnamon.desktop.background", "color-shading-type", None, BACKGROUND_COLOR_SHADING_TYPES)
             advanced_options_box.pack_start(self.color_shading_type, False, False, 0)
 
             hbox = Gtk.HBox()
-            l = Gtk.Label(_("Colors"))
+            l = Gtk.Label.new(_("Colors"))
             hbox.pack_start(l, False, False, 2)
             self.primary_color = GSettingsColorChooser("org.cinnamon.desktop.background", "primary-color", None)
             hbox.pack_start(self.primary_color, False, False, 2)

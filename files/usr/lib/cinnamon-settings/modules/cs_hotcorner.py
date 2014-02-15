@@ -22,7 +22,7 @@ class Module:
 
 class HotCornerDisplay(Gtk.Label):
     def __init__(self):
-        Gtk.Label.__init__(self, "")
+        Gtk.Label.__init__(self, label = "")
         self.connect('draw', self.expose)
         
         self.cornerEnabled = []
@@ -121,7 +121,7 @@ class HotCornerConfigurtion():
         self.functionStore.append(['custom', _("Custom")])
         
     def build(self):
-        self.box = Gtk.VBox(3)
+        self.box = Gtk.VBox.new(3, False)
         
         self.functionCombo = Gtk.ComboBox.new_with_model(self.functionStore)
         self.functionCombo.set_entry_text_column(1)
@@ -130,7 +130,7 @@ class HotCornerConfigurtion():
         self.functionCombo.add_attribute(rendererText, "text", 1)
         
         self.customEntry = Gtk.Entry()
-        self.iconCheckbox = Gtk.CheckButton(_("Icon visible"))
+        self.iconCheckbox = Gtk.CheckButton.new_with_label(_("Icon visible"))
         
         self.box.pack_start(self.functionCombo, True, True, 0)
         self.box.pack_start(self.customEntry, True, True, 0)
@@ -248,7 +248,7 @@ class HotCornerViewSidePage(SidePage):
         for widget in widgets:
             self.content_box.remove(widget)
         
-        table = Gtk.Table(2, 3, False)
+        table = Gtk.Table.new(2, 3, False)
         table.set_row_spacings(5)
         table.set_col_spacings(5)
 

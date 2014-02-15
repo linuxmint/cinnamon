@@ -22,7 +22,7 @@ class EditableEntry (Gtk.Notebook):
     def __init__ (self):
         super(EditableEntry, self).__init__()
 
-        self.label = Gtk.Label()
+        self.label = Gtk.Label.new()
         self.entry = Gtk.Entry()
         self.button = Gtk.Button()
 
@@ -92,11 +92,11 @@ class Module:
         self.menu = Gtk.Menu()
         self.webcam_presence_checked = False # Only check for the presence of the webcam the first time the module is selected
 
-        self.face_photo_menuitem = Gtk.MenuItem(_("Take a photo..."))
+        self.face_photo_menuitem = Gtk.MenuItem.new_with_label(_("Take a photo..."))
         self.face_photo_menuitem.connect('activate', self._on_face_photo_menuitem_activated)         
 
         self.separator = Gtk.SeparatorMenuItem()
-        self.face_browse_menuitem = Gtk.MenuItem(_("Browse for more pictures..."))       
+        self.face_browse_menuitem = Gtk.MenuItem.new_with_label(_("Browse for more pictures..."))       
         self.face_browse_menuitem.connect('activate', self._on_face_browse_menuitem_activated)         
         self.face_button.connect("button-release-event", self.menu_display)
 
@@ -125,17 +125,17 @@ class Module:
         self.realname_entry.connect("changed", self._on_realname_changed)
         self.realname_entry.set_tooltip_text(_("Click to change your name"))
         
-        table = Gtk.Table(3, 2)
+        table = Gtk.Table.new(3, 2, False)
         table.set_row_spacings(8)
         table.set_col_spacings(15)        
         self.sidePage.add_widget(table, False)
         
-        label_picture = Gtk.Label(_("Picture:"))
+        label_picture = Gtk.Label.new(_("Picture:"))
         label_picture.set_alignment(1, 0.5)
         label_picture.get_style_context().add_class("dim-label")
         table.attach(label_picture, 0, 1, 0, 1)
 
-        password_mask = Gtk.Label(u'\u2022\u2022\u2022\u2022\u2022\u2022')        
+        password_mask = Gtk.Label.new(u'\u2022\u2022\u2022\u2022\u2022\u2022')        
         password_mask.set_alignment(0.0, 0.5)
         self.password_button = Gtk.Button()
         self.password_button.add(password_mask)
@@ -144,12 +144,12 @@ class Module:
         self.password_button.connect('activate', self._on_password_button_clicked)
         self.password_button.connect('released', self._on_password_button_clicked)
         
-        label_name = Gtk.Label(_("Name:"))
+        label_name = Gtk.Label.new(_("Name:"))
         label_name.set_alignment(1, 0.5)
         label_name.get_style_context().add_class("dim-label")                        
         table.attach(label_name, 0, 1, 1, 2)
 
-        label_name = Gtk.Label(_("Password:"))
+        label_name = Gtk.Label.new(_("Password:"))
         label_name.set_alignment(1, 0.5)
         label_name.get_style_context().add_class("dim-label")                        
         table.attach(label_name, 0, 1, 2, 3)
@@ -330,15 +330,15 @@ class PasswordDialog(Gtk.Dialog):
         table.set_row_spacings(8)
         table.set_col_spacings(15)        
 
-        label = Gtk.Label(_("Current password"))
+        label = Gtk.Label.new(_("Current password"))
         label.set_alignment(1, 0.5)
         table.attach(label, 0, 1, 0, 1)
 
-        label = Gtk.Label(_("New password"))
+        label = Gtk.Label.new(_("New password"))
         label.set_alignment(1, 0.5)
         table.attach(label, 0, 1, 1, 2)
 
-        label = Gtk.Label(_("Confirm password"))
+        label = Gtk.Label.new(_("Confirm password"))
         label.set_alignment(1, 0.5)
         table.attach(label, 0, 1, 3, 4)
 
@@ -360,7 +360,7 @@ class PasswordDialog(Gtk.Dialog):
         table.attach(self.strengh_indicator, 1, 2, 2, 3, xoptions=Gtk.AttachOptions.EXPAND|Gtk.AttachOptions.FILL)                
         self.strengh_indicator.set_size_request(-1, 1)
 
-        self.strengh_label = Gtk.Label()
+        self.strengh_label = Gtk.Label.new()
         self.strengh_label.set_tooltip_text(_("Your new password needs to be at least 8 characters long"))
         self.strengh_label.set_alignment(1, 0.5)
         table.attach(self.strengh_label, 2, 3, 2, 3)
@@ -375,7 +375,7 @@ class PasswordDialog(Gtk.Dialog):
 
         self.infobar = Gtk.InfoBar()
         self.infobar.set_message_type(Gtk.MessageType.ERROR)
-        label = Gtk.Label(_("An error occured. Your password was not changed."))
+        label = Gtk.Label.new(_("An error occured. Your password was not changed."))
         content = self.infobar.get_content_area()
         content.add(label)        
         table.attach(self.infobar, 0, 3, 5, 6)

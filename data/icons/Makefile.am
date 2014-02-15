@@ -49,6 +49,7 @@ public_icons = \
 	hicolor_categories_scalable_cs-user.svg \
 	hicolor_categories_scalable_cs-windows.svg \
 	hicolor_categories_scalable_cs-workspaces.svg \
+	hicolor_emblems_scalable_cs-xlet-installed.svg \
 	hicolor_emblems_scalable_cs-xlet-running.svg \
 	hicolor_emblems_scalable_cs-xlet-system.svg \
 	hicolor_emblems_scalable_cs-xlet-update.svg \

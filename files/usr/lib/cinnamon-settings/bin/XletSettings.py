@@ -169,7 +169,7 @@ class XletSetting:
                     content_box.pack_start(widgets[widget_key], False, False, 2)
                 if len(widgets[widget_key].dependents) > 0:
                     widgets[widget_key].update_dependents()
-            self.nb.append_page(view, Gtk.Label(_("Instance %s") % i))
+            self.nb.append_page(view, Gtk.Label.new(_("Instance %s") % i))
             view.key = instance_key
             i += 1
 
