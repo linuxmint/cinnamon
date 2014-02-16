@@ -1241,11 +1241,10 @@ class ExtensionSidePage (SidePage):
                         print "Failed to load extension %s: %s" % (theme, detail)
 
     def show_prompt(self, msg):
-        dialog = Gtk.MessageDialog(None,
-                    Gtk.DialogFlags.DESTROY_WITH_PARENT,
-                    Gtk.MessageType.QUESTION,
-                    Gtk.ButtonsType.YES_NO,
-                    None)
+        dialog = Gtk.MessageDialog(transient_for = None,
+                                   destroy_with_parent = True,
+                                   message_type = Gtk.MessageType.QUESTION,
+                                   buttons = Gtk.ButtonsType.YES_NO)
         dialog.set_default_size(400, 200)
         esc = cgi.escape(msg)
         dialog.set_markup(esc)
@@ -1255,7 +1254,10 @@ class ExtensionSidePage (SidePage):
         return response == Gtk.ResponseType.YES
 
     def show_info(self, msg):
-        dialog = Gtk.MessageDialog(None, Gtk.DialogFlags.MODAL, Gtk.MessageType.INFO, Gtk.ButtonsType.OK, None)
+        dialog = Gtk.MessageDialog(transient_for = None,
+                                   modal = True,
+                                   message_type = Gtk.MessageType.INFO,
+                                   buttons = Gtk.ButtonsType.OK)
         esc = cgi.escape(msg)
         dialog.set_markup(esc)
         dialog.show_all()

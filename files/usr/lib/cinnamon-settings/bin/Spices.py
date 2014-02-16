@@ -679,7 +679,10 @@ class Spice_Harvester:
                         pass
 
     def errorMessage(self, msg, detail = None):
-        dialog = Gtk.MessageDialog(None, Gtk.DialogFlags.MODAL, Gtk.MessageType.ERROR, Gtk.ButtonsType.OK, None)
+        dialog = Gtk.MessageDialog(transient_for = None,
+                                   modal = True,
+                                   message_type = Gtk.MessageType.ERROR,
+                                   buttons = Gtk.ButtonsType.OK)
         markup = msg
         if detail is not None:
             markup += _("\n\nDetails:  %s") % (str(detail))
