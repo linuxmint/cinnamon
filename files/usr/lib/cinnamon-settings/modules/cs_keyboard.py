@@ -491,6 +491,21 @@ class KeyboardSidePage (SidePage):
 
         tab.add_widget(headingbox)
         self.addNotebookTab(tab)
+        
+        tab = NotebookPage(_("Keyboard layouts"), True)
+        try:
+            widget = content_box.c_manager.get_c_widget("region")
+        except:
+            widget = None
+
+        if widget is not None:
+            cheat_box = Gtk.Box.new(Gtk.Orientation.VERTICAL, 2)
+            cheat_box.pack_start(widget, False, False, 2)
+            cheat_box.set_vexpand(False)
+            widget.show()
+            tab.add_widget(cheat_box)
+        
+        self.addNotebookTab(tab)        
 
         self.content_box.add(self.notebook)
         for tab in self.tabs:
