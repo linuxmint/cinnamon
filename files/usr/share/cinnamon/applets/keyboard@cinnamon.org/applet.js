@@ -79,7 +79,7 @@ MyApplet.prototype = {
                 Main.overview.hide();
                 Util.spawn(['gucharmap']);
             }));
-            this.menu.addSettingsAction(_("Region and Language Settings"), 'region');                      
+            this.menu.addSettingsAction(_("Keyboard Settings"), 'keyboard');
         }
         catch (e) {
             global.logError(e);
