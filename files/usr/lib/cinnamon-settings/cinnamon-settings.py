@@ -503,10 +503,7 @@ class MainWindow:
         for key in self.store.keys():
             path = self.store[key].get_path(name)
             if path is not None:
-                GObject.idle_add(self.do_side_view, key, path)
-
-    def do_side_view(self, key, path):
-        self.go_to_sidepage(key, path)
+                self.go_to_sidepage(key, path)
 
     def setParentRefs (self, mod):
         try:

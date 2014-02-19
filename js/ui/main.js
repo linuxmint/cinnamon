@@ -405,8 +405,6 @@ function start() {
     if (software_rendering && !GLib.getenv('CINNAMON_2D')) {
         notifyCinnamon2d();
     }
-
-    global.logError("scale is " + global.ui_scale);
 }
 
 function notifyCinnamon2d() {
