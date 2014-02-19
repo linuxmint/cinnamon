@@ -326,7 +326,7 @@ class NotebookPage:
             self.content_box.pack_start(widget, self.expanding, self.expanding, 2)
         self.tab.add_with_viewport(self.content_box)
         self.content_box.set_border_width(5)
-        self.tab.set_min_content_height(320)
+        self.tab.set_min_content_height(410)
         self.content_box.show_all()
 
 class KeyboardSidePage (SidePage):
@@ -494,7 +494,7 @@ class KeyboardSidePage (SidePage):
         
         tab = NotebookPage(_("Keyboard layouts"), True)
         try:
-            widget = content_box.c_manager.get_c_widget("region")
+            widget = self.content_box.c_manager.get_c_widget("region")
         except:
             widget = None
 
