@@ -479,7 +479,12 @@ IconApplet.prototype = {
     set_applet_icon_name: function (icon_name) {
         if (this._applet_icon_box.child) this._applet_icon_box.child.destroy();
         this._applet_icon_box.child = null;
-        this._applet_icon = new St.Icon({icon_name: icon_name, icon_type: St.IconType.FULLCOLOR, reactive: true, track_hover: true, style_class: 'applet-icon' });
+        if (this._scaleMode) {
+            this._applet_icon = new St.Icon({icon_name: icon_name, icon_size: this._panelHeight * COLOR_ICON_HEIGHT_FACTOR,
+                                            icon_type: St.IconType.FULLCOLOR, reactive: true, track_hover: true, style_class: 'applet-icon' });
+        } else {
+            this._applet_icon = new St.Icon({icon_name: icon_name, icon_type: St.IconType.FULLCOLOR, reactive: true, track_hover: true, style_class: 'applet-icon' });
+        }
         this._applet_icon_box.child = this._applet_icon;
         this.__icon_type = St.IconType.FULLCOLOR;
         this.__icon_name = icon_name;
@@ -496,8 +501,12 @@ IconApplet.prototype = {
     set_applet_icon_symbolic_name: function (icon_name) {
         if (this._applet_icon_box.child) this._applet_icon_box.child.destroy();
         this._applet_icon_box.child = null;
-
-        this._applet_icon = new St.Icon({icon_name: icon_name, icon_type: St.IconType.SYMBOLIC, reactive: true, track_hover: true, style_class: 'system-status-icon' });
+        if (this._scaleMode) {
+            let height = (this._panelHeight / DEFAULT_PANEL_HEIGHT) * PANEL_SYMBOLIC_ICON_DEFAULT_HEIGHT;
+            this._applet_icon = new St.Icon({icon_name: icon_name, icon_size: height, icon_type: St.IconType.SYMBOLIC, reactive: true, track_hover: true, style_class: 'system-status-icon' });
+        } else {
+            this._applet_icon = new St.Icon({icon_name: icon_name, icon_type: St.IconType.SYMBOLIC, reactive: true, track_hover: true, style_class: 'system-status-icon' });
+        }
         this._applet_icon_box.child = this._applet_icon;
         this.__icon_type = St.IconType.SYMBOLIC;
         this.__icon_name = icon_name;
@@ -517,9 +526,12 @@ IconApplet.prototype = {
         if (icon_path){
             let file = Gio.file_new_for_path(icon_path);
             let gicon = new Gio.FileIcon({ file: file });
-
-            this._applet_icon = new St.Icon({gicon: gicon, icon_type: St.IconType.FULLCOLOR, reactive: true, track_hover: true, style_class: 'applet-icon' });
-
+            if (this._scaleMode) {
+                this._applet_icon = new St.Icon({gicon: gicon, icon_size: this._panelHeight * COLOR_ICON_HEIGHT_FACTOR,
+                                                icon_type: St.IconType.FULLCOLOR, reactive: true, track_hover: true, style_class: 'applet-icon' });
+            } else {
+                this._applet_icon = new St.Icon({gicon: gicon, icon_type: St.IconType.FULLCOLOR, reactive: true, track_hover: true, style_class: 'applet-icon' });
+            }
             this._applet_icon_box.child = this._applet_icon;
         }
         this.__icon_type = -1;
@@ -540,8 +552,13 @@ IconApplet.prototype = {
         if (icon_path){
             let file = Gio.file_new_for_path(icon_path);
             let gicon = new Gio.FileIcon({ file: file });
-            this._applet_icon = new St.Icon({gicon: gicon, icon_type: St.IconType.FULLCOLOR, reactive: true, track_hover: true, style_class: 'applet-icon' });
-
+            if (this._scaleMode) {
+                let height = (this._panelHeight / DEFAULT_PANEL_HEIGHT) * PANEL_SYMBOLIC_ICON_DEFAULT_HEIGHT;
+                this._applet_icon = new St.Icon({gicon: gicon, icon_size: height,
+                                                icon_type: St.IconType.SYMBOLIC, reactive: true, track_hover: true, style_class: 'applet-icon' });
+            } else {
+                this._applet_icon = new St.Icon({gicon: gicon, icon_type: St.IconType.FULLCOLOR, reactive: true, track_hover: true, style_class: 'applet-icon' });
+            }
             this._applet_icon_box.child = this._applet_icon;
         }
         this.__icon_type = -1;
@@ -549,7 +566,6 @@ IconApplet.prototype = {
     },
 
     on_panel_height_changed: function() {
-        return;
         this._scaleMode = global.settings.get_boolean('panel-scale-text-icons') && global.settings.get_boolean('panel-resizable');
         if (this._applet_icon_box.child) {
             this._applet_icon_box.child.destroy();

@@ -452,7 +452,7 @@ class GSettingsRange(Gtk.HBox):
             self.value = self.settings.get_double(self.key) * 1.0
         self.label = Gtk.Label.new(label)
         self.label.set_alignment(1.0, 0.5)
-        self.label.set_size_request(100, -1)
+        self.label.set_size_request(150, -1)
         self.low_label = Gtk.Label.new()
         self.low_label.set_alignment(0.5, 0.5)
         self.low_label.set_size_request(60, -1)
@@ -572,6 +572,9 @@ class GSettingsRange(Gtk.HBox):
             else:
                 result =  (value * self._range) + self._min
         return round(result)
+
+    def add_mark(self, value, position, markup):
+        self.content_widget.add_mark((value - self._min) / self._range, position, markup)
 
 class GSettingsRangeSpin(Gtk.HBox):
     def __init__(self, label, schema, key, dep_key, **options):

@@ -698,7 +698,7 @@ AppMenuButton.prototype = {
         this.iconSize = Math.round(panel_height * ICON_HEIGHT_FACTOR);
       }
       else {
-        this.iconSize = DEFAULT_ICON_SIZE;
+        this.iconSize = DEFAULT_ICON_SIZE * global.ui_scale;
       }
       let icon = app ?
                             app.create_icon_texture(this.iconSize) :

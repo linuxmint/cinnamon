@@ -45,4 +45,24 @@ class Module:
             box.add(GSettingsSpinButton(_("Hide delay"), "org.cinnamon", "panel2-hide-delay", "org.cinnamon/panel2-autohide", 0, 2000, 50, 200, _("milliseconds")))
             sidePage.add_widget(box, True)
 
+        sidePage.add_widget(GSettingsCheckButton(_("Use customized panel size (otherwise it's defined by the theme)"), "org.cinnamon", "panel-resizable", None), True)
+
+        box = IndentedHBox()
+        box.add(GSettingsCheckButton(_("Allow Cinnamon to scale panel text and icons according to the panel heights"), "org.cinnamon", "panel-scale-text-icons", "org.cinnamon/panel-resizable"))
+        sidePage.add_widget(box, True)
+
+        box = IndentedHBox()
+
+        slider = GSettingsRange(_("Top panel height:"), _("Smaller"), _("Larger"), 20, 50, False, "int", False, "org.cinnamon", "panel-top-height", "org.cinnamon/panel-resizable", adjustment_step = 1.0)
+        slider.add_mark(25.0, Gtk.PositionType.TOP, None)
+        box.add_expand(slider)
+        sidePage.add_widget(box, True)
+
+        box = IndentedHBox()
+
+        slider = GSettingsRange(_("Bottom panel height:"), _("Smaller"), _("Larger"), 20, 50, False, "int", False, "org.cinnamon", "panel-bottom-height", "org.cinnamon/panel-resizable", adjustment_step = 1.0)
+        slider.add_mark(25.0, Gtk.PositionType.TOP, None)
+        box.add_expand(slider)
+        sidePage.add_widget(box, True)
+
         sidePage.add_widget(GSettingsCheckButton(_("Panel edit mode"), "org.cinnamon", "panel-edit-mode", None))

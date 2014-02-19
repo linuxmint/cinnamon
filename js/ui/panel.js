@@ -90,7 +90,7 @@ AnimatedIcon.prototype = {
 
         this._timeoutId = 0;
         this._i = 0;
-        this._animations = St.TextureCache.get_default().load_sliced_image (global.datadir + '/theme/' + name, size, size, null, null);
+        this._animations = St.TextureCache.get_default().load_sliced_image (global.datadir + '/theme/' + name, size, size, null);
         this.actor.set_child(this._animations);
     },
 
@@ -628,20 +628,20 @@ Panel.prototype = {
                                                   reactive: true });
         this.actor._delegate = this;
 
-        // if (global.settings.get_boolean('panel-resizable')) {
-        //     if (bottomPosition) {
-        //         this.actor.set_height(global.settings.get_int('panel-bottom-height'));
-        //     }
-        //     else {
-        //         this.actor.set_height(global.settings.get_int('panel-top-height'));
-        //     }
-        // }
-        // if (this.bottomPosition) {
-        //     global.settings.connect("changed::panel-bottom-height", Lang.bind(this, this._processPanelSize));
-        // }
-        // else {
-        //     global.settings.connect("changed::panel-top-height", Lang.bind(this, this._processPanelSize));
-        // }
+        if (global.settings.get_boolean('panel-resizable')) {
+            if (bottomPosition) {
+                this.actor.set_height(global.settings.get_int('panel-bottom-height') * global.ui_scale);
+            }
+            else {
+                this.actor.set_height(global.settings.get_int('panel-top-height') * global.ui_scale);
+            }
+        }
+        if (this.bottomPosition) {
+            global.settings.connect("changed::panel-bottom-height", Lang.bind(this, this._processPanelSize));
+        }
+        else {
+            global.settings.connect("changed::panel-top-height", Lang.bind(this, this._processPanelSize));
+        }
 
         this._menus = new PopupMenu.PopupMenuManager(this);
 
@@ -793,22 +793,21 @@ Panel.prototype = {
     },
 
     _processPanelSize: function() {
-        return;
         let panelHeight;
         let panelResizable = global.settings.get_boolean("panel-resizable");
         if (panelResizable) {
             if (this.bottomPosition) {
-                panelHeight = global.settings.get_int("panel-bottom-height");
+                panelHeight = global.settings.get_int("panel-bottom-height") * global.ui_scale;
             }
             else {
-                panelHeight = global.settings.get_int("panel-top-height");
+                panelHeight = global.settings.get_int("panel-top-height") * global.ui_scale;
             }
         }
         else {
             let themeNode = this.actor.get_theme_node();
             panelHeight = themeNode.get_length("height");
             if (!panelHeight || panelHeight == 0) {
-                panelHeight = 25;
+                panelHeight = 25 * global.ui_scale;
             }
         }
         if (!this._themeFontSize) {
@@ -816,10 +815,10 @@ Panel.prototype = {
                 this._themeFontSize = themeNode.get_length("font-size");
             }
         if (global.settings.get_boolean("panel-scale-text-icons") && global.settings.get_boolean("panel-resizable")) {
-            let textheight = (panelHeight / Applet.DEFAULT_PANEL_HEIGHT) * Applet.PANEL_FONT_DEFAULT_HEIGHT;
-            this.actor.set_style('font-size: ' + textheight + 'px;');
+            let textheight = (panelHeight / (Applet.DEFAULT_PANEL_HEIGHT * global.ui_scale) * (Applet.PANEL_FONT_DEFAULT_HEIGHT * global.ui_scale));
+            this.actor.set_style('font-size: ' + textheight / global.ui_scale + 'px;');
         } else {
-            this.actor.set_style('font-size: ' + this._themeFontSize + 'px;');
+            this.actor.set_style('font-size: ' + this._themeFontSize / global.ui_scale + 'px;');
         }
         this.actor.set_height(panelHeight);
         this._processPanelAutoHide();
