@@ -920,6 +920,7 @@ static ClutterActor *
 load_gicon_with_colors (StTextureCache    *cache,
                         GIcon             *icon,
                         gint               size,
+                        gint               scale,
                         StIconColors      *colors)
 {
   AsyncTextureLoadData *request;
@@ -933,7 +934,7 @@ load_gicon_with_colors (StTextureCache    *cache,
   /* Do theme lookups in the main thread to avoid thread-unsafety */
   theme = cache->priv->icon_theme;
 
-  info = gtk_icon_theme_lookup_by_gicon (theme, icon, size, GTK_ICON_LOOKUP_USE_BUILTIN);
+  info = gtk_icon_theme_lookup_by_gicon_for_scale (theme, icon, size, scale, GTK_ICON_LOOKUP_USE_BUILTIN);
   if (info == NULL)
     return NULL;
 
@@ -947,8 +948,8 @@ load_gicon_with_colors (StTextureCache    *cache,
   if (colors)
     {
       /* This raises some doubts about the practice of using string keys */
-      key = g_strdup_printf (CACHE_PREFIX_ICON "%s,size=%d,colors=%2x%2x%2x%2x,%2x%2x%2x%2x,%2x%2x%2x%2x,%2x%2x%2x%2x",
-                             gicon_string, size,
+      key = g_strdup_printf (CACHE_PREFIX_ICON "%s,size=%d,scale=%d,colors=%2x%2x%2x%2x,%2x%2x%2x%2x,%2x%2x%2x%2x,%2x%2x%2x%2x",
+                             gicon_string, size, scale,
                              colors->foreground.red, colors->foreground.blue, colors->foreground.green, colors->foreground.alpha,
                              colors->warning.red, colors->warning.blue, colors->warning.green, colors->warning.alpha,
                              colors->error.red, colors->error.blue, colors->error.green, colors->error.alpha,
@@ -956,13 +957,13 @@ load_gicon_with_colors (StTextureCache    *cache,
     }
   else
     {
-      key = g_strdup_printf (CACHE_PREFIX_ICON "%s,size=%d",
-                             gicon_string, size);
+      key = g_strdup_printf (CACHE_PREFIX_ICON "%s,size=%d,scale=%d",
+                             gicon_string, size, scale);
     }
   g_free (gicon_string);
 
   texture = (ClutterActor *) create_default_texture ();
-  clutter_actor_set_size (texture, size, size);
+  clutter_actor_set_size (texture, size * scale, size * scale);
 
   if (ensure_request (cache, key, policy, &request, texture))
     {
@@ -980,7 +981,7 @@ load_gicon_with_colors (StTextureCache    *cache,
       request->policy = policy;
       request->colors = colors ? st_icon_colors_ref (colors) : NULL;
       request->icon_info = info;
-      request->width = request->height = size;
+      request->width = request->height = size * scale;
       request->enforced_square = TRUE;
 
       load_texture_async (cache, request);
@@ -996,6 +997,7 @@ load_gicon_with_colors (StTextureCache    *cache,
  *                            if the icon must not be recolored
  * @icon: the #GIcon to load
  * @size: Size of themed
+ * @scale: Scale factor of display
  *
  * This method returns a new #ClutterActor for a given #GIcon. If the
  * icon isn't loaded already, the texture will be filled
@@ -1007,9 +1009,10 @@ ClutterActor *
 st_texture_cache_load_gicon (StTextureCache    *cache,
                              StThemeNode       *theme_node,
                              GIcon             *icon,
-                             gint               size)
+                             gint               size,
+                             gint               scale)
 {
-  return load_gicon_with_colors (cache, icon, size, theme_node ? st_theme_node_get_icon_colors (theme_node) : NULL);
+  return load_gicon_with_colors (cache, icon, size, scale, theme_node ? st_theme_node_get_icon_colors (theme_node) : NULL);
 }
 
 static ClutterActor *
@@ -1277,6 +1280,7 @@ symbolic_names_for_icon (const char *name)
 typedef struct {
   char *name;
   int size;
+  int scale;
 } CreateFadedIconData;
 
 static CoglHandle
@@ -1301,25 +1305,27 @@ create_faded_icon_cpu (StTextureCache *cache,
   guint8 *pixels;
   GIcon *icon;
   GtkIconInfo *info;
+  gint scale;
 
   name = data->name;
   size = data->size;
+  scale = data->scale;
 
   info = NULL;
 
   icon = g_themed_icon_new_with_default_fallbacks (name);
   if (icon != NULL)
     {
-      info = gtk_icon_theme_lookup_by_gicon (gtk_icon_theme_get_default (),
-                                             icon, size,
+      info = gtk_icon_theme_lookup_by_gicon_for_scale (gtk_icon_theme_get_default (),
+                                             icon, size, scale,
                                              GTK_ICON_LOOKUP_FORCE_SIZE);
     }
 
   if (info == NULL)
     {
       icon = g_themed_icon_new ("application-x-executable");
-      info = gtk_icon_theme_lookup_by_gicon (gtk_icon_theme_get_default (),
-                                             icon, size,
+      info = gtk_icon_theme_lookup_by_gicon_for_scale (gtk_icon_theme_get_default (),
+                                             icon, size, scale,
                                              GTK_ICON_LOOKUP_FORCE_SIZE);
       g_object_unref (icon);
     }
@@ -1394,7 +1400,8 @@ st_texture_cache_load_icon_name (StTextureCache    *cache,
                                  StThemeNode       *theme_node,
                                  const char        *name,
                                  StIconType         icon_type,
-                                 gint               size)
+                                 gint               size,
+                                 gint               scale)
 {
   ClutterActor *texture;
   CoglHandle cogltexture;
@@ -1409,24 +1416,24 @@ st_texture_cache_load_icon_name (StTextureCache    *cache,
     {
     case ST_ICON_APPLICATION:
       themed = g_themed_icon_new (name);
-      texture = load_gicon_with_colors (cache, themed, size, NULL);
+      texture = load_gicon_with_colors (cache, themed, size, scale, NULL);
       g_object_unref (themed);
       if (texture == NULL)
         {
           themed = g_themed_icon_new ("application-x-executable");
-          texture = load_gicon_with_colors (cache, themed, size, NULL);
+          texture = load_gicon_with_colors (cache, themed, size, scale, NULL);
           g_object_unref (themed);
         }
       return CLUTTER_ACTOR (texture);
       break;
     case ST_ICON_DOCUMENT:
       themed = g_themed_icon_new (name);
-      texture = load_gicon_with_colors (cache, themed, size, NULL);
+      texture = load_gicon_with_colors (cache, themed, size, scale, NULL);
       g_object_unref (themed);
       if (texture == NULL)
         {
           themed = g_themed_icon_new ("x-office-document");
-          texture = load_gicon_with_colors (cache, themed, size, NULL);
+          texture = load_gicon_with_colors (cache, themed, size, scale, NULL);
           g_object_unref (themed);
         }
 
@@ -1436,7 +1443,7 @@ st_texture_cache_load_icon_name (StTextureCache    *cache,
       names = symbolic_names_for_icon (name);
       themed = g_themed_icon_new_from_names (names, -1);
       g_strfreev (names);
-      texture = load_gicon_with_colors (cache, themed, size,
+      texture = load_gicon_with_colors (cache, themed, size, scale,
                                         st_theme_node_get_icon_colors (theme_node));
       g_object_unref (themed);
 
@@ -1444,12 +1451,12 @@ st_texture_cache_load_icon_name (StTextureCache    *cache,
       break;
     case ST_ICON_FULLCOLOR:
       themed = g_themed_icon_new_with_default_fallbacks (name);
-      texture = load_gicon_with_colors (cache, themed, size, NULL);
+      texture = load_gicon_with_colors (cache, themed, size, scale, NULL);
       g_object_unref (themed);
       if (texture == NULL)
         {
           themed = g_themed_icon_new ("image-missing");
-          texture = load_gicon_with_colors (cache, themed, size, NULL);
+          texture = load_gicon_with_colors (cache, themed, size, scale, NULL);
           g_object_unref (themed);
         }
 
@@ -1457,7 +1464,7 @@ st_texture_cache_load_icon_name (StTextureCache    *cache,
       break;
     case ST_ICON_FADED:
       themed = g_themed_icon_new_with_default_fallbacks (name);
-      cache_key = g_strdup_printf ("faded-icon:%s,size=%d", name, size);
+      cache_key = g_strdup_printf ("faded-icon:%s,size=%d,scale=%d", name, size, scale);
       data.name = g_strdup (name);
       data.size = size;
       cogltexture = st_texture_cache_load (st_texture_cache_get_default (),
@@ -1476,12 +1483,12 @@ st_texture_cache_load_icon_name (StTextureCache    *cache,
       }
       else
       {
-        texture = load_gicon_with_colors (cache, themed, size, NULL);
+        texture = load_gicon_with_colors (cache, themed, size, scale, NULL);
         g_object_unref (themed);
         if (texture == NULL)
         {
           themed = g_themed_icon_new ("image-missing");
-          texture = load_gicon_with_colors (cache, themed, size, NULL);
+          texture = load_gicon_with_colors (cache, themed, size, scale, NULL);
           g_object_unref (themed);
         }
       }
@@ -1491,33 +1498,6 @@ st_texture_cache_load_icon_name (StTextureCache    *cache,
       g_assert_not_reached ();
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 /**
  * st_texture_cache_load_uri_async:

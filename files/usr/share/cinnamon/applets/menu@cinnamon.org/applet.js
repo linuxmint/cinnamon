@@ -299,12 +299,12 @@ TransientButton.prototype = {
             let fileInfo = this.file.query_info(Gio.FILE_ATTRIBUTE_STANDARD_TYPE, Gio.FileQueryInfoFlags.NONE, null);
             let contentType = Gio.content_type_guess(this.pathOrCommand, null);
             let themedIcon = Gio.content_type_get_icon(contentType[0]);
-            this.icon = new St.Icon({gicon: themedIcon, icon_size: APPLICATION_ICON_SIZE * global.ui_scale, icon_type: St.IconType.FULLCOLOR });
+            this.icon = new St.Icon({gicon: themedIcon, icon_size: APPLICATION_ICON_SIZE, icon_type: St.IconType.FULLCOLOR });
             this.actor.set_style_class_name('menu-application-button');
         } catch (e) {
             this.handler = null;
             let iconName = this.isPath ? 'gnome-folder' : 'unknown';
-            this.icon = new St.Icon({icon_name: iconName, icon_size: APPLICATION_ICON_SIZE * global.ui_scale, icon_type: St.IconType.FULLCOLOR,});
+            this.icon = new St.Icon({icon_name: iconName, icon_size: APPLICATION_ICON_SIZE, icon_type: St.IconType.FULLCOLOR,});
             // @todo Would be nice to indicate we don't have a handler for this file.
             this.actor.set_style_class_name('menu-application-button');
         }
@@ -352,7 +352,7 @@ ApplicationButton.prototype = {
         this.category = new Array();
         this.actor.set_style_class_name('menu-application-button');
 
-        this.icon = this.app.create_icon_texture(APPLICATION_ICON_SIZE * global.ui_scale)
+        this.icon = this.app.create_icon_texture(APPLICATION_ICON_SIZE)
         this.addActor(this.icon);
         this.name = this.app.get_name();
         this.label = new St.Label({ text: this.name, style_class: 'menu-application-button-label' });
@@ -372,9 +372,9 @@ ApplicationButton.prototype = {
         let nbFavorites = favorites.length;
         let monitorHeight = Main.layoutManager.primaryMonitor.height;
         let real_size = (0.7 * monitorHeight) / nbFavorites;
-        let icon_size = 0.6 * real_size;
-        if (icon_size > MAX_FAV_ICON_SIZE * global.ui_scale)
-            icon_size = MAX_FAV_ICON_SIZE * global.ui_scale;
+        let icon_size = 0.6 * real_size / global.ui_scale;
+        if (icon_size > MAX_FAV_ICON_SIZE)
+            icon_size = MAX_FAV_ICON_SIZE;
         return this.app.create_icon_texture(icon_size);
     },
 
@@ -400,9 +400,9 @@ PlaceButton.prototype = {
         this.actor.set_style_class_name('menu-application-button');
         this.actor._delegate = this;
         this.label = new St.Label({ text: this.button_name, style_class: 'menu-application-button-label' });
-        this.icon = place.iconFactory(APPLICATION_ICON_SIZE * global.ui_scale);
+        this.icon = place.iconFactory(APPLICATION_ICON_SIZE);
         if (!this.icon)
-            this.icon = new St.Icon({icon_name: "folder", icon_size: APPLICATION_ICON_SIZE * global.ui_scale, icon_type: St.IconType.FULLCOLOR});
+            this.icon = new St.Icon({icon_name: "folder", icon_size: APPLICATION_ICON_SIZE, icon_type: St.IconType.FULLCOLOR});
         if (this.icon)
             this.addActor(this.icon);
         this.addActor(this.label);
@@ -440,7 +440,7 @@ RecentButton.prototype = {
         this.label = new St.Label({ text: this.button_name, style_class: 'menu-application-button-label' });
         this.label.clutter_text.ellipsize = Pango.EllipsizeMode.END;        
         this.label.set_style("max-width: 50em;");
-        this.icon = file.createIcon(APPLICATION_ICON_SIZE * global.ui_scale);
+        this.icon = file.createIcon(APPLICATION_ICON_SIZE);
         this.addActor(this.icon);
         this.addActor(this.label);
         this.icon.realize();
@@ -474,7 +474,7 @@ RecentClearButton.prototype = {
         this.button_name = _("Clear list");
         this.actor._delegate = this;
         this.label = new St.Label({ text: this.button_name, style_class: 'menu-application-button-label' });
-        this.icon = new St.Icon({ icon_name: 'edit-clear', icon_type: St.IconType.SYMBOLIC, icon_size: APPLICATION_ICON_SIZE * global.ui_scale });
+        this.icon = new St.Icon({ icon_name: 'edit-clear', icon_type: St.IconType.SYMBOLIC, icon_size: APPLICATION_ICON_SIZE });
         this.addActor(this.icon);
         this.addActor(this.label);
     },
@@ -514,7 +514,7 @@ CategoryButton.prototype = {
         this.actor._delegate = this;
         this.label = new St.Label({ text: label, style_class: 'menu-category-button-label' });
         if (category && this.icon_name) {
-            this.icon = St.TextureCache.get_default().load_gicon(null, icon, CATEGORY_ICON_SIZE * global.ui_scale);
+            this.icon = St.TextureCache.get_default().load_gicon(null, icon, CATEGORY_ICON_SIZE, global.ui_scale);
             if (this.icon) {
                 this.addActor(this.icon);
                 this.icon.realize();
@@ -537,7 +537,7 @@ PlaceCategoryButton.prototype = {
         this.actor.set_style_class_name('menu-category-button');
         this.actor._delegate = this;
         this.label = new St.Label({ text: _("Places"), style_class: 'menu-category-button-label' });
-        this.icon = new St.Icon({icon_name: "folder", icon_size: CATEGORY_ICON_SIZE * global.ui_scale, icon_type: St.IconType.FULLCOLOR});
+        this.icon = new St.Icon({icon_name: "folder", icon_size: CATEGORY_ICON_SIZE, icon_type: St.IconType.FULLCOLOR});
         this.addActor(this.icon);
         this.icon.realize();
         this.addActor(this.label);
@@ -557,7 +557,7 @@ RecentCategoryButton.prototype = {
         this.actor.set_style_class_name('menu-category-button');
         this.actor._delegate = this;
         this.label = new St.Label({ text: _("Recent Files"), style_class: 'menu-category-button-label' });
-        this.icon = new St.Icon({icon_name: "folder-recent", icon_size: CATEGORY_ICON_SIZE * global.ui_scale, icon_type: St.IconType.FULLCOLOR});
+        this.icon = new St.Icon({icon_name: "folder-recent", icon_size: CATEGORY_ICON_SIZE, icon_type: St.IconType.FULLCOLOR});
         this.addActor(this.icon);
         this.icon.realize()
         this.addActor(this.label);
@@ -576,10 +576,10 @@ FavoritesButton.prototype = {
         GenericApplicationButton.prototype._init.call(this, appsMenuButton, app);        
         let monitorHeight = Main.layoutManager.primaryMonitor.height;
         let real_size = (0.7 * monitorHeight) / nbFavorites;
-        let icon_size = 0.6 * real_size;
-        if (icon_size > MAX_FAV_ICON_SIZE * global.ui_scale)
-            icon_size = MAX_FAV_ICON_SIZE * global.ui_scale;
-        this.actor.style = "padding-top: "+(icon_size / 3 / global.ui_scale)+"px;padding-bottom: "+(icon_size / 3 / global.ui_scale)+"px; margin:auto;"
+        let icon_size = 0.6 * real_size / global.ui_scale;
+        if (icon_size > MAX_FAV_ICON_SIZE)
+            icon_size = MAX_FAV_ICON_SIZE;
+        this.actor.style = "padding-top: "+(icon_size / 3)+"px;padding-bottom: "+(icon_size / 3)+"px; margin:auto;"
 
         this.actor.add_style_class_name('menu-favorites-button');    
         let icon = app.create_icon_texture(icon_size);
@@ -615,10 +615,10 @@ SystemButton.prototype = {
         this.actor = new St.Button({ reactive: true, style_class: 'menu-favorites-button' });        
         let monitorHeight = Main.layoutManager.primaryMonitor.height;
         let real_size = (0.7 * monitorHeight) / nbFavorites;
-        let icon_size = 0.6 * real_size;
-        if (icon_size > MAX_FAV_ICON_SIZE * global.ui_scale)
-            icon_size = MAX_FAV_ICON_SIZE * global.ui_scale;
-        this.actor.style = "padding-top: "+(icon_size / 3 / global.ui_scale)+"px;padding-bottom: "+(icon_size / 3 / global.ui_scale)+"px; margin:auto;"
+        let icon_size = 0.6 * real_size / global.ui_scale;
+        if (icon_size > MAX_FAV_ICON_SIZE)
+            icon_size = MAX_FAV_ICON_SIZE;
+        this.actor.style = "padding-top: "+(icon_size / 3)+"px;padding-bottom: "+(icon_size / 3)+"px; margin:auto;"
         let iconObj = new St.Icon({icon_name: icon, icon_size: icon_size, icon_type: St.IconType.FULLCOLOR});
         this.actor.set_child(iconObj);
         iconObj.realize()

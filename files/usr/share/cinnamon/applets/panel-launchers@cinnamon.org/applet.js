@@ -109,8 +109,8 @@ PanelAppLauncher.prototype = {
             this.icon_height = Math.floor(panel_height * ICON_HEIGHT_FACTOR);
             this.icon_anim_height = Math.floor(panel_height * ICON_ANIM_FACTOR);
         } else {
-            this.icon_height = DEFAULT_ICON_SIZE * global.ui_scale;
-            this.icon_anim_height = DEFAULT_ANIM_SIZE * global.ui_scale;
+            this.icon_height = DEFAULT_ICON_SIZE;
+            this.icon_anim_height = DEFAULT_ANIM_SIZE;
         }
         this.icon = this._getIconActor();
         this._iconBox.set_child(this.icon);

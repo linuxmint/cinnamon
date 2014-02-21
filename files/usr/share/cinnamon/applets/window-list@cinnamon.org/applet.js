@@ -648,7 +648,7 @@ AppMenuButton.prototype = {
         }
         this._iconBox.allocate(childBox, flags);
 
-        let iconWidth = this.iconSize;
+        let iconWidth = this.iconSize * global.ui_scale;
 
         [minWidth, minHeight, naturalWidth, naturalHeight] = this._label.get_preferred_size();
 
@@ -695,10 +695,10 @@ AppMenuButton.prototype = {
       let app = tracker.get_window_app(this.metaWindow);
 
       if (global.settings.get_boolean('panel-scale-text-icons') && global.settings.get_boolean('panel-resizable')) {
-        this.iconSize = Math.round(panel_height * ICON_HEIGHT_FACTOR);
+        this.iconSize = Math.round(panel_height * ICON_HEIGHT_FACTOR / global.ui_scale);
       }
       else {
-        this.iconSize = DEFAULT_ICON_SIZE * global.ui_scale;
+        this.iconSize = DEFAULT_ICON_SIZE;
       }
       let icon = app ?
                             app.create_icon_texture(this.iconSize) :

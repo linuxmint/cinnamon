@@ -134,6 +134,15 @@ window_backed_app_get_icon (CinnamonApp *app,
 {
   MetaWindow *window;
   ClutterActor *actor;
+  gint scale;
+  CinnamonGlobal *global;
+  StThemeContext *context;
+
+  global = cinnamon_global_get ();
+  context = st_theme_context_get_for_stage (cinnamon_global_get_stage (global));
+  g_object_get (context, "scale-factor", &scale, NULL);
+
+  size *= scale;
 
   /* During a state transition from running to not-running for
    * window-backend apps, it's possible we get a request for the icon.
@@ -167,7 +176,14 @@ cinnamon_app_create_icon_texture (CinnamonApp   *app,
                                int         size)
 {
   GIcon *icon;
+  gint scale;
   ClutterActor *ret;
+  CinnamonGlobal *global;
+  StThemeContext *context;
+ 
+  global = cinnamon_global_get ();
+  context = st_theme_context_get_for_stage (cinnamon_global_get_stage (global));
+  g_object_get (context, "scale-factor", &scale, NULL);
 
   ret = NULL;
 
@@ -176,12 +192,12 @@ cinnamon_app_create_icon_texture (CinnamonApp   *app,
 
   icon = g_app_info_get_icon (G_APP_INFO (gmenu_tree_entry_get_app_info (app->entry)));
   if (icon != NULL)
-    ret = st_texture_cache_load_gicon (st_texture_cache_get_default (), NULL, icon, size);
+    ret = st_texture_cache_load_gicon (st_texture_cache_get_default (), NULL, icon, size, scale);
 
   if (ret == NULL)
     {
       icon = g_themed_icon_new ("application-x-executable");
-      ret = st_texture_cache_load_gicon (st_texture_cache_get_default (), NULL, icon, size);
+      ret = st_texture_cache_load_gicon (st_texture_cache_get_default (), NULL, icon, size, scale);
       g_object_unref (icon);
     }
 
@@ -191,6 +207,7 @@ cinnamon_app_create_icon_texture (CinnamonApp   *app,
 typedef struct {
   CinnamonApp *app;
   int size;
+  int scale;
 } CreateFadedIconData;
 
 static CoglHandle
@@ -203,6 +220,7 @@ cinnamon_app_create_faded_icon_cpu (StTextureCache *cache,
   CinnamonApp *app;
   GdkPixbuf *pixbuf;
   int size;
+  int scale;
   CoglHandle texture;
   gint width, height, rowstride;
   guint8 n_channels;
@@ -218,23 +236,24 @@ cinnamon_app_create_faded_icon_cpu (StTextureCache *cache,
 
   app = data->app;
   size = data->size;
+  scale = data->scale;
 
   info = NULL;
 
   icon = g_app_info_get_icon (G_APP_INFO (gmenu_tree_entry_get_app_info (app->entry)));
   if (icon != NULL)
     {
-      info = gtk_icon_theme_lookup_by_gicon (gtk_icon_theme_get_default (),
-                                             icon, size,
-                                             GTK_ICON_LOOKUP_FORCE_SIZE);
+      info = gtk_icon_theme_lookup_by_gicon_for_scale (gtk_icon_theme_get_default (),
+                                                       icon, size, scale,
+                                                       GTK_ICON_LOOKUP_FORCE_SIZE);
     }
 
   if (info == NULL)
     {
       icon = g_themed_icon_new ("application-x-executable");
-      info = gtk_icon_theme_lookup_by_gicon (gtk_icon_theme_get_default (),
-                                             icon, size,
-                                             GTK_ICON_LOOKUP_FORCE_SIZE);
+      info = gtk_icon_theme_lookup_by_gicon_for_scale (gtk_icon_theme_get_default (),
+                                                       icon, size, scale,
+                                                       GTK_ICON_LOOKUP_FORCE_SIZE);
       g_object_unref (icon);
     }
 
@@ -305,6 +324,9 @@ cinnamon_app_get_faded_icon (CinnamonApp *app, int size)
   ClutterActor *result;
   char *cache_key;
   CreateFadedIconData data;
+  gint scale;
+  CinnamonGlobal *global;
+  StThemeContext *context;
 
   /* Don't fade for window backed apps for now...easier to reuse the
    * property tracking bits, and this helps us visually distinguish
@@ -313,9 +335,14 @@ cinnamon_app_get_faded_icon (CinnamonApp *app, int size)
   if (!app->entry)
     return window_backed_app_get_icon (app, size);
 
-  cache_key = g_strdup_printf ("faded-icon:%s,size=%d", cinnamon_app_get_id (app), size);
+  global = cinnamon_global_get ();
+  context = st_theme_context_get_for_stage (cinnamon_global_get_stage (global));
+  g_object_get (context, "scale-factor", &scale, NULL);
+
+  cache_key = g_strdup_printf ("faded-icon:%s,size=%d,scale=%d", cinnamon_app_get_id (app), size, scale);
   data.app = app;
   data.size = size;
+  data.scale = scale;
   texture = st_texture_cache_load (st_texture_cache_get_default (),
                                    cache_key,
                                    ST_TEXTURE_CACHE_POLICY_FOREVER,
@@ -332,7 +359,7 @@ cinnamon_app_get_faded_icon (CinnamonApp *app, int size)
   else
     {
       result = clutter_texture_new ();
-      g_object_set (result, "opacity", 0, "width", (float) size, "height", (float) size, NULL);
+      g_object_set (result, "opacity", 0, "width", (float) size * scale, "height", (float) size * scale, NULL);
 
     }
   return result;

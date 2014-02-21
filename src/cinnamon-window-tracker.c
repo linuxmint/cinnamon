@@ -841,18 +841,25 @@ cinnamon_startup_sequence_create_icon (CinnamonStartupSequence *sequence, guint 
   GIcon *themed;
   const char *icon_name;
   ClutterActor *texture;
+  gint scale;
+  CinnamonGlobal *global;
+  StThemeContext *context;
+
+  global = cinnamon_global_get ();
+  context = st_theme_context_get_for_stage (cinnamon_global_get_stage (global));
+  g_object_get (context, "scale-factor", &scale, NULL);
 
   icon_name = sn_startup_sequence_get_icon_name ((SnStartupSequence*)sequence);
   if (!icon_name)
     {
       texture = clutter_texture_new ();
-      clutter_actor_set_size (texture, size, size);
+      clutter_actor_set_size (texture, size * scale, size * scale);
       return texture;
     }
 
   themed = g_themed_icon_new (icon_name);
   texture = st_texture_cache_load_gicon (st_texture_cache_get_default (),
-                                         NULL, themed, size);
+                                         NULL, themed, size, scale);
   g_object_unref (G_OBJECT (themed));
   return texture;
 }

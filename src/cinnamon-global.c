@@ -235,18 +235,6 @@ cinnamon_global_get_property(GObject         *object,
 }
 
 static void
-scale_notify_cb (GSettings *settings, gchar *key, gpointer user_data)
-{
-    CinnamonGlobal *global = CINNAMON_GLOBAL (user_data);
-
-    guint new_scale = g_settings_get_uint (global->interface_settings, "scaling-factor-status");
-    if (new_scale != global->ui_scale) {
-        global->ui_scale = new_scale;
-        g_signal_emit_by_name (global, "scale-changed");
-    }
-}
-
-static void
 cinnamon_global_init (CinnamonGlobal *global)
 {
   const char *datadir = g_getenv ("CINNAMON_DATADIR");
@@ -275,10 +263,9 @@ cinnamon_global_init (CinnamonGlobal *global)
   g_mkdir_with_parents (global->userdatadir, 0700);
 
   global->settings = g_settings_new ("org.cinnamon");
-  global->interface_settings = g_settings_new ("org.cinnamon.desktop.interface");
-  g_signal_connect (global->interface_settings, "changed::scaling-factor-status", G_CALLBACK (scale_notify_cb), global);
-  global->ui_scale = g_settings_get_uint (global->interface_settings, "scaling-factor-status");
-  
+
+  global->ui_scale = 1;
+
   global->grab_notifier = GTK_WINDOW (gtk_window_new (GTK_WINDOW_TOPLEVEL));
   g_signal_connect (global->grab_notifier, "grab-notify", G_CALLBACK (grab_notify), global);
   global->gtk_grab_active = FALSE;
@@ -1000,6 +987,26 @@ gnome_cinnamon_gdk_event_handler (GdkEvent *event_gdk,
   gtk_main_do_event (event_gdk);
 }
 
+static void
+update_scale_factor (GdkScreen *screen, gpointer data)
+{
+  gint scale;
+  CinnamonGlobal *global = CINNAMON_GLOBAL (data);
+  ClutterStage *stage = CLUTTER_STAGE (global->stage);
+  StThemeContext *context = st_theme_context_get_for_stage (stage);
+  GValue value = G_VALUE_INIT;
+
+  g_value_init (&value, G_TYPE_INT);
+  gdk_screen_get_setting (global->gdk_screen, "gdk-window-scaling-factor", &value);
+  scale = g_value_get_int (&value);
+  g_object_set (context, "scale-factor", scale, NULL);
+
+  if (scale != global->ui_scale) {
+    global->ui_scale = scale;
+    g_signal_emit_by_name (global, "scale-changed");
+  }
+}
+
 void
 _cinnamon_global_set_plugin (CinnamonGlobal *global,
                           MetaPlugin  *plugin)
@@ -1047,9 +1054,14 @@ _cinnamon_global_set_plugin (CinnamonGlobal *global,
 
   cinnamon_fonts_init (global->stage);
 
+  g_signal_connect_swapped (global->gdk_screen, "monitors-changed",
+                            G_CALLBACK (update_scale_factor), global);
+
   gdk_event_handler_set (gnome_cinnamon_gdk_event_handler, global->stage, NULL);
 
   global->focus_manager = st_focus_manager_get_for_stage (global->stage);
+
+  update_scale_factor (global->gdk_screen, global);
 }
 
 GjsContext *

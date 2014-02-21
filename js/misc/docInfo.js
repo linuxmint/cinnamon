@@ -27,7 +27,7 @@ DocInfo.prototype = {
 
     createIcon : function(size) {
         let gicon = this.recentInfo.get_gicon()
-        return St.TextureCache.get_default().load_gicon(null, gicon, size);
+        return St.TextureCache.get_default().load_gicon(null, gicon, size, global.ui_scale);
     },
 
     launch : function(workspaceIndex) {

@@ -176,7 +176,7 @@ MyApplet.prototype = {
                 } else {
                     icon = new Gio.ThemedIcon({name: 'avatar-default'});
                 }
-                let img = St.TextureCache.get_default().load_gicon(null, icon, 48 * global.ui_scale);
+                let img = St.TextureCache.get_default().load_gicon(null, icon, 48, global.ui_scale);
                 this._userIcon.set_child (img);
                 this._userIcon.show();               
             }

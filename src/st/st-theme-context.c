@@ -34,6 +34,8 @@ struct _StThemeContext {
 
   /* set of StThemeNode */
   GHashTable *nodes;
+
+  gint scale_factor;
 };
 
 struct _StThemeContextClass {
@@ -41,6 +43,12 @@ struct _StThemeContextClass {
 };
 
 #define DEFAULT_FONT "sans-serif 10"
+
+enum
+{
+  PROP_0,
+  PROP_SCALE_FACTOR
+};
 
 enum
 {
@@ -57,6 +65,15 @@ static void on_icon_theme_changed (StTextureCache *cache,
                                    StThemeContext *context);
 
 static void st_theme_context_changed (StThemeContext *context);
+
+static void st_theme_context_set_property (GObject      *object,
+                                           guint         prop_id,
+                                           const GValue *value,
+                                           GParamSpec   *pspec);
+static void st_theme_context_get_property (GObject      *object,
+                                           guint         prop_id,
+                                           GValue       *value,
+                                           GParamSpec   *pspec);
 
 static void
 st_theme_context_finalize (GObject *object)
@@ -88,7 +105,22 @@ st_theme_context_class_init (StThemeContextClass *klass)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
 
+  object_class->set_property = st_theme_context_set_property;
+  object_class->get_property = st_theme_context_get_property;
   object_class->finalize = st_theme_context_finalize;
+
+/**
+   * StThemeContext:scale-factor:
+   *
+   * The scaling factor used or high dpi scaling.
+   */
+  g_object_class_install_property (object_class,
+                                   PROP_SCALE_FACTOR,
+                                   g_param_spec_int ("scale-factor",
+                                                     "Scale factor",
+                                                     "Integer scale factor used for high dpi scaling",
+                                                     0, G_MAXINT, 1,
+                                                     G_PARAM_READABLE | G_PARAM_WRITABLE));
 
   signals[CHANGED] =
     g_signal_new ("changed",
@@ -118,6 +150,54 @@ st_theme_context_init (StThemeContext *context)
   context->nodes = g_hash_table_new_full ((GHashFunc) st_theme_node_hash,
                                           (GEqualFunc) st_theme_node_equal,
                                           g_object_unref, NULL);
+
+  context->scale_factor = 1;
+}
+
+static void
+st_theme_context_set_property (GObject      *object,
+                               guint         prop_id,
+                               const GValue *value,
+                               GParamSpec   *pspec)
+{
+  StThemeContext *context = ST_THEME_CONTEXT (object);
+
+  switch (prop_id)
+    {
+    case PROP_SCALE_FACTOR:
+      {
+        int scale_factor = g_value_get_int (value);
+        if (scale_factor != context->scale_factor)
+          {
+            context->scale_factor = scale_factor;
+            st_theme_context_changed (context);
+          }
+
+        break;
+      }
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+      break;
+    }
+}
+
+static void
+st_theme_context_get_property (GObject    *object,
+                               guint       prop_id,
+                               GValue     *value,
+                               GParamSpec *pspec)
+{
+  StThemeContext *context = ST_THEME_CONTEXT (object);
+
+  switch (prop_id)
+    {
+    case PROP_SCALE_FACTOR:
+      g_value_set_int (value, context->scale_factor);
+      break;
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+      break;
+    }
 }
 
 /**

@@ -845,6 +845,9 @@ get_length_from_term (StThemeNode *node,
   } type = ABSOLUTE;
 
   double multiplier = 1.0;
+  int scale_factor;
+
+  g_object_get (node->context, "scale-factor", &scale_factor, NULL);
 
   if (term->type != TERM_NUMBER)
     {
@@ -858,7 +861,7 @@ get_length_from_term (StThemeNode *node,
     {
     case NUM_LENGTH_PX:
       type = ABSOLUTE;
-      multiplier = 1;
+      multiplier = 1 * scale_factor;
       break;
     case NUM_LENGTH_PT:
       type = POINTS;
@@ -944,8 +947,7 @@ get_length_from_term (StThemeNode *node,
   switch (type)
     {
     case ABSOLUTE:
-      resolution = clutter_backend_get_resolution (clutter_get_default_backend ());
-      *length = num->val * multiplier * (resolution / 96.);
+      *length = num->val * multiplier;
       break;
     case POINTS:
       resolution = clutter_backend_get_resolution (clutter_get_default_backend ());
