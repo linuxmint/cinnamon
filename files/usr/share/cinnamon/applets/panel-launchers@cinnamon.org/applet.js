@@ -174,14 +174,14 @@ PanelAppLauncher.prototype = {
     _animateIcon: function(step){
         if (step>=3) return;
         Tweener.addTween(this.icon,
-                         { width: this.icon_anim_height,
-                           height: this.icon_anim_height,
+                         { width: this.icon_anim_height * global.ui_scale,
+                           height: this.icon_anim_height * global.ui_scale,
                            time: 0.2,
                            transition: 'easeOutQuad',
                            onComplete: function(){
                                Tweener.addTween(this.icon,
-                                                { width: this.icon_height,
-                                                  height: this.icon_height,
+                                                { width: this.icon_height * global.ui_scale,
+                                                  height: this.icon_height * global.ui_scale,
                                                   time: 0.2,
                                                   transition: 'easeOutQuad',
                                                   onComplete: function(){
