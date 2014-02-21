@@ -82,7 +82,7 @@ MyApplet.prototype = {
                 Util.spawnCommandLine("cinnamon-settings user");
             }));
 
-            this.menu.addAction(_("System Settings"), Lang.bind(this, function() {
+            this.menu.addAction(_("All Settings"), Lang.bind(this, function() {
                 Util.spawnCommandLine("cinnamon-settings");
             }));
 
