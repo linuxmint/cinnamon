@@ -5,16 +5,19 @@ const Cinnamon = imports.gi.Cinnamon;
 const Lang = imports.lang;
 const Signals = imports.signals;
 const Search = imports.ui.search;
+const Desktop = imports.gi.CinnamonDesktop;
+const Gio = imports.gi.Gio;
 
 const THUMBNAIL_ICON_MARGIN = 2;
 
-function DocInfo(recentInfo) {
-    this._init(recentInfo);
+function DocInfo(recentInfo, factory) {
+    this._init(recentInfo, factory);
 }
 
 DocInfo.prototype = {
-    _init : function(recentInfo) {
+    _init : function(recentInfo, factory) {
         this.recentInfo = recentInfo;
+        this.factory = factory;
         // We actually used get_modified() instead of get_visited()
         // here, as GtkRecentInfo doesn't updated get_visited()
         // correctly. See http://bugzilla.gnome.org/show_bug.cgi?id=567094
@@ -23,11 +26,30 @@ DocInfo.prototype = {
         this._lowerName = this.name.toLowerCase();
         this.uri = recentInfo.get_uri();
         this.mimeType = recentInfo.get_mime_type();
+        this.mtime = this._fetch_mtime();
+    },
+
+    _fetch_mtime : function() {
+        let file = Gio.file_new_for_uri(this.uri);
+        let file_info = file.query_info(Gio.FILE_ATTRIBUTE_TIME_MODIFIED, Gio.FileQueryInfoFlags.NONE, null);
+        let timeval = 0;
+        if (file_info) {
+            timeval = file_info.get_attribute_uint64(Gio.FILE_ATTRIBUTE_TIME_MODIFIED);
+        }
+        return timeval;
     },
 
     createIcon : function(size) {
-        let gicon = this.recentInfo.get_gicon()
-        return St.TextureCache.get_default().load_gicon(null, gicon, size, global.ui_scale);
+        let existing = this.factory.lookup(this.uri, this.mtime);
+        if (existing) {
+            let file = Gio.file_new_for_path(existing);
+            let thumb_uri = file.get_uri();
+            return St.TextureCache.get_default().load_uri_async(thumb_uri, size, size);
+        }
+        else {
+            let gicon = this.recentInfo.get_gicon()
+            return St.TextureCache.get_default().load_gicon(null, gicon, size, global.ui_scale);
+        }
     },
 
     launch : function(workspaceIndex) {
@@ -70,6 +92,7 @@ function DocManager() {
 DocManager.prototype = {
     _init: function() {
         this._docSystem = Cinnamon.DocSystem.get_default();
+        this._thumbnail_factory = new Desktop.DesktopThumbnailFactory();
         this._infosByTimestamp = [];
         this._infosByUri = {};
         this._docSystem.connect('changed', Lang.bind(this, this._reload));
@@ -82,8 +105,7 @@ DocManager.prototype = {
         this._infosByUri = {};
         for (let i = 0; i < docs.length; i++) {
             let recentInfo = docs[i];
-
-            let docInfo = new DocInfo(recentInfo);
+            let docInfo = new DocInfo(recentInfo, this._thumbnail_factory);
             this._infosByTimestamp.push(docInfo);
             this._infosByUri[docInfo.uri] = docInfo;
         }
