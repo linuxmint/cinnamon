@@ -54,12 +54,14 @@ class MouseTouchpadSidepage (SidePage):
         self.add_widget(box, 0, True)
 
         title = Gtk.Label.new()
-        title.set_markup("<b>%s</b>" % _("Pointer Size"))
+        title.set_markup("<b>%s</b>    <i><small>%s</small></i>" % (_("Pointer Size"), _("Note: All sizes may not be available on certain icon themes")))
         title.set_alignment(0,0)
         self.add_widget(title, 0, None)
 
         box = IndentedHBox()
-        slider = GSettingsRange(_("Size:"), _("Small"), _("Large"), 20.0, 50.0, False, "int", False, "org.cinnamon.desktop.interface", "cursor-size", None, adjustment_step = 1.0)
+
+        slider = GSettingsRange(_("Size:"), _("Smaller"), _("Larger"), 5, 50, False, "int", False, "org.cinnamon.desktop.interface", "cursor-size", None, adjustment_step = 1.0)
+        slider.add_mark(24.0, Gtk.PositionType.TOP, None)
         box.add_expand(slider)
         self.add_widget(box, 0, None)
 
