@@ -655,7 +655,6 @@ class GSettingsComboBox(Gtk.HBox):
         self.content_widget.connect('changed', self.on_my_value_changed)
         self.content_widget.show_all()
         self.dependency_invert = False
-        self.dependency_invert = False
         if self.dep_key is not None:
             if self.dep_key[0] == '!':
                 self.dependency_invert = True
@@ -679,11 +678,16 @@ class GSettingsComboBox(Gtk.HBox):
             self.set_sensitive(not self.dep_settings.get_boolean(self.dep_key))
 
 class GSettingsIntComboBox(Gtk.HBox):
-    def __init__(self, label, schema, key, options):
+    def __init__(self, label, schema, key, dep_key, options, use_uint=False):
         self.key = key
+        self.dep_key = dep_key
+        self.use_uint = use_uint
         super(GSettingsIntComboBox, self).__init__()
         self.settings = Gio.Settings.new(schema)
-        self.value = self.settings.get_int(self.key)
+        if self.use_uint:
+            self.value = self.settings.get_uint(self.key)
+        else:
+            self.value = self.settings.get_int(self.key)
 
         self.label = Gtk.Label(label)
         self.model = Gtk.ListStore(int, str)
@@ -708,12 +712,31 @@ class GSettingsIntComboBox(Gtk.HBox):
         self.pack_start(self.content_widget, False, True, 2)
         self.content_widget.connect('changed', self.on_my_value_changed)
         self.content_widget.show_all()
+        self.dependency_invert = False
+        if self.dep_key is not None:
+            if self.dep_key[0] == '!':
+                self.dependency_invert = True
+                self.dep_key = self.dep_key[1:]
+            split = self.dep_key.split('/')
+            self.dep_settings = Gio.Settings.new(split[0])
+            self.dep_key = split[1]
+            self.dep_settings.connect("changed::"+self.dep_key, self.on_dependency_setting_changed)
+            self.on_dependency_setting_changed(self, None)
 
     def on_my_value_changed(self, widget):
         tree_iter = widget.get_active_iter()
         if tree_iter != None:
             value = self.model[tree_iter][0]
-            self.settings.set_int(self.key, value)
+            if self.use_uint:
+                self.settings.set_uint(self.key, value)
+            else:
+                self.settings.set_int(self.key, value)
+
+    def on_dependency_setting_changed(self, settings, dep_key):
+        if not self.dependency_invert:
+            self.set_sensitive(self.dep_settings.get_boolean(self.dep_key))
+        else:
+            self.set_sensitive(not self.dep_settings.get_boolean(self.dep_key))
 
 class GSettingsColorChooser(Gtk.ColorButton):
     def __init__(self, schema, key, dep_key):

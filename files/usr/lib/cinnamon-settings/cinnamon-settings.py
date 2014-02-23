@@ -64,7 +64,6 @@ CONTROL_CENTER_MODULES = [
     [_("Display"),                          "display",            "display.svg",                 "hardware",      False,          _("display, screen, monitor, layout, resolution, dual, lcd")],
     [_("Bluetooth"),                        "bluetooth",          "bluetooth.svg",               "hardware",      False,          _("bluetooth, dongle, transfer, mobile")], 
     [_("Universal Access"),                 "universal-access",   "universal-access.svg",           "prefs",      False,          _("magnifier, talk, access, zoom, keys, contrast")],
-    [_("Power Management"),                 "power",              "power.svg",                   "hardware",      False,          _("power, suspend, hibernate, laptop, desktop")],
     [_("Sound"),                            "sound",              "sound.svg",                   "hardware",      False,          _("sound, speakers, headphones, test")],
     [_("Color"),                            "color",              "color.svg",                   "hardware",      True,           _("color, profile, display, printer, output")],
     [_("Graphics Tablet"),                  "wacom",              "tablet.svg",                  "hardware",      True,           _("wacom, digitize, tablet, graphics, calibrate, stylus")]

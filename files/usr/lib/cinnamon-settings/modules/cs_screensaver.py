@@ -3,27 +3,47 @@
 import os
 from SettingsWidgets import *
 
+LOCK_DELAY_OPTIONS = [
+    (0, _("When the screen turns off")),
+    (30, _("30 seconds after the screen turns off")),
+    (60, _("1 minute after the screen turns off")),
+    (120, _("2 minutes after the screen turns off")),
+    (180, _("3 minutes after the screen turns off")),
+    (300, _("5 minutes after the screen turns off")),
+    (600, _("10 minutes after the screen turns off")),
+    (1800, _("30 minutes after the screen turns off")),
+    (3600, _("1 hour after the screen turns off"))
+]
+
 class Module:
     def __init__(self, content_box):
-        keywords = _("screensaver, brightness, lock, password, away, message")
+        keywords = _("screensaver, lock, password, away, message")
         advanced = False
-        sidePage = SidePage(_("Screensaver & Lock Settings"), "screensaver.svg", keywords, advanced, content_box)
+        sidePage = SidePage(_("Lock Screen"), "screensaver.svg", keywords, advanced, content_box)
         self.sidePage = sidePage
         self.name = "screensaver"
         self.category = "prefs"
-        self.comment = _("Manage screensaver and lock settings")
-        if os.path.exists("/usr/bin/cinnamon-screensaver-command"):
-            sidePage.add_widget(GSettingsCheckButton(_("Ask for an away message when locking the screen from the menu"), "org.cinnamon.screensaver", "ask-for-away-message", None))
-            sidePage.add_widget(GSettingsEntry(_("Default away message"), "org.cinnamon.screensaver", "default-message", None))
+        self.comment = _("Manage screen lock settings")
+       
+        frame_label = Gtk.Label()
+        frame_label.set_markup("<b>%s</b>" % _("Activation"))
+        frame = Gtk.Frame()
+        frame.set_label_widget(frame_label)
+        frame.set_shadow_type(Gtk.ShadowType.NONE)
+        vbox = Gtk.VBox()
+        vbox.pack_start(GSettingsCheckButton(_("Lock the screen automatically"), "org.cinnamon.desktop.screensaver", "lock-enabled", None), False, False, 2)
+        vbox.pack_start(GSettingsIntComboBox(_(""), "org.cinnamon.desktop.screensaver", "lock-delay", "org.cinnamon.desktop.screensaver/lock-enabled", LOCK_DELAY_OPTIONS, use_uint=True), False, False, 2)
+        vbox.pack_start(GSettingsCheckButton(_("Lock the screen before suspending the computer"), "org.cinnamon.settings-daemon.plugins.power", "lock-on-suspend", None), False, False, 2)
+        frame.add(vbox)
+        self.sidePage.add_widget(frame)
 
-        try:
-            widget = content_box.c_manager.get_c_widget("screen")
-        except:
-            widget = None
-
-        if widget is not None:
-            cheat_box = Gtk.Box.new(Gtk.Orientation.VERTICAL, 2)
-            cheat_box.pack_start(widget, False, False, 2)
-            cheat_box.set_vexpand(False)
-            widget.show()
-            self.sidePage.add_widget(cheat_box)
+        frame_label = Gtk.Label()
+        frame_label.set_markup("<b>%s</b>" % _("Away message"))
+        frame = Gtk.Frame()
+        frame.set_label_widget(frame_label)
+        frame.set_shadow_type(Gtk.ShadowType.NONE)
+        vbox = Gtk.VBox()
+        vbox.pack_start(GSettingsCheckButton(_("Ask for an away message when locking the screen from the menu"), "org.cinnamon.screensaver", "ask-for-away-message", None), False, False, 2)
+        vbox.pack_start(GSettingsEntry(_("Default away message"), "org.cinnamon.screensaver", "default-message", None), False, False, 2)
+        frame.add(vbox)
+        self.sidePage.add_widget(frame)
