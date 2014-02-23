@@ -4,7 +4,7 @@
         "default": 50,
         "min": 10,
         "max": 200,
-	"units": "",
+	"units": " ",
         "description" : "Font size:",
         "step": 1
     },
