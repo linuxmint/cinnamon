@@ -32,7 +32,7 @@ class Module:
         frame.set_shadow_type(Gtk.ShadowType.NONE)
         vbox = Gtk.VBox()
         vbox.pack_start(GSettingsCheckButton(_("Lock the screen automatically"), "org.cinnamon.desktop.screensaver", "lock-enabled", None), False, False, 2)
-        vbox.pack_start(GSettingsIntComboBox(_(""), "org.cinnamon.desktop.screensaver", "lock-delay", "org.cinnamon.desktop.screensaver/lock-enabled", LOCK_DELAY_OPTIONS, use_uint=True), False, False, 2)
+        vbox.pack_start(GSettingsIntComboBox((""), "org.cinnamon.desktop.screensaver", "lock-delay", "org.cinnamon.desktop.screensaver/lock-enabled", LOCK_DELAY_OPTIONS, use_uint=True), False, False, 2)
         vbox.pack_start(GSettingsCheckButton(_("Lock the screen before suspending the computer"), "org.cinnamon.settings-daemon.plugins.power", "lock-on-suspend", None), False, False, 2)
         frame.add(vbox)
         self.sidePage.add_widget(frame)
