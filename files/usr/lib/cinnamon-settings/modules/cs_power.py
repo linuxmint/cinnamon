@@ -2,6 +2,8 @@
 
 import os
 from SettingsWidgets import *
+import gi
+from gi.repository import CinnamonDesktop, Gdk
 
 POWER_BUTTON_OPTIONS = [
     ("blank", _("Lock the screen")),
@@ -56,26 +58,34 @@ class Module:
 
         if widget is not None:
             vbox.pack_start(widget, False, False, 2)
-            vbox.set_vexpand(False)
+            vbox.set_vexpand(False)           
+            widget.set_no_show_all(True)
             widget.show()
+            self.sidePage.add_widget(frame)
 
         try:
             widget = content_box.c_manager.get_c_widget("screen")
         except:
             widget = None
-
-        
-        self.sidePage.add_widget(frame)
-
-
         if widget is not None:
             cheat_box = Gtk.Box.new(Gtk.Orientation.VERTICAL, 2)
             cheat_box.pack_start(widget, False, False, 2)
             cheat_box.set_vexpand(False)
+            widget.set_no_show_all(True)
             widget.show()
             self.sidePage.add_widget(cheat_box)
+    
+            max_backlight = 0
+            try:              
+                screen = CinnamonDesktop.RRScreen.new(Gdk.Screen.get_default())
+                outputs = CinnamonDesktop.RRScreen.list_outputs(screen)
+                for output in outputs:
+                    max_backlight = max_backlight + CinnamonDesktop.GnomeRROutput.gnome_rr_output_get_backlight_max(output)
+            except Exception, detail:
+                print "Failed to query backlight information in cs_power module"
 
-            cheat_box.pack_start(GSettingsCheckButton(_("Dim screen to save power"), "org.cinnamon.settings-daemon.plugins.power", "idle-dim-battery", None), False, False, 2)
-            cheat_box.pack_start(GSettingsIntComboBox(_("Idle brightness"), "org.cinnamon.settings-daemon.plugins.power", "idle-brightness", "org.cinnamon.settings-daemon.plugins.power/idle-dim-battery", IDLE_BRIGHTNESS_OPTIONS), False, False, 2)
-            cheat_box.pack_start(GSettingsIntComboBox(_("Idle delay"), "org.cinnamon.settings-daemon.plugins.power", "idle-dim-time", "org.cinnamon.settings-daemon.plugins.power/idle-dim-battery", IDLE_DELAY_OPTIONS), False, False, 2)
-        
+            if max_backlight > 0:
+                cheat_box.pack_start(GSettingsCheckButton(_("Dim screen to save power"), "org.cinnamon.settings-daemon.plugins.power", "idle-dim-battery", None), False, False, 2)
+                cheat_box.pack_start(GSettingsIntComboBox(_("Idle brightness"), "org.cinnamon.settings-daemon.plugins.power", "idle-brightness", "org.cinnamon.settings-daemon.plugins.power/idle-dim-battery", IDLE_BRIGHTNESS_OPTIONS), False, False, 2)
+                cheat_box.pack_start(GSettingsIntComboBox(_("Idle delay"), "org.cinnamon.settings-daemon.plugins.power", "idle-dim-time", "org.cinnamon.settings-daemon.plugins.power/idle-dim-battery", IDLE_DELAY_OPTIONS), False, False, 2)
+    
