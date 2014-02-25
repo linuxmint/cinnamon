@@ -35,7 +35,7 @@ class Module:
     def __init__(self, content_box):
         keywords = _("power, suspend, hibernate, laptop, desktop, brightness, screensaver")
         advanced = False
-        sidePage = SidePage(_("Power Management"), "power.svg", keywords, advanced, content_box)
+        sidePage = SidePage(_("Power Management"), "power.svg", keywords, advanced, content_box, is_c_mod=True)
         self.sidePage = sidePage
         self.name = "power"
         self.category = "hardware"
@@ -90,7 +90,6 @@ class Module:
 
                 widget.set_tooltip_text(_("Sets the brightness level of the screen"))
                 vbox.pack_start(widget, False, False, 0)
-                widget.set_no_show_all(True)
                 widget.show()
             
                 box = Gtk.HBox()
@@ -113,5 +112,6 @@ class Module:
                 box.pack_start(widget, False, False, 0)
 
                 vbox.pack_start(box, False, False, 0)
+                frame.show_all()
 
                 
