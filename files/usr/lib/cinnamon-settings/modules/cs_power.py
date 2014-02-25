@@ -80,9 +80,9 @@ class Module:
                 screen = CinnamonDesktop.RRScreen.new(Gdk.Screen.get_default())
                 outputs = CinnamonDesktop.RRScreen.list_outputs(screen)
                 for output in outputs:
-                    max_backlight = max_backlight + CinnamonDesktop.GnomeRROutput.gnome_rr_output_get_backlight_max(output)
+                    max_backlight = max_backlight + CinnamonDesktop.RROutput.get_backlight_max(output)
             except Exception, detail:
-                print "Failed to query backlight information in cs_power module"
+                print "Failed to query backlight information in cs_power module: %s" % detail
 
             if max_backlight > 0:
                 cheat_box.pack_start(GSettingsCheckButton(_("Dim screen to save power"), "org.cinnamon.settings-daemon.plugins.power", "idle-dim-battery", None), False, False, 2)
