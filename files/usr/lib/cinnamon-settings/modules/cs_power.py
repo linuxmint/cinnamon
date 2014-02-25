@@ -15,7 +15,6 @@ POWER_BUTTON_OPTIONS = [
 ]
 
 IDLE_BRIGHTNESS_OPTIONS = [
-    (0, _("0%")),
     (5, _("5%")),
     (10, _("10%")),
     (30, _("30%")),
@@ -41,51 +40,78 @@ class Module:
         self.name = "power"
         self.category = "hardware"
         self.comment = _("Manage power settings")
-        
-        frame_label = Gtk.Label()
-        frame_label.set_markup("<b>%s</b>" % _("Power options"))
-        frame = Gtk.Frame()
-        frame.set_label_widget(frame_label)
-        frame.set_shadow_type(Gtk.ShadowType.NONE)
-        vbox = Gtk.VBox()
-        frame.add(vbox) 
-        
 
         try:
             widget = content_box.c_manager.get_c_widget("power")
         except:
             widget = None
 
-        if widget is not None:
-            vbox.pack_start(widget, False, False, 2)
-            vbox.set_vexpand(False)           
+        if widget is not None:  
             widget.set_no_show_all(True)
             widget.show()
-            self.sidePage.add_widget(frame)
+            self.sidePage.add_widget(widget)
 
         try:
             widget = content_box.c_manager.get_c_widget("screen")
         except:
             widget = None
         if widget is not None:
-            cheat_box = Gtk.Box.new(Gtk.Orientation.VERTICAL, 2)
-            cheat_box.pack_start(widget, False, False, 2)
-            cheat_box.set_vexpand(False)
-            widget.set_no_show_all(True)
-            widget.show()
-            self.sidePage.add_widget(cheat_box)
-    
-            max_backlight = 0
+            primary_output = None
             try:              
                 screen = CinnamonDesktop.RRScreen.new(Gdk.Screen.get_default())
                 outputs = CinnamonDesktop.RRScreen.list_outputs(screen)
                 for output in outputs:
-                    max_backlight = max_backlight + CinnamonDesktop.RROutput.get_backlight_max(output)
+                    if (output.is_connected() and output_is_laptop() and output_get_backlight_min() >= 0 and output_get_backlight_max() > 0):
+                        primary_output = output
+                        break
             except Exception, detail:
                 print "Failed to query backlight information in cs_power module: %s" % detail
 
-            if max_backlight > 0:
-                cheat_box.pack_start(GSettingsCheckButton(_("Dim screen to save power"), "org.cinnamon.settings-daemon.plugins.power", "idle-dim-battery", None), False, False, 2)
-                cheat_box.pack_start(GSettingsIntComboBox(_("Idle brightness"), "org.cinnamon.settings-daemon.plugins.power", "idle-brightness", "org.cinnamon.settings-daemon.plugins.power/idle-dim-battery", IDLE_BRIGHTNESS_OPTIONS), False, False, 2)
-                cheat_box.pack_start(GSettingsIntComboBox(_("Idle delay"), "org.cinnamon.settings-daemon.plugins.power", "idle-dim-time", "org.cinnamon.settings-daemon.plugins.power/idle-dim-battery", IDLE_DELAY_OPTIONS), False, False, 2)
-    
+            if output is not None:
+                frame_label = Gtk.Label()
+                frame_label.set_markup("<b>%s</b>" % _("Screen Brightness"))
+                frame = Gtk.Frame()
+                frame.set_label_widget(frame_label)
+                frame.set_shadow_type(Gtk.ShadowType.NONE)
+                frame.set_border_width(6)
+
+                vbox = Gtk.VBox()
+                vbox.set_spacing(8)
+                vbox.set_margin_top(6)
+                vbox.set_margin_left(53)
+                vbox.set_margin_right(60)
+
+                alignment = Gtk.Alignment()
+                alignment.set_margin_left(12)
+
+                alignment.add(vbox)
+                frame.add(alignment)
+                self.sidePage.add_widget(frame, False)
+
+                widget.set_tooltip_text(_("Sets the brightness level of the screen"))
+                vbox.pack_start(widget, False, False, 0)
+                widget.set_no_show_all(True)
+                widget.show()
+            
+                box = Gtk.HBox()
+                box.set_spacing(6)
+
+                widget = GSettingsCheckButton(_("On battery, dim screen to"), "org.cinnamon.settings-daemon.plugins.power", "idle-dim-battery", None)
+                widget.set_tooltip_text(_("Save battery power by reducing the brightness of the screen when inactive"))
+                box.pack_start(widget, False, False, 0)
+
+                widget = GSettingsIntComboBox("", "org.cinnamon.settings-daemon.plugins.power", "idle-brightness", "org.cinnamon.settings-daemon.plugins.power/idle-dim-battery", IDLE_BRIGHTNESS_OPTIONS)
+                widget.set_tooltip_text(_("Save battery power by reducing the brightness of the screen when inactive"))
+                box.pack_start(widget, False, False, 0)
+
+                widget = Gtk.Label(_("after"))
+                widget.set_tooltip_text(_("Save battery power by reducing the brightness of the screen when inactive"))
+                box.pack_start(widget, False, False, 0)
+
+                widget = GSettingsIntComboBox("", "org.cinnamon.settings-daemon.plugins.power", "idle-dim-time", "org.cinnamon.settings-daemon.plugins.power/idle-dim-battery", IDLE_DELAY_OPTIONS)
+                widget.set_tooltip_text(_("Save battery power by reducing the brightness of the screen when inactive"))
+                box.pack_start(widget, False, False, 0)
+
+                vbox.pack_start(box, False, False, 0)
+
+                
