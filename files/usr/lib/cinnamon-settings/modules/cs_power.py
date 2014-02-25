@@ -50,24 +50,24 @@ class Module:
             widget.set_no_show_all(True)
             widget.show()
             self.sidePage.add_widget(widget)
+        
+        primary_output = None
+        try:              
+            screen = CinnamonDesktop.RRScreen.new(Gdk.Screen.get_default())
+            outputs = CinnamonDesktop.RRScreen.list_outputs(screen)
+            for output in outputs:
+                if (output.is_connected() and output.is_laptop() and output.get_backlight_min() >= 0 and output.get_backlight_max() > 0):
+                    primary_output = output
+                    break
+        except Exception, detail:
+            print "Failed to query backlight information in cs_power module: %s" % detail
 
-        try:
-            widget = content_box.c_manager.get_c_widget("screen")
-        except:
-            widget = None
-        if widget is not None:
-            primary_output = None
-            try:              
-                screen = CinnamonDesktop.RRScreen.new(Gdk.Screen.get_default())
-                outputs = CinnamonDesktop.RRScreen.list_outputs(screen)
-                for output in outputs:
-                    if (output.is_connected() and output_is_laptop() and output_get_backlight_min() >= 0 and output_get_backlight_max() > 0):
-                        primary_output = output
-                        break
-            except Exception, detail:
-                print "Failed to query backlight information in cs_power module: %s" % detail
-
-            if output is not None:
+        if primary_output is not None:
+            try:
+                widget = content_box.c_manager.get_c_widget("screen")
+            except:
+                widget = None
+            if widget is not None:
                 frame_label = Gtk.Label()
                 frame_label.set_markup("<b>%s</b>" % _("Screen Brightness"))
                 frame = Gtk.Frame()
