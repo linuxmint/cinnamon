@@ -13,6 +13,7 @@ class Module:
         self.sidePage = sidePage
         self.name = "windows"
         self.category = "prefs"
+        self.comment = _("Manage window preferences")
 
         alttab_styles = [["icons", _("Icons only")],["icons+thumbnails", _("Icons and thumbnails")],["icons+preview", _("Icons and window preview")],["preview", _("Window preview (no icons)")],["coverflow", _("Coverflow (3D)")],["timeline", _("Timeline (3D)")]]
         alttab_styles_combo = self._make_combo_group(_("Alt-Tab switcher style"), "org.cinnamon", "alttab-switcher-style", alttab_styles)
