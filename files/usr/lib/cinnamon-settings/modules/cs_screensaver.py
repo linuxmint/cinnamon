@@ -38,11 +38,11 @@ class Module:
 
         hbox = Gtk.HBox()
 
-        widget = GSettingsCheckButton(_("Lock the session when the screen goes to sleep"), "org.cinnamon.desktop.screensaver", "lock-enabled", None)
-        widget.set_tooltip_text(_("Enable this option to require a password when waking up the screen"))
+        widget = GSettingsCheckButton(_("Lock the session when Cinnamon starts the screensaver"), "org.cinnamon.desktop.screensaver", "lock-enabled", None)
+        widget.set_tooltip_text(_("Enable this option to require a password when the screen turns itself off, or when Cinnamon calls the screensaver after a period of inactivity"))
         hbox.pack_start (widget, False, False, 0)
         widget = GSettingsIntComboBox(_(""), "org.cinnamon.desktop.screensaver", "lock-delay", "org.cinnamon.desktop.screensaver/lock-enabled", LOCK_DELAY_OPTIONS, use_uint=True)
-        widget.set_tooltip_text(_("This option defines the amount of time to wait before locking the screen, after the screen turns itself off"))
+        widget.set_tooltip_text(_("This option defines the amount of time to wait before locking the screen, after showing the screensaver or after turning off the screen"))
         hbox.pack_start (widget, False, False, 6) 
         table.attach(hbox, 1, 2, 1, 2, xoptions=Gtk.AttachOptions.EXPAND|Gtk.AttachOptions.FILL)        
         
