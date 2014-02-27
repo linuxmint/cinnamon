@@ -5,6 +5,7 @@ from SettingsWidgets import *
 
 LOCK_DELAY_OPTIONS = [
     (0, _("Immediately")),
+    (15, _("After 15 seconds")),
     (30, _("After 30 seconds")),
     (60, _("After 1 minute")),
     (120, _("After 2 minutes")),
@@ -24,45 +25,52 @@ class Module:
         self.name = "screensaver"
         self.category = "prefs"
         self.comment = _("Manage screen lock settings")
-
-        table = Gtk.Table(3, 2)
-        table.set_row_spacings(8)
-        table.set_col_spacings(15)        
-        self.sidePage.add_widget(table, False)
         
-        label = Gtk.Label()
-        label.set_markup("<b>%s</b>" % _("Activation"))
-        label.set_alignment(1, 0.5)
-        table.attach(label, 0, 1, 0, 1)        
-                   
-
+        #Label Bold
         hbox = Gtk.HBox()
-
-        widget = GSettingsCheckButton(_("Lock the session when Cinnamon starts the screensaver"), "org.cinnamon.desktop.screensaver", "lock-enabled", None)
-        widget.set_tooltip_text(_("Enable this option to require a password when the screen turns itself off, or when Cinnamon calls the screensaver after a period of inactivity"))
-        hbox.pack_start (widget, False, False, 0)
+        label = Gtk.Label()
+        label.set_markup("<b>%s</b>" % _("Lock Settings"))
+        label.set_alignment(0, 0.5)
+        hbox.pack_start(label, False, False, 0)
+        self.sidePage.add_widget(hbox, False)
+               
+        #Label
+        Ibox = IndentedHBox()
+        widget = GSettingsCheckButton(_("Lock the computer when put to sleep"), "org.cinnamon.settings-daemon.plugins.power", "lock-on-suspend", None)
+        widget.set_tooltip_text(_("Enable this option to require a password when the computer wakes up from suspend"))
+        Ibox.add(widget)
+        self.sidePage.add_widget(Ibox, False)
+        #Label
+        Ibox = IndentedHBox()
+        widget = GSettingsCheckButton(_("Lock the computer when the screen turns off"), "org.cinnamon.desktop.screensaver", "lock-enabled", None)
+        widget.set_tooltip_text(_("Enable this option to require a password when the screen turns itself off, or when the screensaver activates after a period of inactivity"))
+        #ComboBox
+        Ibox.add(widget)
         widget = GSettingsIntComboBox("", "org.cinnamon.desktop.screensaver", "lock-delay", "org.cinnamon.desktop.screensaver/lock-enabled", LOCK_DELAY_OPTIONS, use_uint=True)
         widget.set_tooltip_text(_("This option defines the amount of time to wait before locking the screen, after showing the screensaver or after turning off the screen"))
-        hbox.pack_start (widget, False, False, 6) 
-        table.attach(hbox, 1, 2, 1, 2, xoptions=Gtk.AttachOptions.EXPAND|Gtk.AttachOptions.FILL)        
+        Ibox.add(widget)
+        self.sidePage.add_widget(Ibox, False)
         
-        widget = GSettingsCheckButton(_("Lock the session when the computer suspends"), "org.cinnamon.settings-daemon.plugins.power", "lock-on-suspend", None)
-        widget.set_tooltip_text(_("Enable this option to require a password when the computer wakes up from suspend"))
-        table.attach(widget, 1, 2, 3, 4, xoptions=Gtk.AttachOptions.EXPAND|Gtk.AttachOptions.FILL)
-               
+        #Label Bold
+        hbox = Gtk.HBox()
         label = Gtk.Label()
         label.set_markup("<b>%s</b>" % _("Away Message"))
-        label.set_alignment(1, 0.5)
-        table.attach(label, 0, 1, 4, 5)
+        label.set_alignment(0, 0.5)
+        hbox.pack_start(label, False, False, 0)
+        self.sidePage.add_widget(hbox, False)
 
-        widget = GSettingsEntry(_("Show this message when the screen is locked :"), "org.cinnamon.screensaver", "default-message", None)
+        #Entry
+        Ibox = IndentedHBox()
+        widget = GSettingsEntry(_("Show this message when the screen is locked: "), "org.cinnamon.screensaver", "default-message", None)
         widget.set_tooltip_text(_("This is the default message displayed on your lock screen"))
-        table.attach(widget, 1, 2, 5, 6, xoptions=Gtk.AttachOptions.EXPAND|Gtk.AttachOptions.FILL)
+        Ibox.add(widget)
+        self.sidePage.add_widget(Ibox, False)
         
+        #Label
+        Ibox = IndentedHBox()
         widget = GSettingsCheckButton(_("Ask for a custom message when locking the screen from the menu"), "org.cinnamon.screensaver", "ask-for-away-message", None)
-        widget.set_tooltip_text(_("This option allows you to type a message each time you lock the screen from the menu"))        
-        table.attach(widget, 1, 2, 6, 7, xoptions=Gtk.AttachOptions.EXPAND|Gtk.AttachOptions.FILL)
-
-        
+        widget.set_tooltip_text(_("This option allows you to type a message each time you lock the screen from the menu"))
+        Ibox.add(widget)
+        self.sidePage.add_widget(Ibox, False)
 
         
