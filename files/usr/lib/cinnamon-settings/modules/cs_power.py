@@ -35,7 +35,7 @@ class Module:
     def __init__(self, content_box):
         keywords = _("power, suspend, hibernate, laptop, desktop, brightness, screensaver")
         advanced = False
-        sidePage = SidePage(_("Power Management"), "power.svg", keywords, advanced, content_box, is_c_mod=True)
+        sidePage = SidePage(_("Power Management"), "cs-power", keywords, advanced, content_box, is_c_mod=True)
         self.sidePage = sidePage
         self.name = "power"
         self.category = "hardware"
