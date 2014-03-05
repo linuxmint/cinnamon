@@ -47,10 +47,6 @@ function init() {
     appletsLoaded = true;
     
     global.settings.connect('changed::enabled-applets', onEnabledAppletsChanged);
-    
-    if (!foundAtLeastOneApplet) {
-        global.settings.reset('enabled-applets');
-    }
 }
 
 // Callback for extension.js
