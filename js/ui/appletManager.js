@@ -35,14 +35,12 @@ function init() {
     appletMeta = Extension.meta;
     applets = Extension.importObjects;
 
-    let foundAtLeastOneApplet = false;
     appletsLoaded = false;
     
     // Load all applet extensions, the applets themselves will be added in finishExtensionLoad
     enabledAppletDefinitions = getEnabledAppletDefinitions();
     for (let uuid in enabledAppletDefinitions.uuidMap) {
         Extension.loadExtension(uuid, Extension.Type.APPLET);
-        foundAtLeastOneApplet = true;
     }
     appletsLoaded = true;
     
