@@ -7,6 +7,7 @@ const Signals = imports.signals;
 const Search = imports.ui.search;
 const Desktop = imports.gi.CinnamonDesktop;
 const Gio = imports.gi.Gio;
+const GLib = imports.gi.GLib;
 
 const THUMBNAIL_ICON_MARGIN = 2;
 
@@ -30,13 +31,16 @@ DocInfo.prototype = {
     },
 
     _fetch_mtime : function() {
-        let file = Gio.file_new_for_uri(this.uri);
-        let file_info = file.query_info(Gio.FILE_ATTRIBUTE_TIME_MODIFIED, Gio.FileQueryInfoFlags.NONE, null);
-        let timeval = 0;
-        if (file_info) {
-            timeval = file_info.get_attribute_uint64(Gio.FILE_ATTRIBUTE_TIME_MODIFIED);
+        let ret = -1;
+        if (GLib.str_has_prefix(this.uri, "file://")) {
+            let file = Gio.file_new_for_uri(this.uri);
+            let file_info = file.query_info(Gio.FILE_ATTRIBUTE_TIME_MODIFIED, Gio.FileQueryInfoFlags.NONE, null);
+            if (file_info) {
+                ret = file_info.get_attribute_uint64(Gio.FILE_ATTRIBUTE_TIME_MODIFIED);
+            }
         }
-        return timeval;
+
+        return ret;
     },
 
     createIcon : function(size) {
