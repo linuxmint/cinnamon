@@ -480,7 +480,7 @@ PanelContextMenu.prototype = {
         let applet_settings_item = new SettingsLauncher(_("Add applets to the panel"), "applets", "list-add", this);
         this.addMenuItem(applet_settings_item);
 
-        let menuItem = new SettingsLauncher(_("Panel settings"), "panel", "content-loading", this);
+        let menuItem = new SettingsLauncher(_("Panel settings"), "panel", "emblem-system", this);
         this.addMenuItem(menuItem);
 
         let menuItem = new SettingsLauncher(_("Themes"), "themes", "applications-graphics", this);
