@@ -145,6 +145,10 @@ MyApplet.prototype = {
         this._periodicTimeoutId = Mainloop.timeout_add_seconds(1, Lang.bind(this, this._updateClockAndDatePeriodic));
     },
     
+    _launch_time: function() {
+        Util.spawnCommandLine("cinnamon-settings calendar");
+    },
+    
     on_applet_removed_from_panel: function() {
         if (this._periodicTimeoutId){
             Mainloop.source_remove(this._periodicTimeoutId);

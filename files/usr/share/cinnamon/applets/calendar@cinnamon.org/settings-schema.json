@@ -26,5 +26,12 @@
     "dependency" : "use-custom-format",
     "callback" : "on_custom_format_button_pressed",
     "tooltip" : "Click this button to know more about the syntax for date formats."
+ },
+  "date-time-button" : {
+    "type" : "button",
+    "description" : "Date and Time Settings",
+    "indent": true,
+    "callback" : "_launch_time",
+    "tooltip" : "Press this button to change system date and time."
  }
 }
