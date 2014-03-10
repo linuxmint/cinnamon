@@ -50,7 +50,7 @@ class Module:
         sidePage.add_widget(GSettingsCheckButton(_("Attach dialog windows to their parent window's titlebar"), "org.cinnamon.muffin", "attach-modal-dialogs", None), True)
         sidePage.add_widget(GSettingsCheckButton(_("Enforce displaying the alt-tab switcher on the primary monitor instead of the active one"), "org.cinnamon", "alttab-switcher-enforce-primary-monitor", None), True)
         
-        sidePage.add_widget(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))
+        sidePage.add_widget(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL), True)
         
         sidePage.add_widget(GSettingsSpinButton(_("Window drag/resize threshold"), "org.cinnamon.muffin", "resize-threshold", None, 1, 100, 1, 1, _("Pixels")), True)
 
