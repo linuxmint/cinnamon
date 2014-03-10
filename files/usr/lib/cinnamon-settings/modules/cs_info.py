@@ -8,6 +8,9 @@ import os
 import re
 import threading
 
+PATH = "/usr/lib/cinnamon-settings/"
+CHAR_LIMIT = 50 #Used to prevent abuse ;)
+IMG_SIZE = 128
 
 def killProcess(process):
     process.kill()
@@ -52,6 +55,20 @@ def getDiskSize():
             disksize += float(line.split()[1])
             
     return disksize
+    
+def getVersion():
+    output = str(subprocess.Popen(["cinnamon", "--version"], stdout=subprocess.PIPE).communicate()[0]) # "str" prevents it from outputting results
+    output1 = output.replace("Cinnamon ", "") #Removes "Cinnamon" from the output
+    version = output1.replace("\n", "") #Removes creepy newline from terminal output
+    
+    return version
+    
+def getOemInfo():
+    inpt = open(PATH + '/data/oem/info.txt', 'r')
+    inpt1 = inpt.read(CHAR_LIMIT)
+    info = str(inpt1.replace("\n", "")) #Need to keep newlines off or they will screw with layout
+
+    return info
 
 def getProcInfos():
     infos = [
@@ -82,9 +99,13 @@ def createSystemInfos():
         title = commands.getoutput("awk -F \"=\" '/GRUB_TITLE/ {print $2}' /etc/linuxmint/info")
         infos.append((_("Operating System"), title))    
     else:
-        infos.append((_("Operating System"), dname + " " + dversion +  " '" + dsuffix.title() + "' (" + arch + ")"))    
-    if 'CINNAMON_VERSION' in os.environ:            
-        infos.append((_("Cinnamon Version"), os.environ['CINNAMON_VERSION']))
+        infos.append((_("Operating System"), dname + " " + dversion +  " '" + dsuffix.title() + "' (" + arch + ")"))
+    
+    if (os.path.exists(PATH + "/data/oem/info.txt") and not getOemInfo() == ""):
+        infos.append((_("OEM"), getOemInfo()))
+        
+    if os.path.exists("/usr/bin/cinnamon"):
+        infos.append((_("Cinnamon Version"), getVersion()))
     infos.append((_("Linux Kernel"), platform.release()))
     infos.append((_("Processor"), processorName))
     if memunit == "kB":
@@ -108,6 +129,16 @@ class Module:
         self.name = "info"
         self.category = "hardware"
         self.comment = _("Display system information")
+        
+        if os.path.exists(PATH + "/data/oem/oem.png"):
+            image = Gtk.Image()
+            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(PATH + "/data/oem/oem.png", IMG_SIZE, IMG_SIZE)
+            image.set_from_pixbuf(pixbuf)
+            sidePage.add_widget(image, False)
+        else:
+            image = Gtk.Image()
+            image.set_from_file(PATH + "/data/cinnamon.png")
+            sidePage.add_widget(image, False)
         
         infos = createSystemInfos()                        
         
