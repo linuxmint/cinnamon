@@ -62,7 +62,7 @@ MyApplet.prototype = {
             let icon = this.RecentManager._infosByTimestamp[id].createIcon(22);
             let menuItem = new MyPopupMenuItem(icon, this.RecentManager._infosByTimestamp[id].name, {});
             this.menu.addMenuItem(menuItem);
-            menuItem.connect('activate', Lang.bind(this, this._launchFile, this.RecentManager._infosByTimestamp[id].uri));
+            menuItem.connect('activate', Lang.bind(this, this._launchFile, this.RecentManager._infosByTimestamp[id]));
         }
         if (this.RecentManager._infosByTimestamp.length > 0) {
             this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
@@ -80,8 +80,8 @@ MyApplet.prototype = {
         this._display();
     },
 
-    _launchFile: function(a, b, c, d) {        
-        Gio.app_info_launch_default_for_uri(d, global.create_app_launch_context());
+    _launchFile: function(a, b, c, docinfo) {
+        docinfo.launch();
     },
     
     _clearAll: function() {

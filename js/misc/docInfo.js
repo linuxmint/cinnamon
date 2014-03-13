@@ -1,6 +1,7 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 
 const St = imports.gi.St;
+const Mainloop = imports.mainloop;
 const Cinnamon = imports.gi.Cinnamon;
 const Lang = imports.lang;
 const Signals = imports.signals;
@@ -8,6 +9,7 @@ const Search = imports.ui.search;
 const Desktop = imports.gi.CinnamonDesktop;
 const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
+const Main = imports.ui.main;
 
 const THUMBNAIL_ICON_MARGIN = 2;
 
@@ -34,10 +36,13 @@ DocInfo.prototype = {
         let ret = -1;
         if (GLib.str_has_prefix(this.uri, "file://")) {
             let file = Gio.file_new_for_uri(this.uri);
-            let file_info = file.query_info(Gio.FILE_ATTRIBUTE_TIME_MODIFIED, Gio.FileQueryInfoFlags.NONE, null);
-            if (file_info) {
-                ret = file_info.get_attribute_uint64(Gio.FILE_ATTRIBUTE_TIME_MODIFIED);
-            }
+            let file_info;
+            try {
+                file_info = file.query_info(Gio.FILE_ATTRIBUTE_TIME_MODIFIED, Gio.FileQueryInfoFlags.NONE, null);
+                if (file_info) {
+                    ret = file_info.get_attribute_uint64(Gio.FILE_ATTRIBUTE_TIME_MODIFIED);
+                }
+            } catch (e) {}
         }
 
         return ret;
@@ -56,8 +61,38 @@ DocInfo.prototype = {
         }
     },
 
-    launch : function(workspaceIndex) {
-        Cinnamon.DocSystem.get_default().open(this.recentInfo, workspaceIndex);
+    _realLaunch : function() {
+        Gio.app_info_launch_default_for_uri(this.uri, global.create_app_launch_context());
+    },
+
+    _onMountCallback: function (file, result, data) {
+        try {
+            this._realLaunch();
+        } catch (e) {
+            let q = GLib.quark_from_static_string("g-vfs-error-quark");
+            if (e.domain == q) {/* gvfs cache invalid - not sure why... retry succeeds */
+                this._realLaunch();
+            } else {
+                Main.notify(_("Problem opening file"),
+                            _("There was a problem opening the selected file.") +
+                            _("  Please check to see if you have the proper permissions to access this resource,") +
+                            _(" or try manually mounting the file's enclosing volume.\n\n") +
+                            _("The file uri is: " + file.get_uri()));
+                global.logError("docInfo.js: Failed to mount:  " + file.get_uri());
+                global.logError("............Error domain is:  " + GLib.quark_to_string(e.domain));
+                global.logError("............Error code is:    " + e.code);
+                global.logError("............Error Message is: " + e.message);
+            }
+        }
+    },
+
+    launch : function() {
+        if (this.mtime == -1) {
+            let file = Gio.File.new_for_uri(this.uri);
+            file.mount_enclosing_volume(0, null, null, Lang.bind(this, this._onMountCallback), null);
+        } else {
+            this._realLaunch();
+        }
     },
 
     matchTerms: function(terms) {

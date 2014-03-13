@@ -449,13 +449,13 @@ RecentButton.prototype = {
 
     _onButtonReleaseEvent: function (actor, event) {
         if (event.get_button()==1){
-            Gio.app_info_launch_default_for_uri(this.file.uri, global.create_app_launch_context());
+            this.file.launch();
             this.appsMenuButton.menu.close();
         }
     },
 
     activate: function(event) {
-        Gio.app_info_launch_default_for_uri(this.file.uri, global.create_app_launch_context());
+        this.file.launch();
         this.appsMenuButton.menu.close();
     }
 };
