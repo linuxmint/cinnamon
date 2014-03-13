@@ -12,6 +12,18 @@ class Module:
         self.name = "effects"
         self.category = "appear"
         self.comment = _("Control Cinnamon visual effects.")
+        
+        #Main Header Text
+        title = Gtk.Label()
+        title.set_markup("<span font_desc='10.5'><b>%s</b></span>" %(self.comment))
+        sidePage.add_widget(title)
+        
+        #Some info about the settings
+        info = Gtk.Label(_("These settings control how windows behave in certain situations."))
+        sidePage.add_widget(info)
+        
+        sidePage.add_widget(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))
+        
         sidePage.add_widget(GSettingsCheckButton(_("Enable desktop effects"), "org.cinnamon", "desktop-effects", None))
 
         box = IndentedHBox()
