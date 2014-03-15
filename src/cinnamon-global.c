@@ -1010,7 +1010,7 @@ update_scale_factor (GtkSettings *settings,
   }
 
    /* Make sure clutter and gdk scaling stays disabled
-   /* window-scaling-factor doesn't exist yet in clutter < 1.18, but it's a harmless warning
+    * window-scaling-factor doesn't exist yet in clutter < 1.18, but it's a harmless warning
     * and lets those that can, take advantage of it */
   g_object_set (clutter_settings_get_default (), "window-scaling-factor", 1, NULL);
   gdk_x11_display_set_window_scale (gdk_display_get_default (), 1);
