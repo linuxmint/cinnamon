@@ -988,7 +988,9 @@ gnome_cinnamon_gdk_event_handler (GdkEvent *event_gdk,
 }
 
 static void
-update_scale_factor (GdkScreen *screen, gpointer data)
+update_scale_factor (GtkSettings *settings,
+                     GParamSpec *pspec,
+                     gpointer data)
 {
   gint scale;
   CinnamonGlobal *global = CINNAMON_GLOBAL (data);
@@ -997,14 +999,21 @@ update_scale_factor (GdkScreen *screen, gpointer data)
   GValue value = G_VALUE_INIT;
 
   g_value_init (&value, G_TYPE_INT);
-  gdk_screen_get_setting (global->gdk_screen, "gdk-window-scaling-factor", &value);
-  scale = g_value_get_int (&value);
-  g_object_set (context, "scale-factor", scale, NULL);
+  if (gdk_screen_get_setting (global->gdk_screen, "gdk-window-scaling-factor", &value)) {
+    scale = g_value_get_int (&value);
+    g_object_set (context, "scale-factor", scale, NULL);
 
-  if (scale != global->ui_scale) {
-    global->ui_scale = scale;
-    g_signal_emit_by_name (global, "scale-changed");
+    if (scale != global->ui_scale) {
+        global->ui_scale = scale;
+        g_signal_emit_by_name (global, "scale-changed");
+    }
   }
+
+   /* Make sure clutter and gdk scaling stays disabled
+   /* window-scaling-factor doesn't exist yet in clutter < 1.18, but it's a harmless warning
+    * and lets those that can, take advantage of it */
+  g_object_set (clutter_settings_get_default (), "window-scaling-factor", 1, NULL);
+  gdk_x11_display_set_window_scale (gdk_display_get_default (), 1);
 }
 
 void
@@ -1054,14 +1063,14 @@ _cinnamon_global_set_plugin (CinnamonGlobal *global,
 
   cinnamon_fonts_init (global->stage);
 
-  g_signal_connect_swapped (global->gdk_screen, "monitors-changed",
-                            G_CALLBACK (update_scale_factor), global);
+  g_signal_connect (gtk_settings_get_default (), "notify::gtk-xft-dpi",
+                    G_CALLBACK (update_scale_factor), global);
 
   gdk_event_handler_set (gnome_cinnamon_gdk_event_handler, global->stage, NULL);
 
   global->focus_manager = st_focus_manager_get_for_stage (global->stage);
 
-  update_scale_factor (global->gdk_screen, global);
+  update_scale_factor (gtk_settings_get_default (), NULL, global);
 }
 
 GjsContext *
