@@ -74,7 +74,7 @@ class ColumnBox(Gtk.VBox):
         label.set_alignment(0.5, 0.5)
         
         self.set_homogeneous(False)
-        self.pack_start(label, False, False, 0)
+        self.pack_start(label, False, False, 6)
         self.pack_end(content, True, True, 0)
 
 class ButtonTable(Gtk.Table):
@@ -232,7 +232,7 @@ class OtherTypeDialog(Gtk.Dialog):
         table.addRow(_("_Type:"), self.type_combo)
         self.table = table
         
-        self.vbox.pack_start(ColumnBox(_("Select how other media should be handled"), table), True, True, 2)
+        self.vbox.pack_start(ColumnBox(_("Select how other media should be handled"), table), True, True, 6)
         
         self.vbox.show()
 
@@ -317,7 +317,7 @@ class Module:
 
 class DefaultSidepage (SidePage):
     def __init__(self, name, icon, keywords, advanced, content_box):
-        SidePage.__init__(self, name, icon, keywords, advanced, content_box, 325)
+        SidePage.__init__(self, name, icon, keywords, advanced, content_box, 330)
         self.tabs = []
         self.notebook = Gtk.Notebook()
         self.viewbox1 = Gtk.VBox()
@@ -381,7 +381,8 @@ class DefaultSidepage (SidePage):
         self.other_type_dialog = OtherTypeDialog(self.media_settings)
         
         hbox = Gtk.VBox()
-        hboxToggle = Gtk.VBox()
+        hbox.set_border_width(6)
+        hboxToggle = Gtk.VBox()        
         hbox.add(hboxToggle)
 
         table = ButtonTable(len(removable_media_defs)+1)
@@ -395,7 +396,7 @@ class DefaultSidepage (SidePage):
         table.addRow(None, more)
 
         never = Gtk.CheckButton.new_with_mnemonic(_("_Never prompt or start programs on media insertion"))
-        hboxToggle.pack_start(never, False, False, 2)
+        hbox.pack_start(never, False, False, 2)
         self.media_settings.bind(PREF_MEDIA_AUTORUN_NEVER, never, "active", Gio.SettingsBindFlags.DEFAULT)
         self.media_settings.bind(PREF_MEDIA_AUTORUN_NEVER, hboxToggle, "sensitive", Gio.SettingsBindFlags.INVERT_BOOLEAN)
 
