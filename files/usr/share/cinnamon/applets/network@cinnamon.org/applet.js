@@ -1675,7 +1675,7 @@ MyApplet.prototype = {
             this.menu.addMenuItem(this._devices.vpn.section);
             this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
             this.menu.addSettingsAction(_("Network Settings"), 'network');
-            this.menu.addAction(_("Advanced Network Settings"), Lang.bind(this, function() {
+            this.menu.addAction(_("Network Connections"), Lang.bind(this, function() {
 				Util.spawnCommandLine("nm-connection-editor");
             }));
 

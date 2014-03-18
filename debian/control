@@ -84,7 +84,8 @@ Depends: ${gir:Depends},
          gkbd-capplet,
          python-pyinotify,
          metacity,
-         gnome-panel | tint2
+         gnome-panel | tint2,
+         network-manager-gnome
 Recommends: gnome-themes-standard, gnome-terminal, nemo, cinnamon-screensaver, gnome-session-bin, gir1.2-cjsdbus-1.0, cinnamon-bluetooth
 Provides: notification-daemon, x-window-manager
 Description: Cinnamon desktop
