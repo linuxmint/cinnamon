@@ -955,12 +955,14 @@ class IconFileChooser(Gtk.HBox, BaseWidget):
         filename = dialog.get_preview_filename()
         dialog.set_preview_widget_active(False)
         if os.path.isfile(filename):
-            #TODO:(upstream?) stop glib error from false turncated gifs
-            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(filename, 128, 128)
+            pixbuf = GdkPixbuf.Pixbuf.new_from_file(filename)
             if pixbuf is not None:
+                if pixbuf.get_width() > 128:
+                    pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(filename, 128, -1)
+                elif pixbuf.get_height() > 128:
+                    pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(filename, -1, 128)
                 preview.set_from_pixbuf(pixbuf)
                 dialog.set_preview_widget_active(True)
-
 
 class Scale(Gtk.HBox, BaseWidget):
     def __init__(self, key, settings_obj, uuid):
