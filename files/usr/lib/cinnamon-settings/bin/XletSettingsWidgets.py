@@ -904,7 +904,7 @@ class IconFileChooser(Gtk.HBox, BaseWidget):
             self.preview.set_from_icon_name(val, Gtk.IconSize.BUTTON)
 
     def on_button_pressed(self, widget):
-        dialog = Gtk.FileChooserDialog(_("Pick a new icon file"),
+        dialog = Gtk.FileChooserDialog(_("Choose an Icon"),
                                            None,
                                            Gtk.FileChooserAction.OPEN,
                                            (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
@@ -914,6 +914,10 @@ class IconFileChooser(Gtk.HBox, BaseWidget):
         filter_text.set_name(_("Image files"))
         filter_text.add_mime_type("image/*")
         dialog.add_filter(filter_text)
+        
+        preview = Gtk.Image()
+        dialog.set_preview_widget(preview)
+        dialog.connect("update-preview", self.update_icon_preview_cb, preview)
 
         response = dialog.run()
 
@@ -945,6 +949,17 @@ class IconFileChooser(Gtk.HBox, BaseWidget):
     def update_dep_state(self, active):
         self.entry.set_sensitive(active)
         self.image_button.set_sensitive(active)
+        
+    #Updates the preview widget
+    def update_icon_preview_cb(self, dialog, preview):
+        filename = dialog.get_preview_filename()
+        dialog.set_preview_widget_active(False)
+        if os.path.isfile(filename):
+            #TODO:(upstream?) stop glib error from false turncated gifs
+            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(filename, 128, 128)
+            if pixbuf is not None:
+                preview.set_from_pixbuf(pixbuf)
+                dialog.set_preview_widget_active(True)
 
 
 class Scale(Gtk.HBox, BaseWidget):
