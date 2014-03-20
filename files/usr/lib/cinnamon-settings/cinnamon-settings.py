@@ -38,8 +38,11 @@ menuName = _("System Settings")
 menuComment = _("Control Center")
 NormalMode = _("Switch to Normal Mode")
 AdvancedMode = _("Switch to Advanced Mode")
+WindowTitle = _("System Settings")
+AdvancedTitle = _("(Advanced Mode)")
 
 ADVANCED_GSETTING = "cinnamon-settings-advanced"
+VIEW_MODE_GSETTING = "icon"; #TODO
 
 WIN_WIDTH = 800
 WIN_HEIGHT = 600
@@ -112,7 +115,10 @@ class MainWindow:
         if not sidePage.is_standalone:
             self.side_view_sw.hide()
             self.search_entry.hide()
-            self.window.set_title(sidePage.name)
+            if (self.advanced_mode):
+                self.window.set_title(sidePage.name + " " + AdvancedTitle)
+            else:
+                self.window.set_title(sidePage.name)
             sidePage.build(self.advanced_mode)
             self.content_box_sw.show()
             self.button_back.show()
@@ -169,6 +175,7 @@ class MainWindow:
         self.advanced_mode = self.force_advanced() or self.settings.get_boolean(ADVANCED_GSETTING)
         self.mode_button = self.builder.get_object("mode_button")
         self.mode_button.set_size_request(self.get_mode_size(), -1)
+        
         if self.advanced_mode:
             self.mode_button.set_label(NormalMode)
         else:
@@ -240,7 +247,10 @@ class MainWindow:
         self.displayCategories()
 
         # set up larger components.
-        self.window.set_title(_("System Settings"))
+        if (self.advanced_mode):
+            self.window.set_title(WindowTitle + " " + AdvancedTitle)
+        else:
+            self.window.set_title(WindowTitle)
         self.window.connect("destroy", self.quit)
         self.button_cancel.connect("clicked", self.quit)
         self.button_back.connect('clicked', self.back_to_icon_view)
@@ -528,7 +538,10 @@ class MainWindow:
             return True
 
     def back_to_icon_view(self, widget):
-        self.window.set_title(_("System Settings"))
+        if (self.advanced_mode):
+            self.window.set_title(WindowTitle + " " + AdvancedTitle)
+        else:
+            self.window.set_title(WindowTitle)
         self.window.resize(WIN_WIDTH, WIN_HEIGHT)
         self.content_box_sw.hide()
         children = self.content_box.get_children()
@@ -553,9 +566,11 @@ class MainWindow:
             self.on_advanced_mode()
         touch(os.path.join(GLib.get_user_config_dir(), ".cs_no_default"))
         return True
-
+    
     def on_advanced_mode(self):
         self.advanced_mode = True
+        self.window_title = self.window.get_title()
+        self.window.set_title(self.window_title + " " + AdvancedTitle)
         self.settings.set_boolean(ADVANCED_GSETTING, True)
         if self.current_sidepage is not None:
             self.current_sidepage.build(self.advanced_mode)
@@ -564,6 +579,8 @@ class MainWindow:
 
     def on_normal_mode(self):
         self.advanced_mode = False
+        self.window_title = self.window.get_title()
+        self.window.set_title(self.window_title.replace(" " + AdvancedTitle, ""))
         self.settings.set_boolean(ADVANCED_GSETTING, False)
         if self.current_sidepage is not None:
             self.current_sidepage.build(self.advanced_mode)
