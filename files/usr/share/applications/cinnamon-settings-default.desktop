@@ -1,6 +1,6 @@
 [Desktop Entry]
 Name=Preferred Applications
-Icon=/usr/lib/cinnamon-settings/data/icons/default-applications.svg
+Icon=cs-default-applications
 Exec=cinnamon-settings default
 Type=Application
 OnlyShowIn=X-Cinnamon;

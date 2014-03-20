@@ -1,7 +1,7 @@
 [Desktop Entry]
 Name=Backgrounds
 Comment=Change your desktop's background
-Icon=/usr/lib/cinnamon-settings/data/icons/backgrounds.svg
+Icon=cs-backgrounds
 Exec=cinnamon-settings backgrounds
 Type=Application
 OnlyShowIn=X-Cinnamon;

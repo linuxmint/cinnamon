@@ -1,7 +1,7 @@
 [Desktop Entry]
 Name=System Info
 Comment=Display system information
-Icon=/usr/lib/cinnamon-settings/data/icons/details.svg
+Icon=cs-details
 Exec=cinnamon-settings info
 Type=Application
 OnlyShowIn=X-Cinnamon;

@@ -1,7 +1,7 @@
 [Desktop Entry]
 Name=Extensions
 Comment=Manage your Cinnamon extensions
-Icon=/usr/lib/cinnamon-settings/data/icons/extensions.svg
+Icon=cs-extensions
 Exec=cinnamon-settings extensions
 Type=Application
 OnlyShowIn=X-Cinnamon;

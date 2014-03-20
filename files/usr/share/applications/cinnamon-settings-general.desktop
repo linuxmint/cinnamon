@@ -1,7 +1,7 @@
 [Desktop Entry]
 Name=General
 Comment=Miscellaneous Cinnamon preferences
-Icon=/usr/lib/cinnamon-settings/data/icons/general.svg
+Icon=cs-general
 Exec=cinnamon-settings general
 Type=Application
 OnlyShowIn=X-Cinnamon;

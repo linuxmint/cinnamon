@@ -1,7 +1,7 @@
 [Desktop Entry]
 Name=Keyboard
 Comment=Manage keyboard settings and shortcuts
-Icon=/usr/lib/cinnamon-settings/data/icons/keyboard.svg
+Icon=cs-keyboard
 Exec=cinnamon-settings keyboard
 Type=Application
 OnlyShowIn=X-Cinnamon;

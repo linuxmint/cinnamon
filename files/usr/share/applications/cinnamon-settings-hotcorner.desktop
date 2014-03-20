@@ -1,7 +1,7 @@
 [Desktop Entry]
 Name=Hot Corners
 Comment=Manage hotcorner settings
-Icon=/usr/lib/cinnamon-settings/data/icons/overview.svg
+Icon=cs-overview
 Exec=cinnamon-settings hotcorner
 Type=Application
 OnlyShowIn=X-Cinnamon;

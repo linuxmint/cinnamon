@@ -1,7 +1,7 @@
 [Desktop Entry]
 Name=Windows
 Comment=Manage window preferences
-Icon=/usr/lib/cinnamon-settings/data/icons/windows.svg
+Icon=cs-windows
 Exec=cinnamon-settings windows
 Type=Application
 OnlyShowIn=X-Cinnamon;
