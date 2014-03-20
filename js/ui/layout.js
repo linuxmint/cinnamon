@@ -490,6 +490,7 @@ Chrome.prototype = {
         // Need to update struts on new workspaces when they are added
         global.screen.connect('notify::n-workspaces',
                               Lang.bind(this, this._queueUpdateRegions));
+        global.display.connect('window-moved-resized', Lang.bind(this, this.updateRegions));
 
         this._screenSaverActive = false;
         this._screenSaverProxy = new ScreenSaver.ScreenSaverProxy();
@@ -912,14 +913,8 @@ Chrome.prototype = {
         let newRects = [];
         let rectSubtracted = false;
         for (let i = 0; i < top_windows.length; i++) {
-          let windowActor = top_windows[i];
-          let [x, y] = windowActor.get_position();
-          let [w, h] = windowActor.get_size();
-          x = Math.round(x);
-          y = Math.round(y);
-          w = Math.round(w);
-          h = Math.round(h);
-          let winRect = new Meta.Rectangle({x: x, y: y, width: w, height: h});
+          let metaWindow = top_windows[i].get_meta_window();
+          let winRect = metaWindow.get_input_rect();
           let subRects = [];
           for (let j = 0; j < rects.length; j++) {
             subRects = subRects.concat(Util.rectSubtract(rects[j], winRect));
