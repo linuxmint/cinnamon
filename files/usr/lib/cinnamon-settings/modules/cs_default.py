@@ -331,8 +331,8 @@ class DefaultSidepage (SidePage):
         media = Gtk.ScrolledWindow()
         media.add_with_viewport(self.viewbox2)
         
-        self.notebook.append_page(default, Gtk.Label(_("Preferred Applications")))
-        self.notebook.append_page(media, Gtk.Label(_("Removable Media")))
+        self.notebook.append_page(default, Gtk.Label.new(_("Preferred Applications")))
+        self.notebook.append_page(media, Gtk.Label.new(_("Removable Media")))
 
         widget1 = self.setupDefaultApps()
         widget2 = self.setupMedia()
