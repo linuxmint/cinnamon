@@ -104,6 +104,16 @@ CoglHandle    st_texture_cache_load_file_to_cogl_texture (StTextureCache *cache,
 cairo_surface_t *st_texture_cache_load_file_to_cairo_surface (StTextureCache *cache,
                                                               const gchar    *file_path);
 
+ClutterActor *st_texture_cache_load_from_raw (StTextureCache    *cache,
+                                              const guchar      *data,
+                                              gsize              len,
+                                              gboolean           has_alpha,
+                                              int                width,
+                                              int                height,
+                                              int                rowstride,
+                                              int                size,
+                                              GError           **error);
+
 /**
  * StTextureCacheLoader: (skip)
  * @cache: a #StTextureCache
