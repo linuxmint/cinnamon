@@ -907,20 +907,18 @@ Chrome.prototype = {
             }
         }
 
-        let enable_stage = true;
         let top_windows = global.top_window_group.get_children();
-        
-        let newRects = [];
+
+        let newRects = rects.slice(0);
         let rectSubtracted = false;
         for (let i = 0; i < top_windows.length; i++) {
-          let metaWindow = top_windows[i].get_meta_window();
-          let winRect = metaWindow.get_input_rect();
+          let winRect = top_windows[i].get_meta_window().get_input_rect();
           let subRects = [];
-          for (let j = 0; j < rects.length; j++) {
-            subRects = subRects.concat(Util.rectSubtract(rects[j], winRect));
+          for (let j = 0; j < newRects.length; j++) {
+            subRects = subRects.concat(Util.rectSubtract(newRects[j], winRect));
             rectSubtracted = true;
           }
-          newRects = newRects.concat(subRects);
+          newRects = subRects;
         }
         if (rectSubtracted) {
           rects = newRects;
