@@ -1112,7 +1112,10 @@ stepper_button_release_cb (ClutterActor       *actor,
   if (event->button != 1)
     return FALSE;
 
-  g_source_remove (self->priv->stepper_source_id);
+  if (self->priv->stepper_source_id) {
+    g_source_remove (self->priv->stepper_source_id);
+    self->priv->stepper_source_id = 0;
+  }
 
   return FALSE;
 }

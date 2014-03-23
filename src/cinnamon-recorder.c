@@ -304,8 +304,10 @@ cinnamon_recorder_finalize (GObject  *object)
       pipeline->recorder = NULL;
     }
 
-  if (recorder->update_memory_used_timeout)
+  if (recorder->update_memory_used_timeout) {
     g_source_remove (recorder->update_memory_used_timeout);
+    recorder->update_memory_used_timeout = 0;
+  }
 
   if (recorder->cursor_image)
     cairo_surface_destroy (recorder->cursor_image);

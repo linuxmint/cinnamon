@@ -134,8 +134,10 @@ cinnamon_recorder_src_finalize (GObject *object)
 {
   CinnamonRecorderSrc *src = CINNAMON_RECORDER_SRC (object);
 
-  if (src->memory_used_update_idle)
+  if (src->memory_used_update_idle) {
     g_source_remove (src->memory_used_update_idle);
+    src->memory_used_update_idle = 0;
+  }
 
   cinnamon_recorder_src_set_caps (src, NULL);
   g_async_queue_unref (src->queue);

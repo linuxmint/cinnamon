@@ -77,8 +77,10 @@ on_timeout (gpointer data)
 static void
 establish_timeout ()
 {
-  if (timeout_id != 0)
+  if (timeout_id != 0){
     g_source_remove (timeout_id);
+    timeout_id = 0;
+  }
 
   timeout_id = g_timeout_add (opt_idle_timeout * 1000, on_timeout, NULL);
 }

@@ -1855,8 +1855,10 @@ st_widget_start_tooltip_timeout (StWidget *widget)
   GtkSettings *settings = gtk_settings_get_default ();
   guint timeout;
 
-  if (priv->tooltip_timeout_id)
+  if (priv->tooltip_timeout_id) {
     g_source_remove (priv->tooltip_timeout_id);
+    priv->tooltip_timeout_id = 0;
+  }
 
   g_object_get (settings, "gtk-tooltip-timeout", &timeout, NULL);
   priv->tooltip_timeout_id = g_timeout_add (timeout, tooltip_timeout, widget);
