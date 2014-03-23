@@ -46,6 +46,7 @@ class HotCornerDisplay(Gtk.Label):
             (succ, color) = context.lookup_color(alternative)
         return color
         
+    #Renders button with corner visuals
     def expose(self, widget, cr):
         context = self.get_style_context()
         context.save()
@@ -115,9 +116,9 @@ class HotCornerConfigurtion():
         self.updateCallback = updateCallback
         self.index = index
         self.functionStore = Gtk.ListStore(str, str)
-        self.functionStore.append(['disabled', _("Disabled")])
-        self.functionStore.append(['expo', _("Expo")])
-        self.functionStore.append(['scale', _("Scale")])
+        #self.functionStore.append(['disabled', _("Disabled")])
+        self.functionStore.append(['expo', _("Workspace Selector")]) #Expo
+        self.functionStore.append(['scale', _("Window Selector")]) #Scale
         self.functionStore.append(['custom', _("Custom")])
         
     def build(self):
@@ -130,18 +131,22 @@ class HotCornerConfigurtion():
         self.functionCombo.add_attribute(rendererText, "text", 1)
         
         self.customEntry = Gtk.Entry()
-        self.iconCheckbox = Gtk.CheckButton.new_with_label(_("Icon visible"))
+        self.iconCheckbox = Gtk.CheckButton(_("Icon visible"))
+        self.hoverCheckbox = Gtk.CheckButton(_("Hover enabled"))
         
         self.box.pack_start(self.functionCombo, True, True, 0)
         self.box.pack_start(self.customEntry, True, True, 0)
         self.box.pack_start(self.iconCheckbox, True, True, 0)
+        self.box.pack_start(self.hoverCheckbox, True, True, 0)
         
         self.functionCombo.connect('changed', self.on_widget_changed)
         self.customEntry.connect('changed', self.on_widget_changed)
         self.iconCheckbox.connect('toggled', self.on_widget_changed)
+        self.hoverCheckbox.connect('toggled', self.on_widget_changed)
         
         self.functionCombo.show()
         self.iconCheckbox.show()
+        self.hoverCheckbox.show()
         self.customEntry.show()
         self.box.show()
         
@@ -155,26 +160,18 @@ class HotCornerConfigurtion():
         
         return alignment
     
-    def setValues(self, function, visible):
-        hideIconCheckbox = False
+    def setValues(self, function, visible, enabled):
         hideCustomEntry = True
-        if function == "disabled":
-            hideIconCheckbox = True
+        
+        if function == "expo":
             self.functionCombo.set_active(0)
-        elif function == "expo":
-            self.functionCombo.set_active(1)
         elif function == "scale":
-            self.functionCombo.set_active(2)
+            self.functionCombo.set_active(1)
         else:
             hideCustomEntry = False
-            self.functionCombo.set_active(3)
+            self.functionCombo.set_active(2)
             if self.customEntry.get_text() != function:
                 self.customEntry.set_text(function)
-                
-        if hideIconCheckbox:
-            self.iconCheckbox.hide()
-        else:
-            self.iconCheckbox.show()
             
         if hideCustomEntry:
             self.customEntry.hide()
@@ -183,17 +180,15 @@ class HotCornerConfigurtion():
             
         if self.iconCheckbox.get_active() != visible:
             self.iconCheckbox.set_active(visible)
+        if self.hoverCheckbox.get_active() != enabled:
+            self.hoverCheckbox.set_active(enabled)
         
     def on_widget_changed(self, widget):
         iter = self.functionCombo.get_active_iter()
         if iter != None:
             function = self.functionStore.get_value(iter, 0)
-            if function == 'disabled':
-                visible = False
-                self.iconCheckbox.hide()
-            else:
-                visible = self.iconCheckbox.get_active()
-                self.iconCheckbox.show()
+            visible = self.iconCheckbox.get_active()
+            enabled = self.hoverCheckbox.get_active()
                 
             if function != 'custom':
                 self.customEntry.hide()
@@ -201,7 +196,7 @@ class HotCornerConfigurtion():
                 self.customEntry.show()
                 function = self.customEntry.get_text()
             
-            self.updateCallback(self.index, function, visible)
+            self.updateCallback(self.index, function, visible, enabled)
         
     
 class HotCornerViewSidePage(SidePage):
@@ -232,14 +227,20 @@ class HotCornerViewSidePage(SidePage):
         for corner in self.corners:
             function = ""
             prop = self.properties[corner.index]
+            function = prop[0]
             enabled = prop[1] == "true"
             visible = prop[2] == "true"
-            if enabled:
-                function = prop[0]
+            isEnabled = False
+
+            if prop[1] == "true":
+                isEnabled = True
+            elif prop[2] == "true":
+                isEnabled = True
             else:
-                function = "disabled"
-            corner.setValues(function, visible)
-            self.cornerDisplay.setCornerEnabled(corner.index, enabled)
+                isEnabled = False
+
+            corner.setValues(function, visible, enabled)
+            self.cornerDisplay.setCornerEnabled(corner.index, isEnabled)
         self.cornerDisplay.queue_draw()
 
     def build(self, advanced):
@@ -267,23 +268,23 @@ class HotCornerViewSidePage(SidePage):
         self.content_box.show_all()
         self.on_settings_changed(self.settings, "overview-corner")
         
-    def onConfigChanged(self, index, function, visible):
-        self.cornerDisplay.setCornerEnabled(index, visible)
+    def onConfigChanged(self, index, function, visible, enabled):
         self.cornerDisplay.queue_draw()
         
         props = self.properties[index]
-        
-        if function == 'disabled':
-            props[0] = 'false'
-            props[1] = 'false'
-        else:
-            props[0] = function
+
+        props[0] = function
+    
+        if enabled:
             props[1] = 'true'
-        
+        else:
+            props[1] = 'false'
+
         if visible:
             props[2] = 'true'
         else:
             props[2] = 'false'
+
         self.write_settings()
 
     def write_settings(self):
