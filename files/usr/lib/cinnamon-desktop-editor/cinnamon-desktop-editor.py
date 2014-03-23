@@ -107,7 +107,7 @@ class IconPicker(object):
         else:
             theme = Gtk.IconTheme.get_default()
             icon_info = theme.lookup_icon(fn, 64, 0)
-            icon_info_fn = icon_info.get_filename()
+            icon_info_fn = icon_info.get_filename() if icon_info != None else None
             if icon_info_fn:
                 chooser.set_filename(icon_info_fn)
         filter = Gtk.FileFilter();
