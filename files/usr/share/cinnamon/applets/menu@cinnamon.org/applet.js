@@ -824,6 +824,7 @@ MyApplet.prototype = {
 
             this.settings.bindProperty(Settings.BindingDirection.IN, "menu-icon", "menuIcon", this._updateIconAndLabel, null);
             this.settings.bindProperty(Settings.BindingDirection.IN, "menu-label", "menuLabel", this._updateIconAndLabel, null);
+            Main.themeManager.connect("theme-set", Lang.bind(this, this._updateIconAndLabel));
             this._updateIconAndLabel();
 
             this._searchInactiveIcon = new St.Icon({ style_class: 'menu-search-entry-icon',
@@ -1007,10 +1008,13 @@ MyApplet.prototype = {
             if (this.menuIcon == "" ||
                 (GLib.path_is_absolute(this.menuIcon) && GLib.file_test(this.menuIcon, GLib.FileTest.EXISTS)))
                 this.set_applet_icon_path(this.menuIcon);
-            else if (this.menuIcon.search("-symbolic") != -1)
-                this.set_applet_icon_symbolic_name(this.menuIcon);
-            else
-                this.set_applet_icon_name(this.menuIcon);
+            else if (Gtk.IconTheme.get_default().has_icon(this.menuIcon)) {
+                if (this.menuIcon.search("-symbolic") != -1)
+                    this.set_applet_icon_symbolic_name(this.menuIcon);
+                else
+                    this.set_applet_icon_name(this.menuIcon);
+            }
+            else this.set_applet_icon_path(global.datadir + '/theme/menu.svg');
         } catch(e) {
            global.logWarning("Could not load icon file \""+this.menuIcon+"\" for menu button");
         }
