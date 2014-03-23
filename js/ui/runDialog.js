@@ -295,10 +295,14 @@ __proto__: ModalDialog.ModalDialog.prototype,
                     prefix = text.substr(text.lastIndexOf(' ') + 1);
                 let [postfix, completions] = this._getCompletion(prefix);
                 if (postfix != null && postfix.length > 0) {
-                    o.insert_text(postfix, -1);
-                    o.set_cursor_position(text.length + postfix.length);
-                    if (postfix[postfix.length - 1] == '/')
-                        this._getCompletion(text + postfix + 'a');
+                    if (o.get_text() == prefix + postfix) {
+                        o.set_selection(o.get_text().length, o.get_text().length);
+                    } else {
+                        o.insert_text(postfix, -1);
+                        o.set_cursor_position(text.length + postfix.length);
+                        if (postfix[postfix.length - 1] == '/')
+                            this._getCompletion(text + postfix + 'a');
+                    }
                 }
                 if (!postfix && completions.length > 0 && prefix.length > 2 &&
                     global.settings.get_boolean(SHOW_COMPLETIONS_KEY)) {
