@@ -43,7 +43,10 @@ MyApplet.prototype = {
     _init: function(metadata, orientation, panel_height, instance_id) {        
         Applet.TextIconApplet.prototype._init.call(this, orientation, panel_height, instance_id);
         
-        try {  
+        try {
+            this.metadata = metadata;
+            Main.systrayManager.registerRole("keyboard", metadata.uuid);
+
             Gtk.IconTheme.get_default().append_search_path(metadata.path + "/flags");                              
             this.menuManager = new PopupMenu.PopupMenuManager(this);
             this.menu = new Applet.AppletPopupMenu(this, orientation);
@@ -174,7 +177,11 @@ MyApplet.prototype = {
         }       
 
         this._selectedLayout = item;
-    }    
+    },
+
+    on_applet_removed_from_panel: function() {
+        Main.systrayManager.unregisterRole("keyboard", this.metadata.uuid);
+    }
 };
 
 function main(metadata, orientation, panel_height, instance_id) {  
