@@ -63,7 +63,7 @@ CONTROL_CENTER_MODULES = [
     [_("Networking"),                       "network",            "cs-network",                 "hardware",      False,          _("network, wireless, wifi, ethernet, broadband, internet")],
     [_("Display"),                          "display",            "cs-display",                 "hardware",      False,          _("display, screen, monitor, layout, resolution, dual, lcd")],
     [_("Bluetooth"),                        "bluetooth",          "cs-bluetooth",               "hardware",      False,          _("bluetooth, dongle, transfer, mobile")], 
-    [_("Universal Access"),                 "universal-access",   "cs-universal-access",           "prefs",      False,          _("magnifier, talk, access, zoom, keys, contrast")],
+    [_("Accessibility"),                 "universal-access",   "cs-universal-access",           "prefs",      False,          _("magnifier, talk, access, zoom, keys, contrast")],
     [_("Sound"),                            "sound",              "cs-sound",                   "hardware",      False,          _("sound, speakers, headphones, test")],
     [_("Color"),                            "color",              "cs-color",                   "hardware",      True,           _("color, profile, display, printer, output")],
     [_("Graphics Tablet"),                  "wacom",              "cs-tablet",                  "hardware",      True,           _("wacom, digitize, tablet, graphics, calibrate, stylus")]
