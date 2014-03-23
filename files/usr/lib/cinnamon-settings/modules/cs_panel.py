@@ -6,7 +6,7 @@ class Module:
     def __init__(self, content_box):
         keywords = _("panel, height, bottom, top, autohide, size, traditional, layout")
         advanced = False
-        sidePage = SidePage(_("Panel"), "panel.svg", keywords, advanced, content_box)
+        sidePage = SidePage(_("Panel"), "cs-panel", keywords, advanced, content_box)
         self.sidePage = sidePage
         self.name = "panel"
         self.category = "prefs"
@@ -15,7 +15,7 @@ class Module:
         desktop_layouts = [["traditional", _("Traditional (panel at the bottom)")], ["flipped", _("Flipped (panel at the top)")], ["classic", _("Classic (panels at the top and at the bottom)")]]        
         desktop_layouts_combo = GSettingsComboBox(_("Panel layout"), "org.cinnamon", "desktop-layout", None, desktop_layouts)
         sidePage.add_widget(desktop_layouts_combo) 
-        label = Gtk.Label()
+        label = Gtk.Label.new()
         label.set_markup("<i><small>%s</small></i>" % _("Note: If you change the layout you will need to restart Cinnamon and Cinnamon Settings."))
         sidePage.add_widget(label)
 
@@ -52,11 +52,17 @@ class Module:
         sidePage.add_widget(box, True)
 
         box = IndentedHBox()
-        box.add(GSettingsSpinButton(_("Top panel height"), "org.cinnamon", "panel-top-height", "org.cinnamon/panel-resizable", 0, 2000, 1, 5, _("Pixels")))
+
+        slider = GSettingsRange(_("Top panel height:"), _("Smaller"), _("Larger"), 20, 50, False, "int", False, "org.cinnamon", "panel-top-height", "org.cinnamon/panel-resizable", adjustment_step = 1.0)
+        slider.add_mark(25.0, Gtk.PositionType.TOP, None)
+        box.add_expand(slider)
         sidePage.add_widget(box, True)
 
         box = IndentedHBox()
-        box.add(GSettingsSpinButton(_("Bottom panel height"), "org.cinnamon", "panel-bottom-height", "org.cinnamon/panel-resizable",  0, 2000, 1, 5, _("Pixels")))
+
+        slider = GSettingsRange(_("Bottom panel height:"), _("Smaller"), _("Larger"), 20, 50, False, "int", False, "org.cinnamon", "panel-bottom-height", "org.cinnamon/panel-resizable", adjustment_step = 1.0)
+        slider.add_mark(25.0, Gtk.PositionType.TOP, None)
+        box.add_expand(slider)
         sidePage.add_widget(box, True)
 
         sidePage.add_widget(GSettingsCheckButton(_("Panel edit mode"), "org.cinnamon", "panel-edit-mode", None))

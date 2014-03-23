@@ -222,6 +222,7 @@ AC_ARG_VAR([BROWSER_PLUGIN_DIR],[Where to install the plugin to])
 AC_CONFIG_FILES([
   Makefile
   data/Makefile
+  data/icons/Makefile
   js/Makefile
   js/misc/config.js
   src/Makefile

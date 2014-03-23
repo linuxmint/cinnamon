@@ -88,7 +88,7 @@ PlaceDeviceInfo.prototype = {
 
     iconFactory: function(size) {
         let icon = this._mount.get_icon();
-        return St.TextureCache.get_default().load_gicon(null, icon, size);
+        return St.TextureCache.get_default().load_gicon(null, icon, size, global.ui_scale);
     },
 
     launch: function(params) {
@@ -314,7 +314,7 @@ PlacesManager.prototype = {
                 let icon = Cinnamon.util_get_icon_for_uri(bookmark);
                 item = new PlaceInfo('bookmark:' + bookmark, label,
                         function(size) {
-                            return St.TextureCache.get_default().load_gicon(null, icon, size);
+                            return St.TextureCache.get_default().load_gicon(null, icon, size, global.ui_scale);
                         },
                         function(params) {
                             Gio.app_info_launch_default_for_uri(bookmark, _makeLaunchContext(params));
@@ -325,7 +325,7 @@ PlacesManager.prototype = {
                 let icon = Gio.ThemedIcon.new('gnome-fs-network');          
                 item = new PlaceInfo('bookmark:' + bookmark, label,
                         function(size) {
-                            return St.TextureCache.get_default().load_gicon(null, icon, size);
+                            return St.TextureCache.get_default().load_gicon(null, icon, size, global.ui_scale);
                         },
                         function(params) {
                             let fileapp = Gio.app_info_get_default_for_uri_scheme('file');

@@ -7,7 +7,7 @@ class Module:
     def __init__(self, content_box):
         keywords = _("window, tile, flip, tiling, snap, snapping")
         advanced = False
-        sidePage = SidePage(_("Window Tiling and Edge Flip"), "tiling.svg", keywords, advanced, content_box)
+        sidePage = SidePage(_("Window Tiling and Edge Flip"), "cs-tiling", keywords, advanced, content_box)
         self.sidePage = sidePage
         self.name = "tiling"
         self.comment = _("Manage window tiling preferences")

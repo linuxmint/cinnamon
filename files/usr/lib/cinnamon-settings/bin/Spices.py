@@ -100,9 +100,10 @@ class Spice_Harvester:
 
         self.progress_button_abort.connect("clicked", self.on_abort_clicked)
 
-        self.spiceDetail = Gtk.Dialog(_("Applet info"),
-                            self.window,
-                            Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT)
+        self.spiceDetail = Gtk.Dialog(title = _("Applet info"),
+                                      transient_for = self.window,
+                                      modal = True,
+                                      destroy_with_parent = True)
         self.spiceDetailSelectButton = self.spiceDetail.add_button(_("Select and Close"), Gtk.ResponseType.YES)
         self.spiceDetailSelectButton.connect("clicked", lambda x: self.close_select_detail())
         self.spiceDetailCloseButton = self.spiceDetail.add_button(_("Close"), Gtk.ResponseType.CANCEL)
@@ -678,7 +679,10 @@ class Spice_Harvester:
                         pass
 
     def errorMessage(self, msg, detail = None):
-        dialog = Gtk.MessageDialog(None, Gtk.DialogFlags.MODAL, Gtk.MessageType.ERROR, Gtk.ButtonsType.OK, None)
+        dialog = Gtk.MessageDialog(transient_for = None,
+                                   modal = True,
+                                   message_type = Gtk.MessageType.ERROR,
+                                   buttons = Gtk.ButtonsType.OK)
         markup = msg
         if detail is not None:
             markup += _("\n\nDetails:  %s") % (str(detail))

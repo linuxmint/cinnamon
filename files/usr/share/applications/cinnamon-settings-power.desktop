@@ -1,7 +1,7 @@
 [Desktop Entry]
 Name=Power Management
 Comment=Manage power settings
-Icon=/usr/lib/cinnamon-settings/data/icons/power.svg
+Icon=cs-power
 Exec=cinnamon-settings power
 Type=Application
 OnlyShowIn=X-Cinnamon;

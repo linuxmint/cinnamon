@@ -32,7 +32,7 @@ dist_theme_DATA = \
     theme/close.svg                \
     theme/close-window.svg         \
     theme/corner-ripple.png        \
-    theme/menu.png                 \
+    theme/menu.svg                 \
     theme/overview-hover.png       \
     theme/overview.png             \
     theme/player-paused.svg        \
@@ -80,4 +80,8 @@ CLEANFILES =						\
 	$(desktop_DATA)					\
 	$(gsettings_SCHEMAS)				\
 	gschemas.compiled
+
+SUBDIRS = \
+	icons    \
+	$(NULL)
 

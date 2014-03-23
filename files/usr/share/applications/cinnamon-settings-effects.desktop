@@ -1,7 +1,7 @@
 [Desktop Entry]
 Name=Effects
 Comment=Control Cinnamon visual effects.
-Icon=/usr/lib/cinnamon-settings/data/icons/desktop-effects.svg
+Icon=cs-desktop-effects
 Exec=cinnamon-settings effects
 Type=Application
 OnlyShowIn=X-Cinnamon;

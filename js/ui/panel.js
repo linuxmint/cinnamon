@@ -90,7 +90,7 @@ AnimatedIcon.prototype = {
 
         this._timeoutId = 0;
         this._i = 0;
-        this._animations = St.TextureCache.get_default().load_sliced_image (global.datadir + '/theme/' + name, size, size);
+        this._animations = St.TextureCache.get_default().load_sliced_image (global.datadir + '/theme/' + name, size, size, null);
         this.actor.set_child(this._animations);
     },
 
@@ -98,11 +98,11 @@ AnimatedIcon.prototype = {
         this._animations.hide_all();
         this._animations.show();
         if (this._i && this._i < this._animations.get_n_children())
-            this._animations.get_nth_child(this._i++).show();
+            this._animations.get_child_at_index(this._i++).show();
         else {
             this._i = 1;
             if (this._animations.get_n_children())
-                this._animations.get_nth_child(0).show();
+                this._animations.get_child_at_index(0).show();
         }
         return true;
     },
@@ -630,10 +630,10 @@ Panel.prototype = {
 
         if (global.settings.get_boolean('panel-resizable')) {
             if (bottomPosition) {
-                this.actor.set_height(global.settings.get_int('panel-bottom-height'));
+                this.actor.set_height(global.settings.get_int('panel-bottom-height') * global.ui_scale);
             }
             else {
-                this.actor.set_height(global.settings.get_int('panel-top-height'));
+                this.actor.set_height(global.settings.get_int('panel-top-height') * global.ui_scale);
             }
         }
         if (this.bottomPosition) {
@@ -797,17 +797,17 @@ Panel.prototype = {
         let panelResizable = global.settings.get_boolean("panel-resizable");
         if (panelResizable) {
             if (this.bottomPosition) {
-                panelHeight = global.settings.get_int("panel-bottom-height");
+                panelHeight = global.settings.get_int("panel-bottom-height") * global.ui_scale;
             }
             else {
-                panelHeight = global.settings.get_int("panel-top-height");
+                panelHeight = global.settings.get_int("panel-top-height") * global.ui_scale;
             }
         }
         else {
             let themeNode = this.actor.get_theme_node();
             panelHeight = themeNode.get_length("height");
             if (!panelHeight || panelHeight == 0) {
-                panelHeight = 25;
+                panelHeight = 25 * global.ui_scale;
             }
         }
         if (!this._themeFontSize) {
@@ -815,10 +815,10 @@ Panel.prototype = {
                 this._themeFontSize = themeNode.get_length("font-size");
             }
         if (global.settings.get_boolean("panel-scale-text-icons") && global.settings.get_boolean("panel-resizable")) {
-            let textheight = (panelHeight / Applet.DEFAULT_PANEL_HEIGHT) * Applet.PANEL_FONT_DEFAULT_HEIGHT;
-            this.actor.set_style('font-size: ' + textheight + 'px;');
+            let textheight = (panelHeight / (Applet.DEFAULT_PANEL_HEIGHT * global.ui_scale) * (Applet.PANEL_FONT_DEFAULT_HEIGHT * global.ui_scale));
+            this.actor.set_style('font-size: ' + textheight / global.ui_scale + 'px;');
         } else {
-            this.actor.set_style('font-size: ' + this._themeFontSize + 'px;');
+            this.actor.set_style('font-size: ' + this._themeFontSize / global.ui_scale + 'px;');
         }
         this.actor.set_height(panelHeight);
         this._processPanelAutoHide();

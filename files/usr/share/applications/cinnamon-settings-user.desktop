@@ -1,7 +1,7 @@
 [Desktop Entry]
 Name=Account details
 Comment=Change your user preferences and password
-Icon=/usr/lib/cinnamon-settings/data/icons/user.svg
+Icon=cs-user
 Exec=cinnamon-settings user
 Type=Application
 OnlyShowIn=X-Cinnamon;

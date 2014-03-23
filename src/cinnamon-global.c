@@ -75,6 +75,7 @@ struct _CinnamonGlobal {
   MetaPlugin *plugin;
   CinnamonWM *wm;
   GSettings *settings;
+  GSettings *interface_settings;
   const char *datadir;
   const char *imagedir;
   const char *userdatadir;
@@ -89,6 +90,7 @@ struct _CinnamonGlobal {
 
   guint32 xdnd_timestamp;
   gint64 last_gc_end_time;
+  guint ui_scale;
 };
 
 enum {
@@ -112,6 +114,7 @@ enum {
   PROP_IMAGEDIR,
   PROP_USERDATADIR,
   PROP_FOCUS_MANAGER,
+  PROP_UI_SCALE
 };
 
 /* Signals */
@@ -121,6 +124,7 @@ enum
  XDND_LEAVE,
  XDND_ENTER,
  NOTIFY_ERROR,
+ SCALE_CHANGED,
  LAST_SIGNAL
 };
 
@@ -221,6 +225,9 @@ cinnamon_global_get_property(GObject         *object,
     case PROP_FOCUS_MANAGER:
       g_value_set_object (value, global->focus_manager);
       break;
+    case PROP_UI_SCALE:
+      g_value_set_uint (value, global->ui_scale);
+      break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;
@@ -256,7 +263,9 @@ cinnamon_global_init (CinnamonGlobal *global)
   g_mkdir_with_parents (global->userdatadir, 0700);
 
   global->settings = g_settings_new ("org.cinnamon");
-  
+
+  global->ui_scale = 1;
+
   global->grab_notifier = GTK_WINDOW (gtk_window_new (GTK_WINDOW_TOPLEVEL));
   g_signal_connect (global->grab_notifier, "grab-notify", G_CALLBACK (grab_notify), global);
   global->gtk_grab_active = FALSE;
@@ -288,6 +297,7 @@ cinnamon_global_finalize (GObject *object)
   g_object_unref (global->js_context);
   gtk_widget_destroy (GTK_WIDGET (global->grab_notifier));
   g_object_unref (global->settings);
+  g_object_unref (global->interface_settings);
 
   the_object = NULL;
 
@@ -343,6 +353,15 @@ cinnamon_global_class_init (CinnamonGlobalClass *klass)
                     G_TYPE_NONE, 2,
                     G_TYPE_STRING,
                     G_TYPE_STRING);
+
+  cinnamon_global_signals[SCALE_CHANGED] =
+      g_signal_new ("scale-changed",
+                    G_TYPE_FROM_CLASS (klass),
+                    G_SIGNAL_RUN_LAST,
+                    0,
+                    NULL, NULL,
+                    g_cclosure_marshal_VOID__VOID,
+                    G_TYPE_NONE, 0);
 
   g_object_class_install_property (gobject_class,
                                    PROP_OVERLAY_GROUP,
@@ -475,6 +494,14 @@ cinnamon_global_class_init (CinnamonGlobalClass *klass)
                                                         "Cinnamon's StFocusManager",
                                                         ST_TYPE_FOCUS_MANAGER,
                                                         G_PARAM_READABLE));
+
+  g_object_class_install_property (gobject_class,
+                                   PROP_UI_SCALE,
+                                   g_param_spec_uint ("ui-scale",
+                                                      "Current UI Scale",
+                                                      "Current UI Scale",
+                                                      0, G_MAXUINT, 1,
+                                                      G_PARAM_READABLE));
 }
 
 /**
@@ -854,91 +881,8 @@ constrain_tooltip (StTooltip             *tooltip,
 }
 
 static void
-update_font_options (GtkSettings  *settings,
-                     ClutterStage *stage)
-{
-  StThemeContext *context;
-  ClutterBackend *backend;
-  gint dpi;
-  gint hinting;
-  gchar *hint_style_str;
-  cairo_hint_style_t hint_style = CAIRO_HINT_STYLE_NONE;
-  gint antialias;
-  cairo_antialias_t antialias_mode = CAIRO_ANTIALIAS_NONE;
-  cairo_font_options_t *options;
-
-  g_object_get (settings,
-                "gtk-xft-dpi", &dpi,
-                "gtk-xft-antialias", &antialias,
-                "gtk-xft-hinting", &hinting,
-                "gtk-xft-hintstyle", &hint_style_str,
-                NULL);
-
-  context = st_theme_context_get_for_stage (stage);
-
-  if (dpi != -1)
-    /* GTK stores resolution as 1024 * dots/inch */
-    st_theme_context_set_resolution (context, dpi / 1024);
-  else
-    st_theme_context_set_default_resolution (context);
-
-  st_tooltip_set_constrain_func (stage, constrain_tooltip, NULL, NULL);
-
-  /* Clutter (as of 0.9) passes comprehensively wrong font options
-   * override whatever set_font_flags() did above.
-   *
-   * http://bugzilla.openedhand.com/show_bug.cgi?id=1456
-   */
-  backend = clutter_get_default_backend ();
-  options = cairo_font_options_create ();
-
-  cairo_font_options_set_hint_metrics (options, CAIRO_HINT_METRICS_ON);
-
-  if (hinting >= 0 && !hinting)
-    {
-      hint_style = CAIRO_HINT_STYLE_NONE;
-    }
-  else if (hint_style_str)
-    {
-      if (strcmp (hint_style_str, "hintnone") == 0)
-        hint_style = CAIRO_HINT_STYLE_NONE;
-      else if (strcmp (hint_style_str, "hintslight") == 0)
-        hint_style = CAIRO_HINT_STYLE_SLIGHT;
-      else if (strcmp (hint_style_str, "hintmedium") == 0)
-        hint_style = CAIRO_HINT_STYLE_MEDIUM;
-      else if (strcmp (hint_style_str, "hintfull") == 0)
-        hint_style = CAIRO_HINT_STYLE_FULL;
-    }
-
-  g_free (hint_style_str);
-
-  cairo_font_options_set_hint_style (options, hint_style);
-
-  /* We don't want to turn on subpixel anti-aliasing; since Clutter
-   * doesn't currently have the code to support ARGB masks,
-   * generating them then squashing them back to A8 is pointless.
-   */
-  antialias_mode = (antialias < 0 || antialias) ? CAIRO_ANTIALIAS_GRAY
-                                                : CAIRO_ANTIALIAS_NONE;
-
-  cairo_font_options_set_antialias (options, antialias_mode);
-
-  clutter_backend_set_font_options (backend, options);
-  cairo_font_options_destroy (options);
-}
-
-static void
-settings_notify_cb (GtkSettings *settings,
-                    GParamSpec  *pspec,
-                    gpointer     data)
-{
-  update_font_options (settings, CLUTTER_STAGE (data));
-}
-
-static void
 cinnamon_fonts_init (ClutterStage *stage)
 {
-  GtkSettings *settings;
   CoglPangoFontMap *fontmap;
 
   /* Disable text mipmapping; it causes problems on pre-GEM Intel
@@ -948,19 +892,6 @@ cinnamon_fonts_init (ClutterStage *stage)
    */
   fontmap = COGL_PANGO_FONT_MAP (clutter_get_font_map ());
   cogl_pango_font_map_set_use_mipmapping (fontmap, FALSE);
-
-  settings = gtk_settings_get_default ();
-  g_object_connect (settings,
-                    "signal::notify::gtk-xft-dpi",
-                    G_CALLBACK (settings_notify_cb), stage,
-                    "signal::notify::gtk-xft-antialias",
-                    G_CALLBACK (settings_notify_cb), stage,
-                    "signal::notify::gtk-xft-hinting",
-                    G_CALLBACK (settings_notify_cb), stage,
-                    "signal::notify::gtk-xft-hintstyle",
-                    G_CALLBACK (settings_notify_cb), stage,
-                    NULL);
-  update_font_options (settings, stage);
 }
 
 /* This is an IBus workaround. The flow of events with IBus is that every time
@@ -1056,6 +987,35 @@ gnome_cinnamon_gdk_event_handler (GdkEvent *event_gdk,
   gtk_main_do_event (event_gdk);
 }
 
+static void
+update_scale_factor (GtkSettings *settings,
+                     GParamSpec *pspec,
+                     gpointer data)
+{
+  gint scale;
+  CinnamonGlobal *global = CINNAMON_GLOBAL (data);
+  ClutterStage *stage = CLUTTER_STAGE (global->stage);
+  StThemeContext *context = st_theme_context_get_for_stage (stage);
+  GValue value = G_VALUE_INIT;
+
+  g_value_init (&value, G_TYPE_INT);
+  if (gdk_screen_get_setting (global->gdk_screen, "gdk-window-scaling-factor", &value)) {
+    scale = g_value_get_int (&value);
+    g_object_set (context, "scale-factor", scale, NULL);
+
+    if (scale != global->ui_scale) {
+        global->ui_scale = scale;
+        g_signal_emit_by_name (global, "scale-changed");
+    }
+  }
+
+   /* Make sure clutter and gdk scaling stays disabled
+    * window-scaling-factor doesn't exist yet in clutter < 1.18, but it's a harmless warning
+    * and lets those that can, take advantage of it */
+  g_object_set (clutter_settings_get_default (), "window-scaling-factor", 1, NULL);
+  gdk_x11_display_set_window_scale (gdk_display_get_default (), 1);
+}
+
 void
 _cinnamon_global_set_plugin (CinnamonGlobal *global,
                           MetaPlugin  *plugin)
@@ -1103,9 +1063,14 @@ _cinnamon_global_set_plugin (CinnamonGlobal *global,
 
   cinnamon_fonts_init (global->stage);
 
+  g_signal_connect (gtk_settings_get_default (), "notify::gtk-xft-dpi",
+                    G_CALLBACK (update_scale_factor), global);
+
   gdk_event_handler_set (gnome_cinnamon_gdk_event_handler, global->stage, NULL);
 
   global->focus_manager = st_focus_manager_get_for_stage (global->stage);
+
+  update_scale_factor (gtk_settings_get_default (), NULL, global);
 }
 
 GjsContext *

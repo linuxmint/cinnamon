@@ -371,9 +371,10 @@ ApplicationButton.prototype = {
         let favorites = AppFavorites.getAppFavorites().getFavorites();
         let nbFavorites = favorites.length;
         let monitorHeight = Main.layoutManager.primaryMonitor.height;
-        let real_size = (0.7*monitorHeight) / nbFavorites;
-        let icon_size = 0.6*real_size;
-        if (icon_size>MAX_FAV_ICON_SIZE) icon_size = MAX_FAV_ICON_SIZE;
+        let real_size = (0.7 * monitorHeight) / nbFavorites;
+        let icon_size = 0.6 * real_size / global.ui_scale;
+        if (icon_size > MAX_FAV_ICON_SIZE)
+            icon_size = MAX_FAV_ICON_SIZE;
         return this.app.create_icon_texture(icon_size);
     },
 
@@ -438,7 +439,7 @@ RecentButton.prototype = {
         this.actor._delegate = this;
         this.label = new St.Label({ text: this.button_name, style_class: 'menu-application-button-label' });
         this.label.clutter_text.ellipsize = Pango.EllipsizeMode.END;        
-        this.label.set_style("max-width: 250px;");
+        this.label.set_style("max-width: 50em;");
         this.icon = file.createIcon(APPLICATION_ICON_SIZE);
         this.addActor(this.icon);
         this.addActor(this.label);
@@ -448,13 +449,13 @@ RecentButton.prototype = {
 
     _onButtonReleaseEvent: function (actor, event) {
         if (event.get_button()==1){
-            Gio.app_info_launch_default_for_uri(this.file.uri, global.create_app_launch_context());
+            this.file.launch();
             this.appsMenuButton.menu.close();
         }
     },
 
     activate: function(event) {
-        Gio.app_info_launch_default_for_uri(this.file.uri, global.create_app_launch_context());
+        this.file.launch();
         this.appsMenuButton.menu.close();
     }
 };
@@ -513,7 +514,7 @@ CategoryButton.prototype = {
         this.actor._delegate = this;
         this.label = new St.Label({ text: label, style_class: 'menu-category-button-label' });
         if (category && this.icon_name) {
-            this.icon = St.TextureCache.get_default().load_gicon(null, icon, CATEGORY_ICON_SIZE);
+            this.icon = St.TextureCache.get_default().load_gicon(null, icon, CATEGORY_ICON_SIZE, global.ui_scale);
             if (this.icon) {
                 this.addActor(this.icon);
                 this.icon.realize();
@@ -574,10 +575,11 @@ FavoritesButton.prototype = {
     _init: function(appsMenuButton, app, nbFavorites) {
         GenericApplicationButton.prototype._init.call(this, appsMenuButton, app);        
         let monitorHeight = Main.layoutManager.primaryMonitor.height;
-        let real_size = (0.7*monitorHeight) / nbFavorites;
-        let icon_size = 0.6*real_size;
-        if (icon_size>MAX_FAV_ICON_SIZE) icon_size = MAX_FAV_ICON_SIZE;
-        this.actor.style = "padding-top: "+(icon_size/3)+"px;padding-bottom: "+(icon_size/3)+"px; margin:auto;"
+        let real_size = (0.7 * monitorHeight) / nbFavorites;
+        let icon_size = 0.6 * real_size / global.ui_scale;
+        if (icon_size > MAX_FAV_ICON_SIZE)
+            icon_size = MAX_FAV_ICON_SIZE;
+        this.actor.style = "padding-top: "+(icon_size / 3)+"px;padding-bottom: "+(icon_size / 3)+"px; margin:auto;"
 
         this.actor.add_style_class_name('menu-favorites-button');    
         let icon = app.create_icon_texture(icon_size);
@@ -612,10 +614,11 @@ SystemButton.prototype = {
     _init: function(appsMenuButton, icon, nbFavorites) {
         this.actor = new St.Button({ reactive: true, style_class: 'menu-favorites-button' });        
         let monitorHeight = Main.layoutManager.primaryMonitor.height;
-        let real_size = (0.7*monitorHeight) / nbFavorites;
-        let icon_size = 0.6*real_size;
-        if (icon_size>MAX_FAV_ICON_SIZE) icon_size = MAX_FAV_ICON_SIZE;
-        this.actor.style = "padding-top: "+(icon_size/3)+"px;padding-bottom: "+(icon_size/3)+"px; margin:auto;"
+        let real_size = (0.7 * monitorHeight) / nbFavorites;
+        let icon_size = 0.6 * real_size / global.ui_scale;
+        if (icon_size > MAX_FAV_ICON_SIZE)
+            icon_size = MAX_FAV_ICON_SIZE;
+        this.actor.style = "padding-top: "+(icon_size / 3)+"px;padding-bottom: "+(icon_size / 3)+"px; margin:auto;"
         let iconObj = new St.Icon({icon_name: icon, icon_size: icon_size, icon_type: St.IconType.FULLCOLOR});
         this.actor.set_child(iconObj);
         iconObj.realize()
@@ -954,7 +957,7 @@ MyApplet.prototype = {
             let applicationsBoxHeight = this.applicationsBox.get_allocation_box().y2-this.applicationsBox.get_allocation_box().y1;
             let scrollBoxHeight = (this.leftBox.get_allocation_box().y2-this.leftBox.get_allocation_box().y1) -
                                     (this.searchBox.get_allocation_box().y2-this.searchBox.get_allocation_box().y1);
-            this.applicationsScrollBox.style = "height: "+scrollBoxHeight+"px;";
+            this.applicationsScrollBox.style = "height: "+scrollBoxHeight / global.ui_scale +"px;";
 
             this.initButtonLoad = 30;
             let n = Math.min(this._applicationsButtons.length,

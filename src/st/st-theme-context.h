@@ -56,10 +56,6 @@ void                        st_theme_context_set_theme      (StThemeContext     
                                                              StTheme                    *theme);
 StTheme *                   st_theme_context_get_theme      (StThemeContext             *context);
 
-void                        st_theme_context_set_resolution (StThemeContext             *context,
-                                                             gdouble                     resolution);
-void                        st_theme_context_set_default_resolution (StThemeContext *context);
-double                      st_theme_context_get_resolution (StThemeContext             *context);
 void                        st_theme_context_set_font       (StThemeContext             *context,
                                                              const PangoFontDescription *font);
 const PangoFontDescription *st_theme_context_get_font       (StThemeContext             *context);

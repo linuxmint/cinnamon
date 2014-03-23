@@ -35,7 +35,7 @@ override_dh_auto_test:
 override_dh_install:
 	dh_install -X.la
 	test -e $(CURDIR)/debian/cinnamon-common/usr/share/cinnamon/theme || mkdir -p $(CURDIR)/debian/cinnamon-common/usr/share/cinnamon/theme
-	cp -r $(CURDIR)/debian/icon.png $(CURDIR)/debian/cinnamon-common/usr/share/cinnamon/theme/menu.png
+	cp -r $(CURDIR)/debian/icon.svg $(CURDIR)/debian/cinnamon-common/usr/share/cinnamon/theme/menu.svg
 
 override_dh_strip:
 	dh_strip --dbg-package=cinnamon-dbg

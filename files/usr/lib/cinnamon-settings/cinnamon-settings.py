@@ -10,7 +10,7 @@ try:
     import os
     import glob
     import gettext
-    from gi.repository import Gio, Gtk, GObject, GdkPixbuf, GLib, Pango, Gdk
+    from gi.repository import Gio, Gtk, GObject, GdkPixbuf, GLib, Pango, Gdk, cairo
     import SettingsWidgets
     import capi
     import time
@@ -52,33 +52,33 @@ MAX_PIX_WIDTH = 160
 
 CATEGORIES = [
 #        Display name                         ID              Show it? Always False to start              Icon
-    {"label": _("Appearance"),            "id": "appear",      "show": False,                       "icon": "cat-appearance.svg"},
-    {"label": _("Preferences"),           "id": "prefs",       "show": False,                       "icon": "cat-prefs.svg"},
-    {"label": _("Hardware"),              "id": "hardware",    "show": False,                       "icon": "cat-hardware.svg"},
-    {"label": _("Administration"),        "id": "admin",       "show": False,                       "icon": "cat-admin.svg"}
+    {"label": _("Appearance"),            "id": "appear",      "show": False,                       "icon": "cs-cat-appearance"},
+    {"label": _("Preferences"),           "id": "prefs",       "show": False,                       "icon": "cs-cat-prefs"},
+    {"label": _("Hardware"),              "id": "hardware",    "show": False,                       "icon": "cs-cat-hardware"},
+    {"label": _("Administration"),        "id": "admin",       "show": False,                       "icon": "cs-cat-admin"}
 ]
 
 CONTROL_CENTER_MODULES = [
 #         Label                              Module ID                Icon                         Category      Advanced?                      Keywords for filter
-    [_("Networking"),                       "network",            "network.svg",                 "hardware",      False,          _("network, wireless, wifi, ethernet, broadband, internet")],
-    [_("Display"),                          "display",            "display.svg",                 "hardware",      False,          _("display, screen, monitor, layout, resolution, dual, lcd")],
-    [_("Bluetooth"),                        "bluetooth",          "bluetooth.svg",               "hardware",      False,          _("bluetooth, dongle, transfer, mobile")], 
-    [_("Universal Access"),                 "universal-access",   "universal-access.svg",           "prefs",      False,          _("magnifier, talk, access, zoom, keys, contrast")],
-    [_("Sound"),                            "sound",              "sound.svg",                   "hardware",      False,          _("sound, speakers, headphones, test")],
-    [_("Color"),                            "color",              "color.svg",                   "hardware",      True,           _("color, profile, display, printer, output")],
-    [_("Graphics Tablet"),                  "wacom",              "tablet.svg",                  "hardware",      True,           _("wacom, digitize, tablet, graphics, calibrate, stylus")]
+    [_("Networking"),                       "network",            "cs-network",                 "hardware",      False,          _("network, wireless, wifi, ethernet, broadband, internet")],
+    [_("Display"),                          "display",            "cs-display",                 "hardware",      False,          _("display, screen, monitor, layout, resolution, dual, lcd")],
+    [_("Bluetooth"),                        "bluetooth",          "cs-bluetooth",               "hardware",      False,          _("bluetooth, dongle, transfer, mobile")], 
+    [_("Universal Access"),                 "universal-access",   "cs-universal-access",           "prefs",      False,          _("magnifier, talk, access, zoom, keys, contrast")],
+    [_("Sound"),                            "sound",              "cs-sound",                   "hardware",      False,          _("sound, speakers, headphones, test")],
+    [_("Color"),                            "color",              "cs-color",                   "hardware",      True,           _("color, profile, display, printer, output")],
+    [_("Graphics Tablet"),                  "wacom",              "cs-tablet",                  "hardware",      True,           _("wacom, digitize, tablet, graphics, calibrate, stylus")]
 ]
 
 STANDALONE_MODULES = [
 #         Label                          Executable                          Icon                Category        Advanced?               Keywords for filter
-    [_("Printers"),                      "system-config-printer",        "printer.svg",         "hardware",       False,          _("printers, laser, inkjet")],    
-    [_("Firewall"),                      "gufw",                         "firewall.svg",        "admin",          True,           _("firewall, block, filter, programs")],
-    [_("Languages"),                     "mintlocale",                   "language.svg",        "prefs",          False,          _("language, install, foreign")],
-    [_("Login Screen"),                  "gksu /usr/sbin/mdmsetup",      "login.svg",           "admin",          True,           _("login, mdm, gdm, manager, user, password, startup, switch")],
-    [_("Startup Programs"),              "cinnamon-session-properties",  "startup-programs.svg","prefs",          False,          _("startup, programs, boot, init, session")],
-    [_("Device Drivers"),                "mintdrivers",                  "drivers.svg",         "admin",          False,          _("video, driver, wifi, card, hardware, proprietary, nvidia, radeon, nouveau, fglrx")],
-    [_("Software Sources"),              "mintsources",                  "sources.svg",         "admin",          True,           _("ppa, repository, package, source, download")],
-    [_("Users and Groups"),              "cinnamon-settings-users",      "user-accounts.svg",   "admin",          True,           _("user, users, account, accounts, group, groups, password")]
+    [_("Printers"),                      "system-config-printer",        "cs-printer",         "hardware",       False,          _("printers, laser, inkjet")],    
+    [_("Firewall"),                      "gufw",                         "cs-firewall",        "admin",          True,           _("firewall, block, filter, programs")],
+    [_("Languages"),                     "mintlocale",                   "cs-language",        "prefs",          False,          _("language, install, foreign")],
+    [_("Login Screen"),                  "gksu /usr/sbin/mdmsetup",      "cs-login",           "admin",          True,           _("login, mdm, gdm, manager, user, password, startup, switch")],
+    [_("Startup Programs"),              "cinnamon-session-properties",  "cs-startup-programs","prefs",          False,          _("startup, programs, boot, init, session")],
+    [_("Device Drivers"),                "mintdrivers",                  "cs-drivers",         "admin",          False,          _("video, driver, wifi, card, hardware, proprietary, nvidia, radeon, nouveau, fglrx")],
+    [_("Software Sources"),              "mintsources",                  "cs-sources",         "admin",          True,           _("ppa, repository, package, source, download")],
+    [_("Users and Groups"),              "cinnamon-settings-users",      "cs-user-accounts",   "admin",          True,           _("user, users, account, accounts, group, groups, password")]
 ]
 
 def print_timing(func):
@@ -93,7 +93,6 @@ def print_timing(func):
 def touch(fname, times=None):
     with file(fname, 'a'):
         os.utime(fname, times)
-
 
 class MainWindow:
 
@@ -118,7 +117,6 @@ class MainWindow:
             self.button_back.show()
             self.current_sidepage = sidePage
             self.maybe_resize(sidePage)
-            GObject.timeout_add(250, self.fade_in)
         else:
             sidePage.build(self.advanced_mode)
 
@@ -159,6 +157,7 @@ class MainWindow:
         self.search_entry.connect("icon-press", self.onClearSearchBox)
         self.window.connect("destroy", self.quit)
         self.window.connect("key-press-event", self.on_keypress)
+        self.window.show()
 
         self.builder.connect_signals(self)
         self.window.set_has_resize_grip(False)
@@ -207,16 +206,12 @@ class MainWindow:
         for sidepage in self.sidePages:
             sp, sp_id, sp_cat = sidepage
             if not self.store.has_key(sp_cat):  #       Label         Icon          sidePage     Category
-                self.store[sidepage[2]] = Gtk.ListStore(str,    GdkPixbuf.Pixbuf,    object,     str)
+                self.store[sidepage[2]] = Gtk.ListStore(str,          str,    object,     str)
                 for category in CATEGORIES:
                     if category["id"] == sp_cat:
                         category["show"] = True
-            iconFile = "/usr/lib/cinnamon-settings/data/icons/%s" % sp.icon
-            if os.path.exists(iconFile):
-                img = GdkPixbuf.Pixbuf.new_from_file_at_size( iconFile, 48, 48)
-            else:
-                img = None
-            sidePagesIters[sp_id] = self.store[sp_cat].append([sp.name, img, sp, sp_cat])
+
+            sidePagesIters[sp_id] = self.store[sp_cat].append([sp.name, sp.icon, sp, sp_cat])
 
         self.min_label_length = 0
         self.min_pix_length = 0
@@ -244,8 +239,7 @@ class MainWindow:
         self.window.connect("destroy", self.quit)
         self.button_cancel.connect("clicked", self.quit)
         self.button_back.connect('clicked', self.back_to_icon_view)
-        self.window.set_opacity(0)
-        self.window.show()
+
         self.calculate_bar_heights()
 
         # Select the first sidePage
@@ -254,7 +248,6 @@ class MainWindow:
             self.findPath(first_page_iter)
         else:
             self.search_entry.grab_focus()
-            self.fade_in()
 
     def on_keypress(self, widget, event):
         if event.keyval == Gdk.KEY_BackSpace and type(self.window.get_focus()) != Gtk.Entry and \
@@ -262,9 +255,6 @@ class MainWindow:
             self.back_to_icon_view(None)
             return True
         return False
-
-    def fade_in(self):
-        self.window.set_opacity(1.0)
 
     def force_advanced(self):
         ret = False
@@ -345,6 +335,11 @@ class MainWindow:
             iter = model.iter_next(iter)
         return min_width_chars, min_width_pixels
 
+    def pixbuf_data_func(self, column, cell, model, iter, data=None):
+        wrapper = model.get_value(iter, 1)
+        if wrapper:
+            cell.set_property('surface', wrapper.surface)
+
     def prepCategory(self, category):
         self.storeFilter[category["id"]].refilter()
         if not self.anyVisibleInCategory(category):
@@ -352,15 +347,12 @@ class MainWindow:
         if self.first_category_done:
             widget = Gtk.Separator.new(Gtk.Orientation.HORIZONTAL)
             self.side_view_container.pack_start(widget, False, False, 10)
-        box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 4)
-        iconFile = "/usr/lib/cinnamon-settings/data/icons/%s" % category["icon"]
-        if os.path.exists(iconFile):
-            img = GdkPixbuf.Pixbuf.new_from_file_at_size( iconFile, 30, 30)
-            box.pack_start(Gtk.Image.new_from_pixbuf(img), False, False, 4)
-        else:
-            img = None
 
-        widget = Gtk.Label()
+        box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 4)
+        img = Gtk.Image.new_from_icon_name(category["icon"], Gtk.IconSize.BUTTON)
+        box.pack_start(img, False, False, 4)
+
+        widget = Gtk.Label.new()
         widget.set_use_markup(True)
         widget.set_markup('<span size="12000">%s</span>' % category["label"])
         widget.set_alignment(.5, .5)
@@ -377,7 +369,9 @@ class MainWindow:
         text_renderer.set_alignment(.5, 0)
         area.pack_start(pixbuf_renderer, True, True, False)
         area.pack_start(text_renderer, True, True, False)
-        area.add_attribute(pixbuf_renderer, "pixbuf", 1)
+        area.add_attribute(pixbuf_renderer, "icon-name", 1)
+        pixbuf_renderer.set_property("stock-size", Gtk.IconSize.DIALOG)
+
         area.add_attribute(text_renderer, "text", 0)
 
         css_provider = Gtk.CssProvider()
@@ -509,10 +503,7 @@ class MainWindow:
         for key in self.store.keys():
             path = self.store[key].get_path(name)
             if path is not None:
-                GObject.idle_add(self.do_side_view, key, path)
-
-    def do_side_view(self, key, path):
-        self.go_to_sidepage(key, path)
+                self.go_to_sidepage(key, path)
 
     def setParentRefs (self, mod):
         try:
@@ -576,7 +567,6 @@ class MainWindow:
 
 if __name__ == "__main__":
     import signal
-    GObject.threads_init()
     signal.signal(signal.SIGINT, MainWindow().quit)
     Gtk.main()
 

@@ -69,7 +69,7 @@ class ColumnBox(Gtk.VBox):
     def __init__(self, title, content):
         super(ColumnBox, self).__init__()
         
-        label = Gtk.Label("")
+        label = Gtk.Label.new("")
         label.set_markup('<b>%s\n</b>' % title)
         label.set_alignment(0.5, 0.5)
         
@@ -79,10 +79,10 @@ class ColumnBox(Gtk.VBox):
 
 class ButtonTable(Gtk.Table):
     def __init__(self, lines):
-        super(ButtonTable, self).__init__(lines, 2, False)
+        super(ButtonTable, self).__init__(n_rows = lines, n_columns = 2, homogeneous = False)
         self.set_row_spacings(8)
         self.set_col_spacings(15)
-        self.attach(Gtk.Label(""), 2, 3, 0, lines, Gtk.AttachOptions.EXPAND|Gtk.AttachOptions.FILL, 0, 0, 0)
+        self.attach(Gtk.Label.new(""), 2, 3, 0, lines, Gtk.AttachOptions.EXPAND|Gtk.AttachOptions.FILL, 0, 0, 0)
         self.row = 0
         
     def addRow(self, label, button):
@@ -97,7 +97,7 @@ class ButtonTable(Gtk.Table):
     
 class MnemonicLabel(Gtk.Label):
     def __init__(self, text, widget):
-        super(MnemonicLabel, self).__init__("")
+        super(MnemonicLabel, self).__init__(label = "")
         self.set_text_with_mnemonic(text)
         
         self.set_alignment(1, 0.5)
@@ -203,10 +203,10 @@ class CustomAppChooserButton(Gtk.AppChooserButton):
 
 class OtherTypeDialog(Gtk.Dialog):
     def __init__(self, media_settings):
-        super(OtherTypeDialog, self).__init__(_("Other Media"),
-                                                None,
-                                                0,
-                                                (_("Close"), Gtk.ResponseType.OK))
+        super(OtherTypeDialog, self).__init__(title = _("Other Media"),
+                                              transient_for = None,
+                                              flags = 0)
+        self.add_button(_("Close"), Gtk.ResponseType.OK)
 
         self.set_default_size(350, 100)
         
@@ -310,7 +310,9 @@ class Module:
     def __init__(self, content_box):
         keywords = _("media, defaults, applications, programs, removable, browser, email, calendar, music, videos, photos, images, cd, autostart, autoplay")
         advanced = False
-        sidePage = DefaultSidepage(_("Preferred Applications"), "default-applications.svg", keywords, advanced, content_box)
+
+        sidePage = DefaultSidepage(_("Preferred Applications"), "cs-default-applications", keywords, advanced, content_box)
+
         self.sidePage = sidePage
         self.name = "default"
         self.category = "prefs"
@@ -329,8 +331,8 @@ class DefaultSidepage (SidePage):
         media = Gtk.ScrolledWindow()
         media.add_with_viewport(self.viewbox2)
         
-        self.notebook.append_page(default, Gtk.Label(_("Preferred Applications")))
-        self.notebook.append_page(media, Gtk.Label(_("Removable Media")))
+        self.notebook.append_page(default, Gtk.Label.new(_("Preferred Applications")))
+        self.notebook.append_page(media, Gtk.Label.new(_("Removable Media")))
 
         widget1 = self.setupDefaultApps()
         widget2 = self.setupMedia()

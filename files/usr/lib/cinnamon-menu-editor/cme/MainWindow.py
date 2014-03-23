@@ -149,13 +149,13 @@ class MainWindow(object):
             return True
 
     def setupMenuTree(self):
-        self.menu_store = Gtk.TreeStore(GdkPixbuf.Pixbuf, str, bool, object) # bool is unused, just a placeholder
+        self.menu_store = Gtk.TreeStore(object, str, bool, object) # bool is unused, just a placeholder
         menus = self.tree.get_object('menu_tree')                            # so object is the same index for
         column = Gtk.TreeViewColumn(_("Name"))                               # the menu tree and item tree
         column.set_spacing(4)
         cell = Gtk.CellRendererPixbuf()
         column.pack_start(cell, False)
-        column.add_attribute(cell, 'pixbuf', 0)
+        column.set_cell_data_func(cell, self.icon_data_func, 0)
         cell = Gtk.CellRendererText()
         column.pack_start(cell, True)
         column.add_attribute(cell, 'markup', 1)
@@ -176,13 +176,18 @@ class MainWindow(object):
         column.set_spacing(4)
         cell = Gtk.CellRendererPixbuf()
         column.pack_start(cell, False)
-        column.add_attribute(cell, 'pixbuf', 1)
+        column.set_cell_data_func(cell, self.icon_data_func, 1)
         cell = Gtk.CellRendererText()
         column.pack_start(cell, True)
         column.add_attribute(cell, 'markup', 2)
         items.append_column(column)
-        self.item_store = Gtk.ListStore(bool, GdkPixbuf.Pixbuf, str, object)
+        self.item_store = Gtk.ListStore(bool, object, str, object)
         items.set_model(self.item_store)
+
+    def icon_data_func(self, column, cell, model, iter, data=None):
+        wrapper = model.get_value(iter, data)
+        if wrapper:
+            cell.set_property("surface", wrapper.surface)
 
     def _cell_data_toggle_func(self, tree_column, renderer, model, treeiter, data=None):
         if isinstance(model[treeiter][3], CMenu.TreeSeparator):
@@ -207,14 +212,14 @@ class MainWindow(object):
             if not show:
                 name = "<small><i>%s</i></small>" % (name,)
 
-            icon = util.getIcon(menu)
+            icon = util.getIcon(menu, self.main_window)
             iters[menu] = self.menu_store.append(iters[parent], (icon, name, False, menu))
             self.loadMenu(iters, menu)
 
     def loadItems(self, menu):
         self.item_store.clear()
         for item, show in self.editor.getItems(menu):
-            icon = util.getIcon(item)
+            icon = util.getIcon(item, self.main_window)
             if isinstance(item, CMenu.TreeDirectory):
                 name = item.get_name()
             elif isinstance(item, CMenu.TreeEntry):

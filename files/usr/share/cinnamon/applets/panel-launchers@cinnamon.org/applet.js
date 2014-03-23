@@ -13,7 +13,7 @@ const DND = imports.ui.dnd;
 const Tweener = imports.ui.tweener;
 const Util = imports.misc.util;
 
-const DEFAULT_ICON_SIZE = 20;
+const DEFAULT_ICON_SIZE = 19;
 const DEFAULT_ANIM_SIZE = 13;
 const ICON_HEIGHT_FACTOR = .8;
 const ICON_ANIM_FACTOR = .65;
@@ -174,14 +174,14 @@ PanelAppLauncher.prototype = {
     _animateIcon: function(step){
         if (step>=3) return;
         Tweener.addTween(this.icon,
-                         { width: this.icon_anim_height,
-                           height: this.icon_anim_height,
+                         { width: this.icon_anim_height * global.ui_scale,
+                           height: this.icon_anim_height * global.ui_scale,
                            time: 0.2,
                            transition: 'easeOutQuad',
                            onComplete: function(){
                                Tweener.addTween(this.icon,
-                                                { width: this.icon_height,
-                                                  height: this.icon_height,
+                                                { width: this.icon_height * global.ui_scale,
+                                                  height: this.icon_height * global.ui_scale,
                                                   time: 0.2,
                                                   transition: 'easeOutQuad',
                                                   onComplete: function(){

@@ -1034,9 +1034,7 @@ Source.prototype = {
                                         child: this._counterLabel });
         this._counterBin.hide();
 
-        this._iconBin = new St.Bin({ width: this.ICON_SIZE,
-                                     height: this.ICON_SIZE,
-                                     x_fill: true,
+        this._iconBin = new St.Bin({ x_fill: true,
                                      y_fill: true });
 
         this.actor.add_actor(this._iconBin);

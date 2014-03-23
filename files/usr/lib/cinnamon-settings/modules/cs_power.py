@@ -35,7 +35,7 @@ class Module:
     def __init__(self, content_box):
         keywords = _("power, suspend, hibernate, laptop, desktop, brightness, screensaver")
         advanced = False
-        sidePage = SidePage(_("Power Management"), "power.svg", keywords, advanced, content_box, is_c_mod=True)
+        sidePage = SidePage(_("Power Management"), "cs-power", keywords, advanced, content_box, is_c_mod=True)
         self.sidePage = sidePage
         self.name = "power"
         self.category = "hardware"
@@ -103,7 +103,7 @@ class Module:
                 widget.set_tooltip_text(_("Save battery power by reducing the brightness of the screen when inactive"))
                 box.pack_start(widget, False, False, 0)
 
-                widget = Gtk.Label(_("after"))
+                widget = Gtk.Label.new(_("after"))
                 widget.set_tooltip_text(_("Save battery power by reducing the brightness of the screen when inactive"))
                 box.pack_start(widget, False, False, 0)
 

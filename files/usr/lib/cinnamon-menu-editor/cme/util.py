@@ -20,7 +20,7 @@ import os
 import xml.dom.minidom
 import uuid
 from collections import Sequence
-from gi.repository import Gtk, GdkPixbuf, CMenu, GLib
+from gi.repository import Gtk, GdkPixbuf, CMenu, GLib, Gdk
 
 DESKTOP_GROUP = GLib.KEY_FILE_DESKTOP_GROUP
 KEY_FILE_FLAGS = GLib.KeyFileFlags.KEEP_COMMENTS | GLib.KeyFileFlags.KEEP_TRANSLATIONS
@@ -121,10 +121,15 @@ def getUserMenuXml(tree):
     menu_xml += "<MergeFile type=\"parent\">" + system_file +    "</MergeFile>\n</Menu>\n"
     return menu_xml
 
-def getIcon(item):
+class SurfaceWrapper:
+    def __init__(self, surface):
+        self.surface = surface
+
+def getIcon(item, widget):
+    wrapper = SurfaceWrapper(None)
     pixbuf = None
     if item is None:
-        return None
+        return wrapper
 
     if isinstance(item, CMenu.TreeDirectory):
         gicon = item.get_icon()
@@ -132,24 +137,27 @@ def getIcon(item):
         app_info = item.get_app_info()
         gicon = app_info.get_icon()
     else:
-        return None
+        return wrapper
 
     if gicon is None:
-        return None
+        return wrapper
 
     icon_theme = Gtk.IconTheme.get_default()
-    info = icon_theme.lookup_by_gicon(gicon, 24, 0)
+    size = 24 * widget.get_scale_factor()
+    info = icon_theme.lookup_by_gicon(gicon, size, 0)
     if info is None:
-        return None
+        return wrapper
     try:
         pixbuf = info.load_icon()
     except GLib.GError:
-        return None
+        return wrapper
     if pixbuf is None:
-        return None
-    if pixbuf.get_width() != 24 or pixbuf.get_height() != 24:
-        pixbuf = pixbuf.scale_simple(24, 24, GdkPixbuf.InterpType.HYPER)
-    return pixbuf
+        return wrapper
+    if pixbuf.get_width() != size or pixbuf.get_height() != size:
+        pixbuf = pixbuf.scale_simple(size, size, GdkPixbuf.InterpType.HYPER)
+
+    wrapper.surface = Gdk.cairo_surface_create_from_pixbuf (pixbuf, widget.get_scale_factor(), widget.get_window())
+    return wrapper
 
 def removeWhitespaceNodes(node):
     remove_list = []

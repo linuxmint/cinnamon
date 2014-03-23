@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 
 from SettingsWidgets import *
-from gi.repository.Gtk import SizeGroup, SizeGroupMode
+from gi.repository import Gtk
 
 
 class Module:
     def __init__(self, content_box):
         keywords = _("font, size, small, large")
         advanced = False
-        sidePage = SidePage(_("Fonts"), "fonts.svg", keywords, advanced, content_box)
+        sidePage = SidePage(_("Fonts"), "cs-fonts", keywords, advanced, content_box)
         self.sidePage = sidePage
         self.name = "fonts"
         self.category = "appear"
@@ -40,7 +40,7 @@ class Module:
         sidePage.add_widget(self.make_combo_group(GSettingsComboBox, _("Hinting"), "org.cinnamon.settings-daemon.plugins.xsettings", "hinting", None), True)
 
     def make_combo_group(self, widget, group_label, root, key, ex1):
-        self.size_groups = getattr(self, "size_groups", [SizeGroup(SizeGroupMode.HORIZONTAL) for x in range(2)])
+        self.size_groups = getattr(self, "size_groups", [Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL) for x in range(2)])
         
         box = IndentedHBox()
         label = Gtk.Label()

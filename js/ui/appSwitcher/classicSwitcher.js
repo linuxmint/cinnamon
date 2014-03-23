@@ -978,9 +978,9 @@ ThumbnailList.prototype = {
             this._labels[0].get_preferred_height(-1) : [0, 0];
         let spacing = this._items[0].child.get_theme_node().get_length('spacing');
 
-        availHeight = Math.min(availHeight - labelNaturalHeight - totalPadding - spacing, THUMBNAIL_DEFAULT_SIZE);
+        availHeight = Math.min(availHeight - labelNaturalHeight - totalPadding - spacing, THUMBNAIL_DEFAULT_SIZE * global.ui_scale);
         let binHeight = availHeight + this._items[0].get_theme_node().get_vertical_padding() + this.actor.get_theme_node().get_vertical_padding() - spacing;
-        binHeight = Math.min(THUMBNAIL_DEFAULT_SIZE, binHeight);
+        binHeight = Math.min(THUMBNAIL_DEFAULT_SIZE * global.ui_scale, binHeight);
 
         for (let i = 0; i < this._thumbnailBins.length; i++) {
             let metaWindow = this._windows[i];

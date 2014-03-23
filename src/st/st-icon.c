@@ -29,6 +29,7 @@
 #include "st-enum-types.h"
 #include "st-icon.h"
 #include "st-texture-cache.h"
+#include "st-theme-context.h"
 #include "st-private.h"
 
 enum
@@ -58,6 +59,7 @@ struct _StIconPrivate
   gint          prop_icon_size;  /* icon size set as property */
   gint          theme_icon_size; /* icon size from theme node */
   gint          icon_size;       /* icon size we are using */
+  gint          icon_scale;
 
   CoglHandle    shadow_material;
   float         shadow_width;
@@ -198,10 +200,10 @@ st_icon_get_preferred_height (ClutterActor *actor,
   StThemeNode *theme_node = st_widget_get_theme_node (ST_WIDGET (actor));
 
   if (min_height_p)
-    *min_height_p = priv->icon_size;
+    *min_height_p = priv->icon_size * priv->icon_scale;
 
   if (nat_height_p)
-    *nat_height_p = priv->icon_size;
+    *nat_height_p = priv->icon_size * priv->icon_scale;
 
   st_theme_node_adjust_preferred_height (theme_node, min_height_p, nat_height_p);
 }
@@ -216,10 +218,10 @@ st_icon_get_preferred_width (ClutterActor *actor,
   StThemeNode *theme_node = st_widget_get_theme_node (ST_WIDGET (actor));
 
   if (min_width_p)
-    *min_width_p = priv->icon_size;
+    *min_width_p = priv->icon_size * priv->icon_scale;
 
   if (nat_width_p)
-    *nat_width_p = priv->icon_size;
+    *nat_width_p = priv->icon_size * priv->icon_scale;
 
   st_theme_node_adjust_preferred_width (theme_node, min_width_p, nat_width_p);
 }
@@ -249,10 +251,10 @@ st_icon_allocate (ClutterActor           *actor,
        * expect to get rid of the child actor in favor of a CoglTexture in the
        * future.
        */
-      content_box.x1 = (int)(0.5 + content_box.x1 + (content_box.x2 - content_box.x1 - priv->icon_size) / 2.);
-      content_box.x2 = content_box.x1 + priv->icon_size;
-      content_box.y1 = (int)(0.5 + content_box.y1 + (content_box.y2 - content_box.y1 - priv->icon_size) / 2.);
-      content_box.y2 = content_box.y1 + priv->icon_size;
+      content_box.x1 = (int)(0.5 + content_box.x1 + (content_box.x2 - content_box.x1 - (priv->icon_size * priv->icon_scale)) / 2.);
+      content_box.x2 = content_box.x1 + (priv->icon_size * priv->icon_scale);
+      content_box.y1 = (int)(0.5 + content_box.y1 + (content_box.y2 - content_box.y1 - (priv->icon_size * priv->icon_scale)) / 2.);
+      content_box.y2 = content_box.y1 + (priv->icon_size * priv->icon_scale);
 
       clutter_actor_allocate (priv->icon_texture, &content_box, flags);
     }
@@ -388,6 +390,7 @@ st_icon_init (StIcon *self)
   self->priv->shadow_material = COGL_INVALID_HANDLE;
   self->priv->shadow_width = -1;
   self->priv->shadow_height = -1;
+  self->priv->icon_scale = 1;
 }
 
 static void
@@ -472,6 +475,9 @@ st_icon_update (StIcon *icon)
   StIconPrivate *priv = icon->priv;
   StThemeNode *theme_node;
   StTextureCache *cache;
+  gint scale;
+  ClutterActor *stage;
+  StThemeContext *context;
 
   if (priv->pending_texture)
     {
@@ -485,6 +491,12 @@ st_icon_update (StIcon *icon)
   if (theme_node == NULL)
     return;
 
+  stage = clutter_actor_get_stage (CLUTTER_ACTOR (icon));
+  context = st_theme_context_get_for_stage (CLUTTER_STAGE (stage));
+  g_object_get (context, "scale-factor", &scale, NULL);
+
+  priv->icon_scale = scale;
+
   cache = st_texture_cache_get_default ();
   if (priv->gicon)
     {
@@ -493,7 +505,8 @@ st_icon_update (StIcon *icon)
                                                             priv->icon_type != ST_ICON_DOCUMENT) ?
                                                            theme_node : NULL,
                                                            priv->gicon,
-                                                           priv->icon_size);
+                                                           priv->icon_size,
+                                                           scale);
     }
  else if (priv->icon_name)
     {
@@ -501,7 +514,8 @@ st_icon_update (StIcon *icon)
                                                                theme_node,
                                                                priv->icon_name,
                                                                priv->icon_type,
-                                                               priv->icon_size);
+                                                               priv->icon_size,
+                                                               scale);
     }
 
   if (priv->pending_texture)
@@ -535,7 +549,19 @@ st_icon_update_icon_size (StIcon *icon)
   if (priv->prop_icon_size > 0)
     new_size = priv->prop_icon_size;
   else if (priv->theme_icon_size > 0)
-    new_size = priv->theme_icon_size;
+    {
+      gint scale;
+      ClutterActor *stage;
+      StThemeContext *context;
+
+      /* The theme will give us an already-scaled size, so we
+       * undo it here, as priv->icon_size is in unscaled pixels.
+       */
+      stage = clutter_actor_get_stage (CLUTTER_ACTOR (icon));
+      context = st_theme_context_get_for_stage (CLUTTER_STAGE (stage));
+      g_object_get (context, "scale-factor", &scale, NULL);
+      new_size = (gint) (priv->theme_icon_size / scale);
+    }
   else
     new_size = DEFAULT_ICON_SIZE;
 

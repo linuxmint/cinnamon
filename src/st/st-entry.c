@@ -948,10 +948,17 @@ _st_entry_set_icon_from_file (StEntry       *entry,
   if (filename)
     {
       StTextureCache *cache;
+      GFile *file;
+      gchar *uri;
 
       cache = st_texture_cache_get_default ();
+      file = g_file_new_for_path (filename);
+      uri = g_file_get_uri (file);
 
-      new_icon = (ClutterActor*) st_texture_cache_load_file_simple (cache, filename);
+      g_object_unref (file);
+
+      new_icon = (ClutterActor*) st_texture_cache_load_uri_async (cache, uri, -1, -1);
+      g_free (uri);
     }
 
   _st_entry_set_icon  (entry, icon, new_icon);
