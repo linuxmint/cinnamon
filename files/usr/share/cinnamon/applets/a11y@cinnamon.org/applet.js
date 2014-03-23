@@ -3,6 +3,7 @@ const Gio = imports.gi.Gio;
 const Lang = imports.lang;
 const Applet = imports.ui.applet;
 const GConf = imports.gi.GConf;
+const Main = imports.ui.main;
 
 const A11Y_SCHEMA = 'org.cinnamon.desktop.a11y.keyboard';
 const KEY_STICKY_KEYS_ENABLED = 'stickykeys-enable';
@@ -29,17 +30,20 @@ const KEY_TEXT_SCALING_FACTOR = 'text-scaling-factor';
 
 const HIGH_CONTRAST_THEME = 'HighContrast';
 
-function MyApplet(orientation, panel_height) {
-    this._init(orientation, panel_height);
+function MyApplet(metadata, orientation, panel_height) {
+    this._init(metadata, orientation, panel_height);
 }
 
 MyApplet.prototype = {
     __proto__: Applet.IconApplet.prototype,
 
-    _init: function(orientation, panel_height) {        
+    _init: function(metadata, orientation, panel_height) {        
         Applet.IconApplet.prototype._init.call(this, orientation, panel_height);
         
-        try {        
+        try {
+            this.metadata = metadata;
+            Main.systrayManager.registerRole("a11y", metadata.uuid);
+            
             this.set_applet_icon_symbolic_name("preferences-desktop-accessibility");
             this.set_applet_tooltip(_("Accessibility"));
             
@@ -192,10 +196,14 @@ MyApplet.prototype = {
             widget.setToggleState(active);
         });
         return widget;
+    },
+
+    on_applet_removed_from_panel: function() {
+        Main.systrayManager.unregisterRole("a11y", this.metadata.uuid);
     }
 };
 
 function main(metadata, orientation, panel_height) {  
-    let myApplet = new MyApplet(orientation, panel_height);
+    let myApplet = new MyApplet(metadata, orientation, panel_height);
     return myApplet;      
 }

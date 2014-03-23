@@ -5,6 +5,7 @@ const Lang = imports.lang;
 const St = imports.gi.St;
 const PopupMenu = imports.ui.popupMenu;
 const Pango = imports.gi.Pango;
+const Main = imports.ui.main;
 
 const POWER_SCHEMA = "org.cinnamon.power"
 const SHOW_PERCENTAGE_KEY = "power-label";
@@ -126,18 +127,22 @@ DeviceItem.prototype = {
     }
 }
 
-function MyApplet(orientation, panel_height) {
-    this._init(orientation, panel_height);
+function MyApplet(metadata, orientation, panel_height) {
+    this._init(metadata, orientation, panel_height);
 }
 
 
 MyApplet.prototype = {
     __proto__: Applet.TextIconApplet.prototype,
 
-    _init: function(orientation, panel_height) {        
+    _init: function(metadata, orientation, panel_height) {        
         Applet.TextIconApplet.prototype._init.call(this, orientation, panel_height);
         
-        try {                                
+        try {
+            this.metadata = metadata;
+            Main.systrayManager.registerRole("power", metadata.uuid);
+            Main.systrayManager.registerRole("battery", metadata.uuid);
+            
             this.menuManager = new PopupMenu.PopupMenuManager(this);
             this.menu = new Applet.AppletPopupMenu(this, orientation);
             this.menuManager.addMenu(this.menu);            
@@ -359,11 +364,14 @@ MyApplet.prototype = {
             // Display disabled or no battery found... hot-unplugged?
             this._mainLabel.set_text("");
         }));
-    }
+    },
     
+    on_applet_removed_from_panel: function() {
+        Main.systrayManager.unregisterId(this.metadata.uuid);
+    }
 };
 
 function main(metadata, orientation, panel_height) {  
-    let myApplet = new MyApplet(orientation, panel_height);
+    let myApplet = new MyApplet(metadata, orientation, panel_height);
     return myApplet;      
 }

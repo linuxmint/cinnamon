@@ -77,6 +77,7 @@ const StatusIconDispatcher = imports.ui.statusIconDispatcher;
 const Util = imports.misc.util;
 const Keybindings = imports.ui.keybindings;
 const Settings = imports.ui.settings;
+const Systray = imports.ui.systray;
 
 const DEFAULT_BACKGROUND_COLOR = new Clutter.Color();
 DEFAULT_BACKGROUND_COLOR.from_pixel(0x2266bbff);
@@ -124,6 +125,7 @@ let dynamicWorkspaces = null;
 let nWorks = null;
 let tracker = null;
 let settingsManager = null;
+let systrayManager = null;
 
 let workspace_names = [];
 
@@ -177,6 +179,8 @@ function _initUserSession() {
 
     global.screen.override_workspace_layout(Meta.ScreenCorner.TOPLEFT, false, 1, -1);
 
+    systrayManager = new Systray.SystrayManager();
+    
     ExtensionSystem.init();
 
     Meta.keybindings_set_custom_handler('panel-run-dialog', function() {
