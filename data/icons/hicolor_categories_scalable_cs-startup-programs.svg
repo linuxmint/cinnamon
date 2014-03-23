@@ -38,13 +38,15 @@
      inkscape:window-height="1024"
      id="namedview99"
      showgrid="false"
-     inkscape:zoom="1.7383042"
-     inkscape:cx="-9.9372571"
-     inkscape:cy="-41.971819"
+     inkscape:zoom="4.9166667"
+     inkscape:cx="60.008755"
+     inkscape:cy="15.152591"
      inkscape:window-x="0"
      inkscape:window-y="0"
      inkscape:window-maximized="1"
-     inkscape:current-layer="svg2" />
+     inkscape:current-layer="g4193"
+     inkscape:snap-center="true"
+     inkscape:snap-object-midpoints="true" />
   <defs
      id="defs4">
     <linearGradient
@@ -2351,7 +2353,7 @@
        fx="62.625"
        cy="4.625"
        cx="62.625"
-       gradientTransform="matrix(2.2588166,0,0,0.91263572,-128.59139,38.339817)"
+       gradientTransform="matrix(2.2588166,0,0,0.91263572,-50.077237,79.777842)"
        gradientUnits="userSpaceOnUse"
        id="radialGradient3834"
        xlink:href="#linearGradient8838"
@@ -2804,7 +2806,7 @@
      id="path89" />
   <g
      id="g3759"
-     transform="matrix(0.85942279,0,0,0.85942279,-150.63169,-16.969429)">
+     transform="matrix(0.85942279,0,0,0.85942279,-404.90249,33.654622)">
     <g
        style="display:none"
        id="layer2">
@@ -2820,16 +2822,11 @@
     </g>
     <g
        id="g4193"
-       transform="translate(44.34563,22.578435)">
+       transform="translate(40.3294,23.917178)">
       <g
-         transform="matrix(1.5345884,0,0,1.5345884,168.26574,9.4794939)"
+         transform="matrix(1.4406128,0,0,1.4416842,468.11914,-48.522144)"
          id="layer1-3"
          inkscape:label="Layer 1">
-        <path
-           inkscape:connector-curvature="0"
-           style="opacity:0.3;fill:url(#radialGradient3834);fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:0.99999988;marker:none;visibility:visible;display:inline;overflow:visible"
-           id="path8836"
-           d="m 36.866923,42.560763 a 23.999926,9.6967681 0 0 1 -47.999846,0 23.999926,9.6967681 0 1 1 47.999846,0 z" />
         <path
            inkscape:connector-curvature="0"
            style="fill:url(#radialGradient3909);stroke:url(#linearGradient3911);stroke-width:1.00365412;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0"
