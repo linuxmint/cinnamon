@@ -18,6 +18,9 @@ const DEFAULT_ICON_SIZE = 16; // too bad this can't be defined in theme (cinnamo
 const SPINNER_ANIMATION_TIME = 1;
 const ICON_HEIGHT_FACTOR = .64;
 
+const SCROLL_OPACITY_MODIFIER = Clutter.ModifierType.CONTROL_MASK;
+const SCROLL_OPACITY_INCREMENT = 16;
+
 /* TODO: dragHelper will need to be reworked once more flexible panel configuration is merged */
 
 function dragHelper() {
@@ -394,14 +397,41 @@ AppMenuButton.prototype = {
                 break;
             }
         }
-        let target;
-        if (direction == 1) {
-            target = ((current - 1) >= 0) ? (current - 1) : (num_windows - 1);
+        let modifiers = Cinnamon.get_event_state(event);
+        if (modifiers & SCROLL_OPACITY_MODIFIER) {
+            let target = null; 
+            let gwa = global.get_window_actors();
+            for (let i = 0; i < gwa.length; i++) {
+                if (gwa[i].get_meta_window() == this.actor._delegate.metaWindow) {
+                    target = gwa[i];
+                    break;
+                }
+            }
+            if (target) {
+                let opacity = target.opacity;
+                if (direction == 0) {
+                    opacity = opacity + SCROLL_OPACITY_INCREMENT;
+                    if (opacity>255) {
+                        opacity=255;
+                    }
+                } else {
+                    opacity = opacity - SCROLL_OPACITY_INCREMENT;
+                    if (opacity<0) {
+                        opacity=0;
+                    }
+                }
+                target.set_opacity(opacity);
+            }
+        } else {
+            let target;
+            if (direction == 1) {
+                target = ((current - 1) >= 0) ? (current - 1) : (num_windows - 1);
+            }
+            if (direction == 0) {
+                target = ((current + 1) <= num_windows - 1) ? (current + 1) : 0;
+            }
+            Main.activateWindow(this.window_list[vis_windows[target]].metaWindow, global.get_current_time());
         }
-        if (direction == 0) {
-            target = ((current + 1) <= num_windows - 1) ? (current + 1) : 0;
-        }
-        Main.activateWindow(this.window_list[vis_windows[target]].metaWindow, global.get_current_time());
     },
 
     _onDragBegin: function() {
