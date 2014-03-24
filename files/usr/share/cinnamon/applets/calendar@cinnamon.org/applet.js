@@ -10,12 +10,11 @@ const UPowerGlib = imports.gi.UPowerGlib;
 const Settings = imports.ui.settings;
 const AppletDir = imports.ui.appletManager.applets['calendar@cinnamon.org'];
 const Calendar = AppletDir.calendar;
+const CinnamonDesktop = imports.gi.CinnamonDesktop;
 
 String.prototype.capitalize = function() {
     return this.charAt(0).toUpperCase() + this.slice(1);
 }
-
-let DEFAULT_FORMAT = _("%l:%M %p");
 
 function _onVertSepRepaint (area)
 {
@@ -43,7 +42,9 @@ MyApplet.prototype = {
     _init: function(orientation, panel_height, instance_id) {        
         Applet.TextApplet.prototype._init.call(this, orientation, panel_height, instance_id);
         
-        try {                 
+        try {    
+
+            this.clock = new CinnamonDesktop.WallClock();
 
             this.settings = new Settings.AppletSettings(this, "calendar@cinnamon.org", this.instance_id);
 
@@ -85,8 +86,7 @@ MyApplet.prototype = {
                 global.reparentActor(item.actor, vbox);
             }
 
-            // Track changes to clock settings        
-            this._dateFormat = DEFAULT_FORMAT;
+            // Track changes to clock settings
             this._dateFormatFull = _("%A %B %e, %Y");
 
             this.settings.bindProperty(Settings.BindingDirection.IN, "use-custom-format", "use_custom_format", this.on_settings_changed, null);
@@ -110,12 +110,7 @@ MyApplet.prototype = {
         this.menu.toggle();
     },
 
-    on_settings_changed: function() {
-        if (this.use_custom_format) {
-            this._dateFormat = this.custom_format;
-        } else {
-            this._dateFormat = DEFAULT_FORMAT;
-        }
+    on_settings_changed: function() {        
         this._updateClockAndDate();
     },
 
@@ -129,14 +124,23 @@ MyApplet.prototype = {
     },
 
     _updateClockAndDate: function() {
-        let displayDate = new Date();
-        let dateFormattedFull = displayDate.toLocaleFormat(this._dateFormatFull).capitalize();
-        let label_string = displayDate.toLocaleFormat(this._dateFormat);
-        if (!label_string) {
-            global.logError("Calendar applet: bad time format string - check your string.");
-            label_string = "~CLOCK FORMAT ERROR~ " + displayDate.toLocaleFormat(DEFAULT_FORMAT);
+        let now = new Date();        
+        
+        // Applet label
+        if (this.use_custom_format) {
+            let label_string = now.toLocaleFormat(this.custom_format);
+            if (!label_string) {
+                global.logError("Calendar applet: bad time format string - check your string.");
+                label_string = "~CLOCK FORMAT ERROR~ " + now.toLocaleFormat("%l:%M %p");
+            }          
+            this.set_applet_label(label_string);   
         }
-        this.set_applet_label(label_string);
+        else {
+            this.set_applet_label(this.clock.get_clock().capitalize());
+        }
+
+        // Applet content
+        let dateFormattedFull = now.toLocaleFormat(this._dateFormatFull).capitalize();
         if (dateFormattedFull !== this._lastDateFormattedFull) {
             this._date.set_text(dateFormattedFull);
             this.set_applet_tooltip(dateFormattedFull);
