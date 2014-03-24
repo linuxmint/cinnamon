@@ -994,7 +994,9 @@ MyApplet.prototype = {
             } else {
                 this._icon_path = this._icon_path_prev = path;
             }
-
+        } else if (path === false) {
+            // This track has no art, remove the cache as well
+            this._icon_path = this._icon_path_prev = null;
         } else {
             this._icon_path = null;
         }

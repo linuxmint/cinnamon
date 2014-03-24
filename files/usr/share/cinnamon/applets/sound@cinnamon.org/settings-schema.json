@@ -1,7 +1,7 @@
 {
     "showtrack": {
         "type": "checkbox",
-        "default": true,
+        "default": false,
         "description": "Show song information on the panel"
     },
     "truncatetext": {
@@ -15,7 +15,7 @@
     },
     "showalbum": {
         "type": "checkbox",
-        "default": true,
+        "default": false,
         "description": "Show album art as icon"
     }
 }
