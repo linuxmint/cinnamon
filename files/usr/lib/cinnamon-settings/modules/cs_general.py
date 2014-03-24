@@ -11,9 +11,22 @@ class Module:
         self.name = "general"
         self.comment = _("Miscellaneous Cinnamon preferences")
         self.category = "prefs"
-        sidePage.add_widget(GSettingsCheckButton(_("Log LookingGlass output to ~/.cinnamon/glass.log (Requires Cinnamon restart)"), "org.cinnamon", "enable-looking-glass-logs", None), True)
-        sidePage.add_widget(GSettingsCheckButton(_("Display notifications"), "org.cinnamon", "display-notifications", None))
 
+        bg = SectionBg()
+
+        sidePage.add_widget(bg)
+        vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        bg.add(vbox)
+        
+        section = Section(_("Desktop Scaling"))
         ui_scales = [[0, _("Auto")], [1, _("Normal")], [2, _("Double (Hi-DPI)")]]        
         combo = GSettingsUIntComboBox(_("User interface scaling:"), "org.cinnamon.desktop.interface", "scaling-factor", ui_scales)
-        sidePage.add_widget(combo) 
+        section.add(combo)
+        vbox.add(section)
+
+        vbox.add(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))
+
+        section = Section(_("Miscellaneous Options"))
+        section.add(GSettingsCheckButton(_("Log LookingGlass output to ~/.cinnamon/glass.log (Requires Cinnamon restart)"), "org.cinnamon", "enable-looking-glass-logs", None))
+        section.add(GSettingsCheckButton(_("Display notifications"), "org.cinnamon", "display-notifications", None))
+        vbox.add(section)
