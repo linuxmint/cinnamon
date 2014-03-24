@@ -19,6 +19,10 @@ String.prototype.capitalize = function() {
     return this.charAt(0).toUpperCase() + this.slice(1);
 }
 
+String.prototype.first_cap = function() {
+    return this.charAt(0).toUpperCase();
+}
+
 // in org.cinnamon.desktop.interface
 const CLOCK_FORMAT_KEY        = 'clock-format';
 
@@ -110,51 +114,20 @@ function _getDigitWidth(actor){
 }
 
 function _getCalendarDayAbbreviation(dayNumber) {
-    let abbreviations = [
-        /* Translators: Calendar grid abbreviation for Sunday.
-         *
-         * NOTE: These grid abbreviations are always shown together
-         * and in order, e.g. "S M T W T F S".
-         */
-        C_("grid sunday", "S"),
-        /* Translators: Calendar grid abbreviation for Monday */
-        C_("grid monday", "M"),
-        /* Translators: Calendar grid abbreviation for Tuesday */
-        C_("grid tuesday", "T"),
-        /* Translators: Calendar grid abbreviation for Wednesday */
-        C_("grid wednesday", "W"),
-        /* Translators: Calendar grid abbreviation for Thursday */
-        C_("grid thursday", "T"),
-        /* Translators: Calendar grid abbreviation for Friday */
-        C_("grid friday", "F"),
-        /* Translators: Calendar grid abbreviation for Saturday */
-        C_("grid saturday", "S")
-    ];
-    return abbreviations[dayNumber];
-}
 
-function _getEventDayAbbreviation(dayNumber) {
+    // This returns an array of abbreviated day names, starting with Sunday.
+    // We use 2014/03/02 (months are zero-based in JS) because it was a Sunday
+
     let abbreviations = [
-        /* Translators: Event list abbreviation for Sunday.
-         *
-         * NOTE: These list abbreviations are normally not shown together
-         * so they need to be unique (e.g. Tuesday and Thursday cannot
-         * both be 'T').
-         */
-        C_("list sunday", "Su"),
-        /* Translators: Event list abbreviation for Monday */
-        C_("list monday", "M"),
-        /* Translators: Event list abbreviation for Tuesday */
-        C_("list tuesday", "T"),
-        /* Translators: Event list abbreviation for Wednesday */
-        C_("list wednesday", "W"),
-        /* Translators: Event list abbreviation for Thursday */
-        C_("list thursday", "Th"),
-        /* Translators: Event list abbreviation for Friday */
-        C_("list friday", "F"),
-        /* Translators: Event list abbreviation for Saturday */
-        C_("list saturday", "S")
-    ];
+        new Date(2014, 2, 2).toLocaleFormat('%A').first_cap(),        
+        new Date(2014, 2, 3).toLocaleFormat('%A').first_cap(),
+        new Date(2014, 2, 4).toLocaleFormat('%A').first_cap(),
+        new Date(2014, 2, 5).toLocaleFormat('%A').first_cap(),
+        new Date(2014, 2, 6).toLocaleFormat('%A').first_cap(),
+        new Date(2014, 2, 7).toLocaleFormat('%A').first_cap(),
+        new Date(2014, 2, 8).toLocaleFormat('%A').first_cap()
+    ];  
+
     return abbreviations[dayNumber];
 }
 
@@ -697,7 +670,7 @@ EventsList.prototype = {
 
         for (let n = 0; n < events.length; n++) {
             let event = events[n];
-            let dayString = _getEventDayAbbreviation(event.date.getDay());
+            let dayString = _getCalendarDayAbbreviation(event.date.getDay());
             let timeString = _formatEventTime(event, clockFormat);
             let summaryString = event.summary;
             this._addEvent(dayNameBox, timeBox, eventTitleBox, includeDayName, dayString, timeString, summaryString);
