@@ -15,6 +15,10 @@ const MSECS_IN_DAY = 24 * 60 * 60 * 1000;
 const WEEKDATE_HEADER_WIDTH_DIGITS = 3;
 const SHOW_WEEKDATE_KEY = 'show-weekdate';
 
+String.prototype.capitalize = function() {
+    return this.charAt(0).toUpperCase() + this.slice(1);
+}
+
 // in org.cinnamon.desktop.interface
 const CLOCK_FORMAT_KEY        = 'clock-format';
 
@@ -551,7 +555,7 @@ Calendar.prototype = {
     _update: function(forceReload) {
         let now = new Date();
 
-        this._monthLabel.text = this._selectedDate.toLocaleFormat('%B');
+        this._monthLabel.text = this._selectedDate.toLocaleFormat('%B').capitalize();
         this._yearLabel.text = this._selectedDate.toLocaleFormat('%Y');
 
         // Remove everything but the topBox and the weekday labels

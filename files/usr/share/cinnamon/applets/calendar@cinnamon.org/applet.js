@@ -11,6 +11,10 @@ const Settings = imports.ui.settings;
 const AppletDir = imports.ui.appletManager.applets['calendar@cinnamon.org'];
 const Calendar = AppletDir.calendar;
 
+String.prototype.capitalize = function() {
+    return this.charAt(0).toUpperCase() + this.slice(1);
+}
+
 let DEFAULT_FORMAT = _("%l:%M %p");
 
 function _onVertSepRepaint (area)
@@ -126,7 +130,7 @@ MyApplet.prototype = {
 
     _updateClockAndDate: function() {
         let displayDate = new Date();
-        let dateFormattedFull = displayDate.toLocaleFormat(this._dateFormatFull);
+        let dateFormattedFull = displayDate.toLocaleFormat(this._dateFormatFull).capitalize();
         let label_string = displayDate.toLocaleFormat(this._dateFormat);
         if (!label_string) {
             global.logError("Calendar applet: bad time format string - check your string.");
